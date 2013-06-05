@@ -9,11 +9,11 @@ entity miitx_udp is
 		sys_addr : out std_logic_vector;
 		sys_data : in  std_logic_vector;
 
-        mii_txc  : in  std_logic;
-        mii_treq : in  std_logic;
+		mii_txc  : in  std_logic;
+		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
-        mii_txen : out std_logic;
-        mii_txd  : out nibble);
+		mii_txen : out std_logic;
+		mii_txd  : out nibble);
 end;
 
 architecture mix of miitx_udp is
