@@ -22,7 +22,7 @@ entity ddr_wr_fifo is
 end;
 
 use std.textio.all;
-use work.std.all;
+use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
