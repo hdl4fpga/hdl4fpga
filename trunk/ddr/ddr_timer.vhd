@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 entity ddr_timer is
 	generic ( 

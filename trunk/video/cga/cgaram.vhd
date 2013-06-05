@@ -17,7 +17,7 @@ entity cgaram is
 
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 architecture def of cgaram is
 
@@ -36,7 +36,7 @@ begin
 	assert rd_addr'length=wr_addr'length
 		report "cgaram"
 		severity ERROR;
-	dpram_e : entity work.dpram
+	dpram_e : entity hdl4fpga.dpram
 	generic map (
 		address_size => wr_row'length+wr_col'length,
 		data_size => rd_code'length)

@@ -126,7 +126,7 @@ begin
 	end process;
 
 	ddr_cs  <= '0';
-	ddr_io_ba_e : entity work.ddr_io_ba
+	ddr_io_ba_e : entity hdl4fpga.ddr_io_ba
 	generic map (
 		bank_bits => bank_bits,
 		addr_bits => addr_bits)
@@ -153,7 +153,7 @@ begin
 		ddr_a   => ddr_a,
 		ddr_b   => ddr_ba);
 
-	ddr_timer_du : entity work.ddr_timer
+	ddr_timer_du : entity hdl4fpga.ddr_timer
 	generic map (
 		c200u => natural(t200u/tCP),
 		cREF  => natural(tREF/tCP),
@@ -166,7 +166,7 @@ begin
 		ddr_timer_200u => ddr_timer_200u,
 		ddr_timer_ref => ddr_timer_ref);
 
-	ddr_init_du : entity work.ddr_init
+	ddr_init_du : entity hdl4fpga.ddr_init
 	generic map (
 		a    => addr_bits,
 		tRP  => natural(ceil(tRP/tCp)),
@@ -199,7 +199,7 @@ begin
 
 	ddr_acc_req <= sys_cmd_req;
 	sys_di_rdy  <= ddr_wr_fifo_req;
-	ddr_mpu_e : entity work.ddr_mpu
+	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
 		tRCD => natural(ceil(tRCD/tCp)),
 		tWR  => natural(ceil(tWR/tCp)),
@@ -232,7 +232,7 @@ begin
 		ddr_mpu_dqsz  => ddr_acc_dqsz,
 		ddr_mpu_dqz   => ddr_acc_dqz);
 
-	ddr_pgm_e : entity work.ddr_pgm
+	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	port map (
 		ddr_pgm_rst => ddr_acc_rst,
 		ddr_pgm_clk => clk0,
@@ -246,7 +246,7 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	ddr_rd_fifo_e : entity work.ddr_rd_fifo
+	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	port map (
 		sys_clk => clk0,
 		sys_do  => sys_do,
@@ -258,7 +258,7 @@ begin
 		ddr_dqi  => ddr_io_dqi);
 		
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
-	ddr_wr_fifo_e : entity work.ddr_wr_fifo
+	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,
@@ -270,7 +270,7 @@ begin
 		ddr_clk_n => clk90,
 		ddr_do  => ddr_wr_fifo_do);
 		
-	ddr_io_du : entity work.ddr_io_dq
+	ddr_io_du : entity hdl4fpga.ddr_io_dq
 	generic map (
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
@@ -282,7 +282,7 @@ begin
 		ddr_io_dq  => ddr_dq,
 		ddr_io_dqi => ddr_io_dqi);
 
-	ddr_io_dqs_e : entity work.ddr_io_dqs
+	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
 		data_bytes => 2)
 	port map (
@@ -316,7 +316,7 @@ begin
 			q  => ddr_lp_dqs);
 	end block;
 
---	ddr_io_dm_e : entity work.ddr_io_dm
+--	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 --	generic map (
 --		n => 2)
 --	port map (
