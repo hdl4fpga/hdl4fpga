@@ -212,9 +212,6 @@ package std is
 		constant right: integer)
 		return integer;
 
---	function abs (
---		constant arg : integer64)
---		return integer64;
 end;
 
 use std.textio.all;
@@ -699,44 +696,38 @@ package body std is
 		end if;
 	end;
 
-	function signed_num_bits ( arg: integer) return natural is
-		variable nbits: natural;
-		variable n: natural;
+	function signed_num_bits (
+		constant arg: integer)
+		return natural is
+		variable nbits : natural;
+		variable n : natural;
 	begin
-		if arg>=0 then
-			n:=arg;
+		if arg>= 0 then
+			n := arg;
 		else
-			n:=-(arg+1);
+			n := -(arg+1);
 		end if;
-		nbits:=1;
+		nbits := 1;
 		while n>0 loop
-			nbits:=nbits+1;
-			n:= n / 2;
+			nbits := nbits + 1;
+			n := n / 2;
 		end loop;
 		return nbits;
 	end;
 
-	function unsigned_num_bits (arg: natural) return natural is
+	function unsigned_num_bits (
+		constant arg: natural)
+		return natural is
 		variable nbits: natural;
 		variable n: natural;
 	begin
-		n:=arg;
-		nbits:=1;
-		while n>1 loop
-			nbits:=nbits+1;
-			n:= n / 2;
+		n := arg;
+		nbits := 1;
+		while n > 1 loop
+			nbits := nbits+1;
+			n := n / 2;
 		end loop;
 		return nbits;
 	end;
 
---	function abs (
---		constant arg : integer64)
---		return integer64 is
---	begin
---		if arg < 0 ps then
---			return -arg;
---		else
---			return arg;
---		end if;
---	end;
 end;
