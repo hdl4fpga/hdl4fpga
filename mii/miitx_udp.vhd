@@ -23,11 +23,9 @@ architecture mix of miitx_udp is
 	constant n : natural := 3;
 
 	constant txpre : natural := 0;
-	constant txdst : natural := 1;
-	constant txsrc : natural := 2;
-	constant txmac : natural := 3;
-	constant txpld : natural := 4;
-	constant txcrc : natural := 5;
+	constant txmac : natural := 1;
+	constant txpld : natural := 2;
+	constant txcrc : natural := 3;
 
 	signal txdat : nibble_vector(n downto 0);
 	signal txena : std_logic_vector(n   downto 0);
@@ -46,31 +44,15 @@ begin
 		mem_data =>  x"5555_5555_5555_55d5")
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => txreq(txpre),
+		mii_treq  => txreq(txpre),
 		mii_txen => txena(txpre),
 		mii_txd  => txdat(txpre));
-
-	miitx_macdst_e  : entity work.miitx_mem
-	generic map (
-		mem_data => x"ff_ff_ff_ff_ff_ff")
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => txreq(txdst),
-		mii_txen => txena(txdst),
-		mii_txd  => txdat(txdst));
-
-	miitx_macsrc_e  : entity work.miitx_mem
-	generic map (
-		mem_data => x"00_00_00_01_02_03");
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => txreq(txsrc),
-		mii_txen => txena(txsrc),
-		mii_txd  => txdat(txsrc));
 
 	miitx_macudp_e  : entity work.miitx_mem
 	generic map (
 		mem_data => 
+			x"ffffffffffff" &	-- MAC Destination Address
+			x"000000010203"	&	-- MAC Source Address
 			x"0800"         &   -- MAC Protocol ID
 			x"4500"         &	-- IP  Version, header length, TOS
 			x"041c"         &	-- IP  Length
