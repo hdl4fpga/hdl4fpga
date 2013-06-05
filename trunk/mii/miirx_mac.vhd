@@ -1,4 +1,4 @@
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -23,7 +23,7 @@ architecture def of miirx_mac is
 	signal dtxd  : nibble;
 begin
 
-	miitx_pre_e : entity work.miirx_pre
+	miitx_pre_e : entity hdl4fpga.miirx_pre
 	port map (
 		mii_rxc  => mii_rxc,
         mii_rxdv => mii_rxdv,
@@ -31,7 +31,7 @@ begin
 
 		mii_txen => dtreq);
 
-	miitx_dst_e : entity work.miitx_mem
+	miitx_dst_e : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => x"00_00_00_01_02_03")
 	port map (

@@ -1,5 +1,5 @@
 use std.textio.all;
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;

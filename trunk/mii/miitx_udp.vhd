@@ -1,4 +1,4 @@
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -39,7 +39,7 @@ architecture mix of miitx_udp is
 	signal crc_ted : std_logic;
 begin
 
-	miitx_pre_e  : entity work.miitx_mem
+	miitx_pre_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data =>  x"5555_5555_5555_55d5")
 	port map (
@@ -48,7 +48,7 @@ begin
 		mii_txen => txena(txpre),
 		mii_txd  => txdat(txpre));
 
-	miitx_macudp_e  : entity work.miitx_mem
+	miitx_macudp_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => 
 			x"ffffffffffff" &	-- MAC Destination Address
@@ -70,7 +70,7 @@ begin
 		mii_txen => txena(txmac),
 		mii_txd  => txdat(txmac));
 
-	miitx_pld_e : entity work.miitx_dma
+	miitx_pld_e : entity hdl4fpga.miitx_dma
 	port map (
 		sys_addr => sys_addr,
 		sys_data => sys_data,
@@ -79,7 +79,7 @@ begin
 		mii_txen => txena(txpld),
 		mii_txd  => txdat(txpld));
 
-	miitx_crc_e : entity work.miitx_crc
+	miitx_crc_e : entity hdl4fpga.miitx_crc
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,

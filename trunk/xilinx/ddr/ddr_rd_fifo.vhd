@@ -24,7 +24,7 @@ entity ddr_rd_fifo is
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -45,7 +45,7 @@ architecture mix of ddr_rd_fifo is
 begin
 	ddr_win_dqsi(0) <= transport ddr_win_dqs after dqs_delay+1 ps;
 	ddr_win_dqsi(1) <= transport ddr_win_dqs after dqs_delay+1 ps;
---	st_dqs_delayed_e : entity work.pgm_delay
+--	st_dqs_delayed_e : entity hdl4fpga.pgm_delay
 --	generic map (
 --		n => 5)
 --	port map (
@@ -84,7 +84,7 @@ begin
 			end if;
 		end process;
 
-		dqs_delayed_e : entity work.pgm_delay
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		generic map (
 			n => 5)
 		port map (
