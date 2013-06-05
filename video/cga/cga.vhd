@@ -29,7 +29,7 @@ entity cga is
 
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 architecture def of cga is
 
@@ -61,7 +61,7 @@ begin
 		end if;
 	end process;
 
-	fontrow_e : entity work.align
+	fontrow_e : entity hdl4fpga.align
 	generic map (
 		n => font_row'length,
 		d => (font_row'range => 3))
@@ -70,7 +70,7 @@ begin
 		di  => cga_row(font_row'range),
 		do  => font_row);
 
-	cgaram_e  : entity work.cgaram
+	cgaram_e  : entity hdl4fpga.cgaram
 	port map (
 		wr_clk  => sys_clk,
 		wr_ena  => sys_we,
@@ -83,7 +83,7 @@ begin
 		rd_col  => cgaram_col,
 		rd_code => cgaram_code);
 
-	fontcode_e : entity work.align
+	fontcode_e : entity hdl4fpga.align
 	generic map (
 		n => cgaram_code'length,
 		d => (cgaram_code'range => 1))
@@ -92,7 +92,7 @@ begin
 		di  => cgaram_code,
 		do  => font_code);
 
-	fontrom_e : entity work.fontrom
+	fontrom_e : entity hdl4fpga.fontrom
 	generic map (
 		bitrom => bitrom,
 		height => height,
@@ -107,7 +107,7 @@ begin
 		row  => font_row,
 		data => font_line);
 
-	cgasel_e : entity work.align
+	cgasel_e : entity hdl4fpga.align
 	generic map (
 		n => cga_sel'length,
 		d => (cga_sel'range => 4))
@@ -116,7 +116,7 @@ begin
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	mux_e : entity work.mux
+	mux_e : entity hdl4fpga.mux
 	generic map (
 		m => cga_sel'length)
 	port map (
