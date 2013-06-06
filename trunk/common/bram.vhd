@@ -20,6 +20,7 @@ entity bram is
 		
 end;
 
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of bram is
