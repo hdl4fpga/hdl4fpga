@@ -1,10 +1,9 @@
-use std.textio.all;
-use hdl4fpga.std.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity miitx_dma is
     port (
