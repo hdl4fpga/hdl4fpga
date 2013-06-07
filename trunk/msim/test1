@@ -1,0 +1,6 @@
+TIME=${3:--all}
+/opt/modeltech/bin/vsim -t ps "$1($2)" <<EOF
+run $TIME
+quit -f
+
+EOF
