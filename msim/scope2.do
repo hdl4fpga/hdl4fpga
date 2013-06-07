@@ -1,0 +1,71 @@
+onerror {resume}
+quietly WaveActivateNextPane {} 0
+add wave -noupdate -radix hexadecimal /testbench/addr
+add wave -noupdate /testbench/ba
+add wave -noupdate /testbench/ras_n
+add wave -noupdate /testbench/cas_n
+add wave -noupdate /testbench/we_n
+add wave -noupdate /testbench/cke
+add wave -noupdate /testbench/clk
+add wave -noupdate /testbench/clk_p
+add wave -noupdate /testbench/clk_n
+add wave -noupdate /testbench/nuhs3dsp_e/usm_ddr_dcm_dfs_locked
+add wave -noupdate /testbench/nuhs3dsp_e/usm_ddr_dcm_dll_locked
+add wave -noupdate /testbench/cs_n
+add wave -noupdate /testbench/clk_p
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_pgm_e_ddr_mpu_pc
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_mpu_e_lat_timer
+add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_pgm_cmd
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_mpu_e_ddr_mpu_cas/O
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_mpu_e_ddr_mpu_ras/O
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_mpu_e_ddr_mpu_we/O
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_timer_du_timer_dll/O
+add wave -noupdate -expand /testbench/dqs
+add wave -noupdate /testbench/dqs(1)
+add wave -noupdate -radix hexadecimal /testbench/dq
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_wr_data0
+add wave -noupdate -color {Medium Violet Red} /testbench/nuhs3dsp_e/usm_ddr_dcm_dll_clk0
+add wave -noupdate /testbench/nuhs3dsp_e/usm_ddr_dcm_dll_clk90
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_o_q
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_o_q0
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_i_q0
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_i_q
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_i_q1
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_addr_i_q2
+add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs_IBUF_0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs_0_0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs_1_0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs0_0_0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_ddr_delayed_dqs0_1_0
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_fifo_bytes_g_1_ddr_fifo_1_ram_g_5_ram16x1d_i_SLICEM_G/CLK
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_fifo_bytes_g_1_ddr_fifo_1_ram_g_5_ram16x1d_i_SLICEM_G/WE
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_fifo_bytes_g_0_ddr_fifo_0_ram_g_3_ram16x1d_i_SLICEM_F/CLK
+add wave -noupdate /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_rd_fifo_e_fifo_bytes_g_0_ddr_fifo_0_ram_g_3_ram16x1d_i_SLICEM_F/WE
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(31) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(30) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(29) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(28) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(27) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(26) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(25) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(24) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(23) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(22) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(21) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(20) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(19) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(18) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(17) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(16) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(15) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(14) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(13) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(12) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(11) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(10) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(9) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(8) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(7) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(6) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(5) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(4) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(3) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(2) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(0) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(31) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(30) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(29) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(28) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(27) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(26) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(25) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(24) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(23) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(22) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(21) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(20) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(19) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(18) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(17) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(16) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(15) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(14) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(13) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(12) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(11) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(10) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(9) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(8) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(7) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(6) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(5) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(4) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(3) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(2) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_do
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_e_ddr_addr_q(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_e_ddr_addr_q(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_e_ddr_addr_q(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_e_ddr_addr_q(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_window_system_p_capture_and_plot_b_dataio_e_ddr_ctlr_e_ddr_wr_fifo_e_ddr_addr_q
+add wave -noupdate /testbench/rst
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 3} {202153683 ps} 1} {{Cursor 6} {202150931 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 555
+configure wave -valuecolwidth 39
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+WaveRestoreZoom {202112678 ps} {202277166 ps}
