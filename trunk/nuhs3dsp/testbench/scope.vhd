@@ -1,4 +1,5 @@
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture scope of testbench is
 	constant ddr_period : time := 6 ns;
@@ -135,18 +136,6 @@ architecture scope of testbench is
 	end component;
 
 	component ddr_model is
---		generic (
---			tCK   : time := 6.0 ns;
---			tDQSQ : time :=  0.4 ns; 
---			tMRD  : time := 12.0 ns; 
---			tRAP  : time := 15.0 ns; 
---			tRAS  : time := 42.0 ns; 
---			tRC   : time := 60.0 ns; 
---			tRFC  : time := 72.0 ns; 
---			tRCD  : time := 15.0 ns; 
---			tRP   : time := 15.0 ns; 
---			tRRD  : time := 12.0 ns; 
---			tWR   : time := 15.0 ns);
 		port (
 			clk   : in std_logic;
 			clk_n : in std_logic;
@@ -193,7 +182,7 @@ begin
 		end if;
 	end process;
 
-	eth_e: entity work.miitx_mem
+	eth_e: entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff")
 	port map (
@@ -248,26 +237,6 @@ begin
 		ddr_dq  => dq);
 
 	mt_u : ddr_model
---	generic map (               
---        tCK  =>  ddr_period, -- Timing for -6T CL2
---        tCH  =>  0.45*ddr_period, -- 0.45*tCK
---        tCL  =>  0.45*ddr_period, -- 0.45*tCK
---        tDH  =>  0.450 ns,
---        tDS  =>  0.450 ns,
---        tIH  =>  0.750 ns,
---        tIS  =>  0.750 ns,
---        tMRD => 12.000 ns,
---        tRAS => 42.000 ns,
---        tRAP => 15.000 ns,
---        tRC  => 60.000 ns,
---        tRFC => 72.000 ns,
---        tRCD => 15.000 ns,
---        tRP  => 15.000 ns,
---        tRRD => 12.000 ns,
---        tWR  => 15.000 ns,
---        addr_bits => addr_bits,
---        data_bits => data_bits,
---        cols_bits => cols_bits)
 	port map (
         Dq    => dq,
         Dqs   => dqs,
@@ -283,101 +252,15 @@ begin
         Dm    => dm);
 end;
 
-configuration nuhs3dsp_structure of testbench is
-	for scope 
-		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
-		end for;
-		for all : ddr_model 
-			use entity work.mt46v16m16
-			generic map (               
-				tCK  =>  ddr_period, -- Timing for -6T CL2
-				tCH  =>  0.45*ddr_period, -- 0.45*tCK
-				tCL  =>  0.45*ddr_period, -- 0.45*tCK
-				tDH  =>  0.450 ns,
-				tDS  =>  0.450 ns,
-				tIH  =>  0.750 ns,
-				tIS  =>  0.750 ns,
-				tMRD => 12.000 ns,
-				tRAS => 42.000 ns,
-				tRAP => 15.000 ns,
-				tRC  => 60.000 ns,
-				tRFC => 72.000 ns,
-				tRCD => 15.000 ns,
-				tRP  => 15.000 ns,
-				tRRD => 12.000 ns,
-				tWR  => 15.000 ns,
-				addr_bits => addr_bits,
-				data_bits => data_bits,
-				cols_bits => cols_bits)
-			port map (
-				Dq    => dq,
-				Dqs   => dqs,
-				Addr  => addr,
-				Ba    => ba,
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Dm    => dm);
-		end for;
-	end for;
-end;
-
-configuration nuhs3dsp_dscope of testbench is
-	for scope 
-		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(scope);
-		end for;
-		for all : ddr_model 
-			use entity work.mt46v16m16
-			generic map (               
-				tCK  =>  ddr_period, -- Timing for -6T CL2
-				tCH  =>  0.45*ddr_period, -- 0.45*tCK
-				tCL  =>  0.45*ddr_period, -- 0.45*tCK
-				tDH  =>  0.450 ns,
-				tDS  =>  0.450 ns,
-				tIH  =>  0.750 ns,
-				tIS  =>  0.750 ns,
-				tMRD => 12.000 ns,
-				tRAS => 42.000 ns,
-				tRAP => 15.000 ns,
-				tRC  => 60.000 ns,
-				tRFC => 72.000 ns,
-				tRCD => 15.000 ns,
-				tRP  => 15.000 ns,
-				tRRD => 12.000 ns,
-				tWR  => 15.000 ns,
-				addr_bits => addr_bits,
-				data_bits => data_bits,
-				cols_bits => cols_bits)
-			port map (
-				Dq    => dq,
-				Dqs   => dqs,
-				Addr  => addr,
-				Ba    => ba,
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Dm    => dm);
-		end for;
-	end for;
-end;
+library micron;
 
 configuration nuhs3dsp_structure_md of testbench is
 	for scope 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 		for all : ddr_model 
-			use entity work.ddr_model
+			use entity micron.ddr_model
 			port map (
 				Dq    => dq,
 				Dqs   => dqs,
@@ -395,13 +278,15 @@ configuration nuhs3dsp_structure_md of testbench is
 	end for;
 end;
 
+library micron;
+
 configuration nuhs3dsp_dscope_md of testbench is
 	for scope 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(scope);
+			use entity hdl4fpga.nuhs3dsp(scope);
 		end for;
 		for all : ddr_model 
-			use entity work.ddr_model
+			use entity micron.ddr_model
 			port map (
 				Dq    => dq,
 				Dqs   => dqs,

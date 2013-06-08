@@ -15,7 +15,7 @@ entity bfy is
 		do  : out sfixed);
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 architecture def of bfy is
 	signal fifo_di : std_logic_vector(di'range);
@@ -34,7 +34,7 @@ begin
 		end if;
 	end process;
 
-	fifo_e : entity work.fifo
+	fifo_e : entity hdl4fpga.fifo
 	generic map (
 		data_size => di'length,
 		addr_size => num)
@@ -67,7 +67,7 @@ end;
 architecture def of cbfy is
 begin
 
-	bfyre_e : entity work.bfy
+	bfyre_e : entity hdl4fpga.bfy
 	generic map (
 		num => num)
 	port map (
@@ -76,7 +76,7 @@ begin
 		di  => di.re,
 		do  => do.re);
 
-	bfyim_e : entity work.bfy
+	bfyim_e : entity hdl4fpga.bfy
 	generic map (
 		num => num)
 	port map (
@@ -112,7 +112,7 @@ begin
 
 	data(0) <= di;
 	radix_g : for i in s'range generate
-		cbfy_e : entity work.cbfy
+		cbfy_e : entity hdl4fpga.cbfy
 		generic map (
 			num => num-i)
 		port map (
@@ -241,7 +241,7 @@ architecture def of fft22 is
 
 begin
 
-	bfy_e : entity work.radix22
+	bfy_e : entity hdl4fpga.radix22
 	generic map (
 		num => 14)
 	port map (
@@ -250,7 +250,7 @@ begin
 		di => rdx_di,
 		do => rdx_do);
 
-	twdtab_e : entity work.twdtab
+	twdtab_e : entity hdl4fpga.twdtab
 	port map (
 		clk  => clk,
 		addr => s,
@@ -260,7 +260,7 @@ begin
 	twd_factor.re <= to_sfixed(signed(cos_data),twd_factor.re);
 	twd_factor.im <= to_sfixed(signed(sin_data),twd_factor.im);
 
-	twd_e : entity work.twd
+	twd_e : entity hdl4fpga.twd
 	port map (
 		clk => clk,
 		di  => twd_di,

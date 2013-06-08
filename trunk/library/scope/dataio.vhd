@@ -1,7 +1,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity dataio is
 	generic (
 		page_size : natural := 9;
@@ -83,7 +85,7 @@ architecture def of dataio is
 begin
 
 	mii_a0 <= miitx_a0;
-	datai_e : entity work.datai
+	datai_e : entity hdl4fpga.datai
 	port map (
 		input_clk => input_clk,
 		input_dat => input_dat,
@@ -153,7 +155,7 @@ begin
 		ddr2video_brst_req when '1',
 		ddr2miitx_brst_req when others;
 
-	ddrio_e : entity work.ddrio
+	ddrio_e : entity hdl4fpga.ddrio
 	generic map (
 		bank_size => bank_size,
 		addr_size => addr_size,
@@ -184,7 +186,7 @@ begin
 		end if;
 	end process;
 
-	ddr2video_e : entity work.ddr2video
+	ddr2video_e : entity hdl4fpga.ddr2video
 	port map (
 		ddrios_clk => ddrs_clk,
 		ddrios_brst_req => ddr2video_brst_req,
@@ -196,7 +198,7 @@ begin
 
 		page_addr => video_page);
 
-	videomem_e : entity work.videomem
+	videomem_e : entity hdl4fpga.videomem
 	generic map (
 		bram_num  => page_num,
 		bram_size => page_size,
@@ -212,7 +214,7 @@ begin
 		output_addr => video_off,
 		output_data => video_di);
 
-	mem2vio_e : entity work.mem2vio
+	mem2vio_e : entity hdl4fpga.mem2vio
 	generic map (
 		page_num  => page_num,
 		page_size => page_size,
@@ -226,7 +228,7 @@ begin
 		video_row => video_row,
 		video_do  => video_do);
 
-	ddr2miitx_e : entity work.ddr2miitx
+	ddr2miitx_e : entity hdl4fpga.ddr2miitx
 	port map (
 		ddrios_clk => ddrs_clk,
 		ddrios_gnt => capture_rdy,
@@ -236,7 +238,7 @@ begin
 		miitx_rdy  => miitx_rdy,
 		miitx_req  => miitx_req);
 
-	miitxmem_e : entity work.miitxmem
+	miitxmem_e : entity hdl4fpga.miitxmem
 	generic map (
 		bram_size => page_size,
 		data_size => 2*data_size)

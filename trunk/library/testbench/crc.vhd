@@ -15,7 +15,7 @@ begin
 	clk <= not clk after 5 ns;
 	pl  <= '1', '0' after 12 ns;
 
-	du : entity work.crc
+	du : entity hdl4fpga.crc
 	generic map (
 		n => n)
 	port map (

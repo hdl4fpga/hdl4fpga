@@ -8,7 +8,7 @@ architecture cypf of testbench is
 	signal req : std_logic;
 begin
 	clk <= not clk after 5 ns;
-	du : entity work.cypf
+	du : entity hdl4fpga.cypf
 	generic map (
 		m => 4,
 		n => 5)

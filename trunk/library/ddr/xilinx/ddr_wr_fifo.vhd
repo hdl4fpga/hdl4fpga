@@ -21,10 +21,12 @@ entity ddr_wr_fifo is
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
 
-use std.textio.all;
-use hdl4fpga.std.all;
+
 library unisim;
 use unisim.vcomponents.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture mix of ddr_wr_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);

@@ -15,7 +15,7 @@ begin
 	pl  <= '0', '1' after 52 ns, '0' after 60 ns;
 	clk <= not clk after 5 ns;
 
-	du : entity work.gray_cntr
+	du : entity hdl4fpga.gray_cntr
 	generic map (
 		n => n)
 	port map (

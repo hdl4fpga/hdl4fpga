@@ -229,10 +229,10 @@ end;
 configuration nuhs3dsp_structure of testbench is
 	for ddr_test 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 		for all : ddr_model 
-			use entity work.mt46v16m16
+			use entity hdl4fpga.mt46v16m16
 			generic map (               
 				tCK  =>  ddr_period, -- Timing for -6T CL2
 				tCH  =>  0.45*ddr_period, -- 0.45*tCK
@@ -273,10 +273,10 @@ end;
 configuration nuhs3dsp_ddr_test of testbench is
 	for ddr_test 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(ddr_test);
+			use entity hdl4fpga.nuhs3dsp(ddr_test);
 		end for;
 		for all : ddr_model 
-			use entity work.mt46v16m16
+			use entity hdl4fpga.mt46v16m16
 			generic map (               
 				tCK  =>  ddr_period, -- Timing for -6T CL2
 				tCH  =>  0.45*ddr_period, -- 0.45*tCK
@@ -317,10 +317,10 @@ end;
 configuration nuhs3dsp_structure_md of testbench is
 	for ddr_test 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 		for all : ddr_model 
-			use entity work.ddr_model
+			use entity hdl4fpga.ddr_model
 			port map (
 				Dq    => dq,
 				Dqs   => dqs,
@@ -341,10 +341,10 @@ end;
 configuration nuhs3dsp_ddr_test_md of testbench is
 	for ddr_test 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(ddr_test);
+			use entity hdl4fpga.nuhs3dsp(ddr_test);
 		end for;
 		for all : ddr_model 
-			use entity work.ddr_model
+			use entity hdl4fpga.ddr_model
 			port map (
 				Dq    => dq,
 				Dqs   => dqs,

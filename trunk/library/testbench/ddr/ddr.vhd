@@ -51,7 +51,7 @@ architecture ddr of testbench is
 
 begin
 	ddr_rst <= rst;
-	ddr_timer_du : entity work.ddr_timer
+	ddr_timer_du : entity hdl4fpga.ddr_timer
 	generic map (
 		q200u => 9,
 		qdll  => 8)
@@ -63,7 +63,7 @@ begin
 		ddr_timer_200u => ddr_timer_200u,
 		ddr_timer_ref  => ddr_timer_ref);
 
-	ddr_init_du : entity work.ddr_init
+	ddr_init_du : entity hdl4fpga.ddr_init
 	generic map (
 		a => addr_bits)
 	port map (
@@ -101,7 +101,7 @@ begin
 		end if;
 	end process;
 
-	ddr_acc_du : entity work.ddr_acc
+	ddr_acc_du : entity hdl4fpga.ddr_acc
 	generic map (
 		tRFC => 8,
 		tWR  => 3)
@@ -123,7 +123,7 @@ begin
 	ddr_dql <= resize0(addr(addr_bits-1 downto 1) & '0', data_bits);
 	ddr_dqh <= resize0(addr(addr_bits-1 downto 1) & '1', data_bits);
 
-	ddr_io_du : entity work.ddr_io_dq
+	ddr_io_du : entity hdl4fpga.ddr_io_dq
 	generic map (
 		n => data_bits)
 	port map (
@@ -133,7 +133,7 @@ begin
 		ddr_io_dqz => ddr_acc_dqz,
 		ddr_io_dqo => dq);
 
-	ddr_io_dqs_e : entity work.ddr_io_dqs
+	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
 		n => 2)
 	port map (
@@ -175,7 +175,7 @@ begin
 			ddr_dqs_r <= dqs(i);
 			ddr_dqs_f <= not dqs(i);
 
-			ddr_fifo_r_e : entity work.ddr_fifo
+			ddr_fifo_r_e : entity hdl4fpga.ddr_fifo
 			generic map (
 				n => byte_bits,
 				m => 2)
@@ -190,7 +190,7 @@ begin
 				ddr_fifo_enao => ddr_acc_dwe,
 				ddr_fifo_do   => ddr_byte_r(i)); 
 		
-			ddr_fifo_f_e : entity work.ddr_fifo
+			ddr_fifo_f_e : entity hdl4fpga.ddr_fifo
 			generic map (
 				n => byte_bits,
 				m => 2)
@@ -207,7 +207,7 @@ begin
 		end generate;
 	end block;
 
-	ddr_io_dm_e : entity work.ddr_io_dm
+	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
 		n => 2)
 	port map (
@@ -286,7 +286,7 @@ begin
 		end if;
 	end process;
 
-	mt_u : entity work.mt46v16m16
+	mt_u : entity hdl4fpga.mt46v16m16
 	generic map (               
         tCK  =>  7.500 ns, -- Timing for -6T CL2
         tCH  =>  3.375 ns, -- 0.45*tCK

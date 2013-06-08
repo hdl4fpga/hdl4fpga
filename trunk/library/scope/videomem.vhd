@@ -21,7 +21,8 @@ entity videomem is
 		output_data : out std_logic_vector(bram_num*data_size-1 downto 0));
 end;
 
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.numeric_std.all;
@@ -77,7 +78,7 @@ begin
 	end process; 
 	page_addr <= bram_sel_cnt(1 to bram_sel_cnt'right);
 
-	wr_address_d : entity work.align
+	wr_address_d : entity hdl4fpga.align
 	generic map (
 		n => wr_address'length,
 		d => (wr_address'range => 1))
@@ -86,7 +87,7 @@ begin
 		di  => addri(wr_address'range),
 		do  => wr_address);
 
-	wr_data_d : entity work.align
+	wr_data_d : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
 		d => (ddrs_di'range => 1))
@@ -96,7 +97,7 @@ begin
 		do  => wr_data);
 
 	pages_g: for i in 0 to bram_num-1 generate
-		sector_e : entity work.dpram
+		sector_e : entity hdl4fpga.dpram
 		generic map (
 			data_size => data_size,
 			address_size => bram_size)

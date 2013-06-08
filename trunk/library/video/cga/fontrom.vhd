@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 entity fontrom is
 	generic (
@@ -22,7 +21,8 @@ entity fontrom is
 	constant num_of_char : natural := bitrom'length/(width*height);
 end;
 
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of fontrom is
 

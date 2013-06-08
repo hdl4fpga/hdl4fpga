@@ -2,11 +2,6 @@ library ieee;
 use ieee.std_logic_1164.ALL;
 use ieee.numeric_std.ALL;
 
-library unisim;
-use unisim.vcomponents.ALL;
-
-use work.std.all;
-
 entity dfsdcm is
 	generic (
 		dcm_per : real;
@@ -19,6 +14,12 @@ entity dfsdcm is
 		dfsdcm_clk90 : out std_logic; 
 		dcm_lck : out std_logic);
 end;
+
+library unisim;
+use unisim.vcomponents.ALL;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture mix of dfsdcm is
 	signal dfs_clkfx : std_logic;

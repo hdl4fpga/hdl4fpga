@@ -16,15 +16,11 @@ entity datai is
 		output_dat  : out std_logic_vector);
 end;
 
-use work.std.all;
-use std.textio.all;
-
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
-
 library unisim;
 use unisim.vcomponents.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of datai is
 	constant n : natural := 1;
@@ -95,7 +91,7 @@ begin
 		end if;
 	end process;
 
-	wr_dec_e: entity work.demux 
+	wr_dec_e: entity hdl4fpga.demux 
 	generic map (
 		n => n)
 	port map (
@@ -103,7 +99,7 @@ begin
 		o => wr_ena);
 
 	ram_g : for i in 0 to 2**n-1 generate
-		fifo_e : entity work.dpram
+		fifo_e : entity hdl4fpga.dpram
 		generic map (
 			data_size => input_word'length,
 			address_size => fifo_size)

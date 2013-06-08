@@ -24,15 +24,11 @@ entity mem2vio is
 	type vword_vector is array (natural range <>) of vword;
 end;
 
-use work.std.all;
-use std.textio.all;
-
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
-
 library unisim;
 use unisim.vcomponents.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of mem2vio is
 	constant chan_num : natural := 2;
@@ -90,7 +86,7 @@ begin
 		end if;
 	end process;
 
-	pg_sel_dly_e : entity work.align
+	pg_sel_dly_e : entity hdl4fpga.align
 	generic map (		
 		n => 3,			
 		d => (
@@ -120,7 +116,7 @@ begin
 				end if;
 			end process;
 	
-			mux_channel_e : entity work.muxw
+			mux_channel_e : entity hdl4fpga.muxw
 			generic map (
 				addr_size => 2,
 				data_size => data_size)
@@ -153,7 +149,7 @@ begin
 			end loop;
 			mux_vchn_di <= data;
 		end process;
-		mux2_e : entity work.muxw
+		mux2_e : entity hdl4fpga.muxw
 		generic map (
 			addr_size => video_row'length,
 			data_size => vword'length)

@@ -51,7 +51,7 @@ begin
 		wait on ddr_timer_clk;
 	end process;
 
-	du : entity work.ddr_timer
+	du : entity hdl4fpga.ddr_timer
 	generic map (
 		c200u => 200 us/(2*tCP2),
 		cDLL  => cDLL,

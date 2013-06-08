@@ -48,7 +48,7 @@ begin
 	mii_req <= '0', '1' after 111 ns, '0' after 4000 ns, '1' after 4045 ns;
 
 	sys_data <= ram(to_integer(unsigned(sys_addr)));
-	miitx_dma_e : entity work.miitx_dma
+	miitx_dma_e : entity hdl4fpga.miitx_dma
 	port map (
 		sys_addr => sys_addr,
 		sys_data => sys_data,

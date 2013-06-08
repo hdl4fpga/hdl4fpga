@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity scope is
 	generic (
@@ -17,10 +18,8 @@ entity scope is
 		plot_dot : out std_logic_vector);
 end;
 
-use work.std.all;
-
-library ieee;
-use ieee.numeric_std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of scope is
 	constant n : natural := unsigned_num_bits(max_hght);
@@ -31,7 +30,7 @@ architecture def of scope is
 			to_unsigned (         1, n))));
 begin
 
-	grid_e : entity work.grid
+	grid_e : entity hdl4fpga.grid
 	generic map (
 		col_div  => "1111",
 		col_line => "11",
@@ -43,7 +42,7 @@ begin
 		col => chann_col,
 		dot => grid_dot);
 
-	plot_e : entity work.plot
+	plot_e : entity hdl4fpga.plot
 	generic map (
 		max_hght => max_hght)
 	port map (

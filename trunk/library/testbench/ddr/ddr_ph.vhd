@@ -25,7 +25,7 @@ begin
 		end if;
 	end process;
 
-	du : entity work.ddr_ph
+	du : entity hdl4fpga.ddr_ph
 	generic map (
 		n => n)
 	port map (
