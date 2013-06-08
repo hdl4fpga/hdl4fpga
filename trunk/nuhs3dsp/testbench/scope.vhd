@@ -253,12 +253,11 @@ begin
 end;
 
 library micron;
-library work;
 
 configuration nuhs3dsp_structure_md of testbench is
 	for scope 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 		for all : ddr_model 
 			use entity micron.ddr_model
