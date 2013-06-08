@@ -132,7 +132,7 @@ end;
 configuration nuhs3dsp_structure of testbench is
 	for miitx_udp 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 	end for;
 end;
@@ -140,7 +140,7 @@ end;
 configuration nuhs3dsp_miitx_udp of testbench is
 	for miitx_udp 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(miitx_udp);
+			use entity hdl4fpga.nuhs3dsp(miitx_udp);
 		end for;
 	end for;
 end;

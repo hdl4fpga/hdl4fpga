@@ -136,8 +136,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use hdl4fpga.std.all;
-
 entity video_vga is
 	generic (
 		n : natural := 11);
@@ -150,6 +148,9 @@ entity video_vga is
 		frm   : out std_logic;
 		don   : out std_logic);
 end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture arch of video_vga is
 	signal hparm : std_logic_vector(0 to 1);
@@ -232,6 +233,7 @@ entity grid is
 		dot : out std_logic);
 end;
 
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of grid is
@@ -267,6 +269,8 @@ entity draw_vline is
 		video_row2 : in  unsigned(n-1 downto 0);
 		video_dot  : out std_logic);
 end;
+
+library hdl4fpga;
 
 architecture arc of draw_vline is
 	signal le1, le2 : std_logic;

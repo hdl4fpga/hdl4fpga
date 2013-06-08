@@ -21,7 +21,7 @@ architecture ddr_pgm of testbench is
 begin
 
 	ddr_clk <= not ddr_clk after 5 ns;
-	du : entity work.ddr_pgm
+	du : entity hdl4fpga.ddr_pgm
 	port map (
 		ddr_pgm_rst => ddr_rst,
 		ddr_pgm_clk => ddr_clk);

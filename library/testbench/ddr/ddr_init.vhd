@@ -40,7 +40,7 @@ begin
 		wait on ddr_clk, ddr_rst, ddr_ras, ddr_cas, ddr_we;
 	end process;
 
-	du : entity work.ddr_init
+	du : entity hdl4fpga.ddr_init
 	generic map (
 		t_rp  => 8,
 		t_mrd => 8,

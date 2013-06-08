@@ -10,7 +10,7 @@ begin
 	mii_txc <= not mii_txc after 5 ns;
 	mii_req <= '0', '1' after 111 ns, '0' after 4000 ns, '1' after 4045 ns;
 
-	miitx_udp_e : entity work.miitx_udp
+	miitx_udp_e : entity hdl4fpga.miitx_udp
 	port map (
 		mii_req  => mii_req,
 		mii_txc  => mii_txc,

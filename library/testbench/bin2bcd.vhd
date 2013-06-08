@@ -21,7 +21,7 @@ begin
 		end if;
 	end process;
 
-	du : entity work.bin2bcd
+	du : entity hdl4fpga.bin2bcd
  	generic map (
 		n => n,
 		m => m)

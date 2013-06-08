@@ -1,11 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
-use work.std.all;
-
 entity pgm_delay is
 	generic (
 		n : natural := 8;
@@ -17,6 +12,12 @@ entity pgm_delay is
 		x_p : out std_logic;
 		x_n : out std_logic);
 end;
+
+library unisim;
+use unisim.vcomponents.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture mix of pgm_delay is
 	constant blut : string(1 to 2) := "FG";

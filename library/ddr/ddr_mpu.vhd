@@ -38,6 +38,8 @@ entity ddr_mpu is
 		ddr_mpu_dqz   : out std_logic_vector(0 to 1) := (others => '1'));
 end;
 
+library hdl4fpga;
+
 architecture arch of ddr_mpu is
 	constant ras : natural := 0;
 	constant cas : natural := 1;

@@ -32,7 +32,7 @@ begin
 		end if;
 	end process;
 	
-	sa_ctrl_e : entity work.sa_ctlr
+	sa_ctrl_e : entity hdl4fpga.sa_ctlr
 	port map (
 		sys_clk => sys_clk,
 		sys_rst => sys_rst,

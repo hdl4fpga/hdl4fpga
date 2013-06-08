@@ -155,7 +155,7 @@ end;
 configuration nuhs3dsp_structure of testbench is
 	for cga 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(structure);
+			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
 	end for;
 end;
@@ -163,7 +163,7 @@ end;
 configuration nuhs3dsp_cga of testbench is
 	for cga 
 		for all : nuhs3dsp 
-			use entity work.nuhs3dsp(cga);
+			use entity hdl4fpga.nuhs3dsp(cga);
 		end for;
 	end for;
 end;

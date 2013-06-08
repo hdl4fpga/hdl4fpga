@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity ddr2video is
 	port (
@@ -12,15 +13,11 @@ entity ddr2video is
 		page_addr  : in  std_logic_vector(0 to 3-1));
 end;
 
-use work.std.all;
-use std.textio.all;
-
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
-
 library unisim;
 use unisim.vcomponents.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of ddr2video is
 	type wm_vector is array(natural range <>) of std_logic_vector(page_addr'range);

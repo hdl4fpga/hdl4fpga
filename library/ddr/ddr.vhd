@@ -58,6 +58,8 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
+library hdl4fpga;
+
 architecture mix of ddr is
 	constant debug : boolean := false;
 	subtype byte is std_logic_vector(0 to byte_bits-1);

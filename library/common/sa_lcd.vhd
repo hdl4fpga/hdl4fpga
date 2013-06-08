@@ -1,4 +1,4 @@
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -104,7 +104,7 @@ begin
 	sa_rw <= '0';
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -157,7 +157,7 @@ begin
 		end if;
 	end process;
 
-	sa_timing_e : entity work.sa_timing
+	sa_timing_e : entity hdl4fpga.sa_timing
 	port map (
 		sys_clk => sys_clk,
 		sys_rst => sys_rst,
@@ -168,7 +168,7 @@ begin
 		sa_e    => sa_tmng_e);
 	
 	sys_init_req <= not sys_rst;
-	sa_init_e : entity work.sa_init
+	sa_init_e : entity hdl4fpga.sa_init
 	port map (
 		sys_clk => sa_tmng_e,
 		sys_req => sys_init_req,
@@ -200,7 +200,7 @@ begin
 	sa_db <= sa_do when sys_tmng_oe='1' else (others => 'Z');
 end;
 
-use work.std.all;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.std_logic_1164.all;

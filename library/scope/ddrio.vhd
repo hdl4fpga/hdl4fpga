@@ -1,7 +1,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity ddrio is
 	generic (
 		fifo_size  : natural := 5;

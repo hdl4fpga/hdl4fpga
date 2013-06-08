@@ -1,4 +1,4 @@
-use work.std.all;
+use hdl4fpga.std.all;
 use std.textio.all;
 
 library ieee;
@@ -90,10 +90,10 @@ begin
 	process (clk)
 		variable msg  : line;
 
-		variable ram  : work.std.integer_vector(0 to 2**14-3) := (others => 0);
-		variable pfx  : work.std.integer_vector(0 to ram'length/8-1) := (others => 0);
-		variable ram1 : work.std.integer_vector(0 to 3-1) := (others => 0);
-		variable pfx1 : work.std.integer_vector(0 to 3-1) := (others => 0);
+		variable ram  : hdl4fpga.std.integer_vector(0 to 2**14-3) := (others => 0);
+		variable pfx  : hdl4fpga.std.integer_vector(0 to ram'length/8-1) := (others => 0);
+		variable ram1 : hdl4fpga.std.integer_vector(0 to 3-1) := (others => 0);
+		variable pfx1 : hdl4fpga.std.integer_vector(0 to 3-1) := (others => 0);
 
 		variable prod : integer;
 		variable mul  : integer;

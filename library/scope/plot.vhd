@@ -23,9 +23,11 @@ entity plot is
 	subtype rword is signed(video_row'length-1 downto 0);
 end;
 
-use work.std.all;
 library ieee;
 use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture def of plot is
 
@@ -57,7 +59,7 @@ begin
 	end process;
 	vrow <= rword(video_row);
 
-	muxdot_align_e : entity work.align
+	muxdot_align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
 		d => (0 => m+2))
@@ -82,7 +84,7 @@ begin
 			end if;
 		end process;
 
-		draw_e : entity work.draw_vline 
+		draw_e : entity hdl4fpga.draw_vline 
 		generic map (
 			n => m)
 		port map (
@@ -92,7 +94,7 @@ begin
 			video_dot  => vline_dot(l));
 
 		muxdot_di <= vline_dot rol l;
-		mux_dot_e : entity work.muxw 
+		mux_dot_e : entity hdl4fpga.muxw 
 		generic map (
 			addr_size => 1,
 			data_size => 1)

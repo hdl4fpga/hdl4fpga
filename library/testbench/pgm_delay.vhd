@@ -16,7 +16,7 @@ begin
 	clk <= not clk after 5 ns;
 	ena(n-n) <= '0', '1' after 40 ns;
 
-	du : entity work.pgm_delay
+	du : entity hdl4fpga.pgm_delay
 	generic map (
 		n => 4)
 	port map (

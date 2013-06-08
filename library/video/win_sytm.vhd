@@ -34,6 +34,7 @@ entity win_sytm is
 	constant coloff_size : natural := win_coloff'length;
 end;
 
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 library ieee;

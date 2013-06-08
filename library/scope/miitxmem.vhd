@@ -17,7 +17,8 @@ entity miitxmem is
 		output_data : out std_logic_vector(data_size-1 downto 0));
 end;
 
-use work.std.all;
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 library ieee;
 use ieee.numeric_std.all;
@@ -60,7 +61,7 @@ begin
 		end if;
 	end process; 
 
-	wr_address_d : entity work.align
+	wr_address_d : entity hdl4fpga.align
 	generic map (
 		n => wr_address'length,
 		d => (wr_address'range => 1))
@@ -69,7 +70,7 @@ begin
 		di  => addri(wr_address'range),
 		do  => wr_address);
 
-	wr_data_d : entity work.align
+	wr_data_d : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
 		d => (ddrs_di'range => 1))
@@ -80,7 +81,7 @@ begin
 
 	output_a0 <= rd_address(0);
 	rd_address(1 to bram_size-1) <= output_addr;
-	bram_e : entity work.dpram
+	bram_e : entity hdl4fpga.dpram
 	generic map (
 		data_size => data_size,
 		address_size => bram_size)

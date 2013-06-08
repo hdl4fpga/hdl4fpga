@@ -3,8 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-use std.textio.all;
-
 entity ddr_rd_fifo is
 	generic (
 		dqs_delay : time := 0 ns;
@@ -24,6 +22,7 @@ entity ddr_rd_fifo is
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
 
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 library unisim;

@@ -21,7 +21,7 @@ begin
 
 	video_clk <= not video_clk after 500 ns/150 ;
 
-	video_vga_e : entity work.video_vga
+	video_vga_e : entity hdl4fpga.video_vga
 	generic map (
 		n => 12)
 	port map (
@@ -29,7 +29,7 @@ begin
 		frm   => vga_frm,
 		don   => vga_don);
 
-	win_sytm_e : entity work.win_sytm
+	win_sytm_e : entity hdl4fpga.win_sytm
 	port map (
 		win_clk => video_clk,
 		win_don => vga_don,

@@ -17,7 +17,7 @@ entity cgaram is
 
 end;
 
-library hdl4fpga.all;
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of cgaram is
