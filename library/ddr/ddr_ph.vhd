@@ -207,7 +207,7 @@ begin
 		if rising_edge(clks(0)) then
 			q := q(1 to q'right) & '0';
 			for i in q'range loop
-				qout(4*i+3*j) <= q(i);
+				qout(4*i+3*0) <= q(i);
 			end loop;
 		end if;
 	end process;
