@@ -211,7 +211,8 @@
     parameter TANPD            =       3; // tANPD  tCK   ODT to power-down entry latency
     parameter TAXPD            =       8; // tAXPD  tCK   ODT power-down exit latency
     parameter CL_TIME          =   15000; // CL     ps    Minimum CAS Latency
-`else `define sg5E
+`else 
+	`define sg5E
     parameter TCK_MIN          =    5000; // tCK    ps    Minimum Clock Cycle Time
     parameter TJIT_PER         =     125; // tJIT(per)  ps Period JItter
     parameter TJIT_DUTY        =     150; // tJIT(duty) ps Half Period Jitter
