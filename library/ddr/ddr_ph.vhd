@@ -9,7 +9,7 @@ entity ddr_ph is
 		ddr_ph_clk   : in  std_logic;
 		ddr_ph_clk90 : in  std_logic;
 		ddr_ph_sel   : in  std_logic_vector(0 to 4*n+3*3) := (others => '0');
-		ddr_ph_din   : in  std_logic_vector(0 to 4*n+3*3) := (others => '0');
+		ddr_ph_din   : in  std_logic_vector(0 to 4*n+3*3) := (others => '-');
 		ddr_ph_qout  : out std_logic_vector(0 to 4*n+3*3));
 end;
 
