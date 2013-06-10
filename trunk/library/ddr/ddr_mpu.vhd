@@ -76,8 +76,8 @@ architecture arch of ddr_mpu is
 		std_logic_vector(to_timer(2)),
 		std_logic_vector(to_timer(3)));
 
-	constant ddr_phr_din : std_logic_vector(1 to nr+2) := (others => '-');
-	constant ddr_ph_din : std_logic_vector(1 to n+2) := (others => '-');
+	constant ddr_phr_din : std_logic_vector(1 to 4*nr+3*3) := (others => '-');
+	constant ddr_ph_din : std_logic_vector(1 to 4*n+3*3) := (others => '-');
 	function ddr_ph_cas (
 		constant arg1 : std_logic_vector(0 to 2))
 		return natural is
@@ -286,14 +286,14 @@ begin
 		bytes_g: for i in ddr_mpu_dqs'range generate
 			signal ph_wri : std_logic_vector(0 to 4*n+9);
 		begin
-			ddr_ph_write : entity hdl4fpga.ddr_ph
+			ddr_ph_write : entity hdl4fpga.ddr_ph(arch)
 			generic map (
 				n => n)
 			port map (
 				ddr_ph_clk   => ddr_mpu_clk,
 				ddr_ph_clk90 => ddr_mpu_clk90,
 				ddr_ph_din(0) => ddr_mpu_wph,
-				ddr_ph_din(1 to n+2) => ddr_ph_din,
+				ddr_ph_din(1 to 4*n+3*3) => ddr_ph_din,
 				ddr_ph_qout => ph_wri);
 
 --			ddr_mpu_dqsz(i) <= not ddr_wri or (ph_wri(4*0+4) and ph_wri(4*1+4));
@@ -311,14 +311,14 @@ begin
 	-- Read Enables --
 	------------------
 	
-	ddr_ph_read : entity hdl4fpga.ddr_ph
+	ddr_ph_read : entity hdl4fpga.ddr_ph(arch)
 	generic map (
 		n => nr)
 	port map (
 		ddr_ph_clk   => ddr_mpu_clk,
 		ddr_ph_clk90 => ddr_mpu_clk90,
 		ddr_ph_din(0) => ddr_mpu_rph,
-		ddr_ph_din(1 to nr+2) => ddr_phr_din,
+		ddr_ph_din(1 to 4*nr+3*3) => ddr_phr_din,
 		ddr_ph_qout => ph_rea);
 
 --	ddr_mpu_rwin <= not (not ddr_rea or (ph_rea(4*4+4*((ddr_ph_cas(ddr_mpu_cl)+3)/4))));
