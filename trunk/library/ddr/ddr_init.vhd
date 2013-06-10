@@ -36,21 +36,21 @@ architecture def of ddr_init is
 
 	constant lat_length : natural := 5;
 	type ddr_state_row is record
-		ddr_cmd : std_logic_vector(0 to 2);
-		ddr_lat : signed(0 to lat_length-1);
+		ddr_cmd    : std_logic_vector(0 to 2);
+		ddr_lat    : signed(0 to lat_length-1);
 		ddr_init_b : std_logic_vector(ddr_init_b'range);
 	    next_state : ddr_init_states;
 	end record;
 
 	type ddr_state_tab is array (ddr_init_states) of ddr_state_row;
 	constant ddr_init_tab : ddr_state_tab := (
-		s_pall1 => (cmd_pre, to_signed(trp-2,  lat_length), "00", s_lmr1),
-		s_lmr1  => (cmd_lmr, to_signed(tmrd-2, lat_length), "01", s_lmr2),
-		s_lmr2  => (cmd_lmr, to_signed(tmrd-2, lat_length), "00", s_pall2),
-		s_pall2 => (cmd_pre, to_signed(trp-2,  lat_length), "00", s_auto1),
-		s_auto1 => (cmd_auto,to_signed(trfc-2, lat_length), "00", s_auto2),
-		s_auto2 => (cmd_auto,to_signed(trfc-2, lat_length), "00", s_lmr3),
-		s_lmr3  => (cmd_lmr, to_signed(tmrd-2, lat_length), "00", s_end),
+		s_pall1 => (cmd_pre,  to_signed ( trp-2, lat_length), "00", s_lmr1),
+		s_lmr1  => (cmd_lmr,  to_signed (tmrd-2, lat_length), "01", s_lmr2),
+		s_lmr2  => (cmd_lmr,  to_signed (tmrd-2, lat_length), "00", s_pall2),
+		s_pall2 => (cmd_pre,  to_signed ( trp-2, lat_length), "00", s_auto1),
+		s_auto1 => (cmd_auto, to_signed (trfc-2, lat_length), "00", s_auto2),
+		s_auto2 => (cmd_auto, to_signed (trfc-2, lat_length), "00", s_lmr3),
+		s_lmr3  => (cmd_lmr,  to_signed (tmrd-2, lat_length), "00", s_end),
 		s_end   => (cmd_nop, signed'(1 to lat_length => '1'), "11", s_end));
 
 	signal lat_timer  : signed(0 to lat_length-1);
