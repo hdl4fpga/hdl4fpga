@@ -151,7 +151,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="18"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-	<file xil_pn:name="../../../library/scope/scope.vhd" xil_pn:type="FILE_VHDL">
+	<file xil_pn:name="../../../library/scope/win_scope.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="40"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -539,7 +539,7 @@
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->
     <property xil_pn:name="PROP_BehavioralSimTop" xil_pn:value="" xil_pn:valueState="default"/>
-    <property xil_pn:name="PROP_DesignName" xil_pn:value="dscope" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="PROP_DesignName" xil_pn:value="scope" xil_pn:valueState="non-default"/>
     <property xil_pn:name="PROP_DevFamilyPMName" xil_pn:value="spartan3adsp" xil_pn:valueState="default"/>
     <property xil_pn:name="PROP_FPGAConfiguration" xil_pn:value="FPGAConfiguration" xil_pn:valueState="default"/>
     <property xil_pn:name="PROP_PostMapSimTop" xil_pn:value="" xil_pn:valueState="default"/>
