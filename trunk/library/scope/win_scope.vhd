@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity scope is
+entity win_scope is
 	generic (
 		num_chann : natural;
 		max_hght  : natural := 64);
@@ -21,7 +21,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of scope is
+architecture def of win_scope is
 	constant n : natural := unsigned_num_bits(max_hght);
 	subtype oword is std_logic_vector(0 to num_chann*n-1);
 	constant offset_val : oword := (
