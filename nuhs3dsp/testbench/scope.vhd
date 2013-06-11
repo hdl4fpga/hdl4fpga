@@ -2,6 +2,9 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scope of testbench is
+	type ddrm_ids is (ddr1, ddr2, ddr3);
+	constant ddrm_id  : ddrm_ids := ddr2;
+
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -38,7 +41,7 @@ architecture scope of testbench is
 	signal mii_txen : std_logic;
 	signal mii_strt : std_logic;
 
-
+	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
 	component nuhs3dsp is
@@ -151,6 +154,45 @@ architecture scope of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
+	component ddr2_model is
+		port (
+			ck    : in std_logic;
+			ck_n  : in std_logic;
+			cke   : in std_logic;
+			cs_n  : in std_logic;
+			ras_n : in std_logic;
+			cas_n : in std_logic;
+			we_n  : in std_logic;
+			ba    : in std_logic_vector(1 downto 0);
+			addr  : in std_logic_vector(addr_bits - 1 downto 0);
+			dm_rdqs : in std_logic_vector(data_bytes - 1 downto 0);
+			dq    : inout std_logic_vector(data_bits - 1 downto 0);
+			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
+			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			rdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			odt   : in std_logic);
+	end component;
+
+	component ddr3_model is
+		port (
+			rst_n : in std_logic;
+			ck    : in std_logic;
+			ck_n  : in std_logic;
+			cke   : in std_logic;
+			cs_n  : in std_logic;
+			ras_n : in std_logic;
+			cas_n : in std_logic;
+			we_n  : in std_logic;
+			ba    : in std_logic_vector(1 downto 0);
+			addr  : in std_logic_vector(addr_bits - 1 downto 0);
+			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
+			dq    : inout std_logic_vector(data_bits - 1 downto 0);
+			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
+			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			tdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
+			odt   : in std_logic);
+	end component;
+
 	constant delay : time := 1 ns;
 begin
 
@@ -163,6 +205,7 @@ begin
 			rst <= not vrst(1);
 		end if;
 	end process;
+	ddr3_rst <= not rst;
 
 	mii_strt <= '0', '1' after 240 us;
 	process (mii_refclk, mii_strt)
@@ -236,20 +279,73 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
-	mt_u : ddr_model
-	port map (
-        Dq    => dq,
-        Dqs   => dqs,
-        Addr  => addr,
-        Ba    => ba,
-        Clk   => clk_p,
-        Clk_n => clk_n,
-        Cke   => cke,
-        Cs_n  => cs_n,
-        Ras_n => ras_n,
-        Cas_n => cas_n,
-        We_n  => we_n,
-        Dm    => dm);
+	ddr_model_g: if ddrm_id=ddr1 generate
+		mt_u : ddr_model
+		port map (
+			Clk   => clk_p,
+			Clk_n => clk_n,
+			Cke   => cke,
+			Cs_n  => cs_n,
+			Ras_n => ras_n,
+			Cas_n => cas_n,
+			We_n  => we_n,
+			Ba    => ba,
+			Addr  => addr,
+			Dm    => dm,
+			Dq    => dq,
+			Dqs   => dqs);
+	end generate;
+
+	ddr2_model_g: if ddrm_id=ddr2 generate
+		signal dqs_n  : std_logic_vector(dqs'range);
+		signal rdqs_n : std_logic_vector(dqs'range);
+		signal odt    : std_logic;
+	begin
+		dqs_n <= not dqs;
+		mt_u : ddr2_model
+		port map (
+			Ck    => clk_p,
+			Ck_n  => clk_n,
+			Cke   => cke,
+			Cs_n  => cs_n,
+			Ras_n => ras_n,
+			Cas_n => cas_n,
+			We_n  => we_n,
+			Ba    => ba,
+			Addr  => addr,
+			Dm_rdqs  => dm,
+			Dq    => dq,
+			Dqs   => dqs,
+			Dqs_n => dqs_n,
+			rdqs_n => rdqs_n,
+			Odt   => odt);
+	end generate;
+
+	ddr3_model_g: if ddrm_id=ddr3 generate
+		signal dqs_n  : std_logic_vector(dqs'range);
+		signal tdqs_n : std_logic_vector(dqs'range);
+		signal odt    : std_logic;
+	begin
+		dqs_n <= not dqs;
+		mt_u : ddr3_model
+		port map (
+			Rst_n => ddr3_rst,
+			Ck    => clk_p,
+			Ck_n  => clk_n,
+			Cke   => cke,
+			Cs_n  => cs_n,
+			Ras_n => ras_n,
+			Cas_n => cas_n,
+			We_n  => we_n,
+			Ba    => ba,
+			Addr  => addr,
+			Dm_tdqs  => dm,
+			Dq    => dq,
+			Dqs   => dqs,
+			Dqs_n => dqs_n,
+			Tdqs_n => tdqs_n,
+			Odt   => odt);
+	end generate;
 end;
 
 library micron;
@@ -259,21 +355,68 @@ configuration nuhs3dsp_structure_md of testbench is
 		for all : nuhs3dsp 
 			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
-		for all : ddr_model 
-			use entity micron.ddr_model
-			port map (
-				Dq    => dq,
-				Dqs   => dqs,
-				Addr  => addr,
-				Ba    => ba,
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Dm    => dm);
+		for ddr_model_g
+			for all : ddr_model 
+				use entity micron.ddr_model
+				port map (
+					Clk   => clk_p,
+					Clk_n => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm    => dm,
+					Dq    => dq,
+					Dqs   => dqs);
+			end for;
+		end for;
+
+		for ddr2_model_g 
+			for all : ddr2_model 
+				use entity micron.ddr2
+				port map (
+					Ck    => clk_p,
+					Ck_n  => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm_rdqs  => dm,
+					Dq    => dq,
+					Dqs   => dqs,
+					Dqs_n => dqs_n,
+					rdqs_n => rdqs_n,
+					Odt   => odt);
+			end for;
+		end for;
+
+		for ddr3_model_g 
+			for all : ddr3_model 
+				use entity micron.ddr3
+				port map (
+					Rst_n => ddr3_rst,
+					Ck    => clk_p,
+					Ck_n  => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm_tdqs  => dm,
+					Dq    => dq,
+					Dqs   => dqs,
+					Dqs_n => dqs_n,
+					Tdqs_n => tdqs_n,
+					Odt   => odt);
+			end for;
 		end for;
 	end for;
 end;
@@ -285,21 +428,68 @@ configuration nuhs3dsp_scope_md of testbench is
 		for all : nuhs3dsp 
 			use entity hdl4fpga.nuhs3dsp(scope);
 		end for;
-		for all : ddr_model 
-			use entity micron.ddr_model
-			port map (
-				Dq    => dq,
-				Dqs   => dqs,
-				Addr  => addr,
-				Ba    => ba,
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Dm    => dm);
+		for ddr_model_g 
+			for all : ddr_model 
+				use entity micron.ddr_model
+				port map (
+					Clk   => clk_p,
+					Clk_n => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm    => dm,
+					Dq    => dq,
+					Dqs   => dqs);
+			end for;
+		end for;
+
+		for ddr2_model_g 
+			for all : ddr2_model 
+				use entity micron.ddr2
+				port map (
+					Ck    => clk_p,
+					Ck_n  => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm_rdqs  => dm,
+					Dq    => dq,
+					Dqs   => dqs,
+					Dqs_n => dqs_n,
+					rdqs_n => rdqs_n,
+					Odt   => odt);
+			end for;
+		end for;
+
+		for ddr3_model_g 
+			for all : ddr3_model 
+				use entity micron.ddr3
+				port map (
+					Rst_n => ddr3_rst,
+					Ck    => clk_p,
+					Ck_n  => clk_n,
+					Cke   => cke,
+					Cs_n  => cs_n,
+					Ras_n => ras_n,
+					Cas_n => cas_n,
+					We_n  => we_n,
+					Ba    => ba,
+					Addr  => addr,
+					Dm_tdqs  => dm,
+					Dq    => dq,
+					Dqs   => dqs,
+					Dqs_n => dqs_n,
+					Tdqs_n => tdqs_n,
+					Odt   => odt);
+			end for;
 		end for;
 	end for;
 end;

@@ -401,25 +401,25 @@ begin
 		end if;
 	end process;
 
-	cga_clk <= mii_rxc;
-	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
-	cga_e : entity hdl4fpga.cga
-	generic map (
-		bitrom => psf1cp850x8x16,
-		height => 16,
-		width  => 8,
-		row_reverse => true,
-		col_reverse => true)
-	port map (
-		sys_clk => cga_clk,
-		sys_row => cga_ptr(cga_row'range),
-		sys_col => cga_ptr(cga_col'range),
-		sys_we  => hd_t_clock,
-		sys_code => cga_code,
-		vga_clk => video_clk,
-		vga_row => vga_row,
-		vga_col => win_coloff(8-1 downto 1),
-		vga_dot => cga_dot);
+--	cga_clk <= mii_rxc;
+--	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
+--	cga_e : entity hdl4fpga.cga
+--	generic map (
+--		bitrom => psf1cp850x8x16,
+--		height => 16,
+--		width  => 8,
+--		row_reverse => true,
+--		col_reverse => true)
+--	port map (
+--		sys_clk => cga_clk,
+--		sys_row => cga_ptr(cga_row'range),
+--		sys_col => cga_ptr(cga_col'range),
+--		sys_we  => hd_t_clock,
+--		sys_code => cga_code,
+--		vga_clk => video_clk,
+--		vga_row => vga_row,
+--		vga_col => win_coloff(8-1 downto 1),
+--		vga_dot => cga_dot);
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (

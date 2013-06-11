@@ -361,7 +361,7 @@
 `endif `endif
 
     // Size Parameters
-    parameter BA_BITS          =       3; // Set this parmaeter to control how many Bank Address bits
+    parameter BA_BITS          =       2; // Set this parmaeter to control how many Bank Address bits
     parameter MEM_BITS         =      10; // Number of write data bursts can be stored in memory.  The default is 2^10=1024.
     parameter AP               =      10; // the address bit that controls auto-precharge and precharge-all
     parameter BL_BITS          =       3; // the number of bits required to count to MAX_BL
