@@ -78,6 +78,7 @@ begin
 					when s_end =>
 						ddr_init_a <= (others => '1');
 					when others =>
+						ddr_init_a <= (others => '0');
 					end case;
 
 					ddr_init_s <= ddr_init_tab(ddr_init_s).next_state;
