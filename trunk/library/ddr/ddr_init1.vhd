@@ -11,6 +11,7 @@ entity ddr_init is
 	port (
 		ddr_init_bl  : in  std_logic_vector(0 to 2);
 		ddr_init_cl  : in  std_logic_vector(0 to 2);
+		ddr_init_wr  : in  std_logic_vector(0 to 2) := (others => '-');
 		ddr_init_clk : in  std_logic;
 		ddr_init_req : in  std_logic;
 		ddr_init_rdy : out std_logic := '1';
@@ -146,8 +147,8 @@ architecture ddr2 of ddr_init is
 		cmd_nop,  signed'(1 to lat_length => '1'));
 
 	constant pc_pall1
-	constant pc_lmr2 
-	constant pc_lmr3 
+	constant pc_lemr2 
+	constant pc_lemr3 
 	constant pc_edll,
 	constant pc_rdll, 
 	constant pc_pall2
@@ -158,6 +159,36 @@ architecture ddr2 of ddr_init is
 
 	signal lat_timer  : signed(0 to lat_length-1);
 	signal ddr_init_pc : ddr_init_states;
+
+	-- DDR2 Mode Register --
+	------------------------
+
+	subtype  mr_bl is natural range 2 downto 0;
+	constant mr_bt : natural := 3;
+	subtype  mr_cl is natural range 6 downto 4;
+	constant mr_tm : natural := 7;
+	constant mr_dll : natural := 8;
+	subtype  mr_wr is natural range 11 downto 9;
+	constant mr_pd : natural := 12;
+
+	-- DDR2 Extended Mode Register --
+	---------------------------------
+
+	constant emr_dll : natural := 0;
+	constant emr_ods : natural := 1;
+	constant emr_rt0 : natural := 2;
+	subtype  emr_pcas is natural range 5 downto 0;
+	constant emr_rt1 : natural := 6;
+	subtype  emr_ocd is natural range 9 downto 7;
+	constant emr_dqs : natural := 10;
+	constant emr_rdqs : natural := 11;
+	constant emr_out : natural := 12;
+
+	-- DDR2 Extended Mode Register 2 --
+	-----------------------------------
+
+	constant emr2_srt : natural := 7;
+
 begin
 	process (ddr_init_clk)
 	begin
@@ -169,13 +200,25 @@ begin
 					ddr_init_cas <= ddr_init_tab(to_unsigned(ddr_init_pc)).ddr_cmd(cas);
 					ddr_init_we  <= ddr_init_tab(to_unsigned(ddr_init_pc)).ddr_cmd(rw);
 
-					case ddr_init_s is
+					ddr_init_a <= (others => '0');
+					case ddr_init_pc is
 					when pc_pall1|pc_pall2 =>
-						ddr_init_a(13-1 downto 0) <= (10 => '1', others => '-');
-					when pc_lmr2|pc_lmr3 =>
-						ddr_init_a(13-1 downto 0) <= (others => '0');
+						ddr_init_a(10) <= '1';
+					when pc_lemr2|pc_elmr3 =>
+						ddr_init_a <= (others => '0');
+					when pc_edll =>
+						ddr_init_a(emr_dll) <= '0';
+					when pc_rdll =>
+						ddr_init_a(mr_dll) <= '1'; 
 					when pc_lmr =>
-						ddr_init_a(13-1 downto 0) <= "10" & ddr_init_cl & "0" & ddr_init_bl;
+						ddr_init_a(mr_bl) <= ddr_init_bl; 
+						ddr_init_a(mr_bt) <= '0'; 
+						ddr_init_a(mr_cl) <= ddr_init_cl;
+						ddr_init_a(mr_tm) <= '0'; 
+						ddr_init_a(mr_dll) <= '0'; 
+						ddr_init_a(mr_wr) <= '0'; 
+						ddr_init_a(mr_pd) <= '0'; 
+					   	
 					when s_end =>
 						ddr_init_a <= (others => '1');
 					when others =>
