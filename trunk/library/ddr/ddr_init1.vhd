@@ -170,8 +170,12 @@ begin
 					ddr_init_we  <= ddr_init_tab(to_unsigned(ddr_init_pc)).ddr_cmd(rw);
 
 					case ddr_init_s is
-					when s_pall1|s_pall2 =>
-						ddr_init_a(10) <= '1';
+					when pc_pall1|pc_pall2 =>
+						ddr_init_a(13-1 downto 0) <= (10 => '1', others => '-');
+					when pc_lmr2|pc_lmr3 =>
+						ddr_init_a(13-1 downto 0) <= (others => '0');
+					when pc_lmr =>
+						ddr_init_a(13-1 downto 0) <= "10" & ddr_init_cl & "0" & ddr_init_bl;
 					when s_end =>
 						ddr_init_a <= (others => '1');
 					when others =>
