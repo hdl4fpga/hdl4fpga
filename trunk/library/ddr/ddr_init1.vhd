@@ -12,6 +12,9 @@ entity ddr_init is
 		ddr_init_bl  : in  std_logic_vector(0 to 2);
 		ddr_init_cl  : in  std_logic_vector(0 to 2);
 		ddr_init_wr  : in  std_logic_vector(0 to 2) := (others => '-');
+		ddr_init_pl  : in  std_logic_vector(0 to 2) := (others => '-');
+		ddr_init_dqsn : in std_logic := '-';
+
 		ddr_init_clk : in  std_logic;
 		ddr_init_req : in  std_logic;
 		ddr_init_rdy : out std_logic := '1';
@@ -133,29 +136,28 @@ architecture ddr2 of ddr_init is
 
 	type ddr_state_tab is array (natural range <>) of ddr_cmlt;
 	constant ddr_init_tab : ddr_state_tab := (
-		cmd_pre,  to_signed ( trp-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_pre,  to_signed ( trp-2, lat_length),
-		cmd_auto, to_signed (trfc-2, lat_length),
-		cmd_auto, to_signed (trfc-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_lmr,  to_signed (tmrd-2, lat_length),
-		cmd_nop,  signed'(1 to lat_length => '1'));
+		lb_lemr2, cmd_pre,  to_signed ( trp-2, lat_length),
+		lb_lemr3, cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_edll,  cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_rdll,  cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_pall2, cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_auto1, cmd_pre,  to_signed ( trp-2, lat_length),
+		lb_auto2, cmd_auto, to_signed (trfc-2, lat_length),
+		lb_lmr,   cmd_auto, to_signed (trfc-2, lat_length),
+		lb_docd,  cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_eocd,  cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_end,   cmd_lmr,  to_signed (tmrd-2, lat_length),
+		lb_end,   cmd_nop,  signed'(1 to lat_length => '1'));
 
-	constant pc_pall1
-	constant pc_lemr2 
-	constant pc_lemr3 
-	constant pc_edll,
-	constant pc_rdll, 
-	constant pc_pall2
-	constant pc_lmr
-	constant pc_eocd,
-	constant pc_xocd,
-	constant pc_ref10
+	constant lb_pall1 : natural
+	constant lb_lemr2 : 
+	constant lb_lemr3 
+	constant lb_edll
+	constant lb_rdll 
+	constant lb_pall2
+	constant lb_auto1
+	constant lb_auto2
+	constant lb_lmr
 
 	signal lat_timer  : signed(0 to lat_length-1);
 	signal ddr_init_pc : ddr_init_states;
@@ -177,7 +179,7 @@ architecture ddr2 of ddr_init is
 	constant emr_dll : natural := 0;
 	constant emr_ods : natural := 1;
 	constant emr_rt0 : natural := 2;
-	subtype  emr_pcas is natural range 5 downto 0;
+	subtype  emr_pl  is natural range 5 downto 0;
 	constant emr_rt1 : natural := 6;
 	subtype  emr_ocd is natural range 9 downto 7;
 	constant emr_dqs : natural := 10;
@@ -202,24 +204,35 @@ begin
 
 					ddr_init_a <= (others => '0');
 					case ddr_init_pc is
-					when pc_pall1|pc_pall2 =>
+					when lb_pall1|lb_pall2 =>
 						ddr_init_a(10) <= '1';
-					when pc_lemr2|pc_elmr3 =>
+					when lb_lemr2|lb_elmr3 =>
 						ddr_init_a <= (others => '0');
-					when pc_edll =>
+					when lb_edll =>
 						ddr_init_a(emr_dll) <= '0';
-					when pc_rdll =>
+					when lb_rdll =>
 						ddr_init_a(mr_dll) <= '1'; 
-					when pc_lmr =>
+					when lb_auto1|lb_auto2 =>
+						ddr_init_a(10) <= '1';
+					when lb_lmr =>
 						ddr_init_a(mr_bl) <= ddr_init_bl; 
 						ddr_init_a(mr_bt) <= '0'; 
 						ddr_init_a(mr_cl) <= ddr_init_cl;
 						ddr_init_a(mr_tm) <= '0'; 
 						ddr_init_a(mr_dll) <= '0'; 
-						ddr_init_a(mr_wr) <= '0'; 
+						ddr_init_a(mr_wr) <= ddr_init_wr; 
 						ddr_init_a(mr_pd) <= '0'; 
-					   	
-					when s_end =>
+					when lb_emr =>
+						ddr_init_a(emr_dll) <= (others => '1');
+						ddr_init_a(emr_rt0) <= '0';
+						ddr_init_a(emr_rt1) <= '0';
+						ddr_init_a(emr_ocd) <= (others => '1');
+						ddr_init_a(emr_pl)  <= ddr_ini_pl;
+						ddr_init_a(emr_dqs) <= ddr_init_dqsn;
+						ddr_init_a(emr_rdqs) <= '0';
+						ddr_init_a(emr_out) <= '0';
+
+					when lbend =>
 						ddr_init_a <= (others => '1');
 					when others =>
 						ddr_init_a <= (others => '0');
@@ -227,11 +240,19 @@ begin
 
 					ddr_init_b <= (others => '0');
 					case ddr_init_s is
-					when s_lmr2 =>
+					when lb_lmr2 =>
 						ddr_init_b <= "10";
-					when s_lmr3 =>
+					when lb_lmr3 =>
 						ddr_init_b <= "11";
-					when s_end =>
+					when lb_edll =>
+						ddr_init_b <= "01";
+					when lb_rdll =>
+						ddr_init_b <= "00";
+					when lb_emr =>
+						ddr_init_b <= "00";
+					when lb_lmr =>
+						ddr_init_b <= "00";
+					when lb_end =>
 						ddr_init_b <= "11";
 					when others =>
 						ddr_init_b <= "00";
