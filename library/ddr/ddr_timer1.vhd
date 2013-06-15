@@ -49,47 +49,37 @@ begin
 --	end process;
 
 	counter_g: for i in 0 to 1 generate
-		signal tmr_cntr unsigned(0 to q_length(i));
-		signal tmr_data : unsigned(0 to q_length(i));
-		signal load : std_logic;
-		signal ena  : std_logic;
-		signal data : unsigned(d'range);
+		signal q_cntr : unsigned(0 to q_len(i));
+		signal q_data : unsigned(0 to q_len(i));
+		signal data   : unsigned(d'range);
 	begin
-
-		process (ddr_timer_clk)
-		begin
-			if rising_edge(ddr_timer_clk) then
-				tmr_cntr <= dec (
-					cntr => tmr_cntr,
-					load => q(0),
-					data => d);
-			end if;
-		end process;
-
-		tmr_data <= 
-			data when else;
-			to_unsigned(2**q_length(i)-2, q'length);
 
 		with select
 		data <= 
-			to_unsigned(c200u/2**cnt_len(i) mod 2**q_len(i), q_len(i)) when 
-			to_unsigned( cDLL/2**cnt_len(i) mod 2**q_len(i), q_len(i)) when
-			to_unsigned( cREF/2**cnt_len(i) mod 2**q_len(i), q_len(i)) when others;
+			to_unsigned((c200u/2**cnt_len(i)) mod 2**q_len(i), q_len(i)) when 
+			to_unsigned( (cDLL/2**cnt_len(i)) mod 2**q_len(i), q_len(i)) when
+			to_unsigned( (cREF/2**cnt_len(i)) mod 2**q_len(i), q_len(i)) when others;
 				
-		low_g: if i=0 generate
-			signal sel  : std_logic_vector(0 to 1);
-		begin
-		end generate;
+		q_data <= 
+			data when else;
+			to_unsigned(2**q_length(i)-2, q'length);
 
-		high_g: if i=1 generate
-			signal sel : std_logic;
+		process (ddr_timer_clk)
+			variable load : std_logic;
 		begin
-			
-			sel <= '0' when ddr_timer_sel='0' else '1';
-			data   <= to_unsigned(c200u/2**q_length(0)-1, q'length);
-		end generate;
+			if rising_edge(ddr_timer_clk) then
+				ena := q0(0);
+				for j in 1 to i-1 loop
+					ena := ena and q0(i);
+				end loop;
+				q_cntr <= dec (
+					cntr => q_cntr,
+					ena  => ena,
+					load => q_load,
+					data => q_data);
+			end if;
+		end process;
 
-		q0(i) <= q(0);
 	end generate;
 
 	process (ddr_timer_clk)
