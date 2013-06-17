@@ -17,7 +17,7 @@ entity timers is
 end;
 
 architecture def of timers is
-	constant n : natural := 2;
+	constant n : natural := 3;
 	
 	signal q0  : std_logic_vector(n-1 downto 0);
 	signal rdy : std_logic;
@@ -25,12 +25,10 @@ begin
 
 	timer_rdy <= rdy;
 	cntr_g: for i in q0'range generate
-		signal q_cntr  : unsigned(0 to timer_len/n);
-	begin
 		process (timer_clk)
 			variable ena   : std_logic;
-			variable cntr  : unsigned(0 to timer_len/n);
-			variable data  : unsigned(1 to cntr'right);
+			variable cntr  : unsigned(0 to (timer_len-1)/n+1);
+			variable data  : unsigned(0 to cntr'right);
 			variable value : unsigned(data'range);
 		begin
 			if rising_edge(timer_clk) then
@@ -41,7 +39,7 @@ begin
 
 				data := value;
 				if timer_req='1' then
-					data := to_unsigned(2**data'length-2, data'length);
+					data := to_unsigned(2**(data'length-1)-2, data'length);
 				end if;
 
 				cntr := dec (
@@ -51,7 +49,9 @@ begin
 					data => data);
 				q0(i) <= cntr(0);
 	
-				value := to_unsigned(((timer_data(to_integer(unsigned(timer_sel)))/2**(i*cntr'right))+2**(cntr'right)-2) mod 2**(cntr'right), value'length);
+				value := to_unsigned(((
+					((timer_data(to_integer(unsigned(timer_sel)))-1)/2**(i*cntr'right)) mod 2**cntr'right)+2**value'length-1) mod 2**value'length,
+					value'length);
 
 			end if;
 		end process;
@@ -64,4 +64,5 @@ begin
 			rdy <= setif(q0=(q0'range => '1') or rdy='1') and timer_req;
 		end if;
 	end process;
+	
 end;
