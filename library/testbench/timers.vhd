@@ -12,16 +12,16 @@ architecture timers of testbench is
 	signal timer_sel : std_logic_vector(1 downto 0) := (others => '0');
 
 	constant timer_data : natural_vector(0 to 4-1) := (
-		65, 33, 55, 128);
+		58, 33, 55, 128);
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 50 ns;
+	rst <= '1', '0' after 45.00001 ns;
 
-	timer_req <= not rst and not timer_rdy;
+	timer_req <= not rst; -- and not timer_rdy;
 	du : entity hdl4fpga.timers
 	generic map (
-		timer_len  => 8,
+		timer_len  => 21,
 		timer_data => timer_data)
 	port map (
 		timer_clk  => clk,
