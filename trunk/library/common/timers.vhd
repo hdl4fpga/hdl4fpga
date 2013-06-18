@@ -11,8 +11,8 @@ entity timers is
 		timer_data : natural_vector);
 	port (
 		timer_clk : in  std_logic;
-		timer_req : in  std_logic;
 		timer_sel : in  std_logic_vector;
+		timer_req : in  std_logic;
 		timer_rdy : out std_logic);
 end;
 

@@ -39,6 +39,7 @@ entity ddr is
 		sys_do  : out std_logic_vector(0 to 2*data_bytes*byte_bits-1);
 		sys_ref : out std_logic;
 
+		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
@@ -105,7 +106,7 @@ architecture mix of ddr is
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
 
-	signal in_rst : std_logic;
+	signal rst : std_logic;
 	alias  ddr_dql : std_logic_vector(0 to data_bits-1) is ddr_wr_fifo_do(0 to data_bits-1);
 	alias  ddr_dqh : std_logic_vector(0 to data_bits-1) is ddr_wr_fifo_do(data_bits to 2*data_bits-1);
 
@@ -121,7 +122,7 @@ begin
 	process (clk0)
 	begin
 		if rising_edge(clk0) then
-			in_rst <= sys_rst;
+			rst <= sys_rst;
 		end if;
 	end process;
 
@@ -192,7 +193,7 @@ begin
 			sys_ini       <= ddr_init_rdy and ddr_timer_dll;
 			ddr_init_cke  <= ddr_timer_200u;
 			ddr_init_req  <= ddr_timer_200u;
-			ddr_timer_rst <= in_rst;
+			ddr_timer_rst <= rst;
 			ddr_timer_sel <= ddr_init_cke;
 		end if;
 	end process;
