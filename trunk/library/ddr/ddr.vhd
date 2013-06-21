@@ -12,6 +12,8 @@ entity ddr is
 		tRFC  : real := 72.0;
 		tMRD  : real := 12.0;
 		t200u : real := 200.0e3;
+		t500u : real := 500.0e3;
+		txpr  : real := 10.0;
 		tREF  : real := 7.8e3;
 		cas   : std_logic_vector(0 to 2);
 
@@ -67,17 +69,17 @@ architecture mix of ddr is
 	type byte_vector is array (natural range <>) of byte;
 
 	signal ddr_init_rdy : std_logic;
-	signal ddr_init_req : std_logic;
 	signal ddr_init_ras : std_logic;
 	signal ddr_init_cas : std_logic;
 	signal ddr_init_we  : std_logic;
 	signal ddr_init_a   : std_logic_vector(addr_bits-1 downto 0);
 	signal ddr_init_b   : std_logic_vector(bank_bits-1 downto 0);
 	signal ddr_init_cke : std_logic;
+	signal ddr_init_cfg : std_logic;
+	signal ddr_init_dll : std_logic;
 
 	signal ddr_timer_sel  : std_logic;
-	signal ddr_timer_dll  : std_logic;
-	signal ddr_timer_200u : std_logic;
+	signal dll_timer_rdy  : std_logic;
 	signal ddr_timer_rst  : std_logic;
 	signal ddr_timer_ref  : std_logic;
 
@@ -133,8 +135,8 @@ begin
 		addr_bits => addr_bits)
 	port map (
 		sys_clk => clk0,
-		sys_ini => ddr_timer_dll,
-		sys_cke => ddr_timer_200u,
+		sys_ini => dll_timer_rdy,
+		sys_cke => ddr_init_cke,
 		sys_ras => ddr_acc_ras,
 		sys_cas => ddr_acc_cas,
 		sys_we  => ddr_acc_we,
@@ -157,15 +159,20 @@ begin
 	ddr_timer_du : entity hdl4fpga.ddr_timer
 	generic map (
 		c200u => natural(t200u/tCP),
-		cREF  => natural(tREF/tCP),
-		cDLL  => 200)
+		cDLL  => 200,
+		c500u => natural(t500u/tCP),
+		cxpr  => natural(txpr/tCP),
+		cREF  => natural(tREF/tCP))
 	port map (
 		ddr_timer_clk => clk0,
-		ddr_timer_rst => ddr_timer_rst, 
-		ddr_timer_sel => ddr_timer_sel,
-		ddr_timer_dll => ddr_timer_dll,
-		ddr_timer_200u => ddr_timer_200u,
-		ddr_timer_ref => ddr_timer_ref);
+		ddr_timer_rst => rst,
+		ddr_init_rst  => ddr_rst,
+		ddr_init_cke  => ddr_init_cke,
+		ddr_init_cfg  => ddr_init_cfg,
+		dll_timer_req => ddr_init_dll,
+		dll_timer_rdy => dll_timer_rdy,
+		ref_timer_req => ddr_init_rdy,
+		ref_timer_rdy => ddr_acc_ref);
 
 	ddr_init_du : entity hdl4fpga.ddr_init
 	generic map (
@@ -177,8 +184,9 @@ begin
 		ddr_init_bl  => "011",
 		ddr_init_cl  => cas,
 		ddr_init_clk => clk0,
-		ddr_init_req => ddr_init_req,
+		ddr_init_req => ddr_init_cfg,
 		ddr_init_rdy => ddr_init_rdy,
+		ddr_init_dll => ddr_init_dll,
 		ddr_init_ras => ddr_init_ras,
 		ddr_init_cas => ddr_init_cas,
 		ddr_init_we  => ddr_init_we,
@@ -188,13 +196,8 @@ begin
 	process (clk0)
 	begin
 		if rising_edge(clk0) then
-			ddr_acc_ref   <= ddr_timer_ref and ddr_init_rdy;
-			ddr_acc_rst   <= not (ddr_init_rdy and ddr_timer_dll);
-			sys_ini       <= ddr_init_rdy and ddr_timer_dll;
-			ddr_init_cke  <= ddr_timer_200u;
-			ddr_init_req  <= ddr_timer_200u;
-			ddr_timer_rst <= rst;
-			ddr_timer_sel <= ddr_init_cke;
+			ddr_acc_rst   <= not (ddr_init_rdy and dll_timer_rdy);
+			sys_ini       <= ddr_init_rdy and dll_timer_rdy;
 		end if;
 	end process;
 

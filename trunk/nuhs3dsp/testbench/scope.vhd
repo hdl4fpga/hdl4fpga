@@ -3,7 +3,7 @@ use hdl4fpga.std.all;
 
 architecture scope of testbench is
 	type ddrm_ids is (ddr1, ddr2, ddr3);
-	constant ddrm_id  : ddrm_ids := ddr2;
+	constant ddrm_id  : ddrm_ids := ddr1;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
