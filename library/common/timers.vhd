@@ -25,11 +25,26 @@ begin
 
 	timer_rdy <= rdy;
 	cntr_g: for i in q0'range generate
-		process (timer_clk)
+		cntr_p : process (timer_clk)
 			variable ena   : std_logic;
 			variable cntr  : unsigned(0 to (timer_len-1)/n+1);
 			variable data  : unsigned(0 to cntr'right);
 			variable value : unsigned(data'range);
+
+			function deca_data (
+				constant data : natural_vector;
+				constant deca : natural;
+				constant size : natural)
+				return natural_vector is
+				variable val : hdl4fpga.std.natural_vector(data'range);
+			begin
+				for i in data'range loop
+					val(i) := ((((data(i)-1)/2**(deca*size)) mod 2**size)+2**(size+1)-1) mod 2**(size+1);
+				end loop;
+				return val;
+			end;
+
+			constant deca_rom : natural_vector := deca_data(timer_data, i, cntr'right);
 		begin
 			if rising_edge(timer_clk) then
 				ena := not rdy;
@@ -49,9 +64,7 @@ begin
 					data => data);
 				q0(i) <= cntr(0);
 	
-				value := to_unsigned(((
-					((timer_data(to_integer(unsigned(timer_sel)))-1)/2**(i*cntr'right)) mod 2**cntr'right)+2**value'length-1) mod 2**value'length,
-					value'length);
+				value := to_unsigned(deca_rom(to_integer(unsigned(timer_sel))), value'length);
 
 			end if;
 		end process;

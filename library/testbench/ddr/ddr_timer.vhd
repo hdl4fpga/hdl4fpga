@@ -21,6 +21,8 @@ begin
 
 	ddr_timer_clk <= not ddr_timer_clk after tCP2;
 	ddr_timer_rst <= '1', '0' after 30 ns;
+	dll_timer_req <= '1' after 800 us;
+	ref_timer_req <= '1' after 1000 us;
 
 	process
 	begin
