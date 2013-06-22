@@ -145,7 +145,6 @@ package std is
 		arg : boolean)
 		return natural;
 
-
 	function demux (
 		constant s : std_logic_vector;
 		constant e : std_logic := '1')
@@ -209,6 +208,11 @@ package std is
 		constant right: integer)
 		return integer;
 
+	function assign_if (
+		constant condition : boolean;
+		constant value_if_true  : real;
+		constant value_if_false : real)
+		return real;
 end;
 
 use std.textio.all;
@@ -690,6 +694,19 @@ package body std is
 			return left;
 		else
 			return right;
+		end if;
+	end;
+
+	function assign_if (
+		constant condition : boolean;
+		constant value_if_true  : real;
+		constant value_if_false : real)
+		return real is
+	begin
+		if condition then
+			return value_if_true;
+		else
+			return value_if_false;
 		end if;
 	end;
 

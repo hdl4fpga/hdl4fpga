@@ -2,7 +2,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scope of testbench is
-	constant ddr_ver  : positive := 2;
+	constant ddr_ver  : positive := 3;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
@@ -119,6 +119,7 @@ architecture scope of testbench is
 			-------------
 			-- DDR RAM --
 
+			ddr_rst : out std_logic := 'Z';
 			ddr_ckp : out std_logic := 'Z';
 			ddr_ckn : out std_logic := 'Z';
 			ddr_lp_ckp : in std_logic := 'Z';
@@ -182,7 +183,7 @@ architecture scope of testbench is
 			ras_n : in std_logic;
 			cas_n : in std_logic;
 			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
+			ba    : in std_logic_vector(2 downto 0);
 			addr  : in std_logic_vector(addr_bits - 1 downto 0);
 			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
 			dq    : inout std_logic_vector(data_bits - 1 downto 0);
@@ -261,6 +262,7 @@ begin
 		-------------
 		-- DDR RAM --
 
+		ddr_rst => ddr3_rst,
 		ddr_ckp => clk_p,
 		ddr_ckn => clk_n,
 		ddr_lp_ckp => clk_p,
@@ -321,11 +323,13 @@ begin
 	end generate;
 
 	ddr3_model_g: if ddr_ver=3 generate
+		signal ba3    : std_logic_vector(2 downto 0);
 		signal dqs_n  : std_logic_vector(dqs'range);
 		signal tdqs_n : std_logic_vector(dqs'range);
 		signal odt    : std_logic;
 	begin
 		dqs_n <= not dqs;
+		ba3 <= '0' & ba;
 		mt_u : ddr3_model
 		port map (
 			Rst_n => ddr3_rst,
@@ -336,7 +340,7 @@ begin
 			Ras_n => ras_n,
 			Cas_n => cas_n,
 			We_n  => we_n,
-			Ba    => ba,
+			Ba    => ba3,
 			Addr  => addr,
 			Dm_tdqs  => dm,
 			Dq    => dq,
