@@ -2,8 +2,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scope of testbench is
-	type ddrm_ids is (ddr1, ddr2, ddr3);
-	constant ddrm_id  : ddrm_ids := ddr1;
+	constant ddr_ver  : positive := 2;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
@@ -279,7 +278,7 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
-	ddr_model_g: if ddrm_id=ddr1 generate
+	ddr_model_g: if ddr_ver=1 generate
 		mt_u : ddr_model
 		port map (
 			Clk   => clk_p,
@@ -296,7 +295,7 @@ begin
 			Dqs   => dqs);
 	end generate;
 
-	ddr2_model_g: if ddrm_id=ddr2 generate
+	ddr2_model_g: if ddr_ver=2 generate
 		signal dqs_n  : std_logic_vector(dqs'range);
 		signal rdqs_n : std_logic_vector(dqs'range);
 		signal odt    : std_logic;
@@ -321,7 +320,7 @@ begin
 			Odt   => odt);
 	end generate;
 
-	ddr3_model_g: if ddrm_id=ddr3 generate
+	ddr3_model_g: if ddr_ver=3 generate
 		signal dqs_n  : std_logic_vector(dqs'range);
 		signal tdqs_n : std_logic_vector(dqs'range);
 		signal odt    : std_logic;

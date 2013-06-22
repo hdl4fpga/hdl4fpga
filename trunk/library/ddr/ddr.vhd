@@ -13,6 +13,7 @@ entity ddr is
 		tMRD  : real := 12.0;
 		t200u : real := 200.0e3;
 		t500u : real := 500.0e3;
+		t400n : real := 400.0;
 		txpr  : real := 10.0;
 		tREF  : real := 7.8e3;
 		cas   : std_logic_vector(0 to 2);
@@ -20,7 +21,8 @@ entity ddr is
 		bank_bits  : natural := 2;
 		addr_bits  : natural := 13;
 		data_bytes : natural := 2;
-		byte_bits  : natural := 8);
+		byte_bits  : natural := 8;
+		ver        : positive := 2);
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk0  : in  std_logic;
@@ -160,9 +162,10 @@ begin
 	generic map (
 		c200u => natural(t200u/tCP),
 		cDLL  => 200,
-		c500u => natural(t500u/tCP),
+		c500u => natural(t400n/tCP),
 		cxpr  => natural(txpr/tCP),
-		cREF  => natural(tREF/tCP))
+		cREF  => natural(tREF/tCP),
+		ver   => ver)
 	port map (
 		ddr_timer_clk => clk0,
 		ddr_timer_rst => rst,
@@ -174,24 +177,68 @@ begin
 		ref_timer_req => ddr_init_rdy,
 		ref_timer_rdy => ddr_acc_ref);
 
-	ddr_init_du : entity hdl4fpga.ddr_init
-	generic map (
-		a    => addr_bits,
-		tRP  => natural(ceil(tRP/tCp)),
-		tMRD => natural(ceil(tMRD/tCp)),
-		tRFC => natural(ceil(tRFC/tCp)))
-	port map (
-		ddr_init_bl  => "011",
-		ddr_init_cl  => cas,
-		ddr_init_clk => clk0,
-		ddr_init_req => ddr_init_cfg,
-		ddr_init_rdy => ddr_init_rdy,
-		ddr_init_dll => ddr_init_dll,
-		ddr_init_ras => ddr_init_ras,
-		ddr_init_cas => ddr_init_cas,
-		ddr_init_we  => ddr_init_we,
-		ddr_init_a   => ddr_init_a,
-		ddr_init_b   => ddr_init_b);
+	ddr1_init_g : if ver=1 generate
+		ddr_init_du : entity hdl4fpga.ddr_init(ddr1)
+		generic map (
+			a    => addr_bits,
+			tRP  => natural(ceil(tRP/tCp)),
+			tMRD => natural(ceil(tMRD/tCp)),
+			tRFC => natural(ceil(tRFC/tCp)))
+		port map (
+			ddr_init_bl  => "011",
+			ddr_init_cl  => cas,
+			ddr_init_clk => clk0,
+			ddr_init_req => ddr_init_cfg,
+			ddr_init_rdy => ddr_init_rdy,
+			ddr_init_dll => ddr_init_dll,
+			ddr_init_ras => ddr_init_ras,
+			ddr_init_cas => ddr_init_cas,
+			ddr_init_we  => ddr_init_we,
+			ddr_init_a   => ddr_init_a,
+			ddr_init_b   => ddr_init_b);
+	end generate;
+
+	ddr2_init_g : if ver=2 generate
+		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
+		generic map (
+			a    => addr_bits,
+			tRP  => natural(ceil(tRP/tCp)),
+			tMRD => natural(ceil(tMRD/tCp)),
+			tRFC => natural(ceil(tRFC/tCp)))
+		port map (
+			ddr_init_bl  => "011",
+			ddr_init_cl  => cas,
+			ddr_init_clk => clk0,
+			ddr_init_req => ddr_init_cfg,
+			ddr_init_rdy => ddr_init_rdy,
+			ddr_init_dll => ddr_init_dll,
+			ddr_init_ras => ddr_init_ras,
+			ddr_init_cas => ddr_init_cas,
+			ddr_init_we  => ddr_init_we,
+			ddr_init_a   => ddr_init_a,
+			ddr_init_b   => ddr_init_b);
+	end generate;
+
+	ddr3_init_g : if ver=3 generate
+		ddr_init_du : entity hdl4fpga.ddr_init(ddr3)
+		generic map (
+			a    => addr_bits,
+			tRP  => natural(ceil(tRP/tCp)),
+			tMRD => natural(ceil(tMRD/tCp)),
+			tRFC => natural(ceil(tRFC/tCp)))
+		port map (
+			ddr_init_bl  => "011",
+			ddr_init_cl  => cas,
+			ddr_init_clk => clk0,
+			ddr_init_req => ddr_init_cfg,
+			ddr_init_rdy => ddr_init_rdy,
+			ddr_init_dll => ddr_init_dll,
+			ddr_init_ras => ddr_init_ras,
+			ddr_init_cas => ddr_init_cas,
+			ddr_init_we  => ddr_init_we,
+			ddr_init_a   => ddr_init_a,
+			ddr_init_b   => ddr_init_b);
+	end generate;
 
 	process (clk0)
 	begin
