@@ -11,10 +11,6 @@ entity ddr is
 		tRCD  : real := 15.0;
 		tRFC  : real := 72.0;
 		tMRD  : real := 12.0;
-		t200u : real := 200.0e3;
-		t500u : real := 500.0e3;
-		t400n : real := 400.0;
-		txpr  : real := 10.0;
 		tREF  : real := 7.8e3;
 		cas   : std_logic_vector(0 to 2);
 
@@ -22,7 +18,7 @@ entity ddr is
 		addr_bits  : natural := 13;
 		data_bytes : natural := 2;
 		byte_bits  : natural := 8;
-		ver        : positive := 2);
+		ver : positive := 3);
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk0  : in  std_logic;
@@ -57,6 +53,10 @@ entity ddr is
 		ddr_dqs : inout std_logic_vector(0 to data_bytes-1);
 		ddr_dq  : inout std_logic_vector(0 to data_bytes*byte_bits-1));
 
+	constant t200u : real := 200.0e3;
+	constant t500u : real := 500.0e3;
+	constant t400n : real := 400.0;
+	constant txpr  : real := 120.0;
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
 
@@ -120,6 +120,7 @@ architecture mix of ddr is
 	signal clk270 : std_logic;
 
 begin
+
 	clk180 <= not sys_clk0;
 	clk270 <= not sys_clk90;
 
@@ -162,7 +163,7 @@ begin
 	generic map (
 		c200u => natural(t200u/tCP),
 		cDLL  => 200,
-		c500u => natural(t400n/tCP),
+		c500u => natural(hdl4fpga.std.assign_if(ver=2,t400n,t500u)/tCP),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(tREF/tCP),
 		ver   => ver)
@@ -201,10 +202,11 @@ begin
 	ddr2_init_g : if ver=2 generate
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
 		generic map (
+			lat_length => 9,
 			a    => addr_bits,
 			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => natural(ceil(tMRD/tCp)),
-			tRFC => natural(ceil(tRFC/tCp)))
+			tMRD => 2,
+			tRFC => natural(ceil(127.50/tCp)))
 		port map (
 			ddr_init_bl  => "011",
 			ddr_init_cl  => cas,
@@ -220,11 +222,16 @@ begin
 	end generate;
 
 	ddr3_init_g : if ver=3 generate
+		signal ba3 : std_logic_vector(2 downto 0);
+	begin
+		ddr_init_b <= ba3(1 downto 0);
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr3)
 		generic map (
+			lat_length => 9,
 			a    => addr_bits,
+			ba   => 3,
 			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => natural(ceil(tMRD/tCp)),
+			tMRD => 4,
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
 			ddr_init_bl  => "011",
@@ -237,7 +244,7 @@ begin
 			ddr_init_cas => ddr_init_cas,
 			ddr_init_we  => ddr_init_we,
 			ddr_init_a   => ddr_init_a,
-			ddr_init_b   => ddr_init_b);
+			ddr_init_b   => ba3);
 	end generate;
 
 	process (clk0)

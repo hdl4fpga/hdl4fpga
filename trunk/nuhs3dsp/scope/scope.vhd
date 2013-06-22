@@ -576,6 +576,7 @@ begin
 
 		ddr_st_lp_dqs => ddr_st_lp_dqs,
 		ddr_lp_dqs => ddr_lp_dqs,
+		ddr_rst => ddr_rst,
 		ddr_cke => ddr_cke,
 		ddr_cs  => ddr_cs,
 		ddr_ras => ddr_ras,
