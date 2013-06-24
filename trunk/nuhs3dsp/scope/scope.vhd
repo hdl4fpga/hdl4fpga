@@ -547,7 +547,8 @@ begin
 		tRCD => 15.0,
 		tRFC => 72.0,
 		tMRD => 12.0,
-		cas  => cas,
+--		cas  => cas,
+		cl  => 5.0,
 
 		bank_bits => bank_size,
 		addr_bits => addr_size,
