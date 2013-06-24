@@ -210,6 +210,12 @@ package std is
 
 	function assign_if (
 		constant condition : boolean;
+		constant value_if_true  : integer;
+		constant value_if_false : integer)
+		return integer;
+
+	function assign_if (
+		constant condition : boolean;
 		constant value_if_true  : real;
 		constant value_if_false : real)
 		return real;
@@ -702,6 +708,19 @@ package body std is
 		constant value_if_true  : real;
 		constant value_if_false : real)
 		return real is
+	begin
+		if condition then
+			return value_if_true;
+		else
+			return value_if_false;
+		end if;
+	end;
+
+	function assign_if (
+		constant condition : boolean;
+		constant value_if_true  : integer;
+		constant value_if_false : integer)
+		return integer is
 	begin
 		if condition then
 			return value_if_true;

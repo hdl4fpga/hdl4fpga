@@ -5,14 +5,15 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		tCP   : real := 6.0;
-		tWR   : real := 15.0;
-		tRP   : real := 15.0;
-		tRCD  : real := 15.0;
-		tRFC  : real := 72.0;
-		tMRD  : real := 12.0;
-		tREF  : real := 7.8e3;
-		cas   : std_logic_vector(0 to 2);
+		tCP : real := 6.0;
+		tWR : real := 15.0;
+		tRP : real := 15.0;
+		tRCD : real := 15.0;
+		tRFC : real := 72.0;
+		tMRD : real := 12.0;
+		tREF : real := 7.8e3;
+		cl  : real := 5.0;
+		bl  : natural := 8;
 
 		bank_bits  : natural := 2;
 		addr_bits  : natural := 13;
@@ -119,6 +120,102 @@ architecture mix of ddr is
 	signal clk180 : std_logic;
 	signal clk270 : std_logic;
 
+	function casdb (
+		constant cl  : real;
+		constant ver : natural)
+		return std_logic_vector is
+
+		type castab is array (natural range <>) of std_logic_vector(0 to 2);
+
+		constant cas1db : castab(0 to 3-1) := ("010", "110", "011");
+		constant cas2db : castab(0 to 5-1) := ("011", "100", "101", "110", "111");
+		constant cas3db : castab(0 to 7-1) := ("001", "010", "011", "100", "101", "110", "111");
+
+		constant frac : real := cl-floor(cl);
+	begin
+
+		case ver is
+		when 1 =>
+			assert 2.0 <= cl and cl <= 3.0
+			report "Invalid DDR1 cas latency"
+			severity FAILURE;
+
+			if floor(cl)=2.0 then
+				if floor(2.0*cl) >= 5.0 then
+					return cas1db(1);
+				end if;
+				return cas1db(0);
+			else
+				return cas1db(2);
+			end if;
+
+		when 2 =>
+			assert 3.0 <= cl and cl <= 7.0
+			report "Invalid DDR2 cas latency"
+			severity FAILURE;
+			
+			return cas2db(natural(floor(cl))-3);
+
+		when 3 =>
+			assert 5.0 <= cl and cl <= 11.0
+			report "Invalid DDR3 cas latency"
+			severity FAILURE;
+			
+			return cas3db(natural(floor(cl))-5);
+
+		when others =>
+			report "Invalid DDR version"
+			severity FAILURE;
+
+			return (0 to 2 => '-');
+		end case;
+	end;
+
+	function bldb (
+		constant bl  : natural;
+		constant ver : natural)
+		return std_logic_vector is
+		type bltab is array (natural range <>) of std_logic_vector(0 to 2);
+
+		constant bl1db : bltab(0 to 2) := ("001", "010", "011");
+		constant bl2db : bltab(1 to 2) := ("010", "011");
+		constant bl3db : bltab(0 to 2) := ("000", "001", "010");
+	begin
+		case ver is
+		when 1 =>
+			for i in bl1db'range loop
+				if bl=2**(i+1) then
+					return bl1db(i);
+				end if;
+			end loop;
+
+		when 2 =>
+			for i in bl2db'range loop
+				if bl=2**(i+1) then
+					return bl2db(i);
+				end if;
+			end loop;
+
+		when 3 =>
+			for i in bl3db'range loop
+				if bl=2**(i+1) then
+					return bl3db(i);
+				end if;
+			end loop;
+
+		when others =>
+			report "Invalid DDR version"
+			severity FAILURE;
+
+			return (0 to 2 => '-');
+		end case;
+
+		report "Invalid Burst Length"
+		severity FAILURE;
+		return (0 to 2 => '-');
+	end;
+
+	constant cas : std_logic_vector(0 to 2) := casdb(cl, ver);
 begin
 
 	clk180 <= not sys_clk0;
@@ -162,7 +259,7 @@ begin
 	ddr_timer_du : entity hdl4fpga.ddr_timer
 	generic map (
 		c200u => natural(t200u/tCP),
-		cDLL  => 200,
+		cDLL  => hdl4fpga.std.assign_if(ver=3, 512, 200),
 		c500u => natural(hdl4fpga.std.assign_if(ver=2,t400n,t500u)/tCP),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(tREF/tCP),
@@ -208,7 +305,8 @@ begin
 			tMRD => 2,
 			tRFC => natural(ceil(127.50/tCp)))
 		port map (
-			ddr_init_bl  => "011",
+--			ddr_init_bl  => "011",
+			ddr_init_bl  => bldb(bl,ver),
 			ddr_init_cl  => cas,
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
@@ -234,7 +332,8 @@ begin
 			tMRD => 4,
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
-			ddr_init_bl  => "011",
+--			ddr_init_bl  => "011",
+			ddr_init_bl  => bldb(bl,ver),
 			ddr_init_cl  => cas,
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,

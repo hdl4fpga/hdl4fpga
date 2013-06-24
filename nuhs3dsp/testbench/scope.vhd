@@ -205,7 +205,6 @@ begin
 			rst <= not vrst(1);
 		end if;
 	end process;
-	ddr3_rst <= not rst;
 
 	mii_strt <= '0', '1' after 240 us;
 	process (mii_refclk, mii_strt)

@@ -329,34 +329,45 @@ architecture ddr3 of ddr_init is
 	signal lat_timer : signed(0 to lat_length-1);
 	signal ddr_init_pc : ddr_labels;
 
-	-- DDR3 Mode Register --
-	------------------------
+	-- DDR3 Mode Register 0 --
+	--------------------------
 
-	subtype  mr_bl is natural range 2 downto 0;
-	constant mr_bt : natural := 3;
-	subtype  mr_cl is natural range 6 downto 4;
-	constant mr_tm : natural := 7;
-	constant mr_dll : natural := 8;
-	subtype  mr_wr is natural range 11 downto 9;
-	constant mr_pd : natural := 12;
+	subtype  mr0_bl is natural range 2 downto 0;
+	constant mr0_bt : natural := 3;
+	subtype  mr0_cl is natural range 6 downto 4;
+	constant mr0_tm : natural := 7;
+	constant mr0_dll : natural := 8;
+	subtype  mr0_wr is natural range 11 downto 9;
+	constant mr0_pd : natural := 12;
 
-	-- DDR3 Extended Mode Register --
-	---------------------------------
+	-- DDR3 Mode Register 1 --
+	--------------------------
 
-	constant emr_dll : natural := 0;
-	constant emr_ods : natural := 1;
-	constant emr_rt0 : natural := 2;
-	subtype  emr_pl  is natural range 5 downto 3;
-	constant emr_rt1 : natural := 6;
-	subtype  emr_ocd is natural range 9 downto 7;
-	constant emr_dqs : natural := 10;
-	constant emr_rdqs : natural := 11;
-	constant emr_out : natural := 12;
+	constant mr1_dll : natural := 0;
+	constant mr1_ods0 : natural := 1;
+	constant mr1_ods1 : natural := 5;
+	constant mr1_rt0 : natural := 2;
+	constant mr1_rt1 : natural := 6;
+	constant mr1_rt2 : natural := 9;
+	subtype  mr1_al  is natural range 4 downto 3;
+	constant mr1_wl  : natural := 7;
+	constant mr1_dqs : natural := 10;
+	constant mr1_tdqs : natural := 11;
+	constant mr1_qoff : natural := 12;
 
-	-- DDR3 Extended Mode Register 2 --
-	-----------------------------------
+	-- DDR3 Mode Register 2 --
+	--------------------------
 
-	constant emr2_srt : natural := 7;
+	subtype  mr2_cwl is natural range  5 downto 0;
+	constant mr2_asr : natural := 6;
+	constant mr2_srt : natural := 7;
+	subtype  mr2_rtt is natural range 10 downto 9;
+
+	-- DDR3 Mode Register 3 --
+	--------------------------
+
+	subtype  mr3_mpr_rf is natural range 1 downto 0;
+	constant mr3_mpr : natural := 1;
 
 	constant ddr_init_pgm : ddr_state_code := (
 		(lb_lmr3, (cmd_lmr, to_signed (tmrd-2, lat_length))),
@@ -379,20 +390,22 @@ begin
 
 					ddr_init_a <= (others => '0');
 					case ddr_init_pc is
-					when lb_lmr2|lb_lmr3 =>
+					when lb_lmr3 =>
+						ddr_init_a <= (others => '0');
+					when lb_lmr2 =>
 						ddr_init_a <= (others => '0');
 					when lb_lmr1 =>
-						ddr_init_a(emr_dll) <= '0';
+						ddr_init_a(mr1_dll) <= '0';
+					when lb_lmr0 =>
+						ddr_init_a(mr0_bl) <= ddr_init_bl; 
+						ddr_init_a(mr0_bt) <= '0'; 
+						ddr_init_a(mr0_cl) <= ddr_init_cl;
+						ddr_init_a(mr0_tm) <= '0'; 
+						ddr_init_a(mr0_dll) <= '1'; 
+						ddr_init_a(mr0_wr) <= ddr_init_wr; 
+						ddr_init_a(mr0_pd) <= '0'; 
 					when lb_zqcl =>
 						ddr_init_a(10) <= '1';
-					when lb_lmr0 =>
-						ddr_init_a(mr_bl) <= ddr_init_bl; 
-						ddr_init_a(mr_bt) <= '0'; 
-						ddr_init_a(mr_cl) <= ddr_init_cl;
-						ddr_init_a(mr_tm) <= '0'; 
-						ddr_init_a(mr_dll) <= '0'; 
-						ddr_init_a(mr_wr) <= ddr_init_wr; 
-						ddr_init_a(mr_pd) <= '0'; 
 					when lb_end =>
 						ddr_init_a <= (others => '1');
 					when others =>
