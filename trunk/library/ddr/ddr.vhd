@@ -424,8 +424,8 @@ begin
 		tWR  => natural(ceil(tWR/tCp)),
 		tRP  => natural(ceil(tRP/tCp)),
 		tRFC => natural(ceil(tRFC/tCp)),
---		ddr_mpu_bl => "011",
 		ddr_mpu_bl => bldb(bl,ver),
+		ddr_mpu_cwl => cwldb(cwl, ver),
 		ddr_mpu_cl => casdb(cl, ver))
 	port map (
 		ddr_mpu_rst   => ddr_acc_rst,

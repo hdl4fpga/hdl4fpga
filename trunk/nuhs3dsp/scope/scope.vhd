@@ -126,8 +126,8 @@ architecture scope of nuhs3dsp is
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 25;
-	constant ddr_divide   : natural := 3;
+	constant ddr_multiply : natural := 30; --25;
+	constant ddr_divide   : natural := 1; --3;
 	constant cas : std_logic_vector(0 to 2) := cas_code(
 		tCLK => 50.0,
 		multiply => ddr_multiply,
@@ -548,7 +548,7 @@ begin
 		tRFC => 72.0,
 		tMRD => 12.0,
 --		cas  => cas,
-		cl  => 5.0,
+		cl  => 9.0,
 
 		bank_bits => bank_size,
 		addr_bits => addr_size,
