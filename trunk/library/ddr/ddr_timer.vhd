@@ -67,7 +67,7 @@ begin
 
 	timers_e : entity hdl4fpga.timers
 	generic map (
-		timer_len  => 18,
+		timer_len  => 24,
 		timer_data => (
 			timer_ids'pos(tid_200u) => c200u,
 			timer_ids'pos(tid_dll)  => cDLL,

@@ -15,6 +15,7 @@ entity ddr_init is
 		ddr_init_bl  : in  std_logic_vector(0 to 2);
 		ddr_init_cl  : in  std_logic_vector(0 to 2);
 		ddr_init_wr  : in  std_logic_vector(0 to 2) := (others => '0');
+		ddr_init_cwl : in  std_logic_vector(0 to 2) := (others => '0');
 		ddr_init_pl  : in  std_logic_vector(0 to 2) := (others => '0');
 		ddr_init_dqsn : in std_logic := '0';
 
@@ -350,7 +351,7 @@ architecture ddr3 of ddr_init is
 	constant mr1_rt1 : natural := 6;
 	constant mr1_rt2 : natural := 9;
 	subtype  mr1_al  is natural range 4 downto 3;
-	constant mr1_wl  : natural := 7;
+	constant mr1_wr  : natural := 7;
 	constant mr1_dqs : natural := 10;
 	constant mr1_tdqs : natural := 11;
 	constant mr1_qoff : natural := 12;
@@ -358,7 +359,7 @@ architecture ddr3 of ddr_init is
 	-- DDR3 Mode Register 2 --
 	--------------------------
 
-	subtype  mr2_cwl is natural range  5 downto 0;
+	subtype  mr2_cwl is natural range  5 downto 3;
 	constant mr2_asr : natural := 6;
 	constant mr2_srt : natural := 7;
 	subtype  mr2_rtt is natural range 10 downto 9;
@@ -393,7 +394,7 @@ begin
 					when lb_lmr3 =>
 						ddr_init_a <= (others => '0');
 					when lb_lmr2 =>
-						ddr_init_a <= (others => '0');
+						ddr_init_a(mr2_cwl) <= ddr_init_cwl;
 					when lb_lmr1 =>
 						ddr_init_a(mr1_dll) <= '0';
 					when lb_lmr0 =>

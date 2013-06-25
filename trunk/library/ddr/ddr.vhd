@@ -5,6 +5,7 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
+		ver : positive := 3;
 		tCP : real := 6.0;
 		tWR : real := 15.0;
 		tRP : real := 15.0;
@@ -14,12 +15,13 @@ entity ddr is
 		tREF : real := 7.8e3;
 		cl  : real := 5.0;
 		bl  : natural := 8;
+		wr  : natural := 10;
+		cwl : natural := 7;
 
 		bank_bits  : natural := 2;
 		addr_bits  : natural := 13;
 		data_bytes : natural := 2;
-		byte_bits  : natural := 8;
-		ver : positive := 3);
+		byte_bits  : natural := 8);
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk0  : in  std_logic;
@@ -127,9 +129,9 @@ architecture mix of ddr is
 
 		type castab is array (natural range <>) of std_logic_vector(0 to 2);
 
-		constant cas1db : castab(0 to 3-1) := ("010", "110", "011");
-		constant cas2db : castab(0 to 5-1) := ("011", "100", "101", "110", "111");
-		constant cas3db : castab(0 to 7-1) := ("001", "010", "011", "100", "101", "110", "111");
+		constant cas1db : castab(0 to 3-1)  := ("010", "110", "011");
+		constant cas2db : castab(3 to 8-1)  := ("011", "100", "101", "110", "111");
+		constant cas3db : castab(5 to 12-1) := ("001", "010", "011", "100", "101", "110", "111");
 
 		constant frac : real := cl-floor(cl);
 	begin
@@ -140,11 +142,10 @@ architecture mix of ddr is
 			report "Invalid DDR1 cas latency"
 			severity FAILURE;
 
-			if floor(cl)=2.0 then
-				if floor(2.0*cl) >= 5.0 then
-					return cas1db(1);
-				end if;
+			if cl = 2.0 then
 				return cas1db(0);
+			elsif cl = 2.5 then
+				return cas1db(1);
 			else
 				return cas1db(2);
 			end if;
@@ -154,14 +155,14 @@ architecture mix of ddr is
 			report "Invalid DDR2 cas latency"
 			severity FAILURE;
 			
-			return cas2db(natural(floor(cl))-3);
+			return cas2db(natural(floor(cl)));
 
 		when 3 =>
 			assert 5.0 <= cl and cl <= 11.0
 			report "Invalid DDR3 cas latency"
 			severity FAILURE;
 			
-			return cas3db(natural(floor(cl))-5);
+			return cas3db(natural(floor(cl)));
 
 		when others =>
 			report "Invalid DDR version"
@@ -215,7 +216,66 @@ architecture mix of ddr is
 		return (0 to 2 => '-');
 	end;
 
-	constant cas : std_logic_vector(0 to 2) := casdb(cl, ver);
+	function wrdb (
+		constant wr  : natural;
+		constant ver : natural)
+		return std_logic_vector is
+		type wrtab is array (natural range <>) of std_logic_vector(0 to 2);
+
+		constant wr3db  : wrtab(0 to 6-1) := ("001", "010", "011", "100", "101", "110");
+		constant wr3idx : hdl4fpga.std.natural_vector(wr3db'range) := (5, 6, 7, 8, 10, 12);
+
+	begin
+		case ver is
+		when 3 =>
+			for i in wr3db'range loop
+				if wr = wr3idx(i) then
+					return wr3db(i);
+				end if;
+			end loop;
+
+		when others =>
+			report "Invalid DDR version"
+			severity FAILURE;
+
+			return (0 to 2 => '-');
+		end case;
+
+		report "Invalid Write Recovery"
+		severity FAILURE;
+		return (0 to 2 => '-');
+	end;
+
+	function cwldb (
+		constant cwl : natural;
+		constant ver : natural)
+		return std_logic_vector is
+		type cwltab is array (natural range <>) of std_logic_vector(0 to 2);
+
+		constant cwl3db  : cwltab(0 to 4-1) := ("000", "001", "010", "011");
+		constant cwl3idx : hdl4fpga.std.natural_vector(cwl3db'range) := (5, 6, 7, 8);
+
+	begin
+		case ver is
+		when 3 =>
+			for i in cwl3db'range loop
+				if cwl = cwl3idx(i) then
+					return cwl3db(i);
+				end if;
+			end loop;
+
+		when others =>
+			report "Invalid DDR version"
+			severity FAILURE;
+
+			return (0 to 2 => '-');
+		end case;
+
+		report "Invalid CAS Write Latency"
+		severity FAILURE;
+		return (0 to 2 => '-');
+	end;
+
 begin
 
 	clk180 <= not sys_clk0;
@@ -284,7 +344,7 @@ begin
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
 			ddr_init_bl  => "011",
-			ddr_init_cl  => cas,
+			ddr_init_cl  => casdb(cl, ver),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -305,9 +365,9 @@ begin
 			tMRD => 2,
 			tRFC => natural(ceil(127.50/tCp)))
 		port map (
---			ddr_init_bl  => "011",
+			ddr_init_cl  => casdb(cl, ver),
 			ddr_init_bl  => bldb(bl,ver),
-			ddr_init_cl  => cas,
+			ddr_init_wr  => wrdb(wr,ver),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -334,7 +394,9 @@ begin
 		port map (
 --			ddr_init_bl  => "011",
 			ddr_init_bl  => bldb(bl,ver),
-			ddr_init_cl  => cas,
+			ddr_init_cl  => casdb(cl, ver),
+			ddr_init_wr  => wrdb(wr,ver),
+			ddr_init_cwl => cwldb(cwl,ver),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -362,8 +424,9 @@ begin
 		tWR  => natural(ceil(tWR/tCp)),
 		tRP  => natural(ceil(tRP/tCp)),
 		tRFC => natural(ceil(tRFC/tCp)),
-		ddr_mpu_bl => "011",
-		ddr_mpu_cl => cas)
+--		ddr_mpu_bl => "011",
+		ddr_mpu_bl => bldb(bl,ver),
+		ddr_mpu_cl => casdb(cl, ver))
 	port map (
 		ddr_mpu_rst   => ddr_acc_rst,
 		ddr_mpu_clk   => clk0,
@@ -450,6 +513,7 @@ begin
 		ddr_io_dso => ddr_io_dso);
 	
 	lp_dqs : block
+		constant cas : std_logic_vector(0 to 2) := casdb(cl, ver);
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin
