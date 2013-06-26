@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dqs is
 	generic (
+		std : positive range 1 to 3 := 3;
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
@@ -20,13 +21,31 @@ architecture arch of ddr_io_dqs is
 	signal fclk : std_logic;
 begin
 
-	rclk <= ddr_io_clk;
-	fclk <= not ddr_io_clk;
+	with std select
+	rclk <= 
+		    ddr_io_clk when 1,
+		not ddr_io_clk when 2,
+		not ddr_io_clk when 3;
+
+	with std select
+	fclk <=
+		not ddr_io_clk when 1,
+		    ddr_io_clk when 2,
+		    ddr_io_clk when 3;
+
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
 		signal dqs : std_logic;
 		signal dqz : std_logic;
+		signal d0  : std_logic;
 	begin
+
+		with std select
+		d0 <= 
+			'0' when 1,
+			'1' when 2,
+			'1' when 3;
+
 		oddr_du : fddrrse
 		port map (
 			c0 => rclk,
@@ -34,7 +53,7 @@ begin
 			ce => '1',
 			r  => '0',
 			s  => '0',
-			d0 => '0',
+			d0 => d0,
 			d1 => ddr_io_ena(i),
 			q  => dqs);
 

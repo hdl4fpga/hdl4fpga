@@ -4,13 +4,14 @@ use ieee.numeric_std.all;
 
 entity ddr_mpu is
 	generic (
-		ver  : positive := 3;
+		ver  : positive range 1 to 3 := 3;
 		tCk  : natural := 6;
 		tRCD : natural := (15+6-1)/6;
 		tRFC : natural := (72+6-1)/6;
 		tWR  : natural := (15+6-1)/6;
 		tRP  : natural := (15+6-1)/6;
-		ddr_mpu_bl : std_logic_vector(0 to 2) := "011";
+--		ddr_mpu_bl : std_logic_vector(0 to 2) := "011";
+		ddr_mpu_bl : std_logic_vector(0 to 2) := "000";
 		ddr_mpu_cl : std_logic_vector(0 to 2) := "010";
 		ddr_mpu_cwl : std_logic_vector(0 to 2) := "010");
 	port (
@@ -53,7 +54,7 @@ architecture arch of ddr_mpu is
 	signal ddr_mpu_wph : std_logic := '1';
 	signal ph_rea : std_logic_vector(0 to 4*nr+9);
 
-	signal lat_timer : unsigned(0 to 4) := (others => '1');
+	signal lat_timer : unsigned(0 to 9) := (others => '1');
 	function to_timer (
 		constant t : integer) 
 		return unsigned is
@@ -153,7 +154,7 @@ architecture arch of ddr_mpu is
 	signal ddr_rdy_ena : std_logic;
 
 --	constant bl_time : std_logic_vector(lat_timer'range) := bl_data(to_integer(unsigned(ddr_mpu_bl)));
-	constant bl_time : std_logic_vector(lat_timer'range) := bl_data(to_integer(unsigned(ddr_mpu_bl)));
+	constant bl_time : std_logic_vector(lat_timer'range) := bl_data(2); --to_integer(unsigned(ddr_mpu_bl)));
 --	constant cl_time : std_logic_vector(lat_timer'range) := cl_data(natural'(setif(ddr_mpu_cl(0)='1' and ddr_mpu_cl(2)='1')));
 	constant cl_time : std_logic_vector(lat_timer'range) := cl3_data(to_integer(unsigned(ddr_mpu_cl)));
 	type ddr_state_vector is array(natural range <>) of ddr_state_word;
@@ -215,7 +216,8 @@ architecture arch of ddr_mpu is
 		 ddr_rea => '0', ddr_wri => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => DDRS_WRITE_BL, ddr_state_n => DDRS_WRITE_CL,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1),
+--		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1),
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1+5),
 		 ddr_rea => '0', ddr_wri => '1',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_WRITE_CL, ddr_state_n => DDRS_PRE,
@@ -314,20 +316,20 @@ begin
 
 			ddr1_g : if ver=1 generate
 				ddr_mpu_dqsz(i) <= ph_wri(4*0+4) and ph_wri(4*1+4);
-				ddr_mpu_dqs(i)  <= not ph_wri(4+2);
-				ddr_mpu_dqz(i)  <= ph_wri(4+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(1+4);
-				ddr_mpu_dwf(i)  <= not ph_wri(3+4);
+				ddr_mpu_dqs(i) <= not ph_wri(4+2);
+				ddr_mpu_dqz(i) <= ph_wri(4+1);
+				ddr_mpu_dwr(i) <= not ph_wri(1+4);
+				ddr_mpu_dwf(i) <= not ph_wri(3+4);
 			end generate;
 
 			ddr3_g : if ver=3 generate
 				ddr_mpu_dqsz(i) <= 
-					  ph_wri(4*0+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))) and
-					  ph_wri(4*1+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))));
-				ddr_mpu_dqs(i)  <= not ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+2);
-				ddr_mpu_dqz(i)  <= ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
-				ddr_mpu_dwf(i)  <= not ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+3);
+					  ph_wri(4*0+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))-2) and
+					  ph_wri(4*1+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))-2);
+				ddr_mpu_dqs(i) <= ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))));
+				ddr_mpu_dqz(i) <= ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
+				ddr_mpu_dwf(i) <= not ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
+				ddr_mpu_dwr(i) <= not ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+3);
 			end generate;
 		end generate;
 	end block;
