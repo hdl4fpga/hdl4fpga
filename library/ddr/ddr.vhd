@@ -5,7 +5,7 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		ver : positive := 3;
+		std : positive := 3;
 		tCP : real := 6.0;
 		tWR : real := 15.0;
 		tRP : real := 15.0;
@@ -124,7 +124,7 @@ architecture mix of ddr is
 
 	function casdb (
 		constant cl  : real;
-		constant ver : natural)
+		constant std : natural)
 		return std_logic_vector is
 
 		type castab is array (natural range <>) of std_logic_vector(0 to 2);
@@ -136,7 +136,7 @@ architecture mix of ddr is
 		constant frac : real := cl-floor(cl);
 	begin
 
-		case ver is
+		case std is
 		when 1 =>
 			assert 2.0 <= cl and cl <= 3.0
 			report "Invalid DDR1 cas latency"
@@ -174,7 +174,7 @@ architecture mix of ddr is
 
 	function bldb (
 		constant bl  : natural;
-		constant ver : natural)
+		constant std : natural)
 		return std_logic_vector is
 		type bltab is array (natural range <>) of std_logic_vector(0 to 2);
 
@@ -182,7 +182,7 @@ architecture mix of ddr is
 		constant bl2db : bltab(1 to 2) := ("010", "011");
 		constant bl3db : bltab(0 to 2) := ("000", "001", "010");
 	begin
-		case ver is
+		case std is
 		when 1 =>
 			for i in bl1db'range loop
 				if bl=2**(i+1) then
@@ -218,7 +218,7 @@ architecture mix of ddr is
 
 	function wrdb (
 		constant wr  : natural;
-		constant ver : natural)
+		constant std : natural)
 		return std_logic_vector is
 		type wrtab is array (natural range <>) of std_logic_vector(0 to 2);
 
@@ -226,7 +226,7 @@ architecture mix of ddr is
 		constant wr3idx : hdl4fpga.std.natural_vector(wr3db'range) := (5, 6, 7, 8, 10, 12);
 
 	begin
-		case ver is
+		case std is
 		when 3 =>
 			for i in wr3db'range loop
 				if wr = wr3idx(i) then
@@ -248,7 +248,7 @@ architecture mix of ddr is
 
 	function cwldb (
 		constant cwl : natural;
-		constant ver : natural)
+		constant std : natural)
 		return std_logic_vector is
 		type cwltab is array (natural range <>) of std_logic_vector(0 to 2);
 
@@ -256,7 +256,7 @@ architecture mix of ddr is
 		constant cwl3idx : hdl4fpga.std.natural_vector(cwl3db'range) := (5, 6, 7, 8);
 
 	begin
-		case ver is
+		case std is
 		when 3 =>
 			for i in cwl3db'range loop
 				if cwl = cwl3idx(i) then
@@ -318,12 +318,14 @@ begin
 
 	ddr_timer_du : entity hdl4fpga.ddr_timer
 	generic map (
-		c200u => natural(t200u/tCP),
-		cDLL  => hdl4fpga.std.assign_if(ver=3, 512, 200),
-		c500u => natural(hdl4fpga.std.assign_if(ver=2,t400n,t500u)/tCP),
+--		c200u => natural(t200u/tCP),
+		c200u => natural(2000.0/tCP),
+		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 200),
+--		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
+		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n, 3000.0 )/tCP),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(tREF/tCP),
-		ver   => ver)
+		std   => std)
 	port map (
 		ddr_timer_clk => clk0,
 		ddr_timer_rst => rst,
@@ -335,7 +337,7 @@ begin
 		ref_timer_req => ddr_init_rdy,
 		ref_timer_rdy => ddr_acc_ref);
 
-	ddr1_init_g : if ver=1 generate
+	ddr1_init_g : if std=1 generate
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr1)
 		generic map (
 			a    => addr_bits,
@@ -344,7 +346,7 @@ begin
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
 			ddr_init_bl  => "011",
-			ddr_init_cl  => casdb(cl, ver),
+			ddr_init_cl  => casdb(cl, std),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -356,7 +358,7 @@ begin
 			ddr_init_b   => ddr_init_b);
 	end generate;
 
-	ddr2_init_g : if ver=2 generate
+	ddr2_init_g : if std=2 generate
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
 		generic map (
 			lat_length => 9,
@@ -365,9 +367,9 @@ begin
 			tMRD => 2,
 			tRFC => natural(ceil(127.50/tCp)))
 		port map (
-			ddr_init_cl  => casdb(cl, ver),
-			ddr_init_bl  => bldb(bl,ver),
-			ddr_init_wr  => wrdb(wr,ver),
+			ddr_init_cl  => casdb(cl, std),
+			ddr_init_bl  => bldb(bl,std),
+			ddr_init_wr  => wrdb(wr,std),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -379,7 +381,7 @@ begin
 			ddr_init_b   => ddr_init_b);
 	end generate;
 
-	ddr3_init_g : if ver=3 generate
+	ddr3_init_g : if std=3 generate
 		signal ba3 : std_logic_vector(2 downto 0);
 	begin
 		ddr_init_b <= ba3(1 downto 0);
@@ -393,10 +395,11 @@ begin
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
 --			ddr_init_bl  => "011",
-			ddr_init_bl  => bldb(bl,ver),
-			ddr_init_cl  => casdb(cl, ver),
-			ddr_init_wr  => wrdb(wr,ver),
-			ddr_init_cwl => cwldb(cwl,ver),
+			ddr_init_bl  => "000",
+--			ddr_init_bl  => bldb(bl,std),
+			ddr_init_cl  => casdb(cl, std),
+			ddr_init_wr  => wrdb(wr,std),
+			ddr_init_cwl => cwldb(cwl,std),
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -424,9 +427,9 @@ begin
 		tWR  => natural(ceil(tWR/tCp)),
 		tRP  => natural(ceil(tRP/tCp)),
 		tRFC => natural(ceil(tRFC/tCp)),
-		ddr_mpu_bl => bldb(bl,ver),
-		ddr_mpu_cwl => cwldb(cwl, ver),
-		ddr_mpu_cl => casdb(cl, ver))
+		ddr_mpu_bl => bldb(bl,std),
+		ddr_mpu_cwl => cwldb(cwl, std),
+		ddr_mpu_cl => casdb(cl, std))
 	port map (
 		ddr_mpu_rst   => ddr_acc_rst,
 		ddr_mpu_clk   => clk0,
@@ -513,7 +516,7 @@ begin
 		ddr_io_dso => ddr_io_dso);
 	
 	lp_dqs : block
-		constant cas : std_logic_vector(0 to 2) := casdb(cl, ver);
+		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin

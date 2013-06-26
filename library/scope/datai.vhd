@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity datai is
 	generic (
@@ -82,11 +83,16 @@ begin
 	end process;
 
 	process(output_clk)
+		variable pp : unsigned(output_dat'length/2-1 downto 0 ) := (0 => '1', others => '0');
+		variable pp1 : unsigned(output_dat'length/2-1 downto 0 ) := (0 => '0', others => '0');
 	begin
 		if rising_edge(output_clk) then
 			output_syrq <= not output_syrq(1) & not input_req;
 			if output_req='1' then
 				rd_address <= addro;
+		output_dat <= std_logic_vector(pp1 & pp);
+		pp := pp +1;
+		pp1 := pp1 +2;
 			end if;
 		end if;
 	end process;
@@ -122,7 +128,7 @@ begin
 			data := (data sll input_word'length);
 			data(input_word'range) := datao(i);
 		end loop;
-		output_dat <= data;
+--		output_dat <= data;
 	end process;
 
 	output_rdy <= not (

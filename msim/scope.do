@@ -236,8 +236,8 @@ add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_ba
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_a
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_dm
-add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_dqs
-add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_dq
+add wave -noupdate -expand -group ddr -expand -group ddr_e -expand /testbench/nuhs3dsp_e/ddr_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_e -radix hexadecimal /testbench/nuhs3dsp_e/ddr_e/ddr_dq
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_init_rdy
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_init_ras
 add wave -noupdate -expand -group ddr -expand -group ddr_e /testbench/nuhs3dsp_e/ddr_e/ddr_init_cas
@@ -445,7 +445,7 @@ add wave -noupdate -group vline_1 -radix unsigned -childformat {{/testbench/nuhs
 add wave -noupdate -group vline_1 -format Analog-Step -height 127 -max 127.00000000000001 -radix unsigned -childformat {{/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(7) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(6) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(5) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(4) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(3) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(2) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(1) -radix unsigned} {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(0) -radix unsigned}} -subitemconfig {/testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(7) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(6) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(5) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(4) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(3) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(2) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(1) {-height 16 -radix unsigned} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2(0) {-height 16 -radix unsigned}} /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/row2
 add wave -noupdate -group vline_1 /testbench/nuhs3dsp_e/win_scope_e/plot_e/vline_g(1)/muxdot_di
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {204388668 ps} 0} {{Cursor 2} {204308887 ps} 0} {{Cursor 3} {703163794 ps} 0}
+WaveRestoreCursors {{Cursor 1} {704972566 ps} 0} {{Cursor 2} {704960810 ps} 0} {{Cursor 3} {704976655 ps} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 162
 configure wave -valuecolwidth 40
@@ -461,4 +461,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {703249608 ps} {703744758 ps}
+WaveRestoreZoom {704941201 ps} {705003095 ps}
