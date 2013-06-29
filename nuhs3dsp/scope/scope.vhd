@@ -132,6 +132,29 @@ architecture scope of nuhs3dsp is
 		tCLK => 50.0,
 		multiply => ddr_multiply,
 		divide   => ddr_divide);
+
+	type ddr_tac is record 
+		cl  : real;
+		bl  : natural;
+		wr  : natural;
+		cwl : natural;
+--	end record;
+--	type ddr_tac is record 
+		tMRD : real;
+		tRCD : real;
+		tREFI : real;
+		tRFC : real;
+		tRP  : real;
+--		tRPA : real;	-- DDR2 only
+		tWR  : real;
+	end record;
+
+	type ddr_actab is array (natural range <>) of ddr_tac;
+	constant ddr_acdb : ddr_actab(1 to 3) := (
+		(cl => 2.5, bl => 8, wr => 0, cwl => 0, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC => 72.0, tRP => 15.0, tWR => 15.0),
+		(cl => 7.0, bl => 8, wr => 7, cwl => 7, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC => 72.0, tRP => 15.0, tWR => 15.0),
+		(cl => 9.0, bl => 8, wr => 9, cwl => 9, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC => 72.0, tRP => 15.0, tWR => 15.0));
+
 begin
 
 	input_clk <= adc_clkout;
@@ -552,13 +575,14 @@ begin
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
 		tCP => (50.0*real(ddr_divide))/real(ddr_multiply),
-		tWR => 15.0,
-		tRP => 15.0,
-		tRCD => 15.0,
-		tRFC => 72.0,
-		tMRD => 12.0,
---		cas  => cas,
-		cl  => 9.0,
+		std => ddr_std,
+
+		cl   => ddr_acdb(ddr_std).cl,
+		tMRD => ddr_acdb(ddr_std).tMRD,
+		tRCD => ddr_acdb(ddr_std).tRCD,
+		tRFC => ddr_acdb(ddr_std).tRFC,
+		tRP  => ddr_acdb(ddr_std).tRP,
+		tWR  => ddr_acdb(ddr_std).tWR,
 
 		bank_bits => bank_size,
 		addr_bits => addr_size,

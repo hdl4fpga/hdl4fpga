@@ -5,17 +5,17 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		std : positive := 3;
+		std : positive range 1 to 3 := 3;
 		tCP : real := 6.0;
 		tWR : real := 15.0;
 		tRP : real := 15.0;
 		tRCD : real := 15.0;
 		tRFC : real := 72.0;
 		tMRD : real := 12.0;
-		tREF : real := 7.8e3;
+		tREFI : real := 7.8e3;
 		cl  : real := 5.0;
 		bl  : natural := 8;
-		wr  : natural := 10;
+		wr  : natural := 8;
 		cwl : natural := 7;
 
 		bank_bits  : natural := 2;
@@ -124,7 +124,7 @@ architecture mix of ddr is
 
 	function casdb (
 		constant cl  : real;
-		constant std : natural)
+		constant std : positive range 1 to 3)
 		return std_logic_vector is
 
 		type castab is array (natural range <>) of std_logic_vector(0 to 2);
@@ -163,12 +163,6 @@ architecture mix of ddr is
 			severity FAILURE;
 			
 			return cas3db(natural(floor(cl)));
-
-		when others =>
-			report "Invalid DDR version"
-			severity FAILURE;
-
-			return (0 to 2 => '-');
 		end case;
 	end;
 
@@ -218,15 +212,28 @@ architecture mix of ddr is
 
 	function wrdb (
 		constant wr  : natural;
-		constant std : natural)
+		constant std : positive range 2 to 3)
 		return std_logic_vector is
 		type wrtab is array (natural range <>) of std_logic_vector(0 to 2);
+
+		constant wr2db  : wrtab(0 to 7-1) := ("001", "010", "011", "100", "101", "110", "111");
+		constant wr2idx : hdl4fpga.std.natural_vector(wr2db'range) := (2, 3, 4, 5, 6, 7, 8);
 
 		constant wr3db  : wrtab(0 to 6-1) := ("001", "010", "011", "100", "101", "110");
 		constant wr3idx : hdl4fpga.std.natural_vector(wr3db'range) := (5, 6, 7, 8, 10, 12);
 
 	begin
 		case std is
+		when 2 =>
+			for i in wr2db'range loop
+				if wr = wr2idx(i) then
+					return wr2db(i);
+				end if;
+			end loop;
+
+			report "Invalid DDR2 Write Recovery"
+			severity FAILURE;
+
 		when 3 =>
 			for i in wr3db'range loop
 				if wr = wr3idx(i) then
@@ -234,21 +241,16 @@ architecture mix of ddr is
 				end if;
 			end loop;
 
-		when others =>
-			report "Invalid DDR version"
+			report "Invalid DDR3 Write Recovery"
 			severity FAILURE;
-
-			return (0 to 2 => '-');
 		end case;
 
-		report "Invalid Write Recovery"
-		severity FAILURE;
 		return (0 to 2 => '-');
 	end;
 
 	function cwldb (
 		constant cwl : natural;
-		constant std : natural)
+		constant std : positive range 1 to 3)
 		return std_logic_vector is
 		type cwltab is array (natural range <>) of std_logic_vector(0 to 2);
 
@@ -264,16 +266,16 @@ architecture mix of ddr is
 				end if;
 			end loop;
 
+			report "Invalid CAS Write Latency"
+			severity FAILURE;
+			return (0 to 2 => '-');
+
 		when others =>
 			report "Invalid DDR version"
-			severity FAILURE;
+			severity WARNING;
 
 			return (0 to 2 => '-');
 		end case;
-
-		report "Invalid CAS Write Latency"
-		severity FAILURE;
-		return (0 to 2 => '-');
 	end;
 
 begin
@@ -322,9 +324,9 @@ begin
 		c200u => natural(2000.0/tCP),
 		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 200),
 --		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
-		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n, 3000.0 )/tCP),
+		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
-		cREF  => natural(tREF/tCP),
+		cREF  => natural(tREFI/tCP),
 		std   => std)
 	port map (
 		ddr_timer_clk => clk0,
@@ -359,13 +361,19 @@ begin
 	end generate;
 
 	ddr2_init_g : if std=2 generate
+		process 
+		begin
+			report "DDR2";
+			wait;
+		end process;
+
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
 		generic map (
 			lat_length => 9,
 			a    => addr_bits,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => 2,
-			tRFC => natural(ceil(127.50/tCp)))
+			tRP  => natural(ceil(tRP/tCP)),
+			tMRD => natural(ceil(tMRD/tCP)),
+			tRFC => natural(ceil(tRFC/tCP)))
 		port map (
 			ddr_init_cl  => casdb(cl, std),
 			ddr_init_bl  => bldb(bl,std),
@@ -423,6 +431,7 @@ begin
 	sys_di_rdy  <= ddr_wr_fifo_req;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
+		std  => std,
 		tRCD => natural(ceil(tRCD/tCp)),
 		tWR  => natural(ceil(tWR/tCp)),
 		tRP  => natural(ceil(tRP/tCp)),
