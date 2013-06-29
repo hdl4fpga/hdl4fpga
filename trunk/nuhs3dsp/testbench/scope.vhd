@@ -2,7 +2,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scope of testbench is
-	constant ddr_ver  : positive := 3;
+	constant ddr_std  : positive := 2;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
@@ -44,6 +44,8 @@ architecture scope of testbench is
 	signal ddr_lp_dqs : std_logic;
 
 	component nuhs3dsp is
+		generic (
+			ddr_std : positive);
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;
@@ -235,6 +237,8 @@ begin
 
 	mii_rxc <= mii_refclk after 5 ps;
 	nuhs3dsp_e : nuhs3dsp
+	generic map (
+		ddr_std => ddr_std)
 	port map (
 		xtal => clk,
 		sw1  => '1',
@@ -279,7 +283,7 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
-	ddr_model_g: if ddr_ver=1 generate
+	ddr_model_g: if ddr_std=1 generate
 		mt_u : ddr_model
 		port map (
 			Clk   => clk_p,
@@ -296,7 +300,7 @@ begin
 			Dqs   => dqs);
 	end generate;
 
-	ddr2_model_g: if ddr_ver=2 generate
+	ddr2_model_g: if ddr_std=2 generate
 		signal dqs_n  : std_logic_vector(dqs'range);
 		signal rdqs_n : std_logic_vector(dqs'range);
 		signal odt    : std_logic;
@@ -321,7 +325,7 @@ begin
 			Odt   => odt);
 	end generate;
 
-	ddr3_model_g: if ddr_ver=3 generate
+	ddr3_model_g: if ddr_std=3 generate
 		signal ba3    : std_logic_vector(2 downto 0);
 		signal dqs_n  : std_logic_vector(dqs'range);
 		signal tdqs_n : std_logic_vector(dqs'range);
