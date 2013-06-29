@@ -135,37 +135,36 @@ architecture scope of nuhs3dsp is
 begin
 
 	input_clk <= adc_clkout;
-	process (input_clk)
-		variable sample : signed(adc_db'range);
-	begin
-		if falling_edge(input_clk) then
-			input_dat <= std_logic_vector(resize(sample, input_dat'length));
-			if ddrs_ini='0' then
-				input_req <= '0';
-			elsif input_rdy='0' then
-				input_req <= '1';
-			end if;
-			sample := signed(adc_db);
-			sample(sample'left) := not sample(sample'left);
---			sample := shift_right(sample, 6);
-		end if;
-	end process;
 
 --	process (input_clk)
---		constant n : natural := 15;
---		variable r : unsigned(0 to n);
+--		variable sample : unsigned(0 to 15) := (others => '0');
 --	begin
---		if rising_edge(input_clk) then
---			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
---			r := r + 1;
+--		if falling_edge(input_clk) then
+--			input_dat <= std_logic_vector(resize(sample, input_dat'length));
 --			if ddrs_ini='0' then
 --				input_req <= '0';
---				r := to_unsigned(61, r'length);
 --			elsif input_rdy='0' then
 --				input_req <= '1';
 --			end if;
+--			sample := sample + 1;
 --		end if;
 --	end process;
+
+	process (input_clk)
+		constant n : natural := 15;
+		variable r : unsigned(0 to n);
+	begin
+		if rising_edge(input_clk) then
+			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
+			r := r + 1;
+			if ddrs_ini='0' then
+				input_req <= '0';
+				r := to_unsigned(61, r'length);
+			elsif input_rdy='0' then
+				input_req <= '1';
+			end if;
+		end if;
+	end process;
 
 	video_vga_e : entity hdl4fpga.video_vga
 	generic map (
@@ -516,12 +515,23 @@ begin
 			dfsdcm_clk90 => clk90,
 			dcm_lck => ddrs_lckd);
 
-		isdbt_dcm: entity hdl4fpga.dcmisdbt
+		isdbt_dcm : entity hdl4fpga.dfs
+		generic map (
+			dcm_per => 50.0,
+			dfs_mul => 20,
+			dfs_div => 1)
 		port map (
 			dcm_rst => rst(0),
 			dcm_clk => xtal_ibufg,
 			dfs_clk => adc_clkab,
 			dcm_lck => adc_lckd);
+
+--		isdbt_dcm: entity hdl4fpga.dcmisdbt
+--		port map (
+--			dcm_rst => rst(0),
+--			dcm_clk => xtal_ibufg,
+--			dfs_clk => adc_clkab,
+--			dcm_lck => adc_lckd);
 
 		locked <= adc_lckd and ddrs_lckd and miixc_lckd and video_lckd;
 		ddr_rst_p : process (xtal_ibufg,sw1)

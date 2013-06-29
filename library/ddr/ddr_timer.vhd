@@ -12,7 +12,7 @@ entity ddr_timer is
 		cREF  : natural := 1440;
 		c500u : natural := 100000;
 		cxpr  : natural := 10;
-		ver   : positive := 3);
+		std   : positive := 3);
 	port (
 		ddr_timer_clk : in  std_logic;
 		ddr_timer_rst : in  std_logic;
@@ -88,9 +88,9 @@ begin
 			if ddr_timer_rst='1' then
 				timer_id <= tid_200u;
 				z <= (others => '0');
-				next_tid  := timer_tab(ver)(timer_id).q;
+				next_tid  := timer_tab(std)(timer_id).q;
 				timer_req <= '0';
-				timer_sel <= timer_tab(ver)(timer_id).s;
+				timer_sel <= timer_tab(std)(timer_id).s;
 			elsif timer_rdy='1' then
 				timer_req <= '0';
 				if next_tid=tid_dll then
@@ -99,7 +99,7 @@ begin
 					end if;
 				end if;
 				timer_id <= next_tid;
-				z <= timer_tab(ver)(o_tid).z;
+				z <= timer_tab(std)(o_tid).z;
 			else
 				timer_req <= '1';
 				if timer_id=tid_ref then
@@ -109,11 +109,11 @@ begin
 				end if;
 
 				o_tid := timer_id;
-				next_tid := timer_tab(ver)(timer_id).q;
+				next_tid := timer_tab(std)(timer_id).q;
 			end if;
 
 			if timer_req='1' then
-				timer_sel <= timer_tab(ver)(next_tid).s;
+				timer_sel <= timer_tab(std)(next_tid).s;
 			end if;
 
 			ref_timer_rdy <= z(4) and timer_rdy and timer_req;
