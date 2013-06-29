@@ -128,21 +128,21 @@ begin
 					ddr_mpu_pc <= ddr_pgm_pc;
 					case ddr_pgm_pc is
 					when ddrs_act =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
 						ddr_pgm_cas <= '0';
 						ddr_pgm_pre <= '0';
 					when ddrs_read | ddrs_write =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
 						ddr_pgm_cas <= '1';
 						ddr_pgm_pre <= '0';
 					when ddrs_pre =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
@@ -166,17 +166,17 @@ begin
 				else
 					case ddr_mpu_pc is
 					when ddrs_act =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
 					when ddrs_read | ddrs_write =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
 					when ddrs_pre =>
-						ddr_start   <= '-';
+						ddr_start   <= '0';
 						ddr_pgm_rdy <= '0';
 						ddr_ref_req <= ddr_pgm_ref or ddr_ref_req;
 						sys_pgm_ref <= '0';
