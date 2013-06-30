@@ -221,8 +221,8 @@ architecture arch of ddr_mpu is
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => DDRS_WRITE_BL, ddr_state_n => DDRS_WRITE_CL,
 --		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1),
---		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))),
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))),
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))),
+--		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))),
 		 ddr_rea => '0', ddr_wri => '1',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_WRITE_CL, ddr_state_n => DDRS_PRE,
@@ -329,11 +329,9 @@ begin
 				ddr_ph_qout => ph_wri);
 
 			ddr1_g : if std=1 generate
-				ddr_mpu_dqsz(i) <= ph_wri(4*0+4) and ph_wri(4*1+4);
+				ddr_mpu_dqsz(i) <= ph_wri(4*1-1) and ph_wri(4*(1+1)-1);
 				ddr_mpu_dqs(i) <= not ph_wri(4+2);
 				ddr_mpu_dqz(i) <= ph_wri(4+1);
---				ddr_mpu_dwr(i) <= not ph_wri(1+4);
---				ddr_mpu_dwf(i) <= not ph_wri(3+4);
 				ddr_mpu_dwr(i) <= not ph_wri(4+2-1);
 				ddr_mpu_dwf(i) <= not ph_wri(4+2+1);
 
@@ -341,12 +339,12 @@ begin
 
 			ddr2_g : if std=2 generate
 				ddr_mpu_dqsz(i) <= 
-					  ph_wri(4*0+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1) and
-					  ph_wri(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1);
-				ddr_mpu_dqs(i) <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl))));
-				ddr_mpu_dqz(i) <= ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1);
-				ddr_mpu_dwr(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
-				ddr_mpu_dwf(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
+					  ph_wri(4*0+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-2) and
+					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-2);
+				ddr_mpu_dqs(i) <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-2);
+				ddr_mpu_dqz(i) <= ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+1);
+				ddr_mpu_dwr(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1);
+				ddr_mpu_dwf(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2+1);
 
 			end generate;
 
@@ -354,14 +352,12 @@ begin
 				ddr_mpu_dqsz(i) <= 
 					  ph_wri(4*0+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))-2) and
 					  ph_wri(4*1+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))-2);
-				ddr_mpu_dqs(i) <=
+				ddr_mpu_dqs(i) <= 
 					ph_wri(4*0+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))) and
 					ph_wri(4*1+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))));
 				ddr_mpu_dqz(i) <= ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
 				ddr_mpu_dwr(i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
 				ddr_mpu_dwf(i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
-
---				ddr_mpu_wbl <= not ph_wri(4*0+4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))-1)));
 			end generate;
 		end generate;
 	end block;
