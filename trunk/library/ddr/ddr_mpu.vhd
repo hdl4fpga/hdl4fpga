@@ -307,6 +307,7 @@ begin
 	ddr_mpu_rdy <= lat_timer(0) and ddr_rdy_ena;
 	ddr_mpu_rea <= ddr_rea;
 	ddr_mpu_wri <= ddr_wri;
+	ddr_mpu_wbl <= not ddr_mpu_wph;
 
 	-------------------
 	-- Write Enables --
@@ -336,7 +337,17 @@ begin
 				ddr_mpu_dwr(i) <= not ph_wri(4+2-1);
 				ddr_mpu_dwf(i) <= not ph_wri(4+2+1);
 
-				ddr_mpu_wbl <= not ddr_mpu_wph;
+			end generate;
+
+			ddr2_g : if std=2 generate
+				ddr_mpu_dqsz(i) <= 
+					  ph_wri(4*0+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1) and
+					  ph_wri(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1);
+				ddr_mpu_dqs(i) <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl))));
+				ddr_mpu_dqz(i) <= ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1);
+				ddr_mpu_dwr(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
+				ddr_mpu_dwf(i) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
+
 			end generate;
 
 			ddr3_g : if std=3 generate
@@ -350,7 +361,6 @@ begin
 				ddr_mpu_dwr(i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
 				ddr_mpu_dwf(i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
 
-				ddr_mpu_wbl <= not ddr_mpu_wph;
 --				ddr_mpu_wbl <= not ph_wri(4*0+4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))-1)));
 			end generate;
 		end generate;
@@ -382,6 +392,14 @@ begin
 			ph_rea(4*1+ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))));
 		ddr_mpu_drf  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl))));
 	end generate;
+
+--	ddr2_g : if std=2 generate
+--		ddr_mpu_rwin <= not ph_rea(4*2+4*((ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
+--		ddr_mpu_drr  <= not (
+--			ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))) and
+--			ph_rea(4*1+ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))));
+--		ddr_mpu_drf  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl))));
+--	end generate;
 
 	ddr3_g : if std=3 generate
 		ddr_mpu_rwin <= not ph_rea(4*2+4*((ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));

@@ -202,13 +202,6 @@ architecture ddr2 of ddr_init is
 	constant emr2_srt : natural := 7;
 
 begin
-	process
-	begin
-		report "DDR2"
-		severity WARNING;
-		wait;
-	end process;
-
 	process (ddr_init_clk)
 	begin
 		if rising_edge(ddr_init_clk) then
