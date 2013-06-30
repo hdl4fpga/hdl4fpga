@@ -347,8 +347,9 @@ begin
 			tMRD => natural(ceil(tMRD/tCp)),
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
-			ddr_init_bl  => "011",
-			ddr_init_cl  => casdb(cl, std),
+			ddr_init_cl  => casdb (cl, std),
+			ddr_init_bl  => bldb  (bl, std),
+
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -361,12 +362,6 @@ begin
 	end generate;
 
 	ddr2_init_g : if std=2 generate
-		process 
-		begin
-			report "DDR2";
-			wait;
-		end process;
-
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
 		generic map (
 			lat_length => 9,
@@ -375,9 +370,10 @@ begin
 			tMRD => natural(ceil(tMRD/tCP)),
 			tRFC => natural(ceil(tRFC/tCP)))
 		port map (
-			ddr_init_cl  => casdb(cl, std),
-			ddr_init_bl  => bldb(bl,std),
-			ddr_init_wr  => wrdb(wr,std),
+			ddr_init_cl  => casdb (cl, std),
+			ddr_init_bl  => bldb  (bl, std),
+			ddr_init_wr  => wrdb  (wr, std),
+
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -402,12 +398,11 @@ begin
 			tMRD => 4,
 			tRFC => natural(ceil(tRFC/tCp)))
 		port map (
---			ddr_init_bl  => "011",
-			ddr_init_bl  => "000",
---			ddr_init_bl  => bldb(bl,std),
-			ddr_init_cl  => casdb(cl, std),
-			ddr_init_wr  => wrdb(wr,std),
-			ddr_init_cwl => cwldb(cwl,std),
+			ddr_init_cl  => casdb (cl,  std),
+			ddr_init_bl  => bldb  (bl,  std),
+			ddr_init_wr  => wrdb  (wr,  std),
+			ddr_init_cwl => cwldb (cwl, std),
+
 			ddr_init_clk => clk0,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
@@ -527,16 +522,17 @@ begin
 	
 	lp_dqs : block
 		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
+
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin
 		rclk <= 
-		   clk0; --when std=1 cas(0)='0' else
---		   clk180;
+			clk180 when std=1 and cas(0)='1' else
+			clk0;
 			
 		fclk <= 
-		   clk180; -- when cas(0)='0' else
---		   clk0;
+			clk0   when std=1 and cas(0)='1' else
+			clk180;
 
 		oddr_du : fddrrse
 		port map (
