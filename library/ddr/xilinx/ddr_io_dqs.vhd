@@ -23,15 +23,13 @@ begin
 
 	with std select
 	rclk <= 
-		    ddr_io_clk when 1,
-		not ddr_io_clk when 2,
+		ddr_io_clk when 1|2,
 		not ddr_io_clk when 3;
 
 	with std select
 	fclk <=
-		not ddr_io_clk when 1,
-		    ddr_io_clk when 2,
-		    ddr_io_clk when 3;
+		not ddr_io_clk when 1|2,
+		ddr_io_clk when 3;
 
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
@@ -42,8 +40,7 @@ begin
 
 		with std select
 		d0 <= 
-			'0' when 1,
-			'1' when 2,
+			'0' when 1|2,
 			'1' when 3;
 
 		oddr_du : fddrrse

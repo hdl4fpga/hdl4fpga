@@ -173,7 +173,7 @@ architecture mix of ddr is
 		type bltab is array (natural range <>) of std_logic_vector(0 to 2);
 
 		constant bl1db : bltab(0 to 2) := ("001", "010", "011");
-		constant bl2db : bltab(1 to 2) := ("010", "011");
+		constant bl2db : bltab(2 to 3) := ("010", "011");
 		constant bl3db : bltab(0 to 2) := ("000", "001", "010");
 	begin
 		case std is
@@ -186,7 +186,7 @@ architecture mix of ddr is
 
 		when 2 =>
 			for i in bl2db'range loop
-				if bl=2**(i+1) then
+				if bl=2**i then
 					return bl2db(i);
 				end if;
 			end loop;
@@ -516,6 +516,7 @@ begin
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
+		std => std,
 		data_bytes => 2)
 	port map (
 		ddr_io_clk => clk0,
