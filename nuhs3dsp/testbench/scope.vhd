@@ -2,7 +2,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scope of testbench is
-	constant ddr_std  : positive := 3;
+	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
