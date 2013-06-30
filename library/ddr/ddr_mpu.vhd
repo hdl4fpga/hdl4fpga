@@ -329,7 +329,7 @@ begin
 				ddr_ph_qout => ph_wri);
 
 			ddr1_g : if std=1 generate
-				ddr_mpu_dqsz(i) <= ph_wri(4*1-1) and ph_wri(4*(1+1)-1);
+				ddr_mpu_dqsz(i) <= ph_wri(4*1) and ph_wri(4*(1+1)); -- same phase as dqs
 				ddr_mpu_dqs(i) <= not ph_wri(4+2);
 				ddr_mpu_dqz(i) <= ph_wri(4+1);
 				ddr_mpu_dwr(i) <= not ph_wri(4+2-1);
