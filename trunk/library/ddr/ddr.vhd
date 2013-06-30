@@ -531,12 +531,12 @@ begin
 		signal fclk : std_logic;
 	begin
 		rclk <= 
-		   clk0 when cas(0)='0' else
-		   clk180;
+		   clk0; --when std=1 cas(0)='0' else
+--		   clk180;
 			
 		fclk <= 
-		   clk180 when cas(0)='0' else
-		   clk0;
+		   clk180; -- when cas(0)='0' else
+--		   clk0;
 
 		oddr_du : fddrrse
 		port map (

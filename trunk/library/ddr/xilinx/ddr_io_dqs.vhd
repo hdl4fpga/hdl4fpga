@@ -21,26 +21,24 @@ architecture arch of ddr_io_dqs is
 	signal fclk : std_logic;
 begin
 
-	with std select
-	rclk <= 
-		ddr_io_clk when 1|2,
-		not ddr_io_clk when 3;
-
-	with std select
-	fclk <=
-		not ddr_io_clk when 1|2,
-		ddr_io_clk when 3;
-
+	rclk <=     ddr_io_clk;
+	fclk <= not ddr_io_clk;
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
 		signal dqs : std_logic;
 		signal dqz : std_logic;
 		signal d0  : std_logic;
+		signal d1  : std_logic;
 	begin
 
 		with std select
 		d0 <= 
 			'0' when 1|2,
+			ddr_io_ena(i) when 3;
+
+		with std select
+		d1 <= 
+			ddr_io_ena(i) when 1|2,
 			'1' when 3;
 
 		oddr_du : fddrrse
@@ -51,14 +49,14 @@ begin
 			r  => '0',
 			s  => '0',
 			d0 => d0,
-			d1 => ddr_io_ena(i),
+			d1 => d1,
 			q  => dqs);
 
 		ffd_i : fdrse
 		port map (
 			s  => '0',
 			r  => '0',
-			c  => rclk,
+			c  => fclk,
 			ce => '1',
 			d  => ddr_io_dqz(i),
 			q  => dqz);
