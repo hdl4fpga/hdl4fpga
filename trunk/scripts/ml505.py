@@ -45,17 +45,18 @@ for k in p:
 			ddra = []
 			n = m.group(1)
 			ddra.insert(int (m.group(2)),k['loc'])
-#	else :
-##		if ddra != [] :
-##			f(n,ddra)
-##			ddra = []
-#			n = ""
+	else :
+		if ddra != [] :
+			f(n,ddra)
+			ddra = []
+			n = ""
 #		n = k['net']
 #		ddra.append(k['loc'])
 
 
 for k in sorted(pp.keys()) :
-	print ("\t\t" + k + " : std_logic_vector( downto 0)")
+	print ("\t\t" + k + " : std_logic_vector( downto 0);")
 
+print(");\n\tattribute loc : string;\n\n")
 for k in sorted(pp.keys()) :
-	print ("\t\tattribute loc of " +k + " signal is " + pp[k])
+	print ("\tattribute loc of " +k + " signal is \"" + pp[k] +'"')
