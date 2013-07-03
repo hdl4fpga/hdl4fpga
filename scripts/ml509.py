@@ -56,8 +56,8 @@ for k in p:
 
 
 for k in sorted(pp.keys()) :
-	print ("\t\t" + k + " : std_logic_vector( downto 0);")
+	print ("\t\t" + k + " : std_logic_vector("+ len(pp[k])+ downto 0);")
 
 print(");\n\tattribute loc : string;\n\n")
 for k in sorted(pp.keys()) :
-	print ("\tattribute loc of " +k + " signal is \"" + pp[k] +'"')
+	print ("\tattribute loc of " +k + " : signal is \"" + pp[k] +'";')
