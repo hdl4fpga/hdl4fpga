@@ -6,7 +6,8 @@ import re
 pp = {}
 def f(n, a):
 	s = ""
-	ddra.reverse()
+	if not re.match("phy",n):
+		ddra.reverse()
 	for a in ddra:
 		if s == "":
 			s += a
