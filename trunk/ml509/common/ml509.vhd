@@ -31,8 +31,8 @@ entity ml505 is
 
 		lcd_fpga_db : std_logic_vector(8-1 downto 4);
 
-		phy_rxd : std_logic_vector(8-1 downto 0)
-		phy_txd : std_logic_vector(8-1 downto 0)
+		phy_rxd : std_logic_vector(0 to 8-1)
+		phy_txd : std_logic_vector(0 to 8-1)
 
 		sram_bw : std_logic_vector(4-1 downto 0)
 		sram_d  : std_logic_vector(32-1 downto 16)
@@ -74,8 +74,10 @@ entity ml505 is
 	attribute loc of hdr1 signal is "AN33 AN34 AM32 AJ34 AM33 AL33 AL34 AK32 AJ32 AK33 AK34 AH32 AG32 AE32 AH34 W32 Y32 Y34 AD32 AA34 N34 P34 M32 L33 J34 J32 H32 G32 G33 H34 F34 H33";
 	attribute loc of lcd_fpga_db signal is "T11 G6 G7 T9";
 
-	attribute loc of phy_rxd signal is "F33  D34  C34 D32  C32 C33  B33  A33";
-	attribute loc of phy_txd signal is "AG11 AG10 AH8 AG8 AH10 AH9 AE11 AF11";
+	attribute loc of phy_rxd signal is "A33 B33 C33 C32 D32 C34 D34 F33"
+	attribute loc of phy_txd signal is "AF11 AE11 AH9 AH10 AG8 AH8 AG10 AG11"
+--	attribute loc of phy_rxd signal is "F33  D34  C34 D32  C32 C33  B33  A33"; -- 8-1 downto 0
+--	attribute loc of phy_txd signal is "AG11 AG10 AH8 AG8 AH10 AH9 AE11 AF11"; -- 8-1 downto 0
 
 	attribute loc of sram_bw signal is "K11 J11 D11 D10";
 	attribute loc of sram_d signal is "J9 K8 K9 B13 C13 G11 G12 M8 L8 F11 E11 M10 L9 E12 E13 N10";
