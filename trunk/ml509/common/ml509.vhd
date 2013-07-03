@@ -5,9 +5,9 @@ use ieee.numeric_std.all;
 entity ml505 is
 	port(
 
-		bus_error : std_logic_vector(2 downto 1)
+		bus_error : std_logic_vector(2 downto 1);
 
-		cfg_addr_out : std_logic_vector(2-1 downto 0)
+		cfg_addr_out : std_logic_vector(2-1 downto 0);
 		cpld_io_1 : std_logic;
 
 		ddr2_a   : std_logic_vector(14-1 downto 0);
@@ -17,7 +17,7 @@ entity ml505 is
 		ddr2_dm  : std_logic_vector( 8-1 downto 0);
 		ddr2_odt : std_logic_vector( 2-1 downto 0);
 
-		dvi_d     : std_logic_vector(12-1 downto 0)
+		dvi_d     : std_logic_vector(12-1 downto 0);
 		dvi_gpio1 : std_logic;
 
 		fpga_m     : std_logic_vector(3-1 downto 0);
@@ -31,22 +31,22 @@ entity ml505 is
 
 		lcd_fpga_db : std_logic_vector(8-1 downto 4);
 
-		phy_rxd : std_logic_vector(0 to 8-1)
-		phy_txd : std_logic_vector(0 to 8-1)
+		phy_rxd : std_logic_vector(0 to 8-1);
+		phy_txd : std_logic_vector(0 to 8-1);
 
-		sram_bw : std_logic_vector(4-1 downto 0)
-		sram_d  : std_logic_vector(32-1 downto 16)
-		sram_dqp : std_logic_vector( downto 0)
-		sram_flash_a : std_logic_vector(22-1 downto 0)
-		sram_flash_d : std_logic_vector(16-1 downto 0)
+		sram_bw : std_logic_vector(4-1 downto 0);
+		sram_d  : std_logic_vector(32-1 downto 16);
+		sram_dqp : std_logic_vector( downto 0);
+		sram_flash_a : std_logic_vector(22-1 downto 0);
+		sram_flash_d : std_logic_vector(16-1 downto 0);
 
-		sysace_mpa   : std_logic_vector(7-1 downto 0)
-		sysace_usb_d : std_logic_vector(16-1 downto 0)
+		sysace_mpa   : std_logic_vector(7-1 downto 0);
+		sysace_usb_d : std_logic_vector(16-1 downto 0);
 
-		trc_ts : std_logic_vector( downto 0)
+		trc_ts : std_logic_vector( downto 0);
 
-		vga_in_blue  : std_logic_vector(8-1 downto 0)
-		vga_in_green : std_logic_vector(8-1 downto 0)
+		vga_in_blue  : std_logic_vector(8-1 downto 0);
+		vga_in_green : std_logic_vector(8-1 downto 0);
 		vga_in_red   : std_logic_vector(8-1 downto 0));
 
 	attribute loc : string;
