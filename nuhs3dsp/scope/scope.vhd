@@ -697,22 +697,22 @@ begin
 	lcd_data <= (others => 'Z');
 	lcd_backlight <= 'Z';
 
-	-- DDR RAM --
-	-------------
-
-	ddr_ckp <= 'Z';
-	ddr_ckn <= 'Z';
-	ddr_lp_dqs <= 'Z'; 
-	ddr_cke <= 'Z';  
-	ddr_cs  <= 'Z';  
-	ddr_ras <= 'Z';
-	ddr_cas <= 'Z';
-	ddr_cas <= 'Z';
-	ddr_we  <= 'Z';
-	ddr_a   <= (others => 'Z');
-	ddr_ba  <= (others => 'Z');
-	ddr_dm  <= (others => 'Z');
-	ddr_dqs <= (others => 'Z');
-	ddr_dq  <= (others => 'Z');
+--	-- DDR RAM --
+--	-------------
+--
+--	ddr_ckp <= 'Z';
+--	ddr_ckn <= 'Z';
+--	ddr_lp_dqs <= 'Z'; 
+--	ddr_cke <= 'Z';  
+--	ddr_cs  <= 'Z';  
+--	ddr_ras <= 'Z';
+--	ddr_cas <= 'Z';
+--	ddr_cas <= 'Z';
+--	ddr_we  <= 'Z';
+--	ddr_a   <= (others => 'Z');
+--	ddr_ba  <= (others => 'Z');
+--	ddr_dm  <= (others => 'Z');
+--	ddr_dqs <= (others => 'Z');
+--	ddr_dq  <= (others => 'Z');
 
 end;
