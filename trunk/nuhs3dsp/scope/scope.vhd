@@ -591,7 +591,6 @@ begin
 		byte_bits => 8)
 
 	port map (
-		sys_rst   => sys_rst,
 		sys_clk0  => ddrs_clk0,
 		sys_clk90 => ddrs_clk90,
 
