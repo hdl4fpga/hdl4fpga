@@ -84,7 +84,6 @@ entity nuhs3dsp is
 		-------------
 		-- DDR RAM --
 
---		ddr_rst : out std_logic := '1';
 		ddr_ckp : out std_logic := '1';
 		ddr_ckn : out std_logic := '0';
 		ddr_lp_ckp : in std_logic := '0';
