@@ -3,6 +3,7 @@
 import sys
 import struct
 import re
+
 pp = {}
 def f(n, a):
 	s = ""
@@ -31,7 +32,7 @@ for line in sys.stdin:
 print("library ieee;\n\
 use ieee.std_logic_1164.all;\n\
 use ieee.numeric_std.all;\n\n\
-entity ml505 is\n\
+entity ml509 is\n\
 \tport(")
 ddra = []
 n = ""
@@ -51,12 +52,12 @@ for k in p:
 			f(n,ddra)
 			ddra = []
 			n = ""
-#		n = k['net']
-#		ddra.append(k['loc'])
+		n = k['net']
+		ddra.append(k['loc'])
 
 
 for k in sorted(pp.keys()) :
-	print ("\t\t" + k + " : std_logic_vector("+ len(pp[k])+ downto 0);")
+	print ("\t\t" + k + " : std_logic_vector("+ str(len(pp[k])) + "-1 downto 0);")
 
 print(");\n\tattribute loc : string;\n\n")
 for k in sorted(pp.keys()) :
