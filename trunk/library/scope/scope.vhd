@@ -31,7 +31,6 @@ entity scope is
 		ddr_st_lp_dqs : in std_logic;
 
 		mii_rst  : out std_logic;
-		mii_refclk : in std_logic;
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
 		mii_rxd  : in std_logic_vector;
