@@ -31,12 +31,24 @@ entity ml505 is
 		ddr2_scl  : out std_logic;
 		ddr2_sda  : in  std_logic;
 
-		dvi_d     : std_logic_vector(12-1 downto 0);
-		dvi_gpio1 : std_logic;
+		dvi_xclk_n : out std_logic;
+		dvi_xclk_p : out std_logic;
+		dvi_reset  : out std_logic;
+		dvi_gpio1  : inout std_logic;
+		dvi_de : out std_logic;
+		dvi_d  : out std_logic_vector(12-1 downto 0);
+		dvi_v  : inout std_logic;
+		dvi_h  : inout std_logic;
 
-		fpga_m     : std_logic_vector(3-1 downto 0);
---		fpga_vrn_b : std_logic_vector( downto 0);
---		fpga_vrp_b : std_logic_vector( downto 0);
+		fan_alert : out std_logic;
+
+		fpga_diff_clk_out_p : out std_logic;
+		fpga_diff_clk_out_n : out std_logic;
+		fpga_rotary_inca : in std_logic;
+		fpga_rotary_incb : in std_logic;
+		fpga_rotary_push : in std_logic;
+		fpga_serial_rx : std_logic_vector(1 to 2);
+		fpga_serial_tx : std_logic_vector(1 to 2);
 
 		gpio_dip_sw : std_logic_vector(8 downto 1);
 		gpio_led : std_logic_vector(8-1 downto 0);
@@ -51,12 +63,31 @@ entity ml505 is
 		gpio_sw_s  : std_logic;
 		gpio_sw_w  : std_logic;
 
-
-		hdr1 : std_logic_vector(64 downto 2);
+		hdr1 : std_logic_vector(1 to 32);
+		hdr2_diff_p : std_logic_vector(0 to 4-1);
+		hdr2_diff_n : std_logic_vector(0 to 4-1);
+		hdr2_sm_p : std_logic_vector(4 to 16-1);
+		hdr2_sm_n : std_logic_vector(4 to 16-1);
 
 		lcd_fpga_db : std_logic_vector(8-1 downto 4);
-		phy_rxd : std_logic_vector(0 to 8-1);
-		phy_txd : std_logic_vector(0 to 8-1);
+
+		phy_reset : out std_logic;
+		phy_col : in std_logic;
+		phy_crs : in std_logic;
+		phy_int : in std_logic;		-- open drain
+		phy_mdc : out std_logic;
+		phy_mdio : inout std_logic;
+
+		phy_rxclk : in std_logic;
+		phy_rxctl_rxdv : in std_logic;
+		phy_rxd  : in std_logic_vector(0 to 8-1);
+		phy_rxer : in std_logic;
+
+		phy_txc_gtxclk : in std_logic;
+		phy_txclk : in std_logic;
+		phy_txctl_txen : out std_logic;
+		phy_txd  : out std_logic_vector(0 to 8-1);
+		phy_txer : out std_logic;
 
 		sram_bw : std_logic_vector(4-1 downto 0);
 		sram_d  : std_logic_vector(32-1 downto 16);
@@ -103,11 +134,25 @@ entity ml505 is
 	attribute loc of ddr2_dqs_p  : signal is "G27 H28 E26 Y28 AB3  AK26 AK28 AA29";
 	attribute loc of ddr2_dqs_n  : signal is "H27 G28 E27 Y29 AA31 AJ27 AK27 AA30";
 
-	attribute loc of dvi_d : signal is "AN14 AP14 AB10 AA10 AN13 AM13 AA8 AA9 AP12 AN12 AC8 AB8";
-	attribute loc of dvi_gpio : signal is "N30";
-	attribute loc of fpga_m : signal is "AD22 AC22 AD21";
---	attribute loc of fpga_vrn_b : signal is "AF8 AJ25 L10 N27 AD31 AG33 N33";
---	attribute loc of fpga_vrp_b : signal is "AE9 AH25 L11 M27 AE31 AH33 M33";
+	attribute loc of dvi_xclk_p : signal is "AL11";
+	attribute loc of dvi_xclk_n : signal is "AL10";
+	attribute loc of dvi_gpio1 : signal is "N30";
+	attribute loc of dvi_reset : signal is "AK6";
+	attribute loc of dvi_d  : signal is "AN14 AP14 AB10 AA10 AN13 AM13 AA8 AA9 AP12 AN12 AC8 AB8";
+	attribute loc of dvi_de : signal is "AE8";
+	attribute loc of dvi_v : signal is "AM11";
+	attribute loc of dvi_h : signal is "AM12";
+
+	attribute loc of fan_alert : signal is "T30";
+
+	attribute loc of fpga_diff_clk_out_n : signal is "J21";
+	attribute loc of fpga_diff_clk_out_p : signal is "J20";
+	attribute loc of fpga_rotary_inca : signal is "AH30";
+	attribute loc of fpga_rotary_incb : signal is "AG30";
+	attribute loc of fpga_rotary_push : signal is "AH29";
+	attribute loc of fpga_serial_rx : signal is "AG15 G10";
+	attribute loc of fpga_serial_tx : signal is "AG20 F10";
+
 	attribute loc of gpio_dip_sw : signal is "AC24 AC25 AE26 AE27 AF26 AF25 AG27 U25";
 	attribute loc of gpio_led : signal is "AE24 AD24 AD25 G16 AD26 G15 L18 H18";
 	attribute loc of gpio_led_c : signal is "E8";
@@ -122,12 +167,30 @@ entity ml505 is
 	attribute loc of gpio_sw_w  : signal is "AJ7";
 
 	attribute loc of hdr1 : signal is "AN33 AN34 AM32 AJ34 AM33 AL33 AL34 AK32 AJ32 AK33 AK34 AH32 AG32 AE32 AH34 W32 Y32 Y34 AD32 AA34 N34 P34 M32 L33 J34 J32 H32 G32 G33 H34 F34 H33";
+
+	attribute loc of hdr2_sm_p : signal is "AC33 AC34 Y33  K33 L34 AN32 U33 U32 AF33 AC32 AF34 W34";
+	attribute loc of hdr2_sm_n : signal is "AB33 AD34 AA33 K32 K34 AP32 T34 U31 AE33 AB32 AE34 V34";
+
+	attribute loc of hdr2_diff_p : signal is "P32 T33 R33 V32";
+	attribute loc of hdr2_diff_n : signal is "N32 R34 R32 V33";
+
 	attribute loc of lcd_fpga_db : signal is "T11 G6 G7 T9";
 
+	attribute loc of phy_col  : signal is "B32";
+	attribute loc of phy_crs  : signal is "E34";
+	attribute loc of phy_int  : signal is "H20";
+	attribute loc of phy_mdc  : signal is "H19";
+	attribute loc of phy_mdio  : signal is "H13";
+	attribute loc of phy_reset  : signal is "J14";
+	attribute loc of phy_rxclk  : signal is "H17";
+	attribute loc of phy_rxctl_rxdv  : signal is "E32";
 	attribute loc of phy_rxd : signal is "A33 B33 C33 C32 D32 C34 D34 F33";
+	attribute loc of phy_rxer  : signal is "E33";
+	attribute loc of phy_txc_gtxclk  : signal is "J16";
+	attribute loc of phy_txclk  : signal is "K17";
+	attribute loc of phy_txctl_txen  : signal is "AJ10";
 	attribute loc of phy_txd : signal is "AF11 AE11 AH9 AH10 AG8 AH8 AG10 AG11";
---	attribute loc of phy_rxd : signal is "F33  D34  C34 D32  C32 C33  B33  A33"; -- 8-1 downto 0
---	attribute loc of phy_txd : signal is "AG11 AG10 AH8 AG8 AH10 AH9 AE11 AF11"; -- 8-1 downto 0
+	attribute loc of phy_txer  : signal is "AJ9";
 
 	attribute loc of sram_bw : signal is "K11 J11 D11 D10";
 	attribute loc of sram_d : signal is "J9 K8 K9 B13 C13 G11 G12 M8 L8 F11 E11 M10 L9 E12 E13 N10";
