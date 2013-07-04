@@ -2,28 +2,58 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library unisim;
-use unisim.vcomponents.all;
+entity scope is
+	generic (
+		ddr_std : positive range 1 to 3;
+		bank_size : natural := 2;
+		addr_size : natural := 13;
+		col_size  : natural := 6;
+		data_size : natural := 16);
+	port (
+		clks_lckd  : in std_logic;
+
+		input_clk : in std_logic;
+
+		ddr_rst : out std_logic;
+		ddrs_clk0  : in std_logic;
+		ddrs_clk90 : in std_logic;
+		ddr_cke : out std_logic;
+		ddr_cs  : out std_logic;
+		ddr_ras : out std_logic;
+		ddr_cas : out std_logic;
+		ddr_we  : out std_logic;
+		ddr_ba  : out std_logic_vector;
+		ddr_a   : out std_logic_vector;
+		ddr_dm  : out std_logic_vector;
+		ddr_dqs : inout std_logic_vector;
+		ddr_dq  : inout std_logic_vector;
+		ddr_lp_dqs : out std_logic;
+		ddr_st_lp_dqs : in std_logic;
+
+		mii_rst  : out std_logic;
+		mii_refclk : in std_logic;
+		mii_rxc  : in std_logic;
+		mii_rxdv : in std_logic;
+		mii_rxd  : in std_logic_vector;
+		mii_txc  : in std_logic;
+		mii_txen : out std_logic;
+		mii_txd  : out std_logic_vector;
+
+		vga_clk   : out std_logic;
+		vga_hsync : out std_logic;
+		vga_vsync : out std_logic;
+		vga_blank : out std_logic;
+		vga_red   : out std_logic_vector(8-1 downto 0);
+		vga_green : out std_logic_vector(8-1 downto 0);
+		vga_blue  : out std_logic_vector(8-1 downto 0));
+end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-entity scope
-architecture scope of ml505 is
-	constant bank_size : natural := 2;
-	constant addr_size : natural := 13;
-	constant col_size  : natural := 6;
-	constant data_size : natural := 16;
-
+architecture def of scope is
 	signal sys_rst : std_logic;
-
-	signal vga_hsync : std_logic;
-	signal vga_vsync : std_logic;
-	signal vga_blank : std_logic;
-	signal vga_red   : std_logic_vector(red'range);
-	signal vga_green : std_logic_vector(green'range);
-	signal vga_blue  : std_logic_vector(blue'range);
 
 	signal video_clk  : std_logic;
 	signal video_don : std_logic;
@@ -43,12 +73,6 @@ architecture scope of ml505 is
 	signal cga_don : std_logic;
 	signal cga_code : byte;
 
-	signal video_red   : std_logic_vector(red'range);
-	signal video_green : std_logic_vector(green'range);
-	signal video_blue  : std_logic_vector(blue'range);
-
-	signal ddrs_clk0   : std_logic;
-	signal ddrs_clk90  : std_logic;
 	signal ddrs_clk180 : std_logic;
 
 	signal ddr_lp_clk : std_logic;
@@ -73,7 +97,6 @@ architecture scope of ml505 is
 	signal input_rdy : std_logic;
 	signal input_req : std_logic := '0';
 	signal input_dat : std_logic_vector(0 to 15);
-	signal input_clk : std_logic;
 	
 	signal win_rowid  : std_logic_vector(2-1 downto 0);
 	signal win_rowpag : std_logic_vector(5-1 downto 0);
@@ -94,8 +117,6 @@ architecture scope of ml505 is
 
 	signal trdy : std_logic := '0';
 	signal treq : std_logic := '0';
-	signal txen : std_logic;
-	signal txd  : nibble;
 	signal rxdv : std_logic;
 	signal rxd  : nibble;
 	signal rpkt : std_logic;
@@ -157,8 +178,6 @@ architecture scope of ml505 is
 		3 => (cl => 9.0, bl => 8, wr => 9, cwl => 9, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0));
 
 begin
-
-	input_clk <= adc_clkout;
 
 --	process (input_clk)
 --		variable sample : unsigned(0 to 15) := (others => '0');
@@ -271,29 +290,6 @@ begin
 		
 	end block;
 
-	vga_iob_e : entity hdl4fpga.vga_iob
-	port map (
-		sys_clk   => video_clk,
-		sys_hsync => vga_hsync,
-		sys_vsync => vga_vsync,
-		sys_sync  => '1',
-		sys_psave => '1',
-		sys_blank => vga_blank,
-		sys_red   => vga_red,
-		sys_green => vga_green,
-		sys_blue  => vga_blue,
-
-		vga_clk => clk_videodac,
-		vga_hsync => hsync,
-		vga_vsync => vsync,
-		dac_blank => blank,
-		dac_sync  => sync,
-		dac_psave => psave,
-
-		dac_red   => red,
-		dac_green => green,
-		dac_blue  => blue);
-
 	video_ena <= setif(win_rowid="11");
 
 	dataio_rst <= not ddrs_ini;
@@ -384,19 +380,19 @@ begin
 		mii_txc  => mii_txc,
 		mii_treq => treq,
 		mii_trdy => trdy,
-		mii_txen => txen,
-		mii_txd  => txd);
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd);
 
 	process (mii_txc)
 		variable edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if txen='1' then
+			if mii_txen='1' then
 				if edge='0' then
 					tpkt_cntr <= byte(unsigned(tpkt_cntr) + 1);
 				end if;
 			end if;
-			edge := txen;
+			edge := mii_txen;
 		end if;
 	end process;
 
@@ -424,25 +420,25 @@ begin
 		end if;
 	end process;
 
---	cga_clk <= mii_rxc;
---	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
---	cga_e : entity hdl4fpga.cga
---	generic map (
---		bitrom => psf1cp850x8x16,
---		height => 16,
---		width  => 8,
---		row_reverse => true,
---		col_reverse => true)
---	port map (
---		sys_clk => cga_clk,
---		sys_row => cga_ptr(cga_row'range),
---		sys_col => cga_ptr(cga_col'range),
---		sys_we  => hd_t_clock,
---		sys_code => cga_code,
---		vga_clk => video_clk,
---		vga_row => vga_row,
---		vga_col => win_coloff(8-1 downto 1),
---		vga_dot => cga_dot);
+	cga_clk <= mii_rxc;
+	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
+	cga_e : entity hdl4fpga.cga
+	generic map (
+		bitrom => psf1cp850x8x16,
+		height => 16,
+		width  => 8,
+		row_reverse => true,
+		col_reverse => true)
+	port map (
+		sys_clk => cga_clk,
+		sys_row => cga_ptr(cga_row'range),
+		sys_col => cga_ptr(cga_col'range),
+		sys_we  => '1',
+		sys_code => cga_code,
+		vga_clk => video_clk,
+		vga_row => vga_row,
+		vga_col => win_coloff(8-1 downto 1),
+		vga_dot => cga_dot);
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
@@ -453,25 +449,6 @@ begin
 		mii_txc  => open,
 		mii_txen => rpkt,
 		mii_txd  => open);
-
-
-	mii_iob_e : entity hdl4fpga.mii_iob
-	port map (
-		mii_rxc  => mii_rxc,
-
-		iob_rxdv => mii_rxdv,
-		iob_rxd  => mii_rxd,
-
-		mii_rxdv => rxdv,
-		mii_rxd  => rxd,
-
-
-		mii_txc  => mii_txc,
-		mii_txen => txen,
-		mii_txd  => txd,
-
-		iob_txen => mii_txen,
-		iob_txd  => mii_txd);
 
 	win_scope_e : entity hdl4fpga.win_scope
 	generic map (
@@ -485,93 +462,6 @@ begin
 		chann_dat => chann_dat,
 		grid_dot  => grid_dot,
 		plot_dot  => plot_dot);
-
-	usm: block
-		signal xtal_ibufg : std_logic;
-		signal rst    : std_logic_vector(0 to 32);
-		signal clk0   : std_logic;
-		signal clk90  : std_logic;
-		signal locked : std_logic; 
-
-		signal miixc_lckd : std_logic;
-		signal video_lckd : std_logic;
-		signal ddrs_lckd  : std_logic;
-		signal adc_lckd   : std_logic;
-
-	begin
-
-		clkin_ibufg : ibufg
-		port map (
-			I => xtal,
-			O => xtal_ibufg);
-
-		video_dcm : entity hdl4fpga.dfs
-		generic map (
-			dcm_per => 50.0,
-			dfs_mul => 15,
-			dfs_div => 2)
-		port map(
-			dcm_rst => rst(0),
-			dcm_clk => xtal_ibufg,
-			dfs_clk => video_clk,
-			dcm_lck => video_lckd);
-
-		mii_dfs_e : entity hdl4fpga.dfs
-		generic map (
-			dcm_per => 50.0,
-			dfs_mul => 5,
-			dfs_div => 4)
-		port map (
-			dcm_rst => rst(0),
-			dcm_clk => xtal_ibufg,
-			dfs_clk => mii_refclk,
-			dcm_lck => miixc_lckd);
-
-		ddr_dcm	: entity hdl4fpga.dfsdcm
-		generic map (
-			dcm_per => 50.0,
-			dfs_mul => ddr_multiply,
-			dfs_div => ddr_divide)
-		port map (
-			dcm_rst => rst(0),
-			dcm_clk => xtal_ibufg,
-			dfsdcm_clk0  => clk0,
-			dfsdcm_clk90 => clk90,
-			dcm_lck => ddrs_lckd);
-
-		isdbt_dcm : entity hdl4fpga.dfs
-		generic map (
-			dcm_per => 50.0,
-			dfs_mul => 1,
-			dfs_div => 1)
-		port map (
-			dcm_rst => rst(0),
-			dcm_clk => xtal_ibufg,
-			dfs_clk => adc_clkab,
-			dcm_lck => adc_lckd);
-
---		isdbt_dcm: entity hdl4fpga.dcmisdbt
---		port map (
---			dcm_rst => rst(0),
---			dcm_clk => xtal_ibufg,
---			dfs_clk => adc_clkab,
---			dcm_lck => adc_lckd);
-
-		locked <= adc_lckd and ddrs_lckd and miixc_lckd and video_lckd;
-		ddr_rst_p : process (xtal_ibufg,sw1)
-		begin
-			if sw1='0' then
-				rst <= (others => '1');
-			elsif rising_edge(xtal_ibufg) then
-				rst <= rst(1 to rst'right) & '0';
-			end if;
-		end process;
-
-		ddrs_clk0   <= clk0;
-		ddrs_clk90  <= clk90;
-		ddrs_clk180 <= not clk0;
-		sys_rst <= not locked;
-	end block;
 
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
@@ -624,97 +514,4 @@ begin
 		ddr_dm  => ddr_dm,
 		ddr_dqs => ddr_dqs,
 		ddr_dq  => ddr_dq);
-
-	-- I/O buffers --
-	-----------------
-
-	-- Differential buffers --
-	--------------------------
-
-	diff_clk_b : block
-		signal diff_clk : std_logic;
-	begin
-		oddr_mdq : oddr2
-		port map (
-			r  => '0',
-			s  => '0',
-			c0 => ddrs_clk180,
-			c1 => ddrs_clk0,
-			ce => '1',
-			d0 => '1',
-			d1 => '0',
-			q  => diff_clk);
-
-		ddr_ck_obufds : obufds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => diff_clk,
-			o  => ddr_ckp,
-			ob => ddr_ckn);
-	end block;
-
-	ddr_lp_ck_obufds : ibufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => ddr_lp_ckp,
-		ib => ddr_lp_ckn,
-		o  => ddr_lp_clk);
-
-	hd_t_data <= 'Z';
-
-	-- LEDs DAC --
-	--------------
-		
-	led18 <= treq;
-	led16 <= '0';
-	led15 <= a0;
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= miitx_req;
-	led8  <= miitx_rdy;
-	led7  <= not sys_rst;
-
-	-- RS232 Transceiver --
-	-----------------------
-
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
-	-- Ethernet Transceiver --
-	--------------------------
-
-	mii_mdc  <= '0';
-	mii_mdio <= 'Z';
-
-
-	-- LCD --
-	---------
-
-	lcd_e <= 'Z';
-	lcd_rs <= 'Z';
-	lcd_rw <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
-
-	-- DDR RAM --
-	-------------
-
-	ddr_ckp <= 'Z';
-	ddr_ckn <= 'Z';
-	ddr_lp_dqs <= 'Z'; 
-	ddr_cke <= 'Z';  
-	ddr_cs  <= 'Z';  
-	ddr_ras <= 'Z';
-	ddr_cas <= 'Z';
-	ddr_cas <= 'Z';
-	ddr_we  <= 'Z';
-	ddr_a   <= (others => 'Z');
-	ddr_ba  <= (others => 'Z');
-	ddr_dm  <= (others => 'Z');
-	ddr_dqs <= (others => 'Z');
-	ddr_dq  <= (others => 'Z');
-
 end;
