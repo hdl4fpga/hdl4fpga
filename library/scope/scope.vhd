@@ -4,13 +4,15 @@ use ieee.numeric_std.all;
 
 entity scope is
 	generic (
-		ddr_std : positive range 1 to 3;
+		ddr_std : positive range 1 to 3 := 1;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		col_size  : natural := 6;
+		nibble_size : natural := 4;
+		byte_size : natural := 8;
 		data_size : natural := 16);
 	port (
-		clks_lckd  : in std_logic;
+		sys_rst : in std_logic;
 
 		input_clk : in std_logic;
 
@@ -22,21 +24,21 @@ entity scope is
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
 		ddr_we  : out std_logic;
-		ddr_ba  : out std_logic_vector;
-		ddr_a   : out std_logic_vector;
-		ddr_dm  : out std_logic_vector;
-		ddr_dqs : inout std_logic_vector;
-		ddr_dq  : inout std_logic_vector;
+		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
+		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
+		ddr_dm  : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqs : inout std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);
 		ddr_lp_dqs : out std_logic;
 		ddr_st_lp_dqs : in std_logic;
 
 		mii_rst  : out std_logic;
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
-		mii_rxd  : in std_logic_vector;
+		mii_rxd  : in std_logic_vector(0 to nibble_size-1);
 		mii_txc  : in std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector;
+		mii_txd  : out std_logic_vector(0 to nibble_size-1);
 
 		vga_clk   : out std_logic;
 		vga_hsync : out std_logic;
@@ -52,8 +54,6 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
 architecture def of scope is
-	signal sys_rst : std_logic;
-
 	signal video_clk  : std_logic;
 	signal video_don : std_logic;
 	signal video_frm : std_logic;
@@ -113,6 +113,7 @@ architecture def of scope is
 	signal miitx_rdy  : std_logic;
 	signal miitx_addr : std_logic_vector(8-1 downto 0);
 	signal miitx_data : std_logic_vector(2*data_size-1 downto 0);
+	signal miitx_ena  : std_logic;
 
 	signal trdy : std_logic := '0';
 	signal treq : std_logic := '0';
@@ -341,9 +342,6 @@ begin
 	begin
 		if rising_edge(ddrs_clk0) then
 			mii_rst   <= ddrs_ini; 
---			if input_rdy='0' then
---				miitx_rdy <= '0';
---			els
 			if miitx_rdy/='0' then
 				miitx_rdy <= not miitx_req;
 			elsif trdy='1' then
@@ -372,6 +370,7 @@ begin
 		end if;
 	end process;
 
+	mii_txen <= miitx_ena;
 	miitx_udp_e : entity hdl4fpga.miitx_udp
 	port map (
 		sys_addr => miitx_addr,
@@ -379,19 +378,19 @@ begin
 		mii_txc  => mii_txc,
 		mii_treq => treq,
 		mii_trdy => trdy,
-		mii_txen => mii_txen,
+		mii_txen => miitx_ena,
 		mii_txd  => mii_txd);
 
 	process (mii_txc)
 		variable edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if mii_txen='1' then
+			if miitx_ena='1' then
 				if edge='0' then
 					tpkt_cntr <= byte(unsigned(tpkt_cntr) + 1);
 				end if;
 			end if;
-			edge := mii_txen;
+			edge := miitx_ena;
 		end if;
 	end process;
 

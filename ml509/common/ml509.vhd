@@ -99,7 +99,7 @@ entity ml505 is
 		sysace_usb_d : std_logic_vector(16-1 downto 0);
 
 		trc_ts : std_logic_vector(6 downto 3);
-		user_clk  : std_logic_vector(4-1 downto 0);
+		user_clk : std_logic;
 
 		vga_in_blue  : std_logic_vector(8-1 downto 0);
 		vga_in_green : std_logic_vector(8-1 downto 0);
