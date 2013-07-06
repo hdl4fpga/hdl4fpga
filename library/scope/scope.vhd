@@ -28,7 +28,8 @@ entity scope is
 		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 		ddr_dm  : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqs : inout std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqs_p : inout std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqs_n : inout std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);
 		ddr_lp_dqs : out std_logic;
 		ddr_st_lp_dqs : in std_logic;
@@ -40,7 +41,7 @@ entity scope is
 		mii_txen : out std_logic;
 		mii_txd  : out std_logic_vector(0 to nibble_size-1);
 
-		vga_clk   : out std_logic;
+		vga_clk   : in  std_logic;
 		vga_hsync : out std_logic;
 		vga_vsync : out std_logic;
 		vga_blank : out std_logic;
@@ -54,7 +55,6 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
 architecture def of scope is
-	signal video_clk  : std_logic;
 	signal video_don : std_logic;
 	signal video_frm : std_logic;
 	signal video_ena : std_logic;
@@ -213,7 +213,7 @@ begin
 	generic map (
 		n => 12)
 	port map (
-		clk   => video_clk,
+		clk   => vga_clk,
 		hsync => video_hsync,
 		vsync => video_vsync,
 		frm   => video_frm,
@@ -222,7 +222,7 @@ begin
 		
 	win_stym_e : entity hdl4fpga.win_sytm
 	port map (
-		win_clk => video_clk,
+		win_clk => vga_clk,
 		win_frm => video_frm,
 		win_don => video_don,
 		win_rowid  => win_rowid ,
@@ -256,7 +256,7 @@ begin
 			    8 to 8 => 3,		-- grid_don -> plot_start
 			    9 to 9 => 3))		-- cga_dot -> cga_dot
 		port map (
-			clk   => video_clk,
+			clk   => vga_clk,
 
 			di(0) => video_hsync,
 			di(1) => video_vsync,
@@ -307,7 +307,7 @@ begin
 		input_clk => input_clk,
 		input_dat => input_dat,
 
-		video_clk => video_clk,
+		video_clk => vga_clk,
 		video_ena => video_ena,
 		video_row => win_rowpag(3 downto 0),
 		video_col => win_coloff,
@@ -406,7 +406,7 @@ begin
 		end if;
 	end process;
 
-	process (video_clk)
+	process (cga_clk)
 		variable nibble_ptr : unsigned(3-1 downto 0);
 	begin
 		if rising_edge(cga_clk) then
@@ -432,7 +432,7 @@ begin
 		sys_col => cga_ptr(cga_col'range),
 		sys_we  => '1',
 		sys_code => cga_code,
-		vga_clk => video_clk,
+		vga_clk => vga_clk,
 		vga_row => vga_row,
 		vga_col => win_coloff(8-1 downto 1),
 		vga_dot => cga_dot);
@@ -451,7 +451,7 @@ begin
 	generic map (
 		num_chann => 2)
 	port map (
-		video_clk => video_clk,
+		video_clk => vga_clk,
 
 		chann_row => win_rowoff,
 		chann_col => win_coloff,
@@ -509,7 +509,8 @@ begin
 		ddr_ba  => ddr_ba,
 		ddr_a   => ddr_a,
 		ddr_dm  => ddr_dm,
-		ddr_dqs => ddr_dqs,
+		ddr_dqs_p => ddr_dqs_p,
+		ddr_dqs_n => ddr_dqs_n,
 		ddr_dq  => ddr_dq);
 	sys_ini <= ddrs_ini;
 end;
