@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ml505 is
+entity ml509 is
 	port(
 		bus_error : out std_logic_vector(2 downto 1);
 
@@ -26,7 +26,7 @@ entity ml505 is
 		ddr2_dqs_p : inout std_logic_vector(8-1 downto 0); --
 		ddr2_dqs_n : inout std_logic_vector(8-1 downto 0); --
 		ddr2_d   : inout std_logic_vector(64-1 downto 0);
-		ddr2_dm  : out std_logic_vector( 8-1 downto 0);
+		ddr2_dm  : inout std_logic_vector( 8-1 downto 0);
 		ddr2_odt : out std_logic_vector( 2-1 downto 0); --
 		ddr2_scl  : out std_logic;
 		ddr2_sda  : in  std_logic;

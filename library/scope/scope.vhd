@@ -13,6 +13,7 @@ entity scope is
 		data_size : natural := 16);
 	port (
 		sys_rst : in std_logic;
+		sys_ini : out std_logic;
 
 		input_clk : in std_logic;
 
@@ -32,7 +33,6 @@ entity scope is
 		ddr_lp_dqs : out std_logic;
 		ddr_st_lp_dqs : in std_logic;
 
-		mii_rst  : out std_logic;
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
 		mii_rxd  : in std_logic_vector(0 to nibble_size-1);
@@ -341,7 +341,6 @@ begin
 		variable trdy_edge : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(ddrs_clk0) then
-			mii_rst   <= ddrs_ini; 
 			if miitx_rdy/='0' then
 				miitx_rdy <= not miitx_req;
 			elsif trdy='1' then
@@ -512,4 +511,5 @@ begin
 		ddr_dm  => ddr_dm,
 		ddr_dqs => ddr_dqs,
 		ddr_dq  => ddr_dq);
+	sys_ini <= ddrs_ini;
 end;
