@@ -31,7 +31,6 @@ architecture scope of ml509 is
 	signal ddrs_clk90 : std_logic;
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
-	signal ddr2_dqs : std_logic_vector(data_size/byte_size-1 downto 0);
 
 	signal mii_rxc  : std_logic;
 	signal mii_rxdv : std_logic;
@@ -79,7 +78,8 @@ begin
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
-		ddr_dqs => ddr2_dqs,
+		ddr_dqs_p => ddr2_dqs_p(1 downto 0),
+		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_lp_dqs => open, --ddr_lp_dqs,
 		ddr_st_lp_dqs => '0', --ddr_st_lp_dqs,
@@ -104,7 +104,7 @@ begin
 		I => user_clk,
 		O => uclk_bufg);
 
-	video_dcm : entity hdl4fpga.dfs
+	video_dcm : entity hdl4fpga.dfs1(v5)
 	generic map (
 		dcm_per => uclk_period,
 		dfs_mul => 3,
@@ -127,7 +127,7 @@ begin
 		dfsdcm_clk90 => ddrs_clk90,
 		dcm_lck => ddrs_lckd);
 
-	isdbt_dcm : entity hdl4fpga.dfs
+	isdbt_dcm : entity hdl4fpga.dfs1(v5)
 	generic map (
 		dcm_per => uclk_period,
 		dfs_mul => 10,
@@ -192,16 +192,15 @@ begin
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
-		oddr_mdq : oddr2
+		oddr_mdq : oddr
 		port map (
-			r  => '0',
-			s  => '0',
-			c0 => ddrs_clk180,
-			c1 => ddrs_clk0,
+			r => '0',
+			s => '0',
+			c => ddrs_clk180,
 			ce => '1',
-			d0 => '1',
-			d1 => '0',
-			q  => diff_clk);
+			d1 => '1',
+			d2 => '0',
+			q => diff_clk);
 
 		ddr_ck_obufds : obufds
 		generic map (

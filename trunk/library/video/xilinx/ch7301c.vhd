@@ -69,15 +69,14 @@ begin
 	dvi_fword <= vga_red & vga_green(8-1 downto 4); 
 
 	dviddr_g : for i in dvi_d'range generate
-		dac_clk_i : oddr2
+		dac_clk_i : oddr
 		port map (
-			r  => '0',
-			s  => '0',
-			c0 => vga_clk,
-			c1 => vga_fclk,
+			r => '0',
+			s => '0',
+			c => vga_clk,
 			ce => '1',
-			d0 => dvi_rword(i),
-			d1 => dvi_fword(i),
-			q  => dvi_d(i));
+			d1 => dvi_rword(i),
+			d2 => dvi_fword(i),
+			q => dvi_d(i));
 	end generate;
 end;
