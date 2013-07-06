@@ -9,32 +9,47 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-architecture scope of ml505 is
+architecture scope of ml509 is
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
+	constant nibble_size : natural := 4;
+	constant byte_size : natural := 8;
 	constant data_size : natural := 16;
 
 	constant uclk_period : real := 10.0;
 	signal uclk_bufg  : std_logic;
 
+	signal dcm_rst : std_logic;
 	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
+	signal input_clk : std_logic;
+
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
+	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
+	signal ddr2_dqs : std_logic_vector(data_size/byte_size-1 downto 0);
 
-	signal video_clk : in std_logic;
-	signal vga_hsync : in std_logic;
-	signal vga_vsync : in std_logic;
-	signal vga_blank : in std_logic;
-	signal vga_red : in std_logic_vector(8-1 downto 0);
-	signal vga_green : in std_logic_vector(8-1 downto 0);
-	signal vga_blue  : in std_logic_vector(8-1 downto 0);
+	signal mii_rxc  : std_logic;
+	signal mii_rxdv : std_logic;
+	signal mii_rxd  : std_logic_vector(0 to nibble_size-1);
+	signal mii_txc  : std_logic;
+	signal mii_txen : std_logic;
+	signal mii_txd  : std_logic_vector(0 to nibble_size-1);
 
-	signal sys_rst  : std_logic;
+	signal video_clk : std_logic;
+	signal vga_hsync : std_logic;
+	signal vga_vsync : std_logic;
+	signal vga_blank : std_logic;
+	signal vga_red : std_logic_vector(8-1 downto 0);
+	signal vga_green : std_logic_vector(8-1 downto 0);
+	signal vga_blue  : std_logic_vector(8-1 downto 0);
+
+	signal sys_rst   : std_logic;
+	signal scope_rst : std_logic;
 
 	-------------------------------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 180 Mhz -- 193 Mhz -- 200 Mhz  --
@@ -44,12 +59,45 @@ architecture scope of ml505 is
 
 	constant ddr_multiply : natural := 25; --30; --25;
 	constant ddr_divide   : natural := 3;  --2; --3;
-	constant cas : std_logic_vector(0 to 2) := cas_code(
-		tCLK => 50.0,
-		multiply => ddr_multiply,
-		divide   => ddr_divide);
 
 begin
+
+	scope_e : entity hdl4fpga.scope
+	port map (
+		sys_rst => scope_rst,
+
+		input_clk => uclk_bufg,
+
+		ddr_rst => open,
+		ddrs_clk0  => ddrs_clk0,
+		ddrs_clk90 => ddrs_clk90,
+		ddr_cke => ddr2_cke(0),
+		ddr_cs  => ddr2_cs(0),
+		ddr_ras => ddr2_ras,
+		ddr_cas => ddr2_cas,
+		ddr_we  => ddr2_we,
+		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
+		ddr_a   => ddr2_a(addr_size-1 downto 0),
+		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
+		ddr_dqs => ddr2_dqs,
+		ddr_dq  => ddr2_d(data_size-1 downto 0),
+		ddr_lp_dqs => open, --ddr_lp_dqs,
+		ddr_st_lp_dqs => '0', --ddr_st_lp_dqs,
+
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+		mii_txc  => mii_txc,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd,
+
+		vga_clk   => video_clk,
+		vga_hsync => vga_hsync,
+		vga_vsync => vga_vsync,
+		vga_blank => vga_blank,
+		vga_red   => vga_red,
+		vga_green => vga_green,
+		vga_blue  => vga_blue);
 
 	clkin_ibufg : ibufg
 	port map (
@@ -86,29 +134,27 @@ begin
 		dfs_div => 1)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => uclk_ibuf,
-		dfs_clk => adc_clkab,
-		dcm_lck => adc_lckd);
+		dcm_clk => uclk_bufg,
+		dfs_clk => input_clk,
+		dcm_lck => input_lckd);
 
 	process (sys_rst, uclk_bufg)
-		variable rst : std_logic_vector(1 to 5);
+		variable rst : std_logic_vector(0 to 5);
 	begin
 		if sys_rst='1' then
 			dcm_rst <= '1';
 			rst := (others => '1');
 		elsif rising_edge(uclk_bufg) then
 			if dcm_rst='0' then
-				scope_rst <= not (video_lckd and ddrs_lckd and adc_lckd);
+				scope_rst <= not (video_lckd and ddrs_lckd and input_lckd);
 			end if;
 
 			rst := rst(1 to rst'right) & '0';
 			dcm_rst <= rst(0);
 		end if;
-	end if;
+	end process;
 
-	input_clk <= adc_clkout;
-
-	vga_iob_e : entity hdl4fpga.vga2ch7301_iob
+	vga_iob_e : entity hdl4fpga.vga2ch7301c_iob
 	port map (
 		vga_clk   => video_clk,
 		vga_hsync => vga_hsync,
@@ -128,20 +174,21 @@ begin
 	mii_iob_e : entity hdl4fpga.mii_iob
 	port map (
 		mii_rxc  => phy_rxclk,
-		iob_rxdv => phy_rxdv,
-		iob_rxd  => phy_rxd,
+		iob_rxdv => phy_rxctl_rxdv,
+		iob_rxd  => phy_rxd(0 to nibble_size-1),
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
 		mii_txc  => phy_txclk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
-		iob_txen => phy_txen,
-		iob_txd  => phy_txd);
+		iob_txen => phy_txctl_txen,
+		iob_txd  => phy_txd(0 to nibble_size-1));
 
 	-- Differential buffers --
 	--------------------------
 
+	ddrs_clk180 <= not ddrs_clk0;
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
@@ -161,7 +208,7 @@ begin
 			iostandard => "DIFF_SSTL2_I")
 		port map (
 			i  => diff_clk,
-			o  => ddr_ckp,
-			ob => ddr_ckn);
+			o  => ddr2_clk_p(0),
+			ob => ddr2_clk_n(0));
 	end block;
 end;
