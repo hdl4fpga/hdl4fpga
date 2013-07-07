@@ -40,7 +40,7 @@ entity ml509 is
 		dvi_v  : inout std_logic;
 		dvi_h  : inout std_logic;
 
-		fan_alert : out std_logic;
+--		fan_alert : out std_logic;
 
 		fpga_diff_clk_out_p : out std_logic;
 		fpga_diff_clk_out_n : out std_logic;
@@ -50,18 +50,18 @@ entity ml509 is
 		fpga_serial_rx : std_logic_vector(1 to 2);
 		fpga_serial_tx : std_logic_vector(1 to 2);
 
-		gpio_dip_sw : std_logic_vector(8 downto 1);
-		gpio_led : std_logic_vector(8-1 downto 0);
-		gpio_led_c  : std_logic;
-		gpio_led_e  : std_logic;
-		gpio_led_n  : std_logic;
-		gpio_led_s  : std_logic;
-		gpio_led_w  : std_logic;
-		gpio_sw_c  : std_logic;
-		gpio_sw_e  : std_logic;
-		gpio_sw_n  : std_logic;
-		gpio_sw_s  : std_logic;
-		gpio_sw_w  : std_logic;
+		gpio_dip_sw : in std_logic_vector(8 downto 1);
+		gpio_led : out std_logic_vector(8-1 downto 0);
+		gpio_led_c  : out std_logic;
+		gpio_led_e  : out std_logic;
+		gpio_led_n  : out std_logic;
+		gpio_led_s  : out std_logic;
+		gpio_led_w  : out std_logic;
+		gpio_sw_c  : in std_logic;
+		gpio_sw_e  : in std_logic;
+		gpio_sw_n  : in std_logic;
+		gpio_sw_s  : in std_logic;
+		gpio_sw_w  : in std_logic;
 
 		hdr1 : std_logic_vector(1 to 32);
 		hdr2_diff_p : std_logic_vector(0 to 4-1);
@@ -106,6 +106,8 @@ entity ml509 is
 		vga_in_red   : std_logic_vector(8-1 downto 0));
 
 	attribute loc : string;
+	attribute iostandard : string;
+	attribute nodelay : string;
 
 	attribute loc of bus_error : signal is "T10 F6";
 --	attribute loc of cfg_addr_out : signal is "AE13 AE12";
@@ -131,8 +133,38 @@ entity ml509 is
 	attribute loc of ddr2_dm  : signal is "J25 F26 P24 V25 Y31 Y24 AE28 AJ31";
 	attribute loc of ddr2_odt : signal is "F30 F31";
 
-	attribute loc of ddr2_dqs_p  : signal is "G27 H28 E26 Y28 AB3  AK26 AK28 AA29";
+	attribute loc of ddr2_dqs_p  : signal is "G27 H28 E26 Y28 AB31 AK26 AK28 AA29";
 	attribute loc of ddr2_dqs_n  : signal is "H27 G28 E27 Y29 AA31 AJ27 AK27 AA30";
+
+--	attribute iostandard of ddr2_dqs_p : signal is "DIFF_SSTL18_II_DCI";
+--	attribute iostandard of ddr2_dqs_n : signal is "DIFF_SSTL18_II_DCI";
+	attribute iostandard of ddr2_d   : signal is "SSTL18_II_DCI";
+	attribute iostandard of ddr2_dm  : signal is "SSTL18_II_DCI";
+	attribute iostandard of ddr2_we  : signal is "SSTL18_II";
+	attribute iostandard of ddr2_cas : signal is "SSTL18_II";
+	attribute iostandard of ddr2_ras : signal is "SSTL18_II";
+	attribute iostandard of ddr2_cs  : signal is "SSTL18_II";
+	attribute iostandard of ddr2_cke : signal is "SSTL18_II";
+	attribute iostandard of ddr2_ba  : signal is "SSTL18_II";
+	attribute iostandard of ddr2_a   : signal is "SSTL18_II";
+--	attribute iostandard of ddr2_clk_p : signal is "DIFF_SSTL18_II";
+--	attribute iostandard of ddr2_clk_n : signal is "DIFF_SSTL18_II";
+	attribute iostandard of ddr2_odt : signal is "SSTL18_II";
+	attribute iostandard of ddr2_scl : signal is "SSTL18_II";
+
+	attribute nodelay of ddr2_clk_p : signal is "true";
+	attribute nodelay of ddr2_clk_n : signal is "true";
+	attribute nodelay of ddr2_cke : signal is "true";
+	attribute nodelay of ddr2_cs  : signal is "true";
+	attribute nodelay of ddr2_ras : signal is "true";
+	attribute nodelay of ddr2_cas : signal is "true";
+	attribute nodelay of ddr2_we  : signal is "true";
+	attribute nodelay of ddr2_ba  : signal is "true";
+	attribute nodelay of ddr2_a   : signal is "true";
+	attribute nodelay of ddr2_dm  : signal is "true";
+	attribute nodelay of ddr2_dqs_p : signal is "true";
+	attribute nodelay of ddr2_dqs_n : signal is "true";
+	attribute nodelay of ddr2_odt : signal is "true";
 
 	attribute loc of dvi_xclk_p : signal is "AL11";
 	attribute loc of dvi_xclk_n : signal is "AL10";
@@ -143,7 +175,7 @@ entity ml509 is
 	attribute loc of dvi_v : signal is "AM11";
 	attribute loc of dvi_h : signal is "AM12";
 
-	attribute loc of fan_alert : signal is "T30";
+	--attribute loc of fan_alert : signal is "T30";
 
 	attribute loc of fpga_diff_clk_out_n : signal is "J21";
 	attribute loc of fpga_diff_clk_out_p : signal is "J20";
@@ -152,6 +184,10 @@ entity ml509 is
 	attribute loc of fpga_rotary_push : signal is "AH29";
 	attribute loc of fpga_serial_rx : signal is "AG15 G10";
 	attribute loc of fpga_serial_tx : signal is "AG20 F10";
+
+	attribute iostandard of fpga_rotary_inca  : signal is "SSTL18_II_DCI";
+	attribute iostandard of fpga_rotary_incb  : signal is "SSTL18_II_DCI";
+	attribute iostandard of fpga_rotary_push  : signal is "SSTL18_II_DCI";
 
 	attribute loc of gpio_dip_sw : signal is "AC24 AC25 AE26 AE27 AF26 AF25 AG27 U25";
 	attribute loc of gpio_led : signal is "AE24 AD24 AD25 G16 AD26 G15 L18 H18";

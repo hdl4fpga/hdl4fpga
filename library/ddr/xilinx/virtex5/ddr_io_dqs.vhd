@@ -67,7 +67,7 @@ begin
 
 		iobufds_i : iobufds
 		generic map (
-			iostandard => "DIFF_SSTL18_II")
+			iostandard => "DIFF_SSTL18_II_DCI")
 		port map (
 			t => dqz,
 			i => dqs,
