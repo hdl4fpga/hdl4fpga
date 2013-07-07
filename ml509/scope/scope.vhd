@@ -32,10 +32,8 @@ architecture scope of ml509 is
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
 
-	signal mii_rxc  : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to nibble_size-1);
-	signal mii_txc  : std_logic;
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(0 to nibble_size-1);
 
@@ -61,6 +59,7 @@ architecture scope of ml509 is
 
 begin
 
+	sys_rst <= gpio_sw_n;
 	scope_e : entity hdl4fpga.scope
 	port map (
 		sys_rst => scope_rst,
@@ -78,16 +77,16 @@ begin
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
---		ddr_dqs_p => ddr2_dqs_p(1 downto 0),
---		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
---		ddr_dq  => ddr2_d(data_size-1 downto 0),
-		ddr_lp_dqs => open, --ddr_lp_dqs,
-		ddr_st_lp_dqs => '0', --ddr_st_lp_dqs,
+		ddr_dqs_p => ddr2_dqs_p(1 downto 0),
+		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
+		ddr_dq  => ddr2_d(data_size-1 downto 0),
+		ddr_lp_dqs => gpio_led_c, --ddr_lp_dqs,
+		ddr_st_lp_dqs => gpio_sw_c, --ddr_st_lp_dqs,
 
-		mii_rxc  => mii_rxc,
+		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => mii_txc,
+		mii_txc  => phy_txclk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
@@ -143,6 +142,7 @@ begin
 	begin
 		if sys_rst='1' then
 			dcm_rst <= '1';
+			scope_rst <= '1';
 			rst := (others => '1');
 		elsif rising_edge(uclk_bufg) then
 			if dcm_rst='0' then
@@ -219,7 +219,7 @@ begin
 		o  => ddr2_clk_p(1),
 		ob => ddr2_clk_n(1));
 
-	ddr2_dqs_g : for i in 7 downto 0 generate
+	ddr2_dqs_g : for i in 7 downto 2 generate
 		obufds : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
@@ -237,7 +237,6 @@ begin
   	ddr2_cke(1) <= '0';
    	ddr2_odt(1 downto 0) <= (others => 'Z');
 	ddr2_dm(7 downto 0) <= (others => 'Z');
-   	ddr2_scl <= '0';
-	ddr2_d(63 downto 0) <= (others => '0');
+	ddr2_d(63 downto 16) <= (others => '0');
 --gpio_led <= (others => '1');
 end;
