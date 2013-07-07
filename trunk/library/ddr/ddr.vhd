@@ -532,20 +532,34 @@ begin
 			clk180 when std=1 and cas(0)='1' else
 			clk0;
 			
-		fclk <= 
-			clk0   when std=1 and cas(0)='1' else
-			clk180;
-
-		oddr_du : fddrrse
+		oddr_du : oddr
 		port map (
-			c0 => rclk,
-			c1 => fclk,
+			r => '0',
+			s => '0',
+			c => rclk,
 			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => ddr_acc_drr,
-			d1 => ddr_acc_drf,
+			d1 => ddr_acc_drr,
+			d2 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
+
+--		rclk <= 
+--			clk180 when std=1 and cas(0)='1' else
+--			clk0;
+--			
+--		fclk <= 
+--			clk0   when std=1 and cas(0)='1' else
+--			clk180;
+--
+--		oddr_du : fddrrse
+--		port map (
+--			c0 => rclk,
+--			c1 => fclk,
+--			ce => '1',
+--			r  => '0',
+--			s  => '0',
+--			d0 => ddr_acc_drr,
+--			d1 => ddr_acc_drf,
+--			q  => ddr_lp_dqs);
 	end block;
 
 --	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm

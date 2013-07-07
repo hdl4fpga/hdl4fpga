@@ -28,15 +28,15 @@ begin
 			signal di : std_logic;
 		begin
 
---			oddr_du : oddr
---			port map (
---				r => '0',
---				s => '0',
---				c => ddr_io_fclk,
---				ce => '1',
---				d1 => ddr_io_dql(i*byte_bits+j),
---				d2 => ddr_io_dqh(i*byte_bits+j),
---				q => dqo);
+			oddr_du : oddr
+			port map (
+				r => '0',
+				s => '0',
+				c => ddr_io_fclk,
+				ce => '1',
+				d1 => ddr_io_dql(i*byte_bits+j),
+				d2 => ddr_io_dqh(i*byte_bits+j),
+				q => dqo);
 
 			ffd_i : fdrse
 			port map (
