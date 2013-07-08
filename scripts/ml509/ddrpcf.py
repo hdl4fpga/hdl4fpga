@@ -4,31 +4,88 @@ import sys
 import struct
 import re
 
-ddra = []
-n = ""
-for k in p:
-	m = re.match("(\w+\D)(\d+)\s", k['net'])
-	if m: 
-		if n == m.group(1) :
-			ddra.append(k['loc'])
-		else :
-			if n != "" :
-				f(n,ddra)
-			ddra = []
-			n = m.group(1)
-			ddra.insert(int (m.group(2)),k['loc'])
-	else :
-		if ddra != [] :
-			f(n,ddra)
-			ddra = []
-			n = ""
-		n = k['net']
-		ddra.append(k['loc'])
+pads = [
 
+		[ "L24",  "X0Y139",
+		[ "L25",  "X0Y138",
+		[ "M25",  "X0Y136",
+		[ "J27",  "X0Y135",
 
-for k in sorted(pp.keys()) :
-	print ("\t\t" + k + " : std_logic_vector("+ str(len(pp[k])) + "-1 downto 0);")
+		[ "L26",  "X0Y138",
+		[ "J24",  "X0Y137",
+		[ "M26",  "X0Y136",
+		[ "G25",  "X0Y134",
 
-print(");\n\tattribute loc : string;\n\n")
-for k in sorted(pp.keys()) :
-	print ("\tattribute loc of " +k + " : signal is \"" + pp[k] +'";')
+		[ "G26",  "X0Y134",
+		[ "H24",  "X0Y133",
+		[ "K28",  "X0Y126",
+		[ "K27",  "X0Y125",
+
+		[ "H25",  "X0Y133",
+		[ "F25",  "X0Y132",
+		[ "L28",  "X0Y126",
+		[ "M28",  "X0Y124",
+
+		[ "N28",  "X0Y124",
+		[ "P27",  "X0Y123",
+		[ "N25",  "X0Y121",
+		[ "T24",  "X0Y120",
+
+		[ "P26",  "X0Y123",
+		[ "N24",  "X0Y122",
+		[ "P25",  "X0Y121",
+		[ "R24",  "X0Y120",
+
+		[ "V24",  "X0Y59",
+		[ "W26",  "X0Y58",
+		[ "W25",  "X0Y57",
+		[ "V28",  "X0Y54",
+
+		[ "W24",  "X0Y59",
+		[ "Y26",  "X0Y58",
+		[ "Y27",  "X0Y56",
+		[ "V29",  "X0Y52",
+
+		[ "W27",  "X0Y56",
+		[ "V27",  "X0Y54",
+		[ "W29",  "X0Y52",
+		[ "AC30", "X0Y49",
+
+		[ "V30",  "X0Y55",
+		[ "W31",  "X0Y53",
+		[ "AB30", "X0Y49",
+		[ "AC29", "X0Y46",
+
+		[ "AA25", "X0Y39",
+		[ "AB27", "X0Y38",
+		[ "AA24", "X0Y37",
+		[ "AB26", "X0Y36",
+
+		[ "AA26", "X0Y39",
+		[ "AC27", "X0Y38",
+		[ "AB25", "X0Y36",
+		[ "AC28", "X0Y35",
+
+		[ "AB28", "X0Y34",
+		[ "AG28", "X0Y33",
+		[ "AJ26", "X0Y28",
+		[ "AG25", "X0Y26",
+
+		[ "AA28", "X0Y34",
+		[ "AH28", "X0Y33",
+		[ "AF28", "X0Y32",
+		[ "AH27", "X0Y28",
+
+		[ "AE29", "X0Y44",
+		[ "AD29", "X0Y44",
+		[ "AF29", "X0Y42",
+		[ "AJ30", "X0Y41",
+
+		[ "AD30", "X0Y46",
+		[ "AF31", "X0Y45",
+		[ "AK31", "X0Y43",
+		[ "AF30", "X0Y42",
+			]
+
+for k in  :
+	print (k)
