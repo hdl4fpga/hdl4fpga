@@ -31,39 +31,38 @@ begin
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
 		signal dqs : std_logic;
 		signal dqz : std_logic;
-		signal d0  : std_logic;
 		signal d1  : std_logic;
+		signal d2  : std_logic;
 	begin
 
 		with std select
-		d0 <= 
+		d1 <= 
 			'0' when 1|2,
 			ddr_io_ena(i) when 3;
 
 		with std select
-		d1 <= 
+		d2 <= 
 			ddr_io_ena(i) when 1|2,
 			'1' when 3;
 
-		oddr_du : fddrrse
+		oddr_du : oddr
 		port map (
-			c0 => rclk,
-			c1 => fclk,
+			r => '0',
+			s => '0',
+			c => rclk,
 			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => d0,
 			d1 => d1,
+			d2 => d2,
 			q  => dqs);
 
 		ffd_i : fdrse
 		port map (
-			s  => '0',
-			r  => '0',
-			c  => fclk,
+			s => '0',
+			r => '0',
+			c => fclk,
 			ce => '1',
-			d  => ddr_io_dqz(i),
-			q  => dqz);
+			d => ddr_io_dqz(i),
+			q => dqz);
 
 		iobufds_i : iobufds
 		generic map (
