@@ -2,7 +2,7 @@
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras, msagre@hdl4fpga.com                               --
 --                                                                            --
--- Copyright (C) 2010                                                         --
+-- Copyright (C) 2010-2013                                                    --
 --    Miguel Angel Sagreras, http://www.hdl4fpga.com                          --
 --                                                                            --
 -- This source file may be used and distributed without restriction provided  --
@@ -18,6 +18,5 @@
 -- This source is distributed in the hope that it will be useful, but WITHOUT --
 -- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.
+-- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
-

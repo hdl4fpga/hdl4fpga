@@ -104,7 +104,7 @@ net ddr2_dqs_p[1] tnm_net = RAMS RAMS_dqs1;
 ## Others #
 ## ###### #
 #
-timespec ts_ddr_ram  = from RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_usm_ddr_dcm_dcm_clk0 datapathonly;
+timespec ts_ddr_ram  = from RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_ddr_dcm_dcm_clk0 datapathonly;
 timespec ts_ddr_act  = from FFS  (*/ddr_mpu_act) TO FFS(*ddr_a*) TS_usm_ddr_dcm_dcm_clk0*1.5 datapathonly;
 timespec ts_ddr_dll  = from FFS  (*/dll_timer_rdy)  TIG;
 timespec ts_ddr_200u = from FFS  (*/ddr_init_cfg) TIG;
