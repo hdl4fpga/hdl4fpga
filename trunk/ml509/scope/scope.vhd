@@ -54,7 +54,7 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 11; --30; --25;
+	constant ddr_multiply : natural := 9; --30; --25;
 	constant ddr_divide   : natural := 2;  --2; --3;
 
 begin
@@ -114,17 +114,17 @@ begin
 		dfs_clk => video_clk,
 		dcm_lck => video_lckd);
 
-	ddr_dcm	: entity hdl4fpga.dfsdcm
+	ddr_dcm	: entity hdl4fpga.plldcm
 	generic map (
-		dcm_per => uclk_period,
+		pll_per => uclk_period,
 		dfs_mul => ddr_multiply,
 		dfs_div => ddr_divide)
 	port map (
-		dcm_rst => dcm_rst,
-		dcm_clk => uclk_bufg,
-		dfsdcm_clk0  => ddrs_clk0,
-		dfsdcm_clk90 => ddrs_clk90,
-		dcm_lck => ddrs_lckd);
+		plldcm_rst => dcm_rst,
+		plldcm_clk => uclk_bufg,
+		plldcm_clk0  => ddrs_clk0,
+		plldcm_clk90 => ddrs_clk90,
+		plldcm_lck => ddrs_lckd);
 
 	isdbt_dcm : entity hdl4fpga.dfs1(v5)
 	generic map (
