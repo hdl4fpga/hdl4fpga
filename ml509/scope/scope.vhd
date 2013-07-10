@@ -20,7 +20,8 @@ architecture scope of ml509 is
 	constant uclk_period : real := 10.0;
 	signal uclk_bufg  : std_logic;
 
-	signal dcm_rst : std_logic;
+	signal dcm_rst  : std_logic;
+	signal dcm_lckd : std_logic;
 	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
@@ -54,12 +55,25 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 9; --30; --25;
-	constant ddr_divide   : natural := 2;  --2; --3;
+	constant ddr_multiply : natural := 9; -- 30; -- 25;
+	constant ddr_divide   : natural := 2; --  2; --  3;
 
 begin
 
 	sys_rst <= gpio_sw_n;
+
+	dcms_e : entity hdl4fpga.dcms
+	generic map (
+		sys_per => 10.0)
+	port map (
+		sys_rst => sys_rst,
+		sys_clk => user_clk,
+		input_clk => input_clk,
+		ddr_clk0 => ddrs_clk0,
+		ddr_clk90 => ddrs_clk90,
+		video_clk => video_clk,
+		dcm_lckd => dcm_lckd);
+
 	scope_e : entity hdl4fpga.scope
 	port map (
 		sys_rst => scope_rst,
@@ -98,61 +112,61 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
-	clkin_ibufg : ibufg
-	port map (
-		I => user_clk,
-		O => uclk_bufg);
-
-	video_dcm : entity hdl4fpga.dfs1(v5)
-	generic map (
-		dcm_per => uclk_period,
-		dfs_mul => 3,
-		dfs_div => 2)
-	port map(
-		dcm_rst => dcm_rst,
-		dcm_clk => uclk_bufg,
-		dfs_clk => video_clk,
-		dcm_lck => video_lckd);
-
-	ddr_dcm	: entity hdl4fpga.plldcm
-	generic map (
-		pll_per => uclk_period,
-		dfs_mul => ddr_multiply,
-		dfs_div => ddr_divide)
-	port map (
-		plldcm_rst => dcm_rst,
-		plldcm_clk => uclk_bufg,
-		plldcm_clk0  => ddrs_clk0,
-		plldcm_clk90 => ddrs_clk90,
-		plldcm_lck => ddrs_lckd);
-
-	isdbt_dcm : entity hdl4fpga.dfs1(v5)
-	generic map (
-		dcm_per => uclk_period,
-		dfs_mul => 2,
-		dfs_div => 10)
-	port map (
-		dcm_rst => dcm_rst,
-		dcm_clk => uclk_bufg,
-		dfs_clk => input_clk,
-		dcm_lck => input_lckd);
-
-	process (sys_rst, uclk_bufg)
-		variable rst : std_logic_vector(0 to 5);
-	begin
-		if sys_rst='1' then
-			dcm_rst <= '1';
-			scope_rst <= '1';
-			rst := (others => '1');
-		elsif rising_edge(uclk_bufg) then
-			if dcm_rst='0' then
-				scope_rst <= not (video_lckd and ddrs_lckd and input_lckd);
-			end if;
-
-			rst := rst(1 to rst'right) & '0';
-			dcm_rst <= rst(0);
-		end if;
-	end process;
+--	clkin_ibufg : ibufg
+--	port map (
+--		I => user_clk,
+--		O => uclk_bufg);
+--
+--	video_dcm : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => uclk_period,
+--		dfs_mul => 3,
+--		dfs_div => 2)
+--	port map(
+--		dcm_rst => dcm_rst,
+--		dcm_clk => uclk_bufg,
+--		dfs_clk => video_clk,
+--		dcm_lck => video_lckd);
+--
+--	ddr_dcm	: entity hdl4fpga.plldcm
+--	generic map (
+--		pll_per => uclk_period,
+--		dfs_mul => ddr_multiply,
+--		dfs_div => ddr_divide)
+--	port map (
+--		plldcm_rst => dcm_rst,
+--		plldcm_clkin => uclk_bufg,
+--		plldcm_clk0  => ddrs_clk0,
+--		plldcm_clk90 => ddrs_clk90,
+--		plldcm_lckd => ddrs_lckd);
+--
+--	isdbt_dcm : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => uclk_period,
+--		dfs_mul => 2,
+--		dfs_div => 10)
+--	port map (
+--		dcm_rst => dcm_rst,
+--		dcm_clk => uclk_bufg,
+--		dfs_clk => input_clk,
+--		dcm_lck => input_lckd);
+--
+--	process (sys_rst, uclk_bufg)
+--		variable rst : std_logic_vector(0 to 5);
+--	begin
+--		if sys_rst='1' then
+--			dcm_rst <= '1';
+--			scope_rst <= '1';
+--			rst := (others => '1');
+--		elsif rising_edge(uclk_bufg) then
+--			if dcm_rst='0' then
+--				scope_rst <= not (video_lckd and ddrs_lckd and input_lckd);
+--			end if;
+--
+--			rst := rst(1 to rst'right) & '0';
+--			dcm_rst <= rst(0);
+--		end if;
+--	end process;
 
 	vga_iob_e : entity hdl4fpga.vga2ch7301c_iob
 	port map (
@@ -238,5 +252,5 @@ begin
    	ddr2_odt(1 downto 0) <= (others => 'Z');
 	ddr2_dm(7 downto 0) <= (others => 'Z');
 	ddr2_d(63 downto 16) <= (others => '0');
---gpio_led <= (others => '1');
+
 end;
