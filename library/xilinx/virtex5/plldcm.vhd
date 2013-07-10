@@ -38,8 +38,8 @@ begin
 		clkout0_phase  => 0.000,
 		clkout0_duty_cycle => 0.500,
 		compensation   => "PLL2DCM",
-		divclk_divide  => 2,
-		clkfbout_mult  => 11,
+		divclk_divide  => dfs_div,
+		clkfbout_mult  => dfs_mul,
 		clkfbout_phase => 0.0,
 		ref_jitter => 0.005000)
 	port map (
@@ -78,10 +78,10 @@ begin
 	generic map (
 		clk_feedback => "1x",
 		clkin_divide_by_2 => FALSE,
-		clkin_period => pll_per,
+		clkin_period => (real(dfs_div)*pll_per)/real(dfs_mul),
 		clkdv_divide => 2.0,
-		clkfx_divide => dfs_div,
-		clkfx_multiply => dfs_mul,
+		clkfx_divide => 1,
+		clkfx_multiply => 4,
 		clkout_phase_shift   => "NONE",
 		dcm_autocalibration  => TRUE,
 		dcm_performance_mode => "MAX_SPEED",

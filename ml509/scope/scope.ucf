@@ -87,12 +87,19 @@ net "ddr2_dqs_p[1]" tnm_net = dqs1;
 ## DDR 200 Mhz rate clock #
 ## ###################### #
 #
-timespec ts_dso0 = period "dqs0" 2.222222 ns high 50%; # INPUT_JITTER 200 ps; 
+#timespec ts_dso0 = period "dqs0" 5 ns high 50%; # INPUT_JITTER 200 ps; 
 #net "*ddr_st_lp_dqs*" offset = in 1.5 ns valid 2.5 ns before ddr_dqs[0] rising;
 #net "*ddr_st_lp_dqs*" offset = in 1.5 ns valid 2.5 ns before ddr_dqs[1] rising;
 #offset = in -0.450 ns valid 1.9 ns before ddr_dqs[0] rising;
 #offset = in -0.450 ns valid 1.9 ns before ddr_dqs[1] rising;
 
+## ###################### #
+## DDR 200 Mhz rate clock #
+## ###################### #
+
+timespec ts_dso0 = period "dqs0" 2.222222 ns high 50%; # INPUT_JITTER 200 ps; 
+#offset = in -0.450 ns valid 1.9 ns before ddr_dqs[0] rising;
+#offset = in -0.450 ns valid 1.9 ns before ddr_dqs[1] rising;
 timespec ts_dso1 = period "dqs1" ts_dso0 high 50% phase 0.0; # INPUT_JITTER 200 ps;
 #
 net ddr2_dqs_p[0] tnm_net = FFS  FFS_dqs0;
@@ -100,7 +107,7 @@ net ddr2_dqs_p[1] tnm_net = FFS  FFS_dqs1;
 net ddr2_dqs_p[0] tnm_net = RAMS RAMS_dqs0;
 net ddr2_dqs_p[1] tnm_net = RAMS RAMS_dqs1;
 net ddrs_clk0     tnm_net = FFS FFS_ddrsclk0;
-net user_clk      tnm_net = FFS FFS_userclk;
+net uclk_bufg     tnm_net = FFS FFS_userclk;
 
 ## ###### #
 ## Others #
@@ -116,6 +123,7 @@ timespec ts_ddr_200u = from FFS  (*/ddr_init_cfg) TIG;
 # ###################### #
 
 timespec ts_ddr2user_clk = FROM FFS_ddrsclk0 TO FFS_userclk TIG;
+timespec ts_user2ddr_clk = FROM FFS_userclk TO FFS_ddrsclk0 TIG;
 ##timespec ts_rowid  = FROM FFS(*/*vsync_erq*)  TO FFS(*sync_ena_val*) TIG;
 ##timespec ts_rowpag = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
 #

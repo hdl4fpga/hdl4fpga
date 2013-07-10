@@ -81,20 +81,20 @@ begin
    
 	dfs_i : dcm_adv
 	generic map(
-		clk_feedback => "1x",
+		clk_feedback => "1X",
 		clkdv_divide => 2.0,
 		clkfx_divide => dfs_div,
 		clkfx_multiply => dfs_mul,
-		clkin_divide_by_2 => false,
+		clkin_divide_by_2 => FALSE,
 		clkin_period => dcm_per,
-		clkout_phase_shift => "none",
-		deskew_adjust => "system_synchronous",
-		dfs_frequency_mode => "low",
-		dll_frequency_mode => "low",
-		duty_cycle_correction => true,
-		factory_jf   => x"c080",
+		clkout_phase_shift => "NONE",
+		deskew_adjust => "SYSTEM_SYNCHRONOUS",
+		dfs_frequency_mode => "HIGH",
+		dll_frequency_mode => "HIGH",
+		duty_cycle_correction => TRUE,
+		factory_jf   => X"C080",
 		phase_shift  => 0,
-		startup_wait => false)
+		startup_wait => FALSE)
 	port map (
 		rst   => dcm_rst,
 		psclk => '0',
