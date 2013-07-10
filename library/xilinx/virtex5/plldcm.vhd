@@ -8,10 +8,10 @@ entity plldcm is
 		dfs_mul : natural);
 	port ( 
 		plldcm_rst : in std_logic; 
-		plldcm_clk : in std_logic; 
+		plldcm_clkin : in std_logic; 
 		plldcm_clk0  : out std_logic; 
 		plldcm_clk90 : out std_logic; 
-		plldcm_lck : out std_logic);
+		plldcm_lckd : out std_logic);
 end;
 
 library unisim;
@@ -51,7 +51,7 @@ begin
 		dclk  => '0',
 		daddr => (others => '0'),
 		clkinsel => '1',
-		clkin1   => plldcm_clk,
+		clkin1   => plldcm_clkin,
 		clkin2   => '0',
 		clkfbin  => pll_clkfb,
 		clkfbdcm => pll_clkfb,
@@ -107,7 +107,7 @@ begin
 		psincdec => '0',
 		clk0  => dcm_clk0,
 		clk90 => dcm_clk90,
-		locked => plldcm_lck);
+		locked => plldcm_lckd);
    
 	plldcmclk90_bufg_i : bufg
 	port map (
