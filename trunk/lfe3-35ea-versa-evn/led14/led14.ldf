@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="2.0" title="led14" device="LFE3-35EA-8FN484C" synthesis="precision" default_implementation="led14">
+<BaliProject version="2.0" title="led14" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="led14">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="led14" dir="led14" description="led14" default_strategy="Strategy1">
         <Options def_top="digit14"/>
-        <Source name="../led14.vhd" type="VHDL" type_short="VHDL">
+        <Source name="led14.vhd" type="VHDL" type_short="VHDL">
             <Options top_module="digit14"/>
         </Source>
         <Source name="led14.lpf" type="Logic Preference" type_short="LPF">
