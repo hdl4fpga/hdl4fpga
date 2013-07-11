@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version=" 1.0" encoding="UTF-8"?>
 <BaliProject version="2.0" title="scope" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="scope">
     <Options/>
     <Implementation title="scope" dir="scope" description="scope" default_strategy="Strategy1">
