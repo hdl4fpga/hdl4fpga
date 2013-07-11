@@ -19,8 +19,9 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>/home/msagre/work/corelib/ecp3versa/led14/led14_led14.bit</File>
-			<FileTime>1/14/2012 18:57:59</FileTime>
+			<File>/home/msagre/work/hdl4fpga/lfe3-35ea-versa-evn/led14/led14/led14_led14.bit</File>
+			<FileTime>07/10/13 21:59:07</FileTime>
+			<JedecChecksum>N/A</JedecChecksum>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
