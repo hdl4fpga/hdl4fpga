@@ -257,8 +257,6 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../scope/dcms.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="222"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
