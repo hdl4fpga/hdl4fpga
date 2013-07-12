@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BaliProject version="2.0" title="scope" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="scope">
     <Options/>
-    <Implementation title="scope" dir="scope" description="scope" default_strategy="Strategy1">
+    <Implementation title="scope" dir="scope" description="scope" default_strategy="Area">
         <Options def_top="demux"/>
         <Source name="../../library/scope/datai.vhd" type="VHDL" type_short="VHDL">
             <Options/>
@@ -70,5 +70,4 @@
             <Options/>
         </Source>
     </Implementation>
-    <Strategy name="Strategy1" file="scope1.sty"/>
 </BaliProject>
