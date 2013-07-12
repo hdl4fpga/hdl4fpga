@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <!DOCTYPE		ispXCF	SYSTEM	"IspXCF.dtd" >
-<ispXCF version="1.4">
+<ispXCF version="2.2.0">
 	<Comment></Comment>
 	<Chain>
 		<Comm>JTAG</Comm>
@@ -19,7 +19,7 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>/home/msagre/work/hdl4fpga/lfe3-35ea-versa-evn/led14/led14/led14_led14.bit</File>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/led14/led14/led14_led14.bit</File>
 			<FileTime>07/10/13 22:05:01</FileTime>
 			<JedecChecksum>N/A</JedecChecksum>
 			<Operation>Fast Program</Operation>
@@ -28,9 +28,7 @@
 				<IOState>HighZ</IOState>
 				<PreloadLength>675</PreloadLength>
 				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
-				<OverideUES value="TRUE"/>
-				<TCKFrequency>1.000000 MHz</TCKFrequency>
-				<SVFProcessor>ispVM</SVFProcessor>
+				<SVFProcessor>SVF Processor</SVFProcessor>
 				<Usercode>0x00000000</Usercode>
 				<AccessMode>JTAG</AccessMode>
 			</Option>
@@ -46,7 +44,7 @@
 	</ProjectOptions>
 	<CableOptions>
 		<CableName>USB2</CableName>
-		<PortAdd>FTUSB-1</PortAdd>
-		<USBID>2232 Location 0001 Serial ?B</USBID>
+		<PortAdd>FTUSB-0</PortAdd>
+		<USBID>2232 Location 0000 Serial ?A</USBID>
 	</CableOptions>
 </ispXCF>
