@@ -9,10 +9,10 @@
 			<Pos>1</Pos>
 			<Vendor>Lattice</Vendor>
 			<Family>LatticeECP3</Family>
-			<Name>LFE3-35EA</Name>
+			<Name>LAE3-35EA</Name>
 			<IDCode>0x01012043</IDCode>
 			<Package>All</Package>
-			<PON>LFE3-35EA</PON>
+			<PON>LAE3-35EA</PON>
 			<Bypass>
 				<InstrLen>8</InstrLen>
 				<InstrVal>11111111</InstrVal>
@@ -20,15 +20,16 @@
 				<BScanVal>0</BScanVal>
 			</Bypass>
 			<File>/home/msagre/work/hdl4fpga/ecp3versa/led14/led14/led14_led14.bit</File>
-			<FileTime>07/10/13 22:05:01</FileTime>
-			<JedecChecksum>N/A</JedecChecksum>
+			<FileTime>07/13/13 14:51:34</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
 				<IOState>HighZ</IOState>
 				<PreloadLength>675</PreloadLength>
 				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
-				<SVFProcessor>SVF Processor</SVFProcessor>
+				<OverideUES value="TRUE"/>
+				<TCKFrequency>1.000000 MHz</TCKFrequency>
+				<SVFProcessor>ispVM</SVFProcessor>
 				<Usercode>0x00000000</Usercode>
 				<AccessMode>JTAG</AccessMode>
 			</Option>
