@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="2.0" title="ecp3versa" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="digit14">
+    <Options>
+        <Option name="HDL type" value="VHDL"/>
+    </Options>
+    <Implementation title="digit14" dir="digit14" description="digit14" default_strategy="Strategy1">
+        <Options def_top="digit14"/>
+        <Source name="digit14.vhd" type="VHDL" type_short="VHDL">
+            <Options top_module="digit14"/>
+        </Source>
+        <Source name="../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="ecp3versa1.sty"/>
+</BaliProject>
