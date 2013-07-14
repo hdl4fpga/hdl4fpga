@@ -45,7 +45,3 @@ entity ecp3versa is
 	attribute loc of ddr_dq    : signal is "G3 C1 B1 J4 E2 H4 F1 G2 G4 G5 B2 C2 D1 D2 E4 E5";
 
 end;
-
---architecture scope of ecp3versa is
---begin
---end;
