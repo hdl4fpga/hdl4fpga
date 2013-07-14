@@ -1,0 +1,11 @@
+#! /bin/bash
+unset LD_LIBRARY_PATH
+PATH="/usr/local/bin:/usr/bin:/bin"
+export PATH
+if [ "$1"="openURL" ];
+then
+	shift
+	exec firefox -remote 'openURL('"$@",'new-tab)';
+else
+	exec `basename $0` "$@"
+fi
