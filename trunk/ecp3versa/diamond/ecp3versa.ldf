@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="2.0" title="ecp3versa" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="digit14">
+<BaliProject version="2.0" title="ecp3versa" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="scope">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -16,7 +16,7 @@
         </Source>
     </Implementation>
     <Implementation title="scope" dir="scope" description="scope" default_strategy="Area">
-        <Options def_top="hdl4fpga.crc"/>
+        <Options def_top="hdl4fpga.crc" lib="hdl4fpga"/>
         <Source name="../../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -85,6 +85,9 @@
         </Source>
         <Source name="../../library/common/crc32.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

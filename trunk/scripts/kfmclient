@@ -1,11 +1,14 @@
 #! /bin/bash
 unset LD_LIBRARY_PATH
-PATH="/usr/local/bin:/usr/bin:/bin"
+PATH="/usr/local/bin:/usr/bin:/bin:/opt/bin"
 export PATH
 if [ "$1"="openURL" ];
 then
 	shift
-	exec firefox -remote 'openURL('"$@",'new-tab)';
+#	exec firefox -remote 'openURL('"$@",'new-tab)';
+#	if [ "file://${1##file://}"="$1" ] ;
+#	if [ "${1%%.pdf}.pdf"="$1" ] ;
+	exec firefox -new-tab "$@";
 else
-	exec `basename $0` "$@"
+	echo `basename $0` "$@" > /tmp/pp
 fi
