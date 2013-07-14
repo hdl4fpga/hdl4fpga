@@ -16,9 +16,12 @@
         </Source>
     </Implementation>
     <Implementation title="scope" dir="scope" description="scope" default_strategy="Area">
-        <Options def_top="hdl4fpga.crc" lib="hdl4fpga"/>
+        <Options def_top="hdl4fpga.crc" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
+        </Source>
+        <Source name="../scope/scope.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
         </Source>
         <Source name="../../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
