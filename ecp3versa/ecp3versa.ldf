@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="2.0" title="ecp3versa" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="digit14">
+<BaliProject version="2.0" title="ecp3versa" device="LFE3-35EA-8FN484C" synthesis="synplify" default_implementation="scope">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -8,22 +8,79 @@
         <Source name="digit14.vhd" type="VHDL" type_short="VHDL">
             <Options top_module="digit14"/>
         </Source>
-        <Source name="../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="scope" dir="scope" description="scope" default_strategy="Area">
+        <Options def_top="hdl4fpga.crc"/>
+        <Source name="../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
+        <Source name="../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/datai.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/dataio.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/ddr2miitx.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/ddr2video.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/ddrio.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/mem2vio.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/miitxmem.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/plot.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/scope.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/videomem.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/scope/win_scope.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/align.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/dpram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/pipe_le.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/std.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/timers.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../library/common/crc32.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
