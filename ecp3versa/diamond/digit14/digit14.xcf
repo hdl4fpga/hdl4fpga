@@ -19,8 +19,8 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>/home/msagre/work/hdl4fpga/ecp3versa/digit14/ecp3versa_digit14.bit</File>
-			<FileTime>07/13/13 18:02:40</FileTime>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/digit14/ecp3versa_digit14.bit</File>
+			<FileTime>07/14/13 08:42:41</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
