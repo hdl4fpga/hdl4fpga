@@ -50,6 +50,6 @@ entity ecp3versa is
 
 end;
 
-architecture scope of ecp3versa is
-begin
-end;
+--architecture scope of ecp3versa is
+--begin
+--end;
