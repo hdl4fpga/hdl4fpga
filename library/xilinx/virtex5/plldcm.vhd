@@ -18,7 +18,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture def of plldcm is
-	signal pll_clk : std_logic;
 	signal pll_clkfb  : std_logic;
 	signal pll_lckd  : std_logic;
 
@@ -58,12 +57,12 @@ begin
 		clkoutdcm0 => dcm_clkin,
 		locked   => pll_lckd);
    
-	process (plldcm_rst, pll_clk)
+	process (plldcm_rst, plldcm_clkin)
 		variable srl16 : std_logic_vector(0 to 16-1);
 	begin
 		if plldcm_rst='1' then
 			dcm_rst <= '1';
-		elsif rising_edge(pll_clk) then
+		elsif rising_edge(plldcm_clkin) then
 			srl16 := srl16(1 to srl16'right) & not pll_lckd;
 			dcm_rst <= srl16(0) or not pll_lckd;
 		end if;

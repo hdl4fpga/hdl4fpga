@@ -47,8 +47,8 @@ entity ddr is
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
-		ddr_st_lp_dqs : in std_logic;
 		ddr_lp_dqs : out std_logic;
+		ddr_st_lp_dqs : in std_logic;
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);

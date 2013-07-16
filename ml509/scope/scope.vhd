@@ -18,7 +18,6 @@ architecture scope of ml509 is
 	constant data_size : natural := 16;
 
 	constant uclk_period : real := 10.0;
-	signal uclk_bufg  : std_logic;
 
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
@@ -60,7 +59,7 @@ architecture scope of ml509 is
 
 begin
 
-	sys_rst <= gpio_sw_n;
+	sys_rst <= gpio_sw_c;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -74,11 +73,14 @@ begin
 		video_clk => video_clk,
 		dcm_lckd => dcm_lckd);
 
+	scope_rst <= not dcm_lckd;
 	scope_e : entity hdl4fpga.scope
+	generic map (
+		ddr_std => 2)
 	port map (
 		sys_rst => scope_rst,
 
-		input_clk => uclk_bufg,
+		input_clk => input_clk,
 
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,
@@ -94,8 +96,8 @@ begin
 		ddr_dqs_p => ddr2_dqs_p(1 downto 0),
 		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
-		ddr_lp_dqs => gpio_led_c, --ddr_lp_dqs,
-		ddr_st_lp_dqs => gpio_sw_c, --ddr_st_lp_dqs,
+		ddr_lp_dqs => gpio_led_e, --ddr_lp_dqs,
+		ddr_st_lp_dqs => gpio_sw_e, --ddr_st_lp_dqs,
 
 		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
@@ -111,62 +113,6 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
-
---	clkin_ibufg : ibufg
---	port map (
---		I => user_clk,
---		O => uclk_bufg);
---
---	video_dcm : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => uclk_period,
---		dfs_mul => 3,
---		dfs_div => 2)
---	port map(
---		dcm_rst => dcm_rst,
---		dcm_clk => uclk_bufg,
---		dfs_clk => video_clk,
---		dcm_lck => video_lckd);
---
---	ddr_dcm	: entity hdl4fpga.plldcm
---	generic map (
---		pll_per => uclk_period,
---		dfs_mul => ddr_multiply,
---		dfs_div => ddr_divide)
---	port map (
---		plldcm_rst => dcm_rst,
---		plldcm_clkin => uclk_bufg,
---		plldcm_clk0  => ddrs_clk0,
---		plldcm_clk90 => ddrs_clk90,
---		plldcm_lckd => ddrs_lckd);
---
---	isdbt_dcm : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => uclk_period,
---		dfs_mul => 2,
---		dfs_div => 10)
---	port map (
---		dcm_rst => dcm_rst,
---		dcm_clk => uclk_bufg,
---		dfs_clk => input_clk,
---		dcm_lck => input_lckd);
---
---	process (sys_rst, uclk_bufg)
---		variable rst : std_logic_vector(0 to 5);
---	begin
---		if sys_rst='1' then
---			dcm_rst <= '1';
---			scope_rst <= '1';
---			rst := (others => '1');
---		elsif rising_edge(uclk_bufg) then
---			if dcm_rst='0' then
---				scope_rst <= not (video_lckd and ddrs_lckd and input_lckd);
---			end if;
---
---			rst := rst(1 to rst'right) & '0';
---			dcm_rst <= rst(0);
---		end if;
---	end process;
 
 	vga_iob_e : entity hdl4fpga.vga2ch7301c_iob
 	port map (
