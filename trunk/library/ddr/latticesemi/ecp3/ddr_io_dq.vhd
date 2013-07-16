@@ -17,22 +17,24 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of ddr_io_dq is
+architecture ddr2_ecp3 of ddr_io_dq is
 	signal ddr_io_fclk : std_logic;
 begin
 	ddr_io_fclk <= not ddr_io_clk;
 	bytes_g : for i in 0 to data_bytes-1 generate
-		bits_g : for j in 0 to byte_bits-1 generate
+		bits_g : for j in 0 to byte_bits/2-1 generate
 			signal dqo : std_logic;
 			signal dqz : std_logic;
 			signal di : std_logic;
 		begin
 
-			oddr_du : oddr
+			oddr_i : oddrx2d
 			port map (
-				r => '0',
-				s => '0',
-				c => ddr_io_fclk,
+				da0 => '0',
+				db0 => '0',
+				da1 => '0',
+				db2 => '0',
+				sclk => ddr_io_fclk,
 				ce => '1',
 				d1 => ddr_io_dql(i*byte_bits+j),
 				d2 => ddr_io_dqh(i*byte_bits+j),
