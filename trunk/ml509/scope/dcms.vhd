@@ -30,8 +30,8 @@ architecture def of dcms is
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 9;
-	constant ddr_divide   : natural := 2;
+	constant ddr_multiply : natural := 5; -- 9;
+	constant ddr_divide   : natural := 3; -- 2;
 
 	signal dcm_rst : std_logic;
 	signal sclk_bufg : std_logic;
@@ -89,6 +89,7 @@ begin
 			if dcm_rst='0' then
 				dcm_lckd <= video_lckd and ddr_lckd and input_lckd;
 			end if;
+			dcm_rst <= '0';
 		end if;
 	end process;
 end;

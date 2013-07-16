@@ -403,16 +403,16 @@ begin
 		ddr_mpu_drf  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl))));
 	end generate;
 
---	ddr2_g : if std=2 generate
---		ddr_mpu_rwin <= not ph_rea(4*2+4*((ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
---		ddr_mpu_drr  <= not (
---			ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))) and
---			ph_rea(4*1+ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))));
---		ddr_mpu_drf  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl))));
---	end generate;
+	ddr2_g : if std=2 generate
+		ddr_mpu_rwin <= not ph_rea(4*2+4*((4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
+		ddr_mpu_drr  <= not (
+			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))) and
+			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))));
+		ddr_mpu_drf  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl))));
+	end generate;
 
 	ddr3_g : if std=3 generate
-		ddr_mpu_rwin <= not ph_rea(4*2+4*((ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
+		ddr_mpu_rwin <= not ph_rea(4*2+4*((4*ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
 		ddr_mpu_drr  <= not (
 			ph_rea(ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))) and 
 			ph_rea(4*1+ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))));

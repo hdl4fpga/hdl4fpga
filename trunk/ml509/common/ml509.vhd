@@ -9,10 +9,10 @@ entity ml509 is
 --		cfg_addr_out : in std_logic_vector(2-1 downto 0);
 --		cpld_io_1 : in std_logic;
 
-		clk_27mhz_fpga : in std_logic;
-		clk_33mhz_fpga : in std_logic;
-		clk_fpga_n : in std_logic;
-		clk_fpga_p : in std_logic;
+		clk_27mhz_fpga : in std_logic := '-';
+		clk_33mhz_fpga : in std_logic := '-';
+		clk_fpga_n : in std_logic := '-';
+		clk_fpga_p : in std_logic := '-';
 
 		ddr2_clk_p : out std_logic_vector(2-1 downto 0);	--
 		ddr2_clk_n : out std_logic_vector(2-1 downto 0);	--
@@ -63,7 +63,7 @@ entity ml509 is
 		gpio_sw_s  : in std_logic;
 		gpio_sw_w  : in std_logic;
 
-		hdr1 : std_logic_vector(1 to 32);
+		hdr1 : std_logic_vector(1 to 32):= (others => '-');
 		hdr2_diff_p : std_logic_vector(0 to 4-1);
 		hdr2_diff_n : std_logic_vector(0 to 4-1);
 		hdr2_sm_p : std_logic_vector(4 to 16-1);
