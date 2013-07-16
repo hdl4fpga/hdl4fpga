@@ -24,14 +24,14 @@ end;
 
 architecture def of dcms is
 
-	---------------------------------------
-	-- Frequency   -- 166 Mhz -- 450 Mhz --
-	-- Multiply by --   5     --   9     --
-	-- Divide by   --   3     --   2     --
-	---------------------------------------
+	-------------------------------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 180 Mhz -- 193 Mhz -- 200 Mhz  --
+	-- Multiply by --  20     --  25     --   9     --  29     --  10      --
+	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
+	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 9;
-	constant ddr_divide   : natural := 2;
+	constant ddr_multiply : natural := 5; -- 9;
+	constant ddr_divide   : natural := 3; -- 2;
 
 	signal dcm_rst : std_logic;
 	signal sclk_bufg : std_logic;
@@ -72,8 +72,8 @@ begin
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
+		dfs_mul => 2,
+		dfs_div => 10)
 	port map (
 		dcm_rst => dcm_rst,
 		dcm_clk => sclk_bufg,

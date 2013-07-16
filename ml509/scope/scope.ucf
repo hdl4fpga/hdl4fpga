@@ -107,8 +107,11 @@ net ddr2_dqs_p[1] tnm_net = FFS  FFS_dqs1;
 net ddr2_dqs_p[0] tnm_net = RAMS RAMS_dqs0;
 net ddr2_dqs_p[1] tnm_net = RAMS RAMS_dqs1;
 net ddrs_clk0     tnm_net = FFS  FFS_ddrsclk0;
+net ddrs_clk0     tnm_net = RAMS RAMS_ddrsclk0;
+net ddrs_clk90    tnm_net = FFS  FFS_ddrsclk90;
 net user_clk      tnm_net = FFS  FFS_userclk;
 net user_clk      tnm_net = RAMS RAMS_userclk;
+net input_clk     tnm_net = FFS  FFS_inputclk;
 
 ## ###### #
 ## Others #
@@ -123,9 +126,13 @@ timespec ts_ddr_200u = from FFS  (*/ddr_init_cfg) TIG;
 # Crossclock time ignore #
 # ###################### #
 
-timespec ts_ddr2user_ffs_clk  = FROM FFS_ddrsclk0 TO FFS_userclk  TIG;
-timespec ts_user2ddr_ffs_clk  = FROM FFS_userclk  TO FFS_ddrsclk0 TIG;
-timespec ts_user2ddr_rams_clk = FROM RAMS_userclk TO FFS_ddrsclk0 TIG;
+timespec ts_ff2ff_clk_ddr2user = FROM FFS_ddrsclk0 TO FFS_userclk  TIG;
+timespec ts_ff2ff_clk_user2ddr = FROM FFS_userclk  TO FFS_ddrsclk0 TIG;
+timespec ts_ff2ff_clk_inp2ddr  = FROM FFS_inputclk TO FFs_ddrsclk0 TIG;
+
+timespec ts_ram2ff_clk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
+timespec ts_ram2ff_clk_user2ddr = FROM RAMS_userclk  TO FFS_ddrsclk0  TIG;
+
 #timespec ts_rowid  = FROM FFS(*/*vsync_erq*)  TO FFS(*sync_ena_val*) TIG;
 #timespec ts_rowpag = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
 #
