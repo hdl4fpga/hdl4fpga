@@ -24,7 +24,8 @@ entity ecp3versa is
 		ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z'));
+		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+		ddr3_odt : inout std_logic);
 
 	attribute loc : string;
 	
