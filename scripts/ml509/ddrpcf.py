@@ -78,44 +78,63 @@ pads = [
 	[ "AF30", "Y40", "Y42", "Y41", "Y44" ]
 ]
 
-wr_ddr_i = [ "Y34" ]
 wr_sys_i = [ "Y44", "Y29" ]
+wr_ddr_i = [ [ "Y34", "Y35" ] ]
 
+rd_sys_i = [ "Y45", "Y30"  ]
+rd_ddr_i = [ [ "Y43", "Y46" ], [ "Y31", "Y32" ] ]
 pads.reverse()
 for l in range(2):
 	for i in range(4):
 		print (
-			'INST "*/DDR_WR_FIFO_E/DATA_BYTE_G[' +
-			str(1-l) + '].SYS_CNTR_G[' +
-			str(i) + '].FFD_I" LOC = SLICE_X1' +
-			wr_sys_i[l] + ';')
+			'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+			str(1-l) + '].sys_cntr_g[' +
+			str(i) + '].ffd_i" LOC = SLICE_X1' +
+			wr_sys_i[1-l] + ';')
 	print("\n")
 
-	if l % 2 == 0:
-		for i in range(4):
-			print (
-				'INST "*/DDR_WR_FIFO_E/DATA_BYTE_G[0].DDR_DATA_G[' + 
-				str(0) + '].DDR_WORD_G.CNTR_G['  +
-				str(i) + '].FFD_I" LOC = SLICE_X1' +
-				wr_ddr_i[(l //  2)] + ';')
-		print("\n")
+	for e in range(2):
+		if l % 2 == 0:
+			for i in range(4):
+				print (
+					'INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[' + 
+					str(e) + '].ddr_word_g.cntr_g['  +
+					str(i) + '].ffd_i" LOC = SLICE_X1' +
+					wr_ddr_i[(l //  2)][e] + ';')
+			print("\n")
 
-	for e in range(2) :
 		for i in range(8):
 			print (
-				'INST "*/DDR_WR_FIFO_E/DATA_BYTE_G[' +
-				str(1-l)      + '].DDR_DATA_G[' +
-				str(e) + '].RAM_G[' +
-				str(7-i) + '].RAM16X1D_I" LOC = SLICE_X0' +
+				'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+				str(l)      + '].ddr_data_g[' +
+				str(e) + '].ram_g[' +
+				str(7-i) + '].ram16x1d_i" LOC = SLICE_X0' +
 				pads[8*l+i][e+1] + ';')
 		print("\n")
 
-	for e in range(2) :
+	for i in range(4):
+		print (
+			'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
+			str(1-l) + '].o_cntr_g[' +
+			str(i) + '].ffd_i" LOC = SLICE_X1' +
+			rd_sys_i[l] + ';')
+	print("\n")
+
+	for e in range(2):
+		for i in range(4):
+			print (
+				'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
+				str(1-l) + '].ddr_fifo[' +
+				str(e)   + '].i_cntr_g[' +
+				str(i)   + '].ffd_i" LOC = SLICE_X1' +
+				rd_ddr_i[l][e] + ';')
+		print("\n")
+
 		for i in range(8):
 			print (
-				'INST "*/*DDR_RD_FIFO_E/FIFO_BYTES_G[' +
-				str(1-l) + '].DDR_FIFO[' +
-				str(e) + '].RAM_G[' +
-				str(7-i) + '].RAM16X1D_I" LOC = SLICE_X0' +
+				'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
+				str(1-l) + '].ddr_fifo[' +
+				str(e) + '].ram_g[' +
+				str(7-i) + '].ram16x1d_i" LOC = SLICE_X0' +
 				pads[8*l+i][2+e+1] + ';')
 		print("\n")
