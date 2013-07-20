@@ -78,11 +78,11 @@ pads = [
 	[ "AF30", "Y40", "Y42", "Y41", "Y44" ]
 ]
 
-wr_sys_i = [ "Y44", "Y29" ]
-wr_ddr_i = [ [ "Y34", "Y35" ] ]
+wr_sys_i = [ "Y44", "Y41" ]
+wr_ddr_i = [ [ "Y42", "Y45" ], [ "Y29", "Y30" ] ]
 
-rd_sys_i = [ "Y45", "Y30"  ]
-rd_ddr_i = [ [ "Y43", "Y46" ], [ "Y31", "Y32" ] ]
+rd_sys_i = [ "Y46", "Y31"  ]
+rd_ddr_i = [ [ "Y43", "Y47" ], [ "Y32", "Y34" ] ]
 pads.reverse()
 for l in range(2):
 	for i in range(4):
@@ -94,20 +94,20 @@ for l in range(2):
 	print("\n")
 
 	for e in range(2):
-		if l % 2 == 0:
-			for i in range(4):
-				print (
-					'INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[' + 
-					str(e) + '].ddr_word_g.cntr_g['  +
-					str(i) + '].ffd_i" LOC = SLICE_X1' +
-					wr_ddr_i[(l //  2)][e] + ';')
-			print("\n")
+		for i in range(4):
+			print (
+				'INST "*/ddr_wr_fifo_e/data_byte_g[' + 
+				str(1-l)  + '].ddr_data_g[' + 
+				str(e) + '].ddr_word_g.cntr_g['  +
+				str(i) + '].ffd_i" LOC = SLICE_X1' +
+				wr_ddr_i[l][e] + ';')
+		print("\n")
 
 		for i in range(8):
 			print (
 				'INST "*/ddr_wr_fifo_e/data_byte_g[' +
-				str(l)      + '].ddr_data_g[' +
-				str(e) + '].ram_g[' +
+				str(1-l) + '].ddr_data_g[' +
+				str(e)   + '].ram_g[' +
 				str(7-i) + '].ram16x1d_i" LOC = SLICE_X0' +
 				pads[8*l+i][e+1] + ';')
 		print("\n")
