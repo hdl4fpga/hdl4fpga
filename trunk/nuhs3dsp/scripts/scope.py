@@ -46,6 +46,7 @@ for byte in range(len(ddr_dio)):
 		tap = dqs['taps'][i]
 		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i) + '] LOC = SLICE_' + tap[0] + ';')
 		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i) + '] BEL = ' + tap[1] + ';')
+	print()
 
 	sys_cntr = ddr_dio[byte]['read']['sys_cntr']
 	for i in range(len(sys_cntr)):
@@ -53,6 +54,7 @@ for byte in range(len(ddr_dio)):
 			'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + 
 			'].o_cntr_g[' + str(i) + '].ffd_i" LOC = SLICE_' +
 			sys_cntr[i] + ';')
+	print()
 
 	ddr_cntr = ddr_dio[byte]['read']['ddr_cntr']
 	for edge in range(len(ddr_cntr)):
@@ -63,7 +65,7 @@ for byte in range(len(ddr_dio)):
 				str(edge) + '].i_cntr_g[' +
 				str(i)    + '].ffd_i" LOC = SLICE_X1' +
 				ddr_cntr[edge][i] + ';')
-		print("\n")
+		print()
 
 #		for i in range(8):
 #			print (
