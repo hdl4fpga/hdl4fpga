@@ -78,6 +78,8 @@ begin
 			end block;
 
 			ram_g: for j in 0 to byte_bits-1 generate
+			signal x : std_logic;
+begin
 				ram16x1d_i : ram16x1d
 				port map (
 					wclk => sys_clk,
@@ -91,8 +93,15 @@ begin
 					dpra1 => ddr_addr_q(i)(1),
 					dpra2 => ddr_addr_q(i)(2),
 					dpra3 => ddr_addr_q(i)(3),
-					dpo => ddr_do(data_bits*i+byte_bits*l+j),
+--					dpo => ddr_do(data_bits*i+byte_bits*l+j),
+					dpo => x,
 					spo => open);
+					process (ddr_clk(i))
+					begin
+						if rising_edge (ddr_clk(i)) then
+							ddr_do(data_bits*i+byte_bits*l+j) <= x;
+						end if;
+					end process;
 			end generate;
 		end generate;
 	end generate;

@@ -52,7 +52,15 @@ begin
 			port map (
 				i => ddr_io_dq(i*byte_bits+j),
 				o => di);
-			ddr_io_dqi(i*byte_bits+j) <= di;
+			idelay_i : idelay 
+			port map (
+				rst => '0',
+				c  =>'0',
+				ce => '0',
+				inc => '0',
+				i => di,
+				o => ddr_io_dqi(i*byte_bits+j));
+--			ddr_io_dqi(i*byte_bits+j) <= di;
 		end generate;
 	end generate;
 end;

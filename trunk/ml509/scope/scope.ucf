@@ -101,8 +101,8 @@ net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 ## ###################### #
 
 timespec ts_dso0 = period "dqs0" 2.222222 ns high 50%  INPUT_JITTER 200 ps; 
-#offset = in -0.450 ns valid 1.9 ns before ddr_dqs[0] rising;
-#offset = in -0.450 ns valid 1.9 ns before ddr_dqs[1] rising;
+offset = in -0.200 ns valid 0.5 ns before ddr2_dqs_p[0] rising;
+offset = in -0.200 ns valid 0.5 ns before ddr2_dqs_p[1] rising;
 timespec ts_dso1 = period "dqs1" ts_dso0 high 50% phase 0.0 INPUT_JITTER 200 ps;
 #
 net ddr2_dqs_p[0] tnm_net = FFS  FFS_dqs0;
@@ -185,25 +185,25 @@ NET "gpio_led[7]" iostandard = SSTL18_II;
 # DDR dqs #
 #
 
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" loc = slice_x2y32;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" loc = slice_x2y32;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" loc = slice_x2y28;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" loc = slice_x2y28;
 #inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" bel = g;
 #inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" bel = f;
 
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[1].lut" loc = slice_x2y33;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[2].lut" loc = slice_x2y33;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[3].lut" loc = slice_x2y33;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[4].lut" loc = slice_x2y33;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[1].lut" loc = slice_x2y29;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[2].lut" loc = slice_x2y29;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[3].lut" loc = slice_x2y29;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/chain_g[4].lut" loc = slice_x2y29;
 
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" loc = slice_x2y43;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" loc = slice_x2y43;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" loc = slice_x2y48;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" loc = slice_x2y48;
 #inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" bel = g;
 #inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" bel = f;
 
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[1].lut" loc = slice_x2y44;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[2].lut" loc = slice_x2y44;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[3].lut" loc = slice_x2y44;
-inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[4].lut" loc = slice_x2y44;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[1].lut" loc = slice_x2y47;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[2].lut" loc = slice_x2y47;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[3].lut" loc = slice_x2y47;
+inst "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/chain_g[4].lut" loc = slice_x2y47;
 
 ############################################
 
