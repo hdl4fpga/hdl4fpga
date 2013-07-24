@@ -4,10 +4,10 @@ ddr_dio = [
 	{
 		'delayed_dqs' :  {
 			'lut' :  [ 
-				{ 'inst' : 'lutn', 'slice' : "X0Y82", 'bel' : "g" } ,
-				{ 'inst' : 'lutp', 'slice' : "X0Y82", 'bel' : "f" } ],
+				{ 'inst' : 'lutn', 'slice' : "X0Y82", 'bel' : "G" } ,
+				{ 'inst' : 'lutp', 'slice' : "X0Y82", 'bel' : "F" } ],
 			'taps' : [
-				[ "X0Y83", "f" ], [ "X2Y83", "f" ], [ "X0Y83", "g" ], [ "X2Y83", "g" ] ] } ,
+				[ "X0Y83", "F" ], [ "X2Y83", "F" ], [ "X0Y83", "G" ], [ "X2Y83", "G" ] ] } ,
 		'read' : {
 			'sys_cntr' : [ "X2Y80", "X2Y80", "X2Y81", "X2Y81" ],
 			'ddr_cntr' : [
@@ -16,15 +16,22 @@ ddr_dio = [
 			'ram' : [
 				[ "X2Y86", "X2Y87", "X2Y84", "X2Y85", "X2Y78", "X2Y77", "X2Y76", "X2Y75" ],
 				[ "X0Y86", "X0Y87", "X0Y84", "X0Y85", "X0Y78", "X0Y77", "X0Y76", "X0Y75" ] ] },
-		'write' :  {}
+		'write' :  {
+			'sys_cntr' : [ "X5Y81", "X5Y81", "X5Y80", "X5Y80" ],
+			'ddr_cntr' : [
+				[ "X7Y72", "X7Y72", "X7Y73", "X7Y73" ],
+				[ "X5Y72", "X5Y72", "X5Y73", "X5Y73" ] ],
+			'ram' : [
+				[ "X6Y86", "X6Y87", "X6Y84", "X6Y85", "X6Y78", "X6Y77", "X6Y76", "X6Y75" ],
+				[ "X4Y86", "X4Y87", "X4Y84", "X4Y85", "X4Y78", "X4Y77", "X4Y76", "X4Y75" ] ] },
 			},
 	{
 		'delayed_dqs' :  {
 			'lut' :  [ 
-				{ 'inst'  : 'lutn', 'slice' : "X0Y60", 'bel'   : "g" } ,
-				{ 'inst'  : 'lutp', 'slice' : "X0Y60", 'bel'   : "f" } ],
+				{ 'inst'  : 'lutn', 'slice' : "X0Y60", 'bel'   : "G" } ,
+				{ 'inst'  : 'lutp', 'slice' : "X0Y60", 'bel'   : "F" } ],
 			'taps' : [ 
-				[ "X0Y61", "f" ], [ "X2Y61", "f" ], [ "X0Y61", "g" ], [ "X2Y61", "g" ] ] },
+				[ "X0Y61", "F" ], [ "X2Y61", "F" ], [ "X0Y61", "G" ], [ "X2Y61", "G" ] ] },
 		'read' : {
 			'sys_cntr' : [ "X2Y64", "X2Y64", "X2Y65", "X2Y65" ],
 			'ddr_cntr' : [
@@ -33,19 +40,33 @@ ddr_dio = [
 			'ram' : [
 				[ "X2Y68", "X2Y71", "X2Y62", "X2Y67", "X2Y58", "X2Y59", "X2Y54", "X2Y55" ],
 				[ "X0Y68", "X0Y71", "X0Y62", "X0Y67", "X0Y58", "X0Y59", "X0Y54", "X0Y55" ] ] },
-		'write' :  {}
-		} 
-]
+		'write' :  {
+			'sys_cntr' : [ "X5Y65", "X5Y65", "X5Y64", "X5Y64" ],
+			'ddr_cntr' : [ ],
+				# [ "X7Y72", "X7Y72", "X7Y73", "X7Y73" ],
+				# [ "X5Y72", "X5Y72", "X5Y73", "X5Y73" ] ],
+			'ram' : [
+				[ "X6Y68", "X6Y71", "X6Y62", "X6Y67", "X6Y58", "X6Y59", "X6Y54", "X6Y55" ],
+				[ "X4Y68", "X4Y71", "X4Y62", "X4Y67", "X4Y58", "X4Y59", "X4Y54", "X4Y55" ] ] },
+			},
+	]
 
 for byte in range(len(ddr_dio)):
 	dqs = ddr_dio[byte]['delayed_dqs']
 	for lut in dqs['lut']:
 		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + ' LOC = SLICE_'  + lut['slice'] + ';')
-		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + ' BEL = ' + lut['bel'] + ';')
+		try:
+			print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + ' BEL = ' + lut['bel'] + ';')
+		except KeyError:
+			pass
+
 	for i in range(len(dqs['taps'])):
 		tap = dqs['taps'][i]
 		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i) + '] LOC = SLICE_' + tap[0] + ';')
-		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i) + '] BEL = ' + tap[1] + ';')
+		try:
+			print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i) + '] BEL = ' + tap[1] + ';')
+		except IndexError:
+			pass
 	print()
 
 	sys_cntr = ddr_dio[byte]['read']['sys_cntr']
@@ -58,202 +79,53 @@ for byte in range(len(ddr_dio)):
 
 	ddr_cntr = ddr_dio[byte]['read']['ddr_cntr']
 	for edge in range(len(ddr_cntr)):
-		for i in range(len(ddr_cntr[edge])):
+		for bit in range(len(ddr_cntr[edge])):
 			print (
 				'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
 				str(byte) + '].ddr_fifo[' +
 				str(edge) + '].i_cntr_g[' +
-				str(i)    + '].ffd_i" LOC = SLICE_X1' +
-				ddr_cntr[edge][i] + ';')
+				str(bit)  + '].ffd_i" LOC = SLICE_' +
+				ddr_cntr[edge][bit] + ';')
+	print()
+
+	ram = ddr_dio[byte]['read']['ram']
+	for edge in range(len(ram)):
+		for bit in range(len(ram[edge])):
+			print (
+				'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
+				str(byte) + '].ddr_fifo[' +
+				str(edge) + '].ram_g[' +
+				str(bit)  + '].ram16x1d_i" LOC = SLICE_' +
+				ram[edge][bit] + ';')
 		print()
 
-#		for i in range(8):
-#			print (
-#				'INST "*/*ddr_rd_fifo_e/fifo_bytes_g[' +
-#				str(1-l) + '].ddr_fifo[' +
-#				str(e) + '].ram_g[' +
-#				str(7-i) + '].ram16x1d_i" LOC = SLICE_X0' +
-#				pads[8*l+i][2+e+1] + ';')
-#		print("\n")
-#
-#	for i in range(4):
-#		print (
-#			'INST "*/ddr_wr_fifo_e/data_byte_g[' +
-#			str(1-l) + '].sys_cntr_g[' +
-#			str(i) + '].ffd_i" LOC = SLICE_X1' +
-#			wr_sys_i[1-l] + ';')
-#	print("\n")
+	sys_cntr = ddr_dio[byte]['write']['sys_cntr']
+	for bit in range(len(sys_cntr)):
+		print (
+			'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+			str(byte) + '].sys_cntr_g[' +
+			str(bit)  + '].ffd_i" LOC = SLICE_' +
+			sys_cntr[bit] + ';')
+	print()
 
-#	for e in range(2):
-#		for i in range(4):
-#			print (
-#				'INST "*/ddr_wr_fifo_e/data_byte_g[' + 
-#				str(1-l)  + '].ddr_data_g[' + 
-#				str(e) + '].ddr_word_g.cntr_g['  +
-#				str(i) + '].ffd_i" LOC = SLICE_X1' +
-#				wr_ddr_i[l][e] + ';')
-#		print("\n")
-#
-#		for i in range(8):
-#			print (
-#				'INST "*/ddr_wr_fifo_e/data_byte_g[' +
-#				str(1-l) + '].ddr_data_g[' +
-#				str(e)   + '].ram_g[' +
-#				str(7-i) + '].ram16x1d_i" LOC = SLICE_X0' +
-#				pads[8*l+i][e+1] + ';')
-#		print("\n")
+	ddr_cntr = ddr_dio[byte]['write']['ddr_cntr']
+	for edge in range(len(ddr_cntr)):
+		for bit in range(len(ddr_cntr[edge])):
+			print (
+				'INST "*/ddr_wr_fifo_e/data_byte_g[' + 
+				str(byte) + '].ddr_data_g[' + 
+				str(edge) + '].ddr_word_g.cntr_g['  +
+				str(bit)  + '].ffd_i" LOC = SLICE_' +
+				ddr_cntr[edge][bit] + ';')
+		print()
 
-# ################# #
-# DDR read counters #
-# ################# #
-
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[0].ffd_i" loc = slice_x2y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[1].ffd_i" loc = slice_x2y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[2].ffd_i" loc = slice_x2y81;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[3].ffd_i" loc = slice_x2y81;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[0].ffd_i" loc = slice_x0y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[1].ffd_i" loc = slice_x0y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[2].ffd_i" loc = slice_x0y81;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[3].ffd_i" loc = slice_x0y81;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[0].ffd_i" loc = slice_x3y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[1].ffd_i" loc = slice_x3y80;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[2].ffd_i" loc = slice_x3y81;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[3].ffd_i" loc = slice_x3y81;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[0].ffd_i" loc = slice_x2y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[1].ffd_i" loc = slice_x2y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[2].ffd_i" loc = slice_x2y65;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[3].ffd_i" loc = slice_x2y65;
-#                                    
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[0].ffd_i" loc = slice_x0y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[1].ffd_i" loc = slice_x0y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[2].ffd_i" loc = slice_x0y65;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[3].ffd_i" loc = slice_x0y65;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[0].ffd_i" loc = slice_x3y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[1].ffd_i" loc = slice_x3y64;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[2].ffd_i" loc = slice_x3y65;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[3].ffd_i" loc = slice_x3y65;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[0].ram16x1d_i" loc = slice_x2y86;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[1].ram16x1d_i" loc = slice_x2y87;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[2].ram16x1d_i" loc = slice_x2y84;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[3].ram16x1d_i" loc = slice_x2y85;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[4].ram16x1d_i" loc = slice_x2y78;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[5].ram16x1d_i" loc = slice_x2y77;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[6].ram16x1d_i" loc = slice_x2y76;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].ram_g[7].ram16x1d_i" loc = slice_x2y75;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[0].ram16x1d_i" loc = slice_x0y86;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[1].ram16x1d_i" loc = slice_x0y87;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[2].ram16x1d_i" loc = slice_x0y84;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[3].ram16x1d_i" loc = slice_x0y85;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[4].ram16x1d_i" loc = slice_x0y78;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[5].ram16x1d_i" loc = slice_x0y77;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[6].ram16x1d_i" loc = slice_x0y76;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[7].ram16x1d_i" loc = slice_x0y75;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[0].ram16x1d_i" loc = slice_x2y68;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[1].ram16x1d_i" loc = slice_x2y71;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[2].ram16x1d_i" loc = slice_x2y62;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[3].ram16x1d_i" loc = slice_x2y67;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[4].ram16x1d_i" loc = slice_x2y58;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[5].ram16x1d_i" loc = slice_x2y59;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[6].ram16x1d_i" loc = slice_x2y54;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].ram_g[7].ram16x1d_i" loc = slice_x2y55;
-#
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[0].ram16x1d_i" loc = slice_x0y68;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[1].ram16x1d_i" loc = slice_x0y71;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[2].ram16x1d_i" loc = slice_x0y62;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[3].ram16x1d_i" loc = slice_x0y67;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[4].ram16x1d_i" loc = slice_x0y58;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[5].ram16x1d_i" loc = slice_x0y59;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[6].ram16x1d_i" loc = slice_x0y54;
-#inst "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[7].ram16x1d_i" loc = slice_x0y55;
-
-## ################## #
-## DDR write counters #
-## ################## #
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" loc = slice_x7y72;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" loc = slice_x7y72;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" loc = slice_x7y73;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" loc = slice_x7y73;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" bel = g;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" loc = slice_x5y72;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" loc = slice_x5y72;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" loc = slice_x5y73;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" loc = slice_x5y73;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" bel = g;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[0].ram16x1d_i" loc = slice_x6y86;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[1].ram16x1d_i" loc = slice_x6y87;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[2].ram16x1d_i" loc = slice_x6y84;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[3].ram16x1d_i" loc = slice_x6y85;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[4].ram16x1d_i" loc = slice_x6y78;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[5].ram16x1d_i" loc = slice_x6y77;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[6].ram16x1d_i" loc = slice_x6y76;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[7].ram16x1d_i" loc = slice_x6y75;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[0].ram16x1d_i" loc = slice_x4y86;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[1].ram16x1d_i" loc = slice_x4y87;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[2].ram16x1d_i" loc = slice_x4y84;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[3].ram16x1d_i" loc = slice_x4y85;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[4].ram16x1d_i" loc = slice_x4y78;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[5].ram16x1d_i" loc = slice_x4y77;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[6].ram16x1d_i" loc = slice_x4y76;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ram_g[7].ram16x1d_i" loc = slice_x4y75;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[0].ram16x1d_i" loc = slice_x6y68;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[1].ram16x1d_i" loc = slice_x6y71;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[2].ram16x1d_i" loc = slice_x6y62;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[3].ram16x1d_i" loc = slice_x6y67;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[4].ram16x1d_i" loc = slice_x6y58;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[5].ram16x1d_i" loc = slice_x6y59;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[6].ram16x1d_i" loc = slice_x6y54;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[7].ram16x1d_i" loc = slice_x6y55;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[0].ram16x1d_i" loc = slice_x4y68;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[1].ram16x1d_i" loc = slice_x4y71;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[2].ram16x1d_i" loc = slice_x4y62;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[3].ram16x1d_i" loc = slice_x4y67;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[4].ram16x1d_i" loc = slice_x4y58;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[5].ram16x1d_i" loc = slice_x4y59;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[6].ram16x1d_i" loc = slice_x4y54;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ram_g[7].ram16x1d_i" loc = slice_x4y55;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[0].ffd_i" loc = slice_x5y81;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[1].ffd_i" loc = slice_x5y81;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[2].ffd_i" loc = slice_x5y80;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[3].ffd_i" loc = slice_x5y80;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[0].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[1].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[2].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[3].ffd_i" bel = f;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[0].ffd_i" loc = slice_x5y65;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[1].ffd_i" loc = slice_x5y65;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[2].ffd_i" loc = slice_x5y64;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[3].ffd_i" loc = slice_x5y64;
-#
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[0].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[1].ffd_i" bel = f;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[2].ffd_i" bel = g;
-#inst "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[3].ffd_i" bel = f;
-#
-##NET  "ddr_ckp"                         IOSTANDARD = DIFF_SSTL2_II;
-##NET  "ddr_ckn"                       IOSTANDARD = DIFF_SSTL2_II;
-##NET  "ddr_ckp"                          LOC = "AB13" ;     #bank 3
-##NET  "ddr_ckn"                          LOC = "AA14" ;     #bank 3
+	ram = ddr_dio[byte]['write']['ram']
+	for edge in range(len(ram)):
+		for bit in range(len(ram[edge])):
+			print (
+				'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+				str(byte) + '].ddr_data_g[' +
+				str(edge) + '].ram_g[' +
+				str(bit)  + '].ram16x1d_i" LOC = SLICE_X0' +
+				ram[edge][bit] + ';')
+		print()
