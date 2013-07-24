@@ -532,11 +532,11 @@ begin
 			dfs_mul => ddr_multiply,
 			dfs_div => ddr_divide)
 		port map (
-			dcm_rst => rst(0),
-			dcm_clk => xtal_ibufg,
+			dfsdcm_rst => rst(0),
+			dfsdcm_clkin => xtal_ibufg,
 			dfsdcm_clk0  => clk0,
 			dfsdcm_clk90 => clk90,
-			dcm_lck => ddrs_lckd);
+			dfsdcm_lckd => ddrs_lckd);
 
 		isdbt_dcm : entity hdl4fpga.dfs
 		generic map (
@@ -575,7 +575,7 @@ begin
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
 		tCP => (50.0*real(ddr_divide))/real(ddr_multiply),
-		std => ddr_std,
+		std => 1,
 
 		cl   => ddr_acdb(ddr_std).cl,
 		wr   => ddr_acdb(ddr_std).wr,
@@ -611,7 +611,7 @@ begin
 
 		ddr_st_lp_dqs => ddr_st_lp_dqs,
 		ddr_lp_dqs => ddr_lp_dqs,
-		ddr_rst => ddr_rst,
+		ddr_rst => open,
 		ddr_cke => ddr_cke,
 		ddr_cs  => ddr_cs,
 		ddr_ras => ddr_ras,

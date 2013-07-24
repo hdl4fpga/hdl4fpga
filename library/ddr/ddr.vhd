@@ -53,8 +53,8 @@ entity ddr is
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		ddr_dm  : out std_logic_vector(0 to data_bytes-1);
-		ddr_dqs_p : inout std_logic_vector(0 to data_bytes-1);
-		ddr_dqs_n : inout std_logic_vector(0 to data_bytes-1);
+		ddr_dqs : inout std_logic_vector(0 to data_bytes-1);
+		ddr_dqs_n : inout std_logic_vector(0 to data_bytes-1) := (others => 'Z');
 		ddr_dq  : inout std_logic_vector(0 to data_bytes*byte_bits-1));
 
 	constant t200u : real := 200.0e3;
@@ -99,17 +99,17 @@ architecture mix of ddr is
 	signal ddr_acc_drr : std_logic;
 	signal ddr_acc_drf : std_logic;
 	signal ddr_acc_rea : std_logic;
-	signal ddr_acc_dqz : std_logic_vector(ddr_dqs_p'range);
-	signal ddr_acc_dqsz : std_logic_vector(ddr_dqs_p'range);
-	signal ddr_acc_dqs : std_logic_vector(ddr_dqs_p'range);
+	signal ddr_acc_dqz : std_logic_vector(ddr_dqs'range);
+	signal ddr_acc_dqsz : std_logic_vector(ddr_dqs'range);
+	signal ddr_acc_dqs : std_logic_vector(ddr_dqs'range);
 	signal ddr_pgm_cmd : std_logic_vector(0 to 2);
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst  : std_logic;
 	signal ddr_wr_fifo_req  : std_logic;
-	signal ddr_wr_fifo_ena_n : std_logic_vector(ddr_dqs_p'range);
-	signal ddr_wr_fifo_ena_p : std_logic_vector(ddr_dqs_p'range);
+	signal ddr_wr_fifo_ena_n : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_fifo_ena_p : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_fifo_do  : std_logic_vector(sys_di'range);
-	signal ddr_io_dso  : std_logic_vector(ddr_dqs_p'reverse_range);
+	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
@@ -518,7 +518,7 @@ begin
 		ddr_io_clk => clk0,
 		ddr_io_ena => ddr_acc_dqs,
 		ddr_io_dqz => ddr_acc_dqsz,
-		ddr_io_dqs_p => ddr_dqs_p,
+		ddr_io_dqs => ddr_dqs,
 		ddr_io_dqs_n => ddr_dqs_n,
 		ddr_io_dso => ddr_io_dso);
 	
