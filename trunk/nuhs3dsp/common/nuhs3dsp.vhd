@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity nuhs3dsp is
-	generic (
-		ddr_std : positive);
 	port (
 		xtal : in std_logic := '0';
 
