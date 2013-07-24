@@ -12,7 +12,7 @@ entity dfsdcm is
 		dcm_clk : in std_logic; 
 		dfsdcm_clk0  : out std_logic; 
 		dfsdcm_clk90 : out std_logic; 
-		dcm_lck : out std_logic);
+		dcm_lckd : out std_logic);
 end;
 
 library unisim;
@@ -21,7 +21,7 @@ use unisim.vcomponents.ALL;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture spartan3 dfsdcm is
+architecture spartan3 of dfsdcm is
 	signal dfs_clkfx : std_logic;
 	signal dfs_locked : std_logic;
     signal dfs_clk0  : std_logic;
