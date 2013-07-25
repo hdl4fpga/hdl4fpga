@@ -322,8 +322,8 @@ entity nuhs3dsp is
 	attribute loc of ddr_we  : signal is "AB10";
 	attribute loc of ddr_ba  : signal is "AA15 U10";
 	attribute loc of ddr_a   : signal is "U14 U15 Y19 Y18 AA20 AB20 Y15 AB18 AB17 W14 Y13 U13 AB14";
-	attribute loc of ddr_dm  : signal is "R6 U1";
-	attribute loc of ddr_dqs : signal is "N1 V1";
+	attribute loc of ddr_dm  : signal is "U1 R6";
+	attribute loc of ddr_dqs : signal is "V1 N1";
 	attribute loc of ddr_dq  : signal is "M2 L3 N7 M6 N5 P1 P2 P6 T5 T6 R5 T1 T4 R3 W1 Y1";
 
 	attribute iostandard of ddr_lp_dqs : signal is "SSTL2_I";

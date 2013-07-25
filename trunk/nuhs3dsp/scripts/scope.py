@@ -69,9 +69,9 @@ for byte in range(len(ddr_dio)):
 
 	dqs = ddr_dio[byte]['delayed_dqs']
 	for lut in dqs['lut']:
-		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + ' LOC = SLICE_'  + lut['slice'] + ';')
+		print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + '" LOC = SLICE_'  + lut['slice'] + ';')
 		try:
-			print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + ' BEL = ' + lut['bel'] + ';')
+			print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/' + lut['inst'] + '" BEL = ' + lut['bel'] + ';')
 		except KeyError:
 			pass
 
@@ -79,8 +79,8 @@ for byte in range(len(ddr_dio)):
 			for i in range(len(dqs['taps'])):
 				tap = dqs['taps'][i]
 				try:
-					print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i+1) + '] LOC = SLICE_' + tap[0] + ';')
-					print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i+1) + '] BEL = ' + tap[1] + ';')
+					print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i+1) + ']" LOC = SLICE_' + tap[0] + ';')
+					print ('INST "*/ddr_rd_fifo_e/fifo_bytes_g[' + str(byte) + '].dqs_delayed_e/chain_g[' + str(i+1) + ']" BEL = ' + tap[1] + ';')
 				except IndexError:
 					pass
 		except KeyError:
@@ -170,6 +170,6 @@ for byte in range(len(ddr_dio)):
 				'INST "*/ddr_wr_fifo_e/data_byte_g[' +
 				str(byte) + '].ddr_data_g[' +
 				str(edge) + '].ram_g[' +
-				str(bit)  + '].ram16x1d_i" LOC = SLICE' +
+				str(bit)  + '].ram16x1d_i" LOC = SLICE_' +
 				ram[edge][bit] + ';')
 		print()
