@@ -48,15 +48,6 @@ architecture main of nuhs3dsp is
 	signal sys_rst   : std_logic;
 	signal scope_rst : std_logic;
 
-	-------------------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 180 Mhz -- 193 Mhz -- 200 Mhz  --
-	-- Multiply by --  20     --  25     --   9     --  29     --  10      --
-	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
-	-------------------------------------------------------------------------
-
-	constant ddr_multiply : natural := 9; -- 30; -- 25;
-	constant ddr_divide   : natural := 2; --  2; --  3;
-
 begin
 
 	sys_rst <= not sw1;
