@@ -69,12 +69,12 @@ entity nuhs3dsp is
 
 		mii_txc  : in  std_logic := 'Z';
 		mii_txen : out std_logic := 'Z';
-		mii_txd  : out std_logic_vector(4-1 downto 0) := (others => 'Z');
+		mii_txd  : out std_logic_vector(0 to 4-1) := (others => 'Z');
 
 		mii_rxc  : in std_logic := 'Z';
 		mii_rxdv : in std_logic := 'Z';
 		mii_rxer : in std_logic := 'Z';
-		mii_rxd  : in std_logic_vector(4-1 downto 0) := (others => 'Z');
+		mii_rxd  : in std_logic_vector(0 to 4-1) := (others => 'Z');
 
 		mii_crs  : in std_logic := 'Z';
 		mii_col  : in std_logic := 'Z';
@@ -95,8 +95,8 @@ entity nuhs3dsp is
 		ddr_we  : out std_logic := '0';
 		ddr_ba  : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => '0');
 		ddr_a   : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => '0');
-		ddr_dm  : inout std_logic_vector(0 to 2-1);
-		ddr_dqs : inout std_logic_vector(0 to 2-1);
+		ddr_dm  : inout std_logic_vector(2-1 downto 0);
+		ddr_dqs : inout std_logic_vector(2-1 downto 0);
 		ddr_dq  : inout std_logic_vector(16-1 downto 0);
 
 		---------
@@ -280,10 +280,10 @@ entity nuhs3dsp is
 	attribute loc of mii_mdio   : signal is "E20";
 	attribute loc of mii_txc    : signal is "M20";
 	attribute loc of mii_txen   : signal is "E22";
-	attribute loc of mii_txd    : signal is "F20 J19 H20 F22";
+	attribute loc of mii_txd    : signal is "F22 H20 J19 F20";
+	attribute loc of mii_rxd    : signal is "J21 J22 H21 G20";
 	attribute loc of mii_rxc    : signal is "L21";
 	attribute loc of mii_rxdv   : signal is "V22";
-	attribute loc of mii_rxd    : signal is "G20 H21 J22 J21";
 	attribute loc of mii_rxer   : signal is "E19";
 	attribute loc of mii_crs    : signal is "G19";
 	attribute loc of mii_col    : signal is "U21";
@@ -322,8 +322,8 @@ entity nuhs3dsp is
 	attribute loc of ddr_we  : signal is "AB10";
 	attribute loc of ddr_ba  : signal is "AA15 U10";
 	attribute loc of ddr_a   : signal is "U14 U15 Y19 Y18 AA20 AB20 Y15 AB18 AB17 W14 Y13 U13 AB14";
-	attribute loc of ddr_dm  : signal is "U1 R6";
-	attribute loc of ddr_dqs : signal is "V1 N1";
+	attribute loc of ddr_dm  : signal is "R6 U1";
+	attribute loc of ddr_dqs : signal is "N1 V1";
 	attribute loc of ddr_dq  : signal is "M2 L3 N7 M6 N5 P1 P2 P6 T5 T6 R5 T1 T4 R3 W1 Y1";
 
 	attribute iostandard of ddr_lp_dqs : signal is "SSTL2_I";

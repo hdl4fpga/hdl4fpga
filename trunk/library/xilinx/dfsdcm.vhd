@@ -97,8 +97,8 @@ begin
 		rst   => dcm_rst,
 		clkin => dcm_clkin,
 		clkfb => dcm_clkfb,
-		clk0  => dfsdcm_clk0,
-		clk90 => dfsdcm_clk90,
+		clk0  => dcm_clk0,
+		clk90 => dcm_clk90,
 		locked => dfsdcm_lckd);
 
 	dcm_clkfb_bufg : bufg

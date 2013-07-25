@@ -18,7 +18,7 @@ entity miitx_mem is
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
         mii_txen : out std_logic;
-        mii_txd  : out nibble);
+        mii_txd  : out std_logic_vector(0 to 4-1));
 end;
 
 architecture def of miitx_mem is
@@ -79,7 +79,7 @@ begin
 
 	mii_trdy <= cntr(0) and mii_treq;
 	mii_txen <= mii_treq and not cntr(0);
-	mii_txd  <= word2byte(
+	mii_txd  <= reverse(word2byte(
 		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
-		addr => cntr(addr_size+1 to cntr_size-1) & not cntr(cntr_size));
+		addr => cntr(addr_size+1 to cntr_size-1) & not cntr(cntr_size)));
 end;

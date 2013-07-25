@@ -9,11 +9,11 @@ entity miirx_pre is
     port (
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
-        mii_rxd  : in nibble;
+        mii_rxd  : in std_logic_vector(0 to 4-1);
 
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out nibble);
+		mii_txd  : out std_logic_vector(0 to 4-1));
 
 end;
 
@@ -33,10 +33,10 @@ begin
 				prdy := '0';
 				txen <= '0';
 			elsif prdy='0' then
-				if mii_rxd=x"5" then
+				if reverse(mii_rxd)=x"5" then
 					prdy := '0';
 					txen <= '0';
-				elsif mii_rxd=x"d" then
+				elsif reverse(mii_rxd)=x"d" then
 					prdy := '1';
 					txen <= '1';
 				else
@@ -46,5 +46,4 @@ begin
 			end if;
 		end if;
 	end process;
-
 end;

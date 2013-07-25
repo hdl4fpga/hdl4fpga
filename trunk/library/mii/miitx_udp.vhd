@@ -14,7 +14,7 @@ entity miitx_udp is
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out nibble);
+		mii_txd  : out std_logic_vector(0 to 4-1));
 end;
 
 architecture mix of miitx_udp is
@@ -33,7 +33,7 @@ architecture mix of miitx_udp is
 	signal txreq : std_logic_vector(n+1 downto 0);
 
 	signal txen : std_logic;
-	signal txd : nibble;
+	signal txd : std_logic_vector(0 to 4-1);
 	signal rdy : std_logic_vector(n downto 0);
 	signal dat : nibble_vector(n downto 0);
 	signal ena : std_logic_vector(n downto 0);
