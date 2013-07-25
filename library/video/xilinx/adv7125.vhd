@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity vga_iob is
+entity adv7125 is
 	port (
 		sys_clk   : in std_logic;
 		sys_hsync : in std_logic;
@@ -31,7 +31,7 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture def of vga_iob is
+architecture def of adv7125 is
 	subtype dac_word is std_logic_vector(0 to dac_red'length-1);
 	signal sys_fclk : std_logic;
 
