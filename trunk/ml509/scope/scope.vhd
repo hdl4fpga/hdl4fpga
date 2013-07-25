@@ -9,7 +9,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-architecture scope of ml509 is
+architecture main of ml509 is
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
@@ -93,7 +93,7 @@ begin
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
-		ddr_dqs_p => ddr2_dqs_p(1 downto 0),
+		ddr_dqs => ddr2_dqs_p(1 downto 0),
 		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_lp_dqs => gpio_led_e, --ddr_lp_dqs,

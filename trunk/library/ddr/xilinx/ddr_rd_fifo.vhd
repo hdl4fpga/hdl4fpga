@@ -42,17 +42,8 @@ architecture mix of ddr_rd_fifo is
 	signal ddr_win_dqsi : std_logic_vector(0 to 1);
 	signal ddr_fifo_rdy : std_logic;
 begin
---	ddr_win_dqsi(0) <= transport ddr_win_dqs after dqs_delay+1 ps;
---	ddr_win_dqsi(1) <= transport ddr_win_dqs after dqs_delay+1 ps;
---	st_dqs_delayed_e : entity hdl4fpga.pgm_delay
---	generic map (
---		n => 5)
---	port map (
---		xi => ddr_win_dqsi(0),
---		ena => "00001",
---		x_p => ddr_win_dqsi(1),
---		x_n => open);
-
+	ddr_win_dqsi(0) <= transport ddr_win_dqs after dqs_delay+1 ps;
+	ddr_win_dqsi(1) <= transport ddr_win_dqs after dqs_delay+1 ps;
 	ddr_fifo_di(0) <= ddr_dqi(0 to data_bits/2-1);
 	ddr_fifo_di(1) <= ddr_dqi(data_bits/2 to data_bits-1);
 		

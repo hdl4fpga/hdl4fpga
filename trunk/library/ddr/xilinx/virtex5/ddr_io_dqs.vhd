@@ -12,7 +12,7 @@ entity ddr_io_dqs is
 		ddr_io_clk : in std_logic;
 		ddr_io_ena : in std_logic_vector(0 to data_bytes-1);
 		ddr_io_dqz : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqs_p : inout std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dqs : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_dqs_n : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_dso : out std_logic_vector(0 to data_bytes-1));
 end;
@@ -28,7 +28,7 @@ begin
 	rclk <=     ddr_io_clk;
 	fclk <= not ddr_io_clk;
 
-	ddr_io_dqs_u : for i in ddr_io_dqs_p'range generate
+	ddr_io_dqs_u : for i in ddr_io_dqs'range generate
 		signal dqs : std_logic;
 		signal dqz : std_logic;
 		signal d1  : std_logic;
@@ -71,7 +71,7 @@ begin
 		port map (
 			t => dqz,
 			i => dqs,
-			io => ddr_io_dqs_p(i),
+			io => ddr_io_dqs(i),
 			iob => ddr_io_dqs_n(i),
 --			o => ddr_io_dso(i));
 			o => x);
