@@ -2,14 +2,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity adv7125 is
+entity adv7125_iob is
 	port (
 		sys_clk   : in std_logic;
 		sys_hsync : in std_logic;
 		sys_vsync : in std_logic;
-		sys_sync  : in std_logic;
 		sys_blank : in std_logic;
-		sys_psave : in std_logic;
+		sys_sync  : in std_logic := '1';
+		sys_psave : in std_logic := '1';
 
 		sys_red   : in std_logic_vector;
 		sys_green : in std_logic_vector;
@@ -31,7 +31,7 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture def of adv7125 is
+architecture def of adv7125_iob is
 	subtype dac_word is std_logic_vector(0 to dac_red'length-1);
 	signal sys_fclk : std_logic;
 

@@ -9,17 +9,17 @@ entity mii_iob is
 	port (
 		mii_rxc  : in  std_logic := '-';
 		mii_rxdv : out std_logic;
-		mii_rxd  : out nibble;
+		mii_rxd  : out std_logic_vector(0 to 4-1);
 
 		iob_rxdv : in  std_logic := '-';
-		iob_rxd  : in  nibble := (others => '-');
+		iob_rxd  : in  std_logic_vector(0 to 4-1) := (others => '-');
 
 		mii_txc  : in  std_logic;
 		mii_txen : in std_logic;
-		mii_txd  : in nibble;
+		mii_txd  : in std_logic_vector(0 to 4-1);
 
 		iob_txen : out std_logic;
-		iob_txd  : out nibble);
+		iob_txd  : out std_logic_vector(0 to 4-1));
 end;
 
 library unisim;

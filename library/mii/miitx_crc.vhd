@@ -12,9 +12,9 @@ entity miitx_crc is
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
 		mii_ted  : in  std_logic;
-		mii_txi  : in  nibble;
+		mii_txi  : in  std_logic_vector(0 to 4-1);
 		mii_txen : out std_logic;
-		mii_txd  : out nibble);
+		mii_txd  : out std_logic_vector(0 to 4-1));
 end;
 
 architecture def of miitx_crc is
@@ -69,7 +69,7 @@ architecture def of miitx_crc is
 		return newcrc;
 	end;
 begin
-	mii_txd  <= not reverse(xp(31 downto 28));
+	mii_txd  <= not xp(31 downto 28);
 	mii_txen <= not mii_ted and mii_treq and cnt(0);
 	process (mii_txc)
 	begin
@@ -79,7 +79,7 @@ begin
 				cnt <= (others => '0');
 			elsif mii_ted='1' then
 				cnt <= (others => '1');
-				xp <= next_crc32w4(reverse(mii_txi), xp);
+				xp <= next_crc32w4(mii_txi, xp);
 			else
 				xp <= xp(27 downto 0) & (1 to 4 => '1');
 				cnt <= cnt sll 1;

@@ -13,7 +13,7 @@ entity miitx_dma is
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
         mii_txen : out std_logic;
-        mii_txd  : out nibble);
+        mii_txd  : out std_logic_vector(0 to 4-1));
 end;
 
 architecture def of miitx_dma is
@@ -52,7 +52,7 @@ begin
 	end process;
 
 	mii_txen <= mii_treq and ena(0);
-	mii_txd  <= word2byte(
+	mii_txd  <= reverse(word2byte(
 		word => sys_data,
-		addr => sel(0) & not sel(1 to 2));
+		addr => sel(0) & not sel(1 to 2)));
 end;
