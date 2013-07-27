@@ -9,14 +9,14 @@ entity ddr_wr_fifo is
 	port (
 		sys_clk : in std_logic;
 		sys_req : in std_logic;
-		sys_di  : in std_logic_vector(0 to 2*data_bytes*byte_bits-1);
+		sys_di  : in std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_rst : in std_logic;
 
 		ddr_ena_p : in std_logic_vector;
 		ddr_ena_n : in std_logic_vector;
 		ddr_clk_p : in std_logic;
 		ddr_clk_n : in std_logic;
-		ddr_do    : out std_logic_vector(0 to 2*data_bytes*byte_bits-1));
+		ddr_do    : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
@@ -39,7 +39,7 @@ begin
 	ddr_clk <= (0 => ddr_clk_p, 1 => ddr_clk_n);
 	ddr_ena <= (0 => ddr_ena_p(0), 1 => ddr_ena_n(0));
 
-	data_byte_g: for l in 0 to data_bytes-1 generate
+	data_byte_g: for l in data_bytes-1 downto 0 generate
 		signal sys_addr_q : addr_word;
 		signal sys_addr_d : addr_word;
 	begin
@@ -75,7 +75,7 @@ begin
 				end generate;
 			end generate;
 
-			ram_g: for j in 0 to byte_bits-1 generate
+			ram_g: for j in byte_bits-1 downto 0 generate
 				ram16x1d_i : ram16x1d
 				port map (
 					wclk => sys_clk,

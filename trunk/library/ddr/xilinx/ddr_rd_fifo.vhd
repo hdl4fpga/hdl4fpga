@@ -12,12 +12,12 @@ entity ddr_rd_fifo is
 		sys_clk : in std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in std_logic;
-		sys_do  : out std_logic_vector(0 to 2*data_bytes*byte_bits-1);
+		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 
 		ddr_win_dq  : in std_logic;
 		ddr_win_dqs : in std_logic;
 		ddr_dqs : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqi : in std_logic_vector(0 to data_bytes*byte_bits-1));
+		ddr_dqi : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
@@ -29,23 +29,23 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture mix of ddr_rd_fifo is
-	subtype byte is std_logic_vector(0 to byte_bits-1);
+	subtype byte is std_logic_vector(byte_bits-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 	type natural_vector is array (natural range <>) of natural;
 
-	signal ddr_fifo_di : byte_vector(0 to data_bytes-1);
-	signal ddr_fifo_do : byte_vector(0 to 2*data_bytes-1);
+	signal ddr_fifo_di : byte_vector(data_bytes-1 downto 0);
+	signal ddr_fifo_do : byte_vector(2*data_bytes-1 downto 0);
 
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	constant addr_ini : std_logic_vector(addr_word'range) := "0000";
 	signal sys_do_win : std_logic;
-	signal ddr_win_dqsi : std_logic_vector(0 to 1);
+	signal ddr_win_dqsi : std_logic_vector(1 downto 0);
 	signal ddr_fifo_rdy : std_logic;
 begin
 	ddr_win_dqsi(0) <= transport ddr_win_dqs after dqs_delay+1 ps;
 	ddr_win_dqsi(1) <= transport ddr_win_dqs after dqs_delay+1 ps;
-	ddr_fifo_di(0) <= ddr_dqi(0 to data_bits/2-1);
-	ddr_fifo_di(1) <= ddr_dqi(data_bits/2 to data_bits-1);
+	ddr_fifo_di(0) <= ddr_dqi(data_bits/2-1 downto 0);
+	ddr_fifo_di(1) <= ddr_dqi(data_bits-1 downto data_bits/2);
 		
 	process (sys_clk)
 		variable acc_rea_dly : std_logic;
@@ -56,7 +56,7 @@ begin
 		end if;
 	end process;
 
-	fifo_bytes_g : for k in 0 to 1 generate
+	fifo_bytes_g : for k in ddr_dqs'range generate
 		signal ddr_delayed_dqs : std_logic_vector(0 to 1);
 		signal ddr_dlyd_dqs : std_logic_vector(0 to 1);
 
@@ -126,7 +126,7 @@ begin
 					q   => addr_i_q(j));
 			end generate;
 
-			ram_g: for i in  0 to byte_bits-1 generate
+			ram_g: for i in byte_bits-1 downto 0 generate
 			begin
 				ram16x1d_i : ram16x1d
 				port map (

@@ -96,8 +96,8 @@ begin
 		ddr_dqs => ddr2_dqs_p(1 downto 0),
 		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
-		ddr_lp_dqs => gpio_led_e, --ddr_lp_dqs,
-		ddr_st_lp_dqs => gpio_sw_e, --ddr_st_lp_dqs,
+		ddr_lp_dqs => open, --gpio_led_e, --ddr_lp_dqs,
+		ddr_st_lp_dqs => ddr2_dm(0), --gpio_sw_e, --ddr_st_lp_dqs,
 
 		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
