@@ -29,7 +29,7 @@ entity ddr is
 
 		sys_ini : out std_logic;
 		sys_cmd_req : in  std_logic;
-		sys_cmd_rdy : out  std_logic;
+		sys_cmd_rdy : out std_logic;
 		sys_rw  : in  std_logic;
 		sys_a   : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
@@ -38,8 +38,8 @@ entity ddr is
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
-		sys_di  : in  std_logic_vector(0 to 2*data_bytes*byte_bits-1);
-		sys_do  : out std_logic_vector(0 to 2*data_bytes*byte_bits-1);
+		sys_di  : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_ref : out std_logic;
 
 		ddr_rst : out std_logic;
@@ -52,10 +52,10 @@ entity ddr is
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
-		ddr_dm  : out std_logic_vector(0 to data_bytes-1);
-		ddr_dqs : inout std_logic_vector(0 to data_bytes-1);
-		ddr_dqs_n : inout std_logic_vector(0 to data_bytes-1) := (others => 'Z');
-		ddr_dq  : inout std_logic_vector(0 to data_bytes*byte_bits-1));
+		ddr_dm  : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqs_n : inout std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant t200u : real := 200.0e3;
 	constant t500u : real := 500.0e3;
@@ -84,14 +84,14 @@ architecture mix of ddr is
 	signal ddr_init_cfg : std_logic;
 	signal ddr_init_dll : std_logic;
 
-	signal ddr_timer_sel  : std_logic;
-	signal dll_timer_rdy  : std_logic;
-	signal ddr_timer_rst  : std_logic;
-	signal ddr_timer_ref  : std_logic;
+	signal ddr_timer_sel : std_logic;
+	signal dll_timer_rdy : std_logic;
+	signal ddr_timer_rst : std_logic;
+	signal ddr_timer_ref : std_logic;
 
 	signal ddr_acc_rst : std_logic;
 	signal ddr_acc_req : std_logic;
-	signal ddr_acc_ref  : std_logic;
+	signal ddr_acc_ref : std_logic;
 	signal ddr_acc_ras : std_logic;
 	signal ddr_acc_cas : std_logic;
 	signal ddr_acc_we  : std_logic;
@@ -104,8 +104,8 @@ architecture mix of ddr is
 	signal ddr_acc_dqs : std_logic_vector(ddr_dqs'range);
 	signal ddr_pgm_cmd : std_logic_vector(0 to 2);
 	signal ddr_mpu_rdy : std_logic;
-	signal ddr_wr_fifo_rst  : std_logic;
-	signal ddr_wr_fifo_req  : std_logic;
+	signal ddr_wr_fifo_rst : std_logic;
+	signal ddr_wr_fifo_req : std_logic;
 	signal ddr_wr_fifo_ena_n : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_fifo_ena_p : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_fifo_do  : std_logic_vector(sys_di'range);
@@ -115,8 +115,8 @@ architecture mix of ddr is
 	signal ddr_acc_wri : std_logic;
 
 	signal rst : std_logic;
-	alias  ddr_dql : std_logic_vector(0 to data_bits-1) is ddr_wr_fifo_do(0 to data_bits-1);
-	alias  ddr_dqh : std_logic_vector(0 to data_bits-1) is ddr_wr_fifo_do(data_bits to 2*data_bits-1);
+	alias  ddr_dql : std_logic_vector(ddr_dq'range) is ddr_wr_fifo_do(data_bits-1 downto 0);
+	alias  ddr_dqh : std_logic_vector(ddr_dq'range) is ddr_wr_fifo_do(2*data_bits-1 downto data_bits);
 
 	alias  clk0   is sys_clk0;
 	alias  clk90  is sys_clk90;
