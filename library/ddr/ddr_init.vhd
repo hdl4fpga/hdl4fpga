@@ -43,8 +43,8 @@ entity ddr_init is
 		ddr_cmd : std_logic_vector(0 to 2);
 		ddr_lat : signed(0 to lat_length-1);
 	end record;
-		attribute fsm_encoding : string;
-		attribute fsm_encoding of ddr_init : entity is "compact";
+	attribute fsm_encoding : string;
+	attribute fsm_encoding of ddr_init : entity is "compact";
 end;
 
 architecture ddr1 of ddr_init is

@@ -106,8 +106,8 @@ offset = in -0.200 ns valid 0.5 ns before ddr2_dqs_p[1] rising;
 timespec ts_dso1 = period "dqs1" ts_dso0 high 50% phase 0.0 INPUT_JITTER 200 ps;
 #
 net ddr2_dqs_p[0] tnm_net = FFS  FFS_dqs0;
-net ddr2_dqs_p[1] tnm_net = FFS  FFS_dqs1;
 net ddr2_dqs_p[0] tnm_net = RAMS RAMS_dqs0;
+net ddr2_dqs_p[1] tnm_net = FFS  FFS_dqs1;
 net ddr2_dqs_p[1] tnm_net = RAMS RAMS_dqs1;
 net ddrs_clk0     tnm_net = FFS  FFS_ddrsclk0;
 net ddrs_clk0     tnm_net = RAMS RAMS_ddrsclk0;
@@ -119,12 +119,14 @@ net input_clk     tnm_net = RAMS RAMS_inputclk;
 ## Others #
 ## ###### #
 
-timespec ts_ddr_ram  = from RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1.5 datapathonly;
-timespec ts_ddr_act  = from FFS  (*/ddr_mpu_act) TO FFS(*ddr_a*) TS_dcms_e_ddrdcm_e_dcm_clk0*1.5 datapathonly;
-timespec ts_ddr_dll  = from FFS  (*/dll_timer_rdy)  TIG;
-timespec ts_ddr_200u = from FFS  (*/ddr_init_cfg) TIG;
-timespec ts_sys_ini  = from FFS  (*/sys_ini) TIG;
-timespec ts_dcm_lckd = from FFS  (*dcms_e/dcm_lckd*) TIG;
+TIMESPEC TS_dcmlckd = FROM FFS  (*dcms_e/dcm_lckd*) TIG;
+
+TIMESPEC TS_ddrram = FROM RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1 datapathonly;
+TIMESPEC TS_ddract = FROM FFS  (*/ddr_mpu_act) TIG;
+#TIMESPEC TS_ddract = FROM FFS  (*/ddr_mpu_act) TO FFS(*ddr_a*) TIG;
+TIMESPEC TS_ddrdll = FROM FFS  (*/dll_timer_rdy)  TIG;
+TIMESPEC TS_ddr200u = FROM FFS  (*/ddr_init_cfg) TIG;
+TIMESPEC TS_ddrini = FROM FFS  (*/sys_ini) TIG;
 
 # ###################### #
 # Crossclock time ignore #
@@ -195,21 +197,21 @@ INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y28;
 
 # To Sys Cntrs #
 
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[0].ffd_i" LOC = SLICE_X1Y46;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[1].ffd_i" LOC = SLICE_X1Y46;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[2].ffd_i" LOC = SLICE_X1Y46;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[3].ffd_i" LOC = SLICE_X1Y46;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[0].ffd_i" LOC = SLICE_X2Y46;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[1].ffd_i" LOC = SLICE_X2Y46;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[2].ffd_i" LOC = SLICE_X2Y46;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[3].ffd_i" LOC = SLICE_X2Y46;
 
 # To DDR Cntrs #
 
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[0].ffd_i" LOC = SLICE_X1Y43;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[1].ffd_i" LOC = SLICE_X1Y43;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[2].ffd_i" LOC = SLICE_X1Y43;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[3].ffd_i" LOC = SLICE_X1Y43;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[0].ffd_i" LOC = SLICE_X1Y47;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[1].ffd_i" LOC = SLICE_X1Y47;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[2].ffd_i" LOC = SLICE_X1Y47;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[3].ffd_i" LOC = SLICE_X1Y47;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[0].ffd_i" LOC = SLICE_X2Y43;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[1].ffd_i" LOC = SLICE_X2Y43;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[2].ffd_i" LOC = SLICE_X2Y43;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[0].i_cntr_g[3].ffd_i" LOC = SLICE_X2Y43;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[0].ffd_i" LOC = SLICE_X2Y47;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[1].ffd_i" LOC = SLICE_X2Y47;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[2].ffd_i" LOC = SLICE_X2Y47;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].i_cntr_g[3].ffd_i" LOC = SLICE_X2Y47;
 
 # Distributed RAM  #
 
@@ -236,22 +238,22 @@ INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].ddr_fifo[1].ram_g[7].ram16x1d_i" LOC = SL
 
 # To Sys Cntrs #
 
-INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[0].ffd_i" LOC = SLICE_X1Y44;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[1].ffd_i" LOC = SLICE_X1Y44;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[2].ffd_i" LOC = SLICE_X1Y44;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[3].ffd_i" LOC = SLICE_X1Y44;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[0].ffd_i" LOC = SLICE_X2Y44;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[1].ffd_i" LOC = SLICE_X2Y44;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[2].ffd_i" LOC = SLICE_X2Y44;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].sys_cntr_g[3].ffd_i" LOC = SLICE_X2Y44;
 
 # To DDR Cntrs #
 
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X1Y42;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X1Y42;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X1Y42;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X1Y42;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X2Y42;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X2Y42;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X2Y42;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X2Y42;
 
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X1Y45;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X1Y45;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X1Y45;
-INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X1Y45;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X2Y45;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X2Y45;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X2Y45;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X2Y45;
 
 # Distributed RAM  #
 
@@ -287,21 +289,21 @@ INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
 
 # To Sys Cntrs #
 
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[0].ffd_i" LOC = SLICE_X1Y31;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[1].ffd_i" LOC = SLICE_X1Y31;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[2].ffd_i" LOC = SLICE_X1Y31;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[3].ffd_i" LOC = SLICE_X1Y31;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[0].ffd_i" LOC = SLICE_X2Y31;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[1].ffd_i" LOC = SLICE_X2Y31;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[2].ffd_i" LOC = SLICE_X2Y31;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].o_cntr_g[3].ffd_i" LOC = SLICE_X2Y31;
 
 # To DDR Cntrs #
 
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[0].ffd_i" LOC = SLICE_X1Y32;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[1].ffd_i" LOC = SLICE_X1Y32;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[2].ffd_i" LOC = SLICE_X1Y32;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[3].ffd_i" LOC = SLICE_X1Y32;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[0].ffd_i" LOC = SLICE_X1Y34;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[1].ffd_i" LOC = SLICE_X1Y34;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[2].ffd_i" LOC = SLICE_X1Y34;
-INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[3].ffd_i" LOC = SLICE_X1Y34;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[0].ffd_i" LOC = SLICE_X2Y32;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[1].ffd_i" LOC = SLICE_X2Y32;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[2].ffd_i" LOC = SLICE_X2Y32;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[0].i_cntr_g[3].ffd_i" LOC = SLICE_X2Y32;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[0].ffd_i" LOC = SLICE_X2Y34;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[1].ffd_i" LOC = SLICE_X2Y34;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[2].ffd_i" LOC = SLICE_X2Y34;
+INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].i_cntr_g[3].ffd_i" LOC = SLICE_X2Y34;
 
 # Distributed RAM  #
 
@@ -328,22 +330,22 @@ INST "*/*ddr_rd_fifo_e/fifo_bytes_g[1].ddr_fifo[1].ram_g[7].ram16x1d_i" LOC = SL
 
 # To Sys Cntrs #
 
-INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[0].ffd_i" LOC = SLICE_X1Y41;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[1].ffd_i" LOC = SLICE_X1Y41;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[2].ffd_i" LOC = SLICE_X1Y41;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[3].ffd_i" LOC = SLICE_X1Y41;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[0].ffd_i" LOC = SLICE_X2Y41;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[1].ffd_i" LOC = SLICE_X2Y41;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[2].ffd_i" LOC = SLICE_X2Y41;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].sys_cntr_g[3].ffd_i" LOC = SLICE_X2Y41;
 
 # To DDR Cntrs #
 
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X1Y29;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X1Y29;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X1Y29;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X1Y29;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X2Y29;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X2Y29;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X2Y29;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X2Y29;
 
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X1Y30;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X1Y30;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X1Y30;
-INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X1Y30;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[0].ffd_i" LOC = SLICE_X2Y30;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[1].ffd_i" LOC = SLICE_X2Y30;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[2].ffd_i" LOC = SLICE_X2Y30;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" LOC = SLICE_X2Y30;
 
 # Distributed RAM  #
 
