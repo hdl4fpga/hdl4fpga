@@ -33,7 +33,7 @@ architecture mix of ddr_wr_fifo is
 	signal ddr_clk : std_logic_vector(0 to 1);
 	signal ddr_ena : std_logic_vector(0 to 1);
 	type addrword_vector is array (natural range <>) of addr_word;
-	signal ddr_addr_q : addrword_vector(0 to 1);
+--	signal ddr_addr_q : addrword_vector(0 to 1);
 begin
 
 	ddr_clk <= (0 => ddr_clk_p, 1 => ddr_clk_n);
@@ -42,6 +42,7 @@ begin
 	data_byte_g: for l in data_bytes-1 downto 0 generate
 		signal sys_addr_q : addr_word;
 		signal sys_addr_d : addr_word;
+		signal ddr_addr_q : addrword_vector(0 to 1);
 	begin
 		sys_addr_d <= inc(gray(sys_addr_q));
 		sys_cntr_g: for j in addr_word'range  generate
@@ -58,7 +59,8 @@ begin
 
 		ddr_data_g: for i in 0 to 1 generate
 		begin
-			ddr_word_g : if l=0 generate
+--			ddr_word_g : if l=0 generate
+			ddr_word_g : block
 				signal ddr_addr_d : addr_word;
 			begin
 				ddr_addr_d <= inc(gray(ddr_addr_q(i)));
@@ -73,7 +75,8 @@ begin
 						d  => ddr_addr_d(j),
 						q  => ddr_addr_q(i)(j));
 				end generate;
-			end generate;
+--			end generate;
+			end block;
 
 			ram_g: for j in byte_bits-1 downto 0 generate
 				ram16x1d_i : ram16x1d
