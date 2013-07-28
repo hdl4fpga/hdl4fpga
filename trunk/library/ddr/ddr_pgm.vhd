@@ -15,6 +15,8 @@ entity ddr_pgm is
 		ddr_pgm_cas : out std_logic;
 		ddr_pgm_pre : out std_logic;
 		ddr_pgm_cmd : out std_logic_vector(0 to 2));
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of ddr_pgm : entity is "compact";
 end;
 
 architecture arch of ddr_pgm is
