@@ -123,9 +123,10 @@ NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
 TIMESPEC TS_dcmlckd = FROM FFS  (*dcms_e/dcm_lckd*) TIG;
 
-TIMESPEC TS_ddrram = FROM RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1 datapathonly;
-TIMESPEC TS_ddract = FROM FFS  (*/ddr_act*) TIG;
-#TIMESPEC TS_ddract = FROM FFS  (*/ddr_mpu_act) TO FFS(*ddr_a*) TIG;
+TIMESPEC TS_ddrram = FROM RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1.5 datapathonly;
+#TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act*) TIG;
+TIMESPEC TS_ddra = FROM FFS  (*/ddrs_a*) TIG;
+TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TO FFS(*ddr_a*) TIG;
 TIMESPEC TS_ddrdll = FROM FFS  (*/dll_timer_rdy)  TIG;
 TIMESPEC TS_ddr200u = FROM FFS  (*/ddr_init_cfg) TIG;
 TIMESPEC TS_ddrini = FROM FFS  (*/sys_ini) TIG;
