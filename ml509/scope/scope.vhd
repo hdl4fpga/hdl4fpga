@@ -76,6 +76,7 @@ begin
 	scope_rst <= not dcm_lckd;
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		device => "virtex5",
 		ddr_std => 2)
 	port map (
 		sys_rst => scope_rst,

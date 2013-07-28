@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity ddr_wr_fifo is
 	generic (
+		device : string := "NONE";
 		data_bytes : natural := 2;
 		byte_bits  : natural := 8);
 	port (
@@ -58,8 +59,7 @@ begin
 		ddr_data_g: for i in 0 to 1 generate
 			signal ddr_addr_q : addrword_vector(0 to 1);
 		begin
---			ddr_word_g : if l=0 generate
-			ddr_word_g :block
+			ddr_word_g : block
 				signal ddr_addr_d : addr_word;
 			begin
 				ddr_addr_d <= inc(gray(ddr_addr_q(i)));
@@ -74,12 +74,12 @@ begin
 						d  => ddr_addr_d(j),
 						q  => ddr_addr_q(i)(j));
 				end generate;
---			end generate;
 			end block;
 
 			ram_g: for j in byte_bits-1 downto 0 generate
-			signal x : std_logic;
-begin
+				signal dpo : std_logic;
+				signal qpo : std_logic;
+			begin
 				ram16x1d_i : ram16x1d
 				port map (
 					wclk => sys_clk,
@@ -93,15 +93,20 @@ begin
 					dpra1 => ddr_addr_q(i)(1),
 					dpra2 => ddr_addr_q(i)(2),
 					dpra3 => ddr_addr_q(i)(3),
---					dpo => ddr_do(data_bits*i+byte_bits*l+j),
-					dpo => x,
+					dpo => dpo,
 					spo => open);
-					process (ddr_clk(i))
-					begin
-						if rising_edge (ddr_clk(i)) then
-							ddr_do(data_bits*i+byte_bits*l+j) <= x;
-						end if;
-					end process;
+
+				process (ddr_clk(i))
+				begin
+					if rising_edge (ddr_clk(i)) then
+						qpo <= dpo;
+					end if;
+				end process;
+
+				ddr_do(data_bits*i+byte_bits*l+j) <= 
+					qpo when device="virtex5" else
+					dpo;
+					
 			end generate;
 		end generate;
 	end generate;

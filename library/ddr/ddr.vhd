@@ -5,6 +5,7 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
+		device : string := "NONE";
 		std : positive range 1 to 3 := 3;
 		tCP : real := 6.0;
 		tWR : real := 15.0;
@@ -487,6 +488,8 @@ begin
 		
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
+	generic map (
+		device => device)
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,
@@ -528,38 +531,38 @@ begin
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin
---		rclk <= 
---			clk180 when std=1 and cas(0)='1' else
---			clk0;
---			
---		oddr_du : oddr
---		port map (
---			r => '0',
---			s => '0',
---			c => rclk,
---			ce => '1',
---			d1 => ddr_acc_drr,
---			d2 => ddr_acc_drf,
---			q  => ddr_lp_dqs);
---
 		rclk <= 
 			clk180 when std=1 and cas(0)='1' else
 			clk0;
 			
-		fclk <= 
-			clk0   when std=1 and cas(0)='1' else
-			clk180;
-
-		oddr_du : oddr2
+		oddr_du : oddr
 		port map (
-			c0 => rclk,
-			c1 => fclk,
+			r => '0',
+			s => '0',
+			c => rclk,
 			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => ddr_acc_drr,
-			d1 => ddr_acc_drf,
+			d1 => ddr_acc_drr,
+			d2 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
+
+--		rclk <= 
+--			clk180 when std=1 and cas(0)='1' else
+--			clk0;
+--			
+--		fclk <= 
+--			clk0   when std=1 and cas(0)='1' else
+--			clk180;
+--
+--		oddr_du : oddr2
+--		port map (
+--			c0 => rclk,
+--			c1 => fclk,
+--			ce => '1',
+--			r  => '0',
+--			s  => '0',
+--			d0 => ddr_acc_drr,
+--			d1 => ddr_acc_drf,
+--			q  => ddr_lp_dqs);
 	end block;
 
 --	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
