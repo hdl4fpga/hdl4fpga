@@ -44,8 +44,6 @@ architecture scope of testbench is
 	signal ddr_lp_dqs : std_logic;
 
 	component nuhs3dsp is
-		generic (
-			ddr_std : positive);
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;
@@ -121,7 +119,6 @@ architecture scope of testbench is
 			-------------
 			-- DDR RAM --
 
-			ddr_rst : out std_logic := 'Z';
 			ddr_ckp : out std_logic := 'Z';
 			ddr_ckn : out std_logic := 'Z';
 			ddr_lp_ckp : in std_logic := 'Z';
@@ -237,11 +234,9 @@ begin
 
 	mii_rxc <= mii_refclk after 5 ps;
 	nuhs3dsp_e : nuhs3dsp
-	generic map (
-		ddr_std => ddr_std)
 	port map (
 		xtal => clk,
-		sw1  => '1',
+		sw1  => rst,
 		led7 => led7,
 		dip => b"0000_0001",
 
@@ -265,7 +260,6 @@ begin
 		-------------
 		-- DDR RAM --
 
-		ddr_rst => ddr3_rst,
 		ddr_ckp => clk_p,
 		ddr_ckn => clk_n,
 		ddr_lp_ckp => clk_p,
@@ -283,146 +277,45 @@ begin
 		ddr_dqs => dqs,
 		ddr_dq  => dq);
 
-	ddr_model_g: if ddr_std=1 generate
-		mt_u : ddr_model
-		port map (
-			Clk   => clk_p,
-			Clk_n => clk_n,
-			Cke   => cke,
-			Cs_n  => cs_n,
-			Ras_n => ras_n,
-			Cas_n => cas_n,
-			We_n  => we_n,
-			Ba    => ba,
-			Addr  => addr,
-			Dm    => dm,
-			Dq    => dq,
-			Dqs   => dqs);
-	end generate;
+	ddr_model_g: ddr_model
+	port map (
+		Clk   => clk_p,
+		Clk_n => clk_n,
+		Cke   => cke,
+		Cs_n  => cs_n,
+		Ras_n => ras_n,
+		Cas_n => cas_n,
+		We_n  => we_n,
+		Ba    => ba,
+		Addr  => addr,
+		Dm    => dm,
+		Dq    => dq,
+		Dqs   => dqs);
 
-	ddr2_model_g: if ddr_std=2 generate
-		signal dqs_n  : std_logic_vector(dqs'range);
-		signal rdqs_n : std_logic_vector(dqs'range);
-		signal odt    : std_logic;
-	begin
-		dqs_n <= not dqs;
-		mt_u : ddr2_model
-		port map (
-			Ck    => clk_p,
-			Ck_n  => clk_n,
-			Cke   => cke,
-			Cs_n  => cs_n,
-			Ras_n => ras_n,
-			Cas_n => cas_n,
-			We_n  => we_n,
-			Ba    => ba,
-			Addr  => addr,
-			Dm_rdqs  => dm,
-			Dq    => dq,
-			Dqs   => dqs,
-			Dqs_n => dqs_n,
-			rdqs_n => rdqs_n,
-			Odt   => odt);
-	end generate;
-
-	ddr3_model_g: if ddr_std=3 generate
-		signal ba3    : std_logic_vector(2 downto 0);
-		signal dqs_n  : std_logic_vector(dqs'range);
-		signal tdqs_n : std_logic_vector(dqs'range);
-		signal odt    : std_logic;
-	begin
-		dqs_n <= not dqs;
-		ba3 <= '0' & ba;
-		mt_u : ddr3_model
-		port map (
-			Rst_n => ddr3_rst,
-			Ck    => clk_p,
-			Ck_n  => clk_n,
-			Cke   => cke,
-			Cs_n  => cs_n,
-			Ras_n => ras_n,
-			Cas_n => cas_n,
-			We_n  => we_n,
-			Ba    => ba3,
-			Addr  => addr,
-			Dm_tdqs  => dm,
-			Dq    => dq,
-			Dqs   => dqs,
-			Dqs_n => dqs_n,
-			Tdqs_n => tdqs_n,
-			Odt   => odt);
-	end generate;
 end;
 
 library micron;
 
-configuration nuhs3dsp_structure_md of testbench is
+configuration nuhs2dsp_structure_md of testbench is
 	for scope 
 		for all : nuhs3dsp 
 			use entity hdl4fpga.nuhs3dsp(structure);
 		end for;
-		for ddr_model_g
-			for all : ddr_model 
-				use entity micron.ddr_model
-				port map (
-					Clk   => clk_p,
-					Clk_n => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm    => dm,
-					Dq    => dq,
-					Dqs   => dqs);
-			end for;
-		end for;
-
-		for ddr2_model_g 
-			for all : ddr2_model 
-				use entity micron.ddr2
-				port map (
-					Ck    => clk_p,
-					Ck_n  => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm_rdqs  => dm,
-					Dq    => dq,
-					Dqs   => dqs,
-					Dqs_n => dqs_n,
-					rdqs_n => rdqs_n,
-					Odt   => odt);
-			end for;
-		end for;
-
-		for ddr3_model_g 
-			for all : ddr3_model 
-				use entity micron.ddr3
-				port map (
-					Rst_n => ddr3_rst,
-					Ck    => clk_p,
-					Ck_n  => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm_tdqs  => dm,
-					Dq    => dq,
-					Dqs   => dqs,
-					Dqs_n => dqs_n,
-					Tdqs_n => tdqs_n,
-					Odt   => odt);
-			end for;
+		for all: ddr_model
+			use entity micron.ddr_model
+			port map (
+				Clk   => clk_p,
+				Clk_n => clk_n,
+				Cke   => cke,
+				Cs_n  => cs_n,
+				Ras_n => ras_n,
+				Cas_n => cas_n,
+				We_n  => we_n,
+				Ba    => ba,
+				Addr  => addr,
+				Dm    => dm,
+				Dq    => dq,
+				Dqs   => dqs);
 		end for;
 	end for;
 end;
@@ -434,68 +327,22 @@ configuration nuhs3dsp_scope_md of testbench is
 		for all : nuhs3dsp 
 			use entity hdl4fpga.nuhs3dsp(scope);
 		end for;
-		for ddr_model_g 
 			for all : ddr_model 
-				use entity micron.ddr_model
-				port map (
-					Clk   => clk_p,
-					Clk_n => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm    => dm,
-					Dq    => dq,
-					Dqs   => dqs);
-			end for;
-		end for;
+			use entity micron.ddr_model
+			port map (
+				Clk   => clk_p,
+				Clk_n => clk_n,
+				Cke   => cke,
+				Cs_n  => cs_n,
+				Ras_n => ras_n,
+				Cas_n => cas_n,
+				We_n  => we_n,
+				Ba    => ba,
+				Addr  => addr,
+				Dm    => dm,
+				Dq    => dq,
+				Dqs   => dqs);
 
-		for ddr2_model_g 
-			for all : ddr2_model 
-				use entity micron.ddr2
-				port map (
-					Ck    => clk_p,
-					Ck_n  => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm_rdqs  => dm,
-					Dq    => dq,
-					Dqs   => dqs,
-					Dqs_n => dqs_n,
-					rdqs_n => rdqs_n,
-					Odt   => odt);
-			end for;
-		end for;
-
-		for ddr3_model_g 
-			for all : ddr3_model 
-				use entity micron.ddr3
-				port map (
-					Rst_n => ddr3_rst,
-					Ck    => clk_p,
-					Ck_n  => clk_n,
-					Cke   => cke,
-					Cs_n  => cs_n,
-					Ras_n => ras_n,
-					Cas_n => cas_n,
-					We_n  => we_n,
-					Ba    => ba,
-					Addr  => addr,
-					Dm_tdqs  => dm,
-					Dq    => dq,
-					Dqs   => dqs,
-					Dqs_n => dqs_n,
-					Tdqs_n => tdqs_n,
-					Odt   => odt);
-			end for;
 		end for;
 	end for;
 end;

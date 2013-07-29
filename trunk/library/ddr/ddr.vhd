@@ -85,10 +85,7 @@ architecture mix of ddr is
 	signal ddr_init_cfg : std_logic;
 	signal ddr_init_dll : std_logic;
 
-	signal ddr_timer_sel : std_logic;
 	signal dll_timer_rdy : std_logic;
-	signal ddr_timer_rst : std_logic;
-	signal ddr_timer_ref : std_logic;
 
 	signal ddr_acc_rst : std_logic;
 	signal ddr_acc_req : std_logic;
@@ -306,7 +303,6 @@ begin
 		sys_we  => ddr_acc_we,
 		sys_a   => sys_a,
 		sys_b   => sys_ba,
-		
 		sys_ini_ras => ddr_init_ras,
 		sys_ini_cas => ddr_init_cas,
 		sys_ini_we  => ddr_init_we,
@@ -419,8 +415,8 @@ begin
 	process (clk0)
 	begin
 		if rising_edge(clk0) then
-			ddr_acc_rst   <= not (ddr_init_rdy and dll_timer_rdy);
-			sys_ini       <= ddr_init_rdy and dll_timer_rdy;
+			ddr_acc_rst <= not (ddr_init_rdy and dll_timer_rdy);
+			sys_ini     <= ddr_init_rdy and dll_timer_rdy;
 		end if;
 	end process;
 
