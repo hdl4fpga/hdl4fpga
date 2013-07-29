@@ -9,7 +9,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-architecture main of ml509 is
+architecture scope of ml509 is
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
