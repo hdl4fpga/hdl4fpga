@@ -63,7 +63,7 @@ architecture def of ddr_timer is
 	signal timer_sel : std_logic_vector(0 to 2);
 	signal z : std_logic_vector(0 to 4);
 
-	signal timer_div : unsigned(0 to 4-1);
+	signal timer_div : unsigned(0 to 4-1) := (others => '0');
 	signal treq : std_logic;
 	signal trdy : std_logic;
 begin
@@ -79,20 +79,20 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(timer_div(0)) then
-			timer_req <= q;
-			q := treq;
+			treq <= q;
+			q := timer_req;
 		end if;
 	end process;
 
 	process (timer_div(0))
-		variable timer : unsigned(0 to 6);
+		variable timer : unsigned(0 to 8);
 		type tword_vector is array(natural range <>) of natural range 0 to 2**timer'length-1;
 		constant time_data : tword_vector(0 to 5-1) := (
-			timer_ids'pos(tid_200u) => c200u,
-			timer_ids'pos(tid_dll)  => cDLL,
-			timer_ids'pos(tid_ref)  => cREF,
-			timer_ids'pos(tid_500u) => c500u,
-			timer_ids'pos(tid_xpr)  => cxpr);
+			timer_ids'pos(tid_200u) => (c200u+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_dll)  => (cDLL+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_ref)  => cREF/2**timer_div'length-2,
+			timer_ids'pos(tid_500u) => (c500u+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_xpr)  => (cxpr+2**timer_div'length-1)/2**timer_div'length);
 	begin
 		if rising_edge(timer_div(0)) then
 			if treq='0' then
@@ -101,6 +101,7 @@ begin
 			if trdy='0' then
 				timer := timer - 1;
 			end if;
+			trdy <= timer(0);
 		end if;
 	end process;
 
