@@ -64,11 +64,13 @@ architecture def of ddr_timer is
 	signal z : std_logic_vector(0 to 4);
 
 	signal timer_div : unsigned(0 to 4-1);
+	signal treq : std_logic;
+	signal trdy : std_logic;
 begin
 
-	process (ddr_clk)
+	process (ddr_timer_clk)
 	begin
-		if rising_edge(ddr_clk) then
+		if rising_edge(ddr_timer_clk) then
 			timer_div <= timer_div + 1;
 		end if;
 	end process;
@@ -83,7 +85,8 @@ begin
 	end process;
 
 	process (timer_div(0))
-		type tword_vector is array(natural range <>) is natural range 0 to 2**-1;
+		variable timer : unsigned(0 to 6);
+		type tword_vector is array(natural range <>) of natural range 0 to 2**timer'length-1;
 		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_200u) => c200u,
 			timer_ids'pos(tid_dll)  => cDLL,
@@ -93,7 +96,7 @@ begin
 	begin
 		if rising_edge(timer_div(0)) then
 			if treq='0' then
-				timer <= to_unsigned(time_data(to_unsigned(timer_sel)), timer'length);
+				timer := to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
 			end if;
 			if trdy='0' then
 				timer := timer - 1;
