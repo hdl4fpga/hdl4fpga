@@ -63,22 +63,52 @@ architecture def of ddr_timer is
 	signal timer_sel : std_logic_vector(0 to 2);
 	signal z : std_logic_vector(0 to 4);
 
+	signal timer_div : unsigned(0 to 4-1);
 begin
 
-	timers_e : entity hdl4fpga.timers
-	generic map (
-		timer_len  => 24,
-		timer_data => (
+	process (ddr_clk)
+	begin
+		if rising_edge(ddr_clk) then
+			timer_div <= timer_div + 1;
+		end if;
+	end process;
+
+	process (timer_div(0))
+		variable q : std_logic;
+	begin
+		if rising_edge(timer_div(0)) then
+			timer_req <= q;
+			q := treq;
+		end if;
+	end process;
+
+	process (timer_div(0))
+		type tword_vector is array(natural range <>) is natural range 0 to 2**-1;
+		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_200u) => c200u,
 			timer_ids'pos(tid_dll)  => cDLL,
 			timer_ids'pos(tid_ref)  => cREF,
 			timer_ids'pos(tid_500u) => c500u,
-			timer_ids'pos(tid_xpr)  => cxpr))
-	port map (
-		timer_clk => ddr_timer_clk,
-		timer_sel => timer_sel,
-		timer_req => timer_req,
-		timer_rdy => timer_rdy);
+			timer_ids'pos(tid_xpr)  => cxpr);
+	begin
+		if rising_edge(timer_div(0)) then
+			if treq='0' then
+				timer <= to_unsigned(time_data(to_unsigned(timer_sel)), timer'length);
+			end if;
+			if trdy='0' then
+				timer := timer - 1;
+			end if;
+		end if;
+	end process;
+
+	process (ddr_timer_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(ddr_timer_clk) then
+			timer_rdy <= q;
+			q := trdy;
+		end if;
+	end process;
 
 	process (ddr_timer_clk)
 		variable next_tid  : timer_ids;

@@ -102,8 +102,8 @@ NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%; # INPUT_JITTER 200 ps; 
 NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
 NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
-OFFSET = IN -0.5 ns VALID 2 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN -0.5 ns VALID 2 ns BEFORE ddr_dqs[1] RISING;
+OFFSET = IN -0.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN -0.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
 
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 

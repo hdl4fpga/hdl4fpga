@@ -22,7 +22,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture spartan3 of dfsdcm is
-	signal dfs_rst : std_logic;
 	signal dfs_lckd : std_logic;
     signal dfs_clkfb  : std_logic;
 
@@ -55,7 +54,7 @@ begin
 		psen  => '0',
 		psincdec => '0',
 
-		rst => dfs_rst,
+		rst => dfsdcm_rst,
 		clkin => dfsdcm_clkin,
 		clkfb => dfs_clkfb,
 		clk0  => dfs_clkfb,
@@ -66,8 +65,8 @@ begin
 		variable srl16 : std_logic_vector(0 to 16-1);
 	begin
 		if dfsdcm_rst='1' then
-			dfs_rst <= '1';
-		elsif rising_edge(dcm_clkin) then
+			dcm_rst <= '1';
+		elsif rising_edge(dfsdcm_clkin) then
 			srl16 := srl16(1 to srl16'right) & not dfs_lckd;
 			dcm_rst <= srl16(0) or not dfs_lckd;
 		end if;
