@@ -316,7 +316,7 @@ begin
 		ddr_a   => ddr_a,
 		ddr_b   => ddr_ba);
 
-	ddr_timer_du : entity hdl4fpga.ddr_timer
+	ddr_timer_e : entity hdl4fpga.ddr_timer
 	generic map (
 --		c200u => natural(t200u/tCP),
 		c200u => natural(2000.0/tCP),
