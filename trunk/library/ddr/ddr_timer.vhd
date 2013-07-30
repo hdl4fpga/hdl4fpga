@@ -90,7 +90,7 @@ begin
 		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_200u) => (c200u+2**timer_div'length-1)/2**timer_div'length,
 			timer_ids'pos(tid_dll)  => (cDLL+2**timer_div'length-1)/2**timer_div'length,
-			timer_ids'pos(tid_ref)  => cREF/2**timer_div'length-2,
+			timer_ids'pos(tid_ref)  => (cREF/2**timer_div'length)-5,
 			timer_ids'pos(tid_500u) => (c500u+2**timer_div'length-1)/2**timer_div'length,
 			timer_ids'pos(tid_xpr)  => (cxpr+2**timer_div'length-1)/2**timer_div'length);
 	begin

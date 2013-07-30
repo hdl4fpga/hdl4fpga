@@ -48,13 +48,18 @@ architecture scope of nuhs3dsp is
 	signal sys_rst   : std_logic;
 	signal scope_rst : std_logic;
 
+	constant sys_per : real := 50.0;
+	constant ddr_mul : natural := 25;
+	constant ddr_div : natural := 3;
 begin
 
 	sys_rst <= not sw1;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		sys_per => 10.0)
+		ddr_mul => ddr_mul,
+		ddr_div => ddr_div,
+		sys_per => sys_per)
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => xtal,
@@ -70,6 +75,7 @@ begin
 	scope_rst <= not dcm_lckd;
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		tDDR => (real(ddr_div)*sys_per)/real(ddr_mul),
 		device => "spartan3",
 		ddr_std => 1)
 	port map (

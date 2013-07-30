@@ -107,6 +107,10 @@ OFFSET = IN -0.5 ns VALID 1.9 ns BEFORE ddr_dqs[1] RISING;
 
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
+NET "*/timer_div[0]" TNM_NET = timerdiv0;
+NET "*/timer_div[0]" CLOCK_DEDICATED_ROUTE = false;
+TIMESPEC TS_timerdiv0 = PERIOD "*/timer_div[0]" TS_dcms_e_ddrdcm_e_dcm_clk0*16 HIGH 50%;
+
 NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
 NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;
 NET ddr_dqs[0] TNM_NET = RAMS RAMS_dqs0;
@@ -116,6 +120,7 @@ NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET adc_clkab_OBUF TNM_NET =  FFS FFS_adcclkab;
 NET adc_clkab_OBUF TNM_NET =  RAMS RAMS_adcclkab;
+NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
 
 TIMESPEC TS_ddrlckd  = FROM FFS (*dcm_lckd*) TIG;
 TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY; #TIG;
@@ -124,8 +129,8 @@ TIMESPEC TS_ddrrst  = FROM FFS (*dcm_rst*) TIG;
 TIMESPEC TS_ddrdll  = FROM FFS (*/dll_timer_rdy) TIG;
 TIMESPEC TS_ddr200u = FROM FFS (*/ddr_init_cfg)  TIG;
 TIMESPEC TS_ddrini  = FROM FFS (*/sys_ini) TIG;
-TIMESPEC TS_timereq = FROM FFS (*/ddr_timer_e/timer_req) TIG;
-TIMESPEC TS_timerdy = FROM FFS (*/ddr_timer_e/trdy) TIG;
+TIMESPEC TS_timereq = FROM FFS_ddrsclk0  TO FFS_timerdiv0 TIG;
+TIMESPEC TS_timerdy = FROM FFS_timerdiv0 TO FFS_ddrsclk0  TIG;
 
 # ###################### #
 # Crossclock time ignore #
