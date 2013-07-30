@@ -13,11 +13,12 @@ entity ddr_wr_fifo is
 		sys_di  : in std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_rst : in std_logic;
 
-		ddr_ena_p : in std_logic_vector;
-		ddr_ena_n : in std_logic_vector;
-		ddr_clk_p : in std_logic;
-		ddr_clk_n : in std_logic;
-		ddr_do    : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0));
+		ddr_ena_r : in std_logic_vector;
+		ddr_ena_f : in std_logic_vector;
+		ddr_clk_r : in std_logic;
+		ddr_clk_f : in std_logic;
+		ddr_dq_r  : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_dq_f  : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
@@ -34,10 +35,14 @@ architecture mix of ddr_wr_fifo is
 	signal ddr_clk : std_logic_vector(0 to 1);
 	signal ddr_ena : std_logic_vector(0 to 1);
 	type addrword_vector is array (natural range <>) of addr_word;
+	type dword_vector is array (natural range <>) of std_logic_vector(ddr_dq_r'range);
+	signal ddr_dq : dword_vector(0 to 1);
 begin
 
-	ddr_clk <= (0 => ddr_clk_p, 1 => ddr_clk_n);
-	ddr_ena <= (0 => ddr_ena_p(0), 1 => ddr_ena_n(0));
+	ddr_clk <= (0 => ddr_clk_r,    1 => ddr_clk_f);
+	ddr_ena <= (0 => ddr_ena_r(0), 1 => ddr_ena_f(0));
+	ddr_dq_r <= ddr_dq(0);
+	ddr_dq_f <= ddr_dq(1);
 
 	data_byte_g: for l in data_bytes-1 downto 0 generate
 		signal sys_addr_q : addr_word;
@@ -103,7 +108,7 @@ begin
 					end if;
 				end process;
 
-				ddr_do(data_bits*i+byte_bits*l+j) <= 
+				ddr_dq(i)(byte_bits*l+j) <= 
 					qpo when device="virtex5" else
 					dpo;
 					

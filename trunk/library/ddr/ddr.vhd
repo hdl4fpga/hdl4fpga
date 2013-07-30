@@ -104,17 +104,16 @@ architecture mix of ddr is
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
 	signal ddr_wr_fifo_req : std_logic;
-	signal ddr_wr_fifo_ena_n : std_logic_vector(ddr_dqs'range);
-	signal ddr_wr_fifo_ena_p : std_logic_vector(ddr_dqs'range);
-	signal ddr_wr_fifo_do  : std_logic_vector(sys_di'range);
+	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_dq_r : std_logic_vector(ddr_dq'range);
+	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
 
 	signal rst : std_logic;
-	alias  ddr_dql : std_logic_vector(ddr_dq'range) is ddr_wr_fifo_do(data_bits-1 downto 0);
-	alias  ddr_dqh : std_logic_vector(ddr_dq'range) is ddr_wr_fifo_do(2*data_bits-1 downto data_bits);
 
 	alias  clk0   is sys_clk0;
 	alias  clk90  is sys_clk90;
@@ -318,11 +317,11 @@ begin
 
 	ddr_timer_e : entity hdl4fpga.ddr_timer
 	generic map (
---		c200u => natural(t200u/tCP),
-		c200u => natural(2000.0/tCP),
+		c200u => natural(t200u/tCP),
+--		c200u => natural(2000.0/tCP),
 		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 200),
---		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
-		c500u => natural(3000.0),
+		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
+--		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(floor(tREFI/tCP)),
 		std   => std)
@@ -451,8 +450,8 @@ begin
 		ddr_mpu_drr   => ddr_acc_drr,
 		ddr_mpu_drf   => ddr_acc_drf,
 
-		ddr_mpu_dwr   => ddr_wr_fifo_ena_p,  
-		ddr_mpu_dwf   => ddr_wr_fifo_ena_n,  
+		ddr_mpu_dwr   => ddr_wr_fifo_ena_r,  
+		ddr_mpu_dwf   => ddr_wr_fifo_ena_f,  
 		ddr_mpu_dqs   => ddr_acc_dqs,
 		ddr_mpu_dqsz  => ddr_acc_dqsz,
 		ddr_mpu_dqz   => ddr_acc_dqz);
@@ -491,11 +490,12 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
-		ddr_ena_p => ddr_wr_fifo_ena_n, 
-		ddr_ena_n => ddr_wr_fifo_ena_p, 
-		ddr_clk_p => clk270,
-		ddr_clk_n => clk90,
-		ddr_do  => ddr_wr_fifo_do);
+		ddr_ena_r => ddr_wr_fifo_ena_r, 
+		ddr_ena_f => ddr_wr_fifo_ena_f, 
+		ddr_clk_r => clk90,
+		ddr_clk_f => clk270,
+		ddr_dq_r  => ddr_wr_dq_r,
+		ddr_dq_f  => ddr_wr_dq_f);
 		
 	ddr_io_du : entity hdl4fpga.ddr_io_dq
 	generic map (
@@ -503,8 +503,8 @@ begin
 		byte_bits  => byte_bits)
 	port map (
 		ddr_io_clk => clk90,
-		ddr_io_dql => ddr_dql,
-		ddr_io_dqh => ddr_dqh,
+		ddr_io_dq_r => ddr_wr_dq_r,
+		ddr_io_dq_f => ddr_wr_dq_f,
 		ddr_io_dqz => ddr_acc_dqz,
 		ddr_io_dq  => ddr_dq,
 		ddr_io_dqi => ddr_io_dqi);

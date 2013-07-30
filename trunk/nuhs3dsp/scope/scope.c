@@ -27,8 +27,6 @@ main (int argc, char *argv[])
 
 	int i, j, n;
 	int npkt;
-	double avrg;
-	double err;
 
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
@@ -63,8 +61,6 @@ main (int argc, char *argv[])
 		abort ();
 	}
 
-	avrg = 0;
-	err  = 0;
 	for (i = 0; i < npkt; i++) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
@@ -76,17 +72,11 @@ main (int argc, char *argv[])
 			abort ();
 		}
 
-		for (j = 0; j < sizeof(sb_src)/2; j++) {
+		for (j = 0; j < sizeof(sb_src)/2; j++)
 			printf("0x%04x\n", sb_src[j]);
-			err  += pow(sb_src[j]-21.2038,2.0);
-			avrg += sb_src[j];
-		}
-	
-	}
-	avrg = avrg/(npkt*(sizeof(sb_src)/2));
-	err  = sqrt(err)/(npkt*(sizeof(sb_src)/2));
+						        
 
-	fprintf (stderr,"avrg %g\n", avrg);
-	fprintf (stderr,"err  %g\n", err);
+
+	}
 	return 0;
 }

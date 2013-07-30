@@ -54,5 +54,5 @@ begin
 	mii_txen <= mii_treq and ena(0);
 	mii_txd  <= reverse(word2byte(
 		word => sys_data,
-		addr => sel(0) & not sel(1 to 2)));
+		addr => sel(0 to 1) & not sel(2)));
 end;
