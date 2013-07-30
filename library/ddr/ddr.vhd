@@ -324,7 +324,7 @@ begin
 --		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
 		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
-		cREF  => natural(tREFI/tCP),
+		cREF  => natural(floor(tREFI/tCP)),
 		std   => std)
 	port map (
 		ddr_timer_clk => clk0,
@@ -425,10 +425,10 @@ begin
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
 		std  => std,
-		tRCD => natural(ceil(tRCD/tCp)),
-		tWR  => natural(ceil(tWR/tCp)),
-		tRP  => natural(ceil(tRP/tCp)),
-		tRFC => natural(ceil(tRFC/tCp)),
+		tRCD => natural(ceil(tRCD/tCP)),
+		tWR  => natural(ceil(tWR/tCP)),
+		tRP  => natural(ceil(tRP/tCP)),
+		tRFC => natural(ceil(tRFC/tCP)),
 		ddr_mpu_bl => bldb(bl,std),
 		ddr_mpu_cwl => cwldb(cwl, std),
 		ddr_mpu_cl => casdb(cl, std))

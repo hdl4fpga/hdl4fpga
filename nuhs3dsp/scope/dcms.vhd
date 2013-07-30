@@ -11,6 +11,8 @@ use hdl4fpga.cgafont.all;
 
 entity dcms is
 	generic (
+		ddr_mul : natural := 25;
+		ddr_div : natural := 9;
 		sys_per : real := 50.0);
 	port (
 		sys_rst   : in  std_logic;
@@ -30,9 +32,6 @@ architecture def of dcms is
 	-- Multiply by --  20     --  25     --   9     --  29     --  10      --
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
-
-	constant ddr_multiply : natural := 25; -- 9;
-	constant ddr_divide   : natural :=  3; -- 2;
 
 	signal dcm_rst : std_logic;
 	signal sclk_bufg : std_logic;
@@ -62,8 +61,8 @@ begin
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => ddr_multiply,
-		dfs_div => ddr_divide)
+		dfs_mul => ddr_mul,
+		dfs_div => ddr_div)
 	port map (
 		dfsdcm_rst => dcm_rst,
 		dfsdcm_clkin => sclk_bufg,

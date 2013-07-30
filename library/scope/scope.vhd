@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use std.textio.all;
+
 entity scope is
 	generic (
 		device : string := "NONE";
@@ -11,7 +13,9 @@ entity scope is
 		col_size  : natural := 6;
 		nibble_size : natural := 4;
 		byte_size : natural := 8;
-		data_size : natural := 16);
+		data_size : natural := 16;
+
+		tDDR : real := 6.0 );
 	port (
 		sys_rst : in std_logic;
 		sys_ini : out std_logic;
@@ -126,19 +130,19 @@ architecture def of scope is
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
 
-	impure function cas_code (
-		tCLK : real;
-		multiply : natural;
-		divide   : natural)
+	impure function cas_code (tDDR : real)
 		return std_logic_vector is
-		constant tDDR : real := (real(divide)*tCLK)/(real(multiply));
+			variable msg : line;
 	begin
+		write (msg, tddr);
+		writeline (output, msg);
 
 		if tDDR < 6.0 then
 			return "011";
 		elsif tDDR < 7.5 then
 			return "110";
 		else 
+			report "------------------------------------------------";
 			return "010";
 		end if;
 	end;
@@ -149,12 +153,7 @@ architecture def of scope is
 	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
 	-------------------------------------------------------------------------
 
-	constant ddr_multiply : natural := 25; --30; --25;
-	constant ddr_divide   : natural := 3;  --2; --3;
-	constant cas : std_logic_vector(0 to 2) := cas_code(
-		tCLK => 50.0,
-		multiply => ddr_multiply,
-		divide   => ddr_divide);
+	constant cas : std_logic_vector(0 to 2) := cas_code(tDDR);
 
 	type ddr_tac is record 
 		cl  : real;
@@ -464,7 +463,7 @@ begin
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
 		device => device,
-		tCP => (50.0*real(ddr_divide))/real(ddr_multiply),
+		tCP => tDDR,
 		std => ddr_std,
 
 		cl   => ddr_acdb(ddr_std).cl,
