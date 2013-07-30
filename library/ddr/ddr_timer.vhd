@@ -66,6 +66,7 @@ architecture def of ddr_timer is
 	signal timer_div : unsigned(0 to 4-1) := (others => '0');
 	signal treq : std_logic;
 	signal trdy : std_logic;
+		signal timer : unsigned(0 to 13);
 begin
 
 	process (ddr_timer_clk)
@@ -75,18 +76,21 @@ begin
 		end if;
 	end process;
 
-	process (timer_div(0))
+	process (timer_div(0), ddr_timer_rst)
 		variable q : std_logic;
 	begin
-		if rising_edge(timer_div(0)) then
+		if ddr_timer_rst='1' then
+			treq <= '0';
+			q := '0';
+		elsif rising_edge(timer_div(0)) then
 			treq <= q;
 			q := timer_req;
 		end if;
 	end process;
 
-	process (timer_div(0))
-		variable timer : unsigned(0 to 8);
-		type tword_vector is array(natural range <>) of natural range 0 to 2**timer'length-1;
+	process (timer_div(0), ddr_timer_rst)
+--		variable timer : unsigned(0 to 13);
+		type tword_vector is array(natural range <>) of natural range 0 to 2**(timer'length-1)-1;
 		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_200u) => (c200u+2**timer_div'length-1)/2**timer_div'length,
 			timer_ids'pos(tid_dll)  => (cDLL+2**timer_div'length-1)/2**timer_div'length,
@@ -94,23 +98,30 @@ begin
 			timer_ids'pos(tid_500u) => (c500u+2**timer_div'length-1)/2**timer_div'length,
 			timer_ids'pos(tid_xpr)  => (cxpr+2**timer_div'length-1)/2**timer_div'length);
 	begin
-		if rising_edge(timer_div(0)) then
+		if ddr_timer_rst='1' then
+			timer <= to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
+		elsif rising_edge(timer_div(0)) then
 			if treq='0' then
-				timer := to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
+				timer <= to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
 			end if;
 			if trdy='0' then
-				timer := timer - 1;
+				timer <= timer - 1;
 			end if;
-			trdy <= timer(0);
 		end if;
 	end process;
+			trdy <= timer(0);
 
 	process (ddr_timer_clk)
 		variable q : std_logic;
 	begin
 		if rising_edge(ddr_timer_clk) then
-			timer_rdy <= q;
-			q := trdy;
+			if ddr_timer_rst='1' then
+				timer_rdy <= '0';
+				q := '0';
+			else
+				timer_rdy <= q;
+				q := trdy;
+			end if;
 		end if;
 	end process;
 
