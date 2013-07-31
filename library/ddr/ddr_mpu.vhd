@@ -410,7 +410,7 @@ begin
 		ddr_mpu_drr  <= not (
 			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))) and
 			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))));
-		ddr_mpu_drf  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl))));
+		ddr_mpu_drf  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2);
 	end generate;
 
 	ddr3_g : if std=3 generate

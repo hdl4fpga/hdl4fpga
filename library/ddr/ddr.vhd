@@ -106,10 +106,14 @@ architecture mix of ddr is
 	signal ddr_wr_fifo_req : std_logic;
 	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_dm_r : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_dm_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_dq_r : std_logic_vector(ddr_dq'range);
 	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
+	signal ddr_mpu_dmz : std_logic;
+	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
 
@@ -490,6 +494,8 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
+--		ddr_dm_r  => ddr_wr_dm_r,
+--		ddr_dm_f  => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 
 		ddr_ena_f => ddr_wr_fifo_ena_f, 
 		ddr_clk_r => clk90,
@@ -521,26 +527,43 @@ begin
 		ddr_io_dqs_n => ddr_dqs_n,
 		ddr_io_dso => ddr_io_dso);
 	
+--	ddr_io_du : entity hdl4fpga.ddr_io_dq
+--	generic map (
+--		data_bytes => data_bytes)
+--	port map (
+--		ddr_io_clk => clk90,
+--		ddr_io_dm_r => ddr_wr_dm_r,
+--		ddr_io_dm_f => ddr_wr_dm_f,
+--		=> ddr_acc_drr,
+--		=> ddr_acc_drf,
+--		ddr_io_dmz => ddr_mpu_dmz,
+--		ddr_io_dm  => ddr_dm,
+--		ddr_io_dmi => ddr_io_dmi);
+
 	lp_dqs : block
 		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
 
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin
-	--	rclk <= 
-	--		clk180 when std=1 and cas(0)='1' else
-	--		clk0;
-	--		
-	--	oddr_du : oddr
-	--	port map (
-	--		r => '0',
-	--		s => '0',
-	--		c => rclk,
-	--		ce => '1',
-	--		d1 => ddr_acc_drr,
-	--		d2 => ddr_acc_drf,
-	--		q  => ddr_lp_dqs);
-    --
+--
+--
+--
+--
+--		rclk <= 
+--			clk180 when std=1 and cas(0)='1' else
+--			clk0;
+--			
+--		oddr_du : oddr
+--		port map (
+--			r => '0',
+--			s => '0',
+--			c => rclk,
+--			ce => '1',
+--			d1 => ddr_acc_drr,
+--			d2 => ddr_acc_drf,
+--			q  => ddr_lp_dqs);
+--    
 
 		rclk <= 
 			clk180 when std=1 and cas(0)='1' else
