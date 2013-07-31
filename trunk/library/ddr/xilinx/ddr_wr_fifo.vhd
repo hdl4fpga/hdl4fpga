@@ -10,6 +10,7 @@ entity ddr_wr_fifo is
 	port (
 		sys_clk : in std_logic;
 		sys_req : in std_logic;
+--		sys_dm  : in std_logic_vector(2*data_bytes-1 downto 0);
 		sys_di  : in std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_rst : in std_logic;
 
@@ -17,6 +18,8 @@ entity ddr_wr_fifo is
 		ddr_ena_f : in std_logic_vector;
 		ddr_clk_r : in std_logic;
 		ddr_clk_f : in std_logic;
+--		ddr_dm_r  : out std_logic_vector;
+--		ddr_dm_f  : out std_logic_vector;
 		ddr_dq_r  : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_dq_f  : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
@@ -34,15 +37,24 @@ architecture mix of ddr_wr_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	signal ddr_clk : std_logic_vector(0 to 1);
 	signal ddr_ena : std_logic_vector(0 to 1);
+
 	type addrword_vector is array (natural range <>) of addr_word;
+
 	type dword_vector is array (natural range <>) of std_logic_vector(ddr_dq_r'range);
 	signal ddr_dq : dword_vector(0 to 1);
+
+--	type dm_vector is array (natural range <>) of std_logic_vector(ddr_dm_r'range);
+--	signal ddr_dm : dm_vector(0 to 1);
+
 begin
 
 	ddr_clk <= (0 => ddr_clk_r,    1 => ddr_clk_f);
 	ddr_ena <= (0 => ddr_ena_r(0), 1 => ddr_ena_f(0));
 	ddr_dq_r <= ddr_dq(0);
 	ddr_dq_f <= ddr_dq(1);
+
+--	ddr_dm_r <= ddr_dm(0);
+--	ddr_dm_f <= ddr_dm(1);
 
 	data_byte_g: for l in data_bytes-1 downto 0 generate
 		signal sys_addr_q : addr_word;
@@ -80,6 +92,39 @@ begin
 						q  => ddr_addr_q(i)(j));
 				end generate;
 			end block;
+
+--			dm_ram_g : block
+--				signal dmo : std_logic;
+--				signal qmo : std_logic;
+--			begin
+--				ram16x1d_i : ram16x1d
+--				port map (
+--					wclk => sys_clk,
+--					we => sys_req,
+--					a0 => sys_addr_q(0),
+--					a1 => sys_addr_q(1),
+--					a2 => sys_addr_q(2),
+--					a3 => sys_addr_q(3),
+--					d  => sys_dm(data_bytes*i+l),
+--					dpra0 => ddr_addr_q(i)(0),
+--					dpra1 => ddr_addr_q(i)(1),
+--					dpra2 => ddr_addr_q(i)(2),
+--					dpra3 => ddr_addr_q(i)(3),
+--					dpo => dmo,
+--					spo => open);
+--
+--				process (ddr_clk(i))
+--				begin
+--					if rising_edge (ddr_clk(i)) then
+--						qmo <= dmo;
+--					end if;
+--				end process;
+--
+--				ddr_dm(i)(l) <= 
+--					qmo when device="virtex5" else
+--					dmo;
+--					
+--			end block;
 
 			ram_g: for j in byte_bits-1 downto 0 generate
 				signal dpo : std_logic;

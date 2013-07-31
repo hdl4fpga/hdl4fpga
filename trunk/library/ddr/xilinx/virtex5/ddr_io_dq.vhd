@@ -8,8 +8,8 @@ entity ddr_io_dq is
 	port (
 		ddr_io_clk : in std_logic;
 		ddr_io_dqz : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_io_dqh : in std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_io_dql : in std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_io_dq_r : in std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_io_dq_f : in std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dqi : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 end;
@@ -32,10 +32,10 @@ begin
 			port map (
 				r => '0',
 				s => '0',
-				c => ddr_io_fclk,
+				c => ddr_io_clk,
 				ce => '1',
-				d1 => ddr_io_dql(i*byte_bits+j),
-				d2 => ddr_io_dqh(i*byte_bits+j),
+				d1 => ddr_io_dq_r(i*byte_bits+j),
+				d2 => ddr_io_dq_f(i*byte_bits+j),
 				q => dqo);
 
 			ffd_i : fdrse
@@ -48,6 +48,7 @@ begin
 				q  => dqz);
 
 			ddr_io_dq(i*byte_bits+j) <= 'Z' when dqz='1' else dqo;
+
 			ibuf_dq : ibuf
 			port map (
 				i => ddr_io_dq(i*byte_bits+j),
