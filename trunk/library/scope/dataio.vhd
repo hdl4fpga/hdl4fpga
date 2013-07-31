@@ -125,18 +125,18 @@ begin
 	process (ddrs_clk)
 		type aword_vector is array (natural range <>) of aword;
 		constant addr : aword_vector(0 to 1) := (
---			0 => '0' & to_unsigned(4-1, bank_size) &	-- bank address
---			     '0' & to_unsigned(2**addr_size-1, addr_size) &	-- row  address
---			     '0' & to_unsigned(2**col_size-1, col_size),
-			0 => '0' & to_unsigned(0, bank_size) &	-- bank address
-			     '0' & to_unsigned(0, addr_size) &	-- row  address
+			0 => '0' & to_unsigned(4-1, bank_size) &	-- bank address
+			     '0' & to_unsigned(2**addr_size-1, addr_size) &	-- row  address
 			     '0' & to_unsigned(2**col_size-1, col_size),
---			1 => '0' & to_unsigned(4-1, bank_size) &
---			     '0' & to_unsigned(2**addr_size-1, addr_size) &
---			     '0' & to_unsigned(2**col_size-1, col_size));
-			1 => '0' & to_unsigned(0, bank_size) &
-			     '0' & to_unsigned(0, addr_size) &
+--			0 => '0' & to_unsigned(0, bank_size) &	-- bank address
+--			     '0' & to_unsigned(0, addr_size) &	-- row  address
+--			     '0' & to_unsigned(2**col_size-1, col_size),
+			1 => '0' & to_unsigned(4-1, bank_size) &
+			     '0' & to_unsigned(2**addr_size-1, addr_size) &
 			     '0' & to_unsigned(2**col_size-1, col_size));
+--			1 => '0' & to_unsigned(0, bank_size) &
+--			     '0' & to_unsigned(0, addr_size) &
+--			     '0' & to_unsigned(2**col_size-1, col_size));
 	begin
 		if rising_edge(ddrs_clk) then
 			case input_req is
