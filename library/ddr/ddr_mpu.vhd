@@ -325,7 +325,16 @@ begin
 	ddr_mpu_rdy <= lat_timer(0) and ddr_rdy_ena;
 	ddr_mpu_rea <= ddr_rea;
 	ddr_mpu_wri <= ddr_wri;
-	ddr_mpu_wbl <= not ddr_mpu_wph;
+
+	ddr_mpu_wbl <=  not ddr_mpu_wph;
+--	process (ddr_mpu_clk)
+--		variable q : std_logic;
+--	begin
+--		if rising_edge(ddr_mpu_clk) then
+--			q := not ddr_mpu_wph;
+--			ddr_mpu_wbl <= q;
+--		end if;
+--	end process;
 
 	-------------------
 	-- Write Enables --

@@ -15,7 +15,7 @@ entity ddr_rd_fifo is
 		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 
 		ddr_win_dq  : in std_logic;
-		ddr_win_dqs : in std_logic;
+		ddr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqi : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
@@ -39,11 +39,8 @@ architecture mix of ddr_rd_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	constant addr_ini : std_logic_vector(addr_word'range) := "0000";
 	signal sys_do_win : std_logic;
-	signal ddr_win_dqsi : std_logic_vector(1 downto 0);
 	signal ddr_fifo_rdy : std_logic;
 begin
-	ddr_win_dqsi(0) <= transport ddr_win_dqs after dqs_delay+1 ps;
-	ddr_win_dqsi(1) <= transport ddr_win_dqs after dqs_delay+1 ps;
 	ddr_fifo_di(0) <= ddr_dqi(data_bits/2-1 downto 0);
 	ddr_fifo_di(1) <= ddr_dqi(data_bits-1 downto data_bits/2);
 		
@@ -64,7 +61,10 @@ begin
 		signal addr_o_q : addr_word;
 		signal addr_o_set : std_logic;
 		signal addr_i_set : std_logic;
+		signal ddr_win_dqsi : std_logic;
 	begin
+		ddr_win_dqsi <= transport ddr_win_dqs(k) after dqs_delay+1 ps;
+
 		process (sys_clk)
 		begin 
 			if rising_edge(sys_clk) then
@@ -121,7 +121,7 @@ begin
 					pre => addr_i_pre,
 					clr => addr_i_clr,
 					c   => ddr_dlyd_dqs(l),
-					ce  => ddr_win_dqsi(l),
+					ce  => ddr_win_dqsi,
 					d   => addr_i_d(j),
 					q   => addr_i_q(j));
 			end generate;
@@ -131,7 +131,7 @@ begin
 				ram16x1d_i : ram16x1d
 				port map (
 					wclk => ddr_dlyd_dqs(l),
-					we => ddr_win_dqsi(l),
+					we => ddr_win_dqsi,
 					a0 => addr_i_q(0),
 					a1 => addr_i_q(1),
 					a2 => addr_i_q(2),
