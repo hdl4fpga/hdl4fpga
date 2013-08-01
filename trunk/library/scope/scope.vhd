@@ -32,7 +32,7 @@ entity scope is
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
-		ddr_dm  : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dm  : inout std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqs : inout std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqs_n : inout std_logic_vector(data_size/byte_size-1 downto 0) := (others => 'Z');
 		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);

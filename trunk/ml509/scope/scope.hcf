@@ -122,21 +122,23 @@ NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 ## ###### #
 
 TIMESPEC TS_dcmlckd = FROM FFS  (*dcms_e/dcm_lckd*) TIG;
-
+TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY; #TIG;
 TIMESPEC TS_ddrram = FROM RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1.5 datapathonly;
-#TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act*) TIG;
 TIMESPEC TS_ddra = FROM FFS  (*/ddrs_a*) TIG;
 TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TO FFS(*ddr_a*) TIG;
 TIMESPEC TS_ddrdll = FROM FFS  (*/dll_timer_rdy)  TIG;
 TIMESPEC TS_ddr200u = FROM FFS  (*/ddr_init_cfg) TIG;
 TIMESPEC TS_ddrini = FROM FFS  (*/sys_ini) TIG;
+TIMESPEC TS_timereq = FROM FFS_ddrsclk0  TO FFS_timerdiv0 TIG;
+TIMESPEC TS_timerdy = FROM FFS_timerdiv0 TO FFS_ddrsclk0  TIG;
 
 # ###################### #
 # Crossclock time ignore #
 # ###################### #
 
-TIMESPEC TS_f2fclk_ddr2inp = FROM FFS_ddrsclk0 TO FFS_inputclk  TIG;
+TIMESPEC TS_f2fclk_inp2ddr = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
 TIMESPEC TS_f2fclk_inp2ddr = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_f2fclk_ddr2inp = FROM FFS_ddrsclk0  TO FFS_inputclk  TIG;
 TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 
 #timespec ts_rowid  = FROM FFS(*/*vsync_erq*)  TO FFS(*sync_ena_val*) TIG;

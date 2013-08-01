@@ -53,7 +53,7 @@ entity ddr is
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
-		ddr_dm  : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_dm  : inout std_logic_vector(data_bytes-1 downto 0) := (others => '0');
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs_n : inout std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0));
@@ -112,7 +112,7 @@ architecture mix of ddr is
 	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
-	signal ddr_mpu_dmz : std_logic;
+	signal ddr_mpu_dmz : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
@@ -475,27 +475,33 @@ begin
 		ddr_pgm_rw  => sys_rw);
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
+	generic map (
+		data_bytes => data_bytes,
+		byte_bits  => byte_bits)
 	port map (
 		sys_clk => clk0,
 		sys_do  => sys_do,
 		sys_rdy => sys_do_rdy,
 		sys_rea => ddr_acc_rea,
 		ddr_win_dq  => ddr_acc_rwin,
-		ddr_win_dqs => ddr_st_lp_dqs,
+--		ddr_win_dqs => (others => ddr_st_lp_dqs),
+		ddr_win_dqs => ddr_io_dmi,
 		ddr_dqs => ddr_io_dso,
 		ddr_dqi  => ddr_io_dqi);
 		
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	generic map (
+		data_bytes => data_bytes,
+		byte_bits  => byte_bits,
 		device => device)
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
---		ddr_dm_r  => ddr_wr_dm_r,
---		ddr_dm_f  => ddr_wr_dm_f,
+		ddr_dm_r  => ddr_wr_dm_r,
+		ddr_dm_f  => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 
 		ddr_ena_f => ddr_wr_fifo_ena_f, 
 		ddr_clk_r => clk90,
@@ -503,7 +509,7 @@ begin
 		ddr_dq_r  => ddr_wr_dq_r,
 		ddr_dq_f  => ddr_wr_dq_f);
 		
-	ddr_io_du : entity hdl4fpga.ddr_io_dq
+	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
@@ -527,18 +533,19 @@ begin
 		ddr_io_dqs_n => ddr_dqs_n,
 		ddr_io_dso => ddr_io_dso);
 	
---	ddr_io_du : entity hdl4fpga.ddr_io_dq
---	generic map (
---		data_bytes => data_bytes)
---	port map (
---		ddr_io_clk => clk90,
---		ddr_io_dm_r => ddr_wr_dm_r,
---		ddr_io_dm_f => ddr_wr_dm_f,
---		=> ddr_acc_drr,
---		=> ddr_acc_drf,
---		ddr_io_dmz => ddr_mpu_dmz,
---		ddr_io_dm  => ddr_dm,
---		ddr_io_dmi => ddr_io_dmi);
+	ddr_mpu_dmz <= ddr_acc_dqsz;
+	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
+	generic map (
+		data_bytes => data_bytes)
+	port map (
+		ddr_io_clk => clk90,
+		ddr_io_st_r => ddr_acc_drr,
+		ddr_io_st_f => ddr_acc_drf,
+		ddr_io_dm_r => ddr_wr_dm_r,
+		ddr_io_dm_f => ddr_wr_dm_f,
+		ddr_io_dmz => ddr_mpu_dmz,
+		ddr_io_dm  => ddr_dm,
+		ddr_io_dmi => ddr_io_dmi);
 
 	lp_dqs : block
 		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
@@ -546,53 +553,39 @@ begin
 		signal rclk : std_logic;
 		signal fclk : std_logic;
 	begin
---
---
---
---
---		rclk <= 
---			clk180 when std=1 and cas(0)='1' else
---			clk0;
---			
---		oddr_du : oddr
---		port map (
---			r => '0',
---			s => '0',
---			c => rclk,
---			ce => '1',
---			d1 => ddr_acc_drr,
---			d2 => ddr_acc_drf,
---			q  => ddr_lp_dqs);
---    
-
 		rclk <= 
 			clk180 when std=1 and cas(0)='1' else
 			clk0;
 			
-		fclk <= 
-			clk0   when std=1 and cas(0)='1' else
-			clk180;
-
-		oddr_du : oddr2
+		oddr_du : oddr
 		port map (
-			c0 => rclk,
-			c1 => fclk,
+			r => '0',
+			s => '0',
+			c => rclk,
 			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => ddr_acc_drr,
-			d1 => ddr_acc_drf,
+			d1 => ddr_acc_drr,
+			d2 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
+    
+
+--		rclk <= 
+--			clk180 when std=1 and cas(0)='1' else
+--			clk0;
+--			
+--		fclk <= 
+--			clk0   when std=1 and cas(0)='1' else
+--			clk180;
+--
+--		oddr_du : oddr2
+--		port map (
+--			c0 => rclk,
+--			c1 => fclk,
+--			ce => '1',
+--			r  => '0',
+--			s  => '0',
+--			d0 => ddr_acc_drr,
+--			d1 => ddr_acc_drf,
+--			q  => ddr_lp_dqs);
 	end block;
 
---	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
---	generic map (
---		n => 2)
---	port map (
---		ddr_io_clk => clk90,
---		ddr_io_drw => ddr_acc_drw,
---		ddr_io_dml => "00",
---		ddr_io_dmh => "00",
---		ddr_io_dm  => open); ---ddr_dm);
-		ddr_dm <= (others => '0');
 end;
