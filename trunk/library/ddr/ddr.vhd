@@ -112,7 +112,8 @@ architecture mix of ddr is
 	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
-	signal ddr_mpu_dmz : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_acc_wri : std_logic;
@@ -533,7 +534,8 @@ begin
 		ddr_io_dqs_n => ddr_dqs_n,
 		ddr_io_dso => ddr_io_dso);
 	
-	ddr_mpu_dmz <= ddr_acc_dqsz;
+	ddr_mpu_dmx_r <= (others => ddr_acc_drr);
+	ddr_mpu_dmx_f <= (others => ddr_acc_drf);
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
 		data_bytes => data_bytes)
@@ -543,7 +545,8 @@ begin
 		ddr_io_st_f => ddr_acc_drf,
 		ddr_io_dm_r => ddr_wr_dm_r,
 		ddr_io_dm_f => ddr_wr_dm_f,
-		ddr_io_dmz => ddr_mpu_dmz,
+		ddr_io_dmx_r => ddr_mpu_dmx_r,
+		ddr_io_dmx_f => ddr_mpu_dmx_f,
 		ddr_io_dm  => ddr_dm,
 		ddr_io_dmi => ddr_io_dmi);
 
