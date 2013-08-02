@@ -6,7 +6,8 @@ entity ddr_io_dm is
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
-		ddr_io_dmz : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dmx_r : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dmx_f : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_st_r : in std_logic;
 		ddr_io_st_f : in std_logic;
 		ddr_io_dm_r : in std_logic_vector(data_bytes-1 downto 0);
@@ -29,11 +30,29 @@ begin
 		signal d1 : std_logic;
 		signal d2 : std_logic;
 	begin
+		process (ddr_io_clk)
+		begin
+			if rising_edge(ddr_io_clk) then
+				case ddr_io_dmx_r(i) is
+				when '0' =>
+					d1 <= ddr_io_st_r;
+				when others =>
+					d1 <= ddr_io_dm_r(i);
+				end case;
+			end if;
+		end process;
 
-		d1 <= ddr_io_st_r when ddr_io_dmz(i)='1' else
-			ddr_io_dm_r(i);
-		d2 <= ddr_io_st_f when ddr_io_dmz(i)='1' else 
-			ddr_io_dm_f(i);
+		process (ddr_io_clk)
+		begin
+			if falling_edge(ddr_io_clk) then
+				case ddr_io_dmx_f(i) is
+				when '0' =>
+					d2 <= ddr_io_st_f;
+				when others =>
+					d2 <= ddr_io_dm_f(i);
+				end case;
+			end if;
+		end process;
 
 		oddr_du : oddr
 		port map (
@@ -51,7 +70,7 @@ begin
 			r  => '0',
 			c  => ddr_io_clk,
 			ce => '1',
-			d  => ddr_io_dmz(i),
+			d  => ddr_io_dmx_r(i),
 			q  => dqz);
 
 		ddr_io_dm(i) <= 'Z' when dqz='1' else dqo;

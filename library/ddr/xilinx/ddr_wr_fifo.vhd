@@ -113,15 +113,15 @@ begin
 					dpo => dmo,
 					spo => open);
 
-				process (ddr_clk(i))
-				begin
-					if rising_edge (ddr_clk(i)) then
-						qmo <= dmo;
-					end if;
-				end process;
-
+--				process (ddr_clk(i))
+--				begin
+--					if rising_edge (ddr_clk(i)) then
+--						qmo <= dmo;
+--					end if;
+--				end process;
+--
 				ddr_dm(i)(l) <= 
-					qmo when device="virtex5" else
+--					qmo when device="virtex5" else
 					dmo;
 					
 			end block;
