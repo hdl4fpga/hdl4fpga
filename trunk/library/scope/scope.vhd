@@ -130,31 +130,6 @@ architecture def of scope is
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
 
-	impure function cas_code (tDDR : real)
-		return std_logic_vector is
-			variable msg : line;
-	begin
-		write (msg, tddr);
-		writeline (output, msg);
-
-		if tDDR < 6.0 then
-			return "011";
-		elsif tDDR < 7.5 then
-			return "110";
-		else 
-			report "------------------------------------------------";
-			return "010";
-		end if;
-	end;
-
-	-------------------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 180 Mhz -- 193 Mhz -- 200 Mhz  --
-	-- Multiply by --  20     --  25     --   9     --  29     --  10      --
-	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
-	-------------------------------------------------------------------------
-
-	constant cas : std_logic_vector(0 to 2) := cas_code(tDDR);
-
 	type ddr_tac is record 
 		cl  : real;
 		bl  : natural;
@@ -463,7 +438,7 @@ begin
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
 		device => device,
-		tCP => tDDR,
+		tCP => 10.0*2.0/9.0,
 		std => ddr_std,
 
 		cl   => ddr_acdb(ddr_std).cl,

@@ -136,7 +136,7 @@ TIMESPEC TS_timerdy = FROM FFS_timerdiv0 TO FFS_ddrsclk0  TIG;
 # Crossclock time ignore #
 # ###################### #
 
-TIMESPEC TS_f2fclk_inp2ddr = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_r2fclk_inp2ddr = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
 TIMESPEC TS_f2fclk_inp2ddr = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;
 TIMESPEC TS_f2fclk_ddr2inp = FROM FFS_ddrsclk0  TO FFS_inputclk  TIG;
 TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
