@@ -77,7 +77,7 @@ begin
 		port map (
 			t => '0', -- dqz,
 			i => dqo,
-			o => ddr_io_dm(i);
+			o => ddr_io_dm(i));
 
 
 		ibuf_i : ibuf
