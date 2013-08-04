@@ -262,6 +262,8 @@ INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" L
 
 # Distributed RAM  #
 
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y43;
+INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[1].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y43;
 INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[0].ram16x1d_i" LOC = SLICE_X0Y40;
 INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[1].ram16x1d_i" LOC = SLICE_X0Y40;
 INST "*/ddr_wr_fifo_e/data_byte_g[0].ddr_data_g[0].ram_g[2].ram16x1d_i" LOC = SLICE_X0Y45;
@@ -354,6 +356,8 @@ INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" L
 
 # Distributed RAM  #
 
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y32;
+INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y32;
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[0].ram16x1d_i" LOC = SLICE_X0Y27;
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[1].ram16x1d_i" LOC = SLICE_X0Y27;
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[2].ram16x1d_i" LOC = SLICE_X0Y31;

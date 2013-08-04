@@ -66,7 +66,7 @@ architecture def of ddr_timer is
 	signal timer_div : unsigned(0 to 4-1) := (others => '0');
 	signal treq : std_logic;
 	signal trdy : std_logic;
-		signal timer : unsigned(0 to 13);
+	signal timer : unsigned(0 to 15);
 begin
 
 	process (ddr_timer_clk)
@@ -89,7 +89,6 @@ begin
 	end process;
 
 	process (timer_div(0), ddr_timer_rst)
---		variable timer : unsigned(0 to 13);
 		type tword_vector is array(natural range <>) of natural range 0 to 2**(timer'length-1)-1;
 		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_200u) => (c200u+2**timer_div'length-1)/2**timer_div'length,
@@ -109,7 +108,7 @@ begin
 			end if;
 		end if;
 	end process;
-			trdy <= timer(0);
+	trdy <= timer(0);
 
 	process (ddr_timer_clk)
 		variable q : std_logic;

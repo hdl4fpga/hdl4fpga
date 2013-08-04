@@ -112,6 +112,17 @@ def chip(desc):
 		print("# Distributed RAM  #")
 		print()
 
+		try :
+			ram = desc[byte]['write']['dm'];
+			for edge in range(len(ram)):
+				print (
+					'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+					str(byte) + '].ddr_data_g[' +
+					str(edge) + '].dm_ram_g.ram16x1d_i" LOC = SLICE_' +
+					ram[edge] + ';' )
+		except KeyError:
+			pass
+
 		ram = desc[byte]['write']['ram']
 		for edge in range(len(ram)):
 			for bit in range(len(ram[edge])):
