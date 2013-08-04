@@ -39,6 +39,7 @@ entity ddr is
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
+		sys_dm  : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
 		sys_di  : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_ref : out std_logic;
@@ -501,6 +502,7 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
+		sys_dm  => sys_dm,
 		ddr_dm_r  => ddr_wr_dm_r,
 		ddr_dm_f  => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 

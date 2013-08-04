@@ -34,7 +34,7 @@ begin
 		begin
 			if rising_edge(ddr_io_clk) then
 				case ddr_io_dmx_r(i) is
-				when '0' =>
+				when '1' =>
 					d1 <= ddr_io_st_r;
 				when others =>
 					d1 <= ddr_io_dm_r(i);
@@ -42,11 +42,11 @@ begin
 			end if;
 		end process;
 
-		process (ddr_io_clk)
+		process (ddr_io_fclk)
 		begin
-			if falling_edge(ddr_io_clk) then
+			if rising_edge(ddr_io_fclk) then
 				case ddr_io_dmx_f(i) is
-				when '0' =>
+				when '1' =>
 					d2 <= ddr_io_st_f;
 				when others =>
 					d2 <= ddr_io_dm_f(i);
@@ -73,9 +73,14 @@ begin
 			d  => ddr_io_dmx_r(i),
 			q  => dqz);
 
-		ddr_io_dm(i) <= 'Z' when dqz='1' else dqo;
+		obuf_i : obuft
+		port map (
+			t => '0', -- dqz,
+			i => dqo,
+			o => ddr_io_dm(i);
 
-		ibuf_dq : ibuf
+
+		ibuf_i : ibuf
 		port map (
 			i => ddr_io_dm(i),
 			o => di);
