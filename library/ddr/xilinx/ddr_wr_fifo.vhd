@@ -154,8 +154,8 @@ begin
 				end process;
 
 				ddr_dq(i)(byte_bits*l+j) <= 
-					qpo when device="virtex5" else
-					dpo;
+					qpo ; --when device="virtex5" else
+--					dpo;
 					
 			end generate;
 		end generate;

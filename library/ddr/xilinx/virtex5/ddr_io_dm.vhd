@@ -25,7 +25,6 @@ begin
 	ddr_io_fclk <= not ddr_io_clk;
 	bytes_g : for i in ddr_io_dm'range generate
 		signal dqo : std_logic;
-		signal dqz : std_logic;
 		signal di : std_logic;
 		signal d1 : std_logic;
 		signal d2 : std_logic;
@@ -34,7 +33,7 @@ begin
 		begin
 			if rising_edge(ddr_io_clk) then
 				case ddr_io_dmx_r(i) is
-				when '1' =>
+				when '0' =>
 					d1 <= ddr_io_st_r;
 				when others =>
 					d1 <= ddr_io_dm_r(i);
@@ -46,7 +45,7 @@ begin
 		begin
 			if rising_edge(ddr_io_fclk) then
 				case ddr_io_dmx_f(i) is
-				when '1' =>
+				when '0' =>
 					d2 <= ddr_io_st_f;
 				when others =>
 					d2 <= ddr_io_dm_f(i);
@@ -64,21 +63,11 @@ begin
 			d2 => d2,
 			q => dqo);
 
-		ffd_i : fdrse
-		port map (
-			s  => '0',
-			r  => '0',
-			c  => ddr_io_clk,
-			ce => '1',
-			d  => ddr_io_dmx_r(i),
-			q  => dqz);
-
 		obuf_i : obuft
 		port map (
 			t => '0', -- dqz,
 			i => dqo,
 			o => ddr_io_dm(i));
-
 
 		ibuf_i : ibuf
 		port map (
