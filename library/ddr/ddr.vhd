@@ -125,6 +125,7 @@ architecture mix of ddr is
 	alias  clk90  is sys_clk90;
 	signal clk180 : std_logic;
 	signal clk270 : std_logic;
+	signal sys_dm1 : std_logic_vector(sys_dm'range);
 
 	function casdb (
 		constant cl  : real;
@@ -491,6 +492,7 @@ begin
 		ddr_dqs => ddr_io_dso,
 		ddr_dqi  => ddr_io_dqi);
 		
+	sys_dm1 <= (others => '0') when ddr_wr_fifo_req='1' else (others => '0');
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	generic map (
@@ -502,7 +504,7 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
-		sys_dm  => (others => '-'), --sys_dm,
+		sys_dm  => sys_dm1,
 		ddr_dm_r  => ddr_wr_dm_r,
 		ddr_dm_f  => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 

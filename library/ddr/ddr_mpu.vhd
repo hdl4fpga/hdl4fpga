@@ -369,8 +369,8 @@ begin
 					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-2);
 				ddr_mpu_dqs(i)  <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-2);
 				ddr_mpu_dqz(i)  <= ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1);
-				ddr_mpu_dwf(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2+1);
+				ddr_mpu_dwr(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1-4);
+				ddr_mpu_dwf(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2+1-4);
 			end generate;
 
 			ddr3_g : if std=3 generate
