@@ -54,7 +54,7 @@ entity ddr is
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
-		ddr_dm  : inout std_logic_vector(data_bytes-1 downto 0) := (others => '0');
+		ddr_dm  : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs_n : inout std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0));
@@ -502,7 +502,7 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
-		sys_dm  => sys_dm,
+		sys_dm  => (others => '-'), --sys_dm,
 		ddr_dm_r  => ddr_wr_dm_r,
 		ddr_dm_f  => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 
@@ -536,8 +536,8 @@ begin
 		ddr_io_dqs_n => ddr_dqs_n,
 		ddr_io_dso => ddr_io_dso);
 	
-	ddr_mpu_dmx_r <= (others => ddr_acc_drr);
-	ddr_mpu_dmx_f <= (others => ddr_acc_drf);
+	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
+	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
 		data_bytes => data_bytes)
