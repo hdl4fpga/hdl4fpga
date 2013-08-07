@@ -63,5 +63,5 @@ nuhs3dsp[1]['read']['ram'][1].reverse()
 nuhs3dsp[1]['write']['ram'][0].reverse()
 nuhs3dsp[1]['write']['ram'][1].reverse()
 
-print (nuhs3dsp)
-#ddrpar.chip(nuhs3dsp)
+#print (nuhs3dsp)
+ddrpar.chip(nuhs3dsp)
