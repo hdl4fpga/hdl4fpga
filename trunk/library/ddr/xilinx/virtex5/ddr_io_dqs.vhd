@@ -21,11 +21,9 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture v5 of ddr_io_dqs is
-	signal rclk : std_logic;
 	signal fclk : std_logic;
 begin
 
-	rclk <=     ddr_io_clk;
 	fclk <= not ddr_io_clk;
 
 	ddr_io_dqs_u : for i in ddr_io_dqs'range generate
@@ -50,7 +48,7 @@ begin
 		port map (
 			r => '0',
 			s => '0',
-			c => rclk,
+			c => ddr_io_clk,
 			ce => '1',
 			d1 => d1,
 			d2 => d2,

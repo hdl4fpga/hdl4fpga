@@ -14,14 +14,13 @@ entity ddr_wr_fifo is
 		sys_di  : in std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_rst : in std_logic;
 
+		ddr_clk : in std_logic;
 		ddr_ena_r : in std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_ena_f : in std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_clk_r : in std_logic;
-		ddr_clk_f : in std_logic;
-		ddr_dm_r  : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dm_f  : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dq_r  : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_dq_f  : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
+		ddr_dm_r : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_dm_f : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_dq_r : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_dq_f : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
@@ -35,7 +34,7 @@ use hdl4fpga.std.all;
 
 architecture mix of ddr_wr_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);
-	signal ddr_clk : std_logic_vector(0 to 1);
+	signal ddr_clks : std_logic_vector(0 to 1);
 	signal ddr_ena : std_logic_vector(0 to 1);
 
 	type addrword_vector is array (natural range <>) of addr_word;
@@ -48,7 +47,7 @@ architecture mix of ddr_wr_fifo is
 
 begin
 
-	ddr_clk <= (0 => ddr_clk_r,    1 => ddr_clk_f);
+	ddr_clks <= (0 => ddr_clk, 1 => not ddr_clk);
 	ddr_ena <= (0 => ddr_ena_r(0), 1 => ddr_ena_f(0));
 	ddr_dq_r <= ddr_dq(0);
 	ddr_dq_f <= ddr_dq(1);
@@ -56,7 +55,7 @@ begin
 	ddr_dm_r <= ddr_dm(0);
 	ddr_dm_f <= ddr_dm(1);
 
-	data_byte_g: for l in data_bytes-1 downto 0 generate
+	data_byte_g: for l in ddr_dm_r'range generate
 		signal sys_addr_q : addr_word;
 		signal sys_addr_d : addr_word;
 	begin
@@ -86,7 +85,7 @@ begin
 					port map (
 						clr  => sys_rst,
 						pre  => '0',
-						c  => ddr_clk(i),
+						c  => ddr_clks(i),
 						ce => ddr_ena(i),
 						d  => ddr_addr_d(j),
 						q  => ddr_addr_q(i)(j));
@@ -146,16 +145,18 @@ begin
 					dpo => dpo,
 					spo => open);
 
-				process (ddr_clk(i))
-				begin
-					if rising_edge (ddr_clk(i)) then
-						qpo <= dpo;
-					end if;
-				end process;
+				ffd_i : fdcpe
+				port map (
+					clr => '0',
+					pre => '0',
+					c  => ddr_clks(i),
+					ce => '1',
+					d  => dpo,
+					q  => qpo);
 
 				ddr_dq(i)(byte_bits*l+j) <= 
-					qpo ; --when device="virtex5" else
---					dpo;
+					qpo when device="virtex5" else
+					dpo;
 					
 			end generate;
 		end generate;
