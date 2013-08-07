@@ -21,37 +21,40 @@ use unisim.vcomponents.all;
 
 architecture arch of ddr_io_dm is
 	signal ddr_io_fclk : std_logic;
+	signal ddr_clk : std_logic_vector(0 to 1);
+	signal ddr_st  : std_logic_vector(ddr_clk'range);
 begin
-	ddr_io_fclk <= not ddr_io_clk;
+	ddr_clk <= (0 => ddr_io_clk,  1 => not ddr_io_clk);
+	ddr_st  <= (0 => ddr_io_st_r, 1 =>     ddr_io_st_f);
+
 	bytes_g : for i in ddr_io_dm'range generate
 		signal dqo : std_logic;
 		signal di : std_logic;
-		signal d1 : std_logic;
-		signal d2 : std_logic;
+		signal d : std_logic_vector(ddr_clk'range);
+		signal ddr_dmx : std_logic_vector(ddr_clk'range);
+		signal ddr_dm  : std_logic_vector(ddr_clk'range);
 	begin
-		process (ddr_io_clk)
-		begin
-			if rising_edge(ddr_io_clk) then
-				case ddr_io_dmx_r(i) is
-				when '0' =>
-					d1 <= ddr_io_st_r;
-				when others =>
-					d1 <= ddr_io_dm_r(i);
-				end case;
-			end if;
-		end process;
+		ddr_dmx <= (0 => ddr_io_dmx_r(i), 1 => ddr_io_dmx_f(i));
+		ddr_dm  <= (0 =>  ddr_io_dm_r(i), 1 =>  ddr_io_dm_f(i));
 
-		process (ddr_io_fclk)
+		dmff_g: for l in ddr_clk'range generate
+			signal di : std_logic;
 		begin
-			if rising_edge(ddr_io_fclk) then
-				case ddr_io_dmx_f(i) is
-				when '0' =>
-					d2 <= ddr_io_st_f;
-				when others =>
-					d2 <= ddr_io_dm_f(i);
-				end case;
-			end if;
-		end process;
+			with ddr_dmx(l) select
+			di <=
+				ddr_st(l) when '0',
+				ddr_dm(l) when others;
+
+			ffd_i : fdrse
+			port map (
+				s  => '0',
+				r  => '0',
+				c  => ddr_clk(l),
+				ce => '1',
+				d  => di,
+				q  => d(l));
+
+		end generate;
 
 		oddr_du : oddr
 		port map (
@@ -59,8 +62,8 @@ begin
 			s => '0',
 			c => ddr_io_clk,
 			ce => '1',
-			d1 => d1,
-			d2 => d2,
+			d1 => d(0),
+			d2 => d(1),
 			q => dqo);
 
 		obuf_i : obuft

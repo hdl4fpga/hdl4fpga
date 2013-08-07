@@ -115,21 +115,47 @@ def chip(desc):
 		try :
 			ram = desc[byte]['write']['dm'];
 			for edge in range(len(ram)):
-				print (
-					'INST "*/ddr_wr_fifo_e/data_byte_g[' +
-					str(byte) + '].ddr_data_g[' +
-					str(edge) + '].dm_ram_g.ram16x1d_i" LOC = SLICE_' +
-					ram[edge] + ';' )
+				try :
+					print (
+						'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+						str(byte) + '].ddr_data_g[' +
+						str(edge) + '].dm_ram_g.ram16x1d_i" LOC = SLICE_' +
+						ram[edge] + ';' )
+				except TypeError:
+					print (
+						'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+						str(byte) + '].ddr_data_g[' +
+						str(edge) + '].dm_ram_g.ram16x1d_i" LOC = SLICE_' +
+						ram[edge][0] + ';' )
+					print (
+						'INST "*/ddr_io_dm_e/bytes_g[' +
+						str(byte) + '].dmff_g[' +
+						str(edge) + '].ffd_i" LOC = SLICE_' +
+						ram[edge][1] + ';' )
 		except KeyError:
 			pass
 
 		ram = desc[byte]['write']['ram']
 		for edge in range(len(ram)):
 			for bit in range(len(ram[edge])):
-				print (
-					'INST "*/ddr_wr_fifo_e/data_byte_g[' +
-					str(byte) + '].ddr_data_g[' +
-					str(edge) + '].ram_g[' +
-					str(bit)  + '].ram16x1d_i" LOC = SLICE_' +
-					ram[edge][bit] + ';')
+				try :
+					print (
+						'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+						str(byte) + '].ddr_data_g[' +
+						str(edge) + '].ram_g[' +
+						str(bit)  + '].ram16x1d_i" LOC = SLICE_' +
+						ram[edge][bit] + ';')
+				except TypeError:
+					print (
+						'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+						str(byte) + '].ddr_data_g[' +
+						str(edge) + '].ram_g[' +
+						str(bit)  + '].ram16x1d_i" LOC = SLICE_' +
+						ram[edge][bit][0] + ';')
+					print (
+						'INST "*/ddr_wr_fifo_e/data_byte_g[' +
+						str(byte) + '].ddr_data_g[' +
+						str(edge) + '].ram_g[' +
+						str(bit)  + '].ffd_i" LOC = SLICE_' +
+						ram[edge][bit][1] + ';')
 			print()

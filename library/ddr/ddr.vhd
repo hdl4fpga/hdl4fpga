@@ -504,15 +504,15 @@ begin
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
 		sys_rst => ddr_wr_fifo_rst,
-		sys_dm  => sys_dm1,
-		ddr_dm_r  => ddr_wr_dm_r,
-		ddr_dm_f  => ddr_wr_dm_f,
+		sys_dm  => sys_dm,
+
+		ddr_clk  => clk90,
+		ddr_dm_r => ddr_wr_dm_r,
+		ddr_dm_f => ddr_wr_dm_f,
 		ddr_ena_r => ddr_wr_fifo_ena_r, 
 		ddr_ena_f => ddr_wr_fifo_ena_f, 
-		ddr_clk_r => clk90,
-		ddr_clk_f => clk270,
-		ddr_dq_r  => ddr_wr_dq_r,
-		ddr_dq_f  => ddr_wr_dq_f);
+		ddr_dq_r => ddr_wr_dq_r,
+		ddr_dq_f => ddr_wr_dq_f);
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
@@ -574,7 +574,6 @@ begin
 			d2 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
     
-
 --		rclk <= 
 --			clk180 when std=1 and cas(0)='1' else
 --			clk0;
