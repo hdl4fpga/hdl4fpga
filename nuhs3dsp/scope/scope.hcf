@@ -120,6 +120,8 @@ NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET adc_clkab_OBUF TNM_NET =  FFS FFS_adcclkab;
 NET adc_clkab_OBUF TNM_NET =  RAMS RAMS_adcclkab;
+NET video_clk     TNM_NET = FFS  FFS_videoclk;
+NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
 
 TIMESPEC TS_ddrlckd  = FROM FFS (*dcm_lckd*) TIG;

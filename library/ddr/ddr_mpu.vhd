@@ -345,7 +345,7 @@ begin
 		bytes_g: for i in ddr_mpu_dqs'range generate
 			signal ph_wri : std_logic_vector(0 to 4*n+9);
 		begin
-			ddr_ph_write : entity hdl4fpga.ddr_ph
+			ddr_ph_write : entity hdl4fpga.ddr_ph(slr)
 			generic map (
 				n => n)
 			port map (
@@ -391,7 +391,7 @@ begin
 	-- Read Enables --
 	------------------
 	
-	ddr_ph_read : entity hdl4fpga.ddr_ph
+	ddr_ph_read : entity hdl4fpga.ddr_ph(slr)
 	generic map (
 		n => nr)
 	port map (
