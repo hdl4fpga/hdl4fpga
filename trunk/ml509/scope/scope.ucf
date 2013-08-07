@@ -116,16 +116,16 @@ NET input_clk     TNM_NET = FFS  FFS_inputclk;
 NET input_clk     TNM_NET = RAMS RAMS_inputclk;
 NET video_clk     TNM_NET = FFS  FFS_videoclk;
 NET video_clk     TNM_NET = RAMS RAMS_videoclk;
+NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
 
 ## ###### #
 ## Others #
 ## ###### #
 
 TIMESPEC TS_dcmlckd = FROM FFS  (*dcms_e/dcm_lckd*) TIG;
-TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY; #TIG;
-#TIMESPEC TS_ddrram = FROM RAMS (*/*ddr_data_g[*].ram_g[*].ram16x1d_i*) TS_dcms_e_ddrdcm_e_dcm_clk0*1.5 datapathonly;
+TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG; #TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY;
 ##TIMESPEC TS_ddra = FROM FFS  (*/ddrs_a*) TIG;
-#TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TO FFS(*ddr_a*) TIG;
+TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TIG; #TO FFS(*ddr_a*) TIG;
 TIMESPEC TS_ddrdll = FROM FFS  (*/dll_timer_rdy)  TIG;
 TIMESPEC TS_ddr200u = FROM FFS  (*/ddr_init_cfg) TIG;
 TIMESPEC TS_ddrini = FROM FFS  (*/sys_ini) TIG;
@@ -375,7 +375,7 @@ INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].ddr_word_g.cntr_g[3].ffd_i" L
 # Distributed RAM  #
 
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y32;
-INST "*/ddr_io_dm_e/bytes_g[1].dmff_g[0].ffd_i" LOC = SLICE_X1Y30;
+INST "*/ddr_io_dm_e/bytes_g[1].dmff_g[0].ffd_i" LOC = SLICE_X1Y33;
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[1].dm_ram_g.ram16x1d_i" LOC = SLICE_X0Y32;
 INST "*/ddr_io_dm_e/bytes_g[1].dmff_g[1].ffd_i" LOC = SLICE_X1Y32;
 INST "*/ddr_wr_fifo_e/data_byte_g[1].ddr_data_g[0].ram_g[0].ram16x1d_i" LOC = SLICE_X0Y27;

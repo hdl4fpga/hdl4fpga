@@ -13,223 +13,167 @@ entity ddr_ph is
 		ddr_ph_qout  : out std_logic_vector(0 to 4*n+3*3));
 end;
 
+--library unisim;
+--use unisim.vcomponents.all;
+--
+--architecture ffdi  of ddr_ph is
+--	signal clks : std_logic_vector(1 to 4-1);
+--	signal qout : std_logic_vector(0 to ddr_ph_qout'right) := (others => '-');
+--begin
+--	qout(0) <= ddr_ph_din(0);
+--	delay0: for i in 0 to n+2-1 generate
+--		signal din : std_logic;
+--	begin
+--		din <= qout(4*i) when ddr_ph_sel(4*i)='0' else ddr_ph_din(4*i);
+--		ffd_i : fdrse
+--		port map (
+--			s  => '0',
+--			r  => '0',
+--			c  => ddr_ph_clk,
+--			ce => '1',
+--			d  => din,
+--			q  => qout(4*(i+1)));
+--	end generate;
+--
+--	clks(1) <= not ddr_ph_clk90;
+--	clks(2) <= not ddr_ph_clk;
+--	clks(3) <= ddr_ph_clk90;
+--
+--	ffd_i2 : fdrse
+--	port map (
+--		s  => '0',
+--		r  => '0',
+--		c  => clks(2),
+--		ce => '1',
+--		d  => qout(0),
+--		q  => qout(2));
+--
+--	ffd_i5 : fdrse
+--	port map (
+--		s  => '0',
+--		r  => '0',
+--		c  => clks(3),
+--		ce => '1',
+--		d  => qout(3),
+--		q  => qout(5));
+--
+--	delay369 : for i in 1 to 3 generate
+--		signal din : std_logic;
+--	begin
+--		ffd_i : fdrse
+--		port map (
+--			s  => '0',
+--			r  => '0',
+--			c  => clks(i),
+--			ce => '1',
+--			d  => qout(3*(i-1)),
+--			q  => qout(3*i));
+--	end generate;
+--
+--	delay: for i in 1 to n generate
+--		ph: for j in 1 to 4-1 generate
+--			ffd_i : fdrse
+--			port map (
+--				s  => '0',
+--				r  => '0',
+--				c  => clks(j),
+--				ce => '1',
+--				d  => qout(4*i+3*(j-1)),
+--				q  => qout(4*i+3*(j-1)+3));
+--		end generate;
+--	end generate;
+--	ffd_i : fdrse
+--	port map (
+--		s  => '0',
+--		r  => '0',
+--		c  => clks(1),
+--		ce => '1',
+--		d  => qout(4*(n+1)),
+--		q  => qout(4*(n+1)+3));
+--	ddr_ph_qout <= qout;
+--end;
+
 library unisim;
 use unisim.vcomponents.all;
 
-architecture arch of ddr_ph is
-	signal clks : std_logic_vector(1 to 4-1);
-	signal qout : std_logic_vector(0 to ddr_ph_qout'right) := (others => '-');
+architecture slr of ddr_ph is
+	signal clk : std_logic_vector(0 to 4-1);
+
+	signal q0 : std_logic_vector(1 to (4*n+3*3)/4);
+	signal q3 : std_logic_vector(0 to (4*n+3*3-3)/4);
+	signal q6 : std_logic_vector(0 to (4*n+3*3-6)/4);
+	signal q9 : std_logic_vector(0 to (4*n+3*3-9)/4);
+	signal delay2 : std_logic;
+	signal delay5 : std_logic;
 begin
-	qout(0) <= ddr_ph_din(0);
-	delay0: for i in 0 to n+2-1 generate
-		signal din : std_logic;
+
+	clk(0) <= ddr_ph_clk;
+	clk(1) <= not ddr_ph_clk90;
+	clk(2) <= not ddr_ph_clk;
+	clk(3) <= ddr_ph_clk90;
+
+	ffd2_i : fdrse
+	port map (
+		s  => '0',
+		r  => '0',
+		c  => clk(2),
+		ce => '1',
+		d  => ddr_ph_din(0),
+		q  => delay2);
+
+	ffd5_i : fdrse
+	port map (
+		s  => '0',
+		r  => '0',
+		c  => clk(1),
+		ce => '1',
+		d  => q3(1),
+		q  => delay5);
+
+	process (clk(0))
 	begin
-		din <= qout(4*i) when ddr_ph_sel(4*i)='0' else ddr_ph_din(4*i);
-		ffd_i : fdrse
-		port map (
-			s  => '0',
-			r  => '0',
-			c  => ddr_ph_clk,
-			ce => '1',
-			d  => din,
-			q  => qout(4*(i+1)));
-	end generate;
+		if rising_edge(clk(0)) then
+			q0 <= ddr_ph_din(0) & q0(1 to q0'right-1);
+		end if;
+	end process;
 
-	clks(1) <= not ddr_ph_clk90;
-	clks(2) <= not ddr_ph_clk;
-	clks(3) <= ddr_ph_clk90;
-
-	ffd_i2 : fdrse
-	port map (
-		s  => '0',
-		r  => '0',
-		c  => clks(2),
-		ce => '1',
-		d  => qout(0),
-		q  => qout(2));
-
-	ffd_i5 : fdrse
-	port map (
-		s  => '0',
-		r  => '0',
-		c  => clks(3),
-		ce => '1',
-		d  => qout(3),
-		q  => qout(5));
-
-	delay369 : for i in 1 to 3 generate
-		signal din : std_logic;
+	process (clk(1))
 	begin
-		ffd_i : fdrse
-		port map (
-			s  => '0',
-			r  => '0',
-			c  => clks(i),
-			ce => '1',
-			d  => qout(3*(i-1)),
-			q  => qout(3*i));
-	end generate;
+		if rising_edge(clk(1)) then
+			q3 <= ddr_ph_din(0) & q3(0 to q3'right-1);
+		end if;
+	end process;
 
-	delay: for i in 1 to n generate
-		ph: for j in 1 to 4-1 generate
-			ffd_i : fdrse
-			port map (
-				s  => '0',
-				r  => '0',
-				c  => clks(j),
-				ce => '1',
-				d  => qout(4*i+3*(j-1)),
-				q  => qout(4*i+3*(j-1)+3));
-		end generate;
-	end generate;
-	ffd_i : fdrse
-	port map (
-		s  => '0',
-		r  => '0',
-		c  => clks(1),
-		ce => '1',
-		d  => qout(4*(n+1)),
-		q  => qout(4*(n+1)+3));
-	ddr_ph_qout <= qout;
+	process (clk(2))
+	begin
+		if rising_edge(clk(2)) then
+			q6 <= q3(0) & q6(0 to q6'right-1);
+		end if;
+	end process;
+
+	process (clk(3))
+	begin
+		if rising_edge(clk(3)) then
+			q9 <= q6(0) & q9(0 to q9'right-1);
+		end if;
+	end process;
+
+	process (ddr_ph_din(0), delay2, delay5, q0, q3, q6, q9)
+	begin
+		ddr_ph_qout(0) <= ddr_ph_din(0);
+		ddr_ph_qout(2) <= delay2;
+		ddr_ph_qout(5) <= delay5;
+		for i in q0'range loop
+			ddr_ph_qout (4*i+0) <= q0(i);
+		end loop;
+		for i in q3'range loop
+			ddr_ph_qout (4*i+3) <= q3(i);
+		end loop;
+		for i in q6'range loop
+			ddr_ph_qout (4*i+6) <= q6(i);
+		end loop;
+		for i in q9'range loop
+			ddr_ph_qout (4*i+9) <= q9(i);
+		end loop;
+	end process;
 end;
-
--- library unisim;
--- use unisim.vcomponents.all;
--- 
--- architecture arch1 of ddr_ph is
--- 	signal clks : std_logic_vector(0 to 4-1);
--- 	signal qout : std_logic_vector(0 to ddr_ph_qout'right) := (others => '-');
--- begin
--- 	qout(0) <= ddr_ph_din(0);
--- 
--- 	clks(0) <= ddr_ph_clk;
--- 	clks(1) <= not ddr_ph_clk90;
--- 	clks(2) <= not ddr_ph_clk;
--- 	clks(3) <= ddr_ph_clk90;
--- 
--- 	ffd_i2 : fdrse
--- 	port map (
--- 		s  => '0',
--- 		r  => '0',
--- 		c  => clks(2),
--- 		ce => '1',
--- 		d  => qout(0),
--- 		q  => qout(2));
--- 
--- 	delay369 : for i in 1 to 3 generate
--- 		signal din : std_logic;
--- 	begin
--- 		ffd_i : fdrse
--- 		port map (
--- 			s  => '0',
--- 			r  => '0',
--- 			c  => clks(i),
--- 			ce => '1',
--- 			d  => qout(3*(i-1)),
--- 			q  => qout(3*i));
--- 	end generate;
--- 
--- 	ffd_i5 : fdrse
--- 	port map (
--- 		s  => '0',
--- 		r  => '0',
--- 		c  => clks(3),
--- 		ce => '1',
--- 		d  => qout(3),
--- 		q  => qout(5));
--- 
--- 	delay: for i in 0 to n+1 generate
--- 		ph: for j in 0 to 4-1 generate
--- 			ffd : if 4*(i+1)+3*j <= 4*n+3*3 generate
--- 				signal din : std_logic;
--- 			begin
--- 				din <= qout(4*i+3*j) when ddr_ph_sel(4*i+3*j)='0' else ddr_ph_din(4*i+3*j);
--- 
--- 				ffd_i : fdrse
--- 				port map (
--- 					s  => '0',
--- 					r  => '0',
--- 					c  => clks(j),
--- 					ce => '1',
--- 					d  => din,
--- 					q  => qout(4*(i+1)+3*j));
--- 			end generate;
--- 		end generate;
--- 	end generate;
--- 
--- 	ddr_ph_qout <= qout;
--- end;
--- 
--- library unisim;
--- use unisim.vcomponents.all;
--- 
--- architecture arch2 of ddr_ph is
--- 	signal clks : std_logic_vector(0 to 4-1);
--- 	signal qout : std_logic_vector(0 to ddr_ph_qout'right) := (others => '-');
--- begin
--- 	qout(0) <= ddr_ph_din(0);
--- 
--- 	clks(0) <= ddr_ph_clk;
--- 	clks(1) <= not ddr_ph_clk90;
--- 	clks(2) <= not ddr_ph_clk;
--- 	clks(3) <= ddr_ph_clk90;
--- 
--- 	process (clks(2))
--- 	begin
--- 		if rising_edge(clks(2)) then
--- 			qout(2) <= qout(0);
--- 		end if;
--- 	end process;
--- 
--- 	delay369 : for i in 1 to 3 generate
--- 		signal din : std_logic;
--- 	begin
--- 		ffd_i : fdrse
--- 		port map (
--- 			s  => '0',
--- 			r  => '0',
--- 			c  => clks(i),
--- 			ce => '1',
--- 			d  => qout(3*(i-1)),
--- 			q  => qout(3*i));
--- 	end generate;
--- 
--- 	process (clks(3))
--- 	begin
--- 		if rising_edge(clks(3)) then
--- 			qout(5) <= qout(3);
--- 		end if;
--- 	end process;
--- 
--- 	process (clks(0))
--- 		variable q : std_logic_vector(0 to n-1);
--- 	begin
--- 		if rising_edge(clks(0)) then
--- 			q := q(1 to q'right) & '0';
--- 			for i in q'range loop
--- 				qout(4*i+3*0) <= q(i);
--- 			end loop;
--- 		end if;
--- 	end process;
--- 
--- 	delay: for i in 0 to n+1 generate
--- 		ph: for j in 0 to 4-1 generate
--- 			ffd : if 4*(i+1)+3*j <= 4*n+3*3 generate
--- 				signal din : std_logic;
--- 			begin
--- 				din <= qout(4*i+3*j) when ddr_ph_sel(4*i+3*j)='0' else ddr_ph_din(4*i+3*j);
--- 
--- 				ffd_i : fdrse
--- 				port map (
--- 					s  => '0',
--- 					r  => '0',
--- 					c  => clks(j),
--- 					ce => '1',
--- 					d  => din,
--- 					q  => qout(4*(i+1)+3*j));
--- 			end generate;
--- 		end generate;
--- 	end generate;
--- 
--- 	ddr_ph_qout <= qout;
--- end;
