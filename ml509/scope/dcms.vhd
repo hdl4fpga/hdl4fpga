@@ -30,8 +30,8 @@ architecture def of dcms is
 	-- Divide by   --   3     --   2     --
 	---------------------------------------
 
-	constant ddr_multiply : natural := 8;
-	constant ddr_divide   : natural := 2;
+	constant ddr_multiply : natural := 10;
+	constant ddr_divide   : natural := 3;
 
 	signal dcm_rst : std_logic;
 	signal sclk_bufg : std_logic;
