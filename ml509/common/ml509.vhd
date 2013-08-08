@@ -83,7 +83,7 @@ entity ml509 is
 		phy_rxd  : in std_logic_vector(0 to 8-1);
 		phy_rxer : in std_logic;
 
-		phy_txc_gtxclk : in std_logic;
+		phy_txc_gtxclk : out std_logic;
 		phy_txclk : in std_logic;
 		phy_txctl_txen : out std_logic;
 		phy_txd  : out std_logic_vector(0 to 8-1);

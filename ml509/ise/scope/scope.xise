@@ -241,11 +241,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="34"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/xilinx/virtex5/plldcm.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="100"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
     <file xil_pn:name="../../../library/ddr/xilinx/ddr_wr_fifo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="101"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
@@ -254,6 +249,11 @@
     <file xil_pn:name="../../../library/ddr/xilinx/virtex5/ddr_io_dm.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="151"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../library/xilinx/virtex5/dfsdcm.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="78"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
@@ -563,6 +563,7 @@
     <property xil_pn:name="Working Directory" xil_pn:value="." xil_pn:valueState="non-default"/>
     <property xil_pn:name="Write Timing Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="XOR Collapsing" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="iMPACT Project File" xil_pn:value="scope.ipf" xil_pn:valueState="non-default"/>
     <!--                                                                                  -->
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->

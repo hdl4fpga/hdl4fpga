@@ -48,14 +48,14 @@ architecture scope of ml509 is
 	signal sys_rst   : std_logic;
 	signal scope_rst : std_logic;
 
-	-------------------------------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 180 Mhz -- 193 Mhz -- 200 Mhz  --
-	-- Multiply by --  20     --  25     --   9     --  29     --  10      --
-	-- Divide by   --   3     --   3     --   1     --   3     --   1      --
-	-------------------------------------------------------------------------
+	--------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
+	-- Multiply by --  10     --   8     --   9     --
+	-- Divide by   --   3     --   2     --   2     --
+	--------------------------------------------------
 
-	constant ddr_multiply : natural := 9; -- 30; -- 25;
-	constant ddr_divide   : natural := 2; --  2; --  3;
+	constant ddr_mul : natural := 10;
+	constant ddr_div : natural :=  3;
 
 begin
 
@@ -63,7 +63,9 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		sys_per => 10.0)
+		ddr_mul => ddr_mul,
+		ddr_div => ddr_div, 
+		sys_per => uclk_period)
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => user_clk,
@@ -74,10 +76,19 @@ begin
 		dcm_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
+	dvi_reset <= dcm_lckd;
+	phy_reset <= dcm_lckd;
+	phy_txer  <= '0';
+	phy_txd(4 to 7) <= (others => '0');
+	phy_txc_gtxclk <= '0';
+	phy_mdc <= '0';
+	phy_mdio <= '0';
+
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		device => "virtex5",
-		ddr_std => 2)
+		ddr_std => 2,
+		tDDR => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
 		sys_rst => scope_rst,
 
@@ -192,6 +203,15 @@ begin
 			iob => ddr2_dqs_n(i));
 	end generate;
 
+	bus_error <= (others => 'Z');
+	gpio_led <= (others => 'Z');
+	gpio_led_c <= 'Z';
+	gpio_led_e <= 'Z';
+	gpio_led_n <= 'Z';
+	gpio_led_s <= 'Z';
+	gpio_led_w <= 'Z';
+	fpga_diff_clk_out_p <= 'Z';
+	fpga_diff_clk_out_n <= 'Z';
 	ddr2_cs(1) <= '1';
 	ddr2_ba(2) <= '0';
    	ddr2_a(13) <= '0';
@@ -199,5 +219,6 @@ begin
    	ddr2_odt(1 downto 0) <= (others => 'Z');
 	ddr2_dm(7 downto 0) <= (others => 'Z');
 	ddr2_d(63 downto 16) <= (others => '0');
+
 
 end;
