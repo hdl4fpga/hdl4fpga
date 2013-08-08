@@ -419,9 +419,12 @@ begin
 	end generate;
 
 	process (clk0)
+		variable q : std_logic;
 	begin
 		if rising_edge(clk0) then
-			ddr_acc_rst <= not (ddr_init_rdy and dll_timer_rdy);
+--			ddr_acc_rst <= not (ddr_init_rdy and dll_timer_rdy);
+			ddr_acc_rst <= q;
+			q := not (ddr_init_rdy and dll_timer_rdy);
 			sys_ini     <= ddr_init_rdy and dll_timer_rdy;
 		end if;
 	end process;

@@ -11,6 +11,8 @@ use hdl4fpga.cgafont.all;
 
 entity dcms is
 	generic (
+		ddr_mul : natural := 10;
+		ddr_div : natural := 3;
 		sys_per : real := 10.0);
 	port (
 		sys_rst   : in  std_logic;
@@ -29,9 +31,6 @@ architecture def of dcms is
 	-- Multiply by --   5     --   9     --
 	-- Divide by   --   3     --   2     --
 	---------------------------------------
-
-	constant ddr_multiply : natural := 10;
-	constant ddr_divide   : natural := 3;
 
 	signal dcm_rst : std_logic;
 	signal sclk_bufg : std_logic;
@@ -57,17 +56,29 @@ begin
 		dfs_clk => video_clk,
 		dcm_lck => video_lckd);
 
-	ddrdcm_e : entity hdl4fpga.plldcm
+--	ddrdcm_e : entity hdl4fpga.plldcm
+--	generic map (
+--		pll_per => sys_per,
+--		dfs_mul => ddr_multiply,
+--		dfs_div => ddr_divide)
+--	port map (
+--		plldcm_rst => dcm_rst,
+--		plldcm_clkin => sclk_bufg,
+--		plldcm_clk0  => ddr_clk0,
+--		plldcm_clk90 => ddr_clk90,
+--		plldcm_lckd => ddr_lckd);
+
+	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
-		pll_per => sys_per,
-		dfs_mul => ddr_multiply,
-		dfs_div => ddr_divide)
+		dcm_per => sys_per,
+		dfs_mul => ddr_mul,
+		dfs_div => ddr_div)
 	port map (
-		plldcm_rst => dcm_rst,
-		plldcm_clkin => sclk_bufg,
-		plldcm_clk0  => ddr_clk0,
-		plldcm_clk90 => ddr_clk90,
-		plldcm_lckd => ddr_lckd);
+		dfsdcm_rst => dcm_rst,
+		dfsdcm_clkin => sclk_bufg,
+		dfsdcm_clk0  => ddr_clk0,
+		dfsdcm_clk90 => ddr_clk90,
+		dfsdcm_lckd => ddr_lckd);
 
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
