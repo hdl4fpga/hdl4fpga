@@ -204,12 +204,12 @@ begin
 	end generate;
 
 	bus_error <= (others => 'Z');
-	gpio_led <= (others => 'Z');
-	gpio_led_c <= 'Z';
-	gpio_led_e <= 'Z';
-	gpio_led_n <= 'Z';
-	gpio_led_s <= 'Z';
-	gpio_led_w <= 'Z';
+	gpio_led <= (others => '0');
+	gpio_led_c <= '0';
+	gpio_led_e <= '0';
+	gpio_led_n <= '0';
+	gpio_led_s <= '0';
+	gpio_led_w <= '0';
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 	ddr2_cs(1) <= '1';
