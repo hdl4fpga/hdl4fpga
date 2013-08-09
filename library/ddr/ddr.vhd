@@ -498,12 +498,9 @@ begin
 		sys_rea => ddr_acc_rea,
 		ddr_win_dq  => ddr_acc_rwin,
 		ddr_win_dqs => ddr_win_dqs,
---		ddr_win_dqs => (others => ddr_st_lp_dqs),
---		ddr_win_dqs => ddr_io_dmi,
 		ddr_dqs => ddr_io_dso,
 		ddr_dqi  => ddr_io_dqi);
 		
-	sys_dm1 <= (others => '0') when ddr_wr_fifo_req='1' else (others => '0');
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	generic map (
@@ -565,26 +562,6 @@ begin
 		ddr_io_dm  => ddr_dm,
 		ddr_io_dmi => ddr_io_dmi);
 
-	virtex5_st_dqs : if DEVICE = "virtex5" generate
-		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
-
-		signal clk : std_logic;
-	begin
-		clk <= 
-			clk180 when std=1 and cas(0)='1' else
-			clk0;
-			
-		oddr_du : oddr
-		port map (
-			r => '0',
-			s => '0',
-			c => clk,
-			ce => '1',
-			d1 => ddr_acc_drr,
-			d2 => ddr_acc_drf,
-			q  => ddr_lp_dqs);
-	end generate;
-    
 	st_dqs : if DEVICE /= "virtex5" generate
 		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
 
@@ -610,4 +587,25 @@ begin
 			d1 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
 	end generate;
+
+	virtex5_st_dqs : if DEVICE = "virtex5" generate
+		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
+
+		signal clk : std_logic;
+	begin
+		clk <= 
+			clk180 when std=1 and cas(0)='1' else
+			clk0;
+			
+		oddr_du : oddr
+		port map (
+			r => '0',
+			s => '0',
+			c => clk,
+			ce => '1',
+			d1 => ddr_acc_drr,
+			d2 => ddr_acc_drf,
+			q  => ddr_lp_dqs);
+	end generate;
+    
 end;
