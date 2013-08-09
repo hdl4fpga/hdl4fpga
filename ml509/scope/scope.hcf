@@ -104,6 +104,8 @@ TIMESPEC TS_dso0 = PERIOD "dqs0" 2.222 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
 OFFSET = IN -0.200 ns VALID 0.5 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.200 ns VALID 0.5 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "*ddr2_dm[0]" OFFSET = IN -0.2 ns VALID 0.5 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "*ddr2_dm[1]" OFFSET = IN -0.2 ns VALID 0.5 ns BEFORE ddr2_dqs_p[1] RISING;
 
 NET ddr2_dqs_p[0] TNM_NET = FFS  FFS_dqs0;
 NET ddr2_dqs_p[0] TNM_NET = RAMS RAMS_dqs0;
@@ -123,9 +125,9 @@ NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
 ## ###### #
 
 TIMESPEC TS_dcmlckd = FROM FFS  (*dcms_e/dcm_lckd*) TIG;
-TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG; #TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY;
+TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY;
 ##TIMESPEC TS_ddra = FROM FFS  (*/ddrs_a*) TIG;
-TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TIG; #TO FFS(*ddr_a*) TIG;
+TIMESPEC TS_ddract = FROM FFS  (*/ddrs_act) TO FFS(*ddr_a*) TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY;
 TIMESPEC TS_ddrdll = FROM FFS  (*/dll_timer_rdy)  TIG;
 TIMESPEC TS_ddr200u = FROM FFS  (*/ddr_init_cfg) TIG;
 TIMESPEC TS_ddrini = FROM FFS  (*/sys_ini) TIG;
