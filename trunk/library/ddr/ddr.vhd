@@ -5,28 +5,30 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		device : string := "NONE";
-		std : positive range 1 to 3 := 3;
-		tCP : real := 6.0;
-		tWR : real := 15.0;
-		tRP : real := 15.0;
+		DEVICE : string := "NONE";
+		STROBE : string := "EXTERNAL";
+		STD  : positive range 1 to 3 := 3;
+		tCP  : real := 6.0;
+		tWR  : real := 15.0;
+		tRP  : real := 15.0;
 		tRCD : real := 15.0;
 		tRFC : real := 72.0;
 		tMRD : real := 12.0;
 		tREFI : real := 7.8e3;
-		cl  : real := 5.0;
-		bl  : natural := 8;
-		wr  : natural := 8;
-		cwl : natural := 7;
 
-		bank_bits  : natural := 2;
-		addr_bits  : natural := 13;
-		data_bytes : natural := 2;
-		byte_bits  : natural := 8);
+		CL  : real    := 5.0;
+		BL  : natural := 8;
+		WR  : natural := 8;
+		CWL : natural := 7;
+
+		BANK_BITS  : natural :=  2;
+		ADDR_BITS  : natural := 13;
+		DATA_BYTES : natural :=  2;
+		BYTE_BITS  : natural :=  8);
 	port (
-		sys_rst   : in  std_logic;
-		sys_clk0  : in  std_logic;
-		sys_clk90 : in  std_logic;
+		sys_rst   : in std_logic;
+		sys_clk0  : in std_logic;
+		sys_clk90 : in std_logic;
 
 		sys_ini : out std_logic;
 		sys_cmd_req : in  std_logic;
@@ -50,7 +52,7 @@ entity ddr is
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
 		ddr_lp_dqs : out std_logic;
-		ddr_st_lp_dqs : in std_logic;
+		ddr_st_lp_dqs : in std_logic := '-';
 		ddr_we  : out std_logic;
 		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
@@ -101,6 +103,7 @@ architecture mix of ddr is
 	signal ddr_acc_dqz : std_logic_vector(ddr_dqs'range);
 	signal ddr_acc_dqsz : std_logic_vector(ddr_dqs'range);
 	signal ddr_acc_dqs : std_logic_vector(ddr_dqs'range);
+	signal ddr_win_dqs : std_logic_vector(ddr_dqs'range);
 	signal ddr_pgm_cmd : std_logic_vector(0 to 2);
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
@@ -480,6 +483,10 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
+	ddr_win_dqs <=
+		(others => ddr_st_lp_dqs) when STROBE="EXTERNAL" else
+		ddr_io_dmi;
+
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
 		data_bytes => data_bytes,
@@ -490,8 +497,9 @@ begin
 		sys_rdy => sys_do_rdy,
 		sys_rea => ddr_acc_rea,
 		ddr_win_dq  => ddr_acc_rwin,
+		ddr_win_dqs => ddr_win_dqs,
 --		ddr_win_dqs => (others => ddr_st_lp_dqs),
-		ddr_win_dqs => ddr_io_dmi,
+--		ddr_win_dqs => ddr_io_dmi,
 		ddr_dqs => ddr_io_dso,
 		ddr_dqi  => ddr_io_dqi);
 		
@@ -557,7 +565,27 @@ begin
 		ddr_io_dm  => ddr_dm,
 		ddr_io_dmi => ddr_io_dmi);
 
-	lp_dqs : block
+	virtex5_st_dqs : if DEVICE = "virtex5" generate
+		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
+
+		signal clk : std_logic;
+	begin
+		clk <= 
+			clk180 when std=1 and cas(0)='1' else
+			clk0;
+			
+		oddr_du : oddr
+		port map (
+			r => '0',
+			s => '0',
+			c => clk,
+			ce => '1',
+			d1 => ddr_acc_drr,
+			d2 => ddr_acc_drf,
+			q  => ddr_lp_dqs);
+	end generate;
+    
+	st_dqs : if DEVICE /= "virtex5" generate
 		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
 
 		signal rclk : std_logic;
@@ -567,34 +595,19 @@ begin
 			clk180 when std=1 and cas(0)='1' else
 			clk0;
 			
-		oddr_du : oddr
-		port map (
-			r => '0',
-			s => '0',
-			c => rclk,
-			ce => '1',
-			d1 => ddr_acc_drr,
-			d2 => ddr_acc_drf,
-			q  => ddr_lp_dqs);
-    
---		rclk <= 
---			clk180 when std=1 and cas(0)='1' else
---			clk0;
---			
---		fclk <= 
---			clk0   when std=1 and cas(0)='1' else
---			clk180;
---
---		oddr_du : oddr2
---		port map (
---			c0 => rclk,
---			c1 => fclk,
---			ce => '1',
---			r  => '0',
---			s  => '0',
---			d0 => ddr_acc_drr,
---			d1 => ddr_acc_drf,
---			q  => ddr_lp_dqs);
-	end block;
+		fclk <= 
+			clk0   when std=1 and cas(0)='1' else
+			clk180;
 
+		oddr_du : oddr2
+		port map (
+			c0 => rclk,
+			c1 => fclk,
+			ce => '1',
+			r  => '0',
+			s  => '0',
+			d0 => ddr_acc_drr,
+			d1 => ddr_acc_drf,
+			q  => ddr_lp_dqs);
+	end generate;
 end;
