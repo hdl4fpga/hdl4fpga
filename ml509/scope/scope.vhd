@@ -132,9 +132,9 @@ begin
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
 		vga_blank => vga_blank,
-		vga_red   => vga_red,
-		vga_green => vga_green,
-		vga_blue  => vga_blue,
+		vga_red   => (others => '1'), --vga_red,
+		vga_green => (others => '1'), --vga_green,
+		vga_blue  => (others => '1'), --vga_blue,
 
 		dvi_xclk_p => dvi_xclk_p,
 		dvi_xclk_n => dvi_xclk_n,
