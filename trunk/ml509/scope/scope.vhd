@@ -57,7 +57,15 @@ architecture scope of ml509 is
 	constant ddr_mul : natural := 10;
 	constant ddr_div : natural :=  3;
 
+	signal pp : std_logic;
 begin
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			pp <= not pp;
+		end if;
+	end process;
 
 	sys_rst <= gpio_sw_c;
 
@@ -203,10 +211,11 @@ begin
 			iob => ddr2_dqs_n(i));
 	end generate;
 
+	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= '0';
-	gpio_led_e <= '0';
+	gpio_led_c <= dcm_lckd;
+	gpio_led_e <= pp;
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';

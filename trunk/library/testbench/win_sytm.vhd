@@ -3,6 +3,8 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_textio.all;
 
+library hdl4fpga;
+
 architecture win_sytm of testbench is
 	constant n : natural := 11;
 

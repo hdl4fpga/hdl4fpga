@@ -179,6 +179,8 @@ NET "ddr2_cke[*]"   iostandard = SSTL18_II;
 NET "ddr2_ba[*]"    iostandard = SSTL18_II;
 NET "ddr2_a[*]"     iostandard = SSTL18_II;
 NET "ddr2_odt[*]"   iostandard = SSTL18_II;
+NET "dvi_gpio1"     iostandard = SSTL18_II;
+
 
 #NET "ddr2_scl"  iostandard = SSTL18_II;
 #NET "ddr2_sda"  iostandard = SSTL18_II;

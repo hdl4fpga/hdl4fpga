@@ -1,33 +1,33 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_per
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_mul
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_div
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_rst
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_clkin
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_clkfb
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_lckd
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_lckd
-add wave -noupdate -expand -group dcms -group dfsdcm -color Gold /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_rst
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clkfb
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clkin
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clk0
-add wave -noupdate -expand -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clk90
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/sys_rst
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/sys_clk
-add wave -noupdate -expand -group dcms -divider {New Divider}
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/input_clk
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/ddr_clk0
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/ddr_clk90
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/video_clk
-add wave -noupdate -expand -group dcms -divider {New Divider}
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/dcm_lckd
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/dcm_rst
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/sclk_bufg
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/video_lckd
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/ddr_lckd
-add wave -noupdate -expand -group dcms /testbench/ml509_e/dcms_e/input_lckd
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_per
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_mul
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_div
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_rst
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_clkin
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_clkfb
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfs_lckd
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dfsdcm_lckd
+add wave -noupdate -group dcms -group dfsdcm -color Gold /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_rst
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clkfb
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clkin
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clk0
+add wave -noupdate -group dcms -group dfsdcm /testbench/ml509_e/dcms_e/ddrdcm_e/dcm_clk90
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/sys_rst
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/sys_clk
+add wave -noupdate -group dcms -divider {New Divider}
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/input_clk
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/ddr_clk0
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/ddr_clk90
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/video_clk
+add wave -noupdate -group dcms -divider {New Divider}
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/dcm_lckd
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/dcm_rst
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/sclk_bufg
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/video_lckd
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/ddr_lckd
+add wave -noupdate -group dcms /testbench/ml509_e/dcms_e/input_lckd
 add wave -noupdate -group miirx_mac /testbench/ml509_e/scope_e/miirx_udp_e/dtreq
 add wave -noupdate -group miirx_mac -radix hexadecimal /testbench/ml509_e/scope_e/miirx_udp_e/dtxd
 add wave -noupdate -group miirx_mac /testbench/ml509_e/scope_e/miirx_udp_e/mii_rxc
@@ -83,12 +83,20 @@ add wave -noupdate -group debug -radix hexadecimal /testbench/ml509_e/scope_e/dd
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_ras
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_cas
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_we
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/input_clk
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/ddrs_clk0
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/ddrs_clk90
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/video_clk
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/user_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/input_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/ddrs_clk0
+add wave -noupdate -group sys_clock /testbench/ml509_e/ddrs_clk90
+add wave -noupdate -group sys_clock /testbench/ml509_e/video_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/user_clk
 add wave -noupdate -divider {DDR begin}
+add wave -noupdate /testbench/ml509_e/dvi_xclk_p
+add wave -noupdate /testbench/ml509_e/dvi_xclk_n
+add wave -noupdate /testbench/ml509_e/dvi_v
+add wave -noupdate /testbench/ml509_e/dvi_reset
+add wave -noupdate /testbench/ml509_e/dvi_h
+add wave -noupdate /testbench/ml509_e/dvi_gpio1
+add wave -noupdate /testbench/ml509_e/dvi_de
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/dvi_d
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
 add wave -noupdate /testbench/clk_p
@@ -904,7 +912,7 @@ add wave -noupdate /testbench/ml509_e/scope_e/input_req
 add wave -noupdate /testbench/ml509_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {314889 ps} 0} {{Cursor 2} {183195 ps} 0}
+WaveRestoreCursors {{Cursor 1} {983824980 ps} 0} {{Cursor 2} {983818293 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 220
 configure wave -valuecolwidth 86
@@ -920,4 +928,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {202002500 ps} {203052500 ps}
+WaveRestoreZoom {983754206 ps} {983882380 ps}
