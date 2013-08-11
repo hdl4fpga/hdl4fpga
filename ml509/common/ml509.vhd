@@ -34,7 +34,7 @@ entity ml509 is
 		dvi_xclk_n : out std_logic;
 		dvi_xclk_p : out std_logic;
 		dvi_reset  : out std_logic;
---		dvi_gpio1  : inout std_logic;
+		dvi_gpio1  : out std_logic;
 		dvi_de : out std_logic;
 		dvi_d  : out std_logic_vector(12-1 downto 0);
 		dvi_v  : inout std_logic;
@@ -170,14 +170,14 @@ entity ml509 is
 
 	attribute loc of dvi_xclk_p : signal is "AL11";
 	attribute loc of dvi_xclk_n : signal is "AL10";
---	attribute loc of dvi_gpio1 : signal is "N30";
+	attribute loc of dvi_gpio1 : signal is "N30";
 	attribute loc of dvi_reset : signal is "AK6";
 	attribute loc of dvi_d  : signal is "AN14 AP14 AB10 AA10 AN13 AM13 AA8 AA9 AP12 AN12 AC8 AB8";
 	attribute loc of dvi_de : signal is "AE8";
 	attribute loc of dvi_v : signal is "AM11";
 	attribute loc of dvi_h : signal is "AM12";
 
---	attribute iostandard of dvi_gpio1  : signal is "SSTL18_II_DCI";
+--	attribute iostandard of dvi_gpio1  : signal is "SSTL18_II";
 
 --	attribute loc of fan_alert : signal is "T30";
 --	attribute iostandard of fan_alert : signal is "SSTL18_II_DCI";

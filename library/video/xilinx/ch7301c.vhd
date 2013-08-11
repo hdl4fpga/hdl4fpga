@@ -25,10 +25,15 @@ use unisim.vcomponents.all;
 
 architecture def of vga2ch7301c_iob is
 	signal vga_fclk  : std_logic;
+	signal dvi_clk : std_logic;
 	signal dvi_rword : std_logic_vector(dvi_d'range);
 	signal dvi_fword : std_logic_vector(dvi_d'range);
+	signal h : std_logic;
+	signal v : std_logic;
 begin
-	vga_fclk <= not vga_clk;
+	h <= vga_hsync;
+
+	vga_fclk <= vga_clk;
 
 	dvi_h_i : fdrse
 	port map (
@@ -36,16 +41,17 @@ begin
 		r  => '0',
 		c  => vga_clk,
 		ce => '1',
-		d  => vga_hsync,
+		d  => h,
 		q  => dvi_h);
 
+	v <= vga_vsync;
 	dvi_v_i : fdrse
 	port map (
 		s  => '0',
 		r  => '0',
 		c  => vga_clk,
 		ce => '1',
-		d  => vga_vsync,
+		d  => v,
 		q  => dvi_v);
 
 	dvi_de_i : fdrse
@@ -61,9 +67,19 @@ begin
 	generic map (
 		iostandard => "DIFF_SSTL2_I")
 	port map (
-		i  => vga_clk,
+		i  => dvi_clk,
 		o  => dvi_xclk_p,
 		ob => dvi_xclk_n);
+
+	dvi_clk_i : oddr
+	port map (
+		r => '0',
+		s => '0',
+		c => vga_clk,
+		ce => '1',
+		d1 => '1',
+		d2 => '0',
+		q => dvi_clk);
 
 	dvi_rword <= vga_green(4-1 downto 0) & vga_blue;
 	dvi_fword <= vga_red & vga_green(8-1 downto 4); 
