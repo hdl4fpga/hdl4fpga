@@ -44,9 +44,28 @@ architecture mix of video_timing_rom is
 --		7 => (1080, 2, 6, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 		8 => (1080, 3, 5, 32));	-- 1920x1080C@60Hz pclk 173.00MHz
+
+	subtype word is std_logic_vector(0 to n);
+	type word_vector is array (natural range <>) of word;
+
+	function tab2rom (
+		mode : natural;
+		tab  : natural_matrix)
+		return word_vector is
+		variable val : word_vector(0 to 3);
+	begin
+		for i in tab(2)'range loop
+			val(i) := std_logic_vector(to_unsigned(tab(mode, i))-2,n);
+		end loop;
+		return val;
+	end;
+
+	constant h_rom : word_vector(0 to 3) := tab2rom(mode,h_tab);
+	constant v_rom : word_vector(0 to 3) := tab2rom(mode,v_tab);
+
 begin
-	hdata <= std_logic_vector(to_unsigned(h_tab(mode,to_integer(unsigned(hparm)))-2,n));
-	vdata <= std_logic_vector(to_unsigned(v_tab(mode,to_integer(unsigned(vparm)))-2,n));
+	hdata <= h_rom(to_integer(unsigned(hparm)));
+	vdata <= v_rom(to_integer(unsigned(vparm)));
 end;
 
 library ieee;
