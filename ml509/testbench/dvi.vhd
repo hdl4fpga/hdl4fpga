@@ -10,7 +10,7 @@ architecture dvi of testbench is
 	signal dvi_xclk_p : std_logic;
 	signal dvi_reset  : std_logic;
 	signal dvi_de  : std_logic;
-	signal dvi_d   : std_logic;
+	signal dvi_d   : std_logic_vector(11 downto 0);
 	signal dvi_v   : std_logic;
 	signal dvi_h   : std_logic; 
 
@@ -90,13 +90,13 @@ architecture dvi of testbench is
 			phy_mdc : out std_logic := '-';
 			phy_mdio : inout std_logic := '-';
 
-			phy_rxclk : in std_logic;
-			phy_rxctl_rxdv : in std_logic;
-			phy_rxd  : in std_logic_vector(0 to 8-1);
+			phy_rxclk : in std_logic := '-';
+			phy_rxctl_rxdv : in std_logic := '-';
+			phy_rxd  : in std_logic_vector(0 to 8-1) := (others => '-');
 			phy_rxer : in std_logic := '-';
 
 			phy_txc_gtxclk : out std_logic := '-';
-			phy_txclk : in std_logic;
+			phy_txclk : in std_logic := '-';
 			phy_txctl_txen : out std_logic;
 			phy_txd  : out std_logic_vector(0 to 8-1);
 			phy_txer : out std_logic;
@@ -127,13 +127,6 @@ begin
 	ml509_e : ml509
 	port map (
 		user_clk => clk,
-
-		phy_rxclk => mii_refclk,
-		phy_rxctl_rxdv => mii_rxdv,
-		phy_rxd => mii_rxd,
-
-		phy_txclk => mii_refclk,
-		phy_txctl_txen => mii_txen,
 
 		dvi_xclk_n => dvi_xclk_n,
 		dvi_xclk_p => dvi_xclk_p,
