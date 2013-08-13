@@ -44,7 +44,7 @@ begin
 		d  => h,
 		q  => dvi_h);
 
-	v <= vga_vsync;
+	v <= vga_vsync and vga_hsync;
 	dvi_v_i : fdrse
 	port map (
 		s  => '0',
