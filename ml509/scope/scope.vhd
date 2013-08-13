@@ -38,6 +38,7 @@ architecture scope of ml509 is
 	signal mii_txd  : std_logic_vector(0 to nibble_size-1);
 
 	signal video_clk : std_logic;
+	signal video_clk90 : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
@@ -57,15 +58,7 @@ architecture scope of ml509 is
 	constant ddr_mul : natural := 10;
 	constant ddr_div : natural :=  3;
 
-	signal pp : std_logic;
 begin
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			pp <= not pp;
-		end if;
-	end process;
 
 	sys_rst <= gpio_sw_c;
 
@@ -81,6 +74,7 @@ begin
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
+		video_clk90 => video_clk90,
 		dcm_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
@@ -137,6 +131,7 @@ begin
 	vga_iob_e : entity hdl4fpga.vga2ch7301c_iob
 	port map (
 		vga_clk   => video_clk,
+		vga_clk90 => video_clk90,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
 		vga_blank => vga_blank,
@@ -215,7 +210,7 @@ begin
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
 	gpio_led_c <= dcm_lckd;
-	gpio_led_e <= pp;
+	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';

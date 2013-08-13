@@ -21,6 +21,7 @@ entity dcms is
 		ddr_clk0  : out std_logic;
 		ddr_clk90 : out std_logic;
 		video_clk : out std_logic;
+		video_clk90 : out std_logic;
 		dcm_lckd  : out std_logic);
 end;
 
@@ -45,16 +46,28 @@ begin
 		I => sys_clk,
 		O => sclk_bufg);
 
-	videodcm_e : entity hdl4fpga.dfs
+	video_dcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
 		dfs_mul => 3,
 		dfs_div => 2)
-	port map(
-		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
-		dfs_clk => video_clk,
-		dcm_lck => video_lckd);
+	port map (
+		dfsdcm_rst => dcm_rst,
+		dfsdcm_clkin => sclk_bufg,
+		dfsdcm_clk0  => video_clk,
+		dfsdcm_clk90 => video_clk90,
+		dfsdcm_lckd => video_lckd);
+
+--	videodcm_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => 3,
+--		dfs_div => 2)
+--	port map(
+--		dcm_rst => dcm_rst,
+--		dcm_clk => sclk_bufg,
+--		dfs_clk => video_clk,
+--		dcm_lck => video_lckd);
 
 --	ddrdcm_e : entity hdl4fpga.plldcm
 --	generic map (

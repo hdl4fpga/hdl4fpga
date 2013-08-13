@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dm is
 	generic (
+		STROBE : string := "EXTERNAL";
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
@@ -32,28 +33,33 @@ begin
 		signal d : std_logic_vector(ddr_clk'range);
 		signal ddr_dmx : std_logic_vector(ddr_clk'range);
 		signal ddr_dm  : std_logic_vector(ddr_clk'range);
+		signal d1, d2 : std_logic;
 	begin
 		ddr_dmx <= (0 => ddr_io_dmx_r(i), 1 => ddr_io_dmx_f(i));
 		ddr_dm  <= (0 =>  ddr_io_dm_r(i), 1 =>  ddr_io_dm_f(i));
 
-		dmff_g: for l in ddr_clk'range generate
-			signal di : std_logic;
-		begin
-			with ddr_dmx(l) select
-			di <=
-				ddr_st(l) when '0',
-				ddr_dm(l) when others;
+		external_st_g : if strobe="EXTERNAL" generate
+			dmff_g: for l in ddr_clk'range generate
+				signal di : std_logic;
+			begin
+				with ddr_dmx(l) select
+				di <=
+					ddr_st(l) when '0',
+					ddr_dm(l) when others;
 
-			ffd_i : fdrse
-			port map (
-				s  => '0',
-				r  => '0',
-				c  => ddr_clk(l),
-				ce => '1',
-				d  => di,
-				q  => d(l));
-
+				ffd_i : fdrse
+				port map (
+					s  => '0',
+					r  => '0',
+					c  => ddr_clk(l),
+					ce => '1',
+					d  => di,
+					q  => d(l));
+			end generate;
 		end generate;
+
+		d1 <= ddr_dm(0) when strobe="EXTERNAL" else d(0);
+		d2 <= ddr_dm(1) when strobe="EXTERNAL" else d(1);
 
 		oddr_du : fddrrse
 		port map (
@@ -62,8 +68,8 @@ begin
 			s  => '0',
 			c0 => ddr_clk(0),
 			c1 => ddr_clk(1),
-			d0 => d(0),
-			d1 => d(1),
+			d0 => d1,
+			d1 => d2,
 			q  => dqo);
 
 		obuf_i : obuft
