@@ -75,15 +75,6 @@ begin
 		ibuf_i : ibuf
 		port map (
 			i => ddr_io_dm(i),
-			o => di);
-
-		idelay_i : idelay 
-		port map (
-			rst => '0',
-			c   =>'0',
-			ce  => '0',
-			inc => '0',
-			i => di,
 			o => ddr_io_dmi(i));
 
 	end generate;

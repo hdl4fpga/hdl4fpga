@@ -5,9 +5,9 @@ use ieee.numeric_std.all;
 entity video_timing_rom is
 	generic (
 		m : natural := 1;
-		n : natural := 11);
+		n : natural := 11;
+		mode : in  natural);
 	port (
-		mode  : in  natural;
 
 		hparm : in  std_logic_vector(0 to 1);
 		hdata : out std_logic_vector(n-1 downto 0);
@@ -45,7 +45,7 @@ architecture mix of video_timing_rom is
 		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 		8 => (1080, 3, 5, 32));	-- 1920x1080C@60Hz pclk 173.00MHz
 
-	subtype word is std_logic_vector(0 to n);
+	subtype word is std_logic_vector(n-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function tab2rom (
@@ -54,8 +54,8 @@ architecture mix of video_timing_rom is
 		return word_vector is
 		variable val : word_vector(0 to 3);
 	begin
-		for i in tab(2)'range loop
-			val(i) := std_logic_vector(to_unsigned(tab(mode, i))-2,n);
+		for i in tab'range(2) loop
+			val(i) := std_logic_vector(to_signed(tab(mode, i)-2,n));
 		end loop;
 		return val;
 	end;
@@ -78,13 +78,13 @@ entity video_timing_gen is
 	port (
 		clk : in std_logic;
 
-		hdata : in std_logic_vector(n-1 downto 0);
+		hdata : in std_logic_vector(n downto 0);
 		htmg : out std_logic_vector(0 to 1);
 		hpos : out std_logic_vector(n-1 downto 0);
 		heot : buffer std_logic;
 		heof : out std_logic;
 
-		vdata : in std_logic_vector(n-1 downto 0);
+		vdata : in std_logic_vector(n downto 0);
 		vtmg : out std_logic_vector(0 to 1);
 		vpos : out std_logic_vector(n-1 downto 0);
 		veot : out std_logic;
@@ -100,7 +100,7 @@ architecture beh of video_timing_gen is
 		return unsigned is
 	begin
 		if succ='1' then
-			return resize(unsigned(data),data'length+1);
+			return resize(unsigned(data),cntr'length);
 		else
 			return cntr-1;
 		end if;
@@ -135,7 +135,7 @@ begin
 			end if;
 
 			if ena_hparm='1' then
-				hparm:= dec(hparm(0), hparm, bp);
+				hparm := dec(hparm(0), hparm, bp);
 			end if;
 			hcntr := dec(hcntr(0), hcntr, hdata);
 
@@ -159,7 +159,7 @@ use ieee.numeric_std.all;
 
 entity video_vga is
 	generic (
-		n : natural := 11);
+		n : natural := 12);
 	port (
 		clk   : in std_logic;
 		hsync : out std_logic;
@@ -175,11 +175,11 @@ use hdl4fpga.std.all;
 
 architecture arch of video_vga is
 	signal hparm : std_logic_vector(0 to 1);
-	signal rom_hdata : std_logic_vector(n-1 downto 0);
-	signal hdata : std_logic_vector(n-1 downto 0);
+	signal rom_hdata : std_logic_vector(n downto 0);
+	signal hdata : std_logic_vector(n downto 0);
 	signal vparm : std_logic_vector(0 to 1);
-	signal rom_vdata : std_logic_vector(n-1 downto 0);
-	signal vdata : std_logic_vector(n-1 downto 0);
+	signal rom_vdata : std_logic_vector(n downto 0);
+	signal vdata : std_logic_vector(n downto 0);
 	signal heof : std_logic;
 	signal heot : std_logic;
 	signal veot : std_logic;
@@ -189,9 +189,9 @@ architecture arch of video_vga is
 begin
 	sync_rom : entity hdl4fpga.video_timing_rom
 	generic map (
-		n => n)
+		n => n+1,
+		mode  => 7)
 	port map (
-		mode  => 7,
 
 		hparm => hparm,
 		hdata => rom_hdata,
