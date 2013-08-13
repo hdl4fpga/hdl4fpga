@@ -41,6 +41,7 @@ architecture dvi_test of ml509 is
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
+	signal vga_frm : std_logic;
 	signal vga_red : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
@@ -54,17 +55,12 @@ architecture dvi_test of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 10;
-	constant ddr_div : natural :=  3;
-
 begin
 
 	sys_rst <= gpio_sw_c;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		ddr_mul => ddr_mul,
-		ddr_div => ddr_div, 
 		sys_per => uclk_period)
 	port map (
 		sys_rst => sys_rst,
@@ -80,6 +76,7 @@ begin
 		n => 12)
 	port map (
 		clk   => video_clk,
+		frm   => vga_frm,
 		hsync => vga_hsync,
 		vsync => vga_vsync,
 		don   => vga_blank);
@@ -90,6 +87,7 @@ begin
 		vga_clk90 => video_clk90,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
+		vga_frm   => vga_frm,
 		vga_blank => vga_blank,
 		vga_red   => (others => '1'), --vga_red,
 		vga_green => (others => '1'), --vga_green,
