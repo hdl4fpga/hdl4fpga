@@ -7,7 +7,6 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 architecture dvi_test of ml509 is
 	constant bank_size : natural := 2;
