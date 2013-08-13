@@ -127,6 +127,7 @@ begin
 	ml509_e : ml509
 	port map (
 		user_clk => clk,
+		gpio_sw_c => rst,
 
 		dvi_xclk_n => dvi_xclk_n,
 		dvi_xclk_p => dvi_xclk_p,
