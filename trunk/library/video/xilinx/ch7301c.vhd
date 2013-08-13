@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity vga2ch7301c_iob is
 	port (
 		vga_clk : in std_logic;
+		vga_clk90 : in std_logic;
 		vga_hsync : in std_logic;
 		vga_vsync : in std_logic;
 		vga_blank : in std_logic;
@@ -24,7 +25,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture def of vga2ch7301c_iob is
-	signal vga_fclk  : std_logic;
 	signal dvi_clk : std_logic;
 	signal dvi_rword : std_logic_vector(dvi_d'range);
 	signal dvi_fword : std_logic_vector(dvi_d'range);
@@ -32,8 +32,6 @@ architecture def of vga2ch7301c_iob is
 	signal v : std_logic;
 begin
 	h <= vga_hsync;
-
-	vga_fclk <= vga_clk;
 
 	dvi_h_i : fdrse
 	port map (
@@ -75,7 +73,7 @@ begin
 	port map (
 		r => '0',
 		s => '0',
-		c => vga_clk,
+		c => vga_clk90,
 		ce => '1',
 		d1 => '1',
 		d2 => '0',
