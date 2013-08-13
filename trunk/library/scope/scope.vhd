@@ -195,122 +195,122 @@ begin
 		don   => video_don);
 	video_blank <= video_don and video_frm;
 		
---	win_stym_e : entity hdl4fpga.win_sytm
---	port map (
---		win_clk => vga_clk,
---		win_frm => video_frm,
---		win_don => video_don,
---		win_rowid  => win_rowid ,
---		win_rowpag => win_rowpag,
---		win_rowoff => win_rowoff,
---		win_colid  => win_colid,
---		win_colpag => win_colpag,
---		win_coloff => win_coloff);
---
---	win_ena_b : block
---		signal scope_win : std_logic;
---		signal cga_win : std_logic;
---		signal grid_don : std_logic;
---		signal plot_dot1 : std_logic_vector(plot_dot'range);
---		signal grid_dot1 : std_logic;
---		signal plot_start  : std_logic;
---		signal plot_end  : std_logic;
---	begin
---		scope_win <= setif(win_rowid&win_colid = "1111");
---		cga_win   <= cga_dot and setif(win_rowid&win_colid="1101");
---
---		align_e : entity hdl4fpga.align
---		generic map (
---			n => 10,
---			d => (
---				0 to 2 => 4+10,		-- hsync, vsync, blank
---				3 to 3 => 2+10,		-- scope_win -> plot_end
---				4 to 5 => 1,		-- plot
---				6 to 6 => 1+10,		-- grid
---			    7 to 7 => 1,		-- plot_end -> grid_don
---			    8 to 8 => 3,		-- grid_don -> plot_start
---			    9 to 9 => 3))		-- cga_dot -> cga_dot
---		port map (
---			clk   => vga_clk,
---
---			di(0) => video_hsync,
---			di(1) => video_vsync,
---			di(2) => video_blank,
---
---			di(3) => scope_win,
---
---			di(4) => plot_dot(0),
---			di(5) => plot_dot(1),
---			di(6) => grid_dot,
---			di(7) => plot_end,
---			di(8) => grid_don,
---			di(9) => cga_win,
---
---			do(0) => vga_hsync,
---			do(1) => vga_vsync,
---			do(2) => vga_blank,
---
---			do(3) => plot_end,
---
---			do(4) => plot_dot1(0),
---			do(5) => plot_dot1(1),
---			do(6) => grid_dot1,
---			do(7) => grid_don,
---			do(8) => plot_start,
---			do(9) => cga_don);
---
---		vga_red   <= (others => (plot_start and plot_end and plot_dot1(1)) or cga_don);
---		vga_green <= (others => (plot_start and plot_end and plot_dot1(0)) or cga_don);
---		vga_blue  <= (others => (grid_don and grid_dot1) or cga_don);
---		
---	end block;
---
---	video_ena <= setif(win_rowid="11");
---
---	dataio_rst <= not ddrs_ini;
---	dataio_e : entity hdl4fpga.dataio 
---	generic map (
---		bank_size => bank_size,
---		addr_size => addr_size,
---		col_size  => col_size, 
---		data_size => data_size)
---	port map (
---		sys_rst   => dataio_rst,
---
---		input_req => input_req,
---		input_rdy => input_rdy,
---		input_clk => input_clk,
---		input_dat => input_dat,
---
---		video_clk => vga_clk,
---		video_ena => video_ena,
---		video_row => win_rowpag(3 downto 0),
---		video_col => win_coloff,
---		video_do  => chann_dat,
---
---		ddrs_clk => ddrs_clk0,
---		ddrs_ref_req => ddrs_ref_req,
---		ddrs_cmd_req => ddrs_cmd_req,
---		ddrs_cmd_rdy => ddrs_cmd_rdy,
---		ddrs_ba => ddrs_ba,
---		ddrs_a  => ddrs_a,
---		ddrs_rw  => ddrs_rw,
---		ddrs_act => ddrs_act,
---		ddrs_cas => ddrs_cas,
---		ddrs_pre => ddrs_pre,
---
---		ddrs_di_rdy => ddrs_di_rdy,
---		ddrs_di => ddrs_di,
---		ddrs_do_rdy => ddrs_do_rdy,
---		ddrs_do => ddrs_do,
---		tp => tp(6 downto 0),
---
---		mii_txc => mii_txc,
---		mii_a0 => a0,
---		miitx_req => miitx_req,
---		miitx_rdy => miitx_rdy,
---		miitx_addr => miitx_addr,
---		miitx_data => miitx_data);
+	win_stym_e : entity hdl4fpga.win_sytm
+	port map (
+		win_clk => vga_clk,
+		win_frm => video_frm,
+		win_don => video_don,
+		win_rowid  => win_rowid ,
+		win_rowpag => win_rowpag,
+		win_rowoff => win_rowoff,
+		win_colid  => win_colid,
+		win_colpag => win_colpag,
+		win_coloff => win_coloff);
+
+	win_ena_b : block
+		signal scope_win : std_logic;
+		signal cga_win : std_logic;
+		signal grid_don : std_logic;
+		signal plot_dot1 : std_logic_vector(plot_dot'range);
+		signal grid_dot1 : std_logic;
+		signal plot_start  : std_logic;
+		signal plot_end  : std_logic;
+	begin
+		scope_win <= setif(win_rowid&win_colid = "1111");
+		cga_win   <= cga_dot and setif(win_rowid&win_colid="1101");
+
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 10,
+			d => (
+				0 to 2 => 4+10,		-- hsync, vsync, blank
+				3 to 3 => 2+10,		-- scope_win -> plot_end
+				4 to 5 => 1,		-- plot
+				6 to 6 => 1+10,		-- grid
+			    7 to 7 => 1,		-- plot_end -> grid_don
+			    8 to 8 => 3,		-- grid_don -> plot_start
+			    9 to 9 => 3))		-- cga_dot -> cga_dot
+		port map (
+			clk   => vga_clk,
+
+			di(0) => video_hsync,
+			di(1) => video_vsync,
+			di(2) => video_blank,
+
+			di(3) => scope_win,
+
+			di(4) => plot_dot(0),
+			di(5) => plot_dot(1),
+			di(6) => grid_dot,
+			di(7) => plot_end,
+			di(8) => grid_don,
+			di(9) => cga_win,
+
+			do(0) => vga_hsync,
+			do(1) => vga_vsync,
+			do(2) => vga_blank,
+
+			do(3) => plot_end,
+
+			do(4) => plot_dot1(0),
+			do(5) => plot_dot1(1),
+			do(6) => grid_dot1,
+			do(7) => grid_don,
+			do(8) => plot_start,
+			do(9) => cga_don);
+
+		vga_red   <= (others => (plot_start and plot_end and plot_dot1(1)) or cga_don);
+		vga_green <= (others => (plot_start and plot_end and plot_dot1(0)) or cga_don);
+		vga_blue  <= (others => (grid_don and grid_dot1) or cga_don);
+		
+	end block;
+
+	video_ena <= setif(win_rowid="11");
+
+	dataio_rst <= not ddrs_ini;
+	dataio_e : entity hdl4fpga.dataio 
+	generic map (
+		bank_size => bank_size,
+		addr_size => addr_size,
+		col_size  => col_size, 
+		data_size => data_size)
+	port map (
+		sys_rst   => dataio_rst,
+
+		input_req => input_req,
+		input_rdy => input_rdy,
+		input_clk => input_clk,
+		input_dat => input_dat,
+
+		video_clk => vga_clk,
+		video_ena => video_ena,
+		video_row => win_rowpag(3 downto 0),
+		video_col => win_coloff,
+		video_do  => chann_dat,
+
+		ddrs_clk => ddrs_clk0,
+		ddrs_ref_req => ddrs_ref_req,
+		ddrs_cmd_req => ddrs_cmd_req,
+		ddrs_cmd_rdy => ddrs_cmd_rdy,
+		ddrs_ba => ddrs_ba,
+		ddrs_a  => ddrs_a,
+		ddrs_rw  => ddrs_rw,
+		ddrs_act => ddrs_act,
+		ddrs_cas => ddrs_cas,
+		ddrs_pre => ddrs_pre,
+
+		ddrs_di_rdy => ddrs_di_rdy,
+		ddrs_di => ddrs_di,
+		ddrs_do_rdy => ddrs_do_rdy,
+		ddrs_do => ddrs_do,
+		tp => tp(6 downto 0),
+
+		mii_txc => mii_txc,
+		mii_a0 => a0,
+		miitx_req => miitx_req,
+		miitx_rdy => miitx_rdy,
+		miitx_addr => miitx_addr,
+		miitx_data => miitx_data);
 
 	process (ddrs_clk0)
 		variable trdy_edge : std_logic_vector(0 to 1);
@@ -435,58 +435,58 @@ begin
 		grid_dot  => grid_dot,
 		plot_dot  => plot_dot);
 
---	ddr_e : entity hdl4fpga.ddr
---	generic map (
---		device => device,
---		tCP => tDDR,
---		std => ddr_std,
---
---		cl   => ddr_acdb(ddr_std).cl,
---		wr   => ddr_acdb(ddr_std).wr,
---		tMRD => ddr_acdb(ddr_std).tMRD,
---		tRCD => ddr_acdb(ddr_std).tRCD,
---		tRFC => ddr_acdb(ddr_std).tRFC,
---		tRP  => ddr_acdb(ddr_std).tRP,
---		tWR  => ddr_acdb(ddr_std).tWR,
---
---		bank_bits => bank_size,
---		addr_bits => addr_size,
---		data_bytes => 2,
---		byte_bits => 8)
---
---	port map (
---		sys_rst   => sys_rst,
---		sys_clk0  => ddrs_clk0,
---		sys_clk90 => ddrs_clk90,
---
---		sys_ini => ddrs_ini,
---		sys_cmd_req => ddrs_cmd_req,
---		sys_cmd_rdy => ddrs_cmd_rdy,
---		sys_rw  => ddrs_rw,
---		sys_ba  => ddrs_ba,
---		sys_a   => ddrs_a,
---		sys_act => ddrs_act,
---		sys_cas => ddrs_cas,
---		sys_pre => ddrs_pre,
---		sys_di_rdy => ddrs_di_rdy,
---		sys_di  => ddrs_di,
---		sys_do_rdy => ddrs_do_rdy,
---		sys_do  => ddrs_do,
---		sys_ref => ddrs_ref_req,
---
---		ddr_st_lp_dqs => ddr_st_lp_dqs,
---		ddr_lp_dqs => ddr_lp_dqs,
---		ddr_rst => ddr_rst,
---		ddr_cke => ddr_cke,
---		ddr_cs  => ddr_cs,
---		ddr_ras => ddr_ras,
---		ddr_cas => ddr_cas,
---		ddr_we  => ddr_we,
---		ddr_ba  => ddr_ba,
---		ddr_a   => ddr_a,
---		ddr_dm  => ddr_dm,
---		ddr_dqs => ddr_dqs,
---		ddr_dqs_n => ddr_dqs_n,
---		ddr_dq  => ddr_dq);
+	ddr_e : entity hdl4fpga.ddr
+	generic map (
+		device => device,
+		tCP => tDDR,
+		std => ddr_std,
+
+		cl   => ddr_acdb(ddr_std).cl,
+		wr   => ddr_acdb(ddr_std).wr,
+		tMRD => ddr_acdb(ddr_std).tMRD,
+		tRCD => ddr_acdb(ddr_std).tRCD,
+		tRFC => ddr_acdb(ddr_std).tRFC,
+		tRP  => ddr_acdb(ddr_std).tRP,
+		tWR  => ddr_acdb(ddr_std).tWR,
+
+		bank_bits => bank_size,
+		addr_bits => addr_size,
+		data_bytes => 2,
+		byte_bits => 8)
+
+	port map (
+		sys_rst   => sys_rst,
+		sys_clk0  => ddrs_clk0,
+		sys_clk90 => ddrs_clk90,
+
+		sys_ini => ddrs_ini,
+		sys_cmd_req => ddrs_cmd_req,
+		sys_cmd_rdy => ddrs_cmd_rdy,
+		sys_rw  => ddrs_rw,
+		sys_ba  => ddrs_ba,
+		sys_a   => ddrs_a,
+		sys_act => ddrs_act,
+		sys_cas => ddrs_cas,
+		sys_pre => ddrs_pre,
+		sys_di_rdy => ddrs_di_rdy,
+		sys_di  => ddrs_di,
+		sys_do_rdy => ddrs_do_rdy,
+		sys_do  => ddrs_do,
+		sys_ref => ddrs_ref_req,
+
+		ddr_st_lp_dqs => ddr_st_lp_dqs,
+		ddr_lp_dqs => ddr_lp_dqs,
+		ddr_rst => ddr_rst,
+		ddr_cke => ddr_cke,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_ba  => ddr_ba,
+		ddr_a   => ddr_a,
+		ddr_dm  => ddr_dm,
+		ddr_dqs => ddr_dqs,
+		ddr_dqs_n => ddr_dqs_n,
+		ddr_dq  => ddr_dq);
 	sys_ini <= ddrs_ini;
 end;
