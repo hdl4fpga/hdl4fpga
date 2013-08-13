@@ -9,6 +9,7 @@ entity vga2ch7301c_iob is
 		vga_hsync : in std_logic;
 		vga_vsync : in std_logic;
 		vga_blank : in std_logic;
+		vga_frm   : in std_logic;
 		vga_red : in std_logic_vector(8-1 downto 0);
 		vga_green : in std_logic_vector(8-1 downto 0);
 		vga_blue  : in std_logic_vector(8-1 downto 0);
@@ -31,7 +32,7 @@ architecture def of vga2ch7301c_iob is
 	signal h : std_logic;
 	signal v : std_logic;
 begin
-	h <= vga_hsync;
+	h <= vga_hsync and (vga_frm xor vga_vsync);
 
 	dvi_h_i : fdrse
 	port map (
@@ -42,7 +43,7 @@ begin
 		d  => h,
 		q  => dvi_h);
 
-	v <= vga_vsync and vga_hsync;
+	v <= vga_vsync;
 	dvi_v_i : fdrse
 	port map (
 		s  => '0',
