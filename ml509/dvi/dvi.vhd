@@ -8,7 +8,7 @@ use unisim.vcomponents.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture dvi_test of ml509 is
+architecture dvi of ml509 is
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
@@ -122,6 +122,8 @@ begin
 	ddr2_we <= 'Z';
 	ddr2_dqs_p <= (others => 'Z');
 	ddr2_dqs_n <= (others => 'Z');
+	ddr2_clk_n <= (others => 'Z');
+	ddr2_clk_p <= (others => 'Z');
 
 	phy_reset <= '0';
 	phy_mdc   <= 'Z';
