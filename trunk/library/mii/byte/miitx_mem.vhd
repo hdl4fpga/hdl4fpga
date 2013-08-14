@@ -27,7 +27,7 @@ architecture def of miitx_mem is
 	constant word_size : natural := byte'length;
 	constant word_byte : natural := word_size/byte_size;
 
-	constant cntr_size : natural := unsigned_num_bits((mem_data'length+byte_size-1)/byte_size-1)+1;
+	constant cntr_size : natural := unsigned_num_bits((mem_data'length+byte_size-1)/byte_size-1);
 	constant ramb_size : natural := (mem_data'length+byte_size-1)/byte_size;
 	constant addr_size : natural := unsigned_num_bits((mem_data'length+word_size-1)/word_size-1);
 
@@ -42,10 +42,14 @@ architecture def of miitx_mem is
 	
 		aux(arg'length-1 downto 0) := arg;
 		for i in 0 to ramb_size-1 loop
-			val(i/word_byte) := byte2word (
-				byte => aux(byte'range), 
-				mask => demux(to_unsigned(i mod word_byte, cntr_size-addr_size)),
-				word => val(i/word_byte));
+			if cntr_size > addr_size then
+				val(i/word_byte) := byte2word (
+					byte => aux(byte'range), 
+					mask => demux(to_unsigned(i mod word_byte, cntr_size-addr_size)),
+					word => val(i/word_byte));
+			else
+				val(i/word_byte) := aux(byte'range);
+			end if;
 			aux := aux srl byte'length;
 		end loop;
 
@@ -74,13 +78,14 @@ begin
 				cntr => cntr,
 				ena  => not mii_treq or not cntr(0),
 				load => not mii_treq,
-				data => 2*ramb_size-1);
+				data => ramb_size-1);
 		end if;
 	end process;
 
 	mii_trdy <= cntr(0) and mii_treq;
 	mii_txen <= mii_treq and not cntr(0);
-	mii_txd  <= reverse(word2byte(
-		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
-		addr => cntr(addr_size+1 to cntr_size-1)));
+	mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
+--	mii_txd  <= reverse(word2byte(
+--		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
+--		addr => cntr(addr_size+1 to cntr_size)));
 end;

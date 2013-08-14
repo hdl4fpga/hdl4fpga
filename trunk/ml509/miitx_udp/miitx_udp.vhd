@@ -2,26 +2,31 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 library hdl4fpga;
 
 architecture miitx_udp of ml509 is
 
 	signal rst  : std_logic;
 	signal txen : std_logic;
+	signal mii_txd : std_logic_vector(phy_txd'range);
 	signal dcm_lckd : std_logic;
 	signal mii_req  : std_logic;
 
 	signal sys_addr : std_logic_vector(0 to 9-1);
 	signal sys_data : std_logic_vector(0 to 32-1);
+	signal gtx_clk : std_logic;
 begin
 
-	rst <= gpio_sw_c;
+	rst <= not gpio_sw_c;
 
-	process (phy_txclk)
+	process (gtx_clk)
 		variable edge : std_logic;
 		variable sent : std_logic;
 	begin
-		if rising_edge(phy_txclk) then
+		if rising_edge(gtx_clk) then
 			if rst='1' then
 				mii_req <= '0';
 				sent := '0';
@@ -40,14 +45,15 @@ begin
 	end process;
 
 
-	bram_e : entity hdl4fpga.dpram
-	generic map (
-		data_size => sys_data'length,
-		address_size => sys_addr'length)
-	port map (
-		rd_clk => phy_txclk,
-		rd_address => sys_addr,
-		rd_data => sys_data);
+--	bram_e : entity hdl4fpga.dpram
+--	generic map (
+--		data_size => sys_data'length,
+--		address_size => sys_addr'length)
+--	port map (
+--		rd_clk => gtx_clk,
+--		rd_address => sys_addr,
+--		rd_data => sys_data);
+	sys_data  <= (others => '0');
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (
@@ -55,9 +61,9 @@ begin
 		dfs_mul => 5,
 		dfs_div => 4)
 	port map (
-		dcm_rst => '0',
+		dcm_rst => gpio_sw_e,
 		dcm_clk => user_clk,
-		dfs_clk => phy_txc_gtxclk,
+		dfs_clk => gtx_clk,
 		dcm_lck => dcm_lckd);
 
 	miitx_udp_e : entity hdl4fpga.miitx_udp
@@ -65,12 +71,38 @@ begin
 		sys_addr => sys_addr,
 		sys_data => sys_data,
 		mii_treq => mii_req,
-		mii_txc  => phy_txclk,
+		mii_txc  => gtx_clk,
 		mii_txen => txen,
-		mii_txd  => phy_txd);
-	phy_txctl_txen <= txen;
-	phy_reset <= '1';
+		mii_txd  => mii_txd);
+
+	phy_reset <= dcm_lckd;
 	phy_txer <= '0';
+	mii_iob_e : entity hdl4fpga.mii_iob
+	generic map (
+		xd_len => phy_txd'length)
+	port map (
+		mii_rxc  => phy_rxclk,
+		iob_rxdv => phy_rxctl_rxdv,
+		iob_rxd  => phy_rxd,
+		mii_rxdv => open,
+		mii_rxd  => open,
+
+		mii_txc  => gtx_clk,
+		mii_txen => txen,
+		mii_txd  => mii_txd,
+		iob_txen => phy_txctl_txen,
+		iob_txd  => phy_txd);
+
+	gtx_clk_i : oddr
+	port map (
+		r => '0',
+		s => '0',
+		c => gtx_clk,
+		ce => '1',
+		d1 => '0',
+		d2 => '1',
+		q => phy_txc_gtxclk);
+
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
@@ -97,6 +129,8 @@ begin
 	ddr2_clk_n <= (others => 'Z');
 	ddr2_clk_p <= (others => 'Z');
 
+	dvi_reset <= '0';
+	phy_mdc <= '0';
 	dvi_xclk_p <= 'Z';
 	dvi_xclk_n <= 'Z';
 	dvi_v <= 'Z';

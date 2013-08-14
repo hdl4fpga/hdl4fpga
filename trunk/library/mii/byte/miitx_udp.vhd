@@ -37,7 +37,7 @@ architecture mix of miitx_udp is
 	signal txen : std_logic;
 	signal txd : std_logic_vector(0 to xd_len-1);
 	signal rdy : std_logic_vector(n downto 0);
-	signal dat : nibble_vector(n downto 0);
+	signal dat : xword_vector(n downto 0);
 	signal ena : std_logic_vector(n downto 0);
 	signal crc_ted : std_logic;
 begin
