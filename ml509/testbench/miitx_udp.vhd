@@ -132,13 +132,14 @@ architecture miitx_udp of testbench is
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 30.1 ns;
+	rst <= '0', '1' after 190.1 ns;
 	phy_txclk <= not phy_txclk after 4 ns;
 
 	ml509_e : ml509
 	port map (
 		user_clk => clk,
 		gpio_sw_c => rst,
+		gpio_sw_e => '0',
 
 		phy_reset => phy_reset,
 		phy_col => phy_col,
