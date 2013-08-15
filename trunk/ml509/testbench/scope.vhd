@@ -200,7 +200,7 @@ begin
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd(0 to 4-1));
+		mii_txd  => mii_rxd);
 
 	mii_refclk <= not mii_refclk after 20 ns;
 	ml509_e : ml509

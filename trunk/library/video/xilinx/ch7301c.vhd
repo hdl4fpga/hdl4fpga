@@ -35,7 +35,7 @@ architecture def of vga2ch7301c_iob is
 	signal h : std_logic;
 	signal v : std_logic;
 begin
-	h <= not (vga_hsync and (vga_frm xor vga_vsync));
+	h <= not vga_hsync;
 
 	dvi_h_i : fdrse
 	port map (
