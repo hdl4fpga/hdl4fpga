@@ -29,7 +29,7 @@ architecture mix of video_timing_rom is
 		5 => (1680,  48,  32,  80),	 -- 1680x1050R@60Hz pclk 119.00MHz
 		6 => (1920,  48,  32,  80),	 -- 1920x1080R@60Hz pclk 138.50MHz
 --		7 => (1920,  92,  56, 132),  -- 1920x1080R@60Hz pclk 148.50MHz
-		7 => (1920,  92,  64, 124),  -- 1920x1080R@60Hz pclk 148.50MHz
+		7 => (1920,  76,  128, 76),  -- 1920x1080R@60Hz pclk 148.50MHz
 		8 => (1920, 128, 200, 328)); -- 1920x1080R@60Hz pclk 173.00MHz
 
 	constant v_tab : natural_matrix (0 to 8, 3 downto 0) := (
