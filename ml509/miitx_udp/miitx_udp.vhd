@@ -15,7 +15,7 @@ architecture miitx_udp of ml509 is
 	signal dcm_lckd : std_logic;
 	signal mii_req  : std_logic;
 
-	signal sys_addr : std_logic_vector(0 to 9-1);
+	signal sys_addr : std_logic_vector(0 to 8-1);
 	signal sys_data : std_logic_vector(0 to 32-1);
 	signal gtx_clk : std_logic;
 begin

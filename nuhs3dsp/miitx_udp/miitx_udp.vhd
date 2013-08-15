@@ -11,7 +11,7 @@ architecture miitx_udp of nuhs3dsp is
 	signal dcm_lck : std_logic;
 	signal mii_req : std_logic;
 
-	signal sys_addr : std_logic_vector(0 to 9-1);
+	signal sys_addr : std_logic_vector(0 to 8-1);
 	signal sys_data : std_logic_vector(0 to 32-1);
 begin
 
@@ -41,14 +41,15 @@ begin
 	end process;
 
 
-	bram_e : entity hdl4fpga.dpram
-	generic map (
-		data_size => sys_data'length,
-		address_size => sys_addr'length)
-	port map (
-		rd_clk => mii_txc,
-		rd_address => sys_addr,
-		rd_data => sys_data);
+--	bram_e : entity hdl4fpga.dpram
+--	generic map (
+--		data_size => sys_data'length,
+--		address_size => sys_addr'length)
+--	port map (
+--		rd_clk => mii_txc,
+--		rd_address => sys_addr,
+--		rd_data => sys_data);
+	sys_data <= (others => '0');
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (

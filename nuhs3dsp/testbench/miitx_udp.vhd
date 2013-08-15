@@ -1,3 +1,8 @@
+use std.textio.all;
+
+library ieee;
+use ieee.std_logic_textio.all;
+
 architecture miitx_udp of testbench is
 	component nuhs3dsp is
 		port (
@@ -127,7 +132,20 @@ begin
 		mii_crs  => mii_crs,
 		mii_col  => mii_col);
 
+	process (mii_txc)
+		variable msg : line;
+	begin
+		if rising_edge(mii_txc) then
+			if mii_txen='1' then
+				write (msg, mii_txd);
+				writeline (output, msg);
+			end if;
+		end if;
+	end process;
+
 end;
+
+library hdl4fpga;
 
 configuration nuhs3dsp_structure of testbench is
 	for miitx_udp 
@@ -136,6 +154,10 @@ configuration nuhs3dsp_structure of testbench is
 		end for;
 	end for;
 end;
+
+library hdl4fpga;
+
+library hdl4fpga;
 
 configuration nuhs3dsp_miitx_udp of testbench is
 	for miitx_udp 
