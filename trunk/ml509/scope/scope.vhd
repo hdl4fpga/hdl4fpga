@@ -32,16 +32,18 @@ architecture scope of ml509 is
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
 
+	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to nibble_size-1);
+	signal mii_rxd  : std_logic_vector(phy_rxd'range);
 	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(0 to nibble_size-1);
+	signal mii_txd  : std_logic_vector(phy_txd'range);
 
 	signal video_clk : std_logic;
 	signal video_clk90 : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
+	signal vga_frm : std_logic;
 	signal vga_red : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
@@ -75,21 +77,18 @@ begin
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
 		video_clk90 => video_clk90,
+		gtx_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
 	dvi_reset <= dcm_lckd;
 	phy_reset <= dcm_lckd;
-	phy_txer  <= '0';
-	phy_txd(4 to 7) <= (others => '0');
-	phy_txc_gtxclk <= '0';
-	phy_mdc <= '0';
-	phy_mdio <= '0';
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		device => "virtex5",
 		ddr_std => 2,
+		xd_len => 8,
 		tDDR => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
 		sys_rst => scope_rst,
@@ -116,13 +115,14 @@ begin
 		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => phy_txclk,
+		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
 		vga_clk   => video_clk,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
+		vga_frm   => vga_frm,
 		vga_blank => vga_blank,
 		vga_red   => vga_red,
 		vga_green => vga_green,
@@ -135,9 +135,10 @@ begin
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
 		vga_blank => vga_blank,
-		vga_red   => (others => '1'), --vga_red,
-		vga_green => (others => '1'), --vga_green,
-		vga_blue  => (others => '1'), --vga_blue,
+		vga_frm   => vga_frm,
+		vga_red   => vga_red,
+		vga_green => vga_green,
+		vga_blue  => vga_blue,
 
 		dvi_xclk_p => dvi_xclk_p,
 		dvi_xclk_n => dvi_xclk_n,
@@ -146,19 +147,48 @@ begin
 		dvi_de => dvi_de,
 		dvi_d => dvi_d);
 
+	phy_txer  <= '0';
+	phy_mdc <= '0';
+	phy_mdio <= '0';
+
+	process (phy_rxclk)
+		variable pp : std_logic;
+	begin
+		if rising_edge(phy_rxclk) then
+			if dcm_lckd='0' then
+				pp := '0';
+			elsif mii_rxdv='1' then
+				pp := '1';
+			end if;
+			gpio_led_e <= pp;
+		end if;
+	end process;
+
 	mii_iob_e : entity hdl4fpga.mii_iob
+	generic map (
+		xd_len => 8)
 	port map (
 		mii_rxc  => phy_rxclk,
 		iob_rxdv => phy_rxctl_rxdv,
-		iob_rxd  => phy_rxd(0 to nibble_size-1),
+		iob_rxd  => phy_rxd,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => phy_txclk,
+		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd(0 to nibble_size-1));
+		iob_txd  => phy_txd);
+
+	gtx_clk_i : oddr
+	port map (
+		r => '0',
+		s => '0',
+		c => gtx_clk,
+		ce => '1',
+		d1 => '0',
+		d2 => '1',
+		q => phy_txc_gtxclk);
 
 	-- Differential buffers --
 	--------------------------
@@ -210,7 +240,7 @@ begin
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
 	gpio_led_c <= dcm_lckd;
-	gpio_led_e <= '0';
+--	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';

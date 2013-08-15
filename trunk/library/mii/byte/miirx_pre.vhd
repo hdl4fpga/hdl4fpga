@@ -35,10 +35,10 @@ begin
 				prdy := '0';
 				txen <= '0';
 			elsif prdy='0' then
-				if reverse(mii_rxd)=x"5" then
+				if reverse(mii_rxd)=x"55" then
 					prdy := '0';
 					txen <= '0';
-				elsif reverse(mii_rxd)=x"d" then
+				elsif reverse(mii_rxd)=x"d5" then
 					prdy := '1';
 					txen <= '1';
 				else
