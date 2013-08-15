@@ -19,7 +19,7 @@ add wave -noupdate -radix hexadecimal /testbench/phy_txd
 add wave -noupdate /testbench/phy_txer
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/miitx_udp_e/sys_addr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {4000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8833100 ps} 0} {{Cursor 2} {209100 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -35,4 +35,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {73957 ps}
+WaveRestoreZoom {8685443 ps} {8980757 ps}
