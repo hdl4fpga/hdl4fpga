@@ -467,7 +467,11 @@ package body std is
 	begin
 		if ena='1' then
 			if load='1' then
-				return std_logic_vector(to_signed(data,cntr'length));
+				if data < 0 then
+					return std_logic_vector(to_signed(data,cntr'length));
+				else
+					return std_logic_vector(ieee.numeric_std.to_unsigned(data,cntr'length));
+				end if;
 			else
 				return std_logic_vector(unsigned(cntr)-1);
 			end if;
