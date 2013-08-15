@@ -11,7 +11,7 @@ entity mii_iob is
 	port (
 		mii_rxc  : in  std_logic := '-';
 		mii_rxdv : out std_logic;
-		mii_rxd  : out std_logic_vector(0 to xd_len-11);
+		mii_rxd  : out std_logic_vector(0 to xd_len-1);
 
 		iob_rxdv : in  std_logic := '-';
 		iob_rxd  : in  std_logic_vector(0 to xd_len-1) := (others => '-');

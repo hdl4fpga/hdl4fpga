@@ -7,9 +7,10 @@ use unisim.vcomponents.ALL;
 
 entity dfs is
 	generic (
-		dcm_per : real := 20.0;
-		dfs_div : natural := 3;
-		dfs_mul : natural := 10);
+		dfs_mode : string := "HIGH";
+		dcm_per  : real := 20.0;
+		dfs_div  : natural := 3;
+		dfs_mul  : natural := 10);
 	port (
         dcm_rst : in  std_logic; 
 		dcm_clk : in  std_logic; 
@@ -42,7 +43,7 @@ begin
 		clkin_divide_by_2 => FALSE,
 		clkout_phase_shift => "NONE",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "HIGH",
+		dfs_frequency_mode => dfs_mode,
 		dll_frequency_mode => "LOW",
 		duty_cycle_correction => TRUE,
 		factory_jf   => X"C080",

@@ -14,6 +14,7 @@ entity scope is
 		nibble_size : natural := 4;
 		byte_size : natural := 8;
 		data_size : natural := 16;
+		xd_len : natural;
 
 		tDDR : real);
 	port (
@@ -41,15 +42,16 @@ entity scope is
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
-		mii_rxd  : in std_logic_vector(0 to nibble_size-1);
+		mii_rxd  : in std_logic_vector(0 to xd_len-1);
 		mii_txc  : in std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to nibble_size-1);
+		mii_txd  : out std_logic_vector(0 to xd_len-1);
 
 		vga_clk   : in  std_logic;
 		vga_hsync : out std_logic;
 		vga_vsync : out std_logic;
 		vga_blank : out std_logic;
+		vga_frm   : out std_logic;
 		vga_red   : out std_logic_vector(8-1 downto 0);
 		vga_green : out std_logic_vector(8-1 downto 0);
 		vga_blue  : out std_logic_vector(8-1 downto 0));
@@ -193,6 +195,7 @@ begin
 		vsync => video_vsync,
 		frm   => video_frm,
 		don   => video_don);
+	vga_frm <= video_frm;
 	video_blank <= video_don and video_frm;
 		
 	win_stym_e : entity hdl4fpga.win_sytm
