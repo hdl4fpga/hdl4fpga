@@ -95,6 +95,7 @@ begin
 
 		input_clk => input_clk,
 
+		ddr_st_lp_dqs => '0',
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
@@ -109,8 +110,7 @@ begin
 		ddr_dqs => ddr2_dqs_p(1 downto 0),
 		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
-		ddr_lp_dqs => open, --gpio_led_e, --ddr_lp_dqs,
-		ddr_st_lp_dqs => '-',-- gpio_sw_e, --ddr_st_lp_dqs,
+		ddr_odt => ddr2_odt(0),
 
 		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
@@ -151,19 +151,6 @@ begin
 	phy_mdc <= '0';
 	phy_mdio <= '0';
 
-	process (phy_rxclk)
-		variable pp : std_logic;
-	begin
-		if rising_edge(phy_rxclk) then
-			if dcm_lckd='0' then
-				pp := '0';
-			elsif mii_rxdv='1' then
-				pp := '1';
-			end if;
-			gpio_led_e <= pp;
-		end if;
-	end process;
-
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
@@ -178,17 +165,8 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd);
-
-	gtx_clk_i : oddr
-	port map (
-		r => '0',
-		s => '0',
-		c => gtx_clk,
-		ce => '1',
-		d1 => '0',
-		d2 => '1',
-		q => phy_txc_gtxclk);
+		iob_txd  => phy_txd,
+		iob_gtxclk => phy_txc_gtxclk);
 
 	-- Differential buffers --
 	--------------------------
@@ -240,18 +218,19 @@ begin
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
 	gpio_led_c <= dcm_lckd;
---	gpio_led_e <= '0';
+	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
-	ddr2_cs(1) <= '1';
-	ddr2_ba(2) <= '0';
-   	ddr2_a(13) <= '0';
-  	ddr2_cke(1) <= '0';
-   	ddr2_odt(1 downto 0) <= (others => 'Z');
-	ddr2_dm(7 downto 0) <= (others => 'Z');
+
+	ddr2_cs(1 downto 1)  <= "1";
+	ddr2_ba(2 downto 2)  <= "0";
+   	ddr2_a(13 downto 13) <= "0";
+  	ddr2_cke(1 downto 1) <= "0";
+   	ddr2_odt(1 downto 1) <= (others => 'Z');
+	ddr2_dm(7 downto 2)  <= (others => 'Z');
 	ddr2_d(63 downto 16) <= (others => '0');
 
 

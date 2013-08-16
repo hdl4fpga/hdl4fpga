@@ -37,6 +37,7 @@ entity scope is
 		ddr_dqs : inout std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqs_n : inout std_logic_vector(data_size/byte_size-1 downto 0) := (others => 'Z');
 		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);
+		ddr_odt : out std_logic;
 		ddr_lp_dqs : out std_logic;
 		ddr_st_lp_dqs : in std_logic;
 
@@ -490,6 +491,7 @@ begin
 		ddr_dm  => ddr_dm,
 		ddr_dqs => ddr_dqs,
 		ddr_dqs_n => ddr_dqs_n,
-		ddr_dq  => ddr_dq);
+		ddr_dq  => ddr_dq,
+		ddr_odt => ddr_odt);
 	sys_ini <= ddrs_ini;
 end;

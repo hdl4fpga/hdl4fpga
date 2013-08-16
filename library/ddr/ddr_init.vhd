@@ -12,6 +12,8 @@ entity ddr_init is
 	    tmod : natural := 13;
 		ba   : natural := 2);
 	port (
+		ddr_init_ods : in  std_logic := '1';
+		ddr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
 		ddr_init_bl  : in  std_logic_vector(0 to 2);
 		ddr_init_cl  : in  std_logic_vector(0 to 2);
 		ddr_init_wr  : in  std_logic_vector(0 to 2) := (others => '0');
@@ -83,7 +85,7 @@ begin
 					ddr_init_a <= (others => '0');
 					case ddr_init_pc is
 					when s_lmr1 =>
-						ddr_init_a <= (others => '0');
+						ddr_init_a(1 downto 0) <= ddr_init_ods & '0';
 					when s_lmr2 =>
 						ddr_init_a(9-1 downto 0) <= "10" & ddr_init_cl & "0" & ddr_init_bl;
 					when s_lmr3 =>
@@ -238,8 +240,9 @@ begin
 						ddr_init_a(mr_pd) <= '0'; 
 					when lb_docd =>
 						ddr_init_a(emr_dll) <= '0';
-						ddr_init_a(emr_rt0) <= '0';
-						ddr_init_a(emr_rt1) <= '0';
+						ddr_init_a(emr_ods) <= ddr_init_ods;
+						ddr_init_a(emr_rt0) <= ddr_init_rtt(0);
+						ddr_init_a(emr_rt1) <= ddr_init_rtt(1);
 						ddr_init_a(emr_ocd) <= (others => '1');
 						ddr_init_a(emr_pl)  <= ddr_init_pl;
 						ddr_init_a(emr_dqs) <= ddr_init_dqsn;
@@ -247,8 +250,9 @@ begin
 						ddr_init_a(emr_out) <= '0';
 					when lb_xocd =>
 						ddr_init_a(emr_dll) <= '0';
-						ddr_init_a(emr_rt0) <= '0';
-						ddr_init_a(emr_rt1) <= '0';
+						ddr_init_a(emr_ods) <= ddr_init_ods;
+						ddr_init_a(emr_rt0) <= ddr_init_rtt(0);
+						ddr_init_a(emr_rt1) <= ddr_init_rtt(1);
 						ddr_init_a(emr_ocd) <= (others => '0');
 						ddr_init_a(emr_pl)  <= ddr_init_pl;
 						ddr_init_a(emr_dqs) <= ddr_init_dqsn;
