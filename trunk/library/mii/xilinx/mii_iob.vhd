@@ -20,6 +20,7 @@ entity mii_iob is
 		mii_txen : in std_logic;
 		mii_txd  : in std_logic_vector(0 to xd_len-1);
 
+		iob_gtxclk : out std_logic;
 		iob_txen : out std_logic;
 		iob_txd  : out std_logic_vector(0 to xd_len-1));
 end;
@@ -77,5 +78,15 @@ begin
 			d  => mii_txd(i),
 			q  => iob_txd(i));
 	end generate;
+
+	gtx_clk_i : oddr
+	port map (
+		r => '0',
+		s => '0',
+		c => mii_txc,
+		ce => '1',
+		d1 => '0',
+		d2 => '1',
+		q => iob_gtxclk);
 
 end;

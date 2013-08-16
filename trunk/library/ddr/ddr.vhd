@@ -59,7 +59,8 @@ entity ddr is
 		ddr_dm  : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs_n : inout std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
-		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0));
+		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_odt : out std_logic);
 
 	constant t200u : real := 200.0e3;
 	constant t500u : real := 500.0e3;
@@ -607,5 +608,5 @@ begin
 			d2 => ddr_acc_drf,
 			q  => ddr_lp_dqs);
 	end generate;
-    
+    ddr_odt <= '0';
 end;
