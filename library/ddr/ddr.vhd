@@ -129,7 +129,6 @@ architecture mix of ddr is
 	alias  clk90  is sys_clk90;
 	signal clk180 : std_logic;
 	signal clk270 : std_logic;
-	signal sys_dm1 : std_logic_vector(sys_dm'range);
 
 	function casdb (
 		constant cl  : real;

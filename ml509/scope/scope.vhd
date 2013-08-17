@@ -86,6 +86,7 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		strobe => "INTERNAL",
 		device => "virtex5",
 		ddr_std => 2,
 		xd_len => 8,
