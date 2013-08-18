@@ -154,6 +154,7 @@ begin
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
+		device => "virtex5",
 		xd_len => 8)
 	port map (
 		mii_rxc  => phy_rxclk,
