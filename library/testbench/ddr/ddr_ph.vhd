@@ -19,14 +19,9 @@ begin
 	ddr_clk90 <= transport not ddr_clk after 7.5 ns;
 
 	ddr_sel <= (others => '1'), (others => '0') after 1 us;
-	process (ddr_clk)
-	begin
-		if rising_edge(ddr_clk) then
-			q <= not q after 1 ps;
-		end if;
-	end process;
+	q <= '0', '1' after 5.06 ns , '0' after 35.06  ns, '1' after 105.6 ns;
 
-	du : entity hdl4fpga.ddr_ph(arch2)
+	du : entity hdl4fpga.ddr_ph(slr)
 	generic map (
 		n => n)
 	port map (
