@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity mii_iob is
 	generic (
+		device : string := "SPARTAN3";
 		xd_len : natural);
 	port (
 		mii_rxc  : in  std_logic := '-';
@@ -79,14 +80,15 @@ begin
 			q  => iob_txd(i));
 	end generate;
 
-	gtx_clk_i : oddr
-	port map (
-		r => '0',
-		s => '0',
-		c => mii_txc,
-		ce => '1',
-		d1 => '0',
-		d2 => '1',
-		q => iob_gtxclk);
-
+	virtex5_g : if device="virtex5" generate
+		gtx_clk_i : oddr
+		port map (
+			r => '0',
+			s => '0',
+			c => mii_txc,
+			ce => '1',
+			d1 => '0',
+			d2 => '1',
+			q => iob_gtxclk);
+	end generate;
 end;

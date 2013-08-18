@@ -125,8 +125,8 @@ architecture mix of ddr is
 
 	signal rst : std_logic;
 
-	alias  clk0   is sys_clk0;
-	alias  clk90  is sys_clk90;
+	signal clk0 : std_logic;
+	signal clk90 : std_logic;
 	signal clk180 : std_logic;
 	signal clk270 : std_logic;
 
@@ -288,6 +288,8 @@ architecture mix of ddr is
 
 begin
 
+	clk0 <= sys_clk0;
+	clk90 <= sys_clk90;
 	clk180 <= not sys_clk0;
 	clk270 <= not sys_clk90;
 

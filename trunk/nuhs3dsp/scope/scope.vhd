@@ -75,8 +75,10 @@ begin
 	scope_rst <= not dcm_lckd;
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		xd_len => 4,
 		tDDR => (real(ddr_div)*sys_per)/real(ddr_mul),
 		device => "spartan3",
+		strobe => "EXTERNAL",
 		ddr_std => 1)
 	port map (
 		sys_rst => scope_rst,
@@ -136,6 +138,8 @@ begin
 		dac_blue  => blue);
 
 	mii_iob_e : entity hdl4fpga.mii_iob
+	generic map (
+		xd_len => 4)
 	port map (
 		mii_rxc  => mii_rxc,
 		iob_rxdv => mii_rxdv,

@@ -73,12 +73,12 @@ begin
 		end generate;
 
 		ddr_data_g: for i in 0 to 1 generate
-			signal ddr_addr_q : addrword_vector(0 to 1);
+			signal ddr_addr_q : addr_word;
 		begin
 			ddr_word_g : block
 				signal ddr_addr_d : addr_word;
 			begin
-				ddr_addr_d <= inc(gray(ddr_addr_q(i)));
+				ddr_addr_d <= inc(gray(ddr_addr_q));
 				cntr_g: for j in addr_word'range generate
 
 					ffd_i : fdcpe
@@ -88,7 +88,7 @@ begin
 						c  => ddr_clks(i),
 						ce => ddr_ena(i),
 						d  => ddr_addr_d(j),
-						q  => ddr_addr_q(i)(j));
+						q  => ddr_addr_q(j));
 				end generate;
 			end block;
 
@@ -105,10 +105,10 @@ begin
 					a2 => sys_addr_q(2),
 					a3 => sys_addr_q(3),
 					d  => sys_dm(data_bytes*i+l),
-					dpra0 => ddr_addr_q(i)(0),
-					dpra1 => ddr_addr_q(i)(1),
-					dpra2 => ddr_addr_q(i)(2),
-					dpra3 => ddr_addr_q(i)(3),
+					dpra0 => ddr_addr_q(0),
+					dpra1 => ddr_addr_q(1),
+					dpra2 => ddr_addr_q(2),
+					dpra3 => ddr_addr_q(3),
 					dpo => dmo,
 					spo => open);
 
@@ -138,10 +138,10 @@ begin
 					a2 => sys_addr_q(2),
 					a3 => sys_addr_q(3),
 					d  => sys_di(data_bits*i+byte_bits*l+j),
-					dpra0 => ddr_addr_q(i)(0),
-					dpra1 => ddr_addr_q(i)(1),
-					dpra2 => ddr_addr_q(i)(2),
-					dpra3 => ddr_addr_q(i)(3),
+					dpra0 => ddr_addr_q(0),
+					dpra1 => ddr_addr_q(1),
+					dpra2 => ddr_addr_q(2),
+					dpra3 => ddr_addr_q(3),
 					dpo => dpo,
 					spo => open);
 

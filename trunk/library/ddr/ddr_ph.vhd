@@ -125,14 +125,14 @@ begin
 	port map (
 		s  => '0',
 		r  => '0',
-		c  => clk(1),
+		c  => clk(3),
 		ce => '1',
-		d  => q3(1),
+		d  => q3(0),
 		q  => delay5);
 
-	process (clk(0))
+	process (ddr_ph_clk)
 	begin
-		if rising_edge(clk(0)) then
+		if rising_edge(ddr_ph_clk) then
 			q0 <= ddr_ph_din(0) & q0(1 to q0'right-1);
 		end if;
 	end process;
