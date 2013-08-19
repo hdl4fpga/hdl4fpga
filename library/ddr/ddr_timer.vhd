@@ -25,6 +25,9 @@ entity ddr_timer is
 		dll_timer_rdy : out std_logic;
 		ref_timer_req : in  std_logic;
 		ref_timer_rdy : out std_logic);
+
+	attribute fsm_encoding : string;
+	attribute fsm_encoding of ddr_timer : entity is "compact";
 end;
 
 architecture def of ddr_timer is
@@ -124,18 +127,18 @@ begin
 		end if;
 	end process;
 
-	process (ddr_timer_clk)
+	process (ddr_timer_clk, ddr_timer_rst)
 		variable next_tid  : timer_ids;
 		variable o_tid  : timer_ids;
 	begin
-		if rising_edge(ddr_timer_clk) then
-			if ddr_timer_rst='1' then
-				timer_id <= tid_200u;
-				z <= (others => '0');
-				next_tid  := timer_tab(std)(timer_id).q;
-				timer_req <= '0';
-				timer_sel <= timer_tab(std)(timer_id).s;
-			elsif timer_rdy='1' then
+		if ddr_timer_rst='1' then
+			timer_id <= tid_200u;
+			z <= (others => '0');
+			next_tid  := timer_tab(std)(timer_id).q;
+			timer_req <= '0';
+			timer_sel <= timer_tab(std)(timer_id).s;
+		elsif rising_edge(ddr_timer_clk) then
+			if timer_rdy='1' then
 				timer_req <= '0';
 				if next_tid=tid_dll then
 					if dll_timer_req='0' then

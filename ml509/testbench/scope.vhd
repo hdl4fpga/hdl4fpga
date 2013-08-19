@@ -173,7 +173,7 @@ architecture scope of testbench is
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 30.1 ns;
+	rst <= '1', '0' after 1.1 us;
 
 	mii_strt <= '0', '1' after 240 us;
 	process (mii_refclk, mii_strt)
