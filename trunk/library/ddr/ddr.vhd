@@ -62,9 +62,11 @@ entity ddr is
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic);
 
-	constant t200u : real := 200.0e3;
+--	constant t200u : real := 200.0e3;
+	constant t200u : real := 2000.0;
 	constant t500u : real := 500.0e3;
-	constant t400n : real := 400.0;
+--	constant t400n : real := 400.0;
+	constant t400n : real := 200.0;
 	constant txpr  : real := 120.0;
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
@@ -293,9 +295,11 @@ begin
 	clk180 <= not sys_clk0;
 	clk270 <= not sys_clk90;
 
-	process (clk0)
+	process (clk0, sys_rst)
 	begin
-		if rising_edge(clk0) then
+		if sys_rst='1' then
+			rst <= '1';
+		elsif rising_edge(clk0) then
 			rst <= sys_rst;
 		end if;
 	end process;
@@ -307,6 +311,7 @@ begin
 		addr_bits => addr_bits)
 	port map (
 		sys_clk => clk0,
+		sys_rst => rst,
 		sys_ini => dll_timer_rdy,
 		sys_cke => ddr_init_cke,
 		sys_ras => ddr_acc_ras,
