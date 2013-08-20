@@ -114,15 +114,22 @@ begin
 	trdy <= timer(0);
 
 	process (ddr_timer_clk)
-		variable q : std_logic;
+		variable q : std_logic_vector(0 to 3-1);
 	begin
 		if rising_edge(ddr_timer_clk) then
 			if ddr_timer_rst='1' then
 				timer_rdy <= '0';
-				q := '0';
+				q := (others => '0');
 			else
-				timer_rdy <= q;
-				q := trdy;
+				case q is
+				when "000"|"100" =>
+					timer_rdy <= '0';	
+				when "011"|"111" =>
+					timer_rdy <= '1';	
+				when others =>
+				end case;
+
+				q := q(1 to q'right) & trdy;
 			end if;
 		end if;
 	end process;
