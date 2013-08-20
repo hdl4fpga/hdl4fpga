@@ -531,6 +531,7 @@ begin
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
+		debug_delay => 7 ns,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -543,6 +544,7 @@ begin
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
+		debug_delay => 7 ns+1.75 ns,
 		std => std,
 		data_bytes => 2)
 	port map (
@@ -557,6 +559,7 @@ begin
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
+		debug_delay => 7 ns,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,

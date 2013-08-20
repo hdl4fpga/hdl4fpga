@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dq is
 	generic (
+		debug_delay : time := 0 ns;
 		data_bytes : natural;
 		byte_bits  : natural);
 	port (
@@ -25,7 +26,7 @@ begin
 		bits_g : for j in 0 to byte_bits-1 generate
 			signal dqo : std_logic;
 			signal dqz : std_logic;
-			signal di : std_logic;
+			signal di  : std_logic;
 		begin
 
 			oddr_du : fddrrse
@@ -53,6 +54,7 @@ begin
 			port map (
 				i => ddr_io_dq(i*byte_bits+j),
 				o => di);
+
 			ddr_io_dqi(i*byte_bits+j) <= di;
 		end generate;
 	end generate;

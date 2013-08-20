@@ -5,7 +5,7 @@ use ieee.math_real.all;
 
 entity ddr_rd_fifo is
 	generic (
-		dqs_delay : time := 0 ns;
+--		dqs_delay : time := 0 ns;
 		data_bytes : natural := 2;
 		byte_bits  : natural := 8);
 	port (
@@ -55,7 +55,7 @@ begin
 
 	fifo_bytes_g : for k in ddr_dqs'range generate
 		signal ddr_delayed_dqs : std_logic_vector(0 to 1);
-		signal ddr_dlyd_dqs : std_logic_vector(0 to 1);
+--		signal ddr_dlyd_dqs : std_logic_vector(0 to 1);
 
 		signal addr_o_d : addr_word;
 		signal addr_o_q : addr_word;
@@ -63,7 +63,7 @@ begin
 		signal addr_i_set : std_logic;
 		signal ddr_win_dqsi : std_logic;
 	begin
-		ddr_win_dqsi <= transport ddr_win_dqs(k) after dqs_delay+1 ps;
+		ddr_win_dqsi <= ddr_win_dqs(k);
 
 		process (sys_clk)
 		begin 
@@ -83,8 +83,8 @@ begin
 			x_p => ddr_delayed_dqs(0),
 			x_n => ddr_delayed_dqs(1));
 
-		ddr_dlyd_dqs(0) <= transport ddr_delayed_dqs(0) after dqs_delay+1 ps;
-		ddr_dlyd_dqs(1) <= transport ddr_delayed_dqs(1) after dqs_delay+1 ps;
+--		ddr_dlyd_dqs(0) <= transport ddr_delayed_dqs(0) after dqs_delay+1 ps;
+--		ddr_dlyd_dqs(1) <= transport ddr_delayed_dqs(1) after dqs_delay+1 ps;
 
 		addr_o_d <= inc(gray(addr_o_q));
 		o_cntr_g: for j in addr_word'range generate
@@ -105,7 +105,8 @@ begin
 				q  => addr_o_q(j));
 		end generate;
 
-		ddr_fifo: for l in ddr_dlyd_dqs'range generate
+--		ddr_fifo: for l in ddr_dlyd_dqs'range generate
+		ddr_fifo: for l in ddr_delayed_dqs'range generate
 			signal addr_i_d : addr_word;
 			signal addr_i_q : addr_word;
 		begin
@@ -120,7 +121,8 @@ begin
 				port map (
 					pre => addr_i_pre,
 					clr => addr_i_clr,
-					c   => ddr_dlyd_dqs(l),
+--					c   => ddr_dlyd_dqs(l),
+					c   => ddr_delayed_dqs(l),
 					ce  => ddr_win_dqsi,
 					d   => addr_i_d(j),
 					q   => addr_i_q(j));
@@ -130,7 +132,8 @@ begin
 			begin
 				ram16x1d_i : ram16x1d
 				port map (
-					wclk => ddr_dlyd_dqs(l),
+--					wclk => ddr_dlyd_dqs(l),
+					wclk => ddr_delayed_dqs(l),
 					we => ddr_win_dqsi,
 					a0 => addr_i_q(0),
 					a1 => addr_i_q(1),
