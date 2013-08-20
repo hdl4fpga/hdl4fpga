@@ -3,8 +3,12 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/ml509_e/NlwBufferSignal_scope_e_ddr_e_ddr2_init_g_ddr_init_du_ddr_init_cas_CLK
 add wave -noupdate /testbench/ml509_e/scope_e_ddr_e_dll_timer_rdy
-add wave -noupdate /testbench/ml509_e/NlwBufferSignal_scope_e_ddr_e_ddr2_init_g_ddr_init_du_ddr_init_cas_IN
 add wave -noupdate /testbench/ml509_e/scope_e_ddr_e_ddr_init_cas
+add wave -noupdate /testbench/ml509_e/NlwBufferSignal_scope_e_ddr_e_ddr2_init_g_ddr_init_du_ddr_init_cas_CLK
+add wave -noupdate /testbench/ml509_e/scope_e_ddr_e_ddr_timer_e_timer_rdy_9358
+add wave -noupdate /testbench/ml509_e/scope_e_ddr_e_ddr_timer_e_timer_req_10712
+add wave -noupdate /testbench/ml509_e/Q_5508_2565_0
+add wave -noupdate /testbench/ml509_e/Q_5536_2589
 add wave -noupdate /testbench/ml509_e/NlwBufferSignal_scope_e_ddr_e_ddr2_init_g_ddr_init_du_ddr_init_cas_CLK
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {3991262 ps} 0}
@@ -23,4 +27,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {3986621 ps} {4011231 ps}
+WaveRestoreZoom {3928430 ps} {4096958 ps}
