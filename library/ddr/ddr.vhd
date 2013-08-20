@@ -129,8 +129,6 @@ architecture mix of ddr is
 
 	signal clk0 : std_logic;
 	signal clk90 : std_logic;
-	signal clk180 : std_logic;
-	signal clk270 : std_logic;
 
 	function casdb (
 		constant cl  : real;
@@ -292,8 +290,6 @@ begin
 
 	clk0 <= sys_clk0;
 	clk90 <= sys_clk90;
-	clk180 <= not sys_clk0;
-	clk270 <= not sys_clk90;
 
 	process (clk0, sys_rst)
 	begin
@@ -496,6 +492,7 @@ begin
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
+		data_delay => 2,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -531,7 +528,7 @@ begin
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
-		debug_delay => 7 ns,
+		debug_delay => 9 ns,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -544,7 +541,7 @@ begin
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
-		debug_delay => 7 ns+1.75 ns,
+		debug_delay => 9 ns,
 		std => std,
 		data_bytes => 2)
 	port map (
@@ -559,7 +556,7 @@ begin
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
-		debug_delay => 7 ns,
+		debug_delay => 9 ns,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,
@@ -579,12 +576,12 @@ begin
 		signal fclk : std_logic;
 	begin
 		rclk <= 
-			clk180 when std=1 and cas(0)='1' else
-			clk0;
+			not sys_clk0 when std=1 and cas(0)='1' else
+			sys_clk0;
 			
 		fclk <= 
-			clk0   when std=1 and cas(0)='1' else
-			clk180;
+			sys_clk0   when std=1 and cas(0)='1' else
+			not sys_clk0;
 
 		oddr_du : oddr2
 		port map (
@@ -604,7 +601,7 @@ begin
 		signal clk : std_logic;
 	begin
 		clk <= 
-			clk180 when std=1 and cas(0)='1' else
+			not sys_clk0 when std=1 and cas(0)='1' else
 			clk0;
 			
 		oddr_du : oddr
