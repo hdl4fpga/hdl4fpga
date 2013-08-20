@@ -6,6 +6,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dqs is
 	generic (
+		debug_delay : time := 0 ns;
 		std : positive range 1 to 3 := 3;
 		data_bytes : natural);
 	port (
@@ -32,6 +33,7 @@ begin
 		signal d1  : std_logic;
 		signal d2  : std_logic;
 		signal x : std_logic;
+		signal y : std_logic;
 	begin
 
 		with std select
@@ -73,13 +75,17 @@ begin
 			iob => ddr_io_dqs_n(i),
 --			o => ddr_io_dso(i));
 			o => x);
-			idelay_i : idelay 
-			port map (
-				rst => '0',
-				c  =>'0',
-				ce => '0',
-				inc => '0',
-				i => x,
-				o => ddr_io_dso(i));
+
+		idelay_i : idelay 
+		port map (
+			rst => '0',
+			c  =>'0',
+			ce => '0',
+			inc => '0',
+			i => x,
+--			o => ddr_io_dso(i));
+			o => y);
+
+		ddr_io_dso(i) <= transport y after debug_delay;
 	end generate;
 end;

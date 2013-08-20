@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dm is
 	generic (
+		debug_delay : time := 0 ns;
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
@@ -29,8 +30,9 @@ begin
 
 	bytes_g : for i in ddr_io_dm'range generate
 		signal dqo : std_logic;
-		signal di : std_logic;
-		signal d : std_logic_vector(ddr_clk'range);
+		signal di  : std_logic;
+		signal d   : std_logic_vector(ddr_clk'range);
+		signal dmi : std_logic;
 		signal ddr_dmx : std_logic_vector(ddr_clk'range);
 		signal ddr_dm  : std_logic_vector(ddr_clk'range);
 	begin
@@ -80,11 +82,12 @@ begin
 		idelay_i : idelay 
 		port map (
 			rst => '0',
-			c   =>'0',
+			c   => '0',
 			ce  => '0',
 			inc => '0',
 			i => di,
-			o => ddr_io_dmi(i));
+			o => dmi);
 
+		ddr_io_dmi(i) <= transport dmi after debug_delay;
 	end generate;
 end;
