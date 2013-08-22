@@ -26,8 +26,8 @@ entity ddr_timer is
 		ref_timer_req : in  std_logic;
 		ref_timer_rdy : out std_logic);
 
-	attribute fsm_encoding : string;
-	attribute fsm_encoding of ddr_timer : entity is "compact";
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of ddr_timer : entity is "compact";
 end;
 
 architecture def of ddr_timer is
@@ -114,22 +114,22 @@ begin
 	trdy <= timer(0);
 
 	process (ddr_timer_clk)
-		variable q : std_logic_vector(0 to 3-1);
+		variable q : std_logic_vector(0 to 3);
 	begin
 		if rising_edge(ddr_timer_clk) then
 			if ddr_timer_rst='1' then
 				timer_rdy <= '0';
 				q := (others => '0');
 			else
-				case q is
+				timer_rdy <= q(0);	
+				case q(1 to q'right) is
 				when "000"|"100" =>
-					timer_rdy <= '0';	
+					q(0) := '0';	
 				when "011"|"111" =>
-					timer_rdy <= '1';	
+					q(0) := '1';	
 				when others =>
 				end case;
-
-				q := q(1 to q'right) & trdy;
+				q(1 to q'right) := q(2 to q'right) & trdy;
 			end if;
 		end if;
 	end process;

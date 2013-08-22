@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dqs is
 	generic (
+		debug_delay : time;
 		std : positive range 1 to 3 := 3;
 		data_bytes : natural);
 	port (
@@ -26,6 +27,7 @@ begin
 	fclk <= not ddr_io_clk;
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
+		signal dso : std_logic;
 		signal dqs : std_logic;
 		signal dqz : std_logic;
 		signal d0  : std_logic;
@@ -65,7 +67,8 @@ begin
 		ibuf_i : ibuf 
 		port map (
 			i => ddr_io_dqs(i),
-			o => ddr_io_dso(i));
+			o => dso);
+		ddr_io_dso(i) <= transport dso after debug_delay;
 
 		ddr_io_dqs(i) <= 'Z' when dqz='1' else dqs;
 	end generate;

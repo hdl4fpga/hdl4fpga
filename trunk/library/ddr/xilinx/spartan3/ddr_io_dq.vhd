@@ -55,7 +55,7 @@ begin
 				i => ddr_io_dq(i*byte_bits+j),
 				o => di);
 
-			ddr_io_dqi(i*byte_bits+j) <= di;
+			ddr_io_dqi(i*byte_bits+j) <= transport di after debug_delay;
 		end generate;
 	end generate;
 end;
