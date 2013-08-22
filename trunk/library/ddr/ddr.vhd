@@ -62,11 +62,11 @@ entity ddr is
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic);
 
---	constant t200u : real := 200.0e3;
-	constant t200u : real := 2000.0;
+	constant debug_delay : time := 7.7 ns;
+	constant t200u : real := 200.0e3;
+--	constant t200u : real := 2000.0;
 	constant t500u : real := 500.0e3;
---	constant t400n : real := 400.0;
-	constant t400n : real := 200.0;
+	constant t400n : real := 400.0;
 	constant txpr  : real := 120.0;
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
@@ -288,7 +288,7 @@ architecture mix of ddr is
 
 begin
 
-	clk0 <= sys_clk0;
+	clk0  <= sys_clk0;
 	clk90 <= sys_clk90;
 
 	process (clk0, sys_rst)
@@ -300,7 +300,7 @@ begin
 		end if;
 	end process;
 
-	ddr_cs  <= '0';
+	ddr_cs <= '0';
 	ddr_io_ba_e : entity hdl4fpga.ddr_io_ba
 	generic map (
 		bank_bits => bank_bits,
@@ -320,7 +320,7 @@ begin
 		sys_ini_we  => ddr_init_we,
 		sys_ini_a   => ddr_init_a,
 		sys_ini_b   => ddr_init_b,
-	
+
 		ddr_ras => ddr_ras,
 		ddr_cas => ddr_cas,
 		ddr_cke => ddr_cke,
@@ -492,7 +492,7 @@ begin
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
-		data_delay => 2,
+		data_delay => 1,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -528,7 +528,7 @@ begin
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
-		debug_delay => 9 ns,
+		debug_delay => debug_delay,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -541,7 +541,7 @@ begin
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
-		debug_delay => 9 ns,
+		debug_delay => debug_delay,
 		std => std,
 		data_bytes => 2)
 	port map (
@@ -556,7 +556,7 @@ begin
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
-		debug_delay => 9 ns,
+		debug_delay => debug_delay,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,

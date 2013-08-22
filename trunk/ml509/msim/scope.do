@@ -91,11 +91,11 @@ add wave -noupdate -group debug -radix hexadecimal /testbench/ml509_e/scope_e/dd
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_ras
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_cas
 add wave -noupdate -group debug /testbench/ml509_e/scope_e/ddr_we
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/input_clk
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/ddrs_clk0
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/ddrs_clk90
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/video_clk
-add wave -noupdate -expand -group sys_clock /testbench/ml509_e/user_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/input_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/ddrs_clk0
+add wave -noupdate -group sys_clock /testbench/ml509_e/ddrs_clk90
+add wave -noupdate -group sys_clock /testbench/ml509_e/video_clk
+add wave -noupdate -group sys_clock /testbench/ml509_e/user_clk
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr2_init_g/ddr_init_du/ddr_init_req
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate /testbench/ml509_e/dvi_xclk_p
@@ -188,43 +188,43 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_wr_dm_f
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_wr_dm_r
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_wr_dq_f
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_wr_dq_r
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cs
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cke
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_clk_p
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_clk_n
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_ras
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cas
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_we
-add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_a(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_a(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_a
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/scope_e/ddr_ba
-add wave -noupdate -expand -group to_ddr -expand /testbench/ml509_e/scope_e/ddr_dm
-add wave -noupdate -expand -group to_ddr -expand /testbench/ml509_e/ddr2_dqs_p
-add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_dq(15) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(14) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(13) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_dq(15) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(14) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(13) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_dq
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cs
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cke
-add wave -noupdate -expand -group to_ddr -expand /testbench/ml509_e/ddr2_clk_p
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_clk_n
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_ras
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_cas
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/ddr2_we
-add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_a(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_a(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_a
-add wave -noupdate -expand -group to_ddr /testbench/ml509_e/scope_e/ddr_ba
-add wave -noupdate -expand -group to_ddr -expand /testbench/ml509_e/scope_e/ddr_dm
-add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_dq(15) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(14) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(13) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_dq(15) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(14) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(13) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_dq
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cs
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cke
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_clk_p
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_clk_n
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_ras
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cas
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_we
+add wave -noupdate -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_a(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_a(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_a
+add wave -noupdate -group to_ddr /testbench/ml509_e/scope_e/ddr_ba
+add wave -noupdate -group to_ddr -expand /testbench/ml509_e/scope_e/ddr_dm
+add wave -noupdate -group to_ddr -expand /testbench/ml509_e/ddr2_dqs_p
+add wave -noupdate -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_dq(15) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(14) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(13) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_dq(15) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(14) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(13) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_dq
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cs
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cke
+add wave -noupdate -group to_ddr -expand /testbench/ml509_e/ddr2_clk_p
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_clk_n
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_ras
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_cas
+add wave -noupdate -group to_ddr /testbench/ml509_e/ddr2_we
+add wave -noupdate -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_a(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_a(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_a(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_a(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_a
+add wave -noupdate -group to_ddr /testbench/ml509_e/scope_e/ddr_ba
+add wave -noupdate -group to_ddr -expand /testbench/ml509_e/scope_e/ddr_dm
+add wave -noupdate -group to_ddr -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_dq(15) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(14) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(13) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_dq(15) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(14) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(13) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_dq(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_dq
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(1)/dqo
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(0)/dqo
-add wave -noupdate -expand -group bytes_g(1) /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(1)/dqo
-add wave -noupdate -expand -group bytes_g(1) /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(1)/di
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm_f
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm_r
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmi
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/sys_dm
-add wave -noupdate -expand -group ddr_io_dm -expand /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmx_f
-add wave -noupdate -expand -group ddr_io_dm -expand /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmx_r
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_fclk
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_st_f
-add wave -noupdate -expand -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_st_r
+add wave -noupdate -group bytes_g(1) /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(1)/dqo
+add wave -noupdate -group bytes_g(1) /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/bytes_g(1)/di
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm_f
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dm_r
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmi
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/sys_dm
+add wave -noupdate -group ddr_io_dm -expand /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmx_f
+add wave -noupdate -group ddr_io_dm -expand /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_dmx_r
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_fclk
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_st_f
+add wave -noupdate -group ddr_io_dm /testbench/ml509_e/scope_e/ddr_e/ddr_io_dm_e/ddr_io_st_r
 add wave -noupdate -group ddr2video_e /testbench/ml509_e/scope_e/dataio_e/ddr2video_e/sync_ena_val(0)
 add wave -noupdate -group ddr2video_e /testbench/ml509_e/scope_e/dataio_e/ddr2video_e/sync_dat_pdge
 add wave -noupdate -group ddr2video_e /testbench/ml509_e/scope_e/dataio_e/ddr2video_e/sync_ena_ndge
@@ -475,305 +475,306 @@ add wave -noupdate -group datai -radix hexadecimal /testbench/ml509_e/scope_e/da
 add wave -noupdate -group datai -divider {New Divider}
 add wave -noupdate -group datai -radix hexadecimal /testbench/ml509_e/scope_e/dataio_e/datai_e/rd_address
 add wave -noupdate -group datai -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/dataio_e/datai_e/datao(0) -radix hexadecimal} {/testbench/ml509_e/scope_e/dataio_e/datai_e/datao(1) -radix hexadecimal}} -expand -subitemconfig {/testbench/ml509_e/scope_e/dataio_e/datai_e/datao(0) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/dataio_e/datai_e/datao(1) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/dataio_e/datai_e/datao
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk0
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk90
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ini
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_req
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_do_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rw
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_di_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ba
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_act
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cas
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_di
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_do
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ref
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cke
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_st_lp_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_lp_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ba
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_dm
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_dq
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_b
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cke
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_req
-add wave -noupdate -group ddr -expand -group ddr_e -color {Green Yellow} /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ref
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rwin
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drr
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drf
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rea
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqz
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqsz
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_cmd
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_req
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dso
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dqi
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_wri
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk180
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk270
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk90
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk0
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk0
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk90
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ini
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_req
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_do_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rw
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_di_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ba
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_act
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cas
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_di
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_do
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ref
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cke
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_st_lp_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_lp_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ba
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_dm
-add wave -noupdate -group ddr -expand -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_dq
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_a
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_b
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cke
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_req
-add wave -noupdate -group ddr -expand -group ddr_e -color {Green Yellow} /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ref
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ras
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_cas
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_we
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rwin
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drr
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drf
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rea
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqz
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqsz
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqs
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_cmd
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_rdy
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_rst
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_req
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dso
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dqi
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_wri
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk180
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk270
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk90
-add wave -noupdate -group ddr -expand -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk0
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_rst
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_clk
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cfg
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cke
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_rst
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_id
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_sel
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/z
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_rst
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_clk
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cfg
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cke
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_rst
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_id
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_rdy
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_req
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_sel
-add wave -noupdate -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/z
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rst
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_clk
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_ref
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/sys_pgm_ref
-add wave -noupdate -group ddr -group ddr_pgm -color Blue /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_start
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_start
-add wave -noupdate -group ddr -group ddr_pgm -color Magenta /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rdy
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_req
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rw
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cas
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cmd
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_mpu_pc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_pc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_npc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_ref_req
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rst
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_clk
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_ref
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/sys_pgm_ref
-add wave -noupdate -group ddr -group ddr_pgm -color Blue /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_start
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_start
-add wave -noupdate -group ddr -group ddr_pgm -color Magenta /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rdy
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_req
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rw
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cas
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cmd
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_mpu_pc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_pc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_npc
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_ref_req
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop_d
-add wave -noupdate -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut_d
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rst
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk90
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cmd
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rdy
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_act
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cas
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_ras
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_we
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rwin
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drr
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drf
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dwf
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqs
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqsz
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqz
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rph
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wph
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ph_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/lat_timer
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/sel_cl
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_wri
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_state
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rdy_ena
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rst
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk90
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cmd
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rdy
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_act
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cas
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_ras
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_we
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rwin
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drr
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drf
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dwf
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqs
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqsz
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqz
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rph
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wph
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ph_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/lat_timer
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/sel_cl
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rea
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_wri
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_state
-add wave -noupdate -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rdy_ena
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
-add wave -noupdate -group ddr -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -divider {New Divider}
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_q
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_d
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_q
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_d
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_q
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_d
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_q
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -expand -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_d
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
-add wave -noupdate -group ddr -expand -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk0
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk90
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ini
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_req
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_do_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rw
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_di_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ba
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_act
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cas
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_di
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_do
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ref
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cke
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_st_lp_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_lp_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ba
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_dm
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_dq
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_b
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cke
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_req
+add wave -noupdate -expand -group ddr -group ddr_e -color {Green Yellow} /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ref
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rwin
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drr
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drf
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rea
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqz
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqsz
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_cmd
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_req
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dso
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dqi
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_wri
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk90
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk0
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk0
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_clk90
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ini
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_req
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cmd_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_do_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_rw
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_di_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ba
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_act
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_cas
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_di
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/sys_do
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/sys_ref
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cke
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_st_lp_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_lp_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_ba
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_dm
+add wave -noupdate -expand -group ddr -group ddr_e -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_dq
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_a
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_b
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_init_cke
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_req
+add wave -noupdate -expand -group ddr -group ddr_e -color {Green Yellow} /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ref
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_ras
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_cas
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_we
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rwin
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drr
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_drf
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_rea
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqz
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqsz
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_dqs
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_cmd
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_rdy
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_rst
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_req
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dso
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_io_dqi
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/ddr_acc_wri
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk90
+add wave -noupdate -expand -group ddr -group ddr_e /testbench/ml509_e/scope_e/ddr_e/clk0
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_rst
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_clk
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cfg
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cke
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_rst
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_id
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_sel
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/z
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_rst
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_clk
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cfg
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_cke
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ddr_init_rst
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/dll_timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/ref_timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_id
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_rdy
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_req
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/timer_sel
+add wave -noupdate -expand -group ddr -group ddr_timer /testbench/ml509_e/scope_e/ddr_e/ddr_timer_e/z
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rst
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_clk
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_ref
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/sys_pgm_ref
+add wave -noupdate -expand -group ddr -group ddr_pgm -color Blue /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_start
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_start
+add wave -noupdate -expand -group ddr -group ddr_pgm -color Magenta /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rdy
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_req
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rw
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cas
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cmd
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_mpu_pc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_pc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_npc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_ref_req
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rst
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_clk
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_ref
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/sys_pgm_ref
+add wave -noupdate -expand -group ddr -group ddr_pgm -color Blue /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_start
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_start
+add wave -noupdate -expand -group ddr -group ddr_pgm -color Magenta /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rdy
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_req
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_rw
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cas
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_cmd
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_mpu_pc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_pc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_pgm_npc
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_ref_req
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_act_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_rea_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_wri_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_pre_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_nop_d
+add wave -noupdate -expand -group ddr -group ddr_pgm /testbench/ml509_e/scope_e/ddr_e/ddr_pgm_e/ddr_npc_aut_d
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rst
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk90
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cmd
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rdy
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_act
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cas
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_ras
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_we
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rwin
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drr
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drf
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dwf
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqs
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqsz
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqz
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rph
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wph
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ph_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/lat_timer
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/sel_cl
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_wri
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_state
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rdy_ena
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rst
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_clk90
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cmd
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rdy
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_act
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_cas
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_ras
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_we
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rwin
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drr
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_drf
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dwf
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqs
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqsz
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_dqz
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_rph
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wph
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ph_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/lat_timer
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/sel_cl
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rea
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_wri
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_state
+add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/ml509_e/scope_e/ddr_e/ddr_mpu_e/ddr_rdy_ena
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand -group fifo_bytes_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/fifo_bytes_g(1)/addr_o_q
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand -group fifo_bytes_1 /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/fifo_bytes_g(1)/addr_o_set
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand -group fifo_bytes_1 /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/fifo_bytes_g(1)/addr_i_set
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand -group fifo_bytes_1 -expand -group ddr_fifo_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/fifo_bytes_g(1)/ddr_fifo(0)/addr_i_q
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) {-radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/fifo_bytes_g(1)/addr_o_q
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -divider {New Divider}
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_q
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_d
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_q
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_0 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(0)/sys_addr_d
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_q
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_d
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_q
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -group data_byte_1 -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_addr_d
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
+add wave -noupdate -expand -group ddr -group ddr_wr_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group miitx_crc_e -radix hexadecimal /testbench/ml509_e/scope_e/miitx_udp_e/miitx_crc_e/mii_g
 add wave -noupdate -group miitx_crc_e -radix hexadecimal /testbench/ml509_e/scope_e/miitx_udp_e/miitx_crc_e/mii_ini
@@ -912,7 +913,7 @@ add wave -noupdate -group vline_1 /testbench/ml509_e/scope_e/win_scope_e/plot_e/
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_rst
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate /testbench/clk_p
-add wave -noupdate -expand /testbench/dqs
+add wave -noupdate /testbench/dqs
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(63) -radix hexadecimal} {/testbench/dq(62) -radix hexadecimal} {/testbench/dq(61) -radix hexadecimal} {/testbench/dq(60) -radix hexadecimal} {/testbench/dq(59) -radix hexadecimal} {/testbench/dq(58) -radix hexadecimal} {/testbench/dq(57) -radix hexadecimal} {/testbench/dq(56) -radix hexadecimal} {/testbench/dq(55) -radix hexadecimal} {/testbench/dq(54) -radix hexadecimal} {/testbench/dq(53) -radix hexadecimal} {/testbench/dq(52) -radix hexadecimal} {/testbench/dq(51) -radix hexadecimal} {/testbench/dq(50) -radix hexadecimal} {/testbench/dq(49) -radix hexadecimal} {/testbench/dq(48) -radix hexadecimal} {/testbench/dq(47) -radix hexadecimal} {/testbench/dq(46) -radix hexadecimal} {/testbench/dq(45) -radix hexadecimal} {/testbench/dq(44) -radix hexadecimal} {/testbench/dq(43) -radix hexadecimal} {/testbench/dq(42) -radix hexadecimal} {/testbench/dq(41) -radix hexadecimal} {/testbench/dq(40) -radix hexadecimal} {/testbench/dq(39) -radix hexadecimal} {/testbench/dq(38) -radix hexadecimal} {/testbench/dq(37) -radix hexadecimal} {/testbench/dq(36) -radix hexadecimal} {/testbench/dq(35) -radix hexadecimal} {/testbench/dq(34) -radix hexadecimal} {/testbench/dq(33) -radix hexadecimal} {/testbench/dq(32) -radix hexadecimal} {/testbench/dq(31) -radix hexadecimal} {/testbench/dq(30) -radix hexadecimal} {/testbench/dq(29) -radix hexadecimal} {/testbench/dq(28) -radix hexadecimal} {/testbench/dq(27) -radix hexadecimal} {/testbench/dq(26) -radix hexadecimal} {/testbench/dq(25) -radix hexadecimal} {/testbench/dq(24) -radix hexadecimal} {/testbench/dq(23) -radix hexadecimal} {/testbench/dq(22) -radix hexadecimal} {/testbench/dq(21) -radix hexadecimal} {/testbench/dq(20) -radix hexadecimal} {/testbench/dq(19) -radix hexadecimal} {/testbench/dq(18) -radix hexadecimal} {/testbench/dq(17) -radix hexadecimal} {/testbench/dq(16) -radix hexadecimal} {/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(63) {-height 16 -radix hexadecimal} /testbench/dq(62) {-height 16 -radix hexadecimal} /testbench/dq(61) {-height 16 -radix hexadecimal} /testbench/dq(60) {-height 16 -radix hexadecimal} /testbench/dq(59) {-height 16 -radix hexadecimal} /testbench/dq(58) {-height 16 -radix hexadecimal} /testbench/dq(57) {-height 16 -radix hexadecimal} /testbench/dq(56) {-height 16 -radix hexadecimal} /testbench/dq(55) {-height 16 -radix hexadecimal} /testbench/dq(54) {-height 16 -radix hexadecimal} /testbench/dq(53) {-height 16 -radix hexadecimal} /testbench/dq(52) {-height 16 -radix hexadecimal} /testbench/dq(51) {-height 16 -radix hexadecimal} /testbench/dq(50) {-height 16 -radix hexadecimal} /testbench/dq(49) {-height 16 -radix hexadecimal} /testbench/dq(48) {-height 16 -radix hexadecimal} /testbench/dq(47) {-height 16 -radix hexadecimal} /testbench/dq(46) {-height 16 -radix hexadecimal} /testbench/dq(45) {-height 16 -radix hexadecimal} /testbench/dq(44) {-height 16 -radix hexadecimal} /testbench/dq(43) {-height 16 -radix hexadecimal} /testbench/dq(42) {-height 16 -radix hexadecimal} /testbench/dq(41) {-height 16 -radix hexadecimal} /testbench/dq(40) {-height 16 -radix hexadecimal} /testbench/dq(39) {-height 16 -radix hexadecimal} /testbench/dq(38) {-height 16 -radix hexadecimal} /testbench/dq(37) {-height 16 -radix hexadecimal} /testbench/dq(36) {-height 16 -radix hexadecimal} /testbench/dq(35) {-height 16 -radix hexadecimal} /testbench/dq(34) {-height 16 -radix hexadecimal} /testbench/dq(33) {-height 16 -radix hexadecimal} /testbench/dq(32) {-height 16 -radix hexadecimal} /testbench/dq(31) {-height 16 -radix hexadecimal} /testbench/dq(30) {-height 16 -radix hexadecimal} /testbench/dq(29) {-height 16 -radix hexadecimal} /testbench/dq(28) {-height 16 -radix hexadecimal} /testbench/dq(27) {-height 16 -radix hexadecimal} /testbench/dq(26) {-height 16 -radix hexadecimal} /testbench/dq(25) {-height 16 -radix hexadecimal} /testbench/dq(24) {-height 16 -radix hexadecimal} /testbench/dq(23) {-height 16 -radix hexadecimal} /testbench/dq(22) {-height 16 -radix hexadecimal} /testbench/dq(21) {-height 16 -radix hexadecimal} /testbench/dq(20) {-height 16 -radix hexadecimal} /testbench/dq(19) {-height 16 -radix hexadecimal} /testbench/dq(18) {-height 16 -radix hexadecimal} /testbench/dq(17) {-height 16 -radix hexadecimal} /testbench/dq(16) {-height 16 -radix hexadecimal} /testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
 add wave -noupdate /testbench/ml509_e/scope_e/ddrs_ini
 add wave -noupdate /testbench/ml509_e/scope_e/input_clk
@@ -921,7 +922,7 @@ add wave -noupdate /testbench/ml509_e/scope_e/input_req
 add wave -noupdate /testbench/ml509_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {983824980 ps} 0} {{Cursor 2} {72581 ps} 0}
+WaveRestoreCursors {{Cursor 1} {9442000 ps} 0} {{Cursor 2} {8686478 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 220
 configure wave -valuecolwidth 86
@@ -937,4 +938,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {3150 ns}
+WaveRestoreZoom {8675417 ps} {8697539 ps}
