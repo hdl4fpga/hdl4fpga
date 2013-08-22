@@ -106,8 +106,8 @@ OFFSET = IN -0.500 ns VALID 0.5 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.500 ns VALID 0.5 ns BEFORE ddr2_dqs_p[1] RISING;
 #NET "*ddr2_dm[0]" OFFSET = IN -0.2 ns VALID 0.5 ns BEFORE ddr2_dqs_p[0] RISING;
 #NET "*ddr2_dm[1]" OFFSET = IN -0.2 ns VALID 0.5 ns BEFORE ddr2_dqs_p[1] RISING;
-NET "*ddr2_dm[0]" OFFSET = IN -0.1 ns VALID .2 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "*ddr2_dm[1]" OFFSET = IN -0.1 ns VALID .2 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "*ddr2_dm[0]" OFFSET = IN -.0 ns VALID .01 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "*ddr2_dm[1]" OFFSET = IN -.0 ns VALID .01 ns BEFORE ddr2_dqs_p[1] RISING;
 
 NET ddr2_dqs_p[0] TNM_NET = FFS  FFS_dqs0;
 NET ddr2_dqs_p[0] TNM_NET = RAMS RAMS_dqs0;

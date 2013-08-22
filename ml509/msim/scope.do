@@ -734,11 +734,11 @@ add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand -group 
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
-add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
-add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
-add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) {-radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) {-radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
 add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/ml509_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
@@ -922,8 +922,8 @@ add wave -noupdate /testbench/ml509_e/scope_e/input_req
 add wave -noupdate /testbench/ml509_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9442000 ps} 0} {{Cursor 2} {8686478 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {9442000 ps} 0} {{Cursor 2} {8686478 ps} 0} {{Cursor 3} {207516662 ps} 0} {{Cursor 4} {207437230 ps} 0}
+quietly wave cursor active 4
 configure wave -namecolwidth 220
 configure wave -valuecolwidth 86
 configure wave -justifyvalue left
@@ -938,4 +938,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {8675417 ps} {8697539 ps}
+WaveRestoreZoom {207407750 ps} {207466710 ps}
