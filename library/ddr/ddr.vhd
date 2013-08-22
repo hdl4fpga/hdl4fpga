@@ -62,7 +62,7 @@ entity ddr is
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic);
 
-	constant debug_delay : time := 7.7 ns;
+	constant debug_delay : time := 3.3 ns;
 	constant t200u : real := 200.0e3;
 --	constant t200u : real := 2000.0;
 	constant t500u : real := 500.0e3;
@@ -492,7 +492,7 @@ begin
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
-		data_delay => 1,
+		data_delay => std,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (

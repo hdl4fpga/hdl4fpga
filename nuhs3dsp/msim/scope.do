@@ -495,8 +495,6 @@ add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dso
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqi
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_acc_wri
-add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk180
-add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk270
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk90
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk0
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/sys_rst
@@ -553,8 +551,6 @@ add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dso
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqi
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_acc_wri
-add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk180
-add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk270
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk90
 add wave -noupdate -expand -group ddr -group ddr_e /testbench/nuhs3dsp_e/scope_e/ddr_e/clk0
 add wave -noupdate -expand -group ddr -group ddr_timer /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_timer_e/trdy
