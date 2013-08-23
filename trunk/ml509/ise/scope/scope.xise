@@ -358,7 +358,7 @@
     <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Clock Region Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Constraints Interaction Report" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Datasheet Section" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Datasheet Section Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Detailed MAP Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
@@ -369,7 +369,7 @@
     <property xil_pn:name="Generate SAIF File for Power Optimization/Estimation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Testbench File" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Timegroups Section" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Timegroups Section Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Timegroups Section Post Trace" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Verbose Library Compilation Messages" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Generics, Parameters" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Global Optimization Goal" xil_pn:value="AllClockNets" xil_pn:valueState="default"/>
@@ -426,7 +426,7 @@
     <property xil_pn:name="Netlist Translation Type" xil_pn:value="Timestamp" xil_pn:valueState="default"/>
     <property xil_pn:name="Number of Clock Buffers" xil_pn:value="32" xil_pn:valueState="default"/>
     <property xil_pn:name="Number of Paths in Error/Verbose Report" xil_pn:value="3" xil_pn:valueState="default"/>
-    <property xil_pn:name="Number of Paths in Error/Verbose Report Post Trace" xil_pn:value="3" xil_pn:valueState="default"/>
+    <property xil_pn:name="Number of Paths in Error/Verbose Report Post Trace" xil_pn:value="16" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Optimization Effort" xil_pn:value="High" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Optimization Goal" xil_pn:value="Speed" xil_pn:valueState="default"/>
     <property xil_pn:name="Optimization Strategy (Cover Mode)" xil_pn:value="Speed" xil_pn:valueState="non-default"/>
