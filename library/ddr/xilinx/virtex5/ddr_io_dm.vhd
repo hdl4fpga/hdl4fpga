@@ -88,6 +88,6 @@ begin
 			i => di,
 			o => dmi);
 
-		ddr_io_dmi(i) <= transport dmi after debug_delay;
+			ddr_io_dmi(i) <= transport dmi after debug_delay;
 	end generate;
 end;

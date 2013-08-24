@@ -11,11 +11,11 @@ entity ddr_io_dqs is
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
-		ddr_io_ena : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqz : in std_logic_vector(0 to data_bytes-1);
+		ddr_io_ena : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dqz : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_dqs : inout std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_dqs_n : inout std_logic_vector(data_bytes-1 downto 0);
-		ddr_io_dso : out std_logic_vector(0 to data_bytes-1));
+		ddr_io_dso : out std_logic_vector(data_bytes-1 downto 0));
 end;
 
 library unisim;

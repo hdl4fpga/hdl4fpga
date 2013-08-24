@@ -71,10 +71,7 @@ begin
 			if rising_edge(sys_clk) then
 				q := q(1 to q'right) & ddr_win_dq;
 				addr_o_set <= not q(0);
---				addr_o_set <= sys_do_win;
 				addr_i_set <= sys_do_win;
-
---				ddr_fifo_rdy <=  ddr_win_dq;
 				ddr_fifo_rdy(k) <= q(0);
 			end if;
 		end process;
@@ -97,18 +94,14 @@ begin
 			signal addr_o_r : std_logic;
 			signal addr_o_ce : std_logic;
 		begin
---			addr_o_s <= addr_o_set and addr_ini(j);
---			addr_o_r <= addr_o_set and not addr_ini(j);
 			addr_o_s <=  not ddr_fifo_rdy(k) and addr_ini(j);
 			addr_o_r <=  not ddr_fifo_rdy(k) and not addr_ini(j);
---			addr_o_ce <= ddr_fifo_rdy(k);
 			ffd_i : fdcpe
 			port map (
 				pre => addr_o_s,
 				clr => addr_o_r,
-				c  => sys_clk,
---				ce => addr_o_ce,
 				ce => '1',
+				c  => sys_clk,
 				d  => addr_o_d(j),
 				q  => addr_o_q(j));
 		end generate;
