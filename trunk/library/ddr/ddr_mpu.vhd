@@ -419,10 +419,10 @@ begin
 --		ddr_mpu_drf  <= not (
 --			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2) and
 --			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2));
-		ddr_mpu_drr  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2);
---		ddr_mpu_drr  <= not (
---			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2) and
---			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2));
+--		ddr_mpu_drr  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2);
+		ddr_mpu_drr  <= not (
+			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2) and
+			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2));
 		ddr_mpu_drf  <= not (
 			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2) and
 			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2));
