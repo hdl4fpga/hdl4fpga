@@ -492,7 +492,7 @@ begin
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
-		data_delay => 2, --std,
+		data_delay => 3, --std,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
