@@ -7,13 +7,8 @@
 ;   
 
 [Library]
-std = $MODEL_TECH/../std
-ieee = $MODEL_TECH/../ieee
-vital2000 = $MODEL_TECH/../vital2000
-secureip = /opt/Xilinx/14.3/ISE_DS/ISE/verilog/mti_se/10.1b_1/lin64/secureip
-unisim = /opt/Xilinx/14.3/ISE_DS/ISE/vhdl/mti_se/10.1b_1/lin64/unisim
-unimacro = /opt/Xilinx/14.3/ISE_DS/ISE/vhdl/mti_se/10.1b_1/lin64/unimacro
-simprim = /opt/Xilinx/14.3/ISE_DS/ISE/vhdl/mti_se/10.1b_1/lin64/simprim
+others = /opt/modeltech/modelsim.ini
+work = work
 
 ;
 ; VITAL concerns:
