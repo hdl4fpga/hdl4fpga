@@ -18,12 +18,12 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture arch of ddr_io_dq is
+architecture spartan3 of ddr_io_dq is
 	signal ddr_io_fclk : std_logic;
 begin
 	ddr_io_fclk <= not ddr_io_clk;
-	bytes_g : for i in 0 to data_bytes-1 generate
-		bits_g : for j in 0 to byte_bits-1 generate
+	bytes_g : for i in data_bytes-1 downto 0 generate
+		bits_g : for j in byte_bits-1 downto 0 generate
 			signal dqo : std_logic;
 			signal dqz : std_logic;
 			signal di  : std_logic;
