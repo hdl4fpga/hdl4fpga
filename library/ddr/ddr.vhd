@@ -71,9 +71,6 @@ entity ddr is
 	constant data_bits : natural := data_bytes*byte_bits;
 end;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 
 architecture mix of ddr is
@@ -123,6 +120,7 @@ architecture mix of ddr is
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
+	signal ddr_st_hlf : std_logic;
 	signal ddr_acc_wri : std_logic;
 
 	signal rst : std_logic;
@@ -569,50 +567,14 @@ begin
 		ddr_io_dm  => ddr_dm,
 		ddr_io_dmi => ddr_io_dmi);
 
-	st_dqs : if DEVICE /= "virtex5" generate
-		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
+	ddr_st_hlf <= setif(std=1 and cas(0)='1');
+	ddr_st_e : entity hdl4fpga.ddr_st
+	port map (
+		ddr_st_hlf => ddr_st_hlf,
+		ddr_st_clk => sys_clk0,
+		ddr_st_drr => ddr_acc_drr,
+		ddr_st_drf => ddr_acc_drf;
+		ddr_st_dqs => ddr_lp_dqs);
 
-		signal rclk : std_logic;
-		signal fclk : std_logic;
-	begin
-		rclk <= 
-			not sys_clk0 when std=1 and cas(0)='1' else
-			sys_clk0;
-			
-		fclk <= 
-			sys_clk0   when std=1 and cas(0)='1' else
-			not sys_clk0;
-
-		oddr_du : oddr2
-		port map (
-			c0 => rclk,
-			c1 => fclk,
-			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => ddr_acc_drr,
-			d1 => ddr_acc_drf,
-			q  => ddr_lp_dqs);
-	end generate;
-
-	virtex5_st_dqs : if DEVICE = "virtex5" generate
-		constant cas : std_logic_vector(0 to 2) := casdb(cl, std);
-
-		signal clk : std_logic;
-	begin
-		clk <= 
-			not sys_clk0 when std=1 and cas(0)='1' else
-			clk0;
-			
-		oddr_du : oddr
-		port map (
-			r => '0',
-			s => '0',
-			c => clk,
-			ce => '1',
-			d1 => ddr_acc_drr,
-			d2 => ddr_acc_drf,
-			q  => ddr_lp_dqs);
-	end generate;
     ddr_odt <= '0';
 end;
