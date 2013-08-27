@@ -33,6 +33,12 @@ begin
 				end if;
 			end process;
 
+			oddrt_i : ofd1s3ax
+			port map (
+				sclk => ddr_io_clk,
+				d => ddr_io_dqz(i),
+				q => dqz);
+
 			oddr_i : oddrxd
 			port map (
 				sclk => ddr_io_clk,
@@ -40,12 +46,6 @@ begin
 				da => ddr_io_dq_r(i*byte_bits+j),
 				db => ddr_io_dq_f(i*byte_bits+j),
 				q  => dqo);
-
-			oddrt_i : ofd1s3ax
-			port map (
-				sclk => ddr_io_clk,
-				d => ddr_io_dqz(i),
-				q => dqz);
 
 			ddr_io_dq(i*byte_bits+j)  <= 'Z' when dqz='1' else dqo;
 			ddr_io_dqi(i*byte_bits+j) <= ddr_io_dq(i*byte_bits+j);
