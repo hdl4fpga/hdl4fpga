@@ -1,26 +1,24 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ieee;
-use ieee.std_logic_1164.all;
-
 entity ddr_io_dqs is
 	generic (
+		debug_delay : time;
 		std : positive range 1 to 3 := 3;
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
 		ddr_io_ena : in std_logic_vector(0 to data_bytes-1);
 		ddr_io_dqz : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqs_p : inout std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqs_n : inout std_logic_vector(0 to data_bytes-1);
+		ddr_io_dqs : inout std_logic_vector(0 to data_bytes-1);
+		ddr_io_dqs_n : inout std_logic_vector(0 to data_bytes-1) := (others => 'Z');
 		ddr_io_dso : out std_logic_vector(0 to data_bytes-1));
 end;
 
-library unisim;
-use unisim.vcomponents.all;
+library ecp3;
+use ecp3.components.all;
 
-architecture v5 of ddr_io_dqs is
+architecture arch of ddr_io_dqs is
 	signal rclk : std_logic;
 	signal fclk : std_logic;
 begin
@@ -29,49 +27,31 @@ begin
 	fclk <= not ddr_io_clk;
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
+		signal tclk : std_logic;
 		signal dqs : std_logic;
 		signal dqz : std_logic;
-		signal d1  : std_logic;
-		signal d2  : std_logic;
 	begin
 
-		with std select
-		d1 <= 
-			'0' when 1|2,
-			ddr_io_ena(i) when 3;
-
-		with std select
-		d2 <= 
-			ddr_io_ena(i) when 1|2,
-			'1' when 3;
-
-		oddr_du : oddr
+		oddrt_i : oddrtdqsa
 		port map (
-			r => '0',
-			s => '0',
-			c => rclk,
-			ce => '1',
-			d1 => d1,
-			d2 => d2,
+			sclk => rclk,
+			dqsw => fclk,
+			dqstclk => tclk,
+			ta => ddr_io_dqz(i),
+			db => '0',
+			q  => dqz);
+
+		oddr_i : oddrxdqsa
+		port map (
+			sclk => rclk,
+			da => ddr_io_ena(i),
+			dqclk1 => ddr_io_clk,
+			dqsw   => ddr_io_clk,
+			dqstclk => tclk,
 			q  => dqs);
 
-		ffd_i : fdrse
-		port map (
-			s => '0',
-			r => '0',
-			c => fclk,
-			ce => '1',
-			d => ddr_io_dqz(i),
-			q => dqz);
+		ddr_io_dqs(i) <= 'Z' when dqz='1' else dqs;
 
-		iobufds_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t => dqz,
-			i => dqs,
-			io => ddr_io_dqs_p(i),
-			iob => ddr_io_dqs_n(i),
-			o => ddr_io_dso(i));
+		ddr_io_dso(i) <= transport ddr_io_dqs(i) after debug_delay;
 	end generate;
 end;
