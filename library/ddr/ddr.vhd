@@ -72,6 +72,7 @@ entity ddr is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture mix of ddr is
 	constant debug : boolean := false;
@@ -283,7 +284,7 @@ architecture mix of ddr is
 			return (0 to 2 => '-');
 		end case;
 	end;
-
+	constant cas : std_logic_vector(0 to 2) := casdb(cl, std); 
 begin
 
 	clk0  <= sys_clk0;
@@ -573,7 +574,7 @@ begin
 		ddr_st_hlf => ddr_st_hlf,
 		ddr_st_clk => sys_clk0,
 		ddr_st_drr => ddr_acc_drr,
-		ddr_st_drf => ddr_acc_drf;
+		ddr_st_drf => ddr_acc_drf,
 		ddr_st_dqs => ddr_lp_dqs);
 
     ddr_odt <= '0';
