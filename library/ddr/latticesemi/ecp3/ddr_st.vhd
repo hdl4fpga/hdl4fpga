@@ -11,7 +11,7 @@ entity ddr_st is
 end;
 
 library ecp3;
-use unisim.vcomponents.all;
+use ecp3.components.all;
 
 architecture def of ddr_st is
 	signal clk : std_logic;
