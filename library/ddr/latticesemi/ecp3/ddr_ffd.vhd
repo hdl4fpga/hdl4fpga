@@ -27,8 +27,8 @@ use ieee.std_logic_1164.all;
 
 entity ddr_affd is
 	port (
+		ar  : in  std_logic := '0';
 		clk : in  std_logic;
-		sr  : in  std_logic := '0';
 		d   : in  std_logic;
 		q   : out std_logic);
 end;
@@ -41,7 +41,7 @@ begin
 	ffd_i : fd1s3dx
 	port map (
 		ck => clk,
-		cd => sr,
+		cd => ar,
 		d  => d,
 		q  => q);
 end;
