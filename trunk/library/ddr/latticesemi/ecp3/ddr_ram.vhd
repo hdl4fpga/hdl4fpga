@@ -8,9 +8,9 @@ entity ddr_ram is
 	port (
 		clk : in  std_logic;
 		we  : in  std_logic;
-		ra  : in  std_logic_vector(4-1 downto 0);
 		wa  : in  std_logic_vector(4-1 downto 0);
 		di  : in  std_logic_vector(n-1 downto 0);
+		ra  : in  std_logic_vector(4-1 downto 0);
 		do  : out  std_logic_vector(n-1 downto 0));
 end;
 

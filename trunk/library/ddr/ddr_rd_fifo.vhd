@@ -90,29 +90,17 @@ begin
 		addr_o_d <= inc(gray(addr_o_q));
 		o_cntr_g: for j in addr_word'range generate
 			signal addr_o_r : std_logic;
-			signal addr_o_ce : std_logic;
 		begin
-			addr_o_r <=  not ddr_fifo_rdy(k);
-			ffd_i : 
+			addr_o_r <= not ddr_fifo_rdy(k);
+			ffd_i : entity hdl4fpga.ddr_sffd
 			port map (
-				s => '0',
-				r => addr_o_r,
-				ce => '1',
-				c  => sys_clk,
-				d  => addr_o_d(j),
-				q  => addr_o_q(j));
-			ffd_i : fdrse
-			port map (
-				s => '0',
-				r => addr_o_r,
-				ce => '1',
-				c  => sys_clk,
-				d  => addr_o_d(j),
-				q  => addr_o_q(j));
+				sr  => addr_o_r,
+				clk => sys_clk,
+				d   => addr_o_d(j),
+				q   => addr_o_q(j));
 		end generate;
 
 		ddr_fifo: for l in ddr_dlyd_dqs'range generate
---		ddr_fifo: for l in ddr_delayed_dqs'range generate
 			signal addr_i_d : addr_word;
 			signal addr_i_q : addr_word;
 		begin
@@ -121,28 +109,24 @@ begin
 				signal addr_i_clr : std_logic;
 			begin
 				addr_i_clr <= addr_i_set;
-				ffd_i : fdcpe
+				ffd_i : entity hdl4fpga.ddr_affd
 				port map (
-					pre => '0',
-					clr => addr_i_clr,
-					c   => ddr_dlyd_dqs(l),
---					c   => ddr_delayed_dqs(l),
-					ce  => ddr_win_dqsi,
+					ar  => addr_i_clr,
+					clk => ddr_dlyd_dqs(l),
 					d   => addr_i_d(j),
 					q   => addr_i_q(j));
 			end generate;
 
-			ram_g: for i in byte_bits-1 downto 0 generate
-			begin
-				dram_i : dpr16x4c
-				port map (
-					wck => ddr_dlyd_dqs(l),
-					wre => ddr_win_dqsi,
-					wad => addr_i_q(0),
-					di  => ddr_fifo_di(k)(i),
-					rad => addr_o_q,
-					do => ddr_fifo_do(2*k+l)(i));
-			end generate;
+			ram_b : entity hdl4fpga.ddr_ram
+			generic map (
+				n => byte_bits)
+			port map (
+				clk => ddr_dlyd_dqs(l),
+				we  => ddr_win_dqsi,
+				wa  => addr_i_q(0),
+				di  => ddr_fifo_di(k),
+				ra  => addr_o_q,
+				do  => ddr_fifo_do(2*k+l));
 		end generate;
 	end generate;
 
