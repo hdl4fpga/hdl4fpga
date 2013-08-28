@@ -37,7 +37,6 @@ architecture mix of ddr_rd_fifo is
 	signal ddr_fifo_do : byte_vector(2*data_bytes-1 downto 0);
 
 	subtype addr_word is std_logic_vector(0 to 4-1);
-	constant addr_ini : std_logic_vector(addr_word'range) := "0000";
 	signal sys_do_win : std_logic;
 	signal ddr_fifo_rdy : std_logic_vector(ddr_dqs'range);
 begin
@@ -90,16 +89,22 @@ begin
 
 		addr_o_d <= inc(gray(addr_o_q));
 		o_cntr_g: for j in addr_word'range generate
-			signal addr_o_s : std_logic;
 			signal addr_o_r : std_logic;
 			signal addr_o_ce : std_logic;
 		begin
-			addr_o_s <=  not ddr_fifo_rdy(k) and addr_ini(j);
-			addr_o_r <=  not ddr_fifo_rdy(k) and not addr_ini(j);
-			ffd_i : fdcpe
+			addr_o_r <=  not ddr_fifo_rdy(k);
+			ffd_i : 
 			port map (
-				pre => addr_o_s,
-				clr => addr_o_r,
+				s => '0',
+				r => addr_o_r,
+				ce => '1',
+				c  => sys_clk,
+				d  => addr_o_d(j),
+				q  => addr_o_q(j));
+			ffd_i : fdrse
+			port map (
+				s => '0',
+				r => addr_o_r,
 				ce => '1',
 				c  => sys_clk,
 				d  => addr_o_d(j),
@@ -113,14 +118,12 @@ begin
 		begin
 			addr_i_d <= inc(gray(addr_i_q));
 			i_cntr_g: for j in addr_i_q'range  generate
-				signal addr_i_pre : std_logic;
 				signal addr_i_clr : std_logic;
 			begin
-				addr_i_pre <= addr_i_set and addr_ini(j);
-				addr_i_clr <= addr_i_set and not addr_ini(j);
+				addr_i_clr <= addr_i_set;
 				ffd_i : fdcpe
 				port map (
-					pre => addr_i_pre,
+					pre => '0',
 					clr => addr_i_clr,
 					c   => ddr_dlyd_dqs(l),
 --					c   => ddr_delayed_dqs(l),

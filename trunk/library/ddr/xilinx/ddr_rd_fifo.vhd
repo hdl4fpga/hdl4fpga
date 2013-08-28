@@ -96,10 +96,10 @@ begin
 		begin
 			addr_o_s <=  not ddr_fifo_rdy(k) and addr_ini(j);
 			addr_o_r <=  not ddr_fifo_rdy(k) and not addr_ini(j);
-			ffd_i : fdcpe
+			ffd_i : fdrse
 			port map (
-				pre => addr_o_s,
-				clr => addr_o_r,
+				s => addr_o_s,
+				r => addr_o_r,
 				ce => '1',
 				c  => sys_clk,
 				d  => addr_o_d(j),
