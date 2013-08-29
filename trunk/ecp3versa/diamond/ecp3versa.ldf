@@ -101,6 +101,9 @@
         <Source name="../../library/ddr/ddr_rd_fifo.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+		<Source name="../../library/ddr/ddr_io_ba.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_st.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -108,9 +111,6 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_io_dqs.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-		<Source name="../../library/ddr/latticesemi/ecp3/ddr_io_ba.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
 		<Source name="../../library/ddr/latticesemi/ecp3/ddr_ram.vhd" type="VHDL" type_short="VHDL">
