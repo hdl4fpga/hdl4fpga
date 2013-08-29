@@ -31,6 +31,8 @@ entity ddr_io_ba is
 		ddr_a   : out std_logic_vector(addr_bits-1 downto 0));
 end;
 
+library hdl4fpga;
+
 architecture mix of ddr_io_ba is
 	signal ras_d : std_logic;
 	signal cas_d : std_logic;
