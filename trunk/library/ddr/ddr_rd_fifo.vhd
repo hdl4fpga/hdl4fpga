@@ -123,7 +123,7 @@ begin
 			port map (
 				clk => ddr_dlyd_dqs(l),
 				we  => ddr_win_dqsi,
-				wa  => addr_i_q(0),
+				wa  => addr_i_q,
 				di  => ddr_fifo_di(k),
 				ra  => addr_o_q,
 				do  => ddr_fifo_do(2*k+l));
