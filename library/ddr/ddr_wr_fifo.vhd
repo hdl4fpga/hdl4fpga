@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity ddr_wr_fifo is
 	generic (
-		std : positve ;
+		std : positive ;
 		data_bytes : natural := 2;
 		byte_bits  : natural := 8);
 	port (
@@ -37,7 +37,7 @@ architecture mix of ddr_wr_fifo is
 	signal ddr_clks : std_logic_vector(0 to 1);
 	signal ddr_ena : std_logic_vector(0 to 1);
 
-	type addrword_vector is array (natural range <>) of addr_word;
+	type aw_vector is array (natural range <>) of addr_word;
 
 	type dword_vector is array (natural range <>) of std_logic_vector(ddr_dq_r'range);
 	signal ddr_dq : dword_vector(0 to 1);
@@ -62,6 +62,10 @@ architecture mix of ddr_wr_fifo is
 	end;
 
 	signal di : byte_vector(2*data_bytes-1 downto 0);
+	signal dm : std_logic_vector(2*data_bytes-1 downto 0);
+	signal ddr_addr_q : aw_vector(2*data_bytes-1 downto 0);
+	signal sys_addr_q : aw_vector(data_bytes-1 downto 0);
+
 begin
 
 	ddr_clks <= (0 => ddr_clk, 1 => not ddr_clk);
@@ -72,12 +76,26 @@ begin
 	ddr_dm_r <= ddr_dm(0);
 	ddr_dm_f <= ddr_dm(1);
 
+	dm_byte_g : for l in ddr_dm_r'range generate
+		ddr_dm_g: for i in 0 to 1 generate
+			ram_i : entity hdl4fpga.ddr_ram
+			generic map (
+				n => byte_bits)
+			port map (
+				clk => sys_clk,
+				we => sys_req,
+				wa => sys_addr_q(data_bytes*i+l),
+				di => sys_dm(data_bytes*i+l),
+				ra => ddr_addr_q(data_bytes*i+l),
+				do => ddr_dm(i)(l));
+		end generate;
+	end generate;
+
 	di <= to_bytevector(sys_di);
 	data_byte_g: for l in ddr_dm_r'range generate
-		signal sys_addr_q : addr_word;
 		signal sys_addr_d : addr_word;
 	begin
-		sys_addr_d <= inc(gray(sys_addr_q));
+		sys_addr_d <= inc(gray(sys_addr_q(l)));
 		sys_cntr_g: for j in addr_word'range  generate
 		begin
 			ffd_i : fdcpe
@@ -87,86 +105,46 @@ begin
 				c  => sys_clk,
 				ce => sys_req,
 				d  => sys_addr_d(j),
-				q  => sys_addr_q(j));
+				q  => sys_addr_q(l)(j));
 		end generate;
 
 		ddr_data_g: for i in 0 to 1 generate
-			signal ddr_addr_q : addr_word;
 			signal dpo : std_logic_vector(byte_bits-1 downto 0);
 			signal qpo : std_logic_vector(byte_bits-1 downto 0);
+			signal ddr_addr_d : addr_word;
 		begin
-			ddr_word_g : block
-				signal ddr_addr_d : addr_word;
-			begin
-				ddr_addr_d <= inc(gray(ddr_addr_q));
-				cntr_g: for j in addr_word'range generate
+			ddr_addr_d <= inc(gray(ddr_addr_q(data_bytes*i+l)));
+			cntr_g: for j in addr_word'range generate
 
-					ffd_i : entity ddr_sffd
-					port map (
-						clk => ddr_clks(i),
-						sr  => sys_rst,
-						ena => ddr_ena(i),
-						d   => ddr_addr_d(j),
-						q   => ddr_addr_q(j));
-				end generate;
-			end block;
-
-			dm_ram_g : block
-				signal dmo : std_logic;
-				signal qmo : std_logic;
-			begin
-				ram16x1d_i : ram16x1d
+				ffd_i : entity hdl4fpga.ddr_sffd
 				port map (
-					wclk => sys_clk,
-					we => sys_req,
-					a0 => sys_addr_q(0),
-					a1 => sys_addr_q(1),
-					a2 => sys_addr_q(2),
-					a3 => sys_addr_q(3),
-					d  => sys_dm(data_bytes*i+l),
-					dpra0 => ddr_addr_q(0),
-					dpra1 => ddr_addr_q(1),
-					dpra2 => ddr_addr_q(2),
-					dpra3 => ddr_addr_q(3),
-					dpo => dmo,
-					spo => open);
+					clk => ddr_clks(i),
+					sr  => sys_rst,
+					ena => ddr_ena(i),
+					d   => ddr_addr_d(j),
+					q   => ddr_addr_q(data_bytes*i+l)(j));
+			end generate;
 
---				process (ddr_clk(i))
---				begin
---					if rising_edge (ddr_clk(i)) then
---						qmo <= dmo;
---					end if;
---				end process;
---
-				ddr_dm(i)(l) <= 
---					qmo when device="virtex5" else
-					dmo;
-					
-			end block;
-
-			ram_b : entity hdl4fpga.ddr_ram
+			ram_i : entity hdl4fpga.ddr_ram
 			generic map (
 				n => byte_bits)
 			port map (
 				clk => sys_clk,
 				we => sys_req,
-				wa => sys_addr_q,
-				di => di(data_bits*i+byte_bits*l),
-				ra => ddr_addr_q,
+				wa => sys_addr_q(data_bytes*i+l),
+				di => di(data_bytes*i+l),
+				ra => ddr_addr_q(data_bytes*i+l),
 				do => dpo);
 
 			ram_g: for j in byte_bits-1 downto 0 generate
 				signal dpo : std_logic;
 				signal qpo : std_logic;
 			begin
-				ffd_i : fdcpe
+				ffd_i : entity hdl4fpga.ddr_sffd
 				port map (
-					clr => '0',
-					pre => '0',
-					c  => ddr_clks(i),
-					ce => '1',
-					d  => dpo,
-					q  => qpo);
+					clk => ddr_clks(i),
+					d   => dpo,
+					q   => qpo);
 
 				ddr_dq(i)(byte_bits*l+j) <= 
 					dpo when std=1 else
