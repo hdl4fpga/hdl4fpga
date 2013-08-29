@@ -11,24 +11,6 @@
         <Source name="../scope/scope.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-        <Source name="../../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/scope/datai.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -78,34 +60,67 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miirx_mac.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miirx_pre.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_crc.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_dma.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_mem.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_udp.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_init.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_mpu.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_pgm.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_ph.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_timer.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_rd_fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/ddr_rd_fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/ddr/latticesemi/ecp3/ddr_st.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_io_dq.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_io_dqs.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/ddr/xilinx/ddr_io_ba.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+		<Source name="../../library/ddr/latticesemi/ecp3/ddr_io_ba.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+		<Source name="../../library/ddr/latticesemi/ecp3/ddr_ram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+		<Source name="../../library/ddr/latticesemi/ecp3/ddr_ffd.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
     </Implementation>
     <Strategy name="Strategy1" file="ecp3versa1.sty"/>
