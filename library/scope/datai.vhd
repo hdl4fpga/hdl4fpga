@@ -17,9 +17,6 @@ entity datai is
 		output_dat  : out std_logic_vector);
 end;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 
