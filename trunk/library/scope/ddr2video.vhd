@@ -13,9 +13,6 @@ entity ddr2video is
 		page_addr  : in  std_logic_vector(0 to 3-1));
 end;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 

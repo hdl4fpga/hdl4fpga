@@ -14,6 +14,7 @@ entity ecp3versa is
 		ddr3_clk_p : out std_logic := 'Z';
 		ddr3_clk_n : out std_logic := 'Z';
 		ddr3_vref  : out std_logic := 'Z';
+		ddr3_rst : out std_logic := 'Z';
 		ddr3_cke : out std_logic := 'Z';
 		ddr3_cs  : out std_logic := 'Z';
 		ddr3_ras : out std_logic := 'Z';
@@ -25,7 +26,12 @@ entity ecp3versa is
 		ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-		ddr3_odt : inout std_logic);
+		ddr3_odt : inout std_logic;
+
+		phy1_txd : out std_logic_vector(),
+		phy1_rxd : in  std_logic_vector(),
+		phy1_gtx
+	);
 
 	attribute loc : string;
 	
@@ -39,7 +45,7 @@ entity ecp3versa is
 	
 	attribute loc of ddr3_clk_p : signal is "K4";
 	attribute loc of ddr3_clk_n : signal is "K5";
-	attribute loc of ddr3_vref  : signal is "E1";
+	attribute loc of ddr3_rst   : signal is "D4";
 	attribute loc of ddr3_cke   : signal is "G8";
 	attribute loc of ddr3_cs    : signal is "C6";
 	attribute loc of ddr3_ras   : signal is "A6";
