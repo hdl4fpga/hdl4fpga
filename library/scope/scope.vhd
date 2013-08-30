@@ -6,8 +6,7 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		device : string := "NONE";
-		strobe : string;
+		strobe : string := "NONE";
 		ddr_std : positive range 1 to 3 := 1;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -442,7 +441,6 @@ begin
 
 	ddr_e : entity hdl4fpga.ddr
 	generic map (
-		device => device,
 		strobe => strobe,
 		tCP => tDDR,
 		std => ddr_std,

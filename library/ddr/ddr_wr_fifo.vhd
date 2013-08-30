@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity ddr_wr_fifo is
 	generic (
-		std : positive ;
+		std : positive;
 		data_bytes : natural := 2;
 		byte_bits  : natural := 8);
 	port (

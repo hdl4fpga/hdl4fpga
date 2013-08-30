@@ -5,7 +5,6 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		DEVICE : string := "NONE";
 		STROBE : string := "EXTERNAL";
 		STD  : positive range 1 to 3 := 3;
 		tCP  : real := 6.0;
@@ -507,9 +506,9 @@ begin
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	generic map (
+		std => std,
 		data_bytes => data_bytes,
-		byte_bits  => byte_bits,
-		device => device)
+		byte_bits  => byte_bits)
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,

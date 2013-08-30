@@ -55,13 +55,14 @@ architecture arch of ddr_mpu is
 	signal ph_rea_dummy : std_logic;
 
 	signal lat_timer : unsigned(0 to 9) := (others => '1');
+	constant lat_length : natural := lat_timer'length;
+
 	function to_timer (
-		constant t : integer) 
+		t : integer;
+		l : integer) 
 		return unsigned is
 	begin
-		return to_unsigned(
-			(2**lat_timer'length-2+t) mod 2**lat_timer'length,
-			lat_timer'length);
+		return to_unsigned((2**l-2+t) mod 2**l, l);
 	end;
 
 	signal sel_cl : std_logic;
@@ -70,26 +71,26 @@ architecture arch of ddr_mpu is
 
 	type lattimer_vector is array (natural range <>) of std_logic_vector(0 to lat_timer'length-1);
 	constant bl_data : lattimer_vector(0 to 4-1) := (
-		std_logic_vector(to_timer(1)),
-		std_logic_vector(to_timer(2)),
-		std_logic_vector(to_timer(4)),
-		std_logic_vector(to_timer(8)));
+		std_logic_vector(to_timer(1, lat_length)),
+		std_logic_vector(to_timer(2, lat_length)),
+		std_logic_vector(to_timer(4, lat_length)),
+		std_logic_vector(to_timer(8, lat_length)));
 
 	constant cl1_data : lattimer_vector(0 to 8-1) := (
-		2 => std_logic_vector(to_timer(2)),
-		3 => std_logic_vector(to_timer(3)),
-		6 => std_logic_vector(to_timer(3)),
+		2 => std_logic_vector(to_timer(2, lat_length)),
+		3 => std_logic_vector(to_timer(3, lat_length)),
+		6 => std_logic_vector(to_timer(3, lat_length)),
 		others => (others => '-'));
 
 	constant cl3_data : lattimer_vector(0 to 8-1) := (
 		(others => '-'),
-		std_logic_vector(to_timer(5)),
-		std_logic_vector(to_timer(6)),
-		std_logic_vector(to_timer(7)),
-		std_logic_vector(to_timer(8)),
-		std_logic_vector(to_timer(9)),
-		std_logic_vector(to_timer(10)),
-		std_logic_vector(to_timer(11)));
+		std_logic_vector(to_timer(5, lat_length)),
+		std_logic_vector(to_timer(6, lat_length)),
+		std_logic_vector(to_timer(7, lat_length)),
+		std_logic_vector(to_timer(8, lat_length)),
+		std_logic_vector(to_timer(9, lat_length)),
+		std_logic_vector(to_timer(10, lat_length)),
+		std_logic_vector(to_timer(11, lat_length)));
 
 	constant ddr_phr_din : std_logic_vector(1 to 4*nr+3*3) := (others => '-');
 	constant ddr_ph_din : std_logic_vector(1 to 4*n+3*3) := (others => '-');
@@ -184,15 +185,15 @@ architecture arch of ddr_mpu is
 		-------------
 
 		(ddr_state => DDRS_PRE, ddr_state_n => DDRS_PRE,
-		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => to_timer(1),
+		 ddr_cmi => ddr_nop, ddr_cmo => ddr_nop, ddr_lat => to_timer(1, lat_length),
 		 ddr_rea => '0', ddr_wri => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_PRE, ddr_state_n => DDRS_ACT,
-		 ddr_cmi => ddr_act, ddr_cmo => ddr_act, ddr_lat => to_timer(tRCD),
+		 ddr_cmi => ddr_act, ddr_cmo => ddr_act, ddr_lat => to_timer(tRCD, lat_length),
 		 ddr_rea => '0', ddr_wri => '0',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_PRE, ddr_state_n => DDRS_PRE,
-		 ddr_cmi => ddr_aut, ddr_cmo => ddr_aut, ddr_lat => to_timer(tRFC),
+		 ddr_cmi => ddr_aut, ddr_cmo => ddr_aut, ddr_lat => to_timer(tRFC, lat_length),
 		 ddr_rea => '0', ddr_wri => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '1'),
 
@@ -222,7 +223,7 @@ architecture arch of ddr_mpu is
 		 ddr_rea => '1', ddr_wri => '0',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_READ_CL, ddr_state_n => DDRS_PRE,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => to_timer(tRP),
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => to_timer(tRP, lat_length),
 		 ddr_rea => '1', ddr_wri => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '1'),
 
@@ -235,14 +236,14 @@ architecture arch of ddr_mpu is
 		 ddr_rea => '0', ddr_wri => '1',
 		 ddr_act => '0', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '0'),
 		(ddr_state => DDRS_WRITE_BL, ddr_state_n => DDRS_WRITE_CL,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(ddr_cwl(std)),
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(ddr_cwl(std), lat_length),
 --		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1),
 --		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))),
 --		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))),
 		 ddr_rea => '0', ddr_wri => '1',
 		 ddr_act => '0', ddr_rdy => '0', ddr_rph => '1', ddr_wph => '1'),
 		(ddr_state => DDRS_WRITE_CL, ddr_state_n => DDRS_PRE,
-		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => to_timer(tRP),
+		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_pre, ddr_lat => to_timer(tRP, lat_length),
 		 ddr_rea => '0', ddr_wri => '0',
 		 ddr_act => '1', ddr_rdy => '1', ddr_rph => '1', ddr_wph => '1'));
 

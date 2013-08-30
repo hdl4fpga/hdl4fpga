@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dq is
 	generic (
+		debug_delay : time := 0 ps;
 		data_bytes : natural;
 		byte_bits  : natural);
 	port (
