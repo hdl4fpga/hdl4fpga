@@ -31,9 +31,9 @@ architecture scope of ecp3versa is
 
 	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(phy_rxd'range);
+	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
 	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy_txd'range);
+	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
 
 	signal video_clk : std_logic;
 	signal video_clk90 : std_logic;
@@ -59,7 +59,7 @@ architecture scope of ecp3versa is
 
 begin
 
-	sys_rst <= gpio_sw_c;
+	sys_rst <= not fpga_gsrn;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -78,8 +78,7 @@ begin
 		dcm_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
-	dvi_reset <= dcm_lckd;
-	phy_reset <= dcm_lckd;
+	phy1_rst <= dcm_lckd;
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -96,9 +95,9 @@ begin
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
-		ddr_rst => ddr2_rst,
-		ddr_cke => ddr2_cke,
-		ddr_cs  => ddr2_cs,
+		ddr_rst => ddr3_rst,
+		ddr_cke => ddr3_cke,
+		ddr_cs  => ddr3_cs,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,
 		ddr_we  => ddr3_we,
@@ -107,10 +106,10 @@ begin
 		ddr_dm  => ddr3_dm,
 		ddr_dqs => ddr3_dqs_p,
 		ddr_dqs_n => ddr3_dqs_n,
-		ddr_dq  => ddr3_d,
+		ddr_dq  => ddr3_dq,
 		ddr_odt => ddr3_odt,
 
-		mii_rxc  => phy_rxclk,
+		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 		mii_txc  => gtx_clk,
@@ -126,9 +125,8 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
-	phy_txer  <= '0';
-	phy_mdc <= '0';
-	phy_mdio <= '0';
+	phy1_mdc <= '0';
+	phy1_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
@@ -137,7 +135,7 @@ begin
 	port map (
 		mii_rxc  => phy_rxclk,
 		iob_rxdv => phy_rxctl_rxdv,
-		iob_rxd  => phy_rxd,
+		iob_rxd  => phy1_rx_d,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
@@ -145,7 +143,7 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd,
+		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy_txc_gtxclk);
 
 	-- Differential buffers --

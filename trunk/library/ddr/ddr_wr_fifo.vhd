@@ -25,10 +25,6 @@ entity ddr_wr_fifo is
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
 
-
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 
@@ -112,12 +108,10 @@ begin
 		sys_addr_d <= inc(gray(sys_addr_q(l)));
 		sys_cntr_g: for j in addr_word'range  generate
 		begin
-			ffd_i : fdcpe
+			ffd_i : entity hdl4fpga.ddr_sffd
 			port map (
-				clr => sys_rst,
-				pre => '0',
-				c  => sys_clk,
-				ce => sys_req,
+				clk => sys_clk,
+				sr => sys_req,
 				d  => sys_addr_d(j),
 				q  => sys_addr_q(l)(j));
 		end generate;
