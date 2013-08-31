@@ -24,9 +24,6 @@ entity mem2vio is
 	type vword_vector is array (natural range <>) of vword;
 end;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 

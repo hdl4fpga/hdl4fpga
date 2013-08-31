@@ -24,9 +24,6 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 architecture def of miitxmem is
 	constant bram_num : natural := 2;
 

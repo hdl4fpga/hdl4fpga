@@ -28,9 +28,6 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 architecture def of videomem is
 
 	subtype dword is std_logic_vector(data_size-1 downto 0);
