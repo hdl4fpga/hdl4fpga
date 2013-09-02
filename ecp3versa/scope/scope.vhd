@@ -6,6 +6,9 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
+library ecp3;
+use ecp3.components.all;
+
 architecture scope of ecp3versa is
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
@@ -16,6 +19,7 @@ architecture scope of ecp3versa is
 
 	constant uclk_period : real := 10.0;
 
+	constant uclk : std_logic;
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
 	signal video_lckd : std_logic;
@@ -61,6 +65,12 @@ begin
 
 	sys_rst <= not fpga_gsrn;
 
+	uclk_i : ilvds 
+	port map (
+		a  => clk_p,
+		an => clk_n,
+		z  => uclk);
+
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
@@ -68,7 +78,7 @@ begin
 		sys_per => uclk_period)
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => user_clk,
+		sys_clk => uclk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
@@ -92,7 +102,6 @@ begin
 		input_clk => input_clk,
 
 		ddr_st_lp_dqs => '0',
-		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
 		ddr_rst => ddr3_rst,
