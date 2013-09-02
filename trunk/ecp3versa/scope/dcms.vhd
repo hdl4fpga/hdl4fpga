@@ -48,7 +48,7 @@ begin
 		dfs_div => 2)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clkin => sclk_bufg,
+		dcm_clk => sclk_bufg,
 		dfs_clk => video_clk,
 		dcm_lkd => video_lckd);
 
@@ -63,17 +63,15 @@ begin
 		dfs_clk => gtx_clk,
 		dcm_lkd => gtx_lckd);
 
-	ddrdcm_e : entity hdl4fpga.dfsdcm
+	ddrdcm_e : entity hdl4fpga.pllddr
 	generic map (
-		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
+		dcm_per => sys_per)
 	port map (
-		dfsdcm_rst => dcm_rst,
-		dfsdcm_clkin => sclk_bufg,
-		dfsdcm_clk0  => ddr_clk0,
-		dfsdcm_clk90 => ddr_clk90,
-		dfsdcm_lckd => ddr_lckd);
+		pllddr_rst   => dcm_rst,
+		pllddr_clki => sclk_bufg,
+		pllddr_clk0  => ddr_clk0,
+		pllddr_clk90 => ddr_clk90,
+		pllddr_lkd  => ddr_lckd);
 
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -84,7 +82,7 @@ begin
 		dcm_rst => dcm_rst,
 		dcm_clk => sclk_bufg,
 		dfs_clk => input_clk,
-		dcm_lck => input_lckd);
+		dcm_lkd => input_lckd);
 
 	process (sys_rst, sclk_bufg)
 	begin

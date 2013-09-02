@@ -186,6 +186,10 @@ package std is
 		constant arg : character)
 		return string;
 
+	function to_string (
+		constant arg : real)
+		return string;
+
 	function to_ascii (
 		constant arg : nibble)
 		return ascii;
