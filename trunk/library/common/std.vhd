@@ -186,9 +186,9 @@ package std is
 		constant arg : character)
 		return string;
 
-	function to_string (
-		constant arg : real)
-		return string;
+--	function to_string (
+--		constant arg : real)
+--		return string;
 
 	function to_ascii (
 		constant arg : nibble)
@@ -618,14 +618,14 @@ package body std is
 		return msg.all;
 	end function;
 
-	function to_string (
-		constant arg : real)
-		return string is
-		variable msg : line;
-	begin
-		write (msg, arg);
-		return msg.all;
-	end function;
+--	function to_string (
+--		constant arg : real)
+--		return string is
+--		variable msg : line;
+--	begin
+--		write (msg, arg);
+--		return msg.all;
+--	end function;
 
 	function to_string (
 		constant arg : character)

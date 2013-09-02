@@ -141,8 +141,8 @@ begin
 	generic map (
 		xd_len => 8)
 	port map (
-		mii_rxc  => phy_rxclk,
-		iob_rxdv => phy_rxctl_rxdv,
+		mii_rxc  => phy1_rxc,
+		iob_rxdv => phy1_rx_dv,
 		iob_rxd  => phy1_rx_d,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
@@ -150,9 +150,9 @@ begin
 		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
-		iob_txen => phy_txctl_txen,
+		iob_txen => phy1_tx_en,
 		iob_txd  => phy1_tx_d,
-		iob_gtxclk => phy_txc_gtxclk);
+		iob_gtxclk => phy1_gtxclk);
 
 	-- Differential buffers --
 	--------------------------
