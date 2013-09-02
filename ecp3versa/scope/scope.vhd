@@ -162,14 +162,11 @@ begin
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
-		oddr_mdq : oddr
+		oddr_mdq : hdl4fpga.oddr
 		port map (
-			r => '0',
-			s => '0',
-			c => ddrs_clk180,
-			ce => '1',
-			d1 => '1',
-			d2 => '0',
+			clk => ddrs_clk180,
+			dr => '1',
+			df => '0',
 			q => diff_clk);
 
 		ddr_ck_obufds : obufds
