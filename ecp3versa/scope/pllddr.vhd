@@ -5,31 +5,27 @@ use ieee.numeric_std.ALL;
 library ecp3;
 use ecp3.components.ALL;
 
-entity dfs is
+entity pllddr is
 	generic (
-		dcm_per : real := 20.0;
-		dfs_div : natural := 3;
-		dfs_mul : natural := 10);
+		dcm_per : real := 20.0);
 	port (
-        dcm_rst : in  std_logic; 
-		dcm_clk : in  std_logic; 
-		dfs_clk : out std_logic; 
-		dcm_lkd : out std_logic);
+        pllddr_rst  : in  std_logic; 
+		pllddr_clki : in  std_logic; 
+		pllddr_clk0 : out std_logic; 
+		pllddr_clk90 : out std_logic; 
+		pllddr_lkd  : out std_logic);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ecp3 of dfs is
-	signal dfs_clkbuf : std_logic;
-	signal dcm_clkfb  : std_logic;
-	signal dcm_clk0   : std_logic;
-
+architecture ecp3 of pllddr is
+	signal clkfb : std_logic;
 begin
 
 	pll_i : ehxpllf
 	generic map (
-		feedbk_path  => "INTERNAL",
+		feedbk_path  => "CLKOP",
 		clkos_trim_delay =>  0,
 		clkos_trim_pol => "RISING", 
 		clkop_trim_delay =>  0,
@@ -38,15 +34,15 @@ begin
 		delay_val => 0, 
 		duty => 8,
 		phase_delay_cntl => "STATIC",
-		phaseadj => "0.0", 
+		phaseadj => "90.0", 
 		clkok_div => 2,
-		clkop_div => dfs_mul,
-		clkfb_div => 4,
-		clki_div  => dfs_div,
+		clkop_div => 4,
+		clkfb_div => 2,
+		clki_div  => 1,
 		fin => to_string(1000.0/dcm_per))
 	port map (
-		clki  => dcm_clk,
-		clkfb => dcm_clkfb,
+		clki  => pllddr_clki,
+		clkfb => clkfb,
 		rst   => '0', 
 		rstk  => '0',
 		wrdel => '0',
@@ -62,8 +58,12 @@ begin
 		fda2 => '0', 
 		fda1 => '0',
 		fda0 => '0',
-		clkop => dcm_clkfb, 
-		lock => dcm_lkd, 
-		clkintfb => dcm_clkfb);
+		clkop => clkfb, 
+		clkok => pllddr_clk90,
+		clkok2 => open,
+		lock => pllddr_lkd, 
+		clkintfb => open);
+
+	pllddr_clk0 <= clkfb;
 
 end;
