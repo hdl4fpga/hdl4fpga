@@ -35,14 +35,14 @@ begin
 	-- rx --
 	--------
 
-	rxdv_e : entity hdl4fpga.sffd
+	rxdv_e : entity hdl4fpga.ff
 	port map (
 		clk => mii_rxc,
 		d => iob_rxdv,
 		q => mii_rxdv);
 
 	rxd_e : for i in mii_rxd'range generate
-		ffd_e : ddr_sffd
+		ffd_e : hdl4fpga.ff
 		port map (
 			clk => mii_rxc,
 			d => iob_rxd(i),
@@ -53,29 +53,24 @@ begin
 	-- tx --
 	--------
 
-	txen_e : entity hdl4fpga.sffd
+	txen_e : entity hdl4fpga.ff
 	port map (
 		clk  => mii_txc,
 		d => mii_txen,
 		q => iob_txen);
 
 	txd_e : for i in mii_txd'range generate
-		ffd_e : entity hdl4fpga.sffd
+		ffd_e : entity hdl4fpga.ff
 		port map (
 			clk => mii_txc,
 			d => mii_txd(i),
 			q => iob_txd(i));
 	end generate;
 
-	virtex5_g : if device="virtex5" generate
-		gtx_clk_i : oddr
-		port map (
-			r => '0',
-			s => '0',
-			c => mii_txc,
-			ce => '1',
-			d1 => '0',
-			d2 => '1',
-			q => iob_gtxclk);
-	end generate;
+	gtx_clk_i : oddr
+	port map (
+		clk => mii_txc,
+		dr => '0',
+		df => '1',
+		q => iob_gtxclk);
 end;

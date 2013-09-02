@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="scope" dir="scope" description="scope" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.crc" lib="hdl4fpga" top="ecp3versa"/>
+        <Options def_top="hdl4fpga.arff" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
         </Source>
@@ -59,6 +59,9 @@
         <Source name="../../library/common/crc32.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+        <Source name="../../library/mii/mii_iob.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="../../library/mii/byte/miirx_mac.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -72,6 +75,9 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_mem.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/mii/byte/miitx_udp.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_udp.vhd" type="VHDL" type_short="VHDL">
@@ -116,7 +122,10 @@
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_ffd.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-		<Source name="../../library/common/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/oddr.vhd" type="VHDL" type_short="VHDL">

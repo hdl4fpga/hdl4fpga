@@ -19,7 +19,7 @@ architecture scope of ecp3versa is
 
 	constant uclk_period : real := 10.0;
 
-	constant uclk : std_logic;
+	signal uclk : std_logic;
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
 	signal video_lckd : std_logic;
@@ -65,11 +65,11 @@ begin
 
 	sys_rst <= not fpga_gsrn;
 
-	uclk_i : ilvds 
+	uclk_i : entity hdl4fpga.idbuf 
 	port map (
-		a  => clk_p,
-		an => clk_n,
-		z  => uclk);
+		i_p => clk_p,
+		i_n => clk_n,
+		o   => uclk);
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -139,7 +139,6 @@ begin
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
-		device => "virtex5",
 		xd_len => 8)
 	port map (
 		mii_rxc  => phy_rxclk,
@@ -162,20 +161,18 @@ begin
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
-		oddr_mdq : hdl4fpga.oddr
+		oddr_mdq : entity hdl4fpga.oddr
 		port map (
 			clk => ddrs_clk180,
 			dr => '1',
 			df => '0',
 			q => diff_clk);
 
-		ddr_ck_obufds : obufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II")
+		ddr_ck_obufds : entity hdl4fpga.odbuf
 		port map (
-			i  => diff_clk,
-			o  => ddr2_clk_p(0),
-			ob => ddr2_clk_n(0));
+			i => diff_clk,
+			o_p => ddr3_clk_p,
+			o_n => ddr3_clk_n);
 	end block;
 
 end;
