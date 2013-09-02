@@ -62,7 +62,7 @@ begin
 		fda2 => '0', 
 		fda1 => '0',
 		fda0 => '0',
-		clkop => dcm_clkfb, 
+		clkop => dfs_clk, 
 		lock => dcm_lkd, 
 		clkintfb => dcm_clkfb);
 

@@ -44,7 +44,7 @@ architecture lttsm of ddr_ram is
 		dat := (others => '0');
 		for i in arg'range loop
 			dat := dat sll 4;
-			dat := unsigned(arg(i));
+			dat(0 to 4-1) := unsigned(arg(i));
 		end loop;
 		return std_logic_vector(dat(0 to n-1));
 	end;
@@ -70,14 +70,14 @@ begin
 			wad1 => wa(1),
 			wad2 => wa(2),
 			wad3 => wa(3),
-			do0  => rd_slice(l)(0),
-			do1  => rd_slice(l)(1),
-			do2  => rd_slice(l)(2),
-			do3  => rd_slice(l)(3),
-			di0  => wd_slice(l)(0),
-			di1  => wd_slice(l)(1),
-			di2  => wd_slice(l)(2),
-			di3  => wd_slice(l)(3));
+			do0  => rd_slice(i)(0),
+			do1  => rd_slice(i)(1),
+			do2  => rd_slice(i)(2),
+			do3  => rd_slice(i)(3),
+			di0  => wd_slice(i)(0),
+			di1  => wd_slice(i)(1),
+			di2  => wd_slice(i)(2),
+			di3  => wd_slice(i)(3));
 	end generate;
 	do <= to_stdlogicvector(rd_slice);
 end;

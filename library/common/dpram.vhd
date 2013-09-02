@@ -18,7 +18,7 @@ entity dpram is
 		wr_data : in std_logic_vector(data_size-1 downto 0) := (others => '-'));
 end;
 
-architecture default of dpram is
+architecture def of dpram is
 	type word_vector is array (natural range <>) of std_logic_vector(wr_data'range);
 	function init
 	return word_vector is

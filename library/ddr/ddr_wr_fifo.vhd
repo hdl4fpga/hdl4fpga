@@ -40,6 +40,7 @@ architecture mix of ddr_wr_fifo is
 
 	type dm_vector is array (natural range <>) of std_logic_vector(ddr_dm_r'range);
 	signal ddr_dm : dm_vector(0 to 1);
+	signal dmi : dm_vector(0 to 1);
 
 	type byte_vector is array (natural range <>) of std_logic_vector(byte_bits-1 downto 0);
 
@@ -60,12 +61,12 @@ architecture mix of ddr_wr_fifo is
 	function to_dmvector (
 		arg : std_logic_vector)
 		return dm_vector is
-		variable dat : unsigned(arg'length downto 0);
+		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dm_vector(data_bytes-1 downto 0);
 	begin
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte_bits-1 downto 0));
+			val(i) := std_logic_vector(dat(data_bytes-1 downto 0));
 			dat := dat srl 2;
 		end loop;
 		return val;
@@ -85,21 +86,21 @@ begin
 	ddr_dm_r <= ddr_dm(0);
 	ddr_dm_f <= ddr_dm(1);
 
-	dm_g: block
-		signal dm : std_logic_vector(2*data_bytes-1 downto 0);
+	dmi <= to_dmvector(sys_dm);
+	dm_g: for i in 0 to 1 generate
+		signal dm : std_logic_vector(sys_dm'range);
 	begin
 		ram_i : entity hdl4fpga.ddr_ram
 		generic map (
-			n => byte_bits)
+			n => data_bytes)
 		port map (
 			clk => sys_clk,
 			we => sys_req,
 			wa => sys_addr_q(0),
-			di => sys_dm,
-			ra => ddr_addr_q(0),
-			do => dm);
-		ddr_dm <= to_dmvector(dm);
-	end block;
+			di => dmi(i),
+			ra => ddr_addr_q(data_bytes*i),
+			do => ddr_dm(i));
+	end generate;
 
 	di <= to_bytevector(sys_di);
 	data_byte_g: for l in ddr_dm_r'range generate
@@ -139,7 +140,7 @@ begin
 			port map (
 				clk => sys_clk,
 				we => sys_req,
-				wa => sys_addr_q(data_bytes*i+l),
+				wa => sys_addr_q(l),
 				di => di(data_bytes*i+l),
 				ra => ddr_addr_q(data_bytes*i+l),
 				do => dpo);

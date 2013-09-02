@@ -44,7 +44,7 @@ begin
 				cntr => wm_cntr,
 				ena  => sync_ena_ndge or (wm_mark and not fill_rdy), 
 				load => sync_ena_ndge or wm_cntr(0),
-				data => to_unsigned(2,wm_cntr'length));
+				data => std_logic_vector'(to_unsigned(2,wm_cntr'length)));
 
 			if sync_ena_ndge='1' then
 				wm_level <= wm_levels(2);

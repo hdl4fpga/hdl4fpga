@@ -25,9 +25,6 @@ entity mii_iob is
 		iob_txd  : out std_logic_vector(0 to xd_len-1));
 end;
 
-library unisim;
-use unisim.vcomponents.all;
-
 architecture def of mii_iob is
 begin
 
@@ -42,7 +39,7 @@ begin
 		q => mii_rxdv);
 
 	rxd_e : for i in mii_rxd'range generate
-		ffd_e : hdl4fpga.ff
+		ffd_e : entity hdl4fpga.ff
 		port map (
 			clk => mii_rxc,
 			d => iob_rxd(i),
@@ -67,7 +64,7 @@ begin
 			q => iob_txd(i));
 	end generate;
 
-	gtx_clk_i : oddr
+	gtx_clk_i : entity hdl4fpga.oddr
 	port map (
 		clk => mii_txc,
 		dr => '0',

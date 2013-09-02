@@ -27,12 +27,12 @@ begin
 			signal di : std_logic;
 		begin
 
-			process (ddr_io_clk)
-			begin
-				if rising_edge(ddr_io_clk) then
-					dqz <= ddr_io_dqz(i);
-				end if;
-			end process;
+			--process (ddr_io_clk)
+			--begin
+				--if rising_edge(ddr_io_clk) then
+					--dqz <= ddr_io_dqz(i);
+				--end if;
+			--end process;
 
 			oddrt_i : ofd1s3ax
 			port map (
