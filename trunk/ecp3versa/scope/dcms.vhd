@@ -6,7 +6,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
 entity dcms is
 	generic (
@@ -25,7 +24,7 @@ entity dcms is
 		dcm_lckd  : out std_logic);
 end;
 
-architecture def of dcms is
+architecture ecp3 of dcms is
 
 	---------------------------------------
 	-- Frequency   -- 166 Mhz -- 450 Mhz --
@@ -42,49 +41,19 @@ architecture def of dcms is
 	signal gtx_lckd : std_logic;
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => sys_clk,
-		O => sclk_bufg);
-
-	video_dcm_e : entity hdl4fpga.dfsdcm
+	video_dcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
 		dfs_mul => 3,
 		dfs_div => 2)
 	port map (
-		dfsdcm_rst => dcm_rst,
-		dfsdcm_clkin => sclk_bufg,
-		dfsdcm_clk0  => video_clk,
-		dfsdcm_clk90 => video_clk90,
-		dfsdcm_lckd => video_lckd);
-
---	videodcm_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		dfs_mul => 3,
---		dfs_div => 2)
---	port map(
---		dcm_rst => dcm_rst,
---		dcm_clk => sclk_bufg,
---		dfs_clk => video_clk,
---		dcm_lck => video_lckd);
-
---	ddrdcm_e : entity hdl4fpga.plldcm
---	generic map (
---		pll_per => sys_per,
---		dfs_mul => ddr_multiply,
---		dfs_div => ddr_divide)
---	port map (
---		plldcm_rst => dcm_rst,
---		plldcm_clkin => sclk_bufg,
---		plldcm_clk0  => ddr_clk0,
---		plldcm_clk90 => ddr_clk90,
---		plldcm_lckd => ddr_lckd);
+		dcm_rst => dcm_rst,
+		dcm_clkin => sclk_bufg,
+		dfs_clk => video_clk,
+		dcm_lkd => video_lckd);
 
 	gmii_dfs_e : entity hdl4fpga.dfs
 	generic map (
-		dfs_mode => "LOW",
 		dcm_per => sys_per,
 		dfs_mul => 5,
 		dfs_div => 4)
@@ -92,7 +61,7 @@ begin
 		dcm_rst => dcm_rst,
 		dcm_clk => sclk_bufg,
 		dfs_clk => gtx_clk,
-		dcm_lck => gtx_lckd);
+		dcm_lkd => gtx_lckd);
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (

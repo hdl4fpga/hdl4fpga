@@ -608,38 +608,28 @@ package body std is
 	function to_string (
 		constant arg : integer)
 		return string is
-		constant dgt : string(1 to 10) := "0123456789";
-		variable buf : string(1 to 32);
-		variable aux : natural;
-		variable n : natural;
+		variable msg : line;
 	begin
-		aux := arg;
-		if arg < 0 then
-			aux := -aux;
-		end if;
+		write (msg, arg);
+		return msg.all;
+	end function;
 
-		n := 1;
-		loop
-			buf := dgt(aux mod 10 + 1) & buf(1 to buf'right-1);
-			aux := aux / 10;
-			exit when aux=0;
-			n := n + 1;
-		end loop;
-
-		if arg < 0 then
-			buf := '-' & buf(1 to buf'right-1);
-			n := n + 1;
-		end if;
-		return buf(1 to n);
+	function to_string (
+		constant arg : real)
+		return string is
+		variable msg : line;
+	begin
+		write (msg, arg);
+		return msg.all;
 	end function;
 
 	function to_string (
 		constant arg : character)
 		return string is
-		variable aux : string(1 to 1);
+		variable msg : line;
 	begin
-		aux(1) := arg;
-		return aux;
+		write (msg, arg);
+		return msg.all;
 	end function;
 		
 	function to_ascii(
