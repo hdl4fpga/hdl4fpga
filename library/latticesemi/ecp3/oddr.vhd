@@ -17,7 +17,7 @@ begin
 	oddr_i : oddrxd1
 	port map (
 		sclk => clk,
-		dr => da,
-		df => db,
+		da => dr,
+		db => df,
 		q  => q);
 end;
