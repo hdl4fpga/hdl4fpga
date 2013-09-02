@@ -116,44 +116,47 @@
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_ffd.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
+		<Source name="../../library/common/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
         <Source name="../../library/common/mux.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/win_sytm.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/cga/cga.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/cga/cgafonts.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/cga/cgaram.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/video/cga/fontrom.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/latticesemi/pgm_delay.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/ddr_wr_fifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/ddr/latticesemi/ecp3/ddr_io_dm.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../scope/dcms.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../scope/pllddr.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/latticesemi/dfs.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="hdl4fpga"/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
