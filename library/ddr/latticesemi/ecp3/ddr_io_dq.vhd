@@ -40,10 +40,9 @@ begin
 				d => ddr_io_dqz(i),
 				q => dqz);
 
-			oddr_i : oddrxd
+			oddr_i : oddrxd1
 			port map (
 				sclk => ddr_io_clk,
-				dqclk1 => ddr_io_clk,
 				da => ddr_io_dq_r(i*byte_bits+j),
 				db => ddr_io_dq_f(i*byte_bits+j),
 				q  => dqo);
