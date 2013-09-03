@@ -95,44 +95,33 @@ package std is
 		ena  : std_logic := '1')
 		return unsigned;
 
-	function inc (
-		load : std_logic := '1';
+	function dec (
 		cntr : std_logic_vector;
-		data : integer;
-		ena  : std_logic := '1')
+		ena  : std_logic := '1';
+		load : std_logic := '1';
+		data : std_logic_vector)
 		return std_logic_vector;
 
 	function dec (
-		load : std_logic := '1';
 		cntr : std_logic_vector;
-		data : std_logic_vector;
-		ena  : std_logic := '1')
-		return std_logic_vector;
-
-	function dec (
+		ena  : std_logic := '1';
 		load : std_logic := '1';
-		cntr : unsigned;
-		data : unsigned;
-		ena  : std_logic := '1')
+		data : std_logic_vector)
 		return unsigned;
 
 	function dec (
-		load : std_logic := '1';
 		cntr : std_logic_vector;
-		data : unsigned;
-		ena  : std_logic := '1')
+		ena  : std_logic := '1';
+		load : std_logic := '1';
+		data : integer)
 		return std_logic_vector;
 
 	function dec (
-		load : std_logic := '1';
 		cntr : std_logic_vector;
-		data : integer;
-		ena  : std_logic := '1')
-		return std_logic_vector;
-
-	function seek (
-		constant cntr : in unsigned)
-		return boolean;
+		ena  : std_logic := '1';
+		load : std_logic := '1';
+		data : integer)
+		return unsigned;
 
 	-- Logic Functions
 	------------------
@@ -326,10 +315,10 @@ package body std is
 	end;
 
 	function to_bytevector (
-		constant arg : in string;
-		constant n   : in natural)
+		constant arg : string;
+		constant n   : natural)
 		return byte_vector is
-		alias aux : string(1 to arg'length) is arg;
+		variable aux : string(1 to arg'length) := arg;
 		variable val : byte_vector(0 to n-1);
 	begin
 		for i in 1 to n loop
@@ -433,40 +422,37 @@ package body std is
 	end;
 
 	function dec (
+		cntr : std_logic_vector;
+		ena  : std_logic := '1';
 		load : std_logic := '1';
-		cntr : unsigned;
-		data : std_logic_vector;
-		ena  : std_logic := '1')
+		data : std_logic_vector)
+		return std_logic_vector is
+	begin
+		if ena='1' then
+			if load='1' then
+				return std_logic_vector(resize(unsigned(data), cntr'length));
+			else
+				return std_logic_vector(unsigned(cntr)-1);
+			end if;
+		end if;
+		return cntr;
+	end;
+
+	function dec (
+		cntr : std_logic_vector;
+		ena  : std_logic := '1';
+		load : std_logic := '1';
+		data : std_logic_vector)
 		return unsigned is
 	begin
-		return dec(load,cntr,unsigned(data));
+		return unsigned'(dec(cntr, ena, load, data));
 	end;
 
 	function dec (
-		load : std_logic := '1';
 		cntr : std_logic_vector;
-		data : std_logic_vector;
-		ena  : std_logic := '1')
-		return std_logic_vector is
-	begin
-		return std_logic_vector(dec(load,unsigned(cntr),unsigned(data),ena));
-	end;
-
-	function dec (
+		ena  : std_logic := '1';
 		load : std_logic := '1';
-		cntr : std_logic_vector;
-		data : unsigned;
-		ena  : std_logic := '1')
-		return std_logic_vector is
-	begin
-		return std_logic_vector(dec(load,unsigned(cntr),data,ena));
-	end;
-
-	function dec (
-		load : std_logic := '1';
-		cntr : std_logic_vector;
-		data : integer;
-		ena  : std_logic := '1')
+		data : integer)
 		return std_logic_vector is
 	begin
 		if ena='1' then
@@ -484,20 +470,13 @@ package body std is
 	end;
 
 	function dec (
+		cntr : std_logic_vector;
+		ena  : std_logic := '1';
 		load : std_logic := '1';
-		cntr : unsigned;
-		data : unsigned;
-		ena  : std_logic := '1')
+		data : integer)
 		return unsigned is
 	begin
-		if ena='1' then
-			if load='1' then
-				return resize(data,cntr'length);
-			else
-				return cntr-1;
-			end if;
-		end if;
-		return cntr;
+		return unsigned(std_logic_vector'(dec(cntr, ena, load, data)));
 	end;
 
 	procedure dec (
@@ -526,16 +505,6 @@ package body std is
 	begin
 		return std_logic_vector(unsigned'(to_unsigned(arg1,arg2'length)));
 	end;
-
-	function seek (
-		constant cntr : unsigned) 
-		return boolean is
-	begin
-		if cntr(0)/='1' then
-			return false;
-		end if;
-		return true;
-	end function;
 
 	function demux (
 		constant s : std_logic_vector;
@@ -728,7 +697,7 @@ package body std is
 	end;
 
 	function signed_num_bits (
-		constant arg: integer)
+		arg: integer)
 		return natural is
 		variable nbits : natural;
 		variable n : natural;
@@ -747,7 +716,7 @@ package body std is
 	end;
 
 	function unsigned_num_bits (
-		constant arg: natural)
+		arg: natural)
 		return natural is
 		variable nbits: natural;
 		variable n: natural;

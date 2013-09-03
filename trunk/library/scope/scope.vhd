@@ -60,7 +60,7 @@ end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
+--use hdl4fpga.cgafont.all;
 
 architecture def of scope is
 	signal video_don : std_logic;
@@ -187,89 +187,89 @@ begin
 		end if;
 	end process;
 
-	video_vga_e : entity hdl4fpga.video_vga
-	generic map (
-		n => 12)
-	port map (
-		clk   => vga_clk,
-		hsync => video_hsync,
-		vsync => video_vsync,
-		frm   => video_frm,
-		don   => video_don);
-	vga_frm <= video_frm;
-	video_blank <= video_don and video_frm;
-		
-	win_stym_e : entity hdl4fpga.win_sytm
-	port map (
-		win_clk => vga_clk,
-		win_frm => video_frm,
-		win_don => video_don,
-		win_rowid  => win_rowid ,
-		win_rowpag => win_rowpag,
-		win_rowoff => win_rowoff,
-		win_colid  => win_colid,
-		win_colpag => win_colpag,
-		win_coloff => win_coloff);
-
-	win_ena_b : block
-		signal scope_win : std_logic;
-		signal cga_win : std_logic;
-		signal grid_don : std_logic;
-		signal plot_dot1 : std_logic_vector(plot_dot'range);
-		signal grid_dot1 : std_logic;
-		signal plot_start  : std_logic;
-		signal plot_end  : std_logic;
-	begin
-		scope_win <= setif(win_rowid&win_colid = "1111");
-		cga_win   <= cga_dot and setif(win_rowid&win_colid="1101");
-
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 10,
-			d => (
-				0 to 2 => 4+10,		-- hsync, vsync, blank
-				3 to 3 => 2+10,		-- scope_win -> plot_end
-				4 to 5 => 1,		-- plot
-				6 to 6 => 1+10,		-- grid
-			    7 to 7 => 1,		-- plot_end -> grid_don
-			    8 to 8 => 3,		-- grid_don -> plot_start
-			    9 to 9 => 3))		-- cga_dot -> cga_dot
-		port map (
-			clk   => vga_clk,
-
-			di(0) => video_hsync,
-			di(1) => video_vsync,
-			di(2) => video_blank,
-
-			di(3) => scope_win,
-
-			di(4) => plot_dot(0),
-			di(5) => plot_dot(1),
-			di(6) => grid_dot,
-			di(7) => plot_end,
-			di(8) => grid_don,
-			di(9) => cga_win,
-
-			do(0) => vga_hsync,
-			do(1) => vga_vsync,
-			do(2) => vga_blank,
-
-			do(3) => plot_end,
-
-			do(4) => plot_dot1(0),
-			do(5) => plot_dot1(1),
-			do(6) => grid_dot1,
-			do(7) => grid_don,
-			do(8) => plot_start,
-			do(9) => cga_don);
-
-		vga_red   <= (others => (plot_start and plot_end and plot_dot1(1)) or cga_don);
-		vga_green <= (others => (plot_start and plot_end and plot_dot1(0)) or cga_don);
-		vga_blue  <= (others => (grid_don and grid_dot1) or cga_don);
-		
-	end block;
-
-	video_ena <= setif(win_rowid="11");
+--	video_vga_e : entity hdl4fpga.video_vga
+--	generic map (
+--		n => 12)
+--	port map (
+--		clk   => vga_clk,
+--		hsync => video_hsync,
+--		vsync => video_vsync,
+--		frm   => video_frm,
+--		don   => video_don);
+--	vga_frm <= video_frm;
+--	video_blank <= video_don and video_frm;
+--		
+--	win_stym_e : entity hdl4fpga.win_sytm
+--	port map (
+--		win_clk => vga_clk,
+--		win_frm => video_frm,
+--		win_don => video_don,
+--		win_rowid  => win_rowid ,
+--		win_rowpag => win_rowpag,
+--		win_rowoff => win_rowoff,
+--		win_colid  => win_colid,
+--		win_colpag => win_colpag,
+--		win_coloff => win_coloff);
+--
+--	win_ena_b : block
+--		signal scope_win : std_logic;
+--		signal cga_win : std_logic;
+--		signal grid_don : std_logic;
+--		signal plot_dot1 : std_logic_vector(plot_dot'range);
+--		signal grid_dot1 : std_logic;
+--		signal plot_start  : std_logic;
+--		signal plot_end  : std_logic;
+--	begin
+--		scope_win <= setif(win_rowid&win_colid = "1111");
+--		cga_win   <= cga_dot and setif(win_rowid&win_colid="1101");
+--
+--		align_e : entity hdl4fpga.align
+--		generic map (
+--			n => 10,
+--			d => (
+--				0 to 2 => 4+10,		-- hsync, vsync, blank
+--				3 to 3 => 2+10,		-- scope_win -> plot_end
+--				4 to 5 => 1,		-- plot
+--				6 to 6 => 1+10,		-- grid
+--			    7 to 7 => 1,		-- plot_end -> grid_don
+--			    8 to 8 => 3,		-- grid_don -> plot_start
+--			    9 to 9 => 3))		-- cga_dot -> cga_dot
+--		port map (
+--			clk   => vga_clk,
+--
+--			di(0) => video_hsync,
+--			di(1) => video_vsync,
+--			di(2) => video_blank,
+--
+--			di(3) => scope_win,
+--
+--			di(4) => plot_dot(0),
+--			di(5) => plot_dot(1),
+--			di(6) => grid_dot,
+--			di(7) => plot_end,
+--			di(8) => grid_don,
+--			di(9) => cga_win,
+--
+--			do(0) => vga_hsync,
+--			do(1) => vga_vsync,
+--			do(2) => vga_blank,
+--
+--			do(3) => plot_end,
+--
+--			do(4) => plot_dot1(0),
+--			do(5) => plot_dot1(1),
+--			do(6) => grid_dot1,
+--			do(7) => grid_don,
+--			do(8) => plot_start,
+--			do(9) => cga_don);
+--
+--		vga_red   <= (others => (plot_start and plot_end and plot_dot1(1)) or cga_don);
+--		vga_green <= (others => (plot_start and plot_end and plot_dot1(0)) or cga_don);
+--		vga_blue  <= (others => (grid_don and grid_dot1) or cga_don);
+--		
+--	end block;
+--
+--	video_ena <= setif(win_rowid="11");
 
 	dataio_rst <= not ddrs_ini;
 	dataio_e : entity hdl4fpga.dataio 
@@ -396,25 +396,25 @@ begin
 		end if;
 	end process;
 
-	cga_clk <= mii_rxc;
-	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
-	cga_e : entity hdl4fpga.cga
-	generic map (
-		bitrom => psf1cp850x8x16,
-		height => 16,
-		width  => 8,
-		row_reverse => true,
-		col_reverse => true)
-	port map (
-		sys_clk => cga_clk,
-		sys_row => cga_ptr(cga_row'range),
-		sys_col => cga_ptr(cga_col'range),
-		sys_we  => '1',
-		sys_code => cga_code,
-		vga_clk => vga_clk,
-		vga_row => vga_row,
-		vga_col => win_coloff(8-1 downto 1),
-		vga_dot => cga_dot);
+--	cga_clk <= mii_rxc;
+--	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
+--	cga_e : entity hdl4fpga.cga
+--	generic map (
+--		bitrom => psf1cp850x8x16,
+--		height => 16,
+--		width  => 8,
+--		row_reverse => true,
+--		col_reverse => true)
+--	port map (
+--		sys_clk => cga_clk,
+--		sys_row => cga_ptr(cga_row'range),
+--		sys_col => cga_ptr(cga_col'range),
+--		sys_we  => '1',
+--		sys_code => cga_code,
+--		vga_clk => vga_clk,
+--		vga_row => vga_row,
+--		vga_col => win_coloff(8-1 downto 1),
+--		vga_dot => cga_dot);
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
