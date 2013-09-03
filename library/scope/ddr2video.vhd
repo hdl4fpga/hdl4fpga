@@ -41,10 +41,10 @@ begin
 	begin
 		if rising_edge(ddrios_clk) then
 			wm_cntr <= dec (
-				cntr => wm_cntr,
+				cntr => std_logic_vector(wm_cntr),
 				ena  => sync_ena_ndge or (wm_mark and not fill_rdy), 
 				load => sync_ena_ndge or wm_cntr(0),
-				data => std_logic_vector'(to_unsigned(2,wm_cntr'length)));
+				data => 2);
 
 			if sync_ena_ndge='1' then
 				wm_level <= wm_levels(2);

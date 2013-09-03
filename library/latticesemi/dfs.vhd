@@ -9,7 +9,10 @@ entity dfs is
 	generic (
 		dcm_per : real := 20.0;
 		dfs_div : natural := 3;
-		dfs_mul : natural := 10);
+		div_op : natural;
+		div_fb : natural;
+		div_i  : natural);
+		
 	port (
         dcm_rst : in  std_logic; 
 		dcm_clk : in  std_logic; 
@@ -40,10 +43,10 @@ begin
 		phase_delay_cntl => "STATIC",
 		phaseadj => "0.0", 
 		clkok_div => 2,
-		clkop_div => dfs_mul,
-		clkfb_div => 4,
-		clki_div  => dfs_div,
-		fin => to_string(1000.0/dcm_per))
+		clkop_div => div_op,
+		clkfb_div => div_fb,
+		clki_div  => div_i,
+		fin => "100.000000")
 	port map (
 		clki  => dcm_clk,
 		clkfb => dcm_clkfb,

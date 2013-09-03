@@ -30,33 +30,46 @@ architecture ecp3 of dcms is
 	---------------------------------------
 
 	signal dcm_rst : std_logic;
-	signal sclk_bufg : std_logic;
 
 	signal video_lckd : std_logic;
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
 begin
+	process (sys_rst, sys_clk)
+	begin
+		if sys_rst='1' then
+			dcm_rst  <= '1';
+			dcm_lckd <= '0';
+		elsif rising_edge(sys_clk) then
+			if dcm_rst='0' then
+				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd;
+			end if;
+			dcm_rst <= '0';
+		end if;
+	end process;
 
 	video_dcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
+		div_op => 4,
+		div_fb => 3,
+		div_i  => 2)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => video_clk,
 		dcm_lkd => video_lckd);
 
 	gmii_dfs_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => 5,
-		dfs_div => 4)
+		div_op => 8,
+		div_fb => 5,
+		div_i  => 4)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => gtx_clk,
 		dcm_lkd => gtx_lckd);
 
@@ -65,7 +78,7 @@ begin
 		dcm_per => sys_per)
 	port map (
 		pllddr_rst   => dcm_rst,
-		pllddr_clki => sclk_bufg,
+		pllddr_clki => sys_clk,
 		pllddr_clk0  => ddr_clk0,
 		pllddr_clk90 => ddr_clk90,
 		pllddr_lkd  => ddr_lckd);
@@ -73,24 +86,12 @@ begin
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
+		div_op => 8,
+		div_fb => 1,
+		div_i  => 1)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => input_clk,
 		dcm_lkd => input_lckd);
-
-	process (sys_rst, sclk_bufg)
-	begin
-		if sys_rst='1' then
-			dcm_rst  <= '1';
-			dcm_lckd <= '0';
-		elsif rising_edge(sclk_bufg) then
-			if dcm_rst='0' then
-				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd;
-			end if;
-			dcm_rst <= '0';
-		end if;
-	end process;
 end;

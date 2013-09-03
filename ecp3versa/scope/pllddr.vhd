@@ -39,7 +39,7 @@ begin
 		clkop_div => 4,
 		clkfb_div => 2,
 		clki_div  => 1,
-		fin => to_string(1000.0/dcm_per))
+		fin => "100.00000")
 	port map (
 		clki  => pllddr_clki,
 		clkfb => clkfb,
