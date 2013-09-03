@@ -33,7 +33,6 @@ architecture scope of ecp3versa is
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
 
-	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
 	signal mii_txen : std_logic;
@@ -61,15 +60,18 @@ architecture scope of ecp3versa is
 	constant ddr_mul : natural :=11;
 	constant ddr_div : natural := 4;
 
+	attribute oddrapps : string;
+	attribute oddrapps of all : label is "SCLK_ALIGNED";
 begin
 
 	sys_rst <= not fpga_gsrn;
 
-	uclk_i : entity hdl4fpga.idbuf 
-	port map (
-		i_p => clk_p,
-		i_n => clk_n,
-		o   => uclk);
+--	uclk_i : entity hdl4fpga.idbuf 
+--	port map (
+--		i_p => clk_p,
+--		i_n => clk_n,
+--		o   => uclk);
+	uclk <= clk;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -84,7 +86,6 @@ begin
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
 		video_clk90 => video_clk90,
-		gtx_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
@@ -113,7 +114,7 @@ begin
 		ddr_ba  => ddr3_ba(bank_size-1 downto 0),
 		ddr_a   => ddr3_a,
 		ddr_dm  => ddr3_dm,
-		ddr_dqs => ddr3_dqs_p,
+		ddr_dqs => ddr3_dqs,
 		ddr_dqs_n => ddr3_dqs_n,
 		ddr_dq  => ddr3_dq,
 		ddr_odt => ddr3_odt,
@@ -121,7 +122,7 @@ begin
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => gtx_clk,
+		mii_txc  => phy1_125clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
@@ -147,7 +148,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => gtx_clk,
+		mii_txc  => phy1_125clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy1_tx_en,
@@ -167,12 +168,13 @@ begin
 			dr => '1',
 			df => '0',
 			q => diff_clk);
+		ddr3_clk <= diff_clk;
 
-		ddr_ck_obufds : entity hdl4fpga.odbuf
-		port map (
-			i => diff_clk,
-			o_p => ddr3_clk_p,
-			o_n => ddr3_clk_n);
+--		ddr_ck_obufds : entity hdl4fpga.odbuf
+--		port map (
+--			i => diff_clk,
+--			o_p => ddr3_clk_p,
+--			o_n => ddr3_clk_n);
 	end block;
 
 end;
