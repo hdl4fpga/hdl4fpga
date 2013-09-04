@@ -60,18 +60,16 @@ architecture scope of ecp3versa is
 	constant ddr_mul : natural :=11;
 	constant ddr_div : natural := 4;
 
-	attribute oddrapps : string;
-	attribute oddrapps of all : label is "SCLK_ALIGNED";
 begin
 
 	sys_rst <= not fpga_gsrn;
 
---	uclk_i : entity hdl4fpga.idbuf 
---	port map (
---		i_p => clk_p,
---		i_n => clk_n,
---		o   => uclk);
-	uclk <= clk;
+	uclk_i : entity hdl4fpga.idbuf 
+	port map (
+		i_p => clk,
+		i_n => clk_n,
+		o   => uclk);
+--	uclk <= clk;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -161,20 +159,21 @@ begin
 	ddrs_clk180 <= not ddrs_clk0;
 	diff_clk_b : block
 		signal diff_clk : std_logic;
+		attribute oddrapps : string;
+		attribute oddrapps of oddrmdq : label is "SCLK_ALIGNED";
 	begin
-		oddr_mdq : entity hdl4fpga.oddr
+		oddrmdq : entity hdl4fpga.oddr
 		port map (
 			clk => ddrs_clk180,
 			dr => '1',
 			df => '0',
 			q => diff_clk);
-		ddr3_clk <= diff_clk;
 
---		ddr_ck_obufds : entity hdl4fpga.odbuf
---		port map (
---			i => diff_clk,
---			o_p => ddr3_clk_p,
---			o_n => ddr3_clk_n);
+		ddr_ck_obufds : entity hdl4fpga.odbuf
+		port map (
+			i => diff_clk,
+			o_p => ddr3_clk,
+			o_n => ddr3_clk_n);
 	end block;
 
 end;

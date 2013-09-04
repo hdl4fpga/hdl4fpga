@@ -21,6 +21,8 @@ use ecp3.components.all;
 architecture arch of ddr_io_dqs is
 	signal rclk : std_logic;
 	signal fclk : std_logic;
+	attribute oddrapps : string;
+	attribute oddrapps of oddrdqs : label is "DDR2_MEM_DQS";
 begin
 
 	rclk <=     ddr_io_clk;
@@ -41,7 +43,7 @@ begin
 			db => '0',
 			q  => dqz);
 
-		oddr_i : oddrxdqsa
+		oddrdqs : oddrxdqsa
 		port map (
 			sclk => rclk,
 			da => ddr_io_ena(i),
