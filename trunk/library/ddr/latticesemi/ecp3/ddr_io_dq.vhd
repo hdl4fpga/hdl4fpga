@@ -19,6 +19,8 @@ library ecp3;
 use ecp3.components.all;
 
 architecture ecp3ea of ddr_io_dq is
+	attribute oddrapps : string;
+	attribute oddrapps of oddrdq : label is "SCLK_ALIGNED";
 begin
 	bytes_g : for i in data_bytes-1 downto 0 generate
 		bits_g : for j in byte_bits/2-1 downto 0 generate
@@ -40,7 +42,7 @@ begin
 				d => ddr_io_dqz(i),
 				q => dqz);
 
-			oddr_i : oddrxd1
+			oddrdq : oddrxd1
 			port map (
 				sclk => ddr_io_clk,
 				da => ddr_io_dq_r(i*byte_bits+j),

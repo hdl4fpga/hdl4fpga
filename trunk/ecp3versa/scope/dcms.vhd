@@ -15,7 +15,7 @@ entity dcms is
 		input_clk : out std_logic;
 		ddr_clk0  : out std_logic;
 		ddr_clk90 : out std_logic;
-		video_clk : out std_logic;
+		video_clk : out std_logic := '-';
 		video_clk90 : out std_logic;
 		dcm_lckd  : out std_logic);
 end;
@@ -30,7 +30,7 @@ architecture ecp3 of dcms is
 
 	signal dcm_rst : std_logic;
 
-	signal video_lckd : std_logic;
+	signal video_lckd : std_logic := '1';
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
@@ -48,17 +48,17 @@ begin
 		end if;
 	end process;
 
-	video_dcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		div_op => 4,
-		div_fb => 3,
-		div_i  => 2)
-	port map (
-		dcm_rst => dcm_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk,
-		dcm_lkd => video_lckd);
+--	video_dcm_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		div_op => 4,
+--		div_fb => 3,
+--		div_i  => 2)
+--	port map (
+--		dcm_rst => dcm_rst,
+--		dcm_clk => sys_clk,
+--		dfs_clk => video_clk,
+--		dcm_lkd => video_lckd);
 
 	ddrdcm_e : entity hdl4fpga.pllddr
 	generic map (

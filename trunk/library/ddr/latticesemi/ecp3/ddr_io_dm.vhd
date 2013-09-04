@@ -24,6 +24,9 @@ architecture arch of ddr_io_dm is
 	signal ddr_io_fclk : std_logic;
 	signal ddr_clk : std_logic_vector(0 to 1);
 	signal ddr_st  : std_logic_vector(ddr_clk'range);
+
+	attribute oddrapps : string;
+	attribute oddrapps of oddrdm : label is "SCLK_ALIGNED";
 begin
 	ddr_clk <= (0 => ddr_io_clk,  1 => not ddr_io_clk);
 	ddr_st  <= (0 => ddr_io_st_r, 1 =>     ddr_io_st_f);
@@ -63,10 +66,9 @@ begin
 			d => '0',
 			q => dqz);
 
-		oddr_i : oddrxd
+		oddrdm : oddrxd1
 		port map (
 			sclk => ddr_io_clk,
-			dqclk1 => ddr_io_clk,
 			da => d(0),
 			db => d(1),
 			q  => dqo);
