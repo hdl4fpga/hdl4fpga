@@ -164,9 +164,9 @@ begin
 	begin
 		oddrmdq : entity hdl4fpga.oddr
 		port map (
-			clk => ddrs_clk180,
-			dr => '1',
-			df => '0',
+			clk => ddrs_clk0,
+			dr => '0',
+			df => '1',
 			q => diff_clk);
 
 		ddr_ck_obufds : entity hdl4fpga.odbuf

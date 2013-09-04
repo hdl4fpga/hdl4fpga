@@ -79,7 +79,8 @@ entity ecp3versa is
 	
 	attribute loc of ddr3_clk : signal is "K4";
 	attribute io_type of ddr3_clk : signal is "SSTL18D_II";
-	attribute loc of ddr3_clk_n : signal is "K5";
+
+--	attribute loc of ddr3_clk_n : signal is "K5";
 
 	attribute loc of ddr3_rst : signal is "D4";
 	attribute loc of ddr3_cke : signal is "G8";
