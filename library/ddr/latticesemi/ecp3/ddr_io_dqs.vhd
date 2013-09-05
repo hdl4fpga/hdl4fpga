@@ -9,10 +9,9 @@ entity ddr_io_dqs is
 	port (
 		ddr_io_clk : in std_logic;
 		ddr_io_ena : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqz : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqs : inout std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqs_n : inout std_logic_vector(0 to data_bytes-1) := (others => 'Z');
-		ddr_io_dso : out std_logic_vector(0 to data_bytes-1));
+		ddr_io_dqszi : in std_logic_vector(0 to data_bytes-1);
+		ddr_io_dqsz : out std_logic_vector(0 to data_bytes-1);
+		ddr_io_dqso : out std_logic_vector(0 to data_bytes-1));
 end;
 
 library ecp3;
@@ -21,17 +20,17 @@ use ecp3.components.all;
 architecture arch of ddr_io_dqs is
 	signal rclk : std_logic;
 	signal fclk : std_logic;
-	attribute oddrapps : string;
-	attribute oddrapps of oddrdqs : label is "DDR2_MEM_DQS";
 begin
 
-	rclk <=     ddr_io_clk;
+	rclk <= ddr_io_clk;
 	fclk <= not ddr_io_clk;
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
+		attribute oddrapps : string;
+		attribute oddrapps of oddrdqs : label is "DDR2_MEM_DQS";
+
 		signal tclk : std_logic;
 		signal dqs : std_logic;
-		signal dqz : std_logic;
 	begin
 
 		oddrt_i : oddrtdqsa
@@ -39,9 +38,9 @@ begin
 			sclk => rclk,
 			dqsw => fclk,
 			dqstclk => tclk,
-			ta => ddr_io_dqz(i),
+			ta => ddr_io_dqszi(i),
 			db => '0',
-			q  => dqz);
+			q  => ddr_io_dqsz(i));
 
 		oddrdqs : oddrxdqsa
 		port map (
@@ -50,10 +49,7 @@ begin
 			dqclk1 => ddr_io_clk,
 			dqsw   => ddr_io_clk,
 			dqstclk => tclk,
-			q  => dqs);
+			q  => ddr_io_dqso(i));
 
-		ddr_io_dqs(i) <= 'Z' when dqz='1' else dqs;
-
-		ddr_io_dso(i) <= transport ddr_io_dqs(i) after debug_delay;
 	end generate;
 end;
