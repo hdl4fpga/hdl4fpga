@@ -32,17 +32,17 @@ entity ddr is
 		sys_ini : out std_logic;
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
-		sys_rw  : in  std_logic;
-		sys_a   : in  std_logic_vector(addr_bits-1 downto 0);
+		sys_rw : in  std_logic;
+		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic;
-		sys_ba  : in  std_logic_vector(bank_bits-1 downto 0);
+		sys_ba : in  std_logic_vector(bank_bits-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
-		sys_dm  : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
-		sys_di  : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
-		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_dm : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
+		sys_di : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_do : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_ref : out std_logic;
 
 		ddr_rst : out std_logic;
@@ -50,16 +50,18 @@ entity ddr is
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
-		ddr_lp_dqs : out std_logic;
-		ddr_st_lp_dqs : in std_logic := '-';
-		ddr_we  : out std_logic;
-		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
-		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
-		ddr_dm  : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_we : out std_logic;
+		ddr_ba : out std_logic_vector(bank_bits-1 downto 0);
+		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
+		ddr_dm : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqs_n : inout std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_odt : out std_logic);
+		ddr_odt : out std_logic;
+
+		ddr_lp_dqs : out std_logic;
+		ddr_st_lp_dqs : in std_logic := '-');
 
 	constant debug_delay : time := 3.3 ns;
 	constant t200u : real := 200.0e3;
@@ -119,7 +121,6 @@ architecture mix of ddr is
 	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
-	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_st_hlf : std_logic;
 	signal ddr_acc_wri : std_logic;
 
@@ -500,8 +501,8 @@ begin
 		sys_rea => ddr_acc_rea,
 		ddr_win_dq  => ddr_acc_rwin,
 		ddr_win_dqs => ddr_win_dqs,
-		ddr_dqs => ddr_io_dso,
-		ddr_dqi  => ddr_io_dqi);
+		ddr_dqs => ddr_dqs,
+		ddr_dqi => ddr_dq);
 		
 	ddr_wr_fifo_rst <= not ddr_acc_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
@@ -533,9 +534,9 @@ begin
 		ddr_io_clk => clk90,
 		ddr_io_dq_r => ddr_wr_dq_r,
 		ddr_io_dq_f => ddr_wr_dq_f,
-		ddr_io_dqz => ddr_acc_dqz,
-		ddr_io_dq  => ddr_dq,
-		ddr_io_dqi => ddr_io_dqi);
+		ddr_io_dqzi => ddr_acc_dqz,
+		ddr_io_dqz  => ddr_dqz,
+		ddr_io_dqo  => ddr_dq);
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
@@ -545,10 +546,9 @@ begin
 	port map (
 		ddr_io_clk => clk0,
 		ddr_io_ena => ddr_acc_dqs,
-		ddr_io_dqz => ddr_acc_dqsz,
-		ddr_io_dqs => ddr_dqs,
-		ddr_io_dqs_n => ddr_dqs_n,
-		ddr_io_dso => ddr_io_dso);
+		ddr_io_dqszi => ddr_acc_dqsz,
+		ddr_io_dqsz => ddr_dqsz,
+		ddr_io_dqso => ddr_io_dso);
 	
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
