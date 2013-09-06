@@ -16,7 +16,7 @@ architecture spartan3 of oddr is
 	signal fclk : std_logic;
 begin
 	fclk <= not clk;
-	oddr : ffddrrse
+	oddr : oddr2
 	port map (
 		c0 => clk,
 		c1 => fclk,
