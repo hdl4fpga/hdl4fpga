@@ -77,7 +77,6 @@ begin
 	generic map (
 		xd_len => 4,
 		tDDR => (real(ddr_div)*sys_per)/real(ddr_mul),
-		device => "spartan3",
 		strobe => "EXTERNAL",
 		ddr_std => 1)
 	port map (
