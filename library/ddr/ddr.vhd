@@ -54,9 +54,9 @@ entity ddr is
 		ddr_ba : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
 		ddr_dm : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
+--		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
+--		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic;
 
@@ -121,6 +121,8 @@ architecture mix of ddr is
 	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
+	signal ddr_io_dqz : std_logic_vector(ddrdq'range);
+	signal ddr_io_dqsz : std_logic_vector(ddrdqs'range);
 	signal ddr_st_hlf : std_logic;
 	signal ddr_acc_wri : std_logic;
 
@@ -535,7 +537,7 @@ begin
 		ddr_io_dq_r => ddr_wr_dq_r,
 		ddr_io_dq_f => ddr_wr_dq_f,
 		ddr_io_dqzi => ddr_acc_dqz,
-		ddr_io_dqz  => ddr_dqz,
+		ddr_io_dqz  => ddr_io_dqz,
 		ddr_io_dqo  => ddr_dq);
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
@@ -547,9 +549,22 @@ begin
 		ddr_io_clk => clk0,
 		ddr_io_ena => ddr_acc_dqs,
 		ddr_io_dqszi => ddr_acc_dqsz,
-		ddr_io_dqsz => ddr_dqsz,
+		ddr_io_dqsz => ddr_io_dqsz,
 		ddr_io_dqso => ddr_io_dso);
 	
+	process (
+		ddr_dq,
+		ddr_io_dqz,
+		ddr_io_dso)
+	begin
+		for i in ddr_dq'range loop
+			ddr_dq(i) <= ddr_io_dso(i);
+			if ddr_io_dqz(i)='1' then
+				ddr_dq(i) <= 'Z';
+			end if;
+		end if;
+	end process;
+
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
