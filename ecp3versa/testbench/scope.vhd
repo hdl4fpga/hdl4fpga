@@ -45,7 +45,7 @@ architecture scope of testbench is
 	signal mii_strt : std_logic;
 	signal lp : std_logic;
 
-	component ml509 is
+	component ecp3versa is
 		port (
 			bus_error : out std_logic_vector(2 downto 1);
 
@@ -203,7 +203,7 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_refclk <= not mii_refclk after 20 ns;
-	ml509_e : ml509
+	ml509_e : ecp3versa
 	port map (
 		user_clk => clk,
 
@@ -260,14 +260,14 @@ end;
 
 library micron;
 
-configuration ml509_structure_md of testbench is
+configuration ecp3versa_structure_md of testbench is
 	for scope 
-		for all: ml509 
-			use entity hdl4fpga.ml509(structure);
+		for all: ecp3versa 
+			use entity hdl4fpga.ecp3versa(structure);
 		end for;
 
-		for all : ddr2_model 
-			use entity micron.ddr2
+		for all : ddr3_model 
+			use entity micron.ddr3
 			port map (
 				Ck    => ck,
 				Ck_n  => ck_n,
@@ -290,14 +290,14 @@ end;
 
 library micron;
 
-configuration ml509_scope_md of testbench is
+configuration ecp3versa_scope_md of testbench is
 	for scope 
-		for all: ml509 
-			use entity hdl4fpga.ml509(scope);
+		for all: ecp3versa
+			use entity hdl4fpga.ecp3versa(scope);
 		end for;
 
-		for all: ddr2_model 
-			use entity micron.ddr2
+		for all: ddr3_model 
+			use entity micron.ddr3
 			port map (
 				Ck    => ck,
 				Ck_n  => ck_n,

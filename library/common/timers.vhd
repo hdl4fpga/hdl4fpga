@@ -58,10 +58,10 @@ begin
 				end if;
 
 				cntr := dec (
-					cntr => cntr,
+					cntr => std_logic_vector(cntr),
 					ena  => not timer_req or ena,
 					load => not timer_req or cntr(0),
-					data => data);
+					data => std_logic_vector(data));
 				q0(i) <= cntr(0);
 	
 				value := to_unsigned(deca_rom(to_integer(unsigned(timer_sel))), value'length);
