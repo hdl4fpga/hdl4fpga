@@ -232,7 +232,7 @@ begin
 				cntr => row_cnt,
 				ena  => rowpag_ena or colpag_load,
 				load => rowpag_ena or row_cnt(0),
-				data => rdata(rowside_sz'range));
+				data => std_logic_vector(rdata(rowside_sz'range)));
 		end if;
 	end process;
 
@@ -243,7 +243,7 @@ begin
 				cntr => col_cnt,
 				ena  => colpag_ena or win_don,
 				load => colpag_ena or col_cnt(0),
-				data => cdata(colside_sz'range));
+				data => std_logic_vector(cdata(colside_sz'range)));
 
 		end if;
 	end process;
