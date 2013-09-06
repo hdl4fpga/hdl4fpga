@@ -54,9 +54,9 @@ entity ddr is
 		ddr_ba : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
 		ddr_dm : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
---		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
---		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic;
 
@@ -92,19 +92,19 @@ architecture mix of ddr is
 
 	signal dll_timer_rdy : std_logic;
 
-	signal ddr_acc_rst : std_logic;
-	signal ddr_acc_req : std_logic;
-	signal ddr_acc_ref : std_logic;
-	signal ddr_acc_ras : std_logic;
-	signal ddr_acc_cas : std_logic;
-	signal ddr_acc_we  : std_logic;
-	signal ddr_acc_rwin : std_logic;
-	signal ddr_acc_drr : std_logic;
-	signal ddr_acc_drf : std_logic;
-	signal ddr_acc_rea : std_logic;
-	signal ddr_acc_dqz : std_logic_vector(ddr_dqs'range);
-	signal ddr_acc_dqsz : std_logic_vector(ddr_dqs'range);
-	signal ddr_acc_dqs : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_rst : std_logic;
+	signal ddr_mpu_req : std_logic;
+	signal ddr_mpu_ref : std_logic;
+	signal ddr_mpu_ras : std_logic;
+	signal ddr_mpu_cas : std_logic;
+	signal ddr_mpu_we  : std_logic;
+	signal ddr_mpu_rwin : std_logic;
+	signal ddr_mpu_drr : std_logic;
+	signal ddr_mpu_drf : std_logic;
+	signal ddr_mpu_rea : std_logic;
+	signal ddr_mpu_dqz : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dqsz : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dqs : std_logic_vector(ddr_dqs'range);
 	signal ddr_win_dqs : std_logic_vector(ddr_dqs'range);
 	signal ddr_pgm_cmd : std_logic_vector(0 to 2);
 	signal ddr_mpu_rdy : std_logic;
@@ -116,15 +116,16 @@ architecture mix of ddr is
 	signal ddr_wr_dm_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_dq_r : std_logic_vector(ddr_dq'range);
 	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
-	signal ddr_io_dso  : std_logic_vector(ddr_dqs'range);
 
 	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
 	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
-	signal ddr_io_dqz : std_logic_vector(ddrdq'range);
-	signal ddr_io_dqsz : std_logic_vector(ddrdqs'range);
+	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
+	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
+	signal ddr_io_dqsz : std_logic_vector(ddr_dqs'range);
+	signal ddr_io_dqso : std_logic_vector(ddr_dqs'range);
 	signal ddr_st_hlf : std_logic;
-	signal ddr_acc_wri : std_logic;
+	signal ddr_mpu_wri : std_logic;
 
 	signal rst : std_logic;
 
@@ -311,9 +312,9 @@ begin
 		sys_rst => rst,
 		sys_ini => dll_timer_rdy,
 		sys_cke => ddr_init_cke,
-		sys_ras => ddr_acc_ras,
-		sys_cas => ddr_acc_cas,
-		sys_we  => ddr_acc_we,
+		sys_ras => ddr_mpu_ras,
+		sys_cas => ddr_mpu_cas,
+		sys_we  => ddr_mpu_we,
 		sys_a   => sys_a,
 		sys_b   => sys_ba,
 		sys_ini_ras => ddr_init_ras,
@@ -348,7 +349,7 @@ begin
 		dll_timer_req => ddr_init_dll,
 		dll_timer_rdy => dll_timer_rdy,
 		ref_timer_req => ddr_init_rdy,
-		ref_timer_rdy => ddr_acc_ref);
+		ref_timer_rdy => ddr_mpu_ref);
 
 	ddr1_init_g : if std=1 generate
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr1)
@@ -429,14 +430,14 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(clk0) then
---			ddr_acc_rst <= not (ddr_init_rdy and dll_timer_rdy);
-			ddr_acc_rst <= q;
+--			ddr_mpu_rst <= not (ddr_init_rdy and dll_timer_rdy);
+			ddr_mpu_rst <= q;
 			q := not (ddr_init_rdy and dll_timer_rdy);
 			sys_ini     <= ddr_init_rdy and dll_timer_rdy;
 		end if;
 	end process;
 
-	ddr_acc_req <= sys_cmd_req;
+	ddr_mpu_req <= sys_cmd_req;
 	sys_di_rdy  <= ddr_wr_fifo_req;
 	ddr_mpu_e : entity hdl4fpga.ddr_mpu
 	generic map (
@@ -449,40 +450,40 @@ begin
 		ddr_mpu_cwl => cwldb(cwl, std),
 		ddr_mpu_cl => casdb(cl, std))
 	port map (
-		ddr_mpu_rst   => ddr_acc_rst,
+		ddr_mpu_rst   => ddr_mpu_rst,
 		ddr_mpu_clk   => clk0,
 		ddr_mpu_clk90 => clk90,
 		ddr_mpu_cmd   => ddr_pgm_cmd,
 		ddr_mpu_rdy   => ddr_mpu_rdy,
 		ddr_mpu_act   => sys_act,
-		ddr_mpu_cas   => ddr_acc_cas,
-		ddr_mpu_ras   => ddr_acc_ras,
-		ddr_mpu_we    => ddr_acc_we,
+		ddr_mpu_cas   => ddr_mpu_cas,
+		ddr_mpu_ras   => ddr_mpu_ras,
+		ddr_mpu_we    => ddr_mpu_we,
 
-		ddr_mpu_rea   => ddr_acc_rea,
+		ddr_mpu_rea   => ddr_mpu_rea,
 		ddr_mpu_wbl   => ddr_wr_fifo_req,
-		ddr_mpu_wri   => ddr_acc_wri,
+		ddr_mpu_wri   => ddr_mpu_wri,
 
-		ddr_mpu_rwin  => ddr_acc_rwin,
-		ddr_mpu_drr   => ddr_acc_drr,
-		ddr_mpu_drf   => ddr_acc_drf,
+		ddr_mpu_rwin  => ddr_mpu_rwin,
+		ddr_mpu_drr   => ddr_mpu_drr,
+		ddr_mpu_drf   => ddr_mpu_drf,
 
 		ddr_mpu_dwr   => ddr_wr_fifo_ena_r,  
 		ddr_mpu_dwf   => ddr_wr_fifo_ena_f,  
-		ddr_mpu_dqs   => ddr_acc_dqs,
-		ddr_mpu_dqsz  => ddr_acc_dqsz,
-		ddr_mpu_dqz   => ddr_acc_dqz);
+		ddr_mpu_dqs   => ddr_mpu_dqs,
+		ddr_mpu_dqsz  => ddr_mpu_dqsz,
+		ddr_mpu_dqz   => ddr_mpu_dqz);
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	port map (
-		ddr_pgm_rst => ddr_acc_rst,
+		ddr_pgm_rst => ddr_mpu_rst,
 		ddr_pgm_clk => clk0,
 		sys_pgm_ref => sys_ref,
 		ddr_pgm_cmd => ddr_pgm_cmd,
 		ddr_pgm_cas => sys_cas,
 		ddr_pgm_pre => sys_pre,
-		ddr_pgm_ref => ddr_acc_ref,
-		ddr_pgm_start => ddr_acc_req,
+		ddr_pgm_ref => ddr_mpu_ref,
+		ddr_pgm_start => ddr_mpu_req,
 		ddr_pgm_rdy => sys_cmd_rdy,
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
@@ -500,13 +501,13 @@ begin
 		sys_clk => clk0,
 		sys_do  => sys_do,
 		sys_rdy => sys_do_rdy,
-		sys_rea => ddr_acc_rea,
-		ddr_win_dq  => ddr_acc_rwin,
+		sys_rea => ddr_mpu_rea,
+		ddr_win_dq  => ddr_mpu_rwin,
 		ddr_win_dqs => ddr_win_dqs,
 		ddr_dqs => ddr_dqs,
 		ddr_dqi => ddr_dq);
 		
-	ddr_wr_fifo_rst <= not ddr_acc_wri;
+	ddr_wr_fifo_rst <= not ddr_mpu_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
 	generic map (
 		std => std,
@@ -529,41 +530,48 @@ begin
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
 	generic map (
-		debug_delay => debug_delay,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
 		ddr_io_clk => clk90,
 		ddr_io_dq_r => ddr_wr_dq_r,
 		ddr_io_dq_f => ddr_wr_dq_f,
-		ddr_io_dqzi => ddr_acc_dqz,
+		ddr_mpu_dqz => ddr_mpu_dqz,
 		ddr_io_dqz  => ddr_io_dqz,
-		ddr_io_dqo  => ddr_dq);
+		ddr_io_dqo  => ddr_io_dqo);
+	ddr_dqz <= ddr_io_dqz;
+
+--	process (ddr_dq, ddr_io_dqz, ddr_io_dqo)
+--	begin
+--		for i in ddr_dq'range loop
+--			ddr_dq(i) <= ddr_io_dqo(i);
+--			if ddr_io_dqz(i)='1' then
+--				ddr_dq(i) <= 'Z';
+--			end if;
+--		end loop;
+--	end process;
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
-		debug_delay => debug_delay,
 		std => std,
 		data_bytes => 2)
 	port map (
 		ddr_io_clk => clk0,
-		ddr_io_ena => ddr_acc_dqs,
-		ddr_io_dqszi => ddr_acc_dqsz,
+		ddr_io_ena => ddr_mpu_dqs,
+		ddr_io_dqszi => ddr_mpu_dqsz,
 		ddr_io_dqsz => ddr_io_dqsz,
-		ddr_io_dqso => ddr_io_dso);
+		ddr_io_dqso => ddr_io_dqso);
+	ddr_dqsz <= ddr_io_dqsz;
 	
-	process (
-		ddr_dq,
-		ddr_io_dqz,
-		ddr_io_dso)
-	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= ddr_io_dso(i);
-			if ddr_io_dqz(i)='1' then
-				ddr_dq(i) <= 'Z';
-			end if;
-		end if;
-	end process;
+--	process (ddr_dqs, ddr_io_dqsz, ddr_io_dqso)
+--	begin
+--		for i in ddr_dqs'range loop
+--			ddr_dqs(i) <= ddr_io_dqso(i);
+--			if ddr_io_dqsz(i)='1' then
+--				ddr_dq(i) <= 'Z';
+--			end if;
+--		end loop;
+--	end process;
 
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
@@ -573,8 +581,8 @@ begin
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,
-		ddr_io_st_r => ddr_acc_drr,
-		ddr_io_st_f => ddr_acc_drf,
+		ddr_io_st_r => ddr_mpu_drr,
+		ddr_io_st_f => ddr_mpu_drf,
 		ddr_io_dm_r => ddr_wr_dm_r,
 		ddr_io_dm_f => ddr_wr_dm_f,
 		ddr_io_dmx_r => ddr_mpu_dmx_r,
@@ -587,8 +595,8 @@ begin
 	port map (
 		ddr_st_hlf => ddr_st_hlf,
 		ddr_st_clk => sys_clk0,
-		ddr_st_drr => ddr_acc_drr,
-		ddr_st_drf => ddr_acc_drf,
+		ddr_st_drr => ddr_mpu_drr,
+		ddr_st_drf => ddr_mpu_drf,
 		ddr_st_dqs => ddr_lp_dqs);
 
     ddr_odt <= '0';

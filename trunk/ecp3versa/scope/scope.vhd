@@ -113,7 +113,6 @@ begin
 		ddr_a   => ddr3_a,
 		ddr_dm  => ddr3_dm,
 		ddr_dqs => ddr3_dqs,
-		ddr_dqs_n => ddr3_dqs_n,
 		ddr_dq  => ddr3_dq,
 		ddr_odt => ddr3_odt,
 
@@ -167,13 +166,7 @@ begin
 			clk => ddrs_clk0,
 			dr => '0',
 			df => '1',
-			q => diff_clk);
-
-		ddr_ck_obufds : entity hdl4fpga.odbuf
-		port map (
-			i => diff_clk,
-			o_p => ddr3_clk,
-			o_n => ddr3_clk_n);
+			q => ddr3_clk);
 	end block;
 
 end;
