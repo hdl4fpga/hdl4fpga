@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ddr_ram is
+entity dbram is
 	generic (
 		n : natural);
 	port (
@@ -17,7 +17,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture lttsm of ddr_ram is
+architecture lttsm of dbram is
 	type dw_vector is array (natural range <>) of std_logic_vector(4-1 downto 0);
 
 	function to_dwvector (
