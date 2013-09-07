@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ddr_ram is
+entity dbram is
 	generic (
 		n : natural);
 	port (
@@ -17,7 +17,7 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture xilinx of ddr_ram is
+architecture xilinx of dbram is
 begin
 	ram_g : for i in n-1 downto 0 generate
 		ram_i : ram16x1d

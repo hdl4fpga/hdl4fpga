@@ -117,7 +117,7 @@ begin
 					q   => addr_i_q(j));
 			end generate;
 
-			ram_b : entity hdl4fpga.ddr_ram
+			ram_b : entity hdl4fpga.dbram
 			generic map (
 				n => byte_bits)
 			port map (
