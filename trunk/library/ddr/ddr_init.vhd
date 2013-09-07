@@ -171,7 +171,7 @@ architecture ddr2 of ddr_init is
 		(lb_docd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
 		(lb_xocd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
 		(lb_end,   (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_end,   (cmd_nop,  signed'(1 to lat_length => '1'))));
+		(lb_end,   (cmd_nop,  (1 to lat_length => '1'))));
 
 	signal lat_timer : signed(0 to lat_length-1);
 	signal ddr_init_pc : ddr_labels;

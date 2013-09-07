@@ -91,8 +91,6 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/ddr/xilinx/ddr_io_ba.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="32"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="28"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/ddr/ddr.vhd" xil_pn:type="FILE_VHDL">

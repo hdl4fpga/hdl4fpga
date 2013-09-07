@@ -548,15 +548,15 @@ begin
 		ddr_io_dqo  => ddr_io_dqo);
 	ddr_dqz <= ddr_io_dqz;
 
---	process (ddr_dq, ddr_io_dqz, ddr_io_dqo)
---	begin
---		for i in ddr_dq'range loop
---			ddr_dq(i) <= ddr_io_dqo(i);
---			if ddr_io_dqz(i)='1' then
---				ddr_dq(i) <= 'Z';
---			end if;
---		end loop;
---	end process;
+	process (ddr_io_dqz, ddr_io_dqo)
+	begin
+		for i in ddr_dq'range loop
+			ddr_dq(i) <= ddr_io_dqo(i);
+			if ddr_io_dqz(i)='1' then
+				ddr_dq(i) <= 'Z';
+			end if;
+		end loop;
+	end process;
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
@@ -570,15 +570,15 @@ begin
 		ddr_io_dqso => ddr_io_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
 	
---	process (ddr_dqs, ddr_io_dqsz, ddr_io_dqso)
---	begin
---		for i in ddr_dqs'range loop
---			ddr_dqs(i) <= ddr_io_dqso(i);
---			if ddr_io_dqsz(i)='1' then
---				ddr_dq(i) <= 'Z';
---			end if;
---		end loop;
---	end process;
+	process (ddr_dqs, ddr_io_dqsz, ddr_io_dqso)
+	begin
+		for i in ddr_dqs'range loop
+			ddr_dqs(i) <= ddr_io_dqso(i);
+			if ddr_io_dqsz(i)='1' then
+				ddr_dqz(i) <= 'Z';
+			end if;
+		end loop;
+	end process;
 
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
@@ -596,7 +596,7 @@ begin
 		ddr_io_dmo => ddr_dm);
 
 	ddr_st_hlf <= setif(std=1 and cas(0)='1');
-	ddr_st_e : entity hdl4fpga.ddr_st
+	ddr_st_e : entity hdl4fpga.ddr_stw
 	port map (
 		ddr_st_hlf => ddr_st_hlf,
 		ddr_st_clk => sys_clk0,
