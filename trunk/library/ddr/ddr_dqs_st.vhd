@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr_st is
+entity ddr_dqs_st is
 	port (
 		ddr_st_hlf : in  std_logic;
 		ddr_st_clk : in  std_logic;
@@ -15,7 +15,7 @@ end;
 
 library hdl4fpga;
 
-architecture mix of ddr_st is
+architecture mix of ddr_dqs_st is
 	signal rclk : std_logic;
 	signal fclk : std_logic;
 begin
