@@ -109,7 +109,7 @@ begin
 		sys_addr_d <= inc(gray(sys_addr_q(l)));
 		sys_cntr_g: for j in addr_word'range  generate
 		begin
-			ffd_i : entity hdl4fpga.ddr_sffd
+			ffd_i : entity hdl4fpga.sffd
 			port map (
 				clk => sys_clk,
 				sr => sys_req,
@@ -125,7 +125,7 @@ begin
 			ddr_addr_d <= inc(gray(ddr_addr_q(data_bytes*i+l)));
 			cntr_g: for j in addr_word'range generate
 
-				ffd_i : entity hdl4fpga.ddr_sffd
+				ffd_i : entity hdl4fpga.sffd
 				port map (
 					clk => ddr_clks(i),
 					sr  => sys_rst,
@@ -149,7 +149,7 @@ begin
 				signal dpo : std_logic;
 				signal qpo : std_logic;
 			begin
-				ffd_i : entity hdl4fpga.ddr_sffd
+				ffd_i : entity hdl4fpga.sffd
 				port map (
 					clk => ddr_clks(i),
 					d   => dpo,
