@@ -558,7 +558,7 @@ begin
 	port map (
 		ddr_io_clk => clk0,
 		ddr_io_ena => ddr_mpu_dqs,
-		ddr_io_dqszi => ddr_mpu_dqsz,
+		ddr_mpu_dqsz => ddr_mpu_dqsz,
 		ddr_io_dqsz => ddr_io_dqsz,
 		ddr_io_dqso => ddr_io_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
@@ -577,18 +577,16 @@ begin
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
-		debug_delay => debug_delay,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,
-		ddr_io_st_r => ddr_mpu_drr,
-		ddr_io_st_f => ddr_mpu_drf,
-		ddr_io_dm_r => ddr_wr_dm_r,
-		ddr_io_dm_f => ddr_wr_dm_f,
-		ddr_io_dmx_r => ddr_mpu_dmx_r,
-		ddr_io_dmx_f => ddr_mpu_dmx_f,
-		ddr_io_dm  => ddr_dm,
-		ddr_io_dmi => ddr_io_dmi);
+		ddr_mpu_st_r => ddr_mpu_drr,
+		ddr_mpu_st_f => ddr_mpu_drf,
+		ddr_mpu_dm_r => ddr_wr_dm_r,
+		ddr_mpu_dm_f => ddr_wr_dm_f,
+		ddr_mpu_dmx_r => ddr_mpu_dmx_r,
+		ddr_mpu_dmx_f => ddr_mpu_dmx_f,
+		ddr_io_dmo => ddr_dm);
 
 	ddr_st_hlf <= setif(std=1 and cas(0)='1');
 	ddr_st_e : entity hdl4fpga.ddr_st
