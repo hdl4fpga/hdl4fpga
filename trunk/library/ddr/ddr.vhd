@@ -450,29 +450,29 @@ begin
 		ddr_mpu_cwl => cwldb(cwl, std),
 		ddr_mpu_cl => casdb(cl, std))
 	port map (
-		ddr_mpu_rst   => ddr_mpu_rst,
-		ddr_mpu_clk   => clk0,
+		ddr_mpu_rst => ddr_mpu_rst,
+		ddr_mpu_clk => clk0,
 		ddr_mpu_clk90 => clk90,
-		ddr_mpu_cmd   => ddr_pgm_cmd,
-		ddr_mpu_rdy   => ddr_mpu_rdy,
-		ddr_mpu_act   => sys_act,
-		ddr_mpu_cas   => ddr_mpu_cas,
-		ddr_mpu_ras   => ddr_mpu_ras,
-		ddr_mpu_we    => ddr_mpu_we,
+		ddr_mpu_cmd => ddr_pgm_cmd,
+		ddr_mpu_rdy => ddr_mpu_rdy,
+		ddr_mpu_act => sys_act,
+		ddr_mpu_cas => ddr_mpu_cas,
+		ddr_mpu_ras => ddr_mpu_ras,
+		ddr_mpu_we  => ddr_mpu_we,
 
-		ddr_mpu_rea   => ddr_mpu_rea,
-		ddr_mpu_wbl   => ddr_wr_fifo_req,
-		ddr_mpu_wri   => ddr_mpu_wri,
+		ddr_mpu_rea => ddr_mpu_rea,
+		ddr_mpu_wbl => ddr_wr_fifo_req,
+		ddr_mpu_wri => ddr_mpu_wri,
 
-		ddr_mpu_rwin  => ddr_mpu_rwin,
-		ddr_mpu_drr   => ddr_mpu_drr,
-		ddr_mpu_drf   => ddr_mpu_drf,
+		ddr_mpu_rwin => ddr_mpu_rwin,
+		ddr_mpu_drr => ddr_mpu_drr,
+		ddr_mpu_drf => ddr_mpu_drf,
 
-		ddr_mpu_dwr   => ddr_wr_fifo_ena_r,  
-		ddr_mpu_dwf   => ddr_wr_fifo_ena_f,  
-		ddr_mpu_dqs   => ddr_mpu_dqs,
-		ddr_mpu_dqsz  => ddr_mpu_dqsz,
-		ddr_mpu_dqz   => ddr_mpu_dqz);
+		ddr_mpu_dwr => ddr_wr_fifo_ena_r,  
+		ddr_mpu_dwf => ddr_wr_fifo_ena_f,  
+		ddr_mpu_dqs => ddr_mpu_dqs,
+		ddr_mpu_dqsz => ddr_mpu_dqsz,
+		ddr_mpu_dqz => ddr_mpu_dqz);
 
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	port map (
