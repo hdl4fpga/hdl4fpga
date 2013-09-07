@@ -90,7 +90,7 @@ begin
 	dm_g: for i in 0 to 1 generate
 		signal dm : std_logic_vector(sys_dm'range);
 	begin
-		ram_i : entity hdl4fpga.ddr_ram
+		ram_i : entity hdl4fpga.dbram
 		generic map (
 			n => data_bytes)
 		port map (
@@ -134,7 +134,7 @@ begin
 					q   => ddr_addr_q(data_bytes*i+l)(j));
 			end generate;
 
-			ram_i : entity hdl4fpga.ddr_ram
+			ram_i : entity hdl4fpga.dbram
 			generic map (
 				n => byte_bits)
 			port map (
