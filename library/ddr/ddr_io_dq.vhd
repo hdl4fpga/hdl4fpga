@@ -7,21 +7,23 @@ entity ddr_io_dq is
 		byte_bits  : natural);
 	port (
 		ddr_io_clk  : in  std_logic;
-		ddr_mpu_dqz : out std_logic_vector(data_bytes-1 downto 0);
-		ddr_io_dqz  : in  std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		ddr_mpu_dqz : in  std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dqz  : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dq_r : in  std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dq_f : in  std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dqo  : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 end;
 
-architecture spartan3 of ddr_io_dq is
+library hdl4fpga;
+
+architecture std of ddr_io_dq is
 begin
 	bytes_g : for i in data_bytes-1 downto 0 generate
 		bits_g : for j in byte_bits-1 downto 0 generate
 
 			oddrt_i : entity hdl4fpga.oddrt
 			port map (
-				c  => ddr_io_clk,
+				clk => ddr_io_clk,
 				d  => ddr_mpu_dqz(i),
 				q  => ddr_io_dqz(i*byte_bits+j));
 
