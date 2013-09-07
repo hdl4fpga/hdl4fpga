@@ -119,7 +119,7 @@ architecture mix of ddr is
 
 	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
-	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
+	signal ddr_stw_sti : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqs'range);
@@ -488,9 +488,16 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	ddr_win_dqs <=
-		(others => ddr_st_lp_dqs) when STROBE="EXTERNAL" else
-		ddr_io_dmi;
+	ddr_stw_sti <=
+		(others => ddr_st_lp_dqs) when strobe="EXTERNAL" else
+		ddr_dm;
+
+	ddr_stw_lp_e : entity hdl4fpga.ddr_stw_lp
+	generic map (
+		data_bytes => data_bytes)
+	port map (
+		ddr_stw_sti => ddr_stw_sti,
+		ddr_stw_sto => ddr_win_dqs);
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
