@@ -92,7 +92,7 @@ begin
 			signal addr_o_r : std_logic;
 		begin
 			addr_o_r <= not ddr_fifo_rdy(k);
-			ffd_i : entity hdl4fpga.ddr_sffd
+			ffd_i : entity hdl4fpga.sffd
 			port map (
 				sr  => addr_o_r,
 				clk => sys_clk,
@@ -109,7 +109,7 @@ begin
 				signal addr_i_clr : std_logic;
 			begin
 				addr_i_clr <= addr_i_set;
-				ffd_i : entity hdl4fpga.ddr_affd
+				ffd_i : entity hdl4fpga.affd
 				port map (
 					ar  => addr_i_clr,
 					clk => ddr_dlyd_dqs(l),
