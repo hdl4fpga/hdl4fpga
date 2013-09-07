@@ -1,32 +1,37 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ieee;
-use ieee.std_logic_1164.all;
-
-entity ddr_dqs_st is
+entity ddr_io_dm is
+	generic (
+		data_bytes : natural);
 	port (
-		ddr_st_hlf : in  std_logic;
-		ddr_st_clk : in  std_logic;
-		ddr_st_drr : in  std_logic;
-		ddr_st_drf : in  std_logic;
-		ddr_st_dqs : out std_logic);
+		ddr_io_clk : in std_logic;
+		ddr_io_dm  : inout std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dmi : out std_logic_vector(data_bytes-1 downto 0));
 end;
 
-library hdl4fpga;
+library unisim;
+use unisim.vcomponents.all;
 
-architecture mix of ddr_dqs_st is
-	signal rclk : std_logic;
-	signal fclk : std_logic;
+architecture arch of ddr_io_dm is
+	signal ddr_io_fclk : std_logic;
+	signal ddr_clk : std_logic_vector(0 to 1);
+	signal ddr_st  : std_logic_vector(ddr_clk'range);
 begin
-	rclk <= 
-		not ddr_st_clk when ddr_st_hlf='1' else
-		ddr_st_clk;
+	bytes_g : for i in ddr_io_dm'range generate
+	begin
+		ibuf_i : ibuf
+		port map (
+			i => ddr_io_dm(i),
+			o => di);
 
-	oddr_i : entity hdl4fpga.oddr
-	port map (
-		clk => rclk,
-		dr => ddr_st_drr,
-		df => ddr_st_drf,
-		q  => ddr_st_dqs);
+		idelay_i : idelay 
+		port map (
+			rst => '0',
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i => di,
+			o => ddr_io_dmi(i));
+	end generate;
 end;
