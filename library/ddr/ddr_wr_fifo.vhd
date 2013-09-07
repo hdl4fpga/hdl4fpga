@@ -108,24 +108,25 @@ begin
 	begin
 		sys_addr_d <= inc(gray(sys_addr_q(l)));
 		sys_cntr_g: for j in addr_word'range  generate
+			signal addr_i_set : std_logic;
 		begin
-			ffd_i : entity hdl4fpga.sffd
+			addr_i_set <= not sys_req;
+			ffd_i : entity hdl4fpga.sff
 			port map (
 				clk => sys_clk,
-				sr => sys_req,
-				d  => sys_addr_d(j),
-				q  => sys_addr_q(l)(j));
+				sr  => addr_i_set,
+				d   => sys_addr_d(j),
+				q   => sys_addr_q(l)(j));
 		end generate;
 
 		ddr_data_g: for i in 0 to 1 generate
 			signal dpo : std_logic_vector(byte_bits-1 downto 0);
-			signal qpo : std_logic_vector(byte_bits-1 downto 0);
 			signal ddr_addr_d : addr_word;
 		begin
 			ddr_addr_d <= inc(gray(ddr_addr_q(data_bytes*i+l)));
 			cntr_g: for j in addr_word'range generate
 
-				ffd_i : entity hdl4fpga.sffd
+				ffd_i : entity hdl4fpga.sff
 				port map (
 					clk => ddr_clks(i),
 					sr  => sys_rst,
@@ -146,17 +147,16 @@ begin
 				do => dpo);
 
 			ram_g: for j in byte_bits-1 downto 0 generate
-				signal dpo : std_logic;
 				signal qpo : std_logic;
 			begin
-				ffd_i : entity hdl4fpga.sffd
+				ffd_i : entity hdl4fpga.sff
 				port map (
 					clk => ddr_clks(i),
-					d   => dpo,
+					d   => dpo(j),
 					q   => qpo);
 
 				ddr_dq(i)(byte_bits*l+j) <= 
-					dpo when std=1 else
+					dpo(j) when std=1 else
 					qpo;
 					
 			end generate;

@@ -24,15 +24,15 @@ begin
 		port map (
 			wclk => clk,
 			we  => we,
-			dpra0 => ra(0),
-			dpra1 => ra(1),
-			dpra2 => ra(2),
-			dpra3 => ra(3),
 			a0 => wa(0),
 			a1 => wa(1),
 			a2 => wa(2),
 			a3 => wa(3),
 			d  => di(i),
+			dpra0 => ra(0),
+			dpra1 => ra(1),
+			dpra2 => ra(2),
+			dpra3 => ra(3),
 			dpo => do(i),
 			spo => open);
 	end generate;

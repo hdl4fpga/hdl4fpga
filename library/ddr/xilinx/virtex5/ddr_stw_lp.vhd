@@ -14,7 +14,7 @@ use unisim.vcomponents.all;
 
 architecture virtex5 of ddr_stw_lp is
 begin
-	bytes_g : for i in ddr_stw_lp'range generate
+	bytes_g : for i in ddr_stw_sti'range generate
 		signal st  : std_logic;
 	begin
 		ibuf_i : ibuf

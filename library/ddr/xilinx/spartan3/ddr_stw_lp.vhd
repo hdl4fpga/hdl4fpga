@@ -14,7 +14,7 @@ use unisim.vcomponents.all;
 
 architecture spartan3 of ddr_stw_lp is
 begin
-	bytes_g : for i in ddr_stw_lp'range generate
+	bytes_g : for i in ddr_stw_sti'range generate
 		ibuf_i : ibuf
 		port map (
 			i => ddr_stw_sti(i),

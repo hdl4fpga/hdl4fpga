@@ -25,9 +25,6 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-library ecp3;
-use ecp3.components.all;
-
 architecture mix of ddr_rd_fifo is
 	subtype byte is std_logic_vector(byte_bits-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
@@ -89,13 +86,13 @@ begin
 
 		addr_o_d <= inc(gray(addr_o_q));
 		o_cntr_g: for j in addr_word'range generate
-			signal addr_o_r : std_logic;
+			signal addr_o_set : std_logic;
 		begin
-			addr_o_r <= not ddr_fifo_rdy(k);
-			ffd_i : entity hdl4fpga.sffd
+			addr_o_set <= not ddr_fifo_rdy(k);
+			ffd_i : entity hdl4fpga.sff
 			port map (
-				sr  => addr_o_r,
 				clk => sys_clk,
+				sr  => addr_o_set,
 				d   => addr_o_d(j),
 				q   => addr_o_q(j));
 		end generate;
@@ -106,13 +103,11 @@ begin
 		begin
 			addr_i_d <= inc(gray(addr_i_q));
 			i_cntr_g: for j in addr_i_q'range  generate
-				signal addr_i_clr : std_logic;
-			begin
-				addr_i_clr <= addr_i_set;
-				ffd_i : entity hdl4fpga.affd
+				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => addr_i_clr,
+					ar  => addr_i_set,
 					clk => ddr_dlyd_dqs(l),
+					ena => ddr_win_dqsi,
 					d   => addr_i_d(j),
 					q   => addr_i_q(j));
 			end generate;
