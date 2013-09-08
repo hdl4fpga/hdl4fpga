@@ -75,7 +75,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="30"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xilinx/virtex5/ddr_io_dq.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/ddr/ddr_io_dq.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="80"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -85,12 +85,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="31"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xilinx/ddr_rd_fifo.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="252"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
-    <file xil_pn:name="../../../library/ddr/xilinx/ddr_io_ba.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/ddr/ddr_io_ba.vhd" xil_pn:type="FILE_VHDL">
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/ddr/ddr.vhd" xil_pn:type="FILE_VHDL">
@@ -206,7 +201,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="46"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xilinx/virtex5/ddr_io_dqs.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/ddr/ddr_io_dqs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="69"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -229,7 +224,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xilinx/virtex5/ddr_io_dm.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/ddr/ddr_io_dm.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="151"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="25"/>
       <library xil_pn:name="hdl4fpga"/>
