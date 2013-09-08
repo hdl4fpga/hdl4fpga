@@ -112,14 +112,16 @@ architecture mix of ddr is
 	signal ddr_wr_fifo_req : std_logic;
 	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqs'range);
-	signal ddr_wr_dm_r : std_logic_vector(ddr_dqs'range);
-	signal ddr_wr_dm_f : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_dm_r : std_logic_vector(ddr_dm'range);
+	signal ddr_wr_dm_f : std_logic_vector(ddr_dm'range);
 	signal ddr_wr_dq_r : std_logic_vector(ddr_dq'range);
 	signal ddr_wr_dq_f : std_logic_vector(ddr_dq'range);
 
-	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
-	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dm'range);
+	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dm'range);
 	signal ddr_stw_sto : std_logic;
+	signal ddr_io_dmz : std_logic_vector(ddr_dm'range);
+	signal ddr_io_dmo : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqs'range);
@@ -581,7 +583,12 @@ begin
 		ddr_mpu_dm_f => ddr_wr_dm_f,
 		ddr_mpu_dmx_r => ddr_mpu_dmx_r,
 		ddr_mpu_dmx_f => ddr_mpu_dmx_f,
-		ddr_io_dmo => ddr_dm);
+		ddr_io_dmz => ddr_io_dmz,
+		ddr_io_dmo => ddr_io_dmo);
+
+	ddr_dm_e : for i in ddr_dm'range generate
+		ddr_dm(i) <= ddr_io_dmo(i) when ddr_io_dmz(i)='0' else 'Z';
+	end generate;
 
 	ddr_st_hlf <= setif(std=1 and cas(0)='1');
 	ddr_st_e : entity hdl4fpga.ddr_stw

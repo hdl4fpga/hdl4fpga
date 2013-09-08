@@ -267,7 +267,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="24"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/xilinx/virtex5/oddr.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/xilinx/virtex5/ddro.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="116"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="3"/>
       <library xil_pn:name="hdl4fpga"/>
