@@ -66,7 +66,7 @@ begin
 			q => iob_txd(i));
 	end generate;
 
-	gtx_clk_i : entity hdl4fpga.oddr
+	gtx_clk_i : entity hdl4fpga.ddro
 	port map (
 		clk => mii_txc,
 		dr => '0',

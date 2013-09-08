@@ -23,7 +23,7 @@ begin
 		not ddr_st_clk when ddr_st_hlf='1' else
 		ddr_st_clk;
 
-	oddr_i : entity hdl4fpga.oddr
+	oddr_i : entity hdl4fpga.ddro
 	port map (
 		clk => rclk,
 		dr => ddr_st_drr,

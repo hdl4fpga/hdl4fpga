@@ -161,7 +161,7 @@ begin
 		attribute oddrapps : string;
 		attribute oddrapps of oddrmdq : label is "SCLK_ALIGNED";
 	begin
-		oddrmdq : entity hdl4fpga.oddr
+		oddrmdq : entity hdl4fpga.ddro
 		port map (
 			clk => ddrs_clk0,
 			dr => '0',

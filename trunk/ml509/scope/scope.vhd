@@ -175,7 +175,7 @@ begin
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
-		oddr_mdq : entity hdl4fpga.oddr
+		oddr_mdq : entity hdl4fpga.ddro
 		port map (
 			clk => ddrs_clk0,
 			dr => '0',
