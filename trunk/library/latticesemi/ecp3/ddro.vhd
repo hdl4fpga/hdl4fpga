@@ -21,3 +21,25 @@ begin
 		db => df,
 		q  => q);
 end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity ddrto is
+	port (
+		clk : in std_logic;
+		d   : in std_logic;
+		q   : out std_logic);
+end;
+
+library ecp3;
+use ecp3.components.all;
+
+architecture ecp3 of ddrto is
+begin
+	oddrt_i : ofd1s3ax
+	port map (
+		sclk => clk,
+		d => d,
+		q => q);
+end;

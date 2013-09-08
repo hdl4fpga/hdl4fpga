@@ -23,7 +23,7 @@ end;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity srff is
+entity sff is
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
@@ -35,7 +35,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture lttsm of srff is
+architecture lttsm of sff is
 begin
 	ffd_i : fd1p3ix
 	port map (
@@ -49,7 +49,7 @@ end;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity arff is
+entity aff is
 	port (
 		ar  : in  std_logic := '0';
 		clk : in  std_logic;
@@ -61,7 +61,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture lttsm of arff is
+architecture lttsm of aff is
 begin
 	ffd_i : fd1p3dx
 	port map (
