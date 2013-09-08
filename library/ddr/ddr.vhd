@@ -15,15 +15,15 @@ entity ddr is
 		tMRD : real := 12.0;
 		tREFI : real := 7.8e3;
 
-		CL  : real    := 5.0;
-		BL  : natural := 8;
-		WR  : natural := 8;
-		CWL : natural := 7;
+		cl  : real    := 5.0;
+		bl  : natural := 8;
+		wr  : natural := 8;
+		cwl : natural := 7;
 
-		BANK_BITS  : natural :=  2;
-		ADDR_BITS  : natural := 13;
-		DATA_BYTES : natural :=  2;
-		BYTE_BITS  : natural :=  8);
+		bank_bits  : natural :=  2;
+		addr_bits  : natural := 13;
+		data_bytes : natural :=  2;
+		byte_bits  : natural :=  8);
 	port (
 		sys_rst   : in std_logic;
 		sys_clk0  : in std_logic;
@@ -119,7 +119,7 @@ architecture mix of ddr is
 
 	signal ddr_mpu_dmx_r : std_logic_vector(ddr_dqs'range);
 	signal ddr_mpu_dmx_f : std_logic_vector(ddr_dqs'range);
-	signal ddr_stw_sti : std_logic_vector(ddr_dm'range);
+	signal ddr_stw_sto : std_logic;
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqs'range);
@@ -488,16 +488,16 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	ddr_stw_sti <=
-		(others => ddr_st_lp_dqs) when strobe="EXTERNAL" else
+	ddr_win_dqs <=
+		(others => ddr_stw_sto) when strobe="EXTERNAL" else
 		ddr_dm;
 
 	ddr_stw_lp_e : entity hdl4fpga.ddr_stw_lp
 	generic map (
-		data_bytes => data_bytes)
+		data_bytes => 1)
 	port map (
-		ddr_stw_sti => ddr_stw_sti,
-		ddr_stw_sto => ddr_win_dqs);
+		ddr_stw_sti(0) => ddr_st_lp_dqs,
+		ddr_stw_sto(0) => ddr_stw_sto);
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
