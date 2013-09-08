@@ -48,35 +48,35 @@ add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/test
 add wave -noupdate -expand -group to_ddr /testbench/nuhs3dsp_e/scope_e/ddr_ba
 add wave -noupdate -expand -group to_ddr /testbench/nuhs3dsp_e/scope_e/ddr_dm
 add wave -noupdate -expand -group to_ddr -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_dq(15) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(14) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(13) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(12) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(11) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(10) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(9) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(8) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(7) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(6) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(5) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(4) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(3) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(2) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_dq(15) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(14) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(13) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(12) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(11) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(10) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(9) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(8) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(7) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(6) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(5) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(4) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(3) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(2) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_dq(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_dq
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/clk
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/we
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/wa
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/di
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/ra
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(7) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(6) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(5) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(4) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(3) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(2) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(0) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(7) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(6) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(5) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(4) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(3) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(2) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/write_ena_b/bytes_g(0)/ph_wri(4)
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/write_ena_b/bytes_g(0)/ph_wri(6)
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/clk_p
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_dq_r
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_dq_f
-add wave -noupdate -expand -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena_r
-add wave -noupdate -expand -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena_f
-add wave -noupdate -expand -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clks
-add wave -noupdate -expand -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqz(15)
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqo
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
-add wave -noupdate -expand -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(0) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(1) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(0) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(1) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq
-add wave -noupdate -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/clk
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/we
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/wa
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/di
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/ra
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(7) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(6) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(5) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(4) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(3) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(2) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(0) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(7) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(6) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(5) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(4) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(3) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(2) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/ram_i/do
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/write_ena_b/bytes_g(0)/ph_wri(4)
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/write_ena_b/bytes_g(0)/ph_wri(6)
+add wave -noupdate -group ddr_wr_fifo /testbench/clk_p
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_dq_r
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_dq_f
+add wave -noupdate -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena_r
+add wave -noupdate -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena_f
+add wave -noupdate -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clks
+add wave -noupdate -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqz(15)
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqo
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_clk
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
+add wave -noupdate -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(0) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(1) -radix hexadecimal}} -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(0) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq(1) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq
+add wave -noupdate -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
 add wave -noupdate -group miirx_mac /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/dtreq
 add wave -noupdate -group miirx_mac -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/dtxd
 add wave -noupdate -group miirx_mac /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/mii_rxc
@@ -675,33 +675,32 @@ add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/nuhs3dsp_e/scope
 add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/ddr_wri
 add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/ddr_state
 add wave -noupdate -expand -group ddr -group ddr_mpu /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_mpu_e/ddr_rdy_ena
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
-add wave -noupdate -expand -group ddr -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_clk
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rdy
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_rea
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dq
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_win_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqs
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_dqi
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_di
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_do
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/sys_do_win
+add wave -noupdate -expand -group ddr -expand -group ddr_rd_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_rd_fifo_e/ddr_fifo_rdy
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
-add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/sys_cntr_g(0)/addr_i_set
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/data_byte_g(1)/ddr_data_g(0)/cntr_g(0)/ffd_i/sr
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_addr_q(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_addr_q(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_addr_q(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_addr_q(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_addr_q
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -radix hexadecimal -childformat {{/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(3) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(2) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(1) -radix hexadecimal} {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(3) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(2) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(1) {-height 16 -radix hexadecimal} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q(0) {-height 16 -radix hexadecimal}} /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_addr_q
@@ -718,6 +717,9 @@ add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -group data_byt
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_clk
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_req
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_di
+add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqsz(1)
+add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqz
+add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_io_dqsz
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/sys_rst
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_dq
 add wave -noupdate -expand -group ddr -expand -group ddr_wr_fifo /testbench/nuhs3dsp_e/scope_e/ddr_e/ddr_wr_fifo_e/ddr_ena
@@ -822,7 +824,7 @@ add wave -noupdate /testbench/nuhs3dsp_e/scope_e/input_req
 add wave -noupdate /testbench/nuhs3dsp_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {205258330 ps} 0}
+WaveRestoreCursors {{Cursor 1} {230024011 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 187
 configure wave -valuecolwidth 75
@@ -838,4 +840,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {205130875 ps} {205359051 ps}
+WaveRestoreZoom {229909923 ps} {230138099 ps}
