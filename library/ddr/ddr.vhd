@@ -548,20 +548,14 @@ begin
 		ddr_io_dqo  => ddr_io_dqo);
 	ddr_dqz <= ddr_io_dqz;
 
-	process (ddr_io_dqz, ddr_io_dqo)
-	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= ddr_io_dqo(i);
-			if ddr_io_dqz(i)='1' then
-				ddr_dq(i) <= 'Z';
-			end if;
-		end loop;
-	end process;
+	ddr_dq_e : for i in ddr_dq'range generate
+		ddr_dq(i) <= ddr_io_dqo(i) when ddr_io_dqz(i)='0' else 'Z';
+	end generate;
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
 		std => std,
-		data_bytes => 2)
+		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk0,
 		ddr_io_ena => ddr_mpu_dqs,
@@ -570,15 +564,9 @@ begin
 		ddr_io_dqso => ddr_io_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
 	
-	process (ddr_dqs, ddr_io_dqsz, ddr_io_dqso)
-	begin
-		for i in ddr_dqs'range loop
-			ddr_dqs(i) <= ddr_io_dqso(i);
-			if ddr_io_dqsz(i)='1' then
-				ddr_dqz(i) <= 'Z';
-			end if;
-		end loop;
-	end process;
+	ddr_dqs_e : for i in ddr_dqs'range generate
+		ddr_dqs(i) <= ddr_io_dqso(i) when ddr_io_dqsz(i)='0' else 'Z';
+	end generate;
 
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;

@@ -150,7 +150,7 @@ begin
 			ram_g: for j in byte_bits-1 downto 0 generate
 				signal qpo : std_logic;
 			begin
-				ffd_i : entity hdl4fpga.sff
+				ffd_i : entity hdl4fpga.ff
 				port map (
 					clk => ddr_clks(i),
 					d   => dpo(j),
