@@ -7,10 +7,10 @@ entity ddr_io_dqs is
 		data_bytes : natural);
 	port (
 		ddr_io_clk : in std_logic;
-		ddr_io_ena : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqszi : in std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqsz : out std_logic_vector(0 to data_bytes-1);
-		ddr_io_dqso : out std_logic_vector(0 to data_bytes-1));
+		ddr_io_ena : in   std_logic_vector(data_bytes-1 downto 0);
+		ddr_mpu_dqsz : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dqsz : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_dqso : out std_logic_vector(data_bytes-1 downto 0));
 end;
 
 library ecp3;
@@ -29,15 +29,18 @@ begin
 		attribute oddrapps of oddrdqs : label is "DDR2_MEM_DQS";
 
 		signal tclk : std_logic;
-		signal dqs : std_logic;
 	begin
+
+		assert std=1 or std=2
+		report "Invalid standard"
+		severity failure;
 
 		oddrt_i : oddrtdqsa
 		port map (
 			sclk => rclk,
 			dqsw => fclk,
 			dqstclk => tclk,
-			ta => ddr_io_dqszi(i),
+			ta => ddr_mpu_dqsz(i),
 			db => '0',
 			q  => ddr_io_dqsz(i));
 
@@ -46,7 +49,7 @@ begin
 			sclk => rclk,
 			da => ddr_io_ena(i),
 			dqclk1 => ddr_io_clk,
-			dqsw   => ddr_io_clk,
+			dqsw   => fclk,
 			dqstclk => tclk,
 			q  => ddr_io_dqso(i));
 
