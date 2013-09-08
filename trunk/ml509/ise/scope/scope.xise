@@ -183,7 +183,7 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="47"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="49"/>
     </file>
-    <file xil_pn:name="../../../library/video/xilinx/ch7301c.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/video/ch7301c.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="48"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
       <library xil_pn:name="hdl4fpga"/>
