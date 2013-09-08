@@ -13,6 +13,8 @@ library ecp3;
 use ecp3.components.all;
 
 architecture ecp3 of ddro is
+	attribute oddrapps : string;
+	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 begin
 	oddr_i : oddrxd1
 	port map (
