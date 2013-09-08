@@ -87,7 +87,6 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		strobe => "INTERNAL",
-		device => "virtex5",
 		ddr_std => 2,
 		xd_len => 8,
 		tDDR => (uclk_period*real(ddr_div))/real(ddr_mul))
@@ -109,7 +108,7 @@ begin
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
 		ddr_dqs => ddr2_dqs_p(1 downto 0),
-		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
+--		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
@@ -154,7 +153,6 @@ begin
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
-		device => "virtex5",
 		xd_len => 8)
 	port map (
 		mii_rxc  => phy_rxclk,
@@ -177,14 +175,11 @@ begin
 	diff_clk_b : block
 		signal diff_clk : std_logic;
 	begin
-		oddr_mdq : oddr
+		oddr_mdq : entity hdl4fpga.oddr
 		port map (
-			r => '0',
-			s => '0',
-			c => ddrs_clk180,
-			ce => '1',
-			d1 => '1',
-			d2 => '0',
+			clk => ddrs_clk0,
+			dr => '0',
+			df => '1',
 			q => diff_clk);
 
 		ddr_ck_obufds : obufds

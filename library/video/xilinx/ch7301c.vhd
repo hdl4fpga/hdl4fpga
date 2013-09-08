@@ -37,31 +37,22 @@ architecture def of vga2ch7301c_iob is
 begin
 	h <= not vga_hsync;
 
-	dvi_h_i : fdrse
+	dvi_h_i : entity hdl4fpga.ff
 	port map (
-		s  => '0',
-		r  => '0',
-		c  => vga_clk,
-		ce => '1',
-		d  => h,
-		q  => dvi_h);
+		clk => vga_clk,
+		d   => h,
+		q   => dvi_h);
 
 	v <= not vga_vsync;
-	dvi_v_i : fdrse
+	dvi_v_i : entity hdl4fpga.ff
 	port map (
-		s  => '0',
-		r  => '0',
-		c  => vga_clk,
-		ce => '1',
+		clk => vga_clk,
 		d  => v,
 		q  => dvi_v);
 
-	dvi_de_i : fdrse
+	dvi_de_i : entity hdl4fpga.ff
 	port map (
-		s  => '0',
-		r  => '0',
-		c  => vga_clk,
-		ce => '1',
+		clk => vga_clk,
 		d  => vga_blank,
 		q  => dvi_de);
 
@@ -73,28 +64,22 @@ begin
 		o  => dvi_xclk_p,
 		ob => dvi_xclk_n);
 
-	dvi_clk_i : oddr
+	dvi_clk_i : entity hdl4fpga.oddr
 	port map (
-		r => '0',
-		s => '0',
-		c => vga_clk90,
-		ce => '1',
-		d1 => '1',
-		d2 => '0',
-		q => dvi_clk);
+		clk => vga_clk90,
+		dr  => '1',
+		df  => '0',
+		q   => dvi_clk);
 
 	dvi_rword <= (vga_green(4-1 downto 0) & vga_blue) and vga_blank;
 	dvi_fword <= (vga_red & vga_green(8-1 downto 4)) and vga_blank; 
 
 	dviddr_g : for i in dvi_d'range generate
-		dac_clk_i : oddr
+		dac_clk_i : entity hdl4fpga.oddr
 		port map (
-			r => '0',
-			s => '0',
-			c => vga_clk,
-			ce => '1',
-			d1 => dvi_rword(i),
-			d2 => dvi_fword(i),
-			q => dvi_d(i));
+			clk => vga_clk,
+			dr  => dvi_rword(i),
+			df  => dvi_fword(i),
+			q   => dvi_d(i));
 	end generate;
 end;
