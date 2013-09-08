@@ -64,7 +64,7 @@ begin
 		o  => dvi_xclk_p,
 		ob => dvi_xclk_n);
 
-	dvi_clk_i : entity hdl4fpga.oddr
+	dvi_clk_i : entity hdl4fpga.ddro
 	port map (
 		clk => vga_clk90,
 		dr  => '1',
@@ -75,7 +75,7 @@ begin
 	dvi_fword <= (vga_red & vga_green(8-1 downto 4)) and vga_blank; 
 
 	dviddr_g : for i in dvi_d'range generate
-		dac_clk_i : entity hdl4fpga.oddr
+		dac_clk_i : entity hdl4fpga.ddro
 		port map (
 			clk => vga_clk,
 			dr  => dvi_rword(i),

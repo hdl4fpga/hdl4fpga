@@ -21,13 +21,13 @@ begin
 	bytes_g : for i in data_bytes-1 downto 0 generate
 		bits_g : for j in byte_bits-1 downto 0 generate
 
-			oddrt_i : entity hdl4fpga.oddrt
+			oddrt_i : entity hdl4fpga.ddrto
 			port map (
 				clk => ddr_io_clk,
 				d  => ddr_mpu_dqz(i),
 				q  => ddr_io_dqz(i*byte_bits+j));
 
-			oddr_i : entity hdl4fpga.oddr
+			oddr_i : entity hdl4fpga.ddro
 			port map (
 				clk => ddr_io_clk,
 				dr => ddr_io_dq_r(i*byte_bits+j),

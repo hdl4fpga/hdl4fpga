@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity oddr is
+entity ddro is
 	port (
 		clk : in std_logic;
 		dr  : in std_logic;
@@ -12,7 +12,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of oddr is
+architecture ecp3 of ddro is
 begin
 	oddr_i : oddrxd1
 	port map (

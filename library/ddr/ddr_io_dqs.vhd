@@ -39,13 +39,13 @@ begin
 			ddr_io_ena(i) when 1|2,
 			'1' when 3;
 
-		oddrt_i : entity hdl4fpga.oddrt
+		oddrt_i : entity hdl4fpga.ddrto
 		port map (
 			clk => fclk,
 			d  => ddr_mpu_dqsz(i),
 			q  => ddr_io_dqsz(i));
 
-		oddr_i : entity hdl4fpga.oddr
+		oddr_i : entity hdl4fpga.ddro
 		port map (
 			clk => rclk,
 			dr => dr,

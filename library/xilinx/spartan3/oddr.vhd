@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity oddr is
+entity ddro is
 	port (
 		clk : in std_logic;
 		dr  : in std_logic;
@@ -12,11 +12,11 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture spartan3 of oddr is
+architecture spartan3 of ddro is
 	signal fclk : std_logic;
 begin
 	fclk <= not clk;
-	oddr : oddr2
+	ddro : oddr2
 	port map (
 		c0 => clk,
 		c1 => fclk,
@@ -31,7 +31,7 @@ end;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity oddrt is
+entity ddrto is
 	port (
 		clk : in std_logic;
 		d : in std_logic;
@@ -41,9 +41,9 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture spartan3 of oddrt is
+architecture spartan3 of ddrto is
 begin
-	oddrt : fdrse
+	ddrto : fdrse
 	port map (
 		s  => '0',
 		r  => '0',

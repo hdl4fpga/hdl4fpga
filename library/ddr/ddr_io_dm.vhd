@@ -48,7 +48,7 @@ begin
 
 		end generate;
 
-		oddr_du : entity hdl4fpga.oddr
+		oddr_du : entity hdl4fpga.ddro
 		port map (
 			clk => ddr_io_clk,
 			dr  => d(0),
