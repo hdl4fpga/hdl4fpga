@@ -107,8 +107,8 @@ begin
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
-		ddr_dqs => ddr2_dqs_p(1 downto 0),
-		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
+		ddr_dqs => ddr2_dqs(1 downto 0),
+	--	ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
@@ -200,15 +200,16 @@ begin
 		ob => ddr2_clk_n(1));
 
 	ddr2_dqs_g : for i in 7 downto 2 generate
-		obufds : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t => '1',
-			i => '0',
-			o => open,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
+		ddr2_dqs(i) <= '0';
+--		obufds : iobufds
+--		generic map (
+--			iostandard => "DIFF_SSTL18_II_DCI")
+--		port map (
+--			t => '1',
+--			i => '0',
+--			o => open,
+--			io  => ddr2_dqs_p(i),
+--			iob => ddr2_dqs_n(i));
 	end generate;
 
 	dvi_gpio1 <= '1';

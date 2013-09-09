@@ -16,18 +16,18 @@ entity ml509 is
 
 		ddr2_clk_p : out std_logic_vector(2-1 downto 0);
 		ddr2_clk_n : out std_logic_vector(2-1 downto 0);
---		ddr2_cs  : out std_logic_vector( 2-1 downto 0);
+		ddr2_cs  : out std_logic_vector( 2-1 downto 0);
 		ddr2_cke : out std_logic_vector( 2-1 downto 0);
 		ddr2_ras : out std_logic;
 		ddr2_cas : out std_logic;
 		ddr2_we  : out std_logic;
 		ddr2_a   : out std_logic_vector(14-1 downto 0);
 		ddr2_ba  : out std_logic_vector( 3-1 downto 0);
-		ddr2_dqs_p : inout std_logic_vector(8-1 downto 0);
-		ddr2_dqs_n : inout std_logic_vector(8-1 downto 0);
+		ddr2_dqs : inout std_logic_vector(8-1 downto 0);
+--		ddr2_dqs_n : inout std_logic_vector(8-1 downto 0);
 		ddr2_dm  : inout std_logic_vector( 8-1 downto 0);
 		ddr2_d   : inout std_logic_vector(64-1 downto 0);
---		ddr2_odt : out std_logic_vector( 2-1 downto 0);
+		ddr2_odt : out std_logic_vector( 2-1 downto 0);
 --		ddr2_scl  : out std_logic;
 --		ddr2_sda  : in  std_logic;
 
@@ -132,8 +132,8 @@ entity ml509 is
 	attribute loc of ddr2_d   : signal is "L24 L25 M25 J27 L26 J24 M26 G25 G26 H24 K28 K27 H25 F25 L28 M28 N28 P27 N25 T24 P26 N24 P25 R24 V24 W26 W25 V28 W24 Y26 Y27 V29 W27 V27 W29 AC30 V30 W31 AB30 AC29 AA25 AB27 AA24 AB26 AA26 AC27 AB25 AC28 AB28 AG28 AJ26 AG25 AA28 AH28 AF28 AH27 AE29 AD29 AF29 AJ30 AD30 AF31 AK31 AF30";
 
 	attribute loc of ddr2_dm    : signal is "J25 F26 P24 V25 Y31   Y24 AE28 AJ31";
-	attribute loc of ddr2_dqs_p : signal is "G27 H28 E26 Y28 AB31 AK26 AK28 AA29";
-	attribute loc of ddr2_dqs_n : signal is "H27 G28 E27 Y29 AA31 AJ27 AK27 AA30";
+	attribute loc of ddr2_dqs : signal is "G27 H28 E26 Y28 AB31 AK26 AK28 AA29";
+--	attribute loc of ddr2_dqs_n : signal is "H27 G28 E27 Y29 AA31 AJ27 AK27 AA30";
 --	attribute loc of ddr2_odt   : signal is "F30 F31";
 
 --	attribute iostandard of ddr2_clk_p : signal is "DIFF_SSTL18_II";
@@ -163,8 +163,8 @@ entity ml509 is
 	attribute nodelay of ddr2_ba  : signal is "true";
 	attribute nodelay of ddr2_a   : signal is "true";
 	attribute nodelay of ddr2_dm  : signal is "true";
-	attribute nodelay of ddr2_dqs_p : signal is "true";
-	attribute nodelay of ddr2_dqs_n : signal is "true";
+	attribute nodelay of ddr2_dqs : signal is "true";
+--	attribute nodelay of ddr2_dqs_n : signal is "true";
 --	attribute nodelay of ddr2_odt : signal is "true";
 
 	attribute loc of dvi_xclk_p : signal is "AL11";
