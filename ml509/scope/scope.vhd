@@ -108,7 +108,7 @@ begin
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
 		ddr_dqs => ddr2_dqs_p(1 downto 0),
---		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
+		ddr_dqs_n => ddr2_dqs_n(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
@@ -226,7 +226,7 @@ begin
 	ddr2_ba(2 downto 2)  <= "0";
    	ddr2_a(13 downto 13) <= "0";
   	ddr2_cke(1 downto 1) <= "0";
-   	ddr2_odt(1 downto 1) <= (others => 'Z');
+	ddr2_odt(1 downto 1) <= (others => 'Z');
 	ddr2_dm(7 downto 2)  <= (others => 'Z');
 	ddr2_d(63 downto 16) <= (others => '0');
 
