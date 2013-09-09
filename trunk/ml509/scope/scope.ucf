@@ -174,11 +174,11 @@ NET "ddr2_dm[*]"    IOSTANDARD = SSTL18_II;
 NET "ddr2_we"       IOSTANDARD = SSTL18_II;
 NET "ddr2_cas"      IOSTANDARD = SSTL18_II;
 NET "ddr2_ras"      IOSTANDARD = SSTL18_II;
-NET "ddr2_cs[*]"    IOSTANDARD = SSTL18_II;
+#NET "ddr2_cs[*]"    IOSTANDARD = SSTL18_II;
 NET "ddr2_cke[*]"   IOSTANDARD = SSTL18_II;
 NET "ddr2_ba[*]"    IOSTANDARD = SSTL18_II;
 NET "ddr2_a[*]"     IOSTANDARD = SSTL18_II;
-NET "ddr2_odt[*]"   IOSTANDARD = SSTL18_II;
+#NET "ddr2_odt[*]"   IOSTANDARD = SSTL18_II;
 NET "dvi_gpio1"     IOSTANDARD = SSTL18_II;
 
 #NET "ddr2_scl"       IOSTANDARD = SSTL18_II;

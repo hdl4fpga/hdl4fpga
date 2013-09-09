@@ -16,7 +16,7 @@ entity ml509 is
 
 		ddr2_clk_p : out std_logic_vector(2-1 downto 0);
 		ddr2_clk_n : out std_logic_vector(2-1 downto 0);
-		ddr2_cs  : out std_logic_vector( 2-1 downto 0);
+--		ddr2_cs  : out std_logic_vector( 2-1 downto 0);
 		ddr2_cke : out std_logic_vector( 2-1 downto 0);
 		ddr2_ras : out std_logic;
 		ddr2_cas : out std_logic;
@@ -27,7 +27,7 @@ entity ml509 is
 		ddr2_dqs_n : inout std_logic_vector(8-1 downto 0);
 		ddr2_dm  : inout std_logic_vector( 8-1 downto 0);
 		ddr2_d   : inout std_logic_vector(64-1 downto 0);
-		ddr2_odt : out std_logic_vector( 2-1 downto 0);
+--		ddr2_odt : out std_logic_vector( 2-1 downto 0);
 --		ddr2_scl  : out std_logic;
 --		ddr2_sda  : in  std_logic;
 
@@ -122,7 +122,7 @@ entity ml509 is
 --	attribute loc of ddr2_sda  : signal is "F29";
 	attribute loc of ddr2_clk_p : signal is "E28 AK29";
 	attribute loc of ddr2_clk_n : signal is "F28 AJ29";
-	attribute loc of ddr2_cs  : signal is "J29 L29";
+--	attribute loc of ddr2_cs  : signal is "J29 L29";
 	attribute loc of ddr2_cke : signal is "U30 T28";
 	attribute loc of ddr2_cas : signal is "E31";
 	attribute loc of ddr2_ras : signal is "H30";
@@ -134,7 +134,7 @@ entity ml509 is
 	attribute loc of ddr2_dm    : signal is "J25 F26 P24 V25 Y31   Y24 AE28 AJ31";
 	attribute loc of ddr2_dqs_p : signal is "G27 H28 E26 Y28 AB31 AK26 AK28 AA29";
 	attribute loc of ddr2_dqs_n : signal is "H27 G28 E27 Y29 AA31 AJ27 AK27 AA30";
-	attribute loc of ddr2_odt   : signal is "F30 F31";
+--	attribute loc of ddr2_odt   : signal is "F30 F31";
 
 --	attribute iostandard of ddr2_clk_p : signal is "DIFF_SSTL18_II";
 --	attribute iostandard of ddr2_clk_n : signal is "DIFF_SSTL18_II";
@@ -156,7 +156,7 @@ entity ml509 is
 	attribute nodelay of ddr2_clk_p : signal is "true";
 	attribute nodelay of ddr2_clk_n : signal is "true";
 	attribute nodelay of ddr2_cke : signal is "true";
-	attribute nodelay of ddr2_cs  : signal is "true";
+--	attribute nodelay of ddr2_cs  : signal is "true";
 	attribute nodelay of ddr2_ras : signal is "true";
 	attribute nodelay of ddr2_cas : signal is "true";
 	attribute nodelay of ddr2_we  : signal is "true";
@@ -165,7 +165,7 @@ entity ml509 is
 	attribute nodelay of ddr2_dm  : signal is "true";
 	attribute nodelay of ddr2_dqs_p : signal is "true";
 	attribute nodelay of ddr2_dqs_n : signal is "true";
-	attribute nodelay of ddr2_odt : signal is "true";
+--	attribute nodelay of ddr2_odt : signal is "true";
 
 	attribute loc of dvi_xclk_p : signal is "AL11";
 	attribute loc of dvi_xclk_n : signal is "AL10";
