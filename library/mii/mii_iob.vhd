@@ -26,8 +26,6 @@ entity mii_iob is
 end;
 
 architecture def of mii_iob is
-	attribute oddrapps : string;
-	attribute oddrapps of all : label is "SCLK_ALIGNED";
 begin
 
 	--------

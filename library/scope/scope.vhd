@@ -34,7 +34,10 @@ entity scope is
 		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 		ddr_dm  : inout std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqs : inout std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqsz : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqsi : in  std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqso : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqz : inout std_logic_vector(data_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);
 		ddr_odt : out std_logic;
 		ddr_lp_dqs : out std_logic;
@@ -486,11 +489,14 @@ begin
 		ddr_ba  => ddr_ba,
 		ddr_a   => ddr_a,
 		ddr_dm  => ddr_dm,
-		ddr_dqs => ddr_dqs,
+		ddr_dqsz => ddr_dqsz,
+		ddr_dqsi => ddr_dqsi,
+		ddr_dqso => ddr_dqso,
+		ddr_dqz => ddr_dqz,
 		ddr_dq  => ddr_dq,
 		ddr_odt => ddr_odt,
 
-		ddr_st_lp_dqs => ddr_st_lp_dqs,
-		ddr_lp_dqs => ddr_lp_dqs);
+		ddr_lp_dqs => ddr_lp_dqs,
+		ddr_st_lp_dqs => ddr_st_lp_dqs);
 	sys_ini <= ddrs_ini;
 end;

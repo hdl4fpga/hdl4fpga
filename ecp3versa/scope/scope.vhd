@@ -15,7 +15,8 @@ architecture scope of ecp3versa is
 	constant col_size  : natural := 6;
 	constant nibble_size : natural := 4;
 	constant byte_size : natural := 8;
-	constant data_size : natural := 16;
+	constant data_bytes : natural := 2;
+	constant data_size : natural := data_bytes*byte_size;
 
 	constant uclk_period : real := 10.0;
 
@@ -32,6 +33,11 @@ architecture scope of ecp3versa is
 	signal ddrs_clk90 : std_logic;
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
+
+	signal ddr_dqsz : std_logic_vector(data_bytes-1 downto 0);
+	signal ddr_dqsi : std_logic_vector(data_bytes-1 downto 0);
+	signal ddr_dqso : std_logic_vector(data_bytes-1 downto 0);
+	signal ddr_dqz  : std_logic_vector(data_bytes-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -91,10 +97,10 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		strobe => "INTERNAL",
+		strobe  => "INTERNAL",
 		ddr_std => 2,
-		xd_len => 8,
-		tDDR => (uclk_period*real(ddr_div))/real(ddr_mul))
+		xd_len  => 8,
+		tDDR    => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
 		sys_rst => scope_rst,
 
@@ -112,7 +118,9 @@ begin
 		ddr_ba  => ddr3_ba(bank_size-1 downto 0),
 		ddr_a   => ddr3_a,
 		ddr_dm  => ddr3_dm,
-		ddr_dqs => ddr3_dqs,
+		ddr_dqsz => ddr_dqsz,
+		ddr_dqsi => ddr_dqsi,
+		ddr_dqso => ddr_dqso,
 		ddr_dq  => ddr3_dq,
 		ddr_odt => ddr3_odt,
 
@@ -132,7 +140,11 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
-	phy1_mdc <= '0';
+	ddr_dqsi_e : for i in ddr_dqsi'range generate
+		ddr3_dqs(i) <= ddr_dqso(i) when ddr_dqsz(i)='0' else 'Z';
+	end generate;
+
+	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob

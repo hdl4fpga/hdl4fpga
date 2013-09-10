@@ -115,7 +115,7 @@ begin
 	ddr_ckn <= 'Z';
 	ddr_lp_dqs <= 'Z';
 	ddr_cke <= 'Z';
-	ddr_cs  <= 'Z';
+	ddr_cs  <= '1';
 	ddr_ras <= 'Z';
 	ddr_cas <= 'Z';
 	ddr_we  <= 'Z';

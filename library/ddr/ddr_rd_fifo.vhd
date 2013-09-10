@@ -16,7 +16,7 @@ entity ddr_rd_fifo is
 
 		ddr_win_dq  : in std_logic;
 		ddr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqs : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqi : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
@@ -35,7 +35,7 @@ architecture mix of ddr_rd_fifo is
 
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	signal sys_do_win : std_logic;
-	signal ddr_fifo_rdy : std_logic_vector(ddr_dqs'range);
+	signal ddr_fifo_rdy : std_logic_vector(ddr_dqsi'range);
 begin
 	ddr_fifo_di(0) <= ddr_dqi(data_bits/2-1 downto 0);
 	ddr_fifo_di(1) <= ddr_dqi(data_bits-1 downto data_bits/2);
@@ -49,7 +49,7 @@ begin
 		end if;
 	end process;
 
-	fifo_bytes_g : for k in ddr_dqs'range generate
+	fifo_bytes_g : for k in ddr_dqsi'range generate
 		signal ddr_delayed_dqs : std_logic_vector(0 to 1);
 		signal ddr_dlyd_dqs : std_logic_vector(0 to 1);
 
@@ -76,7 +76,7 @@ begin
 		generic map (
 			n => 5)
 		port map (
-			xi => ddr_dqs(k),
+			xi => ddr_dqsi(k),
 			ena => "00001",
 			x_p => ddr_delayed_dqs(0),
 			x_n => ddr_delayed_dqs(1));
