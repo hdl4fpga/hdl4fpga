@@ -55,7 +55,8 @@ entity ddr is
 		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
 		ddr_dm : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqs : inout std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqso : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_dq  : inout std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic;
@@ -102,16 +103,16 @@ architecture mix of ddr is
 	signal ddr_mpu_drr : std_logic;
 	signal ddr_mpu_drf : std_logic;
 	signal ddr_mpu_rea : std_logic;
-	signal ddr_mpu_dqz : std_logic_vector(ddr_dqs'range);
-	signal ddr_mpu_dqsz : std_logic_vector(ddr_dqs'range);
-	signal ddr_mpu_dqs : std_logic_vector(ddr_dqs'range);
-	signal ddr_win_dqs : std_logic_vector(ddr_dqs'range);
+	signal ddr_mpu_dqz : std_logic_vector(ddr_dqsi'range);
+	signal ddr_mpu_dqsz : std_logic_vector(ddr_dqsi'range);
+	signal ddr_mpu_dqs : std_logic_vector(ddr_dqsi'range);
+	signal ddr_win_dqs : std_logic_vector(ddr_dqsi'range);
 	signal ddr_pgm_cmd : std_logic_vector(0 to 2);
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
 	signal ddr_wr_fifo_req : std_logic;
-	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqs'range);
-	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqs'range);
+	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqsi'range);
+	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqsi'range);
 	signal ddr_wr_dm_r : std_logic_vector(ddr_dm'range);
 	signal ddr_wr_dm_f : std_logic_vector(ddr_dm'range);
 	signal ddr_wr_dq_r : std_logic_vector(ddr_dq'range);
@@ -124,8 +125,8 @@ architecture mix of ddr is
 	signal ddr_io_dmo : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
-	signal ddr_io_dqsz : std_logic_vector(ddr_dqs'range);
-	signal ddr_io_dqso : std_logic_vector(ddr_dqs'range);
+	signal ddr_io_dqsz : std_logic_vector(ddr_dqsi'range);
+	signal ddr_io_dqso : std_logic_vector(ddr_dqsi'range);
 	signal ddr_st_hlf : std_logic;
 	signal ddr_mpu_wri : std_logic;
 
@@ -513,7 +514,7 @@ begin
 		sys_rea => ddr_mpu_rea,
 		ddr_win_dq  => ddr_mpu_rwin,
 		ddr_win_dqs => ddr_win_dqs,
-		ddr_dqs => ddr_dqs,
+		ddr_dqsi => ddr_dqsi,
 		ddr_dqi => ddr_dq);
 		
 	ddr_wr_fifo_rst <= not ddr_mpu_wri;
@@ -566,8 +567,8 @@ begin
 		ddr_io_dqso => ddr_io_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
 	
-	ddr_dqs_e : for i in ddr_dqs'range generate
-		ddr_dqs(i) <= ddr_io_dqso(i) when ddr_io_dqsz(i)='0' else 'Z';
+	ddr_dqsi_e : for i in ddr_dqsi'range generate
+		ddr_dqso(i) <= ddr_io_dqso(i) when ddr_io_dqsz(i)='0' else 'Z';
 	end generate;
 
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
