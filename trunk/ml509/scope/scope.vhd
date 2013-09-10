@@ -31,6 +31,9 @@ architecture scope of ml509 is
 	signal ddrs_clk90 : std_logic;
 	signal ddrs_clk180 : std_logic;
 	signal ddr_lp_clk : std_logic;
+	signal ddr_dqsz : std_logic_vector(8-1 downto 0);
+	signal ddr_dqsi : std_logic_vector(8-1 downto 0);
+	signal ddr_dqso : std_logic_vector(8-1 downto 0);
 
 	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
@@ -107,8 +110,9 @@ begin
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
 		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
-		ddr_dqs => ddr2_dqs(1 downto 0),
-	--	ddr_dqs_n => ddr2_dqs_n(1 downto 0),
+		ddr_dqsz => ddr_dqsz(1 downto 0),
+		ddr_dqsi => ddr_dqsi(1 downto 0),
+		ddr_dqso => ddr_dqso(1 downto 0),
 		ddr_dq  => ddr2_d(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
@@ -199,17 +203,39 @@ begin
 		o  => ddr2_clk_p(1),
 		ob => ddr2_clk_n(1));
 
-	ddr2_dqs_g : for i in 7 downto 2 generate
-		ddr2_dqs(i) <= '0';
---		obufds : iobufds
---		generic map (
---			iostandard => "DIFF_SSTL18_II_DCI")
---		port map (
---			t => '1',
---			i => '0',
---			o => open,
---			io  => ddr2_dqs_p(i),
---			iob => ddr2_dqs_n(i));
+	ddr2_dqs_g : for i in 2-1 downto 0 generate
+		signal dqsi : std_logic;
+	begin
+		obufds : iobufds
+		generic map (
+			iostandard => "DIFF_SSTL18_II_DCI")
+		port map (
+			t => ddr_dqsz(i),
+			i => ddr_dqso(i),
+			o => dqsi,
+			io  => ddr2_dqs_p(i),
+			iob => ddr2_dqs_n(i));
+
+		idelay_i : idelay 
+		port map (
+			rst => '0',
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i => dqsi,
+			o => ddr_dqsi(i));
+	end generate;
+
+	ddr2_dqs_g1 : for i in 7 downto 2 generate
+		obufds : iobufds
+		generic map (
+			iostandard => "DIFF_SSTL18_II_DCI")
+		port map (
+			t => '1',
+			i => '0',
+			o => open,
+			io  => ddr2_dqs_p(i),
+			iob => ddr2_dqs_n(i));
 	end generate;
 
 	dvi_gpio1 <= '1';
@@ -223,8 +249,8 @@ begin
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
-	ddr2_cs(1 downto 1)  <= "1";
-	ddr2_ba(2 downto 2)  <= "0";
+	ddr2_cs(1 downto 1) <= "1";
+	ddr2_ba(2 downto 2) <= "0";
    	ddr2_a(13 downto 13) <= "0";
   	ddr2_cke(1 downto 1) <= "0";
 	ddr2_odt(1 downto 1) <= (others => 'Z');

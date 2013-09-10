@@ -5,8 +5,9 @@ use ieee.math_real.all;
 
 entity ddr is
 	generic (
-		STROBE : string := "EXTERNAL";
-		STD  : positive range 1 to 3 := 3;
+		strobe : string := "EXTERNAL";
+		std  : positive range 1 to 3 := 3;
+
 		tCP  : real := 6.0;
 		tWR  : real := 15.0;
 		tRP  : real := 15.0;
@@ -53,6 +54,7 @@ entity ddr is
 		ddr_we : out std_logic;
 		ddr_ba : out std_logic_vector(bank_bits-1 downto 0);
 		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
+		ddr_dmz : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dm : inout std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
@@ -66,7 +68,6 @@ entity ddr is
 
 	constant debug_delay : time := 3.3 ns;
 	constant t200u : real := 200.0e3;
---	constant t200u : real := 2000.0;
 	constant t500u : real := 500.0e3;
 	constant t400n : real := 400.0;
 	constant txpr  : real := 120.0;
@@ -126,7 +127,6 @@ architecture mix of ddr is
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqsi'range);
-	signal ddr_io_dqso : std_logic_vector(ddr_dqsi'range);
 	signal ddr_st_hlf : std_logic;
 	signal ddr_mpu_wri : std_logic;
 
@@ -495,12 +495,14 @@ begin
 		(others => ddr_stw_sto) when strobe="EXTERNAL" else
 		ddr_dm;
 
-	ddr_stw_lp_e : entity hdl4fpga.ddr_stw_lp
-	generic map (
-		data_bytes => 1)
-	port map (
-		ddr_stw_sti(0) => ddr_st_lp_dqs,
-		ddr_stw_sto(0) => ddr_stw_sto);
+	ddr_st_lp_g : if strobe="EXTERNAL" generate
+		ddr_stw_lp_e : entity hdl4fpga.ddr_stw_lp
+		generic map (
+			data_bytes => 1)
+		port map (
+			ddr_stw_sti(0) => ddr_st_lp_dqs,
+			ddr_stw_sto(0) => ddr_stw_sto);
+	end generate;
 
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
@@ -564,13 +566,9 @@ begin
 		ddr_io_ena => ddr_mpu_dqs,
 		ddr_mpu_dqsz => ddr_mpu_dqsz,
 		ddr_io_dqsz => ddr_io_dqsz,
-		ddr_io_dqso => ddr_io_dqso);
+		ddr_io_dqso => ddr_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
 	
-	ddr_dqsi_e : for i in ddr_dqsi'range generate
-		ddr_dqso(i) <= ddr_io_dqso(i) when ddr_io_dqsz(i)='0' else 'Z';
-	end generate;
-
 	ddr_mpu_dmx_r <= ddr_wr_fifo_ena_r;
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
@@ -586,19 +584,22 @@ begin
 		ddr_mpu_dmx_f => ddr_mpu_dmx_f,
 		ddr_io_dmz => ddr_io_dmz,
 		ddr_io_dmo => ddr_io_dmo);
+	ddr_dmz <= ddr_io_dmz;
 
 	ddr_dm_e : for i in ddr_dm'range generate
 		ddr_dm(i) <= ddr_io_dmo(i) when ddr_io_dmz(i)='0' else 'Z';
 	end generate;
 
-	ddr_st_hlf <= setif(std=1 and cas(0)='1');
-	ddr_st_e : entity hdl4fpga.ddr_stw
-	port map (
-		ddr_st_hlf => ddr_st_hlf,
-		ddr_st_clk => sys_clk0,
-		ddr_st_drr => ddr_mpu_drr,
-		ddr_st_drf => ddr_mpu_drf,
-		ddr_st_dqs => ddr_lp_dqs);
+	ddr_st_g : if strobe="EXTERNAL" generate
+		ddr_st_hlf <= setif(std=1 and cas(0)='1');
+		ddr_st_e : entity hdl4fpga.ddr_stw
+		port map (
+			ddr_st_hlf => ddr_st_hlf,
+			ddr_st_clk => sys_clk0,
+			ddr_st_drr => ddr_mpu_drr,
+			ddr_st_drf => ddr_mpu_drf,
+			ddr_st_dqs => ddr_lp_dqs);
+	end generate;
 
-    ddr_odt <= '0';
+	ddr_odt <= '0';
 end;

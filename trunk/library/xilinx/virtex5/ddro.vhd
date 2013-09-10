@@ -16,14 +16,12 @@ use unisim.vcomponents.all;
 
 architecture virtex5 of ddro is
 begin
-	oddr : 	oddr
-	generic map (
-		init => '0')
+	oddr_i : oddr
 	port map (
 		c => clk,
 		ce => '1',
-		r  => '0',
 		s  => '0',
+		r  => '0',
 		d1 => dr,
 		d2 => df,
 		q  => q);
@@ -47,10 +45,10 @@ architecture virtex5 of ddrto is
 begin
 	oddrt : fdrse
 	port map (
-		s  => '0',
-		r  => '0',
 		c  => clk,
 		ce => '1',
+		s  => '0',
+		r  => '0',
 		d  => d,
 		q  => q);
 end;
