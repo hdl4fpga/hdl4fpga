@@ -216,6 +216,7 @@ begin
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
+		-- ddr_dqsi(i) <= dqsi;
 		idelay_i : idelay 
 		port map (
 			rst => '0',

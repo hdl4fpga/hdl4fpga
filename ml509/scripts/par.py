@@ -61,8 +61,8 @@ ml509 = [
 	{
 		'delayed_dqs' :  {
 			'lut' :  [ 
-				{ 'inst' : 'lutn', 'slice' : "X2Y28" } ,
-				{ 'inst' : 'lutp', 'slice' : "X2Y28" } ] },
+				{ 'inst'  : 'lutn', 'slice' : "X2Y48" } ,
+				{ 'inst'  : 'lutp', 'slice' : "X2Y48" } ] },
 #			'taps' : [
 #				[ "X2Y29" ], [ "X2Y29" ], [ "X2Y29" ], [ "X2Y29" ] ],
 #		'pads' : [ "AF30", "AK31",  "AF31",  "AD30",  "AJ30",  "AF29",  "AD29",  "AE29" ],
@@ -89,8 +89,8 @@ ml509 = [
 	{
 		'delayed_dqs' :  {
 			'lut' :  [ 
-				{ 'inst'  : 'lutn', 'slice' : "X2Y48" } ,
-				{ 'inst'  : 'lutp', 'slice' : "X2Y48" } ] },
+				{ 'inst' : 'lutn', 'slice' : "X2Y28" } ,
+				{ 'inst' : 'lutp', 'slice' : "X2Y28" } ] },
 #			'taps' : [ 
 #				[ "X2Y47" ], [ "X2Y47" ], [ "X2Y47" ], [ "X2Y47" ] ],
 #		'pads' : [ "AH27", "AF28",  "AH28",  "AA28",  "AG25",  "AJ26",  "AG28",  "AB28" ]
