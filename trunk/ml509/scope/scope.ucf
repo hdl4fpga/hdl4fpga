@@ -200,12 +200,12 @@ NET "gpio_led[7]" IOSTANDARD = SSTL18_II;
 
 # Delayed DSQ Taps #
 
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y28;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y28;
+INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y28;
+INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y28;
 
 
 # Delayed DSQ Taps #
 
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
+INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
+INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
 

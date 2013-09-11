@@ -125,6 +125,7 @@ architecture mix of ddr is
 	signal ddr_io_dmz : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dmo : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
+	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqsi'range);
 	signal ddr_st_hlf : std_logic;
@@ -504,6 +505,14 @@ begin
 			ddr_stw_sto(0) => ddr_stw_sto);
 	end generate;
 
+	ddr_dq_e : for i in ddr_dq'range generate
+		idly_i : entity hdl4fpga.idly
+		port map (
+			i => ddr_dq(i),
+			o => ddr_io_dqi(i));
+		ddr_dq(i) <= ddr_io_dqo(i) when ddr_io_dqz(i)='0' else 'Z';
+	end generate;
+
 	ddr_rd_fifo_e : entity hdl4fpga.ddr_rd_fifo
 	generic map (
 		data_delay => 3, --std,
@@ -517,7 +526,7 @@ begin
 		ddr_win_dq  => ddr_mpu_rwin,
 		ddr_win_dqs => ddr_win_dqs,
 		ddr_dqsi => ddr_dqsi,
-		ddr_dqi => ddr_dq);
+		ddr_dqi => ddr_io_dqi);
 		
 	ddr_wr_fifo_rst <= not ddr_mpu_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.ddr_wr_fifo
@@ -552,10 +561,6 @@ begin
 		ddr_io_dqz  => ddr_io_dqz,
 		ddr_io_dqo  => ddr_io_dqo);
 	ddr_dqz <= ddr_io_dqz;
-
-	ddr_dq_e : for i in ddr_dq'range generate
-		ddr_dq(i) <= ddr_io_dqo(i) when ddr_io_dqz(i)='0' else 'Z';
-	end generate;
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
 	generic map (
