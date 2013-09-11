@@ -124,6 +124,7 @@ architecture mix of ddr is
 	signal ddr_stw_sto : std_logic;
 	signal ddr_io_dmz : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dmo : std_logic_vector(ddr_dm'range);
+	signal ddr_io_dmi : std_logic_vector(ddr_dm'range);
 	signal ddr_io_dqz : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_io_dqo : std_logic_vector(ddr_dq'range);
@@ -494,7 +495,7 @@ begin
 
 	ddr_win_dqs <=
 		(others => ddr_stw_sto) when strobe="EXTERNAL" else
-		ddr_dm;
+		ddr_io_dmi;
 
 	ddr_st_lp_g : if strobe="EXTERNAL" generate
 		ddr_stw_lp_e : entity hdl4fpga.ddr_stw_lp
@@ -592,6 +593,10 @@ begin
 	ddr_dmz <= ddr_io_dmz;
 
 	ddr_dm_e : for i in ddr_dm'range generate
+		idly_i : entity hdl4fpga.idly
+		port map (
+			i => ddr_dm(i),
+			o => ddr_io_dmi(i));
 		ddr_dm(i) <= ddr_io_dmo(i) when ddr_io_dmz(i)='0' else 'Z';
 	end generate;
 
