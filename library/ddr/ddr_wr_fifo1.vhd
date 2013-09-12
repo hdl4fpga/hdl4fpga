@@ -6,7 +6,8 @@ entity ddr_wr_fifo is
 	generic (
 		std : positive;
 		data_bytes : natural := 2;
-		byte_bits  : natural := 8);
+		byte_bits  : natural := 8;
+		data_phase : natural := 1);
 	port (
 		sys_clk : in std_logic;
 		sys_req : in std_logic;
@@ -14,14 +15,12 @@ entity ddr_wr_fifo is
 		sys_di  : in std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_rst : in std_logic;
 
-		ddr_clk : in std_logic;
-		ddr_ena_r : in std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_ena_f : in std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dm_r : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dm_f : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
-		ddr_dq_r : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_dq_f : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
+		ddr_clk : in  std_logic_vector(data_phase*2*data_bytes-1 downto 0) := (others => '-');;
+		ddr_ena : in  std_logic_vector(data_phase*2*data_bytes-1 downto 0) := (others => '-');
+		ddr_dm  : out std_logic_vector(data_phase*2*data_bytes-1 downto 0) := (others => '-');
+		ddr_dq  : out std_logic_vector(data_phase*2*data_bytes*byte_bits-1 downto 0));
 
+	constant data_edge : natural := 2;
 	constant data_bits : natural := byte_bits*data_bytes;
 end;
 
@@ -30,8 +29,8 @@ use hdl4fpga.std.all;
 
 architecture mix of ddr_wr_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);
-	signal ddr_clks : std_logic_vector(0 to 1);
-	signal ddr_ena : std_logic_vector(0 to 1);
+	signal ddr_clks : std_logic_vector(0 to data_phase*2-1);
+	signal ddr_ena : std_logic_vector(0 to data_phase*2-1);
 
 	type aw_vector is array (natural range <>) of addr_word;
 
