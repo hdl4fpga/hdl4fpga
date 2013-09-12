@@ -12,7 +12,7 @@ entity ddr_init is
 	    tmod : natural := 13;
 		ba   : natural := 2);
 	port (
-		ddr_init_ods : in  std_logic := '1';
+		ddr_init_ods : in  std_logic := '0';
 		ddr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
 		ddr_init_bl  : in  std_logic_vector(0 to 2);
 		ddr_init_cl  : in  std_logic_vector(0 to 2);
@@ -25,6 +25,7 @@ entity ddr_init is
 		ddr_init_req : in  std_logic;
 		ddr_init_rdy : out std_logic := '1';
 		ddr_init_dll : out std_logic := '1';
+		ddr_init_odt : out std_logic := '0';
 		ddr_init_ras : out std_logic := '1';
 		ddr_init_cas : out std_logic := '1';
 		ddr_init_we  : out std_logic := '1';
@@ -216,6 +217,7 @@ begin
 					ddr_init_cas <= ddr_init_pgm(ddr_init_pc).code.ddr_cmd(cas);
 					ddr_init_we  <= ddr_init_pgm(ddr_init_pc).code.ddr_cmd(rw);
 
+					ddr_init_odt <= '0';
 					ddr_init_a <= (others => '0');
 					case ddr_init_pc is
 					when lb_pall1 =>
@@ -261,8 +263,10 @@ begin
 
 					when lb_end =>
 						ddr_init_a <= (others => '1');
+						ddr_init_odt <= '1';
 					when others =>
 						ddr_init_a <= (others => '0');
+						ddr_init_odt <= '0';
 					end case;
 
 					ddr_init_b <= (others => '0');

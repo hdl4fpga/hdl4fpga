@@ -395,6 +395,7 @@ begin
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
 			ddr_init_dll => ddr_init_dll,
+			ddr_init_odt => ddr_odt,
 			ddr_init_ras => ddr_init_ras,
 			ddr_init_cas => ddr_init_cas,
 			ddr_init_we  => ddr_init_we,
@@ -610,6 +611,4 @@ begin
 			ddr_st_drf => ddr_mpu_drf,
 			ddr_st_dqs => ddr_lp_dqs);
 	end generate;
-
-	ddr_odt <= '0';
 end;
