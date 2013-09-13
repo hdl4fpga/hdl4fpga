@@ -11,19 +11,21 @@ entity ddr_io_ba is
 		sys_clk : in std_logic;
 		sys_ini : in std_logic;
 		sys_cke : in std_logic;
+		sys_odt : in std_logic;
 		sys_ras : in std_logic;
 		sys_cas : in std_logic;
 		sys_we  : in std_logic;
 		sys_a   : in std_logic_vector(addr_bits-1 downto 0);
 		sys_b   : in std_logic_vector(bank_bits-1 downto 0);
 
-		sys_ini_ras : in  std_logic;
-		sys_ini_cas : in  std_logic;
-		sys_ini_we  : in  std_logic;
-		sys_ini_a   : in  std_logic_vector(addr_bits-1 downto 0);
-		sys_ini_b   : in  std_logic_vector(bank_bits-1 downto 0);
+		sys_ini_ras : in std_logic;
+		sys_ini_cas : in std_logic;
+		sys_ini_we  : in std_logic;
+		sys_ini_a   : in std_logic_vector(addr_bits-1 downto 0);
+		sys_ini_b   : in std_logic_vector(bank_bits-1 downto 0);
 
 		ddr_cke : out std_logic;
+		ddr_odt : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
 		ddr_we  : out std_logic;
@@ -43,6 +45,12 @@ begin
 		clk => sys_clk,
 		d => sys_cke,
 		q => ddr_cke);
+
+	ddr_odt_i : entity hdl4fpga.ff
+	port map (
+		clk => sys_clk,
+		d => sys_odt,
+		q => ddr_odt);
 
 	ras_d <= sys_ras when sys_ini='1' else sys_ini_ras;
 	ddr_ras_i : entity hdl4fpga.ff
