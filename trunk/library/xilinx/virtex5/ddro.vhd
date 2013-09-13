@@ -43,7 +43,7 @@ use unisim.vcomponents.all;
 
 architecture virtex5 of ddrto is
 begin
-	oddrt : fdrse
+	ffd_i : fdrse
 	port map (
 		c  => clk,
 		ce => '1',

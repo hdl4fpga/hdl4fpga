@@ -17,11 +17,11 @@ library hdl4fpga;
 
 architecture std of ddr_io_dqs is
 	signal rclk : std_logic;
-	signal fclk : std_logic;
+	signal tclk : std_logic;
 begin
 
 	rclk <= ddr_io_clk;
-	fclk <= not ddr_io_clk;
+	tclk <= not ddr_io_clk when std=1 else ddr_io_clk;
 
 	ddr_io_dqs_u : for i in 0 to data_bytes-1 generate
 		signal dr  : std_logic;
@@ -40,7 +40,7 @@ begin
 
 		oddrt_i : entity hdl4fpga.ddrto
 		port map (
-			clk => fclk,
+			clk => tclk,
 			d  => ddr_mpu_dqsz(i),
 			q  => ddr_io_dqsz(i));
 

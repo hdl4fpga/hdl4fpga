@@ -366,8 +366,8 @@ begin
 
 			ddr2_g : if std=2 generate
 				ddr_mpu_dqsz(i) <= 
-					  ph_wri(4*0+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-2) and
-					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-2);
+					  ph_wri(4*0+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)-4) and
+					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1));
 				ddr_mpu_dqs(i)  <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-2);
 				ddr_mpu_dqz(i)  <= ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+1);
 				ddr_mpu_dwr(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1-4);
