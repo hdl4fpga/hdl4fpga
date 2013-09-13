@@ -14,7 +14,7 @@ entity ddr is
 		tRCD : real := 15.0;
 		tRFC : real := 72.0;
 		tMRD : real := 12.0;
-		tREFI : real := 7.8e3;
+		tREFI : real := 7.0e3;
 
 		cl  : real    := 5.0;
 		bl  : natural := 8;
@@ -320,6 +320,7 @@ begin
 		sys_ras => ddr_mpu_ras,
 		sys_cas => ddr_mpu_cas,
 		sys_we  => ddr_mpu_we,
+		sys_odt => dll_timer_rdy,
 		sys_a   => sys_a,
 		sys_b   => sys_ba,
 		sys_ini_ras => ddr_init_ras,
@@ -328,6 +329,7 @@ begin
 		sys_ini_a   => ddr_init_a,
 		sys_ini_b   => ddr_init_b,
 
+		ddr_odt => ddr_odt,
 		ddr_ras => ddr_ras,
 		ddr_cas => ddr_cas,
 		ddr_cke => ddr_cke,
@@ -339,7 +341,7 @@ begin
 	generic map (
 		c200u => natural(t200u/tCP),
 --		c200u => natural(2000.0/tCP),
-		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 200),
+		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
 		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
 --		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
@@ -382,9 +384,12 @@ begin
 		ddr_init_du : entity hdl4fpga.ddr_init(ddr2)
 		generic map (
 			lat_length => 9,
-			a    => addr_bits,
+
+			a => addr_bits,
+
 			tRP  => natural(ceil(tRP/tCP)),
-			tMRD => natural(ceil(tMRD/tCP)),
+			tMRD => 2,
+			tMOD => natural(ceil(12.0/tCP))+2,
 			tRFC => natural(ceil(tRFC/tCP)))
 		port map (
 			ddr_init_cl  => casdb (cl, std),
@@ -395,7 +400,6 @@ begin
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
 			ddr_init_dll => ddr_init_dll,
-			ddr_init_odt => ddr_odt,
 			ddr_init_ras => ddr_init_ras,
 			ddr_init_cas => ddr_init_cas,
 			ddr_init_we  => ddr_init_we,

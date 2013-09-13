@@ -53,8 +53,8 @@ begin
 		signal ddr_delayed_dqs : std_logic_vector(0 to 1);
 		signal ddr_dlyd_dqs : std_logic_vector(0 to 1);
 
-		signal addr_o_d : addr_word;
-		signal addr_o_q : addr_word;
+		signal addr_o_d : addr_word := (others => '0');
+		signal addr_o_q : addr_word := (others => '0');
 		signal addr_o_set : std_logic;
 		signal addr_i_set : std_logic;
 		signal ddr_win_dqsi : std_logic;
@@ -84,7 +84,7 @@ begin
 		ddr_dlyd_dqs(0) <= transport ddr_delayed_dqs(0) after 1 ps;
 		ddr_dlyd_dqs(1) <= transport ddr_delayed_dqs(1) after 1 ps;
 
-		addr_o_d <= inc(gray(addr_o_q));
+		addr_o_d(1 to 3) <= inc(gray(addr_o_q(1 to 3)));
 		o_cntr_g: for j in addr_word'range generate
 			signal addr_o_set : std_logic;
 		begin
@@ -98,10 +98,10 @@ begin
 		end generate;
 
 		ddr_fifo: for l in ddr_dlyd_dqs'range generate
-			signal addr_i_d : addr_word;
-			signal addr_i_q : addr_word;
+			signal addr_i_d : addr_word := (others => '0');
+			signal addr_i_q : addr_word := (others => '0');
 		begin
-			addr_i_d <= inc(gray(addr_i_q));
+			addr_i_d(1 to 3) <= inc(gray(addr_i_q(1 to 3)));
 			i_cntr_g: for j in addr_i_q'range  generate
 				ffd_i : entity hdl4fpga.aff
 				port map (

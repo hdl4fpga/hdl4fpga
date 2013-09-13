@@ -171,7 +171,7 @@ architecture ddr2 of ddr_init is
 		(lb_lmr,   (cmd_auto, to_signed (trfc-2, lat_length))),
 		(lb_docd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
 		(lb_xocd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_end,   (cmd_lmr,  to_signed (tmrd-2, lat_length))),
+		(lb_end,   (cmd_lmr,  to_signed (tmod-2, lat_length))),
 		(lb_end,   (cmd_nop,  (0 to lat_length-1 => '1'))));
 
 	signal lat_timer : signed(0 to lat_length-1);
@@ -316,6 +316,7 @@ begin
 				ddr_init_ras <= '1';
 				ddr_init_cas <= '1';
 				ddr_init_we  <= '1';
+				ddr_init_odt <= '0';
 				ddr_init_b   <= (others => '1');
 				ddr_init_a   <= (others => '1');
 				ddr_init_rdy <= '0';
@@ -385,7 +386,7 @@ architecture ddr3 of ddr_init is
 		(lb_lmr3, (cmd_lmr, to_signed (tmrd-2, lat_length))),
 		(lb_lmr1, (cmd_lmr, to_signed (tmrd-2, lat_length))),
 		(lb_lmr0, (cmd_lmr, to_signed (tmrd-2, lat_length))),
-		(lb_zqcl, (cmd_lmr, to_signed (tmod-2, lat_length))),
+		(lb_zqcl, (cmd_lmr, to_signed (tmrd-2, lat_length))),
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
