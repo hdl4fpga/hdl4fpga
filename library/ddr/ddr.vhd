@@ -16,7 +16,7 @@ entity ddr is
 		tMRD : real := 12.0;
 		tREFI : real := 7.0e3;
 
-		cl  : real    := 5.0;
+		cl  : real    := 7.0;
 		bl  : natural := 8;
 		wr  : natural := 8;
 		cwl : natural := 7;
