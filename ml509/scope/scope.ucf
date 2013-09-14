@@ -100,8 +100,8 @@ net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 2.222 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
-NET "*ddr2_dm[0]" OFFSET = IN  0.950 ns VALID 0.870 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "*ddr2_dm[1]" OFFSET = IN  0.950 ns VALID 0.870 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "*ddr2_dm[0]" OFFSET = IN  2.5 ns VALID 0.100 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "*ddr2_dm[1]" OFFSET = IN  2.5 ns VALID 0.100 ns BEFORE ddr2_dqs_p[1] RISING;
 OFFSET = IN -0.250 ns VALID 0.870 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.250 ns VALID 0.870 ns BEFORE ddr2_dqs_p[1] RISING;
 
