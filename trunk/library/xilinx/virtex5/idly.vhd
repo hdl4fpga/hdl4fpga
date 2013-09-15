@@ -12,12 +12,16 @@ use unisim.vcomponents.all;
 
 architecture virtex5 of idly is
 begin
-	idelay_i : idelay 
+	id : ibuf 
 	port map (
-		rst => '0',
-		c   => '0',
-		ce  => '0',
-		inc => '0',
 		i => i,
 		o => o);
+--	idelay_i : idelay 
+--	port map (
+--		rst => '0',
+--		c   => '0',
+--		ce  => '0',
+--		inc => '0',
+--		i => i,
+--		o => o);
 end;

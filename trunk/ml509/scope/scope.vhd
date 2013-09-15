@@ -35,6 +35,10 @@ architecture scope of ml509 is
 	signal ddr_dqsi : std_logic_vector(8-1 downto 0);
 	signal ddr_dqso : std_logic_vector(8-1 downto 0);
 
+	signal ddr_dqz : std_logic_vector(64-1 downto 0);
+	signal ddr_dqi : std_logic_vector(64-1 downto 0);
+	signal ddr_dqo : std_logic_vector(64-1 downto 0);
+
 	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy_rxd'range);
@@ -52,6 +56,7 @@ architecture scope of ml509 is
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
 
 	signal sys_rst   : std_logic;
+	signal sys_clk   : std_logic;
 	signal scope_rst : std_logic;
 
 	--------------------------------------------------
@@ -67,6 +72,11 @@ begin
 
 	sys_rst <= gpio_sw_c;
 
+	clkin_ibufg : ibufg
+	port map (
+		I => user_clk,
+		O => sys_clk);
+
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
@@ -74,7 +84,7 @@ begin
 		sys_per => uclk_period)
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => user_clk,
+		sys_clk => sys_clk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
@@ -113,7 +123,9 @@ begin
 		ddr_dqsz => ddr_dqsz(1 downto 0),
 		ddr_dqsi => ddr_dqsi(1 downto 0),
 		ddr_dqso => ddr_dqso(1 downto 0),
-		ddr_dq  => ddr2_d(data_size-1 downto 0),
+		ddr_dqz  => ddr_dqz(data_size-1 downto 0),
+		ddr_dqi  => ddr_dqi(data_size-1 downto 0),
+		ddr_dqo  => ddr_dqo(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
 		mii_rxc  => phy_rxclk,
@@ -203,6 +215,14 @@ begin
 		o  => ddr2_clk_p(1),
 		ob => ddr2_clk_n(1));
 
+	ddr_dq_e : for i in data_size-1 downto 0 generate
+		idly_i : entity hdl4fpga.idly
+		port map (
+			i => ddr2_d(i),
+			o => ddr_dqi(i));
+		ddr2_d(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
+	end generate;
+
 	ddr2_dqs_g : for i in 2-1 downto 0 generate
 		signal dqsi : std_logic;
 	begin
@@ -212,19 +232,11 @@ begin
 		port map (
 			t => ddr_dqsz(i),
 			i => ddr_dqso(i),
-			o => dqsi,
+			o => ddr_dqsi(i),
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
-		-- ddr_dqsi(i) <= dqsi;
-		idelay_i : idelay 
-		port map (
-			rst => '0',
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i => dqsi,
-			o => ddr_dqsi(i));
+--		ddr_dqsi(i) <= d
 	end generate;
 
 	ddr2_dqs_g1 : for i in 7 downto 2 generate

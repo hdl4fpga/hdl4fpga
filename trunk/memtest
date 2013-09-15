@@ -1,0 +1,1 @@
+rm pp* ; scope 32768 > pp ; scope 32768 > pp1 ; i=0; while cmp pp1 pp ; do mv pp pp1 ; ./scope 32768 > pp ;  i=`expr $i + 1`; echo $i ; done

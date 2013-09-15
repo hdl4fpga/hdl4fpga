@@ -1,5 +1,5 @@
-net "user_clk" tnm_net = user_clk;
-timespec ts_user_clk = period "user_clk" 10 ns high 50%;
+net "sys_clk" tnm_net = sys_clk;
+timespec ts_sys_clk = period "sys_clk" 10 ns high 50%;
 
 #net "phy_txc_gtxclk" tnm_net = phy_txc_gtxclk;
 #timespec ts_phy_txc_gtxclk = period "phy_txc_gtxclk" 8 ns high 50%;
@@ -8,7 +8,7 @@ net "phy_rxclk" tnm_net = phy_rxclk;
 timespec ts_phy_rxclk = period "phy_rxclk" 8 ns high 50%;
 
 net "ddrs_clk0" tnm_net = ddrs_clk0;
-net "dcms_e/sclk_bufg" tnm_net = sclk_bufg; 
+net "sys_clk" tnm_net = sys_clk; 
 
 #NET "adc_clkout" CLOCK_DEDICATED_ROUTE = FALSE;
 #
@@ -100,10 +100,10 @@ net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 2.222 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
-NET "*ddr2_dm[0]" OFFSET = IN  2.5 ns VALID 0.100 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "*ddr2_dm[1]" OFFSET = IN  2.5 ns VALID 0.100 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.250 ns VALID 0.870 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.250 ns VALID 0.870 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "*ddr2_dm[0]" OFFSET = IN  2.0 ns VALID 0.100 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "*ddr2_dm[1]" OFFSET = IN  2.0 ns VALID 0.100 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.625 ns VALID 0.100 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.625 ns VALID 0.100 ns BEFORE ddr2_dqs_p[1] RISING;
 
 NET ddr2_dqs_p[0] TNM_NET = FFS  FFS_dqs0;
 NET ddr2_dqs_p[0] TNM_NET = RAMS RAMS_dqs0;
