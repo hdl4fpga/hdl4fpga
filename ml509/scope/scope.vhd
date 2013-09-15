@@ -34,6 +34,7 @@ architecture scope of ml509 is
 	signal ddr_dqsz : std_logic_vector(8-1 downto 0);
 	signal ddr_dqsi : std_logic_vector(8-1 downto 0);
 	signal ddr_dqso : std_logic_vector(8-1 downto 0);
+	signal ddr_st_dqs : std_logic_vector(8-1 downto 0);
 
 	signal ddr_dqz : std_logic_vector(64-1 downto 0);
 	signal ddr_dqi : std_logic_vector(64-1 downto 0);
@@ -108,7 +109,6 @@ begin
 
 		input_clk => input_clk,
 
-		ddr_st_lp_dqs => '0',
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
@@ -127,6 +127,7 @@ begin
 		ddr_dqi  => ddr_dqi(data_size-1 downto 0),
 		ddr_dqo  => ddr_dqo(data_size-1 downto 0),
 		ddr_odt => ddr2_odt(0),
+		ddr_st_lp_dqs => ddr_st_dqs(1 downto 0),
 
 		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
@@ -225,7 +226,23 @@ begin
 
 	ddr2_dqs_g : for i in 2-1 downto 0 generate
 		signal dqsi : std_logic;
+		signal st   : std_logic;
 	begin
+
+		ibuf_i : ibuf
+		port map (
+			i => ddr2_dm(i),
+			o => st);
+
+		idelay_i : idelay 
+		port map (
+			rst => '0',
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i => st,
+			o => ddr_st_dqs(i));
+
 		obufds : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
