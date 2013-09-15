@@ -37,8 +37,9 @@ entity scope is
 		ddr_dqsz : out std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqz : inout std_logic_vector(data_size-1 downto 0);
-		ddr_dq  : inout std_logic_vector(data_size-1 downto 0);
+		ddr_dqz : out std_logic_vector(data_size-1 downto 0);
+		ddr_dqi : in std_logic_vector(data_size-1 downto 0);
+		ddr_dqo : out std_logic_vector(data_size-1 downto 0);
 		ddr_odt : out std_logic;
 		ddr_lp_dqs : out std_logic;
 		ddr_st_lp_dqs : in std_logic;
@@ -179,10 +180,12 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
-			r := r + 1;
+			r := r xor (r'range => '1');
+			--r := r + 1;
 			if ddrs_ini='0' then
 				input_req <= '0';
-				r := to_unsigned(61, r'length);
+				r := x"a55a";
+--				r := to_unsigned(61, r'length);
 			elsif input_rdy='0' then
 				input_req <= '1';
 			end if;
@@ -493,7 +496,8 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqso => ddr_dqso,
 		ddr_dqz => ddr_dqz,
-		ddr_dq  => ddr_dq,
+		ddr_dqi  => ddr_dqi,
+		ddr_dqo  => ddr_dqo,
 		ddr_odt => ddr_odt,
 
 		ddr_lp_dqs => ddr_lp_dqs,
