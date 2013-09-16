@@ -1,1 +1,10 @@
-rm pp* ; scope 32768 > pp ; scope 32768 > pp1 ; i=0; while cmp pp pp1 ; ./scope 32768 > pp1 ;  i=`expr $i + 1`; echo $i ; done
+rm pp*
+scope 32768 > pp
+scope 32768 > pp1
+i=0
+while cmp pp pp1 > log ; do 
+	./scope 32768 > pp1
+	i=`expr $i + 1`
+	echo $i
+done
+cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a pp|head; echo '-----'; tail -n +$a pp1|head)

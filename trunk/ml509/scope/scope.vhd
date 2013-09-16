@@ -99,7 +99,7 @@ begin
 		gtx_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
 
-	scope_rst <= not dcm_lckd and not ictlr_rdy;
+	scope_rst <= not dcm_lckd or not ictlr_rdy;
 	ictlr_rst <= not dcm_lckd;
 	dvi_reset <= dcm_lckd;
 	phy_reset <= dcm_lckd;
@@ -248,9 +248,9 @@ begin
 
 		dmiobuf_i : iobuf
 		port map (
-			t => '0',
-			i => ddr_dm(i),
-			o => st,
+			t  => '0',
+			i  => ddr_dm(i),
+			o  => st,
 			io => ddr2_dm(i));
 
 		dmidelay_i : idelay 
@@ -259,8 +259,8 @@ begin
 			c   => '0',
 			ce  => '0',
 			inc => '0',
-			i => st,
-			o => ddr_st_dqs(i));
+			i   => st,
+			o   => ddr_st_dqs(i));
 
 		dqsidelay_i : idelay 
 		port map (
@@ -298,7 +298,7 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= dcm_lckd and ictlr_rdy;
+	gpio_led_c <= not scope_rst;
 	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
