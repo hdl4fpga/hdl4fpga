@@ -16,6 +16,7 @@ entity dcms is
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
+		iodelay_clk : out std_logic;
 		input_clk : out std_logic;
 		ddr_clk0  : out std_logic;
 		ddr_clk90 : out std_logic;
@@ -39,7 +40,40 @@ architecture def of dcms is
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
+	signal refclk_lckd : std_logic;
+	signal refclk_fb : std_logic;
 begin
+
+
+	refclk_dcm_i : dcm_adv
+	generic map(
+		clk_feedback => "1X",
+		clkdv_divide => 2.0,
+		clkfx_divide => 2,
+		clkfx_multiply => 4,
+		clkin_period => sys_per,
+		clkin_divide_by_2 => FALSE,
+		clkout_phase_shift => "NONE",
+		dcm_autocalibration => true,
+		dcm_performance_mode => "MAX_SPEED",
+		deskew_adjust => "SYSTEM_SYNCHRONOUS",
+		dfs_frequency_mode => "LOW",
+		dll_frequency_mode => "LOW",
+		duty_cycle_correction => TRUE,
+		factory_jf   => X"F0F0",
+		phase_shift  => 0,
+		startup_wait => FALSE)
+	port map (
+		rst   => dcm_rst,
+		psclk => '0',
+		psen  => '0',
+		psincdec => '0',
+		clkfb => refclk_fb,
+		clkin => sys_clk,
+		clk0  => refclk_fb,
+		clk2x => iodelay_clk,
+		locked => refclk_lckd,
+		psdone => open);
 
 	video_dcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -118,7 +152,7 @@ begin
 			dcm_lckd <= '0';
 		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
-				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd;
+				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd and refclk_lckd;
 			end if;
 			dcm_rst <= '0';
 		end if;
