@@ -38,9 +38,9 @@ begin
 			signal di : std_logic;
 		begin
 			di <=
-			ddr_dm(l) when strobe="INTERNAL" else
+			ddr_dm(l) when strobe="EXTERNAL" else
 			ddr_dm(l) when ddr_dmx(l)='1' else
-			ddr_st(l) when '0';
+			ddr_st(l);
 
 --			with ddr_dmx(l) select
 --			di <=
