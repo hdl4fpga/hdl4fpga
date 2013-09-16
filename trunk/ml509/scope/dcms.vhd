@@ -42,6 +42,7 @@ architecture def of dcms is
 	signal gtx_lckd : std_logic;
 	signal ictlr_lckd : std_logic;
 	signal ictlr_fb : std_logic;
+	signal ictlr_buf : std_logic;
 begin
 
 	refclk_dcm_i : dcm_adv
@@ -70,9 +71,14 @@ begin
 		clkfb => ictlr_fb,
 		clkin => sys_clk,
 		clk0  => ictlr_fb,
-		clk2x => ictlr_clk,
+		clk2x => ictlr_buf,
 		locked => ictlr_lckd,
 		psdone => open);
+
+	clkin_ibufg : ibufg
+	port map (
+		I => ictlr_buf,
+		O => ictlr_clk);
 
 	video_dcm_e : entity hdl4fpga.dfsdcm
 	generic map (
