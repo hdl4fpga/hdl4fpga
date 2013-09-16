@@ -88,6 +88,7 @@ begin
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => sys_clk,
+		iodelay_clk => iodelay_clk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
