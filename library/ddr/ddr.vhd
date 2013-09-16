@@ -559,6 +559,7 @@ begin
 	ddr_mpu_dmx_f <= ddr_wr_fifo_ena_f;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
+		strobe => strobe,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,
