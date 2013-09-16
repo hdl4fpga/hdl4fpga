@@ -34,6 +34,7 @@ architecture scope of ml509 is
 	signal ddr_dqsz : std_logic_vector(8-1 downto 0);
 	signal ddr_dqsi : std_logic_vector(8-1 downto 0);
 	signal ddr_dqso : std_logic_vector(8-1 downto 0);
+	signal ddr_dm  : std_logic_vector(8-1 downto 0);
 	signal ddr_st_dqs : std_logic_vector(8-1 downto 0);
 
 	signal ddr_dqz : std_logic_vector(64-1 downto 0);
@@ -59,6 +60,7 @@ architecture scope of ml509 is
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
 	signal scope_rst : std_logic;
+	signal iodelay_clk : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
@@ -119,7 +121,7 @@ begin
 		ddr_we  => ddr2_we,
 		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
 		ddr_a   => ddr2_a(addr_size-1 downto 0),
-		ddr_dm  => ddr2_dm(data_size/byte_size-1 downto 0),
+		ddr_dm  => ddr_dm(data_size/byte_size-1 downto 0),
 		ddr_dqsz => ddr_dqsz(1 downto 0),
 		ddr_dqsi => ddr_dqsi(1 downto 0),
 		ddr_dqso => ddr_dqso(1 downto 0),
@@ -217,17 +219,32 @@ begin
 		ob => ddr2_clk_n(1));
 
 	ddr_dq_e : for i in data_size-1 downto 0 generate
-		idly_i : entity hdl4fpga.idly
+		idelay_i : idelay 
 		port map (
+			rst => '0',
+			c   => '0',
+			ce  => '0',
+			inc => '0',
 			i => ddr2_d(i),
 			o => ddr_dqi(i));
+
 		ddr2_d(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
 	end generate;
+
+	ictrl_i : idelayctrl
+	port map (
+		refclk => iodelay_clk,
+		rst => sys_rst);
 
 	ddr2_dqs_g : for i in 2-1 downto 0 generate
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
+
+		obuf_i : obuf
+		port map (
+			i => ddr_dm(i),
+			o => ddr2_dm(i));
 
 		ibuf_i : ibuf
 		port map (
@@ -243,17 +260,25 @@ begin
 			i => st,
 			o => ddr_st_dqs(i));
 
+		dqsidelay_i : idelay 
+		port map (
+			rst => '0',
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i => dqsi,
+			o => ddr_dqsi(i));
+
 		obufds : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
 		port map (
 			t => ddr_dqsz(i),
 			i => ddr_dqso(i),
-			o => ddr_dqsi(i),
+			o => dqsi,
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
---		ddr_dqsi(i) <= d
 	end generate;
 
 	ddr2_dqs_g1 : for i in 7 downto 2 generate
