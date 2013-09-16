@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity ddr_io_dm is
 	generic (
+		strobe : string;
 		data_bytes : natural);
 	port (
 		ddr_io_clk    : in std_logic;
@@ -36,10 +37,15 @@ begin
 		dmff_g: for l in ddr_clk'range generate
 			signal di : std_logic;
 		begin
-			with ddr_dmx(l) select
 			di <=
-				ddr_st(l) when '0',
-				ddr_dm(l) when others;
+			ddr_dm(l) when strobe="INTERNAL" else
+			ddr_dm(l) when ddr_dmx(l)='1' else
+			ddr_st(l) when '0';
+
+--			with ddr_dmx(l) select
+--			di <=
+--				ddr_st(l) when '0',
+--				ddr_dm(l) when others;
 
 			ffd_i : entity hdl4fpga.ff
 			port map (

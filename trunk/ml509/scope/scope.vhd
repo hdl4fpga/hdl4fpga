@@ -298,7 +298,7 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= not scope_rst;
+	gpio_led_c <= dcm_lckd and ictlr_rdy;
 	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
