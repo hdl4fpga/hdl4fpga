@@ -75,7 +75,7 @@ begin
 		locked => ictlr_lckd,
 		psdone => open);
 
-	clkin_ibufg : ibufg
+	clkin_ibufg : bufg
 	port map (
 		I => ictlr_buf,
 		O => ictlr_clk);
