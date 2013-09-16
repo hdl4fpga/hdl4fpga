@@ -60,7 +60,9 @@ architecture scope of ml509 is
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
 	signal scope_rst : std_logic;
-	signal iodelay_clk : std_logic;
+	signal ictlr_clk : std_logic;
+	signal ictlr_rdy : std_logic;
+	signal ictlr_rst : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
@@ -88,7 +90,7 @@ begin
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => sys_clk,
-		iodelay_clk => iodelay_clk,
+		ictlr_clk => ictlr_clk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
@@ -97,7 +99,8 @@ begin
 		gtx_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
 
-	scope_rst <= not dcm_lckd;
+	scope_rst <= not dcm_lckd and not ictlr_rdy;
+	ictlr_rst <= not dcm_lckd;
 	dvi_reset <= dcm_lckd;
 	phy_reset <= dcm_lckd;
 
@@ -167,8 +170,8 @@ begin
 		dvi_de => dvi_de,
 		dvi_d => dvi_d);
 
-	phy_txer  <= '0';
-	phy_mdc <= '0';
+	phy_txer <= '0';
+	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
@@ -211,7 +214,7 @@ begin
 			ob => ddr2_clk_n(0));
 	end block;
 
-	ddr_clk1_obufds : obufds
+	ddrclk1_obufds : obufds
 	generic map (
 		iostandard => "DIFF_SSTL18_II")
 	port map (
@@ -222,7 +225,7 @@ begin
 	ddr_dq_e : for i in data_size-1 downto 0 generate
 		idelay_i : idelay 
 		port map (
-			rst => '0',
+			rst => ictlr_rst,
 			c   => '0',
 			ce  => '0',
 			inc => '0',
@@ -232,29 +235,27 @@ begin
 		ddr2_d(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
 	end generate;
 
-	ictrl_i : idelayctrl
+	idelayctrl_i : idelayctrl
 	port map (
-		refclk => iodelay_clk,
-		rst => sys_rst);
+		rst => ictlr_rst,
+		refclk => ictlr_clk,
+		rdy => ictlr_rdy);
 
 	ddr2_dqs_g : for i in 2-1 downto 0 generate
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
 
-		obuf_i : obuf
+		dmiobuf_i : iobuf
 		port map (
+			t => '0',
 			i => ddr_dm(i),
-			o => ddr2_dm(i));
+			o => st,
+			io => ddr2_dm(i));
 
-		ibuf_i : ibuf
+		dmidelay_i : idelay 
 		port map (
-			i => ddr2_dm(i),
-			o => st);
-
-		idelay_i : idelay 
-		port map (
-			rst => '0',
+			rst => ictlr_rst,
 			c   => '0',
 			ce  => '0',
 			inc => '0',
@@ -263,20 +264,20 @@ begin
 
 		dqsidelay_i : idelay 
 		port map (
-			rst => '0',
+			rst => ictlr_rst,
 			c   => '0',
 			ce  => '0',
 			inc => '0',
-			i => dqsi,
-			o => ddr_dqsi(i));
+			i   => dqsi,
+			o   => ddr_dqsi(i));
 
-		obufds : iobufds
+		dqsiobuf_i : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
 		port map (
-			t => ddr_dqsz(i),
-			i => ddr_dqso(i),
-			o => dqsi,
+			t   => ddr_dqsz(i),
+			i   => ddr_dqso(i),
+			o   => dqsi,
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
@@ -297,7 +298,7 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= dcm_lckd;
+	gpio_led_c <= dcm_lckd and ictlr_rdy;
 	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
@@ -312,6 +313,5 @@ begin
 	ddr2_odt(1 downto 1) <= (others => 'Z');
 	ddr2_dm(7 downto 2)  <= (others => 'Z');
 	ddr2_d(63 downto 16) <= (others => '0');
-
 
 end;

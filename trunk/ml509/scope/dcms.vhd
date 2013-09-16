@@ -16,7 +16,7 @@ entity dcms is
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
-		iodelay_clk : out std_logic;
+		ictlr_clk : out std_logic;
 		input_clk : out std_logic;
 		ddr_clk0  : out std_logic;
 		ddr_clk90 : out std_logic;
@@ -40,10 +40,9 @@ architecture def of dcms is
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
-	signal refclk_lckd : std_logic;
-	signal refclk_fb : std_logic;
+	signal ictlr_lckd : std_logic;
+	signal ictlr_fb : std_logic;
 begin
-
 
 	refclk_dcm_i : dcm_adv
 	generic map(
@@ -68,11 +67,11 @@ begin
 		psclk => '0',
 		psen  => '0',
 		psincdec => '0',
-		clkfb => refclk_fb,
+		clkfb => ictlr_fb,
 		clkin => sys_clk,
-		clk0  => refclk_fb,
-		clk2x => iodelay_clk,
-		locked => refclk_lckd,
+		clk0  => ictlr_fb,
+		clk2x => ictlr_clk,
+		locked => ictlr_lckd,
 		psdone => open);
 
 	video_dcm_e : entity hdl4fpga.dfsdcm
@@ -152,7 +151,7 @@ begin
 			dcm_lckd <= '0';
 		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
-				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd and refclk_lckd;
+				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd and ictlr_lckd;
 			end if;
 			dcm_rst <= '0';
 		end if;
