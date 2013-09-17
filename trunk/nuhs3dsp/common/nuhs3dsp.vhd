@@ -87,7 +87,7 @@ entity nuhs3dsp is
 		ddr_lp_ckp : in std_logic := '0';
 		ddr_lp_ckn : in std_logic := '1';
 		ddr_st_lp_dqs : in std_logic := 'Z';
-		ddr_lp_dqs : out std_logic := 'Z';
+		ddr_st_dqs : out std_logic := 'Z';
 		ddr_cke : out std_logic := '1';
 		ddr_cs  : out std_logic := '1';
 		ddr_ras : out std_logic := '1';
@@ -314,7 +314,7 @@ entity nuhs3dsp is
 	attribute loc of ddr_lp_ckp : signal is "U4";
 	attribute loc of ddr_lp_ckn : signal is "U5";
 	attribute loc of ddr_st_lp_dqs : signal is "AB5";
-	attribute loc of ddr_lp_dqs : signal is "AB6";
+	attribute loc of ddr_st_dqs : signal is "AB6";
 	attribute loc of ddr_cke : signal is "V11";
 	attribute loc of ddr_cs  : signal is "Y9";
 	attribute loc of ddr_ras : signal is "Y8";
@@ -326,7 +326,7 @@ entity nuhs3dsp is
 	attribute loc of ddr_dqs : signal is "V1 N1";
 	attribute loc of ddr_dq  : signal is "M2 L3 N7 M6 N5 P1 P2 P6 T5 T6 R5 T1 T4 R3 W1 Y1";
 
-	attribute iostandard of ddr_lp_dqs : signal is "SSTL2_I";
+	attribute iostandard of ddr_st_dqs : signal is "SSTL2_I";
 	attribute iostandard of ddr_st_lp_dqs : signal is "SSTL2_I";
 	attribute iostandard of ddr_dqs : signal is "SSTL2_I";
 	attribute iostandard of ddr_dq  : signal is "SSTL2_I";
@@ -348,7 +348,7 @@ entity nuhs3dsp is
 	attribute nodelay of ddr_lp_ckp : signal is "true";
 	attribute nodelay of ddr_lp_ckn : signal is "true";
 	attribute nodelay of ddr_st_lp_dqs : signal is "true";
-	attribute nodelay of ddr_lp_dqs : signal is "true";
+	attribute nodelay of ddr_st_dqs : signal is "true";
 	attribute nodelay of ddr_cke : signal is "true";
 	attribute nodelay of ddr_cs  : signal is "true";
 	attribute nodelay of ddr_ras : signal is "true";
