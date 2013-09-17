@@ -42,6 +42,8 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture virtex5 of ddrto is
+	attribute s : string;
+	attribute s of q : signal is "TRUE";
 begin
 	ffd_i : fdrse
 	port map (
