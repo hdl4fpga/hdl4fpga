@@ -30,9 +30,12 @@ architecture scope of nuhs3dsp is
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
 	signal ddrs_clk180 : std_logic;
-	signal ddr_lp_clk : std_logic;
 	signal ddr_dqsz : std_logic_vector(ddr_dqs'range);
 	signal ddr_dqso : std_logic_vector(ddr_dqs'range);
+	signal ddr_dqz : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo : std_logic_vector(ddr_dq'range);
+	signal ddr_st : std_logic_vector(ddr_dqs'range);
+	signal ddr_lp : std_logic_vector(ddr_dqs'range);
 
 	signal rxdv : std_logic;
 	signal rxd  : std_logic_vector(0 to nibble_size-1);
@@ -100,9 +103,11 @@ begin
 		ddr_dqsz => ddr_dqsz(1 downto 0),
 		ddr_dqsi => ddr_dqs(1 downto 0),
 		ddr_dqso => ddr_dqso(1 downto 0),
-		ddr_dq  => ddr_dq(data_size-1 downto 0),
-		ddr_lp_dqs => ddr_lp_dqs,
-		ddr_st_lp_dqs => ddr_st_lp_dqs,
+		ddr_dqi  => ddr_dq(data_size-1 downto 0),
+		ddr_dqz  => ddr_dqz(data_size-1 downto 0),
+		ddr_dqo  => ddr_dqo(data_size-1 downto 0),
+		ddr_st_dqs => ddr_st,
+		ddr_st_lp_dqs => ddr_lp,
 
 		mii_rxc  => mii_rxc,
 		mii_rxdv => rxdv,
@@ -118,6 +123,13 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
+
+	ddr_st_dqs <= ddr_st(0);
+	ddr_lp <= (others => ddr_st_lp_dqs);
+
+	ddr_dq_e : for i in data_size-1 downto 0 generate
+		ddr_dq(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
+	end generate;
 
 	ddr_dqs_e : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqsz(i)='0' else 'Z';
