@@ -223,15 +223,16 @@ begin
 		ob => ddr2_clk_n(1));
 
 	ddr_dq_e : for i in data_size-1 downto 0 generate
-		idelay_i : idelay 
-		port map (
-			rst => ictlr_rst,
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i => ddr2_d(i),
-			o => ddr_dqi(i));
-
+--		idelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i => ddr2_d(i),
+--			o => ddr_dqi(i));
+			ddr_dqi(i) <= ddr2_d(i);
+			
 		ddr2_d(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
 	end generate;
 
@@ -262,14 +263,15 @@ begin
 			i   => st,
 			o   => ddr_st_dqs(i));
 
-		dqsidelay_i : idelay 
-		port map (
-			rst => ictlr_rst,
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i   => dqsi,
-			o   => ddr_dqsi(i));
+--		dqsidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => dqsi,
+--			o   => ddr_dqsi(i));
+			ddr_dqsi(i) <= dqsi;
 
 		dqsiobuf_i : iobufds
 		generic map (
