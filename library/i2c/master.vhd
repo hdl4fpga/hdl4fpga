@@ -5,43 +5,83 @@ entity i2c_master is
 	port (
 		sys_rst : in  std_logic;
 		sys_clk : in  std_logic;
-		sys_ena : in  std_logic;
-		sys_di  : in  std_logic;
-		sys_do  : out std_logic;
+		sys_di  : in  std_logic_vector(0 to 8-1);
+		sys_do  : out std_logic_vector(0 to 8-1);
+		sys_sbi : out std_logic;
+		sys_req : in  std_logic;
+		sys_rdy : out std_logic;
+		sys_ack : out std_logic;
 
-	 start : out std_logic;
 		i2c_scl : inout std_logic;
 		i2c_sda : inout std_logic);
 end;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 architecture def of i2c_master is
-	signal sttp : std_logic_vector(0 to 1);
+	signal data  : std_logic_vector(0 to 8-1);
+
+	signal start : std_logic;
+	signal stop  : std_logic;
+	signal sbit  : std_logic;
+	signal ack   : std_logic;
+	signal rdy   : std_logic;
+	signal req   : std_logic;
+
+	signal lat : std_logic_vector(0 to 3);
 begin
 
-	process (i2c_sda, sys_rst)
+	if rdy='1' then
+		if sys_req='1' then
+			i2c_scl <= sys_clk and sys_req;
+	process (sys_rst, i2c_sda)
 	begin
 		if sys_rst='1' then
-			sttp(0) <= '1';
+			start<= '0';
 		elsif falling_edge(i2c_sda) then
 			if i2c_scl='1' then
-				sttp(0) <= not sttp(1);
+				start <= not stop;
+				req <= '0';
 			end if;
 		end if;
 	end process;
 
-	process (i2c_sda, sys_rst)
+	process (sys_rst, i2c_sda)
 	begin
 		if sys_rst='1' then
-			sttp(1) <= '1';
+			stop <= '0';
 		elsif rising_edge(i2c_sda) then
 			if i2c_scl='1' then
-				sttp(1) <= sttp(0);
+				stop <= start;
 			end if;
 		end if;
 	end process;
 
-	with sttp select
-	start <= 
-		'1' when "01"|"10",
-		'0' when others;
+	process (sys_rst, i2c_scl)
+	begin
+		if sys_rst='1' then
+		elsif falling_edge(i2c_scl) then
+			lat <= dec (
+				cntr => lat,
+				ena  => not sbit or rdy or not lat(0),
+				load => not sbit or rdy,
+				data => 8-2);
+			ack  <= not i2c_sda and lat(0);
+			rdy  <= lat(0);
+			sbit <= stop xnor start;
+
+			if lat(0)='1' then
+				data <= sys_di;
+			elsif sbit='0' then
+				data <= sys_di;
+			else
+				data <= data sll 1;
+			end if;
+		end if;
+	end process;
+	sys_rdy <= lat(0);
+	sys_sbi <= sbit;
+	sys_ack <= ack;
+	i2c_sda <= data(0);
 end;
