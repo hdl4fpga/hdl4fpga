@@ -8,7 +8,7 @@ use unisim.vcomponents.ALL;
 entity dfs is
 	generic (
 		dfs_mode : string := "HIGH";
-		dcm_per  : real := 20.0;
+		dcm_per  : real;
 		dfs_div  : natural := 3;
 		dfs_mul  : natural := 10);
 	port (
