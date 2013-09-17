@@ -283,7 +283,7 @@
     <property xil_pn:name="AES Initial Vector virtex5" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="AES Key (Hex String)" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Add I/O Buffers" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Allow Logic Optimization Across Hierarchy" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Allow Logic Optimization Across Hierarchy" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow SelectMAP Pins to Persist" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow Unexpanded Blocks" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow Unmatched LOC Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -358,7 +358,7 @@
     <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="4" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Enable Outputs (Output Events)" xil_pn:value="Default (5)" xil_pn:valueState="default"/>
     <property xil_pn:name="Encrypt Bitstream" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="false" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Essential Bits" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Evaluation Development Board" xil_pn:value="None Specified" xil_pn:valueState="default"/>
