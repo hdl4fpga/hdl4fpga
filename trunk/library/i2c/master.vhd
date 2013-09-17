@@ -30,6 +30,7 @@ architecture def of i2c_master is
 	signal req   : std_logic;
 
 	signal lat : std_logic_vector(0 to 3);
+
 begin
 
 	if rdy='1' then
