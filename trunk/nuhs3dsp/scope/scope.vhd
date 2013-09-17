@@ -78,6 +78,9 @@ begin
 
 	adc_clkab <= input_clk;
 	scope_rst <= not dcm_lckd;
+	ddr_st_dqs <= ddr_st(0);
+	ddr_lp <= (others => ddr_st_lp_dqs);
+
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		xd_len => 4,
@@ -123,9 +126,6 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
-
-	ddr_st_dqs <= ddr_st(0);
-	ddr_lp <= (others => ddr_st_lp_dqs);
 
 	ddr_dq_e : for i in data_size-1 downto 0 generate
 		ddr_dq(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';

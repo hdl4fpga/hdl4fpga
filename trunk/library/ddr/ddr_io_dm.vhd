@@ -13,7 +13,6 @@ entity ddr_io_dm is
 		ddr_mpu_st_f  : in std_logic;
 		ddr_mpu_dm_r  : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_mpu_dm_f  : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_io_dmz    : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_dmo    : out std_logic_vector(data_bytes-1 downto 0));
 end;
 
@@ -42,11 +41,6 @@ begin
 			ddr_dm(l) when ddr_dmx(l)='1' else
 			ddr_st(l);
 
---			with ddr_dmx(l) select
---			di <=
---				ddr_st(l) when '0',
---				ddr_dm(l) when others;
-
 			ffd_i : entity hdl4fpga.ff
 			port map (
 				clk => ddr_clk(l),
@@ -54,12 +48,6 @@ begin
 				q => d(l));
 
 		end generate;
-
-		oddrt_i : entity hdl4fpga.ddrto
-		port map (
-			clk => ddr_io_clk,
-			d  => '0',
-			q  => ddr_io_dmz(i));
 
 		oddr_du : entity hdl4fpga.ddro
 		port map (

@@ -145,27 +145,19 @@ TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 TIMESPEC TS_r2fclk_ddr2gtx  = FROM FFS_ddrsclk0  TO RAMS_gtxclk   TIG;
 TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
 
-#timespec ts_rowid  = FROM FFS(*/*vsync_erq*)  TO FFS(*sync_ena_val*) TIG;
+#timespec ts_rowid  = FROM FFS(*/*vsync_erq*) TO FFS(*sync_ena_val*) TIG;
 #timespec ts_rowpag = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
 
-inst "*/ddr_io_ba_e/ddr_odt_i/ffd_i"                 iob = force;
-inst "*/ddr_io_ba_e/ddr_cke_i/ffd_i"                 iob = force;
-inst "*/ddr_io_ba_e/ddr_ras_i/ffd_i"                 iob = force;
-inst "*/ddr_io_ba_e/ddr_cas_i/ffd_i"                 iob = force;
-inst "*/ddr_io_ba_e/ddr_we_i/ffd_i"                  iob = force;
-inst "*/ddr_io_ba_e/ddr_a_g[*].ff_i/ffd_i"           iob = force;
-inst "*/ddr_io_ba_e/ddr_b_g[*].ff_i/ffd_i"             iob = force;
-inst "*/ddr_io_dqs_e/ddr_io_dqs_u[*].oddrt_i/ffd_i"    iob = force;
+inst "*/ddr_io_ba_e/ddr_odt_i/ffd_i" iob = force;
+inst "*/ddr_io_ba_e/ddr_cke_i/ffd_i" iob = force;
+inst "*/ddr_io_ba_e/ddr_ras_i/ffd_i" iob = force;
+inst "*/ddr_io_ba_e/ddr_cas_i/ffd_i" iob = force;
+inst "*/ddr_io_ba_e/ddr_we_i/ffd_i"  iob = force;
+inst "*/ddr_io_ba_e/ddr_a_g[*].ff_i/ffd_i" iob = force;
+inst "*/ddr_io_ba_e/ddr_b_g[*].ff_i/ffd_i" iob = force;
+inst "*/ddr_io_dqs_e/ddr_io_dqs_u[*].oddrt_i/ffd_i"      iob = force;
 inst "*/ddr_io_dq_e/*bytes_g[*].bits_g[*].oddrt_i/ffd_i" iob = force;
-#inst "*/dac_clk_i"   iob = force;
-#inst "*/dac_blank_i" iob = force;
-#inst "*/dac_sync_i"  iob = force;
-#inst "*/dac_hsync_i"  iob = force;
-#inst "*/dac_vsync_i"  iob = force;
-#inst "*/dac_psave_i" iob = force;
-#inst "*/rgb_g[*].ffd_red"   iob = force;
-#inst "*/rgb_g[*].ffd_green" iob = force;
-#inst "*/rgb_g[*].ffd_blue"  iob = force;
+
 
 NET "ddr2_clk_p[*]" IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_clk_n[*]" IOSTANDARD = DIFF_SSTL18_II;
