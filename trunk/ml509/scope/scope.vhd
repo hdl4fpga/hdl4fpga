@@ -70,8 +70,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural :=10;
-	constant ddr_div : natural := 3;
+	constant ddr_mul : natural := 3; --10;
+	constant ddr_div : natural := 1; --3;
 
 begin
 
