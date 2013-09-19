@@ -13,7 +13,7 @@ entity xdr_rd_fifo is
 		sys_clk : in std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in std_logic;
-		sys_do  : out std_logic_vector(data_phase*2*data_bytes*byte_bits-1 downto 0);
+		sys_do  : out std_logic_vector(data_edge*data_phase*data_bytes*byte_bits-1 downto 0);
 
 		ddr_win_dq  : in std_logic;
 		ddr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
