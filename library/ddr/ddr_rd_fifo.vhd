@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 entity ddr_rd_fifo is
 	generic (
@@ -28,7 +27,6 @@ use hdl4fpga.std.all;
 architecture mix of ddr_rd_fifo is
 	subtype byte is std_logic_vector(byte_bits-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
-	type natural_vector is array (natural range <>) of natural;
 
 	signal ddr_fifo_di : byte_vector(data_bytes-1 downto 0);
 	signal ddr_fifo_do : byte_vector(2*data_bytes-1 downto 0);
