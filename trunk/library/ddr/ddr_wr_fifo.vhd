@@ -88,8 +88,6 @@ begin
 
 	dmi <= to_dmvector(sys_dm);
 	dm_g: for i in 0 to 1 generate
-		signal dm : std_logic_vector(sys_dm'range);
-	begin
 		ram_i : entity hdl4fpga.dbram
 		generic map (
 			n => data_bytes)
