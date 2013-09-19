@@ -1,12 +1,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
-entity ddr_rd_fifo is
+entity xdr_rd_fifo is
 	generic (
 		data_delay : natural := 1;
 		data_bytes : natural := 2;
+		data_edge  : natural := 2;
 		data_phase : natural := 1;
 		byte_bits  : natural := 8);
 	port (
@@ -21,16 +21,14 @@ entity ddr_rd_fifo is
 		ddr_dqi  : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
-	constant data_edge : natural := 2;
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of ddr_rd_fifo is
+architecture mix of xdr_rd_fifo is
 	subtype byte is std_logic_vector(byte_bits-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
-	type natural_vector is array (natural range <>) of natural;
 
 	signal ddr_fifo_di : byte_vector(data_bytes-1 downto 0);
 	signal ddr_fifo_do : byte_vector(data_phase*data_edge*data_bytes-1 downto 0);
@@ -56,9 +54,10 @@ architecture mix of ddr_rd_fifo is
 	function to_stdlogicvector (
 		arg : byte_vector)
 		return std_logic_vector is
+		variable dat : byte_vector(arg'length-1 downto 0);
 		variable val : std_logic_vector(arg'length-1 downto 0);
 	begin
-		val := (others => '-');
+		dat := arg;
 		for i in arg'reverse_range loop
 			val(byte'range) := arg(i);
 			val := val sll byte_bits;
@@ -68,8 +67,6 @@ architecture mix of ddr_rd_fifo is
 
 begin
 	ddr_fifo_di <= to_bytevector(ddr_dqi);
---	ddr_fifo_di(0) <= ddr_dqi(data_bits/2-1 downto 0);
---	ddr_fifo_di(1) <= ddr_dqi(data_bits-1 downto data_bits/2);
 		
 	process (sys_clk)
 		variable acc_rea_dly : std_logic;
@@ -173,7 +170,7 @@ begin
 					wa  => addr_i_q,
 					di  => ddr_fifo_di(k),
 					ra  => addr_o_q,
-					do  => ddr_fifo_do(data_phase*data_edge*k+data_edge*j+l));
+					do  => ddr_fifo_do(data_edge*data_phase*l+data_edge*j+k));
 			end generate;
 
 		end generate;
@@ -184,9 +181,6 @@ begin
 		if rising_edge(sys_clk) then
 			sys_rdy <= ddr_fifo_rdy(0);
 			sys_do <= to_stdlogicvector(ddr_fifo_do);
---			sys_do <= 
---				ddr_fifo_do(0) & ddr_fifo_do(2) & 
---				ddr_fifo_do(1) & ddr_fifo_do(3);
 		end if;
 	end process;
 
