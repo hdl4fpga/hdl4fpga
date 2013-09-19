@@ -71,6 +71,34 @@ architecture mix of ddr_wr_fifo is
 		return val;
 	end;
 
+	function to_bytevector (
+		arg : std_logic_vector) 
+		return byte_vector is
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : byte_vector(arg'length/byte_bits-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(byte'range));
+			dat := dat srl byte_bits;
+		end loop;
+		return val;
+	end;
+
+	function to_stdlogicvector (
+		arg : byte_vector)
+		return std_logic_vector is
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in arg'reverse_range loop
+			val(byte'range) := arg(i);
+			val := val sll byte_bits;
+		end loop;
+		return val;
+	end;
+
 	signal di : byte_vector(data_edges*data_phases*data_bytes-1 downto 0);
 	signal ddr_addr_q : aw_vector(data_edges*data_bytes-1 downto 0);
 	signal sys_addr_q : aw_vector(data_bytes-1 downto 0);
@@ -81,7 +109,7 @@ begin
 	ddr_clks <= (data_edges*ddr_clk'length-1 downto ddr_clk'length) <= not ddr_clk;
 
 	ddr_ena <= (0 => ddr_ena_r(0), 1 => ddr_ena_f(0));
-	ddr_dq_r <= ddr_dq(0);
+	ddr_dq <= to_stdlogicvector(ddr_dqe)(0);
 	ddr_dq_f <= ddr_dq(1);
 
 	ddr_dm_r <= ddr_dm(0);
@@ -120,6 +148,7 @@ begin
 
 		ddr_data_g: for i in data_edges*data_phases-1 downto 0 generate
 			signal dpo : std_logic_vector(byte_bits-1 downto 0);
+			signal qpo : std_logic_vector(byte_bits-1 downto 0);
 			signal ddr_addr_d : addr_word;
 		begin
 			ddr_addr_d <= inc(gray(ddr_addr_q(data_bytes*i+l)));
@@ -147,19 +176,15 @@ begin
 				do => dpo);
 
 			ram_g: for j in byte_bits-1 downto 0 generate
-				signal qpo : std_logic;
-			begin
 				ffd_i : entity hdl4fpga.ff
 				port map (
 					clk => ddr_clks(i),
 					d   => dpo(j),
-					q   => qpo);
-
-				ddr_dq(i)(byte_bits*l+j) <= 
-					dpo(j) when std=1 else
-					qpo;
-					
+					q   => qpo(j));
 			end generate;
+
+			ddr_dqe(data_bytes*i+l)(j) <= dpo when std=1 else qpo;
+					
 		end generate;
 	end generate;
 end;
