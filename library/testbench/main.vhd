@@ -1,29 +1,25 @@
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
 
 entity main is
+	port (
+		i : in std_logic;
+		o : out std_logic);
 end;
 
 architecture pgm of main is
-begin
-	process
-		variable msg : line;
-
-	    function pp (
-	        arg : real)
-	        return string is
-	        variable msg : line;
-	    begin
-	        write (msg, arg, digits => 7);
-	        return msg.all;
-	    end;
-
+	function pru
+		generic (
+			type mytype)
+		parameter (
+			arg : mytype)
+		return mytype is
 	begin
-		write (msg, pp(2.8e8));
-		writeline (output, msg);
-		wait;
-	end process;
+		return arg;
+	end;
+
+	function pp is new pru generic map(mytype => std_logic);
+	function pp is new pru generic map(mytype => std_logic_vector);
+begin
+	o <= pp(i);
 end;
