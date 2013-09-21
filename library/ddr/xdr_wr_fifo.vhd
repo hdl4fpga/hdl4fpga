@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ddr_wr_fifo is
+entity xdr_wr_fifo is
 	generic (
 		std : positive;
 		data_bytes : natural := 2;
@@ -26,9 +26,8 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of ddr_wr_fifo is
+architecture mix of xdr_wr_fifo is
 	subtype addr_word is std_logic_vector(0 to 4-1);
-	signal ddr_clks : std_logic_vector(data_edges*ddr_clk'length-1 downto 0);
 
 	type aw_vector is array (natural range <>) of addr_word;
 
