@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity ddr is
+entity xdr is
 	generic (
 		strobe : string := "EXTERNAL";
 		std  : positive range 1 to 3 := 3;
@@ -38,13 +38,13 @@ entity ddr is
 		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic;
-		sys_ba : in  std_logic_vector(bank_bits-1 downto 0);
+		sys_ba  : in  std_logic_vector(bank_bits-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
-		sys_dm : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
-		sys_di : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
-		sys_do : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_dm  : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
+		sys_di  : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
 		sys_ref : out std_logic;
 
 		ddr_rst : out std_logic;
@@ -52,10 +52,10 @@ entity ddr is
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
-		ddr_we : out std_logic;
-		ddr_ba : out std_logic_vector(bank_bits-1 downto 0);
-		ddr_a  : out std_logic_vector(addr_bits-1 downto 0);
-		ddr_dm : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_we  : out std_logic;
+		ddr_ba  : out std_logic_vector(bank_bits-1 downto 0);
+		ddr_a   : out std_logic_vector(addr_bits-1 downto 0);
+		ddr_dm  : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		ddr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_dqso : out std_logic_vector(data_bytes-1 downto 0);
@@ -64,21 +64,23 @@ entity ddr is
 		ddr_dqo : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_odt : out std_logic;
 
-		ddr_st_dqs : out std_logic_vector(ddr_dm'range) := (others => '-');
-		ddr_st_lp_dqs : in std_logic_vector(ddr_dm'range));
+		ddr_st_dqs : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
+		ddr_st_lp_dqs : in std_logic_vector(data_bytes-1 downto 0));
 
-	constant debug_delay : time := 3.3 ns;
+	constant r : natural := 0;
+	constant f : natural := 1;
+	constant data_edges : natural := sys_dm'length/ddr_dqsi'length;
+
 	constant t200u : real := 200.0e3;
 	constant t500u : real := 500.0e3;
 	constant t400n : real := 400.0;
 	constant txpr  : real := 120.0;
-	constant data_bits : natural := data_bytes*byte_bits;
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of ddr is
+architecture mix of xdr is
 	constant debug : boolean := false;
 	subtype byte is std_logic_vector(0 to byte_bits-1);
 	type byte_vector is array (natural range <>) of byte;
@@ -102,8 +104,7 @@ architecture mix of ddr is
 	signal ddr_mpu_cas : std_logic;
 	signal ddr_mpu_we  : std_logic;
 	signal ddr_mpu_rwin : std_logic;
-	signal ddr_mpu_drr : std_logic;
-	signal ddr_mpu_drf : std_logic;
+	signal ddr_mpu_dr : std_logic_vector(data_edges-1 downto 0);
 	signal ddr_mpu_rea : std_logic;
 	signal ddr_mpu_dqz : std_logic_vector(ddr_dqsi'range);
 	signal ddr_mpu_dqsz : std_logic_vector(ddr_dqsi'range);
@@ -113,8 +114,7 @@ architecture mix of ddr is
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
 	signal ddr_wr_fifo_req : std_logic;
-	signal ddr_wr_fifo_ena_r : std_logic_vector(ddr_dqsi'range);
-	signal ddr_wr_fifo_ena_f : std_logic_vector(ddr_dqsi'range);
+	signal ddr_wr_fifo_ena : std_logic_vector(sys_dm'range);
 	signal ddr_wr_dm : std_logic_vector(sys_dm'range);
 	signal ddr_wr_dq : std_logic_vector(sys_di'range);
 
@@ -442,13 +442,15 @@ begin
 
 	ddr_mpu_req <= sys_cmd_req;
 	sys_di_rdy  <= ddr_wr_fifo_req;
-	ddr_mpu_e : entity hdl4fpga.ddr_mpu
+	ddr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
 		std  => std,
 		tRCD => natural(ceil(tRCD/tCP)),
 		tWR  => natural(ceil(tWR/tCP)),
 		tRP  => natural(ceil(tRP/tCP)),
 		tRFC => natural(ceil(tRFC/tCP)),
+		data_bytes => data_bytes,
+		data_edges => data_edges,
 		ddr_mpu_bl => bldb(bl,std),
 		ddr_mpu_cwl => cwldb(cwl, std),
 		ddr_mpu_cl => casdb(cl, std))
@@ -468,11 +470,9 @@ begin
 		ddr_mpu_wri => ddr_mpu_wri,
 
 		ddr_mpu_rwin => ddr_mpu_rwin,
-		ddr_mpu_drr => ddr_mpu_drr,
-		ddr_mpu_drf => ddr_mpu_drf,
+		ddr_mpu_dr => ddr_mpu_dr,
 
-		ddr_mpu_dwr => ddr_wr_fifo_ena_r,  
-		ddr_mpu_dwf => ddr_wr_fifo_ena_f,  
+		ddr_mpu_dw => ddr_wr_fifo_ena,  
 		ddr_mpu_dqs => ddr_mpu_dqs,
 		ddr_mpu_dqsz => ddr_mpu_dqsz,
 		ddr_mpu_dqz => ddr_mpu_dqz);
@@ -559,8 +559,8 @@ begin
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk90,
-		ddr_mpu_st_r => ddr_mpu_drr,
-		ddr_mpu_st_f => ddr_mpu_drf,
+		ddr_mpu_st_r => ddr_mpu_dr(r),
+		ddr_mpu_st_f => ddr_mpu_dr(f),
 		ddr_mpu_dm => ddr_wr_dm,
 		ddr_mpu_dmx => ddr_mpu_dmx,
 		ddr_io_dmo => ddr_dm);
@@ -573,8 +573,8 @@ begin
 		port map (
 			ddr_st_hlf => ddr_st_hlf,
 			ddr_st_clk => sys_clk0,
-			ddr_st_drr => ddr_mpu_drr,
-			ddr_st_drf => ddr_mpu_drf,
+			ddr_st_drr => ddr_mpu_dr(r),
+			ddr_st_drf => ddr_mpu_dr(f),
 			ddr_st_dqs => st_dqs);
 		ddr_st_dqs <= (others => st_dqs);
 	end generate;
