@@ -525,8 +525,9 @@ begin
 		ddr_ena => ddr_wr_fifo_ena, 
 		ddr_dq  => ddr_wr_dq);
 		
-	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
+	ddr_io_dq_e : entity hdl4fpga.xdr_io_dq
 	generic map (
+		data_edges => data_edges,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
@@ -549,7 +550,7 @@ begin
 		ddr_io_dqso => ddr_dqso);
 	ddr_dqsz <= ddr_io_dqsz;
 	
-	ddr_mpu_dmx <= ddr_wr_fifo_ena_f & ddr_wr_fifo_ena_r;
+	ddr_mpu_dmx <= ddr_wr_fifo_ena;
 	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
 	generic map (
 		strobe => strobe,

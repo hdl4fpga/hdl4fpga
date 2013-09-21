@@ -58,10 +58,12 @@ begin
 			q  => ddr_io_dqz(i));
 
 		oddr_i : entity hdl4fpga.ddro
+		generic map (
+			data_phases => data_phases,
+			data_edges  => data_edges)
 		port map (
 			clk => ddr_io_clk,
-			dr => dr,
-			df => df,
-			q  => ddr_io_dqo(i));
+			d   => dr,
+			q   => ddr_io_dqo(i));
 	end generate;
 end;
