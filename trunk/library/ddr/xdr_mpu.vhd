@@ -5,40 +5,41 @@ use ieee.numeric_std.all;
 entity xdr_mpu is
 	generic (
 		std  : positive range 1 to 3 := 3;
-		tck  : real := 6.0;
+		tCK  : real := 6.0;
 		tRCD : natural := (15+6-1)/6;
 		tRFC : natural := (72+6-1)/6;
 		tWR  : natural := (15+6-1)/6;
 		tRP  : natural := (15+6-1)/6;
-		data_phases : natural;
+		data_bytes : natural;
+		data_edges : natural;
 		ddr_mpu_bl : std_logic_vector(0 to 2) := "000";
 		ddr_mpu_cl : std_logic_vector(0 to 2) := "010";
 		ddr_mpu_cwl : std_logic_vector(0 to 2) := "010");
 	port (
-		ddr_mpu_rst   : in  std_logic;
-		ddr_mpu_clk   : in  std_logic;
-		ddr_mpu_clk90 : in  std_logic;
-		ddr_mpu_cmd   : in  std_logic_vector(0 to 2) := (others => '1');
-		ddr_mpu_rdy   : out std_logic;
-		ddr_mpu_act   : out std_logic;
-		ddr_mpu_cas   : out std_logic := '1';
-		ddr_mpu_ras   : out std_logic := '1';
-		ddr_mpu_we    : out std_logic := '1';
+		ddr_mpu_rst : in  std_logic;
+		ddr_mpu_clk : in  std_logic;
+		ddr_mpu_clk90 : in std_logic;
+		ddr_mpu_cmd : in  std_logic_vector(0 to 2) := (others => '1');
+		ddr_mpu_rdy : out std_logic;
+		ddr_mpu_act : out std_logic;
+		ddr_mpu_cas : out std_logic := '1';
+		ddr_mpu_ras : out std_logic := '1';
+		ddr_mpu_we  : out std_logic := '1';
 
+		ddr_mpu_rea : out std_logic := '0';
+		ddr_mpu_wri : out std_logic := '0';
+		ddr_mpu_wbl : out std_logic := '0';
 
-		ddr_mpu_rea   : out std_logic := '0';
-		ddr_mpu_wri   : out std_logic := '0';
-		ddr_mpu_wbl   : out std_logic := '0';
+		ddr_mpu_rwin : out std_logic := '0';
+		ddr_mpu_dr  : out std_logic_vector(data_edges-1 downto 0);
 
-		ddr_mpu_rwin  : out std_logic := '0';
-		ddr_mpu_drr   : out std_logic := '0';
-		ddr_mpu_drf   : out std_logic := '0';
+		ddr_mpu_dw  : out std_logic_vector(data_edges-1 downto 0);
+		ddr_mpu_dqs : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_mpu_dqsz : out std_logic_vector(data_bytes-1 downto 0);
+		ddr_mpu_dqz : out std_logic_vector(data_bytes-1 downto 0));
 
-		ddr_mpu_dwf   : out std_logic_vector(0 to 1) := (others => '0');
-		ddr_mpu_dwr   : out std_logic_vector(0 to 1) := (others => '0');
-		ddr_mpu_dqs   : out std_logic_vector(0 to 1) := (others => '0');
-		ddr_mpu_dqsz  : out std_logic_vector(0 to 1) := (others => '1');
-		ddr_mpu_dqz   : out std_logic_vector(0 to 1) := (others => '1'));
+	constant r : natural := 0;
+	constant f : natural := 1;
 end;
 
 library hdl4fpga;
@@ -128,7 +129,6 @@ architecture arch of xdr_mpu is
 		end case;
 	end;
 
---		 ddr_cmi => ddr_dcare, ddr_cmo => ddr_nop, ddr_lat => to_timer(tWR+1),
 	constant ddr_nop   : std_logic_vector(0 to 2) := "111";
 	constant ddr_act   : std_logic_vector(0 to 2) := "011";
 	constant ddr_read  : std_logic_vector(0 to 2) := "101";
@@ -341,8 +341,8 @@ begin
 				ddr_mpu_dqsz(i) <= ph_wri(4*1) and ph_wri(4*(1+1)-2); -- same phases as dqs
 				ddr_mpu_dqs(i)  <= not ph_wri(4+2);
 				ddr_mpu_dqz(i)  <= ph_wri(4+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(4+2-1);
-				ddr_mpu_dwf(i)  <= not ph_wri(4+2+1);
+				ddr_mpu_dw(r*data_edges+i)  <= not ph_wri(4+2-1);
+				ddr_mpu_dw(f*data_edges+i)  <= not ph_wri(4+2+1);
 			end generate;
 
 			ddr2_g : if std=2 generate
@@ -351,8 +351,8 @@ begin
 					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1));
 				ddr_mpu_dqs(i)  <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-2);
 				ddr_mpu_dqz(i)  <= ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1-4);
-				ddr_mpu_dwf(i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2+1-4);
+				ddr_mpu_dw(r*data_edges+i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2-1-4);
+				ddr_mpu_dw(f*data_edges+i)  <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))-1)+2+1-4);
 			end generate;
 
 			ddr3_g : if std=3 generate
@@ -363,8 +363,8 @@ begin
 					ph_wri(4*0+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))) and
 					ph_wri(4*1+4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl))));
 				ddr_mpu_dqz(i)  <= ph_wri(4*ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1);
-				ddr_mpu_dwr(i)  <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
-				ddr_mpu_dwf(i)  <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
+				ddr_mpu_dw(r*data_edges+i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)-1);
+				ddr_mpu_dw(f*data_edges+i) <= not ph_wri(4*(ddr3_ph_cwl(to_integer(unsigned(ddr_mpu_cwl)))+1)+1);
 			end generate;
 		end generate;
 	end block;
@@ -384,37 +384,29 @@ begin
 		ddr_ph_qout(0) => ph_rea_dummy,
 		ddr_ph_qout(1 to 4*nr+3*3) => ph_rea(1 to 4*nr+3*3));
 
-----	ddr_mpu_rwin <= not ph_rea(4*4+4*((ddr_ph_cas(ddr_mpu_cl)+3)/4));
-----	ddr_mpu_drr  <= not (ph_rea(2*4+ddr_ph_cas(ddr_mpu_cl)) and ph_rea(3*4+ddr_ph_cas(ddr_mpu_cl)));
-----	ddr_mpu_drf  <= not ph_rea(2*4+2+ddr_ph_cas(ddr_mpu_cl));
-
 	ddr1_g : if std=1 generate
 		ddr_mpu_rwin <= not ph_rea(4*2+4*((ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
-		ddr_mpu_drr  <= not (
+		ddr_mpu_dr(r)  <= not (
 			ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))) and
 			ph_rea(4*1+ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))));
-		ddr_mpu_drf  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))+2);
+		ddr_mpu_dr(f)  <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(ddr_mpu_cl)))+2);
 	end generate;
 
 	ddr2_g : if std=2 generate
 		ddr_mpu_rwin <= not ph_rea(4*2+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl))));
---		ddr_mpu_drf  <= not (
---			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2) and
---			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2));
---		ddr_mpu_drr  <= not ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2);
-		ddr_mpu_drr  <= not (
-			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2) and
+		ddr_mpu_dr(r) <= not (
+			ph_rea(4*0+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2) and
 			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2+1-4-2));
-		ddr_mpu_drf  <= not (
+		ddr_mpu_dr(f)  <= not (
 			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2) and
 			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+1-4-2));
 	end generate;
 
 	ddr3_g : if std=3 generate
 		ddr_mpu_rwin <= not ph_rea(4*2+4*((4*ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+3)/4));
-		ddr_mpu_drr  <= not (
+		ddr_mpu_dr(r) <= not (
 			ph_rea(ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))) and 
 			ph_rea(4*1+ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))));
-		ddr_mpu_drf  <= not ph_rea(4*ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2);
+		ddr_mpu_dr(f) <= not ph_rea(4*ddr3_ph_cas(to_integer(unsigned(ddr_mpu_cl)))+2);
 	end generate;
 end;
