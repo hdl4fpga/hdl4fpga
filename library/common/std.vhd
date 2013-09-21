@@ -134,6 +134,11 @@ package std is
 		arg : boolean)
 		return natural;
 
+	function mux (
+		constant i : std_logic_vector;
+		constant s : std_logic_vector)
+		return std_logic;
+
 	function demux (
 		constant s : std_logic_vector;
 		constant e : std_logic := '1')
@@ -504,6 +509,14 @@ package body std is
 		return std_logic_vector is
 	begin
 		return std_logic_vector(unsigned'(to_unsigned(arg1,arg2'length)));
+	end;
+
+	function mux (
+		constant i : std_logic_vector;
+		constant s : std_logic_vector)
+		return std_logic is
+	begin
+		return i(to_integer(unsigned(s)));
 	end;
 
 	function demux (
