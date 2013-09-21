@@ -6,14 +6,14 @@ entity xdr_rd_fifo is
 	generic (
 		data_delay : natural := 1;
 		data_bytes : natural := 2;
-		data_edge  : natural := 2;
-		data_phase : natural := 1;
+		data_edges : natural := 2;
+		data_phases : natural := 1;
 		byte_bits  : natural := 8);
 	port (
 		sys_clk : in std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in std_logic;
-		sys_do  : out std_logic_vector(data_edge*data_phase*data_bytes*byte_bits-1 downto 0);
+		sys_do  : out std_logic_vector(data_edges*data_phases*data_bytes*byte_bits-1 downto 0);
 
 		ddr_win_dq  : in std_logic;
 		ddr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
@@ -31,7 +31,7 @@ architecture mix of xdr_rd_fifo is
 	type byte_vector is array (natural range <>) of byte;
 
 	signal ddr_fifo_di : byte_vector(data_bytes-1 downto 0);
-	signal ddr_fifo_do : byte_vector(data_phase*data_edge*data_bytes-1 downto 0);
+	signal ddr_fifo_do : byte_vector(data_phases*data_edges*data_bytes-1 downto 0);
 
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	signal sys_do_win : std_logic;
@@ -78,8 +78,8 @@ begin
 	end process;
 
 	fifo_bytes_g : for k in ddr_dqsi'range generate
-		signal ddr_delayed_dqs : std_logic_vector(0 to data_edge-1);
-		signal ddr_dlyd_dqs : std_logic_vector(0 to data_edge-1);
+		signal ddr_delayed_dqs : std_logic_vector(0 to data_edges-1);
+		signal ddr_dlyd_dqs : std_logic_vector(0 to data_edges-1);
 
 		signal addr_o_d : addr_word;
 		signal addr_o_q : addr_word;
@@ -127,8 +127,8 @@ begin
 				q   => addr_o_q(j));
 		end generate;
 
-		ddr_fifo: for l in 0 to data_edge-1 generate
-			signal ph_sel : std_logic_vector(data_phase-1 downto 0);
+		ddr_fifo: for l in 0 to data_edges-1 generate
+			signal ph_sel : std_logic_vector(data_phases-1 downto 0);
 		begin
 			process (addr_i_set, ddr_dlyd_dqs(l))
 			begin
@@ -139,14 +139,14 @@ begin
 				end if;
 			end process;
 
-			phase_g : for j in data_phase-1 downto 0 generate
+			phase_g : for j in data_phases-1 downto 0 generate
 				signal addr_i_d : addr_word;
 				signal addr_i_q : addr_word;
 				signal we : std_logic;
 			begin
 
 				we <=
-				ddr_win_dqsi when data_phase=1 else
+				ddr_win_dqsi when data_phases=1 else
 				ddr_win_dqsi when ph_sel=to_unsigned(j, ph_sel'length) else
 				'0';
 
@@ -170,7 +170,7 @@ begin
 					wa  => addr_i_q,
 					di  => ddr_fifo_di(k),
 					ra  => addr_o_q,
-					do  => ddr_fifo_do(data_edge*data_phase*l+data_edge*j+k));
+					do  => ddr_fifo_do(data_edges*data_phases*l+data_edges*j+k));
 			end generate;
 
 		end generate;
