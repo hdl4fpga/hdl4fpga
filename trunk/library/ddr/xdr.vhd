@@ -123,7 +123,6 @@ architecture mix of xdr is
 	signal ddr_io_dqz : std_logic_vector(ddr_dqz'range);
 	signal ddr_io_dqsz : std_logic_vector(ddr_dqsi'range);
 	signal ddr_st_hlf : std_logic;
-	signal ddr_mpu_wri : std_logic;
 
 	signal rst : std_logic;
 
@@ -467,7 +466,7 @@ begin
 
 		ddr_mpu_rea => ddr_mpu_rea,
 		ddr_mpu_wbl => ddr_wr_fifo_req,
-		ddr_mpu_wri => ddr_mpu_wri,
+		ddr_mpu_wri => open,
 
 		ddr_mpu_rwin => ddr_mpu_rwin,
 		ddr_mpu_dr => ddr_mpu_dr,
@@ -509,7 +508,6 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqi => ddr_dqi);
 		
-	ddr_wr_fifo_rst <= not ddr_mpu_wri;
 	ddr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
 		std => std,
@@ -520,12 +518,11 @@ begin
 		sys_clk => clk0,
 		sys_di  => sys_di,
 		sys_req => ddr_wr_fifo_req,
-		sys_rst => ddr_wr_fifo_rst,
 		sys_dm  => sys_dm,
 
-		ddr_clk => clk90,
+		ddr_clk => (others => clk90),
 		ddr_dm  => ddr_wr_dm,
-		ddr_ena => ddr_wr_fifo_ena_r, 
+		ddr_ena => ddr_wr_fifo_ena, 
 		ddr_dq  => ddr_wr_dq);
 		
 	ddr_io_dq_e : entity hdl4fpga.ddr_io_dq
@@ -536,8 +533,8 @@ begin
 		ddr_io_clk => clk90,
 		ddr_io_dq => ddr_wr_dq,
 		ddr_mpu_dqz => ddr_mpu_dqz,
-		ddr_io_dqz  => ddr_io_dqz,
-		ddr_io_dqo  => ddr_dqo);
+		ddr_io_dqz => ddr_io_dqz,
+		ddr_io_dqo => ddr_dqo);
 	ddr_dqz <= ddr_io_dqz;
 
 	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
