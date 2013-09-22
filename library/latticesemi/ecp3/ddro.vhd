@@ -3,11 +3,11 @@ use ieee.std_logic_1164.all;
 
 entity ddro is
 	generic (
-		ddr_phases : natural;
-		data_edges  : natural);
+		ddr_phases : natural := 1;
+		data_edges  : natural := 2);
 	port (
 		clk : in  std_logic;
-		phs : in  std_logic_vector(ddr_phases-1 downto 0);
+		phs : in  std_logic_vector(ddr_phases-1 downto 0) := (others => '0');
 		d   : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
 		q   : out std_logic);
 
@@ -16,7 +16,7 @@ entity ddro is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.mux;
+use hdl4fpga.std;
 
 library ecp3;
 use ecp3.components.all;
@@ -36,11 +36,11 @@ begin
 			aux((i mod data_edges)*(d'length/data_edges)+(i/data_edges)) := d(i);
 		end loop;
 		ddrd(0) <= aux(ddrd(0)'range);
-		aux := aux srl aux'length;
+		aux := hdl4fpga.std."srl"(aux, aux'length);
 		ddrd(1) <= aux(ddrd(0)'range);
 	end process;
-	dr <= mux(ddrd(r),phs);
-	df <= mux(ddrd(f),phs);
+	dr <= hdl4fpga.std.mux(ddrd(r),phs);
+	df <= hdl4fpga.std.mux(ddrd(f),phs);
 
 	oddr_i : oddrxd1
 	port map (

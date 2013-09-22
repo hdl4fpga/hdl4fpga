@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 entity xdr_io_dm is
 	generic (
 		strobe : string;
-		data_phases : natural;
+		ddr_phases : natural;
 		data_edges : natural;
 		data_bytes : natural);
 	port (
@@ -14,6 +14,7 @@ entity xdr_io_dm is
 		ddr_mpu_dm  : in  std_logic_vector(data_edges*data_bytes-1 downto 0);
 		ddr_io_dmo  : out std_logic_vector(data_edges*data_bytes-1 downto 0));
 
+	constant data_phases : natural := 2**ddr_phases;
 	constant r : natural := 0;
 	constant f : natural := 1;
 end;
@@ -72,7 +73,7 @@ begin
 
 		oddr_du : entity hdl4fpga.ddro
 		generic map (
-			data_phases => data_phases,
+			ddr_phases => data_phases,
 			data_edges  => data_edges)
 		port map (
 			clk => ddr_io_clk,
