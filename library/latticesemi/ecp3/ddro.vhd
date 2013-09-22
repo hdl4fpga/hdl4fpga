@@ -2,10 +2,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ddro is
+	generic (
+		data_phases : natural;
+		data_edges  : natural);
 	port (
-		clk : in std_logic;
-		dr  : in std_logic;
-		df  : in std_logic;
+		clk : in  std_logic_vector(data_phases*data_edges-1 downto 0);
+		d   : in  std_logic_vector(data_phases*data_edges-1 downto 0);
 		q   : out std_logic);
 end;
 
@@ -16,6 +18,14 @@ architecture ecp3 of ddro is
 	attribute oddrapps : string;
 	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 begin
+	process (d)
+		variable aux : std_logic_vector(d'range);
+	begin
+		for i in d'range loop
+			aux((i mod 2)) := d(i
+		end loop
+	end;
+
 	oddr_i : oddrxd1
 	port map (
 		sclk => clk,

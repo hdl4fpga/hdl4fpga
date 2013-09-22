@@ -4,6 +4,7 @@ use ieee.std_logic_1164.all;
 entity xdr_io_dm is
 	generic (
 		strobe : string;
+		data_phases : natural;
 		data_edges : natural;
 		data_bytes : natural);
 	port (
@@ -40,9 +41,14 @@ architecture arch of xdr_io_dm is
 
 	signal clks : std_logic_vector(data_edges*data_bytes-1 downto 0);
 begin
-	clks(ddr_io_clk'range) <= ddr_io_clk;
-	clks <= phs_clk sll ddr_io_clk'length;
-	clks(ddr_io_clk'range) <= not ddr_io_clk;
+	process (ddr_io_clk)
+		variable aux : std_logic_vector(clks'range);
+	begin
+		aux(ddr_io_clk'range) := ddr_io_clk;
+		aux := aux sll ddr_io_clk'length;
+		aux(ddr_io_clk'range) <= not ddr_io_clk;
+		clks <= aux;
+	end process;
 
 	bits_g : for i in ddr_io_dmo'range generate
 		signal d : std_logic_vector(clks'range);
