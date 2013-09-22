@@ -60,25 +60,25 @@ begin
 --		dfs_clk => video_clk,
 --		dcm_lkd => video_lckd);
 
-	ddrdcm_e : entity hdl4fpga.pllddr
-	generic map (
-		dcm_per => sys_per)
-	port map (
-		pllddr_rst   => dcm_rst,
-		pllddr_clki => sys_clk,
-		pllddr_clk0  => ddr_clk0,
-		pllddr_clk90 => ddr_clk90,
-		pllddr_lkd  => ddr_lckd);
-
-	inputdcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		div_op => 8,
-		div_fb => 1,
-		div_i  => 1)
-	port map (
-		dcm_rst => dcm_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => input_clk,
-		dcm_lkd => input_lckd);
+--	ddrdcm_e : entity hdl4fpga.pllddr
+--	generic map (
+--		dcm_per => sys_per)
+--	port map (
+--		pllddr_rst   => dcm_rst,
+--		pllddr_clki => sys_clk,
+--		pllddr_clk0  => ddr_clk0,
+--		pllddr_clk90 => ddr_clk90,
+--		pllddr_lkd  => ddr_lckd);
+--
+--	inputdcm_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		div_op => 8,
+--		div_fb => 1,
+--		div_i  => 1)
+--	port map (
+--		dcm_rst => dcm_rst,
+--		dcm_clk => sys_clk,
+--		dfs_clk => input_clk,
+--		dcm_lkd => input_lckd);
 end;
