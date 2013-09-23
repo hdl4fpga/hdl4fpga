@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 entity ecp3versa is
 	port (
 		clk  : in std_logic := 'Z';
-		clk_n  : in std_logic := 'Z';
+		clk_n : in std_logic := 'Z';
 		pclk : in std_logic;
 		pclk_n : in std_logic;
 		
@@ -12,7 +12,7 @@ entity ecp3versa is
 		digit  : out std_logic_vector(0 to 14);
 		
 		ddr3_clk : out std_logic := 'Z';
-		ddr3_vref  : out std_logic := 'Z';
+		ddr3_vref : out std_logic := 'Z';
 		ddr3_rst : out std_logic := 'Z';
 		ddr3_cke : out std_logic := 'Z';
 		ddr3_cs  : out std_logic := 'Z';

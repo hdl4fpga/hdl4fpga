@@ -66,6 +66,8 @@ architecture scope of ecp3versa is
 	constant ddr_mul : natural :=11;
 	constant ddr_div : natural := 4;
 
+	constant r : natural := 0;
+	constant f : natural := 1;
 begin
 
 	sys_rst <= not fpga_gsrn;
@@ -106,7 +108,7 @@ begin
 
 		input_clk => input_clk,
 
-		ddr_st_lp_dqs => '0',
+		ddr_st_lp_dqs => (others => '0'),
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
 		ddr_rst => ddr3_rst,
@@ -121,7 +123,8 @@ begin
 		ddr_dqsz => ddr_dqsz,
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqso => ddr_dqso,
-		ddr_dq  => ddr3_dq,
+		ddr_dqi  => ddr3_dq,
+		ddr_dqo  => ddr3_dq,
 		ddr_odt => ddr3_odt,
 
 		mii_rxc  => phy1_rxc,
@@ -176,8 +179,8 @@ begin
 		oddrmdq : entity hdl4fpga.ddro
 		port map (
 			clk => ddrs_clk0,
-			dr => '0',
-			df => '1',
+			d(r) => '0',
+			d(f) => '1',
 			q => ddr3_clk);
 	end block;
 
