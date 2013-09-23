@@ -128,6 +128,7 @@ architecture mix of xdr is
 
 	signal clk0 : std_logic;
 	signal clk90 : std_logic;
+	signal xdr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
 
 	function casdb (
 		constant cl  : real;
@@ -508,6 +509,7 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqi => ddr_dqi);
 		
+	xdr_clk <= (others => clk90);
 	ddr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
 		std => std,
@@ -520,7 +522,7 @@ begin
 		sys_req => ddr_wr_fifo_req,
 		sys_dm  => sys_dm,
 
-		ddr_clk => (others => clk90),
+		ddr_clk => xdr_clk,
 		ddr_dm  => ddr_wr_dm,
 		ddr_ena => ddr_wr_fifo_ena, 
 		ddr_dq  => ddr_wr_dq);
@@ -551,14 +553,15 @@ begin
 	ddr_dqsz <= ddr_io_dqsz;
 	
 	ddr_mpu_dmx <= ddr_wr_fifo_ena;
-	ddr_io_dm_e : entity hdl4fpga.ddr_io_dm
+	ddr_io_dm_e : entity hdl4fpga.xdr_io_dm
 	generic map (
 		strobe => strobe,
+		data_edges => data_edges,
+		ddr_phases => data_phases,
 		data_bytes => data_bytes)
 	port map (
-		ddr_io_clk => clk90,
-		ddr_mpu_st_r => ddr_mpu_dr(r),
-		ddr_mpu_st_f => ddr_mpu_dr(f),
+		ddr_io_clk => xdr_clk,
+		ddr_mpu_st => ddr_mpu_dr,
 		ddr_mpu_dm => ddr_wr_dm,
 		ddr_mpu_dmx => ddr_mpu_dmx,
 		ddr_io_dmo => ddr_dm);
