@@ -173,7 +173,7 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_refclk <= phy1_125clk;
-	ml509_e : ecp3versa
+	ecp3versa_i : ecp3versa
 	port map (
 		clk    => clk,
 		clk_n  => clk_n,
