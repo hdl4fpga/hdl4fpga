@@ -20,6 +20,7 @@ entity xdr_io_dm is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std."sll";
 
 architecture arch of xdr_io_dm is
 	type oddri_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
@@ -46,8 +47,8 @@ begin
 		variable aux : std_logic_vector(clks'range);
 	begin
 		aux(ddr_io_clk'range) := ddr_io_clk;
-		aux := aux sll ddr_io_clk'length;
-		aux(ddr_io_clk'range) <= not ddr_io_clk;
+		aux := hdl4fpga.std."sll"(aux, ddr_io_clk'length);
+		aux(ddr_io_clk'range) := not ddr_io_clk;
 		clks <= aux;
 	end process;
 
@@ -76,7 +77,7 @@ begin
 			ddr_phases => data_phases,
 			data_edges  => data_edges)
 		port map (
-			clk => ddr_io_clk,
+			clk => ddr_io_clk(0),
 			d   => d,
 			q   => ddr_io_dmo(i));
 

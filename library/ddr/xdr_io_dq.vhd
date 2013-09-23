@@ -45,11 +45,10 @@ architecture std of xdr_io_dq is
 
 begin
 	bits_g : for i in data_bits-1 downto 0 generate
-		signal dr : std_logic;
-		signal df : std_logic;
+		signal d : std_logic_vector(data_edges-1 downto 0);
 	begin
-		dr <= mux(oddri(r*data_bits+i),ddr_io_phs);
-		df <= mux(oddri(f*data_bits+i),ddr_io_phs);
+		d(r) <= mux(oddri(r*data_bits+i),ddr_io_phs);
+		d(f) <= mux(oddri(f*data_bits+i),ddr_io_phs);
 
 		oddrt_i : entity hdl4fpga.ddrto
 		port map (
@@ -59,11 +58,11 @@ begin
 
 		oddr_i : entity hdl4fpga.ddro
 		generic map (
-			data_phases => data_phases,
+			ddr_phases => ddr_phases,
 			data_edges  => data_edges)
 		port map (
 			clk => ddr_io_clk,
-			d   => dr,
+			d   => d,
 			q   => ddr_io_dqo(i));
 	end generate;
 end;
