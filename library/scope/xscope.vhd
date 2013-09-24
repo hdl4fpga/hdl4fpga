@@ -444,7 +444,7 @@ begin
 		grid_dot  => grid_dot,
 		plot_dot  => plot_dot);
 
-	ddr_e : entity hdl4fpga.ddr
+	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		strobe => strobe,
 		tCP => tDDR,
