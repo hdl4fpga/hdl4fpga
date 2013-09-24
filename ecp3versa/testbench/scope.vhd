@@ -15,7 +15,6 @@ architecture scope of testbench is
 	constant data_bits  : natural := byte_bits*data_bytes;
 
 	signal rst   : std_logic;
-	signal clk   : std_logic := '0';
 	signal led7  : std_logic;
 
 	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
@@ -134,7 +133,6 @@ architecture scope of testbench is
 	signal xtal_p : std_logic := '0';
 	signal phy1_125clk : std_logic := '0';
 
-	signal clk_n : std_logic;
 begin
 
 	rst <= '1', '0' after 1.1 us;
@@ -173,10 +171,10 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_refclk <= phy1_125clk;
-	ecp3versa_i : ecp3versa
+	ecp3versa_e : ecp3versa
 	port map (
-		clk    => clk,
-		clk_n  => clk_n,
+		clk    => xtal,
+		clk_n  => xtal_n,
 		pclk   => '-',
 		pclk_n => '-',
 

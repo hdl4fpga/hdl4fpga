@@ -1,27 +1,52 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /testbench/rst
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_timer_e/ddr_timer_rst
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/rst
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/sys_rst
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/sys_clk0
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_ras
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_cas
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_we
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_timer_e/z
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/sys_rst
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/sys_clk
-add wave -noupdate -group dcms -divider {New Divider}
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/input_clk
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/ddr_clk0
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/ddr_clk90
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/video_clk
-add wave -noupdate -group dcms -divider {New Divider}
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/dcm_lckd
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/dcm_rst
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/video_lckd
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/ddr_lckd
-add wave -noupdate -group dcms /testbench/ecp3versa_e/dcms_e/input_lckd
+add wave -noupdate -divider {[testbench]}
+add wave -noupdate -expand -group testbench /testbench/rst
+add wave -noupdate -expand -group testbench /testbench/xtal
+add wave -noupdate -expand -group testbench /testbench/xtal_n
+add wave -noupdate -expand -group testbench /testbench/xtal_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ddr_clk_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ddr_clk_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/rst_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cke
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cs_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ras_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cas_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/we_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/addr
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ba
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dm
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dqs_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dqs_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/odt
+add wave -noupdate -divider {[ecp3versa]}
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/sys_rst
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/sys_clk
+add wave -noupdate -expand -group ecp3versa -expand -group dcms -divider {New Divider}
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/input_clk
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/input_lckd
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/ddr_clk0
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/ddr_clk90
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/video_clk
+add wave -noupdate -expand -group ecp3versa -expand -group dcms -divider {New Divider}
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/dcm_lckd
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/dcm_rst
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/video_lckd
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/ddr_lckd
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_clk
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_vref
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_rst
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_cke
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_cs
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_ras
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_cas
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_we
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_ba
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_a
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_dm
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_dqs
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_dq
+add wave -noupdate -expand -group ecp3versa -group ddr3 /testbench/ecp3versa_e/ddr3_odt
 add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/dtreq
 add wave -noupdate -group miirx_mac -radix hexadecimal /testbench/ecp3versa_e/scope_e/miirx_udp_e/dtxd
 add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/mii_rxc
@@ -82,8 +107,8 @@ add wave -noupdate -group sys_clock /testbench/ecp3versa_e/ddrs_clk0
 add wave -noupdate -group sys_clock /testbench/ecp3versa_e/ddrs_clk90
 add wave -noupdate -group sys_clock /testbench/ecp3versa_e/video_clk
 add wave -noupdate -divider {DDR begin}
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wri
+add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/ddr_mpu_e/ddr_mpu_wbl
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/dqs(0)
 add wave -noupdate /testbench/ecp3versa_e/ddr_dqsz(1)
@@ -766,8 +791,8 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate /testbench/ecp3versa_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {203234600 ps} 0} {{Cursor 2} {203246600 ps} 0} {{Cursor 3} {203248100 ps} 0} {{Cursor 4} {203362100 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {260056 ps} 0} {{Cursor 2} {203246600 ps} 0} {{Cursor 3} {203248100 ps} 0} {{Cursor 4} {203362100 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 311
 configure wave -valuecolwidth 86
 configure wave -justifyvalue left
@@ -782,4 +807,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {203204348 ps} {203315852 ps}
+WaveRestoreZoom {0 ps} {3150 ns}

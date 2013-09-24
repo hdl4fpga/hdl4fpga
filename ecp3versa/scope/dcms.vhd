@@ -30,10 +30,11 @@ architecture ecp3 of dcms is
 
 	signal dcm_rst : std_logic;
 
+	signal input_lckd : std_logic := '1';
+	signal ddr_lckd   : std_logic := '1';
+	signal gtx_lckd   : std_logic := '1';
 	signal video_lckd : std_logic := '1';
-	signal ddr_lckd : std_logic;
-	signal input_lckd : std_logic;
-	signal gtx_lckd : std_logic;
+
 begin
 	process (sys_rst, sys_clk)
 	begin
@@ -69,16 +70,16 @@ begin
 --		pllddr_clk0  => ddr_clk0,
 --		pllddr_clk90 => ddr_clk90,
 --		pllddr_lkd  => ddr_lckd);
---
---	inputdcm_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		div_op => 8,
---		div_fb => 1,
---		div_i  => 1)
---	port map (
---		dcm_rst => dcm_rst,
---		dcm_clk => sys_clk,
---		dfs_clk => input_clk,
---		dcm_lkd => input_lckd);
+
+	inputdcm_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => sys_per,
+		div_op => 8,
+		div_fb => 1,
+		div_i  => 1)
+	port map (
+		dcm_rst => dcm_rst,
+		dcm_clk => sys_clk,
+		dfs_clk => input_clk,
+		dcm_lkd => input_lckd);
 end;
