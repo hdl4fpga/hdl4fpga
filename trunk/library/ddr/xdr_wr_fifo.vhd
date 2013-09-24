@@ -16,7 +16,7 @@ entity xdr_wr_fifo is
 		sys_di  : in  std_logic_vector(data_phases*data_bytes*data_edges*byte_bits-1 downto 0);
 
 		ddr_clk : in  std_logic_vector(data_phases-1 downto 0);
-		ddr_ena : in  std_logic_vector(data_phases*data_bytes-1 downto 0);
+		ddr_ena : in  std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 		ddr_dm  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 		ddr_dq  : out std_logic_vector(data_phases*data_edges*data_bytes*byte_bits-1 downto 0));
 
@@ -53,7 +53,7 @@ architecture mix of xdr_wr_fifo is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(byte_bits*arg'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'reverse_range loop
@@ -84,7 +84,7 @@ architecture mix of xdr_wr_fifo is
 		arg : dme_vector)
 		return std_logic_vector is
 		variable dat : dme_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(data_edges*arg'length-1 downto 0);
 	begin
 		for i in data_phases-1 downto 0 loop
 			for j in data_edges-1 downto 0 loop
@@ -99,8 +99,8 @@ architecture mix of xdr_wr_fifo is
 
 	signal clkg : clkg_vector(data_edges-1 downto 0);
 	signal dqe  : byte_vector(sys_dm'range);
-	signal sys_dme : dme_vector(sys_dm'range);
-	signal ddr_dme : dme_vector(sys_dm'range);
+	signal sys_dme : dme_vector(data_phases*data_bytes-1 downto 0);
+	signal ddr_dme : dme_vector(data_phases*data_bytes-1 downto 0);
 
 	signal ddr_addr_q : aw_vector(data_phases*data_edges*data_bytes-1 downto 0);
 	signal sys_addr_q : aw_vector(data_bytes-1 downto 0);
@@ -155,7 +155,7 @@ begin
 			cntr_g: for j in addr_word'range generate
 				signal addr_set : std_logic;
 			begin
-				addr_set <= not ddr_ena(i);
+				addr_set <= not ddr_ena(i*data_bytes);
 				ffd_i : entity hdl4fpga.sff
 				port map (
 					clk => clkg(i mod data_edges)(i / data_edges),

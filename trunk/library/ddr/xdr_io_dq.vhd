@@ -26,16 +26,16 @@ use hdl4fpga.std.all;
 
 architecture std of xdr_io_dq is
 	type oddri_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
-	signal oddri : oddri_vector(data_edges-1 downto 0);
+	signal oddri : oddri_vector(data_edges*data_bytes*byte_bits-1 downto 0);
 
 	function to_oddrivector (
 		arg : std_logic_vector)
 		return oddri_vector is
 		variable dat : std_logic_vector(arg'length-1 downto 0);
-		variable val : oddri_vector(data_edges-1 downto 0);
+		variable val : oddri_vector(arg'length/data_phases-1 downto 0);
 	begin
 		dat := arg;
-		for i in data_edges*data_bits-1 downto 0 loop
+		for i in arg'length/data_phases-1 downto 0 loop
 			for k in data_phases-1 downto 0 loop
 				val(i)(k) := dat(i*data_phases+k);
 			end loop;
@@ -44,6 +44,8 @@ architecture std of xdr_io_dq is
 	end;
 
 begin
+
+	oddri <= to_oddrivector(ddr_io_dq);
 	bytes_g : for i in data_bytes-1 downto 0 generate
 		bits_g : for j in byte_bits-1 downto 0 generate
 			signal d : std_logic_vector(data_edges-1 downto 0);

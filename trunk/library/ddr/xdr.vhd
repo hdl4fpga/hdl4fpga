@@ -114,7 +114,7 @@ architecture mix of xdr is
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
 	signal ddr_wr_fifo_req : std_logic;
-	signal ddr_wr_fifo_ena : std_logic_vector(data_phases*data_edges-1 downto 0);
+	signal ddr_wr_fifo_ena : std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 	signal ddr_wr_dm : std_logic_vector(sys_dm'range);
 	signal ddr_wr_dq : std_logic_vector(sys_di'range);
 
