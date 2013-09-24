@@ -34,7 +34,7 @@ entity xdr_mpu is
 		ddr_mpu_rwin : out std_logic := '0';
 		ddr_mpu_dr  : out std_logic_vector(data_phases*data_edges-1 downto 0);
 
-		ddr_mpu_dw  : out std_logic_vector(data_phases*data_edges-1 downto 0);
+		ddr_mpu_dw  : out std_logic_vector(data_edges*data_bytes-1 downto 0);
 		ddr_mpu_dqs : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_mpu_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_mpu_dqz : out std_logic_vector(data_bytes-1 downto 0));
@@ -49,8 +49,8 @@ architecture arch of xdr_mpu is
 	constant ras : natural := 0;
 	constant cas : natural := 1;
 	constant we  : natural := 2;
-	constant n   : natural := 8;
-	constant nr  : natural := 8;
+	constant n   : natural := 9;
+	constant nr  : natural := 9;
 
 	signal ddr_mpu_rph : std_logic := '1';
 	signal ddr_mpu_wph : std_logic := '1';

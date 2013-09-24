@@ -42,7 +42,7 @@ architecture arch of xdr_io_dm is
 		return val;
 	end;
 
-	signal clks : std_logic_vector(data_edges*data_bytes-1 downto 0);
+	signal clks : std_logic_vector(data_phases*data_edges-1 downto 0);
 
 begin
 
@@ -65,20 +65,20 @@ begin
 			di <=
 			ddr_mpu_dm(i*data_edges+l) when strobe="EXTERNAL" else
 			ddr_mpu_dm(i*data_edges+l) when ddr_mpu_dmx(i*data_edges+l)='1' else
-			ddr_mpu_st(i*data_edges+l);
+			ddr_mpu_st(l);
 
 			ffd_i : entity hdl4fpga.ff
 			port map (
 				clk => clks(l),
-				d => di,
-				q => d(l));
+				d   => di,
+				q   => d(l));
 
 		end generate;
 
 		oddr_du : entity hdl4fpga.ddro
 		generic map (
-			ddr_phases => data_phases,
-			data_edges  => data_edges)
+			ddr_phases => ddr_phases,
+			data_edges => data_edges)
 		port map (
 			clk => ddr_io_clk(0),
 			d   => d,
