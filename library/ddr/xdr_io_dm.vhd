@@ -8,11 +8,11 @@ entity xdr_io_dm is
 		data_edges : natural;
 		data_bytes : natural);
 	port (
-		ddr_io_clk  : in  std_logic_vector(data_bytes-1 downto 0);
+		ddr_io_clk  : in  std_logic_vector(2**ddr_phases-1 downto 0);
 		ddr_mpu_dmx : in  std_logic_vector(data_edges*data_bytes-1 downto 0);
-		ddr_mpu_st  : in  std_logic_vector(data_edges*data_bytes-1 downto 0);
-		ddr_mpu_dm  : in  std_logic_vector(data_edges*data_bytes-1 downto 0);
-		ddr_io_dmo  : out std_logic_vector(data_edges*data_bytes-1 downto 0));
+		ddr_mpu_st  : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
+		ddr_mpu_dm  : in  std_logic_vector(2**ddr_phases*data_edges*data_bytes-1 downto 0);
+		ddr_io_dmo  : out std_logic_vector(data_bytes-1 downto 0));
 
 	constant data_phases : natural := 2**ddr_phases;
 	constant r : natural := 0;
@@ -23,6 +23,7 @@ library hdl4fpga;
 use hdl4fpga.std."sll";
 
 architecture arch of xdr_io_dm is
+
 	type oddri_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
 	signal oddri : oddri_vector(data_edges-1 downto 0);
 
@@ -42,7 +43,9 @@ architecture arch of xdr_io_dm is
 	end;
 
 	signal clks : std_logic_vector(data_edges*data_bytes-1 downto 0);
+
 begin
+
 	process (ddr_io_clk)
 		variable aux : std_logic_vector(clks'range);
 	begin

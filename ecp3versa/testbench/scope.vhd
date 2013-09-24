@@ -6,8 +6,8 @@ architecture scope of testbench is
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 14;
-	constant cols_bits  : natural := 9;
+	constant addr_bits  : natural := 13;
+	constant cols_bits  : natural := 10;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
@@ -58,7 +58,7 @@ architecture scope of testbench is
 			digit  : out std_logic_vector(0 to 14);
 			
 			ddr3_clk : out std_logic := 'Z';
-			ddr3_vref  : out std_logic := 'Z';
+			ddr3_vref : out std_logic := 'Z';
 			ddr3_rst : out std_logic := 'Z';
 			ddr3_cke : out std_logic := 'Z';
 			ddr3_cs  : out std_logic := 'Z';
@@ -117,7 +117,7 @@ architecture scope of testbench is
 			ras_n : in std_logic;
 			cas_n : in std_logic;
 			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
+			ba    : in std_logic_vector(3-1 downto 0);
 			addr  : in std_logic_vector(addr_bits-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq    : inout std_logic_vector(16-1 downto 0);
@@ -228,7 +228,7 @@ begin
 		Ras_n => ras_n,
 		Cas_n => cas_n,
 		We_n  => we_n,
-		Ba    => ba(2-1 downto 0),
+		Ba    => ba,
 		Addr  => addr,
 		Dm_tdqs  => dm,
 		Dq    => dq,
@@ -258,8 +258,8 @@ configuration ecp3versa_structure_md of testbench is
 				Cas_n => cas_n,
 				We_n  => we_n,
 				Ba    => ba,
-				Addr  => addr(12 downto 0),
-				Dm_tdqs  => dm(2-1 downto 0),
+				Addr  => addr,
+				Dm_tdqs  => dm,
 				Dq    => dq,
 				Dqs   => dqs,
 				Dqs_n => dqs_n,
@@ -289,8 +289,8 @@ configuration ecp3versa_scope_md of testbench is
 				Cas_n => cas_n,
 				We_n  => we_n,
 				Ba    => ba,
-				Addr  => addr(12 downto 0),
-				Dm_tdqs  => dm(2-1 downto 0),
+				Addr  => addr,
+				Dm_tdqs  => dm,
 				Dq    => dq,
 				Dqs   => dqs,
 				Dqs_n => dqs_n,

@@ -11,20 +11,20 @@ entity ecp3versa is
 		leds   : out std_logic_vector(0 to 7);
 		digit  : out std_logic_vector(0 to 14);
 		
-		ddr3_clk : out std_logic := 'Z';
-		ddr3_vref : out std_logic := 'Z';
-		ddr3_rst : out std_logic := 'Z';
-		ddr3_cke : out std_logic := 'Z';
-		ddr3_cs  : out std_logic := 'Z';
-		ddr3_ras : out std_logic := 'Z';
-		ddr3_cas : out std_logic := 'Z';
-		ddr3_we  : out std_logic := 'Z';
-		ddr3_ba  : out std_logic_vector( 2 downto 0) := (others => 'Z');
-		ddr3_a   : out std_logic_vector(12 downto 0) := (others => 'Z');
+		ddr3_clk : out std_logic := '0';
+		ddr3_vref : out std_logic := '0';
+		ddr3_rst : out std_logic := '0';
+		ddr3_cke : out std_logic := '0';
+		ddr3_cs  : out std_logic := '1';
+		ddr3_ras : out std_logic := '1';
+		ddr3_cas : out std_logic := '1';
+		ddr3_we  : out std_logic := '1';
+		ddr3_ba  : out std_logic_vector( 2 downto 0) := (others => '1');
+		ddr3_a   : out std_logic_vector(12 downto 0) := (others => '1');
 		ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-		ddr3_odt : inout std_logic;
+		ddr3_odt : out std_logic := '1';
 
 		fpga_gsrn : in std_logic;
 

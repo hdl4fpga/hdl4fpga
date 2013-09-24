@@ -104,7 +104,7 @@ architecture mix of xdr is
 	signal ddr_mpu_cas : std_logic;
 	signal ddr_mpu_we  : std_logic;
 	signal ddr_mpu_rwin : std_logic;
-	signal ddr_mpu_dr : std_logic_vector(data_edges-1 downto 0);
+	signal ddr_mpu_dr  : std_logic_vector(data_phases*data_edges-1 downto 0);
 	signal ddr_mpu_rea : std_logic;
 	signal ddr_mpu_dqz : std_logic_vector(ddr_dqsi'range);
 	signal ddr_mpu_dqsz : std_logic_vector(ddr_dqsi'range);
@@ -114,7 +114,7 @@ architecture mix of xdr is
 	signal ddr_mpu_rdy : std_logic;
 	signal ddr_wr_fifo_rst : std_logic;
 	signal ddr_wr_fifo_req : std_logic;
-	signal ddr_wr_fifo_ena : std_logic_vector(sys_dm'range);
+	signal ddr_wr_fifo_ena : std_logic_vector(data_phases*data_edges-1 downto 0);
 	signal ddr_wr_dm : std_logic_vector(sys_dm'range);
 	signal ddr_wr_dq : std_logic_vector(sys_di'range);
 
@@ -128,7 +128,7 @@ architecture mix of xdr is
 
 	signal clk0 : std_logic;
 	signal clk90 : std_logic;
-	signal xdr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
+	signal xdr_clk : std_logic_vector(data_phases-1 downto 0);
 
 	function casdb (
 		constant cl  : real;
@@ -449,6 +449,7 @@ begin
 		tWR  => natural(ceil(tWR/tCP)),
 		tRP  => natural(ceil(tRP/tCP)),
 		tRFC => natural(ceil(tRFC/tCP)),
+		data_phases => data_phases,
 		data_bytes => data_bytes,
 		data_edges => data_edges,
 		ddr_mpu_bl => bldb(bl,std),
@@ -529,6 +530,7 @@ begin
 		
 	ddr_io_dq_e : entity hdl4fpga.xdr_io_dq
 	generic map (
+		ddr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
 		data_edges => data_edges,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
@@ -540,9 +542,11 @@ begin
 		ddr_io_dqo => ddr_dqo);
 	ddr_dqz <= ddr_io_dqz;
 
-	ddr_io_dqs_e : entity hdl4fpga.ddr_io_dqs
+	ddr_io_dqs_e : entity hdl4fpga.xdr_io_dqs
 	generic map (
 		std => std,
+		data_phases => data_phases,
+		data_edges => data_edges,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => clk0,
@@ -556,8 +560,8 @@ begin
 	ddr_io_dm_e : entity hdl4fpga.xdr_io_dm
 	generic map (
 		strobe => strobe,
+		ddr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
 		data_edges => data_edges,
-		ddr_phases => data_phases,
 		data_bytes => data_bytes)
 	port map (
 		ddr_io_clk => xdr_clk,

@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr_io_dqs is
+entity xdr_io_dqs is
 	generic (
 		std : positive range 1 to 3 := 3;
 		data_phases : natural := 2;
@@ -17,7 +17,7 @@ end;
 
 library hdl4fpga;
 
-architecture std of ddr_io_dqs is
+architecture std of xdr_io_dqs is
 	signal rclk : std_logic;
 	signal tclk : std_logic;
 begin

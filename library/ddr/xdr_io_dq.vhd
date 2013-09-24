@@ -12,8 +12,8 @@ entity xdr_io_dq is
 		ddr_mpu_dqz : in std_logic_vector(data_bytes-1 downto 0);
 		ddr_io_phs : in std_logic_vector(2**ddr_phases-1 downto 0) := (others => '0'); 
 		ddr_io_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_io_dq  : in  std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		ddr_io_dqo : out std_logic_vector(data_bytes*data_edges*byte_bits-1 downto 0));
+		ddr_io_dq  : in  std_logic_vector(data_bytes*data_edges*byte_bits-1 downto 0);
+		ddr_io_dqo : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
 	constant data_phases : natural := 2**ddr_phases;
@@ -44,25 +44,27 @@ architecture std of xdr_io_dq is
 	end;
 
 begin
-	bits_g : for i in data_bits-1 downto 0 generate
-		signal d : std_logic_vector(data_edges-1 downto 0);
-	begin
-		d(r) <= mux(oddri(r*data_bits+i),ddr_io_phs);
-		d(f) <= mux(oddri(f*data_bits+i),ddr_io_phs);
+	bytes_g : for i in data_bytes-1 downto 0 generate
+		bits_g : for j in byte_bits-1 downto 0 generate
+			signal d : std_logic_vector(data_edges-1 downto 0);
+		begin
+			oddrt_i : entity hdl4fpga.ddrto
+			port map (
+				clk => ddr_io_clk,
+				d   => ddr_mpu_dqz(i),
+				q   => ddr_io_dqz(i));
 
-		oddrt_i : entity hdl4fpga.ddrto
-		port map (
-			clk => ddr_io_clk,
-			d  => ddr_mpu_dqz(i),
-			q  => ddr_io_dqz(i));
+			d(r) <= mux(oddri(r*data_bits+i*byte_bits+j),ddr_io_phs);
+			d(f) <= mux(oddri(f*data_bits+i*byte_bits+j),ddr_io_phs);
 
-		oddr_i : entity hdl4fpga.ddro
-		generic map (
-			ddr_phases => ddr_phases,
-			data_edges  => data_edges)
-		port map (
-			clk => ddr_io_clk,
-			d   => d,
-			q   => ddr_io_dqo(i));
+			oddr_i : entity hdl4fpga.ddro
+			generic map (
+				ddr_phases => ddr_phases,
+				data_edges => data_edges)
+			port map (
+				clk => ddr_io_clk,
+				d   => d,
+				q   => ddr_io_dqo(i*byte_bits+j));
+		end generate;
 	end generate;
 end;

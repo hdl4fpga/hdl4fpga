@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 entity ddro is
 	generic (
-		ddr_phases : natural := 1;
-		data_edges  : natural := 2);
+		ddr_phases : natural := 0;
+		data_edges : natural := 2);
 	port (
 		clk : in  std_logic;
 		phs : in  std_logic_vector(ddr_phases-1 downto 0) := (others => '0');

@@ -156,7 +156,7 @@ architecture def of scope is
 	constant ddr_acdb : ddr_actab(1 to 3) := (
 		1 => (cl => 2.5, bl => 8, wr => 0, cwl => 0, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0),
 		2 => (cl => 5.0, bl => 8, wr => 7, cwl => 5, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC => 127.5, tRP => 18.0, tWR => 15.0),
-		3 => (cl => 9.0, bl => 8, wr => 9, cwl => 9, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0));
+		3 => (cl => 9.0, bl => 8, wr => 6, cwl => 9, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0));
 
 begin
 

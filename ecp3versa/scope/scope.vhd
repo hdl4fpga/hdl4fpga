@@ -100,7 +100,7 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		strobe  => "INTERNAL",
-		ddr_std => 2,
+		ddr_std => 3,
 		xd_len  => 8,
 		tDDR    => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
