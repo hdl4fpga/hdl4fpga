@@ -10,6 +10,7 @@ entity xdr_mpu is
 		tRFC : natural := (72+6-1)/6;
 		tWR  : natural := (15+6-1)/6;
 		tRP  : natural := (15+6-1)/6;
+		data_phases : natural;
 		data_bytes : natural;
 		data_edges : natural;
 		ddr_mpu_bl : std_logic_vector(0 to 2) := "000";
@@ -31,9 +32,9 @@ entity xdr_mpu is
 		ddr_mpu_wbl : out std_logic := '0';
 
 		ddr_mpu_rwin : out std_logic := '0';
-		ddr_mpu_dr  : out std_logic_vector(data_edges-1 downto 0);
+		ddr_mpu_dr  : out std_logic_vector(data_phases*data_edges-1 downto 0);
 
-		ddr_mpu_dw  : out std_logic_vector(data_edges-1 downto 0);
+		ddr_mpu_dw  : out std_logic_vector(data_phases*data_edges-1 downto 0);
 		ddr_mpu_dqs : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_mpu_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		ddr_mpu_dqz : out std_logic_vector(data_bytes-1 downto 0));

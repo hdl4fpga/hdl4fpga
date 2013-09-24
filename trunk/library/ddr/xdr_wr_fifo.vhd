@@ -16,7 +16,7 @@ entity xdr_wr_fifo is
 		sys_di  : in  std_logic_vector(data_phases*data_bytes*data_edges*byte_bits-1 downto 0);
 
 		ddr_clk : in  std_logic_vector(data_phases-1 downto 0);
-		ddr_ena : in  std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
+		ddr_ena : in  std_logic_vector(data_phases*data_bytes-1 downto 0);
 		ddr_dm  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 		ddr_dq  : out std_logic_vector(data_phases*data_edges*data_bytes*byte_bits-1 downto 0));
 
@@ -158,7 +158,7 @@ begin
 				addr_set <= not ddr_ena(i);
 				ffd_i : entity hdl4fpga.sff
 				port map (
-					clk => clkg(i/data_edges)(i mod data_edges),
+					clk => clkg(i mod data_edges)(i / data_edges),
 					sr  => addr_set,
 					d   => ddr_addr_d(j),
 					q   => ddr_addr_q(data_bytes*i+l)(j));
@@ -178,7 +178,7 @@ begin
 			ram_g: for j in byte_bits-1 downto 0 generate
 				ffd_i : entity hdl4fpga.ff
 				port map (
-					clk => clkg(i/data_edges)(i mod data_edges),
+					clk => clkg(i mod data_edges)(i / data_edges),
 					d   => dpo(j),
 					q   => qpo(j));
 			end generate;
