@@ -13,7 +13,14 @@ entity dcms is
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
 		input_clk : out std_logic;
-		ddr_clk0  : out std_logic;
+
+		ddr_uddcntln : in std_logic;
+		ddr_eclk  : out std_logic;
+		ddr_sclk2 : out std_logic;
+		ddr_sclk  : out std_logic;
+		ddr_dqsdel : out std_logic;
+		ddr_dqsclk : out std_logic;
+
 		gtx_clk   : out std_logic;
 		dcm_lckd  : out std_logic);
 end;
@@ -112,9 +119,21 @@ begin
 			eclk  => pll_clkos,
 			eclko => eclk);
 
+		clkdiv_i : clkdiv
+		port map (
+			rst  => rst,
+			release => ,
+			clki => eclk,
+			cdiv1 => open,
+			cdiv2 => ddr_dqsclk,
+			cdiv4 => open,
+			cdiv8 => open);
+
 		dqsdllb_i : dqsdllb
 		port map (
+			rst => rst,
 			clk => pll_clkop,
+			uddcntln => ddr_uddcntln,
 			dqsdel => dqsdel,
 			lock => open);
 		
