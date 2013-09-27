@@ -59,7 +59,7 @@ begin
 			dfs_clk => ddr_clk,
 			dcm_lck => ddr_lck);
 			
-		signal pll_clkop : std_logic;
+		signal pll_clkos : std_logic;
 		signal pll_clkfb  : std_logic;
 	begin
 		pll_i : ehxpllf
@@ -87,9 +87,9 @@ begin
 			fda3   => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
 			clkintfb => pll_clkfb,
 			clkfb => pll_clkfb,
-			clkop => pll_clkop, 
-			clkos => open,
-			clkok => open,
+			clkop => sclk2, 
+			clkos => pll_clkos,
+			clkok => sclk,
 			clkok2 => open,
 
 			lock  => dcm_lck);
@@ -109,22 +109,15 @@ begin
 		eclksynca_i : eclksynca
 		port map (
 			stop  => eclk_stop,
-			eclk  => pll_clkop,
+			eclk  => pll_clkos,
 			eclko => eclk);
 
-		dqs_b : block
-		begin
-			dqsdllb_i : dqsdllb
-			port map (
-				clk => 
-				);
+		dqsdllb_i : dqsdllb
+		port map (
+			clk => pll_clkop,
+			dqsdel => dqsdel,
+			lock => open);
 		
-			dqsbufe1_i : dqsbufe1
-			port map (
-				rst   => rst,
-				eclkw => eclk);
-
-		end block;
 	end block;
 
 end;
