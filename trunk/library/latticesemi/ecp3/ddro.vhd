@@ -6,8 +6,8 @@ entity ddro is
 		ddr_phases : natural := 0;
 		data_edges : natural := 2);
 	port (
+		rst : in  std_logic;
 		clk : in  std_logic;
-		phs : in  std_logic_vector(ddr_phases-1 downto 0) := (others => '0');
 		d   : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
 		q   : out std_logic);
 
@@ -24,11 +24,16 @@ use ecp3.components.all;
 architecture ecp3 of ddro is
 	attribute oddrapps : string;
 	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
+
 	type ddrd_vector is array (natural range <>) of std_logic_vector(d'length/data_edges-1 downto 0);
 	signal ddrd : ddrd_vector(data_edges-1 downto 0);
 	signal dr : std_logic_vector(2-1 downto 0);
 	signal df : std_logic_vector(2-1 downto 0);
+	signal dqclk0 : std_logic;
+	signal dqclk1 : std_logic;
+
 begin
+
 	process (d)
 		variable aux : std_logic_vector(d'length-1 downto 0);
 	begin
@@ -39,24 +44,27 @@ begin
 		aux := hdl4fpga.std."srl"(aux, aux'length);
 		ddrd(1) <= aux(ddrd(0)'range);
 	end process;
+
 	dr <= hdl4fpga.std.mux(ddrd(r),phs);
 	df <= hdl4fpga.std.mux(ddrd(f),phs);
 
 	dqsbuf_i : dqsbufe1
 	port map (
-		rst => ,
-		eclkw => ,
-		dqclk0 => ,
-		dqclk1 => ,
+		rst    => rst,
+		eclkw  => clk,
+		dqclk0 => dqclk0,
+		dqclk1 => dqclk1);
 
 	oddr_i : oddrx2d
 	port map (
 		sclk => sclk,
-		da0 => dr,
-		db0 => df,
-		da1 => dr,
-		db1 => df,
-		q  => q);
+		dqclk0 => dqclk0,
+		dqclk1 => dqclk1,
+		da0 => dr(0),
+		db0 => df(1),
+		da1 => dr(0),
+		db1 => df(1),
+		q   => q);
 end;
 
 library ieee;
