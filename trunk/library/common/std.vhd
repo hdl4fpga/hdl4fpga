@@ -139,6 +139,11 @@ package std is
 		constant s : std_logic_vector)
 		return std_logic;
 
+	function mux (
+		constant i : std_logic_vector;
+		constant s : std_logic_vector)
+		return std_logic_vector;
+
 	function demux (
 		constant s : std_logic_vector;
 		constant e : std_logic := '1')
@@ -517,6 +522,24 @@ package body std is
 		return std_logic is
 	begin
 		return i(to_integer(unsigned(s)));
+	end;
+
+	function mux (
+		constant i : std_logic_vector;
+		constant s : std_logic_vector)
+		return std_logic_vector is
+		variable v : std_logic_vector(i'length/2**s'length downto 0);
+	begin
+		for j in v'range loop
+			if i'left > i'right then
+ 				v := v sll 1;
+				v(v'left) := i(to_integer(unsigned(s))+j);
+			else
+ 				v := v srl 1;
+				v(v'right) := i(to_integer(unsigned(s))+j);
+			end if;
+		end loop;
+		return v;
 	end;
 
 	function demux (

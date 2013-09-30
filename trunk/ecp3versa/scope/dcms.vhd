@@ -18,8 +18,8 @@ entity dcms is
 		ddr_clk0 : out std_logic;
 		ddr_clk90 : out std_logic;
 
-		gtx_clk0  : out std_logic;
-		gtx_clk90 : out std_logic;
+		video_clk0  : out std_logic;
+		video_clk90 : out std_logic;
 
 		dcms_lckd  : out std_logic);
 end;
@@ -38,7 +38,7 @@ architecture ecp3 of dcms is
 	signal dcm_rst : std_logic;
 
 	signal ddr_lckd : std_logic := '1';
-	signal gtx_lckd : std_logic := '1';
+	signal video_lckd : std_logic := '1';
 
 begin
 
@@ -51,25 +51,25 @@ begin
 			dcms_lckd <= '0';
 		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
-				dcms_lckd <= ddr_lckd and gtx_lckd;
+				dcms_lckd <= ddr_lckd and video_lckd;
 			end if;
 			dcm_rst <= '0';
 		end if;
 	end process;
 
-	gtx_b : block
+	video_b : block
 		port (
 			sys_rst  : in  std_logic;
 			sys_clk  : in  std_logic;
-			gtx_clk0 : out std_logic;
-			gtx_clk90 : out std_logic;
-			gtx_lckd : out std_logic);
+			video_clk0 : out std_logic;
+			video_clk90 : out std_logic;
+			video_lckd : out std_logic);
 		port map (
 			sys_rst => sys_rst,
 			sys_clk => sys_clk,
-			gtx_clk0 => gtx_clk0,
-			gtx_clk90 => gtx_clk90,
-			gtx_lckd => ddr_lckd);
+			video_clk0 =>  video_clk0,
+			video_clk90 => video_clk90,
+			video_lckd => video_lckd);
 			
 		attribute frequency_pin_clkop : string; 
 		attribute frequency_pin_clkos : string; 
@@ -111,12 +111,12 @@ begin
 			fda3   => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
 			clkintfb => pll_clkfb,
 			clkfb => pll_clkfb,
-			clkop => gtx_clk0, 
-			clkos => gtx_clk90,
+			clkop => video_clk0, 
+			clkos => video_clk90,
 			clkok => open,
 			clkok2 => open,
 
-			lock  => gtx_lckd);
+			lock  => video_lckd);
 	end block;
 
 	ddr3_b : block

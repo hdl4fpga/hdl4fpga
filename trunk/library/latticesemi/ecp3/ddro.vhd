@@ -26,8 +26,8 @@ architecture ecp3 of ddro is
 	attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 	type ddrd_vector is array (natural range <>) of std_logic_vector(d'length/data_edges-1 downto 0);
 	signal ddrd : ddrd_vector(data_edges-1 downto 0);
-	signal dr : std_logic;
-	signal df : std_logic;
+	signal dr : std_logic_vector(2-1 downto 0);
+	signal df : std_logic_vector(2-1 downto 0);
 begin
 	process (d)
 		variable aux : std_logic_vector(d'length-1 downto 0);
@@ -42,11 +42,20 @@ begin
 	dr <= hdl4fpga.std.mux(ddrd(r),phs);
 	df <= hdl4fpga.std.mux(ddrd(f),phs);
 
-	oddr_i : oddrxd1
+	dqsbuf_i : dqsbufe1
 	port map (
-		sclk => clk,
-		da => dr,
-		db => df,
+		rst => ,
+		eclkw => ,
+		dqclk0 => ,
+		dqclk1 => ,
+
+	oddr_i : oddrx2d
+	port map (
+		sclk => sclk,
+		da0 => dr,
+		db0 => df,
+		da1 => dr,
+		db1 => df,
 		q  => q);
 end;
 

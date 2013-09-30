@@ -90,9 +90,9 @@ begin
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
-		video_clk => video_clk,
+		video_clk0 => video_clk,
 		video_clk90 => video_clk90,
-		dcm_lckd => dcm_lckd);
+		dcms_lckd => dcm_lckd);
 
 	scope_rst <= not dcm_lckd;
 	phy1_rst <= dcm_lckd;
