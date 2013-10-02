@@ -6,8 +6,8 @@ entity ddro is
 		ddr_phases : natural := 0;
 		data_edges : natural := 2);
 	port (
-		rst : in  std_logic;
 		clk : in  std_logic;
+		phs : in  std_logic_vector(ddr_phases-1 downto 0);
 		d   : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
 		q   : out std_logic);
 
@@ -50,14 +50,23 @@ begin
 
 	dqsbuf_i : dqsbufe1
 	port map (
-		rst    => rst,
+		dyndelpol => '0',
+		dyndelay6 => '0',
+		dyndelay5 => '0',
+		dyndelay4 => '0',
+		dyndelay3 => '0',
+		dyndelay2 => '0',
+		dyndelay1 => '0',
+		dyndelay0 => '0',
+		rst    => '0',
+		eclk   => clk,
 		eclkw  => clk,
 		dqclk0 => dqclk0,
 		dqclk1 => dqclk1);
 
 	oddr_i : oddrx2d
 	port map (
-		sclk => sclk,
+		sclk => clk,
 		dqclk0 => dqclk0,
 		dqclk1 => dqclk1,
 		da0 => dr(0),
