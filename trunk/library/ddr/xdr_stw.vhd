@@ -27,6 +27,7 @@ begin
 
 	oddr_i : entity hdl4fpga.ddro
 	port map (
+		phs => (others => '0'),
 		clk => rclk,
 		d(r) => ddr_st_drr,
 		d(f) => ddr_st_drf,
