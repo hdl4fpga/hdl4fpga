@@ -6,6 +6,7 @@ entity ddro is
 		ddr_phases : natural := 0;
 		data_edges : natural := 2);
 	port (
+		rst : in  std_logic := '0';
 		clk : in  std_logic;
 		phs : in  std_logic_vector(ddr_phases-1 downto 0);
 		d   : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
