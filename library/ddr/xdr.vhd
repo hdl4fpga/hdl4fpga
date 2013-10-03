@@ -28,6 +28,7 @@ entity xdr is
 		byte_bits  : natural :=  8);
 	port (
 		sys_rst   : in std_logic;
+		sys_clk   : in std_logic := '-';
 		sys_clk0  : in std_logic;
 		sys_clk90 : in std_logic;
 
@@ -306,7 +307,7 @@ begin
 		bank_bits => bank_bits,
 		addr_bits => addr_bits)
 	port map (
-		sys_clk => clk0,
+		sys_clk => sys_clk0,
 		sys_rst => rst,
 		sys_ini => dll_timer_rdy,
 		sys_cke => ddr_init_cke,
@@ -341,7 +342,7 @@ begin
 		cREF  => natural(floor(tREFI/tCP)),
 		std   => std)
 	port map (
-		ddr_timer_clk => clk0,
+		ddr_timer_clk => sys_clk,
 		ddr_timer_rst => rst,
 		ddr_init_rst  => ddr_rst,
 		ddr_init_cke  => ddr_init_cke,
@@ -362,7 +363,7 @@ begin
 			ddr_init_cl  => casdb (cl, std),
 			ddr_init_bl  => bldb  (bl, std),
 
-			ddr_init_clk => clk0,
+			ddr_init_clk => sys_clk,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
 			ddr_init_dll => ddr_init_dll,
@@ -389,7 +390,7 @@ begin
 			ddr_init_bl  => bldb  (bl, std),
 			ddr_init_wr  => wrdb  (wr, std),
 
-			ddr_init_clk => clk0,
+			ddr_init_clk => sys_clk,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
 			ddr_init_dll => ddr_init_dll,
@@ -418,7 +419,7 @@ begin
 			ddr_init_wr  => wrdb  (wr,  std),
 			ddr_init_cwl => cwldb (cwl, std),
 
-			ddr_init_clk => clk0,
+			ddr_init_clk => sys_clk,
 			ddr_init_req => ddr_init_cfg,
 			ddr_init_rdy => ddr_init_rdy,
 			ddr_init_dll => ddr_init_dll,
@@ -429,10 +430,10 @@ begin
 			ddr_init_b   => ba3);
 	end generate;
 
-	process (clk0)
+	process (sys_clk)
 		variable q : std_logic;
 	begin
-		if rising_edge(clk0) then
+		if rising_edge(sys_clk) then
 --			ddr_mpu_rst <= not (ddr_init_rdy and dll_timer_rdy);
 			ddr_mpu_rst <= q;
 			q := not (ddr_init_rdy and dll_timer_rdy);
@@ -481,7 +482,7 @@ begin
 	ddr_pgm_e : entity hdl4fpga.ddr_pgm
 	port map (
 		ddr_pgm_rst => ddr_mpu_rst,
-		ddr_pgm_clk => clk0,
+		ddr_pgm_clk => sys_clk,
 		sys_pgm_ref => sys_ref,
 		ddr_pgm_cmd => ddr_pgm_cmd,
 		ddr_pgm_cas => sys_cas,
@@ -491,6 +492,36 @@ begin
 		ddr_pgm_rdy => sys_cmd_rdy,
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
+
+	process (sys_clk0)
+	begin
+		if rising_edge(sys_clk0) then
+			if sys_ini='1' then
+				phs <= (others => '0');
+			else
+				phs <= inc(gray(phs));
+			end if;
+		end if;
+	end process;
+	xdr_clk <=  demux(phs);
+
+	for i in ddr_dqsi'range loop
+		signal delay_dqsi : std_logic_vector(data_edges-1 downto 0);
+	begin
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		port map (
+			xi => ddr_dqsi(k),
+			x_p => delayed_dqsi(r),
+			x_n => delayed_dqsi(f));
+
+		for j in delay_dqsi'range loop
+			process (delayed_dqsi(i))
+			begin
+				if then
+				elsif rising_edge(delay_dqsi) then
+				end if;
+			end process;
+	end loop;
 
 	ddr_win_dqs <= ddr_st_lp_dqs;
 	ddr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
@@ -510,7 +541,6 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqi => ddr_dqi);
 		
-	xdr_clk <= (others => clk90);
 	ddr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
 		std => std,
@@ -564,6 +594,8 @@ begin
 		data_edges => data_edges,
 		data_bytes => data_bytes)
 	port map (
+		sys_dmi
+		sys_dmo
 		ddr_io_clk => xdr_clk,
 		ddr_mpu_st => ddr_mpu_dr,
 		ddr_mpu_dm => ddr_wr_dm,

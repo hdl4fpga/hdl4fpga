@@ -60,7 +60,6 @@ begin
 		dyndelay1 => '0',
 		dyndelay0 => '0',
 		rst    => '0',
-		eclk   => clk,
 		eclkw  => clk,
 		dqclk0 => dqclk0,
 		dqclk1 => dqclk1);

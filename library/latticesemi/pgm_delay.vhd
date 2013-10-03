@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 
 entity pgm_delay is
 	generic (
-		n : natural := 8;
+		n : natural := 1;
 		x : natural := 0;
 		y : natural := 0);
 	port (
 		xi  : in  std_logic;
-		ena : in  std_logic_vector(n-1 downto 0);
+		ena : in  std_logic_vector(n-1 downto 0) := (others => '1');
 		x_p : out std_logic;
 		x_n : out std_logic);
 end;

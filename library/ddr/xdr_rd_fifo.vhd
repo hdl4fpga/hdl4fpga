@@ -17,7 +17,7 @@ entity xdr_rd_fifo is
 
 		ddr_win_dq  : in std_logic;
 		ddr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
+		ddr_dqsi : in std_logic_vector(data_edges*data_phases*data_bytes-1 downto 0);
 		ddr_dqi  : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
@@ -35,7 +35,7 @@ architecture mix of xdr_rd_fifo is
 
 	subtype addr_word is std_logic_vector(0 to 4-1);
 	signal sys_do_win : std_logic;
-	signal ddr_fifo_rdy : std_logic_vector(ddr_dqsi'range);
+	signal ddr_fifo_rdy : std_logic_vector(ddr_dqsi'length/data_edges-1 downto 0);
 
 	function to_bytevector (
 		arg : std_logic_vector) 
@@ -77,7 +77,7 @@ begin
 		end if;
 	end process;
 
-	fifo_bytes_g : for k in ddr_dqsi'range generate
+	fifo_bytes_g : for k in ddr_fifo_rdy'range generate
 		signal ddr_delayed_dqs : std_logic_vector(0 to data_edges-1);
 		signal ddr_dlyd_dqs : std_logic_vector(0 to data_edges-1);
 
@@ -103,11 +103,8 @@ begin
 		end process;
 
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
-		generic map (
-			n => 5)
 		port map (
 			xi => ddr_dqsi(k),
-			ena => "00001",
 			x_p => ddr_delayed_dqs(0),
 			x_n => ddr_delayed_dqs(1));
 
