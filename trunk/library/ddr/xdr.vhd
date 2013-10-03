@@ -493,35 +493,46 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	process (sys_clk0)
-	begin
-		if rising_edge(sys_clk0) then
-			if sys_ini='1' then
-				phs <= (others => '0');
-			else
-				phs <= inc(gray(phs));
-			end if;
-		end if;
-	end process;
-	xdr_clk <=  demux(phs);
-
-	for i in ddr_dqsi'range loop
-		signal delay_dqsi : std_logic_vector(data_edges-1 downto 0);
-	begin
-		dqs_delayed_e : entity hdl4fpga.pgm_delay
+	block
 		port map (
-			xi => ddr_dqsi(k),
-			x_p => delayed_dqsi(r),
-			x_n => delayed_dqsi(f));
-
-		for j in delay_dqsi'range loop
-			process (delayed_dqsi(i))
+			ddr_clk : in std_logic;
+			xdr_clk : out std_logic_vector);
+	begin
+		for i in data_edges-1 downto 0 generate
+			process (ddr_clk(i))
 			begin
-				if then
-				elsif rising_edge(delay_dqsi) then
+				if rising_edge(ddr_clk(i)) then
+					if sys_ini='1' then
+						phs <= (others => '0');
+						xdl_clk <= (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
+					else
+						phs <= inc(gray(inc(phs)));
+						xdr_clk <= xdr_clk rol 1;
+					end if;
 				end if;
 			end process;
-	end loop;
+		end generate;
+
+		for i in ddr_dqsi'range loop
+			signal delay_dqsi : std_logic_vector(data_edges-1 downto 0);
+		begin
+			dqs_delayed_e : entity hdl4fpga.pgm_delay
+			port map (
+				xi => ddr_dqsi(k),
+				x_p => delayed_dqsi(r),
+				x_n => delayed_dqsi(f));
+
+			for j in delay_dqsi'range generate
+				process (delayed_dqsi(i))
+				begin
+					if then
+					elsif rising_edge(delay_dqsi(i)) then
+					end if;
+				end process;
+			end generate;
+
+		end generate;
+	end block;
 
 	ddr_win_dqs <= ddr_st_lp_dqs;
 	ddr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
