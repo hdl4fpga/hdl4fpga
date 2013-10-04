@@ -493,7 +493,7 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	block
+	ddr_clks : block
 		generic (
 			data_phases : natural := 1;
 			data_edges  : natural := 2;
@@ -504,14 +504,26 @@ begin
 			phs_clk  : out std_logic_vector(data_phases*data_edges-1 downto 0);
 			phs_dqs  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0));
 
+		generic map (
+			data_phases => data_phases,
+			data_edges  => data_edges,
+			data_bytes  => data_bytes)
+		port map (
+			sys_clk  => clk0,
+			ddr_dqsi => ddr_dqsi,
+			phs_clk  => 
+			phs_dqs  => );
+
 		signal ddr_eclk : std_logic_vector(data_edges-1 downto 0);
 
 		constant r : natural := 0;
 		constant f : natural := 1;
 
 		type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
+
 		signal eclk : ephs_vector(data_edges-1 downto 0);
-		signal ephs : ephs_vector(data_bytes*data_edges-1 downto 0);
+		signal ephs : ephs_vector(data_edges*data_bytes-1 downto 0);
+
 	begin
 
 		ddr_eclk <= (f => not ddr_clk, r => ddr_clk);
@@ -566,6 +578,7 @@ begin
 		begin
 			phs_dqs <= (others => '-');
 			for ephs'range loop
+				for 
 				phs_dqs <= phs_dqs sll ephs(i);
 			end loop;
 		end process;
