@@ -493,97 +493,16 @@ begin
 		ddr_pgm_req => ddr_mpu_rdy,
 		ddr_pgm_rw  => sys_rw);
 
-	ddr_clks : block
-		generic (
-			data_phases : natural := 1;
-			data_edges  : natural := 2;
-			data_bytes  : natural := 2);
-		port (
-			ddr_clk  : in  std_logic;
-			ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
-			phs_clk  : out std_logic_vector(data_phases*data_edges-1 downto 0);
-			phs_dqs  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0));
-
-		generic map (
-			data_phases => data_phases,
-			data_edges  => data_edges,
-			data_bytes  => data_bytes)
-		port map (
-			sys_clk  => clk0,
-			ddr_dqsi => ddr_dqsi,
-			phs_clk  => 
-			phs_dqs  => );
-
-		signal ddr_eclk : std_logic_vector(data_edges-1 downto 0);
-
-		constant r : natural := 0;
-		constant f : natural := 1;
-
-		type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
-
-		signal eclk : ephs_vector(data_edges-1 downto 0);
-		signal ephs : ephs_vector(data_edges*data_bytes-1 downto 0);
-
-	begin
-
-		ddr_eclk <= (f => not ddr_clk, r => ddr_clk);
-		phsclk_e : for i in data_edges-1 downto 0 generate
-			signal cphs : std_logic_vector(0 to data_phases-1);
-		begin
-			process (ddr_eclks(i))
-			begin
-				if rising_edge(ddr_eclks(i)) then
-					if sys_ini='1' then
-						cphs <= (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
-					else
-						cphs <= cphs rol 1;
-					end if;
-				end if;
-			end process;
-			eclk(i*data_bytes+j) <= cphs;
-		end generate;
-
-		process (eclk)
-		begin
-			for eclk'range loop
-				phs_clk <= phs_clk sll eclk(i);
-			end loop;
-		end process;
-
-		phsdqs_e : for i in ddr_dqsi'range loop
-			signal delay_dqsi : std_logic_vector(data_edges-1 downto 0);
-		begin
-			dqs_delayed_e : entity hdl4fpga.pgm_delay
-			port map (
-				xi => ddr_dqsi(k),
-				x_p => delayed_dqsi(r),
-				x_n => delayed_dqsi(f));
-
-			dqsi_e : for j in delay_dqsi'range generate
-				signal cphs : std_logic_vector(0 to data_phases-1);
-			begin
-				process (delayed_dqsi(i))
-				begin
-					if then
-						cphs <= (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
-					elsif rising_edge(delay_dqsi(i)) then
-						cphs <= cphs rol 1;
-					end if;
-				end process;
-				ephs(i*data_bytes+j) <= cphs;
-			end generate;
-		end generate;
-
-		process (ephs)
-		begin
-			phs_dqs <= (others => '-');
-			for ephs'range loop
-				for 
-				phs_dqs <= phs_dqs sll ephs(i);
-			end loop;
-		end process;
-
-	end block;
+	ddr_clks_e : entity hdl4fpga.ddr_clks
+	generic map (
+		data_phases => data_phases,
+		data_edges  => data_edges,
+		data_bytes  => data_bytes)
+	port map (
+		sys_clk  => clk0,
+		ddr_dqsi => ddr_dqsi,
+		phs_clk  => 
+		phs_dqs  => );
 
 	ddr_win_dqs <= ddr_st_lp_dqs;
 	ddr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
@@ -601,7 +520,7 @@ begin
 		ddr_win_dq  => ddr_mpu_rwin,
 		ddr_win_dqs => ddr_win_dqs,
 		ddr_dqsi => ddr_dqsi,
-		ddr_dqi => ddr_dqi);
+		ddr_dqi  => ddr_dqi);
 		
 	ddr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
