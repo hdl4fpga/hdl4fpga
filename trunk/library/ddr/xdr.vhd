@@ -502,7 +502,7 @@ begin
 			ddr_clk  : in  std_logic;
 			ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
 			phs_clk  : out std_logic_vector(data_phases*data_edges-1 downto 0);
-			phs_dqs  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
+			phs_dqs  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0));
 
 		signal ddr_eclk : std_logic_vector(data_edges-1 downto 0);
 
@@ -515,7 +515,7 @@ begin
 	begin
 
 		ddr_eclk <= (f => not ddr_clk, r => ddr_clk);
-		for i in data_edges-1 downto 0 generate
+		phsclk_e : for i in data_edges-1 downto 0 generate
 			signal cphs : std_logic_vector(0 to data_phases-1);
 		begin
 			process (ddr_eclks(i))
@@ -538,7 +538,7 @@ begin
 			end loop;
 		end process;
 
-		for i in ddr_dqsi'range loop
+		phsdqs_e : for i in ddr_dqsi'range loop
 			signal delay_dqsi : std_logic_vector(data_edges-1 downto 0);
 		begin
 			dqs_delayed_e : entity hdl4fpga.pgm_delay
@@ -547,7 +547,7 @@ begin
 				x_p => delayed_dqsi(r),
 				x_n => delayed_dqsi(f));
 
-			for j in delay_dqsi'range generate
+			dqsi_e : for j in delay_dqsi'range generate
 				signal cphs : std_logic_vector(0 to data_phases-1);
 			begin
 				process (delayed_dqsi(i))
@@ -569,6 +569,7 @@ begin
 				phs_dqs <= phs_dqs sll ephs(i);
 			end loop;
 		end process;
+
 	end block;
 
 	ddr_win_dqs <= ddr_st_lp_dqs;
