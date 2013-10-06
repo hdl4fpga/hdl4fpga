@@ -11,7 +11,7 @@ entity xdr_clks is
 		sys_ini   : in std_logic;
 		sys_clk0  : in std_logic;
 		sys_clk90 : in std_logic;
-		clk_phs   : out std_logic_vector(2*data_phases*data_edges-1 downto 0);
+		clk_phs   : out std_logic_vector(data_phases*data_edges-1 downto 0);
 
 		dqs_rst  : in std_logic;
 		ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
@@ -24,30 +24,38 @@ end;
 library hdl4fpga;
 
 architecture uni of xdr_clks is
-
-	signal ddr_eclk0  : std_logic_vector(data_edges-1 downto 0);
-	signal ddr_eclk90 : std_logic_vector(data_edges-1 downto 0);
-
-	type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
+	type ephs_vector is array (natural range <>) of std_logic_vector(2**data_phases-1 downto 0);
+--	constant phs_ini : ephs_vector(2*data_edges-1 downto 0) := (
 
 	signal clks  : std_logic_vector(2*data_edges-1 downto 0);
 	signal eclks : ephs_vector(2*data_edges-1 downto 0);
 	signal ephs  : ephs_vector(data_bytes*data_edges-1 downto 0);
 
+	signal srst : std_ulogic_vector(clks'range);
 begin
 
 	clks <= (
 		2*r+0 => sys_clk0, 2*r+1 => sys_clk90,
 		2*f+0 => not sys_clk0, 2*f+1 => not sys_clk90);
 
+	srst(0) <= sys_ini;
 	eclk_e : for i in clks'range generate
 		signal phs : std_logic_vector(0 to 2**data_phases-1);
 	begin
+		ini_g : if i /= 1 generate 
+			process (clks(i))
+			begin
+				if rising_edge(clks(i)) then
+					srst((i+3) mod 4) <= srst(i);
+				end if;
+			end process;
+		end generate;
+
 		process (clks(i))
 		begin
 			if rising_edge(clks(i)) then
-				if sys_ini='1' then
-					phs <= (0 to 2**(data_phases-1)-1 => '0') & (0 to 2**(data_phases-2)-1 => '1');
+				if srst(i)='1' then
+					phs <= (0 to 2**(data_phases-1)-1 => '0') & (0 to 2**(data_phases-1)-1 => '1');
 				else
 					phs <= phs rol 1;
 				end if;
