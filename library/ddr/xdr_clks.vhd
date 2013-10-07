@@ -25,7 +25,6 @@ library hdl4fpga;
 
 architecture uni of xdr_clks is
 	type ephs_vector is array (natural range <>) of std_logic_vector(2**data_phases-1 downto 0);
---	constant phs_ini : ephs_vector(2*data_edges-1 downto 0) := (
 
 	signal clks  : std_logic_vector(2*data_edges-1 downto 0);
 	signal eclks : ephs_vector(2*data_edges-1 downto 0);
@@ -55,7 +54,11 @@ begin
 		begin
 			if rising_edge(clks(i)) then
 				if srst(i)='1' then
-					phs <= (0 to 2**(data_phases-1)-1 => '0') & (0 to 2**(data_phases-1)-1 => '1');
+					if i=2 then
+						phs <= (0 to 2**(data_phases-1)-1 => '1') & (0 to 2**(data_phases-1)-1 => '0');
+					else
+						phs <= (0 to 2**(data_phases-1)-1 => '0') & (0 to 2**(data_phases-1)-1 => '1');
+					end if;
 				else
 					phs <= phs rol 1;
 				end if;
