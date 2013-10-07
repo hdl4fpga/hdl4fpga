@@ -73,7 +73,8 @@ begin
 		aux := (others => '-');
 		for i in eclks'range loop
 			aux := aux sll data_phases;
-			aux(eclks(0)'range) := eclks(i);
+--			aux(eclks(0)'range) := eclks(i);
+			aux(0) := eclks(i)(0);
 		end loop;
 		clk_phs <= aux;
 	end process;
