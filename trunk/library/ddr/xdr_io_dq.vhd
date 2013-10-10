@@ -43,26 +43,34 @@ architecture std of xdr_io_dq is
 		return val;
 	end;
 
+	signal eclk : std_logic_vector(data_edges-1 downto 0);
 begin
+
+	eclk <= (0 => ddr_io_clk, 1 => not ddr_io_clk);
 
 	oddri <= to_oddrivector(ddr_io_dq);
 	bytes_g : for i in data_bytes-1 downto 0 generate
 		bits_g : for j in byte_bits-1 downto 0 generate
 			signal d : std_logic_vector(data_edges-1 downto 0);
 		begin
+
+			process (eclk())
+			begin
+				if rising_edge(eclk()) then
+
+				end if;
+			end process;
+
 			oddrt_i : entity hdl4fpga.ddrto
 			port map (
 				clk => ddr_io_clk,
 				d   => ddr_mpu_dqz(i),
 				q   => ddr_io_dqz(i));
 
-			d(r) <= mux(oddri(r*data_bits+i*byte_bits+j),ddr_io_phs);
-			d(f) <= mux(oddri(f*data_bits+i*byte_bits+j),ddr_io_phs);
-
 			oddr_i : entity hdl4fpga.ddro
 			generic map (
-				ddr_phases => ddr_phases,
-				data_edges => data_edges)
+				data_phases => data_phases,
+				data_edges  => data_edges)
 			port map (
 				clk => ddr_io_clk,
 				d   => d,
