@@ -53,14 +53,6 @@ begin
 		bits_g : for j in byte_bits-1 downto 0 generate
 			signal d : std_logic_vector(data_edges-1 downto 0);
 		begin
-
-			process (eclk())
-			begin
-				if rising_edge(eclk()) then
-
-				end if;
-			end process;
-
 			oddrt_i : entity hdl4fpga.ddrto
 			port map (
 				clk => ddr_io_clk,

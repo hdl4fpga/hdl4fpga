@@ -11,7 +11,8 @@ entity xdr_clks is
 		sys_ini   : in  std_logic;
 		sys_clk0  : in  std_logic;
 		sys_clk90 : in  std_logic;
-		clk_phs   : out std_logic_vector(2*data_phases*data_edges-1 downto 0); -- 0 -> clk0 1 -> clk90
+		clk_phs0  : out std_logic_vector(data_phases*data_edges-1 downto 0);
+		clk_phs90 : out std_logic_vector(data_phases*data_edges-1 downto 0);
 
 		dqs_rst  : in  std_logic;
 		ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
@@ -22,6 +23,7 @@ entity xdr_clks is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture uni of xdr_clks is
 	type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
@@ -31,7 +33,7 @@ architecture uni of xdr_clks is
 	signal ephs  : ephs_vector(data_bytes*data_edges-1 downto 0);
 
 	signal srst : std_ulogic_vector(clks'range);
-	constant wave : std_logic_vector(data_phases-1 downto 0) := (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
+	constant wave : unsigned(data_phases-1 downto 0) := (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
 begin
 
 	clks <= (
@@ -41,6 +43,7 @@ begin
 	assert data_phases=2 
 		report "data_phases /= 2"
 		severity FAILURE;
+
 	srst(0) <= sys_ini;
 	eclk_e : for i in clks'range generate
 		signal phs : std_logic_vector(0 to data_phases-1);
@@ -59,9 +62,9 @@ begin
 			if rising_edge(clks(i)) then
 				if srst(i)='1' then
 					if i=2 then
-						phs <= wave rol 1;
+						phs <= std_logic_vector(wave rol 1);
 					else
-						phs <= wave;
+						phs <= std_logic_vector(wave);
 					end if;
 				else
 					phs <= phs rol 1;
@@ -71,7 +74,15 @@ begin
 		eclks(i) <= phs;
 	end generate;
 
-	clk_phs <= aux;
+	process (eclks)
+	begin
+		for i in eclks(0)'range loop
+			clk_phs0(2*i) <= eclks(0)(i);
+			clk_phs0(2*i+1) <= eclks(2)(i);
+			clk_phs90(2*i) <= eclks(1)(i);
+			clk_phs90(2*i+1) <= eclks(3)(i);
+		end loop;
+	end process;
 
 --	phsdqs_e : for i in ddr_dqsi'range generate
 --		signal delayed_dqsi : std_logic_vector(data_edges-1 downto 0);
