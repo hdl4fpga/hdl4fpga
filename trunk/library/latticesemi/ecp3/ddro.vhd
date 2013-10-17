@@ -3,12 +3,12 @@ use ieee.std_logic_1164.all;
 
 entity ddro is
 	generic (
-		ddr_phases : natural := 0;
+		data_phases : natural := 0;
 		data_edges : natural := 2);
 	port (
 		rst : in  std_logic := '0';
 		clk : in  std_logic;
-		d   : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
+		d   : in  std_logic_vector(data_phases*data_edges-1 downto 0);
 		q   : out std_logic);
 
 	constant r : natural := 0;

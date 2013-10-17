@@ -3,20 +3,19 @@ use ieee.std_logic_1164.all;
 
 entity xdr_io_dq is
 	generic (
-		ddr_phases : natural := 0;
+		data_phases : natural := 0;
 		data_edges : natural;
 		data_bytes : natural;
 		byte_bits  : natural);
 	port (
 		ddr_io_clk : in std_logic;
 		ddr_mpu_dqz : in std_logic_vector(data_bytes-1 downto 0);
-		ddr_io_phs : in std_logic_vector(2**ddr_phases-1 downto 0) := (others => '0'); 
+		ddr_io_phs : in std_logic_vector(data_phases-1 downto 0) := (others => '0'); 
 		ddr_io_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
 		ddr_io_dq  : in  std_logic_vector(data_bytes*data_edges*byte_bits-1 downto 0);
 		ddr_io_dqo : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
 
 	constant data_bits : natural := data_bytes*byte_bits;
-	constant data_phases : natural := 2**ddr_phases;
 	constant r : natural := 0;
 	constant f : natural := 1;
 end;
