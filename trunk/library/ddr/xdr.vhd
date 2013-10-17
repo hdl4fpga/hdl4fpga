@@ -22,7 +22,7 @@ entity xdr is
 		cwl : natural := 7;
 
 		bank_bits  : natural :=  2;
-		axdr_bits  : natural := 13;
+		addr_bits  : natural := 13;
 		data_phases : natural := 1;
 		data_bytes : natural :=  2;
 		byte_bits  : natural :=  8);
@@ -36,7 +36,7 @@ entity xdr is
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
 		sys_rw : in  std_logic;
-		sys_a  : in  std_logic_vector(axdr_bits-1 downto 0);
+		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic;
 		sys_ba  : in  std_logic_vector(bank_bits-1 downto 0);
@@ -55,7 +55,7 @@ entity xdr is
 		xdr_cas : out std_logic;
 		xdr_we  : out std_logic;
 		xdr_ba  : out std_logic_vector(bank_bits-1 downto 0);
-		xdr_a   : out std_logic_vector(axdr_bits-1 downto 0);
+		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		xdr_dm  : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		xdr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
 		xdr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
@@ -90,7 +90,7 @@ architecture mix of xdr is
 	signal xdr_init_ras : std_logic;
 	signal xdr_init_cas : std_logic;
 	signal xdr_init_we  : std_logic;
-	signal xdr_init_a   : std_logic_vector(axdr_bits-1 downto 0);
+	signal xdr_init_a   : std_logic_vector(addr_bits-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_bits-1 downto 0);
 	signal xdr_init_cke : std_logic;
 	signal xdr_init_cfg : std_logic;
@@ -305,7 +305,7 @@ begin
 	xdr_io_ba_e : entity hdl4fpga.xdr_io_ba
 	generic map (
 		bank_bits => bank_bits,
-		axdr_bits => axdr_bits)
+		addr_bits => addr_bits)
 	port map (
 		sys_clk => sys_clk0,
 		sys_rst => rst,
@@ -355,7 +355,7 @@ begin
 	ddr1_init_g : if std=1 generate
 		xdr_init_du : entity hdl4fpga.xdr_init(ddr1)
 		generic map (
-			a    => axdr_bits,
+			a    => addr_bits,
 			tRP  => natural(ceil(tRP/tCp)),
 			tMRD => natural(ceil(tMRD/tCp)),
 			tRFC => natural(ceil(tRFC/tCp)))
@@ -379,7 +379,7 @@ begin
 		generic map (
 			lat_length => 9,
 
-			a => axdr_bits,
+			a => addr_bits,
 
 			tRP  => natural(ceil(tRP/tCP)),
 			tMRD => 2,
@@ -408,7 +408,7 @@ begin
 		xdr_init_du : entity hdl4fpga.xdr_init(ddr3)
 		generic map (
 			lat_length => 9,
-			a    => axdr_bits,
+			a    => addr_bits,
 			ba   => 3,
 			tRP  => natural(ceil(tRP/tCp)),
 			tMRD => 4,
@@ -557,8 +557,8 @@ begin
 	generic map (
 		std => std,
 		data_phases => data_phases,
-		data_edges => data_edges,
-		data_bytes => data_bytes)
+		data_edges  => data_edges,
+		data_bytes  => data_bytes)
 	port map (
 		xdr_io_clk => clk0,
 		xdr_io_ena => xdr_mpu_dqs,
