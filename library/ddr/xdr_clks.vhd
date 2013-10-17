@@ -16,24 +16,23 @@ entity xdr_clks is
 
 		dqs_rst  : in  std_logic;
 		ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
-		dqs_phs  : out std_logic_vector(2*data_phases*data_edges*data_bytes-1 downto 0));
+		dqs_phs  : out std_logic_vector(data_bytes*data_phases*data_edges-1 downto 0));
 
 	constant r : natural := 0;
 	constant f : natural := 1;
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
 architecture uni of xdr_clks is
 	type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
 
 	signal clks  : std_logic_vector(2*data_edges-1 downto 0);
-	signal eclks : ephs_vector(data_phases*data_edges-1 downto 0);
+	signal eclks : ephs_vector(clks'range);
 	signal ephs  : ephs_vector(data_bytes*data_edges-1 downto 0);
 
 	signal srst : std_ulogic_vector(clks'range);
-	constant wave : unsigned(data_phases-1 downto 0) := (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
+	constant wave : std_logic_vector(data_phases-1 downto 0) := (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
 begin
 
 	clks <= (
@@ -62,9 +61,9 @@ begin
 			if rising_edge(clks(i)) then
 				if srst(i)='1' then
 					if i=2 then
-						phs <= std_logic_vector(wave rol 1);
+						phs <= wave rol 1;
 					else
-						phs <= std_logic_vector(wave);
+						phs <= wave;
 					end if;
 				else
 					phs <= phs rol 1;
@@ -84,39 +83,38 @@ begin
 		end loop;
 	end process;
 
---	phsdqs_e : for i in ddr_dqsi'range generate
---		signal delayed_dqsi : std_logic_vector(data_edges-1 downto 0);
---	begin
---		dqs_delayed_e : entity hdl4fpga.pgm_delay
---		port map (
---			xi => ddr_dqsi(i),
---			x_p => delayed_dqsi(r),
---			x_n => delayed_dqsi(f));
---
---		dqsi_e : for j in delayed_dqsi'range generate
---			signal cphs : std_logic_vector(0 to data_phases-1);
---		begin
---			process (dqs_rst, delayed_dqsi(i))
---			begin
---				if dqs_rst='1' then
---					cphs <= (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
---				elsif rising_edge(delayed_dqsi(i)) then
---					cphs <= cphs rol 1;
---				end if;
---			end process;
---			ephs(i*data_bytes+j) <= cphs;
---		end generate;
---	end generate;
---
---	process (ephs)
---		variable aux : std_logic_vector(dqs_phs'range);
---	begin
---		dqs_phs <= (others => '-');
---		for i in ephs'range loop
---			aux := aux sll data_phases;
---			aux(ephs(0)'range) := ephs(i);
---		end loop;
---		dqs_phs <= aux;
---	end process;
+	phsdqs_e : for i in ddr_dqsi'range generate
+		signal delayed_dqsi : std_logic_vector(data_edges-1 downto 0);
+	begin
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		port map (
+			xi => ddr_dqsi(i),
+			x_p => delayed_dqsi(r),
+			x_n => delayed_dqsi(f));
 
+		dqsi_e : for j in delayed_dqsi'range generate
+			signal cphs : std_logic_vector(0 to data_phases-1);
+		begin
+			process (dqs_rst, delayed_dqsi(i))
+			begin
+				if dqs_rst='1' then
+					cphs <= wave;
+				elsif rising_edge(delayed_dqsi(i)) then
+					cphs <= cphs rol 1;
+				end if;
+			end process;
+			ephs(i*data_bytes+j) <= cphs;
+		end generate;
+	end generate;
+
+	process (ephs)
+	begin
+		for i in data_bytes-1 downto 0 loop
+			for j in ephs(0)'range loop
+				for k in data_edges-1 downto 0 loop
+					dqs_phs((i*data_phases+j)*data_edges+k) <= ephs(i*data_edges)(j);
+				end loop;
+			end loop;
+		end loop;
+	end process;
 end;
