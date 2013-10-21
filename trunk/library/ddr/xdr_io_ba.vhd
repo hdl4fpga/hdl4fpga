@@ -24,13 +24,13 @@ entity xdr_io_ba is
 		sys_ini_a   : in std_logic_vector(addr_bits-1 downto 0);
 		sys_ini_b   : in std_logic_vector(bank_bits-1 downto 0);
 
-		ddr_cke : out std_logic;
-		ddr_odt : out std_logic;
-		ddr_ras : out std_logic;
-		ddr_cas : out std_logic;
-		ddr_we  : out std_logic;
-		ddr_b  : out std_logic_vector(bank_bits-1 downto 0);
-		ddr_a   : out std_logic_vector(addr_bits-1 downto 0));
+		xdr_cke : out std_logic;
+		xdr_odt : out std_logic;
+		xdr_ras : out std_logic;
+		xdr_cas : out std_logic;
+		xdr_we  : out std_logic;
+		xdr_b  : out std_logic_vector(bank_bits-1 downto 0);
+		xdr_a   : out std_logic_vector(addr_bits-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -40,40 +40,40 @@ architecture mix of xdr_io_ba is
 	signal cas_d : std_logic;
 	signal we_d  : std_logic;
 begin
-	ddr_cke_i : entity hdl4fpga.ff
+	xdr_cke_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => sys_cke,
-		q => ddr_cke);
+		q => xdr_cke);
 
-	ddr_odt_i : entity hdl4fpga.ff
+	xdr_odt_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => sys_odt,
-		q => ddr_odt);
+		q => xdr_odt);
 
 	ras_d <= sys_ras when sys_ini='1' else sys_ini_ras;
-	ddr_ras_i : entity hdl4fpga.ff
+	xdr_ras_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => ras_d,
-		q => ddr_ras);
+		q => xdr_ras);
 
 	cas_d <= sys_cas when sys_ini='1' else sys_ini_cas;
-	ddr_cas_i : entity hdl4fpga.ff
+	xdr_cas_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => cas_d,
-		q => ddr_cas);
+		q => xdr_cas);
 
 	we_d  <= sys_we when sys_ini='1' else sys_ini_we;
-	ddr_we_i : entity hdl4fpga.ff
+	xdr_we_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => we_d,
-		q => ddr_we);
+		q => xdr_we);
 
-	ddr_a_g : for i in ddr_a'range generate
+	xdr_a_g : for i in xdr_a'range generate
 		signal d : std_logic;
 	begin
 		d <= sys_a(i) when sys_ini='1' else sys_ini_a(i);
@@ -81,10 +81,10 @@ begin
 		port map (
 			clk => sys_clk,
 			d => d,
-			q => ddr_a(i));
+			q => xdr_a(i));
 	end generate;
 
-	ddr_b_g : for i in ddr_b'range generate
+	xdr_b_g : for i in xdr_b'range generate
 		signal d : std_logic;
 	begin
 		d <= sys_b(i) when sys_ini='1' else sys_ini_b(i);
@@ -92,6 +92,6 @@ begin
 		port map (
 			clk => sys_clk,
 			d => d,
-			q => ddr_b(i));
+			q => xdr_b(i));
 	end generate;
 end;
