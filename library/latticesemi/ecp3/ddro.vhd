@@ -45,8 +45,8 @@ begin
 		ddrd(1) <= aux(ddrd(0)'range);
 	end process;
 
-	dr <= hdl4fpga.std.mux(ddrd(r),phs);
-	df <= hdl4fpga.std.mux(ddrd(f),phs);
+--	dr <= hdl4fpga.std.mux(ddrd(r),phs);
+--	df <= hdl4fpga.std.mux(ddrd(f),phs);
 
 	dqsbuf_i : dqsbufe1
 	port map (

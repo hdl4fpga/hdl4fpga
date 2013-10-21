@@ -77,7 +77,7 @@ begin
 
 		oddr_du : entity hdl4fpga.ddro
 		generic map (
-			ddr_phases => ddr_phases,
+			data_phases => data_phases,
 			data_edges => data_edges)
 		port map (
 			clk => ddr_io_clk(0),
