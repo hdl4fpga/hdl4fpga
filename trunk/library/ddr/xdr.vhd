@@ -493,16 +493,16 @@ begin
 		xdr_pgm_req => xdr_mpu_rdy,
 		xdr_pgm_rw  => sys_rw);
 
-	xdr_clks_e : entity hdl4fpga.xdr_clks
-	generic map (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		data_bytes  => data_bytes)
-	port map (
-		sys_clk  => clk0,
-		xdr_dqsi => xdr_dqsi,
-		phs_clk  => 
-		phs_dqs  => );
+--	xdr_clks_e : entity hdl4fpga.xdr_clks
+--	generic map (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		data_bytes  => data_bytes)
+--	port map (
+--		sys_clk  => clk0,
+--		xdr_dqsi => xdr_dqsi,
+--		phs_clk  => 
+--		phs_dqs  => );
 
 	xdr_win_dqs <= xdr_st_lp_dqs;
 	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
@@ -541,13 +541,13 @@ begin
 		
 	xdr_io_dq_e : entity hdl4fpga.xdr_io_dq
 	generic map (
-		xdr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
+		data_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
 		data_edges => data_edges,
 		data_bytes => data_bytes,
 		byte_bits  => byte_bits)
 	port map (
 		xdr_io_clk => clk90,
-		xdr_io_dq => xdr_wr_dq,
+		xdr_io_dq  => xdr_wr_dq,
 		xdr_mpu_dqz => xdr_mpu_dqz,
 		xdr_io_dqz => xdr_io_dqz,
 		xdr_io_dqo => xdr_dqo);
@@ -568,20 +568,20 @@ begin
 	xdr_dqsz <= xdr_io_dqsz;
 	
 	xdr_mpu_dmx <= xdr_wr_fifo_ena;
-	xdr_io_dm_e : entity hdl4fpga.xdr_io_dm
-	generic map (
-		strobe => strobe,
-		xdr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
-		data_edges => data_edges,
-		data_bytes => data_bytes)
-	port map (
-		sys_dmi
-		sys_dmo
-		xdr_io_clk => xdr_clk,
-		xdr_mpu_st => xdr_mpu_dr,
-		xdr_mpu_dm => xdr_wr_dm,
-		xdr_mpu_dmx => xdr_mpu_dmx,
-		xdr_io_dmo => xdr_dm);
+--	xdr_io_dm_e : entity hdl4fpga.xdr_io_dm
+--	generic map (
+--		strobe => strobe,
+--		xdr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
+--		data_edges => data_edges,
+--		data_bytes => data_bytes)
+--	port map (
+--		sys_dmi
+--		sys_dmo
+--		xdr_io_clk => xdr_clk,
+--		xdr_mpu_st => xdr_mpu_dr,
+--		xdr_mpu_dm => xdr_wr_dm,
+--		xdr_mpu_dmx => xdr_mpu_dmx,
+--		xdr_io_dmo => xdr_dm);
 
 	xdr_st_g : if strobe="EXTERNAL" generate
 		signal st_dqs : std_logic;
