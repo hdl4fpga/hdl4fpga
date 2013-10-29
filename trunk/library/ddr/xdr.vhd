@@ -113,6 +113,7 @@ architecture mix of xdr is
 	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
 	signal xdr_pgm_cmd : std_logic_vector(0 to 2);
 	signal xdr_mpu_rdy : std_logic;
+	signal xdr_rd_dqsi : std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 	signal xdr_wr_fifo_rst : std_logic;
 	signal xdr_wr_fifo_req : std_logic;
 	signal xdr_wr_fifo_ena : std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
@@ -129,7 +130,7 @@ architecture mix of xdr is
 
 	signal clk0 : std_logic;
 	signal clk90 : std_logic;
-	signal xdr_clk : std_logic_vector(data_phases-1 downto 0);
+	signal xdr_wr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
 
 	function casdb (
 		constant cl  : real;
@@ -519,7 +520,7 @@ begin
 
 		xdr_win_dq  => xdr_mpu_rwin,
 		xdr_win_dqs => xdr_win_dqs,
-		xdr_dqsi => xdr_dqsi,
+		xdr_dqsi => xdr_rd_dqsi,
 		xdr_dqi  => xdr_dqi);
 		
 	xdr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
@@ -534,7 +535,7 @@ begin
 		sys_req => xdr_wr_fifo_req,
 		sys_dm  => sys_dm,
 
-		xdr_clk => xdr_clk,
+		xdr_clk => xdr_wr_clk,
 		xdr_dm  => xdr_wr_dm,
 		xdr_ena => xdr_wr_fifo_ena, 
 		xdr_dq  => xdr_wr_dq);
