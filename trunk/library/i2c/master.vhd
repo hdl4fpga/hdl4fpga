@@ -33,10 +33,7 @@ architecture def of i2c_master is
 
 begin
 
-	if rdy='1' then
-		if sys_req='1' then
-			i2c_scl <= sys_clk and sys_req;
-	process (sys_rst, i2c_sda)
+	start_p : process (sys_rst, i2c_sda)
 	begin
 		if sys_rst='1' then
 			start<= '0';
@@ -48,7 +45,7 @@ begin
 		end if;
 	end process;
 
-	process (sys_rst, i2c_sda)
+	stop_p : process (sys_rst, i2c_sda)
 	begin
 		if sys_rst='1' then
 			stop <= '0';
@@ -60,6 +57,12 @@ begin
 	end process;
 
 	process (sys_rst, i2c_scl)
+	begin
+		if falling_edge(i2c_scl) then
+		end if;
+	end process;
+
+	process (sys_rst, i2c_sda)
 	begin
 		if sys_rst='1' then
 		elsif falling_edge(i2c_scl) then
