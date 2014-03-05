@@ -15,7 +15,7 @@ begin
 	i2c_sda <= 
 		'1' , 
 		'0' after 27 ns,
-		'1' after 32 ns,
+		'1' after 32 ns;
 
 	rst <= '1', '0' after 10 ns;
 	du : entity hdl4fpga.i2c_master
