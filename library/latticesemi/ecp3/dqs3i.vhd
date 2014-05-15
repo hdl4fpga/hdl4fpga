@@ -1,4 +1,4 @@
-entity dqs is
+entity dqs3i is
 	port (
 
 end;
