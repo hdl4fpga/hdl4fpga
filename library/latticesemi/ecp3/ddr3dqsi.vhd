@@ -1,5 +1,8 @@
 entity dqs3i is
 	port (
+		sys_clk : in std_logic;
+		sys_ddrclk : in std_logic;
+		ddr_dqsi : in std_logic;
 
 end;
 
@@ -10,8 +13,9 @@ architecture ecp3 of dqs is
 begin
 	dqsbufd_i : dqsbufd 
 	port map (
-		dqsi => ,
-		sclk => ,
+		rst  => ,
+		dqsi => ddr_dqsi,
+		sclk => sys_clk,
 		read => ,
 		dqsdel => ,
 		eclk => ,
