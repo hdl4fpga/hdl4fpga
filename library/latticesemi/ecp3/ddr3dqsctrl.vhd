@@ -23,12 +23,12 @@ begin
 		dqsi => ddr_dqsi,
 		dqsdel => ,
 
-		dqsw => ,
 		ddrclkpol => ,
 		prmbdet => ,
 		datavalid => ,
 		ddrlat => ,
 		eclkdqsr => ,
+		dqsw => ,
 		dqclk0 => ,
 		dqclk1 => );
 
