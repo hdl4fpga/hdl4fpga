@@ -1,4 +1,4 @@
-entity dqs3ctrl is
+entity ddr3ctlrio is
 	port (
 		sys_clk : in std_logic;
 		sys_ddrclk : in std_logic;
@@ -9,7 +9,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of dqs3ctrl is
+architecture ecp3 of ddr3ctlrio is
 begin
 	dqsbufd_i : dqsbufd 
 	port map (
@@ -17,9 +17,9 @@ begin
 		dyndelpol => ,
 		dyndelay  => ,
 		sclk => sys_clk,
+		read => ,
 		eclk => ,
 		eclkw  => ,
-		read => ,
 		dqsi => ddr_dqsi,
 		dqsdel => ,
 
