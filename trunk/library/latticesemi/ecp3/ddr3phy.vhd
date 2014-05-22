@@ -1,8 +1,10 @@
-entity ddr3ioctlr is
+entity ddr3phy is
 	port (
+		sys_rst : in std_logic;
 		sys_clk : in std_logic;
 		sys_ddrclk : in std_logic;
 		sys_rw  : in std_logic;
+		sys_dqsi : in std_logic_vector;
 
 		ddr_dqsi : in  std_logic;
 		ddr_dqst : out std_logic;
@@ -21,38 +23,50 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of ddr3ioctlr is
+architecture ecp3 of ddr3phy is
+
 	constant cell_width : natural := 2;
 	constant cell_group : natural := data_width/(cell_width*data_edges)
 
-	signal oddr_dqclk0: std_logic;
+	signal dqsi_delay : std_logic;
+	signal dqsi_eclk : std_logic;
+	signal iddr_eclk : std_logic;
+	signal oddr_dqsw : std_logic;
+	signal oddr_dqclk0 : std_logic;
 	signal oddr_dqclk1 : std_logic;
+	signal oddr_eclk : std_logic;
+
 begin
+
 	dqsdllb_i : dqsdllb
 	port map (
-		rst => ,
+		rst => sys_rst,
 		clk => sys_ddrclk,
 		uddcntrl => ,
-		lock => );
+		dqsdel => dqsi_delay,
+		lock => dll_lock);
 
 	dqsbufd_i : dqsbufd 
 	port map (
-		rst  => ,
-		dyndelpol => ,
-		dyndelay  => ,
+		dqsdel => dqsi_delay,
+		dqsi => ddr_dqsi,
+		eclkdqsr => ,
 
 		sclk => sys_clk,
-		read => ,
-		eclk => ,
-		eclkw  => ,
-		dqsi => ddr_dqsi,
-		dqsdel => ,
 
-		ddrclkpol => ,
+		read => sys_rw,
 		prmbdet => ,
-		datavalid => ,
+		ddrclkpol => ,
 		ddrlat => ,
-		eclkdqsr => ,
+
+		eclk => iddr_eclk,
+		datavalid => ,
+
+		rst => sys_rst,
+		dyndelpol => ,
+		dyndelay  => ,
+		eclkw => oddr_eclk,
+
 		dqsw => oddr_dqsw,
 		dqclk0 => oddr_dqclk0,
 		dqclk1 => oddr_dqclk1);
@@ -61,8 +75,8 @@ begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_clk,
-			eclk => ,
-			eclkdqsr => ,
+			eclk => iddr_clk,
+			eclkdqsr => idqs_clk,
 			ddrclkpol => ,
 			ddrlat => ,
 
