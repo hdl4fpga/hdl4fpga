@@ -1,4 +1,3 @@
-
 entity ddr3ioctlr is
 	port (
 		sys_clk : in std_logic;
@@ -6,9 +5,12 @@ entity ddr3ioctlr is
 		sys_rw  : in std_logic;
 
 		ddr_dqsi : in  std_logic;
+		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic;
-		ddr_dqi  : in  std_logic;
-		ddr_dqo  : out std_logic;
+
+		ddr_dqi  : in  std_logic_vector;
+		ddr_dqt  : out std_logic_vector;
+		ddr_dqo  : out std_logic_vector;
 
 	constant data_width : natural : ddr_dqi'length;
 	constant data_edges : natural : 2;
@@ -55,7 +57,7 @@ begin
 		dqclk0 => oddr_dqclk0,
 		dqclk1 => oddr_dqclk1);
 
-	iddr_i : for i in 0 to cell_group-1 generate
+	iddr_g : for i in 0 to cell_group-1 generate
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_clk,
@@ -70,7 +72,15 @@ begin
 			qb1 => ddr_dqi(i*cell_width*data_edges+data_edges*1+f));
 	end generate;
 
-	oddr_i : for i in 0 to cell_group-1 generate
+	oddr_g : for i in 0 to cell_group-1 generate
+		oddrtdqa_i : oddrtdqa
+		port map (
+			sclk => sys_clk,
+			ta => ,
+			dqclk0 => ,
+			dqclk1 => ,
+			q  => );
+
 		oddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_clk,
@@ -85,17 +95,6 @@ begin
 	dqso_b : block 
 		signal dqstclk : std_logic;
 	begin
-		oddrx2dqsa_i : oddrx2dqsa
-		port map (
-			sclk => sys_clk,
-			db0  => ,
-			db1  => ,
-			dqsw => oddr_dqsw,
-			dqclk0 => oddr_dqclk0,
-			dqclk1 => oddr_dqclk1,
-			dqstclk => dqstclk);
-			q    => ddr_dqso);
-
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_clk,
@@ -103,7 +102,16 @@ begin
 			dqstclk => dqstclk,
 			ta => );
 
+		oddrx2dqsa_i : oddrx2dqsa
+		port map (
+			sclk => sys_clk,
+			db0 => ,
+			db1 => ,
+			dqsw => oddr_dqsw,
+			dqclk0 => oddr_dqclk0,
+			dqclk1 => oddr_dqclk1,
+			dqstclk => dqstclk,
+			q => ddr_dqso);
 
-				 );
 	end block;
 end;
