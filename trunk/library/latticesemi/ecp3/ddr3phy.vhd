@@ -91,11 +91,11 @@ begin
 		port map (
 			sclk => sys_clk,
 			ta => ,
-			dqclk0 => ,
-			dqclk1 => ,
-			q  => );
+			dqclk0 => oddr_dqclk0,
+			dqclk1 => oddr_dqclk1,
+			q  => ddr_dqt(i*cell_width));
 
-		oddrx2d_i : iddrx2d
+		oddrx2d_i : oddrx2d
 		port map (
 			sclk => sys_clk,
 			dqclk0 => oddr_dqclk0,
@@ -113,8 +113,10 @@ begin
 		port map (
 			sclk => sys_clk,
 			db => ,
+			ta => ,
 			dqstclk => dqstclk,
-			ta => );
+			dqsw => oddr_dqsw,
+			q => ddr_dqst);
 
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
