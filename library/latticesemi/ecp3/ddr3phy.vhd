@@ -3,14 +3,16 @@ use ieee.std_logic_1164.all;
 
 entity ddr3phy is
 	port (
-		sys_rst  : in std_logic;
-		sys_sclk : in std_logic;
-		sys_eclk : in std_logic;
-		sys_rw   : in std_logic;
+		sys_rst  : in  std_logic;
+		sys_sclk : in  std_logic;
+		sys_eclk : in  std_logic;
+		sys_cfgi : in  std_logic_vector(8-1 downto 0);
+		sys_cfgo : out std_logic_vector(8-1 downto 0);
+		sys_rw   : in  std_logic;
 		sys_do   : out std_logic_vector(2-1 downto 0);
-		sys_di   : in std_logic_vector(2-1 downto 0);
-		sys_dqsi : in std_logic_vector(2-1 downto 0);
-		sys_dqst : in std_logic_vector(2-1 downto 0);
+		sys_di   : in  std_logic_vector(2-1 downto 0);
+		sys_dqsi : in  std_logic_vector(2-1 downto 0);
+		sys_dqst : in  std_logic_vector(2-1 downto 0);
 
 		ddr_dqi  : in  std_logic_vector(2-1 downto 0);
 		ddr_dqt  : out std_logic_vector(1-1 downto 0);
@@ -25,6 +27,17 @@ entity ddr3phy is
 	constant r : natural := 0;
 	constant f : natural := 1;
 
+	constant dyndelay0 : natural := 0;
+	constant dyndelay1 : natural := 1;
+	constant dyndelay2 : natural := 2;
+	constant dyndelay3 : natural := 3;
+	constant dyndelay4 : natural := 4;
+	constant dyndelay5 : natural := 5;
+	constant dyndelay6 : natural := 6;
+	constant dyndelpol : natural := 7;
+	constant uddcntln  : natural := 8;
+
+	constant datavalid : natural := 0;
 end;
 
 library ecp3;
@@ -44,9 +57,7 @@ architecture ecp3 of ddr3phy is
 	signal oddr_eclk  : std_logic;
 	
 	signal dqsdll_lock : std_logic;
-	signal dqsdll_update : std_logic;
 	signal dqsbuf_prmbdet : std_logic;
-	signal dqsbuf_dyndelay : std_logic_vector(8-1 downto 0);
 	signal dqsbuf_ddrclkpol : std_logic;
 	signal dqsbuf_ddrlat : std_logic;
 	
@@ -56,7 +67,7 @@ begin
 	port map (
 		rst => sys_rst,
 		clk => sys_eclk,
-		uddcntln => dqsdll_update,
+		uddcntln => sys_cfgi(uddcntln),
 		dqsdel => dqsi_delay,
 		lock => dqsdll_lock);
 
@@ -73,17 +84,17 @@ begin
 		prmbdet => dqsbuf_prmbdet,
 
 		eclk => iddr_eclk,
-		datavalid => open,
+		datavalid => sys_cfgo(datavalid),
 
 		rst  => sys_rst,
-		dyndelay0 => dqsbuf_dyndelay(0),
-		dyndelay1 => dqsbuf_dyndelay(1),
-		dyndelay2 => dqsbuf_dyndelay(2),
-		dyndelay3 => dqsbuf_dyndelay(3),
-		dyndelay4 => dqsbuf_dyndelay(4),
-		dyndelay5 => dqsbuf_dyndelay(5),
-		dyndelay6 => dqsbuf_dyndelay(6),
-		dyndelpol => dqsbuf_dyndelay(7),
+		dyndelay0 => sys_cfgi(dyndelay0),
+		dyndelay1 => sys_cfgi(dyndelay1),
+		dyndelay2 => sys_cfgi(dyndelay2),
+		dyndelay3 => sys_cfgi(dyndelay3),
+		dyndelay4 => sys_cfgi(dyndelay4),
+		dyndelay5 => sys_cfgi(dyndelay5),
+		dyndelay6 => sys_cfgi(dyndelay6),
+		dyndelpol => sys_cfgi(dyndelpol),
 		eclkw => oddr_eclk,
 
 		dqsw => oddr_dqsw,
