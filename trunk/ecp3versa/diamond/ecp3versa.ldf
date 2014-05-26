@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.0" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="scope">
+<BaliProject version="3.0" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="ddr3phy">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
+    <Implementation title="ddr3phy" dir="ddr3phy" description="ddr3phy" synthesis="synplify" default_strategy="Strategy1">
+        <Options def_top="ddr3phy"/>
+        <Source name="../../library/latticesemi/ecp3/ddr3phy.vhd" type="VHDL" type_short="VHDL">
+            <Options top_module="ddr3phy"/>
+        </Source>
+        <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
     <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.win_sytm" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
