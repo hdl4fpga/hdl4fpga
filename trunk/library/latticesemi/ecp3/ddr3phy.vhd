@@ -6,8 +6,8 @@ entity ddr3phy is
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
-		sys_cfgi : in  std_logic_vector(8-1 downto 0);
-		sys_cfgo : out std_logic_vector(8-1 downto 0);
+		sys_cfgi : in  std_logic_vector(9-1 downto 0);
+		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
 		sys_do   : out std_logic_vector(2-1 downto 0);
 		sys_di   : in  std_logic_vector(2-1 downto 0);
@@ -36,7 +36,6 @@ entity ddr3phy is
 	constant dyndelay6 : natural := 6;
 	constant dyndelpol : natural := 7;
 	constant uddcntln  : natural := 8;
-
 	constant datavalid : natural := 0;
 end;
 
@@ -102,6 +101,9 @@ begin
 		dqclk1 => oddr_dqclk1);
 
 	iddr_g : for i in 0 to cell_group-1 generate
+		attribute oddrapps : string;
+		attribute oddrapps of iddrx2d_i : label is "SCLK_ALIGNED";
+	begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_sclk,
@@ -117,6 +119,9 @@ begin
 	end generate;
 
 	oddr_g : for i in 0 to cell_group-1 generate
+		attribute oddrapps : string;
+		attribute oddrapps of oddrx2d_i : label is "SCLK_ALIGNED";
+	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
@@ -139,6 +144,8 @@ begin
 
 	dqso_b : block 
 		signal dqstclk : std_logic;
+		attribute oddrapps : string;
+		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
 	begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
