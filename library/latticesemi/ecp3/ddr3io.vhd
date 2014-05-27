@@ -14,17 +14,17 @@ entity ddr3io is
 		sys_dqsi : in  std_logic_vector(2-1 downto 0);
 		sys_dqst : in  std_logic_vector(2-1 downto 0);
 		ddr_dqsio : inout std_logic_vector(1-1 downto 0);
-		ddr_dqio : inout std_logic_vector(2-1 downto 0));
+		ddr_dqio : inout std_logic_vector(1-1 downto 0));
 end;
 
 architecture ecp3 of ddr3io is
-	signal ddr_dqi  : std_logic_vector(2-1 downto 0);
+	signal ddr_dqi  : std_logic_vector(1-1 downto 0);
 	signal ddr_dqt  : std_logic_vector(1-1 downto 0);
-	signal ddr_dqo  : std_logic_vector(2-1 downto 0);
+	signal ddr_dqo  : std_logic_vector(1-1 downto 0);
 
 	signal ddr_dqsi : std_logic;
 	signal ddr_dqst : std_logic;
-	signal ddr_dqso : std_logic);
+	signal ddr_dqso : std_logic;
 begin
 	ddr3phy_i : entity work.ddr3phy
 	port map (
@@ -56,8 +56,8 @@ begin
 
 	ddr3dqs_i : entity work.ddr3iob
 	port map (
-		di => ddr_dqsi,
-		dt => ddr_dqst,
-		do => ddr_dqso
+		di(0) => ddr_dqsi,
+		dt(0) => ddr_dqst,
+		do(0) => ddr_dqso,
 		io => ddr_dqsio);
 end;
