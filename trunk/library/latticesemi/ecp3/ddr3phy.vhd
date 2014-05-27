@@ -14,9 +14,9 @@ entity ddr3phy is
 		sys_dqsi : in  std_logic_vector(2-1 downto 0);
 		sys_dqst : in  std_logic_vector(2-1 downto 0);
 
-		ddr_dqi  : in  std_logic_vector(2-1 downto 0);
+		ddr_dqi  : in  std_logic_vector(1-1 downto 0);
 		ddr_dqt  : out std_logic_vector(1-1 downto 0);
-		ddr_dqo  : out std_logic_vector(2-1 downto 0);
+		ddr_dqo  : out std_logic_vector(1-1 downto 0);
 
 		ddr_dqsi : in  std_logic;
 		ddr_dqst : out std_logic;
