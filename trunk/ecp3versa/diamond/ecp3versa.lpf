@@ -1,4 +1,26 @@
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 
+LOCATE COMP "ddr3_dqs[0]" SITE "F5";
+
+LOCATE COMP "ddr3_dq[0]"  SITE "E5";
+LOCATE COMP "ddr3_dq[1]"  SITE "E4";
+LOCATE COMP "ddr3_dq[2]"  SITE "D2";
+LOCATE COMP "ddr3_dq[3]"  SITE "D1";
+LOCATE COMP "ddr3_dq[4]"  SITE "C2";
+LOCATE COMP "ddr3_dq[5]"  SITE "B2";
+LOCATE COMP "ddr3_dq[6]"  SITE "G5";
+LOCATE COMP "ddr3_dq[7]"  SITE "G4";
+
+LOCATE COMP "ddr3_dqs[1]" SITE "h5";
+
+LOCATE COMP "ddr3_dq[8]"  SITE "G2";
+LOCATE COMP "ddr3_dq[9]"  SITE "F1";
+LOCATE COMP "ddr3_dq[10]" SITE "H4";
+LOCATE COMP "ddr3_dq[11]" SITE "E2";
+LOCATE COMP "ddr3_dq[12]" SITE "J4";
+LOCATE COMP "ddr3_dq[13]" SITE "B1";
+LOCATE COMP "ddr3_dq[14]" SITE "C1";
+LOCATE COMP "ddr3_dq[15]" SITE "G3";
+
 
