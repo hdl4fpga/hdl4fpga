@@ -9,8 +9,8 @@ entity ddr3phy is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0);
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(2-1 downto 0);
-		sys_di   : in  std_logic_vector(2-1 downto 0);
+		sys_do   : out std_logic_vector(4-1 downto 0);
+		sys_di   : in  std_logic_vector(4-1 downto 0);
 		sys_dqsi : in  std_logic_vector(2-1 downto 0);
 		sys_dqst : in  std_logic_vector(2-1 downto 0);
 
@@ -82,7 +82,7 @@ begin
 		ddrlat  => dqsbuf_ddrlat,
 		prmbdet => dqsbuf_prmbdet,
 
-		eclk => iddr_eclk,
+		eclk => sys_eclk,
 		datavalid => sys_cfgo(datavalid),
 
 		rst  => sys_rst,
@@ -94,15 +94,15 @@ begin
 		dyndelay5 => sys_cfgi(dyndelay5),
 		dyndelay6 => sys_cfgi(dyndelay6),
 		dyndelpol => sys_cfgi(dyndelpol),
-		eclkw => oddr_eclk,
+		eclkw => sys_eclk,
 
 		dqsw => oddr_dqsw,
 		dqclk0 => oddr_dqclk0,
 		dqclk1 => oddr_dqclk1);
 
 	iddr_g : for i in 0 to cell_group-1 generate
-		attribute oddrapps : string;
-		attribute oddrapps of iddrx2d_i : label is "SCLK_ALIGNED";
+		attribute iddrapps : string;
+		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -120,7 +120,7 @@ begin
 
 	oddr_g : for i in 0 to cell_group-1 generate
 		attribute oddrapps : string;
-		attribute oddrapps of oddrx2d_i : label is "SCLK_ALIGNED";
+		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (

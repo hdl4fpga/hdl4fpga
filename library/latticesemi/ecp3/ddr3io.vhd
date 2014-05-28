@@ -9,8 +9,8 @@ entity ddr3io is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0);
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(2-1 downto 0);
-		sys_di   : in  std_logic_vector(2-1 downto 0);
+		sys_do   : out std_logic_vector(4-1 downto 0);
+		sys_di   : in  std_logic_vector(4-1 downto 0);
 		sys_dqsi : in  std_logic_vector(2-1 downto 0);
 		sys_dqst : in  std_logic_vector(2-1 downto 0);
 		ddr_dqsio : inout std_logic_vector(1-1 downto 0);
