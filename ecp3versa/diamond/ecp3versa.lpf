@@ -1,7 +1,33 @@
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 
+LOCATE COMP "ddr3_clk"    SITE "L5";
+LOCATE COMP "ddr3_clkn"   SITE "K6";
+
+LOCATE COMP "ddr3_ras"    SITE "A6";
+LOCATE COMP "ddr3_cas"    SITE "A4";
+LOCATE COMP "ddr3_we"     SITE "D6";
+LOCATE COMP "ddr3_odt"    SITE "D6";
+
+LOCATE COMP "ddr3_ba[0]"  SITE "B4";
+LOCATE COMP "ddr3_ba[1]"  SITE "E6";
+LOCATE COMP "ddr3_ba[2]"  SITE "D5";
+
+LOCATE COMP "ddr3_a[0]"   SITE "C8";
+LOCATE COMP "ddr3_a[1]"   SITE "C7";
+LOCATE COMP "ddr3_a[2]"   SITE "B7";
+LOCATE COMP "ddr3_a[3]"   SITE "D8";
+LOCATE COMP "ddr3_a[4]"   SITE "F9";
+LOCATE COMP "ddr3_a[5]"   SITE "E9";
+LOCATE COMP "ddr3_a[6]"   SITE "A3";
+LOCATE COMP "ddr3_a[7]"   SITE "D7";
+LOCATE COMP "ddr3_a[8]"   SITE "A7";
+LOCATE COMP "ddr3_a[9]"   SITE "B8";
+LOCATE COMP "ddr3_a[10]"  SITE "C9";
+LOCATE COMP "ddr3_a[11]"  SITE "C10";
+
 LOCATE COMP "ddr3_dqs[0]" SITE "F5";
+IOBUF  PORT "ddr3_dqs[0]" IO_TYPE="SSTL15D" VREF="SSTL15D";
 
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
 LOCATE COMP "ddr3_dq[1]"  SITE "E4";
@@ -12,7 +38,9 @@ LOCATE COMP "ddr3_dq[5]"  SITE "B2";
 LOCATE COMP "ddr3_dq[6]"  SITE "G5";
 LOCATE COMP "ddr3_dq[7]"  SITE "G4";
 
-LOCATE COMP "ddr3_dqs[1]" SITE "h5";
+LOCATE COMP "ddr3_dqs[1]" SITE "H5";
+IOBUF  PORT "ddr3_dqs[1]" IO_TYPE="SSTL15D" VREF="SSTL15D";
+LOCATE VREF "ddr3_vref"   SITE "E1" IOTYPE "SSTL15D";
 
 LOCATE COMP "ddr3_dq[8]"  SITE "G2";
 LOCATE COMP "ddr3_dq[9]"  SITE "F1";
@@ -22,5 +50,3 @@ LOCATE COMP "ddr3_dq[12]" SITE "J4";
 LOCATE COMP "ddr3_dq[13]" SITE "B1";
 LOCATE COMP "ddr3_dq[14]" SITE "C1";
 LOCATE COMP "ddr3_dq[15]" SITE "G3";
-
-
