@@ -4,17 +4,17 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="ddr3phy" dir="ddr3phy" description="ddr3phy" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="ddr3io"/>
-        <Source name="../../library/latticesemi/ecp3/ddr3phy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+        <Options def_top="ddr3iob" top="ecp3versa"/>
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+            <Options top_module="ecp3versa"/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/ddr3io.vhd" type="VHDL" type_short="VHDL">
-            <Options top_module="ddr3io"/>
+            <Options/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/ddr3iob.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/latticesemi/ecp3/ddr3phy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
