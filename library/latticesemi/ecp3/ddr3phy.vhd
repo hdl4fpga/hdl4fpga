@@ -49,11 +49,9 @@ architecture ecp3 of ddr3phy is
 
 	signal dqsi_delay : std_logic;
 	signal idqs_eclk  : std_logic;
-	signal iddr_eclk  : std_logic;
 	signal oddr_dqsw  : std_logic;
 	signal oddr_dqclk0 : std_logic;
 	signal oddr_dqclk1 : std_logic;
-	signal oddr_eclk  : std_logic;
 	
 	signal dqsdll_lock : std_logic;
 	signal dqsbuf_prmbdet : std_logic;
@@ -125,7 +123,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => open,
+			ta => sys_dqst(data_edges*0+f),
 			dqclk0 => oddr_dqclk0,
 			dqclk1 => oddr_dqclk1,
 			q  => ddr_dqt(i*cell_width));

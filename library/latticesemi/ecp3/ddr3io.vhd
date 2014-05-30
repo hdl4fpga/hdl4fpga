@@ -1,23 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr3io is
-	port (
-		sys_rst  : in  std_logic;
-		sys_sclk : in  std_logic;
-		sys_eclk : in  std_logic;
-		sys_cfgi : in  std_logic_vector(9-1 downto 0);
-		sys_cfgo : out std_logic_vector(1-1 downto 0);
-		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(4-1 downto 0);
-		sys_di   : in  std_logic_vector(4-1 downto 0);
-		sys_dqsi : in  std_logic_vector(2-1 downto 0);
-		sys_dqst : in  std_logic_vector(2-1 downto 0);
-		ddr_dqsio : inout std_logic_vector(1-1 downto 0);
-		ddr_dqio : inout std_logic_vector(1-1 downto 0));
-end;
-
-architecture ecp3 of ddr3io is
+architecture ecp3 of ecp3versa is
 	signal ddr_dqi  : std_logic_vector(1-1 downto 0);
 	signal ddr_dqt  : std_logic_vector(1-1 downto 0);
 	signal ddr_dqo  : std_logic_vector(1-1 downto 0);
@@ -26,18 +10,19 @@ architecture ecp3 of ddr3io is
 	signal ddr_dqst : std_logic;
 	signal ddr_dqso : std_logic;
 begin
+	ddr3_dqs(1) <= '0';
 	ddr3phy_i : entity work.ddr3phy
 	port map (
-		sys_rst  => sys_rst,
-		sys_sclk => sys_sclk,
-		sys_eclk => sys_eclk,
-		sys_cfgi => sys_cfgi,
-		sys_cfgo => sys_cfgo,
-		sys_rw   => sys_rw,
-		sys_do   => sys_do,
-		sys_di   => sys_di,
-		sys_dqsi => sys_dqsi,
-		sys_dqst => sys_dqst,
+		sys_rst  => expansion(0),
+		sys_sclk => expansion(1),
+		sys_eclk => expansion(2),
+		sys_rw   => expansion(3),
+		sys_dqsi => expansion(4 to 5),
+		sys_dqst => expansion(6 to 7),
+		sys_do   => expansion(8 to 11),
+		sys_di   => expansion(12 to 15),
+		sys_cfgi => expansion(15 to 23),
+		sys_cfgo => expansion(24 to 24),
 
 		ddr_dqi  => ddr_dqi,
 		ddr_dqt  => ddr_dqt,
@@ -52,12 +37,12 @@ begin
 		di => ddr_dqi,
 		dt => ddr_dqt,
 		do => ddr_dqo,
-		io => ddr_dqio);
+		io => ddr3_dq(0 downto 0));
 
 	ddr3dqs_i : entity work.ddr3iob
 	port map (
 		di(0) => ddr_dqsi,
 		dt(0) => ddr_dqst,
 		do(0) => ddr_dqso,
-		io => ddr_dqsio);
+		io => ddr3_dqs(0 downto 0));
 end;
