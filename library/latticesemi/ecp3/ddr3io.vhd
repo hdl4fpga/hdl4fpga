@@ -16,10 +16,10 @@ architecture ecp3 of ecp3versa is
 	signal ddr_dqst : std_logic_vector(n-1 downto 0);
 	signal ddr_dqso : std_logic_vector(n-1 downto 0);
 
-	subtype sysdqs_vector is array (natural range <>) of std_logic_vector(2-1 downto 0);
-	subtype sysdq_vector  is array (natural range <>) of std_logic_vector(4*byte'length-1 downto 0);
-	subtype syscfgi_vector is array (natral range <>) of std_logic_vector(9-1 downto 0);
-	subtype syscfgo_vector is array (natral range <>) of std_logic_vector(1-1 downto 0);
+	type sysdqs_vector is array (natural range <>) of std_logic_vector(2-1 downto 0);
+	type sysdq_vector  is array (natural range <>) of std_logic_vector(4*byte'length-1 downto 0);
+	type syscfgi_vector is array (natural range <>) of std_logic_vector(9-1 downto 0);
+	type syscfgo_vector is array (natural range <>) of std_logic_vector(1-1 downto 0);
 	signal sys_dqsi : sysdqs_vector(n-1 downto 0);
 	signal sys_dqst : sysdqs_vector(n-1 downto 0);
 	signal sys_do   : sysdq_vector(n-1 downto 0);
