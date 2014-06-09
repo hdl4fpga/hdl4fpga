@@ -128,7 +128,7 @@ begin
 			ta => sys_dqst(data_edges*0+f),
 			dqclk0 => oddr_dqclk0,
 			dqclk1 => oddr_dqclk1,
-			q  => ddr_dqt(i*cell_width));
+			q  => ddr_dqt(i));
 
 		oddrx2d_i : oddrx2d
 		port map (
