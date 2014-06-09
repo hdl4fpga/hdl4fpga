@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ddr3phy is
+	generic (
+		n : natural);
 	port (
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
@@ -9,14 +11,14 @@ entity ddr3phy is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0);
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(4-1 downto 0);
-		sys_di   : in  std_logic_vector(4-1 downto 0);
+		sys_do   : out std_logic_vector(4*n-1 downto 0);
+		sys_di   : in  std_logic_vector(4*n-1 downto 0);
 		sys_dqsi : in  std_logic_vector(2-1 downto 0);
 		sys_dqst : in  std_logic_vector(2-1 downto 0);
 
-		ddr_dqi  : in  std_logic_vector(1-1 downto 0);
-		ddr_dqt  : out std_logic_vector(1-1 downto 0);
-		ddr_dqo  : out std_logic_vector(1-1 downto 0);
+		ddr_dqi  : in  std_logic_vector(1*n-1 downto 0);
+		ddr_dqt  : out std_logic_vector(1*n-1 downto 0);
+		ddr_dqo  : out std_logic_vector(1*n-1 downto 0);
 
 		ddr_dqsi : in  std_logic;
 		ddr_dqst : out std_logic;
