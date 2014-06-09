@@ -3,9 +3,9 @@ use ieee.std_logic_1164.all;
 
 entity ddr3iob is
 	port (
-		di : out  std_logic_vector;
-		dt : in std_logic_vector;
-		do : in std_logic_vector;
+		di : out std_logic_vector;
+		dt : in  std_logic_vector;
+		do : in  std_logic_vector;
 		io : inout std_logic_vector);
 end;
 
