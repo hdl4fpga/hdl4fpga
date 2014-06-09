@@ -32,6 +32,10 @@ architecture ecp3 of ecp3versa is
 	signal sys_rw   : std_logic;
 begin
 
+	sys_di(0) <= expansion( 8-1 downto 0);
+	sys_di(1) <= expansion(16-1 downto 8);
+	expansion( 8-1 downto 0) <= sys_do(0);
+	expansion(16-1 downto 8) <= sys_do(1);
 	ddr3byte_g : for i in 0 to n-1 generate
 		ddr3phy_i : entity work.ddr3phy
 		generic map (
