@@ -162,6 +162,10 @@ package std is
 		constant litt : std_logic := '1')
 		return std_logic_vector;
 
+	function byte2word (
+		constant di : byte_vector)
+		return std_logic_vector;
+	
 	subtype gray is std_logic_vector;
 
 	function inc (
@@ -582,6 +586,18 @@ package body std is
 				do(di'range) := di;
 			end if;
 			do := do rol di'length;
+		end loop;
+		return do;
+	end;
+
+	function byte2word (
+		constant di : byte_vector)
+		return std_logic_vector is
+		variable do : std_logic_vector(di'length*di(di'left)'length-1 downto 0);
+	begin
+		for i in di'range loop
+			do(di(di'left)'range) := di(i);
+			do := do sll di'length;
 		end loop;
 		return do;
 	end;
