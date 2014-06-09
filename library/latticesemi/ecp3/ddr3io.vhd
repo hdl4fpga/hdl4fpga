@@ -1,31 +1,52 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-architecture ecp3 of ecp3versa is
-	signal ddr_dqi  : std_logic_vector(1-1 downto 0);
-	signal ddr_dqt  : std_logic_vector(1-1 downto 0);
-	signal ddr_dqo  : std_logic_vector(1-1 downto 0);
+library hdl4fpga;
+use hdl4fpga.std.all;
 
-	signal ddr_dqsi : std_logic;
-	signal ddr_dqst : std_logic;
-	signal ddr_dqso : std_logic;
+architecture ecp3 of ecp3versa is
+	constant n : natural := 2;
+
+	signal ddr_dqi : byte_vector(n-1 downto 0);
+	signal ddr_dqt : byte_vector(n-1 downto 0);
+	signal ddr_dqo : byte_vector(n-1 downto 0);
+	signal ddr_dq  : byte_vector(n-1 downto 0);
+
+	signal ddr_dqsi : std_logic_vector(n-1 downto 0);
+	signal ddr_dqst : std_logic_vector(n-1 downto 0);
+	signal ddr_dqso : std_logic_vector(n-1 downto 0);
+
+	subtype sysdqs_vector is array (natural range <>) of std_logic_vector(2-1 downto 0);
+	subtype sysdq_vector  is array (natural range <>) of std_logic_vector(4*byte'length-1 downto 0);
+	subtype syscfgi_vector is array (natral range <>) of std_logic_vector(9-1 downto 0);
+	subtype syscfgo_vector is array (natral range <>) of std_logic_vector(1-1 downto 0);
+	signal sys_dqsi : sysdqs_vector(n-1 downto 0);
+	signal sys_dqst : sysdqs_vector(n-1 downto 0);
+	signal sys_do   : sysdq_vector(n-1 downto 0);
+	signal sys_di   : sysdq_vector(n-1 downto 0);
+	signal sys_cfgi : syscfgi_vector(n-1 downto 0);
+	signal sys_cfgo : syscfgo_vector(n-1 downto 0);
+	signal sys_rst  : std_logic;
+	signal sys_sclk : std_logic;
+	signal sys_eclk : std_logic;
+	signal sys_rw   : std_logic;
 begin
 
-	ddr3byte_g : for i in 0 to 2-1 generate
+	ddr3byte_g : for i in 0 to n-1 generate
 		ddr3phy_i : entity work.ddr3phy
 		generic map (
-			n => 8)
+			n => byte'length)
 		port map (
-			sys_rst  => expansion(0),
-			sys_sclk => expansion(1),
-			sys_eclk => expansion(2),
-			sys_rw   => expansion(3),
-			sys_dqsi => expansion(4 to 5),
-			sys_dqst => expansion(6 to 7),
-			sys_do   => expansion(8 to 11),
-			sys_di   => expansion(12 to 15),
-			sys_cfgi => expansion(15 to 23),
-			sys_cfgo => expansion(24 to 24),
+			sys_rst  => sys_rst,
+			sys_sclk => sys_sclk,
+			sys_eclk => sys_eclk,
+			sys_rw   => sys_rw,
+			sys_cfgi => sys_cfgi(i),
+			sys_cfgo => sys_cfgo(i),
+			sys_dqsi => sys_dqsi(i),
+			sys_dqst => sys_dqst(i),
+			sys_do   => sys_do(i),
+			sys_di   => sys_di(i),
 	
 			ddr_dqi  => ddr_dqi(i),
 			ddr_dqt  => ddr_dqt(i),
@@ -34,15 +55,16 @@ begin
 			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddr_dqso(i));
+
+		ddr3dq_i : entity work.ddr3iob
+		port map (
+			di => ddr_dqi(i),
+			dt => ddr_dqt(i),
+			do => ddr_dqo(i),
+			io => ddr_dq(i));
 	end generate;
 
-	ddr3dq_i : entity work.ddr3iob
-	port map (
-		di => ddr_dqi,
-		dt => ddr_dqt,
-		do => ddr_dqo,
-		io => ddr3_dq);
-
+	ddr3_dq <= byte2word(ddr_dq);
 	ddr3dqs_i : entity work.ddr3iob
 	port map (
 		di => ddr_dqsi,
