@@ -3,25 +3,26 @@ use ieee.std_logic_1164.all;
 
 entity xdr_phy is
 	generic (
-		n : natural);
+		byte_size   : natural := 8;
+		data_edges  : natural := 2;
+		data_phases : natural := 2;
+		data_bytes  : natural := 2);
 	port (
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
-		sys_cfgi : in  std_logic_vector(9-1 downto 0);
-		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(4*n-1 downto 0);
-		sys_di   : in  std_logic_vector(4*n-1 downto 0);
-		sys_dqsi : in  std_logic_vector(2-1 downto 0);
-		sys_dqst : in  std_logic_vector(2-1 downto 0);
+		sys_do   : out std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_di   : in  std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_dqsi : in  std_logic_vector(data_edges-1 downto 0);
+		sys_dqst : in  std_logic_vector(data_edges-1 downto 0);
 
-		xdr_dqi  : in  std_logic_vector(1*n-1 downto 0);
-		xdr_dqt  : out std_logic_vector(1*n-1 downto 0);
-		xdr_dqo  : out std_logic_vector(1*n-1 downto 0);
+		xdr_dqi  : in  std_logic_vector(data_bytes*byte_size-1 downto 0);
+		xdr_dqz  : out std_logic_vector(data_bytes*byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(data_bytes*byte_size-1 downto 0);
 
 		xdr_dqsi : in  std_logic;
-		xdr_dqst : out std_logic;
+		xdr_dqsz : out std_logic;
 		xdr_dqso : out std_logic);
 end;
 
