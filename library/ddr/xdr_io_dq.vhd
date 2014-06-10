@@ -1,71 +1,44 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xdr_io_dq is
+entity xdr_dqo is
 	generic (
-		data_phases : natural := 0;
-		data_edges : natural;
-		data_bytes : natural;
-		byte_bits  : natural);
+		byte_size   : natural := 8;
+		data_edges  : natural := 2;
+		data_phases : natural := 2);
 	port (
-		xdr_io_clk : in std_logic;
-		xdr_mpu_dqz : in std_logic_vector(data_bytes-1 downto 0);
-		xdr_io_phs : in std_logic_vector(data_phases-1 downto 0) := (others => '0'); 
-		xdr_io_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		xdr_io_dq  : in  std_logic_vector(data_bytes*data_edges*byte_bits-1 downto 0);
-		xdr_io_dqo : out std_logic_vector(data_bytes*byte_bits-1 downto 0));
+		sys_clk : in  std_logic_vector;
 
-	constant data_bits : natural := data_bytes*byte_bits;
+		sys_dqz : in  std_logic_vector(byte_size*data_phases-1 downto 0);
+		sys_dqo : in  std_logic_vector(byte_size*data_phases-1 downto 0);
+
+		xdr_dqz : out std_logic_vector(byte_size-1 downto 0);
+		xdr_dqo : out std_logic_vector(byte_size-1 downto 0));
+
 	constant r : natural := 0;
 	constant f : natural := 1;
+
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture std of xdr_io_dq is
-	type oddri_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
-	signal oddri : oddri_vector(data_edges*data_bytes*byte_bits-1 downto 0);
-
-	function to_oddrivector (
-		arg : std_logic_vector)
-		return oddri_vector is
-		variable dat : std_logic_vector(arg'length-1 downto 0);
-		variable val : oddri_vector(arg'length/data_phases-1 downto 0);
-	begin
-		dat := arg;
-		for i in arg'length/data_phases-1 downto 0 loop
-			for k in data_phases-1 downto 0 loop
-				val(i)(k) := dat(i*data_phases+k);
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	signal eclk : std_logic_vector(data_edges-1 downto 0);
+architecture std of xdr_dqo is
 begin
+	bits_g : for i in byte_size-1 downto 0 generate
+		oddrt_i : entity hdl4fpga.ddrto
+		port map (
+			clk => sys_clk(sys_clk'right),
+			d   => sys_dqz,
+			q   => xdr_dqz);
 
-	eclk <= (0 => xdr_io_clk, 1 => not xdr_io_clk);
-
-	oddri <= to_oddrivector(xdr_io_dq);
-	bytes_g : for i in data_bytes-1 downto 0 generate
-		bits_g : for j in byte_bits-1 downto 0 generate
-			signal d : std_logic_vector(data_edges-1 downto 0);
-		begin
-			oddrt_i : entity hdl4fpga.ddrto
-			port map (
-				clk => xdr_io_clk,
-				d   => xdr_mpu_dqz(i),
-				q   => xdr_io_dqz(i));
-
-			oxdr_i : entity hdl4fpga.ddro
-			generic map (
-				data_phases => data_phases,
-				data_edges  => data_edges)
-			port map (
-				clk => xdr_io_clk,
-				d   => d,
-				q   => xdr_io_dqo(i*byte_bits+j));
-		end generate;
+		oxdr_i : entity hdl4fpga.ddro
+		generic map (
+			data_phases => data_phases,
+			data_edges  => data_edges)
+		port map (
+			clk => sys_clk,
+			d   => sys_dqo,
+			q   => xdr_dqo(j));
 	end generate;
 end;
