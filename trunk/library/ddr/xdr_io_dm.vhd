@@ -3,18 +3,17 @@ use ieee.std_logic_1164.all;
 
 entity xdr_io_dm is
 	generic (
-		strobe : string;
-		ddr_phases : natural;
-		data_edges : natural;
-		data_bytes : natural);
+		data_strobe : string  := "EXTERNAL";
+		data_edges  : natural := 2;
+		data_phases : natural;
+		data_bytes  : natural);
 	port (
-		ddr_io_clk  : in  std_logic_vector(2**ddr_phases-1 downto 0);
+		ddr_io_clk  : in  std_logic_vector(2**(data_phases/data_edges)-1 downto 0);
 		ddr_mpu_dmx : in  std_logic_vector(data_edges*data_bytes-1 downto 0);
-		ddr_mpu_st  : in  std_logic_vector(2**ddr_phases*data_edges-1 downto 0);
-		ddr_mpu_dm  : in  std_logic_vector(2**ddr_phases*data_edges*data_bytes-1 downto 0);
+		ddr_mpu_st  : in  std_logic_vector(2**data_phases-1 downto 0);
+		ddr_mpu_dm  : in  std_logic_vector(2**data_phases*data_bytes-1 downto 0);
 		ddr_io_dmo  : out std_logic_vector(data_bytes-1 downto 0));
 
-	constant data_phases : natural := 2**ddr_phases;
 	constant r : natural := 0;
 	constant f : natural := 1;
 end;
@@ -63,7 +62,7 @@ begin
 			signal di : std_logic;
 		begin
 			di <=
-			ddr_mpu_dm(i*data_edges+l) when strobe="EXTERNAL" else
+			ddr_mpu_dm(i*data_edges+l) when data_strobe="EXTERNAL" else
 			ddr_mpu_dm(i*data_edges+l) when ddr_mpu_dmx(i*data_edges+l)='1' else
 			ddr_mpu_st(l);
 
