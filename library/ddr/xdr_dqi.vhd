@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xdr_dqo is
+entity xdr_dqi is
 	generic (
 		byte_size   : natural := 8;
 		data_edges  : natural := 2;
@@ -9,11 +9,9 @@ entity xdr_dqo is
 	port (
 		sys_clk : in  std_logic_vector;
 
-		sys_dqz : in  std_logic_vector(byte_size*data_phases-1 downto 0);
-		sys_dqo : in  std_logic_vector(byte_size*data_phases-1 downto 0);
+		sys_dqi : in  std_logic_vector(byte_size*data_phases-1 downto 0);
 
-		xdr_dqz : out std_logic_vector(byte_size-1 downto 0);
-		xdr_dqo : out std_logic_vector(byte_size-1 downto 0));
+		xdr_dqi : out std_logic_vector(byte_size-1 downto 0));
 
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -32,13 +30,12 @@ begin
 			d   => sys_dqz,
 			q   => xdr_dqz);
 
-		oxdr_i : entity hdl4fpga.ddro
+		oxdr_i : entity hdl4fpga.ddri
 		generic map (
 			data_phases => data_phases,
 			data_edges  => data_edges)
 		port map (
-			clk => sys_clk,
-			d   => sys_dqo,
-			q   => xdr_dqo(j));
+			d   => xdr_dqo(i),
+			q   => sys_dqo);
 	end generate;
 end;
