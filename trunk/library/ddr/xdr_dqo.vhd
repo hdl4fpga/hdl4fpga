@@ -25,20 +25,20 @@ use hdl4fpga.std.all;
 
 architecture std of xdr_dqo is
 begin
-	bits_g : for i in byte_size-1 downto 0 generate
+	byte_g : for i in byte_size-1 downto 0 generate
 		oddrt_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk(sys_clk'right),
 			d   => sys_dqz,
 			q   => xdr_dqz);
 
-		oxdr_i : entity hdl4fpga.ddro
+		oddr_i : entity hdl4fpga.ddro
 		generic map (
 			data_phases => data_phases,
 			data_edges  => data_edges)
 		port map (
 			clk => sys_clk,
 			d   => sys_dqo,
-			q   => xdr_dqo(j));
+			q   => xdr_dqo(i));
 	end generate;
 end;
