@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xdr_io_dqs is
+entity xdr_dqs is
 	generic (
 		data_phases : natural := 2;
 		data_edges  : natural := 2);
@@ -14,7 +14,7 @@ entity xdr_io_dqs is
 		xdr_dqso : out std_logic);
 end;
 
-architecture std of xdr_io_dqs is
+architecture std of xdr_dqs is
 begin
 
 	oxdrt_i : entity hdl4fpga.oddrt
