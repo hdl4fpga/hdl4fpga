@@ -290,45 +290,6 @@ architecture mix of xdr is
 	constant cas : std_logic_vector(0 to 2) := casdb(cl, std); 
 begin
 
-	process (clk0, sys_rst)
-	begin
-		if sys_rst='1' then
-			rst <= '1';
-		elsif rising_edge(clk0) then
-			rst <= sys_rst;
-		end if;
-	end process;
-
-	xdr_cs <= '0';
-	xdr_io_ba_e : entity hdl4fpga.xdr_io_ba
-	generic map (
-		bank_bits => bank_bits,
-		addr_bits => addr_bits)
-	port map (
-		sys_clk => sys_clk0,
-		sys_rst => rst,
-		sys_ini => dll_timer_rdy,
-		sys_cke => xdr_init_cke,
-		sys_ras => xdr_mpu_ras,
-		sys_cas => xdr_mpu_cas,
-		sys_we  => xdr_mpu_we,
-		sys_odt => dll_timer_rdy,
-		sys_a   => sys_a,
-		sys_b   => sys_ba,
-		sys_ini_ras => xdr_init_ras,
-		sys_ini_cas => xdr_init_cas,
-		sys_ini_we  => xdr_init_we,
-		sys_ini_a   => xdr_init_a,
-		sys_ini_b   => xdr_init_b,
-
-		xdr_odt => xdr_odt,
-		xdr_ras => xdr_ras,
-		xdr_cas => xdr_cas,
-		xdr_cke => xdr_cke,
-		xdr_we  => xdr_we,
-		xdr_a   => xdr_a,
-		xdr_b   => xdr_ba);
-
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
 		c200u => natural(t200u/tCP),
@@ -350,6 +311,30 @@ begin
 		ref_timer_req => xdr_init_rdy,
 		ref_timer_rdy => xdr_mpu_ref);
 
+	xdr_init_du : entity hdl4fpga.xdr_init(ddr2)
+	generic map (
+		lat_length => 9,
+
+		a => addr_bits,
+
+		tRP  => natural(ceil(tRP/tCP)),
+		tMRD => 2,
+		tMOD => natural(ceil(12.0/tCP))+2,
+		tRFC => natural(ceil(tRFC/tCP)))
+	port map (
+		xdr_init_cl  => casdb (cl, std),
+		xdr_init_bl  => bldb  (bl, std),
+		xdr_init_wr  => wrdb  (wr, std),
+
+		xdr_init_clk => sys_clk,
+		xdr_init_req => xdr_init_cfg,
+		xdr_init_rdy => xdr_init_rdy,
+		xdr_init_dll => xdr_init_dll,
+		xdr_init_ras => xdr_init_ras,
+		xdr_init_cas => xdr_init_cas,
+		xdr_init_we  => xdr_init_we,
+		xdr_init_a   => xdr_init_a,
+		xdr_init_b   => xdr_init_b);
 	ddr1_init_g : if std=1 generate
 		xdr_init_du : entity hdl4fpga.xdr_init(ddr1)
 		generic map (
