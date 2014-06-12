@@ -8,14 +8,15 @@ entity xdr_phy is
 		data_phases : natural := 2;
 		data_bytes  : natural := 2);
 	port (
-		sys_rst  : in  std_logic;
-		sys_sclk : in  std_logic;
-		sys_eclk : in  std_logic;
-		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(data_phases*byte_size-1 downto 0);
-		sys_di   : in  std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_rst : in  std_logic;
+		sys_clk : in  std_logic_vector;
+		sys_rw  : in  std_logic;
+		sys_dqi : in  std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_dqz : in  std_logic;
+		sys_dqo : out std_logic_vector(data_phases*byte_size-1 downto 0);
+
 		sys_dqsi : in  std_logic_vector(data_edges-1 downto 0);
-		sys_dqst : in  std_logic_vector(data_edges-1 downto 0);
+		sys_dqsz : in  std_logic_vector(data_edges-1 downto 0);
 
 		xdr_dqi  : in  std_logic_vector(data_bytes*byte_size-1 downto 0);
 		xdr_dqz  : out std_logic_vector(data_bytes*byte_size-1 downto 0);
@@ -28,32 +29,39 @@ end;
 
 architecture mix of xdr_phy is
 begin
-	xdr_io_dq_e : entity hdl4fpga.xdr_io_dq
+	xdr_dqi_e : entity hdl4fpga.xdr_dqi
 	generic map (
-		data_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
-		data_edges => data_edges,
-		data_bytes => data_bytes,
-		byte_bits  => byte_bits)
-	port map (
-		xdr_io_clk => clk90,
-		xdr_io_dq  => xdr_wr_dq,
-		xdr_mpu_dqz => xdr_mpu_dqz,
-		xdr_io_dqz => xdr_io_dqz,
-		xdr_io_dqo => xdr_dqo);
-	xdr_dqz <= xdr_io_dqz;
-
-	xdr_io_dqs_e : entity hdl4fpga.xdr_io_dqs
-	generic map (
-		std => std,
+		byte_size   => byte_size,
 		data_phases => data_phases,
-		data_edges  => data_edges,
-		data_bytes  => data_bytes)
+		data_edges  => data_edges)
 	port map (
-		xdr_io_clk => clk0,
-		xdr_io_ena => xdr_mpu_dqs,
-		xdr_mpu_dqsz => xdr_mpu_dqsz,
-		xdr_io_dqsz => xdr_io_dqsz,
-		xdr_io_dqso => xdr_dqso);
+		sys_clk => ,
+		sys_dqi => sys_di,
+		xdr_dqi => xdr_dqi);
+
+	xdr_dqo_e : entity hdl4fpga.xdr_dqo
+	generic map (
+		byte_size   => byte_size,
+		data_edges  => data_edges,
+		data_phases => data_phases)
+	port map (
+		sys_clk => ,
+		sys_dqo => sys_dqo,
+		sys_dqz => sys_dqz,
+		xdr_dqz => xdr_dqz,
+		xdr_dqo => xdr_dqo);
+
+	xdr_dqs_e : entity hdl4fpga.xdr_dqs
+	generic map (
+		byte_size   => byte_size,
+		data_edges  => data_edges,
+		data_phases => data_phases)
+	port map (
+		sys_clk => clk0,
+		sys_ena => xdr_mpu_dqs,
+		sys_dqsz => xdr_mpu_dqsz,
+		xdr_dqsz => xdr_io_dqsz,
+		xdr_dqso => xdr_dqso);
 	xdr_dqsz <= xdr_io_dqsz;
 	
 	xdr_mpu_dmx <= xdr_wr_fifo_ena;
