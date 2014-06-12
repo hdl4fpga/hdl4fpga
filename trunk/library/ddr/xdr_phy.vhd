@@ -4,6 +4,7 @@ use ieee.std_logic_1164.all;
 entity xdr_phy is
 	generic (
 		byte_size   : natural := 8;
+		data_strobe : string  := "EXTERNAL_LOOPBACK";
 		data_edges  : natural := 2;
 		data_phases : natural := 2;
 		data_bytes  : natural := 2);
@@ -28,6 +29,7 @@ end;
 
 architecture mix of xdr_phy is
 begin
+
 	bytes_q : for i in 0 to data_bytes-1 generate
 		xdr_dqi_e : entity hdl4fpga.xdr_dqi
 		generic map (
@@ -58,23 +60,23 @@ begin
 			data_phases => data_phases)
 		port map (
 			sys_clk => clk0,
-			sys_ena => xdr_mpu_dqs,
+			sys_dqso => xdr_mpu_dqs,
 			sys_dqsz => xdr_mpu_dqsz,
-			xdr_dqsz => xdr_io_dqsz,
+			xdr_dqsz => xdr_dqsz,
 			xdr_dqso => xdr_dqso);
-		xdr_dqsz <= xdr_io_dqsz;
-	end generate;
 	
-	xdr_mpu_dmx <= xdr_wr_fifo_ena;
-	xdr_io_dm_e : entity hdl4fpga.xdr_io_dm
-	generic map (
-		strobe => strobe,
-		data_edges => data_edges,
-		data_bytes => data_bytes)
-	port map (
-		sys_clk => xdr_clk,
-		sys_st  => xdr_mpu_dr,
-		sys_dmo => xdr_wr_dm,
-		sys_dmx => xdr_mpu_dmx,
-		xdr_dmo => xdr_dm);
+		xdr_mpu_dmx <= xdr_wr_fifo_ena;
+		xdr_dm_e : entity hdl4fpga.xdr_dm
+		generic map (
+			data_strobe => data_strobe,
+			data_edges  => data_edges,
+			data_bytes  => data_bytes)
+		port map (
+			sys_clk => xdr_clk,
+			sys_st  => xdr_mpu_dr,
+			sys_dmo => xdr_wr_dm,
+			sys_dmx => xdr_mpu_dmx,
+			xdr_dmo => xdr_dm);
+
+	end generate;
 end;
