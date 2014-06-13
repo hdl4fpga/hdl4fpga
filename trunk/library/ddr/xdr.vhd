@@ -6,26 +6,27 @@ use ieee.math_real.all;
 entity xdr is
 	generic (
 		strobe : string := "EXTERNAL";
-		std  : positive range 1 to 3 := 3;
+		std   : positive;
 
-		tCP  : real := 6.0;
-		tWR  : real := 15.0;
-		tRP  : real := 15.0;
-		tRCD : real := 15.0;
-		tRFC : real := 72.0;
-		tMRD : real := 12.0;
-		tREFI : real := 7.0e3;
+		tCP   : time := 6.0 ns;
 
-		cl  : real    := 7.0;
-		bl  : natural := 8;
-		wr  : natural := 8;
-		cwl : natural := 7;
+		tWR   : time := 0;
+		tRP   : time := 0;
+		tRCD  : time := 0;
+		tRFC  : time := 0;
+		tMRD  : time := 0;
+		tREFI : time := 0;
 
-		bank_bits  : natural :=  2;
-		addr_bits  : natural := 13;
-		data_phases : natural := 1;
-		data_bytes : natural :=  2;
-		byte_bits  : natural :=  8);
+		cl  : natural := 0;
+		bl  : natural := 0;
+		wr  : natural := 0;
+		cwl : natural := 0;
+
+		bank_bits   : natural :=  2;
+		addr_bits   : natural := 13;
+		byte_size   : natural :=  8;
+		data_phases : natural :=  1;
+		data_bytes  : natural :=  2);
 	port (
 		sys_rst   : in std_logic;
 		sys_clk   : in std_logic := '-';
@@ -44,8 +45,8 @@ entity xdr is
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
 		sys_dm  : in  std_logic_vector(2*data_bytes-1 downto 0) := (others => '0');
-		sys_di  : in  std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
-		sys_do  : out std_logic_vector(2*data_bytes*byte_bits-1 downto 0);
+		sys_di  : in  std_logic_vector(2*data_bytes*byte_size-1 downto 0);
+		sys_do  : out std_logic_vector(2*data_bytes*byte_size-1 downto 0);
 		sys_ref : out std_logic;
 
 		xdr_rst : out std_logic;
@@ -58,11 +59,11 @@ entity xdr is
 		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		xdr_dm  : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
 		xdr_dqsz : out std_logic_vector(data_bytes-1 downto 0);
-		xdr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
+		xdr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
 		xdr_dqso : out std_logic_vector(data_bytes-1 downto 0);
-		xdr_dqz : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		xdr_dqi : in std_logic_vector(data_bytes*byte_bits-1 downto 0);
-		xdr_dqo : out std_logic_vector(data_bytes*byte_bits-1 downto 0);
+		xdr_dqz : out std_logic_vector(data_bytes*byte_size-1 downto 0);
+		xdr_dqi : in  std_logic_vector(data_bytes*byte_size-1 downto 0);
+		xdr_dqo : out std_logic_vector(data_bytes*byte_size-1 downto 0);
 		xdr_odt : out std_logic;
 
 		xdr_st_dqs : out std_logic_vector(data_bytes-1 downto 0) := (others => '-');
@@ -83,18 +84,18 @@ use hdl4fpga.std.all;
 
 architecture mix of xdr is
 	constant debug : boolean := false;
-	subtype byte is std_logic_vector(0 to byte_bits-1);
+	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal xdr_init_rdy : std_logic;
-	signal xdr_init_ras : std_logic;
-	signal xdr_init_cas : std_logic;
-	signal xdr_init_we  : std_logic;
-	signal xdr_init_a   : std_logic_vector(addr_bits-1 downto 0);
-	signal xdr_init_b   : std_logic_vector(bank_bits-1 downto 0);
-	signal xdr_init_cke : std_logic;
-	signal xdr_init_cfg : std_logic;
-	signal xdr_init_dll : std_logic;
+	signal xdr_cfg_rdy : std_logic;
+	signal xdr_cfg_ras : std_logic;
+	signal xdr_cfg_cas : std_logic;
+	signal xdr_cfg_we  : std_logic;
+	signal xdr_cfg_a   : std_logic_vector(addr_bits-1 downto 0);
+	signal xdr_cfg_b   : std_logic_vector(bank_bits-1 downto 0);
+	signal xdr_cfg_cke : std_logic;
+	signal xdr_cfg_req : std_logic;
+	signal xdr_cfg_dll : std_logic;
 
 	signal dll_timer_rdy : std_logic;
 
@@ -132,162 +133,7 @@ architecture mix of xdr is
 	signal clk90 : std_logic;
 	signal xdr_wr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
 
-	function casdb (
-		constant cl  : real;
-		constant std : positive range 1 to 3)
-		return std_logic_vector is
-
-		type castab is array (natural range <>) of std_logic_vector(0 to 2);
-
-		constant cas1db : castab(0 to 3-1)  := ("010", "110", "011");
-		constant cas2db : castab(3 to 8-1)  := ("011", "100", "101", "110", "111");
-		constant cas3db : castab(5 to 12-1) := ("001", "010", "011", "100", "101", "110", "111");
-
-		constant frac : real := cl-floor(cl);
-	begin
-
-		case std is
-		when 1 =>
-			assert 2.0 <= cl and cl <= 3.0
-			report "Invalid DDR1 cas latency"
-			severity FAILURE;
-
-			if cl = 2.0 then
-				return cas1db(0);
-			elsif cl = 2.5 then
-				return cas1db(1);
-			else
-				return cas1db(2);
-			end if;
-
-		when 2 =>
-			assert 3.0 <= cl and cl <= 7.0
-			report "Invalid DDR2 cas latency"
-			severity FAILURE;
-			
-			return cas2db(natural(floor(cl)));
-
-		when 3 =>
-			assert 5.0 <= cl and cl <= 11.0
-			report "Invalid DDR3 cas latency"
-			severity FAILURE;
-			
-			return cas3db(natural(floor(cl)));
-		end case;
-	end;
-
-	function bldb (
-		constant bl  : natural;
-		constant std : natural)
-		return std_logic_vector is
-		type bltab is array (natural range <>) of std_logic_vector(0 to 2);
-
-		constant bl1db : bltab(0 to 2) := ("001", "010", "011");
-		constant bl2db : bltab(2 to 3) := ("010", "011");
-		constant bl3db : bltab(0 to 2) := ("000", "001", "010");
-	begin
-		case std is
-		when 1 =>
-			for i in bl1db'range loop
-				if bl=2**(i+1) then
-					return bl1db(i);
-				end if;
-			end loop;
-
-		when 2 =>
-			for i in bl2db'range loop
-				if bl=2**i then
-					return bl2db(i);
-				end if;
-			end loop;
-
-		when 3 =>
-			for i in bl3db'range loop
-				if bl=2**(i+1) then
-					return bl3db(i);
-				end if;
-			end loop;
-
-		when others =>
-			report "Invalid DDR version"
-			severity FAILURE;
-
-			return (0 to 2 => '-');
-		end case;
-
-		report "Invalid Burst Length"
-		severity FAILURE;
-		return (0 to 2 => '-');
-	end;
-
-	function wrdb (
-		constant wr  : natural;
-		constant std : positive range 2 to 3)
-		return std_logic_vector is
-		type wrtab is array (natural range <>) of std_logic_vector(0 to 2);
-
-		constant wr2db  : wrtab(0 to 7-1) := ("001", "010", "011", "100", "101", "110", "111");
-		constant wr2idx : hdl4fpga.std.natural_vector(wr2db'range) := (2, 3, 4, 5, 6, 7, 8);
-
-		constant wr3db  : wrtab(0 to 6-1) := ("001", "010", "011", "100", "101", "110");
-		constant wr3idx : hdl4fpga.std.natural_vector(wr3db'range) := (5, 6, 7, 8, 10, 12);
-
-	begin
-		case std is
-		when 2 =>
-			for i in wr2db'range loop
-				if wr = wr2idx(i) then
-					return wr2db(i);
-				end if;
-			end loop;
-
-			report "Invalid DDR2 Write Recovery"
-			severity FAILURE;
-
-		when 3 =>
-			for i in wr3db'range loop
-				if wr = wr3idx(i) then
-					return wr3db(i);
-				end if;
-			end loop;
-
-			report "Invalid DDR3 Write Recovery"
-			severity FAILURE;
-		end case;
-
-		return (0 to 2 => '-');
-	end;
-
-	function cwldb (
-		constant cwl : natural;
-		constant std : positive range 1 to 3)
-		return std_logic_vector is
-		type cwltab is array (natural range <>) of std_logic_vector(0 to 2);
-
-		constant cwl3db  : cwltab(0 to 4-1) := ("000", "001", "010", "011");
-		constant cwl3idx : hdl4fpga.std.natural_vector(cwl3db'range) := (5, 6, 7, 8);
-
-	begin
-		case std is
-		when 3 =>
-			for i in cwl3db'range loop
-				if cwl = cwl3idx(i) then
-					return cwl3db(i);
-				end if;
-			end loop;
-
-			report "Invalid CAS Write Latency"
-			severity FAILURE;
-			return (0 to 2 => '-');
-
-		when others =>
-			report "Invalid DDR version"
-			severity WARNING;
-
-			return (0 to 2 => '-');
-		end case;
-	end;
-	constant cas : std_logic_vector(0 to 2) := casdb(cl, std); 
+	constant cas : std_logic_vector(0 to 2) := lkup_lat(std, CL, cl); 
 begin
 
 	clk0  <= sys_clk0;
@@ -311,18 +157,18 @@ begin
 		sys_clk => sys_clk0,
 		sys_rst => rst,
 		sys_ini => dll_timer_rdy,
-		sys_cke => xdr_init_cke,
+		sys_cke => xdr_cfg_cke,
 		sys_ras => xdr_mpu_ras,
 		sys_cas => xdr_mpu_cas,
 		sys_we  => xdr_mpu_we,
 		sys_odt => dll_timer_rdy,
 		sys_a   => sys_a,
 		sys_b   => sys_ba,
-		sys_ini_ras => xdr_init_ras,
-		sys_ini_cas => xdr_init_cas,
-		sys_ini_we  => xdr_init_we,
-		sys_ini_a   => xdr_init_a,
-		sys_ini_b   => xdr_init_b,
+		sys_ini_ras => xdr_cfg_ras,
+		sys_ini_cas => xdr_cfg_cas,
+		sys_ini_we  => xdr_cfg_we,
+		sys_ini_a   => xdr_cfg_a,
+		sys_ini_b   => xdr_cfg_b,
 
 		xdr_odt => xdr_odt,
 		xdr_ras => xdr_ras,
@@ -345,100 +191,44 @@ begin
 	port map (
 		xdr_timer_clk => sys_clk,
 		xdr_timer_rst => rst,
-		xdr_init_rst  => xdr_rst,
-		xdr_init_cke  => xdr_init_cke,
-		xdr_init_cfg  => xdr_init_cfg,
-		dll_timer_req => xdr_init_dll,
+		xdr_cfg_rst  => xdr_rst,
+		xdr_cfg_cke  => xdr_cfg_cke,
+		xdr_cfg_req  => xdr_cfg_req,
+		dll_timer_req => xdr_cfg_dll,
 		dll_timer_rdy => dll_timer_rdy,
-		ref_timer_req => xdr_init_rdy,
+		ref_timer_req => xdr_cfg_rdy,
 		ref_timer_rdy => xdr_mpu_ref);
 
-	ddr1_init_g : if std=1 generate
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr1)
-		generic map (
-			a    => addr_bits,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => natural(ceil(tMRD/tCp)),
-			tRFC => natural(ceil(tRFC/tCp)))
-		port map (
-			xdr_init_cl  => casdb (cl, std),
-			xdr_init_bl  => bldb  (bl, std),
+	xdr_cfg_du : xdr_cfg
+	generic map (
+		a    => addr_bits,
+		cRP  => (tRP +tCP)/tCP,
+		cMRD => (tMRD+tCP)/tCP,
+		cRFC => (tRFC+tCP)/tCP)
+	port map (
+		xdr_cfg_cl  => lkup_lat(std, CL,  cl),
+		xdr_cfg_bl  => lkup_lat(std, BL,  bl),
+		xdr_cfg_wr  => lkup_lat(std, WR,  wr),
+		xdr_cfg_cwl => lkup_lat(std, CWL, cwl),
 
-			xdr_init_clk => sys_clk,
-			xdr_init_req => xdr_init_cfg,
-			xdr_init_rdy => xdr_init_rdy,
-			xdr_init_dll => xdr_init_dll,
-			xdr_init_ras => xdr_init_ras,
-			xdr_init_cas => xdr_init_cas,
-			xdr_init_we  => xdr_init_we,
-			xdr_init_a   => xdr_init_a,
-			xdr_init_b   => xdr_init_b);
-	end generate;
-
-	ddr2_init_g : if std=2 generate
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr2)
-		generic map (
-			lat_length => 9,
-
-			a => addr_bits,
-
-			tRP  => natural(ceil(tRP/tCP)),
-			tMRD => 2,
-			tMOD => natural(ceil(12.0/tCP))+2,
-			tRFC => natural(ceil(tRFC/tCP)))
-		port map (
-			xdr_init_cl  => casdb (cl, std),
-			xdr_init_bl  => bldb  (bl, std),
-			xdr_init_wr  => wrdb  (wr, std),
-
-			xdr_init_clk => sys_clk,
-			xdr_init_req => xdr_init_cfg,
-			xdr_init_rdy => xdr_init_rdy,
-			xdr_init_dll => xdr_init_dll,
-			xdr_init_ras => xdr_init_ras,
-			xdr_init_cas => xdr_init_cas,
-			xdr_init_we  => xdr_init_we,
-			xdr_init_a   => xdr_init_a,
-			xdr_init_b   => xdr_init_b);
-	end generate;
-
-	ddr3_init_g : if std=3 generate
-		signal ba3 : std_logic_vector(2 downto 0);
-	begin
-		xdr_init_b <= ba3(1 downto 0);
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr3)
-		generic map (
-			lat_length => 9,
-			a    => addr_bits,
-			ba   => 3,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => 4,
-			tRFC => natural(ceil(tRFC/tCp)))
-		port map (
-			xdr_init_cl  => casdb (cl,  std),
-			xdr_init_bl  => bldb  (bl,  std),
-			xdr_init_wr  => wrdb  (wr,  std),
-			xdr_init_cwl => cwldb (cwl, std),
-
-			xdr_init_clk => sys_clk,
-			xdr_init_req => xdr_init_cfg,
-			xdr_init_rdy => xdr_init_rdy,
-			xdr_init_dll => xdr_init_dll,
-			xdr_init_ras => xdr_init_ras,
-			xdr_init_cas => xdr_init_cas,
-			xdr_init_we  => xdr_init_we,
-			xdr_init_a   => xdr_init_a,
-			xdr_init_b   => ba3);
-	end generate;
+		xdr_cfg_clk => sys_clk,
+		xdr_cfg_req => xdr_cfg_req,
+		xdr_cfg_rdy => xdr_cfg_rdy,
+		xdr_cfg_dll => xdr_cfg_dll,
+		xdr_cfg_ras => xdr_cfg_ras,
+		xdr_cfg_cas => xdr_cfg_cas,
+		xdr_cfg_we  => xdr_cfg_we,
+		xdr_cfg_a   => xdr_cfg_a,
+		xdr_cfg_b   => xdr_cfg_b);
 
 	process (sys_clk)
 		variable q : std_logic;
 	begin
 		if rising_edge(sys_clk) then
---			xdr_mpu_rst <= not (xdr_init_rdy and dll_timer_rdy);
+--			xdr_mpu_rst <= not (xdr_cfg_rdy and dll_timer_rdy);
 			xdr_mpu_rst <= q;
-			q := not (xdr_init_rdy and dll_timer_rdy);
-			sys_ini     <= xdr_init_rdy and dll_timer_rdy;
+			q := not (xdr_cfg_rdy and dll_timer_rdy);
+			sys_ini     <= xdr_cfg_rdy and dll_timer_rdy;
 		end if;
 	end process;
 
@@ -511,7 +301,7 @@ begin
 		data_delay => 2, --std,
 		data_phases => data_phases,
 		data_bytes => data_bytes,
-		byte_bits  => byte_bits)
+		byte_size  => byte_size)
 	port map (
 		sys_clk => clk0,
 		sys_do  => sys_do,
@@ -528,7 +318,7 @@ begin
 		std => std,
 		data_phases => data_phases,
 		data_bytes => data_bytes,
-		byte_bits  => byte_bits)
+		byte_size  => byte_size)
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,
@@ -545,7 +335,7 @@ begin
 		data_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
 		data_edges => data_edges,
 		data_bytes => data_bytes,
-		byte_bits  => byte_bits)
+		byte_size  => byte_size)
 	port map (
 		xdr_io_clk => clk90,
 		xdr_io_dq  => xdr_wr_dq,

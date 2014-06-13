@@ -1,18 +1,16 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.math_real.all;
 
 package xdr_param is
 	component xdr_cfg is
 		generic (
-			lat_size : natural := 5;
-			trp  : natural := 10;
-			tmrd : natural := 11;
-		    trfc : natural := 13;
-		    tmod : natural := 13;
+			cRP  : natural := 10;
+			cMRD : natural := 11;
+		    cRFC : natural := 13;
+		    cMOD : natural := 13;
 
-			a    : natural := 13;
-			ba   : natural := 2);
+			a  : natural := 13;
+			ba : natural := 2);
 		port (
 			xdr_cfg_ods : in  std_logic := '0';
 			xdr_cfg_rtt : in  std_logic_vector(1 downto 0) := "01";
@@ -35,116 +33,141 @@ package xdr_param is
 			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
 	end component;
 
-	type lat_reg is (CL, BL, WRL, CWL);
+	type mark_ids is (M6T, M107);
+	type latr_ids is (CL, BL, WRL, CWL);
+	type tmng_ids is (
+		tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 
-	function lookup_lat (
+	function lkup_lat (
 		constant std : positive;
-		constant reg : lat_reg;
-		constant lat : positive);	-- DDR1 CL must be multiplied by 2 before looking up
+		constant reg : latr_ids;
+		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking it up
 		return std_logic_vector;
+
+	function lkup_tmng (
+		mark  : mark_ids;
+		param : tmng_ids) 
+		return time;
 
 end package;
 
 package body xdr_param is
 
-	type lat_record is record
+	type timing_record is record
+		mark  : mark_ids;
 		std   : positive;
-		reg   : lat_reg;
-		lat   : positive;
-		code  : std_logic_vector(0 to 2);
+		param : tmng_ids;
+		value : time;
 	end record;
 
-	type lattab is array (natural range <>) of lat_record;
+	type timing_tab is array (natural range <>) of timing_record;
 
-	constant casdb : lattab := (
+	constant timing_db : timing_tab(0 to 6-1) := (
+		timing_record'(mark => M6T, std => 1, param => tWR,   value => 15 ns) &
+		timing_record'(mark => M6T, std => 1, param => tRP,   value => 15 ns) &
+		timing_record'(mark => M6T, std => 1, param => tRCD,  value => 15 ns) &
+		timing_record'(mark => M6T, std => 1, param => tRFC,  value => 72 ns) &
+		timing_record'(mark => M6T, std => 1, param => tMRD,  value => 12 ns) &
+		timing_record'(mark => M6T, std => 1, param => tREFI, value =>  7 us));
+
+	type latency_record is record
+		std  : positive;
+		reg  : latr_ids;
+		lat  : positive;
+		code : std_logic_vector(0 to 2);
+	end record;
+
+	type latency_tab is array (natural range <>) of latency_record;
+
+	constant latency_db : latency_tab(0 to 40-1) :=
 
 		-- DDR1 standard --
 		-------------------
 
 		-- CL register --
 
-		std => 1, lat_reg => CL,  lat =>  4, code => "010",
-		std => 1, lat_reg => CL,  lat =>  5, code => "110",
-		std => 1, lat_reg => CL,  lat =>  6, code => "011",
+		latency_record'(std => 1, reg => CL,  lat =>  4, code => "010") &
+		latency_record'(std => 1, reg => CL,  lat =>  5, code => "110") &
+		latency_record'(std => 1, reg => CL,  lat =>  6, code => "011") &
 
 		-- BL register --
 
-		std => 1, lat_reg => BL,  lat =>  2, code => "001",
-		std => 1, lat_reg => BL,  lat =>  4, code => "010",
-		std => 1, lat_reg => BL,  lat =>  8, code => "011",
+		latency_record'(std => 1, reg => BL,  lat =>  2, code => "001") &
+		latency_record'(std => 1, reg => BL,  lat =>  4, code => "010") &
+		latency_record'(std => 1, reg => BL,  lat =>  8, code => "011") &
 
 		-- DDR2 standard --
 		-------------------
 
 		-- CL register --
 
-		std => 2, lat_reg => CL,  lat =>  3, code => "011",
-		std => 2, lat_reg => CL,  lat =>  4, code => "100",
-		std => 2, lat_reg => CL,  lat =>  5, code => "101",
-		std => 2, lat_reg => CL,  lat =>  6, code => "110",
-		std => 2, lat_reg => CL,  lat =>  7, code => "111",
+		latency_record'(std => 2, reg => CL,  lat =>  3, code => "011") &
+		latency_record'(std => 2, reg => CL,  lat =>  4, code => "100") &
+		latency_record'(std => 2, reg => CL,  lat =>  5, code => "101") &
+		latency_record'(std => 2, reg => CL,  lat =>  6, code => "110") &
+		latency_record'(std => 2, reg => CL,  lat =>  7, code => "111") &
 
 		-- BL register --
 
-		std => 2, lat_reg => BL,  lat =>  4, code => "010",
-		std => 2, lat_reg => BL,  lat =>  8, code => "011",
+		latency_record'(std => 2, reg => BL,  lat =>  4, code => "010") &
+		latency_record'(std => 2, reg => BL,  lat =>  8, code => "011") &
 
 		-- WRL register --
 
-		std => 2, lat_reg => WRL, lat =>  2, code => "001",
-		std => 2, lat_reg => WRL, lat =>  3, code => "010",
-		std => 2, lat_reg => WRL, lat =>  4, code => "011",
-		std => 2, lat_reg => WRL, lat =>  5, code => "100",
-		std => 2, lat_reg => WRL, lat =>  6, code => "101",
-		std => 2, lat_reg => WRL, lat =>  7, code => "110",
-		std => 2, lat_reg => WRL, lat =>  8, code => "111",
+		latency_record'(std => 2, reg => WRL, lat =>  2, code => "001") &
+		latency_record'(std => 2, reg => WRL, lat =>  3, code => "010") &
+		latency_record'(std => 2, reg => WRL, lat =>  4, code => "011") &
+		latency_record'(std => 2, reg => WRL, lat =>  5, code => "100") &
+		latency_record'(std => 2, reg => WRL, lat =>  6, code => "101") &
+		latency_record'(std => 2, reg => WRL, lat =>  7, code => "110") &
+		latency_record'(std => 2, reg => WRL, lat =>  8, code => "111") &
 
 		-- DDR3 standard --
 		-------------------
 
 		-- CL register --
 
-		std => 3, lat_reg => CL,  lat =>  5, code => "001",
-		std => 3, lat_reg => CL,  lat =>  6, code => "010",
-		std => 3, lat_reg => CL,  lat =>  7, code => "011",
-		std => 3, lat_reg => CL,  lat =>  8, code => "100",
-		std => 3, lat_reg => CL,  lat =>  9, code => "101",
-		std => 3, lat_reg => CL,  lat => 10, code => "110",
-		std => 3, lat_reg => CL,  lat => 11, code => "111",
+		latency_record'(std => 3, reg => CL,  lat =>  5, code => "001") &
+		latency_record'(std => 3, reg => CL,  lat =>  6, code => "010") &
+		latency_record'(std => 3, reg => CL,  lat =>  7, code => "011") &
+		latency_record'(std => 3, reg => CL,  lat =>  8, code => "100") &
+		latency_record'(std => 3, reg => CL,  lat =>  9, code => "101") &
+		latency_record'(std => 3, reg => CL,  lat => 10, code => "110") &
+		latency_record'(std => 3, reg => CL,  lat => 11, code => "111") &
 
 		-- BL register --
 
-		std => 3, lat_reg => BL,  lat =>  4, code => "000",
-		std => 3, lat_reg => BL,  lat =>  8, code => "001",
-		std => 3, lat_reg => BL,  lat => 16, code => "010",
+		latency_record'(std => 3, reg => BL,  lat =>  4, code => "000") &
+		latency_record'(std => 3, reg => BL,  lat =>  8, code => "001") &
+		latency_record'(std => 3, reg => BL,  lat => 16, code => "010") &
 
 		-- WRL register --
 
-		std => 3, lat_reg => WRL, lat =>  5, code => "001",
-		std => 3, lat_reg => WRL, lat =>  6, code => "010",
-		std => 3, lat_reg => WRL, lat =>  7, code => "011",
-		std => 3, lat_reg => WRL, lat =>  8, code => "100",
-		std => 3, lat_reg => WRL, lat => 10, code => "101",
-		std => 3, lat_reg => WRL, lat => 12, code => "110",
+		latency_record'(std => 3, reg => WRL, lat =>  5, code => "001") &
+		latency_record'(std => 3, reg => WRL, lat =>  6, code => "010") &
+		latency_record'(std => 3, reg => WRL, lat =>  7, code => "011") &
+		latency_record'(std => 3, reg => WRL, lat =>  8, code => "100") &
+		latency_record'(std => 3, reg => WRL, lat => 10, code => "101") &
+		latency_record'(std => 3, reg => WRL, lat => 12, code => "110") &
 
 		-- CWL register --
 
-		std => 3, lat_reg => CWL, lat =>  5, code => "000",
-		std => 3, lat_reg => CWL, lat =>  6, code => "001",
-		std => 3, lat_reg => CWL, lat =>  7, code => "010",
-		std => 3, lat_reg => CWL, lat =>  8, code => "011");
+		latency_record'(std => 3, reg => CWL, lat =>  5, code => "000") &
+		latency_record'(std => 3, reg => CWL, lat =>  6, code => "001") &
+		latency_record'(std => 3, reg => CWL, lat =>  7, code => "010") &
+		latency_record'(std => 3, reg => CWL, lat =>  8, code => "011");
 
-	function lookup_lat (
+	function lkup_lat (
 		constant std : positive;
-		constant reg : lat_reg;
-		constant lat : positive);	-- DDR1 CL must be multiplied by 2 before looking up
+		constant reg : latr_ids;
+		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
 		return std_logic_vector is
 	begin
-		for i in castab'range loop
-			if castab(i).std = std then
-				if castab(i).reg = reg then
-					if castab(i).lat = lat then
-						return castab(i).code;
+		for i in latency_db'range loop
+			if latency_db(i).std = std then
+				if latency_db(i).reg = reg then
+					if latency_db(i).lat = lat then
+						return latency_db(i).code;
 					end if;
 				end if;
 			end if;
@@ -152,6 +175,25 @@ package body xdr_param is
 
 		report "Invalid DDR Latency"
 		severity FAILURE;
+		return "XXX";
 	end;
 
-end package;
+	function lkup_tmng (
+		mark  : mark_ids;
+		param : tmng_ids) 
+		return time is
+	begin
+		for i in timing_db'range loop
+			if timing_db(i).mark = mark then
+				if timing_db(i).param = param then
+					return timing_db(i).value;
+				end if;
+			end if;
+		end loop;
+
+		report "Invalid DDR Latency"
+		severity FAILURE;
+		return 0 ns;
+	end;
+
+end package body;
