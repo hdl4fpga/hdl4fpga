@@ -5,12 +5,13 @@ use ieee.math_real.all;
 package xdr_param is
 	component xdr_cfg is
 		generic (
-			lat_length : natural := 5;
-			a    : natural := 13;
+			lat_size : natural := 5;
 			trp  : natural := 10;
 			tmrd : natural := 11;
 		    trfc : natural := 13;
 		    tmod : natural := 13;
+
+			a    : natural := 13;
 			ba   : natural := 2);
 		port (
 			xdr_cfg_ods : in  std_logic := '0';
@@ -39,52 +40,76 @@ package xdr_param is
 		constant std : positive range 1 to 3)
 		return std_logic_vector;
 
+	function bldb (
+		constant bl  : natural;
+		constant std : positive)
+		return std_logic_vector;
+
+	function wrdb (
+		constant wr  : natural;
+		constant std : positive)
+		return std_logic_vector;
+
+	function cwldb (
+		constant cwl : natural;
+		constant std : positive)
+		return std_logic_vector;
+
 end package;
 
 package body xdr_param is
 
-	function casdb (
-		constant cl  : real;
-		constant std : positive range 1 to 3)
+	type lat_reg is (CL, BL, WR, CWL);
+	type lat_record is record
+		std   : positive;
+		reg   : lat_reg;
+		lat   : positive;
+		code  : std_logic_vector(0 to 2);
+	end record;
+
+	type lattab is array (natural range <>) of lat_record;
+
+	constant casdb : lattab := (
+		std => 1, lat_reg => CL, lat =>  4, code => "010",
+		std => 1, lat_reg => CL, lat =>  5, code => "110",
+		std => 1, lat_reg => CL, lat =>  6, code => "011",
+
+		std => 2, lat_reg => CL, lat =>  3, code => "011",
+		std => 2, lat_reg => CL, lat =>  4, code => "100",
+		std => 2, lat_reg => CL, lat =>  5, code => "101",
+		std => 2, lat_reg => CL, lat =>  6, code => "110",
+		std => 2, lat_reg => CL, lat =>  7, code => "111",
+
+		std => 3, lat_reg => CL, lat =>  5, code => "001",
+		std => 3, lat_reg => CL, lat =>  6, code => "010",
+		std => 3, lat_reg => CL, lat =>  7, code => "011",
+		std => 3, lat_reg => CL, lat =>  8, code => "100",
+		std => 3, lat_reg => CL, lat =>  9, code => "101",
+		std => 3, lat_reg => CL, lat => 10, code => "110",
+		std => 3, lat_reg => CL, lat => 11, code => "111");
+
+	--
+	-- DDR1 CL must be multiplied by 2 before calling casdb
+	--
+
+	function lkup_lat (
+		constant std : positive;
+		constant reg : lat_reg;
+		constant lat : positive);
 		return std_logic_vector is
-
-		type castab is array (natural range <>) of std_logic_vector(0 to 2);
-
-		constant cas1db : castab(0 to 3-1)  := ("010", "110", "011");
-		constant cas2db : castab(3 to 8-1)  := ("011", "100", "101", "110", "111");
-		constant cas3db : castab(5 to 12-1) := ("001", "010", "011", "100", "101", "110", "111");
-
-		constant frac : real := cl-floor(cl);
 	begin
-
-		case std is
-		when 1 =>
-			assert 2.0 <= cl and cl <= 3.0
-			report "Invalid DDR1 cas latency"
-			severity FAILURE;
-
-			if cl = 2.0 then
-				return cas1db(0);
-			elsif cl = 2.5 then
-				return cas1db(1);
-			else
-				return cas1db(2);
+		for i in castab'range loop
+			if castab(i).std = std then
+				if castab(i).reg = reg then
+					if castab(i).lat = lat then
+						return castab(i).code;
+					end if;
+				end if;
 			end if;
+		end loop;
 
-		when 2 =>
-			assert 3.0 <= cl and cl <= 7.0
-			report "Invalid DDR2 cas latency"
-			severity FAILURE;
-			
-			return cas2db(natural(floor(cl)));
-
-		when 3 =>
-			assert 5.0 <= cl and cl <= 11.0
-			report "Invalid DDR3 cas latency"
-			severity FAILURE;
-			
-			return cas3db(natural(floor(cl)));
-		end case;
+		report "Invalid DDR CL"
+		severity FAILURE;
 	end;
 
 	function bldb (
@@ -198,69 +223,5 @@ package body xdr_param is
 			return (0 to 2 => '-');
 		end case;
 	end;
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr1)
-			a    => addr_bits,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => natural(ceil(tMRD/tCp)),
-			tRFC => natural(ceil(tRFC/tCp)))
-		port map (
-			xdr_init_cl  => casdb (cl, std),
-			xdr_init_bl  => bldb  (bl, std),
-
-	ddr2_init_g : if std=2 generate
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr2)
-		generic map (
-			lat_length => 9,
-
-			a => addr_bits,
-
-			tRP  => natural(ceil(tRP/tCP)),
-			tMRD => 2,
-			tMOD => natural(ceil(12.0/tCP))+2,
-			tRFC => natural(ceil(tRFC/tCP)))
-		port map (
-			xdr_init_cl  => casdb (cl, std),
-			xdr_init_bl  => bldb  (bl, std),
-			xdr_init_wr  => wrdb  (wr, std),
-
-			xdr_init_clk => sys_clk,
-			xdr_init_req => xdr_init_cfg,
-			xdr_init_rdy => xdr_init_rdy,
-			xdr_init_dll => xdr_init_dll,
-			xdr_init_ras => xdr_init_ras,
-			xdr_init_cas => xdr_init_cas,
-			xdr_init_we  => xdr_init_we,
-			xdr_init_a   => xdr_init_a,
-			xdr_init_b   => xdr_init_b);
-	end generate;
-
-	ddr3_init_g : if std=3 generate
-		signal ba3 : std_logic_vector(2 downto 0);
-	begin
-		xdr_init_b <= ba3(1 downto 0);
-		xdr_init_du : entity hdl4fpga.xdr_init(ddr3)
-		generic map (
-			lat_length => 9,
-			a    => addr_bits,
-			ba   => 3,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => 4,
-			tRFC => natural(ceil(tRFC/tCp)))
-		port map (
-			xdr_init_cl  => casdb (cl,  std),
-			xdr_init_bl  => bldb  (bl,  std),
-			xdr_init_wr  => wrdb  (wr,  std),
-			xdr_init_cwl => cwldb (cwl, std),
-
-			xdr_init_clk => sys_clk,
-			xdr_init_req => xdr_init_cfg,
-			xdr_init_rdy => xdr_init_rdy,
-			xdr_init_dll => xdr_init_dll,
-			xdr_init_ras => xdr_init_ras,
-			xdr_init_cas => xdr_init_cas,
-			xdr_init_we  => xdr_init_we,
-			xdr_init_a   => xdr_init_a,
-			xdr_init_b   => ba3);
-	end generate;
 
 end package;
