@@ -34,9 +34,9 @@ package xdr_param is
 	end component;
 
 	type mark_ids is (M6T, M107);
+	type tmng_ids is (tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (CL, BL, WRL, CWL);
-	type tmng_ids is (
-		tWR, tRP, tRCD, tRFC, tMRD, tREFI);
+	type cfgt_ids is (cPreRST, cPstRST);
 
 	function lkup_lat (
 		constant std : positive;
@@ -51,8 +51,30 @@ package xdr_param is
 
 end package;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 package body xdr_param is
 
+		cPreRST => natural(t200u/tCP),
+--		c200u => natural(2000.0/tCP),
+		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
+		cPstRST => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
+--		c500u => natural(3000.0),
+		cxpr  => natural(txpr/tCP),
+		cREF  => natural(floor(tREFI/tCP)),
+		std   => std)
+
+	type cnftmng_record is record
+		std   : positive;
+		param : cfgt_ids;
+		value : time;
+	end record;
+
+	type cnftmng_tab is array (natural range <>) of cnftmng_record;
+
+	constant cnftmng_db : cnftmng_tab := 
+		cnftmng_record'(
 	type timing_record is record
 		mark  : mark_ids;
 		std   : positive;
@@ -62,13 +84,13 @@ package body xdr_param is
 
 	type timing_tab is array (natural range <>) of timing_record;
 
-	constant timing_db : timing_tab(0 to 6-1) := (
+	constant timing_db : timing_tab(0 to 6-1) := 
 		timing_record'(mark => M6T, std => 1, param => tWR,   value => 15 ns) &
 		timing_record'(mark => M6T, std => 1, param => tRP,   value => 15 ns) &
 		timing_record'(mark => M6T, std => 1, param => tRCD,  value => 15 ns) &
 		timing_record'(mark => M6T, std => 1, param => tRFC,  value => 72 ns) &
 		timing_record'(mark => M6T, std => 1, param => tMRD,  value => 12 ns) &
-		timing_record'(mark => M6T, std => 1, param => tREFI, value =>  7 us));
+		timing_record'(mark => M6T, std => 1, param => tREFI, value =>  7 us);
 
 	type latency_record is record
 		std  : positive;

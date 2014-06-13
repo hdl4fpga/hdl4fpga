@@ -180,13 +180,11 @@ begin
 
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
-		c200u => natural(t200u/tCP),
---		c200u => natural(2000.0/tCP),
+		c200u => (t200u+tCP)/tCP,
 		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
 		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
---		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
-		cREF  => natural(floor(tREFI/tCP)),
+		cREF  => (tREFI+tCP)/tCP,
 		std   => std)
 	port map (
 		xdr_timer_clk => sys_clk,
@@ -283,17 +281,6 @@ begin
 		xdr_pgm_rdy => sys_cmd_rdy,
 		xdr_pgm_req => xdr_mpu_rdy,
 		xdr_pgm_rw  => sys_rw);
-
---	xdr_clks_e : entity hdl4fpga.xdr_clks
---	generic map (
---		data_phases => data_phases,
---		data_edges  => data_edges,
---		data_bytes  => data_bytes)
---	port map (
---		sys_clk  => clk0,
---		xdr_dqsi => xdr_dqsi,
---		phs_clk  => 
---		phs_dqs  => );
 
 	xdr_win_dqs <= xdr_st_lp_dqs;
 	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo

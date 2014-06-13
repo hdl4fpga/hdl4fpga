@@ -7,12 +7,12 @@ use hdl4fpga.std.all;
 
 entity xdr_timer is
 	generic ( 
-		c200u : natural := 40000;
-		cDLL  : natural := 200;
-		cREF  : natural := 1440;
-		c500u : natural := 100000;
-		cxpr  : natural := 10;
-		std   : positive := 3);
+		cPreRST : natural := 40000;
+		cPstRST : natural := 100000;
+		cDLL : natural := 200;
+		cREF : natural := 1440;
+		cxpr : natural := 10;
+		std  : natural := 3);
 	port (
 		xdr_timer_clk : in  std_logic;
 		xdr_timer_rst : in  std_logic;
@@ -31,7 +31,7 @@ entity xdr_timer is
 end;
 
 architecture def of xdr_timer is
-	type timer_ids is (tid_200u, tid_dll, tid_ref, tid_500u, tid_xpr);
+	type timer_ids is (tid_PreRST, tid_dll, tid_ref, tid_PstRST, tid_xpr);
 
 	type tidtab_row is record
 		q : timer_ids;
@@ -42,23 +42,23 @@ architecture def of xdr_timer is
 	type tidtab_vector is array (natural range <>) of tid_table;
 	constant timer_tab : tidtab_vector(1 to 3) := (
 		1 => (                  --  rcgdf
-			tid_200u => (tid_dll,  "-1100", "000"),
-			tid_dll  => (tid_ref,  "-1111", "001"),
-			tid_ref  => (tid_ref,  "-1111", "010"),
-			tid_500u => (tid_200u, "-----", "---"),
-			tid_xpr  => (tid_200u, "-----", "---")),
+			tid_PreRST => (tid_dll,    "-1100", "000"),
+			tid_dll    => (tid_ref,    "-1111", "001"),
+			tid_ref    => (tid_ref,    "-1111", "010"),
+			tid_PstRST => (tid_PreRST, "-----", "---"),
+			tid_xpr    => (tid_PreRST, "-----", "---")),
 		2 => (
-			tid_200u => (tid_500u, "-1000", "000"),
-			tid_dll  => (tid_ref,  "-1111", "001"),
-			tid_ref  => (tid_ref,  "-1111", "010"),
-			tid_500u => (tid_dll,  "-1100", "011"),
-			tid_xpr  => (tid_200u, "-----", "---")),
+			tid_PreRST => (tid_PstRST, "-1000", "000"),
+			tid_dll    => (tid_ref,    "-1111", "001"),
+			tid_ref    => (tid_ref,    "-1111", "010"),
+			tid_PstRST => (tid_dll,    "-1100", "011"),
+			tid_xpr    => (tid_PreRST, "-----", "---")),
 		3 => (
-			tid_200u => (tid_500u, "10000", "000"),
-			tid_dll  => (tid_ref,  "11111", "001"),
-			tid_ref  => (tid_ref,  "11111", "010"),
-			tid_500u => (tid_xpr,  "11000", "011"),
-			tid_xpr  => (tid_dll,  "11100", "100")));
+			tid_PreRST => (tid_PstRST, "10000", "000"),
+			tid_dll    => (tid_ref,    "11111", "001"),
+			tid_ref    => (tid_ref,    "11111", "010"),
+			tid_PstRST => (tid_xpr,    "11000", "011"),
+			tid_xpr    => (tid_dll,    "11100", "100")));
 
 	signal timer_rdy : std_logic;
 	signal timer_req : std_logic;
@@ -94,11 +94,11 @@ begin
 	process (timer_div(0), xdr_timer_rst)
 		type tword_vector is array(natural range <>) of natural range 0 to 2**(timer'length-1)-1;
 		constant time_data : tword_vector(0 to 5-1) := (
-			timer_ids'pos(tid_200u) => (c200u+2**timer_div'length-1)/2**timer_div'length,
-			timer_ids'pos(tid_dll)  => (cDLL+2**timer_div'length-1)/2**timer_div'length,
-			timer_ids'pos(tid_ref)  => (cREF/2**timer_div'length)-5,
-			timer_ids'pos(tid_500u) => (c500u+2**timer_div'length-1)/2**timer_div'length,
-			timer_ids'pos(tid_xpr)  => (cxpr+2**timer_div'length-1)/2**timer_div'length);
+			timer_ids'pos(tid_PreRST) => (cPreRST+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_dll) => (cDLL+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_ref) => (cREF/2**timer_div'length)-5,
+			timer_ids'pos(tid_PstRST) => (cPstRST+2**timer_div'length-1)/2**timer_div'length,
+			timer_ids'pos(tid_xpr) => (cxpr+2**timer_div'length-1)/2**timer_div'length);
 	begin
 		if xdr_timer_rst='1' then
 			timer <= to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
@@ -139,7 +139,7 @@ begin
 		variable o_tid  : timer_ids;
 	begin
 		if xdr_timer_rst='1' then
-			timer_id <= tid_200u;
+			timer_id <= tid_PreRST;
 			z <= (others => '0');
 			next_tid  := timer_tab(std)(timer_id).q;
 			timer_req <= '0';
