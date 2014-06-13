@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 entity xdr_cfg is
 	generic (
-		lat_size : natural := 5;
-		a    : natural := 13;
-		trp  : natural := 10;
-		tmrd : natural := 11;
-	    trfc : natural := 13;
-	    tmod : natural := 13;
-		ba   : natural := 2);
+		cRP  : natural := 10;
+		cMRD : natural := 11;
+	    cRFC : natural := 13;
+	    cMOD : natural := 13;
+
+		a  : natural := 13;
+		ba : natural :=  2);
 	port (
 		xdr_cfg_ods : in  std_logic := '0';
 		xdr_cfg_rtt : in  std_logic_vector(1 downto 0) := "01";
@@ -41,18 +41,19 @@ entity xdr_cfg is
 	constant cmd_pre  : std_logic_vector(0 to 2) := "010";
 	constant cmd_lmr  : std_logic_vector(0 to 2) := "000";
 	constant cmd_zqcl : std_logic_vector(0 to 2) := "110";
-
-	type xdr_code is record
-		xdr_cmd : std_logic_vector(0 to 2);
-		xdr_lat : signed(0 to lat_size-1);
-	end record;
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_cfg : entity is "compact";
 end;
 
 architecture ddr1 of xdr_cfg is
-	type xdr_labels is (s_pall1, s_lmr1, s_lmr2, s_pall2, s_auto1, s_auto2, s_lmr3, s_end);
+	constant lat_size : natural := 5;
 
+	type xdr_code is record
+		xdr_cmd : std_logic_vector(0 to 2);
+		xdr_lat : signed(0 to lat_size-1);
+	end record;
+
+	type xdr_labels is (s_pall1, s_lmr1, s_lmr2, s_pall2, s_auto1, s_auto2, s_lmr3, s_end);
 	type xdr_cfg_insr is record
 		lbl  : xdr_labels;
 		code : xdr_code;
@@ -60,13 +61,13 @@ architecture ddr1 of xdr_cfg is
 
 	type xdr_state_tab is array (xdr_labels) of xdr_cfg_insr;
 	constant xdr_cfg_pgm : xdr_state_tab := (
-		s_pall1 => (s_lmr1,  (cmd_pre,  to_signed ( trp-2, lat_size))),
-		s_lmr1  => (s_lmr2,  (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		s_lmr2  => (s_pall2, (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		s_pall2 => (s_auto1, (cmd_pre,  to_signed ( trp-2, lat_size))),
-		s_auto1 => (s_auto2, (cmd_auto, to_signed (trfc-2, lat_size))),
-		s_auto2 => (s_lmr3,  (cmd_auto, to_signed (trfc-2, lat_size))),
-		s_lmr3  => (s_end,   (cmd_lmr,  to_signed (tmrd-2, lat_size))),
+		s_pall1 => (s_lmr1,  (cmd_pre,  to_signed ( cRP-2, lat_size))),
+		s_lmr1  => (s_lmr2,  (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		s_lmr2  => (s_pall2, (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		s_pall2 => (s_auto1, (cmd_pre,  to_signed ( cRP-2, lat_size))),
+		s_auto1 => (s_auto2, (cmd_auto, to_signed (cRFC-2, lat_size))),
+		s_auto2 => (s_lmr3,  (cmd_auto, to_signed (cRFC-2, lat_size))),
+		s_lmr3  => (s_end,   (cmd_lmr,  to_signed (cMRD-2, lat_size))),
 		s_end   => (s_end,   (cmd_nop,  (1 to lat_size => '1'))));
 
 	signal lat_timer  : signed(0 to lat_size-1);
@@ -146,6 +147,12 @@ begin
 end;
 
 architecture ddr2 of xdr_cfg is
+	constant lat_size : natural := 9;
+
+	type xdr_code is record
+		xdr_cmd : std_logic_vector(0 to 2);
+		xdr_lat : signed(0 to lat_size-1);
+	end record;
 
 	type xdr_labels is (
 		lb_pall1, lb_lemr2, lb_lemr3,
@@ -161,17 +168,17 @@ architecture ddr2 of xdr_cfg is
 	type xdr_state_code is array (xdr_labels) of xdr_cfg_insr;
 
 	constant xdr_cfg_pgm : xdr_state_code := (
-		(lb_lemr2, (cmd_pre,  to_signed ( trp-2, lat_size))),
-		(lb_lemr3, (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_edll,  (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_rdll,  (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_pall2, (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_auto1, (cmd_pre,  to_signed ( trp-2, lat_size))),
-		(lb_auto2, (cmd_auto, to_signed (trfc-2, lat_size))),
-		(lb_lmr,   (cmd_auto, to_signed (trfc-2, lat_size))),
-		(lb_docd,  (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_xocd,  (cmd_lmr,  to_signed (tmrd-2, lat_size))),
-		(lb_end,   (cmd_lmr,  to_signed (tmod-2, lat_size))),
+		(lb_lemr2, (cmd_pre,  to_signed ( cRP-2, lat_size))),
+		(lb_lemr3, (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_edll,  (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_rdll,  (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_pall2, (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_auto1, (cmd_pre,  to_signed ( cRP-2, lat_size))),
+		(lb_auto2, (cmd_auto, to_signed (cRFC-2, lat_size))),
+		(lb_lmr,   (cmd_auto, to_signed (cRFC-2, lat_size))),
+		(lb_docd,  (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_xocd,  (cmd_lmr,  to_signed (cMRD-2, lat_size))),
+		(lb_end,   (cmd_lmr,  to_signed (cMOD-2, lat_size))),
 		(lb_end,   (cmd_nop,  (0 to lat_size-1 => '1'))));
 
 	signal lat_timer : signed(0 to lat_size-1);
@@ -327,6 +334,12 @@ begin
 end;
 
 architecture ddr3 of xdr_cfg is
+	constant lat_size : natural := 9;
+
+	type xdr_code is record
+		xdr_cmd : std_logic_vector(0 to 2);
+		xdr_lat : signed(0 to lat_size-1);
+	end record;
 
 	type xdr_labels is (
 		lb_lmr2, lb_lmr3, lb_lmr1, lb_lmr0,
@@ -383,11 +396,11 @@ architecture ddr3 of xdr_cfg is
 	constant mr3_mpr : natural := 1;
 
 	constant xdr_cfg_pgm : xdr_state_code := (
-		(lb_lmr3, (cmd_lmr, to_signed (tmrd-2, lat_size))),
-		(lb_lmr1, (cmd_lmr, to_signed (tmrd-2, lat_size))),
-		(lb_lmr0, (cmd_lmr, to_signed (tmrd-2, lat_size))),
-		(lb_zqcl, (cmd_lmr, to_signed (tmrd-2, lat_size))),
-		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_size))),
+		(lb_lmr3, (cmd_lmr, to_signed (cMRD-2, lat_size))),
+		(lb_lmr1, (cmd_lmr, to_signed (cMRD-2, lat_size))),
+		(lb_lmr0, (cmd_lmr, to_signed (cMRD-2, lat_size))),
+		(lb_zqcl, (cmd_lmr, to_signed (cMRD-2, lat_size))),
+		(lb_end, (cmd_zqcl, to_signed (cMRD-2, lat_size))),
 		(lb_end,  (cmd_nop, (1 to lat_size => '1'))));
 
 begin
@@ -396,7 +409,7 @@ begin
 		if rising_edge(xdr_cfg_clk) then
 			if xdr_cfg_req='1' then
 				if lat_timer(0)='1' then
-					lat_timer    <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_lat;
+					lat_timer   <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_lat;
 					xdr_cfg_ras <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(ras);
 					xdr_cfg_cas <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(cas);
 					xdr_cfg_we  <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(rw);
