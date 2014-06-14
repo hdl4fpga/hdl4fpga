@@ -79,7 +79,7 @@ begin
 		if rising_edge(xdr_cfg_clk) then
 			if xdr_cfg_req='1' then
 				if lat_timer(0)='1' then
-					lat_timer    <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_lat;
+					lat_timer   <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_lat;
 					xdr_cfg_ras <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(ras);
 					xdr_cfg_cas <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(cas);
 					xdr_cfg_we  <= xdr_cfg_pgm(xdr_cfg_pc).code.xdr_cmd(rw);
