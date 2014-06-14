@@ -38,7 +38,7 @@ package xdr_param is
 	type latr_ids is (CL, BL, WRL, CWL);
 	type laty_ids is (cDLL);
 
-	function lkup_lat (
+	function lkup_cnfglat (
 		constant std : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking it up
@@ -56,16 +56,10 @@ use hdl4fpga.std.all;
 
 package body xdr_param is
 
-		cPreRST => natural(t200u/tCP),
-		cxpr  => natural(txpr/tCP),
-		cREF  => natural(floor(tREFI/tCP)),
-		cPstRST => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
-		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
-
 	type latency_record is record
 		std   : positive;
-		param : cfgt_ids;
-		value : time;
+		param : laty_ids;
+		value : natural;
 	end record;
 
 	type latency_tab is array (natural range <>) of latency_record;
@@ -84,14 +78,17 @@ package body xdr_param is
 
 	type timing_tab is array (natural range <>) of timing_record;
 
-	constant timing_db : timing_tab(1 to 6) := 
-		timing_record'(mark => M6T, std => 1, param => tPreRST, value => 200 us) &
-		timing_record'(mark => M6T, std => 1, param => tWR,   value => 15 ns) &
-		timing_record'(mark => M6T, std => 1, param => tRP,   value => 15 ns) &
-		timing_record'(mark => M6T, std => 1, param => tRCD,  value => 15 ns) &
-		timing_record'(mark => M6T, std => 1, param => tRFC,  value => 72 ns) &
-		timing_record'(mark => M6T, std => 1, param => tMRD,  value => 12 ns) &
-		timing_record'(mark => M6T, std => 1, param => tREFI, value =>  7 us);
+	constant timing_db : timing_tab(1 to 10) := 
+		timing_record'(mark => M6T,  std => 1, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M6T,  std => 1, param => tWR,   value => 15 ns) &
+		timing_record'(mark => M6T,  std => 1, param => tRP,   value => 15 ns) &
+		timing_record'(mark => M6T,  std => 1, param => tRCD,  value => 15 ns) &
+		timing_record'(mark => M6T,  std => 1, param => tRFC,  value => 72 ns) &
+		timing_record'(mark => M6T,  std => 1, param => tMRD,  value => 12 ns) &
+		timing_record'(mark => M107, std => 3, param => tREFI, value =>  7 us) &
+		timing_record'(mark => M107, std => 3, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M107, std => 3, param => tPstRST, value => 500 us) &
+		timing_record'(mark => M6T,  std => 3, param => tREFI, value =>  7 us);
 
 	type cnfglat_record is record
 		std  : positive;
@@ -180,7 +177,7 @@ package body xdr_param is
 		cnfglat_record'(std => 3, reg => CWL, lat =>  7, code => "010") &
 		cnfglat_record'(std => 3, reg => CWL, lat =>  8, code => "011");
 
-	function lkup_lat (
+	function lkup_cnfglat (
 		constant std : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
@@ -196,7 +193,7 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR Latency"
+		report "Invalid DDR configuration latency"
 		severity FAILURE;
 		return "XXX";
 	end;
@@ -214,9 +211,27 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR Latency"
+		report "Invalid DDR timing"
 		severity FAILURE;
 		return 0 ns;
+	end;
+
+	function lkup_lat (
+		std : natural;
+		param : laty_ids) 
+		return natural is
+	begin
+		for i in latency_db'range loop
+			if latency_db(i).std = std then
+				if latency_db(i).param = param then
+					return latency_db(i).value;
+				end if;
+			end if;
+		end loop;
+
+		report "Invalid DDR latency"
+		severity FAILURE;
+		return 0;
 	end;
 
 end package body;
