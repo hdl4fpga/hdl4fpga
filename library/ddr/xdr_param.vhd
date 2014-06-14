@@ -33,21 +33,41 @@ package xdr_param is
 			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
 	end component;
 
-	type mark_ids is (M6T, M107);
+	type tmrk_ids is (M6T, M107);
 	type tmng_ids is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (CL, BL, WRL, CWL);
 	type laty_ids is (cDLL);
 
-	function lkup_cnfglat (
+	function xdr_cnfglat (
 		constant std : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking it up
 		return std_logic_vector;
 
-	function lkup_tmng (
-		mark  : mark_ids;
+	function xdr_timing (
+		mark  : tmrk_ids;
 		param : tmng_ids) 
 		return time;
+
+	function xdrlatency (
+		std : natural;
+		param : laty_ids) 
+		return natural;
+
+	function xdr_std (
+		mark : tmrk_ids) 
+		return natural;
+
+	function to_xdrlatency (
+		period : time;
+		timing : time)
+		return natural;
+
+	function to_xdrlatency (
+		period : time;
+		mark   : tmrk_ids;
+		param  : tmng_ids)
+		return natural;
 
 end package;
 
@@ -55,6 +75,17 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 package body xdr_param is
+
+	type tmark_record is record
+		mark : tmrk_ids;
+		std  : natural;
+	end record;
+
+	type tmark_tab is array (natural range <>) of tmark_record;
+
+	constant tmark_db : tmark_tab (1 to 2) :=
+		tmark_record'(mark => M6T,  std => 1) &
+		tmark_record'(mark => M107, std => 3);
 
 	type latency_record is record
 		std   : positive;
@@ -70,8 +101,7 @@ package body xdr_param is
 		latency_record'(std => 3, param => cDLL, value => 500);
 
 	type timing_record is record
-		mark  : mark_ids;
-		std   : positive;
+		mark  : tmrk_ids;
 		param : tmng_ids;
 		value : time;
 	end record;
@@ -79,16 +109,16 @@ package body xdr_param is
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab(1 to 10) := 
-		timing_record'(mark => M6T,  std => 1, param => tPreRST, value => 200 us) &
-		timing_record'(mark => M6T,  std => 1, param => tWR,   value => 15 ns) &
-		timing_record'(mark => M6T,  std => 1, param => tRP,   value => 15 ns) &
-		timing_record'(mark => M6T,  std => 1, param => tRCD,  value => 15 ns) &
-		timing_record'(mark => M6T,  std => 1, param => tRFC,  value => 72 ns) &
-		timing_record'(mark => M6T,  std => 1, param => tMRD,  value => 12 ns) &
-		timing_record'(mark => M107, std => 3, param => tREFI, value =>  7 us) &
-		timing_record'(mark => M107, std => 3, param => tPreRST, value => 200 us) &
-		timing_record'(mark => M107, std => 3, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M6T,  std => 3, param => tREFI, value =>  7 us);
+		timing_record'(mark => M6T,  param => tPreRST, value => 200 us) &
+		timing_record'(mark => M6T,  param => tWR,   value => 15 ns) &
+		timing_record'(mark => M6T,  param => tRP,   value => 15 ns) &
+		timing_record'(mark => M6T,  param => tRCD,  value => 15 ns) &
+		timing_record'(mark => M6T,  param => tRFC,  value => 72 ns) &
+		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
+		timing_record'(mark => M107, param => tREFI, value =>  7 us) &
+		timing_record'(mark => M107, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
+		timing_record'(mark => M6T,  param => tREFI, value =>  7 us);
 
 	type cnfglat_record is record
 		std  : positive;
@@ -177,7 +207,7 @@ package body xdr_param is
 		cnfglat_record'(std => 3, reg => CWL, lat =>  7, code => "010") &
 		cnfglat_record'(std => 3, reg => CWL, lat =>  8, code => "011");
 
-	function lkup_cnfglat (
+	function xdr_cnfglat (
 		constant std : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
@@ -198,8 +228,8 @@ package body xdr_param is
 		return "XXX";
 	end;
 
-	function lkup_tmng (
-		mark  : mark_ids;
+	function xdr_timing (
+		mark  : tmrk_ids;
 		param : tmng_ids) 
 		return time is
 	begin
@@ -216,7 +246,7 @@ package body xdr_param is
 		return 0 ns;
 	end;
 
-	function lkup_lat (
+	function xdrlatency (
 		std : natural;
 		param : laty_ids) 
 		return natural is
@@ -232,6 +262,38 @@ package body xdr_param is
 		report "Invalid DDR latency"
 		severity FAILURE;
 		return 0;
+	end;
+
+	function xdr_std (
+		mark : tmrk_ids) 
+		return natural is
+	begin
+		for i in tmark_db'range loop
+			if tmark_db(i).mark = mark then
+				return latency_db(i).value;
+			end if;
+		end loop;
+
+		report "Invalid DDR latency"
+		severity FAILURE;
+		return 0;
+	end;
+
+	function to_xdrlatency (
+		period : time;
+		timing : time)
+		return natural is
+	begin
+		return (timing+period)/period;
+	end;
+
+	function to_xdrlatency (
+		period : time;
+		mark   : tmrk_ids;
+		param  : tmng_ids)
+		return natural is
+	begin
+		return to_xdrlatency(period, xdr_timing(mark, param));
 	end;
 
 end package body;
