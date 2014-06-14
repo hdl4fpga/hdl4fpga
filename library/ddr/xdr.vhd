@@ -180,10 +180,10 @@ begin
 
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
-		c200u => (t200u+tCP)/tCP,
-		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
-		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
-		cxpr  => natural(txpr/tCP),
+		cPreRST => (t200u+tCP)/tCP,
+		cDLL  => lkup_latency(std, cDLL),
+		cPstRST => n,t500u)/tCP),
+		cxpr  => lkup_timings(txpr/tCP),
 		cREF  => (tREFI+tCP)/tCP,
 		std   => std)
 	port map (
