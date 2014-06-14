@@ -1,26 +1,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity xdr is
 	generic (
-		strobe : string := "EXTERNAL";
+		strobe : string := "EXTERNAL_LOOPBACK";
 		std   : positive;
-
 		tCP   : time := 6.0 ns;
-
-		tWR   : time := 0;
-		tRP   : time := 0;
-		tRCD  : time := 0;
-		tRFC  : time := 0;
-		tMRD  : time := 0;
-		tREFI : time := 0;
-
-		cl  : natural := 0;
-		bl  : natural := 0;
-		wr  : natural := 0;
-		cwl : natural := 0;
+		mark : tmark : M6T;
 
 		bank_bits   : natural :=  2;
 		addr_bits   : natural := 13;
@@ -73,10 +62,7 @@ entity xdr is
 	constant f : natural := 1;
 	constant data_edges : natural := sys_dm'length/xdr_dqsi'length;
 
-	constant t200u : real := 200.0e3;
-	constant t500u : real := 500.0e3;
-	constant t400n : real := 400.0;
-	constant txpr  : real := 120.0;
+	constant std : natural := xdr_std(mark);
 end;
 
 library hdl4fpga;
@@ -180,12 +166,12 @@ begin
 
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
-		cPreRST => (t200u+tCP)/tCP,
-		cDLL  => lkup_latency(std, cDLL),
-		cPstRST => n,t500u)/tCP),
-		cxpr  => lkup_timings(txpr/tCP),
-		cREF  => (tREFI+tCP)/tCP,
-		std   => std)
+		cPreRST => to_xdrlatency(tCP, mark, tPreRST),
+		cDLL => xdrlatency(std, cDLL),
+		cPstRST => to_xdrlatency(tCP, mark, tPstRST),
+		cxpr => to_xdrlatency(tCP, mark, tXPR),
+		cREF => to_xdrlatency(tCP, mark, tREFI),
+		std  => std)
 	port map (
 		xdr_timer_clk => sys_clk,
 		xdr_timer_rst => rst,
@@ -200,14 +186,14 @@ begin
 	xdr_cfg_du : xdr_cfg
 	generic map (
 		a    => addr_bits,
-		cRP  => (tRP +tCP)/tCP,
-		cMRD => (tMRD+tCP)/tCP,
-		cRFC => (tRFC+tCP)/tCP)
+		cRP  => to_xdrlatency(tCP, mark, tRP),
+		cMRD => to_xdrlatency(tCP, mark, tMRD),
+		cRFC => to_xdrlatency(tCP, mark, tRFC),
 	port map (
-		xdr_cfg_cl  => lkup_lat(std, CL,  cl),
-		xdr_cfg_bl  => lkup_lat(std, BL,  bl),
-		xdr_cfg_wr  => lkup_lat(std, WR,  wr),
-		xdr_cfg_cwl => lkup_lat(std, CWL, cwl),
+		xdr_cfg_cl  => xdr_cnfglat(std, CL,  cl),
+		xdr_cfg_bl  => xdr_cnfglat(std, BL,  bl),
+		xdr_cfg_wr  => xdr_cnfglat(std, WR,  wr),
+		xdr_cfg_cwl => xdr_cnfglat(std, CWL, cwl),
 
 		xdr_cfg_clk => sys_clk,
 		xdr_cfg_req => xdr_cfg_req,
@@ -235,16 +221,18 @@ begin
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
 		std  => std,
-		tRCD => natural(ceil(tRCD/tCP)),
-		tWR  => natural(ceil(tWR/tCP)),
-		tRP  => natural(ceil(tRP/tCP)),
-		tRFC => natural(ceil(tRFC/tCP)),
 		data_phases => data_phases,
-		data_bytes => data_bytes,
-		data_edges => data_edges,
-		xdr_mpu_bl => bldb(bl,std),
-		xdr_mpu_cwl => cwldb(cwl, std),
-		xdr_mpu_cl => casdb(cl, std))
+		data_bytes  => data_bytes,
+		data_edges  => data_edges,
+
+		tRCD => to_xdrlatency(tCP, mark, tRCD),
+		tWR  => to_xdrlatency(tCP, mark, tWR),
+		tRP  => to_xdrlatency(tCP, mark, tRP),
+		tRFC => to_xdrlatency(tCP, mark, tRFC),
+
+		xdr_mpu_bl  => xdr_cnfglat(std, BL,  bl),
+		xdr_mpu_cwl => xdr_cnfglat(std, CWL, cwl),
+		xdr_mpu_cl  => xdr_cnfglat(std, CL,  cl))
 	port map (
 		xdr_mpu_rst => xdr_mpu_rst,
 		xdr_mpu_clk => clk0,
@@ -285,10 +273,10 @@ begin
 	xdr_win_dqs <= xdr_st_lp_dqs;
 	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
 	generic map (
-		data_delay => 2, --std,
+		data_delay  => std,
 		data_phases => data_phases,
-		data_bytes => data_bytes,
-		byte_size  => byte_size)
+		data_bytes  => data_bytes,
+		byte_size   => byte_size)
 	port map (
 		sys_clk => clk0,
 		sys_do  => sys_do,
@@ -317,50 +305,6 @@ begin
 		xdr_ena => xdr_wr_fifo_ena, 
 		xdr_dq  => xdr_wr_dq);
 		
-	xdr_io_dq_e : entity hdl4fpga.xdr_io_dq
-	generic map (
-		data_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
-		data_edges => data_edges,
-		data_bytes => data_bytes,
-		byte_size  => byte_size)
-	port map (
-		xdr_io_clk => clk90,
-		xdr_io_dq  => xdr_wr_dq,
-		xdr_mpu_dqz => xdr_mpu_dqz,
-		xdr_io_dqz => xdr_io_dqz,
-		xdr_io_dqo => xdr_dqo);
-	xdr_dqz <= xdr_io_dqz;
-
-	xdr_io_dqs_e : entity hdl4fpga.xdr_io_dqs
-	generic map (
-		std => std,
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		data_bytes  => data_bytes)
-	port map (
-		xdr_io_clk => clk0,
-		xdr_io_ena => xdr_mpu_dqs,
-		xdr_mpu_dqsz => xdr_mpu_dqsz,
-		xdr_io_dqsz => xdr_io_dqsz,
-		xdr_io_dqso => xdr_dqso);
-	xdr_dqsz <= xdr_io_dqsz;
-	
-	xdr_mpu_dmx <= xdr_wr_fifo_ena;
---	xdr_io_dm_e : entity hdl4fpga.xdr_io_dm
---	generic map (
---		strobe => strobe,
---		xdr_phases => assign_if(data_phases > 2,unsigned_num_bits(data_phases),0),
---		data_edges => data_edges,
---		data_bytes => data_bytes)
---	port map (
---		sys_dmi
---		sys_dmo
---		xdr_io_clk => xdr_clk,
---		xdr_mpu_st => xdr_mpu_dr,
---		xdr_mpu_dm => xdr_wr_dm,
---		xdr_mpu_dmx => xdr_mpu_dmx,
---		xdr_io_dmo => xdr_dm);
-
 	xdr_st_g : if strobe="EXTERNAL" generate
 		signal st_dqs : std_logic;
 	begin
