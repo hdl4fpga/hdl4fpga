@@ -57,28 +57,23 @@ use hdl4fpga.std.all;
 package body xdr_param is
 
 		cPreRST => natural(t200u/tCP),
---		c200u => natural(2000.0/tCP),
-		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
-		cPstRST => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
---		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(floor(tREFI/tCP)),
-		std   => std)
+		cPstRST => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
+		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
 
-	type cnftmng_record is record
+	type latency_record is record
 		std   : positive;
 		param : cfgt_ids;
 		value : time;
 	end record;
 
-	type cnftmng_tab is array (natural range <>) of cnftmng_record;
+	type latency_tab is array (natural range <>) of latency_record;
 
-	constant cnftmng_db : cnftmng_tab := 
-		cnftmng_record'(std => 1, param => tPreRST, value => 200 us) &
-		cnftmng_record'(std => 2, param => tPreRST, value => 200 us) &
-		cnftmng_record'(std => 3, param => tPreRST, value => 200 us) &
-		cnftmng_record'(std => 2, param => tPstRST, value => 200 us) &
-		cnftmng_record'(std => 3, param => tPstRST, value => 200 us) &
+	constant latency_db : latency_tab (1 to 3) := 
+		latency_record'(std => 1, param => cDLL, value => 200) &
+		latency_record'(std => 2, param => cDLL, value => 200) &
+		latency_record'(std => 3, param => cDLL, value => 500);
 
 	type timing_record is record
 		mark  : mark_ids;
@@ -89,7 +84,8 @@ package body xdr_param is
 
 	type timing_tab is array (natural range <>) of timing_record;
 
-	constant timing_db : timing_tab(0 to 6-1) := 
+	constant timing_db : timing_tab(1 to 6) := 
+		timing_record'(mark => M6T, std => 1, param => tPreRST, value => 200 us) &
 		timing_record'(mark => M6T, std => 1, param => tWR,   value => 15 ns) &
 		timing_record'(mark => M6T, std => 1, param => tRP,   value => 15 ns) &
 		timing_record'(mark => M6T, std => 1, param => tRCD,  value => 15 ns) &
@@ -97,92 +93,92 @@ package body xdr_param is
 		timing_record'(mark => M6T, std => 1, param => tMRD,  value => 12 ns) &
 		timing_record'(mark => M6T, std => 1, param => tREFI, value =>  7 us);
 
-	type latency_record is record
+	type cnfglat_record is record
 		std  : positive;
 		reg  : latr_ids;
 		lat  : positive;
 		code : std_logic_vector(0 to 2);
 	end record;
 
-	type latency_tab is array (natural range <>) of latency_record;
+	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
-	constant latency_db : latency_tab(0 to 40-1) :=
+	constant cnfglat_db : cnfglat_tab(1 to 40) :=
 
 		-- DDR1 standard --
 		-------------------
 
 		-- CL register --
 
-		latency_record'(std => 1, reg => CL,  lat =>  4, code => "010") &
-		latency_record'(std => 1, reg => CL,  lat =>  5, code => "110") &
-		latency_record'(std => 1, reg => CL,  lat =>  6, code => "011") &
+		cnfglat_record'(std => 1, reg => CL,  lat =>  4, code => "010") &
+		cnfglat_record'(std => 1, reg => CL,  lat =>  5, code => "110") &
+		cnfglat_record'(std => 1, reg => CL,  lat =>  6, code => "011") &
 
 		-- BL register --
 
-		latency_record'(std => 1, reg => BL,  lat =>  2, code => "001") &
-		latency_record'(std => 1, reg => BL,  lat =>  4, code => "010") &
-		latency_record'(std => 1, reg => BL,  lat =>  8, code => "011") &
+		cnfglat_record'(std => 1, reg => BL,  lat =>  2, code => "001") &
+		cnfglat_record'(std => 1, reg => BL,  lat =>  4, code => "010") &
+		cnfglat_record'(std => 1, reg => BL,  lat =>  8, code => "011") &
 
 		-- DDR2 standard --
 		-------------------
 
 		-- CL register --
 
-		latency_record'(std => 2, reg => CL,  lat =>  3, code => "011") &
-		latency_record'(std => 2, reg => CL,  lat =>  4, code => "100") &
-		latency_record'(std => 2, reg => CL,  lat =>  5, code => "101") &
-		latency_record'(std => 2, reg => CL,  lat =>  6, code => "110") &
-		latency_record'(std => 2, reg => CL,  lat =>  7, code => "111") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  3, code => "011") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4, code => "100") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  5, code => "101") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  6, code => "110") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  7, code => "111") &
 
 		-- BL register --
 
-		latency_record'(std => 2, reg => BL,  lat =>  4, code => "010") &
-		latency_record'(std => 2, reg => BL,  lat =>  8, code => "011") &
+		cnfglat_record'(std => 2, reg => BL,  lat =>  4, code => "010") &
+		cnfglat_record'(std => 2, reg => BL,  lat =>  8, code => "011") &
 
 		-- WRL register --
 
-		latency_record'(std => 2, reg => WRL, lat =>  2, code => "001") &
-		latency_record'(std => 2, reg => WRL, lat =>  3, code => "010") &
-		latency_record'(std => 2, reg => WRL, lat =>  4, code => "011") &
-		latency_record'(std => 2, reg => WRL, lat =>  5, code => "100") &
-		latency_record'(std => 2, reg => WRL, lat =>  6, code => "101") &
-		latency_record'(std => 2, reg => WRL, lat =>  7, code => "110") &
-		latency_record'(std => 2, reg => WRL, lat =>  8, code => "111") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  2, code => "001") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  3, code => "010") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4, code => "011") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  5, code => "100") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  6, code => "101") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  7, code => "110") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  8, code => "111") &
 
 		-- DDR3 standard --
 		-------------------
 
 		-- CL register --
 
-		latency_record'(std => 3, reg => CL,  lat =>  5, code => "001") &
-		latency_record'(std => 3, reg => CL,  lat =>  6, code => "010") &
-		latency_record'(std => 3, reg => CL,  lat =>  7, code => "011") &
-		latency_record'(std => 3, reg => CL,  lat =>  8, code => "100") &
-		latency_record'(std => 3, reg => CL,  lat =>  9, code => "101") &
-		latency_record'(std => 3, reg => CL,  lat => 10, code => "110") &
-		latency_record'(std => 3, reg => CL,  lat => 11, code => "111") &
+		cnfglat_record'(std => 3, reg => CL,  lat =>  5, code => "001") &
+		cnfglat_record'(std => 3, reg => CL,  lat =>  6, code => "010") &
+		cnfglat_record'(std => 3, reg => CL,  lat =>  7, code => "011") &
+		cnfglat_record'(std => 3, reg => CL,  lat =>  8, code => "100") &
+		cnfglat_record'(std => 3, reg => CL,  lat =>  9, code => "101") &
+		cnfglat_record'(std => 3, reg => CL,  lat => 10, code => "110") &
+		cnfglat_record'(std => 3, reg => CL,  lat => 11, code => "111") &
 
 		-- BL register --
 
-		latency_record'(std => 3, reg => BL,  lat =>  4, code => "000") &
-		latency_record'(std => 3, reg => BL,  lat =>  8, code => "001") &
-		latency_record'(std => 3, reg => BL,  lat => 16, code => "010") &
+		cnfglat_record'(std => 3, reg => BL,  lat =>  4, code => "000") &
+		cnfglat_record'(std => 3, reg => BL,  lat =>  8, code => "001") &
+		cnfglat_record'(std => 3, reg => BL,  lat => 16, code => "010") &
 
 		-- WRL register --
 
-		latency_record'(std => 3, reg => WRL, lat =>  5, code => "001") &
-		latency_record'(std => 3, reg => WRL, lat =>  6, code => "010") &
-		latency_record'(std => 3, reg => WRL, lat =>  7, code => "011") &
-		latency_record'(std => 3, reg => WRL, lat =>  8, code => "100") &
-		latency_record'(std => 3, reg => WRL, lat => 10, code => "101") &
-		latency_record'(std => 3, reg => WRL, lat => 12, code => "110") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  5, code => "001") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  6, code => "010") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  7, code => "011") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  8, code => "100") &
+		cnfglat_record'(std => 3, reg => WRL, lat => 10, code => "101") &
+		cnfglat_record'(std => 3, reg => WRL, lat => 12, code => "110") &
 
 		-- CWL register --
 
-		latency_record'(std => 3, reg => CWL, lat =>  5, code => "000") &
-		latency_record'(std => 3, reg => CWL, lat =>  6, code => "001") &
-		latency_record'(std => 3, reg => CWL, lat =>  7, code => "010") &
-		latency_record'(std => 3, reg => CWL, lat =>  8, code => "011");
+		cnfglat_record'(std => 3, reg => CWL, lat =>  5, code => "000") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  6, code => "001") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  7, code => "010") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  8, code => "011");
 
 	function lkup_lat (
 		constant std : positive;
@@ -190,11 +186,11 @@ package body xdr_param is
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
 		return std_logic_vector is
 	begin
-		for i in latency_db'range loop
-			if latency_db(i).std = std then
-				if latency_db(i).reg = reg then
-					if latency_db(i).lat = lat then
-						return latency_db(i).code;
+		for i in cnfglat_db'range loop
+			if cnfglat_db(i).std = std then
+				if cnfglat_db(i).reg = reg then
+					if cnfglat_db(i).lat = lat then
+						return cnfglat_db(i).code;
 					end if;
 				end if;
 			end if;
