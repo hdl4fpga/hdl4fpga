@@ -3,13 +3,13 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_param.all;
 
 entity xdr is
 	generic (
 		strobe : string := "EXTERNAL_LOOPBACK";
-		std   : positive;
 		tCP   : time := 6.0 ns;
-		mark : tmark : M6T;
+		mark : tmrk_ids := M6T;
 
 		bank_bits   : natural :=  2;
 		addr_bits   : natural := 13;
@@ -119,7 +119,6 @@ architecture mix of xdr is
 	signal clk90 : std_logic;
 	signal xdr_wr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
 
-	constant cas : std_logic_vector(0 to 2) := lkup_lat(std, CL, cl); 
 begin
 
 	clk0  <= sys_clk0;
@@ -308,7 +307,7 @@ begin
 	xdr_st_g : if strobe="EXTERNAL" generate
 		signal st_dqs : std_logic;
 	begin
-		xdr_st_hlf <= setif(std=1 and cas(0)='1');
+--		xdr_st_hlf <= setif(std=1 and cas(0)='1');
 		xdr_st_e : entity hdl4fpga.xdr_stw
 		port map (
 			xdr_st_hlf => xdr_st_hlf,
