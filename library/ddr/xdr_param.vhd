@@ -34,9 +34,9 @@ package xdr_param is
 	end component;
 
 	type mark_ids is (M6T, M107);
-	type tmng_ids is (tWR, tRP, tRCD, tRFC, tMRD, tREFI);
+	type tmng_ids is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (CL, BL, WRL, CWL);
-	type cfgt_ids is (cPreRST, cPstRST);
+	type laty_ids is (cDLL);
 
 	function lkup_lat (
 		constant std : positive;
@@ -74,7 +74,12 @@ package body xdr_param is
 	type cnftmng_tab is array (natural range <>) of cnftmng_record;
 
 	constant cnftmng_db : cnftmng_tab := 
-		cnftmng_record'(
+		cnftmng_record'(std => 1, param => tPreRST, value => 200 us) &
+		cnftmng_record'(std => 2, param => tPreRST, value => 200 us) &
+		cnftmng_record'(std => 3, param => tPreRST, value => 200 us) &
+		cnftmng_record'(std => 2, param => tPstRST, value => 200 us) &
+		cnftmng_record'(std => 3, param => tPstRST, value => 200 us) &
+
 	type timing_record is record
 		mark  : mark_ids;
 		std   : positive;
