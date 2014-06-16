@@ -22,7 +22,7 @@ entity xdr is
 		sys_clk0  : in std_logic;
 		sys_clk90 : in std_logic;
 
-		sys_ini : out std_logic;
+		sys_cfg_rdy : out std_logic;
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
 		sys_rw : in  std_logic;
@@ -134,14 +134,14 @@ begin
 	end process;
 
 	xdr_cs <= '0';
-	xdr_io_ba_e : entity hdl4fpga.xdr_io_ba
+	xdr_io_ba_e : entity hdl4fpga.xdr_ba
 	generic map (
 		bank_bits => bank_bits,
 		addr_bits => addr_bits)
 	port map (
 		sys_clk => sys_clk0,
 		sys_rst => rst,
-		sys_ini => dll_timer_rdy,
+		sys_cfg_rdy => dll_timer_rdy,
 		sys_cke => xdr_cfg_cke,
 		sys_ras => xdr_mpu_ras,
 		sys_cas => xdr_mpu_cas,
@@ -149,11 +149,11 @@ begin
 		sys_odt => dll_timer_rdy,
 		sys_a   => sys_a,
 		sys_b   => sys_ba,
-		sys_ini_ras => xdr_cfg_ras,
-		sys_ini_cas => xdr_cfg_cas,
-		sys_ini_we  => xdr_cfg_we,
-		sys_ini_a   => xdr_cfg_a,
-		sys_ini_b   => xdr_cfg_b,
+		sys_cfg_ras => xdr_cfg_ras,
+		sys_cfg_cas => xdr_cfg_cas,
+		sys_cfg_we  => xdr_cfg_we,
+		sys_cfg_a   => xdr_cfg_a,
+		sys_cfg_b   => xdr_cfg_b,
 
 		xdr_odt => xdr_odt,
 		xdr_ras => xdr_ras,
@@ -172,11 +172,11 @@ begin
 		cREF => to_xdrlatency(tCP, mark, tREFI),
 		std  => std)
 	port map (
-		xdr_timer_clk => sys_clk,
-		xdr_timer_rst => rst,
-		xdr_cfg_rst  => xdr_rst,
-		xdr_cfg_cke  => xdr_cfg_cke,
-		xdr_cfg_req  => xdr_cfg_req,
+		sys_timer_clk => sys_clk,
+		sys_timer_rst => rst,
+		sys_cfg_rst  => xdr_rst,
+		sys_cfg_cke  => xdr_cfg_cke,
+		sys_cfg_req  => xdr_cfg_req,
 		dll_timer_req => xdr_cfg_dll,
 		dll_timer_rdy => dll_timer_rdy,
 		ref_timer_req => xdr_cfg_rdy,
@@ -187,7 +187,7 @@ begin
 		a    => addr_bits,
 		cRP  => to_xdrlatency(tCP, mark, tRP),
 		cMRD => to_xdrlatency(tCP, mark, tMRD),
-		cRFC => to_xdrlatency(tCP, mark, tRFC),
+		cRFC => to_xdrlatency(tCP, mark, tRFC))
 	port map (
 		xdr_cfg_cl  => xdr_cnfglat(std, CL,  cl),
 		xdr_cfg_bl  => xdr_cnfglat(std, BL,  bl),
@@ -211,7 +211,7 @@ begin
 --			xdr_mpu_rst <= not (xdr_cfg_rdy and dll_timer_rdy);
 			xdr_mpu_rst <= q;
 			q := not (xdr_cfg_rdy and dll_timer_rdy);
-			sys_ini     <= xdr_cfg_rdy and dll_timer_rdy;
+			sys_cfg_rdy <= xdr_cfg_rdy and dll_timer_rdy;
 		end if;
 	end process;
 
@@ -304,7 +304,7 @@ begin
 		xdr_ena => xdr_wr_fifo_ena, 
 		xdr_dq  => xdr_wr_dq);
 		
-	xdr_st_g : if strobe="EXTERNAL" generate
+	xdr_st_g : if strobe="EXTERNAL_LOOPBACK" generate
 		signal st_dqs : std_logic;
 	begin
 --		xdr_st_hlf <= setif(std=1 and cas(0)='1');
