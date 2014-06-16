@@ -9,7 +9,6 @@ entity xdr_ba is
 	port (
 		sys_rst : in std_logic;
 		sys_clk : in std_logic;
-		sys_cfg : in std_logic;
 		sys_cke : in std_logic;
 		sys_odt : in std_logic;
 		sys_ras : in std_logic;
@@ -18,6 +17,7 @@ entity xdr_ba is
 		sys_a   : in std_logic_vector(addr_bits-1 downto 0);
 		sys_b   : in std_logic_vector(bank_bits-1 downto 0);
 
+		sys_cfg_rdy : in std_logic;
 		sys_cfg_ras : in std_logic;
 		sys_cfg_cas : in std_logic;
 		sys_cfg_we  : in std_logic;
@@ -52,21 +52,21 @@ begin
 		d => sys_odt,
 		q => xdr_odt);
 
-	ras_d <= sys_ras when sys_cfg='1' else sys_cfg_ras;
+	ras_d <= sys_ras when sys_cfg_rdy='1' else sys_cfg_ras;
 	xdr_ras_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => ras_d,
 		q => xdr_ras);
 
-	cas_d <= sys_cas when sys_cfg='1' else sys_cfg_cas;
+	cas_d <= sys_cas when sys_cfg_rdy='1' else sys_cfg_cas;
 	xdr_cas_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
 		d => cas_d,
 		q => xdr_cas);
 
-	we_d  <= sys_we when sys_cfg='1' else sys_cfg_we;
+	we_d  <= sys_we when sys_cfg_rdy='1' else sys_cfg_we;
 	xdr_we_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
@@ -76,7 +76,7 @@ begin
 	xdr_a_g : for i in xdr_a'range generate
 		signal d : std_logic;
 	begin
-		d <= sys_a(i) when sys_cfg='1' else sys_cfg_a(i);
+		d <= sys_a(i) when sys_cfg_rdy='1' else sys_cfg_a(i);
 		ff_i : entity hdl4fpga.ff
 		port map (
 			clk => sys_clk,
@@ -87,7 +87,7 @@ begin
 	xdr_b_g : for i in xdr_b'range generate
 		signal d : std_logic;
 	begin
-		d <= sys_b(i) when sys_cfg='1' else sys_cfg_b(i);
+		d <= sys_b(i) when sys_cfg_rdy='1' else sys_cfg_b(i);
 		ff_i : entity hdl4fpga.ff
 		port map (
 			clk => sys_clk,

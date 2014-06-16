@@ -14,12 +14,12 @@ entity xdr_timer is
 		cxpr : natural := 10;
 		std  : natural := 3);
 	port (
-		xdr_timer_clk : in  std_logic;
-		xdr_timer_rst : in  std_logic;
+		sys_timer_clk : in  std_logic;
+		sys_timer_rst : in  std_logic;
 
-		xdr_init_rst : out std_logic;
-		xdr_init_cke : out std_logic; 
-		xdr_init_cfg : out std_logic;
+		sys_cfg_rst : out std_logic;
+		sys_cfg_cke : out std_logic; 
+		sys_cfg_req : out std_logic;
 
 		dll_timer_req : in  std_logic;
 		dll_timer_rdy : out std_logic;
@@ -72,17 +72,17 @@ architecture def of xdr_timer is
 	signal timer : unsigned(0 to 15);
 begin
 
-	process (xdr_timer_clk)
+	process (sys_timer_clk)
 	begin
-		if rising_edge(xdr_timer_clk) then
+		if rising_edge(sys_timer_clk) then
 			timer_div <= timer_div + 1;
 		end if;
 	end process;
 
-	process (timer_div(0), xdr_timer_rst)
+	process (timer_div(0), sys_timer_rst)
 		variable q : std_logic;
 	begin
-		if xdr_timer_rst='1' then
+		if sys_timer_rst='1' then
 			treq <= '0';
 			q := '0';
 		elsif rising_edge(timer_div(0)) then
@@ -91,7 +91,7 @@ begin
 		end if;
 	end process;
 
-	process (timer_div(0), xdr_timer_rst)
+	process (timer_div(0), sys_timer_rst)
 		type tword_vector is array(natural range <>) of natural range 0 to 2**(timer'length-1)-1;
 		constant time_data : tword_vector(0 to 5-1) := (
 			timer_ids'pos(tid_PreRST) => (cPreRST+2**timer_div'length-1)/2**timer_div'length,
@@ -100,7 +100,7 @@ begin
 			timer_ids'pos(tid_PstRST) => (cPstRST+2**timer_div'length-1)/2**timer_div'length,
 			timer_ids'pos(tid_xpr) => (cxpr+2**timer_div'length-1)/2**timer_div'length);
 	begin
-		if xdr_timer_rst='1' then
+		if sys_timer_rst='1' then
 			timer <= to_unsigned(time_data(to_integer(unsigned(timer_sel))), timer'length);
 		elsif rising_edge(timer_div(0)) then
 			if treq='0' then
@@ -113,11 +113,11 @@ begin
 	end process;
 	trdy <= timer(0);
 
-	process (xdr_timer_clk)
+	process (sys_timer_clk)
 		variable q : std_logic_vector(0 to 3);
 	begin
-		if rising_edge(xdr_timer_clk) then
-			if xdr_timer_rst='1' then
+		if rising_edge(sys_timer_clk) then
+			if sys_timer_rst='1' then
 				timer_rdy <= '0';
 				q := (others => '0');
 			else
@@ -134,17 +134,17 @@ begin
 		end if;
 	end process;
 
-	process (xdr_timer_clk, xdr_timer_rst)
+	process (sys_timer_clk, sys_timer_rst)
 		variable next_tid  : timer_ids;
 		variable o_tid  : timer_ids;
 	begin
-		if xdr_timer_rst='1' then
+		if sys_timer_rst='1' then
 			timer_id <= tid_PreRST;
 			z <= (others => '0');
 			next_tid  := timer_tab(std)(timer_id).q;
 			timer_req <= '0';
 			timer_sel <= timer_tab(std)(timer_id).s;
-		elsif rising_edge(xdr_timer_clk) then
+		elsif rising_edge(sys_timer_clk) then
 			if timer_rdy='1' then
 				timer_req <= '0';
 				if next_tid=tid_dll then
@@ -174,8 +174,8 @@ begin
 		end if;
 	end process;
 
-	xdr_init_rst  <= z(0);
-	xdr_init_cke  <= z(1);
-	xdr_init_cfg  <= z(2);
+	sys_cfg_rst  <= z(0);
+	sys_cfg_cke  <= z(1);
+	sys_cfg_req  <= z(2);
 	dll_timer_rdy <= z(3);
 end;
