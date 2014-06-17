@@ -27,7 +27,7 @@ begin
 		not xdr_st_clk when xdr_st_hlf='1' else
 		xdr_st_clk;
 
-	oxdr_i : entity hdl4fpga.ddro
+	oxdr_i : entity hdl4fpga.oddr
 	port map (
 		clk => rclk,
 		d(r) => xdr_st_drr,

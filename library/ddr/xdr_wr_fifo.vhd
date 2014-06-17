@@ -8,19 +8,19 @@ entity xdr_wr_fifo is
 		data_bytes : natural := 2;
 		data_edges : natural := 2;
 		data_phases : natural := 1;
-		byte_bits  : natural := 8);
+		byte_size  : natural := 8);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
 		sys_dm  : in  std_logic_vector(data_phases*data_bytes*data_edges-1 downto 0);
-		sys_di  : in  std_logic_vector(data_phases*data_bytes*data_edges*byte_bits-1 downto 0);
+		sys_di  : in  std_logic_vector(data_phases*data_bytes*data_edges*byte_size-1 downto 0);
 
 		xdr_clk : in  std_logic_vector(data_phases*data_edges-1 downto 0);
 		xdr_ena : in  std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
 		xdr_dm  : out std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
-		xdr_dq  : out std_logic_vector(data_phases*data_edges*data_bytes*byte_bits-1 downto 0));
+		xdr_dq  : out std_logic_vector(data_phases*data_edges*data_bytes*byte_size-1 downto 0));
 
-	constant data_bits : natural := byte_bits*data_bytes;
+	constant data_bits : natural := byte_size*data_bytes;
 end;
 
 library hdl4fpga;
@@ -31,14 +31,14 @@ architecture mix of xdr_wr_fifo is
 
 	type aw_vector is array (natural range <>) of axdr_word;
 
-	type byte_vector is array (natural range <>) of std_logic_vector(byte_bits-1 downto 0);
+	type byte_vector is array (natural range <>) of std_logic_vector(byte_size-1 downto 0);
 	type dme_vector  is array (natural range <>) of std_logic_vector(data_phases*data_bytes-1 downto 0);
 
 	function to_bytevector (
 		arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte_bits-1 downto 0);
+		variable val : byte_vector(arg'length/byte_size-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -52,7 +52,7 @@ architecture mix of xdr_wr_fifo is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(byte_bits*arg'length-1 downto 0);
+		variable val : std_logic_vector(byte_size*arg'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'reverse_range loop
@@ -141,8 +141,8 @@ begin
 
 		xdr_phases_g: for i in data_phases-1 downto 0 generate
 			xdr_data_g: for k in data_edges-1 downto 0 generate
-				signal dpo : std_logic_vector(byte_bits-1 downto 0);
-				signal qpo : std_logic_vector(byte_bits-1 downto 0);
+				signal dpo : std_logic_vector(byte_size-1 downto 0);
+				signal qpo : std_logic_vector(byte_size-1 downto 0);
 				signal xdr_axdr_d : axdr_word;
 			begin
 				xdr_axdr_d <= inc(gray(xdr_axdr_q(data_bytes*i+l)));
@@ -160,7 +160,7 @@ begin
 
 				ram_i : entity hdl4fpga.dbram
 				generic map (
-					n => byte_bits)
+					n => byte_size)
 				port map (
 					clk => sys_clk,
 					we  => sys_req,
@@ -169,7 +169,7 @@ begin
 					ra  => xdr_axdr_q(data_bytes*(i*data_edges+k)+l),
 					do  => dpo);
 
-				ram_g: for j in byte_bits-1 downto 0 generate
+				ram_g: for j in byte_size-1 downto 0 generate
 					ffd_i : entity hdl4fpga.ff
 					port map (
 						clk => xdr_clk((i*data_edges+k)),
