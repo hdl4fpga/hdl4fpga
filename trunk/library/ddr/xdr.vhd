@@ -83,7 +83,14 @@ architecture mix of xdr is
 	signal xdr_cfg_we  : std_logic;
 	signal xdr_cfg_a   : std_logic_vector(addr_bits-1 downto 0);
 	signal xdr_cfg_b   : std_logic_vector(bank_bits-1 downto 0);
-	signal xdr_cfg_cke : std_logic;
+
+	signal xdrphy_cke : std_logic;
+	signal xdrphy_ras : std_logic;
+	signal xdrphy_cas : std_logic;
+	signal xdrphy_we  : std_logic;
+	signal xdrphy_a   : std_logic_vector(addr_bits-1 downto 0);
+	signal xdrphy_b   : std_logic_vector(bank_bits-1 downto 0);
+
 	signal xdr_cfg_req : std_logic;
 	signal xdr_cfg_dll : std_logic;
 
@@ -146,7 +153,7 @@ begin
 		sys_clk => sys_clk0,
 		sys_rst => rst,
 		sys_cfg_rdy => dll_timer_rdy,
-		sys_cke => xdr_cfg_cke,
+		sys_cke => xdrphy_cke,
 		sys_ras => xdr_mpu_ras,
 		sys_cas => xdr_mpu_cas,
 		sys_we  => xdr_mpu_we,
@@ -179,8 +186,8 @@ begin
 		sys_timer_clk => sys_clk,
 		sys_timer_rst => rst,
 		sys_cfg_rst  => xdr_rst,
-		sys_cfg_cke  => xdr_cfg_cke,
 		sys_cfg_req  => xdr_cfg_req,
+		xdr_cke => xdrphy_cke,
 		dll_timer_req => xdr_cfg_dll,
 		dll_timer_rdy => dll_timer_rdy,
 		ref_timer_req => xdr_cfg_rdy,
@@ -207,6 +214,12 @@ begin
 		xdr_cfg_we  => xdr_cfg_we,
 		xdr_cfg_a   => xdr_cfg_a,
 		xdr_cfg_b   => xdr_cfg_b);
+
+	xdrphy_ras <= sys_ras when sys_cfg_rdy='1' else sys_cfg_ras;
+	xdrphy_cas <= sys_cas when sys_cfg_rdy='1' else sys_cfg_cas;
+	xdrphy_we  <= sys_we  when sys_cfg_rdy='1' else sys_cfg_we;
+	xdrphy_a   <= sys_a   when sys_cfg_rdy='1' else sys_cfg_a;
+	xdrphy_b   <= sys_b   when sys_cfg_rdy='1' else sys_cfg_b;
 
 	process (sys_clk)
 		variable q : std_logic;
