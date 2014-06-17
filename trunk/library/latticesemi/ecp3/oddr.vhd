@@ -12,9 +12,9 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture  of oddr is
+architecture ecp3 of oddr is
 begin
-	oddr_i : oddr
+	oddr_i : oddrxd1
 	port map (
 		sclk => clk,
 		da => dr,
