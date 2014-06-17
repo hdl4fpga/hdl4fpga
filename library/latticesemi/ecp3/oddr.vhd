@@ -9,8 +9,6 @@ entity oddr is
 		q   : out std_logic);
 end;
 
-library hdl4fpga;
-
 library ecp3;
 use ecp3.components.all;
 
