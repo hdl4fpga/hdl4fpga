@@ -8,26 +8,26 @@ entity xdr_rd_fifo is
 		data_bytes : natural := 2;
 		data_edges : natural := 2;
 		data_phases : natural := 1;
-		byte_bits  : natural := 8);
+		byte_size  : natural := 8);
 	port (
 		sys_clk : in std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in std_logic;
-		sys_do  : out std_logic_vector(data_edges*data_phases*data_bytes*byte_bits-1 downto 0);
+		sys_do  : out std_logic_vector(data_edges*data_phases*data_bytes*byte_size-1 downto 0);
 
 		xdr_win_dq  : in std_logic;
 		xdr_win_dqs : in std_logic_vector(data_bytes-1 downto 0);
 		xdr_dqsi : in std_logic_vector(data_edges*data_phases*data_bytes-1 downto 0);
-		xdr_dqi  : in std_logic_vector(data_bytes*byte_bits-1 downto 0));
+		xdr_dqi  : in std_logic_vector(data_bytes*byte_size-1 downto 0));
 
-	constant data_bits : natural := data_bytes*byte_bits;
+	constant data_bits : natural := data_bytes*byte_size;
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr_rd_fifo is
-	subtype byte is std_logic_vector(byte_bits-1 downto 0);
+	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
 	signal xdr_fifo_di : byte_vector(data_bytes-1 downto 0);
@@ -41,12 +41,12 @@ architecture mix of xdr_rd_fifo is
 		arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte_bits-1 downto 0);
+		variable val : byte_vector(arg'length/byte_size-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(byte'range));
-			dat := dat srl byte_bits;
+			dat := dat srl byte_size;
 		end loop;
 		return val;
 	end;
@@ -60,7 +60,7 @@ architecture mix of xdr_rd_fifo is
 		dat := arg;
 		for i in arg'reverse_range loop
 			val(byte'range) := arg(i);
-			val := val sll byte_bits;
+			val := val sll byte_size;
 		end loop;
 		return val;
 	end;
@@ -160,7 +160,7 @@ begin
 
 				ram_b : entity hdl4fpga.dbram
 				generic map (
-					n => byte_bits)
+					n => byte_size)
 				port map (
 					clk => xdr_dlyd_dqs(l),
 					we  => we,

@@ -11,6 +11,10 @@ entity xdr is
 		tCP   : time := 6.0 ns;
 		mark : tmrk_ids := M6T;
 
+		pcl : natural;
+		pbl : natural;
+		pwr : natural;
+		pcwl : natural;
 		bank_bits   : natural :=  2;
 		addr_bits   : natural := 13;
 		byte_size   : natural :=  8;
@@ -189,10 +193,10 @@ begin
 		cMRD => to_xdrlatency(tCP, mark, tMRD),
 		cRFC => to_xdrlatency(tCP, mark, tRFC))
 	port map (
-		xdr_cfg_cl  => xdr_cnfglat(std, CL,  cl),
-		xdr_cfg_bl  => xdr_cnfglat(std, BL,  bl),
-		xdr_cfg_wr  => xdr_cnfglat(std, WR,  wr),
-		xdr_cfg_cwl => xdr_cnfglat(std, CWL, cwl),
+		xdr_cfg_cl  => xdr_cnfglat(std, CL,  pcl),
+		xdr_cfg_bl  => xdr_cnfglat(std, BL,  pbl),
+		xdr_cfg_wr  => xdr_cnfglat(std, WRL,  pwr),
+		xdr_cfg_cwl => xdr_cnfglat(std, CWL, pcwl),
 
 		xdr_cfg_clk => sys_clk,
 		xdr_cfg_req => xdr_cfg_req,
@@ -229,9 +233,9 @@ begin
 		tRP  => to_xdrlatency(tCP, mark, tRP),
 		tRFC => to_xdrlatency(tCP, mark, tRFC),
 
-		xdr_mpu_bl  => xdr_cnfglat(std, BL,  bl),
-		xdr_mpu_cwl => xdr_cnfglat(std, CWL, cwl),
-		xdr_mpu_cl  => xdr_cnfglat(std, CL,  cl))
+		xdr_mpu_bl  => xdr_cnfglat(std, BL,  pbl),
+		xdr_mpu_cwl => xdr_cnfglat(std, CWL, pcwl),
+		xdr_mpu_cl  => xdr_cnfglat(std, CL,  pcl))
 	port map (
 		xdr_mpu_rst => xdr_mpu_rst,
 		xdr_mpu_clk => clk0,

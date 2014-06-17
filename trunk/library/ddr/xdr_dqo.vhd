@@ -16,6 +16,8 @@ entity xdr_dqo is
 		xdr_dqo : out std_logic_vector(byte_size-1 downto 0));
 end;
 
+library hdl4fpga;
+
 architecture std of xdr_dqo is
 begin
 	byte_g : for i in 0 to byte_size-1 generate
