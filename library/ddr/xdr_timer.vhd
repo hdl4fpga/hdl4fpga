@@ -18,8 +18,8 @@ entity xdr_timer is
 		sys_timer_rst : in  std_logic;
 
 		sys_cfg_rst : out std_logic;
-		sys_cfg_cke : out std_logic; 
 		sys_cfg_req : out std_logic;
+		xdr_cke : out std_logic; 
 
 		dll_timer_req : in  std_logic;
 		dll_timer_rdy : out std_logic;
@@ -174,8 +174,8 @@ begin
 		end if;
 	end process;
 
-	sys_cfg_rst  <= z(0);
-	sys_cfg_cke  <= z(1);
-	sys_cfg_req  <= z(2);
+	sys_cfg_rst <= z(0);
+	xdr_cke <= z(1);
+	sys_cfg_req <= z(2);
 	dll_timer_rdy <= z(3);
 end;
