@@ -6,7 +6,6 @@ entity ddr3baphy is
 		bank_bits : natural := 2;
 		addr_bits : natural := 13);
 	port (
-		sys_rst  : in  std_logic;
 		sys_clk : in  std_logic;
 
 		sys_cke : in std_logic;
