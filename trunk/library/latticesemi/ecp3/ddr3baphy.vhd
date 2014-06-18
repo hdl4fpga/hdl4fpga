@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr3baphy is
+entity xdr_baphy is
 	generic (
 		bank_bits : natural := 2;
 		addr_bits : natural := 13);
@@ -28,7 +28,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of ddr3baphy is
+architecture ecp3 of xdr_baphy is
 	signal sys_cmmd : std_logic_vector(1 to 5) := (others => '-');
 	signal ddr_cmmd : std_logic_vector(sys_cmmd'range) := (others => '-');
 begin
