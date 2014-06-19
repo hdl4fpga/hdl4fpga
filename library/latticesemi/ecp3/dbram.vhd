@@ -39,14 +39,14 @@ architecture lttsm of dbram is
 	function to_stdlogicvector (
 		arg : dw_vector)
 		return std_logic_vector is
-		variable dat : unsigned(0 to 4*arg'length-1);
+		variable dat : unsigned(4*arg'length-1 downto 0);
 	begin
 		dat := (others => '0');
 		for i in arg'range loop
 			dat := dat sll 4;
-			dat(0 to 4-1) := unsigned(arg(i));
+			dat(4-1 downto 0) := unsigned(arg(i));
 		end loop;
-		return std_logic_vector(dat(0 to n-1));
+		return std_logic_vector(dat);
 	end;
 
 	constant l : natural := (n+4-1)/4;

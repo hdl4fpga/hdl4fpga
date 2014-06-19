@@ -13,22 +13,23 @@ architecture xdr_rd_fifo of testbench is
 	signal xdr_dqi : std_logic_vector(8-1 downto 0);
 	signal xdr_win_dq : std_logic;
 	signal xdr_win_dqs : std_logic;
-	signal sys_do  : std_logic_vector(2**2*xdr_dqi'length-1 downto 0);
+	signal sys_do  : std_logic_vector(2**4*xdr_dqi'length-1 downto 0);
 begin
 	sys_clk <= not sys_clk after 2 ns;
-	sys_clk2 <= not sys_clk2 after 4 ns;
+	sys_clk2 <= not sys_clk2 after (sys_do'length/xdr_dqi'length) * 1 ns;
 	xdr_dqsi <= sys_clk after 50 ps;
-	sys_rea <= '0', '1' after 10 ns;
-	xdr_win_dq <= '0', '1' after 19 ns, '0' after 83 ns;
-	xdr_win_dqs <= '0', '1' after 11 ns, '0' after 83 ns;
+	sys_rea <= '0', '1' after 80 ns;
+	xdr_win_dq <= '0', '1' after 129 ns, '0' after 463 ns;
+	xdr_win_dqs <= '0', '1' after 81 ns, '0' after 463 ns;
 
 	process (xdr_dqsi)
 		type byte_vector is array (natural range <>) of std_logic_vector(xdr_dqi'range);
-		constant dqi : byte_vector(0 to 4-1) := ( x"ab", x"34", x"75", x"89");
-		variable i : natural range 0 to 4-1;
+		constant dqi : byte_vector(0 to 16-1) := ( x"ab", x"34", x"75", x"89", x"e6", x"bc", x"fd", x"21",
+		x"bb", x"33", x"77", x"99", x"ee", x"bb", x"dd", x"a1");
+		variable i : natural range 0 to dqi'length-1;
 	begin
 		xdr_dqi <= dqi(i);
-		i := (i+1) mod 4;
+		i := (i+1) mod dqi'length;
 	end process;
 
 	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo

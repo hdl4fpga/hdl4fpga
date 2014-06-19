@@ -41,8 +41,8 @@ architecture mix of xdr_rd_fifo is
 	begin
 		dat := arg;
 		for i in arg'reverse_range loop
-			val(byte'range) := arg(i);
 			val := val sll byte_size;
+			val(byte'range) := arg(i);
 		end loop;
 		return val;
 	end;
@@ -83,8 +83,8 @@ begin
 	dqs_delayed_e : entity hdl4fpga.pgm_delay
 	port map (
 		xi  => xdr_dqsi,
-		x_p => xdr_delayed_dqs(0),
-		x_n => xdr_delayed_dqs(1));
+		x_p => xdr_delayed_dqs(1),
+		x_n => xdr_delayed_dqs(0));
 
 	xdr_dlyd_dqs(0) <= transport xdr_delayed_dqs(0) after 1 ps;
 	xdr_dlyd_dqs(1) <= transport xdr_delayed_dqs(1) after 1 ps;
@@ -120,7 +120,7 @@ begin
 			signal we : std_logic;
 		begin
 
-			axdr_we((data_phases/data_edges)*l+j) <= we;
+			axdr_we(data_edges*j+l) <= we;
 			we <=
 			xdr_win_dqsi when data_phases/data_edges=1 else
 			xdr_win_dqsi when ph_sel(j)='1' else
@@ -146,7 +146,7 @@ begin
 				wa  => axdr_i_q,
 				di  => xdr_dqi,
 				ra  => axdr_o_q,
-				do  => xdr_fifo_do((data_phases/data_edges)*l+j));
+				do  => xdr_fifo_do(data_edges*j+l));
 		end generate;
 
 	end generate;
