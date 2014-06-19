@@ -6,18 +6,23 @@ add wave -noupdate -radix hexadecimal /testbench/xdr_dqi
 add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_dlyd_dqs(0)
 add wave -noupdate -radix hexadecimal /testbench/xdr_dqi
 add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_dlyd_dqs(1)
-add wave -noupdate /testbench/xdr_rd_fifo_e/axdr_o_q
-add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_fifo(0)/phase_g(0)/axdr_i_q
-add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_fifo(1)/phase_g(0)/axdr_i_q
-add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_fifo(0)/phase_g(0)/we
-add wave -noupdate /testbench/xdr_rd_fifo_e/xdr_fifo(1)/phase_g(0)/we
+add wave -noupdate -radix hexadecimal /testbench/xdr_rd_fifo_e/axdr_o_q
+add wave -noupdate -radix hexadecimal /testbench/xdr_rd_fifo_e/xdr_fifo(0)/phase_g(0)/axdr_i_q
+add wave -noupdate -radix hexadecimal /testbench/xdr_rd_fifo_e/xdr_fifo(0)/phase_g(1)/axdr_i_q
+add wave -noupdate -radix hexadecimal /testbench/xdr_rd_fifo_e/xdr_fifo(1)/phase_g(0)/axdr_i_q
+add wave -noupdate -radix hexadecimal /testbench/xdr_rd_fifo_e/xdr_fifo(1)/phase_g(1)/axdr_i_q
+add wave -noupdate /testbench/xdr_win_dqs
+add wave -noupdate -expand /testbench/xdr_rd_fifo_e/axdr_we
+add wave -noupdate -radix hexadecimal /testbench/sys_do
+add wave -noupdate /testbench/sys_rdy
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/xdr_rd_fifo_e/xdr_fifo_do(3) -radix hexadecimal} {/testbench/xdr_rd_fifo_e/xdr_fifo_do(2) -radix hexadecimal} {/testbench/xdr_rd_fifo_e/xdr_fifo_do(1) -radix hexadecimal} {/testbench/xdr_rd_fifo_e/xdr_fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/xdr_rd_fifo_e/xdr_fifo_do(3) {-height 15 -radix hexadecimal} /testbench/xdr_rd_fifo_e/xdr_fifo_do(2) {-height 15 -radix hexadecimal} /testbench/xdr_rd_fifo_e/xdr_fifo_do(1) {-height 15 -radix hexadecimal} /testbench/xdr_rd_fifo_e/xdr_fifo_do(0) {-height 15 -radix hexadecimal}} /testbench/xdr_rd_fifo_e/xdr_fifo_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8 ns} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 216
-configure wave -valuecolwidth 100
+WaveRestoreCursors {{Cursor 1} {66051 ps} 0} {{Cursor 2} {21399 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 128
+configure wave -valuecolwidth 69
 configure wave -justifyvalue left
-configure wave -signalnamewidth 1
+configure wave -signalnamewidth 0
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -28,4 +33,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {18 ns} {105 ns}
+WaveRestoreZoom {0 ps} {103405 ps}

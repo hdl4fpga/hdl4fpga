@@ -6,6 +6,7 @@ library hdl4fpga;
 
 architecture xdr_rd_fifo of testbench is
 	signal sys_clk : std_logic := '1';
+	signal sys_clk2 : std_logic := '1';
 	signal sys_rea : std_logic;
 	signal sys_rdy : std_logic;
 	signal xdr_dqsi : std_logic := '1';
@@ -15,9 +16,10 @@ architecture xdr_rd_fifo of testbench is
 	signal sys_do  : std_logic_vector(2**2*xdr_dqi'length-1 downto 0);
 begin
 	sys_clk <= not sys_clk after 2 ns;
+	sys_clk2 <= not sys_clk2 after 4 ns;
 	xdr_dqsi <= sys_clk after 50 ps;
 	sys_rea <= '0', '1' after 10 ns;
-	xdr_win_dq <= '0';
+	xdr_win_dq <= '0', '1' after 19 ns, '0' after 83 ns;
 	xdr_win_dqs <= '0', '1' after 11 ns, '0' after 83 ns;
 
 	process (xdr_dqsi)
@@ -36,7 +38,7 @@ begin
 		data_phases => sys_do'length/xdr_dqi'length,
 		byte_size   => xdr_dqi'length)
 	port map (
-		sys_clk => sys_clk,
+		sys_clk => sys_clk2,
 		sys_rdy => sys_rdy,
 		sys_rea => sys_rea,
 		sys_do  => sys_do,
