@@ -27,7 +27,6 @@ architecture mix of xdr_rd_fifo is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal xdr_fifo_di : byte;
 	signal xdr_fifo_do : byte_vector(data_phases-1 downto 0);
 
 	subtype axdr_word is std_logic_vector(0 to 4-1);
@@ -56,6 +55,7 @@ architecture mix of xdr_rd_fifo is
 	signal axdr_o_set : std_logic;
 	signal axdr_i_set : std_logic;
 	signal xdr_win_dqsi : std_logic;
+	signal axdr_we : std_logic_vector(0 to data_phases-1);
 
 begin
 	process (sys_clk)
@@ -110,7 +110,7 @@ begin
 			if axdr_i_set='1' then
 				ph_sel <= ('1', others => '0');
 			elsif rising_edge(xdr_dlyd_dqs(l)) then
-				ph_sel <= ph_sel rol 1;
+				ph_sel <= ph_sel ror 1;
 			end if;
 		end process;
 
@@ -120,6 +120,7 @@ begin
 			signal we : std_logic;
 		begin
 
+			axdr_we((data_phases/data_edges)*l+j) <= we;
 			we <=
 			xdr_win_dqsi when data_phases/data_edges=1 else
 			xdr_win_dqsi when ph_sel(j)='1' else
@@ -143,9 +144,9 @@ begin
 				clk => xdr_dlyd_dqs(l),
 				we  => we,
 				wa  => axdr_i_q,
-				di  => xdr_fifo_di,
+				di  => xdr_dqi,
 				ra  => axdr_o_q,
-				do  => xdr_fifo_do(data_phases/data_edges*j+l));
+				do  => xdr_fifo_do((data_phases/data_edges)*l+j));
 		end generate;
 
 	end generate;
