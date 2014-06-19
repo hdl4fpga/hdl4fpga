@@ -108,9 +108,9 @@ begin
 		process (axdr_i_set, xdr_dlyd_dqs(l))
 		begin
 			if axdr_i_set='1' then
-				ph_sel <= (others => '0');
+				ph_sel <= ('1', others => '0');
 			elsif rising_edge(xdr_dlyd_dqs(l)) then
-				ph_sel <= inc(gray(ph_sel));
+				ph_sel <= ph_sel rol 1;
 			end if;
 		end process;
 
@@ -122,18 +122,18 @@ begin
 
 			we <=
 			xdr_win_dqsi when data_phases/data_edges=1 else
-			xdr_win_dqsi when ph_sel=to_unsigned(j, ph_sel'length) else
+			xdr_win_dqsi when ph_sel(j)='1' else
 			'0';
 
 			axdr_i_d <= inc(gray(axdr_i_q));
-			i_cntr_g: for j in axdr_i_q'range  generate
+			i_cntr_g: for k in axdr_i_q'range  generate
 				ffd_i : entity hdl4fpga.aff
 				port map (
 					ar  => axdr_i_set,
 					clk => xdr_dlyd_dqs(l),
 					ena => we,
-					d   => axdr_i_d(j),
-					q   => axdr_i_q(j));
+					d   => axdr_i_d(k),
+					q   => axdr_i_q(k));
 			end generate;
 
 			ram_b : entity hdl4fpga.dbram
