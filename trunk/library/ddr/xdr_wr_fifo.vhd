@@ -77,50 +77,47 @@ begin
 			q   => sys_axdr_q(j));
 	end generate;
 
-	xdr_fifo_g : for l in 0 to data_edges-1 generate
+	xdr_fifo_g : for l in 0 to data_phases-1 generate
+		signal dpo : std_logic_vector(byte_size-1 downto 0);
+		signal qpo : std_logic_vector(byte_size-1 downto 0) := (others => '-');
+		signal xdr_axdr_d : axdr_word;
+	begin
 
-		phase_g: for j in 0 to data_phases/data_edges-1 generate
-			signal dpo : std_logic_vector(byte_size-1 downto 0);
-			signal qpo : std_logic_vector(byte_size-1 downto 0) := (others => '-');
-			signal xdr_axdr_d : axdr_word;
+		xdr_axdr_d <= inc(gray(xdr_axdr_q(l)));
+		cntr_g: for k in axdr_word'range generate
+			signal axdr_set : std_logic;
 		begin
-
-			xdr_axdr_d <= inc(gray(xdr_axdr_q(data_edges*j+l)));
-			cntr_g: for k in axdr_word'range generate
-				signal axdr_set : std_logic;
-			begin
-				axdr_set <= not xdr_ena(data_edges*j+l);
-				ffd_i : entity hdl4fpga.sff
-				port map (
-					clk => xdr_clk(data_edges*j+l),
-					sr  => axdr_set,
-					d   => xdr_axdr_d(k),
-					q   => xdr_axdr_q(data_edges*j+l)(k));
-			end generate;
-
-			ram_i : entity hdl4fpga.dbram
-			generic map (
-				n   => byte_size)
+			axdr_set <= not xdr_ena(l);
+			ffd_i : entity hdl4fpga.sff
 			port map (
-				clk => sys_clk,
-				we  => sys_req,
-				wa  => sys_axdr_q,
-				di  => di(data_edges*j+l),
-				ra  => xdr_axdr_q(data_edges*j+l),
-				do  => dpo);
-
-			register_output_g : if register_output generate
-				dqo_g: for k in byte'range generate
-					ffd_i : entity hdl4fpga.ff
-					port map (
-						clk => xdr_clk(data_edges*j+l),
-						d => dpo(k),
-						q => qpo(k));
-				end generate;
-			end generate;
-
-			do(data_edges*j+l) <= dpo when register_output else qpo;
+				clk => xdr_clk(l),
+				sr  => axdr_set,
+				d   => xdr_axdr_d(k),
+				q   => xdr_axdr_q(l)(k));
 		end generate;
+
+		ram_i : entity hdl4fpga.dbram
+		generic map (
+			n   => byte_size)
+		port map (
+			clk => sys_clk,
+			we  => sys_req,
+			wa  => sys_axdr_q,
+			di  => di(l),
+			ra  => xdr_axdr_q(l),
+			do  => dpo);
+
+		register_output_g : if register_output generate
+			dqo_g: for k in byte'range generate
+				ffd_i : entity hdl4fpga.ff
+				port map (
+					clk => xdr_clk(l),
+					d => dpo(k),
+					q => qpo(k));
+			end generate;
+		end generate;
+
+		do(l) <= dpo when register_output else qpo;
 	end generate;
 	xdr_dq <= to_stdlogicvector(do);
 end;
