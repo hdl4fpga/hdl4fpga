@@ -13,9 +13,9 @@ entity xdr_wr_fifo is
 		sys_req : in  std_logic;
 		sys_di  : in  std_logic_vector(data_phases*byte_size-1 downto 0);
 
-		xdr_clk : in  std_logic_vector(data_phases/data_edges-1 downto 0);
-		xdr_ena : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dq  : out std_logic_vector(data_phases*byte_size-1 downto 0));
+		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
+		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
+		xdr_dqo  : out std_logic_vector(data_phases*byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -78,9 +78,9 @@ begin
 			q   => sys_axdr_q(j));
 	end generate;
 
-	clks_g : for i in xdr_clk'range generate
-		clks(data_edges*i+0) <= xdr_clk(i);
-		clks(data_edges*i+1) <= not xdr_clk(i);
+	clks(xdr_clks'range) <= xdr_clks;
+	falling_edge_g : if data_edges /= 1 generate
+		clks(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
 	end generate;
 
 	xdr_fifo_g : for l in 0 to data_phases-1 generate
@@ -93,7 +93,7 @@ begin
 		cntr_g: for k in axdr_word'range generate
 			signal axdr_set : std_logic;
 		begin
-			axdr_set <= not xdr_ena(l);
+			axdr_set <= not xdr_enas(l);
 			ffd_i : entity hdl4fpga.sff
 			port map (
 				clk => clks(l),
@@ -125,5 +125,5 @@ begin
 
 		do(l) <= dpo when register_output else qpo;
 	end generate;
-	xdr_dq <= to_stdlogicvector(do);
+	xdr_dqo <= to_stdlogicvector(do);
 end;
