@@ -59,9 +59,9 @@ architecture mix of xdr_wr_fifo is
 	signal xdr_axdr_q : aw_vector(data_phases-1 downto 0);
 	signal sys_axdr_q : axdr_word;
 	signal sys_axdr_d : axdr_word;
-	signal clks : std_logic_vector(data_phases-1 downto 0);
 	signal di : byte_vector(sys_di'length/byte'length-1 downto 0);
 	signal do : byte_vector(sys_di'length/byte'length-1 downto 0);
+	signal clks : std_logic_vector(data_phases-1 downto 0);
 begin
 
 	di <= to_bytevector(sys_di);
