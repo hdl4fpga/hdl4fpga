@@ -25,6 +25,10 @@ package std is
 		constant n   : natural)
 		return byte_vector;
 
+	function to_bytevector (
+		arg : std_logic_vector) 
+		return byte_vector;
+
 	function reverse (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -329,18 +333,26 @@ package body std is
 	end;
 
 	function to_bytevector (
-		constant arg : string;
-		constant n   : natural)
+		arg : std_logic_vector) 
 		return byte_vector is
-		variable aux : string(1 to arg'length) := arg;
-		variable val : byte_vector(0 to n-1);
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : byte_vector(arg'length/byte'length-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
+			dat := dat srl byte'length;
+		end loop;
+		return val;
+	end;
+
+	function to_bytevector (
+		constant arg : string);
+		return byte_vector is
+		variable val : byte_vector(arg'range);
 	begin
-		for i in 1 to n loop
-			if i <= aux'length then
-				val(i-1) := std_logic_vector(unsigned'(to_unsigned(character'pos(aux(i)),byte'length)));
-			else
-				val(i-1) := (others => '0');
-			end if;
+		for i in arg'range loop
+			val(i) := std_logic_vector(unsigned'(to_unsigned(character'pos(arg(i)),byte'length)));
 		end loop;
 		return val;
 	end function;
@@ -694,6 +706,20 @@ package body std is
 		for i in arg'range loop
 			val := val sll nibble'length;
 			val(nibble'range) := arg(i);
+		end loop;
+		return val;
+	end;
+
+	function to_stdlogicvector (
+		arg : byte_vector)
+		return std_logic_vector is
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(byte'length*arg'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in dat'reverse_range loop
+			val(byte'range) := dat(i);
+			val := val sll byte'length;
 		end loop;
 		return val;
 	end;
