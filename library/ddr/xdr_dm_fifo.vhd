@@ -2,25 +2,23 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xdr_wr_fifo is
+entity xdr_dm_fifo is
 	generic (
-		data_edges  : natural := 2;
-		data_phases : natural := 1;
-		byte_size   : natural := 8);
+		data_phases : natural := 1);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_di  : in  std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_dm  : in  std_logic_vector(data_phases-1 downto 0);
 
 		xdr_clk : in  std_logic_vector(data_phases-1 downto 0);
 		xdr_ena : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dq  : out std_logic_vector(data_phases*byte_size-1 downto 0));
+		xdr_dm  : out std_logic_vector(data_phases-1 downto 0));
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of xdr_wr_fifo is
+architecture mix of xdr_dm_fifo is
 	subtype axdr_word is std_logic_vector(0 to 4-1);
 
 	type aw_vector is array (natural range <>) of axdr_word;
