@@ -78,6 +78,11 @@ begin
 			q   => sys_axdr_q(j));
 	end generate;
 
+	clks_g : for i in xdr_clk'range generate
+		clks(data_edges*i+0) <= xdr_clk(i);
+		clks(data_edges*i+1) <= not xdr_clk(i);
+	end generate;
+
 	xdr_fifo_g : for l in 0 to data_phases-1 generate
 		signal dpo : std_logic_vector(byte_size-1 downto 0);
 		signal qpo : std_logic_vector(byte_size-1 downto 0) := (others => '-');
@@ -91,7 +96,7 @@ begin
 			axdr_set <= not xdr_ena(l);
 			ffd_i : entity hdl4fpga.sff
 			port map (
-				clk => xdr_clk(l),
+				clk => clks(l),
 				sr  => axdr_set,
 				d   => xdr_axdr_d(k),
 				q   => xdr_axdr_q(l)(k));
@@ -112,7 +117,7 @@ begin
 			dqo_g: for k in byte'range generate
 				ffd_i : entity hdl4fpga.ff
 				port map (
-					clk => xdr_clk(l),
+					clk => clks(l),
 					d => dpo(k),
 					q => qpo(k));
 			end generate;
