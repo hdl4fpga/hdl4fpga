@@ -1,10 +1,13 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/sys_clk
-add wave -noupdate /testbench/xdr_clks
+add wave -noupdate -expand /testbench/xdr_wr_fifo_e/clks
+add wave -noupdate -radix hexadecimal /testbench/sys_di
+add wave -noupdate /testbench/xdr_enas
+add wave -noupdate /testbench/xdr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {12817 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -19,4 +22,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {1 ns}
+WaveRestoreZoom {0 ps} {52500 ps}
