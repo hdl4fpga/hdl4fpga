@@ -21,8 +21,7 @@ package std is
 	type integer64_vector is array (natural range <>) of integer64;
 
 	function to_bytevector (
-		constant arg : string;
-		constant n   : natural)
+		constant arg : string)
 		return byte_vector;
 
 	function to_bytevector (
@@ -347,7 +346,7 @@ package body std is
 	end;
 
 	function to_bytevector (
-		constant arg : string);
+		constant arg : string)
 		return byte_vector is
 		variable val : byte_vector(arg'range);
 	begin

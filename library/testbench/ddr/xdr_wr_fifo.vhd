@@ -21,18 +21,21 @@ begin
 	sys_clk <= not sys_clk after 4 ns;
 	process (sys_clk)
 	begin
-		for i in sys_clk'range loop
+		for i in xdr_clks'range loop
 			xdr_clks(i) <= sys_clk after i * 1 ns;
 		end loop;
 	end process;
 	sys_req <= '0', '1' after 80 ns;
 
 	process (sys_clk)
-		variable i : natural range 0 to dqi'length-1;
 		type word is array (natural range <>) of std_logic_vector(xdr_dqo'range);
+		constant data : word(1 to 1) := (
+			1 => x"abcd_f788");
+		variable i : natural range 0 to data'length-1;
 	begin
 		if rising_edge(sys_clk) then
-			i := (i+1) mod dqi'length;
+			sys_di <= data(i);
+			i := (i+1) mod data'length;
 		end if;
 	end process;
 
@@ -40,7 +43,7 @@ begin
 	generic map (
 		data_edges  => data_edges,
 		data_phases => data_phases,
-		byte_size   => xdr_di'length/data_phases)
+		byte_size   => sys_di'length/data_phases)
 	port map (
 		sys_clk => sys_clk,
 		sys_req => sys_req,
