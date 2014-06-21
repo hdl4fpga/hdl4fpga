@@ -10,10 +10,10 @@ architecture xdr_wr_fifo of testbench is
 	constant data_edges  : natural := 2;
 
 	signal sys_clk  : std_logic := '1';
-	signal sys_req  : std_logic;
+	signal sys_req  : std_logic := '1';
 	signal sys_di   : std_logic_vector(data_phases*byte_size-1 downto 0);
 	signal xdr_clks : std_logic_vector(data_phases/data_edges-1 downto 0);
-	signal xdr_enas : std_logic_vector(data_phases-1 downto 0);
+	signal xdr_enas : std_logic_vector(data_phases-1 downto 0) := (others => '1');
 	signal xdr_dqo  : std_logic_vector(data_phases*byte_size-1 downto 0);
 
 begin
@@ -22,15 +22,15 @@ begin
 	process (sys_clk)
 	begin
 		for i in xdr_clks'range loop
-			xdr_clks(i) <= sys_clk after i * 1 ns;
+			xdr_clks(i) <= sys_clk after i * 2 ns;
 		end loop;
 	end process;
 	sys_req <= '0', '1' after 80 ns;
 
 	process (sys_clk)
 		type word is array (natural range <>) of std_logic_vector(xdr_dqo'range);
-		constant data : word(1 to 1) := (
-			1 => x"abcd_f788");
+		constant data : word(0 to 1-1) := (
+			0 => x"abcd_f788");
 		variable i : natural range 0 to data'length-1;
 	begin
 		if rising_edge(sys_clk) then
