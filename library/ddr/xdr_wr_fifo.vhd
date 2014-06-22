@@ -11,12 +11,10 @@ entity xdr_wr_fifo is
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_dmi : in  std_logic_vector(data_phases-1 downto 0);
 		sys_di  : in  std_logic_vector(data_phases*byte_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dmo  : out std_logic_vector(data_phases-1 downto 0);
 		xdr_dqo  : out std_logic_vector(data_phases*byte_size-1 downto 0));
 end;
 
@@ -48,8 +46,8 @@ architecture mix of xdr_wr_fifo is
 		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'range loop
-			val := val sll byte'length;
+		for i in arg'reverse_range loop
+			val := val sll byte_size;
 			val(byte'range) := arg(i);
 		end loop;
 		return val;
@@ -85,75 +83,26 @@ begin
 		clks(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
 	end generate;
 
-	: if generate
-		xdr_axdr_g : for l in 0 to data_phases-1 generate
-			signal xdr_axdr_d : axdr_word;
-		begin
-			xdr_axdr_d <= inc(gray(xdr_axdr_q(l)));
-			cntr_g: for k in axdr_word'range generate
-				signal axdr_set : std_logic;
-			begin
-				axdr_set <= not xdr_enas(l);
-				ffd_i : entity hdl4fpga.sff
-				port map (
-					clk => clks(l),
-					sr  => axdr_set,
-					d   => xdr_axdr_d(k),
-					q   => xdr_axdr_q(l)(k));
-			end generate;
-	
-			dmram_i : entity hdl4fpga.dbram
-			generic map (
-				n   => 1)
-			port map (
-				clk => sys_clk,
-				we  => sys_req,
-				wa  => sys_axdr_q,
-				di(0)  => sys_dmi(l),
-				ra  => xdr_axdr_q(l),
-				do(0)  => dmo);
-		end generate;
-	end generate;
-
-	: if generate
-		xdr_axdr_g : for l in 0 to data_phases-1 generate
-			signal xdr_axdr_d : axdr_word;
-		begin
-			xdr_axdr_d <= inc(gray(xdr_axdr_q(l)));
-			cntr_g: for k in axdr_word'range generate
-				signal axdr_set : std_logic;
-			begin
-				axdr_set <= not xdr_enas(l);
-				ffd_i : entity hdl4fpga.sff
-				port map (
-					clk => clks(l),
-					sr  => axdr_set,
-					d   => xdr_axdr_d(k),
-					q   => xdr_axdr_q(l)(k));
-			end generate;
-	
-			dmram_i : entity hdl4fpga.dbram
-			generic map (
-				n   => 1)
-			port map (
-				clk => sys_clk,
-				we  => sys_req,
-				wa  => sys_axdr_q,
-				di(0)  => sys_dmi(l),
-				ra  => xdr_axdr_q(l),
-				do(0)  => dmo);
-		end generate;
-	end generate;
-
-
 	xdr_fifo_g : for l in 0 to data_phases-1 generate
 		signal dpo : std_logic_vector(byte_size-1 downto 0);
 		signal qpo : std_logic_vector(byte_size-1 downto 0) := (others => '-');
-		signal dmo : std_logic;
-		signal qmo : std_logic;
+		signal xdr_axdr_d : axdr_word;
 	begin
 
-		dqram_i : entity hdl4fpga.dbram
+		xdr_axdr_d <= inc(gray(xdr_axdr_q(l)));
+		cntr_g: for k in axdr_word'range generate
+			signal axdr_set : std_logic;
+		begin
+			axdr_set <= not xdr_enas(l);
+			ffd_i : entity hdl4fpga.sff
+			port map (
+				clk => clks(l),
+				sr  => axdr_set,
+				d   => xdr_axdr_d(k),
+				q   => xdr_axdr_q(l)(k));
+		end generate;
+
+		ram_i : entity hdl4fpga.dbram
 		generic map (
 			n   => byte_size)
 		port map (
@@ -165,12 +114,6 @@ begin
 			do  => dpo);
 
 		register_output_g : if register_output generate
-			dmo_i : entity hdl4fpga.ff
-			port map (
-				clk => clks(l),
-				d => dmo,
-				q => qmo);
-
 			dqo_g: for k in byte'range generate
 				ffd_i : entity hdl4fpga.ff
 				port map (
@@ -180,8 +123,7 @@ begin
 			end generate;
 		end generate;
 
-		do(l) <= qpo when register_output else dpo;
-		xdr_dmo(l) <= qmo when register_output else dmo;
+		do(l) <= dpo when register_output else qpo;
 	end generate;
 	xdr_dqo <= to_stdlogicvector(do);
 end;
