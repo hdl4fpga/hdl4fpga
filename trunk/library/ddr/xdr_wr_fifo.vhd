@@ -6,49 +6,83 @@ entity xdr_wr_fifo is
 	generic (
 		data_edges  : natural := 2;
 		data_phases : natural := 1;
+		word_size   : natural := 8;
 		byte_size   : natural := 8;
 		register_output : boolean := false);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_di  : in  std_logic_vector(data_phases*byte_size-1 downto 0);
+		sys_dmi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_di  : in  std_logic_vector(data_phases*word_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dqo  : out std_logic_vector(data_phases*byte_size-1 downto 0));
+		xdr_dmo  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
+		xdr_dqo  : out std_logic_vector(data_phases*word_size-1 downto 0));
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr_wr_fifo is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
+	subtype dmword is std_logic_vector(word_size/byte_size-1 downto 0);
+	type dmword_vector range <>) of dmword;
 
-	function to_bytevector (
+	function to_dmvector (
 		arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
+		variable val : dmword_vector(arg'length/dmword'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
-			dat := dat srl byte'length;
+			val(i) := std_logic_vector(dat(dmword'length-1 downto 0));
+			dat := dat srl dmword'length;
 		end loop;
 		return val;
 	end;
 
 	function to_stdlogicvector (
-		arg : byte_vector)
+		arg : dmword_vector)
 		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
+		variable dat : dmword_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*dmword'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in arg'reverse_range loop
-			val := val sll byte_size;
+			val := val sll dmword'length;
 			val(byte'range) := arg(i);
+		end loop;
+		return val;
+	end;
+
+	subtype word is std_logic_vector(word_size-1 downto 0);
+	type word_vector range <>) of word;
+
+	function to_wordvector (
+		arg : std_logic_vector) 
+		return byte_vector is
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : word_vector(arg'length/byte'length-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(word'length-1 downto 0));
+			dat := dat srl word'length;
+		end loop;
+		return val;
+	end;
+
+	function to_stdlogicvector (
+		arg : word_vector)
+		return std_logic_vector is
+		variable dat : word_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*word'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in arg'reverse_range loop
+			val := val sll word'size;
+			val(word'range) := arg(i);
 		end loop;
 		return val;
 	end;
@@ -59,12 +93,15 @@ architecture mix of xdr_wr_fifo is
 	signal xdr_axdr_q : aw_vector(data_phases-1 downto 0);
 	signal sys_axdr_q : axdr_word;
 	signal sys_axdr_d : axdr_word;
-	signal di : byte_vector(sys_di'length/byte'length-1 downto 0);
-	signal do : byte_vector(sys_di'length/byte'length-1 downto 0);
+	signal dmi : dmword_vector(sys_di'length/byte'length-1 downto 0);
+	signal dmo : dmword_vector(sys_di'length/byte'length-1 downto 0);
+	signal di : word_vector(sys_di'length/byte'length-1 downto 0);
+	signal do : word_vector(sys_di'length/byte'length-1 downto 0);
 	signal clks : std_logic_vector(data_phases-1 downto 0);
 begin
 
-	di <= to_bytevector(sys_di);
+	dmi <= to_wordvector(sys_dmi);
+	di  <= to_wordvector(sys_di);
 	sys_axdr_d <= inc(gray(sys_axdr_q));
 	sys_cntr_g: for j in axdr_word'range  generate
 		signal axdr_set : std_logic;
@@ -84,8 +121,10 @@ begin
 	end generate;
 
 	xdr_fifo_g : for l in 0 to data_phases-1 generate
-		signal dpo : std_logic_vector(byte_size-1 downto 0);
-		signal qpo : std_logic_vector(byte_size-1 downto 0) := (others => '-');
+		signal dpo : word;
+		signal qpo : word := (others => '-');
+		signal dmo : dmword := (others => '-');
+		signal qmo : dmword := (others => '-');
 		signal xdr_axdr_d : axdr_word;
 	begin
 
@@ -102,9 +141,9 @@ begin
 				q   => xdr_axdr_q(l)(k));
 		end generate;
 
-		ram_i : entity hdl4fpga.dbram
+		dqram_i : entity hdl4fpga.dbram
 		generic map (
-			n   => byte_size)
+			n   => word'length)
 		port map (
 			clk => sys_clk,
 			we  => sys_req,
@@ -113,8 +152,27 @@ begin
 			ra  => xdr_axdr_q(l),
 			do  => dpo);
 
+		dmram_i : entity hdl4fpga.dbram
+		generic map (
+			n   => dmword'length)
+		port map (
+			clk => sys_clk,
+			we  => sys_req,
+			wa  => sys_axdr_q,
+			di  => dmi(l),
+			ra  => xdr_axdr_q(l),
+			do  => dmo);
+
 		register_output_g : if register_output generate
-			dqo_g: for k in byte'range generate
+			dqo_g: for k in word'range generate
+				ffd_i : entity hdl4fpga.ff
+				port map (
+					clk => clks(l),
+					d => dmo(k),
+					q => qmo(k));
+			end generate;
+
+			dqo_g: for k in word'range generate
 				ffd_i : entity hdl4fpga.ff
 				port map (
 					clk => clks(l),
@@ -123,7 +181,9 @@ begin
 			end generate;
 		end generate;
 
-		do(l) <= dpo when register_output else qpo;
+		dmo(l) <= dmo when register_output else qmo;
+		do(l)  <= dpo when register_output else qpo;
 	end generate;
+	xdr_dmo <= to_stdlogicvector(dmo);
 	xdr_dqo <= to_stdlogicvector(do);
 end;
