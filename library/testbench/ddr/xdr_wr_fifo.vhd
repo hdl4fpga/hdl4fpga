@@ -5,19 +5,20 @@ use std.textio.all;
 library hdl4fpga;
 
 architecture xdr_wr_fifo of testbench is
-	constant word_size   : natural := 8;
+	constant word_size   : natural := 32;
 	constant byte_size   : natural := 8;
-	constant data_phases : natural := 4;
-	constant data_edges  : natural := 2;
+	constant data_phases : natural := 1;
+	constant data_edges  : natural := 1;
 
 	signal sys_clk  : std_logic := '1';
 	signal sys_req  : std_logic := '1';
 	signal sys_di   : std_logic_vector(data_phases*word_size-1 downto 0);
-	signal sys_dmi  : std_logic_vector(data_phases-1 downto 0);
+	signal sys_dmi  : std_logic_vector(sys_di'length/byte_size-1 downto 0);
+
 	signal xdr_clks : std_logic_vector(data_phases/data_edges-1 downto 0);
 	signal xdr_enas : std_logic_vector(data_phases-1 downto 0) := (others => '1');
-	signal xdr_dmo  : std_logic_vector(data_phases-1 downto 0);
-	signal xdr_dqo  : std_logic_vector(data_phases*word_size-1 downto 0);
+	signal xdr_dmo  : std_logic_vector(sys_dmi'range);
+	signal xdr_dqo  : std_logic_vector(sys_di'range);
 
 begin
 
@@ -52,7 +53,8 @@ begin
 	generic map (
 		data_edges  => data_edges,
 		data_phases => data_phases,
-		byte_size   => sys_di'length/data_phases)
+		word_size   => sys_di'length/data_phases,
+		byte_size   => sys_di'length/sys_dmi'length)
 	port map (
 		sys_clk => sys_clk,
 		sys_req => sys_req,

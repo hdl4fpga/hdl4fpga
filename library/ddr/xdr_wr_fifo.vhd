@@ -4,10 +4,10 @@ use ieee.numeric_std.all;
 
 entity xdr_wr_fifo is
 	generic (
-		data_edges  : natural := 2;
-		data_phases : natural := 1;
 		word_size   : natural := 8;
 		byte_size   : natural := 8;
+		data_edges  : natural := 2;
+		data_phases : natural := 1;
 		register_output : boolean := false);
 	port (
 		sys_clk : in  std_logic;
@@ -90,13 +90,13 @@ architecture mix of xdr_wr_fifo is
 	subtype axdr_word is std_logic_vector(0 to 4-1);
 	type aw_vector is array (natural range <>) of axdr_word;
 
-	signal xdr_axdr_q : aw_vector(data_phases-1 downto 0);
 	signal sys_axdr_q : axdr_word;
 	signal sys_axdr_d : axdr_word;
-	signal dmi : dmword_vector(sys_di'length/byte'length-1 downto 0);
-	signal dm : dmword_vector(sys_di'length/byte'length-1 downto 0);
-	signal di : word_vector(sys_di'length/byte'length-1 downto 0);
-	signal do : word_vector(sys_di'length/byte'length-1 downto 0);
+	signal xdr_axdr_q : aw_vector(data_phases-1 downto 0);
+	signal dmi : dmword_vector(data_phases-1 downto 0);
+	signal dm : dmword_vector(data_phases-1 downto 0);
+	signal di : word_vector(data_phases-1 downto 0);
+	signal do : word_vector(data_phases-1 downto 0);
 	signal clks : std_logic_vector(data_phases-1 downto 0);
 begin
 
