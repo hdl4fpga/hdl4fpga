@@ -5,18 +5,19 @@ use std.textio.all;
 library hdl4fpga;
 
 architecture xdr_wr_fifo of testbench is
+	constant word_size   : natural := 8;
 	constant byte_size   : natural := 8;
 	constant data_phases : natural := 4;
 	constant data_edges  : natural := 2;
 
 	signal sys_clk  : std_logic := '1';
 	signal sys_req  : std_logic := '1';
-	signal sys_di   : std_logic_vector(data_phases*byte_size-1 downto 0);
+	signal sys_di   : std_logic_vector(data_phases*word_size-1 downto 0);
 	signal sys_dmi  : std_logic_vector(data_phases-1 downto 0);
 	signal xdr_clks : std_logic_vector(data_phases/data_edges-1 downto 0);
 	signal xdr_enas : std_logic_vector(data_phases-1 downto 0) := (others => '1');
 	signal xdr_dmo  : std_logic_vector(data_phases-1 downto 0);
-	signal xdr_dqo  : std_logic_vector(data_phases*byte_size-1 downto 0);
+	signal xdr_dqo  : std_logic_vector(data_phases*word_size-1 downto 0);
 
 begin
 
@@ -31,11 +32,14 @@ begin
 	xdr_enas <= (others => '0'), (others => '1') after 80 ns;
 
 	process (sys_clk)
-		type word is array (natural range <>) of std_logic_vector(xdr_dqo'range);
-		constant data : word(0 to 2-1) := (
+		type xdrword_vector is array (natural range <>) of std_logic_vector(xdr_dqo'range);
+		constant data : xdrword_vector(0 to 2-1) := (
 			0 => x"abcd_f788",
 			1 => x"3421_59ee");
-		constant dm_word is array (nat
+		type xdrdmword_vector is array (natural range <>) of std_logic_vector(xdr_dqo'length/byte_size-1 downto 0);
+		constant dmdata : xdrdmword_vector (0 to 2-1) := (
+			0 => x"4",
+			1 => x"4");
 		variable i : natural range 0 to data'length-1;
 	begin
 		if rising_edge(sys_clk) then
