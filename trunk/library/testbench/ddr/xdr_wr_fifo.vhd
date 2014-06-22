@@ -12,8 +12,10 @@ architecture xdr_wr_fifo of testbench is
 	signal sys_clk  : std_logic := '1';
 	signal sys_req  : std_logic := '1';
 	signal sys_di   : std_logic_vector(data_phases*byte_size-1 downto 0);
+	signal sys_dmi  : std_logic_vector(data_phases-1 downto 0);
 	signal xdr_clks : std_logic_vector(data_phases/data_edges-1 downto 0);
 	signal xdr_enas : std_logic_vector(data_phases-1 downto 0) := (others => '1');
+	signal xdr_dmo  : std_logic_vector(data_phases-1 downto 0);
 	signal xdr_dqo  : std_logic_vector(data_phases*byte_size-1 downto 0);
 
 begin
@@ -26,11 +28,14 @@ begin
 		end loop;
 	end process;
 	sys_req <= '0', '1' after 80 ns;
+	xdr_enas <= (others => '0'), (others => '1') after 80 ns;
 
 	process (sys_clk)
 		type word is array (natural range <>) of std_logic_vector(xdr_dqo'range);
-		constant data : word(0 to 1-1) := (
-			0 => x"abcd_f788");
+		constant data : word(0 to 2-1) := (
+			0 => x"abcd_f788",
+			1 => x"3421_59ee");
+		constant dm_word is array (nat
 		variable i : natural range 0 to data'length-1;
 	begin
 		if rising_edge(sys_clk) then
@@ -48,8 +53,10 @@ begin
 		sys_clk => sys_clk,
 		sys_req => sys_req,
 		sys_di  => sys_di,
+		sys_dmi => sys_dmi,
 
 		xdr_clks => xdr_clks,
 		xdr_enas => xdr_enas,
+		xdr_dmo  => xdr_dmo,
 		xdr_dqo  => xdr_dqo);
 end;
