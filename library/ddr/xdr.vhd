@@ -7,19 +7,21 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr is
 	generic (
-		strobe : string := "EXTERNAL_LOOPBACK";
-		tCP   : time := 6.0 ns;
-		mark : tmrk_ids := M6T;
-
-		pcl : natural;
-		pbl : natural;
-		pwr : natural;
-		pcwl : natural;
 		bank_bits   : natural :=  2;
 		addr_bits   : natural := 13;
 		byte_size   : natural :=  8;
 		data_phases : natural :=  1;
-		data_bytes  : natural :=  2);
+		data_bytes  : natural :=  2;
+
+		mark : tmrk_ids := M6T;
+		tCP  : time := 6.0 ns;
+		strobe : string := "EXTERNAL_LOOPBACK";
+
+		vCL  : natural;
+		vBL  : natural;
+		vWR  : natural;
+		vCWL : natural);
+
 	port (
 		sys_rst   : in std_logic;
 		sys_clk   : in std_logic := '-';
@@ -145,34 +147,6 @@ begin
 	end process;
 
 	xdr_cs <= '0';
-	xdr_io_ba_e : entity hdl4fpga.xdr_ba
-	generic map (
-		bank_bits => bank_bits,
-		addr_bits => addr_bits)
-	port map (
-		sys_clk => sys_clk0,
-		sys_rst => rst,
-		sys_cfg_rdy => dll_timer_rdy,
-		sys_cke => xdrphy_cke,
-		sys_ras => xdr_mpu_ras,
-		sys_cas => xdr_mpu_cas,
-		sys_we  => xdr_mpu_we,
-		sys_odt => dll_timer_rdy,
-		sys_a   => sys_a,
-		sys_b   => sys_ba,
-		sys_cfg_ras => xdr_cfg_ras,
-		sys_cfg_cas => xdr_cfg_cas,
-		sys_cfg_we  => xdr_cfg_we,
-		sys_cfg_a   => xdr_cfg_a,
-		sys_cfg_b   => xdr_cfg_b,
-
-		xdr_odt => xdr_odt,
-		xdr_ras => xdr_ras,
-		xdr_cas => xdr_cas,
-		xdr_cke => xdr_cke,
-		xdr_we  => xdr_we,
-		xdr_a   => xdr_a,
-		xdr_b   => xdr_ba);
 
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
@@ -200,10 +174,10 @@ begin
 		cMRD => to_xdrlatency(tCP, mark, tMRD),
 		cRFC => to_xdrlatency(tCP, mark, tRFC))
 	port map (
-		xdr_cfg_cl  => xdr_cnfglat(std, CL,  pcl),
-		xdr_cfg_bl  => xdr_cnfglat(std, BL,  pbl),
-		xdr_cfg_wr  => xdr_cnfglat(std, WRL,  pwr),
-		xdr_cfg_cwl => xdr_cnfglat(std, CWL, pcwl),
+		xdr_cfg_cl  => xdr_cnfglat(std, CL,  vCL),
+		xdr_cfg_bl  => xdr_cnfglat(std, BL,  vBL),
+		xdr_cfg_wr  => xdr_cnfglat(std, WRL, vWR),
+		xdr_cfg_cwl => xdr_cnfglat(std, CWL, vCWL),
 
 		xdr_cfg_clk => sys_clk,
 		xdr_cfg_req => xdr_cfg_req,
@@ -214,6 +188,9 @@ begin
 		xdr_cfg_we  => xdr_cfg_we,
 		xdr_cfg_a   => xdr_cfg_a,
 		xdr_cfg_b   => xdr_cfg_b);
+
+		sys_cke => xdrphy_cke,
+		sys_odt => dll_timer_rdy,
 
 	xdrphy_ras <= sys_ras when sys_cfg_rdy='1' else sys_cfg_ras;
 	xdrphy_cas <= sys_cas when sys_cfg_rdy='1' else sys_cfg_cas;
@@ -246,9 +223,9 @@ begin
 		tRP  => to_xdrlatency(tCP, mark, tRP),
 		tRFC => to_xdrlatency(tCP, mark, tRFC),
 
-		xdr_mpu_bl  => xdr_cnfglat(std, BL,  pbl),
-		xdr_mpu_cwl => xdr_cnfglat(std, CWL, pcwl),
-		xdr_mpu_cl  => xdr_cnfglat(std, CL,  pcl))
+		xdr_mpu_bl  => xdr_cnfglat(std, BL,  vBL),
+		xdr_mpu_cwl => xdr_cnfglat(std, CWL, vCWL),
+		xdr_mpu_cl  => xdr_cnfglat(std, CL,  vCL))
 	port map (
 		xdr_mpu_rst => xdr_mpu_rst,
 		xdr_mpu_clk => clk0,
@@ -267,7 +244,7 @@ begin
 		xdr_mpu_rwin => xdr_mpu_rwin,
 		xdr_mpu_dr => xdr_mpu_dr,
 
-		xdr_mpu_dw => xdr_wr_fifo_ena,  
+		xdr_mpu_dw => xdr_wr_fifo_ena,
 		xdr_mpu_dqs => xdr_mpu_dqs,
 		xdr_mpu_dqsz => xdr_mpu_dqsz,
 		xdr_mpu_dqz => xdr_mpu_dqz);
@@ -287,22 +264,24 @@ begin
 		xdr_pgm_rw  => sys_rw);
 
 	xdr_win_dqs <= xdr_st_lp_dqs;
-	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
-	generic map (
-		data_delay => std,
-		data_edges => data_edges,
-		data_phases => data_phases,
-		word_size  => byte_size)
-	port map (
-		sys_clk => clk0,
-		sys_rdy => sys_do_rdy,
-		sys_rea => xdr_mpu_rea,
-		sys_do  => sys_do,
-		xdr_win_dq  => xdr_mpu_rwin,
-		xdr_win_dqs => xdr_win_dqs,
-		xdr_dqsi => xdr_rd_dqsi,
-		xdr_dqi  => xdr_dqi);
-		
+	xdr_rd_fifo_g : for  in generate
+		byte_g : entity hdl4fpga.xdr_rd_fifo
+		generic map (
+			data_delay => std,
+			data_edges => data_edges,
+			data_phases => data_phases,
+			word_size  => byte_size)
+		port map (
+			sys_clk => clk0,
+			sys_rdy => sys_do_rdy,
+			sys_rea => xdr_mpu_rea,
+			sys_do  => sys_do,
+			xdr_win_dq  => xdr_mpu_rwin,
+			xdr_win_dqs => xdr_win_dqs(i),
+			xdr_dqsi => xdr_rd_dqsi(i),
+			xdr_dqi  => xdr_dqi);
+	end generate;
+			
 	xdr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
 		data_phases => data_phases,
