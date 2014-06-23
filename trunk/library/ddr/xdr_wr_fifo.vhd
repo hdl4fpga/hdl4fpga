@@ -12,7 +12,7 @@ entity xdr_wr_fifo is
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_dmi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_dm  : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_di  : in  std_logic_vector(data_phases*word_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
@@ -100,7 +100,7 @@ architecture mix of xdr_wr_fifo is
 	signal clks : std_logic_vector(data_phases-1 downto 0);
 begin
 
-	dmi <= to_dmwordvector(sys_dmi);
+	dmi <= to_dmwordvector(sys_dm);
 	di  <= to_wordvector(sys_di);
 	sys_axdr_d <= inc(gray(sys_axdr_q));
 	sys_cntr_g: for j in axdr_word'range  generate
