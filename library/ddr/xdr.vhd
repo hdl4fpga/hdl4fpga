@@ -128,7 +128,7 @@ architecture mix of xdr is
 
 	signal clk0 : std_logic;
 	signal clk90 : std_logic;
-	signal xdr_wr_clk : std_logic_vector(data_phases*data_edges-1 downto 0);
+	signal xdr_wr_clk : std_logic_vector(data_phases-1 downto 0);
 
 begin
 
@@ -289,16 +289,15 @@ begin
 	xdr_win_dqs <= xdr_st_lp_dqs;
 	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
 	generic map (
-		data_delay  => std,
+		data_delay => std,
+		data_edges => data_edges,
 		data_phases => data_phases,
-		data_bytes  => data_bytes,
-		byte_size   => byte_size)
+		word_size  => byte_size)
 	port map (
 		sys_clk => clk0,
-		sys_do  => sys_do,
 		sys_rdy => sys_do_rdy,
 		sys_rea => xdr_mpu_rea,
-
+		sys_do  => sys_do,
 		xdr_win_dq  => xdr_mpu_rwin,
 		xdr_win_dqs => xdr_win_dqs,
 		xdr_dqsi => xdr_rd_dqsi,
@@ -306,20 +305,19 @@ begin
 		
 	xdr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
 	generic map (
-		std => std,
 		data_phases => data_phases,
-		data_bytes => data_bytes,
-		byte_size  => byte_size)
+		data_edges  => data_edges,
+		byte_size => word_size,
+		word_size => byte_size)
 	port map (
 		sys_clk => clk0,
 		sys_di  => sys_di,
 		sys_req => xdr_wr_fifo_req,
 		sys_dm  => sys_dm,
-
-		xdr_clk => xdr_wr_clk,
-		xdr_dm  => xdr_wr_dm,
-		xdr_ena => xdr_wr_fifo_ena, 
-		xdr_dq  => xdr_wr_dq);
+		xdr_clks => xdr_wr_clk,
+		xdr_dmo  => xdr_wr_dm,
+		xdr_enas => xdr_wr_fifo_ena, 
+		xdr_dqo  => xdr_wr_dq);
 		
 	xdr_st_g : if strobe="EXTERNAL_LOOPBACK" generate
 		signal st_dqs : std_logic;
