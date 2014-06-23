@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xdr_rd_fifo is
+entity xdr_infifo is
 	generic (
 		data_delay  : natural := 1;
 		data_edges  : natural := 2;
@@ -23,7 +23,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of xdr_rd_fifo is
+architecture mix of xdr_infifo is
 	subtype word is std_logic_vector(word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
