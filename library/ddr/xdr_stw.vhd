@@ -11,10 +11,6 @@ entity xdr_stw is
 		xdr_st_drr : in  std_logic;
 		xdr_st_drf : in  std_logic;
 		xdr_st_dqs : out std_logic);
-
-	constant r : natural := 0;
-	constant f : natural := 1;
-
 end;
 
 library hdl4fpga;
@@ -30,7 +26,7 @@ begin
 	oxdr_i : entity hdl4fpga.oddr
 	port map (
 		clk => rclk,
-		d(r) => xdr_st_drr,
-		d(f) => xdr_st_drf,
+		dr => xdr_st_drr,
+		df => xdr_st_drf,
 		q  => xdr_st_dqs);
 end;

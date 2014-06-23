@@ -32,10 +32,10 @@ entity xdr is
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
 		sys_rw : in  std_logic;
+		sys_b  : in  std_logic_vector(bank_bits-1 downto 0);
 		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic;
-		sys_ba  : in  std_logic_vector(bank_bits-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
@@ -189,14 +189,14 @@ begin
 		xdr_cfg_a   => xdr_cfg_a,
 		xdr_cfg_b   => xdr_cfg_b);
 
-		sys_cke => xdrphy_cke,
-		sys_odt => dll_timer_rdy,
+--		sys_cke => xdrphy_cke,
+--		sys_odt => dll_timer_rdy,
 
-	xdrphy_ras <= sys_ras when sys_cfg_rdy='1' else sys_cfg_ras;
-	xdrphy_cas <= sys_cas when sys_cfg_rdy='1' else sys_cfg_cas;
-	xdrphy_we  <= sys_we  when sys_cfg_rdy='1' else sys_cfg_we;
-	xdrphy_a   <= sys_a   when sys_cfg_rdy='1' else sys_cfg_a;
-	xdrphy_b   <= sys_b   when sys_cfg_rdy='1' else sys_cfg_b;
+	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_cfg_ras;
+	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_cfg_cas;
+	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
+	xdrphy_a <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
+	xdrphy_b <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
 
 	process (sys_clk)
 		variable q : std_logic;
@@ -264,7 +264,7 @@ begin
 		xdr_pgm_rw  => sys_rw);
 
 	xdr_win_dqs <= xdr_st_lp_dqs;
-	xdr_rd_fifo_g : for  in generate
+	xdr_rd_fifo_g : for i in 0 to 3 generate
 		byte_g : entity hdl4fpga.xdr_rd_fifo
 		generic map (
 			data_delay => std,
@@ -286,7 +286,7 @@ begin
 	generic map (
 		data_phases => data_phases,
 		data_edges  => data_edges,
-		byte_size => word_size,
+		byte_size => byte_size,
 		word_size => byte_size)
 	port map (
 		sys_clk => clk0,
