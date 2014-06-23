@@ -59,7 +59,7 @@ begin
 		sys_clk => sys_clk,
 		sys_req => sys_req,
 		sys_di  => sys_di,
-		sys_dmi => sys_dmi,
+		sys_dm => sys_dmi,
 
 		xdr_clks => xdr_clks,
 		xdr_enas => xdr_enas,
