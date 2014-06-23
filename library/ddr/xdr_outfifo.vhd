@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity xdr_wr_fifo is
+entity xdr_outfifo is
 	generic (
 		word_size   : natural := 8;
 		byte_size   : natural := 8;
@@ -24,7 +24,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of xdr_wr_fifo is
+architecture mix of xdr_outfifo is
 	subtype dmword is std_logic_vector(word_size/byte_size-1 downto 0);
 	type dmword_vector is array (natural range <>) of dmword;
 
