@@ -40,7 +40,7 @@ architecture mix of xdr_rd_fifo is
 		variable val : std_logic_vector(arg'length*word'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'reverse_range loop
+		for i in arg'range loop
 			val := val sll word'length;
 			val(word'range) := arg(i);
 		end loop;
@@ -83,8 +83,8 @@ begin
 	dqs_delayed_e : entity hdl4fpga.pgm_delay
 	port map (
 		xi  => xdr_dqsi,
-		x_p => xdr_delayed_dqs(1),
-		x_n => xdr_delayed_dqs(0));
+		x_p => xdr_delayed_dqs(0),
+		x_n => xdr_delayed_dqs(1));
 
 	xdr_dlyd_dqs(0) <= transport xdr_delayed_dqs(0) after 1 ps;
 	xdr_dlyd_dqs(1) <= transport xdr_delayed_dqs(1) after 1 ps;
@@ -108,9 +108,9 @@ begin
 		process (axdr_i_set, xdr_dlyd_dqs(l))
 		begin
 			if axdr_i_set='1' then
-				ph_sel <= ('1', others => '0');
+				ph_sel <= (0 => '1', others => '0');
 			elsif rising_edge(xdr_dlyd_dqs(l)) then
-				ph_sel <= ph_sel ror 1;
+				ph_sel <= ph_sel rol 1;
 			end if;
 		end process;
 

@@ -37,7 +37,7 @@ begin
 		data_delay  => 1,
 		data_edges  => 2,
 		data_phases => sys_do'length/xdr_dqi'length,
-		byte_size   => xdr_dqi'length)
+		word_size   => xdr_dqi'length)
 	port map (
 		sys_clk => sys_clk2,
 		sys_rdy => sys_rdy,
