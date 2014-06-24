@@ -1,22 +1,29 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity xdr_wrfifo is
 	generic (
-		word_size   : natural := 8;
+		word_size   : natural := 32;
 		byte_size   : natural := 8;
 		data_edges  : natural := 1;
 		data_phases : natural := 1;
-		data_bytes  : natural := 1;
+		data_bytes  : natural := 2;
 		register_output : boolean := false);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_dm  : in  std_logic_vector(data_bytes*data_phases*word_size/byte_size-1 downto 0);
-		sys_di  : in  std_logic_vector(data_bytes*data_phases*word_size-1 downto 0);
+		sys_dmi : in  std_logic_vector(data_bytes*data_phases*word_size/byte_size-1 downto 0);
+		sys_dqi : in  std_logic_vector(data_bytes*data_phases*word_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
 		xdr_dmo  : out std_logic_vector(data_bytes*data_phases*word_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(data_bytes*data_phases*word_size-1 downto 0));
 end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture struct of xdr_wrfifo is
 
@@ -56,19 +63,19 @@ architecture struct of xdr_wrfifo is
 
 begin
 
-	di <= to_bytevector(xdr_di);
+	di <= to_bytevector(sys_dmi);
 	xdr_fifo_g : for i in data_bytes-1 downto 0 generate
 		signal dmi : std_logic_vector(xdr_dmo'length/data_bytes-1 downto 0);
 		signal dmo : std_logic_vector(dmi'range);
 		signal dqi : byte_vector(xdr_dmo'length/data_bytes-1 downto 0);
 		signal dqo : byte_vector(dqi'range);
 		signal fifo_di : std_logic_vector(xdr_dqo'length/data_bytes-1 downto 0);
-		signal fifo_do : std_logic_vector(fifo_do'range);
+		signal fifo_do : std_logic_vector(fifo_di'range);
 	begin
-		shuffle_p : process (sys_dm, dqi)
+		shuffle_p : process (sys_dmi, dqi)
 		begin
 			for j in dmi'range loop
-				dmi(j) <= sys_dm(data_bytes*j+i);
+				dmi(j) <= sys_dmi(data_bytes*j+i);
 				dqi(j) <= di(data_bytes*j+i);
 			end loop;
 		end process;
@@ -89,7 +96,7 @@ begin
 			sys_dm  => dmi,
 			xdr_clks => xdr_clks,
 			xdr_dmo  => dmo,
-			xdr_enas => enas(i), 
+			xdr_enas => xdr_enas, 
 			xdr_dqo  => fifo_do);
 		dqo <= to_bytevector(fifo_do);
 
@@ -102,4 +109,5 @@ begin
 		end process;
 
 	end generate;
+	xdr_dqo <= to_stdlogicvector(do);
 end;
