@@ -51,7 +51,7 @@ architecture mix of xdr_outfifo is
 		dat := arg;
 		for i in arg'reverse_range loop
 			val := val sll dmword'length;
-			val(byte'range) := arg(i);
+			val(dmword'range) := arg(i);
 		end loop;
 		return val;
 	end;
@@ -63,7 +63,7 @@ architecture mix of xdr_outfifo is
 		arg : std_logic_vector) 
 		return word_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : word_vector(arg'length/byte'length-1 downto 0);
+		variable val : word_vector(arg'length/word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -181,8 +181,8 @@ begin
 			end generate;
 		end generate;
 
-		dm(l) <= dmo when register_output else qmo;
-		do(l) <= dpo when register_output else qpo;
+		dm(l) <= qmo when register_output else dmo;
+		do(l) <= qpo when register_output else dpo;
 	end generate;
 	xdr_dmo <= to_stdlogicvector(dm);
 	xdr_dqo <= to_stdlogicvector(do);
