@@ -49,9 +49,9 @@ architecture mix of xdr_outfifo is
 		variable val : std_logic_vector(arg'length*dmword'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'reverse_range loop
+		for i in dat'range loop
 			val := val sll dmword'length;
-			val(dmword'range) := arg(i);
+			val(dmword'range) := dat(i);
 		end loop;
 		return val;
 	end;
@@ -80,9 +80,9 @@ architecture mix of xdr_outfifo is
 		variable val : std_logic_vector(arg'length*word'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'reverse_range loop
+		for i in dat'range loop
 			val := val sll word'length;
-			val(word'range) := arg(i);
+			val(word'range) := dat(i);
 		end loop;
 		return val;
 	end;
