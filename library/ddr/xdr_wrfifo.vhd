@@ -25,6 +25,8 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
+use std.textio.all;
+
 architecture struct of xdr_wrfifo is
 
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
@@ -58,12 +60,30 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	signal di : byte_vector(data_bytes-1 downto 0);
-	signal do : byte_vector(data_bytes-1 downto 0);
+--	subtype word is std_logic_vector(sys_dqi'length/data_bytes-1 downto 0);
+--	type word_vector is array (natural range <>) of word;
+--
+--	function shuffle_word (
+--		arg : word_vector)
+--		return byte_vector is
+--		variable aux : byte_vector(word'length/byte'length-1 downto 0);
+--		variable val : byte_vector(arg'length*aux'length-1 downto 0);
+--	begin
+--		for i in arg'range loop
+--			aux := to_bytevector(arg(i));
+--			for j in aux'range loop
+--				val(j*arg'length+i) := aux(j);
+--			end loop;
+--		end loop;
+--		return val;
+--	end;
+--
+	signal di : byte_vector(sys_dmi'range);
+	signal do : byte_vector(xdr_dmo'range);
 
 begin
 
-	di <= to_bytevector(sys_dmi);
+	di <= to_bytevector(sys_dqi);
 	xdr_fifo_g : for i in data_bytes-1 downto 0 generate
 		signal dmi : std_logic_vector(xdr_dmo'length/data_bytes-1 downto 0);
 		signal dmo : std_logic_vector(dmi'range);
@@ -72,7 +92,7 @@ begin
 		signal fifo_di : std_logic_vector(xdr_dqo'length/data_bytes-1 downto 0);
 		signal fifo_do : std_logic_vector(fifo_di'range);
 	begin
-		shuffle_p : process (sys_dmi, dqi)
+		shuffle_p : process (sys_dmi, di)
 		begin
 			for j in dmi'range loop
 				dmi(j) <= sys_dmi(data_bytes*j+i);
@@ -100,7 +120,7 @@ begin
 			xdr_dqo  => fifo_do);
 		dqo <= to_bytevector(fifo_do);
 
-		unshuffle_p : process (dmo, dqo)
+		unshuffle_p : process (dqo)
 		begin
 			for j in dmo'range loop
 				xdr_dmo(data_bytes*j+i) <= dmo(i);

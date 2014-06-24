@@ -4,15 +4,16 @@ use ieee.std_logic_1164.all;
 use std.textio.all;
 library hdl4fpga;
 
-architecture xdr_wr_fifo of testbench is
+architecture xdr_wrfifo of testbench is
 	constant word_size   : natural := 32;
 	constant byte_size   : natural := 8;
 	constant data_phases : natural := 1;
 	constant data_edges  : natural := 1;
+	constant data_bytes  : natural := 2;
 
 	signal sys_clk  : std_logic := '1';
 	signal sys_req  : std_logic := '1';
-	signal sys_di   : std_logic_vector(data_phases*word_size-1 downto 0);
+	signal sys_di   : std_logic_vector(data_bytes*data_phases*word_size-1 downto 0);
 	signal sys_dmi  : std_logic_vector(sys_di'length/byte_size-1 downto 0);
 
 	signal xdr_clks : std_logic_vector(data_phases/data_edges-1 downto 0);
@@ -35,12 +36,13 @@ begin
 	process (sys_clk)
 		type xdrword_vector is array (natural range <>) of std_logic_vector(xdr_dqo'range);
 		constant data : xdrword_vector(0 to 2-1) := (
-			0 => x"abcd_f788",
-			1 => x"3421_59ee");
+			0 => x"0001020304050607",
+			1 => x"08090a0b0c0d0e0f");
+
 		type xdrdmword_vector is array (natural range <>) of std_logic_vector(xdr_dqo'length/byte_size-1 downto 0);
 		constant dmdata : xdrdmword_vector (0 to 2-1) := (
-			0 => x"4",
-			1 => x"4");
+			0 => x"44",
+			1 => x"44");
 		variable i : natural range 0 to data'length-1;
 	begin
 		if rising_edge(sys_clk) then
@@ -49,17 +51,18 @@ begin
 		end if;
 	end process;
 
-	xdr_wr_fifo_e : entity hdl4fpga.xdr_wr_fifo
+	xdr_wrfifo_e : entity hdl4fpga.xdr_wrfifo
 	generic map (
 		data_edges  => data_edges,
 		data_phases => data_phases,
-		word_size   => sys_di'length/data_phases,
-		byte_size   => sys_di'length/sys_dmi'length)
+		word_size   => word_size,
+		byte_size   => byte_size,
+		data_bytes  => data_bytes)
 	port map (
 		sys_clk => sys_clk,
 		sys_req => sys_req,
-		sys_di  => sys_di,
-		sys_dm => sys_dmi,
+		sys_dqi => sys_di,
+		sys_dmi => sys_dmi,
 
 		xdr_clks => xdr_clks,
 		xdr_enas => xdr_enas,
