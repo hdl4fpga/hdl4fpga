@@ -53,9 +53,9 @@ architecture struct of xdr_wrfifo is
 		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'reverse_range loop
+		for i in dat'range loop
 			val := val sll byte'length;
-			val(byte'range) := arg(i);
+			val(byte'range) := dat(i);
 		end loop;
 		return val;
 	end;
@@ -64,25 +64,25 @@ architecture struct of xdr_wrfifo is
 	type word_vector is array (natural range <>) of word;
 
 	subtype dmword is std_logic_vector(xdr_dmo'length/data_bytes-1 downto 0);
-	subtype shuffleword is byte_vector(xdr_dmo'length/data_bytes-1 downto 0);
+	subtype shuffleword is byte_vector(dmword'range);
 
 	function unshuffle (
 		arg : word_vector)
 		return byte_vector is
 		variable aux : byte_vector(word'length/byte'length-1 downto 0);
-		variable val : byte_vector(arg'length*aux'length-1 downto 0);
+		variable val : byte_vector(xdr_dmo'range);
 	begin
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
 			for j in aux'range loop
-				val(j*arg'length+i) := aux(j);
+				val(j*data_bytes+i) := aux(j);
 			end loop;
 		end loop;
 		return val;
 	end;
 
 	signal di : byte_vector(sys_dmi'range);
-	signal do : byte_vector(data_bytes-1 downto 0);
+	signal do : byte_vector(xdr_dmo'range);
 	signal dqo : word_vector(data_bytes-1 downto 0);
 
 begin

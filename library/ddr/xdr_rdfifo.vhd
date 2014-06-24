@@ -42,9 +42,9 @@ architecture struct of xdr_rdfifo is
 		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in arg'reverse_range loop
+		for i in dat'range loop
 			val := val sll byte'length;
-			val(byte'range) := arg(i);
+			val(byte'range) := dat(i);
 		end loop;
 		return val;
 	end;
