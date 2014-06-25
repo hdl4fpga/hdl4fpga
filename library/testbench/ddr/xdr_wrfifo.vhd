@@ -5,10 +5,10 @@ use std.textio.all;
 library hdl4fpga;
 
 architecture xdr_wrfifo of testbench is
-	constant word_size   : natural := 32;
+	constant word_size   : natural := 8;
 	constant byte_size   : natural := 8;
-	constant data_phases : natural := 1;
-	constant data_edges  : natural := 1;
+	constant data_phases : natural := 4;
+	constant data_edges  : natural := 2;
 	constant data_bytes  : natural := 2;
 
 	signal sys_clk  : std_logic := '1';

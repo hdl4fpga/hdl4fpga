@@ -73,11 +73,11 @@ begin
 			do0  => rd_slice(i)(0),
 			do1  => rd_slice(i)(1),
 			do2  => rd_slice(i)(2),
-			do3  => rd_slice(i)(3),
+			do3  => rd_slice(i)(3), 
 			di0  => wd_slice(i)(0),
 			di1  => wd_slice(i)(1),
 			di2  => wd_slice(i)(2),
 			di3  => wd_slice(i)(3));
 	end generate;
-	do <= to_stdlogicvector(rd_slice);
+	do <= std_logic_vector(resize(unsigned(to_stdlogicvector(rd_slice)), do'length));
 end;
