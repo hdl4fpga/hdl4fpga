@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity xdr_dm is
 	generic (
-		data_strobe : string  := "EXTERNAL_LOOPBACK";
+		data_strobe : string  := "NONE_LOOPBACK";
 		data_edges  : natural := 2;
 		data_phases : natural);
 	port (
@@ -22,7 +22,7 @@ begin
 		signal di : std_logic;
 	begin
 		di <=
-			sys_dmo when data_strobe="EXTERNAL_LOOPBACK" else
+			sys_dmo when data_strobe /= "INTERNAL_LOOPBACK" else
 			sys_dmo when sys_dmx(i)='1' else
 			sys_st(i);
 
