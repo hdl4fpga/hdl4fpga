@@ -87,6 +87,7 @@ architecture mix of xdr is
 	signal xdr_cfg_a   : std_logic_vector(addr_bits-1 downto 0);
 	signal xdr_cfg_b   : std_logic_vector(bank_bits-1 downto 0);
 
+	signal xdrphy_odt : std_logic;
 	signal xdrphy_cke : std_logic;
 	signal xdrphy_ras : std_logic;
 	signal xdrphy_cas : std_logic;
@@ -190,12 +191,11 @@ begin
 		xdr_cfg_a   => xdr_cfg_a,
 		xdr_cfg_b   => xdr_cfg_b);
 
---		sys_cke => xdrphy_cke,
---		sys_odt => dll_timer_rdy,
-
+	xdrphy_cke <= xdrphy_cke;
+	xdrphy_odt <= dll_timer_rdy;
 	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_cfg_ras;
 	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_cfg_cas;
-	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
+	xdrphy_we <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
 	xdrphy_a <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
 	xdrphy_b <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
 
