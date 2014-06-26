@@ -258,11 +258,11 @@ begin
 	begin
 		xdr_mpu_rwin <= not ph_rea(4*2+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl))));
 		xdr_mpu_drd(r)  <= not (
-			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+2+1-4-2) and
-			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+2+1-4-2));
+			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-3) and
+			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-3));
 		xdr_mpu_drd(f)  <= not (
-			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+1-4-2) and
-			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+1-4-2));
+			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-5) and
+			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-5));
 	end generate;
 
 	ddr3_g : if std=3 generate

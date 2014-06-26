@@ -11,10 +11,10 @@ entity xdr_rdsch is
 		byte_size : natural;
 		word_size : natural);
 	port (
-		sys_lat : std_logic_vector;
-		sys_clks : in std_logic_vector(0 to data_phases/data_edges-1);
-		xdr_dqw : out std_logic := '0';
-		xdr_stw : out std_logic_vector(0 to data_phases-1));
+		sys_slat : in  std_logic_vector;
+		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
+		xdr_dqw  : out std_logic := '0';
+		xdr_stw  : out std_logic_vector(0 to data_phases-1));
 
 	constant data_rate : natural := data_phases/data_edges;
 
@@ -23,17 +23,7 @@ end;
 library hdl4fpga;
 
 architecture def of xdr_rdsch is
-	constant start : natural := 0;
-	constant stop  : natural := 1;
-
-	constant lattab := (
-		brst => (start => , stop => )
-		ds   => (r => ( start => , stop => ))
 begin
-
-	------------------
-	-- Read Enables --
-	------------------
 	
 	xdr_ph_read : entity hdl4fpga.xdr_ph(slr)
 	generic map (
@@ -45,17 +35,32 @@ begin
 		xdr_ph_qout(0) => ph_rea_dummy,
 		xdr_ph_qout(1 to 4*nr+3*3) => ph_rea(1 to 4*nr+3*3));
 
-	stw_p : process (ph_rea)
+	stw_p : process (ph_rea, sys_cl)
+		variable stw : std_logic_vector() := (others => '-');
 	begin
-		xdr_stw(0) <= ph_rea() and ph_rea(4+);
-		for i in 1 to data_phases-1 loop
-			xdr_stw(i) <= not ph_rea(2+);
+		setup_l : for i in loop
+			stw(i)(0) := ph_rea() and ph_rea(4+);
+			for j in 1 to data_phases-1 loop
+				stw(i)(j) := ph_rea(2+);
+			end loop
+		end loop;
+		for i in 0 to data_phases-1 loop
+			xdr_stw(i) <= stw(i)(to_unsigned(sys_cl));
 		end loop;
 	end process;
 
-	dqw_p : process (ph_rea)
+	dqw_p : process (ph_rea, sys_cl)
+		variable dqw : std_logic_vector() := (others => '-');
 	begin
-		xdr_dqw <= not ph_rea(4*2+);
+		setup_l : for i in loop
+			for j in 0 to data_phases-1 loop
+				dtw(i)(j) := ph_rea(2+);
+			end loop;
+		end loop;
+
+		for i in 0 to data_phases-1 loop
+			xdr_dqw <= not ph_rea(4*2+);
+		end loop;
 	end process;
 
 	ddr1_g : if std=1 generate
