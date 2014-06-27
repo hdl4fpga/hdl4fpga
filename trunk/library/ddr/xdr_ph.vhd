@@ -5,13 +5,35 @@ use ieee.numeric_std.all;
 entity xdr_ph is
 	generic (
 		data_phases : natural := 4;
-		data_edges  : natural := 2);
-		n : natural);
+		data_edges  : natural := 2;
+		byte_size  : natural := 8;
+		word_size  : natural := 32;
+		delay_size : natural);
 	port (
 		xdr_ph_clks : in  std_logic_vector(0 to data_phases/data_edges);
-		xdr_ph_sel  : in  std_logic_vector(0 to data_phases*n+(data_phases-1)*(data_phases-1)) := (others => '0');
-		xdr_ph_din  : in  std_logic_vector(0 to data_phases*n+(data_phases-1)*(data_phases-1)) := (others => '-');
-		xdr_ph_qout : out std_logic_vector(0 to data_phases*n+(data_phases-1)*(data_phases-1)));
+		xdr_ph_sel  : in  std_logic_vector(0 to data_phases*delay_size+(data_phases-1)*(data_phases-1)) := (others => '0');
+		xdr_ph_din  : in  std_logic_vector(0 to data_phases*delay_size+(data_phases-1)*(data_phases-1)) := (others => '-');
+		xdr_ph_qout : out std_logic_vector(0 to data_phases*delay_size+(data_phases-1)*(data_phases-1)));
+end;
+
+
+architecture slr of xdr_ph is
+	signal clks : std_logic_vector(0 to data_phases-1);
+begin
+	
+	for i in clks'range generate
+		signal q : std_logic_vector(0 to delay_size);
+	begin
+		process (clks(i))
+		begin
+			if rising_edge(clks(i)) then
+				q <= ph(i) & q(0 to q'right-1)
+			end if;
+		end process;
+		for j in 0 to delay_size-1 generate
+			xdr_ph_qout(j*clks'length+i) <= q(i);
+		end generate;
+	end generate;
 end;
 
 architecture slr of xdr_ph is
