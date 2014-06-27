@@ -4,14 +4,14 @@ use ieee.numeric_std.all;
 
 entity xdr_rdsch is
 	generic (
-		std  : positive range 1 to 3 := 3;
 		data_phases : natural;
 		data_edges  : natural := 2;
 		data_bytes  : natural;
+		cl_size : natural;
 		byte_size : natural;
 		word_size : natural);
 	port (
-		sys_slat : in  std_logic_vector;
+		sys_cl   : in  std_logic_vector;
 		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
 		xdr_dqw  : out std_logic := '0';
 		xdr_stw  : out std_logic_vector(0 to data_phases-1));
@@ -23,9 +23,11 @@ end;
 library hdl4fpga;
 
 architecture def of xdr_rdsch is
+	subtype word is std_logic_vector(data_phases-1 downto 0);
+	type word_vector is array (natural range <>) of word;
 begin
 	
-	xdr_ph_read : entity hdl4fpga.xdr_ph(slr)
+	xdr_ph_read : entity hdl4fpga.xdr_ph
 	generic map (
 		n => nr)
 	port map (
@@ -36,58 +38,32 @@ begin
 		xdr_ph_qout(1 to 4*nr+3*3) => ph_rea(1 to 4*nr+3*3));
 
 	stw_p : process (ph_rea, sys_cl)
-		variable stw : std_logic_vector() := (others => '-');
+		variable stw : word_vector(0 to 2**sys_cl'length-1) := (others => '-');
 	begin
-		setup_l : for i in loop
-			stw(i)(0) := ph_rea() and ph_rea(4+);
+		setup_l : for i in 0 to cl_size-1 loop
+			stw(i)(0) := not (ph_rea(0+i) and ph_rea(data_phases+i));
 			for j in 1 to data_phases-1 loop
-				stw(i)(j) := ph_rea(2+);
+				stw(i)(j) := not ph_rea(data_phases*i+j);
 			end loop
 		end loop;
-		for i in 0 to data_phases-1 loop
-			xdr_stw(i) <= stw(i)(to_unsigned(sys_cl));
+
+		for j in 0 to data_phases-1 loop
+			xdr_stw(i) <= stw(to_unsigned(unsigned(sys_cl)))(j);
 		end loop;
 	end process;
 
 	dqw_p : process (ph_rea, sys_cl)
-		variable dqw : std_logic_vector() := (others => '-');
+		variable dtw : word_vector(0 to 2**sys_cl'length-1) := (others => '-');
 	begin
-		setup_l : for i in loop
+		setup_l : for i in 0 to cl_size-1 loop
 			for j in 0 to data_phases-1 loop
-				dtw(i)(j) := ph_rea(2+);
+				dtw(i)(j) := not ph_rea(2*data_phases+i);
 			end loop;
 		end loop;
 
-		for i in 0 to data_phases-1 loop
-			xdr_dqw <= not ph_rea(4*2+);
+		for j in 0 to data_phases-1 loop
+			xdr_dqw <= dtw(to_unsigned(unsigned(sys_cl)))(j);
 		end loop;
 	end process;
 
-	ddr1_g : if std=1 generate
-	begin
-		xdr_mpu_rwin <= not ph_rea(4*2+4*((ddr1_ph_4cas(to_integer(unsigned(xdr_mpu_cl)))+3)/4));
-		xdr_mpu_drd(r)  <= not (
-			ph_rea(ddr1_ph_4cas(to_integer(unsigned(xdr_mpu_cl)))) and
-			ph_rea(4*1+ddr1_ph_4cas(to_integer(unsigned(xdr_mpu_cl)))));
-		xdr_mpu_drd(f) <= not ph_rea(ddr1_ph_4cas(to_integer(unsigned(xdr_mpu_cl)))+2);
-	end generate;
-
-	ddr2_g : if std=2 generate
-	begin
-		xdr_mpu_rwin <= not ph_rea(4*2+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl))));
-		xdr_mpu_drd(r)  <= not (
-			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+2+1-4-2) and
-			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+2+1-4-2));
-			ph_rea(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+1-4-2) and
-			ph_rea(4*1+4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+1-4-2));
-	end generate;
-
-	ddr3_g : if std=3 generate
-	begin
-		xdr_mpu_rwin <= not ph_rea(4*2+4*((4*ddr3_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+3)/4));
-		xdr_mpu_drd(r)  <= not (
-			ph_rea(ddr3_ph_cas(to_integer(unsigned(xdr_mpu_cl)))) and 
-			ph_rea(4*1+ddr3_ph_cas(to_integer(unsigned(xdr_mpu_cl)))));
-		xdr_mpu_drd(f) <= not ph_rea(4*ddr3_ph_cas(to_integer(unsigned(xdr_mpu_cl)))+2);
-	end generate;
 end;
