@@ -24,12 +24,13 @@ begin
 			sys_clks(i) <= clk after (i * period) / sys_clks'length;
 		end loop;
 		j <= (j + 1) mod 7;
+		if j = 6 then
+            di <= not di;
+        end if;
+        if j = 2 then
+            di <= not di;
+        end if;
 	end process;
-
---	di <=
---		not di when j = 2 else
---		not di when j = 6 else
---		di;
 
 	du : entity hdl4fpga.xdr_ph
 	generic map (
