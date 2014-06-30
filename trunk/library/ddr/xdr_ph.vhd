@@ -26,31 +26,34 @@ begin
 		clks(data_phases/data_edges to data_phases-1) <= not sys_clks;
 	end generate;
 
-	process (clks(0))
-		variable q : std_logic_vector(0 to delay_size);
+	g0: block
+		signal q : std_logic_vector(0 to delay_size);
 	begin
-		if rising_edge(clks(0)) then
-			q := sys_di & q(0 to q'right-1);
-            phi (clks'length-1) <= sys_di;
-        			for j in 0 to delay_size-1 loop
-				--ph_qo(j*clks'length) <= q(j);
-			end loop;
-		end if;
-	end process;
-
-	g : for i in 1 to data_phases-1 generate
-	begin
-		process (clks(i))
-			variable q : std_logic_vector(0 to delay_size);
+		process (clks(0))
 		begin
-			if rising_edge(clks(i)) then
-				q := phi(i) & q(0 to q'right-1);
-				phi ((i+clks'length-1) mod clks'length) <= q(0);
-				for j in 0 to delay_size-1 loop
-					ph_qo(j*data_phases+i) <= q(j);
-				end loop;
+			if rising_edge(clks(0)) then
+				q <= sys_di & q(0 to q'right-1);
 			end if;
 		end process;
+		phi (clks'length-1) <= sys_di;
+		j: for j in 0 to delay_size-1 generate
+			ph_qo(j*clks'length) <= q(j);
+		end generate;
+	end block;
+
+	g : for i in 1 to data_phases-1 generate
+		signal q : std_logic_vector(0 to delay_size);
+	begin
+		process (clks(i))
+		begin
+			if rising_edge(clks(i)) then
+				q <= phi(i) & q(0 to q'right-1);
+			end if;
+		end process;
+		phi ((i+clks'length-1) mod clks'length) <= q(0);
+		j: for j in 0 to delay_size-1 generate
+			ph_qo(j*data_phases+i) <= q(j);
+		end generate;
 	end generate;
 
 end;
