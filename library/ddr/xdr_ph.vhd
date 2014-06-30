@@ -52,7 +52,7 @@ begin
 		end process;
 		phi ((i+clks'length-1) mod clks'length) <= q(0);
 		j: for j in 0 to delay_size-1 generate
-			ph_qo(j*data_phases+i) <= q(j);
+			ph_qo(j*data_phases+(data_phases-i)*(clks'length-1)) <= q(j);
 		end generate;
 	end generate;
 
