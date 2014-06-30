@@ -25,10 +25,10 @@ begin
 		end loop;
 		j <= (j + 1) mod 7;
 		if j = 6 then
-            di <= not di;
+            di <= not di after 1 ps;
         end if;
         if j = 2 then
-            di <= not di;
+            di <= not di after 1 ps;
         end if;
 	end process;
 
