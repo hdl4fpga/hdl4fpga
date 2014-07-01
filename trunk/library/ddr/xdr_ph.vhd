@@ -29,7 +29,7 @@ begin
 	end generate;
 
 	g0: block
-		signal q : std_ulogic_vector(0 to delay_size);
+		signal q : std_ulogic_vector(0 to delay_size/data_phase);
 	begin
 		q(0) <= sys_di;
 		process (clks(0))
@@ -45,6 +45,7 @@ begin
 	end block;
 
 	gn : for i in 1 to data_phases-1 generate
+--		signal q  : std_logic_vector( to delay_size) := (others => '-');
 		signal q  : std_logic_vector(0 to delay_size) := (others => '-');
 		signal q0 : std_logic_vector(delay_phase/(i+1) to ((data_phases-i)*(clks'length-1)-1)/data_phases-1) := (others => '-');
 	begin
