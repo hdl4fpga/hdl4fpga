@@ -23,6 +23,7 @@ begin
 		for i in sys_clks'range loop
 			sys_clks(i) <= clk after (i * period) / sys_clks'length;
 		end loop;
+		if rising_edge(clk) then
 		j <= (j + 1) mod 7;
 		if j = 6 then
             di <= not di after 1 ps;
@@ -30,11 +31,12 @@ begin
         if j = 2 then
             di <= not di after 1 ps;
         end if;
+    end if;
 	end process;
 
 	du : entity hdl4fpga.xdr_ph
 	generic map (
-		delay_size => 5)
+		delay_size => 15)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => di);
