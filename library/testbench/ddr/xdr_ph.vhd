@@ -10,10 +10,12 @@ architecture xdr_ph of testbench is
 	constant data_phases : natural := 4;
 	constant data_edges  : natural := 2;
 	constant period : time := 4 ns;
+	constant word_size : natural := 4;
+	constant byte_size : natural := 1;
 
 	signal clk : std_logic := '0';
 	signal sys_clks : std_logic_vector(0 to data_phases/data_edges-1);
-	signal di : std_logic := '0';
+	signal di : std_logic_vector(0 to word_size/byte_size-1) := (others => '0');
 	signal j : natural;
 begin
 	clk <= not clk after period;
@@ -36,6 +38,10 @@ begin
 
 	du : entity hdl4fpga.xdr_ph
 	generic map (
+		data_phases => data_phases,
+		data_edges => data_edges,
+		word_size => word_size,
+		byte_size => byte_size,
 		delay_size => 15)
 	port map (
 		sys_clks => sys_clks,
