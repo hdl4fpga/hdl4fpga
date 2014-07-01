@@ -28,7 +28,7 @@ architecture slr of xdr_ph is
 	function to_stdlogicvector (
 		constant arg : phword_vector)
 		return std_logic_vector is
-		variable val : unsigned(0 to data_phases*word_size/byte_size-1) := (others => '-');
+		variable val : unsigned(0 to ph_qo'length-1) := (others => '-');
 	begin
 		for i in arg'reverse_range loop
 			val := val srl phword'length;
