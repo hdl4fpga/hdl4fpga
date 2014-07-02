@@ -25,17 +25,21 @@ library hdl4fpga;
 architecture def of xdr_rdsch is
 	subtype word is std_logic_vector(data_phases-1 downto 0);
 	type word_vector is array (natural range <>) of word;
+	signal ph_rea : std_logic_vector (0 to (delay_size+1)*(word_size/byte_size)-1);
 begin
 	
 	xdr_ph_read : entity hdl4fpga.xdr_ph
 	generic map (
-		n => nr)
+		data_phases => data_phases,
+		data_edges  => data_edges,
+		byte_size => byte_size,
+		word_size => word_size,
+		delay_size => 16,
+		delay_phase => 2)
 	port map (
-		xdr_ph_clks => xdr_mpu_clk,
-		xdr_ph_din(0) => xdr_mpu_rph,
-		xdr_ph_din(1 to 4*nr+3*3) => xdr_phr_din,
-		xdr_ph_qout(0) => ph_rea_dummy,
-		xdr_ph_qout(1 to 4*nr+3*3) => ph_rea(1 to 4*nr+3*3));
+		sys_clks => sys_clks,
+		sys_di => (others => '-'),
+		ph_qo => ph_rea);
 
 	stw_p : process (ph_rea, sys_cl)
 		variable stw : word_vector(0 to 2**sys_cl'length-1) := (others => '-');
