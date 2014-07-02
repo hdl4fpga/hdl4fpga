@@ -82,25 +82,27 @@ begin
 
 	xx: if data_phases > 1 generate
 		phi0 (delay_phase) <= std_ulogic_vector(sys_di);
-	end generate;
-
-	g1 : for i in 1 to data_phases-1 generate
-		signal q : phword_vector((delay_phase+i-1)/data_phases to (data_phases-i)*(clks'length-1)/data_phases-1) := (others => (others => '-'));
-		constant left : natural := (delay_phase+i-1)/data_phases;
-	begin
-		xx : if q'length > 0 generate
-			process (clks(i))
-			begin
-				if rising_edge(clks(i)) then
-					q(selecton(data_phases*((delay_phase+i)/data_phases) > delay_phase, left, left+1)) <= phi0(i);
-					for i in (delay_phase+i-1)/data_phases+1 to q'right loop
-						q(i) <= q(i-1);
-					end loop;
-				end if;
-			end process;
-			phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
-			j: for j in q'range generate
-				qo(j*data_phases+i) <= q(j);
+		g : for i in 1 to data_phases-1 generate
+			constant left : natural := selecton (
+				data_phases*((delay_phase+i)/data_phases) > delay_phase,
+				(delay_phase+i-1)/data_phases,
+				(delay_phase+i-1)/data_phases+1);
+			signal q : phword_vector(left to (data_phases-i)*(clks'length-1)/data_phases-1) := (others => (others => '-'));
+		begin
+			xx : if q'length > 0 generate
+				process (clks(i))
+				begin
+					if rising_edge(clks(i)) then
+						q(q'left) <= phi0(i);
+						for i in q'left+1 to q'right loop
+							q(i) <= q(i-1);
+						end loop;
+					end if;
+				end process;
+				phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
+				j: for j in q'range generate
+					qo(j*data_phases+i) <= q(j);
+				end generate;
 			end generate;
 		end generate;
 	end generate;

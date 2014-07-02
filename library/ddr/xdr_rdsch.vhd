@@ -13,6 +13,7 @@ entity xdr_rdsch is
 	port (
 		sys_cl   : in  std_logic_vector;
 		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
+		sys_rea  : in  std_logic;
 		xdr_dqw  : out std_logic := '0';
 		xdr_stw  : out std_logic_vector(0 to data_phases-1));
 
@@ -38,7 +39,7 @@ begin
 		delay_phase => 2)
 	port map (
 		sys_clks => sys_clks,
-		sys_di => (others => '-'),
+		sys_di => sys_rea,
 		ph_qo => ph_rea);
 
 	stw_p : process (ph_rea, sys_cl)
