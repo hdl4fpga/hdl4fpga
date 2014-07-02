@@ -16,6 +16,11 @@ entity xdr_ph is
 		ph_qo  : out std_logic_vector(0 to (delay_size+1)*word_size/byte_size-1));
 end;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+use std.textio.all;
+
 architecture slr of xdr_ph is
 	subtype phword is std_ulogic_vector(0 to word_size/byte_size-1);
 	type phword_vector is array (natural range <>) of phword;
@@ -55,7 +60,6 @@ begin
 			end if;
 		end process;
 		phi (clks'length-1) <= std_ulogic_vector(sys_di);
-		phi0 (delay_phase) <= std_ulogic_vector(sys_di);
 		j: for j in q'range generate
 			qo(j*data_phases) <= q(j);
 		end generate;
@@ -76,22 +80,28 @@ begin
 		end generate;
 	end generate;
 
-	g1 : for i in 1 to data_phases-2 generate
+	xx: if data_phases > 1 generate
+		phi0 (delay_phase) <= std_ulogic_vector(sys_di);
+	end generate;
+
+	g1 : for i in 1 to data_phases-1 generate
 		signal q : phword_vector((delay_phase+i-1)/data_phases to (data_phases-i)*(clks'length-1)/data_phases-1) := (others => (others => '-'));
+		constant left : natural := (delay_phase+i-1)/data_phases;
 	begin
-		process (clks(i))
-			constant  k : natural := ((delay_phase+i-1)/data_phases)*data_phases;
-		begin
-			if rising_edge(clks(i)) then
-				q((delay_phase+i-1)/data_phases) <= phi0(i);
-				for i in (delay_phase+i-1)/data_phases+1 to q'right loop
-					q(i) <= q(i-1);
-				end loop;
-			end if;
-		end process;
-		phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
-		j: for j in q'range generate
-			qo(j*data_phases+i) <= q(j);
+		xx : if q'length > 0 generate
+			process (clks(i))
+			begin
+				if rising_edge(clks(i)) then
+					q(selecton(data_phases*((delay_phase+i)/data_phases) > delay_phase, left, left+1)) <= phi0(i);
+					for i in (delay_phase+i-1)/data_phases+1 to q'right loop
+						q(i) <= q(i-1);
+					end loop;
+				end if;
+			end process;
+			phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
+			j: for j in q'range generate
+				qo(j*data_phases+i) <= q(j);
+			end generate;
 		end generate;
 	end generate;
 	ph_qo <= to_stdlogicvector(qo);

@@ -218,13 +218,13 @@ package std is
 		constant right: integer)
 		return integer;
 
-	function assign_if (
+	function selecton (
 		constant condition : boolean;
 		constant value_if_true  : integer;
 		constant value_if_false : integer)
 		return integer;
 
-	function assign_if (
+	function selecton (
 		constant condition : boolean;
 		constant value_if_true  : real;
 		constant value_if_false : real)
@@ -747,7 +747,7 @@ package body std is
 		end if;
 	end;
 
-	function assign_if (
+	function selecton (
 		constant condition : boolean;
 		constant value_if_true  : real;
 		constant value_if_false : real)
@@ -760,7 +760,7 @@ package body std is
 		end if;
 	end;
 
-	function assign_if (
+	function selecton (
 		constant condition : boolean;
 		constant value_if_true  : integer;
 		constant value_if_false : integer)
