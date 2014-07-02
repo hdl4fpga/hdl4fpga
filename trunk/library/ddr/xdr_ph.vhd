@@ -78,16 +78,15 @@ begin
 
 	g1 : for i in 1 to data_phases-2 generate
 		signal q : phword_vector((delay_phase+i-1)/data_phases to (data_phases-i)*(clks'length-1)/data_phases-1) := (others => (others => '-'));
-		constant k : natural := (delay_phase+i-1)/data_phases;
 	begin
 		process (clks(i))
+			constant  k : natural := ((delay_phase+i-1)/data_phases)*data_phases;
 		begin
 			if rising_edge(clks(i)) then
-				if k*data_phases+i < delay_phase then
-					q(q'right) <= phi0(i);
-				else
-					q(q'left) <= phi0(i);
-				end if;
+				q((delay_phase+i-1)/data_phases) <= phi0(i);
+				for i in (delay_phase+i-1)/data_phases+1 to q'right loop
+					q(i) <= q(i-1);
+				end loop;
 			end if;
 		end process;
 		phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
