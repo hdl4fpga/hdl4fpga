@@ -7,6 +7,7 @@ entity xdr_rdsch is
 		data_phases : natural;
 		data_edges  : natural := 2;
 		data_bytes  : natural;
+		cl_phase : natural;
 		cl_size : natural;
 		byte_size : natural;
 		word_size : natural);
@@ -27,6 +28,7 @@ architecture def of xdr_rdsch is
 	subtype word is std_logic_vector(data_phases-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 	signal ph_rea : std_logic_vector (0 to (delay_size+1)*(word_size/byte_size)-1);
+	constant cycle : natural := data_phases*word_size/byte_size;
 begin
 	
 	xdr_ph_read : entity hdl4fpga.xdr_ph
