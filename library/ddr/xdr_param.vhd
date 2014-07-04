@@ -33,10 +33,18 @@ package xdr_param is
 			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
 	end component;
 
-	type tmrk_ids is (M6T, M107);
-	type tmng_ids is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
-	type latr_ids is (CL, BL, WRL, CWL);
-	type laty_ids is (cDLL);
+	type tmrk_ids is (ANY, M6T, M107);
+	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
+	type latr_ids is (ANY, CL, BL, WRL, CWL);
+	type laty_ids is (ANY, cDLL);
+
+	type cnfglat_record is record
+		std  : positive;
+		reg  : latr_ids;
+		lat  : positive;
+		code : std_logic_vector(0 to 2);
+	end record;
+	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
 	function xdr_cnfglat (
 		constant std : positive;
@@ -53,6 +61,16 @@ package xdr_param is
 		std : natural;
 		param : laty_ids) 
 		return natural;
+
+	function xdr_query_size (
+		constant std : natural;
+		constant reg : latr_ids)
+		return cnfglat_tab);
+
+	function xdr_query_data (
+		constant std : natural;
+		constant reg : latr_ids)
+		return cnfglat_tab);
 
 	function xdr_std (
 		mark : tmrk_ids) 
@@ -120,14 +138,6 @@ package body xdr_param is
 		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
 		timing_record'(mark => M6T,  param => tREFI, value =>  7 us);
 
-	type cnfglat_record is record
-		std  : positive;
-		reg  : latr_ids;
-		lat  : positive;
-		code : std_logic_vector(0 to 2);
-	end record;
-
-	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
 	constant cnfglat_db : cnfglat_tab(1 to 40) :=
 
@@ -294,6 +304,39 @@ package body xdr_param is
 		return natural is
 	begin
 		return to_xdrlatency(period, xdr_timing(mark, param));
+	end;
+
+	function xdr_query_size (
+		constant std : natural;
+		constant reg : )
+		return std_logic_vector is
+		variable val : natural := 0;
+	begin
+		for i in cnfglat_db'range loop
+			if cnfglat_db.std = std then
+				if cnfglat_db.reg = CL then
+					val = val + 1;
+				end if;
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function xdr_query_data (
+		constant std : natural;
+		constant reg : )
+		return std_logic_vector is
+		constant query_size : natural := xdr_query_size(std, reg);
+		variable row : natural := 0;
+		variable cnfglat_index : natural_vector(cnfglat_db'range) := (others => 0);
+		variable query_data : 
+	begin
+		
+		cnfgcltab := new cnfglattab_ptr(1 to row);
+		for i in cnfglat_db'range loop
+			cnfgcltab(i) := cnfglat_db(cnfglat_index(i));
+		end loop;
+		return cnfgcltab.all;
 	end;
 
 end package body;
