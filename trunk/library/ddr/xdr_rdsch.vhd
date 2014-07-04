@@ -7,7 +7,6 @@ entity xdr_rdsch is
 		data_phases : natural;
 		data_edges  : natural := 2;
 		data_bytes  : natural;
-		cl_phase : natural;
 		cl_size : natural;
 		byte_size : natural;
 		word_size : natural);
@@ -29,6 +28,22 @@ architecture def of xdr_rdsch is
 	type word_vector is array (natural range <>) of word;
 	signal ph_rea : std_logic_vector (0 to (delay_size+1)*(word_size/byte_size)-1);
 	constant cycle : natural := data_phases*word_size/byte_size;
+	subtype clword is std_logic_vector(0 to cl_size-1);
+	type clword_vector is (natural range <>) of clword;
+
+	function to_clwordvector(
+		constant arg : std_logic_vector)
+		return clword_vector is
+		variable aux : std_logic_vector(arg'length-1 downto 0) := arg;
+		variable val : clword_vector(arg'length/clword'length-1 downto 0);
+	begin
+		for i in val'reverse_range loop
+			val(i) := aux(clword'range);
+			aux := aux sll clword'length;
+		end loop;
+		return val;
+	end;
+	constant cl_sel : clword_vector(sys_cl'length/cl_size-1 downto 0) := (others => '-');
 begin
 	
 	xdr_ph_read : entity hdl4fpga.xdr_ph
