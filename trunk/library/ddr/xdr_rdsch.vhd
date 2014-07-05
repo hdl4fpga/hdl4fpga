@@ -2,6 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.xdr_param.all;
+
 entity xdr_rdsch is
 	generic (
 		data_phases : natural;
@@ -9,7 +13,8 @@ entity xdr_rdsch is
 		byte_size : natural;
 		word_size : natural;
 		clword_size : natural;
-		clword_data : std_logic_vector);
+		clword_data : std_logic_vector;
+		clword_lat  : natural_vector);
 	port (
 		sys_cl   : in  std_logic_vector;
 		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
@@ -22,14 +27,10 @@ entity xdr_rdsch is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.std.all;
-use hdl4fpga.xdr_param.all;
-
 architecture def of xdr_rdsch is
 	subtype word is std_logic_vector(data_phases-1 downto 0);
 	type word_vector is array (natural range <>) of word;
-	signal ph_rea : std_logic_vector (0 to delay_size-1);
+	signal ph_rea : std_logic_vector (0 to word_size/byte_size*(delay_size+1)-1);
 	constant cycle : natural := data_phases*word_size/byte_size;
 	subtype clword is std_logic_vector(0 to clword_size-1);
 	type clword_vector is array (natural range <>) of clword;
@@ -73,9 +74,9 @@ begin
 	begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			stw(i)(0) := not (ph_rea(0+i) and ph_rea(data_phases+i));
+			stw(i)(0) := not (ph_rea(0+clword_lat(i)) and ph_rea(data_phases+clword_lat(i)));
 			for j in 1 to data_phases-1 loop
-				stw(i)(j) := not ph_rea(data_phases*i+j);
+				stw(i)(j) := not ph_rea(data_phases*i+clword_lat(i)+j);
 			end loop;
 		end loop;
 
@@ -92,9 +93,9 @@ begin
 	dqw_p : process (ph_rea, sys_cl)
 		variable dtw : word_vector(0 to 2**sys_cl'length-1) := (others => (others => '-'));
 	begin
-		setup_l : for i in 0 to clword_size-1 loop
+		setup_l : for i in 0 to cltab_size-1 loop
 			for j in 0 to data_phases-1 loop
-				dtw(i)(j) := not ph_rea(2*data_phases+i);
+				dtw(i)(j) := not ph_rea(2*data_phases+clword_lat(i));
 			end loop;
 		end loop;
 
