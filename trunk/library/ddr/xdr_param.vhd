@@ -65,12 +65,12 @@ package xdr_param is
 	function xdr_query_size (
 		constant std : natural;
 		constant reg : latr_ids)
-		return cnfglat_tab);
+		return natural;
 
 	function xdr_query_data (
 		constant std : natural;
 		constant reg : latr_ids)
-		return cnfglat_tab);
+		return cnfglat_tab;
 
 	function xdr_std (
 		mark : tmrk_ids) 
@@ -308,14 +308,14 @@ package body xdr_param is
 
 	function xdr_query_size (
 		constant std : natural;
-		constant reg : )
-		return std_logic_vector is
+		constant reg : latr_ids)
+		return natural is
 		variable val : natural := 0;
 	begin
 		for i in cnfglat_db'range loop
-			if cnfglat_db.std = std then
-				if cnfglat_db.reg = CL then
-					val = val + 1;
+			if cnfglat_db(i).std = std then
+				if cnfglat_db(i).reg = CL then
+					val := val + 1;
 				end if;
 			end if;
 		end loop;
@@ -324,19 +324,21 @@ package body xdr_param is
 
 	function xdr_query_data (
 		constant std : natural;
-		constant reg : )
-		return std_logic_vector is
+		constant reg : latr_ids)
+		return cnfglat_tab is
 		constant query_size : natural := xdr_query_size(std, reg);
-		variable row : natural := 0;
-		variable cnfglat_index : natural_vector(cnfglat_db'range) := (others => 0);
-		variable query_data : 
+		variable query_data : cnfglat_tab (1 to query_size);
+		variable query_row  : natural := 0;
 	begin
-		
-		cnfgcltab := new cnfglattab_ptr(1 to row);
 		for i in cnfglat_db'range loop
-			cnfgcltab(i) := cnfglat_db(cnfglat_index(i));
+			if cnfglat_db(i).std = std then
+				if cnfglat_db(i).reg = reg then
+					query_row := query_row + 1;
+					query_data(query_row) := cnfglat_db(i);
+				end if;
+			end if;
 		end loop;
-		return cnfgcltab.all;
+		return query_data;
 	end;
 
 end package body;
