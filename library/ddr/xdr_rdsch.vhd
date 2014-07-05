@@ -28,7 +28,7 @@ entity xdr_rdsch is
 end;
 
 architecture def of xdr_rdsch is
-	subtype word is std_logic_vector(data_phases-1 downto 0);
+	subtype word is std_logic_vector(word_size/byte_size*data_phases-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 	signal ph_rea : std_logic_vector (0 to word_size/byte_size*(delay_size+1)-1);
 	constant cycle : natural := data_phases*word_size/byte_size;
@@ -74,9 +74,9 @@ begin
 	begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			stw(i)(0) := not (ph_rea(0+clword_lat(i)) and ph_rea(data_phases+clword_lat(i)));
-			for j in 1 to data_phases-1 loop
-				stw(i)(j) := not ph_rea(data_phases*i+clword_lat(i)+j);
+			stw(i)(0) := ph_rea(0+clword_lat(i)) or ph_rea(data_phases+clword_lat(i));
+			for j in 1 to word'length-1 loop
+				stw(i)(j) := ph_rea(data_phases*i+clword_lat(i)+j);
 			end loop;
 		end loop;
 
@@ -101,7 +101,7 @@ begin
 
 		select_l : for i in 0 to cltab_size-1 loop
 			if sys_cl = cltab_data(i) then
-				for j in 0 to data_phases-1 loop
+				for j in word'range loop
 					xdr_dqw(j) <= dtw(i)(j);
 				end loop;
 			end if;
