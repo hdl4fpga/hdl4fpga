@@ -10,8 +10,8 @@ entity xdr_rdsch is
 	generic (
 		data_phases : natural;
 		data_edges  : natural := 2;
-		byte_size : natural;
-		word_size : natural;
+		byte_size   : natural;
+		word_size   : natural;
 		clword_size : natural;
 		clword_data : std_logic_vector;
 		clword_lat  : natural_vector);
@@ -28,7 +28,7 @@ entity xdr_rdsch is
 end;
 
 architecture def of xdr_rdsch is
-	subtype word is std_logic_vector(word_size/byte_size*data_phases-1 downto 0);
+	subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
 	type word_vector is array (natural range <>) of word;
 	signal ph_rea : std_logic_vector (0 to word_size/byte_size*(delay_size+1)-1);
 	constant cycle : natural := data_phases*word_size/byte_size;
@@ -63,7 +63,7 @@ begin
 		byte_size => byte_size,
 		word_size => word_size,
 		delay_size => delay_size,
-		delay_phase => 2)
+		delay_phase => 1)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => ph_din,
@@ -75,15 +75,15 @@ begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
 			stw(i)(0) := ph_rea(0+clword_lat(i)) or ph_rea(data_phases+clword_lat(i));
-			for j in 1 to word'length-1 loop
-				stw(i)(j) := ph_rea(data_phases*i+clword_lat(i)+j);
+			for j in word'left+1 to word'right loop
+				stw(i)(j) := ph_rea(clword_lat(i)+j);
 			end loop;
 		end loop;
 
 		xdr_stw <= (others =>  '-');
 		select_l : for i in 0 to cltab_size-1 loop
 			if sys_cl = cltab_data(i) then
-				for j in 0 to data_phases-1 loop
+				for j in word'range loop
 					xdr_stw(j) <= stw(i)(j);
 				end loop;
 			end if;
@@ -91,14 +91,16 @@ begin
 	end process;
 
 	dqw_p : process (ph_rea, sys_cl)
-		variable dtw : word_vector(0 to 2**sys_cl'length-1) := (others => (others => '-'));
+		variable dtw : word_vector(0 to 2**sys_cl'length-1);
 	begin
+		dtw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			for j in 0 to data_phases-1 loop
-				dtw(i)(j) := not ph_rea(2*data_phases+clword_lat(i));
+			for j in word'range loop
+				dtw(i)(j) := ph_rea(clword_lat(i)+j);
 			end loop;
 		end loop;
 
+		xdr_dqw <= (others =>  '-');
 		select_l : for i in 0 to cltab_size-1 loop
 			if sys_cl = cltab_data(i) then
 				for j in word'range loop
