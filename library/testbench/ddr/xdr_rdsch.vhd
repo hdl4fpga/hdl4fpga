@@ -10,7 +10,7 @@ architecture xdr_rdsch of testbench is
 	constant data_phases : natural := 1;
 	constant data_edges  : natural := 1;
 	constant period : time := 4 ns;
-	constant word_size : natural := 4;
+	constant word_size : natural := 2;
 	constant byte_size : natural := 1;
 
 	signal clk : std_logic := '0';
@@ -40,7 +40,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size,
 		clword_size => 3,
-		clword_lat => (0 to 0 => 3*data_phases),
+		clword_lat => (0 to 0 => 2*data_phases),
 		clword_data => "101")
 	port map (
 		sys_cl => "101",
