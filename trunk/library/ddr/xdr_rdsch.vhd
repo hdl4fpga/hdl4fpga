@@ -23,7 +23,7 @@ entity xdr_rdsch is
 		xdr_stw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1));
 
 	constant data_rate : natural := data_phases/data_edges;
-	constant delay_size : natural := 16;
+	constant delay_size : natural := 4;
 
 end;
 
