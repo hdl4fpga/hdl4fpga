@@ -60,8 +60,6 @@ begin
 	generic map (
 		data_phases => data_phases,
 		data_edges  => data_edges,
-		byte_size => byte_size,
-		word_size => word_size,
 		delay_size => delay_size,
 		delay_phase => 1)
 	port map (
