@@ -66,7 +66,7 @@ begin
 		delay_phase => 1)
 	port map (
 		sys_clks => sys_clks,
-		sys_di => ph_din,
+		sys_di => sys_rea,
 		ph_qo => ph_rea);
 
 	stw_p : process (ph_rea, sys_cl)

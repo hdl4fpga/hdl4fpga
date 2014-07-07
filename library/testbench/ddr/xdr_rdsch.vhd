@@ -40,7 +40,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size,
 		clword_size => 3,
-		clword_lat => (0 to 0 => 2*data_phases),
+		clword_lat => (0 to 0 => 4*data_phases),
 		clword_data => "101")
 	port map (
 		sys_cl => "101",
