@@ -12,7 +12,7 @@ entity xdr_ph is
 		delay_size  : natural := 2);
 	port (
 		sys_clks : in std_logic_vector(0 to data_phases/data_edges-1);
-		sys_di : in std_logic_vector(0 to word_size/byte_size-1);
+		sys_di : in std_logic;
 		ph_qo  : out std_logic_vector(0 to (delay_size+1)*word_size/byte_size-1));
 end;
 
@@ -52,14 +52,18 @@ begin
 	g0: block
 		signal q : phword_vector(0 to delay_size/data_phases);
 	begin
-		q(0) <= std_ulogic_vector(sys_di);
+		q(0) <= std_ulogic_vector(di);
+		di(0) <= sys_di;
 		process (clks(0))
 		begin
 			if rising_edge(clks(0)) then
+				if di'length > 1 then
+					di(1 to phword'right) <= di(0 to phword'right-1);
+				end if;
 				q(1 to q'right) <= q(0 to q'right-1);
 			end if;
 		end process;
-		phi (clks'length-1) <= std_ulogic_vector(sys_di);
+		phi (clks'length-1) <= q(0);
 		j: for j in q'range generate
 			qo(j*data_phases) <= q(j);
 		end generate;
@@ -81,7 +85,7 @@ begin
 	end generate;
 
 	xx: if data_phases > 1 generate
-		phi0 (delay_phase) <= std_ulogic_vector(sys_di);
+		phi0 (delay_phase) <= std_ulogic_vector(di);
 		g : for i in 1 to data_phases-1 generate
 			constant left : natural := selecton (
 				data_phases*((delay_phase+i)/data_phases) > delay_phase,
