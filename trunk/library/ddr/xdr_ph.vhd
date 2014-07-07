@@ -11,7 +11,7 @@ entity xdr_ph is
 	port (
 		sys_clks : in std_logic_vector(0 to data_phases/data_edges-1);
 		sys_di : in std_logic;
-		ph_qo  : out std_logic_vector(0 to delay_size-1));
+		ph_qo  : out std_logic_vector(0 to delay_size));
 end;
 
 library hdl4fpga;
