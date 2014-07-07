@@ -23,14 +23,14 @@ entity xdr_rdsch is
 		xdr_stw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1));
 
 	constant data_rate : natural := data_phases/data_edges;
-	constant delay_size : natural := 4;
+	constant delay_size : natural := 10;
 
 end;
 
 architecture def of xdr_rdsch is
 	subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
 	type word_vector is array (natural range <>) of word;
-	signal ph_rea : std_logic_vector (0 to word_size/byte_size*(delay_size+1)-1);
+	signal ph_rea : std_logic_vector (0 to delay_size);
 	constant cycle : natural := data_phases*word_size/byte_size;
 	subtype clword is std_logic_vector(0 to clword_size-1);
 	type clword_vector is array (natural range <>) of clword;
@@ -51,11 +51,9 @@ architecture def of xdr_rdsch is
 	constant cltab_size : natural := sys_cl'length/clword_size;
 	constant cltab_data : clword_vector(0 to cltab_size-1) := to_clwordvector(clword_data);
 
-	signal ph_din : std_logic_vector(0 to word_size/byte_size-1) := (others => '-');
 
 begin
 	
-	ph_din <= (0 to word_size/byte_size-1 => sys_rea);
 	xdr_ph_read : entity hdl4fpga.xdr_ph
 	generic map (
 		data_phases => data_phases,
@@ -69,12 +67,13 @@ begin
 
 	stw_p : process (ph_rea, sys_cl)
 		variable stw : word_vector(0 to 2**clword_size-1);
+		constant base : natural := (0+clword_lat(i)) mod (word_size/byte_size);
 	begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
 			stw(i)(0) := ph_rea(0+clword_lat(i)) or ph_rea(data_phases+clword_lat(i));
-			for j in word'left+1 to word'right loop
-				stw(i)(j) := ph_rea(clword_lat(i)+j);
+			for j in 1 to word'right loop
+				stw(i)(j) := ph_rea(0+clword_lat(i));
 			end loop;
 		end loop;
 
