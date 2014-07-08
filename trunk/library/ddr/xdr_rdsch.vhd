@@ -66,16 +66,16 @@ begin
 		ph_qo => ph_rea);
 
 	stw_p : process (ph_rea, sys_cl)
-		constant kkk : natural := data_phases*word_size/byte_size;
+		constant kkk : natural := word_size/byte_size;
 		variable stw : word_vector(0 to 2**clword_size-1);
 		variable base : natural;
 	begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			base := (1+clword_lat(i)) mod (word_size/byte_size);
+			base := (clword_lat(i)) mod (word_size/byte_size);
 			stw(i)((base+0) mod kkk) := ph_rea(0+clword_lat(i)) or ph_rea(data_phases+clword_lat(i));
 			for j in 1 to word'right loop
-				stw(i)((base+j) mod kkk) := ph_rea(clword_lat(i)+j / (word_size/byte_size));
+				stw(i)((j/kkk)*kkk+(base+j) mod kkk) := ph_rea(clword_lat(i)+(j/(word_size/byte_size)));
 			end loop;
 		end loop;
 
@@ -95,7 +95,7 @@ begin
 		dtw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
 			for j in word'range loop
-				dtw(i)(j) := ph_rea(clword_lat(i)+j/(word_size/byte_size));
+				dtw(i)(j) := ph_rea(clword_lat(i)+(j/(word_size/byte_size)));
 			end loop;
 		end loop;
 
