@@ -7,10 +7,10 @@ use std.textio.all;
 library hdl4fpga;
 
 architecture xdr_rdsch of testbench is
-	constant data_phases : natural := 2;
+	constant data_phases : natural := 4;
 	constant data_edges  : natural := 2;
 	constant period : time := 4 ns;
-	constant word_size : natural := 4;
+	constant word_size : natural := 1;
 	constant byte_size : natural := 1;
 
 	signal clk : std_logic := '0';

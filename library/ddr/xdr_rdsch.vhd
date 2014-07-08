@@ -27,8 +27,6 @@ entity xdr_rdsch is
 
 end;
 
-use std.textio.all;
-
 architecture def of xdr_rdsch is
 	subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
 	type word_vector is array (natural range <>) of word;
@@ -54,7 +52,6 @@ architecture def of xdr_rdsch is
 	constant cltab_data : clword_vector(0 to cltab_size-1) := to_clwordvector(clword_data);
 	constant word_byte : natural := word_size/byte_size;
 
-
 begin
 	
 	xdr_ph_read : entity hdl4fpga.xdr_ph
@@ -62,7 +59,7 @@ begin
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		delay_size => delay_size,
-		delay_phase => 1)
+		delay_phase => 2)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => sys_rea,
