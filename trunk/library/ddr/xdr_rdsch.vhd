@@ -23,7 +23,7 @@ entity xdr_rdsch is
 		xdr_stw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1));
 
 	constant data_rate : natural := data_phases/data_edges;
-	constant delay_size : natural := 16;
+	constant delay_size : natural := 32;
 
 end;
 
@@ -69,20 +69,23 @@ begin
 		ph_qo => ph_rea);
 
 	stw_p : process (ph_rea, sys_cl)
-		constant disp : natural := 2;
+		variable disp : natural;
+		variable disp_mod : natural;
+		variable disp_quo : natural;
+		variable phase : natural;
 		variable stw : word_vector(0 to 2**clword_size-1);
-		variable base : natural;
-		variable msg :line;
 	begin
 		stw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			base := (clword_lat(i)) mod (word_size/byte_size)+disp;
-			stw(i)((base+0) mod word_byte) := ph_rea(0+clword_lat(i)) or ph_rea(data_phases+clword_lat(i));
+			disp := clword_lat(i);
+			disp_mod := disp mod word'length;
+			disp_quo := disp / word'length;
+			stw(i)((disp+0) mod word'length) := 
+				ph_rea(disp_quo*word'length+(disp_mod+0)/word_byte) or 
+				ph_rea(disp_quo*word'length+(disp_mod+word'length)/word_byte);
 			for j in 1 to word'right loop
-				stw(i)((j/word_byte)*word_byte+(base+j) mod word_byte) := ph_rea(clword_lat(i)+(j/word_byte+data_phases*((base+j) / word_byte)));
-				write(msg, (j/word_byte+data_phases*((base+j) / word_byte)));
-				write(msg, ',');
-				report msg.all;
+				phase := (j+disp_mod)/word_byte;
+				stw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
 			end loop;
 		end loop;
 
@@ -97,16 +100,20 @@ begin
 	end process;
 
 	dqw_p : process (ph_rea, sys_cl)
-		constant disp : natural := 2;
+		variable disp : natural;
+		variable disp_mod : natural;
+		variable disp_quo : natural;
+		variable phase : natural;
 		variable dtw : word_vector(0 to 2**sys_cl'length-1);
-		variable base : natural;
 	begin
 		dtw := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
-			base := (clword_lat(i)) mod (word_size/byte_size)+disp;
+			disp := clword_lat(i);
+			disp_mod := disp mod word'length;
+			disp_quo := disp / word'length;
 			for j in word'range loop
-				dtw(i)(j) := ph_rea(clword_lat(i)+(j/(word_size/byte_size)));
-				dtw(i)((j/word_byte)*word_byte+(base+j) mod word_byte) := ph_rea(clword_lat(i)+(j/word_byte+data_phases*((base+j) / word_byte)));
+				phase := (j+disp_mod)/word_byte;
+				dtw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
 			end loop;
 		end loop;
 
