@@ -14,22 +14,13 @@ entity xdr_sch is
 
 		clword_size : natural;
 		clword_data : std_logic_vector;
-		clword_lat  : natural_vector;
-
-		cwlword_size : natural;
-		cwlword_data : std_logic_vector;
-		cwlword_lat  : natural_vector);
+		clword_lat  : natural_vector);
 	port (
 		sys_cl   : in  std_logic_vector(clword_size-1 downto 0);
 		sys_cwl  : in  std_logic_vector(cwlword_size-1 downto 0);
 		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
 		sys_rea  : in  std_logic;
 		xdr_dqw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
-		xdr_stw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1));
-
-		xdr_dqs  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
-		xdr_dqsz : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
-		xdr_dqz  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
 		xdr_stw  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1));
 
 	constant data_rate : natural := data_phases/data_edges;
@@ -134,31 +125,4 @@ begin
 		end loop;
 	end process;
 
-	dqs_p : process (ph_rea, sys_cwl)
-		variable disp : natural;
-		variable disp_mod : natural;
-		variable disp_quo : natural;
-		variable phase : natural;
-		variable dtw : word_vector(0 to 2**sys_cwl'length-1);
-	begin
-		dtw := (others => (others => '-'));
-		setup_l : for i in 0 to cltab_size-1 loop
-			disp := clword_lat(i);
-			disp_mod := disp mod word'length;
-			disp_quo := disp / word'length;
-			for j in word'range loop
-				phase := (j+disp_mod)/word_byte;
-				dtw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
-			end loop;
-		end loop;
-
-		xdr_dqw <= (others =>  '-');
-		select_l : for i in 0 to cltab_size-1 loop
-			if sys_cl = cltab_data(i) then
-				for j in word'range loop
-					xdr_dqw(j) <= dtw(i)(j);
-				end loop;
-			end if;
-		end loop;
-	end process;
 end;

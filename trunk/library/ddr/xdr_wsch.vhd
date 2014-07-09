@@ -80,23 +80,23 @@ begin
 		variable phase : natural;
 		variable dqsz : word_vector(0 to 2**cwlword_size-1);
 	begin
-		stw := (others => (others => '-'));
+		dqsz := (others => (others => '-'));
 		setup_l : for i in 0 to cwltab_size-1 loop
 			disp := cwlword_lat(i);
 			disp_mod := disp mod word'length;
-			disp_quo := disp / word'length;
-			stw(i)((disp+0) mod word'length) := 
+			disp_quo := disp  /  word'length;
+			dqsz(i)((disp+0) mod word'length) := 
 				ph_wri(disp_quo*word'length+(disp_mod+0)/word_byte) or 
 				ph_wri(disp_quo*word'length+(disp_mod+word'length)/word_byte);
 			for j in 1 to word'right loop
 				phase := (j+disp_mod)/word_byte;
-				stw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
+				dqsz(i)((disp+j) mod word'length) := ph_wri(disp_quo*word'length + phase);
 			end loop;
 		end loop;
 
 		xdr_dqsz <= (others =>  '-');
 		select_l : for i in 0 to cltab_size-1 loop
-			if sys_cl = cltab_data(i) then
+			if sys_cwl = cltab_data(i) then
 				for j in word'range loop
 					xdr_dqsz(j) <= dqsz(i)(j);
 				end loop;
@@ -104,33 +104,65 @@ begin
 		end loop;
 	end process;
 
-	dqw_p : process (ph_rea, sys_cl)
+	dqs_p : process (ph_rea, sys_cwl)
 		variable disp : natural;
 		variable disp_mod : natural;
 		variable disp_quo : natural;
 		variable phase : natural;
-		variable dtw : word_vector(0 to 2**sys_cl'length-1);
+		variable dqs : word_vector(0 to 2**cwlword_size-1);
 	begin
-		dtw := (others => (others => '-'));
+		dqs := (others => (others => '-'));
+		setup_l : for i in 0 to cwltab_size-1 loop
+			disp := cwlword_lat(i);
+			disp_mod := disp mod word'length;
+			disp_quo := disp  /  word'length;
+			dqs(i)((disp+0) mod word'length) := 
+				ph_wri(disp_quo*word'length+(disp_mod+0)/word_byte) or 
+				ph_wri(disp_quo*word'length+(disp_mod+word'length)/word_byte);
+			for j in 1 to word'right loop
+				phase := (j+disp_mod)/word_byte;
+				dqs(i)((disp+j) mod word'length) := ph_wri(disp_quo*word'length + phase);
+			end loop;
+		end loop;
+
+		xdr_dqsz <= (others =>  '-');
+		select_l : for i in 0 to cltab_size-1 loop
+			if sys_cwl = cwltab_data(i) then
+				for j in word'range loop
+					xdr_dqs(j) <= dqs(i)(j);
+				end loop;
+			end if;
+		end loop;
+	end process;
+
+	function setup_lat (
+		constant window : natural;
+		constant phases : std_logic_vector;
+		constant latency_data : lword_vector)
+		return word_vector is
+		variable disp : natural;
+		variable disp_mod : natural;
+		variable disp_quo : natural;
+		variable pha : natural;
+		variable aux : std_logic;
+		variable val : word_vector(lat_data'range);
+	begin
+		val := (others => (others => '-'));
 		setup_l : for i in 0 to cltab_size-1 loop
 			disp := clword_lat(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp / word'length;
 			for j in word'range loop
-				phase := (j+disp_mod)/word_byte;
-				dtw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
+				aux := '0';
+				for l in 0 to (word'length-j+window)/word'length loop
+					pha := (j+disp_mod+l*word'length)/word_byte;
+					aux := aux or phases(disp_quo*word'length+pha);
+				end loop;
+				val(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-
-		xdr_dqw <= (others =>  '-');
-		select_l : for i in 0 to cltab_size-1 loop
-			if sys_cl = cltab_data(i) then
-				for j in word'range loop
-					xdr_dqw(j) <= dtw(i)(j);
-				end loop;
-			end if;
-		end loop;
-	end process;
+		return val;
+	end;
 
 	dqs_p : process (ph_rea, sys_cwl)
 		variable disp : natural;
