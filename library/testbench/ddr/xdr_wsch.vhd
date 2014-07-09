@@ -6,7 +6,7 @@ use ieee.std_logic_textio.all;
 use std.textio.all;
 library hdl4fpga;
 
-architecture xdr_rdsch of testbench is
+architecture xdr_wsch of testbench is
 	constant data_phases : natural := 1;
 	constant data_edges  : natural := 1;
 	constant period : time := 4 ns;
@@ -33,7 +33,7 @@ begin
 		end loop;
 	end process;
 
-	du : entity hdl4fpga.xdr_rdsch
+	du : entity hdl4fpga.xdr_wsch
 	generic map (
 		data_phases => data_phases,
 		data_edges => data_edges,
@@ -45,5 +45,5 @@ begin
 	port map (
 		sys_cl => "101",
 		sys_clks => sys_clks,
-		sys_rea => sys_rea);
+		sys_wri => sys_rea);
 end;
