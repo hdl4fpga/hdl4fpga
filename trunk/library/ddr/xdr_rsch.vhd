@@ -66,63 +66,37 @@ begin
 		sys_di => sys_rea,
 		ph_qo => ph_rea);
 
-	stw_p : process (ph_rea, sys_cl)
-		variable disp : natural;
-		variable disp_mod : natural;
-		variable disp_quo : natural;
-		variable phase : natural;
-		variable stw : word_vector(0 to 2**clword_size-1);
-	begin
-		stw := (others => (others => '-'));
-		setup_l : for i in 0 to cltab_size-1 loop
-			disp := clword_lat(i);
-			disp_mod := disp mod word'length;
-			disp_quo := disp / word'length;
-			stw(i)((disp+0) mod word'length) := 
-				ph_rea(disp_quo*word'length+(disp_mod+0)/word_byte) or 
-				ph_rea(disp_quo*word'length+(disp_mod+word'length)/word_byte);
-			for j in 1 to word'right loop
-				phase := (j+disp_mod)/word_byte;
-				stw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
-			end loop;
-		end loop;
+	xdr_stw <= xdr_task (
+		data_phases => data_phases,
+		data_edges => data_edges,
+		byte_size => byte_size,
+		word_size => word_size,
+		lat_val => "100",
+		lat_code => lat_code,
+		lat_tab => lat_tab,
+		lat_schd => ph_wri,
+		lat_extn => 1);
 
-		xdr_stw <= (others =>  '-');
-		select_l : for i in 0 to cltab_size-1 loop
-			if sys_cl = cltab_data(i) then
-				for j in word'range loop
-					xdr_stw(j) <= stw(i)(j);
-				end loop;
-			end if;
-		end loop;
-	end process;
+	xdr_stw <= xdr_task (
+		data_phases => data_phases,
+		data_edges => data_edges,
+		byte_size => byte_size,
+		word_size => word_size,
+		lat_val => "100",
+		lat_code => lat_code,
+		lat_tab => lat_tab,
+		lat_schd => ph_wri,
+		lat_extn => 1);
 
-	dqw_p : process (ph_rea, sys_cl)
-		variable disp : natural;
-		variable disp_mod : natural;
-		variable disp_quo : natural;
-		variable phase : natural;
-		variable dtw : word_vector(0 to 2**sys_cl'length-1);
-	begin
-		dtw := (others => (others => '-'));
-		setup_l : for i in 0 to cltab_size-1 loop
-			disp := clword_lat(i);
-			disp_mod := disp mod word'length;
-			disp_quo := disp / word'length;
-			for j in word'range loop
-				phase := (j+disp_mod)/word_byte;
-				dtw(i)((disp+j) mod word'length) := ph_rea(disp_quo*word'length + phase);
-			end loop;
-		end loop;
-
-		xdr_dqw <= (others =>  '-');
-		select_l : for i in 0 to cltab_size-1 loop
-			if sys_cl = cltab_data(i) then
-				for j in word'range loop
-					xdr_dqw(j) <= dtw(i)(j);
-				end loop;
-			end if;
-		end loop;
-	end process;
+	xdr_dqw <= xdr_task (
+		data_phases => data_phases,
+		data_edges => data_edges,
+		byte_size => byte_size,
+		word_size => word_size,
+		lat_val => "100",
+		lat_code => lat_code,
+		lat_tab => lat_tab,
+		lat_schd => ph_wri,
+		lat_extn => 1);
 
 end;
