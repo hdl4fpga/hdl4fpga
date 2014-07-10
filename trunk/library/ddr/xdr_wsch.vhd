@@ -31,13 +31,12 @@ end;
 
 architecture def of xdr_wsch is
 
-	function setup_lat (
-		constant phases   : std_logic_vector;
+	function select_lat (
 		constant lat_val  : std_logic_vector;
 		constant lat_code : std_logic_vector;
 		constant lat_tab  : natural_vector;
 		constant lat_schd : std_logic_vector;
-		constant window  : natural)
+		constant window  : natural := 0)
 		return std_logic_vector is
 
 		subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
@@ -51,7 +50,7 @@ architecture def of xdr_wsch is
 		variable disp_quo : natural;
 		variable pha : natural;
 		variable aux : std_logic;
-		variable val : word_vector(lat_code'range);
+		variable sel_schd : word_vector(lat_code'range);
 
 		constant word_byte : natural := word_size/byte_size;
 		function to_latwordvector(
@@ -67,7 +66,7 @@ architecture def of xdr_wsch is
 			return val;
 		end;
 
-		function select_lat (
+		function select_lat1 (
 			constant lat_val  : std_logic_vector;
 			constant lat_code : latword_vector;
 			constant lat_schd : word_vector)
@@ -75,7 +74,7 @@ architecture def of xdr_wsch is
 			variable val : word;
 		begin
 			val := (others => '-');
-			for i in 0 to cltab_size-1 loop
+			for i in 0 to lat_tab'length -1 loop
 				if lat_val = lat_code(i) then
 					for j in word'range loop
 						val(j) := lat_schd(i)(j);
@@ -86,7 +85,7 @@ architecture def of xdr_wsch is
 		end;
 
 	begin
-		val := (others => (others => '-'));
+		sel_schd := (others => (others => '-'));
 		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
@@ -95,12 +94,12 @@ architecture def of xdr_wsch is
 				aux := '0';
 				for l in 0 to (word'length-j+window)/word'length loop
 					pha := (j+disp_mod+l*word'length)/word_byte;
-					aux := aux or phases(disp_quo*word'length+pha);
+					aux := aux or lat_schd(disp_quo*word'length+pha);
 				end loop;
-				val(i)((disp+j) mod word'length) := aux;
+				sel_schd(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-		return select_val(lat_val, lat_schd);
+		return select_lat1(lat_val, to_latwordvector(lat_code), sel_schd);
 	end;
 
 
@@ -119,6 +118,6 @@ begin
 		sys_di => sys_wri,
 		ph_qo => ph_wri);
 
-	xdr_dqw <= select_lat(sys_lat, setup_lat(latword_data, ph_rea, word'length+1));
+	xdr_dqw <= select_lat(sys_lat, lat_code, lat_tab, ph_wri);
 
 end;
