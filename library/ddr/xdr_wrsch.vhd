@@ -213,8 +213,8 @@ begin
 					  ph_wri(4*1+4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1));
 				xdr_mpu_dqs(i) <= not ph_wri(4*ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-2);
 				xdr_mpu_dqz(i) <= ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1)+1);
-				xdr_mpu_dwr(data_bytes*i+r) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1)+2-1-4);
-				xdr_mpu_dwr(data_bytes*i+f) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1)+2+1-4);
+				xdr_mpu_dwr(data_bytes*i+r) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1)+-3);
+				xdr_mpu_dwr(data_bytes*i+f) <= not ph_wri(4*(ddr2_ph_cas(to_integer(unsigned(xdr_mpu_cl)))-1)+-1);
 			end generate;
 
 			ddr3_g : if std=3 generate
