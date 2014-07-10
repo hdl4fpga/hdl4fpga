@@ -27,8 +27,8 @@ entity xdr_sch is
 		sys_rea  : in  std_logic;
 		sys_wri  : in  std_logic;
 
-		xdr_dr  : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
-		xdr_stw : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
+		xdr_dr : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
+		xdr_st : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
 
 		xdr_dqsz : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
 		xdr_dqs : out std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
@@ -71,7 +71,7 @@ begin
 		ph_qo  => rpho);
 	wpho <= rpho;
 
-	xdr_stw <= xdr_task (
+	xdr_st <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		word_size => word_size,
