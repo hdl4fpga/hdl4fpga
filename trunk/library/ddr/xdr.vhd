@@ -246,6 +246,38 @@ begin
 		xdr_mpu_dqsz => xdr_mpu_dqsz,
 		xdr_mpu_dqz => xdr_mpu_dqz);
 
+	xdr_sch_e : entity hdl4fpga.xdr_sch
+	generic map (
+		data_phases => data_phases;
+		data_edges  => data_edges;
+		byte_size   => byte_size;
+		word_size   => word_size;
+
+		cl_code =>;
+		cl_tab  =>;
+
+		cwl_code  =>;
+		dqszl_tab =>;
+		dqsl_tab  =>;
+		dqzl_tab  =>;
+		dwl_tab   =>);
+	port (
+		sys_cl   =>;
+		sys_cwl  =>;
+		sys_clks =>;
+		sys_rea  =>;
+		sys_wri  =>;
+
+		xdr_dr =>;
+		xdr_st =>;
+
+		xdr_dqsz =>;
+		xdr_dqs =>;
+
+		xdr_dqz =>;
+		xdr_dw  =>);
+
+
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
