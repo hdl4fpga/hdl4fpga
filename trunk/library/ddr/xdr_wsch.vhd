@@ -36,7 +36,7 @@ architecture def of xdr_wsch is
 		constant lat_code : std_logic_vector;
 		constant lat_tab  : natural_vector;
 		constant lat_schd : std_logic_vector;
-		constant window  : natural := 0)
+		constant lat_extn : natural := 3)
 		return std_logic_vector is
 
 		subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
@@ -66,7 +66,7 @@ architecture def of xdr_wsch is
 			return val;
 		end;
 
-		function select_lat1 (
+		function select_lat (
 			constant lat_val  : std_logic_vector;
 			constant lat_code : latword_vector;
 			constant lat_schd : word_vector)
@@ -92,14 +92,14 @@ architecture def of xdr_wsch is
 			disp_quo := disp  / word'length;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to (word'length-j+window)/word'length loop
+				for l in 0 to (lat_extn+word'length-1-j)/word'length loop
 					pha := (j+disp_mod+l*word'length)/word_byte;
 					aux := aux or lat_schd(disp_quo*word'length+pha);
 				end loop;
 				sel_schd(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-		return select_lat1(lat_val, to_latwordvector(lat_code), sel_schd);
+		return select_lat(lat_val, to_latwordvector(lat_code), sel_schd);
 	end;
 
 
