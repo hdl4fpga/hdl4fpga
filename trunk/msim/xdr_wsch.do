@@ -3,8 +3,6 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/clk
 add wave -noupdate -expand /testbench/sys_clks
 add wave -noupdate /testbench/sys_rea
-add wave -noupdate /testbench/du/ph_rea
-add wave -noupdate -expand /testbench/du/xdr_stw
 add wave -noupdate -expand /testbench/du/xdr_dqw
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {414001 ps} 0} {{Cursor 2} {430001 ps} 0}
