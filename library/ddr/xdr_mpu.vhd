@@ -146,17 +146,48 @@ architecture arch of xdr_mpu is
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of xdr_state : signal is "compact";
 
-	function (
+	function select_lat (
+		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
-		return std_logic_vector is
-		variable var : std_logic_vector(lat_timer'range);
-	begin
-		for i in lat_tab'range loop
+		return unsigned is
+		subtype latword is std_logic_vector(lat_cod'length/lat_tab'length-1 downto 0);
+		type latword_vector is array (natural range <>) of latword;
+
+		function to_latwordvector(
+			constant arg : std_logic_vector)
+			return latword_vector is
+			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable val : latword_vector(0 to arg'length/latword'length-1);
+		begin
+			for i in val'range loop
+				val(i) := aux(latword'range);
+				aux := aux sll latword'length;
+			end loop;
+			return val;
+		end;
+
+		function select_latword (
+			constant lat_val : std_logic_vector;
+			constant lat_cod : latword_vector
+			constant lat_tab : natural_vector);
+			return std_logic_vector is
+			variable val : unsigned(lat_timer'length);
+		begin
+			val := (others => '-');
+			for i in lat_cod'range loop
+				if lat_cod(i)=lat_val then
+					val := to_integer(lat_tab(i), lat_timer'length);
+					exit;
+				end if;
+			end loop;
+			return val;
+		end;
 			
-		end loop;
-		return val;
+	begin
+		return select_latword(lat_val, lat_cod, lat_tab);
 	end;
+
 begin
 
 	xdr_mpu_p: process (xdr_mpu_clk)
@@ -197,11 +228,11 @@ begin
 
 								case xdr_state_tab(i).xdr_lat is
 								when ID_BL =>
-									lat_timer <= ;
+									lat_timer <= select_lat(xdr_mpu_bl, bl_cod, bl_tab);
 								when ID_CL =>
-									lat_timer <= ;
+									lat_timer <= select_lat(xdr_mpu_cl, cl_cod, cl_tab);
 								when ID_CWL =>
-									lat_timer <= ;
+									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab);
 								when ID_RCD =>
 									lat_timer <= resize(unsigned(lat_RCD), lat_timer'length);
 								when ID_RFC =>
