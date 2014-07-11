@@ -48,9 +48,9 @@ begin
 		cwl_cod => "000",
 		cwl_tab => (0 => 7))
 	port map (
-		xdr_mpu_bl  => "000",
-		xdr_mpu_cl  => "000",
-		xdr_mpu_cwl => "000",
+		xdr_mpu_bl  => "001",
+		xdr_mpu_cl  => "001",
+		xdr_mpu_cwl => "001",
 
 		xdr_mpu_rst => rst,
 		xdr_mpu_clk => clk,
