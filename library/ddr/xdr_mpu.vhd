@@ -59,7 +59,7 @@ architecture arch of xdr_mpu is
 		xdr_state_n : std_logic_vector(0 to 2);
 		xdr_cmi : std_logic_vector(0 to 2);
 		xdr_cmo : std_logic_vector(0 to 2);
-		xdr_lat : unsigned(lat_timer'range);
+		xdr_lat : lat_id;
 		xdr_rea : std_logic;
 		xdr_wri : std_logic;
 		xdr_act : std_logic;
@@ -71,7 +71,8 @@ architecture arch of xdr_mpu is
 	signal xdr_rdy_ena : std_logic;
 
 	type xdr_state_vector is array(natural range <>) of xdr_state_word;
-	type is (IDLE, RDC, RFC,WR,RP);
+	type is (IDLE, RDC, RFC, WR, RP);
+	type is (bl, cl, cwl);
 	constant xdr_state_tab : xdr_state_vector(0 to 11-1) := (
 
 		-------------
