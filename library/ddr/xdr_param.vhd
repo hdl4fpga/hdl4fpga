@@ -356,6 +356,8 @@ package body xdr_param is
 		return query_data;
 	end;
 
+	function xdr_lattab ()
+		return 
 	function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
