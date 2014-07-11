@@ -39,7 +39,7 @@ begin
 		data_edges => data_edges,
 		word_size => word_size,
 		byte_size => byte_size,
-		lat_code => "101",
+		lat_cod => "101",
 		lat_tab =>  (0 to 0 => 4*data_phases))
 	port map (
 		sys_lat => "101",

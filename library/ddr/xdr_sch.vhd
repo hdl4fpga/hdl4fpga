@@ -12,10 +12,10 @@ entity xdr_sch is
 		byte_size   : natural;
 		word_size   : natural;
 
-		cl_code : std_logic_vector;
+		cl_cod : std_logic_vector;
 		cl_tab  : natural_vector;
 
-		cwl_code  : std_logic_vector;
+		cwl_cod  : std_logic_vector;
 		dqszl_tab : natural_vector;
 		dqsl_tab  : natural_vector;
 		dqzl_tab  : natural_vector;
@@ -78,7 +78,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val  => sys_cl,
-		lat_code => cl_code,
+		lat_cod => cl_cod,
 		lat_tab  => cl_tab,
 		lat_schd => rpho,
 		lat_extn => 1);
@@ -90,7 +90,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cl,
-		lat_code => cl_code,
+		lat_cod => cl_cod,
 		lat_tab => cl_tab,
 		lat_schd => rpho);
 
@@ -101,7 +101,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_code => cwl_code,
+		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
 		lat_schd => wpho);
 
@@ -112,7 +112,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_code => cwl_code,
+		lat_cod => cwl_cod,
 		lat_tab => dqsl_tab,
 		lat_schd => wpho);
 
@@ -123,7 +123,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_code => cwl_code,
+		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
 		lat_schd => wpho);
 
@@ -134,7 +134,7 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_code => cwl_code,
+		lat_cod => cwl_cod,
 		lat_tab => dwl_tab,
 		lat_schd => wpho);
 end;

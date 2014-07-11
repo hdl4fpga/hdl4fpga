@@ -7,7 +7,16 @@ entity xdr_mpu is
 		lat_RCD : std_logic_vector;
 		lat_RFC : std_logic_vector;
 		lat_WR  : std_logic_vector;
-		lat_RP  : std_logic_vector);
+		lat_RP  : std_logic_vector;
+
+		bl_cod : natural_vector;
+		bl_tab : natural_vector;
+
+		cl_cod : natural_vector;
+		cl_tab : natural_vector;
+
+		cwl_cod : natural_vector;
+		cwl_tab : natural_vector);
 	port (
 		xdr_mpu_bl  : in std_logic_vector;
 		xdr_mpu_cl  : in std_logic_vector;
@@ -50,6 +59,7 @@ architecture arch of xdr_mpu is
 
 	signal xdr_state : std_logic_vector(0 to 2);
 
+	type lat_id is (ID_IDLE, ID_RDC, ID_RFC, ID_WR, ID_RP, ID_BL, ID_CL, ID_CWL);
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
 		xdr_state_n : std_logic_vector(0 to 2);
@@ -67,8 +77,6 @@ architecture arch of xdr_mpu is
 	signal xdr_rdy_ena : std_logic;
 
 	type xdr_state_vector is array(natural range <>) of xdr_state_word;
-	type is (IDLE, RDC, RFC, WR, RP);
-	type is (bl, cl, cwl);
 	constant xdr_state_tab : xdr_state_vector(0 to 11-1) := (
 
 		-------------
@@ -76,15 +84,15 @@ architecture arch of xdr_mpu is
 		-------------
 
 		(xdr_state => DDRS_PRE, xdr_state_n => DDRS_PRE,
-		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => IDLE,
+		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => ID_IDLE,
 		 xdr_rea => '0', xdr_wri => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
 		(xdr_state => DDRS_PRE, xdr_state_n => DDRS_ACT,
-		 xdr_cmi => xdr_act, xdr_cmo => xdr_act, xdr_lat => tRCD,
+		 xdr_cmi => xdr_act, xdr_cmo => xdr_act, xdr_lat => ID_RCD,
 		 xdr_rea => '0', xdr_wri => '0',
 		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
 		(xdr_state => DDRS_PRE, xdr_state_n => DDRS_PRE,
-		 xdr_cmi => xdr_aut, xdr_cmo => xdr_aut, xdr_lat => tRFC,
+		 xdr_cmi => xdr_aut, xdr_cmo => xdr_aut, xdr_lat => ID_RFC,
 		 xdr_rea => '0', xdr_wri => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
 
@@ -93,11 +101,11 @@ architecture arch of xdr_mpu is
 		-------------
 
 		(xdr_state => DDRS_ACT, xdr_state_n => DDRS_READ_BL,
-		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => bl_time,
+		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0',
 		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
 		(xdr_state => DDRS_ACT, xdr_state_n => DDRS_WRITE_BL,
-		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => bl_time,
+		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1',
 		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
 
@@ -106,15 +114,15 @@ architecture arch of xdr_mpu is
 		--------------
 
 		(xdr_state => DDRS_READ_BL, xdr_state_n => DDRS_READ_BL,
-		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => bl_time,
+		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0',
 		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
 		(xdr_state => DDRS_READ_BL, xdr_state_n => DDRS_READ_CL,
-		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => cl_time,
+		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => ID_CL,
 		 xdr_rea => '1', xdr_wri => '0',
 		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '1'),
 		(xdr_state => DDRS_READ_CL, xdr_state_n => DDRS_PRE,
-		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => tRP,
+		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
 		 xdr_rea => '1', xdr_wri => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
 
@@ -123,15 +131,15 @@ architecture arch of xdr_mpu is
 		---------------
 
 		(xdr_state => DDRS_WRITE_BL, xdr_state_n => DDRS_WRITE_BL,
-		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => bl_time,
+		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1',
 		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
 		(xdr_state => DDRS_WRITE_BL, xdr_state_n => DDRS_WRITE_CL,
-		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => cwl),
+		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => ID_CWL),
 		 xdr_rea => '0', xdr_wri => '1',
 		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '1'),
 		(xdr_state => DDRS_WRITE_CL, xdr_state_n => DDRS_PRE,
-		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => tRP,
+		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
 		 xdr_rea => '0', xdr_wri => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'));
 
@@ -165,7 +173,6 @@ begin
 							if xdr_state_tab(i).xdr_cmi=xdr_mpu_cmd or
 							   xdr_state_tab(i).xdr_cmi="000" then
 								xdr_state <= xdr_state_tab(i).xdr_state_n;
-								lat_timer <= xdr_state_tab(i).xdr_lat;
 								xdr_mpu_ras <= xdr_state_tab(i).xdr_cmo(ras);
 								xdr_mpu_cas <= xdr_state_tab(i).xdr_cmo(cas);
 								xdr_mpu_we  <= xdr_state_tab(i).xdr_cmo(we);
@@ -175,6 +182,22 @@ begin
 								xdr_mpu_rwin <= xdr_state_tab(i).xdr_rph;
 								xdr_mpu_wwin <= xdr_state_tab(i).xdr_wph;
 								xdr_rdy_ena <= xdr_state_tab(i).xdr_rdy;
+
+								case xdr_state_tab(i).xdr_lat is
+								when ID_BL =>
+								when ID_CL =>
+								when ID_CWL =>
+								when ID_RCD =>
+									lat_timer <= resize(unsigned(lat_RCD), lat_timer'length);
+								when ID_RFC =>
+									lat_timer <= resize(unsigned(lat_RFC), lat_timer'length);
+								when ID_WR  =>
+									lat_timer <= resize(unsigned(lat_WR), lat_timer'length);
+								when ID_RP =>
+									lat_timer <= resize(unsigned(lat_RP), lat_timer'length);
+								when ID_IDLE =>
+									lat_timer <= (others => '1');
+								end case;
 								exit;
 							end if;
 						end if;

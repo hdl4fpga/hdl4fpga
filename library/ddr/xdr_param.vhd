@@ -96,7 +96,7 @@ package xdr_param is
 		constant word_size : natural;
 		constant byte_size : natural;
 		constant lat_val  : std_logic_vector;
-		constant lat_code : std_logic_vector;
+		constant lat_cod : std_logic_vector;
 		constant lat_tab  : natural_vector;
 		constant lat_schd : std_logic_vector;
 		constant lat_extn : natural := 0)
@@ -362,7 +362,7 @@ package body xdr_param is
 		constant word_size : natural;
 		constant byte_size : natural;
 		constant lat_val  : std_logic_vector;
-		constant lat_code : std_logic_vector;
+		constant lat_cod : std_logic_vector;
 		constant lat_tab  : natural_vector;
 		constant lat_schd : std_logic_vector;
 		constant lat_extn : natural := 0)
@@ -379,7 +379,7 @@ package body xdr_param is
 		variable disp_quo : natural;
 		variable pha : natural;
 		variable aux : std_logic;
-		variable sel_schd : word_vector(lat_code'range);
+		variable sel_schd : word_vector(lat_cod'range);
 
 		constant word_byte : natural := word_size/byte_size;
 		function to_latwordvector(
@@ -397,14 +397,14 @@ package body xdr_param is
 
 		function select_lat (
 			constant lat_val  : std_logic_vector;
-			constant lat_code : latword_vector;
+			constant lat_cod : latword_vector;
 			constant lat_schd : word_vector)
 			return std_logic_vector is
 			variable val : word;
 		begin
 			val := (others => '-');
 			for i in 0 to lat_tab'length -1 loop
-				if lat_val = lat_code(i) then
+				if lat_val = lat_cod(i) then
 					for j in word'range loop
 						val(j) := lat_schd(i)(j);
 					end loop;
@@ -428,7 +428,7 @@ package body xdr_param is
 				sel_schd(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-		return select_lat(lat_val, to_latwordvector(lat_code), sel_schd);
+		return select_lat(lat_val, to_latwordvector(lat_cod), sel_schd);
 	end;
 
 end package body;
