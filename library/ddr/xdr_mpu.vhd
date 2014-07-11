@@ -4,15 +4,14 @@ use ieee.numeric_std.all;
 
 entity xdr_mpu is
 	generic (
-		std  : natural;
-		tCk  : natural;
-		tRCD : natural;
-		tRFC : natural;
-		tWR  : natural;
-		tRP  : natural;
 		data_phases : natural;
 		data_edges  : natural;
 		data_bytes  : natural;
+
+		lat_RCD : std_logic_vector;
+		lat_RFC : std_logic_vector;
+		lat_WR  : std_logic_vector;
+		lat_RP  : std_logic_vector);
 	port (
 		xdr_mpu_bl  : in std_logic_vector;
 		xdr_mpu_cl  : in std_logic_vector;
@@ -27,15 +26,12 @@ entity xdr_mpu is
 		xdr_mpu_ras : out std_logic;
 		xdr_mpu_we  : out std_logic;
 
-		xdr_mpu_rea : out std_logic;
+		xdr_mpu_rea  : out std_logic;
 		xdr_mpu_rwin : out std_logic;
-
-		xdr_mpu_wri : out std_logic;
+		xdr_mpu_wri  : out std_logic;
 		xdr_mpu_wwin : out std_logic);
 
 end;
-
-library hdl4fpga;
 
 architecture arch of xdr_mpu is
 	constant ras : natural := 0;
@@ -74,9 +70,8 @@ architecture arch of xdr_mpu is
 
 	signal xdr_rdy_ena : std_logic;
 
-	constant bl_time : std_logic_vector(lat_timer'range) := bl_data(2); --to_integer(unsigned(xdr_mpu_bl)));
-	constant cl_time : std_logic_vector(lat_timer'range) := cl3_data(to_integer(unsigned(xdr_mpu_cl)));
 	type xdr_state_vector is array(natural range <>) of xdr_state_word;
+	type is (IDLE, RDC, RFC,WR,RP);
 	constant xdr_state_tab : xdr_state_vector(0 to 11-1) := (
 
 		-------------
@@ -84,7 +79,7 @@ architecture arch of xdr_mpu is
 		-------------
 
 		(xdr_state => DDRS_PRE, xdr_state_n => DDRS_PRE,
-		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => 1,
+		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => IDLE,
 		 xdr_rea => '0', xdr_wri => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
 		(xdr_state => DDRS_PRE, xdr_state_n => DDRS_ACT,
