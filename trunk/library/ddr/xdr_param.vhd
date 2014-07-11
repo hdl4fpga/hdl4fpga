@@ -95,11 +95,11 @@ package xdr_param is
 		constant data_edges : natural;
 		constant word_size : natural;
 		constant byte_size : natural;
-		constant lat_val  : std_logic_vector;
+		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
-		constant lat_tab  : natural_vector;
-		constant lat_schd : std_logic_vector;
-		constant lat_extn : natural := 0)
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural := 0)
 		return std_logic_vector;
 
 end package;
@@ -361,11 +361,11 @@ package body xdr_param is
 		constant data_edges : natural;
 		constant word_size : natural;
 		constant byte_size : natural;
-		constant lat_val  : std_logic_vector;
+		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
-		constant lat_tab  : natural_vector;
-		constant lat_schd : std_logic_vector;
-		constant lat_extn : natural := 0)
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural := 0)
 		return std_logic_vector is
 
 		subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
@@ -379,7 +379,7 @@ package body xdr_param is
 		variable disp_quo : natural;
 		variable pha : natural;
 		variable aux : std_logic;
-		variable sel_schd : word_vector(lat_cod'range);
+		variable sel_sch : word_vector(lat_cod'range);
 
 		constant word_byte : natural := word_size/byte_size;
 		function to_latwordvector(
@@ -398,7 +398,7 @@ package body xdr_param is
 		function select_lat (
 			constant lat_val  : std_logic_vector;
 			constant lat_cod : latword_vector;
-			constant lat_schd : word_vector)
+			constant lat_sch : word_vector)
 			return std_logic_vector is
 			variable val : word;
 		begin
@@ -406,7 +406,7 @@ package body xdr_param is
 			for i in 0 to lat_tab'length -1 loop
 				if lat_val = lat_cod(i) then
 					for j in word'range loop
-						val(j) := lat_schd(i)(j);
+						val(j) := lat_sch(i)(j);
 					end loop;
 				end if;
 			end loop;
@@ -414,21 +414,21 @@ package body xdr_param is
 		end;
 
 	begin
-		sel_schd := (others => (others => '-'));
+		sel_sch := (others => (others => '-'));
 		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  / word'length;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to (lat_extn+word'length-1-j)/word'length loop
+				for l in 0 to (lat_ext+word'length-1-j)/word'length loop
 					pha := (j+disp_mod+l*word'length)/word_byte;
-					aux := aux or lat_schd(disp_quo*word'length+pha);
+					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
-				sel_schd(i)((disp+j) mod word'length) := aux;
+				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-		return select_lat(lat_val, to_latwordvector(lat_cod), sel_schd);
+		return select_lat(lat_val, to_latwordvector(lat_cod), sel_sch);
 	end;
 
 end package body;
