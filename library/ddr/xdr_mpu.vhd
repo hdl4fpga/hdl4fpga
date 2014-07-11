@@ -7,10 +7,10 @@ use hdl4fpga.std.all;
 
 entity xdr_mpu is
 	generic (
-		lat_RCD : std_logic_vector;
-		lat_RFC : std_logic_vector;
-		lat_WR  : std_logic_vector;
-		lat_RP  : std_logic_vector;
+		lRCD : natural;
+		lRFC : natural;
+		lWR  : natural;
+		lRP  : natural;
 
 		bl_cod : std_logic_vector;
 		bl_tab : natural_vector;
@@ -46,8 +46,41 @@ architecture arch of xdr_mpu is
 	constant cas : natural := 1;
 	constant we  : natural := 2;
 
-	signal lat_timer : unsigned(0 to 9) := (others => '1');
-	constant lat_length : natural := lat_timer'length;
+	function timer_size (
+		constant lRCD : natural;
+		constant lRFC : natural;
+		constant lWR  : natural;
+		constant lRP  : natural;
+		constant bl_tab : natural_vector;
+		constant cl_tab : natural_vector;
+		constant cwl_tab : natural_vector)
+		return natural is
+		variable val : natural;
+		variable aux : natural;
+	begin
+		aux := max(lRCD,lRFC);
+		aux := max(aux, lWR);
+		aux := max(aux, lRP);
+		for i in bl_tab'range loop
+			aux := max(aux, bl_tab(i));
+		end loop;
+		for i in cl_tab'range loop
+			aux := max(aux, cl_tab(i));
+		end loop;
+		for i in cwl_tab'range loop
+			aux := max(aux, cwl_tab(i));
+		end loop;
+		val := 1;
+		while (aux > 0) loop
+			aux := aux / 2;
+			val := val + 1;
+		end loop;
+		return val;
+	end;
+
+		
+	constant lat_size : natural := timer_size(lRCD, lRFC, lWR, lRP, bl_tab, cl_tab, cwl_tab);
+	signal lat_timer : unsigned(0 to lat_size-1) := (others => '1');
 
 	signal xdr_rea : std_logic;
 	signal xdr_wri : std_logic;
@@ -243,13 +276,13 @@ begin
 								when ID_CWL =>
 									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab);
 								when ID_RCD =>
-									lat_timer <= resize(unsigned(lat_RCD), lat_timer'length);
+									lat_timer <= to_unsigned(lRCD, lat_timer'length);
 								when ID_RFC =>
-									lat_timer <= resize(unsigned(lat_RFC), lat_timer'length);
+									lat_timer <= to_unsigned(lRFC, lat_timer'length);
 								when ID_WR  =>
-									lat_timer <= resize(unsigned(lat_WR), lat_timer'length);
+									lat_timer <= to_unsigned(lWR, lat_timer'length);
 								when ID_RP =>
-									lat_timer <= resize(unsigned(lat_RP), lat_timer'length);
+									lat_timer <= to_unsigned(lRP, lat_timer'length);
 								when ID_IDLE =>
 									lat_timer <= (others => '1');
 								end case;
