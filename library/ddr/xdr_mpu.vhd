@@ -145,6 +145,18 @@ architecture arch of xdr_mpu is
 
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of xdr_state : signal is "compact";
+
+	function (
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector)
+		return std_logic_vector is
+		variable var : std_logic_vector(lat_timer'range);
+	begin
+		for i in lat_tab'range loop
+			
+		end loop;
+		return val;
+	end;
 begin
 
 	xdr_mpu_p: process (xdr_mpu_clk)
@@ -185,8 +197,11 @@ begin
 
 								case xdr_state_tab(i).xdr_lat is
 								when ID_BL =>
+									lat_timer <= ;
 								when ID_CL =>
+									lat_timer <= ;
 								when ID_CWL =>
+									lat_timer <= ;
 								when ID_RCD =>
 									lat_timer <= resize(unsigned(lat_RCD), lat_timer'length);
 								when ID_RFC =>
