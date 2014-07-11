@@ -4,10 +4,6 @@ use ieee.numeric_std.all;
 
 entity xdr_mpu is
 	generic (
-		data_phases : natural;
-		data_edges  : natural;
-		data_bytes  : natural;
-
 		lat_RCD : std_logic_vector;
 		lat_RFC : std_logic_vector;
 		lat_WR  : std_logic_vector;
