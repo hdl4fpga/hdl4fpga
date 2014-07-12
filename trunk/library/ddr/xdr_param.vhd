@@ -60,7 +60,7 @@ package xdr_param is
 		param : tmng_ids) 
 		return time;
 
-	function xdrlatency (
+	function xdr_latency (
 		std : natural;
 		param : laty_ids) 
 		return natural;
@@ -89,6 +89,16 @@ package xdr_param is
 		mark   : tmrk_ids;
 		param  : tmng_ids)
 		return natural;
+
+	function xdr_lattab (
+		constant std : natural;
+		constant reg : latr_ids)
+		return natural_vector;
+
+	function xdr_latcod (
+		constant std : natural;
+		constant reg : latr_ids)
+		return std_logic_vector;
 
 	function xdr_task (
 		constant data_phases : natural;
@@ -153,8 +163,7 @@ package body xdr_param is
 		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
 		timing_record'(mark => M6T,  param => tREFI, value =>  7 us);
 
-
-	constant cnfglat_db : cnfglat_tab(1 to 40) :=
+	constant cnfglat_db : cnfglat_tab :=
 
 		-- DDR1 standard --
 		-------------------
@@ -170,6 +179,10 @@ package body xdr_param is
 		cnfglat_record'(std => 1, reg => BL,  lat =>  2, code => "001") &
 		cnfglat_record'(std => 1, reg => BL,  lat =>  4, code => "010") &
 		cnfglat_record'(std => 1, reg => BL,  lat =>  8, code => "011") &
+
+		-- CWL register --
+
+		cnfglat_record'(std => 1, reg => CWL, lat =>  1, code => "---") &
 
 		-- DDR2 standard --
 		-------------------
@@ -196,6 +209,10 @@ package body xdr_param is
 		cnfglat_record'(std => 2, reg => WRL, lat =>  6, code => "101") &
 		cnfglat_record'(std => 2, reg => WRL, lat =>  7, code => "110") &
 		cnfglat_record'(std => 2, reg => WRL, lat =>  8, code => "111") &
+
+		-- CWL register --
+
+		cnfglat_record'(std => 2, reg => CWL, lat =>  1, code => "---") &
 
 		-- DDR3 standard --
 		-------------------
@@ -271,7 +288,7 @@ package body xdr_param is
 		return 0 ns;
 	end;
 
-	function xdrlatency (
+	function xdr_latency (
 		std : natural;
 		param : laty_ids) 
 		return natural is
@@ -329,7 +346,7 @@ package body xdr_param is
 	begin
 		for i in cnfglat_db'range loop
 			if cnfglat_db(i).std = std then
-				if cnfglat_db(i).reg = CL then
+				if cnfglat_db(i).reg = reg then
 					val := val + 1;
 				end if;
 			end if;
@@ -356,8 +373,41 @@ package body xdr_param is
 		return query_data;
 	end;
 
-	function xdr_lattab ()
-		return 
+	function xdr_lattab (
+		constant std : natural;
+		constant reg : latr_ids;
+		constant data_edges : natural := 1;
+		constant word_size : natural := 1;
+		constant byte_size : natural := 1)
+		return natural_vector is
+		constant query_size : natural := xdr_query_size(std, reg);
+		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(std, reg);
+		variable lattab : natural_vector(0 to query_size-1);
+	begin
+		for i in lattab'range loop
+			if std=1 then
+				lattab(i) := (query_data(i).lat*data_edges)/2;
+			end if;
+			lattab(i) := (lattab(i)*data_edges)*(byte_size/word_size);
+		end loop;
+		return lattab;
+	end;
+
+	function xdr_latcod (
+		constant std : natural;
+		constant reg : latr_ids)
+		return std_logic_vector is
+		constant query_size : natural := xdr_query_size(std, reg);
+		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(std, reg);
+		variable latcode : std_logic_vector(0 to cnfglat_db(1).code'length*query_size-1);
+	begin
+		for i in query_data'reverse_range loop
+			latcode := latcode srl cnfglat_db(1).code'length;
+			latcode(cnfglat_db(1).code'range) := query_data(i).code;
+		end loop;
+		return latcode;
+	end;
+
 	function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;

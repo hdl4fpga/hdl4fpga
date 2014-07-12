@@ -5,6 +5,7 @@ use ieee.std_logic_textio.all;
 
 use std.textio.all;
 library hdl4fpga;
+use hdl4fpga.xdr_param.all;
 
 architecture xdr_mpu of testbench is
 	constant period : time := 4 ns;
@@ -37,19 +38,19 @@ begin
 
 	du : entity hdl4fpga.xdr_mpu
 	generic map (
-		lRCD => 1,
-		lRFC => 1,
-		lWR  => 1,
-		lRP  => 1,
-		bl_cod => "000",
-		bl_tab => (0 => 8),
-		cl_cod => "000",
-		cl_tab => (0 => 7),
-		cwl_cod => "000",
-		cwl_tab => (0 => 7))
+		lRCD => to_xdrlatency(6 ns, M6T, tRCD),
+		lRFC => to_xdrlatency(6 ns, M6T, tRFC),
+		lWR  => to_xdrlatency(6 ns, M6T, tWR),
+		lRP  => to_xdrlatency(6 ns, M6T, tRP),
+		bl_cod => xdr_latcod(1, BL),
+		bl_tab => xdr_lattab(1, BL),
+		cl_cod => xdr_latcod(1, CL),
+		cl_tab => xdr_lattab(1, CL),
+		cwl_cod => xdr_latcod(1, CWL),
+		cwl_tab => xdr_lattab(1, CWL))
 	port map (
 		xdr_mpu_bl  => "001",
-		xdr_mpu_cl  => "001",
+		xdr_mpu_cl  => "010",
 		xdr_mpu_cwl => "001",
 
 		xdr_mpu_rst => rst,
