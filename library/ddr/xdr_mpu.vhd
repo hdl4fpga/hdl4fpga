@@ -71,6 +71,7 @@ architecture arch of xdr_mpu is
 			aux := max(aux, cwl_tab(i));
 		end loop;
 		val := 1;
+		aux := aux-2;
 		while (aux > 0) loop
 			aux := aux / 2;
 			val := val + 1;
@@ -219,7 +220,7 @@ architecture arch of xdr_mpu is
 			val := (others => '-');
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
-					val := to_unsigned(lat_tab(i), lat_timer'length);
+					val := to_unsigned(lat_tab(i)-2, lat_timer'length);
 					exit;
 				end if;
 			end loop;
@@ -276,13 +277,13 @@ begin
 								when ID_CWL =>
 									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab);
 								when ID_RCD =>
-									lat_timer <= to_unsigned(lRCD, lat_timer'length);
+									lat_timer <= to_unsigned(lRCD-2, lat_timer'length);
 								when ID_RFC =>
-									lat_timer <= to_unsigned(lRFC, lat_timer'length);
+									lat_timer <= to_unsigned(lRFC-2, lat_timer'length);
 								when ID_WR  =>
-									lat_timer <= to_unsigned(lWR, lat_timer'length);
+									lat_timer <= to_unsigned(lWR-2, lat_timer'length);
 								when ID_RP =>
-									lat_timer <= to_unsigned(lRP, lat_timer'length);
+									lat_timer <= to_unsigned(lRP-2, lat_timer'length);
 								when ID_IDLE =>
 									lat_timer <= (others => '1');
 								end case;
