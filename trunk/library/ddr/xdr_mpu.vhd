@@ -81,7 +81,7 @@ architecture arch of xdr_mpu is
 
 		
 	constant lat_size : natural := timer_size(lRCD, lRFC, lWR, lRP, bl_tab, cl_tab, cwl_tab);
-	signal lat_timer : unsigned(0 to lat_size-1) := (others => '1');
+	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
 	signal xdr_rea : std_logic;
 	signal xdr_wri : std_logic;
@@ -193,7 +193,7 @@ architecture arch of xdr_mpu is
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
-		return unsigned is
+		return signed is
 		subtype latword is std_logic_vector(0 to lat_cod'length/lat_tab'length-1);
 		type latword_vector is array (natural range <>) of latword;
 
@@ -214,13 +214,13 @@ architecture arch of xdr_mpu is
 			constant lat_val : std_logic_vector;
 			constant lat_cod : latword_vector;
 			constant lat_tab : natural_vector)
-			return unsigned is
-			variable val : unsigned(lat_timer'range);
+			return signed is
+			variable val : signed(lat_timer'range);
 		begin
 			val := (others => '-');
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
-					val := to_unsigned(lat_tab(i)-2, lat_timer'length);
+					val := to_signed(lat_tab(i)-2, lat_timer'length);
 					exit;
 				end if;
 			end loop;
@@ -277,13 +277,13 @@ begin
 								when ID_CWL =>
 									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab);
 								when ID_RCD =>
-									lat_timer <= to_unsigned(lRCD-2, lat_timer'length);
+									lat_timer <= to_signed(lRCD-2, lat_timer'length);
 								when ID_RFC =>
-									lat_timer <= to_unsigned(lRFC-2, lat_timer'length);
+									lat_timer <= to_signed(lRFC-2, lat_timer'length);
 								when ID_WR  =>
-									lat_timer <= to_unsigned(lWR-2, lat_timer'length);
+									lat_timer <= to_signed(lWR-2, lat_timer'length);
 								when ID_RP =>
-									lat_timer <= to_unsigned(lRP-2, lat_timer'length);
+									lat_timer <= to_signed(lRP-2, lat_timer'length);
 								when ID_IDLE =>
 									lat_timer <= (others => '1');
 								end case;
