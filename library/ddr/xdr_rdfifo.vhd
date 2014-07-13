@@ -8,12 +8,12 @@ entity xdr_rdfifo is
 		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
-		sys_rdy : out std_logic;
-		sys_rea : in  std_logic;
+		sys_rdy : out std_logic_vector((word_size/byte_size)-1 downto 0);
+		sys_rea : in  std_logic_vector((word_size/byte_size)-1 downto 0);
 		sys_do  : out std_logic_vector(data_phases*line_size-1 downto 0);
 
-		xdr_win_dq  : in std_logic;
-		xdr_win_dqs : in std_logic;
+		xdr_win_dq  : in std_logic_vector((word_size/byte_size)-1 downto 0);
+		xdr_win_dqs : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_dqsi : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
 end;
@@ -82,11 +82,11 @@ begin
 			data_phases => data_phases,
 			byte_size  => byte_size*(line_size/(word_size/byte_size)))
 		port map (
-			sys_clk => clk0,
-			sys_rdy => sys_do_rdy,
-			sys_rea => xdr_mpu_rea,
+			sys_clk => sys_clk,
+			sys_rdy => sys_rdy(i),
+			sys_rea => sys_rea,
 			sys_do  => do(i),
-			xdr_win_dq  => xdr_mpu_rwin,
+			xdr_win_dq  => xdr_win_dq(i),
 			xdr_win_dqs => xdr_win_dqs(i),
 			xdr_dqsi => xdr_dqsi(i),
 			xdr_dqi  => dqi(i));
