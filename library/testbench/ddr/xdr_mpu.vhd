@@ -50,7 +50,7 @@ begin
 		cwl_tab => xdr_lattab(1, CWL))
 	port map (
 		xdr_mpu_bl  => "001",
-		xdr_mpu_cl  => "010",
+		xdr_mpu_cl  => "011",
 		xdr_mpu_cwl => "001",
 
 		xdr_mpu_rst => rst,
