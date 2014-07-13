@@ -7,42 +7,42 @@ entity xdr_infifo is
 		data_delay  : natural := 1;
 		data_edges  : natural := 2;
 		data_phases : natural := 2;
-		word_size   : natural := 8);
+		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in  std_logic;
-		sys_do  : out std_logic_vector(word_size*data_phases-1 downto 0);
+		sys_do  : out std_logic_vector(byte_size*data_phases-1 downto 0);
 
 		xdr_win_dq  : in std_logic;
 		xdr_win_dqs : in std_logic;
 		xdr_dqsi : in std_logic;
-		xdr_dqi  : in std_logic_vector(word_size-1 downto 0));
+		xdr_dqi  : in std_logic_vector(byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr_infifo is
-	subtype word is std_logic_vector(word_size-1 downto 0);
-	type word_vector is array (natural range <>) of word;
+	subtype byte is std_logic_vector(byte_size-1 downto 0);
+	type byte_vector is array (natural range <>) of byte;
 
-	signal xdr_fifo_do : word_vector(data_phases-1 downto 0);
+	signal xdr_fifo_do : byte_vector(data_phases-1 downto 0);
 
 	subtype axdr_word is std_logic_vector(0 to 4-1);
 	signal sys_do_win : std_logic;
 	signal xdr_fifo_rdy : std_logic;
 
 	function to_stdlogicvector (
-		arg : word_vector)
+		arg : byte_vector)
 		return std_logic_vector is
-		variable dat : word_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*word'length-1 downto 0);
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in arg'range loop
-			val := val sll word'length;
-			val(word'range) := arg(i);
+			val := val sll byte'length;
+			val(byte'range) := arg(i);
 		end loop;
 		return val;
 	end;
@@ -139,7 +139,7 @@ begin
 
 			ram_b : entity hdl4fpga.dbram
 			generic map (
-				n => word'length)
+				n => byte'length)
 			port map (
 				clk => xdr_dlyd_dqs(l),
 				we  => we,

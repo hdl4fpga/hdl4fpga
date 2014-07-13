@@ -3,22 +3,23 @@ entity xdr_rdfifo is
 		data_delay  : natural := 1;
 		data_edges  : natural := 2;
 		data_phases : natural := 2;
-		data_bytes  : natural := 1;
-		word_size   : natural := 8);
+		line_size   : natural := 8;
+		word_size   : natural := 8;
+		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
 		sys_rdy : out std_logic;
 		sys_rea : in  std_logic;
-		sys_do  : out std_logic_vector(data_phases*word_size-1 downto 0);
+		sys_do  : out std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_win_dq  : in std_logic;
 		xdr_win_dqs : in std_logic;
-		xdr_dqsi : in std_logic_vector(data_bytes-1 downto 0);
-		xdr_dqi  : in std_logic_vector(word_size-1 downto 0));
+		xdr_dqsi : in std_logic_vector((word_size/byte_size)-1 downto 0);
+		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
 end;
 
 architecture struct of xdr_rdfifo is
-	subtype byte is std_logic_vector(word_size/xdr_dqsi'length-1 downto 0);
+	subtype byte is std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
 	function to_bytevector (
@@ -49,7 +50,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(word_size-1 downto 0);
+	subtype word is std_logic_vector(line_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function shuffle_word (
@@ -79,7 +80,7 @@ begin
 			data_delay => data_delay,
 			data_edges => data_edges,
 			data_phases => data_phases,
-			word_size  => byte_size)
+			byte_size  => byte_size*(line_size/(word_size/byte_size)))
 		port map (
 			sys_clk => clk0,
 			sys_rdy => sys_do_rdy,

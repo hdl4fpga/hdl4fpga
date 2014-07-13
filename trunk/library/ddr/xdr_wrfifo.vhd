@@ -4,23 +4,23 @@ use ieee.numeric_std.all;
 
 entity xdr_wrfifo is
 	generic (
+		line_size   : natural := 32;
 		word_size   : natural := 32;
 		byte_size   : natural := 8;
 		data_edges  : natural := 1;
 		data_phases : natural := 1;
-		data_bytes  : natural := 2;
 		register_output : boolean := false);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_dmi : in  std_logic_vector(data_bytes*data_phases*word_size/byte_size-1 downto 0);
-		sys_dqi : in  std_logic_vector(data_bytes*data_phases*word_size-1 downto 0);
+		sys_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dmo  : out std_logic_vector(data_bytes*data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqo  : out std_logic_vector(data_bytes*data_phases*word_size-1 downto 0));
-	constant data_bytes := word_size/byte_size;
+		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
+
 end;
 
 library hdl4fpga;
@@ -61,10 +61,10 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(sys_dqi'length/data_bytes-1 downto 0);
+	subtype word is std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype dmword is std_logic_vector(xdr_dmo'length/data_bytes-1 downto 0);
+	subtype dmword is std_logic_vector(xdr_dmo'length/(word_size/byte_size)-1 downto 0);
 	subtype shuffleword is byte_vector(dmword'range);
 
 	function unshuffle (
@@ -76,7 +76,7 @@ architecture struct of xdr_wrfifo is
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
 			for j in aux'range loop
-				val(j*data_bytes+i) := aux(j);
+				val(j*(word_size/byte_size)+i) := aux(j);
 			end loop;
 		end loop;
 		return val;
@@ -84,12 +84,12 @@ architecture struct of xdr_wrfifo is
 
 	signal di : byte_vector(sys_dmi'range);
 	signal do : byte_vector(xdr_dmo'range);
-	signal dqo : word_vector(data_bytes-1 downto 0);
+	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
 begin
 
 	di <= to_bytevector(sys_dqi);
-	xdr_fifo_g : for i in data_bytes-1 downto 0 generate
+	xdr_fifo_g : for i in (word_size/byte_size)-1 downto 0 generate
 
 		signal dmi : dmword;
 		signal dmo : dmword;
@@ -103,7 +103,7 @@ begin
 			variable val : dmword;
 		begin
 			for i in val'range loop
-				val(i) := arg1(data_bytes*i+arg2);
+				val(i) := arg1((word_size/byte_size)*i+arg2);
 			end loop;
 			return val;
 		end;
@@ -115,7 +115,7 @@ begin
 			variable val : dmword;
 		begin
 			for i in val'range loop
-				val(data_bytes*i+arg2) := arg1(i);
+				val((word_size/byte_size)*i+arg2) := arg1(i);
 			end loop;
 			return val;
 		end;
@@ -127,7 +127,7 @@ begin
 			variable val : shuffleword;
 		begin
 			for i in val'range loop
-				val(i) := arg1(data_bytes*i+arg2);
+				val(i) := arg1((word_size/byte_size)*i+arg2);
 			end loop;
 			return val;
 		end;
@@ -141,8 +141,8 @@ begin
 		generic map (
 			data_phases => data_phases,
 			data_edges  => data_edges,
-			byte_size => byte_size,
 			word_size => word_size,
+			byte_size => byte_size,
 			register_output => register_output)
 		port map (
 			sys_clk => sys_clk,
