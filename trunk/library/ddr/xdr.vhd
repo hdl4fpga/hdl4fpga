@@ -9,6 +9,7 @@ entity xdr is
 	generic (
 		bank_bits   : natural :=  2;
 		addr_bits   : natural := 13;
+		line_size   : natural := 16;
 		word_size   : natural := 16;
 		byte_size   : natural :=  8;
 		data_phases : natural :=  2;
@@ -282,7 +283,7 @@ begin
 		data_delay => std,
 		data_edges => data_edges,
 		data_phases => data_phases,
-		word_size  => byte_size)
+		word_size  => line_size)
 	port map (
 		sys_clk => sys_coclk,
 		sys_rdy => sys_do_rdy,
@@ -297,6 +298,7 @@ begin
 	generic map (
 		data_phases => data_phases,
 		data_edges  => data_edges,
+		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (
