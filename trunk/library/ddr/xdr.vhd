@@ -7,11 +7,12 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr is
 	generic (
-		bank_bits   : natural :=  2;
-		addr_bits   : natural := 13;
-		line_size   : natural := 16;
-		word_size   : natural := 16;
-		byte_size   : natural :=  8;
+		bank_bits : natural :=  2;
+		addr_bits : natural := 13;
+
+		line_size : natural := 16;
+		word_size : natural := 16;
+		byte_size : natural :=  8;
 		data_phases : natural :=  2;
 		data_edges  : natural :=  2;
 
@@ -20,6 +21,8 @@ entity xdr is
 		tCP  : time := 6.0 ns)
 	port (
 		sys_rst   : in std_logic;
+
+		sys_clk : in std_logic;
 
 		sys_cfg_rdy : out std_logic;
 		sys_cmd_req : in  std_logic;
@@ -48,13 +51,14 @@ entity xdr is
 		xdr_odt : out std_logic;
 		xdr_dmi : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
 		xdr_dmo : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
-		xdr_dqsz : out std_logic_vector((word_size/byte_size)-1 downto 0);
-		xdr_dqsi : in  std_logic_vector((word_size/byte_size)-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector((word_size/byte_size)-1 downto 0);
-		xdr_dqz : out std_logic_vector(word_size-1 downto 0);
+		xdr_dqsi : in  std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
+		xdr_dqso : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
+
 		xdr_dqi : in  std_logic_vector(word_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(word_size-1 downto 0);
 
+		xdr_dqsz : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
+		xdr_dqz : out std_logic_vector(word_size-1 downto 0);
 		xdr_sti : in  std_logic_vector((word_size/byte_size)-1 downto 0) := (others => '-');
 		xdr_sto : out std_logic_vector((word_size/byte_size)-1 downto 0) := (others => '-'));
 
@@ -255,7 +259,7 @@ begin
 	port (
 		sys_cl   => xdr_cl;
 		sys_cwl  => xdr_cwl;
-		sys_clks =>;
+		sys_clks => sys_clks;
 		sys_rea  => xdr_mpu_rwin;
 		sys_wri  => xdr_mpu_wwin;
 
@@ -276,7 +280,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (
-		sys_clk => sys_coclk,
+		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,
 		sys_rea => xdr_mpu_rea,
 		sys_do  => sys_do,
@@ -293,7 +297,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (
-		sys_clk => sys_coclk,
+		sys_clk => sys_clks(0),
 		sys_di  => sys_di,
 		sys_req => xdr_wr_fifo_req,
 		sys_dm  => sys_dm,
