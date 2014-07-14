@@ -1,3 +1,7 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity xdr_rdfifo is
 	generic (
 		data_delay  : natural := 1;
@@ -17,6 +21,9 @@ entity xdr_rdfifo is
 		xdr_dqsi : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
 end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture struct of xdr_rdfifo is
 	subtype byte is std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
@@ -73,7 +80,7 @@ architecture struct of xdr_rdfifo is
 
 begin
 
-	xdr_dqi <= to_bytevector(dqi);
+	dqi <= to_bytevector(xdr_dqi);
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		inbyte_i : entity hdl4fpga.xdr_infifo
 		generic map (
@@ -84,7 +91,7 @@ begin
 		port map (
 			sys_clk => sys_clk,
 			sys_rdy => sys_rdy(i),
-			sys_rea => sys_rea,
+			sys_rea => sys_rea(i),
 			sys_do  => do(i),
 			xdr_win_dq  => xdr_win_dq(i),
 			xdr_win_dqs => xdr_win_dqs(i),
