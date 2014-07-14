@@ -26,22 +26,22 @@ entity xdr is
 		sys_cwl : in std_logic_vector;
 		sys_wr : in std_logic_vector;
 
-		sys_rst  : in std_logic;
+		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
 
 		sys_cfg_rdy : out std_logic;
-		sys_cmd_req : in  std_logic;
+		sys_cmd_req : in  std_logic := '-';
 		sys_cmd_rdy : out std_logic;
-		sys_rw : in  std_logic;
-		sys_b  : in  std_logic_vector(bank_bits-1 downto 0);
-		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
+		sys_rw : in  std_logic := '0';
+		sys_b  : in  std_logic_vector(bank_bits-1 downto 0) := (others => '-');
+		sys_a  : in  std_logic_vector(addr_bits-1 downto 0) := (others => '-');
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
 		sys_dm  : in  std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0) := (others => '0');
-		sys_di  : in  std_logic_vector(data_phases*word_size-1 downto 0);
+		sys_di  : in  std_logic_vector(data_phases*word_size-1 downto 0) := (others => '-');
 		sys_do  : out std_logic_vector(data_phases*word_size-1 downto 0);
 		sys_ref : out std_logic;
 
@@ -59,7 +59,7 @@ entity xdr is
 		xdr_dqsi : in  std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
 
-		xdr_dqi : in  std_logic_vector(word_size-1 downto 0);
+		xdr_dqi : in  std_logic_vector(word_size-1 downto 0) := (others => '-');
 		xdr_dqo : out std_logic_vector(word_size-1 downto 0);
 
 		xdr_dqsz : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
