@@ -13,7 +13,7 @@ entity xdr_rdfifo is
 	port (
 		sys_clk : in  std_logic;
 		sys_rdy : out std_logic_vector((word_size/byte_size)-1 downto 0);
-		sys_rea : in  std_logic_vector((word_size/byte_size)-1 downto 0);
+		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_win_dq  : in std_logic_vector((word_size/byte_size)-1 downto 0);
@@ -91,7 +91,7 @@ begin
 		port map (
 			sys_clk => sys_clk,
 			sys_rdy => sys_rdy(i),
-			sys_rea => sys_rea(i),
+			sys_rea => sys_rea,
 			sys_do  => do(i),
 			xdr_win_dq  => xdr_win_dq(i),
 			xdr_win_dqs => xdr_win_dqs(i),

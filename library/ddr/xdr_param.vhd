@@ -102,6 +102,14 @@ package xdr_param is
 		constant data_edges : natural := 1)
 		return natural_vector;
 
+	function xdr_lattab (
+		constant std : natural;
+		constant reg : ltab_ids;
+		constant word_size : natural := 1;
+		constant byte_size : natural := 1;
+		constant data_edges : natural := 1)
+		return natural_vector;
+
 	function xdr_latcod (
 		constant std : natural;
 		constant reg : latr_ids)
@@ -381,6 +389,23 @@ package body xdr_param is
 			end if;
 		end loop;
 		return query_data;
+	end;
+
+	function xdr_lattab (
+		constant std : natural;
+		constant reg : ltab_ids;
+		constant word_size : natural := 1;
+		constant byte_size : natural := 1;
+		constant data_edges : natural := 1)
+		return natural_vector is
+--		constant query_size : natural := xdr_query_size(std, reg);
+--		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(std, reg);
+		variable lattab : natural_vector(0 to 1); --query_size-1);
+	begin
+--		for i in lattab'range loop
+--			lattab(i) := (byte_size*(data_edges*((query_data(i).lat+1)/2)))/word_size;
+--		end loop;
+		return lattab;
 	end;
 
 	function xdr_lattab (
