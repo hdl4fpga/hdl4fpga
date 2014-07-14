@@ -41,6 +41,7 @@ entity xdr_sch is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
 
 library ieee;
@@ -53,6 +54,8 @@ architecture def of xdr_sch is
 
 	signal rphi : std_logic;
 	signal rpho : std_logic_vector(0 to delay_size);
+
+	signal pp : std_logic_vector(0 to 1);
 
 begin
 	
@@ -71,7 +74,7 @@ begin
 		ph_qo  => rpho);
 	wpho <= rpho;
 
-	xdr_st <= xdr_task (
+	pp <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		word_size => word_size,
@@ -80,8 +83,8 @@ begin
 		lat_val  => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab  => cl_tab,
-		lat_schd => rpho,
-		lat_extn => 1);
+		lat_sch => rpho,
+		lat_ext => 1);
 
 	xdr_dr <= xdr_task (
 		data_phases => data_phases,
@@ -92,7 +95,7 @@ begin
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab => cl_tab,
-		lat_schd => rpho);
+		lat_sch => rpho);
 
 	xdr_dqsz <= xdr_task (
 		data_phases => data_phases,
@@ -103,7 +106,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
-		lat_schd => wpho);
+		lat_sch => wpho);
 
 	xdr_dqs <= xdr_task (
 		data_phases => data_phases,
@@ -114,7 +117,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqsl_tab,
-		lat_schd => wpho);
+		lat_sch => wpho);
 
 	xdr_dqz <= xdr_task (
 		data_phases => data_phases,
@@ -125,7 +128,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
-		lat_schd => wpho);
+		lat_sch => wpho);
 
 	xdr_dw <= xdr_task (
 		data_phases => data_phases,
@@ -136,5 +139,5 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dwl_tab,
-		lat_schd => wpho);
+		lat_sch => wpho);
 end;

@@ -38,7 +38,7 @@ package xdr_param is
 
 	type tmrk_ids is (ANY, M6T, M107);
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
-	type is (DQSZ, DQS, DQZ, DW);
+	type ltab_ids is (DQSZ, DQS, DQZ, DW);
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
 	type laty_ids is (ANY, cDLL);
 
@@ -387,8 +387,8 @@ package body xdr_param is
 		constant std : natural;
 		constant reg : latr_ids;
 		constant word_size : natural := 1;
-		constant byte_size : natural := 1
-		constant data_edges : natural := 1);
+		constant byte_size : natural := 1;
+		constant data_edges : natural := 1)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(std, reg);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(std, reg);
