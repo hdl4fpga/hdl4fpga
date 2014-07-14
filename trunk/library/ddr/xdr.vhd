@@ -21,8 +21,12 @@ entity xdr is
 		data_edges  : natural :=  2);
 
 	port (
-		sys_rst   : in std_logic;
+		sys_bl : in std_logic_vector;
+		sys_cl : in std_logic_vector;
+		sys_cwl : in std_logic_vector;
+		sys_wr : in std_logic_vector;
 
+		sys_rst  : in std_logic;
 		sys_clks : in std_logic_vector;
 
 		sys_cfg_rdy : out std_logic;
@@ -32,7 +36,7 @@ entity xdr is
 		sys_b  : in  std_logic_vector(bank_bits-1 downto 0);
 		sys_a  : in  std_logic_vector(addr_bits-1 downto 0);
 		sys_di_rdy : out std_logic;
-		sys_do_rdy : out std_logic;
+		sys_do_rdy : out std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
@@ -108,6 +112,7 @@ architecture mix of xdr is
 	signal xdr_mpu_wwin : std_logic;
 
 	signal xdr_sch_dr : std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
+	signal xdr_sch_dw : std_logic_vector(0 to (word_size/byte_size)*data_phases-1);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dr'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dr'range);
 	signal xdr_sch_dqsz : std_logic_vector(xdr_sch_dr'range);
@@ -116,7 +121,7 @@ architecture mix of xdr is
 	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
 	signal xdr_wr_fifo_rst : std_logic;
 	signal xdr_wr_fifo_req : std_logic;
-	signal xdr_wr_fifo_ena : std_logic_vector(data_phases*data_edges*data_bytes-1 downto 0);
+	signal xdr_wr_fifo_ena : std_logic_vector(data_phases*data_edges*(word_size/byte_size)-1 downto 0);
 	signal xdr_wr_dm : std_logic_vector(sys_dm'range);
 	signal xdr_wr_dq : std_logic_vector(sys_di'range);
 
@@ -124,11 +129,11 @@ architecture mix of xdr is
 
 begin
 
-	process (clk0, sys_rst)
+	process (sys_clks(0), sys_rst)
 	begin
 		if sys_rst='1' then
 			rst <= '1';
-		elsif rising_edge(clk0) then
+		elsif rising_edge(sys_clks(0)) then
 			rst <= sys_rst;
 		end if;
 	end process;
@@ -138,13 +143,13 @@ begin
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
 		cPreRST => to_xdrlatency(tCP, mark, tPreRST),
-		cDLL => xdrlatency(std, cDLL),
+		cDLL => xdr_latency(std, cDLL),
 		cPstRST => to_xdrlatency(tCP, mark, tPstRST),
 		cxpr => to_xdrlatency(tCP, mark, tXPR),
 		cREF => to_xdrlatency(tCP, mark, tREFI),
 		std  => std)
 	port map (
-		sys_timer_clk => sys_clk,
+		sys_timer_clk => sys_clks(0),
 		sys_timer_rst => rst,
 		sys_cfg_rst  => xdr_rst,
 		sys_cfg_req  => xdr_cfg_req,
@@ -159,14 +164,14 @@ begin
 		a    => addr_bits,
 		cRP  => to_xdrlatency(tCP, mark, tRP),
 		cMRD => to_xdrlatency(tCP, mark, tMRD),
-		cRFC => to_xdrlatency(tCP, mark, tRFC),
+		cRFC => to_xdrlatency(tCP, mark, tRFC))
 	port map (
 		xdr_cfg_bl  => sys_bl,
 		xdr_cfg_cl  => sys_cl,
 		xdr_cfg_cwl => sys_cwl,
 		xdr_cfg_wr  => sys_wr,
 
-		xdr_cfg_clk => sys_clk,
+		xdr_cfg_clk => sys_clks(0),
 		xdr_cfg_req => xdr_cfg_req,
 		xdr_cfg_rdy => xdr_cfg_rdy,
 		xdr_cfg_dll => xdr_cfg_dll,
@@ -184,10 +189,10 @@ begin
 	xdrphy_a <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
 	xdrphy_b <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
 
-	process (sys_clk)
+	process (sys_clks(0))
 		variable q : std_logic;
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(sys_clks(0)) then
 --			xdr_mpu_rst <= not (xdr_cfg_rdy and dll_timer_rdy);
 			xdr_mpu_rst <= q;
 			q := not (xdr_cfg_rdy and dll_timer_rdy);
@@ -198,7 +203,7 @@ begin
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
-		xdr_pgm_clk => sys_clk,
+		xdr_pgm_clk => sys_clks(0),
 		sys_pgm_ref => sys_ref,
 		xdr_pgm_cmd => xdr_pgm_cmd,
 		xdr_pgm_cas => sys_cas,
@@ -229,7 +234,7 @@ begin
 		xdr_mpu_cwl => sys_cwl,
 
 		xdr_mpu_rst => xdr_mpu_rst,
-		xdr_mpu_clk => sys_clk,
+		xdr_mpu_clk => sys_clks(0),
 		xdr_mpu_cmd => xdr_pgm_cmd,
 		xdr_mpu_rdy => xdr_mpu_rdy,
 		xdr_mpu_act => sys_act,
@@ -237,39 +242,39 @@ begin
 		xdr_mpu_ras => xdr_mpu_ras,
 		xdr_mpu_we  => xdr_mpu_we,
 
-		xdr_mpu_rea => xdr_mpu_rea;
-		xdr_mpu_wri => xdr_mpu_wri;
-		xdr_mpu_rwin => xdr_mpu_rwin;
+		xdr_mpu_rea => xdr_mpu_rea,
+		xdr_mpu_wri => xdr_mpu_wri,
+		xdr_mpu_rwin => xdr_mpu_rwin,
 		xdr_mpu_wwin => xdr_mpu_wwin);
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		data_phases => sys_clks'length*data_phases;
-		data_edges  => data_edges;
-		byte_size   => byte_size;
-		word_size   => line_size/word_size;
+		data_phases => sys_clks'length*data_phases,
+		data_edges  => data_edges,
+		byte_size   => byte_size,
+		word_size   => line_size/word_size,
 
-		cl_cod =>  xdr_latcod(std, CL,  word_size, byte_size, data_edges),
-		cl_tab =>  xdr_lattab(std, CL,  word_size, byte_size, data_edges),
-		cwl_cod => xdr_latcod(std, CWL, word_size, byte_size, data_edges),
+		cl_cod =>  xdr_latcod(std, CL),
+		cl_tab =>  xdr_lattab(std, CL, word_size, byte_size, data_edges),
+		cwl_cod => xdr_latcod(std, CWL),
 		cwl_tab => xdr_lattab(std, CWL, word_size, byte_size, data_edges),
-		dqszl_tab => xdr_lattab(std, DQSZ, word_size, byte_size, data_edges),;
-		dqsl_tab  => xdr_lattab(std, DQS,  word_size, byte_size, data_edges),;
-		dqzl_tab  => xdr_lattab(std, DQZ,  word_size, byte_size, data_edges),;
-		dwl_tab   => xdr_lattab(std, DW,   word_size, byte_size, data_edges),);
-	port (
-		sys_cl   => xdr_cl;
-		sys_cwl  => xdr_cwl;
-		sys_clks => sys_clks;
-		sys_rea  => xdr_mpu_rwin;
-		sys_wri  => xdr_mpu_wwin;
+		dqszl_tab => xdr_lattab(std, DQSZ, word_size, byte_size, data_edges),
+		dqsl_tab  => xdr_lattab(std, DQS,  word_size, byte_size, data_edges),
+		dqzl_tab  => xdr_lattab(std, DQZ,  word_size, byte_size, data_edges),
+		dwl_tab   => xdr_lattab(std, DW,   word_size, byte_size, data_edges))
+	port map (
+		sys_cl   => sys_cl,
+		sys_cwl  => sys_cwl,
+		sys_clks => sys_clks,
+		sys_rea  => xdr_mpu_rwin,
+		sys_wri  => xdr_mpu_wwin,
 
-		xdr_dr => xdr_sch_dr;
-		xdr_st => xdr_st;
+		xdr_dr => xdr_sch_dr,
+		xdr_st => xdr_sto,
 
-		xdr_dqsz => xdr_sch_dqsz;
-		xdr_dqs => xdr_sch_dqs;
-		xdr_dqz => xdr_sch_dqz;
+		xdr_dqsz => xdr_sch_dqsz,
+		xdr_dqs => xdr_sch_dqs,
+		xdr_dqz => xdr_sch_dqz,
 		xdr_dw  => xdr_sch_dw);
 
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
@@ -299,11 +304,11 @@ begin
 		byte_size => byte_size)
 	port map (
 		sys_clk => sys_clks(0),
-		sys_di  => sys_di,
+		sys_dqi => sys_di,
 		sys_req => xdr_wr_fifo_req,
-		sys_dm  => sys_dm,
-		xdr_clks => xdr_wrclks,
-		xdr_dmo  => xdr_dm,
+		sys_dmi  => sys_dm,
+		xdr_clks => sys_clks,
+		xdr_dmo  => xdr_dmo,
 		xdr_enas => xdr_wr_fifo_ena, 
-		xdr_dqo  => xdr_dq);
+		xdr_dqo  => xdr_dqo);
 end;
