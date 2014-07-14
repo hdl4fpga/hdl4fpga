@@ -7,6 +7,10 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr is
 	generic (
+		strobe : string := "NONE_LOOPBACK";
+		mark : tmrk_ids := M6T;
+		tCP  : time := 6.0 ns;
+
 		bank_bits : natural :=  2;
 		addr_bits : natural := 13;
 
@@ -14,15 +18,12 @@ entity xdr is
 		word_size : natural := 16;
 		byte_size : natural :=  8;
 		data_phases : natural :=  2;
-		data_edges  : natural :=  2;
+		data_edges  : natural :=  2);
 
-		strobe : string := "NONE_LOOPBACK";
-		mark : tmrk_ids := M6T;
-		tCP  : time := 6.0 ns)
 	port (
 		sys_rst   : in std_logic;
 
-		sys_clk : in std_logic;
+		sys_clks : in std_logic_vector;
 
 		sys_cfg_rdy : out std_logic;
 		sys_cmd_req : in  std_logic;
@@ -243,10 +244,10 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		data_phases => data_phases;
+		data_phases => sys_clks'length*data_phases;
 		data_edges  => data_edges;
 		byte_size   => byte_size;
-		word_size   => word_size;
+		word_size   => line_size/word_size;
 
 		cl_cod =>  xdr_latcod(std, CL,  word_size, byte_size, data_edges),
 		cl_tab =>  xdr_lattab(std, CL,  word_size, byte_size, data_edges),
