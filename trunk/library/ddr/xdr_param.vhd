@@ -283,7 +283,7 @@ package body xdr_param is
 		end loop;
 
 		report "xdr_cnfglat: Invalid DDR configuration latency"
-		severity FAILURE;
+		severity WARNING;
 		return "XXX";
 	end;
 
@@ -307,7 +307,7 @@ package body xdr_param is
 		write (msg, tmng_ids'pos(param));
 		report msg.all;
 		report "xdr_timing: Invalid DDR timing"
-		severity FAILURE;
+		severity WARNING;
 		return 0 ns;
 	end;
 
@@ -325,7 +325,7 @@ package body xdr_param is
 		end loop;
 
 		report "xdr_latency: Invalid DDR latency"
-		severity FAILURE;
+		severity WARNING;
 		return 0;
 	end;
 
@@ -340,7 +340,7 @@ package body xdr_param is
 		end loop;
 
 		report "xdr_std: Invalid DDR latency"
-		severity FAILURE;
+		severity WARNING;
 		return 0;
 	end;
 
