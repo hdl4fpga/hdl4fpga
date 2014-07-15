@@ -87,7 +87,7 @@ begin
 			data_delay => data_delay,
 			data_edges => data_edges,
 			data_phases => data_phases,
-			byte_size  => byte_size*(line_size/(word_size/byte_size)))
+			byte_size  => word_size)
 		port map (
 			sys_clk => sys_clk,
 			sys_rdy => sys_rdy(i),
