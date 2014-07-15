@@ -47,8 +47,10 @@ architecture mix of xdr_infifo is
 		return val;
 	end;
 
-	signal xdr_delayed_dqs : std_logic_vector(0 to data_edges-1);
-	signal xdr_dlyd_dqs : std_logic_vector(0 to data_edges-1);
+	signal xdr_delayed_dqs : std_logic_vector(0 to 2-1);
+	signal xdr_dlyd_dqs : std_logic_vector(0 to 2-1);
+--	signal xdr_delayed_dqs : std_logic_vector(0 to data_edges-1);
+--	signal xdr_dlyd_dqs : std_logic_vector(0 to data_edges-1);
 
 	signal axdr_o_d : axdr_word;
 	signal axdr_o_q : axdr_word;
