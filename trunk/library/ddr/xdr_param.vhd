@@ -1,3 +1,5 @@
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -280,7 +282,7 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR configuration latency"
+		report "xdr_cnfglat: Invalid DDR configuration latency"
 		severity FAILURE;
 		return "XXX";
 	end;
@@ -289,6 +291,7 @@ package body xdr_param is
 		mark  : tmrk_ids;
 		param : tmng_ids) 
 		return time is
+		variable msg : line;
 	begin
 		for i in timing_db'range loop
 			if timing_db(i).mark = mark then
@@ -298,7 +301,12 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR timing"
+		write (msg, string'("-> "));
+		write (msg, tmrk_ids'pos(mark));
+		write (msg, string'(" <-> "));
+		write (msg, tmng_ids'pos(param));
+		report msg.all;
+		report "xdr_timing: Invalid DDR timing"
 		severity FAILURE;
 		return 0 ns;
 	end;
@@ -316,7 +324,7 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR latency"
+		report "xdr_latency: Invalid DDR latency"
 		severity FAILURE;
 		return 0;
 	end;
@@ -331,7 +339,7 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "Invalid DDR latency"
+		report "xdr_std: Invalid DDR latency"
 		severity FAILURE;
 		return 0;
 	end;
