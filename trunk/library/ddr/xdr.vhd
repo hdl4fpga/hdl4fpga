@@ -14,11 +14,11 @@ entity xdr is
 		bank_bits : natural :=  2;
 		addr_bits : natural := 13;
 
-		line_size : natural := 16;
+		line_size : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural :=  8;
-		data_phases : natural := 4;
-		data_edges  : natural := 2;
+		data_phases : natural := 1;
+		data_edges  : natural := 1;
 		sysclk_edges : natural := 2;
 		sysclk_phases : natural := 4);
 
@@ -56,18 +56,18 @@ entity xdr is
 		xdr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		xdr_odt : out std_logic;
-		xdr_dmi : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
-		xdr_dmo : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dmi : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0);
 
-		xdr_dqi : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
-		xdr_dqo : out std_logic_vector(line_size-1 downto 0) := (others => '-');
+		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
+		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 
 		xdr_dqsz : out std_logic_vector(data_phases*(line_size*byte_size)/word_size-1 downto 0);
 		xdr_dqz : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0);
-		xdr_sti : in  std_logic_vector(data_phases/2*(word_size/byte_size)-1 downto 0) := (others => '-');
-		xdr_sto : out std_logic_vector(data_phases/2*(word_size/byte_size)-1 downto 0) := (others => '-'));
+		xdr_sti : in  std_logic_vector(data_phases/(word_size/byte_size)-1 downto 0) := (others => '-');
+		xdr_sto : out std_logic_vector((line_size/word_size)*2*data_phases-1 downto 0) := (others => '-'));
 
 	constant std : natural := xdr_std(mark);
 end;
@@ -113,7 +113,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_dr : std_logic_vector(0 to (line_size/word_size)*data_phases-1);
+	signal xdr_sch_dr : std_logic_vector(0 to (line_size/word_size)*2*data_phases-1);
 	signal xdr_sch_dw : std_logic_vector(xdr_sch_dr'range);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dr'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dr'range);
@@ -252,7 +252,7 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		data_phases => data_phases,
+		data_phases => 2*data_phases,
 		data_edges  => data_edges,
 		byte_size   => word_size,
 		word_size   => line_size,
@@ -312,7 +312,7 @@ begin
 		sys_dqi => sys_di,
 		sys_req => xdr_wr_fifo_req,
 		sys_dmi  => sys_dm,
-		xdr_clks => sys_clks,
+		xdr_clks => open,
 		xdr_dmo  => xdr_dmo,
 		xdr_enas => xdr_wr_fifo_ena, 
 		xdr_dqo  => xdr_dqo);

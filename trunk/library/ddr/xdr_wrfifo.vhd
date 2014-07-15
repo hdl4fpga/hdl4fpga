@@ -16,10 +16,10 @@ entity xdr_wrfifo is
 		sys_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0);
 
-		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
+		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0) := (others => '-');
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
+		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
 
 end;
 
@@ -61,10 +61,10 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
+	subtype word is std_logic_vector(data_phases*(line_size*byte_size/word_size)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype dmword is std_logic_vector(xdr_dmo'length/(word_size/byte_size)-1 downto 0);
+	subtype dmword is std_logic_vector(data_phases*(line_size/word_size)-1 downto 0);
 	subtype shuffleword is byte_vector(dmword'range);
 
 	function unshuffle (
@@ -141,7 +141,7 @@ begin
 		generic map (
 			data_phases => data_phases,
 			data_edges  => data_edges,
-			word_size => word_size,
+			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size,
 			register_output => register_output)
 		port map (

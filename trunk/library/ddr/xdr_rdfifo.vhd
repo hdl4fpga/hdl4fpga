@@ -19,7 +19,7 @@ entity xdr_rdfifo is
 		xdr_win_dq  : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_win_dqs : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_dqsi : in std_logic_vector((word_size/byte_size)-1 downto 0);
-		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
+		xdr_dqi  : in std_logic_vector(data_phases*line_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -57,7 +57,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(data_phases*word_size-1 downto 0);
+	subtype word is std_logic_vector(data_phases*byte'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function shuffle_word (
@@ -87,7 +87,7 @@ begin
 			data_delay => data_delay,
 			data_edges => data_edges,
 			data_phases => data_phases,
-			byte_size  => word_size)
+			byte_size  => byte'length)
 		port map (
 			sys_clk => sys_clk,
 			sys_rdy => sys_rdy(i),
