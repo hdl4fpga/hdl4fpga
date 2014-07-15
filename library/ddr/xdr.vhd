@@ -17,7 +17,7 @@ entity xdr is
 		line_size : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural :=  8;
-		data_phases : natural := 2;
+		data_phases : natural := 4;
 		data_edges  : natural := 2;
 		sysclk_edges : natural := 2;
 		sysclk_phases : natural := 4);
@@ -57,7 +57,7 @@ entity xdr is
 		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		xdr_odt : out std_logic;
 		xdr_dmi : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
-		xdr_dmo : out std_logic_vector((line_size*byte_size)/word_size-1 downto 0) := (others => '-');
+		xdr_dmo : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -312,8 +312,8 @@ begin
 		sys_dqi => sys_di,
 		sys_req => xdr_wr_fifo_req,
 		sys_dmi  => sys_dm,
-		xdr_clks => sys_clks,
+		xdr_clks => sys_clks(0 to 0),
 		xdr_dmo  => xdr_dmo,
-		xdr_enas => xdr_wr_fifo_ena, 
+		xdr_enas => xdr_wr_fifo_ena(1 downto 0), 
 		xdr_dqo  => xdr_dqo);
 end;

@@ -69,7 +69,7 @@ begin
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		delay_size => delay_size,
-		delay_phase => 2)
+		delay_phase => 1)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => rphi,

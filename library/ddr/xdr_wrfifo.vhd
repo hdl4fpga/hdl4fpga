@@ -18,8 +18,8 @@ entity xdr_wrfifo is
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
 		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
+		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
 end;
 
