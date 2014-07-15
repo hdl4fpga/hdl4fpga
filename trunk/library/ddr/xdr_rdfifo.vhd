@@ -57,7 +57,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(line_size-1 downto 0);
+	subtype word is std_logic_vector(data_phases*word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function shuffle_word (

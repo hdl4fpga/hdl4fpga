@@ -14,7 +14,7 @@ entity xdr is
 		bank_bits : natural :=  2;
 		addr_bits : natural := 13;
 
-		line_size : natural := 32;
+		line_size : natural := 16;
 		word_size : natural := 16;
 		byte_size : natural :=  8;
 		data_phases : natural := 4;
@@ -66,8 +66,8 @@ entity xdr is
 
 		xdr_dqsz : out std_logic_vector(data_phases*(line_size*byte_size)/word_size-1 downto 0);
 		xdr_dqz : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0);
-		xdr_sti : in  std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0) := (others => '-');
-		xdr_sto : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0) := (others => '-'));
+		xdr_sti : in  std_logic_vector(data_phases/2*(word_size/byte_size)-1 downto 0) := (others => '-');
+		xdr_sto : out std_logic_vector(data_phases/2*(word_size/byte_size)-1 downto 0) := (others => '-'));
 
 	constant std : natural := xdr_std(mark);
 end;
@@ -124,7 +124,7 @@ architecture mix of xdr is
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
 	signal xdr_wr_fifo_rst : std_logic;
 	signal xdr_wr_fifo_req : std_logic;
-	signal xdr_wr_fifo_ena : std_logic_vector(data_phases*data_edges*(word_size/byte_size)-1 downto 0);
+	signal xdr_wr_fifo_ena : std_logic_vector(data_phases-1 downto 0);
 	signal xdr_wr_dm : std_logic_vector(sys_dm'range);
 	signal xdr_wr_dq : std_logic_vector(sys_di'range);
 
@@ -268,7 +268,7 @@ begin
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => sys_cwl,
-		sys_clks => sys_clks(0 to 0),
+		sys_clks => sys_clks,
 		sys_rea  => xdr_mpu_rwin,
 		sys_wri  => xdr_mpu_wwin,
 
@@ -312,8 +312,8 @@ begin
 		sys_dqi => sys_di,
 		sys_req => xdr_wr_fifo_req,
 		sys_dmi  => sys_dm,
-		xdr_clks => sys_clks(0 to 0),
+		xdr_clks => sys_clks,
 		xdr_dmo  => xdr_dmo,
-		xdr_enas => xdr_wr_fifo_ena(1 downto 0), 
+		xdr_enas => xdr_wr_fifo_ena, 
 		xdr_dqo  => xdr_dqo);
 end;
