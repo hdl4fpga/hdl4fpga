@@ -252,10 +252,10 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		data_phases => 2*data_phases,
+		data_phases => data_phases,
 		data_edges  => data_edges,
-		byte_size   => word_size,
-		word_size   => line_size,
+		line_size   => line_size,
+		byte_size   => byte_size,
 
 		cl_cod =>  xdr_latcod(std, CL),
 		cl_tab =>  xdr_lattab(std, CL, word_size, byte_size, data_edges),
