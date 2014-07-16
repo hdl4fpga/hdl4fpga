@@ -14,13 +14,18 @@ entity xdr is
 		bank_bits : natural :=  2;
 		addr_bits : natural := 13;
 
-		line_size : natural := 32;
-		word_size : natural := 16;
-		byte_size : natural :=  8;
+		sclk_phases : natural := 4;
+		sclk_edges  : natural := 2;
+		dqsi_phases : natural := 2;
+		dqsi_edges  : natural := 2;
+		dqso_phases : natural := 2;
+		dqso_edges  : natural := 2;
 		data_phases : natural := 1;
 		data_edges  : natural := 1;
-		sysclk_edges : natural := 2;
-		sysclk_phases : natural := 4);
+
+		line_size : natural := 32;
+		word_size : natural := 16;
+		byte_size : natural :=  8);
 
 	port (
 		sys_bl : in std_logic_vector;
@@ -47,6 +52,8 @@ entity xdr is
 		sys_do  : out std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_ref : out std_logic;
 
+		xdr_wclks : in std_logic_vector;
+
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
 		xdr_cs  : out std_logic;
@@ -59,7 +66,7 @@ entity xdr is
 		xdr_dmi : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0);
+		xdr_dqso : out std_logic_vector((word_size/byte_size)*data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
@@ -252,6 +259,11 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
+--		sclk_phases : natural := 4;
+--		sclk_edges  : natural := 2;
+--		dqso_phases => dqso_phases,
+--		dqso_edges  => dqso_edges,
+
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		line_size   => line_size,
@@ -280,16 +292,30 @@ begin
 		xdr_dqz => xdr_sch_dqz,
 		xdr_dw  => xdr_sch_dw);
 
+	process (xdr_sch_dqs)
+		variable aux : std_logic_vector(xdr_dqso'range);
+	begin
+		aux := (others => '-');
+		for i in 0 to word_size/byte_size-1 loop
+			aux := aux sll xdr_sch_dqs'length;
+			aux(xdr_sch_dqs'range) := xdr_sch_dqs;
+		end loop;
+		xdr_dqo <= aux;
+	end process;
+
 	xdr_win_dqs <= (others => xdr_sch_dr(0));
 	xdr_win_dq  <= (others => xdr_sch_dr(0));
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
-		data_delay => std,
-		data_edges => data_edges,
+--		dqsi_phases => dqsi_phases,
+--		dqsi_edges  => dqsi_edges,
 		data_phases => data_phases,
+		data_edges  => data_edges,
+
 		line_size => line_size,
 		word_size => word_size,
-		byte_size => byte_size)
+		byte_size => byte_size,
+		data_delay => std)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,
@@ -304,6 +330,7 @@ begin
 	generic map (
 		data_phases => data_phases,
 		data_edges  => data_edges,
+
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size)
@@ -311,8 +338,8 @@ begin
 		sys_clk => sys_clks(0),
 		sys_dqi => sys_di,
 		sys_req => xdr_wr_fifo_req,
-		sys_dmi  => sys_dm,
-		xdr_clks => open,
+		sys_dmi => sys_dm,
+		xdr_clks => xdr_wclks,
 		xdr_dmo  => xdr_dmo,
 		xdr_enas => xdr_wr_fifo_ena, 
 		xdr_dqo  => xdr_dqo);

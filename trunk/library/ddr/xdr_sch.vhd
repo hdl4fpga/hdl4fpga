@@ -13,10 +13,10 @@ entity xdr_sch is
 		byte_size   : natural;
 
 		cl_cod : std_logic_vector;
-		cl_tab  : natural_vector;
+		cl_tab : natural_vector;
 
-		cwl_cod  : std_logic_vector;
-		cwl_tab  : natural_vector;
+		cwl_cod : std_logic_vector;
+		cwl_tab : natural_vector;
 
 		dqszl_tab : natural_vector;
 		dqsl_tab  : natural_vector;
