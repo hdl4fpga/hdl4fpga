@@ -43,6 +43,7 @@ begin
 		sys_wr => "111",
 
 		sys_rst  => '0',
+		xdr_wclks => "1",
 		sys_clks => "11");
 
 
