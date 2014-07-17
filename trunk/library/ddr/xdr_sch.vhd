@@ -69,8 +69,8 @@ begin
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
-		data_phases => sys_clks'length*data_edges,
-		data_edges  => data_edges,
+		data_phases => sysc_phases,
+		data_edges  => sysc_edges,
 		delay_size => delay_size,
 		delay_phase => 1)
 	port map (
@@ -78,7 +78,7 @@ begin
 		sys_di => rphi,
 		ph_qo  => rpho);
 	wpho <= rpho;
-
+	(sysc_phases/dqsi_phases)
 	xdr_st <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
