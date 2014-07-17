@@ -7,8 +7,13 @@ use hdl4fpga.std.all;
 
 entity xdr_sch is
 	generic (
+		sclk_phases : natural;
+		sclk_edges  : natural;
+		dqso_phases : natural;
+		dqso_edges  : natural;
 		data_phases : natural;
 		data_edges  : natural;
+
 		line_size   : natural;
 		byte_size   : natural;
 
