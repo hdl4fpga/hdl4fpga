@@ -24,7 +24,7 @@ entity xdr_sch is
 		cwl_tab : natural_vector;
 
 		dqszl_tab : natural_vector;
-		dqsl_tab  : natural_vector;
+		dqsol_tab  : natural_vector;
 		dqzl_tab  : natural_vector;
 		dwl_tab   : natural_vector);
 	port (
@@ -62,6 +62,8 @@ architecture def of xdr_sch is
 	signal rphi : std_logic;
 	signal rpho : std_logic_vector(0 to delay_size);
 
+	signal ph_dqsi : std_logic_vector;
+
 begin
 	
 	rphi <= sys_wri or sys_rea;
@@ -78,7 +80,18 @@ begin
 		sys_di => rphi,
 		ph_qo  => rpho);
 	wpho <= rpho;
-	(sysc_phases/dqsi_phases)
+	process (rpho)
+	begin
+		for i in ph_dqsi'range loop
+			ph_st   <= rpho(i*sysc_phases/dqso_phases);
+			ph_dr   <= rpho(i*sysc_phases/dqso_phases);
+			ph_dqsz <= wpho(i*sysc_phases/dqsz_phases);
+			ph_dqso <= wpho(i*sysc_phases/dqso_phases);
+			ph_dqz  <= wpho(i*sysc_phases/dqz_phases);
+			ph_dw   <= wpho(i*sysc_phases/dw_phases);
+		end loop;
+	end process;
+
 	xdr_st <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
