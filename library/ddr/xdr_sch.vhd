@@ -73,24 +73,13 @@ begin
 	generic map (
 		data_phases => sysc_phases,
 		data_edges  => sysc_edges,
-		delay_size => delay_size,
+		delay_size  => delay_size,
 		delay_phase => 1)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => rphi,
 		ph_qo  => rpho);
 	wpho <= rpho;
-	process (rpho)
-	begin
-		for i in ph_dqsi'range loop
-			ph_st   <= rpho(i*sysc_phases/dqso_phases);
-			ph_dr   <= rpho(i*sysc_phases/dqso_phases);
-			ph_dqsz <= wpho(i*sysc_phases/dqsz_phases);
-			ph_dqso <= wpho(i*sysc_phases/dqso_phases);
-			ph_dqz  <= wpho(i*sysc_phases/dqz_phases);
-			ph_dw   <= wpho(i*sysc_phases/dw_phases);
-		end loop;
-	end process;
 
 	xdr_st <= xdr_task (
 		data_phases => data_phases,
