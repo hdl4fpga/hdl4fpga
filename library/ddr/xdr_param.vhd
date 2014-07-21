@@ -536,7 +536,10 @@ package body xdr_param is
 			disp_quo := disp  / word'length;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to (lat_ext+word'length-1-j)/word'length loop
+				for l in 0 to ((lat_ext+lat_width-1)/lat_width+word'length-1-j)/word'length loop
+--				for l in 0 to (lat_ext+word'length-1-j)/word'length loop
+--					pha := (j+disp_mod+l*word'length)/word_byte;
+--					aux := aux or lat_sch(disp_quo*word'length+pha);
 					pha := (j+disp_mod+l*word'length)/word_byte;
 					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
