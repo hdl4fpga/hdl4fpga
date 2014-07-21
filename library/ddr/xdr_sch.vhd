@@ -9,8 +9,6 @@ entity xdr_sch is
 	generic (
 		sclk_phases : natural;
 		sclk_edges  : natural;
-		dqso_phases : natural;
-		dqso_edges  : natural;
 		data_phases : natural;
 		data_edges  : natural;
 
@@ -62,7 +60,6 @@ architecture def of xdr_sch is
 	signal rphi : std_logic;
 	signal rpho : std_logic_vector(0 to delay_size);
 
-	signal ph_dqsi : std_logic_vector;
 
 begin
 	
@@ -71,8 +68,8 @@ begin
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
-		data_phases => sysc_phases,
-		data_edges  => sysc_edges,
+		data_phases => sclk_phases,
+		data_edges  => sclk_edges,
 		delay_size  => delay_size,
 		delay_phase => 1)
 	port map (
@@ -123,7 +120,7 @@ begin
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
-		lat_tab => dqsl_tab,
+		lat_tab => dqsol_tab,
 		lat_sch => wpho);
 
 	xdr_dqz <= xdr_task (

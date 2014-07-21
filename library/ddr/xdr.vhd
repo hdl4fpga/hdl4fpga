@@ -274,7 +274,7 @@ begin
 		cwl_cod => xdr_latcod(std, CWL),
 		cwl_tab => xdr_lattab(std, CWL, word_size, byte_size, data_edges),
 		dqszl_tab => xdr_lattab(std, DQSZ, word_size, byte_size, data_edges),
-		dqsl_tab  => xdr_lattab(std, DQS,  word_size, byte_size, data_edges),
+		dqsol_tab  => xdr_lattab(std, DQS,  word_size, byte_size, data_edges),
 		dqzl_tab  => xdr_lattab(std, DQZ,  word_size, byte_size, data_edges),
 		dwl_tab   => xdr_lattab(std, DW,   word_size, byte_size, data_edges))
 	port map (

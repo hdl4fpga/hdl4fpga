@@ -46,7 +46,7 @@ package xdr_param is
 	type cnfglat_record is record
 		std  : positive;
 		reg  : latr_ids;
-		lat  : natural;
+		lat  : integer;
 		code : std_logic_vector(0 to 2);
 	end record;
 	type cnfglat_tab is array (natural range <>) of cnfglat_record;
@@ -201,6 +201,13 @@ package body xdr_param is
 		cnfglat_record'(std => 1, reg => DQZL,  lat =>   1, code => "---") &
 		cnfglat_record'(std => 1, reg => WWL,   lat =>   1, code => "---") &
 
+		cnfglat_record'(std => 1, reg => RSTXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 1, reg => RWXL,  lat => 4*0, code => "---") &
+		cnfglat_record'(std => 1, reg => DQSZXL, lat =>  2, code => "---") &
+		cnfglat_record'(std => 1, reg => DQSXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 1, reg => DQZXL, lat =>   1, code => "---") &
+		cnfglat_record'(std => 1, reg => WWXL,  lat =>   1, code => "---") &
+
 		-- DDR2 standard --
 		-------------------
 
@@ -240,6 +247,13 @@ package body xdr_param is
 		cnfglat_record'(std => 2, reg => DQZL,  lat =>   -7, code => "---") &
 		cnfglat_record'(std => 2, reg => WWL,   lat =>   -3, code => "---") &
 
+		cnfglat_record'(std => 2, reg => RSTXL, lat =>   4, code => "---") &
+		cnfglat_record'(std => 2, reg => RWXL,  lat =>   4, code => "---") &
+		cnfglat_record'(std => 2, reg => DQSZXL, lat =>  8,  code => "---") &
+		cnfglat_record'(std => 2, reg => DQSXL, lat =>   4, code => "---") &
+		cnfglat_record'(std => 2, reg => DQZXL, lat =>   4, code => "---") &
+		cnfglat_record'(std => 2, reg => WWXL,  lat =>   4, code => "---") &
+
 		-- DDR3 standard --
 		-------------------
 
@@ -278,11 +292,18 @@ package body xdr_param is
 		-- RSTL, RWL, DQSZ, DQSZL, DQSL, WWL latency --
 
 		cnfglat_record'(std => 3, reg => RSTL,  lat =>  4*0, code => "---") &
-		cnfglat_record'(std => 3, reg => RWL,   lat =>  4*0, code => "---") &
-		cnfglat_record'(std => 3, reg => DQSZL, lat =>  4*2, code => "---") &
-		cnfglat_record'(std => 3, reg => DQSL,  lat =>  4*2, code => "---") &
-		cnfglat_record'(std => 3, reg => DQZL,  lat =>  4*2, code => "---") &
-		cnfglat_record'(std => 3, reg => WWL,   lat =>  4*2, code => "---");
+		cnfglat_record'(std => 3, reg => RWL,   lat =>  4*2, code => "---") &
+		cnfglat_record'(std => 3, reg => DQSZL, lat =>   -2, code => "---") &
+		cnfglat_record'(std => 3, reg => DQSL,  lat =>    0, code => "---") &
+		cnfglat_record'(std => 3, reg => DQZL,  lat =>    1, code => "---") &
+		cnfglat_record'(std => 3, reg => WWL,   lat =>   -3, code => "---") &
+
+		cnfglat_record'(std => 1, reg => RSTXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 1, reg => RWXL,  lat => 4*0, code => "---") &
+		cnfglat_record'(std => 1, reg => DQSZXL, lat => 4*2, code => "---") &
+		cnfglat_record'(std => 1, reg => DQSXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 1, reg => DQZXL, lat =>   1, code => "---") &
+		cnfglat_record'(std => 1, reg => WWXL,  lat =>   1, code => "---");
 
 
 	function xdr_cnfglat (
