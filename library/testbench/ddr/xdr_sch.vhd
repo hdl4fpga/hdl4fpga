@@ -22,7 +22,7 @@ begin
 		variable k : natural := 0;
 	begin
 		if rising_edge(clk) then
-			k := (k + 1) mod 8;
+			k := (k + 1) mod 2;
 			if k = 0 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
@@ -35,14 +35,24 @@ begin
 
 	du : entity hdl4fpga.xdr_sch
 	generic map (
+        sclk_phases => 4,  
+        sclk_edges => 2,
 		data_phases => data_phases,
 		data_edges => data_edges,
-		word_size => word_size,
+		line_size => word_size,
 		byte_size => byte_size,
-		lat_cod => "101",
-		lat_tab =>  (0 to 0 => 4*data_phases))
+        cl_cod => "101",
+        cwl_cod => "101",
+        cl_tab =>  (0 to 0 => 2*data_phases),
+        cwl_tab =>  (0 to 0 => 2*data_phases),
+        dqszl_tab =>  (0 to 0 => 2*data_phases),
+        dqsol_tab =>  (0 to 0 => 2*data_phases),
+        dqzl_tab =>  (0 to 0 => 2*data_phases),
+        dwl_tab =>  (0 to 0 => 2*data_phases))
 	port map (
-		sys_lat => "101",
+        sys_cl => "101",
+        sys_cwl => "101",
 		sys_clks => sys_clks,
+		sys_rea => sys_rea,
 		sys_wri => sys_rea);
 end;

@@ -40,7 +40,8 @@ package xdr_param is
 
 	type tmrk_ids is (ANY, M6T, M107);
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
-	type latr_ids is (ANY, CL, BL, WRL, CWL, RSTL, RWL, DQSZL, DQSL, DQZL, WWL);
+	type latr_ids is (ANY, CL, BL, WRL, CWL, RSTL,  RWL,  DQSZL,  DQSL,  DQZL,  WWL,
+		RSTXL, RWXL, DQSZXL, DQSXL, DQZXL, WWXL);
 	type laty_ids is (ANY, cDLL);
 
 	type cnfglat_record is record
@@ -117,7 +118,8 @@ package xdr_param is
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
-		constant lat_ext : natural := 0)
+		constant lat_ext : natural := 0;
+		constant lat_wid : natural := 1)
 		return std_logic_vector;
 
 end package;
@@ -480,7 +482,8 @@ package body xdr_param is
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
-		constant lat_ext : natural := 0)
+		constant lat_ext : natural := 0;
+		constant lat_wid : natural := 1)
 		return std_logic_vector is
 
 		subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
@@ -518,7 +521,7 @@ package body xdr_param is
 			variable val : word;
 		begin
 			val := (others => '-');
-			for i in 0 to lat_tab'length -1 loop
+			for i in 0 to lat_tab'length-1 loop
 				if lat_val = lat_cod(i) then
 					for j in word'range loop
 						val(j) := lat_sch(i)(j);
@@ -533,14 +536,11 @@ package body xdr_param is
 		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
-			disp_quo := disp  / word'length;
+			disp_quo := disp  /  word'length;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to ((lat_ext+lat_width-1)/lat_width+word'length-1-j)/word'length loop
---				for l in 0 to (lat_ext+word'length-1-j)/word'length loop
---					pha := (j+disp_mod+l*word'length)/word_byte;
---					aux := aux or lat_sch(disp_quo*word'length+pha);
-					pha := (j+disp_mod+l*word'length)/word_byte;
+				for l in 0 to ((lat_ext+lat_wid-1)/lat_wid+word'length-1-j)/word'length loop
+					pha := (j+disp_mod+(l*word'length+(lat_ext+lat_wid-1)/lat_wid))/word_byte;
 					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;
