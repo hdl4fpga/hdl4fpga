@@ -12,8 +12,8 @@ entity xdr_sch is
 		data_phases : natural;
 		data_edges  : natural;
 
-		line_size   : natural;
-		byte_size   : natural;
+		line_size : natural;
+		byte_size : natural;
 
 		cl_cod : std_logic_vector;
 		cl_tab : natural_vector;
@@ -22,7 +22,7 @@ entity xdr_sch is
 		cwl_tab : natural_vector;
 
 		dqszl_tab : natural_vector;
-		dqsol_tab  : natural_vector;
+		dqsol_tab : natural_vector;
 		dqzl_tab  : natural_vector;
 		dwl_tab   : natural_vector);
 	port (
@@ -41,7 +41,7 @@ entity xdr_sch is
 		xdr_dqz : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 		xdr_dw  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
 
-	constant delay_size : natural := 16;
+	constant delay_size : natural := 256;
 
 end;
 
@@ -71,7 +71,7 @@ begin
 		data_phases => sclk_phases,
 		data_edges  => sclk_edges,
 		delay_size  => delay_size,
-		delay_phase => 1)
+		delay_phase => 2)
 	port map (
 		sys_clks => sys_clks,
 		sys_di => rphi,
@@ -88,7 +88,8 @@ begin
 		lat_cod => cl_cod,
 		lat_tab  => cl_tab,
 		lat_sch => rpho,
-		lat_ext => 1);
+		lat_ext => 1,
+		lat_wid => 1);
 
 	xdr_dr <= xdr_task (
 		data_phases => data_phases,
