@@ -41,7 +41,7 @@ package xdr_param is
 	type tmrk_ids is (ANY, M6T, M107);
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (ANY, CL, BL, WRL, CWL, RSTL,  RWL,  DQSZL,  DQSL,  DQZL,  WWL,
-		RSTXL, RWXL, DQSZXL, DQSXL, DQZXL, WWXL);
+		RSTXL, RWXL, DQSZXL, DQSXL, DQZXL, WWXL, WIDL);
 	type laty_ids is (ANY, cDLL);
 
 	type cnfglat_record is record
@@ -210,6 +210,8 @@ package body xdr_param is
 		cnfglat_record'(std => 1, reg => DQZXL, lat =>   1, code => "---") &
 		cnfglat_record'(std => 1, reg => WWXL,  lat =>   1, code => "---") &
 
+		cnfglat_record'(std => 1, reg => WIDL,  lat =>   4, code => "---") &
+
 		-- DDR2 standard --
 		-------------------
 
@@ -242,19 +244,21 @@ package body xdr_param is
 
 		-- RSTL, RWL, DQSZ, DQSZL, DQSL, WWL latency --
 
-		cnfglat_record'(std => 2, reg => RSTL,  lat =>   -3, code => "---") &
-		cnfglat_record'(std => 2, reg => RWL,   lat =>    8, code => "---") &
-		cnfglat_record'(std => 2, reg => DQSZL, lat =>   -8, code => "---") &
-		cnfglat_record'(std => 2, reg => DQSL,  lat =>   -2, code => "---") &
-		cnfglat_record'(std => 2, reg => DQZL,  lat =>   -7, code => "---") &
-		cnfglat_record'(std => 2, reg => WWL,   lat =>   -3, code => "---") &
+		cnfglat_record'(std => 2, reg => RSTL,  lat =>  -3, code => "---") &
+		cnfglat_record'(std => 2, reg => RWL,   lat =>   8, code => "---") &
+		cnfglat_record'(std => 2, reg => DQSZL, lat =>  -8, code => "---") &
+		cnfglat_record'(std => 2, reg => DQSL,  lat =>  -2, code => "---") &
+		cnfglat_record'(std => 2, reg => DQZL,  lat =>  -7, code => "---") &
+		cnfglat_record'(std => 2, reg => WWL,   lat =>  -3, code => "---") &
 
 		cnfglat_record'(std => 2, reg => RSTXL, lat =>   4, code => "---") &
 		cnfglat_record'(std => 2, reg => RWXL,  lat =>   4, code => "---") &
-		cnfglat_record'(std => 2, reg => DQSZXL, lat =>  8,  code => "---") &
+		cnfglat_record'(std => 2, reg => DQSZXL, lat =>  8, code => "---") &
 		cnfglat_record'(std => 2, reg => DQSXL, lat =>   4, code => "---") &
 		cnfglat_record'(std => 2, reg => DQZXL, lat =>   4, code => "---") &
 		cnfglat_record'(std => 2, reg => WWXL,  lat =>   4, code => "---") &
+
+		cnfglat_record'(std => 2, reg => WIDL,  lat =>   8, code => "---") &
 
 		-- DDR3 standard --
 		-------------------
@@ -300,13 +304,13 @@ package body xdr_param is
 		cnfglat_record'(std => 3, reg => DQZL,  lat =>    1, code => "---") &
 		cnfglat_record'(std => 3, reg => WWL,   lat =>   -3, code => "---") &
 
-		cnfglat_record'(std => 1, reg => RSTXL, lat =>   2, code => "---") &
-		cnfglat_record'(std => 1, reg => RWXL,  lat => 4*0, code => "---") &
-		cnfglat_record'(std => 1, reg => DQSZXL, lat => 4*2, code => "---") &
-		cnfglat_record'(std => 1, reg => DQSXL, lat =>   2, code => "---") &
-		cnfglat_record'(std => 1, reg => DQZXL, lat =>   1, code => "---") &
-		cnfglat_record'(std => 1, reg => WWXL,  lat =>   1, code => "---");
-
+		cnfglat_record'(std => 3, reg => RSTXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 3, reg => RWXL,  lat => 4*0, code => "---") &
+		cnfglat_record'(std => 3, reg => DQSZXL, lat => 4*2, code => "---") &
+		cnfglat_record'(std => 3, reg => DQSXL, lat =>   2, code => "---") &
+		cnfglat_record'(std => 3, reg => DQZXL, lat =>   1, code => "---") &
+		cnfglat_record'(std => 3, reg => WWXL,  lat =>   1, code => "---") &
+		cnfglat_record'(std => 2, reg => WIDL,  lat =>   8, code => "---");
 
 	function xdr_cnfglat (
 		constant std : positive;
