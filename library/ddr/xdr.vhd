@@ -269,14 +269,23 @@ begin
 		line_size   => line_size,
 		byte_size   => byte_size,
 
-		cl_cod =>  xdr_latcod(std, CL),
-		cl_tab =>  xdr_lattab(std, CL, word_size, byte_size, data_edges),
-		cwl_cod => xdr_latcod(std, CWL),
-		cwl_tab => xdr_lattab(std, CWL, word_size, byte_size, data_edges),
-		dqszl_tab => xdr_lattab(std, DQSZ, word_size, byte_size, data_edges),
-		dqsol_tab  => xdr_lattab(std, DQS,  word_size, byte_size, data_edges),
-		dqzl_tab  => xdr_lattab(std, DQZ,  word_size, byte_size, data_edges),
-		dwl_tab   => xdr_lattab(std, DW,   word_size, byte_size, data_edges))
+		CL_COD    => xdr_latcod(std, CL),
+		CWL_COD   => xdr_latcod(std, CWL),
+
+		STRL_TAB  => xdr_lattab(std, STRT, sclk_phases),
+		rwnl_tab  => xdr_lattab(std, RWNT,   sclk_phases),
+		DQSZL_TAB => xdr_lattab(std, DQSZT, sclk_phases),
+		DQSOL_TAB => xdr_lattab(std, DQST,  sclk_phases),
+		DQZL_TAB  => xdr_lattab(std, DQZT,  sclk_phases),
+		WWNL_TAB  => xdr_lattab(std, WWNT,   sclk_phases),
+
+		RSTX_LAT  => xdr_latency(std, RSTXL, 4/sclk_phases),
+		RWX_LAT   => xdr_latency(std, RWXL,  4/sclk_phases),
+		DQSZX_LAT => xdr_latency(std, DQSZXL, 4/sclk_phases),
+		DQSX_LAT  => xdr_latency(std, DQSXL, 4/sclk_phases),
+		DQZX_LAT  => xdr_latency(std, DQZXL, 4/sclk_phases),
+		WWNX_LAT  => xdr_latency(std, WWNXL, 4/sclk_phases),
+		WID_LAT   => xdr_latency(std, WIDL,  4/sclk_phases))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => sys_cwl,
