@@ -15,16 +15,22 @@ entity xdr_sch is
 		line_size : natural;
 		byte_size : natural;
 
-		cl_cod : std_logic_vector;
-		cl_tab : natural_vector;
+		CL_COD  : std_logic_vector;
+		CWL_COD : std_logic_vector;
 
-		cwl_cod : std_logic_vector;
-		cwl_tab : natural_vector;
-
-		dqszl_tab : natural_vector;
-		dqsol_tab : natural_vector;
-		dqzl_tab  : natural_vector;
-		dwl_tab   : natural_vector);
+		STR_TAB   : natural_vector;
+		RWN_TAB   : natural_vector;
+		DQSZL_TAB : natural_vector;
+		DQSOL_TAB : natural_vector;
+		DQZL_TAB  : natural_vector;
+		DWNL_TAB  : natural_vector;
+		RSTX_LAT  : natural;
+		RWX_LAT   : natural;
+		DQSZX_LAT : natural;
+		DQSX_LAT  : natural;
+		DQZX_LAT  : natural;
+		WWNX_LAT  : natural;
+		WID_LAT   : natural);
 	port (
 		sys_cl   : in  std_logic_vector;
 		sys_cwl  : in  std_logic_vector;
@@ -86,10 +92,10 @@ begin
 
 		lat_val  => sys_cl,
 		lat_cod => cl_cod,
-		lat_tab  => cl_tab,
+		lat_tab  => str_tab,
 		lat_sch => rpho,
-		lat_ext => 1,
-		lat_wid => 1);
+		lat_ext => RSTX_LAT,
+		lat_wid => WID_LAT);
 
 	xdr_dr <= xdr_task (
 		data_phases => data_phases,
@@ -99,8 +105,10 @@ begin
 
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
-		lat_tab => cl_tab,
-		lat_sch => rpho);
+		lat_tab => rwn_tab,
+		lat_sch => rpho,
+		lat_ext => RWX_LAT,
+		lat_wid => WID_LAT);
 
 	xdr_dqsz <= xdr_task (
 		data_phases => data_phases,
@@ -111,7 +119,9 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
-		lat_sch => wpho);
+		lat_sch => wpho,
+		lat_ext => DQSZX_LAT,
+		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
 		data_phases => data_phases,
@@ -122,7 +132,9 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqsol_tab,
-		lat_sch => wpho);
+		lat_sch => wpho,
+		lat_ext => DQSX_LAT,
+		lat_wid => WID_LAT);
 
 	xdr_dqz <= xdr_task (
 		data_phases => data_phases,
@@ -133,7 +145,9 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
-		lat_sch => wpho);
+		lat_sch => wpho,
+		lat_ext => DQZX_LAT,
+		lat_wid => WID_LAT);
 
 	xdr_dw <= xdr_task (
 		data_phases => data_phases,
@@ -142,7 +156,9 @@ begin
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => dwl_tab,
-		lat_sch => wpho);
+		lat_cod => CWL_COD,
+		lat_tab => DWNL_TAB,
+		lat_sch => wpho,
+		lat_ext => WWNX_LAT,
+		lat_wid => WID_LAT);
 end;
