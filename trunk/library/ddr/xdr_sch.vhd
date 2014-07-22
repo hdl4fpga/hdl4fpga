@@ -18,14 +18,14 @@ entity xdr_sch is
 		CL_COD  : std_logic_vector;
 		CWL_COD : std_logic_vector;
 
-		STR_TAB   : natural_vector;
-		RWN_TAB   : natural_vector;
+		STRL_TAB   : natural_vector;
+		RWNL_TAB   : natural_vector;
 		DQSZL_TAB : natural_vector;
 		DQSOL_TAB : natural_vector;
 		DQZL_TAB  : natural_vector;
-		DWNL_TAB  : natural_vector;
-		RSTX_LAT  : natural;
-		RWX_LAT   : natural;
+		WWNL_TAB  : natural_vector;
+		STRX_LAT  : natural;
+		RWNX_LAT   : natural;
 		DQSZX_LAT : natural;
 		DQSX_LAT  : natural;
 		DQZX_LAT  : natural;
@@ -92,9 +92,9 @@ begin
 
 		lat_val  => sys_cl,
 		lat_cod => cl_cod,
-		lat_tab  => str_tab,
+		lat_tab  => strl_tab,
 		lat_sch => rpho,
-		lat_ext => RSTX_LAT,
+		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
 
 	xdr_dr <= xdr_task (
@@ -105,9 +105,9 @@ begin
 
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
-		lat_tab => rwn_tab,
+		lat_tab => rwnl_tab,
 		lat_sch => rpho,
-		lat_ext => RWX_LAT,
+		lat_ext => RWNX_LAT,
 		lat_wid => WID_LAT);
 
 	xdr_dqsz <= xdr_task (
@@ -157,7 +157,7 @@ begin
 
 		lat_val => sys_cwl,
 		lat_cod => CWL_COD,
-		lat_tab => DWNL_TAB,
+		lat_tab => WWNL_TAB,
 		lat_sch => wpho,
 		lat_ext => WWNX_LAT,
 		lat_wid => WID_LAT);

@@ -233,11 +233,11 @@ begin
 		lWR  => to_xdrlatency(tCP, M6T, tWR,  word_size, byte_size),
 		lRP  => to_xdrlatency(tCP, M6T, tRP,  word_size, byte_size),
 		bl_cod => xdr_latcod(std, BL),
-		bl_tab => xdr_lattab(std, BL, word_size, byte_size),
+		bl_tab => xdr_lattab(std, BL),
 		cl_cod => xdr_latcod(std, CL),
-		cl_tab => xdr_lattab(std, CL, word_size, byte_size),
+		cl_tab => xdr_lattab(std, CL),
 		cwl_cod => xdr_latcod(std, CWL),
-		cwl_tab => xdr_lattab(std, CWL, word_size, byte_size))
+		cwl_tab => xdr_lattab(std, CWL))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
@@ -259,8 +259,8 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
---		sclk_phases : natural := 4;
---		sclk_edges  : natural := 2;
+		sclk_phases => sclk_phases,
+		sclk_edges => sclk_edges,
 --		dqso_phases => dqso_phases,
 --		dqso_edges  => dqso_edges,
 
@@ -273,14 +273,14 @@ begin
 		CWL_COD   => xdr_latcod(std, CWL),
 
 		STRL_TAB  => xdr_lattab(std, STRT, sclk_phases),
-		rwnl_tab  => xdr_lattab(std, RWNT,   sclk_phases),
+		RWNL_tab  => xdr_lattab(std, RWNT,   sclk_phases),
 		DQSZL_TAB => xdr_lattab(std, DQSZT, sclk_phases),
 		DQSOL_TAB => xdr_lattab(std, DQST,  sclk_phases),
 		DQZL_TAB  => xdr_lattab(std, DQZT,  sclk_phases),
 		WWNL_TAB  => xdr_lattab(std, WWNT,   sclk_phases),
 
-		RSTX_LAT  => xdr_latency(std, RSTXL, 4/sclk_phases),
-		RWX_LAT   => xdr_latency(std, RWXL,  4/sclk_phases),
+		STRX_LAT  => xdr_latency(std, STRXL, 4/sclk_phases),
+		RWNX_LAT   => xdr_latency(std, RWNXL,  4/sclk_phases),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, 4/sclk_phases),
 		DQSX_LAT  => xdr_latency(std, DQSXL, 4/sclk_phases),
 		DQZX_LAT  => xdr_latency(std, DQZXL, 4/sclk_phases),
