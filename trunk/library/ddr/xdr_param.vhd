@@ -41,8 +41,8 @@ package xdr_param is
 	type tmrk_ids is (ANY, M6T, M107);
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
-	type cltabs_ids  is (STRT,  RWNT, DQSZT, DQST,  DQZT);
-	type cwltabs_ids is (WWNT);
+	type cltabs_ids  is (STRT,  RWNT);
+	type cwltabs_ids is (WWNT, DQSZT, DQST,  DQZT);
 	type laty_ids is (ANY, cDLL, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
 		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL);
 
@@ -264,7 +264,7 @@ package body xdr_param is
 		cnfglat_record'(std => 2, reg => BL,  lat =>  4, code => "010") &
 		cnfglat_record'(std => 2, reg => BL,  lat =>  8, code => "011") &
 
-		-- WRL register --
+		-- CWL register --
 
 		cnfglat_record'(std => 2, reg => WRL, lat =>  4*2, code => "001") &
 		cnfglat_record'(std => 2, reg => WRL, lat =>  4*3, code => "010") &
@@ -273,10 +273,6 @@ package body xdr_param is
 		cnfglat_record'(std => 2, reg => WRL, lat =>  4*6, code => "101") &
 		cnfglat_record'(std => 2, reg => WRL, lat =>  4*7, code => "110") &
 		cnfglat_record'(std => 2, reg => WRL, lat =>  4*8, code => "111") &
-
-		-- CWL register --
-
-		cnfglat_record'(std => 2, reg => CWL, lat =>  4*1, code => "---") &
 
 		-- DDR3 standard --
 		-------------------
@@ -469,9 +465,32 @@ package body xdr_param is
 		return natural_vector is
 		type latid_vector is array (cltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := 
-			(STRT => STRL, RWNT => RWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
+			(STRT => STRL, RWNT => RWNL);
 		constant tab : natural_vector := xdr_lattab(std, CL, phs);
 		constant lat : integer := xdr_latency(std, tab2laty(tabid));
+		variable val : natural_vector(tab'range);
+		variable msg : line;
+	begin
+		write (msg, string'("lat : "));
+		write (msg, lat);
+		for i in tab'range loop
+			write (msg, string'(", tab : "));
+			write (msg, tab(i));
+			val(i) := tab(i)+lat;
+		end loop;
+		writeline(output, msg);
+		return val;
+	end;
+
+	impure function xdr_lattab (
+		constant std : natural;
+		constant tabid : cwltabs_ids;
+		constant phs : natural := 1)
+		return natural_vector is
+		type latid_vector is array (cwltabs_ids) of laty_ids;
+		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
+		constant tab : natural_vector := xdr_lattab(std, CWL, phs);
+		constant lat : integer := xdr_latency(std, tab2laty(tabid), 1);
 		variable val : natural_vector(tab'range);
 		variable msg : line;
 	begin
@@ -483,29 +502,6 @@ package body xdr_param is
 		writeline(output, msg);
 			val(i) := tab(i)+lat;
 		end loop;
-		return val;
-	end;
-
-	impure function xdr_lattab (
-		constant std : natural;
-		constant tabid : cwltabs_ids;
-		constant phs : natural := 1)
-		return natural_vector is
-		type latid_vector is array (cwltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := (WWNT => WWNL);
-		constant tab : natural_vector := xdr_lattab(std, CWL, phs);
-		constant lat : integer := xdr_latency(std, tab2laty(tabid));
-		variable val : natural_vector(tab'range);
-		variable msg : line;
-	begin
-		write (msg, string'("lat : "));
-		write (msg, lat);
-		for i in tab'range loop
-			write (msg, tab(i));
-			val(i) := tab(i)+lat;
-		end loop;
-		write (msg, string'("xxxxxxxxxxxxxxxx : "));
-		writeline(output, msg);
 		return val;
 	end;
 
@@ -548,7 +544,6 @@ package body xdr_param is
 		variable disp_quo : natural;
 		variable pha : natural;
 		variable aux : std_logic;
-		variable sel_sch : word_vector(lat_cod'range);
 
 		constant word_byte : natural := word_size/byte_size;
 		function to_latwordvector(
@@ -565,7 +560,7 @@ package body xdr_param is
 		end;
 
 		function select_lat (
-			constant lat_val  : std_logic_vector;
+			constant lat_val : std_logic_vector;
 			constant lat_cod : latword_vector;
 			constant lat_sch : word_vector)
 			return std_logic_vector is
@@ -581,7 +576,8 @@ package body xdr_param is
 			end loop;
 			return val;
 		end;
-
+		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
+		variable sel_sch : word_vector(lat_cod1'range);
 	begin
 		sel_sch := (others => (others => '-'));
 		setup_l : for i in 0 to lat_tab'length-1 loop
@@ -597,7 +593,7 @@ package body xdr_param is
 				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
 		end loop;
-		return select_lat(lat_val, to_latwordvector(lat_cod), sel_sch);
+		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
 end package body;
