@@ -69,7 +69,7 @@ package xdr_param is
 		constant std   : natural;
 		constant param : laty_ids;
 		constant unit  : natural := 1)
-		return natural;
+		return integer;
 
 	function xdr_query_size (
 		constant std : natural;
@@ -99,19 +99,19 @@ package xdr_param is
 		constant data_edges : natural := 1)
 		return natural;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant tabid : cwltabs_ids;
 		constant phs : natural := 1)
@@ -253,11 +253,11 @@ package body xdr_param is
 
 		-- CL register --
 
-		cnfglat_record'(std => 2, reg => CL,  lat =>  2*3, code => "011") &
-		cnfglat_record'(std => 2, reg => CL,  lat =>  2*4, code => "100") &
-		cnfglat_record'(std => 2, reg => CL,  lat =>  2*5, code => "101") &
-		cnfglat_record'(std => 2, reg => CL,  lat =>  2*6, code => "110") &
-		cnfglat_record'(std => 2, reg => CL,  lat =>  2*7, code => "111") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4*3, code => "011") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4*4, code => "100") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4*5, code => "101") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4*6, code => "110") &
+		cnfglat_record'(std => 2, reg => CL,  lat =>  4*7, code => "111") &
 
 		-- BL register --
 
@@ -266,30 +266,30 @@ package body xdr_param is
 
 		-- WRL register --
 
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*2, code => "001") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*3, code => "010") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*4, code => "011") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*5, code => "100") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*6, code => "101") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*7, code => "110") &
-		cnfglat_record'(std => 2, reg => WRL, lat =>  2*8, code => "111") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*2, code => "001") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*3, code => "010") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*4, code => "011") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*5, code => "100") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*6, code => "101") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*7, code => "110") &
+		cnfglat_record'(std => 2, reg => WRL, lat =>  4*8, code => "111") &
 
 		-- CWL register --
 
-		cnfglat_record'(std => 2, reg => CWL, lat =>  2*1, code => "---") &
+		cnfglat_record'(std => 2, reg => CWL, lat =>  4*1, code => "---") &
 
 		-- DDR3 standard --
 		-------------------
 
 		-- CL register --
 
-		cnfglat_record'(std => 3, reg => CL, lat =>  2*5, code => "001") &
-		cnfglat_record'(std => 3, reg => CL, lat =>  2*6, code => "010") &
-		cnfglat_record'(std => 3, reg => CL, lat =>  2*7, code => "011") &
-		cnfglat_record'(std => 3, reg => CL, lat =>  2*8, code => "100") &
-		cnfglat_record'(std => 3, reg => CL, lat =>  2*9, code => "101") &
-		cnfglat_record'(std => 3, reg => CL, lat => 2*10, code => "110") &
-		cnfglat_record'(std => 3, reg => CL, lat => 2*11, code => "111") &
+		cnfglat_record'(std => 3, reg => CL, lat =>  4*5, code => "001") &
+		cnfglat_record'(std => 3, reg => CL, lat =>  4*6, code => "010") &
+		cnfglat_record'(std => 3, reg => CL, lat =>  4*7, code => "011") &
+		cnfglat_record'(std => 3, reg => CL, lat =>  4*8, code => "100") &
+		cnfglat_record'(std => 3, reg => CL, lat =>  4*9, code => "101") &
+		cnfglat_record'(std => 3, reg => CL, lat => 4*10, code => "110") &
+		cnfglat_record'(std => 3, reg => CL, lat => 4*11, code => "111") &
 
 		-- BL register --
 
@@ -299,19 +299,19 @@ package body xdr_param is
 
 		-- WRL register --
 
-		cnfglat_record'(std => 3, reg => WRL, lat =>  2*5, code => "001") &
-		cnfglat_record'(std => 3, reg => WRL, lat =>  2*6, code => "010") &
-		cnfglat_record'(std => 3, reg => WRL, lat =>  2*7, code => "011") &
-		cnfglat_record'(std => 3, reg => WRL, lat =>  2*8, code => "100") &
-		cnfglat_record'(std => 3, reg => WRL, lat => 2*10, code => "101") &
-		cnfglat_record'(std => 3, reg => WRL, lat => 2*12, code => "110") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  4*5, code => "001") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  4*6, code => "010") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  4*7, code => "011") &
+		cnfglat_record'(std => 3, reg => WRL, lat =>  4*8, code => "100") &
+		cnfglat_record'(std => 3, reg => WRL, lat => 4*10, code => "101") &
+		cnfglat_record'(std => 3, reg => WRL, lat => 4*12, code => "110") &
 
 		-- CWL register --
 
-		cnfglat_record'(std => 3, reg => CWL, lat =>  2*5, code => "000") &
-		cnfglat_record'(std => 3, reg => CWL, lat =>  2*6, code => "001") &
-		cnfglat_record'(std => 3, reg => CWL, lat =>  2*7, code => "010") &
-		cnfglat_record'(std => 3, reg => CWL, lat =>  2*8, code => "011");
+		cnfglat_record'(std => 3, reg => CWL, lat =>  4*5, code => "000") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  4*6, code => "001") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  4*7, code => "010") &
+		cnfglat_record'(std => 3, reg => CWL, lat =>  4*8, code => "011");
 
 	function xdr_cnfglat (
 		constant std : positive;
@@ -362,7 +362,7 @@ package body xdr_param is
 		constant std   : natural;
 		constant param : laty_ids; 
 		constant unit : natural := 1) 
-		return natural is
+		return integer is
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).std = std then
@@ -447,7 +447,7 @@ package body xdr_param is
 		return query_data;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
@@ -462,7 +462,7 @@ package body xdr_param is
 		return lattab;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
@@ -473,27 +473,39 @@ package body xdr_param is
 		constant tab : natural_vector := xdr_lattab(std, CL, phs);
 		constant lat : integer := xdr_latency(std, tab2laty(tabid));
 		variable val : natural_vector(tab'range);
+		variable msg : line;
 	begin
+		write (msg, string'("lat : "));
+		write (msg, lat);
 		for i in tab'range loop
+			write (msg, string'(", tab : "));
+			write (msg, tab(i));
+		writeline(output, msg);
 			val(i) := tab(i)+lat;
 		end loop;
 		return val;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant std : natural;
 		constant tabid : cwltabs_ids;
 		constant phs : natural := 1)
 		return natural_vector is
 		type latid_vector is array (cwltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (WWNT => WWNL);
-		constant tab : natural_vector := xdr_lattab(std, CL, phs);
+		constant tab : natural_vector := xdr_lattab(std, CWL, phs);
 		constant lat : integer := xdr_latency(std, tab2laty(tabid));
 		variable val : natural_vector(tab'range);
+		variable msg : line;
 	begin
+		write (msg, string'("lat : "));
+		write (msg, lat);
 		for i in tab'range loop
+			write (msg, tab(i));
 			val(i) := tab(i)+lat;
 		end loop;
+		write (msg, string'("xxxxxxxxxxxxxxxx : "));
+		writeline(output, msg);
 		return val;
 	end;
 

@@ -25,7 +25,7 @@ entity xdr_sch is
 		DQZL_TAB  : natural_vector;
 		WWNL_TAB  : natural_vector;
 		STRX_LAT  : natural;
-		RWNX_LAT   : natural;
+		RWNX_LAT  : natural;
 		DQSZX_LAT : natural;
 		DQSX_LAT  : natural;
 		DQZX_LAT  : natural;
