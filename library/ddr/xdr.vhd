@@ -311,7 +311,7 @@ begin
 		aux := (others => '-');
 		for i in 0 to word_size/byte_size-1 loop
 			aux := aux sll xdr_sch_dqs'length;
-			aux(xdr_sch_dqs'range) := xdr_sch_dqs;
+			aux(xdr_sch_dqs'reverse_range) := xdr_sch_dqs;
 		end loop;
 		xdr_dqo <= aux;
 	end process;
