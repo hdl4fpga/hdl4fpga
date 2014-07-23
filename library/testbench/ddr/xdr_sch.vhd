@@ -5,16 +5,20 @@ use ieee.std_logic_textio.all;
 
 use std.textio.all;
 library hdl4fpga;
+use hdl4fpga.xdr_param.all;
 
 architecture xdr_sch of testbench is
-	constant data_phases : natural := 4;
+	constant std : natural := 2;
+	constant data_phases : natural := 2;
 	constant data_edges  : natural := 2;
+	constant sclk_phases : natural := 4;
+	constant sclk_edges  : natural := 2;
 	constant period : time := 4 ns;
-	constant word_size : natural := 1;
+	constant line_size : natural := 1;
 	constant byte_size : natural := 1;
 
 	signal clk : std_logic := '0';
-	signal sys_clks : std_logic_vector(0 to data_phases/data_edges-1);
+	signal sys_clks : std_logic_vector(0 to sclk_phases/sclk_edges-1);
 	signal sys_rea : std_logic := '0';
 begin
 	clk <= not clk after period/2;
@@ -29,26 +33,36 @@ begin
 		end if;
 
 		for i in sys_clks'range loop
-			sys_clks(i) <= transport clk after (i*period/data_edges)/sys_clks'length;
+			sys_clks(i) <= transport clk after (i*period/sclk_edges)/sys_clks'length;
 		end loop;
 	end process;
 
 	du : entity hdl4fpga.xdr_sch
 	generic map (
-        sclk_phases => 4,  
-        sclk_edges => 2,
+		sclk_phases => sclk_phases,
+		sclk_edges => sclk_edges,
 		data_phases => data_phases,
-		data_edges => data_edges,
-		line_size => word_size,
-		byte_size => byte_size,
-        cl_cod => "101",
-        cwl_cod => "101",
-        cl_tab =>  (0 to 0 => 2*data_phases),
-        cwl_tab =>  (0 to 0 => 2*data_phases),
-        dqszl_tab =>  (0 to 0 => 2*data_phases),
-        dqsol_tab =>  (0 to 0 => 2*data_phases),
-        dqzl_tab =>  (0 to 0 => 2*data_phases),
-        dwl_tab =>  (0 to 0 => 2*data_phases))
+		data_edges  => data_edges,
+		line_size   => line_size,
+		byte_size   => byte_size,
+
+		CL_COD    => xdr_latcod(std, CL),
+		CWL_COD   => xdr_latcod(std, CWL),
+
+		STRL_TAB  => xdr_lattab(std, STRT,  sclk_phases),
+		RWNL_tab  => xdr_lattab(std, RWNT,  sclk_phases),
+		DQSZL_TAB => xdr_lattab(std, DQSZT, sclk_phases),
+		DQSOL_TAB => xdr_lattab(std, DQST,  sclk_phases),
+		DQZL_TAB  => xdr_lattab(std, DQZT,  sclk_phases),
+		WWNL_TAB  => xdr_lattab(std, WWNT,  sclk_phases),
+
+		STRX_LAT  => xdr_latency(std, STRXL, 4/sclk_phases),
+		RWNX_LAT  => xdr_latency(std, RWNXL, 4/sclk_phases),
+		DQSZX_LAT => xdr_latency(std, DQSZXL, 4/sclk_phases),
+		DQSX_LAT  => xdr_latency(std, DQSXL, 4/sclk_phases),
+		DQZX_LAT  => xdr_latency(std, DQZXL, 4/sclk_phases),
+		WWNX_LAT  => xdr_latency(std, WWNXL, 4/sclk_phases),
+		WID_LAT   => xdr_latency(std, WIDL,  4/sclk_phases))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
