@@ -28,10 +28,10 @@ entity xdr is
 		byte_size : natural :=  8);
 
 	port (
-		sys_bl : in std_logic_vector;
-		sys_cl : in std_logic_vector;
-		sys_cwl : in std_logic_vector;
-		sys_wr : in std_logic_vector;
+		sys_bl : in std_logic_vector(2 downto 0);
+		sys_cl : in std_logic_vector(2 downto 0);
+		sys_cwl : in std_logic_vector(2 downto 0);
+		sys_wr : in std_logic_vector(2 downto 0);
 
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
@@ -120,12 +120,12 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_dr : std_logic_vector(0 to (line_size/word_size)*2*data_phases-1);
-	signal xdr_sch_dw : std_logic_vector(xdr_sch_dr'range);
-	signal xdr_sch_st : std_logic_vector(xdr_sch_dr'range);
-	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dr'range);
-	signal xdr_sch_dqsz : std_logic_vector(xdr_sch_dr'range);
-	signal xdr_sch_dqs : std_logic_vector(xdr_sch_dr'range);
+	signal xdr_sch_rwn : std_logic_vector(0 to (line_size/word_size)*2*data_phases-1);
+	signal xdr_sch_wwn : std_logic_vector(xdr_sch_rwn'range);
+	signal xdr_sch_st : std_logic_vector(xdr_sch_rwn'range);
+	signal xdr_sch_dqz : std_logic_vector(xdr_sch_rwn'range);
+	signal xdr_sch_dqsz : std_logic_vector(xdr_sch_rwn'range);
+	signal xdr_sch_dqs : std_logic_vector(xdr_sch_rwn'range);
 
 	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
@@ -134,6 +134,8 @@ architecture mix of xdr is
 	signal xdr_wr_fifo_ena : std_logic_vector(data_phases-1 downto 0);
 	signal xdr_wr_dm : std_logic_vector(sys_dm'range);
 	signal xdr_wr_dq : std_logic_vector(sys_di'range);
+
+	signal xdr_cwl : std_logic_vector(sys_cwl'range);
 
 	signal rst : std_logic;
 
@@ -168,6 +170,8 @@ begin
 		dll_timer_rdy => dll_timer_rdy,
 		ref_timer_req => xdr_cfg_rdy,
 		ref_timer_rdy => xdr_mpu_ref);
+
+	xdr_cwl <= sys_cl when std=2 else sys_cwl;
 
 	xdr_cfg_du : entity hdl4fpga.xdr_cfg(ddr1)
 	generic map (
@@ -236,12 +240,12 @@ begin
 		bl_tab => xdr_lattab(std, BL),
 		cl_cod => xdr_latcod(std, CL),
 		cl_tab => xdr_lattab(std, CL),
-		cwl_cod => xdr_latcod(std, CWL),
-		cwl_tab => xdr_lattab(std, CWL))
+		cwl_cod => xdr_latcod(std, xdr_selcwl(std)),
+		cwl_tab => xdr_lattab(std, xdr_selcwl(std)))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
-		xdr_mpu_cwl => sys_cwl,
+		xdr_mpu_cwl => xdr_cwl,
 
 		xdr_mpu_rst => xdr_mpu_rst,
 		xdr_mpu_clk => sys_clks(0),
@@ -273,14 +277,14 @@ begin
 		CWL_COD   => xdr_latcod(std, CWL),
 
 		STRL_TAB  => xdr_lattab(std, STRT, sclk_phases),
-		RWNL_tab  => xdr_lattab(std, RWNT,   sclk_phases),
+		RWNL_tab  => xdr_lattab(std, RWNT, sclk_phases),
 		DQSZL_TAB => xdr_lattab(std, DQSZT, sclk_phases),
-		DQSOL_TAB => xdr_lattab(std, DQST,  sclk_phases),
-		DQZL_TAB  => xdr_lattab(std, DQZT,  sclk_phases),
-		WWNL_TAB  => xdr_lattab(std, WWNT,   sclk_phases),
+		DQSOL_TAB => xdr_lattab(std, DQST, sclk_phases),
+		DQZL_TAB  => xdr_lattab(std, DQZT, sclk_phases),
+		WWNL_TAB  => xdr_lattab(std, WWNT, sclk_phases),
 
 		STRX_LAT  => xdr_latency(std, STRXL, 4/sclk_phases),
-		RWNX_LAT   => xdr_latency(std, RWNXL,  4/sclk_phases),
+		RWNX_LAT  => xdr_latency(std, RWNXL, 4/sclk_phases),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, 4/sclk_phases),
 		DQSX_LAT  => xdr_latency(std, DQSXL, 4/sclk_phases),
 		DQZX_LAT  => xdr_latency(std, DQZXL, 4/sclk_phases),
@@ -288,18 +292,18 @@ begin
 		WID_LAT   => xdr_latency(std, WIDL,  4/sclk_phases))
 	port map (
 		sys_cl   => sys_cl,
-		sys_cwl  => sys_cwl,
+		sys_cwl  => xdr_cwl,
 		sys_clks => sys_clks,
 		sys_rea  => xdr_mpu_rwin,
 		sys_wri  => xdr_mpu_wwin,
 
-		xdr_dr => xdr_sch_dr,
-		xdr_st => xdr_sto,
+		xdr_rwn => xdr_sch_rwn,
+		xdr_st  => xdr_sto,
 
 		xdr_dqsz => xdr_sch_dqsz,
-		xdr_dqs => xdr_sch_dqs,
-		xdr_dqz => xdr_sch_dqz,
-		xdr_dw  => xdr_sch_dw);
+		xdr_dqs  => xdr_sch_dqs,
+		xdr_dqz  => xdr_sch_dqz,
+		xdr_wwn  => xdr_sch_wwn);
 
 	process (xdr_sch_dqs)
 		variable aux : std_logic_vector(xdr_dqso'range);
@@ -312,8 +316,8 @@ begin
 		xdr_dqo <= aux;
 	end process;
 
-	xdr_win_dqs <= (others => xdr_sch_dr(0));
-	xdr_win_dq  <= (others => xdr_sch_dr(0));
+	xdr_win_dqs <= (others => xdr_sch_rwn(0));
+	xdr_win_dq  <= (others => xdr_sch_rwn(0));
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
 --		dqsi_phases => dqsi_phases,

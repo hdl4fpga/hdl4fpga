@@ -24,12 +24,14 @@ entity xdr_sch is
 		DQSOL_TAB : natural_vector;
 		DQZL_TAB  : natural_vector;
 		WWNL_TAB  : natural_vector;
+
 		STRX_LAT  : natural;
 		RWNX_LAT  : natural;
 		DQSZX_LAT : natural;
 		DQSX_LAT  : natural;
 		DQZX_LAT  : natural;
 		WWNX_LAT  : natural;
+
 		WID_LAT   : natural);
 	port (
 		sys_cl   : in  std_logic_vector;
@@ -38,14 +40,14 @@ entity xdr_sch is
 		sys_rea  : in  std_logic;
 		sys_wri  : in  std_logic;
 
-		xdr_dr : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_st : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_rwn : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_st  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 
 		xdr_dqsz : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_dqs : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_dqs  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 
-		xdr_dqz : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_dw  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
+		xdr_dqz  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_wwn  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
 
 	constant delay_size : natural := 256;
 
@@ -65,7 +67,6 @@ architecture def of xdr_sch is
 
 	signal rphi : std_logic;
 	signal rpho : std_logic_vector(0 to delay_size);
-
 
 begin
 	
@@ -97,7 +98,7 @@ begin
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
 
-	xdr_dr <= xdr_task (
+	xdr_rwn <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		word_size => line_size,
@@ -149,14 +150,14 @@ begin
 		lat_ext => DQZX_LAT,
 		lat_wid => WID_LAT);
 
-	xdr_dw <= xdr_task (
+	xdr_wwn <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		word_size => line_size,
 		byte_size => byte_size,
 
 		lat_val => sys_cwl,
-		lat_cod => CWL_COD,
+		lat_cod => cwl_cod,
 		lat_tab => WWNL_TAB,
 		lat_sch => wpho,
 		lat_ext => WWNX_LAT,

@@ -99,19 +99,19 @@ package xdr_param is
 		constant data_edges : natural := 1)
 		return natural;
 
-	impure function xdr_lattab (
+	function xdr_lattab (
 		constant std : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	impure function xdr_lattab (
+	function xdr_lattab (
 		constant std : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	impure function xdr_lattab (
+	function xdr_lattab (
 		constant std : natural;
 		constant tabid : cwltabs_ids;
 		constant phs : natural := 1)
@@ -134,6 +134,10 @@ package xdr_param is
 		constant lat_ext : natural := 0;
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
+
+	function xdr_selcwl (
+		constant std : natural)
+		return latr_ids;
 
 end package;
 
@@ -162,13 +166,13 @@ package body xdr_param is
 	type latency_tab is array (positive range <>) of latency_record;
 
 	constant latency_db : latency_tab  := 
-		latency_record'(std => 1, param => cDLL, value =>  200) &
-		latency_record'(std => 1, param => STRL, value =>  4*0) &
-		latency_record'(std => 1, param => RWNL, value =>  4*0) &
+		latency_record'(std => 1, param => cDLL,  value => 200) &
+		latency_record'(std => 1, param => STRL,  value => 4*0) &
+		latency_record'(std => 1, param => RWNL,  value => 4*0) &
 		latency_record'(std => 1, param => DQSZL, value => 4*2) &
-		latency_record'(std => 1, param => DQSL, value =>    2) &
-		latency_record'(std => 1, param => DQZL, value =>    1) &
-		latency_record'(std => 1, param => WWNL, value =>    1) &
+		latency_record'(std => 1, param => DQSL,  value =>   2) &
+		latency_record'(std => 1, param => DQZL,  value =>   1) &
+		latency_record'(std => 1, param => WWNL,  value =>   1) &
 		latency_record'(std => 1, param => STRXL, value =>   2) &
 		latency_record'(std => 1, param => RWNXL, value => 4*0) &
 		latency_record'(std => 1, param => DQSZXL, value =>  2) &
@@ -177,7 +181,7 @@ package body xdr_param is
 		latency_record'(std => 1, param => WWNXL, value =>   1) &
 		latency_record'(std => 1, param => WIDL,  value =>   4) &
 
-		latency_record'(std => 2, param => cDLL, value =>  200) &
+		latency_record'(std => 2, param => cDLL,  value => 200) &
 		latency_record'(std => 2, param => STRL,  value =>  -3) &
 		latency_record'(std => 2, param => RWNL,  value =>   8) &
 		latency_record'(std => 2, param => DQSZL, value =>  -8) &
@@ -192,7 +196,7 @@ package body xdr_param is
 		latency_record'(std => 2, param => WWNXL, value =>   4) &
 		latency_record'(std => 2, param => WIDL,  value =>   8) &
 
-		latency_record'(std => 3, param => cDLL, value =>  500) &
+		latency_record'(std => 3, param => cDLL,  value => 500) &
 		latency_record'(std => 3, param => STRL,  value => 4*0) &
 		latency_record'(std => 3, param => RWNL,  value => 4*2) &
 		latency_record'(std => 3, param => DQSZL, value =>  -2) &
@@ -443,7 +447,7 @@ package body xdr_param is
 		return query_data;
 	end;
 
-	impure function xdr_lattab (
+	function xdr_lattab (
 		constant std : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
@@ -458,51 +462,53 @@ package body xdr_param is
 		return lattab;
 	end;
 
-	impure function xdr_lattab (
+	function xdr_lattab (
 		constant std : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
 		return natural_vector is
+
 		type latid_vector is array (cltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := 
-			(STRT => STRL, RWNT => RWNL);
-		constant tab : natural_vector := xdr_lattab(std, CL, phs);
+		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
+
 		constant lat : integer := xdr_latency(std, tab2laty(tabid));
+		constant tab : natural_vector := xdr_lattab(std, CL, phs);
 		variable val : natural_vector(tab'range);
-		variable msg : line;
+
 	begin
-		write (msg, string'("lat : "));
-		write (msg, lat);
 		for i in tab'range loop
-			write (msg, string'(", tab : "));
-			write (msg, tab(i));
 			val(i) := tab(i)+lat;
 		end loop;
-		writeline(output, msg);
 		return val;
 	end;
 
-	impure function xdr_lattab (
-		constant std : natural;
+	function xdr_lattab (
+		constant std   : natural;
 		constant tabid : cwltabs_ids;
-		constant phs : natural := 1)
+		constant phs   : natural := 1)
 		return natural_vector is
+
 		type latid_vector is array (cwltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
-		constant tab : natural_vector := xdr_lattab(std, CWL, phs);
-		constant lat : integer := xdr_latency(std, tab2laty(tabid), 1);
-		variable val : natural_vector(tab'range);
-		variable msg : line;
+
+		constant lat    : integer := xdr_latency(std, tab2laty(tabid), 1);
+		constant cltab  : natural_vector := xdr_lattab(std, CL, phs);
+		variable clval  : natural_vector(cltab'range);
+		constant cwltab : natural_vector := xdr_lattab(std, CWL, phs);
+		variable cwlval : natural_vector(cwltab'range);
+
 	begin
-		write (msg, string'("lat : "));
-		write (msg, lat);
-		for i in tab'range loop
-			write (msg, string'(", tab : "));
-			write (msg, tab(i));
-		writeline(output, msg);
-			val(i) := tab(i)+lat;
-		end loop;
-		return val;
+		if std = 2 then
+			for i in cltab'range loop
+				clval(i) := cltab(i)+lat-4;
+			end loop;
+			return clval;
+		else
+			for i in cwltab'range loop
+				cwlval(i) := cwltab(i)+lat;
+			end loop;
+			return cwlval;
+		end if;
 	end;
 
 	function xdr_latcod (
@@ -594,6 +600,17 @@ package body xdr_param is
 			end loop;
 		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
+	end;
+
+	function xdr_selcwl (
+		constant std : natural)
+		return latr_ids is
+	begin
+		if std = 2 then
+			return CL;
+		else
+			return CWL;
+		end if;
 	end;
 
 end package body;
