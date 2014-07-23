@@ -46,8 +46,8 @@ begin
 		line_size   => line_size,
 		byte_size   => byte_size,
 
-		CL_COD    => xdr_latcod(std, CL),
-		CWL_COD   => xdr_latcod(std, CWL),
+		CL_COD    => xdr_latcod(std, xdr_selcwl(std)),
+		CWL_COD   => xdr_latcod(std, xdr_selcwl(std)),
 
 		STRL_TAB  => xdr_lattab(std, STRT,  sclk_phases),
 		RWNL_tab  => xdr_lattab(std, RWNT,  sclk_phases),
