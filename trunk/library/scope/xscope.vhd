@@ -16,7 +16,7 @@ entity scope is
 		data_size : natural := 16;
 		xd_len : natural;
 
-		tDDR : real);
+		tCP : time);
 	port (
 		sys_rst : in std_logic;
 		sys_ini : out std_logic;
@@ -41,8 +41,8 @@ entity scope is
 		ddr_dqi : in std_logic_vector(data_size-1 downto 0);
 		ddr_dqo : out std_logic_vector(data_size-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_st_dqs : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_st_lp_dqs : in std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_sto : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_sti : in std_logic_vector(data_size/byte_size-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
@@ -447,39 +447,33 @@ begin
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		strobe => strobe,
-		tCP => tDDR,
-		std => ddr_std,
-
-		cl   => ddr_acdb(ddr_std).cl,
-		wr   => ddr_acdb(ddr_std).wr,
-		tMRD => ddr_acdb(ddr_std).tMRD,
-		tRCD => ddr_acdb(ddr_std).tRCD,
-		tRFC => ddr_acdb(ddr_std).tRFC,
-		tRP  => ddr_acdb(ddr_std).tRP,
-		tWR  => ddr_acdb(ddr_std).tWR,
+		tCP => tCP,
 
 		bank_bits => bank_size,
 		addr_bits => addr_size,
-		data_bytes => 2,
-		byte_bits => 8)
+		byte_size => 8)
 
 	port map (
-		sys_rst   => sys_rst,
-		sys_clk0  => ddrs_clk0,
-		sys_clk90 => ddrs_clk90,
+		sys_rst => sys_rst,
+		sys_bl  => "---",
+		sys_cl  => "---",
+		sys_cwl => "---",
+		sys_wr  => "---",
+		sys_clks(0) => ddrs_clk0,
+		sys_clks(1) => ddrs_clk90,
+		xdr_wclks(0) => ddrs_clk90,
 
-		sys_ini => ddrs_ini,
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
-		sys_rw  => ddrs_rw,
-		sys_ba  => ddrs_ba,
+		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
+		sys_rw  => ddrs_rw,
 		sys_act => ddrs_act,
 		sys_cas => ddrs_cas,
 		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di  => ddrs_di,
-		sys_do_rdy => ddrs_do_rdy,
+		sys_do_rdy(0) => ddrs_do_rdy,
 		sys_do  => ddrs_do,
 		sys_ref => ddrs_ref_req,
 
@@ -491,7 +485,7 @@ begin
 		xdr_we  => ddr_we,
 		xdr_ba  => ddr_ba,
 		xdr_a   => ddr_a,
-		xdr_dm  => ddr_dm,
+		xdr_dmo  => ddr_dm,
 		xdr_dqsz => ddr_dqsz,
 		xdr_dqsi => ddr_dqsi,
 		xdr_dqso => ddr_dqso,
@@ -500,7 +494,7 @@ begin
 		xdr_dqo => ddr_dqo,
 		xdr_odt => ddr_odt,
 
-		xdr_st_dqs => ddr_st_dqs,
-		xdr_st_lp_dqs => ddr_st_lp_dqs);
+		xdr_sti => ddr_sti,
+		xdr_sto => ddr_sto);
 	sys_ini <= ddrs_ini;
 end;
