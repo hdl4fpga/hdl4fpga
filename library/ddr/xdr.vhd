@@ -63,7 +63,7 @@ entity xdr is
 		xdr_ba  : out std_logic_vector(bank_bits-1 downto 0);
 		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
 		xdr_odt : out std_logic;
-		xdr_dmi : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector((word_size/byte_size)*data_phases*line_size/byte_size-1 downto 0) := (others => '-');

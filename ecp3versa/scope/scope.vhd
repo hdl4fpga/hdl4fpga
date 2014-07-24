@@ -18,7 +18,7 @@ architecture scope of ecp3versa is
 	constant data_bytes : natural := 2;
 	constant data_size : natural := data_bytes*byte_size;
 
-	constant uclk_period : real := 10.0;
+	constant uclk_period : time := 10.0 ns;
 
 	signal uclk : std_logic;
 	signal dcm_rst  : std_logic;
@@ -83,7 +83,7 @@ begin
 	generic map (
 		ddr_mul => ddr_mul,
 		ddr_div => ddr_div, 
-		sys_per => uclk_period)
+		sys_per => real(uclk_period/1 ns))
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => uclk,
@@ -102,13 +102,13 @@ begin
 		strobe  => "INTERNAL",
 		ddr_std => 3,
 		xd_len  => 8,
-		tDDR    => (uclk_period*real(ddr_div))/real(ddr_mul))
+		tCP    => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
 		sys_rst => scope_rst,
 
 		input_clk => input_clk,
 
-		ddr_st_lp_dqs => (others => '0'),
+		ddr_sti => (others => '0'),
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
 		ddr_rst => ddr3_rst,
@@ -176,11 +176,11 @@ begin
 		attribute oddrapps : string;
 		attribute oddrapps of oddrmdq : label is "SCLK_ALIGNED";
 	begin
-		oddrmdq : entity hdl4fpga.ddro
+		oddrmdq : entity hdl4fpga.oddr
 		port map (
 			clk => ddrs_clk0,
-			d(r) => '0',
-			d(f) => '1',
+			dr => '0',
+			df => '1',
 			q => ddr3_clk);
 	end block;
 
