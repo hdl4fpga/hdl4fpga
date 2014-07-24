@@ -16,27 +16,25 @@ entity xdr is
 
 		sclk_phases : natural := 4;
 		sclk_edges  : natural := 2;
-		dqsi_phases : natural := 2;
-		dqsi_edges  : natural := 2;
-		dqso_phases : natural := 2;
-		dqso_edges  : natural := 2;
 		data_phases : natural := 1;
 		data_edges  : natural := 1;
+		dqso_phases : natural := 4;
+		dqso_edges  : natural := 4;
 
-		line_size : natural := 32;
+		line_size : natural := 16;
 		word_size : natural := 16;
 		byte_size : natural :=  8);
 
 	port (
-		sys_bl : in std_logic_vector(2 downto 0);
-		sys_cl : in std_logic_vector(2 downto 0);
+		sys_bl  : in std_logic_vector(2 downto 0);
+		sys_cl  : in std_logic_vector(2 downto 0);
 		sys_cwl : in std_logic_vector(2 downto 0);
-		sys_wr : in std_logic_vector(2 downto 0);
+		sys_wr  : in std_logic_vector(2 downto 0);
 
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
-
 		sys_cfg_rdy : out std_logic;
+
 		sys_cmd_req : in  std_logic := '-';
 		sys_cmd_rdy : out std_logic;
 		sys_rw : in  std_logic := '0';
@@ -53,7 +51,6 @@ entity xdr is
 		sys_ref : out std_logic;
 
 		xdr_wclks : in std_logic_vector;
-
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
 		xdr_cs  : out std_logic;
@@ -66,7 +63,7 @@ entity xdr is
 		xdr_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector((word_size/byte_size)*data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqso : out std_logic_vector((word_size/byte_size)*dqso_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
