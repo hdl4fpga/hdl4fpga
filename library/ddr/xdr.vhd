@@ -16,10 +16,9 @@ entity xdr is
 
 		sclk_phases : natural := 4;
 		sclk_edges  : natural := 2;
-		data_phases : natural := 1;
-		data_edges  : natural := 1;
-		dqso_phases : natural := 4;
-		dqso_edges  : natural := 4;
+		data_phases : natural := 2;
+		data_edges  : natural := 2;
+		dqso_phases : natural := 2;
 
 		line_size : natural := 16;
 		word_size : natural := 16;
@@ -196,9 +195,9 @@ begin
 	xdrphy_odt <= dll_timer_rdy;
 	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_cfg_ras;
 	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_cfg_cas;
-	xdrphy_we <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
-	xdrphy_a <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
-	xdrphy_b <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
+	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
+	xdrphy_a   <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
+	xdrphy_b   <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
 
 	process (sys_clks(0))
 		variable q : std_logic;
@@ -262,8 +261,6 @@ begin
 	generic map (
 		sclk_phases => sclk_phases,
 		sclk_edges => sclk_edges,
---		dqso_phases => dqso_phases,
---		dqso_edges  => dqso_edges,
 
 		data_phases => data_phases,
 		data_edges  => data_edges,
@@ -302,16 +299,7 @@ begin
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
-	process (xdr_sch_dqs)
-		variable aux : std_logic_vector(xdr_dqso'range);
-	begin
-		aux := (others => '-');
-		for i in 0 to word_size/byte_size-1 loop
-			aux := aux sll xdr_sch_dqs'length;
-			aux(xdr_sch_dqs'reverse_range) := xdr_sch_dqs;
-		end loop;
-		xdr_dqo <= aux;
-	end process;
+	xdr_dqo <= xdr_combclks(xdr_sch_dqs, sclk_phases, dqso_phases);
 
 	xdr_win_dqs <= (others => xdr_sch_rwn(0));
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));

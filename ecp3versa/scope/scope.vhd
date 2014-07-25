@@ -143,6 +143,8 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
+	ddrphy_e : entity hdl4fpga.ddr3phy
+
 	ddr_dqsi_e : for i in ddr_dqsi'range generate
 		ddr3_dqs(i) <= ddr_dqso(i) when ddr_dqsz(i)='0' else 'Z';
 	end generate;

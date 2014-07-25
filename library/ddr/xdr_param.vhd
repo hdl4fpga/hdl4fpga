@@ -139,6 +139,12 @@ package xdr_param is
 		constant std : natural)
 		return latr_ids;
 
+	function xdr_combclks (
+		constant iclks : std_logic_vector;
+		constant iclks_phases : natural;
+		constant oclks_phases : natural)
+		return std_logic_vector;
+
 end package;
 
 library hdl4fpga;
@@ -611,6 +617,20 @@ package body xdr_param is
 		else
 			return CWL;
 		end if;
+	end;
+
+	function xdr_combclks (
+		constant iclks : std_logic_vector;
+		constant iclks_phases : natural;
+		constant oclks_phases : natural)
+		return std_logic_vector is
+		variable aux : std_logic_vector(0 to iclks'length-1) := iclks;
+		variable val : std_logic_vector(0 to iclks'length/(iclks_phases/oclks_phases)-1);
+	begin
+		for i in val'range loop
+			val(i) := aux(i*(iclks_phases/oclks_phases));
+		end loop;
+		return val;
 	end;
 
 end package body;
