@@ -79,9 +79,9 @@ architecture ecp3 of ddrphy is
 	signal dqst : std_logic_vector(data_size-1 downto 0);
 	
 	signal dqsdll_lock : std_logic;
-	signal dqsbuf_prmbdet : std_logic;
-	signal dqsbuf_ddrclkpol : std_logic;
-	signal dqsbuf_ddrlat : std_logic;
+	signal prmbdet : std_logic;
+	signal ddrclkpol : std_logic;
+	signal ddrlat : std_logic;
 	
 begin
 
@@ -161,23 +161,17 @@ begin
 		dqsdel => dqsi_delay,
 		lock => dqsdll_lock);
 
-	iddr_g : for i in 0 to cell_group-1 generate
-		attribute iddrapps : string;
-		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
-	begin
-		iddrx2d_i : iddrx2d
-		port map (
-			sclk => sys_sclk,
-			eclk => sys_eclk,
-			eclkdqsr => idqs_eclk,
-			ddrclkpol => dqsbuf_ddrclkpol,
-			ddrlat => dqsbuf_ddrlat,
-			d   => ddr_dqi(i),
-			qa0 => sys_do(i*cell_width*data_edges+data_edges*0+r),
-			qb0 => sys_do(i*cell_width*data_edges+data_edges*0+f),
-			qa1 => sys_do(i*cell_width*data_edges+data_edges*1+r),
-			qb1 => sys_do(i*cell_width*data_edges+data_edges*1+f));
-	end generate;
+	iddr_i : iddr
+	generic map (
+		data_size => line_size)
+	port map (
+		sclks(0) => sys_sclk,
+		sclks(1) => sys_eclk,
+		dclks(0) => idqs_eclk,
+		dclks(1) => ddrclkpol,
+		dclks(2) => ddrlat,
+		d => ddr_dqi(i),
+		q => sys_do);
 
 	dqsbufd_i : dqsbufd 
 	port map (
@@ -187,9 +181,9 @@ begin
 
 		sclk => sys_sclk,
 		read => sys_rw,
-		ddrclkpol => dqsbuf_ddrclkpol,
-		ddrlat  => dqsbuf_ddrlat,
-		prmbdet => dqsbuf_prmbdet,
+		ddrclkpol => ddrclkpol,
+		ddrlat  => ddrlat,
+		prmbdet => prmbdet,
 
 		eclk => sys_eclk,
 		datavalid => sys_cfgo(datavalid),
@@ -212,41 +206,40 @@ begin
 	oddrt_i : entity hdl4fpga.oddrt
 	port map (
 		sclk => sys_sclk,
-		ta => sys_dqst(data_edges*0+f),
-		dqclk0 => oddr_dqclk0,
-		dqclk1 => oddr_dqclk1,
-		q  => ddr_dqt(i));
+		dclks(0) => dqclk0,
+		dclks(1) => dqclk1,
+		d => sys_dqst,
+		q => ddr_dqt);
 
 	oddr_i : entity hdl4fpga.oddr
 	generic map (
 		data_phases => 
-		data_size => byte_size)
+		data_size => line_size)
 	port map (
 		sclk => sclk,
-		dclk(0) => oddr_dqclk0,
-		dclk(1) => oddr_dqclk1,
-		d => sys_di(byte_size*),
+		dclk(0) => dqclk0,
+		dclk(1) => dqclk1,
+		d => sys_di,
 		q => ddr_dqo);
 
-	oddrtdqsa_i : entity hdl4fpga.oddrtdqsa
+	oddrtdqsa_i : entity hdl4fpga.oddrdqst
 	generic map (
+		line_size => line_size/word_size/2,
 		data_size => word_size/byte_size)
 	port map (
 		sclk => sys_sclk,
-		db => sys_dqst(data_edges*0+r),
-		ta => sys_dqst(data_edges*0+f),
-		dqstclk => dqstclk,
-		dqsw => oddr_dqsw,
+		dclks(0) => dqsw,
+		dclks(1) => dqstclk,
 		q => dqst);
 
-	oddrx2dqsa_i : entity hdl4fpga.oddrtdqsa
+	oddrx2dqsa_i : entity hdl4fpga.oddrdqs
 	generic map (
 		data_size => word_size/byte_size)
 	port map (
 		sclk => sys_sclk,
 		dqsw => oddr_dqsw,
-		dclks(0) => oddr_dqclk0,
-		dclks(1) => oddr_dqclk1,
+		dclks(0) => dqclk0,
+		dclks(1) => dqclk1,
 		dclks(2) => dqstclk,
 		t => dqst,
 		d => sys_dqsi,
