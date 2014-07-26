@@ -25,8 +25,9 @@ entity ddrphy is
 		sys_odt : in  std_logic_vector(2-1 downto 0);
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_di   : in  std_logic_vector(line_size-1 downto 0);
-		sys_do   : out std_logic_vector(line_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqi  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqo  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqsi : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 
@@ -79,17 +80,46 @@ architecture ecp3 of ddrphy is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll byte'length;
-			val(byte'range) := dat(i);
+			val := val sll arg(arg'left)'length;
+			val(arg(arg'left)'range) := dat(i);
 		end loop;
 		return val;
 	end;
 
-	function shuffle_bytes (
+	function to_stdlogicvector (
+		arg : line_vector)
+		return std_logic_vector is
+		variable dat : line_vector(arg'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in dat'range loop
+			val := val sll arg(arg'left)'length;
+			val(arg(arg'left)'range) := dat(i);
+		end loop;
+		return val;
+	end;
+
+	function shuffle (
+		constant arg : std_logic_vector)
+		return line_vector is
+		variable aux : byte_vector(arg'length-1 downto 0);
+		variable val : line_vector(word_size/byte_size-1 downto 0);
+	begin
+		aux := to_bytevector(arg(i));
+		for i in val'range loop
+			for j in 0 to line_size*byte_size/word_size-1 loop
+				val(i) := val(i) sll byte'length;
+				val(i)(byte'range) := aux(j*val'length+i);
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function shuffle (
 		constant arg : byte_vector)
 		return line_vector is
 		variable aux : byte_vector(arg'length-1 downto 0);
@@ -110,14 +140,13 @@ architecture ecp3 of ddrphy is
 	signal sdqo : line_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqt : line_vector(word_size/byte_size-1 downto 0);
+	signal ddqi : line_vector(word_size/byte_size-1 downto 0);
 
 begin
 
+	sdqi <= suffle_bytes(to_bytevector(sys_dqi));
+	sdqt <= suffle_bytes(to_bytevector(sys_dqt));
 	byte_g : for i in 0 to n-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		port map (
@@ -127,17 +156,24 @@ begin
 			sys_rw   => sys_rw,
 			sys_cfgi => cfgi(i),
 			sys_cfgo => cfgo(i),
+
 			sys_dqsi => sdqsi(i),
 			sys_dqst => sdqst(i),
-			sys_do   => sdo(i),
-			sys_di   => sdi(i),
-	
+			sys_dqso => sys_dqso(i),
+
+			sys_dqo  => sdo(i),
+			sys_dqi  => sdi(i),
+
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
-	
-			ddr_dqsi => ddqsi(i),
-			ddr_dqst => ddqst(i),
-			ddr_dqso => ddqso(i));
+
+			ddr_dqsi => ddr_dqsi(i),
+			ddr_dqst => ddr_dqst(i),
+			ddr_dqso => ddr_dqso(i));
 	end generate;
+
+	sys_dqo <= to_stdlogicvector(sdi);
+	ddr_dqt <= to_stdlogicvector(ddqt);
+	ddr_dqo <= to_stdlogicvector(ddqo);
 end;
