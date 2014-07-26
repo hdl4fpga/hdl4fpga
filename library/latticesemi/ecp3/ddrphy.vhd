@@ -105,10 +105,9 @@ architecture ecp3 of ddrphy is
 		return val;
 	end;
 
-	signal ddr_dqi : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dq  : byte_vector(word_size/byte_size-1 downto 0);
+	signal sdqi : line_vector(word_size/byte_size-1 downto 0);
+	signal sdqt : line_vector(word_size/byte_size-1 downto 0);
+	signal sdqo : line_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
@@ -117,23 +116,9 @@ architecture ecp3 of ddrphy is
 	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal sys_dqsi : sysdqs_vector(n-1 downto 0);
-	signal sys_dqst : sysdqs_vector(n-1 downto 0);
-	signal sys_do   : sysdq_vector(n-1 downto 0);
-	signal sys_di   : sysdq_vector(n-1 downto 0);
-	signal sys_rst  : std_logic;
-	signal sys_sclk : std_logic;
-	signal sys_eclk : std_logic;
-	signal sys_rw   : std_logic;
 begin
 
-	ddr3byte_g : for i in 0 to n-1 generate
-		signal sys_cfgi : std_logic_vector(n-1 downto 0);
-		signal sys_cfgo : std_logic_vector(n-1 downto 0);
-		signal ddr_dqi : byte;
-		signal ddr_dqst : byte;
-	begin
-		ddr_dqi <= 
+	byte_g : for i in 0 to n-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		port map (
 			sys_rst  => sys_rst,
@@ -155,6 +140,4 @@ begin
 			ddr_dqst => ddqst(i),
 			ddr_dqso => ddqso(i));
 	end generate;
-
-	ddr3_dq <= byte2word(ddr_dq);
 end;
