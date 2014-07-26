@@ -1,9 +1,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr3phy is
+entity ddrdqphy is
 	generic (
-		n : natural);
+		dqs_size  : natural;
+		line_size : natural;
+		byte_size : natural);
 	port (
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
@@ -11,23 +13,25 @@ entity ddr3phy is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0);
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_do   : out std_logic_vector(4*n-1 downto 0);
-		sys_di   : in  std_logic_vector(4*n-1 downto 0);
-		sys_dqsi : in  std_logic_vector(2-1 downto 0);
-		sys_dqst : in  std_logic_vector(2-1 downto 0);
+		sys_dmi  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dmo  : out std_logic_vector(line_size-1 downto 0);
+		sys_di   : in  std_logic_vector(line_size-1 downto 0);
+		sys_do   : out std_logic_vector(line_size-1 downto 0);
+		sys_dqsi : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
+		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 
-		ddr_dqi  : in  std_logic_vector(1*n-1 downto 0);
-		ddr_dqt  : out std_logic_vector(1*n-1 downto 0);
-		ddr_dqo  : out std_logic_vector(1*n-1 downto 0);
+		ddr_dmt  : out std_logic;
+		ddr_dmi  : in  std_logic;
+		ddr_dmo  : out std_logic;
+		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
+		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
 
 		ddr_dqsi : in  std_logic;
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
 	constant data_width : natural := sys_di'length;
-	constant data_edges : natural := 2;
-	constant r : natural := 0;
-	constant f : natural := 1;
 
 	constant dyndelay0 : natural := 0;
 	constant dyndelay1 : natural := 1;
@@ -44,21 +48,18 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of ddr3phy is
-
-	constant cell_width : natural := 2;
-	constant cell_group : natural := data_width/(cell_width*data_edges);
+architecture ecp3 of ddrdqphy is
 
 	signal dqsi_delay : std_logic;
 	signal idqs_eclk  : std_logic;
-	signal oddr_dqsw  : std_logic;
-	signal oddr_dqclk0 : std_logic;
-	signal oddr_dqclk1 : std_logic;
+	signal dqsw  : std_logic;
+	signal dqclk0 : std_logic;
+	signal dqclk1 : std_logic;
 	
 	signal dqsdll_lock : std_logic;
-	signal dqsbuf_prmbdet : std_logic;
-	signal dqsbuf_ddrclkpol : std_logic;
-	signal dqsbuf_ddrlat : std_logic;
+	signal prmbdet : std_logic;
+	signal ddrclkpol : std_logic;
+	signal ddrlat : std_logic;
 	
 begin
 
@@ -78,9 +79,9 @@ begin
 
 		sclk => sys_sclk,
 		read => sys_rw,
-		ddrclkpol => dqsbuf_ddrclkpol,
-		ddrlat  => dqsbuf_ddrlat,
-		prmbdet => dqsbuf_prmbdet,
+		ddrclkpol => ddrclkpol,
+		ddrlat  => ddrlat,
+		prmbdet => prmbdet,
 
 		eclk => sys_eclk,
 		datavalid => sys_cfgo(datavalid),
@@ -96,11 +97,11 @@ begin
 		dyndelpol => sys_cfgi(dyndelpol),
 		eclkw => sys_eclk,
 
-		dqsw => oddr_dqsw,
-		dqclk0 => oddr_dqclk0,
-		dqclk1 => oddr_dqclk1);
+		dqsw => dqsw,
+		dqclk0 => dqclk0,
+		dqclk1 => dqclk1);
 
-	iddr_g : for i in 0 to cell_group-1 generate
+	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
 	begin
@@ -109,38 +110,62 @@ begin
 			sclk => sys_sclk,
 			eclk => sys_eclk,
 			eclkdqsr => idqs_eclk,
-			ddrclkpol => dqsbuf_ddrclkpol,
-			ddrlat => dqsbuf_ddrlat,
+			ddrclkpol => ddrclkpol,
+			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => sys_do(i*cell_width*data_edges+data_edges*0+r),
-			qb0 => sys_do(i*cell_width*data_edges+data_edges*0+f),
-			qa1 => sys_do(i*cell_width*data_edges+data_edges*1+r),
-			qb1 => sys_do(i*cell_width*data_edges+data_edges*1+f));
+			qa0 => sys_do(i*line_size/byte_size+0),
+			qb0 => sys_do(i*line_size/byte_size+1),
+			qa1 => sys_do(i*line_size/byte_size+2),
+			qb1 => sys_do(i*line_size/byte_size+3));
 	end generate;
 
-	oddr_g : for i in 0 to cell_group-1 generate
+	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => sys_dqst(data_edges*0+f),
-			dqclk0 => oddr_dqclk0,
-			dqclk1 => oddr_dqclk1,
+			ta => sys_dqst(0),
+			dqclk0 => dqclk0,
+			dqclk1 => dqclk1,
 			q  => ddr_dqt(i));
 
 		oddrx2d_i : oddrx2d
 		port map (
 			sclk => sys_sclk,
-			dqclk0 => oddr_dqclk0,
-			dqclk1 => oddr_dqclk1,
-			da0 => sys_di(i*cell_width*data_edges+data_edges*0+r),
-			db0 => sys_di(i*cell_width*data_edges+data_edges*0+f),
-			da1 => sys_di(i*cell_width*data_edges+data_edges*1+r),
-			db1 => sys_di(i*cell_width*data_edges+data_edges*1+f),
+			dqclk0 => dqclk0,
+			dqclk1 => dqclk1,
+			da0 => sys_di(i*line_size/byte_size+0),
+			db0 => sys_di(i*line_size/byte_size+1),
+			da1 => sys_di(i*line_size/byte_size+2),
+			db1 => sys_di(i*line_size/byte_size+3),
 			q   => ddr_dqo(i));
 	end generate;
+
+	dm_b : block
+		attribute oddrapps : string;
+		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+	begin
+		oddrtdqa_i : oddrtdqa
+		port map (
+			sclk => sys_sclk,
+			ta => sys_dqst(0),
+			dqclk0 => dqclk0,
+			dqclk1 => dqclk1,
+			q  => ddr_dmt);
+
+		oddrx2d_i : oddrx2d
+		port map (
+			sclk => sys_sclk,
+			dqclk0 => dqclk0,
+			dqclk1 => dqclk1,
+			da0 => sys_dmi(0),
+			db0 => sys_dmi(1),
+			da1 => sys_dmi(2),
+			db1 => sys_dmi(3),
+			q   => ddr_dmo);
+	end block;
 
 	dqso_b : block 
 		signal dqstclk : std_logic;
@@ -150,20 +175,20 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => sys_dqst(data_edges*0+r),
-			ta => sys_dqst(data_edges*0+f),
+			db => sys_dqst(0),
+			ta => sys_dqst(1),
 			dqstclk => dqstclk,
-			dqsw => oddr_dqsw,
+			dqsw => dqsw,
 			q => ddr_dqst);
 
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => sys_dqsi(data_edges*0+r),
-			db1 => sys_dqsi(data_edges*0+f),
-			dqsw => oddr_dqsw,
-			dqclk0 => oddr_dqclk0,
-			dqclk1 => oddr_dqclk1,
+			db0 => sys_dqsi(0),
+			db1 => sys_dqsi(1),
+			dqsw => dqsw,
+			dqclk0 => dqclk0,
+			dqclk1 => dqclk1,
 			dqstclk => dqstclk,
 			q => ddr_dqso);
 

@@ -173,14 +173,13 @@ use ieee.std_logic_1164.all;
 
 entity oddrdqs is
 	generic (
-		data_size : natural := 1;
 		word_size : natural := 2);
 	port (
 		sclk  : in std_logic;
 		dclks : in std_logic_vector(0 to word_size) := (others => '-');
-		tclk  : out std_logic_vector(data_size-1 downto 0);
-		d  : in  std_logic_vector(data_size*word_size-1 downto 0);
-		q  : out std_logic_vector(data_size-1 downto 0));
+		tclk  : out std_logic;
+		d  : in  std_logic_vector(word_size-1 downto 0);
+		q  : out std_logic);
 end;
 
 library ecp3;
@@ -189,26 +188,23 @@ use ecp3.components.all;
 library hdl4fpga;
 
 architecture ecp3 of oddrdqs is
+	attribute oddrapps : string;
+	attribute oddrapps of oddrdqs_i : label is "DQS_CENTERED";
 begin
 	assert word_size = 2
 	report "DATA_PHASES should be 2"
 	severity FAILURE;
 
-	g : for i in data_size-1 to 0 generate
-		attribute oddrapps : string;
-		attribute oddrapps of oddrdqs_i : label is "DQS_CENTERED";
-	begin
-		oddrdqs_i : oddrx2dqsa
-		port map (
-			sclk => sclk,
-			db0 => d(data_size*0+i),
-			db1 => d(data_size*1+i),
-			dqsw => dclks(word_size/2),
-			dqclk0 => dclks(0),
-			dqclk1 => dclks(1),
-			dqstclk => tclk(i),
-			q => q(i));
-	end generate;
+	oddrdqs_i : oddrx2dqsa
+	port map (
+		sclk => sclk,
+		db0 => d(0),
+		db1 => d(1),
+		dqsw => dclks(word_size/2),
+		dqclk0 => dclks(0),
+		dqclk1 => dclks(1),
+		dqstclk => tclk,
+		q => q);
 end;
 
 library ieee;
@@ -216,13 +212,13 @@ use ieee.std_logic_1164.all;
 
 entity oddrdqst is
 	generic (
-		data_size : natural := 1;
-		word_size : natural := 4);
+		word_size : natural := 2);
 	port (
 		sclk : in std_logic;
-		dclks : in std_logic_vector(0 to word_size/2-1) := (others => '-');
-		d : in  std_logic_vector(data_size*word_size-1 downto 0);
-		q : out std_logic_vector(data_size-1 downto 0));
+		dclk : in std_logic;
+		tclk : in std_logic;
+		d : in  std_logic_vector(word_size-1 downto 0);
+		q : out std_logic);
 end;
 
 library ecp3;
@@ -236,16 +232,14 @@ begin
 	report "DATA_PHASES should be 1"
 	severity FAILURE;
 
-	g : for i in data_size-1 to 0 generate
-		ff_g : if word_size = 2 generate
-			oddrtdqa_i : oddrtdqsa
-			port map (
-				sclk => sclk,
-				dqsw => dclks(0),
-				dqstclk => dclks(1),
-				ta => d(word_size*0+i),
-				db => d(word_size*1+i),
-				q  => q(i));
-		end generate;
+	ff_g : if word_size = 2 generate
+		oddrtdqa_i : oddrtdqsa
+		port map (
+			sclk => sclk,
+			dqsw => dclk,
+			dqstclk => tclk,
+			ta => d(0),
+			db => d(1),
+			q  => q);
 	end generate;
 end;
