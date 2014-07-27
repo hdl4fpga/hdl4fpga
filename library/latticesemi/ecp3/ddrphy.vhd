@@ -148,69 +148,6 @@ architecture ecp3 of ddrphy is
 		return val;
 	end;
 
-	function shuffle (
-		constant arg : std_logic_vector)
-		return bline_vector is
-		variable aux : std_logic_vector(arg'length-1 downto 0);
-		variable val : bline_vector(word_size/byte_size-1 downto 0);
-	begin
-		for i in val'range loop
-			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll 1;
-				val(i)(0) := aux(j*val'length+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function shuffle (
-		constant arg : std_logic_vector)
-		return b2line_vector is
-		variable aux : std_logic_vector(arg'length-1 downto 0);
-		variable val : b2line_vector(word_size/byte_size-1 downto 0);
-	begin
-		aux := arg;
-		for i in val'range loop
-			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll 1;
-				val(i)(0) := aux(j*val'length+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function shuffle (
-		constant arg : byte_vector)
-		return dline_vector is
-		variable aux : byte_vector(arg'length-1 downto 0);
-		variable val : dline_vector(word_size/byte_size-1 downto 0);
-	begin
-		aux := arg;
-		for i in val'range loop
-			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll arg(arg'left)'length;
-				val(i)(arg(arg'left)'range) := aux(j*val'length+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function shuffle (
-		constant arg : byte_vector)
-		return d2line_vector is
-		variable aux : byte_vector(arg'length-1 downto 0);
-		variable val : d2line_vector(word_size/byte_size-1 downto 0);
-	begin
-		aux := arg;
-		for i in val'range loop
-			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll arg(arg'left)'length;
-				val(i)(arg(arg'left)'range) := aux(j*val'length+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-
 	signal sdmt : b2line_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
