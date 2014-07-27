@@ -3,7 +3,6 @@ use ieee.std_logic_1164.all;
 
 entity ddrdqphy is
 	generic (
-		dqs_size  : natural;
 		line_size : natural;
 		byte_size : natural);
 	port (

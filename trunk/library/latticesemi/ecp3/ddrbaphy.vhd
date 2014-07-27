@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddrphy is
+entity ddrbaphy is
 	generic (
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -31,7 +31,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture ecp3 of ddrphy is
+architecture ecp3 of ddrbaphy is
 
 	signal dqsi_delay : std_logic;
 	signal idqs_eclk  : std_logic;
