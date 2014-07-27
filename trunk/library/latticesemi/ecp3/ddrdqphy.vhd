@@ -13,10 +13,12 @@ entity ddrdqphy is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0);
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
+		sys_dmt  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dmi  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(line_size-1 downto 0);
-		sys_di   : in  std_logic_vector(line_size-1 downto 0);
-		sys_do   : out std_logic_vector(line_size-1 downto 0);
+		sys_dqi  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqo  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqsi : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 
@@ -31,7 +33,7 @@ entity ddrdqphy is
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
-	constant data_width : natural := sys_di'length;
+	constant data_width : natural := sys_dqi'length;
 
 	constant dyndelay0 : natural := 0;
 	constant dyndelay1 : natural := 1;
@@ -113,10 +115,10 @@ begin
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => sys_do(i*line_size/byte_size+0),
-			qb0 => sys_do(i*line_size/byte_size+1),
-			qa1 => sys_do(i*line_size/byte_size+2),
-			qb1 => sys_do(i*line_size/byte_size+3));
+			qa0 => sys_dqo(i*line_size/byte_size+0),
+			qb0 => sys_dqo(i*line_size/byte_size+1),
+			qa1 => sys_dqo(i*line_size/byte_size+2),
+			qb1 => sys_dqo(i*line_size/byte_size+3));
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
@@ -136,10 +138,10 @@ begin
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_di(i*line_size/byte_size+0),
-			db0 => sys_di(i*line_size/byte_size+1),
-			da1 => sys_di(i*line_size/byte_size+2),
-			db1 => sys_di(i*line_size/byte_size+3),
+			da0 => sys_dqi(i*line_size/byte_size+0),
+			db0 => sys_dqi(i*line_size/byte_size+1),
+			da1 => sys_dqi(i*line_size/byte_size+2),
+			db1 => sys_dqi(i*line_size/byte_size+3),
 			q   => ddr_dqo(i));
 	end generate;
 
