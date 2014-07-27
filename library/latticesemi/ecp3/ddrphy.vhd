@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity ddrphy is
 	generic (
@@ -59,25 +60,54 @@ architecture ecp3 of ddrphy is
 	subtype byte is std_logic_vector((line_size*byte_size)/word_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype line_word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
-	type line_vector is array (natural range <>) of line_word;
+	subtype dline_word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
+	type dline_vector is array (natural range <>) of dline_word;
+
+	subtype d2line_word is std_logic_vector(byte_size*line_size/word_size/2-1 downto 0);
+	type d2line_vector is array (natural range <>) of d2line_word;
+
+	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	type bline_vector is array (natural range <>) of bline_word;
+
+	subtype b2line_word is std_logic_vector(line_size/word_size/2-1 downto 0);
+	type b2line_vector is array (natural range <>) of b2line_word;
+
+	subtype ciline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	type ciline_vector is array (natural range <>) of ciline_word;
+
+	subtype coline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	type coline_vector is array (natural range <>) of ciline_word;
 
 	function to_bytevector (
-		arg : std_logic_vector) 
+		constant arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
-			dat := dat srl byte'length;
+			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
+			dat := dat srl val(val'left)'length;
+		end loop;
+		return val;
+	end;
+
+	function to_cilinevector (
+		constant arg : std_logic_vector) 
+		return ciline_vector is
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : ciline_vector(arg'length/ciline_word'length-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
+			dat := dat srl val(val'left)'length;
 		end loop;
 		return val;
 	end;
 
 	function to_stdlogicvector (
-		arg : byte_vector)
+		constant arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
 		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
@@ -91,9 +121,24 @@ architecture ecp3 of ddrphy is
 	end;
 
 	function to_stdlogicvector (
-		arg : line_vector)
+		constant arg : dline_vector)
 		return std_logic_vector is
-		variable dat : line_vector(arg'length-1 downto 0);
+		variable dat : dline_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in dat'range loop
+			val := val sll arg(arg'left)'length;
+			val(arg(arg'left)'range) := dat(i);
+		end loop;
+		return val;
+	end;
+
+	function to_stdlogicvector (
+		constant arg : ciline_vector)
+		return std_logic_vector is
+		variable dat : ciline_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
@@ -105,15 +150,30 @@ architecture ecp3 of ddrphy is
 
 	function shuffle (
 		constant arg : std_logic_vector)
-		return line_vector is
-		variable aux : byte_vector(arg'length-1 downto 0);
-		variable val : line_vector(word_size/byte_size-1 downto 0);
+		return bline_vector is
+		variable aux : std_logic_vector(arg'length-1 downto 0);
+		variable val : bline_vector(word_size/byte_size-1 downto 0);
 	begin
-		aux := to_bytevector(arg(i));
 		for i in val'range loop
 			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll byte'length;
-				val(i)(byte'range) := aux(j*val'length+i);
+				val(i) := val(i) sll 1;
+				val(i)(0) := aux(j*val'length+i);
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function shuffle (
+		constant arg : std_logic_vector)
+		return b2line_vector is
+		variable aux : std_logic_vector(arg'length-1 downto 0);
+		variable val : b2line_vector(word_size/byte_size-1 downto 0);
+	begin
+		aux := arg;
+		for i in val'range loop
+			for j in 0 to line_size*byte_size/word_size-1 loop
+				val(i) := val(i) sll 1;
+				val(i)(0) := aux(j*val'length+i);
 			end loop;
 		end loop;
 		return val;
@@ -121,34 +181,63 @@ architecture ecp3 of ddrphy is
 
 	function shuffle (
 		constant arg : byte_vector)
-		return line_vector is
+		return dline_vector is
 		variable aux : byte_vector(arg'length-1 downto 0);
-		variable val : line_vector(word_size/byte_size-1 downto 0);
+		variable val : dline_vector(word_size/byte_size-1 downto 0);
 	begin
-		aux := to_bytevector(arg(i));
+		aux := arg;
 		for i in val'range loop
 			for j in 0 to line_size*byte_size/word_size-1 loop
-				val(i) := val(i) sll byte'length;
-				val(i)(byte'range) := aux(j*val'length+i);
+				val(i) := val(i) sll arg(arg'left)'length;
+				val(i)(arg(arg'left)'range) := aux(j*val'length+i);
 			end loop;
 		end loop;
 		return val;
 	end;
 
-	signal sdqi : line_vector(word_size/byte_size-1 downto 0);
-	signal sdqt : line_vector(word_size/byte_size-1 downto 0);
-	signal sdqo : line_vector(word_size/byte_size-1 downto 0);
+	function shuffle (
+		constant arg : byte_vector)
+		return d2line_vector is
+		variable aux : byte_vector(arg'length-1 downto 0);
+		variable val : d2line_vector(word_size/byte_size-1 downto 0);
+	begin
+		aux := arg;
+		for i in val'range loop
+			for j in 0 to line_size*byte_size/word_size-1 loop
+				val(i) := val(i) sll arg(arg'left)'length;
+				val(i)(arg(arg'left)'range) := aux(j*val'length+i);
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	signal sdmt : b2line_vector(word_size/byte_size-1 downto 0);
+	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
+
+	signal sdqt : d2line_vector(word_size/byte_size-1 downto 0);
+	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqo : dline_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt : line_vector(word_size/byte_size-1 downto 0);
-	signal ddqi : line_vector(word_size/byte_size-1 downto 0);
+	signal ddqt : dline_vector(word_size/byte_size-1 downto 0);
+	signal ddqi : dline_vector(word_size/byte_size-1 downto 0);
+	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
+	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
 begin
 
-	sdqi <= suffle_bytes(to_bytevector(sys_dqi));
-	sdqt <= suffle_bytes(to_bytevector(sys_dqt));
-	byte_g : for i in 0 to n-1 generate
+	sdmi <= shuffle(sys_dmi);
+	sdmi <= shuffle(sys_dmi);
+	sdqi <= shuffle(to_bytevector(sys_dqi));
+	sdqt <= shuffle(to_bytevector(sys_dqt));
+
+	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
+		generic map (
+			dqs_size => 2,
+			line_size => 32,
+			byte_size => 8)
 		port map (
 			sys_rst  => sys_rst,
 			sys_sclk => sys_sclk,
@@ -161,8 +250,10 @@ begin
 			sys_dqst => sdqst(i),
 			sys_dqso => sys_dqso(i),
 
-			sys_dqo  => sdo(i),
-			sys_dqi  => sdi(i),
+			sys_dmi => sdmi(i),
+			sys_dmo => sdmo(i),
+			sys_dqo => sdqo(i),
+			sys_dqi => sdqi(i),
 
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
@@ -173,7 +264,7 @@ begin
 			ddr_dqso => ddr_dqso(i));
 	end generate;
 
-	sys_dqo <= to_stdlogicvector(sdi);
+	sys_dqo <= to_stdlogicvector(sdqi);
 	ddr_dqt <= to_stdlogicvector(ddqt);
 	ddr_dqo <= to_stdlogicvector(ddqo);
 end;
