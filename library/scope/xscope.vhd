@@ -6,16 +6,18 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant ddr_strobe   : string := "NONE";
-		constant ddr_std      : natural;
-		constant ddr_banksize : natural := 2;
-		constant ddr_addrsize : natural := 13;
-		constant ddr_colsize  : natural := 6;
-		constant ddr_bytesize : natural := 8;
-		constant ddr_wordsize : natural := 16;
-		constant ddr_tCP : time;
-		constant nibble_size  : natural := 4;
-		constant xd_len : natural);
+		constant DDR_STROBE   : string := "NONE";
+		constant DDR_STD      : natural;
+		constant DDR_BANKSIZE : natural :=  2;
+		constant DDR_ADDRSIZE : natural := 13;
+		constant DDR_CLNMSIZE : natural :=  6;
+		constant DDR_LINESIZE : natural := 16;
+		constant DDR_WORDSIZE : natural := 16;
+		constant DDR_BYTESIZE : natural :=  8;
+		constant DDR_tCP      : time;
+
+		constant NIBBLE_SIZE  : natural := 4;
+		constant XD_LEN : natural);
 
 	port (
 		sys_rst : in std_logic;
@@ -34,7 +36,7 @@ entity scope is
 		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 		ddr_dm  : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqsz : out std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_dqst : out std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(data_size/byte_size-1 downto 0);
 		ddr_dqz : out std_logic_vector(data_size-1 downto 0);
@@ -135,28 +137,6 @@ architecture def of scope is
 	signal tpkt_cntr : byte := x"00";
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
-
-	type ddr_tac is record 
-		cl  : real;
-		bl  : natural;
-		wr  : natural;
-		cwl : natural;
---	end record;
---	type ddr_tac is record 
-		tMRD : real;
-		tRCD : real;
-		tREFI : real;
-		tRFC : real;
-		tRP  : real;
---		tRPA : real;	-- DDR2 only
-		tWR  : real;
-	end record;
-
-	type ddr_actab is array (natural range <>) of ddr_tac;
-	constant ddr_acdb : ddr_actab(1 to 3) := (
-		1 => (cl => 2.5, bl => 8, wr => 0, cwl => 0, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0),
-		2 => (cl => 5.0, bl => 8, wr => 7, cwl => 5, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC => 127.5, tRP => 18.0, tWR => 15.0),
-		3 => (cl => 9.0, bl => 8, wr => 6, cwl => 9, tMRD => 12.0, tRCD => 15.0, tREFI => 7.8e3, tRFC =>  72.0, tRP => 15.0, tWR => 15.0));
 
 begin
 
@@ -279,10 +259,11 @@ begin
 	dataio_rst <= not ddrs_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
-		bank_size => bank_size,
-		addr_size => addr_size,
-		col_size  => col_size, 
-		data_size => data_size)
+		PAGE_SIZE => 9,
+		BANK_SIZE => DDR_BANKSIZE,
+		ADDR_SIZE => DDR_ADDRSIZE,
+		COL_SIZE  => DDR_CLMNSIZE;
+		DATA_SIZE => DDR_WORDSIZE)
 	port map (
 		sys_rst   => dataio_rst,
 
@@ -446,12 +427,14 @@ begin
 
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
-		strobe => strobe,
-		tCP => tCP,
-
-		bank_bits => bank_size,
-		addr_bits => addr_size,
-		byte_size => 8)
+		STROBE    => DDR_STROBE,
+		STD       => DDR_STD,
+		BANK_SIZE => DDR_BANKSIZE,
+		ADDR_SIZE => DDR_ADDRSIZE,
+		LINE_SIZE => DDR_LINESIZE,
+		WORD_SIZE => DDR_WORDSIZE,
+		BYTE_SIZE => DDR_BYTESIZE,
+		tCP       => DDR_tCP),
 
 	port map (
 		sys_rst => sys_rst,
@@ -486,7 +469,7 @@ begin
 		xdr_ba  => ddr_ba,
 		xdr_a   => ddr_a,
 		xdr_dmo  => ddr_dm,
-		xdr_dqsz => ddr_dqsz,
+		xdr_dqst => ddr_dqst,
 		xdr_dqsi => ddr_dqsi,
 		xdr_dqso => ddr_dqso,
 		xdr_dqz => ddr_dqz,
