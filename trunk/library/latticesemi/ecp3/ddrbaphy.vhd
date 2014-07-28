@@ -7,7 +7,8 @@ entity ddrbaphy is
 		addr_size : natural := 13;
 		line_size : natural := 2);
 	port (
-		sys_sclk : in  std_logic;
+		sys_sclk   : in  std_logic;
+		sys_sclk2x : in  std_logic;
 
 		sys_rw  : in  std_logic;
 		sys_cke : in  std_logic_vector(line_size-1 downto 0);
@@ -87,6 +88,13 @@ begin
 		da => sys_we(0),
 		db => sys_we(1),
 		q  => ddr_we);
+
+	ck_i : oddrxd1
+	port map (
+		sclk => sys_sclk2x,
+		da => '0',
+		db => '1',
+		q  => ddr_ck);
 
 	cke_i : oddrxd1
 	port map (

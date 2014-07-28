@@ -19,7 +19,7 @@ entity ecp3versa is
 		ddr3_ras : out std_logic := '1';
 		ddr3_cas : out std_logic := '1';
 		ddr3_we  : out std_logic := '1';
-		ddr3_ba  : out std_logic_vector( 2 downto 0) := (others => '1');
+		ddr3_b   : out std_logic_vector( 2 downto 0) := (others => '1');
 		ddr3_a   : out std_logic_vector(12 downto 0) := (others => '1');
 		ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs : inout std_logic_vector(2-1 downto 0) := (others => 'Z');

@@ -12,18 +12,19 @@ entity ddrphy is
 	port (
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
+		sys_sclk2x : in  std_logic;
 		sys_eclk : in  std_logic;
 
 		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
 		sys_cfgo : out std_logic_vector(1*(word_size/byte_size)-1 downto 0);
-		sys_rw  : in  std_logic;
-		sys_b   : in  std_logic_vector(line_size*bank_size-1 downto 0);
-		sys_a   : in  std_logic_vector(line_size*addr_size-1 downto 0);
-		sys_cke : in  std_logic_vector(2-1 downto 0);
-		sys_ras : in  std_logic_vector(2-1 downto 0);
-		sys_cas : in  std_logic_vector(2-1 downto 0);
-		sys_we  : in  std_logic_vector(2-1 downto 0);
-		sys_odt : in  std_logic_vector(2-1 downto 0);
+		sys_rw   : in  std_logic;
+		sys_b    : in  std_logic_vector(line_size*bank_size-1 downto 0);
+		sys_a    : in  std_logic_vector(line_size*addr_size-1 downto 0);
+		sys_cke  : in  std_logic_vector(2-1 downto 0);
+		sys_ras  : in  std_logic_vector(2-1 downto 0);
+		sys_cas  : in  std_logic_vector(2-1 downto 0);
+		sys_we   : in  std_logic_vector(2-1 downto 0);
+		sys_odt  : in  std_logic_vector(2-1 downto 0);
 		sys_dmt  : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
@@ -42,16 +43,9 @@ entity ddrphy is
 		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 
-		ddr_dmt  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dmi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dmo  : out std_logic_vector(word_size/byte_size-1 downto 0);
-
-		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
-
-		ddr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
+		ddr_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dq  : inout std_logic_vector(byte_size-1 downto 0);
+		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -244,12 +238,14 @@ architecture ecp3 of ddrphy is
 	signal sdqsi : b2line_vector(word_size/byte_size-1 downto 0);
 	signal sdqst : b2line_vector(word_size/byte_size-1 downto 0);
 
-	signal ddmo : b2line_vector(word_size/byte_size-1 downto 0);
-	signal ddmt : b2line_vector(word_size/byte_size-1 downto 0);
+	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqso : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : dline_vector(word_size/byte_size-1 downto 0);
-	signal ddqi : dline_vector(word_size/byte_size-1 downto 0);
+	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
@@ -262,6 +258,7 @@ begin
 		line_size => line_size/word_size/2)
 	port map (
 		sys_sclk => sys_sclk,
+		sys_sclk2x => sys_sclk2x,
           
 		sys_rw  => sys_rw,
 		sys_cke => sys_cke,
@@ -317,50 +314,48 @@ begin
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
 
+			ddr_dmi  => ddr_dm(i),
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
-			ddr_dmi  => ddr_dmi(i),
 
-			ddr_dqsi => ddr_dqsi(i),
-			ddr_dqst => ddr_dqst(i),
-			ddr_dqso => ddr_dqso(i));
+			ddr_dqsi => ddr_dqs(i),
+			ddr_dqst => ddqst(i),
+			ddr_dqso => ddqso(i));
 	end generate;
 
 	process (ddqso, ddqst)
-		variable dqst : std_logic_vector(ddr_dqso'range) := to_stdlogicvector(ddqst);
-		variable dqso : std_logic_vector(ddr_dqso'range) := to_stdlogicvector(ddqso);
 	begin
-		for i in dqo'range loop
-			if dqst(i)='1' then
-				ddr_dqso(i) <= 'Z';
+		for i in ddqso'range loop
+			if ddqst(i)='1' then
+				ddr_dqs(i) <= 'Z';
 			else
-				ddr_dqso(i) <= dqso(i);
+				ddr_dqs(i) <= ddqso(i);
 			end if;
 		end loop;
 	end process;
 
 	process (ddqo, ddqt)
-		variable dqt : std_logic_vector(ddr_dqo'range) := to_stdlogicvector(ddqt);
-		variable dqo : std_logic_vector(ddr_dqo'range) := to_stdlogicvector(ddqo);
+		variable dqt : std_logic_vector(ddr_dq'range);
+		variable dqo : std_logic_vector(ddr_dq'range);
 	begin
+		dqt := to_stdlogicvector(ddqt);
+		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
 			if dqt(i)='1' then
-				ddr_dqo(i) <= 'Z';
+				ddr_dq(i) <= 'Z';
 			else
-				ddr_dqo(i) <= dqo(i);
+				ddr_dq(i) <= dqo(i);
 			end if;
 		end loop;
 	end process;
 
 	process (ddmo, ddmt)
-		variable dmt : std_logic_vector(ddr_dmo'range) := to_stdlogicvector(ddmt);
-		variable dmo : std_logic_vector(ddr_dmo'range) := to_stdlogicvector(ddmo);
 	begin
-		for i in dqo'range loop
-			if dmt(i)='1' then
-				ddr_dqo(i) <= 'Z';
+		for i in ddmo'range loop
+			if ddmt(i)='1' then
+				ddr_dm(i) <= 'Z';
 			else
-				ddr_dqo(i) <= dmo(i);
+				ddr_dm(i) <= ddmo(i);
 			end if;
 		end loop;
 	end process;
