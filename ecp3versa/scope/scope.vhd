@@ -111,21 +111,21 @@ begin
 		ddr_sti => (others => '0'),
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
-		ddr_rst => ddr3_rst,
-		ddr_cke => ddr3_cke,
-		ddr_cs  => ddr3_cs,
-		ddr_ras => ddr3_ras,
-		ddr_cas => ddr3_cas,
-		ddr_we  => ddr3_we,
-		ddr_ba  => ddr3_ba(bank_size-1 downto 0),
-		ddr_a   => ddr3_a,
-		ddr_dm  => ddr3_dm,
-		ddr_dqsz => ddr_dqsz,
-		ddr_dqsi => ddr_dqsi,
-		ddr_dqso => ddr_dqso,
-		ddr_dqi  => ddr3_dq,
-		ddr_dqo  => ddr3_dq,
-		ddr_odt => ddr3_odt,
+		ddr_rst => ddrphy_rst,
+		ddr_cke => ddrphy_cke,
+		ddr_cs  => ddrphy_cs,
+		ddr_ras => ddrphy_ras,
+		ddr_cas => ddrphy_cas,
+		ddr_we  => ddrphy_we,
+		ddr_ba  => ddrphy_ba(bank_size-1 downto 0),
+		ddr_a   => ddrphy_a,
+		ddr_dm  => ddrphy_dm,
+		ddr_dqsz => ddrphy_dqsz,
+		ddr_dqsi => ddrphy_dqsi,
+		ddr_dqso => ddrphy_dqso,
+		ddr_dqi  => ddrphy_dq,
+		ddr_dqo  => ddrphy_dq,
+		ddr_odt => ddrphy_odt,
 
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
@@ -142,8 +142,6 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
-
-	ddrphy_e : entity hdl4fpga.ddr3phy
 
 	ddr_dqsi_e : for i in ddr_dqsi'range generate
 		ddr3_dqs(i) <= ddr_dqso(i) when ddr_dqsz(i)='0' else 'Z';
