@@ -47,7 +47,6 @@ entity ddrphy is
 		ddr_dmo  : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
 
 		ddr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0);
@@ -245,6 +244,9 @@ architecture ecp3 of ddrphy is
 	signal sdqsi : b2line_vector(word_size/byte_size-1 downto 0);
 	signal sdqst : b2line_vector(word_size/byte_size-1 downto 0);
 
+	signal ddmo : b2line_vector(word_size/byte_size-1 downto 0);
+	signal ddmt : b2line_vector(word_size/byte_size-1 downto 0);
+
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : dline_vector(word_size/byte_size-1 downto 0);
 	signal ddqi : dline_vector(word_size/byte_size-1 downto 0);
@@ -315,8 +317,8 @@ begin
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
 
-			ddr_dmt  => ddr_dmt(i),
-			ddr_dmo  => ddr_dmo(i),
+			ddr_dmt  => ddmt(i),
+			ddr_dmo  => ddmo(i),
 			ddr_dmi  => ddr_dmi(i),
 
 			ddr_dqsi => ddr_dqsi(i),
@@ -324,9 +326,46 @@ begin
 			ddr_dqso => ddr_dqso(i));
 	end generate;
 
+	process (ddqso, ddqst)
+		variable dqst : std_logic_vector(ddr_dqso'range) := to_stdlogicvector(ddqst);
+		variable dqso : std_logic_vector(ddr_dqso'range) := to_stdlogicvector(ddqso);
+	begin
+		for i in dqo'range loop
+			if dqst(i)='1' then
+				ddr_dqso(i) <= 'Z';
+			else
+				ddr_dqso(i) <= dqso(i);
+			end if;
+		end loop;
+	end process;
+
+	process (ddqo, ddqt)
+		variable dqt : std_logic_vector(ddr_dqo'range) := to_stdlogicvector(ddqt);
+		variable dqo : std_logic_vector(ddr_dqo'range) := to_stdlogicvector(ddqo);
+	begin
+		for i in dqo'range loop
+			if dqt(i)='1' then
+				ddr_dqo(i) <= 'Z';
+			else
+				ddr_dqo(i) <= dqo(i);
+			end if;
+		end loop;
+	end process;
+
+	process (ddmo, ddmt)
+		variable dmt : std_logic_vector(ddr_dmo'range) := to_stdlogicvector(ddmt);
+		variable dmo : std_logic_vector(ddr_dmo'range) := to_stdlogicvector(ddmo);
+	begin
+		for i in dqo'range loop
+			if dmt(i)='1' then
+				ddr_dqo(i) <= 'Z';
+			else
+				ddr_dqo(i) <= dmo(i);
+			end if;
+		end loop;
+	end process;
+
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqo <= to_stdlogicvector(sdqo);
 	sys_cfgo <= to_stdlogicvector(cfgo);
-	ddr_dqt <= to_stdlogicvector(ddqt);
-	ddr_dqo <= to_stdlogicvector(ddqo);
 end;
