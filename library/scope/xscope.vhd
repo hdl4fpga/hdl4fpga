@@ -6,17 +6,17 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		strobe : string := "NONE";
-		ddr_std : positive range 1 to 3 := 1;
-		bank_size : natural := 2;
-		addr_size : natural := 13;
-		col_size  : natural := 6;
-		nibble_size : natural := 4;
-		byte_size : natural := 8;
-		data_size : natural := 16;
-		xd_len : natural;
+		constant ddr_strobe   : string := "NONE";
+		constant ddr_std      : natural;
+		constant ddr_banksize : natural := 2;
+		constant ddr_addrsize : natural := 13;
+		constant ddr_colsize  : natural := 6;
+		constant ddr_bytesize : natural := 8;
+		constant ddr_wordsize : natural := 16;
+		constant ddr_tCP : time;
+		constant nibble_size  : natural := 4;
+		constant xd_len : natural);
 
-		tCP : time);
 	port (
 		sys_rst : in std_logic;
 		sys_ini : out std_logic;
