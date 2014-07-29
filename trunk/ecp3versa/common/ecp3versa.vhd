@@ -81,7 +81,7 @@ entity ecp3versa is
 	attribute loc of ddr3_ras : signal is "A6";
 	attribute loc of ddr3_cas : signal is "A4";
 	attribute loc of ddr3_we  : signal is "D6";
-	attribute loc of ddr3_ba  : signal is "D5 E6 B4";
+	attribute loc of ddr3_b   : signal is "D5 E6 B4";
 	attribute loc of ddr3_a   : signal is "F7 C10 C9 B8 A7 D7 A3 E9 F9 D8 B7 C7 C8";
 	attribute loc of ddr3_dm  : signal is "F3 E3";
 	attribute loc of ddr3_dqs : signal is "H5 F5";		-- ddr3_dqs_n "H6 F4"
@@ -95,7 +95,7 @@ entity ecp3versa is
 	attribute io_type of ddr3_ras : signal is "SSTL15";
 	attribute io_type of ddr3_cas : signal is "SSTL15";
 	attribute io_type of ddr3_we  : signal is "SSTL15";
-	attribute io_type of ddr3_ba  : signal is "SSTL15";
+	attribute io_type of ddr3_b   : signal is "SSTL15";
 	attribute io_type of ddr3_a   : signal is "SSTL15";
 	attribute io_type of ddr3_dm  : signal is "SSTL15";
 	attribute io_type of ddr3_dqs : signal is "SSTL15D";

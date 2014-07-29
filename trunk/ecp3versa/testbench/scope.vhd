@@ -64,7 +64,7 @@ architecture scope of testbench is
 			ddr3_ras : out std_logic := 'Z';
 			ddr3_cas : out std_logic := 'Z';
 			ddr3_we  : out std_logic := 'Z';
-			ddr3_ba  : out std_logic_vector( 2 downto 0) := (others => 'Z');
+			ddr3_b   : out std_logic_vector( 2 downto 0) := (others => 'Z');
 			ddr3_a   : out std_logic_vector(12 downto 0) := (others => 'Z');
 			ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 			ddr3_dqs : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
@@ -206,7 +206,7 @@ begin
 		ddr3_ras => ras_n,
 		ddr3_cas => cas_n,
 		ddr3_we  => we_n,
-		ddr3_ba  => ba,
+		ddr3_b   => ba,
 		ddr3_a   => addr(12 downto 0),
 		ddr3_dqs => dqs_p,
 		ddr3_dq  => dq,

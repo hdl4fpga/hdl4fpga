@@ -67,7 +67,7 @@ begin
 	gtx_clk_i : entity hdl4fpga.oddr
 	port map (
 		sclk => mii_txc,
-    d(0) => '1',
-    d(1) => '0',
-		q => iob_gtxclk);
+		d(0) => '1',
+		d(1) => '0',
+		q(0) => iob_gtxclk);
 end;
