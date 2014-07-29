@@ -10,7 +10,7 @@ entity scope is
 		constant DDR_STD      : natural;
 		constant DDR_BANKSIZE : natural :=  2;
 		constant DDR_ADDRSIZE : natural := 13;
-		constant DDR_CLNMSIZE : natural :=  6;
+		constant DDR_CLMNSIZE : natural :=  6;
 		constant DDR_LINESIZE : natural := 16;
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
@@ -33,18 +33,20 @@ entity scope is
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
 		ddr_we  : out std_logic;
-		ddr_ba  : out std_logic_vector(bank_size-1 downto 0);
-		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
-		ddr_dm  : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqst : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqsi : in  std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqso : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_dqz : out std_logic_vector(data_size-1 downto 0);
-		ddr_dqi : in std_logic_vector(data_size-1 downto 0);
-		ddr_dqo : out std_logic_vector(data_size-1 downto 0);
+		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_dmi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt : out std_logic_vector(DDR_WORDSIZE-1 downto 0);
+		ddr_dqi : in std_logic_vector(DDR_WORDSIZE-1 downto 0);
+		ddr_dqo : out std_logic_vector(DDR_WORDSIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(data_size/byte_size-1 downto 0);
-		ddr_sti : in std_logic_vector(data_size/byte_size-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti : in std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
@@ -125,7 +127,7 @@ architecture def of scope is
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic;
 	signal miitx_addr : std_logic_vector(8-1 downto 0);
-	signal miitx_data : std_logic_vector(2*data_size-1 downto 0);
+	signal miitx_data : std_logic_vector(2*DDR_WORDSIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
 	signal trdy : std_logic := '0';
@@ -262,7 +264,7 @@ begin
 		PAGE_SIZE => 9,
 		BANK_SIZE => DDR_BANKSIZE,
 		ADDR_SIZE => DDR_ADDRSIZE,
-		COL_SIZE  => DDR_CLMNSIZE;
+		COL_SIZE  => DDR_CLMNSIZE,
 		DATA_SIZE => DDR_WORDSIZE)
 	port map (
 		sys_rst   => dataio_rst,
@@ -428,14 +430,12 @@ begin
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		STROBE    => DDR_STROBE,
-		STD       => DDR_STD,
 		BANK_SIZE => DDR_BANKSIZE,
 		ADDR_SIZE => DDR_ADDRSIZE,
 		LINE_SIZE => DDR_LINESIZE,
 		WORD_SIZE => DDR_WORDSIZE,
 		BYTE_SIZE => DDR_BYTESIZE,
-		tCP       => DDR_tCP),
-
+		tCP       => DDR_tCP)
 	port map (
 		sys_rst => sys_rst,
 		sys_bl  => "---",
@@ -466,13 +466,15 @@ begin
 		xdr_ras => ddr_ras,
 		xdr_cas => ddr_cas,
 		xdr_we  => ddr_we,
-		xdr_ba  => ddr_ba,
+		xdr_b   => ddr_b,
 		xdr_a   => ddr_a,
-		xdr_dmo  => ddr_dm,
+		xdr_dmi  => ddr_dmi,
+		xdr_dmt  => ddr_dmo,
+		xdr_dmo  => ddr_dmt,
 		xdr_dqst => ddr_dqst,
 		xdr_dqsi => ddr_dqsi,
 		xdr_dqso => ddr_dqso,
-		xdr_dqz => ddr_dqz,
+		xdr_dqt => ddr_dqt,
 		xdr_dqi => ddr_dqi,
 		xdr_dqo => ddr_dqo,
 		xdr_odt => ddr_odt,

@@ -33,6 +33,7 @@ entity ddrphy is
 		sys_dqo  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqsi : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
+		sys_dqso : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 
 		ddr_ck  : out std_logic;
 		ddr_cke : out std_logic;
@@ -360,6 +361,7 @@ begin
 		end loop;
 	end process;
 
+	sys_dqso <= ddr_dqs;
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqo <= to_stdlogicvector(sdqo);
 	sys_cfgo <= to_stdlogicvector(cfgo);

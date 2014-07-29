@@ -11,8 +11,8 @@ entity xdr is
 		mark : tmrk_ids := M6T;
 		tCP  : time := 6.0 ns;
 
-		bank_bits : natural :=  2;
-		addr_bits : natural := 13;
+		bank_size : natural :=  2;
+		addr_size : natural := 13;
 
 		sclk_phases : natural := 4;
 		sclk_edges  : natural := 2;
@@ -37,8 +37,8 @@ entity xdr is
 		sys_cmd_req : in  std_logic := '-';
 		sys_cmd_rdy : out std_logic;
 		sys_rw : in  std_logic := '0';
-		sys_b  : in  std_logic_vector(bank_bits-1 downto 0) := (others => '-');
-		sys_a  : in  std_logic_vector(addr_bits-1 downto 0) := (others => '-');
+		sys_b  : in  std_logic_vector(bank_size-1 downto 0) := (others => '-');
+		sys_a  : in  std_logic_vector(addr_size-1 downto 0) := (others => '-');
 		sys_di_rdy : out std_logic;
 		sys_do_rdy : out std_logic_vector((word_size/byte_size)-1 downto 0);
 		sys_act : out std_logic;
@@ -56,10 +56,11 @@ entity xdr is
 		xdr_ras : out std_logic;
 		xdr_cas : out std_logic;
 		xdr_we  : out std_logic;
-		xdr_ba  : out std_logic_vector(bank_bits-1 downto 0);
-		xdr_a   : out std_logic_vector(addr_bits-1 downto 0);
+		xdr_b   : out std_logic_vector(bank_size-1 downto 0);
+		xdr_a   : out std_logic_vector(addr_size-1 downto 0);
 		xdr_odt : out std_logic;
-		xdr_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+    xdr_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+    xdr_dmt : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector((word_size/byte_size)*dqso_phases*line_size/byte_size-1 downto 0) := (others => '-');
@@ -67,8 +68,8 @@ entity xdr is
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 
-		xdr_dqsz : out std_logic_vector(data_phases*(line_size*byte_size)/word_size-1 downto 0);
-		xdr_dqz : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0);
+		xdr_dqst : out std_logic_vector(data_phases*(line_size*byte_size)/word_size-1 downto 0);
+		xdr_dqt : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0);
 		xdr_sti : in  std_logic_vector(data_phases/(word_size/byte_size)-1 downto 0) := (others => '-');
 		xdr_sto : out std_logic_vector((line_size/word_size)*2*data_phases-1 downto 0) := (others => '-'));
 
@@ -86,16 +87,16 @@ architecture mix of xdr is
 	signal xdr_cfg_ras : std_logic;
 	signal xdr_cfg_cas : std_logic;
 	signal xdr_cfg_we  : std_logic;
-	signal xdr_cfg_a   : std_logic_vector(addr_bits-1 downto 0);
-	signal xdr_cfg_b   : std_logic_vector(bank_bits-1 downto 0);
+	signal xdr_cfg_a   : std_logic_vector(addr_size-1 downto 0);
+	signal xdr_cfg_b   : std_logic_vector(bank_size-1 downto 0);
 
 	signal xdrphy_odt : std_logic;
 	signal xdrphy_cke : std_logic;
 	signal xdrphy_ras : std_logic;
 	signal xdrphy_cas : std_logic;
 	signal xdrphy_we  : std_logic;
-	signal xdrphy_a   : std_logic_vector(addr_bits-1 downto 0);
-	signal xdrphy_b   : std_logic_vector(bank_bits-1 downto 0);
+	signal xdrphy_a   : std_logic_vector(addr_size-1 downto 0);
+	signal xdrphy_b   : std_logic_vector(bank_size-1 downto 0);
 
 	signal xdr_cfg_req : std_logic;
 	signal xdr_cfg_dll : std_logic;
@@ -171,7 +172,7 @@ begin
 
 	xdr_cfg_du : entity hdl4fpga.xdr_cfg(ddr1)
 	generic map (
-		a    => addr_bits,
+		a    => addr_size,
 		cRP  => to_xdrlatency(tCP, mark, tRP),
 		cMRD => to_xdrlatency(tCP, mark, tMRD),
 		cRFC => to_xdrlatency(tCP, mark, tRFC))

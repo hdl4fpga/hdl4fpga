@@ -113,15 +113,15 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		bank_size => ddr3_b'length,
-		addr_size => ddr3_a'length,
-		line_size => ddr3_dq'length*2*4,
-		word_size => ddr3_dq'length*2,
-		byte_size => ddr3_dq'length,
-		strobe  => "INTERNAL",
-		dstd => 3,
+		DDR_BANKSIZE => ddr3_b'length,
+		DDR_ADDRSIZE => ddr3_a'length,
+		DDR_LINESIZE => ddr3_dq'length*2*4,
+		DDR_WORDSIZE => ddr3_dq'length*2,
+		DDR_BYTESIZE => ddr3_dq'length,
+		DDR_strobe  => "INTERNAL",
+		DDR_STD => 3,
 		xd_len  => 8,
-		tCP    => (uclk_period*real(ddr_div))/real(ddr_mul))
+		DDR_tCP    => (uclk_period*real(ddr_div))/real(ddr_mul))
 	port map (
 		sys_rst => scope_rst,
 
@@ -136,14 +136,16 @@ begin
 		ddr_ras => ddrphy_ras,
 		ddr_cas => ddrphy_cas,
 		ddr_we  => ddrphy_we,
-		ddr_ba  => ddrphy_b,
+		ddr_b   => ddrphy_b,
 		ddr_a   => ddrphy_a,
-		ddr_dm  => ddrphy_dm,
+		ddr_dmi  => ddrphy_dmi,
+		ddr_dmt  => ddrphy_dmt,
+		ddr_dmo  => ddrphy_dmo,
 		ddr_dqst => ddrphy_dqst,
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dq,
-		ddr_dqo  => ddrphy_dq,
+		ddr_dqi  => ddrphy_dqi,
+		ddr_dqo  => ddrphy_dqo,
 		ddr_odt => ddrphy_odt,
 
 		mii_rxc  => phy1_rxc,
@@ -170,29 +172,28 @@ begin
 		word_size => ddr3_dq'length*2,
 		byte_size => ddr3_dq'length)
 	port map (
-		sys_rst  
+		sys_rst, 
 		sys_sclk,
 		sys_sclk2x, 
 		sys_eclk,
 
 		sys_cfgi => (others => '-'),
-		sys_cfgo => (others => open),
+		sys_cfgo => open,
 		ddrs_clk0  => ddrs_clk0,
 		ddrs_clk90 => ddrs_clk90,
-		sys_rst => ddrphy_rst,
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
 		sys_ras => ddrphy_ras,
 		sys_cas => ddrphy_cas,
 		sys_we  => ddrphy_we,
-		sys_b   => ddrphy_ba,
+		sys_b   => ddrphy_b,
 		sys_a   => ddrphy_a,
 		sys_dqsi => ddrphy_dqsi,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
 		sys_dmi => ddrphy_dmi,
 		sys_dmt => ddrphy_dmt,
-		sys_dmo => ddrphy_dmo
+		sys_dmo => ddrphy_dmo,
 		sys_dqi  => ddrphy_dqi,
 		sys_dqt  => ddrphy_dqt,
 		sys_dqo  => ddrphy_dqo,
@@ -201,7 +202,7 @@ begin
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,
 		ddr_cke => ddr3_cke,
-		ddr_odt => ddr3_odr,
+		ddr_odt => ddr3_odt,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,
 		ddr_we  => ddr3_we,
