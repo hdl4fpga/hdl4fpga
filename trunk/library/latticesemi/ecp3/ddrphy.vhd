@@ -10,13 +10,14 @@ entity ddrphy is
 		word_size : natural := 2;
 		byte_size : natural := 2);
 	port (
-		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
-		sys_sclk2x : in  std_logic;
+		sys_sclk2x : in std_logic;
 		sys_eclk : in  std_logic;
 
+		sys_rst  : in  std_logic_vector(2-1 downto 0);
 		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
 		sys_cfgo : out std_logic_vector(1*(word_size/byte_size)-1 downto 0);
+		sys_cs   : in  std_logic_vector(2-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
 		sys_b    : in  std_logic_vector(line_size*bank_size-1 downto 0);
 		sys_a    : in  std_logic_vector(line_size*addr_size-1 downto 0);
@@ -35,8 +36,10 @@ entity ddrphy is
 		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dqso : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 
+		ddr_rst : out std_logic;
+		ddr_cs  : out std_logic := '0';
+		ddr_cke : out std_logic := '1';
 		ddr_ck  : out std_logic;
-		ddr_cke : out std_logic;
 		ddr_odt : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
@@ -261,7 +264,9 @@ begin
 		sys_sclk => sys_sclk,
 		sys_sclk2x => sys_sclk2x,
           
+		sys_rst => sys_rst,
 		sys_rw  => sys_rw,
+		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sys_b,
 		sys_a   => sys_a,
@@ -270,6 +275,7 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
         
+		ddr_rst => ddr_rst,
 		ddr_ck  => ddr_ck,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
@@ -293,7 +299,7 @@ begin
 			line_size => line_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => sys_rst,
+			sys_rst  => sys_rst(0),
 			sys_sclk => sys_sclk,
 			sys_eclk => sys_eclk,
 			sys_rw   => sys_rw,

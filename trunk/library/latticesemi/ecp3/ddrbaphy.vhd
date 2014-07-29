@@ -11,6 +11,8 @@ entity ddrbaphy is
 		sys_sclk2x : in  std_logic;
 
 		sys_rw  : in  std_logic;
+		sys_rst : in  std_logic_vector(line_size-1 downto 0);
+		sys_cs  : in  std_logic_vector(line_size-1 downto 0);
 		sys_cke : in  std_logic_vector(line_size-1 downto 0);
 		sys_b   : in  std_logic_vector(line_size*bank_size-1 downto 0);
 		sys_a   : in  std_logic_vector(line_size*addr_size-1 downto 0);
@@ -19,6 +21,8 @@ entity ddrbaphy is
 		sys_we  : in  std_logic_vector(line_size-1 downto 0);
 		sys_odt : in  std_logic_vector(line_size-1 downto 0);
 
+		ddr_rst : out std_logic;
+		ddr_cs  : out std_logic;
 		ddr_ck  : out std_logic;
 		ddr_cke : out std_logic;
 		ddr_odt : out std_logic;
@@ -96,6 +100,13 @@ begin
 		db => '1',
 		q  => ddr_ck);
 
+	cs_i : oddrxd1
+	port map (
+		sclk => sys_sclk,
+		da => sys_cs(0),
+		db => sys_cs(1),
+		q  => ddr_cs);
+
 	cke_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
@@ -103,11 +114,18 @@ begin
 		db => sys_cke(1),
 		q  => ddr_cke);
 
-	odt_i :  oddrxd1
+	odt_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_odt(0),
 		db => sys_odt(1),
 		q  => ddr_odt);
+
+	rst_i : oddrxd1
+	port map (
+		sclk => sys_sclk,
+		da => sys_rst(0),
+		db => sys_rst(1),
+		q  => ddr_rst);
 
 end;
