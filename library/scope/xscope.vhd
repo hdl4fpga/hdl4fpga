@@ -25,9 +25,8 @@ entity scope is
 
 		input_clk : in std_logic;
 
+		ddrs_clks : in std_logic_vector(0 to 1);
 		ddr_rst : out std_logic;
-		ddrs_clk0  : in std_logic;
-		ddrs_clk90 : in std_logic;
 		ddr_cke : out std_logic;
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
@@ -280,7 +279,7 @@ begin
 		video_col => win_coloff,
 		video_do  => chann_dat,
 
-		ddrs_clk => ddrs_clk0,
+		ddrs_clk => ddrs_clks(0),
 		ddrs_ref_req => ddrs_ref_req,
 		ddrs_cmd_req => ddrs_cmd_req,
 		ddrs_cmd_rdy => ddrs_cmd_rdy,
@@ -304,10 +303,10 @@ begin
 		miitx_addr => miitx_addr,
 		miitx_data => miitx_data);
 
-	process (ddrs_clk0)
+	process (ddrs_clks(0))
 		variable trdy_edge : std_logic_vector(0 to 1);
 	begin
-		if rising_edge(ddrs_clk0) then
+		if rising_edge(ddrs_clks(0)) then
 			if miitx_rdy/='0' then
 				miitx_rdy <= not miitx_req;
 			elsif trdy='1' then
@@ -442,9 +441,8 @@ begin
 		sys_cl  => "---",
 		sys_cwl => "---",
 		sys_wr  => "---",
-		sys_clks(0) => ddrs_clk0,
-		sys_clks(1) => ddrs_clk90,
-		xdr_wclks(0) => ddrs_clk90,
+		sys_clks => ddrs_clks,
+		xdr_wclks(0) => ddrs_clks(0),
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
