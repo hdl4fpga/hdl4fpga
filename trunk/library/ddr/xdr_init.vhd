@@ -382,40 +382,23 @@ architecture ddr3 of xdr_init is
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
-
-	type register_field record is
-		base : natural;
-		size : natural;
-	end record;
-
 	type inst record is
-		id  : ;
-		dst : register_field;
-		src : register_field;
+		cmd : ;
+		: dsctr
 	end record;
-
-	subtype  mr0_bl is natural range 2 downto 0;
-	constant mr0_bt : natural := 3;
-	subtype  mr0_cl is natural range 6 downto 4;
-	constant mr0_tm : natural := 7;
-	constant mr0_dll : natural := 8;
-	subtype  mr0_wr is natural range 11 downto 9;
-	constant mr0_pd : natural := 12;
 
 	type xxxx is array (natural range <>) of inst;
 	constant ;  xxxx := ( 
-		(lb_lmr0, rmsk'( 0, 3), rmsk'()));	-- BL
-		(lb_lmr0, rmsk'( 3, 1), rmsk'()));	-- BT
-		(lb_lmr0, rmsk'( 4, 3), rmsk'()));	-- CL
-		(lb_lmr0, rmsk'( 7, 1), rmsk'()));	-- TM
-		(lb_lmr0, rmsk'( 8, 1), rmsk'()));	-- DLL
-		(lb_lmr0, rmsk'( 9, 3), rmsk'()));	-- WR
-		(lb_lmr0, rmsk'(12, 1), rmsk'()));	-- PD
-		(, rmsk'(), rmsk'()));
-		(, rmsk'(), rmsk'()));
-		(, rmsk'(), rmsk'()));
-		(, rmsk'(), rmsk'()));
+		(ld, mr0, mov(bl)),
+		(ld, mr0, set(bt)),
+		(ld, mr0, mov(cl)),
+		(ld, mr0, clr(tm)),
+		(ld, mr0, set(dll)),
+		(ld, mr0, mov(wr)),
+		(ld, mr0, set(pd));
 		
+	signal src : std_logic_vector := 
+		"000" & "111" & "---";
 begin
 	process (xdr_init_clk)
 	begin
