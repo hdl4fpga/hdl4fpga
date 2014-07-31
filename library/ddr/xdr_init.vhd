@@ -382,20 +382,38 @@ architecture ddr3 of xdr_init is
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
-	type inst record is
-		cmd : ;
-		: dsctr
+	type ldsc record is
+		dbase : natural;
+		sbase : natural;
+		size  : natural;
 	end record;
+
+	type record is
+		dst : std_logic_vector(xdr_init_b'range);
+		dsc : ldsc;
+	end record;
+
+	type inst record is
+		issu : issued;
+		ccmd : std_logic_vector(0 to 2);
+	end;
+
+	impure function mov (
+		constant dst : std_logic_vector;
+		constant )
+		return desc;
+	begin
+	end;
 
 	type xxxx is array (natural range <>) of inst;
 	constant ;  xxxx := ( 
-		(ld, mr0, mov(bl)),
-		(ld, mr0, set(bt)),
-		(ld, mr0, mov(cl)),
-		(ld, mr0, clr(tm)),
-		(ld, mr0, set(dll)),
-		(ld, mr0, mov(wr)),
-		(ld, mr0, set(pd));
+		(issmr0, ld, mov(mr0, bl)),
+		(issmr0, ld, set(mr0, bt)),
+		(issmr0, ld, mov(mr0, cl)),
+		(issmr0, ld, clr(mr0, tm)),
+		(issmr0, ld, mr0, set(dll)),
+		(issmr0, ld, mr0, mov(wr)),
+		(issmr0, ld, mr0, set(pd));
 		
 	signal src : std_logic_vector := 
 		"000" & "111" & "---";
