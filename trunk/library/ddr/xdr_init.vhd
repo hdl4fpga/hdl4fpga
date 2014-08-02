@@ -382,20 +382,21 @@ architecture ddr3 of xdr_init is
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
-	type ldsc record is
+	type desc record is
 		dbase : natural;
 		sbase : natural;
 		size  : natural;
 	end record;
 
-	type record is
+	type inst_desc record is
+		cmd : std_logic_vector(0 to 2);
 		dst : std_logic_vector(xdr_init_b'range);
-		dsc : ldsc;
+		arg : desc;
 	end record;
 
-	type inst record is
-		issu : issued;
-		ccmd : std_logic_vector(0 to 2);
+	type issue record is
+		class : natural;
+		instr : inst_desc;
 	end;
 
 	impure function mov (
@@ -407,13 +408,13 @@ architecture ddr3 of xdr_init is
 
 	type xxxx is array (natural range <>) of inst;
 	constant ;  xxxx := ( 
-		(issmr0, ld, mov(mr0, bl)),
-		(issmr0, ld, set(mr0, bt)),
-		(issmr0, ld, mov(mr0, cl)),
-		(issmr0, ld, clr(mr0, tm)),
-		(issmr0, ld, mr0, set(dll)),
-		(issmr0, ld, mr0, mov(wr)),
-		(issmr0, ld, mr0, set(pd));
+		(issmr0, mov(mr0, bl)),
+		(issmr0, set(mr0, bt)),
+		(issmr0, mov(mr0, cl)),
+		(issmr0, clr(mr0, tm)),
+		(issmr0, set(mr0, dll)),
+		(issmr0, mov(mr0, wr)),
+		(issmr0, set(mr0, pd)));
 		
 	signal src : std_logic_vector := 
 		"000" & "111" & "---";
