@@ -382,32 +382,59 @@ architecture ddr3 of xdr_init is
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
-	type desc record is
+	type field_desc record is
 		dbase : natural;
 		sbase : natural;
 		size  : natural;
 	end record;
 
-	type inst_desc record is
-		cmd : std_logic_vector(0 to 2);
-		dst : std_logic_vector(xdr_init_b'range);
-		arg : desc;
+	type inst_param record is
+		cmd  : std_logic_vector(0 to 2);
+		dest : std_logic_vector(xdr_init_b'range);
+		desc : field_desc;
 	end record;
 
 	type issue record is
 		class : natural;
-		instr : inst_desc;
+		param : inst_param;
 	end;
 
-	impure function mov (
-		constant dst : std_logic_vector;
-		constant )
-		return desc;
+	constant bl : field_desc;
+
+	function mov (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+		variable param : inst_param;
 	begin
+		param.cmd  = cmd_lmr;
+		param.dest = ;
+		param.desc = desc;
+		return param;
+	end function;
+
+	function set (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+	begin
+		param.cmd  = cmd_lmr;
+		param.dest = ;
+		param.desc = desc;
 	end;
 
-	type xxxx is array (natural range <>) of inst;
-	constant ;  xxxx := ( 
+	function clr (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+	begin
+		param.cmd  = cmd_lmr;
+		param.dest = ;
+		param.desc = desc;
+	end;
+
+	type code array (natural range <>) of inst;
+	constant init_pgm :  init_code := ( 
 		(issmr0, mov(mr0, bl)),
 		(issmr0, set(mr0, bt)),
 		(issmr0, mov(mr0, cl)),
