@@ -4,13 +4,9 @@ use ieee.numeric_std.all;
 
 entity xdr_init is
 	generic (
-		lat_length : natural := 5;
-		a    : natural := 13;
-		trp  : natural := 10;
-		tmrd : natural := 11;
-	    trfc : natural := 13;
-	    tmod : natural := 13;
-		ba   : natural := 2);
+		tMRD : natural := 11;
+		ADDR_SIZE : natural := 13);
+		BANK_SIZE : natural := 3);
 	port (
 		xdr_init_ods : in  std_logic := '0';
 		xdr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
@@ -29,12 +25,8 @@ entity xdr_init is
 		xdr_init_ras : out std_logic := '1';
 		xdr_init_cas : out std_logic := '1';
 		xdr_init_we  : out std_logic := '1';
-		xdr_init_a   : out std_logic_vector(a-1 downto 0) := (others => '1');
-		xdr_init_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
-
-	constant ras : natural := 0;
-	constant cas : natural := 1;
-	constant rw  : natural := 2;
+		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
+		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
 
 	constant cnop  : std_logic_vector(0 to 2) := "111";
 	constant cauto : std_logic_vector(0 to 2) := "001";
@@ -42,6 +34,7 @@ entity xdr_init is
 	constant clmr  : std_logic_vector(0 to 2) := "000";
 	constant cqcl  : std_logic_vector(0 to 2) := "110";
 
+	type ccmd is (CFG_NOP, CFG_AUTO
 	type field_desc record is
 		dbase : natural;
 		sbase : natural;
@@ -103,289 +96,16 @@ entity xdr_init is
 		xdr_cmd : std_logic_vector(0 to 2);
 		xdr_lat : signed(0 to lat_length-1);
 	end record;
+
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
 end;
 
-architecture ddr1 of xdr_init is
-	type xdr_labels is (s_pall1, s_lmr1, s_lmr2, s_pall2, s_auto1, s_auto2, s_lmr3, s_end);
-
-	type xdr_init_insr is record
-		lbl  : xdr_labels;
-		code : xdr_code;
-	end record;
-
-	type xdr_state_tab is array (xdr_labels) of xdr_init_insr;
-	constant xdr_init_pgm : xdr_state_tab := (
-		s_pall1 => (s_lmr1,  (cmd_pre,  to_signed ( trp-2, lat_length))),
-		s_lmr1  => (s_lmr2,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		s_lmr2  => (s_pall2, (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		s_pall2 => (s_auto1, (cmd_pre,  to_signed ( trp-2, lat_length))),
-		s_auto1 => (s_auto2, (cmd_auto, to_signed (trfc-2, lat_length))),
-		s_auto2 => (s_lmr3,  (cmd_auto, to_signed (trfc-2, lat_length))),
-		s_lmr3  => (s_end,   (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		s_end   => (s_end,   (cmd_nop,  (1 to lat_length => '1'))));
-
-	signal lat_timer  : signed(0 to lat_length-1);
-	signal xdr_init_pc : xdr_labels;
-begin
-
-	process (xdr_init_clk)
-	begin
-		if rising_edge(xdr_init_clk) then
-			if xdr_init_req='1' then
-				if lat_timer(0)='1' then
-					lat_timer    <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
-					xdr_init_ras <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(ras);
-					xdr_init_cas <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(cas);
-					xdr_init_we  <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(rw);
-
-					xdr_init_a <= (others => '0');
-					case xdr_init_pc is
-					when s_lmr1 =>
-						xdr_init_a(1 downto 0) <= xdr_init_ods & '0';
-					when s_lmr2 =>
-						xdr_init_a(9-1 downto 0) <= "10" & xdr_init_cl & "0" & xdr_init_bl;
-					when s_lmr3 =>
-						xdr_init_a(9-1 downto 0) <= "00" & xdr_init_cl & "0" & xdr_init_bl;
-					when s_pall1|s_pall2 =>
-						xdr_init_a(10) <= '1';
-					when s_end =>
-						xdr_init_a <= (others => '1');
-					when others =>
-						xdr_init_a <= (others => '0');
-					end case;
-
-					case xdr_init_pc is
-					when s_lmr1 =>
-						xdr_init_b <= "01";
-					when s_end =>
-						xdr_init_b <= "11";
-					when others =>
-						xdr_init_b <= "00";
-					end case;
-
-					xdr_init_pc <= xdr_init_pgm(xdr_init_pc).lbl;
-					case xdr_init_pc is
-					when s_end =>
-						xdr_init_rdy <= '1';
-					when others =>
-						xdr_init_rdy <= '0';
-					end case;
-
-					if xdr_labels'pos(xdr_init_pc) > xdr_labels'pos(s_pall2) then
-						xdr_init_dll <= '1';
-					else
-						xdr_init_dll <= '0';
-					end if;
-				else
-					lat_timer    <= lat_timer - 1;
-					xdr_init_ras <= '1';
-					xdr_init_cas <= '1';
-					xdr_init_we  <= '1';
-					xdr_init_b   <= (others => '1');
-					xdr_init_a   <= (others => '1');
-					xdr_init_rdy <= '0';
-				end if;
-			else
-				xdr_init_pc  <= s_pall1;
-				lat_timer    <= (others => '1');
-				xdr_init_ras <= '1';
-				xdr_init_cas <= '1';
-				xdr_init_we  <= '1';
-				xdr_init_b   <= (others => '1');
-				xdr_init_a   <= (others => '1');
-				xdr_init_rdy <= '0';
-				xdr_init_dll <= '0';
-			end if;
-		end if;
-	end process;
-end;
-
-architecture ddr2 of xdr_init is
-
-	type xdr_labels is (
-		lb_pall1, lb_lemr2, lb_lemr3,
-		lb_edll,  lb_rdll,  lb_pall2,
-		lb_auto1, lb_auto2, lb_lmr,
-		lb_docd,  lb_xocd,  lb_end); 
-
-	type xdr_init_insr is record
-		lbl  : xdr_labels;
-		code : xdr_code;
-	end record;
-
-	type xdr_state_code is array (xdr_labels) of xdr_init_insr;
-
-	constant xdr_init_pgm : xdr_state_code := (
-		(lb_lemr2, (cmd_pre,  to_signed ( trp-2, lat_length))),
-		(lb_lemr3, (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_edll,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_rdll,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_pall2, (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_auto1, (cmd_pre,  to_signed ( trp-2, lat_length))),
-		(lb_auto2, (cmd_auto, to_signed (trfc-2, lat_length))),
-		(lb_lmr,   (cmd_auto, to_signed (trfc-2, lat_length))),
-		(lb_docd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_xocd,  (cmd_lmr,  to_signed (tmrd-2, lat_length))),
-		(lb_end,   (cmd_lmr,  to_signed (tmod-2, lat_length))),
-		(lb_end,   (cmd_nop,  (0 to lat_length-1 => '1'))));
-
-	signal lat_timer : signed(0 to lat_length-1);
-	signal xdr_init_pc : xdr_labels;
-
-	-- DDR2 Mode Register --
-	------------------------
-
-	subtype  mr_bl is natural range 2 downto 0;
-	constant mr_bt : natural := 3;
-	subtype  mr_cl is natural range 6 downto 4;
-	constant mr_tm : natural := 7;
-	constant mr_dll : natural := 8;
-	subtype  mr_wr is natural range 11 downto 9;
-	constant mr_pd : natural := 12;
-
-	-- DDR2 Extended Mode Register --
-	---------------------------------
-
-	constant emr_dll : natural := 0;
-	constant emr_ods : natural := 1;
-	constant emr_rt0 : natural := 2;
-	subtype  emr_pl  is natural range 5 downto 3;
-	constant emr_rt1 : natural := 6;
-	subtype  emr_ocd is natural range 9 downto 7;
-	constant emr_dqs : natural := 10;
-	constant emr_rdqs : natural := 11;
-	constant emr_out : natural := 12;
-
-	-- DDR2 Extended Mode Register 2 --
-	-----------------------------------
-
-	constant emr2_srt : natural := 7;
-
-begin
-	process (xdr_init_clk)
-	begin
-		if rising_edge(xdr_init_clk) then
-			if xdr_init_req='1' then
-				if lat_timer(0)='1' then
-					lat_timer    <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
-					xdr_init_ras <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(ras);
-					xdr_init_cas <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(cas);
-					xdr_init_we  <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(rw);
-
-					xdr_init_odt <= '0';
-					xdr_init_a <= (others => '0');
-					case xdr_init_pc is
-					when lb_pall1 =>
-						xdr_init_a(10) <= '1';
-					when lb_lemr2|lb_lemr3 =>
-						xdr_init_a <= (others => '0');
-					when lb_edll =>
-						xdr_init_a(emr_dll) <= '0';
-					when lb_rdll =>
-						xdr_init_a(mr_dll) <= '1'; 
-					when lb_pall2 =>
-						xdr_init_a(10) <= '1';
-					when lb_auto1|lb_auto2 =>
-						xdr_init_a(10) <= '1';
-					when lb_lmr =>
-						xdr_init_a(mr_bl) <= xdr_init_bl; 
-						xdr_init_a(mr_bt) <= '0'; 
-						xdr_init_a(mr_cl) <= xdr_init_cl;
-						xdr_init_a(mr_tm) <= '0'; 
-						xdr_init_a(mr_dll) <= '0'; 
-						xdr_init_a(mr_wr) <= xdr_init_wr; 
-						xdr_init_a(mr_pd) <= '0'; 
-					when lb_docd =>
-						xdr_init_a(emr_dll) <= '0';
-						xdr_init_a(emr_ods) <= xdr_init_ods;
-						xdr_init_a(emr_rt0) <= xdr_init_rtt(0);
-						xdr_init_a(emr_rt1) <= xdr_init_rtt(1);
-						xdr_init_a(emr_ocd) <= (others => '1');
-						xdr_init_a(emr_pl)  <= xdr_init_pl;
-						xdr_init_a(emr_dqs) <= xdr_init_dqsn;
-						xdr_init_a(emr_rdqs) <= '0';
-						xdr_init_a(emr_out) <= '0';
-					when lb_xocd =>
-						xdr_init_a(emr_dll) <= '0';
-						xdr_init_a(emr_ods) <= xdr_init_ods;
-						xdr_init_a(emr_rt0) <= xdr_init_rtt(0);
-						xdr_init_a(emr_rt1) <= xdr_init_rtt(1);
-						xdr_init_a(emr_ocd) <= (others => '0');
-						xdr_init_a(emr_pl)  <= xdr_init_pl;
-						xdr_init_a(emr_dqs) <= xdr_init_dqsn;
-						xdr_init_a(emr_rdqs) <= '0';
-						xdr_init_a(emr_out) <= '0';
-
-					when lb_end =>
-						xdr_init_a <= (others => '1');
-						xdr_init_odt <= '1';
-					when others =>
-						xdr_init_a <= (others => '0');
-						xdr_init_odt <= '0';
-					end case;
-
-					xdr_init_b <= (others => '0');
-					case xdr_init_pc is
-					when lb_lemr2 =>
-						xdr_init_b <= "10";
-					when lb_lemr3 =>
-						xdr_init_b <= "11";
-					when lb_edll =>
-						xdr_init_b <= "01";
-					when lb_rdll =>
-						xdr_init_b <= "00";
-					when lb_lmr =>
-						xdr_init_b <= "00";
-					when lb_docd|lb_xocd =>
-						xdr_init_b <= "01";
-					when lb_end =>
-						xdr_init_b <= "11";
-					when others =>
-						xdr_init_b <= "00";
-					end case;
-
-					xdr_init_pc <= xdr_init_pgm(xdr_init_pc).lbl;
-					if xdr_init_pc=lb_end then
-						xdr_init_rdy <= '1';
-					else
-						xdr_init_rdy <= '0';
-					end if;
-
-					if xdr_labels'pos(xdr_init_pc) > xdr_labels'pos(lb_pall2) then
-						xdr_init_dll <= '1';
-					else
-						xdr_init_dll <= '0';
-					end if;
-				else
-					lat_timer    <= lat_timer - 1;
-					xdr_init_ras <= '1';
-					xdr_init_cas <= '1';
-					xdr_init_we  <= '1';
-					xdr_init_b   <= (others => '1');
-					xdr_init_a   <= (others => '1');
-					xdr_init_rdy <= '0';
-				end if;
-			else
-				xdr_init_pc  <= lb_pall1;
-				lat_timer    <= (others => '1');
-				xdr_init_ras <= '1';
-				xdr_init_cas <= '1';
-				xdr_init_we  <= '1';
-				xdr_init_odt <= '0';
-				xdr_init_b   <= (others => '1');
-				xdr_init_a   <= (others => '1');
-				xdr_init_rdy <= '0';
-				xdr_init_dll <= '0';
-			end if;
-		end if;
-	end process;
-end;
+library hdl4fpga.all;
 
 architecture ddr3 of xdr_init is
+	function unsigned_num_bits (arg: natural) return natural;
 
-	type xdr_labels is (
 		lb_lmr2, lb_lmr3, lb_lmr1, lb_lmr0,
 		lb_zqcl, lb_end); 
 
@@ -396,7 +116,7 @@ architecture ddr3 of xdr_init is
 
 	type xdr_state_code is array (xdr_labels) of xdr_init_insr;
 
-	signal lat_timer : signed(0 to lat_length-1);
+	signal lat_timer : signed(0 to unsigned_numbits(tMRD-2));
 	signal xdr_init_pc : xdr_labels;
 
 	constant xdr_init_pgm : xdr_state_code := (
@@ -476,15 +196,14 @@ architecture ddr3 of xdr_init is
 
 	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
 
-	function (
-		constant class : natural;
-		constant pgm   : code)
+	function compile_pgm(
+		constant class : natural)
 		return std_logic_vector is
 		variable val : std_logic_vector(xdr_init_a'range);
 	begin
 		for i in pgm'range loop
-			if pgm(i).class = class then
-				for j in 0 to pgm(i).inst.param.desc.size loop
+			if init_code(i).class = class then
+				for j in 0 to init_code(i).inst.param.desc.size loop
 					val(j+pgm(i).inst.param.desc.dbase) := src(j+pgm(i).inst.param.desc.sbase);
 				end loop;
 			end if;
@@ -494,12 +213,8 @@ architecture ddr3 of xdr_init is
 
 begin
 	src <=
-		xdr_init_ods &
-		xdr_init_pl &
-		xdr_init_cwl &
-		xdr_init_rtt &
-		xdr_init_wr &
-		xdr_init_bl &
+		xdr_init_ods & xdr_init_pl & xdr_init_cwl &
+		xdr_init_rtt & xdr_init_wr & xdr_init_bl  &
 		xdr_init_cl;
 
 	process (xdr_init_clk)
@@ -507,48 +222,9 @@ begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
-					lat_timer    <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
+					lat_timer <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
 
-					xdr_init_a <= (others => '0');
-					case xdr_init_pc is
-					when lb_lmr3 =>
-						xdr_init_a <= (others => '0');
-					when lb_lmr2 =>
-						xdr_init_a(mr2_cwl) <= xdr_init_cwl;
-					when lb_lmr1 =>
-						xdr_init_a(mr1_dll) <= '0';
-					when lb_lmr0 =>
-						xdr_init_a(mr0_bl) <= xdr_init_bl; 
-						xdr_init_a(mr0_bt) <= '0'; 
-						xdr_init_a(mr0_cl) <= xdr_init_cl;
-						xdr_init_a(mr0_tm) <= '0'; 
-						xdr_init_a(mr0_dll) <= '1'; 
-						xdr_init_a(mr0_wr) <= xdr_init_wr; 
-						xdr_init_a(mr0_pd) <= '0'; 
-					when lb_zqcl =>
-						xdr_init_a(10) <= '1';
-					when lb_end =>
-						xdr_init_a <= (others => '1');
-					when others =>
-						xdr_init_a <= (others => '0');
-					end case;
-
-					xdr_init_b <= (others => '0');
-					case xdr_init_pc is
-					when lb_lmr2 =>
-						xdr_init_b <= "010";
-					when lb_lmr3 =>
-						xdr_init_b <= "011";
-					when lb_lmr1 =>
-						xdr_init_b <= "001";
-					when lb_lmr0 =>
-						xdr_init_b <= "000";
-					when lb_zqcl =>
-						xdr_init_b <= "---";
-					when lb_end =>
-						xdr_init_b <= "111";
-					end case;
-
+					dst <= compile_pgm (xdr_init_pc);
 					xdr_init_pc <= xdr_init_pgm(xdr_init_pc).lbl;
 					if xdr_init_pc=lb_end then
 						xdr_init_rdy <= '1';
@@ -563,23 +239,12 @@ begin
 					end if;
 				else
 					lat_timer    <= lat_timer - 1;
-					xdr_init_ras <= '1';
-					xdr_init_cas <= '1';
-					xdr_init_we  <= '1';
-					xdr_init_b   <= (others => '1');
-					xdr_init_a   <= (others => '1');
-					xdr_init_rdy <= '0';
+					dst <= "U0" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 				end if;
 			else
 				xdr_init_pc  <= lb_lmr2;
 				lat_timer    <= (others => '1');
-				xdr_init_ras <= '1';
-				xdr_init_cas <= '1';
-				xdr_init_we  <= '1';
-				xdr_init_b   <= (others => '1');
-				xdr_init_a   <= (others => '1');
-				xdr_init_rdy <= '0';
-				xdr_init_dll <= '0';
+				dst <= "00" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 			end if;
 		end if;
 	end process;
