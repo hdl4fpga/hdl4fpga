@@ -36,11 +36,68 @@ entity xdr_init is
 	constant cas : natural := 1;
 	constant rw  : natural := 2;
 
-	constant cmd_nop  : std_logic_vector(0 to 2) := "111";
-	constant cmd_auto : std_logic_vector(0 to 2) := "001";
-	constant cmd_pre  : std_logic_vector(0 to 2) := "010";
-	constant cmd_lmr  : std_logic_vector(0 to 2) := "000";
-	constant cmd_zqcl : std_logic_vector(0 to 2) := "110";
+	constant cnop  : std_logic_vector(0 to 2) := "111";
+	constant cauto : std_logic_vector(0 to 2) := "001";
+	constant cpre  : std_logic_vector(0 to 2) := "010";
+	constant clmr  : std_logic_vector(0 to 2) := "000";
+	constant cqcl  : std_logic_vector(0 to 2) := "110";
+
+	type field_desc record is
+		dbase : natural;
+		sbase : natural;
+		size  : natural;
+	end record;
+
+	type fielddesc_vector is array of (natural range <>) of field_desc;
+
+	type inst_param record is
+		cmd  : std_logic_vector(0 to 2);
+		dest : std_logic_vector(xdr_init_b'range);
+		desc : field_desc;
+	end record;
+
+	type issue record is
+		class : natural;
+		param : inst_param;
+	end;
+
+	type code array (natural range <>) of issue;
+
+	function mov (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+		variable param : inst_param;
+	begin
+		param.cmd  = clmr;
+		param.dest = dest;
+		param.desc = desc;
+		return param;
+	end function;
+
+	function set (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+		variable param : inst_param;
+	begin
+		param.cmd  = clmr;
+		param.dest = dest;
+		param.desc = desc;
+		param.desc.src = 1*xdr_init_a'length;
+	end;
+
+	function clr (
+		constant dest : std_logic_vector;
+		constant desc : field_desc)
+		return inst_param is
+		variable param : inst_param;
+	begin
+		param.cmd  = clmr;
+		param.dest = dest;
+		param.desc = desc;
+		param.desc.src = 0*xdr_init_a'length;
+	end;
 
 	type xdr_code is record
 		xdr_cmd : std_logic_vector(0 to 2);
@@ -342,38 +399,6 @@ architecture ddr3 of xdr_init is
 	signal lat_timer : signed(0 to lat_length-1);
 	signal xdr_init_pc : xdr_labels;
 
-	-- DDR3 Mode Register 0 --
-	--------------------------
-
-	-- DDR3 Mode Register 1 --
-	--------------------------
-
-	constant mr1_dll : natural := 0;
-	constant mr1_ods0 : natural := 1;
-	constant mr1_ods1 : natural := 5;
-	constant mr1_rt0 : natural := 2;
-	constant mr1_rt1 : natural := 6;
-	constant mr1_rt2 : natural := 9;
-	subtype  mr1_al  is natural range 4 downto 3;
-	constant mr1_wr  : natural := 7;
-	constant mr1_dqs : natural := 10;
-	constant mr1_tdqs : natural := 11;
-	constant mr1_qoff : natural := 12;
-
-	-- DDR3 Mode Register 2 --
-	--------------------------
-
-	subtype  mr2_cwl is natural range  5 downto 3;
-	constant mr2_asr : natural := 6;
-	constant mr2_srt : natural := 7;
-	subtype  mr2_rtt is natural range 10 downto 9;
-
-	-- DDR3 Mode Register 3 --
-	--------------------------
-
-	subtype  mr3_mpr_rf is natural range 1 downto 0;
-	constant mr3_mpr : natural := 1;
-
 	constant xdr_init_pgm : xdr_state_code := (
 		(lb_lmr3, (cmd_lmr, to_signed (tmrd-2, lat_length))),
 		(lb_lmr1, (cmd_lmr, to_signed (tmrd-2, lat_length))),
@@ -382,58 +407,54 @@ architecture ddr3 of xdr_init is
 		(lb_end, (cmd_zqcl, to_signed (tmrd-2, lat_length))),
 		(lb_end,  (cmd_nop, (1 to lat_length => '1'))));
 
-	type field_desc record is
-		dbase : natural;
-		sbase : natural;
-		size  : natural;
-	end record;
+	-- DDR3 Mode Register 0 --
+	--------------------------
 
-	type inst_param record is
-		cmd  : std_logic_vector(0 to 2);
-		dest : std_logic_vector(xdr_init_b'range);
-		desc : field_desc;
-	end record;
+	constant mr0 : std_logic_vector(2 to 0) := "000";
 
-	type issue record is
-		class : natural;
-		param : inst_param;
-	end;
+	constant bl : field_desc := (dbase =>  0, sbase => 0, size => 3);
+	constant bt : field_desc := (dbase =>  3, sbase => 0, size => 1);
+	constant cl : field_desc := (dbase =>  4, sbase => 0, size => 3);
+	constant tm : field_desc := (dbase =>  7, sbase => 0, size => 1);
+	constant wr : field_desc := (dbase =>  9, sbase => 0, size => 3);
+	constant pd : field_desc := (dbase => 12, sbase => 0, size => 1);
 
-	constant bl : field_desc;
+	-- DDR3 Mode Register 1 --
+	--------------------------
 
-	function mov (
-		constant dest : std_logic_vector;
-		constant desc : field_desc)
-		return inst_param is
-		variable param : inst_param;
-	begin
-		param.cmd  = cmd_lmr;
-		param.dest = ;
-		param.desc = desc;
-		return param;
-	end function;
+	constant mr1 : std_logic_vector(2 to 0) := "001";
 
-	function set (
-		constant dest : std_logic_vector;
-		constant desc : field_desc)
-		return inst_param is
-	begin
-		param.cmd  = cmd_lmr;
-		param.dest = ;
-		param.desc = desc;
-	end;
+	constant dll  : fill_desc := (dbase => 0, sbase => 0, size => 1);
+	constant ods  : filldesc_vector := (
+		(dbase => 1, sbase => 0, size => 1),
+	   	(dbase => 5, sbase => 0, size => 1));
+	constant rt   : filldesc_vector := (
+		(dbase => 2, sbase => 0, size => 1),
+		(dbase => 6, sbase => 0, size => 1),
+		(dbase => 9, sbase => 0, size => 1));
+	constant al   : fill_desc := (dbase =>  3, sbase => 0, size => 2);
+	constant wr   : fill_desc := (dbase =>  7, sbase => 0, size => 7);
+	constant dqs  : fill_desc := (dbase => 10, sbase => 0, size => 1);
+	constant tdqs : fill_desc := (dbase => 11, sbase => 0, size => 1);
+	constant qoff : fill_desc := (dbase => 12, sbase => 0, size => 1);
 
-	function clr (
-		constant dest : std_logic_vector;
-		constant desc : field_desc)
-		return inst_param is
-	begin
-		param.cmd  = cmd_lmr;
-		param.dest = ;
-		param.desc = desc;
-	end;
+	-- DDR3 Mode Register 2 --
+	--------------------------
 
-	type code array (natural range <>) of inst;
+	constant mr2 : std_logic_vector(2 to 0) := "011";
+
+	constant cwl : fill_desc := (dbase => 3, sbase => 0, size => 3);
+	constant asr : fill_desc := (dbase => 6, sbase => 0, size => 1);
+	constant srt : fill_desc := (dbase => 7, sbase => 0, size => 1);
+	constant rtt : fill_desc := (dbase => 9, sbase => 0, size => 2);
+
+	-- DDR3 Mode Register 3 --
+	--------------------------
+
+	constant mr3 : std_logic_vector(2 to 0) := "010";
+
+	constant rf  : fill_desc := (dbase => 0, sbase => 0, size => 2);
+
 	constant init_pgm :  init_code := ( 
 		(issmr0, mov(mr0, bl)),
 		(issmr0, set(mr0, bt)),
@@ -442,19 +463,51 @@ architecture ddr3 of xdr_init is
 		(issmr0, set(mr0, dll)),
 		(issmr0, mov(mr0, wr)),
 		(issmr0, set(mr0, pd)));
-		
-	signal src : std_logic_vector := 
-		"000" & "111" & "---";
+
+	constant xdrinitods_size : natural := 1;
+	constant cnfgreg_size : natural := 
+		xdrinitods_size +
+		xdr_init_pl'length +
+		xdr_init_cwl'length +
+		xdr_init_rtt'length +
+		xdr_init_wr'length +
+		xdr_init_bl'length +
+		xdr_init_cl'length;
+
+	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
+
+	function (
+		constant class : natural;
+		constant pgm   : code)
+		return std_logic_vector is
+		variable val : std_logic_vector(xdr_init_a'range);
+	begin
+		for i in pgm'range loop
+			if pgm(i).class = class then
+				for j in 0 to pgm(i).inst.param.desc.size loop
+					val(j+pgm(i).inst.param.desc.dbase) := src(j+pgm(i).inst.param.desc.sbase);
+				end loop;
+			end if;
+		end loop;
+		return val;
+	end;
+
 begin
+	src <=
+		xdr_init_ods &
+		xdr_init_pl &
+		xdr_init_cwl &
+		xdr_init_rtt &
+		xdr_init_wr &
+		xdr_init_bl &
+		xdr_init_cl;
+
 	process (xdr_init_clk)
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
 					lat_timer    <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
-					xdr_init_ras <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(ras);
-					xdr_init_cas <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(cas);
-					xdr_init_we  <= xdr_init_pgm(xdr_init_pc).code.xdr_cmd(rw);
 
 					xdr_init_a <= (others => '0');
 					case xdr_init_pc is
