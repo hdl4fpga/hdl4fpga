@@ -7,7 +7,7 @@ use hdl4fpga.std.all;
 
 entity xdr_init is
 	generic (
-		tMRD : natural := 11;
+		lMRD : natural := 11;
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (
@@ -31,10 +31,11 @@ entity xdr_init is
 		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
 		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
 
-	constant clmr  : std_logic_vector(0 to 2) := "000";
-	constant cqcl  : std_logic_vector(0 to 2) := "110";
+	constant cnop : std_logic_vector(0 to 2) := "111";
+	constant clmr : std_logic_vector(0 to 2) := "000";
+	constant cqcl : std_logic_vector(0 to 2) := "110";
 
-	type ccmd is (CFG_NOP, CFG_AUTO);
+	type ccmds is (CFG_NOP, CFG_AUTO);
 
 	type field_desc is record
 		dbase : natural;
@@ -95,14 +96,32 @@ entity xdr_init is
 		return param;
 	end;
 
-	constant lat_size : natural := unsigned_num_bits(tMRD-2);
-	type xdr_code is record
-		xdr_cmd : std_logic_vector(0 to 2);
-		xdr_lat : signed(0 to lat_size-1);
+	constant lat_size : natural := unsigned_num_bits(lMRD-2);
+	type ccmd_record is record 
+		cmd : std_logic_vector(2 downto 0);
+		lat : signed(0 to lat_size-1);
 	end record;
+
+	type ccmd_table is array (ccmds) of ccmd_record;
+	constant ccmd_db : ccmd_table := (
+		CFG_NOP  => (cnop, to_signed(lMRD-2, lat_size)),
+		CFG_AUTO => (clmr, to_signed(lMRD-2, lat_size)));
+
+	function lat_lookup (
+		constant cmd : std_logic_vector)
+		return signed is
+	begin
+		for i in ccmd_db'range loop
+			if ccmd_db(i).cmd = cmd then
+				return ccmd_db(i).lat;
+			end if;
+		end loop;
+		return (1 to lat_size => '1');
+	end;
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
+
 end;
 
 architecture ddr3 of xdr_init is
@@ -199,13 +218,15 @@ architecture ddr3 of xdr_init is
 
 	signal xdr_init_pc : classes;
 
-	subtype  dst_a  is natural range xdr_init_a'length-1 downto 0;
-	subtype  dst_b  is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
+	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
+	subtype  dst_b   is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
+	subtype  dst_cmd is natural range xdr_init_b'length+xdr_init_a'length+3-1 downto xdr_init_b'length+xdr_init_a'length;
 	constant dst_ras : natural := xdr_init_b'length+xdr_init_a'length+0;
 	constant dst_cas : natural := xdr_init_b'length+xdr_init_a'length+1;
 	constant dst_we  : natural := xdr_init_b'length+xdr_init_a'length+2;
 
 begin
+
 	src <=
 		xdr_init_ods & 
 		xdr_init_pl  & 
@@ -216,22 +237,23 @@ begin
 		xdr_init_cl;
 
 	process (xdr_init_clk)
+		variable aux : std_logic_vector(dst'range);
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
---					lat_timer <= xdr_init_pgm(xdr_init_pc).code.xdr_lat;
-
-					dst <= compile_pgm(classes'pos(xdr_init_pc));
+					aux := compile_pgm(classes'pos(xdr_init_pc));
+					lat_timer <= lat_lookup(aux(dst_cmd));
 					xdr_init_pc <= classes'succ(xdr_init_pc); 
 				else
-					lat_timer    <= lat_timer - 1;
-					dst <= "U0" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+					lat_timer <= lat_timer-1;
+					aux := "U0" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 				end if;
 			else
-				lat_timer    <= (others => '1');
-				dst <= "00" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+				lat_timer <= (others => '1');
+				aux := "00" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 			end if;
+			dst <= aux;
 		end if;
 	end process;
 
