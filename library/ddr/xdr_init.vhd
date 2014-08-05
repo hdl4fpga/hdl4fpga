@@ -96,7 +96,7 @@ entity xdr_init is
 		return param;
 	end;
 
-	constant lat_size : natural := unsigned_num_bits(lMRD-2);
+	constant lat_size : natural := signed_num_bits(lMRD-2);
 	type ccmd_record is record 
 		cmd : std_logic_vector(2 downto 0);
 		lat : signed(0 to lat_size-1);
@@ -199,7 +199,6 @@ architecture ddr3 of xdr_init is
 		xdr_init_cl'length;
 
 	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
-	signal dst : std_logic_vector(cnfgreg_size-1 downto 0);
 
 	impure function compile_pgm(
 		constant class : natural)
@@ -221,10 +220,11 @@ architecture ddr3 of xdr_init is
 	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
 	subtype  dst_b   is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
 	subtype  dst_cmd is natural range xdr_init_b'length+xdr_init_a'length+3-1 downto xdr_init_b'length+xdr_init_a'length;
-	constant dst_ras : natural := xdr_init_b'length+xdr_init_a'length+0;
+	constant dst_ras : natural := xdr_init_b'length+xdr_init_a'length+2;
 	constant dst_cas : natural := xdr_init_b'length+xdr_init_a'length+1;
-	constant dst_we  : natural := xdr_init_b'length+xdr_init_a'length+2;
+	constant dst_we  : natural := xdr_init_b'length+xdr_init_a'length+0;
 
+	signal dst : std_logic_vector(dst_ras+2 downto 0);
 begin
 
 	src <=
