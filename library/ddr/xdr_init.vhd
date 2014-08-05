@@ -47,50 +47,50 @@ entity xdr_init is
 
 	type inst_param is record
 		cmd  : std_logic_vector(0 to 2);
-		dest : std_logic_vector(xdr_init_b'range);
+		mr   : std_logic_vector(xdr_init_b'range);
 		desc : field_desc;
 	end record;
 
 	type issue is record
-		class : natural;
+		setid : natural;
 		param : inst_param;
 	end record;
 
 	type code is array (natural range <>) of issue;
 
 	function mov (
-		constant dest : std_logic_vector;
+		constant mr   : std_logic_vector;
 		constant desc : field_desc)
 		return inst_param is
 		variable param : inst_param;
 	begin
 		param.cmd  := clmr;
-		param.dest := dest;
+		param.mr   := mr;
 		param.desc := desc;
 		return param;
 	end function;
 
 	function set (
-		constant dest : std_logic_vector;
+		constant mr : std_logic_vector;
 		constant desc : field_desc)
 		return inst_param is
 		variable param : inst_param;
 	begin
 		param.cmd  := clmr;
-		param.dest := dest;
+		param.mr   := mr;
 		param.desc := desc;
 		param.desc.sbase := 1*xdr_init_a'length;
 		return param;
 	end;
 
 	function clr (
-		constant dest : std_logic_vector;
+		constant mr : std_logic_vector;
 		constant desc : field_desc)
 		return inst_param is
 		variable param : inst_param;
 	begin
 		param.cmd  := clmr;
-		param.dest := dest;
+		param.mr   := mr;
 		param.desc := desc;
 		param.desc.sbase := 0*xdr_init_a'length;
 		return param;
@@ -201,18 +201,19 @@ architecture ddr3 of xdr_init is
 	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
 
 	impure function compile_pgm(
-		constant class : natural)
+		constant setid : natural)
 		return std_logic_vector is
-		variable val : std_logic_vector(xdr_init_a'range);
+		variable val : std_logic_vector(xdr_init_a'length-1 downto 0);
 	begin
 		for i in init_pgm'range loop
-			if init_pgm(i).class = class then
-				for j in 0 to init_pgm(i).param.desc.size loop
-					val(j+init_pgm(i).param.desc.dbase) := src(j+init_pgm(i).param.desc.sbase);
+			if init_pgm(i).setid = setid then
+				for j in 0 to init_pgm(i).param.desc.size-1 loop
+					val(init_pgm(i).param.desc.dbase+j) := src(init_pgm(i).param.desc.sbase+j);
 				end loop;
+				return init_pgm(i).param.cmd & init_pgm(i).param.mr & val;
 			end if;
 		end loop;
-		return val;
+		return (1 to init_pgm(init_pgm'left).param.cmd'length + init_pgm(init_pgm'left).param.mr  'length + val'length => 'U');
 	end;
 
 	signal xdr_init_pc : classes;
@@ -224,7 +225,7 @@ architecture ddr3 of xdr_init is
 	constant dst_cas : natural := xdr_init_b'length+xdr_init_a'length+1;
 	constant dst_we  : natural := xdr_init_b'length+xdr_init_a'length+0;
 
-	signal dst : std_logic_vector(dst_ras+2 downto 0);
+	signal dst : std_logic_vector(dst_ras downto 0);
 begin
 
 	src <=
@@ -247,11 +248,11 @@ begin
 					xdr_init_pc <= classes'succ(xdr_init_pc); 
 				else
 					lat_timer <= lat_timer-1;
-					aux := "U0" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+					aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 				end if;
 			else
 				lat_timer <= (others => '1');
-				aux := "00" & "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+				aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 			end if;
 			dst <= aux;
 		end if;

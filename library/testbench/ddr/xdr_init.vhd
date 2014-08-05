@@ -14,11 +14,12 @@ architecture xdr_init of testbench is
 	signal xdr_init_rdy : std_logic;
 begin
 
+	xdr_rst <= '0', '1' after 20 ns;
 	xdr_clk <= not xdr_clk after 5 ns;
 	du : entity hdl4fpga.xdr_init
 	generic map (
 		bank_size  => 3,
-		addr_size  => 1,
+		addr_size  => 13,
 		lMRD => 8)
 	port map (
 		xdr_init_clk => xdr_clk,
