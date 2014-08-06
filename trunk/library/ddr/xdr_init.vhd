@@ -216,7 +216,7 @@ architecture ddr3 of xdr_init is
 		return (1 to init_pgm(init_pgm'left).param.cmd'length + init_pgm(init_pgm'left).param.mr  'length + val'length => 'U');
 	end;
 
-	signal xdr_init_pc : classes;
+	signal xdr_init_pc : unsigned(0 to 4);
 
 	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
 	subtype  dst_b   is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
@@ -242,14 +242,14 @@ begin
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
-				if lat_timer(0)='1' then
-					if xdr_init_pc /= classes'low then; 
-						xdr_init_pc <= classes'succ(xdr_init_pc); 
-					aux := compile_pgm(classes'pos(xdr_init_pc));
-					lat_timer <= lat_lookup(aux(dst_cmd));
-				else
-					lat_timer <= lat_timer-1;
-					aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+				if xdr_ini_pc(0)='0' then
+					if lat_timer(0)='1' then
+						aux := compile_pgm(classes'pos(xdr_init_pc));
+						lat_timer <= lat_lookup(aux(dst_cmd));
+					else
+						lat_timer <= lat_timer-1;
+						aux := (others => '1');
+					end if;
 				end if;
 			else
 				lat_timer <= (others => '1');
