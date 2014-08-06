@@ -3,10 +3,12 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/xdr_clk
 add wave -noupdate /testbench/xdr_wait_clk
 add wave -noupdate /testbench/xdr_rst
+add wave -noupdate /testbench/xdr_init_rdy
 add wave -noupdate /testbench/xdr_ras
 add wave -noupdate /testbench/xdr_cas
 add wave -noupdate /testbench/xdr_we
-add wave -noupdate /testbench/xdr_init_rdy
+add wave -noupdate /testbench/du/xdr_init_a
+add wave -noupdate /testbench/du/xdr_init_b
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
@@ -24,4 +26,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {525 ns}
+WaveRestoreZoom {0 ps} {1866346 ps}
