@@ -243,15 +243,17 @@ begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
+					if xdr_init_pc /= classes'low then; 
+						xdr_init_pc <= classes'succ(xdr_init_pc); 
 					aux := compile_pgm(classes'pos(xdr_init_pc));
 					lat_timer <= lat_lookup(aux(dst_cmd));
-					xdr_init_pc <= classes'succ(xdr_init_pc); 
 				else
 					lat_timer <= lat_timer-1;
 					aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 				end if;
 			else
 				lat_timer <= (others => '1');
+					xdr_init_pc <= classes'low; 
 				aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 			end if;
 			dst <= aux;
