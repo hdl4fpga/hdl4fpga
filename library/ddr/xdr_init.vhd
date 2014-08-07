@@ -1,6 +1,9 @@
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -15,9 +18,9 @@ entity xdr_init is
 		xdr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
 		xdr_init_bl  : in  std_logic_vector(0 to 2);
 		xdr_init_cl  : in  std_logic_vector(0 to 2);
-		xdr_init_wr  : in  std_logic_vector(0 to 2) := (others => '-');
-		xdr_init_cwl : in  std_logic_vector(0 to 2) := (others => '-');
-		xdr_init_pl  : in  std_logic_vector(0 to 2) := (others => '-');
+		xdr_init_wr  : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_init_cwl : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_init_pl  : in  std_logic_vector(0 to 2) := (others => '0');
 		xdr_init_dqsn : in std_logic := '0';
 
 		xdr_init_clk : in  std_logic;
@@ -125,7 +128,6 @@ entity xdr_init is
 end;
 
 architecture ddr3 of xdr_init is
-		--lb_zqcl, lb_end); 
 
 	signal lat_timer : signed(0 to lat_size-1);
 
@@ -134,19 +136,20 @@ architecture ddr3 of xdr_init is
 
 	constant mr0 : std_logic_vector(2 downto 0) := "000";
 
-	constant bl : field_desc := (dbase =>  0, sbase => 0, size => 3);
-	constant bt : field_desc := (dbase =>  3, sbase => 0, size => 1);
-	constant cl : field_desc := (dbase =>  4, sbase => 0, size => 3);
-	constant tm : field_desc := (dbase =>  7, sbase => 0, size => 1);
-	constant wr : field_desc := (dbase =>  9, sbase => 0, size => 3);
-	constant pd : field_desc := (dbase => 12, sbase => 0, size => 1);
+	constant bl  : field_desc := (dbase =>  0, sbase => 0, size => 3);
+	constant bt  : field_desc := (dbase =>  3, sbase => 0, size => 1);
+	constant cl  : field_desc := (dbase =>  4, sbase => 0, size => 3);
+	constant tm  : field_desc := (dbase =>  7, sbase => 0, size => 1);
+	constant dll : field_desc := (dbase =>  8, sbase => 0, size => 1);
+	constant wr  : field_desc := (dbase =>  9, sbase => 0, size => 3);
+	constant pd  : field_desc := (dbase => 12, sbase => 0, size => 1);
 
 	-- DDR3 Mode Register 1 --
 	--------------------------
 
 	constant mr1 : std_logic_vector(2 downto 0) := "001";
 
-	constant dll  : field_desc := (dbase => 0, sbase => 0, size => 1);
+	--constant dll  : field_desc := (dbase => 0, sbase => 0, size => 1);
 	constant ods  : fielddesc_vector := (
 		(dbase => 1, sbase => 0, size => 1),
 	   	(dbase => 5, sbase => 0, size => 1));
@@ -177,16 +180,16 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type classes is (issmr0);
+	type setIDs is (issmr0);
 
 	constant init_pgm : code := ( 
-		(classes'POS(issmr0), mov(mr0, bl)),
-		(classes'POS(issmr0), set(mr0, bt)),
-		(classes'POS(issmr0), mov(mr0, cl)),
-		(classes'POS(issmr0), clr(mr0, tm)),
-		(classes'POS(issmr0), set(mr0, dll)),
-		(classes'POS(issmr0), mov(mr0, wr)),
-		(classes'POS(issmr0), set(mr0, pd)));
+		(setIDs'POS(issmr0), mov(mr0, bl)),
+		(setIDs'POS(issmr0), set(mr0, bt)),
+		(setIDs'POS(issmr0), mov(mr0, cl)),
+		(setIDs'POS(issmr0), clr(mr0, tm)),
+		(setIDs'POS(issmr0), set(mr0, dll)),
+		(setIDs'POS(issmr0), mov(mr0, wr)),
+		(setIDs'POS(issmr0), set(mr0, pd)));
 
 	constant xdrinitods_size : natural := 1;
 	constant cnfgreg_size : natural := 
@@ -201,19 +204,23 @@ architecture ddr3 of xdr_init is
 	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
 
 	impure function compile_pgm(
-		constant setid : natural)
+		constant setid : unsigned)
 		return std_logic_vector is
 		variable val : std_logic_vector(xdr_init_a'length-1 downto 0);
+		variable mr  : std_logic_vector(init_pgm(0).param.mr'range);
+		variable cmd : std_logic_vector(init_pgm(0).param.cmd'range);
+		variable msg : line;
 	begin
 		for i in init_pgm'range loop
-			if init_pgm(i).setid = setid then
+			if init_pgm(i).setid = to_integer(setid) then
 				for j in 0 to init_pgm(i).param.desc.size-1 loop
 					val(init_pgm(i).param.desc.dbase+j) := src(init_pgm(i).param.desc.sbase+j);
 				end loop;
-				return init_pgm(i).param.cmd & init_pgm(i).param.mr & val;
+				 mr  := init_pgm(i).param.mr;
+				 cmd := init_pgm(i).param.cmd;
 			end if;
 		end loop;
-		return (1 to init_pgm(init_pgm'left).param.cmd'length + init_pgm(init_pgm'left).param.mr  'length + val'length => 'U');
+		return cmd & mr & val;
 	end;
 
 	signal xdr_init_pc : unsigned(0 to 4);
@@ -242,18 +249,20 @@ begin
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
-				if xdr_ini_pc(0)='0' then
+				if xdr_init_pc(0)='0' then
 					if lat_timer(0)='1' then
-						aux := compile_pgm(classes'pos(xdr_init_pc));
+						aux := compile_pgm(xdr_init_pc);
 						lat_timer <= lat_lookup(aux(dst_cmd));
 					else
 						lat_timer <= lat_timer-1;
 						aux := (others => '1');
 					end if;
+				else
+					aux := compile_pgm(xdr_init_pc);
 				end if;
 			else
 				lat_timer <= (others => '1');
-					xdr_init_pc <= classes'low; 
+					xdr_init_pc <= to_unsigned(setIDs'pos(setIDs'low), xdr_init_pc'length); 
 				aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
 			end if;
 			dst <= aux;
