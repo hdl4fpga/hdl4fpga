@@ -38,6 +38,16 @@ entity xdr_init is
 	constant clmr : std_logic_vector(0 to 2) := "000";
 	constant cqcl : std_logic_vector(0 to 2) := "110";
 
+	constant xdrinitods_size : natural := 1;
+	constant cnfgreg_size : natural := 
+		xdrinitods_size +
+		xdr_init_pl'length +
+		xdr_init_cwl'length +
+		xdr_init_rtt'length +
+		xdr_init_wr'length +
+		xdr_init_bl'length +
+		xdr_init_cl'length;
+
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
 	type field_desc is record
@@ -82,7 +92,7 @@ entity xdr_init is
 		param.cmd  := clmr;
 		param.mr   := mr;
 		param.desc := desc;
-		param.desc.sbase := 1*xdr_init_a'length;
+		param.desc.sbase := 1*xdr_init_a'length+cnfgreg_size;
 		return param;
 	end;
 
@@ -95,7 +105,7 @@ entity xdr_init is
 		param.cmd  := clmr;
 		param.mr   := mr;
 		param.desc := desc;
-		param.desc.sbase := 0*xdr_init_a'length;
+		param.desc.sbase := 0*xdr_init_a'length+cnfgreg_size;
 		return param;
 	end;
 
@@ -131,18 +141,20 @@ architecture ddr3 of xdr_init is
 
 	signal lat_timer : signed(0 to lat_size-1);
 
+	constant allbits  : field_desc := (dbase =>  0, sbase => 0, size => xdr_init_a'length);
+
 	-- DDR3 Mode Register 0 --
 	--------------------------
 
 	constant mr0 : std_logic_vector(2 downto 0) := "000";
 
-	constant bl  : field_desc := (dbase =>  0, sbase => 0, size => 3);
-	constant bt  : field_desc := (dbase =>  3, sbase => 0, size => 1);
-	constant cl  : field_desc := (dbase =>  4, sbase => 0, size => 3);
-	constant tm  : field_desc := (dbase =>  7, sbase => 0, size => 1);
-	constant dll : field_desc := (dbase =>  8, sbase => 0, size => 1);
-	constant wr  : field_desc := (dbase =>  9, sbase => 0, size => 3);
-	constant pd  : field_desc := (dbase => 12, sbase => 0, size => 1);
+	constant bl : field_desc := (dbase =>  0, sbase => 0, size => 3);
+	constant bt : field_desc := (dbase =>  3, sbase => 0, size => 1);
+	constant cl : field_desc := (dbase =>  4, sbase => 0, size => 3);
+	constant tm : field_desc := (dbase =>  7, sbase => 0, size => 1);
+	constant rdll : field_desc := (dbase =>  8, sbase => 0, size => 1);
+	constant wr : field_desc := (dbase =>  9, sbase => 0, size => 3);
+	constant pd : field_desc := (dbase => 12, sbase => 0, size => 1);
 
 	-- DDR3 Mode Register 1 --
 	--------------------------
@@ -158,6 +170,7 @@ architecture ddr3 of xdr_init is
 		(dbase => 6, sbase => 0, size => 1),
 		(dbase => 9, sbase => 0, size => 1));
 	constant al   : field_desc := (dbase =>  3, sbase => 0, size => 2);
+	constant edll : field_desc := (dbase =>  8, sbase => 0, size => 1);
 --	constant wr   : field_desc := (dbase =>  7, sbase => 0, size => 7);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
 	constant tdqs : field_desc := (dbase => 11, sbase => 0, size => 1);
@@ -180,7 +193,7 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type setIDs is (issmr0);
+	type setIDs is (issmr0, issmr1);
 
 	constant init_pgm : code := ( 
 		(setIDs'POS(issmr0), mov(mr0, bl)),
@@ -189,22 +202,18 @@ architecture ddr3 of xdr_init is
 		(setIDs'POS(issmr0), clr(mr0, tm)),
 		(setIDs'POS(issmr0), set(mr0, dll)),
 		(setIDs'POS(issmr0), mov(mr0, wr)),
-		(setIDs'POS(issmr0), set(mr0, pd)));
+		(setIDs'POS(issmr0), mov(mr0, pd)),
 
-	constant xdrinitods_size : natural := 1;
-	constant cnfgreg_size : natural := 
-		xdrinitods_size +
-		xdr_init_pl'length +
-		xdr_init_cwl'length +
-		xdr_init_rtt'length +
-		xdr_init_wr'length +
-		xdr_init_bl'length +
-		xdr_init_cl'length;
+		(setIDs'POS(issmr1), set(mr1, dqs)),
+		(setIDs'POS(issmr1), set(mr1, al))
+	);
 
-	signal src : std_logic_vector(cnfgreg_size-1 downto 0);
+	signal src : std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
+
+	signal xdr_init_pc : signed(0 to 4);
 
 	impure function compile_pgm(
-		constant setid : unsigned)
+		constant setid : signed)
 		return std_logic_vector is
 		variable val : std_logic_vector(xdr_init_a'length-1 downto 0);
 		variable mr  : std_logic_vector(init_pgm(0).param.mr'range);
@@ -212,7 +221,7 @@ architecture ddr3 of xdr_init is
 		variable msg : line;
 	begin
 		for i in init_pgm'range loop
-			if init_pgm(i).setid = to_integer(setid) then
+			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
 				for j in 0 to init_pgm(i).param.desc.size-1 loop
 					val(init_pgm(i).param.desc.dbase+j) := src(init_pgm(i).param.desc.sbase+j);
 				end loop;
@@ -222,8 +231,6 @@ architecture ddr3 of xdr_init is
 		end loop;
 		return cmd & mr & val;
 	end;
-
-	signal xdr_init_pc : unsigned(0 to 4);
 
 	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
 	subtype  dst_b   is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
@@ -236,6 +243,8 @@ architecture ddr3 of xdr_init is
 begin
 
 	src <=
+		(xdr_init_a'range => '1') &
+		(xdr_init_a'range => '0') &
 		xdr_init_ods & 
 		xdr_init_pl  & 
 		xdr_init_cwl &
@@ -249,23 +258,25 @@ begin
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
-				if xdr_init_pc(0)='0' then
-					if lat_timer(0)='1' then
+				if lat_timer(0)='1' then
+					if xdr_init_pc(0)='0' then
 						aux := compile_pgm(xdr_init_pc);
+						dst <= aux;
 						lat_timer <= lat_lookup(aux(dst_cmd));
+						xdr_init_pc <= xdr_init_pc - 1;
 					else
-						lat_timer <= lat_timer-1;
-						aux := (others => '1');
+						dst <= (others => '1');
+						lat_timer <= (others => '1');
 					end if;
 				else
-					aux := compile_pgm(xdr_init_pc);
+					dst <= (others => '1');
+					lat_timer <= lat_timer-1;
 				end if;
 			else
+				dst <= (others => '1');
 				lat_timer <= (others => '1');
-					xdr_init_pc <= to_unsigned(setIDs'pos(setIDs'low), xdr_init_pc'length); 
-				aux := "111" & (xdr_init_b'range => '1') & (xdr_init_a'range => '1');
+				xdr_init_pc <= to_signed(setIds'POS(setIds'high), xdr_init_pc'length);
 			end if;
-			dst <= aux;
 		end if;
 	end process;
 
