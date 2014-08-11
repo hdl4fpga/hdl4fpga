@@ -37,6 +37,7 @@ entity xdr_init is
 	constant cnop : std_logic_vector(0 to 2) := "111";
 	constant clmr : std_logic_vector(0 to 2) := "000";
 	constant cqcl : std_logic_vector(0 to 2) := "110";
+	constant xdrinitout_size : natural := 2;
 
 	constant xdrinitods_size : natural := 1;
 	constant cnfgreg_size : natural := 
@@ -58,52 +59,36 @@ entity xdr_init is
 
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
-	type inst_param is record
-		cmd  : std_logic_vector(0 to 2);
-		mr   : std_logic_vector(xdr_init_b'range);
-		desc : field_desc;
-	end record;
-
 	type issue is record
 		setid : natural;
-		param : inst_param;
+		desc : field_desc;
 	end record;
 
 	type code is array (natural range <>) of issue;
 
 	function mov (
-		constant mr   : std_logic_vector;
 		constant desc : field_desc)
 		return inst_param is
 		variable param : inst_param;
 	begin
-		param.cmd  := clmr;
-		param.mr   := mr;
 		param.desc := desc;
 		return param;
 	end function;
 
 	function set (
-		constant mr : std_logic_vector;
-		constant desc : field_desc)
 		return inst_param is
 		variable param : inst_param;
 	begin
-		param.cmd  := clmr;
-		param.mr   := mr;
 		param.desc := desc;
 		param.desc.sbase := 1*xdr_init_a'length+cnfgreg_size;
 		return param;
 	end;
 
 	function clr (
-		constant mr : std_logic_vector;
-		constant desc : field_desc)
+		constant desc : field_desc;
 		return inst_param is
 		variable param : inst_param;
 	begin
-		param.cmd  := clmr;
-		param.mr   := mr;
 		param.desc := desc;
 		param.desc.sbase := 0*xdr_init_a'length+cnfgreg_size;
 		return param;
@@ -139,9 +124,21 @@ end;
 
 architecture ddr3 of xdr_init is
 
+	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
+	subtype  dst_o   is natural range dst_a'high+xdrinitout_size downto dst_a'high+1;
+	subtype  dst_b   is natural range dst_o'high+xdr_init_b'length downto dst_o'high+1;
+	subtype  dst_cmd is natural range dst_b'high+3 downto dst_b'high+1;
+	constant dst_ras : natural := dst_b'high+3;
+	constant dst_cas : natural := dst_b'high+2;
+	constant dst_we  : natural := dst_b'high+1;
+
+	signal dst : std_logic_vector(dst_ras downto 0);
+
 	signal lat_timer : signed(0 to lat_size-1);
 
-	constant allbits  : field_desc := (dbase =>  0, sbase => 0, size => xdr_init_a'length);
+	constant all_bits : field_desc := (dbase =>  0, sbase => 0, size => xdr_init_a'length);
+	constant ddl_rdy  : field_desc := (dbase =>  dst_o'low+0, sbase => 0, size => 1);
+	constant end_rdy  : field_desc := (dbase =>  dst_o'low+1, sbase => 0, size => 1);
 
 	-- DDR3 Mode Register 0 --
 	--------------------------
@@ -196,13 +193,17 @@ architecture ddr3 of xdr_init is
 	type setIDs is (issmr0, issmr1);
 
 	constant init_pgm : code := ( 
-		(setIDs'POS(issmr0), mov(mr0, bl)),
-		(setIDs'POS(issmr0), set(mr0, bt)),
-		(setIDs'POS(issmr0), mov(mr0, cl)),
-		(setIDs'POS(issmr0), clr(mr0, tm)),
-		(setIDs'POS(issmr0), set(mr0, dll)),
-		(setIDs'POS(issmr0), mov(mr0, wr)),
-		(setIDs'POS(issmr0), mov(mr0, pd)),
+		(setIDs'POS(issmr0), set(clmr)),
+		(setIDs'POS(issmr0), set(mr0)),
+		(setIDs'POS(issmr0), mov(bl)),
+		(setIDs'POS(issmr0), set(bt)),
+		(setIDs'POS(issmr0), mov(cl)),
+		(setIDs'POS(issmr0), clr(tm)),
+		(setIDs'POS(issmr0), set(edll)),
+		(setIDs'POS(issmr0), mov(wr)),
+		(setIDs'POS(issmr0), mov(pd)),
+		(setIDs'POS(issmr0), set(ddl_rdy)),
+		(setIDs'POS(issmr0), set(end_rdy)),
 
 		(setIDs'POS(issmr1), set(mr1, dqs)),
 		(setIDs'POS(issmr1), set(mr1, al))
@@ -215,7 +216,7 @@ architecture ddr3 of xdr_init is
 	impure function compile_pgm(
 		constant setid : signed)
 		return std_logic_vector is
-		variable val : std_logic_vector(xdr_init_a'length-1 downto 0);
+		variable val : std_logic_vector(xdr_init_a'length+xdrinitout_size-1 downto 0);
 		variable mr  : std_logic_vector(init_pgm(0).param.mr'range);
 		variable cmd : std_logic_vector(init_pgm(0).param.cmd'range);
 		variable msg : line;
@@ -232,14 +233,6 @@ architecture ddr3 of xdr_init is
 		return cmd & mr & val;
 	end;
 
-	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
-	subtype  dst_b   is natural range xdr_init_b'length+xdr_init_a'length-1 downto xdr_init_a'length;
-	subtype  dst_cmd is natural range xdr_init_b'length+xdr_init_a'length+3-1 downto xdr_init_b'length+xdr_init_a'length;
-	constant dst_ras : natural := xdr_init_b'length+xdr_init_a'length+2;
-	constant dst_cas : natural := xdr_init_b'length+xdr_init_a'length+1;
-	constant dst_we  : natural := xdr_init_b'length+xdr_init_a'length+0;
-
-	signal dst : std_logic_vector(dst_ras downto 0);
 begin
 
 	src <=
