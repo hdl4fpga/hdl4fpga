@@ -49,6 +49,17 @@ entity xdr_init is
 		xdr_init_bl'length +
 		xdr_init_cl'length;
 
+	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
+	subtype  dst_b   is natural range dst_a'high+xdr_init_b'length downto dst_a'high+1;
+	subtype  dst_cmd is natural range dst_b'high+3 downto dst_b'high+1;
+	constant dst_ras : natural := dst_b'high+3;
+	constant dst_cas : natural := dst_b'high+2;
+	constant dst_we  : natural := dst_b'high+1;
+	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
+
+	subtype src_word is std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
+	subtype dst_word is std_logic_vector(dst_o'hig'high downto 0);
+
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
 	type field_desc is record
@@ -61,7 +72,8 @@ entity xdr_init is
 
 	type issue is record
 		setid : natural;
-		desc : field_desc;
+		dst   : dst_word;
+		desc  : field_desc;
 	end record;
 
 	type code is array (natural range <>) of issue;
@@ -69,28 +81,29 @@ entity xdr_init is
 	function mov (
 		constant desc : field_desc)
 		return inst_param is
-		variable param : inst_param;
+		variable val : field_desc;
 	begin
-		param.desc := desc;
-		return param;
+		val := desc;
+		return val;
 	end function;
 
 	function set (
+		constant desc : field_desc;
 		return inst_param is
-		variable param : inst_param;
+		variable val : field_desc;
 	begin
-		param.desc := desc;
-		param.desc.sbase := 1*xdr_init_a'length+cnfgreg_size;
-		return param;
+		val := desc;
+		val.sbase := 0*xdr_init_a'length+cnfgreg_size;
+		return val;
 	end;
 
 	function clr (
 		constant desc : field_desc;
 		return inst_param is
-		variable param : inst_param;
+		variable val : field_desc;
 	begin
-		param.desc := desc;
-		param.desc.sbase := 0*xdr_init_a'length+cnfgreg_size;
+		val := desc;
+		val.sbase := 0*xdr_init_a'length+cnfgreg_size;
 		return param;
 	end;
 
@@ -124,15 +137,8 @@ end;
 
 architecture ddr3 of xdr_init is
 
-	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
-	subtype  dst_o   is natural range dst_a'high+xdrinitout_size downto dst_a'high+1;
-	subtype  dst_b   is natural range dst_o'high+xdr_init_b'length downto dst_o'high+1;
-	subtype  dst_cmd is natural range dst_b'high+3 downto dst_b'high+1;
-	constant dst_ras : natural := dst_b'high+3;
-	constant dst_cas : natural := dst_b'high+2;
-	constant dst_we  : natural := dst_b'high+1;
-
-	signal dst : std_logic_vector(dst_ras downto 0);
+	signal src : src_word;
+	signal dst : dst_word;
 
 	signal lat_timer : signed(0 to lat_size-1);
 
@@ -206,10 +212,7 @@ architecture ddr3 of xdr_init is
 		(setIDs'POS(issmr0), set(end_rdy)),
 
 		(setIDs'POS(issmr1), set(mr1, dqs)),
-		(setIDs'POS(issmr1), set(mr1, al))
-	);
-
-	signal src : std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
+		(setIDs'POS(issmr1), set(mr1, al)));
 
 	signal xdr_init_pc : signed(0 to 4);
 
