@@ -58,7 +58,7 @@ entity xdr_init is
 	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
 
 	subtype src_word is std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
-	subtype dst_word is std_logic_vector(dst_o'hig'high downto 0);
+	subtype dst_word is std_logic_vector(dst_o'high downto 0);
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
@@ -77,10 +77,11 @@ entity xdr_init is
 
 	type code is array (natural range <>) of issue;
 
-	function mov (
+	signal src : src_word;
+	impure function mov (
 		constant desc : field_desc)
 		return std_logic_vector is
-		variable val : dst_word;
+		variable val : dst_word := (others => '0');
 	begin
 		for j in 0 to desc.size-1 loop
 			val(desc.dbase+j) := src(desc.sbase+j);
@@ -88,25 +89,22 @@ entity xdr_init is
 		return val;
 	end function;
 
-	function set (
+	impure function set (
 		constant desc : field_desc)
 		return std_logic_vector is
 		variable aux : field_desc := desc;
-		variable val : dst_word;
 	begin
 		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
-		return mov(desc);
+		return mov(aux);
 	end;
 
-	function clr (
+	impure function clr (
 		constant desc : field_desc)
 		return std_logic_vector is
 		variable aux : field_desc := desc;
-		variable val : dst_word;
 	begin
-		val := desc;
-		val.sbase := 0*xdr_init_a'length+cnfgreg_size;
-		return val;
+		aux.sbase := 0*xdr_init_a'length+cnfgreg_size;
+		return mov(aux);
 	end;
 
 	constant lat_size : natural := signed_num_bits(lMRD-2);
@@ -139,7 +137,6 @@ end;
 
 architecture ddr3 of xdr_init is
 
-	signal src : src_word;
 	signal dst : dst_word;
 
 	signal lat_timer : signed(0 to lat_size-1);
@@ -221,19 +218,15 @@ architecture ddr3 of xdr_init is
 	impure function compile_pgm(
 		constant setid : signed)
 		return std_logic_vector is
-		variable val : std_logic_vector(xdr_init_a'length+xdrinitout_size-1 downto 0);
+		variable val : dst_word;
 		variable msg : line;
 	begin
 		for i in init_pgm'range loop
 			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
-				for j in 0 to init_pgm(i).param.desc.size-1 loop
-					val(init_pgm(i).param.desc.dbase+j) := src(init_pgm(i).param.desc.sbase+j);
-				end loop;
-				 mr  := init_pgm(i).param.mr;
-				 cmd := init_pgm(i).param.cmd;
+				val := val and init_pgm(i).dst;
 			end if;
 		end loop;
-		return cmd & mr & val;
+		return val;
 	end;
 
 begin
