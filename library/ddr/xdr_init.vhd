@@ -73,38 +73,40 @@ entity xdr_init is
 	type issue is record
 		setid : natural;
 		dst   : dst_word;
-		desc  : field_desc;
 	end record;
 
 	type code is array (natural range <>) of issue;
 
 	function mov (
 		constant desc : field_desc)
-		return inst_param is
-		variable val : field_desc;
+		return std_logic_vector is
+		variable val : dst_word;
 	begin
-		val := desc;
+		for j in 0 to desc.size-1 loop
+			val(desc.dbase+j) := src(desc.sbase+j);
+		end loop;
 		return val;
 	end function;
 
 	function set (
-		constant desc : field_desc;
-		return inst_param is
-		variable val : field_desc;
+		constant desc : field_desc)
+		return std_logic_vector is
+		variable aux : field_desc := desc;
+		variable val : dst_word;
+	begin
+		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
+		return mov(desc);
+	end;
+
+	function clr (
+		constant desc : field_desc)
+		return std_logic_vector is
+		variable aux : field_desc := desc;
+		variable val : dst_word;
 	begin
 		val := desc;
 		val.sbase := 0*xdr_init_a'length+cnfgreg_size;
 		return val;
-	end;
-
-	function clr (
-		constant desc : field_desc;
-		return inst_param is
-		variable val : field_desc;
-	begin
-		val := desc;
-		val.sbase := 0*xdr_init_a'length+cnfgreg_size;
-		return param;
 	end;
 
 	constant lat_size : natural := signed_num_bits(lMRD-2);
@@ -220,8 +222,6 @@ architecture ddr3 of xdr_init is
 		constant setid : signed)
 		return std_logic_vector is
 		variable val : std_logic_vector(xdr_init_a'length+xdrinitout_size-1 downto 0);
-		variable mr  : std_logic_vector(init_pgm(0).param.mr'range);
-		variable cmd : std_logic_vector(init_pgm(0).param.cmd'range);
 		variable msg : line;
 	begin
 		for i in init_pgm'range loop
