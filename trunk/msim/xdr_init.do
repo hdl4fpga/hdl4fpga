@@ -11,8 +11,9 @@ add wave -noupdate /testbench/du/xdr_init_a
 add wave -noupdate /testbench/du/xdr_init_b
 add wave -noupdate /testbench/du/xdr_init_pc
 add wave -noupdate -radix hexadecimal /testbench/du/dst
+add wave -noupdate /testbench/du/lat_timer
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {25000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {31240 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -28,4 +29,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {157500 ps}
+WaveRestoreZoom {0 ps} {577500 ps}

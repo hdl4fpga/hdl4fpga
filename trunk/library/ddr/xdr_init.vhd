@@ -34,9 +34,6 @@ entity xdr_init is
 		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
 		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
 
-	constant cnop : std_logic_vector(0 to 2) := "111";
-	constant clmr : std_logic_vector(0 to 2) := "000";
-	constant cqcl : std_logic_vector(0 to 2) := "110";
 	constant xdrinitout_size : natural := 2;
 
 	constant xdrinitods_size : natural := 1;
@@ -69,8 +66,15 @@ entity xdr_init is
 	end record;
 
 	type cmd_desc is record
-		dbase : natural;
-		cmd   : std_logic_vector(ccmd'range);
+		cmd : std_logic_vector(dst_cmd);
+	end record;
+
+	constant cnop : cmd_desc := (cmd => "111");
+	constant clmr : cmd_desc := (cmd => "000");
+	constant cqcl : cmd_desc := (cmd => "110");
+
+	type mr_desc is record
+		id : std_logic_vector(xdr_init_b'range);
 	end record;
 
 	type fielddesc_vector is array (natural range <>) of field_desc;
@@ -83,24 +87,51 @@ entity xdr_init is
 	type code is array (natural range <>) of issue;
 
 	signal src : src_word;
+
 	impure function mov (
 		constant desc : field_desc)
 		return std_logic_vector is
 		variable val : dst_word := (others => '0');
+		variable msg : line;
 	begin
 		for j in 0 to desc.size-1 loop
 			val(desc.dbase+j) := src(desc.sbase+j);
+		end loop;
+		write(msg, string'("val "));
+		write(msg, val);
+		report msg.all
+		severity failure;
+
+		return val;
+	end function;
+
+	impure function mov (
+		constant desc : fielddesc_vector)
+		return std_logic_vector is
+		variable val : dst_word := (others => '0');
+	begin
+		for i in desc'range loop
+			val := val or mov(desc(i));
 		end loop;
 		return val;
 	end function;
 
 	impure function set (
-		constant desc : std_logic_vector)
+		constant desc : cmd_desc)
 		return std_logic_vector is
-		variable aux : field_desc := desc;
+		variable val : dst_word := (others => '0');
 	begin
-		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
-		return mov(aux);
+		val(dst_cmd) := desc.cmd;
+		return val;
+	end;
+
+	impure function set (
+		constant desc : mr_desc)
+		return std_logic_vector is
+		variable val : dst_word := (others => '0');
+	begin
+		val(dst_b) := desc.id;
+		return val;
 	end;
 
 	impure function set (
@@ -110,6 +141,20 @@ entity xdr_init is
 	begin
 		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
 		return mov(aux);
+	end;
+
+	impure function set (
+		constant desc : fielddesc_vector)
+		return std_logic_vector is
+		variable val : dst_word := (others => '0');
+		variable aux : field_desc;
+	begin
+		for i in desc'range loop
+			aux := desc(i);
+			aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
+			val := val or mov(aux);
+		end loop;
+		return val;
 	end;
 
 	impure function clr (
@@ -121,6 +166,20 @@ entity xdr_init is
 		return mov(aux);
 	end;
 
+	impure function clr (
+		constant desc : fielddesc_vector)
+		return std_logic_vector is
+		variable val : dst_word := (others => '0');
+		variable aux : field_desc;
+	begin
+		for i in desc'range loop
+			aux := desc(i);
+			aux.sbase := 0*xdr_init_a'length+cnfgreg_size;
+			val := val or mov(aux);
+		end loop;
+		return val;
+	end;
+
 	constant lat_size : natural := signed_num_bits(lMRD-2);
 	type ccmd_record is record 
 		cmd : std_logic_vector(2 downto 0);
@@ -129,8 +188,8 @@ entity xdr_init is
 
 	type ccmd_table is array (ccmds) of ccmd_record;
 	constant ccmd_db : ccmd_table := (
-		CFG_NOP  => (cnop, to_signed(lMRD-2, lat_size)),
-		CFG_AUTO => (clmr, to_signed(lMRD-2, lat_size)));
+		CFG_NOP  => (cnop.cmd, to_signed(lMRD-2, lat_size)),
+		CFG_AUTO => (clmr.cmd, to_signed(lMRD-2, lat_size)));
 
 	function lat_lookup (
 		constant cmd : std_logic_vector)
@@ -155,14 +214,14 @@ architecture ddr3 of xdr_init is
 
 	signal lat_timer : signed(0 to lat_size-1);
 
-	constant all_bits : field_desc := (dbase =>  0, sbase => 0, size => xdr_init_a'length);
-	constant ddl_rdy  : field_desc := (dbase =>  dst_o'low+0, sbase => 0, size => 1);
-	constant end_rdy  : field_desc := (dbase =>  dst_o'low+1, sbase => 0, size => 1);
+	constant all_bits : field_desc := (dbase => 0, sbase => 0, size => xdr_init_a'length);
+	constant ddl_rdy  : field_desc := (dbase => dst_o'low+0, sbase => 0, size => 1);
+	constant end_rdy  : field_desc := (dbase => dst_o'low+1, sbase => 0, size => 1);
 
 	-- DDR3 Mode Register 0 --
 	--------------------------
 
-	constant mr0 : std_logic_vector(2 downto 0) := "000";
+	constant mr0 : mr_desc := (id => "000");
 
 	constant bl : field_desc := (dbase =>  0, sbase => 0, size => 3);
 	constant bt : field_desc := (dbase =>  3, sbase => 0, size => 1);
@@ -175,9 +234,9 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 1 --
 	--------------------------
 
-	constant mr1 : std_logic_vector(2 downto 0) := "001";
+	constant mr1 : mr_desc := (id => "001");
 
-	--constant dll  : field_desc := (dbase => 0, sbase => 0, size => 1);
+	constant edll : field_desc := (dbase => 0, sbase => 0, size => 1);
 	constant ods  : fielddesc_vector := (
 		(dbase => 1, sbase => 0, size => 1),
 	   	(dbase => 5, sbase => 0, size => 1));
@@ -186,7 +245,6 @@ architecture ddr3 of xdr_init is
 		(dbase => 6, sbase => 0, size => 1),
 		(dbase => 9, sbase => 0, size => 1));
 	constant al   : field_desc := (dbase =>  3, sbase => 0, size => 2);
-	constant edll : field_desc := (dbase =>  8, sbase => 0, size => 1);
 --	constant wr   : field_desc := (dbase =>  7, sbase => 0, size => 7);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
 	constant tdqs : field_desc := (dbase => 11, sbase => 0, size => 1);
@@ -195,7 +253,7 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 2 --
 	--------------------------
 
-	constant mr2 : std_logic_vector(2 downto 0) := "011";
+	constant mr2 : mr_desc := (id => "011");
 
 	constant cwl : field_desc := (dbase => 3, sbase => 0, size => 3);
 	constant asr : field_desc := (dbase => 6, sbase => 0, size => 1);
@@ -205,7 +263,7 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 3 --
 	--------------------------
 
-	constant mr3 : std_logic_vector(2 downto 0) := "010";
+	constant mr3 : mr_desc := (id => "010");
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
@@ -224,22 +282,27 @@ architecture ddr3 of xdr_init is
 		(setIDs'POS(issmr0), set(ddl_rdy)),
 		(setIDs'POS(issmr0), set(end_rdy)),
 
-		(setIDs'POS(issmr1), set(mr1, dqs)),
-		(setIDs'POS(issmr1), set(mr1, al)));
+		(setIDs'POS(issmr1), set(mr1)),
+		(setIDs'POS(issmr1), set(al)));
 
 	signal xdr_init_pc : signed(0 to 4);
 
 	impure function compile_pgm(
 		constant setid : signed)
 		return std_logic_vector is
-		variable val : dst_word;
+		variable val : dst_word := (others => '0');
 		variable msg : line;
 	begin
+		write(msg, string'("hola "));
+		write(msg, to_integer(setid));
 		for i in init_pgm'range loop
 			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
-				val := val and init_pgm(i).dst;
+			write(msg, string'(", "));
+			write(msg, init_pgm(i).setid);
+				val := val or init_pgm(i).dst;
 			end if;
 		end loop;
+		report msg.all;
 		return val;
 	end;
 
