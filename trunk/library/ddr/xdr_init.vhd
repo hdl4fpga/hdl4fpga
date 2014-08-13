@@ -97,11 +97,6 @@ entity xdr_init is
 		for j in 0 to desc.size-1 loop
 			val(desc.dbase+j) := src(desc.sbase+j);
 		end loop;
-		write(msg, string'("val "));
-		write(msg, val);
-		report msg.all
-		severity failure;
-
 		return val;
 	end function;
 
@@ -269,40 +264,35 @@ architecture ddr3 of xdr_init is
 
 	type setIDs is (issmr0, issmr1);
 
-	constant init_pgm : code := ( 
-		(setIDs'POS(issmr0), set(clmr)),
-		(setIDs'POS(issmr0), set(mr0)),
-		(setIDs'POS(issmr0), mov(bl)),
-		(setIDs'POS(issmr0), set(bt)),
-		(setIDs'POS(issmr0), mov(cl)),
-		(setIDs'POS(issmr0), clr(tm)),
-		(setIDs'POS(issmr0), set(edll)),
-		(setIDs'POS(issmr0), mov(wr)),
-		(setIDs'POS(issmr0), mov(pd)),
-		(setIDs'POS(issmr0), set(ddl_rdy)),
-		(setIDs'POS(issmr0), set(end_rdy)),
-
-		(setIDs'POS(issmr1), set(mr1)),
-		(setIDs'POS(issmr1), set(al)));
-
 	signal xdr_init_pc : signed(0 to 4);
 
 	impure function compile_pgm(
 		constant setid : signed)
 		return std_logic_vector is
+
+		variable init_pgm : code(1 to 13) := ( 
+			(setIDs'POS(issmr0), set(clmr)),
+			(setIDs'POS(issmr0), set(mr0)),
+			(setIDs'POS(issmr0), mov(bl)),
+			(setIDs'POS(issmr0), set(bt)),
+			(setIDs'POS(issmr0), mov(cl)),
+			(setIDs'POS(issmr0), clr(tm)),
+			(setIDs'POS(issmr0), set(edll)),
+			(setIDs'POS(issmr0), mov(wr)),
+			(setIDs'POS(issmr0), mov(pd)),
+			(setIDs'POS(issmr0), set(ddl_rdy)),
+			(setIDs'POS(issmr0), set(end_rdy)),
+
+			(setIDs'POS(issmr1), set(mr1)),
+			(setIDs'POS(issmr1), set(al)));
+
 		variable val : dst_word := (others => '0');
-		variable msg : line;
 	begin
-		write(msg, string'("hola "));
-		write(msg, to_integer(setid));
 		for i in init_pgm'range loop
 			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
-			write(msg, string'(", "));
-			write(msg, init_pgm(i).setid);
 				val := val or init_pgm(i).dst;
 			end if;
 		end loop;
-		report msg.all;
 		return val;
 	end;
 
