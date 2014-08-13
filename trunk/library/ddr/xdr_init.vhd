@@ -68,6 +68,11 @@ entity xdr_init is
 		size  : natural;
 	end record;
 
+	type cmd_desc is record
+		dbase : natural;
+		cmd   : std_logic_vector(ccmd'range);
+	end record;
+
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	type issue is record
@@ -88,6 +93,15 @@ entity xdr_init is
 		end loop;
 		return val;
 	end function;
+
+	impure function set (
+		constant desc : std_logic_vector)
+		return std_logic_vector is
+		variable aux : field_desc := desc;
+	begin
+		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
+		return mov(aux);
+	end;
 
 	impure function set (
 		constant desc : field_desc)
