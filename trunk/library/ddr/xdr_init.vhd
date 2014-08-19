@@ -56,6 +56,7 @@ entity xdr_init is
 
 	subtype src_word is std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
 	subtype dst_word is std_logic_vector(dst_o'high downto 0);
+	subtype dst_wtab is std_logic_vector(dst_tab);
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
@@ -80,43 +81,50 @@ entity xdr_init is
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	type issue is record
-		setid : natural;
-		dst   : dst_word;
+		setId  : natural;
+		dstTab : dst_wtab;
 	end record;
 
 	type code is array (natural range <>) of issue;
 
 	signal src : src_word;
 
-	impure function mov (
+	function mov (
 		constant desc : field_desc)
 		return std_logic_vector is
-		variable val : dst_word := (others => '0');
-		variable msg : line;
+		variable tab : dst_wtab := (others => '0');
 	begin
 		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := src(desc.sbase+j);
+			tab(desc.dbase+j) := desc.sbase+j;
 		end loop;
-		return val;
+		return tab;
 	end function;
 
-	impure function mov (
+	function mov (
 		constant desc : fielddesc_vector)
 		return std_logic_vector is
-		variable val : dst_word := (others => '0');
+		variable val : dst_wtab := (others => '0');
+		variable aux : dst_wtab := (others => '0');
 	begin
 		for i in desc'range loop
-			val := val or mov(desc(i));
+			aux := mov(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
 		end loop;
 		return val;
 	end function;
 
-	impure function set (
+	function set (
 		constant desc : cmd_desc)
 		return std_logic_vector is
-		variable val : dst_word := (others => '0');
+		variable val : dst_tab := (others => '0');
 	begin
-		val(dst_cmd) := desc.cmd;
+		for cmd_des'range loop
+			val(dst_cmd) := desc.cmd;
+		end loop;
 		return val;
 	end;
 
@@ -212,6 +220,8 @@ architecture ddr3 of xdr_init is
 	constant all_bits : field_desc := (dbase => 0, sbase => 0, size => xdr_init_a'length);
 	constant ddl_rdy  : field_desc := (dbase => dst_o'low+0, sbase => 0, size => 1);
 	constant end_rdy  : field_desc := (dbase => dst_o'low+1, sbase => 0, size => 1);
+
+	constant cmd : field_desc := (dbase =>  0, sbase => 0, size => 3);
 
 	-- DDR3 Mode Register 0 --
 	--------------------------
