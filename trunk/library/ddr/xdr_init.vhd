@@ -54,7 +54,7 @@ entity xdr_init is
 	constant dst_we  : natural := dst_b'high+1;
 	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
 
-	subtype src_word is std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
+	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
 	subtype dst_word is std_logic_vector(dst_o'high downto 0);
 	subtype dst_wtab is natural_vector(dst_word'range);
 
@@ -126,9 +126,9 @@ entity xdr_init is
 		aux := desc.cmd;
 		for i in aux'range loop
 			if aux(i) = '0' then
-				val(i) := 1;
+				val(i) := cnfgreg_size+1;
 			elsif aux(i) = '1' then
-				val(i) := 2;
+				val(i) := cnfgreg_size+2;
 			end if;
 		end loop;
 		return val;
@@ -143,9 +143,9 @@ entity xdr_init is
 		aux := desc.id;
 		for i in aux'range loop
 			if aux(i) = '0' then
-				val(i) := 1;
+				val(i) := cnfgreg_size+1;
 			elsif aux(i) = '1' then
-				val(i) := 2;
+				val(i) := cnfgreg_size+2;
 			end if;
 		end loop;
 		return val;
@@ -349,8 +349,7 @@ architecture ddr3 of xdr_init is
 begin
 
 	src <=
-		(xdr_init_a'range => '1') &
-		(xdr_init_a'range => '0') &
+		"10" &
 		xdr_init_ods & 
 		xdr_init_pl  & 
 		xdr_init_cwl &
