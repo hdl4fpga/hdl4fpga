@@ -56,7 +56,7 @@ entity xdr_init is
 
 	subtype src_word is std_logic_vector(2*xdr_init_a'length+cnfgreg_size-1 downto 0);
 	subtype dst_word is std_logic_vector(dst_o'high downto 0);
-	subtype dst_wtab is std_logic_vector(dst_tab);
+	subtype dst_wtab is natural_vector(dst_word'range);
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
@@ -91,8 +91,8 @@ entity xdr_init is
 
 	function mov (
 		constant desc : field_desc)
-		return std_logic_vector is
-		variable tab : dst_wtab := (others => '0');
+		return natural_vector is
+		variable tab : dst_wtab := (others => 0);
 	begin
 		for j in 0 to desc.size-1 loop
 			tab(desc.dbase+j) := desc.sbase+j;
@@ -102,9 +102,9 @@ entity xdr_init is
 
 	function mov (
 		constant desc : fielddesc_vector)
-		return std_logic_vector is
-		variable val : dst_wtab := (others => '0');
-		variable aux : dst_wtab := (others => '0');
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+		variable aux : dst_wtab := (others => 0);
 	begin
 		for i in desc'range loop
 			aux := mov(desc(i));
@@ -119,66 +119,90 @@ entity xdr_init is
 
 	function set (
 		constant desc : cmd_desc)
-		return std_logic_vector is
-		variable val : dst_tab := (others => '0');
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+		variable aux : std_logic_vector(dst_cmd);
 	begin
-		for cmd_des'range loop
-			val(dst_cmd) := desc.cmd;
+		aux := desc.cmd;
+		for i in aux'range loop
+			if aux(i) = '0' then
+				val(i) := 1;
+			elsif aux(i) = '1' then
+				val(i) := 2;
+			end if;
 		end loop;
 		return val;
 	end;
 
-	impure function set (
+	function set (
 		constant desc : mr_desc)
-		return std_logic_vector is
-		variable val : dst_word := (others => '0');
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+		variable aux : std_logic_vector(dst_b);
 	begin
-		val(dst_b) := desc.id;
-		return val;
-	end;
-
-	impure function set (
-		constant desc : field_desc)
-		return std_logic_vector is
-		variable aux : field_desc := desc;
-	begin
-		aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
-		return mov(aux);
-	end;
-
-	impure function set (
-		constant desc : fielddesc_vector)
-		return std_logic_vector is
-		variable val : dst_word := (others => '0');
-		variable aux : field_desc;
-	begin
-		for i in desc'range loop
-			aux := desc(i);
-			aux.sbase := 1*xdr_init_a'length+cnfgreg_size;
-			val := val or mov(aux);
+		aux := desc.id;
+		for i in aux'range loop
+			if aux(i) = '0' then
+				val(i) := 1;
+			elsif aux(i) = '1' then
+				val(i) := 2;
+			end if;
 		end loop;
 		return val;
 	end;
 
-	impure function clr (
+	function set (
 		constant desc : field_desc)
-		return std_logic_vector is
-		variable aux : field_desc := desc;
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
 	begin
-		aux.sbase := 0*xdr_init_a'length+cnfgreg_size;
-		return mov(aux);
+		for j in 0 to desc.size-1 loop
+			val(desc.dbase+j) := 2;
+		end loop;
+		return val;
 	end;
 
-	impure function clr (
+	function set (
 		constant desc : fielddesc_vector)
-		return std_logic_vector is
-		variable val : dst_word := (others => '0');
-		variable aux : field_desc;
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+		variable aux : dst_wtab := (others => 0);
 	begin
 		for i in desc'range loop
-			aux := desc(i);
-			aux.sbase := 0*xdr_init_a'length+cnfgreg_size;
-			val := val or mov(aux);
+			aux := set(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function clr (
+		constant desc : field_desc)
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+	begin
+		for j in 0 to desc.size-1 loop
+			val(desc.dbase+j) := 1;
+		end loop;
+		return val;
+	end;
+
+	function clr (
+		constant desc : fielddesc_vector)
+		return natural_vector is
+		variable val : dst_wtab := (others => 0);
+		variable aux : dst_wtab := (others => 0);
+	begin
+		for i in desc'range loop
+			aux := clr(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
 		end loop;
 		return val;
 	end;
@@ -272,35 +296,51 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type setIDs is (issmr0, issmr1);
+	type setIDs is (issmr3, issmr0, issmr1);
 
 	signal xdr_init_pc : signed(0 to 4);
+
+	constant init_pgm : code := ( 
+		(setIDs'POS(issmr3), set(clmr)),
+		(setIDs'POS(issmr3), set(mr3)),
+
+		(setIDs'POS(issmr1), set(clmr)),
+		(setIDs'POS(issmr1), set(mr1)),
+		(setIDs'POS(issmr1), clr(edll)),
+		(setIDs'POS(issmr1), mov(ods)),
+		(setIDs'POS(issmr1), mov(rtt)),
+		(setIDs'POS(issmr1), mov(al)),
+--		(setIDs'POS(issmr1), mov(wl)),
+		(setIDs'POS(issmr1), mov(tdqs)),
+
+		(setIDs'POS(issmr0), set(clmr)),
+		(setIDs'POS(issmr0), set(mr0)),
+		(setIDs'POS(issmr0), mov(bl)),
+		(setIDs'POS(issmr0), set(bt)),
+		(setIDs'POS(issmr0), mov(cl)),
+		(setIDs'POS(issmr0), clr(tm)),
+		(setIDs'POS(issmr0), set(edll)),
+		(setIDs'POS(issmr0), mov(wr)),
+		(setIDs'POS(issmr0), mov(pd)),
+		(setIDs'POS(issmr0), set(ddl_rdy)),
+		(setIDs'POS(issmr0), set(end_rdy)),
+
+		(setIDs'POS(issmr1), set(mr1)),
+		(setIDs'POS(issmr1), set(al)));
 
 	impure function compile_pgm(
 		constant setid : signed)
 		return std_logic_vector is
 
-		variable init_pgm : code(1 to 13) := ( 
-			(setIDs'POS(issmr0), set(clmr)),
-			(setIDs'POS(issmr0), set(mr0)),
-			(setIDs'POS(issmr0), mov(bl)),
-			(setIDs'POS(issmr0), set(bt)),
-			(setIDs'POS(issmr0), mov(cl)),
-			(setIDs'POS(issmr0), clr(tm)),
-			(setIDs'POS(issmr0), set(edll)),
-			(setIDs'POS(issmr0), mov(wr)),
-			(setIDs'POS(issmr0), mov(pd)),
-			(setIDs'POS(issmr0), set(ddl_rdy)),
-			(setIDs'POS(issmr0), set(end_rdy)),
-
-			(setIDs'POS(issmr1), set(mr1)),
-			(setIDs'POS(issmr1), set(al)));
-
 		variable val : dst_word := (others => '0');
 	begin
 		for i in init_pgm'range loop
 			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
-				val := val or init_pgm(i).dst;
+				for j in dst_wtab'range loop
+					if init_pgm(i).dstTab(j) /= 0 then
+						val(j) := src(init_pgm(i).dstTab(j));
+					end if;
+				end loop;
 			end if;
 		end loop;
 		return val;
