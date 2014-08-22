@@ -268,12 +268,12 @@ architecture ddr3 of xdr_init is
 	constant ods  : fielddesc_vector := (
 		(dbase => 1, sbase => 1, size => 1),
 	   	(dbase => 5, sbase => 1, size => 1));
-	constant rt   : fielddesc_vector := (
+	constant rtt  : fielddesc_vector := (
 		(dbase => 2, sbase => 1, size => 1),
 		(dbase => 6, sbase => 1, size => 1),
 		(dbase => 9, sbase => 1, size => 1));
 	constant al   : field_desc := (dbase =>  3, sbase => 1, size => 2);
---	constant wr   : field_desc := (dbase =>  7, sbase => 0, size => 7);
+	constant wl   : field_desc := (dbase =>  7, sbase => 0, size => 1);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
 	constant tdqs : field_desc := (dbase => 11, sbase => 0, size => 1);
 	constant qoff : field_desc := (dbase => 12, sbase => 0, size => 1);
@@ -286,7 +286,7 @@ architecture ddr3 of xdr_init is
 	constant cwl : field_desc := (dbase => 3, sbase => 0, size => 3);
 	constant asr : field_desc := (dbase => 6, sbase => 0, size => 1);
 	constant srt : field_desc := (dbase => 7, sbase => 0, size => 1);
-	constant rtt : field_desc := (dbase => 9, sbase => 0, size => 2);
+	constant rttw : field_desc := (dbase => 9, sbase => 0, size => 2);
 
 	-- DDR3 Mode Register 3 --
 	--------------------------
@@ -295,24 +295,32 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type setIDs is (issmr3, issmr0, issmr1);
+	type setIDs is (issmr2, issmr3, issmr0, issmr1);
 
 	signal xdr_init_pc : signed(0 to 4);
 
 	constant init_pgm : code := ( 
-		(setIDs'POS(issmr3), set(clmr)),
+		(setIDs'POS(issmr2), set(mr2)),
+		(setIDs'POS(issmr2), set(clmr)),
+		(setIDs'POS(issmr2), clr(rttw)),
+		(setIDs'POS(issmr2), mov(cwl)),
+
 		(setIDs'POS(issmr3), set(mr3)),
-		(setIDs'POS(issmr1), set(clmr)),
+		(setIDs'POS(issmr3), set(clmr)),
+
 		(setIDs'POS(issmr1), set(mr1)),
+		(setIDs'POS(issmr1), set(clmr)),
+
 		(setIDs'POS(issmr1), clr(edll)),
 		(setIDs'POS(issmr1), mov(ods)),
 		(setIDs'POS(issmr1), mov(rtt)),
 		(setIDs'POS(issmr1), mov(al)),
---		(setIDs'POS(issmr1), mov(wl)),
+		(setIDs'POS(issmr1), set(wl)),
 		(setIDs'POS(issmr1), mov(tdqs)),
 
 		(setIDs'POS(issmr0), set(clmr)),
 		(setIDs'POS(issmr0), set(mr0)),
+
 		(setIDs'POS(issmr0), mov(bl)),
 		(setIDs'POS(issmr0), set(bt)),
 		(setIDs'POS(issmr0), mov(cl)),
