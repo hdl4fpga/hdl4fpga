@@ -241,39 +241,38 @@ architecture ddr3 of xdr_init is
 
 	signal lat_timer : signed(0 to lat_size-1);
 
-	constant all_bits : field_desc := (dbase => 0, sbase => 0, size => xdr_init_a'length);
-	constant ddl_rdy  : field_desc := (dbase => dst_o'low+0, sbase => 0, size => 1);
-	constant end_rdy  : field_desc := (dbase => dst_o'low+1, sbase => 0, size => 1);
+	constant ddl_rdy : field_desc := (dbase => dst_o'low+0, sbase => 1, size => 1);
+	constant end_rdy : field_desc := (dbase => dst_o'low+1, sbase => 1, size => 1);
 
-	constant cmd : field_desc := (dbase =>  0, sbase => 0, size => 3);
+	constant cmd : field_desc := (dbase =>  0, sbase => 1, size => 3);
 
 	-- DDR3 Mode Register 0 --
 	--------------------------
 
 	constant mr0 : mr_desc := (id => "000");
 
-	constant bl : field_desc := (dbase =>  0, sbase => 0, size => 3);
-	constant bt : field_desc := (dbase =>  3, sbase => 0, size => 1);
-	constant cl : field_desc := (dbase =>  4, sbase => 0, size => 3);
-	constant tm : field_desc := (dbase =>  7, sbase => 0, size => 1);
-	constant rdll : field_desc := (dbase =>  8, sbase => 0, size => 1);
-	constant wr : field_desc := (dbase =>  9, sbase => 0, size => 3);
-	constant pd : field_desc := (dbase => 12, sbase => 0, size => 1);
+	constant bl : field_desc := (dbase =>  0, sbase => 1, size => 3);
+	constant bt : field_desc := (dbase =>  3, sbase => 1, size => 1);
+	constant cl : field_desc := (dbase =>  4, sbase => 1, size => 3);
+	constant tm : field_desc := (dbase =>  7, sbase => 1, size => 1);
+	constant rdll : field_desc := (dbase =>  8, sbase => 1, size => 1);
+	constant wr : field_desc := (dbase =>  9, sbase => 1, size => 3);
+	constant pd : field_desc := (dbase => 12, sbase => 1, size => 1);
 
 	-- DDR3 Mode Register 1 --
 	--------------------------
 
 	constant mr1 : mr_desc := (id => "001");
 
-	constant edll : field_desc := (dbase => 0, sbase => 0, size => 1);
+	constant edll : field_desc := (dbase => 0, sbase => 1, size => 1);
 	constant ods  : fielddesc_vector := (
-		(dbase => 1, sbase => 0, size => 1),
-	   	(dbase => 5, sbase => 0, size => 1));
+		(dbase => 1, sbase => 1, size => 1),
+	   	(dbase => 5, sbase => 1, size => 1));
 	constant rt   : fielddesc_vector := (
-		(dbase => 2, sbase => 0, size => 1),
-		(dbase => 6, sbase => 0, size => 1),
-		(dbase => 9, sbase => 0, size => 1));
-	constant al   : field_desc := (dbase =>  3, sbase => 0, size => 2);
+		(dbase => 2, sbase => 1, size => 1),
+		(dbase => 6, sbase => 1, size => 1),
+		(dbase => 9, sbase => 1, size => 1));
+	constant al   : field_desc := (dbase =>  3, sbase => 1, size => 2);
 --	constant wr   : field_desc := (dbase =>  7, sbase => 0, size => 7);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
 	constant tdqs : field_desc := (dbase => 11, sbase => 0, size => 1);
@@ -303,7 +302,6 @@ architecture ddr3 of xdr_init is
 	constant init_pgm : code := ( 
 		(setIDs'POS(issmr3), set(clmr)),
 		(setIDs'POS(issmr3), set(mr3)),
-
 		(setIDs'POS(issmr1), set(clmr)),
 		(setIDs'POS(issmr1), set(mr1)),
 		(setIDs'POS(issmr1), clr(edll)),
@@ -328,8 +326,9 @@ architecture ddr3 of xdr_init is
 		(setIDs'POS(issmr1), set(mr1)),
 		(setIDs'POS(issmr1), set(al)));
 
-	impure function compile_pgm(
-		constant setid : signed)
+	function compile_pgm(
+		constant setid : signed;
+		constant src : std_logic_vector)
 		return std_logic_vector is
 
 		variable val : dst_word := (others => '0');
@@ -365,7 +364,7 @@ begin
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
 					if xdr_init_pc(0)='0' then
-						aux := compile_pgm(xdr_init_pc);
+						aux := compile_pgm(xdr_init_pc, src);
 						dst <= aux;
 						lat_timer <= lat_lookup(aux(dst_cmd));
 						xdr_init_pc <= xdr_init_pc - 1;
