@@ -225,6 +225,21 @@ entity xdr_init is
 		return (1 to lat_size => '1');
 	end;
 
+	function "or" (
+		constant arg1 : natural_vector;
+		constant arg2 : natural_vector) 
+		return natural_vector is
+		variable val : natural_vector(arg1'range);
+	begin
+		val := arg2;
+		for i in arg1'range loop
+			if arg1(i) /= '0' then
+				val(i) := arg1(i);
+			end if;
+		end loop;
+		return val;
+	end;
+
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
 
@@ -239,12 +254,8 @@ architecture ddr3 of xdr_init is
 	constant ddl_rdy : field_desc := (dbase => dst_o'low+0, sbase => 1, size => 1);
 	constant end_rdy : field_desc := (dbase => dst_o'low+1, sbase => 1, size => 1);
 
-	constant cmd : field_desc := (dbase =>  0, sbase => 1, size => 3);
-
 	-- DDR3 Mode Register 0 --
 	--------------------------
-
-	constant mr0 : mr_desc := (id => "000");
 
 	constant bl : field_desc := (dbase =>  0, sbase => 1, size => 3);
 	constant bt : field_desc := (dbase =>  3, sbase => 1, size => 1);
@@ -256,8 +267,6 @@ architecture ddr3 of xdr_init is
 
 	-- DDR3 Mode Register 1 --
 	--------------------------
-
-	constant mr1 : mr_desc := (id => "001");
 
 	constant edll : field_desc := (dbase => 0, sbase => 1, size => 1);
 	constant ods  : fielddesc_vector := (
@@ -276,8 +285,6 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 2 --
 	--------------------------
 
-	constant mr2 : mr_desc := (id => "011");
-
 	constant cwl : field_desc := (dbase => 3, sbase => 0, size => 3);
 	constant asr : field_desc := (dbase => 6, sbase => 0, size => 1);
 	constant srt : field_desc := (dbase => 7, sbase => 0, size => 1);
@@ -286,46 +293,21 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 3 --
 	--------------------------
 
-	constant mr3 : mr_desc := (id => "010");
-
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type setIDs is (issmr2, issmr3, issmr0, issmr1);
+	type labelIds is (issmr2, issmr3, issmr0, issmr1);
+
+	type is record
+		id : labelIds;
+		vm : std_logic_vector(dst_cmd'high downto 0);
+	end record;
 
 	signal xdr_init_pc : signed(0 to 4);
 
 	constant mr_file : mr_vector := ( 
-		( clr(rttw)),
-		( mov(cwl)),
-
-		(setIDs'POS(issmr3), set(mr3)),
-		(setIDs'POS(issmr3), set(clmr)),
-
-		(setIDs'POS(issmr1), set(mr1)),
-		(setIDs'POS(issmr1), set(clmr)),
-
-		(setIDs'POS(issmr1), clr(edll)),
-		(setIDs'POS(issmr1), mov(ods)),
-		(setIDs'POS(issmr1), mov(rtt)),
-		(setIDs'POS(issmr1), mov(al)),
-		(setIDs'POS(issmr1), set(wl)),
-		(setIDs'POS(issmr1), mov(tdqs)),
-
-		(setIDs'POS(issmr0), set(clmr)),
-		(setIDs'POS(issmr0), set(mr0)),
-
-		(setIDs'POS(issmr0), mov(bl)),
-		(setIDs'POS(issmr0), set(bt)),
-		(setIDs'POS(issmr0), mov(cl)),
-		(setIDs'POS(issmr0), clr(tm)),
-		(setIDs'POS(issmr0), set(edll)),
-		(setIDs'POS(issmr0), mov(wr)),
-		(setIDs'POS(issmr0), mov(pd)),
-		(setIDs'POS(issmr0), set(ddl_rdy)),
-		(setIDs'POS(issmr0), set(end_rdy)),
-
-		(setIDs'POS(issmr1), set(mr1)),
-		(setIDs'POS(issmr1), set(al)));
+		(clr(rttw) or mov(cwl)),
+		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
+		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
 
 	function compile_pgm(
 		constant setid : signed;
