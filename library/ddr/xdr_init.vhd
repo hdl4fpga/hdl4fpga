@@ -55,7 +55,7 @@ entity xdr_init is
 	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
 
 	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
-	subtype dst_word is std_logic_vector(dst_o'high downto 0);
+	subtype dst_word is std_logic_vector(dst_a'high downto 0);
 	subtype dst_wtab is natural_vector(dst_word'range);
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
@@ -80,12 +80,7 @@ entity xdr_init is
 
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
-	type issue is record
-		setId  : natural;
-		dstTab : dst_wtab;
-	end record;
-
-	type code is array (natural range <>) of issue;
+	type mr_array is array (natural range <>) of dst_tab;
 
 	signal src : src_word;
 
@@ -299,11 +294,9 @@ architecture ddr3 of xdr_init is
 
 	signal xdr_init_pc : signed(0 to 4);
 
-	constant init_pgm : code := ( 
-		(setIDs'POS(issmr2), set(mr2)),
-		(setIDs'POS(issmr2), set(clmr)),
-		(setIDs'POS(issmr2), clr(rttw)),
-		(setIDs'POS(issmr2), mov(cwl)),
+	constant mr_file : mr_vector := ( 
+		( clr(rttw)),
+		( mov(cwl)),
 
 		(setIDs'POS(issmr3), set(mr3)),
 		(setIDs'POS(issmr3), set(clmr)),
