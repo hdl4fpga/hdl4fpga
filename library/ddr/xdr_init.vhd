@@ -66,14 +66,6 @@ entity xdr_init is
 		size  : natural;
 	end record;
 
-	type cmd_desc is record
-		cmd : std_logic_vector(dst_cmd);
-	end record;
-
-	constant cnop : cmd_desc := (cmd => "111");
-	constant clmr : cmd_desc := (cmd => "000");
-	constant cqcl : cmd_desc := (cmd => "110");
-
 	type mr_desc is record
 		id : std_logic_vector(xdr_init_b'range);
 	end record;
@@ -83,124 +75,6 @@ entity xdr_init is
 	type mr_array is array (natural range <>) of dst_tab;
 
 	signal src : src_word;
-
-	function mov (
-		constant desc : field_desc)
-		return natural_vector is
-		variable tab : dst_wtab := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			tab(desc.dbase+j) := desc.sbase+j;
-		end loop;
-		return tab;
-	end function;
-
-	function mov (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : dst_wtab := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := mov(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end function;
-
-	function set (
-		constant desc : cmd_desc)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : std_logic_vector(dst_cmd);
-	begin
-		aux := desc.cmd;
-		for i in aux'range loop
-			if aux(i) = '0' then
-				val(i) := cnfgreg_size+1;
-			elsif aux(i) = '1' then
-				val(i) := cnfgreg_size+2;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : mr_desc)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : std_logic_vector(dst_b);
-	begin
-		aux := desc.id;
-		for i in aux'range loop
-			if aux(i) = '0' then
-				val(i) := cnfgreg_size+1;
-			elsif aux(i) = '1' then
-				val(i) := cnfgreg_size+2;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : field_desc)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 2;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : dst_wtab := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := set(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : field_desc)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 1;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : dst_wtab := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := clr(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end;
 
 	constant lat_size : natural := signed_num_bits(lMRD-2);
 	type ccmd_record is record 
