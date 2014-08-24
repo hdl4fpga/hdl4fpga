@@ -295,38 +295,39 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	type labelIds is (issmr2, issmr3, issmr0, issmr1);
-
-	type is record
-		id : labelIds;
-		vm : std_logic_vector(dst_cmd'high downto 0);
-	end record;
-
-	signal xdr_init_pc : signed(0 to 4);
-
 	constant mr_file : mr_vector := ( 
 		(clr(rttw) or mov(cwl)),
 		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
 		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
 
-	function compile_pgm(
-		constant setid : signed;
-		constant src : std_logic_vector)
-		return std_logic_vector is
+	type labelIds is (lbl_mr2, lbl_mr3, lbl_mr0, lbl_mr1);
 
-		variable val : dst_word := (others => '0');
+	type insctn is record
+		id   : labelIds;
+		data : natural_vector(dst_cmd'high downto 0);
+	end record;
+
+	function "&" (
+		constant arg1 : cmd_desc;
+		constant arg2 : std_logic_vector) 
+		return natural_vector is
+		variable val : natural_vector(arg1'range);
+		variable aux : natural_vector;
 	begin
-		for i in init_pgm'range loop
-			if to_signed(setIds'POS(setIds'high)-init_pgm(i).setid, xdr_init_pc'length) = setid then
-				for j in dst_wtab'range loop
-					if init_pgm(i).dstTab(j) /= 0 then
-						val(j) := src(init_pgm(i).dstTab(j));
-					end if;
-				end loop;
-			end if;
-		end loop;
+		aux := rm_file(to_integer(unsigned(arg2)));
 		return val;
 	end;
+
+	type insttn_vector is array (natural range <>) of insttn;
+
+	constant pgm : insttn_vector :+ (
+		issmr2, clmr & mr1,
+		issmr2, clmr & mr2,
+		issmr2, clmr & mr2,
+		issmr2, clmr & mr4,
+
+	constant clmr : cmd_desc := (cmd => "000");
+	signal xdr_init_pc : signed(0 to 4);
 
 begin
 
