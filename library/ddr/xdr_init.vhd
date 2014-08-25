@@ -60,18 +60,6 @@ entity xdr_init is
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
-	type field_desc is record
-		dbase : natural;
-		sbase : natural;
-		size  : natural;
-	end record;
-
-	type mr_desc is record
-		id : std_logic_vector(xdr_init_b'range);
-	end record;
-
-	type fielddesc_vector is array (natural range <>) of field_desc;
-
 	type mr_array is array (natural range <>) of dst_tab;
 
 	signal src : src_word;
@@ -97,21 +85,6 @@ entity xdr_init is
 			end if;
 		end loop;
 		return (1 to lat_size => '1');
-	end;
-
-	function "or" (
-		constant arg1 : natural_vector;
-		constant arg2 : natural_vector) 
-		return natural_vector is
-		variable val : natural_vector(arg1'range);
-	begin
-		val := arg2;
-		for i in arg1'range loop
-			if arg1(i) /= '0' then
-				val(i) := arg1(i);
-			end if;
-		end loop;
-		return val;
 	end;
 
 	attribute fsm_encoding : string;

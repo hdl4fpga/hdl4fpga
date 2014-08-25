@@ -145,13 +145,25 @@ package xdr_param is
 		constant oclks_phases : natural)
 		return std_logic_vector;
 
-	type cmd_desc is record
-		cmd : std_logic_vector(dst_cmd);
+	type field_desc is record
+		dbase : natural;
+		sbase : natural;
+		size  : natural;
 	end record;
 
-	constant cnop : cmd_desc := (cmd => "111");
-	constant clmr : cmd_desc := (cmd => "000");
-	constant cqcl : cmd_desc := (cmd => "110");
+	type fielddesc_vector is array (natural range <>) of field_desc;
+
+	type mr_t is record
+		mr : std_logic_vector(2 downto 0);
+	end record;
+
+	type cmd_t is record
+		cmd : std_logic_vector(2 downto 0);
+	end record;
+
+	constant clmr : cmd_t := (cmd => "000");
+	constant cqcl : cmd_t := (cmd => "110");
+	constant cnop : cmd_t := (cmd => "111");
 
 	function mov (
 		constant desc : field_desc)
@@ -162,11 +174,11 @@ package xdr_param is
 		return natural_vector;
 
 	function set (
-		constant desc : cmd_desc)
+		constant desc : cmd_t)
 		return natural_vector;
 
 	function set (
-		constant desc : mr_desc)
+		constant desc : mr_t)
 		return natural_vector;
 
 	function set (
@@ -183,6 +195,16 @@ package xdr_param is
 
 	function clr (
 		constant desc : fielddesc_vector)
+		return natural_vector;
+
+	function "or" (
+		constant arg1 : natural_vector;
+		constant arg2 : natural_vector) 
+		return natural_vector;
+
+	function "+" (
+		constant cmd : cmd_t;
+		constant mr  : mr_t)
 		return natural_vector;
 
 end package;
@@ -678,7 +700,7 @@ package body xdr_param is
 	function mov (
 		constant desc : field_desc)
 		return natural_vector is
-		variable tab : dst_wtab := (others => 0);
+		variable tab : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
 	begin
 		for j in 0 to desc.size-1 loop
 			tab(desc.dbase+j) := desc.sbase+j;
@@ -689,108 +711,138 @@ package body xdr_param is
 	function mov (
 		constant desc : fielddesc_vector)
 		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : dst_wtab := (others => 0);
+--		variable val : dst_wtab := (others => 0);
+--		variable aux : dst_wtab := (others => 0);
 	begin
-		for i in desc'range loop
-			aux := mov(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
+--		for i in desc'range loop
+--			aux := mov(desc(i));
+--			for j in aux'range loop
+--				if aux(i) /= 0 then
+--					val(j) := aux(j);
+--				end if;
+--			end loop;
+--		end loop;
+--		return val;
 	end function;
 
 	function set (
-		constant desc : cmd_desc)
+		constant desc : cmd_t)
 		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : std_logic_vector(dst_cmd);
+		variable val : natural_vector(desc.cmd'range) := (others => 0);
+		variable aux : std_logic_vector(desc.cmd'range);
 	begin
 		aux := desc.cmd;
 		for i in aux'range loop
 			if aux(i) = '0' then
-				val(i) := cnfgreg_size+1;
+--				val(i) := cnfgreg_size+1;
 			elsif aux(i) = '1' then
-				val(i) := cnfgreg_size+2;
+--				val(i) := cnfgreg_size+2;
 			end if;
 		end loop;
 		return val;
 	end;
 
 	function set (
-		constant desc : mr_desc)
+		constant desc : mr_t)
 		return natural_vector is
-		variable val : dst_wtab := (others => 0);
-		variable aux : std_logic_vector(dst_b);
+--		variable val : natural_vector := (others => 0);
+--		variable aux : std_logic_vector(dst_b);
 	begin
-		aux := desc.id;
-		for i in aux'range loop
-			if aux(i) = '0' then
-				val(i) := cnfgreg_size+1;
-			elsif aux(i) = '1' then
-				val(i) := cnfgreg_size+2;
+--		aux := desc.id;
+--		for i in aux'range loop
+--			if aux(i) = '0' then
+--				val(i) := cnfgreg_size+1;
+--			elsif aux(i) = '1' then
+--				val(i) := cnfgreg_size+2;
+--			end if;
+--		end loop;
+--		return val;
+	end;
+
+	function set (
+		constant desc : field_desc)
+		return natural_vector is
+--		variable val : natural_vector := (others => 0);
+	begin
+--		for j in 0 to desc.size-1 loop
+--			val(desc.dbase+j) := 2;
+--		end loop;
+--		return val;
+	end;
+
+	function set (
+		constant desc : fielddesc_vector)
+		return natural_vector is
+--		variable val : natural_vector := (others => 0);
+--		variable aux : natural_vector := (others => 0);
+	begin
+--		for i in desc'range loop
+--			aux := set(desc(i));
+--			for j in aux'range loop
+--				if aux(i) /= 0 then
+--					val(j) := aux(j);
+--				end if;
+--			end loop;
+--		end loop;
+--		return val;
+	end;
+
+	function clr (
+		constant desc : field_desc)
+		return natural_vector is
+--		variable val : natural_vector := (others => 0);
+	begin
+--		for j in 0 to desc.size-1 loop
+--			val(desc.dbase+j) := 1;
+--		end loop;
+--		return val;
+	end;
+
+	function clr (
+		constant desc : fielddesc_vector)
+		return natural_vector is
+--		variable val : natural_vector := (others => 0);
+--		variable aux : natural_vector := (others => 0);
+	begin
+--		for i in desc'range loop
+--			aux := clr(desc(i));
+--			for j in aux'range loop
+--				if aux(i) /= 0 then
+--					val(j) := aux(j);
+--				end if;
+--			end loop;
+--		end loop;
+--		return val;
+	end;
+
+	function "or" (
+		constant arg1 : natural_vector;
+		constant arg2 : natural_vector) 
+		return natural_vector is
+		variable val : natural_vector(arg1'range);
+	begin
+		val := arg2;
+		for i in arg1'range loop
+			if arg1(i) /= 0 then
+				val(i) := arg1(i);
 			end if;
 		end loop;
 		return val;
 	end;
 
-	function set (
-		constant desc : field_desc)
+	function "+" (
+		constant cmd : cmd_t;
+		constant mr  : mr_t) 
 		return natural_vector is
-		variable val : dst_wtab := (others => 0);
+--		variable val : natural_vector(arg1'range);
 	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 2;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : natural_vector := (others => 0);
-		variable aux : natural_vector := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := set(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : field_desc)
-		return natural_vector is
-		variable val : natural_vector := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 1;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : natural_vector := (others => 0);
-		variable aux : natural_vector := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := clr(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
+--		val := arg2;
+--		for i in arg1'range loop
+--			if arg1(i) /= 0 then
+--				val(i) := arg1(i);
+--			end if;
+--		end loop;
+--		return val;
 	end;
 
 end package body;
