@@ -154,24 +154,13 @@ architecture ddr3 of xdr_init is
 		data : natural_vector(dst_cmd'high downto 0);
 	end record;
 
-	function "&" (
-		constant arg1 : cmd_desc;
-		constant arg2 : std_logic_vector) 
-		return natural_vector is
-		variable val : natural_vector(arg1'range);
-		variable aux : natural_vector;
-	begin
-		aux := rm_file(to_integer(unsigned(arg2)));
-		return val;
-	end;
-
 	type insttn_vector is array (natural range <>) of insttn;
 
 	constant pgm : insttn_vector :+ (
-		issmr2, clmr & mr1,
-		issmr2, clmr & mr2,
-		issmr2, clmr & mr2,
-		issmr2, clmr & mr4,
+		issmr2, clmr + mr1,
+		issmr2, clmr + mr2,
+		issmr2, clmr + mr2,
+		issmr2, clmr + mr4,
 
 	constant clmr : cmd_desc := (cmd => "000");
 	signal xdr_init_pc : signed(0 to 4);

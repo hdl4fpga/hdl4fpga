@@ -178,10 +178,6 @@ package xdr_param is
 		return natural_vector;
 
 	function set (
-		constant desc : mr_t)
-		return natural_vector;
-
-	function set (
 		constant desc : field_desc)
 		return natural_vector;
 
@@ -708,21 +704,47 @@ package body xdr_param is
 		return tab;
 	end function;
 
+	function max (
+		constant desc : fielddesc_vector)
+		return natural is
+		variable val : natural := 0;
+	begin
+		for i in desc'range loop
+			if desc(i).dbase > val then
+				val := desc(i).dbase;
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function min (
+		constant desc : fielddesc_vector)
+		return natural is
+		variable val : natural := 0;
+	begin
+		for i in desc'range loop
+			if desc(i).dbase < val then
+				val := desc(i).dbase;
+			end if;
+		end loop;
+		return val;
+	end;
+
 	function mov (
 		constant desc : fielddesc_vector)
 		return natural_vector is
---		variable val : dst_wtab := (others => 0);
---		variable aux : dst_wtab := (others => 0);
+		variable val : natural_vector(max(desc) downto min(desc)) := (others => 0);
+		variable aux : natural_vector(val'range) := (others => 0);
 	begin
---		for i in desc'range loop
---			aux := mov(desc(i));
---			for j in aux'range loop
---				if aux(i) /= 0 then
---					val(j) := aux(j);
---				end if;
---			end loop;
---		end loop;
---		return val;
+		for i in desc'range loop
+			aux := mov(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
+		end loop;
+		return val;
 	end function;
 
 	function set (
@@ -734,92 +756,75 @@ package body xdr_param is
 		aux := desc.cmd;
 		for i in aux'range loop
 			if aux(i) = '0' then
---				val(i) := cnfgreg_size+1;
+				val(i) := 1;
 			elsif aux(i) = '1' then
---				val(i) := cnfgreg_size+2;
+				val(i) := 2;
 			end if;
 		end loop;
 		return val;
 	end;
 
 	function set (
-		constant desc : mr_t)
-		return natural_vector is
---		variable val : natural_vector := (others => 0);
---		variable aux : std_logic_vector(dst_b);
-	begin
---		aux := desc.id;
---		for i in aux'range loop
---			if aux(i) = '0' then
---				val(i) := cnfgreg_size+1;
---			elsif aux(i) = '1' then
---				val(i) := cnfgreg_size+2;
---			end if;
---		end loop;
---		return val;
-	end;
-
-	function set (
 		constant desc : field_desc)
 		return natural_vector is
---		variable val : natural_vector := (others => 0);
+		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
 	begin
---		for j in 0 to desc.size-1 loop
---			val(desc.dbase+j) := 2;
---		end loop;
---		return val;
+		for j in 0 to desc.size-1 loop
+			val(desc.dbase+j) := 2;
+		end loop;
+		return val;
 	end;
 
 	function set (
 		constant desc : fielddesc_vector)
 		return natural_vector is
---		variable val : natural_vector := (others => 0);
---		variable aux : natural_vector := (others => 0);
+		variable val : natural_vector(max(desc) downto min(desc)) := (others => 0);
+		variable aux : natural_vector(val'range) := (others => 0);
 	begin
---		for i in desc'range loop
---			aux := set(desc(i));
---			for j in aux'range loop
---				if aux(i) /= 0 then
---					val(j) := aux(j);
---				end if;
---			end loop;
---		end loop;
---		return val;
+		for i in desc'range loop
+			aux := set(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
+		end loop;
+		return val;
 	end;
 
 	function clr (
 		constant desc : field_desc)
 		return natural_vector is
---		variable val : natural_vector := (others => 0);
+		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
 	begin
---		for j in 0 to desc.size-1 loop
---			val(desc.dbase+j) := 1;
---		end loop;
---		return val;
+		for j in 0 to desc.size-1 loop
+			val(desc.dbase+j) := 1;
+		end loop;
+		return val;
 	end;
 
 	function clr (
 		constant desc : fielddesc_vector)
 		return natural_vector is
---		variable val : natural_vector := (others => 0);
---		variable aux : natural_vector := (others => 0);
+		variable val : natural_vector(max(desc) downto min(desc)) := (others => 0);
+		variable aux : natural_vector(val'range) := (others => 0);
 	begin
---		for i in desc'range loop
---			aux := clr(desc(i));
---			for j in aux'range loop
---				if aux(i) /= 0 then
---					val(j) := aux(j);
---				end if;
---			end loop;
---		end loop;
---		return val;
+		for i in desc'range loop
+			aux := clr(desc(i));
+			for j in aux'range loop
+				if aux(i) /= 0 then
+					val(j) := aux(j);
+				end if;
+			end loop;
+		end loop;
+		return val;
 	end;
 
 	function "or" (
 		constant arg1 : natural_vector;
 		constant arg2 : natural_vector) 
 		return natural_vector is
-		variable val : natural_vector(arg1'range);
+		variable val : natural_vector(max(arg1'high,arg2'high) downto min(arg1'low,arg1'low));
 	begin
 		val := arg2;
 		for i in arg1'range loop
