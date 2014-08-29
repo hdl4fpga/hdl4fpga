@@ -153,11 +153,11 @@ package xdr_param is
 
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
-	type mr_t is record
-		mr : std_logic_vector(2 downto 0);
+	type ddr3_mr is record
+		id : std_logic_vector(2 downto 0);
 	end record;
 
-	type cmd_t is record
+	type ddr3_cmd is record
 		cmd : std_logic_vector(2 downto 0);
 	end record;
 
@@ -836,8 +836,8 @@ package body xdr_param is
 	end;
 
 	function "+" (
-		constant cmd : cmd_t;
-		constant mr  : mr_t) 
+		constant cmd : ddr3_cmd;
+		constant mr  : ddr3_mr) 
 		return natural_vector is
 --		variable val : natural_vector(arg1'range);
 	begin
