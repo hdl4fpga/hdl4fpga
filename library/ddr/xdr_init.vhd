@@ -7,6 +7,7 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
@@ -60,7 +61,7 @@ entity xdr_init is
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
 
-	type mr_array is array (natural range <>) of dst_tab;
+	type mr_array is array (natural range <>) of ddr3_mr;
 
 	signal src : src_word;
 
@@ -72,8 +73,8 @@ entity xdr_init is
 
 	type ccmd_table is array (ccmds) of ccmd_record;
 	constant ccmd_db : ccmd_table := (
-		CFG_NOP  => (cnop.cmd, to_signed(lMRD-2, lat_size)),
-		CFG_AUTO => (clmr.cmd, to_signed(lMRD-2, lat_size)));
+		CFG_NOP  => (cnop.id, to_signed(lMRD-2, lat_size)),
+		CFG_AUTO => (clmr.id, to_signed(lMRD-2, lat_size)));
 
 	function lat_lookup (
 		constant cmd : std_logic_vector)
@@ -142,40 +143,44 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	constant mr_file : mr_vector := ( 
+	constant mr : ddr3mr_vector(1 to 3) := ( 
 		(clr(rttw) or mov(cwl)),
 		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
 		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
 
-	type labelIds is (lbl_mr2, lbl_mr3, lbl_mr0, lbl_mr1);
+	type ddr3ccmd_vector is array (natural range <>) of ddr3_ccmd;
 
-	type insctn is record
-		id   : labelIds;
-		data : natural_vector(dst_cmd'high downto 0);
-	end record;
+	constant pgm : ddr3ccmd_vector := (
+		clmr + mr1,
+		clmr + mr2,
+		clmr + mr3,
+		clmr + mr3);
 
-	type insttn_vector is array (natural range <>) of insttn;
-
-	constant pgm : insttn_vector := (
-		issmr2, clmr + mr1,
-		issmr2, clmr + mr2,
-		issmr2, clmr + mr2,
-		issmr2, clmr + mr4,
-
-	constant clmr : cmd_desc := (cmd => "000");
 	signal xdr_init_pc : signed(0 to 4);
 
+	impure function compile_pgm (
+		constant pc  : signed;
+		constant src : std_logic_vector)
+		return std_logic_vector is
+		variable val : std_logic_vector(0 to 0);
+	begin
+		for i in loop
+			if to_integer(pc)= then
+			end if;
+		end loop;
+		return val;
+	end;
 begin
 
 	src <=
-		"10" &
 		xdr_init_ods & 
 		xdr_init_pl  & 
 		xdr_init_cwl &
 		xdr_init_rtt & 
 		xdr_init_wr  & 
 		xdr_init_bl  &
-		xdr_init_cl;
+		xdr_init_cl  &
+		"10";
 
 	process (xdr_init_clk)
 		variable aux : std_logic_vector(dst'range);
@@ -199,7 +204,7 @@ begin
 			else
 				dst <= (others => '1');
 				lat_timer <= (others => '1');
-				xdr_init_pc <= to_signed(setIds'POS(setIds'high), xdr_init_pc'length);
+				xdr_init_pc <= to_signed(pgm'length-1, xdr_init_pc'length);
 			end if;
 		end if;
 	end process;
