@@ -153,18 +153,22 @@ package xdr_param is
 
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
-	type ddr3_mr is record
-		id : std_logic_vector(2 downto 0);
+	type ddr3_ccmd is record
+		cmd  : std_logic_vector( 2 downto 0);
+		bank : natural_vector( 2 downto 0);
+		addr : natural_vector(13 downto 0);
 	end record;
+
+	type ddr3_mrID is (mr0, mr1, mr2, mr3);
+
+	type ddr3_mr is record
+		tab : natural_vector(13 downto 0);
+	end record;
+
+	type ddr3mr_vector is array (natural range <>) of ddr3_mr;
 
 	type ddr3_cmd is record
 		id : std_logic_vector(2 downto 0);
-	end record;
-
-	type ddr3_ccmd is record
-		cmd  : std_logic_vector( 2 downto 0);
-		bank : std_logic_vector( 2 downto 0);
-		addr : std_logic_vector(13 downto 0);
 	end record;
 
 	constant clmr : ddr3_cmd := (id => "000");
@@ -200,13 +204,18 @@ package xdr_param is
 		return natural_vector;
 
 	function "or" (
+		constant arg1 : ddr3_mr;
+		constant arg2 : natural_vector) 
+		return ddr3_mr;
+
+	function "or" (
 		constant arg1 : natural_vector;
 		constant arg2 : natural_vector) 
-		return natural_vector;
+		return ddr3_mr;
 
 	function "+" (
 		constant cmd : ddr3_cmd;
-		constant mr  : ddr3_mr)
+		constant mr  : ddr3_mrID)
 		return ddr3_ccmd;
 
 end package;
@@ -827,25 +836,37 @@ package body xdr_param is
 	end;
 
 	function "or" (
-		constant arg1 : natural_vector;
+		constant arg1 : ddr3_mr;
 		constant arg2 : natural_vector) 
-		return natural_vector is
-		variable val : natural_vector(max(arg1'high,arg2'high) downto min(arg1'low,arg1'low));
+		return ddr3_mr is
+		variable val : ddr3_mr;
 	begin
-		val := arg2;
-		for i in arg1'range loop
-			if arg1(i) /= 0 then
-				val(i) := arg1(i);
+		val := arg1;
+		for i in arg2'range loop
+			if arg2(i) /= 0 then
+				val.tab(i) := arg2(i);
 			end if;
 		end loop;
 		return val;
 	end;
 
+	function "or" (
+		constant arg1 : natural_vector;
+		constant arg2 : natural_vector) 
+		return ddr3_mr is
+		variable val : ddr3_mr;
+	begin
+		val.tab := (others => 0);
+		val := val or arg1;
+		val := val or arg2;
+		return val;
+	end;
+
 	function "+" (
 		constant cmd : ddr3_cmd;
-		constant mr  : ddr3_mr) 
+		constant mr  : ddr3_mrID) 
 		return ddr3_ccmd is
---		variable val : natural_vector(arg1'range);
+		variable val : ddr3_ccmd;
 	begin
 --		val := arg2;
 --		for i in arg1'range loop
@@ -853,7 +874,7 @@ package body xdr_param is
 --				val(i) := arg1(i);
 --			end if;
 --		end loop;
---		return val;
+		return val;
 	end;
 
 end package body;
