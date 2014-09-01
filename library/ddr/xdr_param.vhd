@@ -158,12 +158,18 @@ package xdr_param is
 	end record;
 
 	type ddr3_cmd is record
-		cmd : std_logic_vector(2 downto 0);
+		id : std_logic_vector(2 downto 0);
 	end record;
 
-	constant clmr : cmd_t := (cmd => "000");
-	constant cqcl : cmd_t := (cmd => "110");
-	constant cnop : cmd_t := (cmd => "111");
+	type ddr3_ccmd is record
+		cmd  : std_logic_vector( 2 downto 0);
+		bank : std_logic_vector( 2 downto 0);
+		addr : std_logic_vector(13 downto 0);
+	end record;
+
+	constant clmr : ddr3_cmd := (id => "000");
+	constant cqcl : ddr3_cmd := (id => "110");
+	constant cnop : ddr3_cmd := (id => "111");
 
 	function mov (
 		constant desc : field_desc)
@@ -174,7 +180,7 @@ package xdr_param is
 		return natural_vector;
 
 	function set (
-		constant desc : cmd_t)
+		constant desc : ddr3_cmd)
 		return natural_vector;
 
 	function set (
@@ -199,9 +205,9 @@ package xdr_param is
 		return natural_vector;
 
 	function "+" (
-		constant cmd : cmd_t;
-		constant mr  : mr_t)
-		return natural_vector;
+		constant cmd : ddr3_cmd;
+		constant mr  : ddr3_mr)
+		return ddr3_ccmd;
 
 end package;
 
@@ -748,12 +754,12 @@ package body xdr_param is
 	end function;
 
 	function set (
-		constant desc : cmd_t)
+		constant desc : ddr3_cmd)
 		return natural_vector is
-		variable val : natural_vector(desc.cmd'range) := (others => 0);
-		variable aux : std_logic_vector(desc.cmd'range);
+		variable val : natural_vector(desc.id'range) := (others => 0);
+		variable aux : std_logic_vector(desc.id'range);
 	begin
-		aux := desc.cmd;
+		aux := desc.id;
 		for i in aux'range loop
 			if aux(i) = '0' then
 				val(i) := 1;
@@ -838,7 +844,7 @@ package body xdr_param is
 	function "+" (
 		constant cmd : ddr3_cmd;
 		constant mr  : ddr3_mr) 
-		return natural_vector is
+		return ddr3_ccmd is
 --		variable val : natural_vector(arg1'range);
 	begin
 --		val := arg2;

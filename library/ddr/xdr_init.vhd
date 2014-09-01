@@ -156,7 +156,7 @@ architecture ddr3 of xdr_init is
 
 	type insttn_vector is array (natural range <>) of insttn;
 
-	constant pgm : insttn_vector :+ (
+	constant pgm : insttn_vector := (
 		issmr2, clmr + mr1,
 		issmr2, clmr + mr2,
 		issmr2, clmr + mr2,
