@@ -156,20 +156,30 @@ architecture ddr3 of xdr_init is
 		clmr + mr3,
 		clmr + mr3);
 
-	signal xdr_init_pc : signed(0 to 4);
+	signal xdr_init_pc : unsigned(0 to 4);
 
 	impure function compile_pgm (
-		constant pc  : signed;
+		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(0 to 0);
+		variable val : std_logic_vector(pgm(pgm'high).addr'range);
+		variable aux : std_logic_vector(1 to pc'length-1);
 	begin
-		for i in loop
-			if to_integer(pc)= then
+		aux := std_logic_vector(resize(pc, pc'length-1));
+		for i in pgm'range loop
+			if aux=to_unsigned(i, aux'length) then
+				case pgm(i).cmd is
+				when "000" =>
+					for j in pgm(i).addr'range loop
+						val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+					end loop;
+				when others =>
+				end case;
 			end if;
 		end loop;
 		return val;
 	end;
+
 begin
 
 	src <=
@@ -204,7 +214,7 @@ begin
 			else
 				dst <= (others => '1');
 				lat_timer <= (others => '1');
-				xdr_init_pc <= to_signed(pgm'length-1, xdr_init_pc'length);
+				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
 			end if;
 		end if;
 	end process;

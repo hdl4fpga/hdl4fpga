@@ -2,6 +2,7 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -155,7 +156,7 @@ package xdr_param is
 
 	type ddr3_ccmd is record
 		cmd  : std_logic_vector( 2 downto 0);
-		bank : natural_vector( 2 downto 0);
+		bank : std_logic_vector( 2 downto 0);
 		addr : natural_vector(13 downto 0);
 	end record;
 
@@ -868,12 +869,9 @@ package body xdr_param is
 		return ddr3_ccmd is
 		variable val : ddr3_ccmd;
 	begin
---		val := arg2;
---		for i in arg1'range loop
---			if arg1(i) /= 0 then
---				val(i) := arg1(i);
---			end if;
---		end loop;
+		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
+		val.bank := std_logic_vector(unsigned'(to_unsigned(ddr3_mrID'pos(mr), val.bank'length)));
+		val.addr := (others => 0);
 		return val;
 	end;
 
