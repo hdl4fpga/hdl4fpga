@@ -712,7 +712,7 @@ package body xdr_param is
 	function mov (
 		constant desc : field_desc)
 		return natural_vector is
-		variable tab : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
+		variable tab : natural_vector(desc.dbase+desc.size-1 downto desc.dbase) := (others => 0);
 	begin
 		for j in 0 to desc.size-1 loop
 			tab(desc.dbase+j) := desc.sbase+j;
@@ -783,7 +783,7 @@ package body xdr_param is
 	function set (
 		constant desc : field_desc)
 		return natural_vector is
-		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
+		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.dbase) := (others => 0);
 	begin
 		for j in 0 to desc.size-1 loop
 			val(desc.dbase+j) := 2;
@@ -811,7 +811,7 @@ package body xdr_param is
 	function clr (
 		constant desc : field_desc)
 		return natural_vector is
-		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.sbase) := (others => 0);
+		variable val : natural_vector(desc.dbase+desc.size-1 downto desc.dbase) := (others => 0);
 	begin
 		for j in 0 to desc.size-1 loop
 			val(desc.dbase+j) := 1;
