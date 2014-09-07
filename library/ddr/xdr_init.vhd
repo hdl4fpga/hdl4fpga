@@ -171,7 +171,9 @@ architecture ddr3 of xdr_init is
 				case pgm(i).cmd is
 				when "000" =>
 					for j in pgm(i).addr'range loop
-						val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+						if mr(to_integer(unsigned(pgm(i).bank))).tab(j)/= 0 then
+							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+						end if;
 					end loop;
 				when others =>
 				end case;
