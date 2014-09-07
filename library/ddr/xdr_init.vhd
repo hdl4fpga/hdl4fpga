@@ -219,10 +219,10 @@ begin
 		end if;
 	end process;
 
-	xdr_init_a   <= dst(dst_a);
-	xdr_init_b   <= dst(dst_b);
-	xdr_init_ras <= dst(dst_ras);
-	xdr_init_cas <= dst(dst_cas);
-	xdr_init_we  <= dst(dst_we);
+--	xdr_init_a   <= dst(dst_a);
+--	xdr_init_b   <= dst(dst_b);
+--	xdr_init_ras <= dst(dst_ras);
+--	xdr_init_cas <= dst(dst_cas);
+--	xdr_init_we  <= dst(dst_we);
 
 end;
