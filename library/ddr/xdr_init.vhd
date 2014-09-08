@@ -56,7 +56,7 @@ entity xdr_init is
 	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
 
 	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
-	subtype dst_word is std_logic_vector(dst_a'high downto 0);
+	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
 	subtype dst_wtab is natural_vector(dst_word'range);
 
 	type ccmds is (CFG_NOP, CFG_AUTO);
@@ -162,7 +162,7 @@ architecture ddr3 of xdr_init is
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(pgm(pgm'high).addr'range);
+		variable val : dst_word := (others  => '0');
 		variable aux : std_logic_vector(1 to pc'length-1);
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
@@ -175,11 +175,15 @@ architecture ddr3 of xdr_init is
 							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
 						end if;
 					end loop;
+					val(dst_cmd) := pgm(i).cmd;
+					val(dst_b) := pgm(i).bank;
+					return val;
 				when others =>
 				end case;
 			end if;
 		end loop;
-		return val;
+		report "Wrong command"
+		severity ERROR;
 	end;
 
 begin
@@ -202,9 +206,9 @@ begin
 				if lat_timer(0)='1' then
 					if xdr_init_pc(0)='0' then
 						aux := compile_pgm(xdr_init_pc, src);
-						dst <= aux;
 						lat_timer <= lat_lookup(aux(dst_cmd));
 						xdr_init_pc <= xdr_init_pc - 1;
+						dst <= aux;
 					else
 						dst <= (others => '1');
 						lat_timer <= (others => '1');
@@ -221,10 +225,10 @@ begin
 		end if;
 	end process;
 
---	xdr_init_a   <= dst(dst_a);
---	xdr_init_b   <= dst(dst_b);
---	xdr_init_ras <= dst(dst_ras);
---	xdr_init_cas <= dst(dst_cas);
---	xdr_init_we  <= dst(dst_we);
+	xdr_init_a   <= dst(dst_a);
+	xdr_init_b   <= dst(dst_b);
+	xdr_init_ras <= dst(dst_ras);
+	xdr_init_cas <= dst(dst_cas);
+	xdr_init_we  <= dst(dst_we);
 
 end;
