@@ -153,7 +153,6 @@ architecture ddr3 of xdr_init is
 	constant pgm : ddr3ccmd_vector := (
 		clmr + mr1,
 		clmr + mr2,
-		clmr + mr3,
 		clmr + mr3);
 
 	signal xdr_init_pc : unsigned(0 to 4);
@@ -167,7 +166,7 @@ architecture ddr3 of xdr_init is
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
 		for i in pgm'range loop
-			if aux=to_unsigned(i, aux'length) then
+			if aux=to_unsigned(pgm'length-1-i, aux'length) then
 				case pgm(i).cmd is
 				when "000" =>
 					for j in pgm(i).addr'range loop
@@ -176,7 +175,7 @@ architecture ddr3 of xdr_init is
 						end if;
 					end loop;
 					val(dst_cmd) := pgm(i).cmd;
-					val(dst_b) := pgm(i).bank;
+					val(dst_b)   := pgm(i).bank;
 					return val;
 				when others =>
 				end case;
