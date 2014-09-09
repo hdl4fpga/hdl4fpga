@@ -184,6 +184,7 @@ architecture ddr3 of xdr_init is
 		end loop;
 		report "Wrong command"
 		severity ERROR;
+		return (val'range => 'X');
 	end;
 
 begin
