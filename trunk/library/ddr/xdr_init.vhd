@@ -12,6 +12,7 @@ use hdl4fpga.xdr_param.all;
 entity xdr_init is
 	generic (
 		lMRD : natural := 11;
+		lZQINIT : natural := 500;
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (
@@ -59,13 +60,13 @@ entity xdr_init is
 	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
 	subtype dst_wtab is natural_vector(dst_word'range);
 
-	type ccmds is (CFG_NOP, CFG_AUTO);
+	type ccmds is (CFG_ZQC, CFG_MRS);
 
 	type mr_array is array (natural range <>) of ddr3_mr;
 
 	signal src : src_word;
 
-	constant lat_size : natural := signed_num_bits(lMRD-2);
+	constant lat_size : natural := signed_num_bits(MAX(lMRD-2, lZQINIT-2));
 	type ccmd_record is record 
 		cmd : std_logic_vector(2 downto 0);
 		lat : signed(0 to lat_size-1);
@@ -73,8 +74,8 @@ entity xdr_init is
 
 	type ccmd_table is array (ccmds) of ccmd_record;
 	constant ccmd_db : ccmd_table := (
-		CFG_NOP  => (cnop.id, to_signed(lMRD-2, lat_size)),
-		CFG_AUTO => (clmr.id, to_signed(lMRD-2, lat_size)));
+		CFG_ZQC => (czqc.id, to_signed(lZQINIT-2, lat_size)),
+		CFG_MRS => (clmr.id, to_signed(lMRD-2, lat_size)));
 
 	function lat_lookup (
 		constant cmd : std_logic_vector)
