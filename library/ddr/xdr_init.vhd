@@ -143,6 +143,7 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
+
 	constant mr : ddr3mr_vector(0 to 3) := ( 
 		(clr(rttw) or mov(cwl)),
 		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
