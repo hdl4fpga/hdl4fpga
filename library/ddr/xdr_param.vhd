@@ -45,7 +45,7 @@ package xdr_param is
 	type cltabs_ids  is (STRT,  RWNT);
 	type cwltabs_ids is (WWNT, DQSZT, DQST,  DQZT);
 	type laty_ids is (ANY, cDLL, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
-		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL);
+		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
 
 	type cnfglat_record is record
 		std  : positive;
@@ -172,8 +172,8 @@ package xdr_param is
 		id : std_logic_vector(2 downto 0);
 	end record;
 
+	constant czqc : ddr3_cmd := (id => "110");
 	constant clmr : ddr3_cmd := (id => "000");
-	constant cqcl : ddr3_cmd := (id => "110");
 	constant cnop : ddr3_cmd := (id => "111");
 
 	function mov (
@@ -289,6 +289,7 @@ package body xdr_param is
 		latency_record'(std => 3, param => DQSXL, value =>   2) &
 		latency_record'(std => 3, param => DQZXL, value =>   1) &
 		latency_record'(std => 3, param => WWNXL, value =>   1) &
+		latency_record'(std => 3, param => ZQINIT, value =>  500) &
 		latency_record'(std => 3, param => WIDL,  value =>   8);
 
 	type timing_record is record
