@@ -143,8 +143,9 @@ architecture ddr3 of xdr_init is
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
 
-	constant mr : ddr3mr_vector(1 to 3) := ( 
+	constant mr : ddr3mr_vector(0 to 3) := ( 
 		(clr(rttw) or mov(cwl)),
+		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
 		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
 		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
 
@@ -153,9 +154,10 @@ architecture ddr3 of xdr_init is
 	constant pgm : ddr3ccmd_vector := (
 		clmr + mr1,
 		clmr + mr2,
+		clmr + mr0,
 		clmr + mr3);
 
-	signal xdr_init_pc : unsigned(0 to 4);
+	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
 	impure function compile_pgm (
 		constant pc  : unsigned;
@@ -170,7 +172,7 @@ architecture ddr3 of xdr_init is
 				case pgm(i).cmd is
 				when "000" =>
 					for j in pgm(i).addr'range loop
-						if mr(to_integer(unsigned(pgm(i).bank))).tab(j)/= 0 then
+						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
 							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
 						end if;
 					end loop;
@@ -183,7 +185,7 @@ architecture ddr3 of xdr_init is
 		end loop;
 		report "Wrong command"
 		severity ERROR;
-		return (val'range => 'X');
+		return (val'range => '-');
 	end;
 
 begin
