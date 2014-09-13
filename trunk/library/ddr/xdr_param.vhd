@@ -219,6 +219,12 @@ package xdr_param is
 		constant mr  : ddr3_mrID)
 		return ddr3_ccmd;
 
+
+	function "+" (
+		constant cmd : ddr3_cmd;
+		constant dat : std_logic_vector) 
+		return ddr3_ccmd;
+
 end package;
 
 library hdl4fpga;
@@ -858,7 +864,7 @@ package body xdr_param is
 		return ddr3_mr is
 		variable val : ddr3_mr;
 	begin
-		val.tab := (others => 0);
+		val.tab := (val.tab'range => 0);
 		val := val or arg1;
 		val := val or arg2;
 		return val;
@@ -872,7 +878,25 @@ package body xdr_param is
 	begin
 		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
 		val.bank := std_logic_vector(unsigned'(to_unsigned(ddr3_mrID'pos(mr), val.bank'length)));
-		val.addr := (others => 0);
+		val.addr := (val.addr'range => 0);
+		return val;
+	end;
+
+	function "+" (
+		constant cmd : ddr3_cmd;
+		constant dat : std_logic_vector) 
+		return ddr3_ccmd is
+		variable val : ddr3_ccmd;
+	begin
+		val.addr := (val.addr'range => 0);
+		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
+		val.bank := (others => '1');
+		for i in dat'range loop
+			val.addr(i) := 1;
+			if dat(i) = '1' then
+				val.addr(i) := 2;
+			end if;
+		end loop;
 		return val;
 	end;
 
