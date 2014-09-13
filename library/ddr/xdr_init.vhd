@@ -153,11 +153,14 @@ architecture ddr3 of xdr_init is
 
 	type ddr3ccmd_vector is array (natural range <>) of ddr3_ccmd;
 
+	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
+
 	constant pgm : ddr3ccmd_vector := (
-		clmr + mr1,
 		clmr + mr2,
+		clmr + mr3,
+		clmr + mr1,
 		clmr + mr0,
-		clmr + mr3);
+		czqc + ddr3_a10);
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
@@ -165,14 +168,16 @@ architecture ddr3 of xdr_init is
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return std_logic_vector is
-		variable val : dst_word := (others  => '0');
+		variable val : dst_word;
 		variable aux : std_logic_vector(1 to pc'length-1);
+		variable a : std_logic_vector(xdr_init_a'length-1 downto 0);
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
 		for i in pgm'range loop
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
 				case pgm(i).cmd is
 				when "000" =>
+					val := (others  => '0');
 					for j in pgm(i).addr'range loop
 						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
 							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
@@ -181,7 +186,17 @@ architecture ddr3 of xdr_init is
 					val(dst_cmd) := pgm(i).cmd;
 					val(dst_b)   := pgm(i).bank;
 					return val;
+				when "110" =>
+					val := (others => '-');
+					val(dst_cmd) := pgm(i).cmd;
+					val(dst_b)   := (others => '-');
+					a := (others => '-');
+					a(10) := '1';
+					val(dst_a) := a;
+					return val;
 				when others =>
+					report "Wrong command"
+					severity ERROR;
 				end case;
 			end if;
 		end loop;
