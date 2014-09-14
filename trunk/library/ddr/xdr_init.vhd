@@ -67,27 +67,12 @@ entity xdr_init is
 	signal src : src_word;
 
 	constant lat_size : natural := signed_num_bits(MAX(lMRD-2, lZQINIT-2));
-	type ccmd_record is record 
-		cmd : std_logic_vector(2 downto 0);
-		lat : signed(0 to lat_size-1);
-	end record;
 
-	type ccmd_table is array (ccmds) of ccmd_record;
+	type ccmd_table is array (ccmds) of signed(0 to lat_size-1);
+
 	constant ccmd_db : ccmd_table := (
-		CFG_ZQC => (czqc.id, to_signed(lZQINIT-2, lat_size)),
-		CFG_MRS => (clmr.id, to_signed(lMRD-2, lat_size)));
-
-	function lat_lookup (
-		constant cmd : std_logic_vector)
-		return signed is
-	begin
-		for i in ccmd_db'range loop
-			if ccmd_db(i).cmd = cmd then
-				return ccmd_db(i).lat;
-			end if;
-		end loop;
-		return (1 to lat_size => '1');
-	end;
+		CFG_ZQC => to_signed(lZQINIT-2, lat_size),
+		CFG_MRS => to_signed(lMRD-2, lat_size));
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
@@ -164,11 +149,16 @@ architecture ddr3 of xdr_init is
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
+	type xxx is record
+		tmr : signed(lat_timer'range);
+		dst : dst_word;
+	end record;
+
 	impure function compile_pgm (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
-		return std_logic_vector is
-		variable val : dst_word;
+		return xxx is
+		variable val : xxx;
 		variable aux : std_logic_vector(1 to pc'length-1);
 		variable a : std_logic_vector(xdr_init_a'length-1 downto 0);
 	begin
@@ -180,11 +170,12 @@ architecture ddr3 of xdr_init is
 					val := (others  => '0');
 					for j in pgm(i).addr'range loop
 						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
-							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+							val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
 						end if;
 					end loop;
-					val(dst_cmd) := pgm(i).cmd;
-					val(dst_b)   := pgm(i).bank;
+					val.dst(dst_cmd) := pgm(i).cmd;
+					val.dst(dst_b)   := pgm(i).bank;
+					val.tmr := 
 					return val;
 				when "110" =>
 					val := (others => '-');
