@@ -12,7 +12,6 @@ use hdl4fpga.xdr_param.all;
 entity xdr_init is
 	generic (
 		lMRD : natural := 11;
-		lZQINIT : natural := 500;
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (
@@ -66,13 +65,7 @@ entity xdr_init is
 
 	signal src : src_word;
 
-	constant lat_size : natural := signed_num_bits(MAX(lMRD-2, lZQINIT-2));
-
-	type ccmd_table is array (ccmds) of signed(0 to lat_size-1);
-
-	constant ccmd_db : ccmd_table := (
-		CFG_ZQC => to_signed(lZQINIT-2, lat_size),
-		CFG_MRS => to_signed(lMRD-2, lat_size));
+	constant lat_size : natural := signed_num_bits(lMRD-2);
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
@@ -158,16 +151,17 @@ architecture ddr3 of xdr_init is
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return xxx is
-		variable val : xxx;
+		variable val : xxx := ((lat_timer'range => '-'), (dst_word'range => '-'));
 		variable aux : std_logic_vector(1 to pc'length-1);
 		variable a : std_logic_vector(xdr_init_a'length-1 downto 0);
+
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
 		for i in pgm'range loop
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
 				case pgm(i).cmd is
 				when "000" =>
-					val := (others  => '0');
+					val.dst := (others  => '0');
 					for j in pgm(i).addr'range loop
 						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
 							val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
@@ -175,15 +169,16 @@ architecture ddr3 of xdr_init is
 					end loop;
 					val.dst(dst_cmd) := pgm(i).cmd;
 					val.dst(dst_b)   := pgm(i).bank;
-					val.tmr := 
+					val.tmr := to_signed(lMRD-2, lat_size);
 					return val;
 				when "110" =>
-					val := (others => '-');
-					val(dst_cmd) := pgm(i).cmd;
-					val(dst_b)   := (others => '-');
+					val.dst := (others => '-');
+					val.dst(dst_cmd) := pgm(i).cmd;
+					val.dst(dst_b)   := (others => '-');
 					a := (others => '-');
 					a(10) := '1';
-					val(dst_a) := a;
+					val.dst(dst_a) := a;
+					val.tmr := (others => '1');
 					return val;
 				when others =>
 					report "Wrong command"
@@ -193,7 +188,7 @@ architecture ddr3 of xdr_init is
 		end loop;
 		report "Wrong command"
 		severity ERROR;
-		return (val'range => '-');
+		return val;
 	end;
 
 begin
@@ -209,16 +204,13 @@ begin
 		"10";
 
 	process (xdr_init_clk)
-		variable aux : std_logic_vector(dst'range);
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='1' then
 				if lat_timer(0)='1' then
 					if xdr_init_pc(0)='0' then
-						aux := compile_pgm(xdr_init_pc, src);
-						lat_timer <= lat_lookup(aux(dst_cmd));
+						(tmr => lat_timer, dst => dst) <= compile_pgm(xdr_init_pc, src);
 						xdr_init_pc <= xdr_init_pc - 1;
-						dst <= aux;
 					else
 						dst <= (others => '1');
 						lat_timer <= (others => '1');
