@@ -9,7 +9,7 @@ architecture xdr_timer of testbench is
 	signal sys_req : std_logic;
 	signal sys_rdy : std_logic;
 
-	constant timer_sel : std_logic_vector(0 to 1) := "01";
+	constant timer_sel : std_logic_vector(0 to 1) := "11";
 	constant timer_data : natural_vector(0 to 4-1) := (
 		58, 03, 55, 128);
 begin
