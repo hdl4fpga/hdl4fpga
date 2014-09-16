@@ -7,12 +7,12 @@ use hdl4fpga.std.all;
 
 entity xdr_timer is
 	generic ( 
-		tmr_high : natural;
-		tmr_low  : natural;
-		timers : natural_vector);
+		tmr_high : natural := 9;
+		tmr_low  : natural := 9;
+		timers : natural_vector(0 to 1) := (500, 200));
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  std_logic_vector;
+		tmr_id  : in  std_logic_vector(0 to 0);
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
