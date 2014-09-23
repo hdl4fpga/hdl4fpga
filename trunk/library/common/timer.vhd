@@ -5,38 +5,41 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity timers is
+entity timer is
 	generic (
 		n : natural);
 	port (
-		data : in  std_logic_vector);
+		data : in  std_logic_vector;
 		clk  : in  std_logic;
 		req  : in  std_logic;
 		rdy  : out std_logic);
 end;
 
-architecture def of timers is
-	
+architecture def of timer is
 	constant size : natural := (data'length+n-1)/n;
-
 	signal cy : std_logic_vector(n downto 0);
-
 begin
 
+	cy(0) <= '1';
 	cntr_g: for i in 0 to n-1 generate
-		signal q : std_logic_vector(0 to min(size, data-i*size));
-	generate
+		signal q : unsigned(0 to hdl4fpga.std.min(size, data'length-i*size));
+	begin
 		cntr_p : process (clk)
 		begin
 			if rising_edge(clk) then
 				if req='1' then
-
-				else
+					q <= resize(resize(shift_right(unsigned(data), size*i), size), size+1);
+				elsif cy(i)='1' then
+					if q(0)='1' then
+						q <= to_unsigned((2**size-2), size+1);
+					else
+						q <= q - 1;
+					end if;
 				end if;
-
+				cy(i+1) <= q(0) and cy(i);
 			end if;
 		end process;
 
 	end generate;
-
+	rdy <= cy(n);
 end;
