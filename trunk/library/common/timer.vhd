@@ -7,9 +7,10 @@ use hdl4fpga.std.all;
 
 entity timer is
 	generic (
-		n : natural);
+		n : natural := 3;
+		m : natural := 20);
 	port (
-		data : in  std_logic_vector;
+		data : in  std_logic_vector(m-1 downto 0);
 		clk  : in  std_logic;
 		req  : in  std_logic;
 		rdy  : out std_logic);
@@ -17,29 +18,42 @@ end;
 
 architecture def of timer is
 	constant size : natural := (data'length+n-1)/n;
-	signal cy : std_logic_vector(n downto 0);
+	signal cy : std_logic_vector(n downto 0) := (0 => '1', others => '0');
+	signal q  : std_logic_vector(n-1 downto 0);
+	signal stop : std_logic;
 begin
 
-	cy(0) <= '1';
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			for i in 0 to n-1 loop
+				if req='1' then
+					cy(i+1) <= '0';
+				elsif cy(n)='0' then
+					cy(i+1) <= q(i) and cy(i);
+				end if;
+			end loop;
+		end if;
+	end process;
+
 	cntr_g: for i in 0 to n-1 generate
-		signal q : unsigned(0 to hdl4fpga.std.min(size, data'length-i*size));
+		signal cntr : unsigned(0 to hdl4fpga.std.min(size, data'length-i*size));
 	begin
 		cntr_p : process (clk)
 		begin
 			if rising_edge(clk) then
 				if req='1' then
-					q <= resize(resize(shift_right(unsigned(data), size*i), size), size+1);
+					cntr <= resize(resize(shift_right(unsigned(data), size*i), size), size+1);
 				elsif cy(i)='1' then
-					if q(0)='1' then
-						q <= to_unsigned((2**size-2), size+1);
+					if cntr(0)='1' then
+						cntr <= to_unsigned((2**size-2), size+1);
 					else
-						q <= q - 1;
+						cntr <= cntr - 1;
 					end if;
 				end if;
-				cy(i+1) <= q(0) and cy(i);
 			end if;
 		end process;
-
+		q(i) <= cntr(0);
 	end generate;
 	rdy <= cy(n);
 end;
