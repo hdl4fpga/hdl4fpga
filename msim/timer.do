@@ -1,15 +1,12 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du/n
-add wave -noupdate -expand /testbench/du/q0
 add wave -noupdate -color {Orange Red} /testbench/du/rdy
-add wave -noupdate /testbench/du/timer_clk
-add wave -noupdate /testbench/du/timer_data
-add wave -noupdate /testbench/du/timer_len
-add wave -noupdate /testbench/du/timer_rdy
-add wave -noupdate /testbench/du/timer_req
-add wave -noupdate /testbench/du/timer_sel
-add wave -noupdate /testbench/du/cntr_g(2)/line__28/cntr
+add wave -noupdate /testbench/du/data
+add wave -noupdate /testbench/du/clk
+add wave -noupdate /testbench/du/rdy
+add wave -noupdate /testbench/du/req
+add wave -noupdate /testbench/du/size
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {628567 ps} 0} {{Cursor 3} {44905 ps} 0} {{Cursor 4} {1213675 ps} 0}
 quietly wave cursor active 1
