@@ -7,6 +7,7 @@ add wave -noupdate /testbench/du/clk
 add wave -noupdate /testbench/du/rdy
 add wave -noupdate /testbench/du/req
 add wave -noupdate /testbench/du/size
+add wave -noupdate /testbench/du/cy
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {628567 ps} 0} {{Cursor 3} {44905 ps} 0} {{Cursor 4} {1213675 ps} 0}
 quietly wave cursor active 1
@@ -24,4 +25,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {203 ns} {1135343 ps}
+WaveRestoreZoom {0 ps} {1050 ns}
