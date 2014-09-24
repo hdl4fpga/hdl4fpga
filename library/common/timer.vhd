@@ -7,10 +7,9 @@ use hdl4fpga.std.all;
 
 entity timer is
 	generic (
-		n : natural := 3;
-		m : natural := 20);
+		n : natural := 3);
 	port (
-		data : in  std_logic_vector(m-1 downto 0);
+		data : in  std_logic_vector;
 		clk  : in  std_logic;
 		req  : in  std_logic;
 		rdy  : out std_logic);

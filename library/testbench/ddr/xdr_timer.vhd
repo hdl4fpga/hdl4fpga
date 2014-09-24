@@ -19,8 +19,6 @@ begin
 
 	du : entity hdl4fpga.xdr_timer
 	generic map (
-		tmr_high => 9,
-		tmr_low  => 4,
 		timers   => timer_data)
 	port map (
 		sys_clk => sys_clk,
