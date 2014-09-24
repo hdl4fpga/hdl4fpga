@@ -209,6 +209,10 @@ package std is
 		return std_logic_vector;
 
 	function max (
+		constant data : natural_vector)
+		return natural;
+
+	function max (
 		constant left : integer; 
 		constant right: integer)
 		return integer;
@@ -719,6 +723,19 @@ package body std is
 		for i in dat'reverse_range loop
 			val(byte'range) := dat(i);
 			val := val sll byte'length;
+		end loop;
+		return val;
+	end;
+
+	function max (
+		constant data : natural_vector) 
+		return natural is
+		variable val : natural := 0;
+	begin
+		for i in data'range loop
+			if val < data(i) then
+				val := data(i);
+			end if;
 		end loop;
 		return val;
 	end;
