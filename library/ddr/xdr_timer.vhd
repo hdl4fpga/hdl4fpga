@@ -17,33 +17,34 @@ end;
 
 architecture def of xdr_timer is
 	constant stages : natural := 3;
-	function (
-		constant data : natural_vector)
-		return std_logic_vector is
-		constant size : natural := ((data'length+n-1)/n);
+	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
+	type tword_vector is array (natural range <>) of std_logic_vector(timer_size-1 downto 0);
+
+	impure function pp 
+		return tword_vector is
+		constant stage_size : natural := (timer_size+stages-1)/stages;
+		variable aux : std_logic_vector(stage_size-1 downto 0);
+		variable val : tword_vector(timers'range);
 	begin
-		for i in aux'range loop
-			for j in aux'range loop
-				aux(j) := to_unsigned((2**size-1)+timers(i)) mod 2**size, size);
+		val := (others => (others => '-'));
+		for i in timers'range loop
+			for j in stages-1 downto 0 loop
+				aux := to_unsigned(((2**stage_size-1)+(timers(i)/((2**stage_size)**j))) mod 2**stage_size, stage_size);
+				val(i) := val(i) sll aux'length;
+				val(i)(aux'range) := aux;
 			end loop;
 		end loop;
+		return val;
 	end;
 
-	signal data : std_logic_vector(unsigned_num_bits(max(timers))-1 downto 0);
+	constant timer_data : tword_vector(timers'range) := pp;
 begin
-
-	process (sys_clk)
-		variable aux : natural_vector(stages-1 downto 0);
-	begin
-		if rising_edge(sys_clk) then
-		end if;
-	end process;
 
 	timer_e : entity hdl4fpga.timer
 	generic map (
-		n => n)
+		n => stages)
 	port map (
-		data => data,
+		data => timer_data(0),
 		clk => sys_clk,
 		req => sys_req,
 		rdy => sys_rdy);
