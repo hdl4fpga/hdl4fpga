@@ -10,7 +10,7 @@ architecture timer of testbench is
 	signal req : std_logic;
 	signal rdy : std_logic;
 
-  constant stage_size : natural_vector(3-1 downto 0) := (2 => 9, 1 => 7, 0 => 3);
+  constant stage_size : natural_vector(3-1 downto 0) := (2 => 9, 1 => 5, 0 => 3);
 begin
 
 	clk <= not clk after 5 ns;
