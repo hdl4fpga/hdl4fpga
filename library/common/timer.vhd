@@ -22,6 +22,7 @@ architecture def of timer is
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
 begin
 
+  cy(0) <= not cy(stage_size'length);
 	process (clk)
 	begin
 		if rising_edge(clk) then
@@ -38,17 +39,6 @@ begin
 	cntr_g : for i in 0 to stage_size'length-1 generate
     constant size : natural := csize(i+1)-csize(i);
 		signal cntr : unsigned(0 to size-1);
-
---		impure function shift_size (
---			constant n : natural)
---			return natural is
---			variable val : natural := 0;
---		begin
---			for i in 0 to n-1 loop
---				val := val + stage_size(i);
---			end loop;
---			return val;
---		end if;
 
 	begin
 		cntr_p : process (clk)
