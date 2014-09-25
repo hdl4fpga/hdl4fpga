@@ -7,10 +7,10 @@ use hdl4fpga.std.all;
 
 entity xdr_timer is
 	generic ( 
-		timers : natural_vector);
+		timers : natural_vector(0 to 0) :=(0 => 2000000));
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  std_logic_vector;
+		tmr_id  : in  std_logic_vector(0 to 0);
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
@@ -40,7 +40,6 @@ architecture def of xdr_timer is
 		return tword_vector is
 		variable val : tword_vector(timers'range);
 		variable csize : natural;
-		variable aux : std_logic_vector(csize-1 downto 0);
 	begin
 		val := (others => (others => '-'));
 		for i in timers'range loop
@@ -54,14 +53,15 @@ architecture def of xdr_timer is
 	end;
 
 	constant timer_data : tword_vector(timers'range) := pp;
+	constant xx : natural_vector(stages-1 downto 0) := stage_size(stages downto 1);
 
 begin
 
 	timer_e : entity hdl4fpga.timer
 	generic map (
-		stage_size => stage_size(stages downto 1))
+		stage_size => xx)
 	port map (
-		data => timer_data(1),
+		data => timer_data(0),
 		clk => sys_clk,
 		req => sys_req,
 		rdy => sys_rdy);
