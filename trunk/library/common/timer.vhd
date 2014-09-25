@@ -25,10 +25,10 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			for i in 0 to n-1 loop
+			for i in 0 to stage_size'length-1 loop
 				if req='1' then
 					cy(i+1) <= '0';
-				elsif cy(n)='0' then
+				elsif cy(stage_size'length)='0' then
 					cy(i+1) <= q(i) and cy(i);
 				end if;
 			end loop;
@@ -36,7 +36,8 @@ begin
 	end process;
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
-		signal cntr : unsigned(0 to stage_size(i)-1);
+    constant size : natural := csize(i+1)-csize(i);
+		signal cntr : unsigned(0 to size-1);
 
 --		impure function shift_size (
 --			constant n : natural)
@@ -51,11 +52,10 @@ begin
 
 	begin
 		cntr_p : process (clk)
-			constant size : natural := csize(i+1)-csize(i);
 		begin
 			if rising_edge(clk) then
 				if req='1' then
-					cntr <= resize(shift_right(unsigned(data), stage_size(i)), size);
+					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif cy(i)='1' then
 					if cntr(0)='1' then
 						cntr <= to_unsigned((2**(size-1)-2), size);
@@ -67,5 +67,5 @@ begin
 		end process;
 		q(i) <= cntr(0);
 	end generate;
-	rdy <= cy(n);
+	rdy <= cy(stage_size'length);
 end;

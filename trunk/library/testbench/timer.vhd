@@ -10,6 +10,7 @@ architecture timer of testbench is
 	signal req : std_logic;
 	signal rdy : std_logic;
 
+  constant stage_size : natural_vector(3-1 downto 0) := (2 => 9, 1 => 7, 0 => 3);
 begin
 
 	clk <= not clk after 5 ns;
@@ -17,7 +18,7 @@ begin
 	req <= rst;
 	du : entity hdl4fpga.timer
 	generic map (
-		stage_size => (0 => 3, 1 => 3, 2 => 3))
+		stage_size => stage_size)
 	port map (
 		data => to_unsigned(300, 9),
 		clk  => clk,
