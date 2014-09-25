@@ -17,7 +17,7 @@ begin
 	req <= rst;
 	du : entity hdl4fpga.timer
 	generic map (
-		n  => 3)
+		stage_size => (0 => 3, 1 => 3, 2 => 3))
 	port map (
 		data => to_unsigned(300, 9),
 		clk  => clk,

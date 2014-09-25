@@ -16,9 +16,10 @@ entity timer is
 end;
 
 architecture def of timer is
+	constant csize : natural_vector(stage_size'length downto 0) := stage_size & 0;
+
 	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
-	signal stop : std_logic;
 begin
 
 	process (clk)
@@ -34,29 +35,30 @@ begin
 		end if;
 	end process;
 
-	cntr_g: for i in 0 to n-1 generate
+	cntr_g : for i in 0 to stage_size'length-1 generate
 		signal cntr : unsigned(0 to stage_size(i)-1);
 
-		impure function shift_size (
-			constant n : natural)
-			return natural is
-			variable val : natural := 0;
-		begin
-			for i in 0 to n-1 loop
-				val := val + stage_size(i);
-			end loop;
-			return val;
-		end if;
+--		impure function shift_size (
+--			constant n : natural)
+--			return natural is
+--			variable val : natural := 0;
+--		begin
+--			for i in 0 to n-1 loop
+--				val := val + stage_size(i);
+--			end loop;
+--			return val;
+--		end if;
 
 	begin
 		cntr_p : process (clk)
+			constant size : natural := csize(i+1)-csize(i);
 		begin
 			if rising_edge(clk) then
 				if req='1' then
-					cntr <= resize(shift_right(unsigned(data), shift_size(i)), stage_size(i));
+					cntr <= resize(shift_right(unsigned(data), stage_size(i)), size);
 				elsif cy(i)='1' then
 					if cntr(0)='1' then
-						cntr <= to_unsigned((2**(stage_size(i)-1)-2), stage_size(i));
+						cntr <= to_unsigned((2**(size-1)-2), size);
 					else
 						cntr <= cntr - 1;
 					end if;
