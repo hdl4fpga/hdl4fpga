@@ -16,23 +16,23 @@ entity xdr_timer is
 end;
 
 architecture def of xdr_timer is
-	constant stages : natural := 4;
-	constant timer_size : natural := unsigned_num_bits(max(timers))+stage_size'length;
-	constant stage_size : natural_vector(stages-1 downto 0) := (3 => timer_size-1, 2 => 3, 1 => 3, 0 => 0);
+	constant stages : natural := 3;
+	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
+	constant stage_size : natural_vector(stages downto 0) := (3 => timer_size-1, 2 => 4, 1 => 3, 0 => 0);
 	type tword_vector is array (natural range <>) of std_logic_vector(timer_size-1 downto 0);
 
 	impure function pp 
 		return tword_vector is
 		variable val : tword_vector(timers'range);
-		constant csize : natural := stage_size(i+1)-stage_size(i);
+		variable csize : natural;
 		variable aux : std_logic_vector(csize-1 downto 0);
 	begin
 		val := (others => (others => '-'));
 		for i in timers'range loop
 			for j in stages-1 downto 0 loop
-				aux := to_unsigned(((2**csize-1)+(timers(i)/2**stage_size(i))) mod 2**csize, csize);
-				val(i) := val(i) sll aux'length;
-				val(i)(aux'range) := aux;
+        csize := stage_size(j+1)-stage_size(j);
+				val(i) := val(i) sll csize;
+				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+(timers(i)/2**stage_size(i))) mod 2**csize, csize);
 			end loop;
 		end loop;
 		return val;
@@ -43,7 +43,7 @@ begin
 
 	timer_e : entity hdl4fpga.timer
 	generic map (
-		n => stages())
+		stage_size => stage_size(stages downto 1))
 	port map (
 		data => timer_data(0),
 		clk => sys_clk,
