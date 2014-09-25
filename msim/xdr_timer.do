@@ -11,8 +11,9 @@ add wave -noupdate /testbench/du/timer_e/data
 add wave -noupdate /testbench/du/timer_e/cntr_g(0)/cntr
 add wave -noupdate /testbench/du/timer_e/cntr_g(1)/cntr
 add wave -noupdate /testbench/du/timer_e/cntr_g(2)/cntr
+add wave -noupdate /testbench/du/timer_e/en
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29212 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1325244 ps} 0} {{Cursor 2} {5327401 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -28,4 +29,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {420 ns}
+WaveRestoreZoom {1131487 ps} {1558051 ps}

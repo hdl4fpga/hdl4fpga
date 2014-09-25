@@ -19,10 +19,10 @@ architecture def of timer is
 	constant csize : natural_vector(stage_size'length downto 0) := stage_size & 0;
 
 	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
+	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
 begin
 
-  cy(0) <= not cy(stage_size'length);
 	process (clk)
 	begin
 		if rising_edge(clk) then
@@ -35,6 +35,7 @@ begin
 			end loop;
 		end if;
 	end process;
+	en <= cy(stage_size'length downto 1) & not cy(stage_size'length);
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
     constant size : natural := csize(i+1)-csize(i);
@@ -46,7 +47,7 @@ begin
 			if rising_edge(clk) then
 				if req='1' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
-				elsif cy(i)='1' then
+				elsif en(i)='1' then
 					if cntr(0)='1' then
 						cntr <= to_unsigned((2**(size-1)-2), size);
 					else
