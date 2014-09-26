@@ -16,7 +16,7 @@ entity xdr_timer is
 end;
 
 architecture def of xdr_timer is
-	constant stages : natural := 3;
+	constant stages : natural := 4;
 	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	type tword_vector is array (natural range <>) of std_logic_vector(timer_size-1 downto 0);
 	
@@ -46,7 +46,7 @@ architecture def of xdr_timer is
 			for j in stages-1 downto 0 loop
 				csize := stage_size(j+1)-stage_size(j);
 				val(i) := val(i) sll csize;
-				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-(stages-1))/2**(stage_size(j))) mod 2**(csize-1)) mod 2**csize, csize);
+				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-(stages-1))/2**(stage_size(j)-j)) mod 2**(csize-1)) mod 2**csize, csize);
 			end loop;
 		end loop;
 		return val;
