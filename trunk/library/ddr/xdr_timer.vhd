@@ -46,7 +46,7 @@ architecture def of xdr_timer is
 			for j in stages-1 downto 0 loop
 				csize := stage_size(j+1)-stage_size(j);
 				val(i) := val(i) sll csize;
-				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-(stages-1))/2**(stage_size(j)-j)) mod 2**(csize-1)) mod 2**csize, csize);
+				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-(stages-1))/2**(stage_size(j))) mod 2**(csize-1)) mod 2**csize, csize);
 			end loop;
 		end loop;
 		return val;
