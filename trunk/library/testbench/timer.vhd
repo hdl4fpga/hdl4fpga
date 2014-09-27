@@ -14,13 +14,13 @@ architecture timer of testbench is
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 45.00001 ns, '1' after 4000.00001 ns, '0' after 4045.0001 ns;
-	req <= rst;
+	rst <= '1', '0' after 45.00001 ns;
+	req <= rdy or rst;
 	du : entity hdl4fpga.timer
 	generic map (
 		stage_size => stage_size)
 	port map (
-		data => to_unsigned(300, 9),
+		data => to_unsigned(64, 9),
 		clk  => clk,
 		req  => req,
 		rdy  => rdy);
