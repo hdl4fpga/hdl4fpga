@@ -9,9 +9,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
 
-entity xdr_cfg is
+entity xdr_init is
 	generic (
-		lMRD : natural := 11;
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);
 	port (
@@ -27,7 +26,8 @@ entity xdr_cfg is
 		xdr_init_clk : in  std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic := '1';
-		xdr_init_dll : out std_logic := '1';
+		xdr_timer_req : out std_logic := '0';
+		xdr_timer_rdy : in  std_logic := '0';
 		xdr_init_odt : out std_logic := '0';
 		xdr_init_ras : out std_logic := '1';
 		xdr_init_cas : out std_logic := '1';
@@ -65,18 +65,15 @@ entity xdr_cfg is
 
 	signal src : src_word;
 
-	constant lat_size : natural := signed_num_bits(lMRD-2);
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
 
 end;
 
-architecture ddr3 of xdr_cfg is
+architecture ddr3 of xdr_init is
 
 	signal dst : dst_word;
-
-	signal lat_timer : signed(0 to lat_size-1);
 
 	constant ddl_rdy : field_desc := (dbase => dst_o'low+0, sbase => 1, size => 1);
 	constant end_rdy : field_desc := (dbase => dst_o'low+1, sbase => 1, size => 1);
@@ -84,25 +81,20 @@ architecture ddr3 of xdr_cfg is
 	-- DDR3 Mode Register 0 --
 	--------------------------
 
-	constant bl : field_desc := (dbase =>  0, sbase => 1, size => 3);
-	constant bt : field_desc := (dbase =>  3, sbase => 1, size => 1);
-	constant cl : field_desc := (dbase =>  4, sbase => 1, size => 3);
-	constant tm : field_desc := (dbase =>  7, sbase => 1, size => 1);
+	constant bl   : field_desc := (dbase =>  0, sbase => 1, size => 3);
+	constant bt   : field_desc := (dbase =>  3, sbase => 1, size => 1);
+	constant cl   : field_desc := (dbase =>  4, sbase => 1, size => 3);
+	constant tm   : field_desc := (dbase =>  7, sbase => 1, size => 1);
 	constant rdll : field_desc := (dbase =>  8, sbase => 1, size => 1);
-	constant wr : field_desc := (dbase =>  9, sbase => 1, size => 3);
-	constant pd : field_desc := (dbase => 12, sbase => 1, size => 1);
+	constant wr   : field_desc := (dbase =>  9, sbase => 1, size => 3);
+	constant pd   : field_desc := (dbase => 12, sbase => 1, size => 1);
 
 	-- DDR3 Mode Register 1 --
 	--------------------------
 
 	constant edll : field_desc := (dbase => 0, sbase => 1, size => 1);
-	constant ods  : fielddesc_vector := (
-		(dbase => 1, sbase => 1, size => 1),
-	   	(dbase => 5, sbase => 1, size => 1));
-	constant rtt  : fielddesc_vector := (
-		(dbase => 2, sbase => 1, size => 1),
-		(dbase => 6, sbase => 1, size => 1),
-		(dbase => 9, sbase => 1, size => 1));
+	constant ods  : fielddesc_vector := ((dbase => 1, sbase => 1, size => 1), (dbase => 5, sbase => 1, size => 1));
+	constant rtt  : fielddesc_vector := ((dbase => 2, sbase => 1, size => 1), (dbase => 6, sbase => 1, size => 1), (dbase => 9, sbase => 1, size => 1));
 	constant al   : field_desc := (dbase =>  3, sbase => 1, size => 2);
 	constant wl   : field_desc := (dbase =>  7, sbase => 0, size => 1);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
@@ -112,16 +104,15 @@ architecture ddr3 of xdr_cfg is
 	-- DDR3 Mode Register 2 --
 	--------------------------
 
-	constant cwl : field_desc := (dbase => 3, sbase => 0, size => 3);
-	constant asr : field_desc := (dbase => 6, sbase => 0, size => 1);
-	constant srt : field_desc := (dbase => 7, sbase => 0, size => 1);
+	constant cwl  : field_desc := (dbase => 3, sbase => 0, size => 3);
+	constant asr  : field_desc := (dbase => 6, sbase => 0, size => 1);
+	constant srt  : field_desc := (dbase => 7, sbase => 0, size => 1);
 	constant rttw : field_desc := (dbase => 9, sbase => 0, size => 2);
 
 	-- DDR3 Mode Register 3 --
 	--------------------------
 
 	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
-
 
 	constant mr : ddr3mr_vector(0 to 3) := ( 
 		(clr(rttw) or mov(cwl)),
@@ -142,18 +133,12 @@ architecture ddr3 of xdr_cfg is
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
-	type xxx is record
-		tmr : signed(lat_timer'range);
-		dst : dst_word;
-	end record;
-
 	impure function compile_pgm (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
-		return xxx is
-		variable val : xxx := ((lat_timer'range => '-'), (dst_word'range => '-'));
+		return dst_word is
+		variable val : dst_word := (dst_word'range => '-');
 		variable aux : std_logic_vector(1 to pc'length-1);
-		variable a : std_logic_vector(xdr_init_a'length-1 downto 0);
 
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
@@ -161,24 +146,20 @@ architecture ddr3 of xdr_cfg is
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
 				case pgm(i).cmd is
 				when "000" =>
-					val.dst := (others  => '0');
+					val := (others  => '0');
 					for j in pgm(i).addr'range loop
 						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
-							val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
 						end if;
 					end loop;
-					val.dst(dst_cmd) := pgm(i).cmd;
-					val.dst(dst_b)   := pgm(i).bank;
-					val.tmr := to_signed(lMRD-2, lat_size);
+					val(dst_cmd) := pgm(i).cmd;
+					val(dst_b)   := pgm(i).bank;
 					return val;
 				when "110" =>
-					val.dst := (others => '-');
-					val.dst(dst_cmd) := pgm(i).cmd;
-					val.dst(dst_b)   := (others => '-');
-					a := (others => '-');
-					a(10) := '1';
-					val.dst(dst_a) := a;
-					val.tmr := (others => '1');
+					val := (others => '-');
+					val(dst_cmd) := pgm(i).cmd;
+					val(dst_b)   := (others => '-');
+					val(dst_a)   := (10 => '1', others => '-');
 					return val;
 				when others =>
 					report "Wrong command"
@@ -206,31 +187,30 @@ begin
 	process (xdr_init_clk)
 	begin
 		if rising_edge(xdr_init_clk) then
-			if xdr_init_req='1' then
-				if lat_timer(0)='1' then
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
 					if xdr_init_pc(0)='0' then
-						(tmr => lat_timer, dst => dst) <= compile_pgm(xdr_init_pc, src);
+						dst <= compile_pgm(xdr_init_pc, src);
 						xdr_init_pc <= xdr_init_pc - 1;
 					else
 						dst <= (others => '1');
-						lat_timer <= (others => '1');
 					end if;
 				else
 					dst <= (others => '1');
-					lat_timer <= lat_timer-1;
 				end if;
 			else
 				dst <= (others => '1');
-				lat_timer <= (others => '1');
 				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
 			end if;
 		end if;
 	end process;
+	xdr_timer_req <= xdr_timer_rdy or xdr_init_req;
 
 	xdr_init_a   <= dst(dst_a);
 	xdr_init_b   <= dst(dst_b);
 	xdr_init_ras <= dst(dst_ras);
 	xdr_init_cas <= dst(dst_cas);
 	xdr_init_we  <= dst(dst_we);
+	xdr_init_rdy <= xdr_init_pc(0);
 
 end;

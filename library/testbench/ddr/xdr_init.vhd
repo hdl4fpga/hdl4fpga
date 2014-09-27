@@ -19,8 +19,7 @@ begin
 	du : entity hdl4fpga.xdr_init
 	generic map (
 		bank_size  => 3,
-		addr_size  => 13,
-		lMRD => 8)
+		addr_size  => 13)
 	port map (
 		xdr_init_clk => xdr_clk,
 		xdr_init_req => xdr_rst,

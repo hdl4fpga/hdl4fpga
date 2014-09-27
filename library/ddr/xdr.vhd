@@ -83,12 +83,12 @@ architecture mix of xdr is
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal xdr_cfg_rdy : std_logic;
-	signal xdr_cfg_ras : std_logic;
-	signal xdr_cfg_cas : std_logic;
-	signal xdr_cfg_we  : std_logic;
-	signal xdr_cfg_a   : std_logic_vector(addr_size-1 downto 0);
-	signal xdr_cfg_b   : std_logic_vector(bank_size-1 downto 0);
+	signal xdr_init_rdy : std_logic;
+	signal xdr_init_ras : std_logic;
+	signal xdr_init_cas : std_logic;
+	signal xdr_init_we  : std_logic;
+	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
+	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);
 
 	signal xdrphy_odt : std_logic;
 	signal xdrphy_cke : std_logic;
@@ -98,8 +98,7 @@ architecture mix of xdr is
 	signal xdrphy_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdrphy_b   : std_logic_vector(bank_size-1 downto 0);
 
-	signal xdr_cfg_req : std_logic;
-	signal xdr_cfg_dll : std_logic;
+	signal xdr_init_req : std_logic;
 
 	signal dll_timer_rdy : std_logic;
 
@@ -164,44 +163,46 @@ begin
 
 	xdr_cwl <= sys_cl when std=2 else sys_cwl;
 
-	xdr_cfg_du : entity hdl4fpga.xdr_init
+	xdr_init_du : entity hdl4fpga.xdr_init
 	generic map (
-		a    => addr_size,
-		cRP  => to_xdrlatency(tCP, mark, tRP),
-		cMRD => to_xdrlatency(tCP, mark, tMRD),
-		cRFC => to_xdrlatency(tCP, mark, tRFC))
+		addr_size => addr_size,
+		bank_size => bank_size),
 	port map (
-		xdr_cfg_bl  => sys_bl,
-		xdr_cfg_cl  => sys_cl,
-		xdr_cfg_cwl => sys_cwl,
-		xdr_cfg_wr  => sys_wr,
+		xdr_init_bl  => sys_bl,
+		xdr_init_cl  => sys_cl,
+		xdr_init_wr  => sys_wr,
+		xdr_init_cwl => sys_cwl,
+		xdr_init_pl  => sys_pl,
+		xdr_init_dqsn => sys_dqsn,
 
-		xdr_cfg_clk => sys_clks(0),
-		xdr_cfg_req => xdr_cfg_req,
-		xdr_cfg_rdy => xdr_cfg_rdy,
-		xdr_cfg_dll => xdr_cfg_dll,
-		xdr_cfg_ras => xdr_cfg_ras,
-		xdr_cfg_cas => xdr_cfg_cas,
-		xdr_cfg_we  => xdr_cfg_we,
-		xdr_cfg_a   => xdr_cfg_a,
-		xdr_cfg_b   => xdr_cfg_b);
+		xdr_init_clk => sys_clks(0),
+		xdr_init_req => xdr_init_req,
+		xdr_init_rdy => xdr_init_rdy,
+		xdr_timer_rdy => xdr_timer_rdy,
+		xdr_timer_req => xdr_timer_req,
+		xdr_init_step => xdr_init_step,
+		xdr_init_ras => xdr_init_ras,
+		xdr_init_cas => xdr_init_cas,
+		xdr_init_we  => xdr_init_we,
+		xdr_init_a   => xdr_init_a,
+		xdr_init_b   => xdr_init_b);
 
 	xdrphy_cke <= xdrphy_cke;
 	xdrphy_odt <= dll_timer_rdy;
-	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_cfg_ras;
-	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_cfg_cas;
-	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_cfg_we;
-	xdrphy_a   <= sys_a when dll_timer_rdy='1' else xdr_cfg_a;
-	xdrphy_b   <= sys_b when dll_timer_rdy='1' else xdr_cfg_b;
+	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_init_ras;
+	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_init_cas;
+	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_init_we;
+	xdrphy_a   <= sys_a when dll_timer_rdy='1' else xdr_init_a;
+	xdrphy_b   <= sys_b when dll_timer_rdy='1' else xdr_init_b;
 
 	process (sys_clks(0))
 		variable q : std_logic;
 	begin
 		if rising_edge(sys_clks(0)) then
---			xdr_mpu_rst <= not (xdr_cfg_rdy and dll_timer_rdy);
+--			xdr_mpu_rst <= not (xdr_init_rdy and dll_timer_rdy);
 			xdr_mpu_rst <= q;
-			q := not (xdr_cfg_rdy and dll_timer_rdy);
-			sys_cfg_rdy <= xdr_cfg_rdy and dll_timer_rdy;
+			q := not (xdr_init_rdy and dll_timer_rdy);
+			sys_cfg_rdy <= xdr_init_rdy and dll_timer_rdy;
 		end if;
 	end process;
 
