@@ -7,38 +7,39 @@ use hdl4fpga.std.all;
 
 entity xdr_timer is
 	generic ( 
-		timers : natural_vector(0 to 0) :=(0 => 2000000));
+		timers : natural_vector(0 to 3) :=(0 => 2000000, 1 => 20, 2 => 30, 3 => 4000));
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  std_logic_vector(0 to 0);
+		tmr_id  : in  std_logic_vector(2-1 downto 0);
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
 
 architecture def of xdr_timer is
-	constant stages : natural := 4;
+	constant stages : natural := unsigned_num_bits(max(timers))/5;
 	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
-	type tword_vector is array (natural range <>) of std_logic_vector(timer_size-1 downto 0);
+	subtype tword is std_logic_vector(timer_size-1 downto 0);
+	type tword_vector is array (natural range <>) of tword;
 	
-  impure function stage_size
-    return natural_vector is
-    variable val : natural_vector(stages downto 0);
-    variable quo : natural := timer_size mod stages;
-  begin
-    val(0) := 0;
-    for i in 1 to stages loop
-      val(i) := timer_size/stages + val(i-1);
-      if i*quo >= stages then
-        val(i) := val(i) + 1;
-        quo := quo - 1;
-      end if;
-    end loop;
-    return val;
-  end;
-  
+	impure function stage_size
+		return natural_vector is
+		variable val : natural_vector(stages downto 0);
+		variable quo : natural := timer_size mod stages;
+	begin
+		val(0) := 0;
+		for i in 1 to stages loop
+			val(i) := timer_size/stages + val(i-1);
+			if i*quo >= stages then
+				val(i) := val(i) + 1;
+				quo := quo - 1;
+			end if;
+		end loop;
+		return val;
+	end;
+
 	impure function pp 
 		return tword_vector is
-		variable val : tword_vector(timers'range);
+		variable val : tword_vector(0 to 2**tmr_id'length-1);
 		variable csize : natural;
 	begin
 		val := (others => (others => '-'));
@@ -52,16 +53,27 @@ architecture def of xdr_timer is
 		return val;
 	end;
 
-	constant timer_data : tword_vector(timers'range) := pp;
+	constant timer_values : tword_vector(0 to 2**tmr_id'length-1) := pp;
 	constant xx : natural_vector(stages-1 downto 0) := stage_size(stages downto 1);
 
+	signal data : tword;
+
 begin
+
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			if sys_req='0' then
+				data <= timer_values(to_integer(unsigned(tmr_id)));
+			end if;
+		end if;
+	end process;
 
 	timer_e : entity hdl4fpga.timer
 	generic map (
 		stage_size => xx)
 	port map (
-		data => timer_data(0),
+		data => data,
 		clk => sys_clk,
 		req => sys_req,
 		rdy => sys_rdy);
