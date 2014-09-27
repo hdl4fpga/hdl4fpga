@@ -9,7 +9,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
 
-entity xdr_init is
+entity xdr_cfg is
 	generic (
 		lMRD : natural := 11;
 		ADDR_SIZE : natural := 13;
@@ -72,7 +72,7 @@ entity xdr_init is
 
 end;
 
-architecture ddr3 of xdr_init is
+architecture ddr3 of xdr_cfg is
 
 	signal dst : dst_word;
 

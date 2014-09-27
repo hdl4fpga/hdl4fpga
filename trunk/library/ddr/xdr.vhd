@@ -151,26 +151,20 @@ begin
 
 	xdr_timer_e : entity hdl4fpga.xdr_timer
 	generic map (
-		cPreRST => to_xdrlatency(tCP, mark, tPreRST),
-		cDLL => xdr_latency(std, cDLL),
-		cPstRST => to_xdrlatency(tCP, mark, tPstRST),
-		cxpr => to_xdrlatency(tCP, mark, tXPR),
-		cREF => to_xdrlatency(tCP, mark, tREFI),
-		std  => std)
+		(0 => to_xdrlatency(tCP, mark, tPreRST),
+		 1 => xdr_latency(std, cDLL),
+		 2 => to_xdrlatency(tCP, mark, tPstRST),
+		 3 => to_xdrlatency(tCP, mark, tXPR),
+		 4 => to_xdrlatency(tCP, mark, tREFI));
 	port map (
-		sys_timer_clk => sys_clks(0),
-		sys_timer_rst => rst,
-		sys_cfg_rst  => xdr_rst,
-		sys_cfg_req  => xdr_cfg_req,
-		xdr_cke => xdrphy_cke,
-		dll_timer_req => xdr_cfg_dll,
-		dll_timer_rdy => dll_timer_rdy,
-		ref_timer_req => xdr_cfg_rdy,
-		ref_timer_rdy => xdr_mpu_ref);
+		sys_clk => sys_clks(0),
+		tmr_id  => 
+		sys_req => rst,
+		sys_rdy =>);
 
 	xdr_cwl <= sys_cl when std=2 else sys_cwl;
 
-	xdr_cfg_du : entity hdl4fpga.xdr_cfg(ddr1)
+	xdr_cfg_du : entity hdl4fpga.xdr_init
 	generic map (
 		a    => addr_size,
 		cRP  => to_xdrlatency(tCP, mark, tRP),
