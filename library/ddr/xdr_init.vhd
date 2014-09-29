@@ -28,6 +28,9 @@ entity xdr_init is
 		xdr_init_rdy : out std_logic := '1';
 		xdr_timer_req : out std_logic := '0';
 		xdr_timer_rdy : in  std_logic := '0';
+		xdr_timer_id  : out std_logic_vector;
+		xdr_init_rst : out std_logic := '0';
+		xdr_init_cke : out std_logic := '0';
 		xdr_init_odt : out std_logic := '0';
 		xdr_init_ras : out std_logic := '1';
 		xdr_init_cas : out std_logic := '1';
@@ -125,46 +128,62 @@ architecture ddr3 of xdr_init is
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
 
 	constant pgm : ddr3ccmd_vector := (
-		clmr + mr2,
-		clmr + mr3,
-		clmr + mr1,
-		clmr + mr0,
-		czqc + ddr3_a10);
+		ddr3_ccmd(ddr3_crst),
+		ddr3_ccmd(ddr3_crry),
+		ddr3_ccmd(ddr3_ccke),
+		ddr3_clmr + mr2,
+		ddr3_clmr + mr3,
+		ddr3_clmr + mr1,
+		ddr3_clmr + mr0,
+		ddr3_czqc + ddr3_a10);
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
+
+	type xxx is record
+		dst : dst_word;
+		id  : tmrid;
+	end record;
 
 	impure function compile_pgm (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
-		return dst_word is
-		variable val : dst_word := (dst_word'range => '-');
+		return xxx is
+		variable val : xxx := (dst => (others => '-'), id => );
 		variable aux : std_logic_vector(1 to pc'length-1);
 
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
 		for i in pgm'range loop
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
-				case pgm(i).cmd is
-				when "000" =>
-					val := (others  => '0');
-					for j in pgm(i).addr'range loop
-						if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
-							val(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
-						end if;
-					end loop;
-					val(dst_cmd) := pgm(i).cmd;
-					val(dst_b)   := pgm(i).bank;
-					return val;
-				when "110" =>
-					val := (others => '-');
-					val(dst_cmd) := pgm(i).cmd;
-					val(dst_b)   := (others => '-');
-					val(dst_a)   := (10 => '1', others => '-');
-					return val;
-				when others =>
-					report "Wrong command"
-					severity ERROR;
-				end case;
+				val.dst(dst_cmd) := pgm(i).cmd;
+				for l in ddr3ccmd_tab'range loop
+					if std_match(pgm(i).cmd, ddr3ccmd_tab(l) then
+						case l is 
+						when CRST|CRRDY|CCKE =>
+						when CLMR =>
+							val.dst := (others  => '0');
+							for j in pgm(i).addr'range loop
+								if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
+									val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
+								end if;
+							end loop;
+							val.dst(dst_b) := pgm(i).bank;
+							return val;
+						when CZQC =>
+							for j in pgm(i).addr'range loop
+								if pmg(i).addr(j) /= 0 then
+									val.dst(j) := src(pmg(i).addr(j));
+								end if;
+							end loop;
+							return val;
+						when others =>
+							report "Wrong command"
+							severity ERROR;
+						end case;
+					end if;
+				end loop
+				report "Wrong command"
+				severity ERROR;
 			end if;
 		end loop;
 		report "Wrong command"
@@ -206,6 +225,8 @@ begin
 	end process;
 	xdr_timer_req <= xdr_timer_rdy or xdr_init_req;
 
+	xdr_init_rst <= dst(dst_rst);
+	xdr_init_cke <= dst(dst_cke);
 	xdr_init_a   <= dst(dst_a);
 	xdr_init_b   <= dst(dst_b);
 	xdr_init_ras <= dst(dst_ras);

@@ -169,12 +169,26 @@ package xdr_param is
 	type ddr3mr_vector is array (natural range <>) of ddr3_mr;
 
 	type ddr3_cmd is record
-		id : std_logic_vector(2 downto 0);
+		id : std_logic_vector(5 downto 0);
 	end record;
 
-	constant czqc : ddr3_cmd := (id => "110");
-	constant clmr : ddr3_cmd := (id => "000");
-	constant cnop : ddr3_cmd := (id => "111");
+	type DDR_CCNAME is (DDR_CRST, DDR_CRRDY, DDR_CCKE, DDR_CNOP, DDR_CZQC, DDR_CLMR);
+
+	type ddr3ccmd_vector is array(DDR_CCNAME) of ddr3_cmd;
+	constant ddr3_crst  : ddr3_cmd := (id => "00----");
+	constant ddr3_crrdy : ddr3_cmd := (id => "10----");
+	constant ddr3_ccke  : ddr3_cmd := (id => "11----");
+	constant ddr3_cnop  : ddr3_cmd := (id => "110111");
+	constant ddr3_czqc  : ddr3_cmd := (id => "110110");
+	constant ddr3_clmr  : ddr3_cmd := (id => "110000");
+
+	constant ddr3ccmd_tab : ddr3ccmd_vector := (
+		DDR_CRST  => ddr3_crst,
+		DDR_CRRDY => ddr3_crrdy,
+		DDR_CCKE  => ddr3_ccke,
+		DDR_CNOP  => ddr3_cnop,
+		DDR_CZQC  => ddr3_czqc,
+		DDR_CLMR  => ddr3_clmr);
 
 	function mov (
 		constant desc : field_desc)
@@ -219,6 +233,12 @@ package xdr_param is
 		constant mr  : ddr3_mrID)
 		return ddr3_ccmd;
 
+	function ddr3_ccmd (
+		constant cmd : ddr3_cmd)
+		return ddr3_ccmd;
+
+	function crdy
+		return ddr3_ccmd;
 
 	function "+" (
 		constant cmd : ddr3_cmd;
@@ -880,6 +900,13 @@ package body xdr_param is
 		val.bank := std_logic_vector(unsigned'(to_unsigned(ddr3_mrID'pos(mr), val.bank'length)));
 		val.addr := (val.addr'range => 0);
 		return val;
+	end;
+
+	function ddr3_ccmd (
+		constant cmd : ddr3_cmd)
+		return ddr3_ccmd is
+	begin
+		return (cmd => ddr3_cmd, addr => (others => '-'), bank => (others => '-'));
 	end;
 
 	function "+" (
