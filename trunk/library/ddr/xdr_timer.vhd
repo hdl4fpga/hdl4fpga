@@ -4,22 +4,35 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_param.all;
 
 entity xdr_timer is
 	generic ( 
-		timers : natural_vector);
+		timers : timer_vector);
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  std_logic_vector;
+		tmr_id  : in  TMR_IDs;
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
 
 architecture def of xdr_timer is
-	constant stages : natural := unsigned_num_bits(max(timers))/5;
-	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
+
+	function to_naturalvector (
+		constant arg : timer_vector)
+		return natural_vector is
+		variable val : natural_vector(TMR_IDs'POS(arg'low) to TMR_IDs'POS(arg'high));
+	begin
+		for i in arg'range loop
+			val(TMR_IDs'pos(i)) := arg(i);
+		end loop;
+		return val;
+	end;
+
+	constant stages : natural := unsigned_num_bits(max(to_naturalvector(timers)))/5;
+	constant timer_size : natural := unsigned_num_bits(max(to_naturalvector(timers)))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);
-	type tword_vector is array (natural range <>) of tword;
+	type tword_vector is array (TMR_IDs) of tword;
 	
 	impure function stage_size
 		return natural_vector is
@@ -39,7 +52,7 @@ architecture def of xdr_timer is
 
 	impure function pp 
 		return tword_vector is
-		variable val : tword_vector(0 to 2**tmr_id'length-1);
+		variable val : tword_vector;
 		variable csize : natural;
 	begin
 		val := (others => (others => '-'));
@@ -53,7 +66,7 @@ architecture def of xdr_timer is
 		return val;
 	end;
 
-	constant timer_values : tword_vector(0 to 2**tmr_id'length-1) := pp;
+	constant timer_values : tword_vector := pp;
 	constant xx : natural_vector(stages-1 downto 0) := stage_size(stages downto 1);
 
 	signal data : tword;
@@ -63,8 +76,8 @@ begin
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			if sys_req='0' then
-				data <= timer_values(to_integer(unsigned(tmr_id)));
+			if sys_req='1' then
+				data <= timer_values(tmr_id);
 			end if;
 		end if;
 	end process;
