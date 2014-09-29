@@ -76,9 +76,9 @@ begin
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			if sys_req='1' then
+--			if sys_req='1' then
 				data <= timer_values(tmr_id);
-			end if;
+--			end if;
 		end if;
 	end process;
 
