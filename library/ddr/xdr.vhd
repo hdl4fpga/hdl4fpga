@@ -148,23 +148,15 @@ begin
 
 	xdr_cs <= '0';
 
-	xdr_timer_e : entity hdl4fpga.xdr_timer
-	generic map (
-		(0 => to_xdrlatency(tCP, mark, tPreRST),
-		 1 => xdr_latency(std, cDLL),
-		 2 => to_xdrlatency(tCP, mark, tPstRST),
-		 3 => to_xdrlatency(tCP, mark, tXPR),
-		 4 => to_xdrlatency(tCP, mark, tREFI));
-	port map (
-		sys_clk => sys_clks(0),
-		tmr_id  => 
-		sys_req => rst,
-		sys_rdy =>);
-
 	xdr_cwl <= sys_cl when std=2 else sys_cwl;
 
 	xdr_init_du : entity hdl4fpga.xdr_init
 	generic map (
+		timers => (TMR_RST => to_xdrlatency(tCP, mark, tPreRST),
+		 1 => xdr_latency(std, cDLL),
+		 2 => to_xdrlatency(tCP, mark, tPstRST),
+		 TMR_REF => to_xdrlatency(tCP, mark, tXPR),
+		 4 => to_xdrlatency(tCP, mark, tREFI)),
 		addr_size => addr_size,
 		bank_size => bank_size),
 	port map (
@@ -178,22 +170,20 @@ begin
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,
-		xdr_timer_rdy => xdr_timer_rdy,
-		xdr_timer_req => xdr_timer_req,
-		xdr_init_step => xdr_init_step,
 		xdr_init_ras => xdr_init_ras,
 		xdr_init_cas => xdr_init_cas,
 		xdr_init_we  => xdr_init_we,
 		xdr_init_a   => xdr_init_a,
-		xdr_init_b   => xdr_init_b);
+		xdr_init_b   => xdr_init_b,
+		xdr_timer_ref => xdr_timer_rdy);
 
 	xdrphy_cke <= xdrphy_cke;
 	xdrphy_odt <= dll_timer_rdy;
-	xdrphy_ras <= xdr_mpu_ras when dll_timer_rdy='1' else xdr_init_ras;
-	xdrphy_cas <= xdr_mpu_cas when dll_timer_rdy='1' else xdr_init_cas;
-	xdrphy_we  <= xdr_mpu_we  when dll_timer_rdy='1' else xdr_init_we;
-	xdrphy_a   <= sys_a when dll_timer_rdy='1' else xdr_init_a;
-	xdrphy_b   <= sys_b when dll_timer_rdy='1' else xdr_init_b;
+	xdrphy_ras <= xdr_mpu_ras when xdr_timer_rdy='1' else xdr_init_ras;
+	xdrphy_cas <= xdr_mpu_cas when xdr_timer_rdy='1' else xdr_init_cas;
+	xdrphy_we  <= xdr_mpu_we  when xdr_timer_rdy='1' else xdr_init_we;
+	xdrphy_a   <= sys_a when xdr_timer_rdy='1' else xdr_init_a;
+	xdrphy_b   <= sys_b when xdr_timer_rdy='1' else xdr_init_b;
 
 	process (sys_clks(0))
 		variable q : std_logic;
