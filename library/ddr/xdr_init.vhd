@@ -11,7 +11,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		timers : timer_vector;
+		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_ZQINIT => 20, TMR_REF => 25);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
@@ -57,7 +57,7 @@ entity xdr_init is
 	constant dst_ras : natural := dst_b'high+3;
 	constant dst_cas : natural := dst_b'high+2;
 	constant dst_we  : natural := dst_b'high+1;
-	subtype  dst_o   is natural range dst_ras+xdrinitout_size downto dst_ras+1;
+	subtype  dst_o   is natural range dst_rst+xdrinitout_size downto dst_ras+1;
 
 	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
 	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
@@ -132,9 +132,8 @@ architecture ddr3 of xdr_init is
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
 
 	constant pgm : ddr3ccmd_vector := (
-		ddr_ccmd(ddr3_crst),
 		ddr_ccmd(ddr3_crrdy),
-		ddr_ccmd(ddr3_ccke),
+		ddr_ccmd(ddr3_cnop),
 		ddr3_clmr + mr2,
 		ddr3_clmr + mr3,
 		ddr3_clmr + mr1,
@@ -163,17 +162,16 @@ architecture ddr3 of xdr_init is
 				val.dst(dst_cmd) := pgm(i).cmd;
 				for l in ddr3ccmd_tab'range loop
 					if std_match(ddr3ccmd_tab(l).id, pgm(i).cmd) then
-					write (msg, pgm(i).cmd);
-					write (msg, string'(" : "));
-					write (msg, ddr3ccmd_tab(l).id);
-					writeline (output, msg);
 						case l is 
 						when DDR_CRST  =>
-							return (dst => (others => '-'), id => TMR_RST);
+							val.id :=  TMR_RST;
+							return val;
 						when DDR_CRRDY =>
-							return (dst => (others => '-'), id => TMR_RRDY);
-						when DDR_CCKE =>
-							return (dst => (others => '-'), id => TMR_CKE);
+							val.id :=  TMR_RRDY;
+							return val;
+						when DDR_CNOP =>
+							val.id :=  TMR_CKE;
+							return val;
 						when DDR_CLMR =>
 							val.dst := (others  => '0');
 							for j in pgm(i).addr'range loop
@@ -181,6 +179,7 @@ architecture ddr3 of xdr_init is
 									val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
 								end if;
 							end loop;
+							val.dst(dst_cmd) := pgm(i).cmd;
 							val.dst(dst_b) := pgm(i).bank;
 							val.id := TMR_MRD;
 							return val;
@@ -232,9 +231,18 @@ begin
 					end if;
 				else
 					dst <= (others => '1');
+					case xdr_timer_id is
+					when TMR_RST =>
+						dst(dst_cmd) <= ddr3_crst.id;
+					when TMR_RRDY =>
+						dst(dst_cmd) <= ddr3_crrdy.id;
+					when others =>
+					end case;
 				end if;
 			else
 				dst <= (others => '1');
+				dst(dst_cmd) <= ddr3_crrdy.id;
+				xdr_timer_id <= TMR_RST;
 				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
 			end if;
 		end if;

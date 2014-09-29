@@ -173,13 +173,12 @@ package xdr_param is
 	end record;
 
 	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_ZQINIT, TMR_REF);
-	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY, DDR_CCKE);
+	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY);
 	type timer_vector is array (TMR_IDs) of natural;
 
 	type ddr3ccmd_vector is array(DDR_CCNAME) of ddr3_cmd;
 	constant ddr3_crst  : ddr3_cmd := (id => "00----");
 	constant ddr3_crrdy : ddr3_cmd := (id => "10----");
-	constant ddr3_ccke  : ddr3_cmd := (id => "11----");
 	constant ddr3_cnop  : ddr3_cmd := (id => "110111");
 	constant ddr3_czqc  : ddr3_cmd := (id => "110110");
 	constant ddr3_clmr  : ddr3_cmd := (id => "110000");
@@ -187,7 +186,6 @@ package xdr_param is
 	constant ddr3ccmd_tab : ddr3ccmd_vector := (
 		DDR_CRST  => ddr3_crst,
 		DDR_CRRDY => ddr3_crrdy,
-		DDR_CCKE  => ddr3_ccke,
 		DDR_CNOP  => ddr3_cnop,
 		DDR_CZQC  => ddr3_czqc,
 		DDR_CLMR  => ddr3_clmr);
