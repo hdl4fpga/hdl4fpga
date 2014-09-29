@@ -155,7 +155,7 @@ package xdr_param is
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	type ddr3_ccmd is record
-		cmd  : std_logic_vector( 2 downto 0);
+		cmd  : std_logic_vector( 5 downto 0);
 		bank : std_logic_vector( 2 downto 0);
 		addr : natural_vector(13 downto 0);
 	end record;
@@ -172,7 +172,9 @@ package xdr_param is
 		id : std_logic_vector(5 downto 0);
 	end record;
 
-	type DDR_CCNAME is (DDR_CRST, DDR_CRRDY, DDR_CCKE, DDR_CNOP, DDR_CZQC, DDR_CLMR);
+	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_ZQINIT, TMR_REF);
+	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY, DDR_CCKE);
+	type timer_vector is array (TMR_IDs) of natural;
 
 	type ddr3ccmd_vector is array(DDR_CCNAME) of ddr3_cmd;
 	constant ddr3_crst  : ddr3_cmd := (id => "00----");
@@ -233,11 +235,8 @@ package xdr_param is
 		constant mr  : ddr3_mrID)
 		return ddr3_ccmd;
 
-	function ddr3_ccmd (
+	function ddr_ccmd (
 		constant cmd : ddr3_cmd)
-		return ddr3_ccmd;
-
-	function crdy
 		return ddr3_ccmd;
 
 	function "+" (
@@ -902,11 +901,11 @@ package body xdr_param is
 		return val;
 	end;
 
-	function ddr3_ccmd (
+	function ddr_ccmd (
 		constant cmd : ddr3_cmd)
 		return ddr3_ccmd is
 	begin
-		return (cmd => ddr3_cmd, addr => (others => '-'), bank => (others => '-'));
+		return (cmd => cmd.id, addr => (others => 0), bank => (others => '-'));
 	end;
 
 	function "+" (

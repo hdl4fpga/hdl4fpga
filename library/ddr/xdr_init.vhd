@@ -11,8 +11,9 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		ADDR_SIZE : natural := 13;
-		BANK_SIZE : natural := 3);
+		timers : timer_vector;
+		addr_size : natural := 13;
+		bank_size : natural := 3);
 	port (
 		xdr_init_ods : in  std_logic := '0';
 		xdr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
@@ -26,9 +27,6 @@ entity xdr_init is
 		xdr_init_clk : in  std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic := '1';
-		xdr_timer_req : out std_logic := '0';
-		xdr_timer_rdy : in  std_logic := '0';
-		xdr_timer_id  : out std_logic_vector;
 		xdr_init_rst : out std_logic := '0';
 		xdr_init_cke : out std_logic := '0';
 		xdr_init_odt : out std_logic := '0';
@@ -52,7 +50,10 @@ entity xdr_init is
 
 	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
 	subtype  dst_b   is natural range dst_a'high+xdr_init_b'length downto dst_a'high+1;
-	subtype  dst_cmd is natural range dst_b'high+3 downto dst_b'high+1;
+	subtype  dst_cmd is natural range dst_b'high+6 downto dst_b'high+1;
+	constant dst_rst : natural := dst_b'high+6;
+	constant dst_cke : natural := dst_b'high+5;
+	constant dst_cs  : natural := dst_b'high+4;
 	constant dst_ras : natural := dst_b'high+3;
 	constant dst_cas : natural := dst_b'high+2;
 	constant dst_we  : natural := dst_b'high+1;
@@ -68,6 +69,9 @@ entity xdr_init is
 
 	signal src : src_word;
 
+	signal xdr_timer_req : std_logic;
+	signal xdr_timer_rdy : std_logic;
+	signal xdr_timer_id  : TMR_IDs;
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
@@ -128,9 +132,9 @@ architecture ddr3 of xdr_init is
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
 
 	constant pgm : ddr3ccmd_vector := (
-		ddr3_ccmd(ddr3_crst),
-		ddr3_ccmd(ddr3_crry),
-		ddr3_ccmd(ddr3_ccke),
+		ddr_ccmd(ddr3_crst),
+		ddr_ccmd(ddr3_crrdy),
+		ddr_ccmd(ddr3_ccke),
 		ddr3_clmr + mr2,
 		ddr3_clmr + mr3,
 		ddr3_clmr + mr1,
@@ -141,15 +145,16 @@ architecture ddr3 of xdr_init is
 
 	type xxx is record
 		dst : dst_word;
-		id  : tmrid;
+		id  : TMR_IDs;
 	end record;
 
 	impure function compile_pgm (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return xxx is
-		variable val : xxx := (dst => (others => '-'), id => );
+		variable val : xxx := (dst => (others => '-'), id => TMR_IDs'HIGH);
 		variable aux : std_logic_vector(1 to pc'length-1);
+		variable msg : line;
 
 	begin
 		aux := std_logic_vector(resize(pc, pc'length-1));
@@ -157,10 +162,19 @@ architecture ddr3 of xdr_init is
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
 				val.dst(dst_cmd) := pgm(i).cmd;
 				for l in ddr3ccmd_tab'range loop
-					if std_match(pgm(i).cmd, ddr3ccmd_tab(l) then
+					if std_match(ddr3ccmd_tab(l).id, pgm(i).cmd) then
+					write (msg, pgm(i).cmd);
+					write (msg, string'(" : "));
+					write (msg, ddr3ccmd_tab(l).id);
+					writeline (output, msg);
 						case l is 
-						when CRST|CRRDY|CCKE =>
-						when CLMR =>
+						when DDR_CRST  =>
+							return (dst => (others => '-'), id => TMR_RST);
+						when DDR_CRRDY =>
+							return (dst => (others => '-'), id => TMR_RRDY);
+						when DDR_CCKE =>
+							return (dst => (others => '-'), id => TMR_CKE);
+						when DDR_CLMR =>
 							val.dst := (others  => '0');
 							for j in pgm(i).addr'range loop
 								if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
@@ -168,25 +182,27 @@ architecture ddr3 of xdr_init is
 								end if;
 							end loop;
 							val.dst(dst_b) := pgm(i).bank;
+							val.id := TMR_MRD;
 							return val;
-						when CZQC =>
+						when DDR_CZQC =>
 							for j in pgm(i).addr'range loop
-								if pmg(i).addr(j) /= 0 then
-									val.dst(j) := src(pmg(i).addr(j));
+								if pgm(i).addr(j) /= 0 then
+									val.dst(j) := src(pgm(i).addr(j));
 								end if;
 							end loop;
+							val.id := TMR_ZQINIT;
 							return val;
 						when others =>
 							report "Wrong command"
 							severity ERROR;
 						end case;
 					end if;
-				end loop
-				report "Wrong command"
+				end loop;
+				report "Wrong command xxx"
 				severity ERROR;
 			end if;
 		end loop;
-		report "Wrong command"
+		report "Wrong command yyy"
 		severity ERROR;
 		return val;
 	end;
@@ -209,7 +225,7 @@ begin
 			if xdr_init_req='0' then
 				if xdr_timer_rdy='1' then
 					if xdr_init_pc(0)='0' then
-						dst <= compile_pgm(xdr_init_pc, src);
+						(dst => dst, id => xdr_timer_id) <= compile_pgm(xdr_init_pc, src);
 						xdr_init_pc <= xdr_init_pc - 1;
 					else
 						dst <= (others => '1');
@@ -234,4 +250,12 @@ begin
 	xdr_init_we  <= dst(dst_we);
 	xdr_init_rdy <= xdr_init_pc(0);
 
+	timer_e : entity hdl4fpga.xdr_timer
+	generic map (
+		timers => timers)
+	port map (
+		sys_clk => xdr_init_clk,
+		tmr_id  => xdr_timer_id,
+		sys_req => xdr_timer_req,
+		sys_rdy => xdr_timer_rdy);
 end;
