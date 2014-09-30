@@ -156,6 +156,7 @@ architecture ddr3 of xdr_init is
 		constant src : std_logic_vector)
 		return xxx is
 		variable val : dst_word := (others => '-');
+		variable a1 : ddr3_ccmd;
 		variable aux : std_logic_vector(1 to pc'length-1);
 		variable msg : line;
 
@@ -173,7 +174,7 @@ architecture ddr3 of xdr_init is
 					return (dst => val, id => pgm(i).id);
 				when TMR_MRD =>
 					val := (others  => '0');
-					for j in pgm(i).ccmd.addr'range loop
+					for j in a1.addr'range loop
 						if mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j) /= 0 then
 							val(j) := src(mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j));
 						end if;
@@ -182,7 +183,7 @@ architecture ddr3 of xdr_init is
 					val(dst_b)   := pgm(i).ccmd.bank;
 					return (dst => val, id => TMR_MRD);
 				when TMR_ZQINIT =>
-					for j in pgm(i).ccmd.addr'range loop
+					for j in a1.addr'range loop
 						if pgm(i).ccmd.addr(j) /= 0 then
 							val(j) := src(pgm(i).ccmd.addr(j));
 						end if;
