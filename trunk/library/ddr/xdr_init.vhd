@@ -26,13 +26,13 @@ entity xdr_init is
 
 		xdr_init_clk : in  std_logic;
 		xdr_init_req : in  std_logic;
-		xdr_init_rdy : out std_logic := '1';
-		xdr_init_rst : out std_logic := '0';
-		xdr_init_cke : out std_logic := '0';
-		xdr_init_odt : out std_logic := '0';
-		xdr_init_ras : out std_logic := '1';
-		xdr_init_cas : out std_logic := '1';
-		xdr_init_we  : out std_logic := '1';
+		xdr_init_rdy : out std_logic;
+		xdr_init_rst : out std_logic;
+		xdr_init_cke : out std_logic;
+		xdr_init_odt : out std_logic;
+		xdr_init_ras : out std_logic;
+		xdr_init_cas : out std_logic;
+		xdr_init_we  : out std_logic;
 		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
 		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
 
@@ -235,6 +235,8 @@ begin
 				if xdr_timer_rdy='0' then
 					if xdr_init_pc(0)='0' then
 						xdr_timer_id <= compile_pgm(xdr_init_pc, src).id;
+					else
+						xdr_timer_id <= TMR_REF;
 					end if;
 				end if;
 			else
@@ -254,10 +256,12 @@ begin
 						xdr_init_rst <= '1';
 						xdr_init_cke <= '1';
 					end case;
+					xdr_init_rdy <= xdr_init_pc(0);
 				end if;
 			else
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
+				xdr_init_rdy <= '0';
 			end if;
 
 		end if;
@@ -269,7 +273,6 @@ begin
 	xdr_init_ras <= dst(dst_ras);
 	xdr_init_cas <= dst(dst_cas);
 	xdr_init_we  <= dst(dst_we);
-	xdr_init_rdy <= xdr_init_pc(0);
 
 	timer_e : entity hdl4fpga.xdr_timer
 	generic map (
