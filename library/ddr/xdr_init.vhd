@@ -50,14 +50,12 @@ entity xdr_init is
 
 	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
 	subtype  dst_b   is natural range dst_a'high+xdr_init_b'length downto dst_a'high+1;
-	subtype  dst_cmd is natural range dst_b'high+6 downto dst_b'high+1;
-	constant dst_rst : natural := dst_b'high+6;
-	constant dst_cke : natural := dst_b'high+5;
+	subtype  dst_cmd is natural range dst_b'high+4 downto dst_b'high+1;
 	constant dst_cs  : natural := dst_b'high+4;
 	constant dst_ras : natural := dst_b'high+3;
 	constant dst_cas : natural := dst_b'high+2;
 	constant dst_we  : natural := dst_b'high+1;
-	subtype  dst_o   is natural range dst_rst+xdrinitout_size downto dst_ras+1;
+	subtype  dst_o   is natural range dst_cs+xdrinitout_size downto dst_ras+1;
 
 	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
 	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
@@ -127,31 +125,37 @@ architecture ddr3 of xdr_init is
 		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
 		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
 
-	type ddr3ccmd_vector is array (natural range <>) of ddr3_ccmd;
-
+	constant mrx : std_logic_vector(dst_word'range) := (others => '-');
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
 
-	constant pgm : ddr3ccmd_vector := (
-		ddr_ccmd(ddr3_crrdy),
-		ddr_ccmd(ddr3_cnop),
-		ddr3_clmr + mr2,
-		ddr3_clmr + mr3,
-		ddr3_clmr + mr1,
-		ddr3_clmr + mr0,
-		ddr3_czqc + ddr3_a10);
-
-	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
+	type yyy is record
+		ccmd : ddr3_ccmd;
+		id   : TMR_IDs;
+	end record;
 
 	type xxx is record
 		dst : dst_word;
 		id  : TMR_IDs;
 	end record;
 
+	type ddr3ccmd_vector is array (natural range <>) of yyy;
+
+	constant pgm : ddr3ccmd_vector := (
+		(ddr3_cnop + mrx, TMR_RRDY),
+		(ddr3_cnop + mrx, TMR_CKE),
+		(ddr3_clmr + mr2, TMR_MRD),
+		(ddr3_clmr + mr3, TMR_MRD),
+		(ddr3_clmr + mr1, TMR_MRD),
+		(ddr3_clmr + mr0, TMR_MRD),
+		(ddr3_czqc + ddr3_a10, TMR_ZQINIT));
+
+	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
+
 	impure function compile_pgm (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return xxx is
-		variable val : xxx := (dst => (others => '-'), id => TMR_IDs'HIGH);
+		variable val : dst_word := (others => '-');
 		variable aux : std_logic_vector(1 to pc'length-1);
 		variable msg : line;
 
@@ -159,51 +163,40 @@ architecture ddr3 of xdr_init is
 		aux := std_logic_vector(resize(pc, pc'length-1));
 		for i in pgm'range loop
 			if aux=to_unsigned(pgm'length-1-i, aux'length) then
-				val.dst(dst_cmd) := pgm(i).cmd;
-				for l in ddr3ccmd_tab'range loop
-					if std_match(ddr3ccmd_tab(l).id, pgm(i).cmd) then
-						case l is 
-						when DDR_CRST  =>
-							val.id :=  TMR_RST;
-							return val;
-						when DDR_CRRDY =>
-							val.id :=  TMR_RRDY;
-							return val;
-						when DDR_CNOP =>
-							val.id :=  TMR_CKE;
-							return val;
-						when DDR_CLMR =>
-							val.dst := (others  => '0');
-							for j in pgm(i).addr'range loop
-								if mr(to_integer(unsigned(pgm(i).bank))).tab(j) /= 0 then
-									val.dst(j) := src(mr(to_integer(unsigned(pgm(i).bank))).tab(j));
-								end if;
-							end loop;
-							val.dst(dst_cmd) := pgm(i).cmd;
-							val.dst(dst_b) := pgm(i).bank;
-							val.id := TMR_MRD;
-							return val;
-						when DDR_CZQC =>
-							for j in pgm(i).addr'range loop
-								if pgm(i).addr(j) /= 0 then
-									val.dst(j) := src(pgm(i).addr(j));
-								end if;
-							end loop;
-							val.id := TMR_ZQINIT;
-							return val;
-						when others =>
-							report "Wrong command"
-							severity ERROR;
-						end case;
-					end if;
-				end loop;
-				report "Wrong command xxx"
-				severity ERROR;
+				val(dst_cmd) := pgm(i).ccmd.cmd;
+				case pgm(i).id is 
+				when TMR_RRDY =>
+					return (dst => (others => '-'), id => pgm(i).id);
+				when TMR_CKE =>
+					val := (others => '-');
+					val(dst_cmd) := ddr3_cnop.id;
+					return (dst => val, id => pgm(i).id);
+				when TMR_MRD =>
+					val := (others  => '0');
+					for j in pgm(i).ccmd.addr'range loop
+						if mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j) /= 0 then
+							val(j) := src(mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j));
+						end if;
+					end loop;
+					val(dst_cmd) := pgm(i).ccmd.cmd;
+					val(dst_b)   := pgm(i).ccmd.bank;
+					return (dst => val, id => TMR_MRD);
+				when TMR_ZQINIT =>
+					for j in pgm(i).ccmd.addr'range loop
+						if pgm(i).ccmd.addr(j) /= 0 then
+							val(j) := src(pgm(i).ccmd.addr(j));
+						end if;
+					end loop;
+					return (dst => val, id => TMR_ZQINIT);
+				when others =>
+					report "Wrong command"
+					severity ERROR;
+				end case;
 			end if;
 		end loop;
 		report "Wrong command yyy"
 		severity ERROR;
-		return val;
+		return (dst => val, id => TMR_RST);
 	end;
 
 begin
@@ -224,33 +217,52 @@ begin
 			if xdr_init_req='0' then
 				if xdr_timer_rdy='1' then
 					if xdr_init_pc(0)='0' then
-						(dst => dst, id => xdr_timer_id) <= compile_pgm(xdr_init_pc, src);
 						xdr_init_pc <= xdr_init_pc - 1;
+						dst <= compile_pgm(xdr_init_pc, src).dst;
 					else
 						dst <= (others => '1');
 					end if;
 				else
 					dst <= (others => '1');
+				end if;
+			else
+				dst <= (others => '-');
+				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='0' then
+					if xdr_init_pc(0)='0' then
+						xdr_timer_id <= compile_pgm(xdr_init_pc, src).id;
+					end if;
+				end if;
+			else
+				xdr_timer_id <= TMR_RST;
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
 					case xdr_timer_id is
 					when TMR_RST =>
-						dst(dst_cmd) <= ddr3_crst.id;
+						xdr_init_rst <= '0';
+						xdr_init_cke <= '0';
 					when TMR_RRDY =>
-						dst(dst_cmd) <= ddr3_crrdy.id;
+						xdr_init_rst <= '1';
+						xdr_init_cke <= '0';
 					when others =>
+						xdr_init_rst <= '1';
+						xdr_init_cke <= '1';
 					end case;
 				end if;
 			else
-				dst <= (others => '1');
-				dst(dst_cmd) <= ddr3_crrdy.id;
-				xdr_timer_id <= TMR_RST;
-				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
+				xdr_init_rst <= '0';
+				xdr_init_cke <= '0';
 			end if;
+
 		end if;
 	end process;
 	xdr_timer_req <= xdr_timer_rdy or xdr_init_req;
 
-	xdr_init_rst <= dst(dst_rst);
-	xdr_init_cke <= dst(dst_cke);
 	xdr_init_a   <= dst(dst_a);
 	xdr_init_b   <= dst(dst_b);
 	xdr_init_ras <= dst(dst_ras);

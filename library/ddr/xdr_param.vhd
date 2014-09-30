@@ -155,7 +155,7 @@ package xdr_param is
 	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	type ddr3_ccmd is record
-		cmd  : std_logic_vector( 5 downto 0);
+		cmd  : std_logic_vector( 3 downto 0);
 		bank : std_logic_vector( 2 downto 0);
 		addr : natural_vector(13 downto 0);
 	end record;
@@ -169,7 +169,7 @@ package xdr_param is
 	type ddr3mr_vector is array (natural range <>) of ddr3_mr;
 
 	type ddr3_cmd is record
-		id : std_logic_vector(5 downto 0);
+		id : std_logic_vector(3 downto 0);
 	end record;
 
 	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_ZQINIT, TMR_REF);
@@ -177,18 +177,9 @@ package xdr_param is
 	type timer_vector is array (TMR_IDs) of natural;
 
 	type ddr3ccmd_vector is array(DDR_CCNAME) of ddr3_cmd;
-	constant ddr3_crst  : ddr3_cmd := (id => "00----");
-	constant ddr3_crrdy : ddr3_cmd := (id => "10----");
-	constant ddr3_cnop  : ddr3_cmd := (id => "110111");
-	constant ddr3_czqc  : ddr3_cmd := (id => "110110");
-	constant ddr3_clmr  : ddr3_cmd := (id => "110000");
-
-	constant ddr3ccmd_tab : ddr3ccmd_vector := (
-		DDR_CRST  => ddr3_crst,
-		DDR_CRRDY => ddr3_crrdy,
-		DDR_CNOP  => ddr3_cnop,
-		DDR_CZQC  => ddr3_czqc,
-		DDR_CLMR  => ddr3_clmr);
+	constant ddr3_cnop  : ddr3_cmd := (id => "0111");
+	constant ddr3_czqc  : ddr3_cmd := (id => "0110");
+	constant ddr3_clmr  : ddr3_cmd := (id => "0000");
 
 	function mov (
 		constant desc : field_desc)
@@ -916,9 +907,11 @@ package body xdr_param is
 		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
 		val.bank := (others => '1');
 		for i in dat'range loop
-			val.addr(i) := 1;
-			if dat(i) = '1' then
-				val.addr(i) := 2;
+			if val.addr'high >= i and  i <= val.addr'low then
+				val.addr(i) := 1;
+				if dat(i) = '1' then
+					val.addr(i) := 2;
+				end if;
 			end if;
 		end loop;
 		return val;
