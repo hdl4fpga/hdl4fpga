@@ -166,7 +166,7 @@ architecture ddr3 of xdr_init is
 				val(dst_cmd) := pgm(i).ccmd.cmd;
 				case pgm(i).id is 
 				when TMR_RRDY =>
-					return (dst => (others => '-'), id => pgm(i).id);
+					return (dst => (dst_word'range => '-'), id => pgm(i).id);
 				when TMR_CKE =>
 					val := (others => '-');
 					val(dst_cmd) := ddr3_cnop.id;
