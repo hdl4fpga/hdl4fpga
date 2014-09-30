@@ -29,7 +29,7 @@ architecture def of xdr_timer is
 		return val;
 	end;
 
-	constant stages : natural := unsigned_num_bits(max(to_naturalvector(timers)))/5;
+	constant stages : natural := unsigned_num_bits(max(to_naturalvector(timers)))/4;
 	constant timer_size : natural := unsigned_num_bits(max(to_naturalvector(timers)))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);
 	type tword_vector is array (TMR_IDs) of tword;
@@ -60,7 +60,7 @@ architecture def of xdr_timer is
 			for j in stages-1 downto 0 loop
 				csize := stage_size(j+1)-stage_size(j);
 				val(i) := val(i) sll csize;
-				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-(stages-1))/2**(stage_size(j)-j)) mod 2**(csize-1)) mod 2**csize, csize);
+				val(i)(csize-1 downto 0) := to_unsigned(((2**csize-1)+((timers(i)-stages)/2**(stage_size(j)-j)) mod 2**(csize-1)) mod 2**csize, csize);
 			end loop;
 		end loop;
 		return val;

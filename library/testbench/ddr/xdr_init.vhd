@@ -8,14 +8,14 @@ use hdl4fpga.xdr_param.all;
 architecture xdr_init of testbench is
 	signal xdr_clk : std_logic := '0';
 	signal xdr_wait_clk : std_logic := '0';
-	signal xdr_rst : std_logic := '0';
+	signal xdr_rst : std_logic;
 	signal xdr_ras : std_logic := '1';
 	signal xdr_cas : std_logic := '1';
 	signal xdr_we  : std_logic := '1';
 	signal xdr_rdy : std_logic;
 begin
 
-	xdr_rst <= '1', '0' after 20.00001 ns;
+	xdr_rst <= '0', '1' after 5.0001 ns, '0' after 20.00001 ns;
 	xdr_clk <= not xdr_clk after 5 ns;
 	du : entity hdl4fpga.xdr_init
 	generic map (
