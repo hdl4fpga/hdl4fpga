@@ -35,12 +35,14 @@ begin
 
 	du : entity hdl4fpga.xdr
 	generic map (
-		tCP => 6.0 ns)
+		tCP => 2.0 ns)
 	port map (
 		sys_bl => "111",
 		sys_cl => "111",
 		sys_cwl => "111",
 		sys_wr => "111",
+		sys_pl => "111",
+		sys_dqsn => '1',
 
 		sys_rst  => '0',
 		xdr_wclks => "1",

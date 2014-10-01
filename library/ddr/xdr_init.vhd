@@ -32,6 +32,7 @@ entity xdr_init is
 		xdr_init_rst : out std_logic;
 		xdr_init_cke : out std_logic;
 		xdr_init_odt : out std_logic;
+		xdr_init_cs  : out std_logic;
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
 		xdr_init_we  : out std_logic;
@@ -153,7 +154,7 @@ architecture ddr3 of xdr_init is
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
-	impure function compile_pgm (
+	impure function build (
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return xxx is
@@ -221,7 +222,7 @@ begin
 				if xdr_timer_rdy='1' then
 					if xdr_init_pc(0)='0' then
 						xdr_init_pc <= xdr_init_pc - 1;
-						dst <= compile_pgm(xdr_init_pc, src).dst;
+						dst <= build(xdr_init_pc, src).dst;
 					else
 						dst <= (others => '1');
 					end if;
@@ -236,7 +237,7 @@ begin
 			if xdr_init_req='0' then
 				if xdr_timer_rdy='0' then
 					if xdr_init_pc(0)='0' then
-						xdr_timer_id <= compile_pgm(xdr_init_pc, src).id;
+						xdr_timer_id <= build(xdr_init_pc, src).id;
 					else
 						xdr_timer_id <= TMR_REF;
 					end if;

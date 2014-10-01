@@ -8,7 +8,7 @@ use hdl4fpga.xdr_param.all;
 entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
-		mark : tmrk_ids := M6T;
+		mark : tmrk_ids := M107;
 		tCP  : time := 6.0 ns;
 
 		bank_size : natural :=  2;
@@ -29,6 +29,8 @@ entity xdr is
 		sys_cl  : in std_logic_vector(2 downto 0);
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
+		sys_pl  : in std_logic_vector(2 downto 0);
+		sys_dqsn : in std_logic;
 
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
@@ -96,16 +98,6 @@ architecture mix of xdr is
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);
 
-	signal xdrphy_odt : std_logic;
-	signal xdrphy_cke : std_logic;
-	signal xdrphy_ras : std_logic;
-	signal xdrphy_cas : std_logic;
-	signal xdrphy_we  : std_logic;
-	signal xdrphy_a   : std_logic_vector(addr_size-1 downto 0);
-	signal xdrphy_b   : std_logic_vector(bank_size-1 downto 0);
-
-	signal xdr_init_req : std_logic;
-
 	signal dll_timer_rdy : std_logic;
 
 	signal xdr_pgm_cmd : std_logic_vector(0 to 2);
@@ -160,9 +152,10 @@ begin
 			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
+			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
 			TMR_DLL  => xdr_latency(std, cDLL),
 			TMR_ZQINIT => xdr_latency(std, ZQINIT),
-			TRM_REF  => to_xdrlatency(tCP, mark, tREFI)),
+			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),
 		addr_size => addr_size,
 		bank_size => bank_size)
 	port map (
@@ -187,15 +180,16 @@ begin
 		xdr_refi_req => xdr_refi_req,
 		xdr_refi_rdy => xdr_refi_rdy);
 
-	xdrphy_rst <= xdr_mpu_rst;
-	xdrphy_cke <= xdr_mpu_cke;
-	xdrphy_odt <= '1'         when xdr_init_rdy='1' else '0';
-	xdrphy_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
-	xdrphy_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
-	xdrphy_cas <= xdr_mpu_cas when xdr_init_rdy='1' else xdr_init_cas;
-	xdrphy_we  <= xdr_mpu_we  when xdr_init_rdy='1' else xdr_init_we;
-	xdrphy_a   <= sys_a       when xdr_init_rdy='1' else xdr_init_a;
-	xdrphy_b   <= sys_b       when xdr_init_rdy='1' else xdr_init_b;
+	xdr_rst <= xdr_init_rst;
+	xdr_cs  <= xdr_init_cs;
+	xdr_cke <= xdr_init_cke;
+	xdr_odt <= '1'         when xdr_init_rdy='1' else '0';
+	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
+	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
+	xdr_cas <= xdr_mpu_cas when xdr_init_rdy='1' else xdr_init_cas;
+	xdr_we  <= xdr_mpu_we  when xdr_init_rdy='1' else xdr_init_we;
+	xdr_a   <= sys_a       when xdr_init_rdy='1' else xdr_init_a;
+	xdr_b   <= sys_b       when xdr_init_rdy='1' else xdr_init_b;
 
 	process (sys_clks(0))
 		variable q : std_logic;
@@ -226,10 +220,10 @@ begin
 	sys_di_rdy  <= xdr_wr_fifo_req;
 	du : entity hdl4fpga.xdr_mpu
 	generic map (
-		lRCD => to_xdrlatency(tCP, M6T, tRCD, word_size, byte_size),
-		lRFC => to_xdrlatency(tCP, M6T, tRFC, word_size, byte_size),
-		lWR  => to_xdrlatency(tCP, M6T, tWR,  word_size, byte_size),
-		lRP  => to_xdrlatency(tCP, M6T, tRP,  word_size, byte_size),
+		lRCD => to_xdrlatency(tCP, mark, tRCD, word_size, byte_size),
+		lRFC => to_xdrlatency(tCP, mark, tRFC, word_size, byte_size),
+		lWR  => to_xdrlatency(tCP, mark, tWR,  word_size, byte_size),
+		lRP  => to_xdrlatency(tCP, mark, tRP,  word_size, byte_size),
 		bl_cod => xdr_latcod(std, BL),
 		bl_tab => xdr_lattab(std, BL),
 		cl_cod => xdr_latcod(std, CL),
