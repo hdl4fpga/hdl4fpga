@@ -454,7 +454,7 @@ package body xdr_param is
 		write (msg, tmng_ids'pos(param));
 		report msg.all;
 		report "xdr_timing: Invalid DDR timing"
-		severity WARNING;
+		severity FAILURE;
 		return 0 ns;
 	end;
 
