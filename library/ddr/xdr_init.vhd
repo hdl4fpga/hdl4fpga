@@ -11,7 +11,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_ZQINIT => 20, TMR_REF => 25);
+		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
@@ -24,6 +24,8 @@ entity xdr_init is
 		xdr_init_pl  : in  std_logic_vector(0 to 2) := (others => '0');
 		xdr_init_dqsn : in std_logic := '0';
 
+		xdr_refi_rdy : in  std_logic;
+		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
