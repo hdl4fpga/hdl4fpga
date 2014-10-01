@@ -172,7 +172,7 @@ package xdr_param is
 		id : std_logic_vector(3 downto 0);
 	end record;
 
-	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_ZQINIT, TMR_REF);
+	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_DLL, TMR_ZQINIT, TMR_REF);
 	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY);
 	type timer_vector is array (TMR_IDs) of natural;
 
