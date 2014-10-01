@@ -19,10 +19,12 @@ begin
 	xdr_clk <= not xdr_clk after 5 ns;
 	du : entity hdl4fpga.xdr_init
 	generic map (
-		timers => (TMR_RST => 300, TMR_RRDY => 30, TMR_CKE => 14, TMR_MRD => 17, TMR_ZQINIT => 200, TMR_REF => 25),
+		timers => (TMR_DLL => 200, TMR_RST => 300, TMR_RRDY => 30, TMR_CKE => 14, TMR_MRD => 17, TMR_ZQINIT => 200, TMR_REF => 25),
 		bank_size  => 3,
 		addr_size  => 13)
 	port map (
+	  xdr_refi_req => open,
+	  xdr_refi_rdy => '1',
 		xdr_init_clk => xdr_clk,
 		xdr_init_req => xdr_rst,
 		xdr_init_rdy => xdr_rdy,

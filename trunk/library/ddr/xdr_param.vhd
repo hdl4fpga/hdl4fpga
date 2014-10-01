@@ -44,7 +44,7 @@ package xdr_param is
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
 	type cltabs_ids  is (STRT,  RWNT);
 	type cwltabs_ids is (WWNT, DQSZT, DQST,  DQZT);
-	type laty_ids is (ANY, cDLL, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
+	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
 		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
 
 	type cnfglat_record is record
@@ -304,6 +304,8 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => DQZXL, value =>   1) &
 		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
 		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
+		latency_record'(stdr => 3, param => MRD,   value =>   4) &
+		latency_record'(stdr => 3, param => XPR,   value =>   5) &
 		latency_record'(stdr => 3, param => WIDL,  value =>   8);
 
 	type timing_record is record
@@ -321,10 +323,14 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tRCD,  value => 15 ns) &
 		timing_record'(mark => M6T,  param => tRFC,  value => 72 ns) &
 		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
+		timing_record'(mark => M6T,  param => tREFI, value =>  7 us) &
 		timing_record'(mark => M107, param => tREFI, value =>  7 us) &
 		timing_record'(mark => M107, param => tPreRST, value => 200 us) &
 		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M6T,  param => tREFI, value =>  7 us);
+		timing_record'(mark => M107, param => tMRD,  value => 15 ns) &
+		timing_record'(mark => M107, param => tRFC,  value => 110 ns) &
+		timing_record'(mark => M107, param => tXPR,  value => 110 ns + 10 ns) &
+		timing_record'(mark => M107, param => tREFI, value =>  7.8 us);
 
 	constant cnfglat_db : cnfglat_tab :=
 
@@ -442,7 +448,6 @@ package body xdr_param is
 				end if;
 			end if;
 		end loop;
-
 		write (msg, string'("-> "));
 		write (msg, tmrk_ids'pos(mark));
 		write (msg, string'(" <-> "));
