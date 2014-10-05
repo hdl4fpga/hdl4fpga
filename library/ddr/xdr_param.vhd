@@ -419,6 +419,7 @@ package body xdr_param is
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
 		return std_logic_vector is
+		variable msg : line;
 	begin
 		for i in cnfglat_db'range loop
 			if cnfglat_db(i).stdr = stdr then
@@ -430,8 +431,19 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "xdr_cnfglat: Invalid DDR configuration latency"
-		severity WARNING;
+		report "*******************";
+		report "*** XDR_CNFGLAT ***";
+		report "*******************";
+
+		write (msg, string'("DDR"));
+		write (msg, stdr);
+		write (msg, latr_ids'image(reg));
+		write (msg, string'(" : "));
+		write (msg, lat);
+
+		report msg.all;
+		report "******************"
+		severity FAILURE;
 		return "XXX";
 	end;
 
@@ -448,12 +460,15 @@ package body xdr_param is
 				end if;
 			end if;
 		end loop;
-		write (msg, string'("-> "));
-		write (msg, tmrk_ids'pos(mark));
-		write (msg, string'(" <-> "));
-		write (msg, tmng_ids'pos(param));
+		report "******************";
+		report "*** XDR_TIMING ***";
+		report "******************";
+
+		write (msg, tmrk_ids'image(mark));
+		write (msg, string'(" : "));
+		write (msg, tmng_ids'image(param));
 		report msg.all;
-		report "xdr_timing: Invalid DDR timing"
+		report "******************"
 		severity FAILURE;
 		return 0 ns;
 	end;
@@ -463,6 +478,7 @@ package body xdr_param is
 		constant param : laty_ids; 
 		constant unit : natural := 1) 
 		return integer is
+		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
@@ -472,14 +488,24 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "xdr_latency: Invalid DDR latency"
-		severity WARNING;
+		report "*******************";
+		report "*** XDR_LATENCY ***";
+		report "*******************";
+
+		write (msg, string'("DDR"));
+		write (msg, stdr);
+		write (msg, string'(":"));
+		write (msg, laty_ids'image(param));
+		report msg.all;
+		report "*******************"
+		severity FAILURE;
 		return 0;
 	end;
 
 	function xdr_std (
 		mark : tmrk_ids) 
 		return natural is
+		variable msg : line;
 	begin
 		for i in tmark_db'range loop
 			if tmark_db(i).mark = mark then
@@ -487,8 +513,11 @@ package body xdr_param is
 			end if;
 		end loop;
 
+		write (msg, string'("-> "));
+		write (msg, tmrk_ids'image(mark));
+		report msg.all;
 		report "xdr_std: Invalid DDR latency"
-		severity WARNING;
+		severity FAILURE;
 		return 0;
 	end;
 
