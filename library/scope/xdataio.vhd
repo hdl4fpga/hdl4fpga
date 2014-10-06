@@ -159,9 +159,9 @@ begin
 
 	ddrio_e : entity hdl4fpga.ddrio
 	generic map (
-		DDR_BANKSIZE => DDR_BANKSIZE,
-		DDR_ADDRSIZE => DDR_ADDRSIZE,
-		DDR_CLNMSIZE => DDR_CLNMSIZE)
+		bank_size => DDR_BANKSIZE,
+		addr_size => DDR_ADDRSIZE,
+		col_size => DDR_CLNMSIZE)
 	port map (
 		tp => tp,
 		sys_clk => ddrs_clk,
@@ -204,7 +204,7 @@ begin
 	generic map (
 		bram_num  => page_num,
 		bram_size => page_size,
-		DDR_LINESIZE => 2*DDR_LINESIZE)
+		data_size => 2*DDR_LINESIZE)
 	port map (
 		ddrs_clk => ddrs_clk,
 		ddrs_di_rdy => ddrs_do_rdy,
@@ -220,7 +220,7 @@ begin
 	generic map (
 		page_num  => page_num,
 		page_size => page_size,
-		DDR_LINESIZE => DDR_LINESIZE)
+		data_size => DDR_LINESIZE)
 	port map (
 		video_clk => video_clk,
 		mem_addr  => video_off,
@@ -243,7 +243,7 @@ begin
 	miitxmem_e : entity hdl4fpga.miitxmem
 	generic map (
 		bram_size => page_size,
-		DDR_LINESIZE => 2*DDR_LINESIZE)
+		data_size => 2*DDR_LINESIZE)
 	port map (
 		ddrs_clk => ddrs_clk,
 		ddrs_gnt => capture_rdy,

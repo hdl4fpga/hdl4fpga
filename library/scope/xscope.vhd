@@ -8,7 +8,8 @@ entity scope is
 	generic (
 		constant DDR_STROBE   : string := "NONE";
 		constant DDR_STD      : natural;
-		constant DDR_BANKSIZE : natural :=  2;
+		constant DDR_DATAPHASES : natural :=  2;
+		constant DDR_BANKSIZE : natural :=  3;
 		constant DDR_ADDRSIZE : natural := 13;
 		constant DDR_CLMNSIZE : natural :=  6;
 		constant DDR_LINESIZE : natural := 16;
@@ -34,9 +35,9 @@ entity scope is
 		ddr_we  : out std_logic;
 		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqst : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqso : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
@@ -94,7 +95,7 @@ architecture def of scope is
 	signal ddrs_ref_req : std_logic;
 	signal ddrs_cmd_req : std_logic;
 	signal ddrs_cmd_rdy : std_logic;
-	signal ddrs_ba : std_logic_vector(0 to 2-1);
+	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
 	signal ddrs_a  : std_logic_vector(0 to 13-1);
 	signal ddrs_act : std_logic;
 	signal ddrs_cas : std_logic;
@@ -261,10 +262,10 @@ begin
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE => 9,
-		BANK_SIZE => DDR_BANKSIZE,
-		ADDR_SIZE => DDR_ADDRSIZE,
-		COL_SIZE  => DDR_CLMNSIZE,
-		DATA_SIZE => DDR_WORDSIZE)
+		DDR_BANKSIZE => DDR_BANKSIZE,
+		DDR_ADDRSIZE => DDR_ADDRSIZE,
+		DDR_CLNMSIZE => DDR_CLMNSIZE,
+		DDR_LINESIZE => DDR_WORDSIZE)
 	port map (
 		sys_rst   => dataio_rst,
 
@@ -428,12 +429,13 @@ begin
 
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
-		STROBE    => DDR_STROBE,
-		BANK_SIZE => DDR_BANKSIZE,
-		ADDR_SIZE => DDR_ADDRSIZE,
-		LINE_SIZE => DDR_LINESIZE,
-		WORD_SIZE => DDR_WORDSIZE,
-		BYTE_SIZE => DDR_BYTESIZE,
+		strobe    => DDR_STROBE,
+		data_phases => 2,
+		bank_size => DDR_BANKSIZE,
+		addr_size => DDR_ADDRSIZE,
+		line_size => DDR_WORDSIZE,
+		word_size => DDR_WORDSIZE,
+		byte_size => DDR_BYTESIZE,
 		tCP       => DDR_tCP)
 	port map (
 		sys_rst => sys_rst,
@@ -441,6 +443,8 @@ begin
 		sys_cl  => "---",
 		sys_cwl => "---",
 		sys_wr  => "---",
+		sys_pl  => "---",
+		sys_dqsn => '-',
 		sys_clks => ddrs_clks,
 		xdr_wclks(0) => ddrs_clks(0),
 
