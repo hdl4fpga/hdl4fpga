@@ -75,7 +75,7 @@ entity xdr is
 		xdr_sti : in  std_logic_vector(data_phases/(word_size/byte_size)-1 downto 0) := (others => '-');
 		xdr_sto : out std_logic_vector((line_size/word_size)*2*data_phases-1 downto 0) := (others => '-'));
 
-	constant std : natural := xdr_std(mark);
+	constant stdr : natural := xdr_stdr(mark);
 end;
 
 library hdl4fpga;
@@ -144,7 +144,7 @@ begin
 		end if;
 	end process;
 
-	xdr_cwl <= sys_cl when std=2 else sys_cwl;
+	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_du : entity hdl4fpga.xdr_init
 	generic map (
@@ -153,8 +153,8 @@ begin
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
 			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
-			TMR_DLL  => xdr_latency(std, cDLL),
-			TMR_ZQINIT => xdr_latency(std, ZQINIT),
+			TMR_DLL  => xdr_latency(stdr, cDLL),
+			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
 			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),
 		addr_size => addr_size,
 		bank_size => bank_size)
@@ -224,12 +224,12 @@ begin
 		lRFC => to_xdrlatency(tCP, mark, tRFC, word_size, byte_size),
 		lWR  => to_xdrlatency(tCP, mark, tWR,  word_size, byte_size),
 		lRP  => to_xdrlatency(tCP, mark, tRP,  word_size, byte_size),
-		bl_cod => xdr_latcod(std, BL),
-		bl_tab => xdr_lattab(std, BL),
-		cl_cod => xdr_latcod(std, CL),
-		cl_tab => xdr_lattab(std, CL),
-		cwl_cod => xdr_latcod(std, xdr_selcwl(std)),
-		cwl_tab => xdr_lattab(std, xdr_selcwl(std)))
+		bl_cod => xdr_latcod(stdr, BL),
+		bl_tab => xdr_lattab(stdr, BL),
+		cl_cod => xdr_latcod(stdr, CL),
+		cl_tab => xdr_lattab(stdr, CL),
+		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
+		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr)))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
@@ -259,23 +259,23 @@ begin
 		line_size   => line_size,
 		byte_size   => byte_size,
 
-		CL_COD    => xdr_latcod(std, CL),
-		CWL_COD   => xdr_latcod(std, CWL),
+		CL_COD    => xdr_latcod(stdr, CL),
+		CWL_COD   => xdr_latcod(stdr, CWL),
 
-		STRL_TAB  => xdr_lattab(std, STRT, sclk_phases),
-		RWNL_tab  => xdr_lattab(std, RWNT, sclk_phases),
-		DQSZL_TAB => xdr_lattab(std, DQSZT, sclk_phases),
-		DQSOL_TAB => xdr_lattab(std, DQST, sclk_phases),
-		DQZL_TAB  => xdr_lattab(std, DQZT, sclk_phases),
-		WWNL_TAB  => xdr_lattab(std, WWNT, sclk_phases),
+		STRL_TAB  => xdr_lattab(stdr, STRT, sclk_phases),
+		RWNL_tab  => xdr_lattab(stdr, RWNT, sclk_phases),
+		DQSZL_TAB => xdr_lattab(stdr, DQSZT, sclk_phases),
+		DQSOL_TAB => xdr_lattab(stdr, DQST, sclk_phases),
+		DQZL_TAB  => xdr_lattab(stdr, DQZT, sclk_phases),
+		WWNL_TAB  => xdr_lattab(stdr, WWNT, sclk_phases),
 
-		STRX_LAT  => xdr_latency(std, STRXL, 4/sclk_phases),
-		RWNX_LAT  => xdr_latency(std, RWNXL, 4/sclk_phases),
-		DQSZX_LAT => xdr_latency(std, DQSZXL, 4/sclk_phases),
-		DQSX_LAT  => xdr_latency(std, DQSXL, 4/sclk_phases),
-		DQZX_LAT  => xdr_latency(std, DQZXL, 4/sclk_phases),
-		WWNX_LAT  => xdr_latency(std, WWNXL, 4/sclk_phases),
-		WID_LAT   => xdr_latency(std, WIDL,  4/sclk_phases))
+		STRX_LAT  => xdr_latency(stdr, STRXL, 4/sclk_phases),
+		RWNX_LAT  => xdr_latency(stdr, RWNXL, 4/sclk_phases),
+		DQSZX_LAT => xdr_latency(stdr, DQSZXL, 4/sclk_phases),
+		DQSX_LAT  => xdr_latency(stdr, DQSXL, 4/sclk_phases),
+		DQZX_LAT  => xdr_latency(stdr, DQZXL, 4/sclk_phases),
+		WWNX_LAT  => xdr_latency(stdr, WWNXL, 4/sclk_phases),
+		WID_LAT   => xdr_latency(stdr, WIDL,  4/sclk_phases))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
@@ -305,7 +305,7 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => std)
+		data_delay => stdr)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

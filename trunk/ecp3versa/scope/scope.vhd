@@ -116,9 +116,9 @@ begin
 		DDR_STROBE => "INTERNAL",
 		DDR_BANKSIZE => ddr3_b'length,
 		DDR_ADDRSIZE => ddr3_a'length,
-		DDR_LINESIZE => ddr3_dq'length*2*4,
-		DDR_WORDSIZE => ddr3_dq'length*2,
-		DDR_BYTESIZE => ddr3_dq'length,
+		DDR_LINESIZE => ddr3_dq'length*2,
+		DDR_WORDSIZE => ddr3_dq'length,
+		DDR_BYTESIZE => ddr3_dq'length/2,
 		xd_len  => 8)
 	port map (
 		sys_rst => scope_rst,
@@ -165,9 +165,9 @@ begin
 	generic map (
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
-		LINE_SIZE => ddr3_dq'length*2*4,
-		WORD_SIZE => ddr3_dq'length*2,
-		BYTE_SIZE => ddr3_dq'length)
+		LINE_SIZE => ddr3_dq'length*2,
+		WORD_SIZE => ddr3_dq'length,
+		BYTE_SIZE => ddr3_dq'length/2)
 	port map (
 		sys_sclk => '-',
 		sys_sclk2x => '-', 

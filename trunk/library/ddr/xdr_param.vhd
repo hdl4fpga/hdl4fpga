@@ -55,18 +55,18 @@ package xdr_param is
 	end record;
 	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
-	function xdr_cnfglat (
+	impure function xdr_cnfglat (
 		constant stdr : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking it up
 		return std_logic_vector;
 
-	function xdr_timing (
+	impure function xdr_timing (
 		constant mark  : tmrk_ids;
 		constant param : tmng_ids) 
 		return time;
 
-	function xdr_latency (
+	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids;
 		constant unit  : natural := 1)
@@ -82,16 +82,16 @@ package xdr_param is
 		constant reg : latr_ids)
 		return cnfglat_tab;
 
-	function xdr_std (
+	impure function xdr_stdr (
 		mark : tmrk_ids) 
 		return natural;
 
-	function to_xdrlatency (
+	impure function to_xdrlatency (
 		period : time;
 		timing : time)
 		return natural;
 
-	function to_xdrlatency (
+	impure function to_xdrlatency (
 		constant period : time;
 		constant mark   : tmrk_ids;
 		constant param  : tmng_ids;
@@ -100,19 +100,19 @@ package xdr_param is
 		constant data_edges : natural := 1)
 		return natural;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
 		return natural_vector;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cwltabs_ids;
 		constant phs : natural := 1)
@@ -327,6 +327,9 @@ package body xdr_param is
 		timing_record'(mark => M107, param => tREFI, value =>  7 us) &
 		timing_record'(mark => M107, param => tPreRST, value => 200 us) &
 		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
+		timing_record'(mark => M107, param => tWR,   value => 15 ns) &
+		timing_record'(mark => M107, param => tRCD,  value => 13.91 ns) &
+		timing_record'(mark => M107, param => tRP,   value => 13.91 ns) &
 		timing_record'(mark => M107, param => tMRD,  value => 15 ns) &
 		timing_record'(mark => M107, param => tRFC,  value => 110 ns) &
 		timing_record'(mark => M107, param => tXPR,  value => 110 ns + 10 ns) &
@@ -414,7 +417,7 @@ package body xdr_param is
 		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*7, code => "010") &
 		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*8, code => "011");
 
-	function xdr_cnfglat (
+	impure function xdr_cnfglat (
 		constant stdr : positive;
 		constant reg : latr_ids;
 		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
@@ -431,23 +434,24 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "*******************";
-		report "*** XDR_CNFGLAT ***";
-		report "*******************";
+		write (msg, string'("///////////////////" & CR));
+		write (msg, string'("*** XDR_CNFGLAT ***" & CR));
+		write (msg, string'("///////////////////" & CR));
 
-		write (msg, string'("DDR"));
+		write (msg, string'("DDR" & CR));
 		write (msg, stdr);
 		write (msg, latr_ids'image(reg));
 		write (msg, string'(" : "));
 		write (msg, lat);
+		write (msg, string'(CR & "//////////////////" & CR));
+		writeline(output, msg);
 
-		report msg.all;
-		report "******************"
+		assert false
 		severity FAILURE;
 		return "XXX";
 	end;
 
-	function xdr_timing (
+	impure function xdr_timing (
 		mark  : tmrk_ids;
 		param : tmng_ids) 
 		return time is
@@ -460,20 +464,23 @@ package body xdr_param is
 				end if;
 			end if;
 		end loop;
-		report "******************";
-		report "*** XDR_TIMING ***";
-		report "******************";
+
+		write (msg, string'("//////////////////" & CR));
+		write (msg, string'("*** XDR_TIMING ***" & CR));
+		write (msg, string'("//////////////////" & CR));
 
 		write (msg, tmrk_ids'image(mark));
 		write (msg, string'(" : "));
 		write (msg, tmng_ids'image(param));
-		report msg.all;
-		report "******************"
+		write (msg, string'(CR & "//////////////////" & CR));
+		writeline(output, msg);
+
+		assert false
 		severity FAILURE;
 		return 0 ns;
 	end;
 
-	function xdr_latency (
+	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids; 
 		constant unit : natural := 1) 
@@ -488,40 +495,48 @@ package body xdr_param is
 			end if;
 		end loop;
 
-		report "*******************";
-		report "*** XDR_LATENCY ***";
-		report "*******************";
+		write (msg, string'("///////////////////" & CR));
+		write (msg, string'("*** XDR_LATENCY ***" & CR));
+		write (msg, string'("///////////////////" & CR));
 
 		write (msg, string'("DDR"));
 		write (msg, stdr);
 		write (msg, string'(":"));
 		write (msg, laty_ids'image(param));
-		report msg.all;
-		report "*******************"
+		write (msg, string'(CR & "//////////////////" & CR));
+		writeline(output, msg);
+
+		assert false
 		severity FAILURE;
 		return 0;
 	end;
 
-	function xdr_std (
+	impure function xdr_stdr (
 		mark : tmrk_ids) 
 		return natural is
 		variable msg : line;
 	begin
 		for i in tmark_db'range loop
 			if tmark_db(i).mark = mark then
-				return latency_db(i).value;
+				return tmark_db(i).stdr;
 			end if;
 		end loop;
 
+		write (msg, string'("////////////////" & CR));
+		write (msg, string'("*** XDR_STDR ***" & CR));
+		write (msg, string'("////////////////" & CR));
+
 		write (msg, string'("-> "));
 		write (msg, tmrk_ids'image(mark));
-		report msg.all;
-		report "xdr_std: Invalid DDR latency"
+		write (msg, string'(CR & "//////////////////" & CR));
+		writeline(output, msg);
+
+		assert false
 		severity FAILURE;
 		return 0;
 	end;
 
-	function to_xdrlatency (
+	impure function to_xdrlatency (
 		period : time;
 		timing : time)
 		return natural is
@@ -529,7 +544,7 @@ package body xdr_param is
 		return (timing+period)/period;
 	end;
 
-	function to_xdrlatency (
+	impure function to_xdrlatency (
 		constant period : time;
 		constant mark   : tmrk_ids;
 		constant param  : tmng_ids;
@@ -576,7 +591,7 @@ package body xdr_param is
 		return query_data;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
 		constant phs : natural := 1)
@@ -591,7 +606,7 @@ package body xdr_param is
 		return lattab;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
 		constant phs : natural := 1)
@@ -611,7 +626,7 @@ package body xdr_param is
 		return val;
 	end;
 
-	function xdr_lattab (
+	impure function xdr_lattab (
 		constant stdr   : natural;
 		constant tabid : cwltabs_ids;
 		constant phs   : natural := 1)
