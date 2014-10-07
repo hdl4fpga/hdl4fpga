@@ -10,6 +10,7 @@ library ecp3;
 use ecp3.components.all;
 
 architecture scope of ecp3versa is
+	constant data_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
@@ -42,14 +43,14 @@ architecture scope of ecp3versa is
 	signal ddrphy_b : std_logic_vector(ddr3_b'length-1 downto 0);
 	signal ddrphy_a : std_logic_vector(ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dmi : std_logic_vector(ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmt : std_logic_vector(ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmo : std_logic_vector(ddr3_dm'length-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqt : std_logic_vector(ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqo : std_logic_vector(ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
+	signal ddrphy_dmi : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dmt : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dmo : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dqi : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqt : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqo : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -116,7 +117,7 @@ begin
 		DDR_STROBE => "INTERNAL",
 		DDR_BANKSIZE => ddr3_b'length,
 		DDR_ADDRSIZE => ddr3_a'length,
-		DDR_LINESIZE => ddr3_dq'length*2,
+		DDR_LINESIZE => ddr3_dq'length,
 		DDR_WORDSIZE => ddr3_dq'length,
 		DDR_BYTESIZE => ddr3_dq'length/2,
 		xd_len  => 8)
@@ -165,7 +166,7 @@ begin
 	generic map (
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
-		LINE_SIZE => ddr3_dq'length*2,
+		LINE_SIZE => ddr3_dq'length,
 		WORD_SIZE => ddr3_dq'length,
 		BYTE_SIZE => ddr3_dq'length/2)
 	port map (
@@ -193,7 +194,7 @@ begin
 		sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
-		sys_odt => ddrphy_odt,
+		sys_odt => ddrphy_odt(0 downto 0),
 
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,

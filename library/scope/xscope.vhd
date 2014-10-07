@@ -38,15 +38,15 @@ entity scope is
 		ddr_dmi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dmo : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dmt : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_WORDSIZE-1 downto 0);
-		ddr_dqi : in std_logic_vector(DDR_WORDSIZE-1 downto 0);
-		ddr_dqo : out std_logic_vector(DDR_WORDSIZE-1 downto 0);
+		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
+		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE-1 downto 0);
+		ddr_dqi : in std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
+		ddr_dqo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_sti : in std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
+		ddr_sti : in std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
