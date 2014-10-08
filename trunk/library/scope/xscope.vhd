@@ -27,6 +27,8 @@ entity scope is
 		input_clk : in std_logic;
 
 		ddrs_clks : in std_logic_vector(0 to 1);
+		ddrs_ini  : out std_logic;
+
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
 		ddr_cs  : out std_logic;
@@ -91,7 +93,7 @@ architecture def of scope is
 
 	signal ddr_lp_clk : std_logic;
 
-	signal ddrs_ini : std_logic;
+	signal ddr_ini : std_logic;
 	signal ddrs_ref_req : std_logic;
 	signal ddrs_cmd_req : std_logic;
 	signal ddrs_cmd_rdy : std_logic;
@@ -142,6 +144,8 @@ architecture def of scope is
 
 begin
 
+	ddrs_ini <= ddr_ini;
+
 --	process (input_clk)
 --		variable sample : unsigned(0 to 15) := (others => '0');
 --	begin
@@ -164,7 +168,7 @@ begin
 			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
 			r := r xor (r'range => '1');
 			--r := r + 1;
-			if ddrs_ini='0' then
+			if ddr_ini='0' then
 				input_req <= '0';
 				r := x"ff00";
 			--	r := to_unsigned(61, r'length);
@@ -258,7 +262,7 @@ begin
 --
 --	video_ena <= setif(win_rowid="11");
 
-	dataio_rst <= not ddrs_ini;
+	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE => 9,
@@ -446,6 +450,7 @@ begin
 		sys_pl  => "---",
 		sys_dqsn => '-',
 		sys_clks => ddrs_clks,
+		sys_ini  =>  ddr_ini,
 		xdr_wclks(0) => ddrs_clks(0),
 
 		sys_cmd_req => ddrs_cmd_req,
@@ -483,5 +488,4 @@ begin
 
 		xdr_sti => ddr_sti,
 		xdr_sto => ddr_sto);
-	sys_ini <= ddrs_ini;
 end;
