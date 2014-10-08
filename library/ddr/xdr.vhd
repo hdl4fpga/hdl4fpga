@@ -34,7 +34,7 @@ entity xdr is
 
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
-		sys_cfg_rdy : out std_logic;
+		sys_ini  : out std_logic;
 
 		sys_cmd_req : in  std_logic := '-';
 		sys_cmd_rdy : out std_logic;
@@ -191,16 +191,7 @@ begin
 	xdr_a   <= sys_a       when xdr_init_rdy='1' else xdr_init_a;
 	xdr_b   <= sys_b       when xdr_init_rdy='1' else xdr_init_b;
 
-	process (sys_clks(0))
-		variable q : std_logic;
-	begin
-		if rising_edge(sys_clks(0)) then
---			xdr_mpu_rst <= not (xdr_init_rdy and dll_timer_rdy);
-			xdr_mpu_rst <= q;
-			q := not (xdr_init_rdy and dll_timer_rdy);
-			sys_cfg_rdy <= xdr_init_rdy and dll_timer_rdy;
-		end if;
-	end process;
+	sys_ini <= xdr_init_rdy;
 
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
