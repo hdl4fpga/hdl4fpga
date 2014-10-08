@@ -7,11 +7,12 @@ use hdl4fpga.std.all;
 
 entity counter is
 	generic (
-		stage_size : natural_vector := (0 => 4, 1 => 9, 2 => 14));
+		stage_size : natural_vector := (0 => 13, 1 => 26, 2 => 30));
 	port (
-		data : in  std_logic_vector(14-1 downto 0) := (others => '0');
+		data : in  std_logic_vector(stage_size(stage_size'high) downto 0);
 		clk  : in  std_logic;
 		ena  : in  std_logic;
+		xxx : out std_logic_vector(stage_size(stage_size'high) downto 0);
 		load : in  std_logic);
 end;
 
@@ -28,7 +29,7 @@ architecture def of counter is
 		return val;
 	end;
 
-	signal xxx : std_ulogic_vector(0 to stage_size(stage_size'high)+10-1);
+--	signal xxx : std_ulogic_vector(0 to stage_size(stage_size'high)-1);
 	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
@@ -61,7 +62,7 @@ begin
 			return stage_size(i-1);
 		end;
 		constant size : natural := csize(i+1)-csize(i);
-		signal cntr : unsigned(stage_size(i) to stage_size(i)+size-1);
+		signal cntr : unsigned(csize(i) to csize(i)+size-1);
 
 	begin
 		cntr_p : process (clk)
@@ -80,8 +81,13 @@ begin
 				end if;
 			end if;
 		end process;
+
+--		xxx(cntr'range) <= std_ulogic_vector(cntr);
+		dummy_g : for i in cntr'range generate
+			xxx(i) <= cntr(i);
+		end generate;
+
 		q(i) <= cntr(cntr'left);
-		xxx(cntr'range) <= std_ulogic_vector(cntr);
 
 	end generate;
 	--rdy <= cy(stage_size'length);
