@@ -171,8 +171,6 @@ begin
 		sys_ini => 
 		sys_eoc => ddrios_eoc,
 
-		sys_addr => 
-		sys_brst_req =>
 					 
 		ddrs_ref_req => ddrs_ref_req,
 		ddrs_cmd_req => ddrs_cmd_req,
