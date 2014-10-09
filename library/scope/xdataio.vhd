@@ -157,19 +157,22 @@ begin
 		ddr2video_brst_req when '1',
 		ddr2miitx_brst_req when others;
 
-	ddrio_e : entity hdl4fpga.ddrio
+	ddrio_e : entity hdl4fpga.counter
 	generic map (
-		bank_size => DDR_BANKSIZE,
-		addr_size => DDR_ADDRSIZE,
-		col_size => DDR_CLNMSIZE)
+		stage_size => (
+			2 => DDR_BANKSIZE+1,
+			1 => DDR_ADDRSIZE+1,
+			0 => DDR_CLNMSIZE+1))
 	port map (
-		tp => tp,
-		sys_clk => ddrs_clk,
-		sys_ini => ddrios_ini,
+		clk  => ddrs_clk,
+		load => ddrios_ini,
+		ena  => ddrios_brst_req,
+		data => ddrios_addr,
+		sys_ini => 
 		sys_eoc => ddrios_eoc,
 
-		sys_addr => ddrios_addr,
-		sys_brst_req => ddrios_brst_req,
+		sys_addr => 
+		sys_brst_req =>
 					 
 		ddrs_ref_req => ddrs_ref_req,
 		ddrs_cmd_req => ddrs_cmd_req,
