@@ -13,12 +13,13 @@ entity counter is
 		ena  : in  std_logic;
 		load : in  std_logic;
 		data : in  std_logic_vector(stage_size(stage_size'high) downto 0);
-		qo   : out std_logic_vector(stage_size(stage_size'high) downto 0));
+		qo   : out std_logic_vector(stage_size(stage_size'high) downto 0);
+		cy   : out std_logic_vector(stage_size'length-1 downto 0));
 end;
 
 architecture def of counter is
 
-	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
+	signal cy : std_logic_vector(stage_size'length-1 downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
 
@@ -29,14 +30,18 @@ begin
 		if rising_edge(clk) then
 			for i in 0 to stage_size'length-1 loop
 				if load='1' then
-					cy(i+1) <= '0';
+					cy(i) <= '0';
 				elsif cy(stage_size'length)='0' then
-					cy(i+1) <= q(i) and cy(i);
+					if i=0 then
+						cy(i) <= q(i);
+					else
+						cy(i) <= q(i) and cy(i-1);
+					end if;
 				end if;
 			end loop;
 		end if;
 	end process;
-	en <= cy(stage_size'length downto 1) & not cy(stage_size'length);
+	en <= cy & not cy(stage_size'right);
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
 
@@ -51,7 +56,7 @@ begin
 		end;
 
 		constant size : natural := csize(i+1)-csize(i);
-		signal cntr   : unsigned(csize(i) to csize(i)+size-1);
+		signal   cntr : unsigned(csize(i) to csize(i)+size-1);
 
 	begin
 
@@ -78,5 +83,4 @@ begin
 		q(i) <= cntr(cntr'left);
 
 	end generate;
-	--rdy <= cy(stage_size'length);
 end;
