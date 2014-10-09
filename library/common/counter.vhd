@@ -9,27 +9,15 @@ entity counter is
 	generic (
 		stage_size : natural_vector := (0 => 13, 1 => 26, 2 => 30));
 	port (
-		data : in  std_logic_vector(stage_size(stage_size'high) downto 0);
 		clk  : in  std_logic;
 		ena  : in  std_logic;
-		xxx : out std_logic_vector(stage_size(stage_size'high) downto 0);
-		load : in  std_logic);
+		load : in  std_logic;
+		data : in  std_logic_vector(stage_size(stage_size'high) downto 0);
+		qo   : out std_logic_vector(stage_size(stage_size'high) downto 0));
 end;
 
 architecture def of counter is
 
-	function addup  (
-		constant arg : natural_vector)
-		return natural is
-		variable val : natural := 0;
-	begin
-		for i in arg'range loop
-			val := val + arg(i);
-		end loop;
-		return val;
-	end;
-
---	signal xxx : std_ulogic_vector(0 to stage_size(stage_size'high)-1);
 	signal cy : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
@@ -61,10 +49,12 @@ begin
 			end if;
 			return stage_size(i-1);
 		end;
+
 		constant size : natural := csize(i+1)-csize(i);
-		signal cntr : unsigned(csize(i) to csize(i)+size-1);
+		signal cntr   : unsigned(csize(i) to csize(i)+size-1);
 
 	begin
+
 		cntr_p : process (clk)
 			variable csize : natural_vector(stage_size'length downto 0) := (others => 0);
 		begin
@@ -82,11 +72,9 @@ begin
 			end if;
 		end process;
 
---		xxx(cntr'range) <= std_ulogic_vector(cntr);
-		dummy_g : for i in cntr'range generate
-			xxx(i) <= cntr(i);
+		qo_g : for i in cntr'range generate
+			qo(i) <= cntr(i);
 		end generate;
-
 		q(i) <= cntr(cntr'left);
 
 	end generate;
