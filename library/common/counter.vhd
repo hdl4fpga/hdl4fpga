@@ -12,9 +12,8 @@ entity counter is
 		clk  : in  std_logic;
 		ena  : in  std_logic;
 		load : in  std_logic;
-		data : in  std_logic_vector(stage_size(stage_size'high) downto 0);
-		qo   : out std_logic_vector(stage_size(stage_size'high) downto 0);
-		cy   : out std_logic_vector(stage_size'length-1 downto 0));
+		data : in  std_logic_vector(stage_size(stage_size'high)-1 downto 0);
+		qo   : out std_logic_vector(stage_size(stage_size'high)-1 downto 0));
 end;
 
 architecture def of counter is

@@ -5,10 +5,9 @@ add wave -noupdate /testbench/du/load
 add wave -noupdate /testbench/du/cntr_g(0)/cntr
 add wave -noupdate /testbench/du/cntr_g(1)/cntr
 add wave -noupdate /testbench/du/cntr_g(2)/cntr
-add wave -noupdate /testbench/du/xxx
 add wave -noupdate /testbench/du/q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
+WaveRestoreCursors {{Cursor 1} {0 fs} 0}
 quietly wave cursor active 0
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
