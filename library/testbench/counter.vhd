@@ -18,7 +18,7 @@ begin
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 45.00001 ns;
 	req <= rst;
-	ena <= not co(2);
+	ena <= '1', '0' after 345.00001 ns;
 	du : entity hdl4fpga.counter
 	generic map (
 		stage_size => stage_size)
