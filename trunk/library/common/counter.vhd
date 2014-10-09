@@ -13,6 +13,7 @@ entity counter is
 		ena  : in  std_logic;
 		load : in  std_logic;
 		data : in  std_logic_vector(stage_size(stage_size'high)-1 downto 0);
+		co   : out std_logic_vector(stage_size'length-1 downto 0);
 		qo   : out std_logic_vector(stage_size(stage_size'high)-1 downto 0));
 end;
 
@@ -30,7 +31,7 @@ begin
 			for i in 0 to stage_size'length-1 loop
 				if load='1' then
 					cy(i) <= '0';
-				elsif cy(stage_size'length)='0' then
+				elsif ena='1' then
 					if i=0 then
 						cy(i) <= q(i);
 					else
@@ -40,7 +41,7 @@ begin
 			end loop;
 		end if;
 	end process;
-	en <= cy & not cy(stage_size'right);
+	en <= (cy & ena) and ena;
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
 
@@ -82,4 +83,5 @@ begin
 		q(i) <= cntr(cntr'left);
 
 	end generate;
+	co <= cy;
 end;
