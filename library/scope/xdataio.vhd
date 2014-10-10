@@ -29,7 +29,7 @@ entity dataio is
 		ddrs_ref_req : in std_logic;
 		ddrs_cmd_req : out std_logic;
 		ddrs_cmd_rdy : in std_logic;
-		ddrs_ba  : out std_logic_vector;
+		ddrs_b   : out std_logic_vector;
 		ddrs_a   : out std_logic_vector;
 		ddrs_act : in std_logic;
 		ddrs_cas : in std_logic;
@@ -157,6 +157,27 @@ begin
 		ddr2video_brst_req when '1',
 		ddr2miitx_brst_req when others;
 
+	process (ddrs_clk)
+	begin
+		if rising_edge(ddrs_clk) then
+			if ddrs_ini='1'then
+				cmd_req <= '0';
+			elsif cmd_req='0' then
+				if ddrs_cmd_rdy='1' then
+					if sys_brst_req='1' then
+						cmd_req <= '1';
+					end if;
+				end if;
+			elsif ddrs_ref_req='1' then
+				cmd_req <= '0';
+			elsif ddrs_brst_req='0' then
+				cmd_req <= '0';
+			elsif ddrs_co(0)='1' then
+				cmd_req <= '0';
+			end if;
+		end if;
+	end process;
+
 	ddrio_e : entity hdl4fpga.counter
 	generic map (
 		stage_size => (
@@ -165,21 +186,15 @@ begin
 			0 => DDR_CLNMSIZE+1))
 	port map (
 		clk  => ddrs_clk,
-		load => ddrios_ini,
-		ena  => ddrios_brst_req,
-		data => ddrios_addr,
-		sys_ini => 
-		sys_eoc => ddrios_eoc,
-
+		load => ddrs_ini,
+		ena  => ddrs_brst_req,
+		data => ddrs_addr,
+		qo => ddrs_ba,
+		co => ddrs_co);
 					 
 		ddrs_ref_req => ddrs_ref_req,
 		ddrs_cmd_req => ddrs_cmd_req,
 		ddrs_cmd_rdy => ddrs_cmd_rdy,
-		ddrs_ba  => ddrs_ba,
-		ddrs_a   => ddrs_a,
-		ddrs_act => ddrs_act,
-		ddrs_cas => ddrs_cas,
-		ddrs_pre => ddrs_pre);
 
 	process (video_clk)
 	begin
