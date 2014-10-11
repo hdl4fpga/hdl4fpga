@@ -29,8 +29,11 @@ entity dataio is
 		ddrs_ref_req : in std_logic;
 		ddrs_cmd_req : out std_logic;
 		ddrs_cmd_rdy : in std_logic;
-		ddrs_b   : out std_logic_vector;
-		ddrs_a   : out std_logic_vector;
+
+		ddrs_bnka : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddrs_rowa : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddrs_cola : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+
 		ddrs_act : in std_logic;
 		ddrs_cas : in std_logic;
 		ddrs_pre : in std_logic;
@@ -122,20 +125,6 @@ begin
 	end process;
 
 	process (ddrs_clk)
-		type aword_vector is array (natural range <>) of aword;
-		constant addr : aword_vector(0 to 1) := (
-			0 => '0' & to_unsigned(4-1, DDR_BANKSIZE) &	-- bank address
-			     '0' & to_unsigned(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE) &	-- row  address
-			     '0' & to_unsigned(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE),
---  		0 => '0' & to_unsigned(0, DDR_BANKSIZE) &	-- bank address
---  		     '0' & to_unsigned(0, DDR_ADDRSIZE) &	-- row  address
---  		     '0' & to_unsigned(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE),
-  			1 => '0' & to_unsigned(4-1, DDR_BANKSIZE) &
-  			     '0' & to_unsigned(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE) &
-  			     '0' & to_unsigned(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE));
---			1 => '0' & to_unsigned(0, DDR_BANKSIZE) &
---			     '0' & to_unsigned(0, DDR_ADDRSIZE) &
---			     '0' & to_unsigned(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE));
 	begin
 		if rising_edge(ddrs_clk) then
 			case input_req is
@@ -147,104 +136,70 @@ begin
 		end if;
 	end process;
 
-	with capture_rdy select
-	ddrios_brst_req <= 
-		datai_brst_req when '0',
-		datao_brst_req when others;
+	ddrio_b: block
+		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
+		signal co : std_logic_vector(0 downto 3-1);
 
-	with std_logic'('0') select
-	datao_brst_req <=
-		ddr2video_brst_req when '1',
-		ddr2miitx_brst_req when others;
+		signal ddrios_id  : std_logic_vector(0 to 0);
+		signal ddrios_req : std_logic_vector(0 to 2**ddrios_id'length-1);
 
-	process (ddrs_clk)
-	begin
-		if rising_edge(ddrs_clk) then
-			if ddrs_ini='1'then
-				cmd_req <= '0';
-			elsif cmd_req='0' then
-				if ddrs_cmd_rdy='1' then
-					if sys_brst_req='1' then
-						cmd_req <= '1';
-					end if;
+		function pencoder (
+			constant arg : std_logic_vector)
+			return natural is
+		begin
+			for i in arg'range loop
+				if arg(i)='1' then
+					return i;
 				end if;
-			elsif ddrs_ref_req='1' then
-				cmd_req <= '0';
-			elsif ddrs_brst_req='0' then
-				cmd_req <= '0';
-			elsif ddrs_co(0)='1' then
-				cmd_req <= '0';
-			end if;
-		end if;
-	end process;
-
-	ddrio_e : entity hdl4fpga.counter
-	generic map (
-		stage_size => (
-			2 => DDR_BANKSIZE+1,
-			1 => DDR_ADDRSIZE+1,
-			0 => DDR_CLNMSIZE+1))
-	port map (
-		clk  => ddrs_clk,
-		load => ddrs_ini,
-		ena  => ddrs_brst_req,
-		data => ddrs_addr,
-		qo => ddrs_ba,
-		co => ddrs_co);
-					 
-		ddrs_ref_req => ddrs_ref_req,
-		ddrs_cmd_req => ddrs_cmd_req,
-		ddrs_cmd_rdy => ddrs_cmd_rdy,
-
-	process (video_clk)
+			end loop;
+			return arg'right;
+		end;
 	begin
-		if rising_edge(video_clk) then
-			vsync_erq <= video_ena;
-			hsync_erq <= vsync_erq and video_row(video_row'right) and video_ena;
-		end if;
-	end process;
 
-	ddr2video_e : entity hdl4fpga.ddr2video
-	port map (
-		ddrios_clk => ddrs_clk,
-		ddrios_brst_req => ddr2video_brst_req,
-		vsync_erq => vsync_erq, --video_ena,
-		hsync_erq => hsync_erq, --video_row(video_row'right),
+		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
+		ddrios_c <= mux (
+			i => 
+				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
+				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
+			s => ddrios_id);
+		ddrs_breq <= ddrios_creq(to_integer(ddrios_cid));
 
-		ddrios_rd => capture_rdy,
-		buff_ini  => buff_ini,
+		process (ddrs_clk)
+		begin
+			if rising_edge(ddrs_clk) then
+				if ddrs_ini='1'then
+					ddrs_creq <= '0';
+				elsif ddrs_creq='0' then
+					if ddrs_crdy='1' then
+						if ddrs_breq='1' then
+							ddrs_creq <= '1';
+						end if;
+					end if;
+				else
+					ddrs_creq <= not ddrs_rreq and ddrios_breq and not qo(DDR_CLMSIZE);
+				end if;
+			end if;
+		end process;
 
-		page_addr => video_page);
+		ddrs_bnka <= resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE); 
+		ddrs_rowa <= resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_CLNMSIZE); 
+		ddrs_cola <= shift_left(resize(shift_right(unsigned(qo),0), DDR_CLMNSIZE), DDR_ADDRSIZE-DDR_CLNMSIZE); 
 
-	videomem_e : entity hdl4fpga.videomem
-	generic map (
-		bram_num  => page_num,
-		bram_size => page_size,
-		data_size => 2*DDR_LINESIZE)
-	port map (
-		ddrs_clk => ddrs_clk,
-		ddrs_di_rdy => ddrs_do_rdy,
-		ddrs_di  => ddrs_do,
-		buff_ini => sys_rst,  --buff_ini,
-		page_addr => video_page,
-
-		output_clk  => video_clk,
-		output_addr => video_off,
-		output_data => video_di);
-
-	mem2vio_e : entity hdl4fpga.mem2vio
-	generic map (
-		page_num  => page_num,
-		page_size => page_size,
-		data_size => DDR_LINESIZE)
-	port map (
-		video_clk => video_clk,
-		mem_addr  => video_off,
-		mem_di    => video_di,
-
-		video_col => video_col,
-		video_row => video_row,
-		video_do  => video_do);
+		dcounter_e : entity hdl4fpga.counter
+		generic map (
+			stage_size => (
+				2 => DDR_BANKSIZE+1,
+				1 => DDR_ADDRSIZE+1,
+				0 => DDR_CLNMSIZE+1))
+		port map (
+			clk  => ddrs_clk,
+			load => ddrs_ini,
+			ena  => ddrs_cas,
+			data => ddrs_addr,
+			qo   => qo,
+			co   => co);
+						 
+	end block;
 
 	ddr2miitx_e : entity hdl4fpga.ddr2miitx
 	port map (
