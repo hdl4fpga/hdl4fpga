@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -26,9 +27,9 @@ entity dataio is
 		video_do  : out std_logic_vector;
 
 		ddrs_clk : in  std_logic;
-		ddrs_ref_req : in std_logic;
-		ddrs_cmd_req : out std_logic;
-		ddrs_cmd_rdy : in std_logic;
+		ddrs_rreq : in std_logic;
+		ddrs_creq : out std_logic;
+		ddrs_crdy : in std_logic;
 
 		ddrs_bnka : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddrs_rowa : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
@@ -49,8 +50,7 @@ entity dataio is
 		miitx_rdy  : in std_logic;
 		mii_a0   : out std_logic;
 		miitx_addr : in  std_logic_vector;
-		miitx_data : out std_logic_vector(2*DDR_LINESIZE-1 downto 0);
-		tp : out nibble_vector(0 to 7-1));
+		miitx_data : out std_logic_vector(2*DDR_LINESIZE-1 downto 0));
 		
 	constant page_num  : natural := 6;
 end;
@@ -124,24 +124,13 @@ begin
 		end if;
 	end process;
 
-	process (ddrs_clk)
-	begin
-		if rising_edge(ddrs_clk) then
-			case input_req is
-			when '0' =>
-				ddrios_addr <= addr(0);
-			when others =>
-				ddrios_addr <= addr(1);
-			end case;
-		end if;
-	end process;
-
 	ddrio_b: block
-		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
-		signal co : std_logic_vector(0 downto 3-1);
+		signal ddrs_creq : std_logic;
+		signal ddrs_breq : std_logic;
+		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
 
-		signal ddrios_id  : std_logic_vector(0 to 0);
-		signal ddrios_req : std_logic_vector(0 to 2**ddrios_id'length-1);
+		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
+		signal co : std_logic_vector(0 to 3-1);
 
 		function pencoder (
 			constant arg : std_logic_vector)
@@ -156,44 +145,40 @@ begin
 		end;
 	begin
 
-		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
-		ddrios_c <= mux (
-			i => 
-				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
-				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
-			s => ddrios_id);
-		ddrs_breq <= ddrios_creq(to_integer(ddrios_cid));
+--		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
+--		ddrios_c <= mux (
+--			i => 
+--				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
+--				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
+--			s => ddrios_id);
+--		ddrs_breq <= ddrios_creq(to_integer(ddrios_cid));
 
 		process (ddrs_clk)
 		begin
 			if rising_edge(ddrs_clk) then
-				if ddrs_ini='1'then
+				if sys_rst='1'then
 					ddrs_creq <= '0';
-				elsif ddrs_creq='0' then
-					if ddrs_crdy='1' then
-						if ddrs_breq='1' then
-							ddrs_creq <= '1';
-						end if;
-					end if;
+				elsif ddrs_breq='1' then
+					ddrs_creq <= (ddrs_crdy or not ddrs_rreq) and not qo(DDR_CLNMSIZE);
 				else
-					ddrs_creq <= not ddrs_rreq and ddrios_breq and not qo(DDR_CLMSIZE);
+					ddrs_creq <= '0';
 				end if;
 			end if;
 		end process;
 
-		ddrs_bnka <= resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE); 
-		ddrs_rowa <= resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_CLNMSIZE); 
-		ddrs_cola <= shift_left(resize(shift_right(unsigned(qo),0), DDR_CLMNSIZE), DDR_ADDRSIZE-DDR_CLNMSIZE); 
+		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
+		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_CLNMSIZE)); 
+		ddrs_cola <= std_logic_vector(shift_left(resize(unsigned(qo), DDR_CLNMSIZE), DDR_ADDRSIZE-DDR_CLNMSIZE)); 
 
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
 			stage_size => (
-				2 => DDR_BANKSIZE+1,
-				1 => DDR_ADDRSIZE+1,
+				2 => DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
+				1 => DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
 				0 => DDR_CLNMSIZE+1))
 		port map (
 			clk  => ddrs_clk,
-			load => ddrs_ini,
+			load => sys_rst,
 			ena  => ddrs_cas,
 			data => ddrs_addr,
 			qo   => qo,
