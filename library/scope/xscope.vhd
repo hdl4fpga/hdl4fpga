@@ -437,8 +437,8 @@ begin
 		bank_size => DDR_BANKSIZE,
 		addr_size => DDR_ADDRSIZE,
 		line_size => DDR_WORDSIZE,
-		word_size => DDR_WORDSIZE,
-		byte_size => DDR_BYTESIZE,
+--		word_size => 16, --DDR_WORDSIZE,
+--		byte_size => 8,--DDR_BYTESIZE,
 		tCP       => DDR_tCP)
 	port map (
 		sys_rst => sys_rst,
@@ -462,7 +462,7 @@ begin
 		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di  => ddrs_di,
-		sys_do_rdy(0) => ddrs_do_rdy,
+		sys_do_rdy => open, --ddrs_do_rdy,
 		sys_do  => ddrs_do,
 		sys_ref => ddrs_ref_req,
 

@@ -42,7 +42,8 @@ entity xdr is
 		sys_b  : in  std_logic_vector(bank_size-1 downto 0) := (others => '-');
 		sys_a  : in  std_logic_vector(addr_size-1 downto 0) := (others => '-');
 		sys_di_rdy : out std_logic;
-		sys_do_rdy : out std_logic_vector((word_size/byte_size)-1 downto 0);
+--		sys_do_rdy : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_do_rdy : out std_logic_vector(2-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;

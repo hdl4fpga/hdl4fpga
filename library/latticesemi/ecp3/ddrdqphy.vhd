@@ -9,11 +9,11 @@ entity ddrdqphy is
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
-		sys_cfgi : in  std_logic_vector(9-1 downto 0);
+		sys_cfgi : in  std_logic_vector(9-1 downto 0) := (others => '-');
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_dmt  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dmi  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dmt  : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
+		sys_dmi  : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqi  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
