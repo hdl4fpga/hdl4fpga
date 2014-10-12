@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity ddrphy is
 	generic (
+		data_phases : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		line_size : natural := 13;
@@ -14,27 +15,27 @@ entity ddrphy is
 		sys_sclk2x : in std_logic;
 		sys_eclk : in  std_logic;
 
-		sys_rst  : in  std_logic_vector(2-1 downto 0);
+		sys_rst  : in  std_logic_vector(data_phases-1 downto 0);
 		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
 		sys_cfgo : out std_logic_vector(1*(word_size/byte_size)-1 downto 0);
-		sys_cs   : in  std_logic_vector(2-1 downto 0) := (others => '0');
+		sys_cs   : in  std_logic_vector(data_phases-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
-		sys_b    : in  std_logic_vector((line_size/word_size)*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector((line_size/word_size)*addr_size-1 downto 0);
-		sys_cke  : in  std_logic_vector((line_size/word_size)-1 downto 0);
-		sys_ras  : in  std_logic_vector((line_size/word_size)-1 downto 0);
-		sys_cas  : in  std_logic_vector((line_size/word_size)-1 downto 0);
-		sys_we   : in  std_logic_vector((line_size/word_size)-1 downto 0);
-		sys_odt  : in  std_logic_vector((line_size/word_size)-1 downto 0);
-		sys_dmt  : in  std_logic_vector(2*line_size/byte_size-1 downto 0);
-		sys_dmi  : in  std_logic_vector(2*line_size/byte_size-1 downto 0);
-		sys_dmo  : out std_logic_vector(2*line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(2*word_size-1 downto 0);
-		sys_dqi  : in  std_logic_vector(2*line_size-1 downto 0);
-		sys_dqo  : out std_logic_vector(2*line_size-1 downto 0);
-		sys_dqsi : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(2*line_size/byte_size-1 downto 0);
-		sys_dqso : out std_logic_vector(2*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_b    : in  std_logic_vector(data_phases*bank_size-1 downto 0);
+		sys_a    : in  std_logic_vector(data_phases*addr_size-1 downto 0);
+		sys_cke  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_ras  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_cas  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_we   : in  std_logic_vector(data_phases-1 downto 0);
+		sys_odt  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_dmt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dmi  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(data_phases*word_size-1 downto 0);
+		sys_dqi  : in  std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dqsi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dqst : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_dqso : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic := '0';
@@ -257,9 +258,9 @@ begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
+		data_phases => data_phases,
 		bank_size => bank_size,
-		addr_size => addr_size,
-		line_size => 2)
+		addr_size => addr_size)
 	port map (
 		sys_sclk => sys_sclk,
 		sys_sclk2x => sys_sclk2x,
