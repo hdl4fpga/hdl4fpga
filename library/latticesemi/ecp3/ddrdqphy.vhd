@@ -15,10 +15,10 @@ entity ddrdqphy is
 		sys_dmt  : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqi  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqo  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqsi : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
+		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
 
 		ddr_dmt  : out std_logic;
@@ -114,10 +114,10 @@ begin
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => sys_dqo(i*line_size/byte_size+0),
-			qb0 => sys_dqo(i*line_size/byte_size+1),
-			qa1 => sys_dqo(i*line_size/byte_size+2),
-			qb1 => sys_dqo(i*line_size/byte_size+3));
+			qa0 => sys_dqi(i*line_size/byte_size+0),
+			qb0 => sys_dqi(i*line_size/byte_size+1),
+			qa1 => sys_dqi(i*line_size/byte_size+2),
+			qb1 => sys_dqi(i*line_size/byte_size+3));
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
@@ -137,10 +137,10 @@ begin
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_dqi(i*line_size/byte_size+0),
-			db0 => sys_dqi(i*line_size/byte_size+1),
-			da1 => sys_dqi(i*line_size/byte_size+2),
-			db1 => sys_dqi(i*line_size/byte_size+3),
+			da0 => sys_dqo(i*line_size/byte_size+0),
+			db0 => sys_dqo(i*line_size/byte_size+1),
+			da1 => sys_dqo(i*line_size/byte_size+2),
+			db1 => sys_dqo(i*line_size/byte_size+3),
 			q   => ddr_dqo(i));
 	end generate;
 
@@ -185,8 +185,8 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => sys_dqsi(0),
-			db1 => sys_dqsi(1),
+			db0 => sys_dqso(0),
+			db1 => sys_dqso(1),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,

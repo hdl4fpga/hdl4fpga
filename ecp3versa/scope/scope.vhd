@@ -15,7 +15,9 @@ architecture scope of ecp3versa is
 	constant addr_size : natural := 13;
 	constant col_size  : natural := 6;
 	constant nibble_size : natural := 4;
-	constant byte_size : natural := 8;
+	constant line_size : natural := 2*ddr3_dq'length;
+	constant word_size : natural := ddr3_dq'length;
+	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
 	constant data_bytes : natural := 2;
 
 	constant uclk_period : time := 10.0 ns;
@@ -44,12 +46,12 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dmi : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmt : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmo : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqt : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqo : std_logic_vector(data_phases*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dmi : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dmt : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dmo : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
+	signal ddrphy_dqi : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqt : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqo : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -165,7 +167,7 @@ begin
 	generic map (
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
-		LINE_SIZE => ddr3_dq'length,
+		LINE_SIZE => 2*ddr3_dq'length,
 		WORD_SIZE => ddr3_dq'length,
 		BYTE_SIZE => ddr3_dq'length/2)
 	port map (
