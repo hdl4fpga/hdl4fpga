@@ -17,7 +17,6 @@ architecture scope of ecp3versa is
 	constant nibble_size : natural := 4;
 	constant byte_size : natural := 8;
 	constant data_bytes : natural := 2;
-	constant data_size : natural := data_bytes*byte_size;
 
 	constant uclk_period : time := 10.0 ns;
 
@@ -43,7 +42,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_b : std_logic_vector(data_phases*ddr3_b'length-1 downto 0);
 	signal ddrphy_a : std_logic_vector(data_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(data_phases*data_phases*ddr3_dqs'length-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
@@ -139,7 +138,7 @@ begin
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
-		ddr_dqst => ddrphy_dqst(ddr3_a'length-1 downto 0),
+		ddr_dqst => ddrphy_dqst,
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
 		ddr_dqi  => ddrphy_dqi,
@@ -194,7 +193,7 @@ begin
 		sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
-		sys_odt => ddrphy_odt(0 downto 0),
+		sys_odt => ddrphy_odt,
 
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,
@@ -213,21 +212,21 @@ begin
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
-	mii_iob_e : entity hdl4fpga.mii_iob
-	generic map (
-		xd_len => 8)
-	port map (
-		mii_rxc  => phy1_rxc,
-		iob_rxdv => phy1_rx_dv,
-		iob_rxd  => phy1_rx_d,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => phy1_125clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
-		iob_txen => phy1_tx_en,
-		iob_txd  => phy1_tx_d,
-		iob_gtxclk => phy1_gtxclk);
+--	mii_iob_e : entity hdl4fpga.mii_iob
+--	generic map (
+--		xd_len => 8)
+--	port map (
+--		mii_rxc  => phy1_rxc,
+--		iob_rxdv => phy1_rx_dv,
+--		iob_rxd  => phy1_rx_d,
+--		mii_rxdv => mii_rxdv,
+--		mii_rxd  => mii_rxd,
+--
+--		mii_txc  => phy1_125clk,
+--		mii_txen => mii_txen,
+--		mii_txd  => mii_txd,
+--		iob_txen => phy1_tx_en,
+--		iob_txd  => phy1_tx_d,
+--		iob_gtxclk => phy1_gtxclk);
 
 end;
