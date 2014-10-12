@@ -33,17 +33,17 @@ architecture scope of ecp3versa is
 	signal ddrs_clks  : std_logic_vector(0 to 2-1);
 	signal ddr_lp_clk : std_logic;
 
-	signal ddrphy_rst : std_logic_vector(2-1 downto 0);
-	signal ddrphy_cke : std_logic_vector(2-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(2-1 downto 0);
-	signal ddrphy_ras : std_logic_vector(2-1 downto 0);
-	signal ddrphy_cas : std_logic_vector(2-1 downto 0);
-	signal ddrphy_we : std_logic_vector(2-1 downto 0);
-	signal ddrphy_odt : std_logic_vector(2-1 downto 0);
-	signal ddrphy_b : std_logic_vector(ddr3_b'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(ddr3_a'length-1 downto 0);
+	signal ddrphy_rst : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_cke : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_cs : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_ras : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_cas : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_we : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_odt : std_logic_vector(data_phases-1 downto 0);
+	signal ddrphy_b : std_logic_vector(data_phases*ddr3_b'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(data_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(data_phases*data_phases*ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(data_phases*ddr3_dm'length-1 downto 0);
@@ -134,12 +134,12 @@ begin
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
 		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b,
-		ddr_a    => ddrphy_a,
+		ddr_b    => ddrphy_b(ddr3_b'length-1 downto 0),
+		ddr_a    => ddrphy_a(ddr3_a'length-1 downto 0),
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
-		ddr_dqst => ddrphy_dqst,
+		ddr_dqst => ddrphy_dqst(ddr3_a'length-1 downto 0),
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
 		ddr_dqi  => ddrphy_dqi,
