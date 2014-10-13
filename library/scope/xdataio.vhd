@@ -50,7 +50,7 @@ entity dataio is
 		miitx_rdy  : in std_logic;
 		mii_a0   : out std_logic;
 		miitx_addr : in  std_logic_vector;
-		miitx_data : out std_logic_vector(2*DDR_LINESIZE-1 downto 0));
+		miitx_data : out std_logic_vector(DDR_LINESIZE-1 downto 0));
 		
 	constant page_num  : natural := 6;
 end;
@@ -196,18 +196,18 @@ begin
 		miitx_rdy  => miitx_rdy,
 		miitx_req  => miitx_req);
 
-	miitxmem_e : entity hdl4fpga.miitxmem
-	generic map (
-		bram_size => page_size,
-		data_size => 2*DDR_LINESIZE)
-	port map (
-		ddrs_clk => ddrs_clk,
-		ddrs_gnt => capture_rdy,
-		ddrs_di_rdy => ddrs_do_rdy,
-		ddrs_di => ddrs_do,
-
-		output_clk  => mii_txc,
-		output_a0   => miitx_a0,
-		output_addr => miitx_addr,
-		output_data => miitx_data);
+--	miitxmem_e : entity hdl4fpga.miitxmem
+--	generic map (
+--		bram_size => page_size,
+--		data_size => DDR_LINESIZE)
+--	port map (
+--		ddrs_clk => ddrs_clk,
+--		ddrs_gnt => capture_rdy,
+--		ddrs_di_rdy => ddrs_do_rdy,
+--		ddrs_di => ddrs_do,
+--
+--		output_clk  => mii_txc,
+--		output_a0   => miitx_a0,
+--		output_addr => miitx_addr,
+--		output_data => miitx_data);
 end;

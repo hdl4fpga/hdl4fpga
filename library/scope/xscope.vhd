@@ -8,7 +8,8 @@ entity scope is
 	generic (
 		constant DDR_STROBE   : string := "NONE";
 		constant DDR_STD      : natural;
-		constant DDR_DATAPHASES : natural :=  2;
+		constant DDR_DATAPHASES : natural :=  1;
+		constant DDR_CMNDPHASES : natural :=  2;
 		constant DDR_BANKSIZE : natural :=  3;
 		constant DDR_ADDRSIZE : natural := 13;
 		constant DDR_CLMNSIZE : natural :=  6;
@@ -37,18 +38,18 @@ entity scope is
 		ddr_we  : out std_logic;
 		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmi : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE-1 downto 0);
-		ddr_dqi : in std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
+		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
+		ddr_dqi : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
 		ddr_dqo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
-		ddr_sti : in std_logic_vector(DDR_DATAPHASES*(DDR_WORDSIZE/DDR_BYTESIZE)-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
@@ -105,9 +106,9 @@ architecture def of scope is
 	signal ddrs_rw  : std_logic;
 
 	signal ddrs_di_rdy : std_logic;
-	signal ddrs_di : std_logic_vector(0 to 32-1);
+	signal ddrs_di : std_logic_vector(0 to DDR_LINESIZE-1);
 	signal ddrs_do_rdy : std_logic;
-	signal ddrs_do : std_logic_vector(0 to 32-1);
+	signal ddrs_do : std_logic_vector(0 to DDR_LINESIZE-1);
 
 	signal dataio_rst : std_logic;
 	signal input_rdy : std_logic;
@@ -129,7 +130,7 @@ architecture def of scope is
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic;
 	signal miitx_addr : std_logic_vector(8-1 downto 0);
-	signal miitx_data : std_logic_vector(2*DDR_WORDSIZE-1 downto 0);
+	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
 	signal trdy : std_logic := '0';
@@ -269,7 +270,7 @@ begin
 		DDR_BANKSIZE => DDR_BANKSIZE,
 		DDR_ADDRSIZE => DDR_ADDRSIZE,
 		DDR_CLNMSIZE => DDR_CLMNSIZE,
-		DDR_LINESIZE => DDR_WORDSIZE)
+		DDR_LINESIZE => DDR_LINESIZE)
 	port map (
 		sys_rst   => dataio_rst,
 
@@ -433,12 +434,12 @@ begin
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		strobe    => DDR_STROBE,
-		data_phases => 2,
+		data_phases => DDR_DATAPHASES,
 		bank_size => DDR_BANKSIZE,
 		addr_size => DDR_ADDRSIZE,
-		line_size => DDR_WORDSIZE,
---		word_size => 16, --DDR_WORDSIZE,
---		byte_size => 8,--DDR_BYTESIZE,
+		line_size => DDR_LINESIZE,
+		word_size => DDR_WORDSIZE,
+		byte_size => DDR_BYTESIZE,
 		tCP       => DDR_tCP)
 	port map (
 		sys_rst => sys_rst,
