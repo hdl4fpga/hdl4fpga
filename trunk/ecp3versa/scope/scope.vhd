@@ -13,12 +13,9 @@ architecture scope of ecp3versa is
 	constant data_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant col_size  : natural := 6;
-	constant nibble_size : natural := 4;
-	constant line_size : natural := 2*ddr3_dq'length;
+	constant line_size : natural := 4*ddr3_dq'length;
 	constant word_size : natural := ddr3_dq'length;
 	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
-	constant data_bytes : natural := 2;
 
 	constant uclk_period : time := 10.0 ns;
 
@@ -44,14 +41,14 @@ architecture scope of ecp3versa is
 	signal ddrphy_b : std_logic_vector(data_phases*ddr3_b'length-1 downto 0);
 	signal ddrphy_a : std_logic_vector(data_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(data_phases*ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dmi : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmt : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dmo : std_logic_vector(data_phases*line_size/word_size*ddr3_dm'length-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqt : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
-	signal ddrphy_dqo : std_logic_vector(line_size/word_size*ddr3_dq'length-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_dqt : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -116,11 +113,12 @@ begin
 		DDR_tCP => (uclk_period*real(ddr_div))/real(ddr_mul),
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
+		DDR_DATAPHASES => 1,
 		DDR_BANKSIZE => ddr3_b'length,
 		DDR_ADDRSIZE => ddr3_a'length,
-		DDR_LINESIZE => ddr3_dq'length,
-		DDR_WORDSIZE => ddr3_dq'length,
-		DDR_BYTESIZE => ddr3_dq'length/2,
+		DDR_LINESIZE => line_size,
+		DDR_WORDSIZE => word_size,
+		DDR_BYTESIZE => byte_size,
 		xd_len  => 8)
 	port map (
 		sys_rst => scope_rst,

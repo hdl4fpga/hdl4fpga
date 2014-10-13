@@ -67,14 +67,14 @@ entity xdr is
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
+		xdr_dqt : out std_logic_vector(data_phases*line_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
+		xdr_sti  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_sto  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector((word_size/byte_size)*dqso_phases-1 downto 0) := (others => '-');
-		xdr_dqt : out std_logic_vector(data_phases*word_size-1 downto 0);
-		xdr_dqst : out std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0);
-		xdr_sti : in  std_logic_vector(data_phases*(word_size/byte_size)-1 downto 0) := (others => '-');
-		xdr_sto : out std_logic_vector((line_size/byte_size)*data_phases-1 downto 0) := (others => '-'));
+		xdr_dqso : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqst : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
 end;
