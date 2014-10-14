@@ -165,9 +165,9 @@ begin
 	generic map (
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
-		LINE_SIZE => 2*ddr3_dq'length,
-		WORD_SIZE => ddr3_dq'length,
-		BYTE_SIZE => ddr3_dq'length/2)
+		LINE_SIZE => line_size,
+		WORD_SIZE => word_size,
+		BYTE_SIZE => byte_size)
 	port map (
 		sys_sclk => '-',
 		sys_sclk2x => '-', 

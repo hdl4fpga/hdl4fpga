@@ -17,7 +17,7 @@ entity xdr is
 		sclk_phases : natural := 4;
 		sclk_edges  : natural := 2;
 		data_phases : natural := 2;
-		data_edges  : natural := 2;
+		data_edges  : natural := 1;
 		dqso_phases : natural := 2;
 
 		line_size : natural := 16;
