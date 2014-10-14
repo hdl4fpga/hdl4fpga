@@ -4,7 +4,8 @@ use ieee.numeric_std.all;
 
 entity ddrphy is
 	generic (
-		data_phases : natural := 2;
+		data_phases : natural := 1;
+		cmnd_phases : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		line_size : natural := 32;
@@ -15,25 +16,25 @@ entity ddrphy is
 		sys_sclk2x : in std_logic;
 		sys_eclk : in  std_logic;
 
-		sys_rst  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
 		sys_cfgo : out std_logic_vector(1*(word_size/byte_size)-1 downto 0);
-		sys_cs   : in  std_logic_vector(data_phases-1 downto 0) := (others => '0');
+		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
-		sys_b    : in  std_logic_vector(data_phases*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector(data_phases*addr_size-1 downto 0);
-		sys_cke  : in  std_logic_vector(data_phases-1 downto 0);
-		sys_ras  : in  std_logic_vector(data_phases-1 downto 0);
-		sys_cas  : in  std_logic_vector(data_phases-1 downto 0);
-		sys_we   : in  std_logic_vector(data_phases-1 downto 0);
-		sys_odt  : in  std_logic_vector(data_phases-1 downto 0);
+		sys_b    : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
+		sys_a    : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
+		sys_cke  : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_ras  : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_cas  : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_we   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_odt  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_dmt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dmi  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(data_phases*word_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_dqi  : in  std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 
@@ -63,16 +64,13 @@ architecture ecp3 of ddrphy is
 	subtype dline_word is std_logic_vector(data_phases*byte_size*line_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype d2line_word is std_logic_vector(byte_size*line_size/word_size/2-1 downto 0);
-	type d2line_vector is array (natural range <>) of d2line_word;
-
 	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 	subtype b2line_word is std_logic_vector(word_size/byte_size-1 downto 0);
 	type b2line_vector is array (natural range <>) of b2line_word;
 
-	subtype ciline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	subtype ciline_word is std_logic_vector(9-1 downto 0);
 	type ciline_vector is array (natural range <>) of ciline_word;
 
 	subtype coline_word is std_logic_vector(1-1 downto 0);
@@ -83,20 +81,6 @@ architecture ecp3 of ddrphy is
 		return dline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_d2linevector (
-		constant arg : std_logic_vector) 
-		return d2line_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : d2line_vector(arg'length/d2line_word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -177,20 +161,6 @@ architecture ecp3 of ddrphy is
 	end;
 
 	function to_stdlogicvector (
-		constant arg : d2line_vector)
-		return std_logic_vector is
-		variable dat : d2line_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := val sll arg(arg'left)'length;
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
 		constant arg : bline_vector)
 		return std_logic_vector is
 		variable dat : bline_vector(arg'length-1 downto 0);
@@ -232,7 +202,7 @@ architecture ecp3 of ddrphy is
 		return val;
 	end;
 
-	signal sdmt : b2line_vector(word_size/byte_size-1 downto 0);
+	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
 
@@ -249,7 +219,7 @@ architecture ecp3 of ddrphy is
 	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt : dline_vector(word_size/byte_size-1 downto 0);
+	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
@@ -258,7 +228,7 @@ begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
-		data_phases => data_phases,
+		cmnd_phases => cmnd_phases,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -287,7 +257,7 @@ begin
 		ddr_a   => ddr_a);
 
 	sdmi <= to_blinevector(sys_dmi);
-	sdmt <= to_b2linevector(sys_dmt);
+	sdmt <= to_blinevector(sys_dmt);
 	sdqt <= to_dlinevector(sys_dqt);
 	sdqi <= to_dlinevector(sys_dqi);
 	sdqsi <= to_b2linevector(sys_dqso);
@@ -297,19 +267,19 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			line_size => line_size,
+			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
 			sys_rst  => sys_rst(0),
 			sys_sclk => sys_sclk,
 			sys_eclk => sys_eclk,
 			sys_rw   => sys_rw,
---			sys_cfgi => (others => '-'), --cfgi(i),
+			sys_cfgi => cfgi(i),
 			sys_cfgo => cfgo(i),
 
---			sys_dmt => (others => '-'), --sdmt(i),
---			sys_dmi => (others => '-'), --sdmi(i),
-			sys_dmo => open, --sdmo(i),
+			sys_dmt => sdmt(i),
+			sys_dmi => sdmi(i),
+			sys_dmo => sdmo(i),
 
 			sys_dqi  => sdqi(i),
 			sys_dqt  => sdqt(i),
@@ -319,7 +289,7 @@ begin
 			sys_dqst => sdqst(i),
 
 			ddr_dqi  => ddqi(i),
-			ddr_dqt  => open, --ddqt(i),
+			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
 
 			ddr_dmi  => ddr_dm(i),
