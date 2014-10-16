@@ -31,7 +31,7 @@ entity xdr_init is
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
 		xdr_init_cke : out std_logic;
-		xdr_init_odt : out std_logic;
+		xdr_init_odt : out std_logic := '0';
 		xdr_init_cs  : out std_logic;
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
@@ -59,6 +59,15 @@ entity xdr_init is
 	constant dst_cas : natural := dst_b'high+2;
 	constant dst_we  : natural := dst_b'high+1;
 	subtype  dst_o   is natural range dst_cs+xdrinitout_size downto dst_ras+1;
+
+	subtype src_b01 is natural range 2 downto 1;
+	subtype src_cl  is natural range src_b01'high + xdr_init_cl'length  downto src_b01'high+1;
+	subtype src_bl  is natural range src_cl'high  + xdr_init_bl'length  downto src_cl'high+1;
+	subtype src_wr  is natural range src_bl'high  + xdr_init_wr'length  downto src_bl'high+1;
+	subtype src_rtt is natural range src_wr'high  + xdr_init_rtt'length downto src_wr'high+1;
+	subtype src_cwl is natural range src_rtt'high + xdr_init_cwl'length  downto src_rtt'high+1;
+	subtype src_pl  is natural range src_cwl'high + xdr_init_pl'length  downto src_cwl'high+1;
+	constant src_ods : natural := xdrinitods_size + src_pl'high;
 
 	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
 	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
@@ -89,12 +98,12 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 0 --
 	--------------------------
 
-	constant bl   : field_desc := (dbase =>  0, sbase => 1, size => 3);
+	constant bl   : field_desc := (dbase =>  0, sbase => src_bl'low, size => 3);
 	constant bt   : field_desc := (dbase =>  3, sbase => 1, size => 1);
-	constant cl   : field_desc := (dbase =>  4, sbase => 1, size => 3);
+	constant cl   : field_desc := (dbase =>  4, sbase => src_cl'low, size => 3);
 	constant tm   : field_desc := (dbase =>  7, sbase => 1, size => 1);
 	constant rdll : field_desc := (dbase =>  8, sbase => 1, size => 1);
-	constant wr   : field_desc := (dbase =>  9, sbase => 1, size => 3);
+	constant wr   : field_desc := (dbase =>  9, sbase => src_wr'low, size => 3);
 	constant pd   : field_desc := (dbase => 12, sbase => 1, size => 1);
 
 	-- DDR3 Mode Register 1 --
@@ -112,7 +121,7 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 2 --
 	--------------------------
 
-	constant cwl  : field_desc := (dbase => 3, sbase => 0, size => 3);
+	constant cwl  : field_desc := (dbase => 3, sbase => src_cwl'low, size => 3);
 	constant asr  : field_desc := (dbase => 6, sbase => 0, size => 1);
 	constant srt  : field_desc := (dbase => 7, sbase => 0, size => 1);
 	constant rttw : field_desc := (dbase => 9, sbase => 0, size => 2);
@@ -120,13 +129,14 @@ architecture ddr3 of xdr_init is
 	-- DDR3 Mode Register 3 --
 	--------------------------
 
-	constant rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
+	constant mpr_rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
+	constant mpr     : field_desc := (dbase => 2, sbase => 0, size => 1);
 
 	constant mr : ddr3mr_vector(0 to 3) := ( 
-		(clr(rttw) or mov(cwl)),
-		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
-		(clr(edll) or mov(ods) or mov(rtt) or mov(al) or set(wl)   or mov(tdqs)),
-		(mov(bl)   or set(bt)  or mov(cl)  or clr(tm) or set(edll) or mov(wr) or mov(pd)));
+		(mov(bl)   or clr(bt)  or mov(cl) or clr(tm)  or set(rdll) or mov(wr) or mov(pd)),
+		(clr(tdqs) or clr(wl)  or clr(al) or clr(rtt) or clr(edll)),
+		(clr(rttw) or clr(srt) or clr(asr) or mov(cwl)),
+		(clr(mpr)  or clr(mpr_rf)));
 
 	constant mrx : std_logic_vector(dst_word'range) := (others => '-');
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
@@ -205,15 +215,14 @@ architecture ddr3 of xdr_init is
 
 begin
 
-	src <=
-		xdr_init_ods & 
-		xdr_init_pl  & 
-		xdr_init_cwl &
-		xdr_init_rtt & 
-		xdr_init_wr  & 
-		xdr_init_bl  &
-		xdr_init_cl  &
-		"10";
+	src(src_b01) <= "10";
+	src(src_cl ) <= "001"; --xdr_init_cl;
+	src(src_bl ) <= "001"; --xdr_init_bl;
+	src(src_rtt) <= xdr_init_rtt;
+	src(src_cwl) <= "001"; --xdr_init_cwl;
+	src(src_wr) <= "101"; --xdr_init_cwl;
+	src(src_pl ) <= xdr_init_pl;
+	src(src_ods) <= xdr_init_ods;
 
 	process (xdr_init_clk)
 	begin
@@ -273,6 +282,7 @@ begin
 
 	xdr_init_a   <= dst(dst_a);
 	xdr_init_b   <= dst(dst_b);
+	xdr_init_cs  <= dst(dst_cs);
 	xdr_init_ras <= dst(dst_ras);
 	xdr_init_cas <= dst(dst_cas);
 	xdr_init_we  <= dst(dst_we);

@@ -147,6 +147,7 @@ begin
 
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
+	xdr_init_req <= rst;
 	xdr_init_du : entity hdl4fpga.xdr_init
 	generic map (
 		timers => (

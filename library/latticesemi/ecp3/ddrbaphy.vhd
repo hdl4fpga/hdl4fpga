@@ -59,7 +59,7 @@ begin
 		port map (
 			sclk => sys_sclk,
 			da => sys_b(bank_size*0+i),
-			db => sys_b(bank_size*1+i),
+			db => '1', --sys_b(bank_size*1+i),
 			q  => ddr_b(i));
 	end generate;
 
@@ -68,7 +68,7 @@ begin
 		port map (
 			sclk => sys_sclk,
 			da => sys_a(addr_size*0+i),
-			db => sys_a(addr_size*1+i),
+			db => '1', --sys_a(addr_size*1+i),
 			q => ddr_a(i));
 	end generate;
 
@@ -76,21 +76,21 @@ begin
 	port map (
 		sclk => sys_sclk,
 		da => sys_ras(0),
-		db => sys_ras(1),
+		db => '1', --sys_ras(1),
 		q  => ddr_ras);
 
 	cas_i :oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_cas(0),
-		db => sys_cas(1),
+		db => '1', --sys_cas(1),
 		q  => ddr_cas);
 
 	we_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_we(0),
-		db => sys_we(1),
+		db => '1', --sys_we(1),
 		q  => ddr_we);
 
 	ck_i : oddrxd1
@@ -104,28 +104,28 @@ begin
 	port map (
 		sclk => sys_sclk,
 		da => sys_cs(0),
-		db => sys_cs(1),
+		db => '1', --sys_cs(0),
 		q  => ddr_cs);
 
 	cke_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_cke(0),
-		db => sys_cke(1),
+		db => sys_cke(0),
 		q  => ddr_cke);
 
 	odt_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_odt(0),
-		db => sys_odt(1),
+		db => sys_odt(0),
 		q  => ddr_odt);
 
 	rst_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
 		da => sys_rst(0),
-		db => sys_rst(1),
+		db => sys_rst(0),
 		q  => ddr_rst);
 
 end;

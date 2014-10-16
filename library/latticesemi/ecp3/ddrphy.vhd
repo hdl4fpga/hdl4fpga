@@ -219,6 +219,7 @@ begin
 		ddr_ck  => ddr_ck,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
+		ddr_cs => ddr_cs,
 		ddr_ras => ddr_ras,
 		ddr_cas => ddr_cas,
 		ddr_we  => ddr_we,
