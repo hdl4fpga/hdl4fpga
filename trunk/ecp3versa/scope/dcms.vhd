@@ -51,7 +51,7 @@ begin
 			dcms_lckd <= '0';
 		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
-				dcms_lckd <= ddr_lckd and video_lckd;
+				dcms_lckd <= ddr_lckd;-- and video_lckd;
 			end if;
 			dcm_rst <= '0';
 		end if;
@@ -194,6 +194,7 @@ begin
 			eclk_stop <= not q(0);
 		end process;
 
+		ddr_lckd <= not eclk_stop;
 		eclksynca_i : eclksynca
 		port map (
 			stop  => eclk_stop,

@@ -74,8 +74,8 @@ architecture scope of ecp3versa is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural :=11;
-	constant ddr_div : natural := 4;
+	constant ddr_mul : natural := 4;
+	constant ddr_div : natural := 2;
 
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -84,7 +84,7 @@ architecture scope of ecp3versa is
 	signal ddr_eclk  : std_logic;
 begin
 
-	sys_rst <= not fpga_gsrn;
+	sys_rst <= fpga_gsrn;
 
 	uclk_i : entity hdl4fpga.idbuf 
 	port map (
@@ -112,6 +112,7 @@ begin
 	scope_rst <= not dcm_lckd;
 	phy1_rst <= dcm_lckd;
 
+	ddrs_clks <= (others => ddr_sclk);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => (uclk_period*real(ddr_div))/real(ddr_mul),
@@ -202,7 +203,8 @@ begin
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,
 		ddr_cke => ddr3_cke,
-		ddr_odt => ddr3_odt,
+		ddr_odt => open, --ddr3_odt,
+		ddr_cs => ddr3_cs,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,
 		ddr_we  => ddr3_we,
