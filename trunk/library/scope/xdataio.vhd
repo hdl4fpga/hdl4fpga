@@ -87,16 +87,16 @@ architecture def of dataio is
 begin
 
 	mii_a0 <= miitx_a0;
-	datai_e : entity hdl4fpga.datai
-	port map (
-		input_clk => input_clk,
-		input_dat => input_dat,
-		input_req => datai_req, 
-
-		output_clk => ddrs_clk,
-		output_rdy => datai_brst_req,
-		output_req => ddrs_di_rdy,
-		output_dat => ddrs_di);
+--	datai_e : entity hdl4fpga.datai
+--	port map (
+--		input_clk => input_clk,
+--		input_dat => input_dat,
+--		input_req => datai_req, 
+--
+--		output_clk => ddrs_clk,
+--		output_rdy => datai_brst_req,
+--		output_req => ddrs_di_rdy,
+--		output_dat => ddrs_di);
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
@@ -167,8 +167,8 @@ begin
 		end process;
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
-		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_CLNMSIZE)); 
-		ddrs_cola <= std_logic_vector(shift_left(resize(unsigned(qo), DDR_CLNMSIZE), DDR_ADDRSIZE-DDR_CLNMSIZE)); 
+		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
+		ddrs_cola <= std_logic_vector(resize(shift_left(unsigned(qo), DDR_ADDRSIZE-DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 
 		dcounter_e : entity hdl4fpga.counter
 		generic map (

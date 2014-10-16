@@ -14,9 +14,9 @@ entity dcms is
 		sys_clk  : in  std_logic;
 		input_clk  : out std_logic;
 
-		ddr_clk2 : out std_logic;
-		ddr_clk0 : out std_logic;
-		ddr_clk90 : out std_logic;
+		ddr_sclk2x : out std_logic;
+		ddr_eclk : out std_logic;
+		ddr_sclk : out std_logic;
 
 		video_clk0  : out std_logic;
 		video_clk90 : out std_logic;
@@ -125,14 +125,14 @@ begin
 			sys_clk  : in  std_logic;
 			ddr_sclk : out std_logic;
 			ddr_eclk : out std_logic;
-			ddr_eclk90 : out std_logic;
+			ddr_sclk2x : out std_logic;
 			ddr_lckd : out std_logic);
 		port map (
 			sys_rst => sys_rst,
 			sys_clk => sys_clk,
-			ddr_sclk => ddr_clk2,
-			ddr_eclk => ddr_clk0,
-			ddr_eclk90 => ddr_clk90,
+			ddr_sclk => ddr_sclk,
+			ddr_sclk2x => ddr_sclk2x,
+			ddr_eclk => ddr_eclk,
 			ddr_lckd => ddr_lckd);
 			
 		attribute frequency_pin_clkop : string; 
@@ -144,13 +144,11 @@ begin
 		attribute frequency_pin_clki  of pll_i : label is "100.000000";
 		attribute frequency_pin_clkok of pll_i : label is "200.000000";
 
-		signal pll_clkos : std_logic;
 		signal pll_clkfb : std_logic;
 		signal pll_lck   : std_logic;
 		signal eclk_stop : std_logic;
 		signal eclk : std_logic;
 		signal sclk : std_logic;
-		signal rst  : std_logic;
 	begin
 		pll_i : ehxpllf
 		generic map (
@@ -177,40 +175,30 @@ begin
 			fda3   => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
 			clkintfb => pll_clkfb,
 			clkfb => pll_clkfb,
-			clkop => pll_clkos, 
-			clkos => ddr_eclk90,
-			clkok => open,
+			clkop => ddr_sclk2x, 
+			clkos => eclk,
+			clkok => sclk,
 			clkok2 => open,
 
 			lock  => pll_lck);
 
-		rst <= sys_rst;
-		process (rst, sclk)
+		ddr_sclk <= sclk;
+		process (pll_lck, sclk)
 			variable q : std_logic_vector(0 to 1);
 		begin
-			if rst='1' then
+			if pll_lck='0' then
 				q := (others => '0');
 			elsif rising_edge(sclk) then
 				q := q(1) & '1';
 			end if;
-			eclk_stop <= q(0);
+			eclk_stop <= not q(0);
 		end process;
 
 		eclksynca_i : eclksynca
 		port map (
 			stop  => eclk_stop,
-			eclki => pll_clkos,
-			eclko => eclk);
-
-		clkdiv_i : clkdivb
-		port map (
-			release => eclk_stop,
-			rst  => rst,
-			clki => eclk,
-			cdiv1 => open,
-			cdiv2 => ddr_sclk,
-			cdiv4 => open,
-			cdiv8 => open);
+			eclki => eclk,
+			eclko => ddr_eclk);
 
 	end block;
 
