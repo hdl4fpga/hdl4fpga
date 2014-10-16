@@ -18,8 +18,8 @@ entity ddrdqphy is
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
-		sys_dqst : in  std_logic_vector(line_size/byte_size/2-1 downto 0);
+		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmi  : in  std_logic;
@@ -176,8 +176,8 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => sys_dqst(0),
-			ta => sys_dqst(1),
+			db => sys_dqst(2*0),
+			ta => sys_dqst(2*1),
 			dqstclk => dqstclk,
 			dqsw => dqsw,
 			q => ddr_dqst);
@@ -185,7 +185,7 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => sys_dqso(0),
+			db0 => sys_dqso(2*0),
 			db1 => sys_dqso(1),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,

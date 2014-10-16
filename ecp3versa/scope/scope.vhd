@@ -79,6 +79,9 @@ architecture scope of ecp3versa is
 
 	constant r : natural := 0;
 	constant f : natural := 1;
+	signal ddr_sclk : std_logic;
+	signal ddr_sclk2x : std_logic;
+	signal ddr_eclk  : std_logic;
 begin
 
 	sys_rst <= not fpga_gsrn;
@@ -99,8 +102,9 @@ begin
 		sys_rst => sys_rst,
 		sys_clk => uclk,
 		input_clk => input_clk,
-		ddr_clk0 => ddrs_clks(0),
-		ddr_clk90 => ddrs_clks(1),
+		ddr_eclk =>ddr_eclk,
+		ddr_sclk => ddr_sclk, 
+		ddr_sclk2x => ddr_sclk2x, 
 		video_clk0 => video_clk,
 		video_clk90 => video_clk90,
 		dcms_lckd => dcm_lckd);
@@ -169,9 +173,9 @@ begin
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
-		sys_sclk => '-',
-		sys_sclk2x => '-', 
-		sys_eclk => '-',
+		sys_sclk => ddr_sclk,
+		sys_sclk2x => ddr_sclk2x, 
+		sys_eclk => ddr_eclk,
 
 		sys_rw => 'U',
 		sys_rst => ddrphy_rst, 

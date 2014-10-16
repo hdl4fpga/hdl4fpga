@@ -283,7 +283,7 @@ begin
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
-	xdr_dqo <= xdr_combclks(xdr_sch_dqs, sclk_phases, dqso_phases);
+--	xdr_dqo <= xdr_combclks(xdr_sch_dqs, sclk_phases, dqso_phases);
 
 	xdr_win_dqs <= (others => xdr_sch_rwn(0));
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));
