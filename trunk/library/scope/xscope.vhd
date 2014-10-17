@@ -161,20 +161,16 @@ begin
 --		end if;
 --	end process;
 
+	input_req <= ddr_ini and not input_rdy;
 	process (input_clk)
 		constant n : natural := 15;
 		variable r : unsigned(0 to n);
 	begin
 		if rising_edge(input_clk) then
 			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
-			r := r xor (r'range => '1');
-			--r := r + 1;
+			r := r + 1;
 			if ddr_ini='0' then
-				input_req <= '0';
-				r := x"ff00";
-			--	r := to_unsigned(61, r'length);
-			elsif input_rdy='0' then
-				input_req <= '1';
+				r := to_unsigned(61, r'length);
 			end if;
 		end if;
 	end process;

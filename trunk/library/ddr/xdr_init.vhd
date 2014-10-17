@@ -210,16 +210,16 @@ architecture ddr3 of xdr_init is
 		end loop;
 		report "Wrong command yyy"
 		severity ERROR;
-		return (dst => val, id => pgm(i).id);
+		return (dst => val, id => pgm(0).id);
 	end;
 
 begin
 
 	src(src_b01) <= "10";
-	src(src_cl ) <= "001"; --xdr_init_cl;
+	src(src_cl ) <= "010"; --xdr_init_cl;
 	src(src_bl ) <= "001"; --xdr_init_bl;
 	src(src_rtt) <= xdr_init_rtt;
-	src(src_cwl) <= "001"; --xdr_init_cwl;
+	src(src_cwl) <= "000"; --xdr_init_cwl;
 	src(src_wr)  <= "101"; --xdr_init_cwl;
 	src(src_pl ) <= xdr_init_pl;
 	src(src_ods) <= xdr_init_ods;
