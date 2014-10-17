@@ -39,7 +39,7 @@ package xdr_param is
 			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
 	end component;
 
-	type tmrk_ids is (ANY, M6T, M107);
+	type tmrk_ids is (ANY, M6T, M15E);
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
 	type cltabs_ids  is (STRT,  RWNT);
@@ -249,7 +249,7 @@ package body xdr_param is
 
 	constant tmark_db : tmark_tab (1 to 2) :=
 		tmark_record'(mark => M6T,  stdr => 1) &
-		tmark_record'(mark => M107, stdr => 3);
+		tmark_record'(mark => M15E, stdr => 3);
 
 	type latency_record is record
 		stdr   : positive;
@@ -325,16 +325,16 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72 ns) &
 		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
 		timing_record'(mark => M6T,  param => tREFI, value =>  7 us) &
-		timing_record'(mark => M107, param => tREFI, value =>  7 us) &
-		timing_record'(mark => M107, param => tPreRST, value => 200 us) &
-		timing_record'(mark => M107, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M107, param => tWR,   value => 15 ns) &
-		timing_record'(mark => M107, param => tRCD,  value => 13.91 ns) &
-		timing_record'(mark => M107, param => tRP,   value => 13.91 ns) &
-		timing_record'(mark => M107, param => tMRD,  value => 15 ns) &
-		timing_record'(mark => M107, param => tRFC,  value => 110 ns) &
-		timing_record'(mark => M107, param => tXPR,  value => 110 ns + 10 ns) &
-		timing_record'(mark => M107, param => tREFI, value =>  7.8 us);
+		timing_record'(mark => M15E, param => tREFI, value =>  7 us) &
+		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
+		timing_record'(mark => M15E, param => tWR,   value => 15 ns) &
+		timing_record'(mark => M15E, param => tRCD,  value => 13.91 ns) &
+		timing_record'(mark => M15E, param => tRP,   value => 13.91 ns) &
+		timing_record'(mark => M15E, param => tMRD,  value => 15 ns) &
+		timing_record'(mark => M15E, param => tRFC,  value => 110 ns) &
+		timing_record'(mark => M15E, param => tXPR,  value => 110 ns + 10 ns) &
+		timing_record'(mark => M15E, param => tREFI, value =>  7.8 us);
 
 	constant cnfglat_db : cnfglat_tab :=
 
@@ -957,7 +957,7 @@ package body xdr_param is
 		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
 		val.bank := (others => '1');
 		for i in dat'range loop
-			if val.addr'high >= i and  i <= val.addr'low then
+			if val.addr'low <= i and i <= val.addr'high then
 				val.addr(i) := 1;
 				if dat(i) = '1' then
 					val.addr(i) := 2;

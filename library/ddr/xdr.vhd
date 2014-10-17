@@ -8,7 +8,7 @@ use hdl4fpga.xdr_param.all;
 entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
-		mark : tmrk_ids := M107;
+		mark : tmrk_ids := M15E;
 		tCP  : time := 6.0 ns;
 
 		bank_size : natural :=  2;
