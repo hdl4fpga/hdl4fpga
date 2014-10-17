@@ -220,7 +220,7 @@ begin
 	src(src_bl ) <= "001"; --xdr_init_bl;
 	src(src_rtt) <= xdr_init_rtt;
 	src(src_cwl) <= "001"; --xdr_init_cwl;
-	src(src_wr) <= "101"; --xdr_init_cwl;
+	src(src_wr)  <= "101"; --xdr_init_cwl;
 	src(src_pl ) <= xdr_init_pl;
 	src(src_ods) <= xdr_init_ods;
 
