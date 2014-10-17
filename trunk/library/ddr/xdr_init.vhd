@@ -11,7 +11,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25);
+		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25, TMR_MOD => 100);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
@@ -159,7 +159,7 @@ architecture ddr3 of xdr_init is
 		(ddr3_clmr + mr2, TMR_MRD),
 		(ddr3_clmr + mr3, TMR_MRD),
 		(ddr3_clmr + mr1, TMR_MRD),
-		(ddr3_clmr + mr0, TMR_MRD),
+		(ddr3_clmr + mr0, TMR_MOD),
 		(ddr3_czqc + ddr3_a10, TMR_ZQINIT));
 
 	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
@@ -185,7 +185,7 @@ architecture ddr3 of xdr_init is
 					val := (others => '-');
 					val(dst_cmd) := ddr3_cnop.id;
 					return (dst => val, id => pgm(i).id);
-				when TMR_MRD =>
+				when TMR_MRD|TMR_MOD =>
 					val := (others  => '0');
 					for j in a1.addr'range loop
 						if mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j) /= 0 then
@@ -194,14 +194,14 @@ architecture ddr3 of xdr_init is
 					end loop;
 					val(dst_cmd) := pgm(i).ccmd.cmd;
 					val(dst_b)   := pgm(i).ccmd.bank;
-					return (dst => val, id => TMR_MRD);
+					return (dst => val, id => pgm(i).id);
 				when TMR_ZQINIT =>
 					for j in a1.addr'range loop
 						if pgm(i).ccmd.addr(j) /= 0 then
 							val(j) := src(pgm(i).ccmd.addr(j));
 						end if;
 					end loop;
-					return (dst => val, id => TMR_ZQINIT);
+					return (dst => val, id => pgm(i).id);
 				when others =>
 					report "Wrong command"
 					severity ERROR;
@@ -210,7 +210,7 @@ architecture ddr3 of xdr_init is
 		end loop;
 		report "Wrong command yyy"
 		severity ERROR;
-		return (dst => val, id => TMR_RST);
+		return (dst => val, id => pgm(i).id);
 	end;
 
 begin
