@@ -155,6 +155,7 @@ begin
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
 			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
+			TMR_MOD  => xdr_latency(stdr, MODu),
 			TMR_DLL  => xdr_latency(stdr, cDLL),
 			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
 			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),

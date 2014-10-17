@@ -172,7 +172,7 @@ package xdr_param is
 		id : std_logic_vector(3 downto 0);
 	end record;
 
-	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_DLL, TMR_ZQINIT, TMR_REF);
+	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
 	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY);
 	type timer_vector is array (TMR_IDs) of natural;
 
@@ -305,6 +305,7 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
 		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
 		latency_record'(stdr => 3, param => MRD,   value =>   4) &
+		latency_record'(stdr => 3, param => MODu,  value =>  12) &
 		latency_record'(stdr => 3, param => XPR,   value =>   5) &
 		latency_record'(stdr => 3, param => WIDL,  value =>   8);
 
