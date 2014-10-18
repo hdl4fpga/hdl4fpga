@@ -101,7 +101,6 @@ begin
 	datai_req <= not sys_rst and not capture_rdy;
 
 	ddrio_b: block
-		signal ddrs_creq : std_logic;
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
 
@@ -142,7 +141,7 @@ begin
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
 --			s => ddrios_id);
---		ddrs_breq <= ddrios_creq(to_integer(ddrios_cid));
+		ddrs_breq <= datai_brst_req;
 
 		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 		process (ddrs_clk)

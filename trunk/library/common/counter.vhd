@@ -56,15 +56,13 @@ begin
 		end;
 
 		constant size : natural := csize(i+1)-csize(i);
-		signal   cntr : unsigned(csize(i) to csize(i)+size-1);
+		signal   cntr : unsigned(csize(i)+size-1 downto csize(i));
 
 	begin
 
 		cntr_p : process (clk)
-			variable csize : natural_vector(stage_size'length downto 0) := (others => 0);
 		begin
 			if rising_edge(clk) then
-				csize(stage_size'length downto 1) := stage_size;
 				if load='1' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif en(i)='1' then

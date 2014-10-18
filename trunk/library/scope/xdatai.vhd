@@ -71,10 +71,6 @@ begin
 	end process;
 
 	wr_ena <= demux(wr_sel(1 to wr_sel'right));
---	wr_dec_e: entity hdl4fpga.demux 
---	port map (
---		s => wr_sel,
---		o => wr_ena);
 
 	ram_g : for i in 0 to output_dat'length/input_dat'length-1 generate
 		fifo_e : entity hdl4fpga.dpram
