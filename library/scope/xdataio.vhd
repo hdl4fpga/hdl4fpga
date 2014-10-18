@@ -69,8 +69,6 @@ architecture def of dataio is
 
 	signal datai_req : std_logic;
 
-	signal ddrios_ini : std_logic;
-	signal ddrios_eoc : std_logic;
 	signal ddrios_brst_req : std_logic;
 
 	signal vsync_erq : std_logic;
@@ -87,42 +85,20 @@ architecture def of dataio is
 begin
 
 	mii_a0 <= miitx_a0;
---	datai_e : entity hdl4fpga.datai
---	port map (
---		input_clk => input_clk,
---		input_dat => input_dat,
---		input_req => datai_req, 
---
---		output_clk => ddrs_clk,
---		output_rdy => datai_brst_req,
---		output_req => ddrs_di_rdy,
---		output_dat => ddrs_di);
+	datai_e : entity hdl4fpga.datai
+	port map (
+		input_clk => input_clk,
+		input_dat => input_dat,
+		input_req => datai_req, 
+
+		output_clk => ddrs_clk,
+		output_rdy => datai_brst_req,
+		output_req => ddrs_di_rdy,
+		output_dat => ddrs_di);
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
 	datai_req <= not sys_rst and not capture_rdy;
-
-	ddrios_ini <= 
-		'1' when sys_rst='1' else
-		'1' when input_req='0' else
-		ddrios_eoc when capture_rdy='0' else
-		buff_ini or ddrios_eoc when false else
-		ddrios_eoc;
-
-	process (ddrs_clk)
-	begin
-		if rising_edge(ddrs_clk) then
-			if sys_rst='1' then
-				capture_rdy <= '0';
-			elsif input_req='0' then
-				capture_rdy <= '0';
-			elsif capture_rdy='0' then
-				capture_rdy <= ddrios_eoc;
-			else
-				capture_rdy <= '1';
-			end if;
-		end if;
-	end process;
 
 	ddrio_b: block
 		signal ddrs_creq : std_logic;
@@ -145,6 +121,21 @@ begin
 		end;
 	begin
 
+		process (ddrs_clk)
+		begin
+			if rising_edge(ddrs_clk) then
+				if sys_rst='1' then
+					capture_rdy <= '0';
+				elsif input_req='0' then
+					capture_rdy <= '0';
+				elsif capture_rdy='0' then
+					capture_rdy <= co(0);
+				else
+					capture_rdy <= '1';
+				end if;
+			end if;
+		end process;
+
 --		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
 --		ddrios_c <= mux (
 --			i => 
@@ -153,6 +144,7 @@ begin
 --			s => ddrios_id);
 --		ddrs_breq <= ddrios_creq(to_integer(ddrios_cid));
 
+		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 		process (ddrs_clk)
 		begin
 			if rising_edge(ddrs_clk) then
@@ -168,7 +160,7 @@ begin
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-		ddrs_cola <= std_logic_vector(resize(shift_left(unsigned(qo), DDR_ADDRSIZE-DDR_CLNMSIZE), DDR_ADDRSIZE)); 
+		ddrs_cola <= std_logic_vector(resize(shift_left (unsigned(qo),  DDR_ADDRSIZE-DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
