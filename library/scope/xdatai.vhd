@@ -41,13 +41,13 @@ begin
 		variable addr : std_logic_vector(0 to fifo_size-1) := (others => '0');
 	begin
 		if rising_edge(input_clk) then
-			if input_req='1' then
+			if input_req='0' then
 				wr_addr <= (others => '0');
 				wr_sel  <= (others => '0');
 				addr    := (others => '0');
 			else
 				wr_addr <= addr;
-				wr_sel  <= wr_sel + 1;
+				wr_sel  <= std_logic_vector(unsigned(wr_sel) + 1);
 				if wr_sel(0)='1' then
 					wr_sel(0) <= '0';
 					addr := inc(gray(addr));
@@ -57,22 +57,24 @@ begin
 	end process;
 
 	process (output_clk)
-		variable addr : std_logic_vector(0 to fifo_size-1) := (others => '0');
+		variable rst  : std_logic_vector(0 to 1);
+		variable addr : std_logic_vector(0 to fifo_size-1);
 	begin
 		if rising_edge(output_clk) then
-				addr := (others => '0');
-			if output_req='1' then
-				if wr_addr /= rd_addr then
-					addr := inc(gray(addro));
-				end if;
+			if rst(0)='0' then
+				rd_addr <= (others => '0');
+			elsif output_req='1' then
+				rd_addr <= inc(gray(rd_addr));
 			end if;
+			rst := rst(1 to 1) & input_req;
 		end if;
 	end process;
 
-	wr_dec_e: entity hdl4fpga.demux 
-	port map (
-		s => wr_sel,
-		o => wr_ena);
+	wr_ena <= demux(wr_sel(1 to wr_sel'right));
+--	wr_dec_e: entity hdl4fpga.demux 
+--	port map (
+--		s => wr_sel,
+--		o => wr_ena);
 
 	ram_g : for i in 0 to output_dat'length/input_dat'length-1 generate
 		fifo_e : entity hdl4fpga.dpram
@@ -92,12 +94,12 @@ begin
 	begin
 		data := (others => '-');
 		for i in rd_data'range loop
-			data := data sll wr_data(0)'length;
-			data(wr_data(0)'range) := wr_data(i);
+			data := data sll rd_data(0)'length;
+			data(rd_data(0)'range) := rd_data(i);
 		end loop;
 		output_dat <= data;
 	end process;
 
-	output_rdy <= wr_addr = rd_addr;
+	output_rdy <= setif(wr_addr/=rd_addr);
 
 end;

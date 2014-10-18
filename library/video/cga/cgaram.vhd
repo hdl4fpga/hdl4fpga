@@ -38,16 +38,13 @@ begin
 		report "cgaram"
 		severity ERROR;
 	dpram_e : entity hdl4fpga.dpram
-	generic map (
-		address_size => wr_row'length+wr_col'length,
-		data_size => rd_code'length)
 	port map (
 		wr_clk => wr_clk,
 		wr_ena => wr_ena,
-		wr_address => wr_addr,
+		wr_addr => wr_addr,
 		wr_data => wr_code,
 
 		rd_clk => rd_clk,
-		rd_address => rd_addr,
+		rd_addr => rd_addr,
 		rd_data => rd_code);
 end;
