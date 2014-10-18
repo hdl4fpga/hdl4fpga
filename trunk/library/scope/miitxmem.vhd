@@ -79,15 +79,12 @@ begin
 	output_a0 <= rd_address(0);
 	rd_address(1 to bram_size-1) <= output_addr;
 	bram_e : entity hdl4fpga.dpram
-	generic map (
-		data_size => data_size,
-		address_size => bram_size)
 	port map (
 		wr_clk => ddrs_clk,
-		wr_address => wr_address, 
+		wr_addr => wr_address, 
 		wr_ena => wr_ena,
 		wr_data => wr_data,
 		rd_clk => output_clk,
-		rd_address => rd_address,
+		rd_addr => rd_address,
 		rd_data => output_data);
 end;

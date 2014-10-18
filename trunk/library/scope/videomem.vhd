@@ -95,16 +95,13 @@ begin
 
 	pages_g: for i in 0 to bram_num-1 generate
 		sector_e : entity hdl4fpga.dpram
-		generic map (
-			data_size => data_size,
-			address_size => bram_size)
 		port map (
 			wr_clk => ddrs_clk,
-			wr_address => wr_address, 
+			wr_addr => wr_address, 
 			wr_ena => wr_ena(i),
 			wr_data => wr_data,
 			rd_clk => output_clk,
-			rd_address => rd_addr(i),
+			rd_addr => rd_addr(i),
 			rd_data => rd_data(i));
 	end generate;
 
