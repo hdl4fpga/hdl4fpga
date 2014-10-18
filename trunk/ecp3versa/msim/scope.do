@@ -81,9 +81,11 @@ add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -grou
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_init_a
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_init_b
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_clk
+add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e -expand -group dcounter /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/dcounter_e/q
+add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e -expand -group dcounter /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/dcounter_e/qo
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/input_dat
-add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_rdy
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_req
+add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_rdy
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e /testbench/ecp3versa_e/scope_e/input_clk
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e /testbench/ecp3versa_e/scope_e/ddr_ini
@@ -163,9 +165,7 @@ add wave -noupdate -group ddr2video_e -divider {New Divider}
 add wave -noupdate -group ddr2video_e -divider {New Divider}
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/sys_rst
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_req
-add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_eoc
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/buff_ini
-add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_ini
 add wave -noupdate -group dataio_e -color {Orange Red} /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_brst_req
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_clk
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_rdy
@@ -190,9 +190,7 @@ add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/datao
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/datai_req
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/sys_rst
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_req
-add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_eoc
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/buff_ini
-add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_ini
 add wave -noupdate -group dataio_e -color {Orange Red} /testbench/ecp3versa_e/scope_e/dataio_e/ddrios_brst_req
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_clk
 add wave -noupdate -group dataio_e /testbench/ecp3versa_e/scope_e/dataio_e/input_rdy
@@ -324,7 +322,7 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate /testbench/ecp3versa_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {703910984 ps} 0}
+WaveRestoreCursors {{Cursor 1} {703910249 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 231
 configure wave -valuecolwidth 86
@@ -340,4 +338,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {703818570 ps} {704003398 ps}
+WaveRestoreZoom {703787287 ps} {703972115 ps}
