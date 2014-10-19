@@ -103,19 +103,19 @@ package xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant phs : natural := 1)
+		constant rate : natural := 1)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant phs : natural := 1)
+		constant rate : natural := 1)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cwltabs_ids;
-		constant phs : natural := 1)
+		constant rate : natural := 1)
 		return natural_vector;
 
 	function xdr_latcod (
@@ -595,14 +595,14 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant phs : natural := 1)
+		constant rate : natural := 1)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(stdr, reg);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
-			lattab(i) := (query_data(i).lat*phs)/4;
+			lattab(i) := (query_data(i).lat)/(4*rate);
 		end loop;
 		return lattab;
 	end;
@@ -610,14 +610,14 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant phs : natural := 1)
+		constant rate : natural := 1)
 		return natural_vector is
 
 		type latid_vector is array (cltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
 
 		constant lat : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant tab : natural_vector := xdr_lattab(stdr, CL, phs);
+		constant tab : natural_vector := xdr_lattab(stdr, CL, rate);
 		variable val : natural_vector(tab'range);
 
 	begin
@@ -630,27 +630,28 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr   : natural;
 		constant tabid : cwltabs_ids;
-		constant phs   : natural := 1)
+		constant rate   : natural := 1)
 		return natural_vector is
 
 		type latid_vector is array (cwltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
 
 		constant lat    : integer := xdr_latency(stdr, tab2laty(tabid), 1);
-		constant cltab  : natural_vector := xdr_lattab(stdr, CL, phs);
+		constant cltab  : natural_vector := xdr_lattab(stdr, CL, 1);
 		variable clval  : natural_vector(cltab'range);
-		constant cwltab : natural_vector := xdr_lattab(stdr, CWL, phs);
+		constant cwltab : natural_vector := xdr_lattab(stdr, CWL, 1);
 		variable cwlval : natural_vector(cwltab'range);
 
+		variable mesg : line;
 	begin
 		if stdr = 2 then
 			for i in cltab'range loop
-				clval(i) := cltab(i)+lat-4;
+				clval(i) := (cltab(i)+lat-4)/rate;
 			end loop;
 			return clval;
 		else
 			for i in cwltab'range loop
-				cwlval(i) := cwltab(i)+lat;
+				cwlval(i) := (cwltab(i)+lat)/rate;
 			end loop;
 			return cwlval;
 		end if;

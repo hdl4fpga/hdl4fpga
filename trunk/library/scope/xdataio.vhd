@@ -165,7 +165,7 @@ begin
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-		ddrs_cola <= std_logic_vector(resize(shift_left (unsigned(qo),  DDR_ADDRSIZE-DDR_CLNMSIZE), DDR_ADDRSIZE)); 
+		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo),  DDR_ADDRSIZE-DDR_CLNMSIZE), 10), DDR_ADDRSIZE)); 
 
 		dcounter_e : entity hdl4fpga.counter
 		generic map (

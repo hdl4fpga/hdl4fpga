@@ -10,6 +10,7 @@ entity xdr is
 		strobe : string := "NONE_LOOPBACK";
 		mark : tmrk_ids := M15E;
 		tCP  : time := 6.0 ns;
+		tDDR : time := 6.0 ns;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
@@ -184,7 +185,7 @@ begin
 		xdr_refi_rdy => xdr_refi_rdy);
 
 	xdr_rst <= xdr_init_rst;
-	xdr_cs  <= xdr_init_cs;
+	xdr_cs  <= '0'         when xdr_init_rdy='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
 	xdr_odt <= '1'         when xdr_init_rdy='1' else '0';
 	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
@@ -221,11 +222,11 @@ begin
 		lWR  => to_xdrlatency(tCP, mark, tWR,  word_size, byte_size),
 		lRP  => to_xdrlatency(tCP, mark, tRP,  word_size, byte_size),
 		bl_cod => xdr_latcod(stdr, BL),
-		bl_tab => xdr_lattab(stdr, BL),
+		bl_tab => xdr_lattab(stdr, BL, tCP/tDDR),
 		cl_cod => xdr_latcod(stdr, CL),
-		cl_tab => xdr_lattab(stdr, CL),
+		cl_tab => xdr_lattab(stdr, CL, tCP/tDDR),
 		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
-		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr)))
+		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP/tDDR))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
@@ -258,20 +259,20 @@ begin
 		CL_COD    => xdr_latcod(stdr, CL),
 		CWL_COD   => xdr_latcod(stdr, CWL),
 
-		STRL_TAB  => xdr_lattab(stdr, STRT, sclk_phases),
-		RWNL_tab  => xdr_lattab(stdr, RWNT, sclk_phases),
-		DQSZL_TAB => xdr_lattab(stdr, DQSZT, sclk_phases),
-		DQSOL_TAB => xdr_lattab(stdr, DQST, sclk_phases),
-		DQZL_TAB  => xdr_lattab(stdr, DQZT, sclk_phases),
-		WWNL_TAB  => xdr_lattab(stdr, WWNT, sclk_phases),
+		STRL_TAB  => xdr_lattab(stdr, STRT,  tCP/tDDR),
+		RWNL_tab  => xdr_lattab(stdr, RWNT,  tCP/tDDR),
+		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tCP/tDDR),
+		DQSOL_TAB => xdr_lattab(stdr, DQST,  tCP/tDDR),
+		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tCP/tDDR),
+		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tCP/tDDR),
 
-		STRX_LAT  => xdr_latency(stdr, STRXL, 4/sclk_phases),
-		RWNX_LAT  => xdr_latency(stdr, RWNXL, 4/sclk_phases),
-		DQSZX_LAT => xdr_latency(stdr, DQSZXL, 4/sclk_phases),
-		DQSX_LAT  => xdr_latency(stdr, DQSXL, 4/sclk_phases),
-		DQZX_LAT  => xdr_latency(stdr, DQZXL, 4/sclk_phases),
-		WWNX_LAT  => xdr_latency(stdr, WWNXL, 4/sclk_phases),
-		WID_LAT   => xdr_latency(stdr, WIDL,  4/sclk_phases))
+		STRX_LAT  => xdr_latency(stdr, STRXL, 4/(tCP/tDDR)),
+		RWNX_LAT  => xdr_latency(stdr, RWNXL, 4/(tCP/tDDR)),
+		DQSZX_LAT => xdr_latency(stdr, DQSZXL,4/(tCP/tDDR)),
+		DQSX_LAT  => xdr_latency(stdr, DQSXL, 4/(tCP/tDDR)),
+		DQZX_LAT  => xdr_latency(stdr, DQZXL, 4/(tCP/tDDR)),
+		WWNX_LAT  => xdr_latency(stdr, WWNXL, 4/(tCP/tDDR)),
+		WID_LAT   => xdr_latency(stdr, WIDL,  4/(tCP/tDDR)))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
