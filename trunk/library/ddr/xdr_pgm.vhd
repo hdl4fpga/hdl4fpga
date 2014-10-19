@@ -88,50 +88,50 @@ architecture arch of xdr_pgm is
 
 
 	constant pgm_tab : trans_tab := (
-		(ddrs_act, ddrs_dnt, xdr_dnt),	---------
-		(ddrs_act, ddrs_pre, xdr_pre),	-- ACT --
-		(ddrs_act, ddrs_dnt, xdr_dnt),	---------
-		(ddrs_act, ddrs_pre, xdr_pre),
-		(ddrs_act, ddrs_rea, xdr_rea),
-		(ddrs_act, ddrs_pre, xdr_pre),
-		(ddrs_act, ddrs_wri, xdr_wri),
-		(ddrs_act, ddrs_pre, xdr_pre),
+		(ddrs_act, "000", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_act, "001", ddrs_pre, xdr_pre),	-- ACT --
+		(ddrs_act, "010", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_act, "011", ddrs_pre, xdr_pre),
+		(ddrs_act, "100", ddrs_rea, xdr_rea),
+		(ddrs_act, "101", ddrs_pre, xdr_pre),
+		(ddrs_act, "110", ddrs_wri, xdr_wri),
+		(ddrs_act, "111", ddrs_pre, xdr_pre),
 		
-		(ddrs_rea, ddrs_pre, xdr_pre),	---------
-		(ddrs_rea, ddrs_pre, xdr_pre),	-- REA --
-		(ddrs_rea, ddrs_dnt, xdr_dnt),	---------
-		(ddrs_rea, ddrs_pre, xdr_pre),
-		(ddrs_rea, ddrs_rea, xdr_rea),
-		(ddrs_rea, ddrs_pre, xdr_pre),
-		(ddrs_rea, ddrs_dnt, xdr_wri),
-		(ddrs_rea, ddrs_pre, xdr_pre),
+		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
+		(ddrs_rea, "001", ddrs_pre, xdr_pre),	-- REA --
+		(ddrs_rea, "010", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_rea, "011", ddrs_pre, xdr_pre),
+		(ddrs_rea, "100", ddrs_rea, xdr_rea),
+		(ddrs_rea, "101", ddrs_pre, xdr_pre),
+		(ddrs_rea, "110", ddrs_dnt, xdr_wri),
+		(ddrs_rea, "111", ddrs_pre, xdr_pre),
 
-		(ddrs_wri, ddrs_dnt, xdr_dnt),	---------
-		(ddrs_wri, ddrs_pre, xdr_pre),	-- WRI --
-		(ddrs_wri, ddrs_dnt, xdr_dnt),	---------
-		(ddrs_wri, ddrs_pre, xdr_pre),
-		(ddrs_wri, ddrs_dnt, xdr_dnt),
-		(ddrs_wri, ddrs_pre, xdr_pre),
-		(ddrs_wri, ddrs_wri, xdr_wri),
-		(ddrs_wri, ddrs_pre, xdr_pre),
+		(ddrs_wri, "000", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_wri, "001", ddrs_pre, xdr_pre),	-- WRI --
+		(ddrs_wri, "010", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_wri, "011", ddrs_pre, xdr_pre),
+		(ddrs_wri, "100", ddrs_dnt, xdr_dnt),
+		(ddrs_wri, "101", ddrs_pre, xdr_pre),
+		(ddrs_wri, "110", ddrs_wri, xdr_wri),
+		(ddrs_wri, "111", ddrs_pre, xdr_pre),
 
-		(ddrs_pre, ddrs_pre, xdr_nop),	---------
-		(ddrs_pre, ddrs_aut, xdr_aut),	-- PRE --
-		(ddrs_pre, ddrs_pre, xdr_nop),	---------
-		(ddrs_pre, ddrs_aut, xdr_aut),
-		(ddrs_pre, ddrs_act, xdr_act),
-		(ddrs_pre, ddrs_aut, xdr_aut),
-		(ddrs_pre, ddrs_act, xdr_act),
-		(ddrs_pre, ddrs_aut, xdr_aut),
+		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
+		(ddrs_pre, "001", ddrs_aut, xdr_aut),	-- PRE --
+		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
+		(ddrs_pre, "011", ddrs_aut, xdr_aut),
+		(ddrs_pre, "100", ddrs_act, xdr_act),
+		(ddrs_pre, "101", ddrs_aut, xdr_aut),
+		(ddrs_pre, "110", ddrs_act, xdr_act),
+		(ddrs_pre, "111", ddrs_aut, xdr_aut),
 
-		(ddrs_aut, ddrs_pre, xdr_pre),	---------
-		(ddrs_aut, ddrs_pre, xdr_pre),	-- AUT --
-		(ddrs_aut, ddrs_pre, xdr_pre),	---------
-		(ddrs_aut, ddrs_pre, xdr_pre),
-		(ddrs_aut, ddrs_act, xdr_act),
-		(ddrs_aut, ddrs_act, xdr_act),
-		(ddrs_aut, ddrs_act, xdr_act),
-		(ddrs_aut, ddrs_act, xdr_act));
+		(ddrs_aut, "000", ddrs_pre, xdr_pre),	---------
+		(ddrs_aut, "001", ddrs_pre, xdr_pre),	-- AUT --
+		(ddrs_aut, "010", ddrs_pre, xdr_pre),	---------
+		(ddrs_aut, "011", ddrs_pre, xdr_pre),
+		(ddrs_aut, "100", ddrs_act, xdr_act),
+		(ddrs_aut, "101", ddrs_act, xdr_act),
+		(ddrs_aut, "110", ddrs_act, xdr_act),
+		(ddrs_aut, "111", ddrs_act, xdr_act));
 
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
 	signal xdr_input  : unsigned(0 to 2);
@@ -151,13 +151,20 @@ begin
 				xdr_pgm_pre <= '-'; 
 				sys_pgm_ref <= '-';
 				for i in pgm_tab'range loop
-					if xdr_pgm_pc=pgm_tab.state then
-						if xdr_input=pgm_tab
+					if xdr_pgm_pc=pgm_tab(i).state then
+						if xdr_input=pgm_tab(i).input=xdr_input then
+							xdr_pgm_pc  <= pgm_tab(i).state_n; 
+							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to wr);
+							xdr_pgm_cas <= pgm_tab(i).cmd_n(pas);
+							xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
+							sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
+						end if;
 					end if;
 				end loop;
 			else
 				xdr_pgm_rdy <= '1';
 				xdr_pgm_pc  <= ddrs_pre;
+				xdr_pgm_cmd <= xdr_nop(ras to wr);
 				xdr_pgm_cas <= xdr_nop(pas);
 				xdr_pgm_pre <= xdr_nop(pre); 
 				sys_pgm_ref <= xdr_nop(ref);
