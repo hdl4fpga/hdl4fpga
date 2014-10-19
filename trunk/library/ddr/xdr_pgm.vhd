@@ -30,11 +30,11 @@ architecture arch of xdr_pgm is
 	constant we  : natural := 5;
 
 	constant xdr_pgm_size : natural := 4;
-               --> sys_pgm_ref  >---------------------+
-               --> xdr_pgm_cas  >--------------------+|
-               --> xdr_pgm_pre  >-------------------+||
-               --                                   |||
-               --                                   VVV
+                --> sys_pgm_ref <---------------------+
+                --> xdr_pgm_cas <--------------------+|
+                --> xdr_pgm_pre <-------------------+||
+                --                                  |||
+                --                                  VVV
 	constant xdr_act : std_logic_vector(0 to 5) := "010011";
 	constant xdr_rea : std_logic_vector(0 to 5) := "010101";
 	constant xdr_wri : std_logic_vector(0 to 5) := "010100";
@@ -48,17 +48,18 @@ architecture arch of xdr_pgm is
 	constant ddrs_wri : std_logic_vector(0 to 2) := "100";
 	constant ddrs_pre : std_logic_vector(0 to 2) := "010";
 	constant ddrs_aut : std_logic_vector(0 to 2) := "001";
+	constant ddrs_dnt : std_logic_vector(0 to 2) := (others => '-');
 
 	type trans_row is record
-		state   : xdr_states;
+		state   : std_logic_vector(0 to 2);
 		input   : std_logic_vector(0 to 2);
-		state_n : xdr_states;
-		cmd_n   : std_logic_vector(0 to 5-1);
+		state_n : std_logic_vector(0 to 2);
+		cmd_n   : std_logic_vector(0 to 5);
 	end record;
 
 	type trans_tab is array (natural range <>) of trans_row;
 
--- ref_req   ------+
+-- pgm_ref   ------+
 -- pgm_rw    -----+|
 -- pgm_start ----+||
 --               |||
@@ -134,11 +135,11 @@ architecture arch of xdr_pgm is
 		(ddrs_aut, "111", ddrs_act, xdr_act));
 
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
-	signal xdr_input  : unsigned(0 to 2);
+	signal xdr_input  : std_logic_vector(0 to 2);
 
 begin
 
-	xdr_input(2) <= xdr_ref_req;
+	xdr_input(2) <= xdr_pgm_ref;
 	xdr_input(1) <= xdr_pgm_rw;
 	xdr_input(0) <= xdr_pgm_start;
 
@@ -150,21 +151,22 @@ begin
 				xdr_pgm_cas <= '-';
 				xdr_pgm_pre <= '-'; 
 				sys_pgm_ref <= '-';
-				for i in pgm_tab'range loop
+				loop_pgm : for i in pgm_tab'range loop
 					if xdr_pgm_pc=pgm_tab(i).state then
-						if xdr_input=pgm_tab(i).input=xdr_input then
+						if xdr_input=pgm_tab(i).input then
 							xdr_pgm_pc  <= pgm_tab(i).state_n; 
-							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to wr);
+							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to we);
 							xdr_pgm_cas <= pgm_tab(i).cmd_n(pas);
 							xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
 							sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
+							exit loop_pgm;
 						end if;
 					end if;
 				end loop;
 			else
 				xdr_pgm_rdy <= '1';
 				xdr_pgm_pc  <= ddrs_pre;
-				xdr_pgm_cmd <= xdr_nop(ras to wr);
+				xdr_pgm_cmd <= xdr_nop(ras to we);
 				xdr_pgm_cas <= xdr_nop(pas);
 				xdr_pgm_pre <= xdr_nop(pre); 
 				sys_pgm_ref <= xdr_nop(ref);
