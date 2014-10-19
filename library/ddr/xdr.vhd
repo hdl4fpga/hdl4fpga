@@ -195,6 +195,7 @@ begin
 	xdr_b   <= sys_b       when xdr_init_rdy='1' else xdr_init_b;
 
 	sys_ini <= xdr_init_rdy;
+	xdr_mpu_rst <= not xdr_init_rdy;
 
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
@@ -212,7 +213,7 @@ begin
 
 	xdr_mpu_req <= sys_cmd_req;
 	sys_di_rdy  <= xdr_wr_fifo_req;
-	du : entity hdl4fpga.xdr_mpu
+	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
 		lRCD => to_xdrlatency(tCP, mark, tRCD, word_size, byte_size),
 		lRFC => to_xdrlatency(tCP, mark, tRFC, word_size, byte_size),

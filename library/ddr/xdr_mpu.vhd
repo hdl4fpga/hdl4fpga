@@ -146,11 +146,11 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_READ_BL,
 		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '0', xdr_wph => '1'),
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_WRITE_BL,
 		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
+		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '0'),
 
 		--------------
 		-- DDR_READ --
