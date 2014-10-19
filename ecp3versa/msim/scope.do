@@ -64,9 +64,8 @@ add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -grou
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_mpu_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_rdy_ena
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pre
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
-add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_npc
+add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_input
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
-add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_mpu_pc
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -expand -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
@@ -365,7 +364,7 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate /testbench/ecp3versa_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {703982840 ps} 0}
+WaveRestoreCursors {{Cursor 1} {703935168 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 231
 configure wave -valuecolwidth 86
@@ -381,4 +380,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {703962310 ps} {704054598 ps}
+WaveRestoreZoom {699052039 ps} {709267114 ps}
