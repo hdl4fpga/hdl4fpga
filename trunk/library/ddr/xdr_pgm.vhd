@@ -22,26 +22,28 @@ entity xdr_pgm is
 end;
 
 architecture arch of xdr_pgm is
-	constant pre : natural := 0;
-	constant pas : natural := 1;
-	constant ref : natural := 2;
-	constant ras : natural := 3;
-	constant cas : natural := 4;
-	constant we  : natural := 5;
+	constant rdy : natural := 6;
+	constant pre : natural := 5;
+	constant pas : natural := 4;
+	constant ref : natural := 3;
+	constant ras : natural := 2;
+	constant cas : natural := 1;
+	constant we  : natural := 0;
 
 	constant xdr_pgm_size : natural := 4;
-                --> sys_pgm_ref <---------------------+
-                --> xdr_pgm_cas <--------------------+|
-                --> xdr_pgm_pre <-------------------+||
-                --                                  |||
-                --                                  VVV
-	constant xdr_act : std_logic_vector(0 to 5) := "010011";
-	constant xdr_rea : std_logic_vector(0 to 5) := "010101";
-	constant xdr_wri : std_logic_vector(0 to 5) := "010100";
-	constant xdr_pre : std_logic_vector(0 to 5) := "100010";
-	constant xdr_aut : std_logic_vector(0 to 5) := "001001";
-	constant xdr_nop : std_logic_vector(0 to 5) := "000111";
-	constant xdr_dnt : std_logic_vector(0 to 5) := (others => '-');
+                        --> sys_pgm_ref <---------------------+
+                        --> xdr_pgm_cas <--------------------+|
+                        --> xdr_pgm_pre <-------------------+||
+                        --> xdr_pgm_rdy <------------------+|||
+                        --                                 ||||
+                        --                                 VVVV
+	constant xdr_act : std_logic_vector(6 downto 0)    := "0010011";
+	constant xdr_rea : std_logic_vector(xdr_act'range) := "0010101";
+	constant xdr_wri : std_logic_vector(xdr_act'range) := "0010100";
+	constant xdr_pre : std_logic_vector(xdr_act'range) := "1100010";
+	constant xdr_aut : std_logic_vector(xdr_act'range) := "0001001";
+	constant xdr_nop : std_logic_vector(xdr_act'range) := "1000111";
+	constant xdr_dnt : std_logic_vector(xdr_act'range) := (others => '-');
 
 	constant ddrs_act : std_logic_vector(0 to 2) := "011";
 	constant ddrs_rea : std_logic_vector(0 to 2) := "101";
@@ -54,7 +56,7 @@ architecture arch of xdr_pgm is
 		state   : std_logic_vector(0 to 2);
 		input   : std_logic_vector(0 to 2);
 		state_n : std_logic_vector(0 to 2);
-		cmd_n   : std_logic_vector(0 to 5);
+		cmd_n   : std_logic_vector(xdr_act'range);
 	end record;
 
 	type trans_tab is array (natural range <>) of trans_row;
@@ -151,12 +153,14 @@ begin
 					xdr_pgm_pc  <= (others => '-');
 					xdr_pgm_cas <= '-';
 					xdr_pgm_pre <= '-'; 
+					xdr_pgm_rdy <= '-'; 
 					sys_pgm_ref <= '-';
 					loop_pgm : for i in pgm_tab'range loop
 						if xdr_pgm_pc=pgm_tab(i).state then
 							if xdr_input=pgm_tab(i).input then
 								xdr_pgm_pc  <= pgm_tab(i).state_n; 
-								xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to we);
+								xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
+								xdr_pgm_rdy <= pgm_tab(i).cmd_n(rdy);
 								xdr_pgm_cas <= pgm_tab(i).cmd_n(pas);
 								xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
 								sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
@@ -166,9 +170,9 @@ begin
 					end loop;
 				end if;
 			else
-				xdr_pgm_rdy <= '1';
 				xdr_pgm_pc  <= ddrs_pre;
-				xdr_pgm_cmd <= xdr_nop(ras to we);
+				xdr_pgm_rdy <= xdr_nop(rdy);
+				xdr_pgm_cmd <= xdr_nop(ras downto we);
 				xdr_pgm_cas <= xdr_nop(pas);
 				xdr_pgm_pre <= xdr_nop(pre); 
 				sys_pgm_ref <= xdr_nop(ref);
