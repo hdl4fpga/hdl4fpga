@@ -150,7 +150,7 @@ begin
 				if sys_rst='1'then
 					ddrs_creq <= '0';
 				elsif ddrs_breq='1' then
-					ddrs_creq <= (ddrs_crdy or not ddrs_rreq) and not qo(DDR_CLNMSIZE);
+					ddrs_creq <= (ddrs_crdy and not ddrs_rreq) and not qo(DDR_CLNMSIZE);
 				else
 					ddrs_creq <= '0';
 				end if;
