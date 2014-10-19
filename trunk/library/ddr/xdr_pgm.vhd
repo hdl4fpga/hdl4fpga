@@ -51,6 +51,7 @@ architecture arch of xdr_pgm is
 
 	type trans_row is record
 		state   : xdr_states;
+		input   : std_logic_vector(0 to 2);
 		state_n : xdr_states;
 		cmd_n   : std_logic_vector(0 to 5-1);
 	end record;
@@ -133,14 +134,27 @@ architecture arch of xdr_pgm is
 		(ddrs_aut, ddrs_act, xdr_act));
 
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
+	signal xdr_input  : unsigned(0 to 2);
 
 begin
+
+	xdr_input(2) <= xdr_ref_req;
+	xdr_input(1) <= xdr_pgm_rw;
+	xdr_input(0) <= xdr_pgm_start;
 
 	process (xdr_pgm_clk)
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
-				xdr_pgm_pc := ddrs_pc;
+				xdr_pgm_pc  <= (others => '-');
+				xdr_pgm_cas <= '-';
+				xdr_pgm_pre <= '-'; 
+				sys_pgm_ref <= '-';
+				for i in pgm_tab'range loop
+					if xdr_pgm_pc=pgm_tab.state then
+						if xdr_input=pgm_tab
+					end if;
+				end loop;
 			else
 				xdr_pgm_rdy <= '1';
 				xdr_pgm_pc  <= ddrs_pre;
