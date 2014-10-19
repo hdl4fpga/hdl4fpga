@@ -66,9 +66,9 @@ architecture arch of xdr_pgm is
 --               vvv
 --               000   001   010   011   100   101   110   111
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
---     act     | '-' | pre | '-' | pre | rea | pre | wri | pre |
---     rea     | pre | pre | '-' | pre | rea | pre | '-' | pre |
---     wri     | '-' | pre | '-' | pre | '-' | pre | wri | pre |
+--     act     | '-' | pre | '-' | pre | wri | pre | rea | pre |
+--     rea     | pre | pre | pre | pre | '-' | pre | rea | pre |
+--     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
 --     pre     | pre | aut | pre | aut | act | aut | act | aut |
 --     aut     | pre | pre | pre | pre | act | act | act | act |
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -80,9 +80,9 @@ architecture arch of xdr_pgm is
 --
 --               000   001   010   011   100   101   110   111
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
---     act     | '-' | pre | '-' | pre | rea | pre | wri | pre |
---     rea     | pre | pre | '-' | pre | rea | pre | '-' | pre |
---     wri     | '-' | pre | '-' | pre | '-' | pre | wri | pre |
+--     act     | '-' | pre | '-' | pre | wri | pre | rea | pre |
+--     rea     | pre | pre | pre | pre | '-' | pre | rea | pre |
+--     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
 --     pre     | nop | aut | nop | aut | act | aut | act | aut |
 --     aut     | pre | pre | pre | pre | act | act | act | act |
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -93,27 +93,27 @@ architecture arch of xdr_pgm is
 		(ddrs_act, "001", ddrs_pre, xdr_pre),	-- ACT --
 		(ddrs_act, "010", ddrs_dnt, xdr_dnt),	---------
 		(ddrs_act, "011", ddrs_pre, xdr_pre),
-		(ddrs_act, "100", ddrs_rea, xdr_rea),
+		(ddrs_act, "100", ddrs_wri, xdr_wri),
 		(ddrs_act, "101", ddrs_pre, xdr_pre),
-		(ddrs_act, "110", ddrs_wri, xdr_wri),
+		(ddrs_act, "110", ddrs_rea, xdr_rea),
 		(ddrs_act, "111", ddrs_pre, xdr_pre),
 		
 		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
 		(ddrs_rea, "001", ddrs_pre, xdr_pre),	-- REA --
-		(ddrs_rea, "010", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
 		(ddrs_rea, "011", ddrs_pre, xdr_pre),
-		(ddrs_rea, "100", ddrs_rea, xdr_rea),
+		(ddrs_rea, "100", ddrs_dnt, xdr_wri),
 		(ddrs_rea, "101", ddrs_pre, xdr_pre),
-		(ddrs_rea, "110", ddrs_dnt, xdr_wri),
+		(ddrs_rea, "110", ddrs_rea, xdr_rea),
 		(ddrs_rea, "111", ddrs_pre, xdr_pre),
 
-		(ddrs_wri, "000", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_wri, "000", ddrs_pre, xdr_pre),	---------
 		(ddrs_wri, "001", ddrs_pre, xdr_pre),	-- WRI --
-		(ddrs_wri, "010", ddrs_dnt, xdr_dnt),	---------
+		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
 		(ddrs_wri, "011", ddrs_pre, xdr_pre),
-		(ddrs_wri, "100", ddrs_dnt, xdr_dnt),
+		(ddrs_wri, "100", ddrs_wri, xdr_wri),
 		(ddrs_wri, "101", ddrs_pre, xdr_pre),
-		(ddrs_wri, "110", ddrs_wri, xdr_wri),
+		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
 		(ddrs_wri, "111", ddrs_pre, xdr_pre),
 
 		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
@@ -147,22 +147,24 @@ begin
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
-				xdr_pgm_pc  <= (others => '-');
-				xdr_pgm_cas <= '-';
-				xdr_pgm_pre <= '-'; 
-				sys_pgm_ref <= '-';
-				loop_pgm : for i in pgm_tab'range loop
-					if xdr_pgm_pc=pgm_tab(i).state then
-						if xdr_input=pgm_tab(i).input then
-							xdr_pgm_pc  <= pgm_tab(i).state_n; 
-							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to we);
-							xdr_pgm_cas <= pgm_tab(i).cmd_n(pas);
-							xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
-							sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
-							exit loop_pgm;
+				if xdr_pgm_req='1' then
+					xdr_pgm_pc  <= (others => '-');
+					xdr_pgm_cas <= '-';
+					xdr_pgm_pre <= '-'; 
+					sys_pgm_ref <= '-';
+					loop_pgm : for i in pgm_tab'range loop
+						if xdr_pgm_pc=pgm_tab(i).state then
+							if xdr_input=pgm_tab(i).input then
+								xdr_pgm_pc  <= pgm_tab(i).state_n; 
+								xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras to we);
+								xdr_pgm_cas <= pgm_tab(i).cmd_n(pas);
+								xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
+								sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
+								exit loop_pgm;
+							end if;
 						end if;
-					end if;
-				end loop;
+					end loop;
+				end if;
 			else
 				xdr_pgm_rdy <= '1';
 				xdr_pgm_pc  <= ddrs_pre;
