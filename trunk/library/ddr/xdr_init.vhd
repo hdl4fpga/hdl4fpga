@@ -216,11 +216,11 @@ architecture ddr3 of xdr_init is
 begin
 
 	src(src_b01) <= "10";
-	src(src_cl ) <= "010"; --xdr_init_cl;
-	src(src_bl ) <= "001"; --xdr_init_bl;
+	src(src_cl ) <= xdr_init_cl;
+	src(src_bl ) <= xdr_init_bl;
 	src(src_rtt) <= xdr_init_rtt;
-	src(src_cwl) <= "000"; --xdr_init_cwl;
-	src(src_wr)  <= "101"; --xdr_init_cwl;
+	src(src_cwl) <= xdr_init_cwl;
+	src(src_wr)  <= xdr_init_wr;
 	src(src_pl ) <= xdr_init_pl;
 	src(src_ods) <= xdr_init_ods;
 
