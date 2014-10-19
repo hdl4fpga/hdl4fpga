@@ -439,7 +439,7 @@ begin
 		tCP       => DDR_tCP)
 	port map (
 		sys_rst => sys_rst,
-		sys_bl  => "001",
+		sys_bl  => "000",
 		sys_cl  => "010",
 		sys_cwl => "000",
 		sys_wr  => "101",

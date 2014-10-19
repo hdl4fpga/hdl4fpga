@@ -398,9 +398,9 @@ package body xdr_param is
 
 		-- BL register --
 
-		cnfglat_record'(stdr => 3, reg => BL, lat =>  4, code => "000") &
-		cnfglat_record'(stdr => 3, reg => BL, lat =>  8, code => "001") &
-		cnfglat_record'(stdr => 3, reg => BL, lat => 16, code => "010") &
+		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "000") &
+		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "001") &
+		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "010") &
 
 		-- WRL register --
 
