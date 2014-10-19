@@ -100,6 +100,8 @@ architecture def of scope is
 	signal ddrs_cmd_rdy : std_logic;
 	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
 	signal ddrs_a  : std_logic_vector(0 to 13-1);
+	signal ddrs_rowa  : std_logic_vector(0 to 13-1);
+	signal ddrs_cola  : std_logic_vector(0 to 13-1);
 	signal ddrs_act : std_logic;
 	signal ddrs_cas : std_logic;
 	signal ddrs_pre : std_logic;
@@ -259,6 +261,8 @@ begin
 --
 --	video_ena <= setif(win_rowid="11");
 
+	ddrs_a <= ddrs_rowa when ddrs_cas='0' else ddrs_cola;
+
 	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
@@ -286,7 +290,8 @@ begin
 		ddrs_creq => ddrs_cmd_req,
 		ddrs_crdy => ddrs_cmd_rdy,
 		ddrs_bnka => ddrs_ba,
-		ddrs_rowa => ddrs_a,
+		ddrs_rowa => ddrs_rowa,
+		ddrs_cola => ddrs_cola,
 		ddrs_rw  => ddrs_rw,
 		ddrs_act => ddrs_act,
 		ddrs_cas => ddrs_cas,
@@ -436,7 +441,8 @@ begin
 		line_size => DDR_LINESIZE,
 		word_size => DDR_WORDSIZE,
 		byte_size => DDR_BYTESIZE,
-		tCP       => DDR_tCP)
+		tCP  => DDR_tCP,
+		tDDR => DDR_tCP/2)
 	port map (
 		sys_rst => sys_rst,
 		sys_bl  => "000",
