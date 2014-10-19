@@ -145,15 +145,21 @@ begin
 
 		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 		process (ddrs_clk)
+			variable creq : std_logic;
 		begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1'then
-					ddrs_creq <= '0';
+					creq := '0';
 				elsif ddrs_breq='1' then
-					ddrs_creq <= (ddrs_crdy and not ddrs_rreq) and not qo(DDR_CLNMSIZE);
+					if creq='0' then
+						creq := not ddrs_rreq and ddrs_crdy;
+					else
+						creq := not ddrs_rreq and not qo(DDR_CLNMSIZE);
+					end if;
 				else
-					ddrs_creq <= '0';
+					creq := '0';
 				end if;
+				ddrs_creq <= creq;
 			end if;
 		end process;
 
