@@ -47,7 +47,7 @@ entity xdr is
 		sys_do_rdy : out std_logic_vector(2-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
-		sys_pre : out std_logic;
+		sys_pre : out std_logic := '0';
 		sys_dm  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '0');
 		sys_di  : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		sys_do  : out std_logic_vector(data_phases*line_size-1 downto 0);
@@ -205,8 +205,6 @@ begin
 		xdr_pgm_clk => sys_clks(0),
 		sys_pgm_ref => sys_ref,
 		xdr_pgm_cmd => xdr_pgm_cmd,
-		xdr_pgm_cas => sys_cas,
-		xdr_pgm_pre => sys_pre,
 		xdr_pgm_ref => xdr_mpu_ref,
 		xdr_pgm_start => xdr_mpu_req,
 		xdr_pgm_rdy => sys_cmd_rdy,
@@ -240,6 +238,7 @@ begin
 		xdr_mpu_cas => xdr_mpu_cas,
 		xdr_mpu_ras => xdr_mpu_ras,
 		xdr_mpu_we  => xdr_mpu_we,
+		xdr_mpu_cen => sys_cas,
 
 		xdr_mpu_rea => xdr_mpu_rea,
 		xdr_mpu_wri => xdr_mpu_wri,
