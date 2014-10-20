@@ -141,6 +141,8 @@ architecture arch of xdr_pgm is
 
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
 	signal xdr_input  : std_logic_vector(0 to 2);
+	signal pgm_cas : std_logic;
+	signal pgm_pre : std_logic;
 
 begin
 
@@ -149,26 +151,26 @@ begin
 	xdr_input(0) <= xdr_pgm_start;
 
 	process (xdr_pgm_clk)
-		variable pgm_cas : std_logic;
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
 				if xdr_pgm_req='1' then
 					xdr_pgm_cas <= pgm_cas;
+					xdr_pgm_pre <= pgm_pre;
 					xdr_pgm_pc  <= (others => '-');
-					xdr_pgm_pre <= '-'; 
 					xdr_pgm_rdy <= '-'; 
 					sys_pgm_ref <= '-';
-					pgm_cas := '-';
+					pgm_cas <= '-';
+					pgm_pre <= '-';
 					loop_pgm : for i in pgm_tab'range loop
 						if xdr_pgm_pc=pgm_tab(i).state then
 							if xdr_input=pgm_tab(i).input then
 								xdr_pgm_pc  <= pgm_tab(i).state_n; 
 								xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
 								xdr_pgm_rdy <= pgm_tab(i).cmd_n(rdy);
-								xdr_pgm_pre <= pgm_tab(i).cmd_n(pre); 
 								sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
-								pgm_cas := pgm_tab(i).cmd_n(pas);
+								pgm_cas <= pgm_tab(i).cmd_n(pas);
+								pgm_pre <= pgm_tab(i).cmd_n(pre);
 								exit loop_pgm;
 							end if;
 						end if;
@@ -184,7 +186,8 @@ begin
 				xdr_pgm_pre <= xdr_nop(pre); 
 				sys_pgm_ref <= xdr_nop(ref);
 				xdr_pgm_cas <= xdr_nop(pas);
-				pgm_cas := xdr_nop(pas);
+				pgm_cas <= xdr_nop(pas);
+				pgm_pre <= xdr_nop(pre);
 			end if;
 		end if;
 	end process;

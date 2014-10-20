@@ -121,6 +121,7 @@ begin
 		DDR_DATAPHASES => 1,
 		DDR_BANKSIZE => ddr3_b'length,
 		DDR_ADDRSIZE => ddr3_a'length,
+		DDR_CLMNSIZE => 7,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
 		DDR_BYTESIZE => byte_size,

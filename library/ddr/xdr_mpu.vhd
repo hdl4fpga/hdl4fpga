@@ -33,6 +33,8 @@ entity xdr_mpu is
 		xdr_mpu_cas : out std_logic;
 		xdr_mpu_ras : out std_logic;
 		xdr_mpu_we  : out std_logic;
+		xdr_pgm_cas : in  std_logic;
+		xdr_mpu_ctr : out std_logic;
 
 		xdr_mpu_rea  : out std_logic;
 		xdr_mpu_rwin : out std_logic;
@@ -146,11 +148,11 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_READ_BL,
 		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0',
-		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '0', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_WRITE_BL,
 		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1',
-		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '0'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
 
 		--------------
 		-- DDR_READ --
@@ -291,10 +293,12 @@ begin
 							end if;
 						end if;
 					end loop;
+					xdr_pgm_pas <= xdr_pgm_cas;
 				else
 					xdr_mpu_ras <= xdr_nop(ras);
 					xdr_mpu_cas <= xdr_nop(cas);
 					xdr_mpu_we  <= xdr_nop(we);
+					xdr_mpu_pas <= '0';
 					lat_timer   <= lat_timer - 1;
 				end if;
 			else
@@ -306,6 +310,7 @@ begin
 				xdr_wri <= xdr_state_tab(0).xdr_wri;
 				xdr_act := '1';
 				xdr_mpu_act <= xdr_state_tab(0).xdr_act;
+				xdr_mpu_pas <= '0';
 				xdr_mpu_rwin <= xdr_state_tab(0).xdr_rph;
 				xdr_mpu_wwin <= xdr_state_tab(0).xdr_wph;
 				xdr_rdy_ena <= '1';
