@@ -261,7 +261,7 @@ begin
 --
 --	video_ena <= setif(win_rowid="11");
 
-	ddrs_a <= ddrs_rowa when ddrs_cas='0' else ddrs_cola;
+	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
 
 	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 

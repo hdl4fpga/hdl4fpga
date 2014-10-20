@@ -143,7 +143,7 @@ begin
 --			s => ddrios_id);
 		ddrs_breq <= datai_brst_req;
 
-		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-2, DDR_CLNMSIZE+1));
 		process (ddrs_clk)
 			variable creq : std_logic;
 		begin
@@ -165,7 +165,7 @@ begin
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo),  DDR_ADDRSIZE-DDR_CLNMSIZE), 10), DDR_ADDRSIZE)); 
+		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
