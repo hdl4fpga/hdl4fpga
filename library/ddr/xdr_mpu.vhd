@@ -131,15 +131,15 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_PRE,
 		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => ID_IDLE,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_ACT,
 		 xdr_cmi => xdr_act, xdr_cmo => xdr_act, xdr_lat => ID_RCD,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_PRE,
 		 xdr_cmi => xdr_aut, xdr_cmo => xdr_aut, xdr_lat => ID_RFC,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 
 		-------------
 		-- DDR_ACT --
@@ -148,11 +148,11 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_READ_BL,
 		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '1',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
 		(xdr_state => XDRS_ACT, xdr_state_n => XDRS_WRITE_BL,
 		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1', xdr_cen => '1',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
 
 		--------------
 		-- DDR_READ --
@@ -161,15 +161,15 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_READ_BL, xdr_state_n => XDRS_READ_BL,
 		 xdr_cmi => xdr_read, xdr_cmo => xdr_read, xdr_lat => ID_BL,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '1',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
 		(xdr_state => XDRS_READ_BL, xdr_state_n => XDRS_READ_CL,
 		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => ID_CL,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_READ_CL, xdr_state_n => XDRS_PRE,
 		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 
 		---------------
 		-- DDR_WRITE --
@@ -178,15 +178,15 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_WRITE_BL, xdr_state_n => XDRS_WRITE_BL,
 		 xdr_cmi => xdr_write, xdr_cmo => xdr_write, xdr_lat => ID_BL,
 		 xdr_rea => '0', xdr_wri => '1', xdr_cen => '1',
-		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '0'),
+		 xdr_act => '0', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '1'),
 		(xdr_state => XDRS_WRITE_BL, xdr_state_n => XDRS_WRITE_CL,
 		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => ID_CWL,
 		 xdr_rea => '0', xdr_wri => '1', xdr_cen => '0',
-		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '1', xdr_wph => '1'),
+		 xdr_act => '0', xdr_rdy => '0', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_WRITE_CL, xdr_state_n => XDRS_PRE,
 		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '1', xdr_wph => '1'));
+		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'));
 
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of xdr_state : signal is "compact";
