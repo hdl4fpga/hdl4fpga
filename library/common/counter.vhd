@@ -31,17 +31,15 @@ begin
 			for i in 0 to stage_size'length-1 loop
 				if load='1' then
 					cy(i) <= '0';
-				elsif ena='1' then
-					if i=0 then
-						cy(i) <= q(i);
-					else
-						cy(i) <= q(i) and cy(i-1);
-					end if;
+				elsif i=0 then
+					cy(i) <= q(i) and ena;
+				else
+					cy(i) <= q(i) and cy(i-1);
 				end if;
 			end loop;
 		end if;
 	end process;
-	en <= (cy & ena) and ena;
+	en <= cy & ena;
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
 
