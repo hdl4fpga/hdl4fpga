@@ -611,12 +611,12 @@ package body xdr_param is
 		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
 
 		constant lat : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant tab : natural_vector := xdr_lattab(stdr, CL, rate);
+		constant tab : natural_vector := xdr_lattab(stdr, CL, 1);
 		variable val : natural_vector(tab'range);
 
 	begin
 		for i in tab'range loop
-			val(i) := tab(i)+lat;
+			val(i) := (tab(i)+lat)/rate;
 		end loop;
 		return val;
 	end;
