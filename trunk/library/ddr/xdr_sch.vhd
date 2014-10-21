@@ -14,6 +14,7 @@ entity xdr_sch is
 		data_edges  : natural;
 
 		line_size : natural;
+		word_size : natural;
 		byte_size : natural;
 
 		CL_COD  : std_logic_vector;
@@ -45,7 +46,7 @@ entity xdr_sch is
 		xdr_st  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 
 		xdr_dqsz : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_dqs  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_dqs  : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
 
 		xdr_dqz  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 		xdr_wwn  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
@@ -128,7 +129,7 @@ begin
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		word_size => line_size,
-		byte_size => byte_size,
+		byte_size => word_size,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,

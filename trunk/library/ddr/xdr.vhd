@@ -253,6 +253,7 @@ begin
 		data_phases => 1,
 		data_edges  => 1,
 		line_size   => line_size,
+		word_size   => word_size,
 		byte_size   => byte_size,
 
 		CL_COD    => xdr_latcod(stdr, CL),
@@ -283,11 +284,11 @@ begin
 		xdr_st  => xdr_sto,
 
 		xdr_dqsz => xdr_sch_dqsz,
-		xdr_dqs  => xdr_sch_dqs,
+--		xdr_dqs  => xdr_sch_dqs,
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
---	xdr_dqo <= xdr_combclks(xdr_sch_dqs, sclk_phases, dqso_phases);
+	xdr_dqso <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 
 	xdr_win_dqs <= (others => xdr_sch_rwn(0));
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));
