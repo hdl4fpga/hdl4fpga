@@ -220,11 +220,11 @@ begin
 		lWR  => to_xdrlatency(tCP, mark, tWR),
 		lRP  => to_xdrlatency(tCP, mark, tRP),
 		bl_cod => xdr_latcod(stdr, BL),
-		bl_tab => xdr_lattab(stdr, BL, tCP/tDDR),
+		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
 		cl_cod => xdr_latcod(stdr, CL),
-		cl_tab => xdr_lattab(stdr, CL, tCP/tDDR),
+		cl_tab => xdr_lattab(stdr, CL, tCP,tDDR),
 		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
-		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP/tDDR))
+		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,

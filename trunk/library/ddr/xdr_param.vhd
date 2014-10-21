@@ -69,7 +69,8 @@ package xdr_param is
 	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids;
-		constant unit  : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return integer;
 
 	function xdr_query_size (
@@ -100,19 +101,22 @@ package xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant rate : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant rate : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cwltabs_ids;
-		constant rate : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector;
 
 	function xdr_latcod (
@@ -481,14 +485,15 @@ package body xdr_param is
 	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids; 
-		constant unit : natural := 1) 
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return integer is
 		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
 				if latency_db(i).param = param then
-					return latency_db(i).value/unit;
+					return (latency_db(i).value*tDDR)/(4*tCP);
 				end if;
 			end if;
 		end loop;
@@ -589,14 +594,15 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant rate : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(stdr, reg);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
-			lattab(i) := (query_data(i).lat*rate)/4;
+			lattab(i) := (query_data(i).lat*tDDR)/(4*tCP);
 		end loop;
 		return lattab;
 	end;
@@ -604,19 +610,20 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant rate : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector is
 
 		type latid_vector is array (cltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
 
 		constant lat : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant tab : natural_vector := xdr_lattab(stdr, CL, 4);
+		constant tab : natural_vector := xdr_lattab(stdr, CL, tDDR, 4*tDDR);
 		variable val : natural_vector(tab'range);
 
 	begin
 		for i in tab'range loop
-			val(i) := (tab(i)+lat)/rate;
+			val(i) := ((tab(i)+lat)*tDDR)/(4*tCP);
 		end loop;
 		return val;
 	end;
@@ -624,28 +631,29 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr   : natural;
 		constant tabid : cwltabs_ids;
-		constant rate   : natural := 1)
+		constant tCP  : time :=  250 ps;
+		constant tDDR : time := 1000 ps)
 		return natural_vector is
 
 		type latid_vector is array (cwltabs_ids) of laty_ids;
 		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
 
-		constant lat    : integer := xdr_latency(stdr, tab2laty(tabid), 1);
-		constant cltab  : natural_vector := xdr_lattab(stdr, CL, 4);
+		constant lat    : integer := xdr_latency(stdr, tab2laty(tabid));
+		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		variable clval  : natural_vector(cltab'range);
-		constant cwltab : natural_vector := xdr_lattab(stdr, CWL, 4);
+		constant cwltab : natural_vector := xdr_lattab(stdr, CWL);
 		variable cwlval : natural_vector(cwltab'range);
 
 		variable mesg : line;
 	begin
 		if stdr = 2 then
 			for i in cltab'range loop
-				clval(i) := (cltab(i)+lat-4)/rate;
+				clval(i) := ((cltab(i)+lat-4)*tDDR)/(4*tCP);
 			end loop;
 			return clval;
 		else
 			for i in cwltab'range loop
-				cwlval(i) := (cwltab(i)+lat)/rate;
+				cwlval(i) := ((cwltab(i)+lat)*tDDR)/(4*tCP);
 			end loop;
 			return cwlval;
 		end if;
