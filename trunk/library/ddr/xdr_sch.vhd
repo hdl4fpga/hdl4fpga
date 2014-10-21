@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity xdr_sch is
 	generic (
+		delay_size : natural := 64;
 		sclk_phases : natural;
 		sclk_edges  : natural;
 		data_phases : natural;
@@ -49,7 +50,6 @@ entity xdr_sch is
 		xdr_dqz  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
 		xdr_wwn  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
 
-	constant delay_size : natural := 256;
 
 end;
 
