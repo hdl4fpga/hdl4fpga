@@ -596,7 +596,7 @@ package body xdr_param is
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
-			lattab(i) := (query_data(i).lat)/(4*rate);
+			lattab(i) := (query_data(i).lat*rate)/4;
 		end loop;
 		return lattab;
 	end;
@@ -611,7 +611,7 @@ package body xdr_param is
 		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
 
 		constant lat : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant tab : natural_vector := xdr_lattab(stdr, CL, 1);
+		constant tab : natural_vector := xdr_lattab(stdr, CL, 4);
 		variable val : natural_vector(tab'range);
 
 	begin
@@ -631,9 +631,9 @@ package body xdr_param is
 		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
 
 		constant lat    : integer := xdr_latency(stdr, tab2laty(tabid), 1);
-		constant cltab  : natural_vector := xdr_lattab(stdr, CL, 1);
+		constant cltab  : natural_vector := xdr_lattab(stdr, CL, 4);
 		variable clval  : natural_vector(cltab'range);
-		constant cwltab : natural_vector := xdr_lattab(stdr, CWL, 1);
+		constant cwltab : natural_vector := xdr_lattab(stdr, CWL, 4);
 		variable cwlval : natural_vector(cwltab'range);
 
 		variable mesg : line;
