@@ -94,10 +94,7 @@ package xdr_param is
 	impure function to_xdrlatency (
 		constant period : time;
 		constant mark   : tmrk_ids;
-		constant param  : tmng_ids;
-		constant word_size : natural := 1;
-		constant byte_size : natural := 1;
-		constant data_edges : natural := 1)
+		constant param  : tmng_ids)
 		return natural;
 
 	impure function xdr_lattab (
@@ -548,10 +545,7 @@ package body xdr_param is
 	impure function to_xdrlatency (
 		constant period : time;
 		constant mark   : tmrk_ids;
-		constant param  : tmng_ids;
-		constant word_size : natural := 1;
-		constant byte_size : natural := 1;
-		constant data_edges : natural := 1)
+		constant param  : tmng_ids)
 		return natural is
 	begin
 		return to_xdrlatency(period, xdr_timing(mark, param));

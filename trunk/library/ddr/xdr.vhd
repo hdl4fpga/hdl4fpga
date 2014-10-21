@@ -215,10 +215,10 @@ begin
 	sys_di_rdy  <= xdr_wr_fifo_req;
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
-		lRCD => to_xdrlatency(tCP, mark, tRCD, word_size, byte_size),
-		lRFC => to_xdrlatency(tCP, mark, tRFC, word_size, byte_size),
-		lWR  => to_xdrlatency(tCP, mark, tWR,  word_size, byte_size),
-		lRP  => to_xdrlatency(tCP, mark, tRP,  word_size, byte_size),
+		lRCD => to_xdrlatency(tCP, mark, tRCD),
+		lRFC => to_xdrlatency(tCP, mark, tRFC),
+		lWR  => to_xdrlatency(tCP, mark, tWR),
+		lRP  => to_xdrlatency(tCP, mark, tRP),
 		bl_cod => xdr_latcod(stdr, BL),
 		bl_tab => xdr_lattab(stdr, BL, tCP/tDDR),
 		cl_cod => xdr_latcod(stdr, CL),
@@ -247,11 +247,11 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		sclk_phases => sclk_phases,
-		sclk_edges => sclk_edges,
+		sclk_phases => 1,
+		sclk_edges  => 1,
 
-		data_phases => data_phases,
-		data_edges  => data_edges,
+		data_phases => 1,
+		data_edges  => 1,
 		line_size   => line_size,
 		byte_size   => byte_size,
 
@@ -275,7 +275,7 @@ begin
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
-		sys_clks => sys_clks,
+		sys_clks => sys_clks(0 to 0),
 		sys_rea  => xdr_mpu_rwin,
 		sys_wri  => xdr_mpu_wwin,
 
