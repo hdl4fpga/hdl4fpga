@@ -738,10 +738,18 @@ package body xdr_param is
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  /  word'length;
+--			for j in word'range loop
+--				aux := '0';
+--				for l in 0 to ((lat_ext+lat_wid-1)/lat_wid+word'length-1-j)/word'length loop
+--					pha := (j+disp_mod+(l*word'length+(lat_ext+lat_wid-1)/lat_wid))/word_byte;
+--					aux := aux or lat_sch(disp_quo*word'length+pha);
+--				end loop;
+--				sel_sch(i)((disp+j) mod word'length) := aux;
+--			end loop;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to ((lat_ext+lat_wid-1)/lat_wid+word'length-1-j)/word'length loop
-					pha := (j+disp_mod+(l*word'length+(lat_ext+lat_wid-1)/lat_wid))/word_byte;
+				for l in 0 to ((lat_ext+lat_wid-1-j)/lat_wid+word'length-1)/word'length loop
+					pha := (j+disp_mod+(l*word'length))/word_byte;
 					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;

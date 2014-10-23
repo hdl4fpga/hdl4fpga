@@ -27,7 +27,7 @@ begin
 		variable k : natural := 0;
 	begin
 		if rising_edge(clk) then
-			k := (k + 1) mod 2;
+			k := (k + 1) mod 4;
 			if k = 0 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
@@ -51,20 +51,20 @@ begin
 		CL_COD    => xdr_latcod(std, xdr_selcwl(std)),
 		CWL_COD   => xdr_latcod(std, xdr_selcwl(std)),
 
-		STRL_TAB  => xdr_lattab(std, STRT,  1 ns, 1 ns),
-		RWNL_tab  => xdr_lattab(std, RWNT,  1 ns, 1 ns),
-		DQSZL_TAB => xdr_lattab(std, DQSZT, 1 ns, 1 ns),
-		DQSOL_TAB => xdr_lattab(std, DQST,  1 ns, 1 ns),
-		DQZL_TAB  => xdr_lattab(std, DQZT,  1 ns, 1 ns),
-		WWNL_TAB  => xdr_lattab(std, WWNT,  1 ns, 1 ns),
+		STRL_TAB  => xdr_lattab(std, STRT,  tDDR =>1 ns, tCP => 0.25 ns),
+		RWNL_tab  => xdr_lattab(std, RWNT,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSZL_TAB => xdr_lattab(std, DQSZT, tDDR =>1 ns, tCP => 0.25 ns),
+		DQSOL_TAB => xdr_lattab(std, DQST,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
+		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		STRX_LAT  => xdr_latency(std, STRXL,  1 ns, 1 ns),
-		RWNX_LAT  => xdr_latency(std, RWNXL,  1 ns, 1 ns),
-		DQSZX_LAT => xdr_latency(std, DQSZXL, 1 ns, 1 ns),
-		DQSX_LAT  => xdr_latency(std, DQSXL,  1 ns, 1 ns),
-		DQZX_LAT  => xdr_latency(std, DQZXL,  1 ns, 1 ns),
-		WWNX_LAT  => xdr_latency(std, WWNXL,  1 ns, 1 ns),
-		WID_LAT   => xdr_latency(std, WIDL,   1 ns, 1 ns))
+		STRX_LAT  => 8, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
+		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		WID_LAT   => xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
