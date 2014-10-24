@@ -99,68 +99,68 @@ begin
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
 
-	xdr_rwn <= xdr_task (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		word_size => line_size,
-		byte_size => byte_size,
-
-		lat_val => sys_cl,
-		lat_cod => cl_cod,
-		lat_tab => rwnl_tab,
-		lat_sch => rpho,
-		lat_ext => RWNX_LAT,
-		lat_wid => WID_LAT);
-
-	xdr_dqsz <= xdr_task (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		word_size => line_size,
-		byte_size => byte_size,
-
-		lat_val => sys_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => dqszl_tab,
-		lat_sch => wpho,
-		lat_ext => DQSZX_LAT,
-		lat_wid => WID_LAT);
-
-	xdr_dqs <= xdr_task (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		word_size => line_size,
-		byte_size => word_size,
-
-		lat_val => sys_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => dqsol_tab,
-		lat_sch => wpho,
-		lat_ext => DQSX_LAT,
-		lat_wid => WID_LAT);
-
-	xdr_dqz <= xdr_task (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		word_size => line_size,
-		byte_size => byte_size,
-
-		lat_val => sys_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => dqzl_tab,
-		lat_sch => wpho,
-		lat_ext => DQZX_LAT,
-		lat_wid => WID_LAT);
-
-	xdr_wwn <= xdr_task (
-		data_phases => data_phases,
-		data_edges  => data_edges,
-		word_size => line_size,
-		byte_size => byte_size,
-
-		lat_val => sys_cwl,
-		lat_cod => cwl_cod,
-		lat_tab => WWNL_TAB,
-		lat_sch => wpho,
-		lat_ext => WWNX_LAT,
-		lat_wid => WID_LAT);
+--	xdr_rwn <= xdr_task (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		word_size => line_size,
+--		byte_size => byte_size,
+--
+--		lat_val => sys_cl,
+--		lat_cod => cl_cod,
+--		lat_tab => rwnl_tab,
+--		lat_sch => rpho,
+--		lat_ext => RWNX_LAT,
+--		lat_wid => WID_LAT);
+--
+--	xdr_dqsz <= xdr_task (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		word_size => line_size,
+--		byte_size => byte_size,
+--
+--		lat_val => sys_cwl,
+--		lat_cod => cwl_cod,
+--		lat_tab => dqszl_tab,
+--		lat_sch => wpho,
+--		lat_ext => DQSZX_LAT,
+--		lat_wid => WID_LAT);
+--
+--	xdr_dqs <= xdr_task (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		word_size => line_size,
+--		byte_size => word_size,
+--
+--		lat_val => sys_cwl,
+--		lat_cod => cwl_cod,
+--		lat_tab => dqsol_tab,
+--		lat_sch => wpho,
+--		lat_ext => DQSX_LAT,
+--		lat_wid => WID_LAT);
+--
+--	xdr_dqz <= xdr_task (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		word_size => line_size,
+--		byte_size => byte_size,
+--
+--		lat_val => sys_cwl,
+--		lat_cod => cwl_cod,
+--		lat_tab => dqzl_tab,
+--		lat_sch => wpho,
+--		lat_ext => DQZX_LAT,
+--		lat_wid => WID_LAT);
+--
+--	xdr_wwn <= xdr_task (
+--		data_phases => data_phases,
+--		data_edges  => data_edges,
+--		word_size => line_size,
+--		byte_size => byte_size,
+--
+--		lat_val => sys_cwl,
+--		lat_cod => cwl_cod,
+--		lat_tab => WWNL_TAB,
+--		lat_sch => wpho,
+--		lat_ext => WWNX_LAT,
+--		lat_wid => WID_LAT);
 end;
