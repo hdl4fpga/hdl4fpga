@@ -3,6 +3,7 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -124,7 +125,7 @@ package xdr_param is
 		constant reg : latr_ids)
 		return std_logic_vector;
 
-	function xdr_task (
+	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
 		constant word_size : natural;
@@ -674,7 +675,7 @@ package body xdr_param is
 		return latcode;
 	end;
 
-	function xdr_task (
+	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
 		constant word_size : natural;
@@ -732,9 +733,11 @@ package body xdr_param is
 		end;
 		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
 		variable sel_sch : word_vector(lat_cod1'range);
+		constant i : natural := 2;
+		variable mesg : line;
 	begin
 		sel_sch := (others => (others => '-'));
-		setup_l : for i in 0 to lat_tab'length-1 loop
+--		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  /  word'length;
@@ -748,13 +751,21 @@ package body xdr_param is
 --			end loop;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to ((lat_ext+lat_wid-1-j)/lat_wid+word'length-1)/word'length loop
-					pha := (j+disp_mod+(l*word'length))/word_byte;
+				for l in 0 to (lat_ext+lat_wid-1-j)/lat_wid loop
+					write (mesg, string'("j -> "));
+					write (mesg, j);
+					write (mesg, string'(" : l -> "));
+					write (mesg, l);
+					pha := (j+disp_mod)/word_byte+l*(lat_ext+word'length-1-j)/word'length;
+					write (mesg, string'(" : pha "));
+					write (mesg, pha);
+					writeline (output, mesg);
 					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
-		end loop;
+					writeline (output, mesg);
+--		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
