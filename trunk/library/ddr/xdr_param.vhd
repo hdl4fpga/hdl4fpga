@@ -735,6 +735,8 @@ package body xdr_param is
 		variable sel_sch : word_vector(lat_cod1'range);
 		constant i : natural := 2;
 		variable mesg : line;
+		variable l_quo : natural;
+		variable l_mod : natural;
 	begin
 		sel_sch := (others => (others => '-'));
 --		setup_l : for i in 0 to lat_tab'length-1 loop
@@ -751,12 +753,16 @@ package body xdr_param is
 --			end loop;
 			for j in word'range loop
 				aux := '0';
-				for l in 0 to (lat_ext+lat_wid-1-j)/lat_wid loop
+				for l in 0 to ((lat_ext+lat_wid-1-j)/lat_wid+word'length-1)/word'length loop
+					l_quo := (lat_ext-j+word'length-1)  /  word'length;
+					l_mod := (lat_ext-j+word'length-1) mod word'length;
 					write (mesg, string'("j -> "));
 					write (mesg, j);
 					write (mesg, string'(" : l -> "));
 					write (mesg, l);
-					pha := (j+disp_mod)/word_byte+l*(lat_ext+word'length-1-j)/word'length;
+					write (mesg, string'(" : l_quo -> "));
+					write (mesg, l_quo);
+					pha := (j+disp_mod)/word_byte+l*l_quo;
 					write (mesg, string'(" : pha "));
 					write (mesg, pha);
 					writeline (output, mesg);
