@@ -27,7 +27,7 @@ begin
 		variable k : natural := 0;
 	begin
 		if rising_edge(clk) then
-			k := (k + 1) mod 4;
+			k := (k + 1) mod 8;
 			if k = 0 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
@@ -58,7 +58,7 @@ begin
 		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		STRX_LAT  => 8, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		STRX_LAT  => 13, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
