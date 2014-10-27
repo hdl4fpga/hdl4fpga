@@ -27,8 +27,10 @@ begin
 		variable k : natural := 0;
 	begin
 		if rising_edge(clk) then
-			k := (k + 1) mod 8;
-			if k = 0 then
+			k := (k + 1);-- mod 8;
+			if k = 32 then
+				sys_rea <= not sys_rea after 1 ps;
+			elsif k = 32+2 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
 		end if;
@@ -64,7 +66,7 @@ begin
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+		WID_LAT   => 3) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
