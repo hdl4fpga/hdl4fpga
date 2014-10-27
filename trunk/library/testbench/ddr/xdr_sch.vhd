@@ -60,13 +60,13 @@ begin
 		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		STRX_LAT  => 13, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		STRX_LAT  => 5, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => 3) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+		WID_LAT   => 2) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
