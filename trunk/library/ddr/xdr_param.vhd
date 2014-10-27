@@ -754,15 +754,16 @@ package body xdr_param is
 			for j in word'range loop
 				aux := '0';
 				for l in 0 to ((lat_ext+lat_wid-1-j)/lat_wid+word'length-1)/word'length loop
+--					l_quo := (lat_ext-j+word'length-1)  /  word'length;
 					l_quo := (lat_ext-j+word'length-1)  /  word'length;
-					l_mod := (lat_ext-j+word'length-1) mod word'length;
+					l_mod := (lat_ext-j) mod word'length;
 					write (mesg, string'("j -> "));
 					write (mesg, j);
 					write (mesg, string'(" : l -> "));
 					write (mesg, l);
 					write (mesg, string'(" : l_quo -> "));
 					write (mesg, l_quo);
-					pha := (j+disp_mod)/word_byte+l*l_quo;
+					pha := (j+disp_mod)/word_byte+l*(l_quo-1);
 					write (mesg, string'(" : pha "));
 					write (mesg, pha);
 					writeline (output, mesg);
