@@ -14,7 +14,7 @@ architecture xdr_sch of testbench is
 	constant sclk_phases : natural := 1; --4;
 	constant sclk_edges  : natural := 1; --2;
 	constant period : time := 4 ns;
-	constant line_size : natural := 4;
+	constant line_size : natural := 5;
 	constant word_size : natural := 1;
 	constant byte_size : natural := 1;
 
@@ -30,7 +30,7 @@ begin
 			k := (k + 1);-- mod 8;
 			if k = 32 then
 				sys_rea <= not sys_rea after 1 ps;
-			elsif k = 32+2 then
+			elsif k = 32+8 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
 		end if;
@@ -60,13 +60,13 @@ begin
 		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		STRX_LAT  => 1, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		STRX_LAT  => xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => 2) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+		WID_LAT   => xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",

@@ -736,9 +736,10 @@ package body xdr_param is
 		constant i : natural := 2;
 		variable l_quo : natural;
 		variable l_mod : natural;
+		variable msg : line;
 	begin
 		sel_sch := (others => (others => '-'));
-		setup_l : for i in 0 to lat_tab'length-1 loop
+--		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  /  word'length;
@@ -746,13 +747,21 @@ package body xdr_param is
 				aux := '0';
 				l_mod := lat_wid-1-(((lat_ext-j+word'length-1)/word'length+lat_wid-1) mod lat_wid);
 				for l in 0 to ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
+					write (msg, string'(" j -> "));
+					write (msg, j);
+					write (msg, string'(" l -> "));
+					write (msg, l);
+					write (msg, string'(" pha -> "));
+					write (msg, pha);
+					writeline (output, msg);
 					l_quo := ((l+1)*l_mod) / lat_wid;
 					pha := (j+disp_mod)/word_byte+l*lat_wid-l_quo;
 					aux := aux or lat_sch(disp_quo*word'length+pha);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
-		end loop;
+					writeline (output, msg);
+--		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
