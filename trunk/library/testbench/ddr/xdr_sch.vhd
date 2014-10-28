@@ -60,7 +60,7 @@ begin
 		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
-		STRX_LAT  => 5, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		STRX_LAT  => 1, --xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
