@@ -128,8 +128,8 @@ package xdr_param is
 	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
+		constant line_size : natural;
 		constant word_size : natural;
-		constant byte_size : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
@@ -678,8 +678,8 @@ package body xdr_param is
 	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
+		constant line_size : natural;
 		constant word_size : natural;
-		constant byte_size : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
@@ -688,7 +688,7 @@ package body xdr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector is
 
-		subtype word is std_logic_vector(0 to word_size/byte_size*data_phases-1);
+		subtype word is std_logic_vector(0 to data_phases*line_size/word_size-1);
 		type word_vector is array (natural range <>) of word;
 
 		subtype latword is std_logic_vector(0 to lat_val'length-1);
@@ -700,7 +700,6 @@ package body xdr_param is
 		variable pha : natural;
 		variable aux : std_logic;
 
-		constant word_byte : natural := word_size/byte_size;
 		function to_latwordvector(
 			constant arg : std_logic_vector)
 			return latword_vector is
@@ -739,7 +738,7 @@ package body xdr_param is
 		variable msg : line;
 	begin
 		sel_sch := (others => (others => '-'));
---		setup_l : for i in 0 to lat_tab'length-1 loop
+		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  /  word'length;
@@ -747,25 +746,26 @@ package body xdr_param is
 				aux := '0';
 				l_mod := lat_wid-1-(((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1) mod lat_wid);
 				for l in 0 to ((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
-				write (msg, string'(" L -> "));
-				write (msg, ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid);
-				write (msg, string'(" M -> "));
-				write (msg, (lat_ext-j+word'length-1)/word'length);
-					write (msg, string'(" j -> "));
-					write (msg, j);
-					write (msg, string'(" l -> "));
-					write (msg, l);
-					write (msg, string'(" pha -> "));
-					write (msg, pha);
-					writeline (output, msg);
 					l_quo := ((l+1)*l_mod) / lat_wid;
-					pha := (j+disp_mod)/word_byte+l*lat_wid-l_quo;
-					aux := aux or lat_sch(disp_quo*word'length+pha);
+					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
+					aux   := aux or lat_sch(disp_quo*word'length+pha);
+
+--					write (msg, string'(" L -> "));
+--					write (msg, ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid);
+--					write (msg, string'(" M -> "));
+--					write (msg, (lat_ext-j+word'length-1)/word'length);
+--					write (msg, string'(" j -> "));
+--					write (msg, j);
+--					write (msg, string'(" l -> "));
+--					write (msg, l);
+--					write (msg, string'(" pha -> "));
+--					write (msg, pha);
+--					writeline (output, msg);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
-					writeline (output, msg);
---		end loop;
+--			writeline (output, msg);
+		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
