@@ -15,6 +15,7 @@ entity ddrphy is
 		sys_sclk : in  std_logic;
 		sys_sclk2x : in std_logic;
 		sys_eclk : in  std_logic;
+		phy_rst : in std_logic;
 
 		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
@@ -240,7 +241,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => sys_rst(0),
+			sys_rst  => phy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => sys_eclk,
 			sys_rw   => sys_rw,
@@ -266,9 +267,9 @@ begin
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
 
-			ddr_dqso => ddr_dqs(i),
+			ddr_dqsi => ddr_dqs(i),
 			ddr_dqst => ddqst(i),
-			ddr_dqsi => ddqsi(i));
+			ddr_dqso => ddqsi(i));
 	end generate;
 
 	process (ddqsi, ddqst)

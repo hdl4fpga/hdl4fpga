@@ -116,7 +116,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_rwn : std_logic_vector(0 to (line_size/word_size)*2*data_phases-1);
+	signal xdr_sch_rwn : std_logic_vector((line_size/word_size)*data_phases-1 downto 0);
 	signal xdr_sch_wwn : std_logic_vector(xdr_sch_rwn'range);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_rwn'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_rwn'range);
@@ -252,9 +252,8 @@ begin
 
 		data_phases => 1,
 		data_edges  => 1,
-		line_size   => line_size,
-		word_size   => word_size,
-		byte_size   => byte_size,
+		line_size   => line_size/word_size,
+		word_size   => 1,
 
 		CL_COD    => xdr_latcod(stdr, CL),
 		CWL_COD   => xdr_latcod(stdr, CWL),
@@ -262,7 +261,7 @@ begin
 		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tCP),
 		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tCP),
 		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tCP),
-		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tCP),
+		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2),
 		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tCP),
 		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tCP),
 
@@ -281,17 +280,20 @@ begin
 		sys_wri  => xdr_mpu_wwin,
 
 		xdr_rwn => xdr_sch_rwn,
-		xdr_st  => xdr_sto,
+		xdr_st  => xdr_sch_st,
 
 		xdr_dqsz => xdr_sch_dqsz,
---		xdr_dqs  => xdr_sch_dqs,
+		xdr_dqs  => xdr_sch_dqs,
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
-	xdr_dqso <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
+--	xdr_dqso <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 
 	xdr_win_dqs <= (others => xdr_sch_rwn(0));
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));
+	xdr_sto(xdr_sch_st'range) <= xdr_sch_st;
+	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
+--	xdr_dqso(xdr_sch_st'range) <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
 --		dqsi_phases => dqsi_phases,

@@ -15,7 +15,6 @@ entity xdr_sch is
 
 		line_size : natural;
 		word_size : natural;
-		byte_size : natural;
 
 		CL_COD  : std_logic_vector;
 		CWL_COD : std_logic_vector;
@@ -42,14 +41,14 @@ entity xdr_sch is
 		sys_rea  : in  std_logic;
 		sys_wri  : in  std_logic;
 
-		xdr_rwn : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_st  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_rwn : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
+		xdr_st  : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
 
-		xdr_dqsz : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
+		xdr_dqsz : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
 		xdr_dqs  : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
 
-		xdr_dqz  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1);
-		xdr_wwn  : out std_logic_vector(0 to (line_size/byte_size)*data_phases-1));
+		xdr_dqz  : out std_logic_vector(0 to (line_size/word_size)*data_phases-1);
+		xdr_wwn  : out std_logic_vector(0 to (line_size/word_size)*data_phases-1));
 
 
 end;
