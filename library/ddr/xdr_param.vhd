@@ -748,7 +748,8 @@ package body xdr_param is
 				for l in 0 to ((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
 					l_quo := ((l+1)*l_mod) / lat_wid;
 					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
-					aux   := aux or lat_sch(disp_quo*word'length+pha);
+					aux   := aux or lat_sch(disp_quo+pha);
+--					aux   := aux or lat_sch(disp_quo*word'length+pha);
 
 --					write (msg, string'(" L -> "));
 --					write (msg, ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid);

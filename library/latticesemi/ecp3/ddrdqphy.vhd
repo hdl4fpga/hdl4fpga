@@ -88,14 +88,14 @@ begin
 		datavalid => sys_cfgo(datavalid),
 
 		rst  => sys_rst,
-		dyndelay0 => sys_cfgi(dyndelay0),
-		dyndelay1 => sys_cfgi(dyndelay1),
-		dyndelay2 => sys_cfgi(dyndelay2),
-		dyndelay3 => sys_cfgi(dyndelay3),
-		dyndelay4 => sys_cfgi(dyndelay4),
-		dyndelay5 => sys_cfgi(dyndelay5),
-		dyndelay6 => sys_cfgi(dyndelay6),
-		dyndelpol => sys_cfgi(dyndelpol),
+		dyndelay0 => '0', --sys_cfgi(dyndelay0),
+		dyndelay1 => '0', --sys_cfgi(dyndelay1),
+		dyndelay2 => '0', --sys_cfgi(dyndelay2),
+		dyndelay3 => '0', --sys_cfgi(dyndelay3),
+		dyndelay4 => '0', --sys_cfgi(dyndelay4),
+		dyndelay5 => '0', --sys_cfgi(dyndelay5),
+		dyndelay6 => '0', --sys_cfgi(dyndelay6),
+		dyndelpol => '0', --sys_cfgi(dyndelpol),
 		eclkw => sys_eclk,
 
 		dqsw => dqsw,
@@ -170,6 +170,7 @@ begin
 
 	dqso_b : block 
 		signal dqstclk : std_logic;
+		signal ppp : std_logic;
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
 	begin

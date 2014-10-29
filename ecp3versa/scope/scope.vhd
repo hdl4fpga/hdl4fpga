@@ -178,6 +178,7 @@ begin
 		sys_sclk => ddr_sclk,
 		sys_sclk2x => ddr_sclk2x, 
 		sys_eclk => ddr_eclk,
+		phy_rst => scope_rst,
 
 		sys_rw => 'U',
 		sys_rst => ddrphy_rst, 
