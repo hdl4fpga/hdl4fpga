@@ -152,19 +152,25 @@ begin
 	begin
 		pll_i : ehxpllf
 		generic map (
-			feedbk_path => "INTERNAL",
-			clkos_trim_delay => 0, clkos_trim_pol => "RISING", 
-			clkop_trim_delay => 0, clkop_trim_pol => "RISING", 
-			delay_pwd => "DISABLED",
-			delay_val => 0, 
-			duty => 8,
-			phase_delay_cntl => "STATIC",
-			phaseadj => "90.0", 
-			clkok_div => 2,
-			clkop_div => 2,
-			clkfb_div => 4,
-			clki_div  => 1,
-			fin => "100.000000")
+			CLKOS_TRIM_DELAY => 0,
+			CLKOS_TRIM_POL => "RISING", 
+			CLKOS_BYPASS => "DISABLED", 
+			CLKOP_TRIM_DELAY => 0,
+			CLKOP_TRIM_POL => "RISING", 
+			CLKOP_BYPASS => "DISABLED", 
+			CLKOK_INPUT => "CLKOP",
+			CLKOK_BYPASS => "DISABLED", 
+			DELAY_PWD => "DISABLED",
+			DELAY_VAL => 0, 
+			DUTY => 8,
+			PHASE_DELAY_CNTL => "DYNAMIC",
+			PHASEADJ => "0.0", 
+			CLKOK_DIV => 2,
+			CLKOP_DIV => 2,
+			CLKFB_DIV => 4,
+			CLKI_DIV  => 1,
+			FEEDBK_PATH => "INTERNAL",
+			FIN => "100.000000")
 		port map (
 			rst   => '0', 
 			rstk  => '0',

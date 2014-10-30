@@ -37,6 +37,7 @@ architecture arch of xdr_pgm is
 	constant xdr_act : std_logic_vector(4 downto 0)    := "00011";
 	constant xdr_rea : std_logic_vector(xdr_act'range) := "00101";
 	constant xdr_wri : std_logic_vector(xdr_act'range) := "00100";
+	constant xdr_pre0 : std_logic_vector(xdr_act'range) := "00010";
 	constant xdr_pre : std_logic_vector(xdr_act'range) := "10010";
 	constant xdr_aut : std_logic_vector(xdr_act'range) := "01001";
 	constant xdr_nop : std_logic_vector(xdr_act'range) := "10111";
@@ -77,14 +78,14 @@ architecture arch of xdr_pgm is
 --                           --                 --
 
 --
---               000   001   010   011   100   101   110   111
---             +-----+-----+-----+-----+-----+-----+-----+-----+
---     act     | '-' | pre | '-' | pre | wri | pre | rea | pre |
---     rea     | pre | pre | pre | pre | '-' | pre | rea | pre |
---     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
---     pre     | nop | aut | nop | aut | act | aut | act | aut |
---     aut     | pre | pre | pre | pre | act | act | act | act |
---             +-----+-----+-----+-----+-----+-----+-----+-----+
+--               000    001    010    011    100   101    110   111
+--             +------+------+------+------+-----+------+-----+------+
+--     act     | '-'  | pre  | '-'  | pre  | wri | pre  | rea | pre  |
+--     rea     | pre0 | pre0 | pre0 | pre0 | '-' | pre0 | rea | pre0 |
+--     wri     | pre0 | pre0 | pre0 | pre0 | wri | pre0 | '-' | pre0 |
+--     pre     | nop  | aut  | nop  | aut  | act | aut  | act | aut  |
+--     aut     | pre  | pre  | pre  | pre  | act | act  | act | act  |
+--             +------+------+------+------+-----+------+-----+------+
 
 
 	constant pgm_tab : trans_tab := (
@@ -97,23 +98,23 @@ architecture arch of xdr_pgm is
 		(ddrs_act, "110", ddrs_rea, xdr_rea),
 		(ddrs_act, "111", ddrs_pre, xdr_pre),
 		
-		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
-		(ddrs_rea, "001", ddrs_pre, xdr_pre),	-- REA --
-		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
-		(ddrs_rea, "011", ddrs_pre, xdr_pre),
+		(ddrs_rea, "000", ddrs_pre, xdr_pre0),	---------
+		(ddrs_rea, "001", ddrs_pre, xdr_pre0),	-- REA --
+		(ddrs_rea, "010", ddrs_pre, xdr_pre0),	---------
+		(ddrs_rea, "011", ddrs_pre, xdr_pre0),
 		(ddrs_rea, "100", ddrs_dnt, xdr_wri),
-		(ddrs_rea, "101", ddrs_pre, xdr_pre),
+		(ddrs_rea, "101", ddrs_pre, xdr_pre0),
 		(ddrs_rea, "110", ddrs_rea, xdr_rea),
-		(ddrs_rea, "111", ddrs_pre, xdr_pre),
+		(ddrs_rea, "111", ddrs_pre, xdr_pre0),
 
-		(ddrs_wri, "000", ddrs_pre, xdr_pre),	---------
-		(ddrs_wri, "001", ddrs_pre, xdr_pre),	-- WRI --
-		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
-		(ddrs_wri, "011", ddrs_pre, xdr_pre),
+		(ddrs_wri, "000", ddrs_pre, xdr_pre0),	---------
+		(ddrs_wri, "001", ddrs_pre, xdr_pre0),	-- WRI --
+		(ddrs_wri, "010", ddrs_pre, xdr_pre0),	---------
+		(ddrs_wri, "011", ddrs_pre, xdr_pre0),
 		(ddrs_wri, "100", ddrs_wri, xdr_wri),
-		(ddrs_wri, "101", ddrs_pre, xdr_pre),
+		(ddrs_wri, "101", ddrs_pre, xdr_pre0),
 		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
-		(ddrs_wri, "111", ddrs_pre, xdr_pre),
+		(ddrs_wri, "111", ddrs_pre, xdr_pre0),
 
 		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "001", ddrs_aut, xdr_aut),	-- PRE --

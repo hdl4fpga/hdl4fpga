@@ -71,6 +71,7 @@ begin
 	end process;
 
 	wr_ena <= demux(wr_sel(1 to wr_sel'right));
+	wr_data <= input_dat;
 
 	ram_g : for i in 0 to output_dat'length/input_dat'length-1 generate
 		fifo_e : entity hdl4fpga.dpram
@@ -96,6 +97,6 @@ begin
 		output_dat <= data;
 	end process;
 
-	output_rdy <= setif(wr_addr/=rd_addr);
+	output_rdy <= setif(wr_addr(0 to 2) /= rd_addr(0 to 2));
 
 end;
