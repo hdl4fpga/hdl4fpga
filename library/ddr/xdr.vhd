@@ -258,20 +258,20 @@ begin
 		CL_COD    => xdr_latcod(stdr, CL),
 		CWL_COD   => xdr_latcod(stdr, CWL),
 
-		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tCP),
-		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tCP),
-		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tCP),
+		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2),
+		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2),
+		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2),
 		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2),
-		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tCP),
-		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tCP),
+		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2),
+		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2),
 
-		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tCP),
-		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tCP),
-		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tCP),
-		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tCP),
-		DQZX_LAT  => xdr_latency(stdr, DQZXL,  tDDR => tDDR, tCP => tCP),
-		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tCP),
-		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tCP))
+		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2),
+		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
+		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
+		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
+		DQZX_LAT  => xdr_latency(stdr, DQZXL,  tDDR => tDDR, tCP => tDDR/2),
+		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
+		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR/2))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
