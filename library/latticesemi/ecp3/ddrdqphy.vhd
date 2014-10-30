@@ -18,8 +18,8 @@ entity ddrdqphy is
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
+		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmi  : in  std_logic;
@@ -170,7 +170,6 @@ begin
 
 	dqso_b : block 
 		signal dqstclk : std_logic;
-		signal ppp : std_logic;
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
 	begin
@@ -187,7 +186,7 @@ begin
 		port map (
 			sclk => sys_sclk,
 			db0 => sys_dqso(2*0),
-			db1 => sys_dqso(1),
+			db1 => sys_dqso(2*1),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
