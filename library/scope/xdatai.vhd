@@ -97,6 +97,6 @@ begin
 		output_dat <= data;
 	end process;
 
-	output_rdy <= setif(wr_addr(0 to 2) /= rd_addr(0 to 2));
+	output_rdy <= setif(wr_addr(0 to 1) /= rd_addr(0 to 1));
 
 end;
