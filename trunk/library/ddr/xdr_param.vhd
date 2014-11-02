@@ -544,8 +544,15 @@ package body xdr_param is
 		period : time;
 		timing : time)
 		return natural is
+		variable q : natural;
 	begin
-		return (timing+period)/period;
+			return (timing+period)/period;
+		q := timing / period;
+		if q*period < timing then
+			return (timing+period)/period;
+		else
+			return timing/period;
+		end if;
 	end;
 
 	impure function to_xdrlatency (
