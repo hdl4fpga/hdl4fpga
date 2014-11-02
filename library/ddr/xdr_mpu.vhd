@@ -60,7 +60,6 @@ architecture arch of xdr_mpu is
 		variable aux : natural;
 	begin
 		aux := max(lRCD,lRFC);
-		aux := max(aux, lWR);
 		aux := max(aux, lRP);
 		for i in bl_tab'range loop
 			aux := max(aux, bl_tab(i));
@@ -69,7 +68,7 @@ architecture arch of xdr_mpu is
 			aux := max(aux, cl_tab(i));
 		end loop;
 		for i in cwl_tab'range loop
-			aux := max(aux, cwl_tab(i));
+			aux := max(aux, cwl_tab(i)+lWR);
 		end loop;
 		val := 1;
 		aux := aux-2;
@@ -103,7 +102,7 @@ architecture arch of xdr_mpu is
 	constant xdrs_pre      : std_logic_vector(0 to 2) := "010";
 	signal xdr_state : std_logic_vector(0 to 2);
 
-	type lat_id is (ID_IDLE, ID_RCD, ID_RFC, ID_WR, ID_RP, ID_BL, ID_CL, ID_CWL);
+	type lat_id is (ID_IDLE, ID_RCD, ID_RFC, ID_RP, ID_BL, ID_CL, ID_CWL);
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
 		xdr_state_n : std_logic_vector(0 to 2);
@@ -190,6 +189,18 @@ architecture arch of xdr_mpu is
 
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of xdr_state : signal is "compact";
+
+	function "+" (
+		constant tab : natural_vector;
+		constant off : natural)
+		return natural_vector is
+		variable val : natural_vector(tab'range);
+	begin
+		for i in tab'range loop
+			val(i) := tab(i) + off;
+		end loop;
+		return val;
+	end;
 
 	function select_lat (
 		constant lat_val : std_logic_vector;
@@ -279,13 +290,11 @@ begin
 								when ID_CL =>
 									lat_timer <= select_lat(xdr_mpu_cl, cl_cod, cl_tab);
 								when ID_CWL =>
-									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab);
+									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab+lWR);
 								when ID_RCD =>
 									lat_timer <= to_signed(lRCD-2, lat_timer'length);
 								when ID_RFC =>
 									lat_timer <= to_signed(lRFC-2, lat_timer'length);
-								when ID_WR  =>
-									lat_timer <= to_signed(lWR-2, lat_timer'length);
 								when ID_RP =>
 									lat_timer <= to_signed(lRP-2, lat_timer'length);
 								when ID_IDLE =>

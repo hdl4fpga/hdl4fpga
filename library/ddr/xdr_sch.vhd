@@ -132,9 +132,9 @@ begin
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
-		lat_tab => dqsol_tab,
+		lat_tab => (0 => 0, 1 => 0, 2 => 0, 3 => 0), --dqsol_tab,
 		lat_sch => wpho,
-		lat_ext => DQSX_LAT,
+		lat_ext => 0, --DQSX_LAT,
 		lat_wid => WID_LAT);
 
 	xdr_dqz <= xdr_task (
