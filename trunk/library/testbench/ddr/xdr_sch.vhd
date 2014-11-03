@@ -49,7 +49,6 @@ begin
 		data_edges  => data_edges,
 		line_size   => line_size,
 		word_size   => word_size,
-		byte_size   => byte_size,
 
 		CL_COD    => xdr_latcod(std, xdr_selcwl(std)),
 		CWL_COD   => xdr_latcod(std, xdr_selcwl(std)),
@@ -67,7 +66,7 @@ begin
 		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+		WID_LAT   => lat_wid) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
