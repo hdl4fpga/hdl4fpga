@@ -14,10 +14,10 @@ architecture xdr_sch of testbench is
 	constant sclk_phases : natural := 1; --4;
 	constant sclk_edges  : natural := 1; --2;
 	constant period : time := 4 ns;
-	constant line_size : natural := 4;
+	constant line_size : natural := 5;
 	constant word_size : natural := 1;
 	constant byte_size : natural := 1;
-	constant lat_wid : natural := 8;
+	constant lat_wid : natural := 4;
 
 	signal clk : std_logic := '0';
 	signal sys_clks : std_logic_vector(0 to sclk_phases/sclk_edges-1);
