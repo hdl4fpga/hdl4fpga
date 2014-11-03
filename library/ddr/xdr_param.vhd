@@ -745,35 +745,43 @@ package body xdr_param is
 		variable msg : line;
 	begin
 		sel_sch := (others => (others => '-'));
-		setup_l : for i in 0 to lat_tab'length-1 loop
+		write (msg, string'("LAT_WID -> "));
+		write (msg, LAT_WID);
+		write (msg, string'(" LAT_EXT -> "));
+		write (msg, LAT_EXT);
+		writeline (output, msg);
+--		setup_l : for i in 0 to lat_tab'length-1 loop
 			disp := lat_tab(i);
 			disp_mod := disp mod word'length;
 			disp_quo := disp  /  word'length;
 			for j in word'range loop
 				aux := '0';
-				l_mod := lat_wid-1-(((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1) mod lat_wid);
-				for l in 0 to ((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
-					l_quo := ((l+1)*l_mod) / lat_wid;
+				l_mod := ((lat_ext-j+word'length-1)/word'length) mod lat_wid;
+--				l_mod := lat_wid-1-(((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1) mod lat_wid);
+--				for l in 0 to ((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
+				for l in 0 to ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
+--					l_quo := ((l+1)*l_mod) / lat_wid;
+					l_quo := (lat_wid-(l*l_mod) / lat_wid) mod lat_wid;
 					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
 					aux   := aux or lat_sch(disp_quo+pha);
---					aux   := aux or lat_sch(disp_quo*word'length+pha);
+					aux   := aux or lat_sch(disp_quo*word'length+pha);
 
---					write (msg, string'(" L -> "));
---					write (msg, ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid);
---					write (msg, string'(" M -> "));
---					write (msg, (lat_ext-j+word'length-1)/word'length);
---					write (msg, string'(" j -> "));
---					write (msg, j);
---					write (msg, string'(" l -> "));
---					write (msg, l);
---					write (msg, string'(" pha -> "));
---					write (msg, pha);
---					writeline (output, msg);
+					write (msg, string'(" l_mod -> "));
+					write (msg, l_mod);
+					write (msg, string'(" l_quo -> "));
+					write (msg, l_quo);
+					write (msg, string'(" j -> "));
+					write (msg, j);
+					write (msg, string'(" l -> "));
+					write (msg, l);
+					write (msg, string'(" pha -> "));
+					write (msg, pha);
+					writeline (output, msg);
 				end loop;
 				sel_sch(i)((disp+j) mod word'length) := aux;
 			end loop;
---			writeline (output, msg);
-		end loop;
+			writeline (output, msg);
+--		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 

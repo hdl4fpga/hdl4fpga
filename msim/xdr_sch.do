@@ -12,6 +12,7 @@ add wave -noupdate /testbench/du/STRX_LAT
 add wave -noupdate -expand /testbench/du/STRL_TAB
 add wave -noupdate /testbench/du/CL_COD
 add wave -noupdate /testbench/du/sys_cl
+add wave -noupdate -expand /testbench/du/xdr_dqs
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {397926 ps} 0} {{Cursor 2} {429915 ps} 0}
 quietly wave cursor active 2
@@ -29,4 +30,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {373792 ps} {548443 ps}
+WaveRestoreZoom {134082 ps} {308733 ps}
