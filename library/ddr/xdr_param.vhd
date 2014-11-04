@@ -740,6 +740,8 @@ package body xdr_param is
 		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
 		variable sel_sch : word_vector(lat_cod1'range);
 		constant i : natural := 2;
+		variable j_quo : natural;
+		variable j_mod : natural;
 		variable l_quo : natural;
 		variable l_mod : natural;
 		variable msg : line;
@@ -757,20 +759,24 @@ package body xdr_param is
 			for j in word'range loop
 				aux := '0';
 				l_mod := ((lat_ext-j+word'length-1)/word'length) mod lat_wid;
+				j_quo := ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid;
+				j_mod := ((lat_ext-j+word'length-1)/word'length) mod lat_wid;
+				((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
 				l_quo := 0;
 --				l_mod := lat_wid-1-(((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1) mod lat_wid);
 --				for l in 0 to ((lat_ext+lat_wid-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
 				for l in 0 to ((lat_ext-j+word'length-1)/word'length+lat_wid-1)/lat_wid loop
 --					l_quo := l*l_mod / lat_wid) mod lat_wid;
-					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
-					l_quo := lat_wid-((l+1)*l_mod)/lat_wid;
-					aux   := aux or lat_sch(disp_quo+pha);
-					aux   := aux or lat_sch(disp_quo*word'length+pha);
-
 					write (msg, string'(" l_mod -> "));
 					write (msg, l_mod);
 					write (msg, string'(" l_quo -> "));
 					write (msg, l_quo);
+					l_quo := ((l+1)*l_mod)/lat_wid;
+					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
+--					l_quo := lat_wid-1-((l+2)*l_mod)/lat_wid;
+					aux   := aux or lat_sch(disp_quo+pha);
+					aux   := aux or lat_sch(disp_quo*word'length+pha);
+
 					write (msg, string'(" j -> "));
 					write (msg, j);
 					write (msg, string'(" l -> "));
