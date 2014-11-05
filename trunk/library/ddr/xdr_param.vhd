@@ -544,11 +544,8 @@ package body xdr_param is
 		period : time;
 		timing : time)
 		return natural is
-		variable q : natural;
 	begin
-			return (timing+period)/period;
-		q := timing / period;
-		if q*period < timing then
+		if (timing/period)*period < timing then
 			return (timing+period)/period;
 		else
 			return timing/period;

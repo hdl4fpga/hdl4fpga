@@ -31,7 +31,7 @@ begin
 			k := (k + 1);-- mod 8;
 			if k = 32 then
 				sys_rea <= not sys_rea after 1 ps;
-			elsif k = 32+lat_wid then
+			elsif k = 32+3 then
 				sys_rea <= not sys_rea after 1 ps;
 			end if;
 		end if;
@@ -56,17 +56,17 @@ begin
 		STRL_TAB  => xdr_lattab(std, STRT,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNL_tab  => xdr_lattab(std, RWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZL_TAB => xdr_lattab(std, DQSZT, tDDR =>1 ns, tCP => 0.25 ns),
-		DQSOL_TAB => xdr_lattab(std, DQST,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSOL_TAB => (0 => 0, 1 => 0, 2 => 0, 3 => 0), --xdr_lattab(std, DQST,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZL_TAB  => xdr_lattab(std, DQZT,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNL_TAB  => xdr_lattab(std, WWNT,  tDDR =>1 ns, tCP => 0.25 ns),
 
 		STRX_LAT  => xdr_latency(std, STRXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		RWNX_LAT  => xdr_latency(std, RWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQSZX_LAT => xdr_latency(std, DQSZXL, tDDR =>1 ns, tCP => 0.25 ns),
-		DQSX_LAT  => xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
+		DQSX_LAT  => 11, --xdr_latency(std, DQSXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		DQZX_LAT  => xdr_latency(std, DQZXL,  tDDR =>1 ns, tCP => 0.25 ns),
 		WWNX_LAT  => xdr_latency(std, WWNXL,  tDDR =>1 ns, tCP => 0.25 ns),
-		WID_LAT   => lat_wid) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
+		WID_LAT   => 10)--lat_wid) --xdr_latency(std, WIDL,   tDDR =>1 ns, tCP => 0.25 ns))
 	port map (
         sys_cl => "101",
         sys_cwl => "101",
