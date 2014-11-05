@@ -218,7 +218,7 @@ begin
 	generic map (
 		lRCD => to_xdrlatency(tCP, mark, tRCD),
 		lRFC => to_xdrlatency(tCP, mark, tRFC),
-		lWR  => to_xdrlatency(tCP, mark, tWR),
+		lWR  => to_xdrlatency(tCP, xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2)),
 		lRP  => to_xdrlatency(tCP, mark, tRP),
 		bl_cod => xdr_latcod(stdr, BL),
 		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
@@ -327,10 +327,10 @@ begin
 	port map (
 		sys_clk => sys_clks(0),
 		sys_dqi => sys_di,
-		sys_req => xdr_wr_fifo_req,
+		sys_req => xdr_mpu_wwin,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
 		xdr_dmo  => xdr_dmo,
-		xdr_enas => xdr_wr_fifo_ena, 
+		xdr_enas => xdr_sch_wwn(3 downto 3), 
 		xdr_dqo  => xdr_dqo);
 end;

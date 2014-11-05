@@ -33,8 +33,8 @@ entity ddrphy is
 		sys_dmi  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(data_phases*line_size-1 downto 0);
-		sys_dqi  : in  std_logic_vector(data_phases*line_size-1 downto 0);
-		sys_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dqo  : in  std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dqi  : out std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
@@ -230,7 +230,7 @@ begin
 	sdmi <= to_blinevector(sys_dmi);
 	sdmt <= to_blinevector(sys_dmt);
 	sdqt <= to_dlinevector(sys_dqt);
-	sdqi <= to_dlinevector(sys_dqi);
+	sdqi <= to_dlinevector(sys_dqo);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);
@@ -252,9 +252,9 @@ begin
 			sys_dmi => sdmi(i),
 			sys_dmo => sdmo(i),
 
-			sys_dqi  => sdqi(i),
+			sys_dqo  => sdqi(i),
 			sys_dqt  => sdqt(i),
-			sys_dqo  => sdqo(i),
+			sys_dqi  => sdqo(i),
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
@@ -311,6 +311,6 @@ begin
 
 	sys_dqsi <= ddr_dqs;
 	sys_dmo <= to_stdlogicvector(sdmo);
-	sys_dqo <= to_stdlogicvector(sdqo);
+	sys_dqi <= to_stdlogicvector(sdqo);
 	sys_cfgo <= to_stdlogicvector(cfgo);
 end;
