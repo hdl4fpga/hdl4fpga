@@ -171,7 +171,7 @@ begin
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
-		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
+		attribute oddrapps of oddrx2dqsa_i : label is "DQS_ALIGNED";
 	begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
