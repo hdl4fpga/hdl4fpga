@@ -16,7 +16,7 @@ entity ddrdqphy is
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
@@ -123,11 +123,12 @@ begin
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+		signal qqo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => sys_dqst(0),
+			ta => sys_dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dqt(i));
@@ -141,7 +142,9 @@ begin
 			db0 => sys_dqo(i*line_size/byte_size+1),
 			da1 => sys_dqo(i*line_size/byte_size+2),
 			db1 => sys_dqo(i*line_size/byte_size+3),
-			q   => ddr_dqo(i));
+--			q   => ddr_dqo(i));
+			q   => qqo);
+		ddr_dqo(i) <= qqo after 2.5 ns/4;
 	end generate;
 
 	dm_b : block
@@ -171,7 +174,7 @@ begin
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
-		attribute oddrapps of oddrx2dqsa_i : label is "DQS_ALIGNED";
+		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
 	begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
@@ -183,6 +186,8 @@ begin
 			q => ddr_dqst);
 
 		oddrx2dqsa_i : oddrx2dqsa
+		generic map (
+			ISI_CAL => "DEL4")
 		port map (
 			sclk => sys_sclk,
 			db0 => sys_dqso(2*0),

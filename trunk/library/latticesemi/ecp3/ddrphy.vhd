@@ -32,7 +32,7 @@ entity ddrphy is
 		sys_dmt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dmi  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(data_phases*line_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
@@ -176,7 +176,7 @@ architecture ecp3 of ddrphy is
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
 	signal sdqo : dline_vector(word_size/byte_size-1 downto 0);
 
@@ -229,7 +229,7 @@ begin
 
 	sdmi <= to_blinevector(sys_dmi);
 	sdmt <= to_blinevector(sys_dmt);
-	sdqt <= to_dlinevector(sys_dqt);
+	sdqt <= to_blinevector(sys_dqt);
 	sdqi <= to_dlinevector(sys_dqo);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
@@ -290,7 +290,7 @@ begin
 		dqt := to_stdlogicvector(ddqt);
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
-			if dqt(i)='1' then
+			if dqt(i)='0' then
 				ddr_dq(i) <= 'Z';
 			else
 				ddr_dq(i) <= dqo(i);
