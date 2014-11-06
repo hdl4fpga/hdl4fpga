@@ -68,7 +68,7 @@ entity xdr is
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
-		xdr_dqt : out std_logic_vector(data_phases*line_size-1 downto 0);
+		xdr_dqt : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		xdr_sti  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 		xdr_sto  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
@@ -294,6 +294,7 @@ begin
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));
 	xdr_sto(xdr_sch_st'range) <= xdr_sch_st;
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
+	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
 --	xdr_dqso(xdr_sch_st'range) <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (

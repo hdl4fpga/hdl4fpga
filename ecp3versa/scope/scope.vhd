@@ -47,7 +47,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_dqt : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 
 	signal mii_rxdv : std_logic;
@@ -148,6 +148,7 @@ begin
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
 		ddr_dqi  => ddrphy_dqi,
+		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
 
@@ -213,10 +214,11 @@ begin
 		ddr_b   => ddr3_b,
 		ddr_a   => ddr3_a,
 
-		ddr_dm  => ddr3_dm,
+--		ddr_dm  => ddr3_dm,
 		ddr_dq  => ddr3_dq,
 		ddr_dqs => ddr3_dqs);
 
+	ddr3_dm <= (others => '0');
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 

@@ -44,7 +44,7 @@ entity scope is
 		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
+		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqi : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
 		ddr_dqo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
