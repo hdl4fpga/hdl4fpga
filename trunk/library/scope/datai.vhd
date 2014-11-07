@@ -98,17 +98,14 @@ begin
 
 	ram_g : for i in 0 to 2**n-1 generate
 		fifo_e : entity hdl4fpga.dpram
-		generic map (
-			data_size => input_word'length,
-			address_size => fifo_size)
 		port map (
 			wr_clk => input_clk,
-			wr_address => wr_address, 
+			wr_addr => wr_address, 
 			wr_data => wr_data,
 			wr_ena => wr_ena(i),
 			rd_clk => output_clk,
 			rd_ena => output_req,
-			rd_address => rd_address,
+			rd_addr => rd_address,
 			rd_data => datao(i));
 	end generate;
 
