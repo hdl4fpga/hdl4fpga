@@ -336,8 +336,8 @@ begin
 	generic map (
 		c200u => natural(t200u/tCP),
 --		c200u => natural(2000.0/tCP),
-		cDLL  => hdl4fpga.std.assign_if(std=3, 512, 220),
-		c500u => natural(hdl4fpga.std.assign_if(std=2,t400n,t500u)/tCP),
+		cDLL  => hdl4fpga.std.selecton(std=3, 512, 220),
+		c500u => natural(hdl4fpga.std.selecton(std=2,t400n,t500u)/tCP),
 --		c500u => natural(3000.0),
 		cxpr  => natural(txpr/tCP),
 		cREF  => natural(floor(tREFI/tCP)),
