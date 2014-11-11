@@ -55,7 +55,7 @@ architecture scope of nuhs3dsp is
 
 	constant sys_per : real := 50.0;
 	constant ddr_mul : natural := 25;
-	constant ddr_div : natural :=  3;
+	constant ddr_div : natural := 3;
 begin
 
 	sys_rst <= not sw1;
