@@ -402,35 +402,6 @@ begin
 			ddr_init_b   => ddr_init_b);
 	end generate;
 
-	ddr3_init_g : if std=3 generate
-		signal ba3 : std_logic_vector(2 downto 0);
-	begin
-		ddr_init_b <= ba3(1 downto 0);
-		ddr_init_du : entity hdl4fpga.ddr_init(ddr3)
-		generic map (
-			lat_length => 9,
-			a    => addr_bits,
-			ba   => 3,
-			tRP  => natural(ceil(tRP/tCp)),
-			tMRD => 4,
-			tRFC => natural(ceil(tRFC/tCp)))
-		port map (
-			ddr_init_cl  => casdb (cl,  std),
-			ddr_init_bl  => bldb  (bl,  std),
-			ddr_init_wr  => wrdb  (wr,  std),
-			ddr_init_cwl => cwldb (cwl, std),
-
-			ddr_init_clk => clk0,
-			ddr_init_req => ddr_init_cfg,
-			ddr_init_rdy => ddr_init_rdy,
-			ddr_init_dll => ddr_init_dll,
-			ddr_init_ras => ddr_init_ras,
-			ddr_init_cas => ddr_init_cas,
-			ddr_init_we  => ddr_init_we,
-			ddr_init_a   => ddr_init_a,
-			ddr_init_b   => ba3);
-	end generate;
-
 	process (clk0)
 		variable q : std_logic;
 	begin
