@@ -184,7 +184,7 @@ begin
 			--r := r + 1;
 			if ddrs_ini='0' then
 				input_req <= '0';
-				r := x"ff00";
+				r := x"aa55"; --x"ff00";
 			--	r := to_unsigned(61, r'length);
 			elsif input_rdy='0' then
 				input_req <= '1';

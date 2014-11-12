@@ -14,16 +14,18 @@ net "sys_clk" tnm_net = sys_clk;
 #
 net "*ddr2_d[*]"           maxdelay =  350 ps;
 net "*ddr2_d[*]"           maxskew  =  100 ps;
+net "*ddr2_dm[*]"           maxdelay =  350 ps;
+net "*ddr2_dm[*]"           maxskew  =  100 ps;
 #net "*ddr_st_lp_dqs*"      maxdelay = 3200 ps;
 #net "*ddr_st_lp_dqs*"      maxskew  = 1000 ps;
 #
 ## Data strobe signals
 ## ###################
 #
-#net "*ddr2_dqs_p_p[*]"      maxdelay =  375 ps;
-#net "*ddr2_dqs_p_p[*]"      maxskew  =   75 ps;
-##net "*ddr_delayed_dqs*[*]" maxdelay = 1350 ps;
-##net "*ddr_delayed_dqs*[*]" maxskew  =  560 ps;
+net "*ddr2_dqs_p[*]"      maxdelay =  375 ps;
+net "*ddr2_dqs_p[*]"      maxskew  =   75 ps;
+net "*ddr_delayed_dqs*[*]" maxdelay = 1350 ps;
+net "*ddr_delayed_dqs*[*]" maxskew  =  560 ps;
 #net "*video_clk*" maxskew = 1 ns;
 
 net "ddr2_dqs_p[0]" tnm_net = dqs0;
