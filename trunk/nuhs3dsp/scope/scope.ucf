@@ -28,8 +28,8 @@ INST "*/rgb_g[*].ffd_green"                    IOB = FORCE;
 INST "*/rgb_g[*].ffd_blue"                     IOB = FORCE;
 
 #NET "*video_clk*" MAXSKEW  = 1 ns;
-##NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
-##NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
+NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
+NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
 ##NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
 ##NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
 ##NET "*ddr_dqs[*]" MAXDELAY = 375 ps;

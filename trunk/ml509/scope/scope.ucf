@@ -12,8 +12,8 @@ net "sys_clk" tnm_net = sys_clk;
 
 #NET "adc_clkout" CLOCK_DEDICATED_ROUTE = FALSE;
 #
-#net "*ddr_dq[*]"           maxdelay =  350 ps;
-#net "*ddr_dq[*]"           maxskew  =  100 ps;
+net "*ddr2_d[*]"           maxdelay =  350 ps;
+net "*ddr2_d[*]"           maxskew  =  100 ps;
 #net "*ddr_st_lp_dqs*"      maxdelay = 3200 ps;
 #net "*ddr_st_lp_dqs*"      maxskew  = 1000 ps;
 #
