@@ -16,6 +16,7 @@ entity scope is
 		nibble_size : natural := 4;
 		byte_size : natural := 8;
 		data_size : natural := 16;
+		capture_size : natural := 14;
 		xd_len : natural;
 
 		tDDR : real);
@@ -23,7 +24,8 @@ entity scope is
 		sys_rst : in std_logic;
 		sys_ini : out std_logic;
 
-		input_clk : in std_logic;
+		capture_clk : in std_logic;
+		capture_dat : in std_logic_vector(capture_size-1 downto 0) := (others => '-');
 
 		ddr_rst : out std_logic;
 		ddrs_clk0  : in std_logic;
@@ -163,27 +165,25 @@ architecture def of scope is
 begin
 
 	captureon_g : if captureon generate
-		process (input_clk)
-			variable sample : unsigned(0 to 15) := (others => '0');
+		process (capture_clk)
 		begin
-			if falling_edge(input_clk) then
-				input_dat <= std_logic_vector(resize(sample, input_dat'length));
+			if rising_edge(capture_clk) then
+				input_dat <= std_logic_vector(resize(capture_dat, input_dat'length));
 				if ddrs_ini='0' then
 					input_req <= '0';
 				elsif input_rdy='0' then
 					input_req <= '1';
 				end if;
-				sample := sample + 1;
 			end if;
 		end process;
 	end generate;
 
 	captureoff_g : if not captureon generate
-		process (input_clk)
+		process (capture_clk)
 			constant n : natural := 15;
 			variable r : unsigned(0 to n);
 		begin
-			if rising_edge(input_clk) then
+			if rising_edge(capture_clk) then
 				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
 				r := r xor (r'range => '1');
 				--r := r + 1;
@@ -296,7 +296,7 @@ begin
 
 		input_req => input_req,
 		input_rdy => input_rdy,
-		input_clk => input_clk,
+		input_clk => capture_clk,
 		input_dat => input_dat,
 
 		video_clk => vga_clk,
