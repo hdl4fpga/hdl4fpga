@@ -168,7 +168,8 @@ begin
 		process (capture_clk)
 		begin
 			if rising_edge(capture_clk) then
-				input_dat <= std_logic_vector(resize(capture_dat(13 downto 6), input_dat'length));
+				input_dat <= std_logic_vector(resize(capture_dat(13 downto 7), input_dat'length));
+--				input_dat <= std_logic_vector(resize(capture_dat(13 downto 7), input_dat'length));
 				if ddrs_ini='0' then
 					input_req <= '0';
 				elsif input_rdy='0' then
@@ -185,12 +186,13 @@ begin
 		begin
 			if rising_edge(capture_clk) then
 				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
-				r := r xor (r'range => '1');
-				--r := r + 1;
+--				r := r xor (r'range => '1');
+				r := r + 1;
 				if ddrs_ini='0' then
 					input_req <= '0';
-					r := x"aa55"; --x"ff00";
-				--	r := to_unsigned(61, r'length);
+--					r := x"aa55"; --x"ff00";
+--					r := to_unsigned(61, r'length);
+					r := (others => '0');
 				elsif input_rdy='0' then
 					input_req <= '1';
 				end if;
