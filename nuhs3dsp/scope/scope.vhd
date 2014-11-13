@@ -83,6 +83,8 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		videoon => true,
+		captureon =>  true,
 		xd_len => 4,
 		tDDR => (real(ddr_div)*sys_per)/real(ddr_mul),
 		strobe => "EXTERNAL",
