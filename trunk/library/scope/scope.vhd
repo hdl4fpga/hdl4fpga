@@ -181,11 +181,11 @@ begin
 
 	captureoff_g : if not captureon generate
 		process (capture_clk)
-			constant n : natural := 15;
+			constant n : natural := 7;
 			variable r : unsigned(0 to n);
 		begin
 			if rising_edge(capture_clk) then
-				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
+				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length) sll 5);
 --				r := r xor (r'range => '1');
 				r := r + 1;
 				if ddrs_ini='0' then
