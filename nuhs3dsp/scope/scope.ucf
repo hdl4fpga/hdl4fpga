@@ -121,8 +121,8 @@ NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
 NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET ddrs_clk90 TNM_NET = FFS  RAMS_ddrsclk90;
-NET adc_clkab_OBUF TNM_NET =  FFS FFS_adcclkab;
-NET adc_clkab_OBUF TNM_NET =  RAMS RAMS_adcclkab;
+NET capture_clk TNM_NET =  FFS FFS_adcclkab;
+NET capture_clk TNM_NET =  RAMS RAMS_adcclkab;
 NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
 
 TIMESPEC TS_ddrlckd  = FROM FFS (*dcm_lckd*) TIG;
