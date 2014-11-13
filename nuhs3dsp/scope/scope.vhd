@@ -25,7 +25,8 @@ architecture scope of nuhs3dsp is
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
-	signal input_clk : std_logic;
+	signal capture_clk : std_logic;
+	signal capture_dat : std_logic_vector(adc_db'range);
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
@@ -68,7 +69,7 @@ begin
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => xtal,
-		input_clk => input_clk,
+		input_clk => capture_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
@@ -76,10 +77,11 @@ begin
 		dcm_lckd => dcm_lckd);
 	mii_rst <= dcm_lckd;
 
-	adc_clkab <= input_clk;
+	adc_clkab <= not capture_clk;
 	scope_rst <= not dcm_lckd;
 	ddr_st_dqs <= ddr_st(0);
 	ddr_lp <= (others => ddr_st_lp_dqs);
+	capture_dat <= not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0);
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -92,7 +94,8 @@ begin
 	port map (
 		sys_rst => scope_rst,
 
-		input_clk => input_clk,
+		capture_clk => capture_clk,
+		capture_dat => capture_dat,
 
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,

@@ -91,8 +91,8 @@ begin
 	generic map(
 		clk_feedback   => "1X",
 		clkdv_divide   => 2.0,
-		clkfx_divide   => 21,
---		clkfx_divide   => 3, --3,
+--		clkfx_divide   => 21,
+		clkfx_divide   => 3,
 		clkfx_multiply => n2,
 		clkin_divide_by_2 => FALSE,
 		clkin_period   => (50.0*15.0)/real(n1),

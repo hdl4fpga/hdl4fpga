@@ -38,7 +38,7 @@ architecture def of dcms is
 
 	signal video_lckd : std_logic;
 	signal ddr_lckd : std_logic;
-	signal input_lckd : std_logic;
+	signal input_lckd : std_logic := '1';
 	signal mii_lckd : std_logic;
 begin
 
@@ -70,16 +70,18 @@ begin
 		dfsdcm_clk90 => ddr_clk90,
 		dfsdcm_lckd => ddr_lckd);
 
-	inputdcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 2,
-		dfs_div => 2)
+--	inputdcm_e : entity hdl4fpga.dfs
+	inputdcm_e : entity hdl4fpga.dcmisdbt
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => 2,
+--		dfs_div => 2)
 	port map (
 		dcm_rst => dcm_rst,
 		dcm_clk => sclk_bufg,
 		dfs_clk => input_clk,
 		dcm_lck => input_lckd);
+--		dcm_lck => open);
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (
