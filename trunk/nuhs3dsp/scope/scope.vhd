@@ -81,7 +81,8 @@ begin
 	scope_rst <= not dcm_lckd;
 	ddr_st_dqs <= ddr_st(0);
 	ddr_lp <= (others => ddr_st_lp_dqs);
-	capture_dat <= not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0);
+--	capture_dat <= not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0);
+	capture_dat <= adc_db;
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
