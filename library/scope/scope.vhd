@@ -188,7 +188,7 @@ begin
 --				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length) sll (input_dat'length-n-1));
 				input_dat <= std_logic_vector(resize(unsigned(r(0 to n)), input_dat'length));
 --				r := r xor (r'range => '1');
-				r := r + 1;
+				r := r - 1;
 				if ddrs_ini='0' then
 					input_req <= '0';
 --					r := x"aa55"; --x"ff00";
