@@ -27,15 +27,15 @@ INST "*/rgb_g[*].ffd_red"                      IOB = FORCE;
 INST "*/rgb_g[*].ffd_green"                    IOB = FORCE;
 INST "*/rgb_g[*].ffd_blue"                     IOB = FORCE;
 
-NET "*video_clk*" MAXSKEW  = 1 ns;
+#NET "*video_clk*" MAXSKEW  = 1 ns;
 NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
 NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
-NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
-NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
+#NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
+#NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
 NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
 NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
-NET "*ddr_delayed_dqs*[*]" MAXDELAY = 1350 ps;
-NET "*ddr_delayed_dqs*[*]" MAXSKEW  = 560 ps;
+#NET "*ddr_delayed_dqs*[*]" MAXDELAY = 1350 ps;
+#NET "*ddr_delayed_dqs*[*]" MAXSKEW  = 560 ps;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;

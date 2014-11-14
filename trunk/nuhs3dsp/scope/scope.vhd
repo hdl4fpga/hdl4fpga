@@ -55,7 +55,7 @@ architecture scope of nuhs3dsp is
 	signal scope_rst : std_logic;
 
 	constant sys_per : real := 50.0;
-	constant ddr_mul : natural := 25;
+	constant ddr_mul : natural := 27;
 	constant ddr_div : natural := 3;
 begin
 
@@ -81,13 +81,13 @@ begin
 	scope_rst <= not dcm_lckd;
 	ddr_st_dqs <= ddr_st(0);
 	ddr_lp <= (others => ddr_st_lp_dqs);
---	capture_dat <= not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0);
-	capture_dat <= adc_db;
+	capture_dat <= std_logic_vector(shift_right(signed(not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0)), adc_db'left-8));
+--	capture_dat <= adc_db;
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		videoon => true,
-		captureon =>  false,
+		captureon =>  true,
 		xd_len => 4,
 		tDDR => (real(ddr_div)*sys_per)/real(ddr_mul),
 		strobe => "EXTERNAL",
