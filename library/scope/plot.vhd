@@ -14,7 +14,7 @@ entity plot is
 		video_dot : out std_logic_vector);
 
 	constant num_chann : natural := video_dot'length;
-	subtype dword is signed(chann_dat'length/num_chann-1 downto 0);
+	subtype dword is unsigned(chann_dat'length/num_chann-1 downto 0);
 	type dword_vector is array (natural range <>) of dword;
 
 	subtype oword is unsigned(video_off'length/num_chann-1 downto 0);
@@ -31,7 +31,7 @@ use hdl4fpga.std.all;
 
 architecture def of plot is
 
-	constant m : natural := unsigned_num_bits(max_hght)+1;
+	constant m : natural := unsigned_num_bits(max_hght);
 
 	signal values  : dword_vector(0 to num_chann-1);
 	signal offsets : oword_vector(0 to num_chann-1);
@@ -50,8 +50,8 @@ begin
 		vdata := chann_dat;
 		odata := video_off;
 		for i in 0 to num_chann-1 loop
---			values(i) <= shift_right(signed(vdata(dword'range)), dword'length-m);
-			values(i) <= signed(vdata(dword'range));
+			values(i) <= shift_right(unsigned(vdata(dword'range)), dword'length-m-1);
+			--values(i) <= unsigned(vdata(dword'range));
 			vdata := vdata srl dword'length;
 			offsets(i) <= unsigned(odata(oword'range));
 			odata := odata srl oword'length;

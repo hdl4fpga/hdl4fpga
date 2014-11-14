@@ -113,7 +113,7 @@ begin
 	port map (
 		sys_rst => scope_rst,
 
-		input_clk => input_clk,
+		capture_clk => input_clk,
 
 		ddr_rst => open,
 		ddrs_clk0  => ddrs_clk0,

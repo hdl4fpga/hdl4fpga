@@ -185,13 +185,15 @@ begin
 			variable r : unsigned(0 to n);
 		begin
 			if rising_edge(capture_clk) then
-				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length) sll 5);
+--				input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length) sll (input_dat'length-n-1));
+				input_dat <= std_logic_vector(resize(unsigned(r(0 to n)), input_dat'length));
 --				r := r xor (r'range => '1');
 				r := r + 1;
 				if ddrs_ini='0' then
 					input_req <= '0';
 --					r := x"aa55"; --x"ff00";
 --					r := to_unsigned(61, r'length);
+					r := to_unsigned(2**r'length-33, r'length);
 					r := (others => '0');
 				elsif input_rdy='0' then
 					input_req <= '1';
