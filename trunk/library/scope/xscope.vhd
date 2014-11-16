@@ -108,9 +108,9 @@ architecture def of scope is
 	signal ddrs_rw  : std_logic;
 
 	signal ddrs_di_rdy : std_logic;
-	signal ddrs_di : std_logic_vector(0 to DDR_LINESIZE-1);
+	signal ddrs_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal ddrs_do_rdy : std_logic;
-	signal ddrs_do : std_logic_vector(0 to DDR_LINESIZE-1);
+	signal ddrs_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
 	signal dataio_rst : std_logic;
 	signal input_rdy : std_logic;

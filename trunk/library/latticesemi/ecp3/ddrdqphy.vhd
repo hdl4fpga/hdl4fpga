@@ -114,10 +114,10 @@ begin
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => sys_dqi(0*line_size/byte_size+i),
-			qb0 => sys_dqi(1*line_size/byte_size+i),
-			qa1 => sys_dqi(2*line_size/byte_size+i),
-			qb1 => sys_dqi(3*line_size/byte_size+i));
+			qa0 => sys_dqi(0*byte_size+i),
+			qb0 => sys_dqi(1*byte_size+i),
+			qa1 => sys_dqi(2*byte_size+i),
+			qb1 => sys_dqi(3*byte_size+i));
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
@@ -138,10 +138,10 @@ begin
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_dqo(0*line_size/byte_size+i),
-			db0 => sys_dqo(1*line_size/byte_size+i),
-			da1 => sys_dqo(2*line_size/byte_size+i),
-			db1 => sys_dqo(4*line_size/byte_size+i),
+			da0 => sys_dqo(0*byte_size+i),
+			db0 => sys_dqo(1*byte_size+i),
+			da1 => sys_dqo(2*byte_size+i),
+			db1 => sys_dqo(3*byte_size+i),
 --			q   => ddr_dqo(i));
 			q   => qqo);
 		ddr_dqo(i) <= qqo after 2.5 ns/4;
