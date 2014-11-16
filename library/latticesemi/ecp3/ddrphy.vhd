@@ -74,15 +74,15 @@ architecture ecp3 of ddrphy is
 	subtype coline_word is std_logic_vector(1-1 downto 0);
 	type coline_vector is array (natural range <>) of coline_word;
 
-	function to_dlinevector (
+	function to_bytevector (
 		constant arg : std_logic_vector) 
-		return dline_vector is
+		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
+		variable val : byte_vector(arg'length/byte'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
+			val(i) := std_logic_vector(dat(byte'range));
 			dat := dat srl val(val'left)'length;
 		end loop;
 		return val;
@@ -93,6 +93,20 @@ architecture ecp3 of ddrphy is
 		return bline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
+			dat := dat srl val(val'left)'length;
+		end loop;
+		return val;
+	end;
+
+	function to_dlinevector (
+		constant arg : std_logic_vector) 
+		return dline_vector is
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -172,6 +186,22 @@ architecture ecp3 of ddrphy is
 		return val;
 	end;
 
+	function shuffle_dlinevector (
+		constant arg : std_logic_vector) 
+		return dline_vector is
+		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
+		variable val : byte_vector(dat'range);
+--		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
+	begin	
+		dat := to_bytevector(arg);
+		for i in word_size/byte_size-1 downto 0 loop
+			for j in line_size/word_size-1 downto 0 loop
+				val(i*line_size/word_size+j) := dat(j*word_size/byte_size+i);
+			end loop;
+		end loop;
+		return to_dlinevector(to_stdlogicvector(val));
+	end;
+
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
@@ -230,7 +260,7 @@ begin
 	sdmi <= to_blinevector(sys_dmi);
 	sdmt <= to_blinevector(sys_dmt);
 	sdqt <= to_blinevector(sys_dqt);
-	sdqi <= to_dlinevector(sys_dqo);
+	sdqi <= shuffle_dlinevector(sys_dqo);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);
