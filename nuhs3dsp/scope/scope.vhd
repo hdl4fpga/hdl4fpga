@@ -26,6 +26,7 @@ architecture scope of nuhs3dsp is
 	signal input_lckd : std_logic;
 
 	signal capture_clk : std_logic;
+	signal ncapture_clk : std_logic;
 	signal capture_dat : std_logic_vector(adc_db'range);
 
 	signal ddrs_clk0  : std_logic;
@@ -77,11 +78,27 @@ begin
 		dcm_lckd => dcm_lckd);
 	mii_rst <= dcm_lckd;
 
-	adc_clkab <= not capture_clk;
 	scope_rst <= not dcm_lckd;
 	ddr_st_dqs <= ddr_st(0);
+	ncapture_clk <= not capture_clk;
 	ddr_lp <= (others => ddr_st_lp_dqs);
-	capture_dat <= std_logic_vector(shift_right(signed(not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0)), adc_db'left-8));
+	adc_clk : oddr2
+	port map (
+		r => '0',
+		s => '0',
+		c0 => capture_clk,
+		c1 => ncapture_clk,
+		ce => '1',
+		d0 => '0',
+		d1 => '1',
+		q => adc_clkab);
+
+	process (capture_clk)
+	begin
+		if rising_edge(capture_clk) then
+			capture_dat <= std_logic_vector(shift_right(signed(not adc_db(adc_db'left) & adc_db(adc_db'left-1 downto 0)), adc_db'length-9));
+		end if;
+	end process;
 --	capture_dat <= adc_db;
 
 	scope_e : entity hdl4fpga.scope
