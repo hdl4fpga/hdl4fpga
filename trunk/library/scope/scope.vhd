@@ -168,8 +168,7 @@ begin
 		process (capture_clk)
 		begin
 			if rising_edge(capture_clk) then
-				input_dat <= std_logic_vector(resize(capture_dat(13 downto 7), input_dat'length));
---				input_dat <= std_logic_vector(resize(capture_dat(13 downto 7), input_dat'length));
+				input_dat <= std_logic_vector(resize(unsigned(capture_dat), input_dat'length));
 				if ddrs_ini='0' then
 					input_req <= '0';
 				elsif input_rdy='0' then
