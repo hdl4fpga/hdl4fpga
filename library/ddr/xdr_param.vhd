@@ -71,7 +71,8 @@ package xdr_param is
 		constant stdr   : natural;
 		constant param : laty_ids;
 		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tDDR : time := 1000 ps;
+		constant roundon : boolean := false)
 		return integer;
 
 	function xdr_query_size (
@@ -297,13 +298,13 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => RWNL,  value => 4*2) &
 		latency_record'(stdr => 3, param => DQSZL, value =>  -2) &
 		latency_record'(stdr => 3, param => DQSL,  value =>  -4) &
-		latency_record'(stdr => 3, param => DQZL,  value =>   1) &
-		latency_record'(stdr => 3, param => WWNL,  value =>  -3) &
+		latency_record'(stdr => 3, param => DQZL,  value =>  -6) &
+		latency_record'(stdr => 3, param => WWNL,  value =>  -2) &
 		latency_record'(stdr => 3, param => STRXL, value =>   2) &
 		latency_record'(stdr => 3, param => RWNXL, value => 4*0) &
 		latency_record'(stdr => 3, param => DQSZXL, value => 4*2) &
 		latency_record'(stdr => 3, param => DQSXL, value =>   2) &
-		latency_record'(stdr => 3, param => DQZXL, value =>   1) &
+		latency_record'(stdr => 3, param => DQZXL, value =>   4) &
 		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
 		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
 		latency_record'(stdr => 3, param => MRD,   value =>   4) &
@@ -487,14 +488,23 @@ package body xdr_param is
 		constant stdr   : natural;
 		constant param : laty_ids; 
 		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tDDR : time := 1000 ps;
+		constant roundon : boolean := false)
 		return integer is
 		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
 				if latency_db(i).param = param then
-					return (latency_db(i).value*tDDR)/(4*tCP);
+					if roundon then
+						if (latency_db(i).value*tDDR) mod (4*tCP) = 0 ns then
+							return (latency_db(i).value*tDDR)/(4*tCP);
+						else
+							return (latency_db(i).value*tDDR)/(4*tCP)+1;
+						end if;
+					else
+						return (latency_db(i).value*tDDR)/(4*tCP);
+					end if;
 				end if;
 			end if;
 		end loop;

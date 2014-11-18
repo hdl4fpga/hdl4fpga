@@ -16,7 +16,7 @@ entity xdr_outfifo is
 		sys_di  : in  std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
-		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
+		xdr_enas : in  std_logic_vector(0 to data_phases*line_size/byte_size-1);
 		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
 end;
@@ -98,6 +98,7 @@ architecture mix of xdr_outfifo is
 	signal di : word_vector(data_phases-1 downto 0);
 	signal do : word_vector(data_phases-1 downto 0);
 	signal clks : std_logic_vector(data_phases-1 downto 0);
+
 begin
 
 	dmi <= to_dmwordvector(sys_dm);
@@ -120,7 +121,8 @@ begin
 		clks(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
 	end generate;
 
-	xdr_fifo_g : for l in 0 to data_phases-1 generate
+--	xdr_fifo_g : for l in 0 to data_phases-1 generate
+	xdr_fifo_g : for l in xdr_enas'range generate
 		signal dpo : word;
 		signal qpo : word := (others => '-');
 		signal dmo : dmword := (others => '-');
