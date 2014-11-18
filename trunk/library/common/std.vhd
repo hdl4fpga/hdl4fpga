@@ -77,6 +77,11 @@ package std is
 		constant arg2 : std_logic)
 		return std_logic_vector;
 
+	function "mod" (
+		constant arg1 : time;
+		constant arg2 : time)
+		return time;
+
 	function to_unsigned (
 		constant arg1 : natural;
 		constant arg2 : std_logic_vector)
@@ -318,6 +323,19 @@ package body std is
 			aux(i) := arg1(i) and arg2;
 		end loop;
 		return aux;
+	end;
+
+	function "mod" (
+		constant arg1 : time;
+		constant arg2 : time)
+		return time is
+		variable val : integer;
+	begin
+		val := arg1 / arg2;
+		if val*arg2 < arg1 then
+			return arg2-arg1*val;
+		end if;
+		return 0 ns;
 	end;
 
 	------------------
