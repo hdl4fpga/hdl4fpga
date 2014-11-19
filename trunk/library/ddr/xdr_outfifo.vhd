@@ -25,37 +25,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr_outfifo is
-	subtype dmword is std_logic_vector(line_size/byte_size-1 downto 0);
-	type dmword_vector is array (natural range <>) of dmword;
-
-	function to_dmwordvector (
-		arg : std_logic_vector) 
-		return dmword_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : dmword_vector(arg'length/dmword'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(dmword'length-1 downto 0));
-			dat := dat srl dmword'length;
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		arg : dmword_vector)
-		return std_logic_vector is
-		variable dat : dmword_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*dmword'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := val sll dmword'length;
-			val(dmword'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
 	subtype word is std_logic_vector(byte_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
@@ -93,15 +62,12 @@ architecture mix of xdr_outfifo is
 	signal sys_axdr_q : axdr_word;
 	signal sys_axdr_d : axdr_word;
 	signal xdr_axdr_q : aw_vector(xdr_enas'range);
-	signal dmi : dmword_vector(xdr_enas'range);
-	signal dm : dmword_vector(xdr_enas'range);
 	signal di : word_vector(xdr_enas'range);
 	signal do : word_vector(xdr_enas'range);
 	signal clks : std_logic_vector(0 to data_phases-1);
 
 begin
 
-	dmi <= to_dmwordvector(sys_dm);
 	di  <= to_wordvector(sys_di);
 	sys_axdr_d <= inc(gray(sys_axdr_q));
 	sys_cntr_g: for j in axdr_word'range  generate
@@ -121,13 +87,12 @@ begin
 		clks(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
 	end generate;
 
---	xdr_fifo_g : for l in 0 to data_phases-1 generate
-	xx_g : for m in clks'range generate
-		xdr_fifo_g : for l in 0 to line_size/byte_size generate
+	xdr_fifo_g : for l in 0 to line_size/byte_size-1 generate
+		phases_g : for m in clks'range generate
 			signal dpo : word;
 			signal qpo : word := (others => '-');
-			signal dmo : dmword := (others => '-');
-			signal qmo : dmword := (others => '-');
+			signal dmo : std_logic := '-';
+			signal qmo : std_logic := '-';
 			signal xdr_axdr_d : axdr_word;
 		begin
 
@@ -157,23 +122,21 @@ begin
 
 			dmram_i : entity hdl4fpga.dbram
 			generic map (
-				n   => dmword'length)
+				n   => 1)
 			port map (
 				clk => sys_clk,
 				we  => sys_req,
 				wa  => sys_axdr_q,
-				di  => dmi(data_phases*l+m),
+				di(0) => sys_dm(data_phases*l+m),
 				ra  => xdr_axdr_q(data_phases*l+m),
-				do  => dmo);
+				do(0) => dmo);
 
 			register_output_g : if register_output generate
-				dm_g: for k in dmword'range generate
-					ffd_i : entity hdl4fpga.ff
-					port map (
-						clk => clks(m),
-						d => dmo(k),
-						q => qmo(k));
-				end generate;
+				ffd_i : entity hdl4fpga.ff
+				port map (
+					clk => clks(m),
+					d => dmo,
+					q => qmo);
 
 				dqo_g: for k in word'range generate
 					ffd_i : entity hdl4fpga.ff
@@ -184,10 +147,9 @@ begin
 				end generate;
 			end generate;
 
-			dm(data_phases*l+m) <= qmo when register_output else dmo;
+			xdr_dmo(data_phases*l+m) <= qmo when register_output else dmo;
 			do(data_phases*l+m) <= qpo when register_output else dpo;
 		end generate;
 	end generate;
-	xdr_dmo <= to_stdlogicvector(dm);
 	xdr_dqo <= to_stdlogicvector(do);
 end;
