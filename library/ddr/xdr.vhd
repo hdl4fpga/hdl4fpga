@@ -322,7 +322,7 @@ begin
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
 		n => sys_di'length;
-		m => unsigned__num_bits(line_size))
+		m => unsigned__num_bits(line_size-1))
 	port map (
 		sht  =>
 		din  => sys_di,
