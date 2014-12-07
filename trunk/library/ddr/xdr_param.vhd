@@ -689,6 +689,72 @@ package body xdr_param is
 		return latcode;
 	end;
 
+impure function xdr_rotval (
+    constant data_phases : natural;
+    constant data_edges : natural;
+    constant line_size : natural;
+    constant word_size : natural;
+    constant lat_val : std_logic_vector;
+    constant lat_cod : std_logic_vector;
+    constant lat_tab : natural_vector)
+    return sdt_logic_vector is
+
+    subtype word is std_logic_vector(unsinged_num_bits(line_size/word_size-1)-1 downto 0);
+	type word_vector is array(natural range <>) of word;
+	
+    subtype latword is std_logic_vector(0 to lat_val'length-1);
+    type latword_vector is array (natural range <>) of latword;
+
+	constant algn : unsinged_num_bits(word_size-1);
+    
+    function to_latwordvector(
+        constant arg : std_logic_vector)
+        return latword_vector is
+        variable aux : std_logic_vector(0 to arg'length-1) := arg;
+        variable val : latword_vector(0 to arg'length/latword'length-1);
+    begin
+        for i in val'range loop
+            val(i) := aux(latword'range);
+            aux := aux sll latword'length;
+        end loop;
+        return val;
+    end;
+
+    function select_lat (
+        constant lat_val : std_logic_vector;
+        constant lat_cod : latword_vector;
+        constant lat_sch : word_vector)
+        return std_logic_vector is
+        variable val : word;
+    begin
+        val := (others => '-');
+        for i in 0 to lat_tab'length-1 loop
+            if lat_val = lat_cod(i) then
+                for j in word'range loop
+                    val(j) := lat_sch(i)(j);
+                end loop;
+            end if;
+        end loop;
+        return val;
+    end;
+	
+    constant lc   : latword_vector := to_latwordvector(lat_cod);
+	
+    variable sel_sch : word_vector(lat_cod1'range);
+	variable val : std_logic_vector(unsinged_num_bits(line_size-1) downto 0) := (others => '0');
+	variable disp : natural;
+
+begin
+
+	setup_l : for i in 0 to lat_tab'length-1 loop
+        sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
+	loop;
+	
+	val(word'range) := select_lat(lat_val, lc, sel_sch);
+	val := std_logic_vector(unsigned(val) sll algn);
+	return val;
+end;
+
 	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
