@@ -131,7 +131,8 @@ architecture mix of xdr is
 	signal xdr_wr_dm : std_logic_vector(sys_dm'range);
 	signal xdr_wr_dq : std_logic_vector(sys_di'range);
 
-	signal rot_di : std_logic_vector(syd_di'range);
+	signal rot_val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0);
+	signal rot_di : std_logic_vector(sys_di'range);
 
 	signal xdr_cwl : std_logic_vector(sys_cwl'range);
 
@@ -319,12 +320,21 @@ begin
 		xdr_dqsi => xdr_dqsi,
 		xdr_dqi  => xdr_dqi);
 		
+	rot_val <= xdr_rotval (
+		data_phases => data_phases,
+		data_edges => data_edges,
+		line_size => line_size,
+		word_size => word_size,
+		lat_val => sys_cwl,
+		lat_cod => xdr_latcod(stdr, CWL),
+		lat_tab => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2));
+
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
-		n => sys_di'length;
-		m => unsigned__num_bits(line_size-1))
+		n => sys_di'length,
+		m => unsigned_num_bits(line_size-1))
 	port map (
-		sht  =>
+		rot  => rot_val,
 		din  => sys_di,
 		dout => rot_di);
 		
