@@ -126,6 +126,16 @@ package xdr_param is
 		constant reg : latr_ids)
 		return std_logic_vector;
 
+	impure function xdr_rotval (
+		constant data_phases : natural;
+		constant data_edges : natural;
+		constant line_size : natural;
+		constant word_size : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector)
+		return std_logic_vector;
+
 	impure function xdr_task (
 		constant data_phases : natural;
 		constant data_edges : natural;
@@ -697,15 +707,15 @@ impure function xdr_rotval (
     constant lat_val : std_logic_vector;
     constant lat_cod : std_logic_vector;
     constant lat_tab : natural_vector)
-    return sdt_logic_vector is
+    return std_logic_vector is
 
-    subtype word is std_logic_vector(unsinged_num_bits(line_size/word_size-1)-1 downto 0);
+    subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
 	type word_vector is array(natural range <>) of word;
 	
     subtype latword is std_logic_vector(0 to lat_val'length-1);
     type latword_vector is array (natural range <>) of latword;
 
-	constant algn : unsinged_num_bits(word_size-1);
+	constant algn : natural := unsigned_num_bits(word_size-1);
     
     function to_latwordvector(
         constant arg : std_logic_vector)
@@ -740,18 +750,24 @@ impure function xdr_rotval (
 	
     constant lc   : latword_vector := to_latwordvector(lat_cod);
 	
-    variable sel_sch : word_vector(lat_cod1'range);
-	variable val : std_logic_vector(unsinged_num_bits(line_size-1) downto 0) := (others => '0');
+    variable sel_sch : word_vector(lc'range);
+	variable val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
 	variable disp : natural;
+	variable msg : line;
 
 begin
 
 	setup_l : for i in 0 to lat_tab'length-1 loop
         sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
-	loop;
+--		write (msg, sel_sch(i));
+		write (msg, lat_tab(i));
+		writeline (output, msg);
+	end loop;
+	report "termine"
+	severity FAILURE;
 	
 	val(word'range) := select_lat(lat_val, lc, sel_sch);
-	val := std_logic_vector(unsigned(val) sll algn);
+--	val := std_logic_vector'(unsigned(val) sll algn);
 	return val;
 end;
 
