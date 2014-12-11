@@ -327,7 +327,7 @@ begin
 		word_size => word_size,
 		lat_val => sys_cwl,
 		lat_cod => xdr_latcod(stdr, CWL),
-		lat_tab => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2));
+		lat_tab => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2));
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (

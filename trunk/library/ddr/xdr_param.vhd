@@ -758,16 +758,17 @@ impure function xdr_rotval (
 begin
 
 	setup_l : for i in 0 to lat_tab'length-1 loop
+--        sel_sch(i) := to_unsigned((line_size/word_size-(lat_tab(i) mod (line_size/word_size)) mod (line_size/word_size)), word'length);
         sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
 --		write (msg, sel_sch(i));
-		write (msg, lat_tab(i));
-		writeline (output, msg);
+--		write (msg, lat_tab(i));
+--		writeline (output, msg);
 	end loop;
-	report "termine"
-	severity FAILURE;
+--	report "termine"
+--	severity FAILURE;
 	
 	val(word'range) := select_lat(lat_val, lc, sel_sch);
---	val := std_logic_vector'(unsigned(val) sll algn);
+	val := std_logic_vector'(unsigned(val) sll algn);
 	return val;
 end;
 
