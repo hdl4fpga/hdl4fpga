@@ -16,7 +16,7 @@ entity xdr_outfifo is
 		sys_di  : in  std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
-		xdr_enas : in  std_logic_vector(0 to data_phases*line_size/byte_size-1);
+		xdr_enas : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
 end;
@@ -35,7 +35,7 @@ architecture mix of xdr_outfifo is
 		variable val : word_vector(arg'length/word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
-		for i in val'reverse_range loop
+		for i in val'range loop
 			val(i) := std_logic_vector(dat(word'length-1 downto 0));
 			dat := dat srl word'length;
 		end loop;
@@ -49,7 +49,7 @@ architecture mix of xdr_outfifo is
 		variable val : std_logic_vector(arg'length*word'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in dat'range loop
+		for i in dat'reverse_range loop
 			val := val sll word'length;
 			val(word'range) := dat(i);
 		end loop;
