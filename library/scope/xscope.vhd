@@ -447,7 +447,7 @@ begin
 		sys_rst => sys_rst,
 		sys_bl  => "000",
 		sys_cl  => "010",
-		sys_cwl => "000",
+		sys_cwl => "011",
 		sys_wr  => "101",
 		sys_pl  => "---",
 		sys_dqsn => '-',

@@ -215,7 +215,7 @@ begin
 		xdr_pgm_rw  => sys_rw);
 
 	xdr_mpu_req <= sys_cmd_req;
-	sys_di_rdy  <= xdr_sch_wwn(0);
+	sys_di_rdy  <= xdr_mpu_wwin;
 				   
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
