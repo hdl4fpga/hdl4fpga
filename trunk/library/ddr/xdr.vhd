@@ -273,7 +273,7 @@ begin
 		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
 		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
 		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
-		DQZX_LAT  => xdr_latency(stdr, DQZXL,  tDDR => tDDR, tCP => tDDR/2),
+		DQZX_TAB  => xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4),
 		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
 		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR))
 	port map (
