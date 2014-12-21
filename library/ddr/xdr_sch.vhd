@@ -30,7 +30,7 @@ entity xdr_sch is
 		RWNX_LAT  : natural;
 		DQSZX_LAT : natural;
 		DQSX_LAT  : natural;
-		DQZX_LAT  : natural;
+		DQZX_TAB  : natural_vector;
 		WWNX_LAT  : natural;
 
 		WID_LAT   : natural);
@@ -147,7 +147,7 @@ begin
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
 		lat_sch => wpho,
-		lat_ext => DQZX_LAT,
+		lat_ext => DQZX_TAB,
 		lat_wid => WID_LAT);
 
 	xdr_wwn <= xdr_task (

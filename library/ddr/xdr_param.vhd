@@ -44,7 +44,7 @@ package xdr_param is
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
 	type cltabs_ids  is (STRT,  RWNT);
-	type cwltabs_ids is (WWNT, DQSZT, DQST,  DQZT);
+	type cwltabs_ids is (WWNT, DQSZT, DQST, DQZT, DQZXT);
 	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
 		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
 
@@ -146,6 +146,19 @@ package xdr_param is
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
 		constant lat_ext : natural := 0;
+		constant lat_wid : natural := 1)
+		return std_logic_vector;
+
+	impure function xdr_task (
+		constant data_phases : natural;
+		constant data_edges : natural;
+		constant line_size : natural;
+		constant word_size : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural_vector;
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
 
@@ -661,13 +674,15 @@ package body xdr_param is
 		return natural_vector is
 
 		type latid_vector is array (cwltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL);
+		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL, DQZXT => DQZXL);
 
-		constant lat    : integer := xdr_latency(stdr, tab2laty(tabid));
+		variable lat    : integer := xdr_latency(stdr, tab2laty(tabid));
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		variable clval  : natural_vector(cltab'range);
+		variable aux : time;
 		constant cwltab : natural_vector := xdr_lattab(stdr, CWL);
 		variable cwlval : natural_vector(cwltab'range);
+		variable latx   : integer := 0;
 
 		variable mesg : line;
 	begin
@@ -677,9 +692,19 @@ package body xdr_param is
 			end loop;
 			return clval;
 		else
-			for i in cwltab'range loop
-				cwlval(i) := ((cwltab(i)+lat)*tDDR)/(4*tCP);
-			end loop;
+			case tabid is
+			when DQZXT =>
+				latx := lat;
+				lat  := xdr_latency(stdr, DQZXL);
+				for i in cwltab'range loop
+					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
+					cwlval(i) := (latx*tDDR+aux+4*tCP-1 fs) / (4*tCP);
+				end loop;
+			when others =>
+				for i in cwltab'range loop
+					cwlval(i) := ((cwltab(i)+lat)*tDDR)/(4*tCP);
+				end loop;
+			end case;
 			return cwlval;
 		end if;
 	end;
@@ -699,78 +724,180 @@ package body xdr_param is
 		return latcode;
 	end;
 
-impure function xdr_rotval (
-    constant data_phases : natural;
-    constant data_edges : natural;
-    constant line_size : natural;
-    constant word_size : natural;
-    constant lat_val : std_logic_vector;
-    constant lat_cod : std_logic_vector;
-    constant lat_tab : natural_vector)
-    return std_logic_vector is
+	impure function xdr_rotval (
+		constant data_phases : natural;
+		constant data_edges : natural;
+		constant line_size : natural;
+		constant word_size : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector)
+		return std_logic_vector is
 
-    subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
-	type word_vector is array(natural range <>) of word;
-	
-    subtype latword is std_logic_vector(0 to lat_val'length-1);
-    type latword_vector is array (natural range <>) of latword;
+		subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
+		type word_vector is array(natural range <>) of word;
+		
+		subtype latword is std_logic_vector(0 to lat_val'length-1);
+		type latword_vector is array (natural range <>) of latword;
 
-	constant algn : natural := unsigned_num_bits(word_size-1);
-    
-    function to_latwordvector(
-        constant arg : std_logic_vector)
-        return latword_vector is
-        variable aux : std_logic_vector(0 to arg'length-1) := arg;
-        variable val : latword_vector(0 to arg'length/latword'length-1);
-    begin
-        for i in val'range loop
-            val(i) := aux(latword'range);
-            aux := aux sll latword'length;
-        end loop;
-        return val;
-    end;
+		constant algn : natural := unsigned_num_bits(word_size-1);
+		
+		function to_latwordvector(
+			constant arg : std_logic_vector)
+			return latword_vector is
+			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable val : latword_vector(0 to arg'length/latword'length-1);
+		begin
+			for i in val'range loop
+				val(i) := aux(latword'range);
+				aux := aux sll latword'length;
+			end loop;
+			return val;
+		end;
 
-    function select_lat (
-        constant lat_val : std_logic_vector;
-        constant lat_cod : latword_vector;
-        constant lat_sch : word_vector)
-        return std_logic_vector is
-        variable val : word;
-    begin
-        val := (others => '-');
-        for i in 0 to lat_tab'length-1 loop
-            if lat_val = lat_cod(i) then
-                for j in word'range loop
-                    val(j) := lat_sch(i)(j);
-                end loop;
-            end if;
-        end loop;
-        return val;
-    end;
-	
-    constant lc   : latword_vector := to_latwordvector(lat_cod);
-	
-    variable sel_sch : word_vector(lc'range);
-	variable val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
-	variable disp : natural;
-	variable msg : line;
+		function select_lat (
+			constant lat_val : std_logic_vector;
+			constant lat_cod : latword_vector;
+			constant lat_sch : word_vector)
+			return std_logic_vector is
+			variable val : word;
+		begin
+			val := (others => '-');
+			for i in 0 to lat_tab'length-1 loop
+				if lat_val = lat_cod(i) then
+					for j in word'range loop
+						val(j) := lat_sch(i)(j);
+					end loop;
+				end if;
+			end loop;
+			return val;
+		end;
+		
+		constant lc   : latword_vector := to_latwordvector(lat_cod);
+		
+		variable sel_sch : word_vector(lc'range);
+		variable val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
+		variable disp : natural;
+		variable msg : line;
 
-begin
+	begin
 
-	setup_l : for i in 0 to lat_tab'length-1 loop
---        sel_sch(i) := to_unsigned((line_size/word_size-(lat_tab(i) mod (line_size/word_size)) mod (line_size/word_size)), word'length);
-        sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
---		write (msg, sel_sch(i));
---		write (msg, lat_tab(i));
---		writeline (output, msg);
-	end loop;
---	report "termine"
---	severity FAILURE;
-	
-	val(word'range) := select_lat(lat_val, lc, sel_sch);
-	val := std_logic_vector'(unsigned(val) sll algn);
-	return val;
-end;
+		setup_l : for i in 0 to lat_tab'length-1 loop
+	--        sel_sch(i) := to_unsigned((line_size/word_size-(lat_tab(i) mod (line_size/word_size)) mod (line_size/word_size)), word'length);
+			sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
+	--		write (msg, sel_sch(i));
+	--		write (msg, lat_tab(i));
+	--		writeline (output, msg);
+		end loop;
+	--	report "termine"
+	--	severity FAILURE;
+		
+		val(word'range) := select_lat(lat_val, lc, sel_sch);
+		val := std_logic_vector'(unsigned(val) sll algn);
+		return val;
+	end;
+
+	impure function xdr_task (
+		constant data_phases : natural;
+		constant data_edges : natural;
+		constant line_size : natural;
+		constant word_size : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural_vector;
+		constant lat_wid : natural := 1)
+		return std_logic_vector is
+
+		subtype word is std_logic_vector(0 to data_phases*line_size/word_size-1);
+		type word_vector is array (natural range <>) of word;
+
+		subtype latword is std_logic_vector(0 to lat_val'length-1);
+		type latword_vector is array (natural range <>) of latword;
+
+		function to_latwordvector(
+			constant arg : std_logic_vector)
+			return latword_vector is
+			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable val : latword_vector(0 to arg'length/latword'length-1);
+		begin
+			for i in val'range loop
+				val(i) := aux(latword'range);
+				aux := aux sll latword'length;
+			end loop;
+			return val;
+		end;
+
+		function select_lat (
+			constant lat_val : std_logic_vector;
+			constant lat_cod : latword_vector;
+			constant lat_sch : word_vector)
+			return std_logic_vector is
+			variable val : word;
+		begin
+			val := (others => '-');
+			for i in 0 to lat_tab'length-1 loop
+				if lat_val = lat_cod(i) then
+					for j in word'range loop
+						val(j) := lat_sch(i)(j);
+					end loop;
+				end if;
+			end loop;
+			return val;
+		end;
+
+		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
+
+		variable sel_sch : word_vector(lat_cod1'range);
+		variable disp : natural;
+		variable disp_mod : natural;
+		variable disp_quo : natural;
+		variable pha : natural;
+		variable aux : std_logic;
+
+		variable j_quo : natural;
+		variable j_mod : natural;
+		variable l_quo : natural;
+		variable l_mod : natural;
+		variable msg : line;
+	begin
+		sel_sch := (others => (others => '-'));
+
+--		for i in 0 to lat_tab'length-1 loop
+--			write (msg, lat_ext(i));
+--			writeline (output, msg);
+--		end loop;
+--		report "xdr_task"
+--		severity failure;
+
+		setup_l : for i in 0 to lat_tab'length-1 loop
+			disp := lat_tab(i);
+			disp_mod := disp mod word'length;
+			disp_quo := disp  /  word'length;
+			for j in word'range loop
+				aux := '0';
+				j_quo := ((lat_ext(i)-j+word'length-1)/word'length+lat_wid-1)/lat_wid;
+				j_mod := (lat_wid-(lat_ext(i)-j+word'length-1)/word'length) mod lat_wid;
+				l_mod := 0;
+				l_quo := 0;
+				for l in 0 to j_quo loop
+
+					pha   := (j+disp_mod)/word'length+l*lat_wid-l_quo;
+					aux   := aux or lat_sch(disp_quo+pha);
+
+					if j_quo /= 0 then
+						l_quo := j_mod  /  j_quo;
+						l_mod := j_mod mod j_quo;
+						l_quo := l_quo + (l*l_mod) / j_quo;
+						l_mod := (l*l_mod) mod j_quo;
+					end if;
+				end loop;
+				sel_sch(i)((disp+j) mod word'length) := aux;
+			end loop;
+		end loop;
+		return select_lat(lat_val, lat_cod1, sel_sch);
+	end;
 
 	impure function xdr_task (
 		constant data_phases : natural;
