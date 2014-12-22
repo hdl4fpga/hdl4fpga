@@ -113,7 +113,7 @@ architecture def of scope is
 	signal ddrs_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
 	signal dataio_rst : std_logic;
-	signal input_rdy : std_logic;
+	signal input_rdy : std_logic := '0';
 	signal input_req : std_logic := '0';
 	signal input_dat : std_logic_vector(0 to 15);
 	
