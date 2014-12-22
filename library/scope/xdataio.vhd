@@ -125,8 +125,8 @@ begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1' then
 					capture_rdy <= '0';
-				elsif input_req='0' then
-					capture_rdy <= '0';
+--				elsif input_req='0' then
+--					capture_rdy <= '0';
 				elsif capture_rdy='0' then
 					capture_rdy <= co(0);
 				else
@@ -143,7 +143,17 @@ begin
 --			s => ddrios_id);
 		ddrs_breq <= datai_brst_req;
 
-		ddrs_addr <= std_logic_vector(to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-2, DDR_CLNMSIZE+1));
+		ddrs_addr <= 
+--			std_logic_vector(
+--				to_signed(4-1, DDR_BANKSIZE+1) & 
+--				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
+--				to_signed(2**DDR_CLNMSIZE-2, DDR_CLNMSIZE+1));
+			std_logic_vector(
+				to_signed(-1, DDR_BANKSIZE+1) & 
+				to_signed(-1, DDR_ADDRSIZE+1) & 
+				to_signed(2, DDR_CLNMSIZE+1));
+
+
 		process (ddrs_clk)
 			variable creq : std_logic;
 		begin
