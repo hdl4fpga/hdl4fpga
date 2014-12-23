@@ -179,8 +179,8 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => sys_dqst(0*2),
-			ta => sys_dqst(1*2),
+			ta => sys_dqst(0*2),
+			db => sys_dqst(1*2),
 			dqstclk => dqstclk,
 			dqsw => dqsw,
 			q => ddr_dqst);

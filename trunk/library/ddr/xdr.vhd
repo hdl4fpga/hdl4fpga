@@ -271,7 +271,8 @@ begin
 
 		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2),
 		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
-		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
+--		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
+		DQSZX_TAB => xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4),
 		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
 		DQZX_TAB  => xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4),
 		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
@@ -298,6 +299,7 @@ begin
 	xdr_sto(xdr_sch_st'range) <= xdr_sch_st;
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
+	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
 --	xdr_dqso(xdr_sch_st'range) <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (

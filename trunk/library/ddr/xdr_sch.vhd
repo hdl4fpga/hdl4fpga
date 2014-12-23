@@ -28,7 +28,7 @@ entity xdr_sch is
 
 		STRX_LAT  : natural;
 		RWNX_LAT  : natural;
-		DQSZX_LAT : natural;
+		DQSZX_TAB : natural_vector;
 		DQSX_LAT  : natural;
 		DQZX_TAB  : natural_vector;
 		WWNX_LAT  : natural;
@@ -70,8 +70,8 @@ architecture def of xdr_sch is
 
 begin
 	
-	rphi <= sys_wri or sys_rea;
-	wphi <= rphi;
+	rphi <= sys_rea;
+	wphi <= sys_wri;
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
@@ -83,7 +83,17 @@ begin
 		sys_clks => sys_clks,
 		sys_di => rphi,
 		ph_qo  => rpho);
-	wpho <= rpho;
+
+	xdr_wph_e : entity hdl4fpga.xdr_ph
+	generic map (
+		data_phases => sclk_phases,
+		data_edges  => sclk_edges,
+		delay_size  => delay_size,
+		delay_phase => 2)
+	port map (
+		sys_clks => sys_clks,
+		sys_di => wphi,
+		ph_qo  => wpho);
 
 	xdr_st <= xdr_task (
 		data_phases => data_phases,
@@ -121,7 +131,7 @@ begin
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
 		lat_sch => wpho,
-		lat_ext => DQSZX_LAT,
+		lat_ext => DQSZX_TAB,
 		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
