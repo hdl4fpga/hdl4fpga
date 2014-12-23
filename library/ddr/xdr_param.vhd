@@ -44,7 +44,7 @@ package xdr_param is
 	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
 	type latr_ids is (ANY, CL, BL, WRL, CWL);
 	type cltabs_ids  is (STRT,  RWNT);
-	type cwltabs_ids is (WWNT, DQSZT, DQST, DQZT, DQZXT);
+	type cwltabs_ids is (WWNT, DQSZT, DQST, DQSZXT, DQZT, DQZXT);
 	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
 		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
 
@@ -319,14 +319,14 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => cDLL,  value => 500) &
 		latency_record'(stdr => 3, param => STRL,  value => 4*0) &
 		latency_record'(stdr => 3, param => RWNL,  value => 4*2) &
-		latency_record'(stdr => 3, param => DQSZL, value =>  -2) &
 		latency_record'(stdr => 3, param => DQSL,  value =>  -4) &
+		latency_record'(stdr => 3, param => DQSZL, value =>  -6) &
 		latency_record'(stdr => 3, param => DQZL,  value =>  -6) &
 		latency_record'(stdr => 3, param => WWNL,  value =>  0) &
 		latency_record'(stdr => 3, param => STRXL, value =>   2) &
 		latency_record'(stdr => 3, param => RWNXL, value => 4*0) &
-		latency_record'(stdr => 3, param => DQSZXL, value => 4*2) &
 		latency_record'(stdr => 3, param => DQSXL, value =>   2) &
+		latency_record'(stdr => 3, param => DQSZXL, value =>  2) &
 		latency_record'(stdr => 3, param => DQZXL, value =>   4) &
 		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
 		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
@@ -674,7 +674,7 @@ package body xdr_param is
 		return natural_vector is
 
 		type latid_vector is array (cwltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQZT => DQZL, DQZXT => DQZXL);
+		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQSZXT => DQSZXL, DQZT => DQZL, DQZXT => DQZXL);
 
 		variable lat    : integer := xdr_latency(stdr, tab2laty(tabid));
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
@@ -696,6 +696,13 @@ package body xdr_param is
 			when DQZXT =>
 				latx := lat;
 				lat  := xdr_latency(stdr, DQZXL);
+				for i in cwltab'range loop
+					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
+					cwlval(i) := (latx*tDDR+aux+4*tCP-1 fs) / (4*tCP);
+				end loop;
+			when DQSZXT =>
+				latx := lat;
+				lat  := xdr_latency(stdr, DQSZXL);
 				for i in cwltab'range loop
 					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
 					cwlval(i) := (latx*tDDR+aux+4*tCP-1 fs) / (4*tCP);
