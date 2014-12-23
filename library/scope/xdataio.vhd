@@ -106,6 +106,7 @@ begin
 
 		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
 		signal co : std_logic_vector(0 to 3-1);
+		signal crst : std_logic;
 
 		function pencoder (
 			constant arg : std_logic_vector)
@@ -141,7 +142,7 @@ begin
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
 --			s => ddrios_id);
-		ddrs_breq <= datai_brst_req;
+		ddrs_breq <= datai_brst_req or ddr2miitx_brst_req;
 
 		ddrs_addr <= 
 --			std_logic_vector(
@@ -177,6 +178,7 @@ begin
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 
+		crst <= sys_rst or co(0);
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
 			stage_size => (
@@ -185,7 +187,7 @@ begin
 				0 => DDR_CLNMSIZE+1))
 		port map (
 			clk  => ddrs_clk,
-			load => sys_rst,
+			load => crst,
 			ena  => ddrs_cas,
 			data => ddrs_addr,
 			qo   => qo,
