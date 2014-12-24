@@ -14,9 +14,10 @@ entity xdr_infifo is
 		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(byte_size*data_phases-1 downto 0);
 
-		xdr_clks : in std_logic_vector(0 to data_phases-1);
-		xdr_enas : in std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		xdr_dqi  : in std_logic_vector(data_phases*line_size-1 downto 0));
+		xdr_win_dq  : in std_logic;
+		xdr_win_dqs : in std_logic;
+		xdr_dqsi : in std_logic;
+		xdr_dqi  : in std_logic_vector(byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -45,6 +46,11 @@ architecture mix of xdr_infifo is
 		end loop;
 		return val;
 	end;
+
+	signal xdr_delayed_dqs : std_logic_vector(0 to 2-1);
+	signal xdr_dlyd_dqs : std_logic_vector(0 to 2-1);
+--	signal xdr_delayed_dqs : std_logic_vector(0 to data_edges-1);
+--	signal xdr_dlyd_dqs : std_logic_vector(0 to data_edges-1);
 
 	signal axdr_o_d : axdr_word;
 	signal axdr_o_q : axdr_word;
@@ -76,11 +82,20 @@ begin
 		end if;
 	end process;
 
+	dqs_delayed_e : entity hdl4fpga.pgm_delay
+	port map (
+		xi  => xdr_dqsi,
+		x_p => xdr_delayed_dqs(0),
+		x_n => xdr_delayed_dqs(1));
+
+	xdr_dlyd_dqs(0) <= transport xdr_delayed_dqs(0) after 1 ps;
+	xdr_dlyd_dqs(1) <= transport xdr_delayed_dqs(1) after 1 ps;
+
 	axdr_o_d <= inc(gray(axdr_o_q));
 	o_cntr_g: for j in axdr_word'range generate
 		signal axdr_o_set : std_logic;
 	begin
-		axdr_o_set <= not xdr_enas(data_phases*l+m);
+		axdr_o_set <= not xdr_fifo_rdy;
 		ffd_i : entity hdl4fpga.sff
 		port map (
 			clk => sys_clk,
@@ -89,14 +104,14 @@ begin
 			q   => axdr_o_q(j));
 	end generate;
 
-	xdr_fifo: for l in 0 to data_phases-1 generate
+	xdr_fifo: for l in 0 to data_edges-1 generate
 		signal ph_sel : std_logic_vector(data_phases/data_edges-1 downto 0);
 	begin
-		process (axdr_i_set, xdr_clks(l))
+		process (axdr_i_set, xdr_dlyd_dqs(l))
 		begin
 			if axdr_i_set='1' then
 				ph_sel <= (0 => '1', others => '0');
-			elsif rising_edge(xdr_clks(l)) then
+			elsif rising_edge(xdr_dlyd_dqs(l)) then
 				ph_sel <= ph_sel rol 1;
 			end if;
 		end process;
@@ -118,7 +133,7 @@ begin
 				ffd_i : entity hdl4fpga.aff
 				port map (
 					ar  => axdr_i_set,
-					clk => xdr_clks(l),
+					clk => xdr_dlyd_dqs(l),
 					ena => we,
 					d   => axdr_i_d(k),
 					q   => axdr_i_q(k));
@@ -128,7 +143,7 @@ begin
 			generic map (
 				n => byte'length)
 			port map (
-				clk => xdr_clks(l),
+				clk => xdr_dlyd_dqs(l),
 				we  => we,
 				wa  => axdr_i_q,
 				di  => xdr_dqi,
