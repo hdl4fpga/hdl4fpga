@@ -261,6 +261,7 @@ begin
 	sdmt <= to_blinevector(sys_dmt);
 	sdqt <= to_blinevector(sys_dqt);
 	sdqi <= shuffle_dlinevector(sys_dqo);
+	ddqi <= to_bytevector(ddr_dq);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);

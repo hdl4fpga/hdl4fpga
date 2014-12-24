@@ -82,6 +82,13 @@ begin
 
 	dqi <= to_bytevector(xdr_dqi);
 	xdr_fifo_g : for i in xdr_dqsi'range generate
+
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		port map (
+			xi  => xdr_dqsi,
+			x_p => xdr_delayed_dqs(0),
+			x_n => xdr_delayed_dqs(1));
+
 		inbyte_i : entity hdl4fpga.xdr_infifo
 		generic map (
 			data_delay => data_delay,

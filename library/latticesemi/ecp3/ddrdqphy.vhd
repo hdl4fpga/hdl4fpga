@@ -59,16 +59,17 @@ architecture ecp3 of ddrdqphy is
 	
 	signal dqsdll_lock : std_logic;
 	signal prmbdet : std_logic;
-	signal ddrclkpol : std_logic;
+	signal ddrclkpol : std_logic := '0';
 	signal ddrlat : std_logic;
+	signal rw : std_logic;
 	
 begin
-
+	rw <= not sys_dqst(0);
 	dqsdllb_i : dqsdllb
 	port map (
 		rst => sys_rst,
 		clk => sys_eclk,
-		uddcntln => sys_cfgi(uddcntln),
+		uddcntln => '0', --sys_cfgi(uddcntln),
 		dqsdel => dqsi_delay,
 		lock => dqsdll_lock);
 
@@ -79,7 +80,8 @@ begin
 		eclkdqsr => idqs_eclk,
 
 		sclk => sys_sclk,
-		read => sys_rw,
+--		read => sys_rw,
+		read => rw,
 		ddrclkpol => ddrclkpol,
 		ddrlat  => ddrlat,
 		prmbdet => prmbdet,
