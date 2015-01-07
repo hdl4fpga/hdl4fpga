@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 use std.textio.all;
 library hdl4fpga;
 
-architecture xdr_rd_fifo of testbench is
+architecture xdr_rdfifo of testbench is
 	signal sys_clk : std_logic := '1';
 	signal sys_clk2 : std_logic := '1';
 	signal sys_rea : std_logic;
@@ -13,7 +13,7 @@ architecture xdr_rd_fifo of testbench is
 	signal xdr_dqi : std_logic_vector(8-1 downto 0);
 	signal xdr_win_dq : std_logic;
 	signal xdr_win_dqs : std_logic;
-	signal sys_do  : std_logic_vector(2**4*xdr_dqi'length-1 downto 0);
+	signal sys_do  : std_logic_vector(2*xdr_dqi'length-1 downto 0);
 begin
 	sys_clk <= not sys_clk after 2 ns;
 	sys_clk2 <= not sys_clk2 after (sys_do'length/xdr_dqi'length) * 1 ns;
@@ -32,20 +32,22 @@ begin
 		i := (i+1) mod dqi'length;
 	end process;
 
-	xdr_rd_fifo_e : entity hdl4fpga.xdr_rd_fifo
+	xdr_rdfifo_e : entity hdl4fpga.xdr_rdfifo
 	generic map (
 		data_delay  => 1,
 		data_edges  => 2,
-		data_phases => sys_do'length/xdr_dqi'length,
-		word_size   => xdr_dqi'length)
+		data_phases => 2,
+		line_size   => xdr_dqi'length,
+		word_size   => xdr_dqi'length,
+		byte_size   => xdr_dqi'length)
 	port map (
 		sys_clk => sys_clk2,
-		sys_rdy => sys_rdy,
+		sys_rdy(0) => sys_rdy,
 		sys_rea => sys_rea,
 		sys_do  => sys_do,
 
-		xdr_win_dq  => xdr_win_dq,
-		xdr_win_dqs => xdr_win_dqs,
-		xdr_dqsi => xdr_dqsi,
+		xdr_win_dq(0) => xdr_win_dq,
+		xdr_win_dqs(0) => xdr_win_dqs,
+		xdr_dqsi(0) => xdr_dqsi,
 		xdr_dqi  => xdr_dqi);
 end;

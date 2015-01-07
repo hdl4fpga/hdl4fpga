@@ -19,7 +19,7 @@ entity xdr_rdfifo is
 		xdr_win_dq  : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_win_dqs : in std_logic_vector((word_size/byte_size)-1 downto 0);
 		xdr_dqsi : in std_logic_vector((word_size/byte_size)-1 downto 0);
-		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
+		xdr_dqi  : in std_logic_vector(data_phases*line_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -82,87 +82,28 @@ begin
 
 	dqi <= to_bytevector(xdr_dqi);
 	xdr_fifo_g : for i in xdr_dqsi'range generate
-		signal pll_req : std_logic;
-		signal ser_clk : std_logic_vector(data_edges-1 downto 0);
-		signal ser_req : std_logic_vector(data_edges-1 downto 0);
-		signal ser_ena : std_logic_vector(data_phases-1 downto 0);
-		signal di : std_logic_vector(data_phases*byte_size-1 downto 0);
-
-	begin
-
-		process (dqi(i))
-			variable aux : unsigned(di'range);
-		begin
-			for j in di'range loop
-				aux := aux sll byte'length;
-				aux(byte'range) := unsigned(dqi(i));
-			end loop;
-			di <= std_logic_vector(aux);
-		end process;
-
-		process (sys_clk)
-			variable acc_rea_dly : std_logic;
-			variable sys_do_win : std_logic;
-		begin
-			if rising_edge(sys_clk) then
-				ser_req  <= (others => not sys_do_win);
-				sys_do_win  := acc_rea_dly;
-				acc_rea_dly := not sys_rea;
-			end if;
-		end process;
-
-		process (sys_clk)
-			variable q : std_logic_vector(0 to data_delay);
-		begin 
-			if rising_edge(sys_clk) then
-				q := q(1 to q'right) & xdr_win_dq(i);
-				pll_req <= q(0);
-			end if;
-		end process;
-		sys_rdy(i) <= not pll_req;
 
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
-			xi  => xdr_dqsi(i),
-			x_p => ser_clk(0),
-			x_n => ser_clk(1));
+			xi  => xdr_dqsi,
+			x_p => xdr_delayed_dqs(0),
+			x_n => xdr_delayed_dqs(1));
 
-		data_edges_g : for l in data_edges-1 downto 0 generate
-			signal ena : std_logic_vector(data_phases/data_edges-1 downto 0);
-		begin
-			process (ser_req(l), ser_clk(l))
-			begin
-				if ser_req(l)='0' then
-					ena <= (0 => '1', others => '0');
-				elsif rising_edge(ser_clk(l)) then
-					ena <= ena rol 1;
-				end if;
-			end process;
-
-			ena_g : for j in data_phases/data_edges-1 downto 0 generate
-				ser_ena(j*data_edges+l) <=
-				xdr_win_dqs(i) when data_phases/data_edges=1 else
-				xdr_win_dqs(i) when ena(j)='1' else
-				'0';
-			end generate;
-		end generate;
-
-		inbyte_i : entity hdl4fpga.iofifo
+		inbyte_i : entity hdl4fpga.xdr_infifo
 		generic map (
-			pll2ser => false,
+			data_delay => data_delay,
+			data_edges => data_edges,
 			data_phases => data_phases,
-			word_size  => byte'length,
 			byte_size  => byte'length)
 		port map (
-			pll_clk => sys_clk,
-			pll_req => pll_req,
-
-			ser_req => ser_req,
-			ser_ena => ser_ena,
-			ser_clk => ser_clk,
-
-			do  => do(i),
-			di  => di);
+			sys_clk => sys_clk,
+			sys_rdy => sys_rdy(i),
+			sys_rea => sys_rea,
+			sys_do  => do(i),
+			xdr_win_dq  => xdr_win_dq(i),
+			xdr_win_dqs => xdr_win_dqs(i),
+			xdr_dqsi => xdr_dqsi(i),
+			xdr_dqi  => dqi(i));
 	end generate;
 	sys_do <= to_stdlogicvector(shuffle_word(do));
 
