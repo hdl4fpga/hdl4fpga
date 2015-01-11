@@ -83,10 +83,10 @@ begin
 	dqi <= to_bytevector(xdr_dqi);
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_clk : std_logic_vector(data_edges-1 downto 0);
+		signal ser_clk : std_logic_vector(data_phases-1 downto 0);
 		signal ser_req : std_logic_vector(data_edges-1 downto 0);
 		signal ser_ena : std_logic_vector(data_phases-1 downto 0);
-		signal di : std_logic_vector(data_phases*byte_size-1 downto 0);
+		signal di : std_logic_vector(byte'length-1 downto 0);
 
 	begin
 
@@ -121,11 +121,17 @@ begin
 		end process;
 		sys_rdy(i) <= not pll_req;
 
-		dqs_delayed_e : entity hdl4fpga.pgm_delay
-		port map (
-			xi  => xdr_dqsi(i),
-			x_p => ser_clk(0),
-			x_n => ser_clk(1));
+		clk_data_phases_g: if data_edges > 1 generate
+			dqs_delayed_e : entity hdl4fpga.pgm_delay
+			port map (
+				xi  => xdr_dqsi(i),
+				x_p => ser_clk(0),
+				x_n => ser_clk(1));
+		end generate;
+
+		clk_edges_g: if data_edges < 2 generate
+			ser_clk(0) <= xdr_dqsi(i);
+		end generate;
 
 		data_edges_g : for l in data_edges-1 downto 0 generate
 			signal ena : std_logic_vector(data_phases/data_edges-1 downto 0);

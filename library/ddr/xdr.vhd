@@ -116,7 +116,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_rwn : std_logic_vector(0 to data_phases*line_size/word_size-1);
+	signal xdr_sch_rwn : std_logic_vector(0 to data_phases-1);
 	signal xdr_sch_wwn : std_logic_vector(xdr_sch_rwn'range);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_rwn'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_rwn'range);
