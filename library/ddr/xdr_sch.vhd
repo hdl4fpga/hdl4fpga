@@ -42,12 +42,12 @@ entity xdr_sch is
 		sys_wri  : in  std_logic;
 
 		xdr_rwn : out std_logic_vector(0 to data_phases-1);
-		xdr_st  : out std_logic_vector(0 to data_phases-1);
+		xdr_st  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
 
-		xdr_dqsz : out std_logic_vector(0 to data_phases-1);
-		xdr_dqs  : out std_logic_vector(0 to data_phases-1);
+		xdr_dqsz : out std_logic_vector(0 to data_phases*line_size/word_size-1);
+		xdr_dqs  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
 
-		xdr_dqz  : out std_logic_vector(0 to data_phases-1);
+		xdr_dqz  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
 		xdr_wwn  : out std_logic_vector(0 to data_phases-1));
 
 
@@ -111,7 +111,7 @@ begin
 	xdr_rwn <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
-		line_size => line_size,
+		line_size => word_size,
 		word_size => word_size,
 
 		lat_val => sys_cl,
@@ -163,7 +163,7 @@ begin
 	xdr_wwn <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
-		line_size => line_size,
+		line_size => word_size,
 		word_size => word_size,
 
 		lat_val => sys_cwl,
