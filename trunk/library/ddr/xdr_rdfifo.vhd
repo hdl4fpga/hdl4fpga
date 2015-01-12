@@ -157,7 +157,7 @@ begin
 		generic map (
 			pll2ser => false,
 			data_phases => data_phases,
-			word_size  => byte'length,
+			word_size  => word'length,
 			byte_size  => byte'length)
 		port map (
 			pll_clk => sys_clk,
