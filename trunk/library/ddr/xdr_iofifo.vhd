@@ -15,12 +15,12 @@ entity iofifo is
 		pll_req : in  std_logic := '-';
 
 		ser_clk : in  std_logic_vector(0 to data_phases-1);
-		ser_req : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ser_req : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
 		ser_rdy : out std_logic;
-		ser_ena : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ser_ena : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
 
-		di  : in  std_logic_vector(data_phases*byte_size-1 downto 0);
-		do  : out std_logic_vector(data_phases*byte_size-1 downto 0));
+		di  : in  std_logic_vector(data_phases*word_size-1 downto 0);
+		do  : out std_logic_vector(data_phases*word_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -30,9 +30,9 @@ architecture mix of iofifo is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal fifo_do : byte_vector(data_phases-1 downto 0);
+	signal fifo_do : byte_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal fifo_di : byte_vector(fifo_do'range);
-	signal dqo : byte_vector(data_phases-1 downto 0);
+	signal dqo : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
 	signal pll_do_win : std_logic;
