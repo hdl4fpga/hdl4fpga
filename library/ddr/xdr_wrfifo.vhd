@@ -20,7 +20,7 @@ entity xdr_wrfifo is
 		sys_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0) := (others => '-');
-		xdr_enas : in  std_logic_vector(data_phases-1 downto 0);
+		xdr_enas : in  std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
 
@@ -169,7 +169,7 @@ begin
 			registered_output => registered_output,
 			data_phases => data_phases,
 			word_size => word'length,
-			byte_size => word'length)
+			byte_size => byte'length)
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
