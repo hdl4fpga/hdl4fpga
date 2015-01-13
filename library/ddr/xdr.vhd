@@ -123,7 +123,7 @@ architecture mix of xdr is
 	signal xdr_sch_wwn : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_rwn : std_logic_vector(xdr_sch_dqsz'range);
 
-	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
+	signal xdr_win_dqs : std_logic_vector(xdr_dmi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
 	signal xdr_wr_fifo_rst : std_logic;
 	signal xdr_wr_fifo_req : std_logic;

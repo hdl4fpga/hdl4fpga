@@ -109,7 +109,7 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(data_phases*(line_size*(byte_size+1)/word_size)-1 downto 0);
+	subtype word is std_logic_vector(data_phases*(line_size*(byte'length)/word_size)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	subtype shuffleword is byte_vector(data_phases*(line_size/word_size)-1 downto 0);
@@ -175,7 +175,6 @@ begin
 			pll_req => sys_req,
 			ser_clk => ser_clk,
 			ser_ena => xdr_enas, 
-			ser_req => xdr_enas, 
 			di  => fifo_di,
 			do  => dqo(i));
 
