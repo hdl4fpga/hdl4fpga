@@ -340,7 +340,7 @@ begin
 		end loop;
 	end process;
 
-	sys_dqsi <= ddr_dqs;
+	sys_dqsi <= (others => sys_sclk);
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);
 	sys_cfgo <= to_stdlogicvector(cfgo);
