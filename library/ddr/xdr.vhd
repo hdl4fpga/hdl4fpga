@@ -64,7 +64,7 @@ entity xdr is
 		xdr_a   : out std_logic_vector(addr_size-1 downto 0);
 		xdr_odt : out std_logic;
 		xdr_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dmt : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dmt : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '0');
 		xdr_dmo : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
