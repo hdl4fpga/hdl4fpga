@@ -195,9 +195,9 @@ begin
 		sys_dqsi => ddrphy_dqsi,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
-		sys_dmi => ddrphy_dmi,
+		sys_dmi => ddrphy_dmo,
 		sys_dmt => ddrphy_dmt,
-		sys_dmo => ddrphy_dmo,
+		sys_dmo => ddrphy_dmi,
 		sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
@@ -214,11 +214,10 @@ begin
 		ddr_b   => ddr3_b,
 		ddr_a   => ddr3_a,
 
---		ddr_dm  => ddr3_dm,
+		ddr_dm  => ddr3_dm,
 		ddr_dq  => ddr3_dq,
 		ddr_dqs => ddr3_dqs);
 
-	ddr3_dm <= (others => '0');
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
