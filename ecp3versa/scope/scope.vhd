@@ -52,6 +52,8 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_cfgo : std_logic_vector(2-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -116,6 +118,7 @@ begin
 	phy1_rst <= dcm_lckd;
 
 	ddrs_clks <= (others => ddr_sclk);
+	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => (uclk_period*real(ddr_div))/real(ddr_mul),
@@ -134,7 +137,6 @@ begin
 
 		input_clk => input_clk,
 
-		ddr_sti  => (others => '0'),
 		ddrs_clks => ddrs_clks,
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
@@ -155,6 +157,7 @@ begin
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
 		ddr_sto  => ddrphy_sto,
+		ddr_sti  => ddrphy_sti,
 
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
@@ -173,6 +176,7 @@ begin
 		vga_blue  => vga_blue);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
+	sto <= not ddrphy_sto(0); 
 	process (ddr_sclk)
 		variable pp : std_logic;
 		variable ppp : unsigned(0 to 3);
@@ -180,7 +184,6 @@ begin
 	begin
 		if rising_edge(ddr_sclk) then
 			ppp(0 to n-1) := ppp(1 to n);
-			sto <= ppp(0);
 			ppp(n):= ddrphy_sto(0) and not pp;
 			pp := ddrphy_sto(0);
 		end if;
@@ -202,7 +205,7 @@ begin
 		sys_rw => sto,
 		sys_rst => ddrphy_rst, 
 		sys_cfgi => (others => '-'),
-		sys_cfgo => open,
+		sys_cfgo => ddrphy_cfgo,
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
 		sys_ras => ddrphy_ras,

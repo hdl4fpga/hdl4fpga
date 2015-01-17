@@ -294,9 +294,11 @@ begin
 
 --	xdr_dqso <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 
-	xdr_win_dqs <= (others => xdr_sch_rwn(0));
-	xdr_win_dq  <= (others => xdr_sch_rwn(0));
-	xdr_sto <= (others => xdr_mpu_rwin);
+--	xdr_win_dqs <= (others => xdr_sch_rwn(0));
+--	xdr_win_dq  <= (others => xdr_sch_rwn(0));
+	xdr_win_dqs <= (others => xdr_sti(0));
+	xdr_win_dq  <= (others => xdr_sti(0));
+	xdr_sto <= xdr_sch_rwn;
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
