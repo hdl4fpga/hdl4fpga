@@ -70,8 +70,8 @@ entity xdr is
 		xdr_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
 		xdr_dqt : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(data_phases*line_size-1 downto 0) := (others => '-');
-		xdr_sti  : in  std_logic_vector(0 to data_phases*line_size/byte_size-1) := (others => '-');
-		xdr_sto  : out std_logic_vector(0 to data_phases*line_size/byte_size-1) := (others => '-');
+		xdr_sti  : in  std_logic_vector(0 to data_phases*line_size/word_size-1) := (others => '-');
+		xdr_sto  : out std_logic_vector(0 to data_phases*line_size/word_size-1) := (others => '-');
 
 		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0) := (others => '-');
@@ -296,7 +296,7 @@ begin
 
 	xdr_win_dqs <= (others => xdr_sch_rwn(0));
 	xdr_win_dq  <= (others => xdr_sch_rwn(0));
-	xdr_sto(xdr_sch_st'range) <= xdr_sch_st;
+	xdr_sto <= (others => xdr_mpu_rwin);
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
@@ -354,7 +354,12 @@ begin
 		sys_req => xdr_mpu_wwin,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
-		xdr_dmo  => xdr_dmo,
+		xdr_dmo  => xdr_wr_dm,
 		xdr_enas => xdr_sch_wwn, 
 		xdr_dqo  => xdr_dqo);
+	xdr_dmo <= 
+	xdr_wr_dm when xdr_mpu_wri='1' else
+	xdr_sch_st & xdr_sch_st;
+
+
 end;

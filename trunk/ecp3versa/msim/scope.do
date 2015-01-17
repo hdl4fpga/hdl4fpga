@@ -7,6 +7,18 @@ add wave -noupdate -expand -group testbench /testbench/xtal_n
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
 add wave -noupdate -expand -group testbench /testbench/xtal_p
 add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ddr_clk_n
+add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddr3_dq(15) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(14) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(13) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(12) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(11) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(10) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(9) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(8) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(7) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(6) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(5) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/ddr3_dq(15) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(14) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(13) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddr3_dq
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
+add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal /testbench/ecp3versa_e/ddrphy_e/sys_dqi
+add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_sto
+add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sto
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_sto(0)
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
+add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
 add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/rst_n
 add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_cke
 add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/cke
@@ -187,7 +199,6 @@ add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -grou
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_pgm_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/data
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/cntr_g(0)/cntr
-add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/cntr_g(3)/cntr
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/clk
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/req
 add wave -noupdate -expand -group ecp3versa -expand -group scope_e -expand -group ddr_e -group xdr_init -group timer_e -expand -group timer_e /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/timer_e/timer_e/rdy
@@ -482,10 +493,10 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate /testbench/ecp3versa_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {704837758 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {14697590 ps} 0} {{Cursor 2} {14695623 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 204
-configure wave -valuecolwidth 52
+configure wave -valuecolwidth 190
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -498,4 +509,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {704877094 ps} {705038160 ps}
+WaveRestoreZoom {14647431 ps} {14755399 ps}
