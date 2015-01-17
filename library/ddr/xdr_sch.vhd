@@ -67,6 +67,7 @@ architecture def of xdr_sch is
 
 	signal rphi : std_logic;
 	signal rpho : std_logic_vector(0 to delay_size);
+	signal st : std_logic_vector(xdr_st'reverse_range);
 
 begin
 	
@@ -95,7 +96,7 @@ begin
 		sys_di => wphi,
 		ph_qo  => wpho);
 
-	xdr_st <= xdr_task (
+	st <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,
 		line_size => line_size,
@@ -108,6 +109,12 @@ begin
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
 
+	process (st)
+	begin
+		for i in st'range loop
+			xdr_st(i) <= st(i);
+		end loop;
+	end process;
 	xdr_rwn <= xdr_task (
 		data_phases => data_phases,
 		data_edges  => data_edges,

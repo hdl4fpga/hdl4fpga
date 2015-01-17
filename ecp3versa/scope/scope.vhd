@@ -10,7 +10,8 @@ library ecp3;
 use ecp3.components.all;
 
 architecture scope of ecp3versa is
-	constant data_phases : natural := 2;
+	constant data_phases : natural := 1;
+	constant cmmd_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant line_size : natural := 4*ddr3_dq'length;
@@ -31,15 +32,16 @@ architecture scope of ecp3versa is
 	signal ddrs_clks  : std_logic_vector(0 to 2-1);
 	signal ddr_lp_clk : std_logic;
 
-	signal ddrphy_rst : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_cke : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_ras : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_cas : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_we : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_odt : std_logic_vector(data_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(data_phases*ddr3_b'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(data_phases*ddr3_a'length-1 downto 0);
+	signal sto : std_logic;
+	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cs : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_ras : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_we : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -49,6 +51,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -151,6 +154,7 @@ begin
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
+		ddr_sto  => ddrphy_sto,
 
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
@@ -168,6 +172,20 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
+	ddrphy_rst(1) <= ddrphy_rst(0);
+	process (ddr_sclk)
+		variable pp : std_logic;
+		variable ppp : unsigned(0 to 3);
+		constant n : natural := 3;
+	begin
+		if rising_edge(ddr_sclk) then
+			ppp(0 to n-1) := ppp(1 to n);
+			sto <= ppp(0);
+			ppp(n):= ddrphy_sto(0) and not pp;
+			pp := ddrphy_sto(0);
+		end if;
+	end process;
+
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE => ddr3_b'length,
@@ -181,7 +199,7 @@ begin
 		sys_eclk => ddr_eclk,
 		phy_rst => scope_rst,
 
-		sys_rw => 'U',
+		sys_rw => sto,
 		sys_rst => ddrphy_rst, 
 		sys_cfgi => (others => '-'),
 		sys_cfgo => open,

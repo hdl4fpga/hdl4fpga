@@ -64,7 +64,6 @@ architecture ecp3 of ddrdqphy is
 	signal rw : std_logic;
 	
 begin
-	rw <= not sys_dqst(0);
 	dqsdllb_i : dqsdllb
 	port map (
 		rst => sys_rst,
@@ -80,8 +79,7 @@ begin
 		eclkdqsr => idqs_eclk,
 
 		sclk => sys_sclk,
---		read => sys_rw,
-		read => rw,
+		read => sys_rw,
 		ddrclkpol => ddrclkpol,
 		ddrlat  => ddrlat,
 		prmbdet => prmbdet,
@@ -121,6 +119,25 @@ begin
 			qa1 => sys_dqi(2*byte_size+i),
 			qb1 => sys_dqi(3*byte_size+i));
 	end generate;
+
+	dmi_g : block
+		attribute iddrapps : string;
+		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+	begin
+		iddrx2d_i : iddrx2d
+		port map (
+			sclk => sys_sclk,
+			eclk => sys_eclk,
+			eclkdqsr => idqs_eclk,
+--			eclkdqsr => sys_eclk,
+			ddrclkpol => ddrclkpol,
+			ddrlat => ddrlat,
+			d   => ddr_dmi,
+			qa0 => sys_dmo(0),
+			qb0 => sys_dmo(1),
+			qa1 => sys_dmo(2),
+			qb1 => sys_dmo(3));
+	end block;
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
