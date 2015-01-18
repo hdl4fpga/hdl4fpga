@@ -138,6 +138,7 @@ architecture mix of xdr is
 
 	signal rst : std_logic;
 
+	constant tlWR : time := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
 begin
 
 	process (sys_clks(0), sys_rst)
@@ -221,7 +222,8 @@ begin
 	generic map (
 		lRCD => to_xdrlatency(tCP, mark, tRCD),
 		lRFC => to_xdrlatency(tCP, mark, tRFC),
-		lWR  => to_xdrlatency(tCP, xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2)),
+--		lWR  => to_xdrlatency(tCP, xdr_timing(mark, tWR)+tCP*integer((xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2)/2))),
+		lWR  => to_xdrlatency(tCP, tlWR),
 		lRP  => to_xdrlatency(tCP, mark, tRP),
 		bl_cod => xdr_latcod(stdr, BL),
 		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
