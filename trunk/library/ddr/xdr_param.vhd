@@ -48,11 +48,13 @@ package xdr_param is
 	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
 		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
 
+	constant code_size : natural := 3;
+	subtype code_t is std_logic_vector(0 to code_size-1);
 	type cnfglat_record is record
 		stdr : positive;
 		reg  : latr_ids;
 		lat  : integer;
-		code : std_logic_vector(0 to 2);
+		code : code_t;
 	end record;
 	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
@@ -352,10 +354,10 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
 		timing_record'(mark => M6T,  param => tREFI, value =>  7 us) &
 		timing_record'(mark => M15E, param => tREFI, value =>  7 us) &
---		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
---		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M15E, param => tPreRST, value => 5 us) &
-		timing_record'(mark => M15E, param => tPstRST, value => 5 us) &
+		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 5 us) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 5 us) &
 		timing_record'(mark => M15E, param => tWR,   value => 15 ns) &
 		timing_record'(mark => M15E, param => tRCD,  value => 13.91 ns) &
 		timing_record'(mark => M15E, param => tRP,   value => 13.91 ns) &
@@ -724,11 +726,11 @@ package body xdr_param is
 		return std_logic_vector is
 		constant query_size : natural := xdr_query_size(stdr, reg);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
-		variable latcode : std_logic_vector(0 to cnfglat_db(1).code'length*query_size-1);
+		variable latcode : std_logic_vector(0 to code_size*query_size-1);
 	begin
 		for i in query_data'reverse_range loop
-			latcode := latcode srl cnfglat_db(1).code'length;
-			latcode(cnfglat_db(1).code'range) := query_data(i).code;
+			latcode := latcode srl code_size;
+			latcode(code_t'range) := query_data(i).code;
 		end loop;
 		return latcode;
 	end;

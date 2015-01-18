@@ -51,10 +51,14 @@ architecture ecp3 of ddrbaphy is
 	signal ddrclkpol : std_logic;
 	signal ddrlat : std_logic;
 	signal dqstclk : std_logic;
-	
+	attribute oddrapps : string;
+	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
+	attribute oddrapps of ck_i : label is "SCLK_ALIGNED";
 begin
 
 	b_g : for i in 0 to bank_size-1 generate
+		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
+	begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sys_sclk,
@@ -64,6 +68,8 @@ begin
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
+		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
+	begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sys_sclk,
