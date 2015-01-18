@@ -124,7 +124,7 @@ begin
 				pll_req <= q(0);
 			end if;
 		end process;
-		sys_rdy(i) <= not pll_req;
+		sys_rdy(i) <= pll_req;
 
 		clk_data_phases_g: if data_edges > 1 generate
 			dqs_delayed_e : entity hdl4fpga.pgm_delay

@@ -299,6 +299,7 @@ begin
 	xdr_win_dqs <= (others => xdr_sti(0));
 	xdr_win_dq  <= (others => xdr_sti(0));
 	xdr_sto <= xdr_sch_rwn;
+
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
@@ -313,7 +314,7 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => stdr)
+		data_delay => 0)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

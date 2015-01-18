@@ -109,7 +109,7 @@ architecture def of scope is
 
 	signal ddrs_di_rdy : std_logic;
 	signal ddrs_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
-	signal ddrs_do_rdy : std_logic;
+	signal ddrs_do_rdy : std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 	signal ddrs_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
 	signal dataio_rst : std_logic;
@@ -299,7 +299,7 @@ begin
 
 		ddrs_di_rdy => ddrs_di_rdy,
 		ddrs_di => ddrs_di,
-		ddrs_do_rdy => ddrs_do_rdy,
+		ddrs_do_rdy => ddrs_do_rdy(0),
 		ddrs_do => ddrs_do,
 
 		mii_txc => mii_txc,
@@ -465,7 +465,7 @@ begin
 		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di  => ddrs_di,
-		sys_do_rdy => open, --ddrs_do_rdy,
+		sys_do_rdy => ddrs_do_rdy,
 		sys_do  => ddrs_do,
 		sys_ref => ddrs_ref_req,
 
