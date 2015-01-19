@@ -24,7 +24,7 @@
             <Options/>
         </Source>
     </Implementation>
-    <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
+    <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Quick">
         <Options def_top="hdl4fpga.ddr3iob" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
@@ -192,6 +192,9 @@
             <Options/>
         </Source>
         <Source name="../../library/common/counter.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/xmii_iob.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

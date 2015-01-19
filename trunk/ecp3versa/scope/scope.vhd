@@ -242,21 +242,21 @@ begin
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
---	mii_iob_e : entity hdl4fpga.mii_iob
---	generic map (
---		xd_len => 8)
---	port map (
---		mii_rxc  => phy1_rxc,
---		iob_rxdv => phy1_rx_dv,
---		iob_rxd  => phy1_rx_d,
---		mii_rxdv => mii_rxdv,
---		mii_rxd  => mii_rxd,
---
---		mii_txc  => phy1_125clk,
---		mii_txen => mii_txen,
---		mii_txd  => mii_txd,
---		iob_txen => phy1_tx_en,
---		iob_txd  => phy1_tx_d,
---		iob_gtxclk => phy1_gtxclk);
+	mii_iob_e : entity hdl4fpga.mii_iob
+	generic map (
+		xd_len => 8)
+	port map (
+		mii_rxc  => phy1_rxc,
+		iob_rxdv => phy1_rx_dv,
+		iob_rxd  => phy1_rx_d,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+
+		mii_txc  => phy1_125clk,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd,
+		iob_txen => phy1_tx_en,
+		iob_txd  => phy1_tx_d,
+		iob_gtxclk => phy1_gtxclk);
 
 end;
