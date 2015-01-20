@@ -107,6 +107,7 @@ begin
 		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
 		signal co : std_logic_vector(0 to 3-1);
 		signal crst : std_logic;
+		signal creq : std_logic;
 
 		function pencoder (
 			constant arg : std_logic_vector)
@@ -156,23 +157,22 @@ begin
 
 
 		process (ddrs_clk)
-			variable creq : std_logic;
 		begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1'then
-					creq := '0';
+					creq <= '0';
 				elsif ddrs_breq='1' then
 					if creq='0' then
-						creq := not ddrs_rreq and ddrs_crdy;
+						creq <= not ddrs_rreq and ddrs_crdy;
 					else
-						creq := not ddrs_rreq and not qo(DDR_CLNMSIZE);
+						creq <= not ddrs_rreq and not qo(DDR_CLNMSIZE);
 					end if;
 				else
-					creq := '0';
+					creq <= '0';
 				end if;
-				ddrs_creq <= creq;
 			end if;
 		end process;
+		ddrs_creq <= creq and ddrs_breq;
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
