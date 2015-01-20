@@ -96,7 +96,6 @@ begin
 		i_p => clk,
 		i_n => clk_n,
 		o   => uclk);
---	uclk <= clk;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
