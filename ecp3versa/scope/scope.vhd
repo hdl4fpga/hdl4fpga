@@ -89,7 +89,7 @@ architecture scope of ecp3versa is
 	signal ddr_eclk  : std_logic;
 begin
 
-	sys_rst <= fpga_gsrn;
+	sys_rst <= not fpga_gsrn;
 
 	uclk_i : entity hdl4fpga.idbuf 
 	port map (

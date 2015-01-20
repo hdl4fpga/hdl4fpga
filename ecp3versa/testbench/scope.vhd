@@ -77,7 +77,7 @@ architecture scope of testbench is
 			phy1_coma : out std_logic;
 			phy1_mdio : inout std_logic;
 			phy1_mdc : out std_logic;
-			phy1_gtxclk : out std_logic;
+			phy1_gtxclk : out std_logic := '1';
 			phy1_crs : out std_logic;
 			phy1_col : out std_logic;
 			phy1_txc : out std_logic;
@@ -89,11 +89,11 @@ architecture scope of testbench is
 			phy1_rx_d : in std_logic_vector(0 to 8-1);
 
 			phy2_125clk : in std_logic;
-			phy2_rst : out std_logic;
+			phy2_rst : out std_logic := '0';
 			phy2_coma : out std_logic;
 			phy2_mdio: inout std_logic;
 			phy2_mdc : out std_logic;
-			phy2_gtxclk : out std_logic;
+			phy2_gtxclk : out std_logic := '1';
 			phy2_crs : out std_logic;
 			phy2_col : out std_logic;
 			phy2_txc : out std_logic;
@@ -134,20 +134,23 @@ architecture scope of testbench is
 
 begin
 
-	rst <= '1', '0' after 1.1 us;
+	rst   <= '1', '0' after 1.1 us;
+	rst_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
 
 	phy1_125clk <= not phy1_125clk after 8 ns;
+	mii_rxc <= phy1_125clk;
+	mii_refclk <= phy1_125clk;
 
-	mii_strt <= '0', '1' after 240 us;
+	mii_strt <= '0', '1' after 20 us;
 	process (mii_refclk, mii_strt)
 		variable txen_edge : std_logic;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 240 us;
+			mii_treq <= '1' after 20 us;
 		elsif rising_edge(mii_refclk) then
 			if mii_txen='1' then
 				if txen_edge='0' then
@@ -169,7 +172,6 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_refclk <= phy1_125clk;
 	ecp3versa_e : ecp3versa
 	port map (
 		clk    => xtal,
@@ -177,15 +179,15 @@ begin
 		pclk   => '-',
 		pclk_n => '-',
 
-		fpga_gsrn => rst,
+		fpga_gsrn => rst_n,
 
 		phy1_125clk => phy1_125clk,
-		phy1_rxc   => '-',
+		phy1_rxc   => mii_rxc,
 		phy1_rx_er => '-',
 		phy1_rx_dv => mii_rxdv,
 		phy1_rx_d  => mii_rxd,
 
-		phy1_txc   => mii_refclk,
+		phy1_txc   => open,
 		phy1_tx_en => mii_txen,
 
 		phy2_125clk => phy1_125clk,
