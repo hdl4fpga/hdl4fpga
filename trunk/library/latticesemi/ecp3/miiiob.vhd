@@ -4,6 +4,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+library ecp3;
+use ecp3.components.all;
 
 entity mii_iob is
 	generic (
@@ -26,6 +28,8 @@ entity mii_iob is
 end;
 
 architecture def of mii_iob is
+	attribute oddrapps : string;
+	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 begin
 
 	--------
@@ -64,10 +68,10 @@ begin
 			q => iob_txd(i));
 	end generate;
 
-	gtx_clk_i : entity hdl4fpga.oddr
+	gtx_clk_i : oddrxd1
 	port map (
 		sclk => mii_txc,
-		d(0) => '1',
-		d(1) => '0',
-		q(0) => iob_gtxclk);
+		da => '0',
+		db => '1',
+		q  => iob_gtxclk);
 end;

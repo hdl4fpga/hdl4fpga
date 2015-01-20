@@ -341,16 +341,16 @@ begin
 		end if;
 	end process;
 
---	mii_txen <= miitx_ena;
---	miitx_udp_e : entity hdl4fpga.miitx_udp
---	port map (
---		sys_addr => miitx_addr,
---		sys_data => miitx_data,
---		mii_txc  => mii_txc,
---		mii_treq => treq,
---		mii_trdy => trdy,
---		mii_txen => miitx_ena,
---		mii_txd  => mii_txd);
+	mii_txen <= miitx_ena;
+	miitx_udp_e : entity hdl4fpga.miitx_udp
+	port map (
+		sys_addr => miitx_addr,
+		sys_data => miitx_data,
+		mii_txc  => mii_txc,
+		mii_treq => treq,
+		mii_trdy => trdy,
+		mii_txen => miitx_ena,
+		mii_txd  => mii_txd);
 
 	process (mii_txc)
 		variable edge : std_logic;
