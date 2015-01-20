@@ -25,7 +25,7 @@ architecture def of miitx_dma is
 	constant cntr_size : natural := sys_addr'length+unsigned_num_bits(sys_data'length/mii_txd'length-1);
 
 	signal cntr : std_logic_vector(0 to cntr_size);
-	signal sel  : std_logic_vector(0 to 1);
+	signal sel  : std_logic_vector(0 to 2);
 	signal ena  : std_logic_vector(0 to 1);
 	signal ena_sel : std_logic;
 begin
@@ -56,5 +56,5 @@ begin
 	mii_txen <= mii_treq and ena(0);
 	mii_txd  <= reverse(word2byte(
 		word => sys_data,
-		addr => sel(0 to 1)));
+		addr => sel(0 to 2)));
 end;
