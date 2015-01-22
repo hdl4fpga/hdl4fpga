@@ -483,8 +483,8 @@ package body xdr_param is
 	end;
 
 	impure function xdr_timing (
-		mark  : tmrk_ids;
-		param : tmng_ids) 
+		constant mark  : tmrk_ids;
+		constant param : tmng_ids) 
 		return time is
 		variable msg : line;
 	begin

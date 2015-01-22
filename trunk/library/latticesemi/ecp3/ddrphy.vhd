@@ -50,7 +50,7 @@ entity ddrphy is
 		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 
-		ddr_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
@@ -266,7 +266,7 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);
 
-	byte_g : for i in 0 to word_size/byte_size-1 generate
+	byte_g : for i in 0 to 0 generate --word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			line_size => line_size*byte_size/word_size,
@@ -294,7 +294,7 @@ begin
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
 
-			ddr_dmi  => ddr_dm(i),
+--			ddr_dmi  => ddr_dm(i),
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
 

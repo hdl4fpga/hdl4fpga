@@ -36,7 +36,7 @@ architecture struct of xdr_wrfifo is
 	subtype byte is std_logic_vector(byte_size downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	function merge (
+	impure function merge (
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
 		return std_logic_vector is
@@ -55,7 +55,7 @@ architecture struct of xdr_wrfifo is
 		return std_logic_vector(val);
 	end;
 
-	function extract_dm (
+	impure function extract_dm (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable val : std_logic_vector(xdr_dmo'range);
@@ -66,7 +66,7 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	function extract_dq (
+	impure function extract_dq (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable dat : std_logic_vector(arg'length-1 downto 0);
@@ -114,7 +114,7 @@ architecture struct of xdr_wrfifo is
 
 	subtype shuffleword is byte_vector(data_phases*(line_size/word_size)-1 downto 0);
 
-	function unshuffle (
+	impure function unshuffle (
 		arg : word_vector)
 		return byte_vector is
 		variable aux : byte_vector(word'length/byte'length-1 downto 0);

@@ -91,11 +91,7 @@ begin
 
 	sys_rst <= not fpga_gsrn;
 
-	uclk_i : entity hdl4fpga.idbuf 
-	port map (
-		i_p => clk,
-		i_n => clk_n,
-		o   => uclk);
+	uclk <= clk;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -226,7 +222,7 @@ begin
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,
 		ddr_cke => ddr3_cke,
-		ddr_odt => open, --ddr3_odt,
+		ddr_odt => ddr3_odt,
 		ddr_cs => ddr3_cs,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,

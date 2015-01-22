@@ -1,2 +1,88 @@
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
+
+LOCATE COMP "dcms_e/ddr3_b.pll_i"		SITE "PLL_R35C5" ;
+LOCATE COMP "dcms_e/ddr3_b.eclksynca_i"	SITE "LECLKSYNC2" ;
+#LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsdllb_i"	SITE "LDQSDLL" ;
+#LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsdllb_i"	SITE "LDQSDLL" ;
+
+LOCATE COMP "ddr3_dq[0]"  SITE "E5";
+LOCATE COMP "ddr3_dq[1]"  SITE "E4";
+LOCATE COMP "ddr3_dq[2]"  SITE "D2";
+LOCATE COMP "ddr3_dq[3]"  SITE "D1";
+LOCATE COMP "ddr3_dq[4]"  SITE "C2";
+LOCATE COMP "ddr3_dq[5]"  SITE "B2";
+LOCATE COMP "ddr3_dq[6]"  SITE "G5";
+LOCATE COMP "ddr3_dq[7]"  SITE "G4";
+LOCATE COMP "ddr3_dq[8]"  SITE "G2";
+LOCATE COMP "ddr3_dq[9]"  SITE "F1";
+LOCATE COMP "ddr3_dq[10]" SITE "H4";
+LOCATE COMP "ddr3_dq[11]" SITE "E2";
+LOCATE COMP "ddr3_dq[12]" SITE "J4";
+LOCATE COMP "ddr3_dq[13]" SITE "B1";
+LOCATE COMP "ddr3_dq[14]" SITE "C1";
+LOCATE COMP "ddr3_dq[15]" SITE "G3";
+
+LOCATE COMP "ddr3_dm[0]"    SITE "E3" ;
+LOCATE COMP "ddr3_dm[1]"    SITE "F3" ;
+LOCATE COMP "ddr3_dqs[0]"   SITE "F5" ;
+LOCATE COMP "ddr3_dqs[1]"   SITE "H5" ;
+
+##########################################################################
+LOCATE COMP "ddr_a[0]"  SITE "C8";
+LOCATE COMP "ddr_a[1]"  SITE "C7";
+LOCATE COMP "ddr_a[2]"  SITE "B7";
+LOCATE COMP "ddr_a[3]"  SITE "D8";
+LOCATE COMP "ddr_a[4]"  SITE "F9";
+LOCATE COMP "ddr_a[5]"  SITE "E9";
+LOCATE COMP "ddr_a[6]"  SITE "A3";
+LOCATE COMP "ddr_a[7]"  SITE "D7";
+LOCATE COMP "ddr_a[8]"  SITE "A7";
+LOCATE COMP "ddr_a[9]"  SITE "B8";
+LOCATE COMP "ddr_a[10]" SITE "C9";
+LOCATE COMP "ddr_a[11]" SITE "C10";
+LOCATE COMP "ddr_a[12]" SITE "F7";
+LOCATE COMP "ddr_b[0]"  SITE "B4";
+LOCATE COMP "ddr_b[1]"  SITE "E6";
+LOCATE COMP "ddr_b[2]"  SITE "D5";
+
+LOCATE COMP "ddr3_clk"   SITE "K4";
+LOCATE COMP "ddr3_cke"   SITE "G8";
+LOCATE COMP "ddr3_ras"   SITE "A6";
+LOCATE COMP "ddr3_cas"   SITE "A4";
+LOCATE COMP "ddr3_we"    SITE "D6";
+LOCATE COMP "ddr3_cs"  SITE "C6" ;
+LOCATE COMP "ddr3_odt"   SITE "E7";
+LOCATE COMP "ddr3_rst" SITE "D4" ;
+
+LOCATE COMP "phy1_125clk" SITE "T3";
+LOCATE COMP "phy1_rst"    SITE "L3";
+LOCATE COMP "phy1_coma"   SITE "R4";
+LOCATE COMP "phy1_mdio"   SITE "L2";
+LOCATE COMP "phy1_mdc"    SITE "V4";
+LOCATE COMP "phy1_gtxclk" SITE "M2";
+LOCATE COMP "phy1_crs"    SITE "P4";
+LOCATE COMP "phy1_col"    SITE "R1";
+LOCATE COMP "phy1_txc"    SITE "C12";
+LOCATE COMP "phy1_tx_d[0]" SITE "V1";
+LOCATE COMP "phy1_tx_d[1]" SITE "U1";
+LOCATE COMP "phy1_tx_d[2]" SITE "R3";
+LOCATE COMP "phy1_tx_d[3]" SITE "P1";
+LOCATE COMP "phy1_tx_d[4]" SITE "N5";
+LOCATE COMP "phy1_tx_d[5]" SITE "N3";
+LOCATE COMP "phy1_tx_d[6]" SITE "N4";
+LOCATE COMP "phy1_tx_d[7]" SITE "N2";
+LOCATE COMP "phy1_tx_en"  SITE "V3";
+LOCATE COMP "phy1_rxc"    SITE "L4";
+LOCATE COMP "phy1_rx_er"  SITE "M4";
+LOCATE COMP "phy1_rx_dv"  SITE "M1";
+
+LOCATE COMP "phy1_rx_d[0]" SITE "M5";
+LOCATE COMP "phy1_rx_d[1]" SITE "N1";
+LOCATE COMP "phy1_rx_d[2]" SITE "N6";
+LOCATE COMP "phy1_rx_d[3]" SITE "P6";
+LOCATE COMP "phy1_rx_d[4]" SITE "T2";
+LOCATE COMP "phy1_rx_d[5]" SITE "R2";
+LOCATE COMP "phy1_rx_d[6]" SITE "P5";
+LOCATE COMP "phy1_rx_d[7]" SITE "P3";
+

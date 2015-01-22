@@ -22,7 +22,7 @@ entity ddrdqphy is
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
 
 		ddr_dmt  : out std_logic;
-		ddr_dmi  : in  std_logic;
+		ddr_dmi  : in  std_logic := '-';
 		ddr_dmo  : out std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
