@@ -3,8 +3,8 @@
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
-    <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Quick">
-        <Options def_top="hdl4fpga.ddr3iob" lib="hdl4fpga" top="ecp3versa"/>
+    <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
+        <Options def_top="hdl4fpga.mii_iob" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
         </Source>
@@ -179,9 +179,9 @@
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
-        <Source name="scope/scope.xcf" type="Programming Project File" type_short="Programming">
+        <Source name="ecp3versa.xcf" type="Programming Project File" type_short="Programming">
             <Options/>
         </Source>
     </Implementation>
-    <Strategy name="Strategy1" file="ecp3versa1.sty"/>
+    <Strategy name="Strategy1" file="Strategy1.sty"/>
 </BaliProject>
