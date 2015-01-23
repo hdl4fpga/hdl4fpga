@@ -65,7 +65,9 @@ entity scope is
 		vga_frm   : out std_logic;
 		vga_red   : out std_logic_vector(8-1 downto 0);
 		vga_green : out std_logic_vector(8-1 downto 0);
-		vga_blue  : out std_logic_vector(8-1 downto 0));
+		vga_blue  : out std_logic_vector(8-1 downto 0);
+
+		tpo : out std_logic_vector(0 to 4-1) := (others  => 'Z'));
 end;
 
 library hdl4fpga;
@@ -340,6 +342,7 @@ begin
 			rpkt_edge := not rpkt_edge(1) & not rpkt;
 		end if;
 	end process;
+	tpo (0) <= rpkt;
 
 	mii_txen <= miitx_ena;
 	miitx_udp_e : entity hdl4fpga.miitx_udp

@@ -6,8 +6,8 @@ entity ecp3versa is
 		clk  : in std_logic := 'Z';
 --		pclk : in std_logic := 'Z';
 		
---		leds   : out std_logic_vector(0 to 7);
---		digit  : out std_logic_vector(0 to 14);
+		led : out std_logic_vector(0 to 6) := (others => 'Z');
+		seg : out std_logic_vector(0 to 14) := (others => 'Z');
 		
 		ddr3_clk : out std_logic := '0';
 --		ddr3_vref : out std_logic := '0';
@@ -27,7 +27,7 @@ entity ecp3versa is
 
 		phy1_125clk : in std_logic;
 		phy1_rst : out std_logic;
-		phy1_coma : out std_logic;
+		phy1_coma : out std_logic := 'Z';
 		phy1_mdio : inout std_logic;
 		phy1_mdc : out std_logic;
 		phy1_gtxclk : out std_logic;
@@ -63,8 +63,8 @@ entity ecp3versa is
 	attribute loc : string;
 	attribute io_type : string;
 	
-	attribute loc of clk : signal is "L5"; 				-- clk_n "K6"
-	attribute io_type of clk : signal is "SSTL15D";
+--	attribute loc of clk : signal is "L5"; 				-- clk_n "K6"
+--	attribute io_type of clk : signal is "SSTL15D";
 	
 --	attribute loc of pclk : signal is "F11";			-- pclk_n "F12";
 --	attribute io_type of pclk : signal is "SSTL18D_II";
@@ -100,8 +100,8 @@ entity ecp3versa is
 	attribute io_type of ddr3_dq  : signal is "SSTL15";
 	attribute io_type of ddr3_odt : signal is "SSTL15";
 
-	attribute loc of fpga_gsrn : signal is "A21";
-	attribute io_type of fpga_gsrn : signal is "LVCMOS33";
+--	attribute loc of fpga_gsrn : signal is "A21";
+--	attribute io_type of fpga_gsrn : signal is "LVCMOS33";
 
 --	attribute loc of phy1_125clk : signal is "T3";
 --	attribute loc of phy1_rst : signal is "L3";

@@ -31,6 +31,7 @@ architecture scope of ecp3versa is
 
 	signal ddrs_clks  : std_logic_vector(0 to 2-1);
 	signal ddr_lp_clk : std_logic;
+	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
 	signal sto : std_logic;
 	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
@@ -168,7 +169,8 @@ begin
 		vga_blank => vga_blank,
 		vga_red   => vga_red,
 		vga_green => vga_green,
-		vga_blue  => vga_blue);
+		vga_blue  => vga_blue,
+		tpo => tpo);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	sto <= not ddrphy_sto(0); 
@@ -236,6 +238,20 @@ begin
 
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
+	process (phy1_rxc,fpga_gsrn)
+	begin
+		if fpga_gsrn='0' then
+			led(0) <= '1';
+			led(1) <= '1';
+		elsif rising_edge(phy1_rxc) then
+			if tpo(0)='1'then
+				led(0) <= '0';
+			end if;
+			if phy1_rx_dv='1'then
+				led(1) <= '0';
+			end if;
+		end if;
+	end process;
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
