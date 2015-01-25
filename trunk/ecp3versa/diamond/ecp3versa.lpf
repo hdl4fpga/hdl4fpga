@@ -104,6 +104,7 @@ LOCATE COMP "phy1_rx_d[4]" SITE "T2";
 LOCATE COMP "phy1_rx_d[5]" SITE "R2";
 LOCATE COMP "phy1_rx_d[6]" SITE "P5";
 LOCATE COMP "phy1_rx_d[7]" SITE "P3";
+IOBUF PORT "phy_rx_d[*]" IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 
 LOCATE COMP "dip[0]" SITE "J7" ;
 LOCATE COMP "dip[1]" SITE "J6" ;

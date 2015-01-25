@@ -243,6 +243,7 @@ begin
 		if fpga_gsrn='0' then
 			led(0) <= '1';
 			led(1) <= '1';
+			led(2) <= '1';
 		elsif rising_edge(phy1_rxc) then
 			if tpo(0)='1'then
 				led(0) <= '0';
@@ -250,9 +251,15 @@ begin
 			if phy1_rx_dv='1'then
 				led(1) <= '0';
 			end if;
+			if mii_txen='1'then
+				led(2) <= '0';
+			end if;
 		end if;
 	end process;
 
+	led(4) <= not tpo(0);
+	led(5) <= not phy1_rx_dv;
+	led(6) <= not mii_txen;
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)

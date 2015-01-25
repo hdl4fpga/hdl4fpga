@@ -48,15 +48,15 @@ architecture scope of testbench is
 	component ecp3versa is
 		port (
 			clk  : in std_logic := 'Z';
-			clk_n  : in std_logic := 'Z';
-			pclk : in std_logic;
-			pclk_n : in std_logic;
+--			clk_n  : in std_logic := 'Z';
+--			pclk : in std_logic;
+--			pclk_n : in std_logic;
 			
-			leds   : out std_logic_vector(0 to 7);
-			digit  : out std_logic_vector(0 to 14);
+			led   : out std_logic_vector(0 to 6);
+			seg  : out std_logic_vector(0 to 14);
 			
 			ddr3_clk : out std_logic := 'Z';
-			ddr3_vref : out std_logic := 'Z';
+--			ddr3_vref : out std_logic := 'Z';
 			ddr3_rst : out std_logic := 'Z';
 			ddr3_cke : out std_logic := 'Z';
 			ddr3_cs  : out std_logic := 'Z';
@@ -70,7 +70,6 @@ architecture scope of testbench is
 			ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 			ddr3_odt : inout std_logic;
 
-			fpga_gsrn : in std_logic;
 
 			phy1_125clk : in std_logic;
 			phy1_rst : out std_logic;
@@ -80,7 +79,7 @@ architecture scope of testbench is
 			phy1_gtxclk : out std_logic := '1';
 			phy1_crs : out std_logic;
 			phy1_col : out std_logic;
-			phy1_txc : out std_logic;
+			phy1_txc : in std_logic := '0';
 			phy1_tx_d : out std_logic_vector(0 to 8-1);
 			phy1_tx_en : out std_logic;
 			phy1_rxc : in std_logic;
@@ -88,21 +87,22 @@ architecture scope of testbench is
 			phy1_rx_dv : in std_logic;
 			phy1_rx_d : in std_logic_vector(0 to 8-1);
 
-			phy2_125clk : in std_logic;
-			phy2_rst : out std_logic := '0';
-			phy2_coma : out std_logic;
-			phy2_mdio: inout std_logic;
-			phy2_mdc : out std_logic;
-			phy2_gtxclk : out std_logic := '1';
-			phy2_crs : out std_logic;
-			phy2_col : out std_logic;
-			phy2_txc : out std_logic;
-			phy2_tx_d : out std_logic_vector(0 to 8-1);
-			phy2_tx_en : out std_logic;
-			phy2_rxc : in std_logic;
-			phy2_rx_er : in std_logic;
-			phy2_rx_dv : in std_logic;
-			phy2_rx_d : in std_logic_vector(0 to 8-1));
+--			phy2_125clk : in std_logic;
+--			phy2_rst : out std_logic := '0';
+--			phy2_coma : out std_logic;
+--			phy2_mdio: inout std_logic;
+--			phy2_mdc : out std_logic;
+--			phy2_gtxclk : out std_logic := '1';
+--			phy2_crs : out std_logic;
+--			phy2_col : out std_logic;
+--			phy2_txc : out std_logic;
+--			phy2_tx_d : out std_logic_vector(0 to 8-1);
+--			phy2_tx_en : out std_logic;
+--			phy2_rxc : in std_logic;
+--			phy2_rx_er : in std_logic;
+--			phy2_rx_dv : in std_logic;
+--			phy2_rx_d : in std_logic_vector(0 to 8-1)
+			fpga_gsrn : in std_logic);
 	end component;
 
 	component ddr3_model is
@@ -141,7 +141,7 @@ begin
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
 
-	phy1_125clk <= not phy1_125clk after 8 ns;
+	phy1_125clk <= not phy1_125clk after 4 ns;
 	mii_rxc <= phy1_125clk;
 	mii_refclk <= phy1_125clk;
 
@@ -175,9 +175,9 @@ begin
 	ecp3versa_e : ecp3versa
 	port map (
 		clk    => xtal,
-		clk_n  => xtal_n,
-		pclk   => '-',
-		pclk_n => '-',
+--		clk_n  => xtal_n,
+--		pclk   => '-',
+--		pclk_n => '-',
 
 		fpga_gsrn => rst_n,
 
@@ -190,11 +190,11 @@ begin
 		phy1_txc   => open,
 		phy1_tx_en => mii_txen,
 
-		phy2_125clk => phy1_125clk,
-		phy2_rxc   => '-',
-		phy2_rx_d  => (others => '-'),
-		phy2_rx_er => '-',
-		phy2_rx_dv => '-',
+--		phy2_125clk => phy1_125clk,
+--		phy2_rxc   => '-',
+--		phy2_rx_d  => (others => '-'),
+--		phy2_rx_er => '-',
+--		phy2_rx_dv => '-',
 
 		--         --
 		-- DDR RAM --
