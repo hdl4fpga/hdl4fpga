@@ -33,7 +33,7 @@ entity ecp3versa is
 		phy1_gtxclk : out std_logic;
 		phy1_crs : out std_logic;
 		phy1_col : out std_logic;
-		phy1_txc : out std_logic;
+		phy1_txc : in std_logic;
 		phy1_tx_d : out std_logic_vector(0 to 8-1);
 		phy1_tx_en : out std_logic;
 		phy1_rxc : in std_logic;
