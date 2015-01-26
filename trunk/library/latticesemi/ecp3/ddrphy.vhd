@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library ecp3;
+use ecp3.components.all;
+
 entity ddrphy is
 	generic (
 		data_phases : natural := 1;
@@ -202,6 +205,7 @@ architecture ecp3 of ddrphy is
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
 
+	signal dqsdel : std_logic;
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
@@ -224,6 +228,7 @@ architecture ecp3 of ddrphy is
 	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
+	signal dqsdll_lock : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -266,7 +271,15 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);
 
-	byte_g : for i in 0 to 0 generate --word_size/byte_size-1 generate
+	dqsdllb_i : dqsdllb
+	port map (
+		rst => sys_rst(0),
+		clk => sys_eclk,
+		uddcntln => '0', --sys_cfgi(uddcntln),
+		dqsdel => dqsdel,
+		lock => dqsdll_lock);
+
+	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			line_size => line_size*byte_size/word_size,
@@ -275,6 +288,7 @@ begin
 			sys_rst  => phy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => sys_eclk,
+			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
 			sys_cfgi => cfgi(i),
 			sys_cfgo => cfgo(i),

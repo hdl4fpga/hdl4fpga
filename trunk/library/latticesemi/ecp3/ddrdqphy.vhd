@@ -9,6 +9,7 @@ entity ddrdqphy is
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
+		sys_dqsdel : in  std_logic;
 		sys_cfgi : in  std_logic_vector(9-1 downto 0) := (others => '-');
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
@@ -51,30 +52,20 @@ use ecp3.components.all;
 
 architecture ecp3 of ddrdqphy is
 
-	signal dqsi_delay : std_logic;
 	signal idqs_eclk  : std_logic;
 	signal dqsw  : std_logic;
 	signal dqclk0 : std_logic;
 	signal dqclk1 : std_logic;
 	
-	signal dqsdll_lock : std_logic;
 	signal prmbdet : std_logic;
 	signal ddrclkpol : std_logic := '0';
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
 begin
-	dqsdllb_i : dqsdllb
-	port map (
-		rst => sys_rst,
-		clk => sys_eclk,
-		uddcntln => '0', --sys_cfgi(uddcntln),
-		dqsdel => dqsi_delay,
-		lock => dqsdll_lock);
-
 	dqsbufd_i : dqsbufd 
 	port map (
-		dqsdel => dqsi_delay,
+		dqsdel => sys_dqsdel,
 		dqsi   => ddr_dqsi,
 		eclkdqsr => idqs_eclk,
 

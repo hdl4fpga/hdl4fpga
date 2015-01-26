@@ -354,10 +354,10 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
 		timing_record'(mark => M6T,  param => tREFI, value =>  7 us) &
 		timing_record'(mark => M15E, param => tREFI, value =>  7 us) &
---		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
---		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M15E, param => tPreRST, value => 5 us) &
-		timing_record'(mark => M15E, param => tPstRST, value => 5 us) &
+		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 5 us) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 5 us) &
 		timing_record'(mark => M15E, param => tWR,   value => 15 ns) &
 		timing_record'(mark => M15E, param => tRCD,  value => 13.91 ns) &
 		timing_record'(mark => M15E, param => tRP,   value => 13.91 ns) &

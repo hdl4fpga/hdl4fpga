@@ -147,6 +147,7 @@ begin
 		signal pll_clkfb : std_logic;
 		signal pll_lck   : std_logic;
 		signal eclk_stop : std_logic;
+		signal oclk : std_logic;
 		signal eclk : std_logic;
 		signal sclk : std_logic;
 	begin
