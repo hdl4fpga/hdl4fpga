@@ -112,8 +112,6 @@ add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_
 add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/idqs_eclk
 add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/ddr_dqso
 add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqso
-add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsdll_lock
-add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsi_delay
 add wave -noupdate -expand -group ecp3versa -group byte_g0 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqso
 add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/sys_rst
 add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/sys_clk
