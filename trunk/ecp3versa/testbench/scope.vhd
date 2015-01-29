@@ -14,6 +14,7 @@ architecture scope of testbench is
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
+	signal reset_n : std_logic;
 	signal rst   : std_logic;
 	signal led7  : std_logic;
 
@@ -135,7 +136,7 @@ architecture scope of testbench is
 begin
 
 	rst   <= '1', '0' after 1.1 us;
-	rst_n <= not rst;
+	reset_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
 	xtal_p <= not xtal after 5 ns;
@@ -179,7 +180,7 @@ begin
 --		pclk   => '-',
 --		pclk_n => '-',
 
-		fpga_gsrn => rst_n,
+		fpga_gsrn => reset_n,
 
 		phy1_125clk => phy1_125clk,
 		phy1_rxc   => mii_rxc,
