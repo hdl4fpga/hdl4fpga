@@ -13,7 +13,7 @@ entity ddrdqphy is
 		sys_cfgi : in  std_logic_vector(9-1 downto 0) := (others => '-');
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
 		sys_rw   : in  std_logic;
-		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
@@ -160,6 +160,7 @@ begin
 	dm_b : block
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+		signal qmo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -178,7 +179,8 @@ begin
 			db0 => sys_dmi(1),
 			da1 => sys_dmi(2),
 			db1 => sys_dmi(3),
-			q   => ddr_dmo);
+			q   => qmo);
+		ddr_dmo <= qmo after 2.5 ns/4;
 	end block;
 
 	dqso_b : block 
