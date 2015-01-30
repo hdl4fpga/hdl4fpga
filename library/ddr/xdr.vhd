@@ -9,8 +9,8 @@ entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
 		mark : tmrk_ids := M15E;
-		tCP  : time := 6.0 ns;
-		tDDR : time := 6.0 ns;
+		tCP  : natural := 6000;
+		tDDR : natural := 6000;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
@@ -138,7 +138,16 @@ architecture mix of xdr is
 
 	signal rst : std_logic;
 
-	constant tlWR : time := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant timers : timer_vector := (
+			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
+			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
+			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
+			TMR_MOD  => xdr_latency(stdr, MODu),
+			TMR_DLL  => xdr_latency(stdr, cDLL),
+			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
+			TMR_REF  => to_xdrlatency(tCP, mark, tREFI));
 begin
 
 	process (sys_clks(0), sys_rst)
@@ -155,15 +164,16 @@ begin
 	xdr_init_req <= rst;
 	xdr_init_du : entity hdl4fpga.xdr_init
 	generic map (
-		timers => (
-			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
-			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
-			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
-			TMR_MOD  => xdr_latency(stdr, MODu),
-			TMR_DLL  => xdr_latency(stdr, cDLL),
-			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
-			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),
+		timers => timers,
+--		timers => (
+--			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
+--			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+--			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
+--			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
+--			TMR_MOD  => xdr_latency(stdr, MODu),
+--			TMR_DLL  => xdr_latency(stdr, cDLL),
+--			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
+--			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),
 		addr_size => addr_size,
 		bank_size => bank_size)
 	port map (

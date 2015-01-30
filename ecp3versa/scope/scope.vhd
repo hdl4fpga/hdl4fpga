@@ -18,7 +18,8 @@ architecture scope of ecp3versa is
 	constant word_size : natural := ddr3_dq'length;
 	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
 
-	constant uclk_period : time := 10.0 ns;
+	constant ns : natural := 1000;
+	constant uclk_period : natural := 10*ns;
 
 	signal uclk : std_logic;
 	signal dcm_rst  : std_logic;
@@ -80,9 +81,8 @@ architecture scope of ecp3versa is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 4;
-	constant ddr_div : natural := 2;
-
+	constant ddr_mul : natural := 8;
+	constant ddr_div : natural := 4;
 	constant r : natural := 0;
 	constant f : natural := 1;
 	signal ddr_sclk : std_logic;
@@ -98,7 +98,7 @@ begin
 	generic map (
 		ddr_mul => ddr_mul,
 		ddr_div => ddr_div, 
-		sys_per => real(uclk_period/1 ns))
+		sys_per => real(uclk_period/ns))
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => uclk,
@@ -117,7 +117,7 @@ begin
 	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_tCP => uclk_period*integer(real(ddr_div)/real(ddr_mul)),
+		DDR_tCP => uclk_period*ddr_div/ddr_mul,
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
 		DDR_DATAPHASES => 1,

@@ -16,7 +16,7 @@ entity scope is
 		constant DDR_LINESIZE : natural := 16;
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
-		constant DDR_tCP      : time;
+		constant DDR_tCP      : natural;
 
 		constant NIBBLE_SIZE  : natural := 4;
 		constant XD_LEN : natural);
