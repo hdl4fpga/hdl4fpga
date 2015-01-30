@@ -314,6 +314,7 @@ begin
 
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
+	xdr_dmt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
 --	xdr_dqso(xdr_sch_st'range) <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
