@@ -77,9 +77,6 @@
         <Source name="../scope/dcms.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../scope/pllddr.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/video/win_sytm.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
