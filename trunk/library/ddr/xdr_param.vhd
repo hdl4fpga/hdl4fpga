@@ -67,13 +67,13 @@ package xdr_param is
 	impure function xdr_timing (
 		constant mark  : tmrk_ids;
 		constant param : tmng_ids) 
-		return time;
+		return natural;
 
 	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps;
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000;
 		constant roundon : boolean := false)
 		return integer;
 
@@ -92,12 +92,12 @@ package xdr_param is
 		return natural;
 
 	impure function to_xdrlatency (
-		period : time;
-		timing : time)
+		period : natural;
+		timing : natural)
 		return natural;
 
 	impure function to_xdrlatency (
-		constant period : time;
+		constant period : natural;
 		constant mark   : tmrk_ids;
 		constant param  : tmng_ids)
 		return natural;
@@ -105,22 +105,22 @@ package xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector;
 
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cwltabs_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector;
 
 	function xdr_latcod (
@@ -340,31 +340,31 @@ package body xdr_param is
 	type timing_record is record
 		mark  : tmrk_ids;
 		param : tmng_ids;
-		value : time;
+		value : natural;
 	end record;
 
 	type timing_tab is array (positive range <>) of timing_record;
 
 	constant timing_db : timing_tab := 
-		timing_record'(mark => M6T,  param => tPreRST, value => 200 us) &
-		timing_record'(mark => M6T,  param => tWR,   value => 15 ns) &
-		timing_record'(mark => M6T,  param => tRP,   value => 15 ns) &
-		timing_record'(mark => M6T,  param => tRCD,  value => 15 ns) &
-		timing_record'(mark => M6T,  param => tRFC,  value => 72 ns) &
-		timing_record'(mark => M6T,  param => tMRD,  value => 12 ns) &
-		timing_record'(mark => M6T,  param => tREFI, value =>  7 us) &
-		timing_record'(mark => M15E, param => tREFI, value =>  7 us) &
---		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
---		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
-		timing_record'(mark => M15E, param => tPreRST, value => 2 us) &
-		timing_record'(mark => M15E, param => tPstRST, value => 2 us) &
-		timing_record'(mark => M15E, param => tWR,   value => 15 ns) &
-		timing_record'(mark => M15E, param => tRCD,  value => 13.91 ns) &
-		timing_record'(mark => M15E, param => tRP,   value => 13.91 ns) &
-		timing_record'(mark => M15E, param => tMRD,  value => 15 ns) &
-		timing_record'(mark => M15E, param => tRFC,  value => 110 ns) &
-		timing_record'(mark => M15E, param => tXPR,  value => 110 ns + 10 ns) &
-		timing_record'(mark => M15E, param => tREFI, value =>  7.8 us);
+		timing_record'(mark => M6T,  param => tPreRST, value => 200000000) &
+		timing_record'(mark => M6T,  param => tWR,   value => 15000) &
+		timing_record'(mark => M6T,  param => tRP,   value => 15000) &
+		timing_record'(mark => M6T,  param => tRCD,  value => 15000) &
+		timing_record'(mark => M6T,  param => tRFC,  value => 72000) &
+		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
+		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
+		timing_record'(mark => M15E, param => tREFI, value => 7000000) &
+		timing_record'(mark => M15E, param => tPreRST, value => 200 us) &
+		timing_record'(mark => M15E, param => tPstRST, value => 500 us) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
+		timing_record'(mark => M15E, param => tWR,   value => 15000) &
+		timing_record'(mark => M15E, param => tRCD,  value => 13910) &
+		timing_record'(mark => M15E, param => tRP,   value => 13910) &
+		timing_record'(mark => M15E, param => tMRD,  value => 15000) &
+		timing_record'(mark => M15E, param => tRFC,  value => 110000) &
+		timing_record'(mark => M15E, param => tXPR,  value => 110000 + 10000) &
+		timing_record'(mark => M15E, param => tREFI, value => 7800000);
 
 	constant cnfglat_db : cnfglat_tab :=
 
@@ -485,7 +485,7 @@ package body xdr_param is
 	impure function xdr_timing (
 		constant mark  : tmrk_ids;
 		constant param : tmng_ids) 
-		return time is
+		return natural is
 		variable msg : line;
 	begin
 		for i in timing_db'range loop
@@ -508,14 +508,14 @@ package body xdr_param is
 
 		assert false
 		severity FAILURE;
-		return 0 ns;
+		return 0;
 	end;
 
 	impure function xdr_latency (
 		constant stdr   : natural;
 		constant param : laty_ids; 
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps;
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000;
 		constant roundon : boolean := false)
 		return integer is
 		variable msg : line;
@@ -524,7 +524,7 @@ package body xdr_param is
 			if latency_db(i).stdr = stdr then
 				if latency_db(i).param = param then
 					if roundon then
-						if (latency_db(i).value*tDDR) mod (4*tCP) = 0 ns then
+						if (latency_db(i).value*tDDR) mod (4*tCP) = 0  then
 							return (latency_db(i).value*tDDR)/(4*tCP);
 						else
 							return (latency_db(i).value*tDDR)/(4*tCP)+1;
@@ -578,8 +578,8 @@ package body xdr_param is
 	end;
 
 	impure function to_xdrlatency (
-		period : time;
-		timing : time)
+		period : natural;
+		timing : natural)
 		return natural is
 	begin
 		if (timing/period)*period < timing then
@@ -590,7 +590,7 @@ package body xdr_param is
 	end;
 
 	impure function to_xdrlatency (
-		constant period : time;
+		constant period : natural;
 		constant mark   : tmrk_ids;
 		constant param  : tmng_ids)
 		return natural is
@@ -636,8 +636,8 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant reg : latr_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(stdr, reg);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
@@ -652,8 +652,8 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr : natural;
 		constant tabid : cltabs_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector is
 
 		type latid_vector is array (cltabs_ids) of laty_ids;
@@ -673,8 +673,8 @@ package body xdr_param is
 	impure function xdr_lattab (
 		constant stdr   : natural;
 		constant tabid : cwltabs_ids;
-		constant tCP  : time :=  250 ps;
-		constant tDDR : time := 1000 ps)
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
 		return natural_vector is
 
 		type latid_vector is array (cwltabs_ids) of laty_ids;
@@ -683,7 +683,7 @@ package body xdr_param is
 		variable lat    : integer := xdr_latency(stdr, tab2laty(tabid));
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		variable clval  : natural_vector(cltab'range);
-		variable aux : time;
+		variable aux : natural;
 		constant cwltab : natural_vector := xdr_lattab(stdr, CWL);
 		variable cwlval : natural_vector(cwltab'range);
 		variable latx   : integer := 0;
@@ -702,14 +702,14 @@ package body xdr_param is
 				lat  := xdr_latency(stdr, DQZXL);
 				for i in cwltab'range loop
 					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
-					cwlval(i) := (latx*tDDR+aux+4*tCP-1 fs) / (4*tCP);
+					cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
 				end loop;
 			when DQSZXT =>
 				latx := lat;
 				lat  := xdr_latency(stdr, DQSZXL);
 				for i in cwltab'range loop
 					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
-					cwlval(i) := (latx*tDDR+aux+4*tCP-1 fs) / (4*tCP);
+					cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
 				end loop;
 			when others =>
 				for i in cwltab'range loop

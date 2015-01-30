@@ -77,7 +77,7 @@ package std is
 		constant arg2 : std_logic)
 		return std_logic_vector;
 
-	function "mod" (
+	impure function "mod" (
 		constant arg1 : time;
 		constant arg2 : time)
 		return time;
@@ -325,7 +325,7 @@ package body std is
 		return aux;
 	end;
 
-	function "mod" (
+	impure function "mod" (
 		constant arg1 : time;
 		constant arg2 : time)
 		return time is
