@@ -58,7 +58,7 @@ architecture ecp3 of ddrdqphy is
 	signal dqclk1 : std_logic;
 	
 	signal prmbdet : std_logic;
-	signal ddrclkpol : std_logic := '0';
+	signal ddrclkpol : std_logic := '1';
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
@@ -86,7 +86,7 @@ begin
 		dyndelay4 => '0', --sys_cfgi(dyndelay4),
 		dyndelay5 => '0', --sys_cfgi(dyndelay5),
 		dyndelay6 => '0', --sys_cfgi(dyndelay6),
-		dyndelpol => '0', --sys_cfgi(dyndelpol),
+		dyndelpol => '1', --sys_cfgi(dyndelpol),
 		eclkw => sys_eclk,
 
 		dqsw => dqsw,
@@ -134,6 +134,7 @@ begin
 		attribute oddrapps : string;
 --		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
 		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
+--		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
 		signal qqo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa

@@ -56,6 +56,13 @@ architecture ecp3 of ddrbaphy is
 	attribute oddrapps of ck_i : label is "SCLK_ALIGNED";
 begin
 
+	ck_i : oddrxd1
+	port map (
+		sclk => sys_sclk2x,
+		da => '0',
+		db => '1',
+		q  => ddr_ck);
+
 	b_g : for i in 0 to bank_size-1 generate
 		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
 	begin
@@ -98,13 +105,6 @@ begin
 		da => sys_we(0),
 		db => '1', --sys_we(1),
 		q  => ddr_we);
-
-	ck_i : oddrxd1
-	port map (
-		sclk => sys_sclk2x,
-		da => '0',
-		db => '1',
-		q  => ddr_ck);
 
 	cs_i : oddrxd1
 	port map (
