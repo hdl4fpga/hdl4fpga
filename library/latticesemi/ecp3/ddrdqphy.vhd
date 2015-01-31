@@ -132,7 +132,8 @@ begin
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
-		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+--		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
 		signal qqo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa
@@ -165,7 +166,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => sys_dmt(0),
+			ta => '0', --sys_dmt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dmt);

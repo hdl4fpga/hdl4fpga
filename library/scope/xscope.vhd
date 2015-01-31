@@ -171,7 +171,8 @@ begin
 		variable r : unsigned(0 to n);
 	begin
 		if rising_edge(input_clk) then
-			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
+--			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
+			input_dat <= (others => '1'); --r(n-2));
 			r := r + 1;
 			if ddr_ini='0' then
 				r := to_unsigned(61, r'length);
@@ -467,7 +468,7 @@ begin
 		sys_cas => ddrs_cas,
 		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
-		sys_di  => ddrs_di,
+		sys_di  => (others => '0'), --ddrs_di,
 		sys_do_rdy => ddrs_do_rdy,
 		sys_do  => ddrs_do,
 		sys_ref => ddrs_ref_req,
