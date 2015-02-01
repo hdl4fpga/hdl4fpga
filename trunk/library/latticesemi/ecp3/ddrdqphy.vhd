@@ -61,8 +61,16 @@ architecture ecp3 of ddrdqphy is
 	signal ddrclkpol : std_logic := '1';
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
+	signal rst : std_logic;
 	
 begin
+	rw <= not sys_rw;
+	process (sys_sclk)
+	begin
+		if rising_edge(sys_sclk) then
+			rst <= sys_rst;
+		end if;
+	end process;
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,
@@ -78,7 +86,7 @@ begin
 		eclk => sys_eclk,
 		datavalid => sys_cfgo(datavalid),
 
-		rst  => sys_rst,
+		rst  => rst,
 		dyndelay0 => '0', --sys_cfgi(dyndelay0),
 		dyndelay1 => '0', --sys_cfgi(dyndelay1),
 		dyndelay2 => '0', --sys_cfgi(dyndelay2),
