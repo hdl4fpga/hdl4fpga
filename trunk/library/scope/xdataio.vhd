@@ -153,7 +153,7 @@ begin
 			std_logic_vector(
 				to_signed(-1, DDR_BANKSIZE+1) & 
 				to_signed(-1, DDR_ADDRSIZE+1) & 
-				to_signed(2, DDR_CLNMSIZE+1));
+				to_signed(14, DDR_CLNMSIZE+1));
 
 
 		process (ddrs_clk)

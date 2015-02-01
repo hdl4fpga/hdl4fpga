@@ -132,8 +132,8 @@ begin
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
---		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
-		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
+		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+--		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
 --		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
 		signal qqo :std_logic;
 	begin
