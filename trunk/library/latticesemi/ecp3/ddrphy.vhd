@@ -229,6 +229,7 @@ architecture ecp3 of ddrphy is
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
 	signal dqsdll_lock : std_logic;
+	signal dqrst : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -273,11 +274,12 @@ begin
 
 	dqsdllb_i : dqsdllb
 	port map (
-		rst => sys_rst(0),
-		clk => sys_eclk,
+		rst => phy_rst,
+		clk => sys_sclk2x,
 		uddcntln => '0', --sys_cfgi(uddcntln),
 		dqsdel => dqsdel,
 		lock => dqsdll_lock);
+	dqrst <= not dqsdll_lock;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -285,7 +287,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => phy_rst,
+			sys_rst  => dqrst,
 			sys_sclk => sys_sclk,
 			sys_eclk => sys_eclk,
 			sys_dqsdel => dqsdel,
