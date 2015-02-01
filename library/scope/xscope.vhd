@@ -22,7 +22,7 @@ entity scope is
 		constant XD_LEN : natural);
 
 	port (
-		sys_rst : in std_logic;
+		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
 		input_clk : in std_logic;
@@ -448,7 +448,7 @@ begin
 		tCP  => DDR_tCP,
 		tDDR => DDR_tCP/2)
 	port map (
-		sys_rst => sys_rst,
+		sys_rst => ddrs_rst,
 		sys_bl  => "000",
 		sys_cl  => "010",
 		sys_cwl => "000",

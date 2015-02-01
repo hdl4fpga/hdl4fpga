@@ -72,7 +72,6 @@ architecture scope of ecp3versa is
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
 
 	signal sys_rst   : std_logic;
-	signal scope_rst : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
@@ -115,34 +114,30 @@ begin
 	rsts_b : block
 		port (
 			grst : in  std_logic;
-			clks : in  std_logic_vector;
-			rsts : out std_logic_vector);
+			clks : in  std_logic_vector(0 to 3);
+			rsts : out std_logic_vector(0 to 3));
 		port map (
 			grst => dcm_lckd,
-			clks => (
-				0 => input_clk,
-				1 => ddr_sclk,
-				2 => phy1_125clk,
-				3 => vga_clk),
-			rsts => (
-				0 => input_rst,
-				1 => ddrs_rst,
-				2 => mii_rst,
-				3 => vga_rst));
+			clks(0) => input_clk,
+			clks(1) => ddr_sclk,
+			clks(2) => phy1_125clk,
+			clks(3) => vga_clk,
+			rsts(0) => input_rst,
+			rsts(1) => ddrs_rst,
+			rsts(2) => mii_rst,
+			rsts(3) => vga_rst);
 	begin
 		rsts_g: for i in clks'range generate
-			process (clk(i))
+			process (clks(i))
 				variable rsta : std_logic;
 			begin
-				if rising_edge(clk(i)) then
+				if rising_edge(clks(i)) then
 					rsts(i) <= rsta;
 					rsta    := not grst;
 				end if;
 			end process;
 		end generate;
 	end block;
-
-	scope_rst <= not dcm_lckd;
 
 	ddrs_clks <= (others => ddr_sclk);
 	ddrphy_sti <= (others => ddrphy_cfgo(0));
@@ -160,12 +155,11 @@ begin
 		DDR_BYTESIZE => byte_size,
 		xd_len  => 8)
 	port map (
-		sys_rst => scope_rst,
 
-		input_rst => input_clk,
+--		input_rst => input_rst,
 		input_clk => input_clk,
 
---		ddrs_rst =>
+		ddrs_rst => ddrs_rst,
 		ddrs_clks => ddrs_clks,
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
@@ -188,7 +182,7 @@ begin
 		ddr_sto  => ddrphy_sto,
 		ddr_sti  => ddrphy_sti,
 
---		mii_rst  => 
+--		mii_rst  => mii_rst,
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
@@ -196,7 +190,7 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
---		vga_rst   =>
+--		vga_rst   => vga_rst,
 		vga_clk   => vga_clk,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
@@ -232,7 +226,7 @@ begin
 		sys_sclk => ddr_sclk,
 		sys_sclk2x => ddr_sclk2x, 
 		sys_eclk => ddr_eclk,
-		phy_rst => scope_rst,
+		phy_rst => ddrs_rst,
 
 		sys_rw => sto,
 		sys_rst => ddrphy_rst, 

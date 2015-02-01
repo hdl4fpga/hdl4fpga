@@ -23,6 +23,7 @@ add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY6
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY7
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/SCLK
+add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQSDEL
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/READ
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQSI
@@ -50,15 +51,16 @@ add wave -noupdate -group dqs_0 /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/IOLTO
 add wave -noupdate -group dqs_0 /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/IOLDO
 add wave -noupdate -divider ddr3_dqs_1
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/RST
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY0
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY1
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY2
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY3
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY4
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY5
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY6
-add wave -noupdate -expand -group dlldqs_1 -expand -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY7
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY0
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY1
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY2
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY3
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY4
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY5
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY6
+add wave -noupdate -expand -group dlldqs_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY7
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/SCLK
+add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSDEL
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/READ
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSI
@@ -71,18 +73,18 @@ add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK1
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/CLK
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQCLK0
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQCLK1
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSTCLKI
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSW
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/OPOSA
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/OPOSB
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/ONEGB
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/TS
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSTCLKO
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/IOLTO
-add wave -noupdate -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/IOLDO
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/CLK
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQCLK0
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQCLK1
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSTCLKI
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSW
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/OPOSA
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/OPOSB
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/ONEGB
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/TS
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQSTCLKO
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/IOLTO
+add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/IOLDO
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/dcms_e_eclk
 add wave -noupdate /testbench/ecp3versa_e/ddr3_cke
@@ -99,8 +101,8 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8592970 ps} 0} {{Cursor 2} {8597038 ps} 0} {{Cursor 3} {1121505 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {8592970 ps} 0} {{Cursor 2} {1131752 ps} 0} {{Cursor 3} {1131695 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -115,4 +117,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {8535378 ps} {8650562 ps}
+WaveRestoreZoom {1102899 ps} {1160491 ps}
