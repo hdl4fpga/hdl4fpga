@@ -62,8 +62,7 @@ architecture scope of ecp3versa is
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
 
-	signal video_clk : std_logic;
-	signal video_clk90 : std_logic;
+	signal vga_clk : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
@@ -88,10 +87,14 @@ architecture scope of ecp3versa is
 	signal ddr_sclk : std_logic;
 	signal ddr_sclk2x : std_logic;
 	signal ddr_eclk  : std_logic;
+
+	signal input_rst : std_logic;
+	signal ddrs_rst : std_logic;
+	signal mii_rst : std_logic;
+	signal vga_rst : std_logic;
 begin
 
 	sys_rst <= not fpga_gsrn;
-
 	uclk <= clk;
 
 	dcms_e : entity hdl4fpga.dcms
@@ -106,12 +109,40 @@ begin
 		ddr_eclk =>ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
-		video_clk0 => video_clk,
-		video_clk90 => video_clk90,
+		video_clk0 => vga_clk,
 		dcms_lckd => dcm_lckd);
 
+	rsts_b : block
+		port (
+			grst : in  std_logic;
+			clks : in  std_logic_vector;
+			rsts : out std_logic_vector);
+		port map (
+			grst => dcm_lckd,
+			clks => (
+				0 => input_clk,
+				1 => ddr_sclk,
+				2 => phy1_125clk,
+				3 => vga_clk),
+			rsts => (
+				0 => input_rst,
+				1 => ddrs_rst,
+				2 => mii_rst,
+				3 => vga_rst));
+	begin
+		rsts_g: for i in clks'range generate
+			process (clk(i))
+				variable rsta : std_logic;
+			begin
+				if rising_edge(clk(i)) then
+					rsts(i) <= rsta;
+					rsta    := not grst;
+				end if;
+			end process;
+		end generate;
+	end block;
+
 	scope_rst <= not dcm_lckd;
-	phy1_rst <= dcm_lckd;
 
 	ddrs_clks <= (others => ddr_sclk);
 	ddrphy_sti <= (others => ddrphy_cfgo(0));
@@ -131,8 +162,10 @@ begin
 	port map (
 		sys_rst => scope_rst,
 
+		input_rst => input_clk,
 		input_clk => input_clk,
 
+--		ddrs_rst =>
 		ddrs_clks => ddrs_clks,
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
@@ -155,6 +188,7 @@ begin
 		ddr_sto  => ddrphy_sto,
 		ddr_sti  => ddrphy_sti,
 
+--		mii_rst  => 
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
@@ -162,7 +196,8 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
-		vga_clk   => video_clk,
+--		vga_rst   =>
+		vga_clk   => vga_clk,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
 		vga_frm   => vga_frm,
@@ -236,8 +271,27 @@ begin
 		ddr_dq  => ddr3_dq,
 		ddr_dqs => ddr3_dqs);
 
+	phy1_rst  <= dcm_lckd;
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
+
+	mii_iob_e : entity hdl4fpga.mii_iob
+	generic map (
+		xd_len => 8)
+	port map (
+		mii_rxc  => phy1_rxc,
+		iob_rxdv => phy1_rx_dv,
+		iob_rxd  => phy1_rx_d,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+
+		mii_txc  => phy1_125clk,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd,
+		iob_txen => phy1_tx_en,
+		iob_txd  => phy1_tx_d,
+		iob_gtxclk => phy1_gtxclk);
+
 	process (phy1_rxc,fpga_gsrn)
 	begin
 		if fpga_gsrn='0' then
@@ -260,21 +314,5 @@ begin
 	led(4) <= not tpo(0);
 	led(5) <= not phy1_rx_dv;
 	led(6) <= not mii_txen;
-	mii_iob_e : entity hdl4fpga.mii_iob
-	generic map (
-		xd_len => 8)
-	port map (
-		mii_rxc  => phy1_rxc,
-		iob_rxdv => phy1_rx_dv,
-		iob_rxd  => phy1_rx_d,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => phy1_125clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
-		iob_txen => phy1_tx_en,
-		iob_txd  => phy1_tx_d,
-		iob_gtxclk => phy1_gtxclk);
 
 end;
