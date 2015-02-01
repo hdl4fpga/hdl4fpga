@@ -85,7 +85,7 @@ begin
 		dyndelay3 => '0', --sys_cfgi(dyndelay3),
 		dyndelay4 => '0', --sys_cfgi(dyndelay4),
 		dyndelay5 => '0', --sys_cfgi(dyndelay5),
-		dyndelay6 => '0', --sys_cfgi(dyndelay6),
+		dyndelay6 => '1', --sys_cfgi(dyndelay6),
 		dyndelpol => '1', --sys_cfgi(dyndelpol),
 		eclkw => sys_eclk,
 
@@ -133,9 +133,6 @@ begin
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
---		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
---		attribute oddrapps of oddrx2d_i : label is "DQS_CENTERED";
-		signal qqo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -154,15 +151,12 @@ begin
 			db0 => sys_dqo(1*byte_size+i),
 			da1 => sys_dqo(2*byte_size+i),
 			db1 => sys_dqo(3*byte_size+i),
---			q   => ddr_dqo(i));
-			q   => qqo);
-		ddr_dqo(i) <= qqo after 2.5 ns/4;
+			q   => ddr_dqo(i));
 	end generate;
 
 	dm_b : block
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
-		signal qmo :std_logic;
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -181,8 +175,7 @@ begin
 			db0 => sys_dmi(1),
 			da1 => sys_dmi(2),
 			db1 => sys_dmi(3),
-			q   => qmo);
-		ddr_dmo <= qmo after 2.5 ns/4;
+			q   => ddr_dmo);
 	end block;
 
 	dqso_b : block 
@@ -200,8 +193,6 @@ begin
 			q => ddr_dqst);
 
 		oddrx2dqsa_i : oddrx2dqsa
-		generic map (
-			ISI_CAL => "DEL4")
 		port map (
 			sclk => sys_sclk,
 			db0 => sys_dqso(2*0),
