@@ -171,8 +171,8 @@ begin
 		variable r : unsigned(0 to n);
 	begin
 		if rising_edge(input_clk) then
---			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
-			input_dat <= (others => '1'); --r(n-2));
+			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
+--			input_dat <= (others => r(n-2));
 			r := r + 1;
 			if ddr_ini='0' then
 				r := to_unsigned(61, r'length);
@@ -382,16 +382,16 @@ begin
 		end if;
 	end process;
 
-	process (cga_clk)
-		variable nibble_ptr : unsigned(3-1 downto 0);
-	begin
-		if rising_edge(cga_clk) then
-			nibble_ptr := nibble_ptr + 1;
-			cga_code <= to_ascii(tp(to_integer(nibble_ptr)));
-			cga_ptr <= (3 to 5 => '0',others => '1');
-			cga_ptr(2 downto 0) <= std_logic_vector(nibble_ptr);
-		end if;
-	end process;
+--	process (cga_clk)
+--		variable nibble_ptr : unsigned(3-1 downto 0);
+--	begin
+--		if rising_edge(cga_clk) then
+--			nibble_ptr := nibble_ptr + 1;
+--			cga_code <= to_ascii(tp(to_integer(nibble_ptr)));
+--			cga_ptr <= (3 to 5 => '0',others => '1');
+--			cga_ptr(2 downto 0) <= std_logic_vector(nibble_ptr);
+--		end if;
+--	end process;
 
 --	cga_clk <= mii_rxc;
 --	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
@@ -468,7 +468,7 @@ begin
 		sys_cas => ddrs_cas,
 		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
-		sys_di  => (others => '0'), --ddrs_di,
+		sys_di  => ddrs_di,
 		sys_do_rdy => ddrs_do_rdy,
 		sys_do  => ddrs_do,
 		sys_ref => ddrs_ref_req,
