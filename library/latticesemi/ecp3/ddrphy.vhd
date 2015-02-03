@@ -276,10 +276,10 @@ begin
 	port map (
 		rst => phy_rst,
 		clk => sys_sclk2x,
-		uddcntln => '0', --sys_cfgi(uddcntln),
+		uddcntln => '1', --sys_cfgi(uddcntln),
 		dqsdel => dqsdel,
 		lock => dqsdll_lock);
-	dqrst <= not dqsdll_lock;
+	dqrst <= phy_rst; --not dqsdll_lock;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy

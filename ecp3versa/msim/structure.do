@@ -12,6 +12,9 @@ add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate /testbench/dqs_p(0)
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
+add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
+add wave -noupdate /testbench/ecp3versa_e/ddr_sclk2x
+add wave -noupdate /testbench/ecp3versa_e/ddr_eclk
 add wave -noupdate -divider ddr3_dqs_0
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/RST
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY0
@@ -34,8 +37,8 @@ add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DDRLAT
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQSW
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ECLKDQSR
-add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQCLK1
+add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group dqs_0 /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/CLK
 add wave -noupdate -group dqs_0 /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/DQCLK0
@@ -70,8 +73,8 @@ add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DDRLAT
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSW
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLKDQSR
-add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK1
+add wave -noupdate -expand -group dlldqs_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/CLK
 add wave -noupdate -expand -group dqs_1 /testbench/ecp3versa_e/ddr3_dqs_1_MGIOLI/DQCLK0
@@ -101,9 +104,9 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8592970 ps} 0} {{Cursor 2} {1131752 ps} 0} {{Cursor 3} {1131695 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 178
+WaveRestoreCursors {{Cursor 1} {8592970 ps} 0} {{Cursor 2} {1167560 ps} 0} {{Cursor 3} {8605470 ps} 0}
+quietly wave cursor active 3
+configure wave -namecolwidth 184
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -117,4 +120,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1102899 ps} {1160491 ps}
+WaveRestoreZoom {8603098 ps} {8648834 ps}
