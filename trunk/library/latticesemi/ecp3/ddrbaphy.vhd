@@ -53,7 +53,7 @@ architecture ecp3 of ddrbaphy is
 	signal dqstclk : std_logic;
 	attribute oddrapps : string;
 	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
-	attribute oddrapps of ck_i : label is "SCLK_ALIGNED";
+	attribute oddrapps of ck_i : label is "SCLK_CENTERED";
 begin
 
 	ck_i : oddrxd1

@@ -189,25 +189,9 @@ begin
 
 			lock  => pll_lck);
 
+		ddr_lckd <= pll_lck;
 		ddr_sclk <= sclk;
-		process (pll_lck, sclk)
-			variable q : std_logic_vector(0 to 1);
-		begin
-			if pll_lck='0' then
-				q := (others => '0');
-			elsif rising_edge(sclk) then
-				q := q(1) & '1';
-			end if;
-			eclk_stop <= not q(0);
-		end process;
-
-		ddr_lckd <= not eclk_stop;
-		eclksynca_i : eclksynca
-		port map (
-			stop  => eclk_stop,
-			eclki => eclk,
-			eclko => ddr_eclk);
-
+		ddr_eclk <= eclk;
 	end block;
 
 end;
