@@ -94,7 +94,7 @@ begin
 		dyndelay4 => '0', --sys_cfgi(dyndelay4),
 		dyndelay5 => '0', --sys_cfgi(dyndelay5),
 		dyndelay6 => '0', --sys_cfgi(dyndelay6),
-		dyndelpol => '1', --sys_cfgi(dyndelpol),
+		dyndelpol => '0', --sys_cfgi(dyndelpol),
 		eclkw => sys_eclk,
 
 		dqsw => dqsw,

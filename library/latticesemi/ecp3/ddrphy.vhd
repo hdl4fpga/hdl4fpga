@@ -279,16 +279,14 @@ begin
 	cfgi <= to_cilinevector(sys_cfgi);
 
 	process (phy_rst, sys_sclk)
-		variable counter : unsigned(0 to 1);
+		variable sr : std_logic_vector(0 to 1);
 	begin
 		if phy_rst='1' then
-			counter := (others => '0');
-			eclk_stop <= not counter(0);
+			sr := (others => '0');
+			eclk_stop <= not sr(0);
 		elsif rising_edge(sys_sclk) then
-			if counter(0)='0' then
-				counter := counter + 1;
-			end if;
-			eclk_stop <= not counter(0);
+			sr := sr(1 to 1) & '1';
+			eclk_stop <= not sr(0);
 		end if;
 	end process;
 
@@ -321,27 +319,11 @@ begin
 		if lock='0' then
 			counter := (others => '0');
 			dqsdll_uddcntln <= '1';
-			dqsdll_uddcntln_rdy <= '0';
 		elsif rising_edge(sys_sclk2x) then
 			dqsdll_uddcntln <= counter(0);
 			if counter(0)='0' then
 				counter := counter + 1;
 			end if;
-			dqsdll_uddcntln_rdy <= counter(0);
-		end if;
-	end process;
-
-	process (sys_sclk, dqsdll_uddcntln_rdy)
-		variable counter : unsigned(0 to 2);
-	begin
-		if dqsdll_uddcntln_rdy='0' then
-			counter := (others => '0');
-			dqrst <= not counter(0);
-		elsif rising_edge(sys_sclk) then
-			if counter(0)='0' then
-				counter := counter + 1;
-			end if;
-			dqrst <= not counter(0);
 		end if;
 	end process;
 
@@ -351,7 +333,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => dqrst,
+			sys_rst  => phy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => eclk,
 			sys_dqsdel => dqsdel,
