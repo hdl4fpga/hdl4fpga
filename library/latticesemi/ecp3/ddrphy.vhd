@@ -228,8 +228,14 @@ architecture ecp3 of ddrphy is
 	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
+	signal dqsdll_rst : std_logic;
 	signal dqsdll_lock : std_logic;
+	signal dqsdll_uddcntln : std_logic;
+	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
+	signal lock : std_logic;
+	signal eclk : std_logic;
+	signal eclk_stop : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -272,14 +278,72 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 	cfgi <= to_cilinevector(sys_cfgi);
 
+	process (phy_rst, sys_sclk)
+		variable counter : unsigned(0 to 1);
+	begin
+		if phy_rst='1' then
+			counter := (others => '0');
+			eclk_stop <= not counter(0);
+		elsif rising_edge(sys_sclk) then
+			if counter(0)='0' then
+				counter := counter + 1;
+			end if;
+			eclk_stop <= not counter(0);
+		end if;
+	end process;
+
+	eclksynca_i : eclksynca
+	port map (
+		stop  => eclk_stop,
+		eclki => sys_eclk,
+		eclko => eclk);
+
 	dqsdllb_i : dqsdllb
 	port map (
 		rst => phy_rst,
 		clk => sys_sclk2x,
-		uddcntln => '1', --sys_cfgi(uddcntln),
+		uddcntln => dqsdll_uddcntln,
 		dqsdel => dqsdel,
 		lock => dqsdll_lock);
-	dqrst <= phy_rst; --not dqsdll_lock;
+
+	process (sys_sclk2x)
+		variable sr : std_logic_vector(0 to 3);
+	begin
+		if rising_edge(sys_sclk2x) then
+			sr := sr(1 to 3) & dqsdll_lock;
+			lock <= sr(0);
+		end if;
+	end process;
+
+	process (lock, sys_sclk2x)
+		variable counter : unsigned(0 to 3);
+	begin
+		if lock='0' then
+			counter := (others => '0');
+			dqsdll_uddcntln <= '1';
+			dqsdll_uddcntln_rdy <= '0';
+		elsif rising_edge(sys_sclk2x) then
+			dqsdll_uddcntln <= counter(0);
+			if counter(0)='0' then
+				counter := counter + 1;
+			end if;
+			dqsdll_uddcntln_rdy <= counter(0);
+		end if;
+	end process;
+
+	process (sys_sclk, dqsdll_uddcntln_rdy)
+		variable counter : unsigned(0 to 2);
+	begin
+		if dqsdll_uddcntln_rdy='0' then
+			counter := (others => '0');
+			dqrst <= not counter(0);
+		elsif rising_edge(sys_sclk) then
+			if counter(0)='0' then
+				counter := counter + 1;
+			end if;
+			dqrst <= not counter(0);
+		end if;
+	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -289,7 +353,7 @@ begin
 		port map (
 			sys_rst  => dqrst,
 			sys_sclk => sys_sclk,
-			sys_eclk => sys_eclk,
+			sys_eclk => eclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
 			sys_cfgi => cfgi(i),
