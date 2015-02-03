@@ -15,72 +15,81 @@ add wave -noupdate -expand -group testbench /testbench/mii_treq
 add wave -noupdate -expand -group testbench /testbench/mii_txen
 add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ddr_clk_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddr3_dq(15) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(14) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(13) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(12) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(11) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(10) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(9) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(8) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(7) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(6) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(5) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/ddr3_dq(15) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(14) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(13) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddr3_dq
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
-add wave -noupdate -expand -group testbench -expand -group ddr3 -divider {New Divider}
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_creq
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddrs_cmd_rdy
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_crdy
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo(6)
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo(5)
-add wave -noupdate -expand -group testbench -expand -group ddr3 -divider {New Divider}
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal /testbench/ecp3versa_e/ddrphy_e/sys_dqi
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_sto
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sto
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_sto(0)
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/rst_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_cke
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/cke
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/cs_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ras_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/cas_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/we_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal /testbench/addr
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ba
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/dm
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ddr_clk_p
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/dqs_p(1)
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/dqs_p
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/dqs_n
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/odt
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_clk
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_rst
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sch_dqs
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_wwin
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_cke
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_cs
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_ras
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_cas
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_we
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal /testbench/ecp3versa_e/ddr3_a
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(12) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(11) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(10) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(9) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(8) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(7) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(6) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(5) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(4) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/sys_dmi
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmt
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmi
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmo
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/sdmt
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/ddmo
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/ddr_dm
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_e/ddmt
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddrphy_dmo
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddr3_dm
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqt
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqst
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/ser_clk
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sch_dqsz
-add wave -noupdate -expand -group testbench -expand -group ddr3 -expand /testbench/ecp3versa_e/ddr3_dqs
-add wave -noupdate -expand -group testbench -expand -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddr3_dq(15) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(14) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(13) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(12) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(11) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(10) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(9) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(8) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(7) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(6) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(5) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/ddr3_dq(15) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(14) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(13) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddr3_dq
-add wave -noupdate -expand -group testbench -expand -group ddr3 /testbench/ecp3versa_e/ddr3_odt
+add wave -noupdate -expand -group testbench /testbench/ba
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/addr
+add wave -noupdate -expand -group testbench /testbench/cs_n
+add wave -noupdate -expand -group testbench /testbench/ras_n
+add wave -noupdate -expand -group testbench /testbench/cas_n
+add wave -noupdate -expand -group testbench /testbench/we_n
+add wave -noupdate -expand -group testbench /testbench/cke
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/dq
+add wave -noupdate -expand -group testbench -expand /testbench/dqs_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ddr_clk_n
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddr3_dq(15) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(14) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(13) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(12) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(11) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(10) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(9) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(8) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(7) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(6) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(5) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/ddr3_dq(15) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(14) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(13) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddr3_dq
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
+add wave -noupdate -expand -group testbench -group ddr3 -divider {New Divider}
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_creq
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddrs_cmd_rdy
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_crdy
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo(6)
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo(5)
+add wave -noupdate -expand -group testbench -group ddr3 -divider {New Divider}
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal /testbench/ecp3versa_e/ddrphy_e/sys_dqi
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_sto
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sto
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_sto(0)
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/rst_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_cke
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cke
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cs_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ras_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/cas_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/we_n
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal /testbench/addr
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ba
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dm
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ddr_clk_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dqs_p(1)
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/dqs_p
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/dqs_n
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/odt
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_clk
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_rst
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sch_dqs
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_wwin
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_cke
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_cs
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_ras
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_cas
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_we
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal /testbench/ecp3versa_e/ddr3_a
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(12) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(11) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(10) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(9) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(8) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(7) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(6) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(5) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(4) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_cola
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/sys_dmi
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmt
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmi
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dmo
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/sdmt
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/ddmo
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/ddr_dm
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_e/ddmt
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddrphy_dmo
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddr3_dm
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqt
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqst
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/ser_clk
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/scope_e/ddr_e/xdr_sch_dqsz
+add wave -noupdate -expand -group testbench -group ddr3 -expand /testbench/ecp3versa_e/ddr3_dqs
+add wave -noupdate -expand -group testbench -group ddr3 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddr3_dq(15) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(14) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(13) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(12) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(11) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(10) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(9) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(8) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(7) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(6) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(5) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddr3_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/ddr3_dq(15) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(14) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(13) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(12) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(11) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(10) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(9) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(8) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(7) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddr3_dq(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddr3_dq
+add wave -noupdate -expand -group testbench -group ddr3 /testbench/ecp3versa_e/ddr3_odt
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/sys_do
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/sys_do_rdy
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/wr_address
@@ -331,7 +340,6 @@ add wave -noupdate -group debug /testbench/ecp3versa_e/scope_e/ddr_ras
 add wave -noupdate -group debug /testbench/ecp3versa_e/scope_e/ddr_cas
 add wave -noupdate -group debug /testbench/ecp3versa_e/scope_e/ddr_we
 add wave -noupdate -group sys_clock /testbench/ecp3versa_e/input_clk
-add wave -noupdate -group sys_clock /testbench/ecp3versa_e/video_clk
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_dqso
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_dqsi
@@ -508,8 +516,8 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/input_req
 add wave -noupdate /testbench/ecp3versa_e/scope_e/input_rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {15104120 ps} 0} {{Cursor 2} {15132262 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {8588247 ps} 1} {{Cursor 2} {8598265 ps} 1}
+quietly wave cursor active 1
 configure wave -namecolwidth 204
 configure wave -valuecolwidth 190
 configure wave -justifyvalue left
@@ -524,4 +532,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {299794861 ps} {300010797 ps}
+WaveRestoreZoom {8580608 ps} {8607600 ps}
