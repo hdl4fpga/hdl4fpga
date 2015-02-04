@@ -9,6 +9,7 @@ entity ddrdqphy is
 		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
+		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
 		sys_cfgi : in  std_logic_vector(9-1 downto 0) := (others => '-');
 		sys_cfgo : out std_logic_vector(1-1 downto 0);
@@ -95,7 +96,7 @@ begin
 		dyndelay5 => '0', --sys_cfgi(dyndelay5),
 		dyndelay6 => '0', --sys_cfgi(dyndelay6),
 		dyndelpol => '0', --sys_cfgi(dyndelpol),
-		eclkw => sys_eclk,
+		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
 		dqclk0 => dqclk0,
@@ -103,7 +104,7 @@ begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
-		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -121,7 +122,7 @@ begin
 
 	dmi_g : block
 		attribute iddrapps : string;
-		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
