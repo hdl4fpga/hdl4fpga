@@ -2,3 +2,5 @@
 find . -name "*~" -exec rm {} \; -print
 find . -name 'C\:\\nppdf32Log\\debuglog.txt' -exec rm {} \; -print
 find . -name \*.bak -exec rm {} \; -print
+rm -rf ecp3versa/diamond/ecp3versa_tcr.dir
+rm -rf ecp3versa/diamond/scope
