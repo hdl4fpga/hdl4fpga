@@ -346,6 +346,7 @@ begin
 			sys_rst  => phy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => eclk,
+			sys_eclkw => eclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
 			sys_cfgi => cfgi(i),
