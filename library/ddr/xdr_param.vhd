@@ -322,13 +322,13 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => STRL,  value => 4*0) &
 		latency_record'(stdr => 3, param => RWNL,  value => 4*2) &
 		latency_record'(stdr => 3, param => DQSL,  value =>  -4) &
-		latency_record'(stdr => 3, param => DQSZL, value =>  -6) &
+		latency_record'(stdr => 3, param => DQSZL, value =>  -8) &
 		latency_record'(stdr => 3, param => DQZL,  value =>  -4) &
 		latency_record'(stdr => 3, param => WWNL,  value =>  0) &
 		latency_record'(stdr => 3, param => STRXL, value =>   2) &
 		latency_record'(stdr => 3, param => RWNXL, value => 4*0) &
 		latency_record'(stdr => 3, param => DQSXL, value =>   2) &
-		latency_record'(stdr => 3, param => DQSZXL, value =>  2) &
+		latency_record'(stdr => 3, param => DQSZXL, value =>  6) &
 		latency_record'(stdr => 3, param => DQZXL, value =>   4) &
 		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
 		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
@@ -352,10 +352,10 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000) &
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000) &
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
-		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
-		timing_record'(mark => M15E, param => tREFI, value => 7000000) &
---		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
---		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
+--		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
+--		timing_record'(mark => M15E, param => tREFI, value => 7000000) &
+		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
+		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
 		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
 		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
 		timing_record'(mark => M15E, param => tWR,   value => 15000) &
