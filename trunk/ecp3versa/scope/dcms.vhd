@@ -14,6 +14,7 @@ entity dcms is
 		sys_clk  : in  std_logic;
 		input_clk  : out std_logic;
 
+		ddr_eclkph : in std_logic_vector(3 downto 0);
 		ddr_sclk2x : out std_logic;
 		ddr_eclk : out std_logic;
 		ddr_sclk : out std_logic;
@@ -150,7 +151,11 @@ begin
 		signal oclk : std_logic;
 		signal eclk : std_logic;
 		signal sclk : std_logic;
+		signal drpa : std_logic_vector(3 downto 0);
+		signal dfpa : std_logic_vector(3 downto 0);
 	begin
+		drpa <= ddr_eclkph;
+		dfpa <= not ddr_eclkph(3) & ddr_eclkph(2 downto 0);
 		pll_i : ehxpllf
 		generic map (
 			CLKOS_TRIM_DELAY => 0,
@@ -164,8 +169,8 @@ begin
 			DELAY_PWD => "DISABLED",
 			DELAY_VAL => 0, 
 			DUTY => 8,
-			PHASE_DELAY_CNTL => "STATIC",
-			PHASEADJ => "45.0", 
+			PHASE_DELAY_CNTL => "DYNAMIC",
+			PHASEADJ => "0.0", 
 			CLKOK_DIV => 2,
 			CLKOP_DIV => 2,
 			CLKFB_DIV => 4,
@@ -176,10 +181,10 @@ begin
 			rst   => '0', 
 			rstk  => '0',
 			clki  => sys_clk,
-			wrdel => '0',
-			drpai3 => '0', drpai2 => '0', drpai1 => '0', drpai0 => '0', 
-			dfpai3 => '0', dfpai2 => '0', dfpai1 => '0', dfpai0 => '0', 
+			drpai3 => drpa(3), drpai2 => drpa(2), drpai1 => drpa(1), drpai0 => drpa(0), 
+			dfpai3 => dfpa(3), dfpai2 => dfpa(2), dfpai1 => dfpa(1), dfpai0 => dfpa(0), 
 			fda3   => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
+			wrdel => '0',
 			clkintfb => pll_clkfb,
 			clkfb => pll_clkfb,
 			clkop => ddr_sclk2x, 
