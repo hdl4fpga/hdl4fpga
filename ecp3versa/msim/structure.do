@@ -26,7 +26,6 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_rst
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_eclk
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/RST
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY0
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY1
@@ -112,8 +111,8 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1146683 ps} 0} {{Cursor 2} {1169088 ps} 0} {{Cursor 3} {1199411 ps} 0} {{Cursor 4} {8602949 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {69174 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {66677 ps} 0}
+quietly wave cursor active 4
 configure wave -namecolwidth 196
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -128,4 +127,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1094753 ps} {1239921 ps}
+WaveRestoreZoom {61271 ps} {70459 ps}

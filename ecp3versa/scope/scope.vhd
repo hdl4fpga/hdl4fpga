@@ -55,7 +55,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-	signal ddrphy_cfgo : std_logic_vector(2-1 downto 0);
+	signal ddrphy_cfgo : std_logic_vector(2+4-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -105,6 +105,7 @@ begin
 		sys_rst => sys_rst,
 		sys_clk => uclk,
 		input_clk => input_clk,
+		ddr_eclkph =>ddrphy_cfgo(5 downto 2),
 		ddr_eclk =>ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
