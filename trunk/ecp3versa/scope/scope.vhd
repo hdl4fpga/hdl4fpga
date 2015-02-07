@@ -203,16 +203,10 @@ begin
 		tpo => tpo);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
-	sto <= not ddrphy_sto(0); 
 	process (ddr_sclk)
-		variable pp : std_logic;
-		variable ppp : unsigned(0 to 3);
-		constant n : natural := 3;
 	begin
-		if rising_edge(ddr_sclk) then
-			ppp(0 to n-1) := ppp(1 to n);
-			ppp(n):= ddrphy_sto(0) and not pp;
-			pp := ddrphy_sto(0);
+		if falling_edge(ddr_sclk) then
+	sto <= not ddrphy_sto(0); 
 		end if;
 	end process;
 
