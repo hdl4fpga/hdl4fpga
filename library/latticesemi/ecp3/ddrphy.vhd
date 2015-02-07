@@ -298,7 +298,7 @@ begin
 		end if;
 	end process;
 
-	sys_cfgo(5 downto 2) <= "1000";
+	sys_cfgo(5 downto 2) <= "0000";
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclk_stop,
