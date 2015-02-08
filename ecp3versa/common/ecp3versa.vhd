@@ -10,7 +10,6 @@ entity ecp3versa is
 		seg : out std_logic_vector(0 to 14) := (others => 'Z');
 		
 		ddr3_clk : out std_logic := '0';
---		ddr3_vref : out std_logic := '0';
 		ddr3_rst : out std_logic := '0';
 		ddr3_cke : out std_logic := '0';
 		ddr3_cs  : out std_logic := '1';
@@ -59,85 +58,4 @@ entity ecp3versa is
 
 --		expansion : inout std_logic_vector(0 to 46-1)
 		fpga_gsrn : in std_logic);
-
-	attribute loc : string;
-	attribute io_type : string;
-	
---	attribute loc of clk : signal is "L5"; 				-- clk_n "K6"
---	attribute io_type of clk : signal is "SSTL15D";
-	
---	attribute loc of pclk : signal is "F11";			-- pclk_n "F12";
---	attribute io_type of pclk : signal is "SSTL18D_II";
-	
---	attribute loc of leds   : signal is "U19 U18 AA21 Y20 W19 V19 AA20 AB20";
---	attribute loc of digit  : signal is "V6  U7 Y6 AA6 U8 T8 R9 T9 AB3 AB4 W4 Y5 AA4 AA5 W5";
-	
---	attribute loc of ddr3_clk : signal is "K4";			-- ddr3_clk_n "K5"
---	attribute loc of ddr3_rst : signal is "D4";
---	attribute loc of ddr3_cke : signal is "G8";
---	attribute loc of ddr3_cs  : signal is "C6";
---	attribute loc of ddr3_ras : signal is "A6";
---	attribute loc of ddr3_cas : signal is "A4";
---	attribute loc of ddr3_we  : signal is "D6";
---	attribute loc of ddr3_b   : signal is "D5 E6 B4";
---	attribute loc of ddr3_a   : signal is "F7 C10 C9 B8 A7 D7 A3 E9 F9 D8 B7 C7 C8";
---	attribute loc of ddr3_dm  : signal is "F3 E3";
---	attribute loc of ddr3_dqs : signal is "H5 F5";		-- ddr3_dqs_n "H6 F4"
---	attribute loc of ddr3_dq  : signal is "G3 C1 B1 J4 E2 H4 F1 G2" & "G4 G5 B2 C2 D1 D2 E4 E5";
---	attribute loc of ddr3_odt : signal is "E7";
-
---	attribute io_type of ddr3_clk : signal is "SSTL15D";
---	attribute io_type of ddr3_rst : signal is "LVCMOS15";
---	attribute io_type of ddr3_cke : signal is "SSTL15";
---	attribute io_type of ddr3_cs  : signal is "SSTL15";
---	attribute io_type of ddr3_ras : signal is "SSTL15";
---	attribute io_type of ddr3_cas : signal is "SSTL15";
---	attribute io_type of ddr3_we  : signal is "SSTL15";
---	attribute io_type of ddr3_b   : signal is "SSTL15";
---	attribute io_type of ddr3_a   : signal is "SSTL15";
---	attribute io_type of ddr3_dm  : signal is "SSTL15";
---	attribute io_type of ddr3_dqs : signal is "SSTL15D";
---	attribute io_type of ddr3_dq  : signal is "SSTL15";
---	attribute io_type of ddr3_odt : signal is "SSTL15";
-
---	attribute loc of fpga_gsrn : signal is "A21";
---	attribute io_type of fpga_gsrn : signal is "LVCMOS33";
-
---	attribute loc of phy1_125clk : signal is "T3";
---	attribute loc of phy1_rst : signal is "L3";
---	attribute loc of phy1_coma : signal is "R4";
---	attribute loc of phy1_mdio : signal is "L2";
---	attribute loc of phy1_mdc : signal is "V4";
---	attribute loc of phy1_gtxclk : signal is "M2";
---	attribute loc of phy1_crs : signal is "P4";
---	attribute loc of phy1_col : signal is "R1";
---	attribute loc of phy1_txc : signal is "C12";
---	attribute loc of phy1_tx_d : signal is "V1 U1 R3 P1 N5 N3 N4 N2";
---	attribute loc of phy1_tx_en : signal is "V3";
---	attribute loc of phy1_rxc : signal is "L4";
---	attribute loc of phy1_rx_er : signal is "M4";
---	attribute loc of phy1_rx_dv : signal is "M1";
---	attribute loc of phy1_rx_d  : signal is "M5 N1 N6 P6 T2 R2 P5 P3";
---
---	attribute loc of phy2_125clk : signal is "R17";
---	attribute loc of phy2_rst : signal is "R21";
---	attribute loc of phy2_coma : signal is "T15";
---	attribute loc of phy2_mdio : signal is "U16";
---	attribute loc of phy2_mdc : signal is "Y18";
---	attribute loc of phy2_gtxclk : signal is "M19";
---	attribute loc of phy2_crs : signal is "P19";
---	attribute loc of phy2_col : signal is "N18";
---	attribute loc of phy2_txc : signal is "M21";
---	attribute loc of phy2_tx_d : signal is "W22 R16 P17 Y22 T21 U22 P20 U20";
---	attribute loc of phy2_tx_en : signal is "V22";
---	attribute loc of phy2_rxc : signal is "N19";
---	attribute loc of phy2_rx_er : signal is "V20";
---	attribute loc of phy2_rx_dv : signal is "U15";
---	attribute loc of phy2_rx_d  : signal is "AB17 AA17 R19 V21 T17 R18 W21 Y21";
---
---	attribute loc of expansion : signal is "B11 B12 A12 A13 E12 E13 C13 C14 D13 D14" &
---	                                       "A14 B14 F13 F14 A15 B15 C15 D15 G15 G14" &
---										   "A16 B16 F15 F16 A17 B18 A18 A19 D16 D17" &
---										   "J22 K22 L18 L19 L22 M22 K18 K17 H22 H21" &
---										   "G22 G21 J18 J17 F22 E22";
 end;
