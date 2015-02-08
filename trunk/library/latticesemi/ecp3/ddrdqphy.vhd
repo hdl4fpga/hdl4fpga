@@ -64,8 +64,8 @@ architecture ecp3 of ddrdqphy is
 	signal rw : std_logic;
 	signal rst : std_logic;
 	
-	attribute nrzmode : string;
-	attribute nrzmode of dqsbufd_i : label is "ENABLED";
+--	attribute nrzmode : string;
+--	attribute nrzmode of dqsbufd_i : label is "ENABLED";
 begin
 	rw <= not sys_rw;
 	process (sys_sclk)

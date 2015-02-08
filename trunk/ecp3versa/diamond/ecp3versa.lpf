@@ -5,12 +5,12 @@ COMMERCIAL ;
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
 
-#BANK 0 VCCIO 1.5 V;
-#BANK 1 VCCIO 3.3 V;
-#BANK 2 VCCIO 3.3 V;
-#BANK 3 VCCIO 3.3 V;
-#BANK 6 VCCIO 3.3 V;
-#BANK 7 VCCIO 1.5 V;
+BANK 0 VCCIO 1.5 V;
+BANK 1 VCCIO 3.3 V;
+BANK 2 VCCIO 3.3 V;
+BANK 3 VCCIO 3.3 V;
+BANK 6 VCCIO 3.3 V;
+BANK 7 VCCIO 1.5 V;
 
 SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
 
@@ -40,13 +40,16 @@ LOCATE COMP "ddr3_dq[12]" SITE "J4";
 LOCATE COMP "ddr3_dq[13]" SITE "B1";
 LOCATE COMP "ddr3_dq[14]" SITE "C1";
 LOCATE COMP "ddr3_dq[15]" SITE "G3";
+LOCATE COMP "ddr3_dm[0]" SITE "E3" ;
+LOCATE COMP "ddr3_dm[1]"  SITE "F3" ;
+DEFINE PORT GROUP "ddr3_dq" "ddr3_dq[*]" "ddr3_dm[*]";
+IOBUF GROUP "ddr3_dq" IO_TYPE=SSTL15;
 
-LOCATE COMP "ddr3_dm[0]"    SITE "E3" ;
-LOCATE COMP "ddr3_dm[1]"    SITE "F3" ;
-LOCATE COMP "ddr3_dqs[0]"   SITE "F5" ;
-LOCATE COMP "ddr3_dqs[1]"   SITE "H5" ;
+LOCATE COMP "ddr3_dqs[0]"  SITE "F5" ;
+LOCATE COMP "ddr3_dqs[1]"  SITE "H5" ;
+DEFINE PORT GROUP "ddr3_dqs" "ddr3_dqs[*]";
+IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0 ;
 
-##########################################################################
 LOCATE COMP "ddr_a[0]"  SITE "C8";
 LOCATE COMP "ddr_a[1]"  SITE "C7";
 LOCATE COMP "ddr_a[2]"  SITE "B7";
@@ -63,15 +66,24 @@ LOCATE COMP "ddr_a[12]" SITE "F7";
 LOCATE COMP "ddr_b[0]"  SITE "B4";
 LOCATE COMP "ddr_b[1]"  SITE "E6";
 LOCATE COMP "ddr_b[2]"  SITE "D5";
+DEFINE PORT GROUP "ddr3_ba" "ddr3_a[*]" "ddr3_b[*]";
+IOBUF GROUP "ddr3_ba" IO_TYPE=SSTL15;
 
 LOCATE COMP "ddr3_clk"   SITE "K4";
+IOBUF PORT "ddr3_clk" IO_TYPE=SSTL15D;
+
 LOCATE COMP "ddr3_cke"   SITE "G8";
 LOCATE COMP "ddr3_ras"   SITE "A6";
 LOCATE COMP "ddr3_cas"   SITE "A4";
 LOCATE COMP "ddr3_we"    SITE "D6";
-LOCATE COMP "ddr3_cs"  SITE "C6" ;
+LOCATE COMP "ddr3_cs"   SITE "C6" ;
 LOCATE COMP "ddr3_odt"   SITE "E7";
+
+DEFINE PORT GROUP "ddr3_cmd" "ddr3_cke" "ddr3_cs" "ddr3_ras" "ddr3_cas" "ddr3_we" "ddr3_odt";
+IOBUF GROUP "ddr3_cmd" IO_TYPE=SSTL15;
+
 LOCATE COMP "ddr3_rst" SITE "D4" ;
+IOBUF PORT "ddr3_rst" IO_TYPE=LVCMOS15;
 
 FREQUENCY PORT  "phy1_clk125" 125.00 MHz ;  // 125 MHz
 LOCATE COMP "phy1_125clk" SITE "T3";
@@ -95,7 +107,6 @@ LOCATE COMP "phy1_tx_en"  SITE "V3";
 LOCATE COMP "phy1_rxc"    SITE "L4";
 LOCATE COMP "phy1_rx_er"  SITE "M4";
 LOCATE COMP "phy1_rx_dv"  SITE "M1";
-IOBUF PORT "phy_tx_d[*]" IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 
 LOCATE COMP "phy1_rx_d[0]" SITE "M5";
 LOCATE COMP "phy1_rx_d[1]" SITE "N1";
@@ -105,7 +116,9 @@ LOCATE COMP "phy1_rx_d[4]" SITE "T2";
 LOCATE COMP "phy1_rx_d[5]" SITE "R2";
 LOCATE COMP "phy1_rx_d[6]" SITE "P5";
 LOCATE COMP "phy1_rx_d[7]" SITE "P3";
-IOBUF PORT "phy_rx_d[*]" IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+
+DEFINE PORT GROUP "phy1s" "phy1*";
+IOBUF  GROUP "phy1s" IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 
 LOCATE COMP "dip[0]" SITE "J7" ;
 LOCATE COMP "dip[1]" SITE "J6" ;
@@ -114,8 +127,9 @@ LOCATE COMP "dip[3]" SITE "H3" ;
 LOCATE COMP "dip[4]" SITE "J3" ;
 LOCATE COMP "dip[5]" SITE "K3" ;
 LOCATE COMP "dip[6]" SITE "J2" ;
-#LOCATE COMP "dip[7]" SITE "J1" ;
-IOBUF PORT "dip[*]" IO_TYPE=LVCMOS15; 
+LOCATE COMP "dip[7]" SITE "J1" ;
+DEFINE PORT GROUP "dips" "dip[*]";
+IOBUF GROUP "dips" IO_TYPE=LVCMOS15; 
 
 LOCATE COMP "led[0]" SITE "Y20";
 LOCATE COMP "led[1]" SITE "AA21";
@@ -125,7 +139,10 @@ LOCATE COMP "led[4]" SITE "W19";
 LOCATE COMP "led[5]" SITE "AB20";
 LOCATE COMP "led[6]" SITE "AA20";
 LOCATE COMP "led[7]" SITE "V19";
-IOBUF PORT "led[*]" IO_TYPE=LVCMOS33 ;
+
+DEFINE PORT GROUP "leds" "led[*]";
+IOBUF GROUP "leds" IO_TYPE=LVCMOS33;
+
 
 LOCATE COMP "seg[0]"  SITE "V6" ; 
 LOCATE COMP "seg[1]"  SITE "U7" ; 
@@ -142,6 +159,8 @@ LOCATE COMP "seg[11]" SITE "AA4" ;
 LOCATE COMP "seg[12]" SITE "AA5" ; 
 LOCATE COMP "seg[13]" SITE "R9" ;  
 LOCATE COMP "seg[14]" SITE "W5" ;
-IOBUF PORT "seg[*]" IO_TYPE=LVCMOS33 ;
+
+DEFINE PORT GROUP "segs" "seg[*]";
+IOBUF GROUP "segs" IO_TYPE=LVCMOS33 ;
 
 

@@ -298,7 +298,7 @@ begin
 		end if;
 	end process;
 
-	sys_cfgo(5 downto 2) <= "0000";
+	sys_cfgo(5 downto 2) <= "0011";
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclk_stop,
@@ -349,10 +349,10 @@ begin
 		lock => dqsdll_lock);
 
 	process (sys_sclk2x)
-		variable sr : std_logic_vector(0 to 3);
+		variable sr : std_logic_vector(0 to 4);
 	begin
 		if rising_edge(sys_sclk2x) then
-			sr := sr(1 to 3) & dqsdll_lock;
+			sr := sr(1 to 4) & dqsdll_lock;
 			lock <= sr(0);
 		end if;
 	end process;
