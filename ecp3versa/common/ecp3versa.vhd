@@ -86,19 +86,19 @@ entity ecp3versa is
 --	attribute loc of ddr3_dq  : signal is "G3 C1 B1 J4 E2 H4 F1 G2" & "G4 G5 B2 C2 D1 D2 E4 E5";
 --	attribute loc of ddr3_odt : signal is "E7";
 
-	attribute io_type of ddr3_clk : signal is "SSTL15D";
-	attribute io_type of ddr3_rst : signal is "LVCMOS15";
-	attribute io_type of ddr3_cke : signal is "SSTL15";
-	attribute io_type of ddr3_cs  : signal is "SSTL15";
-	attribute io_type of ddr3_ras : signal is "SSTL15";
-	attribute io_type of ddr3_cas : signal is "SSTL15";
-	attribute io_type of ddr3_we  : signal is "SSTL15";
-	attribute io_type of ddr3_b   : signal is "SSTL15";
-	attribute io_type of ddr3_a   : signal is "SSTL15";
-	attribute io_type of ddr3_dm  : signal is "SSTL15";
-	attribute io_type of ddr3_dqs : signal is "SSTL15D";
-	attribute io_type of ddr3_dq  : signal is "SSTL15";
-	attribute io_type of ddr3_odt : signal is "SSTL15";
+--	attribute io_type of ddr3_clk : signal is "SSTL15D";
+--	attribute io_type of ddr3_rst : signal is "LVCMOS15";
+--	attribute io_type of ddr3_cke : signal is "SSTL15";
+--	attribute io_type of ddr3_cs  : signal is "SSTL15";
+--	attribute io_type of ddr3_ras : signal is "SSTL15";
+--	attribute io_type of ddr3_cas : signal is "SSTL15";
+--	attribute io_type of ddr3_we  : signal is "SSTL15";
+--	attribute io_type of ddr3_b   : signal is "SSTL15";
+--	attribute io_type of ddr3_a   : signal is "SSTL15";
+--	attribute io_type of ddr3_dm  : signal is "SSTL15";
+--	attribute io_type of ddr3_dqs : signal is "SSTL15D";
+--	attribute io_type of ddr3_dq  : signal is "SSTL15";
+--	attribute io_type of ddr3_odt : signal is "SSTL15";
 
 --	attribute loc of fpga_gsrn : signal is "A21";
 --	attribute io_type of fpga_gsrn : signal is "LVCMOS33";

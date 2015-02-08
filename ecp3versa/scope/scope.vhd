@@ -205,7 +205,7 @@ begin
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	process (ddr_sclk)
 	begin
-		if falling_edge(ddr_sclk) then
+		if rising_edge(ddr_sclk) then
 	sto <= not ddrphy_sto(0); 
 		end if;
 	end process;

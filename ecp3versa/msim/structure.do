@@ -30,46 +30,6 @@ add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/dqi_0
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/dqi_1
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/dqi_3
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/dqi_6
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_24
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_25
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_26
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_27
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_28
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_29
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_30
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_31
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_32
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_33
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_34
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_35
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_36
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_37
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_38
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_39
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_40
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_41
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_42
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_43
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_44
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_45
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_46
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_47
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_48
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_49
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_50
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_51
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_52
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_53
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_54
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_55
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_56
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_57
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_58
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_59
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_60
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_61
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_62
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_dqi_63
 add wave -noupdate /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_eclk_stop
@@ -165,7 +125,7 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8951399 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {8999259 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8951399 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {8797248 ps} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 196
 configure wave -valuecolwidth 100
@@ -181,4 +141,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {8930172 ps} {9003676 ps}
+WaveRestoreZoom {8730172 ps} {8803676 ps}
