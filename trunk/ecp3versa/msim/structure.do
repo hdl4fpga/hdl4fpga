@@ -33,13 +33,25 @@ add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/dqi_6
 add wave -noupdate /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_eclk_stop
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_rst
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int1
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int2
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int3
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int4
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int5
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int6
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int_n
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/read
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/prmbdet_raw
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/prmbdet
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/prmbdet_clean
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/PRMBDET_int
 add wave -noupdate -expand -group dlldqs_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/RST
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY0
 add wave -noupdate -expand -group dlldqs_0 -group dyndelay /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/DYNDELAY1
@@ -125,10 +137,10 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8951399 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {8797248 ps} 0}
-quietly wave cursor active 4
-configure wave -namecolwidth 196
-configure wave -valuecolwidth 100
+WaveRestoreCursors {{Cursor 1} {8954183 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {1172409 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 167
+configure wave -valuecolwidth 55
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -141,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {8730172 ps} {8803676 ps}
+WaveRestoreZoom {8867501 ps} {8995017 ps}

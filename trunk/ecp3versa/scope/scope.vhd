@@ -35,6 +35,7 @@ architecture scope of ecp3versa is
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
 	signal sto : std_logic;
+	signal sto1 : std_logic;
 	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmmd_phases-1 downto 0);
@@ -206,7 +207,8 @@ begin
 	process (ddr_sclk)
 	begin
 		if rising_edge(ddr_sclk) then
-	sto <= not ddrphy_sto(0); 
+			sto <= not ddrphy_sto(0) and sto1;
+			sto1 <= not ddrphy_sto(0);
 		end if;
 	end process;
 

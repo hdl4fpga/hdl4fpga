@@ -232,7 +232,6 @@ begin
 	generic map (
 		lRCD => to_xdrlatency(tCP, mark, tRCD),
 		lRFC => to_xdrlatency(tCP, mark, tRFC),
---		lWR  => to_xdrlatency(tCP, xdr_timing(mark, tWR)+tCP*integer((xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2)/2))),
 		lWR  => to_xdrlatency(tCP, tlWR),
 		lRP  => to_xdrlatency(tCP, mark, tRP),
 		bl_cod => xdr_latcod(stdr, BL),

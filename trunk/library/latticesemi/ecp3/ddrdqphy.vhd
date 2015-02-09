@@ -64,8 +64,8 @@ architecture ecp3 of ddrdqphy is
 	signal rw : std_logic;
 	signal rst : std_logic;
 	
---	attribute nrzmode : string;
---	attribute nrzmode of dqsbufd_i : label is "ENABLED";
+	attribute NRZMODE : string;
+	attribute NRZMODE of dqsbufd_i : label is "ENABLED";
 begin
 	rw <= not sys_rw;
 	process (sys_sclk)
@@ -92,7 +92,7 @@ begin
 		rst  => rst,
 		dyndelay0 => '0', --sys_cfgi(dyndelay0),
 		dyndelay1 => '0', --sys_cfgi(dyndelay1),
-		dyndelay2 => '0', --sys_cfgi(dyndelay2),
+		dyndelay2 => '1', --sys_cfgi(dyndelay2),
 		dyndelay3 => '0', --sys_cfgi(dyndelay3),
 		dyndelay4 => '0', --sys_cfgi(dyndelay4),
 		dyndelay5 => '0', --sys_cfgi(dyndelay5),
