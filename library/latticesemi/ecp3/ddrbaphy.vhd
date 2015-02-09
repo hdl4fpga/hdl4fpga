@@ -10,7 +10,6 @@ entity ddrbaphy is
 		sys_sclk   : in  std_logic;
 		sys_sclk2x : in  std_logic;
 
-		sys_rw  : in  std_logic;
 		sys_rst : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cs  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cke : in  std_logic_vector(cmnd_phases-1 downto 0);

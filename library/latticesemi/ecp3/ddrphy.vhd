@@ -249,7 +249,6 @@ begin
 		sys_sclk2x => sys_sclk2x,
           
 		sys_rst => sys_rst,
-		sys_rw  => sys_rw,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sys_b,
@@ -298,7 +297,7 @@ begin
 		end if;
 	end process;
 
-	sys_cfgo(5 downto 2) <= "0011";
+	sys_cfgo(5 downto 2) <= "0010";
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclk_stop,
