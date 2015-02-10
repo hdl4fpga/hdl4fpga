@@ -204,11 +204,11 @@ begin
 		tpo => tpo);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
-	sto <= not ddrphy_sto(0) and not sto1;
 	process (ddr_sclk)
 	begin
 		if rising_edge(ddr_sclk) then
-			sto1 <= ddrphy_sto(0);
+	sto1 <= not ddrphy_sto(0);
+	sto <= sto1;
 		end if;
 	end process;
 
