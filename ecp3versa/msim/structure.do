@@ -47,6 +47,11 @@ add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_by
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int5
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int6
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/datavalid_int_n
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/lat1
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/mc1_nrz
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/lat3
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/ddrlat_int
+add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/lat3_inv
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/reset_data_valid_regs
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/reset_prmbdet_clean
 add wave -noupdate -expand -group datavalid_0 /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/read
@@ -139,7 +144,7 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8716078 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {1172409 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8984943 ps} 0} {{Cursor 2} {67921 ps} 0} {{Cursor 3} {65424 ps} 0} {{Cursor 4} {1172409 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 167
 configure wave -valuecolwidth 55
@@ -155,4 +160,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {8682055 ps} {8745813 ps}
+WaveRestoreZoom {8461245 ps} {9463754 ps}
