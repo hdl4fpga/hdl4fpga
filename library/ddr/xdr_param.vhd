@@ -321,8 +321,8 @@ package body xdr_param is
 		latency_record'(stdr => 3, param => cDLL,  value => 500) &
 		latency_record'(stdr => 3, param => STRL,  value => 4*0) &
 		latency_record'(stdr => 3, param => RWNL,  value => 4*2) &
-		latency_record'(stdr => 3, param => DQSL,  value =>  -4) &
-		latency_record'(stdr => 3, param => DQSZL, value =>  -8) &
+		latency_record'(stdr => 3, param => DQSL,  value =>  -8) &
+		latency_record'(stdr => 3, param => DQSZL, value =>  -12) &
 		latency_record'(stdr => 3, param => DQZL,  value =>  -4) &
 		latency_record'(stdr => 3, param => WWNL,  value =>  0) &
 		latency_record'(stdr => 3, param => STRXL, value =>   2) &
