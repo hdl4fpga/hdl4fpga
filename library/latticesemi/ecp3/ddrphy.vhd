@@ -21,7 +21,7 @@ entity ddrphy is
 		phy_rst : in std_logic;
 
 		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cfgi : in  std_logic_vector(9*(word_size/byte_size)-1 downto 0);
+		sys_cfgi : in  std_logic_vector(8*(word_size/byte_size)-1 downto 0);
 		sys_cfgo : out std_logic_vector(4+1*(word_size/byte_size)-1 downto 0) := (others => '1');
 		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
@@ -71,7 +71,7 @@ architecture ecp3 of ddrphy is
 	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
-	subtype ciline_word is std_logic_vector(9-1 downto 0);
+	subtype ciline_word is std_logic_vector(8-1 downto 0);
 	type ciline_vector is array (natural range <>) of ciline_word;
 
 	subtype coline_word is std_logic_vector(1-1 downto 0);
@@ -276,7 +276,9 @@ begin
 	ddqi <= to_bytevector(ddr_dq);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
-	cfgi <= to_cilinevector(sys_cfgi);
+	sys_cfgo(5 downto 2) <= "0011";
+--	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
+	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
 
 	process (phy_rst, sys_sclk)
 		variable sr : std_logic_vector(0 to 1);
@@ -297,7 +299,6 @@ begin
 		end if;
 	end process;
 
-	sys_cfgo(5 downto 2) <= "0011";
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclk_stop,

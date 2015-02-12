@@ -212,6 +212,13 @@ begin
 		end if;
 	end process;
 
+	process (ddr_sclk2)
+	begin
+		if rising_edge(ddr_sclk2) then
+			ddrphy_dqi <= not ddrphy_dqi;
+		end if;
+	process;
+
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE => ddr3_b'length,
@@ -240,11 +247,11 @@ begin
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
 		sys_dmi => ddrphy_dmo,
-		sys_dmt => ddrphy_dmt,
+		sys_dmt => (others => '0'), -- ddrphy_dmt,
 		sys_dmo => ddrphy_dmi,
-		sys_dqi => ddrphy_dqi,
+--		sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
-		sys_dqo => ddrphy_dqo,
+		sys_dqo => (others => '0'), --ddrphy_dqo,
 		sys_odt => ddrphy_odt,
 
 		ddr_rst => ddr3_rst,
