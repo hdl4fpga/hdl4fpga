@@ -25,6 +25,7 @@ architecture def of ddr2miitx is
 begin
 
 	miitx_req <= req;
+			a0_edge <= not a0_dly xor ddrios_a0;
 	process (ddrios_clk)
 	begin
 		if rising_edge(ddrios_clk) then
@@ -53,7 +54,6 @@ begin
 			sync_rdy_edge <= sync_rdy_val(0);
 			sync_rdy_pdge <= sync_rdy_val(0) xor sync_rdy_edge;
 
-			a0_edge <= not a0_dly xor ddrios_a0;
 			a0_dly  <= not ddrios_a0;
 
 		end if;

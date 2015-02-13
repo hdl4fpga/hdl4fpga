@@ -146,7 +146,14 @@ begin
 	mii_rxc <= phy1_125clk;
 	mii_refclk <= phy1_125clk;
 
-	mii_strt <= '0', '1' after 20 us;
+	process (mii_strt, rst)
+	begin
+		if rst='1'then
+			mii_strt <= '0', '1' after 12 us, '0' after 22 us;
+		elsif falling_edge(mii_strt) then
+			mii_strt <= '1', '0' after 10 us;
+		end if;
+	end process;
 	process (mii_refclk, mii_strt)
 		variable txen_edge : std_logic;
 	begin
