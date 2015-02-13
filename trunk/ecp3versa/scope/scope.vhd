@@ -51,7 +51,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"07_06_05_04_03_02_01_00";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -212,12 +212,12 @@ begin
 		end if;
 	end process;
 
-	process (ddr_sclk2)
+	process (ddr_sclk)
 	begin
-		if rising_edge(ddr_sclk2) then
+		if rising_edge(ddr_sclk) then
 			ddrphy_dqi <= not ddrphy_dqi;
 		end if;
-	process;
+	end process;
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
