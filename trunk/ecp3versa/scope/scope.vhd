@@ -51,7 +51,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"07_06_05_04_03_02_01_00";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"07_05_03_01_06_04_02_00";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -92,6 +92,7 @@ architecture scope of ecp3versa is
 	signal ddrs_rst : std_logic;
 	signal mii_rst : std_logic;
 	signal vga_rst : std_logic;
+
 begin
 
 	sys_rst <= not fpga_gsrn;
@@ -213,9 +214,16 @@ begin
 	end process;
 
 	process (ddr_sclk)
+		variable xxx : byte_vector(0 to 7);
 	begin
 		if rising_edge(ddr_sclk) then
-			ddrphy_dqi <= not ddrphy_dqi;
+			if ddrphy_cfgo(0)='1' then
+			xxx := to_bytevector(ddrphy_dqi);
+			for i in xxx'range loop
+				xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
+			end loop;
+			ddrphy_dqi <= to_stdlogicvector(xxx);
+		end if;
 		end if;
 	end process;
 

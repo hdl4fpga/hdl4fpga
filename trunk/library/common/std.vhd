@@ -213,6 +213,10 @@ package std is
 		constant arg : nibble_vector) 
 		return std_logic_vector;
 
+	function to_stdlogicvector (
+		constant arg : byte_vector) 
+		return std_logic_vector;
+
 	function max (
 		constant data : natural_vector)
 		return natural;
@@ -738,9 +742,9 @@ package body std is
 		variable val : std_logic_vector(byte'length*arg'length-1 downto 0);
 	begin
 		dat := arg;
-		for i in dat'reverse_range loop
-			val(byte'range) := dat(i);
+		for i in dat'range loop
 			val := val sll byte'length;
+			val(byte'range) := dat(i);
 		end loop;
 		return val;
 	end;
