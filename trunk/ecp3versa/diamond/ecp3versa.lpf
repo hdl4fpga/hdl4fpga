@@ -23,6 +23,7 @@ IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
 
 LOCATE COMP "dcms_e/ddr3_b.pll_i"		SITE "PLL_R35C5" ;
 LOCATE COMP "dcms_e/ddr3_b.eclksynca_i"	SITE "LECLKSYNC2" ;
+LOCATE COMP "ddrphy_e/sr[4]" SITE "R34C4B";
 
 LOCATE VREF "vref_ddr3"   SITE "E1";
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
