@@ -16,29 +16,49 @@ entity miitx_dma is
 		mii_treq : in  std_logic;
         mii_txen : out std_logic;
         mii_txd  : out std_logic_vector(0 to xd_len-1));
+
+	constant word_byte : natural := sys_data'length/mii_txd'length;
+
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of miitx_dma is
-	constant word_byte : natural := sys_data'length/mii_txd'length;
-	constant cntr_size : natural := sys_addr'length+unsigned_num_bits(word_byte-1);
-	signal cntr : unsigned(cntr_size downto 0);
+
+	signal wcntr : unsigned(0 to sys_addr'length);
+	signal bcntr : unsigned(0 to unsigned_num_bits(word_byte-1));
 begin
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
-				cntr <= to_unsigned(2**cntr_size-2, cntr'length); 
-			elsif cntr(cntr'left)='0' then
-				cntr <= cntr - 1;
+				bcntr <= to_unsigned(2**unsigned_num_bits(word_byte-1)-2, bcntr'length); 
+			elsif bcntr(0)='1' then
+				if wcntr(0)='0' then
+					bcntr <= to_unsigned(2**unsigned_num_bits(word_byte-1)-2, bcntr'length); 
+				end if;
+			else
+				bcntr <= bcntr - 1;
 			end if;
-
 		end if;
 	end process;
-	sys_addr <= std_logic_vector(cntr(cntr_size-1 downto unsigned_num_bits(word_byte-1)));
+
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if mii_treq='0' then
+				wcntr <= to_unsigned(2**sys_addr'length-2, wcntr'length); 
+			elsif wcntr(0)='0' then
+				if bcntr(0)='1' then
+					wcntr <= wcntr - 1;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
 
 	process (mii_txc, mii_treq)
 	begin
@@ -49,8 +69,8 @@ begin
 		end if;
 	end process;
 
-	mii_txd  <= reverse(
+	mii_txd  <= 
 		word2byte(
-			word => sys_data ror mii_txd'length,
-			addr => std_logic_vector(cntr(unsigned_num_bits(word_byte-1)-1 downto 0))));
+			word => sys_data ror 2*mii_txd'length,
+			addr => std_logic_vector(bcntr(1 to bcntr'length-1)));
 end;
