@@ -28,6 +28,7 @@ architecture def of miitx_dma is
 
 	signal wcntr : unsigned(0 to sys_addr'length);
 	signal bcntr : unsigned(0 to unsigned_num_bits(word_byte-1));
+	signal xxx :std_logic;
 begin
 
 	process (mii_txc)
@@ -55,22 +56,27 @@ begin
 					wcntr <= wcntr - 1;
 				end if;
 			end if;
+			sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
+
 		end if;
 	end process;
 
-	sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
 
 	process (mii_txc, mii_treq)
+		variable ena : std_logic;
 	begin
 		if mii_treq='0' then
+			ena := '0';
+			xxx <= '0';
 			mii_txen <= '0';
 		elsif rising_edge(mii_txc) then
-			mii_txen <= '1';
+			ena := not wcntr(0) or not bcntr(0);
+			xxx <= ena;
+	mii_txen <= xxx and (not wcntr(0) or not bcntr(0));
 		end if;
 	end process;
 
-	mii_txd  <= 
-		word2byte(
+	mii_txd  <= word2byte(
 			word => sys_data ror 2*mii_txd'length,
 			addr => std_logic_vector(bcntr(1 to bcntr'length-1)));
 end;

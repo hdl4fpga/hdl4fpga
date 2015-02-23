@@ -133,7 +133,7 @@ architecture def of scope is
 
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic;
-	signal miitx_addr : std_logic_vector(8-1 downto 0);
+	signal miitx_addr : std_logic_vector(7-1 downto 0);
 	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
