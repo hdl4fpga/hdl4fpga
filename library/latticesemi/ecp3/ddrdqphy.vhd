@@ -75,7 +75,7 @@ begin
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,
-		dqsi   => ddr_dqsi,
+		dqsi   => '0', --ddr_dqsi,
 		eclkdqsr => idqs_eclk,
 
 		sclk => sys_sclk,

@@ -19,7 +19,7 @@ entity scope is
 		constant DDR_tCP      : natural;
 
 		constant NIBBLE_SIZE  : natural := 4;
-		constant XD_LEN : natural);
+		constant XD_LEN : natural := 8);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -133,7 +133,7 @@ architecture def of scope is
 
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic;
-	signal miitx_addr : std_logic_vector(7-1 downto 0);
+	signal miitx_addr : std_logic_vector(10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1)-1 downto 0);
 	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
