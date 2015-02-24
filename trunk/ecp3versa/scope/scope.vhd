@@ -71,6 +71,7 @@ architecture scope of ecp3versa is
 	signal vga_red : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
+	signal dvdelay : std_logic_vector(0 to 2);
 
 	signal sys_rst   : std_logic;
 
@@ -213,19 +214,30 @@ begin
 		end if;
 	end process;
 
+--	process (ddr_sclk)
+--		variable xxx : byte_vector(0 to 7);
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			if ddrphy_cfgo(0)='1' then
+--			xxx := to_bytevector(ddrphy_dqi);
+--			for i in xxx'range loop
+--				xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
+--			end loop;
+--			ddrphy_dqi <= to_stdlogicvector(xxx);
+--		end if;
+--		end if;
+--	end process;
+
 	process (ddr_sclk)
-		variable xxx : byte_vector(0 to 7);
 	begin
 		if rising_edge(ddr_sclk) then
-			if ddrphy_cfgo(0)='1' then
-			xxx := to_bytevector(ddrphy_dqi);
-			for i in xxx'range loop
-				xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
-			end loop;
-			ddrphy_dqi <= to_stdlogicvector(xxx);
-		end if;
+			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
 		end if;
 	end process;
+
+	ddrphy_dqi <= 
+		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
+		x"aa_aa_aa_aa_aa_aa_aa_aa";
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
@@ -257,7 +269,7 @@ begin
 		sys_dmi => ddrphy_dmo,
 		sys_dmt => (others => '0'), -- ddrphy_dmt,
 		sys_dmo => ddrphy_dmi,
---		sys_dqi => ddrphy_dqi,
+		--sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => (others => '0'), --ddrphy_dqo,
 		sys_odt => ddrphy_odt,

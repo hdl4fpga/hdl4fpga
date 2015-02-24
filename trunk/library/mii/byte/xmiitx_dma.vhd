@@ -28,7 +28,6 @@ architecture def of miitx_dma is
 
 	signal wcntr : unsigned(0 to sys_addr'length);
 	signal bcntr : unsigned(0 to unsigned_num_bits(word_byte-1));
-	signal xxx :std_logic;
 begin
 
 	process (mii_txc)
@@ -49,6 +48,7 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
+			sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
 			if mii_treq='0' then
 				wcntr <= to_unsigned(2**sys_addr'length-2, wcntr'length); 
 			elsif wcntr(0)='0' then
@@ -56,8 +56,6 @@ begin
 					wcntr <= wcntr - 1;
 				end if;
 			end if;
-			sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
-
 		end if;
 	end process;
 
@@ -67,16 +65,15 @@ begin
 	begin
 		if mii_treq='0' then
 			ena := '0';
-			xxx <= '0';
 			mii_txen <= '0';
 		elsif rising_edge(mii_txc) then
+			mii_txen <= ena and (not wcntr(0) or not bcntr(0));
 			ena := not wcntr(0) or not bcntr(0);
-			xxx <= ena;
-	mii_txen <= xxx and (not wcntr(0) or not bcntr(0));
 		end if;
 	end process;
 
-	mii_txd  <= word2byte(
-			word => sys_data ror 2*mii_txd'length,
-			addr => std_logic_vector(bcntr(1 to bcntr'length-1)));
+	mii_txd  <= reverse (
+		word2byte (
+			word => sys_data ror (3*mii_txd'length mod sys_data'length),
+			addr => std_logic_vector(bcntr(1 to bcntr'length-1))));
 end;
