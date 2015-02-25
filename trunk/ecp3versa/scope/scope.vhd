@@ -94,6 +94,7 @@ architecture scope of ecp3versa is
 	signal mii_rst : std_logic;
 	signal vga_rst : std_logic;
 
+	signal debug_clk : std_logic;
 begin
 
 	sys_rst <= not fpga_gsrn;
@@ -214,6 +215,17 @@ begin
 		end if;
 	end process;
 
+	debug_clk <= ddr3_dqs(0);
+	process (debug_clk)
+	begin
+		if rising_edge(debug_clk) then
+			if sto='0' then
+				ddrphy_dqi <= (others => '0');
+				ddrphy_dqi (3 downto 0) <= inc(gray(ddrphy_dqi (3 downto 0)));
+			end if;
+		end if;
+	end process;
+
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);
 --	begin
@@ -228,12 +240,12 @@ begin
 --		end if;
 --	end process;
 
-	process (ddr_sclk)
-	begin
-		if rising_edge(ddr_sclk) then
-			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
-		end if;
-	end process;
+--	process (ddr_sclk)
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
+--		end if;
+--	end process;
 
 	ddrphy_dqi <= 
 		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
