@@ -217,11 +217,15 @@ begin
 
 	debug_clk <= ddr3_dqs(0);
 	process (debug_clk)
+		variable aux : std_logic_vector(7 downto 0);
 	begin
-		if rising_edge(debug_clk) then
-			if sto='0' then
+		if fpga_gsrn='0' then
 				ddrphy_dqi <= (others => '0');
-				ddrphy_dqi (3 downto 0) <= inc(gray(ddrphy_dqi (3 downto 0)));
+				aux := (others => '0');
+		elsif rising_edge(debug_clk) then
+			if ddrphy_sto(0)='1' then
+				ddrphy_dqi <= aux & ddrphy_dqi (63 downto 8);
+				aux := inc(gray(aux));
 			end if;
 		end if;
 	end process;
@@ -247,9 +251,9 @@ begin
 --		end if;
 --	end process;
 
-	ddrphy_dqi <= 
-		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
-		x"aa_aa_aa_aa_aa_aa_aa_aa";
+--	ddrphy_dqi <= 
+--		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
+--		x"aa_aa_aa_aa_aa_aa_aa_aa";
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
