@@ -51,6 +51,7 @@ LOCATE COMP "ddr3_dqs[0]"  SITE "F5" ;
 LOCATE COMP "ddr3_dqs[1]"  SITE "H5" ;
 DEFINE PORT GROUP "ddr3_dqs" "ddr3_dqs[*]";
 IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0 ;
+FREQUENCY PORT  "ddr3_dqs[0]" 400.00 MHz ;
 
 LOCATE COMP "ddr_a[0]"  SITE "C8";
 LOCATE COMP "ddr_a[1]"  SITE "C7";
