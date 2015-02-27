@@ -48,7 +48,6 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
 			if mii_treq='0' then
 				wcntr <= to_unsigned(2**sys_addr'length-2, wcntr'length); 
 			elsif wcntr(0)='0' then
@@ -58,14 +57,15 @@ begin
 			end if;
 		end if;
 	end process;
+	sys_addr <= std_logic_vector(wcntr(1 to sys_addr'length));
 
 
 	process (mii_txc, mii_treq)
 		variable ena : std_logic;
 	begin
 		if mii_treq='0' then
-			ena := '0';
 			mii_txen <= '0';
+			ena := '0';
 		elsif rising_edge(mii_txc) then
 			mii_txen <= ena and (not wcntr(0) or not bcntr(0));
 			ena := not wcntr(0) or not bcntr(0);

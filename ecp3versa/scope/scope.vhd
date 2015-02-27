@@ -50,7 +50,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"07_05_03_01_06_04_02_00";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f6_f4_f2_f7_f5_f3_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -206,33 +206,34 @@ begin
 		tpo => tpo);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
-	process (ddr_sclk)
-		variable xxx : std_logic_vector(0 to 1);
-	begin
-		if rising_edge(ddr_sclk) then
-			xxx := xxx(1 to xxx'right) & not ddrphy_sto(0);
-			sto <= xxx(0);
-		end if;
-	end process;
+			sto <= not ddrphy_sto(0);
+--	process (ddr_sclk)
+--		variable xxx : std_logic_vector(0 to 1);
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			xxx := xxx(1 to xxx'right) & not ddrphy_sto(0);
+--			sto <= xxx(0);
+--		end if;
+--	end process;
 
 	debug_clk <= ddr3_dqs(0);
 	ddrphy_sti <= (others => not ddrphy_sto(0));
-	process (debug_clk, fpga_gsrn)
-		constant n : natural := 8;
-		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
-		variable xxx : std_logic_vector(0 to 3);
-	begin
-		if fpga_gsrn='0' then
-			ddrphy_dqi <= (others => '0');
-			aux := (others => '0');
-		elsif rising_edge(debug_clk) then
-			xxx := xxx(1 to xxx'right) & (ddrphy_sto(0) and sto);
-			if xxx(0)='1' then
-				ddrphy_dqi <= aux & ddrphy_dqi (63 downto n);
-				aux := inc(gray(aux));
-			end if;
-		end if;
-	end process;
+--	process (debug_clk, fpga_gsrn)
+--		constant n : natural := 8;
+--		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+--		variable xxx : std_logic_vector(0 to 3);
+--	begin
+--		if fpga_gsrn='0' then
+--			ddrphy_dqi <= (others => '0');
+--			aux := (others => '0');
+--		elsif rising_edge(debug_clk) then
+--			xxx := xxx(1 to xxx'right) & (ddrphy_sto(0) and sto);
+--			if xxx(0)='1' then
+--				ddrphy_dqi <= aux & ddrphy_dqi (63 downto n);
+--				aux := inc(gray(aux));
+--			end if;
+--		end if;
+--	end process;
 
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);
