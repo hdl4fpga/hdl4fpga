@@ -84,7 +84,7 @@ begin
 		d => (rd_address'range => 1))
 	port map (
 		clk => ddrs_clk,
-		ena => 
+		ena => output_ena,
 		di  => addro,
 		do  => rd_address);
 	output_a0 <= addro(0);
@@ -97,7 +97,7 @@ begin
 		wr_ena => wr_ena,
 		wr_data => wr_data,
 		rd_clk => output_clk,
-		rd_ena =>
+		rd_ena => output_ena,
 		rd_addr => rd_address,
 		rd_data => output_data);
 end;
