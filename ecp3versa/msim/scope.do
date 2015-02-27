@@ -8,7 +8,7 @@ add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecima
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxdv
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_strt
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_treq
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/ecp3versa_e/phy1_tx_d
+add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_txen
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
@@ -21,6 +21,7 @@ add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cas_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(1)
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sto(0)
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sti(0)
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/sto
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(0)
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/dq
@@ -324,7 +325,7 @@ add wave -noupdate -expand -group ddr_e -group xdr_rdfifo /testbench/ecp3versa_e
 add wave -noupdate -expand -group ddr_e -expand -group ddr_wr_fifo -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {22971250 ps} 0} {{Cursor 2} {39991508 ps} 0}
+WaveRestoreCursors {{Cursor 1} {20252000 ps} 0} {{Cursor 2} {39991508 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 197
 configure wave -valuecolwidth 107
@@ -340,4 +341,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {22922070 ps} {23004102 ps}
+WaveRestoreZoom {20087937 ps} {20416063 ps}

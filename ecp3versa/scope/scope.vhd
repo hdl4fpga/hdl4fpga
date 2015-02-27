@@ -217,23 +217,22 @@ begin
 --	end process;
 
 	debug_clk <= ddr3_dqs(0);
-	ddrphy_sti <= (others => not ddrphy_sto(0));
---	process (debug_clk, fpga_gsrn)
---		constant n : natural := 8;
---		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
---		variable xxx : std_logic_vector(0 to 3);
---	begin
---		if fpga_gsrn='0' then
---			ddrphy_dqi <= (others => '0');
---			aux := (others => '0');
---		elsif rising_edge(debug_clk) then
---			xxx := xxx(1 to xxx'right) & (ddrphy_sto(0) and sto);
---			if xxx(0)='1' then
---				ddrphy_dqi <= aux & ddrphy_dqi (63 downto n);
---				aux := inc(gray(aux));
---			end if;
---		end if;
---	end process;
+	ddrphy_sti <= (others => ddrphy_sto(0));
+	process (debug_clk, fpga_gsrn)
+		constant n : natural := 4;
+		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+		variable xxx : std_logic_vector(0 to 3);
+	begin
+		if fpga_gsrn='0' then
+			ddrphy_dqi <= (others => '0');
+			aux := (others => '0');
+		elsif rising_edge(debug_clk) then
+			if ddrphy_sto(0)='1' then
+				ddrphy_dqi <= aux & ddrphy_dqi (63 downto n);
+				aux := inc(gray(aux));
+			end if;
+		end if;
+	end process;
 
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);
