@@ -11,7 +11,7 @@ entity miitx_dma is
     port (
 		sys_addr : out std_logic_vector;
 		sys_data : in  std_logic_vector;
-		sys_ena  : out std_logic;
+--		sys_ena  : out std_logic;
 
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
