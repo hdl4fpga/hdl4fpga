@@ -1,3 +1,5 @@
 #!/usr/bin/tclsh
 
-function 
+set temp [open arg(1) r]
+set data [read temp ]
+regsub

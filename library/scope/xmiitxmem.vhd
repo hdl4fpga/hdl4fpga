@@ -89,7 +89,6 @@ begin
 		do  => rd_address);
 	output_a0 <= addro(0);
 
-	rd_address(1 to bram_size-1) <= output_addr;
 	bram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk => ddrs_clk,
