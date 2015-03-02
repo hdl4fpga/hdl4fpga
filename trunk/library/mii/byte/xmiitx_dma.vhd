@@ -75,6 +75,6 @@ begin
 
 	mii_txd  <= reverse (
 		word2byte (
-			word => sys_data ror (3*mii_txd'length mod sys_data'length),
+			word => sys_data ror (mii_txd'length mod sys_data'length),
 			addr => std_logic_vector(bcntr(1 to bcntr'length-1))));
 end;
