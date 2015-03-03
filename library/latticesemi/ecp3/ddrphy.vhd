@@ -412,16 +412,16 @@ begin
 			ddr_dqso => ddqsi(i));
 	end generate;
 
-	process (ddqsi, ddqst)
-	begin
-		for i in ddqsi'range loop
-			if ddqst(i)='1' then
-				ddr_dqs(i) <= 'Z';
-			else
-				ddr_dqs(i) <= ddqsi(i);
-			end if;
-		end loop;
-	end process;
+--	process (ddqsi, ddqst)
+--	begin
+--		for i in ddqsi'range loop
+--			if ddqst(i)='1' then
+--				ddr_dqs(i) <= 'Z';
+--			else
+--				ddr_dqs(i) <= ddqsi(i);
+--			end if;
+--		end loop;
+--	end process;
 
 	process (ddqo, ddqt)
 		variable dqt : std_logic_vector(ddr_dq'range);

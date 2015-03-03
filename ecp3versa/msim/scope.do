@@ -38,8 +38,9 @@ add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexa
 add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(0) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(3) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr(3) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/bcntr
 add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(0) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(4) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(5) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(6) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(7) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/wcntr
 add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/sys_addr
+add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address
+add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/sel
 add wave -noupdate -expand -group ecp3versa -expand -group miitx_pld -radix hexadecimal /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/sys_data
-add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/sel
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/mii_txc
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/mii_txd
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
@@ -327,10 +328,10 @@ add wave -noupdate -expand -group ddr_e -group xdr_rdfifo /testbench/ecp3versa_e
 add wave -noupdate -expand -group ddr_e -expand -group ddr_wr_fifo -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20540454 ps} 0} {{Cursor 2} {20604000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {20523866 ps} 0} {{Cursor 2} {20604000 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 197
-configure wave -valuecolwidth 107
+configure wave -namecolwidth 137
+configure wave -valuecolwidth 138
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -343,4 +344,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20360065 ps} {20688191 ps}
+WaveRestoreZoom {20270822 ps} {20776910 ps}

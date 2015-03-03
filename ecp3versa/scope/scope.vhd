@@ -50,7 +50,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f6_f4_f2_f7_f5_f3_f1";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f4_f3_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -94,6 +94,21 @@ architecture scope of ecp3versa is
 	signal vga_rst : std_logic;
 
 	signal debug_clk : std_logic;
+
+function shuffle (
+	constant arg : byte_vector)
+	return byte_vector is
+	variable dat : byte_vector(arg'length-1 downto 0);
+	variable val : byte_vector(dat'range);
+begin
+	dat := arg;
+	for i in 2-1 downto 0 loop
+		for j in dat'length/2-1 downto 0 loop
+			val(dat'length/2*i+j) := dat(2*j+i);
+		end loop;
+	end loop;
+	return val;
+end;
 begin
 
 	sys_rst <= not fpga_gsrn;
@@ -216,38 +231,36 @@ begin
 --		end if;
 --	end process;
 
-	debug_clk <= ddr3_dqs(0);
 	ddrphy_sti <= (others => ddrphy_sto(0));
---	process (debug_clk, fpga_gsrn)
---		constant n : natural := 4;
---		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
---		variable xxx : std_logic_vector(0 to 3);
---	begin
---		if fpga_gsrn='0' then
---			ddrphy_dqi <= (others => '0');
---			aux := (others => '0');
---		elsif rising_edge(debug_clk) then
---			if ddrphy_sto(0)='1' then
---				ddrphy_dqi <= aux & ddrphy_dqi (63 downto n);
---				aux := inc(gray(aux));
---			end if;
---		end if;
---	end process;
-
-	process (ddr_sclk)
-		variable xxx : byte_vector(0 to 7);
+	debug_clk <= ddr3_dqs(1);
+	process (debug_clk)
+		constant n : natural := 4;
+		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+		variable aux1 : std_logic_vector(ddrphy_dqi'range);
 	begin
-		if rising_edge(ddr_sclk) then
-			if ddrphy_sto(0)='1' then
-				xxx := to_bytevector(ddrphy_dqi);
-				for i in xxx'range loop
-					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
-				end loop;
-				ddrphy_dqi <= to_stdlogicvector(xxx);
-			end if;
+		if rising_edge(debug_clk) then
+--			if ddrphy_sto(0)='1' then
+				aux1 := aux & aux1(63 downto n);
+				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
+				aux := inc(gray(aux));
+--			end if;
 		end if;
 	end process;
 
+--	process (ddr_sclk)
+--		variable xxx : byte_vector(0 to 7);
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			if ddrphy_sto(0)='1' then
+--				xxx := to_bytevector(ddrphy_dqi);
+--				for i in xxx'range loop
+--					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
+--				end loop;
+--				ddrphy_dqi <= to_stdlogicvector(shuffle(xxx));
+--			end if;
+--		end if;
+--	end process;
+--
 --	process (ddr_sclk)
 --	begin
 --		if rising_edge(ddr_sclk) then

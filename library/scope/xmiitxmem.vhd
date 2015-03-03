@@ -83,7 +83,7 @@ begin
 		n => rd_address'length,
 		d => (rd_address'range => 1))
 	port map (
-		clk => ddrs_clk,
+		clk => output_clk,
 		ena => output_ena,
 		di  => addro,
 		do  => rd_address);

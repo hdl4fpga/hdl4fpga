@@ -1,5 +1,7 @@
 #!/usr/bin/tclsh
 
-set temp [open arg(1) r]
+array set arg $::argv; 
+set temp [open $arg(1) r]
 set data [read temp ]
-regsub
+regsub -all ({%byte%})FS($argv[2]) $data "" data 
+puts $data
