@@ -45,7 +45,8 @@ begin
 			else
 				bcntr <= bcntr - 1;
 			end if;
-			sel <= std_logic_vector(bcntr(sel'range));
+			sel <= aux;
+			aux := std_logic_vector(bcntr(sel'range));
 		end if;
 	end process;
 

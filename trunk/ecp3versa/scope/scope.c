@@ -20,7 +20,8 @@ main (int argc, char *argv[])
 	struct sockaddr_in sa_trgt;
 
 	int s;
-	unsigned long long sb_src[1024/8];
+	char sb_char[1024];
+	unsigned long long *sb_src;
 	char sb_trgt[17];
 	socklen_t sl_src  = sizeof(sa_src);
 	socklen_t sl_trgt = sizeof(sa_trgt);
@@ -67,12 +68,13 @@ main (int argc, char *argv[])
 			abort ();
 		}
 
-		if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+		if ((n = recvfrom(s, sb_char, sizeof(sb_char), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 			perror ("recvfrom");
 			abort ();
 		}
 
-		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++)
+		sb_src = (unsigned long long *) (sb_char+2);
+		for (j = 0; j < sizeof(sb_char)/sizeof(sb_src[0]); j++)
 			printf("0x%016llx\n", htobe64(sb_src[j]));
 						        
 
