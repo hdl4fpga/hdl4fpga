@@ -234,19 +234,19 @@ begin
 --		end if;
 --	end process;
 
---	process (ddr_sclk)
---		variable xxx : byte_vector(0 to 7);
---	begin
---		if rising_edge(ddr_sclk) then
---			if ddrphy_cfgo(0)='1' then
---			xxx := to_bytevector(ddrphy_dqi);
---			for i in xxx'range loop
---				xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
---			end loop;
---			ddrphy_dqi <= to_stdlogicvector(xxx);
---		end if;
---		end if;
---	end process;
+	process (ddr_sclk)
+		variable xxx : byte_vector(0 to 7);
+	begin
+		if rising_edge(ddr_sclk) then
+			if ddrphy_sto(0)='1' then
+				xxx := to_bytevector(ddrphy_dqi);
+				for i in xxx'range loop
+					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
+				end loop;
+				ddrphy_dqi <= to_stdlogicvector(xxx);
+			end if;
+		end if;
+	end process;
 
 --	process (ddr_sclk)
 --	begin
