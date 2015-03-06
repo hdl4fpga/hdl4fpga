@@ -16,7 +16,8 @@ entity xdr_init is
 		bank_size : natural := 3);
 	port (
 		xdr_init_ods : in  std_logic := '0';
-		xdr_init_rtt : in  std_logic_vector(1 downto 0) := "01";
+		xdr_init_rtt : in  std_logic_vector(2 downto 0) := "001";
+		xdr_init_drtt : in  std_logic_vector(1 downto 0) := "01";
 		xdr_init_bl  : in  std_logic_vector(0 to 2);
 		xdr_init_cl  : in  std_logic_vector(0 to 2);
 		xdr_init_wr  : in  std_logic_vector(0 to 2) := (others => '0');
@@ -44,9 +45,10 @@ entity xdr_init is
 	constant xdrinitods_size : natural := 1;
 	constant cnfgreg_size : natural := 
 		xdrinitods_size +
+		xdr_init_rtt'length +
 		xdr_init_pl'length +
 		xdr_init_cwl'length +
-		xdr_init_rtt'length +
+		xdr_init_drtt'length +
 		xdr_init_wr'length +
 		xdr_init_bl'length +
 		xdr_init_cl'length;
@@ -64,7 +66,8 @@ entity xdr_init is
 	subtype src_cl  is natural range src_b01'high + xdr_init_cl'length  downto src_b01'high+1;
 	subtype src_bl  is natural range src_cl'high  + xdr_init_bl'length  downto src_cl'high+1;
 	subtype src_wr  is natural range src_bl'high  + xdr_init_wr'length  downto src_bl'high+1;
-	subtype src_rtt is natural range src_wr'high  + xdr_init_rtt'length downto src_wr'high+1;
+	subtype src_drtt is natural range src_wr'high  + xdr_init_drtt'length downto src_wr'high+1;
+	subtype src_rtt is natural range src_drtt'high  + xdr_init_rtt'length downto src_drtt'high+1;
 	subtype src_cwl is natural range src_rtt'high + xdr_init_cwl'length  downto src_rtt'high+1;
 	subtype src_pl  is natural range src_cwl'high + xdr_init_pl'length  downto src_cwl'high+1;
 	constant src_ods : natural := xdrinitods_size + src_pl'high;
@@ -111,7 +114,10 @@ architecture ddr3 of xdr_init is
 
 	constant edll : field_desc := (dbase => 0, sbase => 1, size => 1);
 	constant ods  : fielddesc_vector := ((dbase => 1, sbase => 1, size => 1), (dbase => 5, sbase => 1, size => 1));
-	constant rtt  : fielddesc_vector := ((dbase => 2, sbase => 1, size => 1), (dbase => 6, sbase => 1, size => 1), (dbase => 9, sbase => 1, size => 1));
+	constant rtt  : fielddesc_vector := (
+		(dbase => 2, sbase => src_rtt'low+0, size => 1),
+		(dbase => 6, sbase => src_rtt'low+1, size => 1),
+		(dbase => 9, sbase => src_rtt'low+2, size => 1));
 	constant al   : field_desc := (dbase =>  3, sbase => 1, size => 2);
 	constant wl   : field_desc := (dbase =>  7, sbase => 0, size => 1);
 	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
@@ -124,7 +130,7 @@ architecture ddr3 of xdr_init is
 	constant cwl  : field_desc := (dbase => 3, sbase => src_cwl'low, size => 3);
 	constant asr  : field_desc := (dbase => 6, sbase => 0, size => 1);
 	constant srt  : field_desc := (dbase => 7, sbase => 0, size => 1);
-	constant rttw : field_desc := (dbase => 9, sbase => 0, size => 2);
+	constant drtt : field_desc := (dbase => 9, sbase => src_rtt'low, size => 2);
 
 	-- DDR3 Mode Register 3 --
 	--------------------------
@@ -134,11 +140,11 @@ architecture ddr3 of xdr_init is
 
 	constant mr : ddr3mr_vector(0 to 3) := ( 
 		(mov(bl)   or clr(bt)  or mov(cl) or clr(tm)  or set(rdll) or mov(wr) or mov(pd)),
-		(clr(tdqs) or clr(wl)  or clr(al) or clr(rtt) or clr(edll)),
-		(clr(rttw) or clr(srt) or clr(asr) or mov(cwl)),
+		(clr(tdqs) or clr(wl)  or clr(al) or mov(rtt) or clr(edll)),
+		(mov(drtt) or clr(srt) or clr(asr) or mov(cwl)),
 		(clr(mpr)  or clr(mpr_rf)));
 
-	constant mrx : std_logic_vector(dst_word'range) := (others => '-');
+	constant mrx : std_logic_vector(dst_word'range) := (others => '1');
 	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
 
 	type yyy is record
@@ -168,7 +174,7 @@ architecture ddr3 of xdr_init is
 		constant pc  : unsigned;
 		constant src : std_logic_vector)
 		return xxx is
-		variable val : dst_word := (others => '-');
+		variable val : dst_word := (others => '1');
 		variable a1 : ddr3_ccmd;
 		variable aux : std_logic_vector(1 to pc'length-1);
 		variable msg : line;
@@ -180,9 +186,9 @@ architecture ddr3 of xdr_init is
 				val(dst_cmd) := pgm(i).ccmd.cmd;
 				case pgm(i).id is 
 				when TMR_RRDY =>
-					return (dst => (dst_word'range => '-'), id => pgm(i).id);
+					return (dst => (dst_word'range => '1'), id => pgm(i).id);
 				when TMR_CKE =>
-					val := (others => '-');
+					val := (others => '1');
 					val(dst_cmd) := ddr3_cnop.id;
 					return (dst => val, id => pgm(i).id);
 				when TMR_MRD|TMR_MOD =>
@@ -218,6 +224,7 @@ begin
 	src(src_b01) <= "10";
 	src(src_cl ) <= xdr_init_cl;
 	src(src_bl ) <= xdr_init_bl;
+	src(src_drtt) <= xdr_init_drtt;
 	src(src_rtt) <= xdr_init_rtt;
 	src(src_cwl) <= xdr_init_cwl;
 	src(src_wr)  <= xdr_init_wr;
@@ -239,7 +246,7 @@ begin
 					dst <= (others => '1');
 				end if;
 			else
-				dst <= (others => '-');
+				dst <= (others => '1');
 				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
 			end if;
 
