@@ -213,7 +213,7 @@ package xdr_param is
 		constant desc : field_desc)
 		return natural_vector;
 
-	function mov (
+	impure function mov (
 		constant desc : fielddesc_vector)
 		return natural_vector;
 
@@ -354,10 +354,10 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
 		timing_record'(mark => M15E, param => tREFI, value => 7000000) &
-		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
-		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
---		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
---		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
+		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
+		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
 		timing_record'(mark => M15E, param => tWR,   value => 15000) &
 		timing_record'(mark => M15E, param => tRCD,  value => 13910) &
 		timing_record'(mark => M15E, param => tRP,   value => 13910) &
@@ -1094,20 +1094,28 @@ package body xdr_param is
 		return val;
 	end;
 
-	function mov (
+	impure function mov (
 		constant desc : fielddesc_vector)
 		return natural_vector is
 		variable val : natural_vector(13 downto 0) := (others => 0);
 		variable aux : natural_vector(val'range) := (others => 0);
+		variable msg : line;
 	begin
 		for i in desc'range loop
 			aux := mov(desc(i));
 			for j in aux'range loop
-				if aux(i) /= 0 then
+				if aux(j) > 1 then
 					val(j) := aux(j);
 				end if;
 			end loop;
 		end loop;
+--			for k in aux'range loop
+--				write (msg, val(k));
+--				write (msg, string'(","));
+--			end loop;
+--			writeline (output, msg);
+--			report "val"
+--			severity failure;
 		return val;
 	end function;
 

@@ -21,7 +21,6 @@ architecture scope of ecp3versa is
 	constant ns : natural := 1000;
 	constant uclk_period : natural := 10*ns;
 
-	signal uclk : std_logic;
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
 	signal video_lckd : std_logic;
@@ -50,7 +49,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f4_f3_f1";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -111,8 +110,19 @@ begin
 end;
 begin
 
-	sys_rst <= not fpga_gsrn;
-	uclk <= clk;
+	process (fpga_gsrn, clk)
+		variable aux : std_logic_vector(0 to 3);
+	begin
+		if fpga_gsrn='0' then
+			sys_rst <= '1';
+			aux := (others => '0');
+		elsif rising_edge(clk) then
+			sys_rst <= not aux(0);
+			if aux(0)='0' then
+				aux := inc(gray(aux));
+			end if;
+		end if;
+	end process;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -121,10 +131,11 @@ begin
 		sys_per => real(uclk_period/ns))
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => uclk,
+		sys_clk => clk,
+
 		input_clk => input_clk,
-		ddr_eclkph =>ddrphy_cfgo(5 downto 2),
-		ddr_eclk =>ddr_eclk,
+		ddr_eclkph => ddrphy_cfgo(5 downto 2),
+		ddr_eclk => ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
 		video_clk0 => vga_clk,
@@ -232,7 +243,7 @@ begin
 --	end process;
 
 	ddrphy_sti <= (others => ddrphy_sto(0));
-	debug_clk <= ddr3_dqs(1);
+	debug_clk <= ddr3_dqs(0);
 	process (debug_clk)
 		constant n : natural := 4;
 		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
