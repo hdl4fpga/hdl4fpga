@@ -208,7 +208,7 @@ begin
 		ddr_dqi  => ddrphy_dqi,
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
-		ddr_odt  => ddrphy_odt(0),
+--		ddr_odt  => ddrphy_odt(0),
 		ddr_sto  => ddrphy_sto,
 		ddr_sti  => ddrphy_sti,
 
@@ -243,6 +243,7 @@ begin
 --	end process;
 
 	ddrphy_sti <= (others => ddrphy_sto(0));
+	ddrphy_odt <= (others => ddrphy_sto(0));
 	debug_clk <= ddr3_dqs(0);
 	process (debug_clk)
 		constant n : natural := 4;
@@ -257,7 +258,7 @@ begin
 --			end if;
 		end if;
 	end process;
-
+--
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);
 --	begin
