@@ -130,7 +130,7 @@ architecture ddr3 of xdr_init is
 	constant cwl  : field_desc := (dbase => 3, sbase => src_cwl'low, size => 3);
 	constant asr  : field_desc := (dbase => 6, sbase => 0, size => 1);
 	constant srt  : field_desc := (dbase => 7, sbase => 0, size => 1);
-	constant drtt : field_desc := (dbase => 9, sbase => src_rtt'low, size => 2);
+	constant drtt : field_desc := (dbase => 9, sbase => src_drtt'low, size => 2);
 
 	-- DDR3 Mode Register 3 --
 	--------------------------

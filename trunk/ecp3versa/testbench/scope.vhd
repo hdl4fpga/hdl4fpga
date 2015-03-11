@@ -19,8 +19,8 @@ architecture scope of testbench is
 	signal led7  : std_logic;
 
 	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
-	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
 	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
 	signal ba    : std_logic_vector (bank_bits-1 downto 0);
 	signal ddr_clk   : std_logic;
@@ -53,7 +53,7 @@ architecture scope of testbench is
 --			pclk : in std_logic;
 --			pclk_n : in std_logic;
 			
-			led   : out std_logic_vector(0 to 6);
+			led   : out std_logic_vector(0 to 7);
 			seg  : out std_logic_vector(0 to 14);
 			
 			ddr3_clk : out std_logic := 'Z';
@@ -217,7 +217,7 @@ begin
 		ddr3_we  => we_n,
 		ddr3_b   => ba,
 		ddr3_a   => addr(12 downto 0),
-		ddr3_dqs => dqs_p,
+--		ddr3_dqs => dqs_p,
 		ddr3_dq  => dq,
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
