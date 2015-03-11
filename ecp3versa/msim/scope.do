@@ -2,6 +2,12 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_udprdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udprdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udpreq
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miiudptx_req
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/udprx_rdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/udptx_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/sys_rst
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_refclk
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxc
@@ -42,6 +48,7 @@ add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3v
 add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/input_clk
 add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/video_clk0
 add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/video_clk90
+add wave -noupdate -expand -group ecp3versa -expand -group dcms /testbench/ecp3versa_e/dcms_e/dcms_lckd
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/ddrphy_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
@@ -60,7 +67,6 @@ add wave -noupdate -expand -group ecp3versa -group miitx_pld -radix hexadecimal 
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/mii_txc
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/miitx_udp_e/miitx_pld_e/mii_txd
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
-add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/dcms_lckd
 add wave -noupdate -expand -group ecp3versa -group ddrdqphy_0 -expand -group eclksynca /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKO
 add wave -noupdate -expand -group ecp3versa -group ddrdqphy_0 -expand -group eclksynca /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKI
 add wave -noupdate -expand -group ecp3versa -group ddrdqphy_0 -expand -group dqsbufd /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/sclk
@@ -246,14 +252,8 @@ add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/d
 add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/txen
 add wave -noupdate -group debug -group miirx -color {Violet Red} /testbench/ecp3versa_e/scope_e/miitx_rdy
 add wave -noupdate -group debug -group miirx -color {Violet Red} /testbench/ecp3versa_e/scope_e/miitx_req
-add wave -noupdate -group debug -group miirx /testbench/ecp3versa_e/scope_e/rpkt
-add wave -noupdate -group debug -group miirx -color {Medium Blue} /testbench/ecp3versa_e/scope_e/trdy
-add wave -noupdate -group debug -group miirx -color {Medium Blue} /testbench/ecp3versa_e/scope_e/treq
 add wave -noupdate -group debug -group miirx -color {Violet Red} /testbench/ecp3versa_e/scope_e/miitx_rdy
 add wave -noupdate -group debug -group miirx -color {Violet Red} /testbench/ecp3versa_e/scope_e/miitx_req
-add wave -noupdate -group debug -group miirx /testbench/ecp3versa_e/scope_e/rpkt
-add wave -noupdate -group debug -group miirx -color {Medium Blue} /testbench/ecp3versa_e/scope_e/trdy
-add wave -noupdate -group debug -group miirx -color {Medium Blue} /testbench/ecp3versa_e/scope_e/treq
 add wave -noupdate -group debug -radix hexadecimal /testbench/mii_rxd
 add wave -noupdate -group debug /testbench/mii_strt
 add wave -noupdate -group debug /testbench/mii_rxdv
@@ -299,9 +299,6 @@ add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/dd
 add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/miitx_rdy
 add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/miitx_req
 add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/req
-add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/sync_rdy_edge
-add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/sync_rdy_pdge
-add wave -noupdate -group ddr2miitx_e /testbench/ecp3versa_e/scope_e/dataio_e/ddr2miitx_e/sync_rdy_val
 add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
 add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
 add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
@@ -342,8 +339,8 @@ add wave -noupdate -expand -group ddr_e -group xdr_rdfifo /testbench/ecp3versa_e
 add wave -noupdate -expand -group ddr_e -expand -group ddr_wr_fifo -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {67588 ps} 0} {{Cursor 2} {20604000 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {1220000 ps} 0} {{Cursor 2} {20107997 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
 configure wave -justifyvalue left
@@ -358,4 +355,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1050 ns}
+WaveRestoreZoom {30025 ns} {40525 ns}

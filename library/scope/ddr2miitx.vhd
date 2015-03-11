@@ -14,10 +14,6 @@ end;
 
 architecture def of ddr2miitx is
 
---	signal sync_rdy_edge : std_logic;
---	signal sync_rdy_pdge : std_logic;
---	signal sync_rdy_val  : std_logic_vector(0 to 1);
-
 	signal a0_edge : std_logic;
 	signal a0_dly  : std_logic;
 	signal req     : std_logic;
@@ -49,10 +45,6 @@ begin
 				req <= '0';
 				ddrios_brst_req <= '0';
 			end if;
-
---			sync_rdy_val  <= not sync_rdy_val(1) & not miitx_rdy;
---			sync_rdy_edge <= sync_rdy_val(0);
---			sync_rdy_pdge <= sync_rdy_val(0) xor sync_rdy_edge;
 
 			a0_dly  <= not ddrios_a0;
 
