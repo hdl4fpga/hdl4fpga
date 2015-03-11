@@ -140,7 +140,6 @@ architecture def of scope is
 	signal miitx_udprdy : std_logic := '0';
 	signal miitx_udpreq : std_logic := '0';
 	signal miirx_udprdy : std_logic;
-	signal udptx_req : std_logic;
 	signal udptx_rdy : std_logic;
 	signal udprx_rdy : std_logic;
 	signal miiudptx_req : std_logic;
@@ -317,6 +316,16 @@ begin
 		miitx_addr => miitx_addr,
 		miitx_data => miitx_data);
 
+	miirx_udp_e : entity hdl4fpga.miirx_mac
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+
+		mii_txc  => open,
+		mii_txen => miirx_udprdy,
+		mii_txd  => open);
+
 	ddrsync_i : entity hdl4fpga.ffdasync
 	generic map (
 		n => 2)
@@ -327,16 +336,6 @@ begin
 		d(1) => miitx_udprdy,
 		q(0) => udprx_rdy,
 		q(1) => udptx_rdy);
-
-	miirx_udp_e : entity hdl4fpga.miirx_mac
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => open,
-		mii_txen => miirx_udprdy,
-		mii_txd  => open);
 
 	process (ddrs_clks(0))
 	begin
@@ -369,15 +368,16 @@ begin
 		mii_txd  => mii_txd);
 
 	process (mii_txc)
+		variable req_edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if miitx_udpreq='0' then
-				if miitx_udprdy='1' then
-					miitx_udpreq <= miiudptx_req;
-				end if;
+			if miiudptx_req='1' then
+				miitx_udpreq <= req_edge;
 			elsif miitx_udprdy='1' then
-				miitx_udpreq <= not miiudptx_req;
+				miitx_udpreq <= '0';
 			end if;
+
+			req_edge := miiudptx_req;
 		end if;
 	end process;
 
