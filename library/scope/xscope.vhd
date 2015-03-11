@@ -132,16 +132,21 @@ architecture def of scope is
 	signal plot_dot : std_logic_vector(0 to 2-1);
 
 	signal miitx_req  : std_logic;
-	signal miitx_rdy  : std_logic;
+	signal miitx_rdy  : std_logic := '0';
 	signal miitx_addr : std_logic_vector(10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1)-1 downto 0);
 	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
-	signal trdy : std_logic := '0';
-	signal treq : std_logic := '0';
+	signal miitx_udprdy : std_logic := '0';
+	signal miitx_udpreq : std_logic := '0';
+	signal miirx_udprdy : std_logic;
+	signal udptx_req : std_logic;
+	signal udptx_rdy : std_logic;
+	signal udprx_rdy : std_logic;
+	signal miiudptx_req : std_logic;
+
 	signal rxdv : std_logic;
 	signal rxd  : nibble;
-	signal rpkt : std_logic;
 	signal pkt_cntr : std_logic_vector(15 downto 0) := x"0000";
 	signal tpkt_cntr : byte := x"00";
 	signal a0 : std_logic;
@@ -312,50 +317,76 @@ begin
 		miitx_addr => miitx_addr,
 		miitx_data => miitx_data);
 
+	ddrsync_i : entity hdl4fpga.ffdasync
+	generic map (
+		n => 2)
+	port map (
+		arst => ddrs_rst,
+		clk  => ddrs_clks(0),
+		d(0) => miirx_udprdy,
+		d(1) => miitx_udprdy,
+		q(0) => udprx_rdy,
+		q(1) => udptx_rdy);
+
+	miirx_udp_e : entity hdl4fpga.miirx_mac
+	port map (
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
+
+		mii_txc  => open,
+		mii_txen => miirx_udprdy,
+		mii_txd  => open);
+
 	process (ddrs_clks(0))
-		variable trdy_edge : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(ddrs_clks(0)) then
-			if miitx_rdy/='0' then
+			if miitx_rdy='1' then
 				miitx_rdy <= not miitx_req;
-			elsif trdy='1' then
-				if trdy_edge(0)='0' then
+			elsif udptx_rdy='1' then
+				if udprx_rdy='1' then
 					miitx_rdy <= miitx_req;
 				end if;
 			end if;
-			trdy_edge := not trdy_edge(0) & not trdy;
 		end if;
 	end process;
 
-	process (mii_txc)
-		variable rpkt_edge : std_logic_vector(0 to 1);
-	begin
-		if rising_edge(mii_txc) then
-			if treq='0' then
-				if rpkt='1' then
-					if rpkt_edge(0)='0' then
-						treq <= '1';
-					end if;
-				end if;
-			elsif trdy='1' then
-				treq <= '0';
-			end if;
-			rpkt_edge := not rpkt_edge(1) & not rpkt;
-		end if;
-	end process;
-	tpo (0) <= rpkt;
+	miitxsync_i : entity hdl4fpga.ffdasync
+	port map (
+		arst => ddrs_rst,
+		clk  => mii_txc,
+		d(0) => miitx_req,
+		q(0) => miiudptx_req);
 
-	mii_txen <= miitx_ena;
 	miitx_udp_e : entity hdl4fpga.miitx_udp
 	port map (
 		sys_addr => miitx_addr,
 		sys_data => miitx_data,
 		mii_txc  => mii_txc,
-		mii_treq => treq,
-		mii_trdy => trdy,
+		mii_treq => miitx_udpreq,
+		mii_trdy => miitx_udprdy,
 		mii_txen => miitx_ena,
 		mii_txd  => mii_txd);
 
+	process (mii_txc)
+	begin
+		if rising_edge(mii_txc) then
+			if miitx_udpreq='0' then
+				if miitx_udprdy='1' then
+					miitx_udpreq <= miiudptx_req;
+				end if;
+			elsif miitx_udprdy='1' then
+				miitx_udpreq <= not miiudptx_req;
+			end if;
+		end if;
+	end process;
+
+	tpo (0) <= miirx_udprdy;
+	tpo (1) <= input_rdy;
+	tpo (2) <= a0;
+	tpo (3) <= miitx_req;
+
+	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
 	begin
@@ -373,12 +404,12 @@ begin
 		variable edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			if rpkt='1' then
+			if miirx_udprdy='1' then
 				if edge='0' then
 					pkt_cntr <= std_logic_vector(unsigned(pkt_cntr) + 1);
 				end if;
 			end if;
-			edge := rpkt;
+			edge := miirx_udprdy;
 		end if;
 	end process;
 
@@ -412,16 +443,6 @@ begin
 --		vga_row => vga_row,
 --		vga_col => win_coloff(8-1 downto 1),
 --		vga_dot => cga_dot);
-
-	miirx_udp_e : entity hdl4fpga.miirx_mac
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => open,
-		mii_txen => rpkt,
-		mii_txd  => open);
 
 	win_scope_e : entity hdl4fpga.win_scope
 	generic map (

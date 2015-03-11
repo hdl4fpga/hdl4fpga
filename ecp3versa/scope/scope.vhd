@@ -243,7 +243,7 @@ begin
 --	end process;
 
 	ddrphy_sti <= (others => ddrphy_sto(0));
-	ddrphy_odt <= (others => ddrphy_sto(0));
+	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
 	debug_clk <= ddr3_dqs(0);
 	process (debug_clk)
 		constant n : natural := 4;
@@ -251,11 +251,11 @@ begin
 		variable aux1 : std_logic_vector(ddrphy_dqi'range);
 	begin
 		if rising_edge(debug_clk) then
---			if ddrphy_sto(0)='1' then
+			if ddrphy_sto(0)='1' then
 				aux1 := aux & aux1(63 downto n);
 				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
 				aux := inc(gray(aux));
---			end if;
+			end if;
 		end if;
 	end process;
 --
@@ -332,7 +332,7 @@ begin
 
 		ddr_dm  => ddr3_dm,
 		ddr_dq  => ddr3_dq,
-		ddr_dqs => ddr3_dqs);
+		ddr_dqs => open); --ddr3_dqs);
 
 	phy1_rst  <= dcm_lckd;
 	phy1_mdc  <= '0';
@@ -355,27 +355,31 @@ begin
 		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy1_gtxclk);
 
-	process (phy1_rxc,fpga_gsrn)
-	begin
-		if fpga_gsrn='0' then
-			led(0) <= '1';
-			led(1) <= '1';
-			led(2) <= '1';
-		elsif rising_edge(phy1_rxc) then
-			if tpo(0)='1'then
-				led(0) <= '0';
-			end if;
-			if phy1_rx_dv='1'then
-				led(1) <= '0';
-			end if;
-			if mii_txen='1'then
-				led(2) <= '0';
-			end if;
-		end if;
-	end process;
+--	process (phy1_rxc,fpga_gsrn)
+--	begin
+--		if fpga_gsrn='0' then
+--			led(0) <= '1';
+--			led(1) <= '1';
+--			led(2) <= '1';
+--		elsif rising_edge(phy1_rxc) then
+--			if tpo(0)='1'then
+--				led(0) <= '0';
+--			end if;
+--			if phy1_rx_dv='1'then
+--				led(1) <= '0';
+--			end if;
+--			if mii_txen='1'then
+--				led(2) <= '0';
+--			end if;
+--		end if;
+--	end process;
 
+	led(0 to 3) <= (others => '1');
+--	led(5) <= not phy1_rx_dv;
+--	led(6) <= not mii_txen;
 	led(4) <= not tpo(0);
-	led(5) <= not phy1_rx_dv;
-	led(6) <= not mii_txen;
+	led(5) <= not tpo(1);
+	led(6) <= not tpo(2);
+	led(7) <= not tpo(3);
 
 end;
