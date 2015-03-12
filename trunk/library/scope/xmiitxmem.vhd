@@ -6,16 +6,18 @@ entity miitxmem is
 		bram_size : natural := 9;
 		data_size : natural := 32);
 	port (
-		ddrs_clk : in std_logic;
-		ddrs_gnt : in std_logic;
-		ddrs_req : out std_logic;
-		ddrs_rdy : in std_logic;
-		ddrs_di  : in std_logic_vector(data_size-1 downto 0);
+		ddrs_clk   : in  std_logic;
+		ddrs_gnt   : in  std_logic;
+		ddrs_req   : in  std_logic := '1';
+		ddrs_rdy   : out std_logic;
+		ddrs_direq : out std_logic;
+		ddrs_dirdy : in  std_logic;
+		ddrs_di    : in  std_logic_vector(data_size-1 downto 0);
 
-		output_clk  : in  std_logic;
-		output_ena  : in  std_logic := '1';
-		output_addr : in  std_logic_vector(bram_size-1 downto 1);
-		output_data : out std_logic_vector(data_size-1 downto 0));
+		miitx_clk  : in  std_logic;
+		miitx_ena  : in  std_logic := '1';
+		miitx_addr : in  std_logic_vector(bram_size-1 downto 0);
+		miitx_data : out std_logic_vector(data_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -51,39 +53,36 @@ begin
 		if rising_edge(ddrs_clk) then
 			addri <= dec (
 				cntr => addri,
-				ena  => not ddrs_gnt or ddrs_rdy,
+				ena  => not ddrs_gnt or ddrs_dirdy,
 				load => not ddrs_gnt,
 				data => 2**bram_size/2-1);
 
-			wr_ena <= ddrs_rdy;
+			wr_ena <= ddrs_dirdy;
 		end if;
 	end process; 
 
 	process (ddrs_clk)
+		variable edge : std_logic;
 	begin
-		if rising_edge(ddrios_clk) then
+		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='1' then
-				if req='0' then
-					ddrs_req <= '1';
-					req <= '0';
-					if a0_edge='1' then
-						req <= '1';
-						ddrs_req <= '0';
+				if ddrs_req='1' then
+					if (addri(0) xor edge)='1' then
+						ddrs_rdy   <= '1';
+						ddrs_direq <= '0';
+					else
+						ddrs_direq <= '1';
+						ddrs_rdy   <= '0';
 					end if;
-				elsif miitx_rdy='0' then
-					req <= '1';
-					ddrs_req <= '0';
 				else
-					req <= '0';
-					ddrs_req <= '0';
+					ddrs_rdy   <= '0';
+					ddrs_direq <= '0';
 				end if;
 			else
-				req <= '0';
-				ddrs_req <= '0';
+				ddrs_rdy   <= '0';
+				ddrs_direq <= '0';
 			end if;
-
-			a0_dly  <= not ddrios_a0;
-
+			edge := addri(0);
 		end if;
 	end process;
 
@@ -105,17 +104,15 @@ begin
 		di  => ddrs_di,
 		do  => wr_data);
 
-	addro <= not addri(0) & output_addr;
 	rd_address_i : entity hdl4fpga.align
 	generic map (
 		n => rd_address'length,
 		d => (rd_address'range => 1))
 	port map (
-		clk => output_clk,
-		ena => output_ena,
-		di  => addro,
+		clk => miitx_clk,
+		ena => miitx_ena,
+		di  => miitx_addr,
 		do  => rd_address);
-	output_a0 <= addro(0);
 
 	bram_e : entity hdl4fpga.dpram
 	port map (
@@ -123,8 +120,8 @@ begin
 		wr_addr => wr_address, 
 		wr_ena => wr_ena,
 		wr_data => wr_data,
-		rd_clk => output_clk,
-		rd_ena => output_ena,
+		rd_clk => miitx_clk,
+		rd_ena => miitx_ena,
 		rd_addr => rd_address,
-		rd_data => output_data);
+		rd_data => miitx_data);
 end;

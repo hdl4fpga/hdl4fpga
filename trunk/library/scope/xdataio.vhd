@@ -48,9 +48,6 @@ entity dataio is
 		mii_txc : in std_logic;
 		miirx_req  : in std_logic;
 		miirx_rdy  : out std_logic;
-		miitx_req  : out std_logic;
-		miitx_rdy  : in std_logic;
-		mii_a0   : out std_logic;
 		miitx_addr : in  std_logic_vector;
 		miitx_data : out std_logic_vector(DDR_LINESIZE-1 downto 0));
 		
@@ -82,11 +79,8 @@ architecture def of dataio is
 	signal video_off  : std_logic_vector(0 to page_num*page_size-1);
 	signal video_di   : std_logic_vector(0 to page_num*2*DDR_LINESIZE-1);
 
-	signal miitx_a0 : std_logic;
-
 begin
 
-	mii_a0 <= miitx_a0;
 	datai_e : entity hdl4fpga.datai
 	port map (
 		input_clk => input_clk,
@@ -197,16 +191,6 @@ begin
 						 
 	end block;
 
-	ddr2miitx_e : entity hdl4fpga.ddr2miitx
-	port map (
-		ddrios_clk => ddrs_clk,
-		ddrios_gnt => capture_rdy,
-		ddrios_a0  => miitx_a0,
-		ddrios_brst_req => ddr2miitx_brst_req,
-
-		miitx_rdy  => miitx_rdy,
-		miitx_req  => miitx_req);
-
 	miitxmem_e : entity hdl4fpga.miitxmem
 	generic map (
 		bram_size => page_size-1,
@@ -214,10 +198,13 @@ begin
 	port map (
 		ddrs_clk => ddrs_clk,
 		ddrs_gnt => capture_rdy,
-		ddrs_di_rdy => ddrs_do_rdy,
-		ddrs_di => ddrs_do,
+		ddrs_rdy => miirx_rdy,
+		ddrs_req => miirx_req,
+		ddrs_dirdy => ddrs_do_rdy,
+		ddrs_direq => ddr2miitx_brst_req,
+		ddrs_di  => ddrs_do,
 
-		output_clk  => mii_txc,
-		output_addr => miitx_addr,
-		output_data => miitx_data);
+		miitx_clk  => mii_txc,
+		miitx_addr => miitx_addr,
+		miitx_data => miitx_data);
 end;
