@@ -46,6 +46,8 @@ entity dataio is
 		ddrs_do  : in std_logic_vector;
 		
 		mii_txc : in std_logic;
+		miirx_req  : in std_logic;
+		miirx_rdy  : out std_logic;
 		miitx_req  : out std_logic;
 		miitx_rdy  : in std_logic;
 		mii_a0   : out std_logic;
@@ -216,7 +218,6 @@ begin
 		ddrs_di => ddrs_do,
 
 		output_clk  => mii_txc,
-		output_a0   => miitx_a0,
 		output_addr => miitx_addr,
 		output_data => miitx_data);
 end;

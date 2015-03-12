@@ -311,7 +311,8 @@ begin
 
 		mii_txc => mii_txc,
 		mii_a0 => a0,
-		miitx_req => miitx_req,
+		miirx_req => miirx_req,
+		miirx_rdy => miirx_rdy,
 		miitx_rdy => miitx_rdy,
 		miitx_addr => miitx_addr,
 		miitx_data => miitx_data);
@@ -337,16 +338,20 @@ begin
 		q(0) => udprx_rdy,
 		q(1) => udptx_rdy);
 
-	process (ddrs_clks(0))
+	process (miirx_rdy, ddrs_clks(0))
+		variable req_edge : std_logic;
+		variable rdy_edge : std_logic;
 	begin
 		if rising_edge(ddrs_clks(0)) then
-			if miitx_rdy='1' then
-				miitx_rdy <= not miitx_req;
-			elsif udptx_rdy='1' then
+			if miirx_req='0' then
 				if udprx_rdy='1' then
-					miitx_rdy <= miitx_req;
+					miirx_req <= not req_edge;
 				end if;
+			elsif miirx_rdy='1' then
+				miirx_req <= rdy_edge;
 			end if;
+			rdy_edge <= miirx_rdy;
+			req_edge <= udprx_rdy;
 		end if;
 	end process;
 
