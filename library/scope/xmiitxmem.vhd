@@ -8,12 +8,12 @@ entity miitxmem is
 	port (
 		ddrs_clk : in std_logic;
 		ddrs_gnt : in std_logic;
-		ddrs_di_rdy : in std_logic;
-		ddrs_di : in std_logic_vector(data_size-1 downto 0);
+		ddrs_req : out std_logic;
+		ddrs_rdy : in std_logic;
+		ddrs_di  : in std_logic_vector(data_size-1 downto 0);
 
 		output_clk  : in  std_logic;
 		output_ena  : in  std_logic := '1';
-		output_a0   : out std_logic;
 		output_addr : in  std_logic_vector(bram_size-1 downto 1);
 		output_data : out std_logic_vector(data_size-1 downto 0));
 end;
@@ -51,13 +51,41 @@ begin
 		if rising_edge(ddrs_clk) then
 			addri <= dec (
 				cntr => addri,
-				ena  => not ddrs_gnt or ddrs_di_rdy,
+				ena  => not ddrs_gnt or ddrs_rdy,
 				load => not ddrs_gnt,
 				data => 2**bram_size/2-1);
 
-			wr_ena <= ddrs_di_rdy;
+			wr_ena <= ddrs_rdy;
 		end if;
 	end process; 
+
+	process (ddrs_clk)
+	begin
+		if rising_edge(ddrios_clk) then
+			if ddrs_gnt='1' then
+				if req='0' then
+					ddrs_req <= '1';
+					req <= '0';
+					if a0_edge='1' then
+						req <= '1';
+						ddrs_req <= '0';
+					end if;
+				elsif miitx_rdy='0' then
+					req <= '1';
+					ddrs_req <= '0';
+				else
+					req <= '0';
+					ddrs_req <= '0';
+				end if;
+			else
+				req <= '0';
+				ddrs_req <= '0';
+			end if;
+
+			a0_dly  <= not ddrios_a0;
+
+		end if;
+	end process;
 
 	wr_address_i : entity hdl4fpga.align
 	generic map (
