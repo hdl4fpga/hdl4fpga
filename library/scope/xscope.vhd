@@ -131,9 +131,11 @@ architecture def of scope is
 	signal grid_dot : std_logic;
 	signal plot_dot : std_logic_vector(0 to 2-1);
 
+	signal miirx_req  : std_logic;
+	signal miirx_rdy  : std_logic := '0';
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic := '0';
-	signal miitx_addr : std_logic_vector(10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1)-1 downto 0);
+	signal miitx_addr : std_logic_vector(0 to 10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1));
 	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal miitx_ena  : std_logic;
 
@@ -310,10 +312,8 @@ begin
 		ddrs_do => ddrs_do,
 
 		mii_txc => mii_txc,
-		mii_a0 => a0,
 		miirx_req => miirx_req,
 		miirx_rdy => miirx_rdy,
-		miitx_rdy => miitx_rdy,
 		miitx_addr => miitx_addr,
 		miitx_data => miitx_data);
 
@@ -350,8 +350,8 @@ begin
 			elsif miirx_rdy='1' then
 				miirx_req <= rdy_edge;
 			end if;
-			rdy_edge <= miirx_rdy;
-			req_edge <= udprx_rdy;
+			rdy_edge := miirx_rdy;
+			req_edge := udprx_rdy;
 		end if;
 	end process;
 
@@ -388,7 +388,6 @@ begin
 
 	tpo (0) <= miirx_udprdy;
 	tpo (1) <= input_rdy;
-	tpo (2) <= a0;
 	tpo (3) <= miitx_req;
 
 	mii_txen <= miitx_ena;
