@@ -154,6 +154,7 @@ begin
 			mii_strt <= '1', '0' after 10 us;
 		end if;
 	end process;
+
 	process (mii_refclk, mii_strt)
 		variable txen_edge : std_logic;
 	begin
