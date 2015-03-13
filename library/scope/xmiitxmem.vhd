@@ -16,7 +16,6 @@ entity miitxmem is
 
 		miitx_clk  : in  std_logic;
 		miitx_ena  : in  std_logic := '1';
-		miitx_addr : in  std_logic_vector(bram_size-1 downto 0);
 		miitx_data : out std_logic_vector(data_size-1 downto 0));
 end;
 
@@ -48,20 +47,6 @@ architecture def of miitxmem is
 begin
 
 	process (ddrs_clk)
-		variable addri0_edge : std_logic;
-	begin
-		if rising_edge(ddrs_clk) then
-			addri <= dec (
-				cntr => addri,
-				ena  => not ddrs_gnt or ddrs_dirdy,
-				load => not ddrs_gnt,
-				data => 2**bram_size/2-1);
-
-			wr_ena <= ddrs_dirdy;
-		end if;
-	end process; 
-
-	process (ddrs_clk)
 		variable edge : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
@@ -83,6 +68,33 @@ begin
 				ddrs_direq <= '0';
 			end if;
 			edge := addri(0);
+		end if;
+	end process;
+
+	process (ddrs_clk)
+	begin
+		if rising_edge(ddrs_clk) then
+			if ddrs_gnt='0' then
+				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
+			elsif addr(0)='1' then
+				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
+			else
+				addri <= addri - 1;
+			end if;
+			wr_ena <= ddrs_dirdy;
+		end if;
+	end process; 
+
+	process (miitx_clk)
+	begin
+		if rising_edge(miitx_clk) then
+			if miitx_req='0' then
+				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
+			elsif addr(0)='1' then
+				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
+			else
+				addro <= addro - 1;
+			end if;
 		end if;
 	end process;
 

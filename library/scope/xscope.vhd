@@ -140,11 +140,12 @@ architecture def of scope is
 	signal miitx_ena  : std_logic;
 
 	signal miitx_udprdy : std_logic := '0';
+	signal miitxudp_rdy : std_logic := '0';
+	signal miitxudp_req : std_logic := '0';
 	signal miitx_udpreq : std_logic := '0';
 	signal miirx_udprdy : std_logic;
 	signal udptx_rdy : std_logic;
 	signal udprx_rdy : std_logic;
-	signal miiudptx_req : std_logic;
 
 	signal rxdv : std_logic;
 	signal rxd  : nibble;
@@ -334,24 +335,47 @@ begin
 		arst => ddrs_rst,
 		clk  => ddrs_clks(0),
 		d(0) => miirx_udprdy,
-		d(1) => miitx_udprdy,
+		d(1) => miitxudp_rdy,
 		q(0) => udprx_rdy,
 		q(1) => udptx_rdy);
 
-	process (miirx_rdy, ddrs_clks(0))
+	rx_p : process (ddrs_clks(0))
 		variable req_edge : std_logic;
 		variable rdy_edge : std_logic;
 	begin
 		if rising_edge(ddrs_clks(0)) then
 			if miirx_req='0' then
-				if udprx_rdy='1' then
-					miirx_req <= not req_edge;
+				if not req_edge/='0' then
+					if udprx_rdy='1' then
+						miirx_req <= '0';
+					end if;
 				end if;
 			elsif miirx_rdy='1' then
-				miirx_req <= rdy_edge;
+				if not rdy_edge/='0' then
+					miirx_req <= rdy_edge;
+				end if;
 			end if;
 			rdy_edge := miirx_rdy;
 			req_edge := udprx_rdy;
+		end if;
+	end process;
+
+	tx_p : process (ddrs_clks(0))
+		variable req_edge : std_logic;
+		variable rdy_edge : std_logic;
+	begin
+		if rising_edge(ddrs_clks(0)) then
+			if miirx_rdy='1' then
+				if not req_edge/='0' then
+					miitx_req <= '1';
+				end if;
+			elsif miitx_rdy='1' then
+				if not rdy_edge/='0' then
+					miitx_req <= '0';
+				end if;
+			end if;
+			req_edge := miirx_rdy;
+			rdy_edge := miitx_rdy;
 		end if;
 	end process;
 
@@ -360,7 +384,7 @@ begin
 		arst => ddrs_rst,
 		clk  => mii_txc,
 		d(0) => miitx_req,
-		q(0) => miiudptx_req);
+		q(0) => miitxudp_req);
 
 	miitx_udp_e : entity hdl4fpga.miitx_udp
 	port map (
@@ -374,15 +398,25 @@ begin
 
 	process (mii_txc)
 		variable req_edge : std_logic;
+		variable rdy_edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if miiudptx_req='1' then
-				miitx_udpreq <= req_edge;
+			if miitx_udpreq='0' then
+				if miitxudp_req='1' then
+					if not req_edge/='0' then
+						miitx_udpreq <= '1';
+						miitxudp_rdy <= '0';
+					end if;
+				end if;
 			elsif miitx_udprdy='1' then
-				miitx_udpreq <= '0';
+				if not rdy_edge/='0' then
+					miitx_udpreq <= '0';
+					miitxudp_rdy <= '1';
+				end if;
 			end if;
 
-			req_edge := miiudptx_req;
+			req_edge := miitxudp_req;
+			rdy_edge := miitx_udprdy;
 		end if;
 	end process;
 
