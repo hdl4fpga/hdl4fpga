@@ -15,8 +15,10 @@ entity miitxmem is
 		ddrs_di    : in  std_logic_vector(data_size-1 downto 0);
 
 		miitx_clk  : in  std_logic;
-		miitx_ena  : in  std_logic := '1';
-		miitx_data : out std_logic_vector(data_size-1 downto 0));
+		miitx_req  : in  std_logic := '1';
+		miitx_rdy  : out std_logic;
+		miitx_data : out std_logic_vector);
+	constant xxx : natural := unsigned_num_bits(data_size/miitx_data'length-1);
 end;
 
 library hdl4fpga;
@@ -90,10 +92,13 @@ begin
 		if rising_edge(miitx_clk) then
 			if miitx_req='0' then
 				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
-			elsif addr(0)='1' then
-				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
-			else
-				addro <= addro - 1;
+				yyyy  <= to_unsigned(2**(yyy'length-1)-1, yyyy'length); 
+			elsif miitx_ena='1' then
+				if addr(0)='1' then
+					addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
+				else
+					addro <= addro - 1;
+				end if;
 			end if;
 		end if;
 	end process;
