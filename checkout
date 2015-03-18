@@ -1,4 +1,4 @@
 #!/bin/sh
 pushd ..
-svn checkout https://hdl4fpga.googlecode.com/svn/trunk/ hdl4fpga --username msagre@hdl4fpga.com
+svn checkout https://github.com/hdl4fpga/hdl4fpga/trunk hdl4fpga --username hdl4fpga@gmail.com
 popd
