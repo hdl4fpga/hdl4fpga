@@ -37,8 +37,8 @@ architecture def of miitxmem is
 	subtype dword is std_logic_vector(data_size-1 downto 0);
 	type dword_vector is array(natural range <>) of dword;
 
-	signal addri : std_logic_vector(0 to bram_size-1);
-	signal addro : std_logic_vector(0 to bram_size-1);
+	signal addri : unsigned(0 to bram_size-1);
+	signal addro : unsigned(0 to bram_size-1);
 
 	signal wr_address : std_logic_vector(0 to bram_size-1);
 	signal wr_ena  : std_logic;
@@ -47,9 +47,9 @@ architecture def of miitxmem is
 	signal miitx_addr : std_logic_vector(0 to bram_size-1);
 	signal rd_address : std_logic_vector(0 to bram_size-1);
 	signal rd_data : dword;
-	signal bysel : std_logic_vector(1 to unsigned_num_bits(data_size/miitx_data'length-1));
+	signal bysel : std_logic_vector(1 to unsigned_num_bits(ddrs_di'length/miitx_dat'length-1));
 
-	signal baddro : std_logic_vector;
+	signal baddro : std_logic_vector(0 to 0);
 begin
 
 	process (ddrs_clk)
@@ -68,7 +68,7 @@ begin
 				else
 					ddrs_rdy   <= '0';
 					ddrs_direq <= '0';
-					baddro <= addri();
+					baddro <= std_logic_vector(addri(0 to 0));
 				end if;
 			else
 				ddrs_rdy   <= '0';
@@ -83,7 +83,7 @@ begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='0' then
 				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
-			elsif addr(0)='1' then
+			elsif addri(0)='1' then
 				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
 			else
 				addri <= addri - 1;
@@ -106,10 +106,10 @@ begin
 				if bycnt(0)='1' then
 					if addro(0)='0' then
 						addro <= addro - 1;
-						bycnt <= to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
+						bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
 					end if;
 				else
-					bycnt <= bycnt - 1;
+					bycnt := bycnt - 1;
 				end if;
 				bysel <= bydly;
 				bydly := std_logic_vector(bycnt(bydly'range));
@@ -124,7 +124,7 @@ begin
 		d => (wr_address'range => 1))
 	port map (
 		clk => ddrs_clk,
-		di  => addri(wr_address'range),
+		di  => std_logic_vector(addri(wr_address'range)),
 		do  => wr_address);
 
 	wr_data_i : entity hdl4fpga.align
@@ -136,7 +136,7 @@ begin
 		di  => ddrs_di,
 		do  => wr_data);
 
-	miitx_addr <= baddro & addro();
+	miitx_addr <= baddro & std_logic_vector(addro(0 to 0));
 	rd_address_i : entity hdl4fpga.align
 	generic map (
 		n => rd_address'length,
@@ -160,6 +160,6 @@ begin
 
 	miitx_dat <=  reverse (
 		word2byte (
-			word => mii_data ror miitx_dat'length,
+			word => rd_data ror miitx_dat'length,
 			addr => bysel));
 end;
