@@ -5,13 +5,13 @@ add wave -noupdate -expand -group testbench /testbench/xtal
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_udprdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/udprx_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_req
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_rdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_direq
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_dirdy
-add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udprdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_rdy
-add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitxudp_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udpreq
@@ -322,7 +322,7 @@ add wave -noupdate -expand -group ddr_e -group xdr_rdfifo /testbench/ecp3versa_e
 add wave -noupdate -expand -group ddr_e -expand -group ddr_wr_fifo -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21517963 ps} 0} {{Cursor 2} {20134865 ps} 0}
+WaveRestoreCursors {{Cursor 1} {20135072 ps} 0} {{Cursor 2} {17419741 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -338,4 +338,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {42 us}
+WaveRestoreZoom {20093034 ps} {20175066 ps}

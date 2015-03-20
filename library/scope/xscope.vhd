@@ -351,13 +351,13 @@ begin
 			if ddrs_rst='1' then
 				miirx_req <= '0';
 			elsif miirx_req='0' then
-				if not req_edge/='0' then
+				if req_edge='0' then
 					if udprx_rdy='1' then
-						miirx_req <= '0';
+						miirx_req <= '1';
 					end if;
 				end if;
 			elsif miirx_rdy='1' then
-				if not rdy_edge/='0' then
+				if rdy_edge='0' then
 					miirx_req <= rdy_edge;
 				end if;
 			end if;
@@ -374,11 +374,11 @@ begin
 			if ddrs_rst='1' then
 				miitx_req <= '0';
 			elsif miirx_rdy='1' then
-				if not req_edge/='0' then
+				if req_edge='0' then
 					miitx_req <= '1';
 				end if;
 			elsif miitx_rdy='1' then
-				if not rdy_edge/='0' then
+				if rdy_edge='0' then
 					miitx_req <= '0';
 				end if;
 			end if;
