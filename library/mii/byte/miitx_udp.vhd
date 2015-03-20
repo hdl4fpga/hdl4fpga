@@ -6,17 +6,17 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miitx_udp is
-	generic (
-		xd_len : natural := 8);
 	port (
-		sys_addr : out std_logic_vector;
-		sys_data : in  std_logic_vector;
+		miidma_rreq : out  std_logic;
+		miidma_rrdy : in std_logic;
+		miidma_rxen : in std_logic;
+		miidma_rxd  : in std_logic_vector;
 
 		mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to xd_len-1));
+		mii_txd  : out std_logic_vector);
 end;
 
 architecture mix of miitx_udp is
@@ -35,7 +35,7 @@ architecture mix of miitx_udp is
 	signal txreq : std_logic_vector(n+1 downto 0);
 
 	signal txen : std_logic;
-	signal txd : std_logic_vector(0 to xd_len-1);
+	signal txd : std_logic_vector(0 to mii_txd'length-1);
 	signal rdy : std_logic_vector(n downto 0);
 	signal dat : xword_vector(n downto 0);
 	signal ena : std_logic_vector(n downto 0);
@@ -73,14 +73,18 @@ begin
 		mii_txen => txena(txmac),
 		mii_txd  => txdat(txmac));
 
-	miitx_pld_e : entity hdl4fpga.miitx_dma
-	port map (
-		sys_addr => sys_addr,
-		sys_data => sys_data,
-		mii_txc  => mii_txc,
-		mii_treq => txreq(txpld),
-		mii_txen => txena(txpld),
-		mii_txd  => txdat(txpld));
+		miidma_rreq <= txreq(txpld);
+		txena(txpld) <= miidma_rxen;
+		txdat(txpld) <= miidma_rxd;
+
+--	miitx_pld_e : entity hdl4fpga.miitx_dma
+--	port map (
+--		sys_addr => sys_addr,
+--		sys_data => sys_data,
+--		mii_txc  => mii_txc,
+--		mii_treq => txreq(txpld),
+--		mii_txen => txena(txpld),
+--		mii_txd  => txdat(txpld));
 
 	miitx_crc_e : entity hdl4fpga.miitx_crc
 	port map (

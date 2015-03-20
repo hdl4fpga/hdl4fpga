@@ -45,11 +45,13 @@ entity dataio is
 		ddrs_do_rdy : in std_logic;
 		ddrs_do  : in std_logic_vector;
 		
-		mii_txc : in std_logic;
-		miirx_req  : in std_logic;
-		miirx_rdy  : out std_logic;
-		miitx_addr : in  std_logic_vector;
-		miitx_data : out std_logic_vector(DDR_LINESIZE-1 downto 0));
+		mii_txc   : in  std_logic;
+		miirx_req : in  std_logic;
+		miirx_rdy : out std_logic;
+		miitx_req : in  std_logic;
+		miitx_rdy : out std_logic;
+		miitx_ena : out std_logic;
+		miitx_dat : out std_logic_vector);
 		
 	constant page_num  : natural := 6;
 end;
@@ -204,7 +206,9 @@ begin
 		ddrs_direq => ddr2miitx_brst_req,
 		ddrs_di  => ddrs_do,
 
-		miitx_clk  => mii_txc,
-		miitx_addr => miitx_addr,
-		miitx_data => miitx_data);
+		miitx_clk => mii_txc,
+		miitx_rdy => miitx_rdy,
+		miitx_req => miitx_req,
+		miitx_ena => miitx_ena,
+		miitx_dat => miitx_dat);
 end;

@@ -16,7 +16,7 @@ entity miitxmem is
 
 		miitx_clk : in  std_logic;
 		miitx_req : in  std_logic := '1';
-		miitx_ena : in std_logic;
+		miitx_ena : out std_logic;
 		miitx_rdy : out std_logic;
 		miitx_dat : out std_logic_vector);
 end;
@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 architecture def of miitxmem is
-	constant bram_num : natural := 2;
+	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024*8-1))+1;
 
 	subtype aword is std_logic_vector(bram_size-1 downto 0);
 	type aword_vector is array(natural range <>) of aword;
@@ -74,7 +74,7 @@ begin
 				ddrs_rdy   <= '0';
 				ddrs_direq <= '0';
 			end if;
-			edge := addri(0);
+			edge := addri(bram_num-1);
 		end if;
 	end process;
 
@@ -95,16 +95,19 @@ begin
 	process (miitx_clk)
 		variable bycnt : unsigned(0 to bysel'right);
 		variable bydly : std_logic_vector(bysel'range);
+		variable edge : std_logic;
 	begin
 		if rising_edge(miitx_clk) then
 			if miitx_req='0' then
+				edge  := '1';
 				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
-				bydly := to_unsigned(2**(bycnt'length-1)-3, bycnt'length); 
-				bysel <= to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
-			elsif miitx_ena='1' then
+				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
+				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
+--			elsif miitx_ena='1' then
+			else
 				if bycnt(0)='1' then
-					if addro(0)='0' then
+					if (addro(0) xor edge)='1' then
 						addro <= addro - 1;
 						bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
 					end if;
@@ -114,6 +117,7 @@ begin
 				bysel <= bydly;
 				bydly := std_logic_vector(bycnt(bydly'range));
 			end if;
+			edge := addro(bram_num);
 		end if;
 	end process;
 	miitx_rdy <= addro(0);
@@ -136,17 +140,17 @@ begin
 		di  => ddrs_di,
 		do  => wr_data);
 
-	miitx_addr <= baddro & std_logic_vector(addro(0 to 0));
 	rd_address_i : entity hdl4fpga.align
 	generic map (
 		n => rd_address'length,
 		d => (rd_address'range => 1))
 	port map (
 		clk => miitx_clk,
-		ena => miitx_ena,
-		di  => miitx_addr,
+		ena => miitx_req, --miitx_ena,
+		di  => std_logic_vector(addro),
 		do  => rd_address);
 
+	miitx_ena <= miitx_req;
 	bram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk => ddrs_clk,
@@ -154,7 +158,7 @@ begin
 		wr_ena => wr_ena,
 		wr_data => wr_data,
 		rd_clk => miitx_clk,
-		rd_ena => miitx_ena,
+		rd_ena => miitx_req, --miitx_ena,
 		rd_addr => rd_address,
 		rd_data => rd_data);
 

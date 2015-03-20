@@ -135,8 +135,11 @@ architecture def of scope is
 	signal miirx_rdy  : std_logic := '0';
 	signal miitx_req  : std_logic;
 	signal miitx_rdy  : std_logic := '0';
+	signal miidma_rrdy : std_logic;
+	signal miidma_rxen : std_logic;
+	signal miidma_rxd  : std_logic_vector(mii_txd'length-1 downto 0);
 	signal miitx_addr : std_logic_vector(0 to 10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1));
-	signal miitx_data : std_logic_vector(DDR_LINESIZE-1 downto 0);
+	signal miitx_dat : std_logic_vector(mii_txd'length-1 downto 0);
 	signal miitx_ena  : std_logic;
 
 	signal miitx_udprdy : std_logic := '0';
@@ -315,8 +318,9 @@ begin
 		mii_txc => mii_txc,
 		miirx_req => miirx_req,
 		miirx_rdy => miirx_rdy,
-		miitx_addr => miitx_addr,
-		miitx_data => miitx_data);
+		miitx_req => miitx_req,
+		miitx_rdy => miitx_rdy,
+		miitx_dat => miitx_dat);
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
@@ -344,7 +348,9 @@ begin
 		variable rdy_edge : std_logic;
 	begin
 		if rising_edge(ddrs_clks(0)) then
-			if miirx_req='0' then
+			if ddrs_rst='1' then
+				miirx_req <= '0';
+			elsif miirx_req='0' then
 				if not req_edge/='0' then
 					if udprx_rdy='1' then
 						miirx_req <= '0';
@@ -365,7 +371,9 @@ begin
 		variable rdy_edge : std_logic;
 	begin
 		if rising_edge(ddrs_clks(0)) then
-			if miirx_rdy='1' then
+			if ddrs_rst='1' then
+				miitx_req <= '0';
+			elsif miirx_rdy='1' then
 				if not req_edge/='0' then
 					miitx_req <= '1';
 				end if;
@@ -388,8 +396,9 @@ begin
 
 	miitx_udp_e : entity hdl4fpga.miitx_udp
 	port map (
-		sys_addr => miitx_addr,
-		sys_data => miitx_data,
+		miidma_rrdy => miidma_rrdy,
+		miidma_rxen => miidma_rxen,
+		miidma_rxd  => miidma_rxd,
 		mii_txc  => mii_txc,
 		mii_treq => miitx_udpreq,
 		mii_trdy => miitx_udprdy,
