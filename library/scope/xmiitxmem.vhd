@@ -52,6 +52,7 @@ architecture def of miitxmem is
 	signal addri_edge : std_logic;
 	signal addro_edge : std_logic;
 	signal rdy : std_logic;
+	signal ena : std_logic;
 
 begin
 
@@ -103,6 +104,7 @@ begin
 				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
 				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
 				miitx_rdy <= '0';
+				ena <= '1';
 				rdy <= '0';
 			elsif miitx_req='0' then
 				addro_edge <= addro(bram_num-1);
@@ -110,9 +112,11 @@ begin
 				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
 				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
 				miitx_rdy <= '0';
+				ena <= '1';
 				rdy <= '0';
 			else
 				miitx_rdy <= rdy;
+				ena <= not rdy;
 				rdy <= addro(bram_num-1) xor addro_edge;
 				bysel <= bydly;
 				bydly := std_logic_vector(bycnt(bydly'range));
@@ -128,14 +132,7 @@ begin
 			end if;
 		end if;
 	end process;
-	miitx_ena_p : process (miitx_clk, miitx_req)
-	begin
-		if miitx_req='0' then
-			miitx_ena <= '0';
-		elsif rising_edge(miitx_clk) then
-			miitx_ena <= not rdy;
-		end if;
-	end process;
+	miitx_ena <= miitx_req and ena;
 
 	wr_address_i : entity hdl4fpga.align
 	generic map (
