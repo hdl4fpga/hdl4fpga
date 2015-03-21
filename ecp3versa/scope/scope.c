@@ -73,7 +73,7 @@ main (int argc, char *argv[])
 			abort ();
 		}
 
-		sb_src = (unsigned long long *) (sb_char+2);
+		sb_src = (unsigned long long *) (sb_char);
 		for (j = 0; j < sizeof(sb_char)/sizeof(sb_src[0]); j++)
 			printf("0x%016llx\n", htobe64(sb_src[j]));
 						        

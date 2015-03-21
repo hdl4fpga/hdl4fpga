@@ -244,20 +244,20 @@ begin
 
 	ddrphy_sti <= (others => ddrphy_sto(0));
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
-	debug_clk <= ddr3_dqs(0);
-	process (debug_clk)
-		constant n : natural := 4;
-		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
-		variable aux1 : std_logic_vector(ddrphy_dqi'range);
-	begin
-		if rising_edge(debug_clk) then
-			if ddrphy_sto(0)='1' then
-				aux1 := aux & aux1(63 downto n);
-				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
-				aux := inc(gray(aux));
-			end if;
-		end if;
-	end process;
+--	debug_clk <= ddr3_dqs(0);
+--	process (debug_clk)
+--		constant n : natural := 4;
+--		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+--		variable aux1 : std_logic_vector(ddrphy_dqi'range);
+--	begin
+--		if rising_edge(debug_clk) then
+--			if ddrphy_sto(0)='1' then
+--				aux1 := aux & aux1(63 downto n);
+--				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
+--				aux := inc(gray(aux));
+--			end if;
+--		end if;
+--	end process;
 --
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);

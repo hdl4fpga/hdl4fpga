@@ -1,12 +1,30 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
+add wave -noupdate -expand -group testbench -radix decimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(0)
+add wave -noupdate -expand -group testbench -radix decimal -childformat {{/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(0) -radix decimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(1) -radix decimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(2) -radix decimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(3) -radix decimal}} -expand -subitemconfig {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(0) {-radix decimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(1) {-radix decimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(2) {-radix decimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt(3) {-radix decimal}} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bycnt
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/line__93/bydly
+add wave -noupdate -expand -group testbench -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(0) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(4) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(5) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(6) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(7) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro_edge
+add wave -noupdate -expand -group testbench /testbench/mii_rxc
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udp_e/miidma_rxen
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udp_e/miidma_rrdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udp_e/miidma_rreq
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_udp_e/miidma_rxd
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miidma_rrdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miidma_rxd
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miidma_rxen
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_data
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/miitx_req
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/miitx_dat
+add wave -noupdate -expand -group testbench -radix unsigned /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/bysel
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addri
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addro
 add wave -noupdate -expand -group testbench /testbench/xtal
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_udprdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/udprx_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miirx_rdy
-add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/miitx_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_direq
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_dirdy
@@ -322,8 +340,8 @@ add wave -noupdate -expand -group ddr_e -group xdr_rdfifo /testbench/ecp3versa_e
 add wave -noupdate -expand -group ddr_e -expand -group ddr_wr_fifo -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20135072 ps} 0} {{Cursor 2} {17419741 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {21955995 ps} 0} {{Cursor 3} {30042969 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
 configure wave -justifyvalue left
@@ -338,4 +356,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20093034 ps} {20175066 ps}
+WaveRestoreZoom {29933865 ps} {30152073 ps}
