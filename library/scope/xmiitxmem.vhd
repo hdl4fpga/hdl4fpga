@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 architecture def of miitxmem is
-	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024*8-1))+1;
+	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024*8-1));
 
 	subtype aword is std_logic_vector(bram_size-1 downto 0);
 	type aword_vector is array(natural range <>) of aword;
@@ -49,16 +49,17 @@ architecture def of miitxmem is
 	signal rd_data : dword;
 	signal bysel : std_logic_vector(1 to unsigned_num_bits(ddrs_di'length/miitx_dat'length-1));
 
-	signal baddro : std_logic_vector(0 to 0);
+	signal addri_edge : std_logic;
+	signal addro_edge : std_logic;
+
 begin
 
 	process (ddrs_clk)
-		variable edge : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='1' then
 				if ddrs_req='1' then
-					if (addri(0) xor edge)='1' then
+					if (addri(bram_num-1) xor addri_edge)='1' then
 						ddrs_rdy   <= '1';
 						ddrs_direq <= '0';
 					else
@@ -68,13 +69,11 @@ begin
 				else
 					ddrs_rdy   <= '0';
 					ddrs_direq <= '0';
-					baddro <= std_logic_vector(addri(0 to 0));
 				end if;
 			else
 				ddrs_rdy   <= '0';
 				ddrs_direq <= '0';
 			end if;
-			edge := addri(bram_num-1);
 		end if;
 	end process;
 
@@ -82,32 +81,30 @@ begin
 	begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='0' then
-				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
-			elsif addri(0)='1' then
-				addri <= to_unsigned(2**(addri'length-1)-1, addri'length);
-			else
+				addri <= to_unsigned(2**addri'length-1, addri'length);
+			elsif wr_ena='1' then
 				addri <= addri - 1;
 			end if;
 			wr_ena <= ddrs_dirdy;
+			addri_edge <= addri(bram_num-1);
 		end if;
 	end process; 
 
 	process (miitx_clk)
 		variable bycnt : unsigned(0 to bysel'right);
 		variable bydly : std_logic_vector(bysel'range);
-		variable edge : std_logic;
 	begin
 		if rising_edge(miitx_clk) then
 			if miitx_req='0' then
-				edge  := '1';
-				addro <= to_unsigned(2**(addro'length-1)-1, addro'length);
+				addro_edge <= '1';
+				addro <= to_unsigned(2**addro'length-1, addro'length);
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
 				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
 				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
 --			elsif miitx_ena='1' then
 			else
 				if bycnt(0)='1' then
-					if (addro(0) xor edge)='1' then
+					if (addro(bram_num-1) xor addro_edge)='1' then
 						addro <= addro - 1;
 						bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
 					end if;
@@ -117,10 +114,10 @@ begin
 				bysel <= bydly;
 				bydly := std_logic_vector(bycnt(bydly'range));
 			end if;
-			edge := addro(bram_num);
+			addro_edge <= addro(bram_num-1);
 		end if;
 	end process;
-	miitx_rdy <= addro(0);
+	miitx_rdy <= addro(bram_num) xor addro_edge;
 
 	wr_address_i : entity hdl4fpga.align
 	generic map (
