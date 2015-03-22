@@ -218,7 +218,7 @@ begin
 		ddr3_we  => we_n,
 		ddr3_b   => ba,
 		ddr3_a   => addr(12 downto 0),
---		ddr3_dqs => dqs_p,
+		ddr3_dqs => dqs_p,
 		ddr3_dq  => dq,
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
