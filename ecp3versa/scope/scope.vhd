@@ -245,17 +245,19 @@ begin
 	ddrphy_sti <= (others => ddrphy_sto(0));
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
 	debug_clk <= ddr3_dqs(0);
-	process (debug_clk)
+	process (debug_clk, fpga_gsrn)
 		constant n : natural := 4;
 		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
-		variable aux1 : std_logic_vector(ddrphy_dqi'range);
+		variable aux1 : std_logic_vector(ddrphy_dqi'range) := (others => '0');
 	begin
-		if rising_edge(debug_clk) then
-			if ddrphy_sto(0)='1' then
+		if fpga_gsrn='0' then
+			aux1 := (others => '0');
+		elsif rising_edge(debug_clk) then
+--			if ddrphy_sto(0)='1' then
 				aux1 := aux & aux1(63 downto n);
 				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
 				aux := inc(gray(aux));
-			end if;
+--			end if;
 		end if;
 	end process;
 --
