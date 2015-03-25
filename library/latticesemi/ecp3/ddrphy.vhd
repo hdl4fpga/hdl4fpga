@@ -277,8 +277,8 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 	sys_cfgo(5 downto 2) <= "0011";
---	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
-	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
+	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
+--	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
 
 	process (phy_rst, sys_sclk)
 		variable sr : std_logic_vector(0 to 1);
@@ -412,16 +412,16 @@ begin
 			ddr_dqso => ddqsi(i));
 	end generate;
 
---	process (ddqsi, ddqst)
---	begin
---		for i in ddqsi'range loop
---			if ddqst(i)='1' then
---				ddr_dqs(i) <= 'Z';
---			else
---				ddr_dqs(i) <= ddqsi(i);
---			end if;
---		end loop;
---	end process;
+	process (ddqsi, ddqst)
+	begin
+		for i in ddqsi'range loop
+			if ddqst(i)='1' then
+				ddr_dqs(i) <= 'Z';
+			else
+				ddr_dqs(i) <= ddqsi(i);
+			end if;
+		end loop;
+	end process;
 
 	process (ddqo, ddqt)
 		variable dqt : std_logic_vector(ddr_dq'range);

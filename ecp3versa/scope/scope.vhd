@@ -334,7 +334,7 @@ begin
 
 		ddr_dm  => ddr3_dm,
 		ddr_dq  => ddr3_dq,
-		ddr_dqs => open); --ddr3_dqs);
+		ddr_dqs => ddr3_dqs);
 
 	phy1_rst  <= dcm_lckd;
 	phy1_mdc  <= '0';
