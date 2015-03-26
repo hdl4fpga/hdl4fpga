@@ -53,6 +53,7 @@ architecture ecp3 of ddrbaphy is
 	attribute oddrapps : string;
 	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
 	attribute oddrapps of ck_i : label is "SCLK_CENTERED";
+	signal cs : std_logic;
 begin
 
 	ck_i : oddrxd1
@@ -105,11 +106,12 @@ begin
 		db => '1', --sys_we(1),
 		q  => ddr_we);
 
+	cs <= not sys_cke(0);
 	cs_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da => sys_cs(0),
-		db => '1', --sys_cs(0),
+		da => cs, --sys_cs(0),
+		db => cs, --sys_cs(0),
 		q  => ddr_cs);
 
 	cke_i : oddrxd1
@@ -122,8 +124,8 @@ begin
 	odt_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da => sys_odt(0),
-		db => sys_odt(0),
+		da => '1', -- sys_odt(0),
+		db => '1', -- sys_odt(0),
 		q  => ddr_odt);
 
 	rst_i : oddrxd1

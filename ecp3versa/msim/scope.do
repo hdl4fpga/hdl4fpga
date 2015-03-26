@@ -22,16 +22,12 @@ add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_cl
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/addr
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cke
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/odt
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/rst_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cs_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ras_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cas_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(1)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sto(0)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sti(0)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/sto
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(0)
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/dq
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
@@ -42,11 +38,7 @@ add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cs_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ras_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cas_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(1)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sto(0)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_sti(0)
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/sto
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(0)
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/dq
 add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/ddr_e/xdr_a
@@ -608,7 +600,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8718779 ps} 0} {{Cursor 3} {8676410 ps} 0}
+WaveRestoreCursors {{Cursor 1} {701476250 ps} 0} {{Cursor 3} {8676410 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -624,4 +616,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {8663411 ps} {8772515 ps}
+WaveRestoreZoom {701459843 ps} {701492657 ps}

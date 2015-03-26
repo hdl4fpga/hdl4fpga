@@ -418,7 +418,7 @@ begin
 			if ddqst(i)='1' then
 				ddr_dqs(i) <= 'Z';
 			else
-				ddr_dqs(i) <= ddqsi(i);
+				ddr_dqs(i) <= 'Z'; --ddqsi(i);
 			end if;
 		end loop;
 	end process;
