@@ -75,7 +75,7 @@ begin
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,
-		dqsi   => '0', --ddr_dqsi,
+		dqsi   => ddr_dqsi,
 		eclkdqsr => idqs_eclk,
 
 		sclk => sys_sclk,
@@ -169,7 +169,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => '1', --sys_dmt(0),
+			ta => sys_dmt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dmt);
