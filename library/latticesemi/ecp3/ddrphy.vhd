@@ -452,5 +452,6 @@ begin
 	sys_dqsi <= (others => sys_sclk);
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);
-	sys_cfgo(2-1 downto 0) <= to_stdlogicvector(cfgo);
+	sys_cfgo(0) <= cfgo(0)(0);
+--	sys_cfgo(2-1 downto 0) <= to_stdlogicvector(cfgo);
 end;
