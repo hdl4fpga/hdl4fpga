@@ -10,6 +10,7 @@ entity xdr_pgm is
 		xdr_pgm_rst : in  std_logic := '0';
 		xdr_pgm_clk : in  std_logic := '0';
 		xdr_pgm_ref : in  std_logic := '0';
+		xdr_pgm_rrdy : out  std_logic := '0';
 		sys_pgm_ref : out std_logic := '0';
 		xdr_pgm_start : in  std_logic := '1';
 		xdr_pgm_rdy : out std_logic;
@@ -23,25 +24,28 @@ entity xdr_pgm is
 end;
 
 architecture arch of xdr_pgm is
-	constant rdy : natural := 4;
-	constant ref : natural := 3;
-	constant ras : natural := 2;
-	constant cas : natural := 1;
-	constant we  : natural := 0;
+	constant rrdy : natural := 5;
+	constant rdy  : natural := 4;
+	constant ref  : natural := 3;
+	constant ras  : natural := 2;
+	constant cas  : natural := 1;
+	constant we   : natural := 0;
 
 	constant xdr_pgm_size : natural := 4;
-                        --> sys_pgm_ref <--------------------+
-                        --> xdr_pgm_rdy <-------------------+|
-                        --                                  ||
-                        --                                  VV
-	constant xdr_act : std_logic_vector(4 downto 0)     := "00011";
-	constant xdr_rea : std_logic_vector(xdr_act'range)  := "00101";
-	constant xdr_wri : std_logic_vector(xdr_act'range)  := "00100";
-	constant xdr_pre0 : std_logic_vector(xdr_act'range) := "00010";
-	constant xdr_pre : std_logic_vector(xdr_act'range)  := "10010";
-	constant xdr_aut : std_logic_vector(xdr_act'range)  := "01001";
-	constant xdr_nop : std_logic_vector(xdr_act'range)  := "10111";
-	constant xdr_dnt : std_logic_vector(xdr_act'range)  := (others => '-');
+                        --> sys_pgm_ref <---------------------+
+                        --> xdr_pgm_rdy <--------------------+|
+                        --                                   ||
+                        --                                   VV
+	constant xdr_act  : std_logic_vector(5 downto 0)    := "000011";
+	constant xdr_rea  : std_logic_vector(xdr_act'range) := "000101";
+	constant xdr_reaf : std_logic_vector(xdr_act'range) := "001101";
+	constant xdr_wri  : std_logic_vector(xdr_act'range) := "000100";
+	constant xdr_wrif : std_logic_vector(xdr_act'range) := "001100";
+	constant xdr_pre  : std_logic_vector(xdr_act'range) := "010010";
+	constant xdr_pref : std_logic_vector(xdr_act'range) := "011010";
+	constant xdr_aut  : std_logic_vector(xdr_act'range) := "100001";
+	constant xdr_nop  : std_logic_vector(xdr_act'range) := "010111";
+	constant xdr_dnt  : std_logic_vector(xdr_act'range) := (others => '-');
 
 	constant ddrs_act : std_logic_vector(0 to 2) := "011";
 	constant ddrs_rea : std_logic_vector(0 to 2) := "101";
@@ -70,7 +74,7 @@ architecture arch of xdr_pgm is
 --               000   001   010   011   100   101   110   111
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
 --     act     | wri | wri | rea | rea | wri | wri | rea | rea |
---     rea     | pre | pre | pre | pre | '-' | pre | rea | pre |
+--     rea     | pre | pre | pre | pre | '-' | rea | rea | rea |
 --     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
 --     pre     | idl | aut | idl | aut | act | aut | act | aut |
 --     idl     | idl | aut | idl | aut | il1 | aut | il1 | aut |
@@ -87,13 +91,13 @@ architecture arch of xdr_pgm is
 --               000    001    010    011    100   101    110   111
 --             +------+------+------+------+-----+------+-----+------+
 --     act     | wri  | wri  | rea  | rea  | wri | wri  | rea | rea  |
---     rea     | pre0 | pre0 | pre0 | pre0 | '-' | pre0 | rea | pre0 |
---     wri     | pre0 | pre0 | pre0 | pre0 | wri | pre0 | '-' | pre0 |
+--     rea     | pre  | pref | pre  | pref | '-' | pref | rea | reaf |
+--     wri     | pre  | pref | pre  | pref | wri | wrif | '-' | pref |
 --     pre     | nop  | aut  | nop  | aut  | act | aut  | act | aut  |
 --     idl     | nop  | aut  | nop  | aut  | act | aut  | act | aut  |
---     il1     | wri  | wri  | rea  | rea  | wri | wri  | rea | rea  |
---     il2     | pre  | pre  | pre  | pre  | act | act  | act | act  |
---     aut     | pre  | pre  | pre  | pre  | act | act  | act | act  |
+--     il1     | wri  | wrif | rea  | reaf | wri | wri  | rea | rea  |
+--     il2     | pre  | pref | pre  | pref | act | act  | act | act  |
+--     aut     | pre  | pref | pre  | pref | act | act  | act | act  |
 --             +------+------+------+------+-----+------+-----+------+
 
 
@@ -107,23 +111,23 @@ architecture arch of xdr_pgm is
 		(ddrs_act, "110", ddrs_rea, xdr_rea),
 		(ddrs_act, "111", ddrs_rea, xdr_rea),
 		
-		(ddrs_rea, "000", ddrs_pre, xdr_pre0),	---------
-		(ddrs_rea, "001", ddrs_pre, xdr_pre0),	-- REA --
-		(ddrs_rea, "010", ddrs_pre, xdr_pre0),	---------
-		(ddrs_rea, "011", ddrs_pre, xdr_pre0),
+		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
+		(ddrs_rea, "001", ddrs_pre, xdr_pref),	-- REA --
+		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
+		(ddrs_rea, "011", ddrs_pre, xdr_pref),
 		(ddrs_rea, "100", ddrs_dnt, xdr_wri),
-		(ddrs_rea, "101", ddrs_pre, xdr_pre0),
+		(ddrs_rea, "101", ddrs_pre, xdr_pref),
 		(ddrs_rea, "110", ddrs_rea, xdr_rea),
-		(ddrs_rea, "111", ddrs_pre, xdr_pre0),
+		(ddrs_rea, "111", ddrs_rea, xdr_reaf),
 
-		(ddrs_wri, "000", ddrs_pre, xdr_pre0),	---------
-		(ddrs_wri, "001", ddrs_pre, xdr_pre0),	-- WRI --
-		(ddrs_wri, "010", ddrs_pre, xdr_pre0),	---------
-		(ddrs_wri, "011", ddrs_pre, xdr_pre0),
+		(ddrs_wri, "000", ddrs_pre, xdr_pre),	---------
+		(ddrs_wri, "001", ddrs_pre, xdr_pref),	-- WRI --
+		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
+		(ddrs_wri, "011", ddrs_pre, xdr_pref),
 		(ddrs_wri, "100", ddrs_wri, xdr_wri),
-		(ddrs_wri, "101", ddrs_pre, xdr_pre0),
+		(ddrs_wri, "101", ddrs_pre, xdr_wrif),
 		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
-		(ddrs_wri, "111", ddrs_pre, xdr_pre0),
+		(ddrs_wri, "111", ddrs_pre, xdr_pref),
 
 		(ddrs_pre, "000", ddrs_idl, xdr_nop),	---------
 		(ddrs_pre, "001", ddrs_aut, xdr_aut),	-- PRE --
@@ -144,27 +148,27 @@ architecture arch of xdr_pgm is
 		(ddrs_idl, "111", ddrs_aut, xdr_aut),
 
 		(ddrs_il1, "000", ddrs_act, xdr_wri),	---------
-		(ddrs_il1, "001", ddrs_act, xdr_wri),	-- IL1 --
+		(ddrs_il1, "001", ddrs_act, xdr_wrif),	-- IL1 --
 		(ddrs_il1, "010", ddrs_act, xdr_rea),	---------
-		(ddrs_il1, "011", ddrs_act, xdr_rea),
+		(ddrs_il1, "011", ddrs_act, xdr_reaf),
 		(ddrs_il1, "100", ddrs_act, xdr_wri),
 		(ddrs_il1, "101", ddrs_act, xdr_wri),
 		(ddrs_il1, "110", ddrs_act, xdr_rea),
 		(ddrs_il1, "111", ddrs_act, xdr_rea),
 
 		(ddrs_il2, "000", ddrs_aut, xdr_pre),	---------
-		(ddrs_il2, "001", ddrs_aut, xdr_pre),	-- IL1 --
+		(ddrs_il2, "001", ddrs_aut, xdr_pref),	-- IL1 --
 		(ddrs_il2, "010", ddrs_aut, xdr_pre),	---------
-		(ddrs_il2, "011", ddrs_aut, xdr_pre),
+		(ddrs_il2, "011", ddrs_aut, xdr_pref),
 		(ddrs_il2, "100", ddrs_aut, xdr_act),
 		(ddrs_il2, "101", ddrs_aut, xdr_act),
 		(ddrs_il2, "110", ddrs_aut, xdr_act),
 		(ddrs_il2, "111", ddrs_aut, xdr_act),
 
 		(ddrs_aut, "000", ddrs_pre, xdr_pre),	---------
-		(ddrs_aut, "001", ddrs_pre, xdr_pre),	-- AUT --
+		(ddrs_aut, "001", ddrs_pre, xdr_pref),	-- AUT --
 		(ddrs_aut, "010", ddrs_pre, xdr_pre),	---------
-		(ddrs_aut, "011", ddrs_pre, xdr_pre),
+		(ddrs_aut, "011", ddrs_pre, xdr_pref),
 		(ddrs_aut, "100", ddrs_act, xdr_act),
 		(ddrs_aut, "101", ddrs_act, xdr_act),
 		(ddrs_aut, "110", ddrs_act, xdr_act),
@@ -194,6 +198,7 @@ begin
 							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
 							xdr_pgm_rdy <= pgm_tab(i).cmd_n(rdy);
 							sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
+							xdr_pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
 							exit loop_pgm;
 						end if;
 					end if;
@@ -205,6 +210,7 @@ begin
 				xdr_pgm_pc  <= ddrs_pre;
 				xdr_pgm_cmd <= xdr_nop(ras downto we);
 				xdr_pgm_rdy <= xdr_nop(rdy);
+				xdr_pgm_rrdy <= xdr_nop(rrdy);
 				sys_pgm_ref <= xdr_nop(ref);
 			end if;
 		end if;

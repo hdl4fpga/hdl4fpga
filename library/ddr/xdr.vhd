@@ -212,7 +212,7 @@ begin
 
 	sys_ini <= xdr_init_rdy;
 	xdr_mpu_rst <= not xdr_init_rdy;
-	xdr_mpu_ref <= '0'; --xdr_refi_req;
+	xdr_mpu_ref <= xdr_refi_req;
 
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
@@ -221,6 +221,7 @@ begin
 		sys_pgm_ref => sys_ref,
 		xdr_pgm_cmd => xdr_pgm_cmd,
 		xdr_pgm_ref => xdr_mpu_ref,
+		xdr_pgm_rrdy => xdr_refi_rdy,
 		xdr_pgm_start => xdr_mpu_req,
 		xdr_pgm_rdy => sys_cmd_rdy,
 		xdr_pgm_req => xdr_mpu_rdy,

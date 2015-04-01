@@ -29,12 +29,12 @@ add wave -noupdate /testbench/ecp3versa_e/ddr_eclk
 add wave -noupdate /testbench/ecp3versa_e/phy1_125clk
 add wave -noupdate /testbench/ecp3versa_e/phy1_tx_d
 add wave -noupdate /testbench/ecp3versa_e/phy1_tx_en
-add wave -noupdate /testbench/ecp3versa_e/phy1_rxc
-add wave -noupdate /testbench/ecp3versa_e/phy1_rx_dv
 add wave -noupdate /testbench/ecp3versa_e/mii_rxdv
 add wave -noupdate /testbench/ecp3versa_e/scope_e_miitx_udprdy
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ecp3versa_e/mii_rxd(7) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(6) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(5) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(4) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(3) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(2) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(1) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/mii_rxd_0 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_1 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_2 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_3 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_4 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_5 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_6 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_7 {-radix hexadecimal}} /testbench/ecp3versa_e/mii_rxd
-add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/phy1_rx_d
+add wave -noupdate /testbench/ecp3versa_e/phy1_rxc
+add wave -noupdate /testbench/ecp3versa_e/phy1_rx_dv
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/ecp3versa_e/phy1_rx_d(0) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(1) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(2) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(3) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(4) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(5) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(6) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(7) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/phy1_rx_d(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/phy1_rx_d
 add wave -noupdate -divider ddr3_dqs_0
 add wave -noupdate -group ddrphy -radix hexadecimal /testbench/ecp3versa_e/dqi_0
 add wave -noupdate -group ddrphy -radix hexadecimal /testbench/ecp3versa_e/dqi_1
@@ -403,8 +403,8 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8713339 ps} 1} {{Cursor 2} {8798213 ps} 1} {{Cursor 3} {20172000 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 3} {20000000 ps} 0} {{Cursor 4} {19878548 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 167
 configure wave -valuecolwidth 55
 configure wave -justifyvalue left
@@ -419,4 +419,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {19467878 ps} {22133270 ps}
+WaveRestoreZoom {21366951 ps} {22033319 ps}

@@ -85,6 +85,7 @@ entity xdr_init is
 	signal xdr_timer_req : std_logic;
 	signal xdr_timer_rdy : std_logic;
 	signal xdr_timer_id  : TMR_IDs;
+	signal xdr_timer_ref : std_logic;
 
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
@@ -264,6 +265,16 @@ begin
 
 			if xdr_init_req='0' then
 				if xdr_timer_rdy='1' then
+					if xdr_init_pc(0)='1' then
+						xdr_timer_ref <= '1';
+					end if;
+				end if;
+			else
+				xdr_timer_ref <= '0';
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
 					case xdr_timer_id is
 					when TMR_RST =>
 						xdr_init_rst <= '0';
@@ -283,8 +294,20 @@ begin
 				xdr_init_rdy <= '0';
 			end if;
 
+			if xdr_init_req='0' then
+				if xdr_refi_rdy='1' then
+					xdr_refi_req <= '0';
+				elsif xdr_timer_ref='1' then
+					if xdr_timer_req='1' then
+						xdr_refi_req  <= '1';
+					end if;
+				end if;
+			else
+				xdr_refi_req <= '0';
+			end if;
 		end if;
 	end process;
+
 	xdr_timer_req <= xdr_timer_rdy or xdr_init_req;
 
 	xdr_init_a   <= dst(dst_a);
