@@ -12,6 +12,7 @@ entity xdr_sch is
 		sclk_edges  : natural;
 		data_phases : natural;
 		data_edges  : natural;
+		registered_output : boolean := false;
 
 		line_size : natural;
 		word_size : natural;
@@ -19,8 +20,8 @@ entity xdr_sch is
 		CL_COD  : std_logic_vector;
 		CWL_COD : std_logic_vector;
 
-		STRL_TAB   : natural_vector;
-		RWNL_TAB   : natural_vector;
+		STRL_TAB  : natural_vector;
+		RWNL_TAB  : natural_vector;
 		DQSZL_TAB : natural_vector;
 		DQSOL_TAB : natural_vector;
 		DQZL_TAB  : natural_vector;

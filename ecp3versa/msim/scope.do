@@ -2,6 +2,9 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_refclk
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxc
 add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/mii_rxd
@@ -19,6 +22,7 @@ add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_tr
 add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_txen
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_e/sys_rw
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/addr
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cke
@@ -600,8 +604,8 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {701476250 ps} 0} {{Cursor 3} {8676410 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {20177064 ps} 0} {{Cursor 3} {20189841 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
 configure wave -justifyvalue left
@@ -616,4 +620,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {701459843 ps} {701492657 ps}
+WaveRestoreZoom {20089704 ps} {20270174 ps}

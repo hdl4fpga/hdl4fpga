@@ -81,6 +81,8 @@ architecture def of dataio is
 	signal video_off  : std_logic_vector(0 to page_num*page_size-1);
 	signal video_di   : std_logic_vector(0 to page_num*2*DDR_LINESIZE-1);
 
+	signal output_dat : std_logic_vector(ddrs_di'range);
+	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0) := x"07_06_05_04_03_02_01_00";
 begin
 
 	datai_e : entity hdl4fpga.datai
@@ -92,7 +94,28 @@ begin
 		output_clk => ddrs_clk,
 		output_rdy => datai_brst_req,
 		output_req => ddrs_di_rdy,
-		output_dat => ddrs_di);
+--		output_dat => ddrs_di
+		output_dat => output_dat);
+
+	ddrs_di <= aux2;
+	process (ddrs_clk)
+		constant n : natural := 8;
+		variable aux : std_logic_vector(n-1 downto 0) := x"08";
+		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
+	begin
+		if rising_edge(ddrs_clk) then
+			if ddrs_di_rdy='1' then
+				aux1 := aux2;
+				for i in 0 to aux1'length/n-1 loop
+					aux  := std_logic_vector(unsigned(aux1(aux'range))+2**3);
+		--			aux := inc(gray(aux));
+					aux1 := aux1 srl n;
+					aux1(aux1'left downto aux1'left-(n-1)) := aux;
+				end loop;
+				aux2 <= aux1;
+			end if;
+		end if;
+	end process;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;

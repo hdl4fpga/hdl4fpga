@@ -233,39 +233,33 @@ begin
 		tpo => tpo);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
-	sto <= not ddrphy_sto(0);
-	process (ddr_sclk)
-		variable xxx : std_logic_vector(0 to 1);
-	begin
-		if rising_edge(ddr_sclk) then
-			valid <= not ddrphy_sto(0);
---			xxx := xxx(1 to xxx'right) & not ddrphy_sto(0);
---			sto <= xxx(0);
---			sto <= not ddrphy_sto(0);
-		end if;
-	end process;
+	sto <= ddrphy_sto(0);
 
-	ddrphy_sti <= (others => ddrphy_sto(0));
+	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
-	debug_clk <= ddrphy_cfgo(0);
+--	debug_clk <= ddrphy_cfgo(0);
 --	debug_clk <= ddr3_dqs(0);
-	process (debug_clk)
-		constant n : natural := 8;
-		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
-		variable aux1 : std_logic_vector(ddrphy_dqi'length-1 downto 0) := (others => '0');
-		variable edge : std_logic;
-	begin
-		if rising_edge(debug_clk) then
+--	process (debug_clk)
+--		constant n : natural := 8;
+--		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+--		variable aux1 : std_logic_vector(ddrphy_dqi'length-1 downto 0) := (others => '0');
+--		variable edge : std_logic;
+--	begin
+--		if rising_edge(debug_clk) then
 --			if (ddrphy_cfgo(0) xor edge)='1' then
-				aux1 := aux & aux1(63 downto n);
+--				aux1 := aux & aux1(63 downto n);
 --				aux1 := aux1(aux1'left-1 downto aux1'right) & ddrphy_cfgo(0);
-				ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
+--				if ddrphy_sto(0)='1' then
+--					ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
+--				else
+--					ddrphy_dqi <= ddrphy_dqii;
+--				end if;
 --				aux := inc(gray(aux));
-				aux := std_logic_vector(unsigned(aux)+1);
+--				aux := std_logic_vector(unsigned(aux)+1);
 --			end if;
 --			edge := ddrphy_cfgo(0);
-		end if;
-	end process;
+--		end if;
+--	end process;
 --
 --	process (ddr_sclk)
 --		variable xxx : byte_vector(0 to 7);
@@ -320,11 +314,11 @@ begin
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
 		sys_dmi => ddrphy_dmo,
-		sys_dmt => (others => '0'), -- ddrphy_dmt,
+		sys_dmt => ddrphy_dmt,
 		sys_dmo => ddrphy_dmi,
-		--sys_dqi => ddrphy_dqi,
+		sys_dqi => ddrphy_dqi,
 		sys_dqt => ddrphy_dqt,
-		sys_dqo => (others => '0'), --ddrphy_dqo,
+		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
 
 		ddr_rst => ddr3_rst,

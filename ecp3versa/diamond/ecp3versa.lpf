@@ -25,7 +25,7 @@ LOCATE COMP "dcms_e/ddr3_b.pll_i"		SITE "PLL_R35C5" ;
 LOCATE COMP "dcms_e/ddr3_b.eclksynca_i"	SITE "LECLKSYNC2" ;
 LOCATE COMP "ddrphy_e/sr[4]" SITE "R34C4B";
 
-LOCATE VREF "vref_ddr3"   SITE "E1";
+LOCATE VREF "vref1_ddr3"  SITE "E1";
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
 LOCATE COMP "ddr3_dq[1]"  SITE "E4";
 LOCATE COMP "ddr3_dq[2]"  SITE "D2";
@@ -45,12 +45,12 @@ LOCATE COMP "ddr3_dq[15]" SITE "G3";
 LOCATE COMP "ddr3_dm[0]" SITE "E3" ;
 LOCATE COMP "ddr3_dm[1]"  SITE "F3" ;
 DEFINE PORT GROUP "ddr3_dq" "ddr3_dq[*]" "ddr3_dm[*]";
-IOBUF GROUP "ddr3_dq" IO_TYPE=SSTL15;
+IOBUF GROUP "ddr3_dq" IO_TYPE=SSTL15 vref=vref1_ddr3;
 
 LOCATE COMP "ddr3_dqs[0]"  SITE "F5" ;
 LOCATE COMP "ddr3_dqs[1]"  SITE "H5" ;
 DEFINE PORT GROUP "ddr3_dqs" "ddr3_dqs[*]";
-IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0 ;
+IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0  vref=vref1_ddr3;
 FREQUENCY PORT  "ddr3_dqs[0]" 400.00 MHz ;
 
 LOCATE COMP "ddr3_a[0]"  SITE "C8";
@@ -70,10 +70,10 @@ LOCATE COMP "ddr3_b[0]"  SITE "B4";
 LOCATE COMP "ddr3_b[1]"  SITE "E6";
 LOCATE COMP "ddr3_b[2]"  SITE "D5";
 DEFINE PORT GROUP "ddr3_ba" "ddr3_a[*]" "ddr3_b[*]";
-IOBUF GROUP "ddr3_ba" IO_TYPE=SSTL15;
+IOBUF GROUP "ddr3_ba" IO_TYPE=SSTL15 vref=vref1_ddr3;
 
 LOCATE COMP "ddr3_clk"   SITE "K4";
-IOBUF PORT "ddr3_clk" IO_TYPE=SSTL15D;
+IOBUF PORT "ddr3_clk" IO_TYPE=SSTL15D vref=vref1_ddr3;
 
 LOCATE COMP "ddr3_cke"   SITE "G8";
 LOCATE COMP "ddr3_ras"   SITE "A6";
@@ -83,7 +83,7 @@ LOCATE COMP "ddr3_cs"   SITE "C6" ;
 LOCATE COMP "ddr3_odt"   SITE "E7";
 
 DEFINE PORT GROUP "ddr3_cmd" "ddr3_cke" "ddr3_cs" "ddr3_ras" "ddr3_cas" "ddr3_we" "ddr3_odt";
-IOBUF GROUP "ddr3_cmd" IO_TYPE=SSTL15;
+IOBUF GROUP "ddr3_cmd" IO_TYPE=SSTL15 vref=vref1_ddr3;
 
 LOCATE COMP "ddr3_rst" SITE "D4" ;
 IOBUF PORT "ddr3_rst" IO_TYPE=LVCMOS15;

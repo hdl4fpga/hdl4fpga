@@ -79,13 +79,13 @@ begin
 		eclkdqsr => idqs_eclk,
 
 		sclk => sys_sclk,
-		read => sys_rw,
+		read => rw,
 		ddrclkpol => ddrclkpol,
 		ddrlat  => ddrlat,
 		prmbdet => prmbdet,
 
 		eclk => sys_eclk,
---		datavalid => sys_cfgo(0),
+		datavalid => sys_cfgo(datavalid),
 
 		rst  => rst,
 		dyndelay0 => sys_cfgi(dyndelay0),
@@ -101,7 +101,6 @@ begin
 		dqsw => dqsw,
 		dqclk0 => dqclk0,
 		dqclk1 => dqclk1);
-	sys_cfgo(0) <= sys_rw;
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;

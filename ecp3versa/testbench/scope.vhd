@@ -42,6 +42,8 @@ architecture scope of testbench is
 	signal mii_treq : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 8-1);
+	signal mii_rxdv_d : std_logic;
+	signal mii_rxd_d  : std_logic_vector(0 to 8-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
 	signal mii_strt : std_logic;
@@ -178,8 +180,11 @@ begin
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
-		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd);
+		mii_txen => mii_rxdv_d,
+		mii_txd  => mii_rxd_d);
+
+		mii_rxdv <= mii_rxdv_d after 1 ns;
+		mii_rxd  <= mii_rxd_d  after 1 ns;
 
 	ecp3versa_e : ecp3versa
 	port map (

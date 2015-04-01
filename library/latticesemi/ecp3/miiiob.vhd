@@ -28,8 +28,6 @@ entity mii_iob is
 end;
 
 architecture def of mii_iob is
-	attribute oddrapps : string;
-	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 begin
 
 	--------
