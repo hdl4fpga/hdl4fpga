@@ -1,8 +1,11 @@
 onerror {resume}
+quietly virtual signal -install /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e { (context /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e )(xdr_pgm_start & xdr_pgm_rw & xdr_pgm_ref )} pgm_cmd
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_rdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
 add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_refclk
@@ -522,60 +525,62 @@ add wave -noupdate -group miitxmem -radix hexadecimal -childformat {{/testbench/
 add wave -noupdate -group miitxmem /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/wr_ena
 add wave -noupdate -group miitxmem -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(0) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(4) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(5) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(6) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(7) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address
 add wave -noupdate -group miitxmem /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_gnt
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rw
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/sys_pgm_ref
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rw
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
-add wave -noupdate -expand -group ddr_e -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/sys_pgm_ref
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rst
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_bl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cas
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cwl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_ras
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_we
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rst
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_bl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cas
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cwl
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_ras
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_we
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
-add wave -noupdate -expand -group ddr_e -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/line__190/pc
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rst
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rw
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -divider {New Divider}
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rw
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rrdy
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/sys_pgm_ref
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rst
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_bl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cas
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cwl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_ras
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_we
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rst
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_bl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cas
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cwl
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_ras
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_we
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
+add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
 add wave -noupdate -expand -group ddr_e -group xdr_rdfifo -expand -group byte_0 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do
 add wave -noupdate -expand -group ddr_e -group xdr_rdfifo -expand -group byte_0 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_di
 add wave -noupdate -expand -group ddr_e -group xdr_rdfifo -expand -group byte_0 -radix hexadecimal -childformat {{/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(3) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(2) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(1) -radix hexadecimal} {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(0)/data_edges_g(0)/ena_g(0)/inbyte_i/fifo_do
@@ -604,7 +609,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20177064 ps} 0} {{Cursor 3} {20189841 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8774195 ps} 0} {{Cursor 3} {41727976 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -620,4 +625,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20089704 ps} {20270174 ps}
+WaveRestoreZoom {41632058 ps} {41832536 ps}
