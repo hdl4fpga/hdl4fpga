@@ -541,6 +541,10 @@ add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3ve
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -divider {New Divider}
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/pgm_cmd
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_start
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_rreq
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/qo(7)
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/dataio_e/ddrio_b/creq
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rw
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rrdy
@@ -609,7 +613,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8774195 ps} 0} {{Cursor 3} {41727976 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8774195 ps} 0} {{Cursor 3} {51786807 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -625,4 +629,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {41632058 ps} {41832536 ps}
+WaveRestoreZoom {50599530 ps} {53530610 ps}

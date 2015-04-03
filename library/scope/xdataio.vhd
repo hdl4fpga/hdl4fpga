@@ -179,23 +179,40 @@ begin
 				to_signed(2, DDR_CLNMSIZE+1));
 
 
-		process (ddrs_clk)
+--		process (ddrs_clk)
+--		begin
+--			if rising_edge(ddrs_clk) then
+--				if sys_rst='1'then
+--					creq <= '0';
+--				elsif ddrs_breq='1' then
+--					if creq='0' then
+--						creq <= not ddrs_rreq and ddrs_crdy;
+--					else
+--						creq <= not ddrs_rreq and not qo(DDR_CLNMSIZE);
+--					end if;
+--				else
+--					creq <= '0';
+--				end if;
+--			end if;
+--		end process;
+
+		creq <= 
+		'1' when sys_rst='1'   else
+		'1' when ddrs_breq='0' else
+		'1' when ddrs_rreq='1' else
+		'1' when qo(ddr_clnmsize)='1' else
+		'0';
+
+		process (ddrs_clk, creq)
 		begin
-			if rising_edge(ddrs_clk) then
-				if sys_rst='1'then
-					creq <= '0';
-				elsif ddrs_breq='1' then
-					if creq='0' then
-						creq <= not ddrs_rreq and ddrs_crdy;
-					else
-						creq <= not ddrs_rreq and not qo(DDR_CLNMSIZE);
-					end if;
-				else
-					creq <= '0';
-				end if;
+			if creq='1' then
+				ddrs_creq <= '0';
+			elsif rising_edge(ddrs_clk) then
+				ddrs_creq <= ddrs_crdy;
 			end if;
 		end process;
-		ddrs_creq <= creq and ddrs_breq;
+
+--		ddrs_creq <= creq and ddrs_breq;
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
