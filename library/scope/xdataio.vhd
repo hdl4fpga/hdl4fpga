@@ -197,21 +197,22 @@ begin
 --		end process;
 
 		creq <= 
-		'1' when sys_rst='1'   else
-		'1' when ddrs_breq='0' else
-		'1' when ddrs_rreq='1' else
-		'1' when qo(ddr_clnmsize)='1' else
-		'0';
+		'0' when sys_rst='1'   else
+		'0' when ddrs_breq='0' else
+		'0' when ddrs_rreq='1' else
+		'0' when qo(ddr_clnmsize)='1' else
+		'0' when ddrs_crdy='0' else
+		'1';
 
-		process (ddrs_clk, creq)
+		process (ddrs_crdy, creq)
+			variable q : std_logic;
 		begin
-			if creq='1' then
-				ddrs_creq <= '0';
-			elsif rising_edge(ddrs_clk) then
-				ddrs_creq <= ddrs_crdy;
+			if creq='0' then
+				ddrs_creq <='0';
+			elsif ddrs_crdy='1' then
+				ddrs_creq <='1';
 			end if;
 		end process;
-
 --		ddrs_creq <= creq and ddrs_breq;
 
 		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
