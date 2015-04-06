@@ -96,7 +96,7 @@ architecture arch of xdr_pgm is
 --             +------+------+------+------+------+------+------+------+
 --     act     | wri  | wri  | rea  | rea  | wri  | wri  | rea  | rea  |
 --     rea     | pre  | preq | pre  | preq | '-'  | preq | rea  | reaq |
---     wri     | pre  | preq | pre  | preq | wri  | wriq | '-'  | preq |
+--     wri     | pre  | preq | pre  | preq | wri  | preq | '-'  | preq |
 --     pre     | nop  | aut  | nop  | autq | act  | act  | act  | act  |
 --     idl     | nop  | aut  | nop  | aut  | act  | aut  | act  | aut  |
 --     il1     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
@@ -129,7 +129,7 @@ architecture arch of xdr_pgm is
 		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
 		(ddrs_wri, "011", ddrs_pre, xdr_preq),
 		(ddrs_wri, "100", ddrs_wri, xdr_wri),
-		(ddrs_wri, "101", ddrs_pre, xdr_wriq),
+		(ddrs_wri, "101", ddrs_pre, xdr_preq),
 		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
 		(ddrs_wri, "111", ddrs_pre, xdr_preq),
 
@@ -192,6 +192,9 @@ begin
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
+				if xdr_pgm_req='1' then
+					xdr_pgm_pc <= pc;
+				end if;
 				pc  := (others => '-');
 				xdr_pgm_rdy <= '-'; 
 				sys_pgm_ref <= '-';
@@ -207,11 +210,9 @@ begin
 						end if;
 					end if;
 				end loop;
-				if xdr_pgm_req='1' then
-					xdr_pgm_pc <= pc;
-				end if;
 			else
-				xdr_pgm_pc  <= ddrs_pre;
+				pc := ddrs_pre;
+				xdr_pgm_pc  <= pc;
 				xdr_pgm_cmd <= xdr_nop(ras downto we);
 				xdr_pgm_rdy <= xdr_nop(rdy);
 				xdr_pgm_rrdy <= xdr_nop(rrdy);
