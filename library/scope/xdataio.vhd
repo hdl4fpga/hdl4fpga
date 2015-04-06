@@ -215,7 +215,15 @@ begin
 		end process;
 --		ddrs_creq <= creq and ddrs_breq;
 
-		ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
+		process (ddrs_clk)
+		begin
+			if rising_edge(ddrs_clk) then
+				if ddrs_act='1' then
+					ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
+				end if;
+			end if;
+		end process;
+
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 
