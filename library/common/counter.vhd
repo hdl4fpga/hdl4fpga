@@ -25,22 +25,7 @@ architecture def of counter is
 
 begin
 
-	process (clk)
-		variable eee : std_logic;
-	begin
-		if rising_edge(clk) then
-			for i in 0 to stage_size'length-1 loop
-				if load='1' then
-					cy(i) <= '0';
-				elsif i=0 then
-					cy(i) <= q(i);
-				else
-					cy(i) <= q(i) and cy(i-1);
-				end if;
-			end loop;
-		end if;
-	end process;
-	en <= cy & ena;
+	en <= q & ena;
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
 
@@ -65,8 +50,10 @@ begin
 				if load='1' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif cntr(cntr'left)='1' then
-					cntr <= to_unsigned((2**(size-1)-2), size);
-				elsif ena='1' then
+					if i /= (stage_size'length-1) then
+						cntr <= to_unsigned((2**(size-1)-1), size);
+					end if;
+				elsif en(i)='1' then
 					cntr <= cntr - 1;
 				end if;
 			end if;
