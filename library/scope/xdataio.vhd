@@ -201,12 +201,13 @@ begin
 		'0' when ddrs_breq='0' else
 		'0' when ddrs_rreq='1' else
 		'0' when qo(ddr_clnmsize)='1' else
-		'0' when ddrs_crdy='0' else
 		'1';
 
-		process (ddrs_clk)
+		process (ddrs_clk, creq)
 		begin
-			if rising_edge(ddrs_clk) then
+			if creq='0' then
+				ddrs_creq <= '0';
+			elsif rising_edge(ddrs_clk) then
 				ddrs_creq <= creq;
 			end if;
 		end process;
