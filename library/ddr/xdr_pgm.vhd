@@ -80,7 +80,7 @@ architecture arch of xdr_pgm is
 --     act     | wri | wri | rea | rea | wri | wri | rea | rea |
 --     rea     | pre | pre | pre | pre | '-' | rea | rea | rea |
 --     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
---     pre     | idl | aut | idl | aut | act | act | act | act |
+--     pre     | pre | aut | pre | aut | act | act | act | act |
 --     idl     | idl | aut | idl | aut | il1 | aut | il1 | aut |
 --     il1     | act | act | act | act | act | act | act | act |
 --     il2     | aut | aut | aut | aut | aut | aut | aut | aut |
@@ -133,9 +133,9 @@ architecture arch of xdr_pgm is
 		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
 		(ddrs_wri, "111", ddrs_pre, xdr_preq),
 
-		(ddrs_pre, "000", ddrs_idl, xdr_nop),	---------
+		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "001", ddrs_aut, xdr_autq),	-- PRE --
-		(ddrs_pre, "010", ddrs_idl, xdr_nop),	---------
+		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "011", ddrs_aut, xdr_autq),
 		(ddrs_pre, "100", ddrs_act, xdr_act),
 		(ddrs_pre, "101", ddrs_act, xdr_act),
@@ -181,6 +181,11 @@ architecture arch of xdr_pgm is
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
 	signal xdr_input  : std_logic_vector(0 to 2);
 
+	signal pc : std_logic_vector(xdr_pgm_pc'range);
+	signal pgm_cmd : std_logic_vector(xdr_pgm_cmd'range);
+	signal pgm_rdy : std_logic;
+	signal pgm_rrdy : std_logic;
+	signal sys_ref : std_logic;
 begin
 
 	xdr_input(2) <= xdr_pgm_ref;
@@ -188,36 +193,48 @@ begin
 	xdr_input(0) <= xdr_pgm_start;
 
 	process (xdr_pgm_clk)
-		variable pc : std_logic_vector(xdr_pgm_pc'range);
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
 				if xdr_pgm_req='1' then
 					xdr_pgm_pc <= pc;
 				end if;
-				pc  := (others => '-');
-				xdr_pgm_rdy <= '-'; 
-				sys_pgm_ref <= '-';
-				loop_pgm : for i in pgm_tab'range loop
-					if xdr_pgm_pc=pgm_tab(i).state then
-						if xdr_input=pgm_tab(i).input then
-							pc := pgm_tab(i).state_n; 
-							xdr_pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
-							xdr_pgm_rdy <= pgm_tab(i).cmd_n(rdy);
-							sys_pgm_ref <= pgm_tab(i).cmd_n(ref);
-							xdr_pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
-							exit loop_pgm;
-						end if;
-					end if;
-				end loop;
+--				xdr_pgm_cmd  <= pgm_cmd;
+--				xdr_pgm_rdy  <= pgm_rdy;
+--				sys_pgm_ref  <= sys_ref;
+--				xdr_pgm_rrdy <= pgm_rrdy;
 			else
-				pc := ddrs_pre;
-				xdr_pgm_pc  <= pc;
-				xdr_pgm_cmd <= xdr_nop(ras downto we);
-				xdr_pgm_rdy <= xdr_nop(rdy);
-				xdr_pgm_rrdy <= xdr_nop(rrdy);
-				sys_pgm_ref <= xdr_nop(ref);
+				xdr_pgm_pc  <= ddrs_pre;
+--				xdr_pgm_cmd <= xdr_nop(ras downto we);
+--				xdr_pgm_rdy <= xdr_nop(rdy);
+--				xdr_pgm_rrdy <= xdr_nop(rrdy);
+--				sys_pgm_ref <= xdr_nop(ref);
 			end if;
 		end if;
 	end process;
+
+	xdr_pgm_cmd  <= pgm_cmd;
+	xdr_pgm_rdy  <= pgm_rdy;
+	sys_pgm_ref  <= sys_ref;
+	xdr_pgm_rrdy <= pgm_rrdy;
+
+	process (xdr_pgm_pc, xdr_input)
+	begin
+		pgm_rdy <= '-'; 
+		sys_ref <= '-';
+		pc  <= (others => '-');
+		loop_pgm : for i in pgm_tab'range loop
+			if xdr_pgm_pc=pgm_tab(i).state then
+				if xdr_input=pgm_tab(i).input then
+					pc <= pgm_tab(i).state_n; 
+					pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
+					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
+					sys_ref <= pgm_tab(i).cmd_n(ref);
+					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
+					exit loop_pgm;
+				end if;
+			end if;
+		end loop;
+	end process;
+
 end;

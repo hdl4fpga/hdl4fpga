@@ -204,15 +204,22 @@ begin
 		'0' when ddrs_crdy='0' else
 		'1';
 
-		process (ddrs_crdy, creq)
-			variable q : std_logic;
+		process (ddrs_clk)
 		begin
-			if creq='0' then
-				ddrs_creq <='0';
-			elsif ddrs_crdy='1' then
-				ddrs_creq <='1';
+			if rising_edge(ddrs_clk) then
+				ddrs_creq <= creq;
 			end if;
 		end process;
+
+--		process (ddrs_crdy, creq)
+--			variable q : std_logic;
+--		begin
+--			if creq='0' then
+--				ddrs_creq <='0';
+--			elsif ddrs_crdy='1' then
+--				ddrs_creq <='1';
+--			end if;
+--		end process;
 --		ddrs_creq <= creq and ddrs_breq;
 
 		process (ddrs_clk)

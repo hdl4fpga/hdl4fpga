@@ -1,5 +1,5 @@
 onerror {resume}
-quietly virtual signal -install /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e { (context /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e )(xdr_pgm_start & xdr_pgm_rw & xdr_pgm_ref )} pgm_cmd
+quietly virtual signal -install /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e { (context /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e )(xdr_pgm_ref & xdr_pgm_rrdy & xdr_pgm_req )} pgm_cmd2
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
@@ -529,7 +529,6 @@ add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3ve
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_clk
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
-add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/line__190/pc
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rdy
@@ -551,10 +550,12 @@ add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3ve
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_ref
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_rrdy
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
-add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -divider {New Divider}
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/pc
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_input
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -color Orange -itemcolor Orange /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_pc
-add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/line__190/pc
-add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -color Cyan /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
+add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm -divider {New Divider}
 add wave -noupdate -expand -group ddr_e -expand -group xdr_pgm /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e/sys_pgm_ref
 add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rst
 add wave -noupdate -expand -group ddr_e -expand -group xdr_mpu /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
@@ -618,8 +619,8 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8657696 ps} 0} {{Cursor 3} {8763943 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {7869325 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
 configure wave -justifyvalue left
@@ -634,4 +635,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {8726490 ps} {8772290 ps}
+WaveRestoreZoom {7859856 ps} {8007377 ps}
