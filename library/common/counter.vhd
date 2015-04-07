@@ -65,5 +65,5 @@ begin
 		q(i) <= cntr(cntr'left);
 
 	end generate;
-	co <= cy;
+	co <= q;
 end;
