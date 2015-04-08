@@ -201,6 +201,7 @@ begin
 		'1' when sys_rst='1'   else
 		'1' when ddrs_rreq='1' else
 		'1' when ddrs_breq='0' else
+		'1' when qo(ddr_clnmsize)='1' else
 		'0';
 
 		crdy <=
@@ -211,11 +212,9 @@ begin
 		'0';
 
 
-		process (ddrs_clk, qo(ddr_clnmsize))
+		process (ddrs_clk)
 		begin
-			if qo(ddr_clnmsize)='1' then
-				ddrs_creq <= '0' after 100 ps;
-			elsif rising_edge(ddrs_clk) then
+			if rising_edge(ddrs_clk) then
 				if creq='1' then
 					ddrs_creq <= '0';
 				elsif crdy='1' then

@@ -216,11 +216,8 @@ architecture registered of xdr_pgm is
 --     act     | wri | wri | rea | rea | wri | wri | rea | rea |
 --     rea     | pre | pre | pre | pre | '-' | rea | rea | rea |
 --     wri     | pre | pre | pre | pre | wri | pre | '-' | pre |
---     pre     | pre | aut | pre | aut | act | act | act | act |
---     idl     | idl | aut | idl | aut | il1 | aut | il1 | aut |
---     il1     | act | act | act | act | act | act | act | act |
---     il2     | aut | aut | aut | aut | aut | aut | aut | aut |
---     aut     | idl | idl | idl | idl | act | act | act | act |
+--     pre     | pre | aut | pre | aut | act | aut | act | aut |
+--     aut     | pre | pre | pre | pre | act | act | act | act |
 --             +-----+-----+-----+-----+-----+-----+-----+-----+
 
 --                           --                 --
@@ -228,34 +225,31 @@ architecture registered of xdr_pgm is
 --                           --                 --
 
 --
---               000    001    010    011    100   101    110   111
+--               000    001    010    011    100    101    110    111
 --             +------+------+------+------+------+------+------+------+
---     act     | wri  | wri  | rea  | rea  | wri  | wri  | rea  | rea  |
---     rea     | pre  | preq | pre  | preq | '-'  | preq | rea  | reaq |
---     wri     | pre  | preq | pre  | preq | wri  | preq | '-'  | preq |
---     pre     | nop  | aut  | nop  | autq | act  | act  | act  | act  |
---     idl     | nop  | aut  | nop  | aut  | act  | aut  | act  | aut  |
---     il1     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     il2     | pre  | preq | pre  | pref | act  | act  | act  | act  |
---     aut     | prey | prey | prey | prey | acty | acty | acty | acty |
+--     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     rea     | pre  | preq | pre  | preq | '-'  | '-'  | rea  | reaq |
+--     wri     | pre  | preq | pre  | preq | wri  | wriq | '-'  | '-'  |
+--     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
 --             +------+------+------+------+------+------+------+------+
 
 	constant pgm_tab : trans_tab := (
 		(ddrs_act, "000", ddrs_wri, xdr_wri),	---------
-		(ddrs_act, "001", ddrs_wri, xdr_wri),	-- ACT --
+		(ddrs_act, "001", ddrs_wri, xdr_wriq),	-- ACT --
 		(ddrs_act, "010", ddrs_rea, xdr_rea),	---------
-		(ddrs_act, "011", ddrs_rea, xdr_rea),
+		(ddrs_act, "011", ddrs_rea, xdr_reaq),
 		(ddrs_act, "100", ddrs_wri, xdr_wri),
-		(ddrs_act, "101", ddrs_wri, xdr_wri),
+		(ddrs_act, "101", ddrs_wri, xdr_wriq),
 		(ddrs_act, "110", ddrs_rea, xdr_rea),
-		(ddrs_act, "111", ddrs_rea, xdr_rea),
+		(ddrs_act, "111", ddrs_rea, xdr_reaq),
 		
 		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
 		(ddrs_rea, "001", ddrs_pre, xdr_preq),	-- REA --
 		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
 		(ddrs_rea, "011", ddrs_pre, xdr_preq),
-		(ddrs_rea, "100", ddrs_dnt, xdr_wri),
-		(ddrs_rea, "101", ddrs_pre, xdr_preq),
+		(ddrs_rea, "100", ddrs_dnt, xdr_dnt),
+		(ddrs_rea, "101", ddrs_pre, xdr_dnt),
 		(ddrs_rea, "110", ddrs_rea, xdr_rea),
 		(ddrs_rea, "111", ddrs_rea, xdr_reaq),
 
@@ -264,54 +258,27 @@ architecture registered of xdr_pgm is
 		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
 		(ddrs_wri, "011", ddrs_pre, xdr_preq),
 		(ddrs_wri, "100", ddrs_wri, xdr_wri),
-		(ddrs_wri, "101", ddrs_pre, xdr_preq),
+		(ddrs_wri, "101", ddrs_pre, xdr_wriq),
 		(ddrs_wri, "110", ddrs_dnt, xdr_dnt),
-		(ddrs_wri, "111", ddrs_pre, xdr_preq),
+		(ddrs_wri, "111", ddrs_pre, xdr_dnt),
 
 		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "001", ddrs_aut, xdr_autq),	-- PRE --
 		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "011", ddrs_aut, xdr_autq),
 		(ddrs_pre, "100", ddrs_act, xdr_act),
-		(ddrs_pre, "101", ddrs_act, xdr_act),
+		(ddrs_pre, "101", ddrs_act, xdr_autq),
 		(ddrs_pre, "110", ddrs_act, xdr_act),
-		(ddrs_pre, "111", ddrs_act, xdr_act),
+		(ddrs_pre, "111", ddrs_act, xdr_autq),
 
-		(ddrs_idl, "000", ddrs_idl, xdr_nop),	---------
-		(ddrs_idl, "001", ddrs_aut, xdr_aut),	-- IDL --
-		(ddrs_idl, "010", ddrs_idl, xdr_nop),	---------
-		(ddrs_idl, "011", ddrs_aut, xdr_aut),
-		(ddrs_idl, "100", ddrs_il1, xdr_act),
-		(ddrs_idl, "101", ddrs_aut, xdr_aut),
-		(ddrs_idl, "110", ddrs_il1, xdr_act),
-		(ddrs_idl, "111", ddrs_aut, xdr_aut),
-
-		(ddrs_il1, "000", ddrs_act, xdr_wri),	---------
-		(ddrs_il1, "001", ddrs_act, xdr_wriq),	-- IL1 --
-		(ddrs_il1, "010", ddrs_act, xdr_rea),	---------
-		(ddrs_il1, "011", ddrs_act, xdr_reaq),
-		(ddrs_il1, "100", ddrs_act, xdr_wri),
-		(ddrs_il1, "101", ddrs_act, xdr_wriq),
-		(ddrs_il1, "110", ddrs_act, xdr_rea),
-		(ddrs_il1, "111", ddrs_act, xdr_reaq),
-
-		(ddrs_il2, "000", ddrs_aut, xdr_pre),	---------
-		(ddrs_il2, "001", ddrs_aut, xdr_preq),	-- IL2 --
-		(ddrs_il2, "010", ddrs_aut, xdr_pre),	---------
-		(ddrs_il2, "011", ddrs_aut, xdr_preq),
-		(ddrs_il2, "100", ddrs_aut, xdr_act),
-		(ddrs_il2, "101", ddrs_aut, xdr_act),
-		(ddrs_il2, "110", ddrs_aut, xdr_act),
-		(ddrs_il2, "111", ddrs_aut, xdr_act),
-
-		(ddrs_aut, "000", ddrs_pre, xdr_prey),	---------
-		(ddrs_aut, "001", ddrs_pre, xdr_prey),	-- AUT --
-		(ddrs_aut, "010", ddrs_pre, xdr_prey),	---------
-		(ddrs_aut, "011", ddrs_pre, xdr_prey),
+		(ddrs_aut, "000", ddrs_pre, xdr_nopy),	---------
+		(ddrs_aut, "001", ddrs_pre, xdr_auty),	-- AUT --
+		(ddrs_aut, "010", ddrs_pre, xdr_nopy),	---------
+		(ddrs_aut, "011", ddrs_pre, xdr_auty),
 		(ddrs_aut, "100", ddrs_act, xdr_acty),
-		(ddrs_aut, "101", ddrs_act, xdr_acty),
+		(ddrs_aut, "101", ddrs_act, xdr_auty),
 		(ddrs_aut, "110", ddrs_act, xdr_acty),
-		(ddrs_aut, "111", ddrs_act, xdr_acty));
+		(ddrs_aut, "111", ddrs_act, xdr_auty));
 
 begin
 
@@ -335,10 +302,10 @@ begin
 			else
 				pgm_pc := ddrs_pre;
 				xdr_pgm_pc <= pgm_pc;
---				xdr_pgm_cmd  <= pgm_cmd;
---				xdr_pgm_rdy  <= pgm_rdy;
---				sys_pgm_ref  <= sys_ref;
---				xdr_pgm_rrdy <= pgm_rrdy;
+				xdr_pgm_cmd  <= "111";
+				xdr_pgm_rdy  <= '1';
+				sys_pgm_ref  <= '0';
+				xdr_pgm_rrdy <= '0';
 			end if;
 		end if;
 	end process;
