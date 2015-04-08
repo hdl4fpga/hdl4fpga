@@ -131,6 +131,7 @@ begin
 		signal co : std_logic_vector(0 to 3-1);
 		signal crst : std_logic;
 		signal creq : std_logic;
+		signal crdy : std_logic;
 
 		function pencoder (
 			constant arg : std_logic_vector)
@@ -197,18 +198,29 @@ begin
 --		end process;
 
 		creq <= 
-		'0' when sys_rst='1'   else
-		'0' when ddrs_breq='0' else
+		'1' when sys_rst='1'   else
+		'1' when ddrs_rreq='1' else
+		'1' when ddrs_breq='0' else
+		'0';
+
+		crdy <=
+		'0' when sys_rst='1' else
 		'0' when ddrs_rreq='1' else
 		'0' when qo(ddr_clnmsize)='1' else
-		'1';
+	   	ddrs_breq when ddrs_crdy='1' else
+		'0';
 
-		process (ddrs_clk, creq)
+
+		process (ddrs_clk, qo(ddr_clnmsize))
 		begin
-			if creq='0' then
-				ddrs_creq <= '0';
+			if qo(ddr_clnmsize)='1' then
+				ddrs_creq <= '0' after 100 ps;
 			elsif rising_edge(ddrs_clk) then
-				ddrs_creq <= creq;
+				if creq='1' then
+					ddrs_creq <= '0';
+				elsif crdy='1' then
+					ddrs_creq <= '1';
+				end if;
 			end if;
 		end process;
 
