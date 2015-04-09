@@ -235,7 +235,16 @@ begin
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	sto <= ddrphy_sto(0);
 
-	ddrphy_sti <= (others => ddrphy_cfgo(0));
+--	ddrphy_sti <= (others => ddrphy_cfgo(0));
+	process (ddr_sclk)
+		variable q : std_logic_vector(0 to 2);
+	begin
+		if rising_edge(ddr_sclk) then
+			q := q(1 to q'right) & ddrphy_sto(0);
+			ddrphy_sti <= (others => q(0));
+		end if;
+	end process;
+
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
 --	debug_clk <= ddrphy_cfgo(0);
 --	debug_clk <= ddr3_dqs(0);

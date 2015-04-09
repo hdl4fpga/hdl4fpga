@@ -4,6 +4,8 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/cfgo(0)(0)
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_sti(0)
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_sto(0)
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_req
@@ -621,7 +623,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8687173 ps} 0}
+WaveRestoreCursors {{Cursor 1} {20662911 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -637,4 +639,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {8518378 ps} {8846506 ps}
+WaveRestoreZoom {20498847 ps} {20826975 ps}
