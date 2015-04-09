@@ -353,17 +353,17 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000) &
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
-		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
-		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
---		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
---		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
+		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
+		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
 		timing_record'(mark => M15E, param => tWR,   value => 15000) &
 		timing_record'(mark => M15E, param => tRCD,  value => 13910) &
 		timing_record'(mark => M15E, param => tRP,   value => 13910) &
 		timing_record'(mark => M15E, param => tMRD,  value => 15000) &
 		timing_record'(mark => M15E, param => tRFC,  value => 110000) &
 		timing_record'(mark => M15E, param => tXPR,  value => 110000 + 10000) &
-		timing_record'(mark => M15E, param => tREFI, value => 7800000);
+		timing_record'(mark => M15E, param => tREFI, value => 78000); --7800000);
 
 	constant cnfglat_db : cnfglat_tab :=
 
