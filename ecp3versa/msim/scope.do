@@ -3,6 +3,7 @@ quietly virtual signal -install /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e {
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/cfgo(0)(0)
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/read
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_rdy
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_req
