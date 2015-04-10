@@ -18,11 +18,13 @@ entity xdr_pgm is
 		xdr_pgm_rdy : out std_logic;
 		xdr_pgm_req : in  std_logic := '1';
 		xdr_pgm_rw  : in  std_logic := '1';
+		xdr_pgm_cas : out std_logic := '0';
 		xdr_pgm_cmd : out std_logic_vector(0 to 2));
 
 --	attribute fsm_encoding : string;
 --	attribute fsm_encoding of xdr_pgm : entity is "compact";
 
+	constant cacc : natural := 6;
 	constant rrdy : natural := 5;
 	constant ref  : natural := 4;
 	constant rdy  : natural := 3;
@@ -34,21 +36,21 @@ entity xdr_pgm is
                         --> sys_pgm_ref <--------------------+|
                         --                                   ||
                         --                                   VV
-	constant xdr_act  : std_logic_vector(5 downto 0)    := "000" & "011";
-	constant xdr_actq : std_logic_vector(5 downto 0)    := "010" & "011";
-	constant xdr_acty : std_logic_vector(5 downto 0)    := "100" & "011";
-	constant xdr_rea  : std_logic_vector(xdr_act'range) := "000" & "101";
-	constant xdr_reaq : std_logic_vector(xdr_act'range) := "010" & "101";
-	constant xdr_wri  : std_logic_vector(xdr_act'range) := "000" & "100";
-	constant xdr_wriq : std_logic_vector(xdr_act'range) := "010" & "100";
-	constant xdr_pre  : std_logic_vector(xdr_act'range) := "000" & "010";
-	constant xdr_preq : std_logic_vector(xdr_act'range) := "010" & "010";
-	constant xdr_prey : std_logic_vector(xdr_act'range) := "100" & "010";
-	constant xdr_aut  : std_logic_vector(xdr_act'range) := "000" & "001";
-	constant xdr_autq : std_logic_vector(xdr_act'range) := "010" & "001";
-	constant xdr_auty : std_logic_vector(xdr_act'range) := "111" & "001";
-	constant xdr_nop  : std_logic_vector(xdr_act'range) := "001" & "111";
-	constant xdr_nopy : std_logic_vector(xdr_act'range) := "101" & "111";
+	constant xdr_act  : std_logic_vector(6 downto 0)    := "0000" & "011";
+	constant xdr_actq : std_logic_vector(xdr_act'range) := "0010" & "011";
+	constant xdr_acty : std_logic_vector(xdr_act'range) := "0100" & "011";
+	constant xdr_rea  : std_logic_vector(xdr_act'range) := "1000" & "101";
+	constant xdr_reaq : std_logic_vector(xdr_act'range) := "1010" & "101";
+	constant xdr_wri  : std_logic_vector(xdr_act'range) := "1000" & "100";
+	constant xdr_wriq : std_logic_vector(xdr_act'range) := "1010" & "100";
+	constant xdr_pre  : std_logic_vector(xdr_act'range) := "0000" & "010";
+	constant xdr_preq : std_logic_vector(xdr_act'range) := "0010" & "010";
+	constant xdr_prey : std_logic_vector(xdr_act'range) := "0100" & "010";
+	constant xdr_aut  : std_logic_vector(xdr_act'range) := "0000" & "001";
+	constant xdr_autq : std_logic_vector(xdr_act'range) := "0010" & "001";
+	constant xdr_auty : std_logic_vector(xdr_act'range) := "0111" & "001";
+	constant xdr_nop  : std_logic_vector(xdr_act'range) := "0001" & "111";
+	constant xdr_nopy : std_logic_vector(xdr_act'range) := "0101" & "111";
 	constant xdr_dnt  : std_logic_vector(xdr_act'range) := (others => '-');
 
 	constant ddrs_act : std_logic_vector(0 to 2) := "011";
@@ -78,6 +80,7 @@ entity xdr_pgm is
 	signal pgm_cmd : std_logic_vector(xdr_pgm_cmd'range);
 	signal pgm_rdy : std_logic;
 	signal pgm_rrdy : std_logic;
+	signal pgm_cas : std_logic;
 	signal sys_ref : std_logic;
 
 end;
@@ -177,6 +180,7 @@ begin
 		end if;
 	end process;
 
+	xdr_pgm_cas  <= pgm_cas and xdr_pgm_req;
 	xdr_pgm_cmd  <= pgm_cmd;
 	xdr_pgm_rdy  <= pgm_rdy;
 	sys_pgm_ref  <= sys_ref;
@@ -189,6 +193,7 @@ begin
 		sys_ref <= '-';
 		pgm_cmd <= (others => '-');
 		pc  <= (others => '-');
+		pgm_cas <= '-';
 		loop_pgm : for i in pgm_tab'range loop
 			if xdr_pgm_pc=pgm_tab(i).state then
 				if xdr_input=pgm_tab(i).input then
@@ -197,6 +202,7 @@ begin
 					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
 					sys_ref <= pgm_tab(i).cmd_n(ref);
 					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
+					pgm_cas <= pgm_tab(i).cmd_n(cacc);
 					exit loop_pgm;
 				end if;
 			end if;
@@ -279,7 +285,7 @@ architecture registered of xdr_pgm is
 		(ddrs_aut, "101", ddrs_act, xdr_auty),
 		(ddrs_aut, "110", ddrs_act, xdr_acty),
 		(ddrs_aut, "111", ddrs_act, xdr_auty));
-
+	signal ppp : std_logic;
 begin
 
 	xdr_input(2) <= xdr_pgm_ref;
@@ -296,10 +302,12 @@ begin
 				sys_pgm_ref  <= sys_ref;
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
-					xdr_pgm_pc <= pgm_pc;
+					xdr_pgm_pc  <= pgm_pc;
 				end if;
 				pgm_pc := pc;
+				ppp <= pgm_cas;
 			else
+				ppp <= '0';
 				pgm_pc := ddrs_pre;
 				xdr_pgm_pc <= pgm_pc;
 				xdr_pgm_cmd  <= "111";
@@ -310,12 +318,14 @@ begin
 		end if;
 	end process;
 
+	xdr_pgm_cas  <= ppp and xdr_pgm_req;
 	process (xdr_pgm_pc, xdr_input)
 	begin
 		pgm_rdy <= '-'; 
 		pgm_rrdy <= '-'; 
 		sys_ref <= '-';
 		pgm_cmd <= (others => '-');
+		pgm_cas <= '-';
 		pc  <= (others => '-');
 		loop_pgm : for i in pgm_tab'range loop
 			if xdr_pgm_pc=pgm_tab(i).state then
@@ -325,6 +335,7 @@ begin
 					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
 					sys_ref <= pgm_tab(i).cmd_n(ref);
 					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
+					pgm_cas <= pgm_tab(i).cmd_n(cacc);
 					exit loop_pgm;
 				end if;
 			end if;

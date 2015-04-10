@@ -1,6 +1,9 @@
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -238,10 +241,21 @@ begin
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	process (ddr_sclk)
 		variable q : std_logic_vector(0 to 2);
+		constant pp : byte_vector(0 to 7) := (x"07", x"07", x"0f", x"17", x"1f", x"27", x"2f", x"37" );
+		variable j : natural := 0;
+		variable msg : line;
 	begin
 		if rising_edge(ddr_sclk) then
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
+--			if ddrphy_sti(0)='1' then
+--				write (msg, ddrphy_dqi(63 downto 56));
+--				writeline (output, msg);
+--				assert ddrphy_dqi(63 downto 56)=pp(j)
+--				report "falle"
+--				severity failure;
+--				j := (j + 1 ) mod pp'length;
+--			end if;
 		end if;
 	end process;
 

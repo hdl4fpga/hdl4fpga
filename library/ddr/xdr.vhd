@@ -219,6 +219,7 @@ begin
 		xdr_pgm_rst => xdr_mpu_rst,
 		xdr_pgm_clk => sys_clks(0),
 		sys_pgm_ref => sys_ref,
+		xdr_pgm_cas => sys_cas,
 		xdr_pgm_cmd => xdr_pgm_cmd,
 		xdr_pgm_ref => xdr_mpu_ref,
 		xdr_pgm_rrdy => xdr_refi_rdy,
@@ -255,8 +256,6 @@ begin
 		xdr_mpu_cas => xdr_mpu_cas,
 		xdr_mpu_ras => xdr_mpu_ras,
 		xdr_mpu_we  => xdr_mpu_we,
-		xdr_mpu_cen => sys_cas,
-
 		xdr_mpu_rea => xdr_mpu_rea,
 		xdr_mpu_wri => xdr_mpu_wri,
 		xdr_mpu_rwin => xdr_mpu_rwin,

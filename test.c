@@ -5,10 +5,11 @@ main ()
 	char line[32];
 	char num[] = {0x7,0x7,0x0f,0x17,0x1f,0x27,0x2f,0x37};
 	long l;
+	long l1;
 	char j;
 	char i;
 	j=0;
-	l=0;
+	l=l1=0;
 	while (gets(line)) {
 		char val = 0;
 		for (i = 2; i < 4; i++) {
@@ -23,7 +24,8 @@ main ()
 			val += c;
 		}
 		if (val != num[j]) {
-			printf ("%d\n", l);
+			printf ("%6d %s\n", l, line);
+			l1 = l;
 			j++;
 		}
 		j++;

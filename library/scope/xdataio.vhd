@@ -177,31 +177,13 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+1) & 
-				to_signed(2, DDR_CLNMSIZE+1));
-
-
---		process (ddrs_clk)
---		begin
---			if rising_edge(ddrs_clk) then
---				if sys_rst='1'then
---					creq <= '0';
---				elsif ddrs_breq='1' then
---					if creq='0' then
---						creq <= not ddrs_rreq and ddrs_crdy;
---					else
---						creq <= not ddrs_rreq and not qo(DDR_CLNMSIZE);
---					end if;
---				else
---					creq <= '0';
---				end if;
---			end if;
---		end process;
+				to_signed(3, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
 		'1' when ddrs_rreq='1' else
 		'1' when ddrs_breq='0' else
-		'1' when qo(ddr_clnmsize)='1' else
+--		'1' when qo(ddr_clnmsize)='1' else
 		'0';
 
 		crdy <=
@@ -211,10 +193,11 @@ begin
 	   	ddrs_breq when ddrs_crdy='1' else
 		'0';
 
-
-		process (ddrs_clk)
+		process (ddrs_clk, qo(ddr_clnmsize))
 		begin
-			if rising_edge(ddrs_clk) then
+			if qo(ddr_clnmsize)='1' then
+				ddrs_creq <= '0';
+			elsif rising_edge(ddrs_clk) then
 				if creq='1' then
 					ddrs_creq <= '0';
 				elsif crdy='1' then
@@ -223,28 +206,17 @@ begin
 			end if;
 		end process;
 
---		process (ddrs_crdy, creq)
---			variable q : std_logic;
---		begin
---			if creq='0' then
---				ddrs_creq <='0';
---			elsif ddrs_crdy='1' then
---				ddrs_creq <='1';
---			end if;
---		end process;
---		ddrs_creq <= creq and ddrs_breq;
-
 		process (ddrs_clk)
 		begin
 			if rising_edge(ddrs_clk) then
 				if ddrs_act='1' then
 					ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 				end if;
+				ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 			end if;
 		end process;
 
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-		ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 
 		crst <= sys_rst or co(0);
 		dcounter_e : entity hdl4fpga.counter
