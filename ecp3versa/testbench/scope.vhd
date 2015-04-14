@@ -153,7 +153,7 @@ begin
 		if rst='1'then
 			mii_strt <= '0', '1' after 12 us, '0' after 22 us;
 		elsif falling_edge(mii_strt) then
-			mii_strt <= '1', '0' after 10 us;
+--			mii_strt <= '1', '0' after 10 us;
 		end if;
 	end process;
 

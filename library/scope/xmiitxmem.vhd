@@ -65,8 +65,8 @@ begin
 						ddrs_rdy   <= '1';
 						ddrs_direq <= '0';
 					else
-						ddrs_direq <= '1';
 						ddrs_rdy   <= '0';
+						ddrs_direq <= '1';
 					end if;
 				else
 					ddrs_rdy   <= '0';
