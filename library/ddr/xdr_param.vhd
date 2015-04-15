@@ -363,7 +363,7 @@ package body xdr_param is
 		timing_record'(mark => M15E, param => tMRD,  value => 15000) &
 		timing_record'(mark => M15E, param => tRFC,  value => 110000) &
 		timing_record'(mark => M15E, param => tXPR,  value => 110000 + 10000) &
-		timing_record'(mark => M15E, param => tREFI, value => 25000); --7800000);
+		timing_record'(mark => M15E, param => tREFI, value => 80000); --7800000);
 
 	constant cnfglat_db : cnfglat_tab :=
 
