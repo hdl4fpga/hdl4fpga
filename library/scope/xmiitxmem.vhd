@@ -61,13 +61,13 @@ begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='1' then
 				if ddrs_req='1' then
-					if (addri(bram_num-1) xor addri_edge)='1' then
-						ddrs_rdy   <= '1';
-						ddrs_direq <= '0';
-					else
+--					if (addri(bram_num-1) xor addri_edge)='1' then
+--						ddrs_rdy   <= '1';
+--						ddrs_direq <= '1'; --'0';
+--					else
 						ddrs_rdy   <= '0';
 						ddrs_direq <= '1';
-					end if;
+--					end if;
 				else
 					ddrs_rdy   <= '0';
 					ddrs_direq <= '0';
