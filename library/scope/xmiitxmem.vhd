@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 architecture def of miitxmem is
-	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024*8-1));
+	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024/2**1*8-1));
 
 	subtype aword is std_logic_vector(bram_size-1 downto 0);
 	type aword_vector is array(natural range <>) of aword;
@@ -61,13 +61,13 @@ begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='1' then
 				if ddrs_req='1' then
---					if (addri(bram_num-1) xor addri_edge)='1' then
---						ddrs_rdy   <= '1';
---						ddrs_direq <= '1'; --'0';
---					else
+					if (addri(bram_num-1) xor addri_edge)='1' then
+						ddrs_rdy   <= '1';
+						ddrs_direq <= '0';
+					else
 						ddrs_rdy   <= '0';
 						ddrs_direq <= '1';
---					end if;
+					end if;
 				else
 					ddrs_rdy   <= '0';
 					ddrs_direq <= '0';

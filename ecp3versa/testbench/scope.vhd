@@ -158,7 +158,7 @@ begin
 		if rst='1'then
 			mii_strt <= '0', '1' after 12 us, '0' after 22 us;
 		elsif falling_edge(mii_strt) then
---			mii_strt <= '1', '0' after 10 us;
+			mii_strt <= '1', '0' after 10 us;
 		end if;
 	end process;
 
@@ -242,8 +242,8 @@ begin
 			if ras_n='1' then
 				if cas_n='0' then
 					if we_n='1'then
-				write (msg, addr(7 downto 0));
-				writeline (output, msg);
+						write (msg, to_integer(unsigned(addr)));
+						writeline (output, msg);
 						assert addr(7 downto 0)=pp(j)
 						report "falle"
 						severity failure;
@@ -257,24 +257,24 @@ begin
 	dqs_n <= not dqs_p;
 	ddr_clk_p <=     ddr_clk;
 	ddr_clk_n <= not ddr_clk;
-	mt_u : ddr3_model
-	port map (
-		rst_n => rst_n,
-		Ck    => ddr_clk_p,
-		Ck_n  => ddr_clk_n,
-		Cke   => cke,
-		Cs_n  => cs_n,
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba,
-		Addr  => addr,
-		Dm_tdqs  => dm,
-		Dq    => dq,
-		Dqs   => dqs_p,
-		Dqs_n => dqs_n,
-		tdqs_n => tdqs_n,
-		Odt   => odt);
+--	mt_u : ddr3_model
+--	port map (
+--		rst_n => rst_n,
+--		Ck    => ddr_clk_p,
+--		Ck_n  => ddr_clk_n,
+--		Cke   => cke,
+--		Cs_n  => cs_n,
+--		Ras_n => ras_n,
+--		Cas_n => cas_n,
+--		We_n  => we_n,
+--		Ba    => ba,
+--		Addr  => addr,
+--		Dm_tdqs  => dm,
+--		Dq    => dq,
+--		Dqs   => dqs_p,
+--		Dqs_n => dqs_n,
+--		tdqs_n => tdqs_n,
+--		Odt   => odt);
 end;
 
 library micron;

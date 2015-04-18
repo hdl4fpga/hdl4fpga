@@ -58,7 +58,8 @@ begin
 			x"000000010203"	&	-- MAC Source Address
 			x"0800"         &   -- MAC Protocol ID
 			x"4500"         &	-- IP  Version, header length, TOS
-			x"041c"         &	-- IP  Length
+--			x"041c"         &	-- IP  Length
+			x"021c"         &	-- IP  Length
 			x"0000"         &	-- IP  Identification
 			x"0000"         &	-- IP  Fragmentation
 			x"0511"         &	-- IP  TTL, protocol
@@ -66,7 +67,8 @@ begin
 			x"c0a802c8"     &	-- IP  Source address
 			x"ffffffff"     &	-- IP  Destination address
 			x"00000400"     &	-- UDP Source port, Destination port
-			x"04080000")	   	-- UDP Length, Checksum
+			x"02080000")	   	-- UDP Length, Checksum
+--			x"04080000")	   	-- UDP Length, Checksum
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => txreq(txmac),

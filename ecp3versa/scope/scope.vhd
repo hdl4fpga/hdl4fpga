@@ -271,8 +271,8 @@ begin
 			yyyy <= xxxx1(0);
 		end if;
 	end process;
-	--ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
-	ddrphy_dqi2 <= ddrphy_dqi;
+	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
+--	ddrphy_dqi2 <= ddrphy_dqi;
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
 --	debug_clk <= ddrphy_cfgo(0);
 --	debug_clk <= ddr3_dqs(0);
