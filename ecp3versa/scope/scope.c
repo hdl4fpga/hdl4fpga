@@ -1,9 +1,9 @@
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
@@ -18,12 +18,9 @@ main (int argc, char *argv[])
 	struct sockaddr_in sa_host;
 	struct sockaddr_in sa_src;
 	struct sockaddr_in sa_trgt;
-	int fds[2];
 
 	int s;
-	int p;
-	char sb_char[512];
-	unsigned long long *sb_src;
+	unsigned long long sb_src[1024/8];
 	char sb_trgt[17];
 	socklen_t sl_src  = sizeof(sa_src);
 	socklen_t sl_trgt = sizeof(sa_trgt);
@@ -64,35 +61,22 @@ main (int argc, char *argv[])
 		abort ();
 	}
 
-	pipe(fds);
-	if ((p = fork())> 0) {
-		char c;
-
-//		read(fds[0], &c, sizeof(char));
-		for (;;) {
-		getchar();
+	for (i = 0; i < npkt; i++) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			abort ();
 		}
-		}
 
-	} else if (p ==0)  {
-		char c;
-
-//		write(fds[1], &c, sizeof(char));
-		printf("pase por write\n");
-		if ((n = recvfrom(s, sb_char, sizeof(sb_char), 0, (struct sockaddr *) &sa_host, &sl_src)) < 0) {
+		if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 			perror ("recvfrom");
 			abort ();
 		}
 
-		sb_src = (unsigned long long *) (sb_char);
-		for (j = 0; j < sizeof(sb_char)/sizeof(sb_src[0]); j++)
+		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++)
 			printf("0x%016llx\n", htobe64(sb_src[j]));
 						        
-	} else abort();
 
 
+	}
 	return 0;
 }

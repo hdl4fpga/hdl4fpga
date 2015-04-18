@@ -279,7 +279,7 @@ begin
 	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
-		PAGE_SIZE => 8,
+		PAGE_SIZE => 9,
 		DDR_BANKSIZE => DDR_BANKSIZE,
 		DDR_ADDRSIZE => DDR_ADDRSIZE,
 		DDR_CLNMSIZE => DDR_CLMNSIZE,
