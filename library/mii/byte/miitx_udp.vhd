@@ -57,15 +57,17 @@ begin
 			x"ffffffffffff" &	-- MAC Destination Address
 			x"000000010203"	&	-- MAC Source Address
 			x"0800"         &   -- MAC Protocol ID
-			x"4500"         &	-- IP  Version, header length, TOS
-			x"041c"         &	-- IP  Length
---			x"021c"         &	-- IP  Length
-			x"0000"         &	-- IP  Identification
-			x"0000"         &	-- IP  Fragmentation
-			x"0511"         &	-- IP  TTL, protocol
-			x"ee61"         &	-- IP  Checksum
-			x"c0a802c8"     &	-- IP  Source address
-			x"ffffffff"     &	-- IP  Destination address
+			ipheader_checksumed(
+				x"4500"         &	-- IP  Version, header length, TOS
+				x"041c"         &	-- IP  Length
+	--			x"021c"         &	-- IP  Length
+				x"0000"         &	-- IP  Identification
+				x"0000"         &	-- IP  Fragmentation
+				x"0511"         &	-- IP  TTL, protocol
+--				x"ee61"         &	-- IP  Checksum
+				x"0000"         &	-- IP  Checksum
+				x"c0a802c8"     &	-- IP  Source address
+				x"ffffffff")    &	-- IP  Destination address
 			x"04000400"     &	-- UDP Source port, Destination port
 --			x"02080000")	   	-- UDP Length, Checksum
 			x"04080000")	   	-- UDP Length, Checksum

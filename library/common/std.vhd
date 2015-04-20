@@ -245,11 +245,12 @@ package std is
 
 	function oneschecksum (
 		constant data : std_logic_vector;
-		constant size : natural);
+		constant size : natural)
+		return std_logic_vector;
 
-	function ipheader_checksum(
+	function ipheader_checksumed (
 		constant ipheader : std_logic_vector)
-		return std_logic_vector is
+		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -279,13 +280,14 @@ package body std is
 		return std_logic_vector(checksum(1 to size));	
 	end;
 
-	function ipheader_checksum(
+	function ipheader_checksumed(
 		constant ipheader : std_logic_vector)
 		return std_logic_vector is
 		variable aux : std_logic_vector(0 to ipheader'length-1);
 	begin
 		aux := ipheader;
-		aux(80 to 96-1) := not checksum(ipheader, 16);
+		aux(80 to 96-1) := (others => '0');
+		aux(80 to 96-1) := not oneschecksum(aux, 16);
 		return aux;
 	end;
 	function resize (
