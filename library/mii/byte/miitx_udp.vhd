@@ -6,6 +6,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miitx_udp is
+	generic (
+		payload_size : natural := 512);
 	port (
 		miidma_rreq : out  std_logic;
 		miidma_rrdy : in std_logic;
@@ -59,8 +61,8 @@ begin
 			x"0800"         &   -- MAC Protocol ID
 			ipheader_checksumed(
 				x"4500"         &	-- IP  Version, header length, TOS
-				x"041c"         &	-- IP  Length
 	--			x"021c"         &	-- IP  Length
+				to_unsigned(payload_size+28,16) &	-- IP  Length
 				x"0000"         &	-- IP  Identification
 				x"0000"         &	-- IP  Fragmentation
 				x"0511"         &	-- IP  TTL, protocol
@@ -70,7 +72,8 @@ begin
 				x"ffffffff")    &	-- IP  Destination address
 			x"04000400"     &	-- UDP Source port, Destination port
 --			x"02080000")	   	-- UDP Length, Checksum
-			x"04080000")	   	-- UDP Length, Checksum
+			to_unsigned(payload_size+8,16) & -- UDP Length,
+			x"0000")	   	-- Checksum
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => txreq(txmac),
