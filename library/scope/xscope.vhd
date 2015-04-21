@@ -17,6 +17,7 @@ entity scope is
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
 		constant DDR_tCP      : natural;
+		constant PAGE_SIZE : natural := 8;
 
 		constant NIBBLE_SIZE  : natural := 4;
 		constant XD_LEN : natural := 8);
@@ -279,7 +280,7 @@ begin
 	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
-		PAGE_SIZE => 9,
+		PAGE_SIZE => PAGE_SIZE,
 		DDR_BANKSIZE => DDR_BANKSIZE,
 		DDR_ADDRSIZE => DDR_ADDRSIZE,
 		DDR_CLNMSIZE => DDR_CLMNSIZE,
@@ -396,6 +397,8 @@ begin
 		q(0) => miitxudp_req);
 
 	miitx_udp_e : entity hdl4fpga.miitx_udp
+	generic map (
+		payload_size => 2**(PAGE_SIZE+1))
 	port map (
 		miidma_rrdy => miidma_rrdy,
 		miidma_rreq => miidma_rreq,
