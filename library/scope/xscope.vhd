@@ -17,7 +17,7 @@ entity scope is
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
 		constant DDR_tCP      : natural;
-		constant PAGE_SIZE : natural := 8;
+		constant PAGE_SIZE : natural := 9;
 
 		constant NIBBLE_SIZE  : natural := 4;
 		constant XD_LEN : natural := 8);
