@@ -214,7 +214,8 @@ begin
 	xdr_mpu_rst <= not xdr_init_rdy;
 	xdr_mpu_ref <= xdr_refi_req;
 
-	xdr_pgm_e : entity hdl4fpga.xdr_pgm(non_registered)
+	xdr_pgm_e : entity hdl4fpga.xdr_pgm(registered)
+--	xdr_pgm_e : entity hdl4fpga.xdr_pgm(non_registered)
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
 		xdr_pgm_clk => sys_clks(0),

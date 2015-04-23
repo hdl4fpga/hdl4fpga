@@ -143,18 +143,18 @@ architecture non_registered of xdr_pgm is
 		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
 		(ddrs_pre, "011", ddrs_aut, xdr_autq),
 		(ddrs_pre, "100", ddrs_act, xdr_act),
-		(ddrs_pre, "101", ddrs_act, xdr_autq),
+		(ddrs_pre, "101", ddrs_aut, xdr_autq),
 		(ddrs_pre, "110", ddrs_act, xdr_act),
-		(ddrs_pre, "111", ddrs_act, xdr_autq),
+		(ddrs_pre, "111", ddrs_aut, xdr_autq),
 
 		(ddrs_aut, "000", ddrs_pre, xdr_nopy),	---------
-		(ddrs_aut, "001", ddrs_pre, xdr_auty),	-- AUT --
+		(ddrs_aut, "001", ddrs_aut, xdr_auty),	-- AUT --
 		(ddrs_aut, "010", ddrs_pre, xdr_nopy),	---------
-		(ddrs_aut, "011", ddrs_pre, xdr_auty),
+		(ddrs_aut, "011", ddrs_aut, xdr_auty),
 		(ddrs_aut, "100", ddrs_act, xdr_acty),
-		(ddrs_aut, "101", ddrs_act, xdr_auty),
+		(ddrs_aut, "101", ddrs_aut, xdr_auty),
 		(ddrs_aut, "110", ddrs_act, xdr_acty),
-		(ddrs_aut, "111", ddrs_act, xdr_auty));
+		(ddrs_aut, "111", ddrs_aut, xdr_auty));
 
 begin
 
@@ -305,18 +305,18 @@ architecture registered of xdr_pgm is
 		(ddrs_paut, "010", ddrs_idl, xdr_nopy),	---------
 		(ddrs_paut, "011", ddrs_idl, xdr_auty),
 		(ddrs_paut, "100", ddrs_act, xdr_acty),
-		(ddrs_paut, "101", ddrs_act, xdr_auty),
+		(ddrs_paut, "101", ddrs_aut, xdr_auty),
 		(ddrs_paut, "110", ddrs_act, xdr_acty),
-		(ddrs_paut, "111", ddrs_act, xdr_auty),
+		(ddrs_paut, "111", ddrs_aut, xdr_auty),
 
 		(ddrs_aut, "000", ddrs_idl, xdr_nopy),	---------
 		(ddrs_aut, "001", ddrs_idl, xdr_auty),	-- AUT --
 		(ddrs_aut, "010", ddrs_idl, xdr_nopy),	---------
 		(ddrs_aut, "011", ddrs_idl, xdr_auty),
 		(ddrs_aut, "100", ddrs_act, xdr_acty),
-		(ddrs_aut, "101", ddrs_act, xdr_auty),
+		(ddrs_aut, "101", ddrs_aut, xdr_auty),
 		(ddrs_aut, "110", ddrs_act, xdr_acty),
-		(ddrs_aut, "111", ddrs_act, xdr_auty)
+		(ddrs_aut, "111", ddrs_aut, xdr_auty)
 	);
 	signal ppp : std_logic;
 begin

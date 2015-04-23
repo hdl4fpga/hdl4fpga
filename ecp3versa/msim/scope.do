@@ -1,8 +1,17 @@
 onerror {resume}
 quietly virtual signal -install /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e { (context /testbench/ecp3versa_e/scope_e/ddr_e/xdr_pgm_e )(xdr_pgm_ref & xdr_pgm_rrdy & xdr_pgm_req )} pgm_cmd2
+quietly virtual signal -install /testbench/ecp3versa_e {/testbench/ecp3versa_e/phy1_tx_d  } iii
+quietly virtual signal -install /testbench/ecp3versa_e {/testbench/ecp3versa_e/phy1_tx_d  } sss
+quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )( phy1_tx_d(7) & phy1_tx_d(6) & phy1_tx_d(5) & phy1_tx_d(4) & phy1_tx_d(3) & phy1_tx_d(2) & phy1_tx_d(1) & phy1_tx_d(0) )} sss001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group testbench /testbench/xtal
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/ddrs_dirdy
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addri_edge
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addri(0)
+add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addri(1)
+add wave -noupdate -expand -group testbench -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/addri
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/cfgo(0)(0)
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_sti(0)
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_sto(0)
@@ -11,45 +20,46 @@ add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_du/xdr_refi_req
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/prmbdet
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/datavalid
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_refclk
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxc
-add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/mii_rxd
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxdv
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_strt
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_treq
-add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_txen
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_refclk
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxc
-add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/mii_rxd
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_rxdv
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_strt
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_treq
-add wave -noupdate -expand -group testbench -expand -group mii -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
-add wave -noupdate -expand -group testbench -expand -group mii /testbench/mii_txen
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/ddrphy_e/sys_rw
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
-add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/addr
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cke
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/odt
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/rst_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cs_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ras_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cas_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
-add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/dq
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ba
-add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/addr
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cke
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/rst_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cs_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ras_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/cas_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
-add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p
-add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/dq
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_refclk
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_rxc
+add wave -noupdate -expand -group testbench -group mii -radix hexadecimal /testbench/mii_rxd
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_rxdv
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_strt
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_treq
+add wave -noupdate -expand -group testbench -group mii -radix hexadecimal /testbench/ecp3versa_e/sss001
+add wave -noupdate -expand -group testbench -group mii -radix hexadecimal -childformat {{/testbench/ecp3versa_e/phy1_tx_d(0) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(1) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(2) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(3) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(4) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(5) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(6) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_tx_d(7) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/phy1_tx_d(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_tx_d(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/phy1_tx_d
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_txen
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_refclk
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_rxc
+add wave -noupdate -expand -group testbench -group mii -radix hexadecimal /testbench/mii_rxd
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_rxdv
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_strt
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_treq
+add wave -noupdate -expand -group testbench -group mii -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
+add wave -noupdate -expand -group testbench -group mii /testbench/mii_txen
+add wave -noupdate -expand -group testbench -group ddr /testbench/ddr_clk_p
+add wave -noupdate -expand -group testbench -group ddr /testbench/ecp3versa_e/ddrphy_e/sys_rw
+add wave -noupdate -expand -group testbench -group ddr /testbench/ba
+add wave -noupdate -expand -group testbench -group ddr -radix hexadecimal /testbench/addr
+add wave -noupdate -expand -group testbench -group ddr /testbench/cke
+add wave -noupdate -expand -group testbench -group ddr /testbench/odt
+add wave -noupdate -expand -group testbench -group ddr /testbench/rst_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/cs_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/ras_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/cas_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/we_n
+add wave -noupdate -expand -group testbench -group ddr -radix hexadecimal /testbench/dq
+add wave -noupdate -expand -group testbench -group ddr /testbench/ddr_clk_p
+add wave -noupdate -expand -group testbench -group ddr /testbench/ba
+add wave -noupdate -expand -group testbench -group ddr -radix hexadecimal /testbench/addr
+add wave -noupdate -expand -group testbench -group ddr /testbench/cke
+add wave -noupdate -expand -group testbench -group ddr /testbench/rst_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/cs_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/ras_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/cas_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/we_n
+add wave -noupdate -expand -group testbench -group ddr /testbench/dqs_p
+add wave -noupdate -expand -group testbench -group ddr -radix hexadecimal /testbench/dq
 add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/ddr_e/xdr_a
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/ddr_e/xdr_b
@@ -76,6 +86,7 @@ add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/d
 add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/video_clk0
 add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/video_clk90
 add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/dcms_e/dcms_lckd
+add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/ddrphy_sti(0)
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/ddrphy_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
@@ -623,7 +634,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20662911 ps} 0}
+WaveRestoreCursors {{Cursor 1} {26625000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -639,4 +650,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20498847 ps} {20826975 ps}
+WaveRestoreZoom {25935936 ps} {27314064 ps}

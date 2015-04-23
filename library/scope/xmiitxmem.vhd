@@ -59,36 +59,33 @@ begin
 	process (ddrs_clk)
 	begin
 		if rising_edge(ddrs_clk) then
-			if ddrs_gnt='1' then
-				if ddrs_req='1' then
-					if (addri(bram_num-1) xor addri_edge)='1' then
-						ddrs_rdy   <= '1';
-						ddrs_direq <= '0';
-					else
-						ddrs_rdy   <= '0';
-						ddrs_direq <= '1';
-					end if;
-				else
-					ddrs_rdy   <= '0';
-					ddrs_direq <= '0';
-				end if;
-			else
-				ddrs_rdy   <= '0';
-				ddrs_direq <= '0';
-			end if;
-		end if;
-	end process;
-
-	process (ddrs_clk)
-	begin
-		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='0' then
 				addri <= to_unsigned(2**addri'length-1, addri'length);
-			elsif ddrs_dirdy='1' then
-				addri <= addri - 1;
+				addri_edge <='1';
+				wr_ena <= '0';
+				ddrs_rdy <= '0';
+				ddrs_direq <= '0';
+			else
+				if wr_ena='1' then
+					if (addri(bram_num-1) xor addri_edge)='1' then
+						ddrs_rdy <= '1';
+						ddrs_direq <= '0';
+					end if;
+				elsif ddrs_req='1' then
+					ddrs_rdy <= '0';
+					ddrs_direq <= '1';
+				else
+					ddrs_rdy <= '0';
+					ddrs_direq <= '0';
+				end if;
+
+				if ddrs_dirdy='1' then
+					addri <= addri - 1;
+				end if;
+
+				addri_edge <= addri(bram_num-1);
+				wr_ena <= ddrs_dirdy;
 			end if;
-			wr_ena <= ddrs_dirdy;
-			addri_edge <= addri(bram_num-1);
 		end if;
 	end process; 
 
