@@ -243,37 +243,28 @@ begin
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	process (ddr_sclk)
 		variable q : std_logic_vector(0 to 2);
-		constant pp : byte_vector(0 to 7) := (x"18", x"18", x"10", x"10", x"08", x"08", x"00", x"00" );
-		variable j : natural := 0;
-		variable msg : line;
 	begin
 		if rising_edge(ddr_sclk) then
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
---			if ddrphy_sti(0)='1' then
---				write (msg, std_logic_vector'(ddrphy_dqi2(7 downto 0)));
---				writeline (output, msg);
---				assert ddrphy_dqi2(7 downto 0)=pp(j)
---				report "falle"
---				severity failure;
---				j := (j + 1 ) mod pp'length;
---			end if;
 		end if;
 	end process;
 
-	process (ddr_sclk)
-		subtype xxxx is std_logic_vector(ddrphy_a'range);
-		type xxxx_vector is array (0 to 7) of xxxx;
-		variable xxxx1 : xxxx_vector;
-	begin
-		if rising_edge(ddr_sclk) then
-			xxxx1 := xxxx1(1 to xxxx1'right) & ddrphy_a;
-			yyyy <= xxxx1(0);
-		end if;
-	end process;
-	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
---	ddrphy_dqi2 <= ddrphy_dqi;
+	ddrphy_dqi2 <= ddrphy_dqi;
 	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
+
+--	process (ddr_sclk)
+--		subtype xxxx is std_logic_vector(ddrphy_a'range);
+--		type xxxx_vector is array (0 to 7) of xxxx;
+--		variable xxxx1 : xxxx_vector;
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			xxxx1 := xxxx1(1 to xxxx1'right) & ddrphy_a;
+--			yyyy <= xxxx1(0);
+--		end if;
+--	end process;
+--	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
+
 --	debug_clk <= ddrphy_cfgo(0);
 --	debug_clk <= ddr3_dqs(0);
 --	process (debug_clk)

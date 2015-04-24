@@ -319,10 +319,10 @@ begin
 		mii_txc => mii_txc,
 		miirx_req => miirx_req,
 		miirx_rdy => miirx_rdy,
-		miitx_req => miidma_rreq, --miitx_req,
-		miitx_rdy => miidma_rrdy, --miitx_rdy,
-		miitx_ena => miidma_rxen, --miitx_rdy,
-		miitx_dat => miidma_rxd);  --miitx_dat);
+		miitx_req => miidma_rreq,
+		miitx_rdy => miidma_rrdy,
+		miitx_ena => miidma_rxen,
+		miitx_dat => miidma_rxd);
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
