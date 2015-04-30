@@ -9,6 +9,7 @@ entity adjdll is
 		eclk : in  std_logic;
 		kclk : in  std_logic;
 		lck  : in  std_logic;
+		stop : out std_logic;
 		rdy  : out std_logic;
 		pha  : out std_logic_vector);
 		
@@ -19,6 +20,7 @@ architecture beh of adjdll is
 	signal ph : std_logic_vector(pha'range);
 	signal qk : std_logic;
 	signal ok : std_logic;
+	signal nx : std_logic;
 
 begin
 
@@ -45,7 +47,7 @@ begin
 	end process;
 
 	process(rst, sclk)
-		variable dg : std_logic_vector(0 to pha'length);
+		variable dg : unsigned(0 to pha'length);
 	begin
 		if rst='1' then
 			ph <= (others => '0');
@@ -53,16 +55,18 @@ begin
 			rdy <= dg(dg'right);
 		elsif rising_edge(sclk) then
 			if lck='1' then
-				if dg(dg'right)='1' then
-					if ok='1' then
-						ph <= ph or  dg(0 to ph'length-1);
+				if dg(dg'right)='0' then
+					if nx='1' then
+						ph <= ph or  std_logic_vector(dg(0 to ph'length-1));
 					else
-						ph <= ph and not dg(0 to ph'length-1);
-						dg <= dg srl 1;
+						ph <= ph and not std_logic_vector(dg(0 to ph'length-1));
+						dg := dg srl 1;
+						stop <= '0';
 					end if;
 				end if;
 			end if;
 			rdy <= dg(dg'right);
 		end if;
 	end process;
+	pha <= ph;
 end;
