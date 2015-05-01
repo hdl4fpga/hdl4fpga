@@ -228,15 +228,16 @@ architecture ecp3 of ddrphy is
 	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
+	signal adjdll_stop : std_logic;
 	signal dqsdll_rst : std_logic;
 	signal dqsdll_lock : std_logic;
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
-	signal lock : std_logic;
 	signal synceclk : std_logic;
 	signal eclk_stop : std_logic;
 	signal stop : std_logic;
+	signal krst : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -276,7 +277,18 @@ begin
 	ddqi <= to_bytevector(ddr_dq);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
-	sys_cfgo(5 downto 2) <= "0011";
+
+	adjdll_e : entity hdl4fpga.adjdll
+	port map (
+		rst  => phy_rst,
+		sclk => sys_sclk,
+		eclk => sys_eclk,
+		kclk => synceclk,
+		stop => adjdll_stop,
+		rdy  => open,
+		pha => sys_cfgo(5 downto 2));
+
+--	sys_cfgo(5 downto 2) <= "0011";
 	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
 --	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
 
@@ -292,9 +304,34 @@ begin
 		end if;
 	end process;
 
-	process (sys_sclk)
+	dqsdll_b : block
+		signal lock : std_logic;
 	begin
-		if falling_edge(sys_sclk) then
+
+		dqsdllb_i : dqsdllb
+		port map (
+			rst => phy_rst,
+			clk => sys_sclk2x,
+			uddcntln => dqsdll_uddcntln,
+			dqsdel => dqsdel,
+			lock => lock);
+
+		process (sys_sclk2x)
+			variable sr : std_logic_vector(0 to 4);
+		begin
+			if rising_edge(sys_sclk2x) then
+				sr := sr(1 to 4) & lock;
+				dqsdll_lock <= sr(0);
+			end if;
+		end process;
+
+	end block;
+
+	process (adjdll_stop, sys_sclk)
+	begin
+		if adjdll_stop='1' then
+			eclk_stop <= '1';
+		elsif falling_edge(sys_sclk) then
 			eclk_stop <= not dqsdll_uddcntln_rdy;
 		end if;
 	end process;
@@ -305,62 +342,10 @@ begin
 		eclki => sys_eclk,
 		eclko => synceclk);
 
-	eclk_phase_p : block
-		signal eclk_ff : std_logic;
-		signal eclksync_ff : std_logic;
-		signal edge_ff : std_logic;
-	begin
-
-		process (phy_rst, synceclk)
-		begin
-			if phy_rst='1' then
-				eclk_ff <= '0';
-			elsif rising_edge(synceclk) then
-				eclk_ff <= not eclk_ff;
-			end if;
-		end process;
-
-		process (phy_rst, sys_sclk)
-		begin
-			if phy_rst='1' then
-				eclk_ff <= '0';
-			elsif rising_edge(sys_sclk) then
-				eclk_ff <= sys_eclk;
-			end if;
-		end process;
-
-		process (phy_rst, sys_sclk)
-		begin
-			if phy_rst='1' then
-				edge_ff <= '0';
-			elsif rising_edge(sys_sclk) then
-				edge_ff <= eclksync_ff;
-			end if;
-		end process;
-
-	end block;
-
-	dqsdllb_i : dqsdllb
-	port map (
-		rst => phy_rst,
-		clk => sys_sclk2x,
-		uddcntln => dqsdll_uddcntln,
-		dqsdel => dqsdel,
-		lock => dqsdll_lock);
-
-	process (sys_sclk2x)
-		variable sr : std_logic_vector(0 to 4);
-	begin
-		if rising_edge(sys_sclk2x) then
-			sr := sr(1 to 4) & dqsdll_lock;
-			lock <= sr(0);
-		end if;
-	end process;
-
-	process (lock, sys_sclk2x)
+	process (dqsdll_lock, sys_sclk2x)
 		variable counter : unsigned(0 to 3);
 	begin
-		if lock='0' then
+		if dqsdll_lock='0' then
 			counter := (others => '0');
 			dqsdll_uddcntln_rdy <= counter(0);
 			dqsdll_uddcntln <= '1';
