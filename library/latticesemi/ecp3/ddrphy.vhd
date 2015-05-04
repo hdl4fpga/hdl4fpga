@@ -240,6 +240,8 @@ architecture ecp3 of ddrphy is
 	signal stop : std_logic;
 	signal krst : std_logic;
 	signal kclk : std_logic;
+	signal ddrdqphy_rst : std_logic;
+	signal adjdll_rdy : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -289,7 +291,7 @@ begin
 		eclk => sys_eclk,
 		kclk => kclk, --synceclk,
 		stop => adjdll_stop,
-		rdy  => open,
+		rdy  => adjdll_rdy,
 		pha => sys_cfgo(5 downto 2));
 
 --	sys_cfgo(5 downto 2) <= "0011";
@@ -362,13 +364,14 @@ begin
 		end if;
 	end process;
 
+	ddrdqphy_rst <= not adjdll_rdy;
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => phy_rst,
+			sys_rst  => ddrdqphy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,

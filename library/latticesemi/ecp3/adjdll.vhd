@@ -74,7 +74,18 @@ begin
 			end if;
 		end if;
 	end process;
-	rdy <= dg(dg'right);
+
 	stop <= dy(2+2);
 	pha <= ph;
+
+	process(rst, sclk)
+	begin
+		if rst='1' then
+			rdy <= '0';
+		elsif rising_edge(sclk) then
+			if stop='0' then
+				rdy <= dg(dg'right);
+			end if;
+		end if;
+	end process;
 end;
