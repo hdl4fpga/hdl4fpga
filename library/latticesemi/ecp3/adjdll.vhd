@@ -21,6 +21,8 @@ architecture beh of adjdll is
 	signal ok : std_logic;
 	signal prdy : std_logic_vector(4 downto 0);
 	signal dy : unsigned(prdy'range);
+	signal dg : unsigned(0 to pha'length+1);
+	signal q : std_logic_vector(0 to 1);
 
 begin
 
@@ -34,50 +36,45 @@ begin
 	end process;
 
 	process (stop, sclk)
-		variable q : std_logic_vector(0 to 1);
 	begin
 		if stop='1' then
 			ok <= '0';
-			q := (others => '0');
+			q <= (others => '0');
 		elsif rising_edge(sclk) then
-			if prdy((prdy'left+2) mod prdy'length)='1' then
+			if prdy(0)='1' then
 				ok <= not q(0) and q(1);
 			end if;
 
-			q(0) := eclk;
-			q(1) := qk;
+			q(0) <= eclk;
+			q(1) <= qk;
 		end if;
 	end process;
 
 	process(rst, sclk)
-		variable dg : unsigned(0 to pha'length+1);
 		variable aux : unsigned(pha'range);
 	begin
 		if rst='1' then
 			ph <= (others => '0');
-			dg := (0 => '1', others => '0');
-			rdy <= dg(dg'right);
-			dy <= (others => '1');
+			dg <= (0 => '1', others => '0');
+			dy <= (others => '0');
 			prdy <= (others => '0');
 		elsif rising_edge(sclk) then
-			if dg(dg'right)='0' then
+			if dg(dg'right)='0' or stop='1' then
 				if prdy(2)='1' then
 					aux := unsigned(ph);
 					aux := aux or dg(0 to ph'length-1);
-					if ok='1' then
+					if ok='0' then
 						aux := aux and not dg(1 to ph'length);
 					end if;
 					ph <= std_logic_vector(aux);
-					dg := dg srl 1;
+					dg <= dg srl 1;
 				end if;
 				prdy <= std_logic_vector(dy and not (dy ror 1));
 				dy <= dy(dy'left-1 downto 0) & not dy(dy'left);
-			else
-				prdy <= (others => '0');
 			end if;
-			rdy <= dg(dg'left);
 		end if;
 	end process;
+	rdy <= dg(dg'right);
 	stop <= dy(2+2);
 	pha <= ph;
 end;

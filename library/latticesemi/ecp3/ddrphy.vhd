@@ -229,6 +229,7 @@ architecture ecp3 of ddrphy is
 	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
 	signal adjdll_stop : std_logic;
+	signal adjdll_rst  : std_logic;
 	signal dqsdll_rst : std_logic;
 	signal dqsdll_lock : std_logic;
 	signal dqsdll_uddcntln : std_logic;
@@ -279,10 +280,11 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
+	adjdll_rst <= not dqsdll_uddcntln_rdy;
 	kclk <= synceclk after 0 ns;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
-		rst  => phy_rst,
+		rst  => adjdll_rst,
 		sclk => sys_sclk,
 		eclk => sys_eclk,
 		kclk => kclk, --synceclk,

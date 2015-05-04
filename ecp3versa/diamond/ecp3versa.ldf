@@ -20,9 +20,6 @@
         <Source name="../../library/scope/mem2vio.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/scope/miitxmem.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/scope/plot.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -173,13 +170,13 @@
         <Source name="../../library/mii/byte/xmiitx_dma.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/mii/byte/miitx_dma.vhd" type="VHDL" type_short="VHDL" excluded="TRUE">
-            <Options/>
-        </Source>
         <Source name="../../library/scope/xmiitxmem.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/common/ffdasync.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/latticesemi/ecp3/adjdll.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
