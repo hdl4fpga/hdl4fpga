@@ -237,7 +237,6 @@ architecture ecp3 of ddrphy is
 	signal dqrst : std_logic;
 	signal synceclk : std_logic;
 	signal eclk_stop : std_logic;
-	signal stop : std_logic;
 	signal krst : std_logic;
 	signal kclk : std_logic;
 	signal ddrdqphy_rst : std_logic;
@@ -282,7 +281,7 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	adjdll_rst <= not dqsdll_uddcntln_rdy;
+	adjdll_rst <= phy_rst;
 	kclk <= synceclk after 0 ns;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
@@ -298,25 +297,29 @@ begin
 	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
 --	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
 
-	process (phy_rst, sys_sclk)
-		variable sr : std_logic_vector(0 to 1);
+	process (adjdll_stop, sys_sclk)
 	begin
-		if phy_rst='1' then
-			sr := (others => '0');
-			stop <= not sr(0);
-		elsif rising_edge(sys_sclk) then
-			sr := sr(1 to 1) & '1';
-			stop <= not sr(0);
+		if adjdll_stop='1' then
+			eclk_stop <= '1';
+		elsif falling_edge(sys_sclk) then
+			eclk_stop <= '0';
 		end if;
 	end process;
 
+	eclksynca_i : eclksynca
+	port map (
+		stop  => eclk_stop,
+		eclki => sys_eclk,
+		eclko => synceclk);
+
+	dqsdll_rst <= not adjdll_rdy;
 	dqsdll_b : block
 		signal lock : std_logic;
 	begin
 
 		dqsdllb_i : dqsdllb
 		port map (
-			rst => phy_rst,
+			rst => dqsdll_rst,
 			clk => sys_sclk2x,
 			uddcntln => dqsdll_uddcntln,
 			dqsdel => dqsdel,
@@ -332,21 +335,6 @@ begin
 		end process;
 
 	end block;
-
-	process (adjdll_stop, sys_sclk)
-	begin
-		if adjdll_stop='1' then
-			eclk_stop <= '1';
-		elsif falling_edge(sys_sclk) then
-			eclk_stop <= not dqsdll_uddcntln_rdy;
-		end if;
-	end process;
-
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclk_stop,
-		eclki => sys_eclk,
-		eclko => synceclk);
 
 	process (dqsdll_lock, sys_sclk2x)
 		variable counter : unsigned(0 to 3);
@@ -364,7 +352,7 @@ begin
 		end if;
 	end process;
 
-	ddrdqphy_rst <= not adjdll_rdy;
+	ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
