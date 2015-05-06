@@ -42,7 +42,8 @@ begin
 			q <= (others => '0');
 		elsif rising_edge(sclk) then
 			if prdy(0)='1' then
-				ok <= not q(0) and q(1);
+--				ok <= not q(0) and q(1);
+				ok <= q(1);
 			end if;
 
 			q(0) <= eclk;
@@ -63,7 +64,7 @@ begin
 				if prdy(2)='1' then
 					aux := unsigned(ph);
 					aux := aux or dg(0 to ph'length-1);
-					if ok='0' then
+					if ok='1' then
 						aux := aux and not dg(1 to ph'length);
 					end if;
 					ph <= std_logic_vector(aux);

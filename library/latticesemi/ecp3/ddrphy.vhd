@@ -282,7 +282,7 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	adjdll_rst <= phy_rst;
-	kclk <= synceclk after 0 ns;
+	kclk <= synceclk after 0.75 ns;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
 		rst  => adjdll_rst,

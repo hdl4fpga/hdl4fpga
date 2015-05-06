@@ -7,9 +7,12 @@ quietly virtual signal -install /testbench/ecp3versa_e/ddrphy_e/adjdll_e { (cont
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/rst
+add wave -noupdate -expand -group adjdll -divider {New Divider}
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sclk
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/kclk
+add wave -noupdate -expand -group adjdll -divider {New Divider}
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/eclk_stop
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/dg
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/ok
@@ -19,7 +22,6 @@ add wave -noupdate -expand -group adjdll -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/dy
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/pha
 add wave -noupdate -expand -group adjdll -radix hexadecimal -childformat {{/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(4) -radix hexadecimal} {/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(3) -radix hexadecimal} {/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(2) -radix hexadecimal} {/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(1) -radix hexadecimal} {/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy(0) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/prdy
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/rdy
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/stop
 add wave -noupdate -expand -group testbench /testbench/xtal
@@ -651,7 +653,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1343088 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1278319 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 138
@@ -667,4 +669,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1337584 ps} {1508549 ps}
+WaveRestoreZoom {1225819 ps} {1488319 ps}
