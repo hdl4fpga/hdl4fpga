@@ -17,7 +17,8 @@ end;
 architecture beh of adjdll is
 
 	signal ph : std_logic_vector(pha'range);
-	signal qk : std_logic;
+	signal qr : std_logic;
+	signal qf : std_logic;
 	signal ok : std_logic;
 	signal prdy : std_logic_vector(4 downto 0);
 	signal dy : unsigned(prdy'range);
@@ -26,12 +27,17 @@ architecture beh of adjdll is
 
 begin
 
-	process (rst, kclk)
+	process (kclk)
 	begin
-		if rst='1' then
-			qk <= '0';
-		elsif rising_edge(kclk) then
-			qk <= not qk;
+		if rising_edge(kclk) then
+			qr <= not setif(qr='1');
+		end if;
+	end process;
+
+	process (kclk)
+	begin
+		if falling_edge(kclk) then
+			qf <= not setif(qf='1');
 		end if;
 	end process;
 
@@ -42,12 +48,12 @@ begin
 			q <= (others => '0');
 		elsif rising_edge(sclk) then
 			if prdy(0)='1' then
---				ok <= not q(0) and q(1);
+--				ok <= ;
 				ok <= q(1);
 			end if;
 
-			q(0) <= eclk;
-			q(1) <= qk;
+			q(0) <= qk(0) xor qk(1);
+			q(1) <= qk(0);
 		end if;
 	end process;
 
