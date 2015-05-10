@@ -282,7 +282,7 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	adjdll_rst <= phy_rst;
-	kclk <= synceclk after 0.5 ns;
+	kclk <= transport synceclk after 0.0625 ns;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
 		rst  => adjdll_rst,
@@ -297,12 +297,15 @@ begin
 	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
 --	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
 
-	process (adjdll_stop, sys_sclk)
+	process (adjdll_stop, sys_eclk)
+		variable q : std_logic_vector(0 to 1);
 	begin
 		if adjdll_stop='1' then
 			eclk_stop <= '1';
-		elsif rising_edge(sys_sclk) then
-			eclk_stop <= '0';
+			q := (others => '1');
+		elsif falling_edge(sys_eclk) then
+			eclk_stop <= q(0);
+			q := q(1) & '0';
 		end if;
 	end process;
 
