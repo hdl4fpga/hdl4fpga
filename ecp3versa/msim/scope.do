@@ -9,6 +9,8 @@ add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_
 add wave -noupdate -expand -group adjdll -divider {New Divider}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sm
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sclk
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/er
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/ef
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qr
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qf
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/kclk
@@ -655,7 +657,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1280141 ps} 0} {{Cursor 2} {1338095 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1280000 ps} 0} {{Cursor 2} {1338095 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 94
 configure wave -valuecolwidth 92
@@ -671,4 +673,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1252503 ps} {1371923 ps}
+WaveRestoreZoom {1220290 ps} {1339710 ps}
