@@ -83,7 +83,7 @@ begin
 					if ok=ok1 then
 						aux := aux and not dg(1 to ph'length);
 					else
-						ok1 := ok;
+					--	ok1 := ok;
 					end if;
 					ph <= std_logic_vector(aux);
 					dg <= dg srl 1;
