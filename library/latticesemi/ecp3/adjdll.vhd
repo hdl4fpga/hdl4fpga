@@ -57,6 +57,7 @@ begin
 			qf <= '0';
 			dr := (others => '0');
 			df := (others => '0');
+			ok <= '0';
 		elsif rising_edge(sclk) then
 			ok <= qr xor qf;
 			dr := dr(1) & er;
@@ -65,6 +66,7 @@ begin
 			qf <= df(0);
 		end if;
 	end process;
+	sm <= qf xor er;
 
 	process(rst, sclk)
 		variable aux : unsigned(pha'range);
