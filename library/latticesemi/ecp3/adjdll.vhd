@@ -48,7 +48,7 @@ begin
 			qr <= not setif(qr='1');
 		end if;
 	end process;
-	sm <= qr xnor qf;
+	sm <= qr xor qf;
 
 	process (stop, sclk)
 	begin
@@ -58,7 +58,7 @@ begin
 		elsif rising_edge(sclk) then
 			if prdy(0)='1' then
 --				ok <= not q(0) and q(1);
-				ok <= qr xnor qf;
+				ok <= sm;
 			end if;
 
 			q(0) <= eclk;
