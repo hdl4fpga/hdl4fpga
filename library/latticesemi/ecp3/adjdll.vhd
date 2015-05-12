@@ -27,6 +27,7 @@ architecture beh of adjdll is
 	signal dy : unsigned(prdy'range);
 	signal dg : unsigned(0 to pha'length+1);
 	signal sm : std_logic;
+	signal delta : unsigned(0 to 2);
 
 begin
 
@@ -99,20 +100,28 @@ begin
 	begin
 		if rst='1' then
 			pha <= (ph'range => '0');
+			delta <= (delta'right => '1', others => '0');
 			ok1 := '0';
 		elsif rising_edge(sclk) then
 			if dg(dg'right)='1' then
 				if ok1='1' then
 					if stop='1' then
 						if ph(ph'right)='1' then
-							pha <= std_logic_vector(unsigned(ph) + 1);
+							delta <= delta sll 1;
 						end if;
 					end if;
 				end if;
-			else
-				pha <= ph;
 			end if;
 			ok1 := ok;
+		end if;
+	end process;
+
+	process (rst, sclk)
+	begin
+		if rst='1' then
+			pha <= (others => '0');
+		elsif rising_edge(sclk) then
+			pha <= std_logic_vector(unsigned(ph) + resize(delta(0 to 1), ph'length));
 		end if;
 	end process;
 
