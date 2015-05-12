@@ -94,7 +94,27 @@ begin
 	end process;
 
 	stop <= dy(2+2);
-	pha <= ph;
+	process (rst, sclk)
+		variable ok1 : std_logic;
+	begin
+		if rst='1' then
+			pha <= (ph'range => '0');
+			ok1 := '0';
+		elsif rising_edge(sclk) then
+			if dg(dg'right)='1' then
+				if ok1='1' then
+					if stop='1' then
+						if ph(ph'right)='1' then
+							pha <= std_logic_vector(unsigned(ph) + 1);
+						end if;
+					end if;
+				end if;
+			else
+				pha <= ph;
+			end if;
+			ok1 := ok;
+		end if;
+	end process;
 
 	process(rst, sclk)
 	begin
