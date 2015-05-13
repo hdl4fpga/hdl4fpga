@@ -235,12 +235,10 @@ architecture ecp3 of ddrphy is
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
-	signal synceclk : std_logic;
 	signal eclk_stop : std_logic;
-	signal krst : std_logic;
-	signal kclk : std_logic;
 	signal ddrdqphy_rst : std_logic;
 	signal adjdll_rdy : std_logic;
+	signal synceclk : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -282,38 +280,18 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	adjdll_rst <= phy_rst;
-	kclk <= transport synceclk after 0.80 ns;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
 		rst  => adjdll_rst,
 		sclk => sys_sclk,
 		eclk => sys_eclk,
-		kclk => kclk, --synceclk,
-		stop => adjdll_stop,
+		synceclk => synceclk,
 		rdy  => adjdll_rdy,
 		pha => sys_cfgo(5 downto 2));
 
 --	sys_cfgo(5 downto 2) <= "0011";
 	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
 --	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
-
-	process (adjdll_stop, sys_eclk)
-		variable q : std_logic_vector(0 to 1);
-	begin
-		if adjdll_stop='1' then
-			eclk_stop <= '1';
-			q := (others => '1');
-		elsif falling_edge(sys_eclk) then
-			eclk_stop <= q(0);
-			q := q(1) & '0';
-		end if;
-	end process;
-
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclk_stop,
-		eclki => sys_eclk,
-		eclko => synceclk);
 
 	dqsdll_rst <= not adjdll_rdy;
 	dqsdll_b : block
