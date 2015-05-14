@@ -22,8 +22,9 @@ use ecp3.components.all;
 architecture beh of adjdll is
 
 	signal ph : std_logic_vector(pha'range);
-	signal qr, qf : std_logic;
 	signal er, ef : std_logic;
+	signal sr, sf : std_logic;
+	signal qr, qf : std_logic;
 	signal kclk : std_logic;
 	signal pe : std_logic_vector(0 to 5);
 	signal dy : unsigned(pe'range);
@@ -55,43 +56,59 @@ begin
 		eclki => eclk,
 		eclko => eclksynca_eclk);
 
-	synceclk <= eclksynca_eclk;
+	synceclk <= kclk;
 	kclk <= transport eclksynca_eclk after 0.156 ns;
 
-	process (stop, kclk)
+	seclk_b : block
+		signal kclk_n : std_logic;
+		signal er_n : std_logic;
+		signal ef_n : std_logic;
 	begin
-		if stop='1' then
-			er <= '0';
-		elsif rising_edge(kclk) then
-			er <= not setif(er='1');
-		end if;
-	end process;
 
-	process (stop, kclk)
-	begin
-		if stop='1' then
-			ef <= '0';
-		elsif falling_edge(kclk) then
-			ef <= not setif(ef='1');
-		end if;
-	end process;
+		kclk_n <= not kclk;
+
+		er_n <= not er;
+		er_i : entity hdl4fpga.aff
+		port map (
+			ar  => stop,
+			clk => kclk,
+			d   => er_n,
+			q   => er);
+
+		ef_n <= not ef;
+		ef_i : entity hdl4fpga.aff
+		port map (
+			ar  => stop,
+			clk => kclk_n,
+			d   => ef_n,
+			q   => ef);
+
+		sr_i : entity hdl4fpga.aff
+		port map (
+			ar  => stop,
+			clk => sclk,
+			d   => er,
+			q   => sr);
+
+		sf_i : entity hdl4fpga.aff
+		port map (
+			ar  => stop,
+			clk => sclk,
+			d   => ef,
+			q   => sf);
+
+	end block;
 
 	process (stop, sclk)
-		variable dr : std_logic_vector(0 to 1);
-		variable df : std_logic_vector(0 to 1);
 	begin
 		if stop='1' then
 			qr <= '0';
 			qf <= '0';
-			dr := (others => '0');
-			df := (others => '0');
 			ok <= '0';
 		elsif rising_edge(sclk) then
 			ok <= qr xor qf;
-			dr := dr(1) & er;
-			df := df(1) & ef;
-			qr <= dr(0);
-			qf <= df(0);
+			qr <= sr;
+			qf <= sf;
 		end if;
 	end process;
 	sm <= qf xor er;

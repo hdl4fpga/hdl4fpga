@@ -245,6 +245,7 @@ begin
 		variable q : std_logic_vector(0 to 2);
 	begin
 		if rising_edge(ddr_sclk) then
+	led(0 to 3) <= ddrphy_cfgo(5 downto 2);
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
 		end if;
@@ -405,7 +406,7 @@ begin
 --		end if;
 --	end process;
 
-	led(0 to 3) <= (others => '1');
+--	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
 --	led(5) <= not phy1_rx_dv;
 --	led(6) <= not mii_txen;
 	led(4) <= not tpo(0);

@@ -23,6 +23,8 @@ quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_dqi_63 & ddrphy_dqi_62 & ddrphy_dqi_61 & ddrphy_dqi_60 & ddrphy_dqi_59 & ddrphy_dqi_58 & ddrphy_dqi_57 & ddrphy_dqi_56 )} dqi_7002
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_cfgo_2 & ddrphy_cfgo_3 & ddrphy_cfgo_4 & ddrphy_cfgo_5 )} cfgo
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_cfgo_5 & ddrphy_cfgo_4 & ddrphy_cfgo_3 & ddrphy_cfgo_2 )} cfgo001
+quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_ph_2 & ddrphy_e_adjdll_e_ph_3 & ddrphy_e_adjdll_e_ph_4 & ddrphy_e_adjdll_e_ph_5 )} ph
+quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_ph_5 & ddrphy_e_adjdll_e_ph_4 & ddrphy_e_adjdll_e_ph_3 & ddrphy_e_adjdll_e_ph_2 )} ph001
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst_n
 add wave -noupdate /testbench/cke
@@ -37,10 +39,20 @@ add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate /testbench/dqs_p(0)
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
-add wave -noupdate /testbench/ecp3versa_e/ddr_eclk
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_qk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_qr
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_qf
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ef
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_er
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_1
+add wave -noupdate /testbench/ecp3versa_e/ph001
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ph_2
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ph_3
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ph_4
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ph_5
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
+add wave -noupdate /testbench/ecp3versa_e/ddr_eclk
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk2x
 add wave -noupdate /testbench/ecp3versa_e/phy1_125clk
@@ -51,10 +63,8 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e_miitx_udprdy
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ecp3versa_e/mii_rxd(7) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(6) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(5) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(4) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(3) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(2) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(1) -radix hexadecimal} {/testbench/ecp3versa_e/mii_rxd(0) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/mii_rxd_0 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_1 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_2 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_3 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_4 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_5 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_6 {-radix hexadecimal} /testbench/ecp3versa_e/mii_rxd_7 {-radix hexadecimal}} /testbench/ecp3versa_e/mii_rxd
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_q_0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_q_1
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_stop
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_1
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_qk_i
 add wave -noupdate /testbench/ecp3versa_e/cfgo001
 add wave -noupdate /testbench/ecp3versa_e/phy1_rxc
 add wave -noupdate /testbench/ecp3versa_e/phy1_rx_dv
@@ -112,10 +122,8 @@ add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_dqi_22
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_dqi_23
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_eclk_stop
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_rst
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -433,10 +441,10 @@ add wave -noupdate -expand -group dqsbuf_1 -group dyndelay1 /testbench/ecp3versa
 add wave -noupdate -expand -group dqsbuf_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY6
 add wave -noupdate -expand -group dqsbuf_1 -group dyndelay1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DYNDELAY7
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/SCLK
+add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLK
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSDEL
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/READ
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSI
-add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLK
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLKW
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DDRCLKPOL
 add wave -noupdate -expand -group dqsbuf_1 /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DDRLAT
@@ -472,9 +480,9 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {1365201 ps} 0} {{Cursor 4} {1515776 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 176
+WaveRestoreCursors {{Cursor 3} {1425429 ps} 0} {{Cursor 4} {1546359 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 217
 configure wave -valuecolwidth 55
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -488,4 +496,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1491197 ps} {1533929 ps}
+WaveRestoreZoom {1402017 ps} {1525246 ps}
