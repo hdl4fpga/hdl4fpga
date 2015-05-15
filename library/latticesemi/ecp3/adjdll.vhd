@@ -164,13 +164,6 @@ begin
 		end if;
 	end process;
 
-	process (rst, sclk)
-	begin
-		if rst='1' then
-		elsif rising_edge(sclk) then
-		end if;
-	end process;
-
 	process(rst, sclk)
 	begin
 		if rst='1' then
