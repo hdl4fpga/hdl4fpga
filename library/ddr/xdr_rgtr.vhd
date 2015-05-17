@@ -14,20 +14,18 @@ entity xdr_rgtr is
 		data_size : natural := 13;
 		addr_size : natural := 3);
 	port (
-		xdr_init_ods  : in  std_logic := '0';
-		xdr_init_rtt  : in  std_logic_vector(2 downto 0) := "001";
-		xdr_init_drtt : in  std_logic_vector(1 downto 0) := "01";
-		xdr_init_bl   : in  std_logic_vector(0 to 2);
-		xdr_init_cl   : in  std_logic_vector(0 to 2);
-		xdr_init_wr   : in  std_logic_vector(0 to 2) := (others => '0');
-		xdr_init_cwl  : in  std_logic_vector(0 to 2) := (others => '0');
-		xdr_init_pl   : in  std_logic_vector(0 to 2) := (others => '0');
-		xdr_init_dqsn : in  std_logic := '0';
+		xdr_rgtr_ods  : in  std_logic := '0';
+		xdr_rgtr_rtt  : in  std_logic_vector(2 downto 0) := "001";
+		xdr_rgtr_drtt : in  std_logic_vector(1 downto 0) := "01";
+		xdr_rgtr_bl   : in  std_logic_vector(0 to 2);
+		xdr_rgtr_cl   : in  std_logic_vector(0 to 2);
+		xdr_rgtr_wr   : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_rgtr_cwl  : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_rgtr_pl   : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_rgtr_dqsn : in  std_logic := '0';
 
-		xdr_init_clk  : in  std_logic;
-		xdr_init_rst  : out std_logic;
-		xdr_init_data : out std_logic_vector(data_size-1 downto 0) := (others => '1');
-		xdr_init_addr : out std_logic_vector(addr_size-1 downto 0) := (others => '1'));
+		xdr_rgtr_addr : in  std_logic_vector(addr_size-1 downto 0);
+		xdr_rgtr_data : out std_logic_vector(data_size-1 downto 0));
 
 	type field_id is (ID_CL, ID_BL, ID_WR, ID_DRTT, ID_RTT, ID_CWL, ID_PL, ID_ODS);
 
@@ -88,6 +86,19 @@ architecture ddr3 of xdr_rgtr is
 	constant ddr3_mpr_rf  : fdctr_vector(0 to 0) := (off => 0, sz => 2);
 	constant ddr3_mpr     : fdctr_vector(0 to 0) := (off => 2, sz => 1);
 
+	subtype rgtr_word is std_logic_vector(xdr_rgtr_data'lenth-1 downto 0);
+
+	type rgtrword_vector is array (natural range <>) of word;
+	signal rgtrfile is word_vector(0 to 2**xdr_rgtr_addr'length-1);
+
+	function (
+		constant rgtr_id  : std_logic_vector;
+		constant fld_mask : fdctr_vector;
+		constant fld_val  : std_logic_vector)
+		return rgrt_word) is
+		variable rtgr_word : std_logic_vector(rgtr_word'range) := (others => '0');
+	begin
+	end;
 begin
 
 end;
