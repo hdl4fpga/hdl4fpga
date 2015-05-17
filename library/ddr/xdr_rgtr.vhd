@@ -1,0 +1,308 @@
+use std.textio.all;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.xdr_param.all;
+
+entity xdr_rgtr is
+	generic (
+		data_size : natural := 13;
+		addr_size : natural := 3);
+	port (
+		xdr_init_ods  : in  std_logic := '0';
+		xdr_init_rtt  : in  std_logic_vector(2 downto 0) := "001";
+		xdr_init_drtt : in  std_logic_vector(1 downto 0) := "01";
+		xdr_init_bl   : in  std_logic_vector(0 to 2);
+		xdr_init_cl   : in  std_logic_vector(0 to 2);
+		xdr_init_wr   : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_init_cwl  : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_init_pl   : in  std_logic_vector(0 to 2) := (others => '0');
+		xdr_init_dqsn : in std_logic := '0';
+
+		xdr_init_clk : in  std_logic;
+		xdr_init_rst : out std_logic;
+		xdr_init_a   : out std_logic_vector(data_size-1 downto 0) := (others => '1');
+		xdr_init_b   : out std_logic_vector(addr_size-1 downto 0) := (others => '1'));
+
+	constant xdrinitout_size : natural := 2;
+
+	constant xdrinitods_size : natural := 1;
+	constant cnfgreg_size : natural := 
+		xdrinitods_size +
+		xdr_init_rtt'length +
+		xdr_init_pl'length +
+		xdr_init_cwl'length +
+		xdr_init_drtt'length +
+		xdr_init_wr'length +
+		xdr_init_bl'length +
+		xdr_init_cl'length;
+
+	subtype  dst_a   is natural range xdr_init_a'length-1 downto 0;
+	subtype  dst_b   is natural range dst_a'high+xdr_init_b'length downto dst_a'high+1;
+
+	type field_id is (ID_CL, ID_BL, ID_WR, ID_DRTT, ID_RTT, ID_CWL, ID_PL, ID_ODS);
+
+	subtype src_cl  is natural range src_b01'high + xdr_init_cl'length  downto src_b01'high+1;
+	subtype src_bl  is natural range src_cl'high  + xdr_init_bl'length  downto src_cl'high+1;
+	subtype src_wr  is natural range src_bl'high  + xdr_init_wr'length  downto src_bl'high+1;
+	subtype src_drtt is natural range src_wr'high  + xdr_init_drtt'length downto src_wr'high+1;
+	subtype src_rtt is natural range src_drtt'high  + xdr_init_rtt'length downto src_drtt'high+1;
+	subtype src_cwl is natural range src_rtt'high + xdr_init_cwl'length  downto src_rtt'high+1;
+	subtype src_pl  is natural range src_cwl'high + xdr_init_pl'length  downto src_cwl'high+1;
+	constant src_ods : natural := xdrinitods_size + src_pl'high;
+
+	subtype src_word is std_logic_vector(2+cnfgreg_size downto 1);
+	subtype dst_word is std_logic_vector(dst_cmd'high downto 0);
+	subtype dst_wtab is natural_vector(dst_word'range);
+
+	type mr_array is array (natural range <>) of ddr3_mr;
+
+	signal src : src_word;
+
+end;
+
+architecture ddr3 of xdr_rgtr is
+
+	type fdctr is record
+		sz  : natural;
+		off : natural;
+	end record;
+	type fdctr_vector is array of fdctr;
+
+	signal dst : dst_word;
+
+	constant ddl_rdy : field_desc := (dbase => dst_o'low+0, sbase => 1, size => 1);
+	constant end_rdy : field_desc := (dbase => dst_o'low+1, sbase => 1, size => 1);
+
+	-- DDR3 Mode Register 0 --
+	--------------------------
+
+	constant ddr3_bl   : fdctr_vector(0 to 0) := (0 => (off =>  0, sz => 3));
+	constant ddr3_bt   : fdctr_vector(0 to 0) := (0 => (off =>  3, sz => 1));
+	constant ddr3_cl   : fdctr_vector(0 to 0) := (0 => (off =>  4, sz => 3));
+	constant ddr3_tm   : fdctr_vector(0 to 0) := (0 => (off =>  7, sz => 1));
+	constant ddr3_rdll : fdctr_vector(0 to 0) := (0 => (off =>  8, sz => 1));
+	constant ddr3_wr   : fdctr_vector(0 to 0) := (0 => (off =>  9, sz => 3));
+	constant ddr3_pd   : fdctr_vector(0 to 0) := (0 => (off => 12, sz => 1));
+
+	-- DDR3 Mode Register 1 --
+	--------------------------
+
+	constant edll : field_desc := (dbase => 0, sbase => 1, size => 1);
+	constant ods  : fielddesc_vector := ((dbase => 1, sbase => 1, size => 1), (dbase => 5, sbase => 1, size => 1));
+	constant rtt  : fielddesc_vector := (
+		(dbase => 2, sbase => src_rtt'low+0, size => 1),
+		(dbase => 6, sbase => src_rtt'low+1, size => 1),
+		(dbase => 9, sbase => src_rtt'low+2, size => 1));
+	constant al   : field_desc := (dbase =>  3, sbase => 1, size => 2);
+	constant wl   : field_desc := (dbase =>  7, sbase => 0, size => 1);
+	constant dqs  : field_desc := (dbase => 10, sbase => 0, size => 1);
+	constant tdqs : field_desc := (dbase => 11, sbase => 0, size => 1);
+	constant qoff : field_desc := (dbase => 12, sbase => 0, size => 1);
+
+	-- DDR3 Mode Register 2 --
+	--------------------------
+
+	constant cwl  : field_desc := (dbase => 3, sbase => src_cwl'low, size => 3);
+	constant asr  : field_desc := (dbase => 6, sbase => 0, size => 1);
+	constant srt  : field_desc := (dbase => 7, sbase => 0, size => 1);
+	constant drtt : field_desc := (dbase => 9, sbase => src_drtt'low, size => 2);
+
+	-- DDR3 Mode Register 3 --
+	--------------------------
+
+	constant mpr_rf  : field_desc := (dbase => 0, sbase => 0, size => 2);
+	constant mpr     : field_desc := (dbase => 2, sbase => 0, size => 1);
+
+	constant mr : ddr3mr_vector(0 to 3) := ( 
+		(mov(bl)   or clr(bt)  or mov(cl) or clr(tm)  or set(rdll) or mov(wr) or mov(pd)),
+		(clr(tdqs) or clr(wl)  or clr(al) or mov(rtt) or clr(edll)),
+		(mov(drtt) or clr(srt) or clr(asr) or mov(cwl)),
+		(clr(mpr)  or clr(mpr_rf)));
+
+	constant mrx : std_logic_vector(dst_word'range) := (others => '1');
+	constant ddr3_a10 : std_logic_vector(10 to 10) := "1";
+
+	type yyy is record
+		ccmd : ddr3_ccmd;
+		id   : TMR_IDs;
+	end record;
+
+	type xxx is record
+		dst : dst_word;
+		id  : TMR_IDs;
+	end record;
+
+	type ddr3ccmd_vector is array (natural range <>) of yyy;
+
+	constant pgm : ddr3ccmd_vector := (
+		(ddr3_cnop + mrx, TMR_RRDY),
+		(ddr3_cnop + mrx, TMR_CKE),
+		(ddr3_clmr + mr2, TMR_MRD),
+		(ddr3_clmr + mr3, TMR_MRD),
+		(ddr3_clmr + mr1, TMR_MRD),
+		(ddr3_clmr + mr0, TMR_MOD),
+		(ddr3_czqc + ddr3_a10, TMR_ZQINIT));
+
+	signal xdr_init_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
+
+	impure function build (
+		constant pc  : unsigned;
+		constant src : std_logic_vector)
+		return xxx is
+		variable val : dst_word := (others => '1');
+		variable a1 : ddr3_ccmd;
+		variable aux : std_logic_vector(1 to pc'length-1);
+		variable msg : line;
+
+	begin
+		aux := std_logic_vector(resize(pc, pc'length-1));
+		for i in pgm'range loop
+			if aux=to_unsigned(pgm'length-1-i, aux'length) then
+				val(dst_cmd) := pgm(i).ccmd.cmd;
+				case pgm(i).id is 
+				when TMR_RRDY =>
+					return (dst => (dst_word'range => '1'), id => pgm(i).id);
+				when TMR_CKE =>
+					val := (others => '1');
+					val(dst_cmd) := ddr3_cnop.id;
+					return (dst => val, id => pgm(i).id);
+				when TMR_MRD|TMR_MOD =>
+					val := (others  => '0');
+					for j in a1.addr'range loop
+						if mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j) /= 0 then
+							val(j) := src(mr(to_integer(unsigned(pgm(i).ccmd.bank))).tab(j));
+						end if;
+					end loop;
+					val(dst_cmd) := pgm(i).ccmd.cmd;
+					val(dst_b)   := pgm(i).ccmd.bank;
+					return (dst => val, id => pgm(i).id);
+				when TMR_ZQINIT =>
+					for j in a1.addr'range loop
+						if pgm(i).ccmd.addr(j) /= 0 then
+							val(j) := src(pgm(i).ccmd.addr(j));
+						end if;
+					end loop;
+					return (dst => val, id => pgm(i).id);
+				when others =>
+					report "Wrong command"
+					severity ERROR;
+				end case;
+			end if;
+		end loop;
+		report "Wrong command yyy"
+		severity ERROR;
+		return (dst => val, id => pgm(0).id);
+	end;
+
+begin
+
+	src(src_b01) <= "10";
+	src(src_cl ) <= xdr_init_cl;
+	src(src_bl ) <= xdr_init_bl;
+	src(src_drtt) <= xdr_init_drtt;
+	src(src_rtt) <= xdr_init_rtt;
+	src(src_cwl) <= xdr_init_cwl;
+	src(src_wr)  <= xdr_init_wr;
+	src(src_pl ) <= xdr_init_pl;
+	src(src_ods) <= xdr_init_ods;
+
+	process (xdr_init_clk)
+	begin
+		if rising_edge(xdr_init_clk) then
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
+					if xdr_init_pc(0)='0' then
+						xdr_init_pc <= xdr_init_pc - 1;
+						dst <= build(xdr_init_pc, src).dst;
+					else
+						dst <= (others => '1');
+					end if;
+				else
+					dst <= (others => '1');
+				end if;
+			else
+				dst <= (others => '1');
+				xdr_init_pc <= to_unsigned(pgm'length-1, xdr_init_pc'length);
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='0' then
+					if xdr_init_pc(0)='0' then
+						xdr_timer_id <= build(xdr_init_pc, src).id;
+					else
+						xdr_timer_id <= TMR_REF;
+					end if;
+				end if;
+			else
+				xdr_timer_id <= TMR_RST;
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
+					if xdr_init_pc(0)='1' then
+						xdr_timer_ref <= '1';
+					end if;
+				end if;
+			else
+				xdr_timer_ref <= '0';
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_timer_rdy='1' then
+					case xdr_timer_id is
+					when TMR_RST =>
+						xdr_init_rst <= '0';
+						xdr_init_cke <= '0';
+					when TMR_RRDY =>
+						xdr_init_rst <= '1';
+						xdr_init_cke <= '0';
+					when others =>
+						xdr_init_rst <= '1';
+						xdr_init_cke <= '1';
+					end case;
+					xdr_init_rdy <= xdr_init_pc(0);
+				end if;
+			else
+				xdr_init_rst <= '0';
+				xdr_init_cke <= '0';
+				xdr_init_rdy <= '0';
+			end if;
+
+			if xdr_init_req='0' then
+				if xdr_refi_rdy='1' then
+					xdr_refi_req <= '0';
+				elsif xdr_timer_ref='1' then
+					if xdr_timer_req='1' then
+						xdr_refi_req  <= '1';
+					end if;
+				end if;
+			else
+				xdr_refi_req <= '0';
+			end if;
+		end if;
+	end process;
+
+	xdr_timer_req <= xdr_timer_rdy or xdr_init_req;
+
+	xdr_init_a   <= dst(dst_a);
+	xdr_init_b   <= dst(dst_b);
+	xdr_init_cs  <= dst(dst_cs);
+	xdr_init_ras <= dst(dst_ras);
+	xdr_init_cas <= dst(dst_cas);
+	xdr_init_we  <= dst(dst_we);
+
+	timer_e : entity hdl4fpga.xdr_timer
+	generic map (
+		timers => timers)
+	port map (
+		sys_clk => xdr_init_clk,
+		tmr_id  => xdr_timer_id,
+		sys_req => xdr_timer_req,
+		sys_rdy => xdr_timer_rdy);
+end;
