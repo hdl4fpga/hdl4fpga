@@ -10,37 +10,23 @@ use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
 
 entity xdr_wlp is
-	generic (
-		timers : timer_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25, TMR_MOD => 100);
-		addr_size : natural := 13;
-		bank_size : natural := 3);
 	port (
-		xdr_init_clk : in  std_logic;
-		xdr_init_req : in  std_logic;
-		xdr_init_rdy : out std_logic;
-		xdr_init_rst : out std_logic;
-		xdr_init_cke : out std_logic;
-		xdr_init_odt : out std_logic := '0';
-		xdr_init_cs  : out std_logic;
-		xdr_init_ras : out std_logic;
-		xdr_init_cas : out std_logic;
-		xdr_init_we  : out std_logic;
-		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
+		xdr_wlp_clk : in  std_logic;
+		xdr_wlp_req : in  std_logic;
+		xdr_wlp_rdy : out std_logic;
+		xdr_wlp_cke : out std_logic;
+		xdr_wlp_cs  : out std_logic;
+		xdr_wlp_ras : out std_logic;
+		xdr_wlp_cas : out std_logic;
+		xdr_wlp_we  : out std_logic;
+		xdr_wlp_odt : out std_logic;
+		xdr_wlp_b   : out std_logic_vector);
 
 end;
 
 architecture ddr3 of xdr_wlp is
 
-	function unsigned_num_bits(
-		constant values : natural_vector)
-		return natural is
-		variable max : natural := 0;
-	begin
-		for i in values'range loop
-		end loop;
-	end;
-
-	constant lat_size : natural := unsigned_num_bits(lRCD, lRFC, lWR, lRP, bl_tab, cl_tab, cwl_tab);
+	constant lat_size : natural := unsigned_num_bits(max(natural_vector'(0 => lRCD, 1 => lRFC, 2 => lWR, 3 => lRP) & bl_tab & cl_tab & cwl_tab));
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
 	type xdr_state_word is record
