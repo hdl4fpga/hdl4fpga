@@ -9,26 +9,29 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
 
-entity xdr_wlp is
+entity xdr_wlu is
+	generic (
 	port (
-		xdr_wlp_clk : in  std_logic;
-		xdr_wlp_req : in  std_logic;
-		xdr_wlp_rdy : out std_logic;
-		xdr_wlp_cke : out std_logic;
-		xdr_wlp_cs  : out std_logic;
-		xdr_wlp_ras : out std_logic;
-		xdr_wlp_cas : out std_logic;
-		xdr_wlp_we  : out std_logic;
-		xdr_wlp_odt : out std_logic;
-		xdr_wlp_b   : out std_logic_vector);
+		xdr_wlu_clk : in  std_logic;
+		xdr_wlu_req : in  std_logic;
+		xdr_wlu_rdy : out std_logic;
+		xdr_wlu_cke : out std_logic;
+		xdr_wlu_cs  : out std_logic;
+		xdr_wlu_ras : out std_logic;
+		xdr_wlu_cas : out std_logic;
+		xdr_wlu_we  : out std_logic;
+		xdr_wlu_odt : out std_logic;
+		xdr_wlu_b   : out std_logic_vector);
 
 end;
 
-architecture ddr3 of xdr_wlp is
+architecture ddr3 of xdr_wlu is
 
-	constant lat_size : natural := unsigned_num_bits(max(natural_vector'(0 => lRCD, 1 => lRFC, 2 => lWR, 3 => lRP) & bl_tab & cl_tab & cwl_tab));
+	constant lat_size : natural := unsigned_num_bits(
+		max(());
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
+	(ID_MOD, ID_WLDQSEN, ID_WLMRD, 
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
 		xdr_state_n : std_logic_vector(0 to 2);
