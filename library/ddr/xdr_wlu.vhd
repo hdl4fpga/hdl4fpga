@@ -31,7 +31,14 @@ architecture ddr3 of xdr_wlu is
 		max(());
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
-	(ID_MOD, ID_WLDQSEN, ID_WLMRD, 
+	type timer_id is (ID_MOD, ID_WLDQSEN, ID_WLMRD);
+	type lattab is array (timer_id) of unsigned(0 to lat_size-1)
+	constant latdb : lattab := (
+		ID_MOD     => to_unsigned(tMRD),
+		ID_WLDQSEN => to_unsigned(),
+		ID_WLMRD   => to_unsigned());
+
+	constant 
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
 		xdr_state_n : std_logic_vector(0 to 2);
