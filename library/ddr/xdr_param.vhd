@@ -261,6 +261,17 @@ package xdr_param is
 		constant dat : std_logic_vector) 
 		return ddr3_ccmd;
 
+
+	function round_lat (
+		constant dly : natural;
+		constant clk : natural) 
+		return natural;
+
+	function floor_lat (
+		constant dly : natural;
+		constant clk : natural) 
+		return natural;
+
 end package;
 
 library hdl4fpga;
@@ -1255,6 +1266,22 @@ package body xdr_param is
 			end if;
 		end loop;
 		return val;
+	end;
+
+	function round_lat (
+		constant dly : natural;
+		constant clk : natural) 
+		return natural is
+	begin
+		return (dly+clk-1)/clk;
+	end;
+
+	function floor_lat (
+		constant dly : natural;
+		constant clk : natural) 
+		return natural is
+	begin
+		return dly/clk;
 	end;
 
 end package body;

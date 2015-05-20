@@ -31,54 +31,31 @@ architecture ddr3 of xdr_wlu is
 		max(());
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
-	type timer_id is (ID_MOD, ID_WLDQSEN, ID_WLMRD);
-	type lattab is array (timer_id) of unsigned(0 to lat_size-1)
-	constant latdb : lattab := (
-		ID_MOD     => to_unsigned(tMRD),
-		ID_WLDQSEN => to_unsigned(),
-		ID_WLMRD   => to_unsigned());
+	type timer_id is (ID_MOD, ID_WLDQSEN, ID_WLMRD, ID_WLO, ID_TB);
 
-	constant 
+	type lattab is array (timer_id) of natural;
+	constant latdb : lattab := (
+		ID_MOD     => round_lat(tMOD, tCLK),
+		ID_WLDQSEN => round_lat(tWLDQSE-tMOD, tCLK),
+		ID_WLMRD   => round_lat(tWLMRD-tWLDQSE, tCLK),
+		ID_TB      => round_lat(tODTL+tWLOE, tCLK),
+
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
 		xdr_state_n : std_logic_vector(0 to 2);
-		xdr_cmdi : std_logic_vector(0 to 3);
-		xdr_cmdo : std_logic_vector(0 to 3);
-		xdr_odt : std_logic;
 		xdr_lat : lat_id;
-		xdr_rea : std_logic;
-		xdr_wri : std_logic;
-		xdr_rph : std_logic;
-		xdr_wph : std_logic;
-		xdr_rdy : std_logic;
+		xdr_odt : std_logic;
 	end record;
 
 	signal xdr_wlp_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
 	constant xdr_state_tab : xdr_state_vector(0 to 12-1) := (
-		(xdr_state => WLS_MRS, xdr_state_n => WLS_WLDQSEN,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_MOD,),
-
-		(xdr_state => WLS_WLDQSEN, xdr_state_n => WLS_WLMRD,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLDQSEN,),
-
-		(xdr_state => WLS_WLMRD, xdr_state_n => WLS_WLO,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLMRD,),
-
-		(xdr_state => WLS_WLO, xdr_state_n => WLS_WLO,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLO,),
-
-		(xdr_state => WLS_WLO, xdr_state_n => WLS_TA,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLMRD,),
-
-		(xdr_state => WLS_TA, xdr_state_n => WLS_TB,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLMRD,),
-
-		(xdr_state => WLS_TB, xdr_state_n => WLS_TC,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLMRD,),
-
-		(xdr_state => WLS_TC, xdr_state_n => WLS_TD,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_WLMRD,),
+--		 xdr_state    xdr_state_n  xdr_lat     odt   dqs
+		(WLS_MRS,     WLS_WLDQSEN, ID_MOD,     '0', '0'),		
+		(WLS_WLDQSEN, WLS_WLMRD,   ID_WLDQSEN, '1', '0'),
+		(WLS_WLMRD,   WLS_WLO,     ID_WLMRD,   '1', '0'),
+		(WLS_DQSL     WLS_DQSH,    ID_WLO,      '0', '0'),
+		(WLS_TB,      WLS_TC,      ID_TC,      '0', '0'),
 
 begin
 
