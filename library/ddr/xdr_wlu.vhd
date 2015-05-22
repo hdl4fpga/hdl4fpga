@@ -35,10 +35,16 @@ architecture ddr3 of xdr_wlu is
 
 	type lattab is array (timer_id) of natural;
 	constant latdb : lattab := (
-		ID_MOD     => round_lat(tMOD, tCLK),
-		ID_WLDQSEN => round_lat(tWLDQSE-tMOD, tCLK),
-		ID_WLMRD   => round_lat(tWLMRD-tWLDQSE, tCLK),
-		ID_TB      => round_lat(tODTL+tWLOE, tCLK),
+		ID_MOD     => round_lat(tMOD, tCLK)-2,
+		ID_WLDQSEN => round_lat(tWLDQSE-tMOD, tCLK)-2,
+		ID_DQSPRE  => round_lat(tWLO, tCLK)-2,
+
+		ID_DQLHEA  => round_lat(tDQSL-tWLO, tCLK)-2,
+		ID_DQH     => round_lat(tDQSH, tCLK)-2,
+		ID_DQLTWO  => round_lat(tWLO, tCLK)-2,
+
+		ID_DQSSUF  => round_lat(, tCLK)-2,
+		ID_ODT      => round_lat(tODTL+tWLOE, tCLK)-2,
 
 	type xdr_state_word is record
 		xdr_state : std_logic_vector(0 to 2);
@@ -53,8 +59,9 @@ architecture ddr3 of xdr_wlu is
 --		 xdr_state    xdr_state_n  xdr_lat     odt   dqs
 		(WLS_MRS,     WLS_WLDQSEN, ID_MOD,     '0', '0'),		
 		(WLS_WLDQSEN, WLS_WLMRD,   ID_WLDQSEN, '1', '0'),
-		(WLS_WLMRD,   WLS_WLO,     ID_WLMRD,   '1', '0'),
-		(WLS_DQSL     WLS_DQSH,    ID_WLO,      '0', '0'),
+		(WLS_DQSPRE,   WLS_WLO,     ID_WLMRD,   '1', '0'),
+
+		(WLS_DQSL     WLS_DQSH,    ID_WLO,     '0', '0'),
 		(WLS_TB,      WLS_TC,      ID_TC,      '0', '0'),
 
 begin
