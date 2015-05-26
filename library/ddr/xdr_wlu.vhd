@@ -16,6 +16,7 @@ entity xdr_wlu is
 		xdr_wlu_req : in  std_logic;
 		xdr_wlu_rdy : out std_logic;
 		xdr_wlu_stp : in  std_logic;
+		xdr_wlu_nxt : in  std_logic;
 
 		xdr_wlu_cke : out std_logic;
 		xdr_wlu_cs  : out std_logic;
@@ -62,14 +63,14 @@ architecture ddr3 of xdr_wlu is
 --		+------------+--------------+-------+------+-------------+-----------+-----+-----+
 --		| xdr_state  | xdr_state_n  | input | mask | xdr_lat     | cmd       | odt | dqs |
 --		+------------+--------------+-------+------+-------------+-----------+-----+-----+
-		( WLS_MRS,     WLS_WLDQSEN,   "0",    "0",   ID_MOD,       ddr3_mrs,   '0',  '0'),		
-		( WLS_WLDQSEN, WLS_WLMRD,     "0",    "0",   ID_WLDQSEN,   ddr3_nop,   '1',  '0'),
-		( WLS_DQSPRE,  WLS_DQLHEA,    "0",    "0",   ID_WLMRD,     ddr3_nop,   '1',  '0'),
+		( WLS_MRS,     WLS_WLDQSEN,   "00",   "00",  ID_MOD,       ddr3_mrs,   '0',  '0'),		
+		( WLS_WLDQSEN, WLS_WLMRD,     "00",   "00",  ID_WLDQSEN,   ddr3_nop,   '1',  '0'),
+		( WLS_DQSPRE,  WLS_DQLHEA,    "00",   "00",  ID_WLMRD,     ddr3_nop,   '1',  '0'),
                                                                               
-		( WLS_DQSHEA,  WLS_DQSH,      "1",    "0",   ID_WLO,       ddr3_nop,   '0',  '0'),
-		( WLS_DQSH,    WLS_DQLTWO,    "1",    "0",   ID_TC,        ddr3_nop,   '0',  '0'),
-		( WLS_DQLTWO,  WLS_DQSHEA,    "1",    "1",   ID_TC,        ddr3_nop,   '0',  '1'),
-		( WLS_DQLTWO,  WLS_DQSSFX,    "1",    "0",   ID_TC,        ddr3_nop,   '0',  '1'),
+		( WLS_DQSHEA,  WLS_DQSH,      "1 ",   "00",  ID_WLO,       ddr3_nop,   '0',  '0'),
+		( WLS_DQSH,    WLS_DQLTWO,    "1 ",   "00",  ID_TC,        ddr3_nop,   '0',  '0'),
+		( WLS_DQLTWO,  WLS_DQSHEA,    "1 ",   "10",  ID_TC,        ddr3_nop,   '0',  '1'),
+		( WLS_DQLTWO,  WLS_DQSSFX,    "1 ",   "0 ",  ID_TC,        ddr3_nop,   '0',  '1'),
                                                                               
 		( WLS_DQSFSX   WLS_ODT,       "0",    "0",   ID_TC,        ddr3_nop,   '1',  '0'),
 		( WLS_ODT,     WLS_RDY,       "0",    "0",   ID_TC,        ddr3_mrs,   '1',  '0'));
