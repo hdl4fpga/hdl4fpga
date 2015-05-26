@@ -15,6 +15,8 @@ entity xdr_wlu is
 		xdr_wlu_clk : in  std_logic;
 		xdr_wlu_req : in  std_logic;
 		xdr_wlu_rdy : out std_logic;
+		xdr_wlu_stp : in  std_logic;
+
 		xdr_wlu_cke : out std_logic;
 		xdr_wlu_cs  : out std_logic;
 		xdr_wlu_ras : out std_logic;
@@ -44,44 +46,53 @@ architecture ddr3 of xdr_wlu is
 		ID_DQLTWO  => round_lat(tWLO, tCLK)-2,
 
 		ID_DQSSFX  => round_lat(, tCLK)-2,
-		ID_ODT     => round_lat(tODTL+tWLOE, tCLK)-2,
+		ID_ODT     => round_lat(tODTL+tWLOE, tCLK)-2);
 
 	type xdr_state_word is record
-		xdr_state : std_logic_vector(0 to 2);
-		xdr_state_n : std_logic_vector(0 to 2);
-		xdr_lat : lat_id;
-		xdr_odt : std_logic;
+		state : std_logic_vector(0 to 2);
+		state_n : std_logic_vector(0 to 2);
+		lat : lat_id;
+		cmd : ddr3_cmd;
+		odt : std_logic;
 	end record;
 
 	signal xdr_wlu_pc : unsigned(0 to unsigned_num_bits(pgm'length-1));
 
 	constant xdr_state_tab : xdr_state_vector(0 to 12-1) := (
---		+------------+--------------+-------------+------+-----+
---		| xdr_state  | xdr_state_n  | xdr_lat     | odt  | dqs |
---		+------------+--------------+-------------+------+-----+
-		( WLS_MRS,     WLS_WLDQSEN,   ID_MOD,       '0',  '0'),		
-		( WLS_WLDQSEN, WLS_WLMRD,     ID_WLDQSEN,   '1',  '0'),
-		( WLS_DQSPRE,  WLS_DQLHEA,    ID_WLMRD,     '1',  '0'),
-
-		( WLS_DQSHEA,  WLS_DQSH,      ID_WLO,       '0',  '0'),
-		( WLS_DQSH,    WLS_DQLTWO,    ID_TC,        '0',  '0'),
-		( WLS_DQLTWO,  WLS_DQSHEA,    ID_TC,        '0',  '1'),
-		( WLS_DQLTWO,  WLS_DQSSFX,    ID_TC,        '0',  '1'),
-
-		( WLS_DQSFSX   WLS_ODT,       ID_TC,        '1',  '0'),
-		( WLS_ODT,     WLS_RDY,       ID_TC,        '1',  '0'));
+--		+------------+--------------+-------+------+-------------+-----------+-----+-----+
+--		| xdr_state  | xdr_state_n  | input | mask | xdr_lat     | cmd       | odt | dqs |
+--		+------------+--------------+-------+------+-------------+-----------+-----+-----+
+		( WLS_MRS,     WLS_WLDQSEN,   "0",    "0",   ID_MOD,       ddr3_mrs,   '0',  '0'),		
+		( WLS_WLDQSEN, WLS_WLMRD,     "0",    "0",   ID_WLDQSEN,   ddr3_nop,   '1',  '0'),
+		( WLS_DQSPRE,  WLS_DQLHEA,    "0",    "0",   ID_WLMRD,     ddr3_nop,   '1',  '0'),
+                                                                              
+		( WLS_DQSHEA,  WLS_DQSH,      "1",    "0",   ID_WLO,       ddr3_nop,   '0',  '0'),
+		( WLS_DQSH,    WLS_DQLTWO,    "1",    "0",   ID_TC,        ddr3_nop,   '0',  '0'),
+		( WLS_DQLTWO,  WLS_DQSHEA,    "1",    "1",   ID_TC,        ddr3_nop,   '0',  '1'),
+		( WLS_DQLTWO,  WLS_DQSSFX,    "1",    "0",   ID_TC,        ddr3_nop,   '0',  '1'),
+                                                                              
+		( WLS_DQSFSX   WLS_ODT,       "0",    "0",   ID_TC,        ddr3_nop,   '1',  '0'),
+		( WLS_ODT,     WLS_RDY,       "0",    "0",   ID_TC,        ddr3_mrs,   '1',  '0'));
 begin
 
 	process(xdr_wlu_clk )
 	begin
 		if rising_edge(xdr_wlu_clk) then
-			xdr_wlu_pc <= (others => '-');
-			for i in xdr_state_tab'ragne loop
-				if xdr_state_tab=xdr_wlu_pc then
-					if (.inp xor .val) and .mask=( =>'0') then
+			if xdr_wlu_req='0' then
+				xdr_wlu_pc <= (others => '-');
+				for i in xdr_state_tab'range loop
+					if xdr_state_tab.state=xdr_wlu_state then
+						if (xdr_state_tab.input xor input) and xdr_state_tab.mask=(input'range =>'0') then
+							xdr_wlu_state <= xdr_state_tab.state_n;
+							<= xdr_state_tab.odt;
+							<= xdr_state_tab.lat;
+							<= xdr_state_tab.odt;
+						end if;
 					end if;
-				end if;
-			end loop;
+				end loop;
+			else
+				xdr_wlu_pc <= xdr_state_tab(0).xdr_state;
+			end if;
 		end if;
 	end process;
 end;
