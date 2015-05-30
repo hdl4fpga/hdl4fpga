@@ -21,8 +21,10 @@ entity xdr_wlu is
 		xdr_wlu_ras : out std_logic;
 		xdr_wlu_cas : out std_logic;
 		xdr_wlu_we  : out std_logic;
-		xdr_wlu_odt : out std_logic;
-		xdr_wlu_b   : out std_logic_vector);
+		xdr_wlu_a   : out std_logic_vector;
+		xdr_wlu_b   : out std_logic_vector;
+		xdr_wlu_dqs : out std_logic_vector;
+		xdr_wlu_odt : out std_logic);
 
 	constant tCLK    : natural := 100;
 	constant tMOD    : natural := 10000;
@@ -83,26 +85,22 @@ architecture ddr3 of xdr_wlu is
 		input   : std_logic_vector(input'range);
 		lat     : timer_id;
 		cmd     : ddr3_cmd;
+		xdr_b   : std_logic_vector(3-1 downto 0);
+		xdr_a   : std_logic_vector(xdr_wlu_a'range);
 		odt     : std_logic;
 		dqs     : std_logic;
 	end record;
 	type xdr_state_vector is array (natural range <>) of xdr_state_word;
 
 	constant xdr_state_tab : xdr_state_vector(0 to 9-1) := (
---		+------------+--------------+-------+------+-------------+-----------+-----+-----+
---		| xdr_state  | xdr_state_n  | input | mask | xdr_lat     | cmd       | odt | dqs |
---		+------------+--------------+-------+------+-------------+-----------+-----+-----+
-		( WLS_MRS,     WLS_WLDQSEN,   "0",    "0",   ID_MOD,       ddr3_mrs,   '0',  '0'),		
-		( WLS_WLDQSEN, WLS_DQSLPRE,   "0",    "0",   ID_WLDQSEN,   ddr3_nop,   '1',  '0'),
-		( WLS_DQSLPRE, WLS_DQSLHEA,   "0",    "0",   ID_DQSPRE,    ddr3_nop,   '1',  '0'),
-                                                                              
-		( WLS_DQSLHEA, WLS_DQSH,      "1",    "0",   ID_DQLHEA,    ddr3_nop,   '0',  '0'),
-		( WLS_DQSH,    WLS_DQLTWO,    "1",    "0",   ID_DQSH,      ddr3_nop,   '0',  '0'),
-		( WLS_DQLTWO,  WLS_DQSLHEA,   "1",    "1",   ID_DQLTWO,    ddr3_nop,   '0',  '1'),
-		( WLS_DQLTWO,  WLS_DQSSFX,    "1",    "0",   ID_DQSSFX,    ddr3_nop,   '0',  '1'),
-                                                                              
-		( WLS_DQSSFX,  WLS_ODT,       "0",    "0",   ID_ODT,       ddr3_nop,   '1',  '0'),
-		( WLS_ODT,     WLS_RDY,       "0",    "0",   ID_ODT,       ddr3_mrs,   '1',  '0'));
+--		+------------+--------------+-------+------+-------------+-----------+-----------+-----+-----+
+--		| xdr_state  | xdr_state_n  | input | mask | xdr_lat     | cmd       | xdr_b     | odt | dqs |
+--		+------------+--------------+-------+------+-------------+-----------+-----------+-----+-----+
+		( WLS_MRS,     WLS_WLDQSEN,   "0",    "0",   ID_MOD,       ddr3_mrs,   ddr3_mrs,   '0',  '0'),		
+                                                                                         
+		( WLS_DQLTWO,  WLS_DQSSFX,    "1",    "0",   ID_DQSSFX,    ddr3_nop,   "---",      '1',  '0'),
+                                                                                         
+		( WLS_ODT,     WLS_RDY,       "0",    "0",   ID_ODT,       ddr3_mrs,   ddr3_mrs,   '0',  '0'));
 
 	signal xdr_wlu_state : wls_cod;
 begin
