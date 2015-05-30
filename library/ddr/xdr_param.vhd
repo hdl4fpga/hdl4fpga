@@ -208,6 +208,8 @@ package xdr_param is
 	constant ddr3_cnop  : ddr3_cmd := (id => "0111");
 	constant ddr3_czqc  : ddr3_cmd := (id => "0110");
 	constant ddr3_clmr  : ddr3_cmd := (id => "0000");
+	constant ddr3_nop : ddr3_cmd := ddr3_cnop;
+	constant ddr3_mrs : ddr3_cmd := ddr3_clmr;
 
 	function mov (
 		constant desc : field_desc)
