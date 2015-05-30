@@ -63,14 +63,25 @@ architecture ddr3 of xdr_wlu is
 	constant lat_size : natural := unsigned_num_bits(max(to_naturalvector(latdb)))+1;
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
-	type wl_state is (WLS_MRS, WLS_WLDQSEN, WLS_DQSLPRE, WLS_DQSLHEA, WLS_DQSH, WLS_DQLTWO, WLS_DQSSFX, WLS_ODT, WLS_RDY);
+	type wlstate_id is (WSID_MRS, WSID_WLDQSEN, WSID_DQSLPRE, WSID_DQSLHEA, WSID_DQSH, WSID_DQLTWO, WSID_DQSSFX, WSID_ODT, WSID_RDY);
+	subtype wls_cod is std_logic_vector(0 to 4-1);
 
-	signal input : std_logic_vector(0 to 1);
+	constant WLS_MRS     : wls_cod := "0000";
+	constant WLS_WLDQSEN : wls_cod := "0001"; 
+	constant WLS_DQSLPRE : wls_cod := "0011";
+	constant WLS_DQSLHEA : wls_cod := "0010";
+	constant WLS_DQSH    : wls_cod := "0110";
+	constant WLS_DQLTWO  : wls_cod := "0111";
+	constant WLS_DQSSFX  : wls_cod := "0101";
+	constant WLS_ODT     : wls_cod := "0100";
+	constant WLS_RDY     : wls_cod := "1100";
+
+	signal input : std_logic_vector(0 to 0);
 	type xdr_state_word is record
-		state   : wl_state;
-		state_n : wl_state;
-		input   : std_logic_vector(input'range);
+		state   : wls_cod;
+		state_n : wls_cod;
 		mask    : std_logic_vector(input'range);
+		input   : std_logic_vector(input'range);
 		lat     : timer_id;
 		cmd     : ddr3_cmd;
 		odt     : std_logic;
@@ -93,7 +104,8 @@ architecture ddr3 of xdr_wlu is
                                                                               
 		( WLS_DQSSFX,  WLS_ODT,       "0",    "0",   ID_ODT,       ddr3_nop,   '1',  '0'),
 		( WLS_ODT,     WLS_RDY,       "0",    "0",   ID_ODT,       ddr3_mrs,   '1',  '0'));
-	signal xdr_wlu_state : wl_state;
+
+	signal xdr_wlu_state : wls_cod;
 begin
 
 	input(0) <= xdr_wlu_stp;
