@@ -63,7 +63,6 @@ architecture ddr3 of xdr_wlu is
 	constant lat_size : natural := unsigned_num_bits(max(to_naturalvector(latdb)))+1;
 	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
 
-	type wlstate_id is (WSID_MRS, WSID_WLDQSEN, WSID_DQSLPRE, WSID_DQSLHEA, WSID_DQSH, WSID_DQLTWO, WSID_DQSSFX, WSID_ODT, WSID_RDY);
 	subtype wls_cod is std_logic_vector(0 to 4-1);
 
 	constant WLS_MRS     : wls_cod := "0000";
