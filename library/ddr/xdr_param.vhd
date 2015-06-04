@@ -188,81 +188,30 @@ package xdr_param is
 		addr : natural_vector(13 downto 0);
 	end record;
 
-	type ddr3_mrID is (mr0, mr1, mr2, mr3);
+	subtype ddr_mr is std_logic_vector(0 to 3-1);
+	constant mrx : ddr_mr := (others => '-');
+	constant mr0 : ddr_mr := "000";
+	constant mr1 : ddr_mr := "001";
+	constant mr2 : ddr_mr := "010";
+	constant mr3 : ddr_mr := "011";
+	constant mrz : ddr_mr := "100";
 
-	type ddr3_mr is record
-		tab : natural_vector(13 downto 0);
+	type ddrmr_vector is array (natural range <>) of ddr_mr;
+
+	type ddr_cmd is record
+		cs  : std_logic;
+		ras : std_logic;
+		cas : std_logic;
+		we  : std_logic;
 	end record;
 
-	type ddr3mr_vector is array (natural range <>) of ddr3_mr;
+	type ddr_tid is (TMR_RST, TMR_WLC, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
+	type ddrtid_vector is array (ddr_tid) of natural;
 
-	type ddr3_cmd is record
-		id : std_logic_vector(3 downto 0);
-	end record;
-
-	type TMR_IDs is (TMR_RST, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
-	type DDR_CCNAME is (DDR_CNOP, DDR_CZQC, DDR_CLMR, DDR_CRST, DDR_CRRDY);
-	type timer_vector is array (TMR_IDs) of natural;
-
-	type ddr3ccmd_vector is array(DDR_CCNAME) of ddr3_cmd;
-	constant ddr3_cnop  : ddr3_cmd := (id => "0111");
-	constant ddr3_czqc  : ddr3_cmd := (id => "0110");
-	constant ddr3_clmr  : ddr3_cmd := (id => "0000");
-	constant ddr3_nop : ddr3_cmd := ddr3_cnop;
-	constant ddr3_mrs : ddr3_cmd := ddr3_clmr;
-
-	function mov (
-		constant desc : field_desc)
-		return natural_vector;
-
-	impure function mov (
-		constant desc : fielddesc_vector)
-		return natural_vector;
-
-	function set (
-		constant desc : ddr3_cmd)
-		return natural_vector;
-
-	function set (
-		constant desc : field_desc)
-		return natural_vector;
-
-	function set (
-		constant desc : fielddesc_vector)
-		return natural_vector;
-
-	function clr (
-		constant desc : field_desc)
-		return natural_vector;
-
-	function clr (
-		constant desc : fielddesc_vector)
-		return natural_vector;
-
-	function "or" (
-		constant arg1 : ddr3_mr;
-		constant arg2 : natural_vector) 
-		return ddr3_mr;
-
-	function "or" (
-		constant arg1 : natural_vector;
-		constant arg2 : natural_vector) 
-		return ddr3_mr;
-
-	function "+" (
-		constant cmd : ddr3_cmd;
-		constant mr  : ddr3_mrID)
-		return ddr3_ccmd;
-
-	function ddr_ccmd (
-		constant cmd : ddr3_cmd)
-		return ddr3_ccmd;
-
-	function "+" (
-		constant cmd : ddr3_cmd;
-		constant dat : std_logic_vector) 
-		return ddr3_ccmd;
-
+	constant ddr_nop : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
+	constant ddr_mrs : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
+	constant ddr_lmr : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
+	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
 
 	function round_lat (
 		constant dly : natural;
@@ -1130,145 +1079,6 @@ package body xdr_param is
 --			severity failure;
 		return val;
 	end function;
-
-	function set (
-		constant desc : ddr3_cmd)
-		return natural_vector is
-		variable val : natural_vector(desc.id'range) := (others => 0);
-		variable aux : std_logic_vector(desc.id'range);
-	begin
-		aux := desc.id;
-		for i in aux'range loop
-			if aux(i) = '0' then
-				val(i) := 1;
-			elsif aux(i) = '1' then
-				val(i) := 2;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : field_desc)
-		return natural_vector is
-		variable val : natural_vector(13 downto 0) := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 2;
-		end loop;
-		return val;
-	end;
-
-	function set (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : natural_vector(13 downto 0) := (others => 0);
-		variable aux : natural_vector(val'range) := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := set(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : field_desc)
-		return natural_vector is
-		variable val : natural_vector(13 downto 0) := (others => 0);
-	begin
-		for j in 0 to desc.size-1 loop
-			val(desc.dbase+j) := 1;
-		end loop;
-		return val;
-	end;
-
-	function clr (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : natural_vector(13 downto 0) := (others => 0);
-		variable aux : natural_vector(val'range) := (others => 0);
-	begin
-		for i in desc'range loop
-			aux := clr(desc(i));
-			for j in aux'range loop
-				if aux(i) /= 0 then
-					val(j) := aux(j);
-				end if;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function "or" (
-		constant arg1 : ddr3_mr;
-		constant arg2 : natural_vector) 
-		return ddr3_mr is
-		variable val : ddr3_mr;
-	begin
-		val := arg1;
-		for i in arg2'range loop
-			if arg2(i) /= 0 then
-				val.tab(i) := arg2(i);
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function "or" (
-		constant arg1 : natural_vector;
-		constant arg2 : natural_vector) 
-		return ddr3_mr is
-		variable val : ddr3_mr;
-	begin
-		val.tab := (val.tab'range => 0);
-		val := val or arg1;
-		val := val or arg2;
-		return val;
-	end;
-
-	function "+" (
-		constant cmd : ddr3_cmd;
-		constant mr  : ddr3_mrID) 
-		return ddr3_ccmd is
-		variable val : ddr3_ccmd;
-	begin
-		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
-		val.bank := std_logic_vector(unsigned'(to_unsigned(ddr3_mrID'pos(mr), val.bank'length)));
-		val.addr := (val.addr'range => 0);
-		return val;
-	end;
-
-	function ddr_ccmd (
-		constant cmd : ddr3_cmd)
-		return ddr3_ccmd is
-	begin
-		return (cmd => cmd.id, addr => (others => 0), bank => (others => '-'));
-	end;
-
-	function "+" (
-		constant cmd : ddr3_cmd;
-		constant dat : std_logic_vector) 
-		return ddr3_ccmd is
-		variable val : ddr3_ccmd;
-	begin
-		val.addr := (val.addr'range => 0);
-		val.cmd  := std_logic_vector(resize(unsigned(cmd.id), cmd.id'length));
-		val.bank := (others => '1');
-		for i in dat'range loop
-			if val.addr'low <= i and i <= val.addr'high then
-				val.addr(i) := 1;
-				if dat(i) = '1' then
-					val.addr(i) := 2;
-				end if;
-			end if;
-		end loop;
-		return val;
-	end;
 
 	function round_lat (
 		constant dly : natural;

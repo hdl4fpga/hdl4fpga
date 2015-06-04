@@ -8,10 +8,10 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_timer is
 	generic ( 
-		timers : timer_vector);
+		timers : ddrtid_vector);
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  TMR_IDs;
+		tmr_id  : in  ddr_tid;
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
@@ -19,12 +19,12 @@ end;
 architecture def of xdr_timer is
 
 	function to_naturalvector (
-		constant arg : timer_vector)
+		constant arg : ddrtid_vector)
 		return natural_vector is
-		variable val : natural_vector(TMR_IDs'POS(arg'low) to TMR_IDs'POS(arg'high));
+		variable val : natural_vector(ddr_tid'POS(arg'low) to ddr_tid'POS(arg'high));
 	begin
 		for i in arg'range loop
-			val(TMR_IDs'pos(i)) := arg(i);
+			val(ddr_tid'pos(i)) := arg(i);
 		end loop;
 		return val;
 	end;
@@ -32,7 +32,7 @@ architecture def of xdr_timer is
 	constant stages : natural := unsigned_num_bits(max(to_naturalvector(timers)))/5;
 	constant timer_size : natural := unsigned_num_bits(max(to_naturalvector(timers)))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);
-	type tword_vector is array (TMR_IDs) of tword;
+	type tword_vector is array (ddr_tid) of tword;
 	
 	impure function stage_size
 		return natural_vector is
