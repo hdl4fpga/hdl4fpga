@@ -31,8 +31,6 @@ entity xdr is
 		sys_cl  : in std_logic_vector(2 downto 0);
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
-		sys_pl  : in std_logic_vector(2 downto 0);
-		sys_dqsn : in std_logic;
 
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
@@ -140,15 +138,20 @@ architecture mix of xdr is
 	signal rst : std_logic;
 
 	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant timers : timer_vector := (
+	constant timers : ddrtid_vector := (
 			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+			TMR_WLC => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
 			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
 			TMR_MOD  => xdr_latency(stdr, MODu),
 			TMR_DLL  => xdr_latency(stdr, cDLL),
 			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
 			TMR_REF  => to_xdrlatency(tCP, mark, tREFI));
+
+	signal xdr_mr_addr : std_logic_vector(2-1 downto 0);
+	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
+
 begin
 
 	process (sys_clks(0), sys_rst)
@@ -163,32 +166,30 @@ begin
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_req <= rst;
-	xdr_init_du : entity hdl4fpga.xdr_init
+	xdr_mr_e : entity hdl4fpga.xdr_mr
+	port map (
+		xdr_mr_bl  => sys_bl,
+		xdr_mr_cl  => sys_cl,
+		xdr_mr_cwl => sys_cwl,
+		xdr_mr_wr  => sys_wr,
+
+		xdr_mr_addr => xdr_mr_addr,
+		xdr_mr_data => xdr_mr_data);
+
+	xdr_init_e : entity hdl4fpga.xdr_init
 	generic map (
 		timers => timers,
---		timers => (
---			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
---			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
---			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
---			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
---			TMR_MOD  => xdr_latency(stdr, MODu),
---			TMR_DLL  => xdr_latency(stdr, cDLL),
---			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
---			TMR_REF  => to_xdrlatency(tCP, mark, tREFI)),
 		addr_size => addr_size,
 		bank_size => bank_size)
 	port map (
-		xdr_init_bl  => sys_bl,
-		xdr_init_cl  => sys_cl,
-		xdr_init_wr  => sys_wr,
-		xdr_init_cwl => sys_cwl,
-		xdr_init_pl  => sys_pl,
-		xdr_init_dqsn => sys_dqsn,
+		xdr_mr_addr  => xdr_mr_addr,
+		xdr_mr_data  => xdr_mr_data,
 
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,
 		xdr_init_rst => xdr_init_rst,
+		xdr_init_wlc => 'X',
 		xdr_init_cke => xdr_init_cke,
 		xdr_init_cs  => xdr_init_cs,
 		xdr_init_ras => xdr_init_ras,

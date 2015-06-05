@@ -526,8 +526,6 @@ begin
 		sys_cl  => "010",
 		sys_cwl => "000",
 		sys_wr  => "101",
-		sys_pl  => "---",
-		sys_dqsn => '-',
 		sys_clks => ddrs_clks,
 		sys_ini  =>  ddr_ini,
 		xdr_wclks(0) => ddrs_clks(0),

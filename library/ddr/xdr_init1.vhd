@@ -99,7 +99,7 @@ begin
 			if xdr_init_req='0' then
 				for i in pgm'range loop
 					if pgm(i).state=xdr_init_pc then
-						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => "0") then
+						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
 							 row := pgm(i);
 						end if;
 					end if;
