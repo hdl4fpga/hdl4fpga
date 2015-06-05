@@ -188,7 +188,7 @@ package xdr_param is
 		addr : natural_vector(13 downto 0);
 	end record;
 
-	subtype ddr_mr is std_logic_vector(0 to 3-1);
+	subtype ddr_mr is std_logic_vector(3-1 downto 0);
 	constant mrx : ddr_mr := (others => '-');
 	constant mr0 : ddr_mr := "000";
 	constant mr1 : ddr_mr := "001";
@@ -209,9 +209,8 @@ package xdr_param is
 	type ddrtid_vector is array (ddr_tid) of natural;
 
 	constant ddr_nop : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
-	constant ddr_mrs : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
-	constant ddr_lmr : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
-	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
+	constant ddr_mrs : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '0');
+	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
 	function round_lat (
 		constant dly : natural;
@@ -315,10 +314,10 @@ package body xdr_param is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000) &
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
-		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
-		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
---		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
---		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
+--		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
+--		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
+		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
+		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
 		timing_record'(mark => M15E, param => tWR,   value => 15000) &
 		timing_record'(mark => M15E, param => tRCD,  value => 13910) &
 		timing_record'(mark => M15E, param => tRP,   value => 13910) &

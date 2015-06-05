@@ -24,7 +24,7 @@ entity xdr_mr is
 		xdr_mr_wl   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_mr_wr   : in  std_logic_vector(3-1 downto 0) := (others => '0');
 
-		xdr_mr_addr : in  std_logic_vector(2-1 downto 0) := (others => '0');
+		xdr_mr_addr : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		xdr_mr_data : out std_logic_vector(13-1 downto 0) := (others => '0'));
 end;
 
@@ -100,7 +100,7 @@ architecture ddr3 of xdr_mr is
 
 begin
 
-	with xdr_mr_addr select
+	with xdr_mr_addr(1 downto 0) select
 	xdr_mr_data <=
 
 		-- Mode Register 0 --

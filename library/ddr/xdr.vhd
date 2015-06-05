@@ -149,7 +149,7 @@ architecture mix of xdr is
 			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
 			TMR_REF  => to_xdrlatency(tCP, mark, tREFI));
 
-	signal xdr_mr_addr : std_logic_vector(2-1 downto 0);
+	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 
 begin

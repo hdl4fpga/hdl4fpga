@@ -43,15 +43,16 @@ architecture ddr3 of xdr_init is
 	subtype s_code is std_logic_vector(0 to 4-1);
 
 	constant sc_rst  : s_code := "0000";
-	constant sc_cke  : s_code := "0001";
-	constant sc_lmr2 : s_code := "0011";
-	constant sc_lmr3 : s_code := "0010";
-	constant sc_lmr1 : s_code := "0110";
-	constant sc_lmr0 : s_code := "0111";
-	constant sc_zqi  : s_code := "0101";
-	constant sc_wls  : s_code := "0100";
-	constant sc_wlc  : s_code := "1100";
-	constant sc_wlf  : s_code := "1101";
+	constant sc_rrdy : s_code := "0001";
+	constant sc_cke  : s_code := "0011";
+	constant sc_lmr2 : s_code := "0010";
+	constant sc_lmr3 : s_code := "0110";
+	constant sc_lmr1 : s_code := "0111";
+	constant sc_lmr0 : s_code := "0101";
+	constant sc_zqi  : s_code := "0100";
+	constant sc_wls  : s_code := "1100";
+	constant sc_wlc  : s_code := "1101";
+	constant sc_wlf  : s_code := "1001";
 	constant sc_ref  : s_code := "1000";
 
 	type s_row is record
@@ -61,6 +62,7 @@ architecture ddr3 of xdr_init is
 		input   : std_logic_vector(0 to 0);
 		rst     : std_logic;
 		cke     : std_logic;
+		rdy     : std_logic;
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
 		tid     : ddr_tid;
@@ -69,18 +71,19 @@ architecture ddr3 of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_cke,  "0", "0", '0', '0', ddr_nop, mrx, TMR_RST),
-		(sc_cke,  sc_lmr2, "0", "0", '1', '0', ddr_nop, mrx, TMR_RRDY),
-		(sc_lmr2, sc_lmr3, "0", "0", '1', '1', ddr_lmr, mr2, TMR_MRD),
-		(sc_lmr3, sc_lmr1, "0", "0", '1', '1', ddr_lmr, mr3, TMR_MRD),
-		(sc_lmr1, sc_lmr0, "0", "0", '1', '1', ddr_lmr, mr1, TMR_MRD),
-		(sc_lmr0, sc_zqi,  "0", "0", '1', '1', ddr_lmr, mr0, TMR_MOD),
-		(sc_zqi,  sc_wls,  "0", "0", '1', '1', ddr_zqc, mrz, TMR_ZQINIT),
-		(sc_wls,  sc_wlf,  "0", "0", '1', '1', ddr_lmr, mrz, TMR_MRD),
-		(sc_wlc,  sc_wlc,  "1", "0", '1', '1', ddr_nop, mrz, TMR_WLC),
-		(sc_wlc,  sc_wlf,  "1", "1", '1', '1', ddr_nop, mrz, TMR_WLC),
-		(sc_wlf,  sc_ref,  "0", "0", '1', '1', ddr_lmr, mrz, TMR_MRD),
-		(sc_ref,  sc_ref,  "0", "0", '1', '1', ddr_nop, mrz, TMR_REF));
+		(sc_rst,  sc_rrdy, "0", "0", '1', '0', '0', ddr_nop, mrx, TMR_RRDY),
+		(sc_rrdy, sc_cke,  "0", "0", '1', '1', '0', ddr_nop, mrx, TMR_CKE), 
+		(sc_cke,  sc_lmr2, "0", "0", '1', '1', '0', ddr_mrs, mr2, TMR_MRD), 
+		(sc_lmr2, sc_lmr3, "0", "0", '1', '1', '0', ddr_mrs, mr3, TMR_MRD), 
+		(sc_lmr3, sc_lmr1, "0", "0", '1', '1', '0', ddr_mrs, mr1, TMR_MRD), 
+		(sc_lmr1, sc_lmr0, "0", "0", '1', '1', '0', ddr_mrs, mr0, TMR_MOD), 
+		(sc_lmr0, sc_zqi,  "0", "0", '1', '1', '0', ddr_zqc, mrz, TMR_ZQINIT),
+		(sc_zqi,  sc_wls,  "0", "0", '1', '1', '0', ddr_mrs, mrz, TMR_MRD), 
+		(sc_wls,  sc_wlc,  "0", "0", '1', '1', '0', ddr_nop, mrz, TMR_WLC),  
+		(sc_wlc,  sc_wlc,  "1", "0", '1', '1', '0', ddr_nop, mrz, TMR_WLC),  
+		(sc_wlc,  sc_wlf,  "1", "1", '1', '1', '0', ddr_mrs, mrz, TMR_MRD),  
+		(sc_wlf,  sc_ref,  "0", "0", '1', '1', '1', ddr_nop, mrz, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", '1', '1', '1', ddr_nop, mrz, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;
@@ -97,6 +100,17 @@ begin
 	begin
 		if rising_edge(xdr_init_clk) then
 			if xdr_init_req='0' then
+				row := (
+					state => (others => '-'), 
+					state_n => (others => '-'),
+					mask  => (others => '-'),
+					input => (others => '-'),
+					rst => '-',
+					cke => '-',
+					rdy => '-',
+					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
+					mr  => (others => '-'),
+					tid => TMR_RST);
 				for i in pgm'range loop
 					if pgm(i).state=xdr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
@@ -107,26 +121,32 @@ begin
 				if xdr_timer_rdy='1' then
 					xdr_init_pc  <= row.state_n;
 					xdr_init_rst <= row.rst;
+					xdr_init_rdy <= row.rdy;
 					xdr_init_cke <= row.cke;
 					xdr_init_cs  <= row.cmd.cs;
 					xdr_init_ras <= row.cmd.ras;
 					xdr_init_cas <= row.cmd.cas;
 					xdr_init_we  <= row.cmd.we;
 				else
+					xdr_init_cs  <= ddr_nop.cs;
+					xdr_init_ras <= ddr_nop.ras;
+					xdr_init_cas <= ddr_nop.cas;
+					xdr_init_we  <= ddr_nop.we;
 					xdr_timer_id <= row.tid;
 				end if;
 				xdr_init_b  <= std_logic_vector(unsigned(resize(unsigned(row.mr), xdr_init_b'length)));
 				xdr_mr_addr <= row.mr;
 			else
-				xdr_init_pc  <= pgm(0).state;
-				xdr_timer_id <= pgm(0).tid;
-				xdr_init_rst <= pgm(0).rst;
-				xdr_init_cke <= pgm(0).cke;
-				xdr_init_cs  <= pgm(0).cmd.cs;
-				xdr_init_ras <= pgm(0).cmd.ras;
-				xdr_init_cas <= pgm(0).cmd.cas;
-				xdr_init_we  <= pgm(0).cmd.we;
-				xdr_mr_addr  <= pgm(0).mr;
+				xdr_init_pc  <= sc_rst;
+				xdr_timer_id <= TMR_RST;
+				xdr_init_rst <= '0';
+				xdr_init_cke <= '0';
+				xdr_init_rdy <= '0';
+				xdr_init_cs  <= '0';
+				xdr_init_ras <= '1';
+				xdr_init_cas <= '1';
+				xdr_init_we  <= '1';
+				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
 				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(pgm(0).mr), xdr_init_b'length)));
 			end if;
 		end if;
@@ -135,7 +155,7 @@ begin
 
 
 	xdr_timer_req <=
-	'1' when xdr_timer_req='1' else
+	'1' when xdr_init_req='1' else
 	'1' when xdr_timer_rdy='1' else
 	'0';
 
