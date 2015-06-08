@@ -26,6 +26,7 @@ entity xdr_init is
 		xdr_init_rst : out std_logic;
 		xdr_init_cke : out std_logic;
 		xdr_init_odt : out std_logic := '0';
+		xdr_init_wl  : out std_logic := '0';
 		xdr_init_cs  : out std_logic;
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
@@ -63,27 +64,29 @@ architecture ddr3 of xdr_init is
 		rst     : std_logic;
 		cke     : std_logic;
 		rdy     : std_logic;
+		wl		: std_logic;
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
+		bnk     : ddr_mr;
 		tid     : ddr_tid;
 	end record;
 
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_rrdy, "0", "0", '1', '0', '0', ddr_nop, mrx, TMR_RRDY),
-		(sc_rrdy, sc_cke,  "0", "0", '1', '1', '0', ddr_nop, mrx, TMR_CKE), 
-		(sc_cke,  sc_lmr2, "0", "0", '1', '1', '0', ddr_mrs, mr2, TMR_MRD), 
-		(sc_lmr2, sc_lmr3, "0", "0", '1', '1', '0', ddr_mrs, mr3, TMR_MRD), 
-		(sc_lmr3, sc_lmr1, "0", "0", '1', '1', '0', ddr_mrs, mr1, TMR_MRD), 
-		(sc_lmr1, sc_lmr0, "0", "0", '1', '1', '0', ddr_mrs, mr0, TMR_MOD), 
-		(sc_lmr0, sc_zqi,  "0", "0", '1', '1', '0', ddr_zqc, mrz, TMR_ZQINIT),
-		(sc_zqi,  sc_wls,  "0", "0", '1', '1', '0', ddr_mrs, mrz, TMR_MRD), 
-		(sc_wls,  sc_wlc,  "0", "0", '1', '1', '0', ddr_nop, mrz, TMR_WLC),  
-		(sc_wlc,  sc_wlc,  "1", "0", '1', '1', '0', ddr_nop, mrz, TMR_WLC),  
-		(sc_wlc,  sc_wlf,  "1", "1", '1', '1', '0', ddr_mrs, mrz, TMR_MRD),  
-		(sc_wlf,  sc_ref,  "0", "0", '1', '1', '1', ddr_nop, mrz, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", '1', '1', '1', ddr_nop, mrz, TMR_REF));
+		(sc_rst,  sc_rrdy, "0", "0", '1', '0', '0', '0', ddr_nop, mrx, mrx, TMR_RRDY),
+		(sc_rrdy, sc_cke,  "0", "0", '1', '1', '0', '0', ddr_nop, mrx, mrx, TMR_CKE), 
+		(sc_cke,  sc_lmr2, "0", "0", '1', '1', '0', '0', ddr_mrs, mr2, mr2, TMR_MRD), 
+		(sc_lmr2, sc_lmr3, "0", "0", '1', '1', '0', '0', ddr_mrs, mr3, mr3, TMR_MRD), 
+		(sc_lmr3, sc_lmr1, "0", "0", '1', '1', '0', '0', ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_lmr1, sc_lmr0, "0", "0", '1', '1', '0', '0', ddr_mrs, mr0, mr0, TMR_MOD), 
+		(sc_lmr0, sc_zqi,  "0", "0", '1', '1', '0', '0', ddr_zqc, mrz, mrx, TMR_ZQINIT),
+		(sc_zqi,  sc_wls,  "0", "0", '1', '1', '0', '1', ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_wls,  sc_wlc,  "0", "0", '1', '1', '0', '1', ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlc,  "1", "0", '1', '1', '0', '1', ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlf,  "1", "1", '1', '1', '0', '0', ddr_mrs, mr1, mr1, TMR_MOD),  
+		(sc_wlf,  sc_ref,  "0", "0", '1', '1', '1', '0', ddr_nop, mrx, mrx, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", '1', '1', '1', '0', ddr_nop, mrx, mrx, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;
@@ -108,7 +111,9 @@ begin
 					rst => '-',
 					cke => '-',
 					rdy => '-',
+					wl  => '-',
 					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
+					bnk => (others => '-'),
 					mr  => (others => '-'),
 					tid => TMR_RST);
 				for i in pgm'range loop
@@ -127,6 +132,7 @@ begin
 					xdr_init_ras <= row.cmd.ras;
 					xdr_init_cas <= row.cmd.cas;
 					xdr_init_we  <= row.cmd.we;
+					xdr_init_wl  <= row.wl;
 				else
 					xdr_init_cs  <= ddr_nop.cs;
 					xdr_init_ras <= ddr_nop.ras;
@@ -134,7 +140,7 @@ begin
 					xdr_init_we  <= ddr_nop.we;
 					xdr_timer_id <= row.tid;
 				end if;
-				xdr_init_b  <= std_logic_vector(unsigned(resize(unsigned(row.mr), xdr_init_b'length)));
+				xdr_init_b  <= std_logic_vector(unsigned(resize(unsigned(row.bnk), xdr_init_b'length)));
 				xdr_mr_addr <= row.mr;
 			else
 				xdr_init_pc  <= sc_rst;
@@ -146,13 +152,29 @@ begin
 				xdr_init_ras <= '1';
 				xdr_init_cas <= '1';
 				xdr_init_we  <= '1';
+				xdr_init_wl  <= '0';
 				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
-				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(pgm(0).mr), xdr_init_b'length)));
+				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(pgm(0).bnk), xdr_init_b'length)));
 			end if;
 		end if;
 	end process;
 	xdr_init_a <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
 
+
+	process (xdr_init_clk)
+	begin
+		if rising_edge(xdr_init_clk)then
+			if xdr_init_pc=sc_ref then
+				if xdr_timer_rdy='1' then
+					xdr_refi_req <= '1';
+				elsif xdr_refi_rdy='1' then
+					xdr_refi_req <='0';
+				end if;
+			else
+				xdr_refi_req <= '0';
+			end if;
+		end if;
+	end process;
 
 	xdr_timer_req <=
 	'1' when xdr_init_req='1' else

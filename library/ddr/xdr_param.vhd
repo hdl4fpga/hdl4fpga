@@ -189,7 +189,7 @@ package xdr_param is
 	end record;
 
 	subtype ddr_mr is std_logic_vector(3-1 downto 0);
-	constant mrx : ddr_mr := (others => '-');
+	constant mrx : ddr_mr := (others => '1');
 	constant mr0 : ddr_mr := "000";
 	constant mr1 : ddr_mr := "001";
 	constant mr2 : ddr_mr := "010";

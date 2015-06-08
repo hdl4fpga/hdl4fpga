@@ -233,27 +233,6 @@ begin
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
 
-	process(ddr_clk)
-		constant pp : byte_vector(0 to 3) := (x"18",  x"10", x"08", x"00" );
-		variable j : natural := 0;
-		variable msg : line;
-	begin
-		if rising_edge(ddr_clk) then
-			if ras_n='1' then
-				if cas_n='0' then
-					if we_n='1'then
-						write (msg, to_integer(unsigned(addr)));
-						writeline (output, msg);
-						assert addr(7 downto 0)=pp(j)
-						report "falle"
-						severity failure;
-						j := (j + 1 ) mod pp'length;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
-
 	dqs_n <= not dqs_p;
 	ddr_clk_p <=     ddr_clk;
 	ddr_clk_n <= not ddr_clk;
