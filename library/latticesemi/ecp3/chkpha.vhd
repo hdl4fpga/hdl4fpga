@@ -9,6 +9,7 @@ entity chkpha is
 	port (
 		clk : in  std_logic;
 		req : in  std_logic;
+		rdy : in  std_logic;
 		nxt : in  std_logic;
 		ok  : in  std_logic;
 		pha : out std_logic_vector);
@@ -21,7 +22,7 @@ use ecp3.components.all;
 architecture beh of chkpha is
 
 	signal ph : unsigned(pha'range);
-	signal dg : std_logic_vector(0 to pha'length+1);
+	signal dg : unsigned(0 to pha'length);
 	signal ok : std_logic;
 
 begin
@@ -32,6 +33,7 @@ begin
 		if rising_edge(clk) then
 			if req='0' then
 				aux := (others => '0');
+				dg  <= (0 => '1', others => '0');
 				pha <= std_logic_vector(ph + 2);
 			elsif nxt='1' then
 				aux := aux or dg(0 to ph'length-1);
@@ -40,8 +42,10 @@ begin
 				end if;
 				ph  <= aux;
 				pha <= std_logic_vector(aux);
+				dg <= dg srl 1;
 			end if;
 		end if;
 	end process;
 
+	rdy <= dg(dg'right);
 end;
