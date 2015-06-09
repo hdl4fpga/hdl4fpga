@@ -346,7 +346,7 @@ begin
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
-			sys_cfgi => cfgi(i),
+			sys_wlda => cfgi(i),
 			sys_cfgo => cfgo(i),
 
 			sys_dmt => sdmt(i),

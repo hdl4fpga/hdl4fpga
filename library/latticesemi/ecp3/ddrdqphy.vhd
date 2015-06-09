@@ -11,8 +11,7 @@ entity ddrdqphy is
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
-		sys_cfgi : in  std_logic_vector(8-1 downto 0) := (others => '-');
-		sys_cfgo : out std_logic_vector(1-1 downto 0);
+		sys_wlph : in  std_logic_vector(8-1 downto 0) := (others => '-');
 		sys_rw   : in  std_logic;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
@@ -81,14 +80,14 @@ begin
 		datavalid => sys_cfgo(datavalid),
 
 		rst  => sys_rst,
-		dyndelay0 => sys_cfgi(dyndelay0),
-		dyndelay1 => sys_cfgi(dyndelay1),
-		dyndelay2 => sys_cfgi(dyndelay2),
-		dyndelay3 => sys_cfgi(dyndelay3),
-		dyndelay4 => sys_cfgi(dyndelay4),
-		dyndelay5 => sys_cfgi(dyndelay5),
-		dyndelay6 => sys_cfgi(dyndelay6),
-		dyndelpol => sys_cfgi(dyndelpol),
+		dyndelay0 => sys_wlph(dyndelay0),
+		dyndelay1 => sys_wlph(dyndelay1),
+		dyndelay2 => sys_wlph(dyndelay2),
+		dyndelay3 => sys_wlph(dyndelay3),
+		dyndelay4 => sys_wlph(dyndelay4),
+		dyndelay5 => sys_wlph(dyndelay5),
+		dyndelay6 => sys_wlph(dyndelay6),
+		dyndelpol => sys_wlph(dyndelpol),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
