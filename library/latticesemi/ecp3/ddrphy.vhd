@@ -21,8 +21,8 @@ entity ddrphy is
 		phy_rst : in std_logic;
 
 		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cfgi : in  std_logic_vector(8*(word_size/byte_size)-1 downto 0);
-		sys_cfgo : out std_logic_vector(4+1*(word_size/byte_size)-1 downto 0) := (others => '1');
+		sys_wlreq : in  std_logic;
+		sys_wlrdy : out  std_logic;
 		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
 		sys_b    : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
