@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity adjdll is
+entity adjwl is
 	port (
 		clk  : in std_logic;
 		rst  : in std_logic;
@@ -16,11 +16,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture beh of adjdll is
-
-	signal pe : std_logic_vector(0 to 5);
-	signal dy : unsigned(pe'range);
-	signal dg : unsigned(0 to pha'length+1);
+architecture beh of adjwl is
 
 begin
 
