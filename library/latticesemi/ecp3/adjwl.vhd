@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity adjpha is
+entity adjdll is
 	port (
 		clk  : in std_logic;
 		rst  : in std_logic;
@@ -16,7 +16,7 @@ end;
 library ecp3;
 use ecp3.components.all;
 
-architecture beh of adjpha is
+architecture beh of adjdll is
 
 	signal pe : std_logic_vector(0 to 5);
 	signal dy : unsigned(pe'range);
@@ -26,7 +26,7 @@ begin
 
 	process(clk)
 	begin
-		if rising_edge(sclk) then
+		if rising_edge(clk) then
 			if rst='1' then
 				creq <= '0';
 				ordy <= '0';
