@@ -35,6 +35,8 @@ entity xdr is
 		sys_rst  : in std_logic := '-';
 		sys_clks : in std_logic_vector;
 		sys_ini  : out std_logic;
+		sys_wlrdy : in  std_logic;
+		sys_wlreq : out std_logic;
 
 		sys_cmd_req : in  std_logic := '-';
 		sys_cmd_rdy : out std_logic;
@@ -193,7 +195,6 @@ begin
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,
 		xdr_init_rst => xdr_init_rst,
-		xdr_init_wlc => '1',
 		xdr_init_cke => xdr_init_cke,
 		xdr_init_cs  => xdr_init_cs,
 		xdr_init_ras => xdr_init_ras,
@@ -201,7 +202,8 @@ begin
 		xdr_init_we  => xdr_init_we,
 		xdr_init_a   => xdr_init_a,
 		xdr_init_b   => xdr_init_b,
-		xdr_init_wl  => xdr_init_wl,
+		xdr_init_wlreq => sys_wlreq,
+		xdr_init_wlrdy => sys_wlrdy,
 		xdr_refi_req => xdr_refi_req,
 		xdr_refi_rdy => xdr_refi_rdy);
 

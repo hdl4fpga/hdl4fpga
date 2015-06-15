@@ -58,7 +58,9 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-	signal ddrphy_cfgo : std_logic_vector(2+4-1 downto 0);
+	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
+	signal ddrphy_wlreq : std_logic;
+	signal ddrphy_wlrdy : std_logic;
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -140,7 +142,7 @@ begin
 		sys_clk => clk,
 
 		input_clk => input_clk,
-		ddr_eclkph => ddrphy_cfgo(5 downto 2),
+		ddr_eclkph => ddr_eclkph,
 		ddr_eclk => ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
@@ -199,6 +201,8 @@ begin
 		ddrs_clks => ddrs_clks,
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
+		ddr_wlreq => ddrphy_wlreq,
+		ddr_wlrdy => ddrphy_wlrdy,
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -245,7 +249,7 @@ begin
 		variable q : std_logic_vector(0 to 2);
 	begin
 		if rising_edge(ddr_sclk) then
-			led(0 to 3) <= not ddrphy_cfgo(5 downto 2);
+			led(0 to 3) <= not ddr_eclkph;
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
 		end if;
@@ -330,8 +334,9 @@ begin
 
 		sys_rw => sto,
 		sys_rst => ddrphy_rst, 
-		sys_cfgi => (others => '-'),
-		sys_cfgo => ddrphy_cfgo,
+		sys_pha => ddr_eclkph,
+		sys_wlreq => ddrphy_wlreq,
+		sys_wlrdy => ddrphy_wlrdy,
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
 		sys_ras => ddrphy_ras,

@@ -33,6 +33,8 @@ entity scope is
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
+		ddr_wlreq : out std_logic;
+		ddr_wlrdy : in  std_logic;
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
@@ -532,6 +534,8 @@ begin
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
+		sys_wlreq => ddr_wlreq,
+		sys_wlrdy => ddr_wlrdy,
 		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
 		sys_rw  => ddrs_rw,

@@ -20,13 +20,13 @@ entity xdr_init is
 		xdr_refi_rdy : in  std_logic;
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
-		xdr_init_wlc : in  std_logic;
+		xdr_init_wlrdy : in  std_logic;
+		xdr_init_wlreq : out std_logic := '0';
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
 		xdr_init_cke : out std_logic;
 		xdr_init_odt : out std_logic := '0';
-		xdr_init_wl  : out std_logic := '0';
 		xdr_init_cs  : out std_logic;
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
@@ -96,7 +96,7 @@ architecture ddr3 of xdr_init is
 	signal input : std_logic_vector(0 to 0);
 begin
 
-	input(0) <= xdr_init_wlc;
+	input(0) <= xdr_init_wlrdy;
 
 	process (xdr_init_clk)
 		variable row : s_row;
@@ -132,7 +132,7 @@ begin
 					xdr_init_ras <= row.cmd.ras;
 					xdr_init_cas <= row.cmd.cas;
 					xdr_init_we  <= row.cmd.we;
-					xdr_init_wl  <= row.wl;
+					xdr_init_wlreq <= row.wl;
 				else
 					xdr_init_cs  <= ddr_nop.cs;
 					xdr_init_ras <= ddr_nop.ras;
@@ -152,7 +152,7 @@ begin
 				xdr_init_ras <= '1';
 				xdr_init_cas <= '1';
 				xdr_init_we  <= '1';
-				xdr_init_wl  <= '0';
+				xdr_init_wlreq <= '0';
 				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
 				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(pgm(0).bnk), xdr_init_b'length)));
 			end if;
