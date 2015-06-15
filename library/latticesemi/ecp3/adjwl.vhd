@@ -25,7 +25,6 @@ begin
 		if rising_edge(clk) then
 			if rst='1' then
 				creq <= '0';
-				ordy <= '0';
 			elsif crdy='0' then
 				creq <= '1';
 			else
