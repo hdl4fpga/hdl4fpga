@@ -23,6 +23,7 @@ entity ddrphy is
 		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out  std_logic;
+		sys_pha  : out std_logic_vector;
 		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
 		sys_rw   : in  std_logic;
 		sys_b    : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
@@ -71,11 +72,6 @@ architecture ecp3 of ddrphy is
 	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
-	subtype ciline_word is std_logic_vector(8-1 downto 0);
-	type ciline_vector is array (natural range <>) of ciline_word;
-
-	subtype coline_word is std_logic_vector(1-1 downto 0);
-	type coline_vector is array (natural range <>) of coline_word;
 
 	function to_bytevector (
 		constant arg : std_logic_vector) 
@@ -110,20 +106,6 @@ architecture ecp3 of ddrphy is
 		return dline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_cilinevector (
-		constant arg : std_logic_vector) 
-		return ciline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : ciline_vector(arg'length/ciline_word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -175,20 +157,6 @@ architecture ecp3 of ddrphy is
 		return val;
 	end;
 
-	function to_stdlogicvector (
-		constant arg : coline_vector)
-		return std_logic_vector is
-		variable dat : coline_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := val sll arg(arg'left)'length;
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
 	function shuffle_dlinevector (
 		constant arg : std_logic_vector) 
 		return dline_vector is
@@ -225,8 +193,6 @@ architecture ecp3 of ddrphy is
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal cfgi : ciline_vector(word_size/byte_size-1 downto 0);
-	signal cfgo : coline_vector(word_size/byte_size-1 downto 0);
 
 	signal adjdll_stop : std_logic;
 	signal adjdll_rst  : std_logic;
@@ -287,11 +253,7 @@ begin
 		eclk => sys_eclk,
 		synceclk => synceclk,
 		rdy  => adjdll_rdy,
-		pha => sys_cfgo(5 downto 2));
-
---	sys_cfgo(5 downto 2) <= "0011";
-	cfgi <= "10110100" & "10110100"; --to_cilinevector(sys_cfgi);
---	cfgi <= "00000100" & "00000100"; --to_cilinevector(sys_cfgi);
+		pha => sys_pha);
 
 	dqsdll_rst <= not adjdll_rdy;
 	dqsdll_b : block
@@ -346,8 +308,7 @@ begin
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
-			sys_wlda => cfgi(i),
-			sys_cfgo => cfgo(i),
+			sys_wlda => '1',
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),
@@ -413,5 +374,4 @@ begin
 	sys_dqsi <= (others => sys_sclk);
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);
-	sys_cfgo(2-1 downto 0) <= to_stdlogicvector(cfgo);
 end;

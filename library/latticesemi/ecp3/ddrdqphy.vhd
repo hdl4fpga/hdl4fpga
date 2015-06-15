@@ -11,7 +11,6 @@ entity ddrdqphy is
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
-		sys_wlph : in  std_logic_vector(8-1 downto 0) := (others => '-');
 		sys_rw   : in  std_logic;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
@@ -35,16 +34,6 @@ entity ddrdqphy is
 
 	constant data_width : natural := sys_dqi'length;
 
-	constant dyndelay0 : natural := 0;
-	constant dyndelay1 : natural := 1;
-	constant dyndelay2 : natural := 2;
-	constant dyndelay3 : natural := 3;
-	constant dyndelay4 : natural := 4;
-	constant dyndelay5 : natural := 5;
-	constant dyndelay6 : natural := 6;
-	constant dyndelpol : natural := 7;
-	constant uddcntln  : natural := 8;
-	constant datavalid : natural := 0;
 end;
 
 library ecp3;
@@ -62,6 +51,7 @@ architecture ecp3 of ddrdqphy is
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
+	signal pha : std_logic_vector(8-1 downto 0);
 begin
 	rw <= not sys_rw;
 	dqsbufd_i : dqsbufd 
@@ -77,17 +67,17 @@ begin
 		prmbdet => prmbdet,
 
 		eclk => sys_eclk,
-		datavalid => sys_cfgo(datavalid),
+		datavalid => open,
 
 		rst  => sys_rst,
-		dyndelay0 => sys_wlph(dyndelay0),
-		dyndelay1 => sys_wlph(dyndelay1),
-		dyndelay2 => sys_wlph(dyndelay2),
-		dyndelay3 => sys_wlph(dyndelay3),
-		dyndelay4 => sys_wlph(dyndelay4),
-		dyndelay5 => sys_wlph(dyndelay5),
-		dyndelay6 => sys_wlph(dyndelay6),
-		dyndelpol => sys_wlph(dyndelpol),
+		dyndelay0 => pha(0),
+		dyndelay1 => pha(1),
+		dyndelay2 => pha(2),
+		dyndelay3 => pha(3),
+		dyndelay4 => pha(4),
+		dyndelay5 => pha(5),
+		dyndelay6 => pha(6),
+		dyndelpol => pha(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
