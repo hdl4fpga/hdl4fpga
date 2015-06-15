@@ -98,7 +98,7 @@ architecture mix of xdr is
 	signal xdr_init_ras : std_logic;
 	signal xdr_init_cas : std_logic;
 	signal xdr_init_we  : std_logic;
-	signal xdr_init_wl  : std_logic;
+	signal xdr_init_wl  : std_logic := '1';
 	signal xdr_init_zqc : std_logic := '1';
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);

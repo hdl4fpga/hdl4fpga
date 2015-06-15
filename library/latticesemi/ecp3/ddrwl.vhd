@@ -18,6 +18,8 @@ library hdl4fpga;
 architecture beh of ddrwl is
 	signal nxt : std_logic;
 	signal ok  : std_logic;
+	signal dg  : std_logic_vector(0 to pha'range);
+	signal aph_req : std_logic;
 begin
 	dqt <= (others => req);
 	ok <= dqi(dqi'left);
@@ -38,22 +40,25 @@ begin
 		variable cntr : std_logic_vector(0 to 3-1);
 	begin
 		if rising_edge(clk) then
-			if req='1' then
+			if req='0' then
 				cntr := (0 => '1', others => '0');
+				dg <= (0 => '1', others => '0');
 			else
 				cntr := cntr(cntr'left) & cntr(0 to cntr'right-1);
+				dg <= std_logic_vector(unsigned(dg) srl 1);
 			end if;
 			nxt <= cntr(0);
 		end if;
 	end process;
 
+	adjph_req <= req and not dg(dg'rigght);
 	adjpha_e : entity hdl4fpga.adjpha
 	port map (
 		clk => clk,
-		req => req,
-		rdy => rdy,
+		req => adjph_req,
 		nxt => nxt,
 		ok  => ok,
+		dg  => dg(0 to pha'length-1),
 		pha => pha);
 
 end;
