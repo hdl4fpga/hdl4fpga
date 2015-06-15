@@ -12,6 +12,8 @@ entity ddrdqphy is
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
 		sys_rw   : in  std_logic;
+		sys_wlreq : in std_logic;
+		sys_wlrdy : out std_logic;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);

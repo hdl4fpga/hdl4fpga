@@ -23,7 +23,6 @@ architecture beh of adjpha is
 
 	signal ph : unsigned(pha'range);
 	signal dg : unsigned(0 to pha'length);
-	signal ok : std_logic;
 
 begin
 

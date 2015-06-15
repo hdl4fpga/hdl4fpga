@@ -308,7 +308,8 @@ begin
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
-			sys_wlda => '1',
+			sys_wlreq => sys_wlreq,
+			sys_wlrdy => sys_wlrdy,
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),

@@ -1,3 +1,7 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity ddrwl is
 	port (
 		clk : in  std_logic;
@@ -9,20 +13,23 @@ entity ddrwl is
 		pha : out std_logic_vector);
 end;
 
+library hdl4fpga;
+
 architecture beh of ddrwl is
 	signal nxt : std_logic;
+	signal ok  : std_logic;
 begin
-	dqt <= (others => wle);
+	dqt <= (others => req);
 	ok <= dqi(dqi'left);
 
-	process (wle)
+	process (req)
 		variable aux : unsigned(dqs'length-1 downto 0);
 	begin
 		aux := (others => '0');
 		if req='1' then
 			for i in 0 to dqs'length/2-1 loop
-				aux := sll 2;
-				aux(2-1 to 0) := "01";
+				aux := aux sll 2;
+				aux(2-1 downto 0) := "01";
 			end loop;
 		end if;
 	end process;
@@ -34,7 +41,7 @@ begin
 			if req='1' then
 				cntr := (0 => '1', others => '0');
 			else
-				cntr := cntr(cntr'left) & cntr(0 to cntr'left-1);
+				cntr := cntr(cntr'left) & cntr(0 to cntr'right-1);
 			end if;
 			nxt <= cntr(0);
 		end if;
