@@ -7,34 +7,16 @@ entity ddrwl is
 		clk : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
-		dqt : out std_logic_vector(0 to 4-1);
-		dqs : out std_logic_vector(0 to 4-1);
-		dqi : in  std_logic_vector(0 to 4-1);
-		pha : out std_logic_vector);
+		nxt : out std_logic;
+		dg  : out std_logic_vector);
 end;
 
 library hdl4fpga;
 
 architecture beh of ddrwl is
-	signal nxt : std_logic;
-	signal ok  : std_logic;
-	signal dg  : std_logic_vector(0 to pha'range);
+	signal aph_dg  : unsigned(0 to dg'length);
 	signal aph_req : std_logic;
 begin
-	dqt <= (others => req);
-	ok <= dqi(dqi'left);
-
-	process (req)
-		variable aux : unsigned(dqs'length-1 downto 0);
-	begin
-		aux := (others => '0');
-		if req='1' then
-			for i in 0 to dqs'length/2-1 loop
-				aux := aux sll 2;
-				aux(2-1 downto 0) := "01";
-			end loop;
-		end if;
-	end process;
 
 	process (clk)
 		variable cntr : std_logic_vector(0 to 3-1);
@@ -42,23 +24,16 @@ begin
 		if rising_edge(clk) then
 			if req='0' then
 				cntr := (0 => '1', others => '0');
-				dg <= (0 => '1', others => '0');
+				aph_dg <= (0 => '1', others => '0');
 			else
 				cntr := cntr(cntr'left) & cntr(0 to cntr'right-1);
-				dg <= std_logic_vector(unsigned(dg) srl 1);
+				aph_dg <= aph_dg srl 1;
 			end if;
-			nxt <= cntr(0);
+			nxt <= cntr(0) and not aph_dg(aph_dg'right);
 		end if;
 	end process;
 
-	adjph_req <= req and not dg(dg'rigght);
-	adjpha_e : entity hdl4fpga.adjpha
-	port map (
-		clk => clk,
-		req => adjph_req,
-		nxt => nxt,
-		ok  => ok,
-		dg  => dg(0 to pha'length-1),
-		pha => pha);
+	dg  <= std_logic_vector(aph_dg(0 to dg'length-1));
+	rdy <= aph_dg(aph_dg'right);
 
 end;

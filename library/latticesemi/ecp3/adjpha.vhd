@@ -20,9 +20,7 @@ library ecp3;
 use ecp3.components.all;
 
 architecture beh of adjpha is
-
 	signal ph : unsigned(pha'range);
-
 begin
 
 	process(clk)
@@ -33,14 +31,13 @@ begin
 				aux := (others => '0');
 				pha <= std_logic_vector(ph + 2);
 			elsif nxt='1' then
-				aux := aux or dg(0 to ph'length-1);
+				aux := aux or unsigned(dg(0 to ph'length-1));
 				if ok='0' then
-					aux := aux and not dg(1 to ph'length);
+					aux := aux and not unsigned(dg(1 to ph'length));
 				end if;
 				ph  <= aux;
 				pha <= std_logic_vector(aux);
 			end if;
 		end if;
 	end process;
-
 end;
