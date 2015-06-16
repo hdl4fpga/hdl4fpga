@@ -193,7 +193,7 @@ begin
 		signal dqst : std_logic_vector(sys_dqst'range);
 		signal dqso : std_logic_vector(sys_dqso'range);
 	begin
-		dqst <= sys_dqst when sys_wlreq='0' else (others => sys_wlreq);
+		dqst <= sys_dqst when sys_wlreq='0' else (others => not sys_wlreq);
 
 		oddrtdqsa_i : oddrtdqsa
 		port map (

@@ -98,7 +98,7 @@ architecture mix of xdr is
 	signal xdr_init_ras : std_logic;
 	signal xdr_init_cas : std_logic;
 	signal xdr_init_we  : std_logic;
-	signal xdr_init_wl  : std_logic := '1';
+	signal xdr_init_wl  : std_logic;
 	signal xdr_init_zqc : std_logic := '1';
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);
@@ -170,6 +170,7 @@ begin
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_req <= rst;
+	xdr_init_wl  <= not sys_wlrdy;
 	xdr_mr_e : entity hdl4fpga.xdr_mr
 	port map (
 		xdr_mr_bl  => sys_bl,

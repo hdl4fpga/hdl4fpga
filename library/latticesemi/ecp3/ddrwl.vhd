@@ -16,23 +16,45 @@ library hdl4fpga;
 architecture beh of ddrwl is
 	signal aph_dg  : unsigned(0 to dg'length);
 	signal aph_req : std_logic;
+	signal aph_nxt : std_logic;
+	signal aph_req : std_logic;
+	signal cntr : std_logic_vector(0 to 3-1);
 begin
 
 	process (clk)
-		variable cntr : std_logic_vector(0 to 3-1);
+		variable cntr  : unsigned;
+		variable odton : std_logic;
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				cntr := (0 => '1', others => '0');
-				aph_dg <= (0 => '1', others => '0');
-			else
-				cntr := cntr(cntr'left) & cntr(0 to cntr'right-1);
-				aph_dg <= aph_dg srl 1;
+				cntr  := to_unsigned(4-2, 2**cntr'length);
+				odton := '1';
+			elsif odton='1' then
+				if cntr(0)='1' then
+					cntr <= to_unsigned(4-2, 2**cntr'length);
+					odton := '0';
+				end if;
 			end if;
-			nxt <= cntr(0) and not aph_dg(aph_dg'right);
 		end if;
 	end process;
 
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if aph_req='0' then
+				cntr   <= (0 => '1', others => '0');
+				aph_dg <= (0 => '1', others => '0');
+			else
+				if aph_nxt='1' then
+					aph_dg <= aph_dg srl 1;
+				end if;
+				cntr <= cntr(cntr'right) & cntr(0 to cntr'right-1);
+			end if;
+			aph_nxt <= cntr(0) and not aph_dg(aph_dg'right);
+		end if;
+	end process;
+
+	nxt <= aph_nxt;
 	dg  <= std_logic_vector(aph_dg(0 to dg'length-1));
 	rdy <= aph_dg(aph_dg'right);
 

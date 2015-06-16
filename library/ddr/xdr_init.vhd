@@ -56,37 +56,54 @@ architecture ddr3 of xdr_init is
 	constant sc_wlf  : s_code := "1001";
 	constant sc_ref  : s_code := "1000";
 
-	type s_row is record
-		state   : s_code;
-		state_n : s_code;
-		mask    : std_logic_vector(0 to 0);
-		input   : std_logic_vector(0 to 0);
+	type s_out is record
 		rst     : std_logic;
 		cke     : std_logic;
 		rdy     : std_logic;
 		wl		: std_logic;
+		odt     : std_logic;
+	end record;
+
+	type s_row is record
+		state   : s_code;
+		state_n : s_code;
+		mask    : std_logic_vector(0 to 1-1);
+		input   : std_logic_vector(0 to 1-1);
+		output  : std_logic_vector(0 to 5-1);
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
 		bnk     : ddr_mr;
 		tid     : ddr_tid;
 	end record;
 
+	function to_sout (
+		constant output : std_logic_vector(0 to 5-1))
+		return s_out is
+	begin
+		return (
+			rst => output(0),
+			cke => output(1),
+			rdy => output(2),
+			wl  => output(3),
+			odt => output(4));
+	end;
+
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_rrdy, "0", "0", '1', '0', '0', '0', ddr_nop, mrx, mrx, TMR_RRDY),
-		(sc_rrdy, sc_cke,  "0", "0", '1', '1', '0', '0', ddr_nop, mrx, mrx, TMR_CKE), 
-		(sc_cke,  sc_lmr2, "0", "0", '1', '1', '0', '0', ddr_mrs, mr2, mr2, TMR_MRD), 
-		(sc_lmr2, sc_lmr3, "0", "0", '1', '1', '0', '0', ddr_mrs, mr3, mr3, TMR_MRD), 
-		(sc_lmr3, sc_lmr1, "0", "0", '1', '1', '0', '0', ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_lmr1, sc_lmr0, "0", "0", '1', '1', '0', '0', ddr_mrs, mr0, mr0, TMR_MOD), 
-		(sc_lmr0, sc_zqi,  "0", "0", '1', '1', '0', '0', ddr_zqc, mrz, mrx, TMR_ZQINIT),
-		(sc_zqi,  sc_wls,  "0", "0", '1', '1', '0', '1', ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_wls,  sc_wlc,  "0", "0", '1', '1', '0', '1', ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlc,  "1", "0", '1', '1', '0', '1', ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlf,  "1", "1", '1', '1', '0', '0', ddr_mrs, mr1, mr1, TMR_MOD),  
-		(sc_wlf,  sc_ref,  "0", "0", '1', '1', '1', '0', ddr_nop, mrx, mrx, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", '1', '1', '1', '0', ddr_nop, mrx, mrx, TMR_REF));
+		(sc_rst,  sc_rrdy, "0", "0", "10001", ddr_nop, mrx, mrx, TMR_RRDY),
+		(sc_rrdy, sc_cke,  "0", "0", "11001", ddr_nop, mrx, mrx, TMR_CKE), 
+		(sc_cke,  sc_lmr2, "0", "0", "11001", ddr_mrs, mr2, mr2, TMR_MRD), 
+		(sc_lmr2, sc_lmr3, "0", "0", "11001", ddr_mrs, mr3, mr3, TMR_MRD), 
+		(sc_lmr3, sc_lmr1, "0", "0", "11001", ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_lmr1, sc_lmr0, "0", "0", "11001", ddr_mrs, mr0, mr0, TMR_MOD), 
+		(sc_lmr0, sc_zqi,  "0", "0", "11001", ddr_zqc, mrz, mrx, TMR_ZQINIT),
+		(sc_zqi,  sc_wls,  "0", "0", "11011", ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_wls,  sc_wlc,  "0", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlc,  "1", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlf,  "1", "1", "11001", ddr_mrs, mr1, mr1, TMR_MOD),  
+		(sc_wlf,  sc_ref,  "0", "0", "11101", ddr_nop, mrx, mrx, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", "11101", ddr_nop, mrx, mrx, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;
@@ -125,14 +142,15 @@ begin
 				end loop;
 				if xdr_timer_rdy='1' then
 					xdr_init_pc  <= row.state_n;
-					xdr_init_rst <= row.rst;
-					xdr_init_rdy <= row.rdy;
-					xdr_init_cke <= row.cke;
+					xdr_init_rst <= to_sout(row.output).rst;
+					xdr_init_rdy <= to_sout(row.output).rdy;
+					xdr_init_cke <= to_sout(row.output).cke;
+					xdr_init_wlreq <= to_sout(row.output).wl;
+					xdr_init_odt <= to_sout(row.output).odt;
 					xdr_init_cs  <= row.cmd.cs;
 					xdr_init_ras <= row.cmd.ras;
 					xdr_init_cas <= row.cmd.cas;
 					xdr_init_we  <= row.cmd.we;
-					xdr_init_wlreq <= row.wl;
 				else
 					xdr_init_cs  <= ddr_nop.cs;
 					xdr_init_ras <= ddr_nop.ras;
