@@ -147,6 +147,7 @@ architecture mix of xdr is
 			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_WLC  => xdr_latency(stdr, MODu),
+			TMR_WLDQSEN => 25,
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
 			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
 			TMR_MOD  => xdr_latency(stdr, MODu),
@@ -172,7 +173,7 @@ begin
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_req <= rst;
-	xdr_init_wl  <= wl_req;
+	xdr_init_wl  <= not xdr_init_odt;
 	xdr_mr_e : entity hdl4fpga.xdr_mr
 	port map (
 		xdr_mr_bl  => sys_bl,

@@ -205,7 +205,7 @@ package xdr_param is
 		we  : std_logic;
 	end record;
 
-	type ddr_tid is (TMR_RST, TMR_WLC, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
+	type ddr_tid is (TMR_RST, TMR_WLC, TMR_WLDQSEN, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
 	type ddrtid_vector is array (ddr_tid) of natural;
 
 	constant ddr_nop : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');

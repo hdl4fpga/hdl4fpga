@@ -11,7 +11,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		timers : ddrtid_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25, TMR_MOD => 100, TMR_WLC => 20);
+		timers : ddrtid_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25, TMR_MOD => 100, TMR_WLC => 20, TMR_WLDQSEN => 25);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
@@ -51,11 +51,12 @@ architecture ddr3 of xdr_init is
 	constant sc_lmr1 : s_code := "0111";
 	constant sc_lmr0 : s_code := "0101";
 	constant sc_zqi  : s_code := "0100";
-	constant sc_wls  : s_code := "1100";
-	constant sc_wlc  : s_code := "1101";
-	constant sc_wlo  : s_code := "1111";
-	constant sc_wlf  : s_code := "1110";
-	constant sc_ref  : s_code := "1010";
+	constant sc_wle  : s_code := "1100";
+	constant sc_wls  : s_code := "1101";
+	constant sc_wlc  : s_code := "1111";
+	constant sc_wlo  : s_code := "1110";
+	constant sc_wlf  : s_code := "1010";
+	constant sc_ref  : s_code := "1011";
 
 	type s_out is record
 		rst     : std_logic;
@@ -99,8 +100,8 @@ architecture ddr3 of xdr_init is
 		(sc_lmr3, sc_lmr1, "0", "0", "11001", ddr_mrs, mr1, mr1, TMR_MRD), 
 		(sc_lmr1, sc_lmr0, "0", "0", "11001", ddr_mrs, mr0, mr0, TMR_MOD), 
 		(sc_lmr0, sc_zqi,  "0", "0", "11001", ddr_zqc, mrz, mrx, TMR_ZQINIT),
-		(sc_zqi,  sc_wls,  "0", "0", "11000", ddr_mrs, mr1, mr1, TMR_MOD), 
---		(sc_wls,  sc_wlc,  "0", "0", "11011", ddr_nop, mrx, mrx, TMR_WLDQEN),  
+		(sc_zqi,  sc_wle,  "0", "0", "11000", ddr_mrs, mr1, mr1, TMR_MOD), 
+		(sc_wle,  sc_wlc,  "0", "0", "11001", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
 		(sc_wls,  sc_wlc,  "0", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
 		(sc_wlc,  sc_wlc,  "1", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
 		(sc_wlc,  sc_wlo,  "1", "1", "11000", ddr_nop, mrx, mrx, TMR_MRD),  
