@@ -6,6 +6,7 @@ entity ddrwl is
 	port (
 		clk : in  std_logic;
 		req : in  std_logic;
+		adjreq : out std_logic;
 		rdy : out std_logic;
 		nxt : out std_logic;
 		dg  : out std_logic_vector);
@@ -15,26 +16,21 @@ library hdl4fpga;
 
 architecture beh of ddrwl is
 	signal aph_dg  : unsigned(0 to dg'length);
-	signal aph_req : std_logic;
 	signal aph_nxt : std_logic;
 	signal aph_req : std_logic;
 	signal cntr : std_logic_vector(0 to 3-1);
 begin
 
 	process (clk)
-		variable cntr  : unsigned;
-		variable odton : std_logic;
+		variable cntr : unsigned(0 to 3);
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				cntr  := to_unsigned(4-2, 2**cntr'length);
-				odton := '1';
-			elsif odton='1' then
-				if cntr(0)='1' then
-					cntr <= to_unsigned(4-2, 2**cntr'length);
-					odton := '0';
-				end if;
+				cntr := (0 => '0', others => '1');
+			elsif cntr(0)='0' then
+				cntr := cntr - 1;
 			end if;
+			aph_req <= cntr(0);
 		end if;
 	end process;
 
