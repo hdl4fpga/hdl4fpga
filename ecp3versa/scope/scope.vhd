@@ -218,7 +218,7 @@ begin
 		ddr_dqi  => ddrphy_dqi2,
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
---		ddr_odt  => ddrphy_odt(0),
+		ddr_odt  => ddrphy_odt(0),
 		ddr_sto  => ddrphy_sto,
 		ddr_sti  => ddrphy_sti,
 
@@ -256,7 +256,6 @@ begin
 	end process;
 
 	ddrphy_dqi2 <= ddrphy_dqi;
-	ddrphy_odt <= (others => '0'); --not ddrphy_sto(0));
 
 --	process (ddr_sclk)
 --		subtype xxxx is std_logic_vector(ddrphy_a'range);

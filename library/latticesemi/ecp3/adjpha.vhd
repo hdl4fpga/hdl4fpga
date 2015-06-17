@@ -32,7 +32,7 @@ begin
 				pha <= std_logic_vector(ph + 2);
 			elsif nxt='1' then
 				aux := aux or unsigned(dg(0 to ph'length-1));
-				if ok='0' then
+				if ok='1' then
 					aux := aux and not unsigned(dg(1 to ph'length));
 				end if;
 				ph  <= aux;

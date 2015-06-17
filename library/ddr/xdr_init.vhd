@@ -53,8 +53,9 @@ architecture ddr3 of xdr_init is
 	constant sc_zqi  : s_code := "0100";
 	constant sc_wls  : s_code := "1100";
 	constant sc_wlc  : s_code := "1101";
-	constant sc_wlf  : s_code := "1001";
-	constant sc_ref  : s_code := "1000";
+	constant sc_wlo  : s_code := "1111";
+	constant sc_wlf  : s_code := "1110";
+	constant sc_ref  : s_code := "1010";
 
 	type s_out is record
 		rst     : std_logic;
@@ -98,12 +99,13 @@ architecture ddr3 of xdr_init is
 		(sc_lmr3, sc_lmr1, "0", "0", "11001", ddr_mrs, mr1, mr1, TMR_MRD), 
 		(sc_lmr1, sc_lmr0, "0", "0", "11001", ddr_mrs, mr0, mr0, TMR_MOD), 
 		(sc_lmr0, sc_zqi,  "0", "0", "11001", ddr_zqc, mrz, mrx, TMR_ZQINIT),
-		(sc_zqi,  sc_wls,  "0", "0", "11001", ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_wls,  sc_wlc,  "0", "0", "11010", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlc,  "1", "0", "11010", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlf,  "1", "1", "11001", ddr_mrs, mr1, mr1, TMR_MOD),  
-		(sc_wlf,  sc_ref,  "0", "0", "11101", ddr_nop, mrx, mrx, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", "11101", ddr_nop, mrx, mrx, TMR_REF));
+		(sc_zqi,  sc_wls,  "0", "0", "11010", ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_wls,  sc_wlc,  "0", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlc,  "1", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlo,  "1", "1", "11000", ddr_nop, mrx, mrx, TMR_MRD),  
+		(sc_wlo,  sc_wlf,  "0", "0", "11000", ddr_mrs, mr1, mr1, TMR_MOD),  
+		(sc_wlf,  sc_ref,  "0", "0", "11100", ddr_nop, mrx, mrx, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", "11100", ddr_nop, mrx, mrx, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;

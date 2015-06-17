@@ -124,8 +124,8 @@ begin
 	odt_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da => '1', -- sys_odt(0),
-		db => '1', -- sys_odt(0),
+		da => sys_odt(0),
+		db => '1', --sys_odt(0),
 		q  => ddr_odt);
 
 	rst_i : oddrxd1

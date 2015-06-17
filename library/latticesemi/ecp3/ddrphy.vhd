@@ -207,6 +207,7 @@ architecture ecp3 of ddrphy is
 	signal synceclk : std_logic;
 
 	signal wlnxt : std_logic;
+	signal wl_adjreq : std_logic;
 	signal wldg  : std_logic_vector(9-1 downto 0);
 begin
 
@@ -304,6 +305,7 @@ begin
 		clk => sys_sclk,
 		req => sys_wlreq,
 		rdy => sys_wlrdy,
+		adjreq => wl_adjreq,
 		nxt => wlnxt,
 		dg  => wldg);
 
@@ -319,7 +321,7 @@ begin
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
-			sys_wlreq => sys_wlreq,
+			sys_wlreq => wl_adjreq,
 			sys_wlnxt => wlnxt,
 			sys_wldg  => wldg,
 

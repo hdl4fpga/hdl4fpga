@@ -56,6 +56,7 @@ architecture ecp3 of ddrdqphy is
 	
 	signal wlpha : std_logic_vector(sys_wldg'right-1 downto 0);
 	signal wlok : std_logic;
+	signal dqi : std_logic_vector(sys_dqi'range);
 
 begin
 	rw <= not sys_rw;
@@ -102,7 +103,6 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
-		signal dqi : std_logic_vector(sys_dqi'range);
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -112,13 +112,12 @@ begin
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => dqi(0*byte_size+i),
-			qb0 => dqi(1*byte_size+i),
-			qa1 => dqi(2*byte_size+i),
-			qb1 => dqi(3*byte_size+i));
-		sys_dqi <= dqi;
-		wlok <= dqi(3);
+			qa0 => sys_dqi(0*byte_size+i),
+			qb0 => sys_dqi(1*byte_size+i),
+			qa1 => sys_dqi(2*byte_size+i),
+			qb1 => sys_dqi(3*byte_size+i));
 	end generate;
+	wlok <= ddr_dqi(0);
 
 	dmi_g : block
 		attribute iddrapps : string;
@@ -141,11 +140,13 @@ begin
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+		signal dqt : std_logic_vector(sys_dqt'range);
 	begin
+		dqt <= sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => sys_dqt(0),
+			ta => dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dqt(i));

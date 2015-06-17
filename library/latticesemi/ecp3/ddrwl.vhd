@@ -18,35 +18,37 @@ architecture beh of ddrwl is
 	signal aph_dg  : unsigned(0 to dg'length);
 	signal aph_nxt : std_logic;
 	signal aph_req : std_logic;
-	signal cntr : std_logic_vector(0 to 3-1);
 begin
 
 	process (clk)
-		variable cntr : unsigned(0 to 3);
+		variable cntr : unsigned(0 to 5);
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				cntr := (0 => '0', others => '1');
+				cntr := to_unsigned(25-2, cntr'length);
 			elsif cntr(0)='0' then
 				cntr := cntr - 1;
 			end if;
 			aph_req <= cntr(0);
 		end if;
 	end process;
+	adjreq <= aph_req;
 
 	process (clk)
+		variable slr : std_logic_vector(0 to 5-1);
 	begin
 		if rising_edge(clk) then
+			aph_nxt <= slr(slr'right) and not aph_dg(aph_dg'right);
 			if aph_req='0' then
-				cntr   <= (0 => '1', others => '0');
+				slr    := (0 => '1', others => '0');
 				aph_dg <= (0 => '1', others => '0');
+				aph_nxt <= '0';
 			else
 				if aph_nxt='1' then
 					aph_dg <= aph_dg srl 1;
 				end if;
-				cntr <= cntr(cntr'right) & cntr(0 to cntr'right-1);
+				slr := slr(slr'right) & slr(0 to slr'right-1);
 			end if;
-			aph_nxt <= cntr(0) and not aph_dg(aph_dg'right);
 		end if;
 	end process;
 

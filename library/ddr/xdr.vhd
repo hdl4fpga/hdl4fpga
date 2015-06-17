@@ -100,6 +100,7 @@ architecture mix of xdr is
 	signal xdr_init_we  : std_logic;
 	signal xdr_init_wl  : std_logic;
 	signal xdr_init_zqc : std_logic := '1';
+	signal xdr_init_odt : std_logic;
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);
 
@@ -145,7 +146,7 @@ architecture mix of xdr is
 	constant timers : ddrtid_vector := (
 			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-			TMR_WLC => to_xdrlatency(tCP, mark, tPstRST),
+			TMR_WLC  => xdr_latency(stdr, MODu),
 			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
 			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
 			TMR_MOD  => xdr_latency(stdr, MODu),
@@ -155,6 +156,7 @@ architecture mix of xdr is
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
+	signal wl_req : std_logic;
 
 begin
 
@@ -170,7 +172,7 @@ begin
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_req <= rst;
-	xdr_init_wl  <= not sys_wlrdy;
+	xdr_init_wl  <= wl_req;
 	xdr_mr_e : entity hdl4fpga.xdr_mr
 	port map (
 		xdr_mr_bl  => sys_bl,
@@ -203,15 +205,17 @@ begin
 		xdr_init_we  => xdr_init_we,
 		xdr_init_a   => xdr_init_a,
 		xdr_init_b   => xdr_init_b,
-		xdr_init_wlreq => sys_wlreq,
+		xdr_init_odt => xdr_init_odt,
+		xdr_init_wlreq => wl_req,
 		xdr_init_wlrdy => sys_wlrdy,
 		xdr_refi_req => xdr_refi_req,
 		xdr_refi_rdy => xdr_refi_rdy);
+	sys_wlreq <= wl_req;
 
 	xdr_rst <= xdr_init_rst;
 	xdr_cs  <= '0'         when xdr_init_rdy='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
-	xdr_odt <= '1'         when xdr_init_rdy='1' else '0';
+	xdr_odt <= '1'         when xdr_init_rdy='1' else xdr_init_odt;
 	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
 	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
 	xdr_cas <= xdr_mpu_cas when xdr_init_rdy='1' else xdr_init_cas;
