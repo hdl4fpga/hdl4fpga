@@ -142,7 +142,7 @@ begin
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
 		signal dqt : std_logic_vector(sys_dqt'range);
 	begin
-		dqt <= sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
+		dqt <= (others => '1'); --sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,

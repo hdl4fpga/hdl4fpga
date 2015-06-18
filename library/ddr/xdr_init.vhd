@@ -22,6 +22,7 @@ entity xdr_init is
 		xdr_init_clk : in  std_logic;
 		xdr_init_wlrdy : in  std_logic;
 		xdr_init_wlreq : out std_logic := '0';
+		xdr_init_wlr : out std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
@@ -62,7 +63,8 @@ architecture ddr3 of xdr_init is
 		rst     : std_logic;
 		cke     : std_logic;
 		rdy     : std_logic;
-		wl		: std_logic;
+		wlr		: std_logic;
+		wlq		: std_logic;
 		odt     : std_logic;
 	end record;
 
@@ -71,7 +73,7 @@ architecture ddr3 of xdr_init is
 		state_n : s_code;
 		mask    : std_logic_vector(0 to 1-1);
 		input   : std_logic_vector(0 to 1-1);
-		output  : std_logic_vector(0 to 5-1);
+		output  : std_logic_vector(0 to 6-1);
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
 		bnk     : ddr_mr;
@@ -79,35 +81,36 @@ architecture ddr3 of xdr_init is
 	end record;
 
 	function to_sout (
-		constant output : std_logic_vector(0 to 5-1))
+		constant output : std_logic_vector(0 to 6-1))
 		return s_out is
 	begin
 		return (
 			rst => output(0),
 			cke => output(1),
 			rdy => output(2),
-			wl  => output(3),
+			wlq => output(3),
+			wlr => output(5),
 			odt => output(4));
 	end;
 
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_rrdy, "0", "0", "10001", ddr_nop, mrx, mrx, TMR_RRDY),
-		(sc_rrdy, sc_cke,  "0", "0", "11001", ddr_nop, mrx, mrx, TMR_CKE), 
-		(sc_cke,  sc_lmr2, "0", "0", "11001", ddr_mrs, mr2, mr2, TMR_MRD), 
-		(sc_lmr2, sc_lmr3, "0", "0", "11001", ddr_mrs, mr3, mr3, TMR_MRD), 
-		(sc_lmr3, sc_lmr1, "0", "0", "11001", ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_lmr1, sc_lmr0, "0", "0", "11001", ddr_mrs, mr0, mr0, TMR_MOD), 
-		(sc_lmr0, sc_zqi,  "0", "0", "11001", ddr_zqc, mrz, mrx, TMR_ZQINIT),
-		(sc_zqi,  sc_wle,  "0", "0", "11000", ddr_mrs, mr1, mr1, TMR_MOD), 
-		(sc_wle,  sc_wlc,  "0", "0", "11001", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
-		(sc_wls,  sc_wlc,  "0", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlc,  "1", "0", "11011", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlo,  "1", "1", "11000", ddr_nop, mrx, mrx, TMR_MRD),  
-		(sc_wlo,  sc_wlf,  "0", "0", "11000", ddr_mrs, mr1, mr1, TMR_MOD),  
-		(sc_wlf,  sc_ref,  "0", "0", "11100", ddr_nop, mrx, mrx, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", "11100", ddr_nop, mrx, mrx, TMR_REF));
+		(sc_rst,  sc_rrdy, "0", "0", "100010", ddr_nop, mrx, mrx, TMR_RRDY),
+		(sc_rrdy, sc_cke,  "0", "0", "110010", ddr_nop, mrx, mrx, TMR_CKE), 
+		(sc_cke,  sc_lmr2, "0", "0", "110010", ddr_mrs, mr2, mr2, TMR_MRD), 
+		(sc_lmr2, sc_lmr3, "0", "0", "110010", ddr_mrs, mr3, mr3, TMR_MRD), 
+		(sc_lmr3, sc_lmr1, "0", "0", "110010", ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_lmr1, sc_lmr0, "0", "0", "110010", ddr_mrs, mr0, mr0, TMR_MOD), 
+		(sc_lmr0, sc_zqi,  "0", "0", "110010", ddr_zqc, mrz, mrx, TMR_ZQINIT),
+		(sc_zqi,  sc_wle,  "0", "0", "110001", ddr_mrs, mr1, mr1, TMR_MOD), 
+		(sc_wle,  sc_wlc,  "0", "0", "110011", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
+		(sc_wls,  sc_wlc,  "0", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlc,  "1", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
+		(sc_wlc,  sc_wlo,  "1", "1", "110000", ddr_nop, mrx, mrx, TMR_MRD),  
+		(sc_wlo,  sc_wlf,  "0", "0", "110000", ddr_mrs, mr1, mr1, TMR_MOD),  
+		(sc_wlf,  sc_ref,  "0", "0", "111000", ddr_nop, mrx, mrx, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", "111000", ddr_nop, mrx, mrx, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;
@@ -146,7 +149,8 @@ begin
 					xdr_init_rst <= to_sout(row.output).rst;
 					xdr_init_rdy <= to_sout(row.output).rdy;
 					xdr_init_cke <= to_sout(row.output).cke;
-					xdr_init_wlreq <= to_sout(row.output).wl;
+					xdr_init_wlreq <= to_sout(row.output).wlq;
+					xdr_init_wlr <= to_sout(row.output).wlr;
 					xdr_init_odt <= to_sout(row.output).odt;
 					xdr_init_cs  <= row.cmd.cs;
 					xdr_init_ras <= row.cmd.ras;
@@ -172,6 +176,7 @@ begin
 				xdr_init_cas <= '1';
 				xdr_init_we  <= '1';
 				xdr_init_wlreq <= '0';
+				xdr_init_wlr <= '0';
 				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
 				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(pgm(0).bnk), xdr_init_b'length)));
 			end if;

@@ -365,7 +365,8 @@ begin
 		dqt := to_stdlogicvector(ddqt);
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
-			if dqt(i)='1' then
+--			if dqt(i)='1' then
+			if true then
 				ddr_dq(i) <= 'Z';
 			else
 				ddr_dq(i) <= dqo(i);
