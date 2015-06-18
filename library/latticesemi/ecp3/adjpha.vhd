@@ -8,6 +8,7 @@ use hdl4fpga.std.all;
 entity adjpha is
 	port (
 		clk : in  std_logic;
+		rst : in  std_logic := '0';
 		req : in  std_logic;
 		nxt : in  std_logic;
 		ok  : in  std_logic;
@@ -37,6 +38,9 @@ begin
 				end if;
 				ph  <= aux;
 				pha <= std_logic_vector(aux);
+			end if;
+			if rst='1' then
+				ph <= (others => '0');
 			end if;
 		end if;
 	end process;

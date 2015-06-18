@@ -58,11 +58,16 @@ architecture ecp3 of ddrdqphy is
 	signal wlok : std_logic;
 	signal dqi : std_logic_vector(sys_dqi'range);
 
+	signal dqt : std_logic_vector(sys_dqt'range);
+	signal dqst : std_logic_vector(sys_dqst'range);
+	signal dqso : std_logic_vector(sys_dqso'range);
+
 begin
 	rw <= not sys_rw;
 	adjpha_e : entity hdl4fpga.adjpha
 	port map (
 		clk => sys_sclk,
+		rst => sys_rst,
 		req => sys_wlreq,
 		ok  => wlok,
 		nxt => sys_wlnxt,
@@ -137,12 +142,11 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
+	dqt <= sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
-		signal dqt : std_logic_vector(sys_dqt'range);
 	begin
-		dqt <= (others => '1'); --sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
@@ -187,14 +191,13 @@ begin
 			q   => ddr_dmo);
 	end block;
 
+	dqst <= sys_dqst when sys_wlreq='0' else (others => not sys_wlreq);
+	dqso <= sys_dqso when sys_wlreq='0' else (others => sys_wlreq);
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
-		signal dqst : std_logic_vector(sys_dqst'range);
-		signal dqso : std_logic_vector(sys_dqso'range);
 	begin
-		dqst <= sys_dqst when sys_wlreq='0' else (others => not sys_wlreq);
 
 		oddrtdqsa_i : oddrtdqsa
 		port map (
@@ -205,7 +208,6 @@ begin
 			dqsw => dqsw,
 			q => ddr_dqst);
 
-		dqso <= sys_dqso when sys_wlreq='0' else (others => sys_wlreq);
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,

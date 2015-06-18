@@ -96,13 +96,13 @@ architecture ddr3 of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_rrdy, "0", "0", "100010", ddr_nop, mrx, mrx, TMR_RRDY),
-		(sc_rrdy, sc_cke,  "0", "0", "110010", ddr_nop, mrx, mrx, TMR_CKE), 
-		(sc_cke,  sc_lmr2, "0", "0", "110010", ddr_mrs, mr2, mr2, TMR_MRD), 
-		(sc_lmr2, sc_lmr3, "0", "0", "110010", ddr_mrs, mr3, mr3, TMR_MRD), 
-		(sc_lmr3, sc_lmr1, "0", "0", "110010", ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_lmr1, sc_lmr0, "0", "0", "110010", ddr_mrs, mr0, mr0, TMR_MOD), 
-		(sc_lmr0, sc_zqi,  "0", "0", "110010", ddr_zqc, mrz, mrx, TMR_ZQINIT),
+		(sc_rst,  sc_rrdy, "0", "0", "100000", ddr_nop, mrx, mrx, TMR_RRDY),
+		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, TMR_CKE), 
+		(sc_cke,  sc_lmr2, "0", "0", "110000", ddr_mrs, mr2, mr2, TMR_MRD), 
+		(sc_lmr2, sc_lmr3, "0", "0", "110000", ddr_mrs, mr3, mr3, TMR_MRD), 
+		(sc_lmr3, sc_lmr1, "0", "0", "110000", ddr_mrs, mr1, mr1, TMR_MRD), 
+		(sc_lmr1, sc_lmr0, "0", "0", "110000", ddr_mrs, mr0, mr0, TMR_MOD), 
+		(sc_lmr0, sc_zqi,  "0", "0", "110000", ddr_zqc, mrz, mrx, TMR_ZQINIT),
 		(sc_zqi,  sc_wle,  "0", "0", "110001", ddr_mrs, mr1, mr1, TMR_MOD), 
 		(sc_wle,  sc_wlc,  "0", "0", "110011", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
 		(sc_wls,  sc_wlc,  "0", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
