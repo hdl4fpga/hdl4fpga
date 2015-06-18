@@ -13,6 +13,7 @@ entity ddrdqphy is
 		sys_dqsdel : in  std_logic;
 		sys_rw : in  std_logic;
 		sys_wlreq : in std_logic;
+		sys_wlrdy : in std_logic;
 		sys_wlnxt : in std_logic;
 		sys_wldg  : in std_logic_vector(0 to 9-1);
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
@@ -67,10 +68,10 @@ begin
 	adjpha_e : entity hdl4fpga.adjpha
 	port map (
 		clk => sys_sclk,
-		rst => sys_rst,
+		rdy => sys_wlrdy,
 		req => sys_wlreq,
-		ok  => wlok,
-		nxt => sys_wlnxt,
+		smp => wlok,
+		hld => sys_wlnxt,
 		dg  => sys_wldg,
 		pha => wlpha);
 
@@ -142,7 +143,7 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
-	dqt <= sys_dqt when sys_wlreq='0' else (others => sys_wlreq);
+	dqt <= sys_dqt when sys_wlrdy='1' else (others => not sys_wlrdy);
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
@@ -191,8 +192,8 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when sys_wlreq='0' else (others => not sys_wlreq);
-	dqso <= sys_dqso when sys_wlreq='0' else (others => sys_wlreq);
+	dqst <= sys_dqst when sys_wlrdy and sys_wlre='1' else (others => not sys_wlrdy);
+	dqso <= sys_dqso when sys_wlrdy='1' else (others => not sys_wlrdy);
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;

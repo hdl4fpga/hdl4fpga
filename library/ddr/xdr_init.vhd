@@ -107,10 +107,10 @@ architecture ddr3 of xdr_init is
 		(sc_wle,  sc_wlc,  "0", "0", "110011", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
 		(sc_wls,  sc_wlc,  "0", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
 		(sc_wlc,  sc_wlc,  "1", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlo,  "1", "1", "110000", ddr_nop, mrx, mrx, TMR_MRD),  
-		(sc_wlo,  sc_wlf,  "0", "0", "110000", ddr_mrs, mr1, mr1, TMR_MOD),  
-		(sc_wlf,  sc_ref,  "0", "0", "111000", ddr_nop, mrx, mrx, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", "111000", ddr_nop, mrx, mrx, TMR_REF));
+		(sc_wlc,  sc_wlo,  "1", "1", "110100", ddr_nop, mrx, mrx, TMR_MRD),  
+		(sc_wlo,  sc_wlf,  "0", "0", "110100", ddr_mrs, mr1, mr1, TMR_MOD),  
+		(sc_wlf,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, TMR_REF),
+		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, TMR_REF));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id : ddr_tid;

@@ -207,6 +207,7 @@ architecture ecp3 of ddrphy is
 	signal synceclk : std_logic;
 
 	signal wlnxt : std_logic;
+	signal wlrdy : std_logic;
 	signal wldg  : std_logic_vector(9-1 downto 0);
 begin
 
@@ -303,9 +304,10 @@ begin
 	port map (
 		clk => sys_sclk,
 		req => sys_wlreq,
-		rdy => sys_wlrdy,
+		rdy => wlrdy,
 		nxt => wlnxt,
 		dg  => wldg);
+	sys_wlrdy <= wlrdy;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -320,6 +322,7 @@ begin
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
 			sys_wlreq => sys_wlreq,
+			sys_wlrdy => wlrdy,
 			sys_wlnxt => wlnxt,
 			sys_wldg  => wldg,
 
@@ -365,8 +368,7 @@ begin
 		dqt := to_stdlogicvector(ddqt);
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
---			if dqt(i)='1' then
-			if true then
+			if dqt(i)='1' then
 				ddr_dq(i) <= 'Z';
 			else
 				ddr_dq(i) <= dqo(i);
