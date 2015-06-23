@@ -31,7 +31,7 @@ begin
 				aux := (others => '0');
 				pha <= (pha'range => '0');
 			elsif rdy='1' then
-				pha <= std_logic_vector(aux + 2);
+				pha <= std_logic_vector(aux + 0);
 			elsif hld='1' then
 				aux := aux or unsigned(dg(0 to pha'length-1));
 				if smp='1' then

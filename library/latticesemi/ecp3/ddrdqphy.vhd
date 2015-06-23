@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
@@ -15,7 +16,7 @@ entity ddrdqphy is
 		sys_wlreq : in std_logic;
 		sys_wlrdy : in std_logic;
 		sys_wlnxt : in std_logic;
-		sys_wldg  : in std_logic_vector(0 to 9-1);
+		sys_wldg  : in std_logic_vector(0 to 8-1);
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
@@ -62,6 +63,8 @@ architecture ecp3 of ddrdqphy is
 	signal dqt : std_logic_vector(sys_dqt'range);
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
+	signal wle : std_logic;
+	signal dsqbufd_rst : std_logic;
 
 begin
 	rw <= not sys_rw;
@@ -75,6 +78,7 @@ begin
 		dg  => sys_wldg,
 		pha => wlpha);
 
+	dsqbufd_rst <= sys_rst;
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,
@@ -90,7 +94,7 @@ begin
 		eclk => sys_eclk,
 		datavalid => open,
 
-		rst  => sys_rst,
+		rst  => dsqbufd_rst,
 		dyndelay0 => wlpha(0),
 		dyndelay1 => wlpha(1),
 		dyndelay2 => wlpha(2),
@@ -98,7 +102,7 @@ begin
 		dyndelay4 => wlpha(4),
 		dyndelay5 => wlpha(5),
 		dyndelay6 => wlpha(6),
-		dyndelpol => wlpha(7),
+		dyndelpol => '0', --wlpha(6),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -143,7 +147,8 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
-	dqt <= sys_dqt when sys_wlrdy='1' else (others => not sys_wlrdy);
+	wle <= not sys_wlrdy and sys_wlreq;
+	dqt <= sys_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
@@ -192,8 +197,8 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when sys_wlrdy and sys_wlre='1' else (others => not sys_wlrdy);
-	dqso <= sys_dqso when sys_wlrdy='1' else (others => not sys_wlrdy);
+	dqst <= sys_dqst when wle='0' else (others => '0');
+	dqso <= sys_dqso when wle='0' else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
