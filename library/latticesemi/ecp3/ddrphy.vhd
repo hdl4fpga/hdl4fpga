@@ -299,7 +299,15 @@ begin
 		end if;
 	end process;
 
-	ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+	process (dqsdll_lock, synceclk)
+	begin
+		if dqsdll_lock='0' then
+			ddrdqphy_rst <= '1';
+		elsif rising_edge(synceclk) then
+			ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+		end if;
+	end process;
+
 	ddrwl_e : entity hdl4fpga.ddrwl
 	port map (
 		clk => sys_sclk,
