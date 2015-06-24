@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
+		period : natural;
 		line_size : natural;
 		byte_size : natural);
 	port (
@@ -69,6 +70,8 @@ architecture ecp3 of ddrdqphy is
 begin
 	rw <= not sys_rw;
 	adjpha_e : entity hdl4fpga.adjpha
+	generic map (
+		period => period)
 	port map (
 		clk => sys_sclk,
 		rdy => sys_wlrdy,

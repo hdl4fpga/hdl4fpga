@@ -7,6 +7,7 @@ use ecp3.components.all;
 
 entity ddrphy is
 	generic (
+		period : natural;
 		data_phases : natural := 1;
 		cmnd_phases : natural := 2;
 		bank_size : natural := 2;
@@ -304,7 +305,9 @@ begin
 		if dqsdll_lock='0' then
 			ddrdqphy_rst <= '1';
 		elsif rising_edge(synceclk) then
-			ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+			if sys_sclk='0' then
+				ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+			end if;
 		end if;
 	end process;
 
@@ -320,6 +323,7 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
+			period => period,
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (

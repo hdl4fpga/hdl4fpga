@@ -36,14 +36,15 @@ add wave -noupdate /testbench/dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ddr_clk_p
 add wave -noupdate /testbench/dqs_p(1)
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/cntl_delay
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLKW
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQSW
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLKW
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK1
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/dq(0)
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/DQCLK0
@@ -54,16 +55,18 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_er
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
 add wave -noupdate /testbench/ecp3versa_e/adjdll_ph
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsi
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/sclk
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkw
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/read
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsdel
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/rst
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsi
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dyndelpol
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dyndelay6
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dyndelay5
@@ -546,9 +549,9 @@ add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn
 add wave -noupdate /testbench/ecp3versa_e/clk_c
 add wave -noupdate /testbench/ecp3versa_e/fpga_gsrn_c
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 8} {8311260 ps} 0} {{Cursor 9} {8270916 ps} 0} {{Cursor 10} {8312190 ps} 0} {{Cursor 11} {1531242 ps} 0}
-quietly wave cursor active 4
-configure wave -namecolwidth 112
+WaveRestoreCursors {{Cursor 8} {1297337 ps} 0} {{Cursor 9} {8550257 ps} 0} {{Cursor 10} {8235487 ps} 0} {{Cursor 11} {8339279 ps} 0}
+quietly wave cursor active 3
+configure wave -namecolwidth 221
 configure wave -valuecolwidth 40
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -562,4 +565,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1518280 ps} {1534688 ps}
+WaveRestoreZoom {7579231 ps} {8891743 ps}
