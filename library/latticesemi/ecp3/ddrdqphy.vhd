@@ -104,8 +104,8 @@ begin
 		dyndelay3 => wlpha(3),
 		dyndelay4 => wlpha(4),
 		dyndelay5 => wlpha(5),
-		dyndelay6 => wlpha(6),
-		dyndelpol => '0', --wlpha(6),
+		dyndelay6 => '0', --wlpha(6),
+		dyndelpol => wlpha(6),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,

@@ -33,7 +33,7 @@ architecture beh of adjpha is
 		constant step_delay : natural := 27;
 	begin
 		retval(0) := (0 => '1', others => '0');
-		for i in 0 to pha'length-1 loop
+		for i in 1 to pha'length-1 loop
 			retval(i) := to_unsigned(period / (2**(i+1)*step_delay), pha'length);
 		end loop;
 		return retval;
@@ -46,7 +46,7 @@ architecture beh of adjpha is
 	begin
 		retval(0) := phi_tab1(0);
 		for i in 1 to pha'length-1 loop
-			retval(i) := phi_tab1(i-1) - retval(i);
+			retval(i) := phi_tab1(i) - phi_tab1(i-1);
 		end loop;
 		return retval;
 	end;
