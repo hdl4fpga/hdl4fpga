@@ -13,10 +13,9 @@ entity adjpha is
 		req : in  std_logic;
 		rdy : in  std_logic;
 		hld : in  std_logic;
-		smp  : in  std_logic;
+		smp : in  std_logic;
 		dg  : in  std_logic_vector;
 		pha : out std_logic_vector);
-		
 end;
 
 library ecp3;
@@ -33,7 +32,7 @@ architecture beh of adjpha is
 		constant step_delay : natural := 27;
 	begin
 		retval(0) := (0 => '1', others => '0');
-		for i in 1 to pha'length-1 loop
+		for i in 0 to pha'length-1 loop
 			retval(i) := to_unsigned(period / (2**(i+1)*step_delay), pha'length);
 		end loop;
 		return retval;
@@ -53,6 +52,7 @@ architecture beh of adjpha is
 
 	constant phi_rom0 : phi_vector(0 to pha'length-1) := phi_table0(period);
 	constant phi_rom1 : phi_vector(0 to pha'length-1) := phi_table1(phi_rom0);
+
 begin
 
 	process(clk)
@@ -79,4 +79,5 @@ begin
 			end if;
 		end if;
 	end process;
+
 end;

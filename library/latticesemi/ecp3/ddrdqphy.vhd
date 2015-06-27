@@ -17,7 +17,7 @@ entity ddrdqphy is
 		sys_wlreq : in std_logic;
 		sys_wlrdy : in std_logic;
 		sys_wlnxt : in std_logic;
-		sys_wldg  : in std_logic_vector(0 to 8-1);
+		sys_wldg  : in std_logic_vector;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
@@ -57,7 +57,8 @@ architecture ecp3 of ddrdqphy is
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
-	signal wlpha : std_logic_vector(sys_wldg'right-1 downto 0);
+	signal wlpha : std_logic_vector(sys_wldg'length-1 downto 0);
+	signal dyndelay : unsigned(8-1 downto 0);
 	signal wlok : std_logic;
 	signal dqi : std_logic_vector(sys_dqi'range);
 
@@ -71,7 +72,7 @@ begin
 	rw <= not sys_rw;
 	adjpha_e : entity hdl4fpga.adjpha
 	generic map (
-		period => period)
+		period => period/2)
 	port map (
 		clk => sys_sclk,
 		rdy => sys_wlrdy,
@@ -82,6 +83,7 @@ begin
 		pha => wlpha);
 
 	dsqbufd_rst <= sys_rst;
+	dyndelay <= resize(unsigned(wlpha), dyndelay'length);
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,
@@ -98,14 +100,14 @@ begin
 		datavalid => open,
 
 		rst  => dsqbufd_rst,
-		dyndelay0 => wlpha(0),
-		dyndelay1 => wlpha(1),
-		dyndelay2 => wlpha(2),
-		dyndelay3 => wlpha(3),
-		dyndelay4 => wlpha(4),
-		dyndelay5 => wlpha(5),
-		dyndelay6 => '0', --wlpha(6),
-		dyndelpol => wlpha(6),
+		dyndelay0 => dyndelay(0),
+		dyndelay1 => dyndelay(1),
+		dyndelay2 => dyndelay(2),
+		dyndelay3 => dyndelay(3),
+		dyndelay4 => dyndelay(4),
+		dyndelay5 => dyndelay(5),
+		dyndelay6 => dyndelay(6),
+		dyndelpol => dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,

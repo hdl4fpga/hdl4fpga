@@ -209,7 +209,7 @@ architecture ecp3 of ddrphy is
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic;
-	signal wldg  : std_logic_vector(8-1 downto 0);
+	signal wldg  : std_logic_vector(unsigned_num_bits(period/(2*27))-1 downto 0);
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
