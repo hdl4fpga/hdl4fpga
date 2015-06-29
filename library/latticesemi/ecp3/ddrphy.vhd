@@ -252,6 +252,8 @@ begin
 
 	adjdll_rst <= phy_rst;
 	adjdll_e : entity hdl4fpga.adjdll
+	generic map (
+		period => period)
 	port map (
 		rst  => adjdll_rst,
 		sclk => sys_sclk,

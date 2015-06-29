@@ -6,6 +6,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity adjdll is
+	generic (
+		period : natural);
 	port (
 		rst  : in std_logic;
 		sclk : in std_logic;
@@ -29,7 +31,6 @@ architecture beh of adjdll is
 	signal pe : std_logic_vector(0 to 5);
 	signal dy : unsigned(pe'range);
 	signal dg : unsigned(0 to pha'length+1);
---	signal delta : unsigned(0 to 2);
 	signal ok : std_logic;
 	signal sm : std_logic;
 
@@ -155,11 +156,10 @@ begin
 	begin
 		if rst='1' then
 			pha <= (ph'range => '0');
---			delta <= (delta'right => '1', others => '0');
 		elsif rising_edge(sclk) then
 			pha <= ph;
 			if dg(dg'right)='1' then
-					pha <= std_logic_vector(unsigned(ph) + 2);
+					pha <= std_logic_vector(unsigned(ph) + (ph'length-((1250*ph'length)/period) mod 2**ph'length) + 2);
 			end if;
 		end if;
 	end process;
