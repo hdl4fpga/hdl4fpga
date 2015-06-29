@@ -209,7 +209,7 @@ architecture ecp3 of ddrphy is
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic;
-	signal wldg  : std_logic_vector(unsigned_num_bits(period/(2*27))-1 downto 0);
+	signal wldg  : std_logic_vector(unsigned_num_bits(period/(2*27)) downto 0);
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -302,14 +302,12 @@ begin
 		end if;
 	end process;
 
-	process (dqsdll_lock, synceclk)
+	process (dqsdll_lock, sys_sclk)
 	begin
 		if dqsdll_lock='0' then
 			ddrdqphy_rst <= '1';
-		elsif rising_edge(synceclk) then
-			if sys_sclk='0' then
-				ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
-			end if;
+		elsif falling_edge(sys_sclk) then
+			ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
 		end if;
 	end process;
 

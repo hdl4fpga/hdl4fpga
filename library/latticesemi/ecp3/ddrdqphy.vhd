@@ -72,7 +72,7 @@ begin
 	rw <= not sys_rw;
 	adjpha_e : entity hdl4fpga.adjpha
 	generic map (
-		period => period/2)
+		period => period)
 	port map (
 		clk => sys_sclk,
 		rdy => sys_wlrdy,
@@ -106,8 +106,8 @@ begin
 		dyndelay3 => dyndelay(3),
 		dyndelay4 => dyndelay(4),
 		dyndelay5 => dyndelay(5),
-		dyndelay6 => dyndelay(6),
-		dyndelpol => dyndelay(7),
+		dyndelay6 => '0', --dyndelay(6),
+		dyndelpol => dyndelay(6),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
