@@ -163,7 +163,6 @@ architecture ecp3 of ddrphy is
 		return dline_vector is
 		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
 		variable val : byte_vector(dat'range);
---		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop

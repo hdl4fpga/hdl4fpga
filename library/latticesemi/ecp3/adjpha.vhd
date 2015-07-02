@@ -33,7 +33,7 @@ architecture beh of adjpha is
 	begin
 		retval(0) := (0 => '1', others => '0');
 		for i in 1 to pha'length-1 loop
-			retval(i) := to_unsigned(period / (2**(i+1)*step_delay), pha'length);
+			retval(i) := to_unsigned((period-(630-140)) / (2**(i+1)*step_delay), pha'length);
 		end loop;
 		return retval;
 	end;
@@ -50,7 +50,7 @@ architecture beh of adjpha is
 		return retval;
 	end;
 
-	constant phi_rom0 : phi_vector(0 to pha'length-1) := phi_table0(period-140);
+	constant phi_rom0 : phi_vector(0 to pha'length-1) := phi_table0(period);
 	constant phi_rom1 : phi_vector(0 to pha'length-1) := phi_table1(phi_rom0);
 
 begin
@@ -62,8 +62,8 @@ begin
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				aux  := (others => '0');
-				pha  <= (pha'range => '0');
+				aux  := to_unsigned((633-140+27-1)/27,aux'length);
+				pha  <= std_logic_vector(aux);
 				addr := (others => '0');
 			elsif rdy='1' then
 				pha <= std_logic_vector(aux + 0);
