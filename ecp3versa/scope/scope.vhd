@@ -47,8 +47,8 @@ architecture scope of ecp3versa is
 	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
 	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);

@@ -70,7 +70,7 @@ architecture ecp3 of ddrphy is
 	subtype dline_word is std_logic_vector(data_phases*byte_size*line_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 
