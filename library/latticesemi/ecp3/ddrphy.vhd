@@ -305,7 +305,7 @@ begin
 	begin
 		if dqsdll_lock='0' then
 			ddrdqphy_rst <= '1';
-		elsif falling_edge(sys_sclk) then
+		elsif rising_edge(sys_sclk) then
 			ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
 		end if;
 	end process;

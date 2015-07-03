@@ -81,12 +81,11 @@ begin
 		port map (
 			ar  => stop,
 			clk => kclk_n,
-			d   => ef_n,
+			d   => er,
 			q   => ef);
 
-		sr_i : entity hdl4fpga.aff
+		sr_i : entity hdl4fpga.ff
 		port map (
-			ar  => stop,
 			clk => sclk,
 			d   => er,
 			q   => sr);
@@ -159,7 +158,7 @@ begin
 		elsif rising_edge(sclk) then
 			pha <= ph;
 			if dg(dg'right)='1' then
-					pha <= std_logic_vector(unsigned(ph) + (ph'length-((1250*2**ph'length)/period) mod 2**ph'length) + 1);
+					pha <= std_logic_vector(unsigned(ph) + ((2**ph'length-((1250*2**ph'length)/period) mod 2**ph'length)-3));
 			end if;
 		end if;
 	end process;
