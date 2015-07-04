@@ -8,7 +8,7 @@ entity ddrdqphy is
 		line_size : natural;
 		byte_size : natural);
 	port (
-		sys_rst  : in  std_logic;
+		dqsbufd_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
@@ -66,7 +66,6 @@ architecture ecp3 of ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
-	signal dsqbufd_rst : std_logic;
 
 begin
 	rw <= not sys_rw;
@@ -82,7 +81,6 @@ begin
 		dg  => sys_wldg,
 		pha => wlpha);
 
-	dsqbufd_rst <= sys_rst;
 	dyndelay <= resize(unsigned(wlpha), dyndelay'length);
 	dqsbufd_i : dqsbufd 
 	port map (
@@ -99,7 +97,7 @@ begin
 		eclk => sys_eclk,
 		datavalid => open,
 
-		rst  => dsqbufd_rst,
+		rst  => dqsbufd_rst,
 		dyndelay0 => dyndelay(0),
 		dyndelay1 => dyndelay(1),
 		dyndelay2 => dyndelay(2),

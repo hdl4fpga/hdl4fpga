@@ -205,10 +205,12 @@ architecture ecp3 of ddrphy is
 	signal ddrdqphy_rst : std_logic;
 	signal adjdll_rdy : std_logic;
 	signal synceclk : std_logic;
+	signal dqsbufd_rst : std_logic;
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic;
 	signal wldg  : std_logic_vector(unsigned_num_bits(period/(2*27)) downto 0);
+	signal dqsbufd_arst : std_logic;
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -285,6 +287,7 @@ begin
 
 	end block;
 
+	dqsbufd_rst <= dqsdll_lock;
 	process (dqsdll_lock, sys_sclk2x)
 		variable counter : unsigned(0 to 3);
 	begin
@@ -301,12 +304,23 @@ begin
 		end if;
 	end process;
 
+
 	process (dqsdll_lock, sys_sclk)
+		variable sync : std_logic;
 	begin
 		if dqsdll_lock='0' then
 			ddrdqphy_rst <= '1';
-		elsif rising_edge(sys_sclk) then
-			ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+		elsif falling_edge(sys_sclk) then
+			if wlrdy='1' then
+				if sync='1' then
+					ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+				else 
+					ddrdqphy_rst <= '1';
+				end if;
+			else
+				ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
+			end if;
+			sync := wlrdy;
 		end if;
 	end process;
 
@@ -326,7 +340,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => ddrdqphy_rst,
+			dqsbufd_rst  => ddrdqphy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,

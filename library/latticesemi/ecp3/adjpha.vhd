@@ -63,7 +63,7 @@ begin
 		if rising_edge(clk) then
 			if req='0' then
 				aux  := to_unsigned((633-140+27-1)/27,aux'length);
-				pha  <= std_logic_vector(aux);
+				pha  <= (pha'range => '0');
 				addr := (others => '0');
 			elsif rdy='1' then
 				pha <= std_logic_vector(aux + 0);
@@ -75,6 +75,8 @@ begin
 				end if;
 				aux  := aux + val;
 				addr := addr + 1;
+				pha <= std_logic_vector(aux);
+			else
 				pha <= std_logic_vector(aux);
 			end if;
 		end if;
