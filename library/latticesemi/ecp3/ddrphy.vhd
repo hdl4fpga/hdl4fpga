@@ -340,7 +340,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			dqsbufd_rst  => ddrdqphy_rst,
+			sys_rst  => ddrdqphy_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,

@@ -8,7 +8,7 @@ entity ddrdqphy is
 		line_size : natural;
 		byte_size : natural);
 	port (
-		dqsbufd_rst  : in  std_logic;
+		sys_rst  : in  std_logic;
 		sys_sclk : in  std_logic;
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
@@ -66,6 +66,9 @@ architecture ecp3 of ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
+	signal dqsbufd_rst : std_logic;
+	signal dqsbufd_nclk : std_logic;
+	signal drst : std_logic;
 
 begin
 	rw <= not sys_rw;
@@ -80,6 +83,15 @@ begin
 		hld => sys_wlnxt,
 		dg  => sys_wldg,
 		pha => wlpha);
+
+	dqsbufd_nclk <= sys_sclk;
+	ppp_i : entity hdl4fpga.aff
+	port map (
+		clk => dqsbufd_nclk,
+		ar  => sys_rst,
+		d   => '1',
+		q   => drst);
+	dqsbufd_rst <= not drst;
 
 	dyndelay <= resize(unsigned(wlpha), dyndelay'length);
 	dqsbufd_i : dqsbufd 
@@ -211,8 +223,8 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => dqst(0),
-			ta => dqst(2),
+			db => dqst(2),
+			ta => dqst(0),
 			dqstclk => dqstclk,
 			dqsw => dqsw,
 			q => ddr_dqst);

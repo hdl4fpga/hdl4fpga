@@ -77,7 +77,7 @@ begin
 				addr := addr + 1;
 				pha <= std_logic_vector(aux);
 			else
-				pha <= std_logic_vector(aux);
+--				pha <= std_logic_vector(aux);
 			end if;
 		end if;
 	end process;
