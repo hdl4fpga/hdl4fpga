@@ -39,11 +39,14 @@ add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate /testbench/dqs_p
 add wave -noupdate /testbench/dm
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/DQSW
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK0
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQSW
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1_int
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsw
-add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/DQCLK1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0_int
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkw
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsw_int
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1
@@ -3358,4 +3361,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {9272417 ps} {9395031 ps}
+WaveRestoreZoom {0 ps} {114870 ps}
