@@ -64,6 +64,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture ecp3 of ddrphy is
+	signal xxxx : std_logic;
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
