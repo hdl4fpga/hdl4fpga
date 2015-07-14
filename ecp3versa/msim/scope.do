@@ -9,11 +9,11 @@ add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_
 add wave -noupdate -expand -group adjdll -divider {New Divider}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/kclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sclk
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/er
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/ef
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qr
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/qf
 add wave -noupdate -expand -group adjdll -divider {New Divider}
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/seclk_b/ef_q
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/seclk_b/er_q
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/seclk_b/ok_d
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/seclk_b/ok_q
 add wave -noupdate -expand -group adjdll -color {Orange Red} /testbench/ecp3versa_e/ddrphy_e/adjdll_e/ok
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/nxt
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclk
@@ -653,7 +653,7 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1324420 ps} 0} {{Cursor 2} {1248685 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1404998 ps} 0} {{Cursor 2} {1237206 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 188
 configure wave -valuecolwidth 92
@@ -669,4 +669,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1151562 ps} {1348438 ps}
+WaveRestoreZoom {1153527 ps} {1343843 ps}

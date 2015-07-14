@@ -9,12 +9,11 @@ entity adjdll is
 	generic (
 		period : natural);
 	port (
-		rst  : in std_logic;
-		sclk : in std_logic;
-		eclk : in std_logic;
-		synceclk : out std_logic;
-		rdy  : out std_logic;
-		pha  : out std_logic_vector);
+		req   : in std_logic;
+		clk0  : in std_logic;
+		clk90 : in std_logic;
+		rdy   : out std_logic;
+		pha   : out std_logic_vector);
 		
 end;
 
@@ -28,49 +27,24 @@ architecture beh of adjdll is
 	signal dg : unsigned(0 to pha'length+1);
 	signal ok : std_logic;
 	signal nxt : std_logic;
-	signal er_q, e, ef_q : std_logic;
-
-	signal eclksynca_stop : std_logic;
-	signal eclksynca_eclk : std_logic;
 
 	signal smp_rdy : std_logic;
 	signal smp_req : std_logic;
 begin
 
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclksynca_stop,
-		eclki => eclk,
-		eclko => eclksynca_eclk);
+	ff_b : block
+		signal clk180 : std_logic;
+		signal clk270 : std_logic;
 
-	synceclk <= kclk;
-	kclk <= transport eclksynca_eclk after 0.5 ns + 0.056 ns;
-
-	adjdll2_i : entity hdl4fpga.adjdll2
-	port map (
-		req   => 
-		clk0  => er_q,
-		clk90 => ef_q,
-		rdy   => ,
-		pha);
-
-	seclk_b : block
-		signal kclk_n : std_logic;
-		signal er_d : std_logic;
-		signal ok_d, ok_q : std_logic;
+		
+		signal d0, d90 : std_logic;
+		signal q0, q90, q180, q270 : std_logic;
+		signal ok_d : std_logic;
+		signal ok_q : std_logic;
 	begin
 
-		process (smp_req, eclk)
-			variable q : std_logic_vector(0 to 1);
-		begin
-			if smp_req='1' then
-				eclksynca_stop <= '1';
-				q := (others => '1');
-			elsif falling_edge(eclk) then
-				eclksynca_stop <= q(0);
-				q := q(1) & '0';
-			end if;
-		end process;
+		clk180 <= not clk0;
+		clk270 <= not clk90;
 
 		process (sclk)
 			variable shtr : std_logic_vector(0 to 3);
@@ -85,30 +59,43 @@ begin
 			end if;
 		end process;
 
-		er_d <= not er_q;
-		er_i : entity hdl4fpga.aff
+		d0 <= not q0;
+		ff0_i : entity hdl4fpga.aff
 		port map (
 			ar  => smp_req,
-			clk => kclk,
-			d   => er_d,
-			q   => er_q);
+			clk => clk0,
+			d   => d0,
+			q   => q0);
 
-		kclk_n <= not kclk;
-		ef_i : entity hdl4fpga.aff
+		d90 <= not q90;
+		ff90_i : entity hdl4fpga.aff
 		port map (
 			ar  => smp_req,
-			clk => kclk_n,
-			d   => er_q,
-			q   => ef_q);
+			clk => clk90,
+			d   => d90,
+			q   => q90);
 
-		ok_d <= er_q xor ef_q;
+		ff180_i : entity hdl4fpga.ff
+		port map (
+			ar  => smp_req,
+			clk => clk180,
+			d   => q0,
+			q   => q180);
+
+		ff270_i : entity hdl4fpga.ff
+		port map (
+			clk => sclk,
+			d   => q90,
+			q   => q270);
+
+		ok_d <= q0 xor q90 xor q180 xor q270;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => ok_d,
 			q   => ok_q);
 
-		process (smp_req, sclk)
+		process (sclk)
 		begin
 			if rising_edge(sclk) then
 				ok <= ok_q;
@@ -117,11 +104,11 @@ begin
 
 	end block;
 
-	process(rst, sclk)
+	process(req, sclk)
 		variable aux : unsigned(ph'range);
 		variable smp_rdy1 : std_logic;
 	begin
-		if rst='1' then
+		if req='1' then
 			ph  <= (others => '0');
 			dg  <= (0 => '1', others => '0');
 			nxt <= '0';
@@ -147,9 +134,9 @@ begin
 		end if;
 	end process;
 
-	process (rst, sclk)
+	process (req, sclk)
 	begin
-		if rst='1' then
+		if req='1' then
 			pha <= (pha'range => '0');
 		elsif rising_edge(sclk) then
 			pha <= ph;
@@ -159,9 +146,9 @@ begin
 		end if;
 	end process;
 
-	process(rst, sclk)
+	process(req, sclk)
 	begin
-		if rst='1' then
+		if req='1' then
 			rdy <= '0';
 		elsif rising_edge(sclk) then
 			if smp_req='0' then
