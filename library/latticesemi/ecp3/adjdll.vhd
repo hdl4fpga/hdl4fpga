@@ -35,7 +35,24 @@ architecture beh of adjdll is
 	signal ph, ph_a, ph_b : std_logic_vector(0 to pha'length-1);
 	signal smpa_rdy, smpb_rdy, smp_rdy : std_logic;
 	signal smpa_req, smpb_req, smp_req : std_logic;
+	signal adjdll_rdy : std_logic;
+	constant delay : time := 1.5 ns;
 begin
+
+	process (eclk)
+		variable q : std_logic_vector(0 to 1);
+	begin
+		if falling_edge(eclk) then
+			eclksynca_stop <= q(0);
+			q := q(1) & '0';
+			if adjdll_rdy='0' then
+				if smp_req='0' then
+					eclksynca_stop <= '1';
+					q := (others => '1');
+				end if;
+			end if;
+		end if;
+	end process;
 
 	eclksynca_i : eclksynca
 	port map (
@@ -44,11 +61,13 @@ begin
 		eclko => eclksynca_eclk);
 
 	synceclk <= kclk;
-	kclk <= transport eclksynca_eclk after 1.5 ns + 0.056 ns;
+	kclk <= transport eclksynca_eclk after 0.75 ns + 0.056 ns;
 
 	process (sclk)
+		variable aux : unsigned(ph'range);
 	begin
 		if rising_edge(sclk) then
+			aux := unsigned(ph) + 1;
 			if rst='1' then
 				sel_ba  <= '0';
 				adj_req <= '0';
@@ -60,7 +79,7 @@ begin
 						if adj_rdy='1' then
 							sel_ba  <='1';
 							adj_req <= '0';
-							ph_b <= ph;
+							ph_b <= std_logic_vector(aux);
 						end if;
 					else
 						adj_req <= '1';
@@ -68,9 +87,7 @@ begin
 				elsif adj_rdy='0' then
 					adj_req <= '1';
 				elsif adj_req='1' then
-					if adj_rdy='1' then
-						ph_a <= ph;
-					end if;
+					ph_a <= std_logic_vector(aux);
 				end if;
 			end if;
 		end if;
@@ -83,10 +100,10 @@ begin
 		signal ok_d, ok_q : std_logic;
 	begin
 
-		clk0   <= er_q;
-		clk90  <= ef_q;
-		clk180 <= not clk0;
-		clk270 <= not clk90;
+		clk0   <= transport er_q after delay;
+		clk90  <= transport ef_q after delay;
+		clk180 <= transport not er_q after delay;
+		clk270 <= transport not ef_q after delay;
 
 		process (sclk)
 			variable cntr : unsigned(0 to 3);
@@ -127,7 +144,7 @@ begin
 			d   => q90,
 			q   => q270);
 
-		ok_d <= q0 xor q90 xor q180 xor q270 after 0.5 ns;
+		ok_d <= transport q0 xor q90 xor q180 xor q270 after delay;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
@@ -148,18 +165,6 @@ begin
 		signal er_d : std_logic;
 		signal ok_d, ok_q : std_logic;
 	begin
-
-		process (smp_req, eclk)
-			variable q : std_logic_vector(0 to 1);
-		begin
-			if smp_req='0' then
-				eclksynca_stop <= '1';
-				q := (others => '1');
-			elsif falling_edge(eclk) then
-				eclksynca_stop <= q(0);
-				q := q(1) & '0';
-			end if;
-		end process;
 
 		process (sclk)
 			variable cntr : unsigned(0 to 3);
@@ -188,7 +193,7 @@ begin
 			d   => er_q,
 			q   => ef_q);
 
-		ok_d <= er_q xor ef_q;
+		ok_d <= transport er_q xor ef_q after delay;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
@@ -270,17 +275,18 @@ begin
 	process(rst, sclk)
 	begin
 		if rst='1' then
-			rdy <= '0';
+			adjdll_rdy <= '0';
 		elsif rising_edge(sclk) then
 			if smp_req='0' then
 				if sel_ba='1' then
 					if adj_req='1' then
 						if adj_rdy='1' then
-							rdy <= adj_rdy;
+							adjdll_rdy <= adj_rdy;
 						end if;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
+	rdy <= adjdll_rdy;
 end;

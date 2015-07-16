@@ -7,9 +7,11 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/rst
 add wave -noupdate -expand -group adjdll -divider {New Divider}
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclksynca_i/STOP
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/kclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/phb_b/ok_d
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adjdll_rdy
 add wave -noupdate -expand -group adjdll -divider {New Divider}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/phb_b/q0
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/phb_b/q90
@@ -22,6 +24,7 @@ add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/ok
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/oka
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclk
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adj_rdy
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adj_req
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/sel_ba
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/smpa_rdy
@@ -662,9 +665,9 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1266673 ps} 0} {{Cursor 2} {124981 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 188
+WaveRestoreCursors {{Cursor 1} {1479712 ps} 0} {{Cursor 2} {1990027 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 140
 configure wave -valuecolwidth 92
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -678,4 +681,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1114372 ps} {1521252 ps}
+WaveRestoreZoom {1919883 ps} {2060171 ps}

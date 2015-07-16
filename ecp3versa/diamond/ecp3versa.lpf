@@ -14,7 +14,7 @@ BANK 7 VCCIO 1.5 V;
 
 SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
 
-MAXDELAY NET "ddrphy_e/synceclk" 1.2 ns;
+MAXDELAY NET "ddrphy_e/synceclk" 0.580 ns;
 MAXDELAY NET "ddrphy_e/byte_g*.ddr3phy_i/dqsw" 0 ns;
 
 LOCATE COMP "clk"  SITE "L5";
@@ -28,10 +28,22 @@ LOCATE COMP "ddrphy_e/adjdll_e/eclksynca_i"	SITE "LECLKSYNC2" ;
 LOCATE COMP "ddrphy_e/sr[4]" SITE "R34C4B";
 LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.er_i" SITE "R34C2A";
 LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ef_i" SITE "R34C2B";
-LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i" SITE "R34C2C";
+#LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i" SITE "R34C2C";
 MAXDELAY NET "ddrphy_e/adjdll_e/ef_q" 0.2 ns;
 MAXDELAY NET "ddrphy_e/adjdll_e/er_q" 0.2 ns;
 MAXDELAY NET "ddrphy_e/adjdll_e/ok_d" 0.2 ns;
+
+LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff0_i"    SITE "R33C2A";
+LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff90_i"   SITE "R33C2B";
+LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff180_i"  SITE "R33C3A";
+LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff270_i"  SITE "R33C3B";
+# LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ok_i"     SITE "R33C3C";
+MAXDELAY NET "ddrphy_e/adjdll_e/q0" 0.2 ns;
+MAXDELAY NET "ddrphy_e/adjdll_e/q90" 0.2 ns;
+MAXDELAY NET "ddrphy_e/adjdll_e/q180" 0.2 ns;
+MAXDELAY NET "ddrphy_e/adjdll_e/q270" 0.2 ns;
+
+
 
 LOCATE VREF "vref1_ddr3"  SITE "E1";
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
