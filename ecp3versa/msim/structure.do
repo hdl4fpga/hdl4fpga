@@ -22,10 +22,9 @@ quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_dqi_23 & ddrphy_dqi_22 & ddrphy_dqi_21 & ddrphy_dqi_20 & ddrphy_dqi_19 & ddrphy_dqi_18 & ddrphy_dqi_17 & ddrphy_dqi_16 & ddrphy_dqi_40 & ddrphy_dqi_39 & ddrphy_dqi_38 & ddrphy_dqi_37 & ddrphy_dqi_36 & ddrphy_dqi_35 & ddrphy_dqi_34 & ddrphy_dqi_33 & ddrphy_dqi_32 & ddrphy_dqi_47 & ddrphy_dqi_46 & ddrphy_dqi_45 & ddrphy_dqi_44 & ddrphy_dqi_43 & ddrphy_dqi_42 & ddrphy_dqi_41 & ddrphy_dqi_40 & ddrphy_dqi_55 & ddrphy_dqi_54 & ddrphy_dqi_53 & ddrphy_dqi_52 & ddrphy_dqi_51 & ddrphy_dqi_50 & ddrphy_dqi_49 & ddrphy_dqi_48 & ddrphy_dqi_63 & ddrphy_dqi_62 & ddrphy_dqi_61 & ddrphy_dqi_60 & ddrphy_dqi_59 & ddrphy_dqi_58 & ddrphy_dqi_57 & ddrphy_dqi_56 )} dq
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_dqi_63 & ddrphy_dqi_62 & ddrphy_dqi_61 & ddrphy_dqi_60 & ddrphy_dqi_59 & ddrphy_dqi_58 & ddrphy_dqi_57 & ddrphy_dqi_56 )} dqi_7002
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_ph_3 & ddrphy_e_adjdll_e_ph_2 & ddrphy_e_adjdll_e_ph_1 & ddrphy_e_adjdll_e_ph_0 )} adjdll_ph
-quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_pha_4_3 & ddrphy_e_adjdll_e_pha_4_2 & ddrphy_e_adjdll_e_pha_4_1 & ddrphy_e_adjdll_e_ph_0 )} pha
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_byte_g_0_ddr3phy_i_wlpha_6 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_5 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_4 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_3 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_2 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_1 & ddrphy_e_byte_g_0_ddr3phy_i_wlpha_0 )} wpha
-quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_pha_4_3 & ddrphy_e_adjdll_e_pha_4_2 & ddrphy_e_adjdll_e_pha_4_1 & ddrphy_e_adjdll_e_pha_4_0 )} pha001
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddrphy_e_adjdll_e_ph_0 & ddrphy_e_adjdll_e_ph_1 & ddrphy_e_adjdll_e_ph_2 & ddrphy_e_adjdll_e_ph_3 )} ph
+quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )(ddr_eclkph_3 & ddr_eclkph_2 & ddr_eclkph_1 & ddr_eclkph_0 )} pha
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst_n
 add wave -noupdate /testbench/cke
@@ -41,21 +40,24 @@ add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate /testbench/dqs_p
 add wave -noupdate /testbench/dm
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ecp3versa_e/pha
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQSW
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/sclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1_int
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsw
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0_int
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkw
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqsw_int
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1
-add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkw
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_d
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_d_1
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/dqsw
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqclk1_ipd
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw_ipd
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/q
@@ -145,13 +147,10 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_wlnxt
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
 add wave -noupdate /testbench/ecp3versa_e/ph
-add wave -noupdate -radix binary -childformat {{/testbench/ecp3versa_e/pha001(3) -radix binary} {/testbench/ecp3versa_e/pha001(2) -radix binary} {/testbench/ecp3versa_e/pha001(1) -radix binary} {/testbench/ecp3versa_e/pha001(0) -radix binary}} -subitemconfig {/testbench/ecp3versa_e/ddrphy_e_adjdll_e_pha_4_3 {-radix binary} /testbench/ecp3versa_e/ddrphy_e_adjdll_e_pha_4_2 {-radix binary} /testbench/ecp3versa_e/ddrphy_e_adjdll_e_pha_4_1 {-radix binary} /testbench/ecp3versa_e/ddrphy_e_adjdll_e_pha_4_0 {-radix binary}} /testbench/ecp3versa_e/pha001
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ECLKW
 add wave -noupdate /testbench/ecp3versa_e/ddr_eclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_synceclk
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ef_q
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_er_q
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_d
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
@@ -3197,7 +3196,6 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_wlnxt
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok
-add wave -noupdate /testbench/ecp3versa_e/pha
 add wave -noupdate -expand /testbench/ecp3versa_e/adjdll_ph
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk
 add wave -noupdate -divider {New Divider}
@@ -3318,8 +3316,8 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1313887 ps} 0} {{Cursor 2} {1315772 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {9977302 ps} 0} {{Cursor 2} {1806919 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 195
 configure wave -valuecolwidth 40
 configure wave -justifyvalue left
@@ -3334,4 +3332,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1301286 ps} {1327913 ps}
+WaveRestoreZoom {1777061 ps} {1836777 ps}
