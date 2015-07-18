@@ -41,6 +41,8 @@ add wave -noupdate /testbench/dqs_p
 add wave -noupdate /testbench/dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/pha
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw_ipd
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQSW
@@ -3318,10 +3320,10 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {9977302 ps} 0} {{Cursor 2} {1806919 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 195
+configure wave -namecolwidth 918
 configure wave -valuecolwidth 40
 configure wave -justifyvalue left
-configure wave -signalnamewidth 1
+configure wave -signalnamewidth 0
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -3332,4 +3334,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1777061 ps} {1836777 ps}
+WaveRestoreZoom {1777061 ps} {1798787 ps}

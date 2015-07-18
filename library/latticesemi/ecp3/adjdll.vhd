@@ -144,15 +144,12 @@ begin
 			d   => q90,
 			q   => q270);
 
-		od_i: block 
-		begin
 		ok_d <= transport q0 xor q90 xor q180 xor q270 after delay;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => ok_d,
 			q   => ok_q);
-		end block;
 
 		process (sclk)
 		begin
