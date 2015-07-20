@@ -24,21 +24,22 @@ use ecp3.components.all;
 architecture beh of adjdll is
 
 	signal kclk : std_logic;
-	signal ok, oka, okb : std_logic;
+	signal ok : std_logic;
 	signal er_q, e, ef_q : std_logic;
-	signal sel_ba : std_logic;
 	signal adj_rdy, adj_req : std_logic;
+	signal adjdll_rdy : std_logic;
 
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_eclk : std_logic;
 
-	signal ph, ph_a, ph_b : std_logic_vector(0 to pha'length-1);
-	signal smpa_rdy, smpb_rdy, smp_rdy : std_logic;
-	signal smpa_req, smpb_req, smp_req : std_logic;
-	signal adjdll_rdy : std_logic;
-	constant delay : time := 1.5 ns;
+	signal ph : std_logic_vector(0 to pha'length-1);
+	signal smp_rdy : std_logic;
+	signal smp_req : std_logic;
+	constant delay : natural := 0;
+
 begin
 
+	adj_req <= not rst;
 	process (eclk)
 		variable q : std_logic_vector(0 to 1);
 	begin
@@ -63,103 +64,6 @@ begin
 	synceclk <= kclk;
 	kclk <= transport eclksynca_eclk after 0.75 ns + 0.056 ns;
 
-	process (sclk)
-		variable aux : unsigned(ph'range);
-	begin
-		if rising_edge(sclk) then
-			aux := unsigned(ph) + 1;
-			if rst='1' then
-				sel_ba  <= '0';
-				adj_req <= '0';
-				ph_b <= (others => '0');
-				ph_a <= (others => '0');
-			else
-				if sel_ba='0' then
-					if adj_req='1' then
-						if adj_rdy='1' then
-							sel_ba  <='1';
-							adj_req <= '0';
-							ph_b <= std_logic_vector(aux);
-						end if;
-					else
-						adj_req <= '1';
-					end if;
-				elsif adj_rdy='0' then
-					adj_req <= '1';
-				elsif adj_req='1' then
-					ph_a <= std_logic_vector(aux);
-				end if;
-			end if;
-		end if;
-	end process;
-
-	phb_b : block
-		signal clk0, clk90, clk180, clk270 : std_logic;
-		signal q0,   q90,   q180,   q270   : std_logic;
-		signal d0,   d90  : std_logic;
-		signal ok_d, ok_q : std_logic;
-	begin
-
-		clk0   <= transport er_q after delay;
-		clk90  <= transport ef_q after delay;
-		clk180 <= transport not er_q after delay;
-		clk270 <= transport not ef_q after delay;
-
-		process (sclk)
-			variable cntr : unsigned(0 to 3);
-		begin
-			if rising_edge(sclk) then
-				if smp_req='0' then
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
-				smpb_rdy <= cntr(0);
-			end if;
-		end process;
-
-		d0 <= not q0;
-		ff0_i : entity hdl4fpga.ff
-		port map (
-			clk => clk0,
-			d   => d0,
-			q   => q0);
-
-		d90 <= not q90;
-		ff90_i : entity hdl4fpga.ff
-		port map (
-			clk => clk90,
-			d   => d90,
-			q   => q90);
-
-		ff180_i : entity hdl4fpga.ff
-		port map (
-			clk => clk180,
-			d   => q0,
-			q   => q180);
-
-		ff270_i : entity hdl4fpga.ff
-		port map (
-			clk => clk270,
-			d   => q90,
-			q   => q270);
-
-		ok_d <= transport q0 xor q90 xor q180 xor q270 after delay;
-		ok_i : entity hdl4fpga.ff
-		port map (
-			clk => sclk,
-			d   => ok_d,
-			q   => ok_q);
-
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				okb <= ok_q;
-			end if;
-		end process;
-
-	end block;
-
 	seclk_b : block
 		signal kclk_n : std_logic;
 		signal er_d : std_logic;
@@ -175,7 +79,7 @@ begin
 				elsif cntr(0)='0' then
 					cntr := cntr + 1;
 				end if;
-				smpa_rdy <= cntr(0);
+				smp_rdy <= cntr(0);
 			end if;
 		end process;
 
@@ -193,34 +97,24 @@ begin
 			d   => er_q,
 			q   => ef_q);
 
-		ok_d <= transport er_q xor ef_q after delay;
+		ok_d <= er_q xor ef_q;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => ok_d,
 			q   => ok_q);
 
-		process (smp_req, sclk)
+		process (sclk)
 		begin
 			if rising_edge(sclk) then
-				oka <= ok_q;
+				ok <= ok_q;
 			end if;
 		end process;
 
 	end block;
 
-	with sel_ba select
-	ok <=
-   		oka when '1',
-		okb when others;
-
-	with sel_ba select 
-	smp_rdy <=
-   		smpa_rdy when '1',
-		smpb_rdy when others;
-
 	process(sclk)
-		variable dg  : unsigned(0 to pha'length+1);
+		variable dg  : unsigned(0 to pha'length+2);
 		variable nxt : std_logic;
 		variable aux : unsigned(ph'range);
 		variable smp_rdy1 : std_logic;
@@ -251,11 +145,12 @@ begin
 				nxt := smp_rdy and not smp_rdy1;
 				smp_rdy1 := smp_rdy;
 			end if;
-			adj_rdy <= dg(dg'right);
+			adj_rdy <= dg(dg'right-1) or dg(dg'right);
+			adjdll_rdy <=  dg(dg'right);
 		end if;
 	end process;
 
-	process (rst, sclk)
+	process (sclk)
 		variable aux : unsigned(pha'range);
 	begin
 		if rising_edge(sclk) then
@@ -264,29 +159,11 @@ begin
 			else
 				pha <= ph;
 				if adj_rdy='1' then
-					if sel_ba='1' then
-						pha <= std_logic_vector((unsigned(ph_a) sll 1) - unsigned(ph_b));
-					end if;
+					pha <= std_logic_vector(unsigned(ph)+1+((delay mod period)*2**pha'length)/period);
 				end if;
 			end if;
 		end if;
 	end process;
 
-	process(rst, sclk)
-	begin
-		if rst='1' then
-			adjdll_rdy <= '0';
-		elsif rising_edge(sclk) then
-			if smp_req='0' then
-				if sel_ba='1' then
-					if adj_req='1' then
-						if adj_rdy='1' then
-							adjdll_rdy <= adj_rdy;
-						end if;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
 	rdy <= adjdll_rdy;
 end;

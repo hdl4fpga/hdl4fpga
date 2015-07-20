@@ -32,19 +32,19 @@ LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R34C2C";
 MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" 0.0 ns;
 MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" 0.0 ns;
 
-LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i"    SITE "R33C2A";
-LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i"   SITE "R33C2B";
-LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i"  SITE "R33C3A";
-LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i"  SITE "R33C3B";
-LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i"     SITE "R33C3C";
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" 0.0 ns;
-MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" 0.0 ns;
+//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i"    SITE "R33C2A";
+//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i"   SITE "R33C2B";
+//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i"  SITE "R33C3A";
+//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i"  SITE "R33C3B";
+//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i"     SITE "R33C3C";
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" 0.0 ns;
+//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" 0.0 ns;
 BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "ddr_eclk";
  
 
