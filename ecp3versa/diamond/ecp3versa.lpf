@@ -14,7 +14,8 @@ BANK 7 VCCIO 1.5 V;
 
 SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
 
-#MAXDELAY NET "ddrphy_e/synceclk" 0.580 ns;
+
+MAXDELAY NET "ddrphy_e/synceclk" 0.580 ns;
 MAXDELAY NET "ddrphy_e/byte_g*.ddr3phy_i/dqsw" 0 ns;
 
 LOCATE COMP "clk"  SITE "L5";
@@ -46,6 +47,8 @@ MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjd
 //MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" 0.0 ns;
 //MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" 0.0 ns;
 BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "ddr_eclk";
+BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "clk_c";
+BLOCK PATH FROM CLKNET "clk_c" TO CLKNET "ddr_sclk";
  
 
 

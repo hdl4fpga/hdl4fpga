@@ -35,7 +35,6 @@ architecture beh of adjdll is
 	signal ph : std_logic_vector(0 to pha'length-1);
 	signal smp_rdy : std_logic;
 	signal smp_req : std_logic;
-	constant delay : natural := 0;
 
 begin
 
@@ -159,7 +158,8 @@ begin
 			else
 				pha <= ph;
 				if adj_rdy='1' then
-					pha <= std_logic_vector(unsigned(ph)+1+((delay mod period)*2**pha'length)/period);
+					pha <= std_logic_vector(unsigned(ph)+unsigned(std_logic_vector'(ph'range => '1')));
+--					pha <= std_logic_vector(unsigned(ph)+3);
 				end if;
 			end if;
 		end if;

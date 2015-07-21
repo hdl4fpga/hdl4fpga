@@ -414,9 +414,9 @@ begin
 --	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
 --	led(5) <= not phy1_rx_dv;
 --	led(6) <= not mii_txen;
-	led(4) <= not tpo(0);
-	led(5) <= not tpo(1);
-	led(6) <= not tpo(2);
-	led(7) <= not tpo(3);
+	led(4) <= '1'; --not tpo(0);
+	led(5) <= '1'; --not tpo(1);
+	led(6) <= '1'; --not tpo(2);
+	led(7) <= '1'; --not tpo(3);
 
 end;

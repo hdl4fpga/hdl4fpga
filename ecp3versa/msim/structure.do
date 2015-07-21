@@ -42,6 +42,7 @@ add wave -noupdate /testbench/dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/pha
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw
+add wave -noupdate /testbench/ecp3versa_e/ddr_sclk2x
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw_ipd
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/DQCLK1
@@ -57,7 +58,6 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkw
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_d
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_adjdll_e_ok_d_1
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/dqsw
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqclk1_ipd
@@ -99,6 +99,7 @@ add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/DQCLK0
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/DQCLK1
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/VitalBehavior/DQSW_zd
+add wave -noupdate /testbench/ecp3versa_e/ddr_sclk2x
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int
 add wave -noupdate /testbench/ddr_clk_p
 add wave -noupdate /testbench/dqs_p(0)
@@ -284,7 +285,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -299,7 +299,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -314,7 +313,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -329,7 +327,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -344,7 +341,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -359,7 +355,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -374,7 +369,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -389,7 +383,6 @@ add wave -noupdate -expand -group ddrphy -radix hexadecimal /testbench/ecp3versa
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/rsts_b_rsts_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_rst_1
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
-add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdel
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_lock
 add wave -noupdate -expand -group ddrphy /testbench/ecp3versa_e/ddrphy_e_dqsdll_uddcntln
@@ -3318,12 +3311,12 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9977302 ps} 0} {{Cursor 2} {1806919 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1255525 ps} 0} {{Cursor 2} {1447462 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 918
+configure wave -namecolwidth 167
 configure wave -valuecolwidth 40
 configure wave -justifyvalue left
-configure wave -signalnamewidth 0
+configure wave -signalnamewidth 1
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -3334,4 +3327,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1777061 ps} {1798787 ps}
+WaveRestoreZoom {1441092 ps} {1506718 ps}

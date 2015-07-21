@@ -281,9 +281,17 @@ begin
 			variable sr : std_logic_vector(0 to 4);
 		begin
 			if rising_edge(sys_sclk2x) then
-				sr := sr(1 to 4) & lock;
-				dqsdll_lock <= sr(0);
+				if dqsdll_rst='1' then
+					sr := (others => '0');
+				else
+					sr := sr(1 to 4) & '1';
+					dqsdll_lock <= sr(0);
+				end if;
 			end if;
+--			if rising_edge(sys_sclk2x) then
+--				sr := sr(1 to 4) & lock;
+--				dqsdll_lock <= sr(0);
+--			end if;
 		end process;
 
 	end block;
