@@ -362,14 +362,15 @@ begin
 		lat_cod => xdr_latcod(stdr, CWL),
 		lat_tab => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2));
 
-	rotate_i : entity hdl4fpga.barrel
-	generic map (
-		n => sys_di'length,
-		m => unsigned_num_bits(line_size-1))
-	port map (
-		rot  => rot_val,
-		din  => sys_di,
-		dout => rot_di);
+--	rotate_i : entity hdl4fpga.barrel
+--	generic map (
+--		n => sys_di'length,
+--		m => unsigned_num_bits(line_size-1))
+--	port map (
+--		rot  => rot_val,
+--		din  => sys_di,
+--		dout => rot_di);
+	rot_di <= sys_di;
 		
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (

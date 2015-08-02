@@ -284,14 +284,10 @@ begin
 				if dqsdll_rst='1' then
 					sr := (others => '0');
 				else
-					sr := sr(1 to 4) & '1';
-					dqsdll_lock <= sr(0);
+					sr := sr(1 to 4) & '1'; -- & lock;
 				end if;
+				dqsdll_lock <= sr(0);
 			end if;
---			if rising_edge(sys_sclk2x) then
---				sr := sr(1 to 4) & lock;
---				dqsdll_lock <= sr(0);
---			end if;
 		end process;
 
 	end block;
