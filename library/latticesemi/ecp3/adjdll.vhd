@@ -59,7 +59,7 @@ begin
 		end if;
 	end process;
 
-	dqsdll_rst <= smp_rdy;
+	dqsdll_rst <= rst and smp_rdy;
 	dqsdll_b : block
 		signal lock : std_logic;
 	begin
