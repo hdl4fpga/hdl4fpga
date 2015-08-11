@@ -47,6 +47,21 @@ architecture beh of adjdll is
 
 begin
 
+	process (sclk)
+		variable cntr : unsigned(0 to 4);
+	begin
+		if rising_edge(sclk) then
+			if smp_req='0' then
+				cntr := (others => '0');
+			elsif smp_rdy='1' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				cntr := cntr + 1;
+			end if;
+			smp_rdy <= cntr(0);
+		end if;
+	end process;
+
 	dqsdll_rst <= smp_rdy;
 	dqsdll_b : block
 		signal lock : std_logic;
@@ -60,17 +75,15 @@ begin
 			dqsdel => dqsdel,
 			lock => lock);
 
-		process (eclk)
+		process (dqsdll_rst, eclk)
 			variable sr : std_logic_vector(0 to 4);
 		begin
-			if rising_edge(eclk) then
-				if dqsdll_rst='1' then
-					sr := (others => '0');
-				else
-					sr := sr(1 to 4) & lock;
-				end if;
-				dqsdll_lock <= sr(0);
+			if dqsdll_rst='1' then
+				sr := (others => '0');
+			elsif rising_edge(eclk) then
+				sr := sr(1 to 4) & lock;
 			end if;
+			dqsdll_lock <= sr(0);
 		end process;
 
 		process (eclk)
@@ -93,7 +106,15 @@ begin
 
 	end block;
 
-	eclksynca_rst <= smp_rdy or not dqsdll_uddcntln_rdy;
+	process(sclk, smp_rdy)
+	begin
+		if smp_rdy='1' then
+			eclksynca_rst <= '1';
+		elsif rising_edge(sclk) then
+			eclksynca_rst <= not dqsdll_uddcntln_rdy;
+		end if;
+	end process;
+
 	process (eclksynca_rst, eclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
@@ -117,21 +138,6 @@ begin
 	seclk_b : block
 		signal ok_q : std_logic;
 	begin
-
-		process (sclk)
-			variable cntr : unsigned(0 to 3);
-		begin
-			if rising_edge(sclk) then
-				if smp_req='0' then
-					cntr := (others => '0');
-				elsif smp_rdy='1' then
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
-				smp_rdy <= cntr(0);
-			end if;
-		end process;
 
 		ok_i : entity hdl4fpga.ff
 		port map (
