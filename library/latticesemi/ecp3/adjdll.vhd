@@ -13,7 +13,8 @@ entity adjdll is
 		sclk : in std_logic;
 		eclk : in std_logic;
 		synceclk : out std_logic;
-		rdy  : out std_logic;
+		dqsdel : out std_logic;
+		dqsbuf_rst : out std_logic;
 		pha  : out std_logic_vector);
 		
 end;
@@ -23,38 +24,85 @@ use ecp3.components.all;
 
 architecture beh of adjdll is
 
-	signal kclk : std_logic;
+	signal dqsdll_rst : std_logic;
+	signal kclk, kclk_n : std_logic;
 	signal ok : std_logic;
-	signal er_q, ef_q : std_logic;
-	signal sr_q, sf_q : std_logic;
 	signal adj_rdy : std_logic;
 	signal adj_req : std_logic;
-	signal adj_edge : std_logic;
-	signal adjdll_rdy : std_logic;
-	signal adjdll_eclk : std_logic;
-	signal adjdll_pha  : std_logic;
+	signal dqsbuf_clr : std_logic;
+	signal dqsbuf_rdy : std_logic;
 
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_eclk : std_logic;
 	signal eclksynca_rst  : std_logic;
 
-	signal ph, ph_r, ph_f : unsigned(0 to pha'length-1);
+	signal ph : unsigned(0 to pha'length-1);
 	signal smp_rdy : std_logic;
 	signal smp_req : std_logic;
+	signal n_q : std_logic;
+	signal dqsdll_uddcntln : std_logic;
+	signal dqsdll_uddcntln_rdy : std_logic;
+	signal dqsdll_lock : std_logic;
+	signal ddrdqphy_rst : std_logic;
 
 begin
 
-	eclksynca_rst <= smp_rdy or adjdll_eclk;
+	dqsdll_rst <= smp_rdy;
+	dqsdll_b : block
+		signal lock : std_logic;
+	begin
+
+		dqsdllb_i : dqsdllb
+		port map (
+			rst => dqsdll_rst,
+			clk => eclk,
+			uddcntln => dqsdll_uddcntln,
+			dqsdel => dqsdel,
+			lock => lock);
+
+		process (eclk)
+			variable sr : std_logic_vector(0 to 4);
+		begin
+			if rising_edge(eclk) then
+				if dqsdll_rst='1' then
+					sr := (others => '0');
+				else
+					sr := sr(1 to 4) & lock;
+				end if;
+				dqsdll_lock <= sr(0);
+			end if;
+		end process;
+
+		process (eclk)
+			variable counter : unsigned(0 to 3);
+		begin
+			if rising_edge(eclk) then
+				if dqsdll_lock='0' then
+					counter := (others => '0');
+					dqsdll_uddcntln_rdy <= counter(0);
+					dqsdll_uddcntln <= '0';
+				else
+					if counter(0)='0' then
+						counter := counter + 1;
+					end if;
+					dqsdll_uddcntln_rdy <= counter(0);
+					dqsdll_uddcntln <= counter(0);
+				end if;
+			end if;
+		end process;
+
+	end block;
+
+	eclksynca_rst <= smp_rdy or not dqsdll_uddcntln_rdy;
 	process (eclksynca_rst, eclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
 		if eclksynca_rst='1' then
 			q := (others => '1');
-			eclksynca_stop <= q(0);
 		elsif falling_edge(eclk) then
 			q := q(1 to 2) & '0';
-			eclksynca_stop <= q(0);
 		end if;
+		eclksynca_stop <= q(0);
 	end process;
 
 	eclksynca_i : eclksynca
@@ -66,51 +114,8 @@ begin
 	synceclk <= kclk;
 	kclk <= transport eclksynca_eclk after 0.75 ns + 0.056 ns;
 
-	process (sclk)
-	begin
-		if rising_edge(sclk) then
-			if rst='1' then
-				adjdll_rdy  <= '0';
-				adjdll_pha  <= '0';
-				adjdll_eclk <= '0';
-				adj_req  <= '0';
-				adj_edge <= '0';
-			elsif adjdll_pha='0' then
-				if adj_edge='0' then
-					adj_req <= '1';
-					if adj_rdy='1' then
-						adj_req  <= '0';
-						adj_edge <= '1';
-					end if;
-				elsif adj_req='0' then
-					if adj_rdy='0' then
-						adj_req <= '1';
-					end if;
-				elsif adj_rdy='1' then
-					adjdll_pha  <= '1';
-					adjdll_eclk <= '1';
-				end if;
-			else
-				adjdll_eclk <= '0';
-				adjdll_rdy  <= '1';
-			end if;
-		end if;
-	end process;
-
 	seclk_b : block
-		signal kclk_n : std_logic;
-		signal sclk_n : std_logic;
-		signal ef_d   : std_logic;
-		signal sf_d   : std_logic;
-		signal ok_d,  ok_q : std_logic;
-		attribute HGROUP : string;
-		attribute PBBOX : string;
-		attribute HGROUP of ef_i: label is "ef_i";
-		attribute HGROUP of er_i: label is "er_i";
-		attribute HGROUP of sf_i: label is "sf_i";
-		attribute PBBOX of ef_i: label is "1,1";
-		attribute PBBOX of er_i: label is "1,1";
-		attribute PBBOX of sf_i: label is "1,1";
+		signal ok_q : std_logic;
 	begin
 
 		process (sclk)
@@ -128,36 +133,10 @@ begin
 			end if;
 		end process;
 
-		kclk_n <= not kclk;
-		ef_d <= not ef_q;
-		ef_i : fd1s3dx
-		port map (
-			cd => '0',
-			ck => kclk,
-			d  => ef_d,
-			q  => ef_q);
-
-		er_i : fd1s3dx
-		port map (
-			cd => '0',
-			ck => sclk,
-			d  => ef_q,
-			q  => er_q);
-
-		sclk_n <= not eclk;
-		sf_d <= not sf_q;
-		sf_i : fd1s3dx
-		port map (
-			cd => '0',
-			ck => sclk,
-			d  => eclk,
-			q  => sf_q);
-
-		ok_d <= ef_q xor er_q xor sf_q;
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
-			d   => ok_d,
+			d   => kclk,
 			q   => ok_q);
 
 		process (sclk)
@@ -172,17 +151,19 @@ begin
 	process(sclk)
 		variable dg  : unsigned(0 to pha'length+1);
 		variable aux : unsigned(ph'range);
+		variable adj_edge : std_logic;
 	begin
 		if rising_edge(sclk) then
 			if adj_req='0' then
 				ph  <= (others => '0');
 				dg  := (0 => '1', others => '0');
+				adj_edge := dg(dg'right);
 				smp_req  <= '0';
 			else
 				if dg(dg'right)='0' then
 					if smp_rdy='1' then
 						aux := ph or dg(0 to aux'length-1);
-						if ok=adj_edge then
+						if ok='0' then
 							aux := aux and not dg(1 to aux'length);
 						end if;
 						ph <= aux;
@@ -194,29 +175,42 @@ begin
 				else
 					smp_req <= '0';
 				end if;
+				adj_edge := adj_rdy;
 			end if;
-			adj_rdy <= dg(dg'right);
+			adj_rdy  <= dg(dg'right);
 		end if;
 	end process;
 
 	process (sclk)
-		variable aux : unsigned(pha'range);
 	begin
 		if rising_edge(sclk) then
 			if rst='1' then
 				pha <= (pha'range => '0');
 			else
 				pha <= std_logic_vector(ph);
-				if adjdll_pha='1' then
-					pha <= std_logic_vector(ph_f-ph_r);
-				elsif adj_edge='1' then
-					ph_r <= ph;
-				else
-					ph_f <= ph;
+				if adj_rdy='1' then
+					pha <= std_logic_vector(ph+1);
 				end if;
 			end if;
+
 		end if;
 	end process;
 
-	rdy <= adjdll_rdy;
+	dqsbuf_clr <= not adj_rdy;
+	kclk_n <= kclk;
+	ff1 : entity hdl4fpga.aff
+	port map (
+		ar  => dqsbuf_clr,
+		clk => kclk_n,
+		d   => '1',
+		q   => n_q);
+
+	ff2 : entity hdl4fpga.aff
+	port map (
+		ar  => dqsbuf_clr,
+		clk => kclk,
+		d   => n_q,
+		q   => dqsbuf_rdy);
+	dqsbuf_rst <= not dqsbuf_rdy;
+
 end;

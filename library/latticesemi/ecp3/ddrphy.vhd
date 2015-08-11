@@ -204,7 +204,6 @@ architecture ecp3 of ddrphy is
 	signal dqrst : std_logic;
 	signal eclk_stop : std_logic;
 	signal ddrdqphy_rst : std_logic;
-	signal adjdll_rdy : std_logic;
 	signal synceclk : std_logic;
 	signal dqsbufd_rst : std_logic;
 
@@ -261,73 +260,9 @@ begin
 		sclk => sys_sclk,
 		eclk => sys_eclk,
 		synceclk => synceclk,
-		rdy  => adjdll_rdy,
+		dqsdel => dqsdel,
+		dqsbuf_rst => dqsbufd_rst,
 		pha => sys_pha);
-
-	dqsdll_rst <= not adjdll_rdy;
-	dqsdll_b : block
-		signal lock : std_logic;
-	begin
-
-		dqsdllb_i : dqsdllb
-		port map (
-			rst => dqsdll_rst,
-			clk => sys_sclk2x,
-			uddcntln => dqsdll_uddcntln,
-			dqsdel => dqsdel,
-			lock => lock);
-
-		process (sys_sclk2x)
-			variable sr : std_logic_vector(0 to 4);
-		begin
-			if rising_edge(sys_sclk2x) then
-				if dqsdll_rst='1' then
-					sr := (others => '0');
-				else
-					sr := sr(1 to 4) & '1'; -- & lock;
-				end if;
-				dqsdll_lock <= sr(0);
-			end if;
-		end process;
-
-	end block;
-
-	dqsbufd_rst <= dqsdll_lock;
-	process (dqsdll_lock, sys_sclk2x)
-		variable counter : unsigned(0 to 3);
-	begin
-		if dqsdll_lock='0' then
-			counter := (others => '0');
-			dqsdll_uddcntln_rdy <= counter(0);
-			dqsdll_uddcntln <= '1';
-		elsif rising_edge(sys_sclk2x) then
-			dqsdll_uddcntln <= counter(0);
-			if counter(0)='0' then
-				counter := counter + 1;
-			end if;
-			dqsdll_uddcntln_rdy <= counter(0);
-		end if;
-	end process;
-
-
-	process (dqsdll_lock, sys_sclk)
-		variable sync : std_logic;
-	begin
-		if dqsdll_lock='0' then
-			ddrdqphy_rst <= '1';
-		elsif falling_edge(sys_sclk) then
-			if wlrdy='1' then
-				if sync='1' then
-					ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
-				else 
-					ddrdqphy_rst <= '1';
-				end if;
-			else
-				ddrdqphy_rst <= not dqsdll_uddcntln_rdy;
-			end if;
-			sync := wlrdy;
-		end if;
-	end process;
 
 	ddrwl_e : entity hdl4fpga.ddrwl
 	port map (
@@ -345,7 +280,7 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			sys_rst  => ddrdqphy_rst,
+			dqsbufd_rst  => dqsbufd_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,
