@@ -29,8 +29,6 @@ architecture beh of adjdll is
 	signal ok : std_logic;
 	signal adj_rdy : std_logic;
 	signal adj_req : std_logic;
-	signal dqsbuf_clr : std_logic;
-	signal dqsbuf_rdy : std_logic;
 
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_eclk : std_logic;
@@ -39,14 +37,13 @@ architecture beh of adjdll is
 	signal ph : unsigned(0 to pha'length-1);
 	signal smp_rdy : std_logic;
 	signal smp_req : std_logic;
-	signal n_q : std_logic;
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqsdll_lock : std_logic;
-	signal ddrdqphy_rst : std_logic;
 
 begin
 
+	adj_req <= not rst;
 	process (sclk)
 		variable cntr : unsigned(0 to 4);
 	begin
@@ -202,21 +199,27 @@ begin
 		end if;
 	end process;
 
-	dqsbuf_clr <= not adj_rdy;
-	kclk_n <= kclk;
-	ff1 : entity hdl4fpga.aff
-	port map (
-		ar  => dqsbuf_clr,
-		clk => kclk_n,
-		d   => '1',
-		q   => n_q);
+	dqsbuf_b : block
+		signal n_q : std_logic;
+		signal dqsbuf_clr : std_logic;
+		signal dqsbuf_rdy : std_logic;
+	begin
+		dqsbuf_clr <= not adj_rdy;
+		kclk_n <= kclk;
+		ff1 : entity hdl4fpga.aff
+		port map (
+			ar  => dqsbuf_clr,
+			clk => kclk_n,
+			d   => '1',
+			q   => n_q);
 
-	ff2 : entity hdl4fpga.aff
-	port map (
-		ar  => dqsbuf_clr,
-		clk => kclk,
-		d   => n_q,
-		q   => dqsbuf_rdy);
-	dqsbuf_rst <= not dqsbuf_rdy;
+		ff2 : entity hdl4fpga.aff
+		port map (
+			ar  => dqsbuf_clr,
+			clk => kclk,
+			d   => n_q,
+			q   => dqsbuf_rdy);
+		dqsbuf_rst <= not dqsbuf_rdy;
+	end block;
 
 end;
