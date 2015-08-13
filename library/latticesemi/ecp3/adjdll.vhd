@@ -39,7 +39,6 @@ architecture beh of adjdll is
 	signal smp_req : std_logic;
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
-	signal dqsdll_lock : std_logic;
 
 begin
 
@@ -59,15 +58,7 @@ begin
 		end if;
 	end process;
 
-	process(sclk, smp_rdy)
-	begin
-		if smp_rdy='1' then
-			eclksynca_rst <= '1';
-		elsif rising_edge(sclk) then
-			eclksynca_rst <= not dqsdll_uddcntln_rdy;
-		end if;
-	end process;
-
+	eclksynca_rst <= smp_rdy;
 	process (eclksynca_rst, eclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
@@ -95,7 +86,7 @@ begin
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
-			d   => kclk,
+			d   => eclk,
 			q   => ok_q);
 
 		process (sclk)
@@ -162,7 +153,7 @@ begin
 			if adj_rdy='0' then
 				q := (others => '1');
 			elsif rising_edge(eclk) then
-				q := q sll 0;
+				q := q sll 1;
 			end if;
 			dqsdll_rst <= q(0);
 		end process;
@@ -175,41 +166,37 @@ begin
 			dqsdel => dqsdel,
 			lock => lock);
 
-		process 
-		process (dqsdll_rst, eclk)
+		process (dqsdll_rst, sclk)
 			variable sr : std_logic_vector(0 to 4);
 		begin
 			if dqsdll_rst='1' then
 				sr := (others => '0');
-			elsif rising_edge(eclk) then
+			elsif rising_edge(sclk) then
 				sr := sr(1 to 4) & lock;
 			end if;
-			dqsdll_lock <= sr(0);
+			dqsdll_uddcntln <= sr(1) xnor sr(3);
+			dqsdll_uddcntln_rdy <= sr(0);
 		end process;
 
 	end block;
 
 	dqsbuf_b : block
 		signal n_q : std_logic;
-		signal dqsbuf_clr : std_logic;
-		signal dqsbuf_rdy : std_logic;
+		signal q : std_logic;
 	begin
-		dqsbuf_clr <= dqsdll_lock;
 		kclk_n <= kclk;
-		ff1 : entity hdl4fpga.aff
+		ff1 : entity hdl4fpga.ff
 		port map (
-			ar  => dqsbuf_clr,
 			clk => kclk_n,
-			d   => '1',
-			q   => n_q);
+			d   => dqsdll_uddcntln_rdy,
+			q   => q);
+		n_q <= not q;
 
-		ff2 : entity hdl4fpga.aff
+		ff2 : entity hdl4fpga.ff
 		port map (
-			ar  => dqsbuf_clr,
 			clk => kclk,
 			d   => n_q,
-			q   => dqsbuf_rdy);
-		dqsbuf_rst <= not dqsbuf_rdy;
+			q   => dqsbuf_rst);
 	end block;
 
 end;
