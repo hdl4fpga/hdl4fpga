@@ -175,6 +175,7 @@ begin
 			dqsdel => dqsdel,
 			lock => lock);
 
+		process 
 		process (dqsdll_rst, eclk)
 			variable sr : std_logic_vector(0 to 4);
 		begin
