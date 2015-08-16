@@ -119,6 +119,19 @@ begin
 		end if;
 	end process;
 
+--	xx_b : block
+--		signal cout : std_logic_vector(7 downto 0);
+--	begin
+--		lfsr_e : entity hdl4fpga.lfsr
+--		port  map (
+--			clk => ddrs_clk,
+--			enable => ddrs_di_rdy,
+--			cout => cout,
+--			reset => sys_rst);
+--		aux2 <= cout &  cout & cout & cout & 
+--				cout &  cout & cout & cout;
+--	end block;
+
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
 	datai_req <= not sys_rst and not capture_rdy;

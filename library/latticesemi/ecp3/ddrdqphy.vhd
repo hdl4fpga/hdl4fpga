@@ -66,6 +66,7 @@ architecture ecp3 of ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
+	signal dqsbufd_rsto : std_logic;
 
 begin
 	rw <= not sys_rw;
@@ -80,6 +81,32 @@ begin
 		hld => sys_wlnxt,
 		dg  => sys_wldg,
 		pha => wlpha);
+
+	dqsbuf_b : block
+		signal q : std_logic;
+		signal sys_eclk_n : std_logic;
+		signal rst : std_logic;
+	begin
+		ff0 : entity hdl4fpga.ff
+		port map (
+			clk => sys_sclk,
+			d   => dqsbufd_rst,
+			q   => rst
+
+		sys_eclk_n <= not sys_eclk;
+		ff1 : entity hdl4fpga.ff
+		port map (
+			clk => sys_eclk_n,
+			d   => rst,
+			q   => q);
+
+		ff2 : entity hdl4fpga.ff
+		port map (
+			clk => sys_eclk,
+			d   => q,
+			q   => dqsbufd_rsto);
+
+	end block;
 
 	dyndelay <= resize(unsigned(wlpha), dyndelay'length);
 	dqsbufd_i : dqsbufd 
@@ -97,7 +124,7 @@ begin
 		eclk => sys_eclk,
 		datavalid => open,
 
-		rst  => dqsbufd_rst,
+		rst  => dqsbufd_rsto,
 		dyndelay0 => dyndelay(0),
 		dyndelay1 => dyndelay(1),
 		dyndelay2 => dyndelay(2),

@@ -77,7 +77,7 @@ begin
 		eclko => eclksynca_eclk);
 
 	synceclk <= kclk;
-	kclk <= transport eclksynca_eclk after 0.75 ns + 0.056 ns;
+	kclk <= transport eclksynca_eclk after  ns; --0.75 ns + 0.056 ns;
 
 	seclk_b : block
 		signal ok_q : std_logic;
@@ -138,7 +138,7 @@ begin
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
 			if adj_rdy='1' then
-				pha <= std_logic_vector(ph+1);
+				pha <= std_logic_vector(ph+2);
 			end if;
 		end if;
 	end process;
@@ -175,28 +175,9 @@ begin
 				sr := sr(1 to 4) & lock;
 			end if;
 			dqsdll_uddcntln <= sr(1) xnor sr(3);
-			dqsdll_uddcntln_rdy <= sr(0);
+			dqsbuf_rst <= not sr(0);
 		end process;
 
-	end block;
-
-	dqsbuf_b : block
-		signal n_q : std_logic;
-		signal q : std_logic;
-	begin
-		kclk_n <= kclk;
-		ff1 : entity hdl4fpga.ff
-		port map (
-			clk => kclk_n,
-			d   => dqsdll_uddcntln_rdy,
-			q   => q);
-		n_q <= not q;
-
-		ff2 : entity hdl4fpga.ff
-		port map (
-			clk => kclk,
-			d   => n_q,
-			q   => dqsbuf_rst);
 	end block;
 
 end;
