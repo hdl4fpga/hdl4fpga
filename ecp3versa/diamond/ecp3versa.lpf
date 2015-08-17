@@ -15,7 +15,7 @@ BANK 7 VCCIO 1.5 V;
 SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
 
 MAXDELAY NET "ddrphy_e/synceclk" 0.580 ns;
-#MAXDELAY NET "ddr_eclk" 0 ns;
+MAXDELAY NET "ddr_eclk" 0 ns;
 MAXDELAY NET "ddrphy_e/byte_g*.ddr3phy_i/dqsw" 0 ns;
 
 LOCATE COMP "clk"  SITE "L5";
@@ -30,13 +30,16 @@ LOCATE COMP "ddrphy_e/adjdll_e/sr[4]" SITE "R34C4B";
 MAXDELAY NET "ddrphy_e/adjdll_e/sr[0]" 320 ns;
 MAXDELAY NET "ddrphy_e/adjdll_e/dqsbuf_rst" 0 ns;
 MAXDELAY NET "ddrphy_e/dqsbufd_rst" 0 ns;
-MAXDELAY NET "ddrphy_e/byte_g.*.ddr3phy_i/dqsbufd_rsto" 620 ns;
-MAXDELAY NET "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b/rst" 0 ns;
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R13C2B";
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R13C2C";
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R22C2B";
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R22C2C";
+MAXDELAY NET "ddrphy_e/byte_g.*.ddr3phy_i/dqsbufd_rsto" 0.620 ns;
+MAXDELAY NET "ddrphy_e/byte_g.*.ddr3phy_i/rst" 500 ps;
+LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R13C2A";
+LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R13C2B";
+LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff3/ffd_i" SITE "R13C2C";
+LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R22C2A";
+LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R22C2B";
+LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff3/ffd_i" SITE "R22C2C";
 LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R33C2C";
+#LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R34C1A";
 
 MAXDELAY FROM ASIC "ddrphy_e/adjdll_e/eclksynca_i" PIN "eclko" TO CELL "ddrphy_e/adjdll_e/seclk_b.ef_i" 0.0 ns;
 MAXDELAY FROM ASIC "dcms_e/ddr3_b.pll_i" PIN "clk_os" TO CELL "ddrphy_e/adjdll_e/seclk_b.sf_i" 0.0 ns;

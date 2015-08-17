@@ -83,7 +83,7 @@ begin
 		pha => wlpha);
 
 	dqsbuf_b : block
-		signal q : std_logic;
+		signal q1, q2 : std_logic;
 		signal sys_eclk_n : std_logic;
 		signal rst : std_logic;
 	begin
@@ -91,19 +91,25 @@ begin
 		port map (
 			clk => sys_sclk,
 			d   => dqsbufd_rst,
-			q   => rst
+			q   => rst);
 
 		sys_eclk_n <= not sys_eclk;
 		ff1 : entity hdl4fpga.ff
 		port map (
 			clk => sys_eclk_n,
 			d   => rst,
-			q   => q);
+			q   => q1);
 
 		ff2 : entity hdl4fpga.ff
 		port map (
 			clk => sys_eclk,
-			d   => q,
+			d   => q1,
+			q   => q2);
+
+		ff3 : entity hdl4fpga.ff
+		port map (
+			clk => sys_eclk_n,
+			d   => q2,
 			q   => dqsbufd_rsto);
 
 	end block;

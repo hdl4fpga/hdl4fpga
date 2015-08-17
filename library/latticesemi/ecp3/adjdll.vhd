@@ -86,7 +86,7 @@ begin
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
-			d   => eclk,
+			d   => kclk,
 			q   => ok_q);
 
 		process (sclk)
@@ -138,7 +138,7 @@ begin
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
 			if adj_rdy='1' then
-				pha <= std_logic_vector(ph+2);
+				pha <= std_logic_vector(ph+1);
 			end if;
 		end if;
 	end process;
