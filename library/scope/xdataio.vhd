@@ -130,7 +130,8 @@ begin
 				aux := shr(1) xor shr(2) xor shr(3) xor shr(7);
 				shr := aux & shr(0 to 6);
 			end if;
-			aux2 <= shr & shr & shr & shr & shr & shr & shr & shr;
+			aux2 <= shr & shr & not shr & not shr &
+					shr & shr & not shr & not shr;
 		end if;
 	end process;
 
