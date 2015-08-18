@@ -64,7 +64,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture ecp3 of ddrphy is
-	signal xxxx : std_logic;
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -203,13 +202,11 @@ architecture ecp3 of ddrphy is
 	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
 	signal eclk_stop : std_logic;
-	signal ddrdqphy_rst : std_logic;
 	signal synceclk : std_logic;
 	signal dqsbufd_rst : std_logic;
 
 	signal wlnxt : std_logic;
-	signal wlrdy : std_logic;
-	signal wldg  : std_logic_vector(unsigned_num_bits(period/(2*27)) downto 0);
+	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1i);
 	signal dqsbufd_arst : std_logic;
 begin
 
@@ -271,7 +268,19 @@ begin
 		rdy => wlrdy,
 		nxt => wlnxt,
 		dg  => wldg);
-	sys_wlrdy <= wlrdy;
+
+	process (sys_sclk)
+		variable aux : std_logic;
+	begin
+		if rising_edge(sys_clk) then
+			aux := '1';
+			for i in wlrdy'range loop
+				aux := aux and wlrdy(i);
+			end loop;
+			sys_wlrdy <= aux;
+		end if;
+	end process;
+
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -287,7 +296,7 @@ begin
 			sys_dqsdel => dqsdel,
 			sys_rw   => sys_rw,
 			sys_wlreq => sys_wlreq,
-			sys_wlrdy => wlrdy,
+			sys_wlrdy => wlrdy(i),
 			sys_wlnxt => wlnxt,
 			sys_wldg  => wldg,
 

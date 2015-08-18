@@ -14,9 +14,8 @@ entity ddrdqphy is
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
 		sys_rw : in  std_logic;
-		sys_wlreq : in std_logic;
-		sys_wlrdy : in std_logic;
-		sys_wlnxt : in std_logic;
+		sys_wlreq : in  std_logic;
+		sys_wlrdy : out std_logic;
 		sys_wldg  : in std_logic_vector;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
@@ -70,16 +69,13 @@ architecture ecp3 of ddrdqphy is
 
 begin
 	rw <= not sys_rw;
-	adjpha_e : entity hdl4fpga.adjpha
-	generic map (
-		period => period)
+	adjpha_e : entity hdl4fpga.adjdqs
 	port map (
-		clk => sys_sclk,
+		clk => sys_eclk,
 		rdy => sys_wlrdy,
 		req => sys_wlreq,
 		smp => wlok,
 		hld => sys_wlnxt,
-		dg  => sys_wldg,
 		pha => wlpha);
 
 	dqsbuf_b : block
