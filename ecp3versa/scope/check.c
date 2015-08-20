@@ -89,7 +89,8 @@ main (int argc, char *argv[])
 
 			printf("0x%016llx 0x%016llx\n", htobe64(sb_src[j]), check);
 			if (check != htobe64(sb_src[j])){
-				fprintf(stderr, "Failed %d, %d\n", i, j);
+				fprintf(stderr, "Failed %d, %d, ", i, j);
+				fprintf(stderr,"0x%016llx 0x%016llx\n", htobe64(sb_src[j]), check);
 				abort();
 			}
 

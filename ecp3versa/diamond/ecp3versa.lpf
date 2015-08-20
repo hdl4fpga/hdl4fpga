@@ -43,10 +43,8 @@ LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R22C2A";
 LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff0/ffd_i" SITE "R22C2B";
 LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff3/ffd_i" SITE "R22C2C";
 LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R33C2C";
-#LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R34C1A";
 
-MAXDELAY FROM ASIC "ddrphy_e/adjdll_e/eclksynca_i" PIN "eclko" TO CELL "ddrphy_e/adjdll_e/seclk_b.ef_i" 0.0 ns;
-MAXDELAY FROM ASIC "dcms_e/ddr3_b.pll_i" PIN "clk_os" TO CELL "ddrphy_e/adjdll_e/seclk_b.sf_i" 0.0 ns;
+
 
 //LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i"    SITE "R33C2A";
 //LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i"   SITE "R33C2B";
