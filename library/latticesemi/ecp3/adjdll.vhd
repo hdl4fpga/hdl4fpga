@@ -6,8 +6,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity adjdll is
-	generic (
-		period : natural);
 	port (
 		rst  : in std_logic;
 		sclk : in std_logic;
@@ -138,7 +136,7 @@ begin
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
 			if adj_rdy='1' then
-				pha <= std_logic_vector(ph+1);
+				pha <= std_logic_vector(ph-1);
 			end if;
 		end if;
 	end process;

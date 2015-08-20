@@ -206,7 +206,7 @@ architecture ecp3 of ddrphy is
 	signal dqsbufd_rst : std_logic;
 
 	signal wlnxt : std_logic;
-	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1i);
+	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal dqsbufd_arst : std_logic;
 begin
 
@@ -250,8 +250,6 @@ begin
 
 	adjdll_rst <= phy_rst;
 	adjdll_e : entity hdl4fpga.adjdll
-	generic map (
-		period => period)
 	port map (
 		rst  => adjdll_rst,
 		sclk => sys_sclk,
@@ -261,18 +259,10 @@ begin
 		dqsbuf_rst => dqsbufd_rst,
 		pha => sys_pha);
 
-	ddrwl_e : entity hdl4fpga.ddrwl
-	port map (
-		clk => sys_sclk,
-		req => sys_wlreq,
-		rdy => wlrdy,
-		nxt => wlnxt,
-		dg  => wldg);
-
 	process (sys_sclk)
 		variable aux : std_logic;
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(sys_sclk) then
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
@@ -281,11 +271,9 @@ begin
 		end if;
 	end process;
 
-
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			period => period,
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
@@ -297,8 +285,6 @@ begin
 			sys_rw   => sys_rw,
 			sys_wlreq => sys_wlreq,
 			sys_wlrdy => wlrdy(i),
-			sys_wlnxt => wlnxt,
-			sys_wldg  => wldg,
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),

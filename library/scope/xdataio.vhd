@@ -130,8 +130,8 @@ begin
 				aux := shr(1) xor shr(2) xor shr(3) xor shr(7);
 				shr := aux & shr(0 to 6);
 			end if;
-			aux2 <= shr & shr & not shr & not shr &
-					shr & shr & not shr & not shr;
+			aux2 <= shr & not shr & not shr & shr &
+					shr & not shr & not shr & shr;
 		end if;
 	end process;
 
@@ -191,9 +191,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-2, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(0, DDR_BANKSIZE+1) & 
-				to_signed(0, DDR_ADDRSIZE+1) & 
-				to_signed(64-1, DDR_CLNMSIZE+1));
+				to_signed(5-1, DDR_BANKSIZE+1) & 
+				to_signed(2**DDR_ADDRSIZE/2-1,   DDR_ADDRSIZE+1) & 
+				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

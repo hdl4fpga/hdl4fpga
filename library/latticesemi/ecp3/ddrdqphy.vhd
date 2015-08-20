@@ -4,7 +4,6 @@ use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
-		period : natural;
 		line_size : natural;
 		byte_size : natural);
 	port (
@@ -16,7 +15,6 @@ entity ddrdqphy is
 		sys_rw : in  std_logic;
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
-		sys_wldg  : in std_logic_vector;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
@@ -56,7 +54,7 @@ architecture ecp3 of ddrdqphy is
 	signal ddrlat : std_logic;
 	signal rw : std_logic;
 	
-	signal wlpha : std_logic_vector(sys_wldg'length-1 downto 0);
+	signal wlpha : std_logic_vector(8-1 downto 0);
 	signal dyndelay : unsigned(8-1 downto 0);
 	signal wlok : std_logic;
 	signal dqi : std_logic_vector(sys_dqi'range);
@@ -65,17 +63,18 @@ architecture ecp3 of ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
+	signal wlrdy : std_logic;
 	signal dqsbufd_rsto : std_logic;
 
 begin
 	rw <= not sys_rw;
+	sys_wlrdy <= wlrdy;
 	adjpha_e : entity hdl4fpga.adjdqs
 	port map (
-		clk => sys_eclk,
-		rdy => sys_wlrdy,
+		clk => sys_sclk,
+		rdy => wlrdy,
 		req => sys_wlreq,
 		smp => wlok,
-		hld => sys_wlnxt,
 		pha => wlpha);
 
 	dqsbuf_b : block
@@ -133,8 +132,8 @@ begin
 		dyndelay3 => dyndelay(3),
 		dyndelay4 => dyndelay(4),
 		dyndelay5 => dyndelay(5),
-		dyndelay6 => '0', --dyndelay(6),
-		dyndelpol => dyndelay(6),
+		dyndelay6 => dyndelay(6),
+		dyndelpol => dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -181,7 +180,7 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
-	wle <= not sys_wlrdy and sys_wlreq;
+	wle <= not wlrdy and sys_wlreq;
 	dqt <= sys_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;

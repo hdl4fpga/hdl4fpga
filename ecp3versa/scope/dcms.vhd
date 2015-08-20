@@ -140,10 +140,13 @@ begin
 		attribute frequency_pin_clkos : string; 
 		attribute frequency_pin_clki  : string; 
 		attribute frequency_pin_clkok : string; 
-		attribute frequency_pin_clkop of pll_i : label is "400.000000";
-		attribute frequency_pin_clkos of pll_i : label is "400.000000";
+--		attribute frequency_pin_clkop of pll_i : label is "400.000000";
+--		attribute frequency_pin_clkos of pll_i : label is "400.000000";
+--		attribute frequency_pin_clkok of pll_i : label is "200.000000";
+		attribute frequency_pin_clkop of pll_i : label is "500.000000";
+		attribute frequency_pin_clkos of pll_i : label is "500.000000";
+		attribute frequency_pin_clkok of pll_i : label is "250.000000";
 		attribute frequency_pin_clki  of pll_i : label is "100.000000";
-		attribute frequency_pin_clkok of pll_i : label is "200.000000";
 
 		signal pll_clkfb : std_logic;
 		signal pll_lck   : std_logic;
@@ -173,7 +176,9 @@ begin
 			PHASEADJ => "0.0", 
 			CLKOK_DIV => 2,
 			CLKOP_DIV => 2,
-			CLKFB_DIV => 4,
+--			CLKFB_DIV => 4,
+--			CLKI_DIV  => 1,
+			CLKFB_DIV => 5,
 			CLKI_DIV  => 1,
 			FEEDBK_PATH => "INTERNAL",
 			FIN => "100.000000")
