@@ -27,7 +27,7 @@ main (int argc, char *argv[])
 
 	int i, j, n;
 	int npkt;
-	unsigned char lfsr = 0xff;
+	unsigned char lfsr = 0;
 
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
@@ -80,6 +80,7 @@ main (int argc, char *argv[])
 			unsigned long long check;
 			int k;
 
+			if (!lfsr) lfsr = 0xff & htobe64(sb_src[j]);
 						        
 			check = 
 				 (((((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
