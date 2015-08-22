@@ -320,7 +320,6 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		period => uclk_period*ddr_div/(ddr_mul*2),
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
 		LINE_SIZE => line_size,

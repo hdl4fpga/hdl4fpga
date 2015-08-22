@@ -81,6 +81,7 @@ begin
 		signal q1, q2 : std_logic;
 		signal sys_eclk_n : std_logic;
 		signal rst : std_logic;
+
 	begin
 		ff0 : entity hdl4fpga.ff
 		port map (

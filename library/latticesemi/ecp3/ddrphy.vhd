@@ -7,7 +7,6 @@ use ecp3.components.all;
 
 entity ddrphy is
 	generic (
-		period : natural;
 		data_phases : natural := 1;
 		cmnd_phases : natural := 2;
 		bank_size : natural := 2;

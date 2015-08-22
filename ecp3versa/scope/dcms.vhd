@@ -6,8 +6,8 @@ library hdl4fpga;
 
 entity dcms is
 	generic (
-		ddr_mul : natural := 10;
-		ddr_div : natural := 3;
+		ddr_mul : natural := 5;
+		ddr_div : natural := 1;
 		sys_per : real := 10.0);
 	port (
 		sys_rst  : in  std_logic;
@@ -174,11 +174,13 @@ begin
 			DUTY => 8,
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			PHASEADJ => "0.0", 
-			CLKOK_DIV => 2,
-			CLKOP_DIV => 2,
+			CLKOK_DIV => ddr_div,
+			CLKOP_DIV => ddr_div,
 --			CLKFB_DIV => 4,
 --			CLKI_DIV  => 1,
-			CLKFB_DIV => 5,
+--			CLKFB_DIV => 5,
+--			CLKI_DIV  => 1,
+			CLKFB_DIV => ddr_mul,
 			CLKI_DIV  => 1,
 			FEEDBK_PATH => "INTERNAL",
 			FIN => "100.000000")
