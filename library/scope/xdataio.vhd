@@ -143,15 +143,18 @@ begin
 --	end process;
 
 	xx_b : process(ddrs_clk)
+--		variable shr32 : std_logic_vector(32 downto 0);
 		variable shr : std_logic_vector(0 to 8-1);
 		variable aux : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 				shr := (others => '1');
+--				shr32 := (others => '1');
 			elsif ddrs_di_rdy='1' then
 				aux := shr(1) xor shr(2) xor shr(3) xor shr(7);
 				shr := aux & shr(0 to 6);
+--				aux := shr(1) xor shr(2) xor shr(3) xor shr(7);
 			end if;
 			aux2 <= shr & not shr & not shr & shr &
 					shr & not shr & not shr & shr;
