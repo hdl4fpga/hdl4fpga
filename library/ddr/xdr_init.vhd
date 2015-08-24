@@ -2,7 +2,7 @@
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
 --                                                                            --
--- Copyright (C) 2015                                                    --
+-- Copyright (C) 2015                                                         --
 --    Miguel Angel Sagreras                                                   --
 --                                                                            --
 -- This source file may be used and distributed without restriction provided  --
