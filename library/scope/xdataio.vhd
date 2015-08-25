@@ -145,38 +145,27 @@ begin
 	xx_b : process(ddrs_clk)
 		variable aux : std_logic;
 		variable aux1 : std_logic;
---		variable shr : std_logic_vector(0 to 8-1);
-		constant g8 : std_logic_vector(8 downto 1) := B"0011_1000";
-		variable s8 : std_logic_vector(g8'range);
---		constant g32 : std_logic_vector(32 downto 1);
+		constant n : natural := 8;
+		constant g : std_logic_vector(n downto 1) := B"0011_1000";
 --		variable s32 : std_logic_vector(g32'range) := B"0010_0010_1000_0000_0000_0000_0000_0000";
+		variable s : std_logic_vector(g'range);
 	begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
---				shr := (others => '1');
-				s8  := (others => '1');
---				s32 := (others => '1');
+				s  := (others => '1');
 			elsif ddrs_di_rdy='1' then
---				aux := shr(1) xor shr(2) xor shr(3) xor shr(7);
---				shr := aux & shr(0 to 6);
-				aux1 := s8(1);
-				for i in g8'range loop
-					aux := s8(i);
-					s8(i) := aux1 xor (s8(s8'right) and g8(i));
+				aux1 := s(1);
+				for i in g'range loop
+					aux  := s(i);
+					s(i) := aux1 xor (s(s'right) and g(i));
 					aux1 := aux;
---					s8(i) := s8((i mod g8'length)+1) xor (s8(s8'right) and g8(i));
+--					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
 				end loop;
---				for i in g32'range loop
---					aux := s32(i);
---					s32(i) := s32((i mod g32'length)+1) xor (s32(s32'right) and g32(i));
---				end loop;
 			end if;
---			aux2 <= shr & not shr & not shr & shr &
---					shr & not shr & not shr & shr;
-			aux2 <= s8 & not s8 & not s8 & s8 &
-					s8 & not s8 & not s8 & s8;
---			aux2 <= not s32(32 downto 25) & s32(24 downto 17) & s32(32 downto 25) & not s32(24 downto 17) &
---			        not s32(16 downto  8) & s32( 8 downto  1) & s32(16 downto  8) & not s32( 8 downto  1);
+			aux2 <= s & not s & not s & s &
+					s & not s & not s & s;
+--			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
+--			        not s(16 downto  8) & s( 8 downto  1) & s(16 downto  8) & not s( 8 downto  1);
 		end if;
 	end process;
 

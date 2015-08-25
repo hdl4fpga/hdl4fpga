@@ -12,6 +12,8 @@
 
 #define PORT	1024
 
+typedef unsigned char lfsr_t;
+
 main (int argc, char *argv[])
 {
 	struct hostent *hostname;
@@ -27,7 +29,7 @@ main (int argc, char *argv[])
 
 	int i, j, n;
 	int npkt;
-	unsigned char lfsr = 0;
+	lfsr_t lfsr = 0;
 
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
@@ -75,8 +77,7 @@ main (int argc, char *argv[])
 		}
 
 		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++) {
-			unsigned char lfbs;
-			unsigned char bit;
+			lfsr_t p = 0x38;
 			unsigned long long check;
 			int k;
 
@@ -95,15 +96,7 @@ main (int argc, char *argv[])
 				abort();
 			}
 
-			lfbs = (lfsr & 0x71);
-			bit = 0;
-
-			for (k = 0; k < 8; k++) {
-				bit  ^= (lfbs & 0x01);
-				lfbs >>= 1;
-			}
-			lfsr >>= 1;
-			lfsr |= ((bit) ? 0x80 : 0x00);
+			lfsr = ((lfsr>>1)|((lfsr&1)<<7)) ^ (((lfsr&1) ? ~0 : 0) & p);
 		}
 	}
 
