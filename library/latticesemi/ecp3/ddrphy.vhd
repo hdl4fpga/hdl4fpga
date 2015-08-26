@@ -65,6 +65,7 @@ entity ddrphy is
 		sys_dqso : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		sys_wlpha : out std_logic_vector(8-1 downto 0) := (others => '-');
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic := '0';
@@ -230,8 +231,13 @@ architecture ecp3 of ddrphy is
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal dqsbufd_arst : std_logic;
+
+	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
+	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
+
 begin
 
+	sys_wlpha <= wlpha(1);
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		cmnd_phases => cmnd_phases,
@@ -307,6 +313,7 @@ begin
 			sys_rw   => sys_rw,
 			sys_wlreq => sys_wlreq,
 			sys_wlrdy => wlrdy(i),
+			sys_wlpha => wlpha(i),
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),

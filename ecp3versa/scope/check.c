@@ -77,11 +77,18 @@ main (int argc, char *argv[])
 		}
 
 		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++) {
+//			lfsr_t p = 0x22800000;
 			lfsr_t p = 0x38;
 			unsigned long long check;
 			int k;
 
-			if (!lfsr) lfsr = 0xff & htobe64(sb_src[j]);
+			if (!lfsr) lfsr = 
+				0xff & htobe64(sb_src[j]);
+
+//				(0x000000ff & ~ htobe64(sb_src[j])) |
+//				(0x0000ff00 &   htobe64(sb_src[j])) |
+//				(0x00ff0000 & ~(htobe64(sb_src[j]) >> 16)) |
+//				(0xff000000 &  (htobe64(sb_src[j]) >> 16));
 						        
 			check = 
 				 (((((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
@@ -89,14 +96,19 @@ main (int argc, char *argv[])
 				   (((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
 				    (((~((unsigned long long)lfsr<<8)&0xff00  | ( (unsigned long long)lfsr<<0)) & 0xffff)));
 
+//				  (((~(unsigned long long)lfsr&0xff000000) | ( (unsigned long long)lfsr&0x00ff0000)) << 32) |
+//				  ((( (unsigned long long)lfsr&0xff000000) | (~(unsigned long long)lfsr&0x00ff0000)) << 16) |
+//				  (((~(unsigned long long)lfsr&0x0000ff00) | ( (unsigned long long)lfsr&0x000000ff)) << 16) |
+//				  ((( (unsigned long long)lfsr&0x0000ff00) | (~(unsigned long long)lfsr&0x000000ff)) <<  0);
+
 			printf("0x%016llx 0x%016llx\n", htobe64(sb_src[j]), check);
 			if (check != htobe64(sb_src[j])){
-				fprintf(stderr, "Failed %d, %d, ", i, j);
-				fprintf(stderr,"0x%016llx 0x%016llx\n", htobe64(sb_src[j]), check);
+				fprintf(stderr, "Failed %d, %d\n", i, j);
+				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", htobe64(sb_src[j])^check, htobe64(sb_src[j]), check);
 				abort();
 			}
 
-			lfsr = ((lfsr>>1)|((lfsr&1)<<7)) ^ (((lfsr&1) ? ~0 : 0) & p);
+			lfsr = ((lfsr>>1)|((lfsr&1)<<(sizeof(lfsr)*8-1))) ^ (((lfsr&1) ? ~0 : 0) & p);
 		}
 	}
 

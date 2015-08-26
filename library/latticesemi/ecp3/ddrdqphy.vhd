@@ -46,6 +46,7 @@ entity ddrdqphy is
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
+		sys_wlpha : out std_logic_vector(8-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmi  : in  std_logic := '-';
@@ -78,7 +79,7 @@ architecture ecp3 of ddrdqphy is
 	signal rw : std_logic;
 	
 	signal wlpha : std_logic_vector(8-1 downto 0);
-	signal dyndelay : unsigned(8-1 downto 0);
+	signal dyndelay : std_logic_vector(8-1 downto 0);
 	signal wlok : std_logic;
 	signal dqi : std_logic_vector(sys_dqi'range);
 
@@ -91,6 +92,7 @@ architecture ecp3 of ddrdqphy is
 
 begin
 	rw <= not sys_rw;
+	sys_wlpha <= wlpha;
 	sys_wlrdy <= wlrdy;
 	adjpha_e : entity hdl4fpga.adjdqs
 	port map (
@@ -133,7 +135,7 @@ begin
 
 	end block;
 
-	dyndelay <= resize(unsigned(wlpha), dyndelay'length);
+	dyndelay <= wlpha;
 	dqsbufd_i : dqsbufd 
 	port map (
 		dqsdel => sys_dqsdel,

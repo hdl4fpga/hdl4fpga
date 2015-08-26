@@ -31,6 +31,7 @@ entity dcms is
 	generic (
 		ddr_mul : natural := 5;
 		ddr_div : natural := 1;
+		ddr_fbdiv : natural := 1;
 		sys_per : real := 10.0);
 	port (
 		sys_rst  : in  std_logic;
@@ -170,6 +171,10 @@ begin
 		attribute frequency_pin_clkos of pll_i : label is "500.000000";
 		attribute frequency_pin_clkok of pll_i : label is "250.000000";
 		attribute frequency_pin_clki  of pll_i : label is "100.000000";
+--		attribute frequency_pin_clkop of pll_i : label is to_string(ddr_mul*1000/(natural(sys_per)*ddr_fbdiv));
+--		attribute frequency_pin_clkos of pll_i : label is to_string(ddr_mul*1000/(natural(sys_per)*ddr_fbdiv));
+--		attribute frequency_pin_clkok of pll_i : label is to_string(ddr_mul*1000/(natural(sys_per)*ddr_fbdiv*ddr_div));
+--		attribute frequency_pin_clki  of pll_i : label is to_string(1000/natural(sys_per));
 
 		signal pll_clkfb : std_logic;
 		signal pll_lck   : std_logic;
@@ -199,12 +204,8 @@ begin
 			PHASEADJ => "0.0", 
 			CLKOK_DIV => ddr_div,
 			CLKOP_DIV => ddr_div,
---			CLKFB_DIV => 4,
---			CLKI_DIV  => 1,
---			CLKFB_DIV => 5,
---			CLKI_DIV  => 1,
 			CLKFB_DIV => ddr_mul,
-			CLKI_DIV  => 1,
+			CLKI_DIV  => ddr_fbdiv,
 			FEEDBK_PATH => "INTERNAL",
 			FIN => "100.000000")
 		port map (

@@ -146,8 +146,9 @@ begin
 		variable aux : std_logic;
 		variable aux1 : std_logic;
 		constant n : natural := 8;
-		constant g : std_logic_vector(n downto 1) := B"0011_1000";
---		variable s32 : std_logic_vector(g32'range) := B"0010_0010_1000_0000_0000_0000_0000_0000";
+		constant g : std_logic_vector(n downto 1) :=
+		B"0011_1000";
+--		B"0010_0010_1000_0000_0000_0000_0000_0000";
 		variable s : std_logic_vector(g'range);
 	begin
 		if rising_edge(ddrs_clk) then
@@ -165,7 +166,7 @@ begin
 			aux2 <= s & not s & not s & s &
 					s & not s & not s & s;
 --			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
---			        not s(16 downto  8) & s( 8 downto  1) & s(16 downto  8) & not s( 8 downto  1);
+--			        not s(16 downto  9) & s( 8 downto  1) & s(16 downto  9) & not s( 8 downto  1);
 		end if;
 	end process;
 

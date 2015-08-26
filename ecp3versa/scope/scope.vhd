@@ -103,14 +103,16 @@ architecture scope of ecp3versa is
 	signal sys_rst   : std_logic;
 	signal valid : std_logic;
 
+	signal wlpha : std_logic_vector(8-1 downto 0);
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
 	-- Multiply by --  10     --   8     --   9     --
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 5;
-	constant ddr_div : natural := 2;
+	constant ddr_mul   : natural := 5;
+	constant ddr_div   : natural := 2;
+	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
 	signal ddr_sclk : std_logic;
@@ -159,6 +161,7 @@ begin
 	generic map (
 		ddr_mul => ddr_mul,
 		ddr_div => ddr_div, 
+		ddr_fbdiv => ddr_fbdiv,
 		sys_per => real(uclk_period/ns))
 	port map (
 		sys_rst => sys_rst,
@@ -204,7 +207,7 @@ begin
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_tCP => uclk_period*ddr_div/ddr_mul,
+		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
 		DDR_DATAPHASES => 1,
@@ -268,11 +271,13 @@ begin
 	sto <= ddrphy_sto(0);
 
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
+	led(4 to 7) <= (others => '1');
 	process (ddr_sclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
 		if rising_edge(ddr_sclk) then
 			led(0 to 3) <= not ddr_eclkph;
+--			led <= not wlpha;
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
 		end if;
@@ -376,6 +381,7 @@ begin
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
+		sys_wlpha => wlpha,
 
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,
@@ -436,9 +442,5 @@ begin
 --	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
 --	led(5) <= not phy1_rx_dv;
 --	led(6) <= not mii_txen;
-	led(4) <= '1'; --not tpo(0);
-	led(5) <= '1'; --not tpo(1);
-	led(6) <= '1'; --not tpo(2);
-	led(7) <= '1'; --not tpo(3);
 
 end;
