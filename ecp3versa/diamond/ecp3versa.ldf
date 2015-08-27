@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="scope">
+<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-7FN484C" default_implementation="scope">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
