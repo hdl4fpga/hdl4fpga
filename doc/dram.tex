@@ -6,8 +6,7 @@
 \usetheme[secheader=true]{Madrid}
 \useinnertheme{rectangles}
 \usepackage{tikz}
-\title{Memorias}
-\subtitle{Velocidad y Volumen}
+\title{FPGA \& DDR DRAM}
 \author[msagre]{Miguel A Sagreras}
 \date[2015]{}
 %\institution[short name]{long name}
@@ -18,57 +17,63 @@
 \end{frame}
 
 \section{Primeras computadoras}
-\subsection{Electromecánicas Analógicas}
+\subsection{Tecnología analógica}
 \begin{frame}
 \frametitle{Torpedo Data Computer}
-\begin{center}
-\hfill
-\includegraphics[height=3cm]{TDC-image.jpg}
-\hfill
-\includegraphics[height=3cm]{TDC-inside.jpg}
-\end{center}
+%\subsection{Electromecánicas Analógicas}
+\includegraphics[width=3.2cm]{TDC-image.jpg} 
+
+%\includegraphics[width=3.2cm]{TDC-inside.jpg}
 \end{frame}
 
-\subsection{Electromecánicas Digitales}
+\subsection{Tecnología digital electromecánica}
+
+\begin{frame}
+\frametitle{Relay}
+\framesubtitle{Componente básico}
+\begin{minipage}[c]{6cm}
+	\begin{center}
+		\includegraphics[height=3cm]{relay-imagen.jpg}
+	\end{center}
+\end{minipage}
+\begin{minipage}[c]{5cm}
+	\begin{center}
+		\includegraphics[height=3cm]{relay-diagrama.png}
+	\end{center}
+\end{minipage}
+\end{frame}
+
 \begin{frame}
 \frametitle{Z3}
-\begin{itemize}
-	\item Año 1941
-	\item Diseño Konrad Zuse
-	\item Proposito : aeroelasticidad
-	\item 2000 relays
-	\item Palabra de 22 bits
-	\item Memoria 64 palabras
-	\item Frecuencia entre 5.3 Hz
-	\item 4Kw
-	\item 1 Tonelada
-\end{itemize}
-\begin{center}
-\includegraphics[height=3cm]{Z3_Deutsches_Museum.JPG}
-\end{center}
+\begin{minipage}[c]{5.25cm}
+	\begin{itemize}
+		\item Año 1941
+		\item Diseño Konrad Zuse
+		\item Proposito : aeroelasticidad
+		\item Palabra de 22 bits
+		\item Memoria 64 palabras
+		\item Frecuencia alrededor 5 Hz
+		\item 2000 relays
+		\item 4 KW
+		\item Peso 1 Tonelada
+	\end{itemize}
+\end{minipage}
+\begin{minipage}[c]{6.4cm}
+\includegraphics[width=6.4cm]{Z3_Deutsches_Museum.JPG}
+\end{minipage}
 \end{frame}
 
-\subsection{Electromecánicas Digitales}
-\begin{frame}
-\frametitle{Relays}
-\begin{center}
-\hfill
-\includegraphics[height=3cm]{relay-imagen.jpg}
-\hfill
-\includegraphics[height=3cm]{relay-diagrama.png}
-\end{center}
-\end{frame}
-
-\subsection{Electrónicas Digitales}
+\subsection{Técnolgia digital electrónica}
 \begin{frame}
 \frametitle{Atanasoff-Berry Computer}
 \begin{itemize}
 	\item Año 1942
 	\item Primera computadora electrócnica 
-	\item Resolucion de equaciones diferenciales
-	\item mas de 300 tubos de vacio, 320 kg
-	\item 2 Drum renerative capacitor memory DRAM 1600 bits
-	\item 30 operaciones por segundo, clock the 60 Hz
+	\item Resolución de equaciones diferenciales
+	\item Más de 300 tubos de vacio
+	\item 2 DRUM de memoria capacitiva 1600 bits
+	\item 30 operaciones por segundo
+	\item 320 kg
 \end{itemize}
 \end{frame}
 
@@ -78,29 +83,38 @@
 	\item Año 1943-1945
 	\item Criptoanalisis
 	\item Programación mediante teclas y enchufes
-	\item mas de 1600 tubos de vacio
+	\item Más de 1600 tubos de vacio
 	\item Apodada Colosus por su tamaño.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{ENIAC o Electronic Numerical Integrator And Computer}
+\begin{center}
+	\includegraphics[width=11cm]{ENIAC.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{ENIAC o Electronic Numerical Integrator And Computer}
+\framesubtitle{Descripción}
 \begin{itemize}
 	\item Año 1943
-	\item Cálculo de trayectoria de misiles
-	\item Programación mediante teclas y enchufes
-	\item Velocidad de processamiento $10^{3}$ más rápida que las electromecánicas
-	\item Recursos
+	\item Proposito : cálculo de trayectoria de misiles
+	\item Programación : mediante teclas y clavijas
+	\item $10^{3}$ más rápida en procesamiento que las electromecánicas
+	\item Memoria : 100 palabras de 10 digitos decimales o 1000 bytes
+	\item Recursos :
 		\begin{itemize}
-			\item más de 17000 tubos de vacio
+			\small
+			\item 17.000 tubos de vacio
 			\item 7.200 diodos de cristal
 			\item 70.000 resistencias
 			\item 10.000 capacitores
 			\item 5.000.000 de soldaduras
-			\item 150Kw
-			\item 167 mm2
-			\item 500.000 de dollares
-			\item Memoria 100 palabras de 10 digitos decimales o 1000 bytes
+			\item 150 KW
+			\item 167 $m^{2}$
+			\item 500.000 USD o 6.000.000 USD actualizados
 		\end{itemize}
 \end{itemize}
 \end{frame}
@@ -109,21 +123,15 @@
 \frametitle{EDSAC o Electronic Delay Storage Automatic Calculator}
 \begin{itemize}
 	\item Año 1949
-	\item Cálculo de trayectoria de misiles
-	\item Programación mediante teclas y enchufes
-	\item Recursos
+	\item Propositos : Cálculo de trayectoria de misiles
+	\item Programación : mediante teclas y enchufes
+	\item Recursos :
 		\begin{itemize}
 			\item Tubos de vacio como logica
 			\item Memoria Lineas de Retardo de mercurio
 			\item Capacidad 1024 palabras de 36 bits en 1955
 		\end{itemize}
 \end{itemize}
-\end{frame}
-
-\subsection{Memoria}
-\begin{frame}
-\frametitle{Memoria de linea de retardo}
-\includegraphics[height=3cm]{Mercury_memory.jpg}
 \end{frame}
 
 \subsection{Memoria}
@@ -142,9 +150,9 @@
 			\end{itemize}
 	\end{itemize}
 \end{minipage}
-\begin{minipage}[t]{4cm}
+\begin{minipage}[c]{4cm}
 	\begin{center}
-		\includegraphics[width=4cm]{Mercury_memory.jpg}
+		\includegraphics[width=4cm]{delay_line.png}
 	\end{center}
 \end{minipage}
 \end{frame}
