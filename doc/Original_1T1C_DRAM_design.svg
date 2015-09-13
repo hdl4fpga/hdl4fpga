@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="800px" height="600px" viewBox="0 0 800 600" enable-background="new 0 0 800 600" xml:space="preserve">
+<g>
+	<g>
+		<polygon fill="#B3B3B3" points="381.5,343.414 381.5,441.5 423.5,441.5 423.5,425.551 680.182,425.551 680.182,343.414 		"/>
+	</g>
+	<g>
+		<polygon fill="none" stroke="#000000" points="381.5,343.414 381.5,441.5 423.5,441.5 423.5,425.551 680.182,425.551 
+			680.182,343.414 		"/>
+	</g>
+</g>
+<rect x="16" y="122" fill="#662D91" stroke="#000000" width="768" height="126.5"/>
+<path fill="#00FFFF" stroke="#000000" d="M192,122v61.062c0,0,0,20.353-19.943,20.353c-19.945,0-119.665,0-119.665,0
+	s-19.942,0-19.942-20.353c0-20.354,0-61.062,0-61.062"/>
+<path fill="#00FFFF" stroke="#000000" d="M767.551,122.586v61.062c0,0-0.051,19.852-14.051,19.852c-51.947,0-384,0-384,0
+	S352,204,352,183.647c0-20.354,0-61.062,0-61.062"/>
+<rect x="192.089" y="23.5" fill="#B3B3B3" stroke="#000000" width="160.683" height="82.137"/>
+<text transform="matrix(1 0 0 1 229.9131 59.5957)" font-family="'ArialMT'" font-size="18">Word Line</text>
+<text transform="matrix(1 0 0 1 229.9131 81.1963)" font-family="'ArialMT'" font-size="18">Poly-silicon</text>
+<rect x="510.818" y="24" fill="#B3B3B3" stroke="#000000" width="256.682" height="82.137"/>
+<text transform="matrix(1 0 0 1 623.1465 60.0957)" font-family="'ArialMT'" font-size="18">Vdd</text>
+<text transform="matrix(1 0 0 1 593.6455 81.6953)" font-family="'ArialMT'" font-size="18">Poly-silicon</text>
+<text transform="matrix(1 0 0 1 77.2046 157.7344)" font-family="'ArialMT'" font-size="18">Bit Line, </text>
+<text transform="matrix(1 0 0 1 100.4697 179.334)" font-family="'ArialMT'" font-size="18">N+</text>
+<text transform="matrix(1 0 0 1 420.0195 169.1211)" font-family="'ArialMT'" font-size="18">N+</text>
+<text transform="matrix(1 0 0 1 305.9971 234)" font-family="'ArialMT'" font-size="18">P</text>
+<rect x="15.5" y="441.5" fill="#662D91" stroke="#000000" width="768" height="126.5"/>
+<path fill="#00FFFF" stroke="#000000" d="M151.5,441v61.062c0,0,0,20.353-14.943,20.353c-14.945,0-89.665,0-89.665,0
+	s-14.942,0-14.942-20.353c0-20.354,0-61.062,0-61.062"/>
+<path fill="#00FFFF" stroke="#000000" d="M425.5,441.586v61.062c0,0,0,18.852-16,18.852c-14.194,0-82,0-82,0
+	s-15.551,1.5-15.551-18.854s0-61.062,0-61.062"/>
+<rect x="152.817" y="342.5" fill="#B3B3B3" stroke="#000000" width="160.683" height="82.137"/>
+<text transform="matrix(1 0 0 1 190.6416 378.5957)" font-family="'ArialMT'" font-size="18">Word Line</text>
+<text transform="matrix(1 0 0 1 190.6416 400.1963)" font-family="'ArialMT'" font-size="18">Poly-silicon</text>
+<text transform="matrix(1 0 0 1 506.3271 387.5)" font-family="'ArialMT'" font-size="18">Poly-silicon</text>
+<text transform="matrix(1 0 0 1 60.2349 476.7344)" font-family="'ArialMT'" font-size="18">Bit Line, </text>
+<text transform="matrix(1 0 0 1 83.5 498.334)" font-family="'ArialMT'" font-size="18">N+</text>
+<text transform="matrix(1 0 0 1 355.9492 488.1211)" font-family="'ArialMT'" font-size="18">N+</text>
+<text transform="matrix(1 0 0 1 305.4971 553)" font-family="'ArialMT'" font-size="18">P</text>
+<path fill="#00FFFF" stroke="#000000" d="M777.05,442v61.062c0,0,0.45,20.438-25.55,20.438c-39.196,0-266,0-266,0
+	s-22-0.085-22-20.438c0-20.354,0-61.062,0-61.062"/>
+<text transform="matrix(1 0 0 1 593.5 485.5)" font-family="'ArialMT'" font-size="18">N+</text>
+<rect x="735.5" y="343.5" fill="#B3B3B3" stroke="#000000" width="41.55" height="98"/>
+<text transform="matrix(1 0 0 1 744.4551 389.5)" font-family="'MyriadPro-Regular'" font-size="12">GND</text>
+</svg>
