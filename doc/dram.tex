@@ -134,7 +134,7 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{UNIVAC I (UNIVersal Automatic Computer I}
+\frametitle{UNIVAC I (UNIVersal Automatic Computer I}
 	\begin{itemize}
 		\item Periodo 1951–1954
 		\item Proposito comercial
@@ -160,6 +160,15 @@
 	\end{center}
 \end{frame}
 
+\subsection{Transistores}
+\begin{frame}
+	\begin{itemize}
+		\item 1953, Universidad de Manchester, 92 transistores, 550 diodos, 48 bits, 150 Watts
+		\item 1954, Bell Laboratories
+		\item 1957 IBM 608
+	\end{itemize}
+\end{frame}
+
 \subsection{Memoria}
 \begin{frame}
 \frametitle{Memoria de linea de retardo}
@@ -181,47 +190,46 @@
 
 \begin{frame}
 \frametitle{Drum memory}
-\begin{minipage}[b]{7.5cm}
-	\begin{itemize}
-		\item Año 1932
-		\item Gustav Tauschek
-		\item Capacidad de 500 Kbits o 62.5 Kbytes
-		\item Precursores de los HDD o discos rígidos
-	\end{itemize}
-\end{minipage}
-\begin{minipage}[c]{4cm}
-	\begin{center}
-		\includegraphics[height=4cm]{Pamiec_bebnowa_1.jpg}
-	\end{center}
-\end{minipage}
+	\begin{minipage}[b]{7.5cm}
+		\begin{itemize}
+			\item Año 1932
+			\item Gustav Tauschek
+			\item Capacidad de 500 Kbits o 62.5 Kbytes
+			\item Precursores de los HDD o discos rígidos
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}[c]{4cm}
+		\begin{center}
+			\includegraphics[height=4cm]{Pamiec_bebnowa_1.jpg}
+		\end{center}
+	\end{minipage}
 \end{frame}
 
 \begin{frame}
 \frametitle{Core memory}
-\begin{minipage}[c]{7.5cm}
-	\begin{itemize}
-		\item Periodo 1955-1975
-		\item Tecnología toroides mágneticos
-		\item Lectura destructiva
-		\item Costo de 1.00(1955) a 0.01(1975) USD por bit
-		\item Desplazó a las tecnología de memorias :
-			\begin{itemize}
+	\begin{minipage}[c]{7.5cm}
+		\begin{itemize}
+			\item Periodo 1955-1975
+			\item Tecnología toroides mágneticos
+			\item Lectura destructiva
+			\item Costo de 1.00(1955) a 0.01(1975) USD por bit
+			\item Desplazó a las tecnología de memorias :
+				\begin{itemize}
 				\item DRUM
-				\item Tubos de Vacio
-				\item Transistores
-			\end{itemize}
-		\item Fabricadas por sastres en el este asiático
-	\end{itemize}
-\end{minipage}
-\begin{minipage}[c]{4cm}
-	\includegraphics[width=4cm]{Ferrite_core_memory.eps} \\ \\
-	\includegraphics[width=2.5cm]{Coincident-current_magnetic_core.eps}
-\end{minipage}
+					\item Tubos de Vacio
+					\item Transistores
+				\end{itemize}
+			\item Fabricadas por sastres en el este asiático
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}[c]{4cm}
+		\includegraphics[width=4cm]{Ferrite_core_memory.eps} \\ \\
+		\includegraphics[width=2.5cm]{Coincident-current_magnetic_core.eps}
+	\end{minipage}
 \end{frame}
 
-\section{Memoria Dinámica}
 \begin{frame}
-\frametitle{DRAM}
+\frametitle{DRAM Memoria dinámica}
 	\begin{minipage}[c]{4.5cm}
 		\begin{center}
 			\begin{itemize}
@@ -239,6 +247,7 @@
 	\end{minipage}
 \end{frame}
 
+\subsection{DRAM}
 \begin{frame}
 \frametitle{Banco de Memoria}
 	\begin{center}
@@ -263,35 +272,48 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{DRAM : Diagrama en Bloques}
+\frametitle{Ley de Moore}
+	\begin{itemize}
+		\item 1975
+		\item Gordon E. Moore
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama en Bloques}
 	\begin{center}
 		\includegraphics[width=10cm]{chip.eps}
 	\end{center}
 \end{frame}
 
-\section{Secuencia de acceso}
 \begin{frame}
+\frametitle{Secuencia de acceso}
 	\begin{itemize}
-		\item Acceder a la fila
+		\item Acceder a la fila con las lineas precargardas
+		\item Conectar el amplificador de sensado
 		\item Acceder a la columna
 		\item Recuperar el valor leido
+		\item Percargar las lineas a la mitad de la tensión entre 0 y 1
 	\end{itemize}
 \end{frame}
 
-\section{Timing diagram}
+\subsection{Diagrama de tiempos}
 \begin{frame}
-\begin{figure}[!htb]
-\centering
-\includegraphics[scale=1.0]{dram-timings.eps}
-\end{figure}
+	\begin{center}
+		\includegraphics[width=11cm]{dram-timings.eps}
+	\end{center}
 \end{frame}
 
-\section{Timing diagram}
 \begin{frame}
-\begin{figure}[!htb]
-\centering
-\includegraphics[scale=1.0]{ddrdram-timings.eps}
-\end{figure}
+	\begin{center}
+		\includegraphics[width=11cm]{sdrdram-timings.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+		\includegraphics[width=11cm]{ddrdram-timings.eps}
+	\end{center}
 \end{frame}
 
 \section{fpga}
