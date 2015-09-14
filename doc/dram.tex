@@ -110,7 +110,7 @@
 	\item Proposito : cálculo de trayectoria de misiles
 	\item Programación por interruptores y clavijas
 	\item $10^{3}$ más rápida en procesamiento que las electromecánicas
-	\item Memoria : 100 palabras de 10 digitos decimales o 1000 bytes
+	\item Memoria : 100 palabras de 10 digitos decimales o 4100 bits
 	\item Recursos :
 		\begin{itemize}
 			\small
@@ -203,7 +203,7 @@
 		\item Periodo 1955-1975
 		\item Tecnología toroides mágneticos
 		\item Lectura destructiva
-		\item Costo de 1.00(1955) USD a 0.01(1975) USD por bit
+		\item Costo de 1.00(1955) a 0.01(1975) USD por bit
 		\item Desplazó a las tecnología de memorias :
 			\begin{itemize}
 				\item DRUM
@@ -219,41 +219,38 @@
 \end{minipage}
 \end{frame}
 
-\subsection{DRAM}
+\section{Memoria Dinámica}
 \begin{frame}
-\begin{minipage}[c]{6cm}
-	\begin{center}
-		\begin{itemize}
-			\item Año 1966
-			\item Robert Dennard
-			\item Un transistor por bit
-		\end{itemize}
-	\end{center}
-\end{minipage}
-\begin{minipage}[c]{5cm}
-	\begin{center}
-		\includegraphics[width=4cm]{Original_1T1C_DRAM_design.eps}
-	\end{center}
-\end{minipage}
-\hfill
-\hfill
-\begin{center}
-	\includegraphics[width=7cm]{onetransistor.png} 
-\end{center}
+\frametitle{DRAM}
+	\begin{minipage}[c]{4.5cm}
+		\begin{center}
+			\begin{itemize}
+				\item Año 1966
+				\item Robert Dennard
+				\item Un transistor por bit
+			\end{itemize}
+		\end{center}
+	\end{minipage}
+	\begin{minipage}[c]{6.5cm}
+		\begin{center}
+		\includegraphics[width=6.5cm]{onetransistor.png} 
+			%	\includegraphics[width=5cm]{Original_1T1C_DRAM_design.eps}
+		\end{center}
+	\end{minipage}
 \end{frame}
 
 \begin{frame}
-\frametitle{Estructura de la  memoria dinámica}
+\frametitle{Banco de Memoria}
 	\begin{center}
 		\includegraphics[width=9cm]{membank.eps}
 	\end{center}
 \end{frame}
 
-\subsection{Multiplexado de DRAM}
 \begin{frame}
+\frametitle{Multiplexado de la dirección}
 	\begin{itemize}
 		\item Año 1966
-		\item Robert Proebsting
+		\item Robert Proebsting cofundador de Mostek
 		\item Divide la dirección en dos y multiplexa las partes
 			\begin{itemize}
 				\item Filas \textbf{Row}
@@ -265,12 +262,11 @@
 	\end{itemize}
 \end{frame}
 
-\section{Banco de Memoria}
 \begin{frame}
-\begin{figure}[!htb]
-\centering
-\includegraphics[scale=1.0]{chip.eps}
-\end{figure}
+\frametitle{DRAM : Diagrama en Bloques}
+	\begin{center}
+		\includegraphics[width=10cm]{chip.eps}
+	\end{center}
 \end{frame}
 
 \section{Secuencia de acceso}
