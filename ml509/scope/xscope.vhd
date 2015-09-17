@@ -35,7 +35,7 @@ use hdl4fpga.std.all;
 library ecp3;
 use ecp3.components.all;
 
-architecture scope of ecp3versa is
+architecture scope of ml509 is
 	constant data_phases : natural := 1;
 	constant cmmd_phases : natural := 2;
 	constant bank_size : natural := 2;
