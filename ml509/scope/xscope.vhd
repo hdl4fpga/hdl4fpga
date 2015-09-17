@@ -21,26 +21,31 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
-library unisim;
-use unisim.vcomponents.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
+--use hdl4fpga.cgafont.all;
 
-architecture scope of ml509 is
+library ecp3;
+use ecp3.components.all;
+
+architecture scope of ecp3versa is
+	constant data_phases : natural := 1;
+	constant cmmd_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant col_size  : natural := 6;
-	constant nibble_size : natural := 4;
-	constant byte_size : natural := 8;
-	constant data_size : natural := 16;
+	constant line_size : natural := 4*ddr3_dq'length;
+	constant word_size : natural := ddr3_dq'length;
+	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
 
-	constant uclk_period : real := 10.0;
+	constant ns : natural := 1000;
+	constant uclk_period : natural := 10*ns;
 
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
@@ -50,28 +55,42 @@ architecture scope of ml509 is
 
 	signal input_clk : std_logic;
 
-	signal ddrs_clk0  : std_logic;
-	signal ddrs_clk90 : std_logic;
-	signal ddrs_clk180 : std_logic;
+	signal ddrs_clks  : std_logic_vector(0 to 2-1);
 	signal ddr_lp_clk : std_logic;
-	signal ddr_dqsz : std_logic_vector(8-1 downto 0);
-	signal ddr_dqsi : std_logic_vector(8-1 downto 0);
-	signal ddr_dqso : std_logic_vector(8-1 downto 0);
-	signal ddr_dm  : std_logic_vector(8-1 downto 0);
-	signal ddr_st_dqs : std_logic_vector(8-1 downto 0);
+	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
-	signal ddr_dqz : std_logic_vector(64-1 downto 0);
-	signal ddr_dqi : std_logic_vector(64-1 downto 0);
-	signal ddr_dqo : std_logic_vector(64-1 downto 0);
+	signal sto : std_logic;
+	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cs : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_ras : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_we : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
+	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
+	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
+	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
+	signal ddrphy_wlreq : std_logic;
+	signal ddrphy_wlrdy : std_logic;
 
-	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(phy_rxd'range);
+	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
 	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy_txd'range);
+	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
 
-	signal video_clk : std_logic;
-	signal video_clk90 : std_logic;
+	signal vga_clk : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
@@ -79,264 +98,349 @@ architecture scope of ml509 is
 	signal vga_red : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
+	signal dvdelay : std_logic_vector(0 to 2);
 
 	signal sys_rst   : std_logic;
-	signal sys_clk   : std_logic;
-	signal scope_rst : std_logic;
-	signal ictlr_clk : std_logic;
-	signal ictlr_rdy : std_logic;
-	signal ictlr_rst : std_logic;
+	signal valid : std_logic;
 
+	signal wlpha : std_logic_vector(8-1 downto 0);
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
 	-- Multiply by --  10     --   8     --   9     --
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 13;
-	constant ddr_div : natural := 4;
+	constant ddr_mul   : natural := 5;
+	constant ddr_div   : natural := 2;
+	constant ddr_fbdiv : natural := 1;
+	constant r : natural := 0;
+	constant f : natural := 1;
+	signal ddr_sclk : std_logic;
+	signal ddr_sclk2x : std_logic;
+	signal ddr_eclk  : std_logic;
 
+	signal input_rst : std_logic;
+	signal ddrs_rst : std_logic;
+	signal mii_rst : std_logic;
+	signal vga_rst : std_logic;
+
+	signal debug_clk : std_logic;
+	signal yyyy : std_logic_vector(ddrphy_a'range);
+
+function shuffle (
+	constant arg : byte_vector)
+	return byte_vector is
+	variable dat : byte_vector(arg'length-1 downto 0);
+	variable val : byte_vector(dat'range);
+begin
+	dat := arg;
+	for i in 2-1 downto 0 loop
+		for j in dat'length/2-1 downto 0 loop
+			val(dat'length/2*i+j) := dat(2*j+i);
+		end loop;
+	end loop;
+	return val;
+end;
 begin
 
-	sys_rst <= gpio_sw_c;
-
-	clkin_ibufg : ibufg
-	port map (
-		I => user_clk,
-		O => sys_clk);
+	process (fpga_gsrn, clk)
+		variable aux : std_logic_vector(0 to 3);
+	begin
+		if fpga_gsrn='0' then
+			sys_rst <= '1';
+			aux := (others => '0');
+		elsif rising_edge(clk) then
+			sys_rst <= not aux(0);
+			if aux(0)='0' then
+				aux := inc(gray(aux));
+			end if;
+		end if;
+	end process;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
 		ddr_div => ddr_div, 
-		sys_per => uclk_period)
+		ddr_fbdiv => ddr_fbdiv,
+		sys_per => real(uclk_period/ns))
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => sys_clk,
-		ictlr_clk => ictlr_clk,
+		sys_clk => clk,
+
 		input_clk => input_clk,
-		ddr_clk0 => ddrs_clk0,
-		ddr_clk90 => ddrs_clk90,
-		video_clk => video_clk,
-		video_clk90 => video_clk90,
-		gtx_clk => gtx_clk,
-		dcm_lckd => dcm_lckd);
+		ddr_eclkph => ddr_eclkph,
+		ddr_eclk => ddr_eclk,
+		ddr_sclk => ddr_sclk, 
+		ddr_sclk2x => ddr_sclk2x, 
+		video_clk0 => vga_clk,
+		dcms_lckd => dcm_lckd);
 
-	scope_rst <= not dcm_lckd or not ictlr_rdy;
-	ictlr_rst <= not dcm_lckd;
-	dvi_reset <= dcm_lckd;
-	phy_reset <= dcm_lckd;
+	rsts_b : block
+		port (
+			grst : in  std_logic;
+			clks : in  std_logic_vector(0 to 3);
+			rsts : out std_logic_vector(0 to 3));
+		port map (
+			grst => dcm_lckd,
+			clks(0) => input_clk,
+			clks(1) => ddr_sclk,
+			clks(2) => phy1_125clk,
+			clks(3) => vga_clk,
+			rsts(0) => input_rst,
+			rsts(1) => ddrs_rst,
+			rsts(2) => mii_rst,
+			rsts(3) => vga_rst);
+	begin
+		rsts_g: for i in clks'range generate
+			process (clks(i))
+				variable rsta : std_logic;
+			begin
+				if rising_edge(clks(i)) then
+					rsts(i) <= rsta;
+					rsta    := not grst;
+				end if;
+			end process;
+		end generate;
+	end block;
 
+	ddrs_clks <= (others => ddr_sclk);
+--	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		strobe => "INTERNAL",
-		ddr_std => 2,
-		xd_len => 8,
-		tDDR => (uclk_period*real(ddr_div))/real(ddr_mul))
+		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_STD => 3,
+		DDR_STROBE => "INTERNAL",
+		DDR_DATAPHASES => 1,
+		DDR_BANKSIZE => ddr3_b'length,
+		DDR_ADDRSIZE => ddr3_a'length,
+		DDR_CLMNSIZE => 7,
+		DDR_LINESIZE => line_size,
+		DDR_WORDSIZE => word_size,
+		DDR_BYTESIZE => byte_size,
+		xd_len  => 8)
 	port map (
-		sys_rst => scope_rst,
 
-		capture_clk => input_clk,
+--		input_rst => input_rst,
+		input_clk => input_clk,
 
-		ddr_rst => open,
-		ddrs_clk0  => ddrs_clk0,
-		ddrs_clk90 => ddrs_clk90,
-		ddr_cke => ddr2_cke(0),
-		ddr_cs  => ddr2_cs(0),
-		ddr_ras => ddr2_ras,
-		ddr_cas => ddr2_cas,
-		ddr_we  => ddr2_we,
-		ddr_ba  => ddr2_ba(bank_size-1 downto 0),
-		ddr_a   => ddr2_a(addr_size-1 downto 0),
-		ddr_dm  => ddr_dm(data_size/byte_size-1 downto 0),
-		ddr_dqsz => ddr_dqsz(1 downto 0),
-		ddr_dqsi => ddr_dqsi(1 downto 0),
-		ddr_dqso => ddr_dqso(1 downto 0),
-		ddr_dqz  => ddr_dqz(data_size-1 downto 0),
-		ddr_dqi  => ddr_dqi(data_size-1 downto 0),
-		ddr_dqo  => ddr_dqo(data_size-1 downto 0),
-		ddr_odt => ddr2_odt(0),
-		ddr_st_lp_dqs => ddr_st_dqs(1 downto 0),
+		ddrs_rst => ddrs_rst,
+		ddrs_clks => ddrs_clks,
+		ddr_rst  => ddrphy_rst(0),
+		ddr_cke  => ddrphy_cke(0),
+		ddr_wlreq => ddrphy_wlreq,
+		ddr_wlrdy => ddrphy_wlrdy,
+		ddr_cs   => ddrphy_cs(0),
+		ddr_ras  => ddrphy_ras(0),
+		ddr_cas  => ddrphy_cas(0),
+		ddr_we   => ddrphy_we(0),
+		ddr_b    => ddrphy_b(ddr3_b'length-1 downto 0),
+		ddr_a    => ddrphy_a(ddr3_a'length-1 downto 0),
+		ddr_dmi  => ddrphy_dmi,
+		ddr_dmt  => ddrphy_dmt,
+		ddr_dmo  => ddrphy_dmo,
+		ddr_dqst => ddrphy_dqst,
+		ddr_dqsi => ddrphy_dqsi,
+		ddr_dqso => ddrphy_dqso,
+		ddr_dqi  => ddrphy_dqi2,
+		ddr_dqt  => ddrphy_dqt,
+		ddr_dqo  => ddrphy_dqo,
+		ddr_odt  => ddrphy_odt(0),
+		ddr_sto  => ddrphy_sto,
+		ddr_sti  => ddrphy_sti,
 
-		mii_rxc  => phy_rxclk,
+--		mii_rst  => mii_rst,
+		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => gtx_clk,
+		mii_txc  => phy1_125clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
-		vga_clk   => video_clk,
+--		vga_rst   => vga_rst,
+		vga_clk   => vga_clk,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
 		vga_frm   => vga_frm,
 		vga_blank => vga_blank,
-		vga_red   => vga_red,
-		vga_green => vga_green,
-		vga_blue  => vga_blue);
-
-	vga_iob_e : entity hdl4fpga.vga2ch7301c_iob
-	port map (
-		vga_clk   => video_clk,
-		vga_clk90 => video_clk90,
-		vga_hsync => vga_hsync,
-		vga_vsync => vga_vsync,
-		vga_blank => vga_blank,
-		vga_frm   => vga_frm,
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue,
+		tpo => tpo);
 
-		dvi_xclk_p => dvi_xclk_p,
-		dvi_xclk_n => dvi_xclk_n,
-		dvi_v => dvi_v,
-		dvi_h => dvi_h,
-		dvi_de => dvi_de,
-		dvi_d => dvi_d);
+	ddrphy_rst(1) <= ddrphy_rst(0);
+	sto <= ddrphy_sto(0);
 
-	phy_txer <= '0';
-	phy_mdc  <= '0';
-	phy_mdio <= '0';
+--	ddrphy_sti <= (others => ddrphy_cfgo(0));
+	led(4 to 7) <= (others => '1');
+	process (ddr_sclk)
+		variable q : std_logic_vector(0 to 2);
+	begin
+		if rising_edge(ddr_sclk) then
+			led(0 to 3) <= not ddr_eclkph;
+--			led <= not wlpha;
+			q := q(1 to q'right) & ddrphy_sto(0);
+			ddrphy_sti <= (others => q(0));
+		end if;
+	end process;
+
+	ddrphy_dqi2 <= ddrphy_dqi;
+
+--	process (ddr_sclk)
+--		subtype xxxx is std_logic_vector(ddrphy_a'range);
+--		type xxxx_vector is array (0 to 7) of xxxx;
+--		variable xxxx1 : xxxx_vector;
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			xxxx1 := xxxx1(1 to xxxx1'right) & ddrphy_a;
+--			yyyy <= xxxx1(0);
+--		end if;
+--	end process;
+--	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
+
+--	debug_clk <= ddrphy_cfgo(0);
+--	debug_clk <= ddr3_dqs(0);
+--	process (debug_clk)
+--		constant n : natural := 8;
+--		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
+--		variable aux1 : std_logic_vector(ddrphy_dqi'length-1 downto 0) := (others => '0');
+--		variable edge : std_logic;
+--	begin
+--		if rising_edge(debug_clk) then
+--			if (ddrphy_cfgo(0) xor edge)='1' then
+--				aux1 := aux & aux1(63 downto n);
+--				aux1 := aux1(aux1'left-1 downto aux1'right) & ddrphy_cfgo(0);
+--				if ddrphy_sto(0)='1' then
+--					ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
+--				else
+--					ddrphy_dqi <= ddrphy_dqii;
+--				end if;
+--				aux := inc(gray(aux));
+--				aux := std_logic_vector(unsigned(aux)+1);
+--			end if;
+--			edge := ddrphy_cfgo(0);
+--		end if;
+--	end process;
+--
+--	process (ddr_sclk)
+--		variable xxx : byte_vector(0 to 7);
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			if ddrphy_sto(0)='1' then
+--				xxx := to_bytevector(ddrphy_dqi);
+--				for i in xxx'range loop
+--					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
+--				end loop;
+--				ddrphy_dqi <= to_stdlogicvector(shuffle(xxx));
+--			end if;
+--		end if;
+--	end process;
+--
+--	process (ddr_sclk)
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
+--		end if;
+--	end process;
+
+--	ddrphy_dqi <= 
+--		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
+--		x"aa_aa_aa_aa_aa_aa_aa_aa";
+
+	ddrphy_e : entity hdl4fpga.ddrphy
+	generic map (
+		BANK_SIZE => ddr3_b'length,
+		ADDR_SIZE => ddr3_a'length,
+		LINE_SIZE => line_size,
+		WORD_SIZE => word_size,
+		BYTE_SIZE => byte_size)
+	port map (
+		sys_sclk => ddr_sclk,
+		sys_sclk2x => ddr_sclk2x, 
+		sys_eclk => ddr_eclk,
+		phy_rst => ddrs_rst,
+
+		sys_rw => sto,
+		sys_rst => ddrphy_rst, 
+		sys_pha => ddr_eclkph,
+		sys_wlreq => ddrphy_wlreq,
+		sys_wlrdy => ddrphy_wlrdy,
+		sys_cke => ddrphy_cke,
+		sys_cs  => ddrphy_cs,
+		sys_ras => ddrphy_ras,
+		sys_cas => ddrphy_cas,
+		sys_we  => ddrphy_we,
+		sys_b   => ddrphy_b,
+		sys_a   => ddrphy_a,
+		sys_dqsi => ddrphy_dqsi,
+		sys_dqst => ddrphy_dqst,
+		sys_dqso => ddrphy_dqso,
+		sys_dmi => ddrphy_dmo,
+		sys_dmt => ddrphy_dmt,
+		sys_dmo => ddrphy_dmi,
+		sys_dqi => ddrphy_dqi,
+		sys_dqt => ddrphy_dqt,
+		sys_dqo => ddrphy_dqo,
+		sys_odt => ddrphy_odt,
+		sys_wlpha => wlpha,
+
+		ddr_rst => ddr3_rst,
+		ddr_ck  => ddr3_clk,
+		ddr_cke => ddr3_cke,
+		ddr_odt => ddr3_odt,
+		ddr_cs => ddr3_cs,
+		ddr_ras => ddr3_ras,
+		ddr_cas => ddr3_cas,
+		ddr_we  => ddr3_we,
+		ddr_b   => ddr3_b,
+		ddr_a   => ddr3_a,
+
+--		ddr_dm  => ddr3_dm,
+		ddr_dq  => ddr3_dq,
+		ddr_dqs => ddr3_dqs);
+	ddr3_dm <= (others => '0');
+
+	phy1_rst  <= dcm_lckd;
+	phy1_mdc  <= '0';
+	phy1_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
 	port map (
-		mii_rxc  => phy_rxclk,
-		iob_rxdv => phy_rxctl_rxdv,
-		iob_rxd  => phy_rxd,
+		mii_rxc  => phy1_rxc,
+		iob_rxdv => phy1_rx_dv,
+		iob_rxd  => phy1_rx_d,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => gtx_clk,
+		mii_txc  => phy1_125clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
-		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd,
-		iob_gtxclk => phy_txc_gtxclk);
+		iob_txen => phy1_tx_en,
+		iob_txd  => phy1_tx_d,
+		iob_gtxclk => phy1_gtxclk);
 
-	-- Differential buffers --
-	--------------------------
+--	process (phy1_rxc,fpga_gsrn)
+--	begin
+--		if fpga_gsrn='0' then
+--			led(0) <= '1';
+--			led(1) <= '1';
+--			led(2) <= '1';
+--		elsif rising_edge(phy1_rxc) then
+--			if tpo(0)='1'then
+--				led(0) <= '0';
+--			end if;
+--			if phy1_rx_dv='1'then
+--				led(1) <= '0';
+--			end if;
+--			if mii_txen='1'then
+--				led(2) <= '0';
+--			end if;
+--		end if;
+--	end process;
 
-	ddrs_clk180 <= not ddrs_clk0;
-	diff_clk_b : block
-		signal diff_clk : std_logic;
-	begin
-		oddr_mdq : entity hdl4fpga.ddro
-		port map (
-			clk => ddrs_clk0,
-			dr => '0',
-			df => '1',
-			q => diff_clk);
-
-		ddr_ck_obufds : obufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II")
-		port map (
-			i  => diff_clk,
-			o  => ddr2_clk_p(0),
-			ob => ddr2_clk_n(0));
-	end block;
-
-	ddrclk1_obufds : obufds
-	generic map (
-		iostandard => "DIFF_SSTL18_II")
-	port map (
-		i  => '0',
-		o  => ddr2_clk_p(1),
-		ob => ddr2_clk_n(1));
-
-	ddr_dq_e : for i in data_size-1 downto 0 generate
---		idelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i => ddr2_d(i),
---			o => ddr_dqi(i));
-			ddr_dqi(i) <= ddr2_d(i);
-			
-		ddr2_d(i) <= ddr_dqo(i) when ddr_dqz(i)='0' else 'Z';
-	end generate;
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy => ictlr_rdy);
-
-	ddr2_dqs_g : for i in 2-1 downto 0 generate
-		signal dqsi : std_logic;
-		signal st   : std_logic;
-	begin
-
-		dmiobuf_i : iobuf
-		port map (
-			t  => '0',
-			i  => ddr_dm(i),
-			o  => st,
-			io => ddr2_dm(i));
-
-		dmidelay_i : idelay 
-		port map (
-			rst => ictlr_rst,
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i   => st,
-			o   => ddr_st_dqs(i));
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
-			ddr_dqsi(i) <= dqsi;
-
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => ddr_dqsz(i),
-			i   => ddr_dqso(i),
-			o   => dqsi,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
-
-	end generate;
-
-	ddr2_dqs_g1 : for i in 7 downto 2 generate
-		obufds : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t => '1',
-			i => '0',
-			o => open,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
-	end generate;
-
-	dvi_gpio1 <= '1';
-	bus_error <= (others => 'Z');
-	gpio_led <= (others => '0');
-	gpio_led_c <= dcm_lckd and ictlr_rdy;
-	gpio_led_e <= '0';
-	gpio_led_n <= '0';
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
-	fpga_diff_clk_out_p <= 'Z';
-	fpga_diff_clk_out_n <= 'Z';
-
-	ddr2_cs(1 downto 1) <= "1";
-	ddr2_ba(2 downto 2) <= "0";
-   	ddr2_a(13 downto 13) <= "0";
-  	ddr2_cke(1 downto 1) <= "0";
-	ddr2_odt(1 downto 1) <= (others => 'Z');
-	ddr2_dm(7 downto 2)  <= (others => 'Z');
-	ddr2_d(63 downto 16) <= (others => '0');
+--	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
+--	led(5) <= not phy1_rx_dv;
+--	led(6) <= not mii_txen;
 
 end;
