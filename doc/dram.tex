@@ -5,6 +5,7 @@
 \usepackage[spanish,english]{babel}
 \usepackage{graphics}
 \usepackage{graphicx}
+\usepackage{listings}
 \usetheme[secheader=true]{Madrid}
 \useinnertheme{rectangles}
 \usepackage{tikz}
@@ -272,7 +273,6 @@
 	\begin{minipage}[c]{6.5cm}
 		\begin{center}
 		\includegraphics[width=6.5cm]{onetransistor.png} 
-			%	\includegraphics[width=5cm]{Original_1T1C_DRAM_design.eps}
 		\end{center}
 	\end{minipage}
 \end{frame}
@@ -293,7 +293,7 @@
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=5cm]{MT4C1024-HD.jpg} 
-		Memory Card with Integrated circuit Micron MT4C1024 1 Mbit DRAM chip. Die size 8662x3969 um.
+		Memory Card with Integrated circuit Micron MT4C1024 1 Mbit DRAM chip. Die size 8662x3969 $\mu m$
 	\end{center}
 \end{frame}
 
@@ -310,12 +310,148 @@
 \end{frame}
 
 \begin{frame}
+\frametitle{GA Gate Arrays o Arreglos de Compuertas}
+	\begin{itemize}
+		\item Circuitos integrados con bloques prearmandos para proposito especifico
+		\item Ventajas
+			\begin{itemize}
+				\item Fabricación de gran escala
+				\item Solo requieren las máscaras de interconexión 
+				\item Reduce el costo de la aplicación especifca
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lenguajes descriptores de hardware}
+	\begin{itemize}
+		\item Finales de los 60s
+		\item Transferencia de Registros
+		\item Norma IEEE-1076 VHDL
+	\end{itemize}
+\end{frame}
+
+\section{FPGAs Field Programmable Gate Arrays}
+\begin{frame}
 \frametitle{FPGAs Field Programmable Gate Arrays}
 	\begin{itemize}
 		\item 1985
-		\item Arreglos de compuertas cuya red interconexión es programable.
-		\item Depuración de circutos digitales
+		\item Xilinx
+		\item Gate Arrays cuya red interconexión es programable.
+		\item La idea se descartaba por la baja escala de integración
+		\item A 6 años de su fundación obtiene reigresos por 100 millones de USD
+		\item Son los impulsores del incremento en la escala de integración
+		\item Intel compra Altera pricipal competidor de Xilinx en el 2015.\
+			La acción de Altera paso de valer 30 USD a valer 50 USD (9/2015)
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Ventajas}
+	\begin{itemize}
+		\item vs procesadores
+		\begin{itemize}
+			\item Más rápidas
+			\item Menor consumo a igual aplicación
+			\item Se adaptan a aplicaiones específicas
+		\end{itemize}
+		\item vs ASICs
+		\begin{itemize}
+			\item Menor costo de fabricacíon para bajo volunem
+			\item Reprogramables para actualizaciones en el diseño
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Aplicaciones}
+	\begin{minipage}[c]{5.5cm}
+		\begin{itemize}
+			\item Aerospace and Defense
+			\item Medical Electronics
+			\item ASIC Prototyping
+			\item Audio
+			\item Automotive
+			\item Broadcast
+			\item Consumer Electronics
+			\item Data Center
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}[c]{5.5cm}
+		\begin{itemize}
+			\item High Performance Computing
+			\item Industrial
+			\item Medical
+			\item Scientific Instruments
+			\item Security
+			\item Video \& Image Processing
+			\item Wired Communications
+			\item Wireless Communications
+		\end{itemize}
+	\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama en bloque}
+	\begin{center}
+		\includegraphics[width=11cm]{fpga.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Nu Horizons Spartan 3A DSP board}
+	\begin{center}
+		\includegraphics[width=11cm]{nuhorizonsS3DSP.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Nu Horizons Spartan 3A DSP kit}
+	\begin{itemize}
+		\item 2008
+		\item Spartan 3A DSP
+			\begin{itemize}
+				\item 37440 LE
+				\item 84 BRAM de 18Kbits
+				\item 84 Unidades de DSP
+				\item 250 Mhz
+				\item Tecnología de exportación restringida
+			\end{itemize}
+		\item 32 MBytes de Memoria DDR1 333
+		\item 2 ADC
+			\begin{itemize}
+				\item Diferencial
+				\item 14 bits
+				\item 120 MS/s
+				\item 500 Mhz
+			\end{itemize}
+		\item Video DAC salida diferencial
+		\item Ethernet
+		\item Precio 200 USD
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+		$y[n] = \sum\limits_{i=0}^84\ h[i]*x[n-i]$
+	\end{center}
+	\begin{minipage}[c]{5.5cm}
+		\lstinputlisting[language=C,
+			tabsize=4,
+			basicstyle=\ttfamily\tiny,
+			keywordstyle=\color{blue}\ttfamily,
+			stringstyle=\color{red}\ttfamily,
+			commentstyle=\color{green}\ttfamily]{convolution.c}
+	\end{minipage}
+	\begin{minipage}[c]{5.5cm}
+		%\lstinputlisting[language=[x86masm]Assembler,
+		\lstinputlisting[language=C,
+			tabsize=4,
+			basicstyle=\ttfamily\tiny,
+			keywordstyle=\color{blue}\ttfamily,
+			stringstyle=\color{red}\ttfamily,
+			commentstyle=\color{green}\ttfamily]{convolution.s}
+	\end{minipage}
 \end{frame}
 
 \subsection{DRAM}
@@ -324,14 +460,6 @@
 	\begin{center}
 		\includegraphics[width=9cm]{membank.eps}
 	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Lenguajes descriptores de hardware}
-	\begin{itemize}
-		\item Finales de los 60s
-		\item Transferencia de Registros
-	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -368,13 +496,6 @@
 \begin{frame}
 	\begin{center}
 		\includegraphics[width=11cm]{ddrdram-timings.eps}
-	\end{center}
-\end{frame}
-
-\section{fpga}
-\begin{frame}
-	\begin{center}
-		\includegraphics[width=11cm]{fpga.eps}
 	\end{center}
 \end{frame}
 
