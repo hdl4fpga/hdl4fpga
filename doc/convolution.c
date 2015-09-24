@@ -1,3 +1,9 @@
+
+
+
+
+
+
 typedef int sample;
 
 sample convolution (x, h, n)

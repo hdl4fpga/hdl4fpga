@@ -418,28 +418,27 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Convolución}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
-	\begin{minipage}[c]{5.5cm}
+	\begin{columns}[t]
+		\column{0.4\textwidth}
 		\lstinputlisting[language=C,
 			tabsize=4,
 			basicstyle=\ttfamily\tiny,
 			keywordstyle=\color{blue}\ttfamily,
 			stringstyle=\color{red}\ttfamily,
 			commentstyle=\color{green}\ttfamily]{convolution.c}
-	\end{minipage}
-	\begin{minipage}[c]{5.5cm}
-		%\lstinputlisting[language=[x86masm]Assembler,
+		\column{0.6\textwidth}
 		\lstinputlisting[language=C,
 			tabsize=4,
 			basicstyle=\ttfamily\tiny,
 			keywordstyle=\color{blue}\ttfamily,
 			stringstyle=\color{red}\ttfamily,
 			commentstyle=\color{green}\ttfamily]{convolution.s}
-	\end{minipage}
+	\end{columns}
 \end{frame}
 
 \subsection{DRAM}
