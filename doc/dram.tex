@@ -9,6 +9,7 @@
 \usetheme[secheader=true]{Madrid}
 \useinnertheme{rectangles}
 \usepackage{tikz}
+\beamertemplatenavigationsymbolsempty 
 \title{FPGA \& DDR DRAM}
 \author[msagre]{Miguel A Sagreras}
 \date[2015]{}
@@ -34,16 +35,16 @@
 \begin{frame}
 \frametitle{Relay}
 \framesubtitle{Componente básico}
-\begin{minipage}[c]{6cm}
+\begin{columns}
+	\column{.5\textwidth}
 	\begin{center}
 		\includegraphics[height=3cm]{relay-imagen.jpg}
 	\end{center}
-\end{minipage}
-\begin{minipage}[c]{5cm}
+	\column{.5\textwidth}
 	\begin{center}
 		\includegraphics[height=3cm]{relay-diagrama.png}
 	\end{center}
-\end{minipage}
+\end{columns}
 \end{frame}
 
 \begin{frame}
@@ -126,23 +127,17 @@
 \framesubtitle{Descripción}
 \begin{itemize}
 	\item 1943
-	\item Cálculo de trayectoria de misiles
+	\item Cálculo de tablas de disparo de artilleria
 	\item Programación por interruptores y clavijas
 	\item $10^{3}$ más rápida en procesamiento que las electromecánicas
-	\item Memoria : 100 palabras de 10 digitos decimales o 4100 bits
-	\item Recursos :
-		\begin{itemize}
-			\small
-			\item 17.000 tubos de vacio
-			\item 7.200 diodos de cristal
-			\item 70.000 resistencias
-			\item 10.000 capacitores
-			\item 5.000.000 de soldaduras
-			\item 150 KW
-			\item 167 $m^{2}$
-			\item 500.000 USD o 6.000.000 USD actualizados
-		\end{itemize}
-	\end{itemize}
+	\item 100 palabras de 10 digitos decimales más signo o 4100 bits
+	\item 17.000 tubos de vacio
+	\item 7.200 diodos de cristal
+	\item 5.000.000 de soldaduras
+	\item 150 KW
+	\item 167 $m^{2}$
+	\item 500.000 USD o 6.000.000 USD actualizados
+\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -156,19 +151,16 @@
 \frametitle{UNIVAC I UNIVersal Automatic Computer I}
 	\begin{itemize}
 		\item 1951-1954
-		\item Proposito comercial
+		\item Propósito comercial
 		\item Programación en memoria
 		\item 1.900 operaciones por segundo
 		\item 1000 palabras de 11 digitos decimales
-		\item Recursos
-			\begin{itemize}
-				\item 5.200 Tubos de vacio.
-				\item Tecnología de memoria Linea de Retardo de mercurio.
-				\item 125 KW
-				\item 13 toneladas
-				\item 35.5 $m^{2}$
-				\item Precio original 159.000 incrementandose hasta 1.500.000 USD
-			\end{itemize}
+		\item 5.200 Tubos de vacio.
+		\item Tecnología de memoria \textbf{linea de retardo de mercurio}.
+		\item 125 KW
+		\item 13 toneladas
+		\item 35.5 $m^{2}$
+		\item Precio base 159.000 USD llegando hasta 1.500.000 USD
 	\end{itemize}
 \end{frame}
 
@@ -179,28 +171,29 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Memoria de linea de retardo}
-\begin{minipage}[c]{7.5cm}
+\begin{columns}[t]
+	\column{0.5\textwidth}
 	\begin{itemize}
 		\item 1947
 		\item John Adam Presper Eckert
-		\item Origen en las lineas de retardo para Radar
+		\item Lineas de retardo para Radar
 		\item EDVAC, UNIVAC I
-		\item Medio de propagacion Mercurio
+		\item Medio de propagación Mercurio
+		\item 576 Bits
 	\end{itemize}
-\end{minipage}
-\begin{minipage}[c]{4cm}
+	\column{0.5\textwidth}
 	\begin{center}
 		\includegraphics[width=4cm]{delay_line.png}
 	\end{center}
-\end{minipage}
+\end{columns}
 \end{frame}
 
-\subsection{Semiconductores}
-\begin{frame}
-\frametitle{}
-	\begin{minipage}[c]{7.5cm}
+\begin{frame}[t]
+\frametitle{Computadoras a transistores}
+	\begin{columns}[t]
+		\column{0.55\textwidth}
 		\begin{itemize}
 			\item 1953 Universidad de Manchester
 				\begin{itemize}
@@ -211,16 +204,15 @@
 			\item 1954 Bell Labs TRADIC
 			\item 1957 Calculadora IBM 608
 		\end{itemize}
-	\end{minipage}
-	\begin{minipage}[c]{4cm}
+		\column{0.45\textwidth}
 		\begin{center}
-			\includegraphics[width=4cm]{TRADIC_computer.jpg} \\ 
-			Prototype TRADIC at Bell Labs, 1955. Felker is at left
+			\includegraphics[width=0.8\textwidth]{TRADIC_computer.jpg} \\ 
+			\tiny{Prototype TRADIC at Bell Labs, 1955.}
 		\end{center}
-	\end{minipage}
+	\end{columns}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Compiladores}
 	\begin{itemize}
 		\item Principios de los 50s
@@ -259,25 +251,19 @@
 	\end{minipage}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{DRAM Memoria dinámica}
-	\begin{minipage}[c]{4.5cm}
-		\begin{center}
-			\begin{itemize}
-				\item 1966
-				\item Robert Dennard
-				\item Un transistor por bit
-			\end{itemize}
-		\end{center}
-	\end{minipage}
-	\begin{minipage}[c]{6.5cm}
-		\begin{center}
+	\begin{itemize}
+		\item 1966
+		\item Robert Dennard
+		\item Un transistor por bit
+	\end{itemize}
+	\begin{center}
 		\includegraphics[width=6.5cm]{onetransistor.png} 
-		\end{center}
-	\end{minipage}
+	\end{center}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Multiplexado de la dirección}
 	\begin{itemize}
 		\item 1966-
@@ -292,8 +278,8 @@
 		\item A finales del 70s dominaba el 85\% del mercado mundial.
 	\end{itemize}
 	\begin{center}
-		\includegraphics[width=5cm]{MT4C1024-HD.jpg} 
-		Memory Card with Integrated circuit Micron MT4C1024 1 Mbit DRAM chip. Die size 8662x3969 $\mu m$
+		\includegraphics[width=0.55\textwidth]{MT4C1024-HD.jpg} \\
+		\tiny{Micron MT4C1024 Chip. 1 Mbit DRAM. Die size 8662x3969 $\mu m$}
 	\end{center}
 \end{frame}
 
@@ -302,7 +288,7 @@
 	\begin{itemize}
 		\item 1975
 		\item Gordon E. Moore Co-fundador de Intel
-		\item Duplicacion de componentes por año en los circuitos integrados
+		\item Duplicación de componentes por año en los circuitos integrados
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=7cm]{mooreslaw.eps} 
@@ -340,9 +326,10 @@
 		\item Gate Arrays cuya red interconexión es programable.
 		\item La idea se descartaba por la baja escala de integración
 		\item A 6 años de su fundación obtiene reigresos por 100 millones de USD
+		\item Fabless
 		\item Son los impulsores del incremento en la escala de integración
 		\item Intel compra Altera pricipal competidor de Xilinx en el 2015.\
-			La acción de Altera paso de valer 30 USD a valer 50 USD (9/2015)
+			La acción de Altera paso a valer 50 USD (9/2015) de valer 30 USD 
 	\end{itemize}
 \end{frame}
 
@@ -358,7 +345,7 @@
 		\item vs ASICs
 		\begin{itemize}
 			\item Menor costo de fabricacíon para bajo volunem
-			\item Reprogramables para actualizaciones en el diseño
+			\item Reprogramables para actualizaciones de la aplicación
 		\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -417,7 +404,7 @@
 				\item 250 Mhz
 				\item Tecnología de exportación restringida
 			\end{itemize}
-		\item 32 MBytes de Memoria DDR1 333
+		\item 32 MBytes de Memoria DDR1 333 T/s
 		\item 2 ADC
 			\begin{itemize}
 				\item Diferencial
@@ -432,8 +419,9 @@
 \end{frame}
 
 \begin{frame}
+\frametitle{Convolución}
 	\begin{center}
-		$y[n] = \sum\limits_{i=0}^84\ h[i]*x[n-i]$
+		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
 	\begin{minipage}[c]{5.5cm}
 		\lstinputlisting[language=C,

@@ -1,4 +1,4 @@
-typedef short sample;
+typedef int sample;
 
 sample convolution (x, h, n)
 sample x[];
