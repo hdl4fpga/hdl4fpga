@@ -263,6 +263,14 @@
 	\end{center}
 \end{frame}
 
+\subsection{DRAM}
+\begin{frame}
+\frametitle{Banco de Memoria}
+	\begin{center}
+		\includegraphics[width=9cm]{membank.eps}
+	\end{center}
+\end{frame}
+
 \begin{frame}[t]
 \frametitle{Multiplexado de la dirección}
 	\begin{itemize}
@@ -275,7 +283,7 @@
 			\end{itemize}
 		\item Reduce el tamaño del Chip y por consiguiente su costo.
 		\item Fue ridiculizado por sus competidores.
-		\item A finales del 70s dominaba el 85\% del mercado mundial.
+		\item A finales de los 70s dominaba el 85\% del mercado mundial.
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.55\textwidth]{MT4C1024-HD.jpg} \\
@@ -288,7 +296,7 @@
 	\begin{itemize}
 		\item 1975
 		\item Gordon E. Moore Co-fundador de Intel
-		\item Duplicación de componentes por año en los circuitos integrados
+		\item Duplicación de la escala de integración cada dos años.
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=7cm]{mooreslaw.eps} 
@@ -336,13 +344,13 @@
 \begin{frame}
 \frametitle{Ventajas}
 	\begin{itemize}
-		\item vs procesadores
+		\item FPGA vs procesadores
 		\begin{itemize}
 			\item Más rápidas
 			\item Menor consumo a igual aplicación
 			\item Se adaptan a aplicaiones específicas
 		\end{itemize}
-		\item vs ASICs
+		\item FPGA vs ASIC
 		\begin{itemize}
 			\item Menor costo de fabricacíon para bajo volunem
 			\item Reprogramables para actualizaciones de la aplicación
@@ -441,12 +449,48 @@
 	\end{columns}
 \end{frame}
 
-\subsection{DRAM}
 \begin{frame}
-\frametitle{Banco de Memoria}
+\frametitle{Convolución}
 	\begin{center}
-		\includegraphics[width=9cm]{membank.eps}
+		\includegraphics[width=11cm]{convolutionfpga.eps}
 	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Convolución}
+	\begin{columns}[t]
+		\column{0.4\textwidth}
+		2002
+		Spartan 3ADSP
+		90 nm
+		Tecnologia 2004
+		Un resultado por ciclo
+		Frecuencia de 250 Mhz
+		Ciclo de 4 ns
+		Un resultado cada 4 ns;
+		\column{0.6\textwidth}
+		2008
+		Intel i7 920
+		45 nm
+		Tecnologia 2008
+		Frecuencia 2.66 Ghz
+		Ciclo de .375 ps
+		Un resultado cada 84 ejecuciones del lazo
+		Un lazo 7 instrucciones
+		Total instrucciones por resultado 7*84 = 588
+		Conciderando 2.5 instrucciones por ciclo promedio 588/2.5 ciclos
+		Un resultado cada 235*.375 = 88 ns
+	\end{columns}
+	\begin{center}
+		Spartan3DSP/Corei7 = 88 ns/4ns = 22 
+		Más de un orden de magnitud
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	La FPGA tiene memoria interna pero no es masiva
+	Se requiere memoeria DRAM
+	La transferencia de datos debe ser rápida para poder sostener la tasa de trasnferencia
 \end{frame}
 
 \begin{frame}
