@@ -272,12 +272,12 @@
      borderopacity="0.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
-     inkscape:zoom="1.4"
-     inkscape:cx="86.807347"
-     inkscape:cy="606.65152"
+     inkscape:zoom="1.979899"
+     inkscape:cx="127.6074"
+     inkscape:cy="711.93304"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
+     showgrid="false"
      inkscape:snap-center="false"
      inkscape:window-width="1920"
      inkscape:window-height="1025"
@@ -326,6 +326,20 @@
        height="345"
        x="-350"
        y="192.36218" />
+    <rect
+       y="432.36218"
+       x="-10"
+       height="45"
+       width="170"
+       id="rect4069"
+       style="fill:#00fcff;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1" />
+    <rect
+       style="fill:#00fffc;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
+       id="rect4012"
+       width="170"
+       height="45"
+       x="-10"
+       y="377.36218" />
     <rect
        y="282.36218"
        x="-255"
@@ -622,13 +636,6 @@
          x="75"
          sodipodi:role="line">Write FIFO unit</tspan></text>
     <rect
-       style="fill:#00fffc;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
-       id="rect4012"
-       width="170"
-       height="45"
-       x="-10"
-       y="377.36218" />
-    <rect
        style="fill:#00ff00;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
        id="rect4047"
        width="70"
@@ -679,13 +686,6 @@
          x="75"
          y="442.36218"
          id="tspan4067">Read FIFO unit</tspan></text>
-    <rect
-       y="432.36218"
-       x="-10"
-       height="45"
-       width="170"
-       id="rect4069"
-       style="fill:#00fcff;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1" />
     <rect
        y="447.36218"
        x="0"
@@ -1182,7 +1182,7 @@
          sodipodi:role="line"
          id="tspan3342"
          x="-355"
-         y="317.36218"></tspan><tspan
+         y="317.36218" /><tspan
          sodipodi:role="line"
          id="tspan3344"
          x="-355"
