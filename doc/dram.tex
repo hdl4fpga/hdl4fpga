@@ -316,27 +316,35 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Lenguajes descriptores de hardware}
 	\begin{itemize}
 		\item Finales de los 60s
-		\item Transferencia de Registros
-		\item Norma IEEE-1076 VHDL
+		\item Herramienta de especificación de hardware digital para:
+		\begin{itemize}
+			\item Simulación
+			\item Sintetizadores de Hardware
+			\item Compiladores de silicio
+		\end{itemize}
+		\item VHSIC Hardware Description Language o VHDL
+		\item IEEE 1076
+		\item Primer HDL en normalizarse 1988
 	\end{itemize}
 \end{frame}
 
 \section{FPGAs Field Programmable Gate Arrays}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{FPGAs Field Programmable Gate Arrays}
 	\begin{itemize}
 		\item 1985
 		\item Xilinx
 		\item Gate Arrays cuya red interconexión es programable.
-		\item La idea se descartaba por la baja escala de integración
-		\item A 6 años de su fundación obtiene reigresos por 100 millones de USD
+		\item La idea se descartaba por la baja escala de integración.
+		\item 6 años después obtiene reingresos por 100 millones de USD.
 		\item Fabless
 		\item Son los impulsores del incremento en la escala de integración
-		\item Intel compra Altera pricipal competidor de Xilinx en el 2015.\
+		\item Conciderada tecnología restrictiva
+		\item Intel compra Altera pricipal competidor de Xilinx en el 2015.\\
 			La acción de Altera paso a valer 50 USD (9/2015) de valer 30 USD 
 	\end{itemize}
 \end{frame}
@@ -456,41 +464,41 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Convolución}
 	\begin{columns}[t]
-		\column{0.4\textwidth}
-		2002
-		Spartan 3ADSP
-		90 nm
-		Tecnologia 2004
-		Un resultado por ciclo
-		Frecuencia de 250 Mhz
-		Ciclo de 4 ns
-		Un resultado cada 4 ns;
-		\column{0.6\textwidth}
-		2008
-		Intel i7 920
-		45 nm
-		Tecnologia 2008
-		Frecuencia 2.66 Ghz
-		Ciclo de .375 ps
-		Un resultado cada 84 ejecuciones del lazo
-		Un lazo 7 instrucciones
-		Total instrucciones por resultado 7*84 = 588
-		Conciderando 2.5 instrucciones por ciclo promedio 588/2.5 ciclos
-		Un resultado cada 235*.375 = 88 ns
+	\column{0.4\textwidth}
+		\begin{itemize}
+			\item Tecnologia 2004
+			\item Spartan 3A DSP
+			\item 90 nm
+			\item 250 Mhz o ciclo de 4 ns
+			\item Un resultado por ciclo
+			\item Un resultado cada 4 ns;
+		\end{itemize}
+	\column{0.6\textwidth}
+		\begin{itemize}
+			\item Tecnologia 2008
+			\item Intel i7 920
+			\item 45 nm
+			\item 2.66 Ghz  o ciclo de .375 ps
+			\item Un resultado cada 84 ciclos del lazo
+			\item Un lazo 7 instrucciones
+			\item 2.5 instrucciones por ciclo promedio
+			\item Un resultado cada 7*84/(2.5*2.66) = 88 ns
+		\end{itemize}
 	\end{columns}
 	\begin{center}
-		Spartan3DSP/Corei7 = 88 ns/4ns = 22 
-		Más de un orden de magnitud
+		$\frac{Spartan3DSP}{Corei7} = \frac{88 ns}{4 ns} = 22 $
 	\end{center}
 \end{frame}
 
 \begin{frame}
-	La FPGA tiene memoria interna pero no es masiva
-	Se requiere memoeria DRAM
-	La transferencia de datos debe ser rápida para poder sostener la tasa de trasnferencia
+	\begin{itemize}
+		\item La FPGA tiene memoria interna pero no es masiva
+		\item Se requiere memoria DRAM
+		\item La transferencia de datos debe ser rápida para poder sostener la tasa de trasnferencia
+	\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -566,13 +574,68 @@
 	\end{center}
 \end{frame}
 
+\begin{frame}[t]
+\frametitle{Program Unit}
+\begin{columns}[t]
+	\column{0.5\textwidth}
+		\begin{itemize}
+			\item Sirve el pedido de acceso a la DRAM
+			\item Secuencia las instrucciones del diagrama parcial de estado
+				\begin{itemize}
+					\item ACT
+					\item READ
+					\item WRITE
+					\item PRE
+					\item REF
+				\end{itemize}
+		\end{itemize}
+	\column{0.6\textwidth}
+		\begin{center}
+			\includegraphics[width=.75\textwidth]{ddr3-statedbusy.eps}
+		\end{center}
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Config \& Refresh Unit}
+	\begin{itemize}
+		\item Temporización de las instrucciones
+			\begin{itemize}
+				\item MPR
+				\item READ
+				\item WRITE
+				\item PRE
+				\item REF
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
 \begin{frame}
 \frametitle{Processor Unit}
 	\begin{itemize}
-		\item Implementa el ciclo crítco, el acceso los datos.
-		\item Secuencia el cambio de estados
-		\item Conforma las latencias de las instrucciones
-		\item Busca la siguiente instrucción el último ciclo de la actual
+		\item Temporización de las instrucciones
+			\begin{itemize}
+				\item ACT
+				\item READ
+				\item WRITE
+				\item PRE
+				\item REF
+			\end{itemize}
+		\item Tiempos de propagación críticos 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Scheduler Unit}
+	\begin{itemize}
+		\item Temporización de las señales de acceso a :
+			\begin{itemize}
+				\item DRAM
+				\item IOFIFOs
+			\end{itemize}
+		\item Tiempos de propagación críticos
+		\item Phase Unit es un registro de desplazamiento con las phases necestarias
+		\item Task Unit elige las salidas de los FFDs que generan el diagrama de tiempos
 	\end{itemize}
 \end{frame}
 
