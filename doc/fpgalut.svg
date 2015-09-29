@@ -38,14 +38,14 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1025"
+     inkscape:window-height="1014"
      id="namedview4"
      showgrid="false"
      inkscape:zoom="2.5368506"
      inkscape:cx="545.07671"
-     inkscape:cy="629.23662"
+     inkscape:cy="723.84211"
      inkscape:window-x="-2"
-     inkscape:window-y="1021"
+     inkscape:window-y="-3"
      inkscape:window-maximized="1"
      inkscape:current-layer="g34" /><g
      id="g10"
@@ -73,10 +73,10 @@
              sodipodi:role="line"
              id="tspan48">LUT4 &amp;</tspan><tspan
              style="font-size:7.47996807px;font-variant:normal;font-weight:bold;writing-mode:lr-tb;fill:#11100e;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica-Bold"
-             x="-1.4734367 3.9263432 9.0658207 14.465625 19.865404 24.853859"
+             x="-1.4734367 3.9263432 9.0658207 14.465625 19.865404"
              y="8.9754543"
              sodipodi:role="line"
-             id="tspan50">CARRY*</tspan></text>
+             id="tspan50">CARRY</tspan></text>
 </g><path
          d="m 4408.44,4040.06 119.71,0"
          style="fill:none;stroke:#11100e;stroke-width:4.66013002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
@@ -185,10 +185,10 @@
              sodipodi:role="line"
              id="tspan106">LUT4 &amp;</tspan><tspan
              style="font-size:7.47996807px;font-variant:normal;font-weight:bold;writing-mode:lr-tb;fill:#11100e;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica-Bold"
-             x="-1.4734367 3.9263432 9.0658207 14.465625 19.865404 24.853859"
+             x="-1.4734367 3.9263432 9.0658207 14.465625 19.865404"
              y="8.9758453"
              sodipodi:role="line"
-             id="tspan108">CARRY*</tspan></text>
+             id="tspan108">CARRY</tspan></text>
 <text
            transform="matrix(1,0,0,-0.99686983,285.089,386.011)"
            id="text110"><tspan
