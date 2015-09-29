@@ -467,6 +467,9 @@
 \begin{frame}
 \frametitle{Convolución}
 	\begin{center}
+		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
+	\end{center}
+	\begin{center}
 		\includegraphics[width=11cm]{convolutionfpga.eps}
 	\end{center}
 \end{frame}
@@ -496,15 +499,16 @@
 		\end{itemize}
 	\end{columns}
 	\begin{center}
-		$\frac{Spartan3DSP}{Corei7} = \frac{88 ns}{4 ns} = 22 $
+		$\frac{Spartan3A\ DSP}{Corei7} = \frac{88 ns}{4 ns} = 22 $
 	\end{center}
 \end{frame}
 
+\section{DRAM}
 \begin{frame}
 	\begin{itemize}
 		\item La FPGA tiene memoria interna pero no es masiva
 		\item Se requiere memoria DRAM
-		\item La transferencia de datos debe ser rápida para poder sostener la tasa de trasnferencia
+		\item La transferencia de datos debe ser rápida para poder sostener la tasa de procesamiento
 	\end{itemize}
 \end{frame}
 
