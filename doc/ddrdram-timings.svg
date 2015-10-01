@@ -78,8 +78,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
      inkscape:zoom="3.0765042"
-     inkscape:cx="91.355123"
-     inkscape:cy="763.40331"
+     inkscape:cx="39.022999"
+     inkscape:cy="685.39269"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -450,5 +450,20 @@
          x="-70"
          id="tspan3073"
          sodipodi:role="line">dqs</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.4;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 40,282.36218 0,140"
+       id="path3052"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path3846"
+       d="m 60,282.36218 0,140"
+       style="fill:none;stroke:#000000;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 80,282.36218 0,140"
+       id="path3848"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

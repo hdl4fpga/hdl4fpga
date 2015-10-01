@@ -1,5 +1,5 @@
 --
--- Decriptcion de un FFD
+-- Decripcion de un FFD
 --
 
 library ieee ;
@@ -12,7 +12,7 @@ entity ffd is
 		q   : out std_logic);
 end;
 
-architecture behv of dff is
+architecture behv of ffd is
 begin
 	process(clk)
 	begin

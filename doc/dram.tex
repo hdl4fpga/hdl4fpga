@@ -171,7 +171,6 @@
 		\item 1.900 operaciones por segundo
 		\item 1000 palabras de 11 digitos decimales
 		\item 5.200 Tubos de vacio.
-		\item Tecnología de memoria \textbf{linea de retardo de mercurio}.
 		\item 125 KW
 		\item 13 toneladas
 		\item 35.5 $m^{2}$
@@ -266,7 +265,6 @@
 	\end{minipage}
 \end{frame}
 
-\section{DRAM Memoria dinámica}
 \begin{frame}[t]
 \frametitle{DRAM Memoria dinámica}
 	\begin{itemize}
@@ -282,7 +280,7 @@
 \begin{frame}
 \frametitle{Banco de Memoria}
 	\begin{center}
-	\includegraphics[width=.8\textwidth]{membank.eps}
+	\includegraphics[height=.8\textheight]{membank.eps}
 	\end{center}
 \end{frame}
 
@@ -332,7 +330,7 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
 \frametitle{Secuencia de acceso}
 \framesubtitle{DRAM}
 	\begin{itemize}
@@ -359,7 +357,7 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Diagrama de tiempos SDR DRAM}
+\frametitle{Diagrama de tiempos DDR DRAM}
 	\begin{center}
 		\includegraphics[width=\textwidth]{ddrdram-timings.eps}
 	\end{center}
@@ -440,6 +438,14 @@
 		\item Intel compra Altera principal competidor de Xilinx en el 2015.\\
 			La acción de Altera paso a valer 50 USD (9/2015) de valer 30 USD 
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{FPGAs Field Programmable Gate Arrays}
+\framesubtitle{Restricciones de exportación}
+	\begin{center}
+		\includegraphics[width=\textwidth]{export.eps}
+	\end{center}
 \end{frame}
 
 \begin{frame}
@@ -536,7 +542,7 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Ejemplo de apliación : Convolución}
+\frametitle{Ejemplo de aplicación : Convolución}
 \framesubtitle{Algoritmo en Lenguaje C y en Assembler Optimizado}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
@@ -560,7 +566,7 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Ejemplo de apliación : Convolución}
+\frametitle{Ejemplo de aplicación : Convolución}
 \framesubtitle{Diagrama en bloque para FPGA}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
@@ -571,7 +577,7 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Ejemplo de apliación : Convolución}
+\frametitle{Ejemplo de aplicación : Convolución}
 \framesubtitle{Comparación entre FPGA y Procesador}
 	\begin{columns}[t]
 	\column{0.4\textwidth}
@@ -687,7 +693,7 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Processor Unit}
 	\begin{itemize}
 		\item Temporización de las instrucciones
@@ -712,7 +718,7 @@
 			\end{itemize}
 		\item Tiempos de propagación críticos
 		\item Phase Unit es un registro de desplazamiento con las phases necesarias para todos los eventos posibles
-		\item Task Unit elige las salidas del registro de desplazamiento conforme a los diagramas e tiempos
+		\item Task Unit elige las salidas del registro de desplazamiento conforme a los diagramas de tiempos
 	\end{itemize}
 \end{frame}
 

@@ -272,12 +272,12 @@
      borderopacity="0.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
-     inkscape:zoom="4"
-     inkscape:cx="86.150295"
-     inkscape:cy="772.15539"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="-215.92121"
+     inkscape:cy="674.59476"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
+     showgrid="false"
      inkscape:snap-center="false"
      inkscape:window-width="1920"
      inkscape:window-height="1025"
@@ -314,7 +314,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#0e8bff;fill-opacity:1;stroke:none;stroke-width:0.98147987999999997px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:#0e8bff;fill-opacity:1;stroke:#006cd0;stroke-width:0.50000000000000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
        d="m -405,187.36218 530,0 0,380 -525,0"
        id="path3433"
        inkscape:connector-curvature="0"
@@ -350,7 +350,7 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <rect
-       style="fill:#ffffff;stroke:none;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
+       style="fill:#ffffff;stroke:#2c2c2c;stroke-width:0.50000001;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;fill-opacity:1"
        id="rect4065"
        width="375"
        height="370"
@@ -1095,7 +1095,7 @@
        height="370"
        width="45"
        id="rect3362"
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#2c2c2c;stroke-width:0.50000000000000000;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        ry="0" />
     <text
        xml:space="preserve"
@@ -1132,7 +1132,7 @@
          y="197.36218">FPGA Chip</tspan></text>
     <rect
        ry="0"
-       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#5f5f5f;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect3441"
        width="40"
        height="380"
