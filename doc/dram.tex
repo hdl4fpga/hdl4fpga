@@ -11,7 +11,7 @@
 \usepackage{tikz}
 \beamertemplatenavigationsymbolsempty 
 \title{FPGA \& DDR DRAM}
-\author[msagre]{Miguel A Sagreras}
+\author{Miguel A Sagreras}
 \date[2015]{}
 %\institution[short name]{long name}
 \begin{document}
@@ -169,7 +169,7 @@
 		\item Propósito comercial
 		\item Programación en memoria
 		\item 1.900 operaciones por segundo
-		\item 1000 palabras de 11 digitos decimales
+		\item 1.000 palabras de 11 digitos decimales
 		\item 5.200 Tubos de vacio.
 		\item 125 KW
 		\item 13 toneladas
@@ -376,12 +376,39 @@
 	\end{center}
 \end{frame}
 
+\begin{frame}[t]
+\frametitle{Lenguajes descriptores de hardware}
+	\begin{columns}[t]
+	\column{0.6\textwidth}
+	\begin{itemize}
+			\item Finales de los 60s
+			\item Herramienta de especificación de hardware digital para:
+				\begin{itemize}
+				\item Simulación
+				\item Sintetizadores de Hardware
+				\item Compiladores de silicio
+				\end{itemize}
+			\item VHDL \\ VHSIC Hardware Description Language
+			\item Primer HDL en normalizarse 1987
+			\item Promovido por el DoD de EEUU
+			\item Norma IEEE 1076
+		\end{itemize}
+	\column{0.4\textwidth}
+		\lstinputlisting[language=VHDL,
+			tabsize=2,
+			basicstyle=\ttfamily\tiny,
+			keywordstyle=\color{blue}\ttfamily,
+			stringstyle=\color{red}\ttfamily,
+			commentstyle=\color{brown}\ttfamily]{ffd.vhd}
+	\end{columns}
+\end{frame}
+
 \begin{frame}
-\frametitle{GA Gate Arrays o Arreglos de Compuertas}
+\frametitle{Gate Arrays o Arreglos de Compuertas}
 	\begin{columns}[t]
 	\column{0.6\textwidth}
 		\begin{itemize}
-		\item IC con bloques prearmandos para propósito específico
+		\item C.I. con bloques prearmandos para propósito específico
 		\item Ventajas
 			\begin{itemize}
 			\item Fabricación de gran escala
@@ -395,33 +422,6 @@
 		\end{center}
 	\end{columns}
 %"S-MOS Systems ASIC SLA6140" by Antoinebercovici - Own work. Licensed under CC BY-SA 3.0 via Commons - https://commons.wikimedia.org/wiki/File:S-MOS_Systems_ASIC_SLA6140.jpg#/media/File:S-MOS_Systems_ASIC_SLA6140.jpg
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Lenguajes descriptores de hardware}
-	\begin{columns}[t]
-	\column{0.6\textwidth}
-	\begin{itemize}
-			\item Finales de los 60s
-			\item Herramienta de especificación de hardware digital para:
-				\begin{itemize}
-				\item Simulación
-				\item Sintetizadores de Hardware
-				\item Compiladores de silicio
-				\end{itemize}
-			\item Primer HDL en normalizarse 1987
-			\item VHSIC Hardware Description Language \\ VHDL
-			\item Promovido por el DoD de EEUU
-			\item Norma IEEE 1076
-		\end{itemize}
-	\column{0.4\textwidth}
-		\lstinputlisting[language=VHDL,
-			tabsize=2,
-			basicstyle=\ttfamily\tiny,
-			keywordstyle=\color{blue}\ttfamily,
-			stringstyle=\color{red}\ttfamily,
-			commentstyle=\color{brown}\ttfamily]{ffd.vhd}
-	\end{columns}
 \end{frame}
 
 \begin{frame}[t]
@@ -607,11 +607,11 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Requerimiento de DRAM}
+\frametitle{Requerimiento de memoria masiva}
 	\begin{itemize}
 		\item La FPGA tiene memoria interna pero no es masiva
-		\item Se requiere memoria DRAM
 		\item La transferencia de datos debe ser rápida para poder sostener la tasa de procesamiento
+		\item Se requiere memoria DRAM
 	\end{itemize}
 \end{frame}
 
@@ -623,31 +623,37 @@
 	\end{center}
 \end{frame}
 
+\subsection{Ciclo READ}
 \begin{frame}
-\frametitle{Diagrama de tiempos READ Burst Mode}
+\frametitle{BURST READ MODE}
+\framesubtitle{Diagrama de tiempo}
 	\begin{center}
-		\includegraphics[height=0.85\textheight]{ddr3rdbrst.eps}
+		\includegraphics[height=0.8\textheight]{ddr3rdbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Diagrama de tiempos NON READ Burst Mode}
+\frametitle{NON BURST READ MODE}
+\framesubtitle{Diagrama de tiempo}
 	\begin{center}
-		\includegraphics[height=0.85\textheight]{ddr3nrdbrst.eps}
+		\includegraphics[height=0.8\textheight]{ddr3nrdbrst.eps}
+	\end{center}
+\end{frame}
+
+\subsection{Ciclo WRITE}
+\begin{frame}
+\frametitle{BURST WRITE MODE}
+\framesubtitle{Diagrama de tiempo}
+	\begin{center}
+		\includegraphics[height=0.8\textheight]{ddr3wrbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Diagrama de tiempos WRITE Burst Mode}
+\frametitle{NON BURST WRITE MODE}
+\framesubtitle{Diagrama de tiempo}
 	\begin{center}
-		\includegraphics[height=0.85\textheight]{ddr3wrbrst.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama de tiempos NON WRITE Burst Mode}
-	\begin{center}
-		\includegraphics[height=0.85\textheight]{ddr3nwrbrst.eps}
+		\includegraphics[height=0.8\textheight]{ddr3nwrbrst.eps}
 	\end{center}
 \end{frame}
 
@@ -686,7 +692,7 @@
 	\item Ejecuta las intrucciones de inicialización
 	\item Temporización de las ntrucciones MPR, MRS
 	\item Ciclo de refresco
-	\item Configuración de BL, AL, WL
+	\item Configuración de BL, CL, AL, WL
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{ddr3initstated.eps}
