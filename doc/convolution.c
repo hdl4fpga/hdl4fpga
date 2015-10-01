@@ -1,7 +1,8 @@
+/***************/
+/* Convolucion */
+/***************/
 
-
-
-
+#include <sdtlib.h>
 
 
 typedef int sample;

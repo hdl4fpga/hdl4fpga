@@ -117,7 +117,8 @@
 	\end{minipage}
 	\begin{minipage}[c]{4cm}
 		\begin{center}
-			\includegraphics[width=4cm]{ColossusRebuild_11.jpg}
+			\includegraphics[width=4cm]{ColossusRebuild_11.jpg} \\
+			Bletchley Park
 		\end{center}
 	\end{minipage}
 \end{frame}
@@ -251,6 +252,7 @@
 	\end{minipage}
 \end{frame}
 
+\section{DRAM Memoria dinámica}
 \begin{frame}[t]
 \frametitle{DRAM Memoria dinámica}
 	\begin{itemize}
@@ -263,7 +265,6 @@
 	\end{center}
 \end{frame}
 
-\subsection{DRAM}
 \begin{frame}
 \frametitle{Banco de Memoria}
 	\begin{center}
@@ -287,10 +288,70 @@
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.55\textwidth]{MT4C1024-HD.jpg} \\
-		\tiny{Micron MT4C1024 Chip. 1 Mbit DRAM. Die size 8662x3969 $\mu m$}
+		\tiny{Micron MT4C1024 Chip. 1 Mbit DRAM. Die size 8662x3969$\mu m$ 1989 - 1991}
 	\end{center}
 \end{frame}
 
+\begin{frame}
+\frametitle{Diagrama en Bloques}
+\framesubtitle{MOSTEK DRAM}
+	\includegraphics[width=0.9\textwidth]{dramchip.eps}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Versiones más reconocidas}
+\framesubtitle{DRAM}
+	\begin{itemize}
+	\item FPM Fast Page Mode
+	\item EDO Extended Data Out - 1995
+	\item SDRAM Synchronous DRAM
+		\begin{itemize}
+		\item SDR Single Data Rate - 1993 
+		\item DDR Double Data Rate - 2000
+			\begin{itemize}
+			\item DDR1 - 2000
+			\item DDR2 - 2003
+			\item DDR3 - 2007
+			\item DDR4 - 2014
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Secuencia de acceso}
+\framesubtitle{DRAM}
+	\begin{itemize}
+		\item Acceder a la fila con las lineas precargardas
+		\item Conectar el amplificador de sensado y obtener el valor almacenado
+		\item Acceder a la columna
+		\item Recuperar el valor leido
+		\item Percargar las lineas a la mitad de la tension entre el 0 y el 1 lógico
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos FPM  y EDO}
+	\begin{center}
+		\includegraphics[width=\textwidth]{dram-timings.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos SDR DRAM}
+	\begin{center}
+		\includegraphics[width=\textwidth]{sdrdram-timings.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos SDR DRAM}
+	\begin{center}
+		\includegraphics[width=\textwidth]{ddrdram-timings.eps}
+	\end{center}
+\end{frame}
+
+\section{Field Programmable Gate Arrays}
 \begin{frame}
 \frametitle{Ley de Moore}
 	\begin{itemize}
@@ -305,46 +366,64 @@
 
 \begin{frame}
 \frametitle{GA Gate Arrays o Arreglos de Compuertas}
-	\begin{itemize}
-		\item Circuitos integrados con bloques prearmandos para proposito especifico
+	\begin{columns}[t]
+	\column{0.6\textwidth}
+		\begin{itemize}
+		\item IC con bloques prearmandos para propósito específico
 		\item Ventajas
 			\begin{itemize}
-				\item Fabricación de gran escala
-				\item Solo requieren las máscaras de interconexión 
-				\item Reduce el costo de la aplicación especifca
+			\item Fabricación de gran escala
+			\item Solo requieren las máscaras de interconexión 
+			\item Reduce el costo de la aplicación especifca
 			\end{itemize}
-	\end{itemize}
+		\end{itemize}
+	\column{0.4\textwidth}
+		\begin{center}
+			\includegraphics[width=\textwidth]{S-MOS_Systems_ASIC_SLA6140.jpg} 
+		\end{center}
+	\end{columns}
+%"S-MOS Systems ASIC SLA6140" by Antoinebercovici - Own work. Licensed under CC BY-SA 3.0 via Commons - https://commons.wikimedia.org/wiki/File:S-MOS_Systems_ASIC_SLA6140.jpg#/media/File:S-MOS_Systems_ASIC_SLA6140.jpg
 \end{frame}
 
 \begin{frame}[t]
 \frametitle{Lenguajes descriptores de hardware}
+	\begin{columns}[t]
+	\column{0.6\textwidth}
 	\begin{itemize}
-		\item Finales de los 60s
-		\item Herramienta de especificación de hardware digital para:
-		\begin{itemize}
-			\item Simulación
-			\item Sintetizadores de Hardware
-			\item Compiladores de silicio
+			\item Finales de los 60s
+			\item Herramienta de especificación de hardware digital para:
+				\begin{itemize}
+				\item Simulación
+				\item Sintetizadores de Hardware
+				\item Compiladores de silicio
+				\end{itemize}
+			\item Primer HDL en normalizarse 1987
+			\item VHSIC Hardware Description Language \\ VHDL
+			\item Promovido por el DoD de EEUU
+			\item Norma IEEE 1076
 		\end{itemize}
-		\item VHSIC Hardware Description Language o VHDL
-		\item IEEE 1076
-		\item Primer HDL en normalizarse 1988
-	\end{itemize}
+	\column{0.4\textwidth}
+		\lstinputlisting[language=VHDL,
+			tabsize=2,
+			basicstyle=\ttfamily\tiny,
+			keywordstyle=\color{blue}\ttfamily,
+			stringstyle=\color{red}\ttfamily,
+			commentstyle=\color{brown}\ttfamily]{ffd.vhd}
+	\end{columns}
 \end{frame}
 
-\section{FPGAs Field Programmable Gate Arrays}
 \begin{frame}[t]
 \frametitle{FPGAs Field Programmable Gate Arrays}
 	\begin{itemize}
 		\item 1985
 		\item Xilinx
 		\item Gate Arrays cuya red interconexión es programable.
-		\item La idea se descartaba por la baja escala de integración.
+		\item La idea se descartaba por la baja escala de integración del momento.
 		\item 6 años después obtiene reingresos por 100 millones de USD.
 		\item Fabless
 		\item Son los impulsores del incremento en la escala de integración
 		\item Conciderada tecnología restrictiva
-		\item Intel compra Altera pricipal competidor de Xilinx en el 2015.\\
+		\item Intel compra Altera principal competidor de Xilinx en el 2015.\\
 			La acción de Altera paso a valer 50 USD (9/2015) de valer 30 USD 
 	\end{itemize}
 \end{frame}
@@ -416,7 +495,8 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Nu Horizons Spartan 3A DSP kit}
+\frametitle{Descripción}
+\framesubtitle{Nu Horizons Spartan 3A DSP board}
 	\begin{itemize}
 		\item 2008
 		\item Spartan 3A DSP
@@ -442,7 +522,8 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Convolución}
+\frametitle{Ejemplo de apliación : Convolución}
+\framesubtitle{Algoritmo en Lenguaje C y en Assembler Optimizado}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
@@ -453,19 +534,20 @@
 			basicstyle=\ttfamily\tiny,
 			keywordstyle=\color{blue}\ttfamily,
 			stringstyle=\color{red}\ttfamily,
-			commentstyle=\color{green}\ttfamily]{convolution.c}
+			commentstyle=\color{brown}\ttfamily]{convolution.c}
 		\column{0.6\textwidth}
 		\lstinputlisting[language=C,
 			tabsize=4,
 			basicstyle=\ttfamily\tiny,
 			keywordstyle=\color{blue}\ttfamily,
 			stringstyle=\color{red}\ttfamily,
-			commentstyle=\color{green}\ttfamily]{convolution.s}
+			commentstyle=\color{brown}\ttfamily]{convolution.s}
 	\end{columns}
 \end{frame}
 
 \begin{frame}
-\frametitle{Convolución}
+\frametitle{Ejemplo de apliación : Convolución}
+\framesubtitle{Diagrama en bloque para FPGA}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
@@ -475,36 +557,37 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Convolución}
+\frametitle{Ejemplo de apliación : Convolución}
+\framesubtitle{Comparación entre FPGA y Procesador}
 	\begin{columns}[t]
 	\column{0.4\textwidth}
 		\begin{itemize}
-			\item Tecnologia 2004
+			\item Tecnología 2004
 			\item Spartan 3A DSP
 			\item 90 nm
 			\item 250 Mhz o ciclo de 4 ns
 			\item Un resultado por ciclo
-			\item Un resultado cada 4 ns;
+			\item Un resultado cada 4 ns
 		\end{itemize}
 	\column{0.6\textwidth}
 		\begin{itemize}
-			\item Tecnologia 2008
+			\item Tecnología 2008
 			\item Intel i7 920
 			\item 45 nm
 			\item 2.66 Ghz  o ciclo de .375 ps
 			\item Un resultado cada 84 ciclos del lazo
 			\item Un lazo 7 instrucciones
 			\item 2.5 instrucciones por ciclo promedio
-			\item Un resultado cada 7*84/(2.5*2.66) = 88 ns
+			\item Un resultado cada 84*7/(2.5*2.66) = 88 ns
 		\end{itemize}
 	\end{columns}
 	\begin{center}
-		$\frac{Spartan3A\ DSP}{Corei7} = \frac{88 ns}{4 ns} = 22 $
+		$\frac{Spartan3A\ DSP}{Corei7} = \frac{88 ns}{4 ns} = 22$ veces más rápida
 	\end{center}
 \end{frame}
 
-\section{DRAM}
 \begin{frame}
+\frametitle{Requerimiento de DRAM}
 	\begin{itemize}
 		\item La FPGA tiene memoria interna pero no es masiva
 		\item Se requiere memoria DRAM
@@ -512,84 +595,56 @@
 	\end{itemize}
 \end{frame}
 
+\section{DDR3 DRAM}
 \begin{frame}
-\frametitle{Diagrama en Bloques}
-		\includegraphics[width=0.9\textwidth]{chip.eps}
-\end{frame}
-
-\begin{frame}
-\frametitle{Secuencia de acceso}
-	\begin{itemize}
-		\item Acceder a la fila con las lineas precargardas
-		\item Conectar el amplificador de sensado y obtener el valor almacenado
-		\item Acceder a la columna
-		\item Recuperar el valor leido
-		\item Percargar las lineas a la mitad de la tension entre el 0 y el 1 lógico
-	\end{itemize}
-\end{frame}
-
-\subsection{Diagrama de tiempos}
-\begin{frame}
-	\begin{center}
-		\includegraphics[width=11cm]{dram-timings.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-	\begin{center}
-		\includegraphics[width=11cm]{sdrdram-timings.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-	\begin{center}
-		\includegraphics[width=11cm]{ddrdram-timings.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
+\frametitle{Diagrama en bloque}
 	\begin{center}
 		\includegraphics[width=\textwidth]{ddr3-blockdiagraman.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
+\frametitle{Diagrama de tiempos READ Burst Mode}
 	\begin{center}
-		\includegraphics[height=0.9\textheight]{ddr3rdbrst.eps}
+		\includegraphics[height=0.85\textheight]{ddr3rdbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
+\frametitle{Diagrama de tiempos NON READ Burst Mode}
 	\begin{center}
-		\includegraphics[height=0.9\textheight]{ddr3nrdbrst.eps}
+		\includegraphics[height=0.85\textheight]{ddr3nrdbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
+\frametitle{Diagrama de tiempos WRITE Burst Mode}
 	\begin{center}
-		\includegraphics[height=0.9\textheight]{ddr3wrbrst.eps}
+		\includegraphics[height=0.85\textheight]{ddr3wrbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
+\frametitle{Diagrama de tiempos NON WRITE Burst Mode}
 	\begin{center}
-		\includegraphics[height=0.9\textheight]{ddr3nwrbrst.eps}
+		\includegraphics[height=0.85\textheight]{ddr3nwrbrst.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
+\frametitle{Diagrama en bloques controlador de DRAM FPGA}
 	\begin{center}
-		\includegraphics[width=\textwidth]{ddrcntroler.eps}
+		\includegraphics[width=.95\textwidth]{ddrcntroler.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}[t]
 \frametitle{Program Unit}
-\begin{columns}[t]
+	\begin{columns}[t]
 	\column{0.5\textwidth}
 		\begin{itemize}
-			\item Sirve el pedido de acceso a la DRAM
-			\item Secuencia las instrucciones del diagrama parcial de estado
+			\item Sirve el pedido de la aplicación
+			\item Secuencia las instrucciones:
 				\begin{itemize}
 					\item ACT
 					\item READ
@@ -605,18 +660,17 @@
 	\end{columns}
 \end{frame}
 
-\begin{frame}
-	\frametitle{Config \& Refresh Unit}
+\begin{frame}[t]
+\frametitle{Config \& Refresh Unit}
 	\begin{itemize}
-		\item Temporización de las instrucciones
-			\begin{itemize}
-				\item MPR
-				\item READ
-				\item WRITE
-				\item PRE
-				\item REF
-			\end{itemize}
+	\item Ejecuta las intrucciones de inicialización
+	\item Temporización de las ntrucciones MPR, MRS
+	\item Ciclo de refresco
+	\item Configuración de BL, AL, WL
 	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{ddr3initstated.eps}
+	\end{center}
 \end{frame}
 
 \begin{frame}
@@ -643,8 +697,8 @@
 				\item IOFIFOs
 			\end{itemize}
 		\item Tiempos de propagación críticos
-		\item Phase Unit es un registro de desplazamiento con las phases necestarias
-		\item Task Unit elige las salidas de los FFDs que generan el diagrama de tiempos
+		\item Phase Unit es un registro de desplazamiento con las phases necesarias para todos los eventos posibles
+		\item Task Unit elige las salidas del registro de desplazamiento conforme a los diagramas e tiempos
 	\end{itemize}
 \end{frame}
 
