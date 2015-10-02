@@ -127,20 +127,20 @@ architecture scope of ml509 is
 	signal debug_clk : std_logic;
 	signal yyyy : std_logic_vector(ddrphy_a'range);
 
-function shuffle (
-	constant arg : byte_vector)
-	return byte_vector is
-	variable dat : byte_vector(arg'length-1 downto 0);
-	variable val : byte_vector(dat'range);
-begin
-	dat := arg;
-	for i in 2-1 downto 0 loop
-		for j in dat'length/2-1 downto 0 loop
-			val(dat'length/2*i+j) := dat(2*j+i);
+	function shuffle (
+		constant arg : byte_vector)
+		return byte_vector is
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : byte_vector(dat'range);
+	begin
+		dat := arg;
+		for i in 2-1 downto 0 loop
+			for j in dat'length/2-1 downto 0 loop
+				val(dat'length/2*i+j) := dat(2*j+i);
+			end loop;
 		end loop;
-	end loop;
-	return val;
-end;
+		return val;
+	end;
 begin
 
 	process (fpga_gsrn, clk)
