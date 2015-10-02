@@ -623,6 +623,43 @@
 	\end{center}
 \end{frame}
 
+\begin{frame}[t]
+\frametitle{Program Unit}
+	\begin{columns}[t]
+	\column{0.5\textwidth}
+		\begin{itemize}
+			\item Sirve el pedido de la aplicación
+			\item Secuencia las instrucciones:
+				\begin{itemize}
+					\item ACT
+					\item READ
+					\item WRITE
+					\item PRE
+					\item REF
+				\end{itemize}
+		\end{itemize}
+	\column{0.6\textwidth}
+		\begin{center}
+			\includegraphics[width=.75\textwidth]{ddr3-statedbusy.eps}
+		\end{center}
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Processor Unit}
+	\begin{itemize}
+		\item Temporización de las instrucciones
+			\begin{itemize}
+				\item ACT
+				\item READ
+				\item WRITE
+				\item PRE
+				\item REF
+			\end{itemize}
+		\item Tiempos de propagación críticos 
+	\end{itemize}
+\end{frame}
+
 \subsection{Ciclo ACT}
 \begin{frame}
 \frametitle{ACT}
@@ -679,7 +716,16 @@
 \frametitle{WRITE PRE}
 \framesubtitle{Diagrama de tiempo}
 	\begin{center}
-		\includegraphics[height=0.8\textheight]{ddr3writepre.eps}
+		\includegraphics[height=\textheight]{ddr3writepre.eps}
+	\end{center}
+\end{frame}
+
+\subsection{Ciclo REF}
+\begin{frame}
+\frametitle{REF}
+\framesubtitle{Diagrama de tiempo}
+	\begin{center}
+		\includegraphics[height=0.8\textheight]{ddr3ref.eps}
 	\end{center}
 \end{frame}
 
@@ -691,32 +737,10 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Program Unit}
-	\begin{columns}[t]
-	\column{0.5\textwidth}
-		\begin{itemize}
-			\item Sirve el pedido de la aplicación
-			\item Secuencia las instrucciones:
-				\begin{itemize}
-					\item ACT
-					\item READ
-					\item WRITE
-					\item PRE
-					\item REF
-				\end{itemize}
-		\end{itemize}
-	\column{0.6\textwidth}
-		\begin{center}
-			\includegraphics[width=.75\textwidth]{ddr3-statedbusy.eps}
-		\end{center}
-	\end{columns}
-\end{frame}
-
-\begin{frame}[t]
 \frametitle{Config \& Refresh Unit}
 	\begin{itemize}
 	\item Ejecuta las intrucciones de inicialización
-	\item Temporización de las ntrucciones MPR, MRS
+	\item Temporización de las instrucciones MPR, MRS
 	\item Ciclo de refresco
 	\item Configuración de BL, CL, AL, WL
 	\end{itemize}
@@ -725,19 +749,12 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}[t]
-\frametitle{Processor Unit}
-	\begin{itemize}
-		\item Temporización de las instrucciones
-			\begin{itemize}
-				\item ACT
-				\item READ
-				\item WRITE
-				\item PRE
-				\item REF
-			\end{itemize}
-		\item Tiempos de propagación críticos 
-	\end{itemize}
+\begin{frame}
+\frametitle{Inicializacion}
+\framesubtitle{Diagrama de tiempo}
+	\begin{center}
+		\includegraphics[height=0.8\textheight]{ddrinit.eps}
+	\end{center}
 \end{frame}
 
 \begin{frame}[t]
