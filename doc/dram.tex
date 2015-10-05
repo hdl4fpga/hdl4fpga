@@ -20,100 +20,122 @@
 \titlepage
 \end{frame}
 
-\section{Primeras computadoras}
-\subsection{Tecnología analógica}
 \begin{frame}[t]
-\frametitle{Torpedo Data Computer}
+\frametitle{Números}
+{\small
 \begin{columns}[t]
-	\column{.6\textwidth}
-		\begin{itemize}
-			\item 1940
-			\item Instaladas en submarinos
-			\item Cálculo del ajuste de los parámetros \\ del torpedo previo al disparo
-		\end{itemize}
-	\column{.4\textwidth}
-	\begin{center}
-	\includegraphics[width=\textwidth]{tdc.jpg} 
-	\end{center}
-\end{columns}
+	\column{0.1\textwidth}
+		\begin{tabular}{r}
+		\visible<1-> 0 \\
+		\visible<1-> 1 \\
+		\visible<1-> 2 \\
+		\visible<1-> 3 \\
+		\visible<1-> 4 \\
+		\visible<1-> 5 \\
+		\visible<1-> 6 \\
+		\visible<1-> 7 \\
+		\visible<1-> 8 \\
+		\visible<1-> 9 \\
+		\visible<2-> {10} \\
+		\visible<3-> {11} \\
+		\visible<3-> {12} \\
+		\visible<3-> {13} \\
+		\visible<3-> {14} \\
+		\visible<3-> {15} \\
+		\visible<4-> {16}
+		\end{tabular}
+	\column{0.1\textwidth}
+		\begin{tabular}{r}
+		\visible<1-> 0 \\
+		\visible<1-> 1 \\
+		\visible<1-> 2 \\
+		\visible<1-> 3 \\
+		\visible<1-> 4 \\
+		\visible<1-> 5 \\
+		\visible<1-> 6 \\
+		\visible<1-> 7 \\
+		\visible<1-> 8 \\
+		\visible<1-> 9 \\
+		\visible<2-> {A} \\
+		\visible<3-> {B} \\
+		\visible<3-> {C} \\
+		\visible<3-> {D} \\
+		\visible<3-> {E} \\
+		\visible<3-> {F} \\
+		\visible<4-> {10}
+		\end{tabular}
+	\column{0.8\textwidth}
+		\begin{tabular}{r}
+		\visible<5-> {0} \\
+		\visible<5-> {1} \\
+		\visible<6-> {10} \\
+		\visible<7-> {11} \\
+		\visible<8-> {100} \\
+		\visible<9-> {101} \\
+		\visible<10-> {110} \\
+		\visible<10-> {111} \\
+		\visible<10-> {1000} \\
+		\visible<10-> {1001} \\
+		\visible<10-> {1010} \\
+		\visible<10-> {1011} \\
+		\visible<10-> {1100} \\
+		\visible<10-> {1101} \\
+		\visible<10-> {1110} \\
+		\visible<10-> {1111} \\
+		\visible<10-> {10000}
+		\end{tabular}
+\end{columns}}
 \end{frame}
 
-\subsection{Tecnología digital electromecánica}
-
 \begin{frame}
-\frametitle{Relay}
-	\begin{columns}
-	\column{.5\textwidth}
-	\begin{center}
-		\includegraphics[height=3cm]{relay-imagen.jpg}
-	\end{center}
-	\column{.5\textwidth}
-	\begin{center}
-		\includegraphics[height=3cm]{relay-diagrama.png}
-	\end{center}
-\end{columns}
+\frametitle{Compuertas}
+\begin{center}
+	\includegraphics[width=\textwidth]{logic_gates.eps}
+\end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Z3}
-\begin{minipage}[c]{5.25cm}
+\frametitle{Compuertas}
+\begin{center}
+	\includegraphics[width=\textwidth]{adder1.eps}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Compuertas}
+\begin{center}
+	\includegraphics[height=.8\textheight]{adder2.eps}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Contexto y arquitectura}
 	\begin{itemize}
-		\item 1941
-		\item Konrad Zuse
-		\item Estudio de aeroelasticidad
-		\item 64 palabras de 22 bits
-		\item 5 Hz
-		\item 2000 relays
-		\item 4 KW
-		\item 1 Tonelada
+	\item Ripple Carry Adder
+	\item Carry Look Ahead Adder
+	\item Carry Save Adder
+	\item Carry Select Adder
 	\end{itemize}
-\end{minipage}
-	\begin{minipage}[c]{6.4cm}
-		\includegraphics[width=6.4cm]{Z3_Deutsches_Museum.JPG}
-	\end{minipage}
 \end{frame}
 
-\subsection{Tecnolgía digital electrónica}
 \begin{frame}
-\frametitle{Tubos de vacio}
-	\begin{center}
-	\includegraphics[width=.9\textwidth]{ENIAC-Computer-045_book_fin.jpg}
-	\end{center}
+	ENIAC was built at the University of Pennsylvania between 1943 and 1945 by two professors, John Mauchly and the 24 year old J. Presper Eckert, who got funding from the war department after promising they could build a machine that would replace all the "computers", meaning the women who were employed calculating the firing tables for the army's artillery guns. \\
+	The day that Mauchly and Eckert saw the first small piece of ENIAC work, the persons they ran to bring to their lab to show off their progress were some of these female computers (one of whom remarked, "I was astounded that it took all this equipment to multiply 5 by 1000").
 \end{frame}
 
 \begin{frame}
 \frametitle{ENIAC Electronic Numerical Integrator And Computer}
 \framesubtitle{Descripción}
 \begin{itemize}
-	\item 1943
+	\item 1943 Físico J. Mauchly e Ingeniero J. P. Eckert
 	\item Cálculo de tablas de disparo de artilleria
 	\item Programación por interruptores y clavijas
-	\item $10^{3}$ más rápida en procesamiento que las electromecánicas
-	\item 100 palabras de 10 digitos decimales más signo o 4100 bits
 	\item 17.000 tubos de vacio
-	\item 7.200 diodos de cristal
-	\item 5.000.000 de soldaduras
+	\item Aproximadamentoe 4.100 bits
 	\item 150 KW
 	\item 167 $m^{2}$
 	\item 500.000 USD o 6.000.000 USD actualizados
 \end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Memoria Drum}
-	\begin{minipage}[b]{7.5cm}
-		\begin{itemize}
-			\item 1932
-			\item Gustav Tauschek
-			\item Capacidad de 500 Kbits o 62.5 Kbytes
-			\item Precursores de los HDD o discos rigidos
-		\end{itemize}
-	\end{minipage}
-	\begin{minipage}[c]{4cm}
-		\begin{center}
-			\includegraphics[height=4cm]{Pamiec_bebnowa_1.jpg}
-		\end{center}
-	\end{minipage}
 \end{frame}
 
 \begin{frame}
@@ -123,234 +145,6 @@
 \end{center}
 \end{frame}
 
-\begin{frame}[t]
-\frametitle{Sistemas númericos}
-{\tiny
-\begin{columns}[t]
-	\column{0.1\textwidth}
-	\begin{flushright}
-	\visible<10-> 0 \\
-	\visible<1-> 1 \\
-	\visible<2-> 2 \\
-	\visible<3-> 3 \\
-	\visible<4-> 4 \\
-	\visible<5-> 5 \\
-	\visible<6-> 6 \\
-	\visible<7-> 7 \\
-	\visible<8-> 8 \\
-	\visible<9-> 9 \\
-	\visible<10-> {A} \\
-	\visible<11-> {B} \\
-	\visible<12-> {C} \\
-	\visible<13-> {D} \\
-	\visible<14-> {E} \\
-	\visible<15-> {F} \\
-	\visible<16-> {10}
-	\end{flushright}
-	\column{0.1\textwidth}
-	\begin{flushright}
-	\visible<10-> 0 \\
-	\visible<10-> 1 \\
-	\visible<10-> 2 \\
-	\visible<10-> 3 \\
-	\visible<10-> 4 \\
-	\visible<10-> 5 \\
-	\visible<10-> 6 \\
-	\visible<10-> 7 \\
-	\visible<10-> 8 \\
-	\visible<10-> 9 \\
-	\visible<10-> {10} \\
-	\visible<11-> {11} \\
-	\visible<12-> {12} \\
-	\visible<13-> {13} \\
-	\visible<14-> {14} \\
-	\visible<15-> {15} \\
-	\visible<16-> {16}
-	\end{flushright}
-	\column{0.1\textwidth}
-	\begin{flushright}
-	\visible<16-> {0} \\
-	\visible<16-> {1} \\
-	\visible<17-> {10} \\
-	\visible<18-> {11} \\
-	\visible<19-> {100} \\
-	\visible<20-> {101} \\
-	\visible<21-> {110} \\
-	\visible<22-> {111} \\
-	\visible<23-> {1000} \\
-	\visible<24-> {1001} \\
-	\visible<25-> {1010} \\
-	\visible<26-> {1011} \\
-	\visible<27-> {1100} \\
-	\visible<28-> {1101} \\
-	\visible<29-> {1110} \\
-	\visible<30-> {1111} \\
-	\visible<31-> {10000}
-	\end{flushright}
-\end{columns}}
-\end{frame}
-
-
-\begin{frame}[t]
-\frametitle{Memoria de linea de retardo}
-\begin{columns}[t]
-	\column{0.5\textwidth}
-	\begin{itemize}
-		\item 1947
-		\item John Adam Presper Eckert
-		\item Lineas de retardo para Radar
-		\item EDVAC, UNIVAC I
-		\item Medio de propagación Mercurio
-		\item 576 Bits
-	\end{itemize}
-	\column{0.5\textwidth}
-	\begin{center}
-		\includegraphics[width=4cm]{delay_line.png}
-	\end{center}
-\end{columns}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Compiladores}
-	\begin{itemize}
-	\item Principios de los 50s
-	\item Programa generador automático de código de máquina
-	\item Ejemplos
-		\begin{itemize}
-			\item Autocode (principios de 1950)
-			\item FLOW-MATIC (1955)
-			\item FORTRAN (mediados de 1950)
-			\item COBOL (1959)
-			\item ALGOL (1960)
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Core memory}
-	\begin{minipage}[c]{7.5cm}
-		\begin{itemize}
-			\item 1955-1975
-			\item Toroides mágneticos
-			\item Lectura destructiva
-			\item Costo de 1.00(1955) a 0.01(1975) USD por bit
-			\item Tecnologías desplazadas
-				\begin{itemize}
-					\item DRUM
-					\item Tubos de Vacio
-					\item Transistores
-				\end{itemize}
-			\item Fabricadas por sastres en el este asiático
-		\end{itemize}
-	\end{minipage}
-	\begin{minipage}[c]{4cm}
-		\includegraphics[width=4cm]{Ferrite_core_memory.eps} \\ \\
-		\includegraphics[width=2.5cm]{Coincident-current_magnetic_core.eps}
-	\end{minipage}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{DRAM Memoria dinámica}
-	\begin{itemize}
-		\item 1966
-		\item Robert Dennard
-		\item Un transistor por bit
-	\end{itemize}
-	\begin{center}
-		\includegraphics[width=6.5cm]{onetransistor.png} 
-	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Banco de Memoria}
-	\begin{center}
-	\includegraphics[height=.8\textheight]{membank.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Multiplexado de la dirección}
-	\begin{itemize}
-		\item 1966-
-		\item Robert Proebsting cofundador de Mostek
-		\item Divide la direccion en dos y multiplexa las partes
-			\begin{itemize}
-				\item Filas \textbf{Row}
-				\item Columnas \textbf{Column}
-			\end{itemize}
-		\item Reduce el tamaño del Chip y por consiguiente su costo.
-		\item Fue ridiculizado por sus competidores.
-		\item A finales de los 70s dominaba el 85\% del mercado mundial.
-	\end{itemize}
-	\begin{center}
-		\includegraphics[width=0.55\textwidth]{MT4C1024-HD.jpg} \\
-		\tiny{Micron MT4C1024 Chip. 1 Mbit DRAM. Die size 8662x3969$\mu m$ 1989 - 1991}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama en Bloques}
-\framesubtitle{MOSTEK DRAM}
-	\includegraphics[width=0.9\textwidth]{dramchip.eps}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Versiones más reconocidas}
-\framesubtitle{DRAM}
-	\begin{itemize}
-	\item SDRAM Synchronous DRAM
-		\begin{itemize}
-			\item FPM Fast Page Mode
-			\item EDO Extended Data Out - 1995
-		\end{itemize}
-	\item SDRAM Synchronous DRAM
-		\begin{itemize}
-		\item SDR Single Data Rate - 1993 
-		\item DDR Double Data Rate - 2000
-			\begin{itemize}
-			\item DDR1 - 2000
-			\item DDR2 - 2003
-			\item DDR3 - 2007
-			\item DDR4 - 2014
-			\end{itemize}
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Secuencia de acceso}
-\framesubtitle{DRAM}
-	\begin{itemize}
-		\item Acceder a la fila con las lineas precargardas
-		\item Conectar el amplificador de sensado y obtener el valor almacenado
-		\item Acceder a la columna
-		\item Recuperar el valor leido
-		\item Percargar las lineas a la mitad de la tension entre el 0 y el 1 lógico
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama de tiempos FPM  y EDO}
-	\begin{center}
-		\includegraphics[width=\textwidth]{dram-timings.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama de tiempos SDR DRAM}
-	\begin{center}
-		\includegraphics[width=\textwidth]{sdrdram-timings.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama de tiempos DDR DRAM}
-	\begin{center}
-		\includegraphics[width=\textwidth]{ddrdram-timings.eps}
-	\end{center}
-\end{frame}
-
-\section{Field Programmable Gate Arrays}
 \begin{frame}
 \frametitle{Ley de Moore}
 	\begin{itemize}
@@ -363,33 +157,7 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}[t]
-\frametitle{Lenguajes descriptores de hardware}
-	\begin{columns}[t]
-	\column{0.6\textwidth}
-	\begin{itemize}
-			\item Finales de los 60s
-			\item Herramienta de especificación de hardware digital para:
-				\begin{itemize}
-				\item Simulación
-				\item Sintetizadores de Hardware
-				\item Compiladores de silicio
-				\end{itemize}
-			\item VHDL \\ VHSIC Hardware Description Language
-			\item Primer HDL en normalizarse 1987
-			\item Promovido por el DoD de EEUU
-			\item Norma IEEE 1076
-		\end{itemize}
-	\column{0.4\textwidth}
-		\lstinputlisting[language=VHDL,
-			tabsize=2,
-			basicstyle=\ttfamily\tiny,
-			keywordstyle=\color{blue}\ttfamily,
-			stringstyle=\color{red}\ttfamily,
-			commentstyle=\color{brown}\ttfamily]{ffd.vhd}
-	\end{columns}
-\end{frame}
-
+\section{Field Programmable Gate Arrays}
 \begin{frame}
 \frametitle{Gate Arrays o Arreglos de Compuertas}
 	\begin{columns}[t]
@@ -411,28 +179,14 @@
 %"S-MOS Systems ASIC SLA6140" by Antoinebercovici - Own work. Licensed under CC BY-SA 3.0 via Commons - https://commons.wikimedia.org/wiki/File:S-MOS_Systems_ASIC_SLA6140.jpg#/media/File:S-MOS_Systems_ASIC_SLA6140.jpg
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
 \frametitle{FPGAs Field Programmable Gate Arrays}
 	\begin{itemize}
-		\item 1985
-		\item Xilinx
+		\item 1985 Xilinx
 		\item Gate Arrays cuya red interconexión es programable.
-		\item Fabless
 		\item Son los impulsores del incremento en la escala de integración
-		\item Conciderada tecnología restrictiva
-		\item Intel compra Altera principal competidor de Xilinx en el 2015.\\
-			La acción de Altera paso a valer 50 USD (9/2015) de valer 30 USD 
-		\item La idea se descartaba por la baja escala de integración del momento. \\
-		Seis años después obtiene reingresos por 100 millones de USD.
+		\item Tecnología de exportación retringida
 	\end{itemize}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{FPGAs Field Programmable Gate Arrays}
-\framesubtitle{Restricciones de exportación}
-	\begin{center}
-		\includegraphics[width=\textwidth]{export.eps}
-	\end{center}
 \end{frame}
 
 \begin{frame}
@@ -442,7 +196,7 @@
 		\begin{itemize}
 			\item Más rápidas
 			\item Menor consumo a igual aplicación
-			\item Se adaptan a aplicaiones específicas
+			\item Se adaptan a aplicaciones específicas
 		\end{itemize}
 		\item FPGA vs ASIC
 		\begin{itemize}
@@ -508,7 +262,7 @@
 		\item 2008
 		\item Spartan 3A DSP
 			\begin{itemize}
-				\item 37440 LE
+				\item 37440 LE equivalente a 14 procesadores de 32 Bits.
 				\item 84 BRAM de 18Kbits
 				\item 84 Unidades de DSP
 				\item 250 Mhz
@@ -602,6 +356,105 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}[t]
+\frametitle{DRAM Memoria dinámica}
+	\begin{itemize}
+		\item 1966
+		\item Robert Dennard
+		\item Un transistor por bit
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=6.5cm]{onetransistor.png} 
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Banco de Memoria}
+	\begin{center}
+	\includegraphics[height=.8\textheight]{membank.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Multiplexado de la dirección}
+	\begin{itemize}
+		\item 1966-
+		\item Robert Proebsting cofundador de Mostek
+		\item Divide la direccion en dos y multiplexa las partes
+			\begin{itemize}
+				\item Filas \textbf{Row}
+				\item Columnas \textbf{Column}
+			\end{itemize}
+		\item Reduce el tamaño del Chip y por consiguiente su costo.
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.55\textwidth]{MT4C1024-HD.jpg} \\
+		\tiny{Micron MT4C1024 Chip. 1 Mbit DRAM. Die size 8662x3969$\mu m$ 1989 - 1991}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama en Bloques}
+\framesubtitle{MOSTEK DRAM}
+	\includegraphics[width=0.9\textwidth]{dramchip.eps}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Versiones más reconocidas}
+\framesubtitle{DRAM}
+	\begin{itemize}
+	\item DRAM Asincrónica
+		\begin{itemize}
+			\item FPM Fast Page Mode
+			\item EDO Extended Data Out - 1995
+		\end{itemize}
+	\item SDRAM DRAM Sincrónica
+		\begin{itemize}
+		\item SDR Single Data Rate - 1993 
+		\item DDR Double Data Rate - 2000
+			\begin{itemize}
+			\item DDR1 - 2000
+			\item DDR2 - 2003
+			\item DDR3 - 2007
+			\item DDR4 - 2014
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Secuencia de acceso}
+\framesubtitle{DRAM}
+	\begin{itemize}
+		\item Acceder a la fila con las lineas precargardas
+		\item Conectar el amplificador de sensado y obtener el valor almacenado
+		\item Acceder a la columna
+		\item Recuperar el valor leido
+		\item Percargar las lineas a la mitad de la tension entre el 0 y el 1 lógico
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos FPM  y EDO}
+	\begin{center}
+		\includegraphics[width=\textwidth]{dram-timings.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos SDR DRAM}
+	\begin{center}
+		\includegraphics[width=\textwidth]{sdrdram-timings.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diagrama de tiempos DDR DRAM}
+	\begin{center}
+		\includegraphics[width=\textwidth]{ddrdram-timings.eps}
+	\end{center}
+\end{frame}
+
 \section{DDR3 DRAM}
 \begin{frame}
 \frametitle{Diagrama en bloque}
@@ -681,6 +534,136 @@
 		\item Phase Unit es un registro de desplazamiento con las phases necesarias para todos los eventos posibles
 		\item Task Unit elige las salidas del registro de desplazamiento conforme a los diagramas de tiempos
 	\end{itemize}
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Memoria de linea de retardo}
+\begin{columns}[t]
+	\column{0.5\textwidth}
+	\begin{itemize}
+		\item 1947
+		\item John Adam Presper Eckert
+		\item Lineas de retardo para Radar
+		\item EDVAC, UNIVAC I
+		\item Medio de propagación Mercurio
+		\item 576 Bits
+	\end{itemize}
+	\column{0.5\textwidth}
+	\begin{center}
+		\includegraphics[width=4cm]{delay_line.png}
+	\end{center}
+\end{columns}
+\end{frame}
+
+
+\section{Primeras computadoras}
+\subsection{Tecnología analógica}
+\begin{frame}[t]
+\frametitle{Torpedo Data Computer}
+\begin{columns}[t]
+	\column{.6\textwidth}
+		\begin{itemize}
+			\item 1940
+			\item Instaladas en submarinos
+			\item Cálculo del ajuste de los parámetros \\ del torpedo previo al disparo
+		\end{itemize}
+	\column{.4\textwidth}
+	\begin{center}
+	\includegraphics[width=\textwidth]{tdc.jpg} 
+	\end{center}
+\end{columns}
+\end{frame}
+
+\subsection{Tecnología digital electromecánica}
+
+\begin{frame}
+\frametitle{Relay}
+	\begin{columns}
+	\column{.5\textwidth}
+	\begin{center}
+		\includegraphics[height=3cm]{relay-imagen.jpg}
+	\end{center}
+	\column{.5\textwidth}
+	\begin{center}
+		\includegraphics[height=3cm]{relay-diagrama.png}
+	\end{center}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Z3}
+\begin{minipage}[c]{5.25cm}
+	\begin{itemize}
+		\item 1941
+		\item Konrad Zuse
+		\item Estudio de aeroelasticidad
+		\item 64 palabras de 22 bits
+		\item 5 Hz
+		\item 2000 relays
+		\item 4 KW
+		\item 1 Tonelada
+	\end{itemize}
+\end{minipage}
+	\begin{minipage}[c]{6.4cm}
+		\includegraphics[width=6.4cm]{Z3_Deutsches_Museum.JPG}
+	\end{minipage}
+\end{frame}
+
+\subsection{Tecnolgía digital electrónica}
+\begin{frame}
+\frametitle{Tubos de vacio}
+	\begin{center}
+	\includegraphics[width=.9\textwidth]{ENIAC-Computer-045_book_fin.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Memoria Drum}
+	\begin{minipage}[b]{7.5cm}
+		\begin{itemize}
+			\item 1932
+			\item Gustav Tauschek
+			\item Capacidad de 500 Kbits o 62.5 Kbytes
+			\item Precursores de los HDD o discos rigidos
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}[c]{4cm}
+		\begin{center}
+			\includegraphics[height=4cm]{Pamiec_bebnowa_1.jpg}
+		\end{center}
+	\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Core memory}
+	\begin{minipage}[c]{7.5cm}
+		\begin{itemize}
+			\item 1955-1975
+			\item Toroides mágneticos
+			\item Lectura destructiva
+			\item Costo de 1.00(1955) a 0.01(1975) USD por bit
+			\item Tecnologías desplazadas
+				\begin{itemize}
+					\item DRUM
+					\item Tubos de Vacio
+					\item Transistores
+				\end{itemize}
+			\item Fabricadas por sastres en el este asiático
+		\end{itemize}
+	\end{minipage}
+	\begin{minipage}[c]{4cm}
+		\includegraphics[width=4cm]{Ferrite_core_memory.eps} \\ \\
+		\includegraphics[width=2.5cm]{Coincident-current_magnetic_core.eps}
+	\end{minipage}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{FPGAs Field Programmable Gate Arrays}
+\framesubtitle{Restricciones de exportación}
+	\begin{center}
+		\includegraphics[width=\textwidth]{export.eps}
+	\end{center}
 \end{frame}
 
 \end{document}
