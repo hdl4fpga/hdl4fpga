@@ -10,7 +10,7 @@
 \useinnertheme{rectangles}
 \usepackage{tikz}
 \beamertemplatenavigationsymbolsempty 
-\title{FPGA Más Rápido y Más furioso}
+\title{FPGA}
 \author{Miguel A Sagreras}
 \date[2015]{}
 %\institution[short name]{long name}
@@ -20,6 +20,7 @@
 \titlepage
 \end{frame}
 
+\section{Lógica binaria}
 \begin{frame}[t]
 \frametitle{Números}
 {\small
@@ -88,6 +89,13 @@
 \end{frame}
 
 \begin{frame}
+\frametitle{Valores lógicos}
+\begin{center}
+	\includegraphics[width=0.9\textwidth]{logic_values.eps}
+\end{center}
+\end{frame}
+
+\begin{frame}
 \frametitle{Compuertas}
 \begin{center}
 	\includegraphics[width=\textwidth]{logic_gates.eps}
@@ -95,32 +103,46 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Compuertas}
+\frametitle{Aritmética}
 \begin{center}
 	\includegraphics[width=\textwidth]{adder1.eps}
 \end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Compuertas}
+\frametitle{Sumador}
 \begin{center}
 	\includegraphics[height=.8\textheight]{adder2.eps}
 \end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Contexto y arquitectura}
+\frametitle{Diseño}
 	\begin{itemize}
-	\item Ripple Carry Adder
-	\item Carry Look Ahead Adder
-	\item Carry Save Adder
-	\item Carry Select Adder
+	\item Dificultades en el diseño
+		\begin{itemize}
+		\item Tiempos de propagación
+			\begin{itemize}
+			\item Compuertas
+			\item Cables
+			\end{itemize}
+		\end{itemize}
+	\item Soluciónes parciales
+		\begin{itemize}
+			\item Distintas Arquitecturas
+			\begin{itemize}
+			\item Ripple Carry Adder
+			\item Carry Look Ahead Adder
+			\item Carry Save Adder
+			\item Carry Select Adder
+			\end{itemize}
+		\end{itemize}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	ENIAC was built at the University of Pennsylvania between 1943 and 1945 by two professors, John Mauchly and the 24 year old J. Presper Eckert, who got funding from the war department after promising they could build a machine that would replace all the "computers", meaning the women who were employed calculating the firing tables for the army's artillery guns. \\
-	The day that Mauchly and Eckert saw the first small piece of ENIAC work, the persons they ran to bring to their lab to show off their progress were some of these female computers (one of whom remarked, "I was astounded that it took all this equipment to multiply 5 by 1000").
+%	ENIAC was built at the University of Pennsylvania between 1943 and 1945 by two professors, John Mauchly and the 24 year old J. Presper Eckert, who got funding from the war department after promising they could build a machine that would replace all the "computers", meaning the women who were employed calculating the firing tables for the army's artillery guns. 
+	ENIAC se construyó en la Universidad de Pennsylvania entre 1943 y 1945 por dos profesores, John Mauchly y J. Presper Eckert de 24 años quienes obtuvieron fondos del departamento de guerra después de prometer que podían construrir una máquina que reemplazaría a todoas las "computadoras", queriendo decir todas las mujeres que empleadas en calcular las tablas de disparo de las armas de artilleria
 \end{frame}
 
 \begin{frame}
@@ -136,6 +158,11 @@
 	\item 167 $m^{2}$
 	\item 500.000 USD o 6.000.000 USD actualizados
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+%	The day that Mauchly and Eckert saw the first small piece of ENIAC work, the persons they ran to bring to their lab to show off their progress were some of these female computers (one of whom remarked, "I was astounded that it took all this equipment to multiply 5 by 1000").
+	El día que Mauchly y Eckert vieron la primera pieza pequeña de la ENIAC trabajando, la persona a la que fueron corriendo a traer al laboratorio para mostrar su progreso fue a algunas de las computadoras mujeres de las que una remarco, quedé atonita al ver que llevó todo ese equipo para multiplicar 5 por 1000.
 \end{frame}
 
 \begin{frame}
@@ -218,6 +245,7 @@
 			\item Radio difusion
 			\item Electronica de Consumo
 			\item Data Center
+			\item Video \& Procesamiento de Imagen
 		\end{itemize}
 	\end{minipage}
 	\begin{minipage}[c]{5.5cm}
@@ -227,7 +255,6 @@
 			\item Medicina
 			\item Instrumentación Cientifica
 			\item Seguridad
-			\item Video \& Procesamiento de Imagen
 			\item Communications alámbricas
 			\item Comuniaciones inalabámbricas
 		\end{itemize}
@@ -352,10 +379,11 @@
 	\begin{itemize}
 		\item La FPGA tiene memoria interna pero no es masiva
 		\item La transferencia de datos debe ser rápida para poder sostener la tasa de procesamiento
-		\item Se requiere memoria DRAM
+		\item Se requiere tasas de transferencia rápidas a memoria DRAM
 	\end{itemize}
 \end{frame}
 
+\section{DRAM}
 \begin{frame}[t]
 \frametitle{DRAM Memoria dinámica}
 	\begin{itemize}
