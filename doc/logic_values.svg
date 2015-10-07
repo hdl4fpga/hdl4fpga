@@ -201,7 +201,7 @@
      inkscape:showpageshadow="false"
      borderlayer="top"
      inkscape:zoom="8.0000002"
-     inkscape:cx="3.7450407"
+     inkscape:cx="75.651849"
      inkscape:cy="45.41257"
      inkscape:window-x="-2"
      inkscape:window-y="1021"
@@ -257,11 +257,11 @@
        x="170.5"
        y="96.324371">t</tspan></text>
   <path
-     style="fill:none;stroke:#004bc6;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-     d="m 160.5,81.324374 -20,0 -10,-50 -55,0 -10,50 -30,0"
+     style="fill:none;stroke:#004bc6;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+     d="m 160.5,81.324374 c 0,0 -18,1.000001 -20,0 -2,-1.000001 -8.58579,-48.585785 -10,-50 -1,-1.000001 -53,-2.000001 -55,-10e-7 -2,2 -6.579473,48.859825 -10,50 -3,1 -30,1e-6 -30,1e-6"
      id="path5969"
      inkscape:connector-curvature="0"
-     sodipodi:nodetypes="cccccc" />
+     sodipodi:nodetypes="cssssc" />
   <rect
      style="fill:#0000fa;fill-opacity:1;fill-rule:nonzero;stroke:none"
      id="rect5973"
