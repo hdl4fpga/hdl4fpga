@@ -135,7 +135,7 @@
 	\item Cálculo de tablas de disparo de artilleria
 	\item Programación por interruptores y clavijas
 	\item 17.000 tubos de vacio
-	\item Aproximadamentoe 4.100 bits
+	\item Aproximadamente 4.100 bits
 	\item 150 KW
 	\item 167 $m^{2}$
 	\item 500.000 USD o 6.000.000 USD actualizados
@@ -231,7 +231,7 @@
 	\end{block}
 	\begin{block}{FPGA vs ASIC}
 		\begin{itemize}
-			\item Menor costo de fabricacíon para bajo volunem
+			\item Menor costo de fabricación para bajo volunem
 			\item Reprogramables para actualizaciones de la aplicación
 		\end{itemize}
 	\end{block}
@@ -243,7 +243,7 @@
 		\column{0.45\textwidth}
 		\begin{itemize}
 			\item Aeroespacio y Defensa
-			\item Electro medicina.
+			\item Electromedicina.
 			\item Protipado de ASIC.
 			\item Audio
 			\item Automotor
@@ -259,14 +259,14 @@
 			\item Medicina
 			\item Instrumentación Cientifica
 			\item Seguridad
-			\item Communications alámbricas
-			\item Comuniaciones inalabámbricas
+			\item Comunicaciones alámbricas
+			\item Comunicaciones inalabámbricas
 		\end{itemize}
 	\end{columns}
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Diagrama en bloque}
+\frametitle{Diagrama en bloques}
 	\begin{center}
 		\includegraphics[width=0.75\textwidth]{fpga.eps}
 	\end{center}
@@ -314,8 +314,8 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Ejemplo de aplicación : Convolución}
-\framesubtitle{Algoritmo en Lenguaje C y en Assembler Optimizado}
+\frametitle{Algoritmo en Lenguaje C y en Assembler Optimizado}
+\framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
@@ -338,8 +338,8 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Ejemplo de aplicación : Convolución}
-\framesubtitle{Diagrama en bloque para FPGA}
+\frametitle{Diagrama en bloque para FPGA}
+\framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
 	\end{center}
@@ -349,8 +349,8 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Ejemplo de aplicación : Convolución}
-\framesubtitle{Comparación entre FPGA y Procesador}
+\frametitle{Comparación estimaiva entre FPGA y Procesador}
+\framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{columns}[t]
 	\column{0.35\textwidth}
 	\begin{block}{Spartan 3A DSP}
@@ -508,7 +508,7 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{\footnotesize Arquitectura del controlador obtenido de DDR3 DRAM para FPGA}
+\frametitle{\footnotesize Arquitectura del controlador de DDR DRAM obtenido para FPGA}
 	\begin{center}
 		\includegraphics[width=.95\textwidth]{ddrcntroler.eps}
 	\end{center}
@@ -554,6 +554,7 @@
 \begin{frame}
 \frametitle{Diagrama de tiempos}
 \framesubtitle{Comando READ}
+\centering
 	\includegraphics[width=.8\textwidth]{ddr3nrdbrst.eps} 
 \end{frame}
 
@@ -564,8 +565,8 @@
 	\begin{itemize}
 	\item Ejecuta las intrucciones de inicialización
 	\item Temporización de las instrucciones MPR, MRS
-	\item Ciclo de refresco
 	\item Configuración de BL, CL, AL, WL
+	\item Ciclo de refresco
 	\end{itemize}
 	\begin{center}
 		\includegraphics[width=0.6\textwidth]{ddr3initstated.eps}
@@ -590,135 +591,25 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}
+\frametitle{Fragmento del código de la especificación}
+\framesubtitle{VHDL}
+	\begin{center}
+		\lstinputlisting[language=VHDL,
+			tabsize=2,
+			basicstyle=\ttfamily\tiny,
+			keywordstyle=\color{blue}\ttfamily,
+			stringstyle=\color{red}\ttfamily,
+			commentstyle=\color{brown}\ttfamily]{xdrinit.vhd}
+	\end{center}
+\end{frame}
 
-%\begin{frame}[t]
-%\frametitle{Memoria de linea de retardo}
-%\begin{columns}[t]
-%	\column{0.5\textwidth}
-%	\begin{itemize}
-%		\item 1947
-%		\item John Adam Presper Eckert
-%		\item Lineas de retardo para Radar
-%		\item EDVAC, UNIVAC I
-%		\item Medio de propagación Mercurio
-%		\item 576 Bits
-%	\end{itemize}
-%	\column{0.5\textwidth}
-%	\begin{center}
-%		\includegraphics[width=4cm]{delay_line.png}
-%	\end{center}
-%\end{columns}
-%\end{frame}
-%
-%
-%\section{Primeras computadoras}
-%\subsection{Tecnología analógica}
-%\begin{frame}[t]
-%\frametitle{Torpedo Data Computer}
-%\begin{columns}[t]
-%	\column{.6\textwidth}
-%		\begin{itemize}
-%			\item 1940
-%			\item Instaladas en submarinos
-%			\item Cálculo del ajuste de los parámetros \\ del torpedo previo al disparo
-%		\end{itemize}
-%	\column{.4\textwidth}
-%	\begin{center}
-%	\includegraphics[width=\textwidth]{tdc.jpg} 
-%	\end{center}
-%\end{columns}
-%\end{frame}
-%
-%\subsection{Tecnología digital electromecánica}
-%
-%\begin{frame}
-%\frametitle{Relay}
-%	\begin{columns}
-%	\column{.5\textwidth}
-%	\begin{center}
-%		\includegraphics[height=3cm]{relay-imagen.jpg}
-%	\end{center}
-%	\column{.5\textwidth}
-%	\begin{center}
-%		\includegraphics[height=3cm]{relay-diagrama.png}
-%	\end{center}
-%\end{columns}
-%\end{frame}
-%
-%\begin{frame}
-%\frametitle{Z3}
-%\begin{minipage}[c]{5.25cm}
-%	\begin{itemize}
-%		\item 1941
-%		\item Konrad Zuse
-%		\item Estudio de aeroelasticidad
-%		\item 64 palabras de 22 bits
-%		\item 5 Hz
-%		\item 2000 relays
-%		\item 4 KW
-%		\item 1 Tonelada
-%	\end{itemize}
-%\end{minipage}
-%	\begin{minipage}[c]{6.4cm}
-%		\includegraphics[width=6.4cm]{Z3_Deutsches_Museum.JPG}
-%	\end{minipage}
-%\end{frame}
-%
-%\subsection{Tecnolgía digital electrónica}
-%\begin{frame}
-%\frametitle{Tubos de vacio}
-%	\begin{center}
-%	\includegraphics[width=.9\textwidth]{ENIAC-Computer-045_book_fin.jpg}
-%	\end{center}
-%\end{frame}
-%
-%\begin{frame}
-%\frametitle{Memoria Drum}
-%	\begin{minipage}[b]{7.5cm}
-%		\begin{itemize}
-%			\item 1932
-%			\item Gustav Tauschek
-%			\item Capacidad de 500 Kbits o 62.5 Kbytes
-%			\item Precursores de los HDD o discos rigidos
-%		\end{itemize}
-%	\end{minipage}
-%	\begin{minipage}[c]{4cm}
-%		\begin{center}
-%			\includegraphics[height=4cm]{Pamiec_bebnowa_1.jpg}
-%		\end{center}
-%	\end{minipage}
-%\end{frame}
-%
-%\begin{frame}
-%\frametitle{Core memory}
-%	\begin{minipage}[c]{7.5cm}
-%		\begin{itemize}
-%			\item 1955-1975
-%			\item Toroides mágneticos
-%			\item Lectura destructiva
-%			\item Costo de 1.00(1955) a 0.01(1975) USD por bit
-%			\item Tecnologías desplazadas
-%				\begin{itemize}
-%					\item DRUM
-%					\item Tubos de Vacio
-%					\item Transistores
-%				\end{itemize}
-%			\item Fabricadas por sastres en el este asiático
-%		\end{itemize}
-%	\end{minipage}
-%	\begin{minipage}[c]{4cm}
-%		\includegraphics[width=4cm]{Ferrite_core_memory.eps} \\ \\
-%		\includegraphics[width=2.5cm]{Coincident-current_magnetic_core.eps}
-%	\end{minipage}
-%\end{frame}
-%
-%\begin{frame}[t]
-%\frametitle{FPGAs Field Programmable Gate Arrays}
-%\framesubtitle{Restricciones de exportación}
-%	\begin{center}
-%		\includegraphics[width=\textwidth]{export.eps}
-%	\end{center}
-%\end{frame}
+\begin{frame}
+\frametitle{Resultado de la síntesis}
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{ddr3ctrl.png}
+	\end{center}
+\end{frame}
 
 \end{document}
 
