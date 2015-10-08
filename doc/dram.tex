@@ -353,8 +353,8 @@
 \framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{columns}[t]
 	\column{0.35\textwidth}
-	\begin{block}{Spartan 3A DSP}
-		{\footnotesize \begin{itemize}
+	\begin{block}{\small Spartan 3A DSP}
+		{\scriptsize \begin{itemize}
 			\item Tecnología 2004
 			\item 90 nm
 			\item 250 Mhz o ciclo de 4 ns
@@ -363,21 +363,21 @@
 		\end{itemize}}
 	\end{block}
 	\column{0.6\textwidth}
-	\begin{block}{Intel i7 920}
-		{\footnotesize \begin{itemize}
+	\begin{block}{\small Intel i7 920}
+		{\scriptsize \begin{itemize}
 			\item Tecnología 2008
 			\item 45 nm
-			\item 2.66 Ghz  o ciclo de .375 ps
+			\item 2.66 Ghz  o ciclo de 0.375 ps
 			\item Un resultado cada 84 ciclos del lazo
 			\item Un lazo 7 instrucciones
-			\item 2.5 instrucciones por ciclo promedio
-			\item Un resultado cada 84*7/(2.5*2.66) = 88 ns
+			\item 0.44\footnote{\tiny Computer Achitecture A Quantitative Approach 5th edition \\ Hennessy Patterson figura 3.43} ciclos por instrucción.
+			\item Un resultado cada 84*7*0.44*0.375 = 97 ns
 		\end{itemize}}
 	\end{block}
 	\end{columns}
-	\begin{block}{Aumento de velocidad}
+	\begin{block}{\small Aumento de velocidad}
 	\begin{center}
-		$\frac{Spartan3A\ DSP}{Corei7} = \frac{88 ns}{4 ns} = 22$
+		$\frac{Spartan3A\ DSP}{Corei7} = \frac{97 ns}{4 ns} = 24$
 	\end{center}
 	\end{block}
 \end{frame}
