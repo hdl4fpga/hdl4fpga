@@ -626,6 +626,53 @@
 		\includegraphics[width=0.5\textwidth]{ddr3ctrl.png}
 	\end{center}
 \end{frame}
-
+%Design Summary
+%   Number of registers:    797 out of 26718 (3%)
+%      PFU registers:          793 out of 24948 (3%)
+%      PIO registers:            4 out of  1770 (0%)
+%   Number of SLICEs:       700 out of 16632 (4%)
+%      SLICEs as Logic/ROM:    568 out of 16632 (3%)
+%      SLICEs as RAM:          132 out of  3204 (4%)
+%      SLICEs as Carry:         45 out of 16632 (0%)
+%   Number of LUT4s:        1096 out of 33264 (3%)
+%      Number of logic LUTs:      742
+%      Number of distributed RAM: 132 (264 LUT4s)
+%      Number of ripple logic:     45 (90 LUT4s)
+%      Number of shift registers:   0
+%   Number of PIO sites used: 100 out of 295 (34%)
+%      Number of PIO sites used for single ended IOs: 92
+%      Number of PIO sites used for differential IOs: 8 (represented by 4 PIO
+%     comps in NCD)
+%   Number of IDDR/ODDR/TDDR cells used: 77 out of 1770 (4%)
+%      Number of IDDR cells:  16
+%      Number of ODDR cells:  43
+%      Number of TDDR cells:  18
+%   Number of PIO using at least one IDDR/ODDR/TDDR: 43 (3 differential)
+%      Number of PIO using IDDR only:        0 (0 differential)
+%      Number of PIO using ODDR only:       25 (1 differential)
+%      Number of PIO using TDDR only:        0 (0 differential)
+%      Number of PIO using IDDR/ODDR:        0 (0 differential)
+%      Number of PIO using IDDR/TDDR:        0 (0 differential)
+%      Number of PIO using ODDR/TDDR:        2 (2 differential)
+%      Number of PIO using IDDR/ODDR/TDDR:  16 (0 differential)
+%   Number of PIO FIXEDDELAY:    0
+%   Number of PCS (SerDes):  0 out of 1 (0%) with bonded PIO sites
+%   Number of DQSDLLs:  1 out of 2 (50%)
+%   Number of PLLs:  1 out of 4 (25%)
+%   Number of DLLs:  0 out of 2 (0%)
+%   Number of block RAMs:  2 out of 72 (3%)
+%   Number of CLKDIVs:  0 out of 2 (0%)
+%   Number of GSRs:  1 out of 1 (100%)
+%   JTAG used :      No
+%   Readback used :  No
+%   Oscillator used :  No
+%   Startup used :   No
+%   Notes:-
+%
+%      1. Total number of LUT4s = (Number of logic LUT4s) + 2*(Number of
+%     distributed RAMs) + 2*(Number of ripple logic)
+%      2. Number of logic LUT4s does not include count of distributed RAM and
+%     ripple logic.
+%
 \end{document}
 

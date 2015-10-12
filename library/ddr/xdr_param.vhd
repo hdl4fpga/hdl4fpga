@@ -850,6 +850,7 @@ package body xdr_param is
 		variable pha : natural;
 		variable aux : std_logic;
 
+		variable xxx : natural;
 		variable j_quo : natural;
 		variable j_mod : natural;
 		variable l_quo : natural;
@@ -871,8 +872,9 @@ package body xdr_param is
 			disp_quo := disp  /  word'length;
 			for j in word'range loop
 				aux := '0';
-				j_quo := ((lat_ext(i)-j+word'length-1)/word'length+lat_wid-1)/lat_wid;
-				j_mod := (lat_wid-(lat_ext(i)-j+word'length-1)/word'length) mod lat_wid;
+				xxx := (lat_ext(i)-j+word'length-1)/word'length
+				j_quo := (xxx+lat_wid-1)/lat_wid;
+				j_mod := (lat_wid-xxx) mod lat_wid;
 				l_mod := 0;
 				l_quo := 0;
 				for l in 0 to j_quo loop
