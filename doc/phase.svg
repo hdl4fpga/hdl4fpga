@@ -188,7 +188,7 @@
     </marker>
   </defs>
   <sodipodi:namedview
-     inkscape:window-height="1025"
+     inkscape:window-height="1060"
      inkscape:window-width="1920"
      inkscape:pageshadow="2"
      inkscape:pageopacity="1"
@@ -199,10 +199,10 @@
      inkscape:showpageshadow="false"
      borderlayer="top"
      inkscape:zoom="2.8284271"
-     inkscape:cx="148.93039"
-     inkscape:cy="-428.24435"
-     inkscape:window-x="-2"
-     inkscape:window-y="1021"
+     inkscape:cx="43.228181"
+     inkscape:cy="-215.89931"
+     inkscape:window-x="1918"
+     inkscape:window-y="-3"
      inkscape:current-layer="svg2"
      showgrid="true"
      inkscape:window-maximized="1"
@@ -1001,7 +1001,7 @@
        sodipodi:role="line"
        id="tspan5340"
        x="-115.30245"
-       y="905.5">j_quo</tspan></text>
+       y="905.5">width_quo</tspan></text>
   <path
      sodipodi:nodetypes="cccccc"
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1097,7 +1097,7 @@
        sodipodi:role="line"
        id="tspan3139"
        x="-8.9328203"
-       y="502.17578">disp_quo</tspan></text>
+       y="502.17578">latency_quo</tspan></text>
   <path
      style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
      d="m -30.302449,545.50001 0,55 10,0 0,-60 30,0 0,35"
@@ -1114,7 +1114,7 @@
        y="562.17578"
        x="135.16191"
        id="tspan5025"
-       sodipodi:role="line">disp_mod</tspan></text>
+       sodipodi:role="line">latency_mod</tspan></text>
   <path
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart)"
      d="m 125.76005,565.50002 40,0"
@@ -1137,7 +1137,7 @@
        sodipodi:role="line"
        id="tspan6033"
        x="-71.25"
-       y="499.83838">disp = lat_tab(i)</tspan></text>
+       y="499.83838">latency</tspan></text>
   <path
      inkscape:connector-curvature="0"
      id="path6035"
@@ -1154,13 +1154,13 @@
      sodipodi:linespacing="125%"
      id="text6041"
      y="500.5"
-     x="94.697548"
+     x="79.697548"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
      xml:space="preserve"><tspan
        y="500.5"
-       x="94.697548"
+       x="79.697548"
        id="tspan6043"
-       sodipodi:role="line">disp = lat_ext(i)</tspan></text>
+       sodipodi:role="line">width</tspan></text>
   <path
      inkscape:connector-curvature="0"
      id="path6062"
@@ -1212,47 +1212,47 @@
   <text
      xml:space="preserve"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
-     x="-60.302448"
+     x="-75.302452"
      y="655.5"
      id="text6078"
      sodipodi:linespacing="125%"><tspan
        sodipodi:role="line"
        id="tspan6080"
-       x="-60.302448"
-       y="655.5">XXX(0)</tspan></text>
+       x="-75.302452"
+       y="655.5">distance(0)</tspan></text>
   <text
      sodipodi:linespacing="125%"
      id="text6082"
      y="645.5"
-     x="-60.302448"
+     x="-75.302452"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
      xml:space="preserve"><tspan
        y="645.5"
-       x="-60.302448"
+       x="-75.302452"
        id="tspan6084"
-       sodipodi:role="line">XXX(1)</tspan></text>
+       sodipodi:role="line">distance(1)</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
-     x="-60.302448"
+     x="-75.302452"
      y="635.5"
      id="text6086"
      sodipodi:linespacing="125%"><tspan
        sodipodi:role="line"
        id="tspan6088"
-       x="-60.302448"
-       y="635.5">XXX(2)</tspan></text>
+       x="-75.302452"
+       y="635.5">distance(2)</tspan></text>
   <text
      sodipodi:linespacing="125%"
      id="text6090"
      y="625.5"
-     x="-60.302448"
+     x="-75.302452"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
      xml:space="preserve"><tspan
        y="625.5"
-       x="-60.302448"
+       x="-75.302452"
        id="tspan6092"
-       sodipodi:role="line">XXX(3)</tspan></text>
+       sodipodi:role="line">distance(3)</tspan></text>
   <path
      sodipodi:nodetypes="cc"
      inkscape:connector-curvature="0"
@@ -1291,7 +1291,7 @@
        y="515.5"
        x="-90.302452"
        id="tspan6108"
-       sodipodi:role="line">lat_wid</tspan></text>
+       sodipodi:role="line">extension</tspan></text>
   <path
      style="fill:none;stroke:#fffc00;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
      d="m 9.697551,575.50001 0,25 10,0 0,-55 30,0 0,60 10,0 0,-60 25,0 0,60 19.999999,0 0,-60"
@@ -1308,7 +1308,7 @@
        y="805.5"
        x="149.69756"
        id="tspan3181"
-       sodipodi:role="line">lat_wid*j_quo</tspan></text>
+       sodipodi:role="line">width_quo*width</tspan></text>
   <path
      sodipodi:nodetypes="cc"
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#StopM);marker-end:url(#StopM)"
@@ -1325,7 +1325,7 @@
        sodipodi:role="line"
        id="tspan3187"
        x="259.69754"
-       y="770.5">j_mod</tspan></text>
+       y="770.5">width_mod</tspan></text>
   <text
      sodipodi:linespacing="125%"
      id="text3189"
@@ -1336,7 +1336,7 @@
        y="705.5"
        x="89.697548"
        sodipodi:role="line"
-       id="tspan3193">XXX</tspan></text>
+       id="tspan3193">distance</tspan></text>
   <text
      sodipodi:linespacing="125%"
      id="text3197"
@@ -1347,7 +1347,7 @@
        y="785.5"
        x="9.6975508"
        id="tspan3199"
-       sodipodi:role="line">lat_wid</tspan></text>
+       sodipodi:role="line">width</tspan></text>
   <path
      sodipodi:nodetypes="cc"
      style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#StopM);marker-end:url(#StopM)"
@@ -1390,18 +1390,18 @@
        sodipodi:role="line"
        id="tspan3213"
        x="174.69756"
-       y="785.5">lat_wid</tspan></text>
+       y="785.5">width</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:6px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
-     x="294.69754"
+     x="259.69754"
      y="785.5"
      id="text3215"
      sodipodi:linespacing="125%"><tspan
        sodipodi:role="line"
        id="tspan3217"
-       x="294.69754"
-       y="785.5">lat_wid</tspan></text>
+       x="259.69754"
+       y="785.5">width</tspan></text>
   <path
      inkscape:connector-curvature="0"
      id="path3219"
@@ -1424,5 +1424,5 @@
        sodipodi:role="line"
        id="tspan3231"
        x="134.70384"
-       y="958.61749">l_quo</tspan></text>
+       y="958.61749">tail</tspan></text>
 </svg>
