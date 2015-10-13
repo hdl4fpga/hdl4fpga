@@ -51,7 +51,7 @@ begin
 			for j in word'range loop
 				xxx := (extention-j+word'length-1)/word'length;
 				j_quo := (xxx+width-1)/width;
-				j_mod := (width-xxx) mod width;
+				j_mod := (j_quo*width-xxx) mod width;
 				l_mod := 0;
 				l_quo := 0;
 				write (msg, string'("----------------"));
@@ -76,9 +76,8 @@ begin
 					writeline (output, msg);
 
 					if j_quo /= 0 then
-						l_quo := j_mod  /  j_quo;
 						l_mod := j_mod mod j_quo;
-						l_quo := l_quo + (l*l_mod) / j_quo;
+						l_quo := j_mod  /  j_quo + (l*l_mod) / j_quo;
 						l_mod := (l*l_mod) mod j_quo;
 					end if;
 				end loop;
