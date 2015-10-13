@@ -24,36 +24,31 @@
 use std.textio.all;
 
 architecture main of testbench is
-	constant latency : natural := 12;
-	constant extention : natural := 22;
+	constant extension : natural := 22;
 	constant width : natural := 3;
 	subtype word is bit_vector(0 to 4);
 begin
 	process 
 		variable msg : line;
 
-		variable disp : natural;
-		variable disp_mod : natural;
-		variable disp_quo : natural;
+		constant latency : natural := 12;
+		variable latency_mod : natural;
+		variable latency_quo : natural;
 		variable pha : natural;
 --		variable aux : std_logic;
 
 		variable xxx : natural;
 		variable j_quo : natural;
 		variable j_mod : natural;
-		variable l_quo : natural;
-		variable l_mod : natural;
+		variable tail : natural;
 	begin
 
-			disp := latency;
-			disp_mod := disp mod word'length;
-			disp_quo := disp  /  word'length;
+			latency_mod := latency mod word'length;
+			latency_quo := latency  /  word'length;
 			for j in word'range loop
-				xxx := (extention-j+word'length-1)/word'length;
+				xxx := (extension-j+word'length-1)/word'length;
 				j_quo := (xxx+width-1)/width;
 				j_mod := (j_quo*width-xxx) mod width;
-				l_mod := 0;
-				l_quo := 0;
 				write (msg, string'("----------------"));
 				writeline (output, msg);
 
@@ -69,16 +64,15 @@ begin
 				writeline (output, msg);
 				write (msg, string'("----------------"));
 				writeline (output, msg);
-				for l in 0 to j_quo loop
 
-					pha   := (j+disp_mod)/word'length+l*width-l_quo;
+				tail := 0;
+				for l in 0 to j_quo loop
+					pha   := (j+latency_mod)/word'length+l*width-tail;
 					write (msg, pha);
 					writeline (output, msg);
 
 					if j_quo /= 0 then
-						l_mod := j_mod mod j_quo;
-						l_quo := j_mod  /  j_quo + (l*l_mod) / j_quo;
-						l_mod := (l*l_mod) mod j_quo;
+						tail := j_mod / j_quo + (l*(j_mod mod j_quo)) / j_quo;
 					end if;
 				end loop;
 			end loop;

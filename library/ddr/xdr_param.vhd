@@ -872,7 +872,7 @@ package body xdr_param is
 			disp_quo := disp  /  word'length;
 			for j in word'range loop
 				aux := '0';
-				xxx := (lat_ext(i)-j+word'length-1)/word'length
+				xxx := (lat_ext(i)-j+word'length-1)/word'length;
 				j_quo := (xxx+lat_wid-1)/lat_wid;
 				j_mod := (lat_wid-xxx) mod lat_wid;
 				l_mod := 0;
