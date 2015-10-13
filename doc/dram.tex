@@ -11,8 +11,8 @@
 \useinnertheme{rectangles}
 \usepackage{tikz}
 \beamertemplatenavigationsymbolsempty 
-\title{FPGA}
-\author{Miguel A Sagreras}
+\title{Controlador de DDR para FPGA}
+\author{Miguel A. Sagreras}
 \date[2015]{}
 %\institution[short name]{long name}
 \begin{document}
@@ -91,14 +91,6 @@
 				\end{itemize}
 			\item Número de componentes
 		\end{itemize}
-	\end{block}
-	\begin{block}{Soluciónes parciales}
-			\begin{itemize}
-			\item Ripple Carry Adder
-			\item Carry Look Ahead Adder
-			\item Carry Save Adder
-			\item Carry Select Adder
-			\end{itemize}
 	\end{block}
 \end{frame}
 
@@ -198,7 +190,7 @@
 		\item Ventajas
 			\begin{itemize}
 			\item Fabricación de gran escala
-			\item Solo requieren las máscaras de interconexión 
+			\item Sólo requieren las máscaras de interconexión 
 			\item Reduce el costo de la aplicación específica
 			\end{itemize}
 		\end{itemize}
@@ -214,7 +206,7 @@
 \frametitle{FPGAs Field Programmable Gate Arrays}
 	\begin{itemize}
 		\item 1985 Xilinx
-		\item Gate Arrays cuya red interconexión es programable.
+		\item Gate Arrays cuya red de interconexión es programable.
 		\item Son los impulsores del incremento en la escala de integración
 		\item Tecnología de exportación restringida
 	\end{itemize}
@@ -231,7 +223,7 @@
 	\end{block}
 	\begin{block}{FPGA vs ASIC}
 		\begin{itemize}
-			\item Menor costo de fabricación para bajo volunem
+			\item Menor costo de fabricación para bajo volumen
 			\item Reprogramables para actualizaciones de la aplicación
 		\end{itemize}
 	\end{block}
@@ -244,10 +236,10 @@
 		\begin{itemize}
 			\item Aeroespacio y Defensa
 			\item Electromedicina.
-			\item Protipado de ASIC.
+			\item Prototipado de ASIC.
 			\item Audio
 			\item Automotor
-			\item Radio difusion
+			\item Radiodifusión
 			\item Electrónica de Consumo
 			\item Data Center
 		\end{itemize}
@@ -257,7 +249,7 @@
 			\item Computación de Alta Prestación
 			\item Industrial
 			\item Medicina
-			\item Instrumentación Cientifica
+			\item Instrumentación Científica
 			\item Seguridad
 			\item Comunicaciones alámbricas
 			\item Comunicaciones inalabámbricas
@@ -269,13 +261,6 @@
 \frametitle{Diagrama en bloques}
 	\begin{center}
 		\includegraphics[width=0.75\textwidth]{fpga.eps}
-	\end{center}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Elemento Lógico}
-	\begin{center}
-		\includegraphics[width=0.75\textwidth]{fpgalut.eps}
 	\end{center}
 \end{frame}
 
@@ -309,7 +294,7 @@
 			\end{itemize}
 		\item Video DAC salida diferencial
 		\item Ethernet
-		\item Precio 200 USD
+		\item Precio USD 200
 	\end{itemize}
 \end{frame}
 
@@ -349,7 +334,7 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Comparación estimaiva entre FPGA y Procesador}
+\frametitle{Comparación estimativa entre FPGA y Procesador}
 \framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{columns}[t]
 	\column{0.35\textwidth}
@@ -363,7 +348,7 @@
 		\end{itemize}}
 	\end{block}
 	\column{0.6\textwidth}
-	\begin{block}{\small Intel i7 920}
+	\begin{block}{\small Intel Corei7 920}
 		{\scriptsize \begin{itemize}
 			\item Tecnología 2008
 			\item 45 nm
@@ -377,7 +362,7 @@
 	\end{columns}
 	\begin{block}{\small Aumento de velocidad}
 	\begin{center}
-		$\frac{Spartan3A\ DSP}{Corei7} = \frac{97 ns}{4 ns} = 24$
+		$\frac{Spartan3A\ DSP}{Intel Corei7} = \frac{97 ns}{4 ns} = 24$
 	\end{center}
 	\end{block}
 \end{frame}
@@ -387,7 +372,7 @@
 	\begin{itemize}
 		\item La FPGA tiene memoria interna pero no es masiva
 		\item Se requiere de un controlador de memoria DRAM
-		\item El controlador deber sostener la velocidad de transferencia de datos entre la aplicación y la memoria DRAM
+		\item El controlador debe sostener la velocidad de transferencia de datos entre la aplicación y la memoria DRAM
 	\end{itemize}
 \end{frame}
 
@@ -488,18 +473,27 @@
 %	\end{center}
 %\end{frame}
 %
+
 \begin{frame}
-\frametitle{Diagrama de tiempos simplificado de DDR DRAM}
+\frametitle{Diagrama en bloque detallado de un chip de DDR3 DRAM}
 	\begin{center}
-		\includegraphics[width=\textwidth]{ddrdram-timings.eps}
+		\includegraphics[width=\textwidth]{ddr3-blockdiagraman.eps}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Diagrama de estados}
+\framesubtitle{Especificación DDR3}
+	\begin{center}
+		\includegraphics[height=.75\textheight]{ddr3-statedbusy.eps}
 	\end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Diagrama en bloque de un chip de DDR3 DRAM}
-	\begin{center}
-		\includegraphics[width=\textwidth]{ddr3-blockdiagraman.eps}
-	\end{center}
+\frametitle{Diagrama de tiempos}
+\framesubtitle{Especificación DDR3}
+\centering
+	\includegraphics[width=.8\textwidth]{ddr3nrdbrst.eps} 
 \end{frame}
 
 \section{Controlador DDR DRAM}
@@ -515,104 +509,30 @@
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Program Unit}
-	\begin{columns}[t]
-	\column{0.4\textwidth}
-		\\
-		Secuencia los comandos:
-				\begin{itemize}
-					\item ACT
-					\item READ
-					\item WRITE
-					\item PRE
-					\item REF
-				\end{itemize}
-	\column{0.6\textwidth}
-		\begin{center}
-			\includegraphics[width=.75\textwidth]{ddr3-statedbusy.eps}
-		\end{center}
-	\end{columns}
-\end{frame}
-
-\begin{frame}
-\frametitle{Processor Unit}
-	\begin{itemize}
-		\item Temporiza y ejecuta, deacuerdo a las especificaciones los comandos:
-			\begin{itemize}
-				\item ACT
-				\item READ
-				\item WRITE
-				\item PRE
-				\item REF
-			\end{itemize}
-		\item Tiempos de propagación críticos 
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Diagrama de tiempos especificados por la memoria}
-\framesubtitle{Comando READ}
-\centering
-	\includegraphics[width=.8\textwidth]{ddr3nrdbrst.eps} 
-\end{frame}
-
-
-
-\begin{frame}[t]
-\frametitle{Config \& Refresh Unit}
-	\begin{itemize}
-	\item Ejecuta las intrucciones de inicialización
-	\item Temporización de las instrucciones MPR, MRS
-	\item Configuración de BL, CL, AL, WL
-	\item Ciclo de refresco
-	\end{itemize}
-	\begin{center}
-		\includegraphics[width=0.6\textwidth]{ddr3initstated.eps}
-	\end{center}
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Scheduler Unit}
-	\begin{itemize}
-		\item Tiempos de propagación críticos
-		\item Temporización de las señales de acceso a
-			\begin{itemize}
-				\item DRAM
-				\item IOFIFOs
-			\end{itemize}
-		\item Compuesta por 
-		\begin{itemize}
-			\item Phase Unit
-			\item Task Unit
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{Conclusiones}
-\footnotesize
+\frametitle{Constraste con fabricantes}
+\scriptsize
 \begin{center}
-\begin{tabular}[t]{|l|c|c|c|}
+\begin{tabular}[t]{|r|c|c|c|}
 	\hline
-	Familia & Spartan 3A DPS & Virtex 5 & LatticeECP3 \\
+	\textcolor{blue}{Familia} & \textcolor{blue}{Spartan 3A DPS} & \textcolor{blue}{Virtex 5} & \textcolor{blue}{LatticeECP3} \\
 	\hline
-	Fabricante            & Xilinx & Xilinx & Lattice \\
-	Escala de integración & 90 nm  & 65 nm  & 65 nm \\
-	Grado                 & 4      &   1    & 8 \\
-	Tipo de DRAM          & DDR1   & DDR2   & DDR3 \\
+	\textcolor{blue}{Chip}                  & xc3sd1800a-4cs484 & xc5vlx110t-1ff1136 & LFE3-35EA-7FN484C \\
+	\textcolor{blue}{Fabricante}            & Xilinx & Xilinx & Lattice \\
+	\textcolor{blue}{Escala de integración} & 90 nm  & 65 nm  & 65 nm \\
+	\textcolor{blue}{Grado}                 & 4      &   1    & 8 \\
+	\textcolor{blue}{Tipo de DRAM}          & DDR1   & DDR2   & DDR3 \\
 	\hline
-	Modulo del Fabricante \\
+	\textcolor{red}{Módulo del fabricante} \\
 	\hline
-	Velocidad   T/s          & 266 & 533 & 800 \\
-	Código portable       & no  & no  & cerrado \\
+	\textcolor{blue}{Velocidad   T/s}          & 266 & 533 & 800 \\
+	\textcolor{blue}{Código portable}       & no  & no  & cerrado \\
 	\hline
-	Modulos obtenido  \\
+	\textcolor{red}{Módulo obtenido}  \\
 	\hline
-	Velocidad T/s    & 333 & 650 & 1000 \\
-	Código portable       & sí   & sí & sí \\
+	\textcolor{blue}{Velocidad T/s}    & 333 & 650 & 1000 \\
+	\textcolor{blue}{Código portable}       & sí   & sí & sí \\
 	\hline
-	Aumento de velocidad  & 25\% & 22\% & 25\% \\
+	\textcolor{magenta}{Aumento de velocidad}  & 25\% & 22\% & 25\% \\
 	\hline
 
 	\end{tabular}
@@ -620,7 +540,7 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Resultado de la síntesis}
+\frametitle{Síntesis}
 \framesubtitle{Lattice ECP3 Versa Kit}
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{ddr3ctrl.png}

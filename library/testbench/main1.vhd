@@ -37,44 +37,30 @@ begin
 		variable pha : natural;
 --		variable aux : std_logic;
 
-		variable xxx : natural;
-		variable j_quo : natural;
-		variable j_mod : natural;
+		variable distance : natural;
+		variable word_quo : natural;
+		variable word_mod : natural;
 		variable tail : natural;
+		variable tail_quo : natural;
+		variable tail_mod : natural;
 	begin
 
 			latency_mod := latency mod word'length;
 			latency_quo := latency  /  word'length;
 			for j in word'range loop
-				xxx := (extension-j+word'length-1)/word'length;
-				j_quo := (xxx+width-1)/width;
-				j_mod := (j_quo*width-xxx) mod width;
-				write (msg, string'("----------------"));
-				writeline (output, msg);
+				distance  := (extension-j+word'length-1)/word'length;
+				width_quo := (distance+width-1)/width;
+				width_mod := (width_quo*width-distance) mod width;
 
-				write (msg, string'("j : "));
-				write (msg, j);
-				write (msg, string'(" : xxx : "));
-				write (msg, xxx);
-				write (msg, string'(" : j_quo : "));
-				write (msg, j_quo);
-				write (msg, string'(" : j_mod : "));
-				write (msg, j_mod);
-
-				writeline (output, msg);
-				write (msg, string'("----------------"));
-				writeline (output, msg);
-
-				tail := 0;
-				for l in 0 to j_quo loop
-					pha   := (j+latency_mod)/word'length+l*width-tail;
-					write (msg, pha);
-					writeline (output, msg);
-
-					if j_quo /= 0 then
-						tail := j_mod / j_quo + (l*(j_mod mod j_quo)) / j_quo;
-					end if;
-				end loop;
+				pha := (j+latency_mod)/word'length;
+				if word_quo /= 0 then
+					tail_quo := width_mod  /  width_quo;
+					tail_mod := width_mod mod width_quo;
+					for l in 1 to width_quo loop
+						tail := tail_quo + (l*tail_mod) / j_quo;
+						pha  := (j+latency_mod)/word'length+l*width-tail;
+					end loop;
+				end if;
 			end loop;
 		wait ;
 	end process;
