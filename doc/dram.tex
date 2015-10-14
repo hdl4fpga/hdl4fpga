@@ -19,6 +19,16 @@
 
 \begin{frame}
 \titlepage
+{\small
+Los dispositivos conocidos como FPGAs comienzan a desplazar en aplicaciones de
+alta prestación a los procesadores tradicionales. En este contexto, se requiere
+del uso de memoria masiva DDR DRAM. El controlador, la interfaz entre la
+aplicación y la memoria, se programa en la FPGA y debe ser capaz de transferir
+datos desde y hacia la memoria de manera de alcanzar las tasas límites físicas
+que ofrecen los recursos de la FPGA de manera de aprovechar al máximo todo su
+potencial.
+
+}
 \end{frame}
 
 \begin{frame}
@@ -524,12 +534,12 @@
 	\hline
 	\textcolor{red}{Módulo del fabricante} \\
 	\hline
-	\textcolor{blue}{Velocidad   T/s}          & 266 & 533 & 800 \\
+	\textcolor{blue}{Velocidad   MT/s}          & 266 & 533 & 800 \\
 	\textcolor{blue}{Código portable}       & no  & no  & cerrado \\
 	\hline
 	\textcolor{red}{Módulo obtenido}  \\
 	\hline
-	\textcolor{blue}{Velocidad T/s}    & 333 & 650 & 1000 \\
+	\textcolor{blue}{Velocidad MT/s}    & 333 & 650 & 1000 \\
 	\textcolor{blue}{Código portable}       & sí   & sí & sí \\
 	\hline
 	\textcolor{magenta}{Aumento de velocidad}  & 25\% & 22\% & 25\% \\
@@ -545,6 +555,15 @@
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{ddr3ctrl.png}
 	\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Conclusiones}
+\begin{itemize}
+	\item Portable.
+	\item Descripción a nivel de compuerta en VHDL.
+	\item Más de un 20\% de aumento de velocidad de transferencia respecto del modulo de los respectivos fabricantes.
+\end{itemize}
 \end{frame}
 %Design Summary
 %   Number of registers:    797 out of 26718 (3%)
