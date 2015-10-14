@@ -19,16 +19,20 @@
 
 \begin{frame}
 \titlepage
+\begin{center}
+\begin{minipage}{.8\textwidth}
 {\small
+	\justifying
 Los dispositivos conocidos como FPGAs comienzan a desplazar en aplicaciones de
 alta prestación a los procesadores tradicionales. En este contexto, se requiere
 del uso de memoria masiva DDR DRAM. El controlador, la interfaz entre la
-aplicación y la memoria, se programa en la FPGA y debe ser capaz de transferir
-datos desde y hacia la memoria de manera de alcanzar las tasas límites físicas
-que ofrecen los recursos de la FPGA de manera de aprovechar al máximo todo su
-potencial.
+aplicación y la misma, se programa en la FPGA y debe ser capaz de transferir
+datos desde y hacia la memoria de manera de alcanzar las velocidades máximas
+que ofrecen los recursos de la FPGA y así aprovechar todo su potencial.
 
 }
+\end{minipage}
+\end{center}
 \end{frame}
 
 \begin{frame}
@@ -63,6 +67,13 @@ potencial.
 \end{frame}
 
 \begin{frame}
+\frametitle{Valores lógicos}
+\begin{center}
+	\includegraphics[width=0.9\textwidth]{logic_values.eps}
+\end{center}
+\end{frame}
+
+\begin{frame}
 \frametitle{Compuertas}
 \begin{center}
 	\includegraphics[width=\textwidth]{logic_gates.eps}
@@ -80,13 +91,6 @@ potencial.
 \frametitle{Sumador}
 \begin{center}
 	\includegraphics[height=.8\textheight]{adder2.eps}
-\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Valores lógicos}
-\begin{center}
-	\includegraphics[width=0.9\textwidth]{logic_values.eps}
 \end{center}
 \end{frame}
 
@@ -195,21 +199,24 @@ potencial.
 \frametitle{Gate Arrays o Arreglos de Compuertas}
 	\begin{columns}[t]
 	\column{0.6\textwidth}
+		{\small
 		\begin{itemize}
-		\item C.I. con bloques prearmandos para propósito específico
+		\item C.I. con compuertas y bloques prearmandos.
 		\item Ventajas
+		{\small
 			\begin{itemize}
 			\item Fabricación de gran escala
 			\item Sólo requieren las máscaras de interconexión 
 			\item Reduce el costo de la aplicación específica
-			\end{itemize}
-		\end{itemize}
+	\end{itemize}}
+\end{itemize}}
 	\column{0.4\textwidth}
 		\begin{center}
-			\includegraphics[width=\textwidth]{S-MOS_Systems_ASIC_SLA6140.jpg} 
+			\includegraphics[width=\textwidth]{S-MOS_Systems_ASIC_SLA6140.jpg} \\
+{\scriptsize
+"S-MOS Systems ASIC SLA6140" \\ by Antoinebercovici}
 		\end{center}
 	\end{columns}
-%"S-MOS Systems ASIC SLA6140" by Antoinebercovici - Own work. Licensed under CC BY-SA 3.0 via Commons - https://commons.wikimedia.org/wiki/File:S-MOS_Systems_ASIC_SLA6140.jpg#/media/File:S-MOS_Systems_ASIC_SLA6140.jpg
 \end{frame}
 
 \begin{frame}
@@ -275,7 +282,7 @@ potencial.
 \end{frame}
 
 \begin{frame}
-\frametitle{Nu Horizons Spartan 3A DSP board}
+\frametitle{NU HORIZONS Spartan 3A DSP board}
 	\begin{center}
 		\includegraphics[width=11cm]{nuhorizonsS3DSP.jpg}
 	\end{center}
@@ -283,7 +290,7 @@ potencial.
 
 \begin{frame}
 \frametitle{Descripción}
-\framesubtitle{Nu Horizons Spartan 3A DSP board}
+\framesubtitle{NU HORIZONS Spartan 3A DSP board}
 	\begin{itemize}
 		\item 2008
 		\item Spartan 3A DSP
@@ -309,7 +316,7 @@ potencial.
 \end{frame}
 
 \begin{frame}[t]
-\frametitle{Algoritmo en Lenguaje C y en Assembler Optimizado}
+\frametitle{Algoritmo en Lenguaje C y en Assembly Optimizado}
 \framesubtitle{Ejemplo de aplicación : Convolución}
 	\begin{center}
 		$y[n] = \sum\limits_{i=0}^{N=84-1}\ h[i]*x[n-i]$
@@ -372,7 +379,7 @@ potencial.
 	\end{columns}
 	\begin{block}{\small Aumento de velocidad}
 	\begin{center}
-		$\frac{Spartan3A\ DSP}{Intel Corei7} = \frac{97 ns}{4 ns} = 24$
+		$\frac{Spartan3A\ DSP}{Intel\ Corei7} = \frac{97 ns}{4 ns} = 24$
 	\end{center}
 	\end{block}
 \end{frame}
@@ -551,7 +558,7 @@ potencial.
 
 \begin{frame}
 \frametitle{Síntesis}
-\framesubtitle{Lattice ECP3 Versa Kit}
+\framesubtitle{LatticeECP3 Versa Kit}
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{ddr3ctrl.png}
 	\end{center}
@@ -560,9 +567,9 @@ potencial.
 \begin{frame}
 \frametitle{Conclusiones}
 \begin{itemize}
-	\item Portable.
+	\item Código Portable.
 	\item Descripción a nivel de compuerta en VHDL.
-	\item Más de un 20\% de aumento de velocidad de transferencia respecto del modulo de los respectivos fabricantes.
+	\item Más de un 20\% de aumento de velocidad de transferencia comparado contra el módulo de los respectivos fabricantes.
 \end{itemize}
 \end{frame}
 %Design Summary
