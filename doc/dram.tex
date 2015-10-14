@@ -7,9 +7,12 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{ragged2e}
-\usetheme[secheader=true]{Madrid}
+%\usetheme[secheader=true]{Madrid}
+\usetheme{Copenhagen}
 \useinnertheme{rectangles}
+\useoutertheme[subsection=false]{miniframes}
 \usepackage{tikz}
+\setbeamercolor{section in head/foot}{fg=white,bg=black}
 \beamertemplatenavigationsymbolsempty 
 \title{Controlador de DDR para FPGA}
 \author{Miguel A. Sagreras}
@@ -17,10 +20,11 @@
 %\institution[short name]{long name}
 \begin{document}
 
+\section{Resumen}
 \begin{frame}
 \titlepage
 \begin{center}
-\begin{minipage}{.8\textwidth}
+\begin{minipage}{\textwidth}
 {\small
 	\justifying
 Los dispositivos conocidos como FPGAs comienzan a desplazar en aplicaciones de
@@ -35,7 +39,9 @@ que ofrecen los recursos de la FPGA y así aprovechar todo su potencial.
 \end{center}
 \end{frame}
 
+\section{Contenidos}
 \begin{frame}
+\frametitle{Contenidos}
 \tableofcontents
 \end{frame}
 
@@ -372,7 +378,7 @@ que ofrecen los recursos de la FPGA y así aprovechar todo su potencial.
 			\item 2.66 Ghz  o ciclo de 0.375 ps
 			\item Un resultado cada 84 ciclos del lazo
 			\item Un lazo 7 instrucciones
-			\item 0.44\footnote{\tiny Computer Achitecture A Quantitative Approach 5th edition \\ Hennessy Patterson figura 3.43} ciclos por instrucción.
+			\item 0.44\footnote{\tiny Computer Achitecture A Quantitative Approach 5th \\ edition Hennessy Patterson figura 3.43} ciclos por instrucción.
 			\item Un resultado cada 84*7*0.44*0.375 = 97 ns
 		\end{itemize}}
 	\end{block}
@@ -525,9 +531,9 @@ que ofrecen los recursos de la FPGA y así aprovechar todo su potencial.
 	\end{center}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
 \frametitle{Constraste con fabricantes}
-\scriptsize
+\tiny
 \begin{center}
 \begin{tabular}[t]{|r|c|c|c|}
 	\hline

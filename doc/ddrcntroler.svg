@@ -277,16 +277,16 @@
      borderopacity="0.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="340.91298"
-     inkscape:cy="234.40134"
+     inkscape:zoom="1"
+     inkscape:cx="278.9982"
+     inkscape:cy="353.46944"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:snap-center="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1060"
-     inkscape:window-x="1918"
+     inkscape:window-height="1014"
+     inkscape:window-x="-2"
      inkscape:window-y="-3"
      inkscape:window-maximized="1"
      inkscape:object-paths="false"
@@ -1170,7 +1170,8 @@
          sodipodi:role="line"
          id="tspan3439"
          x="299.72461"
-         y="665.67273">FPGA Chip</tspan></text>
+         y="665.67273"
+         style="-inkscape-font-specification:DejaVu Sans Bold;font-family:DejaVu Sans;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;font-size:16px;text-anchor:middle;text-align:center;writing-mode:lr;line-height:125%">FPGA Chip</tspan></text>
     <rect
        ry="0"
        style="fill:#030303;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
@@ -1181,16 +1182,17 @@
        y="647.36218" />
     <text
        xml:space="preserve"
-       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
-       x="-847.49988"
-       y="611.65527"
+       style="font-size:11px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+       x="-847.68347"
+       y="613.8623"
        id="text3443"
        sodipodi:linespacing="125%"
        transform="matrix(0,-1,1,0,0,0)"><tspan
          sodipodi:role="line"
          id="tspan3445"
-         x="-847.49988"
-         y="611.65527">DDR Chip</tspan></text>
+         x="-847.68347"
+         y="613.8623"
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold">DDR Chip</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3478"
@@ -1624,33 +1626,48 @@
          y="31.142578">Aplicación de usuario</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:7px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
-       x="3.640625"
-       y="697.50476"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+       x="6.4804688"
+       y="686.71912"
        id="text4155"
        sodipodi:linespacing="125%"><tspan
          id="tspan4162"
          sodipodi:role="line"
-         x="3.640625"
-         y="697.50476">Convolución</tspan><tspan
+         x="6.4804688"
+         y="686.71912">Convolución</tspan><tspan
          id="tspan4164"
          sodipodi:role="line"
-         x="3.640625"
-         y="707.50476" /></text>
+         x="6.4804688"
+         y="694.21912" /></text>
     <text
        sodipodi:linespacing="125%"
        id="text4184"
-       y="707.54919"
-       x="4.5927734"
+       y="697.54919"
+       x="6.5927734"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana Bold"
        xml:space="preserve"><tspan
-         y="707.54919"
-         x="4.5927734"
+         y="697.54919"
+         x="6.5927734"
          sodipodi:role="line"
          id="tspan4206">FFT</tspan><tspan
-         y="715.04919"
-         x="4.5927734"
+         y="705.04919"
+         x="6.5927734"
          sodipodi:role="line"
          id="tspan4198" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana Bold"
+       x="6.5927734"
+       y="707.54919"
+       id="text3266"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan3268"
+         sodipodi:role="line"
+         x="6.5927734"
+         y="707.54919">Otras</tspan><tspan
+         id="tspan3270"
+         sodipodi:role="line"
+         x="6.5927734"
+         y="715.04919" /></text>
   </g>
 </svg>
