@@ -24,10 +24,6 @@
 use std.textio.all;
 
 architecture main of testbench is
-	constant extension : natural := 22;
-	constant width : natural := 3;
-	subtype word is bit_vector(0 to 4);
-
 	function pulse_delay (
 		constant phase     : std_logic_vector;
 		constant latency   : natural := 12;
@@ -71,6 +67,10 @@ architecture main of testbench is
 		end loop;
 		return pulses;
 	end;
+
+	constant extension : natural := 22;
+	constant width : natural := 3;
+	subtype word is bit_vector(0 to 4);
 
 begin
 end;
