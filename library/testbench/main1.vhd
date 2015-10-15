@@ -27,41 +27,50 @@ architecture main of testbench is
 	constant extension : natural := 22;
 	constant width : natural := 3;
 	subtype word is bit_vector(0 to 4);
-begin
-	process 
-		variable msg : line;
 
-		constant latency : natural := 12;
+	function pulse_delay (
+		constant phase     : std_logic_vector;
+		constant latency   : natural := 12;
+		constant extension : natural := 4;
+		constant word_size : natural := 4;
+		constant width     : natural := 3)
+		return std_logic_vector is
+	
 		variable latency_mod : natural;
 		variable latency_quo : natural;
-		variable pha : natural;
---		variable aux : std_logic;
+		variable delay : natural;
+		variable pulse : std_logic;
 
 		variable distance : natural;
-		variable word_quo : natural;
-		variable word_mod : natural;
+		variable width_quo : natural;
+		variable width_mod : natural;
 		variable tail : natural;
 		variable tail_quo : natural;
 		variable tail_mod : natural;
+		variable pulses : std_logic_vector(word_size-1 downto 0);
 	begin
 
-			latency_mod := latency mod word'length;
-			latency_quo := latency  /  word'length;
-			for j in word'range loop
-				distance  := (extension-j+word'length-1)/word'length;
-				width_quo := (distance+width-1)/width;
-				width_mod := (width_quo*width-distance) mod width;
+		latency_mod := latency mod pulses'length;
+		latency_quo := latency  /  pulses'length;
+		for j in word'range loop
+			distance  := (extension-j+pulses'length-1)/pulses'length;
+			width_quo := (distance+width-1)/width;
+			width_mod := (width_quo*width-distance) mod width;
 
-				pha := (j+latency_mod)/word'length;
-				if word_quo /= 0 then
-					tail_quo := width_mod  /  width_quo;
-					tail_mod := width_mod mod width_quo;
-					for l in 1 to width_quo loop
-						tail := tail_quo + (l*tail_mod) / j_quo;
-						pha  := (j+latency_mod)/word'length+l*width-tail;
-					end loop;
-				end if;
-			end loop;
-		wait ;
-	end process;
+			delay := (j+latency_mod)/pulses'length;
+			pulse := phase(delay);
+			if width_quo /= 0 then
+				tail_quo := width_mod  /  width_quo;
+				tail_mod := width_mod mod width_quo;
+				for l in 1 to width_quo loop
+					tail  := tail_quo + (l*tail_mod) / width_quo;
+					pulse := pulse or phase(delay+l*width-tail);
+				end loop;
+			end if;
+			pulses((latency+j) mod pulses'length) := pulse;
+		end loop;
+		return pulses;
+	end;
+
+begin
 end;
