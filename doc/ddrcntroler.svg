@@ -277,17 +277,17 @@
      borderopacity="0.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="0"
-     inkscape:zoom="1"
-     inkscape:cx="278.9982"
-     inkscape:cy="353.46944"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="241.95127"
+     inkscape:cy="193.67959"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:snap-center="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1014"
+     inkscape:window-height="1025"
      inkscape:window-x="-2"
-     inkscape:window-y="-3"
+     inkscape:window-y="1021"
      inkscape:window-maximized="1"
      inkscape:object-paths="false"
      inkscape:snap-nodes="true"
@@ -320,7 +320,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -433,7 +433,7 @@
          x="-454"
          y="263.36221" /></text>
     <path
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.29999995;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#00339a;fill-opacity:1;stroke:#000000;stroke-width:2.0000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m -5,647.36218 588.6066,-0.70711 -3.3566,405.20713 -584.9999998,0.5"
        id="path3433"
        inkscape:connector-curvature="0"
@@ -469,7 +469,7 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:#202020;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#202020;stroke-width:2;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect4065"
        width="375"
        height="370"
@@ -487,7 +487,7 @@
        height="50"
        width="30"
        id="rect3779-6"
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Bold"
@@ -509,10 +509,10 @@
        height="50"
        width="35"
        id="rect3779-3"
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        ry="0" />
     <rect
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:0.93541437;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect3956"
        width="30"
        height="50"
@@ -557,21 +557,21 @@
     <rect
        y="706.86218"
        x="275.25"
-       height="20"
-       width="40"
+       height="20.499998"
+       width="79.75"
        id="rect7457"
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Bold"
-       x="295.25"
-       y="718.86218"
+       x="314.74805"
+       y="718.91785"
        id="text7447"
        sodipodi:linespacing="125%"><tspan
          id="tspan7475"
          sodipodi:role="line"
-         x="295.25"
-         y="718.86218">Multiplexer</tspan></text>
+         x="314.74805"
+         y="718.91785">Multiplexer</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow2Mstart);marker-end:none"
        d="m 107.25,1026.8622 358,0 0,-35.00002 -15,0"
@@ -605,7 +605,7 @@
        height="155"
        width="80"
        id="rect3779"
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Bold"
@@ -912,7 +912,7 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path3188"
-       d="m 315.25,716.86218 164,0"
+       d="m 355,717.36218 124.25,-0.5"
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow2Mend)" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow2Mend)"
@@ -927,7 +927,7 @@
        d="m 145.25,716.86218 18,0"
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow2Mend)" />
     <rect
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect4012"
        width="180"
        height="45"
@@ -1133,19 +1133,19 @@
        height="370"
        width="45"
        id="rect3362"
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        ry="0" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana Bold"
-       x="405"
+       x="415"
        y="697.36218"
        id="text3425"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3265"
          style="font-size:14px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
-         x="405"
+         x="415"
          y="697.36218">DDR Controller</tspan></text>
     <text
        xml:space="preserve"
@@ -1174,7 +1174,7 @@
          style="-inkscape-font-specification:DejaVu Sans Bold;font-family:DejaVu Sans;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;font-size:16px;text-anchor:middle;text-align:center;writing-mode:lr;line-height:125%">FPGA Chip</tspan></text>
     <rect
        ry="0"
-       style="fill:#030303;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#030303;fill-opacity:1;stroke:#808080;stroke-width:2;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect3441"
        width="40.25"
        height="404.5"
@@ -1252,7 +1252,7 @@
        height="45"
        width="180"
        id="rect4069"
-       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
+       style="fill:#005ad4;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none" />
     <text
        xml:space="preserve"
        style="font-size:6px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Bold"
@@ -1606,7 +1606,7 @@
        sodipodi:nodetypes="cc" />
     <rect
        ry="0"
-       style="fill:#b70000;fill-opacity:1;stroke:#000000;stroke-width:0.60000002;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#b70000;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:2;stroke-opacity:1;stroke-dasharray:none"
        id="rect3263"
        width="49.999939"
        height="370"
