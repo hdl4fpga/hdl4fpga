@@ -23,8 +23,9 @@
 
 use std.textio.all;
 
-architecture main of testbench is
-	function pulse_delay (
+architecture main1 of testbench is
+
+	impure function pulse_delay (
 		constant phase     : std_logic_vector;
 		constant latency   : natural := 12;
 		constant extension : natural := 4;
@@ -43,18 +44,20 @@ architecture main of testbench is
 		variable tail : natural;
 		variable tail_quo : natural;
 		variable tail_mod : natural;
-		variable pulses : std_logic_vector(word_size-1 downto 0);
+		variable pulses : std_logic_vector(0 to word_size-1);
 	begin
 
 		latency_mod := latency mod pulses'length;
 		latency_quo := latency  /  pulses'length;
-		for j in word'range loop
+		for j in pulses'range loop
 			distance  := (extension-j+pulses'length-1)/pulses'length;
 			width_quo := (distance+width-1)/width;
 			width_mod := (width_quo*width-distance) mod width;
 
-			delay := (j+latency_mod)/pulses'length;
+			delay := latency_quo+(j+latency_mod)/pulses'length;
 			pulse := phase(delay);
+
+
 			if width_quo /= 0 then
 				tail_quo := width_mod  /  width_quo;
 				tail_mod := width_mod mod width_quo;
@@ -68,9 +71,39 @@ architecture main of testbench is
 		return pulses;
 	end;
 
-	constant extension : natural := 22;
-	constant width : natural := 3;
-	subtype word is bit_vector(0 to 4);
+	subtype word is std_logic_vector(0 to 4);
+
+	signal ph : std_logic_vector(0 to 10) := (others => '0');
+	signal pulse : std_logic := '0';
+	signal ppp : word;
+	signal clk : std_logic := '0';
 
 begin
+
+	clk <= not clk after 10 ns;
+	process (clk)
+		variable pw : natural;
+	begin
+		if rising_edge(clk) then
+			ph <= pulse & ph(0 to ph'right-1);
+			if pw = 0 then
+				pulse <= not pulse;
+				if pulse='0' then
+					pw := 1-1;
+				else
+					pw := 5-1;
+				end if;
+			else
+				pw := pw -1;
+			end if;
+		end if;
+	end process;
+
+	ppp <= pulse_delay(
+		phase     => ph,
+		latency   => 11,
+		extension => 7,
+		word_size => word'length,
+		width     => 1);
+
 end;
