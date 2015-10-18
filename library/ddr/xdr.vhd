@@ -342,10 +342,7 @@ begin
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
---	xdr_dqso <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
 
---	xdr_win_dqs <= (others => xdr_sch_rwn(0));
---	xdr_win_dq  <= (others => xdr_sch_rwn(0));
 	xdr_win_dqs <= (others => xdr_sti(0));
 	xdr_win_dq  <= (others => xdr_sti(0));
 	xdr_sto <= xdr_sch_rwn;
@@ -354,11 +351,9 @@ begin
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dmt <= xdr_sch_dqz & xdr_sch_dqz;
 	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
---	xdr_dqso(xdr_sch_st'range) <= xdr_combclks(xdr_sch_dqs, 1, 1); --sclk_phases, dqso_phases);
+
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
---		dqsi_phases => dqsi_phases,
---		dqsi_edges  => dqsi_edges,
 		data_phases => data_phases,
 		data_edges  => data_edges,
 
@@ -393,7 +388,6 @@ begin
 		rot  => rot_val,
 		din  => sys_di,
 		dout => rot_di);
---	rot_di <= sys_di;
 		
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (

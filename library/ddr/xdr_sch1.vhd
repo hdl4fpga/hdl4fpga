@@ -34,7 +34,6 @@ entity xdr_sch is
 		sclk_phases : natural;
 		sclk_edges  : natural;
 		data_phases : natural;
-		data_edges  : natural;
 		registered_output : boolean := false;
 
 		line_size : natural;
@@ -73,8 +72,6 @@ entity xdr_sch is
 
 		xdr_dqz  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
 		xdr_wwn  : out std_logic_vector(0 to data_phases*line_size/word_size-1));
-
-
 end;
 
 library hdl4fpga;
@@ -122,13 +119,12 @@ begin
 
 	st <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
-		lat_val  => sys_cl,
+		lat_val => sys_cl,
 		lat_cod => cl_cod,
-		lat_tab  => strl_tab,
+		lat_tab => strl_tab,
 		lat_sch => rpho,
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
@@ -139,9 +135,9 @@ begin
 			xdr_st(i) <= st(i);
 		end loop;
 	end process;
+
 	xdr_rwn <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -154,7 +150,6 @@ begin
 
 	xdr_dqsz <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -167,7 +162,6 @@ begin
 
 	xdr_dqs <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -180,7 +174,6 @@ begin
 
 	xdr_dqz <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -193,7 +186,6 @@ begin
 
 	xdr_wwn <= xdr_task (
 		data_phases => data_phases,
-		data_edges  => data_edges,
 		line_size => line_size,
 		word_size => word_size,
 
