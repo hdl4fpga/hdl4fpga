@@ -33,7 +33,6 @@ entity xdr_sch is
 		delay_size : natural := 64;
 		sclk_phases : natural;
 		sclk_edges  : natural;
-		data_phases : natural;
 		registered_output : boolean := false;
 
 		line_size : natural;
@@ -64,14 +63,14 @@ entity xdr_sch is
 		sys_rea  : in  std_logic;
 		sys_wri  : in  std_logic;
 
-		xdr_rwn : out std_logic_vector(0 to data_phases*line_size/word_size-1);
-		xdr_st  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
+		xdr_rwn : out std_logic_vector(0 to line_size/word_size-1);
+		xdr_st  : out std_logic_vector(0 to line_size/word_size-1);
 
-		xdr_dqsz : out std_logic_vector(0 to data_phases*line_size/word_size-1);
-		xdr_dqs  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
+		xdr_dqsz : out std_logic_vector(0 to line_size/word_size-1);
+		xdr_dqs  : out std_logic_vector(0 to line_size/word_size-1);
 
-		xdr_dqz  : out std_logic_vector(0 to data_phases*line_size/word_size-1);
-		xdr_wwn  : out std_logic_vector(0 to data_phases*line_size/word_size-1));
+		xdr_dqz  : out std_logic_vector(0 to line_size/word_size-1);
+		xdr_wwn  : out std_logic_vector(0 to line_size/word_size-1));
 end;
 
 library hdl4fpga;
@@ -118,7 +117,6 @@ begin
 		ph_qo  => wpho);
 
 	st <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -137,7 +135,6 @@ begin
 	end process;
 
 	xdr_rwn <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -149,7 +146,6 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqsz <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -161,7 +157,6 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -173,7 +168,6 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqz <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 
@@ -185,7 +179,6 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_wwn <= xdr_task (
-		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 

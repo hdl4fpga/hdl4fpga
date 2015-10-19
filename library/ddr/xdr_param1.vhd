@@ -778,7 +778,6 @@ package body xdr_param is
 	end;
 
 	function xdr_task (
-		constant data_phases : natural;
 		constant line_size : natural;
 		constant word_size : natural;
 		constant lat_val : std_logic_vector;
@@ -789,7 +788,7 @@ package body xdr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector is
 
-		subtype word is std_logic_vector(0 to data_phases*line_size/word_size-1);
+		subtype word is std_logic_vector(0 to line_size/word_size-1);
 		type word_vector is array (natural range <>) of word;
 
 		subtype latword is std_logic_vector(0 to lat_val'length-1);
@@ -827,31 +826,17 @@ package body xdr_param is
 		end;
 
 		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
-
 		variable sel_sch : word_vector(lat_cod1'range);
-		variable phase : std_logic_vector(0 to (lat_sch'length+data_phases-1)/data_phases-1);
-		variable pulse : std_logic_vector(0 to line_size/word_size-1);
 
 	begin
 		sel_sch := (others => (others => '-'));
-
-		for k in 0 to data_phases-1 loop
-			for i in 0 to (lat_sch'length-k)/data_phase-1 loop
-				phase := lat_sch(data_phases*i+k);
-			end loop;
-			
-			for i in 0 to lat_tab'length-1 loop
-				pulse := pulse_delay (
-					phase     => phase,
-					latency   => lat_tab(i),
-					word_size => word_length,
-					extension => lat_ext(i),
-					width     => lat_wid);
-			end loop;
-
-			for i in pulse'range loop
-				sel_sch(data_phases*i+k) := pulse(i);
-			end loop;
+		for i in 0 to lat_tab'length-1 loop
+			sel_sch(i) := pulse_delay (
+				phase     => lat_sch(i);
+				latency   => lat_tab(i),
+				word_size => word_length,
+				extension => lat_ext(i),
+				width     => lat_wid);
 		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
