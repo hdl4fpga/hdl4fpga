@@ -29,19 +29,21 @@ entity xdr_rdfifo is
 	generic (
 		data_delay  : natural := 1;
 		data_edges  : natural := 2;
-		line_size   : natural := 8;
-		word_size   : natural := 8;
+		line_size   : natural := 32;
+		word_size   : natural := 16;
 		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
-		sys_rdy : out std_logic_vector(line_size/word_size-1 downto 0);
+		sys_rdy : out std_logic_vector((line_size/word_size)-1 downto 0);
 		sys_rea : in  std_logic;
-		xdr_win_dq : in std_logic_vector(line_size/word_size-1 downto 0);
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 
-		xdr_win_dqs : in std_logic_vector(0 to word_size/byte_size-1);
-		xdr_dqsi : in std_logic_vector(line_size/word_size-1 downto 0);
+		xdr_win_dq  : in std_logic_vector((line_size/word_size)-1 downto 0);
+		xdr_win_dqs : in std_logic_vector(line_size/word_size-1 downto 0);
+		xdr_dqsi : in std_logic_vector(line_size/(data_edges*byte_size)-1 downto 0);
 		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
+
+	constant data_phases : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -121,8 +123,8 @@ begin
 	di  <= shuffle_word(to_bytevector(xdr_dqi));
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_clk : std_logic_vector(data_edges-1 downto 0);
-		signal ser_req : std_logic_vector(data_edges-1 downto 0);
+		signal ser_clk : std_logic_vector(data_phases-1 downto 0);
+		signal ser_req : std_logic_vector(data_phases-1 downto 0);
 
 	begin
 
@@ -159,19 +161,18 @@ begin
 			ser_clk(0) <= xdr_dqsi(i);
 		end generate;
 
-		data_edges_g : for l in data_edges-1 downto 0 generate
-
+		data_edges_g : for l in data_phases-1 downto 0 generate
 			inbyte_i : entity hdl4fpga.iofifo
 			generic map (
-				pll2ser   => false,
-				word_size => word'length,
-				byte_size => 'length)
+				pll2ser => false,
+				word_size  => word'length,
+				byte_size  => byte'length)
 			port map (
 				pll_clk => sys_clk,
 				pll_req => pll_req,
 
 				ser_req => ser_req,
-				ser_ena => xdr_win_dqs,
+				ser_ena => xdr_win_dqs(l),
 				ser_clk => ser_clk,
 
 				do  => do(i),
