@@ -38,12 +38,11 @@ entity xdr_rdfifo is
 		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 
-		xdr_win_dq  : in std_logic_vector((line_size/word_size)-1 downto 0);
+		xdr_win_dq  : in std_logic_vector(line_size/word_size-1 downto 0);
 		xdr_win_dqs : in std_logic_vector(line_size/word_size-1 downto 0);
-		xdr_dqsi : in std_logic_vector(line_size/(data_edges*byte_size)-1 downto 0);
+		xdr_dqsi : in std_logic_vector;
 		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
 
-	constant data_phases : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -81,7 +80,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(line_size-1 downto 0);
+	subtype word is std_logic_vector(line_size/(data_edges*xdr_dqsi'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function shuffle_word (
@@ -123,8 +122,8 @@ begin
 	di  <= shuffle_word(to_bytevector(xdr_dqi));
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_clk : std_logic_vector(data_phases-1 downto 0);
-		signal ser_req : std_logic_vector(data_phases-1 downto 0);
+		signal ser_clk : std_logic_vector(data_edges-1 downto 0);
+		signal ser_req : std_logic_vector(data_edges-1 downto 0);
 
 	begin
 
@@ -161,7 +160,7 @@ begin
 			ser_clk(0) <= xdr_dqsi(i);
 		end generate;
 
-		data_edges_g : for l in data_phases-1 downto 0 generate
+		data_edges_g : for l in data_edges-1 downto 0 generate
 			inbyte_i : entity hdl4fpga.iofifo
 			generic map (
 				pll2ser => false,
@@ -175,8 +174,8 @@ begin
 				ser_ena => xdr_win_dqs(l),
 				ser_clk => ser_clk,
 
-				do  => do(i),
-				di  => di(i));
+				do  => do(i*data_edges+l),
+				di  => di(i*data_edges+l));
 		end generate;
 	end generate;
 	sys_do <= to_stdlogicvector(unshuffle_word(do));

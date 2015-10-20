@@ -21,6 +21,8 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -39,11 +41,12 @@ entity xdr_wrfifo is
 		sys_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
-		xdr_clk  : in  std_logic := '-';
+		xdr_clks : in  std_logic_vector(line_size/(data_edges*byte_size)-1 downto 0) := (others => '-');
 		xdr_enas : in  std_logic_vector(line_size/word_size-1 downto 0);
 		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
+	constant data_phases : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -129,10 +132,10 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(line_size-1 downto 0);
+	subtype word is std_logic_vector(line_size/(data_edges*xdr_dqsi'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype shuffleword is byte_vector(line_size/byte_size-1 downto 0);
+	subtype shuffleword is byte_vector(line_size/byte_size)-1 downto 0);
 
 	impure function unshuffle (
 		arg : word_vector)
@@ -153,16 +156,16 @@ architecture struct of xdr_wrfifo is
 	signal do : byte_vector(xdr_dmo'range);
 	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
-	signal ser_clk : std_logic_vector(data_edges-1 downto 0);
+	signal ser_clk : std_logic_vector(data_phases-1 downto 0);
 begin
 
-	ser_clk(0) <= xdr_clk;
+	ser_clk(xdr_clks'range) <= xdr_clks;
 	falling_edge_g : if data_edges /= 1 generate
-		ser_clk(data_edges-1) <= not xdr_clk;
+		ser_clk(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
 	end generate;
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in ser_clk'range generate
+	xdr_fifo_g : for i in (word_size/byte_size)-1 downto 0 generate
 
 		signal dqi : shuffleword;
 		signal fifo_di : word;
@@ -187,12 +190,13 @@ begin
 		generic map (
 			pll2ser => true,
 			registered_output => registered_output,
+			data_phases => data_phases,
 			word_size => word'length,
 			byte_size => byte'length)
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
-			ser_clk => ser_clk(i),
+			ser_clk => ser_clk,
 			ser_ena => xdr_enas, 
 			di  => fifo_di,
 			do  => dqo(i));
