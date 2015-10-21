@@ -28,8 +28,8 @@ use ieee.numeric_std.all;
 entity xdr_rdfifo is
 	generic (
 		data_delay  : natural := 1;
-		data_edges  : natural := 2;
-		line_size   : natural := 32;
+		data_phases : natural := 1;
+		line_size   : natural := 64;
 		word_size   : natural := 16;
 		byte_size   : natural := 8);
 	port (
@@ -40,7 +40,7 @@ entity xdr_rdfifo is
 
 		xdr_win_dq  : in std_logic_vector(line_size/word_size-1 downto 0);
 		xdr_win_dqs : in std_logic_vector(line_size/word_size-1 downto 0);
-		xdr_dqsi : in std_logic_vector;
+		xdr_dqsi : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
 
 end;
@@ -80,7 +80,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(line_size/(data_edges*xdr_dqsi'length)-1 downto 0);
+	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function shuffle_word (
@@ -114,16 +114,16 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	signal do  : word_vector(xdr_dqsi'length-1 downto 0);
-	signal di :  word_vector(xdr_dqsi'length-1 downto 0);
+	signal do : word_vector(xdr_dqsi'length-1 downto 0);
+	signal di : word_vector(xdr_dqsi'length-1 downto 0);
 
 begin
 
 	di  <= shuffle_word(to_bytevector(xdr_dqi));
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_clk : std_logic_vector(data_edges-1 downto 0);
-		signal ser_req : std_logic_vector(data_edges-1 downto 0);
+		signal ser_clk : std_logic;
+		signal ser_req : std_logic;
 
 	begin
 
@@ -148,35 +148,30 @@ begin
 		end process;
 		sys_rdy(i) <= pll_req;
 
-		clk_data_phases_g: if data_edges > 1 generate
-			dqs_delayed_e : entity hdl4fpga.pgm_delay
-			port map (
-				xi  => xdr_dqsi(i),
-				x_p => ser_clk(0),
-				x_n => ser_clk(1));
-		end generate;
+--		clk_data_phases_g: if data_edges > 1 generate
+--			dqs_delayed_e : entity hdl4fpga.pgm_delay
+--			port map (
+--				xi  => xdr_dqsi(i),
+--				x_p => ser_clk(0),
+--				x_n => ser_clk(1));
+--		end generate;
 
-		clk_edges_g: if data_edges < 2 generate
-			ser_clk(0) <= xdr_dqsi(i);
-		end generate;
+		inbyte_i : entity hdl4fpga.iofifo
+		generic map (
+			pll2ser => false,
+			data_phases => 1,
+			word_size  => word'length,
+			byte_size  => byte'length)
+		port map (
+			pll_clk => sys_clk,
+			pll_req => pll_req,
 
-		data_edges_g : for l in data_edges-1 downto 0 generate
-			inbyte_i : entity hdl4fpga.iofifo
-			generic map (
-				pll2ser => false,
-				word_size  => word'length,
-				byte_size  => byte'length)
-			port map (
-				pll_clk => sys_clk,
-				pll_req => pll_req,
+			ser_req(0) => ser_req,
+			ser_ena(0) => xdr_win_dqs(i),
+			ser_clk(0) => ser_clk,
 
-				ser_req => ser_req,
-				ser_ena => xdr_win_dqs(l),
-				ser_clk => ser_clk,
-
-				do  => do(i*data_edges+l),
-				di  => di(i*data_edges+l));
-		end generate;
+			do  => do(i),
+			di  => di(i));
 	end generate;
 	sys_do <= to_stdlogicvector(unshuffle_word(do));
 

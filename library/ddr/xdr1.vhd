@@ -39,9 +39,7 @@ entity xdr is
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
 
-		sclk_edges  : natural := 2;
-		data_edges  : natural := 1;
-
+		data_phases : natural;
 		line_size : natural := 16;
 		word_size : natural := 16;
 		byte_size : natural :=  8);
@@ -94,9 +92,9 @@ entity xdr is
 		xdr_sti  : in  std_logic_vector(0 to line_size/word_size-1) := (others => '-');
 		xdr_sto  : out std_logic_vector(0 to line_size/word_size-1) := (others => '-');
 
-		xdr_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqst : out std_logic_vector(line_size/byte_size-1 downto 0));
+		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
 end;
@@ -350,7 +348,7 @@ begin
 
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
-		data_edges  => data_edges,
+		data_phases => data_phases,
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
@@ -366,7 +364,7 @@ begin
 		xdr_dqi  => xdr_dqi);
 		
 	rot_val <= xdr_rotval (
-		data_edges => data_edges,
+		data_edges => 1,
 		line_size => line_size,
 		word_size => word_size,
 		lat_val => sys_cwl,
@@ -385,7 +383,7 @@ begin
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
 		registered_output => registered_output,
-		data_edges  => data_edges,
+		data_phases  => data_phases,
 
 		line_size => line_size,
 		word_size => word_size,
