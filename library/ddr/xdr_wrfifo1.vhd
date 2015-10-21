@@ -46,7 +46,6 @@ entity xdr_wrfifo is
 		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
-	constant data_phases : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -132,10 +131,10 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(byte_size*line_size/word_size)-1 downto 0);
+	subtype word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype shuffleword is byte_vector(line_size/byte_size)-1 downto 0);
+	subtype shuffleword is byte_vector(line_size/byte_size-1 downto 0);
 
 	impure function unshuffle (
 		arg : word_vector)
@@ -164,9 +163,8 @@ begin
 --	end generate;
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in word_size/byte_size generate
-		signal ser_clk : std_logic_vector(xdr_clks);
-	begin
+	xdr_fifo_g : for i in 0 to word_size/byte_size generate
+		signal ser_clk : std_logic_vector(xdr_clks'range);
 
 		signal dqi : shuffleword;
 		signal fifo_di : word;
@@ -198,6 +196,7 @@ begin
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
+			ser_req => 
 			ser_clk => ser_clk(data_phases-1 downto 0),
 			ser_ena => xdr_enas, 
 			di  => fifo_di,

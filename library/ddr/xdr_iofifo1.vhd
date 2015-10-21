@@ -38,7 +38,7 @@ entity iofifo is
 		pll_req : in  std_logic := '-';
 
 		ser_clk : in  std_logic_vector(data_phases-1 downto 0);
-		ser_req : in  std_logic_vector(data_phases-1 downto 0);
+		ser_req : in  std_logic_vector(data_phases-1 downto 0) := (others => '-');
 		ser_ena : in  std_logic_vector(data_phases-1 downto 0);
 		ser_rdy : out std_logic;
 
@@ -187,7 +187,7 @@ begin
 				end generate;
 			end generate;
 		end generate;
-	end generate
+	end generate;
 
 	do <= 
 		to_stdlogicvector(dqo) when registered_output else

@@ -152,8 +152,6 @@ package xdr_param is
 		return std_logic_vector;
 
 	impure function xdr_rotval (
-		constant data_phases : natural;
-		constant data_edges : natural;
 		constant line_size : natural;
 		constant word_size : natural;
 		constant lat_val : std_logic_vector;
@@ -162,7 +160,6 @@ package xdr_param is
 		return std_logic_vector;
 
 	function xdr_task (
-		constant data_phases : natural;
 		constant line_size : natural;
 		constant word_size : natural;
 		constant lat_val : std_logic_vector;
@@ -705,8 +702,6 @@ package body xdr_param is
 	end;
 
 	impure function xdr_rotval (
-		constant data_phases : natural;
-		constant data_edges : natural;
 		constant line_size : natural;
 		constant word_size : natural;
 		constant lat_val : std_logic_vector;
@@ -784,7 +779,7 @@ package body xdr_param is
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
-		constant lat_ext : natural_vector;
+		constant lat_ext : natural := 0;
 		constant lat_wid : natural := 1)
 		return std_logic_vector is
 
@@ -832,10 +827,10 @@ package body xdr_param is
 		sel_sch := (others => (others => '-'));
 		for i in 0 to lat_tab'length-1 loop
 			sel_sch(i) := pulse_delay (
-				phase     => lat_sch(i);
+				phase     => lat_sch,
 				latency   => lat_tab(i),
-				word_size => word_length,
-				extension => lat_ext(i),
+				word_size => word'length,
+				extension => lat_ext,
 				width     => lat_wid);
 		end loop;
 		return select_lat(lat_val, lat_cod1, sel_sch);

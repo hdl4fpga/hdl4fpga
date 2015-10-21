@@ -27,8 +27,8 @@ use ieee.numeric_std.all;
 
 entity xdr_ph is
 	generic (
-		data_phases : natural := 4;
-		data_edges  : natural := 2;
+		data_phases : natural := 1;
+		data_edges  : natural := 1;
 		delay_phase : natural := 2;
 		delay_size  : natural := 2);
 	port (

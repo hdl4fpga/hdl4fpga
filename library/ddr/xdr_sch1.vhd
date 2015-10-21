@@ -31,8 +31,6 @@ use hdl4fpga.std.all;
 entity xdr_sch is
 	generic (
 		delay_size : natural := 64;
-		sclk_phases : natural;
-		sclk_edges  : natural;
 		registered_output : boolean := false;
 
 		line_size : natural;
@@ -96,8 +94,6 @@ begin
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
-		data_phases => sclk_phases,
-		data_edges  => sclk_edges,
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
@@ -107,8 +103,6 @@ begin
 
 	xdr_wph_e : entity hdl4fpga.xdr_ph
 	generic map (
-		data_phases => sclk_phases,
-		data_edges  => sclk_edges,
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
@@ -153,7 +147,7 @@ begin
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
 		lat_sch => wpho,
-		lat_ext => DQSZX_TAB,
+		lat_ext => DQSZX_TAB(0),
 		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
@@ -175,7 +169,7 @@ begin
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
 		lat_sch => wpho,
-		lat_ext => DQZX_TAB,
+		lat_ext => DQZX_TAB(0),
 		lat_wid => WID_LAT);
 
 	xdr_wwn <= xdr_task (

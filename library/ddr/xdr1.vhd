@@ -296,10 +296,6 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		sclk_phases => 1,
-		sclk_edges  => 1,
-
-		data_edges  => 1,
 		line_size   => line_size/word_size,
 		word_size   => 1,
 
@@ -364,6 +360,7 @@ begin
 		xdr_dqi  => xdr_dqi);
 		
 	rot_val <= xdr_rotval (
+		data_phases => 1,
 		data_edges => 1,
 		line_size => line_size,
 		word_size => word_size,

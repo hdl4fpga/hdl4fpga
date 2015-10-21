@@ -132,7 +132,7 @@ begin
 			variable sys_do_win : std_logic;
 		begin
 			if rising_edge(sys_clk) then
-				ser_req  <= (others => not sys_do_win);
+				ser_req  <= not sys_do_win;
 				sys_do_win  := acc_rea_dly;
 				acc_rea_dly := not sys_rea;
 			end if;
