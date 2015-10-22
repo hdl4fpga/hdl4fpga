@@ -285,67 +285,6 @@ begin
 
 	ddrphy_dqi2 <= ddrphy_dqi;
 
---	process (ddr_sclk)
---		subtype xxxx is std_logic_vector(ddrphy_a'range);
---		type xxxx_vector is array (0 to 7) of xxxx;
---		variable xxxx1 : xxxx_vector;
---	begin
---		if rising_edge(ddr_sclk) then
---			xxxx1 := xxxx1(1 to xxxx1'right) & ddrphy_a;
---			yyyy <= xxxx1(0);
---		end if;
---	end process;
---	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
-
---	debug_clk <= ddrphy_cfgo(0);
---	debug_clk <= ddr3_dqs(0);
---	process (debug_clk)
---		constant n : natural := 8;
---		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
---		variable aux1 : std_logic_vector(ddrphy_dqi'length-1 downto 0) := (others => '0');
---		variable edge : std_logic;
---	begin
---		if rising_edge(debug_clk) then
---			if (ddrphy_cfgo(0) xor edge)='1' then
---				aux1 := aux & aux1(63 downto n);
---				aux1 := aux1(aux1'left-1 downto aux1'right) & ddrphy_cfgo(0);
---				if ddrphy_sto(0)='1' then
---					ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
---				else
---					ddrphy_dqi <= ddrphy_dqii;
---				end if;
---				aux := inc(gray(aux));
---				aux := std_logic_vector(unsigned(aux)+1);
---			end if;
---			edge := ddrphy_cfgo(0);
---		end if;
---	end process;
---
---	process (ddr_sclk)
---		variable xxx : byte_vector(0 to 7);
---	begin
---		if rising_edge(ddr_sclk) then
---			if ddrphy_sto(0)='1' then
---				xxx := to_bytevector(ddrphy_dqi);
---				for i in xxx'range loop
---					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
---				end loop;
---				ddrphy_dqi <= to_stdlogicvector(shuffle(xxx));
---			end if;
---		end if;
---	end process;
---
---	process (ddr_sclk)
---	begin
---		if rising_edge(ddr_sclk) then
---			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
---		end if;
---	end process;
-
---	ddrphy_dqi <= 
---		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
---		x"aa_aa_aa_aa_aa_aa_aa_aa";
-
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE => ddr3_b'length,
@@ -383,20 +322,20 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_wlpha => wlpha,
 
-		ddr_rst => ddr3_rst,
-		ddr_ck  => ddr3_clk,
-		ddr_cke => ddr3_cke,
-		ddr_odt => ddr3_odt,
-		ddr_cs => ddr3_cs,
-		ddr_ras => ddr3_ras,
-		ddr_cas => ddr3_cas,
-		ddr_we  => ddr3_we,
-		ddr_b   => ddr3_b,
-		ddr_a   => ddr3_a,
+		ddr_clk_p => ddr2_clk_p,
+		ddr_clk_n => ddr2_clk_n,
+		ddr_cke => ddr2_cke,
+		ddr_cs  => ddr2_cs,
+		ddr_ras => ddr2_ras,
+		ddr_cas => ddr2_cas,
+		ddr_we  => ddr2_we,
+		ddr_b   => ddr2_b,
+		ddr_a   => ddr2_a,
 
---		ddr_dm  => ddr3_dm,
-		ddr_dq  => ddr3_dq,
-		ddr_dqs => ddr3_dqs);
+--		ddr_dm  => ddr2_dm,
+		ddr_dq  => ddr2_d,
+		ddr_dqs_p => ddr2_dqs_p,
+		ddr_dqs_n => ddr2_dqs_n);
 	ddr3_dm <= (others => '0');
 
 	phy1_rst  <= dcm_lckd;
@@ -407,40 +346,17 @@ begin
 	generic map (
 		xd_len => 8)
 	port map (
-		mii_rxc  => phy1_rxc,
-		iob_rxdv => phy1_rx_dv,
-		iob_rxd  => phy1_rx_d,
+		mii_rxc  => phy_rxclk,
+		iob_rxdv => phy_rxctl_rxdv,
+		iob_rxd  => phy_rxd,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => phy1_125clk,
+		mii_txc  => phy_gtxclk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
-		iob_txen => phy1_tx_en,
-		iob_txd  => phy1_tx_d,
+		iob_txen => phy_txctl_txen,
+		iob_txd  => phy_txd,
 		iob_gtxclk => phy1_gtxclk);
-
---	process (phy1_rxc,fpga_gsrn)
---	begin
---		if fpga_gsrn='0' then
---			led(0) <= '1';
---			led(1) <= '1';
---			led(2) <= '1';
---		elsif rising_edge(phy1_rxc) then
---			if tpo(0)='1'then
---				led(0) <= '0';
---			end if;
---			if phy1_rx_dv='1'then
---				led(1) <= '0';
---			end if;
---			if mii_txen='1'then
---				led(2) <= '0';
---			end if;
---		end if;
---	end process;
-
---	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
---	led(5) <= not phy1_rx_dv;
---	led(6) <= not mii_txen;
 
 end;

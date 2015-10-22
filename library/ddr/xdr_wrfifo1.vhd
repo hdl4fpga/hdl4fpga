@@ -196,7 +196,6 @@ begin
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
-			ser_req => 
 			ser_clk => ser_clk(data_phases-1 downto 0),
 			ser_ena => xdr_enas, 
 			di  => fifo_di,
