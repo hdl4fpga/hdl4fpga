@@ -30,10 +30,8 @@ entity ddrbaphy is
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
-		sys_sclk   : in  std_logic;
-		sys_sclk2x : in  std_logic;
+		sys_clk   : in  std_logic;
 
-		sys_rst : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cs  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_cke : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_b   : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
@@ -55,107 +53,77 @@ entity ddrbaphy is
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
-library ecp3;
-use ecp3.components.all;
+library hdl4fpga;
 
 architecture ecp3 of ddrbaphy is
-
-	signal dqsi_delay : std_logic;
-	signal idqs_eclk  : std_logic;
-	signal dqsw  : std_logic;
-	signal dqclk0 : std_logic;
-	signal dqclk1 : std_logic;
-
-	signal dqst : std_logic_vector(cmnd_phases-1 downto 0);
-	
-	signal dqsdll_lock : std_logic;
-	signal prmbdet : std_logic;
-	signal ddrclkpol : std_logic;
-	signal ddrlat : std_logic;
-	signal dqstclk : std_logic;
-	attribute oddrapps : string;
-	attribute oddrapps of ras_i, cas_i, we_i, cs_i, cke_i, odt_i, rst_i : label is "SCLK_ALIGNED";
-	attribute oddrapps of ck_i : label is "SCLK_CENTERED";
-	signal cs : std_logic;
 begin
 
-	ck_i : oddrxd1
+	ck_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk2x,
-		da => '0',
-		db => '1',
+		clk => sys_clk,
+		dr => '0',
+		df => '1',
 		q  => ddr_ck);
 
 	b_g : for i in 0 to bank_size-1 generate
-		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
-	begin
-		oddr_i : oddrxd1
+		oddr_i : entity hdl4fpga.ddro
 		port map (
-			sclk => sys_sclk,
-			da => sys_b(bank_size*0+i),
-			db => '1', --sys_b(bank_size*1+i),
+			clk => sys_clk,
+			dr => sys_b(bank_size*0+i),
+			df => sys_b(bank_size*1+i),
 			q  => ddr_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
-		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
 	begin
-		oddr_i : oddrxd1
+		oddr_i : entity hdl4fpga.ddro
 		port map (
-			sclk => sys_sclk,
-			da => sys_a(addr_size*0+i),
-			db => '1', --sys_a(addr_size*1+i),
-			q => ddr_a(i));
+			clk => sys_clk,
+			dr  => sys_a(addr_size*0+i),
+			df  => sys_a(addr_size*1+i),
+			q   => ddr_a(i));
 	end generate;
 
-	ras_i : oddrxd1
+	ras_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => sys_ras(0),
-		db => '1', --sys_ras(1),
-		q  => ddr_ras);
+		clk => sys_clk,
+		dr  => sys_ras(0),
+		df  => sys_ras(1),
+		q   => ddr_ras);
 
-	cas_i :oddrxd1
+	cas_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => sys_cas(0),
-		db => '1', --sys_cas(1),
-		q  => ddr_cas);
+		clk => sys_clk,
+		dr  => sys_cas(0),
+		df  => sys_cas(1),
+		q   => ddr_cas);
 
-	we_i : oddrxd1
+	we_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => sys_we(0),
-		db => '1', --sys_we(1),
-		q  => ddr_we);
+		clk => sys_clk,
+		dr  => sys_we(0),
+		df  => sys_we(1),
+		q   => ddr_we);
 
-	cs <= not sys_cke(0);
-	cs_i : oddrxd1
+	cs_i :  entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => cs, --sys_cs(0),
-		db => cs, --sys_cs(0),
+		clk => sys_clk,
+		dr => sys_cs(0),
+		df => sys_cs(1),
 		q  => ddr_cs);
 
-	cke_i : oddrxd1
+	cke_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => sys_cke(0),
-		db => sys_cke(0),
+		clk => sys_clk,
+		dr => sys_cke(0),
+		df => sys_cke(1),
 		q  => ddr_cke);
 
-	odt_i : oddrxd1
+	odt_i : entity hdl4fpga.ddro
 	port map (
-		sclk => sys_sclk,
-		da => sys_odt(0),
-		db => '1', --sys_odt(0),
+		clk => sys_clk,
+		dr => sys_odt(0),
+		df => sys_odt(1),
 		q  => ddr_odt);
-
-	rst_i : oddrxd1
-	port map (
-		sclk => sys_sclk,
-		da => sys_rst(0),
-		db => sys_rst(0),
-		q  => ddr_rst);
 
 end;

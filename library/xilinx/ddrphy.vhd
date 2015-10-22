@@ -30,29 +30,25 @@ use ecp3.components.all;
 
 entity ddrphy is
 	generic (
-		cmd_phases  : natural := 1;
-		cmd_edges   : natural := 1;
 		data_phases : natural := 2;
-		data_edges  : natural := 2;
+		cmd_phases : natural := 1;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		line_size : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
-		sys_cclk : in std_logic_vector(0 to cmd_phases/cmd_edges-1);
-		sys_dclk : in std_logic_vector(0 to data_phases/data_edges-1);
+		sys_clk0  : in std_logic;
+		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
-		sys_rst  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
-		sys_rw   : in  std_logic;
-		sys_b    : in  std_logic_vector(cmd_phases*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
 		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_cas  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_we   : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_b    : in  std_logic_vector(cmd_phases*bank_size-1 downto 0);
+		sys_a    : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
 		sys_odt  : in  std_logic_vector(cmd_phases-1 downto 0);
 
 		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
@@ -68,7 +64,8 @@ entity ddrphy is
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
-		ddr_ck  : out std_logic;
+		ddr_clk_p  : out std_logic;
+		ddr_clk_n  : out std_logic;
 		ddr_odt : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
@@ -78,11 +75,15 @@ entity ddrphy is
 
 		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
-		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
+		ddr_dqs_n : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dqs_p : inout std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+
+library unisim;
+use unisim.vcomponents.all;
 
 architecture ecp3 of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
@@ -210,42 +211,26 @@ architecture ecp3 of ddrphy is
 	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqso : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal adjdll_stop : std_logic;
-	signal adjdll_rst  : std_logic;
-	signal dqsdll_rst : std_logic;
-	signal dqsdll_lock : std_logic;
-	signal dqsdll_uddcntln : std_logic;
-	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
-	signal eclk_stop : std_logic;
-	signal synceclk : std_logic;
-	signal dqsbufd_rst : std_logic;
+	signal clk : std_logic;
 
-	signal wlnxt : std_logic;
-	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
-	signal dqsbufd_arst : std_logic;
-
-	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
-	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 
 begin
 
-	sys_wlpha <= wlpha(1);
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
-		cmnd_phases => cmnd_phases,
+--		cmd_phases => cmd_phases,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_sclk => sys_sclk,
-		sys_sclk2x => sys_sclk2x,
+		sys_clk => sys_clk0,
           
-		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sys_b,
@@ -255,37 +240,23 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
         
-		ddr_rst => ddr_rst,
-		ddr_ck  => ddr_ck,
+		ddr_ck  => clk,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
-		ddr_cs => ddr_cs,
+		ddr_cs  => ddr_cs,
 		ddr_ras => ddr_ras,
 		ddr_cas => ddr_cas,
 		ddr_we  => ddr_we,
 		ddr_b   => ddr_b,
 		ddr_a   => ddr_a);
 
-	sdmi <= to_blinevector(sys_dmi);
-	sdmt <= to_blinevector(not sys_dmt);
-	sdqt <= to_blinevector(not sys_dqt);
-	sdqi <= shuffle_dlinevector(sys_dqo);
-	ddqi <= to_bytevector(ddr_dq);
+	sdmi  <= to_blinevector(sys_dmi);
+	sdmt  <= to_blinevector(not sys_dmt);
+	sdqt  <= to_blinevector(not sys_dqt);
+	sdqi  <= shuffle_dlinevector(sys_dqo);
+	ddqi  <= to_bytevector(ddr_dq);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
-
-	adjdll_rst <= phy_rst;
-	process (sys_sclk)
-		variable aux : std_logic;
-	begin
-		if rising_edge(sys_sclk) then
-			aux := '1';
-			for i in wlrdy'range loop
-				aux := aux and wlrdy(i);
-			end loop;
-			sys_wlrdy <= aux;
-		end if;
-	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -293,15 +264,8 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			dqsbufd_rst  => dqsbufd_rst,
-			sys_sclk => sys_sclk,
-			sys_eclk => synceclk,
-			sys_eclkw => synceclk,
-			sys_dqsdel => dqsdel,
-			sys_rw   => sys_rw,
-			sys_wlreq => sys_wlreq,
-			sys_wlrdy => wlrdy(i),
-			sys_wlpha => wlpha(i),
+			sys_clk0  => sys_clk0,
+			sys_clk90 => sys_clk90,
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),
@@ -322,21 +286,10 @@ begin
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
 
-			ddr_dqsi => ddr_dqs(i),
+			ddr_dqsi => ddqso(i),
 			ddr_dqst => ddqst(i),
 			ddr_dqso => ddqsi(i));
 	end generate;
-
-	process (ddqsi, ddqst)
-	begin
-		for i in ddqsi'range loop
-			if ddqst(i)='1' then
-				ddr_dqs(i) <= 'Z';
-			else
-				ddr_dqs(i) <= ddqsi(i);
-			end if;
-		end loop;
-	end process;
 
 	process (ddqo, ddqt)
 		variable dqt : std_logic_vector(ddr_dq'range);
@@ -364,7 +317,40 @@ begin
 		end loop;
 	end process;
 
-	sys_dqsi <= (others => sys_sclk);
+	ddr2_dqs_g : for i in data_phases-1 downto 0 generate
+		signal dqsi : std_logic;
+		signal st   : std_logic;
+	begin
+
+--		dqsidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => dqsi,
+--			o   => ddr_dqsi(i));
+
+		dqsiobuf_i : iobufds
+		generic map (
+			iostandard => "DIFF_SSTL18_II_DCI")
+		port map (
+			t   => ddqst(i),
+			i   => ddqso(i),
+			o   => ddqsi(i),
+			io  => ddr_dqs_p(i),
+			iob => ddr_dqs_n(i));
+
+	end generate;
+
+	ddr_ck_obufds : obufds
+	generic map (
+		iostandard => "DIFF_SSTL18_II")
+	port map (
+		i  => clk,
+		o  => ddr_clk_p,
+		ob => ddr_clk_n);
+--	sys_dqsi <= (others => sys_clk);
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);
 end;

@@ -308,16 +308,10 @@ begin
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
-		sys_sclk => ddr_sclk,
-		sys_sclk2x => ddr_sclk2x, 
-		sys_eclk => ddr_eclk,
+		sys_clk0 => ddr_sclk,
+		sys_clk90 => ddr_sclk2x, 
 		phy_rst => ddrs_rst,
 
-		sys_rw => sto,
-		sys_rst => ddrphy_rst, 
-		sys_pha => ddr_eclkph,
-		sys_wlreq => ddrphy_wlreq,
-		sys_wlrdy => ddrphy_wlrdy,
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
 		sys_ras => ddrphy_ras,
@@ -335,12 +329,11 @@ begin
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
-		sys_wlpha => wlpha,
 
-		ddr_clk_p => ddr2_clk_p,
-		ddr_clk_n => ddr2_clk_n,
-		ddr_cke => ddr2_cke,
-		ddr_cs  => ddr2_cs,
+		ddr_clk_p => ddr2_clk_p(0),
+		ddr_clk_n => ddr2_clk_n(0),
+		ddr_cke => ddr2_cke(0),
+		ddr_cs  => ddr2_cs(0),
 		ddr_ras => ddr2_ras,
 		ddr_cas => ddr2_cas,
 		ddr_we  => ddr2_we,
@@ -349,8 +342,8 @@ begin
 
 --		ddr_dm  => ddr2_dm,
 		ddr_dq  => ddr2_d,
-		ddr_dqs_p => ddr2_dqs_p,
-		ddr_dqs_n => ddr2_dqs_n);
+		ddr_dqs_p => ddr2_dqs_p(2-1 downto 0),
+		ddr_dqs_n => ddr2_dqs_n(2-1 downto 0));
 	ddr2_dm <= (others => '0');
 
 	phy_reset  <= dcm_lckd;
