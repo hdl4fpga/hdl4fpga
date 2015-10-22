@@ -360,8 +360,6 @@ begin
 		xdr_dqi  => xdr_dqi);
 		
 	rot_val <= xdr_rotval (
-		data_phases => 1,
-		data_edges => 1,
 		line_size => line_size,
 		word_size => word_size,
 		lat_val => sys_cwl,

@@ -32,30 +32,36 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 --use hdl4fpga.cgafont.all;
 
-library ecp3;
-use ecp3.components.all;
+library unisim;
+use unisim.vcomponents.all;
 
 architecture scope of ml509 is
 	constant data_phases : natural := 1;
 	constant cmmd_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant line_size : natural := 4*ddr3_dq'length;
-	constant word_size : natural := ddr3_dq'length;
-	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
+	constant line_size : natural := 2*16;
+	constant word_size : natural := 16;
+	constant byte_size : natural := 8;
 
-	constant ns : natural := 1000;
-	constant uclk_period : natural := 10*ns;
+	constant uclk_period : real := 10.0;
 
+	signal ictlr_clk : std_logic;
+	signal ictlr_rdy : std_logic;
+	signal ictlr_rst : std_logic;
+	signal grst : std_logic;
+
+	signal sys_clk : std_logic;
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
-	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
 	signal input_clk : std_logic;
 
 	signal ddrs_clks  : std_logic_vector(0 to 2-1);
+	signal ddrs_clk0  : std_logic;
+	signal ddrs_clk90 : std_logic;
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
@@ -67,16 +73,16 @@ architecture scope of ml509 is
 	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_we : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
-	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr2_ba'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr2_a'length-1 downto 0);
+	signal ddrphy_dqsi : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
-	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
+	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
@@ -85,10 +91,11 @@ architecture scope of ml509 is
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
 
+	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
+	signal mii_rxd  : std_logic_vector(phy_rxd'range);
 	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
+	signal mii_txd  : std_logic_vector(phy_txd'range);
 
 	signal vga_clk : std_logic;
 	signal vga_hsync : std_logic;
@@ -143,13 +150,18 @@ architecture scope of ml509 is
 	end;
 begin
 
-	process (fpga_gsrn, clk)
+	clkin_ibufg : ibufg
+	port map (
+		I => user_clk,
+		O => sys_clk);
+
+	process (gpio_sw_c, sys_clk)
 		variable aux : std_logic_vector(0 to 3);
 	begin
-		if fpga_gsrn='0' then
+		if gpio_sw_c='1' then
 			sys_rst <= '1';
 			aux := (others => '0');
-		elsif rising_edge(clk) then
+		elsif rising_edge(sys_clk) then
 			sys_rst <= not aux(0);
 			if aux(0)='0' then
 				aux := inc(gray(aux));
@@ -161,19 +173,26 @@ begin
 	generic map (
 		ddr_mul => ddr_mul,
 		ddr_div => ddr_div, 
-		ddr_fbdiv => ddr_fbdiv,
-		sys_per => real(uclk_period/ns))
+		sys_per => uclk_period)
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => clk,
-
+		sys_clk => sys_clk,
+		ictlr_clk => ictlr_clk,
 		input_clk => input_clk,
-		ddr_eclkph => ddr_eclkph,
-		ddr_eclk => ddr_eclk,
-		ddr_sclk => ddr_sclk, 
-		ddr_sclk2x => ddr_sclk2x, 
-		video_clk0 => vga_clk,
-		dcms_lckd => dcm_lckd);
+		ddr_clk0 => ddrs_clk0,
+		ddr_clk90 => ddrs_clk90,
+		video_clk => open,
+		video_clk90 => open,
+		gtx_clk => gtx_clk,
+		dcm_lckd => dcm_lckd);
+
+	grst <= dcm_lckd and ictlr_rdy;
+	ictlr_rst <= not dcm_lckd;
+	idelayctrl_i : idelayctrl
+	port map (
+		rst => ictlr_rst,
+		refclk => ictlr_clk,
+		rdy => ictlr_rdy);
 
 	rsts_b : block
 		port (
@@ -181,10 +200,10 @@ begin
 			clks : in  std_logic_vector(0 to 3);
 			rsts : out std_logic_vector(0 to 3));
 		port map (
-			grst => dcm_lckd,
+			grst    => grst,
 			clks(0) => input_clk,
 			clks(1) => ddr_sclk,
-			clks(2) => phy1_125clk,
+			clks(2) => gtx_clk,
 			clks(3) => vga_clk,
 			rsts(0) => input_rst,
 			rsts(1) => ddrs_rst,
@@ -207,12 +226,12 @@ begin
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_tCP => integer(uclk_period)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
 		DDR_DATAPHASES => 1,
-		DDR_BANKSIZE => ddr3_b'length,
-		DDR_ADDRSIZE => ddr3_a'length,
+		DDR_BANKSIZE => ddr2_ba'length,
+		DDR_ADDRSIZE => ddr2_a'length,
 		DDR_CLMNSIZE => 7,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
@@ -233,8 +252,8 @@ begin
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
 		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(ddr3_b'length-1 downto 0),
-		ddr_a    => ddrphy_a(ddr3_a'length-1 downto 0),
+		ddr_b    => ddrphy_b(ddr2_ba'length-1 downto 0),
+		ddr_a    => ddrphy_a(ddr2_a'length-1 downto 0),
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
@@ -249,10 +268,10 @@ begin
 		ddr_sti  => ddrphy_sti,
 
 --		mii_rst  => mii_rst,
-		mii_rxc  => phy1_rxc,
+		mii_rxc  => phy_rxclk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => phy1_125clk,
+		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
@@ -270,14 +289,10 @@ begin
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	sto <= ddrphy_sto(0);
 
---	ddrphy_sti <= (others => ddrphy_cfgo(0));
-	led(4 to 7) <= (others => '1');
 	process (ddr_sclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
 		if rising_edge(ddr_sclk) then
-			led(0 to 3) <= not ddr_eclkph;
---			led <= not wlpha;
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
 		end if;
@@ -287,8 +302,8 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		BANK_SIZE => ddr3_b'length,
-		ADDR_SIZE => ddr3_a'length,
+		BANK_SIZE => ddr2_ba'length,
+		ADDR_SIZE => ddr2_a'length,
 		LINE_SIZE => line_size,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
@@ -329,18 +344,18 @@ begin
 		ddr_ras => ddr2_ras,
 		ddr_cas => ddr2_cas,
 		ddr_we  => ddr2_we,
-		ddr_b   => ddr2_b,
+		ddr_b   => ddr2_ba,
 		ddr_a   => ddr2_a,
 
 --		ddr_dm  => ddr2_dm,
 		ddr_dq  => ddr2_d,
 		ddr_dqs_p => ddr2_dqs_p,
 		ddr_dqs_n => ddr2_dqs_n);
-	ddr3_dm <= (others => '0');
+	ddr2_dm <= (others => '0');
 
-	phy1_rst  <= dcm_lckd;
-	phy1_mdc  <= '0';
-	phy1_mdio <= '0';
+	phy_reset  <= dcm_lckd;
+	phy_mdc  <= '0';
+	phy_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
@@ -352,11 +367,11 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => phy_gtxclk,
+		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy_txctl_txen,
 		iob_txd  => phy_txd,
-		iob_gtxclk => phy1_gtxclk);
+		iob_gtxclk => phy_txc_gtxclk);
 
 end;
