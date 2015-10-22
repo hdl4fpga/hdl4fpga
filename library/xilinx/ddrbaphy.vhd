@@ -55,7 +55,7 @@ end;
 
 library hdl4fpga;
 
-architecture ecp3 of ddrbaphy is
+architecture virtex of ddrbaphy is
 begin
 
 	ck_i : entity hdl4fpga.ddro

@@ -521,18 +521,18 @@ begin
 --		vga_col => win_coloff(8-1 downto 1),
 --		vga_dot => cga_dot);
 
-	win_scope_e : entity hdl4fpga.win_scope
-	generic map (
-		num_chann => 2)
-	port map (
-		video_clk => vga_clk,
-
-		chann_row => win_rowoff,
-		chann_col => win_coloff,
-		chann_seg => win_rowpag(3 downto 0),
-		chann_dat => chann_dat,
-		grid_dot  => grid_dot,
-		plot_dot  => plot_dot);
+--	win_scope_e : entity hdl4fpga.win_scope
+--	generic map (
+--		num_chann => 2)
+--	port map (
+--		video_clk => vga_clk,
+--
+--		chann_row => win_rowoff,
+--		chann_col => win_coloff,
+--		chann_seg => win_rowpag(3 downto 0),
+--		chann_dat => chann_dat,
+--		grid_dot  => grid_dot,
+--		plot_dot  => plot_dot);
 
 	ddr_e : entity hdl4fpga.xdr
 	generic map (

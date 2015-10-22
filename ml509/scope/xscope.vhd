@@ -195,21 +195,21 @@ begin
 		rdy => ictlr_rdy);
 
 	rsts_b : block
-		port (
-			grst : in  std_logic;
-			clks : in  std_logic_vector(0 to 3);
-			rsts : out std_logic_vector(0 to 3));
-		port map (
-			grst    => grst,
-			clks(0) => input_clk,
-			clks(1) => ddr_sclk,
-			clks(2) => gtx_clk,
-			clks(3) => vga_clk,
-			rsts(0) => input_rst,
-			rsts(1) => ddrs_rst,
-			rsts(2) => mii_rst,
-			rsts(3) => vga_rst);
+		signal clks : std_logic_vector(0 to 3);
+		signal rsts : std_logic_vector(0 to 3);
+		signal grst : std_logic;
 	begin
+		grst    <= grst;
+		clks(0) <= input_clk;
+		clks(1) <= ddr_sclk;
+		clks(2) <= gtx_clk;
+		clks(3) <= vga_clk;
+
+		input_rst <= rsts(0);
+		ddrs_rst  <= rsts(1);
+		mii_rst   <= rsts(2);
+		vga_rst   <= rsts(3);
+
 		rsts_g: for i in clks'range generate
 			process (clks(i))
 				variable rsta : std_logic;

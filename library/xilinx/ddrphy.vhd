@@ -25,8 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library ecp3;
-use ecp3.components.all;
 
 entity ddrphy is
 	generic (
@@ -85,7 +83,7 @@ use hdl4fpga.std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture ecp3 of ddrphy is
+architecture virtex of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 

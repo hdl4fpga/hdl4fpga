@@ -55,21 +55,15 @@ entity ddrdqphy is
 	constant data_phases : natural := 2;
 end;
 
-library ecp3;
-use ecp3.components.all;
-
 library hdl4fpga;
 
-architecture ecp3 of ddrdqphy is
+architecture virtex of ddrdqphy is
 
 	signal dqi : std_logic_vector(sys_dqi'range);
 
 	signal dqt : std_logic_vector(sys_dqt'range);
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
-	signal wle : std_logic;
-	signal wlrdy : std_logic;
-	signal dqsbufd_rsto : std_logic;
 
 begin
 

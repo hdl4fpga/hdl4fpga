@@ -177,6 +177,32 @@ architecture mix of xdr is
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 	signal wl_req : std_logic;
 
+	constant lRCD : natural := to_xdrlatency(tCP, mark, tRCD);
+	constant lRFC : natural := to_xdrlatency(tCP, mark, tRFC);
+	constant lWR  : natural := to_xdrlatency(tCP, tlWR);
+	constant lRP  : natural := to_xdrlatency(tCP, mark, tRP);
+	constant bl_cod : std_logic_vector := xdr_latcod(stdr, BL);
+	constant bl_tab : natural_vector := xdr_lattab(stdr, BL, tCP,tDDR);
+	constant cl_tab : natural_vector := xdr_lattab(stdr, CL, tCP,tDDR);
+	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR);
+
+	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
+	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, CWL);
+	constant STRL_TAB  : natural_vector := xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2);
+	constant RWNL_tab  : natural_vector := xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQSZL_TAB : natural_vector := xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2);
+	constant DQSOL_TAB : natural_vector := xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQZL_TAB  : natural_vector := xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2);
+	constant WWNL_TAB  : natural_vector := xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2);
+	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2);
+	constant DQSZX_TAB : natural_vector := xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4);
+	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQZX_TAB  : natural_vector := xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4);
+	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant WID_LAT   : natural := xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR);
+
 begin
 
 	process (sys_clks(0), sys_rst)
@@ -266,16 +292,26 @@ begin
 				   
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
-		lRCD => to_xdrlatency(tCP, mark, tRCD),
-		lRFC => to_xdrlatency(tCP, mark, tRFC),
-		lWR  => to_xdrlatency(tCP, tlWR),
-		lRP  => to_xdrlatency(tCP, mark, tRP),
-		bl_cod => xdr_latcod(stdr, BL),
-		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
-		cl_cod => xdr_latcod(stdr, CL),
-		cl_tab => xdr_lattab(stdr, CL, tCP,tDDR),
-		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
-		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR))
+		lRCD    => lRCD,
+		lRFC    => lRFC,
+		lWR     => lWR,
+		lRP     => lRP,
+		bl_cod  => bl_cod,
+		bl_tab  => bl_tab,
+		cl_cod  => cl_cod,
+		cl_tab  => cl_tab,
+		cwl_cod => cwl_cod,
+		cwl_tab => cwl_tab)
+--		lRCD => to_xdrlatency(tCP, mark, tRCD),
+--		lRFC => to_xdrlatency(tCP, mark, tRFC),
+--		lWR  => to_xdrlatency(tCP, tlWR),
+--		lRP  => to_xdrlatency(tCP, mark, tRP),
+--		bl_cod => xdr_latcod(stdr, BL),
+--		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
+--		cl_cod => xdr_latcod(stdr, CL),
+--		cl_tab => xdr_lattab(stdr, CL, tCP,tDDR),
+--		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
+--		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
@@ -298,25 +334,42 @@ begin
 	generic map (
 		line_size   => line_size/word_size,
 		word_size   => 1,
+		CL_COD    => CL_COD,
+		CWL_COD   => CWL_COD,
+                               
+		STRL_TAB  => STRL_TAB,
+		RWNL_tab  => RWNL_tab,
+		DQSZL_TAB => DQSZL_TAB,
+		DQSOL_TAB => DQSOL_TAB,
+		DQZL_TAB  => DQZL_TAB,
+		WWNL_TAB  => WWNL_TAB,
+                               
+		STRX_LAT  => STRX_LAT,
+		RWNX_LAT  => RWNX_LAT,
+		DQSZX_TAB => DQSZX_TAB ,
+		DQSX_LAT  => DQSX_LAT,
+		DQZX_TAB  => DQZX_TAB,
+		WWNX_LAT  => WWNX_LAT,
+		WID_LAT   => WID_LAT)
 
-		CL_COD    => xdr_latcod(stdr, CL),
-		CWL_COD   => xdr_latcod(stdr, CWL),
-
-		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2),
-		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2),
-		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2),
-		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2),
-		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2),
-		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2),
-
-		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2),
-		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
---		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
-		DQSZX_TAB => xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4),
-		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
-		DQZX_TAB  => xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4),
-		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
-		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR))
+--		CL_COD    => xdr_latcod(stdr, CL),
+--		CWL_COD   => xdr_latcod(stdr, CWL),
+--
+--		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2),
+--		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2),
+--		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2),
+--		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2),
+--		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2),
+--		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2),
+--
+--		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2),
+--		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
+----		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
+--		DQSZX_TAB => xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4),
+--		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
+--		DQZX_TAB  => xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4),
+--		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
+--		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
