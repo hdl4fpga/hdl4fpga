@@ -225,7 +225,7 @@ begin
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_tCP => integer(uclk_period)*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_tCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,

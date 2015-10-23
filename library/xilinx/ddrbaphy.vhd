@@ -26,20 +26,20 @@ use ieee.std_logic_1164.all;
 
 entity ddrbaphy is
 	generic (
-		cmnd_phases : natural := 2;
+		cmd_phases : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
 		sys_clk   : in  std_logic;
 
-		sys_cs  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cke : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_b   : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
-		sys_a   : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
-		sys_ras : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cas : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_we  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_odt : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_cs  : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_cke : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_b   : in  std_logic_vector(cmd_phases*bank_size-1 downto 0);
+		sys_a   : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
+		sys_ras : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_cas : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_we  : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_odt : in  std_logic_vector(cmd_phases-1 downto 0);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic;
@@ -56,7 +56,40 @@ end;
 library hdl4fpga;
 
 architecture virtex of ddrbaphy is
+	constant ddr_phases : natural := 2;
+
+	signal cs  : std_logic_vector(ddr_phases-1 downto 0);
+	signal cke : std_logic_vector(ddr_phases-1 downto 0);
+	signal b   : std_logic_vector(ddr_phases*bank_size-1 downto 0);
+	signal a   : std_logic_vector(ddr_phases*addr_size-1 downto 0);
+	signal ras : std_logic_vector(ddr_phases-1 downto 0);
+	signal cas : std_logic_vector(ddr_phases-1 downto 0);
+	signal we  : std_logic_vector(ddr_phases-1 downto 0);
+	signal odt : std_logic_vector(ddr_phases-1 downto 0);
+
 begin
+
+	xxx : if cmd_phases < ddr_phases generate
+		cs  <= sys_cs  & sys_cs;
+		cke <= sys_cke & sys_cke;
+		b   <= sys_b   & sys_b;
+		a   <= sys_a   & sys_a;
+		ras <= (sys_ras'range => sys_ras(0)) & sys_ras;
+		cas <= (sys_cas'range => sys_cas(0)) & sys_cas;
+		we  <= (sys_we 'range => sys_we(0))  & sys_we;
+		odt <= (sys_odt'range => sys_odt(0)) & sys_odt;
+	end generate;
+
+	xxx1 : if not (cmd_phases < ddr_phases) generate
+		cs  <= sys_cs;
+		cke <= sys_cke;
+		b   <= sys_b;
+		a   <= sys_a;
+		ras <= sys_ras;
+		cas <= sys_cas;
+		we  <= sys_we;
+		odt <= sys_odt;
+	end generate;
 
 	ck_i : entity hdl4fpga.ddro
 	port map (
@@ -69,8 +102,8 @@ begin
 		oddr_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk,
-			dr => sys_b(bank_size*0+i),
-			df => sys_b(bank_size*1+i),
+			dr => b(bank_size*0+i),
+			df => b(bank_size*1+i),
 			q  => ddr_b(i));
 	end generate;
 
@@ -79,51 +112,51 @@ begin
 		oddr_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk,
-			dr  => sys_a(addr_size*0+i),
-			df  => sys_a(addr_size*1+i),
+			dr  => a(addr_size*0+i),
+			df  => a(addr_size*1+i),
 			q   => ddr_a(i));
 	end generate;
 
 	ras_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr  => sys_ras(0),
-		df  => sys_ras(1),
+		dr  => ras(0),
+		df  => ras(1),
 		q   => ddr_ras);
 
 	cas_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr  => sys_cas(0),
-		df  => sys_cas(1),
+		dr  => cas(0),
+		df  => cas(1),
 		q   => ddr_cas);
 
 	we_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr  => sys_we(0),
-		df  => sys_we(1),
+		dr  => we(0),
+		df  => we(1),
 		q   => ddr_we);
 
 	cs_i :  entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => sys_cs(0),
-		df => sys_cs(1),
+		dr => cs(0),
+		df => cs(1),
 		q  => ddr_cs);
 
 	cke_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => sys_cke(0),
-		df => sys_cke(1),
+		dr => cke(0),
+		df => cke(1),
 		q  => ddr_cke);
 
 	odt_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => sys_odt(0),
-		df => sys_odt(1),
+		dr => odt(0),
+		df => odt(1),
 		q  => ddr_odt);
 
 end;

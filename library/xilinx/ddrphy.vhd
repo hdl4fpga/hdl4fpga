@@ -52,13 +52,13 @@ entity ddrphy is
 		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
 
-		sys_dqso : in  std_logic_vector(line_size/word_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(line_size/word_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(line_size/word_size-1 downto 0) := (others => '-');
+		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqsi : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -87,12 +87,11 @@ architecture virtex of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(data_phases*byte_size*line_size/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(line_size*byte_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
-
 
 	function to_bytevector (
 		constant arg : std_logic_vector) 
@@ -223,7 +222,7 @@ begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
---		cmd_phases => cmd_phases,
+		cmd_phases => cmd_phases,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (

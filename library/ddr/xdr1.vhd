@@ -72,7 +72,7 @@ entity xdr is
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;
 
-		xdr_wclks : in std_logic_vector;
+		xdr_wclks : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
 		xdr_cs  : out std_logic;
@@ -89,8 +89,8 @@ entity xdr is
 		xdr_dqi : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		xdr_dqt : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(line_size-1 downto 0) := (others => '-');
-		xdr_sti  : in  std_logic_vector(0 to line_size/word_size-1) := (others => '-');
-		xdr_sto  : out std_logic_vector(0 to line_size/word_size-1) := (others => '-');
+		xdr_sti  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_sto  : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
@@ -297,21 +297,11 @@ begin
 		lWR     => lWR,
 		lRP     => lRP,
 		bl_cod  => bl_cod,
-		bl_tab  => bl_tab,
 		cl_cod  => cl_cod,
-		cl_tab  => cl_tab,
 		cwl_cod => cwl_cod,
+		bl_tab  => bl_tab,
+		cl_tab  => cl_tab,
 		cwl_tab => cwl_tab)
---		lRCD => to_xdrlatency(tCP, mark, tRCD),
---		lRFC => to_xdrlatency(tCP, mark, tRFC),
---		lWR  => to_xdrlatency(tCP, tlWR),
---		lRP  => to_xdrlatency(tCP, mark, tRP),
---		bl_cod => xdr_latcod(stdr, BL),
---		bl_tab => xdr_lattab(stdr, BL, tCP,tDDR),
---		cl_cod => xdr_latcod(stdr, CL),
---		cl_tab => xdr_lattab(stdr, CL, tCP,tDDR),
---		cwl_cod => xdr_latcod(stdr, xdr_selcwl(stdr)),
---		cwl_tab => xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR))
 	port map (
 		xdr_mpu_bl  => sys_bl,
 		xdr_mpu_cl  => sys_cl,
@@ -351,25 +341,6 @@ begin
 		DQZX_TAB  => DQZX_TAB,
 		WWNX_LAT  => WWNX_LAT,
 		WID_LAT   => WID_LAT)
-
---		CL_COD    => xdr_latcod(stdr, CL),
---		CWL_COD   => xdr_latcod(stdr, CWL),
---
---		STRL_TAB  => xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2),
---		RWNL_tab  => xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2),
---		DQSZL_TAB => xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2),
---		DQSOL_TAB => xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2),
---		DQZL_TAB  => xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2),
---		WWNL_TAB  => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2),
---
---		STRX_LAT  => xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2),
---		RWNX_LAT  => xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2),
-----		DQSZX_LAT => xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2),
---		DQSZX_TAB => xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4),
---		DQSX_LAT  => xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2),
---		DQZX_TAB  => xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4),
---		WWNX_LAT  => xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2),
---		WID_LAT   => xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR))
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
@@ -384,7 +355,6 @@ begin
 		xdr_dqs  => xdr_sch_dqs,
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
-
 
 	xdr_win_dqs <= (others => xdr_sti(0));
 	xdr_win_dq  <= (others => xdr_sti(0));

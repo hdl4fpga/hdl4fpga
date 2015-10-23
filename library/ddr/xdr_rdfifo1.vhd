@@ -38,10 +38,10 @@ entity xdr_rdfifo is
 		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 
-		xdr_win_dq  : in std_logic_vector(line_size/word_size-1 downto 0);
-		xdr_win_dqs : in std_logic_vector(line_size/word_size-1 downto 0);
-		xdr_dqsi : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqi  : in std_logic_vector(line_size-1 downto 0));
+		xdr_win_dq  : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_win_dqs : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_dqsi    : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_dqi     : in std_logic_vector(line_size-1 downto 0));
 
 end;
 

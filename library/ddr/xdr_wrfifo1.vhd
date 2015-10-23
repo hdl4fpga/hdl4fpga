@@ -42,7 +42,7 @@ entity xdr_wrfifo is
 		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_enas : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_enas : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
@@ -163,7 +163,7 @@ begin
 --	end generate;
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in 0 to word_size/byte_size generate
+	xdr_fifo_g : for i in 0 to word_size/byte_size-1 generate
 		signal ser_clk : std_logic_vector(xdr_clks'range);
 
 		signal dqi : shuffleword;
