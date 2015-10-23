@@ -36,8 +36,8 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of ml509 is
-	constant data_phases : natural := 1;
-	constant cmmd_phases : natural := 2;
+	constant data_phases : natural := 2;
+	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant line_size : natural := 2*16;
@@ -66,18 +66,17 @@ architecture scope of ml509 is
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
 	signal sto : std_logic;
-	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_ras : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_we : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr2_ba'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr2_a'length-1 downto 0);
-	signal ddrphy_dqsi : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_ras : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmd_phases*ddr2_ba'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmd_phases*ddr2_a'length-1 downto 0);
+	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -229,10 +228,10 @@ begin
 		DDR_tCP => integer(uclk_period)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STD => 3,
 		DDR_STROBE => "INTERNAL",
-		DDR_DATAPHASES => 1,
+		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,
 		DDR_ADDRSIZE => ddr2_a'length,
-		DDR_CLMNSIZE => 7,
+		DDR_DATAPHASES => data_phases,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
 		DDR_BYTESIZE => byte_size,
@@ -244,7 +243,6 @@ begin
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks => ddrs_clks,
-		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -286,7 +284,6 @@ begin
 		vga_blue  => vga_blue,
 		tpo => tpo);
 
-	ddrphy_rst(1) <= ddrphy_rst(0);
 	sto <= ddrphy_sto(0);
 
 	process (ddr_sclk)
@@ -341,7 +338,7 @@ begin
 		ddr_a   => ddr2_a,
 
 --		ddr_dm  => ddr2_dm,
-		ddr_dq  => ddr2_d,
+		ddr_dq  => ddr2_d(word_size-1 downto 0),
 		ddr_dqs_p => ddr2_dqs_p(2-1 downto 0),
 		ddr_dqs_n => ddr2_dqs_n(2-1 downto 0));
 	ddr2_dm <= (others => '0');
