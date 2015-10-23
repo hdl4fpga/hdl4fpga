@@ -34,7 +34,7 @@ entity xdr_rdfifo is
 		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
-		sys_rdy : out std_logic_vector((line_size/word_size)-1 downto 0);
+		sys_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_rea : in  std_logic;
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 

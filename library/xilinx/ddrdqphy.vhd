@@ -36,7 +36,7 @@ entity ddrdqphy is
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
@@ -82,7 +82,7 @@ begin
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk0,
-			d => sys_dqt(i),
+			d => sys_dqt(0),
 			q => ddr_dqt(i));
 
 		ddro_i : entity hdl4fpga.ddro

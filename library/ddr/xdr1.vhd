@@ -63,7 +63,7 @@ entity xdr is
 		sys_a  : in  std_logic_vector(addr_size-1 downto 0) := (others => '-');
 		sys_di_rdy : out std_logic;
 --		sys_do_rdy : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_do_rdy : out std_logic_vector(2-1 downto 0);
+		sys_do_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic := '0';
@@ -358,7 +358,7 @@ begin
 
 	xdr_win_dqs <= (others => xdr_sti(0));
 	xdr_win_dq  <= (others => xdr_sti(0));
-	xdr_sto <= xdr_sch_rwn;
+	xdr_sto <= xdr_sch_rwn & xdr_sch_rwn;
 
 	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
 	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
