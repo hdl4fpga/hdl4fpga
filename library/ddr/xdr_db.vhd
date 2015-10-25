@@ -33,19 +33,66 @@ use hdl4fpga.std.all;
 
 package xdr_db is
 
-	type tmrk_ids is (ANY, M6T, M15E);
-	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
-	type latr_ids is (ANY, CL, BL, WRL, CWL);
-	type cltabs_ids  is (STRT,  RWNT);
-	type cwltabs_ids is (WWNT, DQSZT, DQST, DQSZXT, DQZT, DQZXT);
-	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
-		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
+	constant ANY  : natural := 0;
+
+	constant DDR1 : natural := 1;
+	constant DDR2 : natural := 2;
+	constant DDR3 : natural := 3;
+
+	constant M6T  : natural := 1;
+	constant M15E : natural := 2;
+
+	constant tPreRST : natural := 1;
+	constant tPstRST : natural := 2;
+	constant tXPR    : natural := 3;
+	constant tWR     : natural := 4;
+	constant tRP     : natural := 5;
+	constant tRCD    : natural := 6;
+	constant tRFC    : natural := 7;
+	constant tMRD    : natural := 8;
+	constant tREFI   : natural := 9;
+
+	constant CL  : natural := 1;
+	constant BL  : natural := 2;
+	constant WRL : natural := 3;
+	constant CWL : natural := 4;
+
+	-- Latency Tables
+
+	constant STRT   : natural := 1;
+	constant RWNT   : natural := 2;
+	constant WWNT   : natural := 3;
+	constant DQSZT  : natural := 4;
+	constant DQST   : natural := 5;
+	constant DQSZXT : natural := 6;
+	constant DQZT   : natural := 7;
+	constant DQZXT  : natural := 8;
+
+	-- Latencies 
+	constant cDLL   : natural := 1;
+	constant MRD    : natural := 2;
+	constant MODu   : natural := 3;
+	constant XPR    : natural := 4;
+	constant STRL   : natural := 5;
+	constant RWNL   : natural := 6;
+	constant DQSZL  : natural := 7;
+	constant DQSL   : natural := 8;
+	constant DQZL   : natural := 9;
+	constant WWNL   : natural := 10;
+	constant STRXL  : natural := 11;
+	constant RWNXL  : natural := 12;
+	constant DQSZXL : natural := 13;
+	constant DQSXL  : natural := 14;
+	constant DQZXL  : natural := 15;
+	constant WWNXL  : natural := 16;
+	constant WIDL   : natural := 17;
+	constant ZQINIT : natural := 18;
 
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
 	type cnfglat_record is record
-		stdr : positive;
-		reg  : latr_ids;
+		stdr : natural;
+		reg  : natural;
 		lat  : integer;
 		code : code_t;
 	end record;
@@ -53,8 +100,8 @@ package xdr_db is
 	type cnfglat_tab is array (natural range <>) of cnfglat_record;
 
 	type tmark_record is record
-		mark : tmrk_ids;
-		stdr  : natural;
+		mark : natural;
+		stdr : natural;
 	end record;
 
 	type tmark_tab is array (natural range <>) of tmark_record;
@@ -64,12 +111,20 @@ package xdr_db is
 		tmark_record'(mark => M15E, stdr => 3);
 
 	type latency_record is record
-		stdr   : positive;
-		param : laty_ids;
+		stdr  : natural;
+		param : natural; -- Latency
 		value : integer;
 	end record;
 
 	type latency_tab is array (natural range <>) of latency_record;
+
+	type timing_record is record
+		mark  : natural;
+		param : natural;
+		value : natural;
+	end record;
+
+	type timing_tab is array (natural range <>) of timing_record;
 
 	constant latency_db : latency_tab  := 
 		latency_record'(stdr => 1, param => cDLL,  value => 200) &
@@ -121,13 +176,6 @@ package xdr_db is
 		latency_record'(stdr => 3, param => XPR,   value =>   5) &
 		latency_record'(stdr => 3, param => WIDL,  value =>   8);
 
-	type timing_record is record
-		mark  : tmrk_ids;
-		param : tmng_ids;
-		value : natural;
-	end record;
-
-	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab(0 to 16-1) := 
 		timing_record'(mark => M6T,  param => tPreRST, value => 200000000) &
@@ -231,4 +279,97 @@ package xdr_db is
 		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*7, code => "010") &
 		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*8, code => "011");
 
+
+	function xdr_query_size (
+		constant stdr : natural;
+		constant rgtr  : natural)
+		return natural;
+
+	function xdr_cnfglat (
+		constant stdr: natural;
+		constant reg : natural;
+		constant lat : natural)
+		return natural;
+
+	function xdr_timing (
+		constant timing_db : timing_tab;
+		constant mark  : tmrk_ids;
+		constant param : tmng_ids) 
+		return natural is
+
 end package;
+
+package body xdr_db is
+
+	function xdr_query_size (
+		constant stdr : natural;
+		constant rtgr : natural)
+		return natural is
+		variable val : natural := 0;
+	begin
+		for i in cnfglat_db'range loop
+			if cnfglat_db(i).stdr = stdr then
+				if cnfglat_db(i).rgtr = reg then
+					val := val + 1;
+				end if;
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function xdr_query_data (
+		constant stdr : natural;
+		constant rgtr : natural)
+		return cnfglat_tab is
+		constant query_size : natural := xdr_query_size(stdr, reg);
+		variable query_data : cnfglat_tab (0 to query_size-1);
+		variable query_row  : natural := 0;
+	begin
+		for i in cnfglat_db'range loop
+			if cnfglat_db(i).stdr = stdr then
+				if cnfglat_db(i).rgtr = rgtr then
+					query_row := query_row + 1;
+					query_data(query_row) := cnfglat_db(i);
+				end if;
+			end if;
+		end loop;
+		return query_data;
+	end;
+
+	function xdr_cnfglat (
+		constant stdr: natural;
+		constant reg : natural;
+		constant lat : natural)
+		return std_logic_vector is
+	begin
+		for i in cnfglat_db'range loop
+			if cnfglat_db(i).stdr = stdr then
+				if cnfglat_db(i).rgtr = rgtr then
+					if cnfglat_db(i).lat = lat then
+						return cnfglat_db(i).code;
+					end if;
+				end if;
+			end if;
+		end loop;
+
+		return "XXX";
+	end;
+
+	function xdr_timing (
+		constant timing_db : timing_tab;
+		constant mark  : tmrk_ids;
+		constant param : tmng_ids) 
+		return natural is
+	begin
+		for i in timing_db'range loop
+			if timing_db(i).mark = mark then
+				if timing_db(i).param = param then
+					return timing_db(i).value;
+				end if;
+			end if;
+		end loop;
+
+		return 0;
+	end;
+
+end package body;

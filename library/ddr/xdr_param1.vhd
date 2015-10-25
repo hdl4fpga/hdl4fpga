@@ -130,28 +130,28 @@ package xdr_param is
 
 	function xdr_lattab (
 		constant stdr : natural;
-		constant reg : latr_ids;
+		constant reg  : natural;
 		constant tCP  : natural :=  250;
 		constant tDDR : natural := 1000)
 		return natural_vector;
 
 	function xdr_lattab (
-		constant stdr : natural;
-		constant tabid : cltabs_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
+		constant stdr  : natural;
+		constant tabid : natural;
+		constant tCP   : natural :=  250;
+		constant tDDR  : natural := 1000)
 		return natural_vector;
 
 	function xdr_lattab (
-		constant stdr : natural;
-		constant tabid : cwltabs_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
+		constant stdr  : natural;
+		constant tabid : natural;
+		constant tCP   : natural :=  250;
+		constant tDDR  : natural := 1000)
 		return natural_vector;
 
 	function xdr_latcod (
 		constant stdr : natural;
-		constant reg : latr_ids)
+		constant reg  : natural)
 		return std_logic_vector;
 
 	function xdr_rotval (
@@ -475,20 +475,6 @@ package body xdr_param is
 						return (latency_db(i).value*tDDR)/(4*tCP);
 					end if;
 				end if;
-			end if;
-		end loop;
-
-		return 0;
-	end;
-
-	function xdr_stdr (
-		mark : tmrk_ids) 
-		return natural is
-		variable msg : line;
-	begin
-		for i in tmark_db'range loop
-			if tmark_db(i).mark = mark then
-				return tmark_db(i).stdr;
 			end if;
 		end loop;
 
