@@ -293,9 +293,27 @@ package xdr_db is
 
 	function xdr_timing (
 		constant timing_db : timing_tab;
-		constant mark  : tmrk_ids;
-		constant param : tmng_ids) 
+		constant mark  : natural;
+		constant param : natural) 
 		return natural is
+
+	function xdr_latency (
+		constant stdr  : natural;
+		constant param : natural; 
+		constant tCP   : natural :=  250;
+		constant tDDR  : natural := 1000);
+		return integer;
+
+	function to_xdrlatency (
+		period : natural;
+		timing : natural)
+		return natural;
+
+	function to_xdrlatency (
+		constant period : natural;
+		constant mark   : natural;
+		constant param  : natural)
+		return natural;
 
 end package;
 
@@ -356,9 +374,8 @@ package body xdr_db is
 	end;
 
 	function xdr_timing (
-		constant timing_db : timing_tab;
-		constant mark  : tmrk_ids;
-		constant param : tmng_ids) 
+		constant mark  : natural;
+		constant param : natural) 
 		return natural is
 	begin
 		for i in timing_db'range loop
@@ -370,6 +387,131 @@ package body xdr_db is
 		end loop;
 
 		return 0;
+	end;
+
+	function xdr_latency (
+		constant stdr  : natural;
+		constant param : natural; 
+		constant tCP   : natural :=  250;
+		constant tDDR  : natural := 1000);
+		return integer is
+		variable msg : line;
+	begin
+		for i in latency_db'range loop
+			if latency_db(i).stdr = stdr then
+				if latency_db(i).param = param then
+					return (latency_db(i).value*tDDR)/(4*tCP);
+				end if;
+			end if;
+		end loop;
+		return 0;
+	end;
+
+	function to_xdrlatency (
+		period : natural;
+		timing : natural)
+		return natural is
+	begin
+		if (timing/period)*period < timing then
+			return (timing+period)/period;
+		else
+			return timing/period;
+		end if;
+	end;
+
+	function to_xdrlatency (
+		constant period : natural;
+		constant mark   : natural;
+		constant param  : natural)
+		return natural is
+	begin
+		return to_xdrlatency(period, xdr_timing(mark, param));
+	end;
+
+	function xdr_lattab (
+		constant stdr : natural;
+		constant rgtr : natural;
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
+		return natural_vector is
+		constant query_size : natural := xdr_query_size(stdr, rgtr);
+		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
+		variable lattab : natural_vector(0 to query_size-1);
+	begin
+		for i in lattab'range loop
+			lattab(i) := (query_data(i).lat*tDDR)/(4*tCP);
+		end loop;
+		return lattab;
+	end;
+
+	function xdr_schtab (
+		constant stdr : natural;
+		constant rtgr : natural;
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
+		return natural_vector is
+
+		constant lat : integer := xdr_latency(stdr, rtgr);
+		constant tab : natural_vector := xdr_latrgtr(stdr, CL, tDDR, 4*tDDR);
+		variable val : natural_vector(tab'range);
+
+	begin
+		for i in tab'range loop
+			val(i) := ((tab(i)+lat)*tDDR)/(4*tCP);
+		end loop;
+		return val;
+	end;
+
+	function xdr_schtab (
+		constant stdr   : natural;
+		constant tabid : cwltabs_ids;
+		constant tCP  : natural :=  250;
+		constant tDDR : natural := 1000)
+		return natural_vector is
+
+		type latid_vector is array (cwltabs_ids) of laty_ids;
+		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQSZXT => DQSZXL, DQZT => DQZL, DQZXT => DQZXL);
+
+		constant cltab  : natural_vector(0 to  xdr_query_size(stdr, CL)-1)  := xdr_lattab(stdr, CL);
+		constant cwltab : natural_vector(0 to  xdr_query_size(stdr, CWL)-1) := xdr_lattab(stdr, CWL);
+		variable clval  : natural_vector(cltab'range);
+		variable cwlval : natural_vector(cwltab'range);
+		variable latx   : integer := 0;
+
+	constant STRT   : natural := 1;
+	constant RWNT   : natural := 2;
+	constant WWNT   : natural := 3;
+	constant DQSZT  : natural := 4;
+	constant DQST   : natural := 5;
+	constant DQSZXT : natural := 6;
+	constant DQZT   : natural := 7;
+	constant DQZXT  : natural := 8;
+
+	begin
+		case tabid is
+		when STRT =>
+		when RWNT =>
+		when WWNT =>
+		when DQZXT =>
+			latx := lat;
+			lat  := xdr_latency(stdr, DQZXL);
+			for i in cwltab'range loop
+				aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
+				cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
+			end loop;
+		when DQSZXT =>
+			latx := lat;
+			lat  := xdr_latency(stdr, DQSZXL);
+			for i in cwltab'range loop
+				aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
+				cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
+			end loop;
+		when others =>
+			for i in cwltab'range loop
+				cwlval(i) := ((cwltab(i)+lat)*tDDR)/(4*tCP);
+			end loop;
+		end case;
+		return cwlval;
 	end;
 
 end package body;
