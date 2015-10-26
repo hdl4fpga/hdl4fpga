@@ -490,50 +490,6 @@ begin
 		end if;
 	end process;
 
---	process (cga_clk)
---		variable nibble_ptr : unsigned(3-1 downto 0);
---	begin
---		if rising_edge(cga_clk) then
---			nibble_ptr := nibble_ptr + 1;
---			cga_code <= to_ascii(tp(to_integer(nibble_ptr)));
---			cga_ptr <= (3 to 5 => '0',others => '1');
---			cga_ptr(2 downto 0) <= std_logic_vector(nibble_ptr);
---		end if;
---	end process;
-
---	cga_clk <= mii_rxc;
---	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
---	cga_e : entity hdl4fpga.cga
---	generic map (
---		bitrom => psf1cp850x8x16,
---		height => 16,
---		width  => 8,
---		row_reverse => true,
---		col_reverse => true)
---	port map (
---		sys_clk => cga_clk,
---		sys_row => cga_ptr(cga_row'range),
---		sys_col => cga_ptr(cga_col'range),
---		sys_we  => '1',
---		sys_code => cga_code,
---		vga_clk => vga_clk,
---		vga_row => vga_row,
---		vga_col => win_coloff(8-1 downto 1),
---		vga_dot => cga_dot);
-
---	win_scope_e : entity hdl4fpga.win_scope
---	generic map (
---		num_chann => 2)
---	port map (
---		video_clk => vga_clk,
---
---		chann_row => win_rowoff,
---		chann_col => win_coloff,
---		chann_seg => win_rowpag(3 downto 0),
---		chann_dat => chann_dat,
---		grid_dot  => grid_dot,
---		plot_dot  => plot_dot);
-
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		strobe    => DDR_STROBE,

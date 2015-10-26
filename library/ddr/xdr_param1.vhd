@@ -64,95 +64,13 @@ package xdr_param is
 			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
 	end component;
 
---	type tmrk_ids is (ANY, M6T, M15E);
---	type tmng_ids is (ANY, tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI);
---	type latr_ids is (ANY, CL, BL, WRL, CWL);
---	type cltabs_ids  is (STRT,  RWNT);
---	type cwltabs_ids is (WWNT, DQSZT, DQST, DQSZXT, DQZT, DQZXT);
---	type laty_ids is (ANY, cDLL, MRD, MODu, XPR, STRL, RWNL, DQSZL, DQSL, DQZL, WWNL,
---		STRXL, RWNXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL, ZQINIT);
+	type field_desc is record
+		dbase : natural;
+		sbase : natural;
+		size  : natural;
+	end record;
 
---	constant code_size : natural := 3;
---	subtype code_t is std_logic_vector(0 to code_size-1);
---	type cnfglat_record is record
---		stdr : positive;
---		reg  : latr_ids;
---		lat  : integer;
---		code : code_t;
---	end record;
---	type cnfglat_tab is array (natural range <>) of cnfglat_record;
-
-	function xdr_cnfglat (
-		constant stdr : positive;
-		constant reg : latr_ids;
-		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking it up
-		return std_logic_vector;
-
-	function xdr_timing (
-		constant timing_db : timing_tab;
-		constant mark  : tmrk_ids;
-		constant param : tmng_ids) 
-		return natural;
-
-	function xdr_latency (
-		constant stdr   : natural;
-		constant param : laty_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000;
-		constant roundon : boolean := false)
-		return integer;
-
-	function xdr_query_size (
-		constant stdr : natural;
-		constant reg : latr_ids)
-		return natural;
-
-	function xdr_query_data (
-		constant stdr : natural;
-		constant reg : latr_ids)
-		return cnfglat_tab;
-
-	function xdr_stdr (
-		mark : tmrk_ids) 
-		return natural;
-
-	function to_xdrlatency (
-		period : natural;
-		timing : natural)
-		return natural;
-
-	function to_xdrlatency (
-		constant timing_db : timing_tab;
-		constant period : natural;
-		constant mark   : tmrk_ids;
-		constant param  : tmng_ids)
-		return natural;
-
-	function xdr_lattab (
-		constant stdr : natural;
-		constant reg  : natural;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
-		return natural_vector;
-
-	function xdr_lattab (
-		constant stdr  : natural;
-		constant tabid : natural;
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
-		return natural_vector;
-
-	function xdr_lattab (
-		constant stdr  : natural;
-		constant tabid : natural;
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
-		return natural_vector;
-
-	function xdr_latcod (
-		constant stdr : natural;
-		constant reg  : natural)
-		return std_logic_vector;
+	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	function xdr_rotval (
 		constant line_size : natural;
@@ -172,24 +90,6 @@ package xdr_param is
 		constant lat_ext : natural := 0;
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
-
-	function xdr_selcwl (
-		constant stdr : natural)
-		return latr_ids;
-
-	function xdr_combclks (
-		constant iclks : std_logic_vector;
-		constant iclks_phases : natural;
-		constant oclks_phases : natural)
-		return std_logic_vector;
-
-	type field_desc is record
-		dbase : natural;
-		sbase : natural;
-		size  : natural;
-	end record;
-
-	type fielddesc_vector is array (natural range <>) of field_desc;
 
 	type ddr3_ccmd is record
 		cmd  : std_logic_vector( 3 downto 0);
@@ -226,419 +126,12 @@ package xdr_param is
 		constant clk : natural) 
 		return natural;
 
-	function floor_lat (
-		constant dly : natural;
-		constant clk : natural) 
-		return natural;
-
 end package;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 package body xdr_param is
-
---	type tmark_record is record
---		mark : tmrk_ids;
---		stdr  : natural;
---	end record;
---
---	type tmark_tab is array (natural range <>) of tmark_record;
---
---	constant tmark_db : tmark_tab (1 to 2) :=
---		tmark_record'(mark => M6T,  stdr => 1) &
---		tmark_record'(mark => M15E, stdr => 3);
-
---	type latency_record is record
---		stdr   : positive;
---		param : laty_ids;
---		value : integer;
---	end record;
---
---	type latency_tab is array (positive range <>) of latency_record;
---
---	constant latency_db : latency_tab  := 
---		latency_record'(stdr => 1, param => cDLL,  value => 200) &
---		latency_record'(stdr => 1, param => STRL,  value => 4*0) &
---		latency_record'(stdr => 1, param => RWNL,  value => 4*0) &
---		latency_record'(stdr => 1, param => DQSZL, value => 4*2) &
---		latency_record'(stdr => 1, param => DQSL,  value =>   2) &
---		latency_record'(stdr => 1, param => DQZL,  value =>   1) &
---		latency_record'(stdr => 1, param => WWNL,  value =>   1) &
---		latency_record'(stdr => 1, param => STRXL, value =>   2) &
---		latency_record'(stdr => 1, param => RWNXL, value => 4*0) &
---		latency_record'(stdr => 1, param => DQSZXL, value =>  2) &
---		latency_record'(stdr => 1, param => DQSXL, value =>   2) &
---		latency_record'(stdr => 1, param => DQZXL, value =>   1) &
---		latency_record'(stdr => 1, param => WWNXL, value =>   1) &
---		latency_record'(stdr => 1, param => WIDL,  value =>   4) &
---
---		latency_record'(stdr => 2, param => cDLL,  value => 200) &
---		latency_record'(stdr => 2, param => STRL,  value =>  -3) &
---		latency_record'(stdr => 2, param => RWNL,  value =>   8) &
---		latency_record'(stdr => 2, param => DQSZL, value =>  -8) &
---		latency_record'(stdr => 2, param => DQSL,  value =>  -2) &
---		latency_record'(stdr => 2, param => DQZL,  value =>  -7) &
---		latency_record'(stdr => 2, param => WWNL,  value =>  -3) &
---		latency_record'(stdr => 2, param => STRXL, value =>   4) &
---		latency_record'(stdr => 2, param => RWNXL, value =>   4) &
---		latency_record'(stdr => 2, param => DQSZXL, value =>  8) &
---		latency_record'(stdr => 2, param => DQSXL, value =>   4) &
---		latency_record'(stdr => 2, param => DQZXL, value =>   4) &
---		latency_record'(stdr => 2, param => WWNXL, value =>   4) &
---		latency_record'(stdr => 2, param => WIDL,  value =>   8) &
---
---		latency_record'(stdr => 3, param => cDLL,  value => 500) &
---		latency_record'(stdr => 3, param => STRL,  value => 4*0) &
---		latency_record'(stdr => 3, param => RWNL,  value => 4*2) &
---		latency_record'(stdr => 3, param => DQSL,  value =>  -4) &
---		latency_record'(stdr => 3, param => DQSZL, value =>  -4) &
---		latency_record'(stdr => 3, param => DQZL,  value =>  -4) &
---		latency_record'(stdr => 3, param => WWNL,  value =>  -8) &
---		latency_record'(stdr => 3, param => STRXL, value =>   2) &
---		latency_record'(stdr => 3, param => RWNXL, value => 4*0) &
---		latency_record'(stdr => 3, param => DQSXL, value =>   2) &
---		latency_record'(stdr => 3, param => DQSZXL, value =>  2) &
---		latency_record'(stdr => 3, param => DQZXL, value =>   4) &
---		latency_record'(stdr => 3, param => WWNXL, value =>   1) &
---		latency_record'(stdr => 3, param => ZQINIT, value =>  500) &
---		latency_record'(stdr => 3, param => MRD,   value =>   4) &
---		latency_record'(stdr => 3, param => MODu,  value =>  12) &
---		latency_record'(stdr => 3, param => XPR,   value =>   5) &
---		latency_record'(stdr => 3, param => WIDL,  value =>   8);
---
---	type timing_record is record
---		mark  : tmrk_ids;
---		param : tmng_ids;
---		value : natural;
---	end record;
---
---	type timing_tab is array (natural range <>) of timing_record;
---
---	constant timing_db : timing_tab(0 to 16-1) := 
---		timing_record'(mark => M6T,  param => tPreRST, value => 200000000) &
---		timing_record'(mark => M6T,  param => tWR,   value => 15000) &
---		timing_record'(mark => M6T,  param => tRP,   value => 15000) &
---		timing_record'(mark => M6T,  param => tRCD,  value => 15000) &
---		timing_record'(mark => M6T,  param => tRFC,  value => 72000) &
---		timing_record'(mark => M6T,  param => tMRD,  value => 12000) &
---		timing_record'(mark => M6T,  param => tREFI, value => 7000000) &
---		timing_record'(mark => M15E, param => tPreRST, value => 200000000) &
---		timing_record'(mark => M15E, param => tPstRST, value => 500000000) &
-----		timing_record'(mark => M15E, param => tPreRST, value => 2000000) &
-----		timing_record'(mark => M15E, param => tPstRST, value => 2000000) &
---		timing_record'(mark => M15E, param => tWR,   value => 15000) &
---		timing_record'(mark => M15E, param => tRCD,  value => 13910) &
---		timing_record'(mark => M15E, param => tRP,   value => 13910) &
---		timing_record'(mark => M15E, param => tMRD,  value => 15000) &
---		timing_record'(mark => M15E, param => tRFC,  value => 110000) &
---		timing_record'(mark => M15E, param => tXPR,  value => 110000 + 10000) &
---		timing_record'(mark => M15E, param => tREFI, value => 7800000);
---
---	constant cnfglat_db : cnfglat_tab :=
---
---		-- DDR1 standard --
---		-------------------
---
---		-- CL register --
---
---		cnfglat_record'(stdr => 1, reg => CL,  lat =>  4*2, code => "010") &
---		cnfglat_record'(stdr => 1, reg => CL,  lat =>  2*5, code => "110") &
---		cnfglat_record'(stdr => 1, reg => CL,  lat =>  4*3, code => "011") &
---
---		-- BL register --
---
---		cnfglat_record'(stdr => 1, reg => BL,  lat =>  2*2, code => "001") &
---		cnfglat_record'(stdr => 1, reg => BL,  lat =>  2*4, code => "010") &
---		cnfglat_record'(stdr => 1, reg => BL,  lat =>  2*8, code => "011") &
---
---		-- CWL register --
---
---		cnfglat_record'(stdr => 1, reg => CWL, lat =>  4*1, code => "---") &
---
---		-- DDR2 standard --
---		-------------------
---
---		-- CL register --
---
---		cnfglat_record'(stdr => 2, reg => CL,  lat =>  4*3, code => "011") &
---		cnfglat_record'(stdr => 2, reg => CL,  lat =>  4*4, code => "100") &
---		cnfglat_record'(stdr => 2, reg => CL,  lat =>  4*5, code => "101") &
---		cnfglat_record'(stdr => 2, reg => CL,  lat =>  4*6, code => "110") &
---		cnfglat_record'(stdr => 2, reg => CL,  lat =>  4*7, code => "111") &
---
---		-- BL register --
---
---		cnfglat_record'(stdr => 2, reg => BL,  lat =>  4, code => "010") &
---		cnfglat_record'(stdr => 2, reg => BL,  lat =>  8, code => "011") &
---
---		-- CWL register --
---
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*2, code => "001") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*3, code => "010") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*4, code => "011") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*5, code => "100") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*6, code => "101") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*7, code => "110") &
---		cnfglat_record'(stdr => 2, reg => WRL, lat =>  4*8, code => "111") &
---
---		-- DDR3 standard --
---		-------------------
---
---		-- CL register --
---
---		cnfglat_record'(stdr => 3, reg => CL, lat =>  4*5, code => "001") &
---		cnfglat_record'(stdr => 3, reg => CL, lat =>  4*6, code => "010") &
---		cnfglat_record'(stdr => 3, reg => CL, lat =>  4*7, code => "011") &
---		cnfglat_record'(stdr => 3, reg => CL, lat =>  4*8, code => "100") &
---		cnfglat_record'(stdr => 3, reg => CL, lat =>  4*9, code => "101") &
---		cnfglat_record'(stdr => 3, reg => CL, lat => 4*10, code => "110") &
---		cnfglat_record'(stdr => 3, reg => CL, lat => 4*11, code => "111") &
---
---		-- BL register --
---
---		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "000") &
---		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "001") &
---		cnfglat_record'(stdr => 3, reg => BL, lat => 2*8, code => "010") &
---
---		-- WRL register --
---
---		cnfglat_record'(stdr => 3, reg => WRL, lat =>  4*5, code => "001") &
---		cnfglat_record'(stdr => 3, reg => WRL, lat =>  4*6, code => "010") &
---		cnfglat_record'(stdr => 3, reg => WRL, lat =>  4*7, code => "011") &
---		cnfglat_record'(stdr => 3, reg => WRL, lat =>  4*8, code => "100") &
---		cnfglat_record'(stdr => 3, reg => WRL, lat => 4*10, code => "101") &
---		cnfglat_record'(stdr => 3, reg => WRL, lat => 4*12, code => "110") &
---
---		-- CWL register --
---
---		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*5, code => "000") &
---		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*6, code => "001") &
---		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*7, code => "010") &
---		cnfglat_record'(stdr => 3, reg => CWL, lat =>  4*8, code => "011");
---
-	function xdr_cnfglat (
-		constant stdr : positive;
-		constant reg : latr_ids;
-		constant lat : positive)	-- DDR1 CL must be multiplied by 2 before looking up
-		return std_logic_vector is
-	begin
-		for i in cnfglat_db'range loop
-			if cnfglat_db(i).stdr = stdr then
-				if cnfglat_db(i).reg = reg then
-					if cnfglat_db(i).lat = lat then
-						return cnfglat_db(i).code;
-					end if;
-				end if;
-			end if;
-		end loop;
-
-		return "XXX";
-	end;
-
-	function xdr_timing (
-		constant timing_db : timing_tab;
-		constant mark  : tmrk_ids;
-		constant param : tmng_ids) 
-		return natural is
-	begin
-		for i in timing_db'range loop
-			if timing_db(i).mark = mark then
-				if timing_db(i).param = param then
-					return timing_db(i).value;
-				end if;
-			end if;
-		end loop;
-
-		return 0;
-	end;
-
-	function xdr_latency (
-		constant stdr   : natural;
-		constant param : laty_ids; 
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000;
-		constant roundon : boolean := false)
-		return integer is
-		variable msg : line;
-	begin
-		for i in latency_db'range loop
-			if latency_db(i).stdr = stdr then
-				if latency_db(i).param = param then
-					if roundon then
-						if (latency_db(i).value*tDDR) mod (4*tCP) = 0  then
-							return (latency_db(i).value*tDDR)/(4*tCP);
-						else
-							return (latency_db(i).value*tDDR)/(4*tCP)+1;
-						end if;
-					else
-						return (latency_db(i).value*tDDR)/(4*tCP);
-					end if;
-				end if;
-			end if;
-		end loop;
-
-		return 0;
-	end;
-
-	function to_xdrlatency (
-		period : natural;
-		timing : natural)
-		return natural is
-	begin
-		if (timing/period)*period < timing then
-			return (timing+period)/period;
-		else
-			return timing/period;
-		end if;
-	end;
-
-	function to_xdrlatency (
-		constant timing_db : timing_tab;
-		constant period : natural;
-		constant mark   : tmrk_ids;
-		constant param  : tmng_ids)
-		return natural is
-	begin
-		return to_xdrlatency(period, xdr_timing(timing_db, mark, param));
-	end;
-
-	function xdr_query_size (
-		constant stdr : natural;
-		constant reg : latr_ids)
-		return natural is
-		variable val : natural := 0;
-	begin
-		for i in cnfglat_db'range loop
-			if cnfglat_db(i).stdr = stdr then
-				if cnfglat_db(i).reg = reg then
-					val := val + 1;
-				end if;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function xdr_query_data (
-		constant stdr : natural;
-		constant reg : latr_ids)
-		return cnfglat_tab is
-		constant query_size : natural := xdr_query_size(stdr, reg);
-		variable query_data : cnfglat_tab (1 to query_size);
-		variable query_row  : natural := 0;
-	begin
-		for i in cnfglat_db'range loop
-			if cnfglat_db(i).stdr = stdr then
-				if cnfglat_db(i).reg = reg then
-					query_row := query_row + 1;
-					query_data(query_row) := cnfglat_db(i);
-				end if;
-			end if;
-		end loop;
-		return query_data;
-	end;
-
-	function xdr_lattab (
-		constant stdr : natural;
-		constant reg : latr_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
-		return natural_vector is
-		constant query_size : natural := xdr_query_size(stdr, reg);
-		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
-		variable lattab : natural_vector(0 to query_size-1);
-	begin
-		for i in lattab'range loop
-			lattab(i) := (query_data(i).lat*tDDR)/(4*tCP);
-		end loop;
-		return lattab;
-	end;
-
-	function xdr_lattab (
-		constant stdr : natural;
-		constant tabid : cltabs_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
-		return natural_vector is
-
-		type latid_vector is array (cltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := (STRT => STRL, RWNT => RWNL);
-
-		constant lat : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant tab : natural_vector := xdr_lattab(stdr, CL, tDDR, 4*tDDR);
-		variable val : natural_vector(tab'range);
-
-	begin
-		for i in tab'range loop
-			val(i) := ((tab(i)+lat)*tDDR)/(4*tCP);
-		end loop;
-		return val;
-	end;
-
-	function xdr_lattab (
-		constant stdr   : natural;
-		constant tabid : cwltabs_ids;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
-		return natural_vector is
-
-		type latid_vector is array (cwltabs_ids) of laty_ids;
-		constant tab2laty : latid_vector := (WWNT => WWNL, DQSZT => DQSZL, DQST => DQSL, DQSZXT => DQSZXL, DQZT => DQZL, DQZXT => DQZXL);
-
-		variable lat    : integer := xdr_latency(stdr, tab2laty(tabid));
-		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
-		variable clval  : natural_vector(cltab'range);
-		variable aux : natural;
-		constant cwltab : natural_vector := xdr_lattab(stdr, CWL);
-		variable cwlval : natural_vector(cwltab'range);
-		variable latx   : integer := 0;
-
-		variable mesg : line;
-	begin
-		if stdr = 2 then
-			for i in cltab'range loop
-				clval(i) := ((cltab(i)+lat-4)*tDDR)/(4*tCP);
-			end loop;
-			return clval;
-		else
-			case tabid is
-			when DQZXT =>
-				latx := lat;
-				lat  := xdr_latency(stdr, DQZXL);
-				for i in cwltab'range loop
-					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
-					cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
-				end loop;
-			when DQSZXT =>
-				latx := lat;
-				lat  := xdr_latency(stdr, DQSZXL);
-				for i in cwltab'range loop
-					aux := ((cwltab(i)+lat )*tDDR) mod (4*tCP);
-					cwlval(i) := (latx*tDDR+aux+4*tCP-1) / (4*tCP);
-				end loop;
-			when others =>
-				for i in cwltab'range loop
-					cwlval(i) := ((cwltab(i)+lat)*tDDR)/(4*tCP);
-				end loop;
-			end case;
-			return cwlval;
-		end if;
-	end;
-
-	function xdr_latcod (
-		constant stdr : natural;
-		constant reg : latr_ids)
-		return std_logic_vector is
-		constant query_size : natural := xdr_query_size(stdr, reg);
-		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, reg);
-		variable latcode : std_logic_vector(0 to code_size*query_size-1);
-	begin
-		for i in query_data'reverse_range loop
-			latcode := latcode srl code_size;
-			latcode(code_t'range) := query_data(i).code;
-		end loop;
-		return latcode;
-	end;
 
 	function xdr_rotval (
 		constant line_size : natural;
@@ -697,14 +190,8 @@ package body xdr_param is
 	begin
 
 		setup_l : for i in 0 to lat_tab'length-1 loop
-	--        sel_sch(i) := to_unsigned((line_size/word_size-(lat_tab(i) mod (line_size/word_size)) mod (line_size/word_size)), word'length);
 			sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
-	--		write (msg, sel_sch(i));
-	--		write (msg, lat_tab(i));
-	--		writeline (output, msg);
 		end loop;
-	--	report "termine"
-	--	severity FAILURE;
 		
 		val(word'range) := select_lat(lat_val, lc, sel_sch);
 		val := std_logic_vector'(unsigned(val) sll algn);
@@ -775,31 +262,6 @@ package body xdr_param is
 		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
-	function xdr_selcwl (
-		constant stdr : natural)
-		return latr_ids is
-	begin
-		if stdr = 2 then
-			return CL;
-		else
-			return CWL;
-		end if;
-	end;
-
-	function xdr_combclks (
-		constant iclks : std_logic_vector;
-		constant iclks_phases : natural;
-		constant oclks_phases : natural)
-		return std_logic_vector is
-		variable aux : std_logic_vector(0 to iclks'length-1) := iclks;
-		variable val : std_logic_vector(0 to iclks'length/(iclks_phases/oclks_phases)-1);
-	begin
-		for i in val'range loop
-			val(i) := aux(i*(iclks_phases/oclks_phases));
-		end loop;
-		return val;
-	end;
-
 	-- DDR init
 
 	function mov (
@@ -854,13 +316,6 @@ package body xdr_param is
 				end if;
 			end loop;
 		end loop;
---			for k in aux'range loop
---				write (msg, val(k));
---				write (msg, string'(","));
---			end loop;
---			writeline (output, msg);
---			report "val"
---			severity failure;
 		return val;
 	end function;
 
@@ -870,14 +325,6 @@ package body xdr_param is
 		return natural is
 	begin
 		return (dly+clk-1)/clk;
-	end;
-
-	function floor_lat (
-		constant dly : natural;
-		constant clk : natural) 
-		return natural is
-	begin
-		return dly/clk;
 	end;
 
 end package body;

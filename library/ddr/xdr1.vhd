@@ -33,14 +33,14 @@ entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
 		registered_output : boolean := true;
-		mark : tmrk_ids := M15E;
+		mark : natural := M15E;
 		tCP  : natural := 6000;
 		tDDR : natural := 6000;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
 
-		data_phases : natural;
+		data_phases : natural := 2;
 		line_size : natural := 16;
 		word_size : natural := 16;
 		byte_size : natural :=  8);
@@ -161,18 +161,18 @@ architecture mix of xdr is
 
 	signal rst : std_logic;
 
-	constant tlWR : natural := xdr_timing(timing_db, mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant timers : ddrtid_vector := (
-			TMR_RST  => to_xdrlatency(timing_db, tCP, mark, tPreRST),
-			TMR_RRDY => to_xdrlatency(timing_db, tCP, mark, tPstRST),
+			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
+			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 			TMR_WLC  => xdr_latency(stdr, MODu),
 			TMR_WLDQSEN => 25,
-			TMR_CKE  => to_xdrlatency(timing_db, tCP, mark, tXPR),
-			TMR_MRD  => to_xdrlatency(timing_db, tCP, mark, tMRD),
+			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
+			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
 			TMR_MOD  => xdr_latency(stdr, MODu),
 			TMR_DLL  => xdr_latency(stdr, cDLL),
 			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
-			TMR_REF  => to_xdrlatency(timing_db, tCP, mark, tREFI));
+			TMR_REF  => to_xdrlatency(tCP, mark, tREFI));
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
@@ -189,18 +189,18 @@ architecture mix of xdr is
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
 	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, CWL);
-	constant STRL_TAB  : natural_vector := xdr_lattab(stdr, STRT,  tDDR => tDDR, tCP => tDDR/2);
-	constant RWNL_tab  : natural_vector := xdr_lattab(stdr, RWNT,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZL_TAB : natural_vector := xdr_lattab(stdr, DQSZT, tDDR => tDDR, tCP => tDDR/2);
-	constant DQSOL_TAB : natural_vector := xdr_lattab(stdr, DQST,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQZL_TAB  : natural_vector := xdr_lattab(stdr, DQZT,  tDDR => tDDR, tCP => tDDR/2);
-	constant WWNL_TAB  : natural_vector := xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2);
+	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL,  tDDR => tDDR, tCP => tDDR/2);
+	constant RWNL_tab  : natural_vector := xdr_schtab(stdr, RWNL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL, tDDR => tDDR, tCP => tDDR/2);
+	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  tDDR => tDDR, tCP => tDDR/2);
+	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL,  tDDR => tDDR, tCP => tDDR/2);
 	constant STRX_LAT  : natural := 4; --xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant RWNX_LAT  : natural := 4; --xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant DQSZX_LAT : natural := 4; --xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZX_TAB : natural_vector := xdr_lattab(stdr, DQSZXT, tDDR => tDDR, tCP => tDDR/4);
+	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/4);
 	constant DQSX_LAT  : natural := 4; --xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQZX_TAB  : natural_vector := xdr_lattab(stdr, DQZXT,  tDDR => tDDR, tCP => tDDR/4);
+	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL,  tDDR => tDDR, tCP => tDDR/4);
 	constant WWNX_LAT  : natural := 4; --xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant WID_LAT   : natural := 4; --xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR);
 
@@ -388,7 +388,7 @@ begin
 		word_size => word_size,
 		lat_val => sys_cwl,
 		lat_cod => xdr_latcod(stdr, CWL),
-		lat_tab => xdr_lattab(stdr, WWNT,  tDDR => tDDR, tCP => tDDR/2));
+		lat_tab => xdr_schtab(stdr, WWNL,  tDDR => tDDR, tCP => tDDR/2));
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
