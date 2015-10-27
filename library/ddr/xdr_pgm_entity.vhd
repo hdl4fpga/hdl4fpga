@@ -84,15 +84,4 @@ entity xdr_pgm is
 
 	type trans_tab is array (natural range <>) of trans_row;
 
-	signal xdr_input  : std_logic_vector(0 to 2);
-
-	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
-
-	signal pc : std_logic_vector(xdr_pgm_pc'range);
-	signal pgm_cmd : std_logic_vector(xdr_pgm_cmd'range);
-	signal pgm_rdy : std_logic;
-	signal pgm_rrdy : std_logic;
-	signal pgm_cas : std_logic;
-	signal sys_ref : std_logic;
-
 end;
