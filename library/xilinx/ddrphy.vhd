@@ -62,8 +62,7 @@ entity ddrphy is
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
-		ddr_clk_p  : out std_logic;
-		ddr_clk_n  : out std_logic;
+		ddr_clk : out std_logic;
 		ddr_odt : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
@@ -216,7 +215,6 @@ architecture virtex of ddrphy is
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 
 	signal dqrst : std_logic;
-	signal clk : std_logic;
 
 begin
 
@@ -237,7 +235,7 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
         
-		ddr_ck  => clk,
+		ddr_ck  => ddr_clk,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
 		ddr_cs  => ddr_cs,
@@ -287,12 +285,11 @@ begin
 			ddr_dqst => ddqst(i),
 			ddr_dqso => ddqsi(i));
 
-			dqs_delayed_e : entity hdl4fpga.pgm_delay
-			port map (
-				xi  => ddr_dqsi(i),
-				x_p => sys_dqsi(data_phases*i+0),
-				x_n => sys_dqsi(data_phases*i+1));
-		end generate;
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		port map (
+			xi  => ddr_dqsi(i),
+			x_p => sys_dqsi(data_phases*i+0),
+			x_n => sys_dqsi(data_phases*i+1));
 
 	end generate;
 
@@ -322,39 +319,6 @@ begin
 		end loop;
 	end process;
 
-	ddr2_dqs_g : for i in data_phases-1 downto 0 generate
-		signal dqsi : std_logic;
-		signal st   : std_logic;
-	begin
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
-
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => ddqst(i),
-			i   => ddqso(i),
-			o   => ddqsi(i),
-			io  => ddr_dqs_p(i),
-			iob => ddr_dqs_n(i));
-
-	end generate;
-
-	ddr_ck_obufds : obufds
-	generic map (
-		iostandard => "DIFF_SSTL18_II")
-	port map (
-		i  => clk,
-		o  => ddr_clk_p,
-		ob => ddr_clk_n);
 --	sys_dqsi <= (others => sys_clk);
 	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);

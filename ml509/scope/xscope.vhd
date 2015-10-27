@@ -334,8 +334,7 @@ begin
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
 
-		ddr_clk_p => ddr2_clk_p(0),
-		ddr_clk_n => ddr2_clk_n(0),
+		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
 		ddr_cs  => ddr2_cs(0),
 		ddr_ras => ddr2_ras,
@@ -346,8 +345,9 @@ begin
 
 --		ddr_dm  => ddr2_dm,
 		ddr_dq  => ddr2_d(word_size-1 downto 0),
-		ddr_dqs_p => ddr2_dqs_p(2-1 downto 0),
-		ddr_dqs_n => ddr2_dqs_n(2-1 downto 0));
+		ddr_dqst => ddr2_dqst,
+		ddr_dqsi => ddr2_dqsi,
+		ddr_dqso => ddr2_dqso);
 	ddr2_dm <= (others => '0');
 
 	phy_reset  <= dcm_lckd;
