@@ -73,8 +73,9 @@ entity ddrphy is
 
 		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
-		ddr_dqs_n : inout std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dqs_p : inout std_logic_vector(word_size/byte_size-1 downto 0));
+		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -217,7 +218,6 @@ architecture virtex of ddrphy is
 	signal dqrst : std_logic;
 	signal clk : std_logic;
 
-
 begin
 
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
@@ -286,6 +286,14 @@ begin
 			ddr_dqsi => ddqso(i),
 			ddr_dqst => ddqst(i),
 			ddr_dqso => ddqsi(i));
+
+			dqs_delayed_e : entity hdl4fpga.pgm_delay
+			port map (
+				xi  => ddr_dqsi(i),
+				x_p => sys_dqsi(data_phases*i+0),
+				x_n => sys_dqsi(data_phases*i+1));
+		end generate;
+
 	end generate;
 
 	process (ddqo, ddqt)
