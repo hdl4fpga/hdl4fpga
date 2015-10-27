@@ -55,11 +55,11 @@ entity xdr_sch is
 
 		WID_LAT   : natural);
 	port (
-		sys_cl   : in  std_logic_vector;
-		sys_cwl  : in  std_logic_vector;
-		sys_clks : in  std_logic_vector;
-		sys_rea  : in  std_logic;
-		sys_wri  : in  std_logic;
+		sys_cl  : in  std_logic_vector;
+		sys_cwl : in  std_logic_vector;
+		sys_clk : in  std_logic;
+		sys_rea : in  std_logic;
+		sys_wri : in  std_logic;
 
 		xdr_rwn : out std_logic_vector(0 to line_size/word_size-1);
 		xdr_st  : out std_logic_vector(0 to line_size/word_size-1);
@@ -97,7 +97,7 @@ begin
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
-		sys_clks => sys_clks,
+		sys_clks(0) => sys_clk,
 		sys_di => rphi,
 		ph_qo  => rpho);
 
@@ -106,7 +106,7 @@ begin
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
-		sys_clks => sys_clks,
+		sys_clks(0) => sys_clk,
 		sys_di => wphi,
 		ph_qo  => wpho);
 

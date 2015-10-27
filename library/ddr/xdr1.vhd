@@ -51,9 +51,9 @@ entity xdr is
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
 
-		sys_rst  : in std_logic := '-';
-		sys_clks : in std_logic_vector;
-		sys_ini  : out std_logic;
+		sys_rst : in std_logic := '-';
+		sys_clk : in std_logic;
+		sys_ini : out std_logic;
 		sys_wlrdy : in  std_logic;
 		sys_wlreq : out std_logic;
 
@@ -206,11 +206,11 @@ architecture mix of xdr is
 
 begin
 
-	process (sys_clks(0), sys_rst)
+	process (sys_clk, sys_rst)
 	begin
 		if sys_rst='1' then
 			rst <= '1';
-		elsif rising_edge(sys_clks(0)) then
+		elsif rising_edge(sys_clk) then
 			rst <= sys_rst;
 		end if;
 	end process;
@@ -239,7 +239,7 @@ begin
 		xdr_mr_addr  => xdr_mr_addr,
 		xdr_mr_data  => xdr_mr_data,
 
-		xdr_init_clk => sys_clks(0),
+		xdr_init_clk => sys_clk,
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,
 		xdr_init_rst => xdr_init_rst,
@@ -277,7 +277,7 @@ begin
 --	xdr_pgm_e : entity hdl4fpga.xdr_pgm(non_registered)
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
-		xdr_pgm_clk => sys_clks(0),
+		xdr_pgm_clk => sys_clk,
 		sys_pgm_ref => sys_ref,
 		xdr_pgm_cas => sys_cas,
 		xdr_pgm_cmd => xdr_pgm_cmd,
@@ -309,7 +309,7 @@ begin
 		xdr_mpu_cwl => xdr_cwl,
 
 		xdr_mpu_rst => xdr_mpu_rst,
-		xdr_mpu_clk => sys_clks(0),
+		xdr_mpu_clk => sys_clk,
 		xdr_mpu_cmd => xdr_pgm_cmd,
 		xdr_mpu_rdy => xdr_mpu_rdy,
 		xdr_mpu_act => sys_act,
@@ -345,7 +345,7 @@ begin
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
-		sys_clks => sys_clks(0 to 0),
+		sys_clk => sys_clk,
 		sys_rea  => xdr_mpu_rwin,
 		sys_wri  => xdr_mpu_wwin,
 
@@ -374,7 +374,7 @@ begin
 		byte_size => byte_size,
 		data_delay => 0)
 	port map (
-		sys_clk => sys_clks(0),
+		sys_clk => sys_clk,
 		sys_rdy => sys_do_rdy,
 		sys_rea => xdr_mpu_rea,
 		sys_do  => sys_do,
@@ -408,7 +408,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (
-		sys_clk => sys_clks(0),
+		sys_clk => sys_clk,
 		sys_dqi => rot_di,
 		sys_req => xdr_mpu_wwin,
 		sys_dmi => sys_dm,

@@ -288,7 +288,7 @@ begin
 
 	miitxmem_e : entity hdl4fpga.miitxmem
 	generic map (
-		bram_size => page_size-1,
+		bram_size => unsigned_num_bits(2**page_size*32/DDR_LINESIZE-1),
 		data_size => DDR_LINESIZE)
 	port map (
 		ddrs_clk => ddrs_clk,
