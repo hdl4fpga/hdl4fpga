@@ -34,7 +34,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_init is
 	generic (
-		timers : ddrtid_vector := (TMR_RST => 100_000, TMR_RRDY => 250_000, TMR_CKE => 14, TMR_MRD => 17, TMR_DLL => 200, TMR_ZQINIT => 20, TMR_REF => 25, TMR_MOD => 100, TMR_WLC => 20, TMR_WLDQSEN => 25);
+		timers : natural_vector := (1 to 0 => 0);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
@@ -61,6 +61,13 @@ entity xdr_init is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_init : entity is "compact";
 
+	subtype tid_word is std_logic_vector(unsigned_num_bits(timers'length-1)-1 downto 0);
+	function to_tidword (
+		constant tid : natural)
+		return tid_word is
+	begin
+		return tid_word(unsigned'(to_unsigned(tid,tid_word'length)));
+	end;
 end;
 
 architecture ddr2 of xdr_init is
@@ -69,17 +76,18 @@ architecture ddr2 of xdr_init is
 
 	constant sc_rrdy : s_code := "0001";
 	constant sc_cke  : s_code := "0011";
-	constant sc_lmr2 : s_code := "0010";
-	constant sc_lmr3 : s_code := "0110";
-	constant sc_lmr1 : s_code := "0111";
-	constant sc_lmr0 : s_code := "0101";
-	constant sc_zqi  : s_code := "0100";
-	constant sc_wle  : s_code := "1100";
-	constant sc_wls  : s_code := "1101";
-	constant sc_wlc  : s_code := "1111";
-	constant sc_wlo  : s_code := "1110";
-	constant sc_wlf  : s_code := "1010";
-	constant sc_ref  : s_code := "1011";
+	constant sc_pre1 : s_code := "0010";
+	constant sc_lm1  : s_code := "0110";
+	constant sc_lm2  : s_code := "0111";
+	constant sc_lm3  : s_code := "0101";
+	constant sc_lm4  : s_code := "0100";
+	constant sc_pre  : s_code := "1100";
+	constant sc_ref1 : s_code := "1101";
+	constant sc_ref2 : s_code := "1111";
+	constant sc_lm5  : s_code := "1110";
+	constant sc_lm6  : s_code := "1010";
+	constant sc_lm7  : s_code := "1011";
+	constant sc_ref  : s_code := "1100";
 
 	type s_out is record
 		rst     : std_logic;
@@ -99,7 +107,7 @@ architecture ddr2 of xdr_init is
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
 		bnk     : ddr_mr;
-		tid     : ddr_tid;
+		tid     : tid_word;
 	end record;
 
 	function to_sout (
@@ -118,23 +126,23 @@ architecture ddr2 of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, TMR_RRDY), 
-		(sc_cke,  sc_pre1, "0", "0", "110000", ddr_mrs, mrx, mrx, TMR_MRD), 
-		(sc_pre1, sc_lmr1, "0", "0", "110000", ddr_mrs, mrx, mrx, TMR_RPA), 
-		(sc_lm1,  sc_lm2,  "0", "0", "110000", ddr_mrs, mr2, mr2, TMR_MRD), 
-		(sc_lm2,  sc_lm3,  "0", "0", "110000", ddr_mrs, mr3, mr3, TMR_MRD), 
-		(sc_lm3,  sc_lm4,  "0", "0", "110000", ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_lm4,  sc_pre,  "0", "0", "110000", ddr_pre, mr0, mr0, TMR_MRD),
-		(sc_pre,  sc_ref1  "0", "0", "110001", ddr_mrs, mrp, mrx, TMR_RPA), 
-		(sc_ref1, sc_ref2  "0", "0", "110001", ddr_mrs, mrx, mrx, TMR_RFC), 
-		(sc_ref2, sc_lm5,  "0", "0", "110011", ddr_nop, mrx, mrx, TMR_RFC),  
-		(sc_lm5,  sc_lm6,  "0", "0", "110111", ddr_nop, mrt, mr1, TMR_MRD),  
-		(sc_lm6,  sc_lm7,  "1", "0", "110111", ddr_nop, mrx, mrx, TMR_MRD),  
-		(sc_lm7,  sc_ref,  "1", "1", "110100", ddr_nop, mrx, mrx, TMR_MRD),  
-		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, TMR_REF));
+		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, to_tidword(TMR2_RRDY)), 
+		(sc_cke,  sc_pre1, "0", "0", "110000", ddr_mrs, mrx, mrx, to_tidword(TMR2_MRD)), 
+		(sc_pre1, sc_lm1,  "0", "0", "110000", ddr_mrs, mrx, mrx, to_tidword(TMR2_RPA)), 
+		(sc_lm1,  sc_lm2,  "0", "0", "110000", ddr_mrs, mr2, mr2, to_tidword(TMR2_MRD)), 
+		(sc_lm2,  sc_lm3,  "0", "0", "110000", ddr_mrs, mr3, mr3, to_tidword(TMR2_MRD)), 
+		(sc_lm3,  sc_lm4,  "0", "0", "110000", ddr_mrs, mr1, mr1, to_tidword(TMR2_MRD)), 
+		(sc_lm4,  sc_pre,  "0", "0", "110000", ddr_pre, mr0, mr0, to_tidword(TMR2_MRD)),
+		(sc_pre,  sc_ref1, "0", "0", "110001", ddr_mrs, mrp, mrx, to_tidword(TMR2_RPA)), 
+		(sc_ref1, sc_ref2, "0", "0", "110001", ddr_mrs, mrx, mrx, to_tidword(TMR2_RFC)), 
+		(sc_ref2, sc_lm5,  "0", "0", "110011", ddr_nop, mrx, mrx, to_tidword(TMR2_RFC)),  
+		(sc_lm5,  sc_lm6,  "0", "0", "110111", ddr_nop, mrt, mr1, to_tidword(TMR2_MRD)),  
+		(sc_lm6,  sc_lm7,  "1", "0", "110111", ddr_nop, mrx, mrx, to_tidword(TMR2_MRD)),  
+		(sc_lm7,  sc_ref,  "1", "1", "110100", ddr_nop, mrx, mrx, to_tidword(TMR2_MRD)),  
+		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, to_tidword(TMR2_REF)));
 
 	signal xdr_init_pc : s_code;
-	signal xdr_timer_id : ddr_tid;
+	signal xdr_timer_id  : tid_word;
 	signal xdr_timer_rdy : std_logic;
 	signal xdr_timer_req : std_logic;
 
@@ -157,7 +165,7 @@ begin
 					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
 					bnk => (others => '-'),
 					mr  => (others => '-'),
-					tid => TMR_RST);
+					tid => to_tidword(TMR3_RST));
 				for i in pgm'range loop
 					if pgm(i).state=xdr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
@@ -188,7 +196,7 @@ begin
 				xdr_mr_addr <= row.mr;
 			else
 				xdr_init_pc  <= sc_rrdy;
-				xdr_timer_id <= TMR_RST;
+				xdr_timer_id <= std_logic_vector(to_unsigned(TMR3_RST,xdr_timer_id));
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
 				xdr_init_rdy <= '0';
@@ -231,7 +239,7 @@ begin
 		timers => timers)
 	port map (
 		sys_clk => xdr_init_clk,
-		tmr_id  => xdr_timer_id,
+		tmr_sel => std_logic_vector(xdr_timer_id),
 		sys_req => xdr_timer_req,
 		sys_rdy => xdr_timer_rdy);
 end;
@@ -273,7 +281,7 @@ architecture ddr3 of xdr_init is
 		cmd     : ddr_cmd;
 		mr      : ddr_mr;
 		bnk     : ddr_mr;
-		tid     : ddr_tid;
+		tid     : tid_word;
 	end record;
 
 	function to_sout (
@@ -292,24 +300,24 @@ architecture ddr3 of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rst,  sc_rrdy, "0", "0", "100000", ddr_nop, mrx, mrx, TMR_RRDY),
-		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, TMR_CKE), 
-		(sc_cke,  sc_lmr2, "0", "0", "110000", ddr_mrs, mr2, mr2, TMR_MRD), 
-		(sc_lmr2, sc_lmr3, "0", "0", "110000", ddr_mrs, mr3, mr3, TMR_MRD), 
-		(sc_lmr3, sc_lmr1, "0", "0", "110000", ddr_mrs, mr1, mr1, TMR_MRD), 
-		(sc_lmr1, sc_lmr0, "0", "0", "110000", ddr_mrs, mr0, mr0, TMR_MOD), 
-		(sc_lmr0, sc_zqi,  "0", "0", "110000", ddr_zqc, mrz, mrx, TMR_ZQINIT),
-		(sc_zqi,  sc_wle,  "0", "0", "110001", ddr_mrs, mr1, mr1, TMR_MOD), 
-		(sc_wle,  sc_wlc,  "0", "0", "110011", ddr_nop, mrx, mrx, TMR_WLDQSEN),  
-		(sc_wls,  sc_wlc,  "0", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlc,  "1", "0", "110111", ddr_nop, mrx, mrx, TMR_WLC),  
-		(sc_wlc,  sc_wlo,  "1", "1", "110100", ddr_nop, mrx, mrx, TMR_MRD),  
-		(sc_wlo,  sc_wlf,  "0", "0", "110100", ddr_mrs, mr1, mr1, TMR_MOD),  
-		(sc_wlf,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, TMR_REF),
-		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, TMR_REF));
+		(sc_rst,  sc_rrdy, "0", "0", "100000", ddr_nop, mrx, mrx, to_tidword(TMR3_RRDY)),
+		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, to_tidword(TMR3_CKE)), 
+		(sc_cke,  sc_lmr2, "0", "0", "110000", ddr_mrs, mr2, mr2, to_tidword(TMR3_MRD)), 
+		(sc_lmr2, sc_lmr3, "0", "0", "110000", ddr_mrs, mr3, mr3, to_tidword(TMR3_MRD)), 
+		(sc_lmr3, sc_lmr1, "0", "0", "110000", ddr_mrs, mr1, mr1, to_tidword(TMR3_MRD)), 
+		(sc_lmr1, sc_lmr0, "0", "0", "110000", ddr_mrs, mr0, mr0, to_tidword(TMR3_MOD)), 
+		(sc_lmr0, sc_zqi,  "0", "0", "110000", ddr_zqc, mrz, mrx, to_tidword(TMR3_ZQINIT)),
+		(sc_zqi,  sc_wle,  "0", "0", "110001", ddr_mrs, mr1, mr1, to_tidword(TMR3_MOD)), 
+		(sc_wle,  sc_wlc,  "0", "0", "110011", ddr_nop, mrx, mrx, to_tidword(TMR3_WLDQSEN)),  
+		(sc_wls,  sc_wlc,  "0", "0", "110111", ddr_nop, mrx, mrx, to_tidword(TMR3_WLC)),  
+		(sc_wlc,  sc_wlc,  "1", "0", "110111", ddr_nop, mrx, mrx, to_tidword(TMR3_WLC)),  
+		(sc_wlc,  sc_wlo,  "1", "1", "110100", ddr_nop, mrx, mrx, to_tidword(TMR3_MRD)),  
+		(sc_wlo,  sc_wlf,  "0", "0", "110100", ddr_mrs, mr1, mr1, to_tidword(TMR3_MOD)),  
+		(sc_wlf,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, to_tidword(TMR3_REF)),
+		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, mrx, mrx, to_tidword(TMR3_REF)));
 
 	signal xdr_init_pc : s_code;
-	signal xdr_timer_id : ddr_tid;
+	signal xdr_timer_id : tid_word;
 	signal xdr_timer_rdy : std_logic;
 	signal xdr_timer_req : std_logic;
 
@@ -332,7 +340,7 @@ begin
 					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
 					bnk => (others => '-'),
 					mr  => (others => '-'),
-					tid => TMR_RST);
+					tid => to_tidword(TMR3_RST));
 				for i in pgm'range loop
 					if pgm(i).state=xdr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
@@ -363,7 +371,7 @@ begin
 				xdr_mr_addr <= row.mr;
 			else
 				xdr_init_pc  <= sc_rst;
-				xdr_timer_id <= TMR_RST;
+				xdr_timer_id <= to_tidword(TMR3_RST);
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
 				xdr_init_rdy <= '0';
@@ -406,7 +414,7 @@ begin
 		timers => timers)
 	port map (
 		sys_clk => xdr_init_clk,
-		tmr_id  => xdr_timer_id,
+		tmr_sel => std_logic_vector(xdr_timer_id),
 		sys_req => xdr_timer_req,
 		sys_rdy => xdr_timer_rdy);
 end;

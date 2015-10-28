@@ -54,7 +54,7 @@ entity xdr is
 		sys_rst : in std_logic := '-';
 		sys_clk : in std_logic;
 		sys_ini : out std_logic;
-		sys_wlrdy : in  std_logic;
+		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
 
 		sys_cmd_req : in  std_logic := '-';
@@ -162,29 +162,19 @@ architecture mix of xdr is
 	signal rst : std_logic;
 
 	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant timers : ddrtid_vector := (
-			TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
-			TMR_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-			TMR_WLC  => xdr_latency(stdr, MODu),
-			TMR_WLDQSEN => 25,
-			TMR_CKE  => to_xdrlatency(tCP, mark, tXPR),
-			TMR_MRD  => to_xdrlatency(tCP, mark, tMRD),
-			TMR_MOD  => xdr_latency(stdr, MODu),
-			TMR_DLL  => xdr_latency(stdr, cDLL),
-			TMR_ZQINIT => xdr_latency(stdr, ZQINIT),
-			TMR_REF  => to_xdrlatency(tCP, mark, tREFI));
+	constant timers : natural_vector := ddr_timers(tCP, mark);
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 	signal wl_req : std_logic;
 
-	constant lRCD : natural := 4; --to_xdrlatency(timing_db, tCP, mark, tRCD);
-	constant lRFC : natural := 4; --to_xdrlatency(timing_db, tCP, mark, tRFC);
-	constant lWR  : natural := 4; --to_xdrlatency(tCP, tlWR);
-	constant lRP  : natural := 4; --to_xdrlatency(timing_db, tCP, mark, tRP);
-	constant bl_cod : std_logic_vector := xdr_latcod(stdr, BL);
-	constant bl_tab : natural_vector := xdr_lattab(stdr, BL, tCP,tDDR);
-	constant cl_tab : natural_vector := xdr_lattab(stdr, CL, tCP,tDDR);
+	constant lRCD : natural := to_xdrlatency(tCP, mark, tRCD);
+	constant lRFC : natural := to_xdrlatency(tCP, mark, tRFC);
+	constant lWR  : natural := to_xdrlatency(tCP, tlWR);
+	constant lRP  : natural := to_xdrlatency(tCP, mark, tRP);
+	constant bl_cod  : std_logic_vector := xdr_latcod(stdr, BL);
+	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL, tCP,tDDR);
+	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL, tCP,tDDR);
 	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR);
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
@@ -195,14 +185,14 @@ architecture mix of xdr is
 	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  tDDR => tDDR, tCP => tDDR/2);
 	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  tDDR => tDDR, tCP => tDDR/2);
 	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL,  tDDR => tDDR, tCP => tDDR/2);
-	constant STRX_LAT  : natural := 4; --xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant RWNX_LAT  : natural := 4; --xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZX_LAT : natural := 4; --xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2);
+	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2);
 	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/4);
-	constant DQSX_LAT  : natural := 4; --xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL,  tDDR => tDDR, tCP => tDDR/4);
-	constant WWNX_LAT  : natural := 4; --xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant WID_LAT   : natural := 4; --xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR);
+	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant WID_LAT   : natural := xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR);
 
 begin
 

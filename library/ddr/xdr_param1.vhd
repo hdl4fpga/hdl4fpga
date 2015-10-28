@@ -33,44 +33,22 @@ use hdl4fpga.std.all;
 use hdl4fpga.xdr_db.all;
 
 package xdr_param is
-	component xdr_cfg is
-		generic (
-			cRP  : natural := 10;
-			cMRD : natural := 11;
-		    cRFC : natural := 13;
-		    cMOD : natural := 13;
 
-			a  : natural := 13;
-			ba : natural := 2);
-		port (
-			xdr_cfg_ods : in  std_logic := '0';
-			xdr_cfg_rtt : in  std_logic_vector(1 downto 0) := "01";
-			xdr_cfg_bl  : in  std_logic_vector(0 to 2);
-			xdr_cfg_cl  : in  std_logic_vector(0 to 2);
-			xdr_cfg_wr  : in  std_logic_vector(0 to 2) := (others => '0');
-			xdr_cfg_cwl : in  std_logic_vector(0 to 2) := (others => '0');
-			xdr_cfg_pl  : in  std_logic_vector(0 to 2) := (others => '0');
-			xdr_cfg_dqsn : in std_logic := '0';
+	-- Mode Register Field Descriptor --
+	------------------------------------
 
-			xdr_cfg_clk : in  std_logic;
-			xdr_cfg_req : in  std_logic;
-			xdr_cfg_rdy : out std_logic := '1';
-			xdr_cfg_dll : out std_logic := '1';
-			xdr_cfg_odt : out std_logic := '0';
-			xdr_cfg_ras : out std_logic := '1';
-			xdr_cfg_cas : out std_logic := '1';
-			xdr_cfg_we  : out std_logic := '1';
-			xdr_cfg_a   : out std_logic_vector( a-1 downto 0) := (others => '1');
-			xdr_cfg_b   : out std_logic_vector(ba-1 downto 0) := (others => '1'));
-	end component;
-
-	type field_desc is record
-		dbase : natural;
-		sbase : natural;
-		size  : natural;
+	type fd is record	-- Field Descritpor
+		sz  : natural;	-- Size
+		off : natural;	-- Offset
 	end record;
 
-	type fielddesc_vector is array (natural range <>) of field_desc;
+	type fd_vector is array (natural range <>) of fd;
+
+	function mr_field (
+		constant mask : fd_vector;
+		constant src  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
 
 	function xdr_rotval (
 		constant line_size : natural;
@@ -104,6 +82,8 @@ package xdr_param is
 	constant mr2 : ddr_mr := "010";
 	constant mr3 : ddr_mr := "011";
 	constant mrz : ddr_mr := "100";
+	constant mrt : ddr_mr := "100";
+	constant mrp : ddr_mr := "100";
 
 	type ddrmr_vector is array (natural range <>) of ddr_mr;
 
@@ -114,17 +94,39 @@ package xdr_param is
 		we  : std_logic;
 	end record;
 
-	type ddr_tid is (TMR_RST, TMR_WLC, TMR_WLDQSEN, TMR_RRDY, TMR_CKE, TMR_MRD, TMR_MOD, TMR_DLL, TMR_ZQINIT, TMR_REF);
-	type ddrtid_vector is array (ddr_tid) of natural;
-
 	constant ddr_nop : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
 	constant ddr_mrs : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '0');
+	constant ddr_pre : ddr_cmd := (cs => '0', ras => '0', cas => '1', we => '0');
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
-	function round_lat (
-		constant dly : natural;
-		constant clk : natural) 
-		return natural;
+	constant TMR2_RST : natural := 0;
+	constant TMR2_WLC : natural := 1;
+	constant TMR2_WLDQSEN : natural := 2;
+	constant TMR2_RRDY : natural := 3;
+	constant TMR2_CKE : natural := 4;
+	constant TMR2_MRD : natural := 5;
+	constant TMR2_MOD : natural := 6;
+	constant TMR2_DLL : natural := 7;
+	constant TMR2_ZQINIT : natural := 8;
+	constant TMR2_REF : natural := 9;
+	constant TMR2_RPA : natural := 10;
+	constant TMR2_RFC : natural := 10;
+
+	constant TMR3_RST : natural := 0;
+	constant TMR3_WLC : natural := 1;
+	constant TMR3_WLDQSEN : natural := 2;
+	constant TMR3_RRDY : natural := 3;
+	constant TMR3_CKE : natural := 4;
+	constant TMR3_MRD : natural := 5;
+	constant TMR3_MOD : natural := 6;
+	constant TMR3_DLL : natural := 7;
+	constant TMR3_ZQINIT : natural := 8;
+	constant TMR3_REF : natural := 9;
+
+	function ddr_timers (
+		constant tCP   : natural;
+		constant mark  : natural)
+		return natural_vector;
 
 end package;
 
@@ -264,67 +266,44 @@ package body xdr_param is
 
 	-- DDR init
 
-	function mov (
-		constant desc : field_desc)
-		return natural_vector is
-		variable tab : natural_vector(13 downto 0) := (others => 0);
+	function mr_field (
+		constant mask : fd_vector;
+		constant src  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable aux : unsigned(src'range) := unsigned(src);
+		variable fld : unsigned(size-1 downto 0) := (others => '0');
+		variable val : unsigned(fld'range) := (others => '0');
 	begin
-		for j in 0 to desc.size-1 loop
-			tab(desc.dbase+j) := desc.sbase+j;
-		end loop;
-		return tab;
-	end function;
-
-	function max (
-		constant desc : fielddesc_vector)
-		return natural is
-		variable val : natural := 0;
-	begin
-		for i in desc'range loop
-			if desc(i).dbase > val then
-				val := desc(i).dbase;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function min (
-		constant desc : fielddesc_vector)
-		return natural is
-		variable val : natural := 0;
-	begin
-		for i in desc'range loop
-			if desc(i).dbase < val then
-				val := desc(i).dbase;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function mov (
-		constant desc : fielddesc_vector)
-		return natural_vector is
-		variable val : natural_vector(13 downto 0) := (others => 0);
-		variable aux : natural_vector(val'range) := (others => 0);
-		variable msg : line;
-	begin
-		for i in desc'range loop
-			aux := mov(desc(i));
-			for j in aux'range loop
-				if aux(j) > 1 then
-					val(j) := aux(j);
-				end if;
+		for i in mask'reverse_range loop
+			fld := (others => '0');
+			for j in 1 to mask(i).sz loop
+				fld := fld sll 1;
+				fld(0) := aux(0);
+				aux := aux srl 1;
 			end loop;
+			fld := fld sll mask(i).off;
+			val := val or  fld;
 		end loop;
-		return val;
-	end function;
-
-	function round_lat (
-		constant dly : natural;
-		constant clk : natural) 
-		return natural is
-	begin
-		return (dly+clk-1)/clk;
+		return std_logic_vector(val);
 	end;
 
+	function ddr_timers (
+		constant tCP   : natural;
+		constant mark  : natural)
+		return natural_vector  is
+	begin
+		return natural_vector'(
+			TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
+			TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+			TMR3_WLC => xdr_latency(DDR3, MODu),
+			TMR3_WLDQSEN => 25,
+			TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
+			TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
+			TMR3_MOD => xdr_latency(DDR3, MODu),
+			TMR3_DLL => xdr_latency(DDR3, cDLL),
+			TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
+			TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
+	end;
+		
 end package body;

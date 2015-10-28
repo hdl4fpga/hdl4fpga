@@ -96,6 +96,7 @@ architecture scope of ml509 is
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
 
+
 	signal gtx_clk  : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy_rxd'range);
@@ -232,7 +233,7 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
-		DDR_STD => 3,
+		DDR_STD => 2,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,

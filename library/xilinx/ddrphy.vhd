@@ -58,7 +58,7 @@ entity ddrphy is
 
 		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		sys_dqsi : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -282,7 +282,7 @@ begin
 			ddr_dmo  => ddmo(i),
 
 			ddr_dqsi => ddqso(i),
-			ddr_dqst => ddqst(i),
+			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddqsi(i));
 
 		dqs_delayed_e : entity hdl4fpga.pgm_delay

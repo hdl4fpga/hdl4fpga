@@ -917,7 +917,6 @@ package body std is
 		return nbits;
 	end;
 
-
 	function pulse_delay (
 		constant phase     : std_logic_vector;
 		constant latency   : natural := 12;
