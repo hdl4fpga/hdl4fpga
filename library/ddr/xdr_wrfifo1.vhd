@@ -134,7 +134,7 @@ architecture struct of xdr_wrfifo is
 	subtype word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype shuffleword is byte_vector(line_size/byte_size-1 downto 0);
+	subtype shuffleword is byte_vector(line_size/word_size-1 downto 0);
 
 	impure function unshuffle (
 		arg : word_vector)
@@ -156,11 +156,6 @@ architecture struct of xdr_wrfifo is
 	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
 begin
-
---	ser_clk(xdr_clks'range) <= xdr_clks;
---	falling_edge_g : if data_edges /= 1 generate
---		ser_clk(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
---	end generate;
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
 	xdr_fifo_g : for i in 0 to word_size/byte_size-1 generate
