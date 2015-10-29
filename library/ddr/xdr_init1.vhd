@@ -48,7 +48,7 @@ entity xdr_init is
 		xdr_init_wlr : out std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
-		xdr_init_rst : out std_logic := '-';
+		xdr_init_rst : out std_logic := '1';
 		xdr_init_cke : out std_logic;
 		xdr_init_odt : out std_logic := '0';
 		xdr_init_cs  : out std_logic;
@@ -198,7 +198,7 @@ begin
 				xdr_mr_addr <= row.mr;
 			else
 				xdr_init_pc  <= sc_rrdy;
-				xdr_timer_id <= std_logic_vector(to_unsigned(TMR3_RST,xdr_timer_id));
+				xdr_timer_id <= std_logic_vector(to_unsigned(TMR2_RST,xdr_timer_id));
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
 				xdr_init_rdy <= '0';

@@ -124,8 +124,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 5;
-	constant ddr_div   : natural := 2;
+	constant ddr_mul   : natural := 10;
+	constant ddr_div   : natural := 3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -218,13 +218,15 @@ begin
 		vga_rst   <= rsts(3);
 
 		rsts_g: for i in clks'range generate
-			process (clks(i))
+			process (clks(i), dcm_lckd)
 				variable rsta : std_logic;
 			begin
-				if rising_edge(clks(i)) then
-					rsts(i) <= rsta;
-					rsta    := not grst;
+				if dcm_lckd='0' then
+					rsta := '1';
+				elsif rising_edge(clks(i)) then
+					rsta := not dcm_lckd;
 				end if;
+				rsts(i) <= rsta;
 			end process;
 		end generate;
 	end block;

@@ -43,15 +43,16 @@ package xdr_db is
 	constant M15E : natural := 2;
 	constant M3   : natural := 3;
 
-	constant tPreRST : natural := 1;
-	constant tPstRST : natural := 2;
-	constant tXPR    : natural := 3;
-	constant tWR     : natural := 4;
-	constant tRP     : natural := 5;
-	constant tRCD    : natural := 6;
-	constant tRFC    : natural := 7;
-	constant tMRD    : natural := 8;
-	constant tREFI   : natural := 9;
+	constant tPreRST : natural :=  1;
+	constant tPstRST : natural :=  2;
+	constant tXPR    : natural :=  3;
+	constant tWR     : natural :=  4;
+	constant tRP     : natural :=  5;
+	constant tRCD    : natural :=  6;
+	constant tRFC    : natural :=  7;
+	constant tMRD    : natural :=  8;
+	constant tREFI   : natural :=  9;
+	constant tRPA    : natural := 10;
 
 	constant CL  : natural := 1;
 	constant BL  : natural := 2;
@@ -125,13 +126,17 @@ package xdr_db is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000),
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
-		timing_record'(mark => M3,  param => tPreRST, value => 200000000),
+
+--		timing_record'(mark => M3,  param => tPreRST, value => 200000000),
+		timing_record'(mark => M3,  param => tPreRST, value => 20000000),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
 		timing_record'(mark => M3,  param => tWR,   value => 15000),
 		timing_record'(mark => M3,  param => tRP,   value => 15000),
 		timing_record'(mark => M3,  param => tRCD,  value => 15000),
 		timing_record'(mark => M3,  param => tRFC,  value => 75000),
+		timing_record'(mark => M3,  param => tRPA,  value => 15000),
 		timing_record'(mark => M3,  param => tREFI, value => 7800000),
+
 		timing_record'(mark => M15E, param => tPreRST, value => 200000000),
 		timing_record'(mark => M15E, param => tPstRST, value => 500000000),
 --		timing_record'(mark => M15E, param => tPreRST, value => 2000000),
@@ -335,7 +340,7 @@ package xdr_db is
 		constant rgtr : natural)
 		return std_logic_vector;
 
-	function xdr_selcwl (
+	impure function xdr_selcwl (
 		constant stdr : natural)
 		return natural;
 
@@ -488,24 +493,26 @@ package body xdr_db is
 		return natural_vector is
 
 		constant lat : integer := xdr_latency(stdr, tabid);
-		constant cltab  : natural_vector(0 to  xdr_query_size(stdr, CL)-1)  := xdr_lattab(stdr, CL);
-		constant cwltab : natural_vector(0 to  xdr_query_size(stdr, CWL)-1) := xdr_lattab(stdr, CWL);
+		constant cwlsel : natural := xdr_selcwl(stdr);
+		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
+		constant cwltab : natural_vector := xdr_lattab(stdr, cwlsel);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 
 	begin
 		case tabid is
 		when STRL |RWNL| WWNL =>
-			for i in cwltab'range loop
+			for i in cltab'range loop
 				clval(i) := ((cltab(i)+lat)*tDDR)/(2*tCP);
 			end loop;
+			return clval;
 		when DQSZL|DQSL|DQSZXL|DQZL|DQZXL =>
 			for i in cwltab'range loop
 				cwlval(i) := ((cwltab(i)+lat)*tDDR)/(2*tCP);
 			end loop;
 			return cwlval;
 		when others =>
-			return (0 to 0 => 0);
+			return (0 to 1 => 0);
 		end case;
 		return (0 to 0 => 0);
 	end;
@@ -525,9 +532,10 @@ package body xdr_db is
 		return latcode;
 	end;
 
-	function xdr_selcwl (
+	impure function xdr_selcwl (
 		constant stdr : natural)
 		return natural is
+		variable msg : line;
 	begin
 		if stdr = 2 then
 			return CL;

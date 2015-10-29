@@ -159,7 +159,7 @@ architecture mix of xdr is
 
 	signal xdr_cwl : std_logic_vector(sys_cwl'range);
 
-	signal rst : std_logic;
+	signal rst : std_logic := '1';
 
 	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
 	constant timers : natural_vector := ddr_timers(tCP, mark);
@@ -178,9 +178,9 @@ architecture mix of xdr is
 	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR);
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
-	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, CWL);
+	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, xdr_selcwl(stdr));
 	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL,  tDDR => tDDR, tCP => tDDR/2);
-	constant RWNL_tab  : natural_vector := xdr_schtab(stdr, RWNL,  tDDR => tDDR, tCP => tDDR/2);
+	constant RWNL_TAB  : natural_vector := xdr_schtab(stdr, RWNL,  tDDR => tDDR, tCP => tDDR/2);
 	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL, tDDR => tDDR, tCP => tDDR/2);
 	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  tDDR => tDDR, tCP => tDDR/2);
 	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  tDDR => tDDR, tCP => tDDR/2);
@@ -201,7 +201,7 @@ begin
 		if sys_rst='1' then
 			rst <= '1';
 		elsif rising_edge(sys_clk) then
-			rst <= sys_rst;
+			rst <= '0'; --sys_rst;
 		end if;
 	end process;
 
@@ -319,7 +319,7 @@ begin
 		CWL_COD   => CWL_COD,
                                
 		STRL_TAB  => STRL_TAB,
-		RWNL_tab  => RWNL_tab,
+		RWNL_TAB  => RWNL_TAB,
 		DQSZL_TAB => DQSZL_TAB,
 		DQSOL_TAB => DQSOL_TAB,
 		DQZL_TAB  => DQZL_TAB,
@@ -377,8 +377,8 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		lat_val => sys_cwl,
-		lat_cod => xdr_latcod(stdr, CWL),
-		lat_tab => xdr_schtab(stdr, WWNL,  tDDR => tDDR, tCP => tDDR/2));
+		lat_cod => CWL_COD,
+		lat_tab => WWNL_TAB);
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
