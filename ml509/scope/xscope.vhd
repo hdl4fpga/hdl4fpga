@@ -30,6 +30,7 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_db.all;
 --use hdl4fpga.cgafont.all;
 
 library unisim;
@@ -232,6 +233,7 @@ begin
 	ddrs_wclks <= (others => ddrs_clk90);
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		DDR_MARK => M3,
 		DDR_tCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STD => 2,
 		DDR_STROBE => "INTERNAL",

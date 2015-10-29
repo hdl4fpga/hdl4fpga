@@ -74,6 +74,7 @@ architecture ddr2 of xdr_init is
 
 	subtype s_code is std_logic_vector(0 to 4-1);
 
+	constant sc_rst  : s_code := "0000";
 	constant sc_rrdy : s_code := "0001";
 	constant sc_cke  : s_code := "0011";
 	constant sc_pre1 : s_code := "0010";
@@ -126,7 +127,8 @@ architecture ddr2 of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant pgm : s_table := (
-		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, to_tidword(TMR2_RRDY)), 
+		(sc_rst,  sc_rst,  "0", "0", "110000", ddr_nop, mrx, mrx, to_tidword(TMR2_RST)), 
+		(sc_rrdy, sc_cke,  "0", "0", "110000", ddr_nop, mrx, mrx, to_tidword(TMR2_CKE)), 
 		(sc_cke,  sc_pre1, "0", "0", "110000", ddr_mrs, mrx, mrx, to_tidword(TMR2_MRD)), 
 		(sc_pre1, sc_lm1,  "0", "0", "110000", ddr_mrs, mrx, mrx, to_tidword(TMR2_RPA)), 
 		(sc_lm1,  sc_lm2,  "0", "0", "110000", ddr_mrs, mr2, mr2, to_tidword(TMR2_MRD)), 

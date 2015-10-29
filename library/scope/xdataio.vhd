@@ -163,7 +163,7 @@ begin
 --					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
 				end loop;
 			end if;
-			aux2 <= s & not s & not s & s &
+			aux2 <= --s & not s & not s & s &
 					s & not s & not s & s;
 --			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
 --			        not s(16 downto  9) & s( 8 downto  1) & s(16 downto  9) & not s( 8 downto  1);

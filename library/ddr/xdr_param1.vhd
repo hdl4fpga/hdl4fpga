@@ -100,28 +100,23 @@ package xdr_param is
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
 	constant TMR2_RST : natural := 0;
-	constant TMR2_WLC : natural := 1;
-	constant TMR2_WLDQSEN : natural := 2;
-	constant TMR2_RRDY : natural := 3;
-	constant TMR2_CKE : natural := 4;
-	constant TMR2_MRD : natural := 5;
-	constant TMR2_MOD : natural := 6;
-	constant TMR2_DLL : natural := 7;
-	constant TMR2_ZQINIT : natural := 8;
-	constant TMR2_REF : natural := 9;
-	constant TMR2_RPA : natural := 10;
-	constant TMR2_RFC : natural := 10;
+	constant TMR2_CKE : natural := 1;
+	constant TMR2_MRD : natural := 2;
+	constant TMR2_RPA : natural := 3;
+	constant TMR2_RFC : natural := 4;
+	constant TMR2_DLL : natural := 5;
+	constant TMR2_REF : natural := 6;
 
-	constant TMR3_RST : natural := 0;
-	constant TMR3_WLC : natural := 1;
+	constant TMR3_RST     : natural := 0;
+	constant TMR3_WLC     : natural := 1;
 	constant TMR3_WLDQSEN : natural := 2;
-	constant TMR3_RRDY : natural := 3;
-	constant TMR3_CKE : natural := 4;
-	constant TMR3_MRD : natural := 5;
-	constant TMR3_MOD : natural := 6;
-	constant TMR3_DLL : natural := 7;
-	constant TMR3_ZQINIT : natural := 8;
-	constant TMR3_REF : natural := 9;
+	constant TMR3_RRDY    : natural := 3;
+	constant TMR3_CKE     : natural := 4;
+	constant TMR3_MRD     : natural := 5;
+	constant TMR3_MOD     : natural := 6;
+	constant TMR3_DLL     : natural := 7;
+	constant TMR3_ZQINIT  : natural := 8;
+	constant TMR3_REF     : natural := 9;
 
 	function ddr_timers (
 		constant tCP   : natural;
@@ -293,17 +288,31 @@ package body xdr_param is
 		constant mark  : natural)
 		return natural_vector  is
 	begin
-		return natural_vector'(
-			TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
-			TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-			TMR3_WLC => xdr_latency(DDR3, MODu),
-			TMR3_WLDQSEN => 25,
-			TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
-			TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
-			TMR3_MOD => xdr_latency(DDR3, MODu),
-			TMR3_DLL => xdr_latency(DDR3, cDLL),
-			TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
-			TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
+		case mark is
+		when M3 =>
+			return natural_vector'(
+				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
+				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
+				TMR2_MRD => xdr_latency(DDR2, MRD),
+				TMR2_RPA => xdr_latency(DDR2, MODu),
+				TMR2_RFC => xdr_latency(DDR2, cDLL),
+				TMR2_DLL => xdr_latency(DDR2, cDLL),
+				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
+		when M15E =>
+			return natural_vector'(
+				TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
+				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
+				TMR3_WLC => xdr_latency(DDR3, MODu),
+				TMR3_WLDQSEN => 25,
+				TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
+				TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
+				TMR3_MOD => xdr_latency(DDR3, MODu),
+				TMR3_DLL => xdr_latency(DDR3, cDLL),
+				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
+				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
+		when others =>
+		end case;
+		return natural_vector'(1 to 0 => 0);
 	end;
 		
 end package body;

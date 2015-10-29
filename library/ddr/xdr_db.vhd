@@ -41,6 +41,7 @@ package xdr_db is
 
 	constant M6T  : natural := 1;
 	constant M15E : natural := 2;
+	constant M3   : natural := 3;
 
 	constant tPreRST : natural := 1;
 	constant tPstRST : natural := 2;
@@ -95,9 +96,10 @@ package xdr_db is
 
 	type tmark_tab is array (natural range <>) of tmark_record;
 
-	constant tmark_db : tmark_tab (1 to 2) :=
-		tmark_record'(mark => M6T,  stdr => 1) &
-		tmark_record'(mark => M15E, stdr => 3);
+	constant tmark_db : tmark_tab := (
+		tmark_record'(mark => M6T,  stdr => DDR1),
+		tmark_record'(mark => M3,   stdr => DDR2),
+		tmark_record'(mark => M15E, stdr => DDR3));
 
 	type latency_record is record
 		stdr  : natural;
@@ -115,7 +117,7 @@ package xdr_db is
 
 	type timing_tab is array (natural range <>) of timing_record;
 
-	constant timing_db : timing_tab(0 to 16-1) := (
+	constant timing_db : timing_tab := (
 		timing_record'(mark => M6T,  param => tPreRST, value => 200000000),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
@@ -123,6 +125,13 @@ package xdr_db is
 		timing_record'(mark => M6T,  param => tRFC,  value => 72000),
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
+		timing_record'(mark => M3,  param => tPreRST, value => 200000000),
+		timing_record'(mark => M3,  param => tXPR,  value => 400000),
+		timing_record'(mark => M3,  param => tWR,   value => 15000),
+		timing_record'(mark => M3,  param => tRP,   value => 15000),
+		timing_record'(mark => M3,  param => tRCD,  value => 15000),
+		timing_record'(mark => M3,  param => tRFC,  value => 75000),
+		timing_record'(mark => M3,  param => tREFI, value => 7800000),
 		timing_record'(mark => M15E, param => tPreRST, value => 200000000),
 		timing_record'(mark => M15E, param => tPstRST, value => 500000000),
 --		timing_record'(mark => M15E, param => tPreRST, value => 2000000),
@@ -152,6 +161,7 @@ package xdr_db is
 		latency_record'(stdr => DDR1, param => WIDL,  value =>   1),
 
 		latency_record'(stdr => DDR2, param => cDLL,  value => 200),
+		latency_record'(stdr => DDR2, param => MRD,   value =>   2),
 		latency_record'(stdr => DDR2, param => STRL,  value =>  -2),
 		latency_record'(stdr => DDR2, param => RWNL,  value =>   4),
 		latency_record'(stdr => DDR2, param => DQSZL, value =>  -4),
