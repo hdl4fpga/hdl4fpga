@@ -129,8 +129,6 @@ architecture scope of ml509 is
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
-	signal ddr_sclk : std_logic;
-	signal ddr_sclk2x : std_logic;
 	signal ddr_eclk  : std_logic;
 
 	signal input_rst : std_logic;
@@ -208,7 +206,7 @@ begin
 	begin
 		grst    <= grst;
 		clks(0) <= input_clk;
-		clks(1) <= ddr_sclk;
+		clks(1) <= ddrs_clk0;
 		clks(2) <= gtx_clk;
 		clks(3) <= vga_clk;
 
@@ -218,16 +216,17 @@ begin
 		vga_rst   <= rsts(3);
 
 		rsts_g: for i in clks'range generate
+			signal q : std_logic;
+		begin
 			process (clks(i), dcm_lckd)
-				variable rsta : std_logic;
 			begin
 				if dcm_lckd='0' then
-					rsta := '1';
+					q <= '1';
 				elsif rising_edge(clks(i)) then
-					rsta := not dcm_lckd;
+					q <= not dcm_lckd;
 				end if;
-				rsts(i) <= rsta;
 			end process;
+			rsts(i) <= q;
 		end generate;
 	end block;
 
@@ -298,10 +297,10 @@ begin
 
 	sto <= ddrphy_sto(0);
 
-	process (ddr_sclk)
+	process (ddrs_clk0)
 		variable q : std_logic_vector(0 to 2);
 	begin
-		if rising_edge(ddr_sclk) then
+		if rising_edge(ddrs_clk0) then
 			q := q(1 to q'right) & ddrphy_sto(0);
 			ddrphy_sti <= (others => q(0));
 		end if;
@@ -317,8 +316,8 @@ begin
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
-		sys_clk0 => ddr_sclk,
-		sys_clk90 => ddr_sclk2x, 
+		sys_clk0 => ddrs_clk0,
+		sys_clk90 => ddrs_clk90, 
 		phy_rst => ddrs_rst,
 
 		sys_cke => ddrphy_cke,

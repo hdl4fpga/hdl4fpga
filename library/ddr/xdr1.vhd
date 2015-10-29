@@ -201,7 +201,7 @@ begin
 		if sys_rst='1' then
 			rst <= '1';
 		elsif rising_edge(sys_clk) then
-			rst <= '0'; --sys_rst;
+			rst <= sys_rst;
 		end if;
 	end process;
 

@@ -5,10 +5,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_clk
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rst
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_rst
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_rst
+add wave -noupdate /testbench/ml509_e/dcm_lckd
+add wave -noupdate /testbench/ml509_e/ddrs_rst
 add wave -noupdate -divider xdr_init
+add wave -noupdate /testbench/ml509_e/scope_e/ddrs_rst
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/timers
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_clk
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_rst
@@ -34,13 +34,14 @@ add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/ST
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WID_LAT
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNL_TAB
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNX_LAT
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_rst
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1451932 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1542819 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 529
+configure wave -namecolwidth 110
 configure wave -valuecolwidth 204
 configure wave -justifyvalue left
-configure wave -signalnamewidth 0
+configure wave -signalnamewidth 1
 configure wave -snapdistance 10
 configure wave -datasetprefix 0
 configure wave -rowmargin 4
@@ -51,4 +52,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1268994 ps} {1778320 ps}
+WaveRestoreZoom {0 ps} {3281250 ps}

@@ -506,7 +506,7 @@ begin
 		tCP  => DDR_tCP,
 		tDDR => DDR_tCP/2)
 	port map (
---		sys_rst => ddrs_rst,
+		sys_rst => ddrs_rst,
 		sys_bl  => "000",
 		sys_cl  => "010",
 		sys_cwl => "000",
