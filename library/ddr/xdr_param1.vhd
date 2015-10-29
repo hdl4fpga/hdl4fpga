@@ -294,7 +294,7 @@ package body xdr_param is
 				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR2_MRD => xdr_latency(DDR2, MRD),
-				TMR2_RPA => xdr_latency(DDR2, MODu),
+				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
 				TMR2_RFC => xdr_latency(DDR2, cDLL),
 				TMR2_DLL => xdr_latency(DDR2, cDLL),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
