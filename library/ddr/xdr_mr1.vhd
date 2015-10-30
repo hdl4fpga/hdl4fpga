@@ -42,7 +42,6 @@ entity xdr_mr is
 		xdr_mr_mpr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_mr_mprrf : in std_logic_vector(2-1 downto 0) := (others => '0');
 		xdr_mr_qoff : in  std_logic_vector(1-1 downto 0) := (others => '0');
-		xdr_mr_rdll : in  std_logic_vector(1-1 downto 0) := (others => '1');
 		xdr_mr_rtt  : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		xdr_mr_srt  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_mr_tdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
@@ -56,6 +55,8 @@ entity xdr_mr is
 
 		xdr_mr_addr : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		xdr_mr_data : out std_logic_vector(13-1 downto 0) := (others => '0'));
+
+		constant xdr_mr_rdll : std_logic_vector(1-1 downto 0) := (others => '1');
 end;
 
 architecture ddr2 of xdr_mr is
@@ -112,14 +113,17 @@ begin
 		variable mr_file : mr_vector(0 to 4-1);
 	begin
 		mr_file := (
-			(mr   => mr0, 
+			(mr   => ddr2_mrst, 
+			 data => (
+				 mr_field(mask => ddr2_rdll, src => xdr_mr_rdll)),
+			(mr   => ddr2_mr0, 
 			 data => (
 				 mr_field(mask => ddr2_bl,   src => xdr_mr_bl)   or
 				 mr_field(mask => ddr2_bt,   src => xdr_mr_bt)   or
 				 mr_field(mask => ddr2_cl,   src => xdr_mr_cl)   or
-				 mr_field(mask => ddr2_rdll, src => xdr_mr_rdll) or
+				 mr_field(mask => ddr2_rdll, src => not xdr_mr_rdll) or
 				 mr_field(mask => ddr2_wr,   src => xdr_mr_wr))),
-			(mr   => mr1, 
+			(mr   => ddr2_mred, 
 			 data => (
 				mr_field(mask => ddr2_edll, src => xdr_mr_edll) or
 				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
@@ -129,10 +133,10 @@ begin
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
 				mr_field(mask => ddr2_qoff, src => xdr_mr_wl))),
-			(mr   => mr2, 
+			(mr   => ddr2_mr2, 
 			 data => (
 				mr_field(mask => ddr2_srt,  src => xdr_mr_srt))),
-			(mr   => mr3, 
+			(mr   => ddr2_mr3, 
 			 data => (others => '0')));
 
 		xdr_mr_data <= (others => '-');

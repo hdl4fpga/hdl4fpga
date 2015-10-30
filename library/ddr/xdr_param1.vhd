@@ -85,6 +85,17 @@ package xdr_param is
 	constant mrt : ddr_mr := "100";
 	constant mrp : ddr_mr := "100";
 
+	constant ddr2_mrx : ddr_mr := (others => '1');
+	constant ddr2_mred : ddr_mr := "000";
+	constant ddr2_mrst : ddr_mr := "000";
+	constant ddr2_mr0 : ddr_mr := "000";
+	constant ddr2_mr1 : ddr_mr := "001";
+	constant ddr2_mr2 : ddr_mr := "010";
+	constant ddr2_mr3 : ddr_mr := "011";
+	constant ddr2_mrz : ddr_mr := "100";
+	constant ddr2_mrt : ddr_mr := "100";
+	constant ddr2_mrp : ddr_mr := "100";
+
 	type ddrmr_vector is array (natural range <>) of ddr_mr;
 
 	type ddr_cmd is record
