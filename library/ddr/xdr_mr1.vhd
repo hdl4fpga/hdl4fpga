@@ -100,40 +100,48 @@ architecture ddr2 of xdr_mr is
 		return mr_field(mask, src, xdr_mr_data'length);
 	end;
 
+	type mr_row is record
+		mr   : ddr_mr;
+		data : std_logic_vector(xdr_mr_data'length-1 downto 0);
+	end record;
+
+	type mr_vector is array (natural range <>) of mr_row;
 begin
 
-	with xdr_mr_addr(2 downto 0) select
-	xdr_mr_data <=
+	process (xdr_mr_addr)
+		variable mr_file : mr_vector(0 to 4-1);
+	begin
+		mr_file := (
+			(mr   => mr0, 
+			 data => (
+				 mr_field(mask => ddr2_bl,   src => xdr_mr_bl)   or
+				 mr_field(mask => ddr2_bt,   src => xdr_mr_bt)   or
+				 mr_field(mask => ddr2_cl,   src => xdr_mr_cl)   or
+				 mr_field(mask => ddr2_rdll, src => xdr_mr_rdll) or
+				 mr_field(mask => ddr2_wr,   src => xdr_mr_wr))),
+			(mr   => mr1, 
+			 data => (
+				mr_field(mask => ddr2_edll, src => xdr_mr_edll) or
+				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
+				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
+				mr_field(mask => ddr2_al,   src => xdr_mr_al)   or
+				mr_field(mask => ddr2_ocd,  src => xdr_mr_ocd)  or
+				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
+				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
+				mr_field(mask => ddr2_qoff, src => xdr_mr_wl))),
+			(mr   => mr2, 
+			 data => (
+				mr_field(mask => ddr2_srt,  src => xdr_mr_srt))),
+			(mr   => mr3, 
+			 data => (others => '0')));
 
-		-- Mode Register 0 --
-
-		mr_field(mask => ddr2_bl, src => xdr_mr_bl) or
-		mr_field(mask => ddr2_bt, src => xdr_mr_bt) or
-		mr_field(mask => ddr2_cl, src => xdr_mr_cl) or
-		mr_field(mask => ddr2_rdll, src => xdr_mr_rdll) or
-		mr_field(mask => ddr2_wr, src => xdr_mr_wr) when "000",
-
-		-- Mode Register 1 --
-
-		mr_field(mask => ddr2_edll, src => xdr_mr_edll) or
-		mr_field(mask => ddr2_ods,  src => xdr_mr_ods) or
-		mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt) or
-		mr_field(mask => ddr2_al,   src => xdr_mr_al) or
-		mr_field(mask => ddr2_ocd,  src => xdr_mr_ocd) or
-		mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
-		mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
-		mr_field(mask => ddr2_qoff, src => xdr_mr_wl) when "001",
-
-		-- Mode Register 2 --
-
-		mr_field(mask => ddr2_srt,  src => xdr_mr_srt) when "010",
-
-		-- Mode Register 3 --
-
-		(others => '0') when "100",
-
-		(xdr_mr_data'range => '-') when others; 
-
+		xdr_mr_data <= (others => '-');
+		for i in mr_file'range loop
+			if xdr_mr_addr=mr_file(i).mr then
+				xdr_mr_data <= mr_file(i).data;
+			end if;
+		end loop;
+	end process;
 
 end;
 
