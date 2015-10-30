@@ -35,11 +35,18 @@ add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WI
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNL_TAB
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNX_LAT
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_rst
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_a
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_b
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_cs
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_cke
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_ras
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_cas
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_we
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1542819 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 110
-configure wave -valuecolwidth 204
+WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {21967000 ps} 0}
+quietly wave cursor active 3
+configure wave -namecolwidth 170
+configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -52,4 +59,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {3281250 ps}
+WaveRestoreZoom {21966813 ps} {21967175 ps}

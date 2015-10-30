@@ -97,6 +97,7 @@ package xdr_param is
 	constant ddr_nop : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
 	constant ddr_mrs : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '0');
 	constant ddr_pre : ddr_cmd := (cs => '0', ras => '0', cas => '1', we => '0');
+	constant ddr_ref : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '1');
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
 	constant TMR2_RST : natural := 0;
@@ -295,8 +296,8 @@ package body xdr_param is
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR2_MRD => xdr_latency(DDR2, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
-				TMR2_RFC => xdr_latency(DDR2, cDLL),
-				TMR2_DLL => xdr_latency(DDR2, cDLL),
+				TMR2_RFC => xdr_latency(DDR2, MRD),
+				TMR2_DLL => xdr_latency(DDR2, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 		when M15E =>
 			return natural_vector'(
