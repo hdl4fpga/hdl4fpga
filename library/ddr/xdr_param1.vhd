@@ -75,28 +75,25 @@ package xdr_param is
 		addr : natural_vector(13 downto 0);
 	end record;
 
-	subtype ddr_mr is std_logic_vector(3-1 downto 0);
-	constant mrx : ddr_mr := (others => '1');
-	constant mr0 : ddr_mr := "000";
-	constant mr1 : ddr_mr := "001";
-	constant mr2 : ddr_mr := "010";
-	constant mr3 : ddr_mr := "011";
-	constant mrz : ddr_mr := "100";
-	constant mrt : ddr_mr := "100";
-	constant mrp : ddr_mr := "100";
+	subtype ddrmr_id is std_logic_vector(3-1 downto 0);
+	constant ddr_mrx : ddrmr_id := (others => '1');
+	constant ddr_mr0 : ddrmr_id := "000";
+	constant ddr_mr1 : ddrmr_id := "001";
+	constant ddr_mr2 : ddrmr_id := "010";
+	constant ddr_mr3 : ddrmr_id := "011";
 
-	constant ddr2_mrx : ddr_mr := (others => '1');
-	constant ddr2_mred : ddr_mr := "000";
-	constant ddr2_mrst : ddr_mr := "000";
-	constant ddr2_mr0 : ddr_mr := "000";
-	constant ddr2_mr1 : ddr_mr := "001";
-	constant ddr2_mr2 : ddr_mr := "010";
-	constant ddr2_mr3 : ddr_mr := "011";
-	constant ddr2_mrz : ddr_mr := "100";
-	constant ddr2_mrt : ddr_mr := "100";
-	constant ddr2_mrp : ddr_mr := "100";
+	subtype ddrmr_addr is std_logic_vector(3-1 downto 0);
+	constant ddr2mr_mrx     : ddrmr_addr := (others => '1');
+	constant ddr2mr_setemr2 : ddrmr_addr := "001";
+	constant ddr2mr_setemr3 : ddrmr_addr := "110";
+	constant ddr2mr_enadll  : ddrmr_addr := "111";
+	constant ddr2mr_rstdll  : ddrmr_addr := "101";
+	constant ddr2mr_preall  : ddrmr_addr := "100";
+	constant ddr2mr_setmr   : ddrmr_addr := "000";
+	constant ddr2mr_seteOCD : ddrmr_addr := "010";
+	constant ddr2mr_setdOCD : ddrmr_addr := "011";
 
-	type ddrmr_vector is array (natural range <>) of ddr_mr;
+	type ddrmr_vector is array (natural range <>) of ddrmr_addr;
 
 	type ddr_cmd is record
 		cs  : std_logic;

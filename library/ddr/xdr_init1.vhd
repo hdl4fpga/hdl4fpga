@@ -105,8 +105,8 @@ architecture ddr2 of xdr_init is
 		input   : std_logic_vector(0 to 1-1);
 		output  : std_logic_vector(0 to 6-1);
 		cmd     : ddr_cmd;
-		mr      : ddr_mr;
-		bnk     : ddr_mr;
+		mr      : ddrmr_addr;
+		bnk     : ddrmr_id;
 		tid     : tid_word;
 	end record;
 
@@ -134,20 +134,20 @@ architecture ddr2 of xdr_init is
 	                            --    ||||||
                                 --    vvvvvv
 	constant pgm : s_table := (
-		(sc_rst,  sc_cke,  "0", "0", "110000", ddr_nop, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_CKE)), 
-		(sc_cke,  sc_pre1, "0", "0", "110000", ddr_pre, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_RPA)), 
-		(sc_pre1, sc_lm1,  "0", "0", "110000", ddr_mrs, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_MRD)), 
-		(sc_lm1,  sc_lm2,  "0", "0", "110000", ddr_mrs, ddr2_mr2, ddr2_mr2, to_tidword(TMR2_MRD)), 
-		(sc_lm2,  sc_lm3,  "0", "0", "110000", ddr_mrs, ddr2_mr3, ddr2_mr3, to_tidword(TMR2_MRD)), 
-		(sc_lm3,  sc_lm4,  "0", "0", "110000", ddr_mrs, ddr2_mr1, ddr2_mr1, to_tidword(TMR2_MRD)), 
-		(sc_lm4,  sc_pre2, "0", "0", "110000", ddr_pre, ddr2_mr0, ddr2_mr0, to_tidword(TMR2_RPA)),
-		(sc_pre2, sc_ref1, "0", "0", "110001", ddr_ref, ddr2_mrp, ddr2_mrx, to_tidword(TMR2_RFC)), 
-		(sc_ref1, sc_ref2, "0", "0", "110001", ddr_ref, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_RFC)), 
-		(sc_ref2, sc_lm5,  "0", "0", "110011", ddr_mrs, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_MRD)),  
-		(sc_lm5,  sc_lm6,  "0", "0", "110111", ddr_mrs, ddr2_mrt, ddr2_mr1, to_tidword(TMR2_MRD)),  
-		(sc_lm6,  sc_lm7,  "0", "0", "110111", ddr_mrs, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_MRD)),  
-		(sc_lm7,  sc_ref,  "0", "0", "111100", ddr_nop, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_REF)),  
-		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, ddr2_mrx, ddr2_mrx, to_tidword(TMR2_REF)));
+		(sc_rst,  sc_cke,  "0", "0", "110000", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_CKE)), 
+		(sc_cke,  sc_pre1, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_tidword(TMR2_RPA)), 
+		(sc_pre1, sc_lm1,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, to_tidword(TMR2_MRD)), 
+		(sc_lm1,  sc_lm2,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, to_tidword(TMR2_MRD)), 
+		(sc_lm2,  sc_lm3,  "0", "0", "110000", ddr_mrs, ddr2mr_enadll,  ddr_mr3, to_tidword(TMR2_MRD)), 
+		(sc_lm3,  sc_lm4,  "0", "0", "110000", ddr_mrs, ddr2mr_rstdll,  ddr_mr1, to_tidword(TMR2_MRD)), 
+		(sc_lm4,  sc_pre2, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_tidword(TMR2_RPA)),
+		(sc_pre2, sc_ref1, "0", "0", "110001", ddr_ref, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
+		(sc_ref1, sc_ref2, "0", "0", "110001", ddr_ref, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
+		(sc_ref2, sc_lm5,  "0", "0", "110011", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_tidword(TMR2_MRD)),  
+		(sc_lm5,  sc_lm6,  "0", "0", "110111", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
+		(sc_lm6,  sc_lm7,  "0", "0", "110111", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
+		(sc_lm7,  sc_ref,  "0", "0", "111100", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_REF)),  
+		(sc_ref,  sc_ref,  "0", "0", "111100", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_REF)));
 
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id  : tid_word;
