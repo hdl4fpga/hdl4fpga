@@ -113,19 +113,25 @@ begin
 		variable mr_file : mr_vector(0 to 4-1);
 	begin
 		mr_file := (
+			(mr   => ddr2_mr2, 
+			 data => ( mr_field(mask => ddr2_srt,  src => xdr_mr_srt))),
+
+			(mr   => ddr2_mr3, 
+			 data => (others => '0')),
+
 			(mr   => ddr2_mrst, 
 			 data => (
-				 mr_field(mask => ddr2_rdll, src => xdr_mr_rdll)),
+				 mr_field(mask => ddr2_rdll, src => '1')),
 			(mr   => ddr2_mr0, 
 			 data => (
 				 mr_field(mask => ddr2_bl,   src => xdr_mr_bl)   or
 				 mr_field(mask => ddr2_bt,   src => xdr_mr_bt)   or
 				 mr_field(mask => ddr2_cl,   src => xdr_mr_cl)   or
-				 mr_field(mask => ddr2_rdll, src => not xdr_mr_rdll) or
+				 mr_field(mask => ddr2_rdll, src => '0') or
 				 mr_field(mask => ddr2_wr,   src => xdr_mr_wr))),
 			(mr   => ddr2_mred, 
 			 data => (
-				mr_field(mask => ddr2_edll, src => xdr_mr_edll) or
+				mr_field(mask => ddr2_edll, src => '0') or
 				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
 				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
 				mr_field(mask => ddr2_al,   src => xdr_mr_al)   or
@@ -133,11 +139,7 @@ begin
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
 				mr_field(mask => ddr2_qoff, src => xdr_mr_wl))),
-			(mr   => ddr2_mr2, 
-			 data => (
-				mr_field(mask => ddr2_srt,  src => xdr_mr_srt))),
-			(mr   => ddr2_mr3, 
-			 data => (others => '0')));
+		 );
 
 		xdr_mr_data <= (others => '-');
 		for i in mr_file'range loop
