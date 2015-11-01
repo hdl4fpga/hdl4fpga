@@ -151,11 +151,12 @@ architecture arch of xdr_mpu is
 		-------------
 
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_PRE,
-		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
+		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => ID_IDLE,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
+
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_PRE,
-		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => ID_IDLE,
+		 xdr_cmi => xdr_pre, xdr_cmo => xdr_pre, xdr_lat => ID_RP,
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_PRE, xdr_state_n => XDRS_ACT,

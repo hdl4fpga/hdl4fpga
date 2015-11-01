@@ -40,10 +40,27 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_clk
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_rst
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_req
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_pc
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_cs
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_cke
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_ras
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_cas
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_we
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_a
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_b
+add wave -noupdate -divider xdr_mpu
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_ras
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cas
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_we
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {21967000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22329914 ps} 0}
 quietly wave cursor active 3
-configure wave -namecolwidth 412
+configure wave -namecolwidth 165
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -57,4 +74,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {21966813 ps} {21967150 ps}
+WaveRestoreZoom {22211946 ps} {22447882 ps}
