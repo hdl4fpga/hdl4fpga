@@ -167,7 +167,6 @@ begin
 		for i in mr_file'range loop
 			if xdr_mr_addr=mr_file(i).mr then
 				xdr_mr_data <= mr_file(i).data;
-				p := true;
 			end if;
 		end loop;
 	end process;
