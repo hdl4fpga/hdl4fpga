@@ -283,8 +283,8 @@ package body xdr_param is
 			fld := (others => '0');
 			for j in 1 to mask(i).sz loop
 				fld := fld sll 1;
-				fld(0) := aux(0);
-				aux := aux srl 1;
+				fld(0) := aux(aux'left);
+				aux := aux sll 1;
 			end loop;
 			fld := fld sll mask(i).off;
 			val := val or  fld;

@@ -29,9 +29,9 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant DDR_MARK : natural;
+		constant DDR_TCP      : natural;
+		constant DDR_MARK     : natural;
 		constant DDR_STROBE   : string := "NONE";
-		constant DDR_STD      : natural;
 		constant DDR_DATAPHASES : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
 		constant DDR_BANKSIZE : natural :=  3;
@@ -40,11 +40,9 @@ entity scope is
 		constant DDR_LINESIZE : natural := 16;
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
-		constant DDR_tCP      : natural;
-		constant PAGE_SIZE : natural := 9;
-
+		constant PAGE_SIZE    : natural := 9;
 		constant NIBBLE_SIZE  : natural := 4;
-		constant XD_LEN : natural := 8);
+		constant XD_LEN       : natural := 8);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -507,8 +505,7 @@ begin
 		line_size => DDR_LINESIZE,
 		word_size => DDR_WORDSIZE,
 		byte_size => DDR_BYTESIZE,
-		tCP  => DDR_tCP,
-		tDDR => DDR_tCP/2)
+		tCP  => DDR_tCP)
 	port map (
 		sys_rst => ddrs_rst,
 		sys_bl  => ddrs_bl,

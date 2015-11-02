@@ -34,8 +34,6 @@ entity xdr is
 		strobe : string := "NONE_LOOPBACK";
 		registered_output : boolean := true;
 		mark : natural := M15E;
-		tCP  : natural := 6000;
-		tDDR : natural := 6000;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;

@@ -235,8 +235,7 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_MARK => M3,
-		DDR_tCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
-		DDR_STD => 2,
+		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,
