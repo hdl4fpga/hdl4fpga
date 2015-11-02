@@ -262,23 +262,23 @@ begin
 --		ddr2_sda  => sda
 	);
 
---	mt_u : ddr2_model
---	port map (
---		Ck    => clk_p(0),
---		Ck_n  => clk_n(0),
---		Cke   => cke(0),
---		Cs_n  => cs_n(0),
---		Ras_n => ras_n,
---		Cas_n => cas_n,
---		We_n  => we_n,
---		Ba    => ba(2-1 downto 0),
---		Addr  => addr,
---		Dm_rdqs  => dm(2-1 downto 0),
---		Dq    => dq(16-1 downto 0),
---		Dqs   => dqs(2-1 downto 0),
---		Dqs_n => dqs_n(2-1 downto 0),
---		rdqs_n => rdqs_n(2-1 downto 0),
---		Odt   => odt(0));
+	mt_u : ddr2_model
+	port map (
+		Ck    => clk_p(0),
+		Ck_n  => clk_n(0),
+		Cke   => cke(0),
+		Cs_n  => cs_n(0),
+		Ras_n => ras_n,
+		Cas_n => cas_n,
+		We_n  => we_n,
+		Ba    => ba(2-1 downto 0),
+		Addr  => addr,
+		Dm_rdqs  => dm(2-1 downto 0),
+		Dq    => dq(16-1 downto 0),
+		Dqs   => dqs(2-1 downto 0),
+		Dqs_n => dqs_n(2-1 downto 0),
+		rdqs_n => rdqs_n(2-1 downto 0),
+		Odt   => odt(0));
 end;
 
 library micron;

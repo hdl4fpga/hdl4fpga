@@ -94,8 +94,8 @@ begin
 	ck_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => '0',
-		df => '1',
+		dr => '1',
+		df => '0',
 		q  => ddr_ck);
 
 	b_g : for i in 0 to bank_size-1 generate

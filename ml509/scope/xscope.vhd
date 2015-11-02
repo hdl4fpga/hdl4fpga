@@ -253,6 +253,8 @@ begin
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clk => ddrs_clk0,
+		ddrs_bl  => "011",
+		ddrs_cl  => "101",
 		ddrs_wclks => ddrs_wclks,
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,

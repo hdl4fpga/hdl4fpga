@@ -52,7 +52,11 @@ entity scope is
 
 		input_clk : in std_logic;
 
-		ddrs_clk  : in std_logic;
+		ddrs_clk : in std_logic;
+		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
+		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
 		ddrs_wclks : in std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddrs_ini   : out std_logic;
 		ddr_wlreq : out std_logic;
@@ -507,10 +511,10 @@ begin
 		tDDR => DDR_tCP/2)
 	port map (
 		sys_rst => ddrs_rst,
-		sys_bl  => "000",
-		sys_cl  => "010",
-		sys_cwl => "000",
-		sys_wr  => "101",
+		sys_bl  => ddrs_bl,
+		sys_cl  => ddrs_cl,
+		sys_cwl => ddrs_cwl,
+		sys_wr  => ddrs_wr,
 		sys_clk => ddrs_clk,
 		sys_ini  =>  ddr_ini,
 		xdr_wclks => ddrs_wclks,

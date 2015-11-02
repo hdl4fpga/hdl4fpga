@@ -304,7 +304,7 @@ package body xdr_param is
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR2_MRD => xdr_latency(DDR2, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
-				TMR2_RFC => xdr_latency(DDR2, MRD),
+				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
 				TMR2_DLL => xdr_latency(DDR2, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 		when M15E =>
