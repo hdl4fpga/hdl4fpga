@@ -1,25 +1,28 @@
 onerror {resume}
+quietly virtual signal -install /testbench { /testbench/dq(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/clk
-add wave -noupdate -radix hexadecimal /testbench/dq
-add wave -noupdate /testbench/dqs
-add wave -noupdate /testbench/dqs_n
+add wave -noupdate /testbench/dqs(1)
+add wave -noupdate /testbench/dqs(0)
+add wave -noupdate -radix hexadecimal /testbench/dq16
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/ba
-add wave -noupdate /testbench/clk_p
-add wave -noupdate /testbench/clk_n
+add wave -noupdate /testbench/clk_p(0)
 add wave -noupdate /testbench/cke
 add wave -noupdate /testbench/cs_n
 add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
-add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/odt
 add wave -noupdate -divider ml509
 add wave -noupdate /testbench/ml509_e/ddrs_rst
 add wave -noupdate /testbench/ml509_e/dcm_lckd
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr_dqso
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(1)/ddr3phy_i/ddr_dqso
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqso
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider ddr2baphy
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_rst
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cs
@@ -39,6 +42,10 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_cas
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_we
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_a
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_b
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqo
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqi
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqso
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider xdr
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_cod
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_tab
@@ -83,8 +90,8 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22042100 ps} 0} {{Cursor 4} {22015100 ps} 0}
-quietly wave cursor active 4
+WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22618101 ps} 0} {{Cursor 4} {22615093 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 209
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
@@ -99,4 +106,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {22177860 ps} {22411692 ps}
+WaveRestoreZoom {22612584 ps} {22623778 ps}

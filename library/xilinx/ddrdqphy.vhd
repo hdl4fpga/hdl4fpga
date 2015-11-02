@@ -48,7 +48,6 @@ entity ddrdqphy is
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
 
-		ddr_dqsi : in  std_logic;
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
@@ -122,8 +121,8 @@ begin
 		port map (
 			clk => sys_clk0,
 			dr  => sys_dqso(0),
-			df  => sys_dqso(1),
-			q   => ddr_dmo);
+			df  => '0',
+			q   => ddr_dqso);
 
 	end block;
 end;

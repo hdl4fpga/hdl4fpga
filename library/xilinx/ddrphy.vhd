@@ -207,9 +207,6 @@ architecture virtex of ddrphy is
 	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
@@ -281,9 +278,8 @@ begin
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
 
-			ddr_dqsi => ddqso(i),
 			ddr_dqst => ddr_dqst(i),
-			ddr_dqso => ddqsi(i));
+			ddr_dqso => ddr_dqso(i));
 
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
