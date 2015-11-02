@@ -306,22 +306,19 @@ package xdr_db is
 	function xdr_latency (
 		constant stdr  : natural;
 		constant param : natural; 
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
+		constant gear  : natural := 1)
 		return integer;
 
 	function xdr_lattab (
 		constant stdr : natural;
 		constant rgtr : natural;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
+		constant gear : natural := 1)
 		return natural_vector;
 
 	function xdr_schtab (
 		constant stdr  : natural;
 		constant tabid : natural;
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
+		constant gear  : natural := 1)
 		return natural_vector;
 
 	function to_xdrlatency (
@@ -433,15 +430,14 @@ package body xdr_db is
 	function xdr_latency (
 		constant stdr  : natural;
 		constant param : natural; 
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
+		constant gear  : natural := 1)
 		return integer is
 		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
 				if latency_db(i).param = param then
-					return (latency_db(i).value*tDDR)/(4*tCP);
+					return latency_db(i).value/gear;
 				end if;
 			end if;
 		end loop;
@@ -472,15 +468,14 @@ package body xdr_db is
 	function xdr_lattab (
 		constant stdr : natural;
 		constant rgtr : natural;
-		constant tCP  : natural :=  250;
-		constant tDDR : natural := 1000)
+		constant gear : natural := 1)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(stdr, rgtr);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
-			lattab(i) := (query_data(i).lat*tDDR)/(2*tCP);
+			lattab(i) := query_data(i).lat/gear;
 		end loop;
 		return lattab;
 	end;
@@ -488,8 +483,7 @@ package body xdr_db is
 	function xdr_schtab (
 		constant stdr  : natural;
 		constant tabid : natural;
-		constant tCP   : natural :=  250;
-		constant tDDR  : natural := 1000)
+		constant gear  : natural := 1)
 		return natural_vector is
 
 		constant lat : integer := xdr_latency(stdr, tabid);
@@ -503,12 +497,12 @@ package body xdr_db is
 		case tabid is
 		when STRL |RWNL| WWNL =>
 			for i in cltab'range loop
-				clval(i) := ((cltab(i)+lat)*tDDR)/(2*tCP);
+				clval(i) := (cltab(i)+lat)/(2*gear);
 			end loop;
 			return clval;
 		when DQSZL|DQSL|DQSZXL|DQZL|DQZXL =>
 			for i in cwltab'range loop
-				cwlval(i) := ((cwltab(i)+lat)*tDDR)/(2*tCP);
+				cwlval(i) := (cwltab(i)+lat)/(2*gear);
 			end loop;
 			return cwlval;
 		when others =>

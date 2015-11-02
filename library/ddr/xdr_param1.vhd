@@ -128,8 +128,9 @@ package xdr_param is
 	constant TMR3_REF     : natural := 9;
 
 	function ddr_timers (
-		constant tCP   : natural;
-		constant mark  : natural)
+		constant tCP  : natural;
+		constant mark : natural;
+		constant gear : natural := 2)
 		return natural_vector;
 
 end package;
@@ -293,34 +294,34 @@ package body xdr_param is
 	end;
 
 	function ddr_timers (
-		constant tCP   : natural;
-		constant mark  : natural)
+		constant tCP  : natural;
+		constant mark : natural;
+		constant gear : natural := 2)
 		return natural_vector  is
+		constant stdr : natural := xdr_stdr(mark);
 	begin
-		case mark is
-		when M3 =>
+		if stdr=DDR2 then
 			return natural_vector'(
 				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
-				TMR2_MRD => xdr_latency(DDR2, MRD),
+				TMR2_MRD => xdr_latency(stdr, MRD, gear),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
 				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR2_DLL => xdr_latency(DDR2, MRD),
+				TMR2_DLL => xdr_latency(stdr, MRD, gear),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
-		when M15E =>
+		elsif stdr=DDR3 then
 			return natural_vector'(
 				TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-				TMR3_WLC => xdr_latency(DDR3, MODu),
+				TMR3_WLC => xdr_latency(stdr, MODu, gear),
 				TMR3_WLDQSEN => 25,
 				TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
-				TMR3_MOD => xdr_latency(DDR3, MODu),
-				TMR3_DLL => xdr_latency(DDR3, cDLL),
-				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
+				TMR3_MOD => xdr_latency(stdr, MODu, gear),
+				TMR3_DLL => xdr_latency(stdr, cDLL, gear),
+				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT, gear),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
-		when others =>
-		end case;
+		end if;
 		return natural_vector'(1 to 0 => 0);
 	end;
 		

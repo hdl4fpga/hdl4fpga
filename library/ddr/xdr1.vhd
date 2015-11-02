@@ -34,6 +34,7 @@ entity xdr is
 		strobe : string := "NONE_LOOPBACK";
 		registered_output : boolean := true;
 		mark : natural := M15E;
+		tcp : natural;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
@@ -96,6 +97,7 @@ entity xdr is
 		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
+	constant gear : natural := line_size/(data_phases*word_size);
 end;
 
 library hdl4fpga;
@@ -159,7 +161,7 @@ architecture mix of xdr is
 
 	signal rst : std_logic := '1';
 
-	constant tlWR : natural := xdr_timing(mark, tWR)+tCP/2*xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
+	constant tlWR : natural := xdr_timing(mark, tWR)+xdr_latency(stdr, DQSXL, gear => gear);
 	constant timers : natural_vector := ddr_timers(tCP, mark);
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
@@ -171,26 +173,26 @@ architecture mix of xdr is
 	constant lWR  : natural := to_xdrlatency(tCP, tlWR);
 	constant lRP  : natural := to_xdrlatency(tCP, mark, tRP);
 	constant bl_cod  : std_logic_vector := xdr_latcod(stdr, BL);
-	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL, tCP,tDDR);
-	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL, tCP,tDDR);
-	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), tCP, tDDR);
+	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL, gear);
+	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL, gear);
+	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), gear);
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
 	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, xdr_selcwl(stdr));
-	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL,  tDDR => tDDR, tCP => tDDR/2);
-	constant RWNL_TAB  : natural_vector := xdr_schtab(stdr, RWNL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL, tDDR => tDDR, tCP => tDDR/2);
-	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  tDDR => tDDR, tCP => tDDR/2);
-	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL,  tDDR => tDDR, tCP => tDDR/2);
-	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/2);
-	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL, tDDR => tDDR, tCP => tDDR/4);
-	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL,  tDDR => tDDR, tCP => tDDR/4);
-	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL,  tDDR => tDDR, tCP => tDDR/2);
-	constant WID_LAT   : natural := xdr_latency(stdr, WIDL,   tDDR => tDDR, tCP => tDDR);
+	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL,  gear => gear);
+	constant RWNL_TAB  : natural_vector := xdr_schtab(stdr, RWNL,  gear => gear);
+	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL, gear => gear);
+	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  gear => gear);
+	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  gear => gear);
+	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL,  gear => gear);
+	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL, gear => gear);
+	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL, gear => gear);
+	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL,gear => gear);
+	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL, gear => gear);
+	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL, gear => gear);
+	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL, gear => gear);
+	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL, gear => gear);
+	constant WID_LAT   : natural := xdr_latency(stdr, WIDL,  gear => gear);
 
 begin
 
