@@ -169,14 +169,14 @@ package xdr_db is
 		latency_record'(stdr => DDR2, param => MRD,   value =>   2),
 		latency_record'(stdr => DDR2, param => STRL,  value =>  -2),
 		latency_record'(stdr => DDR2, param => RWNL,  value =>   4),
-		latency_record'(stdr => DDR2, param => DQSZL, value =>  -4),
-		latency_record'(stdr => DDR2, param => DQSL,  value =>  -1),
-		latency_record'(stdr => DDR2, param => DQZL,  value =>  -3),
+		latency_record'(stdr => DDR2, param => DQSZL, value =>  -2),
+		latency_record'(stdr => DDR2, param => DQSL,  value =>   0),
+		latency_record'(stdr => DDR2, param => DQZL,  value =>  -2),
 		latency_record'(stdr => DDR2, param => WWNL,  value =>  -1),
 		latency_record'(stdr => DDR2, param => STRXL, value =>   2),
 		latency_record'(stdr => DDR2, param => RWNXL, value =>   2),
-		latency_record'(stdr => DDR2, param => DQSZXL, value =>  4),
-		latency_record'(stdr => DDR2, param => DQSXL, value =>   2),
+		latency_record'(stdr => DDR2, param => DQSZXL, value =>  2),
+		latency_record'(stdr => DDR2, param => DQSXL, value =>   0),
 		latency_record'(stdr => DDR2, param => DQZXL, value =>   2),
 		latency_record'(stdr => DDR2, param => WWNXL, value =>   2),
 		latency_record'(stdr => DDR2, param => WIDL,  value =>   4),
@@ -480,21 +480,33 @@ package body xdr_db is
 		constant tabid : natural)
 		return natural_vector is
 
-		constant lat : integer := xdr_latency(stdr, tabid);
 		constant cwlsel : natural := xdr_selcwl(stdr);
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		constant cwltab : natural_vector := xdr_lattab(stdr, cwlsel);
 
+		variable lat : integer := xdr_latency(stdr, tabid);
+		variable clval  : natural_vector(cltab'range);
+		variable cwlval : natural_vector(cwltab'range);
+
 	begin
 		case tabid is
-		when STRL |RWNL| WWNL =>
-			return cltab;
-		when DQSZL|DQSL|DQSZXL|DQZL|DQZXL =>
-			return cwltab;
+		when STRL|RWNL|WWNL =>
+			for i in cltab'range loop
+				clval(i) := cltab(i) + lat;
+			end loop;
+			return clval;
+		when DQSZL|DQSL|DQZL|CWL =>
+			if stdr=2 then
+				lat := lat - 2;
+			end if;
+			for i in cwltab'range loop
+				cwlval(i) := cwltab(i) + lat;
+			end loop;
+			return cwlval;
 		when others =>
-			return (0 to 1 => 0);
+			return (1 to 0 => 0);
 		end case;
-		return (0 to 0 => 0);
+		return (1 to 0 => 0);
 	end;
 
 	function xdr_latcod (

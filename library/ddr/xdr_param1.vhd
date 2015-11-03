@@ -21,12 +21,9 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -59,8 +56,7 @@ package xdr_param is
 		return std_logic_vector;
 
 	function xdr_task (
-		constant line_size : natural;
-		constant word_size : natural;
+		constant gear : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
@@ -192,7 +188,6 @@ package body xdr_param is
 		variable sel_sch : word_vector(lc'range);
 		variable val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
 		variable disp : natural;
-		variable msg : line;
 
 	begin
 
@@ -206,8 +201,7 @@ package body xdr_param is
 	end;
 
 	function xdr_task (
-		constant line_size : natural;
-		constant word_size : natural;
+		constant gear : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
@@ -216,7 +210,7 @@ package body xdr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector is
 
-		subtype word is std_logic_vector(0 to line_size/word_size-1);
+		subtype word is std_logic_vector(0 to gear-1);
 		type word_vector is array (natural range <>) of word;
 
 		subtype latword is std_logic_vector(0 to lat_val'length-1);

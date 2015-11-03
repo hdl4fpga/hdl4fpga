@@ -174,7 +174,7 @@ architecture mix of xdr is
 	constant bl_cod  : std_logic_vector := xdr_latcod(stdr, BL);
 	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL);
 	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL);
-	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr));
+	constant cwl_tab : natural_vector := xdr_schtab(stdr, CWL);
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
 	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, xdr_selcwl(stdr));
@@ -187,9 +187,8 @@ architecture mix of xdr is
 	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL);
 	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL);
 	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL);
-	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL);
 	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL);
-	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL);
+	constant DQZX_LAT  : natural := xdr_latency(stdr, DQZXL);
 	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL);
 	constant WID_LAT   : natural := xdr_latency(stdr, WIDL);
 
@@ -313,8 +312,7 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
-		line_size   => line_size/word_size,
-		word_size   => 1,
+		gear => line_size/word_size,
 		CL_COD    => CL_COD,
 		CWL_COD   => CWL_COD,
                                
@@ -327,9 +325,9 @@ begin
                                
 		STRX_LAT  => STRX_LAT,
 		RWNX_LAT  => RWNX_LAT,
-		DQSZX_TAB => DQSZX_TAB ,
+		DQSZX_LAT => DQSZX_LAT,
 		DQSX_LAT  => DQSX_LAT,
-		DQZX_TAB  => DQZX_TAB,
+		DQZX_LAT  => DQZX_LAT,
 		WWNX_LAT  => WWNX_LAT,
 		WID_LAT   => WID_LAT)
 	port map (

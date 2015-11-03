@@ -33,8 +33,7 @@ entity xdr_sch is
 		delay_size : natural := 64;
 		registered_output : boolean := false;
 
-		line_size : natural;
-		word_size : natural;
+		gear : natural;
 
 		CL_COD  : std_logic_vector;
 		CWL_COD : std_logic_vector;
@@ -48,9 +47,9 @@ entity xdr_sch is
 
 		STRX_LAT  : natural;
 		RWNX_LAT  : natural;
-		DQSZX_TAB : natural_vector;
+		DQSZX_LAT : natural;
 		DQSX_LAT  : natural;
-		DQZX_TAB  : natural_vector;
+		DQZX_LAT  : natural;
 		WWNX_LAT  : natural;
 
 		WID_LAT   : natural);
@@ -61,14 +60,14 @@ entity xdr_sch is
 		sys_rea : in  std_logic;
 		sys_wri : in  std_logic;
 
-		xdr_rwn : out std_logic_vector(0 to line_size/word_size-1);
-		xdr_st  : out std_logic_vector(0 to line_size/word_size-1);
+		xdr_rwn : out std_logic_vector(0 to gear-1);
+		xdr_st  : out std_logic_vector(0 to gear-1);
 
-		xdr_dqsz : out std_logic_vector(0 to line_size/word_size-1);
-		xdr_dqs  : out std_logic_vector(0 to line_size/word_size-1);
+		xdr_dqsz : out std_logic_vector(0 to gear-1);
+		xdr_dqs  : out std_logic_vector(0 to gear-1);
 
-		xdr_dqz  : out std_logic_vector(0 to line_size/word_size-1);
-		xdr_wwn  : out std_logic_vector(0 to line_size/word_size-1));
+		xdr_dqz  : out std_logic_vector(0 to gear-1);
+		xdr_wwn  : out std_logic_vector(0 to gear-1));
 end;
 
 library hdl4fpga;
@@ -111,8 +110,7 @@ begin
 		ph_qo  => wpho);
 
 	st <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
@@ -129,8 +127,7 @@ begin
 	end process;
 
 	xdr_rwn <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
@@ -140,19 +137,17 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqsz <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
 		lat_sch => wpho,
-		lat_ext => DQSZX_TAB(0),
+		lat_ext => DQSZX_LAT,
 		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
@@ -162,19 +157,17 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqz <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
 		lat_sch => wpho,
-		lat_ext => DQZX_TAB(0),
+		lat_ext => DQZX_LAT,
 		lat_wid => WID_LAT);
 
 	xdr_wwn <= xdr_task (
-		line_size => line_size,
-		word_size => word_size,
+		gear => gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,

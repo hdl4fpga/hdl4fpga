@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity xdr_mpu is
 	generic (
+		gear : natural;
 		lRCD : natural;
 		lRFC : natural;
 		lWR  : natural;
@@ -40,9 +41,10 @@ entity xdr_mpu is
 
 		cl_cod : std_logic_vector;
 		cl_tab : natural_vector;
-
 		cwl_cod : std_logic_vector;
-		cwl_tab : natural_vector);
+		cwl_tab : natural_vector;
+		wrl_cod : std_logic_vector;
+		wrl_tab : natural_vector);
 	port (
 		xdr_mpu_bl  : in std_logic_vector;
 		xdr_mpu_cl  : in std_logic_vector;
@@ -230,7 +232,7 @@ architecture arch of xdr_mpu is
 		return val;
 	end;
 
-	impure function select_lat (
+	function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
@@ -251,7 +253,7 @@ architecture arch of xdr_mpu is
 			return val;
 		end;
 
-		impure function select_latword (
+		function select_latword (
 			constant lat_val : std_logic_vector;
 			constant lat_cod : latword_vector;
 			constant lat_tab : natural_vector)
@@ -261,7 +263,7 @@ architecture arch of xdr_mpu is
 			val := (others => '-');
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
-					val := to_signed(lat_tab(i)-2, lat_timer'length);
+					val := to_signed(lat_tab(i)/gear-2, lat_timer'length);
 					exit;
 				end if;
 			end loop;
