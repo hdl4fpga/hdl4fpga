@@ -248,7 +248,7 @@ begin
 	port map (
 
 --		input_rst => input_rst,
-		input_clk => input_clk,
+		input_clk => ddrs_clk0, --input_clk,
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clk => ddrs_clk0,

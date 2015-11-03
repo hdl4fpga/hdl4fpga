@@ -261,7 +261,7 @@ architecture arch of xdr_mpu is
 			val := (others => '-');
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
-					val := to_signed(lat_tab(i)/gear-2, lat_timer'length);
+					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_timer'length);
 					exit;
 				end if;
 			end loop;

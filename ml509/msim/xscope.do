@@ -21,8 +21,8 @@ add wave -noupdate /testbench/ml509_e/ddrs_rst
 add wave -noupdate /testbench/ml509_e/dcm_lckd
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(1)/ddr3phy_i/ddr_dqso
-add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqso
-add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqst
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqso
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider ddr2baphy
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_rst
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cs
@@ -87,10 +87,15 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wri
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_wwin
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rea
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rwin
+add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrs_creq
+add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrio_b/ddrs_breq
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrs_rreq
+add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/datai_brst_req
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22618101 ps} 0} {{Cursor 4} {22615093 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 209
+WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22618101 ps} 0} {{Cursor 4} {22609000 ps} 0}
+quietly wave cursor active 4
+configure wave -namecolwidth 127
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -104,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {22595187 ps} {22684739 ps}
+WaveRestoreZoom {22730308 ps} {22835247 ps}

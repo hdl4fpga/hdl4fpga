@@ -121,6 +121,26 @@ begin
 		output_dat => output_dat);
 
 	ddrs_di <= aux2;
+	process (ddrs_clk)
+		constant n : natural := 3;
+		variable aux : std_logic_vector(2**n-1 downto 0);
+		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
+	begin
+		if rising_edge(ddrs_clk) then
+			if sys_rst='1' then
+				aux2 <= x"03_02_01_00";
+			elsif ddrs_di_rdy='1' then
+				aux1 := aux2;
+				for i in 0 to aux1'length/(2**n)-1 loop
+					aux  := std_logic_vector(unsigned(aux1(aux'range))+ddrs_di'length/2**n);
+					aux1 := aux1 srl (2**n);
+					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
+				end loop;
+				aux2 <= aux1;
+			end if;
+		end if;
+	end process;
+
 --	process (ddrs_clk)
 --		constant n : natural := 3;
 --		variable aux : std_logic_vector(2**n-1 downto 0);
@@ -142,33 +162,33 @@ begin
 --		end if;
 --	end process;
 
-	xx_b : process(ddrs_clk)
-		variable aux : std_logic;
-		variable aux1 : std_logic;
-		constant n : natural := 8;
-		constant g : std_logic_vector(n downto 1) :=
-		B"0011_1000";
---		B"0010_0010_1000_0000_0000_0000_0000_0000";
-		variable s : std_logic_vector(g'range);
-	begin
-		if rising_edge(ddrs_clk) then
-			if sys_rst='1' then
-				s  := (others => '1');
-			elsif ddrs_di_rdy='1' then
-				aux1 := s(1);
-				for i in g'range loop
-					aux  := s(i);
-					s(i) := aux1 xor (s(s'right) and g(i));
-					aux1 := aux;
---					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
-				end loop;
-			end if;
-			aux2 <= --s & not s & not s & s &
-					s & not s & not s & s;
---			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
---			        not s(16 downto  9) & s( 8 downto  1) & s(16 downto  9) & not s( 8 downto  1);
-		end if;
-	end process;
+--	xx_b : process(ddrs_clk)
+--		variable aux : std_logic;
+--		variable aux1 : std_logic;
+--		constant n : natural := 8;
+--		constant g : std_logic_vector(n downto 1) :=
+--		B"0011_1000";
+----		B"0010_0010_1000_0000_0000_0000_0000_0000";
+--		variable s : std_logic_vector(g'range);
+--	begin
+--		if rising_edge(ddrs_clk) then
+--			if sys_rst='1' then
+--				s  := (others => '1');
+--			elsif ddrs_di_rdy='1' then
+--				aux1 := s(1);
+--				for i in g'range loop
+--					aux  := s(i);
+--					s(i) := aux1 xor (s(s'right) and g(i));
+--					aux1 := aux;
+----					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
+--				end loop;
+--			end if;
+--			aux2 <= --s & not s & not s & s &
+--					s & not s & not s & s;
+----			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
+----			        not s(16 downto  9) & s( 8 downto  1) & s(16 downto  9) & not s( 8 downto  1);
+--		end if;
+--	end process;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
