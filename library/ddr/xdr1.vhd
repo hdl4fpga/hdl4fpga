@@ -97,7 +97,6 @@ entity xdr is
 		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
-	constant gear : natural := line_size/(data_phases*word_size);
 end;
 
 library hdl4fpga;
@@ -161,7 +160,7 @@ architecture mix of xdr is
 
 	signal rst : std_logic := '1';
 
-	constant tlWR : natural := xdr_timing(mark, tWR)+xdr_latency(stdr, DQSXL, gear => gear);
+	constant tlWR : natural := xdr_timing(mark, tWR)+xdr_latency(stdr, DQSXL);
 	constant timers : natural_vector := ddr_timers(tCP, mark);
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
@@ -173,26 +172,26 @@ architecture mix of xdr is
 	constant lWR  : natural := to_xdrlatency(tCP, tlWR);
 	constant lRP  : natural := to_xdrlatency(tCP, mark, tRP);
 	constant bl_cod  : std_logic_vector := xdr_latcod(stdr, BL);
-	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL, gear);
-	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL, gear);
-	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr), gear);
+	constant bl_tab  : natural_vector := xdr_lattab(stdr, BL);
+	constant cl_tab  : natural_vector := xdr_lattab(stdr, CL);
+	constant cwl_tab : natural_vector := xdr_lattab(stdr, xdr_selcwl(stdr));
 
 	constant CL_COD    : std_logic_vector := xdr_latcod(stdr, CL);
 	constant CWL_COD   : std_logic_vector := xdr_latcod(stdr, xdr_selcwl(stdr));
-	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL,  gear => gear);
-	constant RWNL_TAB  : natural_vector := xdr_schtab(stdr, RWNL,  gear => gear);
-	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL, gear => gear);
-	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL,  gear => gear);
-	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL,  gear => gear);
-	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL,  gear => gear);
-	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL, gear => gear);
-	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL, gear => gear);
-	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL,gear => gear);
-	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL, gear => gear);
-	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL, gear => gear);
-	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL, gear => gear);
-	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL, gear => gear);
-	constant WID_LAT   : natural := xdr_latency(stdr, WIDL,  gear => gear);
+	constant STRL_TAB  : natural_vector := xdr_schtab(stdr, STRL);
+	constant RWNL_TAB  : natural_vector := xdr_schtab(stdr, RWNL);
+	constant DQSZL_TAB : natural_vector := xdr_schtab(stdr, DQSZL);
+	constant DQSOL_TAB : natural_vector := xdr_schtab(stdr, DQSL);
+	constant DQZL_TAB  : natural_vector := xdr_schtab(stdr, DQZL);
+	constant WWNL_TAB  : natural_vector := xdr_schtab(stdr, WWNL);
+	constant STRX_LAT  : natural := xdr_latency(stdr, STRXL);
+	constant RWNX_LAT  : natural := xdr_latency(stdr, RWNXL);
+	constant DQSZX_LAT : natural := xdr_latency(stdr, DQSZXL);
+	constant DQSZX_TAB : natural_vector := xdr_schtab(stdr, DQSZXL);
+	constant DQSX_LAT  : natural := xdr_latency(stdr, DQSXL);
+	constant DQZX_TAB  : natural_vector := xdr_schtab(stdr, DQZXL);
+	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL);
+	constant WID_LAT   : natural := xdr_latency(stdr, WIDL);
 
 begin
 
@@ -283,10 +282,11 @@ begin
 				   
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
-		lRCD    => lRCD,
-		lRFC    => lRFC,
-		lWR     => lWR,
-		lRP     => lRP,
+		gear => line_size/word_size,
+		lRCD => lRCD,
+		lRFC => lRFC,
+		lWR  => lWR,
+		lRP  => lRP,
 		bl_cod  => bl_cod,
 		cl_cod  => cl_cod,
 		cwl_cod => cwl_cod,

@@ -305,20 +305,17 @@ package xdr_db is
 
 	function xdr_latency (
 		constant stdr  : natural;
-		constant param : natural; 
-		constant gear  : natural := 1)
+		constant param : natural)
 		return integer;
 
 	function xdr_lattab (
 		constant stdr : natural;
-		constant rgtr : natural;
-		constant gear : natural := 1)
+		constant rgtr : natural)
 		return natural_vector;
 
 	function xdr_schtab (
 		constant stdr  : natural;
-		constant tabid : natural;
-		constant gear  : natural := 1)
+		constant tabid : natural)
 		return natural_vector;
 
 	function to_xdrlatency (
@@ -337,7 +334,7 @@ package xdr_db is
 		constant rgtr : natural)
 		return std_logic_vector;
 
-	impure function xdr_selcwl (
+	function xdr_selcwl (
 		constant stdr : natural)
 		return natural;
 
@@ -429,15 +426,14 @@ package body xdr_db is
 
 	function xdr_latency (
 		constant stdr  : natural;
-		constant param : natural; 
-		constant gear  : natural := 1)
+		constant param : natural)
 		return integer is
 		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
 				if latency_db(i).param = param then
-					return latency_db(i).value/gear;
+					return latency_db(i).value;
 				end if;
 			end if;
 		end loop;
@@ -467,44 +463,34 @@ package body xdr_db is
 
 	function xdr_lattab (
 		constant stdr : natural;
-		constant rgtr : natural;
-		constant gear : natural := 1)
+		constant rgtr : natural)
 		return natural_vector is
 		constant query_size : natural := xdr_query_size(stdr, rgtr);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
 		variable lattab : natural_vector(0 to query_size-1);
 	begin
 		for i in lattab'range loop
-			lattab(i) := query_data(i).lat/gear;
+			lattab(i) := query_data(i).lat;
 		end loop;
 		return lattab;
 	end;
 
 	function xdr_schtab (
 		constant stdr  : natural;
-		constant tabid : natural;
-		constant gear  : natural := 1)
+		constant tabid : natural)
 		return natural_vector is
 
 		constant lat : integer := xdr_latency(stdr, tabid);
 		constant cwlsel : natural := xdr_selcwl(stdr);
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		constant cwltab : natural_vector := xdr_lattab(stdr, cwlsel);
-		variable clval  : natural_vector(cltab'range);
-		variable cwlval : natural_vector(cwltab'range);
 
 	begin
 		case tabid is
 		when STRL |RWNL| WWNL =>
-			for i in cltab'range loop
-				clval(i) := (cltab(i)+lat)/(2*gear);
-			end loop;
-			return clval;
+			return cltab;
 		when DQSZL|DQSL|DQSZXL|DQZL|DQZXL =>
-			for i in cwltab'range loop
-				cwlval(i) := (cwltab(i)+lat)/(2*gear);
-			end loop;
-			return cwlval;
+			return cwltab;
 		when others =>
 			return (0 to 1 => 0);
 		end case;
@@ -526,10 +512,9 @@ package body xdr_db is
 		return latcode;
 	end;
 
-	impure function xdr_selcwl (
+	function xdr_selcwl (
 		constant stdr : natural)
 		return natural is
-		variable msg : line;
 	begin
 		if stdr = 2 then
 			return CL;

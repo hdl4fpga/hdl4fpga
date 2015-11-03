@@ -304,22 +304,22 @@ package body xdr_param is
 			return natural_vector'(
 				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
-				TMR2_MRD => xdr_latency(stdr, MRD, gear),
+				TMR2_MRD => xdr_latency(stdr, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
 				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR2_DLL => xdr_latency(stdr, MRD, gear),
+				TMR2_DLL => xdr_latency(stdr, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 		elsif stdr=DDR3 then
 			return natural_vector'(
 				TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
-				TMR3_WLC => xdr_latency(stdr, MODu, gear),
+				TMR3_WLC => xdr_latency(stdr, MODu),
 				TMR3_WLDQSEN => 25,
 				TMR3_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR3_MRD => to_xdrlatency(tCP, mark, tMRD),
-				TMR3_MOD => xdr_latency(stdr, MODu, gear),
-				TMR3_DLL => xdr_latency(stdr, cDLL, gear),
-				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT, gear),
+				TMR3_MOD => xdr_latency(stdr, MODu),
+				TMR3_DLL => xdr_latency(stdr, cDLL),
+				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
 		end if;
 		return natural_vector'(1 to 0 => 0);
