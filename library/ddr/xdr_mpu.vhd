@@ -42,9 +42,7 @@ entity xdr_mpu is
 		cl_cod : std_logic_vector;
 		cl_tab : natural_vector;
 		cwl_cod : std_logic_vector;
-		cwl_tab : natural_vector;
-		wrl_cod : std_logic_vector;
-		wrl_tab : natural_vector);
+		cwl_tab : natural_vector);
 	port (
 		xdr_mpu_bl  : in std_logic_vector;
 		xdr_mpu_cl  : in std_logic_vector;
@@ -274,6 +272,7 @@ architecture arch of xdr_mpu is
 		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
 	end;
 
+	signal pp : signed(lat_timer'range);
 begin
 
 	xdr_mpu_p: process (xdr_mpu_clk)
@@ -320,7 +319,7 @@ begin
 								when ID_CL =>
 									lat_timer <= select_lat(xdr_mpu_cl, cl_cod, cl_tab);
 								when ID_CWL =>
-									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab+lWR);
+									lat_timer <= select_lat(xdr_mpu_cwl, cwl_cod, cwl_tab+gear*lWR);
 								when ID_RCD =>
 									lat_timer <= to_signed(lRCD-2, lat_timer'length);
 								when ID_RFC =>
