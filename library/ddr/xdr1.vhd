@@ -73,6 +73,7 @@ entity xdr is
 		sys_ref : out std_logic;
 
 		xdr_wclks : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_enas : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
 		xdr_cs  : out std_logic;
@@ -401,12 +402,11 @@ begin
 		sys_req => xdr_mpu_wwin,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
-		xdr_dmo  => xdr_wr_dm,
-		xdr_enas => xdr_sch_wwn, 
-		xdr_dqo  => xdr_dqo);
+		xdr_dmo => xdr_wr_dm,
+		xdr_enas => xdr_wenas, --xdr_sch_wwn, 
+		xdr_dqo => xdr_dqo);
 	xdr_dmo <= 
 	xdr_wr_dm when xdr_mpu_wri='1' else
 	xdr_sch_st & xdr_sch_st;
-
 
 end;

@@ -42,7 +42,7 @@ entity xdr_wrfifo is
 		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
 		xdr_clks : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_enas : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		xdr_enas : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
@@ -160,6 +160,7 @@ begin
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
 	xdr_fifo_g : for i in 0 to word_size/byte_size-1 generate
 		signal ser_clk : std_logic_vector(xdr_clks'range);
+		signal ser_ena : std_logic_vector(xdr_enas'range);
 
 		signal dqi : shuffleword;
 		signal fifo_di : word;
@@ -179,6 +180,7 @@ begin
 	begin
 		dqi <= shuffle(di, i);
 		ser_clk <= xdr_clks srl (i*word_size/byte_size);
+		ser_ena <= xdr_enas srl (i*word_size/byte_size);
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo
@@ -192,7 +194,7 @@ begin
 			pll_clk => sys_clk,
 			pll_req => sys_req,
 			ser_clk => ser_clk(data_phases-1 downto 0),
-			ser_ena => xdr_enas, 
+			ser_ena => ser_ena(data_phases-1 downto 0),
 			di  => fifo_di,
 			do  => dqo(i));
 

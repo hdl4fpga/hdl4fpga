@@ -80,13 +80,13 @@ begin
 	begin
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clk0,
+			clk => sys_clk90,
 			d => sys_dqt(0),
 			q => ddr_dqt(i));
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clk0,
+			clk => sys_clk90,
 			dr  => sys_dqo(0*byte_size+i),
 			df  => sys_dqo(1*byte_size+i),
 			q   => ddr_dqo(i));
@@ -96,13 +96,13 @@ begin
 	begin
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clk0,
+			clk => sys_clk90,
 			d => sys_dmt(0),
 			q => ddr_dmt);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clk0,
+			clk => sys_clk90,
 			dr  => sys_dmi(0),
 			df  => sys_dmi(1),
 			q   => ddr_dmo);

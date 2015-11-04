@@ -40,6 +40,8 @@ entity ddrphy is
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
+		sys_wclks : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_wenas : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
 		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);
@@ -212,6 +214,7 @@ architecture virtex of ddrphy is
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 
 	signal dqrst : std_logic;
+	signal ph : std_logic_vector(0 to 6-1);
 
 begin
 
@@ -250,7 +253,23 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	byte_g : for i in 0 to word_size/byte_size-1 generate
+	xxxx : entity hdl4fpga.ph
+	generic (
+		delay_size  => 6,
+		data_phases => 4,
+		data_edges  => 2)
+	port (
+		sys_clks(0) => sys_clk0,
+		sys_clks(1) => sys_clk90,
+		sys_di => ddr_dqst(0),
+		ph_qo => ph);
+
+	byte_g : for i in word_size/byte_size-1 downto 0 generate
+		signal clks : std_logic_vector(data_phases-1 downto 0);
+	begin
+		ph(3);
+		ph(5);
+
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			line_size => line_size*byte_size/word_size,

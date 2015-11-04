@@ -63,6 +63,7 @@ architecture scope of ml509 is
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
 	signal ddrs_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ddrs_wenas : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -231,7 +232,6 @@ begin
 	end block;
 
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
-	ddrs_wclks <= (others => ddrs_clk90);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_MARK => M3,
@@ -255,6 +255,7 @@ begin
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
 		ddrs_wclks => ddrs_wclks,
+		ddrs_wenas => ddrs_wenas,
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -320,6 +321,8 @@ begin
 		sys_clk0 => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
 		phy_rst => ddrs_rst,
+		sys_wclks => ddrs_wclks,
+		sys_wenas => ddrs_wenas,
 
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
