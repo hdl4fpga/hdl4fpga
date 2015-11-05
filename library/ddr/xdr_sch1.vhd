@@ -32,6 +32,8 @@ entity xdr_sch is
 	generic (
 		delay_size : natural := 64;
 		registered_output : boolean := false;
+		data_phases : natural := 4;
+		data_edges  : natural := 2;
 
 		gear : natural;
 
@@ -54,9 +56,9 @@ entity xdr_sch is
 
 		WID_LAT   : natural);
 	port (
+		sys_clks : in  std_logic_vector(0 to data_phases/data_edges-1);
 		sys_cl  : in  std_logic_vector;
 		sys_cwl : in  std_logic_vector;
-		sys_clk : in  std_logic;
 		sys_rea : in  std_logic;
 		sys_wri : in  std_logic;
 
@@ -80,12 +82,14 @@ use ieee.std_logic_1164.all;
 architecture def of xdr_sch is
 
 	signal wphi : std_logic;
-	signal wpho : std_logic_vector(0 to delay_size);
-
 	signal rphi : std_logic;
-	signal rpho : std_logic_vector(0 to delay_size);
-	signal st : std_logic_vector(xdr_st'reverse_range);
 
+	signal rpho : std_logic_vector(0 to delay_size/data_edges-1);
+	signal rpho0 : std_logic_vector(0 to delay_size/data_edges-1);
+	signal wpho : std_logic_vector(0 to delay_size/data_edges-1);
+	signal wpho0 : std_logic_vector(0 to delay_size/data_edges-1);
+	signal st : std_logic_vector(xdr_st'reverse_range);
+	constant pp : natural := 1 mod sys_clks'length;
 begin
 	
 	rphi <= sys_rea;
@@ -93,21 +97,43 @@ begin
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
+		data_edges  => data_edges,
+		data_phases => data_phases,
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
-		sys_clks(0) => sys_clk,
+		sys_clks => sys_clks,
 		sys_di => rphi,
-		ph_qo  => rpho);
+		ph_qo  => rpho0);
+
+	process(rpho0) 
+	begin
+		for i in 0 to delay_size/data_phases-1 loop
+			for j in 0 to data_phases/data_edges-1 loop
+				rpho(i) <= rpho0(data_phases*i+data_edges*j);
+			end loop;
+		end loop;
+	end process;
 
 	xdr_wph_e : entity hdl4fpga.xdr_ph
 	generic map (
+		data_edges  => data_edges,
+		data_phases => data_phases,
 		delay_size  => delay_size,
 		delay_phase => 2)
 	port map (
-		sys_clks(0) => sys_clk,
+		sys_clks => sys_clks,
 		sys_di => wphi,
-		ph_qo  => wpho);
+		ph_qo  => wpho0);
+
+	process(wpho0) 
+	begin
+		for i in pp to (delay_size-pp)/data_phases-1 loop
+			for j in 0 to data_phases/data_edges-1 loop
+				wpho(i) <= wpho0(data_phases*i+data_edges*j+pp);
+			end loop;
+		end loop;
+	end process;
 
 	st <= xdr_task (
 		gear => gear,

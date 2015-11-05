@@ -918,6 +918,7 @@ package body std is
 	end;
 
 	function pulse_delay (
+--		constant data_phases : natural;
 		constant phase     : std_logic_vector;
 		constant latency   : natural := 12;
 		constant extension : natural := 4;
@@ -937,17 +938,20 @@ package body std is
 		variable tail_quo : natural;
 		variable tail_mod : natural;
 		variable pulses : std_logic_vector(0 to word_size-1);
+--		variable ph : natural;
 	begin
 
 		latency_mod := latency mod pulses'length;
 		latency_quo := latency  /  pulses'length;
 		for j in pulses'range loop
+--			ph := (latency+j) mod pulses'length;
 			distance  := (extension-j+pulses'length-1)/pulses'length;
 			width_quo := (distance+width-1)/width;
 			width_mod := (width_quo*width-distance) mod width;
 
 			delay := latency_quo+(j+latency_mod)/pulses'length;
 			pulse := phase(delay);
+--			pulse := phase(delay*data_phases+ph mod data_phases);
 
 
 			if width_quo /= 0 then
@@ -956,9 +960,11 @@ package body std is
 				for l in 1 to width_quo loop
 					tail  := tail_quo + (l*tail_mod) / width_quo;
 					pulse := pulse or phase(delay+l*width-tail);
+--					pulse := pulse or phase((delay+l*width-tail)*data_phases+ph mod data_phases);
 				end loop;
 			end if;
 			pulses((latency+j) mod pulses'length) := pulse;
+--			pulses(ph) := pulse;
 		end loop;
 		return pulses;
 	end;

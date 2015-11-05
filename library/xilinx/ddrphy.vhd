@@ -253,22 +253,9 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	xxxx : entity hdl4fpga.ph
-	generic (
-		delay_size  => 6,
-		data_phases => 4,
-		data_edges  => 2)
-	port (
-		sys_clks(0) => sys_clk0,
-		sys_clks(1) => sys_clk90,
-		sys_di => ddr_dqst(0),
-		ph_qo => ph);
-
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		signal clks : std_logic_vector(data_phases-1 downto 0);
 	begin
-		ph(3);
-		ph(5);
 
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (

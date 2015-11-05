@@ -40,6 +40,7 @@ entity xdr is
 		addr_size : natural := 13;
 
 		data_phases : natural := 2;
+		data_edges : natural := 2;
 		line_size : natural := 16;
 		word_size : natural := 16;
 		byte_size : natural :=  8);
@@ -50,9 +51,9 @@ entity xdr is
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
 
-		sys_rst : in std_logic := '-';
-		sys_clk : in std_logic;
-		sys_ini : out std_logic;
+		sys_rst  : in std_logic := '-';
+		sys_clks : in std_logic_vector(0 to data_phases/data_edges);
+		sys_ini  : out std_logic;
 		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
 
@@ -72,7 +73,6 @@ entity xdr is
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;
 
-		xdr_wclks : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_enas : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
@@ -145,6 +145,7 @@ architecture mix of xdr is
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_wwn : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_rwn : std_logic_vector(xdr_sch_dqsz'range);
+	signal xdr_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	signal xdr_win_dqs : std_logic_vector(xdr_dmi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
@@ -195,11 +196,11 @@ architecture mix of xdr is
 
 begin
 
-	process (sys_clk, sys_rst)
+	process (sys_clks(0), sys_rst)
 	begin
 		if sys_rst='1' then
 			rst <= '1';
-		elsif rising_edge(sys_clk) then
+		elsif rising_edge(sys_clks(0)) then
 			rst <= sys_rst;
 		end if;
 	end process;
@@ -228,7 +229,7 @@ begin
 		xdr_mr_addr  => xdr_mr_addr,
 		xdr_mr_data  => xdr_mr_data,
 
-		xdr_init_clk => sys_clk,
+		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,
 		xdr_init_rst => xdr_init_rst,
@@ -266,7 +267,7 @@ begin
 --	xdr_pgm_e : entity hdl4fpga.xdr_pgm(non_registered)
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
-		xdr_pgm_clk => sys_clk,
+		xdr_pgm_clk => sys_clks(0),
 		sys_pgm_ref => sys_ref,
 		xdr_pgm_cas => sys_cas,
 		xdr_pgm_cmd => xdr_pgm_cmd,
@@ -299,7 +300,7 @@ begin
 		xdr_mpu_cwl => xdr_cwl,
 
 		xdr_mpu_rst => xdr_mpu_rst,
-		xdr_mpu_clk => sys_clk,
+		xdr_mpu_clk => sys_clks(0),
 		xdr_mpu_cmd => xdr_pgm_cmd,
 		xdr_mpu_rdy => xdr_mpu_rdy,
 		xdr_mpu_act => sys_act,
@@ -334,7 +335,7 @@ begin
 	port map (
 		sys_cl   => sys_cl,
 		sys_cwl  => xdr_cwl,
-		sys_clk => sys_clk,
+		sys_clks => sys_clks,
 		sys_rea  => xdr_mpu_rwin,
 		sys_wri  => xdr_mpu_wwin,
 
@@ -363,7 +364,7 @@ begin
 		byte_size => byte_size,
 		data_delay => 0)
 	port map (
-		sys_clk => sys_clk,
+		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,
 		sys_rea => xdr_mpu_rea,
 		sys_do  => sys_do,
@@ -397,13 +398,13 @@ begin
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (
-		sys_clk => sys_clk,
+		sys_clk => sys_clks(0),
 		sys_dqi => rot_di,
 		sys_req => xdr_mpu_wwin,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
 		xdr_dmo => xdr_wr_dm,
-		xdr_enas => xdr_wenas, --xdr_sch_wwn, 
+		xdr_enas => xdr_sch_wwn, 
 		xdr_dqo => xdr_dqo);
 	xdr_dmo <= 
 	xdr_wr_dm when xdr_mpu_wri='1' else

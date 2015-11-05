@@ -50,7 +50,7 @@ entity scope is
 
 		input_clk : in std_logic;
 
-		ddrs_clk : in std_logic;
+		ddrs_clks : in std_logic_vector(DDR_DATAPHASE);
 		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
@@ -513,10 +513,8 @@ begin
 		sys_cl  => ddrs_cl,
 		sys_cwl => ddrs_cwl,
 		sys_wr  => ddrs_wr,
-		sys_clk => ddrs_clk,
+		sys_clks => ddrs_clks,
 		sys_ini  =>  ddr_ini,
-		xdr_wclks => ddrs_wclks,
-		xdr_wenas => ddrs_wenas,
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
