@@ -56,6 +56,7 @@ package xdr_param is
 		return std_logic_vector;
 
 	function xdr_task (
+		constant clk_phases : natural;
 		constant gear : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
@@ -201,6 +202,7 @@ package body xdr_param is
 	end;
 
 	function xdr_task (
+		constant clk_phases : natural;
 		constant gear : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
@@ -254,6 +256,7 @@ package body xdr_param is
 		sel_sch := (others => (others => '-'));
 		for i in 0 to lat_tab'length-1 loop
 			sel_sch(i) := pulse_delay (
+				clk_phases => clk_phases,
 				phase     => lat_sch,
 				latency   => lat_tab(i),
 				word_size => word'length,

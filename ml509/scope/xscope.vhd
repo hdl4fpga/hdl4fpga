@@ -37,6 +37,7 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of ml509 is
+	constant sclk_phases : natural := 2;
 	constant data_phases : natural := 2;
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
@@ -240,6 +241,7 @@ begin
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,
 		DDR_ADDRSIZE => ddr2_a'length,
+		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
@@ -251,7 +253,8 @@ begin
 		input_clk => ddrs_clk0, --input_clk,
 
 		ddrs_rst => ddrs_rst,
-		ddrs_clk => ddrs_clk0,
+		ddrs_clks(0) => ddrs_clk0,
+		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
 		ddrs_wclks => ddrs_wclks,

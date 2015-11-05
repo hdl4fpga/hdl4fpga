@@ -30,10 +30,11 @@ use std.textio.all;
 entity scope is
 	generic (
 		constant DDR_TCP      : natural;
-		constant DDR_MARK     : natural;
-		constant DDR_STROBE   : string := "NONE";
+		constant DDR_SCLKPHASES : natural;
 		constant DDR_DATAPHASES : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
+		constant DDR_MARK     : natural;
+		constant DDR_STROBE   : string := "NONE";
 		constant DDR_BANKSIZE : natural :=  3;
 		constant DDR_ADDRSIZE : natural := 13;
 		constant DDR_CLMNSIZE : natural :=  6;
@@ -50,7 +51,7 @@ entity scope is
 
 		input_clk : in std_logic;
 
-		ddrs_clks : in std_logic_vector(DDR_DATAPHASE);
+		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases-1);
 		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
@@ -330,7 +331,7 @@ begin
 		video_col => win_coloff,
 		video_do  => chann_dat,
 
-		ddrs_clk => ddrs_clk,
+		ddrs_clk  => ddrs_clks(0),
 		ddrs_rreq => ddrs_ref_req,
 		ddrs_creq => ddrs_cmd_req,
 		ddrs_crdy => ddrs_cmd_rdy,
@@ -370,17 +371,17 @@ begin
 		n => 2)
 	port map (
 		arst => ddrs_rst,
-		clk  => ddrs_clk,
+		clk  => ddrs_clks(0),
 		d(0) => miirx_udprdy,
 		d(1) => miitxudp_rdy,
 		q(0) => udprx_rdy,
 		q(1) => udptx_rdy);
 
-	rx_p : process (ddrs_clk)
+	rx_p : process (ddrs_clks(0))
 		variable req_edge : std_logic;
 		variable rdy_edge : std_logic;
 	begin
-		if rising_edge(ddrs_clk) then
+		if rising_edge(ddrs_clks(0)) then
 			if ddrs_rst='1' then
 				miirx_req <= '0';
 			elsif miirx_req='0' then
@@ -399,11 +400,11 @@ begin
 		end if;
 	end process;
 
-	tx_p : process (ddrs_clk)
+	tx_p : process (ddrs_clks(0))
 		variable req_edge : std_logic;
 		variable rdy_edge : std_logic;
 	begin
-		if rising_edge(ddrs_clk) then
+		if rising_edge(ddrs_clks(0)) then
 			if ddrs_rst='1' then
 				miitx_req <= '0';
 			elsif miirx_rdy='1' then

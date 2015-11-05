@@ -73,7 +73,6 @@ entity xdr is
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;
 
-		xdr_enas : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_rst : out std_logic;
 		xdr_cke : out std_logic;
 		xdr_cs  : out std_logic;

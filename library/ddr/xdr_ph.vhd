@@ -27,12 +27,12 @@ use ieee.numeric_std.all;
 
 entity xdr_ph is
 	generic (
-		data_phases : natural := 1;
-		data_edges  : natural := 1;
+		clk_phases : natural := 1;
+		clk_edges  : natural := 1;
 		delay_phase : natural := 2;
 		delay_size  : natural := 2);
 	port (
-		sys_clks : in std_logic_vector(0 to data_phases/data_edges-1);
+		sys_clks : in std_logic_vector(0 to clk_phases/clk_edges-1);
 		sys_di : in std_logic;
 		ph_qo  : out std_logic_vector(0 to delay_size));
 end;
@@ -43,7 +43,7 @@ use hdl4fpga.std.all;
 use std.textio.all;
 
 architecture slr of xdr_ph is
-	signal clks : std_logic_vector(0 to data_phases-1) := (others => '-');
+	signal clks : std_logic_vector(0 to clk_phases-1) := (others => '-');
 	signal phi  : std_logic_vector(clks'range) := (others => '-');
 	signal phi0 : std_logic_vector(clks'range) := (others => '-');
 	signal qo : std_logic_vector(0 to delay_size);
@@ -51,12 +51,12 @@ architecture slr of xdr_ph is
 begin
 	
 	clks(sys_clks'range) <= sys_clks;
-	falling_edge_g : if data_edges /= 1 generate
-		clks(data_phases/data_edges to data_phases-1) <= not sys_clks;
+	falling_edge_g : if clk_edges /= 1 generate
+		clks(clk_phases/clk_edges to clk_phases-1) <= not sys_clks;
 	end generate;
 
 	g0: block
-		signal q : std_logic_vector(0 to delay_size/data_phases);
+		signal q : std_logic_vector(0 to delay_size/clk_phases);
 	begin
 		q(0) <= sys_di;
 		process (clks(0))
@@ -67,12 +67,12 @@ begin
 		end process;
 		phi (clks'length-1) <= q(0);
 		j: for j in q'range generate
-			qo(j*data_phases) <= q(j);
+			qo(j*clk_phases) <= q(j);
 		end generate;
 	end block;
 
-	gn : for i in 1 to data_phases-1 generate
-		signal q  : std_logic_vector((data_phases-i)*(clks'length-1)/data_phases to (delay_size-i)/data_phases) := (others => '-');
+	gn : for i in 1 to clk_phases-1 generate
+		signal q  : std_logic_vector((clk_phases-i)*(clks'length-1)/clk_phases to (delay_size-i)/clk_phases) := (others => '-');
 	begin
 		process (clks(i))
 		begin
@@ -82,18 +82,18 @@ begin
 		end process;
 		phi ((i+clks'length-1) mod clks'length) <= q(q'left);
 		j: for j in q'range generate
-			qo(j*data_phases+i) <= q(j);
+			qo(j*clk_phases+i) <= q(j);
 		end generate;
 	end generate;
 
-	xx: if data_phases > 1 generate
+	xx: if clk_phases > 1 generate
 		phi0 (delay_phase) <= sys_di;
-		g : for i in 1 to data_phases-1 generate
+		g : for i in 1 to clk_phases-1 generate
 			constant left : natural := selecton (
-				data_phases*((delay_phase+i)/data_phases) > delay_phase,
-				(delay_phase+i-1)/data_phases,
-				(delay_phase+i-1)/data_phases+1);
-			signal q : std_logic_vector(left to (data_phases-i)*(clks'length-1)/data_phases-1) := (others => '-');
+				clk_phases*((delay_phase+i)/clk_phases) > delay_phase,
+				(delay_phase+i-1)/clk_phases,
+				(delay_phase+i-1)/clk_phases+1);
+			signal q : std_logic_vector(left to (clk_phases-i)*(clks'length-1)/clk_phases-1) := (others => '-');
 		begin
 			xx : if q'length > 0 generate
 				process (clks(i))
@@ -107,7 +107,7 @@ begin
 				end process;
 				phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
 				j: for j in q'range generate
-					qo(j*data_phases+i) <= q(j);
+					qo(j*clk_phases+i) <= q(j);
 				end generate;
 			end generate;
 		end generate;
