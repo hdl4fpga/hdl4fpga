@@ -51,6 +51,7 @@ add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_cod
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_tab
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/cl_tab
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/cwl_tab
+add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_dqz
 add wave -noupdate -divider xdr_sch
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/CL_COD
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/CWL_COD
@@ -63,7 +64,7 @@ add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/RW
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/STRL_TAB
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/STRX_LAT
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WID_LAT
-add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNL_TAB
+add wave -noupdate -group constant -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNL_TAB
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/WWNX_LAT
 add wave -noupdate -divider xdr_init
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_init_clk
@@ -92,9 +93,12 @@ add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrio_b/ddrs_breq
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrs_rreq
 add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/datai_brst_req
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ml509_e/ddrs_clk90
+add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {21562000 ps} 0} {{Cursor 3} {22618101 ps} 0} {{Cursor 4} {22609000 ps} 0}
-quietly wave cursor active 4
+WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {18781942 ps} 0} {{Cursor 3} {23529250 ps} 0} {{Cursor 4} {23556139 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 127
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
@@ -109,4 +113,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {22730308 ps} {22835247 ps}
+WaveRestoreZoom {23477237 ps} {23579701 ps}

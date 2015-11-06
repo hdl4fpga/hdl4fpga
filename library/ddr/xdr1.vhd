@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -39,6 +40,7 @@ entity xdr is
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
 
+		sclk_edges : natural := 2;
 		data_phases : natural := 2;
 		data_edges : natural := 2;
 		line_size : natural := 16;
@@ -52,7 +54,7 @@ entity xdr is
 		sys_wr  : in std_logic_vector(2 downto 0);
 
 		sys_rst  : in std_logic := '-';
-		sys_clks : in std_logic_vector(0 to data_phases/data_edges);
+		sys_clks : in std_logic_vector(0 to sclk_edges-1);
 		sys_ini  : out std_logic;
 		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
@@ -144,7 +146,8 @@ architecture mix of xdr is
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_wwn : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_rwn : std_logic_vector(xdr_sch_dqsz'range);
-	signal xdr_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal xdr_wclks : std_logic_vector(0 to data_phases*word_size/byte_size-1);
+	signal xdr_wenas : std_logic_vector(0 to data_phases*word_size/byte_size-1);
 
 	signal xdr_win_dqs : std_logic_vector(xdr_dmi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
@@ -311,8 +314,20 @@ begin
 		xdr_mpu_rwin => xdr_mpu_rwin,
 		xdr_mpu_wwin => xdr_mpu_wwin);
 
+	process (xdr_sch_wwn)
+		variable wenas : unsigned(xdr_wenas'range);
+	begin
+		wenas := (others => '-');
+		for i in 0 to word_size/byte_size-1 loop
+			wenas := wenas srl xdr_sch_wwn'length;
+			wenas(xdr_sch_wwn'range) := unsigned(xdr_sch_wwn);
+		end loop;
+		xdr_wenas <= std_logic_vector(wenas);
+	end process;
+
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
+		clk_edges => sclk_edges,
 		gear => line_size/word_size,
 		CL_COD    => CL_COD,
 		CWL_COD   => CWL_COD,
@@ -388,6 +403,16 @@ begin
 		din  => sys_di,
 		dout => rot_di);
 		
+	process (sys_clks(1))
+	begin
+		for i in xdr_wclks'range loop
+			if i mod 2 = 0 then
+				xdr_wclks(i) <= sys_clks(1);
+			else
+				xdr_wclks(i) <= not sys_clks(1);
+			end if;
+		end loop;
+	end process;
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
 		registered_output => registered_output,
@@ -403,7 +428,7 @@ begin
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
 		xdr_dmo => xdr_wr_dm,
-		xdr_enas => xdr_sch_wwn, 
+		xdr_enas => xdr_wenas, 
 		xdr_dqo => xdr_dqo);
 	xdr_dmo <= 
 	xdr_wr_dm when xdr_mpu_wri='1' else

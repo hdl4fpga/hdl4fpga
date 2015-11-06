@@ -32,7 +32,6 @@ entity xdr_sch is
 	generic (
 		delay_size : natural := 64;
 		registered_output : boolean := false;
-		clk_phases : natural := 4;
 		clk_edges  : natural := 2;
 
 		gear : natural;
@@ -56,7 +55,7 @@ entity xdr_sch is
 
 		WID_LAT   : natural);
 	port (
-		sys_clks : in  std_logic_vector(0 to clk_phases/clk_edges-1);
+		sys_clks : in  std_logic_vector(0 to clk_edges-1);
 		sys_cl  : in  std_logic_vector;
 		sys_cwl : in  std_logic_vector;
 		sys_rea : in  std_logic;
@@ -70,6 +69,9 @@ entity xdr_sch is
 
 		xdr_dqz  : out std_logic_vector(0 to gear-1);
 		xdr_wwn  : out std_logic_vector(0 to gear-1));
+
+	constant clk_phases : natural := 2*clk_edges;
+
 end;
 
 library hdl4fpga;
@@ -84,12 +86,15 @@ architecture def of xdr_sch is
 	signal wphi : std_logic;
 	signal rphi : std_logic;
 
-	signal rpho : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal rpho0 : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal wpho : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal wpho0 : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal rpho  : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal rpho0 : std_logic_vector(0 to delay_size);
+	signal wpho  : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal wpho0 : std_logic_vector(0 to delay_size);
+
 	signal st : std_logic_vector(xdr_st'reverse_range);
-	constant pp : natural := 1 mod sys_clks'length;
+
+	constant ph90 : natural := 1 mod sys_clks'length;
+
 begin
 	
 	rphi <= sys_rea;
@@ -110,7 +115,7 @@ begin
 	begin
 		for i in 0 to delay_size/clk_phases-1 loop
 			for j in 0 to clk_phases/clk_edges-1 loop
-				rpho(i) <= rpho0(clk_phases*i+clk_edges*j);
+				rpho(i*clk_edges+j) <= rpho0(clk_phases*i+clk_edges*j);
 			end loop;
 		end loop;
 	end process;
@@ -123,20 +128,20 @@ begin
 		delay_phase => 2)
 	port map (
 		sys_clks => sys_clks,
-		sys_di => wphi,
-		ph_qo  => wpho0);
+		sys_di   => wphi,
+		ph_qo    => wpho0);
 
 	process(wpho0) 
 	begin
-		for i in pp to (delay_size-pp)/clk_phases-1 loop
-			for j in 0 to clk_phases/clk_edges-1 loop
-				wpho(i) <= wpho0(clk_phases*i+clk_edges*j+pp);
+		for i in 0 to (delay_size-ph90)/clk_phases-1 loop
+			for j in 0 to clk_edges-1 loop
+				wpho(i*clk_edges+j) <= wpho0(clk_phases*i+clk_edges*j+ph90);
 			end loop;
 		end loop;
 	end process;
 
 	st <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
@@ -153,7 +158,7 @@ begin
 	end process;
 
 	xdr_rwn <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 
 		lat_val => sys_cl,
@@ -164,7 +169,7 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqsz <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 
 		lat_val => sys_cwl,
@@ -175,7 +180,7 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqs <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 
 		lat_val => sys_cwl,
@@ -186,7 +191,7 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_dqz <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 
 		lat_val => sys_cwl,
@@ -197,7 +202,7 @@ begin
 		lat_wid => WID_LAT);
 
 	xdr_wwn <= xdr_task (
-		clk_phases => clk_phases,
+		clk_phases => clk_edges,
 		gear => gear,
 
 		lat_val => sys_cwl,
