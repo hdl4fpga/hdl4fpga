@@ -25,7 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-
 entity ddrphy is
 	generic (
 		data_phases : natural := 2;
@@ -72,11 +71,12 @@ entity ddrphy is
 		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 
-		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
+	constant gear : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -197,7 +197,6 @@ architecture virtex of ddrphy is
 	signal dqsdel : std_logic;
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmo : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal sdqt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
@@ -267,7 +266,6 @@ begin
 
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),
-			sys_dmo => sdmo(i),
 
 			sys_dqo  => sdqi(i),
 			sys_dqt  => sdqt(i),
@@ -287,6 +285,7 @@ begin
 			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddr_dqso(i));
 
+
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
 			xi  => ddr_dqsi(i),
@@ -294,6 +293,15 @@ begin
 			x_n => sys_dqsi(data_phases*i+1));
 
 	end generate;
+
+	process(ddr_dm)
+	begin
+		for i in 0 to word_size/byte_size-1 loop
+			for j in 0 to gear-1 loop
+				sys_dmo(i) <= ddr_dm(i);
+			end loop;
+		end loop;
+	end process;
 
 	process (ddqo, ddqt)
 		variable dqt : std_logic_vector(ddr_dq'range);
@@ -310,18 +318,12 @@ begin
 		end loop;
 	end process;
 
-	process (ddmo, ddmt)
+	process (ddmo)
 	begin
 		for i in ddmo'range loop
-			if ddmt(i)='1' then
-				ddr_dm(i) <= 'Z';
-			else
-				ddr_dm(i) <= ddmo(i);
-			end if;
+			ddr_dm(i) <= ddmo(i);
 		end loop;
 	end process;
 
---	sys_dqsi <= (others => sys_clk);
-	sys_dmo <= to_stdlogicvector(sdmo);
 	sys_dqi <= to_stdlogicvector(sdqo);
 end;

@@ -34,7 +34,6 @@ entity ddrdqphy is
 		sys_clk90 : in  std_logic;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
@@ -42,7 +41,6 @@ entity ddrdqphy is
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
 
 		ddr_dmt  : out std_logic;
-		ddr_dmi  : in  std_logic := '-';
 		ddr_dmo  : out std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
@@ -70,10 +68,6 @@ begin
 		phase_g : for j in  data_phases-1 downto 0 generate
 			sys_dqi(j*byte_size+i) <= ddr_dqi(i);
 		end generate;
-	end generate;
-
-	dmi_g : for i in 0 to data_phases-1 generate
-		sys_dmo(i) <= ddr_dmi;
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
