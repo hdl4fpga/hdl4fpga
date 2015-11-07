@@ -3,9 +3,16 @@ quietly virtual signal -install /testbench { /testbench/dq(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
 add wave -noupdate /testbench/rst
+add wave -noupdate /testbench/mii_refclk
+add wave -noupdate /testbench/mii_treq
+add wave -noupdate /testbench/mii_rxdv
+add wave -noupdate /testbench/mii_rxc
+add wave -noupdate /testbench/ml509_e/phy_rxctl_rxdv
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/dqs(1)
+add wave -noupdate /testbench/ml509_e/ddrs_clk90
 add wave -noupdate /testbench/dqs(0)
+add wave -noupdate -expand /testbench/dqs
 add wave -noupdate -radix hexadecimal /testbench/dq16
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/ba
@@ -14,9 +21,13 @@ add wave -noupdate /testbench/cke
 add wave -noupdate /testbench/cs_n
 add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
-add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/odt
+add wave -noupdate /testbench/we_n
+add wave -noupdate /testbench/dqs(1)
+add wave -noupdate /testbench/dqs(0)
 add wave -noupdate -divider ml509
+add wave -noupdate /testbench/ml509_e/ddr2_dqs_p(1)
+add wave -noupdate /testbench/ml509_e/ddr2_dqs_p(0)
 add wave -noupdate /testbench/ml509_e/ddrs_rst
 add wave -noupdate /testbench/ml509_e/dcm_lckd
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr_dqso
@@ -34,6 +45,8 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cas
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_we
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_b
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_a
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqsi
+add wave -noupdate /testbench/ml509_e/ddrphy_dmo
 add wave -noupdate -divider scope
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cs
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cke
@@ -42,16 +55,19 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_cas
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_we
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_a
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_b
-add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqo
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqi
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqo
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider xdr
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_sti
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_sto
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_clks(1)
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/rpho90
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_cod
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_tab
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/cl_tab
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/cwl_tab
-add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_dqz
 add wave -noupdate -divider xdr_sch
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/CL_COD
 add wave -noupdate -group constant /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/CWL_COD
@@ -94,12 +110,12 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/ddrs_rreq
 add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/datai_brst_req
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ml509_e/ddrs_clk90
+add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1555000 ps} 0} {{Cursor 2} {18781942 ps} 0} {{Cursor 3} {23529250 ps} 0} {{Cursor 4} {23556139 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 127
+WaveRestoreCursors {{Cursor 1} {24877100 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 174
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -113,4 +129,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {23477237 ps} {23579701 ps}
+WaveRestoreZoom {24835035 ps} {24963632 ps}

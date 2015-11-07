@@ -173,7 +173,7 @@ package xdr_db is
 		latency_record'(stdr => DDR2, param => DQSL,  value =>   0),
 		latency_record'(stdr => DDR2, param => DQZL,  value =>  -2),
 		latency_record'(stdr => DDR2, param => WWNL,  value =>  -4),
-		latency_record'(stdr => DDR2, param => STRXL, value =>   2),
+		latency_record'(stdr => DDR2, param => STRXL, value =>   1),
 		latency_record'(stdr => DDR2, param => RWNXL, value =>   2),
 		latency_record'(stdr => DDR2, param => DQSZXL, value =>  2),
 		latency_record'(stdr => DDR2, param => DQSXL, value =>   0),

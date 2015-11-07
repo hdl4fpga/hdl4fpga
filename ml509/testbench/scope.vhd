@@ -198,12 +198,13 @@ begin
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 1.1 us;
 
-	mii_strt <= '0', '1' after 240 us;
+--	mii_strt <= '0', '1' after 240 us;
+	mii_strt <= '0', '1' after 24 us;
 	process (mii_refclk, mii_strt)
 		variable txen_edge : std_logic;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 240 us;
+			mii_treq <= '1' after 24 us;
 		elsif rising_edge(mii_refclk) then
 			if mii_txen='1' then
 				if txen_edge='0' then
@@ -226,6 +227,7 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_refclk <= not mii_refclk after 20 ns;
+	mii_rxc <= mii_refclk;
 	ml509_e : ml509
 	port map (
 		user_clk => clk,

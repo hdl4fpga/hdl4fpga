@@ -87,11 +87,10 @@ architecture def of xdr_sch is
 	signal rphi : std_logic;
 
 	signal rpho  : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal rpho90  : std_logic_vector(0 to delay_size/clk_edges-1);
 	signal rpho0 : std_logic_vector(0 to delay_size);
 	signal wpho  : std_logic_vector(0 to delay_size/clk_edges-1);
 	signal wpho0 : std_logic_vector(0 to delay_size);
-
-	signal st : std_logic_vector(xdr_st'reverse_range);
 
 	constant ph90 : natural := 1 mod sys_clks'length;
 
@@ -118,6 +117,11 @@ begin
 				rpho(i*clk_edges+j) <= rpho0(clk_phases*i+clk_edges*j);
 			end loop;
 		end loop;
+		for i in 0 to (delay_size-ph90)/clk_phases-1 loop
+			for j in 0 to clk_edges-1 loop
+				rpho90(i*clk_edges+j) <= rpho0(clk_phases*i+clk_edges*j+ph90);
+			end loop;
+		end loop;
 	end process;
 
 	xdr_wph_e : entity hdl4fpga.xdr_ph
@@ -140,22 +144,15 @@ begin
 		end loop;
 	end process;
 
-	st <= xdr_task (
+	xdr_st <= xdr_task (
 		clk_phases => clk_edges,
 		gear => gear,
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab => strl_tab,
-		lat_sch => rpho,
+		lat_sch => rpho90,
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
-
-	process (st)
-	begin
-		for i in st'range loop
-			xdr_st(i) <= st(i);
-		end loop;
-	end process;
 
 	xdr_rwn <= xdr_task (
 		clk_phases => clk_edges,

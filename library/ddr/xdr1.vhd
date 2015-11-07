@@ -99,6 +99,7 @@ entity xdr is
 		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
+	constant gear : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -140,7 +141,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_dqsz : std_logic_vector(0 to line_size/word_size-1);
+	signal xdr_sch_dqsz : std_logic_vector(0 to gear-1);
 	signal xdr_sch_dqs : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dqsz'range);
@@ -285,7 +286,7 @@ begin
 				   
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
-		gear => line_size/word_size,
+		gear => gear,
 		lRCD => lRCD,
 		lRFC => lRFC,
 		lWR  => lWR,
@@ -314,21 +315,10 @@ begin
 		xdr_mpu_rwin => xdr_mpu_rwin,
 		xdr_mpu_wwin => xdr_mpu_wwin);
 
-	process (xdr_sch_wwn)
-		variable wenas : unsigned(xdr_wenas'range);
-	begin
-		wenas := (others => '-');
-		for i in 0 to word_size/byte_size-1 loop
-			wenas := wenas srl xdr_sch_wwn'length;
-			wenas(xdr_sch_wwn'range) := unsigned(xdr_sch_wwn);
-		end loop;
-		xdr_wenas <= std_logic_vector(wenas);
-	end process;
-
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
 		clk_edges => sclk_edges,
-		gear => line_size/word_size,
+		gear => gear,
 		CL_COD    => CL_COD,
 		CWL_COD   => CWL_COD,
                                
@@ -363,12 +353,32 @@ begin
 
 	xdr_win_dqs <= (others => xdr_sti(0));
 	xdr_win_dq  <= (others => xdr_sti(0));
-	xdr_sto <= xdr_sch_rwn & xdr_sch_rwn;
 
-	xdr_dqso <= xdr_sch_dqs & xdr_sch_dqs;
-	xdr_dqt <= xdr_sch_dqz & xdr_sch_dqz;
-	xdr_dmt <= xdr_sch_dqz & xdr_sch_dqz;
-	xdr_dqst <= not xdr_sch_dqsz & not xdr_sch_dqsz;
+	process (
+		xdr_mpu_wri,
+		xdr_sch_st,
+		xdr_sch_dqz,
+		xdr_sch_dqs,
+		xdr_sch_dqsz,
+		xdr_sch_rwn,
+		xdr_sch_wwn)
+	begin
+		for i in 0 to word_size/byte_size-1 loop
+			for j in 0 to gear-1 loop
+				xdr_dqt(i*gear+j)  <= xdr_sch_dqz(j);
+				xdr_dmt(i*gear+j)  <= xdr_sch_dqz(j);
+				xdr_dqso(i*gear+j) <= xdr_sch_dqs(j);
+				xdr_dqst(i*gear+j) <= not xdr_sch_dqsz(j);
+				xdr_sto(i*gear+j)  <= xdr_sch_st(j);
+				xdr_wenas(i*gear+j) <= xdr_sch_wwn(j);
+				if xdr_mpu_wri='1' then
+					xdr_dmo(i*gear+j) <= xdr_wr_dm(i*gear+j);
+				else
+					xdr_dmo(i*gear+j) <= xdr_sch_st(j);
+				end if;
+			end loop;
+		end loop;
+	end process;
 
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
@@ -413,6 +423,18 @@ begin
 			end if;
 		end loop;
 	end process;
+
+	process (xdr_sch_wwn)
+		variable wenas : unsigned(xdr_wenas'range);
+	begin
+		wenas := (others => '-');
+		for i in 0 to word_size/byte_size-1 loop
+			wenas := wenas srl xdr_sch_wwn'length;
+			wenas(xdr_sch_wwn'range) := unsigned(xdr_sch_wwn);
+		end loop;
+		xdr_wenas <= std_logic_vector(wenas);
+	end process;
+
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
 		registered_output => registered_output,
@@ -430,8 +452,5 @@ begin
 		xdr_dmo => xdr_wr_dm,
 		xdr_enas => xdr_wenas, 
 		xdr_dqo => xdr_dqo);
-	xdr_dmo <= 
-	xdr_wr_dm when xdr_mpu_wri='1' else
-	xdr_sch_st & xdr_sch_st;
 
 end;

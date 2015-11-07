@@ -85,7 +85,7 @@ architecture ddr2 of xdr_mr is
 	constant ddr2_ocd  : fd_vector(0 to 0) := (0 => (off =>  7, sz => 3));
 	constant ddr2_ddqs : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 	constant ddr2_rdqs : fd_vector(0 to 0) := (0 => (off => 11, sz => 1));
-	constant ddr2_qoff : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
+	constant ddr2_out  : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
 
 	-- DDR2 Extended Mode Register 2 --
 	-----------------------------------
@@ -148,7 +148,7 @@ begin
 				mr_field(mask => ddr2_ocd,  src => xdr_mr_ocd)  or
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
-				mr_field(mask => ddr2_qoff, src => xdr_mr_wl))),
+				mr_field(mask => ddr2_out,  src => "0"))),
 			(mr   => ddr2mr_setdOCD, 
 			 data => (
 				mr_field(mask => ddr2_edll, src => "0") or
@@ -158,7 +158,7 @@ begin
 				mr_field(mask => ddr2_ocd,  src => "000")  or
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
-				mr_field(mask => ddr2_qoff, src => xdr_mr_wl))),
+				mr_field(mask => ddr2_out,  src => "0"))),
 			(mr   => ddr2mr_preall, 
 			 data => (
 				 mr_field(mask => ddr2_preall, src => "1"))));
