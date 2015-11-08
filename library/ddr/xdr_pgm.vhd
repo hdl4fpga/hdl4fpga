@@ -25,9 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use std.textio.all;
-use ieee.std_logic_textio.all;
-
 entity xdr_pgm is
 	port (
 		xdr_pgm_rst : in  std_logic := '0';
@@ -42,8 +39,9 @@ entity xdr_pgm is
 		xdr_pgm_cas : out std_logic := '0';
 		xdr_pgm_cmd : out std_logic_vector(0 to 2));
 
---	attribute fsm_encoding : string;
---	attribute fsm_encoding of xdr_pgm : entity is "compact";
+end;
+
+architecture registered of xdr_pgm is
 
 	constant cacc : natural := 6;
 	constant rrdy : natural := 5;
@@ -57,21 +55,21 @@ entity xdr_pgm is
                         --> sys_pgm_ref <--------------------+|
                         --                                   ||
                         --                                   VV
-	constant xdr_act  : std_logic_vector(6 downto 0)    := "0000" & "011";
-	constant xdr_actq : std_logic_vector(xdr_act'range) := "0010" & "011";
-	constant xdr_acty : std_logic_vector(xdr_act'range) := "0100" & "011";
-	constant xdr_rea  : std_logic_vector(xdr_act'range) := "1000" & "101";
-	constant xdr_reaq : std_logic_vector(xdr_act'range) := "1010" & "101";
-	constant xdr_wri  : std_logic_vector(xdr_act'range) := "1000" & "100";
-	constant xdr_wriq : std_logic_vector(xdr_act'range) := "1010" & "100";
-	constant xdr_pre  : std_logic_vector(xdr_act'range) := "0000" & "010";
-	constant xdr_preq : std_logic_vector(xdr_act'range) := "0010" & "010";
-	constant xdr_prey : std_logic_vector(xdr_act'range) := "0100" & "010";
-	constant xdr_aut  : std_logic_vector(xdr_act'range) := "0000" & "001";
-	constant xdr_autq : std_logic_vector(xdr_act'range) := "0010" & "001";
-	constant xdr_auty : std_logic_vector(xdr_act'range) := "0111" & "001";
-	constant xdr_nop  : std_logic_vector(xdr_act'range) := "0001" & "111";
-	constant xdr_nopy : std_logic_vector(xdr_act'range) := "0101" & "111";
+	constant xdr_act  : std_logic_vector(6 downto 0)    := B"0000_011";
+	constant xdr_actq : std_logic_vector(xdr_act'range) := B"0010_011";
+	constant xdr_acty : std_logic_vector(xdr_act'range) := B"0100_011";
+	constant xdr_rea  : std_logic_vector(xdr_act'range) := B"1000_101";
+	constant xdr_reaq : std_logic_vector(xdr_act'range) := B"1010_101";
+	constant xdr_wri  : std_logic_vector(xdr_act'range) := B"1000_100";
+	constant xdr_wriq : std_logic_vector(xdr_act'range) := B"1010_100";
+	constant xdr_pre  : std_logic_vector(xdr_act'range) := B"0000_010";
+	constant xdr_preq : std_logic_vector(xdr_act'range) := B"0010_010";
+	constant xdr_prey : std_logic_vector(xdr_act'range) := B"0100_010";
+	constant xdr_aut  : std_logic_vector(xdr_act'range) := B"0000_001";
+	constant xdr_autq : std_logic_vector(xdr_act'range) := B"0010_001";
+	constant xdr_auty : std_logic_vector(xdr_act'range) := B"0111_001";
+	constant xdr_nop  : std_logic_vector(xdr_act'range) := B"0001_111";
+	constant xdr_nopy : std_logic_vector(xdr_act'range) := B"0101_111";
 	constant xdr_dnt  : std_logic_vector(xdr_act'range) := (others => '-');
 
 	constant ddrs_act : std_logic_vector(0 to 2) := "011";
@@ -94,16 +92,12 @@ entity xdr_pgm is
 
 	signal xdr_pgm_pc : std_logic_vector(ddrs_act'range);
 
-	signal pc : std_logic_vector(xdr_pgm_pc'range);
 	signal pgm_cmd : std_logic_vector(xdr_pgm_cmd'range);
 	signal pgm_rdy : std_logic;
 	signal pgm_rrdy : std_logic;
 	signal pgm_cas : std_logic;
 	signal sys_ref : std_logic;
 
-end;
-
-architecture registered of xdr_pgm is
 	constant ddrs_pact : std_logic_vector(0 to 2) := "110";
 	constant ddrs_paut : std_logic_vector(0 to 2) := "111";
 	constant ddrs_idl  : std_logic_vector(0 to 2) := "000";
@@ -142,7 +136,7 @@ architecture registered of xdr_pgm is
 --     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
 --             +------+------+------+------+------+------+------+------+
 
-	constant pgm_tab : trans_tab := (
+	constant pgm_tab : trans_tab(0 to 64-1) := (
 		(ddrs_act, "000", ddrs_wri, xdr_wri),	---------
 		(ddrs_act, "001", ddrs_wri, xdr_wriq),	-- ACT --
 		(ddrs_act, "010", ddrs_rea, xdr_rea),	---------
@@ -223,6 +217,7 @@ begin
 	xdr_input(0) <= xdr_pgm_start;
 
 	process (xdr_pgm_clk)
+		variable pc : std_logic_vector(xdr_pgm_pc'range);
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
@@ -231,12 +226,20 @@ begin
 				sys_pgm_ref  <= sys_ref;
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
-					xdr_pgm_pc  <= pc;
+					xdr_pgm_pc <= pc; 
 				end if;
+				for i in pgm_tab'range loop
+					if xdr_pgm_pc=pgm_tab(i).state then
+						if xdr_input=pgm_tab(i).input then
+							pc := pgm_tab(i).state_n; 
+						end if;
+					end if;
+				end loop;
 				ppp <= pgm_cas;
 			else
 				ppp <= '0';
-				xdr_pgm_pc <= ddrs_pre;
+				xdr_pgm_pc <= ddrs_pre; 
+				pc := ddrs_pre;
 				xdr_pgm_cmd <= "111";
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
@@ -246,24 +249,21 @@ begin
 	end process;
 
 	xdr_pgm_cas  <= ppp and xdr_pgm_req;
-	process (xdr_pgm_pc, xdr_input)
+	process (xdr_input, xdr_pgm_pc)
 	begin
 		pgm_rdy <= '-'; 
 		pgm_rrdy <= '-'; 
 		sys_ref <= '-';
 		pgm_cmd <= (others => '-');
 		pgm_cas <= '-';
-		pc  <= (others => '-');
-		loop_pgm : for i in pgm_tab'range loop
+		for i in pgm_tab'range loop
 			if xdr_pgm_pc=pgm_tab(i).state then
 				if xdr_input=pgm_tab(i).input then
-					pc <= pgm_tab(i).state_n; 
 					pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
 					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
 					sys_ref <= pgm_tab(i).cmd_n(ref);
 					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
 					pgm_cas <= pgm_tab(i).cmd_n(cacc);
-					exit loop_pgm;
 				end if;
 			end if;
 		end loop;
@@ -271,128 +271,128 @@ begin
 
 end;
 
-architecture non_registered of xdr_pgm is
-
--- pgm_ref   ------+
--- pgm_rw    -----+|
--- pgm_start ----+||
---               |||
---               vvv
---               000   001   010   011   100   101   110   111
---             +-----+-----+-----+-----+-----+-----+-----+-----+
---     act     | wri | wri | rea | rea | wri | wri | rea | rea |
---     rea     | pre | pre | pre | pre | wri | wri | rea | rea |
---     wri     | pre | pre | pre | pre | wri | wri | rea | rea |
---     pre     | pre | aut | pre | aut | act | aut | act | aut |
---     aut     | pre | pre | pre | pre | act | act | act | act |
---             +-----+-----+-----+-----+-----+-----+-----+-----+
-
---                           --                 --
---                           -- OUTPUT COMMANDS --
---                           --                 --
-
+--architecture non_registered of xdr_pgm is
 --
---               000    001    010    011    100    101    110    111
---             +------+------+------+------+------+------+------+------+
---     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     rea     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     wri     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
---             +------+------+------+------+------+------+------+------+
-
-	constant pgm_tab : trans_tab := (
-		(ddrs_act, "000", ddrs_wri, xdr_wri),	---------
-		(ddrs_act, "001", ddrs_wri, xdr_wriq),	-- ACT --
-		(ddrs_act, "010", ddrs_rea, xdr_rea),	---------
-		(ddrs_act, "011", ddrs_rea, xdr_reaq),
-		(ddrs_act, "100", ddrs_wri, xdr_wri),
-		(ddrs_act, "101", ddrs_wri, xdr_wriq),
-		(ddrs_act, "110", ddrs_rea, xdr_rea),
-		(ddrs_act, "111", ddrs_rea, xdr_reaq),
-		
-		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
-		(ddrs_rea, "001", ddrs_pre, xdr_preq),	-- REA --
-		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
-		(ddrs_rea, "011", ddrs_pre, xdr_preq),
-		(ddrs_rea, "100", ddrs_wri, xdr_wri),
-		(ddrs_rea, "101", ddrs_wri, xdr_wriq),
-		(ddrs_rea, "110", ddrs_rea, xdr_rea),
-		(ddrs_rea, "111", ddrs_rea, xdr_reaq),
-
-		(ddrs_wri, "000", ddrs_pre, xdr_pre),	---------
-		(ddrs_wri, "001", ddrs_pre, xdr_preq),	-- WRI --
-		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
-		(ddrs_wri, "011", ddrs_pre, xdr_preq),
-		(ddrs_wri, "100", ddrs_wri, xdr_wri),
-		(ddrs_wri, "101", ddrs_pre, xdr_wriq),
-		(ddrs_wri, "110", ddrs_rea, xdr_rea),
-		(ddrs_wri, "111", ddrs_rea, xdr_reaq),
-
-		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
-		(ddrs_pre, "001", ddrs_aut, xdr_autq),	-- PRE --
-		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
-		(ddrs_pre, "011", ddrs_aut, xdr_autq),
-		(ddrs_pre, "100", ddrs_act, xdr_act),
-		(ddrs_pre, "101", ddrs_aut, xdr_autq),
-		(ddrs_pre, "110", ddrs_act, xdr_act),
-		(ddrs_pre, "111", ddrs_aut, xdr_autq),
-
-		(ddrs_aut, "000", ddrs_pre, xdr_nopy),	---------
-		(ddrs_aut, "001", ddrs_aut, xdr_auty),	-- AUT --
-		(ddrs_aut, "010", ddrs_pre, xdr_nopy),	---------
-		(ddrs_aut, "011", ddrs_aut, xdr_auty),
-		(ddrs_aut, "100", ddrs_act, xdr_acty),
-		(ddrs_aut, "101", ddrs_aut, xdr_auty),
-		(ddrs_aut, "110", ddrs_act, xdr_acty),
-		(ddrs_aut, "111", ddrs_aut, xdr_auty));
-
-begin
-
-	xdr_input(2) <= xdr_pgm_ref;
-	xdr_input(1) <= xdr_pgm_rw;
-	xdr_input(0) <= xdr_pgm_start;
-
-	process (xdr_pgm_clk)
-	begin
-		if rising_edge(xdr_pgm_clk) then
-			if xdr_pgm_rst='0' then
-				if xdr_pgm_req='1' then
-					xdr_pgm_pc <= pc;
-				end if;
-			else
-				xdr_pgm_pc  <= ddrs_pre;
-			end if;
-		end if;
-	end process;
-
-	xdr_pgm_cas  <= pgm_cas and xdr_pgm_req;
-	xdr_pgm_cmd  <= pgm_cmd;
-	xdr_pgm_rdy  <= pgm_rdy;
-	sys_pgm_ref  <= sys_ref;
-	xdr_pgm_rrdy <= pgm_rrdy;
-
-	process (xdr_pgm_pc, xdr_input)
-	begin
-		pgm_rdy <= '-'; 
-		pgm_rrdy <= '-'; 
-		sys_ref <= '-';
-		pgm_cmd <= (others => '-');
-		pc  <= (others => '-');
-		pgm_cas <= '-';
-		loop_pgm : for i in pgm_tab'range loop
-			if xdr_pgm_pc=pgm_tab(i).state then
-				if xdr_input=pgm_tab(i).input then
-					pc <= pgm_tab(i).state_n; 
-					pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
-					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
-					sys_ref <= pgm_tab(i).cmd_n(ref);
-					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
-					pgm_cas <= pgm_tab(i).cmd_n(cacc);
-					exit loop_pgm;
-				end if;
-			end if;
-		end loop;
-	end process;
-
-end;
+---- pgm_ref   ------+
+---- pgm_rw    -----+|
+---- pgm_start ----+||
+----               |||
+----               vvv
+----               000   001   010   011   100   101   110   111
+----             +-----+-----+-----+-----+-----+-----+-----+-----+
+----     act     | wri | wri | rea | rea | wri | wri | rea | rea |
+----     rea     | pre | pre | pre | pre | wri | wri | rea | rea |
+----     wri     | pre | pre | pre | pre | wri | wri | rea | rea |
+----     pre     | pre | aut | pre | aut | act | aut | act | aut |
+----     aut     | pre | pre | pre | pre | act | act | act | act |
+----             +-----+-----+-----+-----+-----+-----+-----+-----+
+--
+----                           --                 --
+----                           -- OUTPUT COMMANDS --
+----                           --                 --
+--
+----
+----               000    001    010    011    100    101    110    111
+----             +------+------+------+------+------+------+------+------+
+----     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+----     rea     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
+----     wri     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
+----     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq |
+----     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
+----             +------+------+------+------+------+------+------+------+
+--
+--	constant pgm_tab : trans_tab := (
+--		(ddrs_act, "000", ddrs_wri, xdr_wri),	---------
+--		(ddrs_act, "001", ddrs_wri, xdr_wriq),	-- ACT --
+--		(ddrs_act, "010", ddrs_rea, xdr_rea),	---------
+--		(ddrs_act, "011", ddrs_rea, xdr_reaq),
+--		(ddrs_act, "100", ddrs_wri, xdr_wri),
+--		(ddrs_act, "101", ddrs_wri, xdr_wriq),
+--		(ddrs_act, "110", ddrs_rea, xdr_rea),
+--		(ddrs_act, "111", ddrs_rea, xdr_reaq),
+--		
+--		(ddrs_rea, "000", ddrs_pre, xdr_pre),	---------
+--		(ddrs_rea, "001", ddrs_pre, xdr_preq),	-- REA --
+--		(ddrs_rea, "010", ddrs_pre, xdr_pre),	---------
+--		(ddrs_rea, "011", ddrs_pre, xdr_preq),
+--		(ddrs_rea, "100", ddrs_wri, xdr_wri),
+--		(ddrs_rea, "101", ddrs_wri, xdr_wriq),
+--		(ddrs_rea, "110", ddrs_rea, xdr_rea),
+--		(ddrs_rea, "111", ddrs_rea, xdr_reaq),
+--
+--		(ddrs_wri, "000", ddrs_pre, xdr_pre),	---------
+--		(ddrs_wri, "001", ddrs_pre, xdr_preq),	-- WRI --
+--		(ddrs_wri, "010", ddrs_pre, xdr_pre),	---------
+--		(ddrs_wri, "011", ddrs_pre, xdr_preq),
+--		(ddrs_wri, "100", ddrs_wri, xdr_wri),
+--		(ddrs_wri, "101", ddrs_pre, xdr_wriq),
+--		(ddrs_wri, "110", ddrs_rea, xdr_rea),
+--		(ddrs_wri, "111", ddrs_rea, xdr_reaq),
+--
+--		(ddrs_pre, "000", ddrs_pre, xdr_nop),	---------
+--		(ddrs_pre, "001", ddrs_aut, xdr_autq),	-- PRE --
+--		(ddrs_pre, "010", ddrs_pre, xdr_nop),	---------
+--		(ddrs_pre, "011", ddrs_aut, xdr_autq),
+--		(ddrs_pre, "100", ddrs_act, xdr_act),
+--		(ddrs_pre, "101", ddrs_aut, xdr_autq),
+--		(ddrs_pre, "110", ddrs_act, xdr_act),
+--		(ddrs_pre, "111", ddrs_aut, xdr_autq),
+--
+--		(ddrs_aut, "000", ddrs_pre, xdr_nopy),	---------
+--		(ddrs_aut, "001", ddrs_aut, xdr_auty),	-- AUT --
+--		(ddrs_aut, "010", ddrs_pre, xdr_nopy),	---------
+--		(ddrs_aut, "011", ddrs_aut, xdr_auty),
+--		(ddrs_aut, "100", ddrs_act, xdr_acty),
+--		(ddrs_aut, "101", ddrs_aut, xdr_auty),
+--		(ddrs_aut, "110", ddrs_act, xdr_acty),
+--		(ddrs_aut, "111", ddrs_aut, xdr_auty));
+--
+--begin
+--
+--	xdr_input(2) <= xdr_pgm_ref;
+--	xdr_input(1) <= xdr_pgm_rw;
+--	xdr_input(0) <= xdr_pgm_start;
+--
+--	process (xdr_pgm_clk)
+--	begin
+--		if rising_edge(xdr_pgm_clk) then
+--			if xdr_pgm_rst='0' then
+--				if xdr_pgm_req='1' then
+--					xdr_pgm_pc <= pc;
+--				end if;
+--			else
+--				xdr_pgm_pc  <= ddrs_pre;
+--			end if;
+--		end if;
+--	end process;
+--
+--	xdr_pgm_cas  <= pgm_cas and xdr_pgm_req;
+--	xdr_pgm_cmd  <= pgm_cmd;
+--	xdr_pgm_rdy  <= pgm_rdy;
+--	sys_pgm_ref  <= sys_ref;
+--	xdr_pgm_rrdy <= pgm_rrdy;
+--
+--	process (xdr_pgm_pc, xdr_input)
+--	begin
+--		pgm_rdy <= '-'; 
+--		pgm_rrdy <= '-'; 
+--		sys_ref <= '-';
+--		pgm_cmd <= (others => '-');
+--		pc  <= (others => '-');
+--		pgm_cas <= '-';
+--		loop_pgm : for i in pgm_tab'range loop
+--			if xdr_pgm_pc=pgm_tab(i).state then
+--				if xdr_input=pgm_tab(i).input then
+--					pc <= pgm_tab(i).state_n; 
+--					pgm_cmd <= pgm_tab(i).cmd_n(ras downto we);
+--					pgm_rdy <= pgm_tab(i).cmd_n(rdy);
+--					sys_ref <= pgm_tab(i).cmd_n(ref);
+--					pgm_rrdy <= pgm_tab(i).cmd_n(rrdy);
+--					pgm_cas <= pgm_tab(i).cmd_n(cacc);
+--					exit loop_pgm;
+--				end if;
+--			end if;
+--		end loop;
+--	end process;
+--
+--end;
