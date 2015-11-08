@@ -103,19 +103,21 @@ begin
 	end block;
 
 	dqso_b : block 
+		signal clk_n : std_logic;
 	begin
 
+		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => sys_clk0,
-			d => sys_dqst(0),
+			clk => clk_n,
+			d => sys_dqst(1),
 			q => ddr_dqst);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk0,
-			dr  => sys_dqso(0),
-			df  => '0',
+			dr  => '0',
+			df  => sys_dqso(0),
 			q   => ddr_dqso);
 
 	end block;

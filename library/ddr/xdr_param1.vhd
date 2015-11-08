@@ -296,9 +296,8 @@ package body xdr_param is
 		constant gear : natural := 2)
 		return natural_vector  is
 		constant stdr : natural := xdr_stdr(mark);
-	begin
-		if stdr=DDR2 then
-			return natural_vector'(
+
+		constant ddr2_timer : natural_vector := (
 				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR2_MRD => xdr_latency(stdr, MRD),
@@ -306,8 +305,8 @@ package body xdr_param is
 				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
 				TMR2_DLL => xdr_latency(stdr, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
-		elsif stdr=DDR3 then
-			return natural_vector'(
+
+		constant ddr3_timer : natural_vector := (
 				TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
 				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 				TMR3_WLC => xdr_latency(stdr, MODu),
@@ -318,6 +317,11 @@ package body xdr_param is
 				TMR3_DLL => xdr_latency(stdr, cDLL),
 				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
+	begin
+		if stdr=DDR2 then
+			return ddr2_timer;
+		elsif stdr=DDR3 then
+			return ddr3_timer;
 		end if;
 		return natural_vector'(1 to 0 => 0);
 	end;

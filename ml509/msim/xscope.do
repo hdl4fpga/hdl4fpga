@@ -47,6 +47,8 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_b
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_a
 add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqsi
 add wave -noupdate /testbench/ml509_e/ddrphy_dmo
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_dmi
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_clks(1)
 add wave -noupdate -divider scope
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cs
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cke
@@ -62,7 +64,6 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider xdr
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_sti
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_sto
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_clks(1)
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/rpho90
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_cod
 add wave -noupdate -group xdr_constant /testbench/ml509_e/scope_e/ddr_e/bl_tab
@@ -113,7 +114,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {24877100 ps} 0}
+WaveRestoreCursors {{Cursor 1} {30706100 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 174
 configure wave -valuecolwidth 103
@@ -129,4 +130,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {24835035 ps} {24963632 ps}
+WaveRestoreZoom {22894004 ps} {38518196 ps}

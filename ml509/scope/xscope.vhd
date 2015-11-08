@@ -94,7 +94,7 @@ architecture scope of ml509 is
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
@@ -232,7 +232,6 @@ begin
 		end generate;
 	end block;
 
---	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_MARK => M3,
@@ -302,14 +301,7 @@ begin
 
 	sto <= ddrphy_sto(0);
 
-	process (ddrs_clk0)
-		variable q : std_logic_vector(0 to 2);
-	begin
-		if rising_edge(ddrs_clk0) then
-			q := q(1 to q'right) & ddrphy_sto(0);
-			ddrphy_sti <= (others => q(0));
-		end if;
-	end process;
+	ddrphy_sti <= ddrphy_dmi;
 
 	ddrphy_dqi2 <= ddrphy_dqi;
 
@@ -354,12 +346,12 @@ begin
 		ddr_b   => ddr2_ba,
 		ddr_a   => ddr2_a,
 
---		ddr_dm  => ddr2_dm,
+		ddr_dm  => ddr2_dm(2-1 downto 0),
 		ddr_dq  => ddr2_d(word_size-1 downto 0),
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
 		ddr_dqso => ddr2_dqso);
-	ddr2_dm <= (others => '0');
+	ddr2_dm(8-2 downto 2) <= (others => '0');
 
 	phy_reset  <= dcm_lckd;
 	phy_mdc  <= '0';
@@ -408,6 +400,32 @@ begin
 
 	end generate;
 
+	ddr2_dqs27_g : for i in 2 to 8-1 generate
+		signal dqsi : std_logic;
+		signal st   : std_logic;
+	begin
+
+--		dqsidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => dqsi,
+--			o   => ddr_dqsi(i));
+
+		dqsiobuf_i : iobufds
+		generic map (
+			iostandard => "DIFF_SSTL18_II_DCI")
+		port map (
+			t   => '1',
+			i   => '0',
+			o   => open,
+			io  => ddr2_dqs_p(i),
+			iob => ddr2_dqs_n(i));
+
+	end generate;
+
 	ddr_ck_obufds : obufds
 	generic map (
 		iostandard => "DIFF_SSTL18_II")
@@ -415,4 +433,12 @@ begin
 		i  => ddr2_clk,
 		o  => ddr2_clk_p(0),
 		ob => ddr2_clk_n(0));
+
+	ddr_ck_obufds1 : obufds
+	generic map (
+		iostandard => "DIFF_SSTL18_II")
+	port map (
+		i  => '0',
+		o  => ddr2_clk_p(1),
+		ob => ddr2_clk_n(1));
 end;

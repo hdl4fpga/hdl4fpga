@@ -278,7 +278,6 @@ begin
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
 
---			ddr_dmi  => ddr_dm(i),
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
 
@@ -318,10 +317,14 @@ begin
 		end loop;
 	end process;
 
-	process (ddmo)
+	process (ddmo, ddmt)
 	begin
 		for i in ddmo'range loop
-			ddr_dm(i) <= ddmo(i);
+			if ddmt(i)='1' then
+				ddr_dm(i) <= 'Z';
+			else
+				ddr_dm(i) <= ddmo(i);
+			end if;
 		end loop;
 	end process;
 

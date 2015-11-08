@@ -94,69 +94,69 @@ begin
 	ck_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => '1',
-		df => '0',
+		dr => '0',
+		df => '1',
 		q  => ddr_ck);
 
 	b_g : for i in 0 to bank_size-1 generate
-		oddr_i : entity hdl4fpga.ddro
+		oddr_i : entity hdl4fpga.ff
 		port map (
 			clk => sys_clk,
-			dr => b(bank_size*0+i),
-			df => b(bank_size*1+i),
+			d => b(bank_size*0+i),
+--			df => b(bank_size*1+i),
 			q  => ddr_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
 	begin
-		oddr_i : entity hdl4fpga.ddro
+		oddr_i : entity hdl4fpga.ff
 		port map (
 			clk => sys_clk,
-			dr  => a(addr_size*0+i),
-			df  => a(addr_size*1+i),
-			q   => ddr_a(i));
+			d => a(addr_size*0+i),
+--			df  => a(addr_size*1+i),
+			q => ddr_a(i));
 	end generate;
 
-	ras_i : entity hdl4fpga.ddro
+	ras_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr  => ras(0),
-		df  => ras(1),
-		q   => ddr_ras);
+		d => ras(0),
+--		df  => ras(1),
+		q => ddr_ras);
 
-	cas_i : entity hdl4fpga.ddro
+	cas_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr  => cas(0),
-		df  => cas(1),
+		d => cas(0),
+--		df  => cas(1),
 		q   => ddr_cas);
 
-	we_i : entity hdl4fpga.ddro
+	we_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr  => we(0),
-		df  => we(1),
+		d => we(0),
+--		df  => we(1),
 		q   => ddr_we);
 
-	cs_i :  entity hdl4fpga.ddro
+	cs_i :  entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr => cs(0),
-		df => cs(1),
+		d => cs(0),
+--		df => cs(1),
 		q  => ddr_cs);
 
-	cke_i : entity hdl4fpga.ddro
+	cke_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr => cke(0),
-		df => cke(1),
+		d => cke(0),
+--		df => cke(1),
 		q  => ddr_cke);
 
-	odt_i : entity hdl4fpga.ddro
+	odt_i : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk,
-		dr => odt(0),
-		df => odt(1),
+		d => odt(0),
+--		df => odt(1),
 		q  => ddr_odt);
 
 end;

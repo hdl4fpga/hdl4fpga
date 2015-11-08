@@ -91,6 +91,7 @@ architecture def of xdr_sch is
 	signal rpho0 : std_logic_vector(0 to delay_size);
 	signal wpho  : std_logic_vector(0 to delay_size/clk_edges-1);
 	signal wpho0 : std_logic_vector(0 to delay_size);
+	signal wphoxx : std_logic_vector(0 to delay_size);
 
 	constant ph90 : natural := 1 mod sys_clks'length;
 
@@ -137,6 +138,11 @@ begin
 
 	process(wpho0) 
 	begin
+		for i in 0 to delay_size/clk_phases-1 loop
+			for j in 0 to clk_phases/clk_edges-1 loop
+				wphoxx(i*clk_edges+j) <= wpho0(clk_phases*i+clk_edges*j);
+			end loop;
+		end loop;
 		for i in 0 to (delay_size-ph90)/clk_phases-1 loop
 			for j in 0 to clk_edges-1 loop
 				wpho(i*clk_edges+j) <= wpho0(clk_phases*i+clk_edges*j+ph90);
@@ -172,7 +178,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
-		lat_sch => wpho,
+		lat_sch => wphoxx,
 		lat_ext => DQSZX_LAT,
 		lat_wid => WID_LAT);
 
@@ -183,7 +189,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqsol_tab,
-		lat_sch => wpho,
+		lat_sch => wphoxx,
 		lat_ext => DQSX_LAT,
 		lat_wid => WID_LAT);
 
