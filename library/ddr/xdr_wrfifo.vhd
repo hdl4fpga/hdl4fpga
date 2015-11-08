@@ -30,7 +30,6 @@ use ieee.std_logic_textio.all;
 
 entity xdr_wrfifo is
 	generic (
-		data_edges  : natural;
 		data_phases : natural;
 		line_size   : natural;
 		word_size   : natural;
@@ -39,13 +38,13 @@ entity xdr_wrfifo is
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
-		sys_dmi : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqi : in  std_logic_vector(data_phases*line_size-1 downto 0);
+		sys_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
-		xdr_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0) := (others => '-');
-		xdr_enas : in  std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-		xdr_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		xdr_dqo  : out std_logic_vector(data_phases*line_size-1 downto 0));
+		xdr_clks : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		xdr_enas : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
 end;
 
@@ -81,10 +80,14 @@ architecture struct of xdr_wrfifo is
 	impure function extract_dm (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(xdr_dmo'range);
+		variable dat : std_logic_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(0 to xdr_dmo'length-1);
 	begin
+		dat := arg;
 		for i in val'range loop
-			val(i) := arg(i*byte'length+byte_size);
+			val := val srl 1;
+			val(0) := dat(byte_size);
+			dat := dat srl byte'length;
 		end loop;
 		return val;
 	end;
@@ -132,15 +135,15 @@ architecture struct of xdr_wrfifo is
 		return val;
 	end;
 
-	subtype word is std_logic_vector(data_phases*(line_size*(byte'length)/word_size)-1 downto 0);
+	subtype word is std_logic_vector(byte'length*line_size/word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype shuffleword is byte_vector(data_phases*(line_size/word_size)-1 downto 0);
+	subtype shuffleword is byte_vector(line_size/word_size-1 downto 0);
 
 	impure function unshuffle (
 		arg : word_vector)
 		return byte_vector is
-		variable aux : byte_vector(word'length/byte'length-1 downto 0);
+		variable aux : byte_vector(0 to word'length/byte'length-1);
 		variable val : byte_vector(xdr_dmo'range);
 	begin
 		for i in arg'range loop
@@ -156,16 +159,12 @@ architecture struct of xdr_wrfifo is
 	signal do : byte_vector(xdr_dmo'range);
 	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
-	signal ser_clk : std_logic_vector(data_phases-1 downto 0);
 begin
 
-	ser_clk(xdr_clks'range) <= xdr_clks;
-	falling_edge_g : if data_edges /= 1 generate
-		ser_clk(data_phases-1 downto data_phases/data_edges) <= not xdr_clks;
-	end generate;
-
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in (word_size/byte_size)-1 downto 0 generate
+	xdr_fifo_g : for i in 0 to word_size/byte_size-1 generate
+		signal ser_clk : std_logic_vector(xdr_clks'range);
+		signal ser_ena : std_logic_vector(xdr_enas'range);
 
 		signal dqi : shuffleword;
 		signal fifo_di : word;
@@ -175,15 +174,19 @@ begin
 			arg2 : natural)
 			return shuffleword is
 			variable val : shuffleword;
+			variable aux : byte_vector(arg1'length-1 downto 0);
 		begin
+			aux := arg1;
 			for i in val'range loop
-				val(i) := arg1((word_size/byte_size)*i+arg2);
+				val(i) := aux((word_size/byte_size)*i+arg2);
 			end loop;
 			return val;
 		end;
 
 	begin
 		dqi <= shuffle(di, i);
+		ser_clk <= xdr_clks sll (i*data_phases);
+		ser_ena <= xdr_enas sll (i*data_phases);
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo
@@ -196,8 +199,8 @@ begin
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
-			ser_clk => ser_clk,
-			ser_ena => xdr_enas, 
+			ser_clk => ser_clk(0 to data_phases-1),
+			ser_ena => ser_ena(0 to data_phases-1),
 			di  => fifo_di,
 			do  => dqo(i));
 
