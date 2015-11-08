@@ -80,10 +80,14 @@ architecture struct of xdr_wrfifo is
 	impure function extract_dm (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(xdr_dmo'range);
+		variable dat : std_logic_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(0 to xdr_dmo'length-1);
 	begin
+		dat := arg;
 		for i in val'range loop
-			val(i) := arg(i*byte'length+byte_size);
+			val := val srl 1;
+			val(0) := dat(byte_size);
+			dat := dat srl byte'length;
 		end loop;
 		return val;
 	end;

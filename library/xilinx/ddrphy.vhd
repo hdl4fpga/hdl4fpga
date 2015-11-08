@@ -179,6 +179,21 @@ architecture virtex of ddrphy is
 		return val;
 	end;
 
+	function shuffle_stdlogicvector (
+		constant arg : std_logic_vector) 
+		return std_logic_vector is
+		variable dat : std_logic_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(dat'range);
+	begin	
+		dat := arg;
+		for i in word_size/byte_size-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				val(i*gear+j) := dat(j*word_size/byte_size+i);
+			end loop;
+		end loop;
+		return val;
+	end;
+
 	function shuffle_dlinevector (
 		constant arg : std_logic_vector) 
 		return dline_vector is
@@ -244,7 +259,7 @@ begin
 		ddr_b   => ddr_b,
 		ddr_a   => ddr_a);
 
-	sdmi  <= to_blinevector(sys_dmi);
+	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	sdmt  <= to_blinevector(not sys_dmt);
 	sdqt  <= to_blinevector(not sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqo);
