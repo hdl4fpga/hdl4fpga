@@ -217,6 +217,7 @@ begin
 	xdr_input(0) <= xdr_pgm_start;
 
 	process (xdr_pgm_clk)
+		variable pc : std_logic_vector(xdr_pgm_pc'range);
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
@@ -225,18 +226,20 @@ begin
 				sys_pgm_ref  <= sys_ref;
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
-					for i in pgm_tab'range loop
-						if xdr_pgm_pc=pgm_tab(i).state then
-							if xdr_input=pgm_tab(i).input then
-								xdr_pgm_pc <= pgm_tab(i).state_n; 
-							end if;
-						end if;
-					end loop;
+					xdr_pgm_pc <= pc; 
 				end if;
+				for i in pgm_tab'range loop
+					if xdr_pgm_pc=pgm_tab(i).state then
+						if xdr_input=pgm_tab(i).input then
+							pc := pgm_tab(i).state_n; 
+						end if;
+					end if;
+				end loop;
 				ppp <= pgm_cas;
 			else
 				ppp <= '0';
-				xdr_pgm_pc <= ddrs_pre;
+				xdr_pgm_pc <= ddrs_pre; 
+				pc := ddrs_pre;
 				xdr_pgm_cmd <= "111";
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
