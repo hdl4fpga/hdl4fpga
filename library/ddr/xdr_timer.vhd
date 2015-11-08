@@ -31,31 +31,20 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr_timer is
 	generic ( 
-		timers : ddrtid_vector);
+		timers : natural_vector);
 	port (
 		sys_clk : in  std_logic;
-		tmr_id  : in  ddr_tid;
+		tmr_sel : in  std_logic_vector;
 		sys_req : in  std_logic;
 		sys_rdy : out std_logic);
 end;
 
 architecture def of xdr_timer is
 
-	function to_naturalvector (
-		constant arg : ddrtid_vector)
-		return natural_vector is
-		variable val : natural_vector(ddr_tid'POS(arg'low) to ddr_tid'POS(arg'high));
-	begin
-		for i in arg'range loop
-			val(ddr_tid'pos(i)) := arg(i);
-		end loop;
-		return val;
-	end;
-
-	constant stages : natural := unsigned_num_bits(max(to_naturalvector(timers)))/5;
-	constant timer_size : natural := unsigned_num_bits(max(to_naturalvector(timers)))+stages;
+	constant stages : natural := unsigned_num_bits(max(timers))/5;
+	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);
-	type tword_vector is array (ddr_tid) of tword;
+	type tword_vector is array (natural range <>) of tword;
 	
 	impure function stage_size
 		return natural_vector is
@@ -75,7 +64,7 @@ architecture def of xdr_timer is
 
 	impure function pp 
 		return tword_vector is
-		variable val : tword_vector;
+		variable val : tword_vector(timers'range);
 		variable csize : natural;
 	begin
 		val := (others => (others => '-'));
@@ -100,7 +89,7 @@ begin
 	begin
 		if rising_edge(sys_clk) then
 --			if sys_req='1' then
-				data <= timer_values(tmr_id);
+				data <= timer_values(to_integer(unsigned(tmr_sel)));
 --			end if;
 		end if;
 	end process;
