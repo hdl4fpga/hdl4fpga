@@ -86,12 +86,13 @@ architecture def of xdr_sch is
 	signal wphi : std_logic;
 	signal rphi : std_logic;
 
-	signal rpho  : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal rpho90  : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal rpho0 : std_logic_vector(0 to delay_size);
-	signal wpho  : std_logic_vector(0 to delay_size/clk_edges-1);
-	signal wpho0 : std_logic_vector(0 to delay_size);
-	signal wphoxx : std_logic_vector(0 to delay_size);
+	signal rpho   : std_logic_vector(0 to delay_size);
+	signal rpho0  : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal rpho90 : std_logic_vector(0 to delay_size/clk_edges-1);
+
+	signal wpho   : std_logic_vector(0 to delay_size);
+	signal wpho0  : std_logic_vector(0 to delay_size/clk_edges-1);
+	signal wpho90 : std_logic_vector(0 to delay_size/clk_edges-1);
 
 	constant ph90 : natural := 1 mod sys_clks'length;
 
@@ -109,18 +110,18 @@ begin
 	port map (
 		sys_clks => sys_clks,
 		sys_di => rphi,
-		ph_qo  => rpho0);
+		ph_qo  => rpho);
 
-	process(rpho0) 
+	process(rpho) 
 	begin
 		for i in 0 to delay_size/clk_phases-1 loop
 			for j in 0 to clk_phases/clk_edges-1 loop
-				rpho(i*clk_edges+j) <= rpho0(clk_phases*i+clk_edges*j);
+				rpho0(i*clk_edges+j) <= rpho(clk_phases*i+clk_edges*j);
 			end loop;
 		end loop;
 		for i in 0 to (delay_size-ph90)/clk_phases-1 loop
 			for j in 0 to clk_edges-1 loop
-				rpho90(i*clk_edges+j) <= rpho0(clk_phases*i+clk_edges*j+ph90);
+				rpho90(i*clk_edges+j) <= rpho(clk_phases*i+clk_edges*j+ph90);
 			end loop;
 		end loop;
 	end process;
@@ -134,18 +135,18 @@ begin
 	port map (
 		sys_clks => sys_clks,
 		sys_di   => wphi,
-		ph_qo    => wpho0);
+		ph_qo    => wpho);
 
-	process(wpho0) 
+	process(wpho) 
 	begin
 		for i in 0 to delay_size/clk_phases-1 loop
 			for j in 0 to clk_phases/clk_edges-1 loop
-				wphoxx(i*clk_edges+j) <= wpho0(clk_phases*i+clk_edges*j);
+				wpho0(i*clk_edges+j) <= wpho(clk_phases*i+clk_edges*j);
 			end loop;
 		end loop;
 		for i in 0 to (delay_size-ph90)/clk_phases-1 loop
 			for j in 0 to clk_edges-1 loop
-				wpho(i*clk_edges+j) <= wpho0(clk_phases*i+clk_edges*j+ph90);
+				wpho90(i*clk_edges+j) <= wpho(clk_phases*i+clk_edges*j+ph90);
 			end loop;
 		end loop;
 	end process;
@@ -167,7 +168,7 @@ begin
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab => rwnl_tab,
-		lat_sch => rpho,
+		lat_sch => rpho0,
 		lat_ext => RWNX_LAT,
 		lat_wid => WID_LAT);
 
@@ -178,7 +179,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqszl_tab,
-		lat_sch => wphoxx,
+		lat_sch => wpho0,
 		lat_ext => DQSZX_LAT,
 		lat_wid => WID_LAT);
 
@@ -189,7 +190,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqsol_tab,
-		lat_sch => wphoxx,
+		lat_sch => wpho0,
 		lat_ext => DQSX_LAT,
 		lat_wid => WID_LAT);
 
@@ -200,7 +201,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => dqzl_tab,
-		lat_sch => wpho,
+		lat_sch => wpho90,
 		lat_ext => DQZX_LAT,
 		lat_wid => WID_LAT);
 
@@ -211,7 +212,7 @@ begin
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
 		lat_tab => WWNL_TAB,
-		lat_sch => wpho,
+		lat_sch => wpho90,
 		lat_ext => WWNX_LAT,
 		lat_wid => WID_LAT);
 end;

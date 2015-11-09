@@ -50,11 +50,15 @@ NET gtx_clk       TNM_NET = RAMS RAMS_gtxclk;
 ##NET video_clk     TNM_NET = FFS  FFS_videoclk;
 ##NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
+
+
+TIMESPEC TS_ddrdll  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TIG;
+
 #TIMESPEC TS_r2fclk_inp2ddr  = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
 #TIMESPEC TS_f2fclk_inp2ddr  = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;
 #TIMESPEC TS_f2fclk_ddr2inp  = FROM FFS_ddrsclk0  TO FFS_inputclk  TIG;
 TIMESPEC TS_r2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
-TIMESPEC TS_f2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO FFS_ddrsclk90 TIG;
+#TIMESPEC TS_f2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 TIMESPEC TS_r2fclk_ddr2gtx  = FROM FFS_ddrsclk0  TO FFS_gtxclk   TIG;
 TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
 

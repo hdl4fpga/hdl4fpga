@@ -40,7 +40,7 @@ entity xdr is
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
 
-		sclk_phases : natural := 2;
+		sclk_phases : natural := 4;
 		sclk_edges : natural := 2;
 		data_phases : natural := 2;
 		data_edges : natural := 2;
@@ -109,6 +109,8 @@ use hdl4fpga.std.all;
 architecture mix of xdr is
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
+
+	signal sys_wclk : std_logic;
 
 	signal xdr_refi_rdy : std_logic;
 	signal xdr_refi_req : std_logic;
@@ -417,16 +419,18 @@ begin
 		din  => sys_di,
 		dout => rot_di);
 		
-	process (sys_clks(1))
-		variable clks : std_logic_vector(0 to 2-1);
-		variable aux : unsigned(xdr_wclks'range);
+	sys_wclk <= sys_clks(1);
+	process (sys_wclk)
 	begin
-		clks := (0 => sys_clks(0), 1 => sys_clks(1));
-		for i in 0 to xdr_wclks'length/clks'length-1 loop
-			aux(clks'range) := clks;
-			aus := aux srl clks'length;
+		for i in 0 to data_phases/data_edges-1 loop
+			xdr_wclks(i*data_edges) <= sys_wclk;
 		end loop;
-		xdr_wclks <= aux;
+
+		if data_edges > 1 then
+			for i in 0 to data_phases/data_edges-1 loop
+				xdr_wclks(i*data_edges+1) <= not sys_wclk;
+			end loop;
+		end if;
 	end process;
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
