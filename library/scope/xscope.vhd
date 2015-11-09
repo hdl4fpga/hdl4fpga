@@ -29,21 +29,21 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant DDR_STROBE   : string := "NONE";
-		constant DDR_STD      : natural;
+		constant DDR_TCP      : natural;
+		constant DDR_SCLKPHASES : natural;
 		constant DDR_DATAPHASES : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
+		constant DDR_MARK     : natural;
+		constant DDR_STROBE   : string := "NONE";
 		constant DDR_BANKSIZE : natural :=  3;
 		constant DDR_ADDRSIZE : natural := 13;
 		constant DDR_CLMNSIZE : natural :=  6;
 		constant DDR_LINESIZE : natural := 16;
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
-		constant DDR_tCP      : natural;
-		constant PAGE_SIZE : natural := 9;
-
+		constant PAGE_SIZE    : natural := 9;
 		constant NIBBLE_SIZE  : natural := 4;
-		constant XD_LEN : natural := 8);
+		constant XD_LEN       : natural := 8);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -51,31 +51,38 @@ entity scope is
 
 		input_clk : in std_logic;
 
-		ddrs_clks : in std_logic_vector(0 to 1);
-		ddrs_ini  : out std_logic;
+		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases-1);
+		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
+		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
+		ddrs_wclks : in std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddrs_wenas : in std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddrs_ini   : out std_logic;
+		ddr_wlreq : out std_logic;
+		ddr_wlrdy : in  std_logic;
+
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
-		ddr_wlreq : out std_logic;
-		ddr_wlrdy : in  std_logic;
 		ddr_cs  : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
 		ddr_we  : out std_logic;
 		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqsi : in  std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqi : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
-		ddr_dqo : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE-1 downto 0);
+		ddr_dmi : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqsi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqi : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_dqo : out std_logic_vector(DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
-		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
@@ -127,9 +134,9 @@ architecture def of scope is
 	signal ddrs_cmd_req : std_logic;
 	signal ddrs_cmd_rdy : std_logic;
 	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
-	signal ddrs_a  : std_logic_vector(0 to 13-1);
-	signal ddrs_rowa  : std_logic_vector(0 to 13-1);
-	signal ddrs_cola  : std_logic_vector(0 to 13-1);
+	signal ddrs_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal ddrs_rowa  : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal ddrs_cola  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddrs_act : std_logic;
 	signal ddrs_cas : std_logic;
 	signal ddrs_pre : std_logic;
@@ -137,7 +144,7 @@ architecture def of scope is
 
 	signal ddrs_di_rdy : std_logic;
 	signal ddrs_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
-	signal ddrs_do_rdy : std_logic_vector(DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+	signal ddrs_do_rdy : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 	signal ddrs_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
 	signal dataio_rst : std_logic;
@@ -324,7 +331,7 @@ begin
 		video_col => win_coloff,
 		video_do  => chann_dat,
 
-		ddrs_clk => ddrs_clks(0),
+		ddrs_clk  => ddrs_clks(0),
 		ddrs_rreq => ddrs_ref_req,
 		ddrs_creq => ddrs_cmd_req,
 		ddrs_crdy => ddrs_cmd_rdy,
@@ -490,52 +497,9 @@ begin
 		end if;
 	end process;
 
---	process (cga_clk)
---		variable nibble_ptr : unsigned(3-1 downto 0);
---	begin
---		if rising_edge(cga_clk) then
---			nibble_ptr := nibble_ptr + 1;
---			cga_code <= to_ascii(tp(to_integer(nibble_ptr)));
---			cga_ptr <= (3 to 5 => '0',others => '1');
---			cga_ptr(2 downto 0) <= std_logic_vector(nibble_ptr);
---		end if;
---	end process;
-
---	cga_clk <= mii_rxc;
---	vga_row <= win_rowpag(4-1 downto 0) & win_rowoff(6-1 downto 1);
---	cga_e : entity hdl4fpga.cga
---	generic map (
---		bitrom => psf1cp850x8x16,
---		height => 16,
---		width  => 8,
---		row_reverse => true,
---		col_reverse => true)
---	port map (
---		sys_clk => cga_clk,
---		sys_row => cga_ptr(cga_row'range),
---		sys_col => cga_ptr(cga_col'range),
---		sys_we  => '1',
---		sys_code => cga_code,
---		vga_clk => vga_clk,
---		vga_row => vga_row,
---		vga_col => win_coloff(8-1 downto 1),
---		vga_dot => cga_dot);
-
---	win_scope_e : entity hdl4fpga.win_scope
---	generic map (
---		num_chann => 2)
---	port map (
---		video_clk => vga_clk,
---
---		chann_row => win_rowoff,
---		chann_col => win_coloff,
---		chann_seg => win_rowpag(3 downto 0),
---		chann_dat => chann_dat,
---		grid_dot  => grid_dot,
---		plot_dot  => plot_dot);
-
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
+		mark => DDR_MARK,
 		strobe    => DDR_STROBE,
 		data_phases => DDR_DATAPHASES,
 		bank_size => DDR_BANKSIZE,
@@ -543,22 +507,20 @@ begin
 		line_size => DDR_LINESIZE,
 		word_size => DDR_WORDSIZE,
 		byte_size => DDR_BYTESIZE,
-		tCP  => DDR_tCP,
-		tDDR => DDR_tCP/2)
+		tCP  => DDR_tCP)
 	port map (
 		sys_rst => ddrs_rst,
-		sys_bl  => "000",
-		sys_cl  => "010",
-		sys_cwl => "000",
-		sys_wr  => "101",
+		sys_bl  => ddrs_bl,
+		sys_cl  => ddrs_cl,
+		sys_cwl => ddrs_cwl,
+		sys_wr  => ddrs_wr,
 		sys_clks => ddrs_clks,
 		sys_ini  =>  ddr_ini,
-		xdr_wclks(0) => ddrs_clks(0),
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
-		sys_wlreq => ddr_wlreq,
-		sys_wlrdy => ddr_wlrdy,
+--		sys_wlreq => ddr_wlreq,
+--		sys_wlrdy => ddr_wlrdy,
 		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
 		sys_rw  => ddrs_rw,
