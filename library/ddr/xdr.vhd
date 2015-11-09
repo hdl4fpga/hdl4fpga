@@ -40,6 +40,7 @@ entity xdr is
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
 
+		sclk_phases : natural := 2;
 		sclk_edges : natural := 2;
 		data_phases : natural := 2;
 		data_edges : natural := 2;
@@ -54,7 +55,7 @@ entity xdr is
 		sys_wr  : in std_logic_vector(2 downto 0);
 
 		sys_rst  : in std_logic := '-';
-		sys_clks : in std_logic_vector(0 to sclk_edges-1);
+		sys_clks : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		sys_ini  : out std_logic;
 		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
@@ -425,17 +426,6 @@ begin
 				xdr_wclks(i) <= not sys_clks(1);
 			end if;
 		end loop;
-	end process;
-
-	process (xdr_sch_wwn)
-		variable wenas : unsigned(xdr_wenas'range);
-	begin
-		wenas := (others => '-');
-		for i in 0 to word_size/byte_size-1 loop
-			wenas := wenas srl xdr_sch_wwn'length;
-			wenas(xdr_sch_wwn'range) := unsigned(xdr_sch_wwn);
-		end loop;
-		xdr_wenas <= std_logic_vector(wenas);
 	end process;
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
