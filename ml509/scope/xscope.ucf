@@ -52,7 +52,10 @@ NET gtx_clk       TNM_NET = RAMS RAMS_gtxclk;
 
 
 
-TIMESPEC TS_ddrdll  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TIG;
+TIMESPEC TS_mpuwri0  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[0].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
+TIMESPEC TS_mpuwri1  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[1].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
+TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
+
 
 #TIMESPEC TS_r2fclk_inp2ddr  = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
 #TIMESPEC TS_f2fclk_inp2ddr  = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;

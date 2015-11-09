@@ -36,7 +36,7 @@ use hdl4fpga.xdr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture scope of ml509 is
+architecture scope of nuhs3dsp is
 	constant sclk_phases : natural := 2;
 	constant data_phases : natural := 2;
 	constant cmd_phases : natural := 1;
