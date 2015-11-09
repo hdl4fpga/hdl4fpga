@@ -418,14 +418,15 @@ begin
 		dout => rot_di);
 		
 	process (sys_clks(1))
+		variable clks : std_logic_vector(0 to 2-1);
+		variable aux : unsigned(xdr_wclks'range);
 	begin
-		for i in xdr_wclks'range loop
-			if i mod 2 = 0 then
-				xdr_wclks(i) <= sys_clks(1);
-			else
-				xdr_wclks(i) <= not sys_clks(1);
-			end if;
+		clks := (0 => sys_clks(0), 1 => sys_clks(1));
+		for i in 0 to xdr_wclks'length/clks'length-1 loop
+			aux(clks'range) := clks;
+			aus := aux srl clks'length;
 		end loop;
+		xdr_wclks <= aux;
 	end process;
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
