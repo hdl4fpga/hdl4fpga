@@ -99,12 +99,11 @@ architecture scope of nuhs3dsp is
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
 
-
 	signal gtx_clk  : std_logic;
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(phy_rxd'range);
-	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy_txd'range);
+	signal rxdv : std_logic;
+	signal rxd  : std_logic_vector(mii_rxd'range);
+	signal txen : std_logic;
+	signal txd  : std_logic_vector(mii_txd'range);
 
 	signal vga_clk : std_logic;
 	signal vga_hsync : std_logic;
@@ -132,7 +131,6 @@ architecture scope of nuhs3dsp is
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
-	signal mii_rst : std_logic;
 	signal vga_rst : std_logic;
 
 	signal debug_clk : std_logic;
@@ -277,12 +275,12 @@ begin
 		ddr_sti  => ddrphy_sti,
 
 --		mii_rst  => mii_rst,
-		mii_rxc  => phy_rxclk,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
+		mii_rxc  => mii_rxc,
+		mii_rxdv => rxdv,
+		mii_rxd  => rxd,
 		mii_txc  => gtx_clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
+		mii_txen => txen,
+		mii_txd  => txd,
 
 --		vga_rst   => vga_rst,
 		vga_clk   => vga_clk,
@@ -348,26 +346,26 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqso => ddr_dqso);
 
-	phy_reset  <= dcm_lckd;
-	phy_mdc  <= '0';
-	phy_mdio <= '0';
+	mii_rst  <= dcm_lckd;
+	mii_mdc  <= '0';
+	mii_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
 	port map (
-		mii_rxc  => phy_rxclk,
-		iob_rxdv => phy_rxctl_rxdv,
-		iob_rxd  => phy_rxd,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
+		mii_rxc  => mii_rxc,
+		iob_rxdv => mii_rxdv,
+		iob_rxd  => mii_rxd,
+		mii_rxdv => rxdv,
+		mii_rxd  => rxd,
 
 		mii_txc  => gtx_clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
-		iob_txen => phy_txctl_txen,
-		iob_txd  => phy_txd,
-		iob_gtxclk => phy_txc_gtxclk);
+		mii_txen => txen,
+		mii_txd  => txd,
+		iob_txen => mii_txen,
+		iob_txd  => mii_txd,
+		iob_gtxclk => mii_txc);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
@@ -380,6 +378,5 @@ begin
 		i  => ddr_clk,
 		o  => ddr_ckp,
 		ob => ddr_ckn);
-
 	
 end;
