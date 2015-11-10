@@ -30,7 +30,6 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 entity dcms is
 	generic (

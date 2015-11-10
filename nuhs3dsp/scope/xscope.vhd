@@ -66,10 +66,10 @@ architecture scope of nuhs3dsp is
 	signal ddrs_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ddrs_wenas : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
-	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_clk : std_logic;
+	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_clk : std_logic;
 
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
@@ -81,8 +81,8 @@ architecture scope of nuhs3dsp is
 	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmd_phases*ddr2_ba'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmd_phases*ddr2_a'length-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmd_phases*ddr_ba'length-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmd_phases*ddr_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -126,12 +126,9 @@ architecture scope of nuhs3dsp is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10;
-	constant ddr_div   : natural := 3;
-	constant ddr_fbdiv : natural := 1;
-	constant r : natural := 0;
-	constant f : natural := 1;
-	signal ddr_eclk  : std_logic;
+	constant sys_per : real := 50.0;
+	constant ddr_mul : natural := 25;
+	constant ddr_div : natural := 3;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
@@ -159,13 +156,13 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => user_clk,
+		I => xtal ,
 		O => sys_clk);
 
-	process (gpio_sw_c, sys_clk)
+	process (sw1, sys_clk)
 		variable aux : std_logic_vector(0 to 3);
 	begin
-		if gpio_sw_c='1' then
+		if sw1='0' then
 			sys_rst <= '1';
 			aux := (others => '0');
 		elsif rising_edge(sys_clk) then
@@ -179,19 +176,18 @@ begin
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
-		ddr_div => ddr_div, 
-		sys_per => uclk_period)
+		ddr_div => ddr_div,
+		sys_per => sys_per)
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => sys_clk,
-		ictlr_clk => ictlr_clk,
+		sys_clk => xtal,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => open,
-		video_clk90 => open,
-		gtx_clk => gtx_clk,
+		mii_clk => mii_refclk,
 		dcm_lckd => dcm_lckd);
+
 
 	grst <= dcm_lckd and ictlr_rdy;
 	ictlr_rst <= not dcm_lckd;
@@ -235,17 +231,17 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_MARK => M3,
-		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
-		DDR_BANKSIZE => ddr2_ba'length,
-		DDR_ADDRSIZE => ddr2_a'length,
+		DDR_BANKSIZE => ddr_ba'length,
+		DDR_ADDRSIZE => ddr_a'length,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
 		DDR_BYTESIZE => byte_size,
-		xd_len  => 8)
+		xd_len  => 4)
 	port map (
 
 --		input_rst => input_rst,
@@ -265,8 +261,8 @@ begin
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
 		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(ddr2_ba'length-1 downto 0),
-		ddr_a    => ddrphy_a(ddr2_a'length-1 downto 0),
+		ddr_b    => ddrphy_b(ddr_ba'length-1 downto 0),
+		ddr_a    => ddrphy_a(ddr_a'length-1 downto 0),
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
@@ -307,8 +303,8 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		BANK_SIZE => ddr2_ba'length,
-		ADDR_SIZE => ddr2_a'length,
+		BANK_SIZE => ddr_ba'length,
+		ADDR_SIZE => ddr_a'length,
 		LINE_SIZE => line_size,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
@@ -337,21 +333,20 @@ begin
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
 
-		ddr_clk => ddr2_clk,
-		ddr_cke => ddr2_cke(0),
-		ddr_cs  => ddr2_cs(0),
-		ddr_ras => ddr2_ras,
-		ddr_cas => ddr2_cas,
-		ddr_we  => ddr2_we,
-		ddr_b   => ddr2_ba,
-		ddr_a   => ddr2_a,
+		ddr_clk => ddr_clk,
+		ddr_cke => ddr_cke,
+		ddr_cs  => ddr_cs,
+		ddr_ras => ddr_ras,
+		ddr_cas => ddr_cas,
+		ddr_we  => ddr_we,
+		ddr_b   => ddr_ba,
+		ddr_a   => ddr_a,
 
-		ddr_dm  => ddr2_dm(2-1 downto 0),
-		ddr_dq  => ddr2_d(word_size-1 downto 0),
-		ddr_dqst => ddr2_dqst,
-		ddr_dqsi => ddr2_dqsi,
-		ddr_dqso => ddr2_dqso);
-	ddr2_dm(8-2 downto 2) <= (others => '0');
+		ddr_dm  => ddr_dm,
+		ddr_dq  => ddr_dq,
+		ddr_dqst => ddr_dqst,
+		ddr_dqsi => ddr_dqsi,
+		ddr_dqso => ddr_dqso);
 
 	phy_reset  <= dcm_lckd;
 	phy_mdc  <= '0';
@@ -374,71 +369,17 @@ begin
 		iob_txd  => phy_txd,
 		iob_gtxclk => phy_txc_gtxclk);
 
-	ddr2_dqs_g : for i in ddr2_dqsi'range generate
-		signal dqsi : std_logic;
-		signal st   : std_logic;
-	begin
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
-
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => ddr2_dqst(i),
-			i   => ddr2_dqso(i),
-			o   => ddr2_dqsi(i),
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
-
-	end generate;
-
-	ddr2_dqs27_g : for i in 2 to 8-1 generate
-		signal dqsi : std_logic;
-		signal st   : std_logic;
-	begin
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
-
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => '1',
-			i   => '0',
-			o   => open,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
-
+	ddr_dqs_g : for i in ddr_dqs'range generate
+		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
 	ddr_ck_obufds : obufds
 	generic map (
-		iostandard => "DIFF_SSTL18_II")
+		iostandard => "DIFF_SSTL2_I")
 	port map (
-		i  => ddr2_clk,
-		o  => ddr2_clk_p(0),
-		ob => ddr2_clk_n(0));
+		i  => ddr_clk,
+		o  => ddr_ckp,
+		ob => ddr_ckn);
 
-	ddr_ck_obufds1 : obufds
-	generic map (
-		iostandard => "DIFF_SSTL18_II")
-	port map (
-		i  => '0',
-		o  => ddr2_clk_p(1),
-		ob => ddr2_clk_n(1));
+	
 end;
