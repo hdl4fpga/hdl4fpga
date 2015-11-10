@@ -39,8 +39,6 @@ entity ddrphy is
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
-		sys_wclks : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		sys_wenas : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
 		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);

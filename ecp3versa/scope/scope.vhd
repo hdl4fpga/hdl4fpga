@@ -30,13 +30,13 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_db.all;
 --use hdl4fpga.cgafont.all;
 
 library ecp3;
 use ecp3.components.all;
 
 architecture scope of ecp3versa is
-	constant data_phases : natural := 1;
 	constant cmmd_phases : natural := 2;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
@@ -55,7 +55,6 @@ architecture scope of ecp3versa is
 
 	signal input_clk : std_logic;
 
-	signal ddrs_clks  : std_logic_vector(0 to 2-1);
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
@@ -70,8 +69,8 @@ architecture scope of ecp3versa is
 	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
 	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -79,8 +78,8 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-	signal ddrphy_sti : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(line_size/word_size-1 downto 0);
+	signal ddrphy_sti : std_logic_vector(line_size/word_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
@@ -203,12 +202,13 @@ begin
 		end generate;
 	end block;
 
-	ddrs_clks <= (others => ddr_sclk);
 --	ddrphy_sti <= (others => ddrphy_cfgo(0));
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
-		DDR_STD => 3,
+		DDR_SCLKPHASES => 1,
+		DDR_SCLKEDGES  => 1,
+		DDR_MARK => M15E,
 		DDR_STROBE => "INTERNAL",
 		DDR_DATAPHASES => 1,
 		DDR_BANKSIZE => ddr3_b'length,
@@ -216,15 +216,14 @@ begin
 		DDR_CLMNSIZE => 7,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size,
-		xd_len  => 8)
+		DDR_BYTESIZE => byte_size)
 	port map (
 
 --		input_rst => input_rst,
 		input_clk => input_clk,
 
 		ddrs_rst => ddrs_rst,
-		ddrs_clks => ddrs_clks,
+		ddrs_clks(0) => ddr_sclk,
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,

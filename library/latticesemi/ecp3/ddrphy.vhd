@@ -30,7 +30,6 @@ use ecp3.components.all;
 
 entity ddrphy is
 	generic (
-		data_phases : natural := 1;
 		cmnd_phases : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -56,14 +55,14 @@ entity ddrphy is
 		sys_cas  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_we   : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_odt  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_dmt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dmi  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dmo  : out std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(data_phases*line_size-1 downto 0);
-		sys_dqi  : out std_logic_vector(data_phases*line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(data_phases*line_size/byte_size-1 downto 0);
+		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
+		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		sys_wlpha : out std_logic_vector(8-1 downto 0) := (others => '-');
 
@@ -90,10 +89,10 @@ architecture ecp3 of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(data_phases*byte_size*line_size/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 

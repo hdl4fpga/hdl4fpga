@@ -29,16 +29,13 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miirx_pre is
-	generic (
-		xd_len : natural := 8);
     port (
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
-        mii_rxd  : in std_logic_vector(0 to xd_len-1);
+        mii_rxd  : in std_logic_vector;
 
 		mii_txc  : out std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to xd_len-1));
+		mii_txen : out std_logic);
 
 end;
 
@@ -47,7 +44,6 @@ architecture def of miirx_pre is
 begin
 
 	mii_txc  <= mii_rxc;
-	mii_txd  <= mii_rxd;
 	mii_txen <= mii_rxdv and txen;
 
 	process (mii_rxc)

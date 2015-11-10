@@ -41,14 +41,11 @@ entity dfs is
 end;
 
 architecture spartan3 of dfs is
-   signal dfs_clkbuf : std_logic;
+
    signal dcm_clkfb  : std_logic;
    signal dcm_clk0   : std_logic;
 begin
-	dfsbuf_g : bufg
-	port map (
-		i => dfs_clkbuf,
-		o => dfs_clk);
+
 
 	dcmclk_g : bufg
 	port map (
@@ -79,7 +76,7 @@ begin
 		psincdec => '0',
 		clkfb => dcm_clkfb,
 		clkin => dcm_clk,
-		clkfx => dfs_clkbuf,
+		clkfx => dfs_clk,
 		clkfx180 => open,
 		clk0  => dcm_clk0,
 		locked => dcm_lck,

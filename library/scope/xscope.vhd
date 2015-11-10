@@ -31,6 +31,7 @@ entity scope is
 	generic (
 		constant DDR_TCP      : natural;
 		constant DDR_SCLKPHASES : natural;
+		constant DDR_SCLKEDGES : natural;
 		constant DDR_DATAPHASES : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
 		constant DDR_MARK     : natural;
@@ -42,8 +43,7 @@ entity scope is
 		constant DDR_WORDSIZE : natural := 16;
 		constant DDR_BYTESIZE : natural :=  8;
 		constant PAGE_SIZE    : natural := 9;
-		constant NIBBLE_SIZE  : natural := 4;
-		constant XD_LEN       : natural := 8);
+		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -51,13 +51,11 @@ entity scope is
 
 		input_clk : in std_logic;
 
-		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases-1);
+		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
 		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_wclks : in std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddrs_wenas : in std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddrs_ini   : out std_logic;
 		ddr_wlreq : out std_logic;
 		ddr_wlrdy : in  std_logic;
@@ -75,21 +73,21 @@ entity scope is
 		ddr_dmo : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dmt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqsi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqi : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
 		ddr_dqo : out std_logic_vector(DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
+		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
-		mii_rxd  : in std_logic_vector(0 to xd_len-1);
+		mii_rxd  : in std_logic_vector;
 		mii_txc  : in std_logic;
 		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to xd_len-1);
+		mii_txd  : out std_logic_vector;
 
 		vga_clk   : in  std_logic;
 		vga_hsync : out std_logic;
@@ -171,7 +169,7 @@ architecture def of scope is
 	signal miidma_rrdy : std_logic;
 	signal miidma_rxen : std_logic;
 	signal miidma_rxd  : std_logic_vector(mii_txd'length-1 downto 0);
-	signal miitx_addr : std_logic_vector(0 to 10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/xd_len-1));
+	signal miitx_addr : std_logic_vector(0 to 10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/mii_rxd'length-1));
 	signal miitx_dat : std_logic_vector(mii_txd'length-1 downto 0);
 	signal miitx_ena  : std_logic;
 
@@ -363,8 +361,7 @@ begin
 		mii_rxd  => mii_rxd,
 
 		mii_txc  => open,
-		mii_txen => miirx_udprdy,
-		mii_txd  => open);
+		mii_txen => miirx_udprdy);
 
 	ddrsync_i : entity hdl4fpga.ffdasync
 	generic map (
@@ -501,6 +498,8 @@ begin
 	generic map (
 		mark => DDR_MARK,
 		strobe    => DDR_STROBE,
+		sclk_phases => DDR_SCLKPHASES,
+		sclk_edges  => DDR_SCLKEDGES,
 		data_phases => DDR_DATAPHASES,
 		bank_size => DDR_BANKSIZE,
 		addr_size => DDR_ADDRSIZE,

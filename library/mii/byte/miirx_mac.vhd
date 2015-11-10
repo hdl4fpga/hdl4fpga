@@ -29,16 +29,13 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miirx_mac is
-	generic (
-		xd_len : natural :=8);
     port (
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
-        mii_rxd  : in std_logic_vector(0 to xd_len-1);
+        mii_rxd  : in std_logic_vector;
 
 		mii_txc  : out std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to xd_len-1));
+		mii_txen : out std_logic);
 end;
 
 architecture def of miirx_mac is
@@ -46,7 +43,7 @@ architecture def of miirx_mac is
 	signal dtreq : std_logic;
 	signal dtrdy : std_logic;
 	signal dtxen : std_logic;
-	signal dtxd  : std_logic_vector(mii_txd'range);
+	signal dtxd  : std_logic_vector(mii_rxd'range);
 begin
 
 	miitx_pre_e : entity hdl4fpga.miirx_pre
@@ -90,5 +87,4 @@ begin
 
 	mii_txc  <= mii_rxc;
 	mii_txen <= dtrdy and txen;
-	mii_txd  <= mii_rxd;
 end;

@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 
 entity miitx_mem is
 	generic (
-		tx_len   : natural := 8;
 		mem_data : std_logic_vector);
     port (
 		sys_clk  : in std_logic := '-';
@@ -42,7 +41,7 @@ entity miitx_mem is
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
         mii_txen : out std_logic;
-        mii_txd  : out std_logic_vector(0 to tx_len-1));
+        mii_txd  : out std_logic_vector);
 end;
 
 architecture def of miitx_mem is

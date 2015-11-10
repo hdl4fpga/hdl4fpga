@@ -56,18 +56,12 @@ architecture def of dcms is
 	-------------------------------------------------------------------------
 
 	signal dcm_rst : std_logic;
-	signal sclk_bufg : std_logic;
 
 	signal video_lckd : std_logic;
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic := '1';
 	signal mii_lckd : std_logic;
 begin
-
-	clkin_ibufg : ibufg
-	port map (
-		I => sys_clk,
-		O => sclk_bufg);
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -76,7 +70,7 @@ begin
 		dfs_div => 2)
 	port map(
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => video_clk,
 		dcm_lck => video_lckd);
 
@@ -87,7 +81,7 @@ begin
 		dfs_div => ddr_div)
 	port map (
 		dfsdcm_rst => dcm_rst,
-		dfsdcm_clkin => sclk_bufg,
+		dfsdcm_clkin => sys_clk,
 		dfsdcm_clk0  => ddr_clk0,
 		dfsdcm_clk90 => ddr_clk90,
 		dfsdcm_lckd => ddr_lckd);
@@ -100,7 +94,7 @@ begin
 --		dfs_div => 2)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => input_clk,
 		dcm_lck => input_lckd);
 --		dcm_lck => open);
@@ -112,16 +106,16 @@ begin
 		dfs_div => 4)
 	port map (
 		dcm_rst => dcm_rst,
-		dcm_clk => sclk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => mii_clk,
 		dcm_lck => mii_lckd);
 
-	process (sys_rst, sclk_bufg)
+	process (sys_rst, sys_clk)
 	begin
 		if sys_rst='1' then
 			dcm_rst  <= '1';
 			dcm_lckd <= '0';
-		elsif rising_edge(sclk_bufg) then
+		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
 				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and mii_lckd;
 			end if;

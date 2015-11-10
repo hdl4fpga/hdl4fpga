@@ -63,8 +63,6 @@ architecture scope of nuhs3dsp is
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
-	signal ddrs_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddrs_wenas : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -178,22 +176,16 @@ begin
 		sys_per => sys_per)
 	port map (
 		sys_rst => sys_rst,
-		sys_clk => xtal,
+		sys_clk => sys_clk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => open,
-		mii_clk => mii_refclk,
+		mii_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
 
 
-	grst <= dcm_lckd and ictlr_rdy;
-	ictlr_rst <= not dcm_lckd;
-	idelayctrl_i : idelayctrl
-	port map (
-		rst => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy => ictlr_rdy);
+	grst <= dcm_lckd;
 
 	rsts_b : block
 		signal clks : std_logic_vector(0 to 3);
@@ -230,6 +222,8 @@ begin
 	generic map (
 		DDR_MARK => M3,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
+		DDR_SCLKPHASES => 4,
+		DDR_SCLKEDGES => 2,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr_ba'length,
@@ -238,8 +232,7 @@ begin
 		DDR_DATAPHASES => data_phases,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size,
-		xd_len  => 4)
+		DDR_BYTESIZE => byte_size)
 	port map (
 
 --		input_rst => input_rst,
@@ -250,8 +243,6 @@ begin
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
-		ddrs_wclks => ddrs_wclks,
-		ddrs_wenas => ddrs_wenas,
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -278,7 +269,7 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
-		mii_txc  => gtx_clk,
+		mii_txc  => mii_txc,
 		mii_txen => txen,
 		mii_txd  => txd,
 
@@ -310,8 +301,6 @@ begin
 		sys_clk0 => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
 		phy_rst => ddrs_rst,
-		sys_wclks => ddrs_wclks,
-		sys_wenas => ddrs_wenas,
 
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,
@@ -346,13 +335,12 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqso => ddr_dqso);
 
-	mii_rst  <= dcm_lckd;
 	mii_mdc  <= '0';
 	mii_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
-		xd_len => 8)
+		xd_len => mii_txd'length)
 	port map (
 		mii_rxc  => mii_rxc,
 		iob_rxdv => mii_rxdv,
@@ -365,7 +353,7 @@ begin
 		mii_txd  => txd,
 		iob_txen => mii_txen,
 		iob_txd  => mii_txd,
-		iob_gtxclk => mii_txc);
+		iob_gtxclk => mii_refclk);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
