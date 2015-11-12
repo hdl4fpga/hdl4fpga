@@ -32,6 +32,7 @@ entity xdr_sch is
 	generic (
 		delay_size : natural := 64;
 		registered_output : boolean := false;
+		clk_phases : natural := 4;
 		clk_edges  : natural := 2;
 
 		gear : natural;
@@ -55,7 +56,7 @@ entity xdr_sch is
 
 		WID_LAT   : natural);
 	port (
-		sys_clks : in  std_logic_vector(0 to clk_edges-1);
+		sys_clks : in  std_logic_vector(0 to clk_phases/clk_edges-1);
 		sys_cl  : in  std_logic_vector;
 		sys_cwl : in  std_logic_vector;
 		sys_rea : in  std_logic;

@@ -237,6 +237,7 @@ begin
 		DDR_MARK => M3,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_SCLKEDGES => 2,
+		DDR_SCLKPHASES => 4,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,

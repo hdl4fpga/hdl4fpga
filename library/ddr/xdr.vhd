@@ -320,6 +320,7 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
+		clk_phases => sclk_phases,
 		clk_edges => sclk_edges,
 		gear => gear,
 		CL_COD    => CL_COD,
