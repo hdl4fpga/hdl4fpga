@@ -148,13 +148,6 @@ begin
 		end process;
 		sys_rdy(i) <= pll_req;
 
---		clk_data_phases_g: if data_edges > 1 generate
---			dqs_delayed_e : entity hdl4fpga.pgm_delay
---			port map (
---				xi  => xdr_dqsi(i),
---				x_p => ser_clk(0),
---				x_n => ser_clk(1));
---		end generate;
 
 		inbyte_i : entity hdl4fpga.iofifo
 		generic map (
@@ -168,7 +161,7 @@ begin
 
 			ser_req(0) => ser_req,
 			ser_ena(0) => xdr_win_dqs(i),
-			ser_clk(0) => ser_clk,
+			ser_clk(0) => xdr_dqsi'range,
 
 			do  => do(i),
 			di  => di(i));
