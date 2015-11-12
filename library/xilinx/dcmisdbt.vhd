@@ -59,9 +59,9 @@ architecture behavioral of dcmisdbt is
 begin
    
 	u1_clk0_bufg_inst : bufg
-    port map (
+	port map (
 		i => u1_clk0_buf,
-        o => u1_clkfb_in);
+		o => u1_clkfb_in);
    
 	dcm1_u : dcm_sp
 	generic map(
@@ -100,15 +100,19 @@ begin
 		psdone => open,
 		status => open);
 
-	u2_clkfx_bufg_inst : bufg
-	port map (
-		i => u1_clkfx_buf,
-		o => u2_clkin_in);
+--	u2_clkfx_bufg_inst : bufg
+--	port map (
+--		i => u1_clkfx_buf,
+--		o => u2_clkin_in);
 
-	u2_clk0_bufg_inst : bufg
-    port map (
-		i => u2_clk0_buf,
-        o => u2_clkfb_in);
+	u2_clkin_in <= u1_clkfx_buf;
+
+--	u2_clk0_bufg_inst : bufg
+--	port map (
+--		i => u2_clk0_buf,
+--		o => u2_clkfb_in);
+
+	u2_clkfb_in <= u2_clk0_buf;
 		
 	dcm_sp_inst2 : dcm_sp
 	generic map(

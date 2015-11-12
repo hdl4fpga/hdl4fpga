@@ -2,40 +2,44 @@
 NET "xtal" TNM_NET = xtal;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
-
+#
 NET "mii_txc" TNM_NET = mii_txc;
-TIMESPEC TS_mii_txc = PERIOD "mii_txc" 8 ns HIGH 50%;
+TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 
 NET "mii_rxc" TNM_NET = mii_rxc;
-TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 8 ns HIGH 50%;
 
-INST "*/ddr_io_ba_e/ddr_cke_i"                 IOB = FORCE;
-INST "*/ddr_io_ba_e/ddr_ras_i"                 IOB = FORCE;
-INST "*/ddr_io_ba_e/ddr_cas_i"                 IOB = FORCE;
-INST "*/ddr_io_ba_e/ddr_we_i"                  IOB = FORCE;
-INST "*/ddr_io_ba_e/ddr_a_g[*].ff_i"           IOB = FORCE;
-INST "*/ddr_io_ba_e/ddr_b_g[*].ff_i"             IOB = FORCE;
-INST "*/ddr_io_dqs_e/ddr_io_dqs_u[*].oddrt_i"    IOB = FORCE;
-INST "*/ddr_io_dq_e/*bytes_g[*].bits_g[*].oddrt_i" IOB = FORCE;
-INST "*/dac_clk_i"                             IOB = FORCE;
-INST "*/dac_blank_i"                           IOB = FORCE;
-INST "*/dac_sync_i"                            IOB = FORCE;
-INST "*/dac_hsync_i"                           IOB = FORCE;
-INST "*/dac_vsync_i"                           IOB = FORCE;
-INST "*/dac_psave_i"                           IOB = FORCE;
-INST "*/rgb_g[*].ffd_red"                      IOB = FORCE;
-INST "*/rgb_g[*].ffd_green"                    IOB = FORCE;
-INST "*/rgb_g[*].ffd_blue"                     IOB = FORCE;
+TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
+TIMESPEC TS_mpuwri0  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[0].ddr3phy_i/dmo_g.ddro_i/ddro) TIG;
+TIMESPEC TS_mpuwri1  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[1].ddr3phy_i/dmo_g.ddro_i/ddro) TIG;
+TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
+
+#INST "*/ddr_io_ba_e/ddr_cke_i"                 IOB = FORCE;
+#INST "*/ddr_io_ba_e/ddr_ras_i"                 IOB = FORCE;
+#INST "*/ddr_io_ba_e/ddr_cas_i"                 IOB = FORCE;
+#INST "*/ddr_io_ba_e/ddr_we_i"                  IOB = FORCE;
+#INST "*/ddr_io_ba_e/ddr_a_g[*].ff_i"           IOB = FORCE;
+#INST "*/ddr_io_ba_e/ddr_b_g[*].ff_i"             IOB = FORCE;
+#INST "*/ddr_io_dqs_e/ddr_io_dqs_u[*].oddrt_i"    IOB = FORCE;
+#INST "*/ddr_io_dq_e/*bytes_g[*].bits_g[*].oddrt_i" IOB = FORCE;
+#INST "*/dac_clk_i"                             IOB = FORCE;
+#INST "*/dac_blank_i"                           IOB = FORCE;
+#INST "*/dac_sync_i"                            IOB = FORCE;
+#INST "*/dac_hsync_i"                           IOB = FORCE;
+#INST "*/dac_vsync_i"                           IOB = FORCE;
+#INST "*/dac_psave_i"                           IOB = FORCE;
+#INST "*/rgb_g[*].ffd_red"                      IOB = FORCE;
+#INST "*/rgb_g[*].ffd_green"                    IOB = FORCE;
+#INST "*/rgb_g[*].ffd_blue"                     IOB = FORCE;
 
 #NET "*video_clk*" MAXSKEW  = 1 ns;
-NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
-NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
-#NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
-#NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
-NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
-NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
-NET "*ddr_delayed_dqs*[*]" MAXDELAY = 1350 ps;
-NET "*ddr_delayed_dqs*[*]" MAXSKEW  = 560 ps;
+#NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
+#NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
+##NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
+##NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
+#NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
+#NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
+#NET "*ddr_delayed_dqs*[*]" MAXDELAY = 1350 ps;
+#NET "*ddr_delayed_dqs*[*]" MAXSKEW  = 560 ps;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
@@ -67,7 +71,7 @@ NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 ## DDR 166 Mhz rate clock #
 ## ###################### #
 #
-TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.25 ns HIGH 50%;
 NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
 NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
 #OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[0] RISING;
@@ -107,33 +111,29 @@ OFFSET = IN -0.4 ns VALID 2.25 ns BEFORE ddr_dqs[1] RISING;
 #OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[0] RISING;
 #OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[1] RISING;
 
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
-NET "*/timer_div[0]" TNM_NET = timerdiv0;
-NET "*/timer_div[0]" CLOCK_DEDICATED_ROUTE = false;
-TIMESPEC TS_timerdiv0 = PERIOD "*/timer_div[0]" TS_dcms_e_ddrdcm_e_dcm_clk0*16 HIGH 50%;
 
-NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
-NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;
-NET ddr_dqs[0] TNM_NET = RAMS RAMS_dqs0;
-NET ddr_dqs[1] TNM_NET = RAMS RAMS_dqs1;
+
+#NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
+#NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;
+#NET ddr_dqs[0] TNM_NET = RAMS RAMS_dqs0;
+#NET ddr_dqs[1] TNM_NET = RAMS RAMS_dqs1;
 NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
 NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clk90 TNM_NET = FFS  RAMS_ddrsclk90;
-NET capture_clk TNM_NET =  FFS FFS_adcclkab;
-NET capture_clk TNM_NET =  RAMS RAMS_adcclkab;
-NET "*/timer_div[0]" TNM_NET =  FFS FFS_timerdiv0;
+NET ddrs_clk90 TNM_NET = RAMS  RAMS_ddrsclk90;
+NET input_clk TNM_NET =  FFS FFS_adcclkab;
+NET input_clk TNM_NET =  RAMS RAMS_adcclkab;
 
 TIMESPEC TS_ddrlckd  = FROM FFS (*dcm_lckd*) TIG;
-TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TS_dcms_e_ddrdcm_e_dcm_clk0 DATAPATHONLY; #TIG;
-TIMESPEC TS_ddract   = FROM FFS (*/ddr_mpu_act) TO FFS(*ddr_a*) TS_dcms_e_ddrdcm_e_dcm_clk0 *1.5 DATAPATHONLY;
-TIMESPEC TS_ddrrst  = FROM FFS (*dcm_rst*) TIG;
-TIMESPEC TS_ddrdll  = FROM FFS (*/dll_timer_rdy) TIG;
-TIMESPEC TS_ddr200u = FROM FFS (*/ddr_init_cfg)  TIG;
-TIMESPEC TS_ddrini  = FROM FFS (*/sys_ini) TIG;
-TIMESPEC TS_timereq = FROM FFS_ddrsclk0  TO FFS_timerdiv0 TIG;
-TIMESPEC TS_timerdy = FROM FFS_timerdiv0 TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
+TIMESPEC TS_ff2ram = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
+#TIMESPEC TS_ddract   = FROM FFS (*/ddr_mpu_act) TO FFS(*ddr_a*) TS_dcms_e_ddrdcm_e_dcm_clk0 *1.5 DATAPATHONLY;
+#TIMESPEC TS_ddrrst  = FROM FFS (*dcm_rst*) TIG;
+#TIMESPEC TS_ddrdll  = FROM FFS (*/dll_timer_rdy) TIG;
+#TIMESPEC TS_ddrini  = FROM FFS (*/sys_ini) TIG;
+#TIMESPEC TS_timereq = FROM FFS_ddrsclk0  TO FFS_timerdiv0 TIG;
 
 ## ###################### #
 ## Crossclock time ignore #
@@ -142,7 +142,7 @@ TIMESPEC TS_timerdy = FROM FFS_timerdiv0 TO FFS_ddrsclk0  TIG;
 TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab TO FFS_ddrsclk0 TIG;
 TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0 TIG;
 TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0 TO FFS_adcclkab TIG;
-TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
+#TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 #TIMESPEC TS_f2rclk_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
 ##TIMESPEC TS_rowid   = FROM FFS(*/*vsync_erq*) TO FFS(*sync_ena_val*) TIG;
 ##TIMESPEC TS_rowpag  = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
@@ -156,12 +156,12 @@ TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 #
 ## Delayed DSQ Taps #
 #
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" LOC = SLICE_X0Y60;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" BEL = G;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X0Y60;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" BEL = F;
-#
-## To Sys Cntrs #
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X0Y60;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" BEL = G;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X0Y60;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" BEL = F;
+##
+### To Sys Cntrs #
 #
 #INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[0].ffd_i" LOC = SLICE_X2Y64;
 #INST "*/*ddr_rd_fifo_e/fifo_bytes_g[0].o_cntr_g[1].ffd_i" LOC = SLICE_X2Y64;
@@ -250,10 +250,10 @@ INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" BEL = F;
 #
 ## Delayed DSQ Taps #
 #
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" LOC = SLICE_X0Y82;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" BEL = G;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X0Y82;
-INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" BEL = F;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" LOC = SLICE_X0Y82;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" BEL = G;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X0Y82;
+#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" BEL = F;
 
 ## To Sys Cntrs #
 #

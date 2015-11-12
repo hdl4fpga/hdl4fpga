@@ -60,6 +60,7 @@ architecture scope of nuhs3dsp is
 	signal input_lckd : std_logic;
 
 	signal input_clk : std_logic;
+	signal video_clk : std_logic;
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
@@ -124,8 +125,8 @@ architecture scope of nuhs3dsp is
 	--------------------------------------------------
 
 	constant sys_per : real := 50.0;
-	constant ddr_mul : natural := 25;
-	constant ddr_div : natural := 3;
+	constant ddr_mul : natural := 8; --25;
+	constant ddr_div : natural := 1; --3;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
@@ -180,11 +181,11 @@ begin
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
-		video_clk => open,
+		video_clk => video_clk,
 		mii_clk => gtx_clk,
 		dcm_lckd => dcm_lckd);
-
-
+	mii_refclk <= gtx_clk;
+ddr_st_dqs <='Z';
 	grst <= dcm_lckd;
 
 	rsts_b : block
@@ -236,7 +237,7 @@ begin
 	port map (
 
 --		input_rst => input_rst,
-		input_clk => ddrs_clk0, --input_clk,
+		input_clk => input_clk,
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks(0) => ddrs_clk0,
@@ -335,6 +336,43 @@ begin
 		ddr_dqsi => ddr_dqsi,
 		ddr_dqso => ddr_dqso);
 
+	adcclkab_iob_b : block
+		signal clk_n : std_logic;
+	begin
+		clk_n <= input_clk;
+		oddr_i : oddr2
+		port map (
+			r => '0',
+			s => '0',
+			c0 => input_clk,
+			c1 => clk_n,
+			ce => '1',
+			d0 => '0',
+			d1 => '1',
+			q => adc_clkab);
+	end block;
+
+	vga_iob_e : entity hdl4fpga.adv7125_iob
+	port map (
+		sys_clk   => video_clk,
+		sys_hsync => vga_hsync,
+		sys_vsync => vga_vsync,
+		sys_blank => vga_blank,
+		sys_red   => vga_red,
+		sys_green => vga_green,
+		sys_blue  => vga_blue,
+
+		vga_clk => clk_videodac,
+		vga_hsync => hsync,
+		vga_vsync => vsync,
+		dac_blank => blank,
+		dac_sync  => sync,
+		dac_psave => psave,
+
+		dac_red   => red,
+		dac_green => green,
+		dac_blue  => blue);
+
 	mii_mdc  <= '0';
 	mii_mdio <= '0';
 
@@ -348,23 +386,77 @@ begin
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
 
-		mii_txc  => gtx_clk,
+		mii_txc  => mii_txc,
 		mii_txen => txen,
 		mii_txd  => txd,
 		iob_txen => mii_txen,
-		iob_txd  => mii_txd,
-		iob_gtxclk => mii_refclk);
+		iob_txd  => mii_txd);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
-	ddr_ck_obufds : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => ddr_clk,
-		o  => ddr_ckp,
-		ob => ddr_ckn);
-	
+	ddr_clk_b : block
+		signal diff_clk : std_logic;
+		signal clk_n : std_logic;
+	begin
+		clk_n <= not ddrs_clk0;
+		oddr_i : oddr2
+		port map (
+			r => '0',
+			s => '0',
+			c0 => clk_n,
+			c1 => ddrs_clk0,
+			ce => '1',
+			d0 => '1',
+			d1 => '0',
+			q => diff_clk);
+
+		obufds_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => diff_clk,
+			o  => ddr_ckp,
+			ob => ddr_ckn);
+
+	end block;
+
+	hd_t_data <= 'Z';
+
+	-- LEDs DAC --
+	--------------
+		
+	led18 <= '0';
+	led16 <= '0';
+	led15 <= '0';
+	led13 <= '0';
+	led11 <= '0';
+	led9  <= '0';
+	led8  <= '0';
+	led7  <= not sys_rst;
+
+	-- RS232 Transceiver --
+	-----------------------
+
+	rs232_rts <= '0';
+	rs232_td  <= '0';
+	rs232_dtr <= '0';
+
+	-- Ethernet Transceiver --
+	--------------------------
+
+	mii_mdc  <= '0';
+	mii_mdio <= 'Z';
+
+
+	-- LCD --
+	---------
+
+	lcd_e <= 'Z';
+	lcd_rs <= 'Z';
+	lcd_rw <= 'Z';
+	lcd_data <= (others => 'Z');
+	lcd_backlight <= 'Z';
+
 end;
