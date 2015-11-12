@@ -94,9 +94,6 @@ architecture scope of nuhs3dsp is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
-	signal ddrphy_wlreq : std_logic;
-	signal ddrphy_wlrdy : std_logic;
 
 	signal gtx_clk  : std_logic;
 	signal rxdv : std_logic;
@@ -125,8 +122,8 @@ architecture scope of nuhs3dsp is
 	--------------------------------------------------
 
 	constant sys_per : real := 50.0;
-	constant ddr_mul : natural := 8; -- 25;
-	constant ddr_div : natural := 1; --  3;
+	constant ddr_mul : natural := 8; --25;
+	constant ddr_div : natural := 1; -- 3;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
@@ -182,42 +179,12 @@ begin
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
-		mii_clk => gtx_clk,
+		mii_clk => mii_refclk,
+		input_rst => input_rst,
+		ddrs_rst  => ddrs_rst, 
+    	mii_rst   => mii_rst,  
+		vga_rst   => vga_rst,
 		dcm_lckd => dcm_lckd);
-	mii_refclk <= gtx_clk;
-ddr_st_dqs <='Z';
-	grst <= dcm_lckd;
-
-	rsts_b : block
-		signal clks : std_logic_vector(0 to 3);
-		signal rsts : std_logic_vector(0 to 3);
-		signal grst : std_logic;
-	begin
-		grst    <= grst;
-		clks(0) <= input_clk;
-		clks(1) <= ddrs_clk0;
-		clks(2) <= gtx_clk;
-		clks(3) <= vga_clk;
-
-		input_rst <= rsts(0);
-		ddrs_rst  <= rsts(1);
-		mii_rst   <= rsts(2);
-		vga_rst   <= rsts(3);
-
-		rsts_g: for i in clks'range generate
-			signal q : std_logic;
-		begin
-			process (clks(i), dcm_lckd)
-			begin
-				if dcm_lckd='0' then
-					q <= '1';
-				elsif rising_edge(clks(i)) then
-					q <= not dcm_lckd;
-				end if;
-			end process;
-			rsts(i) <= q;
-		end generate;
-	end block;
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -245,8 +212,6 @@ ddr_st_dqs <='Z';
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
 		ddr_cke  => ddrphy_cke(0),
-		ddr_wlreq => ddrphy_wlreq,
-		ddr_wlrdy => ddrphy_wlrdy,
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -285,10 +250,6 @@ ddr_st_dqs <='Z';
 		vga_blue  => vga_blue,
 		tpo => tpo);
 
-	sto <= ddrphy_sto(0);
-
-	ddrphy_sti <= ddrphy_dmi;
-
 	ddrphy_dqi2 <= ddrphy_dqi;
 
 	ddrphy_e : entity hdl4fpga.ddrphy
@@ -321,6 +282,8 @@ ddr_st_dqs <='Z';
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
+		sys_sti => ddrphy_sto,
+		sys_sto => ddrphy_sti,
 
 		ddr_clk => ddr_clk,
 		ddr_cke => ddr_cke,
@@ -331,6 +294,10 @@ ddr_st_dqs <='Z';
 		ddr_b   => ddr_ba,
 		ddr_a   => ddr_a,
 
+		ddr_sto(0) => ddr_st_dqs,
+		ddr_sto(1) => open,
+		ddr_sti(0) => ddr_st_lp_dqs,
+		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => ddr_dm,
 		ddr_dq  => ddr_dq,
 		ddr_dqst => ddr_dqst,

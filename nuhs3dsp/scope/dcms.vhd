@@ -39,12 +39,16 @@ entity dcms is
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
-		input_clk : out std_logic;
-		ddr_clk0  : out std_logic;
+		input_clk : buffer std_logic;
+		ddr_clk0  : buffer std_logic;
 		ddr_clk90 : out std_logic;
-		video_clk : out std_logic;
-		mii_clk   : out std_logic;
-		dcm_lckd  : out std_logic);
+		video_clk : buffer std_logic;
+		mii_clk   : buffer std_logic;
+		dcm_lckd  : out std_logic;
+		input_rst : out std_logic;
+		ddrs_rst  : out std_logic;
+		mii_rst   : out std_logic;
+		vga_rst   : out std_logic);
 end;
 
 architecture def of dcms is
@@ -61,6 +65,7 @@ architecture def of dcms is
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic := '1';
 	signal mii_lckd : std_logic;
+	signal lckd :std_logic;
 begin
 
 	videodcm_e : entity hdl4fpga.dfs
@@ -114,12 +119,42 @@ begin
 	begin
 		if sys_rst='1' then
 			dcm_rst  <= '1';
-			dcm_lckd <= '0';
+			lckd <= '0';
 		elsif rising_edge(sys_clk) then
 			if dcm_rst='0' then
-				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and mii_lckd;
+				lckd <= video_lckd and ddr_lckd and input_lckd and mii_lckd;
 			end if;
 			dcm_rst <= '0';
 		end if;
 	end process;
+
+	dcm_lckd <= lckd;
+	rsts_b : block
+		signal clks : std_logic_vector(0 to 3);
+		signal rsts : std_logic_vector(0 to 3);
+	begin
+		clks(0) <= input_clk;
+		clks(1) <= ddr_clk0;
+		clks(2) <= mii_clk;
+		clks(3) <= video_clk;
+
+		input_rst <= rsts(0);
+		ddrs_rst  <= rsts(1);
+		mii_rst   <= rsts(2);
+		vga_rst   <= rsts(3);
+
+		rsts_g: for i in clks'range generate
+			signal q : std_logic;
+		begin
+			process (clks(i), lckd)
+			begin
+				if lckd='0' then
+					q <= '1';
+				elsif rising_edge(clks(i)) then
+					q <= not lckd;
+				end if;
+			end process;
+			rsts(i) <= q;
+		end generate;
+	end block;
 end;

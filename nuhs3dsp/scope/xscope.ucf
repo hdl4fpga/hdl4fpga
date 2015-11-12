@@ -111,37 +111,31 @@ OFFSET = IN -0.4 ns VALID 2.25 ns BEFORE ddr_dqs[1] RISING;
 
 #TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
-
-
 #NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
 #NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;
 #NET ddr_dqs[0] TNM_NET = RAMS RAMS_dqs0;
 #NET ddr_dqs[1] TNM_NET = RAMS RAMS_dqs1;
+
 NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
 NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
-NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clk90 TNM_NET = RAMS  RAMS_ddrsclk90;
-NET input_clk TNM_NET =  FFS FFS_adcclkab;
-NET input_clk TNM_NET =  RAMS RAMS_adcclkab;
 
-TIMESPEC TS_ddrlckd  = FROM FFS (*dcm_lckd*) TIG;
+NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
+
+NET input_clk  TNM_NET = FFS  FFS_adcclkab;
+NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+
 TIMESPEC TS_ram2oddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 TIMESPEC TS_ff2ram = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
-#TIMESPEC TS_ddract   = FROM FFS (*/ddr_mpu_act) TO FFS(*ddr_a*) TS_dcms_e_ddrdcm_e_dcm_clk0 *1.5 DATAPATHONLY;
-#TIMESPEC TS_ddrrst  = FROM FFS (*dcm_rst*) TIG;
-#TIMESPEC TS_ddrdll  = FROM FFS (*/dll_timer_rdy) TIG;
-#TIMESPEC TS_ddrini  = FROM FFS (*/sys_ini) TIG;
-#TIMESPEC TS_timereq = FROM FFS_ddrsclk0  TO FFS_timerdiv0 TIG;
 
-## ###################### #
-## Crossclock time ignore #
-## ###################### #
-#
+# ###################### #
+# Crossclock time ignore #
+# ###################### #
+
 TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab TO FFS_ddrsclk0 TIG;
 TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0 TIG;
 TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0 TO FFS_adcclkab TIG;
-#TIMESPEC TS_r2fclk_ddr0to90 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90 TIG;
-#TIMESPEC TS_f2rclk_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
+
 ##TIMESPEC TS_rowid   = FROM FFS(*/*vsync_erq*) TO FFS(*sync_ena_val*) TIG;
 ##TIMESPEC TS_rowpag  = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
 #
