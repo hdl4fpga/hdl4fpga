@@ -95,7 +95,7 @@ begin
 		signal dmt : std_logic_vector(sys_dmt'range);
 	begin
 
-		process (sys_dmi, sys_dmt)
+		process (sys_dmi, sys_dmt, sys_sti)
 		begin
 			for i in sys_dmi'range loop
 				if sys_dmt(i)='0' then
