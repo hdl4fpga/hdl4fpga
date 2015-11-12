@@ -161,7 +161,7 @@ begin
 
 			ser_req(0) => ser_req,
 			ser_ena(0) => xdr_win_dqs(i),
-			ser_clk(0) => xdr_dqsi'range,
+			ser_clk(0) => xdr_dqsi(i),
 
 			do  => do(i),
 			di  => di(i));
