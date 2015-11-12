@@ -39,7 +39,7 @@ architecture spartan3 of ddro is
 	signal fclk : std_logic;
 begin
 	fclk <= not clk;
-	ddro : oddr2
+	oddr_i : oddr2
 	port map (
 		c0 => clk,
 		c1 => fclk,
@@ -66,7 +66,7 @@ use unisim.vcomponents.all;
 
 architecture spartan3 of ddrto is
 begin
-	ddrto : fdrse
+	ffd_i : fdrse
 	port map (
 		s  => '0',
 		r  => '0',

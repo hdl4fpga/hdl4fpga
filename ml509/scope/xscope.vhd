@@ -236,6 +236,7 @@ begin
 	generic map (
 		DDR_MARK => M3,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_SCLKEDGES => 2,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,
@@ -244,8 +245,7 @@ begin
 		DDR_DATAPHASES => data_phases,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size,
-		xd_len  => 8)
+		DDR_BYTESIZE => byte_size)
 	port map (
 
 --		input_rst => input_rst,
@@ -256,8 +256,6 @@ begin
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
-		ddrs_wclks => ddrs_wclks,
-		ddrs_wenas => ddrs_wenas,
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -307,6 +305,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+		LOOPBACK => FALSE,
 		BANK_SIZE => ddr2_ba'length,
 		ADDR_SIZE => ddr2_a'length,
 		LINE_SIZE => line_size,
@@ -316,8 +315,6 @@ begin
 		sys_clk0 => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
 		phy_rst => ddrs_rst,
-		sys_wclks => ddrs_wclks,
-		sys_wenas => ddrs_wenas,
 
 		sys_cke => ddrphy_cke,
 		sys_cs  => ddrphy_cs,

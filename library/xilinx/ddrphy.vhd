@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddrphy is
 	generic (
+		loopback : boolean;
 		data_phases : natural := 2;
 		cmd_phases : natural := 1;
 		bank_size : natural := 2;
@@ -58,6 +59,8 @@ entity ddrphy is
 		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sti  : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -68,6 +71,9 @@ entity ddrphy is
 		ddr_we  : out std_logic;
 		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
+
+		ddr_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		ddr_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
@@ -210,6 +216,7 @@ architecture virtex of ddrphy is
 	signal dqsdel : std_logic;
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
+	signal ssti : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal sdqt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdqi : dline_vector(word_size/byte_size-1 downto 0);
@@ -220,6 +227,7 @@ architecture virtex of ddrphy is
 
 	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal dsto : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
@@ -258,6 +266,7 @@ begin
 		ddr_a   => ddr_a);
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
+	ssti  <= to_blinevector(sys_sti);
 	sdmt  <= to_blinevector(not sys_dmt);
 	sdqt  <= to_blinevector(not sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqo);
@@ -269,8 +278,9 @@ begin
 		signal clks : std_logic_vector(data_phases-1 downto 0);
 	begin
 
-		ddr3phy_i : entity hdl4fpga.ddrdqphy
+		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
+			loopback => loopback,
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
@@ -290,9 +300,9 @@ begin
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
+			ddr_sto  => dsto(i),
 
 			ddr_dmt  => ddmt(i),
-			ddr_dmo  => ddmo(i),
 
 			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddr_dqso(i));
@@ -306,12 +316,14 @@ begin
 
 	end generate;
 
-	process(ddr_dm)
+	process(ddr_dm, ddr_sti)
 	begin
 		for i in 0 to word_size/byte_size-1 loop
-			for j in 0 to gear-1 loop
-				sys_dmo(i) <= ddr_dm(i);
-			end loop;
+			if loopback=true then
+				sys_sto(i) <= ddr_sti(i);
+			else
+				sys_sto(i) <= ddr_dm(i);
+			end if;
 		end loop;
 	end process;
 

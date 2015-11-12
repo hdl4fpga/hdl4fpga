@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
+		loopback : boolean;
 		line_size : natural;
 		byte_size : natural);
 	port (
@@ -34,6 +35,8 @@ entity ddrdqphy is
 		sys_clk90 : in  std_logic;
 		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		sys_sti  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		sys_sto  : out  std_logic_vector(line_size-1 downto 0);
 		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
@@ -42,6 +45,7 @@ entity ddrdqphy is
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
+		ddr_sto  : out std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
@@ -87,20 +91,47 @@ begin
 	end generate;
 
 	dmo_g : block
+		signal dmi : std_logic_vector(sys_dmi'range);
+		signal dmt : std_logic_vector(sys_dmt'range);
 	begin
+
+		process (sys_dmi, sys_dmt)
+		begin
+			for i in sys_dmi'range loop
+				if sys_dmt(i)='0' then
+					dmi(i) <= sys_dmi(i);
+				else
+					dmi(i) <= sys_sti(i);
+				end if;
+
+				if loopback=true then
+					dmt(i) <= '0';
+				else
+					dmt(i) <= sys_dmt(i);
+				end if;
+			end loop;
+		end process;
+
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk90,
-			d => sys_dmt(0),
+			d => dmt(0),
 			q => ddr_dmt);
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk90,
-			dr  => sys_dmi(0),
-			df  => sys_dmi(1),
+			dr  => dmi(0),
+			df  => dmi(1),
 			q   => ddr_dmo);
 	end block;
+
+	sto_i : entity hdl4fpga.ddro
+	port map (
+		clk => sys_clk90,
+		dr  => sys_sti(0),
+		df  => sys_sti(1),
+		q   => ddr_sto);
 
 	dqso_b : block 
 		signal clk_n : std_logic;

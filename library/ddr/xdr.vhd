@@ -365,23 +365,16 @@ begin
 		xdr_sch_dqsz,
 		xdr_sch_rwn,
 		xdr_sch_wwn)
-		variable aux : std_logic_vector(xdr_sch_st'reverse_range);
 	begin
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to gear-1 loop
-				aux := xdr_sch_dqz;
 				xdr_dqt(i*gear+j)  <= xdr_sch_dqz(j);
-				xdr_dmt(i*gear+j)  <= aux(j);
+				xdr_dmt(i*gear+j)  <= reverse(xdr_sch_dqz)(j);
 				xdr_dqso(i*gear+j) <= xdr_sch_dqs(j);
 				xdr_dqst(i*gear+j) <= not xdr_sch_dqsz(j);
 				xdr_sto(i*gear+j)  <= xdr_sch_st(j);
 				xdr_wenas(i*gear+j) <= xdr_sch_wwn(j);
-				aux := xdr_sch_st;
-				if xdr_mpu_wri='1' then
-					xdr_dmo(i*gear+j) <= xdr_wr_dm(i*gear+j);
-				else
-					xdr_dmo(j*word_size/byte_size+i) <= xdr_sch_st(j);
-				end if;
+				xdr_dmo(i*gear+j) <= xdr_wr_dm(i*gear+j);
 			end loop;
 		end loop;
 	end process;
