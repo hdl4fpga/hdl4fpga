@@ -355,8 +355,8 @@ begin
 		xdr_dqz  => xdr_sch_dqz,
 		xdr_wwn  => xdr_sch_wwn);
 
-	xdr_win_dqs <= (others => xdr_sti(0));
-	xdr_win_dq  <= (others => xdr_sti(0));
+	xdr_win_dqs <= xdr_sti;
+	xdr_win_dq  <= xdr_sti;
 
 	process (
 		xdr_mpu_wri,

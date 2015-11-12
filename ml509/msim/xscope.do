@@ -31,20 +31,20 @@ add wave -noupdate /testbench/ml509_e/ddr2_dqs_p(0)
 add wave -noupdate /testbench/ml509_e/ddrs_rst
 add wave -noupdate /testbench/ml509_e/dcm_lckd
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr_dqso
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(1)/ddr3phy_i/ddr_dqso
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(1)/ddrdqphy_i/ddr_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqst
 add wave -noupdate -divider ddr2baphy
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_rst
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cs
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_ck
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cke
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_odt
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_ras
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_cas
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_we
-add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_b
-add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/ddr3phy_i/ddr_a
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_rst
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_cs
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_ck
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_cke
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_odt
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_ras
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_cas
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_we
+add wave -noupdate /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_b
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/ddrbaphy_i/ddr_a
 add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/sys_dqsi
 add wave -noupdate /testbench/ml509_e/ddrphy_dmo
 add wave -noupdate -expand /testbench/ml509_e/ddrphy_dmi

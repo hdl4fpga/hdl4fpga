@@ -58,7 +58,7 @@ entity scope is
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
 		ddrs_ini   : out std_logic;
 		ddr_wlreq : out std_logic;
-		ddr_wlrdy : in  std_logic;
+		ddr_wlrdy : in  std_logic := '-';
 
 
 		ddr_rst : out std_logic;

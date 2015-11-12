@@ -318,7 +318,9 @@ package body xdr_param is
 				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
 	begin
-		if stdr=DDR2 then
+		if stdr=DDR1 then
+			return ddr2_timer;
+		elsif stdr=DDR2 then
 			return ddr2_timer;
 		elsif stdr=DDR3 then
 			return ddr3_timer;

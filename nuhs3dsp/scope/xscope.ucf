@@ -149,9 +149,9 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0 TO FFS_adcclkab TIG;
 ## Delayed DSQ Taps #
 #
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X0Y60;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutn" BEL = G;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" LOC = SLICE_X0Y60;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[1].dqs_delayed_e/lutp" BEL = F;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X0Y60;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;
 ##
 ### To Sys Cntrs #
 #
@@ -242,10 +242,10 @@ INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X0Y60;
 #
 ## Delayed DSQ Taps #
 #
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" LOC = SLICE_X0Y82;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutn" BEL = G;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" LOC = SLICE_X0Y82;
-#INST "*/ddr_rd_fifo_e/fifo_bytes_g[0].dqs_delayed_e/lutp" BEL = F;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X0Y82;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X0Y82;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
 
 ## To Sys Cntrs #
 #

@@ -147,7 +147,7 @@ architecture scope of testbench is
 			ddr_lp_ckp : in std_logic := 'Z';
 			ddr_lp_ckn : in std_logic := 'Z';
 			ddr_st_lp_dqs : in std_logic := 'Z';
-			ddr_lp_dqs : out std_logic := 'Z';
+			ddr_st_dqs : out std_logic := 'Z';
 			ddr_cke : out std_logic := 'Z';
 			ddr_cs  : out std_logic := 'Z';
 			ddr_ras : out std_logic := 'Z';
@@ -288,7 +288,7 @@ begin
 		ddr_lp_ckp => clk_p,
 		ddr_lp_ckn => clk_n,
 		ddr_st_lp_dqs => ddr_lp_dqs,
-		ddr_lp_dqs => ddr_lp_dqs,
+		ddr_st_dqs => ddr_lp_dqs,
 		ddr_cke => cke,
 		ddr_cs  => cs_n,
 		ddr_ras => ras_n,

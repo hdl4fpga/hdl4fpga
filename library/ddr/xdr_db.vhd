@@ -119,7 +119,7 @@ package xdr_db is
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab := (
-		timing_record'(mark => M6T,  param => tPreRST, value => 200000000),
+		timing_record'(mark => M6T,  param => tPreRST, value => 20000000),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000),
@@ -219,7 +219,7 @@ package xdr_db is
 
 		-- CWL register --
 
-		cnfglat_record'(stdr => DDR1, rgtr => CWL, lat =>  2*1, code => "---"),
+		cnfglat_record'(stdr => DDR1, rgtr => CWL, lat =>  2*1, code => "000"),
 
 		-- DDR2 standard --
 		-------------------
@@ -237,7 +237,7 @@ package xdr_db is
 		cnfglat_record'(stdr => DDR2, rgtr => BL,  lat =>  2*2, code => "010"),
 		cnfglat_record'(stdr => DDR2, rgtr => BL,  lat =>  2*4, code => "011"),
 
-		-- CWL register --
+		-- WRL register --
 
 		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*2, code => "001"),
 		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*3, code => "010"),
@@ -489,7 +489,22 @@ package body xdr_db is
 
 	begin
 		case tabid is
-		when STRL|RWNL|WWNL =>
+		when WWNL =>
+			case stdr is
+			when DDR1|DDR3 =>
+				for i in cwltab'range loop
+					cwlval(i) := cwltab(i) + lat;
+				end loop;
+				return cwlval;
+			when DDR2 =>
+				for i in cltab'range loop
+					clval(i) := cltab(i) + lat;
+				end loop;
+				return clval;
+			when others =>
+				return (1 to 0 => 0);
+			end case;
+		when STRL|RWNL =>
 			for i in cltab'range loop
 				clval(i) := cltab(i) + lat;
 			end loop;

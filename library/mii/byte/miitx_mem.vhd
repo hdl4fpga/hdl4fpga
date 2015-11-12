@@ -106,8 +106,8 @@ begin
 
 	mii_trdy <= cntr(0) and mii_treq;
 	mii_txen <= mii_treq and not cntr(0);
-	mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
---	mii_txd  <= reverse(word2byte(
---		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
---		addr => cntr(addr_size+1 to cntr_size)));
+--	mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
+	mii_txd  <= reverse(word2byte(
+		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
+		addr => cntr(addr_size to cntr_size)));
 end;

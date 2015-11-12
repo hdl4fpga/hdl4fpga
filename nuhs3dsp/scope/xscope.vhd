@@ -37,7 +37,7 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of nuhs3dsp is
-	constant sclk_phases : natural := 2;
+	constant sclk_phases : natural := 4;
 	constant data_phases : natural := 2;
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
@@ -46,7 +46,6 @@ architecture scope of nuhs3dsp is
 	constant word_size : natural := 16;
 	constant byte_size : natural := 8;
 
-	constant uclk_period : real := 10.0;
 
 	signal ictlr_clk : std_logic;
 	signal ictlr_rdy : std_logic;
@@ -67,7 +66,6 @@ architecture scope of nuhs3dsp is
 
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_clk : std_logic;
 
 	signal ddr_lp_clk : std_logic;
@@ -146,6 +144,7 @@ architecture scope of nuhs3dsp is
 		end loop;
 		return val;
 	end;
+	signal xxx : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -188,9 +187,8 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_MARK => M3,
-		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKPHASES => 4,
+		DDR_MARK => M6T,
+		DDR_TCP => integer(sys_per*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES => 2,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
@@ -295,13 +293,13 @@ begin
 		ddr_a   => ddr_a,
 
 		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => open,
+		ddr_sto(1) => xxx,
 		ddr_sti(0) => ddr_st_lp_dqs,
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => ddr_dm,
 		ddr_dq  => ddr_dq,
 		ddr_dqst => ddr_dqst,
-		ddr_dqsi => ddr_dqsi,
+		ddr_dqsi => ddr_dqs,
 		ddr_dqso => ddr_dqso);
 
 	adcclkab_iob_b : block

@@ -238,7 +238,7 @@ architecture virtex of ddrphy is
 
 begin
 
-	ddr3phy_i : entity hdl4fpga.ddrbaphy
+	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		cmd_phases => cmd_phases,
 		bank_size => bank_size,
