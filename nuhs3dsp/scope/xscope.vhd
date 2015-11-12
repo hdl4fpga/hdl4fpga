@@ -125,8 +125,8 @@ architecture scope of nuhs3dsp is
 	--------------------------------------------------
 
 	constant sys_per : real := 50.0;
-	constant ddr_mul : natural := 8; --25;
-	constant ddr_div : natural := 1; --3;
+	constant ddr_mul : natural := 8; -- 25;
+	constant ddr_div : natural := 1; --  3;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
@@ -293,6 +293,7 @@ ddr_st_dqs <='Z';
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+		loopback => false,
 		BANK_SIZE => ddr_ba'length,
 		ADDR_SIZE => ddr_a'length,
 		LINE_SIZE => line_size,

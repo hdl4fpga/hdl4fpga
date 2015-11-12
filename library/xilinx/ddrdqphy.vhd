@@ -98,7 +98,7 @@ begin
 		process (sys_dmi, sys_dmt, sys_sti)
 		begin
 			for i in sys_dmi'range loop
-				if sys_dmt(i)='0' then
+				if sys_dmt(i)='1' then
 					dmi(i) <= sys_dmi(i);
 				else
 					dmi(i) <= sys_sti(i);

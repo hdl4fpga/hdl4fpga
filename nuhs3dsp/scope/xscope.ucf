@@ -9,8 +9,6 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 NET "mii_rxc" TNM_NET = mii_rxc;
 
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
-TIMESPEC TS_mpuwri0  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[0].ddr3phy_i/dmo_g.ddro_i/ddro) TIG;
-TIMESPEC TS_mpuwri1  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[1].ddr3phy_i/dmo_g.ddro_i/ddro) TIG;
 TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
 
 #INST "*/ddr_io_ba_e/ddr_cke_i"                 IOB = FORCE;
