@@ -23,13 +23,13 @@ net "*ddr2_dqs_p[*]"      maxskew  =   75 ps;
 ##net "*ddr_delayed_dqs*[*]" maxskew  =  560 ps;
 ##net "*video_clk*" maxskew = 1 ns;
 
-net "ddr2_dqs_p[0]" tnm_net = dqs0;
-net "ddr2_dqs_p[1]" tnm_net = dqs1;
-net "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
-net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
+#net "ddr2_dqs_p[0]" tnm_net = dqs0;
+#net "ddr2_dqs_p[1]" tnm_net = dqs1;
+#net "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
+#net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%;
+#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
 #NET "*ddr2_dm[0]" OFFSET = IN  2 ns VALID 0.100 ns BEFORE ddr2_dqs_p[0] RISING;
 #NET "*ddr2_dm[1]" OFFSET = IN  2 ns VALID 0.100 ns BEFORE ddr2_dqs_p[1] RISING;
 #OFFSET = IN -0.650 ns VALID 0.200 ns BEFORE ddr2_dqs_p[0] RISING;
@@ -52,18 +52,18 @@ NET gtx_clk       TNM_NET = RAMS RAMS_gtxclk;
 
 
 
-TIMESPEC TS_mpuwri0  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[0].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
-TIMESPEC TS_mpuwri1  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[1].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
-TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
+#TIMESPEC TS_mpuwri0  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[0].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
+##TIMESPEC TS_mpuwri1  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_wri) TO FFS (ddrphy_e/byte_g[1].ddr3phy_i/dmo_g.ddro_i/oddr_i) TIG;
+#TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
 
 
 #TIMESPEC TS_r2fclk_inp2ddr  = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
 #TIMESPEC TS_f2fclk_inp2ddr  = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;
 #TIMESPEC TS_f2fclk_ddr2inp  = FROM FFS_ddrsclk0  TO FFS_inputclk  TIG;
-TIMESPEC TS_r2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
+TIMESPEC TS_f2r_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
 #TIMESPEC TS_f2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO FFS_ddrsclk90 TIG;
-TIMESPEC TS_r2fclk_ddr2gtx  = FROM FFS_ddrsclk0  TO FFS_gtxclk   TIG;
-TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
+#TIMESPEC TS_r2fclk_ddr2gtx  = FROM FFS_ddrsclk0  TO FFS_gtxclk   TIG;
+#TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
 
 ## ###### #
 ## Others #

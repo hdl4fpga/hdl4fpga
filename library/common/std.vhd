@@ -422,11 +422,13 @@ package body std is
 		constant arg : std_logic_vector)
 		return std_logic_vector is
 		variable aux : std_logic_vector(arg'reverse_range);
+		variable val : std_logic_vector(arg'range);
 	begin
 		for i in arg'range loop
 			aux(i) := arg(i);
 		end loop;
-		return aux;
+		val := aux;
+		return val;
 	end;
 
 	function to_bytevector (

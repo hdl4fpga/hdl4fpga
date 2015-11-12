@@ -92,8 +92,8 @@ entity xdr is
 		xdr_dqi : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		xdr_dqt : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(line_size-1 downto 0) := (others => '-');
-		xdr_sti  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		xdr_sto  : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_sti : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
+		xdr_sto : out std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
 
 		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
@@ -366,7 +366,9 @@ begin
 		xdr_sch_dqsz,
 		xdr_sch_rwn,
 		xdr_sch_wwn)
+		variable aux : std_logic_vector(xdr_sch_dqz'reverse_range);
 	begin
+		aux := xdr_sch_dqz;
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to gear-1 loop
 				xdr_dqt(i*gear+j)  <= xdr_sch_dqz(j);

@@ -71,8 +71,6 @@ entity xdr_sch is
 		xdr_dqz  : out std_logic_vector(0 to gear-1);
 		xdr_wwn  : out std_logic_vector(0 to gear-1));
 
-	constant clk_phases : natural := 2*clk_edges;
-
 end;
 
 library hdl4fpga;
