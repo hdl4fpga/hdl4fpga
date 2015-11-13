@@ -287,6 +287,7 @@ begin
 			sys_clk0  => sys_clk0,
 			sys_clk90 => sys_clk90,
 
+			sys_sti => ssti(i),
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),
 
@@ -300,7 +301,7 @@ begin
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
-			ddr_sto  => dsto(i),
+			ddr_sto  => ddr_sto(i),
 
 			ddr_dmt  => ddmt(i),
 
@@ -319,11 +320,13 @@ begin
 	process(ddr_dm, ddr_sti)
 	begin
 		for i in 0 to word_size/byte_size-1 loop
-			if loopback=true then
-				sys_sto(i) <= ddr_sti(i);
-			else
-				sys_sto(i) <= ddr_dm(i);
-			end if;
+			for j in 0 to data_phases-1 loop
+				if loopback=true then
+					sys_sto(data_phases*i+j) <= ddr_sti(i);
+				else
+					sys_sto(data_phases*i+j) <= ddr_dm(i);
+				end if;
+			end loop;
 		end loop;
 	end process;
 

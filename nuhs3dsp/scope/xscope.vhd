@@ -71,7 +71,6 @@ architecture scope of nuhs3dsp is
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
-	signal sto : std_logic;
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_ras : std_logic_vector(cmd_phases-1 downto 0);
@@ -208,7 +207,7 @@ begin
 		ddrs_clks(0) => ddrs_clk0,
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
-		ddrs_cl  => "101",
+		ddrs_cl  => "011",
 		ddr_cke  => ddrphy_cke(0),
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
@@ -252,7 +251,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		loopback => false,
+		loopback => TRUE,
 		BANK_SIZE => ddr_ba'length,
 		ADDR_SIZE => ddr_a'length,
 		LINE_SIZE => line_size,

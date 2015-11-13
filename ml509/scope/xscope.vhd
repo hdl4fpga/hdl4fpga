@@ -300,8 +300,6 @@ begin
 
 	sto <= ddrphy_sto(0);
 
-	ddrphy_sti <= ddrphy_dmi;
-
 	ddrphy_dqi2 <= ddrphy_dqi;
 
 	ddrphy_e : entity hdl4fpga.ddrphy
@@ -334,6 +332,8 @@ begin
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
+		sys_sti => ddrphy_sto,
+		sys_sto => ddrphy_sti,
 
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
