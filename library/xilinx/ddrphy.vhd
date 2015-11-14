@@ -25,6 +25,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity ddrphy is
 	generic (
 		loopback : boolean;
@@ -48,7 +51,7 @@ entity ddrphy is
 		sys_a    : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
 		sys_odt  : in  std_logic_vector(cmd_phases-1 downto 0);
 
-		sys_dmt  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmt  : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		sys_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -58,8 +61,8 @@ entity ddrphy is
 		sys_dqso : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
-		sys_sti  : in  std_logic_vector(0 to data_gear*word_size/byte_size-1) := (others => '-');
-		sys_sto  : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';

@@ -254,7 +254,7 @@ begin
 		loopback => TRUE,
 		BANK_SIZE => ddr_ba'length,
 		ADDR_SIZE => ddr_a'length,
-		LINE_SIZE => line_size,
+		data_gear => line_size/word_size,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (

@@ -92,8 +92,8 @@ entity xdr is
 		xdr_dqi : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
 		xdr_dqt : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(line_size-1 downto 0) := (others => '-');
-		xdr_sti : in  std_logic_vector(0 to data_phases*word_size/byte_size-1) := (others => '-');
-		xdr_sto : out std_logic_vector(0 to data_phases*word_size/byte_size-1) := (others => '-');
+		xdr_sti : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		xdr_sto : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
 
 		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
 		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
@@ -372,7 +372,7 @@ begin
 				xdr_dmt(i*gear+j)  <= reverse(xdr_sch_dqz)(j);
 				xdr_dqso(i*gear+j) <= xdr_sch_dqs(j);
 				xdr_dqst(i*gear+j) <= not xdr_sch_dqsz(j);
-				xdr_sto(i*gear+j)  <= xdr_sch_st(j);
+				xdr_sto(i*gear+j)  <= reverse(xdr_sch_st)(j);
 				xdr_wenas(i*gear+j) <= xdr_sch_wwn(j);
 				xdr_dmo(i*gear+j) <= xdr_wr_dm(i*gear+j);
 			end loop;
