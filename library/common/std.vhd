@@ -180,17 +180,15 @@ package std is
 		constant e : std_logic := '1')
 		return std_logic_vector;
 
-	impure function word2byte (
+	function word2byte (
 		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant litt : std_logic := '1')
+		constant addr : std_logic_vector)
 		return std_logic_vector;
 
 	function byte2word (
 		constant byte : std_logic_vector;
 		constant mask : std_logic_vector;
-		constant word : std_logic_vector;
-		constant litt : std_logic := '1')
+		constant word : std_logic_vector)
 		return std_logic_vector;
 
 	function byte2word (
@@ -668,10 +666,9 @@ package body std is
 		return o;
 	end;
 
-	impure function word2byte (
+	function word2byte (
 		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant litt : std_logic := '1')
+		constant addr : std_logic_vector)
 		return std_logic_vector is
 		variable byte : std_logic_vector(word'length/2**addr'length-1 downto 0); 
 	begin
@@ -684,8 +681,7 @@ package body std is
 	function byte2word (
 		constant byte : std_logic_vector;
 		constant mask : std_logic_vector;
-		constant word : std_logic_vector;
-		constant litt : std_logic := '1')
+		constant word : std_logic_vector)
 		return std_logic_vector is
 		variable di : std_logic_vector(0 to byte'length-1);
 		variable do : std_logic_vector(0 to word'length-1);

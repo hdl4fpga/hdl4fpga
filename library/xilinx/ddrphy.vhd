@@ -28,11 +28,10 @@ use ieee.numeric_std.all;
 entity ddrphy is
 	generic (
 		loopback : boolean;
-		data_phases : natural := 2;
 		cmd_phases : natural := 1;
+		data_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		line_size : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
@@ -49,18 +48,18 @@ entity ddrphy is
 		sys_a    : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
 		sys_odt  : in  std_logic_vector(cmd_phases-1 downto 0);
 
-		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
+		sys_dmt  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqo  : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqi  : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
-		sys_sti  : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
-		sys_sto  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqst : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sti  : in  std_logic_vector(0 to data_gear*word_size/byte_size-1) := (others => '-');
+		sys_sto  : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -80,7 +79,7 @@ entity ddrphy is
 		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
-	constant gear : natural := line_size/word_size;
+
 end;
 
 library hdl4fpga;
@@ -93,10 +92,10 @@ architecture virtex of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(line_size*byte_size/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(data_gear*byte_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(data_gear-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 	function to_bytevector (
@@ -191,8 +190,8 @@ architecture virtex of ddrphy is
 	begin	
 		dat := arg;
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in gear-1 downto 0 loop
-				val(i*gear+j) := dat(j*word_size/byte_size+i);
+			for j in data_gear-1 downto 0 loop
+				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return val;
@@ -206,8 +205,8 @@ architecture virtex of ddrphy is
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in line_size/word_size-1 downto 0 loop
-				val(i*line_size/word_size+j) := dat(j*word_size/byte_size+i);
+			for j in data_gear-1 downto 0 loop
+				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
@@ -275,13 +274,11 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
-		signal clks : std_logic_vector(data_phases-1 downto 0);
-	begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			loopback => loopback,
-			line_size => line_size*byte_size/word_size,
+			gear => data_gear,
 			byte_size => byte_size)
 		port map (
 			sys_clk0  => sys_clk0,
@@ -304,6 +301,7 @@ begin
 			ddr_sto  => ddr_sto(i),
 
 			ddr_dmt  => ddmt(i),
+			ddr_dmo  => ddmo(i),
 
 			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddr_dqso(i));
@@ -312,19 +310,19 @@ begin
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
 			xi  => ddr_dqsi(i),
-			x_p => sys_dqsi(data_phases*i+0),
-			x_n => sys_dqsi(data_phases*i+1));
+			x_p => sys_dqsi(data_gear*i+0),
+			x_n => sys_dqsi(data_gear*i+1));
 
 	end generate;
 
 	process(ddr_dm, ddr_sti)
 	begin
 		for i in 0 to word_size/byte_size-1 loop
-			for j in 0 to data_phases-1 loop
+			for j in 0 to data_gear-1 loop
 				if loopback=true then
-					sys_sto(data_phases*i+j) <= ddr_sti(i);
+					sys_sto(data_gear*i+j) <= ddr_sti(i);
 				else
-					sys_sto(data_phases*i+j) <= ddr_dm(i);
+					sys_sto(data_gear*i+j) <= ddr_dm(i);
 				end if;
 			end loop;
 		end loop;

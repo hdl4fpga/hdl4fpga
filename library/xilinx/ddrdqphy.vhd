@@ -28,20 +28,20 @@ use ieee.numeric_std.all;
 entity ddrdqphy is
 	generic (
 		loopback : boolean;
-		line_size : natural;
+		gear : natural;
 		byte_size : natural);
 	port (
 		sys_clk0 : in  std_logic;
 		sys_clk90 : in  std_logic;
-		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
-		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		sys_sti  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		sys_sto  : out  std_logic_vector(line_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
-		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
+		sys_dmt  : in  std_logic_vector(0 to gear-1) := (others => '-');
+		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
+		sys_sto  : out std_logic_vector(0 to gear-1);
+		sys_dqo  : in  std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqt  : in  std_logic_vector(gear-1 downto 0);
+		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqso : in  std_logic_vector(0 to gear-1);
+		sys_dqst : in  std_logic_vector(0 to gear-1);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -53,7 +53,6 @@ entity ddrdqphy is
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
-	constant data_phases : natural := 2;
 end;
 
 library hdl4fpga;
@@ -69,7 +68,7 @@ architecture virtex of ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		phase_g : for j in  data_phases-1 downto 0 generate
+		phase_g : for j in  gear-1 downto 0 generate
 			sys_dqi(j*byte_size+i) <= ddr_dqi(i);
 		end generate;
 	end generate;
@@ -98,13 +97,13 @@ begin
 		process (sys_dmi, sys_dmt, sys_sti)
 		begin
 			for i in sys_dmi'range loop
-				if sys_dmt(i)='1' then
+				if sys_dmt(i)='0' then
 					dmi(i) <= sys_dmi(i);
 				else
 					dmi(i) <= sys_sti(i);
 				end if;
 
-				if loopback=true then
+				if loopback=false then
 					dmt(i) <= '0';
 				else
 					dmt(i) <= sys_dmt(i);

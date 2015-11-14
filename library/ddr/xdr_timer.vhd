@@ -41,7 +41,7 @@ end;
 
 architecture def of xdr_timer is
 
-	constant stages : natural := unsigned_num_bits(max(timers))/6;
+	constant stages : natural := unsigned_num_bits(max(timers))/5;
 	constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	subtype tword is std_logic_vector(timer_size-1 downto 0);
 	type tword_vector is array (natural range <>) of tword;

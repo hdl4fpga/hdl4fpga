@@ -37,7 +37,8 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of ml509 is
-	constant sclk_phases : natural := 2;
+	constant sclk_phases : natural := 4;
+	constant sclk_edges : natural := 2;
 	constant data_phases : natural := 2;
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
@@ -236,8 +237,7 @@ begin
 	generic map (
 		DDR_MARK => M3,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
-		DDR_SCLKEDGES => 2,
-		DDR_SCLKPHASES => 4,
+		DDR_SCLKEDGES => sclk_edges,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
 		DDR_BANKSIZE => ddr2_ba'length,
@@ -250,7 +250,7 @@ begin
 	port map (
 
 --		input_rst => input_rst,
-		input_clk => ddrs_clk0, --input_clk,
+		input_clk => input_clk,
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks(0) => ddrs_clk0,
@@ -307,7 +307,7 @@ begin
 		LOOPBACK => FALSE,
 		BANK_SIZE => ddr2_ba'length,
 		ADDR_SIZE => ddr2_a'length,
-		LINE_SIZE => line_size,
+		data_gear => line_size/word_size,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (

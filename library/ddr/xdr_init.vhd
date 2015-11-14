@@ -219,8 +219,13 @@ begin
 			end if;
 		end if;
 	end process;
-	xdr_init_a <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
 
+	process (xdr_init_clk)
+	begin
+		if rising_edge(xdr_init_clk) then
+			xdr_init_a <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
+		end if;
+	end process;
 
 	process (xdr_init_clk)
 	begin
