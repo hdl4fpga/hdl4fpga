@@ -105,7 +105,8 @@ package xdr_param is
 	constant ddr_ref : ddr_cmd := (cs => '0', ras => '0', cas => '0', we => '1');
 	constant ddr_zqc : ddr_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
 
-	constant TMR2_RST : natural := 0;
+	constant TMR_RST : natural := 0;
+
 	constant TMR2_CKE : natural := 1;
 	constant TMR2_MRD : natural := 2;
 	constant TMR2_RPA : natural := 3;
@@ -113,7 +114,6 @@ package xdr_param is
 	constant TMR2_DLL : natural := 5;
 	constant TMR2_REF : natural := 6;
 
-	constant TMR3_RST     : natural := 0;
 	constant TMR3_WLC     : natural := 1;
 	constant TMR3_WLDQSEN : natural := 2;
 	constant TMR3_RRDY    : natural := 3;
@@ -298,7 +298,7 @@ package body xdr_param is
 		constant stdr : natural := xdr_stdr(mark);
 
 		constant ddr2_timer : natural_vector := (
-				TMR2_RST => to_xdrlatency(tCP, mark, tPreRST),
+				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
 				TMR2_MRD => xdr_latency(stdr, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
@@ -307,7 +307,7 @@ package body xdr_param is
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 
 		constant ddr3_timer : natural_vector := (
-				TMR3_RST => to_xdrlatency(tCP, mark, tPreRST),
+				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 				TMR3_RRDY => to_xdrlatency(tCP, mark, tPstRST),
 				TMR3_WLC => xdr_latency(stdr, MODu),
 				TMR3_WLDQSEN => 25,
