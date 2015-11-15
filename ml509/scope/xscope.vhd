@@ -46,6 +46,7 @@ architecture scope of ml509 is
 	constant line_size : natural := 2*16;
 	constant word_size : natural := 16;
 	constant byte_size : natural := 8;
+	constant data_gear : natural := line_size/word_size;
 
 	constant uclk_period : real := 10.0;
 
@@ -96,6 +97,7 @@ architecture scope of ml509 is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddr_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
@@ -277,7 +279,7 @@ begin
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
 		ddr_sto  => ddrphy_sto,
-		ddr_sti  => ddrphy_sti,
+		ddr_sti  => ddr_sti,
 
 --		mii_rst  => mii_rst,
 		mii_rxc  => phy_rxclk,
@@ -307,7 +309,7 @@ begin
 		LOOPBACK => FALSE,
 		BANK_SIZE => ddr2_ba'length,
 		ADDR_SIZE => ddr2_a'length,
-		data_gear => line_size/word_size,
+		data_gear => data_gear,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
@@ -372,7 +374,7 @@ begin
 		iob_txd  => phy_txd,
 		iob_gtxclk => phy_txc_gtxclk);
 
-	ddr2_dqs_g : for i in ddr2_dqsi'range generate
+	ddr2_dqs_g : for i in 0 to 2-1 generate
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
@@ -385,6 +387,15 @@ begin
 --			inc => '0',
 --			i   => dqsi,
 --			o   => ddr_dqsi(i));
+		dmidelay_i : idelay 
+		port map (
+			rst => ictlr_rst,
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i   => ddrphy_sti(i*data_gear),
+			o   => ddr_sti(i*data_gear));
+		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
 
 		dqsiobuf_i : iobufds
 		generic map (
@@ -402,15 +413,6 @@ begin
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
 
 		dqsiobuf_i : iobufds
 		generic map (

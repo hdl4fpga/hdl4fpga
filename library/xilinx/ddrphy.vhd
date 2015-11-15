@@ -77,7 +77,7 @@ entity ddrphy is
 		ddr_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		ddr_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
 
-		ddr_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dm  : inout  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
