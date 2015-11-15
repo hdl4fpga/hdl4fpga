@@ -395,6 +395,7 @@ begin
 			inc => '0',
 			i   => ddrphy_sti(i*data_gear),
 			o   => ddr_sti(i*data_gear));
+--		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
 		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
 
 		dqsiobuf_i : iobufds
@@ -410,10 +411,6 @@ begin
 	end generate;
 
 	ddr2_dqs27_g : for i in 2 to 8-1 generate
-		signal dqsi : std_logic;
-		signal st   : std_logic;
-	begin
-
 		dqsiobuf_i : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
