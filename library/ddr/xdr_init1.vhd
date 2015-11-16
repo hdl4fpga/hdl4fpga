@@ -136,20 +136,20 @@ architecture ddr2 of xdr_init is
 	                            --    ||||||
                                 --    vvvvvv
 	constant ddr2_pgm : s_table := (
-		(sc2_rst,  sc2_cke,  "0", "0", "110000", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_CKE)), 
+		(sc2_rst,  sc2_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_CKE)), 
 		(sc2_cke,  sc2_pre1, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_tidword(TMR2_RPA)), 
 		(sc2_pre1, sc2_lm1,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, to_tidword(TMR2_MRD)), 
 		(sc2_lm1,  sc2_lm2,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, to_tidword(TMR2_MRD)), 
 		(sc2_lm2,  sc2_lm3,  "0", "0", "110000", ddr_mrs, ddr2mr_enadll,  ddr_mr1, to_tidword(TMR2_MRD)), 
 		(sc2_lm3,  sc2_lm4,  "0", "0", "110000", ddr_mrs, ddr2mr_rstdll,  ddr_mr0, to_tidword(TMR2_MRD)), 
 		(sc2_lm4,  sc2_pre2, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_tidword(TMR2_RPA)),
-		(sc2_pre2, sc2_ref1, "0", "0", "110001", ddr_ref, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
-		(sc2_ref1, sc2_ref2, "0", "0", "110001", ddr_ref, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
+		(sc2_pre2, sc2_ref1, "0", "0", "110001", ddr_ref, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
+		(sc2_ref1, sc2_ref2, "0", "0", "110001", ddr_ref, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_RFC)), 
 		(sc2_ref2, sc2_lm5,  "0", "0", "110011", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_tidword(TMR2_MRD)),  
 		(sc2_lm5,  sc2_lm6,  "0", "0", "110111", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
 		(sc2_lm6,  sc2_lm7,  "0", "0", "110111", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
-		(sc2_lm7,  sc2_ref,  "0", "0", "111100", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_REF)),  
-		(sc2_ref,  sc2_ref,  "0", "0", "111100", ddr_nop, ddr2mr_mrx,     ddr_mrx, to_tidword(TMR2_REF)));
+		(sc2_lm7,  sc2_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)),  
+		(sc2_ref,  sc2_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)));
 
  	constant sc3_rst  : s_code := "0000";
  	constant sc3_rrdy : s_code := "0001";
@@ -167,21 +167,21 @@ architecture ddr2 of xdr_init is
  	constant sc3_ref  : s_code := "1011";
  
  	constant ddr3_pgm : s_table := (
- 		(sc3_rst,  sc3_rrdy, "0", "0", "100000", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_RRDY)),
- 		(sc3_rrdy, sc3_cke,  "0", "0", "110000", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_CKE)), 
- 		(sc3_cke,  sc3_lmr2, "0", "0", "110000", ddr_mrs, ddr3mr_mr2, ddr_mr2, to_tidword(TMR3_MRD)), 
- 		(sc3_lmr2, sc3_lmr3, "0", "0", "110000", ddr_mrs, ddr3mr_mr3, ddr_mr3, to_tidword(TMR3_MRD)), 
- 		(sc3_lmr3, sc3_lmr1, "0", "0", "110000", ddr_mrs, ddr3mr_mr1, ddr_mr1, to_tidword(TMR3_MRD)), 
- 		(sc3_lmr1, sc3_lmr0, "0", "0", "110000", ddr_mrs, ddr3mr_mr0, ddr_mr0, to_tidword(TMR3_MOD)), 
- 		(sc3_lmr0, sc3_zqi,  "0", "0", "110000", ddr_zqc, ddr3mr_mrz, ddr_mrx, to_tidword(TMR3_ZQINIT)),
- 		(sc3_zqi,  sc3_wle,  "0", "0", "110001", ddr_mrs, ddr3mr_mr1, ddr_mr1, to_tidword(TMR3_MOD)), 
- 		(sc3_wle,  sc3_wlc,  "0", "0", "110011", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_WLDQSEN)),  
- 		(sc3_wls,  sc3_wlc,  "0", "0", "110111", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
- 		(sc3_wlc,  sc3_wlc,  "1", "0", "110111", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
- 		(sc3_wlc,  sc3_wlo,  "1", "1", "110100", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_MRD)),  
- 		(sc3_wlo,  sc3_wlf,  "0", "0", "110100", ddr_mrs, ddr3mr_mr1, ddr_mr1, to_tidword(TMR3_MOD)),  
- 		(sc3_wlf,  sc3_ref,  "0", "0", "111100", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_REF)),
- 		(sc3_ref,  sc3_ref,  "0", "0", "111100", ddr_nop, ddr3mr_mrx, ddr_mrx, to_tidword(TMR3_REF)));
+ 		(sc3_rst,  sc3_rrdy, "0", "0", "100000", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_RRDY)),
+ 		(sc3_rrdy, sc3_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_CKE)), 
+ 		(sc3_cke,  sc3_lmr2, "0", "0", "110000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, to_tidword(TMR3_MRD)), 
+ 		(sc3_lmr2, sc3_lmr3, "0", "0", "110000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, to_tidword(TMR3_MRD)), 
+ 		(sc3_lmr3, sc3_lmr1, "0", "0", "110000", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_tidword(TMR3_MRD)), 
+ 		(sc3_lmr1, sc3_lmr0, "0", "0", "110000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, to_tidword(TMR3_MOD)), 
+ 		(sc3_lmr0, sc3_zqi,  "0", "0", "110000", ddr_zqc, ddr3mr_zqc, ddr_mrx, to_tidword(TMR3_ZQINIT)),
+ 		(sc3_zqi,  sc3_wle,  "0", "0", "110001", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_tidword(TMR3_MOD)), 
+ 		(sc3_wle,  sc3_wlc,  "0", "0", "110011", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLDQSEN)),  
+ 		(sc3_wls,  sc3_wlc,  "0", "0", "110111", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
+ 		(sc3_wlc,  sc3_wlc,  "1", "0", "110111", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
+ 		(sc3_wlc,  sc3_wlo,  "1", "1", "110100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_MRD)),  
+ 		(sc3_wlo,  sc3_wlf,  "0", "0", "110100", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_tidword(TMR3_MOD)),  
+ 		(sc3_wlf,  sc3_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)),
+ 		(sc3_ref,  sc3_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)));
  
 	impure function choose_pgm (
 		constant ddr_stdr : natural)

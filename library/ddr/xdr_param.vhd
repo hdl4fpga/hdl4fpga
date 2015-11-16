@@ -81,7 +81,8 @@ package xdr_param is
 
 	subtype ddrmr_addr is std_logic_vector(3-1 downto 0);
 
-	constant ddr2mr_mrx     : ddrmr_addr := (others => '1');
+	constant ddrmr_mrx     : ddrmr_addr := (others => '1');
+
 	constant ddr2mr_setemr2 : ddrmr_addr := "001";
 	constant ddr2mr_setemr3 : ddrmr_addr := "110";
 	constant ddr2mr_enadll  : ddrmr_addr := "111";
