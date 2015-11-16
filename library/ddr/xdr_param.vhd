@@ -80,6 +80,7 @@ package xdr_param is
 	constant ddr_mr3 : ddrmr_id := "011";
 
 	subtype ddrmr_addr is std_logic_vector(3-1 downto 0);
+
 	constant ddr2mr_mrx     : ddrmr_addr := (others => '1');
 	constant ddr2mr_setemr2 : ddrmr_addr := "001";
 	constant ddr2mr_setemr3 : ddrmr_addr := "110";
@@ -89,6 +90,12 @@ package xdr_param is
 	constant ddr2mr_setmr   : ddrmr_addr := "000";
 	constant ddr2mr_seteOCD : ddrmr_addr := "010";
 	constant ddr2mr_setdOCD : ddrmr_addr := "011";
+
+	constant ddr3mr_setmr0  : ddrmr_addr := "000";
+	constant ddr3mr_setmr1  : ddrmr_addr := "001";
+	constant ddr3mr_setmr2  : ddrmr_addr := "010";
+	constant ddr3mr_setmr3  : ddrmr_addr := "011";
+	constant ddr3mr_zqc     : ddrmr_addr := "100";
 
 	type ddrmr_vector is array (natural range <>) of ddrmr_addr;
 
