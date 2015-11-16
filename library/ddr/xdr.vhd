@@ -215,6 +215,8 @@ begin
 
 	xdr_init_req <= rst;
 	xdr_mr_e : entity hdl4fpga.xdr_mr
+	generic map (
+		ddr_stdr => stdr)
 	port map (
 		xdr_mr_bl  => sys_bl,
 		xdr_mr_cl  => sys_cl,
@@ -228,6 +230,7 @@ begin
 
 	xdr_init_e : entity hdl4fpga.xdr_init
 	generic map (
+		ddr_stdr => stdr,
 		timers => timers,
 		addr_size => addr_size,
 		bank_size => bank_size)

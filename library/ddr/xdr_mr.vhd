@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.xdr_db.all;
 use hdl4fpga.xdr_param.all;
 
 entity xdr_mr is
@@ -59,7 +60,7 @@ entity xdr_mr is
 		xdr_mr_data : out std_logic_vector(13-1 downto 0) := (others => '0'));
 end;
 
-architecture ddr2 of xdr_mr is
+architecture def of xdr_mr is
 
 	function mr_field (
 		constant mask : fd_vector;
@@ -166,7 +167,7 @@ architecture ddr2 of xdr_mr is
 		return (xdr_mr_data'range => '0');
 	end;
 
-	function ddr2_mr (
+	function ddr2_mrfile (
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
@@ -233,7 +234,7 @@ architecture ddr2 of xdr_mr is
 			mr_file => mr_file);
 	end;
 
-	function ddr3_mr (
+	function ddr3_mrfile (
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
@@ -243,11 +244,16 @@ architecture ddr2 of xdr_mr is
 		constant xdr_mr_ods  : std_logic_vector;
 		constant xdr_mr_rtt  : std_logic_vector;
 		constant xdr_mr_al   : std_logic_vector;
-		constant xdr_mr_ocd  : std_logic_vector;
 		constant xdr_mr_tdqs : std_logic_vector;
-		constant xdr_mr_rdqs : std_logic_vector;
+		constant xdr_mr_wl   : std_logic_vector;
+		constant xdr_mr_qoff : std_logic_vector;
+		constant xdr_mr_drtt : std_logic_vector;
+		constant xdr_mr_mprrf : std_logic_vector;
+		constant xdr_mr_mpr  : std_logic_vector;
+		constant xdr_mr_zqc  : std_logic_vector;
+		constant xdr_mr_asr  : std_logic_vector;
 		constant xdr_mr_pd   : std_logic_vector;
-		constant xdr_mr_wl   : std_logic_vector)
+		constant xdr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
 		variable mr_file : mr_vector(0 to 5-1);
 	begin
@@ -288,11 +294,12 @@ architecture ddr2 of xdr_mr is
 
 		return ddrmr_data (
 			mr_addr => xdr_mr_addr,
-			mr_file => mr_file));
+			mr_file => mr_file);
 	end;
 
 	function ddr_mrfile(
 		constant xdr_stdr : natural;
+
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
@@ -305,13 +312,20 @@ architecture ddr2 of xdr_mr is
 		constant xdr_mr_ocd  : std_logic_vector;
 		constant xdr_mr_tdqs : std_logic_vector;
 		constant xdr_mr_rdqs : std_logic_vector;
-		constant xdr_mr_wl   : std_logic_vector);
+		constant xdr_mr_wl   : std_logic_vector;
+		constant xdr_mr_qoff : std_logic_vector;
+		constant xdr_mr_drtt : std_logic_vector;
+		constant xdr_mr_mprrf : std_logic_vector;
+		constant xdr_mr_mpr  : std_logic_vector;
+		constant xdr_mr_zqc  : std_logic_vector;
+		constant xdr_mr_asr  : std_logic_vector;
+		constant xdr_mr_pd   : std_logic_vector;
+		constant xdr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
-		variable nullrange : mr_vector(1 to 0);
 	begin
-		case xdr_stdr is
-		when DDR2 =>
+		if xdr_stdr=DDR2 then
 			return ddr2_mrfile(
+				xdr_mr_addr => xdr_mr_addr,
 				xdr_mr_srt  => xdr_mr_srt,
 				xdr_mr_bl   => xdr_mr_bl,
 				xdr_mr_bt   => xdr_mr_bt,
@@ -324,29 +338,35 @@ architecture ddr2 of xdr_mr is
 				xdr_mr_tdqs => xdr_mr_tdqs,
 				xdr_mr_rdqs => xdr_mr_rdqs,
 				xdr_mr_wl   => xdr_mr_wl);
-		when DDR3 =>
+		elsif xdr_stdr=DDR3 then
 			return ddr3_mrfile(
-				xdr_mr_srt  => xdr_mr_srt,
-				xdr_mr_bl   => xdr_mr_bl,
-				xdr_mr_bt   => xdr_mr_bt,
-				xdr_mr_cl   => xdr_mr_cl,
-				xdr_mr_wr   => xdr_mr_wr,
-				xdr_mr_ods  => xdr_mr_ods,
-				xdr_mr_rtt  => xdr_mr_rtt,
-				xdr_mr_al   => xdr_mr_al,
-				xdr_mr_ocd  => xdr_mr_ocd,
-				xdr_mr_tdqs => xdr_mr_tdqs,
-				xdr_mr_rdqs => xdr_mr_rdqs,
-				xdr_mr_wl   => xdr_mr_wl);
-		when others =>
-			return nullrange;
-		end case;
-		return nullrange;
+				xdr_mr_addr  => xdr_mr_addr,
+				xdr_mr_srt   => xdr_mr_srt,
+				xdr_mr_bl    => xdr_mr_bl,
+				xdr_mr_bt    => xdr_mr_bt,
+				xdr_mr_cl    => xdr_mr_cl,
+				xdr_mr_wr    => xdr_mr_wr,
+				xdr_mr_ods   => xdr_mr_ods,
+				xdr_mr_rtt   => xdr_mr_rtt,
+				xdr_mr_al    => xdr_mr_al,
+				xdr_mr_qoff  => xdr_mr_qoff,
+				xdr_mr_tdqs  => xdr_mr_tdqs,
+				xdr_mr_drtt  => xdr_mr_drtt,
+				xdr_mr_mprrf => xdr_mr_mprrf,
+				xdr_mr_mpr   => xdr_mr_mpr,
+				xdr_mr_zqc   => xdr_mr_zqc,
+				xdr_mr_asr   => xdr_mr_asr,
+				xdr_mr_pd    => xdr_mr_pd,
+				xdr_mr_cwl   => xdr_mr_cwl,
+				xdr_mr_wl    => xdr_mr_wl);
+		end if;
+		return (1 to 0 => '-');
 	end;
 
 begin
 
 	xdr_mr_data <= ddr_mrfile(
+		xdr_stdr => ddr_stdr,
 		xdr_mr_addr => xdr_mr_addr, 
 		xdr_mr_srt  => xdr_mr_srt,
 		xdr_mr_bl   => xdr_mr_bl,
@@ -359,5 +379,13 @@ begin
 		xdr_mr_ocd  => xdr_mr_ocd,
 		xdr_mr_tdqs => xdr_mr_tdqs,
 		xdr_mr_rdqs => xdr_mr_rdqs,
-		xdr_mr_wl   => xdr_mr_wl);
+		xdr_mr_wl   => xdr_mr_wl,
+		xdr_mr_qoff => xdr_mr_qoff,
+		xdr_mr_drtt => xdr_mr_drtt,
+		xdr_mr_mprrf=> xdr_mr_mprrf,
+		xdr_mr_mpr  => xdr_mr_mpr,
+		xdr_mr_zqc  => xdr_mr_zqc,
+		xdr_mr_asr  => xdr_mr_asr,
+		xdr_mr_pd   => xdr_mr_pd,
+		xdr_mr_cwl  => xdr_mr_cwl);
 end;

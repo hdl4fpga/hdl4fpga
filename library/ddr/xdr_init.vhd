@@ -31,10 +31,11 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_param.all;
+use hdl4fpga.xdr_db.all;
 
 entity xdr_init is
 	generic (
-		ddr_stdr ; natural;
+		ddr_stdr : natural;
 		timers : natural_vector := (1 to 0 => 0);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
@@ -71,7 +72,7 @@ entity xdr_init is
 	end;
 end;
 
-architecture ddr2 of xdr_init is
+architecture def of xdr_init is
 
 	subtype s_code is std_logic_vector(0 to 4-1);
 
@@ -111,7 +112,9 @@ architecture ddr2 of xdr_init is
 
 	type s_table is array (natural range <>) of s_row;
 
-	constant sc2_rst  : s_code := "0000";
+	constant sc_rst  : s_code := "0000";
+	constant sc_ref  : s_code := "1011";
+
 	constant sc2_cke  : s_code := "0001";
 	constant sc2_pre1 : s_code := "0011";
 	constant sc2_lm1  : s_code := "0010";
@@ -124,7 +127,6 @@ architecture ddr2 of xdr_init is
 	constant sc2_lm5  : s_code := "1111";
 	constant sc2_lm6  : s_code := "1110";
 	constant sc2_lm7  : s_code := "1010";
-	constant sc2_ref  : s_code := "1011";
 
 
 	                            --    +------< rst
@@ -136,7 +138,7 @@ architecture ddr2 of xdr_init is
 	                            --    ||||||
                                 --    vvvvvv
 	constant ddr2_pgm : s_table := (
-		(sc2_rst,  sc2_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_CKE)), 
+		(sc_rst,   sc2_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_CKE)), 
 		(sc2_cke,  sc2_pre1, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_tidword(TMR2_RPA)), 
 		(sc2_pre1, sc2_lm1,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr2, ddr_mr2, to_tidword(TMR2_MRD)), 
 		(sc2_lm1,  sc2_lm2,  "0", "0", "110000", ddr_mrs, ddr2mr_setemr3, ddr_mr3, to_tidword(TMR2_MRD)), 
@@ -148,10 +150,9 @@ architecture ddr2 of xdr_init is
 		(sc2_ref2, sc2_lm5,  "0", "0", "110011", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_tidword(TMR2_MRD)),  
 		(sc2_lm5,  sc2_lm6,  "0", "0", "110111", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
 		(sc2_lm6,  sc2_lm7,  "0", "0", "110111", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_tidword(TMR2_MRD)),  
-		(sc2_lm7,  sc2_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)),  
-		(sc2_ref,  sc2_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)));
+		(sc2_lm7,  sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)),  
+		(sc_ref,   sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_tidword(TMR2_REF)));
 
- 	constant sc3_rst  : s_code := "0000";
  	constant sc3_rrdy : s_code := "0001";
  	constant sc3_cke  : s_code := "0011";
  	constant sc3_lmr2 : s_code := "0010";
@@ -164,10 +165,9 @@ architecture ddr2 of xdr_init is
  	constant sc3_wlc  : s_code := "1111";
  	constant sc3_wlo  : s_code := "1110";
  	constant sc3_wlf  : s_code := "1010";
- 	constant sc3_ref  : s_code := "1011";
  
  	constant ddr3_pgm : s_table := (
- 		(sc3_rst,  sc3_rrdy, "0", "0", "100000", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_RRDY)),
+ 		(sc_rst,   sc3_rrdy, "0", "0", "100000", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_RRDY)),
  		(sc3_rrdy, sc3_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_CKE)), 
  		(sc3_cke,  sc3_lmr2, "0", "0", "110000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, to_tidword(TMR3_MRD)), 
  		(sc3_lmr2, sc3_lmr3, "0", "0", "110000", ddr_mrs, ddr3mr_setmr3, ddr_mr3, to_tidword(TMR3_MRD)), 
@@ -180,20 +180,19 @@ architecture ddr2 of xdr_init is
  		(sc3_wlc,  sc3_wlc,  "1", "0", "110111", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
  		(sc3_wlc,  sc3_wlo,  "1", "1", "110100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_MRD)),  
  		(sc3_wlo,  sc3_wlf,  "0", "0", "110100", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_tidword(TMR3_MOD)),  
- 		(sc3_wlf,  sc3_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)),
- 		(sc3_ref,  sc3_ref,  "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)));
+ 		(sc3_wlf,  sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)),
+ 		(sc_ref,   sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_REF)));
  
 	impure function choose_pgm (
-		constant ddr_stdr : natural)
+		constant xdr_stdr : natural)
 		return s_table is
 	begin
-		case stdr is
+		case xdr_stdr is
 		when DDR2 =>
-			return pgm2;
+			return ddr2_pgm;
 		when others =>
-			return pgm3;
+			return ddr3_pgm;
 		end case;
-		return pgm3;
 	end;
 
 	constant pgm : s_table := choose_pgm(ddr_stdr);
@@ -222,7 +221,7 @@ begin
 					cmd => (cs => '-', ras => '-', cas => '-', we => '-'), 
 					bnk => (others => '-'),
 					mr  => (others => '-'),
-					tid => to_tidword(TMR2_RST));
+					tid => to_tidword(TMR_RST));
 				for i in pgm'range loop
 					if pgm(i).state=xdr_init_pc then
 						if ((pgm(i).input xor input) and pgm(i).mask)=(input'range => '0') then
