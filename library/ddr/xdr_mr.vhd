@@ -77,6 +77,20 @@ architecture def of xdr_mr is
 
 	type mr_vector is array (natural range <>) of mr_row;
 
+	-- DDR1 Mode Register --
+	------------------------
+
+	constant ddr1_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
+	constant ddr1_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
+	constant ddr1_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
+	constant ddr1_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
+
+	-- DDR1 Extended Mode Register --
+	---------------------------------
+
+	constant ddr1_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
+	constant ddr1_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
+
 	-- DDR2 Mode Register --
 	------------------------
 
@@ -165,6 +179,44 @@ architecture def of xdr_mr is
 			end if;
 		end loop;
 		return (xdr_mr_data'range => '0');
+	end;
+
+	function ddr1_mrfile (
+		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_bl   : std_logic_vector;
+		constant xdr_mr_bt   : std_logic_vector;
+		constant xdr_mr_cl   : std_logic_vector;
+		constant xdr_mr_ods  : std_logic_vector)
+		return std_logic_vector is
+		variable mr_file : mr_vector(0 to 4-1);
+	begin
+		mr_file := (
+			(mr   => ddr2mr_enadll, 
+			 data => (
+				mr_field(mask => ddr2_edll, src => "0") or
+				mr_field(mask => ddr2_ods,  src => xdr_mr_ods))),
+
+			(mr   => ddr2mr_rstdll, 
+			 data => (
+				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
+				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
+				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
+				mr_field(mask => ddr2_rdll, src => "1"))),
+
+			(mr   => ddr2mr_setmr, 
+			 data => (
+				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
+				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
+				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
+				mr_field(mask => ddr2_rdll, src => "0"))),
+
+			(mr   => ddr2mr_preall, 
+			 data => (
+				mr_field(mask => ddr2_preall, src => "1"))));
+
+		return ddrmr_data(
+			mr_addr => xdr_mr_addr,
+			mr_file => mr_file);
 	end;
 
 	function ddr2_mrfile (
@@ -323,7 +375,16 @@ architecture def of xdr_mr is
 		constant xdr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
 	begin
-		if xdr_stdr=DDR2 then
+		case xdr_stdr is
+		when DDR1 =>
+			return ddr1_mrfile(
+				xdr_mr_addr => xdr_mr_addr,
+				xdr_mr_bl   => xdr_mr_bl,
+				xdr_mr_bt   => xdr_mr_bt,
+				xdr_mr_cl   => xdr_mr_cl,
+				xdr_mr_ods  => xdr_mr_ods);
+
+		when DDR2 =>
 			return ddr2_mrfile(
 				xdr_mr_addr => xdr_mr_addr,
 				xdr_mr_srt  => xdr_mr_srt,
@@ -338,7 +399,8 @@ architecture def of xdr_mr is
 				xdr_mr_tdqs => xdr_mr_tdqs,
 				xdr_mr_rdqs => xdr_mr_rdqs,
 				xdr_mr_wl   => xdr_mr_wl);
-		elsif xdr_stdr=DDR3 then
+
+		when others =>
 			return ddr3_mrfile(
 				xdr_mr_addr  => xdr_mr_addr,
 				xdr_mr_srt   => xdr_mr_srt,
@@ -359,7 +421,7 @@ architecture def of xdr_mr is
 				xdr_mr_pd    => xdr_mr_pd,
 				xdr_mr_cwl   => xdr_mr_cwl,
 				xdr_mr_wl    => xdr_mr_wl);
-		end if;
+		end case;
 		return (1 to 0 => '-');
 	end;
 

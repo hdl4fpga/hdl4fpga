@@ -41,31 +41,6 @@ package xdr_param is
 
 	type fd_vector is array (natural range <>) of fd;
 
-	function mr_field (
-		constant mask : fd_vector;
-		constant src  : std_logic_vector;
-		constant size : natural)
-		return std_logic_vector;
-
-	function xdr_rotval (
-		constant line_size : natural;
-		constant word_size : natural;
-		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector)
-		return std_logic_vector;
-
-	function xdr_task (
-		constant clk_phases : natural;
-		constant gear : natural;
-		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector;
-		constant lat_sch : std_logic_vector;
-		constant lat_ext : natural := 0;
-		constant lat_wid : natural := 1)
-		return std_logic_vector;
-
 	type ddr3_ccmd is record
 		cmd  : std_logic_vector( 3 downto 0);
 		bank : std_logic_vector( 2 downto 0);
@@ -82,6 +57,12 @@ package xdr_param is
 	subtype ddrmr_addr is std_logic_vector(3-1 downto 0);
 
 	constant ddrmr_mrx     : ddrmr_addr := (others => '1');
+
+	constant ddr1mr_setemr  : ddrmr_addr := "000";
+	constant ddr1mr_enadll  : ddrmr_addr := "001";
+	constant ddr1mr_rstdll  : ddrmr_addr := "010";
+	constant ddr1mr_preall  : ddrmr_addr := "011";
+	constant ddr1mr_setmr   : ddrmr_addr := "100";
 
 	constant ddr2mr_setemr2 : ddrmr_addr := "001";
 	constant ddr2mr_setemr3 : ddrmr_addr := "110";
@@ -115,6 +96,13 @@ package xdr_param is
 
 	constant TMR_RST : natural := 0;
 
+	constant TMR1_CKE : natural := 1;
+	constant TMR1_MRD : natural := 2;
+	constant TMR1_RPA : natural := 3;
+	constant TMR1_RFC : natural := 4;
+	constant TMR1_DLL : natural := 5;
+	constant TMR1_REF : natural := 6;
+
 	constant TMR2_CKE : natural := 1;
 	constant TMR2_MRD : natural := 2;
 	constant TMR2_RPA : natural := 3;
@@ -137,6 +125,31 @@ package xdr_param is
 		constant mark : natural;
 		constant gear : natural := 2)
 		return natural_vector;
+
+	function mr_field (
+		constant mask : fd_vector;
+		constant src  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
+
+	function xdr_rotval (
+		constant line_size : natural;
+		constant word_size : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector)
+		return std_logic_vector;
+
+	function xdr_task (
+		constant clk_phases : natural;
+		constant gear : natural;
+		constant lat_val : std_logic_vector;
+		constant lat_cod : std_logic_vector;
+		constant lat_tab : natural_vector;
+		constant lat_sch : std_logic_vector;
+		constant lat_ext : natural := 0;
+		constant lat_wid : natural := 1)
+		return std_logic_vector;
 
 end package;
 
@@ -305,6 +318,15 @@ package body xdr_param is
 		return natural_vector  is
 		constant stdr : natural := xdr_stdr(mark);
 
+		constant ddr1_timer : natural_vector := (
+				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
+				TMR1_CKE => to_xdrlatency(tCP, mark, tXPR),
+				TMR1_MRD => to_xdrlatency(tCP, mark, tMRD),
+				TMR1_RPA => to_xdrlatency(tCP, mark, tRP),
+				TMR1_RFC => to_xdrlatency(tCP, mark, tRFC),
+				TMR1_DLL => to_xdrlatency(tCP, mark, tMRD),
+				TMR1_REF => to_xdrlatency(tCP, mark, tREFI));
+
 		constant ddr2_timer : natural_vector := (
 				TMR_RST  => to_xdrlatency(tCP, mark, tPreRST),
 				TMR2_CKE => to_xdrlatency(tCP, mark, tXPR),
@@ -326,13 +348,14 @@ package body xdr_param is
 				TMR3_ZQINIT => xdr_latency(DDR3, ZQINIT),
 				TMR3_REF => to_xdrlatency(tCP, mark, tREFI));
 	begin
-		if stdr=DDR1 then
+		case stdr is 
+		when DDR1 =>
+			return ddr1_timer;
+		when DDR2 =>
 			return ddr2_timer;
-		elsif stdr=DDR2 then
-			return ddr2_timer;
-		elsif stdr=DDR3 then
+		when others =>
 			return ddr3_timer;
-		end if;
+		end case;
 		return natural_vector'(1 to 0 => 0);
 	end;
 		
