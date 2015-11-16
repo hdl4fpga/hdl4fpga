@@ -113,7 +113,7 @@ architecture def of xdr_init is
 	type s_table is array (natural range <>) of s_row;
 
 	constant sc_rst  : s_code := "0000";
-	constant sc_ref  : s_code := "1011";
+	constant sc_ref  : s_code := "1000";
 
 	constant sc2_cke  : s_code := "0001";
 	constant sc2_pre1 : s_code := "0011";
@@ -175,7 +175,7 @@ architecture def of xdr_init is
  		(sc3_lmr1, sc3_lmr0, "0", "0", "110000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, to_tidword(TMR3_MOD)), 
  		(sc3_lmr0, sc3_zqi,  "0", "0", "110000", ddr_zqc, ddr3mr_zqc, ddr_mrx, to_tidword(TMR3_ZQINIT)),
  		(sc3_zqi,  sc3_wle,  "0", "0", "110001", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_tidword(TMR3_MOD)), 
- 		(sc3_wle,  sc3_wlc,  "0", "0", "110011", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLDQSEN)),  
+ 		(sc3_wle,  sc3_wls,  "0", "0", "110011", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLDQSEN)),  
  		(sc3_wls,  sc3_wlc,  "0", "0", "110111", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
  		(sc3_wlc,  sc3_wlc,  "1", "0", "110111", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_WLC)),  
  		(sc3_wlc,  sc3_wlo,  "1", "1", "110100", ddr_nop, ddrmr_mrx, ddr_mrx, to_tidword(TMR3_MRD)),  

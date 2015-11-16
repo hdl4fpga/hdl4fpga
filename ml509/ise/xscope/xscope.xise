@@ -120,9 +120,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="23"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xdr_ph.vhd" xil_pn:type="FILE_VHDL">
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
     <file xil_pn:name="../../../library/common/barrel.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="99"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="26"/>
@@ -224,6 +221,11 @@
     </file>
     <file xil_pn:name="../../scope/xscope.ucf" xil_pn:type="FILE_UCF">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
+    </file>
+    <file xil_pn:name="../../../library/ddr/xdr_ph.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="119"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="8"/>
+      <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
 
