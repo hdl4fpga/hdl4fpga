@@ -154,7 +154,7 @@ architecture ddr2 of xdr_mr is
 	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 
 	function ddrmr_data (
-		constant mr_file : mr_vector)
+		constant mr_file : mr_vector;
 		constant mr_addr : std_logic_vector)
 		return std_logic_vector is
 	begin
@@ -164,7 +164,7 @@ architecture ddr2 of xdr_mr is
 			end if;
 		end loop;
 		return (xdr_mr_data'range => '0');
-	end process;
+	end;
 
 	function ddr2_mr (
 		constant xdr_mr_addr : std_logic_vector;
@@ -179,7 +179,7 @@ architecture ddr2 of xdr_mr is
 		constant xdr_mr_ocd  : std_logic_vector;
 		constant xdr_mr_tdqs : std_logic_vector;
 		constant xdr_mr_rdqs : std_logic_vector;
-		constant xdr_mr_wl   : std_logic_vector);
+		constant xdr_mr_wl   : std_logic_vector)
 		return std_logic_vector is
 		variable mr_file : mr_vector(0 to 8-1);
 	begin
@@ -230,7 +230,7 @@ architecture ddr2 of xdr_mr is
 
 		return ddrmr_data(
 			mr_addr => xdr_mr_addr,
-			mr_file => mr_file));
+			mr_file => mr_file);
 	end;
 
 	function ddr3_mr (
@@ -246,7 +246,8 @@ architecture ddr2 of xdr_mr is
 		constant xdr_mr_ocd  : std_logic_vector;
 		constant xdr_mr_tdqs : std_logic_vector;
 		constant xdr_mr_rdqs : std_logic_vector;
-		constant xdr_mr_wl   : std_logic_vector);
+		constant xdr_mr_pd   : std_logic_vector;
+		constant xdr_mr_wl   : std_logic_vector)
 		return std_logic_vector is
 		variable mr_file : mr_vector(0 to 5-1);
 	begin
@@ -262,7 +263,7 @@ architecture ddr2 of xdr_mr is
 			(mr   => ddr3mr_setmr1,
 			 data => (
 				mr_field(mask => ddr3_al,   src => xdr_mr_al) or
-				mr_field(mask => ddr3_edll, src => xdr_mr_edll) or
+				mr_field(mask => ddr3_edll, src => "0") or
 				mr_field(mask => ddr3_ods,  src => xdr_mr_ods) or
 				mr_field(mask => ddr3_qoff, src => xdr_mr_qoff) or
 				mr_field(mask => ddr3_rtt,  src => xdr_mr_rtt) or
