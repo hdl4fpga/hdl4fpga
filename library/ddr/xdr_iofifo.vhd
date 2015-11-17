@@ -28,7 +28,6 @@ use ieee.numeric_std.all;
 entity iofifo is
 	generic (
 		pll2ser : boolean;
-		registered_output : boolean := false;
 		data_phases : natural;
 		word_size   : natural;
 		byte_size   : natural);
@@ -55,7 +54,6 @@ architecture mix of iofifo is
 
 	signal fifo_do : byte_vector(ser_clk'range);
 	signal fifo_di : byte_vector(fifo_do'reverse_range);
-	signal dqo : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
 	signal pll_do_win : std_logic;
@@ -169,25 +167,7 @@ begin
 			aser_q when pll2ser else
 			apll_q;
 
-
-		ro_g : if registered_output generate
-			signal clk : std_logic;
-		begin
-			clk <= 
-				ser_clk(l) when pll2ser else
-				pll_clk;
-
-			dqo_g: for k in byte'range generate
-				ffd_i : entity hdl4fpga.ff
-				port map (
-					clk => clk,
-					d => fifo_do(l)(k),
-					q => dqo(l)(k));
-			end generate;
-		end generate;
 	end generate;
 
-	do <= 
-		to_stdlogicvector(dqo) when registered_output else
-		to_stdlogicvector(fifo_do);
+	do <= to_stdlogicvector(fifo_do);
 end;

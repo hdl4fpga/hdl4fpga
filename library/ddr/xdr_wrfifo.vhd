@@ -33,8 +33,7 @@ entity xdr_wrfifo is
 		data_phases : natural;
 		line_size   : natural;
 		word_size   : natural;
-		byte_size   : natural;
-		registered_output : boolean := true);
+		byte_size   : natural);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
@@ -192,7 +191,6 @@ begin
 		outbyte_i : entity hdl4fpga.iofifo
 		generic map (
 			pll2ser => true,
-			registered_output => registered_output,
 			data_phases => data_phases,
 			word_size => word'length,
 			byte_size => byte'length)

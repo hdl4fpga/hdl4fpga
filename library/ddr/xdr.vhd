@@ -33,7 +33,6 @@ use hdl4fpga.xdr_param.all;
 entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
-		registered_output : boolean := true;
 		mark : natural := M15E;
 		tcp : natural;
 
@@ -431,9 +430,7 @@ begin
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
-		registered_output => registered_output,
 		data_phases  => data_phases,
-
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size)

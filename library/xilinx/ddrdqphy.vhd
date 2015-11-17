@@ -92,24 +92,28 @@ begin
 	dmo_g : block
 		signal dmi : std_logic_vector(sys_dmi'range);
 		signal dmt : std_logic_vector(sys_dmt'range);
+		signal clks : std_logic_vector(0 to gear-1);
 	begin
 
-		process (sys_dmi, sys_dmt, sys_sti)
-		begin
-			for i in sys_dmi'range loop
-				if sys_dmt(i)='0' then
-					dmi(i) <= sys_dmi(i);
-				else
-					dmi(i) <= sys_sti(i);
-				end if;
+		clks <= (0 => sys_clk90, 1 => not sys_clk90);
+		xxx : for i in clks'range generate
+			process (clks(i))
+			begin
+				if rising_edge(clks(i)) then
+					if sys_dmt(i)='0' then
+						dmi(i) <= sys_dmi(i);
+					else
+						dmi(i) <= sys_sti(i);
+					end if;
 
-				if loopback=false then
-					dmt(i) <= '0';
-				else
-					dmt(i) <= sys_dmt(i);
+					if loopback=false then
+						dmt(i) <= '0';
+					else
+						dmt(i) <= sys_dmt(i);
+					end if;
 				end if;
-			end loop;
-		end process;
+			end process;
+		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
