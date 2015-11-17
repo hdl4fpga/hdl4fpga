@@ -197,10 +197,10 @@ begin
 
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
-		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
+		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+2+DDR_CLNMSIZE downto 0);
 
-		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
-		signal co : std_logic_vector(0 to 3-1);
+		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+2+DDR_CLNMSIZE downto 0);
+		signal co : std_logic_vector(0 to 4-1);
 		signal crst : std_logic;
 		signal creq : std_logic;
 		signal crdy : std_logic;
@@ -285,21 +285,22 @@ begin
 		process (ddrs_clk)
 		begin
 			if rising_edge(ddrs_clk) then
-		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 				if ddrs_act='1' then
 					ddrs_bnka <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 				end if;
 				ddrs_cola <= std_logic_vector(resize(resize(shift_left (unsigned(qo), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
 			end if;
 		end process;
+		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
 
 
 		crst <= sys_rst or co(0);
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
 			stage_size => (
-				2 => DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
-				1 => DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
+				3 => DDR_BANKSIZE+1+DDR_ADDRSIZE+2+DDR_CLNMSIZE+1,
+				2 => DDR_ADDRSIZE+2+DDR_CLNMSIZE+1,
+				1 => DDR_ADDRSIZE/2+1+DDR_CLNMSIZE+1,
 				0 => DDR_CLNMSIZE+1))
 		port map (
 			clk  => ddrs_clk,

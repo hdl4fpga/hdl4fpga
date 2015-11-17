@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity ddrphy is
 	generic (
+		registered_dout : boolean := true;
 		loopback : boolean;
 		cmd_phases : natural := 1;
 		data_gear : natural := 2;
@@ -280,6 +281,7 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
+			registered_dout => registered_dout,
 			loopback => loopback,
 			gear => data_gear,
 			byte_size => byte_size)

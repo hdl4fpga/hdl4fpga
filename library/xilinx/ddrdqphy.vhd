@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
+		registered_dout : boolean;
 		loopback : boolean;
 		gear : natural;
 		byte_size : natural);
@@ -74,7 +75,22 @@ begin
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
+		signal dqo  : std_logic_vector(0 to gear-1);
+		signal rdqo : std_logic_vector(0 to gear-1);
+		signal clks : std_logic_vector(0 to gear-1);
 	begin
+		clks <= (0 => sys_clk90, 1 => not sys_clk90);
+
+		registered_g : for j in clks'range generate
+			process (clks(j))
+			begin
+				if rising_edge(clks(j)) then
+					rdqo(j) <= sys_dqo(j*byte_size+i);
+				end if;
+			end process;
+			dqo(j) <= rdqo(j) when registered_dout else sys_dqo(j*byte_size+i);
+		end generate;
+
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk90,
@@ -84,35 +100,39 @@ begin
 		ddro_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk90,
-			dr  => sys_dqo(0*byte_size+i),
-			df  => sys_dqo(1*byte_size+i),
+			dr  => dqo(0),
+			df  => dqo(1),
 			q   => ddr_dqo(i));
 	end generate;
 
 	dmo_g : block
-		signal dmi : std_logic_vector(sys_dmi'range);
-		signal dmt : std_logic_vector(sys_dmt'range);
+		signal dmt  : std_logic_vector(sys_dmt'range);
+		signal dmi  : std_logic_vector(sys_dmi'range);
+		signal rdmi : std_logic_vector(sys_dmi'range);
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
 
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
-		xxx : for i in clks'range generate
+		registered_g : for i in clks'range generate
+			dmt(i) <= sys_dmt(i) when loopback else '0';
+
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
 					if sys_dmt(i)='0' then
-						dmi(i) <= sys_dmi(i);
+						rdmi(i) <= sys_dmi(i);
 					else
-						dmi(i) <= sys_sti(i);
+						rdmi(i) <= sys_sti(i);
 					end if;
 
-					if loopback=false then
-						dmt(i) <= '0';
-					else
-						dmt(i) <= sys_dmt(i);
-					end if;
 				end if;
 			end process;
+
+			dmi(i) <=
+				rdmi(i)    when registered_dout else 
+				sys_sti(i) when sys_dmt(i)='1' else
+				sys_dmi(i);
+
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto
