@@ -56,9 +56,10 @@ entity xdr_init is
 		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
 		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
 
-	attribute fsm_encoding : string;
-	attribute fsm_encoding of xdr_init : entity is "compact";
+--	attribute fsm_encoding : string;
+--	attribute fsm_encoding of xdr_init : entity is "compact";
 
+	signal init_rdy : std_logic;
 end;
 
 architecture def of xdr_init is
@@ -100,7 +101,7 @@ begin
 				if xdr_timer_rdy='1' then
 					xdr_init_pc  <= row.state_n;
 					xdr_init_rst <= to_sout(row.output).rst;
-					xdr_init_rdy <= to_sout(row.output).rdy;
+					init_rdy <= to_sout(row.output).rdy;
 					xdr_init_cke <= to_sout(row.output).cke;
 					xdr_init_wlreq <= to_sout(row.output).wlq;
 					xdr_init_wlr <= to_sout(row.output).wlr;
@@ -123,7 +124,7 @@ begin
 				xdr_timer_id <= to_unsigned(TMR_RST, xdr_timer_id'length);
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
-				xdr_init_rdy <= '0';
+				init_rdy <= '0';
 				xdr_init_cs  <= '0';
 				xdr_init_ras <= '1';
 				xdr_init_cas <= '1';
@@ -139,7 +140,8 @@ begin
 	process (xdr_init_clk)
 	begin
 		if rising_edge(xdr_init_clk) then
-			xdr_init_a <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
+			xdr_init_a   <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
+			xdr_init_rdy <= init_rdy;
 		end if;
 	end process;
 

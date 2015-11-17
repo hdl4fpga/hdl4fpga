@@ -215,8 +215,8 @@ architecture arch of xdr_mpu is
 		 xdr_rea => '0', xdr_wri => '0', xdr_cen => '0',
 		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'));
 
-		attribute fsm_encoding : string;
-		attribute fsm_encoding of xdr_state : signal is "compact";
+--		attribute fsm_encoding : string;
+--		attribute fsm_encoding of xdr_state : signal is "compact";
 
 	function "+" (
 		constant tab : natural_vector;
