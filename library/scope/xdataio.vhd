@@ -107,6 +107,7 @@ architecture def of dataio is
 
 	signal output_dat : std_logic_vector(ddrs_di'range);
 	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
+	signal cas : std_logic;
 begin
 
 	datai_e : entity hdl4fpga.datai
@@ -305,7 +306,7 @@ begin
 		port map (
 			clk  => ddrs_clk,
 			load => crst,
-			ena  => ddrs_cas,
+			ena  => cas,
 			data => ddrs_addr,
 			qo   => qo,
 			co   => co);
@@ -315,6 +316,7 @@ begin
 	process (ddrs_clk)
 	begin
 		if rising_edge(ddrs_clk) then
+			cas <= ddrs_cas;
 			miitx_gnt <= capture_rdy;
 		end if;
 	end process;
