@@ -80,8 +80,14 @@ begin
 
 	mii_trdy <= cntr(0) and mii_treq;
 	mii_txen <= mii_treq and not cntr(0);
-	mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
---	mii_txd  <= reverse(word2byte(
---		word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
---		addr => cntr(addr_size+xxx to addr_size)));
+
+	nomuxed_g : if mii_txd'length=byte'length generate
+		mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
+	end generate;
+
+	muxed_g : if mii_txd'length/=byte'length generate
+		mii_txd  <= reverse(word2byte(
+			word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
+			addr => cntr(addr_size+xxx to addr_size)));
+	end generate;
 end;

@@ -252,7 +252,7 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		loopback => TRUE,
-		registered_dou => false,
+		registered_dout => false,
 		BANK_SIZE => ddr_ba'length,
 		ADDR_SIZE => ddr_a'length,
 		data_gear => line_size/word_size,

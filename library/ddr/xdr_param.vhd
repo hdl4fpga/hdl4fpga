@@ -575,6 +575,11 @@ package body xdr_param is
 	constant ddr1_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
 	constant ddr1_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
 
+	-- A10 --
+	---------
+
+	constant ddr1_preall : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
+
 	-- DDR2 Mode Register --
 	------------------------
 
@@ -675,28 +680,28 @@ package body xdr_param is
 		variable mr_file : mr_vector(0 to 4-1);
 	begin
 		mr_file := (
-			(mr   => ddr2mr_enadll, 
+			(mr   => ddr1mr_enadll, 
 			 data => (
-				mr_field(mask => ddr2_edll, src => "0") or
-				mr_field(mask => ddr2_ods,  src => xdr_mr_ods))),
+				mr_field(mask => ddr1_edll, src => "0") or
+				mr_field(mask => ddr1_ods,  src => xdr_mr_ods))),
 
-			(mr   => ddr2mr_rstdll, 
+			(mr   => ddr1mr_rstdll, 
 			 data => (
-				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
-				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
-				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
-				mr_field(mask => ddr2_rdll, src => "1"))),
+				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
+				mr_field(mask => ddr1_rdll, src => "1"))),
 
-			(mr   => ddr2mr_setmr, 
+			(mr   => ddr1mr_setmr, 
 			 data => (
-				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
-				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
-				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
-				mr_field(mask => ddr2_rdll, src => "0"))),
+				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
+				mr_field(mask => ddr1_rdll, src => "0"))),
 
-			(mr   => ddr2mr_preall, 
+			(mr   => ddr1mr_preall, 
 			 data => (
-				mr_field(mask => ddr2_preall, src => "1"))));
+				mr_field(mask => ddr1_preall, src => "1"))));
 
 		return ddrmr_data(
 			mr_addr => xdr_mr_addr,
