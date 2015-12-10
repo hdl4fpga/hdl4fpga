@@ -158,7 +158,7 @@ begin
 	wr_address_i : entity hdl4fpga.align
 	generic map (
 		n => wr_address'length,
-		d => (wr_address'range => 2))
+		d => (wr_address'range => 3))
 	port map (
 		clk => ddrs_clk,
 		di  => std_logic_vector(addri(wr_address'range)),
@@ -167,7 +167,7 @@ begin
 	wr_data_i : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
-		d => (ddrs_di'range => 2))
+		d => (ddrs_di'range => 3))
 	port map (
 		clk => ddrs_clk,
 		di  => ddrs_di,
@@ -177,7 +177,7 @@ begin
 	generic map (
 		srl16 => "false",
 		n => 1,
-		d => (1 to 1 => 1))
+		d => (1 to 1 => 2))
 	port map (
 		clk => ddrs_clk,
 		di(0) => dirdy,
