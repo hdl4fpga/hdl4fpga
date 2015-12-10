@@ -29,6 +29,7 @@ use hdl4fpga.std.all;
 
 entity align is
 	generic (
+		srl16 : string := "true";
 		n : natural := 1;
 		d : natural_vector);
 	port (
@@ -44,7 +45,7 @@ begin
 	delay: for i in 0 to n-1 generate
 		signal q : std_logic_vector(0 to dly(i));
 		attribute shreg_extract : string;
-		attribute shreg_extract of q : signal is "false";
+		attribute shreg_extract of q : signal is srl16;
 	begin
 		q(q'right) <= di(i);
 		process (clk)
