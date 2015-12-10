@@ -43,6 +43,8 @@ architecture arch of align is
 begin
 	delay: for i in 0 to n-1 generate
 		signal q : std_logic_vector(0 to dly(i));
+		attribute shreg_extract : string;
+		attribute shreg_extract of q : signal is "false";
 	begin
 		q(q'right) <= di(i);
 		process (clk)

@@ -76,6 +76,7 @@ architecture def of miitxmem is
 	signal addro_edge : std_logic;
 	signal rdy : std_logic;
 	signal ena : std_logic;
+	signal dirdy : std_logic;
 
 begin
 
@@ -85,11 +86,11 @@ begin
 			if ddrs_gnt='0' then
 				addri <= to_unsigned(2**addri'length-1, addri'length);
 				addri_edge <='1';
-				wr_ena <= '0';
+				dirdy <= '0';
 				ddrs_rdy <= '0';
 				ddrs_direq <= '0';
 			else
-				if wr_ena='1' then
+				if dirdy='1' then
 					if (addri(bram_num-1) xor addri_edge)='1' then
 						ddrs_rdy <= '1';
 						ddrs_direq <= '0';
@@ -107,7 +108,7 @@ begin
 				end if;
 
 				addri_edge <= addri(bram_num-1);
-				wr_ena <= ddrs_dirdy;
+				dirdy <= ddrs_dirdy;
 			end if;
 		end if;
 	end process; 
@@ -157,7 +158,7 @@ begin
 	wr_address_i : entity hdl4fpga.align
 	generic map (
 		n => wr_address'length,
-		d => (wr_address'range => 1))
+		d => (wr_address'range => 3))
 	port map (
 		clk => ddrs_clk,
 		di  => std_logic_vector(addri(wr_address'range)),
@@ -166,11 +167,20 @@ begin
 	wr_data_i : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
-		d => (ddrs_di'range => 1))
+		d => (ddrs_di'range => 3))
 	port map (
 		clk => ddrs_clk,
 		di  => ddrs_di,
 		do  => wr_data);
+
+	wr_ena_i : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (1 to 1 => 2))
+	port map (
+		clk => ddrs_clk,
+		di(0) => dirdy,
+		do(0) => wr_ena);
 
 	rd_address_i : entity hdl4fpga.align
 	generic map (
