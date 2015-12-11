@@ -41,6 +41,7 @@ end;
 
 architecture def of miirx_pre is
 	signal txen : std_logic;
+
 begin
 
 	mii_txc  <= mii_rxc;
@@ -48,22 +49,29 @@ begin
 
 	process (mii_rxc)
 		variable prdy : std_logic;
+		variable rxd : std_logic_vector(mii_rxd'range);
+		variable d : std_logic_vector(0 to 4-1);
 	begin
+		rxd := mii_rxd;
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
 				prdy := '0';
 				txen <= '0';
 			elsif prdy='0' then
-				if reverse(mii_rxd)=x"55" then
-					prdy := '0';
-					txen <= '0';
-				elsif reverse(mii_rxd)=x"d5" then
-					prdy := '1';
-					txen <= '1';
-				else
-					prdy := '1';
-					txen <= '0';
-				end if;
+				for i in 0 to mii_rxd'length/d'length-1 loop
+					if d=reverse(x"5") then
+						prdy := '0';
+						txen <= '0';
+					elsif d=reverse(x"d") then
+						prdy := '1';
+						txen <= '1';
+						exit;
+					else
+						prdy := '1';
+						txen <= '0';
+						exit;
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;

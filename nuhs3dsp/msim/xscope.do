@@ -22,6 +22,21 @@ add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/dqs(0)
+add wave -noupdate /testbench/mii_refclk
+add wave -noupdate -radix hexadecimal /testbench/mii_rxd
+add wave -noupdate /testbench/mii_txen
+add wave -noupdate /testbench/mii_rxdv
+add wave -noupdate /testbench/mii_rxc
+add wave -noupdate /testbench/mii_strt
+add wave -noupdate /testbench/mii_treq
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/mii_txc
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/mii_rxd
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/mii_rxdv
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_rxc
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_rxd
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_rxdv
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_txc
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_txen
 add wave -noupdate -divider ml509
 add wave -noupdate /testbench/nuhs3dsp_e/ddrs_rst
 add wave -noupdate /testbench/nuhs3dsp_e/dcm_lckd
@@ -109,7 +124,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {30706100 ps} 0}
+WaveRestoreCursors {{Cursor 1} {24025105 ps} 0} {{Cursor 2} {28759822 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 174
 configure wave -valuecolwidth 103
@@ -125,4 +140,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {22894004 ps} {38518196 ps}
+WaveRestoreZoom {21496401 ps} {28849217 ps}

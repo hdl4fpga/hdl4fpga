@@ -119,7 +119,7 @@ package xdr_db is
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab := (
-		timing_record'(mark => M6T,  param => tPreRST, value => 200*10**6),
+		timing_record'(mark => M6T,  param => tPreRST, value => 200*10**5),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000),
@@ -150,9 +150,9 @@ package xdr_db is
 
 	constant latency_db : latency_tab := (
 		latency_record'(stdr => DDR1, param => cDLL,  value => 200),
-		latency_record'(stdr => DDR1, param => STRL,  value => 2*0),
-		latency_record'(stdr => DDR1, param => RWNL,  value => 2*0),
-		latency_record'(stdr => DDR1, param => DQSZL, value => 2*2),
+		latency_record'(stdr => DDR1, param => STRL,  value =>   0),
+		latency_record'(stdr => DDR1, param => RWNL,  value =>   0),
+		latency_record'(stdr => DDR1, param => DQSZL, value =>   0),
 		latency_record'(stdr => DDR1, param => DQSL,  value =>   1),
 		latency_record'(stdr => DDR1, param => DQZL,  value =>   0),
 		latency_record'(stdr => DDR1, param => WWNL,  value =>   0),
