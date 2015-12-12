@@ -49,20 +49,21 @@ begin
 
 	process (mii_rxc)
 		variable prdy : std_logic;
-		variable rxd : std_logic_vector(mii_rxd'range);
-		variable d : std_logic_vector(0 to 4-1);
+		variable rxd : unsigned(0 to mii_rxd'length-1);
+		variable nbb : std_logic_vector(0 to 4-1);
 	begin
-		rxd := mii_rxd;
 		if rising_edge(mii_rxc) then
+			rxd := unsigned(mii_rxd);
 			if mii_rxdv='0' then
 				prdy := '0';
 				txen <= '0';
 			elsif prdy='0' then
-				for i in 0 to mii_rxd'length/d'length-1 loop
-					if d=reverse(x"5") then
+				for i in mii_rxd'length/nbb'length-1 downto 0 loop
+					nbb := std_logic_vector(rxd(nbb'range));
+					if nbb=reverse(x"5") then
 						prdy := '0';
 						txen <= '0';
-					elsif d=reverse(x"d") then
+					elsif nbb=reverse(x"d") and i=0 then
 						prdy := '1';
 						txen <= '1';
 						exit;
@@ -71,6 +72,7 @@ begin
 						txen <= '0';
 						exit;
 					end if;
+					rxd := rxd sll nbb'length;
 				end loop;
 			end if;
 		end if;

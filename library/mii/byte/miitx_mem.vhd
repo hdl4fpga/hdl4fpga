@@ -42,7 +42,7 @@ end;
 architecture def of miitx_mem is
 	constant addr_size : natural := unsigned_num_bits((mem_data'length+byte'length-1)/byte'length-1);
 	constant ramb_size : natural := (mem_data'length+byte'length-1)/byte'length;
-	constant xxx : natural := 2-unsigned_num_bits(2*byte'length/mii_txd'length-1);
+	constant xxx : natural := unsigned_num_bits(2*byte'length/mii_txd'length-1)-1;
 
 	function ramb_init (
 		constant arg : std_logic_vector)
@@ -54,7 +54,7 @@ architecture def of miitx_mem is
 	begin
 		aux(arg'length-1 downto 0) := arg;
 		for i in 0 to ramb_size-1 loop
-			val(i) := aux(byte'range);
+			val(i) := reverse(aux(byte'range));
 			aux := aux srl byte'length;
 		end loop;
 
@@ -62,7 +62,7 @@ architecture def of miitx_mem is
 	end;
 
 	signal ramb : byte_vector(2**addr_size-1 downto 0) := ramb_init(mem_data);
-	signal cntr : std_logic_vector(0 to addr_size);
+	signal cntr : std_logic_vector(0 to addr_size+xxx);
 
 begin
 
@@ -74,7 +74,7 @@ begin
 				cntr => cntr,
 				ena  => not mii_treq or not cntr(0),
 				load => not mii_treq,
-				data => ramb_size-1);
+				data => ramb_size*2**xxx-1);
 		end if;
 	end process;
 
@@ -82,12 +82,12 @@ begin
 	mii_txen <= mii_treq and not cntr(0);
 
 	nomuxed_g : if mii_txd'length=byte'length generate
-		mii_txd  <= reverse(ramb(to_integer(unsigned(cntr(1 to addr_size)))));
+		mii_txd  <= ramb(to_integer(unsigned(cntr(1 to addr_size))));
 	end generate;
 
 	muxed_g : if mii_txd'length/=byte'length generate
-		mii_txd  <= reverse(word2byte(
+		mii_txd  <= word2byte(
 			word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
-			addr => cntr(addr_size+xxx to addr_size)));
+			addr => cntr(addr_size+1 to addr_size+xxx));
 	end generate;
 end;
