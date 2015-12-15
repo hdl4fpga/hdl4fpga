@@ -1,3 +1,3 @@
-source /opt/Xilinx/14.6/ISE_DS/settings64.sh
+source /opt/Xilinx/14.7/ISE_DS/settings64.sh
 export LD_PRELOAD=/usr/local/lib/libusb-driver.so
 echo -e 'cleancablelock\nexit' | impact -batch

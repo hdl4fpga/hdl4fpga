@@ -34,7 +34,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="38"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="xscope.ipf" xil_pn:type="FILE_USERDOC"/>
     <file xil_pn:name="../../../library/xilinx/dbram.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="112"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="4"/>
@@ -237,6 +236,7 @@
     <file xil_pn:name="../../scope/xscope.ucf" xil_pn:type="FILE_UCF">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
+    <file xil_pn:name="xscope.ipf" xil_pn:type="FILE_USERDOC"/>
   </files>
 
   <properties>
@@ -532,7 +532,7 @@
     <property xil_pn:name="Working Directory" xil_pn:value="." xil_pn:valueState="non-default"/>
     <property xil_pn:name="Write Timing Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="XOR Collapsing" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="iMPACT Project File" xil_pn:value="scope.ipf" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="iMPACT Project File" xil_pn:value="xscope.ipf" xil_pn:valueState="non-default"/>
     <!--                                                                                  -->
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->
