@@ -121,7 +121,7 @@ begin
 --		output_dat => ddrs_di
 		output_dat => output_dat);
 
-	ddrs_di <= aux2;
+	ddrs_di <=  x"a5a5a5a5"; --aux2;
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);
@@ -137,7 +137,7 @@ begin
 					aux1 := aux1 srl (2**n);
 					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
 				end loop;
-				aux2 <= aux1;
+				aux2 <= x"a5a5a5a5"; --aux1;
 			end if;
 		end if;
 	end process;

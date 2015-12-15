@@ -122,7 +122,6 @@ begin
 	di  <= shuffle_word(to_bytevector(xdr_dqi));
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_clk : std_logic;
 		signal ser_req : std_logic;
 
 	begin

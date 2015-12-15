@@ -278,6 +278,8 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
+		signal dqsi : std_logic_vector(0 to 1);
+	begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
@@ -315,9 +317,11 @@ begin
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
 			xi  => ddr_dqsi(i),
-			x_p => sys_dqsi(data_gear*i+0),
-			x_n => sys_dqsi(data_gear*i+1));
+			x_p => dqsi(0),
+			x_n => dqsi(1));
 
+			sys_dqsi(data_gear*i+0) <= dqsi(0) after 10 ps;
+			sys_dqsi(data_gear*i+1) <= dqsi(1) after 10 ps;
 	end generate;
 
 	process(ddr_dm, ddr_sti)

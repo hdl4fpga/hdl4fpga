@@ -417,15 +417,17 @@ begin
 	sys_wclk <= sys_clks(1);
 	process (sys_wclk)
 	begin
-		for i in 0 to data_phases/data_edges-1 loop
-			xdr_wclks(i*data_edges) <= sys_wclk;
-		end loop;
-
-		if data_edges > 1 then
+		for k in 0 to word_size/byte_size-1 loop
 			for i in 0 to data_phases/data_edges-1 loop
-				xdr_wclks(i*data_edges+1) <= not sys_wclk;
+				xdr_wclks(k*word_size/byte_size+i) <= sys_wclk;
 			end loop;
-		end if;
+
+			if data_edges > 1 then
+				for i in 0 to data_phases/data_edges-1 loop
+					xdr_wclks(k*word_size/byte_size+1) <= not sys_wclk;
+				end loop;
+			end if;
+		end loop;
 	end process;
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
