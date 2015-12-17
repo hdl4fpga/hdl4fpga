@@ -357,7 +357,7 @@ begin
 		xdr_wwn  => xdr_sch_wwn);
 
 	xdr_win_dqs <= xdr_sti;
-	xdr_win_dq  <= xdr_sti;
+	xdr_win_dq  <= (others => xdr_sch_rwn(0)); 
 
 	process (
 		xdr_mpu_wri,
@@ -387,7 +387,7 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => 0)
+		data_delay => 2)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

@@ -206,6 +206,6 @@ begin
 
 	miitx_dat <= reverse (
 		word2byte (
-			word => rd_data ror miitx_dat'length,
+			word => rd_data,
 			addr => bysel));
 end;

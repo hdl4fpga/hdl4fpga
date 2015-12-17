@@ -319,7 +319,7 @@ end;
 
 library micron;
 
-configuration nuhs2dsp_structure_md of testbench is
+configuration nuhs3dsp_structure_md of testbench is
 	for scope 
 		for all : nuhs3dsp 
 			use entity hdl4fpga.nuhs3dsp(structure);

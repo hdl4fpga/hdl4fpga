@@ -13,6 +13,7 @@ add wave -noupdate /testbench/nuhs3dsp_e/ddrs_clk90
 add wave -noupdate /testbench/dqs(0)
 add wave -noupdate -expand /testbench/dqs
 add wave -noupdate -radix hexadecimal /testbench/dq16
+add wave -noupdate /testbench/clk_p
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/ba
 add wave -noupdate /testbench/cke
@@ -124,9 +125,9 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {24025105 ps} 0} {{Cursor 2} {28759822 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 174
+WaveRestoreCursors {{Cursor 1} {25216000 ps} 0} {{Cursor 2} {25234165 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 100
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -140,4 +141,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {21496401 ps} {28849217 ps}
+WaveRestoreZoom {24897286 ps} {25486117 ps}

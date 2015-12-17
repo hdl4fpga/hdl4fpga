@@ -207,7 +207,7 @@ begin
 		ddrs_clks(0) => ddrs_clk0,
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
-		ddrs_cl  => "011",
+		ddrs_cl  => "110",
 		ddr_cke  => ddrphy_cke(0),
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),

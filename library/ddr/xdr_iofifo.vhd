@@ -136,9 +136,9 @@ begin
 				aser_set <= not ser_req(l);
 				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => aser_set,
+					ar  => ser_ena(l), --aser_set,
 					clk => ser_clk(l),
-					ena => ser_ena(l),
+					ena => '1', --ser_ena(l),
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
@@ -150,7 +150,7 @@ begin
 
 		fifo_we <=
 			pll_req when pll2ser else
-			ser_ena(l);
+			'1'; --ser_ena(l);
 
 		ram_b : entity hdl4fpga.dbram
 		generic map (
