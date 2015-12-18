@@ -59,11 +59,11 @@ entity xdr_init is
 --	attribute fsm_encoding : string;
 --	attribute fsm_encoding of xdr_init : entity is "compact";
 
-	signal init_rdy : std_logic;
 end;
 
 architecture def of xdr_init is
 
+	signal init_rdy : std_logic;
 	constant pgm : s_table := choose_pgm(ddr_stdr);
 
 	signal xdr_init_pc : s_code;
@@ -138,9 +138,12 @@ begin
 	end process;
 
 	process (xdr_init_clk)
+		variable pp : std_logic_vector(xdr_init_a'range) := (others => '0');
 	begin
 		if rising_edge(xdr_init_clk) then
-			xdr_init_a   <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
+			--xdr_init_a   <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
+			pp   := not pp;
+			xdr_init_a   <= pp;
 			xdr_init_rdy <= init_rdy;
 		end if;
 	end process;

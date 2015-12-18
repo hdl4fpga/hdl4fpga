@@ -33,7 +33,7 @@ use hdl4fpga.xdr_param.all;
 entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
-		mark : natural := M15E;
+		mark : natural := M6T;
 		tcp : natural := 6000;
 
 		bank_size : natural :=  2;
@@ -43,7 +43,7 @@ entity xdr is
 		sclk_edges : natural := 2;
 		data_phases : natural := 2;
 		data_edges : natural := 2;
-		line_size : natural := 16;
+		line_size : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural :=  8);
 
@@ -98,14 +98,15 @@ entity xdr is
 		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
-	constant stdr : natural := xdr_stdr(mark);
-	constant gear : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr is
+	constant stdr : natural := xdr_stdr(mark);
+	constant gear : natural := line_size/word_size;
+
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
 
