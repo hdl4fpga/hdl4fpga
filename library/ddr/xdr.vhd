@@ -34,7 +34,7 @@ entity xdr is
 	generic (
 		strobe : string := "NONE_LOOPBACK";
 		mark : natural := M15E;
-		tcp : natural;
+		tcp : natural := 6000;
 
 		bank_size : natural :=  2;
 		addr_size : natural := 13;
@@ -53,25 +53,25 @@ entity xdr is
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
 
-		sys_rst  : in std_logic := '-';
+		sys_rst  : in std_logic;
 		sys_clks : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		sys_ini  : out std_logic;
-		sys_wlrdy : in  std_logic := '-';
+		sys_wlrdy : in  std_logic;
 		sys_wlreq : out std_logic;
 
-		sys_cmd_req : in  std_logic := '-';
+		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
-		sys_rw : in  std_logic := '0';
-		sys_b  : in  std_logic_vector(bank_size-1 downto 0) := (others => '-');
-		sys_a  : in  std_logic_vector(addr_size-1 downto 0) := (others => '-');
+		sys_rw : in  std_logic;
+		sys_b  : in  std_logic_vector(bank_size-1 downto 0);
+		sys_a  : in  std_logic_vector(addr_size-1 downto 0);
 		sys_di_rdy : out std_logic;
 --		sys_do_rdy : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_do_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
-		sys_pre : out std_logic := '0';
-		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '0');
-		sys_di  : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
+		sys_pre : out std_logic;
+		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_di  : in  std_logic_vector(line_size-1 downto 0);
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;
 
@@ -84,18 +84,18 @@ entity xdr is
 		xdr_b   : out std_logic_vector(bank_size-1 downto 0);
 		xdr_a   : out std_logic_vector(addr_size-1 downto 0);
 		xdr_odt : out std_logic;
-		xdr_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dmt : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '0');
-		xdr_dmo : out std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dmt : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dmo : out std_logic_vector(line_size/byte_size-1 downto 0);
 
-		xdr_dqi : in  std_logic_vector(line_size-1 downto 0) := (others => '-');
+		xdr_dqi : in  std_logic_vector(line_size-1 downto 0);
 		xdr_dqt : out std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dqo : out std_logic_vector(line_size-1 downto 0) := (others => '-');
-		xdr_sti : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_sto : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqo : out std_logic_vector(line_size-1 downto 0);
+		xdr_sti : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_sto : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
-		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
-		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0) := (others => '-');
+		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
 
 	constant stdr : natural := xdr_stdr(mark);
@@ -360,6 +360,7 @@ begin
 	xdr_win_dq  <= (others => xdr_sch_rwn(0)); 
 
 	process (
+		xdr_wr_dm,
 		xdr_mpu_wri,
 		xdr_sch_st,
 		xdr_sch_dqz,

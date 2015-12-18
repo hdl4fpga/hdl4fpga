@@ -122,7 +122,6 @@ begin
 	di  <= shuffle_word(to_bytevector(xdr_dqi));
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
-		signal ser_req : std_logic;
 
 	begin
 
@@ -131,7 +130,6 @@ begin
 			variable sys_do_win : std_logic;
 		begin
 			if rising_edge(sys_clk) then
-				ser_req  <= not sys_do_win;
 				sys_do_win  := acc_rea_dly;
 				acc_rea_dly := not sys_rea;
 			end if;
@@ -158,7 +156,6 @@ begin
 			pll_clk => sys_clk,
 			pll_req => pll_req,
 
-			ser_req(0) => ser_req,
 			ser_ena(0) => xdr_win_dqs(i),
 			ser_clk(0) => xdr_dqsi(i),
 

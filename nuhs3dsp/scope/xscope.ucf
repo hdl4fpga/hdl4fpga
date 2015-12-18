@@ -32,18 +32,22 @@ TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
 #NET "*video_clk*" MAXSKEW  = 1 ns;
 #NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
 #NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
-#NET "*ddr_st_lp_dqs*" MAXDELAY = 3200 ps;
-#NET "*ddr_st_lp_dqs*" MAXSKEW  = 1000 ps;
+NET "ddr_st_lp_dqs" MAXDELAY = 3200 ps;
+NET "ddr_st_lp_dqs" MAXSKEW  = 1000 ps;
 #NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
 #NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
-#NET "*sys_dqsi*[*]" MAXDELAY = 1350 ps;
-#NET "*sys_dqsi*[*]" MAXSKEW  = 560 ps;
+NET "ddrphy_dqsi[*]" MAXDELAY = 1350 ps;
+NET "ddrphy_dqsi[*]" MAXSKEW  = 560 ps;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
+#NET "ddrphy_dqsi[0]" TNM_NET = ddqs0;
+#NET "ddrphy_dqsi[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "ddr_dqs[1]" TNM_NET = dqs1;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
+#NET "ddrphy_dqsi[1]" TNM_NET = ddqs1;
+#NET "ddrphy_dqsi[1]" CLOCK_DEDICATED_ROUTE = false;
 
 # ###################### #
 # DDR 100 Mhz rate clock #
@@ -109,7 +113,7 @@ OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
 #OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[0] RISING;
 #OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[1] RISING;
 
-#TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
 #NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
 #NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;

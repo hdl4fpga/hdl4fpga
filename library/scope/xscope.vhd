@@ -547,7 +547,7 @@ begin
 		xdr_dqsi => ddr_dqsi,
 		xdr_dqso => ddr_dqso,
 		xdr_dqt => ddr_dqt,
-		xdr_dqi => ddr_dqi,
+		xdr_dqi => x"a5a5a5a5", --ddr_dqi,
 		xdr_dqo => ddr_dqo,
 		xdr_odt => ddr_odt,
 

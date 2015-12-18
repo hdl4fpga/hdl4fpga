@@ -3,26 +3,23 @@ quietly virtual signal -install /testbench {/testbench/dq  } dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
 add wave -noupdate /testbench/rst
-add wave -noupdate /testbench/mii_refclk
-add wave -noupdate /testbench/mii_treq
-add wave -noupdate /testbench/mii_rxdv
-add wave -noupdate /testbench/mii_rxc
 add wave -noupdate /testbench/clk
-add wave -noupdate /testbench/dqs(1)
-add wave -noupdate /testbench/nuhs3dsp_e/ddrs_clk90
-add wave -noupdate /testbench/dqs(0)
-add wave -noupdate -expand /testbench/dqs
-add wave -noupdate -radix hexadecimal /testbench/dq16
 add wave -noupdate /testbench/clk_p
-add wave -noupdate -radix hexadecimal /testbench/addr
-add wave -noupdate /testbench/ba
 add wave -noupdate /testbench/cke
 add wave -noupdate /testbench/cs_n
 add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
+add wave -noupdate /testbench/ba
+add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/dqs(0)
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq16
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/phases_g(0)/aser_g(0)/ar_g/aser_set
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/apll_q
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/phases_g(0)/aser_q
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/phases_g(0)/ram_b/we
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/phases_g(0)/ram_b/clk
 add wave -noupdate /testbench/mii_refclk
 add wave -noupdate -radix hexadecimal /testbench/mii_rxd
 add wave -noupdate /testbench/mii_txen
@@ -125,9 +122,9 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/nuhs3dsp_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {25216000 ps} 0} {{Cursor 2} {25234165 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 100
+WaveRestoreCursors {{Cursor 1} {25231110 ps} 0} {{Cursor 2} {25226605 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 120
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -141,4 +138,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {24897286 ps} {25486117 ps}
+WaveRestoreZoom {25223837 ps} {25234197 ps}

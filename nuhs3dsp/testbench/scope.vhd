@@ -224,7 +224,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			vrst := vrst sll 1;
-			rst <= not vrst(1);
+			rst <= not vrst(1) after 5 ns;
 		end if;
 	end process;
 

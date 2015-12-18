@@ -37,7 +37,6 @@ entity iofifo is
 		pll_req : in  std_logic := '-';
 
 		ser_clk : in  std_logic_vector(0 to data_phases-1);
-		ser_req : in  std_logic_vector(0 to data_phases-1) := (others => '-');
 		ser_ena : in  std_logic_vector(0 to data_phases-1);
 		ser_rdy : out std_logic;
 
@@ -133,12 +132,13 @@ begin
 			ar_g : if not pll2ser generate
 				signal aser_set : std_logic;
 			begin
-				aser_set <= not ser_req(l);
+				aser_set <= not ser_ena(l);
+
 				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => ser_ena(l), --aser_set,
+					ar  => aser_set,
 					clk => ser_clk(l),
-					ena => '1', --ser_ena(l),
+					ena => '1',
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
@@ -150,7 +150,7 @@ begin
 
 		fifo_we <=
 			pll_req when pll2ser else
-			'1'; --ser_ena(l);
+			'1';
 
 		ram_b : entity hdl4fpga.dbram
 		generic map (

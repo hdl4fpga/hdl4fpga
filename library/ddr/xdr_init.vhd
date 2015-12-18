@@ -53,8 +53,8 @@ entity xdr_init is
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
 		xdr_init_we  : out std_logic;
-		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0) := (others => '1');
-		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0) := (others => '1'));
+		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0);
+		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0));
 
 --	attribute fsm_encoding : string;
 --	attribute fsm_encoding of xdr_init : entity is "compact";
