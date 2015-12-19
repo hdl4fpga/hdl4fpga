@@ -134,7 +134,7 @@ begin
 				aux1 := aux2;
 				for i in 0 to aux1'length/(2**n)-1 loop
 					aux  := std_logic_vector(unsigned(aux1(aux'range))+ddrs_di'length/2**n);
-					aux1 := aux1 srl (2**n);
+					aux1 := std_logic_vector(unsigned(aux1) srl (2**n));
 					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
 				end loop;
 				aux2 <= x"a5a5a5a5"; --aux1;

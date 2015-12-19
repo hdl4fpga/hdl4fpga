@@ -56,7 +56,7 @@ entity xdr is
 		sys_rst  : in std_logic;
 		sys_clks : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		sys_ini  : out std_logic;
-		sys_wlrdy : in  std_logic;
+		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
 
 		sys_cmd_req : in  std_logic;
@@ -70,7 +70,7 @@ entity xdr is
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
-		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
 		sys_di  : in  std_logic_vector(line_size-1 downto 0);
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;

@@ -37,7 +37,7 @@ entity xdr_init is
 		bank_size : natural := 3);
 	port (
 		xdr_mr_addr  : out std_logic_vector;
-		xdr_mr_data  : in std_logic_vector;
+		xdr_mr_data  : in std_logic_vector(13-1 downto 0);
 		xdr_refi_rdy : in  std_logic;
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
@@ -141,9 +141,7 @@ begin
 		variable pp : std_logic_vector(xdr_init_a'range) := (others => '0');
 	begin
 		if rising_edge(xdr_init_clk) then
-			--xdr_init_a   <= std_logic_vector(unsigned(resize(unsigned(xdr_mr_data), xdr_init_a'length)));
-			pp   := not pp;
-			xdr_init_a   <= pp;
+			xdr_init_a   <= resize(xdr_mr_data, xdr_init_a'length);
 			xdr_init_rdy <= init_rdy;
 		end if;
 	end process;

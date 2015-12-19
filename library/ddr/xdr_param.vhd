@@ -43,7 +43,6 @@ package xdr_param is
 	constant ddrmr_mrx     : ddrmr_addr := (others => '1');
 
 	constant ddr1mr_setemr  : ddrmr_addr := "000";
-	constant ddr1mr_enadll  : ddrmr_addr := "001";
 	constant ddr1mr_rstdll  : ddrmr_addr := "010";
 	constant ddr1mr_preall  : ddrmr_addr := "011";
 	constant ddr1mr_setmr   : ddrmr_addr := "100";
@@ -222,11 +221,12 @@ package body xdr_param is
 		function to_latwordvector(
 			constant arg : std_logic_vector)
 			return latword_vector is
-			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable aux : unsigned(0 to arg'length-1);
 			variable val : latword_vector(0 to arg'length/latword'length-1);
 		begin
+			aux := unsigned(arg);
 			for i in val'range loop
-				val(i) := aux(latword'range);
+				val(i) := std_logic_vector(aux(latword'range));
 				aux := aux sll latword'length;
 			end loop;
 			return val;
@@ -253,7 +253,7 @@ package body xdr_param is
 		constant lc   : latword_vector := to_latwordvector(lat_cod);
 		
 		variable sel_sch : word_vector(lc'range);
-		variable val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
+		variable val : unsigned(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
 		variable disp : natural;
 
 	begin
@@ -262,9 +262,9 @@ package body xdr_param is
 			sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
 		end loop;
 		
-		val(word'range) := select_lat(lat_val, lc, sel_sch);
-		val := std_logic_vector'(unsigned(val) sll algn);
-		return val;
+		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
+		val := val sll algn;
+		return std_logic_vector(val);
 	end;
 
 	function xdr_task (
@@ -287,11 +287,12 @@ package body xdr_param is
 		function to_latwordvector(
 			constant arg : std_logic_vector)
 			return latword_vector is
-			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable aux : unsigned(0 to arg'length-1);
 			variable val : latword_vector(0 to arg'length/latword'length-1);
 		begin
+			aux := unsigned(arg);
 			for i in val'range loop
-				val(i) := aux(latword'range);
+				val(i) := std_logic_vector(aux(latword'range));
 				aux := aux sll latword'length;
 			end loop;
 			return val;
@@ -499,7 +500,6 @@ package body xdr_param is
 		when others =>
 			return ddr3_timer;
 		end case;
-		return natural_vector'(1 to 0 => 0);
 	end;
 		
 	-------------------------
@@ -677,31 +677,25 @@ package body xdr_param is
 		constant xdr_mr_cl   : std_logic_vector;
 		constant xdr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
-		variable mr_file : mr_vector(0 to 4-1);
+		variable mr_file : mr_vector(0 to 3-1);
 	begin
 		mr_file := (
-			(mr   => ddr1mr_enadll, 
-			 data => (
-				mr_field(mask => ddr1_edll, src => "0") or
-				mr_field(mask => ddr1_ods,  src => xdr_mr_ods))),
-
-			(mr   => ddr1mr_rstdll, 
+			0 => (mr   => ddr1mr_rstdll, 
 			 data => (
 				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
 				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
 				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
 				mr_field(mask => ddr1_rdll, src => "1"))),
 
-			(mr   => ddr1mr_setmr, 
+			1 => (mr   => ddr1mr_setmr, 
 			 data => (
 				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
 				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
 				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
 				mr_field(mask => ddr1_rdll, src => "0"))),
 
-			(mr   => ddr1mr_preall, 
-			 data => (
-				mr_field(mask => ddr1_preall, src => "1"))));
+			2 => (mr   => ddr1mr_preall, 
+			 data => (mr_field(mask => ddr1_preall, src => "1"))));
 
 		return ddrmr_data(
 			mr_addr => xdr_mr_addr,
@@ -911,7 +905,6 @@ package body xdr_param is
 				xdr_mr_cwl   => xdr_mr_cwl,
 				xdr_mr_wl    => xdr_mr_wl);
 		end case;
-		return (1 to 0 => '-');
 	end;
 
 end package body;

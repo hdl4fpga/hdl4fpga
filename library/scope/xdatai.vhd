@@ -114,14 +114,14 @@ begin
 	end generate;
 
 	process (rd_data)
-		variable data : std_logic_vector(output_dat'length-1 downto 0);
+		variable data : unsigned(output_dat'length-1 downto 0);
 	begin
 		data := (others => '-');
 		for i in rd_data'reverse_range loop
 			data := data sll rd_data(0)'length;
-			data(rd_data(0)'range) := rd_data(i);
+			data(rd_data(0)'range) := unsigned(rd_data(i));
 		end loop;
-		output_dat <= data;
+		output_dat <= std_logic_vector(data);
 	end process;
 
 	output_rdy <= setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");

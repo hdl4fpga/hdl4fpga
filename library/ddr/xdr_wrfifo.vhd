@@ -79,31 +79,31 @@ architecture struct of xdr_wrfifo is
 	impure function extract_dm (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
-		variable dat : std_logic_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(0 to xdr_dmo'length-1);
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : unsigned(0 to xdr_dmo'length-1);
 	begin
-		dat := arg;
+		dat := unsigned(arg);
 		for i in val'range loop
 			val := val srl 1;
 			val(0) := dat(byte_size);
 			dat := dat srl byte'length;
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	impure function extract_dq (
 		constant arg : std_logic_vector)
 		return std_logic_vector is
-		variable dat : std_logic_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(0 to xdr_dqo'length-1);
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : unsigned(0 to xdr_dqo'length-1);
 	begin
-		dat := arg;
+		dat := unsigned(arg);
 		for i in xdr_dmo'range loop
 			val := val srl byte_size;
 			val(0 to byte_size-1) := dat(byte_size-1 downto 0);
 			dat := dat srl byte'length;
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	function to_bytevector (
@@ -124,14 +124,14 @@ architecture struct of xdr_wrfifo is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
+		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
 			val := val sll byte'length;
-			val(byte'range) := dat(i);
+			val(byte'range) := unsigned(dat(i));
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	subtype word is std_logic_vector(byte'length*line_size/word_size-1 downto 0);
@@ -184,8 +184,8 @@ begin
 
 	begin
 		dqi <= shuffle(di, i);
-		ser_clk <= xdr_clks sll (i*data_phases);
-		ser_ena <= xdr_enas sll (i*data_phases);
+		ser_clk <= std_logic_vector(unsigned(xdr_clks) sll (i*data_phases));
+		ser_ena <= std_logic_vector(unsigned(xdr_enas) sll (i*data_phases));
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo

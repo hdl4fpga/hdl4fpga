@@ -26,12 +26,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 use hdl4fpga.xdr_db.all;
 use hdl4fpga.xdr_param.all;
 
 entity xdr_mr is
 	generic (
-		ddr_stdr : natural);
+		ddr_stdr : natural := DDR1);
 	port (
 		xdr_mr_al   : in  std_logic_vector(2-1 downto 0) := (others => '0');
 		xdr_mr_asr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
@@ -56,15 +57,15 @@ entity xdr_mr is
 		xdr_mr_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
 		xdr_mr_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
-		xdr_mr_addr : in  std_logic_vector(3-1 downto 0) := (others => '0');
-		xdr_mr_data : out std_logic_vector(13-1 downto 0) := (others => '0'));
+		xdr_mr_addr : in  std_logic_vector(3-1 downto 0);
+		xdr_mr_data : out std_logic_vector(13-1 downto 0));
 end;
 
 architecture def of xdr_mr is
 
 begin
 
-	xdr_mr_data <= std_logic_vector(resize(unsigned(ddr_mrfile(
+	xdr_mr_data <= resize(ddr_mrfile(
 		xdr_stdr => ddr_stdr,
 		xdr_mr_addr => xdr_mr_addr, 
 		xdr_mr_srt  => xdr_mr_srt,
@@ -86,5 +87,5 @@ begin
 		xdr_mr_zqc  => xdr_mr_zqc,
 		xdr_mr_asr  => xdr_mr_asr,
 		xdr_mr_pd   => xdr_mr_pd,
-		xdr_mr_cwl  => xdr_mr_cwl)),xdr_mr_data'length));
+		xdr_mr_cwl  => xdr_mr_cwl),xdr_mr_data'length);
 end;

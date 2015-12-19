@@ -42,7 +42,7 @@ end;
 
 architecture def of miitx_crc is
 	signal xp : std_logic_vector(31 downto 0);
-	signal cnt : std_logic_vector (0 to 7-1);
+	signal cnt : unsigned (0 to 7-1);
 
 	function next_crc32w4 (
 		data: std_logic_vector(3 downto 0);

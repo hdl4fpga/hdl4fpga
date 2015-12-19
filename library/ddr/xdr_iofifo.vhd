@@ -62,25 +62,25 @@ architecture mix of iofifo is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
+		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in arg'range loop
 			val := val sll byte'length;
-			val(byte'range) := arg(i);
+			val(byte'range) := unsigned(arg(i));
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	function to_bytevector (
 		arg : std_logic_vector)
 		return byte_vector is
-		variable dat : std_logic_vector(arg'length-1 downto 0);
+		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
 	begin
-		dat := arg;
+		dat := unsigned(arg);
 		for i in val'reverse_range loop
-			val(i) := dat(byte'range);
+			val(i) := std_logic_vector(dat(byte'range));
 			dat := dat srl byte'length;
 		end loop;
 		return val;

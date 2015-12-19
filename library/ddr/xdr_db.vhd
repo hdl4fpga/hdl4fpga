@@ -529,13 +529,13 @@ package body xdr_db is
 		return std_logic_vector is
 		constant query_size : natural := xdr_query_size(stdr, rgtr);
 		constant query_data : cnfglat_tab(0 to query_size-1) := xdr_query_data(stdr, rgtr);
-		variable latcode : std_logic_vector(0 to code_size*query_size-1);
+		variable latcode : unsigned(0 to code_size*query_size-1);
 	begin
 		for i in query_data'reverse_range loop
 			latcode := latcode srl code_size;
-			latcode(code_t'range) := query_data(i).code;
+			latcode(code_t'range) := unsigned(query_data(i).code);
 		end loop;
-		return latcode;
+		return std_logic_vector(latcode);
 	end;
 
 	function xdr_selcwl (

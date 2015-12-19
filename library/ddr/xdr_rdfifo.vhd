@@ -70,14 +70,14 @@ architecture struct of xdr_rdfifo is
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*byte'length-1 downto 0);
+		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
 			val := val sll byte'length;
-			val(byte'range) := dat(i);
+			val(byte'range) := unsigned(dat(i));
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);

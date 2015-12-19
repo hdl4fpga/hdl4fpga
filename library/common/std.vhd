@@ -60,50 +60,40 @@ package std is
 		constant arg2 : natural)
 		return std_logic_vector;
 
-	function resize (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector;
-
-	function resize (
-		constant arg1 : unsigned;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector;
-
-	function "rol" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : integer)
-		return std_logic_vector;
-
-	function "ror" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector;
-
-	function "sll" (
-		constant arg1 : unsigned;
-		constant arg2 : natural)
-		return std_logic_vector;
-
-	function "sll" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector;
-
-	function "srl" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector;
-
-	function "and" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic)
-		return std_logic_vector;
-
-	impure function "mod" (
-		constant arg1 : time;
-		constant arg2 : time)
-		return time;
+--	function "rol" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : integer)
+--		return std_logic_vector;
+--
+--	function "ror" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector;
+--
+--	function "sll" (
+--		constant arg1 : unsigned;
+--		constant arg2 : natural)
+--		return std_logic_vector;
+--
+--	function "sll" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector;
+--
+--	function "srl" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector;
+--
+--	function "and" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : std_logic)
+--		return std_logic_vector;
+--
+--	impure function "mod" (
+--		constant arg1 : time;
+--		constant arg2 : time)
+--		return time;
 
 	function to_unsigned (
 		constant arg1 : natural;
@@ -321,96 +311,91 @@ package body std is
 		aux(80 to 96-1) := not oneschecksum(aux, 16);
 		return aux;
 	end;
-	function resize (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(resize(unsigned(arg1), arg2));
-	end;
 
 	function resize (
 		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(resize(unsigned(arg1), arg2'length));
-	end;
-
-	function resize (
-		constant arg1 : unsigned;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(resize(arg1, arg2'length));
-	end;
-
-	function "rol" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : integer)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(rotate_left(unsigned(arg1), arg2));
-	end;
-
-	function "ror" (
-		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector is
+		variable aux : unsigned(0 to arg1'length);
+		variable val : unsigned(arg2-1 downto 0);
 	begin
-		return std_logic_vector(rotate_right(unsigned(arg1), arg2));
-	end;
-
-	function "sll" (
-		constant arg1 : unsigned;
-		constant arg2 : natural)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(shift_left(arg1, arg2));
-	end;
-
-	function "sll" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector is
-		variable aux : unsigned(arg1'range);
-	begin
-		return std_logic_vector(shift_left(unsigned(arg1), arg2));
-	end;
-
-	function "srl" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector is
-		variable aux : unsigned(arg1'range);
-	begin
-		return std_logic_vector(shift_right(unsigned(arg1), arg2));
-	end;
-
-	function "and" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic)
-		return std_logic_vector is
-		variable aux : std_logic_vector(arg1'range);
-	begin
-		for i in arg1'range loop
-			aux(i) := arg1(i) and arg2;
+		val :=(others => '0');
+		aux := unsigned(arg1);
+		for i in aux'range loop
+			val := val sll 1;
+			val(0) := aux(0);
+			aux := aux sll 1;
 		end loop;
-		return aux;
+		return std_logic_vector(val);
+
 	end;
 
-	impure function "mod" (
-		constant arg1 : time;
-		constant arg2 : time)
-		return time is
-		variable val : integer;
-	begin
-		val := arg1 / arg2;
-		if val*arg2 < arg1 then
-			return arg2-arg1*val;
-		end if;
-		return 0 ns;
-	end;
+--	function "rol" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : integer)
+--		return std_logic_vector is
+--	begin
+--		return std_logic_vector(rotate_left(unsigned(arg1), arg2));
+--	end;
+--
+--	function "ror" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector is
+--	begin
+--		return std_logic_vector(rotate_right(unsigned(arg1), arg2));
+--	end;
+--
+--	function "sll" (
+--		constant arg1 : unsigned;
+--		constant arg2 : natural)
+--		return std_logic_vector is
+--	begin
+--		return std_logic_vector(shift_left(arg1, arg2));
+--	end;
+--
+--	function "sll" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector is
+--		variable aux : unsigned(arg1'range);
+--	begin
+--		return std_logic_vector(shift_left(unsigned(arg1), arg2));
+--	end;
+--
+--	function "srl" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : natural)
+--		return std_logic_vector is
+--		variable aux : unsigned(arg1'range);
+--	begin
+--		return std_logic_vector(shift_right(unsigned(arg1), arg2));
+--	end;
+--
+--	function "and" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : std_logic)
+--		return std_logic_vector is
+--		variable aux : std_logic_vector(arg1'range);
+--	begin
+--		for i in arg1'range loop
+--			aux(i) := arg1(i) and arg2;
+--		end loop;
+--		return aux;
+--	end;
+--
+--	impure function "mod" (
+--		constant arg1 : time;
+--		constant arg2 : time)
+--		return time is
+--		variable val : integer;
+--	begin
+--		val := arg1 / arg2;
+--		if val*arg2 < arg1 then
+--			return arg2-arg1*val;
+--		end if;
+--		return 0 ns;
+--	end;
 
 	------------------
 	-- Array functions
@@ -641,7 +626,7 @@ package body std is
 		constant i : std_logic_vector;
 		constant s : std_logic_vector)
 		return std_logic_vector is
-		variable v : std_logic_vector(i'length/2**s'length downto 0);
+		variable v : unsigned(i'length/2**s'length downto 0);
 	begin
 		for j in v'range loop
 			if i'left > i'right then
@@ -652,7 +637,7 @@ package body std is
 				v(v'right) := i(to_integer(unsigned(s))+j);
 			end if;
 		end loop;
-		return v;
+		return std_logic_vector(v);
 	end;
 
 	function demux (
@@ -683,30 +668,30 @@ package body std is
 		constant mask : std_logic_vector;
 		constant word : std_logic_vector)
 		return std_logic_vector is
-		variable di : std_logic_vector(0 to byte'length-1);
-		variable do : std_logic_vector(0 to word'length-1);
+		variable di : unsigned(0 to byte'length-1);
+		variable do : unsigned(0 to word'length-1);
 	begin
-		di := byte;
-		do := word;
+		di := unsigned(byte);
+		do := unsigned(word);
 		for i in mask'range loop
 			if mask(i)='1' then
 				do(di'range) := di;
 			end if;
 			do := do rol di'length;
 		end loop;
-		return do;
+		return std_logic_vector(do);
 	end;
 
 	function byte2word (
 		constant di : byte_vector)
 		return std_logic_vector is
-		variable do : std_logic_vector(di'length*di(di'left)'length-1 downto 0);
+		variable do : unsigned(di'length*di(di'left)'length-1 downto 0);
 	begin
 		for i in di'range loop
-			do(di(di'left)'range) := di(i);
+			do(di(di'left)'range) := unsigned(di(i));
 			do := do sll di'length;
 		end loop;
-		return do;
+		return std_logic_vector(do);
 	end;
 
 	function inc (
@@ -781,12 +766,12 @@ package body std is
 		constant arg : std_logic_vector)
 		return nibble_vector is
 		variable val : nibble_vector((arg'length+nibble'length-1)/nibble'length-1 downto 0);
-		variable aux : std_logic_vector(val'length*nibble'length-1 downto 0);
+		variable aux : unsigned(val'length*nibble'length-1 downto 0);
 	begin
-		aux := std_logic_vector(resize(unsigned(arg),aux'length));
+		aux := resize(unsigned(arg), aux'length);
 		val := (others => (others => '-'));
 		for i in val'reverse_range loop
-			val(i) := aux(nibble'range);
+			val(i) := std_logic_vector(aux(nibble'range));
 			aux := aux srl nibble'length;
 		end loop;
 		return val;
@@ -795,28 +780,28 @@ package body std is
 	function to_stdlogicvector (
 		constant arg : nibble_vector) 
 		return std_logic_vector is
-		variable val : std_logic_vector(arg'length*nibble'length-1 downto 0);
+		variable val : unsigned(arg'length*nibble'length-1 downto 0);
 	begin
 		val := (others => '-');
 		for i in arg'range loop
 			val := val sll nibble'length;
-			val(nibble'range) := arg(i);
+			val(nibble'range) := unsigned(arg(i));
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	function to_stdlogicvector (
 		arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(byte'length*arg'length-1 downto 0);
+		variable val : unsigned(byte'length*arg'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
 			val := val sll byte'length;
-			val(byte'range) := dat(i);
+			val(byte'range) := unsigned(dat(i));
 		end loop;
-		return val;
+		return std_logic_vector(val);
 	end;
 
 	function max (

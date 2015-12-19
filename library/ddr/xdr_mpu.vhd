@@ -241,11 +241,12 @@ architecture arch of xdr_mpu is
 		function to_latwordvector(
 			constant arg : std_logic_vector)
 			return latword_vector is
-			variable aux : std_logic_vector(0 to arg'length-1) := arg;
+			variable aux : unsigned(0 to arg'length-1);
 			variable val : latword_vector(0 to arg'length/latword'length-1);
 		begin
+			aux := unsigned(arg);
 			for i in val'range loop
-				val(i) := aux(latword'range);
+				val(i) := std_logic_vector(aux(latword'range));
 				aux := aux sll latword'length;
 			end loop;
 			return val;

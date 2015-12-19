@@ -48,13 +48,13 @@ architecture def of miitx_mem is
 		constant arg : std_logic_vector)
 		return byte_vector is
 
-		variable aux : std_logic_vector(arg'length-1 downto 0) := (others => '-');
+		variable aux : unsigned(arg'length-1 downto 0) := (others => '-');
 		variable val : byte_vector(2**addr_size-1 downto 0) := (others => (others => '-'));
 
 	begin
-		aux(arg'length-1 downto 0) := arg;
+		aux(arg'length-1 downto 0) := unsigned(arg);
 		for i in 0 to ramb_size-1 loop
-			val(i) := reverse(aux(byte'range));
+			val(i) := reverse(std_logic_vector(aux(byte'range)));
 			aux := aux srl byte'length;
 		end loop;
 
