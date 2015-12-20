@@ -170,7 +170,7 @@ package xdr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
 
-	function ddr_mrfile(
+	impure function ddr_mrfile(
 		constant xdr_stdr : natural;
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
@@ -546,7 +546,7 @@ package body xdr_param is
 
 	constant xdr_a_max : natural := 16;
 
-	function mr_field (
+	impure function mr_field (
 		constant mask : fd_vector;
 		constant src  : std_logic_vector)
 		return std_logic_vector is
@@ -657,52 +657,57 @@ package body xdr_param is
 
 	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 
-	function ddrmr_data (
+	impure function ddrmr_data (
 		constant mr_file : mr_vector;
-		constant mr_addr : std_logic_vector)
+		constant mr_addr : ddrmr_addr)
 		return std_logic_vector is
+		variable val : std_logic_vector(0 to xdr_a_max-1);
 	begin
+		val := (others => '-');
 		for i in mr_file'range loop
 			if mr_addr=mr_file(i).mr then
-				return mr_file(i).data;
+				val := mr_file(i).data;
 			end if;
 		end loop;
-		return (0 to xdr_a_max-1 => '0');
+		return val;
 	end;
 
-	function ddr1_mrfile (
+	impure function ddr1_mrfile (
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;
 		constant xdr_mr_cl   : std_logic_vector;
 		constant xdr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
-		variable mr_file : mr_vector(0 to 3-1);
+		constant mr_file : mr_vector := (
+--			(mr   => ddr1mr_rstdll, 
+--			 data => (
+--				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+--				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_rdll, src => "1"))),
+
+
+			(mr   => ddr1mr_preall, 
+			 data => x"0400"), --(mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max))),
+
+			(mr   => ddr1mr_setmr, 
+			 data => x"0fff"
+--				 (
+--				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+--				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_rdll, src => "0"))
+			 )
+		 );
+
 	begin
-		mr_file := (
-			0 => (mr   => ddr1mr_rstdll, 
-			 data => (
-				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
-				mr_field(mask => ddr1_rdll, src => "1"))),
-
-			1 => (mr   => ddr1mr_setmr, 
-			 data => (
-				mr_field(mask => ddr1_bl,   src => xdr_mr_bl) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl) or
-				mr_field(mask => ddr1_rdll, src => "0"))),
-
-			2 => (mr   => ddr1mr_preall, 
-			 data => (mr_field(mask => ddr1_preall, src => "1"))));
-
 		return ddrmr_data(
 			mr_addr => xdr_mr_addr,
 			mr_file => mr_file);
 	end;
 
-	function ddr2_mrfile (
+	impure function ddr2_mrfile (
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
@@ -717,9 +722,7 @@ package body xdr_param is
 		constant xdr_mr_rdqs : std_logic_vector;
 		constant xdr_mr_wl   : std_logic_vector)
 		return std_logic_vector is
-		variable mr_file : mr_vector(0 to 8-1);
-	begin
-		mr_file := (
+		constant mr_file : mr_vector := (
 			(mr   => ddr2mr_setemr2, 
 			 data => (
 			 	mr_field(mask => ddr2_srt, src => xdr_mr_srt))),
@@ -764,12 +767,13 @@ package body xdr_param is
 			 data => (
 				mr_field(mask => ddr2_preall, src => "1"))));
 
+	begin
 		return ddrmr_data(
 			mr_addr => xdr_mr_addr,
 			mr_file => mr_file);
 	end;
 
-	function ddr3_mrfile (
+	impure function ddr3_mrfile (
 		constant xdr_mr_addr : std_logic_vector;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
@@ -790,9 +794,7 @@ package body xdr_param is
 		constant xdr_mr_pd   : std_logic_vector;
 		constant xdr_mr_cwl  : std_logic_vector)
 		return std_logic_vector is
-		variable mr_file : mr_vector(0 to 5-1);
-	begin
-		mr_file := (
+		constant mr_file : mr_vector := (
 			(mr   => ddr3mr_setmr0,
 			 data => (
 				mr_field(mask => ddr3_bl, src => xdr_mr_bl) or
@@ -827,12 +829,13 @@ package body xdr_param is
 			 data => (
 				mr_field(mask => ddr3_zqc,   src => xdr_mr_zqc))));
 
+	begin
 		return ddrmr_data (
 			mr_addr => xdr_mr_addr,
 			mr_file => mr_file);
 	end;
 
-	function ddr_mrfile(
+	impure function ddr_mrfile(
 		constant xdr_stdr : natural;
 
 		constant xdr_mr_addr : std_logic_vector;

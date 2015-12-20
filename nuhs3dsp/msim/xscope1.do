@@ -16,9 +16,17 @@ add wave -noupdate /testbench/nuhs3dsp_e/ddr_a_10_OBUF/O
 add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/ddr_a
 add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/ddrphy_a
 add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e_ddr_e_xdr_init_a
-add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddr_e_xdr_mr_data
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_dcm_rst/O
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/RST
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLKIN
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLK0
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLK180
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLK270
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLK90
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/CLKFX
+add wave -noupdate /testbench/nuhs3dsp_e/dcms_e_ddrdcm_e_dcm_dll/LOCKED
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21695247 ps} 0} {{Cursor 2} {22930373 ps} 0}
+WaveRestoreCursors {{Cursor 1} {21695247 ps} 0} {{Cursor 2} {1985912 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 99
 configure wave -valuecolwidth 100
@@ -34,4 +42,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {22740880 ps} {23088540 ps}
+WaveRestoreZoom {1900190 ps} {2089684 ps}

@@ -84,13 +84,13 @@ begin
 		clkfx => dcm_clkin,
 		locked => dfs_lckd);
 
-	process (dfsdcm_rst, dfsdcm_clkin)
-		variable srl16 : std_logic_vector(0 to 16-1);
+	process (dfs_lckd, dcm_clkin)
+		variable srl16 : std_logic_vector(0 to 8-1) := (others => '1');
 	begin
-		if dfsdcm_rst='1' then
+		if dfs_lckd='0' then
 			dcm_rst <= '1';
-		elsif rising_edge(dfsdcm_clkin) then
-			srl16 := srl16(1 to srl16'right) & not dfs_lckd;
+		elsif rising_edge(dcm_clkin) then
+			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
 			dcm_rst <= srl16(0) or not dfs_lckd;
 		end if;
 	end process;
