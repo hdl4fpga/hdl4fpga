@@ -316,7 +316,7 @@ package body std is
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector is
-		variable aux : unsigned(0 to arg1'length);
+		variable aux : unsigned(0 to arg1'length-1);
 		variable val : unsigned(arg2-1 downto 0);
 	begin
 		val :=(others => '0');

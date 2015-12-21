@@ -166,8 +166,6 @@ architecture mix of xdr is
 
 	signal xdr_cwl : std_logic_vector(sys_cwl'range);
 
-	signal rst : std_logic := '1';
-
 	constant tlWR : natural := xdr_timing(mark, tWR)+xdr_latency(stdr, DQSXL);
 	constant timers : natural_vector := ddr_timers(tCP, mark);
 
@@ -202,31 +200,22 @@ architecture mix of xdr is
 
 begin
 
-	process (sys_clks(0), sys_rst)
-	begin
-		if sys_rst='1' then
-			rst <= '1';
-		elsif rising_edge(sys_clks(0)) then
-			rst <= sys_rst;
-		end if;
-	end process;
-
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
-	xdr_init_req <= rst;
-	xdr_mr_e : entity hdl4fpga.xdr_mr
-	generic map (
-		ddr_stdr => stdr)
-	port map (
-		xdr_mr_bl  => sys_bl,
-		xdr_mr_cl  => sys_cl,
-		xdr_mr_cwl => sys_cwl,
-		xdr_mr_wl(0) => xdr_init_wlr,
-		xdr_mr_zqc(0) => xdr_init_zqc,
-		xdr_mr_wr  => sys_wr,
-
-		xdr_mr_addr => xdr_mr_addr,
-		xdr_mr_data => xdr_mr_data);
+	xdr_init_req <= sys_rst;
+--	xdr_mr_e : entity hdl4fpga.xdr_mr
+--	generic map (
+--		ddr_stdr => stdr)
+--	port map (
+--		xdr_mr_bl  => sys_bl,
+--		xdr_mr_cl  => sys_cl,
+--		xdr_mr_cwl => sys_cwl,
+--		xdr_mr_wl(0) => xdr_init_wlr,
+--		xdr_mr_zqc(0) => xdr_init_zqc,
+--		xdr_mr_wr  => sys_wr,
+--
+--		xdr_mr_addr => xdr_mr_addr,
+--		xdr_mr_data => xdr_mr_data);
 
 	xdr_init_e : entity hdl4fpga.xdr_init
 	generic map (
@@ -235,8 +224,12 @@ begin
 		addr_size => addr_size,
 		bank_size => bank_size)
 	port map (
-		xdr_mr_addr  => xdr_mr_addr,
-		xdr_mr_data  => xdr_mr_data,
+		xdr_init_bl  => sys_bl,
+		xdr_init_cl  => sys_cl,
+		xdr_init_bt  => "0",
+		xdr_init_ods => "0",
+--		xdr_mr_addr  => xdr_mr_addr,
+--		xdr_mr_data  => xdr_mr_data,
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,

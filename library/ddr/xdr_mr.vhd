@@ -57,7 +57,7 @@ entity xdr_mr is
 		xdr_mr_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
 		xdr_mr_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
-		xdr_mr_addr : in  std_logic_vector(3-1 downto 0);
+		xdr_mr_addr : in  ddrmr_addr;
 		xdr_mr_data : out std_logic_vector(13-1 downto 0));
 end;
 
@@ -65,27 +65,33 @@ architecture def of xdr_mr is
 
 begin
 
-	xdr_mr_data <= resize(ddr_mrfile(
-		xdr_stdr => ddr_stdr,
+	xdr_mr_data <= resize(ddr1_mrfile(
 		xdr_mr_addr => xdr_mr_addr, 
-		xdr_mr_srt  => xdr_mr_srt,
 		xdr_mr_bl   => xdr_mr_bl,
 		xdr_mr_bt   => xdr_mr_bt,
 		xdr_mr_cl   => xdr_mr_cl,
-		xdr_mr_wr   => xdr_mr_wr,
-		xdr_mr_ods  => xdr_mr_ods,
-		xdr_mr_rtt  => xdr_mr_rtt,
-		xdr_mr_al   => xdr_mr_al,
-		xdr_mr_ocd  => xdr_mr_ocd,
-		xdr_mr_tdqs => xdr_mr_tdqs,
-		xdr_mr_rdqs => xdr_mr_rdqs,
-		xdr_mr_wl   => xdr_mr_wl,
-		xdr_mr_qoff => xdr_mr_qoff,
-		xdr_mr_drtt => xdr_mr_drtt,
-		xdr_mr_mprrf=> xdr_mr_mprrf,
-		xdr_mr_mpr  => xdr_mr_mpr,
-		xdr_mr_zqc  => xdr_mr_zqc,
-		xdr_mr_asr  => xdr_mr_asr,
-		xdr_mr_pd   => xdr_mr_pd,
-		xdr_mr_cwl  => xdr_mr_cwl),xdr_mr_data'length);
+		xdr_mr_ods  => xdr_mr_ods),xdr_mr_data'length);
+--	xdr_mr_data <= resize(ddr_mrfile(
+--		xdr_stdr => ddr_stdr,
+--		xdr_mr_addr => xdr_mr_addr, 
+--		xdr_mr_srt  => xdr_mr_srt,
+--		xdr_mr_bl   => xdr_mr_bl,
+--		xdr_mr_bt   => xdr_mr_bt,
+--		xdr_mr_cl   => xdr_mr_cl,
+--		xdr_mr_wr   => xdr_mr_wr,
+--		xdr_mr_ods  => xdr_mr_ods,
+--		xdr_mr_rtt  => xdr_mr_rtt,
+--		xdr_mr_al   => xdr_mr_al,
+--		xdr_mr_ocd  => xdr_mr_ocd,
+--		xdr_mr_tdqs => xdr_mr_tdqs,
+--		xdr_mr_rdqs => xdr_mr_rdqs,
+--		xdr_mr_wl   => xdr_mr_wl,
+--		xdr_mr_qoff => xdr_mr_qoff,
+--		xdr_mr_drtt => xdr_mr_drtt,
+--		xdr_mr_mprrf=> xdr_mr_mprrf,
+--		xdr_mr_mpr  => xdr_mr_mpr,
+--		xdr_mr_zqc  => xdr_mr_zqc,
+--		xdr_mr_asr  => xdr_mr_asr,
+--		xdr_mr_pd   => xdr_mr_pd,
+--		xdr_mr_cwl  => xdr_mr_cwl),xdr_mr_data'length);
 end;

@@ -54,7 +54,6 @@ architecture scope of nuhs3dsp is
 
 	signal sys_clk : std_logic;
 	signal dcm_rst  : std_logic;
-	signal dcm_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
@@ -181,8 +180,7 @@ begin
 		input_rst => input_rst,
 		ddrs_rst  => ddrs_rst, 
     	mii_rst   => mii_rst,  
-		vga_rst   => vga_rst,
-		dcm_lckd => dcm_lckd);
+		vga_rst   => vga_rst);
 
 	scope_e : entity hdl4fpga.scope
 	generic map (

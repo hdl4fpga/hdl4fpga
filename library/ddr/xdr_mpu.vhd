@@ -230,7 +230,7 @@ architecture arch of xdr_mpu is
 		return val;
 	end;
 
-	function select_lat (
+	impure function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
@@ -252,7 +252,7 @@ architecture arch of xdr_mpu is
 			return val;
 		end;
 
-		function select_latword (
+		impure function select_latword (
 			constant lat_val : std_logic_vector;
 			constant lat_cod : latword_vector;
 			constant lat_tab : natural_vector)

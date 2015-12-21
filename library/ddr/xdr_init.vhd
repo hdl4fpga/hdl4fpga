@@ -32,12 +32,16 @@ use hdl4fpga.xdr_param.all;
 entity xdr_init is
 	generic (
 		ddr_stdr : natural;
-		timers : natural_vector := (1 to 0 => 0);
+		timers : natural_vector := (0 to 0 => 0);
 		addr_size : natural := 13;
 		bank_size : natural := 3);
 	port (
-		xdr_mr_addr  : out std_logic_vector;
-		xdr_mr_data  : in std_logic_vector(13-1 downto 0);
+		xdr_init_bl   : std_logic_vector;
+		xdr_init_bt   : std_logic_vector;
+		xdr_init_cl   : std_logic_vector;
+		xdr_init_ods  : std_logic_vector;
+	--	xdr_mr_addr  : out std_logic_vector;
+	--	xdr_mr_data  : in std_logic_vector(13-1 downto 0);
 		xdr_refi_rdy : in  std_logic;
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
@@ -72,10 +76,47 @@ architecture def of xdr_init is
 	signal xdr_timer_req : std_logic;
 
 	signal input : std_logic_vector(0 to 0);
+	signal xdr_mr_addr : ddrmr_addr;
+	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 begin
 
 	input(0) <= xdr_init_wlrdy;
 
+--	process(
+--		xdr_mr_addr,
+--		xdr_init_bl,
+--		xdr_init_bt,
+--		xdr_init_cl,
+--		xdr_init_ods)
+--
+--		variable mr_data : std_logic_vector(0 to xdr_a_max-1);
+--	begin
+--		mr_data := (others => '1');
+--		case xdr_mr_addr is
+--		when ddr1mr_preall =>
+--			mr_data := mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
+--		when ddr1mr_rstdll =>
+--			mr_data := mr_field(mask => ddr1_bl,   src => xdr_init_bl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_bt,   src => xdr_init_bt, size => xdr_a_max) or
+--				mr_field(mask => ddr1_cl,   src => xdr_init_cl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_rdll, src => "1", size => xdr_a_max);
+--		when ddr1mr_setmr =>
+--			mr_data := mr_field(mask => ddr1_bl,   src => xdr_init_bl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_bt,   src => xdr_init_bt, size => xdr_a_max) or
+--				mr_field(mask => ddr1_cl,   src => xdr_init_cl, size => xdr_a_max) or
+--				mr_field(mask => ddr1_rdll, src => "0", size => xdr_a_max);
+--		when others =>
+--		end case;
+--		xdr_mr_data <= resize(mr_data, xdr_mr_data'length);
+--	end process;
+
+--		xdr_mr_data <= resize(mr_data, xdr_mr_data'length);
+	xdr_mr_data <= resize(ddr1_mrfile(
+		xdr_mr_addr => xdr_rnit_addr, 
+		xdr_mr_bl   => xdr_init_bl,
+		xdr_mr_bt   => xdr_init_bt,
+		xdr_mr_cl   => xdr_init_cl,
+		xdr_mr_ods  => xdr_init_ods),xdr_mr_data'length);
 	process (xdr_init_clk)
 		variable row : s_row;
 	begin

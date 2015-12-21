@@ -170,9 +170,17 @@ package xdr_param is
 		constant lat_wid : natural := 1)
 		return std_logic_vector;
 
+	impure function ddr1_mrfile (
+		constant xdr_mr_addr : ddrmr_addr;
+		constant xdr_mr_bl   : std_logic_vector;
+		constant xdr_mr_bt   : std_logic_vector;
+		constant xdr_mr_cl   : std_logic_vector;
+		constant xdr_mr_ods  : std_logic_vector)
+		return std_logic_vector;
+
 	impure function ddr_mrfile(
 		constant xdr_stdr : natural;
-		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_addr : ddrmr_addr;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;
@@ -194,6 +202,137 @@ package xdr_param is
 		constant xdr_mr_pd   : std_logic_vector;
 		constant xdr_mr_cwl  : std_logic_vector)
 		return std_logic_vector;
+
+	-------------------------
+	-- DDR Memory Register --
+	-------------------------
+
+	-- Mode Register Field Descriptor --
+	------------------------------------
+
+	type fd is record	-- Field Descritpor
+		sz  : natural;	-- Size
+		off : natural;	-- Offset
+	end record;
+
+	type fd_vector is array (natural range <>) of fd;
+		
+	function mr_field (
+		constant mask : fd_vector;
+		constant src  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
+
+	type ddr3_ccmd is record
+		cmd  : std_logic_vector( 3 downto 0);
+		bank : std_logic_vector( 2 downto 0);
+		addr : natural_vector(13 downto 0);
+	end record;
+
+	constant xdr_a_max : natural := 16;
+
+	type mr_row is record
+		mr   : ddrmr_addr;
+		data : std_logic_vector(xdr_a_max-1 downto 0);
+	end record;
+
+	type mr_vector is array (natural range <>) of mr_row;
+
+	-- DDR1 Mode Register --
+	------------------------
+
+	constant ddr1_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
+	constant ddr1_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
+	constant ddr1_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
+	constant ddr1_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
+
+	-- DDR1 Extended Mode Register --
+	---------------------------------
+
+	constant ddr1_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
+	constant ddr1_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
+
+	-- A10 --
+	---------
+
+	constant ddr1_preall : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
+
+	-- DDR2 Mode Register --
+	------------------------
+
+	constant ddr2_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
+	constant ddr2_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
+	constant ddr2_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
+	constant ddr2_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
+	constant ddr2_wr   : fd_vector(0 to 0) := (0 => (off =>  9, sz => 3));
+	constant ddr2_pd   : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
+
+	-- DDR2 Extended Mode Register --
+	---------------------------------
+
+	constant ddr2_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
+	constant ddr2_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
+	constant ddr2_rtt  : fd_vector(0 to 1) := (
+		0 => (off => 2, sz => 1),
+		1 => (off => 6, sz => 1));
+	constant ddr2_al   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 3));
+	constant ddr2_ocd  : fd_vector(0 to 0) := (0 => (off =>  7, sz => 3));
+	constant ddr2_ddqs : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
+	constant ddr2_rdqs : fd_vector(0 to 0) := (0 => (off => 11, sz => 1));
+	constant ddr2_out  : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
+
+	-- DDR2 Extended Mode Register 2 --
+	-----------------------------------
+
+	constant ddr2_srt  : fd_vector(0 to 0) := (0 => (off => 7, sz => 1));
+
+	-- A10 --
+	---------
+
+	constant ddr2_preall : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
+
+	--------------------------
+	-- DDR3 Mode Register 0 --
+	--------------------------
+
+	constant ddr3_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
+	constant ddr3_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
+	constant ddr3_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
+	constant ddr3_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
+	constant ddr3_wr   : fd_vector(0 to 0) := (0 => (off =>  9, sz => 3));
+	constant ddr3_pd   : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
+
+	-- DDR3 Mode Register 1 --
+	--------------------------
+
+	constant ddr3_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
+	constant ddr3_ods  : fd_vector(0 to 1) := (
+		0 => (off => 1, sz => 1), 
+		1 => (off => 5, sz => 1));
+	constant ddr3_rtt  : fd_vector(0 to 2) := (
+		0 => (off => 2, sz => 1),
+		1 => (off => 6, sz => 1),
+		2 => (off => 9, sz => 1));
+	constant ddr3_al   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 2));
+	constant ddr3_wl   : fd_vector(0 to 0) := (0 => (off =>  7, sz => 1));
+	constant ddr3_tdqs : fd_vector(0 to 0) := (0 => (off => 11, sz => 1));
+	constant ddr3_qoff : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
+
+	-- DDR3 Mode Register 2 --
+	--------------------------
+
+	constant ddr3_cwl  : fd_vector(0 to 0) := (0 => (off => 3, sz => 3));
+	constant ddr3_asr  : fd_vector(0 to 0) := (0 => (off => 6, sz => 1));
+	constant ddr3_srt  : fd_vector(0 to 0) := (0 => (off => 7, sz => 1));
+	constant ddr3_drtt : fd_vector(0 to 0) := (0 => (off => 9, sz => 2));
+
+	-- DDR3 Mode Register 3 --
+	--------------------------
+
+	constant ddr3_mprrf : fd_vector(0 to 0) := (0 => (off => 0, sz => 2));
+	constant ddr3_mpr   : fd_vector(0 to 0) := (0 => (off => 2, sz => 1));
+
+	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
 
 end package;
 
@@ -502,26 +641,6 @@ package body xdr_param is
 		end case;
 	end;
 		
-	-------------------------
-	-- DDR Memory Register --
-	-------------------------
-
-	-- Mode Register Field Descriptor --
-	------------------------------------
-
-	type fd is record	-- Field Descritpor
-		sz  : natural;	-- Size
-		off : natural;	-- Offset
-	end record;
-
-	type fd_vector is array (natural range <>) of fd;
-
-	type ddr3_ccmd is record
-		cmd  : std_logic_vector( 3 downto 0);
-		bank : std_logic_vector( 2 downto 0);
-		addr : natural_vector(13 downto 0);
-	end record;
-
 	function mr_field (
 		constant mask : fd_vector;
 		constant src  : std_logic_vector;
@@ -544,7 +663,6 @@ package body xdr_param is
 		return std_logic_vector(val);
 	end;
 
-	constant xdr_a_max : natural := 16;
 
 	impure function mr_field (
 		constant mask : fd_vector;
@@ -554,116 +672,13 @@ package body xdr_param is
 		return mr_field(mask, src, xdr_a_max);
 	end;
 
-	type mr_row is record
-		mr   : ddrmr_addr;
-		data : std_logic_vector(xdr_a_max-1 downto 0);
-	end record;
-
-	type mr_vector is array (natural range <>) of mr_row;
-
-	-- DDR1 Mode Register --
-	------------------------
-
-	constant ddr1_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
-	constant ddr1_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
-	constant ddr1_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
-	constant ddr1_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
-
-	-- DDR1 Extended Mode Register --
-	---------------------------------
-
-	constant ddr1_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
-	constant ddr1_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
-
-	-- A10 --
-	---------
-
-	constant ddr1_preall : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
-
-	-- DDR2 Mode Register --
-	------------------------
-
-	constant ddr2_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
-	constant ddr2_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
-	constant ddr2_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
-	constant ddr2_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
-	constant ddr2_wr   : fd_vector(0 to 0) := (0 => (off =>  9, sz => 3));
-	constant ddr2_pd   : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
-
-	-- DDR2 Extended Mode Register --
-	---------------------------------
-
-	constant ddr2_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
-	constant ddr2_ods  : fd_vector(0 to 0) := (0 => (off => 1, sz => 1));
-	constant ddr2_rtt  : fd_vector(0 to 1) := (
-		0 => (off => 2, sz => 1),
-		1 => (off => 6, sz => 1));
-	constant ddr2_al   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 3));
-	constant ddr2_ocd  : fd_vector(0 to 0) := (0 => (off =>  7, sz => 3));
-	constant ddr2_ddqs : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
-	constant ddr2_rdqs : fd_vector(0 to 0) := (0 => (off => 11, sz => 1));
-	constant ddr2_out  : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
-
-	-- DDR2 Extended Mode Register 2 --
-	-----------------------------------
-
-	constant ddr2_srt  : fd_vector(0 to 0) := (0 => (off => 7, sz => 1));
-
-	-- A10 --
-	---------
-
-	constant ddr2_preall : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
-
-	--------------------------
-	-- DDR3 Mode Register 0 --
-	--------------------------
-
-	constant ddr3_bl   : fd_vector(0 to 0) := (0 => (off =>  0, sz => 3));
-	constant ddr3_bt   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 1));
-	constant ddr3_cl   : fd_vector(0 to 0) := (0 => (off =>  4, sz => 3));
-	constant ddr3_rdll : fd_vector(0 to 0) := (0 => (off =>  8, sz => 1));
-	constant ddr3_wr   : fd_vector(0 to 0) := (0 => (off =>  9, sz => 3));
-	constant ddr3_pd   : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
-
-	-- DDR3 Mode Register 1 --
-	--------------------------
-
-	constant ddr3_edll : fd_vector(0 to 0) := (0 => (off => 0, sz => 1));
-	constant ddr3_ods  : fd_vector(0 to 1) := (
-		0 => (off => 1, sz => 1), 
-		1 => (off => 5, sz => 1));
-	constant ddr3_rtt  : fd_vector(0 to 2) := (
-		0 => (off => 2, sz => 1),
-		1 => (off => 6, sz => 1),
-		2 => (off => 9, sz => 1));
-	constant ddr3_al   : fd_vector(0 to 0) := (0 => (off =>  3, sz => 2));
-	constant ddr3_wl   : fd_vector(0 to 0) := (0 => (off =>  7, sz => 1));
-	constant ddr3_tdqs : fd_vector(0 to 0) := (0 => (off => 11, sz => 1));
-	constant ddr3_qoff : fd_vector(0 to 0) := (0 => (off => 12, sz => 1));
-
-	-- DDR3 Mode Register 2 --
-	--------------------------
-
-	constant ddr3_cwl  : fd_vector(0 to 0) := (0 => (off => 3, sz => 3));
-	constant ddr3_asr  : fd_vector(0 to 0) := (0 => (off => 6, sz => 1));
-	constant ddr3_srt  : fd_vector(0 to 0) := (0 => (off => 7, sz => 1));
-	constant ddr3_drtt : fd_vector(0 to 0) := (0 => (off => 9, sz => 2));
-
-	-- DDR3 Mode Register 3 --
-	--------------------------
-
-	constant ddr3_mprrf : fd_vector(0 to 0) := (0 => (off => 0, sz => 2));
-	constant ddr3_mpr   : fd_vector(0 to 0) := (0 => (off => 2, sz => 1));
-
-	constant ddr3_zqc   : fd_vector(0 to 0) := (0 => (off => 10, sz => 1));
-
 	impure function ddrmr_data (
 		constant mr_file : mr_vector;
 		constant mr_addr : ddrmr_addr)
 		return std_logic_vector is
 		variable val : std_logic_vector(0 to xdr_a_max-1);
 	begin
-		val := (others => '-');
+		val := (others => '1');
 		for i in mr_file'range loop
 			if mr_addr=mr_file(i).mr then
 				val := mr_file(i).data;
@@ -673,42 +688,58 @@ package body xdr_param is
 	end;
 
 	impure function ddr1_mrfile (
-		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_addr : ddrmr_addr;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;
 		constant xdr_mr_cl   : std_logic_vector;
 		constant xdr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
 		constant mr_file : mr_vector := (
---			(mr   => ddr1mr_rstdll, 
---			 data => (
---				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
---				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
---				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
---				mr_field(mask => ddr1_rdll, src => "1"))),
-
-
 			(mr   => ddr1mr_preall, 
-			 data => x"0400"), --(mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max))),
+			 data => (mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max))),
+
+			(mr   => ddr1mr_rstdll, 
+			 data => (
+				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "1"))),
+
 
 			(mr   => ddr1mr_setmr, 
-			 data => x"0fff"
---				 (
---				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
---				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
---				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
---				mr_field(mask => ddr1_rdll, src => "0"))
-			 )
-		 );
+			 data => 
+				 (
+				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "0"))));
 
+		variable val : std_logic_vector(0 to xdr_a_max-1);
 	begin
-		return ddrmr_data(
-			mr_addr => xdr_mr_addr,
-			mr_file => mr_file);
+--		return ddrmr_data(
+--			mr_addr => xdr_mr_addr,
+--			mr_file => mr_file);
+		val := (others => '1');
+		case xdr_mr_addr is
+		when ddr1mr_preall =>
+			val := mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
+		when ddr1mr_rstdll =>
+			val := mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "1");
+		when ddr1mr_setmr =>
+			val := mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
+				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
+				mr_field(mask => ddr1_rdll, src => "0");
+		when others =>
+		end case;
+		return val;
 	end;
 
 	impure function ddr2_mrfile (
-		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_addr : ddrmr_addr;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;
@@ -774,7 +805,7 @@ package body xdr_param is
 	end;
 
 	impure function ddr3_mrfile (
-		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_addr : ddrmr_addr;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;
@@ -838,7 +869,7 @@ package body xdr_param is
 	impure function ddr_mrfile(
 		constant xdr_stdr : natural;
 
-		constant xdr_mr_addr : std_logic_vector;
+		constant xdr_mr_addr : ddrmr_addr;
 		constant xdr_mr_srt  : std_logic_vector;
 		constant xdr_mr_bl   : std_logic_vector;
 		constant xdr_mr_bt   : std_logic_vector;

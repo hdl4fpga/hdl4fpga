@@ -502,7 +502,7 @@ package body xdr_db is
 				end loop;
 				return clval;
 			when others =>
-				return (1 to 0 => 0);
+				return (0 to 0 => 0);
 			end case;
 		when STRL|RWNL =>
 			for i in cltab'range loop
@@ -518,9 +518,9 @@ package body xdr_db is
 			end loop;
 			return cwlval;
 		when others =>
-			return (1 to 0 => 0);
+			return (0 to 0 => 0);
 		end case;
-		return (1 to 0 => 0);
+		return (0 to 0 => 0);
 	end;
 
 	function xdr_latcod (
