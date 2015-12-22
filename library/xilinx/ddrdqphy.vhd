@@ -163,7 +163,7 @@ begin
 		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
-			clk => clk_n,
+			clk => sys_clk0,
 			d => sys_dqst(1),
 			q => ddr_dqst);
 

@@ -109,6 +109,13 @@ architecture def of dataio is
 	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 begin
 
+	process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			datai_req <= not sys_rst and not capture_rdy;
+		end if;
+	end process;
+
 	datai_e : entity hdl4fpga.datai
 	port map (
 		input_clk => input_clk,
@@ -193,8 +200,6 @@ begin
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
-	datai_req <= not sys_rst and not capture_rdy;
-
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+2+DDR_CLNMSIZE downto 0);

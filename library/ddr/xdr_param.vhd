@@ -484,6 +484,7 @@ package body xdr_param is
 	constant sc1_ref1 : s_code := "0101";
 	constant sc1_ref2 : s_code := "0100";
 	constant sc1_lm3  : s_code := "1100";
+	constant sc1_wai  : s_code := "1101";
 
 	constant ddr1_pgm : s_table := (
 		(sc_rst,   sc1_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_CKE, TMR_SIZE)), 
@@ -494,7 +495,8 @@ package body xdr_param is
 		(sc1_pre2, sc1_ref1, "0", "0", "110001", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
 		(sc1_ref1, sc1_ref2, "0", "0", "110001", ddr_ref, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_RFC, TMR_SIZE)), 
 		(sc1_ref2, sc1_lm3,  "0", "0", "110011", ddr_mrs, ddr1mr_setmr,  ddr_mr0, to_unsigned(TMR1_MRD, TMR_SIZE)),  
-		(sc1_lm3,  sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),  
+		(sc1_lm3,  sc1_wai,  "0", "0", "110100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_DLL, TMR_SIZE)),  
+		(sc1_wai,  sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)),  
 		(sc_ref,   sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,     ddr_mrx, to_unsigned(TMR1_REF, TMR_SIZE)));
 
 	constant sc2_cke  : s_code := "0001";
@@ -511,14 +513,14 @@ package body xdr_param is
 	constant sc2_lm7  : s_code := "1010";
 
 
-	                            --    +------< rst
-	                            --    |+-----< cke
-	                            --    ||+----< rdy
-	                            --    |||+---< wlq
-	                            --    ||||+--< wlr
-	                            --    |||||+-< odt
-	                            --    ||||||
-                                --    vvvvvv
+	                              --    +------< rst
+	                              --    |+-----< cke
+	                              --    ||+----< rdy
+	                              --    |||+---< wlq
+	                              --    ||||+--< wlr
+	                              --    |||||+-< odt
+	                              --    ||||||
+                                  --    vvvvvv
 	constant ddr2_pgm : s_table := (
 		(sc_rst,   sc2_cke,  "0", "0", "110000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_CKE, TMR_SIZE)), 
 		(sc2_cke,  sc2_pre1, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_unsigned(TMR2_RPA, TMR_SIZE)), 
@@ -607,7 +609,7 @@ package body xdr_param is
 				TMR1_MRD => to_xdrlatency(tCP, mark, tMRD),
 				TMR1_RPA => to_xdrlatency(tCP, mark, tRP),
 				TMR1_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR1_DLL => to_xdrlatency(tCP, mark, tMRD),
+				TMR1_DLL => 200, --to_xdrlatency(tCP, mark, tMRD),
 				TMR1_REF => to_xdrlatency(tCP, mark, tREFI));
 
 		constant ddr2_timer : natural_vector := (
