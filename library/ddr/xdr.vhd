@@ -203,19 +203,6 @@ begin
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
 	xdr_init_req <= sys_rst;
---	xdr_mr_e : entity hdl4fpga.xdr_mr
---	generic map (
---		ddr_stdr => stdr)
---	port map (
---		xdr_mr_bl  => sys_bl,
---		xdr_mr_cl  => sys_cl,
---		xdr_mr_cwl => sys_cwl,
---		xdr_mr_wl(0) => xdr_init_wlr,
---		xdr_mr_zqc(0) => xdr_init_zqc,
---		xdr_mr_wr  => sys_wr,
---
---		xdr_mr_addr => xdr_mr_addr,
---		xdr_mr_data => xdr_mr_data);
 
 	xdr_init_e : entity hdl4fpga.xdr_init
 	generic map (
@@ -228,8 +215,7 @@ begin
 		xdr_init_cl  => sys_cl,
 		xdr_init_bt  => "0",
 		xdr_init_ods => "0",
---		xdr_mr_addr  => xdr_mr_addr,
---		xdr_mr_data  => xdr_mr_data,
+
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
 		xdr_init_rdy => xdr_init_rdy,

@@ -40,8 +40,28 @@ entity xdr_init is
 		xdr_init_bt   : std_logic_vector;
 		xdr_init_cl   : std_logic_vector;
 		xdr_init_ods  : std_logic_vector;
-	--	xdr_mr_addr  : out std_logic_vector;
-	--	xdr_mr_data  : in std_logic_vector(13-1 downto 0);
+
+		xdr_init_al   : in  std_logic_vector(2-1 downto 0) := (others => '0');
+		xdr_init_asr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_cwl  : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		xdr_init_drtt : in  std_logic_vector(2-1 downto 0) := (others => '0');
+		xdr_init_edll : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_mpr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_mprrf : in std_logic_vector(2-1 downto 0) := (others => '0');
+		xdr_init_qoff : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_rtt  : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		xdr_init_srt  : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_tdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_wl   : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_wr   : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		xdr_init_zqc  : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_ddqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		xdr_init_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
+		xdr_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
+
+--	xdr_mr_addr  : out std_logic_vector;
+--	xdr_mr_data  : in std_logic_vector(13-1 downto 0);
 		xdr_refi_rdy : in  std_logic;
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
@@ -82,41 +102,30 @@ begin
 
 	input(0) <= xdr_init_wlrdy;
 
---	process(
---		xdr_mr_addr,
---		xdr_init_bl,
---		xdr_init_bt,
---		xdr_init_cl,
---		xdr_init_ods)
---
---		variable mr_data : std_logic_vector(0 to xdr_a_max-1);
---	begin
---		mr_data := (others => '1');
---		case xdr_mr_addr is
---		when ddr1mr_preall =>
---			mr_data := mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
---		when ddr1mr_rstdll =>
---			mr_data := mr_field(mask => ddr1_bl,   src => xdr_init_bl, size => xdr_a_max) or
---				mr_field(mask => ddr1_bt,   src => xdr_init_bt, size => xdr_a_max) or
---				mr_field(mask => ddr1_cl,   src => xdr_init_cl, size => xdr_a_max) or
---				mr_field(mask => ddr1_rdll, src => "1", size => xdr_a_max);
---		when ddr1mr_setmr =>
---			mr_data := mr_field(mask => ddr1_bl,   src => xdr_init_bl, size => xdr_a_max) or
---				mr_field(mask => ddr1_bt,   src => xdr_init_bt, size => xdr_a_max) or
---				mr_field(mask => ddr1_cl,   src => xdr_init_cl, size => xdr_a_max) or
---				mr_field(mask => ddr1_rdll, src => "0", size => xdr_a_max);
---		when others =>
---		end case;
---		xdr_mr_data <= resize(mr_data, xdr_mr_data'length);
---	end process;
-
---		xdr_mr_data <= resize(mr_data, xdr_mr_data'length);
-	xdr_mr_data <= resize(ddr1_mrfile(
-		xdr_mr_addr => xdr_rnit_addr, 
+	xdr_mr_data <= resize(ddr_mrfile(
+		xdr_stdr => ddr_stdr,
+		xdr_mr_addr => xdr_mr_addr, 
+		xdr_mr_srt  => xdr_init_srt,
 		xdr_mr_bl   => xdr_init_bl,
 		xdr_mr_bt   => xdr_init_bt,
 		xdr_mr_cl   => xdr_init_cl,
-		xdr_mr_ods  => xdr_init_ods),xdr_mr_data'length);
+		xdr_mr_wr   => xdr_init_wr,
+		xdr_mr_ods  => xdr_init_ods,
+		xdr_mr_rtt  => xdr_init_rtt,
+		xdr_mr_al   => xdr_init_al,
+		xdr_mr_ocd  => xdr_init_ocd,
+		xdr_mr_tdqs => xdr_init_tdqs,
+		xdr_mr_rdqs => xdr_init_rdqs,
+		xdr_mr_wl   => xdr_init_wl,
+		xdr_mr_qoff => xdr_init_qoff,
+		xdr_mr_drtt => xdr_init_drtt,
+		xdr_mr_mprrf=> xdr_init_mprrf,
+		xdr_mr_mpr  => xdr_init_mpr,
+		xdr_mr_zqc  => xdr_init_zqc,
+		xdr_mr_asr  => xdr_init_asr,
+		xdr_mr_pd   => xdr_init_pd,
+		xdr_mr_cwl  => xdr_init_cwl),xdr_mr_data'length);
+
 	process (xdr_init_clk)
 		variable row : s_row;
 	begin

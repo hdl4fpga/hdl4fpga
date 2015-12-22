@@ -694,48 +694,27 @@ package body xdr_param is
 		constant xdr_mr_cl   : std_logic_vector;
 		constant xdr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
-		constant mr_file : mr_vector := (
-			(mr   => ddr1mr_preall, 
-			 data => (mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max))),
-
-			(mr   => ddr1mr_rstdll, 
-			 data => (
-				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "1"))),
-
-
-			(mr   => ddr1mr_setmr, 
-			 data => 
-				 (
-				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
-				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
-				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "0"))));
-
 		variable val : std_logic_vector(0 to xdr_a_max-1);
 	begin
---		return ddrmr_data(
---			mr_addr => xdr_mr_addr,
---			mr_file => mr_file);
-		val := (others => '1');
+
+
 		case xdr_mr_addr is
 		when ddr1mr_preall =>
-			val := mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
+			return mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
 		when ddr1mr_rstdll =>
-			val := mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+			return 
+				mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
 				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
 				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "1");
+				mr_field(mask => ddr1_rdll, src => "1",       size => xdr_a_max);
 		when ddr1mr_setmr =>
-			val := mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
+			return mr_field(mask => ddr1_bl,   src => xdr_mr_bl, size => xdr_a_max) or
 				mr_field(mask => ddr1_bt,   src => xdr_mr_bt, size => xdr_a_max) or
 				mr_field(mask => ddr1_cl,   src => xdr_mr_cl, size => xdr_a_max) or
-				mr_field(mask => ddr1_rdll, src => "0");
+				mr_field(mask => ddr1_rdll, src => "0", size => xdr_a_max);
 		when others =>
+			return (0 to xdr_a_max-1 => '1');
 		end case;
-		return val;
 	end;
 
 	impure function ddr2_mrfile (
