@@ -31,13 +31,13 @@ TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
 
 #NET "*video_clk*" MAXSKEW  = 1 ns;
 #NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
-#NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
-NET "ddr_st_lp_dqs" MAXDELAY = 3200 ps;
-NET "ddr_st_lp_dqs" MAXSKEW  = 1000 ps;
-NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
-NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
-NET "ddrphy_dqsi[*]" MAXDELAY = 1350 ps;
-NET "ddrphy_dqsi[*]" MAXSKEW  = 560 ps;
+##NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
+#NET "ddr_st_lp_dqs" MAXDELAY = 3200 ps;
+#NET "ddr_st_lp_dqs" MAXSKEW  = 1000 ps;
+#NET "*ddr_dqs[*]" MAXDELAY = 375 ps;
+#NET "*ddr_dqs[*]" MAXSKEW  = 75 ps;
+#NET "ddrphy_dqsi[*]" MAXDELAY = 1350 ps;
+#NET "ddrphy_dqsi[*]" MAXSKEW  = 560 ps;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
