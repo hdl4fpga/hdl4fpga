@@ -123,12 +123,14 @@ begin
 		input_req => datai_req, 
 
 		output_clk => ddrs_clk,
-		output_rdy => datai_brst_req,
+----		output_rdy => datai_brst_req,
 		output_req => ddrs_di_rdy,
 --		output_dat => ddrs_di
 		output_dat => output_dat);
+	datai_brst_req <= '1';
 
-	ddrs_di <=  x"a5a5a5a5"; --aux2;
+--	ddrs_di <=  x"5a5aa5a5"; --aux2;
+	ddrs_di <=  x"12345678"; --aux2;
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);
@@ -258,7 +260,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+2) & 
-				to_signed(1, DDR_CLNMSIZE+1));
+				to_signed(4, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

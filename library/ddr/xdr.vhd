@@ -70,7 +70,7 @@ entity xdr is
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
 		sys_pre : out std_logic;
-		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
+		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '0');
 		sys_di  : in  std_logic_vector(line_size-1 downto 0);
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
 		sys_ref : out std_logic;

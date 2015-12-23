@@ -206,6 +206,6 @@ begin
 
 	miitx_dat <= reverse (
 		word2byte (
-			word => rd_data,
+			word => std_logic_vector(unsigned(rd_data) ror miitx_dat'length),
 			addr => bysel));
 end;

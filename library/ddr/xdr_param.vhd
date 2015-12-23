@@ -701,6 +701,10 @@ package body xdr_param is
 
 
 		case xdr_mr_addr is
+		when ddr1mr_setemr =>
+			return
+				mr_field(mask => ddr1_edll, src => "0", size => xdr_a_max) or
+				mr_field(mask => ddr1_ods,  src => "0", size => xdr_a_max);
 		when ddr1mr_preall =>
 			return mr_field(mask => ddr1_preall, src => "1", size => xdr_a_max);
 		when ddr1mr_rstdll =>

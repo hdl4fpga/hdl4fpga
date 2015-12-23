@@ -1,4 +1,4 @@
-rm pp*
+rm pp pp1
 ./scope 32768 > pp
 ./scope 32768 > pp1
 i=0

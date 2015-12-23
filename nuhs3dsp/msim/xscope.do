@@ -37,7 +37,6 @@ add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_txc
 add wave -noupdate /testbench/nuhs3dsp_e/scope_e/miirx_udp_e/miitx_pre_e/mii_txen
 add wave -noupdate -divider ml509
 add wave -noupdate /testbench/nuhs3dsp_e/ddrs_rst
-add wave -noupdate /testbench/nuhs3dsp_e/dcm_lckd
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_e/ddr_dqso
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_e/byte_g(1)/ddrdqphy_i/ddr_dqso
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_e/sys_dqso
