@@ -150,7 +150,7 @@ begin
 
 		fifo_we <=
 			pll_req when pll2ser else
-			'1';
+			ser_ena(l);
 
 		ram_b : entity hdl4fpga.dbram
 		generic map (
