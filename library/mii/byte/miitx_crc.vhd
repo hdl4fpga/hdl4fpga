@@ -107,7 +107,7 @@ begin
 				xp <= next_crc32w8(mii_txi, xp);
 			else
 				xp <= xp(31-xd_len downto 0) & (1 to xd_len => '1');
-				cnt <= cnt sll 1;
+				cnt <= std_logic_vector(unsigned(cnt) sll 1);
 			end if;
 		end if;
 	end process;
