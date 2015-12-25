@@ -9,116 +9,28 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 NET "mii_rxc" TNM_NET = mii_rxc;
 
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
-TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
+#TIMESPEC TS_mpuact  = FROM FFS (scope_e/ddr_e/xdr_mpu_e/xdr_mpu_act) TIG;
 
-#INST "*/ddr_io_ba_e/ddr_cke_i"                 IOB = FORCE;
-#INST "*/ddr_io_ba_e/ddr_ras_i"                 IOB = FORCE;
-#INST "*/ddr_io_ba_e/ddr_cas_i"                 IOB = FORCE;
-#INST "*/ddr_io_ba_e/ddr_we_i"                  IOB = FORCE;
-#INST "*/ddr_io_ba_e/ddr_a_g[*].ff_i"           IOB = FORCE;
-#INST "*/ddr_io_ba_e/ddr_b_g[*].ff_i"             IOB = FORCE;
-#INST "*/ddr_io_dqs_e/ddr_io_dqs_u[*].oddrt_i"    IOB = FORCE;
-#INST "*/ddr_io_dq_e/*bytes_g[*].bits_g[*].oddrt_i" IOB = FORCE;
-#INST "*/dac_clk_i"                             IOB = FORCE;
-#INST "*/dac_blank_i"                           IOB = FORCE;
-#INST "*/dac_sync_i"                            IOB = FORCE;
-#INST "*/dac_hsync_i"                           IOB = FORCE;
-#INST "*/dac_vsync_i"                           IOB = FORCE;
-#INST "*/dac_psave_i"                           IOB = FORCE;
-#INST "*/rgb_g[*].ffd_red"                      IOB = FORCE;
-#INST "*/rgb_g[*].ffd_green"                    IOB = FORCE;
-#INST "*/rgb_g[*].ffd_blue"                     IOB = FORCE;
-
-#NET "*video_clk*" MAXSKEW  = 1 ns;
-#NET "*ddr_dq[*]"  MAXDELAY = 350 ps;
-##NET "*ddr_dq[*]"  MAXSKEW  = 100 ps;
-#NET "ddr_st_lp_dqs" MAXDELAY = 2600 ps;
-#NET "ddr_st_lp_dqs" MAXSKEW  = 1000 ps;
-#NET "ddr_dqs[*]" MAXDELAY = 375 ps;
-#NET "ddr_dqs[*]" MAXSKEW  = 75 ps;
-#NET "ddrphy_dqsi[*]" MAXDELAY = 2500 ps;
-#NET "ddrphy_dqsi[*]" MAXSKEW  = 660 ps;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddrphy_dqsi[0]" TNM_NET = ddqs0;
-#NET "ddrphy_dqsi[0]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "ddr_dqs[1]" TNM_NET = dqs1;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddrphy_dqsi[1]" TNM_NET = ddqs1;
-#NET "ddrphy_dqsi[1]" CLOCK_DEDICATED_ROUTE = false;
-
-# ###################### #
-# DDR 100 Mhz rate clock #
-# ###################### #
-
-#timespec ts_dso0 = PERIOD "dqs0" 10 ns HIGH 50%;
-#OFFSET = IN 0 ns VALID 5 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN 0 ns VALID 5 ns BEFORE ddr_dqs[1] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
-
-# ###################### #
-# DDR 133 Mhz rate clock #
-# ###################### #
-
-#TIMESPEC ts_dso0 = PERIOD "dqs0" 7.5 ns HIGH 50%;
-#OFFSET = IN 0 ns VALID 3.75 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN 0 ns VALID 3.75 ns BEFORE ddr_dqs[1] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
 
 # ###################### #
 # DDR 166 Mhz rate clock #
 # ###################### #
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING; # IN 1.25 ns
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING; # IN 1.25 ns
 #OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[0] RISING;
 #OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
 OFFSET = IN -0.65 ns VALID 2 ns BEFORE ddr_dqs[0] RISING;
 OFFSET = IN -0.65 ns VALID 2 ns BEFORE ddr_dqs[1] RISING;
 
-# ###################### #
-# DDR 180 Mhz rate clock #
-# ###################### #
-
-#TIMESPEC ts_dso0 = PERIOD "dqs0" 5.56 ns HIGH 50%;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
-#OFFSET = IN 0 ns VALID 2.77 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN 0 ns VALID 2.77 ns BEFORE ddr_dqs[1] RISING;
-
-# ###################### #
-# DDR 193 Mhz rate clock #
-# ###################### #
-
-#TIMESPEC ts_dso0 = PERIOD "dqs0" 5.172 ns HIGH 50%;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 2.586 ns VALID 6.46 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 2.586 ns VALID 6.46 ns BEFORE ddr_dqs[1] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 2.1 ns VALID 6.46 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = in 2.1 ns VALID 6.46 ns BEFORE ddr_dqs[1] RISING;
-#OFFSET = IN 0 ns VALID 2.586 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN 0 ns VALID 2.586 ns BEFORE ddr_dqs[1] RISING;
-
-# ###################### #
-# DDR 200 Mhz rate clock #
-# ###################### #
-
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 5 ns HIGH 50%; # INPUT_JITTER 200 ps; 
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING;
-#NET "*ddr_st_lp_dqs*" OFFSET = IN 1.5 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING;
-#OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[0] RISING;
-#OFFSET = IN -0.4 ns VALID 1.85 ns BEFORE ddr_dqs[1] RISING;
 
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
-
-#NET ddr_dqs[0] TNM_NET = FFS  FFS_dqs0;
-#NET ddr_dqs[1] TNM_NET = FFS  FFS_dqs1;
-#NET ddr_dqs[0] TNM_NET = RAMS RAMS_dqs0;
-#NET ddr_dqs[1] TNM_NET = RAMS RAMS_dqs1;
 
 NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
 NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;

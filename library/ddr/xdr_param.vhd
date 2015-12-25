@@ -531,11 +531,11 @@ package body xdr_param is
 		(sc2_lm4,  sc2_pre2, "0", "0", "110000", ddr_pre, ddr2mr_preall,  ddr_mrx, to_unsigned(TMR2_RPA, TMR_SIZE)),
 		(sc2_pre2, sc2_ref1, "0", "0", "110001", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)), 
 		(sc2_ref1, sc2_ref2, "0", "0", "110001", ddr_ref, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_RFC, TMR_SIZE)), 
-		(sc2_ref2, sc2_lm5,  "0", "0", "110011", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm5,  sc2_lm6,  "0", "0", "110111", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm6,  sc2_lm7,  "0", "0", "110111", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm7,  sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)),  
-		(sc_ref,   sc_ref,   "0", "0", "111100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)));
+		(sc2_ref2, sc2_lm5,  "0", "0", "110001", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),  
+		(sc2_lm5,  sc2_lm6,  "0", "0", "110001", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
+		(sc2_lm6,  sc2_lm7,  "0", "0", "110001", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
+		(sc2_lm7,  sc_ref,   "0", "0", "111000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)),  
+		(sc_ref,   sc_ref,   "0", "0", "111000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)));
 
  	constant sc3_rrdy : s_code := "0001";
  	constant sc3_cke  : s_code := "0011";
@@ -696,7 +696,6 @@ package body xdr_param is
 		constant xdr_mr_cl   : std_logic_vector;
 		constant xdr_mr_ods  : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(0 to xdr_a_max-1);
 	begin
 
 
@@ -738,29 +737,25 @@ package body xdr_param is
 		constant xdr_mr_rdqs : std_logic_vector;
 		constant xdr_mr_wl   : std_logic_vector)
 		return std_logic_vector is
-		constant mr_file : mr_vector := (
-			(mr   => ddr2mr_setemr2, 
-			 data => (
-			 	mr_field(mask => ddr2_srt, src => xdr_mr_srt))),
-
-			(mr   => ddr2mr_setemr3, 
-			 data => (others => '0')),
-			(mr   => ddr2mr_rstdll, 
-			 data => (
-				mr_field(mask => ddr2_rdll, src => "1"))),
-			(mr   => ddr2mr_enadll, 
-			 data => (
-				mr_field(mask => ddr2_edll, src => "0"))),
-
-			(mr   => ddr2mr_setmr, 
-			 data => (
+	begin
+		case xdr_mr_addr is
+		when ddr2mr_setemr2 =>
+			return mr_field(mask => ddr2_srt, src => xdr_mr_srt);
+		when ddr2mr_setemr3 =>
+			return (0 to xdr_a_max-1 => '0');
+		when ddr2mr_rstdll =>
+			return mr_field(mask => ddr2_rdll, src => "1");
+		when ddr2mr_enadll =>
+			return mr_field(mask => ddr2_edll, src => "0");
+		when ddr2mr_setmr =>
+			return
 				mr_field(mask => ddr2_bl,   src => xdr_mr_bl) or
 				mr_field(mask => ddr2_bt,   src => xdr_mr_bt) or
 				mr_field(mask => ddr2_cl,   src => xdr_mr_cl) or
 				mr_field(mask => ddr2_wr,   src => xdr_mr_wr) or
-				mr_field(mask => ddr2_rdll, src => "0"))),
-			(mr   => ddr2mr_seteOCD, 
-			 data => (
+				mr_field(mask => ddr2_rdll, src => "0");
+		when ddr2mr_seteOCD =>
+			return
 				mr_field(mask => ddr2_edll, src => "0") or
 				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
 				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
@@ -768,9 +763,9 @@ package body xdr_param is
 				mr_field(mask => ddr2_ocd,  src => xdr_mr_ocd)  or
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
-				mr_field(mask => ddr2_out,  src => "0"))),
-			(mr   => ddr2mr_setdOCD, 
-			 data => (
+				mr_field(mask => ddr2_out,  src => "0");
+		when ddr2mr_setdOCD =>
+			return
 				mr_field(mask => ddr2_edll, src => "0") or
 				mr_field(mask => ddr2_ods,  src => xdr_mr_ods)  or
 				mr_field(mask => ddr2_rtt,  src => xdr_mr_rtt)  or
@@ -778,15 +773,13 @@ package body xdr_param is
 				mr_field(mask => ddr2_ocd,  src => "000")  or
 				mr_field(mask => ddr2_ddqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr2_rdqs, src => xdr_mr_rdqs) or
-				mr_field(mask => ddr2_out,  src => "0"))),
-			(mr   => ddr2mr_preall, 
-			 data => (
-				mr_field(mask => ddr2_preall, src => "1"))));
-
-	begin
-		return ddrmr_data(
-			mr_addr => xdr_mr_addr,
-			mr_file => mr_file);
+				mr_field(mask => ddr2_out,  src => "0");
+		when ddr2mr_preall =>
+			return
+				mr_field(mask => ddr2_preall, src => "1");
+		when others =>
+			return (0 to xdr_a_max-1 => '1');
+		end case;
 	end;
 
 	impure function ddr3_mrfile (
