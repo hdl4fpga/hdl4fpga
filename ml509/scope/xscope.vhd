@@ -345,6 +345,7 @@ begin
 		ddr_we  => ddr2_we,
 		ddr_b   => ddr2_ba,
 		ddr_a   => ddr2_a,
+		ddr_odt => ddr2_odt(0),
 
 		ddr_dm  => ddr2_dm(2-1 downto 0),
 		ddr_dq  => ddr2_d(word_size-1 downto 0),
@@ -438,4 +439,37 @@ begin
 		i  => '0',
 		o  => ddr2_clk_p(1),
 		ob => ddr2_clk_n(1));
+
+	phy_txer <= '0';
+	phy_mdc  <= '0';
+	phy_mdio <= '0';
+
+	dvi_xclk_p <= 'Z';
+	dvi_xclk_n <= 'Z';
+	dvi_v <= 'Z';
+	dvi_h <= 'Z';
+	dvi_de <= 'Z';
+	dvi_d <= (others => 'Z');
+
+	ictlr_rst <= not dcm_lckd;
+	dvi_reset <= dcm_lckd;
+	phy_reset <= dcm_lckd;
+
+	dvi_gpio1 <= '1';
+	bus_error <= (others => 'Z');
+	gpio_led <= (others => '0');
+	gpio_led_c <= dcm_lckd and ictlr_rdy;
+	gpio_led_e <= '0';
+	gpio_led_n <= '0';
+	gpio_led_s <= '0';
+	gpio_led_w <= '0';
+	fpga_diff_clk_out_p <= 'Z';
+	fpga_diff_clk_out_n <= 'Z';
+
+	ddr2_cs(1 downto 1) <= "1";
+  	ddr2_cke(1 downto 1) <= "0";
+	ddr2_odt(1 downto 1) <= (others => 'Z');
+	ddr2_dm(7 downto 2)  <= (others => 'Z');
+	ddr2_d(63 downto 16) <= (others => '0');
+
 end;
