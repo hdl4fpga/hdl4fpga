@@ -31,7 +31,6 @@ add wave -noupdate -divider ml509
 add wave -noupdate /testbench/ml509_e/ddr2_dqs_p(1)
 add wave -noupdate /testbench/ml509_e/ddr2_dqs_p(0)
 add wave -noupdate /testbench/ml509_e/ddrs_rst
-add wave -noupdate /testbench/ml509_e/dcm_lckd
 add wave -noupdate /testbench/ml509_e/ddrphy_e/ddr_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(1)/ddrdqphy_i/ddr_dqso
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dqso

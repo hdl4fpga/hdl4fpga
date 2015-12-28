@@ -178,9 +178,9 @@ begin
 		video_clk => video_clk,
 		mii_clk => mii_refclk,
 		input_rst => input_rst,
-		ddrs_rst  => ddrs_rst, 
+		ddr_rst  => ddrs_rst, 
     	mii_rst   => mii_rst,  
-		vga_rst   => vga_rst);
+		video_rst   => vga_rst);
 
 	scope_e : entity hdl4fpga.scope
 	generic map (

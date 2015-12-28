@@ -40,13 +40,17 @@ entity dcms is
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
 		ictlr_clk : out std_logic;
-		input_clk : out std_logic;
-		ddr_clk0  : out std_logic;
+		input_clk : buffer std_logic;
+		ddr_clk0  : buffer std_logic;
 		ddr_clk90 : out std_logic;
-		video_clk : out std_logic;
+		video_clk : buffer std_logic;
 		video_clk90 : out std_logic;
-		gtx_clk   : out std_logic;
-		dcm_lckd  : out std_logic);
+		gtx_clk   : buffer std_logic;
+		ddr_rst   : out std_logic;
+		ictlr_rst : out std_logic;
+		input_rst : out std_logic;
+		gtx_rst   : out std_logic;
+		video_rst : out std_logic);
 end;
 
 architecture def of dcms is
@@ -63,11 +67,12 @@ architecture def of dcms is
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
-	signal ictlr_lckd : std_logic;
 	signal ictlr_fb : std_logic;
 	signal ictlr_buf : std_logic;
+	signal ictlr_lckd : std_logic;
 begin
 
+	dcm_rst <= sys_rst;
 	refclk_dcm_i : dcm_adv
 	generic map(
 		clk_feedback => "1X",
@@ -97,6 +102,7 @@ begin
 		clk2x => ictlr_buf,
 		locked => ictlr_lckd,
 		psdone => open);
+	ictlr_rst <= not ictlr_lckd;
 
 	clkin_ibufg : bufg
 	port map (
@@ -173,16 +179,38 @@ begin
 		dfs_clk => input_clk,
 		dcm_lck => input_lckd);
 
-	process (sys_rst, sys_clk)
+	rsts_b : block
+		signal clks : std_logic_vector(0 to 3);
+		signal rsts : std_logic_vector(clks'range);
+		signal lcks : std_logic_vector(clks'range);
 	begin
-		if sys_rst='1' then
-			dcm_rst  <= '1';
-			dcm_lckd <= '0';
-		elsif rising_edge(sys_clk) then
-			if dcm_rst='0' then
-				dcm_lckd <= video_lckd and ddr_lckd and input_lckd and gtx_lckd and ictlr_lckd;
-			end if;
-			dcm_rst <= '0';
-		end if;
-	end process;
+		clks(0) <= input_clk;
+		clks(1) <= gtx_clk;
+		clks(2) <= video_clk;
+		clks(3) <= ddr_clk0;
+
+		lcks(0) <= input_lckd;
+		lcks(1) <= gtx_lckd;
+		lcks(2) <= video_lckd;
+		lcks(3) <= video_lckd;
+
+		input_rst <= rsts(0);
+		gtx_rst   <= rsts(1);
+		video_rst <= rsts(2);
+		ddr_rst   <= rsts(3);
+
+		rsts_g: for i in clks'range generate
+			signal q : std_logic;
+		begin
+			process (clks(i), lcks(i))
+			begin
+				if lcks(i)='0' then
+					q <= '1';
+				elsif rising_edge(clks(i)) then
+					q <= not lcks(i);
+				end if;
+			end process;
+			rsts(i) <= q;
+		end generate;
+	end block;
 end;

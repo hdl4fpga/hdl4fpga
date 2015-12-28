@@ -37,7 +37,8 @@ entity ddrphy is
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		word_size : natural := 16;
-		byte_size : natural := 8);
+		byte_size : natural := 8;
+		clkinv : std_logic := '0');
 	port (
 		sys_clk0  : in std_logic;
 		sys_clk90 : in std_logic;
@@ -245,7 +246,8 @@ begin
 	generic map (
 		cmd_phases => cmd_phases,
 		bank_size => bank_size,
-		addr_size => addr_size)
+		addr_size => addr_size,
+		clkinv => clkinv)
 	port map (
 		sys_clk => sys_clk0,
           

@@ -53,13 +53,10 @@ architecture scope of ml509 is
 	signal ictlr_clk : std_logic;
 	signal ictlr_rdy : std_logic;
 	signal ictlr_rst : std_logic;
-	signal grst : std_logic;
 
 	signal sys_clk : std_logic;
-	signal dcm_rst  : std_logic;
-	signal dcm_lckd : std_logic;
-	signal ddrs_lckd  : std_logic;
-	signal input_lckd : std_logic;
+	signal ddrs_rst  : std_logic;
+	signal input_rst : std_logic;
 
 	signal input_clk : std_logic;
 
@@ -104,6 +101,7 @@ architecture scope of ml509 is
 
 
 	signal gtx_clk  : std_logic;
+	signal gtx_rst  : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy_rxd'range);
 	signal mii_txen : std_logic;
@@ -136,11 +134,6 @@ architecture scope of ml509 is
 	constant f : natural := 1;
 	signal ddr_eclk  : std_logic;
 
-	signal input_rst : std_logic;
-	signal ddrs_rst : std_logic;
-	signal mii_rst : std_logic;
-	signal vga_rst : std_logic;
-
 	signal debug_clk : std_logic;
 	signal yyyy : std_logic_vector(ddrphy_a'range);
 
@@ -160,24 +153,11 @@ architecture scope of ml509 is
 	end;
 begin
 
+	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
 		O => sys_clk);
-
-	process (gpio_sw_c, sys_clk)
-		variable aux : std_logic_vector(0 to 3);
-	begin
-		if gpio_sw_c='1' then
-			sys_rst <= '1';
-			aux := (others => '0');
-		elsif rising_edge(sys_clk) then
-			sys_rst <= not aux(0);
-			if aux(0)='0' then
-				aux := inc(gray(aux));
-			end if;
-		end if;
-	end process;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -191,49 +171,18 @@ begin
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
+		gtx_clk => gtx_clk,
 		video_clk => open,
 		video_clk90 => open,
-		gtx_clk => gtx_clk,
-		dcm_lckd => dcm_lckd);
+		ddr_rst => ddrs_rst,
+		gtx_rst => gtx_rst,
+		ictlr_rst => ictlr_rst);
 
-	grst <= dcm_lckd and ictlr_rdy;
-	ictlr_rst <= not dcm_lckd;
 	idelayctrl_i : idelayctrl
 	port map (
 		rst => ictlr_rst,
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
-
-	rsts_b : block
-		signal clks : std_logic_vector(0 to 3);
-		signal rsts : std_logic_vector(0 to 3);
-		signal grst : std_logic;
-	begin
-		grst    <= grst;
-		clks(0) <= input_clk;
-		clks(1) <= ddrs_clk0;
-		clks(2) <= gtx_clk;
-		clks(3) <= vga_clk;
-
-		input_rst <= rsts(0);
-		ddrs_rst  <= rsts(1);
-		mii_rst   <= rsts(2);
-		vga_rst   <= rsts(3);
-
-		rsts_g: for i in clks'range generate
-			signal q : std_logic;
-		begin
-			process (clks(i), dcm_lckd)
-			begin
-				if dcm_lckd='0' then
-					q <= '1';
-				elsif rising_edge(clks(i)) then
-					q <= not dcm_lckd;
-				end if;
-			end process;
-			rsts(i) <= q;
-		end generate;
-	end block;
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -354,7 +303,6 @@ begin
 		ddr_dqso => ddr2_dqso);
 	ddr2_dm(8-2 downto 2) <= (others => '0');
 
-	phy_reset  <= dcm_lckd;
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
@@ -440,10 +388,12 @@ begin
 		o  => ddr2_clk_p(1),
 		ob => ddr2_clk_n(1));
 
+	phy_reset <= not gtx_rst;
 	phy_txer <= '0';
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
+	dvi_reset <= '0';
 	dvi_xclk_p <= 'Z';
 	dvi_xclk_n <= 'Z';
 	dvi_v <= 'Z';
@@ -451,14 +401,10 @@ begin
 	dvi_de <= 'Z';
 	dvi_d <= (others => 'Z');
 
-	ictlr_rst <= not dcm_lckd;
-	dvi_reset <= dcm_lckd;
-	phy_reset <= dcm_lckd;
-
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= dcm_lckd and ictlr_rdy;
+	gpio_led_c <= ictlr_rdy;
 	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';

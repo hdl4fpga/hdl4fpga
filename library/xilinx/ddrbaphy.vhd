@@ -28,7 +28,8 @@ entity ddrbaphy is
 	generic (
 		cmd_phases : natural := 2;
 		bank_size : natural := 2;
-		addr_size : natural := 13);
+		addr_size : natural := 13;
+		clkinv : std_logic);
 	port (
 		sys_clk   : in  std_logic;
 
@@ -94,8 +95,8 @@ begin
 	ck_i : entity hdl4fpga.ddro
 	port map (
 		clk => sys_clk,
-		dr => '0',
-		df => '1',
+		dr => '0' xor clkinv,
+		df => '1' xor clkinv,
 		q  => ddr_ck);
 
 	b_g : for i in 0 to bank_size-1 generate
