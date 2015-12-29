@@ -405,10 +405,10 @@ begin
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
 	gpio_led_c <= ictlr_rdy;
-	gpio_led_e <= '0';
-	gpio_led_n <= '0';
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
+	gpio_led_e <= tpo(2);
+	gpio_led_n <= tpo(3);
+	gpio_led_s <= tpo(1);
+	gpio_led_w <= tpo(0);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

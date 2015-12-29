@@ -9,19 +9,19 @@ net "ddrs_clk90" tnm_net = ddrs_clk90;
 net "sys_clk" tnm_net = sys_clk; 
 net "gtx_clk" tnm_net = gtx_clk;
 
-net "*ddr2_d[*]"           maxdelay =  350 ps;
-net "*ddr2_d[*]"           maxskew  =  100 ps;
-net "*ddr2_dm[*]"           maxdelay =  350 ps;
-net "*ddr2_dm[*]"           maxskew  =  100 ps;
+#net "*ddr2_d[*]"           maxdelay =  350 ps;
+#net "*ddr2_d[*]"           maxskew  =  100 ps;
+#net "*ddr2_dm[*]"           maxdelay =  350 ps;
+#net "*ddr2_dm[*]"           maxskew  =  100 ps;
 
 # Data strobe signals
 # ###################
 
-net "ddr2_dqs_p[*]"      maxdelay =  375 ps;
-net "ddr2_dqs_p[*]"      maxskew  =   75 ps;
-net "*sys_dqsi*[*]" maxdelay = 1350 ps;
-net "*sys_dqsi*[*]" maxskew  =  560 ps;
-##net "*video_clk*" maxskew = 1 ns;
+#net "ddr2_dqs_p[*]"      maxdelay =  375 ps;
+#net "ddr2_dqs_p[*]"      maxskew  =   75 ps;
+#net "*sys_dqsi*[*]" maxdelay = 1350 ps;
+#net "*sys_dqsi*[*]" maxskew  =  560 ps;
+#net "*video_clk*" maxskew = 1 ns;
 
 net "ddr2_dqs_p[1]" tnm_net = dqs0;
 net "ddr2_dqs_p[0]" tnm_net = dqs1;

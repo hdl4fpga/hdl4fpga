@@ -464,7 +464,8 @@ begin
 	end process;
 
 	tpo (0) <= miirx_udprdy;
-	tpo (1) <= input_rdy;
+	tpo (1) <= miidma_rreq;
+	tpo (2) <= miidma_rrdy;
 	tpo (3) <= miitx_req;
 
 	mii_txen <= miitx_ena;
