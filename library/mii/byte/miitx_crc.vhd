@@ -29,22 +29,20 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity miitx_crc is
-	generic (
-		xd_len : natural := 8);
     port (
 		mii_g    : in  std_logic_vector(31 downto 0) := x"04c11db7";
 		mii_ini  : in  std_logic_vector(31 downto 0) := (others => '1');
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
 		mii_ted  : in  std_logic;
-		mii_txi  : in  std_logic_vector(0 to xd_len-1);
+		mii_txi  : in  std_logic_vector(0 to 8-1);
 		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to xd_len-1));
+		mii_txd  : out std_logic_vector(0 to 8-1));
 end;
 
 architecture def of miitx_crc is
 	signal xp : std_logic_vector(31 downto 0);
-	signal cnt : std_logic_vector (0 to (32/xd_len-1)-1);
+	signal cnt : std_logic_vector (0 to 3-1);
 
 	function next_crc32w8 (
 		data: std_logic_vector(7 downto 0);
@@ -94,7 +92,7 @@ architecture def of miitx_crc is
 	end;
 
 begin
-	mii_txd  <= not xp(31 downto 32-xd_len);
+	mii_txd  <= not xp(31 downto 24);
 	mii_txen <= not mii_ted and mii_treq and cnt(0);
 	process (mii_txc)
 	begin
@@ -106,7 +104,7 @@ begin
 				cnt <= (others => '1');
 				xp <= next_crc32w8(mii_txi, xp);
 			else
-				xp <= xp(31-xd_len downto 0) & (1 to xd_len => '1');
+				xp <= xp(23 downto 0) & (1 to 8 => '1');
 				cnt <= std_logic_vector(unsigned(cnt) sll 1);
 			end if;
 		end if;

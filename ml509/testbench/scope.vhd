@@ -199,12 +199,12 @@ begin
 	rst <= '1', '0' after 1.1 us;
 
 --	mii_strt <= '0', '1' after 240 us;
-	mii_strt <= '0', '1' after 24 us;
+	mii_strt <= '0', '1' after 6 us;
 	process (mii_refclk, mii_strt)
 		variable txen_edge : std_logic;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 24 us;
+			mii_treq <= '1' after 6 us;
 		elsif rising_edge(mii_refclk) then
 			if mii_txen='1' then
 				if txen_edge='0' then

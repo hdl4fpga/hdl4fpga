@@ -463,11 +463,9 @@ begin
 		end if;
 	end process;
 
-	tpo (0) <= miirx_udprdy;
-	tpo (1) <= miidma_rreq;
-	tpo (2) <= miidma_rrdy;
-	tpo (3) <= miitx_req;
-
+	tpo(0) <= miidma_rreq;
+	tpo(1) <= miidma_rrdy;
+	tpo(2) <= miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;

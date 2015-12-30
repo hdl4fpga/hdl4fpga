@@ -127,7 +127,7 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10;
+	constant ddr_mul   : natural := 9;
 	constant ddr_div   : natural := 3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
@@ -404,11 +404,11 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= ictlr_rdy;
-	gpio_led_e <= tpo(2);
-	gpio_led_n <= tpo(3);
-	gpio_led_s <= tpo(1);
-	gpio_led_w <= tpo(0);
+	gpio_led_c <= mii_txen; --'0';
+	gpio_led_e <= tpo(0);
+	gpio_led_w <= '0';
+	gpio_led_s <= tpo(2);
+	gpio_led_n <= tpo(1);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

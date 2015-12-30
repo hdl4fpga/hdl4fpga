@@ -124,7 +124,6 @@ begin
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
 				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
 				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
-				miitx_rdy <= '0';
 				ena <= '1';
 				rdy <= '0';
 			elsif miitx_req='0' then
@@ -132,27 +131,28 @@ begin
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
 				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
 				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
-				miitx_rdy <= '0';
 				ena <= '1';
 				rdy <= '0';
 			else
-				miitx_rdy <= rdy;
 				ena <= not rdy;
-				rdy <= addro(bram_num-1) xor addro_edge;
-				bysel <= bydly;
-				bydly := std_logic_vector(bycnt(bydly'range));
-				if bycnt(0)='1' then
-					addro_edge <= addro(bram_num-1);
-					bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
-					if (addro(bram_num-1) xor addro_edge)='0' then
-						addro <= addro - 1;
+				if rdy='0' then
+					rdy <= addro(bram_num-1) xor addro_edge;
+					bysel <= bydly;
+					bydly := std_logic_vector(bycnt(bydly'range));
+					if bycnt(0)='1' then
+						addro_edge <= addro(bram_num-1);
+						bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
+						if (addro(bram_num-1) xor addro_edge)='0' then
+							addro <= addro - 1;
+						end if;
+					else
+						bycnt := bycnt - 1;
 					end if;
-				else
-					bycnt := bycnt - 1;
 				end if;
 			end if;
 		end if;
 	end process;
+	miitx_rdy <= not ena;
 	miitx_ena <= miitx_req and ena;
 
 	wr_address_i : entity hdl4fpga.align

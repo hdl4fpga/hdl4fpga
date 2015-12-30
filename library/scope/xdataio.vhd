@@ -129,7 +129,7 @@ begin
 		output_dat => output_dat);
 --	datai_brst_req <= '1';
 
-	ddrs_di <= aux2;
+	ddrs_di <= x"a55a5aa5"; --aux2;
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);

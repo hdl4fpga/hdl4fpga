@@ -2,17 +2,20 @@ onerror {resume}
 quietly virtual signal -install /testbench { /testbench/dq(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
-add wave -noupdate /testbench/rst
-add wave -noupdate /testbench/mii_refclk
-add wave -noupdate /testbench/mii_treq
-add wave -noupdate /testbench/mii_rxdv
-add wave -noupdate /testbench/mii_rxc
 add wave -noupdate /testbench/ml509_e/phy_rxctl_rxdv
+add wave -noupdate /testbench/ml509_e/phy_txd
+add wave -noupdate /testbench/ml509_e/phy_txctl_txen
+add wave -noupdate -divider -height 40 {New Divider}
+add wave -noupdate /testbench/ml509_e/phy_txc_gtxclk
+add wave -noupdate /testbench/rst
+add wave -noupdate /testbench/mii_treq
+add wave -noupdate /testbench/mii_txen
+add wave -noupdate /testbench/mii_rxdv
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/ml509_e/ddrs_clk90
 add wave -noupdate /testbench/dqs(0)
-add wave -noupdate -expand /testbench/dqs
+add wave -noupdate /testbench/dqs
 add wave -noupdate -radix hexadecimal /testbench/dq16
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_init_e/xdr_mr_addr
@@ -115,7 +118,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {4013600 ps} 0}
+WaveRestoreCursors {{Cursor 1} {21055000 ps} 0} {{Cursor 2} {21184786 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 174
 configure wave -valuecolwidth 103
@@ -131,4 +134,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {3952568 ps} {4074632 ps}
+WaveRestoreZoom {20774916 ps} {21431168 ps}
