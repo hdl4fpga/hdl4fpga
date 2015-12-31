@@ -129,15 +129,16 @@ begin
 		output_dat => output_dat);
 --	datai_brst_req <= '1';
 
-	ddrs_di <= x"a55a5aa5"; --aux2;
+	ddrs_di <= x"a55a_5aa5"; --aux2;
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);
 		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
 		if rising_edge(ddrs_clk) then
+--			ddrs_di <= aux2;
 			if sys_rst='1' then
-				aux2 <= x"03_02_01_00";
+				aux2 <= x"a55a_5aa5";
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to aux1'length/(2**n)-1 loop

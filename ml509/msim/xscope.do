@@ -15,6 +15,11 @@ add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/ml509_e/ddrs_clk90
 add wave -noupdate /testbench/dqs(0)
+add wave -noupdate /testbench/dm(1)
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/xdr_fifo_g(3)/inbyte_i/phases_g(0)/ram_b/we
+add wave -noupdate /testbench/dm(0)
+add wave -noupdate /testbench/dm(1)
+add wave -noupdate /testbench/dm(0)
 add wave -noupdate /testbench/dqs
 add wave -noupdate -radix hexadecimal /testbench/dq16
 add wave -noupdate -radix hexadecimal /testbench/addr
@@ -118,7 +123,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_wenas
 add wave -noupdate -expand /testbench/ml509_e/scope_e/ddr_e/xdr_sch_e/xdr_wwn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21055000 ps} 0} {{Cursor 2} {21184786 ps} 0}
+WaveRestoreCursors {{Cursor 1} {7503016 ps} 0} {{Cursor 2} {21184786 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 174
 configure wave -valuecolwidth 103
@@ -134,4 +139,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {20774916 ps} {21431168 ps}
+WaveRestoreZoom {7457222 ps} {7548811 ps}

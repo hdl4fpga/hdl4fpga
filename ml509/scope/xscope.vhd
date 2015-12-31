@@ -327,25 +327,14 @@ begin
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
-
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr_dqsi(i));
-		dmidelay_i : idelay 
+		dqsidelay_i : idelay 
 		port map (
 			rst => ictlr_rst,
 			c   => '0',
 			ce  => '0',
 			inc => '0',
-			i   => ddrphy_sti(i*data_gear),
-			o   => ddr_sti(i*data_gear));
---		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
-		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
+			i   => dqsi,
+			o   => ddr2_dqsi(i));
 
 		dqsiobuf_i : iobufds
 		generic map (
@@ -353,9 +342,20 @@ begin
 		port map (
 			t   => ddr2_dqst(i),
 			i   => ddr2_dqso(i),
-			o   => ddr2_dqsi(i),
+			o   => dqsi,
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
+
+--		dmidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => ddrphy_sti(i*data_gear),
+--			o   => ddr_sti(i*data_gear));
+		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
+		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
 
 	end generate;
 
