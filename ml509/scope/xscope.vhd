@@ -327,14 +327,15 @@ begin
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
-		dqsidelay_i : idelay 
-		port map (
-			rst => ictlr_rst,
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i   => dqsi,
-			o   => ddr2_dqsi(i));
+--		dqsidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => dqsi,
+--			o   => ddr2_dqsi(i));
+		ddr2_dqsi(i) <= dqsi;
 
 		dqsiobuf_i : iobufds
 		generic map (
