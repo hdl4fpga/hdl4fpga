@@ -67,7 +67,6 @@ entity xdr_init is
 		xdr_init_clk : in  std_logic;
 		xdr_init_wlrdy : in  std_logic;
 		xdr_init_wlreq : out std_logic := '0';
-		xdr_init_wlr : out std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
@@ -116,7 +115,6 @@ begin
 		xdr_mr_ocd  => xdr_init_ocd,
 		xdr_mr_tdqs => xdr_init_tdqs,
 		xdr_mr_rdqs => xdr_init_rdqs,
-		xdr_mr_wl   => xdr_init_wl,
 		xdr_mr_qoff => xdr_init_qoff,
 		xdr_mr_drtt => xdr_init_drtt,
 		xdr_mr_mprrf=> xdr_init_mprrf,
@@ -154,7 +152,6 @@ begin
 					init_rdy <= to_sout(row.output).rdy;
 					xdr_init_cke <= to_sout(row.output).cke;
 					xdr_init_wlreq <= to_sout(row.output).wlq;
-					xdr_init_wlr <= to_sout(row.output).wlr;
 					xdr_init_odt <= to_sout(row.output).odt;
 					xdr_init_cs  <= row.cmd.cs;
 					xdr_init_ras <= row.cmd.ras;
@@ -180,7 +177,6 @@ begin
 				xdr_init_cas <= '1';
 				xdr_init_we  <= '1';
 				xdr_init_wlreq <= '0';
-				xdr_init_wlr <= '0';
 				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
 				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(ddr_mrx), xdr_init_b'length)));
 			end if;

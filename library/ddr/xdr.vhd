@@ -92,11 +92,11 @@ entity xdr is
 		xdr_dqt : out std_logic_vector(line_size/byte_size-1 downto 0);
 		xdr_dqo : out std_logic_vector(line_size-1 downto 0);
 		xdr_sti : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_sto : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_sto : out std_logic_vector(line_size/byte_size-1 downto 0);
 
 		xdr_dqsi : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqso : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqst : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0));
+		xdr_dqso : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dqst : out std_logic_vector(line_size/byte_size-1 downto 0));
 
 end;
 
@@ -122,7 +122,6 @@ architecture mix of xdr is
 	signal xdr_init_ras : std_logic;
 	signal xdr_init_cas : std_logic;
 	signal xdr_init_we  : std_logic;
-	signal xdr_init_wlr : std_logic;
 	signal xdr_init_zqc : std_logic := '1';
 	signal xdr_init_odt : std_logic;
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
@@ -148,12 +147,12 @@ architecture mix of xdr is
 	signal xdr_sch_dqs : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_st : std_logic_vector(xdr_sch_dqsz'range);
-	signal xdr_sch_wwn : std_logic_vector(xdr_sch_dqsz'range);
+	signal xdr_sch_wwn : std_logic_vector(0 to data_phases-1);
 	signal xdr_sch_rwn : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_wclks : std_logic_vector(0 to data_phases*word_size/byte_size-1);
 	signal xdr_wenas : std_logic_vector(0 to data_phases*word_size/byte_size-1);
 
-	signal xdr_win_dqs : std_logic_vector(xdr_dmi'range);
+	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
 	signal xdr_wr_fifo_rst : std_logic;
 	signal xdr_wr_fifo_req : std_logic;
@@ -171,7 +170,6 @@ architecture mix of xdr is
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
-	signal wl_req : std_logic;
 
 	constant lRCD : natural := to_xdrlatency(tCP, mark, tRCD);
 	constant lRFC : natural := to_xdrlatency(tCP, mark, tRFC);
@@ -199,6 +197,7 @@ architecture mix of xdr is
 	constant WID_LAT   : natural := xdr_latency(stdr, WIDL);
 
 begin
+
 
 	xdr_cwl <= sys_cl when stdr=2 else sys_cwl;
 
@@ -229,12 +228,10 @@ begin
 		xdr_init_a   => xdr_init_a,
 		xdr_init_b   => xdr_init_b,
 		xdr_init_odt => xdr_init_odt,
-		xdr_init_wlreq => wl_req,
+		xdr_init_wlreq => sys_wlreq,
 		xdr_init_wlrdy => sys_wlrdy,
-		xdr_init_wlr => xdr_init_wlr,
 		xdr_refi_req => xdr_refi_req,
 		xdr_refi_rdy => xdr_refi_rdy);
-	sys_wlreq <= wl_req;
 
 	xdr_rst <= xdr_init_rst;
 	xdr_cs  <= '0'         when xdr_init_rdy='1' else xdr_init_cs;
@@ -302,6 +299,7 @@ begin
 
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
+		data_phases => data_phases,
 		clk_phases => sclk_phases,
 		clk_edges => sclk_edges,
 		gear => gear,
@@ -357,8 +355,10 @@ begin
 				xdr_dqso(i*gear+j) <= xdr_sch_dqs(j);
 				xdr_dqst(i*gear+j) <= not xdr_sch_dqsz(j);
 				xdr_sto(i*gear+j)  <= reverse(xdr_sch_st)(j);
-				xdr_wenas(i*gear+j) <= xdr_sch_wwn(j);
 				xdr_dmo(i*gear+j) <= xdr_wr_dm(i*gear+j);
+			end loop;
+			for j in 0 to data_phases-1 loop
+				xdr_wenas(i*data_phases+j) <= xdr_sch_wwn(j);
 			end loop;
 		end loop;
 	end process;
@@ -396,7 +396,8 @@ begin
 		din  => sys_di,
 		dout => rot_di);
 		
-	sys_wclk <= sys_clks(1);
+	sys_wclk <= sys_clks(sys_clks'high);
+
 	process (sys_wclk)
 	begin
 		for k in 0 to word_size/byte_size-1 loop

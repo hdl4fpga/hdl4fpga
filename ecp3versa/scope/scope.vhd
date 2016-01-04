@@ -38,6 +38,7 @@ use ecp3.components.all;
 
 architecture scope of ecp3versa is
 	constant cmmd_phases : natural := 2;
+	constant data_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
 	constant line_size : natural := 4*ddr3_dq'length;
@@ -78,8 +79,8 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto : std_logic_vector(line_size/word_size-1 downto 0);
-	signal ddrphy_sti : std_logic_vector(line_size/word_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_sti : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;

@@ -48,7 +48,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of iofifo is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
+	subtype byte is std_logic_vector(word_size/data_phases-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
 	signal fifo_do : byte_vector(ser_clk'range);

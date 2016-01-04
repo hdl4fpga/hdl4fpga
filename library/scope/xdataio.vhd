@@ -129,21 +129,41 @@ begin
 		output_dat => output_dat);
 --	datai_brst_req <= '1';
 
+--	process (ddrs_clk)
+--		constant n : natural := 3;
+--		variable aux : std_logic_vector(2**n-1 downto 0);
+--		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
+--	begin
+--		if rising_edge(ddrs_clk) then
+--			ddrs_di <= aux2;
+----			if sys_rst='1' then
+--			if ddrs_di_rdy='0' then
+--				aux2 <= x"a55a_5aa5";
+--			elsif ddrs_di_rdy='1' then
+--				aux1 := aux2;
+--				for i in 0 to aux1'length/(2**n)-1 loop
+--					aux  := std_logic_vector(unsigned(aux1(aux'range))+ddrs_di'length/2**n);
+--					aux1 := std_logic_vector(unsigned(aux1) srl (2**n));
+--					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
+--				end loop;
+--				aux2 <= aux1;
+--			end if;
+--		end if;
+--	end process;
+
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);
 		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
 		if rising_edge(ddrs_clk) then
-			ddrs_di <= aux2;
---			ddrs_di <= x"a55a_5aa5";
---			if sys_rst='1' then
-			if ddrs_di_rdy='0' then
-				aux2 <= x"a55a_5aa5";
+			if sys_rst='1' then
+				aux2 <= x"07_06_05_04_03_02_01_00";
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to aux1'length/(2**n)-1 loop
-					aux  := std_logic_vector(unsigned(aux1(aux'range))+ddrs_di'length/2**n);
+					aux  := std_logic_vector(unsigned(aux1(aux'range))+2**(6-n));
+		--			aux := inc(gray(aux));
 					aux1 := std_logic_vector(unsigned(aux1) srl (2**n));
 					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
 				end loop;
@@ -151,27 +171,6 @@ begin
 			end if;
 		end if;
 	end process;
-
---	process (ddrs_clk)
---		constant n : natural := 3;
---		variable aux : std_logic_vector(2**n-1 downto 0);
---		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
---	begin
---		if rising_edge(ddrs_clk) then
---			if sys_rst='1' then
---				aux2 <= x"07_06_05_04_03_02_01_00";
---			elsif ddrs_di_rdy='1' then
---				aux1 := aux2;
---				for i in 0 to aux1'length/(2**n)-1 loop
---					aux  := std_logic_vector(unsigned(aux1(aux'range))+2**(6-n));
---		--			aux := inc(gray(aux));
---					aux1 := aux1 srl (2**n);
---					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
---				end loop;
---				aux2 <= aux1;
---			end if;
---		end if;
---	end process;
 
 --	xx_b : process(ddrs_clk)
 --		variable aux : std_logic;

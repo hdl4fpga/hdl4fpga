@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.miitx_dma" lib="hdl4fpga" top="ecp3versa"/>
+        <Options def_top="hdl4fpga.ddr3iob" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
         </Source>
@@ -113,9 +113,6 @@
         <Source name="../../library/ddr/xdr_clks.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/ddr/xdr_cfg.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/ddr/xdr_timer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -177,9 +174,6 @@
             <Options/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/adjdll.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/ddr/xdr_mr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/adjdqs.vhd" type="VHDL" type_short="VHDL">

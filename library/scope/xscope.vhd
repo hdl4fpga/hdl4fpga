@@ -79,8 +79,8 @@ entity scope is
 		ddr_dqi : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
 		ddr_dqo : out std_logic_vector(DDR_LINESIZE-1 downto 0);
 		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
-		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_LINESIZE/DDR_WORDSIZE-1 downto 0);
+		ddr_sto : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
@@ -517,8 +517,8 @@ begin
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,
---		sys_wlreq => ddr_wlreq,
---		sys_wlrdy => ddr_wlrdy,
+		sys_wlreq => ddr_wlreq,
+		sys_wlrdy => ddr_wlrdy,
 		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
 		sys_rw  => ddrs_rw,

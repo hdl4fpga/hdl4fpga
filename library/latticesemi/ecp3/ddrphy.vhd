@@ -146,7 +146,7 @@ architecture ecp3 of ddrphy is
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll arg(arg'left)'length;
+			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
 			val(arg(arg'left)'range) := dat(i);
 		end loop;
 		return val;
@@ -160,7 +160,7 @@ architecture ecp3 of ddrphy is
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll arg(arg'left)'length;
+			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
 			val(arg(arg'left)'range) := dat(i);
 		end loop;
 		return val;
@@ -174,7 +174,7 @@ architecture ecp3 of ddrphy is
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll arg(arg'left)'length;
+			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
 			val(arg(arg'left)'range) := dat(i);
 		end loop;
 		return val;

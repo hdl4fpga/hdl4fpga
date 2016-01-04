@@ -32,6 +32,7 @@ entity xdr_sch is
 	generic (
 		delay_size : natural := 64;
 		registered_output : boolean := false;
+		data_phases : natural := 2;
 		clk_phases : natural := 4;
 		clk_edges  : natural := 2;
 
@@ -69,7 +70,7 @@ entity xdr_sch is
 		xdr_dqs  : out std_logic_vector(0 to gear-1);
 
 		xdr_dqz  : out std_logic_vector(0 to gear-1);
-		xdr_wwn  : out std_logic_vector(0 to gear-1));
+		xdr_wwn  : out std_logic_vector(0 to data_phases-1));
 
 end;
 
@@ -206,7 +207,7 @@ begin
 
 	xdr_wwn <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_phases,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
