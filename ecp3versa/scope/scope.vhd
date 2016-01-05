@@ -225,6 +225,8 @@ begin
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks(0) => ddr_sclk,
+		ddrs_cl => "011",
+		ddrs_cwl => "001",
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,

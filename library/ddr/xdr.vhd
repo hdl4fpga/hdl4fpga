@@ -212,6 +212,7 @@ begin
 	port map (
 		xdr_init_bl  => sys_bl,
 		xdr_init_cl  => sys_cl,
+		xdr_init_cwl => xdr_cwl,
 		xdr_init_bt  => "0",
 		xdr_init_ods => "0",
 		xdr_init_wr  => sys_wr,

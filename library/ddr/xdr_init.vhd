@@ -54,7 +54,6 @@ entity xdr_init is
 		xdr_init_tdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_wl   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_wr   : in  std_logic_vector(3-1 downto 0) := (others => '0');
-		xdr_init_zqc  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_ddqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
@@ -119,7 +118,6 @@ begin
 		xdr_mr_drtt => xdr_init_drtt,
 		xdr_mr_mprrf=> xdr_init_mprrf,
 		xdr_mr_mpr  => xdr_init_mpr,
-		xdr_mr_zqc  => xdr_init_zqc,
 		xdr_mr_asr  => xdr_init_asr,
 		xdr_mr_pd   => xdr_init_pd,
 		xdr_mr_cwl  => xdr_init_cwl),xdr_mr_data'length);

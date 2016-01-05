@@ -196,7 +196,6 @@ package xdr_param is
 		constant xdr_mr_drtt : std_logic_vector;
 		constant xdr_mr_mprrf : std_logic_vector;
 		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_zqc  : std_logic_vector;
 		constant xdr_mr_asr  : std_logic_vector;
 		constant xdr_mr_pd   : std_logic_vector;
 		constant xdr_mr_cwl  : std_logic_vector)
@@ -510,6 +509,7 @@ package body xdr_param is
 	constant sc2_lm5  : s_code := "1111";
 	constant sc2_lm6  : s_code := "1110";
 	constant sc2_lm7  : s_code := "1010";
+	constant sc2_wai  : s_code := "1011";
 
 
 	                              --    +------< rst
@@ -532,7 +532,8 @@ package body xdr_param is
 		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),  
 		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
 		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm7,  sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)),  
+		(sc2_lm7,  sc2_wai,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_DLL, TMR_SIZE)),  
+ 		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
 		(sc_ref,   sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)));
 
  	constant sc3_rrdy : s_code := "0001";
@@ -547,6 +548,7 @@ package body xdr_param is
  	constant sc3_wlc  : s_code := "1111";
  	constant sc3_wlo  : s_code := "1110";
  	constant sc3_wlf  : s_code := "1010";
+ 	constant sc3_wai  : s_code := "1011";
  
  	constant ddr3_pgm : s_table := (
  		(sc_rst,   sc3_rrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_RRDY, TMR_SIZE)),
@@ -562,7 +564,8 @@ package body xdr_param is
  		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),  
  		(sc3_wlc,  sc3_wlo,  "1", "1", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_MRD, TMR_SIZE)),  
  		(sc3_wlo,  sc3_wlf,  "0", "0", "11011", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),  
- 		(sc3_wlf,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
+ 		(sc3_wlf,  sc3_wai,  "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_DLL, TMR_SIZE)),
+ 		(sc3_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
  		(sc_ref,   sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)));
  
 	function to_sout (
@@ -793,7 +796,6 @@ package body xdr_param is
 		constant xdr_mr_drtt : std_logic_vector;
 		constant xdr_mr_mprrf : std_logic_vector;
 		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_zqc  : std_logic_vector;
 		constant xdr_mr_asr  : std_logic_vector;
 		constant xdr_mr_pd   : std_logic_vector;
 		constant xdr_mr_cwl  : std_logic_vector)
@@ -842,7 +844,7 @@ package body xdr_param is
 
 		when ddr3mr_zqc =>
 			 return
-				mr_field(mask => ddr3_zqc,   src => xdr_mr_zqc);
+				mr_field(mask => ddr3_zqc,   src => "1");
 		when others =>
 			return (0 to xdr_a_max-1 => '1');
 		end case;
@@ -867,7 +869,6 @@ package body xdr_param is
 		constant xdr_mr_drtt : std_logic_vector;
 		constant xdr_mr_mprrf : std_logic_vector;
 		constant xdr_mr_mpr  : std_logic_vector;
-		constant xdr_mr_zqc  : std_logic_vector;
 		constant xdr_mr_asr  : std_logic_vector;
 		constant xdr_mr_pd   : std_logic_vector;
 		constant xdr_mr_cwl  : std_logic_vector)
@@ -913,7 +914,6 @@ package body xdr_param is
 				xdr_mr_drtt  => xdr_mr_drtt,
 				xdr_mr_mprrf => xdr_mr_mprrf,
 				xdr_mr_mpr   => xdr_mr_mpr,
-				xdr_mr_zqc   => xdr_mr_zqc,
 				xdr_mr_asr   => xdr_mr_asr,
 				xdr_mr_pd    => xdr_mr_pd,
 				xdr_mr_cwl   => xdr_mr_cwl);
