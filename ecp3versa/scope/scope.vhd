@@ -76,7 +76,6 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
-	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -110,8 +109,8 @@ architecture scope of ecp3versa is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 5;
-	constant ddr_div   : natural := 2;
+	constant ddr_mul   : natural := 4; --5;
+	constant ddr_div   : natural := 2; --2;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -203,7 +202,7 @@ begin
 		end generate;
 	end block;
 
---	ddrphy_sti <= (others => ddrphy_cfgo(0));
+	ddrphy_rst(1) <= ddrphy_rst(0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
@@ -212,6 +211,7 @@ begin
 		DDR_MARK => M15E,
 		DDR_STROBE => "INTERNAL",
 		DDR_DATAPHASES => 1,
+		DDR_DATAEDGES => 1,
 		DDR_BANKSIZE => ddr3_b'length,
 		DDR_ADDRSIZE => ddr3_a'length,
 		DDR_CLMNSIZE => 7,
@@ -225,7 +225,7 @@ begin
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks(0) => ddr_sclk,
-		ddrs_cl => "011",
+		ddrs_cl => "100",
 		ddrs_cwl => "001",
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
@@ -243,7 +243,7 @@ begin
 		ddr_dqst => ddrphy_dqst,
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dqi2,
+		ddr_dqi  => ddrphy_dqi,
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
@@ -269,85 +269,6 @@ begin
 		vga_blue  => vga_blue,
 		tpo => tpo);
 
-	ddrphy_rst(1) <= ddrphy_rst(0);
-	sto <= ddrphy_sto(0);
-
---	ddrphy_sti <= (others => ddrphy_cfgo(0));
-	led(4 to 7) <= (others => '1');
-	process (ddr_sclk)
-		variable q : std_logic_vector(0 to 2);
-	begin
-		if rising_edge(ddr_sclk) then
-			led(0 to 3) <= not ddr_eclkph;
---			led <= not wlpha;
-			q := q(1 to q'right) & ddrphy_sto(0);
-			ddrphy_sti <= (others => q(0));
-		end if;
-	end process;
-
-	ddrphy_dqi2 <= ddrphy_dqi;
-
---	process (ddr_sclk)
---		subtype xxxx is std_logic_vector(ddrphy_a'range);
---		type xxxx_vector is array (0 to 7) of xxxx;
---		variable xxxx1 : xxxx_vector;
---	begin
---		if rising_edge(ddr_sclk) then
---			xxxx1 := xxxx1(1 to xxxx1'right) & ddrphy_a;
---			yyyy <= xxxx1(0);
---		end if;
---	end process;
---	ddrphy_dqi2 <= to_stdlogicvector(shuffle(to_bytevector(std_logic_vector(resize(unsigned(yyyy), ddrphy_dqi'length))))) when ddrphy_sti(0)='1' else ddrphy_dqi;
-
---	debug_clk <= ddrphy_cfgo(0);
---	debug_clk <= ddr3_dqs(0);
---	process (debug_clk)
---		constant n : natural := 8;
---		variable aux : std_logic_vector(n-1 downto 0) := (others => '0');
---		variable aux1 : std_logic_vector(ddrphy_dqi'length-1 downto 0) := (others => '0');
---		variable edge : std_logic;
---	begin
---		if rising_edge(debug_clk) then
---			if (ddrphy_cfgo(0) xor edge)='1' then
---				aux1 := aux & aux1(63 downto n);
---				aux1 := aux1(aux1'left-1 downto aux1'right) & ddrphy_cfgo(0);
---				if ddrphy_sto(0)='1' then
---					ddrphy_dqi <= to_stdlogicvector(shuffle(to_bytevector(aux1)));
---				else
---					ddrphy_dqi <= ddrphy_dqii;
---				end if;
---				aux := inc(gray(aux));
---				aux := std_logic_vector(unsigned(aux)+1);
---			end if;
---			edge := ddrphy_cfgo(0);
---		end if;
---	end process;
---
---	process (ddr_sclk)
---		variable xxx : byte_vector(0 to 7);
---	begin
---		if rising_edge(ddr_sclk) then
---			if ddrphy_sto(0)='1' then
---				xxx := to_bytevector(ddrphy_dqi);
---				for i in xxx'range loop
---					xxx(i) := std_logic_vector(unsigned(xxx(i))+8);
---				end loop;
---				ddrphy_dqi <= to_stdlogicvector(shuffle(xxx));
---			end if;
---		end if;
---	end process;
---
---	process (ddr_sclk)
---	begin
---		if rising_edge(ddr_sclk) then
---			dvdelay <= dvdelay(1 to dvdelay'right) & ddrphy_cfgo(0); --sto;
---		end if;
---	end process;
-
---	ddrphy_dqi <= 
---		x"55_55_55_55_55_55_55_55" when dvdelay(0)='0' else
---		x"aa_aa_aa_aa_aa_aa_aa_aa";
-
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE => ddr3_b'length,
@@ -361,7 +282,6 @@ begin
 		sys_eclk => ddr_eclk,
 		phy_rst => ddrs_rst,
 
-		sys_rw => sto,
 		sys_rst => ddrphy_rst, 
 		sys_pha => ddr_eclkph,
 		sys_wlreq => ddrphy_wlreq,
@@ -384,6 +304,8 @@ begin
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
 		sys_wlpha => wlpha,
+		sys_sti => ddrphy_sti,
+		sys_sto => ddrphy_sto,
 
 		ddr_rst => ddr3_rst,
 		ddr_ck  => ddr3_clk,

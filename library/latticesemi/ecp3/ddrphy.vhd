@@ -47,7 +47,8 @@ entity ddrphy is
 		sys_wlrdy : out  std_logic;
 		sys_pha  : out std_logic_vector;
 		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
-		sys_rw   : in  std_logic;
+		sys_sti  : out  std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_sto  : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_b    : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
 		sys_a    : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
 		sys_cke  : in  std_logic_vector(cmnd_phases-1 downto 0);
@@ -80,6 +81,7 @@ entity ddrphy is
 		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
+	constant gear : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -309,7 +311,7 @@ begin
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
-			sys_rw   => sys_rw,
+			sys_rw   =>  sys_sto(i*gear+0),
 			sys_wlreq => sys_wlreq,
 			sys_wlrdy => wlrdy(i),
 			sys_wlpha => wlpha(i),
@@ -336,6 +338,17 @@ begin
 			ddr_dqsi => ddr_dqs(i),
 			ddr_dqst => ddqst(i),
 			ddr_dqso => ddqsi(i));
+
+
+		wr_address_i : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => 2))
+		port map (
+			clk => sys_sclk,
+			di(0)  => sys_sto(i*gear+0),
+			do(0)  => sys_sti(i));
+
 	end generate;
 
 	process (ddqsi, ddqst)

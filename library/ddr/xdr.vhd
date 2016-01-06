@@ -402,15 +402,12 @@ begin
 	process (sys_wclk)
 	begin
 		for k in 0 to word_size/byte_size-1 loop
-			for i in 0 to data_phases/data_edges-1 loop
-				xdr_wclks(k*word_size/byte_size+i) <= sys_wclk;
+			for i in 0 to data_phases-1 loop
+				xdr_wclks(k*data_phases+i) <= sys_wclk;
+				if data_edges > 1 then
+					xdr_wclks(k*data_phases+1) <= not sys_wclk;
+				end if;
 			end loop;
-
-			if data_edges > 1 then
-				for i in 0 to data_phases/data_edges-1 loop
-					xdr_wclks(k*word_size/byte_size+1) <= not sys_wclk;
-				end loop;
-			end if;
 		end loop;
 	end process;
 

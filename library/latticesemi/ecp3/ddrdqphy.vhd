@@ -81,7 +81,6 @@ architecture ecp3 of ddrdqphy is
 	signal wlpha : std_logic_vector(8-1 downto 0);
 	signal dyndelay : std_logic_vector(8-1 downto 0);
 	signal wlok : std_logic;
-	signal dqi : std_logic_vector(sys_dqi'range);
 
 	signal dqt : std_logic_vector(sys_dqt'range);
 	signal dqst : std_logic_vector(sys_dqst'range);

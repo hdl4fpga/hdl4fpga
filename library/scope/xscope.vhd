@@ -33,6 +33,7 @@ entity scope is
 		constant DDR_SCLKPHASES : natural;
 		constant DDR_SCLKEDGES : natural;
 		constant DDR_DATAPHASES : natural :=  1;
+		constant DDR_DATAEDGES : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
 		constant DDR_MARK     : natural;
 		constant DDR_STROBE   : string := "NONE";
@@ -500,6 +501,7 @@ begin
 		sclk_phases => DDR_SCLKPHASES,
 		sclk_edges  => DDR_SCLKEDGES,
 		data_phases => DDR_DATAPHASES,
+		data_edges => DDR_DATAEDGES,
 		bank_size => DDR_BANKSIZE,
 		addr_size => DDR_ADDRSIZE,
 		line_size => DDR_LINESIZE,

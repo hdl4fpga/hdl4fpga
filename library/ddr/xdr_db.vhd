@@ -127,7 +127,7 @@ package xdr_db is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
 
-		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_0),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
 		timing_record'(mark => M3,  param => tWR,   value => 15000),
 		timing_record'(mark => M3,  param => tRP,   value => 15000),
@@ -181,13 +181,13 @@ package xdr_db is
 		latency_record'(stdr => DDR2, param => WIDL,  value =>   4),
 
 		latency_record'(stdr => DDR3, param => cDLL,  value => 500),
-		latency_record'(stdr => DDR3, param => STRL,  value => 2*0),
+		latency_record'(stdr => DDR3, param => STRL,  value => 	4),
 		latency_record'(stdr => DDR3, param => RWNL,  value => 2*2),
 		latency_record'(stdr => DDR3, param => DQSL,  value =>  -2),
 		latency_record'(stdr => DDR3, param => DQSZL, value =>  -2),
 		latency_record'(stdr => DDR3, param => DQZL,  value =>  -2),
-		latency_record'(stdr => DDR3, param => WWNL,  value =>  -4),
-		latency_record'(stdr => DDR3, param => STRXL, value =>   1),
+		latency_record'(stdr => DDR3, param => WWNL,  value =>  -8),
+		latency_record'(stdr => DDR3, param => STRXL, value =>   0),
 		latency_record'(stdr => DDR3, param => RWNXL, value => 2*0),
 		latency_record'(stdr => DDR3, param => DQSXL, value =>   1),
 		latency_record'(stdr => DDR3, param => DQSZXL, value =>  2),
@@ -262,9 +262,9 @@ package xdr_db is
 
 		-- BL register --
 
-		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 2*8, code => "000"),
-		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 2*8, code => "001"),
-		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 2*8, code => "010"),
+		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 8, code => "000"),
+		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 8, code => "001"),
+		cnfglat_record'(stdr => DDR3, rgtr => BL, lat => 8, code => "010"),
 
 		-- WRL register --
 
