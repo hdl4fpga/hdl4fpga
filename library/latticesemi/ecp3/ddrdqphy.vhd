@@ -151,14 +151,14 @@ begin
 		datavalid => open,
 
 		rst  => dqsbufd_rsto,
-		dyndelay0 => dyndelay(0),
-		dyndelay1 => dyndelay(1),
-		dyndelay2 => dyndelay(2),
-		dyndelay3 => dyndelay(3),
-		dyndelay4 => dyndelay(4),
-		dyndelay5 => dyndelay(5),
-		dyndelay6 => dyndelay(6),
-		dyndelpol => dyndelay(7),
+		dyndelay0 => '0', --dyndelay(0),
+		dyndelay1 => '0', --dyndelay(1),
+		dyndelay2 => '0', --dyndelay(2),
+		dyndelay3 => '0', --dyndelay(3),
+		dyndelay4 => '0', --dyndelay(4),
+		dyndelay5 => '0', --dyndelay(5),
+		dyndelay6 => '0', --dyndelay(6),
+		dyndelpol => '1', --dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -269,8 +269,8 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => dqst(2),
-			ta => dqst(0),
+			db => dqst(0),
+			ta => dqst(2),
 			dqstclk => dqstclk,
 			dqsw => dqsw,
 			q => ddr_dqst);
@@ -278,8 +278,8 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => dqso(2*0),
-			db1 => dqso(2*1),
+			db0 => dqso(2*0), --dqso(2*1),
+			db1 => dqso(2*1), --dqso(2*0),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
