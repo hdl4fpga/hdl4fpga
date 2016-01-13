@@ -343,7 +343,7 @@ begin
 		wr_address_i : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => 2))
+			d => (0 to 0 => 3))
 		port map (
 			clk => sys_sclk,
 			di(0)  => sys_sto(i*gear+0),

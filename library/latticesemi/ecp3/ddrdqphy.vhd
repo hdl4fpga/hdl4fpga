@@ -278,8 +278,8 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => dqso(2*0), --dqso(2*1),
-			db1 => dqso(2*1), --dqso(2*0),
+			db0 => dqso(2*1),
+			db1 => dqso(2*0),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,

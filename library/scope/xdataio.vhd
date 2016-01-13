@@ -151,6 +151,7 @@ begin
 --		end if;
 --	end process;
 
+--			ddrs_di <= x"07_06_05_04_03_02_01_00";
 	process (ddrs_clk)
 		constant n : natural := 3;
 		variable aux : std_logic_vector(2**n-1 downto 0);
@@ -158,8 +159,8 @@ begin
 	begin
 		if rising_edge(ddrs_clk) then
 			ddrs_di <= aux2;
---			if sys_rst='1' then
-			if ddrs_di_rdy='0' then
+			if sys_rst='1' then
+--			if ddrs_di_rdy='0' then
 				aux2 <= x"07_06_05_04_03_02_01_00";
 --				aux2 <= x"a55a_5aa5_a55a_5aa5"; --aux2;
 			elsif ddrs_di_rdy='1' then
@@ -263,7 +264,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+2) & 
-				to_signed(3, DDR_CLNMSIZE+1));
+				to_signed(-1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
