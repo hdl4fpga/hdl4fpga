@@ -24,6 +24,10 @@ long long htonll(long long val)
 
 int main (int argc, char *argv[])
 {
+	        WSADATA t_wsa; // WSADATA structure
+        WORD wVers; // version number
+        int iError; // error number
+
 	struct hostent *hostname;
 	struct sockaddr_in sa_host;
 	struct sockaddr_in sa_src;
@@ -46,6 +50,8 @@ int main (int argc, char *argv[])
 	sscanf (argv[1], "%d", &npkt);
 
 
+        wVers = MAKEWORD(2, 2); // Set the version number to 2.2
+        iError = WSAStartup(wVers, &t_wsa); // Start the WSADATA
 	if (!(hostname = gethostbyname("kit"))) {
 		perror ("hostbyname");
 		abort ();
