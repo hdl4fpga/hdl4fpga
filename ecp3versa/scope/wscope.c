@@ -10,17 +10,15 @@
 
 #define PORT	1024
 
-long long htonll(long long val)
-{
-	return (((val & (long long)0x00000000000000ffULL) << 56) |
-		((val & (long long)0x000000000000ff00ULL) << 40) |
-		((val & (long long)0x0000000000ff0000ULL) << 24) |
-		((val & (long long)0x00000000ff000000ULL) <<  8) |
-		((val & (long long)0x000000ff00000000ULL) >>  8) |
-		((val & (long long)0x0000ff0000000000ULL) >> 24) |
-		((val & (long long)0x00ff000000000000ULL) >> 40) |
-		((val & (long long)0xff00000000000000ULL) >> 56));
-}
+#define htonll(x) \
+	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000000000ff0000ULL) << 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00000000ff000000ULL) <<  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000ff00000000ULL) >>  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000ff0000000000ULL) >> 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00ff000000000000ULL) >> 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0xff00000000000000ULL) >> 56))
 
 int main (int argc, char *argv[])
 {
