@@ -4,7 +4,7 @@ SCOPE 32768 > PP
 SCOPE 32768 > PP1
 SET /A i=0
 :OTHER
-	FC pp pp1
+	FC /N pp pp1 |more
 	IF %ERRORLEVEL% NEQ 0 EXIT
 	SET /A i=%i%+1
 	ECHO %i%

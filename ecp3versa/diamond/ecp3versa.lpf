@@ -20,7 +20,7 @@ MAXDELAY NET "ddr_eclk" 0 ns;
 MAXDELAY NET "ddrphy_e/byte_g*.ddr3phy_i/dqsw" 0 ns;
 USE EDGE NET "ddrphy_e/synceclk";
 LOCATE COMP "clk"  SITE "L5";
- IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
+IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
 
 LOCATE COMP "fpga_gsrn"  SITE "A21";
 IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
