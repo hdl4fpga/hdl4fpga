@@ -211,24 +211,45 @@ begin
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 --		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+		signal ta : std_logic;
+		signal da0 db0, da1, db1 : std_logic;
+		signal dat : std_logic;
 	begin
+		ta  <= dtq(0) when wle='0' else '0';
+
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => dqt(0),
+			ta => ta, --dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dqt(i));
+
+		process (sys_sclk)
+		begin
+			if rising_edge(sys_sclk) then
+				if wle='0' then
+					dat <= '1';
+				else
+					dat <= not dat;
+				end if;
+			end if;
+		end process;
+
+		da0 <= sys_dqo(0*byte_size+i) when wle='0' else not dat;
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' else dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' else dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' else not dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_dqo(0*byte_size+i),
-			db0 => sys_dqo(1*byte_size+i),
-			da1 => sys_dqo(2*byte_size+i),
-			db1 => sys_dqo(3*byte_size+i),
+			da0 => da0,
+			db0 => db0,
+			da1 => da1,
+			db1 => db1,
 			q   => ddr_dqo(i));
 	end generate;
 
