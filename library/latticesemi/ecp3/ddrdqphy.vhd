@@ -158,7 +158,7 @@ begin
 		dyndelay4 => '0', --dyndelay(4),
 		dyndelay5 => '0', --dyndelay(5),
 		dyndelay6 => '0', --dyndelay(6),
-		dyndelpol => '1', --dyndelay(7),
+		dyndelpol => '0', --dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -212,10 +212,10 @@ begin
 		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 --		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
 		signal ta : std_logic;
-		signal da0 db0, da1, db1 : std_logic;
+		signal da0, db0, da1, db1 : std_logic;
 		signal dat : std_logic;
 	begin
-		ta  <= dtq(0) when wle='0' else '0';
+		ta  <= '0'; --dqt(0) when wle='0' else '0';
 
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -236,10 +236,10 @@ begin
 			end if;
 		end process;
 
-		da0 <= sys_dqo(0*byte_size+i) when wle='0' else not dat;
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' else dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' else dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' else not dat;
+		da0 <= not dat; -- sys_dqo(0*byte_size+i) when wle='0' else not dat;
+		db0 <= dat;     -- sys_dqo(1*byte_size+i) when wle='0' else dat;
+		da1 <= dat;     -- sys_dqo(2*byte_size+i) when wle='0' else dat;
+		db1 <= not dat; -- sys_dqo(3*byte_size+i) when wle='0' else not dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
@@ -278,8 +278,8 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when wle='0' else (others => '0');
-	dqso <= sys_dqso when wle='0' else (others => '1');
+	dqst <= (others => '0'); --sys_dqst when wle='0' else (others => '0');
+	dqso <= (others => '1'); --sys_dqso when wle='0' else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;

@@ -29,7 +29,7 @@ entity ecp3versa is
 		clk  : in std_logic := 'Z';
 --		pclk : in std_logic := 'Z';
 		
-		led : out std_logic_vector(0 to 7) := (others => 'Z');
+		led : out std_logic_vector(7 downto 0) := (others => 'Z');
 		seg : out std_logic_vector(0 to 14) := (others => 'Z');
 		
 		ddr3_clk : out std_logic := '0';
