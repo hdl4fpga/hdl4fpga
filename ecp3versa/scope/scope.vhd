@@ -167,7 +167,7 @@ begin
 		sys_clk => clk,
 
 		input_clk => input_clk,
-		ddr_eclkph => "0000", --ddr_eclkph,
+		ddr_eclkph => ddr_eclkph,
 		ddr_eclk => ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
@@ -344,7 +344,7 @@ begin
 		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy1_gtxclk);
 
-	led <= "00011111";
+	led <= "00000000";
 --	process (phy1_rxc,fpga_gsrn)
 --	begin
 --		if fpga_gsrn='0' then

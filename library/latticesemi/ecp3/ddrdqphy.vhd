@@ -151,14 +151,14 @@ begin
 		datavalid => open,
 
 		rst  => dqsbufd_rsto,
-		dyndelay0 => '0', --dyndelay(0),
-		dyndelay1 => '0', --dyndelay(1),
-		dyndelay2 => '0', --dyndelay(2),
-		dyndelay3 => '0', --dyndelay(3),
-		dyndelay4 => '0', --dyndelay(4),
-		dyndelay5 => '0', --dyndelay(5),
-		dyndelay6 => '0', --dyndelay(6),
-		dyndelpol => '0', --dyndelay(7),
+		dyndelay0 => dyndelay(0),
+		dyndelay1 => dyndelay(1),
+		dyndelay2 => dyndelay(2),
+		dyndelay3 => dyndelay(3),
+		dyndelay4 => dyndelay(4),
+		dyndelay5 => dyndelay(5),
+		dyndelay6 => dyndelay(6),
+		dyndelpol => dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -215,7 +215,7 @@ begin
 		signal da0, db0, da1, db1 : std_logic;
 		signal dat : std_logic;
 	begin
-		ta  <= '0'; --dqt(0) when wle='0' else '0';
+		ta  <= dqt(0) when wle='0' else '0';
 
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -233,13 +233,14 @@ begin
 				else
 					dat <= not dat;
 				end if;
+					dat <= '1';
 			end if;
 		end process;
 
-		da0 <= not dat; -- sys_dqo(0*byte_size+i) when wle='0' else not dat;
-		db0 <= dat;     -- sys_dqo(1*byte_size+i) when wle='0' else dat;
-		da1 <= dat;     -- sys_dqo(2*byte_size+i) when wle='0' else dat;
-		db1 <= not dat; -- sys_dqo(3*byte_size+i) when wle='0' else not dat;
+		da0 <= sys_dqo(0*byte_size+i) when wle='0' else not dat;
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' else dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' else dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' else not dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
@@ -278,8 +279,8 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= (others => '0'); --sys_dqst when wle='0' else (others => '0');
-	dqso <= (others => '1'); --sys_dqso when wle='0' else (others => '1');
+	dqst <= sys_dqst when wle='0' else (others => '0');
+	dqso <= sys_dqso when wle='0' else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;

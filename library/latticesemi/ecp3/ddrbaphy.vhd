@@ -133,15 +133,15 @@ begin
 	cs_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da =>  '1', --cs, --sys_cs(0),
-		db =>  '1', --cs, --sys_cs(0),
+		da => cs, --sys_cs(0),
+		db => cs, --sys_cs(0),
 		q  => ddr_cs);
 
 	cke_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da =>  '1', --sys_cke(0),
-		db =>  '1', --sys_cke(0),
+		da =>  sys_cke(0),
+		db =>  sys_cke(0),
 		q  => ddr_cke);
 
 	odt_i : oddrxd1
@@ -154,8 +154,8 @@ begin
 	rst_i : oddrxd1
 	port map (
 		sclk => sys_sclk,
-		da => '1', --sys_rst(0),
-		db => '1', --sys_rst(0),
+		da => sys_rst(0),
+		db => sys_rst(0),
 		q  => ddr_rst);
 
 end;

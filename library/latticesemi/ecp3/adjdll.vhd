@@ -46,7 +46,6 @@ use ecp3.components.all;
 architecture beh of adjdll is
 
 	signal dqsdll_rst : std_logic;
-	signal kclk, kclk_n : std_logic;
 	signal ok : std_logic;
 	signal adj_rdy : std_logic;
 	signal adj_req : std_logic;
@@ -56,7 +55,7 @@ architecture beh of adjdll is
 	signal eclksynca_rst  : std_logic;
 
 	signal ph : unsigned(0 to pha'length-1);
-	signal smp_rdy : std_logic;
+	signal nextdg_rdy : std_logic;
 	signal smp_req : std_logic;
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
@@ -70,16 +69,16 @@ begin
 		if rising_edge(sclk) then
 			if smp_req='0' then
 				cntr := (others => '0');
-			elsif smp_rdy='1' then
+			elsif nextdg_rdy='1' then
 				cntr := (others => '0');
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 			end if;
-			smp_rdy <= cntr(0);
+			nextdg_rdy <= cntr(0);
 		end if;
 	end process;
 
-	eclksynca_rst <= smp_rdy;
+	eclksynca_rst <= nextdg_rdy;
 	process (eclksynca_rst, eclk)
 		variable q : std_logic_vector(0 to 2);
 	begin
@@ -96,28 +95,7 @@ begin
 		stop  => eclksynca_stop,
 		eclki => eclk,
 		eclko => eclksynca_eclk);
-
-	synceclk <= kclk;
-	kclk <= transport eclksynca_eclk after  ns; --0.75 ns + 0.056 ns;
-
-	seclk_b : block
-		signal ok_q : std_logic;
-	begin
-
-		ok_i : entity hdl4fpga.ff
-		port map (
-			clk => sclk,
-			d   => kclk,
-			q   => ok_q);
-
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				ok <= ok_q;
-			end if;
-		end process;
-
-	end block;
+	synceclk <= eclksynca_eclk;
 
 	process(sclk)
 		variable dg  : unsigned(0 to pha'length+1);
@@ -130,9 +108,10 @@ begin
 				dg  := (0 => '1', others => '0');
 				adj_edge := dg(dg'right);
 				smp_req  <= '0';
+				adj_rdy  <= '0';
 			else
 				if dg(dg'right)='0' then
-					if smp_rdy='1' then
+					if nextdg_rdy='1' then
 						aux := ph or dg(0 to aux'length-1);
 						if ok='0' then
 							aux := aux and not dg(1 to aux'length);
@@ -147,8 +126,8 @@ begin
 					smp_req <= '0';
 				end if;
 				adj_edge := adj_rdy;
+				adj_rdy  <= '1' ; --dg(dg'right);
 			end if;
-			adj_rdy  <= dg(dg'right);
 		end if;
 	end process;
 
@@ -162,6 +141,7 @@ begin
 				pha <= std_logic_vector(ph-2);
 			end if;
 		end if;
+		pha <= (pha'range => '0');
 	end process;
 
 	dqsdll_b : block
@@ -174,7 +154,7 @@ begin
 			if adj_rdy='0' then
 				q := (others => '1');
 			elsif rising_edge(eclk) then
-				q := q sll 1;
+				q := (others => '0'); --q sll 1;
 			end if;
 			dqsdll_rst <= q(0);
 		end process;

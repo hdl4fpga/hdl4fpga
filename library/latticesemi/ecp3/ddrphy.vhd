@@ -296,7 +296,7 @@ begin
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
-			sys_wlrdy <= '1'; --aux;
+			sys_wlrdy <= aux;
 		end if;
 	end process;
 
