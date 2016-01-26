@@ -301,10 +301,10 @@ begin
 		end if;
 	end process;
 
-	sys_pll(0) <= sdqo(0)(0*4);
-	sys_pll(1) <= sdqo(0)(1*4);
-	sys_pll(2) <= sdqo(0)(2*4);
-	sys_pll(3) <= sdqo(0)(3*4);
+	sys_pll(0) <= sdqo(0)(0*8);
+	sys_pll(1) <= sdqo(0)(1*8);
+	sys_pll(2) <= sdqo(0)(2*8);
+	sys_pll(3) <= sdqo(0)(3*8);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
