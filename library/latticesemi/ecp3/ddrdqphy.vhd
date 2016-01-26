@@ -48,6 +48,7 @@ entity ddrdqphy is
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_wlpha : out std_logic_vector(8-1 downto 0);
 
+		sys_pll  : out std_logic_vector(0 to 4-1);
 		ddr_dmt  : out std_logic;
 		ddr_dmi  : in  std_logic := '-';
 		ddr_dmo  : out std_logic;
@@ -59,6 +60,7 @@ entity ddrdqphy is
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
+	constant test : boolean := true;
 end;
 
 library ecp3;
@@ -215,7 +217,7 @@ begin
 		signal da0, db0, da1, db1 : std_logic;
 		signal dat : std_logic;
 	begin
-		ta  <= dqt(0) when wle='0' else '0';
+		ta  <= dqt(0) when wle='0' and not test else '0';
 
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -233,14 +235,14 @@ begin
 				else
 					dat <= not dat;
 				end if;
-					dat <= '1';
+				dat <= '1';
 			end if;
 		end process;
 
-		da0 <= sys_dqo(0*byte_size+i) when wle='0' else not dat;
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' else dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' else dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' else not dat;
+		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else not dat;
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else not dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
@@ -279,8 +281,8 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when wle='0' else (others => '0');
-	dqso <= sys_dqso when wle='0' else (others => '1');
+	dqst <= sys_dqst when wle='0' and not test else (others => '0');
+	dqso <= sys_dqso when wle='0' and not test else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;

@@ -66,6 +66,7 @@ entity ddrphy is
 		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		sys_wlpha : out std_logic_vector(8-1 downto 0) := (others => '-');
+		sys_pll : out std_logic_vector(0 to 4-1);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic := '0';
@@ -299,6 +300,11 @@ begin
 			sys_wlrdy <= aux;
 		end if;
 	end process;
+
+	sys_pll(0) <= sdqo(0)(0*4);
+	sys_pll(1) <= sdqo(0)(1*4);
+	sys_pll(2) <= sdqo(0)(2*4);
+	sys_pll(3) <= sdqo(0)(3*4);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
