@@ -312,12 +312,12 @@ begin
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
-			dqsbufd_rst  => dqsbufd_rst,
+			dqsbufd_rst => dqsbufd_rst,
 			sys_sclk => sys_sclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
-			sys_rw   =>  sys_sto(i*gear+0),
+			sys_rw => sys_sto(i*gear+0),
 			sys_wlreq => sys_wlreq,
 			sys_wlrdy => wlrdy(i),
 			sys_wlpha => wlpha(i),
@@ -326,20 +326,20 @@ begin
 			sys_dmi => sdmi(i),
 			sys_dmo => sdmo(i),
 
-			sys_dqo  => sdqi(i),
-			sys_dqt  => sdqt(i),
-			sys_dqi  => sdqo(i),
+			sys_dqo => sdqi(i),
+			sys_dqt => sdqt(i),
+			sys_dqi => sdqo(i),
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
 
-			ddr_dqi  => ddqi(i),
-			ddr_dqt  => ddqt(i),
-			ddr_dqo  => ddqo(i),
+			ddr_dqi => ddqi(i),
+			ddr_dqt => ddqt(i),
+			ddr_dqo => ddqo(i),
 
---			ddr_dmi  => ddr_dm(i),
-			ddr_dmt  => ddmt(i),
-			ddr_dmo  => ddmo(i),
+--			ddr_dmi => ddr_dm(i),
+			ddr_dmt => ddmt(i),
+			ddr_dmo => ddmo(i),
 
 			ddr_dqsi => ddr_dqs(i),
 			ddr_dqst => ddqst(i),
