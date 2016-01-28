@@ -66,7 +66,7 @@ entity ddrphy is
 		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		sys_wlpha : out std_logic_vector(8-1 downto 0) := (others => '-');
-		sys_pll : out std_logic_vector(0 to 4-1);
+		sys_pll : out std_logic_vector(0 to 8-1);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic := '0';
@@ -234,6 +234,7 @@ architecture ecp3 of ddrphy is
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal dqsbufd_arst : std_logic;
 
+	signal test : std_logic_vector(word_size/byte_size-1 downto 0);
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 
@@ -301,10 +302,22 @@ begin
 		end if;
 	end process;
 
-	sys_pll(0) <= sdqo(0)(0*8);
-	sys_pll(1) <= sdqo(0)(1*8);
-	sys_pll(2) <= sdqo(0)(2*8);
-	sys_pll(3) <= sdqo(0)(3*8);
+	process (sys_sclk)
+	begin
+		if rising_edge(sys_sclk) then
+			if test(0)='1'then
+				sys_pll(0) <= sdqo(0)(0*8);
+				sys_pll(1) <= sdqo(0)(1*8);
+				sys_pll(2) <= sdqo(0)(2*8);
+				sys_pll(3) <= sdqo(0)(3*8);
+			else
+				sys_pll(4) <= sdqo(0)(0*8);
+				sys_pll(5) <= sdqo(0)(1*8);
+				sys_pll(6) <= sdqo(0)(2*8);
+				sys_pll(7) <= sdqo(0)(3*8);
+			end if;
+		end if;
+	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -314,6 +327,7 @@ begin
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
 			sys_sclk => sys_sclk,
+			sys_eclk1 => sys_eclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
@@ -332,6 +346,7 @@ begin
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
+			sys_test => test(i),
 
 			ddr_dqi => ddqi(i),
 			ddr_dqt => ddqt(i),

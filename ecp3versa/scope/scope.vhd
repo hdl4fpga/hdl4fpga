@@ -83,7 +83,7 @@ architecture scope of ecp3versa is
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
-	signal ddrphy_pll : std_logic_vector(4-1 downto 0);
+	signal ddrphy_pll : std_logic_vector(8-1 downto 0);
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -348,7 +348,7 @@ begin
 	process (ddr_sclk)
 	begin
 		if rising_edge(ddr_sclk) then
-			led <= ddrphy_pll & "1111"; 
+			led <= ddrphy_pll;
 		end if;
 	end process;
 --	process (phy1_rxc,fpga_gsrn)
