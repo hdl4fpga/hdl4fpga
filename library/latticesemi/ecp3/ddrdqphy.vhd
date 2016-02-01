@@ -96,13 +96,17 @@ architecture ecp3 of ddrdqphy is
 begin
 
 	process (sys_sclk, sys_rw)
-		variable q : std_logic := '0';
+		variable q : unsigned(0 to 4-1) := (others => '0');
 	begin
 		if rising_edge(sys_sclk) then
-			q := not q;
+			if q(0)='1' then
+				q := "0001";
+			else
+				q := q - 1;
+			end if;
 		end if;
 		if test then
-			rw <= q;
+			rw <= q(0);
 		else
 			rw <= sys_rw;
 		end if;
@@ -121,7 +125,8 @@ begin
 
 	dqsbuf_b : block
 		signal q1, q2 : std_logic;
-		signal sys_eclk_n : std_logic;
+		signal eclk_p : std_logic;
+		signal eclk_n : std_logic;
 		signal sys_sclk_n : std_logic;
 		signal rst : std_logic;
 
@@ -133,22 +138,23 @@ begin
 			d   => dqsbufd_rst,
 			q   => rst);
 
-		sys_eclk_n <= not sys_eclk1;
+		eclk_p <= not sys_eclk1;
+		eclk_n <= not eclk_p;
 		ff1 : entity hdl4fpga.ff
 		port map (
-			clk => sys_eclk1,
+			clk => eclk_p,
 			d   => rst,
 			q   => q1);
 
 		ff2 : entity hdl4fpga.ff
 		port map (
-			clk => sys_eclk_n,
+			clk => eclk_n,
 			d   => q1,
 			q   => q2);
 
 		ff3 : entity hdl4fpga.ff
 		port map (
-			clk => sys_eclk1,
+			clk => eclk_p,
 			d   => q2,
 			q   => dqsbufd_rsto);
 
@@ -188,8 +194,8 @@ begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
---		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
-		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
+		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+--		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -208,8 +214,8 @@ begin
 
 	dmi_g : block
 		attribute iddrapps : string;
---		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
-		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
+		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+--		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -256,10 +262,10 @@ begin
 			end if;
 		end process;
 
-		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else not dat;
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else not dat;
+		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else '1';
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else '0' ; --not dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else '1' ; --not dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else '0';
 
 		oddrx2d_i : oddrx2d
 		port map (

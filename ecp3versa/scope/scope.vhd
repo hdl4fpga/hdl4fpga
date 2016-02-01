@@ -168,7 +168,7 @@ begin
 		sys_clk => clk,
 
 		input_clk => input_clk,
-		ddr_eclkph => ddr_eclkph,
+		ddr_eclkph => "0000", --ddr_eclkph,
 		ddr_eclk => ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
@@ -348,7 +348,7 @@ begin
 	process (ddr_sclk)
 	begin
 		if rising_edge(ddr_sclk) then
-			led <= ddrphy_pll;
+			led <= not ddrphy_pll;
 		end if;
 	end process;
 --	process (phy1_rxc,fpga_gsrn)
