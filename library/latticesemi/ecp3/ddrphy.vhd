@@ -305,7 +305,7 @@ begin
 	process (sys_sclk)
 	begin
 		if rising_edge(sys_sclk) then
-			if false then --test(0)='1'then
+			if test(0)='1'then
 				sys_pll(0) <= sdqo(0)(0*8);
 				sys_pll(1) <= sdqo(0)(1*8);
 				sys_pll(2) <= sdqo(0)(2*8);

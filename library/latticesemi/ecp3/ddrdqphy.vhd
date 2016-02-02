@@ -100,7 +100,7 @@ begin
 	begin
 		if rising_edge(sys_sclk) then
 			if q(0)='1' then
-				q := "0001";
+				q := "0000";
 			else
 				q := q - 1;
 			end if;
@@ -262,10 +262,10 @@ begin
 			end if;
 		end process;
 
-		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else '1';
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else '0' ; --not dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else '1' ; --not dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else '0';
+		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else dat;
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else not dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else not dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
