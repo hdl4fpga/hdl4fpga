@@ -237,6 +237,7 @@ architecture ecp3 of ddrphy is
 	signal test : std_logic_vector(word_size/byte_size-1 downto 0);
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
+	signal pha : std_logic_vector(sys_pha'range);
 
 begin
 
@@ -288,7 +289,8 @@ begin
 		synceclk => synceclk,
 		dqsdel => dqsdel,
 		dqsbuf_rst => dqsbufd_rst,
-		pha => sys_pha);
+		pha => pha);
+	sys_pha <= pha;
 
 	process (sys_sclk)
 		variable aux : std_logic;
@@ -302,22 +304,23 @@ begin
 		end if;
 	end process;
 
-	process (sys_sclk)
-	begin
-		if rising_edge(sys_sclk) then
-			if test(0)='1'then
-				sys_pll(0) <= sdqo(0)(0*8);
-				sys_pll(1) <= sdqo(0)(1*8);
-				sys_pll(2) <= sdqo(0)(2*8);
-				sys_pll(3) <= sdqo(0)(3*8);
-			else
-				sys_pll(4) <= sdqo(0)(0*8);
-				sys_pll(5) <= sdqo(0)(1*8);
-				sys_pll(6) <= sdqo(0)(2*8);
-				sys_pll(7) <= sdqo(0)(3*8);
-			end if;
-		end if;
-	end process;
+	sys_pll(4-1 downto 0) <= pha;
+--	process (sys_sclk)
+--	begin
+--		if rising_edge(sys_sclk) then
+--			if test(0)='1'then
+--				sys_pll(0) <= sdqo(0)(0*8);
+--				sys_pll(1) <= sdqo(0)(1*8);
+--				sys_pll(2) <= sdqo(0)(2*8);
+--				sys_pll(3) <= sdqo(0)(3*8);
+--			else
+--				sys_pll(4) <= sdqo(0)(0*8);
+--				sys_pll(5) <= sdqo(0)(1*8);
+--				sys_pll(6) <= sdqo(0)(2*8);
+--				sys_pll(7) <= sdqo(0)(3*8);
+--			end if;
+--		end if;
+--	end process;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy

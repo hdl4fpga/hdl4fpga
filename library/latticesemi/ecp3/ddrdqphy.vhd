@@ -134,7 +134,7 @@ begin
 		sys_sclk_n <= not sys_sclk;
 		ff0 : entity hdl4fpga.ff
 		port map (
-			clk => sys_sclk_n,
+			clk => sys_sclk,
 			d   => dqsbufd_rst,
 			q   => rst);
 
@@ -192,6 +192,7 @@ begin
 		dqclk1 => dqclk1);
 
 
+
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
@@ -200,6 +201,7 @@ begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_sclk,
+--			sclk => sys_cdiv2,
 			eclk => sys_eclk,
 			eclkdqsr => idqs_eclk,
 			ddrclkpol => ddrclkpol,
@@ -212,24 +214,24 @@ begin
 	end generate;
 	wlok <= ddr_dqi(0);
 
-	dmi_g : block
-		attribute iddrapps : string;
-		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+--	dmi_g : block
+--		attribute iddrapps : string;
+--		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED"
 --		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
-	begin
-		iddrx2d_i : iddrx2d
-		port map (
-			sclk => sys_sclk,
-			eclk => sys_eclk,
-			eclkdqsr => idqs_eclk,
-			ddrclkpol => ddrclkpol,
-			ddrlat => ddrlat,
-			d   => ddr_dmi,
-			qa0 => sys_dmo(0),
-			qb0 => sys_dmo(1),
-			qa1 => sys_dmo(2),
-			qb1 => sys_dmo(3));
-	end block;
+--	begin
+--		iddrx2d_i : iddrx2d
+--		port map (
+--			sclk => sys_sclk,
+--			eclk => sys_eclk,
+--			eclkdqsr => idqs_eclk,
+--			ddrclkpol => ddrclkpol,
+--			ddrlat => ddrlat,
+--			d   => ddr_dmi,
+--			qa0 => sys_dmo(0),
+--			qb0 => sys_dmo(1),
+--			qa1 => sys_dmo(2),
+--			qb1 => sys_dmo(3));
+--	end block;
 
 	wle <= not wlrdy and sys_wlreq;
 	dqt <= sys_dqt when wle='0' else (others => '1');
@@ -263,9 +265,9 @@ begin
 		end process;
 
 		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else dat;
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else not dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else not dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else dat;
+		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else '1'; --not dat;
+		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else '0'; --not dat;
+		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else '0'; --dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
