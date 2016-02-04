@@ -238,6 +238,7 @@ architecture ecp3 of ddrphy is
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 	signal pha : std_logic_vector(sys_pha'range);
+	signal okt : std_logic;
 
 begin
 
@@ -280,6 +281,31 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
+	dqsdll_b : block
+		signal lock : std_logic;
+		signal uddcntln : std_logic;
+	begin
+		process (phy_rst, sys_sclk)
+			variable sr : std_logic_vector(0 to 4);
+		begin
+			if phy_rst='1' then
+				sr := (others => '0');
+			elsif rising_edge(sys_sclk) then
+				sr := sr(1 to 4) & lock;
+			end if;
+			uddcntln <= sr(1) xnor sr(3);
+			dqsbufd_rst <= not sr(0);
+		end process;
+
+		dqsdllb_i : dqsdllb
+		port map (
+			rst => phy_rst,
+			clk => sys_eclk,
+			uddcntln => uddcntln,
+			dqsdel => dqsdel,
+			lock => lock);
+	end block;
+
 	adjdll_rst <= phy_rst;
 	adjdll_e : entity hdl4fpga.adjdll
 	port map (
@@ -287,8 +313,7 @@ begin
 		sclk => sys_sclk,
 		eclk => sys_eclk,
 		synceclk => synceclk,
-		dqsdel => dqsdel,
-		dqsbuf_rst => dqsbufd_rst,
+		okt => okt,
 		pha => pha);
 	sys_pha <= pha;
 
@@ -304,7 +329,7 @@ begin
 		end if;
 	end process;
 
-	sys_pll(4-1 downto 0) <= pha;
+	sys_pll(5-1 downto 0) <= okt & pha;
 --	process (sys_sclk)
 --	begin
 --		if rising_edge(sys_sclk) then

@@ -34,10 +34,8 @@ entity adjdll is
 		sclk : in std_logic;
 		eclk : in std_logic;
 		synceclk : out std_logic;
-		dqsdel : out std_logic;
-		dqsbuf_rst : out std_logic;
+		okt : out std_logic;
 		pha  : out std_logic_vector);
-		
 end;
 
 library ecp3;
@@ -45,7 +43,6 @@ use ecp3.components.all;
 
 architecture beh of adjdll is
 
-	signal dqsdll_rst : std_logic;
 	signal ok : std_logic;
 	signal adj_rdy : std_logic;
 	signal adj_req : std_logic;
@@ -57,12 +54,11 @@ architecture beh of adjdll is
 	signal ph : unsigned(0 to pha'length-1);
 	signal nextdg_rdy : std_logic;
 	signal smp_req : std_logic;
-	signal dqsdll_uddcntln : std_logic;
-	signal dqsdll_uddcntln_rdy : std_logic;
 
 begin
 
 	adj_req <= not rst;
+	okt <= ok;
 	process (sclk)
 		variable cntr : unsigned(0 to 3);
 	begin
@@ -79,20 +75,12 @@ begin
 	end process;
 
 	seclk_b : block
-		signal ok_q : std_logic;
 	begin
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => eclk,
-			q   => ok_q);
-
-		process (sclk)
-		begin
-			if rising_edge(sclk) then
-				ok <= ok_q;
-			end if;
-		end process;
+			q   => ok);
 	end block;
 	
 	process(sclk)
@@ -111,7 +99,7 @@ begin
 				if dg(dg'right)='0' then
 					if nextdg_rdy='1' then
 						aux := ph or dg(0 to aux'length-1);
-						if ok='0' then
+						if ok='1' then
 							aux := aux and not dg(1 to aux'length);
 						end if;
 						ph <= aux;
@@ -136,10 +124,9 @@ begin
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
 			if adj_rdy='1' then
-				pha <= std_logic_vector(ph-2);
+				pha <= std_logic_vector(ph-1);
 			end if;
 		end if;
---		pha <= (pha'range => '0');
 	end process;
 
 	eclksynca_rst <= not adj_rdy;
@@ -160,33 +147,5 @@ begin
 		eclki => eclk,
 		eclko => eclksynca_eclk);
 	synceclk <= eclksynca_eclk;
-
-	dqsdll_b : block
-		signal lock : std_logic;
-	begin
-
-		dqsdll_rst <= eclksynca_stop;
-
-		dqsdllb_i : dqsdllb
-		port map (
-			rst => dqsdll_rst,
-			clk => eclk,
-			uddcntln => dqsdll_uddcntln,
-			dqsdel => dqsdel,
-			lock => lock);
-
-		process (dqsdll_rst, sclk)
-			variable sr : std_logic_vector(0 to 4);
-		begin
-			if dqsdll_rst='1' then
-				sr := (others => '0');
-			elsif rising_edge(sclk) then
-				sr := sr(1 to 4) & lock;
-			end if;
-			dqsdll_uddcntln <= sr(1) xnor sr(3);
-			dqsbuf_rst <= not sr(0);
-		end process;
-
-	end block;
 
 end;
