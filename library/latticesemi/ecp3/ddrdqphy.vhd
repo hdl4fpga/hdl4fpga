@@ -32,7 +32,6 @@ entity ddrdqphy is
 	port (
 		dqsbufd_rst : in  std_logic;
 		sys_sclk : in  std_logic;
-		sys_eclk1 : in std_logic;
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
@@ -48,9 +47,7 @@ entity ddrdqphy is
 		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
 		sys_wlpha : out std_logic_vector(8-1 downto 0);
-		sys_test : out std_logic;
 
-		sys_pll  : out std_logic_vector(0 to 4-1);
 		ddr_dmt  : out std_logic;
 		ddr_dmi  : in  std_logic := '-';
 		ddr_dmo  : out std_logic;
@@ -62,7 +59,6 @@ entity ddrdqphy is
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
 
-	constant test : boolean := true;
 end;
 
 library ecp3;
@@ -85,6 +81,7 @@ architecture ecp3 of ddrdqphy is
 	signal wlpha : std_logic_vector(8-1 downto 0);
 	signal dyndelay : std_logic_vector(8-1 downto 0);
 	signal wlok : std_logic;
+	signal dqi : std_logic_vector(sys_dqi'range);
 
 	signal dqt : std_logic_vector(sys_dqt'range);
 	signal dqst : std_logic_vector(sys_dqst'range);
@@ -94,25 +91,7 @@ architecture ecp3 of ddrdqphy is
 	signal dqsbufd_rsto : std_logic;
 
 begin
-
-	process (sys_sclk, sys_rw)
-		variable q : unsigned(0 to 4-1) := (others => '0');
-	begin
-		if rising_edge(sys_sclk) then
-			if q(0)='1' then
-				q := "0000";
-			else
-				q := q - 1;
-			end if;
-		end if;
-		if test then
-			rw <= q(0);
-		else
-			rw <= sys_rw;
-		end if;
-	end process;
-	sys_test <= rw;
-
+	rw <= not sys_rw;
 	sys_wlpha <= wlpha;
 	sys_wlrdy <= wlrdy;
 	adjpha_e : entity hdl4fpga.adjdqs
@@ -125,36 +104,32 @@ begin
 
 	dqsbuf_b : block
 		signal q1, q2 : std_logic;
-		signal eclk_p : std_logic;
-		signal eclk_n : std_logic;
-		signal sys_sclk_n : std_logic;
+		signal sys_eclk_n : std_logic;
 		signal rst : std_logic;
 
 	begin
-		sys_sclk_n <= not sys_sclk;
 		ff0 : entity hdl4fpga.ff
 		port map (
 			clk => sys_sclk,
 			d   => dqsbufd_rst,
 			q   => rst);
 
-		eclk_p <= not sys_eclk1;
-		eclk_n <= not eclk_p;
+		sys_eclk_n <= not sys_eclk;
 		ff1 : entity hdl4fpga.ff
 		port map (
-			clk => eclk_p,
+			clk => sys_eclk_n,
 			d   => rst,
 			q   => q1);
 
 		ff2 : entity hdl4fpga.ff
 		port map (
-			clk => eclk_n,
+			clk => sys_eclk,
 			d   => q1,
 			q   => q2);
 
 		ff3 : entity hdl4fpga.ff
 		port map (
-			clk => eclk_p,
+			clk => sys_eclk_n,
 			d   => q2,
 			q   => dqsbufd_rsto);
 
@@ -177,14 +152,14 @@ begin
 		datavalid => open,
 
 		rst  => dqsbufd_rsto,
-		dyndelay0 => '0', --dyndelay(0),
-		dyndelay1 => '0', --dyndelay(1),
-		dyndelay2 => '0', --dyndelay(2),
-		dyndelay3 => '0', --dyndelay(3),
-		dyndelay4 => '0', --dyndelay(4),
-		dyndelay5 => '0', --dyndelay(5),
-		dyndelay6 => '0', --dyndelay(6),
-		dyndelpol => '0', --dyndelay(7),
+		dyndelay0 => dyndelay(0),
+		dyndelay1 => dyndelay(1),
+		dyndelay2 => dyndelay(2),
+		dyndelay3 => dyndelay(3),
+		dyndelay4 => dyndelay(4),
+		dyndelay5 => dyndelay(5),
+		dyndelay6 => dyndelay(6),
+		dyndelpol => dyndelay(7),
 		eclkw => sys_eclkw,
 
 		dqsw => dqsw,
@@ -192,16 +167,14 @@ begin
 		dqclk1 => dqclk1);
 
 
-
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
---		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
+--		attribute iddrapps of iddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_sclk,
---			sclk => sys_cdiv2,
 			eclk => sys_eclk,
 			eclkdqsr => idqs_eclk,
 			ddrclkpol => ddrclkpol,
@@ -214,76 +187,56 @@ begin
 	end generate;
 	wlok <= ddr_dqi(0);
 
---	dmi_g : block
---		attribute iddrapps : string;
---		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED"
---		attribute iddrapps of iddrx2d_i : label is "DQS_CENTERED";
---	begin
---		iddrx2d_i : iddrx2d
---		port map (
---			sclk => sys_sclk,
---			eclk => sys_eclk,
---			eclkdqsr => idqs_eclk,
---			ddrclkpol => ddrclkpol,
---			ddrlat => ddrlat,
---			d   => ddr_dmi,
---			qa0 => sys_dmo(0),
---			qb0 => sys_dmo(1),
---			qa1 => sys_dmo(2),
---			qb1 => sys_dmo(3));
---	end block;
+	dmi_g : block
+		attribute iddrapps : string;
+		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
+--		attribute iddrapps of iddrx2d_i : label is "DDR_MEM_DQ";
+	begin
+		iddrx2d_i : iddrx2d
+		port map (
+			sclk => sys_sclk,
+			eclk => sys_eclk,
+			eclkdqsr => idqs_eclk,
+			ddrclkpol => ddrclkpol,
+			ddrlat => ddrlat,
+			d   => ddr_dmi,
+			qa0 => sys_dmo(0),
+			qb0 => sys_dmo(1),
+			qa1 => sys_dmo(2),
+			qb1 => sys_dmo(3));
+	end block;
 
 	wle <= not wlrdy and sys_wlreq;
 	dqt <= sys_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
-		signal ta : std_logic;
-		signal da0, db0, da1, db1 : std_logic;
-		signal dat : std_logic;
+--		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
-		ta  <= dqt(0) when wle='0' and not test else '0';
-
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk => sys_sclk,
-			ta => ta, --dqt(0),
+			ta => dqt(0),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q  => ddr_dqt(i));
-
-		process (sys_sclk)
-		begin
-			if rising_edge(sys_sclk) then
-				if wle='0' and not test then
-					dat <= '1';
-				else
-					dat <= not dat;
-				end if;
---				dat <= '1';
-			end if;
-		end process;
-
-		da0 <= sys_dqo(0*byte_size+i) when wle='0' and not test else dat;
-		db0 <= sys_dqo(1*byte_size+i) when wle='0' and not test else '1'; --not dat;
-		da1 <= sys_dqo(2*byte_size+i) when wle='0' and not test else '0'; --not dat;
-		db1 <= sys_dqo(3*byte_size+i) when wle='0' and not test else '0'; --dat;
 
 		oddrx2d_i : oddrx2d
 		port map (
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => da0,
-			db0 => db0,
-			da1 => da1,
-			db1 => db1,
+			da0 => sys_dqo(0*byte_size+i),
+			db0 => sys_dqo(1*byte_size+i),
+			da1 => sys_dqo(2*byte_size+i),
+			db1 => sys_dqo(3*byte_size+i),
 			q   => ddr_dqo(i));
 	end generate;
 
 	dm_b : block
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
+--		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -305,19 +258,20 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	dqst <= sys_dqst when wle='0' and not test else (others => '0');
-	dqso <= sys_dqso when wle='0' and not test else (others => '1');
+	dqst <= sys_dqst when wle='0' else (others => '0');
+	dqso <= sys_dqso when wle='0' else (others => '1');
 	dqso_b : block 
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
+--		attribute oddrapps of oddrx2dqsa_i : label is "DDR3_MEM_DQS";
 	begin
 
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk => sys_sclk,
-			db => dqst(0),
-			ta => dqst(2),
+			db => dqst(2),
+			ta => dqst(0),
 			dqstclk => dqstclk,
 			dqsw => dqsw,
 			q => ddr_dqst);
@@ -325,8 +279,8 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk => sys_sclk,
-			db0 => dqso(2*1),
-			db1 => dqso(2*0),
+			db0 => dqso(2*0),
+			db1 => dqso(2*1),
 			dqsw => dqsw,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,

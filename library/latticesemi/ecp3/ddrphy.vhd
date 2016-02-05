@@ -234,11 +234,9 @@ architecture ecp3 of ddrphy is
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal dqsbufd_arst : std_logic;
 
-	signal test : std_logic_vector(word_size/byte_size-1 downto 0);
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 	signal pha : std_logic_vector(sys_pha'range);
-	signal okt : std_logic;
 
 begin
 
@@ -313,7 +311,6 @@ begin
 		sclk => sys_sclk,
 		eclk => sys_eclk,
 		synceclk => synceclk,
-		okt => okt,
 		pha => pha);
 	sys_pha <= pha;
 
@@ -329,23 +326,7 @@ begin
 		end if;
 	end process;
 
-	sys_pll(5-1 downto 0) <= okt & pha;
---	process (sys_sclk)
---	begin
---		if rising_edge(sys_sclk) then
---			if test(0)='1'then
---				sys_pll(0) <= sdqo(0)(0*8);
---				sys_pll(1) <= sdqo(0)(1*8);
---				sys_pll(2) <= sdqo(0)(2*8);
---				sys_pll(3) <= sdqo(0)(3*8);
---			else
---				sys_pll(4) <= sdqo(0)(0*8);
---				sys_pll(5) <= sdqo(0)(1*8);
---				sys_pll(6) <= sdqo(0)(2*8);
---				sys_pll(7) <= sdqo(0)(3*8);
---			end if;
---		end if;
---	end process;
+	sys_pll <= wlpha(0);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -355,7 +336,6 @@ begin
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
 			sys_sclk => sys_sclk,
-			sys_eclk1 => sys_eclk,
 			sys_eclk => synceclk,
 			sys_eclkw => synceclk,
 			sys_dqsdel => dqsdel,
@@ -374,7 +354,6 @@ begin
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
-			sys_test => test(i),
 
 			ddr_dqi => ddqi(i),
 			ddr_dqt => ddqt(i),

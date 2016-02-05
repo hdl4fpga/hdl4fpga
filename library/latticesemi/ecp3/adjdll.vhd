@@ -86,13 +86,11 @@ begin
 	process(sclk)
 		variable dg  : unsigned(0 to pha'length+1);
 		variable aux : unsigned(ph'range);
-		variable adj_edge : std_logic;
 	begin
 		if rising_edge(sclk) then
 			if adj_req='0' then
 				ph  <= (others => '0');
 				dg  := (0 => '1', others => '0');
-				adj_edge := dg(dg'right);
 				smp_req  <= '0';
 				adj_rdy  <= '0';
 			else
@@ -111,32 +109,34 @@ begin
 				else
 					smp_req <= '0';
 				end if;
-				adj_edge := adj_rdy;
 				adj_rdy  <= dg(dg'right);
 			end if;
 		end if;
 	end process;
 
 	process (sclk, rst)
+		variable pll_rdy : unsigned(0 to 4-1);
 	begin
 		if rst='1' then
 			pha <= (pha'range => '0');
+			pll_rdy := (others => '1');
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
+			pll_rdy := pll_rdy(1 to pll_rdy'right) & not adj_rdy;
 			if adj_rdy='1' then
 				pha <= std_logic_vector(ph-1);
 			end if;
 		end if;
+		eclksynca_rst <= pll_rdy(0);
 	end process;
 
-	eclksynca_rst <= not adj_rdy;
 	process (eclksynca_rst, eclk)
-		variable q : std_logic_vector(0 to 2);
+		variable q : std_logic_vector(0 to 1);
 	begin
 		if eclksynca_rst='1' then
 			q := (others => '1');
 		elsif falling_edge(eclk) then
-			q := q(1 to 2) & '0';
+			q := q(1 to q'right) & '0';
 		end if;
 		eclksynca_stop <= q(0);
 	end process;
