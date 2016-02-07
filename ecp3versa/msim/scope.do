@@ -8,11 +8,8 @@ add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/rst
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adj_rdy
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adj_req
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/dqsdll_rst
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/dqsdll_uddcntln
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/dqsdll_b/lock
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/dqsdll_b/uddcntln
-add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/dqsdll_uddcntln_rdy
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclksynca_eclk
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/eclksynca_rst
@@ -78,7 +75,14 @@ add wave -noupdate -expand -group testbench -expand -group ddr /testbench/we_n
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/dqs_p(1)
 add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ddr_clk_p
 add wave -noupdate -expand -group testbench -expand -group ddr -expand /testbench/dqs_p
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do_rdy
+add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/scope_e/ddr_e/sys_do_rdy
+add wave -noupdate -expand -group testbench -expand -group ddr -expand /testbench/ecp3versa_e/ddrphy_e/sys_sti
+add wave -noupdate -expand -group testbench -expand -group ddr /testbench/ecp3versa_e/scope_e/ddr_e/xdr_init_e/xdr_init_clk
 add wave -noupdate -expand -group testbench -expand -group ddr -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_sto
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_sti
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_dqt
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/sys_wlreq
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/wlok
@@ -136,7 +140,6 @@ add wave -noupdate -expand -group ecp3versa -group dcms /testbench/ecp3versa_e/d
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/ddrphy_sti(0)
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/ddrphy_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_dqi
-add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/sys_do
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dqi
 add wave -noupdate -expand -group ecp3versa -group miitx_pld -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/rd_address
@@ -387,10 +390,12 @@ add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/ddr_e
 add wave -noupdate -expand -group ecp3versa /testbench/ecp3versa_e/scope_e/ddr_e/xdr_rst
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/ddrphy_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_dqi
-add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/sys_do
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/xdr_dqi
 add wave -noupdate -expand -group ecp3versa -radix hexadecimal /testbench/ecp3versa_e/phy1_tx_d
+add wave -noupdate /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do_rdy
+add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
+add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/ddrs_do
 add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/dtreq
 add wave -noupdate -group miirx_mac -radix hexadecimal /testbench/ecp3versa_e/scope_e/miirx_udp_e/dtxd
 add wave -noupdate -group miirx_mac /testbench/ecp3versa_e/scope_e/miirx_udp_e/mii_rxc
@@ -608,9 +613,9 @@ add wave -noupdate -divider {[ecp3versa]}
 add wave -noupdate -divider {DDR begin}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1245000 ps} 0} {{Cursor 2} {3110035 ps} 0}
+WaveRestoreCursors {{Cursor 1} {20226000 ps} 0} {{Cursor 2} {3110035 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 181
+configure wave -namecolwidth 295
 configure wave -valuecolwidth 92
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -624,4 +629,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1129442 ps} {1342068 ps}
+WaveRestoreZoom {20172220 ps} {20279780 ps}
