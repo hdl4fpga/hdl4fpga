@@ -21,77 +21,89 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity adjdqs is
+	generic (
+		tCP : natural; 				-- ps
+		tap_delay : natural := 27); -- tap delay ps
 	port (
 		clk : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
 		smp : in  std_logic;
-		pha : out std_logic_vector);
+		dly : out std_logic_vector);
+
 end;
 
-library ecp3;
-use ecp3.components.all;
-
 architecture beh of adjdqs is
-	signal hld : std_logic;
-	signal adj : std_logic;
+	constant num_of_taps  : natural := tCP/(2*tap_delay);
+	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+2;
+	subtype gap_word is unsigned(num_of_steps-1 downto 0);
+	type gword_vector is array(natural range <>) of gap_word;
+
+	function create_gaps (
+		constant num_of_taps : natural;
+		constant num_of_steps : natural)
+		return gword_vector is
+		variable val : gword_vector(2**unsigned_num_bits(num_of_steps)-1 downto 0);
+		variable aux : natural;
+	begin
+		val := (others => (others => '-'));
+		aux := num_of_taps;
+		val(num_of_steps-1) := to_unsigned(2**(gap_word'length-1), gap_word'length);
+		for i in num_of_steps-2 downto 1 loop
+			val(i) := to_unsigned((aux+1)/2, gap_word'length);
+			aux := aux/2;
+		end loop;
+		val(0) := (others => '0');
+		return val;
+	end;
+
+	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
+
+	signal pha : gap_word;
+	signal phb : gap_word;
+	signal phc : gap_word;
+	signal hld : unsigned(0 to 4-1);
+	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
+	signal dly0 : std_logic_vector(dly'length-1 downto 0);
+
 begin
 
-	process(clk)
-		variable cntr : unsigned(0 to 4-1);
+	phc <= pha when smp='1' else phb;
+	process(req, clk)
 	begin
-		if rising_edge(clk) then
-			if req='0' then
-				cntr := (others => '0');
-			elsif adj='1' then
-				cntr := (others => '0');
-			elsif cntr(0)='1' then
-				cntr := (others => '0');
-			else
-				cntr := cntr + 1;
-			end if;
-			hld <= cntr(0);
-		end if;
-	end process;
-
-	process(clk)
-		variable mph : unsigned(pha'length-1-1 downto 0);
-		variable sph : std_logic;
-		variable fst : std_logic;
-	begin
-		if rising_edge(clk) then
-			if req='0' then
-				mph := (others => '0');
-				sph := '0';
-				fst := '0';
-				adj <= '0';
-			else
-				if adj='0' then
-					if hld='1' then
-						if smp='1' then
-							if fst='0' then
-								sph := '1';
-							else
-								adj <= '1';
-							end if;
-						else
-							mph := mph + 1;
-						end if;
-						fst :='1';
+		if req='0' then
+			step <= to_unsigned(num_of_steps, step'length);
+			pha  <= (others => '0');
+			phb  <= (others => '0');
+			hld  <= (others => '0');
+		elsif rising_edge(clk) then
+			if step(0)='0' then
+				if hld(0)='1' then
+					if smp='1' then
+						phb <= pha;
 					end if;
+					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
+					step <= step - 1;
+					hld  <= (others => '0');
+				else
+					hld  <= hld - 1;
 				end if;
 			end if;
-			pha <= std_logic_vector(sph & mph);
 		end if;
 	end process;
-	rdy <= adj;
+	dly0(dly0'left) <= pha(pha'left);
+	dly0(dly0'left-1 downto 0) <= std_logic_vector(resize(pha(pha'left-1 downto 0), dly'length-1));
+	rdy <= step(0);
 
 end;

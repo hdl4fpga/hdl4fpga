@@ -100,7 +100,7 @@ begin
 		rdy => wlrdy,
 		req => sys_wlreq,
 		smp => wlok,
-		pha => wlpha);
+		dly => wlpha);
 
 	dqsbuf_b : block
 		signal q1, q2 : std_logic;
