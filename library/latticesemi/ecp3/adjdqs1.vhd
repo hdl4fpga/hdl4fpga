@@ -49,7 +49,7 @@ architecture beh of adjdqs is
 		constant xxx : natural;
 		constant yyy : natural)
 		return natural_vector is
-		variable val : natural_vector(yyy+1	downto 0);
+		variable val : natural_vector(yyy+1 downto 0);
 		variable aux : natural;
 	begin
 		val := (others => 0);
@@ -100,6 +100,7 @@ begin
 			else
 				if adj='0' then
 					if hld='1' then
+						if then
 						if smp='1' then
 							phb := pha;
 							phc := pha;
