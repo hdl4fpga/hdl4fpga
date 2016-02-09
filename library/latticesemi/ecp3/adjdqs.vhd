@@ -33,7 +33,7 @@ use hdl4fpga.std.all;
 
 entity adjdqs is
 	generic (
-		ok : std_logic := '1';
+		ok : std_logic := '0';
 		tCP : natural; 				-- ps
 		tap_delay : natural := 27); -- tap delay ps
 	port (
@@ -48,7 +48,7 @@ end;
 architecture beh of adjdqs is
 	constant num_of_taps  : natural := tCP/(2*tap_delay);
 	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+2;
-	subtype gap_word is unsigned(num_of_steps-1 downto 0);
+	subtype gap_word is unsigned(num_of_steps-2 downto 0);
 	type gword_vector is array(natural range <>) of gap_word;
 
 	function create_gaps (
@@ -76,7 +76,6 @@ architecture beh of adjdqs is
 	signal phc : gap_word;
 	signal hld : unsigned(0 to 4-1);
 	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-	signal dly0 : std_logic_vector(dly'length-1 downto 0);
 
 begin
 
@@ -87,7 +86,7 @@ begin
 			step <= to_unsigned(num_of_steps-1, step'length);
 			pha  <= (others => '0');
 			phb  <= (others => '0');
-			hld  <= (others => '0');
+			hld  <= ('0', others => '1');
 		elsif rising_edge(clk) then
 			if step(0)='0' then
 				if hld(0)='1' then
@@ -103,9 +102,7 @@ begin
 			end if;
 		end if;
 	end process;
-	dly0(dly0'left) <= pha(pha'left);
-	dly0(dly0'left-1 downto 0) <= std_logic_vector(resize(pha(pha'left-1 downto 0), dly'length-1));
-	dly <= dly0;
+	dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
 	rdy <= step(0);
 
 end;
