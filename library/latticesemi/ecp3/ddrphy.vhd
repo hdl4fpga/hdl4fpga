@@ -239,6 +239,7 @@ architecture ecp3 of ddrphy is
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
+	signal wlreq : std_logic;
 	signal dqsbufd_arst : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
@@ -342,6 +343,7 @@ begin
 	end process;
 
 	sys_pll <= wlpha(0);
+	wlreq <= sys_wlreq and not phy_rst;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -356,7 +358,7 @@ begin
 			sys_eclkw => eclksynca_eclk,
 			sys_dqsdel => dqsdel,
 			sys_rw => sys_sto(i*gear+0),
-			sys_wlreq => sys_wlreq,
+			sys_wlreq => wlreq,
 			sys_wlrdy => wlrdy(i),
 			sys_wlpha => wlpha(i),
 

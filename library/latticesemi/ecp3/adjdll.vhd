@@ -85,34 +85,32 @@ begin
 
 	end block;
 	
-	process(sclk)
+	process(adj_req, sclk)
 		variable dg  : unsigned(0 to pha'length+1);
 		variable aux : unsigned(ph'range);
 	begin
-		if rising_edge(sclk) then
-			if adj_req='0' then
-				ph  <= (others => '0');
-				dg  := (0 => '1', others => '0');
-				smp_req  <= '0';
-				adj_rdy  <= '0';
-			else
-				if dg(dg'right)='0' then
-					if nextdg_rdy='1' then
-						aux := ph or dg(0 to aux'length-1);
+		if adj_req='0' then
+			ph  <= (others => '0');
+			dg  := (0 => '1', others => '0');
+			smp_req  <= '0';
+			adj_rdy  <= '0';
+		elsif rising_edge(sclk) then
+			if dg(dg'right)='0' then
+				if nextdg_rdy='1' then
+					aux := ph or dg(0 to aux'length-1);
 						if ok='1' then
-							aux := aux and not dg(1 to aux'length);
-						end if;
-						ph <= aux;
-						smp_req <= '0';
-						dg := dg srl 1;
-					else
-						smp_req <= '1';
+						aux := aux and not dg(1 to aux'length);
 					end if;
-				else
+					ph <= aux;
 					smp_req <= '0';
+					dg := dg srl 1;
+				else
+					smp_req <= '1';
 				end if;
-				adj_rdy  <= dg(dg'right);
+			else
+				smp_req <= '0';
 			end if;
+			adj_rdy  <= dg(dg'right);
 		end if;
 	end process;
 
