@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ddrdqphy is
 	generic (
+		tcp : natural;
 		line_size : natural;
 		byte_size : natural);
 	port (
@@ -95,6 +96,8 @@ begin
 	sys_wlpha <= wlpha;
 	sys_wlrdy <= wlrdy;
 	adjpha_e : entity hdl4fpga.adjdqs
+	generic map (
+		tcp => tcp)
 	port map (
 		clk => sys_sclk,
 		rdy => wlrdy,
@@ -106,6 +109,8 @@ begin
 		signal q1, q2 : std_logic;
 		signal sys_eclk_n : std_logic;
 		signal rst : std_logic;
+		signal rst_n : std_logic;
+		signal rsto_n : std_logic;
 
 	begin
 		ff0 : entity hdl4fpga.ff
@@ -114,24 +119,26 @@ begin
 			d   => dqsbufd_rst,
 			q   => rst);
 
+		rst_n <= not rst;
 		sys_eclk_n <= not sys_eclk;
-		ff1 : entity hdl4fpga.ff
+		ff1 : entity hdl4fpga.aff
 		port map (
 			clk => sys_eclk_n,
 			d   => rst,
 			q   => q1);
 
-		ff2 : entity hdl4fpga.ff
+		ff2 : entity hdl4fpga.aff
 		port map (
 			clk => sys_eclk,
 			d   => q1,
 			q   => q2);
 
-		ff3 : entity hdl4fpga.ff
+		ff3 : entity hdl4fpga.aff
 		port map (
 			clk => sys_eclk_n,
 			d   => q2,
-			q   => dqsbufd_rsto);
+			q   => rsto_n);
+	dqsbufd_rsto <= rsto_n;
 
 	end block;
 

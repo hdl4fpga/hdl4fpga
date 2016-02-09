@@ -33,6 +33,7 @@ use hdl4fpga.std.all;
 
 entity adjdqs is
 	generic (
+		ok : std_logic := '1';
 		tCP : natural; 				-- ps
 		tap_delay : natural := 27); -- tap delay ps
 	port (
@@ -79,23 +80,23 @@ architecture beh of adjdqs is
 
 begin
 
-	phc <= pha when smp='1' else phb;
+	phc <= pha when smp=ok else phb;
 	process(req, clk)
 	begin
 		if req='0' then
-			step <= to_unsigned(num_of_steps, step'length);
+			step <= to_unsigned(num_of_steps-1, step'length);
 			pha  <= (others => '0');
 			phb  <= (others => '0');
 			hld  <= (others => '0');
 		elsif rising_edge(clk) then
 			if step(0)='0' then
 				if hld(0)='1' then
-					if smp='1' then
+					if smp=ok then
 						phb <= pha;
 					end if;
 					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
 					step <= step - 1;
-					hld  <= (others => '0');
+					hld  <= ('0', others => '1');
 				else
 					hld  <= hld - 1;
 				end if;
@@ -104,6 +105,7 @@ begin
 	end process;
 	dly0(dly0'left) <= pha(pha'left);
 	dly0(dly0'left-1 downto 0) <= std_logic_vector(resize(pha(pha'left-1 downto 0), dly'length-1));
+	dly <= dly0;
 	rdy <= step(0);
 
 end;

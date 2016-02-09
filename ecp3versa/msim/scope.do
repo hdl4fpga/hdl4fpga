@@ -4,6 +4,22 @@ quietly virtual signal -install /testbench/ecp3versa_e {/testbench/ecp3versa_e/p
 quietly virtual signal -install /testbench/ecp3versa_e {/testbench/ecp3versa_e/phy1_tx_d  } sss
 quietly virtual signal -install /testbench/ecp3versa_e { (context /testbench/ecp3versa_e )( phy1_tx_d(7) & phy1_tx_d(6) & phy1_tx_d(5) & phy1_tx_d(4) & phy1_tx_d(3) & phy1_tx_d(2) & phy1_tx_d(1) & phy1_tx_d(0) )} sss001
 quietly WaveActivateNextPane {} 0
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tCP
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tap_delay
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/clk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/req
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/rdy
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/smp
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/pha
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phb
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phc
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/hld
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/step
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly0
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_taps
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_steps
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/gaptab
 add wave -noupdate -divider {[testbench]}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/rst
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_e/adj_rdy
@@ -23,6 +39,38 @@ add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/adjdll_
 add wave -noupdate -expand -group adjdll -divider {New Divider}
 add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/led
 add wave -noupdate -expand -group adjdll -divider {New Divider}
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tCP
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tap_delay
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/clk
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/req
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/rdy
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/smp
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/pha
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phb
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phc
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/hld
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/step
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly0
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_taps
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_steps
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/gaptab
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tCP
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/tap_delay
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/clk
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/req
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/rdy
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/smp
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/pha
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phb
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/phc
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/hld
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/step
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/dly0
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_taps
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/num_of_steps
+add wave -noupdate -expand -group adjdll /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/adjpha_e/gaptab
 add wave -noupdate -expand -group adjdll -divider {New Divider}
 add wave -noupdate -expand -group testbench /testbench/xtal
 add wave -noupdate -expand -group testbench /testbench/ecp3versa_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_clk
@@ -629,4 +677,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20172220 ps} {20279780 ps}
+WaveRestoreZoom {0 ps} {22120971 ps}

@@ -272,6 +272,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+		tCP => uclk_period*ddr_div*ddr_fbdiv/(2*ddr_mul),
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
 		LINE_SIZE => line_size,

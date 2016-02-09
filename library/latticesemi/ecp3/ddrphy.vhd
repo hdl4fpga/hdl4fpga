@@ -35,7 +35,8 @@ entity ddrphy is
 		addr_size : natural := 13;
 		line_size : natural := 32;
 		word_size : natural := 16;
-		byte_size : natural := 8);
+		byte_size : natural := 8;
+		tcp : natural);
 	port (
 		sys_sclk : in  std_logic;
 		sys_sclk2x : in std_logic;
@@ -331,6 +332,7 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
+			tcp => tcp,
 			line_size => line_size*byte_size/word_size,
 			byte_size => byte_size)
 		port map (
