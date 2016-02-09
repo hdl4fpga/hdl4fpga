@@ -71,6 +71,7 @@ architecture beh of adjdqs is
 
 	constant gaptab : gword_vector := create_gaps(num_of_taps, num_of_steps);
 
+	signal ssmp : std_logic;
 	signal pha : gap_word;
 	signal phb : gap_word;
 	signal phc : gap_word;
@@ -78,8 +79,24 @@ architecture beh of adjdqs is
 	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 
 begin
+  
+	sync_b : block
+		signal q : std_logic;
+	begin
+		sync1_i : entity hdl4fpga.ff
+		port map (
+			clk => clk,
+			d => smp,
+			q => q);
 
-	phc <= pha when smp=ok else phb;
+		sync2_i : entity hdl4fpga.ff
+		port map (
+			clk => clk,
+			d => q,
+			q => ssmp);
+	end block;
+
+	phc <= pha when ssmp=ok else phb;
 	process(req, clk)
 	begin
 		if req='0' then
@@ -90,7 +107,7 @@ begin
 		elsif rising_edge(clk) then
 			if step(0)='0' then
 				if hld(0)='1' then
-					if smp=ok then
+					if ssmp=ok then
 						phb <= pha;
 					end if;
 					pha  <= phc + gaptab(to_integer(step(1 to step'right)));

@@ -33,8 +33,7 @@ entity adjdll is
 		rst  : in std_logic;
 		sclk : in std_logic;
 		eclk : in std_logic;
-		synceclk : out std_logic;
-		okt : out std_logic;
+		rdy  : out std_logic;
 		pha  : out std_logic_vector);
 end;
 
@@ -47,10 +46,6 @@ architecture beh of adjdll is
 	signal adj_rdy : std_logic;
 	signal adj_req : std_logic;
 
-	signal eclksynca_stop : std_logic;
-	signal eclksynca_eclk : std_logic;
-	signal eclksynca_rst  : std_logic;
-
 	signal ph : unsigned(0 to pha'length-1);
 	signal nextdg_rdy : std_logic;
 	signal smp_req : std_logic;
@@ -58,7 +53,6 @@ architecture beh of adjdll is
 begin
 
 	adj_req <= not rst;
-	okt <= ok;
 	process (sclk)
 		variable cntr : unsigned(0 to 3);
 	begin
@@ -75,12 +69,20 @@ begin
 	end process;
 
 	seclk_b : block
+		signal q : std_logic;
 	begin
 		ok_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => eclk,
+			q   => q);
+
+		sync_i : entity hdl4fpga.ff
+		port map (
+			clk => sclk,
+			d   => q,
 			q   => ok);
+
 	end block;
 	
 	process(sclk)
@@ -115,37 +117,16 @@ begin
 	end process;
 
 	process (sclk, rst)
-		variable pll_rdy : unsigned(0 to 4-1);
 	begin
 		if rst='1' then
 			pha <= (pha'range => '0');
-			pll_rdy := (others => '1');
+			rdy <= '0';
 		elsif rising_edge(sclk) then
 			pha <= std_logic_vector(ph);
-			pll_rdy := pll_rdy(1 to pll_rdy'right) & not adj_rdy;
 			if adj_rdy='1' then
 				pha <= std_logic_vector(ph-1);
+				rdy <= adj_rdy;
 			end if;
 		end if;
-		eclksynca_rst <= pll_rdy(0);
 	end process;
-
-	process (eclksynca_rst, eclk)
-		variable q : std_logic_vector(0 to 1);
-	begin
-		if eclksynca_rst='1' then
-			q := (others => '1');
-		elsif falling_edge(eclk) then
-			q := q(1 to q'right) & '0';
-		end if;
-		eclksynca_stop <= q(0);
-	end process;
-
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclksynca_stop,
-		eclki => eclk,
-		eclko => eclksynca_eclk);
-	synceclk <= eclksynca_eclk;
-
 end;

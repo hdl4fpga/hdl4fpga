@@ -28,6 +28,9 @@ use ieee.numeric_std.all;
 library ecp3;
 use ecp3.components.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity ddrphy is
 	generic (
 		cmnd_phases : natural := 2;
@@ -46,7 +49,6 @@ entity ddrphy is
 		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out  std_logic;
-		sys_pha  : out std_logic_vector;
 		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
 		sys_sti  : out  std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_sto  : in  std_logic_vector(line_size/byte_size-1 downto 0);
@@ -222,13 +224,17 @@ architecture ecp3 of ddrphy is
 
 	signal adjdll_stop : std_logic;
 	signal adjdll_rst  : std_logic;
+	signal adjdll_rdy  : std_logic;
 	signal dqsdll_rst : std_logic;
 	signal dqsdll_lock : std_logic;
 	signal dqsdll_uddcntln : std_logic;
 	signal dqsdll_uddcntln_rdy : std_logic;
 	signal dqrst : std_logic;
 	signal eclk_stop : std_logic;
-	signal synceclk : std_logic;
+	signal eclksynca_stop : std_logic;
+	signal eclksynca_eclk : std_logic;
+	signal eclksynca_rst_n : std_logic;
+
 	signal dqsbufd_rst : std_logic;
 
 	signal wlnxt : std_logic;
@@ -237,7 +243,6 @@ architecture ecp3 of ddrphy is
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
-	signal pha : std_logic_vector(sys_pha'range);
 
 begin
 
@@ -280,6 +285,23 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
+	process (phy_rst, sys_eclk)
+		variable q : std_logic_vector(0 to 1);
+	begin
+		if phy_rst='1' then
+			q := (others => '1');
+		elsif falling_edge(sys_eclk) then
+			q := q(1 to q'right) & '0';
+		end if;
+		eclksynca_stop <= q(0);
+	end process;
+
+	eclksynca_i : eclksynca
+	port map (
+		stop  => eclksynca_stop,
+		eclki => sys_eclk,
+		eclko => eclksynca_eclk);
+
 	dqsdll_b : block
 		signal lock : std_logic;
 		signal uddcntln : std_logic;
@@ -293,7 +315,6 @@ begin
 				sr := sr(1 to 4) & lock;
 			end if;
 			uddcntln <= sr(1) xnor sr(3);
-			dqsbufd_rst <= not sr(0);
 		end process;
 
 		dqsdllb_i : dqsdllb
@@ -303,17 +324,10 @@ begin
 			uddcntln => uddcntln,
 			dqsdel => dqsdel,
 			lock => lock);
+
+		dqsbufd_rst <= not lock;
 	end block;
 
-	adjdll_rst <= phy_rst;
-	adjdll_e : entity hdl4fpga.adjdll
-	port map (
-		rst  => adjdll_rst,
-		sclk => sys_sclk,
-		eclk => sys_eclk,
-		synceclk => synceclk,
-		pha => pha);
-	sys_pha <= pha;
 
 	process (sys_sclk)
 		variable aux : std_logic;
@@ -338,8 +352,8 @@ begin
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
 			sys_sclk => sys_sclk,
-			sys_eclk => synceclk,
-			sys_eclkw => synceclk,
+			sys_eclk => sys_eclk,
+			sys_eclkw => eclksynca_eclk,
 			sys_dqsdel => dqsdel,
 			sys_rw => sys_sto(i*gear+0),
 			sys_wlreq => sys_wlreq,

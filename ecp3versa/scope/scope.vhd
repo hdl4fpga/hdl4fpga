@@ -80,7 +80,6 @@ architecture scope of ecp3versa is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
 	signal ddrphy_pll : std_logic_vector(8-1 downto 0);
@@ -101,6 +100,7 @@ architecture scope of ecp3versa is
 	signal dvdelay : std_logic_vector(0 to 2);
 
 	signal sys_rst   : std_logic;
+	signal sys_rst_n : std_logic;
 	signal valid : std_logic;
 
 	signal wlpha : std_logic_vector(8-1 downto 0);
@@ -127,35 +127,25 @@ architecture scope of ecp3versa is
 	signal debug_clk : std_logic;
 	signal yyyy : std_logic_vector(ddrphy_a'range);
 
-function shuffle (
-	constant arg : byte_vector)
-	return byte_vector is
-	variable dat : byte_vector(arg'length-1 downto 0);
-	variable val : byte_vector(dat'range);
-begin
-	dat := arg;
-	for i in 2-1 downto 0 loop
-		for j in dat'length/2-1 downto 0 loop
-			val(dat'length/2*i+j) := dat(2*j+i);
+	function shuffle (
+		constant arg : byte_vector)
+		return byte_vector is
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : byte_vector(dat'range);
+	begin
+		dat := arg;
+		for i in 2-1 downto 0 loop
+			for j in dat'length/2-1 downto 0 loop
+				val(dat'length/2*i+j) := dat(2*j+i);
+			end loop;
 		end loop;
-	end loop;
-	return val;
-end;
+		return val;
+	end;
+
 begin
 
-	process (fpga_gsrn, clk)
-		variable aux : std_logic_vector(0 to 3);
-	begin
-		if fpga_gsrn='0' then
-			sys_rst <= '1';
-			aux := (others => '0');
-		elsif rising_edge(clk) then
-			sys_rst <= not aux(0);
-			if aux(0)='0' then
-				aux := inc(gray(aux));
-			end if;
-		end if;
-	end process;
+	sys_rst   <= not fpga_gsrn;
+	sys_rst_n <= not sys_rst;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -167,43 +157,16 @@ begin
 		sys_rst => sys_rst,
 		sys_clk => clk,
 
-		input_clk => input_clk,
-		ddr_eclkph => ddr_eclkph,
 		ddr_eclk => ddr_eclk,
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
-		video_clk0 => vga_clk,
-		dcms_lckd => dcm_lckd);
+		ddr_rst   => ddrs_rst,
 
-	rsts_b : block
-		port (
-			grst : in  std_logic;
-			clks : in  std_logic_vector(0 to 3);
-			rsts : out std_logic_vector(0 to 3));
-		port map (
-			grst => dcm_lckd,
-			clks(0) => input_clk,
-			clks(1) => ddr_sclk,
-			clks(2) => phy1_125clk,
-			clks(3) => vga_clk,
-			rsts(0) => input_rst,
-			rsts(1) => ddrs_rst,
-			rsts(2) => mii_rst,
-			rsts(3) => vga_rst);
-	begin
-		rsts_g: for i in clks'range generate
-			process (clks(i))
-				variable rsta : std_logic;
-			begin
-				if rising_edge(clks(i)) then
-					rsts(i) <= rsta;
-					rsta    := not grst;
-				end if;
-			end process;
-		end generate;
-	end block;
+		video_clk0 => vga_clk,
+		video_rst => vga_rst);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
+	input_clk <= ddr_sclk;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
@@ -221,7 +184,7 @@ begin
 		DDR_BYTESIZE => byte_size)
 	port map (
 
---		input_rst => input_rst,
+		input_rst => ddrs_rst,
 		input_clk => input_clk,
 
 		ddrs_rst => ddrs_rst,
@@ -251,7 +214,7 @@ begin
 		ddr_sto  => ddrphy_sto,
 		ddr_sti  => ddrphy_sti,
 
---		mii_rst  => mii_rst,
+		mii_rst  => sys_rst,
 		mii_rxc  => phy1_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
@@ -259,7 +222,7 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
---		vga_rst   => vga_rst,
+		vga_rst   => vga_rst,
 		vga_clk   => vga_clk,
 		vga_hsync => vga_hsync,
 		vga_vsync => vga_vsync,
@@ -285,7 +248,6 @@ begin
 		phy_rst => ddrs_rst,
 
 		sys_rst => ddrphy_rst, 
-		sys_pha => ddr_eclkph,
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
 		sys_cke => ddrphy_cke,
@@ -325,7 +287,7 @@ begin
 		ddr_dqs => ddr3_dqs);
 	ddr3_dm <= (others => '0');
 
-	phy1_rst  <= dcm_lckd;
+	phy1_rst  <= sys_rst_n;
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
@@ -346,33 +308,17 @@ begin
 		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy1_gtxclk);
 
-	process (ddr_sclk)
+	process (ddr_sclk, sys_rst)
+		variable led1 : std_logic_vector(led'range);
+		variable led2 : std_logic_vector(led'range);
 	begin
-		if rising_edge(ddr_sclk) then
-			led <= not ddrphy_pll;
+		if sys_rst='1' then
+			led  <=  not ddrphy_pll;
+		elsif rising_edge(ddr_sclk) then
+			led  <= led2;
+			led2 := led1;
+			led1 := not ddrphy_pll;
 		end if;
 	end process;
---	process (phy1_rxc,fpga_gsrn)
---	begin
---		if fpga_gsrn='0' then
---			led(0) <= '1';
---			led(1) <= '1';
---			led(2) <= '1';
---		elsif rising_edge(phy1_rxc) then
---			if tpo(0)='1'then
---				led(0) <= '0';
---			end if;
---			if phy1_rx_dv='1'then
---				led(1) <= '0';
---			end if;
---			if mii_txen='1'then
---				led(2) <= '0';
---			end if;
---		end if;
---	end process;
-
---	led(0 to 3) <= ddrphy_cfgo(5 downto 2); --(others => '1');
---	led(5) <= not phy1_rx_dv;
---	led(6) <= not mii_txen;
 
 end;

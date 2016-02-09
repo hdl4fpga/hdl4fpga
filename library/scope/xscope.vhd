@@ -50,6 +50,7 @@ entity scope is
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
+		input_rst : in std_logic := '0';
 		input_clk : in std_logic;
 
 		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
@@ -83,6 +84,7 @@ entity scope is
 		ddr_sto : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
+		mii_rst  : in std_logic := '0';
 		mii_rxc  : in std_logic;
 		mii_rxdv : in std_logic;
 		mii_rxd  : in std_logic_vector;
@@ -90,6 +92,7 @@ entity scope is
 		mii_txen : out std_logic;
 		mii_txd  : out std_logic_vector;
 
+		vga_rst   : in  std_logic := '0';
 		vga_clk   : in  std_logic;
 		vga_hsync : out std_logic;
 		vga_vsync : out std_logic;
@@ -208,17 +211,16 @@ begin
 --	end process;
 
 	input_req <= ddr_ini and not input_rdy;
-	process (input_clk)
+	process (input_rst, input_clk)
 		constant n : natural := 15;
 		variable r : unsigned(0 to n);
 	begin
-		if rising_edge(input_clk) then
+		if input_rst='0' then
+			r := to_unsigned(61, r'length);
+		elsif rising_edge(input_clk) then
 			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
 --			input_dat <= (others => r(n-2));
 			r := r + 1;
-			if ddr_ini='0' then
-				r := to_unsigned(61, r'length);
-			end if;
 		end if;
 	end process;
 
@@ -347,6 +349,7 @@ begin
 		ddrs_do_rdy => ddrs_do_rdy(0),
 		ddrs_do => ddrs_do,
 
+		mii_rst => mii_rst,
 		mii_txc => mii_txc,
 		miirx_req => miirx_req,
 		miirx_rdy => miirx_rdy,

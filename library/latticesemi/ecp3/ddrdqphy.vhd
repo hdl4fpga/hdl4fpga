@@ -108,6 +108,7 @@ begin
 	dqsbuf_b : block
 		signal q1, q2 : std_logic;
 		signal sys_eclk_n : std_logic;
+		signal sys_eclk_p : std_logic;
 		signal rst : std_logic;
 		signal rst_n : std_logic;
 		signal rsto_n : std_logic;
@@ -116,29 +117,30 @@ begin
 		ff0 : entity hdl4fpga.ff
 		port map (
 			clk => sys_sclk,
-			d   => dqsbufd_rst,
-			q   => rst);
+			d  => dqsbufd_rst,
+			q  => rst);
 
 		rst_n <= not rst;
 		sys_eclk_n <= not sys_eclk;
-		ff1 : entity hdl4fpga.aff
+		sys_eclk_p <= sys_eclk_n;
+		ff1 : entity hdl4fpga.ff
 		port map (
 			clk => sys_eclk_n,
-			d   => rst,
-			q   => q1);
+			d  => rst_n,
+			q  => q1);
 
-		ff2 : entity hdl4fpga.aff
+		ff2 : entity hdl4fpga.ff
 		port map (
-			clk => sys_eclk,
-			d   => q1,
-			q   => q2);
+			clk => sys_eclk_p,
+			d  => q1,
+			q  => q2);
 
-		ff3 : entity hdl4fpga.aff
+		ff3 : entity hdl4fpga.ff
 		port map (
 			clk => sys_eclk_n,
-			d   => q2,
-			q   => rsto_n);
-	dqsbufd_rsto <= rsto_n;
+			d  => q2,
+			q  => rsto_n);
+	dqsbufd_rsto <= not rsto_n;
 
 	end block;
 
@@ -155,7 +157,7 @@ begin
 		ddrlat  => ddrlat,
 		prmbdet => prmbdet,
 
-		eclk => sys_eclk,
+		eclk => sys_eclkw,
 		datavalid => open,
 
 		rst  => dqsbufd_rsto,
@@ -182,7 +184,7 @@ begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_sclk,
-			eclk => sys_eclk,
+			eclk => sys_eclkw,
 			eclkdqsr => idqs_eclk,
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
@@ -202,7 +204,7 @@ begin
 		iddrx2d_i : iddrx2d
 		port map (
 			sclk => sys_sclk,
-			eclk => sys_eclk,
+			eclk => sys_eclkw,
 			eclkdqsr => idqs_eclk,
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,

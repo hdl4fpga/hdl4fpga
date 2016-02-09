@@ -68,6 +68,7 @@ entity dataio is
 		ddrs_do_rdy : in std_logic;
 		ddrs_do  : in std_logic_vector;
 		
+		mii_rst   : in  std_logic;
 		mii_txc   : in  std_logic;
 		miirx_req : in  std_logic;
 		miirx_rdy : out std_logic;
@@ -260,7 +261,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+2) & 
-				to_signed(1, DDR_CLNMSIZE+1));
+				to_signed(3, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
