@@ -297,6 +297,26 @@ begin
 		eclksynca_stop <= q(0);
 	end process;
 
+	dqclk_b : block
+		signal tq : std_logic;
+		signal td : std_logic;
+	begin
+		td <= not tq;
+		fft_i : entity hdl4fpga.aff
+		port map(
+			ar => '0',
+			clk => esyncaclk_eclk,
+			d => td,
+			q => tq);
+
+		ffst_i : entity hdl4fpga.aff
+		port map(
+			ar => '0',
+			clk => sys_sclk,
+			d => tq,
+			q => tq);
+	end block;
+
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
@@ -307,17 +327,6 @@ begin
 		signal lock : std_logic;
 		signal uddcntln : std_logic;
 	begin
-		process (phy_rst, sys_sclk)
-			variable sr : std_logic_vector(0 to 4);
-		begin
-			if phy_rst='1' then
-				sr := (others => '0');
-			elsif rising_edge(sys_sclk) then
-				sr := sr(1 to 4) & lock;
-			end if;
-			uddcntln <= sr(1) xnor sr(3);
-		end process;
-
 		dqsdllb_i : dqsdllb
 		port map (
 			rst => phy_rst,
@@ -326,9 +335,21 @@ begin
 			dqsdel => dqsdel,
 			lock => lock);
 
-		dqsbufd_rst <= not lock;
-	end block;
+		process (sys_sclk)
+			variable sr : std_logic_vector(0 to 4);
+		begin
+			if rising_edge(sys_sclk) then
+				if phy_rst='1' then
+					sr := (others => '0');
+				else
+					sr := sr(1 to 4) & lock;
+				end if;
+				dqsbufd_rst <= not lock;
+			end if;
+			uddcntln <= sr(1) xnor sr(3);
+		end process;
 
+	end block;
 
 	process (sys_sclk)
 		variable aux : std_logic;
@@ -343,7 +364,7 @@ begin
 	end process;
 
 	sys_pll <= wlpha(0);
-	wlreq <= sys_wlreq and not phy_rst;
+	wlreq <= sys_wlreq;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
@@ -354,6 +375,7 @@ begin
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
 			sys_sclk => sys_sclk,
+			sys_sclk2x => sys_sclk2x,
 			sys_eclk => sys_eclk,
 			sys_eclkw => eclksynca_eclk,
 			sys_dqsdel => dqsdel,

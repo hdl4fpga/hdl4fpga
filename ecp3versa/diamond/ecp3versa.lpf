@@ -13,7 +13,6 @@ BANK 6 VCCIO 3.3 V;
 BANK 7 VCCIO 1.5 V;
 
 SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
-
 MAXDELAY NET "ddrphy_e/eclksynca_eclk" 580 ps;
 #MAXDELAY FROM ASIC "ddrphy_e/adjdll_e/eclksynca_i" PIN "eclko" TO CELL "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" 580 ps;
 MAXDELAY NET "ddr_eclk" 0 ns;
@@ -28,61 +27,14 @@ IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
 LOCATE COMP "dcms_e/ddr_b.pll_i"	SITE "PLL_R35C5" ;
 LOCATE COMP "dcms_e/ddr_b.adjdll_e/sr[4]" SITE "R34C4B";
 LOCATE COMP "dcms_e/ddr_b.adjdll_e/seclk_b.ok_i/ffd_i" SITE "R24C5C";
+UGROUP  "ok" BBOX 1 1 BLKNAME "dcms_e/ddr_b.adjdll_e/seclk_b.ok_i";
+LOCATE UGROUP "ok" SITE "R24C5D";
 
 LOCATE COMP "ddrphy_e/eclksynca_i"	SITE "LECLKSYNC2" ;
-//MAXDELAY NET "ddrphy_e/adjdll_e/sr[0]" 620 ps;
-MAXDELAY NET "ddrphy_e/byte_g.*.ddr3phy_i/dqsbufd_rsto" 620 ps;
-MAXDELAY NET "ddrphy_e/byte_g.*.ddr3phy_i/rst" 300 ps;
-
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff0/ffd_i" SITE "R13C3A";
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R13C2A";
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R13C2B";
-LOCATE COMP "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff3/ffd_i" SITE "R13C2C";
-
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff2/ffd_i" SITE "R22C2B";
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff1/ffd_i" SITE "R22C2A";
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff0/ffd_i" SITE "R22C3A";
-LOCATE COMP "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff3/ffd_i" SITE "R22C2C";
-#LOCATE COMP "ddrphy_e/adjdll_e/seclk_b.ok_i/ffd_i" SITE "R34C2C";
-
-//UGROUP "dqsbuf0" BBOX 1 1
-	//BLKNAME "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff0" 
-	//BLKNAME "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff1"
-	//BLKNAME "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff2" 
-	//BLKNAME "ddrphy_e/byte_g.0.ddr3phy_i/dqsbuf_b.ff3";
-//LOCATE UGROUP "dqsbuf0" SITE "R13C2D";
-
-//UGROUP  "dqsbuf1" BBOX 2 1
-	//BLKNAME "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff0" 
-	//BLKNAME "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff1"
-	//BLKNAME "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff2" 
-	//BLKNAME "ddrphy_e/byte_g.1.ddr3phy_i/dqsbuf_b.ff3";
-//LOCATE UGROUP "dqsbuf1" SITE "R22C2D";
-
-UGROUP  "ok" BBOX 1 1 BLKNAME "ddrphy_e/adjdll_e/seclk_b.ok_i";
-LOCATE UGROUP "ok" SITE "R34C2D";
-
-
-
-//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i"    SITE "R33C2A";
-//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i"   SITE "R33C2B";
-//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i"  SITE "R33C3A";
-//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i"  SITE "R33C3B";
-//LOCATE COMP "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i"     SITE "R33C3C";
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ok_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff0_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.er_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff180_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff90_i/ffd_i" 0.0 ns;
-//MAXDELAY FROM CELL "ddrphy_e/adjdll_e/seclk_b.ef_i/ffd_i" TO CELL "ddrphy_e/adjdll_e/phb_b.ff270_i/ffd_i" 0.0 ns;
 BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "ddr_eclk";
 BLOCK PATH FROM CLKNET "ddr_eclk" TO CLKNET "ddr_sclk";
 BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "clk_c";
 BLOCK PATH FROM CLKNET "clk_c" TO CLKNET "ddr_sclk";
- 
-
 
 LOCATE VREF "vref1_ddr3"  SITE "E1";
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
@@ -110,7 +62,6 @@ LOCATE COMP "ddr3_dqs[0]"  SITE "F5" ;
 LOCATE COMP "ddr3_dqs[1]"  SITE "H5" ;
 DEFINE PORT GROUP "ddr3_dqs" "ddr3_dqs[*]";
 IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0  vref=vref1_ddr3;
-
 
 LOCATE COMP "ddr3_a[0]"  SITE "C8";
 LOCATE COMP "ddr3_a[1]"  SITE "C7";

@@ -312,9 +312,7 @@ begin
 		variable led1 : std_logic_vector(led'range);
 		variable led2 : std_logic_vector(led'range);
 	begin
-		if sys_rst='1' then
-			led  <=  not ddrphy_pll;
-		elsif rising_edge(ddr_sclk) then
+		if rising_edge(ddr_sclk) then
 			led  <= led2;
 			led2 := led1;
 			led1 := not ddrphy_pll;

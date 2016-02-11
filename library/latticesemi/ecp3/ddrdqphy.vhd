@@ -33,6 +33,7 @@ entity ddrdqphy is
 	port (
 		dqsbufd_rst : in  std_logic;
 		sys_sclk : in  std_logic;
+		sys_sclk2x : in  std_logic;
 		sys_eclk : in  std_logic;
 		sys_eclkw : in  std_logic;
 		sys_dqsdel : in  std_logic;
@@ -89,7 +90,6 @@ architecture ecp3 of ddrdqphy is
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal wle : std_logic;
 	signal wlrdy : std_logic;
-	signal dqsbufd_rsto : std_logic;
 
 begin
 	rw <= not sys_rw;
@@ -104,45 +104,6 @@ begin
 		req => sys_wlreq,
 		smp => wlok,
 		dly => wlpha);
-
-	dqsbuf_b : block
-		signal q1, q2 : std_logic;
-		signal sys_eclk_n : std_logic;
-		signal sys_eclk_p : std_logic;
-		signal rst : std_logic;
-		signal rst_n : std_logic;
-		signal rsto_n : std_logic;
-
-	begin
-		ff0 : entity hdl4fpga.ff
-		port map (
-			clk => sys_sclk,
-			d  => dqsbufd_rst,
-			q  => rst);
-
-		rst_n <= not rst;
-		sys_eclk_n <= not sys_eclk;
-		sys_eclk_p <= sys_eclk_n;
-		ff1 : entity hdl4fpga.ff
-		port map (
-			clk => sys_eclk_n,
-			d  => rst_n,
-			q  => q1);
-
-		ff2 : entity hdl4fpga.ff
-		port map (
-			clk => sys_eclk_p,
-			d  => q1,
-			q  => q2);
-
-		ff3 : entity hdl4fpga.ff
-		port map (
-			clk => sys_eclk_n,
-			d  => q2,
-			q  => rsto_n);
-	dqsbufd_rsto <= not rsto_n;
-
-	end block;
 
 	dyndelay <= wlpha;
 	dqsbufd_i : dqsbufd 
@@ -160,7 +121,7 @@ begin
 		eclk => sys_eclkw,
 		datavalid => open,
 
-		rst  => dqsbufd_rsto,
+		rst  => dqsbufd_rst,
 		dyndelay0 => dyndelay(0),
 		dyndelay1 => dyndelay(1),
 		dyndelay2 => dyndelay(2),

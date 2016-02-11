@@ -25,7 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
 
 entity dcms is
 	generic (
@@ -50,6 +49,9 @@ end;
 
 library ecp3;
 use ecp3.components.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture ecp3 of dcms is
 
@@ -189,7 +191,20 @@ begin
 			eclk => eclk,
 			pha => pha);
 
-		ddr_rst <= not adjdll_rdy;
+		process(sclk, lock)
+			variable q : std_logic_vector(0 to 3-1);
+		begin
+			if lock='0' then
+				q := (others => '0');
+			elsif rising_edge(sclk) then
+				if adjdll_rdy='1' then
+					if q(0)='0' then
+						q := inc(gray(q));
+					end if;
+				end if;
+			end if;
+			ddr_rst <= not q(0);
+		end process;
 
 
 	end block;

@@ -99,13 +99,13 @@ begin
 	phc <= pha when ssmp=ok else phb;
 	process(req, clk)
 	begin
-		if req='0' then
-			step <= to_unsigned(num_of_steps-1, step'length);
-			pha  <= (others => '0');
-			phb  <= (others => '0');
-			hld  <= ('0', others => '1');
-		elsif rising_edge(clk) then
-			if step(0)='0' then
+		if rising_edge(clk) then
+			if req='0' then
+				step <= to_unsigned(num_of_steps-1, step'length);
+				pha  <= (others => '0');
+				phb  <= (others => '0');
+				hld  <= ('0', others => '1');
+			elsif step(0)='0' then
 				if hld(0)='1' then
 					if ssmp=ok then
 						phb <= pha;

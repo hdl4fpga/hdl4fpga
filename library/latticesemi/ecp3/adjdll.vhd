@@ -57,7 +57,9 @@ begin
 		variable cntr : unsigned(0 to 3);
 	begin
 		if rising_edge(sclk) then
-			if smp_req='0' then
+			if adj_req='0' then
+				cntr := (others => '0');
+			elsif smp_req='0' then
 				cntr := (others => '0');
 			elsif nextdg_rdy='1' then
 				cntr := (others => '0');
@@ -85,17 +87,17 @@ begin
 
 	end block;
 	
-	process(adj_req, sclk)
+	process(sclk)
 		variable dg  : unsigned(0 to pha'length+1);
 		variable aux : unsigned(ph'range);
 	begin
-		if adj_req='0' then
-			ph  <= (others => '0');
-			dg  := (0 => '1', others => '0');
-			smp_req  <= '0';
-			adj_rdy  <= '0';
-		elsif rising_edge(sclk) then
-			if dg(dg'right)='0' then
+		if rising_edge(sclk) then
+			if adj_req='0' then
+				ph  <= (others => '0');
+				dg  := (0 => '1', others => '0');
+				smp_req  <= '0';
+				adj_rdy  <= '0';
+			elsif dg(dg'right)='0' then
 				if nextdg_rdy='1' then
 					aux := ph or dg(0 to aux'length-1);
 						if ok='1' then
@@ -116,14 +118,16 @@ begin
 
 	process (sclk, rst)
 	begin
-		if rst='1' then
-			pha <= (pha'range => '0');
-			rdy <= '0';
-		elsif rising_edge(sclk) then
-			pha <= std_logic_vector(ph);
-			if adj_rdy='1' then
-				pha <= std_logic_vector(ph-1);
-				rdy <= adj_rdy;
+		if rising_edge(sclk) then
+			if rst='1' then
+				pha <= (pha'range => '0');
+				rdy <= '0';
+			else
+				pha <= std_logic_vector(ph);
+				if adj_rdy='1' then
+					pha <= std_logic_vector(ph-1);
+					rdy <= adj_rdy;
+				end if;
 			end if;
 		end if;
 	end process;
