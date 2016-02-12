@@ -68,7 +68,6 @@ entity ddrphy is
 		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		sys_wlpha : out std_logic_vector(8-1 downto 0) := (others => '-');
 		sys_pll : out std_logic_vector(8-1 downto 0);
 
 		ddr_rst : out std_logic;
@@ -244,10 +243,11 @@ architecture ecp3 of ddrphy is
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
+	signal xxx : std_logic;
+	signal yyy : std_logic;
 
 begin
 
-	sys_wlpha <= wlpha(1);
 	ddr3phy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		cmnd_phases => cmnd_phases,
@@ -304,24 +304,25 @@ begin
 		td <= not tq;
 		fft_i : entity hdl4fpga.aff
 		port map(
-			ar => '0',
-			clk => esyncaclk_eclk,
+			ar => eclksynca_stop,
+			clk => eclksynca_eclk,
 			d => td,
 			q => tq);
 
 		ffst_i : entity hdl4fpga.aff
 		port map(
-			ar => '0',
+			ar => eclksynca_stop,
 			clk => sys_sclk,
 			d => tq,
-			q => tq);
+			q => xxx);
 	end block;
 
 	eclksynca_i : eclksynca
 	port map (
 		stop  => eclksynca_stop,
 		eclki => sys_eclk,
-		eclko => eclksynca_eclk);
+		eclko => yyy);
+	eclksynca_eclk <= yyy after (tcp*2)/16 * 1 ps;
 
 	dqsdll_b : block
 		signal lock : std_logic;
@@ -330,7 +331,7 @@ begin
 		dqsdllb_i : dqsdllb
 		port map (
 			rst => phy_rst,
-			clk => sys_eclk,
+			clk => sys_sclk2x,
 			uddcntln => uddcntln,
 			dqsdel => dqsdel,
 			lock => lock);
@@ -346,7 +347,7 @@ begin
 				end if;
 				dqsbufd_rst <= not lock;
 			end if;
-			uddcntln <= sr(1) xnor sr(3);
+			uddcntln <= sr(0) xnor sr(3);
 		end process;
 
 	end block;
@@ -363,7 +364,7 @@ begin
 		end if;
 	end process;
 
-	sys_pll <= wlpha(0);
+	sys_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
 	wlreq <= sys_wlreq;
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate

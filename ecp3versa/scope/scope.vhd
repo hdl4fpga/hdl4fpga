@@ -103,7 +103,6 @@ architecture scope of ecp3versa is
 	signal sys_rst_n : std_logic;
 	signal valid : std_logic;
 
-	signal wlpha : std_logic_vector(8-1 downto 0);
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
 	-- Multiply by --  10     --   8     --   9     --
@@ -267,7 +266,6 @@ begin
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
-		sys_wlpha => wlpha,
 		sys_sti => ddrphy_sti,
 		sys_sto => ddrphy_sto,
 		sys_pll => ddrphy_pll ,

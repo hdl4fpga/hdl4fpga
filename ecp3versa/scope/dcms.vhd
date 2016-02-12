@@ -39,6 +39,7 @@ entity dcms is
 		ddr_sclk2x : out std_logic;
 		ddr_eclk : out std_logic;
 		ddr_sclk : out std_logic;
+		ddr_pha  : out std_logic_vector(4-1 downto 0);
 
 		video_clk0  : out std_logic;
 		video_clk90 : out std_logic;
@@ -60,8 +61,22 @@ architecture ecp3 of dcms is
 	-- Multiply by --   5     --   9     --
 	-- Divide by   --   3     --   2     --
 	---------------------------------------
+	signal pll_rst : std_logic;
 
 begin
+
+	process (sys_rst, sys_clk)
+		variable q : std_logic_vector(0 to 6-1) := (others => '0');
+	begin
+		if sys_rst='1' then
+			q := (others => '0');
+		elsif rising_edge(sys_clk) then
+			if q(0)='0' then
+				q := inc(gray(q));
+			end if;
+		end if;
+		pll_rst <= not q(0);
+	end process;
 
 	video_b : block
 		attribute frequency_pin_clkop : string; 
@@ -91,7 +106,7 @@ begin
 			clki_div  => 4,
 			fin => "100.000000")
 		port map (
-			rst   => sys_rst, 
+			rst   => pll_rst, 
 			rstk  => '0',
 			clki  => sys_clk,
 			wrdel => '0',
@@ -163,7 +178,7 @@ begin
 			FEEDBK_PATH => "INTERNAL",
 			FIN => "100.000000")
 		port map (
-			rst   => sys_rst, 
+			rst   => pll_rst, 
 			rstk  => '0',
 			clki  => sys_clk,
 			drpai3 => drpa(3), drpai2 => drpa(2), drpai1 => drpa(1), drpai0 => drpa(0), 
@@ -190,9 +205,10 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			pha => pha);
+		ddr_pha <= pha;
 
 		process(sclk, lock)
-			variable q : std_logic_vector(0 to 3-1);
+			variable q : std_logic_vector(0 to 6-1) := (others => '0');
 		begin
 			if lock='0' then
 				q := (others => '0');
