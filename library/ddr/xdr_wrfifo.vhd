@@ -142,7 +142,7 @@ architecture struct of xdr_wrfifo is
 	impure function unshuffle (
 		arg : word_vector)
 		return byte_vector is
-		variable aux : byte_vector(0 to word'length/byte'length-1);
+		variable aux : byte_vector(word'length/byte'length-1 downto 0);
 		variable val : byte_vector(xdr_dmo'range);
 	begin
 		for i in arg'range loop

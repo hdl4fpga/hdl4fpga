@@ -49,6 +49,7 @@ architecture def of miitx_dma is
 
 	signal bcntr : unsigned(0 to unsigned_num_bits(word_byte-1));
 	signal sel   : std_logic_vector(1 to bcntr'right);
+	signal txd : std_logic_vector(mii_txd'range);
 begin
 
 	process (mii_txc)
@@ -79,8 +80,8 @@ begin
 		end if;
 	end process;
 
-	mii_txd  <=  reverse (
-		word2byte (
-			word => mii_data ror ((1*mii_txd'length) mod mii_data'length),
-			addr => sel));
+	mii_txd <= word2byte (
+		word => mii_data ror ((1*mii_txd'length) mod mii_data'length),
+		addr => sel);
+	mii_txd  <=  reverse (txd);
 end;

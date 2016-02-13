@@ -52,7 +52,7 @@ architecture mix of iofifo is
 	type byte_vector is array (natural range <>) of byte;
 
 	signal fifo_do : byte_vector(ser_clk'range);
-	signal fifo_di : byte_vector(fifo_do'reverse_range);
+	signal fifo_di : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
 	signal pll_do_win : std_logic;

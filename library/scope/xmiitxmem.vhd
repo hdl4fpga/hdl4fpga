@@ -77,6 +77,7 @@ architecture def of miitxmem is
 	signal rdy : std_logic;
 	signal ena : std_logic;
 	signal dirdy : std_logic;
+	signal txd : std_logic_vector(miitx_dat'range);
 
 begin
 
@@ -204,8 +205,8 @@ begin
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
-	miitx_dat <= reverse (
-		word2byte (
-			word => std_logic_vector(unsigned(rd_data) ror miitx_dat'length),
-			addr => bysel));
+	txd <= word2byte (
+		word => std_logic_vector(unsigned(rd_data) ror miitx_dat'length),
+		addr => not bysel);
+	miitx_dat <= reverse (txd);
 end;
