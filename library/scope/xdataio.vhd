@@ -156,11 +156,11 @@ begin
 	process (ddrs_clk)
 		variable aux : std_logic_vector(8-1 downto 0);
 		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
+		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
 		if rising_edge(ddrs_clk) then
-			ddrs_di <= aux2;
 			if sys_rst='1' then
-				aux2 <= x"07_03_06_02_05_01_04_00";
+				aux2 := x"07_03_06_02_05_01_04_00";
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to 8-1 loop
@@ -168,9 +168,10 @@ begin
 					aux1 := std_logic_vector(unsigned(aux1) srl 8);
 					aux1(aux1'left downto aux1'left-(8-1)) := aux;
 				end loop;
-				aux2 <= aux1;
+				aux2 := aux1;
 			end if;
 		end if;
+			ddrs_di <= aux2;
 	end process;
 
 --	xx_b : process(ddrs_clk)
@@ -261,7 +262,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+2) & 
-				to_signed(15, DDR_CLNMSIZE+1));
+				to_signed(1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

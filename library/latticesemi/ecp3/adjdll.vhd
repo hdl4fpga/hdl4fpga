@@ -72,8 +72,16 @@ begin
 
 	seclk_b : block
 		signal q : std_logic;
+
+		attribute hgroup : string;
+		attribute pbbox  : string;
+
+		attribute pbbox  of phase_ff_0_i : label is "1,1";
+		attribute hgroup of phase_ff_0_i : label is "clk_phase0";
+
 	begin
-		ok_i : entity hdl4fpga.ff
+
+		phase_ff_0_i : entity hdl4fpga.ff
 		port map (
 			clk => sclk,
 			d   => eclk,

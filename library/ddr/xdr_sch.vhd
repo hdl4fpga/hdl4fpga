@@ -70,7 +70,7 @@ entity xdr_sch is
 		xdr_dqs  : out std_logic_vector(0 to gear-1);
 
 		xdr_dqz  : out std_logic_vector(0 to gear-1);
-		xdr_wwn  : out std_logic_vector(0 to data_phases-1));
+		xdr_wwn  : out std_logic_vector(0 to gear-1));
 
 end;
 
@@ -207,7 +207,7 @@ begin
 
 	xdr_wwn <= xdr_task (
 		clk_phases => clk_edges,
-		gear => data_phases,
+		gear => gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,

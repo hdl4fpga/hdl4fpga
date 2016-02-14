@@ -300,16 +300,23 @@ begin
 	dqclk_b : block
 		signal tq : std_logic;
 		signal td : std_logic;
+		attribute hgroup : string;
+		attribute pbbox  : string;
+
+		attribute pbbox of dqclk1bar_ff_i : label is "1,1";
+		attribute pbbox of phase_ff_1_i   : label is "1,1";
+		attribute hgroup of dqclk1bar_ff_i  : label is "clk_phase1a";
+		attribute hgroup of phase_ff_1_i    : label is "clk_phase1b";
 	begin
 		td <= not tq;
-		fft_i : entity hdl4fpga.aff
+		dqclk1bar_ff_i : entity hdl4fpga.aff
 		port map(
 			ar => eclksynca_stop,
 			clk => eclksynca_eclk,
 			d => td,
 			q => tq);
 
-		ffst_i : entity hdl4fpga.aff
+		phase_ff_1_i : entity hdl4fpga.aff
 		port map(
 			ar => eclksynca_stop,
 			clk => sys_sclk,
@@ -331,7 +338,7 @@ begin
 		dqsdllb_i : dqsdllb
 		port map (
 			rst => phy_rst,
-			clk => sys_sclk2x,
+			clk => sys_eclk,
 			uddcntln => uddcntln,
 			dqsdel => dqsdel,
 			lock => lock);

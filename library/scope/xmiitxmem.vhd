@@ -70,6 +70,7 @@ architecture def of miitxmem is
 	signal miitx_addr : std_logic_vector(0 to bram_size-1);
 	signal rd_address : std_logic_vector(0 to bram_size-1);
 	signal rd_data : dword;
+	signal rad : dword;
 	signal bysel : std_logic_vector(1 to unsigned_num_bits(ddrs_di'length/miitx_dat'length-1));
 
 	signal addri_edge : std_logic;
@@ -205,8 +206,9 @@ begin
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
+	rad <= std_logic_vector(unsigned(rd_data) rol miitx_dat'length);
 	txd <= word2byte (
-		word => std_logic_vector(unsigned(rd_data) ror miitx_dat'length),
+		word => rad,
 		addr => not bysel);
 	miitx_dat <= reverse (txd);
 end;
