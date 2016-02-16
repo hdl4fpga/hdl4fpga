@@ -323,13 +323,6 @@ begin
 		dqsbufd_rst => dqsbufd_rst);
 	eclksynca_stop <= not eclksynca_start;
 
-	process (eclk)
-	begin
-		if falling_edge(eclk) then
-			dqsbufd_rst <=
-		end if;
-	end process;
-
 	dqclk_b : block
 		signal tq : std_logic;
 		signal td : std_logic;
