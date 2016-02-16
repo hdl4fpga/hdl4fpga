@@ -240,11 +240,18 @@ architecture ecp3 of ddrphy is
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal wlreq : std_logic;
 	signal dqsbufd_arst : std_logic;
+	signal clk_start : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
 	signal xxx : std_logic;
 	signal yyy : std_logic;
+
+	attribute hgroup : string;
+	attribute pbbox  : string;
+
+	attribute hgroup of clk_start_i : label is "clk_stop";
+	attribute pbbox  of clk_start_i : label is "3,2";
 
 begin
 
@@ -286,27 +293,24 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	process (phy_rst, sys_eclk)
-		variable q : std_logic_vector(0 to 1);
-	begin
-		if phy_rst='1' then
-			q := (others => '1');
-		elsif falling_edge(sys_eclk) then
-			q := q(1 to q'right) & '0';
-		end if;
-		eclksynca_stop <= q(0);
-	end process;
+	clk_start_i : entity hdl4fpga.clk_start
+	port map (
+		rst  => phy_rst,
+		sclk => sys_sclk,
+		eclk => sys_eclk,
+		req  => '1',
+		rdy  => clk_start);
+	eclksynca_stop <= not clk_start;
 
 	dqclk_b : block
 		signal tq : std_logic;
 		signal td : std_logic;
-		attribute hgroup : string;
-		attribute pbbox  : string;
 
-		attribute pbbox of dqclk1bar_ff_i : label is "1,1";
-		attribute pbbox of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i  : label is "clk_phase1a";
-		attribute hgroup of phase_ff_1_i    : label is "clk_phase1b";
+		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
+		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
+		attribute pbbox  of phase_ff_1_i   : label is "1,1";
+		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
+
 	begin
 		td <= not tq;
 		dqclk1bar_ff_i : entity hdl4fpga.aff

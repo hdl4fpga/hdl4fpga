@@ -16,7 +16,7 @@ SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE
 MAXDELAY NET "ddrphy_e/eclksynca_eclk" 580 ps;
 MAXDELAY NET "ddr_eclk" 0 ns;
 MAXDELAY NET "ddrphy_e/byte_g*.ddr3phy_i/dqsw" 0 ns;
-USE EDGE NET "ddrphy_e/synceclk";
+USE EDGE NET "ddrphy_e/yyy";
 LOCATE COMP "clk"  SITE "L5";
 IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
 
@@ -24,7 +24,6 @@ LOCATE COMP "fpga_gsrn"  SITE "A21";
 IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
 
 LOCATE COMP "dcms_e/ddr_b.pll_i"	SITE "PLL_R35C5" ;
-#LOCATE COMP "dcms_e/ddr_b.adjdll_e/seclk_b.ok_i/ffd_i" SITE "R24C5C";
 
 LOCATE COMP "ddrphy_e/eclksynca_i"	SITE "LECLKSYNC2" ;
 LOCATE COMP "ddrphy_e/sr[4]" SITE "R34C4B";
@@ -32,8 +31,7 @@ LOCATE COMP "ddrphy_e/sr[4]" SITE "R34C4B";
 LOCATE PGROUP "dcms_e/ddr_b.adjdll_e/seclk_b.phase_ff_0_i/clk_phase0"  SITE "R24C5D";
 LOCATE PGROUP "ddrphy_e/dqclk_b.dqclk1bar_ff_i/clk_phase1a"            SITE "R34C2D";
 LOCATE PGROUP "ddrphy_e/dqclk_b.phase_ff_1_i/clk_phase1b"              SITE "R34C2D";
-LOCATE PGROUP "clk_stop"    SITE "R34C2D";
-#LOCATE PGROUP "rst_dp_out"  SITE "R60C4D";
+LOCATE PGROUP "ddrphy_e/clk_start_i/clk_stop"    SITE "R34C2D";
 
 BLOCK PATH FROM CLKNET "ddr_sclk" TO CLKNET "ddr_eclk";
 BLOCK PATH FROM CLKNET "ddr_sclk2x" TO CLKNET "ddr_sclk";
