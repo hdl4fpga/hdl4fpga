@@ -240,7 +240,8 @@ architecture ecp3 of ddrphy is
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal wlreq : std_logic;
 	signal dqsbufd_arst : std_logic;
-	signal clk_start : std_logic;
+	signal clkstart_rdy : std_logic;
+	signal clkstart_rst : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
 	signal wlpha : wlword_vector(word_size/byte_size-1 downto 0);
@@ -293,48 +294,6 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	clk_start_i : entity hdl4fpga.clk_start
-	port map (
-		rst  => phy_rst,
-		sclk => sys_sclk,
-		eclk => sys_eclk,
-		req  => '1',
-		rdy  => clk_start);
-	eclksynca_stop <= not clk_start;
-
-	dqclk_b : block
-		signal tq : std_logic;
-		signal td : std_logic;
-
-		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-	begin
-		td <= not tq;
-		dqclk1bar_ff_i : entity hdl4fpga.aff
-		port map(
-			ar => eclksynca_stop,
-			clk => eclksynca_eclk,
-			d => td,
-			q => tq);
-
-		phase_ff_1_i : entity hdl4fpga.aff
-		port map(
-			ar => eclksynca_stop,
-			clk => sys_sclk,
-			d => tq,
-			q => xxx);
-	end block;
-
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclksynca_stop,
-		eclki => sys_eclk,
-		eclko => yyy);
-	eclksynca_eclk <= yyy after (tcp*2)/16 * 1 ps;
-
 	dqsdll_b : block
 		signal lock : std_logic;
 		signal uddcntln : std_logic;
@@ -362,6 +321,48 @@ begin
 		end process;
 
 	end block;
+
+	clkstart_rst <= phy_rst;
+	clk_start_i : entity hdl4fpga.clk_start
+	port map (
+		rst  => clkstart_rst,
+		sclk => sys_sclk,
+		eclk => sys_eclk,
+		req  => '1',
+		rdy  => clkstart_rdy);
+	eclksynca_stop <= not clkstart_rdy;
+
+	dqclk_b : block
+		signal tq : std_logic;
+		signal td : std_logic;
+
+		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
+		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
+		attribute pbbox  of phase_ff_1_i   : label is "1,1";
+		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
+
+	begin
+		td <= not tq;
+		dqclk1bar_ff_i : entity hdl4fpga.aff
+		port map(
+			ar => eclksynca_stop,
+			clk => eclksynca_eclk,
+			d => td,
+			q => tq);
+
+		phase_ff_1_i : entity hdl4fpga.ff
+		port map(
+			clk => sys_sclk,
+			d => tq,
+			q => xxx);
+	end block;
+
+	eclksynca_i : eclksynca
+	port map (
+		stop  => eclksynca_stop,
+		eclki => sys_eclk,
+		eclko => yyy);
+	eclksynca_eclk <= yyy after (tcp*2)/16 * 1 ps;
 
 	process (sys_sclk)
 		variable aux : std_logic;
