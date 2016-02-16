@@ -221,26 +221,16 @@ architecture ecp3 of ddrphy is
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal adjdll_stop : std_logic;
-	signal adjdll_rst  : std_logic;
-	signal adjdll_rdy  : std_logic;
-	signal dqsdll_rst : std_logic;
 	signal dqsdll_lock : std_logic;
-	signal dqsdll_uddcntln : std_logic;
-	signal dqsdll_uddcntln_rdy : std_logic;
-	signal dqrst : std_logic;
-	signal eclk_stop : std_logic;
+	signal eclksynca_start : std_logic;
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_eclk : std_logic;
-	signal eclksynca_rst_n : std_logic;
 
 	signal dqsbufd_rst : std_logic;
 
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal wlreq : std_logic;
-	signal dqsbufd_arst : std_logic;
-	signal clkstart_rdy : std_logic;
 	signal clkstart_rst : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
@@ -315,7 +305,7 @@ begin
 				else
 					sr := sr(1 to 4) & lock;
 				end if;
-				dqsbufd_rst <= not lock;
+				dqsdll_lock <= not lock;
 			end if;
 			uddcntln <= sr(0) xnor sr(3);
 		end process;
@@ -329,8 +319,16 @@ begin
 		sclk => sys_sclk,
 		eclk => sys_eclk,
 		req  => '1',
-		rdy  => clkstart_rdy);
-	eclksynca_stop <= not clkstart_rdy;
+		eclksynca_start => eclksynca_start,
+		dqsbufd_rst => dqsbufd_rst);
+	eclksynca_stop <= not eclksynca_start;
+
+	process (eclk)
+	begin
+		if falling_edge(eclk) then
+			dqsbufd_rst <=
+		end if;
+	end process;
 
 	dqclk_b : block
 		signal tq : std_logic;
