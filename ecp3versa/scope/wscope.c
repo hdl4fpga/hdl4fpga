@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
 		}
 
 		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++)
-			printf("0x%016llx\n", htonll(sb_src[j]i));
+			printf("0x%016llx\n", sb_src[j]);
 						        
 
 

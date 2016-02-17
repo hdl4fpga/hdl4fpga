@@ -161,6 +161,7 @@ begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 				aux2 := x"07_03_06_02_05_01_04_00";
+--				aux2 := x"a5_5a_5a_a5_a5_01_04_00";
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to 8-1 loop

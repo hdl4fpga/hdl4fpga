@@ -221,7 +221,8 @@ architecture ecp3 of ddrphy is
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal dqsdll_lock : std_logic;
+	signal dqsdllb_lock : std_logic;
+	signal dqsdllb_dqsdel : std_logic;
 	signal eclksynca_start : std_logic;
 	signal eclksynca_stop : std_logic;
 	signal eclksynca_eclk : std_logic;
@@ -287,15 +288,18 @@ begin
 	dqsdll_b : block
 		signal lock : std_logic;
 		signal uddcntln : std_logic;
+		signal rst : std_logic;
 	begin
+		rst <= phy_rst; 
 		dqsdllb_i : dqsdllb
 		port map (
-			rst => phy_rst,
-			clk => sys_eclk,
+			rst => rst,
+			clk => sys_sclk2x,
 			uddcntln => uddcntln,
 			dqsdel => dqsdel,
 			lock => lock);
 
+		dqsdllb_dqsdel <= dqsdel;
 		process (sys_sclk)
 			variable sr : std_logic_vector(0 to 4);
 		begin
@@ -305,14 +309,14 @@ begin
 				else
 					sr := sr(1 to 4) & lock;
 				end if;
-				dqsdll_lock <= not lock;
+				dqsdllb_lock <= lock;
 			end if;
 			uddcntln <= sr(0) xnor sr(3);
 		end process;
 
 	end block;
 
-	clkstart_rst <= phy_rst;
+	clkstart_rst <= not dqsdllb_lock;
 	clk_start_i : entity hdl4fpga.clk_start
 	port map (
 		rst  => clkstart_rst,
@@ -336,7 +340,7 @@ begin
 		td <= not tq;
 		dqclk1bar_ff_i : entity hdl4fpga.aff
 		port map(
-			ar => eclksynca_stop,
+			ar => dqsbufd_rst,
 			clk => eclksynca_eclk,
 			d => td,
 			q => tq);
@@ -382,7 +386,7 @@ begin
 			sys_sclk2x => sys_sclk2x,
 			sys_eclk => sys_eclk,
 			sys_eclkw => eclksynca_eclk,
-			sys_dqsdel => dqsdel,
+			sys_dqsdel => dqsdllb_dqsdel,
 			sys_rw => sys_sto(i*gear+0),
 			sys_wlreq => wlreq,
 			sys_wlrdy => wlrdy(i),

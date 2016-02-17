@@ -28,9 +28,14 @@ add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/wrfif
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/ram_g(8)/ram_i/VitalBehavior/rindex
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/we
 add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/ram_g(8)/ram_i/wre
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/eclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/eclkw
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/dqsdel
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/rst
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {15065944 ps} 0} {{Cursor 2} {1146000 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {15085500 ps} 0} {{Cursor 2} {15111000 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 129
 configure wave -valuecolwidth 92
 configure wave -justifyvalue left
@@ -45,4 +50,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {15000464 ps} {15131536 ps}
+WaveRestoreZoom {15080032 ps} {15141968 ps}
