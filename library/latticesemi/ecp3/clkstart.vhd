@@ -30,21 +30,33 @@ entity clk_start is
 		rst  : in  std_logic;
 		sclk : in  std_logic;
 		eclk : in  std_logic;
-		req  : in  std_logic;
+		wlrdy  : in  std_logic;
 		eclksynca_start : out std_logic;
 		dqsbufd_rst : out std_logic);
 end;
 
 architecture ecp3 of clk_start is
 	signal xxx : std_logic;
+	signal drst : std_logic;
 begin
 
 	process (rst, sclk)
+		variable q : std_logic;
 	begin
 		if rst='1' then
 			xxx <= '0';
+			q := '1';
 		elsif rising_edge(sclk) then
-			xxx <= req;
+			if wlrdy='1' then
+				if q='0' then
+					xxx <= '0';
+				elsif drst='1' then
+					xxx <= '1';
+				end if;
+			elsif drst='1' then
+				xxx <= '1';
+			end if;
+			q := wlrdy;
 		end if;
 	end process;
 
@@ -56,8 +68,9 @@ begin
 		elsif falling_edge(eclk) then
 			q := q(1 to q'right) & xxx;
 		end if;
-		eclksynca_start <= q(1);
-		dqsbufd_rst <= not q(0);
+		eclksynca_start <= q(0);
+		drst <= not q(1);
 	end process;
+	dqsbufd_rst <= drst;
 
 end;

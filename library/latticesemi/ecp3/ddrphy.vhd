@@ -232,6 +232,7 @@ architecture ecp3 of ddrphy is
 	signal wlnxt : std_logic;
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
 	signal wlreq : std_logic;
+	signal wlr : std_logic;
 	signal clkstart_rst : std_logic;
 
 	type wlword_vector is array (natural range <>) of std_logic_vector(8-1 downto 0);
@@ -322,14 +323,14 @@ begin
 		rst  => clkstart_rst,
 		sclk => sys_sclk,
 		eclk => sys_eclk,
-		req  => '1',
+		wlrdy  => wlr,
 		eclksynca_start => eclksynca_start,
 		dqsbufd_rst => dqsbufd_rst);
 	eclksynca_stop <= not eclksynca_start;
 
 	dqclk_b : block
-		signal tq : std_logic;
-		signal td : std_logic;
+		signal dqclk1bar_ff_q : std_logic;
+		signal dqclk1bar_ff_d : std_logic;
 
 		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
 		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
@@ -337,18 +338,18 @@ begin
 		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
 
 	begin
-		td <= not tq;
+		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
 		dqclk1bar_ff_i : entity hdl4fpga.aff
 		port map(
 			ar => dqsbufd_rst,
-			clk => eclksynca_eclk,
-			d => td,
-			q => tq);
+			clk => yyy,
+			d => dqclk1bar_ff_d,
+			q => dqclk1bar_ff_q);
 
 		phase_ff_1_i : entity hdl4fpga.ff
 		port map(
 			clk => sys_sclk,
-			d => tq,
+			d => dqclk1bar_ff_q,
 			q => xxx);
 	end block;
 
@@ -356,8 +357,8 @@ begin
 	port map (
 		stop  => eclksynca_stop,
 		eclki => sys_eclk,
-		eclko => yyy);
-	eclksynca_eclk <= yyy after (tcp*2)/16 * 1 ps;
+		eclko => eclksynca_eclk);
+	yyy <= eclksynca_eclk after (tcp*2)/16 * 1 ps;
 
 	process (sys_sclk)
 		variable aux : std_logic;
@@ -367,9 +368,10 @@ begin
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
-			sys_wlrdy <= aux;
+			wlr<= aux;
 		end if;
 	end process;
+	sys_wlrdy <= wlr;
 
 	sys_pll <= wlpha(0)(7 downto 7) & xxx & wlpha(0)(5 downto 0);
 	wlreq <= sys_wlreq;
@@ -385,7 +387,7 @@ begin
 			sys_sclk => sys_sclk,
 			sys_sclk2x => sys_sclk2x,
 			sys_eclk => sys_eclk,
-			sys_eclkw => eclksynca_eclk,
+			sys_eclkw => yyy,
 			sys_dqsdel => dqsdllb_dqsdel,
 			sys_rw => sys_sto(i*gear+0),
 			sys_wlreq => wlreq,

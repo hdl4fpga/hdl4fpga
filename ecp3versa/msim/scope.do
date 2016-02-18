@@ -16,26 +16,18 @@ add wave -noupdate -radix hexadecimal /testbench/ba
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate -expand /testbench/dqs_p
-add wave -noupdate -divider wr_fifo
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/sys_req
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/sys_clk
-add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/sys_dqi
-add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_dqo
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_enas
-add wave -noupdate -divider fifo
-add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/apll_q
-add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/aser_q
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/ram_g(8)/ram_i/VitalBehavior/rindex
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/we
-add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(0)/outbyte_i/phases_g(0)/ram_b/ram_g(8)/ram_i/wre
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/sclk
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/eclk
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/eclkw
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/dqsdel
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKO
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKI
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/STOP
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/rst
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/dqclk1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/dqclk_b/dqclk1bar_ff_q
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/dqsbufd_i/eclkwb_int1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/dqclk_b/phase_ff_1_i/q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {15085500 ps} 0} {{Cursor 2} {15111000 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {14510693 ps} 0} {{Cursor 2} {15111000 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 129
 configure wave -valuecolwidth 92
 configure wave -justifyvalue left
@@ -50,4 +42,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {15080032 ps} {15141968 ps}
+WaveRestoreZoom {14485874 ps} {14617126 ps}

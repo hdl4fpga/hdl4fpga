@@ -176,12 +176,12 @@ begin
 			qb1 => sys_dmo(3));
 	end block;
 
+	process (sys_sclk)
+	begin
+		if rising_edge(sys_sclk) then
 			wle <= not wlrdy and sys_wlreq;
---	process (sys_sclk)
---	begin
---		if rising_edge(sys_sclk) then
---		end if;
---	end process;
+		end if;
+	end process;
 	dqt <= sys_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;

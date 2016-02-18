@@ -38,12 +38,16 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix he
 add wave -noupdate -expand /testbench/dqs_p
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/q
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/sclk
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/dqsw
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/sclk
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/ta
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/db
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/QB1
+add wave -noupdate /testbench/ecp3versa_e/dcms_e_ddr_b_pll_iI/DRPAI0
+add wave -noupdate /testbench/ecp3versa_e/dcms_e_ddr_b_pll_iI/DRPAI1
+add wave -noupdate /testbench/ecp3versa_e/dcms_e_ddr_b_pll_iI/DRPAI2
+add wave -noupdate /testbench/ecp3versa_e/dcms_e_ddr_b_pll_iI/DRPAI3
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/dqstclk
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/QT1
@@ -91,7 +95,6 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_tq
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_dqclk_b_dqclk1bar_ff_i_tq_i
-add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_clk_start_i_clkstart_rdy
 add wave -noupdate -color Magenta /testbench/ecp3versa_e/ddrphy_e_dqclk_b_phase_ff_1_i_ddrphy_pll_6
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_ODDRDQS/INST1/dqsw
 add wave -noupdate /testbench/ecp3versa_e/ddr_sclk2x
@@ -13035,9 +13038,9 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk1
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/dqclk0
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {14487443 ps} 0} {{Cursor 2} {15076670 ps} 0} {{Cursor 3} {2118924 ps} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 296
+WaveRestoreCursors {{Cursor 1} {14487443 ps} 0} {{Cursor 2} {15111233 ps} 0} {{Cursor 3} {9584 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 150
 configure wave -valuecolwidth 69
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -13051,4 +13054,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {2090726 ps} {2156352 ps}
+WaveRestoreZoom {15107549 ps} {15138517 ps}
