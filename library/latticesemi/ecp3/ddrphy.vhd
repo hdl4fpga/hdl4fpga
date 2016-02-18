@@ -302,6 +302,7 @@ begin
 
 		dqsdllb_dqsdel <= dqsdel;
 		process (sys_sclk)
+			variable sr : std_logic_vector(0 to 4);
 		begin
 			if rising_edge(sys_sclk) then
 				if phy_rst='1' then
