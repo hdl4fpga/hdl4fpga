@@ -132,12 +132,12 @@ begin
 
 		attribute frequency_pin_clki  of pll_i : label is "100.000000";
 
-		attribute frequency_pin_clkop of pll_i : label is "400.000000";
-		attribute frequency_pin_clkos of pll_i : label is "400.000000";
-		attribute frequency_pin_clkok of pll_i : label is "200.000000";
---		attribute frequency_pin_clkop of pll_i : label is "500.000000";
---		attribute frequency_pin_clkos of pll_i : label is "500.000000";
---		attribute frequency_pin_clkok of pll_i : label is "250.000000";
+--		attribute frequency_pin_clkop of pll_i : label is "400.000000";
+--		attribute frequency_pin_clkos of pll_i : label is "400.000000";
+--		attribute frequency_pin_clkok of pll_i : label is "200.000000";
+		attribute frequency_pin_clkop of pll_i : label is "500.000000";
+		attribute frequency_pin_clkos of pll_i : label is "500.000000";
+		attribute frequency_pin_clkok of pll_i : label is "250.000000";
 
 --		attribute frequency_pin_clki  of pll_i : label is to_string(1000/natural(sys_per));
 --		attribute frequency_pin_clkop of pll_i : label is to_string(ddr_mul*1000/(natural(sys_per)*ddr_fbdiv));

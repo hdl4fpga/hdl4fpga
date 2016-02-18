@@ -109,8 +109,8 @@ architecture scope of ecp3versa is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 4; --5;
-	constant ddr_div   : natural := 2; --2;
+	constant ddr_mul   : natural := 5;
+	constant ddr_div   : natural := 2;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
