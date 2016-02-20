@@ -30,7 +30,6 @@ entity clk_start is
 		rst  : in  std_logic;
 		sclk : in  std_logic;
 		eclk : in  std_logic;
-		wlrdy  : in  std_logic;
 		eclksynca_start : out std_logic;
 		dqsbufd_rst : out std_logic);
 end;
@@ -45,18 +44,10 @@ begin
 	begin
 		if rst='1' then
 			xxx <= '0';
-			q := '1';
 		elsif rising_edge(sclk) then
-			if wlrdy='1' then
-				if q='0' then
-					xxx <= '0';
-				elsif drst='1' then
-					xxx <= '1';
-				end if;
-			elsif drst='1' then
+			if drst='1' then
 				xxx <= '1';
 			end if;
-			q := wlrdy;
 		end if;
 	end process;
 

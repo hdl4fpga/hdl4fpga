@@ -306,15 +306,16 @@ begin
 		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy1_gtxclk);
 
-	process (ddr_sclk, sys_rst)
-		variable led1 : std_logic_vector(led'range);
-		variable led2 : std_logic_vector(led'range);
-	begin
-		if rising_edge(ddr_sclk) then
-			led  <= led2;
-			led2 := led1;
-			led1 := not ddrphy_pll;
-		end if;
-	end process;
+	led <= '1' & not ddrphy_pll(6) & (1 to 6 => '1');
+--	process (ddr_sclk, sys_rst)
+--		variable led1 : std_logic_vector(led'range);
+--		variable led2 : std_logic_vector(led'range);
+--	begin
+--		if rising_edge(ddr_sclk) then
+--			led  <= led2;
+--			led2 := led1;
+--			led1 := not ddrphy_pll;
+--		end if;
+--	end process;
 
 end;
