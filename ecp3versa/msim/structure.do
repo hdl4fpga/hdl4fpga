@@ -39,6 +39,11 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix he
 add wave -noupdate -expand /testbench/dqs_p
 add wave -noupdate /testbench/ecp3versa_e/ddr3_dqs_0_MGIOLI/ddr3_dqs_0_MGIOL_TSDQS/INST1/q
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dq_0_MGIOLI/ddr3_dq_0_MGIOL_TSREG2/DQCLK0
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dq_0_MGIOLI/ddr3_dq_0_MGIOL_TSREG2/DQCLK1
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dq_0_MGIOLI/ddr3_dq_0_MGIOL_TSREG2/Q
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dq_0_MGIOLI/ddr3_dq_0_MGIOL_TSREG2/SCLK
+add wave -noupdate /testbench/ecp3versa_e/ddr3_dq_0_MGIOLI/ddr3_dq_0_MGIOL_TSREG2/TS
 add wave -noupdate -color Coral /testbench/ecp3versa_e/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_1_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/sclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_eclksynca_eclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_iI/ddrphy_e_byte_g_0_ddr3phy_i_dqsbufd_i_DQSBUFD/INST10/eclkwb_int1

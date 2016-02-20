@@ -52,7 +52,7 @@ begin
 	end process;
 
 	process (rst, eclk)
-		variable q : std_logic_vector(0 to 3-1);
+		variable q : std_logic_vector(0 to 4-1);
 	begin
 		if rst='1' then
 			q := (others => '0');

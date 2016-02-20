@@ -108,7 +108,7 @@ begin
 			elsif dg(dg'right)='0' then
 				if nextdg_rdy='1' then
 					aux := ph or dg(0 to aux'length-1);
-						if ok='1' then
+						if ok='0' then
 						aux := aux and not dg(1 to aux'length);
 					end if;
 					ph <= aux;
@@ -133,7 +133,7 @@ begin
 			else
 				pha <= std_logic_vector(ph);
 				if adj_rdy='1' then
-					pha <= std_logic_vector(ph-1);
+					pha <= std_logic_vector(ph+1);
 					rdy <= adj_rdy;
 				end if;
 			end if;
