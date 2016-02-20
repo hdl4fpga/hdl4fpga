@@ -11,9 +11,6 @@
         <Source name="../scope/scope.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-        <Source name="../../library/scope/ddr2miitx.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/scope/ddr2video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
