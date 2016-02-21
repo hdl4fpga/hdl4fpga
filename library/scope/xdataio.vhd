@@ -128,80 +128,57 @@ begin
 		output_req => ddrs_di_rdy,
 --		output_dat => ddrs_di
 		output_dat => output_dat);
---	datai_brst_req <= '1';
 
 --	process (ddrs_clk)
---		constant n : natural := 3;
---		variable aux : std_logic_vector(2**n-1 downto 0);
+--		variable aux : std_logic_vector(8-1 downto 0);
 --		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
+--		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 --	begin
 --		if rising_edge(ddrs_clk) then
---			ddrs_di <= aux2;
-----			if sys_rst='1' then
---			if ddrs_di_rdy='0' then
---				aux2 <= x"a55a_5aa5";
+--			if sys_rst='1' then
+--				aux2 := x"07_03_06_02_05_01_04_00";
 --			elsif ddrs_di_rdy='1' then
 --				aux1 := aux2;
---				for i in 0 to aux1'length/(2**n)-1 loop
---					aux  := std_logic_vector(unsigned(aux1(aux'range))+ddrs_di'length/2**n);
---					aux1 := std_logic_vector(unsigned(aux1) srl (2**n));
---					aux1(aux1'left downto aux1'left-(2**n-1)) := aux;
+--				for i in 0 to 8-1 loop
+--					aux  := std_logic_vector(unsigned(aux1(8-1 downto 0))+8);
+--					aux1 := std_logic_vector(unsigned(aux1) srl 8);
+--					aux1(aux1'left downto aux1'left-(8-1)) := aux;
 --				end loop;
---				aux2 <= aux1;
+--				aux2 := aux1;
 --			end if;
 --		end if;
+--		ddrs_di <= aux2;
 --	end process;
 
---			ddrs_di <= x"07_06_05_04_03_02_01_00";
-	process (ddrs_clk)
-		variable aux : std_logic_vector(8-1 downto 0);
+	xx_b : process(ddrs_clk)
+		variable aux : std_logic;
+		variable aux1 : std_logic;
+		constant n : natural := 16;
+		constant g : std_logic_vector(n downto 1) :=
+		B"0011_1000";
+--		B"0010_0010_1000_0000_0000_0000_0000_0000";
+		variable s : std_logic_vector(g'range);
 		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
 		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
-				aux2 := x"07_03_06_02_05_01_04_00";
---				aux2 := x"a5_5a_5a_a5_a5_01_04_00";
+				s  := (others => '1');
+--				aux2 := x"07_03_06_02_05_01_04_00";
 			elsif ddrs_di_rdy='1' then
-				aux1 := aux2;
-				for i in 0 to 8-1 loop
-					aux  := std_logic_vector(unsigned(aux1(8-1 downto 0))+8);
-					aux1 := std_logic_vector(unsigned(aux1) srl 8);
-					aux1(aux1'left downto aux1'left-(8-1)) := aux;
+				aux1 := s(1);
+				for i in g'range loop
+					aux  := s(i);
+					s(i) := aux1 xor (s(s'right) and g(i));
+					aux1 := aux;
+--					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
 				end loop;
-				aux2 := aux1;
 			end if;
+			aux2 := s & not s & not s & s &
+					s & not s & not s & s;
 		end if;
-			ddrs_di <= aux2;
+		ddrs_di <= aux2;
 	end process;
-
---	xx_b : process(ddrs_clk)
---		variable aux : std_logic;
---		variable aux1 : std_logic;
---		constant n : natural := 8;
---		constant g : std_logic_vector(n downto 1) :=
---		B"0011_1000";
-----		B"0010_0010_1000_0000_0000_0000_0000_0000";
---		variable s : std_logic_vector(g'range);
---	begin
---		if rising_edge(ddrs_clk) then
---			if sys_rst='1' then
---				s  := (others => '1');
---			elsif ddrs_di_rdy='1' then
---				aux1 := s(1);
---				for i in g'range loop
---					aux  := s(i);
---					s(i) := aux1 xor (s(s'right) and g(i));
---					aux1 := aux;
-----					s(i) := s((i mod g'length)+1) xor (s(s'right) and g(i));
---				end loop;
---			end if;
---			aux2 <= --s & not s & not s & s &
---					s & not s & not s & s;
-----			aux2 <= not s(32 downto 25) & s(24 downto 17) & s(32 downto 25) & not s(24 downto 17) &
-----			        not s(16 downto  9) & s( 8 downto  1) & s(16 downto  9) & not s( 8 downto  1);
---		end if;
---	end process;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
