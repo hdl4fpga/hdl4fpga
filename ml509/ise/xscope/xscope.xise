@@ -361,8 +361,8 @@
     <property xil_pn:name="JTAG Pin TMS" xil_pn:value="Pull Up" xil_pn:valueState="default"/>
     <property xil_pn:name="JTAG to System Monitor Connection" xil_pn:value="Enable" xil_pn:valueState="default"/>
     <property xil_pn:name="Keep Hierarchy" xil_pn:value="Soft" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="LUT Combining Map" xil_pn:value="Off" xil_pn:valueState="default"/>
-    <property xil_pn:name="LUT Combining Xst" xil_pn:value="No" xil_pn:valueState="default"/>
+    <property xil_pn:name="LUT Combining Map" xil_pn:value="Auto" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="LUT Combining Xst" xil_pn:value="Auto" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Language" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Last Applied Goal" xil_pn:value="Balanced" xil_pn:valueState="default"/>
     <property xil_pn:name="Last Applied Strategy" xil_pn:value="Xilinx Default (unlocked)" xil_pn:valueState="default"/>
@@ -394,7 +394,7 @@
     <property xil_pn:name="Number of Paths in Error/Verbose Report Post Trace" xil_pn:value="16" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Optimization Effort" xil_pn:value="High" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Optimization Goal" xil_pn:value="Speed" xil_pn:valueState="default"/>
-    <property xil_pn:name="Optimization Strategy (Cover Mode)" xil_pn:value="Speed" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Optimization Strategy (Cover Mode)" xil_pn:value="Balanced" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Optimize Instantiated Primitives" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Bitgen Command Line Options" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Other Compxlib Command Line Options" xil_pn:value="" xil_pn:valueState="default"/>
@@ -442,7 +442,7 @@
     <property xil_pn:name="ROM Extraction" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="ROM Style" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="Read Cores" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Reduce Control Sets" xil_pn:value="No" xil_pn:valueState="default"/>
+    <property xil_pn:name="Reduce Control Sets" xil_pn:value="Auto" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Regenerate Core" xil_pn:value="Under Current Project Setting" xil_pn:valueState="default"/>
     <property xil_pn:name="Register Balancing" xil_pn:value="No" xil_pn:valueState="default"/>
     <property xil_pn:name="Register Duplication Map" xil_pn:value="On" xil_pn:valueState="non-default"/>
