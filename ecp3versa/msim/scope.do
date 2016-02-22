@@ -16,6 +16,16 @@ add wave -noupdate -radix hexadecimal /testbench/ba
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate -expand /testbench/dqs_p
+add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_dqo
+add wave -noupdate /testbench/ecp3versa_e/scope_e/ddr_e/sys_di_rdy
+add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/ddr_e/sys_di
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/sclk
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/dqclk1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/dqclk0
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/ta
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/QB
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/QT1
+add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/byte_g(0)/ddr3phy_i/oddr_g(0)/oddrtdqa_i/q
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKO
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/ECLKI
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/eclksynca_i/STOP
@@ -32,7 +42,7 @@ add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/sys_sclk
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/sys_sclk2x
 add wave -noupdate /testbench/ecp3versa_e/ddrphy_e/sys_eclk
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2074500 ps} 0} {{Cursor 2} {2165812 ps} 0}
+WaveRestoreCursors {{Cursor 1} {2074500 ps} 0} {{Cursor 2} {17323469 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 129
 configure wave -valuecolwidth 92
@@ -48,4 +58,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {2034562 ps} {2297062 ps}
+WaveRestoreZoom {17310396 ps} {17368199 ps}
