@@ -1,115 +1,65 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <netdb.h>
 #include <math.h>
 
-#define PORT	1024
+#define htonll(x) \
+	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000000000ff0000ULL) << 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00000000ff000000ULL) <<  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000ff00000000ULL) >>  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000ff0000000000ULL) >> 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00ff000000000000ULL) >> 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0xff00000000000000ULL) >> 56))
 
 typedef unsigned int lfsr_t;
 
 main (int argc, char *argv[])
 {
-	struct hostent *hostname;
-	struct sockaddr_in sa_host;
-	struct sockaddr_in sa_src;
-	struct sockaddr_in sa_trgt;
-
-	int s;
-	unsigned long long sb_src[1024/8];
-	char sb_trgt[17];
-	socklen_t sl_src  = sizeof(sa_src);
-	socklen_t sl_trgt = sizeof(sa_trgt);
-
-	int i, j, n;
-	int npkt;
-	int size;
 	lfsr_t lfsr = 0;
+	long long unsigned int datum;
+	int i;
+	int size;
 
-	if (!(argc > 2)) {
+	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
 		abort();
 	}
+	sscanf(argv[1],"%d", &size);
 
-	sscanf (argv[1], "%d", &size);
-	sscanf (argv[2], "%d", &npkt);
+	for(i = 0; scanf("%llx", &datum) > 0; i++) {
+		lfsr_t p = (size!=32) ? 0x38 : 0x22800000;
+		unsigned long long check;
+		int k;
 
+		if (!lfsr) lfsr = 
+			(size!=32) 
+				? (0xff & htobe64(datum))
+				: (0x000000ff & ~ htobe64(datum)) |	(0x0000ff00 &   htobe64(datum)) |
+			      (0x00ff0000 & ~(htobe64(datum) >> 16)) |(0xff000000 &  (htobe64(datum) >> 16));
+					        
+		check = 
+			(size!=32)
+			 ? (((((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
+			    (((~((unsigned long long)lfsr<<8)&0xff00  | ( (unsigned long long)lfsr<<0)) & 0xffff))) << 32) & 0xffffffff00000000) |
+			   (((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
+			    (((~((unsigned long long)lfsr<<8)&0xff00  | ( (unsigned long long)lfsr<<0)) & 0xffff)))
 
-	if (!(hostname = gethostbyname("kit"))) {
-		perror ("hostbyname");
-		abort ();
-	}
+			  : (((~(unsigned long long)lfsr&0xff000000) | ( (unsigned long long)lfsr&0x00ff0000)) << 32) |
+			  ((( (unsigned long long)lfsr&0xff000000) | (~(unsigned long long)lfsr&0x00ff0000)) << 16) |
+			  (((~(unsigned long long)lfsr&0x0000ff00) | ( (unsigned long long)lfsr&0x000000ff)) << 16) |
+			  ((( (unsigned long long)lfsr&0x0000ff00) | (~(unsigned long long)lfsr&0x000000ff)) <<  0);
 
-	memset (&sa_trgt, 0, sizeof (sa_trgt));
-	sa_trgt.sin_family = AF_INET;
-	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, hostname->h_addr, sizeof(sa_trgt.sin_addr));
-
-	memset (&sa_host, 0, sizeof (sa_host));
-	sa_host.sin_family = AF_INET;
-	sa_host.sin_port   = htons(PORT);	
-	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("can't get a socket");
-		abort ();
-	}
-
-	if (bind (s, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
-		perror ("can't bind the socket");
-		abort ();
-	}
-
-	for (i = 0; i < npkt; i++) {
-
-		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
-			perror ("sendto()");
-			abort ();
+		printf("0x%016llx 0x%016llx\n", htonll(datum), check);
+		if (check != htobe64(datum)){
+			fprintf(stderr, "Failed %d\n", i);
+			fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", htonll(datum)^check, htonll(datum), check);
+			abort();
+			return -1;
 		}
 
-		if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-			perror ("recvfrom");
-			abort ();
-		}
-
-		for (j = 0; j < sizeof(sb_src)/sizeof(sb_src[0]); j++) {
-			lfsr_t p = (size!=32) ? 0x38 : 0x22800000;
-			unsigned long long check;
-			int k;
-
-			if (!lfsr) lfsr = 
-				(size!=32) 
-					? (0xff & htobe64(sb_src[j]))
-					: (0x000000ff & ~ htobe64(sb_src[j])) |	(0x0000ff00 &   htobe64(sb_src[j])) |
-				      (0x00ff0000 & ~(htobe64(sb_src[j]) >> 16)) |(0xff000000 &  (htobe64(sb_src[j]) >> 16));
-						        
-			check = 
-				(size!=32)
-				 ? (((((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
-				    (((~((unsigned long long)lfsr<<8)&0xff00  | ( (unsigned long long)lfsr<<0)) & 0xffff))) << 32) & 0xffffffff00000000) |
-				   (((((((unsigned long long)lfsr<<8)&0xff00) | (~(unsigned long long)lfsr<<0)&0x00ff) << 16) & 0xffff0000) |
-				    (((~((unsigned long long)lfsr<<8)&0xff00  | ( (unsigned long long)lfsr<<0)) & 0xffff)))
-
-				  : (((~(unsigned long long)lfsr&0xff000000) | ( (unsigned long long)lfsr&0x00ff0000)) << 32) |
-				  ((( (unsigned long long)lfsr&0xff000000) | (~(unsigned long long)lfsr&0x00ff0000)) << 16) |
-				  (((~(unsigned long long)lfsr&0x0000ff00) | ( (unsigned long long)lfsr&0x000000ff)) << 16) |
-				  ((( (unsigned long long)lfsr&0x0000ff00) | (~(unsigned long long)lfsr&0x000000ff)) <<  0);
-
-			printf("0x%016llx 0x%016llx\n", htobe64(sb_src[j]), check);
-			if (check != htobe64(sb_src[j])){
-				fprintf(stderr, "Failed %d, %d\n", i, j);
-				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", htobe64(sb_src[j])^check, htobe64(sb_src[j]), check);
-				abort();
-			}
-
-			lfsr = ((lfsr>>1)|((lfsr&1)<<(size-1))) ^ (((lfsr&1) ? ~0 : 0) & p);
-		}
+		lfsr = ((lfsr>>1)|((lfsr&1)<<(size-1))) ^ (((lfsr&1) ? ~0 : 0) & p);
 	}
 
 	return 0;
