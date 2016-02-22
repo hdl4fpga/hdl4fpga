@@ -77,16 +77,14 @@ architecture lttsm of dbram is
 	signal rd_slice : dw_vector(l-1 downto 0);
 	signal wd_slice : dw_vector(l-1 downto 0);
 	signal dat : std_logic_vector(0 to 4*l-1);
-	signal wed : std_logic;
 
 begin
 	wd_slice <= dw_vector(to_dwvector(di));
-	wed <= we after 1 ps;
 	ram_g : for i in l-1 downto 0 generate
 		ram_i : dpr16x4c
 		port map (
 			wck  => clk,
-			wre  => wed,
+			wre  => we,
 			rad0 => ra(0),
 			rad1 => ra(1),
 			rad2 => ra(2),
