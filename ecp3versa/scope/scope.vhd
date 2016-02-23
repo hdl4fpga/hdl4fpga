@@ -50,6 +50,7 @@ architecture scope of ecp3versa is
 
 	signal dcm_rst  : std_logic;
 	signal dcm_lckd : std_logic;
+	signal ddr_pha : std_logic_vector(4-1 downto 0);
 	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
@@ -165,6 +166,7 @@ begin
 		ddr_sclk => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
 		ddr_rst   => ddrs_rst,
+		ddr_pha => ddr_pha,
 
 		video_clk0 => vga_clk,
 		video_rst => vga_rst);
@@ -320,7 +322,7 @@ begin
 		if rising_edge(ddr_sclk) then
 			led  <= led2;
 			led2 := led1;
-			led1 := not ddrphy_pll;
+			led1 := (1 to 4 => '1') & not ddr_pha;
 		end if;
 	end process;
 
