@@ -104,14 +104,18 @@ architecture scope of ecp3versa is
 	signal valid : std_logic;
 
 	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
-	-- Multiply by --  10     --   8     --   9     --
-	-- Divide by   --   3     --   2     --   2     --
+	-- Frequency -- 400 Mhz -- 450 Mhz -- 500 Mhz --
+	-- ddr_clki        1         2          1
+	-- ddr_clkfb       4         9          5
+	-- ddr_clkop       2         2          2
+	-- ddr_clkok       2         2          2
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 4;
-	constant ddr_div   : natural := 2;
-	constant ddr_fbdiv : natural := 1;
+	constant ddr_clki  : natural := 1;
+	constant ddr_clkfb : natural := 4;
+	constant ddr_clkop : natural := 2;
+	constant ddr_clkok : natural := 2;
+
 	constant r : natural := 0;
 	constant f : natural := 1;
 	signal ddr_sclk : std_logic;
@@ -148,9 +152,10 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		ddr_mul => ddr_mul,
-		ddr_div => ddr_div, 
-		ddr_fbdiv => ddr_fbdiv,
+		ddr_clki  => ddr_clki,
+		ddr_clkfb => ddr_clkfb,
+		ddr_clkop => ddr_clkop,
+		ddr_clkok => ddr_clkok,
 		sys_per => real(uclk_period/ns))
 	port map (
 		sys_rst => sys_rst,
@@ -168,7 +173,7 @@ begin
 	input_clk <= ddr_sclk;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		DDR_tCP => uclk_period*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_tCP => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_SCLKPHASES => 1,
 		DDR_SCLKEDGES  => 1,
 		DDR_MARK => M15E,
@@ -234,7 +239,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		tCP => uclk_period*ddr_div*ddr_fbdiv/(2*ddr_mul),
+		tCP => (uclk_period*ddr_clki)/ddr_clkfb,
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
 		LINE_SIZE => line_size,

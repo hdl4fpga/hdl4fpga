@@ -28,9 +28,10 @@ use ieee.numeric_std.all;
 
 entity dcms is
 	generic (
-		ddr_mul : natural := 5;
-		ddr_div : natural := 1;
-		ddr_fbdiv : natural := 1;
+		ddr_clki  : natural := 1;
+		ddr_clkfb : natural := 4;
+		ddr_clkop : natural := 2;
+		ddr_clkok : natural := 2;
 		sys_per : real := 10.0);
 	port (
 		sys_rst  : in  std_logic;
@@ -171,10 +172,10 @@ begin
 			DUTY => 8,
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			PHASEADJ => "0.0", 
-			CLKOK_DIV => ddr_div,
-			CLKOP_DIV => ddr_div,
-			CLKFB_DIV => ddr_mul,
-			CLKI_DIV  => ddr_fbdiv,
+			CLKOK_DIV => ddr_clkok,
+			CLKOP_DIV => ddr_clkop,
+			CLKFB_DIV => ddr_clkfb,
+			CLKI_DIV  => ddr_clki,
 			FEEDBK_PATH => "INTERNAL",
 			FIN => "100.000000")
 		port map (
