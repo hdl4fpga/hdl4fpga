@@ -164,7 +164,7 @@ begin
 			if sys_rst='1' then
 				s  := (others => '1');
 			elsif ddrs_di_rdy='1' then
-				aux1 := s(s'left);
+				aux1 := s(s'right);
 				for i in g'range loop
 					aux  := s(i);
 					s(i) := aux1 xor (s(s'right) and g(i));
@@ -238,8 +238,9 @@ begin
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
-				to_signed(0, DDR_ADDRSIZE+2) & 
-				to_signed(1, DDR_CLNMSIZE+1));
+				to_signed(2*7-1, (DDR_ADDRSIZE+1)/2+1) & 
+				to_signed(2**(DDR_ADDRSIZE/2)-1, DDR_ADDRSIZE/2+1) & 
+				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

@@ -109,7 +109,7 @@ architecture scope of ecp3versa is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 5;
+	constant ddr_mul   : natural := 4;
 	constant ddr_div   : natural := 2;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
@@ -308,15 +308,15 @@ begin
 
 --	led <= '1' & not ddrphy_pll(6) & (1 to 6 => '1');
 --	led <= (others => '1');
---	process (ddr_sclk, sys_rst)
---		variable led1 : std_logic_vector(led'range);
---		variable led2 : std_logic_vector(led'range);
---	begin
---		if rising_edge(ddr_sclk) then
---			led  <= led2;
---			led2 := led1;
---			led1 := not ddrphy_pll;
---		end if;
---	end process;
+	process (ddr_sclk, sys_rst)
+		variable led1 : std_logic_vector(led'range);
+		variable led2 : std_logic_vector(led'range);
+	begin
+		if rising_edge(ddr_sclk) then
+			led  <= led2;
+			led2 := led1;
+			led1 := not ddrphy_pll;
+		end if;
+	end process;
 
 end;
