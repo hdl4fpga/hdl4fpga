@@ -127,7 +127,7 @@ package xdr_db is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
 
-		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_0),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
 		timing_record'(mark => M3,  param => tWR,   value => 15000),
 		timing_record'(mark => M3,  param => tRP,   value => 15000),

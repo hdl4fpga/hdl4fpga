@@ -39,6 +39,7 @@ use unisim.vcomponents.all;
 architecture scope of nuhs3dsp is
 	constant sclk_phases : natural := 4;
 	constant data_phases : natural := 2;
+	constant data_edges : natural := 2;
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
@@ -193,6 +194,7 @@ begin
 		DDR_ADDRSIZE => ddr_a'length,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
+		DDR_DATAEDGES => data_edges,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
 		DDR_BYTESIZE => byte_size)

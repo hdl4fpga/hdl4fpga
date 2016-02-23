@@ -51,7 +51,7 @@ architecture mix of iofifo is
 	subtype byte is std_logic_vector(word_size/data_phases-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal fifo_do : byte_vector(ser_clk'range);
+	signal fifo_do : byte_vector(ser_clk'reverse_range);
 	signal fifo_di : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);

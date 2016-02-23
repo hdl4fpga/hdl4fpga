@@ -40,6 +40,7 @@ architecture scope of ml509 is
 	constant sclk_phases : natural := 4;
 	constant sclk_edges : natural := 2;
 	constant data_phases : natural := 2;
+	constant data_edges : natural := 2;
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
@@ -127,7 +128,7 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 9;
+	constant ddr_mul   : natural := 10;
 	constant ddr_div   : natural := 3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
@@ -195,6 +196,7 @@ begin
 		DDR_ADDRSIZE => ddr2_a'length,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
+		DDR_DATAEDGES => data_edges,
 		DDR_LINESIZE => line_size,
 		DDR_WORDSIZE => word_size,
 		DDR_BYTESIZE => byte_size)

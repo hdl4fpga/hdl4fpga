@@ -190,7 +190,7 @@ architecture virtex of ddrphy is
 	function shuffle_stdlogicvector (
 		constant arg : std_logic_vector) 
 		return std_logic_vector is
-		variable dat : std_logic_vector(arg'length-1 downto 0);
+		variable dat : std_logic_vector(0 to arg'length-1);
 		variable val : std_logic_vector(dat'range);
 	begin	
 		dat := arg;
@@ -205,7 +205,7 @@ architecture virtex of ddrphy is
 	function shuffle_dlinevector (
 		constant arg : std_logic_vector) 
 		return dline_vector is
-		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
+		variable dat : byte_vector(0 to arg'length/byte'length-1);
 		variable val : byte_vector(dat'range);
 	begin	
 		dat := to_bytevector(arg);
