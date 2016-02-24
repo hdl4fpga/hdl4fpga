@@ -60,7 +60,9 @@ TIMESPEC TS_f2r_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
 #TIMESPEC TS_f2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO FFS_ddrsclk90 TIG;
 TIMESPEC TS_f2fclk_ddr2gtx  = FROM FFS_ddrsclk0 TO FFS_gtxclk   TIG;
 TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk   TO FFS_ddrsclk0 TIG;
-#
+TIMESPEC TS_pp = TO FFS  (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_pp1 = TO FFS  (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+
 ### ###### #
 ### Others #
 ### ###### #

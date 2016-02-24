@@ -49,67 +49,33 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture struct of xdr_rdfifo is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
-
-	function to_bytevector (
-		arg : std_logic_vector) 
-		return byte_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
-			dat := dat srl byte'length;
-		end loop;
-		return val;
-	end;
+	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);
+	type word_vector is array (natural range <>) of word;
 
 	function to_stdlogicvector (
-		arg : byte_vector)
+		arg : word_vector)
 		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : unsigned(arg'length*byte'length-1 downto 0);
+		variable dat : word_vector(arg'length-1 downto 0);
+		variable val : unsigned(arg'length*word'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll byte'length;
-			val(byte'range) := unsigned(dat(i));
+			val := val sll word'length;
+			val(word'range) := unsigned(dat(i));
 		end loop;
 		return std_logic_vector(val);
 	end;
 
-	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);
-	type word_vector is array (natural range <>) of word;
-
-	function shuffle_word (
-		arg : byte_vector)
+	function to_wordvector (
+		arg : std_logic_vector) 
 		return word_vector is
-		variable aux : byte_vector(word'length/byte'length-1 downto 0);
-		variable val : word_vector(arg'length/aux'length-1 downto 0);
-	begin
-		for i in val'range loop
-			aux := (others => (others => '-'));
-			for j in aux'range loop
-				aux(j) := arg(i*aux'length+j);
-			end loop;
-			val(i) := to_stdlogicvector(aux);
-		end loop;
-		return val;
-	end;
-
-	function unshuffle_word (
-		arg : word_vector)
-		return byte_vector is
-		variable aux : byte_vector(word'length/byte'length-1 downto 0);
-		variable val : byte_vector(arg'length*aux'length-1 downto 0);
-	begin
-		for i in arg'range loop
-			aux := to_bytevector(arg(i));
-			for j in aux'range loop
-				val(j*arg'length+i) := aux(j);
-			end loop;
+		variable dat : unsigned(arg'length-1 downto 0);
+		variable val : word_vector(arg'length/word'length-1 downto 0);
+	begin	
+		dat := unsigned(arg);
+		for i in val'reverse_range loop
+			val(i) := std_logic_vector(dat(word'length-1 downto 0));
+			dat := dat srl word'length;
 		end loop;
 		return val;
 	end;
@@ -119,7 +85,7 @@ architecture struct of xdr_rdfifo is
 
 begin
 
-	di  <= shuffle_word(to_bytevector(xdr_dqi));
+	di  <= to_wordvector(xdr_dqi);
 	xdr_fifo_g : for i in xdr_dqsi'range generate
 		signal pll_req : std_logic;
 
@@ -159,9 +125,9 @@ begin
 			ser_ena(0) => xdr_win_dqs(i),
 			ser_clk(0) => xdr_dqsi(i),
 
-			do  => do(i),
-			di  => di(i));
+			di  => di(i),
+			do  => do(i));
 	end generate;
-	sys_do <= to_stdlogicvector(unshuffle_word(do));
+	sys_do <= to_stdlogicvector(do);
 
 end;

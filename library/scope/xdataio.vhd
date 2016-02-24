@@ -137,7 +137,8 @@ begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 --				aux2 := x"07_03_06_02_05_01_04_00";
-				aux2 := x"03_02_01_00";
+				aux2 := x"07_06_05_04_03_02_01_00";
+--				aux2 := x"03_02_01_00";
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to ddrs_di'length/8-1 loop
@@ -238,11 +239,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
---				to_signed(2*7-1, (DDR_ADDRSIZE+1)/2+1) & 
---				to_signed(2**(DDR_ADDRSIZE/2)-1, DDR_ADDRSIZE/2+1) & 
-				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
-				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+				to_signed(0, DDR_BANKSIZE+1) & 
+				to_signed(0, DDR_ADDRSIZE+1) & 
+				to_signed(1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
@@ -287,9 +286,6 @@ begin
 		dcounter_e : entity hdl4fpga.counter
 		generic map (
 			stage_size => (
---				3 => DDR_BANKSIZE+1+DDR_ADDRSIZE+2+DDR_CLNMSIZE+1,
---				2 => DDR_ADDRSIZE+2+DDR_CLNMSIZE+1,
---				1 => DDR_ADDRSIZE/2+1+DDR_CLNMSIZE+1,
 				2 => DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
 				1 => DDR_ADDRSIZE+1+DDR_CLNMSIZE+1,
 				0 => DDR_CLNMSIZE+1))

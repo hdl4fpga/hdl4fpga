@@ -217,6 +217,21 @@ architecture virtex of ddrphy is
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
 
+	function unshuffle(
+		constant arg : dline_vector) 
+		return byte_vector is
+		variable val : byte_vector(sys_dqi'length/byte_size-1 downto 0);
+		variable aux : byte_vector(0 to data_gear-1);
+	begin	
+		for i in arg'range loop
+			aux := to_bytevector(arg(i));
+			for j in aux'range loop
+				val(j*arg'length+i) := aux(j);
+			end loop;
+		end loop;
+		return val;
+	end;
+
 	signal dqsdel : std_logic;
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
@@ -322,8 +337,8 @@ begin
 			x_p => dqsi(0),
 			x_n => dqsi(1));
 
-			sys_dqsi(data_gear*i+0) <= dqsi(0) after 10 ps;
-			sys_dqsi(data_gear*i+1) <= dqsi(1) after 10 ps;
+			sys_dqsi(data_gear*0+i) <= dqsi(0) after 1 ns;
+			sys_dqsi(data_gear*1+i) <= dqsi(1) after 1 ns;
 	end generate;
 
 	process(ddr_dm, ddr_sti)
@@ -365,5 +380,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqi <= to_stdlogicvector(sdqo);
+	sys_dqi <= to_stdlogicvector(unshuffle((sdqo)));
 end;
