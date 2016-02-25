@@ -87,12 +87,14 @@ architecture struct of xdr_rdfifo is
 		constant arg : word_vector)
 		return byte_vector is
 		variable aux : word;
+		variable aux2 : word_vector(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length*word'length/byte'length-1 downto 0);
 	begin
+		aux2 := arg;
 		for i in arg'range loop
 			aux := arg(i);
-			for j in word'length/byte'length-1 downto 0 loop
-				val(i*word'length/byte'length+j) := aux(byte'range);
+			for j in 0 to word'length/byte'length-1 loop
+				val(j*arg'length+i) := aux(byte'range);
 				aux := std_logic_vector(unsigned(aux) srl byte'length);
 			end loop;
 		end loop;
