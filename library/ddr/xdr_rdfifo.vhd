@@ -49,25 +49,28 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture struct of xdr_rdfifo is
+	subtype byte is std_logic_vector(byte_size-1 downto 0);
+	type byte_vector is array (natural range <>) of byte;
+
 	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function to_stdlogicvector (
-		arg : word_vector)
+		arg : byte_vector)
 		return std_logic_vector is
-		variable dat : word_vector(arg'length-1 downto 0);
-		variable val : unsigned(arg'length*word'length-1 downto 0);
+		variable dat : byte_vector(arg'length-1 downto 0);
+		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
 		for i in dat'range loop
-			val := val sll word'length;
-			val(word'range) := unsigned(dat(i));
+			val := val sll byte'length;
+			val(byte'range) := unsigned(dat(i));
 		end loop;
 		return std_logic_vector(val);
 	end;
 
 	function to_wordvector (
-		arg : std_logic_vector) 
+		constant arg : std_logic_vector) 
 		return word_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : word_vector(arg'length/word'length-1 downto 0);
@@ -80,54 +83,71 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
+	function shuffle (
+		constant arg : word_vector)
+		return byte_vector is
+		variable aux : word;
+		variable val : byte_vector(arg'length*word'length/byte'length-1 downto 0);
+	begin
+		for i in arg'range loop
+			aux := arg(i);
+			for j in word'length/byte'length-1 downto 0 loop
+				val(i*word'length/byte'length+j) := aux(byte'range);
+				aux := std_logic_vector(unsigned(aux) srl byte'length);
+			end loop;
+		end loop;
+		return val;
+	end;
+
 	signal do : word_vector(xdr_dqsi'length-1 downto 0);
 	signal di : word_vector(xdr_dqsi'length-1 downto 0);
 
 begin
 
 	di  <= to_wordvector(xdr_dqi);
-	xdr_fifo_g : for i in xdr_dqsi'range generate
-		signal pll_req : std_logic;
-
-	begin
-
-		process (sys_clk)
-			variable acc_rea_dly : std_logic;
-			variable sys_do_win : std_logic;
+	bytes_g : for i in word_size/byte_size-1 downto 0 generate
+		data_phases_g : for j in 0 to data_phases-1 generate
+			signal pll_req : std_logic;
 		begin
-			if rising_edge(sys_clk) then
-				sys_do_win  := acc_rea_dly;
-				acc_rea_dly := not sys_rea;
-			end if;
-		end process;
 
-		process (sys_clk)
-			variable q : std_logic_vector(0 to data_delay);
-		begin 
-			if rising_edge(sys_clk) then
-				q := q(1 to q'right) & xdr_win_dq(i);
-				pll_req <= q(0);
-			end if;
-		end process;
-		sys_rdy(i) <= pll_req;
+			process (sys_clk)
+				variable acc_rea_dly : std_logic;
+				variable sys_do_win : std_logic;
+			begin
+				if rising_edge(sys_clk) then
+					sys_do_win  := acc_rea_dly;
+					acc_rea_dly := not sys_rea;
+				end if;
+			end process;
+
+			process (sys_clk)
+				variable q : std_logic_vector(0 to data_delay);
+			begin 
+				if rising_edge(sys_clk) then
+					q := q(1 to q'right) & xdr_win_dq(i*data_phases+j);
+					pll_req <= q(0);
+				end if;
+			end process;
+			sys_rdy(i*data_phases+j) <= pll_req;
 
 
-		inbyte_i : entity hdl4fpga.iofifo
-		generic map (
-			pll2ser => false,
-			data_phases => 1,
-			word_size  => word'length,
-			byte_size  => byte'length)
-		port map (
-			pll_clk => sys_clk,
-			pll_req => pll_req,
+			inbyte_i : entity hdl4fpga.iofifo
+			generic map (
+				pll2ser => false,
+				data_phases => 1,
+				word_size  => word'length,
+				byte_size  => byte'length)
+			port map (
+				pll_clk => sys_clk,
+				pll_req => pll_req,
 
-			ser_ena(0) => xdr_win_dqs(i),
-			ser_clk(0) => xdr_dqsi(i),
+				ser_ena(0) => xdr_win_dqs(i*data_phases+j),
+				ser_clk(0) => xdr_dqsi(i*data_phases+j),
 
-			di  => di(i),
-			do  => do(i));
+				di  => di(i*data_phases+j),
+				do  => do(j*word_size/byte_size+i));
+		end generate;
 	end generate;
-	sys_do <= to_stdlogicvector(do);
+	sys_do <= to_stdlogicvector(shuffle(do));
 
 end;

@@ -337,8 +337,8 @@ begin
 			x_p => dqsi(0),
 			x_n => dqsi(1));
 
-			sys_dqsi(data_gear*0+i) <= dqsi(0) after 1 ns;
-			sys_dqsi(data_gear*1+i) <= dqsi(1) after 1 ns;
+			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
+			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
 	end generate;
 
 	process(ddr_dm, ddr_sti)
@@ -380,5 +380,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqi <= to_stdlogicvector(unshuffle((sdqo)));
+	sys_dqi <= to_stdlogicvector(sdqo);
 end;

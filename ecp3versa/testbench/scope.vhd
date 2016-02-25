@@ -168,9 +168,9 @@ begin
 	rst   <= '1', '0' after 1.1 us;
 	reset_n <= not rst;
 
-	xtal   <= not xtal after 6*1.25 ns;
-	xtal_p <= not xtal after 6*1.25 ns;
-	xtal_n <=     xtal after 6*1.25 ns;
+	xtal   <= not xtal after 6 ns;
+	xtal_p <= not xtal after 6 ns;
+	xtal_n <=     xtal after 6 ns;
 
 	phy1_125clk <= not phy1_125clk after 4 ns;
 	mii_rxc <= phy1_125clk;
