@@ -13,8 +13,6 @@ add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate -expand /testbench/dqs
 add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate /testbench/dm
-add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_e/sys_sti
-add wave -noupdate -expand /testbench/nuhs3dsp_e/ddrphy_e/sys_sto
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {25261100 ps} 0}
 quietly wave cursor active 1
