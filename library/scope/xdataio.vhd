@@ -129,57 +129,56 @@ begin
 --		output_dat => ddrs_di
 		output_dat => output_dat);
 
---	process (ddrs_clk)
---		variable aux : std_logic_vector(8-1 downto 0);
---		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
---		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
---	begin
---		if rising_edge(ddrs_clk) then
---			if sys_rst='1' then
-----				aux2 := x"07_03_06_02_05_01_04_00";
---				aux2 := x"07_06_05_04_03_02_01_00";
-----				aux2 := x"03_02_01_00";
---			elsif ddrs_di_rdy='1' then
---				aux1 := aux2;
---				for i in 0 to ddrs_di'length/8-1 loop
---					aux  := std_logic_vector(unsigned(aux1(8-1 downto 0))+ddrs_di'length/8);
---					aux1 := std_logic_vector(unsigned(aux1) srl 8);
---					aux1(aux1'left downto aux1'left-(8-1)) := aux;
---				end loop;
---				aux2 := aux1;
---			end if;
---		end if;
---		ddrs_di <= aux2;
---	end process;
-
-	process(ddrs_clk)
-		constant n : natural := 32;
-		constant g : std_logic_vector(n-1 downto 0) :=
---		B"0011_1000";
-		B"0010_0010_1000_0000_0000_0000_0000_0000";
-		variable s    : std_logic_vector(g'range);
-		variable aux  : std_logic;
-		variable aux1 : std_logic;
+	process (ddrs_clk)
+		variable aux : std_logic_vector(8-1 downto 0);
+		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
 		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
-				s  := (others => '1');
+--				aux2 := x"07_06_05_04_03_02_01_00";
+				aux2 := x"03_02_01_00";
 			elsif ddrs_di_rdy='1' then
-				aux1 := s(s'right);
-				for i in g'range loop
-					aux  := s(i);
-					s(i) := aux1 xor (s(s'right) and g(i));
-					aux1 := aux;
+				aux1 := aux2;
+				for i in 0 to ddrs_di'length/8-1 loop
+					aux  := std_logic_vector(unsigned(aux1(8-1 downto 0))+ddrs_di'length/8);
+					aux1 := std_logic_vector(unsigned(aux1) srl 8);
+					aux1(aux1'left downto aux1'left-(8-1)) := aux;
 				end loop;
+				aux2 := aux1;
 			end if;
-			for i in 0 to aux2'length/s'length-1 loop
-				aux2 := std_logic_vector(unsigned(aux2) sll s'length);
-				aux2(s'range) := s;
-			end loop;
 		end if;
 		ddrs_di <= aux2;
 	end process;
+
+--	process(ddrs_clk)
+--		constant n : natural := 32;
+--		constant g : std_logic_vector(n-1 downto 0) :=
+----		B"0011_1000";
+--		B"0010_0010_1000_0000_0000_0000_0000_0000";
+--		variable s    : std_logic_vector(g'range);
+--		variable aux  : std_logic;
+--		variable aux1 : std_logic;
+--		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
+--	begin
+--		if rising_edge(ddrs_clk) then
+--			if sys_rst='1' then
+--				s  := (others => '1');
+--			elsif ddrs_di_rdy='1' then
+--				aux1 := s(s'right);
+--				for i in g'range loop
+--					aux  := s(i);
+--					s(i) := aux1 xor (s(s'right) and g(i));
+--					aux1 := aux;
+--				end loop;
+--			end if;
+--			for i in 0 to aux2'length/s'length-1 loop
+--				aux2 := std_logic_vector(unsigned(aux2) sll s'length);
+--				aux2(s'range) := s;
+--			end loop;
+--		end if;
+--		ddrs_di <= aux2;
+--	end process;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
@@ -239,9 +238,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
-				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
-				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+				to_signed(0, DDR_BANKSIZE+1) & 
+				to_signed(0, DDR_ADDRSIZE+1) & 
+				to_signed(0, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

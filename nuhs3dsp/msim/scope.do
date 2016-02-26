@@ -9,13 +9,13 @@ add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/ba
-add wave -noupdate /testbench/addr
+add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate /testbench/dqs
-add wave -noupdate /testbench/dq
+add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate /testbench/dm
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {5998100 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -30,4 +30,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {1 ns}
+WaveRestoreZoom {5948881 ps} {6047319 ps}
