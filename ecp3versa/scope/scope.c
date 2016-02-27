@@ -37,13 +37,14 @@ main (int argc, char *argv[])
 	struct sockaddr_in sa_trgt;
 
 	int s;
-	char *sb_src[1024];
+	char sb_src[1024];
 	char sb_trgt[17];
 	socklen_t sl_src  = sizeof(sa_src);
 	socklen_t sl_trgt = sizeof(sa_trgt);
 
 	int i, j, n;
 	int npkt;
+	int size;
 
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
@@ -57,7 +58,7 @@ main (int argc, char *argv[])
 		abort ();
 	}
 
-	if (!(argc > 2)) {
+	if (argc > 2) {
 		sscanf (argv[2], "%d", &size);
 	} else {
 		size = 64;
@@ -94,13 +95,13 @@ main (int argc, char *argv[])
 			abort ();
 		}
 
-		for (j = 0; j < sizeof(sb_src)/size; j += size) {
+		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
 			switch (size) {
 			case 32:
-				printf("0x%08lx\n", htonl(*(long *)(sb_src+j)));
+				printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j)));
 				break;
 			case 64:
-				printf("0x%016llx\n", htobe64(*(long long unsigned *)(sb_src+j)));
+				printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
 				break;
 			}
 		}

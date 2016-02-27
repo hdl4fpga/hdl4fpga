@@ -22,8 +22,8 @@ NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 # ###################### #
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%;
-NET "ddr_st_lp_dqs" OFFSET = IN 1.5 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING; # IN 1.25 ns
-NET "ddr_st_lp_dqs" OFFSET = IN 1.5 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING; # IN 1.25 ns
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING; # IN 1.25 ns
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING; # IN 1.25 ns
 
 #OFFSET = IN 0 ns VALID 3 ns BEFOR ddr_dqs[0] RISING;
 #OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
