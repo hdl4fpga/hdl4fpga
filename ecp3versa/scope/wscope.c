@@ -1,10 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//#include <unistd.h>
-//#include <sys/types.h>
 #include <ws2tcpip.h>
-//#include <winsock2.h>
 #include <wininet.h>
 #include <math.h>
 
