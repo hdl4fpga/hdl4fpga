@@ -19,8 +19,8 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>C:/Users/msagre/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
-			<FileTime>02/09/16 18:24:49</FileTime>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
+			<FileTime>02/26/16 14:36:46</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>

@@ -54,7 +54,6 @@ architecture scope of nuhs3dsp is
 	signal grst : std_logic;
 
 	signal sys_clk : std_logic;
-	signal dcm_rst  : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 

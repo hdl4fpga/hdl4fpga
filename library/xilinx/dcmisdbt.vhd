@@ -30,38 +30,25 @@ use unisim.vcomponents.all;
 
 entity dcmisdbt is
 	port ( 
-		dcm_rst : in  std_logic; 
-		dcm_clk : in  std_logic; 
+		sys_rst : in  std_logic; 
+		sys_clk : in  std_logic; 
 		dfs_clk : out std_logic; 
 		dcm_lck : out std_logic);
 end;
 
 architecture behavioral of dcmisdbt is
-   signal u1_clk0_buf        : std_logic;
-   signal u1_clkfb_in        : std_logic;
-   signal u1_clkfx_buf       : std_logic;
-   signal u1_locked_inv_in   : std_logic;
-   signal u2_clkin_in        : std_logic;
-   signal u2_clkfb_in        : std_logic;
-   signal u2_clk0_buf        : std_logic;
-   signal u2_clk90_buf       : std_logic;
-   signal u2_fds_q_out       : std_logic;
-   signal u2_fd1_q_out       : std_logic;
-   signal u2_fd2_q_out       : std_logic;
-   signal u2_fd3_q_out       : std_logic;
-   signal u2_locked_inv_rst  : std_logic;
-   signal u2_or3_o_out       : std_logic;
-   signal u2_rst_in          : std_logic;
- 
-   signal u2_clkfb_ibufgds: std_logic;
-   constant n1 : natural := 16;
-   constant n2 : natural := 16;
+	signal dfs_lck : std_logic;
+    signal dfs_clkfb  : std_logic;
+
+	signal dcm_rst : std_logic;
+	signal dcm_clkin : std_logic;
+	signal dcm_clkfb : std_logic;
+	signal dcm_clk0  : std_logic;
+	signal dcm_clkfx : std_logic;
+
+	constant n1 : natural := 16;
+constant n2 : natural := 16;
 begin
-   
-	u1_clk0_bufg_inst : bufg
-	port map (
-		i => u1_clk0_buf,
-		o => u1_clkfb_in);
    
 	dcm1_u : dcm_sp
 	generic map(
@@ -80,40 +67,29 @@ begin
 		phase_shift => 0,
 		startup_wait => FALSE)
 	port map (
-		clkfb  => u1_clkfb_in,
-		clkin  => dcm_clk,
 		dssen  => '0',
 		psclk  => '0',
 		psen   => '0',
 		psincdec =>'0',
-		rst   => dcm_rst,
-		clkdv => open,
-		clkfx => u1_clkfx_buf,
-		clkfx180 => open,
-		clk0   => u1_clk0_buf,
-		clk2x  => open,
-		clk2x180=>open,
-		clk90  => open,
-		clk180 => open,
-		clk270 => open,
-		locked => u1_locked_inv_in,
-		psdone => open,
-		status => open);
 
---	u2_clkfx_bufg_inst : bufg
---	port map (
---		i => u1_clkfx_buf,
---		o => u2_clkin_in);
+		rst   => sys_rst,
+		clkin  => sys_clk,
+		clkfb  => dfs_clkfb,
+		clk0   => dfs_clkfb,
+		clkfx => dcm_clkin,
+		locked => dfs_lck);
 
-	u2_clkin_in <= u1_clkfx_buf;
+	process (dfs_lck, sys_clk)
+		variable srl16 : std_logic_vector(0 to 8-1) := (others => '1');
+	begin
+		if dfs_lck='0' then
+			dcm_rst <= '1';
+		elsif rising_edge(sys_clk) then
+			srl16 := srl16(1 to srl16'right) &  not dfs_lck;
+			dcm_rst <= srl16(0) or not dfs_lck;
+		end if;
+	end process;
 
---	u2_clk0_bufg_inst : bufg
---	port map (
---		i => u2_clk0_buf,
---		o => u2_clkfb_in);
-
-	u2_clkfb_in <= u2_clk0_buf;
-		
 	dcm_sp_inst2 : dcm_sp
 	generic map(
 		clk_feedback   => "1X",
@@ -132,68 +108,26 @@ begin
 		phase_shift    => 0,
 		startup_wait   => FALSE)
 	port map (
-		clkfb    => u2_clkfb_in,
-		clkin    => u2_clkin_in,
 		dssen    => '0',
 		psclk    => '0',
 		psen     => '0',
 		psincdec => '0',
-		rst      => u2_rst_in,
-		clk0     => open,
-		clk90    => open,
-		clk180   => open,
-		clk270   => open,
-		clk2x    => open,
-		clk2x180 => open,
-		clkdv    => open,
-		clkfx    => dfs_clk,
-		clkfx180 => open,
-		locked   => dcm_lck,
-		psdone   => open,
-		status   => open);
+		rst      => dcm_rst,
+		clkin    => dcm_clkin,
+		clkfb    => dcm_clkfb,
+		clkfx    => dcm_clkfx,
+		locked   => dcm_lck);
 
-	u1_inv_inst : inv
+	dcm_clkfb_bufg : bufg
 	port map (
-		i => u1_locked_inv_in,
-		o => u2_locked_inv_rst);
+		i => dcm_clkin,
+		o => dcm_clkfb);
 
-	u2_fds_inst : fds
+	dcm_clkfx_bufg : bufg
 	port map (
-		c => u2_clkin_in,
-		d => '0',
-		s => '0',
-		q => u2_fds_q_out);
-   
-	u2_fd1_inst : fd
-	port map (
-		c => u2_clkin_in,
-		d => u2_fds_q_out,
-		q => u2_fd1_q_out);
-   
-	u2_fd2_inst : fd
-	port map (
-		c => u2_clkin_in,
-		d => u2_fd1_q_out,
-		q => u2_fd2_q_out);
+		i => dcm_clkfx,
+		o => dfs_clk);
 
-	u2_fd3_inst : fd
-	port map (
-		c => u2_clkin_in,
-		d => u2_fd2_q_out,
-		q => u2_fd3_q_out);
-
-	u2_or2_inst : or2
-	port map (
-		i0 => u2_locked_inv_rst,
-		i1 => u2_or3_o_out,
-		o  => u2_rst_in);
-
-	u2_or3_inst : or3
-	port map (
-		i0 => u2_fd3_q_out,
-		i1 => u2_fd2_q_out,
-		i2 => u2_fd1_q_out,
-		o  => u2_or3_o_out);
 end;
 
 

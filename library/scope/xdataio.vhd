@@ -136,8 +136,11 @@ begin
 	begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
---				aux2 := x"07_06_05_04_03_02_01_00";
-				aux2 := x"03_02_01_00";
+				if ddrs_di'length > 32 then
+				aux2 := x"07_06_05_04_03_02_01_00";
+				else
+				aux2 := x"76_54_32_10";
+				end if;
 			elsif ddrs_di_rdy='1' then
 				aux1 := aux2;
 				for i in 0 to ddrs_di'length/8-1 loop
@@ -240,7 +243,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) & 
 				to_signed(0, DDR_ADDRSIZE+1) & 
-				to_signed(0, DDR_CLNMSIZE+1));
+				to_signed(1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
@@ -263,12 +266,12 @@ begin
 				ddrs_creq <= '0';
 				q := '0';
 			elsif rising_edge(ddrs_clk) then
-				ddrs_creq <= q;
 				if creq='1' then
 					q := '0';
 				elsif crdy='1' then
 					q := '1';
 				end if;
+				ddrs_creq <= q;
 			end if;
 		end process;
 

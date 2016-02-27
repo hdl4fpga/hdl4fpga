@@ -110,8 +110,6 @@ architecture mix of xdr is
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;
 
-	signal sys_wclk : std_logic;
-
 	signal xdr_refi_rdy : std_logic;
 	signal xdr_refi_req : std_logic;
 	signal xdr_init_rst : std_logic;
@@ -397,15 +395,13 @@ begin
 		din  => sys_di,
 		dout => rot_di);
 		
-	sys_wclk <= sys_clks(sys_clks'high);
-
-	process (sys_wclk)
+	process (sys_clks(sys_clks'high))
 	begin
 		for k in 0 to word_size/byte_size-1 loop
 			for i in 0 to data_phases-1 loop
-				xdr_wclks(k*data_phases+i) <= sys_wclk;
+				xdr_wclks(k*data_phases+i) <= sys_clks(sys_clks'high);
 				if data_edges > 1 then
-					xdr_wclks(k*data_phases+1) <= not sys_wclk;
+					xdr_wclks(k*data_phases+1) <= not sys_clks(sys_clks'high);
 				end if;
 			end loop;
 		end loop;

@@ -15,6 +15,11 @@ add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_e/sys_sti
 add wave -noupdate -expand /testbench/nuhs3dsp_e/ddrphy_e/sys_sto
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/dataio_e/miitxmem_e/miitx_clk
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e/dataio_e/miitxmem_e/miitx_ena
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/dataio_e/miitxmem_e/txd
+add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e/dataio_e/miitxmem_e/miitx_dat
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {25261100 ps} 0}
 quietly wave cursor active 1
