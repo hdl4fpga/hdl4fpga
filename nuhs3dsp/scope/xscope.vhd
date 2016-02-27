@@ -188,7 +188,7 @@ begin
 		DDR_TCP => integer(sys_per*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES => 2,
 		DDR_STROBE => "INTERNAL",
-		DDR_CLMNSIZE => 7,
+		DDR_CLMNSIZE => 6,
 		DDR_BANKSIZE => ddr_ba'length,
 		DDR_ADDRSIZE => ddr_a'length,
 		DDR_SCLKPHASES => sclk_phases,
