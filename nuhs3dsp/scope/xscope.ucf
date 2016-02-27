@@ -27,8 +27,8 @@ NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING; #
 
 #OFFSET = IN 0 ns VALID 3 ns BEFOR ddr_dqs[0] RISING;
 #OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
-OFFSET = IN -0.5 ns VALID 1.75 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN -0.5 ns VALID 1.75 ns BEFORE ddr_dqs[1] RISING;
+OFFSET = IN -0.650 ns VALID 1.7 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN -0.650 ns VALID 1.7 ns BEFORE ddr_dqs[1] RISING;
 
 
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
