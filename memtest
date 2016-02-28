@@ -1,9 +1,9 @@
 rm pp pp1
-./scope 32768 > pp
-./scope 32768 > pp1
+./scope 32768 32 > pp
+./scope 32768 32 > pp1
 i=0
 while cmp pp pp1 > log ; do 
-	./scope 32768 > pp1
+	./scope 32768 32 > pp1
 	i=`expr $i + 1`
 	echo $i
 done
