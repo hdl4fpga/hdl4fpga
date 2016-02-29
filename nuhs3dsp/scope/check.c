@@ -16,12 +16,12 @@ int main (int argc, char *argv[])
 	for(i = 0; scanf("%lx", &datum) > 0; i++) {
 		datum = htonl(datum);
 		lfsr_t p = 0x22800000;
-		unsigned long long check;
+		unsigned long check;
 		int k;
 
 		if (!lfsr) lfsr = (0xffffffff & (datum));
 					        
-		check = (unsigned long long)lfsr;
+		check = (unsigned long )lfsr;
 
 		if (check != (datum)){
 			fprintf(stderr, "Failed %d : ", i+1);
