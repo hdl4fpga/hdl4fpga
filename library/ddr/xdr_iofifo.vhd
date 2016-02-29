@@ -134,7 +134,7 @@ begin
 
 				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => ser_ar(l),
+					ar  => ser_ar(l),  -- not ser_ena(l)
 					clk => ser_clk(l),
 					ena => ser_ena(l), --'1',
 					d   => aser_d(k),
