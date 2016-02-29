@@ -368,7 +368,8 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => 2)
+		data_delay => 1)
+--		data_delay => 3) latticesemi
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

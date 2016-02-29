@@ -36,6 +36,7 @@ entity iofifo is
 		pll_rdy : out std_logic;
 		pll_req : in  std_logic := '-';
 
+		ser_ar  : in  std_logic_vector(0 to data_phases-1) := (others => '1');
 		ser_clk : in  std_logic_vector(0 to data_phases-1);
 		ser_ena : in  std_logic_vector(0 to data_phases-1);
 		ser_rdy : out std_logic;
@@ -130,15 +131,12 @@ begin
 			end generate;	
 
 			ar_g : if not pll2ser generate
-				signal aser_set : std_logic;
-			begin
-				aser_set <= not ser_ena(l);
 
 				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => aser_set,
+					ar  => ser_ar(l),
 					clk => ser_clk(l),
-					ena => '1',
+					ena => ser_ena(l), --'1',
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
