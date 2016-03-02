@@ -12,7 +12,7 @@ TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
 NET "*ddr_dq[*]"  MAXDELAY = 0.350 ns;
 NET "*ddr_dq[*]"  MAXSKEW  = 0.100 ns;
 #NET "*ddr_st_lp_dqs*" MAXDELAY = 2 ns;
-#NET "*ddr_st_lp_dqs*" MAXSKEW  = 1 ns;
+NET "*ddr_st_lp_dqs*" MAXSKEW  = 1 ns;
 NET "*ddr_dqs[*]" MAXDELAY = 0.375 ns;
 NET "*ddr_dqs[*]" MAXSKEW  = 0.75 ns;
 NET "*ddrphy_dqsi*" MAXDELAY = 2.5 ns;
@@ -30,8 +30,8 @@ NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[0] RISING; # IN 1.25 ns
-NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 5.5 ns BEFORE ddr_dqs[1] RISING; # IN 1.25 ns
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 2.5 ns BEFORE ddr_dqs[0] RISING; # IN 1.25 ns
+NET "ddr_st_lp_dqs" OFFSET = IN 1.75 ns VALID 2.5 ns BEFORE ddr_dqs[1] RISING; # IN 1.25 ns
 
 OFFSET = IN -0.650 ns VALID 1.7 ns BEFORE ddr_dqs[0] RISING;
 OFFSET = IN -0.650 ns VALID 1.7 ns BEFORE ddr_dqs[1] RISING;

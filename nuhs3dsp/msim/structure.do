@@ -26,6 +26,7 @@ add wave -noupdate /testbench/nuhs3dsp_e/txd
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_dqs
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs_IBUF_0
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddr_e_rdfifo_i_bytes_g_1_data_phases_g_0_inbyte_i_aser_q_1_CEINV_12585
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_dqsi
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_dqsi_2_0
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_dqsi_3_0
@@ -42,8 +43,13 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/pllq1
 add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/serq190
 add wave -noupdate -label serq1270 -radix hexadecimal /testbench/nuhs3dsp_e/serq100
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddr_e_rdfifo_i_bytes_g_0_data_phases_g_0_inbyte_i_aser_q_1_CEINV_23698
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddr_e_rdfifo_i_bytes_g_0_data_phases_g_1_inbyte_i_aser_q_3_CEINV_23651
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddrs_do_23_SRINV_21890
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddrs_do_23_DIF_MUX_21911
+add wave -noupdate /testbench/nuhs3dsp_e/scope_e_ddrs_do_23_CLKINV_21896
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 7} {6090936 ps} 0} {{Cursor 8} {24414000 ps} 0}
+WaveRestoreCursors {{Cursor 7} {6090936 ps} 0} {{Cursor 8} {25236960 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 218
 configure wave -valuecolwidth 100
@@ -59,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {24318288 ps} {24509712 ps}
+WaveRestoreZoom {25209074 ps} {25304786 ps}
