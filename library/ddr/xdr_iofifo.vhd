@@ -52,6 +52,7 @@ architecture mix of iofifo is
 	subtype byte is std_logic_vector(word_size/data_phases-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
+	signal fifo_clk : std_logic;
 	signal fifo_do : byte_vector(ser_clk'reverse_range);
 	signal fifo_di : byte_vector(fifo_do'range);
 
@@ -142,6 +143,10 @@ begin
 			end generate;
 		end generate;
 
+		fifo_clk <= 
+			pll_clk when pll2ser else
+			ser_clk(l);
+
 		fifo_wa <=
 			apll_q when pll2ser else
 			aser_q;
@@ -154,7 +159,7 @@ begin
 		generic map (
 			n => byte'length)
 		port map (
-			clk => ser_clk(l),
+			clk => fifo_clk,
 			we  => fifo_we,
 			wa  => fifo_wa,
 			di  => fifo_di(l),
