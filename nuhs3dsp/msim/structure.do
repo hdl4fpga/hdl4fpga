@@ -19,7 +19,6 @@ add wave -noupdate -radix hexadecimal /testbench/nuhs3dsp_e/scope_e_ddrs_do
 add wave -noupdate /testbench/nuhs3dsp_e/txd
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_dqs
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs
-add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs_IBUF_11299
 add wave -noupdate /testbench/nuhs3dsp_e/ddr_st_lp_dqs_IBUF_0
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_dqsi
 add wave -noupdate /testbench/nuhs3dsp_e/ddrphy_dqsi_2_0

@@ -24,8 +24,8 @@ int main (int argc, char *argv[])
 		check = (unsigned long )lfsr;
 
 		if (check != (datum)){
-			fprintf(stderr, "Failed %d : ", i+1);
-			fprintf(stderr,"0x%08lx 0x%08lx 0x%08lx\n", (datum), check, (datum)^check);
+			fprintf(stdout, "Failed %d : ", i+1);
+			fprintf(stdout,"0x%08lx 0x%08lx 0x%08lx\n", (datum), check, (datum)^check);
 			//return -1;
 		} else {
 			//printf("0x%016llx 0x%016llx\n", (datum), check);
