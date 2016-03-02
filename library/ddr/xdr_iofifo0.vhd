@@ -88,6 +88,7 @@ architecture mix of iofifo is
 
 	signal apll_d : aword;
 	signal apll_q : aword;
+	signal fifo_clk : std_logic;
 
 begin
 
@@ -143,6 +144,10 @@ begin
 					q   => aser_q(k));
 			end generate;
 		end generate;
+
+		fifo_clk <= 
+			pll_clk when pll2ser else
+			ser_clk(l);
 
 		fifo_wa <=
 			apll_q when pll2ser else
