@@ -161,7 +161,7 @@ begin
 		generic map (
 			n => byte'length)
 		port map (
-			clk => ser_clk(l),
+			clk => fifo_clk,
 			we  => fifo_we,
 			wa  => fifo_wa,
 			di  => fifo_di(l),
