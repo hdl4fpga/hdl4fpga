@@ -66,7 +66,6 @@ architecture scope of nuhs3dsp is
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqt : std_logic_vector(ddr_dq'range);
-	signal ddr_dqi : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_clk : std_logic;
 
@@ -300,7 +299,7 @@ begin
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => ddr_dm,
 		ddr_dqt  => ddr_dqt,
-		ddr_dqi  => ddr_dqi,
+		ddr_dqi  => ddr_dq,
 		ddr_dqo  => ddr_dqo,
 		ddr_dqst => ddr_dqst,
 		ddr_dqsi => ddr_dqs,
