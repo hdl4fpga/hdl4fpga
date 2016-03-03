@@ -19,9 +19,9 @@ TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
 NET "ddr_st_lp_dqs" MAXSKEW  = 1.000 ns;
 NET "ddr_dqs[*]"    MAXDELAY = 0.375 ns;
 NET "ddr_dqs[*]"    MAXSKEW  = 0.750 ns;
-#NET "ddr_dq[*]"     MAXDELAY = 0.350 ns;
+NET "ddr_dq[*]"     MAXDELAY = 0.350 ns;
 NET "ddr_dq[*]"     MAXSKEW  = 0.100 ns;
-#NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
+NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
 NET "ddrphy_dqsi*"  MAXSKEW  = 0.650 ns;
 
 # ###################### #
