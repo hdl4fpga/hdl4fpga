@@ -65,6 +65,9 @@ architecture scope of nuhs3dsp is
 
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt : std_logic_vector(ddr_dq'range);
+	signal ddr_dqi : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo : std_logic_vector(ddr_dq'range);
 	signal ddr_clk : std_logic;
 
 	signal ddr_lp_clk : std_logic;
@@ -296,7 +299,9 @@ begin
 		ddr_sti(0) => ddr_st_lp_dqs,
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => ddr_dm,
-		ddr_dq  => ddr_dq,
+		ddr_dqt  => ddr_dqt,
+		ddr_dqi  => ddr_dqi,
+		ddr_dqo  => ddr_dqo,
 		ddr_dqst => ddr_dqst,
 		ddr_dqsi => ddr_dqs,
 		ddr_dqso => ddr_dqso);
@@ -360,6 +365,16 @@ begin
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
+
+	process (ddr_dqt, ddr_dqo)
+	begin
+		for i in ddr_dq'range loop
+			ddr_dq(i) <= 'Z';
+			if ddr_dqt(i)='0' then
+				ddr_dq(i) <= ddr_dqo(i);
+			end if;
+		end loop;
+	end process;
 
 	ddr_clk_b : block
 		signal diff_clk : std_logic;

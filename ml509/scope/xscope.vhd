@@ -69,7 +69,10 @@ architecture scope of ml509 is
 	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_clk : std_logic;
+	signal ddr2_dqi  : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqo  : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqt  : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_clk  : std_logic;
 
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
@@ -298,8 +301,10 @@ begin
 		ddr_a   => ddr2_a,
 		ddr_odt => ddr2_odt(0),
 
-		ddr_dm  => ddr2_dm(2-1 downto 0),
-		ddr_dq  => ddr2_d(word_size-1 downto 0),
+		ddr_dm   => ddr2_dm(2-1 downto 0),
+		ddr_dqo  => ddr2_dqo,
+		ddr_dqi  => ddr2_dqi,
+		ddr_dqt  => ddr2_dqt,
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
 		ddr_dqso => ddr2_dqso);
@@ -325,19 +330,36 @@ begin
 		iob_txd  => phy_txd,
 		iob_gtxclk => phy_txc_gtxclk);
 
+	ddr2_d_g : for i in ddr2_dqt'range generate
+	begin
+		dqi_i : idelay 
+		port map (
+			rst => ictlr_rst,
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i   => ddr2_d(i),
+			o   => ddr2_dqi(i));
+
+		ddr2_d(i) <= 
+			ddr2_dqo(i) when ddr2_dqt(i)='0' else
+			'Z';
+
+	end generate;
+
 	ddr2_dqs_g : for i in 0 to 2-1 generate
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
---		dqsidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => dqsi,
---			o   => ddr2_dqsi(i));
-		ddr2_dqsi(i) <= dqsi;
+		dqsidelay_i : idelay 
+		port map (
+			rst => ictlr_rst,
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i   => dqsi,
+			o   => ddr2_dqsi(i));
+--		ddr2_dqsi(i) <= dqsi;
 
 		dqsiobuf_i : iobufds
 		generic map (

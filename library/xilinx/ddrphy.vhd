@@ -80,7 +80,9 @@ entity ddrphy is
 		ddr_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_dm  : inout  std_logic_vector(word_size/byte_size-1 downto 0);
-		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
+		ddr_dqt  : out std_logic_vector(word_size-1 downto 0);
+		ddr_dqi  : in  std_logic_vector(word_size-1 downto 0);
+		ddr_dqo  : out std_logic_vector(word_size-1 downto 0);
 		ddr_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
@@ -290,7 +292,7 @@ begin
 	sdmt  <= to_blinevector(not sys_dmt);
 	sdqt  <= to_blinevector(not sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqo);
-	ddqi  <= to_bytevector(ddr_dq);
+	ddqi  <= to_bytevector(ddr_dqi);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
@@ -354,20 +356,8 @@ begin
 		end loop;
 	end process;
 
-	process (ddqo, ddqt)
-		variable dqt : std_logic_vector(ddr_dq'range);
-		variable dqo : std_logic_vector(ddr_dq'range);
-	begin
-		dqt := to_stdlogicvector(ddqt);
-		dqo := to_stdlogicvector(ddqo);
-		for i in dqo'range loop
-			if dqt(i)='1' then
-				ddr_dq(i) <= 'Z';
-			else
-				ddr_dq(i) <= dqo(i);
-			end if;
-		end loop;
-	end process;
+	ddr_dqt <= to_stdlogicvector(ddqt);
+	ddr_dqo <= to_stdlogicvector(ddqo);
 
 	process (ddmo, ddmt)
 	begin
