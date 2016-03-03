@@ -1,72 +1,79 @@
-net "sys_clk" tnm_net = sys_clk;
-timespec ts_sys_clk = period "sys_clk" 10 ns high 50%;
+NET "sys_clk" TNM_NET = sys_clk;
+TIMESPEC ts_sys_clk = PERIOD "sys_clk" 10 ns HIGH 50%;
 
-net "phy_rxclk" tnm_net = phy_rxclk;
-timespec ts_phy_rxclk = period "phy_rxclk" 8 ns high 50%;
+NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
+NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
-net "ddrs_clk0" tnm_net = ddrs_clk0;
-net "ddrs_clk90" tnm_net = ddrs_clk90;
-net "sys_clk" tnm_net = sys_clk; 
-net "gtx_clk" tnm_net = gtx_clk;
+NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
-net "ddr2_d[*]"           maxdelay =  350 ps;
-net "ddr2_d[*]"           maxskew  =  100 ps;
-net "ddr2_dm[*]"           maxdelay =  350 ps;
-net "ddr2_dm[*]"           maxskew  =  100 ps;
+NET "phy_rxclk" TNM_NET = phy_rxclk;
+TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
 
-# Data strobe signals
-# ###################
+NET "ddr2_d[*]"     MAXDELAY = 0.350 ns;
+NET "ddr2_d[*]"     MAXSKEW  = 0.100 ns;
+NET "ddr2_dm[*]"    MAXSKEW  = 0.500 ns;
+NET "ddr2_dqs_p[*]" MAXDELAY = 0.375 ns;
+NET "ddr2_dqs_p[*]" MAXSKEW  = 0.750 ns;
+NET "ddrphy_dqsi*"  MAXDELAY = 1.350 ns;
+NET "ddrphy_dqsi*"  MAXSKEW  = 0.560 ns;
 
-net "ddr2_dqs_p[*]"      maxdelay =  375 ps;
-net "ddr2_dqs_p[*]"      maxskew  =   75 ps;
-net "ddrphy_dqsi*[*]" maxdelay = 1350 ps;
-net "ddrphy_dqsi*[*]" maxskew  =  560 ps;
-#net "*video_clk*" maxskew = 1 ns;
+# ###################### #
+# DDR 333 Mhz rate clock #
+# ###################### #
 
-net "ddr2_dqs_p[1]" tnm_net = dqs0;
-net "ddr2_dqs_p[0]" tnm_net = dqs1;
-net "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
-net "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dm[0]" OFFSET = IN  3.000 ns VALID 1.000 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  3.000 ns VALID 1.000 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.225 ns VALID 1.050 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.225 ns VALID 1.050 ns BEFORE ddr2_dqs_p[1] RISING;
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 3.333 ns HIGH 50%;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0  HIGH 50% PHASE 0.0;
-NET "ddr2_dm[0]" OFFSET = IN  2.50 ns VALID .5 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN  2.50 ns VALID .5 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -.500 ns VALID .500 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -.500 ns VALID .500 ns BEFORE ddr2_dqs_p[1] RISING;
-
-NET ddr2_dqs_p[0] TNM_NET = FFS  FFS_dqs0;
-NET ddr2_dqs_p[0] TNM_NET = RAMS RAMS_dqs0;
-NET ddr2_dqs_p[1] TNM_NET = FFS  FFS_dqs1;
-NET ddr2_dqs_p[1] TNM_NET = RAMS RAMS_dqs1;
-NET ddrs_clk0     TNM_NET = FFS  FFS_ddrsclk0;
-NET ddrs_clk0     TNM_NET = RAMS RAMS_ddrsclk0;
-NET ddrs_clk90    TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clk90    TNM_NET = RAMS RAMS_ddrsclk90;
-NET gtx_clk       TNM_NET = FFS  FFS_gtxclk;
-NET gtx_clk       TNM_NET = RAMS RAMS_gtxclk;
-NET input_clk     TNM_NET = FFS  FFS_inputclk;
-NET input_clk     TNM_NET = RAMS RAMS_inputclk;
+# ###################### #
+# Ignore crossclock time #
+# ###################### #
+NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
+NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
+NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
+NET input_clk  TNM_NET = FFS  FFS_adcclkab;
+NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
+NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 #NET video_clk     TNM_NET = FFS  FFS_videoclk;
 #NET video_clk     TNM_NET = RAMS RAMS_videoclk;
-#
-#
-#
-#
-TIMESPEC TS_r2fclk_inp2ddr  = FROM RAMS_inputclk TO FFS_ddrsclk0  TIG;
-TIMESPEC TS_f2fclk_inp2ddr  = FROM FFS_inputclk  TO FFS_ddrsclk0  TIG;
-TIMESPEC TS_f2fclk_ddr2inp  = FROM FFS_ddrsclk0  TO FFS_inputclk  TIG;
-TIMESPEC TS_f2r_ddr0to90 = FROM FFS_ddrsclk0 TO RAMS_ddrsclk90 TIG;
-#TIMESPEC TS_f2fclk_ddr0to90 = FROM FFS_ddrsclk0 TO FFS_ddrsclk90 TIG;
-TIMESPEC TS_f2fclk_ddr2gtx  = FROM FFS_ddrsclk0 TO FFS_gtxclk   TIG;
-TIMESPEC TS_f2fclk_gtx2ddr  = FROM FFS_gtxclk   TO FFS_ddrsclk0 TIG;
-TIMESPEC TS_pp = TO FFS  (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_pp1 = TO FFS  (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 
-### ###### #
-### Others #
-### ###### #
-#
+TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
+TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
+TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk    TIG;
+TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
+
+TIMESPEC TS_pp  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_pp1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_pp2 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrdll  = FROM FFS  (*/xdr_init_rdy)  TIG;
+# ######################## #
+# Read-FIFO DQS Delay Taps #
+# ######################## #
+
+# Data Byte 0 #
+# ########### #
+
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y28;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y28;
+
+# Data Byte 1 #
+# ########### #
+
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
+
+# Others #
+# ###### #
+
 NET "ddr2_clk_p[*]" IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_clk_n[*]" IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_dqs_p[*]" IOSTANDARD = DIFF_SSTL18_II_DCI;
@@ -91,22 +98,4 @@ NET "gpio_led[3]" IOSTANDARD = SSTL18_II;
 NET "gpio_led[5]" IOSTANDARD = SSTL18_II;
 NET "gpio_led[6]" IOSTANDARD = SSTL18_II;
 NET "gpio_led[7]" IOSTANDARD = SSTL18_II;
-
-# ########### #
-# Data Byte 0 #
-# ########### #
-
-# Read FIFO #
-# ######### #
-
-# Delayed DSQ Taps #
-
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y28;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y28;
-
-
-# Delayed DSQ Taps #
-
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
 

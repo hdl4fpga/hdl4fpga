@@ -128,7 +128,7 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 9;
+	constant ddr_mul   : natural := 10;
 	constant ddr_div   : natural := 3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
@@ -349,15 +349,15 @@ begin
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
---		dmidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => ddrphy_sti(i*data_gear),
---			o   => ddr_sti(i*data_gear));
-		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
+		dmidelay_i : idelay 
+		port map (
+			rst => ictlr_rst,
+			c   => '0',
+			ce  => '0',
+			inc => '0',
+			i   => ddrphy_sti(i*data_gear),
+			o   => ddr_sti(i*data_gear));
+--		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
 		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
 
 	end generate;

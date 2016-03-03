@@ -182,7 +182,6 @@ begin
 	end process;
 
 	process (xdr_init_clk)
-		variable pp : std_logic_vector(xdr_init_a'range) := (others => '0');
 	begin
 		if rising_edge(xdr_init_clk) then
 			xdr_init_a   <= resize(xdr_mr_data, xdr_init_a'length);

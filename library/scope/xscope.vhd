@@ -518,7 +518,7 @@ begin
 		sys_cwl => ddrs_cwl,
 		sys_wr  => ddrs_wr,
 		sys_clks => ddrs_clks,
-		sys_ini  =>  ddr_ini,
+		sys_ini  => ddr_ini,
 
 		sys_cmd_req => ddrs_cmd_req,
 		sys_cmd_rdy => ddrs_cmd_rdy,

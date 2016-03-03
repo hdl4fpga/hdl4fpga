@@ -168,6 +168,7 @@ architecture mix of xdr is
 
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
+	signal xdr_mpu_sel : std_logic;
 
 	constant lRCD : natural := to_xdrlatency(tCP, mark, tRCD);
 	constant lRFC : natural := to_xdrlatency(tCP, mark, tRFC);
@@ -233,15 +234,24 @@ begin
 		xdr_refi_rdy => xdr_refi_rdy);
 
 	xdr_rst <= xdr_init_rst;
-	xdr_cs  <= '0'         when xdr_init_rdy='1' else xdr_init_cs;
+	xdr_cs  <= '0'         when xdr_mpu_sel='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
-	xdr_odt <= '1'         when xdr_init_rdy='1' else xdr_init_odt;
-	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
-	xdr_ras <= xdr_mpu_ras when xdr_init_rdy='1' else xdr_init_ras;
-	xdr_cas <= xdr_mpu_cas when xdr_init_rdy='1' else xdr_init_cas;
-	xdr_we  <= xdr_mpu_we  when xdr_init_rdy='1' else xdr_init_we;
-	xdr_a   <= sys_a       when xdr_init_rdy='1' else xdr_init_a;
-	xdr_b   <= sys_b       when xdr_init_rdy='1' else xdr_init_b;
+	xdr_odt <= '1'         when xdr_mpu_sel='1' else xdr_init_odt;
+	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
+	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
+	xdr_cas <= xdr_mpu_cas when xdr_mpu_sel='1' else xdr_init_cas;
+	xdr_we  <= xdr_mpu_we  when xdr_mpu_sel='1' else xdr_init_we;
+	xdr_a   <= sys_a       when xdr_mpu_sel='1' else xdr_init_a;
+	xdr_b   <= sys_b       when xdr_mpu_sel='1' else xdr_init_b;
+
+	mpu_sel_slr_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => sys_clks(0),
+		di(0) => xdr_init_rdy,
+		do(0) => xdr_mpu_sel);
 
 	sys_ini <= xdr_init_rdy;
 	xdr_mpu_rst <= not xdr_init_rdy;
