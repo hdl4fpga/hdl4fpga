@@ -3,6 +3,19 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef _WINDOWS_
+#define htobe64(x) \
+	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000000000ff0000ULL) << 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00000000ff000000ULL) <<  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x000000ff00000000ULL) >>  8) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x0000ff0000000000ULL) >> 24) |\
+	 (((unsigned long long)(x) & (unsigned long long)0x00ff000000000000ULL) >> 40) |\
+	 (((unsigned long long)(x) & (unsigned long long)0xff00000000000000ULL) >> 56))
+#endif
+
+  
 typedef unsigned int lfsr_t;
 
 int main (int argc, char *argv[])
@@ -17,6 +30,7 @@ int main (int argc, char *argv[])
 		unsigned long long check;
 		int k;
 
+		datum = htobe64(datum);
 		if (!lfsr) lfsr = (0xffffffff & (datum));
 					        
 		check = ((unsigned long long)lfsr) |  (((unsigned long long)lfsr) << 32);

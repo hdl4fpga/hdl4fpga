@@ -112,10 +112,10 @@ architecture scope of ecp3versa is
 	-- ddr_clkok       2         2          2
 	--------------------------------------------------
 
-	constant ddr_clki  : natural := 1;
-	constant ddr_clkfb : natural := 4;
-	constant ddr_clkop : natural := 2;
-	constant ddr_clkok : natural := 2;
+	constant ddr_clki  : natural := 1; -- 1;
+	constant ddr_clkfb : natural := 5; -- 4;
+	constant ddr_clkop : natural := 2; -- 2;
+	constant ddr_clkok : natural := 2; -- 2;
 
 	constant r : natural := 0;
 	constant f : natural := 1;

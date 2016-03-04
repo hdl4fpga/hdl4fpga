@@ -52,6 +52,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 architecture def of miitxmem is
+	constant wr_delay : natural := 6;
 	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024/2**0*8-1));
 
 	subtype aword is std_logic_vector(bram_size-1 downto 0);
@@ -160,7 +161,7 @@ begin
 	wr_address_i : entity hdl4fpga.align
 	generic map (
 		n => wr_address'length,
-		d => (wr_address'range => 4))
+		d => (wr_address'range => wr_delay))
 	port map (
 		clk => ddrs_clk,
 		di  => std_logic_vector(addri(wr_address'range)),
@@ -168,8 +169,9 @@ begin
 
 	wr_data_i : entity hdl4fpga.align
 	generic map (
+		srl16 => "false",
 		n => ddrs_di'length,
-		d => (ddrs_di'range => 4))
+		d => (ddrs_di'range => wr_delay))
 	port map (
 		clk => ddrs_clk,
 		di  => ddrs_di,
@@ -179,7 +181,7 @@ begin
 	generic map (
 		srl16 => "false",
 		n => 1,
-		d => (1 to 1 => 3))
+		d => (1 to 1 => wr_delay-1))
 	port map (
 		clk => ddrs_clk,
 		di(0) => dirdy,

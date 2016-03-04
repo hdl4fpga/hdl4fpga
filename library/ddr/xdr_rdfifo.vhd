@@ -103,26 +103,24 @@ architecture struct of xdr_rdfifo is
 
 	signal do : word_vector(xdr_dqsi'length-1 downto 0);
 	signal di : word_vector(xdr_dqsi'length-1 downto 0);
-	signal ser_ar : std_logic;
 
+	signal sys_do_win : std_logic;
 begin
 
-	ser_ar <= not sys_rea;
+	process (sys_clk)
+		variable acc_rea_dly : std_logic;
+	begin
+		if rising_edge(sys_clk) then
+			sys_do_win  <= acc_rea_dly;
+			acc_rea_dly := not sys_rea;
+		end if;
+	end process;
+
 	di  <= to_wordvector(xdr_dqi);
 	bytes_g : for i in word_size/byte_size-1 downto 0 generate
 		data_phases_g : for j in 0 to data_phases-1 generate
 			signal pll_req : std_logic;
 		begin
-
-			process (sys_clk)
-				variable acc_rea_dly : std_logic;
-				variable sys_do_win : std_logic;
-			begin
-				if rising_edge(sys_clk) then
-					sys_do_win  := acc_rea_dly;
-					acc_rea_dly := not sys_rea;
-				end if;
-			end process;
 
 			process (sys_clk)
 				variable q : std_logic_vector(0 to data_delay);
@@ -145,7 +143,7 @@ begin
 				pll_clk => sys_clk,
 				pll_req => pll_req,
 
-				ser_ar(0)  => ser_ar,
+				ser_ar(0)  => sys_do_win,
 				ser_ena(0) => xdr_win_dqs(i*data_phases+j),
 				ser_clk(0) => xdr_dqsi(i*data_phases+j),
 

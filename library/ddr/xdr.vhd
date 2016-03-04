@@ -246,6 +246,7 @@ begin
 
 	mpu_sel_slr_e : entity hdl4fpga.align
 	generic map (
+		srl16 => "false",
 		n => 1,
 		d => (0 to 0 => 2))
 	port map (
@@ -378,8 +379,8 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => 2)
---		data_delay => 3) latticesemi
+--		data_delay => 2)
+		data_delay => 3) --latticesemi
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

@@ -1,3 +1,26 @@
+#                                                                            #
+# Author(s):                                                                 #
+#   Miguel Angel Sagreras                                                    #
+#                                                                            #
+# Copyright (C) 2015                                                         #
+#    Miguel Angel Sagreras                                                   #
+#                                                                            #
+# This source file may be used and distributed without restriction provided  #
+# that this copyright statement is not removed from the file and that any    #
+# derivative work contains  the original copyright notice and the associated #
+# disclaimer.                                                                #
+#                                                                            #
+# This source file is free software; you can redistribute it and/or modify   #
+# it under the terms of the GNU General Public License as published by the   #
+# Free Software Foundation, either version 3 of the License, or (at your     #
+# option) any later version.                                                 #
+#                                                                            #
+# This source is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
+# more details at http://www.gnu.org/licenses/.                              #
+#                                                                            #
+
 NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
@@ -16,13 +39,9 @@ TIMESPEC TS_mii_txc = PERIOD "mii_txc" 20 ns HIGH 50%;
 NET "mii_rxc" TNM_NET = mii_rxc;
 TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 20 ns HIGH 50%;
 
-NET "ddr_st_lp_dqs" MAXSKEW  = 1.500 ns;
-#NET "ddr_dqs[*]"    MAXDELAY = 0.375 ns;
-NET "ddr_dqs[*]"    MAXSKEW  = 1.000 ns;
-#NET "ddr_dq[*]"     MAXDELAY = 0.350 ns;
-NET "ddr_dq[*]"     MAXSKEW  = 0.250 ns;
-#NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.850 ns;
+NET "ddr_dqs[*]"    MAXSKEW  = 0.100 ns;
+NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
+NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
 
 # ###################### #
 # DDR 166 Mhz rate clock #

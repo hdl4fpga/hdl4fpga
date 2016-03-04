@@ -1,9 +1,11 @@
 rm pp pp1
-./scope 32768 32 > pp
-./scope 32768 32 > pp1
+SIZE=${1:-32};
+BLOCKS=${2:-32768};
+./scope $BLOCKS $SIZE > pp
+./scope $BLOCKS $SIZE > pp1
 i=0
 while cmp pp pp1 > log ; do 
-	./scope 32768 32 > pp1
+	./scope $BLOCKS $SIZE > pp1
 	i=`expr $i + 1`
 	echo $i
 done
