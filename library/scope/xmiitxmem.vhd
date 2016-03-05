@@ -52,7 +52,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 architecture def of miitxmem is
-	constant wr_delay : natural := 6;
+	constant wr_delay : natural := 4;
 	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024/2**0*8-1));
 
 	subtype aword is std_logic_vector(bram_size-1 downto 0);

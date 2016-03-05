@@ -34,10 +34,10 @@ NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
-
-#NET "ddr2_dqs_p[*]" MAXSKEW  = 0.250 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
-NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
+NET "ddr2_d[*]" MAXSKEW  = 0.250 ns;
+NET "ddr2_dqs_p[*]" MAXSKEW  = 0.250 ns;
+NET "ddrphy_dqsi*"  MAXSKEW  = 0.850 ns;
+#NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
 
 # ###################### #
 # DDR 333 Mhz rate clock #
