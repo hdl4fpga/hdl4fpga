@@ -70,13 +70,13 @@ entity xdr_init is
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
 		xdr_init_cke : out std_logic;
-		xdr_init_odt : out std_logic := '0';
 		xdr_init_cs  : out std_logic;
 		xdr_init_ras : out std_logic;
 		xdr_init_cas : out std_logic;
 		xdr_init_we  : out std_logic;
 		xdr_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0);
-		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0));
+		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0);
+		xdr_init_odt : out std_logic);
 
 --	attribute fsm_encoding : string;
 --	attribute fsm_encoding of xdr_init : entity is "compact";
@@ -88,6 +88,7 @@ architecture def of xdr_init is
 	signal init_rdy : std_logic;
 	constant pgm : s_table := choose_pgm(ddr_stdr);
 
+	signal wlreq : std_logic;
 	signal xdr_init_pc : s_code;
 	signal xdr_timer_id  : std_logic_vector(unsigned_num_bits(timers'length-1)-1 downto 0);
 	signal xdr_timer_rdy : std_logic;
@@ -149,8 +150,7 @@ begin
 					xdr_init_rst <= to_sout(row.output).rst;
 					init_rdy <= to_sout(row.output).rdy;
 					xdr_init_cke <= to_sout(row.output).cke;
-					xdr_init_wlreq <= to_sout(row.output).wlq;
-					xdr_init_odt <= to_sout(row.output).odt;
+					wlreq <= to_sout(row.output).wlq;
 					xdr_init_cs  <= row.cmd.cs;
 					xdr_init_ras <= row.cmd.ras;
 					xdr_init_cas <= row.cmd.cas;
@@ -174,9 +174,23 @@ begin
 				xdr_init_ras <= '1';
 				xdr_init_cas <= '1';
 				xdr_init_we  <= '1';
-				xdr_init_wlreq <= '0';
+				wlreq <= '0';
 				xdr_mr_addr  <= (xdr_mr_addr'range => '1');
 				xdr_init_b   <= std_logic_vector(unsigned(resize(unsigned(ddr_mrx), xdr_init_b'length)));
+			end if;
+		end if;
+	end process;
+	xdr_init_wlreq <= wlreq;
+
+	process (xdr_init_clk)
+	begin
+		if rising_edge(xdr_init_clk) then
+			if xdr_init_req='1' then
+				xdr_init_odt <= '0';
+			elsif wlreq='0' then
+				xdr_init_odt <='0';
+			else 
+				xdr_init_odt <= not xdr_init_wlrdy;
 			end if;
 		end if;
 	end process;
