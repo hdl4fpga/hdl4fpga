@@ -8,6 +8,7 @@ add wave -noupdate /testbench/xtal
 add wave -noupdate /testbench/ddr_clk_p
 add wave -noupdate /testbench/rst_n
 add wave -noupdate /testbench/cke
+add wave -noupdate /testbench/odt
 add wave -noupdate /testbench/cs_n
 add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
@@ -39,7 +40,7 @@ add wave -noupdate /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/miitx_ena
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/txd
 add wave -noupdate -radix hexadecimal /testbench/ecp3versa_e/scope_e/dataio_e/miitxmem_e/miitx_dat
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {20231261 ps} 0} {{Cursor 2} {20286711 ps} 0}
+WaveRestoreCursors {{Cursor 1} {11276015000 fs} 0} {{Cursor 2} {20286711000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 129
 configure wave -valuecolwidth 92
@@ -55,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {20173618 ps} {20317178 ps}
+WaveRestoreZoom {11204235 ps} {11347795 ps}

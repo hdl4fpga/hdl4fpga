@@ -70,7 +70,8 @@ entity xdr_sch is
 		xdr_dqs  : out std_logic_vector(0 to gear-1);
 
 		xdr_dqz  : out std_logic_vector(0 to gear-1);
-		xdr_wwn  : out std_logic_vector(0 to gear-1));
+		xdr_wwn  : out std_logic_vector(0 to gear-1);
+		xdr_odt  : out std_logic_vector(0 to gear-1));
 
 end;
 
@@ -214,5 +215,16 @@ begin
 		lat_tab => WWNL_TAB,
 		lat_sch => wpho90,
 		lat_ext => WWNX_LAT,
+		lat_wid => WID_LAT);
+
+	xdr_odt <= xdr_task (
+		clk_phases => clk_edges,
+		gear => gear,
+
+		lat_val => "000",
+		lat_cod => "000",
+		lat_tab => (0 to 0 => 0),
+		lat_sch => wpho90,
+		lat_ext => 1*gear,
 		lat_wid => WID_LAT);
 end;

@@ -141,6 +141,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
+	signal xdr_sch_odt : std_logic_vector(0 to gear-1);
 	signal xdr_sch_dqsz : std_logic_vector(0 to gear-1);
 	signal xdr_sch_dqs : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dqsz'range);
@@ -236,7 +237,7 @@ begin
 	xdr_rst <= xdr_init_rst;
 	xdr_cs  <= '0'         when xdr_mpu_sel='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
-	xdr_odt <= '1'         when xdr_mpu_sel='1' else xdr_init_odt;
+	xdr_odt <= xdr_sch_odt(0) when xdr_mpu_sel='1' else xdr_init_odt;
 	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
 	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
 	xdr_cas <= xdr_mpu_cas when xdr_mpu_sel='1' else xdr_init_cas;
@@ -343,6 +344,7 @@ begin
 		xdr_dqsz => xdr_sch_dqsz,
 		xdr_dqs  => xdr_sch_dqs,
 		xdr_dqz  => xdr_sch_dqz,
+		xdr_odt  => xdr_sch_odt,
 		xdr_wwn  => xdr_sch_wwn);
 
 	xdr_win_dqs <= xdr_sti;

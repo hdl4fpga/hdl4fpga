@@ -540,17 +540,27 @@ package body xdr_param is
  	constant sc3_cke  : s_code := "0011";
  	constant sc3_lmr2 : s_code := "0010";
  	constant sc3_lmr3 : s_code := "0110";
+
  	constant sc3_lmr1 : s_code := "0111";
  	constant sc3_lmr0 : s_code := "0101";
  	constant sc3_zqi  : s_code := "0100";
  	constant sc3_wle  : s_code := "1100";
+
  	constant sc3_wls  : s_code := "1101";
  	constant sc3_wlc  : s_code := "1111";
  	constant sc3_wlo  : s_code := "1110";
  	constant sc3_wlf  : s_code := "1010";
+
  	constant sc3_wai  : s_code := "1011";
  
- 	constant ddr3_pgm : s_table := (
+	                              --    +------< rst
+	                              --    |+-----< cke
+	                              --    ||+----< rdy
+	                              --    |||+---< wlq
+	                              --    ||||+--< odt
+	                              --    |||||
+                                  --    vvvvv
+ 	constant ddr3_pgm : s_table := (          
  		(sc_rst,   sc3_rrdy, "0", "0", "10000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_RRDY, TMR_SIZE)),
  		(sc3_rrdy, sc3_cke,  "0", "0", "11000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_CKE, TMR_SIZE)), 
  		(sc3_cke,  sc3_lmr2, "0", "0", "11000", ddr_mrs, ddr3mr_setmr2, ddr_mr2, to_unsigned(TMR3_MRD, TMR_SIZE)), 
@@ -559,14 +569,14 @@ package body xdr_param is
  		(sc3_lmr1, sc3_lmr0, "0", "0", "11000", ddr_mrs, ddr3mr_setmr0, ddr_mr0, to_unsigned(TMR3_MOD, TMR_SIZE)), 
  		(sc3_lmr0, sc3_zqi,  "0", "0", "11000", ddr_zqc, ddr3mr_zqc, ddr_mrx,    to_unsigned(TMR3_ZQINIT, TMR_SIZE)),
  		(sc3_zqi,  sc3_wle,  "0", "0", "11000", ddr_mrs, ddr3mr_enawl, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)), 
- 		(sc3_wle,  sc3_wls,  "0", "0", "11000", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLDQSEN, TMR_SIZE)),  
+ 		(sc3_wle,  sc3_wls,  "0", "0", "11001", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLDQSEN, TMR_SIZE)),  
  		(sc3_wls,  sc3_wlc,  "0", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),  
  		(sc3_wlc,  sc3_wlc,  "1", "0", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_WLC, TMR_SIZE)),  
- 		(sc3_wlc,  sc3_wlo,  "1", "1", "11011", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_MRD, TMR_SIZE)),  
- 		(sc3_wlo,  sc3_wlf,  "0", "0", "11011", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),  
- 		(sc3_wlf,  sc3_wai,  "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_DLL, TMR_SIZE)),
- 		(sc3_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
- 		(sc_ref,   sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)));
+ 		(sc3_wlc,  sc3_wlo,  "1", "1", "11010", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_MRD, TMR_SIZE)),  
+ 		(sc3_wlo,  sc3_wlf,  "0", "0", "11010", ddr_mrs, ddr3mr_setmr1, ddr_mr1, to_unsigned(TMR3_MOD, TMR_SIZE)),  
+ 		(sc3_wlf,  sc3_wai,  "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_DLL, TMR_SIZE)),
+ 		(sc3_wai,  sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
+ 		(sc_ref,   sc_ref,   "0", "0", "11110", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)));
  
 	function to_sout (
 		constant output : std_logic_vector(0 to 5-1))
@@ -815,7 +825,7 @@ package body xdr_param is
 				mr_field(mask => ddr3_al,   src => xdr_mr_al) or
 				mr_field(mask => ddr3_edll, src => "0") or
 				mr_field(mask => ddr3_ods,  src => xdr_mr_ods) or
-				mr_field(mask => ddr3_qoff, src => xdr_mr_qoff) or
+				mr_field(mask => ddr3_qoff, src => "0") or
 				mr_field(mask => ddr3_rtt,  src => xdr_mr_rtt) or
 				mr_field(mask => ddr3_tdqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr3_wl,   src => "1");
@@ -825,7 +835,7 @@ package body xdr_param is
 				mr_field(mask => ddr3_al,   src => xdr_mr_al) or
 				mr_field(mask => ddr3_edll, src => "0") or
 				mr_field(mask => ddr3_ods,  src => xdr_mr_ods) or
-				mr_field(mask => ddr3_qoff, src => xdr_mr_qoff) or
+				mr_field(mask => ddr3_qoff, src => "0") or
 				mr_field(mask => ddr3_rtt,  src => xdr_mr_rtt) or
 				mr_field(mask => ddr3_tdqs, src => xdr_mr_tdqs) or
 				mr_field(mask => ddr3_wl,   src => "0");
