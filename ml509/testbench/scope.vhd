@@ -195,7 +195,7 @@ architecture scope of testbench is
 	constant delay : time := 1 ns;
 begin
 
-	clk <= not clk after 5 ns;
+	clk <= not clk after 6 ns;
 	rst <= '1', '0' after 1.1 us;
 
 --	mii_strt <= '0', '1' after 240 us;

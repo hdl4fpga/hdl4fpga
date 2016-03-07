@@ -54,6 +54,7 @@ entity scope is
 		input_clk : in std_logic;
 
 		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
+		ddrs_rtt : in std_logic_vector;
 		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
@@ -513,6 +514,7 @@ begin
 		tCP  => DDR_tCP)
 	port map (
 		sys_rst => ddrs_rst,
+		sys_rtt => ddrs_rtt,
 		sys_bl  => ddrs_bl,
 		sys_cl  => ddrs_cl,
 		sys_cwl => ddrs_cwl,

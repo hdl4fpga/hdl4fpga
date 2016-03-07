@@ -84,8 +84,8 @@ architecture scope of ml509 is
 	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmd_phases*ddr2_ba'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmd_phases*ddr2_a'length-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmd_phases*2-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmd_phases*13-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -131,8 +131,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10;
-	constant ddr_div   : natural := 3;
+	constant ddr_mul   : natural := 9; --10;
+	constant ddr_div   : natural := 3; --3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -194,9 +194,9 @@ begin
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_SCLKEDGES => sclk_edges,
 		DDR_STROBE => "INTERNAL",
-		DDR_CLMNSIZE => 7,
-		DDR_BANKSIZE => ddr2_ba'length,
-		DDR_ADDRSIZE => ddr2_a'length,
+		DDR_CLMNSIZE => 6,
+		DDR_BANKSIZE => 2, --ddr2_ba'length,
+		DDR_ADDRSIZE => 13,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
 		DDR_DATAEDGES => data_edges,
@@ -213,6 +213,7 @@ begin
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
+		ddrs_rtt => "11",
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -220,8 +221,8 @@ begin
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
 		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(ddr2_ba'length-1 downto 0),
-		ddr_a    => ddrphy_a(ddr2_a'length-1 downto 0),
+		ddr_b    => ddrphy_b(2-1 downto 0),
+		ddr_a    => ddrphy_a(13-1 downto 0),
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
@@ -261,8 +262,8 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		LOOPBACK => FALSE,
-		BANK_SIZE => ddr2_ba'length,
-		ADDR_SIZE => ddr2_a'length,
+		BANK_SIZE => 2,
+		ADDR_SIZE => 13,
 		data_gear => data_gear,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
@@ -297,8 +298,8 @@ begin
 		ddr_ras => ddr2_ras,
 		ddr_cas => ddr2_cas,
 		ddr_we  => ddr2_we,
-		ddr_b   => ddr2_ba,
-		ddr_a   => ddr2_a,
+		ddr_b   => ddr2_ba(2-1 downto 0),
+		ddr_a   => ddr2_a(13-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
 		ddr_dm   => ddr2_dm(2-1 downto 0),
@@ -308,7 +309,9 @@ begin
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
 		ddr_dqso => ddr2_dqso);
-	ddr2_dm(8-2 downto 2) <= (others => '0');
+	ddr2_dm(8-2 downto 2)  <= (others => '0');
+	ddr2_a(14-1 downto 13) <= (others => '0');
+	ddr2_ba(3-1 downto 2)  <= (others => '0');
 
 	phy_mdc  <= '0';
 	phy_mdio <= '0';

@@ -15,7 +15,7 @@ int main (int argc, char *argv[])
 
 	for(i = 0; scanf("%lx", &datum) > 0; i++) {
 		datum = htonl(datum);
-		lfsr_t p = 0x22800000;
+		lfsr_t p = 0x23000000;
 		unsigned long check;
 		int k;
 

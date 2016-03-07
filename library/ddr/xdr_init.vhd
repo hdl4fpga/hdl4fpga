@@ -49,7 +49,7 @@ entity xdr_init is
 		xdr_init_mpr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_mprrf : in std_logic_vector(2-1 downto 0) := (others => '0');
 		xdr_init_qoff : in  std_logic_vector(1-1 downto 0) := (others => '0');
-		xdr_init_rtt  : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		xdr_init_rtt  : in  std_logic_vector;
 		xdr_init_srt  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_tdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		xdr_init_wl   : in  std_logic_vector(1-1 downto 0) := (others => '0');

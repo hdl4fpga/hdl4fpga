@@ -169,7 +169,7 @@ begin
 
 	wr_data_i : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
+--		srl16 => "false",
 		n => ddrs_di'length,
 		d => (ddrs_di'range => wr_delay))
 	port map (
@@ -179,7 +179,7 @@ begin
 
 	wr_ena_i : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
+--		srl16 => "false",
 		n => 1,
 		d => (1 to 1 => wr_delay-1))
 	port map (
@@ -209,7 +209,7 @@ begin
 		rd_data => rd_data);
 
 --	rad <= std_logic_vector(unsigned(rd_data) rol miitx_dat'length);
-	rad <= std_logic_vector(unsigned(rd_data) rol miitx_dat'length);
+	rad <= std_logic_vector(unsigned(rd_data) ror miitx_dat'length);
 	txd <= word2byte (
 		word => rad,
 		addr => not bysel);

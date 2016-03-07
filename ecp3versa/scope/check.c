@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 
 
 	for(i = 0; scanf("%llx", &datum) > 0; i++) {
-		lfsr_t p = 0x22800000;
+		lfsr_t p = 0x23000000;
 		unsigned long long check;
 		int k;
 

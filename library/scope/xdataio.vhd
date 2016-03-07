@@ -156,15 +156,21 @@ begin
 --	end process;
 
 	process(ddrs_clk)
-		constant n : natural := 32;
-		constant g : std_logic_vector(n-1 downto 0) :=
---		B"0011_1000";
-		B"0010_0010_1000_0000_0000_0000_0000_0000";
+		constant n : natural := aux2'length;
+		variable g : std_logic_vector(n-1 downto 0);
 		variable s    : std_logic_vector(g'range);
 		variable aux  : std_logic;
 		variable aux1 : std_logic;
 		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
+		case n is
+		when 32 =>
+			g := B"0010_0011_0000_0000_0000_0000_0000_0000";
+		when 64 =>
+			g := B"0101_1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000";
+		when others =>
+			g := (others => '-');
+		end case;
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 				s  := (others => '1');

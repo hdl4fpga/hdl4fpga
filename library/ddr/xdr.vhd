@@ -52,6 +52,7 @@ entity xdr is
 		sys_cl  : in std_logic_vector(2 downto 0);
 		sys_cwl : in std_logic_vector(2 downto 0);
 		sys_wr  : in std_logic_vector(2 downto 0);
+		sys_rtt : in std_logic_vector;
 
 		sys_rst  : in std_logic;
 		sys_clks : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
@@ -216,7 +217,7 @@ begin
 		xdr_init_bt  => "0",
 		xdr_init_ods => "0",
 		xdr_init_wr  => sys_wr,
-		xdr_init_rtt  => "001",
+		xdr_init_rtt  => sys_rtt,
 
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
