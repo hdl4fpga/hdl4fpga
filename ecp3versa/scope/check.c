@@ -16,7 +16,7 @@
 #endif
 
   
-typedef unsigned int lfsr_t;
+typedef long long unsigned int lfsr_t;
 
 int main (int argc, char *argv[])
 {
@@ -26,14 +26,14 @@ int main (int argc, char *argv[])
 
 
 	for(i = 0; scanf("%llx", &datum) > 0; i++) {
-		lfsr_t p = 0x23000000;
+		lfsr_t p = 0x5800000000000000;
 		unsigned long long check;
 		int k;
 
 		datum = htobe64(datum);
-		if (!lfsr) lfsr = (0xffffffff & (datum));
+		if (!lfsr) lfsr = (0xffffffffffffffff & (datum));
 					        
-		check = ((unsigned long long)lfsr) |  (((unsigned long long)lfsr) << 32);
+		check = lfsr;
 
 		if (check != (datum)){
 			fprintf(stderr, "Failed %d : ", i+1);
@@ -43,7 +43,7 @@ int main (int argc, char *argv[])
 			//printf("0x%016llx 0x%016llx\n", (datum), check);
 		}
 
-		lfsr = ((lfsr>>1)|((lfsr&1)<<(32-1))) ^ (((lfsr&1) ? ~0 : 0) & p);
+		lfsr = ((lfsr>>1)|((lfsr&1)<<(64-1))) ^ (((lfsr&1) ? ~0 : 0) & p);
 	}
 
 	return 0;
