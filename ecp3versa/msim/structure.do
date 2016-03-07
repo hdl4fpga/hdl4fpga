@@ -34,6 +34,7 @@ add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/cs_n
 add wave -noupdate /testbench/ddr_clk_p
+add wave -noupdate /testbench/odt
 add wave -noupdate /testbench/dqs_p(0)
 add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate /testbench/dm
@@ -320,8 +321,8 @@ add wave -noupdate /testbench/ecp3versa_e/phy1_rx_dv
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ecp3versa_e/phy1_rx_d(0) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(1) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(2) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(3) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(4) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(5) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(6) -radix hexadecimal} {/testbench/ecp3versa_e/phy1_rx_d(7) -radix hexadecimal}} -subitemconfig {/testbench/ecp3versa_e/phy1_rx_d(0) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(1) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(2) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(3) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(4) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(5) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(6) {-height 16 -radix hexadecimal} /testbench/ecp3versa_e/phy1_rx_d(7) {-height 16 -radix hexadecimal}} /testbench/ecp3versa_e/phy1_rx_d
 add wave -noupdate -divider ddr3_dqs_0
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2268581 ps} 0} {{Cursor 2} {18557819 ps} 0} {{Cursor 3} {2269056 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {1752155000 fs} 0} {{Cursor 2} {16267405056 fs} 1} {{Cursor 3} {16213223000 fs} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 130
 configure wave -justifyvalue left
@@ -336,4 +337,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {18563906 ps} {18601900 ps}
+WaveRestoreZoom {16201533546 fs} {16224912454 fs}

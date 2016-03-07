@@ -216,6 +216,7 @@ begin
 		xdr_init_bt  => "0",
 		xdr_init_ods => "0",
 		xdr_init_wr  => sys_wr,
+		xdr_init_rtt  => "001",
 
 		xdr_init_clk => sys_clks(0),
 		xdr_init_req => xdr_init_req,
