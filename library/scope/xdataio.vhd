@@ -182,12 +182,9 @@ begin
 					aux1 := aux;
 				end loop;
 			end if;
-			for i in 0 to aux2'length/s'length-1 loop
-				aux2 := std_logic_vector(unsigned(aux2) sll s'length);
-				aux2(s'range) := s;
-			end loop;
+			aux2(s'range) := s;
 		end if;
-		ddrs_di <= aux2;
+		ddrs_di <= s;
 	end process;
 
 	input_rdy <= capture_rdy;
