@@ -172,6 +172,7 @@ architecture mix of xdr is
 	signal xdr_mr_addr : std_logic_vector(3-1 downto 0);
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 	signal xdr_mpu_sel : std_logic;
+	signal init_rdy : std_logic;
 
 	constant lRCD : natural := to_xdrlatency(tCP, mark, tRCD);
 	constant lRFC : natural := to_xdrlatency(tCP, mark, tRFC);
@@ -251,15 +252,17 @@ begin
 	mpu_sel_slr_e : entity hdl4fpga.align
 	generic map (
 		srl16 => "false",
-		n => 1,
-		d => (0 to 0 => 2))
+		n => 2,
+		d => (0 to 1 => 1))
 	port map (
 		clk => sys_clks(0),
 		di(0) => xdr_init_rdy,
-		do(0) => xdr_mpu_sel);
+		di(1) => init_rdy,
+		do(0) => init_rdy,
+		do(1) => xdr_mpu_sel);
 
-	sys_ini <= xdr_init_rdy;
-	xdr_mpu_rst <= not xdr_init_rdy;
+	sys_ini <= init_rdy;
+	xdr_mpu_rst <= not init_rdy;
 	xdr_mpu_ref <= xdr_refi_req;
 
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm --(registered)
@@ -385,7 +388,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size,
 --		data_delay => 2)
-		data_delay => 3) --latticesemi
+		data_delay => 4) --latticesemi
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

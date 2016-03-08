@@ -36,17 +36,17 @@ NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
 NET "ddr2_d[*]" MAXSKEW  = 0.250 ns;
 #NET "ddr2_dqs_p[*]" MAXSKEW  = 0.250 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.850 ns;
-#NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
+#NET "ddrphy_dqsi*"  MAXSKEW  = 0.850 ns;
+#NET "ddrphy_dqsi*"  MAXDELAY = 3.000 ns;
 
 # ###################### #
 # DDR 333 Mhz rate clock #
 # ###################### #
 
-NET "ddr2_dm[0]" OFFSET = IN  0.875 ns VALID 1.00 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN  0.875 ns VALID 1.00 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.225 ns VALID 1.000 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.225 ns VALID 1.000 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN  1.000 ns VALID 2.50 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  1.000 ns VALID 2.50 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
@@ -68,13 +68,13 @@ TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
-TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk    TIG;
-TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0  TIG;
+TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
 
-TIMESPEC TS_pp  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_pp1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_pp2 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-TIMESPEC TS_ddrdll  = FROM FFS  (*/xdr_init_rdy)  TIG;
+TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqt   = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+
 # ######################## #
 # Read-FIFO DQS Delay Taps #
 # ######################## #

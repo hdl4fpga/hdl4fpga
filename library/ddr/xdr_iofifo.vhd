@@ -117,8 +117,9 @@ begin
 	begin
 
 		aser_d <= inc(gray(aser_q));
-		aser_g: for k in aser_q'range  generate
-			sr_g : if pll2ser generate
+
+		sr_g : if pll2ser generate
+			gcntr_g: for k in aser_q'range  generate
 				signal aser_set : std_logic;
 			begin
 				aser_set <= not ser_ena(l);
@@ -130,8 +131,24 @@ begin
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;	
+		end generate;	
 
-			ar_g : if not pll2ser generate
+		ar_g : if not pll2ser generate
+			signal ena : std_logic;
+			signal clk_n : std_logic;
+			signal rst : std_logic;
+		begin
+			clk_n <= not ser_clk(l);
+			rst <= not ser_ena(l);
+
+			ena_i : entity hdl4fpga.aff
+			port map (
+				clk => clk_n,
+				ar  => rst,
+				d   => '1',
+				q   => ena);
+
+			gcntr_g: for k in aser_q'range  generate
 
 				ffd_i : entity hdl4fpga.aff
 				port map (

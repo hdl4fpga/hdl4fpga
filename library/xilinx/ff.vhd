@@ -79,7 +79,7 @@ entity aff is
 	port (
 		ar  : in  std_logic;
 		clk : in  std_logic;
-		ena : in  std_logic;
+		ena : in  std_logic := '1';
 		d   : in  std_logic;
 		q   : out std_logic);
 end;

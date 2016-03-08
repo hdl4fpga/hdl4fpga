@@ -124,6 +124,11 @@ begin
 		output_dat <= std_logic_vector(data);
 	end process;
 
-	output_rdy <= setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+	process (output_clk)
+	begin
+		if rising_edge(output_clk) then
+			output_rdy <= setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+		end if;
+	end process;
 
 end;

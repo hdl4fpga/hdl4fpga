@@ -176,7 +176,7 @@ begin
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 				s  := (others => '1');
-			elsif ddrs_di_req='1' then
+			elsif di_rdy='1' then
 				aux1 := s(s'right);
 				for i in g'range loop
 					aux  := s(i);
@@ -184,7 +184,6 @@ begin
 					aux1 := aux;
 				end loop;
 			end if;
---			di_rdy <= ddrs_di_req;
 		end if;
 		aux2 <= s;
 	end process;
@@ -192,7 +191,7 @@ begin
 	ddr_di_rdy_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 to 2-1 => 1))
+		d => (0 => 1, 1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di(0) => ddrs_di_req,
@@ -203,7 +202,7 @@ begin
 	ddr_di_e : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
-		d => (0 to ddrs_di'length-1 => 2))
+		d => (0 to ddrs_di'length-1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di => aux2,
