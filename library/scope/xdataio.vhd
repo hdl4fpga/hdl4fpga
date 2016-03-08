@@ -63,7 +63,8 @@ entity dataio is
 		ddrs_pre : in std_logic;
 		ddrs_rw  : out std_logic;
 
-		ddrs_di_rdy : in std_logic;
+		ddrs_di_req : in  std_logic;
+		ddrs_di_rdy : out std_logic;
 		ddrs_di  : out  std_logic_vector;
 		ddrs_do_rdy : in std_logic;
 		ddrs_do  : in std_logic_vector;
@@ -108,6 +109,7 @@ architecture def of dataio is
 
 	signal output_dat : std_logic_vector(ddrs_di'range);
 	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
+	signal di_rdy : std_logic;
 begin
 
 	process (input_clk)
@@ -125,7 +127,7 @@ begin
 
 		output_clk => ddrs_clk,
 		output_rdy => datai_brst_req,
-		output_req => ddrs_di_rdy,
+		output_req => ddrs_di_req,
 --		output_dat => ddrs_di
 		output_dat => output_dat);
 
@@ -156,25 +158,25 @@ begin
 --	end process;
 
 	process(ddrs_clk)
-		constant n : natural := aux2'length;
-		variable g : std_logic_vector(n-1 downto 0);
-		variable s    : std_logic_vector(g'range);
+		variable g : std_logic_vector(ddrs_di'length-1 downto 0);
+		variable s : std_logic_vector(g'range);
 		variable aux  : std_logic;
 		variable aux1 : std_logic;
-		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 	begin
-		case n is
+
+		case ddrs_di'length is
 		when 32 =>
-			g := B"0010_0011_0000_0000_0000_0000_0000_0000";
+			g := X"23000000";
 		when 64 =>
-			g := B"0101_1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000";
+			g := X"5800000000000000";
 		when others =>
 			g := (others => '-');
 		end case;
+
 		if rising_edge(ddrs_clk) then
 			if sys_rst='1' then
 				s  := (others => '1');
-			elsif ddrs_di_rdy='1' then
+			elsif ddrs_di_req='1' then
 				aux1 := s(s'right);
 				for i in g'range loop
 					aux  := s(i);
@@ -182,10 +184,30 @@ begin
 					aux1 := aux;
 				end loop;
 			end if;
-			aux2(s'range) := s;
+--			di_rdy <= ddrs_di_req;
 		end if;
-		ddrs_di <= s;
+		aux2 <= s;
 	end process;
+
+	ddr_di_rdy_e : entity hdl4fpga.align
+	generic map (
+		n => 2,
+		d => (0 to 2-1 => 1))
+	port map (
+		clk => ddrs_clk,
+		di(0) => ddrs_di_req,
+		di(1) => di_rdy,
+		do(0) => di_rdy,
+		do(1) => ddrs_di_rdy);
+
+	ddr_di_e : entity hdl4fpga.align
+	generic map (
+		n => ddrs_di'length,
+		d => (0 to ddrs_di'length-1 => 2))
+	port map (
+		clk => ddrs_clk,
+		di => aux2,
+		do => ddrs_di);
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;

@@ -224,7 +224,7 @@ begin
 		lat_val => "000",
 		lat_cod => "000",
 		lat_tab => (0 to 0 => 0),
-		lat_sch => wpho0,
+		lat_sch => wpho90,
 		lat_ext => 1*gear,
 		lat_wid => WID_LAT);
 end;

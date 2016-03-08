@@ -65,7 +65,8 @@ entity xdr is
 		sys_rw : in  std_logic;
 		sys_b  : in  std_logic_vector(bank_size-1 downto 0);
 		sys_a  : in  std_logic_vector(addr_size-1 downto 0);
-		sys_di_rdy : out std_logic;
+		sys_di_rdy : in  std_logic;
+		sys_di_req : out std_logic;
 --		sys_do_rdy : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_do_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_act : out std_logic;
@@ -277,7 +278,7 @@ begin
 		xdr_pgm_rw  => sys_rw);
 
 	xdr_mpu_req <= sys_cmd_req;
-	sys_di_rdy  <= xdr_mpu_wwin;
+	sys_di_req  <= xdr_mpu_wwin;
 				   
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
@@ -432,7 +433,7 @@ begin
 	port map (
 		sys_clk => sys_clks(0),
 		sys_dqi => rot_di,
-		sys_req => xdr_mpu_wwin,
+		sys_req => sys_di_rdy,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
 		xdr_dmo => xdr_wr_dm,
