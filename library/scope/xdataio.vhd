@@ -162,6 +162,7 @@ begin
 		variable s : std_logic_vector(g'range);
 		variable aux  : std_logic;
 		variable aux1 : std_logic;
+		variable q : std_logic;
 	begin
 
 		case ddrs_di'length is
@@ -174,7 +175,7 @@ begin
 		end case;
 
 		if rising_edge(ddrs_clk) then
-			if sys_rst='1' then
+			if q='1' then
 				s  := (others => '1');
 			elsif di_rdy='1' then
 				aux1 := s(s'right);
@@ -184,6 +185,7 @@ begin
 					aux1 := aux;
 				end loop;
 			end if;
+			q := sys_rst;
 		end if;
 		aux2 <= s;
 	end process;

@@ -195,7 +195,7 @@ architecture scope of testbench is
 	constant delay : time := 1 ns;
 begin
 
-	clk <= not clk after 6 ns;
+	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 1.1 us;
 
 --	mii_strt <= '0', '1' after 240 us;
@@ -226,7 +226,7 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	mii_refclk <= not mii_refclk after 20 ns;
+	mii_refclk <= not mii_refclk after 4 ns;
 	mii_rxc <= mii_refclk;
 	ml509_e : ml509
 	port map (

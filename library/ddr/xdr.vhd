@@ -241,13 +241,16 @@ begin
 	xdr_rst <= xdr_init_rst;
 	xdr_cs  <= '0'         when xdr_mpu_sel='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
-	xdr_odt <= xdr_sch_odt(0) when xdr_mpu_sel='1' else xdr_init_odt;
 	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
 	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
 	xdr_cas <= xdr_mpu_cas when xdr_mpu_sel='1' else xdr_init_cas;
 	xdr_we  <= xdr_mpu_we  when xdr_mpu_sel='1' else xdr_init_we;
 	xdr_a   <= sys_a       when xdr_mpu_sel='1' else xdr_init_a;
 	xdr_b   <= sys_b       when xdr_mpu_sel='1' else xdr_init_b;
+	xdr_odt <= 
+		xdr_init_odt   when xdr_mpu_sel='0' else
+		xdr_sch_odt(0) when stdr=3 else
+		'1';
 
 	mpu_sel_slr_e : entity hdl4fpga.align
 	generic map (

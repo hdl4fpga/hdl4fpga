@@ -14,14 +14,13 @@ int main (int argc, char *argv[])
 
 
 	for(i = 0; scanf("%lx", &datum) > 0; i++) {
-		datum = htonl(datum);
 		lfsr_t p = 0x23000000;
 		unsigned long check;
 		int k;
 
-		if (!lfsr) lfsr = (0xffffffff & (datum));
+		if (!lfsr) lfsr = 0xffffffff; //(0xffffffff & (htonl(datum)));
 					        
-		check = (unsigned long )lfsr;
+		check = htonl((unsigned long )lfsr);
 
 		if (check != (datum)){
 			fprintf(stdout, "Failed %d : ", i+1);

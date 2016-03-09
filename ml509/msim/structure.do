@@ -22,8 +22,12 @@ add wave -noupdate /testbench/ml509_e/phy_txc_gtxclk
 add wave -noupdate /testbench/ml509_e/phy_rxctl_rxdv
 add wave -noupdate /testbench/ml509_e/phy_txclk
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/phy_rxd
+add wave -noupdate -radix hexadecimal /testbench/ml509_e/mii_rxd
+add wave -noupdate /testbench/ml509_e/mii_rxdv
+add wave -noupdate /testbench/ml509_e/scope_e_miitx_udprdy
+add wave -noupdate /testbench/ml509_e/phy_rxclk_BUFGP
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6860000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6904590 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -39,4 +43,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {9450 ns}
+WaveRestoreZoom {1317500 ps} {8667500 ps}

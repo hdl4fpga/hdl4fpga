@@ -532,8 +532,8 @@ package body xdr_param is
 		(sc2_ref2, sc2_lm5,  "0", "0", "11000", ddr_mrs, ddr2mr_setmr,   ddr_mr0, to_unsigned(TMR2_MRD, TMR_SIZE)),  
 		(sc2_lm5,  sc2_lm6,  "0", "0", "11000", ddr_mrs, ddr2mr_seteOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
 		(sc2_lm6,  sc2_lm7,  "0", "0", "11000", ddr_mrs, ddr2mr_setdOCD, ddr_mr1, to_unsigned(TMR2_MRD, TMR_SIZE)),  
-		(sc2_lm7,  sc2_wai,  "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_DLL, TMR_SIZE)),  
- 		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR3_REF, TMR_SIZE)),
+		(sc2_lm7,  sc2_wai,  "0", "0", "11000", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_DLL, TMR_SIZE)),  
+ 		(sc2_wai,  sc_ref,   "0", "0", "11111", ddr_nop, ddrmr_mrx, ddr_mrx,     to_unsigned(TMR2_REF, TMR_SIZE)),
 		(sc_ref,   sc_ref,   "0", "0", "11100", ddr_nop, ddrmr_mrx,      ddr_mrx, to_unsigned(TMR2_REF, TMR_SIZE)));
 
  	constant sc3_rrdy : s_code := "0001";
@@ -628,7 +628,7 @@ package body xdr_param is
 				TMR2_MRD => xdr_latency(stdr, MRD),
 				TMR2_RPA => to_xdrlatency(tCP, mark, tRPA),
 				TMR2_RFC => to_xdrlatency(tCP, mark, tRFC),
-				TMR2_DLL => xdr_latency(stdr, MRD),
+				TMR2_DLL => 200, --xdr_latency(stdr, MRD),
 				TMR2_REF => to_xdrlatency(tCP, mark, tREFI));
 
 		constant ddr3_timer : natural_vector := (
