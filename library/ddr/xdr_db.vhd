@@ -35,6 +35,11 @@ package xdr_db is
 
 	constant ANY  : natural := 0;
 
+	constant spartan3 : natural := 1;
+	constant virtex5  : natural := 2;
+	constant LatticeECP3 : natural := 3;
+
+
 	constant DDR1 : natural := 1;
 	constant DDR2 : natural := 2;
 	constant DDR3 : natural := 3;
@@ -82,6 +87,7 @@ package xdr_db is
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
 	type cnfglat_record is record
+		fpga : natural;
 		stdr : natural;
 		rgtr : natural;
 		lat  : integer;
@@ -116,6 +122,13 @@ package xdr_db is
 		value : natural;
 	end record;
 
+	type cntlrcnfg_boolean is record
+		fpga  : natural;
+		param : boolean;
+	end record;
+
+	type cntrlcnfgboolean_tab is array (natural range <>) of cntlrcnfg_boolean;
+
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab := (
@@ -147,57 +160,64 @@ package xdr_db is
 		timing_record'(mark => M15E, param => tREFI, value => 7800000));
 
 	constant latency_db : latency_tab := (
-		latency_record'(stdr => DDR1, param => cDLL,  value => 200),
-		latency_record'(stdr => DDR1, param => STRL,  value =>   0),
-		latency_record'(stdr => DDR1, param => RWNL,  value =>   0),
-		latency_record'(stdr => DDR1, param => DQSZL, value =>   0),
-		latency_record'(stdr => DDR1, param => DQSL,  value =>   1),
-		latency_record'(stdr => DDR1, param => DQZL,  value =>   0),
-		latency_record'(stdr => DDR1, param => WWNL,  value =>   0),
-		latency_record'(stdr => DDR1, param => STRXL, value =>   1),
-		latency_record'(stdr => DDR1, param => RWNXL, value => 2*0),
-		latency_record'(stdr => DDR1, param => DQSZXL, value =>  1),
-		latency_record'(stdr => DDR1, param => DQSXL, value =>   0),
-		latency_record'(stdr => DDR1, param => DQZXL, value =>   0),
-		latency_record'(stdr => DDR1, param => WWNXL, value =>   0),
-		latency_record'(stdr => DDR1, param => WIDL,  value =>   1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => cDLL,  value => 200),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => STRL,  value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => RWNL,  value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSZL, value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSL,  value =>   1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZL,  value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNL,  value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => STRXL, value =>   1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => RWNXL, value => 2*0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSZXL, value =>  1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSXL, value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZXL, value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNXL, value =>   0),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => WIDL,  value =>   1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => RDFIFO_DELAY, value => 2),
 
-		latency_record'(stdr => DDR2, param => cDLL,  value => 200),
-		latency_record'(stdr => DDR2, param => MRD,   value =>   2),
-		latency_record'(stdr => DDR2, param => STRL,  value =>  -3),
-		latency_record'(stdr => DDR2, param => RWNL,  value =>   4),
-		latency_record'(stdr => DDR2, param => DQSZL, value =>  -3),
-		latency_record'(stdr => DDR2, param => DQSL,  value =>   1),
-		latency_record'(stdr => DDR2, param => DQZL,  value =>  -1),
-		latency_record'(stdr => DDR2, param => WWNL,  value =>  -4),
-		latency_record'(stdr => DDR2, param => STRXL, value =>   2),
-		latency_record'(stdr => DDR2, param => RWNXL, value =>   0),
-		latency_record'(stdr => DDR2, param => DQSZXL, value =>  4),
-		latency_record'(stdr => DDR2, param => DQSXL, value =>   0),
-		latency_record'(stdr => DDR2, param => DQZXL, value =>   2),
-		latency_record'(stdr => DDR2, param => WWNXL, value =>   2),
-		latency_record'(stdr => DDR2, param => WIDL,  value =>   4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => cDLL,  value => 200),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => MRD,   value =>   2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>  -3),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNL,  value =>   4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZL, value =>  -3),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSL,  value =>   1),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZL,  value =>  -1),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNL,  value =>  -4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => STRXL, value =>   2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNXL, value =>   0),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZXL, value =>  4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSXL, value =>   0),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZXL, value =>   2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNXL, value =>   2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => WIDL,  value =>   4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_DELAY, value => 2),
 
-		latency_record'(stdr => DDR3, param => cDLL,  value => 500),
-		latency_record'(stdr => DDR3, param => STRL,  value => 	 4),
-		latency_record'(stdr => DDR3, param => RWNL,  value =>   4),
-		latency_record'(stdr => DDR3, param => DQSL,  value =>  -4),
-		latency_record'(stdr => DDR3, param => DQSZL, value =>  -2),
-		latency_record'(stdr => DDR3, param => DQZL,  value =>   0),
-		latency_record'(stdr => DDR3, param => WWNL,  value =>   0),
-		latency_record'(stdr => DDR3, param => STRXL, value =>   0),
-		latency_record'(stdr => DDR3, param => RWNXL, value =>   0),
-		latency_record'(stdr => DDR3, param => DQSXL, value =>   4),
-		latency_record'(stdr => DDR3, param => DQSZXL, value =>  4),
-		latency_record'(stdr => DDR3, param => DQZXL, value =>   4),
-		latency_record'(stdr => DDR3, param => WWNXL, value =>   2),
-		latency_record'(stdr => DDR3, param => ZQINIT, value => 500),
-		latency_record'(stdr => DDR3, param => MRD,   value =>   4),
-		latency_record'(stdr => DDR3, param => MODu,  value =>  12),
-		latency_record'(stdr => DDR3, param => XPR,   value =>   5),
-		latency_record'(stdr => DDR3, param => WIDL,  value =>   4));
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => cDLL,  value => 500),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNL,  value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSL,  value =>  -4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZL, value =>  -2),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZL,  value =>   0),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WWNL,  value =>   0),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRXL, value =>   0),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNXL, value =>   0),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSXL, value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZXL, value =>  4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZXL, value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WWNXL, value =>   2),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => ZQINIT, value => 500),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MRD,   value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MODu,  value =>  12),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => XPR,   value =>   5),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 2));
 
-
+	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
+		cntlrcnfgboolean_record'(fpga => startan3,    stdr => DDR1, param => RDFIFO_ASYNC, value => TRUE),
+		cntlrcnfgboolean_record'(fpga => virtex5,     stdr => DDR2, param => RDFIFO_ASYNC, value => TRUE),
+		cntlrcnfgboolean_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_ASYNC, value => FALSE));
+		
 	constant cnfglat_db : cnfglat_tab := (
 
 		-- DDR1 standard --
@@ -224,38 +244,38 @@ package xdr_db is
 
 		-- CL register --
 
-		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  2*3, code => "011"),
-		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  2*4, code => "100"),
-		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  2*5, code => "101"),
-		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  2*6, code => "110"),
-		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  2*7, code => "111"),
+		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  3*2, code => "011"),
+		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  4*2, code => "100"),
+		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  5*2, code => "101"),
+		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  6*2, code => "110"),
+		cnfglat_record'(stdr => DDR2, rgtr => CL,  lat =>  7*2, code => "111"),
 
 		-- BL register --
 
 		cnfglat_record'(stdr => DDR2, rgtr => BL,  lat =>  2*2, code => "010"),
-		cnfglat_record'(stdr => DDR2, rgtr => BL,  lat =>  2*4, code => "011"),
+		cnfglat_record'(stdr => DDR2, rgtr => BL,  lat =>  4*2, code => "011"),
 
 		-- WRL register --
 
 		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*2, code => "001"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*3, code => "010"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*4, code => "011"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*5, code => "100"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*6, code => "101"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*7, code => "110"),
-		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  2*8, code => "111"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  3*2, code => "010"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  4*2, code => "011"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  5*2, code => "100"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  6*2, code => "101"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  7*2, code => "110"),
+		cnfglat_record'(stdr => DDR2, rgtr => WRL, lat =>  8*2, code => "111"),
 
 		-- DDR3 standard --
 		-------------------
 
 		-- CL register --
 
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*5, code => "001"),
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*6, code => "010"),
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*7, code => "011"),
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*8, code => "100"),
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*9, code => "101"),
-		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*10, code => "110"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat =>  5*2, code => "001"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat =>  6*2, code => "010"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat =>  7*2, code => "011"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat =>  8*2, code => "100"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat =>  9*2, code => "101"),
+		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 10*2, code => "110"),
 		cnfglat_record'(stdr => DDR3, rgtr => CL, lat => 2*11, code => "111"),
 
 		-- BL register --
@@ -266,19 +286,19 @@ package xdr_db is
 
 		-- WRL register --
 
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*5,  code => "001"),
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*6,  code => "010"),
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*7,  code => "011"),
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*8,  code => "100"),
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*10, code => "101"),
-		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 2*12, code => "110"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat =>  5*2,  code => "001"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat =>  6*2,  code => "010"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat =>  7*2,  code => "011"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat =>  8*2,  code => "100"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 10*2, code => "101"),
+		cnfglat_record'(stdr => DDR3, rgtr => WRL, lat => 12*2, code => "110"),
 
 		-- CWL register --
 
-		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  2*5, code => "000"),
-		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  2*6, code => "001"),
-		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  2*7, code => "010"),
-		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  2*8, code => "011"));
+		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  5*2, code => "000"),
+		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  6*2, code => "001"),
+		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  7*2, code => "010"),
+		cnfglat_record'(stdr => DDR3, rgtr => CWL, lat =>  8*2, code => "011"));
 
 	function xdr_stdr (
 		mark : natural) 
@@ -334,6 +354,11 @@ package xdr_db is
 	function xdr_selcwl (
 		constant stdr : natural)
 		return natural;
+
+	function (
+		constant fpga : natural;
+		constant param : natural)
+		return boolean;
 
 end package;
 
@@ -425,7 +450,6 @@ package body xdr_db is
 		constant stdr  : natural;
 		constant param : natural)
 		return integer is
-		variable msg : line;
 	begin
 		for i in latency_db'range loop
 			if latency_db(i).stdr = stdr then
@@ -544,6 +568,21 @@ package body xdr_db is
 			return CL;
 		end if;
 		return CWL;
+	end;
+
+	function (
+		constant fpga : natural;
+		constant param : natural)
+		return boolean is
+	begin
+		for i in ctlrcnfgboolean_db'range loop
+			if ctlrcnfgboolean_db(i).fpga = fpga then
+				if ctlrcnfgboolean_db(i).param = param then
+					return ctlrcnfgboolean_db(i).value;
+				end if;
+			end if;
+		end loop;
+		severity ERROR;
 	end;
 
 end package body;

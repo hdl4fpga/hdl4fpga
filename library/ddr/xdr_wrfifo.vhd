@@ -37,6 +37,7 @@ entity xdr_wrfifo is
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
+		sys_ena : in  std_logic;
 		sys_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0);
 		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
@@ -197,6 +198,7 @@ begin
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
+			pll_ena => sys_ena,
 			ser_clk => ser_clk(0 to data_phases-1),
 			ser_ena => ser_ena(0 to data_phases-1),
 			di  => fifo_di,

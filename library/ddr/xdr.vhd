@@ -391,7 +391,7 @@ begin
 		word_size => word_size,
 		byte_size => byte_size,
 --		data_delay => 2)
-		data_delay => 4) --latticesemi
+		data_delay => 3) --latticesemi
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,
@@ -439,7 +439,8 @@ begin
 	port map (
 		sys_clk => sys_clks(0),
 		sys_dqi => rot_di,
-		sys_req => sys_di_rdy,
+		sys_ena => sys_di_rdy,
+		sys_req => xdr_mpu_wri,
 		sys_dmi => sys_dm,
 		xdr_clks => xdr_wclks,
 		xdr_dmo => xdr_wr_dm,

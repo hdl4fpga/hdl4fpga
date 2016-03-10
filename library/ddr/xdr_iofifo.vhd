@@ -28,13 +28,14 @@ use ieee.numeric_std.all;
 entity iofifo is
 	generic (
 		pll2ser : boolean;
+		dqsena  : boolean := false;
 		data_phases : natural;
 		word_size   : natural;
 		byte_size   : natural);
 	port (
 		pll_clk : in  std_logic;
-		pll_rdy : out std_logic;
 		pll_req : in  std_logic := '-';
+		pll_ena : in  std_logic := '1';
 
 		ser_ar  : in  std_logic_vector(0 to data_phases-1) := (others => '1');
 		ser_clk : in  std_logic_vector(0 to data_phases-1);
@@ -57,7 +58,6 @@ architecture mix of iofifo is
 	signal fifo_di : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
-	signal pll_do_win : std_logic;
 	signal ser_fifo_rdy : std_logic;
 
 	function to_stdlogicvector (
@@ -98,10 +98,11 @@ begin
 		signal apll_set : std_logic;
 	begin
 		apll_set <= not pll_req;
-		ffd_i : entity hdl4fpga.sff
+		ffd_i : entity hdl4fpga.aff
 		port map (
 			clk => pll_clk,
-			sr  => apll_set,
+			ar  => apll_set,
+			ena => pll_ena,
 			d   => apll_d(j),
 			q   => apll_q(j));
 	end generate;
@@ -114,8 +115,11 @@ begin
 		signal fifo_we : std_logic;
 		signal fifo_wa : aword;
 		signal fifo_ra : aword;
-			signal ena : std_logic;
+		signal dqsena_q : std_logic;
+		signal ena : std_logic;
 	begin
+
+		ena <= dqsena_q when dqsena else ser_ena(l);
 
 		aser_d <= inc(gray(aser_q));
 
@@ -139,22 +143,21 @@ begin
 			signal rst : std_logic;
 		begin
 			clk_n <= not ser_clk(l);
-			rst <= not ser_ena(l);
+			rst   <= not ser_ena(l);
 
 			ena_i : entity hdl4fpga.aff
 			port map (
 				clk => clk_n,
 				ar  => rst,
 				d   => '1',
-				q   => ena);
+				q   => dqsena_q);
 
 			gcntr_g: for k in aser_q'range  generate
-
 				ffd_i : entity hdl4fpga.aff
 				port map (
-					ar  => ser_ar(l),  -- not ser_ena(l)
+					ar  => ser_ar(l),
 					clk => ser_clk(l),
-					ena => ena, --ser_ena(l), --'1',
+					ena => ena,
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
@@ -170,7 +173,7 @@ begin
 
 		fifo_we <=
 			pll_req when pll2ser else
-			ena; --ser_ena(l);
+			ena;
 
 		ram_b : entity hdl4fpga.dbram
 		generic map (
