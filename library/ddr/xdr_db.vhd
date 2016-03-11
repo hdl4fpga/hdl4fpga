@@ -83,11 +83,11 @@ package xdr_db is
 	constant WWNXL  : natural := 16;
 	constant WIDL   : natural := 17;
 	constant ZQINIT : natural := 18;
+	constant RDFIFO_DELAY : natural := 18;
 
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
 	type cnfglat_record is record
-		fpga : natural;
 		stdr : natural;
 		rgtr : natural;
 		lat  : integer;
@@ -109,6 +109,7 @@ package xdr_db is
 		tmark_record'(mark => M15E, stdr => DDR3));
 
 	type latency_record is record
+		fpga : natural;
 		stdr  : natural;
 		param : natural; -- Latency
 		value : integer;
@@ -178,13 +179,13 @@ package xdr_db is
 
 		latency_record'(fpga => virtex5, stdr => DDR2, param => cDLL,  value => 200),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => MRD,   value =>   2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>  -3),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>  -2),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNL,  value =>   4),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZL, value =>  -3),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSL,  value =>   1),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZL,  value =>  -1),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNL,  value =>  -4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => STRXL, value =>   2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => STRXL, value =>   1),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNXL, value =>   0),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZXL, value =>  4),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSXL, value =>   0),
@@ -213,10 +214,10 @@ package xdr_db is
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 2));
 
-	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
-		cntlrcnfgboolean_record'(fpga => startan3,    stdr => DDR1, param => RDFIFO_ASYNC, value => TRUE),
-		cntlrcnfgboolean_record'(fpga => virtex5,     stdr => DDR2, param => RDFIFO_ASYNC, value => TRUE),
-		cntlrcnfgboolean_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_ASYNC, value => FALSE));
+--	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
+--		cntlrcnfgboolean_record'(fpga => startan3,    stdr => DDR1, param => RDFIFO_ASYNC, value => TRUE),
+--		cntlrcnfgboolean_record'(fpga => virtex5,     stdr => DDR2, param => RDFIFO_ASYNC, value => TRUE),
+--		cntlrcnfgboolean_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_ASYNC, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (
 
@@ -355,10 +356,10 @@ package xdr_db is
 		constant stdr : natural)
 		return natural;
 
-	function (
-		constant fpga : natural;
-		constant param : natural)
-		return boolean;
+--	function (
+--		constant fpga : natural;
+--		constant param : natural)
+--		return boolean;
 
 end package;
 
@@ -570,19 +571,6 @@ package body xdr_db is
 		return CWL;
 	end;
 
-	function (
-		constant fpga : natural;
-		constant param : natural)
-		return boolean is
-	begin
-		for i in ctlrcnfgboolean_db'range loop
-			if ctlrcnfgboolean_db(i).fpga = fpga then
-				if ctlrcnfgboolean_db(i).param = param then
-					return ctlrcnfgboolean_db(i).value;
-				end if;
-			end if;
-		end loop;
-		severity ERROR;
-	end;
+
 
 end package body;

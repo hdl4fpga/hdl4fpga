@@ -135,6 +135,7 @@ begin
 
 			inbyte_i : entity hdl4fpga.iofifo
 			generic map (
+				dqsena => false,
 				pll2ser => false,
 				data_phases => 1,
 				word_size  => word'length,

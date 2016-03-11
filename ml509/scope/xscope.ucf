@@ -38,17 +38,21 @@ NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
-NET "ddr2_d[*]" MAXSKEW  = 0.250 ns;
-NET "ddr2_dqs_p[*]" MAXSKEW  = 0.250 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
-NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
+NET "ddr2_d[*]"     MAXSKEW  = 0.050 ns;
+NET "ddr2_dm[*]"    MAXSKEW  = 0.050 ns;
+NET "ddr2_dqs_p[*]" MAXSKEW  = 0.050 ns;
+NET "ddrphy_dqsi*"  MAXSKEW  = 0.500 ns;
+NET "ddrphy_sti*"   MAXSKEW  = 0.050 ns;
+NET "ddr_sti*"      MAXSKEW =  0.100 ns;
+NET "ddr_sti*"      MAXDELAY =  1.000 ns;
+#NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
 
 # ###################### #
 # DDR 300 Mhz rate clock #
 # ###################### #
 
-#NET "ddr2_dm[0]" OFFSET = IN  2.889 ns VALID 2.666 ns BEFORE ddr2_dqs_p[0] RISING;
-#NET "ddr2_dm[1]" OFFSET = IN  2.889 ns VALID 2.666 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN  1.041 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  1.041 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
 OFFSET = IN -0.416 ns VALID 0.834 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.416 ns VALID 0.834 ns BEFORE ddr2_dqs_p[1] RISING;
 
@@ -56,8 +60,8 @@ OFFSET = IN -0.416 ns VALID 0.834 ns BEFORE ddr2_dqs_p[1] RISING;
 # DDR 333 Mhz rate clock #
 # ###################### #
 
-#NET "ddr2_dm[0]" OFFSET = IN  2.500 ns VALID 2.50 ns BEFORE ddr2_dqs_p[0] RISING;
-#NET "ddr2_dm[1]" OFFSET = IN  2.500 ns VALID 2.50 ns BEFORE ddr2_dqs_p[1] RISING;
+#NET "ddr2_dm[0]" OFFSET = IN 0.937 ns VALID 2.625 ns BEFORE ddr2_dqs_p[0] RISING;
+#NET "ddr2_dm[1]" OFFSET = IN 0.937 ns VALID 2.625 ns BEFORE ddr2_dqs_p[1] RISING;
 #OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[0] RISING;
 #OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[1] RISING;
 
