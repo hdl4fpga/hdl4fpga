@@ -32,6 +32,7 @@ use hdl4fpga.xdr_param.all;
 
 entity xdr is
 	generic (
+		fpga : natural;
 		strobe : string := "NONE_LOOPBACK";
 		mark : natural := M6T;
 		tcp : natural := 6000;
@@ -198,7 +199,9 @@ architecture mix of xdr is
 	constant DQZX_LAT  : natural := xdr_latency(stdr, DQZXL);
 	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL);
 	constant WID_LAT   : natural := xdr_latency(stdr, WIDL);
+	constant RDFIFODELAY_LAT : natural := xdr_latency(stdr, RDFIFO_DELAY);
 
+	constant dqs_async : boolean := xdr_cntlrcnfg(fpga, RDFIFO_ASYNC);
 begin
 
 
@@ -390,8 +393,8 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
---		data_delay => 2)
-		data_delay => 4) --latticesemi
+		data_delay => RDFIFODELAY_LAT,
+		dqs_async => dqs_async)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

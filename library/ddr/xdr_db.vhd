@@ -83,7 +83,8 @@ package xdr_db is
 	constant WWNXL  : natural := 16;
 	constant WIDL   : natural := 17;
 	constant ZQINIT : natural := 18;
-	constant RDFIFO_DELAY : natural := 18;
+	constant RDFIFO_DELAY : natural := 19;
+	constant RDFIFO_ASYNC : natural := 20;
 
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
@@ -111,6 +112,7 @@ package xdr_db is
 	type latency_record is record
 		fpga : natural;
 		stdr  : natural;
+		fpga : natural;
 		param : natural; -- Latency
 		value : integer;
 	end record;
@@ -125,10 +127,11 @@ package xdr_db is
 
 	type cntlrcnfg_boolean is record
 		fpga  : natural;
-		param : boolean;
+		param : natural;
+		value : boolean;
 	end record;
 
-	type cntrlcnfgboolean_tab is array (natural range <>) of cntlrcnfg_boolean;
+	type cntlrcnfgboolean_tab is array (natural range <>) of cntlrcnfg_boolean;
 
 	type timing_tab is array (natural range <>) of timing_record;
 
@@ -214,10 +217,10 @@ package xdr_db is
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 2));
 
---	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
---		cntlrcnfgboolean_record'(fpga => startan3,    stdr => DDR1, param => RDFIFO_ASYNC, value => TRUE),
---		cntlrcnfgboolean_record'(fpga => virtex5,     stdr => DDR2, param => RDFIFO_ASYNC, value => TRUE),
---		cntlrcnfgboolean_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_ASYNC, value => FALSE));
+	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
+		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_ASYNC, value => TRUE),
+		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_ASYNC, value => TRUE),
+		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_ASYNC, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (
 
@@ -356,11 +359,10 @@ package xdr_db is
 		constant stdr : natural)
 		return natural;
 
---	function (
---		constant fpga : natural;
---		constant param : natural)
---		return boolean;
-
+	function xdr_cntlrcnfg (
+		constant fpga  : natural;
+		constant param : natural)
+		return boolean;
 end package;
 
 package body xdr_db is
@@ -571,6 +573,20 @@ package body xdr_db is
 		return CWL;
 	end;
 
-
+	function xdr_cntlrcnfg (
+		constant fpga : natural;
+		constant param : natural)
+		return boolean is
+	begin
+		for i in cntlrcnfgboolean_db'range loop
+			if cntlrcnfgboolean_db(i).fpga = fpga then
+				if cntlrcnfgboolean_db(i).param = param then
+					return cntlrcnfgboolean_db(i).value;
+				end if;
+			end if;
+		end loop;
+		assert FALSE severity FAILURE;
+		return FALSE;
+	end;
 
 end package body;

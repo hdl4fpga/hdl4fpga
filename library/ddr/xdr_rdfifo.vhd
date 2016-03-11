@@ -31,7 +31,8 @@ entity xdr_rdfifo is
 		data_phases : natural := 1;
 		line_size   : natural := 64;
 		word_size   : natural := 16;
-		byte_size   : natural := 8);
+		byte_size   : natural := 8;
+		dqs_async   : boolean := FALSE);
 	port (
 		sys_clk : in  std_logic;
 		sys_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
@@ -135,11 +136,12 @@ begin
 
 			inbyte_i : entity hdl4fpga.iofifo
 			generic map (
-				dqsena => false,
+				dqsena => dqs_async,
 				pll2ser => false,
 				data_phases => 1,
 				word_size  => word'length,
-				byte_size  => byte'length)
+				byte_size  => byte'length,
+				ena_del => dqs_async)
 			port map (
 				pll_clk => sys_clk,
 				pll_req => pll_req,
