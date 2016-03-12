@@ -31,6 +31,9 @@
 
 int main (int argc, char *argv[])
 {
+#ifdef WINDOWS
+	WSADATA wsaData;
+#endif
 	struct hostent *hostname;
 	struct sockaddr_in sa_host;
 	struct sockaddr_in sa_src;
@@ -46,6 +49,11 @@ int main (int argc, char *argv[])
 	int npkt;
 	int size;
 
+#ifdef WINDOWS
+	if (WSAStartup(MAKEWORD(2,2), &wsaData))
+		exit(-1);
+#endif
+	
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
 		exit(-1);
@@ -55,7 +63,6 @@ int main (int argc, char *argv[])
 
 	if (!(hostname = gethostbyname("kit"))) {
 		perror ("hostbyname");
-		printf(" hhhh %s\n",hostname);
 		exit (-1);
 	}
 

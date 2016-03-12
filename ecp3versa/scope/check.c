@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef _WINDOWS_
+#ifdef WINDOWS
 #define htobe64(x) \
 	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
 	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
