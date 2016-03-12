@@ -194,7 +194,7 @@ package xdr_db is
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZXL, value =>   2),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNXL, value =>   2),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => WIDL,  value =>   4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_DELAY, value => 2),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_DELAY, value => 3),
 
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => cDLL,  value => 500),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   4),
@@ -214,7 +214,7 @@ package xdr_db is
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MODu,  value =>  12),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => XPR,   value =>   5),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 2));
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 3));
 
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_ASYNC, value => TRUE),
