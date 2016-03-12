@@ -256,7 +256,15 @@ begin
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
 --				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
 --			s => ddrios_id);
-		ddrs_breq <= datai_brst_req or ddr2miitx_brst_req;
+		process (datai_brst_req, ddrs_clk)
+		begin
+			if datai_brst_req='1' then
+				ddrs_breq <= '1';
+			elsif rising_edge(ddrs_clk) then
+				ddrs_breq <= ddr2miitx_brst_req;
+			end if;
+		end process;
+--		ddrs_breq <= datai_brst_req or ddr2miitx_brst_req;
 
 		ddrs_addr <= 
 --			std_logic_vector(

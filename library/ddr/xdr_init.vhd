@@ -59,8 +59,6 @@ entity xdr_init is
 		xdr_init_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
 		xdr_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
---	xdr_mr_addr  : out std_logic_vector;
---	xdr_mr_data  : in std_logic_vector(13-1 downto 0);
 		xdr_refi_rdy : in  std_logic;
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
@@ -78,9 +76,9 @@ entity xdr_init is
 		xdr_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0);
 		xdr_init_odt : out std_logic);
 
---	attribute fsm_encoding : string;
---	attribute fsm_encoding of xdr_init : entity is "compact";
 
+	attribute fsm_encoding : string;
+	attribute fsm_encoding of xdr_init : entity is "compact";
 end;
 
 architecture def of xdr_init is
@@ -95,14 +93,22 @@ architecture def of xdr_init is
 
 	signal input : std_logic_vector(0 to 0);
 	signal xdr_mr_addr : ddrmr_addr;
+	signal mr_addr : ddrmr_addr;
 	signal xdr_mr_data : std_logic_vector(13-1 downto 0);
 begin
 
 	input(0) <= xdr_init_wlrdy;
 
+	process (xdr_init_clk)
+	begin
+		if rising_edge(xdr_init_clk) then
+			mr_addr <= xdr_mr_addr;
+		end if;
+	end process;
+
 	xdr_mr_data <= resize(ddr_mrfile(
 		xdr_stdr => ddr_stdr,
-		xdr_mr_addr => xdr_mr_addr, 
+		xdr_mr_addr => mr_addr, 
 		xdr_mr_srt  => xdr_init_srt,
 		xdr_mr_bl   => xdr_init_bl,
 		xdr_mr_bt   => xdr_init_bt,

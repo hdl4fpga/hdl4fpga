@@ -210,6 +210,9 @@ architecture registered of xdr_pgm is
 		(ddrs_aut, "111", ddrs_aut, xdr_auty)
 	);
 	signal ppp : std_logic;
+	attribute fsm_encoding : string;
+	attribute fsm_encoding of xdr_pgm_pc : signal is "compact";
+
 begin
 
 	xdr_input(2) <= xdr_pgm_ref;
@@ -218,6 +221,8 @@ begin
 
 	process (xdr_pgm_clk)
 		variable pc : std_logic_vector(xdr_pgm_pc'range);
+
+		
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then

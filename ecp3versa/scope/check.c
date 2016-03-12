@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
 		sscanf (argv[1], "%d", &size);
 
 	if (size != 64) 
-		mask = ((1 << size)-1);
+		mask = ((1LL << size)-1);
 
 	const long long unsigned int p = (size==64) ? 0x5800000000000000 : 0x23000000;
 	
@@ -52,8 +52,10 @@ int main (int argc, char *argv[])
 			switch(size) {
 			case 32:
 				fprintf(stderr,"0x%08lx 0x%08lx 0x%08lx\n", (long unsigned int) (datum), (long unsigned int) check, (long unsigned int) (datum^check));
+				break;
 			case 64:
 				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", (datum), check, (datum)^check);
+				break;
 			default:
 				fprintf(stderr,"invalid size\n");
 				return -1;
