@@ -112,7 +112,6 @@ package xdr_db is
 	type latency_record is record
 		fpga : natural;
 		stdr  : natural;
-		fpga : natural;
 		param : natural; -- Latency
 		value : integer;
 	end record;
@@ -219,7 +218,7 @@ package xdr_db is
 
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_ASYNC, value => TRUE),
-		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_ASYNC, value => TRUE),
+		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_ASYNC, value => FALSE),
 		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_ASYNC, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (

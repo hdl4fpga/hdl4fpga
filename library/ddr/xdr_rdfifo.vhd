@@ -140,8 +140,7 @@ begin
 				pll2ser => false,
 				data_phases => 1,
 				word_size  => word'length,
-				byte_size  => byte'length,
-				ena_del => dqs_async)
+				byte_size  => byte'length)
 			port map (
 				pll_clk => sys_clk,
 				pll_req => pll_req,

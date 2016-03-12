@@ -186,6 +186,7 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		fpga => spartan3,
 		DDR_MARK => M6T,
 		DDR_TCP => integer(sys_per*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES => 2,
@@ -209,6 +210,7 @@ begin
 		ddrs_clks(1) => ddrs_clk90,
 		ddrs_bl  => "011",
 		ddrs_cl  => "110",
+		ddrs_rtt => "--",
 		ddr_cke  => ddrphy_cke(0),
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),

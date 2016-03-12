@@ -175,6 +175,7 @@ begin
 	input_clk <= ddr_sclk;
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		fpga => LatticeECP3,
 		DDR_tCP => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_SCLKPHASES => 1,
 		DDR_SCLKEDGES  => 1,

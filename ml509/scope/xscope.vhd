@@ -190,6 +190,7 @@ begin
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		fpga => virtex5,
 		DDR_MARK => M3,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
 		DDR_SCLKEDGES => sclk_edges,

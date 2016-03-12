@@ -29,6 +29,7 @@ use std.textio.all;
 
 entity scope is
 	generic (
+		constant fpga : natural;
 		constant DDR_TCP      : natural;
 		constant DDR_SCLKPHASES : natural;
 		constant DDR_SCLKEDGES : natural;
@@ -502,6 +503,7 @@ begin
 
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
+		fpga => fpga,
 		mark => DDR_MARK,
 		strobe    => DDR_STROBE,
 		sclk_phases => DDR_SCLKPHASES,

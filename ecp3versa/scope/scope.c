@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef _WINDOWS_
+#ifdef WINDOWS
 #include <ws2tcpip.h>
 #include <wininet.h>
 #define htobe64(x) \
@@ -29,7 +29,7 @@
 
 #define PORT	1024
 
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
 	struct hostent *hostname;
 	struct sockaddr_in sa_host;
@@ -48,14 +48,15 @@ main (int argc, char *argv[])
 
 	if (!(argc > 1)) {
 		fprintf (stderr, "no argument %d", argc);
-		abort();
+		exit(-1);
 	}
 
 	sscanf (argv[1], "%d", &npkt);
 
 	if (!(hostname = gethostbyname("kit"))) {
 		perror ("hostbyname");
-		abort ();
+		printf(" hhhh %s\n",hostname);
+		exit (-1);
 	}
 
 	if (argc > 2) {
