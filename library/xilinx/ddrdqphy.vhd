@@ -114,17 +114,17 @@ begin
 
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 		registered_g : for i in clks'range generate
+			signal d, t, s : std_logic;
+		begin
 			dmt(i) <= sys_dmt(i) when loopback else '0';
 
+			rdmi(i) <= d when t='0' else s;
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
-					if sys_dmt(i)='0' then
-						rdmi(i) <= sys_dmi(i);
-					else
-						rdmi(i) <= sys_sti(i);
-					end if;
-
+					t <= sys_dmt(i);
+					d <= sys_dmi(i);
+					s <= sys_sti(i);
 				end if;
 			end process;
 

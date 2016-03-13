@@ -24,13 +24,13 @@
 NET "sys_clk" TNM_NET = sys_clk;
 TIMESPEC ts_sys_clk = PERIOD "sys_clk" 10 ns HIGH 50%;
 
-#NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
-#NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 3.33333 ns HIGH 50%; # DDR 300 Mhz rate clock
+TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
 NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
+
+#NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 3.33333 ns HIGH 50%; # DDR 300 Mhz rate clock
+#NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
@@ -38,14 +38,15 @@ NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
+NET "ddrphy_dqsi*"  MAXSKEW  = 0.500 ns;
 NET "ddr2_d[*]"     MAXSKEW  = 0.050 ns;
 NET "ddr2_dm[*]"    MAXSKEW  = 0.050 ns;
 NET "ddr2_dqs_p[*]" MAXSKEW  = 0.050 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.500 ns;
 NET "ddrphy_sti*"   MAXSKEW  = 0.050 ns;
 NET "ddr_sti*"      MAXSKEW =  0.100 ns;
-NET "ddr_sti*"      MAXDELAY =  1.100 ns;
-#NET "ddrphy_dqsi*"  MAXDELAY = 1.500 ns;
+NET "ddr_sti*"      MAXDELAY = 1.000 ns;
+NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
+NET "ddr2_dqi*"     MAXDELAY = 1.200 ns;
 
 # ###################### #
 # DDR 300 Mhz rate clock #
@@ -60,10 +61,10 @@ NET "ddr_sti*"      MAXDELAY =  1.100 ns;
 # DDR 333 Mhz rate clock #
 # ###################### #
 
-NET "ddr2_dm[0]" OFFSET = IN 0.937 ns VALID 2.625 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN 0.937 ns VALID 2.625 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.250 ns VALID 1.000 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN 0.9375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN 0.9375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.200 ns VALID 1.100 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.200 ns VALID 1.100 ns BEFORE ddr2_dqs_p[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
@@ -88,9 +89,13 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
 
+#TIMESPEC TS_sel = FROM FFS (scope_e/ddr_e/xdr_mpu_sel) TIG;
+
 TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqt   = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dmt0 = FROM FFS (ddrphy_e/byte_g[0].ddrdqphy_i/t0) TIG;
+TIMESPEC TS_dmt1 = FROM FFS (ddrphy_e/byte_g[1].ddrdqphy_i/t0) TIG;
+#TIMESPEC TS_dqt   = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
 
 # ######################## #
 # Read-FIFO DQS Delay Taps #

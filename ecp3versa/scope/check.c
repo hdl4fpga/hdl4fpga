@@ -40,12 +40,13 @@ int main (int argc, char *argv[])
 	for(i = 0; scanf("%llx", &datum) > 0; i++) {
 		int k;
 
-		datum  = (size==64) ? htobe64(datum) : htonl(datum);
+		// datum  = (size==64) ? htobe64(datum) : htonl(datum);
 		datum &= mask;
 		if (!lfsr)
 			lfsr = datum;
 					        
 		check = lfsr;
+		check = (size==64) ? htobe64(check) : htonl(check);
 
 		if (check != (datum)){
 			fprintf(stderr, "Failed %d : ", i+1);
