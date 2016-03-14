@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
+		gclk100 : in std_logic;
 		eth_rstn  : in std_logic;
 		eth_ref_clk : in std_logic;
 		eth_mdc   : in std_logic;
@@ -17,8 +18,9 @@ entity arty is
 		eth_rx_dv : in std_logic;
 		eth_rxd   : in std_logic_vector(0 to 4-1);
 		
-		ddr3_clk : out std_logic := '0';
 		ddr3_reset : out std_logic := '0';
+		ddr3_clk_p : out std_logic := '0';
+		ddr3_clk_n : out std_logic := '0';
 		ddr3_cke : out std_logic := '0';
 		ddr3_cs  : out std_logic := '1';
 		ddr3_ras : out std_logic := '1';
@@ -33,6 +35,8 @@ entity arty is
 		ddr3_odt : out std_logic := '1';
 
 	attribute loc : string;
+	attribute loc of gclk100  : signal is "E3";
+
 	attribute loc of eth_rstn  : signal is "C16";
 	attribute loc of eth_ref_clk : signal is "G18";
 	attribute loc of eth_mdc   : signal is "F16";
@@ -47,18 +51,19 @@ entity arty is
 	attribute loc of eth_rx_dv : signal is "G16";
 	attribute loc of eth_txd   : signal is "H14 J14 J13 H17";
 
-	attribute loc of ddr3_clk  : signal is "C16";
-	attribute loc of ddr3_reset : signal is "G18";
-	attribute loc of ddr3_cke  : signal is "F16";
-	attribute loc of ddr3_cs   : signal is "G14";
-	attribute loc of ddr3_ras  : signal is "D17";
-	attribute loc of ddr3_cas  : signal is "K13";
-	attribute loc of ddr3_we   : signal is "H16";
-	attribute loc of ddr3_ba   : signal is "H15";
-	attribute loc of ddr3_a    : signal is "D18 E17 E18 G17";
-	attribute loc of ddr3_dm   : signal is "F15";
-	attribute loc of ddr3_dqs_p : signal is "C17";
-	attribute loc of ddr3_dqs_n : signal is "G16";
-	attribute loc of ddr3_dq   : signal is "H14 J14 J13 H17";
-    attribute loc of ddr3_odt  :  signal is "F15";
+	attribute loc of ddr3_reset : signal is "K6";
+	attribute loc of ddr3_clk_p  : signal is "U9";
+	attribute loc of ddr3_clk_n  : signal is "V9";
+	attribute loc of ddr3_cke  : signal is "N5";
+	attribute loc of ddr3_cs   : signal is "U8";
+	attribute loc of ddr3_ras  : signal is "P3";
+	attribute loc of ddr3_cas  : signal is "M4";
+	attribute loc of ddr3_we   : signal is "P5";
+	attribute loc of ddr3_ba   : signal is "P2 P4 R1";
+	attribute loc of ddr3_a    : signal is "T8 T6 U6 R6 V7 R8 U7 V6 R5 N6 T1 N4 M6 R2"
+	attribute loc of ddr3_dm   : signal is "U1 L1";
+	attribute loc of ddr3_dqs_p : signal is "U2 N2";
+	attribute loc of ddr3_dqs_n : signal is "V2 N1";
+	attribute loc of ddr3_dq   : signal is "R3 U3 T3 V1 U6 U4 T5 V4 M2 L4 M1 M3 L6 K3 L3 K5";
+    attribute loc of ddr3_odt  :  signal is "R5";
 end;
