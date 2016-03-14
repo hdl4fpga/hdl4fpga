@@ -36,7 +36,7 @@ use hdl4fpga.xdr_db.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture scope of nuhs3dsp is
+architecture scope of arty is
 	constant sclk_phases : natural := 4;
 	constant data_phases : natural := 2;
 	constant data_edges : natural := 2;
@@ -322,27 +322,6 @@ begin
 			d1 => '1',
 			q => adc_clkab);
 	end block;
-
-	vga_iob_e : entity hdl4fpga.adv7125_iob
-	port map (
-		sys_clk   => video_clk,
-		sys_hsync => vga_hsync,
-		sys_vsync => vga_vsync,
-		sys_blank => vga_blank,
-		sys_red   => vga_red,
-		sys_green => vga_green,
-		sys_blue  => vga_blue,
-
-		vga_clk => clk_videodac,
-		vga_hsync => hsync,
-		vga_vsync => vsync,
-		dac_blank => blank,
-		dac_sync  => sync,
-		dac_psave => psave,
-
-		dac_red   => red,
-		dac_green => green,
-		dac_blue  => blue);
 
 	mii_mdc  <= '0';
 	mii_mdio <= '0';
