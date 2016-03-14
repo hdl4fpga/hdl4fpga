@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="10" Path="/home/msagre/work/hdl4fpga/arty/arty.xpr">
+<Project Version="7" Minor="10" Path="/home/msagre/work/hdl4fpga/arty/ise/arty.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="318839101f964cfd9c703968613c555c"/>

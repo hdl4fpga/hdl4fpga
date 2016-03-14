@@ -120,8 +120,8 @@ architecture scope of nuhs3dsp is
 	--------------------------------------------------
 
 	constant sys_per : real := 50.0;
-	constant ddr_mul : natural := 10; --25;
-	constant ddr_div : natural :=  1; --3;
+	constant ddr_mul : natural := 25;
+	constant ddr_div : natural :=  3;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst : std_logic;
