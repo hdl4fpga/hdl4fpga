@@ -15,6 +15,12 @@ add wave -noupdate /testbench/dm(0)
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq16(15) -radix hexadecimal} {/testbench/dq16(14) -radix hexadecimal} {/testbench/dq16(13) -radix hexadecimal} {/testbench/dq16(12) -radix hexadecimal} {/testbench/dq16(11) -radix hexadecimal} {/testbench/dq16(10) -radix hexadecimal} {/testbench/dq16(9) -radix hexadecimal} {/testbench/dq16(8) -radix hexadecimal} {/testbench/dq16(7) -radix hexadecimal} {/testbench/dq16(6) -radix hexadecimal} {/testbench/dq16(5) -radix hexadecimal} {/testbench/dq16(4) -radix hexadecimal} {/testbench/dq16(3) -radix hexadecimal} {/testbench/dq16(2) -radix hexadecimal} {/testbench/dq16(1) -radix hexadecimal} {/testbench/dq16(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-radix hexadecimal} /testbench/dq(14) {-radix hexadecimal} /testbench/dq(13) {-radix hexadecimal} /testbench/dq(12) {-radix hexadecimal} /testbench/dq(11) {-radix hexadecimal} /testbench/dq(10) {-radix hexadecimal} /testbench/dq(9) {-radix hexadecimal} /testbench/dq(8) {-radix hexadecimal} /testbench/dq(7) {-radix hexadecimal} /testbench/dq(6) {-radix hexadecimal} /testbench/dq(5) {-radix hexadecimal} /testbench/dq(4) {-radix hexadecimal} /testbench/dq(3) {-radix hexadecimal} /testbench/dq(2) {-radix hexadecimal} /testbench/dq(1) {-radix hexadecimal} /testbench/dq(0) {-radix hexadecimal}} /testbench/dq16
 add wave -noupdate /testbench/dqs(1)
 add wave -noupdate /testbench/dqs(0)
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/ar_g/cntr_clk
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/ar_g/cntr_ena
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/dqsena_q
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(1)/inbyte_i/phases_g(0)/ar_g/cntr_clk
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(1)/inbyte_i/phases_g(0)/ar_g/cntr_ena
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(1)/inbyte_i/phases_g(0)/dqsena_q
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/dataio_e/miitxmem_e/miitx_ena
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/dataio_e/miitxmem_e/txd
@@ -34,8 +40,8 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/sys_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6746197 ps} 1} {{Cursor 2} {6661600 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {6461211 ps} 0} {{Cursor 2} {6462074 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
@@ -50,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {6654606 ps} {6702390 ps}
+WaveRestoreZoom {6449263 ps} {6473159 ps}

@@ -116,10 +116,8 @@ begin
 		signal fifo_wa : aword;
 		signal fifo_ra : aword;
 		signal dqsena_q : std_logic;
-		signal ena : std_logic;
 	begin
 
-		ena <= dqsena_q when dqsena else ser_ena(l);
 
 		aser_d <= inc(gray(aser_q));
 
@@ -139,16 +137,17 @@ begin
 		end generate;	
 
 		ar_g : if not pll2ser generate
-			signal clk_n : std_logic;
-			signal rst : std_logic;
+			signal cntr_clk : std_logic;
+			signal cntr_ena : std_logic;
 		begin
-			clk_n <= not ser_clk(l);
-			rst   <= not ser_ena(l);
+			cntr_clk <= not ser_clk(l) when dqsena else ser_clk(l);
+			cntr_ena <=       dqsena_q when dqsena else ser_ena(l);
 
 			ena_i : entity hdl4fpga.aff
 			port map (
-				clk => clk_n,
-				ar  => rst,
+				clk => ser_clk(l),
+				ar  => ser_ar(l),
+				ena => ser_ena(l),
 				d   => '1',
 				q   => dqsena_q);
 
@@ -156,8 +155,8 @@ begin
 				ffd_i : entity hdl4fpga.aff
 				port map (
 					ar  => ser_ar(l),
-					clk => ser_clk(l),
-					ena => ena,
+					clk => cntr_clk,
+					ena => cntr_ena,
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
@@ -173,7 +172,7 @@ begin
 
 		fifo_we <=
 			pll_req when pll2ser else
-			ena;
+			ser_ena(l);
 
 		ram_b : entity hdl4fpga.dbram
 		generic map (
