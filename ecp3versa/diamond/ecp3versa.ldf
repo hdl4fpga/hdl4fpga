@@ -113,16 +113,13 @@
         <Source name="../../library/ddr/xdr_wrfifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/xdatai.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/datai.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/xdataio.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/dataio.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/xddrio.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/scope/xscope.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/scope.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/ddrbaphy.vhd" type="VHDL" type_short="VHDL">
@@ -158,10 +155,7 @@
         <Source name="../../library/latticesemi/ecp3/miiiob.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/mii/byte/xmiitx_dma.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/scope/xmiitxmem.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/miitxmem.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/common/ffdasync.vhd" type="VHDL" type_short="VHDL">
