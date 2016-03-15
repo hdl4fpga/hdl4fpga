@@ -28,7 +28,8 @@ use ieee.numeric_std.all;
 library unisim;
 use unisim.vcomponents.all;
 
-use work.cgafont.all;
+library hdl4fpga;
+use hdl4fpga.cgafont.all;
 
 architecture cga of nuhs3dsp is
 
@@ -57,7 +58,7 @@ begin
 		I => xtal,
 		O => xtal_ibufg);
 
-	ddr_dcm	: entity work.dfs
+	ddr_dcm	: entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
 		dfs_mul => 15,
@@ -68,7 +69,7 @@ begin
 		dfs_clk => vga_clk,
 		dcm_lck => locked);
 
-	video_vga_e : entity work.video_vga
+	video_vga_e : entity hdl4fpga.video_vga
 	generic map (
 		n => 11)
 	port map (
@@ -81,7 +82,7 @@ begin
 		don   => vga_don);
 	vga_blank <= vga_don and vga_frm;
 		
-	cga_e : entity work.cga
+	cga_e : entity hdl4fpga.cga
 	generic map (
 		bitrom => psf1cp850x8x16,
 		height => 16,
@@ -100,7 +101,7 @@ begin
 		vga_dot => vga_dot);
 
 	pixel <= (others => vga_dot);
-	vga_iob_e : entity work.vga_iob
+	vga_iob_e : entity hdl4fpga.adv7125_iob
 	port map (
 		sys_clk   => vga_clk,
 		sys_hsync => vga_hsync,
@@ -130,7 +131,7 @@ begin
 
 	ddr_ckp <= 'Z';
 	ddr_ckn <= 'Z';
-	ddr_lp_dqs <= 'Z'; 
+	ddr_st_dqs <= 'Z'; 
 	ddr_cke <= 'Z';  
 	ddr_cs  <= 'Z';  
 	ddr_ras <= 'Z';

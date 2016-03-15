@@ -79,7 +79,7 @@ architecture def of fontrom is
 			else
 				val(addr) := line;
 			end if;
-			val(addr) := val(addr) rol col_offset;
+			val(addr) := std_logic_vector(unsigned(val(addr)) rol col_offset);
 		end loop;
 		return val;
 	end;
