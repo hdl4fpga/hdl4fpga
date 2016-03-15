@@ -1,7 +1,1 @@
-cc ecp3versa/scope/check.c -o check
-
-
-Check reads data from the fpga kit and compares it against the sequence
-written into the memory. if print the data read and the sequence that should be
-written. If there is a difference between them
-heck lfsr_size number_of_blocks
+HDL4FPGAs is an library of application ready to use for FPGA kits. Its main goal is to be portable to any manufactures while trying to be fast and if it is possible to be small
