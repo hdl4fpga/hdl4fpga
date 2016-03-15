@@ -66,7 +66,7 @@ architecture scope of testbench is
 	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
-	component nuhs3dsp is
+	component nuhs3adsp is
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;
@@ -256,7 +256,7 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_rxc <= mii_refclk after 5 ps;
-	nuhs3dsp_e : nuhs3dsp
+	nuhs3adsp_e : nuhs3adsp
 	port map (
 		xtal => clk,
 		sw1  => rst,
@@ -319,10 +319,10 @@ end;
 
 library micron;
 
-configuration nuhs3dsp_structure_md of testbench is
+configuration nuhs3adsp_structure_md of testbench is
 	for scope 
-		for all : nuhs3dsp 
-			use entity hdl4fpga.nuhs3dsp(structure);
+		for all : nuhs3adsp 
+			use entity hdl4fpga.nuhs3adsp(structure);
 		end for;
 		for all: ddr_model
 			use entity micron.ddr_model
@@ -345,10 +345,10 @@ end;
 
 library micron;
 
-configuration nuhs3dsp_scope_md of testbench is
+configuration nuhs3adsp_scope_md of testbench is
 	for scope 
-		for all : nuhs3dsp 
-			use entity hdl4fpga.nuhs3dsp(scope);
+		for all : nuhs3adsp 
+			use entity hdl4fpga.nuhs3adsp(scope);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

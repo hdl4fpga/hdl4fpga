@@ -22,7 +22,7 @@
 --                                                                            --
 
 architecture cga of testbench is
-	component nuhs3dsp is
+	component nuhs3adsp is
 		port (
 			xtal : in std_logic;
 			sw1 : in std_logic;
@@ -145,7 +145,7 @@ begin
 	clk <= not clk after 25 ns;
 	mii_txc <= mii_refclk;
 
-	nuhs3dsp_e : nuhs3dsp
+	nuhs3adsp_e : nuhs3adsp
 	port map (
 		xtal => clk,
 		sw1  => rst,
@@ -175,18 +175,18 @@ begin
 
 end;
 
-configuration nuhs3dsp_structure of testbench is
+configuration nuhs3adsp_structure of testbench is
 	for cga 
-		for all : nuhs3dsp 
-			use entity hdl4fpga.nuhs3dsp(structure);
+		for all : nuhs3adsp 
+			use entity hdl4fpga.nuhs3adsp(structure);
 		end for;
 	end for;
 end;
 
-configuration nuhs3dsp_cga of testbench is
+configuration nuhs3adsp_cga of testbench is
 	for cga 
-		for all : nuhs3dsp 
-			use entity hdl4fpga.nuhs3dsp(cga);
+		for all : nuhs3adsp 
+			use entity hdl4fpga.nuhs3adsp(cga);
 		end for;
 	end for;
 end;
