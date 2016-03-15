@@ -41,19 +41,19 @@
         <Source name="../../library/common/crc32.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/mii/byte/miirx_mac.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/mii/miirx_mac.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/mii/byte/miirx_pre.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/mii/byte/miitx_crc.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/mii/byte/miitx_mem.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/mii/miitx_mem.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/mii/byte/miitx_udp.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/mii/miitx_udp.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
