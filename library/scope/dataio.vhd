@@ -175,6 +175,7 @@ begin
 		end case;
 
 		if rising_edge(ddrs_clk) then
+			q := sys_rst;
 			if q='1' then
 				s  := (others => '1');
 			elsif di_rdy='1' then
@@ -185,30 +186,32 @@ begin
 					aux1 := aux;
 				end loop;
 			end if;
-			q := sys_rst;
 		end if;
 		aux2 <= s;
 	end process;
 
-	ddr_di_rdy_e : entity hdl4fpga.align
-	generic map (
-		n => 2,
-		d => (0 => 1, 1 => 1))
-	port map (
-		clk => ddrs_clk,
-		di(0) => ddrs_di_req,
-		di(1) => di_rdy,
-		do(0) => di_rdy,
-		do(1) => ddrs_di_rdy);
+--	ddr_di_rdy_e : entity hdl4fpga.align
+--	generic map (
+--		n => 2,
+--		d => (0 => 1, 1 => 1))
+--	port map (
+--		clk => ddrs_clk,
+--		di(0) => ddrs_di_req,
+--		di(1) => di_rdy,
+--		do(0) => di_rdy,
+--		do(1) => ddrs_di_rdy);
+	ddrs_di_rdy <= ddrs_di_req;
+	di_rdy <= ddrs_di_req;
 
-	ddr_di_e : entity hdl4fpga.align
-	generic map (
-		n => ddrs_di'length,
-		d => (0 to ddrs_di'length-1 => 1))
-	port map (
-		clk => ddrs_clk,
-		di => aux2,
-		do => ddrs_di);
+--	ddr_di_e : entity hdl4fpga.align
+--	generic map (
+--		n => ddrs_di'length,
+--		d => (0 to ddrs_di'length-1 => 1))
+--	port map (
+--		clk => ddrs_clk,
+--		di => aux2,
+--		do => ddrs_di);
+	ddrs_di <= aux2;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
@@ -276,9 +279,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(0, DDR_BANKSIZE+1) & 
-				to_signed(0, DDR_ADDRSIZE+1) & 
-				to_signed(1, DDR_CLNMSIZE+1));
+				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
+				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
