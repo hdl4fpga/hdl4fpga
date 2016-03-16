@@ -200,9 +200,6 @@ begin
 --		di(1) => di_rdy,
 --		do(0) => di_rdy,
 --		do(1) => ddrs_di_rdy);
-	ddrs_di_rdy <= ddrs_di_req;
-	di_rdy <= ddrs_di_req;
-
 --	ddr_di_e : entity hdl4fpga.align
 --	generic map (
 --		n => ddrs_di'length,
@@ -211,6 +208,10 @@ begin
 --		clk => ddrs_clk,
 --		di => aux2,
 --		do => ddrs_di);
+
+	ddrs_di_rdy <= ddrs_di_req;
+	di_rdy <= ddrs_di_req;
+
 	ddrs_di <= aux2;
 
 	input_rdy <= capture_rdy;
