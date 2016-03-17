@@ -1,3 +1,2 @@
 HDL4FPGA is an library of applications ready to use for FPGA kits. Its main goal
-is to be portable to any FPGA kits manufactures while trying to be fast and if
-it is possible to be area efficient
+is to be portable to any FPGA kits manufactures.
