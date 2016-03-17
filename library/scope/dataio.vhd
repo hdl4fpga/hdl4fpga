@@ -193,7 +193,7 @@ begin
 	ddr_di_rdy_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 => 0, 1 => 0))
+		d => (0 => 2, 1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di(0) => ddrs_di_req,
@@ -203,7 +203,7 @@ begin
 	ddr_di_e : entity hdl4fpga.align
 	generic map (
 		n => ddrs_di'length,
-		d => (0 to ddrs_di'length-1 => 0))
+		d => (0 to ddrs_di'length-1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di => aux2,
@@ -211,8 +211,7 @@ begin
 
 --	ddrs_di_rdy <= ddrs_di_req;
 --	di_rdy <= ddrs_di_req;
-
-	ddrs_di <= aux2;
+--	ddrs_di <= aux2;
 
 	input_rdy <= capture_rdy;
 	ddrs_rw   <= capture_rdy;
