@@ -29,10 +29,6 @@ TIMESPEC TS_dso0 = PERIOD "dqs0" 3.226 ns HIGH 50%; # DDR 310 Mhz rate clock
 NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
 #NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 3.125 ns HIGH 50%; # DDR 320 Mhz rate clock
-#NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
-
-#NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
 #TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
 #NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
