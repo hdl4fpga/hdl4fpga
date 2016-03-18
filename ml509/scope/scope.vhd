@@ -131,8 +131,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10; --10;
-	constant ddr_div   : natural := 3; --3;
+	constant ddr_mul   : natural := 31; --10;
+	constant ddr_div   : natural := 10; --3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;

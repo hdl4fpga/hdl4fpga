@@ -199,9 +199,9 @@ architecture mix of xdr is
 	constant DQZX_LAT  : natural := xdr_latency(stdr, DQZXL);
 	constant WWNX_LAT  : natural := xdr_latency(stdr, WWNXL);
 	constant WID_LAT   : natural := xdr_latency(stdr, WIDL);
-	constant RDFIFODELAY_LAT : natural := xdr_latency(stdr, RDFIFO_DELAY);
+	constant RDFIFO_LAT : natural := xdr_latency(stdr, hdl4fpga.xdr_db.RDFIFO_LAT);
 
-	constant dqs_async : boolean := xdr_cntlrcnfg(fpga, RDFIFO_ASYNC);
+	constant RDFIFO_DELAY : boolean := xdr_cntlrcnfg(fpga, hdl4fpga.xdr_db.RDFIFO_DELAY);
 begin
 
 
@@ -393,8 +393,8 @@ begin
 		line_size => line_size,
 		word_size => word_size,
 		byte_size => byte_size,
-		data_delay => RDFIFODELAY_LAT,
-		dqs_async => dqs_async)
+		data_delay => RDFIFO_LAT,
+		acntr_delay => RDFIFO_DELAY)
 	port map (
 		sys_clk => sys_clks(0),
 		sys_rdy => sys_do_rdy,

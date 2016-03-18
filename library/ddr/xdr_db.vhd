@@ -83,8 +83,8 @@ package xdr_db is
 	constant WWNXL  : natural := 16;
 	constant WIDL   : natural := 17;
 	constant ZQINIT : natural := 18;
-	constant RDFIFO_DELAY : natural := 19;
-	constant RDFIFO_ASYNC : natural := 20;
+	constant RDFIFO_LAT : natural := 19;
+	constant RDFIFO_DELAY : natural := 20;
 
 	constant code_size : natural := 3;
 	subtype code_t is std_logic_vector(0 to code_size-1);
@@ -177,7 +177,7 @@ package xdr_db is
 		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZXL, value =>   0),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNXL, value =>   0),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => WIDL,  value =>   1),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => RDFIFO_DELAY, value => 2),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => RDFIFO_LAT, value => 2),
 
 		latency_record'(fpga => virtex5, stdr => DDR2, param => cDLL,  value => 200),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => MRD,   value =>   2),
@@ -194,7 +194,7 @@ package xdr_db is
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZXL, value =>   2),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNXL, value =>   2),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => WIDL,  value =>   4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_DELAY, value => 4),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_LAT, value => 4),
 
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => cDLL,  value => 500),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   4),
@@ -214,12 +214,12 @@ package xdr_db is
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MODu,  value =>  12),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => XPR,   value =>   5),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_DELAY, value => 3));
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_LAT, value => 3));
 
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
-		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_ASYNC, value => FALSE),
-		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_ASYNC, value => FALSE),
-		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_ASYNC, value => FALSE));
+		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
+		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => TRUE),
+		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (
 

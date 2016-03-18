@@ -43,7 +43,7 @@ int main (int argc, char *argv[])
 		// datum  = (size==64) ? htobe64(datum) : htonl(datum);
 		datum &= mask;
 		if (!lfsr)
-			lfsr = datum;
+			lfsr = mask;
 					        
 		check = lfsr;
 		check = (size==64) ? htobe64(check) : htonl(check);

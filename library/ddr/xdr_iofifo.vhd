@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 entity iofifo is
 	generic (
 		pll2ser : boolean;
-		dqsena  : boolean := false;
+		acntr_delay : boolean := false;
 		data_phases : natural;
 		word_size   : natural;
 		byte_size   : natural);
@@ -115,7 +115,6 @@ begin
 		signal fifo_we : std_logic;
 		signal fifo_wa : aword;
 		signal fifo_ra : aword;
-		signal dqsena_q : std_logic;
 	begin
 
 
@@ -138,25 +137,24 @@ begin
 
 		ar_g : if not pll2ser generate
 			signal cntr_clk : std_logic;
-			signal cntr_ena : std_logic;
 		begin
-			cntr_clk <= not ser_clk(l) when dqsena else ser_clk(l);
-			cntr_ena <=       dqsena_q when dqsena else ser_ena(l);
+			cntr_clk_delay_g : if acntr_delay generate 
+				delay_e : entity hdl4fpga.pgm_delay
+				port map (
+					xi  => ser_clk(l),
+					x_p => cntr_clk);
+			end generate;
 
-			ena_i : entity hdl4fpga.aff
-			port map (
-				clk => ser_clk(l),
-				ar  => ser_ar(l),
-				ena => ser_ena(l),
-				d   => '1',
-				q   => dqsena_q);
+			cntr_clk_nodelay_g : if not acntr_delay generate 
+				cntr_clk <= ser_clk(l);
+			end generate;
 
 			gcntr_g: for k in aser_q'range  generate
 				ffd_i : entity hdl4fpga.aff
 				port map (
 					ar  => ser_ar(l),
 					clk => cntr_clk,
-					ena => cntr_ena,
+					ena => ser_ena(l),
 					d   => aser_d(k),
 					q   => aser_q(k));
 			end generate;
