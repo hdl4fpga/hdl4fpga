@@ -63,7 +63,7 @@ entity xdr_init is
 		xdr_refi_req : out std_logic;
 		xdr_init_clk : in  std_logic;
 		xdr_init_wlrdy : in  std_logic;
-		xdr_init_wlreq : out std_logic := '0';
+		xdr_init_wlreq : out std_logic;
 		xdr_init_req : in  std_logic;
 		xdr_init_rdy : out std_logic;
 		xdr_init_rst : out std_logic;
