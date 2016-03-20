@@ -107,6 +107,7 @@ architecture scope of ml509 is
 	signal gtx_clk  : std_logic;
 	signal gtx_rst  : std_logic;
 	signal mii_rxdv : std_logic;
+	signal mii_rxc  : std_logic;
 	signal mii_rxd  : std_logic_vector(phy_rxd'range);
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(phy_txd'range);
@@ -238,7 +239,7 @@ begin
 		ddr_sti  => ddr_sti,
 
 --		mii_rst  => mii_rst,
-		mii_rxc  => phy_rxclk,
+		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 		mii_txc  => gtx_clk,
@@ -317,11 +318,12 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
+	mii_rxc <= not phy_rxclk;
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
 	port map (
-		mii_rxc  => phy_rxclk,
+		mii_rxc  => mii_rxc,
 		iob_rxdv => phy_rxctl_rxdv,
 		iob_rxd  => phy_rxd,
 		mii_rxdv => mii_rxdv,
