@@ -47,7 +47,7 @@ NET "ddrphy_sti*"   MAXSKEW  = 0.050 ns;
 NET "ddr_sti*"      MAXSKEW  = 0.250 ns;
 NET "ddr_sti*"      MAXDELAY = 1.100 ns;
 NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
-NET "ddr2_dqi*"     MAXDELAY = 1.100 ns;
+NET "ddr2_dqi*"     MAXDELAY = 0.100 ns;
 
 
 # ###################### #
@@ -106,9 +106,10 @@ TIMESPEC TS_dmt1 = FROM FFS (ddrphy_e/byte_g[1].ddrdqphy_i/t0) TIG;
 # Data Byte 0 #
 # ########### #
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X1Y48;
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X1Y48;
-#INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = 
+
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X1Y48;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y46;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp"  LOC = SLICE_X2Y48;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp"  LOC = SLICE_X2Y48;
 
@@ -117,6 +118,7 @@ INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X1Y48;
 
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X1Y29;
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X1Y29;
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y33;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[1].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y28;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[1].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y28;
 
