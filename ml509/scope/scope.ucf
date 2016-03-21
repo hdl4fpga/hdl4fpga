@@ -47,7 +47,7 @@ NET "ddrphy_sti*"   MAXSKEW  = 0.050 ns;
 NET "ddr_sti*"      MAXSKEW  = 0.250 ns;
 NET "ddr_sti*"      MAXDELAY = 1.100 ns;
 NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
-NET "ddr2_dqi*"     MAXDELAY = 0.100 ns;
+NET "ddr2_dqi*"     MAXDELAY = 1.100 ns;
 
 
 # ###################### #
