@@ -1,6 +1,6 @@
 rm pp pp1
 SIZE=${1:-32};
-BLOCKS=${2:-65336};
+BLOCKS=${2:-65536};
 ./scope $BLOCKS $SIZE > pp
 ./scope $BLOCKS $SIZE > pp1
 i=0

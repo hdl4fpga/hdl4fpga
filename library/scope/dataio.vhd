@@ -279,8 +279,8 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(0, DDR_BANKSIZE+1) & 
-				to_signed(0, DDR_ADDRSIZE+1) & 
+				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 
 		creq <= 
@@ -356,7 +356,7 @@ begin
 		ddrs_clk => ddrs_clk,
 		ddrs_gnt => miitx_gnt,
 		ddrs_rdy => miirx_rdy,
-		ddrs_req => '1', --miirx_req,
+		ddrs_req => miirx_req,
 		ddrs_dirdy => ddrs_do_rdy,
 		ddrs_direq => ddr2miitx_brst_req,
 		ddrs_di  => ddrs_do,
