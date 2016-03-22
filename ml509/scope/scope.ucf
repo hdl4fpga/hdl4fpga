@@ -102,7 +102,7 @@ TIMESPEC TS_dmt1 = FROM FFS (ddrphy_e/byte_g[1].ddrdqphy_i/t0) TIG;
 # Data Byte 0 #
 # ########### #
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X1Y44;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X1Y43;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y43;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y43;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y44;
@@ -112,7 +112,7 @@ INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ra
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y44;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y44;
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X1Y44;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X1Y43;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y42;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y42;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y45;
