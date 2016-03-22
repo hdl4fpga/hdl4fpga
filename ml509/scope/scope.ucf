@@ -50,8 +50,8 @@ NET "ddr2_dqi*"     MAXDELAY = 1.000 ns;
 # DDR 300 Mhz rate clock #
 # ###################### #
 
-NET "ddr2_dm[0]" OFFSET = IN  1.641 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN  1.641 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN  1.841 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  1.841 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
 OFFSET = IN -0.416 ns VALID 0.834 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.416 ns VALID 0.834 ns BEFORE ddr2_dqs_p[1] RISING;
 
