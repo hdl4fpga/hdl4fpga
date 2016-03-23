@@ -98,10 +98,12 @@ int main (int argc, char *argv[])
 			abort ();
 		}
 
-		if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-			perror ("recvfrom");
-			abort ();
-		}
+		do {
+			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+				perror ("recvfrom");
+				abort ();
+			}
+		} while(htonl(sa_src.sin_addr.s_addr) != 0xc0a802c8);
 
 		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
 			switch (size) {
