@@ -34,8 +34,8 @@ entity ml509 is
 
 		clk_27mhz_fpga : in std_logic := '-';
 		clk_33mhz_fpga : in std_logic := '-';
-		clk_fpga_n : in std_logic := '-';
 		clk_fpga_p : in std_logic := '-';
+		clk_fpga_n : in std_logic := '-';
 
 		ddr2_clk_p : out std_logic_vector(2-1 downto 0);
 		ddr2_clk_n : out std_logic_vector(2-1 downto 0);

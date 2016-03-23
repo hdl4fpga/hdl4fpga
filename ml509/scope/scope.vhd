@@ -157,6 +157,13 @@ architecture scope of ml509 is
 		return val;
 	end;
 begin
+		
+		
+--	clkin_ibufg : IBUFGDS_LVPECL_25
+--	port map (
+--		I  => clk_fpga_p,
+--		IB => clk_fpga_n,
+--		O  => sys_clk);
 
 	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
