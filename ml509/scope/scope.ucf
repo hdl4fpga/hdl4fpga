@@ -24,13 +24,13 @@
 NET "sys_clk" TNM_NET = sys_clk;
 TIMESPEC ts_sys_clk = PERIOD "sys_clk" 10 ns HIGH 50%;
 
-#NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 3.33333 ns HIGH 50%; # DDR 300 Mhz rate clock
-#NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
+TIMESPEC TS_dso0 = PERIOD "dqs0" 3.33333 ns HIGH 50%; # DDR 300 Mhz rate clock
 NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
+
+#NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 3 ns HIGH 50%; # DDR 333 Mhz rate clock
+#NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
@@ -50,20 +50,20 @@ NET "ddr2_dqi*"     MAXDELAY = 1.100 ns;
 # DDR 300 Mhz rate clock #
 # ###################### #
 
-#NET "ddr2_dm[0]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
-#NET "ddr2_dm[1]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
-#OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[0] RISING;
-#OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[1] RISING;
 
 
 # ###################### #
 # DDR 333 Mhz rate clock #
 # ###################### #
 
-NET "ddr2_dm[0]" OFFSET = IN 0.9375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN 0.9375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.650 ns VALID 0.200 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.650 ns VALID 0.200 ns BEFORE ddr2_dqs_p[1] RISING;
+#NET "ddr2_dm[0]" OFFSET = IN 1.2375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[0] RISING;
+#NET "ddr2_dm[1]" OFFSET = IN 1.2375 ns VALID 2.625 ns BEFORE ddr2_dqs_p[1] RISING;
+#OFFSET = IN -0.650 ns VALID 0.200 ns BEFORE ddr2_dqs_p[0] RISING;
+#OFFSET = IN -0.650 ns VALID 0.200 ns BEFORE ddr2_dqs_p[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
