@@ -43,17 +43,17 @@ NET "ddrphy_dqsi*"  MAXSKEW  = 0.300 ns;
 NET "ddr_sti*"      MAXSKEW  = 0.250 ns;
 #NET "ddr_sti*"      MAXDELAY = 1.000 ns;
 NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
-NET "ddr2_dqi*"     MAXDELAY = 1.000 ns;
+NET "ddr2_dqi*"     MAXDELAY = 1.100 ns;
 
 
 # ###################### #
 # DDR 300 Mhz rate clock #
 # ###################### #
 
-NET "ddr2_dm[0]" OFFSET = IN  1.441 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN  1.441 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.616 ns VALID 0.434 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.616 ns VALID 0.434 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[0]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN  1.241 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.716 ns VALID 0.234 ns BEFORE ddr2_dqs_p[1] RISING;
 
 
 # ###################### #
