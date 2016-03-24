@@ -132,8 +132,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 3; --10;
-	constant ddr_div   : natural := 1; --3;
+	constant ddr_mul   : natural := 10; --10;
+	constant ddr_div   : natural := 3; --3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -159,11 +159,11 @@ architecture scope of ml509 is
 begin
 		
 		
---	clkin_ibufg : IBUFGDS_LVPECL_25
---	port map (
---		I  => clk_fpga_p,
---		IB => clk_fpga_n,
---		O  => sys_clk);
+	idelay_bufg_i : IBUFGDS_LVPECL_25
+	port map (
+		I  => clk_fpga_p,
+		IB => clk_fpga_n,
+		O  => ictlr_clk);
 
 	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
@@ -179,7 +179,6 @@ begin
 	port map (
 		sys_rst => sys_rst,
 		sys_clk => sys_clk,
-		ictlr_clk => ictlr_clk,
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
@@ -187,12 +186,11 @@ begin
 		video_clk => open,
 		video_clk90 => open,
 		ddr_rst => ddrs_rst,
-		gtx_rst => gtx_rst,
-		ictlr_rst => ictlr_rst);
+		gtx_rst => gtx_rst);
 
 	idelayctrl_i : idelayctrl
 	port map (
-		rst => ictlr_rst,
+		rst => sys_rst,
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
 
