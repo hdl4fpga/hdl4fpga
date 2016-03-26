@@ -44,8 +44,8 @@ architecture scope of ml509 is
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant line_size : natural := 2*32;
-	constant word_size : natural := 32;
+	constant word_size : natural := ddr2_d'length;
+	constant line_size : natural := 2*word_size;
 	constant byte_size : natural := 8;
 	constant data_gear : natural := line_size/word_size;
 	constant uclk_period : real := 10.0;
@@ -450,7 +450,5 @@ begin
 	ddr2_cs(1 downto 1) <= "1";
   	ddr2_cke(1 downto 1) <= "0";
 	ddr2_odt(1 downto 1) <= (others => 'Z');
-	ddr2_dm(7 downto 2)  <= (others => 'Z');
-	ddr2_d(63 downto 32) <= (others => '0');
 
 end;

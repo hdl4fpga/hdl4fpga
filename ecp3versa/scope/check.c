@@ -19,26 +19,51 @@
 #include <arpa/inet.h>
 #endif
   
+unsigned __int128 htobe128 (unsigned __int128 num)
+{
+	unsigned __int128 a;
+
+	a   = ~0;
+	a <<= 64;
+	a   = ~a;
+	a = htobe64(num & a);
+	a <<= 64;
+	a |= htobe64(num >> 64);
+	return a;
+}
+
 int main (int argc, char *argv[])
 {
-	long long unsigned int lfsr = 0;
-	long long unsigned int mask = ~0;
-	long long unsigned int datum;
-	long long unsigned int check;
+	unsigned __int128 lfsr = 0;
+	unsigned __int128 mask = ~0;
+	unsigned __int128 datum;
+	unsigned __int128 check;
+	unsigned __int128 diff;
 
 	int size = 32;
 
 	if (argc > 1) 
 		sscanf (argv[1], "%d", &size);
 
-	if (size != 64) 
+	if (size != 128) 
 		mask = ((1LL << size)-1);
 
-	const long long unsigned int p = (size==64) ? 0x5800000000000000 : 0x23000000;
-	
+	unsigned __int128 p = 0xC200000000000000;
+	p <<= 64;
+
+	p = (size==128) ? p : (size==64) ? 0x5800000000000000 : 0x23000000;
+
 	int i;
-	for(i = 0; scanf("%llx", &datum) > 0; i++) {
+	for(i = 0;; i++) {
 		int k;
+		if (size=128)
+			if (!(scanf("%18llx", ((long long unsigned int *) &datum)+1)) > 0)
+				break;
+		if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
+			break;
+
+		fprintf(stderr,"0x%016llx", *(((long long unsigned int *)&datum)+1));
+		fprintf(stderr,"%016llx\n", *(long long unsigned int *)&datum);
 
 		// datum  = (size==64) ? htobe64(datum) : htonl(datum);
 		datum &= mask;
@@ -46,7 +71,7 @@ int main (int argc, char *argv[])
 			lfsr = mask;
 					        
 		check = lfsr;
-		check = (size==64) ? htobe64(check) : htonl(check);
+		check = (size==128) ? htobe128(check) : (size==64) ? htobe64(check) : htonl(check);
 
 		if (check != (datum)){
 			fprintf(stderr, "Failed %d : ", i+1);
@@ -56,6 +81,16 @@ int main (int argc, char *argv[])
 				break;
 			case 64:
 				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", (datum), check, (datum)^check);
+				break;
+			case 128:
+				diff = (datum)^check;
+				fprintf(stderr,"0x%016llx%016llx 0x%016llx%016llx 0x%016llx%016llx\n",
+					*(((long long unsigned int *)&datum)+1),
+					*(((long long unsigned int *)&datum)+0),
+					*(((long long unsigned int *)&check)+1),
+					*(((long long unsigned int *)&check)+0),
+					*(((long long unsigned int *)&diff)+1),
+					*(((long long unsigned int *)&diff)+0));
 				break;
 			default:
 				fprintf(stderr,"invalid size\n");

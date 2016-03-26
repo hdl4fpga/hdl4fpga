@@ -170,6 +170,8 @@ begin
 			g := X"23000000";
 		when 64 =>
 			g := X"5800000000000000";
+		when 128 =>
+			g := X"C2000000000000000000000000000000";
 		when others =>
 			g := (others => '-');
 		end case;
@@ -193,7 +195,7 @@ begin
 	ddr_di_rdy_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 => 1, 1 => 1))
+		d => (0 => 2, 1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di(0) => ddrs_di_req,

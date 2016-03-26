@@ -33,16 +33,26 @@ NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 #NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
-NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "ddr2_dqs_p[2]" TNM_NET = dqs1;
-TIMESPEC TS_dso2 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
-NET "ddr2_dqs_p[2]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "ddr2_dqs_p[3]" TNM_NET = dqs1;
+NET "ddr2_dqs_p[4]" TNM_NET = dqs1;
+NET "ddr2_dqs_p[5]" TNM_NET = dqs1;
+NET "ddr2_dqs_p[6]" TNM_NET = dqs1;
+NET "ddr2_dqs_p[7]" TNM_NET = dqs1;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso2 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 TIMESPEC TS_dso3 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso4 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso5 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso6 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+TIMESPEC TS_dso7 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
+NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[2]" CLOCK_DEDICATED_ROUTE = false;
 NET "ddr2_dqs_p[3]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[4]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[5]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[6]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[7]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
@@ -62,10 +72,18 @@ NET "ddr2_dm[0]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[0] RISIN
 NET "ddr2_dm[1]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[1] RISING;
 NET "ddr2_dm[2]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[2] RISING;
 NET "ddr2_dm[3]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[3] RISING;
+NET "ddr2_dm[4]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[4] RISING;
+NET "ddr2_dm[5]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[5] RISING;
+NET "ddr2_dm[6]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[6] RISING;
+NET "ddr2_dm[7]" OFFSET = IN  1.141 ns VALID 2.917 ns BEFORE ddr2_dqs_p[7] RISING;
 OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[1] RISING;
 OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[2] RISING;
 OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[3] RISING;
+OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[4] RISING;
+OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[5] RISING;
+OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[6] RISING;
+OFFSET = IN -0.666 ns VALID 0.334 ns BEFORE ddr2_dqs_p[7] RISING;
 
 
 # ###################### #
@@ -212,6 +230,107 @@ INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ra
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y50;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y55;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y55;
+
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+
+# Data Byte 4 #
+# ########### #
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X1Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y56;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y56;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y58;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y58;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y56;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y56;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y58;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y58;
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X1Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y59;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y59;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y57;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y59;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[4].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y59;
+
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+
+# Data Byte 5 #
+# ########### #
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X1Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y122;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y122;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y122;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y122;
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X1Y121;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y120;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y120;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y123;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y123;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y120;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y120;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y123;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[5].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y123;
+
+# Data Byte 6 #
+# ########### #
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X1Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y130;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y130;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y130;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y130;
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X1Y129;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y128;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y128;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y131;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y131;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y128;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y128;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y131;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y131;
+
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+#INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
+
+# Data Byte 6 #
+# ########### #
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X1Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y136;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y136;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y137;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y137;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y136;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y136;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y137;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[7].data_phases_g[0].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y137;
+
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X1Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[0].ram_i" LOC = SLICE_X0Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[1].ram_i" LOC = SLICE_X0Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[2].ram_i" LOC = SLICE_X0Y138;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[3].ram_i" LOC = SLICE_X0Y138;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[4].ram_i" LOC = SLICE_X0Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[5].ram_i" LOC = SLICE_X0Y135;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[6].ram_i" LOC = SLICE_X0Y138;
+INST "scope_e/ddr_e/rdfifo_i/bytes_g[6].data_phases_g[1].inbyte_i/phases_g[0].ram_b/ram_g[7].ram_i" LOC = SLICE_X0Y138;
 
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[0].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[3].data_phases_g[1].inbyte_i/phases_g[0].ar_g.cntr_clk_delay_g.delay_e/lutp" LOC = SLICE_X2Y52;

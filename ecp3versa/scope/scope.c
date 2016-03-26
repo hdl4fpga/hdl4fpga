@@ -113,6 +113,11 @@ int main (int argc, char *argv[])
 			case 64:
 				printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
 				break;
+			case 128:
+				printf("0x%016llx%016llx\n",
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8)),
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
+				break;
 			}
 		}
 	}
