@@ -62,10 +62,6 @@ int main (int argc, char *argv[])
 		if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
 			break;
 
-		fprintf(stderr,"0x%016llx", *(((long long unsigned int *)&datum)+1));
-		fprintf(stderr,"%016llx\n", *(long long unsigned int *)&datum);
-
-		// datum  = (size==64) ? htobe64(datum) : htonl(datum);
 		datum &= mask;
 		if (!lfsr)
 			lfsr = mask;
