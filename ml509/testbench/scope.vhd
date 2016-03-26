@@ -24,6 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.std.all;
 
+library micron;
 architecture scope of testbench is
 	constant ddr_std  : positive := 1;
 
@@ -264,23 +265,25 @@ begin
 --		ddr2_sda  => sda
 	);
 
-	mt_u : ddr2_model
-	port map (
-		Ck    => clk_p(0),
-		Ck_n  => clk_n(0),
-		Cke   => cke(0),
-		Cs_n  => cs_n(0),
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba(2-1 downto 0),
-		Addr  => addr,
-		Dm_rdqs  => dm(2-1 downto 0),
-		Dq    => dq(16-1 downto 0),
-		Dqs   => dqs(2-1 downto 0),
-		Dqs_n => dqs_n(2-1 downto 0),
-		rdqs_n => rdqs_n(2-1 downto 0),
-		Odt   => odt(0));
+	gg : for i in data_bytes/2-1 downto 0 generate
+		mt_u : 	entity micron.ddr2
+		port map (
+			Ck    => clk_p(i/2),
+			Ck_n  => clk_n(0),
+			Cke   => cke(i/2),
+			Cs_n  => cs_n(0),
+			Ras_n => ras_n,
+			Cas_n => cas_n,
+			We_n  => we_n,
+			Ba    => ba(2-1 downto 0),
+			Addr  => addr(13-1 downto 0),
+			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
+			Dqs     => dqs(2*(i+1)-1 downto 2*i),
+			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
+			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
+			Dq      => dq(16*(i+1)-1 downto 16*i),
+			Odt     => odt(i/2));
+	end generate;
 end;
 
 library micron;
@@ -290,26 +293,26 @@ configuration ml509_structure_md of testbench is
 		for all: ml509 
 			use entity hdl4fpga.ml509(structure);
 		end for;
-
-		for all : ddr2_model 
-			use entity micron.ddr2
-			port map (
-				Ck    => ck,
-				Ck_n  => ck_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr(12 downto 0),
-				Dm_rdqs  => dm(2-1 downto 0),
-				Dq    => dq,
-				Dqs   => dqs,
-				Dqs_n => dqs_n,
-				rdqs_n => rdqs_n,
-				Odt   => odt);
-		end for;
+--
+--		for all : ddr2_model 
+--			use entity micron.ddr2
+--			port map (
+--				Ck    => ck,
+--				Ck_n  => ck_n,
+--				Cke   => cke,
+--				Cs_n  => cs_n,
+--				Ras_n => ras_n,
+--				Cas_n => cas_n,
+--				We_n  => we_n,
+--				Ba    => ba,
+--				Addr  => addr(12 downto 0),
+--				Dm_rdqs  => dm(2-1 downto 0),
+--				Dq    => dq,
+--				Dqs   => dqs,
+--				Dqs_n => dqs_n,
+--				rdqs_n => rdqs_n,
+--				Odt   => odt);
+--		end for;
 	end for;
 end;
 
@@ -320,25 +323,26 @@ configuration ml509_scope_md of testbench is
 		for all: ml509 
 			use entity hdl4fpga.ml509(scope);
 		end for;
-
-		for all: ddr2_model 
-			use entity micron.ddr2
-			port map (
-				Ck    => ck,
-				Ck_n  => ck_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr(12 downto 0),
-				Dm_rdqs  => dm(2-1 downto 0),
-				Dq    => dq,
-				Dqs   => dqs,
-				Dqs_n => dqs_n,
-				rdqs_n => rdqs_n,
-				Odt   => odt);
-		end for;
+--		for gg 
+--			for all: ddr2_model 
+--				use entity micron.ddr2
+--			port map (
+--					Ck    => ck,
+--					Ck_n  => ck_n,
+--					Cke   => cke,
+--					Cs_n  => cs_n,
+--					Ras_n => ras_n,
+--					Cas_n => cas_n,
+--					We_n  => we_n,
+--					Ba    => ba,
+--					Addr  => addr(12 downto 0),
+--					Dm_rdqs  => dm(2-1 downto 0),
+--					Dq    => dq,
+--					Dqs   => dqs,
+--					Dqs_n => dqs_n,
+--					rdqs_n => rdqs_n,
+--					Odt   => odt);
+--			end for;
+--		end for;
 	end for;
 end;

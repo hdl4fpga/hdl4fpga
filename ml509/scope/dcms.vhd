@@ -39,7 +39,6 @@ entity dcms is
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
-		ictlr_clk : out std_logic;
 		input_clk : buffer std_logic;
 		ddr_clk0  : buffer std_logic;
 		ddr_clk90 : out std_logic;
@@ -47,7 +46,6 @@ entity dcms is
 		video_clk90 : out std_logic;
 		gtx_clk   : buffer std_logic;
 		ddr_rst   : out std_logic;
-		ictlr_rst : out std_logic;
 		input_rst : out std_logic;
 		gtx_rst   : out std_logic;
 		video_rst : out std_logic);
@@ -73,42 +71,6 @@ architecture def of dcms is
 begin
 
 	dcm_rst <= sys_rst;
-	refclk_dcm_i : dcm_adv
-	generic map(
-		clk_feedback => "1X",
-		clkdv_divide => 2.0,
-		clkfx_divide => 2,
-		clkfx_multiply => 4,
-		clkin_period => sys_per,
-		clkin_divide_by_2 => FALSE,
-		clkout_phase_shift => "NONE",
-		dcm_autocalibration => true,
-		dcm_performance_mode => "MAX_SPEED",
-		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "LOW",
-		dll_frequency_mode => "LOW",
-		duty_cycle_correction => TRUE,
-		factory_jf   => X"F0F0",
-		phase_shift  => 0,
-		startup_wait => FALSE)
-	port map (
-		rst   => dcm_rst,
-		psclk => '0',
-		psen  => '0',
-		psincdec => '0',
-		clkfb => ictlr_fb,
-		clkin => sys_clk,
-		clk0  => ictlr_fb,
-		clk2x => ictlr_buf,
-		locked => ictlr_lckd,
-		psdone => open);
-	ictlr_rst <= not ictlr_lckd;
-
-	clkin_ibufg : bufg
-	port map (
-		I => ictlr_buf,
-		O => ictlr_clk);
-
 	video_dcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,

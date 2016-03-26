@@ -210,7 +210,7 @@ begin
 		rd_data => rd_data);
 
 --	rad <= std_logic_vector(unsigned(rd_data) rol miitx_dat'length);
-	rad <= std_logic_vector(unsigned(rd_data) ror miitx_dat'length);
+	rad <= std_logic_vector(unsigned(rd_data) ror 3*miitx_dat'length);
 	txd <= word2byte (
 		word => rad,
 		addr => not bysel);

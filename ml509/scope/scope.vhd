@@ -44,11 +44,10 @@ architecture scope of ml509 is
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant line_size : natural := 2*16;
-	constant word_size : natural := 16;
+	constant line_size : natural := 2*32;
+	constant word_size : natural := 32;
 	constant byte_size : natural := 8;
 	constant data_gear : natural := line_size/word_size;
-
 	constant uclk_period : real := 10.0;
 
 	signal ictlr_clk : std_logic;
@@ -92,11 +91,11 @@ architecture scope of ml509 is
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
-	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddr_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
@@ -132,8 +131,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10; --10;
-	constant ddr_div   : natural := 3; --3;
+	constant ddr_mul   : natural := 3; --10;
+	constant ddr_div   : natural := 1; --3;
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -309,14 +308,14 @@ begin
 		ddr_a   => ddr2_a(13-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
-		ddr_dm   => ddr2_dm(2-1 downto 0),
+		ddr_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
 		ddr_dqo  => ddr2_dqo,
 		ddr_dqi  => ddr2_dqi,
 		ddr_dqt  => ddr2_dqt,
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
 		ddr_dqso => ddr2_dqso);
-	ddr2_dm(8-2 downto 2)  <= (others => '0');
+	ddr2_dm(8-2 downto word_size/byte_size)  <= (others => '0');
 	ddr2_a(14-1 downto 13) <= (others => '0');
 	ddr2_ba(3-1 downto 2)  <= (others => '0');
 
@@ -358,7 +357,7 @@ begin
 
 	end generate;
 
-	ddr2_dqs_g : for i in 0 to 2-1 generate
+	ddr2_dqs_g : for i in 0 to word_size/byte_size-1 generate
 		signal dqsi : std_logic;
 		signal st   : std_logic;
 	begin
@@ -395,7 +394,7 @@ begin
 
 	end generate;
 
-	ddr2_dqs27_g : for i in 2 to 8-1 generate
+	ddr2_dqs27_g : for i in word_size/byte_size to 8-1 generate
 		dqsiobuf_i : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
@@ -452,6 +451,6 @@ begin
   	ddr2_cke(1 downto 1) <= "0";
 	ddr2_odt(1 downto 1) <= (others => 'Z');
 	ddr2_dm(7 downto 2)  <= (others => 'Z');
-	ddr2_d(63 downto 16) <= (others => '0');
+	ddr2_d(63 downto 32) <= (others => '0');
 
 end;
