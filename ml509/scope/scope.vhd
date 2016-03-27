@@ -308,14 +308,14 @@ begin
 		ddr_a   => ddr2_a(13-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
-		ddr_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
+		ddr_dm   => ddr2_dm,
 		ddr_dqo  => ddr2_dqo,
 		ddr_dqi  => ddr2_dqi,
 		ddr_dqt  => ddr2_dqt,
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
 		ddr_dqso => ddr2_dqso);
-	ddr2_dm(8-2 downto word_size/byte_size)  <= (others => '0');
+
 	ddr2_a(14-1 downto 13) <= (others => '0');
 	ddr2_ba(3-1 downto 2)  <= (others => '0');
 
