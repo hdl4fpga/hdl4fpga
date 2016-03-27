@@ -68,7 +68,7 @@ entity ddrphy is
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
-		ddr_clk : out std_logic;
+		ddr_clk : out std_logic_vector;
 		ddr_odt : out std_logic;
 		ddr_ras : out std_logic;
 		ddr_cas : out std_logic;
@@ -259,12 +259,20 @@ architecture virtex of ddrphy is
 
 begin
 
+	ddr_clk_g : for i in ddr_clk'range generate
+		ck_i : entity hdl4fpga.ddro
+		port map (
+			clk => sys_clk0,
+			dr => '0' xor clkinv,
+			df => '1' xor clkinv,
+			q  => ddr_clk(i));
+	end generate;
+
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		cmd_phases => cmd_phases,
 		bank_size => bank_size,
-		addr_size => addr_size,
-		clkinv => clkinv)
+		addr_size => addr_size)
 	port map (
 		sys_clk => sys_clk0,
           
@@ -277,7 +285,6 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
         
-		ddr_ck  => ddr_clk,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
 		ddr_cs  => ddr_cs,

@@ -190,12 +190,13 @@ begin
 			q := sys_rst;
 		end if;
 		aux2 <= s;
+--		aux2 <= X"01020304050607080910111213141516";
 	end process;
 
 	ddr_di_rdy_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 => 2, 1 => 1))
+		d => (0 => 1, 1 => 1))
 	port map (
 		clk => ddrs_clk,
 		di(0) => ddrs_di_req,
@@ -281,7 +282,7 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) &
 				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 

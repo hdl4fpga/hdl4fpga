@@ -268,9 +268,9 @@ begin
 	gg : for i in data_bytes/2-1 downto 0 generate
 		mt_u : 	entity micron.ddr2
 		port map (
-			Ck    => clk_p(i/2),
+			Ck    => clk_p(0),
 			Ck_n  => clk_n(0),
-			Cke   => cke(i/2),
+			Cke   => cke(0),
 			Cs_n  => cs_n(0),
 			Ras_n => ras_n,
 			Cas_n => cas_n,
