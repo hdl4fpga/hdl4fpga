@@ -25,6 +25,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 entity ddrdqphy is
 	generic (
 		registered_dout : boolean;
@@ -47,6 +50,7 @@ entity ddrdqphy is
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
 		ddr_sto  : out std_logic;
+		ddr_dqsi : in  std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
@@ -69,14 +73,12 @@ architecture virtex of ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		phase_g : for j in  gear-1 downto 0 generate
-			iddr_i : iddr
-			port map (
-				c  => 
-				d  => ddr_dqi(i),
-				q1 => sys_dqi(j*byte_size+i),
-				q2 => sys_dqi(j*byte_size+i));
-		end generate;
+		iddr_i : iddr
+		port map (
+			c  => ddr_dqsi,
+			d  => ddr_dqi(i),
+			q1 => sys_dqi(0*byte_size+i),
+			q2 => sys_dqi(1*byte_size+i));
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate

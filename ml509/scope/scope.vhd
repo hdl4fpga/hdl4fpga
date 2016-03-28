@@ -193,6 +193,7 @@ begin
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
 
+	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga => virtex5,
@@ -267,7 +268,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		LOOPBACK => FALSE,
+		LOOPBACK => TRUE,
 		BANK_SIZE => 2,
 		ADDR_SIZE => 13,
 		data_gear => data_gear,
@@ -285,7 +286,7 @@ begin
 		sys_we  => ddrphy_we,
 		sys_b   => ddrphy_b,
 		sys_a   => ddrphy_a,
-		sys_dqsi => ddrphy_dqsi,
+		sys_dqsi => open,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
 		sys_dmi => ddrphy_dmo,
@@ -357,20 +358,10 @@ begin
 
 	end generate;
 
-	ddr2_dqs_g : for i in 0 to word_size/byte_size-1 generate
+	ddr2_dqs_g : for i in ddr2_dqs_p'range generate
 		signal dqsi : std_logic;
-		signal st   : std_logic;
+		signal dqsi_buf : std_logic;
 	begin
-		dqsidelay_i : idelay 
-		port map (
-			rst => ictlr_rst,
-			c   => '0',
-			ce  => '0',
-			inc => '0',
-			i   => dqsi,
-			o   => ddr2_dqsi(i));
---		ddr2_dqsi(i) <= dqsi;
-
 		dqsiobuf_i : iobufds
 		generic map (
 			iostandard => "DIFF_SSTL18_II_DCI")
@@ -381,18 +372,34 @@ begin
 			io  => ddr2_dqs_p(i),
 			iob => ddr2_dqs_n(i));
 
-		dmidelay_i : idelay 
+		dqsidelay_i : idelay 
 		port map (
 			rst => ictlr_rst,
 			c   => '0',
 			ce  => '0',
 			inc => '0',
-			i   => ddrphy_sti(i*data_gear),
-			o   => ddr_sti(i*data_gear));
---		ddr_sti(i*data_gear)  <= ddrphy_sti(i*data_gear);
-		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
+			i   => dqsi,
+			o   => dqsi_buf);
 
+		bufio_i : bufio
+		port map (
+			i => dqsi_buf,
+			o => ddr2_dqsi(i));
 	end generate;
+
+--	ddr2_dm_g : for i in ddr2_dm'range generate
+--		signal st   : std_logic;
+--	begin
+--		dmidelay_i : idelay 
+--		port map (
+--			rst => ictlr_rst,
+--			c   => '0',
+--			ce  => '0',
+--			inc => '0',
+--			i   => ddrphy_sti(i*data_gear),
+--			o   => ddr_sti(i*data_gear));
+--		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
+--	end generate;
 
 	ddr2_dqs27_g : for i in word_size/byte_size to 8-1 generate
 		dqsiobuf_i : iobufds
