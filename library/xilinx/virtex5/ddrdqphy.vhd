@@ -70,7 +70,12 @@ begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		phase_g : for j in  gear-1 downto 0 generate
-			sys_dqi(j*byte_size+i) <= ddr_dqi(i);
+			iddr_i : iddr
+			port map (
+				c  => 
+				d  => ddr_dqi(i),
+				q1 => sys_dqi(j*byte_size+i),
+				q2 => sys_dqi(j*byte_size+i));
 		end generate;
 	end generate;
 
