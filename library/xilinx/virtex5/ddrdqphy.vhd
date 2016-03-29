@@ -33,7 +33,8 @@ entity ddrdqphy is
 		registered_dout : boolean;
 		loopback : boolean;
 		gear : natural;
-		byte_size : natural);
+		byte_size : natural;
+		iddron : boolean := false);
 	port (
 		sys_clk0 : in  std_logic;
 		sys_clk90 : in  std_logic;
@@ -73,12 +74,20 @@ architecture virtex of ddrdqphy is
 begin
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		iddr_i : iddr
-		port map (
-			c  => ddr_dqsi,
-			d  => ddr_dqi(i),
-			q1 => sys_dqi(0*byte_size+i),
-			q2 => sys_dqi(1*byte_size+i));
+		iddron_g : if iddron generate
+			iddr_i : iddr
+			port map (
+				c  => ddr_dqsi,
+				d  => ddr_dqi(i),
+				q1 => sys_dqi(0*byte_size+i),
+				q2 => sys_dqi(1*byte_size+i));
+		end generate;
+
+		iddroff_g : if not iddron generate
+			phase_g : for j in  gear-1 downto 0 generate
+				sys_dqi(j*byte_size+i) <= ddr_dqi(i);
+			end generate;
+		end generate;
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate
