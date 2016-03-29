@@ -76,7 +76,7 @@ int main (int argc, char *argv[])
 				fprintf(stderr,"0x%08lx 0x%08lx 0x%08lx\n", (long unsigned int) (datum), (long unsigned int) check, (long unsigned int) (datum^check));
 				break;
 			case 64:
-				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", (datum), check, (datum)^check);
+				fprintf(stderr,"0x%016llx 0x%016llx 0x%016llx\n", (long long unsigned int)(datum), (long long unsigned int)check, (long long unsigned int)((datum)^check));
 				break;
 			case 128:
 				diff = (datum)^check;

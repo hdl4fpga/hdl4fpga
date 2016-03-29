@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity ddrphy is
 	generic (
+		iddron : boolean := false;
 		registered_dout : boolean := true;
 		loopback : boolean;
 		cmd_phases : natural := 1;
@@ -309,6 +310,7 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
+			iddron => iddron,
 			registered_dout => registered_dout,
 			loopback => loopback,
 			gear => data_gear,
@@ -357,7 +359,7 @@ begin
 	begin
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to data_gear-1 loop
-				if loopback=true then
+				if loopback then
 					sys_sto(data_gear*i+j) <= ddr_sti(i);
 				else
 					sys_sto(data_gear*i+j) <= ddr_dm(i);

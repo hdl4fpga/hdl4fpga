@@ -212,6 +212,7 @@ begin
 		di => aux2,
 		do => ddrs_di);
 
+--	ddrs_di <= X"01020304050607080910111213141516";
 --	ddrs_di_rdy <= ddrs_di_req;
 --	di_rdy <= ddrs_di_req;
 --	ddrs_di <= aux2;
@@ -282,9 +283,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) &
-				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
-				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+				to_signed(0, DDR_BANKSIZE+1) &
+				to_signed(0, DDR_ADDRSIZE+1) & 
+				to_signed(0, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

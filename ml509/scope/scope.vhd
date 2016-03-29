@@ -76,7 +76,6 @@ architecture scope of ml509 is
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
 
-	signal sto : std_logic;
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_ras : std_logic_vector(cmd_phases-1 downto 0);
@@ -95,8 +94,8 @@ architecture scope of ml509 is
 	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_sto : std_logic_vector(0 to line_size/byte_size-1);
+	signal ddrphy_sti : std_logic_vector(0 to line_size/byte_size-1);
 	signal ddr_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
@@ -262,12 +261,12 @@ begin
 		vga_blue  => vga_blue,
 		tpo => tpo);
 
-	sto <= ddrphy_sto(0);
 
 	ddrphy_dqi2 <= ddrphy_dqi;
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+		iddron => true,
 		LOOPBACK => TRUE,
 		BANK_SIZE => 2,
 		ADDR_SIZE => 13,
@@ -387,19 +386,9 @@ begin
 			o => ddr2_dqsi(i));
 	end generate;
 
---	ddr2_dm_g : for i in ddr2_dm'range generate
---		signal st   : std_logic;
---	begin
---		dmidelay_i : idelay 
---		port map (
---			rst => ictlr_rst,
---			c   => '0',
---			ce  => '0',
---			inc => '0',
---			i   => ddrphy_sti(i*data_gear),
---			o   => ddr_sti(i*data_gear));
---		ddr_sti(i*data_gear+1) <= ddr_sti(data_gear*i);
---	end generate;
+	xx_g : for i in ddr_sti'range generate
+		ddr_sti(i) <= ddrphy_sto((i/data_gear)*data_gear);
+	end generate;
 
 	ddr2_dqs27_g : for i in word_size/byte_size to 8-1 generate
 		dqsiobuf_i : iobufds

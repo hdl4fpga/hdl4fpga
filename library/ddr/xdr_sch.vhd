@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.xdr_db.all;
 
 entity xdr_sch is
 	generic (
@@ -35,6 +36,7 @@ entity xdr_sch is
 		data_phases : natural := 2;
 		clk_phases : natural := 4;
 		clk_edges  : natural := 2;
+		profile : natural;
 
 		gear : natural;
 
@@ -95,6 +97,7 @@ architecture def of xdr_sch is
 	signal wpho0  : std_logic_vector(0 to delay_size/clk_edges-1);
 	signal wpho90 : std_logic_vector(0 to delay_size/clk_edges-1);
 
+	signal stpho : std_logic_vector(0 to delay_size/clk_edges-1);
 	constant ph90 : natural := 1 mod sys_clks'length;
 
 begin
@@ -152,13 +155,15 @@ begin
 		end loop;
 	end process;
 
+	stpho <= rpho0 when profile=virtex5 else rpho90;
+
 	xdr_st <= xdr_task (
 		clk_phases => clk_edges,
 		gear => gear,
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab => strl_tab,
-		lat_sch => rpho90,
+		lat_sch => stpho,
 		lat_ext => STRX_LAT,
 		lat_wid => WID_LAT);
 

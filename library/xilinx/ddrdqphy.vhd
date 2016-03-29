@@ -76,8 +76,11 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		iddron_g : if iddron generate
 			iddr_i : iddr
+			generic map (
+				DDR_CLK_EDGE => "SAME_EDGE")
 			port map (
 				c  => ddr_dqsi,
+				ce => '1',
 				d  => ddr_dqi(i),
 				q1 => sys_dqi(0*byte_size+i),
 				q2 => sys_dqi(1*byte_size+i));

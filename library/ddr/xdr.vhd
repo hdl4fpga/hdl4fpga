@@ -326,6 +326,7 @@ begin
 		clk_phases => sclk_phases,
 		clk_edges => sclk_edges,
 		gear => gear,
+		profile => virtex5,
 		CL_COD    => CL_COD,
 		CWL_COD   => CWL_COD,
                                
