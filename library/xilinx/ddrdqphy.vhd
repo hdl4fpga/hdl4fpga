@@ -47,6 +47,7 @@ entity ddrdqphy is
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
 		ddr_sto  : out std_logic;
+		ddr_dqsi : in  std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
@@ -116,9 +117,9 @@ begin
 		registered_g : for i in clks'range generate
 			signal d, t, s : std_logic;
 		begin
-			dmt(i) <= sys_dmt(i) when loopback else '0';
+			dmt(i) <= sys_dmt(i) when not loopback else '0';
 
-			rdmi(i) <= d when t='0' else s;
+			rdmi(i) <= s when t='1' and not loopback else d;
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then

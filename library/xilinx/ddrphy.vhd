@@ -341,16 +341,16 @@ begin
 			ddr_dqso => ddr_dqso(i));
 
 
---		dqs_delayed_e : entity hdl4fpga.pgm_delay
---		port map (
---			xi  => ddr_dqsi(i),
---			x_p => dqsi(0),
---			x_n => dqsi(1));
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		port map (
+			xi  => ddr_dqsi(i),
+			x_p => dqsi(0),
+			x_n => dqsi(1));
+			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
+			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
 
---			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
---			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
-			sys_dqsi(data_gear*i+0) <=     ddr_dqsi(i) after 1 ns;
-			sys_dqsi(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
+--			sys_dqsi(data_gear*i+0) <=     ddr_dqsi(i) after 1 ns;
+--			sys_dqsi(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
 	end generate;
 
 	process(ddr_dm, ddr_sti)

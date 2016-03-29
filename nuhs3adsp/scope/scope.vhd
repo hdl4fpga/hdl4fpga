@@ -67,7 +67,7 @@ architecture scope of nuhs3adsp is
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqt : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo : std_logic_vector(ddr_dq'range);
-	signal ddr_clk : std_logic;
+	signal ddr_clk : std_logic_vector(0 downto 0);
 
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
@@ -377,31 +377,13 @@ begin
 		end loop;
 	end process;
 
-	ddr_clk_b : block
-		signal diff_clk : std_logic;
-		signal clk_n : std_logic;
-	begin
-		clk_n <= not ddrs_clk0;
-		oddr_i : oddr2
-		port map (
-			r => '0',
-			s => '0',
-			c0 => clk_n,
-			c1 => ddrs_clk0,
-			ce => '1',
-			d0 => '1',
-			d1 => '0',
-			q => diff_clk);
-
-		obufds_i : obufds
+	ddr_clk_i : obufds
 		generic map (
 			iostandard => "DIFF_SSTL2_I")
 		port map (
-			i  => diff_clk,
+			i  => ddr_clk(0),
 			o  => ddr_ckp,
 			ob => ddr_ckn);
-
-	end block;
 
 	hd_t_data <= 'Z';
 
