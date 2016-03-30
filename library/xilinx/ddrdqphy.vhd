@@ -77,7 +77,7 @@ begin
 		iddron_g : if iddron generate
 			iddr_i : iddr
 			generic map (
-				DDR_CLK_EDGE => "SAME_EDGE")
+				DDR_CLK_EDGE => "OPPOSITE_EDGE")
 			port map (
 				c  => ddr_dqsi,
 				ce => '1',
