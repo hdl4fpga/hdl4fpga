@@ -192,7 +192,17 @@ begin
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
 
-	ddrphy_dqsi <= (others => ddrs_clk0);
+	process(ddrs_clk0)
+	begin
+		for i in ddrphy_dqsi'range loop
+			if i mod 2=0 then
+				ddrphy_dqsi(i) <= ddrs_clk0);
+			else
+				ddrphy_dqsi(i) <= not ddrs_clk0);
+			end if;
+		end loop;
+	end process;
+
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga => virtex5,
