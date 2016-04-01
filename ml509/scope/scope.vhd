@@ -154,14 +154,20 @@ architecture scope of ml509 is
 		end loop;
 		return val;
 	end;
+	signal ictlr_clk_ibufg : std_logic;
 begin
 		
 		
-	idelay_bufg_i : IBUFGDS_LVPECL_25
+	idelay_ibufg_i : IBUFGDS_LVPECL_25
 	port map (
 		I  => clk_fpga_p,
 		IB => clk_fpga_n,
-		O  => ictlr_clk);
+		O  => ictlr_clk_ibufg );
+
+	idelay_bufg_i : BUFG
+	port map (
+		i => ictlr_clk_ibufg,
+		o => ictlr_clk);
 
 	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
@@ -353,9 +359,11 @@ begin
 	ddr2_d_g : for i in ddr2_dqt'range generate
 	begin
 		dqi_i : idelay 
+		generic map (
+			IOBDELAY_TYPE => "VARIABLE")
 		port map (
 			rst => ictlr_rst,
-			c   => '0',
+			c   => ictlr_clk,
 			ce  => '0',
 			inc => '0',
 			i   => ddr2_d(i),
@@ -382,9 +390,11 @@ begin
 			iob => ddr2_dqs_n(i));
 
 		dqsidelay_i : idelay 
+		generic map (
+			IOBDELAY_TYPE => "VARIABLE")
 		port map (
 			rst => ictlr_rst,
-			c   => '0',
+			c   => ictlr_clk,
 			ce  => '0',
 			inc => '0',
 			i   => dqsi,
