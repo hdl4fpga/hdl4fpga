@@ -92,6 +92,7 @@ OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[7] RISING;
 
 NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
 NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
+
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
 NET input_clk  TNM_NET = FFS  FFS_adcclkab;
@@ -102,6 +103,7 @@ NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 #NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
 TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_r2o_ddr2ddr1 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk0  3.333 ns;
 TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
 TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;

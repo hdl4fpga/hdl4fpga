@@ -196,9 +196,9 @@ begin
 	begin
 		for i in ddrphy_dqsi'range loop
 			if i mod 2=0 then
-				ddrphy_dqsi(i) <= ddrs_clk0);
+				ddrphy_dqsi(i) <= ddrs_clk0;
 			else
-				ddrphy_dqsi(i) <= not ddrs_clk0);
+				ddrphy_dqsi(i) <= not ddrs_clk0;
 			end if;
 		end loop;
 	end process;
@@ -397,7 +397,7 @@ begin
 	end generate;
 
 	xx_g : for i in ddr_sti'range generate
-		ddr_sti(i) <= ddrphy_sto((i/data_gear)*data_gear);
+		ddr_sti(i) <= ddrphy_sto(i);
 	end generate;
 
 	ddr2_dqs27_g : for i in word_size/byte_size to 8-1 generate

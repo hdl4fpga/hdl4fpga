@@ -218,7 +218,7 @@ package xdr_db is
 
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
-		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => TRUE),
+		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (

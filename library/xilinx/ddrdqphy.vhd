@@ -38,6 +38,7 @@ entity ddrdqphy is
 	port (
 		sys_clk0 : in  std_logic;
 		sys_clk90 : in  std_logic;
+		sys_calreq : in std_logic := '0';
 		sys_dmt  : in  std_logic_vector(0 to gear-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
@@ -177,20 +178,39 @@ begin
 
 	dqso_b : block 
 		signal clk_n : std_logic;
+		signal dt : std_logic;
+		signal dqso_r : std_logic;
+		signal dqso_f : std_logic;
+		signal dqsi_r : std_logic;
+		signal dqsi_f : std_logic;
 	begin
 
+		iddr_i : iddr
+		generic map (
+			DDR_CLK_EDGE => "OPPOSITE_EDGE")
+		port map (
+			c  => sys_clk0,
+			ce => '1',
+			d  => ddr_dqsi,
+			q1 => dqsi_r,
+			q2 => dqsi_f);
+
+		dt <= sys_dqst(1) when sys_calreq='0' else '0';
 		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk0,
-			d => sys_dqst(1),
+			d => dt,
 			q => ddr_dqst);
+
+		dqso_r <= '0'         when sys_calreq='0' else'1';
+		dqso_f <= sys_dqso(0) when sys_calreq='0' else'1';
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk0,
-			dr  => '0',
-			df  => sys_dqso(0),
+			dr  => dqso_r,
+			df  => dqso_f,
 			q   => ddr_dqso);
 
 	end block;

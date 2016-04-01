@@ -136,24 +136,11 @@ begin
 		end generate;	
 
 		ar_g : if not pll2ser generate
-			signal cntr_clk : std_logic;
-		begin
-			cntr_clk_delay_g : if acntr_delay generate 
-				delay_e : entity hdl4fpga.pgm_delay
-				port map (
-					xi  => ser_clk(l),
-					x_p => cntr_clk);
-			end generate;
-
-			cntr_clk_nodelay_g : if not acntr_delay generate 
-				cntr_clk <= ser_clk(l);
-			end generate;
-
 			gcntr_g: for k in aser_q'range  generate
 				ffd_i : entity hdl4fpga.aff
 				port map (
 					ar  => ser_ar(l),
-					clk => cntr_clk,
+					clk => ser_clk(l),
 					ena => ser_ena(l),
 					d   => aser_d(k),
 					q   => aser_q(k));
