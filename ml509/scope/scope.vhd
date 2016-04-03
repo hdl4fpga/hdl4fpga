@@ -360,6 +360,7 @@ begin
 	begin
 		dqi_i : idelay 
 		generic map (
+			IOBDELAY_VALUE => 0,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
 			rst => ictlr_rst,
@@ -391,6 +392,7 @@ begin
 
 		dqsidelay_i : idelay 
 		generic map (
+			IOBDELAY_VALUE => 0,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
 			rst => ictlr_rst,
