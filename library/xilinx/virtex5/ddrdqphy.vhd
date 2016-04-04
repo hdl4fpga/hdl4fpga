@@ -48,6 +48,9 @@ entity ddrdqphy is
 		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
+		sys_dqsiod_rst : out std_logic;
+		sys_dqsiod_ce  : out std_logic;
+		sys_dqsiod_inc : out std_logic;
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -176,6 +179,15 @@ begin
 		df  => sys_sti(1),
 		q   => ddr_sto);
 
+	: entity hdl4fpga.adjdly
+	port map (
+		clk => ,
+		dly =>
+		hld =>
+		iod_rst => sys_dqsiod_rst,
+		iod_ce  => sys_dqsiod_ce,
+		iod_inc => sys_dqsiod_inc);
+		
 	dqso_b : block 
 		signal clk_n : std_logic;
 		signal dt : std_logic;
