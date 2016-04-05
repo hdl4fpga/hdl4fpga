@@ -53,6 +53,7 @@ entity ddrdqphy is
 		sys_dqsiod_rst : out std_logic;
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
+		sys_dqsibuf : in std_logic;
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -181,16 +182,6 @@ begin
 		df  => sys_sti(1),
 		q   => ddr_sto);
 
-	adjdqs_req <= not sys_rst;
-	adjdqs_e : entity hdl4fpga.adjdqs
-	port map (
-		clk => sys_dqsiod_clk,
-		din => ddr_dqsi,
-		req => adjdqs_req,
-		iod_rst => sys_dqsiod_rst,
-		iod_ce  => sys_dqsiod_ce,
-		iod_inc => sys_dqsiod_inc);
-		
 	dqso_b : block 
 		signal clk_n : std_logic;
 		signal dt : std_logic;
@@ -200,16 +191,16 @@ begin
 		signal dqsi_f : std_logic;
 	begin
 
-		iddr_i : iddr
-		generic map (
-			DDR_CLK_EDGE => "OPPOSITE_EDGE")
+		adjdqs_req <= not sys_rst;
+		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
-			c  => sys_clk0,
-			ce => '1',
-			d  => ddr_dqsi,
-			q1 => dqsi_r,
-			q2 => dqsi_f);
-
+			din => sys_dqsibuf,
+			iod_clk => sys_dqsiod_clk,
+			req => adjdqs_req,
+			iod_rst => sys_dqsiod_rst,
+			iod_ce  => sys_dqsiod_ce,
+			iod_inc => sys_dqsiod_inc);
+			
 		dt <= sys_dqst(1) when sys_calreq='0' else '0';
 		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto

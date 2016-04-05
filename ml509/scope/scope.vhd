@@ -102,7 +102,7 @@ architecture scope of ml509 is
 	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
-
+	signal dqsi_buf : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal gtx_clk  : std_logic;
 	signal gtx_rst  : std_logic;
@@ -316,6 +316,7 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
+		sys_dqsibuf => dqsi_buf,
 		sys_dqsiod_rst => ddrphy_dqsiod_rst,
 		sys_dqsiod_clk => ictlr_clk,
 		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
@@ -385,7 +386,6 @@ begin
 
 	ddr2_dqs_g : for i in ddr2_dqs_p'range generate
 		signal dqsi : std_logic;
-		signal dqsi_buf : std_logic;
 	begin
 		dqsiobuf_i : iobufds
 		generic map (
@@ -407,11 +407,11 @@ begin
 			ce  => ddrphy_dqsiod_ce(i),
 			inc => ddrphy_dqsiod_inc(i),
 			i   => dqsi,
-			o   => dqsi_buf);
+			o   => dqsi_buf(i));
 
 		bufio_i : bufio
 		port map (
-			i => dqsi_buf,
+			i => dqsi_buf(i),
 			o => ddr2_dqsi(i));
 	end generate;
 

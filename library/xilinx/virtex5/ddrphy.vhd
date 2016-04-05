@@ -72,6 +72,7 @@ entity ddrphy is
 		sys_dqsiod_clk : in  std_logic;
 		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_dqsibuf : in std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -341,6 +342,7 @@ begin
 			sys_dqsiod_clk => sys_dqsiod_clk,
 			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
+			sys_dqsibuf => sys_dqsibuf(i),
 
 			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqi  => ddqi(i),

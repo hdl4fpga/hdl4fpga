@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity adjdqs is
 	port (
-		clk : in  std_logic;
+		iod_clk : in  std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
@@ -20,21 +20,21 @@ architecture def of adjdqs is
 	signal smp1 : std_logic;
 begin
 
-	process (clk)
+	process (iod_clk)
 		variable q : std_logic;
 	begin
-		if rising_edge(clk) then
+		if rising_edge(iod_clk) then
 			smp1 <= smp0;
 			smp0 <= q;
 			q := din;
 		end if;
 	end process;
 
-	process (clk)
+	process (iod_clk)
 --		variable cntr : unsigned(0 to iod_dly'length);
 		variable sync : std_logic;
 	begin
-		if rising_edge(clk) then
+		if rising_edge(iod_clk) then
 			if req='0' then
 				iod_rst <= '0';
 				iod_ce  <= '0';
