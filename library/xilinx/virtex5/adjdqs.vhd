@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adjdqs is
-	port map (
+	port (
 		clk : in  std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
@@ -24,13 +24,14 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(clk) then
+			smp1 <= smp0;
 			smp0 <= q;
 			q := din;
 		end if;
 	end process;
 
 	process (clk)
-		variable cntr : unsigned(0 to iod_dly'length);
+--		variable cntr : unsigned(0 to iod_dly'length);
 		variable sync : std_logic;
 	begin
 		if rising_edge(clk) then
@@ -38,7 +39,7 @@ begin
 				iod_rst <= '0';
 				iod_ce  <= '0';
 				iod_inc <= '0';
-				sync := '1';
+				sync := '0';
 --				cntr := (others => '0');
 			elsif sync='0' then
 				if smp0='0' then

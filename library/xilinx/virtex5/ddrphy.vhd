@@ -41,6 +41,7 @@ entity ddrphy is
 		byte_size : natural := 8;
 		clkinv : std_logic := '0');
 	port (
+		sys_rst  : in std_logic;
 		sys_clk0  : in std_logic;
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
@@ -66,6 +67,11 @@ entity ddrphy is
 		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
+		sys_dqsiod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_dqsiod_clk : in  std_logic;
+		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -316,6 +322,7 @@ begin
 			gear => data_gear,
 			byte_size => byte_size)
 		port map (
+			sys_rst => sys_rst,
 			sys_clk0  => sys_clk0,
 			sys_clk90 => sys_clk90,
 
@@ -329,6 +336,11 @@ begin
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
+
+			sys_dqsiod_rst => sys_dqsiod_rst(i), 
+			sys_dqsiod_clk => sys_dqsiod_clk,
+			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
+			sys_dqsiod_inc => sys_dqsiod_inc(i), 
 
 			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqi  => ddqi(i),

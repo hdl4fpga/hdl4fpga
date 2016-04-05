@@ -194,8 +194,14 @@ architecture scope of testbench is
 	end component;
 
 	constant delay : time := 1 ns;
+	signal clk_fpga : std_logic := '0';
+	signal clk_fpga_p : std_logic := '0';
+	signal clk_fpga_n : std_logic := '0';
 begin
 
+	clk_fpga <= not clk_fpga after 2.5 ns;
+	clk_fpga_p <= clk_fpga;
+	clk_fpga_n <= not clk_fpga;
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 1.1 us;
 
@@ -233,6 +239,8 @@ begin
 	port map (
 		user_clk => clk,
 
+		clk_fpga_p => clk_fpga_p,
+		clk_fpga_n => clk_fpga_n,
 		gpio_sw_c => rst,
 		gpio_sw_e => lp,
 		gpio_led_e => lp,

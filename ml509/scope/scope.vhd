@@ -52,7 +52,6 @@ architecture scope of ml509 is
 
 	signal ictlr_clk : std_logic;
 	signal ictlr_rdy : std_logic;
-	signal ictlr_rst : std_logic;
 
 	signal sys_clk : std_logic;
 	signal ddrs_rst  : std_logic;
@@ -100,6 +99,9 @@ architecture scope of ml509 is
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
+	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
 
 
 	signal gtx_clk  : std_logic;
@@ -290,6 +292,7 @@ begin
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
+		sys_rst => sys_rst,
 		sys_clk0 => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
 		phy_rst => ddrs_rst,
@@ -313,6 +316,10 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
+		sys_dqsiod_rst => ddrphy_dqsiod_rst,
+		sys_dqsiod_clk => ictlr_clk,
+		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
+		sys_dqsiod_inc => ddrphy_dqsiod_inc,
 
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
@@ -363,7 +370,7 @@ begin
 			IOBDELAY_VALUE => 0,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => ictlr_rst,
+			rst => ddrphy_dqsiod_rst(i/(word_size/byte_size)),
 			c   => ictlr_clk,
 			ce  => '0',
 			inc => '0',
@@ -392,13 +399,13 @@ begin
 
 		dqsidelay_i : idelay 
 		generic map (
-			IOBDELAY_VALUE => 5,
+			IOBDELAY_VALUE => 63,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => ictlr_rst,
+			rst => ddrphy_dqsiod_rst(i),
 			c   => ictlr_clk,
-			ce  => '0',
-			inc => '0',
+			ce  => ddrphy_dqsiod_ce(i),
+			inc => ddrphy_dqsiod_inc(i),
 			i   => dqsi,
 			o   => dqsi_buf);
 
@@ -410,19 +417,6 @@ begin
 
 	xx_g : for i in ddr_sti'range generate
 		ddr_sti(i) <= ddrphy_sto(i);
-	end generate;
-
-	ddr2_dqs27_g : for i in word_size/byte_size to 8-1 generate
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => '1',
-			i   => '0',
-			o   => open,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
-
 	end generate;
 
 	ddr_clks_g : for i in ddr2_clk'range generate
