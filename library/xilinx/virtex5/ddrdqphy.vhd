@@ -36,6 +36,7 @@ entity ddrdqphy is
 		byte_size : natural;
 		iddron : boolean := false);
 	port (
+		sys_rst : in std_logic;
 		sys_clk0 : in  std_logic;
 		sys_clk90 : in  std_logic;
 		sys_calreq : in std_logic := '0';
@@ -48,6 +49,7 @@ entity ddrdqphy is
 		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
+		sys_dqsiod_clk : in  std_logic;
 		sys_dqsiod_rst : out std_logic;
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
@@ -69,11 +71,11 @@ library hdl4fpga;
 
 architecture virtex of ddrdqphy is
 
-	signal dqi : std_logic_vector(sys_dqi'range);
-
-	signal dqt : std_logic_vector(sys_dqt'range);
+	signal dqi  : std_logic_vector(sys_dqi'range);
+	signal dqt  : std_logic_vector(sys_dqt'range);
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
+	signal adjdqs_req : std_logic;
 
 begin
 
@@ -179,11 +181,12 @@ begin
 		df  => sys_sti(1),
 		q   => ddr_sto);
 
-	: entity hdl4fpga.adjdly
+	adjdqs_req <= not sys_rst;
+	adjdqs_e : entity hdl4fpga.adjdqs
 	port map (
-		clk => ,
-		dly =>
-		hld =>
+		clk => sys_dqsiod_clk,
+		din => ddr_dqsi,
+		req => adjdqs_req,
 		iod_rst => sys_dqsiod_rst,
 		iod_ce  => sys_dqsiod_ce,
 		iod_inc => sys_dqsiod_inc);
