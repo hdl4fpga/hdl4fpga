@@ -104,6 +104,23 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture virtex of ddrphy is
+	subtype dlyw is std_logic_vector(6-1 downto 0);
+	type dlyw_vector is array (natural range <>) of dlyw;
+
+	function to_stdlogicvector (
+		constant arg : dlyw_vector)
+		return std_logic_vector is
+		variable dat : dlyw_vector(arg'length-1 downto 0);
+		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
+	begin
+		dat := arg;
+		for i in dat'range loop
+			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
+			val(arg(arg'left)'range) := dat(i);
+		end loop;
+		return val;
+	end;
+
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -265,6 +282,7 @@ architecture virtex of ddrphy is
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
 
+	signal dlytap : dlyw_vector(word_size/byte_size-1 downto 0);
 begin
 
 	ddr_clk_g : for i in ddr_clk'range generate
@@ -342,6 +360,7 @@ begin
 			sys_dqsiod_clk => sys_dqsiod_clk,
 			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
+			sys_dqsiod_dly => dlytap(i), 
 			sys_dqsibuf => sys_dqsibuf(i),
 
 			ddr_dqsi => ddr_dqsi(i),
