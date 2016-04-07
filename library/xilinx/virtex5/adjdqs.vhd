@@ -4,15 +4,15 @@ use ieee.numeric_std.all;
 
 entity adjdqs is
 	port (
-		iod_clk : in  std_logic;
+		sys_clk0 : in  std_logic;
+		iod_clk  : in  std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
 		iod_rst : out std_logic;
 		iod_ce  : out std_logic;
-		iod_inc : out std_logic
-		--iod_dly : out std_logic_vector
-		);
+		iod_inc : out std_logic;
+		iod_dly : out std_logic_vector);
 end;
 
 architecture def of adjdqs is
@@ -31,7 +31,7 @@ begin
 	end process;
 
 	process (iod_clk)
---		variable cntr : unsigned(0 to iod_dly'length);
+		variable cntr : unsigned(0 to iod_dly'length);
 		variable sync : std_logic;
 	begin
 		if rising_edge(iod_clk) then
@@ -40,7 +40,7 @@ begin
 				iod_ce  <= '0';
 				iod_inc <= '0';
 				sync := '0';
---				cntr := (others => '0');
+				cntr := (others => '0');
 			elsif sync='0' then
 				if smp0='0' then
 					if smp1='1' then
@@ -48,24 +48,24 @@ begin
 						iod_ce  <= '1';
 						iod_inc <= '1';
 						sync := '1';
---						cntr := cntr - 1;
+						cntr := cntr - 1;
 					else
 						iod_rst <= '0';
 						iod_ce  <= '1';
 						iod_inc <= '0';
 						sync := '0';
---						cntr := cntr + 1;
+						cntr := cntr + 1;
 					end if;
 				else 
 					iod_rst <= '0';
 					iod_ce  <= '1';
 					iod_inc <= '0';
 					sync := '0';
---					cntr := cntr + 1;
+					cntr := cntr + 1;
 				end if;
 			end if;
 			rdy <= sync;
---			iod_dly <= cntr(1 to iod_dly'length);
+			iod_dly <= std_logic_vector(cntr(1 to iod_dly'length));
 		end if;
 	end process;
 end;

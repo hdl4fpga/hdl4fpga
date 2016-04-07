@@ -102,6 +102,7 @@ architecture scope of ml509 is
 	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddrphy_dqsiod_taps : std_logic_vector(6*word_size/byte_size-1 downto 0);
 	signal dqsi_buf : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal gtx_clk  : std_logic;
@@ -321,7 +322,7 @@ begin
 		sys_dqsiod_clk => ictlr_clk,
 		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
 		sys_dqsiod_inc => ddrphy_dqsiod_inc,
-
+		sys_dqsiod_taps => ddrphy_dqsiod_taps,
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
 		ddr_cs  => ddr2_cs(0),
@@ -444,7 +445,7 @@ begin
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= (others => '0');
+	gpio_led <= "00" & ddrphy_dqsiod_taps(6-1 downto 0) ;
 	gpio_led_c <= mii_txen; --'0';
 	gpio_led_e <= tpo(0);
 	gpio_led_w <= '0';

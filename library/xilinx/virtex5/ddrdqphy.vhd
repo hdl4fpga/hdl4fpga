@@ -54,6 +54,7 @@ entity ddrdqphy is
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
 		sys_dqsibuf : in std_logic;
+		sys_dqsiod_taps : out std_logic_vector(6-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -194,13 +195,15 @@ begin
 		adjdqs_req <= not sys_rst;
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
-			din => sys_dqsibuf,
 			iod_clk => sys_dqsiod_clk,
+			sys_clk0 => sys_clk0,
+			din => sys_dqsibuf,
 			req => adjdqs_req,
 			iod_rst => sys_dqsiod_rst,
 			iod_ce  => sys_dqsiod_ce,
-			iod_inc => sys_dqsiod_inc);
-			
+			iod_inc => sys_dqsiod_inc,
+			iod_dly => sys_dqsiod_taps);
+
 		dt <= sys_dqst(1) when sys_calreq='0' else '0';
 		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto

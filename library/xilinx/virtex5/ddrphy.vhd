@@ -72,6 +72,7 @@ entity ddrphy is
 		sys_dqsiod_clk : in  std_logic;
 		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_dqsiod_taps : out std_logic_vector(6*word_size/byte_size-1 downto 0);
 		sys_dqsibuf : in std_logic_vector(word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
@@ -104,13 +105,13 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture virtex of ddrphy is
-	subtype dlyw is std_logic_vector(6-1 downto 0);
-	type dlyw_vector is array (natural range <>) of dlyw;
+	subtype tapsw is std_logic_vector(6-1 downto 0);
+	type tapsw_vector is array (natural range <>) of tapsw;
 
 	function to_stdlogicvector (
-		constant arg : dlyw_vector)
+		constant arg : tapsw_vector)
 		return std_logic_vector is
-		variable dat : dlyw_vector(arg'length-1 downto 0);
+		variable dat : tapsw_vector(arg'length-1 downto 0);
 		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
 	begin
 		dat := arg;
@@ -282,9 +283,8 @@ architecture virtex of ddrphy is
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
 
-	signal dlytap : dlyw_vector(word_size/byte_size-1 downto 0);
+	signal dqsiod_taps : tapsw_vector(word_size/byte_size-1 downto 0);
 begin
-
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
@@ -360,7 +360,7 @@ begin
 			sys_dqsiod_clk => sys_dqsiod_clk,
 			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
-			sys_dqsiod_dly => dlytap(i), 
+			sys_dqsiod_taps => dqsiod_taps(i), 
 			sys_dqsibuf => sys_dqsibuf(i),
 
 			ddr_dqsi => ddr_dqsi(i),
@@ -416,4 +416,5 @@ begin
 	end process;
 
 	sys_dqi <= to_stdlogicvector(sdqo);
+	sys_dqsiod_taps <= to_stdlogicvector(dqsiod_taps);
 end;
