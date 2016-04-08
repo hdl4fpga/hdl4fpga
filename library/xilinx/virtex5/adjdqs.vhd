@@ -15,18 +15,24 @@ entity adjdqs is
 		iod_dly : out std_logic_vector);
 end;
 
+library hdl4fpga;
+
 architecture def of adjdqs is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
 begin
+
+	ffd_e : entity hdl4fpga.ff
+	port map (
+		clk => sys_clk0,
+		d   => din,
+		q   => smp0);
 
 	process (iod_clk)
 		variable q : std_logic;
 	begin
 		if rising_edge(iod_clk) then
 			smp1 <= smp0;
-			smp0 <= q;
-			q := din;
 		end if;
 	end process;
 
@@ -48,24 +54,22 @@ begin
 						iod_ce  <= '1';
 						iod_inc <= '1';
 						sync := '1';
-						cntr := cntr - 1;
+						iod_dly <= std_logic_vector(cntr(1 to iod_dly'length)-1);
 					else
 						iod_rst <= '0';
 						iod_ce  <= '1';
 						iod_inc <= '0';
 						sync := '0';
-						cntr := cntr + 1;
 					end if;
 				else 
 					iod_rst <= '0';
 					iod_ce  <= '1';
 					iod_inc <= '0';
 					sync := '0';
-					cntr := cntr + 1;
 				end if;
+				cntr := cntr + 1;
 			end if;
 			rdy <= sync;
-			iod_dly <= std_logic_vector(cntr(1 to iod_dly'length));
 		end if;
 	end process;
 end;

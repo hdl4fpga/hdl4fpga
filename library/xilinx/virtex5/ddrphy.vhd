@@ -68,12 +68,15 @@ entity ddrphy is
 		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+		sys_wlreq : in std_logic;
+		sys_wlrdy : out std_logic;
 		sys_dqsiod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_clk : in  std_logic;
 		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_taps : out std_logic_vector(6*word_size/byte_size-1 downto 0);
 		sys_dqsibuf : in std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_dqsiod_dly : out std_logic_vector(6*word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -282,7 +285,7 @@ architecture virtex of ddrphy is
 
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
-
+	
 	signal dqsiod_taps : tapsw_vector(word_size/byte_size-1 downto 0);
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
@@ -329,6 +332,7 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
+	sys_wlrdy <= sys_wlreq;
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		signal dqsi : std_logic_vector(0 to 1);
 	begin

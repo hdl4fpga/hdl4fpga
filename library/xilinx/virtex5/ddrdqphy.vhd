@@ -49,11 +49,11 @@ entity ddrdqphy is
 		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
+		sys_dqsibuf : in std_logic;
 		sys_dqsiod_clk : in  std_logic;
 		sys_dqsiod_rst : out std_logic;
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
-		sys_dqsibuf : in std_logic;
 		sys_dqsiod_taps : out std_logic_vector(6-1 downto 0);
 
 		ddr_dmt  : out std_logic;

@@ -305,6 +305,9 @@ begin
 		sys_we  => ddrphy_we,
 		sys_b   => ddrphy_b,
 		sys_a   => ddrphy_a,
+
+		sys_wlreq => ddrphy_wlreq,
+		sys_wlrdy => ddrphy_wlrdy,
 		sys_dqsi => open,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,

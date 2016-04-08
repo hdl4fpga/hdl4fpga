@@ -60,41 +60,6 @@ package std is
 		constant arg2 : natural)
 		return std_logic_vector;
 
---	function "rol" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : integer)
---		return std_logic_vector;
---
---	function "ror" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector;
---
---	function "sll" (
---		constant arg1 : unsigned;
---		constant arg2 : natural)
---		return std_logic_vector;
---
---	function "sll" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector;
---
---	function "srl" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector;
---
---	function "and" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : std_logic)
---		return std_logic_vector;
---
---	impure function "mod" (
---		constant arg1 : time;
---		constant arg2 : time)
---		return time;
-
 	function to_unsigned (
 		constant arg1 : natural;
 		constant arg2 : std_logic_vector)
@@ -217,10 +182,6 @@ package std is
 		constant arg : character)
 		return string;
 
---	function to_string (
---		constant arg : real)
---		return string;
-
 	function to_ascii (
 		constant arg : nibble)
 		return ascii;
@@ -329,73 +290,6 @@ package body std is
 		return std_logic_vector(val);
 
 	end;
-
---	function "rol" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : integer)
---		return std_logic_vector is
---	begin
---		return std_logic_vector(rotate_left(unsigned(arg1), arg2));
---	end;
---
---	function "ror" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector is
---	begin
---		return std_logic_vector(rotate_right(unsigned(arg1), arg2));
---	end;
---
---	function "sll" (
---		constant arg1 : unsigned;
---		constant arg2 : natural)
---		return std_logic_vector is
---	begin
---		return std_logic_vector(shift_left(arg1, arg2));
---	end;
---
---	function "sll" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector is
---		variable aux : unsigned(arg1'range);
---	begin
---		return std_logic_vector(shift_left(unsigned(arg1), arg2));
---	end;
---
---	function "srl" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : natural)
---		return std_logic_vector is
---		variable aux : unsigned(arg1'range);
---	begin
---		return std_logic_vector(shift_right(unsigned(arg1), arg2));
---	end;
---
---	function "and" (
---		constant arg1 : std_logic_vector;
---		constant arg2 : std_logic)
---		return std_logic_vector is
---		variable aux : std_logic_vector(arg1'range);
---	begin
---		for i in arg1'range loop
---			aux(i) := arg1(i) and arg2;
---		end loop;
---		return aux;
---	end;
---
---	impure function "mod" (
---		constant arg1 : time;
---		constant arg2 : time)
---		return time is
---		variable val : integer;
---	begin
---		val := arg1 / arg2;
---		if val*arg2 < arg1 then
---			return arg2-arg1*val;
---		end if;
---		return 0 ns;
---	end;
 
 	------------------
 	-- Array functions
@@ -730,15 +624,6 @@ package body std is
 		write (msg, arg);
 		return msg.all;
 	end function;
-
---	function to_string (
---		constant arg : real)
---		return string is
---		variable msg : line;
---	begin
---		write (msg, arg);
---		return msg.all;
---	end function;
 
 	function to_string (
 		constant arg : character)

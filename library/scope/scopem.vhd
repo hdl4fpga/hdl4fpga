@@ -60,10 +60,9 @@ entity scope is
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_ini   : out std_logic;
+		ddrs_ini : out std_logic;
 		ddr_wlreq : out std_logic;
 		ddr_wlrdy : in  std_logic := '-';
-
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
@@ -134,12 +133,13 @@ architecture def of scope is
 	signal ddr_lp_clk : std_logic;
 
 	signal ddr_ini : std_logic;
+	signal xdr_ini : std_logic;
 	signal ddr_cmd_req : std_logic;
 	signal ddr_cmd_rdy : std_logic;
 	signal ddr_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
-	signal ddr_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal xdr_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddr_act : std_logic;
-	signal ddr_cas : std_logic;
+	signal xdr_cas : std_logic;
 	signal ddr_pre : std_logic;
 	signal ddr_rw  : std_logic;
 	signal ddr_di_rdy : std_logic;
@@ -160,6 +160,7 @@ architecture def of scope is
 	signal ddrs_cas : std_logic;
 	signal ddrs_pre : std_logic;
 	signal ddrs_rw  : std_logic;
+	signal ddrs_wlreq : std_logic;
 
 	signal ddrs_di_rdy : std_logic;
 	signal ddrs_di_req : std_logic;
@@ -227,7 +228,7 @@ begin
 --		end if;
 --	end process;
 
-	input_req <= ddrs_ini and not input_rdy;
+	input_req <= xdr_ini and not input_rdy;
 	process (input_rst, input_clk)
 		constant n : natural := 15;
 		variable r : unsigned(0 to n);
@@ -327,7 +328,7 @@ begin
 
 	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
 
-	dataio_rst <= not ddrs_ini;
+	dataio_rst <= not xdr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE => PAGE_SIZE,
@@ -361,7 +362,7 @@ begin
 		ddrs_cas => ddrs_cas,
 		ddrs_pre => ddrs_pre,
 
-		ddrs_di_rdy => ddrs_di_rdy,
+		ddrs_di_rdy => ddr_di_rdy,
 		ddrs_di_req => ddrs_di_req,
 		ddrs_di => ddrs_di,
 		ddrs_do_rdy => ddrs_do_rdy(0),
@@ -515,49 +516,54 @@ begin
 		end if;
 	end process;
 
-	ddrs_di_g : for i in ddr_di'range loop
-		ddrs_di  <= ddr_di when ddrs_ini='1' else '1' when i mod 2=0 else '0';
-	end loop;
+	ddrs_di_g : for i in ddr_di'range generate
+		ddrs_di(i) <= ddr_di(i) when xdr_ini='1' else '1' when i mod 2=0 else '0';
+	end generate;
 
-	ddr_ba  <= ddrs_ba when ddrs_ini='1' else (others => '0');
-	ddr_a   <= ddrs_a  when ddrs_ini='1' else (others => '0');
-	ddrs_di_rdy <= ddrs_di_req when ddrs_ini='1' else ddr_di_req;
-	ddrs_di_req <= ddr_di_req  when ddrs_ini='1' else '0';;
-	ddrs_do_rdy <= ddr_do_rdy  when ddrs_ini='1' else '0';
+	ddrs_ini <= xdr_ini;
+	ddr_ba  <= ddrs_ba when xdr_ini='1' else (others => '0');
+	xdr_a   <= ddrs_a  when xdr_ini='1' else (others => '0');
+	ddrs_di_rdy <= ddr_di_rdy when xdr_ini='1' else ddr_di_req;
+	ddrs_di_req <= ddr_di_req  when xdr_ini='1' else '0';
+	ddrs_do_rdy <= ddr_do_rdy  when xdr_ini='1' else (others => '0');
 	ddrs_act <= ddr_act;
-	ddrs_cas <= ddr_cas;
+	ddrs_cas <= xdr_cas;
 	ddrs_pre <= ddr_pre;
 	
+	ddr_wlreq <= ddr_ini;
 	process (
-		ddr_clks(0),
+		ddrs_clks(0),
 	   	ddrs_cmd_req,
 		ddrs_rst)
 	begin
-		if rising_edge(ddr_clks(0)) then
+		if rising_edge(ddrs_clks(0)) then
 			if ddrs_rst='1' then
-				ddrs_ini <= '0';
-				ddr_rw   <= '0';
+				xdr_ini <= '0';
+				ddr_rw  <= '0';
 				ddr_cmd_req <= '0';
 			elsif ddr_ini='1' then
 				if ddr_cmd_req='1' then
 					if ddr_cmd_rdy='0' then
 						if ddr_rw='0' then 
 							ddr_cmd_req <= '0';
+						elsif ddr_wlrdy='1' then
+							ddr_cmd_req <= '0';
+							xdr_ini <= '1';
 						end if;
 					end if;
 				elsif ddr_cmd_rdy='0' then
+					ddr_cmd_req <= '1';
 					ddr_rw <= '1';
 				end if;
 			end if;
 		end if;
 
-		if ddrs_ini='1' then
+		if xdr_ini='1' then
 			ddr_rw <= ddrs_rw;
 			ddr_cmd_req <= ddrs_cmd_req;
 		end if;
-	end if;
-
 	end process;
+
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		fpga => fpga,
@@ -585,13 +591,13 @@ begin
 
 		sys_cmd_req => ddr_cmd_req,
 		sys_cmd_rdy => ddr_cmd_rdy,
-		sys_wlreq => ddr_wlreq,
+		sys_wlreq => open, --ddr_wlreq,
 		sys_wlrdy => ddr_wlrdy,
 		sys_b   => ddr_ba,
-		sys_a   => ddr_a,
+		sys_a   => xdr_a,
 		sys_rw  => ddr_rw,
 		sys_act => ddr_act,
-		sys_cas => ddr_cas,
+		sys_cas => xdr_cas,
 		sys_pre => ddr_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di_req => ddr_di_req,

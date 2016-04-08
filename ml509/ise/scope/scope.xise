@@ -305,7 +305,7 @@
     <property xil_pn:name="Enable Internal Done Pipe" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Message Filtering" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Multi-Threading" xil_pn:value="2" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="Off" xil_pn:valueState="default"/>
+    <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="4" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Enable Outputs (Output Events)" xil_pn:value="Default (5)" xil_pn:valueState="default"/>
     <property xil_pn:name="Encrypt Bitstream" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Equivalent Register Removal" xil_pn:value="false" xil_pn:valueState="non-default"/>
@@ -459,8 +459,8 @@
     <property xil_pn:name="Rename Top Level Module To" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Fastest Path(s) in Each Constraint" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Fastest Path(s) in Each Constraint Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Report Paths by Endpoint" xil_pn:value="3" xil_pn:valueState="default"/>
-    <property xil_pn:name="Report Paths by Endpoint Post Trace" xil_pn:value="3" xil_pn:valueState="default"/>
+    <property xil_pn:name="Report Paths by Endpoint" xil_pn:value="8" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Report Paths by Endpoint Post Trace" xil_pn:value="8" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Report Type" xil_pn:value="Verbose Report" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Type Post Trace" xil_pn:value="Verbose Report" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Unconstrained Paths" xil_pn:value="" xil_pn:valueState="default"/>
