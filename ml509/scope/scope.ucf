@@ -49,13 +49,13 @@ TIMESPEC TS_dso4 = PERIOD "dqs4" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 
 TIMESPEC TS_dso5 = PERIOD "dqs5" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 TIMESPEC TS_dso6 = PERIOD "dqs6" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
 TIMESPEC TS_dso7 = PERIOD "dqs7" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
-#NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[2]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[3]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[4]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[5]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[6]" CLOCK_DEDICATED_ROUTE = false;
-#NET "ddr2_dqs_p[7]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[2]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[3]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[4]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[5]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[6]" CLOCK_DEDICATED_ROUTE = false;
+NET "ddr2_dqs_p[7]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
@@ -73,14 +73,14 @@ NET "dqsi_buf[*]"    MAXDELAY = 0.100 ns;
 # DDR 300 Mhz rate clock #
 # ###################### #
 
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[2] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[3] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[4] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[5] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[6] RISING;
-OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[7] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[0] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[1] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[2] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[3] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[4] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[5] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[6] RISING;
+#OFFSET = IN -0.333 ns VALID 1 ns BEFORE ddr2_dqs_p[7] RISING;
 
 # ###################### #
 # DDR 333 Mhz rate clock #
@@ -100,21 +100,21 @@ NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-NET input_clk  TNM_NET = FFS  FFS_adcclkab;
-NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+#NET input_clk  TNM_NET = FFS  FFS_adcclkab;
+#NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
 NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
 NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 #NET video_clk     TNM_NET = FFS  FFS_videoclk;
 #NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
-TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
-TIMESPEC TS_r2o_ddr2ddr1 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk0  3.333 ns;
-TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
-TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
-TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
-TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
+#TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+#TIMESPEC TS_r2o_ddr2ddr1 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk0  3.333 ns;
+#TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
+#TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
+#TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
+#TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
+#TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+#TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
 
 #TIMESPEC TS_sel = FROM FFS (scope_e/ddr_e/xdr_mpu_sel) TIG;
 
