@@ -39,7 +39,8 @@ entity ddrdqphy is
 		sys_rst : in std_logic;
 		sys_clk0 : in  std_logic;
 		sys_clk90 : in  std_logic;
-		sys_calreq : in std_logic := '0';
+		sys_wlreq : in std_logic := '0';
+		sys_wlrdy : out std_logic;
 		sys_dmt  : in  std_logic_vector(0 to gear-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
@@ -184,42 +185,32 @@ begin
 		q   => ddr_sto);
 
 	dqso_b : block 
-		signal clk_n : std_logic;
-		signal dt : std_logic;
-		signal dqso_r : std_logic;
-		signal dqso_f : std_logic;
-		signal dqsi_r : std_logic;
-		signal dqsi_f : std_logic;
 	begin
 
-		adjdqs_req <= not sys_rst;
+		adjdqs_req <= sys_wlreq and sys_sti(0);
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			iod_clk => sys_dqsiod_clk,
 			sys_clk0 => sys_clk0,
 			din => sys_dqsibuf,
 			req => adjdqs_req,
+			rdy => sys_wlrdy,
 			iod_rst => sys_dqsiod_rst,
 			iod_ce  => sys_dqsiod_ce,
 			iod_inc => sys_dqsiod_inc,
 			iod_dly => sys_dqsiod_taps);
 
-		dt <= sys_dqst(1) when sys_calreq='0' else '0';
-		clk_n <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (
 			clk => sys_clk0,
-			d => dt,
+			d => sys_dqst(1),
 			q => ddr_dqst);
-
-		dqso_r <= '0'         when sys_calreq='0' else'1';
-		dqso_f <= sys_dqso(0) when sys_calreq='0' else'1';
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
 			clk => sys_clk0,
-			dr  => dqso_r,
-			df  => dqso_f,
+			dr  => '0',
+			df  => sys_dqso(0),
 			q   => ddr_dqso);
 
 	end block;

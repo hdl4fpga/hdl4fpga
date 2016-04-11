@@ -100,104 +100,106 @@ NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-#NET input_clk  TNM_NET = FFS  FFS_adcclkab;
-#NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+NET input_clk  TNM_NET = FFS  FFS_adcclkab;
+NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
 NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
 NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 #NET video_clk     TNM_NET = FFS  FFS_videoclk;
 #NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
-#TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_xdr_ini = FROM FFS (scope_e/xdr_ini) TIG;
+
+TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 #TIMESPEC TS_r2o_ddr2ddr1 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk0  3.333 ns;
-#TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
-#TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
-#TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
-#TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
-#TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
-#TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
+TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
+TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
 
 #TIMESPEC TS_sel = FROM FFS (scope_e/ddr_e/xdr_mpu_sel) TIG;
 
-#TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt00 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt01 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt02 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt03 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt04 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt05 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt06 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt07 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt10 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt11 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt12 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt13 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt14 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt15 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt16 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt17 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt20 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt21 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt22 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt23 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt24 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt25 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt26 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt27 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt30 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt31 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt32 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt33 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt34 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt35 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt36 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt37 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt40 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt41 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt42 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt43 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt44 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt45 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt46 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt47 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt50 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt51 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt52 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt53 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt54 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt55 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt56 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt57 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt60 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt61 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt62 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt63 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt64 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt65 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt66 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt67 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
-#
-#TIMESPEC TS_ddrt70 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt71 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt72 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt73 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt74 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt75 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt76 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
-#TIMESPEC TS_ddrt77 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt00 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt01 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt02 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt03 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt04 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt05 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt06 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt07 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt10 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt11 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt12 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt13 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt14 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt15 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt16 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt17 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt20 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt21 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt22 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt23 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt24 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt25 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt26 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt27 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt30 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt31 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt32 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt33 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt34 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt35 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt36 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt37 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt40 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt41 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt42 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt43 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt44 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt45 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt46 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt47 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt50 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt51 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt52 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt53 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt54 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt55 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt56 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt57 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt60 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt61 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt62 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt63 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt64 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt65 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt66 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt67 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
+
+TIMESPEC TS_ddrt70 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt71 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt72 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt73 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt74 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt75 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt76 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TIG;
+TIMESPEC TS_ddrt77 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TIG;
 
 #TIMESPEC TS_dmt0 = FROM FFS (ddrphy_e/byte_g[0].ddrdqphy_i/t0) TIG;
 #TIMESPEC TS_dmt1 = FROM FFS (ddrphy_e/byte_g[1].ddrdqphy_i/t0) TIG;

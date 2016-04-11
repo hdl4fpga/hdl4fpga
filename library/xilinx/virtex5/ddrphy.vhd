@@ -332,7 +332,7 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	sys_wlrdy <= sys_wlreq;
+	sys_wlrdy <= '0'; --sys_wlreq;
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		signal dqsi : std_logic_vector(0 to 1);
 	begin
@@ -348,6 +348,7 @@ begin
 			sys_rst => sys_rst,
 			sys_clk0  => sys_clk0,
 			sys_clk90 => sys_clk90,
+			sys_wlreq  => sys_wlreq,
 
 			sys_sti => ssti(i),
 			sys_dmt => sdmt(i),

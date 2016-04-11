@@ -517,7 +517,7 @@ begin
 	end process;
 
 	ddrs_di_g : for i in ddr_di'range generate
-		ddrs_di(i) <= ddr_di(i) when xdr_ini='1' else '1' when i mod 2=0 else '0';
+		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when i/DDR_WORDSIZE=0 else '0';
 	end generate;
 
 	ddrs_ini <= xdr_ini;
@@ -526,15 +526,18 @@ begin
 	ddrs_di_rdy <= ddr_di_rdy when xdr_ini='1' else ddr_di_req;
 	ddrs_di_req <= ddr_di_req  when xdr_ini='1' else '0';
 	ddrs_do_rdy <= ddr_do_rdy  when xdr_ini='1' else (others => '0');
+	ddrs_cmd_rdy <= ddr_cmd_rdy  when xdr_ini='1' else '0';
 	ddrs_act <= ddr_act;
 	ddrs_cas <= xdr_cas;
 	ddrs_pre <= ddr_pre;
 	
 	ddr_wlreq <= ddr_ini;
 	process (
+		ddrs_rst,
 		ddrs_clks(0),
 	   	ddrs_cmd_req,
-		ddrs_rst)
+		ddrs_rw,
+		xdr_ini)
 	begin
 		if rising_edge(ddrs_clks(0)) then
 			if ddrs_rst='1' then
@@ -546,15 +549,20 @@ begin
 					if ddr_cmd_rdy='0' then
 						if ddr_rw='0' then 
 							ddr_cmd_req <= '0';
-						elsif ddr_wlrdy='1' then
+							elsif ddr_wlrdy='1' then
 							ddr_cmd_req <= '0';
-							xdr_ini <= '1';
 						end if;
 					end if;
-				elsif ddr_cmd_rdy='0' then
-					ddr_cmd_req <= '1';
+				elsif ddr_cmd_rdy='1' then
+					if ddr_rw='0' then 
+						ddr_cmd_req <= '1';
+					else
+						xdr_ini <= '1';
+					end if;
 					ddr_rw <= '1';
 				end if;
+			elsif ddr_cmd_rdy='1' then
+				ddr_cmd_req <= '1';
 			end if;
 		end if;
 
