@@ -11,8 +11,7 @@ entity adjdqs is
 		rdy : out std_logic;
 		iod_rst : out std_logic;
 		iod_ce  : out std_logic;
-		iod_inc : out std_logic;
-		iod_dly : out std_logic_vector);
+		iod_inc : out std_logic);
 end;
 
 library hdl4fpga;
@@ -20,9 +19,7 @@ library hdl4fpga;
 architecture def of adjdqs is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
-	signal cntr : unsigned(0 to iod_dly'length);
 	signal sync : std_logic;
-	signal sync1: std_logic;
 begin
 
 	ffd_e : entity hdl4fpga.ff
@@ -40,43 +37,32 @@ begin
 	end process;
 
 	process (iod_clk)
+		variable ce  : unsigned(0 to 2-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
-				iod_rst <= '0';
-				iod_ce  <= '0';
-				iod_inc <= '1';
 				sync <= '0';
-				cntr <= (others => '0');
+				ce := (others => '0');
+				iod_inc <= '0';
+				iod_ce  <= '0';
 			elsif sync='0' then
 				if smp0='0' then
 					if smp1='1' then
-						iod_rst <= '0';
-						iod_ce  <= '1';
-						iod_inc <= '0';
-						sync <= '1';
-						iod_dly <= std_logic_vector(cntr(1 to iod_dly'length)-2);
-					else
-						iod_rst <= '0';
-						iod_ce  <= '1';
+						sync  <= '1';
+						ce(0) := '1';
 						iod_inc <= '1';
-						sync <= '0';
 					end if;
 				else 
-					iod_rst <= '0';
-					iod_ce  <= '1';
-					iod_inc <= '1';
-					sync <= '0';
+					sync  <= '0';
+					ce(0) := '1';
+					iod_inc <= '0';
 				end if;
-				cntr <= cntr + 1;
-			else
-				iod_rst <= '0';
-				iod_ce  <= not sync;
-				iod_inc <= '0';
-				sync <= '1';
+				iod_ce  <= ce(0);
 			end if;
-			sync1 <= sync;
+			iod_ce <= ce(ce'right);
+			ce  := ce  srl 1;
 		end if;
 	end process;
 	rdy <= sync;
+	iod_rst <= not req;
 end;

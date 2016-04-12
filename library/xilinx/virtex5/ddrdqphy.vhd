@@ -51,7 +51,10 @@ entity ddrdqphy is
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
 		sys_dqsibuf : in std_logic;
-		sys_dqsiod_clk : in  std_logic;
+		sys_iod_clk : in  std_logic;
+		sys_iod_rst : out std_logic;
+		sys_dqsiod_ce  : out std_logic;
+		sys_dqsiod_inc : out std_logic;
 		sys_dqsiod_rst : out std_logic;
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
@@ -79,20 +82,41 @@ architecture virtex of ddrdqphy is
 	signal dqst : std_logic_vector(sys_dqst'range);
 	signal dqso : std_logic_vector(sys_dqso'range);
 	signal adjdqs_req : std_logic;
-
+	signal adjdqs_rdy : std_logic;
+	signal adjdqi_req : std_logic;
+	signal adjdqi_rdy : std_logic;
 begin
 
+	iod_rst => sys_iod_rst,
 	iddr_g : for i in 0 to byte_size-1 generate
 		iddron_g : if iddron generate
+			signal q0 : std_logic;
+			signal q1 : std_logic;
+		begin
 			iddr_i : iddr
 			generic map (
-				DDR_CLK_EDGE => "OPPOSITE_EDGE")
+				DDR_CLK_EDGE => "SAME_EDGE")
 			port map (
 				c  => ddr_dqsi,
 				ce => '1',
 				d  => ddr_dqi(i),
-				q1 => sys_dqi(0*byte_size+i),
-				q2 => sys_dqi(1*byte_size+i));
+				q1 => q0,
+				q2 => q1);
+
+			sys_dqi(0*byte_size+i) <= q0;
+			sys_dqi(1*byte_size+i) <= q1;
+		
+			adjdqi_req <= adjdqs_rdy;
+			adjdqi_e : entity hdl4fpga.adjdqi
+			port map (
+				sys_clk0 => sys_clk0,
+				di0 => q0,
+				di1 => q1,
+				req => adjdqi_req,
+				rdy => adjdqi_rdy,
+				iod_clk => sys_iod_clk,
+				iod_ce  => dqiod_ce,
+				iod_inc => dqiod_inc);
 		end generate;
 
 		iddroff_g : if not iddron generate
@@ -190,12 +214,11 @@ begin
 		adjdqs_req <= sys_wlreq and sys_sti(0);
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
-			iod_clk => sys_dqsiod_clk,
 			sys_clk0 => sys_clk0,
 			din => sys_dqsibuf,
 			req => adjdqs_req,
-			rdy => sys_wlrdy,
-			iod_rst => sys_dqsiod_rst,
+			rdy => adjdqs_rdy,
+			iod_clk => sys_iod_clk,
 			iod_ce  => sys_dqsiod_ce,
 			iod_inc => sys_dqsiod_inc,
 			iod_dly => sys_dqsiod_taps);
