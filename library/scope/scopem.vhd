@@ -517,7 +517,20 @@ begin
 	end process;
 
 	ddrs_di_g : for i in ddr_di'range generate
-		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when i/DDR_WORDSIZE=0 else '0';
+		signal xx : std_logic := '0';
+	begin
+		process (ddrs_clks(0))
+		begin
+			if rising_edge(ddrs_clks(0)) then
+				if ddr_di_req='0' then
+					xx <= '0';
+				else
+					xx <= not xx;
+			
+				end if;
+			end if;
+		end process;
+		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when xx='1' and i/DDR_WORDSIZE=0 else '0';
 	end generate;
 
 	ddrs_ini <= xdr_ini;
