@@ -70,13 +70,13 @@ entity ddrphy is
 
 		sys_wlreq : in std_logic;
 		sys_wlrdy : out std_logic;
-		sys_dqsiod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_dqsiod_clk : in  std_logic;
+		sys_iod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_iod_clk : in  std_logic;
+		sys_dqiod_ce  : out std_logic_vector(word_size-1 downto 0);
+		sys_dqiod_inc : out std_logic_vector(word_size-1 downto 0);
 		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_dqsiod_taps : out std_logic_vector(6*word_size/byte_size-1 downto 0);
 		sys_dqsibuf : in std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_dqsiod_dly : out std_logic_vector(6*word_size/byte_size-1 downto 0);
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -282,6 +282,8 @@ architecture virtex of ddrphy is
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
+	signal dqiod_ce  : byte_vector(word_size/byte_size-1 downto 0);
+	signal dqiod_inc : byte_vector(word_size/byte_size-1 downto 0);
 
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
@@ -331,7 +333,6 @@ begin
 	ddqi  <= to_bytevector(ddr_dqi);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
-
 	sys_wlrdy <= '0'; --sys_wlreq;
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		signal dqsi : std_logic_vector(0 to 1);
@@ -361,11 +362,12 @@ begin
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
 
-			sys_dqsiod_rst => sys_dqsiod_rst(i), 
-			sys_dqsiod_clk => sys_dqsiod_clk,
+			sys_iod_rst => sys_iod_rst(i), 
+			sys_iod_clk => sys_iod_clk,
+			sys_dqiod_ce  => dqiod_ce(i), 
+			sys_dqiod_inc => dqiod_inc(i), 
 			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
-			sys_dqsiod_taps => dqsiod_taps(i), 
 			sys_dqsibuf => sys_dqsibuf(i),
 
 			ddr_dqsi => ddr_dqsi(i),
@@ -392,6 +394,9 @@ begin
 --			sys_dqsi(data_gear*i+0) <=     ddr_dqsi(i) after 1 ns;
 --			sys_dqsi(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
 	end generate;
+
+	sys_dqiod_ce  <= to_stdlogicvector(dqiod_ce);
+	sys_dqiod_inc <= to_stdlogicvector(dqiod_inc);
 
 	process(ddr_dm, ddr_sti)
 	begin
@@ -421,5 +426,4 @@ begin
 	end process;
 
 	sys_dqi <= to_stdlogicvector(sdqo);
-	sys_dqsiod_taps <= to_stdlogicvector(dqsiod_taps);
 end;

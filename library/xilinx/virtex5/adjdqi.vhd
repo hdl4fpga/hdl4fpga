@@ -11,8 +11,7 @@ entity adjdqi is
 		rdy : out std_logic;
 		iod_clk  : in std_logic;
 		iod_ce  : out std_logic;
-		iod_inc : out std_logic;
-		iod_dly : out std_logic_vector);
+		iod_inc : out std_logic);
 end;
 
 library hdl4fpga;
@@ -20,7 +19,6 @@ library hdl4fpga;
 architecture def of adjdqi is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
-	signal cntr : unsigned(0 to iod_dly'length);
 	signal sync: std_logic;
 	signal edge : std_logic;
 	signal q0 : std_logic;
@@ -50,30 +48,34 @@ begin
 	end process;
 
 	iod_inc <= not edge;
-	iod_ce  <= '0' when cntr(0)='1' else '0' when req='0' else '1';
 	process (iod_clk)
+		variable ce  : unsigned(0 to 3-1);
+		variable cntr : unsigned(0 to 6-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
 				edge <= '0';
 				sync <= '0';
-				cntr <= (others => '0');
+				cntr := (others => '0');
+				iod_ce <= '0';
 			elsif sync='0' then
 				if smp0=edge then
 					if smp1=not edge then
 						if edge='1' then
-							cntr <= not (cntr srl 1);
+							cntr := not (cntr srl 1);
 							sync <='1';
 						end if;
 						edge <= '1';
 					elsif edge='1' then
-						cntr <= cntr + 1;
+						cntr := cntr + 1;
 					end if;
 				elsif edge='1' then
-					cntr <= cntr + 1;
+					cntr := cntr + 1;
 				end if;
+				iod_ce <= not cntr(0);
 			elsif cntr(0)='0' then
-				cntr <= cntr + 1;
+				cntr := cntr + 1;
+				iod_ce <= not cntr(0);
 			end if;
 		end if;
 	end process;

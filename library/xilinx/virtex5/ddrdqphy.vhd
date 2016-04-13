@@ -51,14 +51,12 @@ entity ddrdqphy is
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
 		sys_dqsibuf : in std_logic;
-		sys_iod_clk : in  std_logic;
 		sys_iod_rst : out std_logic;
+		sys_iod_clk : in  std_logic;
+		sys_dqiod_ce   : out std_logic_vector(byte_size-1 downto 0);
+		sys_dqiod_inc  : out std_logic_vector(byte_size-1 downto 0);
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
-		sys_dqsiod_rst : out std_logic;
-		sys_dqsiod_ce  : out std_logic;
-		sys_dqsiod_inc : out std_logic;
-		sys_dqsiod_taps : out std_logic_vector(6-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -84,11 +82,21 @@ architecture virtex of ddrdqphy is
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
-	signal adjdqi_rdy : std_logic;
+	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
+
+
+	signal dqsiod_inc : std_logic;
+	signal dqsiod_ce  : std_logic;
 begin
 
-	iod_rst => sys_iod_rst,
+	sys_iod_rst    <= adjdqs_req;
+	sys_dqsiod_ce  <= dqsiod_ce;
+	sys_dqsiod_inc <= dqsiod_inc;
+
 	iddr_g : for i in 0 to byte_size-1 generate
+		signal dqiod_inc : std_logic;
+		signal dqiod_ce  : std_logic;
+	begin
 		iddron_g : if iddron generate
 			signal q0 : std_logic;
 			signal q1 : std_logic;
@@ -110,15 +118,17 @@ begin
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
 				sys_clk0 => sys_clk0,
-				di0 => q0,
-				di1 => q1,
+				d0 => q0,
+				d1 => q1,
 				req => adjdqi_req,
-				rdy => adjdqi_rdy,
+				rdy => adjdqi_rdy(i),
 				iod_clk => sys_iod_clk,
 				iod_ce  => dqiod_ce,
 				iod_inc => dqiod_inc);
 		end generate;
 
+		sys_dqiod_ce(i)  <= dqiod_ce  or dqsiod_ce;
+		sys_dqiod_inc(i) <= dqiod_inc when adjdqi_req='1' else dqsiod_inc;
 		iddroff_g : if not iddron generate
 			phase_g : for j in  gear-1 downto 0 generate
 				sys_dqi(j*byte_size+i) <= ddr_dqi(i);
@@ -219,9 +229,8 @@ begin
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
 			iod_clk => sys_iod_clk,
-			iod_ce  => sys_dqsiod_ce,
-			iod_inc => sys_dqsiod_inc,
-			iod_dly => sys_dqsiod_taps);
+			iod_ce  => dqsiod_ce,
+			iod_inc => dqsiod_inc);
 
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (

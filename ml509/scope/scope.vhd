@@ -102,7 +102,8 @@ architecture scope of ml509 is
 	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqsiod_taps : std_logic_vector(6*word_size/byte_size-1 downto 0);
+	signal ddrphy_dqiod_ce  : std_logic_vector(word_size-1 downto 0);
+	signal ddrphy_dqiod_inc : std_logic_vector(word_size-1 downto 0);
 	signal dqsi_buf : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal gtx_clk  : std_logic;
@@ -320,12 +321,13 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
-		sys_dqsibuf => dqsi_buf,
-		sys_dqsiod_rst => ddrphy_dqsiod_rst,
-		sys_dqsiod_clk => ictlr_clk,
+		sys_dqsibuf => ddr2_dqsi, --dqsi_buf,
+		sys_iod_rst => ddrphy_dqsiod_rst,
+		sys_iod_clk => ictlr_clk,
+		sys_dqiod_ce  => ddrphy_dqiod_ce,
+		sys_dqiod_inc => ddrphy_dqiod_inc,
 		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
 		sys_dqsiod_inc => ddrphy_dqsiod_inc,
-		sys_dqsiod_taps => ddrphy_dqsiod_taps,
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
 		ddr_cs  => ddr2_cs(0),
@@ -372,13 +374,13 @@ begin
 	begin
 		dqi_i : idelay 
 		generic map (
-			IOBDELAY_VALUE => 0,
+			IOBDELAY_VALUE => 63,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => ddrphy_dqsiod_rst(i/(word_size/byte_size)),
+			rst => sys_rst, --ddrphy_dqsiod_rst(i/(word_size/byte_size)),
 			c   => ictlr_clk,
-			ce  => '0',
-			inc => '0',
+			ce  => ddrphy_dqiod_ce(i),
+			inc => ddrphy_dqiod_inc(i),
 			i   => ddr2_d(i),
 			o   => ddr2_dqi(i));
 
@@ -406,7 +408,7 @@ begin
 			IOBDELAY_VALUE => 63,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => ddrphy_dqsiod_rst(i),
+			rst => sys_rst, --ddrphy_dqsiod_rst(i),
 			c   => ictlr_clk,
 			ce  => ddrphy_dqsiod_ce(i),
 			inc => ddrphy_dqsiod_inc(i),
@@ -448,7 +450,7 @@ begin
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= "00" & ddrphy_dqsiod_taps(6-1 downto 0) ;
+	gpio_led <= (others => '0');
 	gpio_led_c <= mii_txen; --'0';
 	gpio_led_e <= tpo(0);
 	gpio_led_w <= '0';

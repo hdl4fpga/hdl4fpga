@@ -32,12 +32,16 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(iod_clk) then
-			smp1 <= smp0;
+			if req='0' then
+				smp1 <= '1';
+			else
+				smp1 <= smp0;
+			end if;
 		end if;
 	end process;
 
 	process (iod_clk)
-		variable ce  : unsigned(0 to 2-1);
+		variable ce  : unsigned(0 to 3-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
@@ -45,24 +49,28 @@ begin
 				ce := (others => '0');
 				iod_inc <= '0';
 				iod_ce  <= '0';
+				rdy <= '0';
 			elsif sync='0' then
-				if smp0='0' then
-					if smp1='1' then
+				if smp0='1' then
+					if smp1='0' then
 						sync  <= '1';
 						ce(0) := '1';
 						iod_inc <= '1';
+					else
+						ce(0) := '1';
+						iod_inc <= '0';
 					end if;
 				else 
-					sync  <= '0';
 					ce(0) := '1';
 					iod_inc <= '0';
 				end if;
 				iod_ce  <= ce(0);
+			else
+				iod_ce <= ce(ce'right);
+				rdy <= not ce(ce'right);
 			end if;
-			iod_ce <= ce(ce'right);
-			ce  := ce  srl 1;
+			ce  := ce srl 1;
 		end if;
 	end process;
-	rdy <= sync;
 	iod_rst <= not req;
 end;
