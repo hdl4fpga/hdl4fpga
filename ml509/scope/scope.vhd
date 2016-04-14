@@ -370,7 +370,7 @@ begin
 		iob_txd  => phy_txd,
 		iob_gtxclk => phy_txc_gtxclk);
 
-	ddr2_d_g : for i in ddr2_dqt'range generate
+	ddr2_d_g : for i in ddr2_d'range generate
 	begin
 		dqi_i : idelay 
 		generic map (
@@ -387,7 +387,6 @@ begin
 		ddr2_d(i) <= 
 			ddr2_dqo(i) when ddr2_dqt(i)='0' else
 			'Z';
-
 	end generate;
 
 	ddr2_dqs_g : for i in ddr2_dqs_p'range generate
@@ -415,14 +414,22 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
+		sti_idelay_i : idelay 
+		generic map (
+			IOBDELAY_VALUE => 63,
+			IOBDELAY_TYPE => "VARIABLE")
+		port map (
+			rst => sys_rst, --ddrphy_dqsiod_rst(i),
+			c   => ictlr_clk,
+			ce  => ddrphy_dqsiod_ce(i),
+			inc => ddrphy_dqsiod_inc(i),
+			i   => ddrphy_sto(i),
+			o   => ddr_sti(i));
+
 		bufio_i : bufio
 		port map (
 			i => dqsi_buf(i),
 			o => ddr2_dqsi(i));
-	end generate;
-
-	xx_g : for i in ddr_sti'range generate
-		ddr_sti(i) <= ddrphy_sto(i);
 	end generate;
 
 	ddr_clks_g : for i in ddr2_clk'range generate

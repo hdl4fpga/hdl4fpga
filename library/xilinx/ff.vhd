@@ -27,6 +27,7 @@ use ieee.std_logic_1164.all;
 entity ff is
 	port (
 		clk : in  std_logic;
+		ena : in  std_logic := '1';
 		d   : in  std_logic;
 		q   : out std_logic);
 end;
@@ -41,7 +42,7 @@ begin
 		pre => '0',
 		clr => '0',
 		c => clk,
-		ce => '1',
+		ce => ena,
 		d => d,
 		q => q);
 end;

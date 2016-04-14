@@ -4,10 +4,14 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/sync
 add wave -noupdate /testbench/clk_p(0)
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/sys_clk0
 add wave -noupdate /testbench/ml509_e/ddr2_dqi(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_dqiod_ce(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_dqiod_inc(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/din
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
+add wave -noupdate /testbench/ml509_e/ddr2_dqs_g(0)/dqsidelay_i/prcs_refclk/TapCount_var
 add wave -noupdate /testbench/dqs(0)
 add wave -noupdate /testbench/ml509_e/ddrs_clk0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_ce
@@ -18,7 +22,28 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdq
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/req
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp1
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/sys_clk0
+add wave -noupdate -divider dqi
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sys_clk0
+add wave -noupdate /testbench/dq(0)
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/ddr_dqi(0)
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/q
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/din
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sti
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/ena
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp0
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp1
+add wave -noupdate /testbench/ml509_e/ddr2_d_g(0)/dqi_i/prcs_refclk/TapCount_var
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ml509_e/ddr2_d_g(0)/dqi_i/RST
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/req
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/rdy
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sync
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/edge
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_clk
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_ce
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_inc
+add wave -noupdate -radix unsigned -childformat {{/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(0) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(1) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(2) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(3) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(4) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(5) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(6) -radix unsigned}} -subitemconfig {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(0) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(1) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(2) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(3) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(4) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(5) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(6) {-height 16 -radix unsigned}} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cmd_rdy
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cmd_req
@@ -42,7 +67,7 @@ add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/ba
 add wave -noupdate -radix hexadecimal /testbench/addr
-add wave -noupdate -expand /testbench/dqs
+add wave -noupdate /testbench/dqs
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(63) -radix hexadecimal} {/testbench/dq(62) -radix hexadecimal} {/testbench/dq(61) -radix hexadecimal} {/testbench/dq(60) -radix hexadecimal} {/testbench/dq(59) -radix hexadecimal} {/testbench/dq(58) -radix hexadecimal} {/testbench/dq(57) -radix hexadecimal} {/testbench/dq(56) -radix hexadecimal} {/testbench/dq(55) -radix hexadecimal} {/testbench/dq(54) -radix hexadecimal} {/testbench/dq(53) -radix hexadecimal} {/testbench/dq(52) -radix hexadecimal} {/testbench/dq(51) -radix hexadecimal} {/testbench/dq(50) -radix hexadecimal} {/testbench/dq(49) -radix hexadecimal} {/testbench/dq(48) -radix hexadecimal} {/testbench/dq(47) -radix hexadecimal} {/testbench/dq(46) -radix hexadecimal} {/testbench/dq(45) -radix hexadecimal} {/testbench/dq(44) -radix hexadecimal} {/testbench/dq(43) -radix hexadecimal} {/testbench/dq(42) -radix hexadecimal} {/testbench/dq(41) -radix hexadecimal} {/testbench/dq(40) -radix hexadecimal} {/testbench/dq(39) -radix hexadecimal} {/testbench/dq(38) -radix hexadecimal} {/testbench/dq(37) -radix hexadecimal} {/testbench/dq(36) -radix hexadecimal} {/testbench/dq(35) -radix hexadecimal} {/testbench/dq(34) -radix hexadecimal} {/testbench/dq(33) -radix hexadecimal} {/testbench/dq(32) -radix hexadecimal} {/testbench/dq(31) -radix hexadecimal} {/testbench/dq(30) -radix hexadecimal} {/testbench/dq(29) -radix hexadecimal} {/testbench/dq(28) -radix hexadecimal} {/testbench/dq(27) -radix hexadecimal} {/testbench/dq(26) -radix hexadecimal} {/testbench/dq(25) -radix hexadecimal} {/testbench/dq(24) -radix hexadecimal} {/testbench/dq(23) -radix hexadecimal} {/testbench/dq(22) -radix hexadecimal} {/testbench/dq(21) -radix hexadecimal} {/testbench/dq(20) -radix hexadecimal} {/testbench/dq(19) -radix hexadecimal} {/testbench/dq(18) -radix hexadecimal} {/testbench/dq(17) -radix hexadecimal} {/testbench/dq(16) -radix hexadecimal} {/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(63) {-height 16 -radix hexadecimal} /testbench/dq(62) {-height 16 -radix hexadecimal} /testbench/dq(61) {-height 16 -radix hexadecimal} /testbench/dq(60) {-height 16 -radix hexadecimal} /testbench/dq(59) {-height 16 -radix hexadecimal} /testbench/dq(58) {-height 16 -radix hexadecimal} /testbench/dq(57) {-height 16 -radix hexadecimal} /testbench/dq(56) {-height 16 -radix hexadecimal} /testbench/dq(55) {-height 16 -radix hexadecimal} /testbench/dq(54) {-height 16 -radix hexadecimal} /testbench/dq(53) {-height 16 -radix hexadecimal} /testbench/dq(52) {-height 16 -radix hexadecimal} /testbench/dq(51) {-height 16 -radix hexadecimal} /testbench/dq(50) {-height 16 -radix hexadecimal} /testbench/dq(49) {-height 16 -radix hexadecimal} /testbench/dq(48) {-height 16 -radix hexadecimal} /testbench/dq(47) {-height 16 -radix hexadecimal} /testbench/dq(46) {-height 16 -radix hexadecimal} /testbench/dq(45) {-height 16 -radix hexadecimal} /testbench/dq(44) {-height 16 -radix hexadecimal} /testbench/dq(43) {-height 16 -radix hexadecimal} /testbench/dq(42) {-height 16 -radix hexadecimal} /testbench/dq(41) {-height 16 -radix hexadecimal} /testbench/dq(40) {-height 16 -radix hexadecimal} /testbench/dq(39) {-height 16 -radix hexadecimal} /testbench/dq(38) {-height 16 -radix hexadecimal} /testbench/dq(37) {-height 16 -radix hexadecimal} /testbench/dq(36) {-height 16 -radix hexadecimal} /testbench/dq(35) {-height 16 -radix hexadecimal} /testbench/dq(34) {-height 16 -radix hexadecimal} /testbench/dq(33) {-height 16 -radix hexadecimal} /testbench/dq(32) {-height 16 -radix hexadecimal} /testbench/dq(31) {-height 16 -radix hexadecimal} /testbench/dq(30) {-height 16 -radix hexadecimal} /testbench/dq(29) {-height 16 -radix hexadecimal} /testbench/dq(28) {-height 16 -radix hexadecimal} /testbench/dq(27) {-height 16 -radix hexadecimal} /testbench/dq(26) {-height 16 -radix hexadecimal} /testbench/dq(25) {-height 16 -radix hexadecimal} /testbench/dq(24) {-height 16 -radix hexadecimal} /testbench/dq(23) {-height 16 -radix hexadecimal} /testbench/dq(22) {-height 16 -radix hexadecimal} /testbench/dq(21) {-height 16 -radix hexadecimal} /testbench/dq(20) {-height 16 -radix hexadecimal} /testbench/dq(19) {-height 16 -radix hexadecimal} /testbench/dq(18) {-height 16 -radix hexadecimal} /testbench/dq(17) {-height 16 -radix hexadecimal} /testbench/dq(16) {-height 16 -radix hexadecimal} /testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
 add wave -noupdate /testbench/ml509_e/ddrs_clk0
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/ddrphy_e/sys_dqi
@@ -70,7 +95,7 @@ add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/ser_ena(0)
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/aser_q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {5557500 ps} 0} {{Cursor 4} {5324824 ps} 0}
+WaveRestoreCursors {{Cursor 2} {5360000 ps} 0} {{Cursor 4} {5557500 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
@@ -86,4 +111,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {5511562 ps} {5603438 ps}
+WaveRestoreZoom {5286701 ps} {5477441 ps}
