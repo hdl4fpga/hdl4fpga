@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 entity adjdqi is
 	port (
 		sys_clk0 : in std_logic;
-		d0 : in  std_logic;
-		d1 : in  std_logic;
+		sti : in std_logic;
+		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
 		iod_clk  : in std_logic;
@@ -19,38 +19,45 @@ library hdl4fpga;
 architecture def of adjdqi is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
-	signal sync: std_logic;
+	signal sync : std_logic;
 	signal edge : std_logic;
-	signal q0 : std_logic;
-	signal q1 : std_logic;
+	signal ena  : std_logic;
+		signal cntr0 : unsigned(0 to 7-1);
 begin
 
-	ffd0_e : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk0,
-		d   => d0,
-		q   => q0);
-
-	ffd1_e : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk0,
-		d   => d1,
-		q   => q1);
---	smp0 <= qi0 xor qi1;
-	smp0 <= q0;
-
-	process (iod_clk)
-		variable q : std_logic;
+	process (sys_clk0)
 	begin
-		if rising_edge(iod_clk) then
-			smp1 <= smp0;
+		if rising_edge(sys_clk0) then
+			if sti='0' then
+				ena <= '0';
+			else
+				ena <= not ena;
+			end if;
 		end if;
 	end process;
 
-	iod_inc <= not edge;
+	ff_e : entity hdl4fpga.ff
+	port map (
+		clk => sys_clk0,
+		ena => ena,
+		d => din,
+		q => smp0);
+
 	process (iod_clk)
-		variable ce  : unsigned(0 to 3-1);
-		variable cntr : unsigned(0 to 6-1);
+	begin
+		if rising_edge(iod_clk) then
+			if req='0' then
+				smp1 <= '1';
+			else
+				smp1 <= smp0;
+			end if;
+		end if;
+	end process;
+
+	iod_inc <= edge;
+	process (iod_clk)
+		variable ce   : unsigned(0 to 3-1);
+		variable cntr : unsigned(0 to 7-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
@@ -58,11 +65,12 @@ begin
 				sync <= '0';
 				cntr := (others => '0');
 				iod_ce <= '0';
+				rdy <= '0';
 			elsif sync='0' then
-				if smp0=edge then
-					if smp1=not edge then
+				if smp0='0' then
+					if smp1=edge then
 						if edge='1' then
-							cntr := not (cntr srl 1);
+							cntr(1 to cntr'right) := not (cntr(1 to cntr'right) srl 1);
 							sync <='1';
 						end if;
 						edge <= '1';
@@ -76,8 +84,9 @@ begin
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 				iod_ce <= not cntr(0);
+				rdy <= cntr(0);
 			end if;
+			cntr0 <= cntr;
 		end if;
 	end process;
-	rdy <= sync;
 end;

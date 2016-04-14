@@ -98,8 +98,7 @@ begin
 		signal dqiod_ce  : std_logic;
 	begin
 		iddron_g : if iddron generate
-			signal q0 : std_logic;
-			signal q1 : std_logic;
+			signal q : std_logic_vector(2-1 downto 0);
 		begin
 			iddr_i : iddr
 			generic map (
@@ -108,18 +107,18 @@ begin
 				c  => ddr_dqsi,
 				ce => '1',
 				d  => ddr_dqi(i),
-				q1 => q0,
-				q2 => q1);
+				q1 => q(0),
+				q2 => q(1));
 
-			sys_dqi(0*byte_size+i) <= q0;
-			sys_dqi(1*byte_size+i) <= q1;
+			sys_dqi(0*byte_size+i) <= q(0);
+			sys_dqi(1*byte_size+i) <= q(1);
 		
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
 				sys_clk0 => sys_clk0,
-				d0 => q0,
-				d1 => q1,
+				din => q(0),
+				sti => sys_sti(0),
 				req => adjdqi_req,
 				rdy => adjdqi_rdy(i),
 				iod_clk => sys_iod_clk,

@@ -55,7 +55,7 @@ begin
 					if smp1='0' then
 						sync  <= '1';
 						ce(0) := '1';
-						iod_inc <= '1';
+						iod_inc <= '0';
 					else
 						ce(0) := '1';
 						iod_inc <= '0';
@@ -66,8 +66,8 @@ begin
 				end if;
 				iod_ce  <= ce(0);
 			else
-				iod_ce <= ce(ce'right);
-				rdy <= not ce(ce'right);
+				iod_ce <= '0'; --ce(ce'right);
+				rdy <= '1'; --not ce(ce'right);
 			end if;
 			ce  := ce srl 1;
 		end if;
