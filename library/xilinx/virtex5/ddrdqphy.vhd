@@ -84,6 +84,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqi_req : std_logic;
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 
+	signal wlrdy : std_logic_vector(ddr_dqi'range);
 
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
@@ -92,6 +93,18 @@ begin
 	sys_iod_rst    <= adjdqs_req;
 	sys_dqsiod_ce  <= dqsiod_ce;
 	sys_dqsiod_inc <= dqsiod_inc;
+
+	process (sys_iod_clk)
+		variable aux : std_logic;
+	begin
+		aux := '1';
+		if rising_edge(sys_iod_clk) then
+			for i in wlrdy'range loop
+				aux := aux and wlrdy(i);
+			end loop;
+			sys_wlrdy <= aux;
+		end if;
+	end process;
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal dqiod_inc : std_logic;
@@ -124,6 +137,7 @@ begin
 				iod_clk => sys_iod_clk,
 				iod_ce  => dqiod_ce,
 				iod_inc => dqiod_inc);
+				wlrdy(i) <= adjdqi_rdy(i);
 		end generate;
 
 		sys_dqiod_ce(i)  <= dqiod_ce  or dqsiod_ce;
@@ -210,17 +224,23 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	sto_i : entity hdl4fpga.ddro
+	sto_i : entity hdl4fpga.ff
 	port map (
-		clk => sys_clk90,
-		dr  => sys_sti(0),
-		df  => sys_sti(1),
+		clk => sys_clk0,
+		d   => sys_sti(0),
 		q   => ddr_sto);
 
+--	sto_i : entity hdl4fpga.ddro
+--	port map (
+--		clk => sys_clk90,
+--		dr  => sys_sti(0),
+--		df  => sys_sti(1),
+--		q   => ddr_sto);
+--
 	dqso_b : block 
 	begin
 
-		adjdqs_req <= sys_wlreq and sys_sti(0);
+		adjdqs_req <= sys_wlreq;
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			sys_clk0 => sys_clk0,

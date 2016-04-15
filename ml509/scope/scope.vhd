@@ -321,7 +321,7 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
-		sys_dqsibuf => ddr2_dqsi, --dqsi_buf,
+		sys_dqsibuf => dqsi_buf,
 		sys_iod_rst => ddrphy_dqsiod_rst,
 		sys_iod_clk => ictlr_clk,
 		sys_dqiod_ce  => ddrphy_dqiod_ce,
@@ -414,18 +414,19 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
-		sti_idelay_i : idelay 
-		generic map (
-			IOBDELAY_VALUE => 63,
-			IOBDELAY_TYPE => "VARIABLE")
-		port map (
-			rst => sys_rst, --ddrphy_dqsiod_rst(i),
-			c   => ictlr_clk,
-			ce  => ddrphy_dqsiod_ce(i),
-			inc => ddrphy_dqsiod_inc(i),
-			i   => ddrphy_sto(i),
-			o   => ddr_sti(i));
-
+--		sti_idelay_i : idelay 
+--		generic map (
+--			IOBDELAY_VALUE => 63,
+--			IOBDELAY_TYPE => "VARIABLE")
+--		port map (
+--			rst => sys_rst, --ddrphy_dqsiod_rst(i),
+--			c   => ictlr_clk,
+--			ce  => ddrphy_dqsiod_ce(i),
+--			inc => ddrphy_dqsiod_inc(i),
+--			i   => ddrphy_sti(i),
+--			o   => ddr_sti(i));
+--
+			ddr_sti(i) <= ddrphy_sti(i);
 		bufio_i : bufio
 		port map (
 			i => dqsi_buf(i),

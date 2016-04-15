@@ -530,7 +530,7 @@ begin
 				end if;
 			end if;
 		end process;
-		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when xx='1' and i/DDR_WORDSIZE=0 else '0';
+		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when i/DDR_WORDSIZE=0 else '0';
 	end generate;
 
 	ddrs_ini <= xdr_ini;

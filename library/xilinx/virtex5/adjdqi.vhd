@@ -21,24 +21,11 @@ architecture def of adjdqi is
 	signal smp1 : std_logic;
 	signal sync : std_logic;
 	signal edge : std_logic;
-	signal ena  : std_logic;
 begin
-
-	process (sys_clk0)
-	begin
-		if rising_edge(sys_clk0) then
-			if sti='0' then
-				ena <= '1';
-			else
-				ena <= not ena;
-			end if;
-		end if;
-	end process;
 
 	ff_e : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk0,
-		ena => ena,
 		d => din,
 		q => smp0);
 
@@ -77,6 +64,7 @@ begin
 			elsif ce(0)='0' then
 				ce := ce - 1;
 				iod_ce <= not ce(0);
+				rdy <= ce(0);
 			end if;
 		end if;
 	end process;

@@ -33,7 +33,7 @@ begin
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
-				smp1 <= '1';
+				smp1 <= '0';
 			else
 				smp1 <= smp0;
 			end if;
@@ -51,8 +51,8 @@ begin
 				iod_ce  <= '0';
 				rdy <= '0';
 			elsif sync='0' then
-				if smp0='1' then
-					if smp1='0' then
+				if smp0='0' then
+					if smp1='1' then
 						sync  <= '1';
 						ce(0) := '1';
 						iod_inc <= '0';
