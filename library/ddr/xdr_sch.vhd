@@ -155,7 +155,8 @@ begin
 		end loop;
 	end process;
 
-	stpho <= rpho0 when profile=virtex5 else rpho90;
+--	stpho <= rpho0 when profile=virtex5 else rpho90;
+	stpho <= rpho90;
 
 	xdr_st <= xdr_task (
 		clk_phases => clk_edges,

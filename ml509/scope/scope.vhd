@@ -95,7 +95,8 @@ architecture scope of ml509 is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(0 to line_size/byte_size-1);
 	signal ddrphy_sti : std_logic_vector(0 to line_size/byte_size-1);
-	signal ddr_sti : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddr_sti : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_sto : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
@@ -260,7 +261,7 @@ begin
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
 		ddr_sto  => ddrphy_sto,
-		ddr_sti  => ddr_sti,
+		ddr_sti  => ddrphy_sti,
 
 --		mii_rst  => mii_rst,
 		mii_rxc  => mii_rxc,
@@ -287,7 +288,7 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		iddron => true,
-		LOOPBACK => TRUE,
+		LOOPBACK => true,
 		BANK_SIZE => 2,
 		ADDR_SIZE => 13,
 		data_gear => data_gear,
@@ -338,6 +339,8 @@ begin
 		ddr_a   => ddr2_a(13-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
+		ddr_sti  => ddr_sti,
+		ddr_sto  => ddr_sto,
 		ddr_dm   => ddr2_dm,
 		ddr_dqo  => ddr2_dqo,
 		ddr_dqi  => ddr2_dqi,
@@ -414,19 +417,18 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
---		sti_idelay_i : idelay 
---		generic map (
---			IOBDELAY_VALUE => 63,
---			IOBDELAY_TYPE => "VARIABLE")
---		port map (
---			rst => sys_rst, --ddrphy_dqsiod_rst(i),
---			c   => ictlr_clk,
---			ce  => ddrphy_dqsiod_ce(i),
---			inc => ddrphy_dqsiod_inc(i),
---			i   => ddrphy_sti(i),
---			o   => ddr_sti(i));
---
-			ddr_sti(i) <= ddrphy_sti(i);
+		sti_idelay_i : idelay 
+		generic map (
+			IOBDELAY_VALUE => 63,
+			IOBDELAY_TYPE => "VARIABLE")
+		port map (
+			rst => sys_rst, --ddrphy_dqsiod_rst(i),
+			c   => ictlr_clk,
+			ce  => ddrphy_dqsiod_ce(i),
+			inc => ddrphy_dqsiod_inc(i),
+			i   => ddr_sto(i),
+			o   => ddr_sti(i));
+
 		bufio_i : bufio
 		port map (
 			i => dqsi_buf(i),

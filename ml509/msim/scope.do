@@ -22,15 +22,19 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdq
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/req
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp1
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_dmt
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sti
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dmt
+add wave -noupdate /testbench/dm
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sto
 add wave -noupdate -divider dqi
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sys_clk0
 add wave -noupdate /testbench/dq(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/ddr_dqi(0)
-add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/q
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/q
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/din
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sti
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/ena
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp1
 add wave -noupdate /testbench/ml509_e/ddr2_d_g(0)/dqi_i/prcs_refclk/TapCount_var
@@ -43,7 +47,6 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/id
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_clk
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_ce
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/iod_inc
-add wave -noupdate -radix unsigned -childformat {{/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(0) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(1) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(2) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(3) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(4) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(5) -radix unsigned} {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(6) -radix unsigned}} -subitemconfig {/testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(0) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(1) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(2) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(3) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(4) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(5) {-height 16 -radix unsigned} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0(6) {-height 16 -radix unsigned}} /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/cntr0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cmd_rdy
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_cmd_req
@@ -95,7 +98,7 @@ add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/ser_ena(0)
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/aser_q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {5360000 ps} 0} {{Cursor 4} {5557500 ps} 0}
+WaveRestoreCursors {{Cursor 2} {6848053 ps} 0} {{Cursor 4} {5230833 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
@@ -111,4 +114,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {5286701 ps} {5477441 ps}
+WaveRestoreZoom {6733209 ps} {6962897 ps}

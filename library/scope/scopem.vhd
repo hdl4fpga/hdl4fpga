@@ -146,7 +146,6 @@ architecture def of scope is
 	signal ddr_di_req : std_logic;
 	signal ddr_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal ddr_do_rdy : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-	signal ddr_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
 
 	signal ddrs_ref_req : std_logic;
@@ -624,7 +623,7 @@ begin
 		sys_di_req => ddr_di_req,
 		sys_di  => ddr_di,
 		sys_do_rdy => ddr_do_rdy,
-		sys_do  => ddr_do,
+		sys_do  => ddrs_do,
 
 		sys_ref => ddrs_ref_req,
 

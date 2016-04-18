@@ -205,7 +205,7 @@ begin
 
 			dmi(i) <=
 				rdmi(i)    when registered_dout else 
-				sys_sti(i) when sys_dmt(i)='1' else
+				sys_sti(i) when sys_dmt(i)='1' and not loopback else
 				sys_dmi(i);
 
 		end generate;
