@@ -417,17 +417,21 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
-		sti_idelay_i : idelay 
+		sti_idelay_i : iodelay 
 		generic map (
-			IOBDELAY_VALUE => 63,
-			IOBDELAY_TYPE => "VARIABLE")
+			DELAY_SRC => "DATAIN",
+			IDELAY_VALUE => 63,
+			IDELAY_TYPE => "VARIABLE")
 		port map (
 			rst => sys_rst, --ddrphy_dqsiod_rst(i),
+			t => '1',
 			c   => ictlr_clk,
 			ce  => ddrphy_dqsiod_ce(i),
 			inc => ddrphy_dqsiod_inc(i),
-			i   => ddr_sto(i),
-			o   => ddr_sti(i));
+			idatain => '0',
+			odatain => '0',
+			datain   => ddr_sto(i),
+			dataout   => ddr_sti(i));
 
 		bufio_i : bufio
 		port map (
