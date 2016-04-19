@@ -203,17 +203,7 @@ begin
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
 
-	process(ddrs_clk0)
-	begin
-		for i in ddrphy_dqsi'range loop
-			if i mod 2=0 then
-				ddrphy_dqsi(i) <= ddrs_clk0;
-			else
-				ddrphy_dqsi(i) <= not ddrs_clk0;
-			end if;
-		end loop;
-	end process;
-
+	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga => virtex5,
@@ -417,26 +407,28 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
-		sti_idelay_i : iodelay 
-		generic map (
-			DELAY_SRC => "DATAIN",
-			IDELAY_VALUE => 63,
-			IDELAY_TYPE => "VARIABLE")
-		port map (
-			rst => sys_rst, --ddrphy_dqsiod_rst(i),
-			t => '1',
-			c   => ictlr_clk,
-			ce  => ddrphy_dqsiod_ce(i),
-			inc => ddrphy_dqsiod_inc(i),
-			idatain => '0',
-			odatain => '0',
-			datain   => ddr_sto(i),
-			dataout   => ddr_sti(i));
-
 		bufio_i : bufio
 		port map (
 			i => dqsi_buf(i),
 			o => ddr2_dqsi(i));
+
+--		sti_idelay_i : iodelay 
+--		generic map (
+--			DELAY_SRC => "DATAIN",
+--			IDELAY_VALUE => 0,
+--			IDELAY_TYPE => "VARIABLE")
+--		port map (
+--			rst => sys_rst,
+--			t => '1',
+--			c  => ictlr_clk,
+--			ce => ddrphy_dqsiod_ce(i),
+--			inc => ddrphy_dqsiod_inc(i),
+--			idatain => '0',
+--			odatain => '0',
+--			datain   => ddr_sto(i),
+--			dataout   => ddr_sti(i));
+
+		ddr_sti(i) <= ddr_sto(i);
 	end generate;
 
 	ddr_clks_g : for i in ddr2_clk'range generate

@@ -160,7 +160,6 @@ begin
 
 	wr_address_i : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
 		n => wr_address'length,
 		d => (wr_address'range => wr_delay))
 	port map (
@@ -170,7 +169,6 @@ begin
 
 	wr_data_i : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
 		n => ddrs_di'length,
 		d => (ddrs_di'range => wr_delay))
 	port map (
@@ -180,7 +178,6 @@ begin
 
 	wr_ena_i : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
 		n => 1,
 		d => (1 to 1 => wr_delay-1))
 	port map (

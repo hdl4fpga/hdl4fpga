@@ -257,7 +257,6 @@ begin
 
 	mpu_sel_slr_e : entity hdl4fpga.align
 	generic map (
-		srl16 => "false",
 		n => 2,
 		d => (0 to 1 => 1))
 	port map (

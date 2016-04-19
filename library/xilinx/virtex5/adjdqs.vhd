@@ -20,6 +20,7 @@ architecture def of adjdqs is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
 	signal sync : std_logic;
+	constant pp : std_logic :='1';
 begin
 
 	ffd_e : entity hdl4fpga.ff
@@ -33,10 +34,10 @@ begin
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
-				smp1 <= '0';
+				smp1 <= '0' xor pp;
 			else
-				smp1 <= smp0;
 			end if;
+				smp1 <= smp0;
 		end if;
 	end process;
 
@@ -51,11 +52,11 @@ begin
 				iod_ce  <= '0';
 				rdy <= '0';
 			elsif sync='0' then
-				if smp0='0' then
-					if smp1='1' then
+				if smp0=('0' xor pp) then
+					if smp1=('1' xor pp) then
 						sync  <= '1';
 						ce(0) := '1';
-						iod_inc <= '0';
+						iod_inc <= '1';
 					else
 						ce(0) := '1';
 						iod_inc <= '0';
@@ -66,8 +67,8 @@ begin
 				end if;
 				iod_ce  <= ce(0);
 			else
-				iod_ce <= '0'; --ce(ce'right);
-				rdy <= '1'; --not ce(ce'right);
+				iod_ce <= ce(ce'right);
+				rdy <= not ce(ce'right);
 			end if;
 			ce  := ce srl 1;
 		end if;

@@ -485,7 +485,7 @@ begin
 		end if;
 	end process;
 
-	tpo(0) <= miidma_rreq;
+	tpo(0) <= ddr_wlrdy; --xdr_ini; --miidma_rreq;
 	tpo(1) <= miidma_rrdy;
 	tpo(2) <= miirx_udprdy;
 	mii_txen <= miitx_ena;

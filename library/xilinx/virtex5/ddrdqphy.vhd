@@ -102,7 +102,7 @@ begin
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
-			sys_wlrdy <= aux;
+			sys_wlrdy <= adjdqs_req; --aux;
 		end if;
 	end process;
 
@@ -112,12 +112,14 @@ begin
 	begin
 		iddron_g : if iddron generate
 			signal q : std_logic_vector(2-1 downto 0);
+			signal dqs_clk : std_logic;
 		begin
+			dqs_clk <= not ddr_dqsi;
 			iddr_i : iddr
 			generic map (
 				DDR_CLK_EDGE => "SAME_EDGE")
 			port map (
-				c  => ddr_dqsi,
+				c  => dqs_clk,
 				ce => '1',
 				d  => ddr_dqi(i),
 				q1 => q(0),
@@ -241,7 +243,13 @@ begin
 		signal clk_n : std_logic;
 	begin
 
-		adjdqs_req <= sys_wlreq;
+		process (sys_iod_clk)
+		begin
+			if rising_edge(sys_iod_clk) then
+				adjdqs_req <= sys_wlreq;-- and sys_sti(0);
+			end if;
+		end process;
+
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			sys_clk0 => sys_clk0,
