@@ -102,10 +102,10 @@ begin
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
-			sys_wlrdy <= adjdqs_req; --aux;
 		end if;
 	end process;
 
+	sys_wlrdy <= adjdqs_req;-- aux;
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
@@ -246,9 +246,9 @@ begin
 		process (sys_iod_clk)
 		begin
 			if rising_edge(sys_iod_clk) then
-				adjdqs_req <= sys_wlreq;-- and sys_sti(0);
 			end if;
 		end process;
+				adjdqs_req <= sys_wlreq and sys_sti(0);
 
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
