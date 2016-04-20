@@ -57,6 +57,7 @@ entity ddrdqphy is
 		sys_dqiod_inc  : out std_logic_vector(byte_size-1 downto 0);
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
+		sys_tp : out std_logic;
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -84,7 +85,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqi_req : std_logic;
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 
-	signal wlrdy : std_logic_vector(ddr_dqi'range);
+	signal tp : std_logic_vector(ddr_dqi'range);
 
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
@@ -99,20 +100,22 @@ begin
 	begin
 		aux := '1';
 		if rising_edge(sys_iod_clk) then
-			for i in wlrdy'range loop
-				aux := aux and wlrdy(i);
+			for i in adjdqi_rdy'range loop
+				aux := aux and adjdqi_rdy(i);
 			end loop;
+			sys_wlrdy <= aux;
 		end if;
 	end process;
+	sys_tp <= tp(0);
 
-	sys_wlrdy <= adjdqs_req;-- aux;
-	iddr_g : for i in 0 to byte_size-1 generate
+	iddr_g : for i in ddr_dqi'range generate
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
 	begin
 		iddron_g : if iddron generate
 			signal q : std_logic_vector(2-1 downto 0);
 			signal dqs_clk : std_logic;
+			signal din : std_logic;
 		begin
 			dqs_clk <= not ddr_dqsi;
 			iddr_i : iddr
@@ -127,19 +130,21 @@ begin
 
 			sys_dqi(0*byte_size+i) <= q(0);
 			sys_dqi(1*byte_size+i) <= q(1);
+			din <= q(1) or q(0);
 		
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
 				sys_clk0 => sys_clk0,
-				din => q(0),
+				din => ddr_dqi(i),
 				sti => sys_sti(0),
 				req => adjdqi_req,
 				rdy => adjdqi_rdy(i),
+				tp => tp(i),
 				iod_clk => sys_iod_clk,
 				iod_ce  => dqiod_ce,
 				iod_inc => dqiod_inc);
-				wlrdy(i) <= adjdqi_rdy(i);
+
 		end generate;
 
 		sys_dqiod_ce(i)  <= dqiod_ce  or dqsiod_ce;
@@ -243,12 +248,14 @@ begin
 		signal clk_n : std_logic;
 	begin
 
-		process (sys_iod_clk)
+		process (sys_wlreq, sys_iod_clk)
 		begin
-			if rising_edge(sys_iod_clk) then
+			if sys_wlreq='0' then
+				adjdqs_req <= '0';
+			elsif rising_edge(sys_iod_clk) then
+				adjdqs_req <= sys_sti(0);
 			end if;
 		end process;
-				adjdqs_req <= sys_wlreq and sys_sti(0);
 
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (

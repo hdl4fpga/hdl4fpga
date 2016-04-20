@@ -9,6 +9,7 @@ entity adjdqi is
 		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
+		tp : out std_logic;
 		iod_clk  : in std_logic;
 		iod_ce  : out std_logic;
 		iod_inc : out std_logic);
@@ -21,8 +22,10 @@ architecture def of adjdqi is
 	signal smp1 : std_logic;
 	signal sync : std_logic;
 	signal edge : std_logic;
+	signal clk_n : std_logic;
 begin
 
+	clk_n <= not sys_clk0;
 	ff_e : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk0,
@@ -32,15 +35,12 @@ begin
 	process (iod_clk)
 	begin
 		if rising_edge(iod_clk) then
-			if req='0' then
-				smp1 <= '0';
-			else
-				smp1 <= smp0;
-			end if;
+			smp1 <= smp0;
 		end if;
 	end process;
 
 	iod_inc <= not edge;
+	tp <= edge;
 	process (iod_clk)
 		variable ce : unsigned(0 to 4-1);
 	begin
@@ -52,8 +52,8 @@ begin
 				iod_ce <= '0';
 				rdy <= '0';
 			elsif sync='0' then
-				if smp0=not edge then
-					if smp1=not edge then
+				if smp0=edge then
+					if smp1=edge then
 						if edge='1' then
 							sync <='1';
 						end if;

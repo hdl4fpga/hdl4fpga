@@ -485,9 +485,10 @@ begin
 		end if;
 	end process;
 
-	tpo(0) <= ddr_wlrdy; --xdr_ini; --miidma_rreq;
-	tpo(1) <= miidma_rrdy;
-	tpo(2) <= miirx_udprdy;
+	tpo(0) <= ddr_sti(0); --ddr_wlrdy; --xdr_ini; --miidma_rreq;
+	tpo(1) <= ddr_rw; --miidma_rrdy;
+	tpo(2) <= ddr_cmd_rdy; --miirx_udprdy;
+	tpo(3) <= ddr_wlrdy; --miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;

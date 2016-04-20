@@ -30,7 +30,6 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sto
 add wave -noupdate -divider dqi
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sys_clk0
-add wave -noupdate /testbench/dq(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/ddr_dqi(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/q
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/din
@@ -98,7 +97,7 @@ add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/ser_ena(0)
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/aser_q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {6848053 ps} 0} {{Cursor 4} {5230833 ps} 0}
+WaveRestoreCursors {{Cursor 2} {5571109 ps} 0} {{Cursor 4} {5230833 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
@@ -114,4 +113,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {6733209 ps} {6962897 ps}
+WaveRestoreZoom {5511560 ps} {5741248 ps}

@@ -33,11 +33,7 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(iod_clk) then
-			if req='0' then
-				smp1 <= '0' xor pp;
-			else
-			end if;
-				smp1 <= smp0;
+			smp1 <= smp0;
 		end if;
 	end process;
 

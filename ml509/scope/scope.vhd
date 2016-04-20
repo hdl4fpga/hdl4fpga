@@ -74,6 +74,7 @@ architecture scope of ml509 is
 
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
+	signal tp1 : std_logic_vector(ddr2_dqs_p'range) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
@@ -160,6 +161,7 @@ architecture scope of ml509 is
 		return val;
 	end;
 	signal ictlr_clk_ibufg : std_logic;
+	signal idelay_rst : std_logic;
 begin
 		
 		
@@ -173,6 +175,17 @@ begin
 	port map (
 		i => ictlr_clk_ibufg,
 		o => ictlr_clk);
+
+	process (ictlr_clk, sys_rst)
+		variable q : unsigned(0 to 16-1);
+	begin
+		if sys_rst='1' then
+			q := (others => '1');
+		elsif rising_edge(ictlr_clk) then
+			q := q sll 1;
+		end if;
+		idelay_rst <= q(0);
+	end process;
 
 	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
@@ -319,6 +332,7 @@ begin
 		sys_dqiod_inc => ddrphy_dqiod_inc,
 		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
 		sys_dqsiod_inc => ddrphy_dqsiod_inc,
+		sys_tp => tp1,
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
 		ddr_cs  => ddr2_cs(0),
@@ -370,7 +384,7 @@ begin
 			IOBDELAY_VALUE => 63,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => sys_rst, --ddrphy_dqsiod_rst(i/(word_size/byte_size)),
+			rst => idelay_rst, --ddrphy_dqsiod_rst(i/(word_size/byte_size)),
 			c   => ictlr_clk,
 			ce  => ddrphy_dqiod_ce(i),
 			inc => ddrphy_dqiod_inc(i),
@@ -400,7 +414,7 @@ begin
 			IOBDELAY_VALUE => 63,
 			IOBDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => sys_rst, --ddrphy_dqsiod_rst(i),
+			rst => idelay_rst, --ddrphy_dqsiod_rst(i),
 			c   => ictlr_clk,
 			ce  => ddrphy_dqsiod_ce(i),
 			inc => ddrphy_dqsiod_inc(i),
@@ -457,11 +471,11 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= (others => '0');
-	gpio_led_c <= mii_txen; --'0';
+	gpio_led_s <= tpo(3); --mii_txen; --'0';
+	gpio_led_w <= tpo(2);
+	gpio_led_c <= tpo(1);
 	gpio_led_e <= tpo(0);
-	gpio_led_w <= '0';
-	gpio_led_s <= tpo(2);
-	gpio_led_n <= tpo(1);
+	gpio_led_n <= tp1(0);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
