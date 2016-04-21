@@ -5,7 +5,6 @@ use ieee.numeric_std.all;
 entity adjdqi is
 	port (
 		sys_clk0 : in std_logic;
-		sti : in std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;

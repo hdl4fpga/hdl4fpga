@@ -57,7 +57,7 @@ entity ddrdqphy is
 		sys_dqiod_inc  : out std_logic_vector(byte_size-1 downto 0);
 		sys_dqsiod_ce  : out std_logic;
 		sys_dqsiod_inc : out std_logic;
-		sys_tp : out std_logic;
+		sys_tp : out std_logic_vector(byte_size-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -106,7 +106,7 @@ begin
 			sys_wlrdy <= aux;
 		end if;
 	end process;
-	sys_tp <= tp(0);
+	sys_tp <= tp;
 
 	iddr_g : for i in ddr_dqi'range generate
 		signal dqiod_inc : std_logic;
@@ -115,7 +115,6 @@ begin
 		iddron_g : if iddron generate
 			signal q : std_logic_vector(2-1 downto 0);
 			signal dqs_clk : std_logic;
-			signal din : std_logic;
 		begin
 			dqs_clk <= not ddr_dqsi;
 			iddr_i : iddr
@@ -130,17 +129,33 @@ begin
 
 			sys_dqi(0*byte_size+i) <= q(0);
 			sys_dqi(1*byte_size+i) <= q(1);
-			din <= q(1) or q(0);
 		
+			deb : if i=0 generate
+				process (ddr_dqi(i),adjdqi_req)
+					variable q : unsigned(4 downto 0);
+				begin
+					if adjdqi_req='0' then
+						q := (others =>'0');
+						tp(0) <= q(0);
+						tp(1) <= '0';
+					elsif rising_edge(ddr_dqi(i)) then
+						if q(0)='0' then
+							q := q + 1;
+						end if;
+						tp(1) <= '1';
+						tp(q'range) <= std_logic_vector(q);
+					end if;
+				end process;
+			end generate;
+
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
-				sys_clk0 => sys_clk0,
+				sys_clk0 => dqs_clk,
 				din => ddr_dqi(i),
-				sti => sys_sti(0),
 				req => adjdqi_req,
 				rdy => adjdqi_rdy(i),
-				tp => tp(i),
+				tp => open,-- tp(i),
 				iod_clk => sys_iod_clk,
 				iod_ce  => dqiod_ce,
 				iod_inc => dqiod_inc);

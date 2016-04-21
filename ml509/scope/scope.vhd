@@ -74,7 +74,7 @@ architecture scope of ml509 is
 
 	signal ddr_lp_clk : std_logic;
 	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
-	signal tp1 : std_logic_vector(ddr2_dqs_p'range) := (others  => 'Z');
+	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
@@ -470,8 +470,8 @@ begin
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= (others => '0');
-	gpio_led_s <= tpo(3); --mii_txen; --'0';
+	gpio_led <= "000" & tp1(4 downto 0);
+	gpio_led_s <= tp1(1); --mii_txen; --'0';
 	gpio_led_w <= tpo(2);
 	gpio_led_c <= tpo(1);
 	gpio_led_e <= tpo(0);

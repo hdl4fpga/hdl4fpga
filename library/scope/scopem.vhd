@@ -210,6 +210,8 @@ architecture def of scope is
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
 
+	signal rw : std_logic;
+	signal cmd_req : std_logic;
 begin
 
 
@@ -488,7 +490,7 @@ begin
 	tpo(0) <= ddr_sti(0); --ddr_wlrdy; --xdr_ini; --miidma_rreq;
 	tpo(1) <= ddr_rw; --miidma_rrdy;
 	tpo(2) <= ddr_cmd_rdy; --miirx_udprdy;
-	tpo(3) <= ddr_wlrdy; --miirx_udprdy;
+	tpo(3) <= xdr_ini; --miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
@@ -545,45 +547,38 @@ begin
 	ddrs_pre <= ddr_pre;
 	
 	ddr_wlreq <= ddr_ini;
-	process (
-		ddrs_rst,
-		ddrs_clks(0),
-	   	ddrs_cmd_req,
-		ddrs_rw,
-		xdr_ini)
+	process (ddrs_clks(0))
 	begin
 		if rising_edge(ddrs_clks(0)) then
 			if ddrs_rst='1' then
 				xdr_ini <= '0';
-				ddr_rw  <= '0';
-				ddr_cmd_req <= '0';
+				rw  <= '0';
+				cmd_req <= '0';
 			elsif ddr_ini='1' then
-				if ddr_cmd_req='1' then
+				if cmd_req='1' then
 					if ddr_cmd_rdy='0' then
-						if ddr_rw='0' then 
-							ddr_cmd_req <= '0';
-							elsif ddr_wlrdy='1' then
-							ddr_cmd_req <= '0';
+						if rw='0' then 
+							cmd_req <= '0';
+						elsif ddr_wlrdy='1' then
+							cmd_req <= '0';
 						end if;
 					end if;
 				elsif ddr_cmd_rdy='1' then
-					if ddr_rw='0' then 
-						ddr_cmd_req <= '1';
+					if rw='0' then 
+						cmd_req <= '1';
 					else
 						xdr_ini <= '1';
 					end if;
-					ddr_rw <= '1';
+					rw <= '1';
 				end if;
 			elsif ddr_cmd_rdy='1' then
-				ddr_cmd_req <= '1';
+				cmd_req <= '1';
 			end if;
 		end if;
 
-		if xdr_ini='1' then
-			ddr_rw <= ddrs_rw;
-			ddr_cmd_req <= ddrs_cmd_req;
-		end if;
 	end process;
+	ddr_rw <= ddrs_rw when xdr_ini='1' else rw;
+	ddr_cmd_req <= ddrs_cmd_req when xdr_ini='1' else cmd_req;
 
 	ddr_e : entity hdl4fpga.xdr
 	generic map (

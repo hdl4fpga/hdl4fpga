@@ -67,7 +67,7 @@ entity ddrphy is
 		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_tp :  out std_logic_vector(word_size/byte_size-1 downto 0);
+		sys_tp :  out std_logic_vector(word_size-1 downto 0);
 
 		sys_wlreq : in std_logic;
 		sys_wlrdy : out std_logic;
@@ -384,7 +384,7 @@ begin
 			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
 			sys_dqsibuf => sys_dqsibuf(i),
-			sys_tp => sys_tp(i),
+			sys_tp => sys_tp((i+1)*byte_size-1 downto i*byte_size),
 
 			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqi  => ddqi(i),
