@@ -89,6 +89,7 @@ architecture virtex of ddrdqphy is
 
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
+	signal wlrdy : std_logic;
 begin
 
 	sys_iod_rst    <= adjdqs_req;
@@ -103,9 +104,10 @@ begin
 			for i in adjdqi_rdy'range loop
 				aux := aux and adjdqi_rdy(i);
 			end loop;
-			sys_wlrdy <= aux;
+			wlrdy <= aux;
 		end if;
 	end process;
+	sys_wlrdy <= wlrdy;
 	sys_tp <= tp;
 
 	iddr_g : for i in ddr_dqi'range generate
@@ -151,7 +153,7 @@ begin
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
-				sys_clk0 => dqs_clk,
+				sys_clk0 => sys_clk0,
 				din => ddr_dqi(i),
 				req => adjdqi_req,
 				rdy => adjdqi_rdy(i),
@@ -179,13 +181,23 @@ begin
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 
 		registered_g : for j in clks'range generate
-			process (clks(j))
+			process (wlrdy, clks(j))
 			begin
-				if rising_edge(clks(j)) then
+				if wlrdy='0' then
+					if j mod 2=0 then
+						rdqo(j) <= '1';
+					else
+						rdqo(j) <= '0';
+					end if;
+				elsif rising_edge(clks(j)) then
 					rdqo(j) <= sys_dqo(j*byte_size+i);
 				end if;
 			end process;
-			dqo(j) <= rdqo(j) when registered_dout else sys_dqo(j*byte_size+i);
+			dqo(j) <= 
+			rdqo(j) when registered_dout else
+			'1' when wlrdy='0' and j mod 2=0 else
+			'0' when wlrdy='0' else
+			sys_dqo(j*byte_size+i);
 		end generate;
 
 		ddrto_i : entity hdl4fpga.ddrto

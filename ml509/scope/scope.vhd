@@ -162,6 +162,7 @@ architecture scope of ml509 is
 	end;
 	signal ictlr_clk_ibufg : std_logic;
 	signal idelay_rst : std_logic;
+	signal ictlr_rst : std_logic;
 begin
 		
 		
@@ -176,22 +177,19 @@ begin
 		i => ictlr_clk_ibufg,
 		o => ictlr_clk);
 
-	process (ictlr_clk, sys_rst)
-		variable q : unsigned(0 to 16-1);
-	begin
-		if sys_rst='1' then
-			q := (others => '1');
-		elsif rising_edge(ictlr_clk) then
-			q := q sll 1;
-		end if;
-		idelay_rst <= q(0);
-	end process;
-
-	sys_rst <= gpio_sw_c;
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
 		O => sys_clk);
+
+	ictlr_rst <= gpio_sw_c;
+	idelayctrl_i : idelayctrl
+	port map (
+		rst => ictlr_rst,
+		refclk => ictlr_clk,
+		rdy => ictlr_rdy);
+	idelay_rst <= not ictlr_rdy;
+	sys_rst    <= not ictlr_rdy;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -209,12 +207,6 @@ begin
 		video_clk90 => open,
 		ddr_rst => ddrs_rst,
 		gtx_rst => gtx_rst);
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst => sys_rst,
-		refclk => ictlr_clk,
-		rdy => ictlr_rdy);
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope

@@ -144,7 +144,6 @@ architecture def of scope is
 	signal ddr_rw  : std_logic;
 	signal ddr_di_rdy : std_logic;
 	signal ddr_di_req : std_logic;
-	signal ddr_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
 	signal ddr_do_rdy : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
 
@@ -518,23 +517,6 @@ begin
 		end if;
 	end process;
 
-	ddrs_di_g : for i in ddr_di'range generate
-		signal xx : std_logic := '0';
-	begin
-		process (ddrs_clks(0))
-		begin
-			if rising_edge(ddrs_clks(0)) then
-				if ddr_di_req='0' then
-					xx <= '0';
-				else
-					xx <= not xx;
-			
-				end if;
-			end if;
-		end process;
-		ddr_di(i) <= ddrs_di(i) when xdr_ini='1' else '1' when i/DDR_WORDSIZE=0 else '0';
-	end generate;
-
 	ddrs_ini <= xdr_ini;
 	ddr_ba  <= ddrs_ba when xdr_ini='1' else (others => '0');
 	xdr_a   <= ddrs_a  when xdr_ini='1' else (others => '0');
@@ -617,7 +599,7 @@ begin
 		sys_pre => ddr_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di_req => ddr_di_req,
-		sys_di  => ddr_di,
+		sys_di  => ddrs_di,
 		sys_do_rdy => ddr_do_rdy,
 		sys_do  => ddrs_do,
 
