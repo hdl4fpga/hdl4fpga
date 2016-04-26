@@ -107,34 +107,36 @@ architecture registered of xdr_pgm is
 -- pgm_start ----+||
 --               |||
 --               vvv
---               000    001    010    011    100    101    110    111
---             +------+------+------+------+------+------+------+------+
---     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     pact    | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     rea     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     wri     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
---     pre     | pre  | paut | pre  | paut | pact | paut | pact | paut |
---     idl     | pre  | paut | pre  | paut | pact | paut | pact | paut |
---     paut    | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
---     aut     | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
---             +------+------+------+------+------+------+------+------+
+--               0000   0010   0100   0110   1000   1010   1100   1110   0001   0011   0101   0111   1001   1011   1101   1111  
+--             +------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+
+--     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     pact    | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     rea     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  | pre  | pre  | pre  | pre  | wri  | wri  | rean | rean |
+--     rean    | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
+--     wri     | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  | pre  | pre  | pre  | pre  | wri  | wri  | rea  | rea  |
+--     pre     | pre  | paut | pre  | paut | pact | paut | pact | paut | pre  | paut | pre  | paut | pact | paut | pact | paut |
+--     idl     | pre  | paut | pre  | paut | pact | paut | pact | paut | pre  | paut | pre  | paut | pact | paut | pact | paut |
+--     paut    | idl  | idl  | idl  | idl  | act  | act  | act  | act  | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
+--     aut     | idl  | idl  | idl  | idl  | act  | act  | act  | act  | idl  | idl  | idl  | idl  | act  | act  | act  | act  |
+--             +------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+
 
 --                           --                 --
 --                           -- OUTPUT COMMANDS --
 --                           --                 --
 
 --
---               000    001    010    011    100    101    110    111
---             +------+------+------+------+------+------+------+------+
---     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
---     pact    | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     rea     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     wri     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
---     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     idl     | nop  | autq | nop  | autq | act  | autq | act  | autq |
---     paut    | nopy | auty | nopy | auty | acty | auty | acty | auty |
---     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty |
---             +------+------+------+------+------+------+------+------+
+--               0000   0010   0100   0110   1000   1010   1100   1110   0001   0011   0101   0111   1001   1011   1101   1111  
+--             +------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+
+--     act     | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq | wri  | wriq | rea  | reaq |
+--     pact    | nop  | autq | nop  | autq | act  | autq | act  | autq | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     rea     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq | pre  | preq | pre  | preq | wri  | wriq | rea  | reay |
+--     rean    | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq | pre  | preq | pre  | preq | wri  | wriq | nop  | nopy |
+--     wri     | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq | pre  | preq | pre  | preq | wri  | wriq | rea  | reaq |
+--     pre     | nop  | autq | nop  | autq | act  | autq | act  | autq | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     idl     | nop  | autq | nop  | autq | act  | autq | act  | autq | nop  | autq | nop  | autq | act  | autq | act  | autq |
+--     paut    | nopy | auty | nopy | auty | acty | auty | acty | auty | nopy | auty | nopy | auty | acty | auty | acty | auty |
+--     aut     | nopy | auty | nopy | auty | acty | auty | acty | auty | nopy | auty | nopy | auty | acty | auty | acty | auty |
+--             +------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+------+
 
 	constant pgm_tab : trans_tab(0 to 64-1) := (
 		(ddrs_act, "000", ddrs_wri, xdr_wri),	---------
