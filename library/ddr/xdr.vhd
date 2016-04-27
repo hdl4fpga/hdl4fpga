@@ -60,6 +60,7 @@ entity xdr is
 		sys_ini  : out std_logic;
 		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
+		sys_wlcal : in  std_logic;
 
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
@@ -281,6 +282,7 @@ begin
 		xdr_pgm_ref => xdr_mpu_ref,
 		xdr_pgm_rrdy => xdr_refi_rdy,
 		xdr_pgm_start => xdr_mpu_req,
+		xdr_pgm_cal => sys_wlcal,
 		xdr_pgm_rdy => sys_cmd_rdy,
 		xdr_pgm_req => xdr_mpu_rdy,
 		xdr_pgm_rw  => sys_rw);

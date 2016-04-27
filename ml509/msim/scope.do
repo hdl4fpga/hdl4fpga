@@ -33,7 +33,6 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/id
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/ddr_dqi(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/q
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/din
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sti
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/smp1
 add wave -noupdate /testbench/ml509_e/ddr2_d_g(0)/dqi_i/prcs_refclk/TapCount_var
@@ -96,9 +95,16 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/apll_q
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/ser_ena(0)
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/aser_q
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer(0)
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {5571109 ps} 0} {{Cursor 4} {5230833 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 4} {5659689 ps} 0} {{Cursor 3} {5688332 ps} 0} {{Cursor 4} {5698332 ps} 0} {{Cursor 5} {5734648 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
@@ -113,4 +119,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {5511560 ps} {5741248 ps}
+WaveRestoreZoom {5629696 ps} {5808964 ps}

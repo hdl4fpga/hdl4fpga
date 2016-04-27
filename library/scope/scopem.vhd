@@ -211,6 +211,7 @@ architecture def of scope is
 
 	signal rw : std_logic;
 	signal cmd_req : std_logic;
+	signal cal : std_logic;
 begin
 
 
@@ -536,13 +537,15 @@ begin
 				xdr_ini <= '0';
 				rw  <= '0';
 				cmd_req <= '0';
+				cal <= '0';
 			elsif ddr_ini='1' then
 				if cmd_req='1' then
 					if ddr_cmd_rdy='0' then
 						if rw='0' then 
 							cmd_req <= '0';
 						elsif ddr_wlrdy='1' then
-							cmd_req <= '0';
+							--cmd_req <= '0';
+							cal <='1';
 						end if;
 					end if;
 				elsif ddr_cmd_rdy='1' then
@@ -591,6 +594,7 @@ begin
 		sys_cmd_rdy => ddr_cmd_rdy,
 		sys_wlreq => open, --ddr_wlreq,
 		sys_wlrdy => ddr_wlrdy,
+		sys_wlcal => cal,
 		sys_b   => ddr_ba,
 		sys_a   => xdr_a,
 		sys_rw  => ddr_rw,
