@@ -192,7 +192,7 @@ architecture arch of xdr_mpu is
 		(xdr_state => XDRS_READ_BL, xdr_state_n => XDRS_READ_BL,
 		 xdr_cmi => xdr_nop, xdr_cmo => xdr_nop, xdr_lat => ID_IDLE,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '0',
-		 xdr_act => '1', xdr_rdy => '0', xdr_rph => '0', xdr_wph => '0'),
+		 xdr_act => '1', xdr_rdy => '1', xdr_rph => '0', xdr_wph => '0'),
 		(xdr_state => XDRS_READ_BL, xdr_state_n => XDRS_READ_CL,
 		 xdr_cmi => xdr_dcare, xdr_cmo => xdr_nop, xdr_lat => ID_CL,
 		 xdr_rea => '1', xdr_wri => '0', xdr_cen => '0',

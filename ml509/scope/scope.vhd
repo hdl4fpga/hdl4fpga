@@ -101,6 +101,7 @@ architecture scope of ml509 is
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
+	signal ddrphy_wlcal : std_logic;
 	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -239,6 +240,7 @@ begin
 		ddr_cke  => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
+		ddr_wlcal => ddrphy_wlcal,
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -305,6 +307,7 @@ begin
 
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
+		sys_wlcal => ddrphy_wlcal,
 		sys_dqsi => open,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,

@@ -63,6 +63,7 @@ entity scope is
 		ddrs_ini : out std_logic;
 		ddr_wlreq : out std_logic;
 		ddr_wlrdy : in  std_logic := '-';
+		ddr_wlcal : in  std_logic := '-';
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
@@ -544,7 +545,8 @@ begin
 						if rw='0' then 
 							cmd_req <= '0';
 						elsif ddr_wlrdy='1' then
-							--cmd_req <= '0';
+							cmd_req <= '0';
+						elsif ddr_wlcal='1' then
 							cal <='1';
 						end if;
 					end if;

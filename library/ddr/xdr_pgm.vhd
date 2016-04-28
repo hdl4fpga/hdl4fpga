@@ -214,7 +214,6 @@ architecture registered of xdr_pgm is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_pgm_pc : signal is "compact";
 
-		signal t : std_logic;
 begin
 
 	xdr_input(2) <= xdr_pgm_ref;
@@ -223,21 +222,28 @@ begin
 
 	process (xdr_pgm_clk)
 		variable pc : std_logic_vector(xdr_pgm_pc'range);
+		variable t : std_logic;
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
-				xdr_pgm_cmd  <= pgm_cmd;
 				if xdr_pgm_cal='1' then
-					if t='1' then
-						xdr_pgm_cmd <= "111";
+					if xdr_pgm_req='1' then
+						if t='1' then
+							xdr_pgm_cmd <= pgm_cmd;
+						else
+							xdr_pgm_cmd <= "111";
+						end if;
 					end if;
+				else
+					xdr_pgm_cmd  <= pgm_cmd;
 				end if;
+
 				xdr_pgm_rdy  <= pgm_rdy;
 				sys_pgm_ref  <= sys_ref;
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
 					if xdr_pgm_cal='1' then
-						t <= not t;
+						t := not t;
 					end if;
 					xdr_pgm_pc <= pc; 
 				end if;
@@ -257,7 +263,7 @@ begin
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
 				xdr_pgm_rrdy <= '0';
-				t <= '1';
+				t := '0';
 			end if;
 		end if;
 	end process;

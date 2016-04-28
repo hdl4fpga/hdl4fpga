@@ -71,6 +71,7 @@ entity ddrphy is
 
 		sys_wlreq : in std_logic;
 		sys_wlrdy : out std_logic;
+		sys_wlcal : out std_logic;
 		sys_iod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sys_iod_clk : in  std_logic;
 		sys_dqiod_ce  : out std_logic_vector(word_size-1 downto 0);
@@ -344,7 +345,7 @@ begin
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
 			end loop;
-			sys_wlrdy <= aux;
+			sys_wlcal <= aux;
 		end if;
 	end process;
 
