@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity adjdqs is
 	port (
 		sys_clk0 : in  std_logic;
+		sys_dqs : in  std_logic;
 		iod_clk  : in  std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
@@ -17,12 +18,10 @@ end;
 library hdl4fpga;
 
 architecture def of adjdqs is
-	signal smp0 : std_logic;
-	signal smp1 : std_logic;
-	signal sync : std_logic;
-	constant pp : std_logic :='1';
+	signal clk0_n : std_logic;
 begin
 
+	clk0_n <= not sys_clk0;
 	ffd_e : entity hdl4fpga.ff
 	port map (
 		clk => sys_clk0,
