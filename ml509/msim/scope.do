@@ -99,12 +99,14 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer(0)
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_pgm_e/t
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {5659689 ps} 0} {{Cursor 3} {5688332 ps} 0} {{Cursor 4} {5698332 ps} 0} {{Cursor 5} {5734648 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 4} {5652744 ps} 0} {{Cursor 3} {5681251 ps} 0} {{Cursor 4} {5698332 ps} 0} {{Cursor 5} {5792516 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 132
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
@@ -119,4 +121,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {5629696 ps} {5808964 ps}
+WaveRestoreZoom {5076461 ps} {6446477 ps}
