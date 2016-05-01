@@ -273,7 +273,20 @@ begin
 --
 	dqso_b : block 
 		signal clk_n : std_logic;
+		signal smp : std_logic_vector(2-1 downto 0);
+		signal dqs_clk : std_logic;
 	begin
+
+		dqs_clk <= not ddr_dqsi;
+		iddr_i : iddr
+		generic map (
+			DDR_CLK_EDGE => "SAME_EDGE")
+		port map (
+			c  => sys_clk0,
+			ce => '1',
+			d  => dqs_clk,
+			q1 => smp(0),
+			q2 => smp(1));
 
 		process (sys_wlreq, sys_iod_clk)
 		begin
@@ -287,7 +300,7 @@ begin
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			sys_clk0 => sys_clk0,
-			din => sys_dqsibuf,
+			smp => smp(1),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
 			iod_clk => sys_iod_clk,

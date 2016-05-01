@@ -6,7 +6,7 @@ entity adjdqs is
 	port (
 		sys_clk0 : in  std_logic;
 		iod_clk  : in  std_logic;
-		din : in  std_logic;
+		smp : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
 		iod_rst : out std_logic;
@@ -23,17 +23,11 @@ architecture def of adjdqs is
 	constant pp : std_logic :='1';
 begin
 
-	ffd_e : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk0,
-		d   => din,
-		q   => smp0);
-
 	process (iod_clk)
 		variable q : std_logic;
 	begin
 		if rising_edge(iod_clk) then
-			smp1 <= smp0;
+			smp1 <= smp;
 		end if;
 	end process;
 
