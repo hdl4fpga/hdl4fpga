@@ -338,8 +338,6 @@ begin
 		ddr_a   => ddr2_a(13-1 downto 0),
 		ddr_odt => ddr2_odt(0),
 
-		ddr_sti  => ddr_sti,
-		ddr_sto  => ddr_sto,
 		ddr_dm   => ddr2_dm,
 		ddr_dqo  => ddr2_dqo,
 		ddr_dqi  => ddr2_dqi,
@@ -421,23 +419,6 @@ begin
 			i => dqsi_buf(i),
 			o => ddr2_dqsi(i));
 
---		sti_idelay_i : iodelay 
---		generic map (
---			DELAY_SRC => "DATAIN",
---			IDELAY_VALUE => 0,
---			IDELAY_TYPE => "VARIABLE")
---		port map (
---			rst => sys_rst,
---			t => '1',
---			c  => ictlr_clk,
---			ce => ddrphy_dqsiod_ce(i),
---			inc => ddrphy_dqsiod_inc(i),
---			idatain => '0',
---			odatain => '0',
---			datain   => ddr_sto(i),
---			dataout   => ddr_sti(i));
-
-		ddr_sti(i) <= ddr_sto(i);
 	end generate;
 
 	ddr_clks_g : for i in ddr2_clk'range generate

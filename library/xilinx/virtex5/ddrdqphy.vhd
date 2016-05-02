@@ -41,6 +41,7 @@ entity ddrdqphy is
 		sys_clk90 : in  std_logic;
 		sys_wlreq : in std_logic := '0';
 		sys_wlrdy : out std_logic;
+		sys_wlcal : out std_logic;
 		sys_dmt  : in  std_logic_vector(0 to gear-1) := (others => '-');
 		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
@@ -83,12 +84,14 @@ architecture virtex of ddrdqphy is
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
+	signal adjsto_req : std_logic;
+	signal adjsto_rdy : std_logic;
+	signal wlrdy : std_logic;
 
 	signal tp : std_logic_vector(ddr_dqi'range);
 
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
-	signal wlrdy : std_logic;
 begin
 
 	sys_iod_rst    <= adjdqs_req;
@@ -103,10 +106,12 @@ begin
 			for i in adjdqi_rdy'range loop
 				aux := aux and adjdqi_rdy(i);
 			end loop;
-			wlrdy <= aux;
+			adjsto_req <= aux;
 		end if;
 	end process;
+	sys_wlcal <= adjsto_req;
 	sys_wlrdy <= wlrdy;
+	wlrdy <= adjsto_rdy;
 	sys_tp <= tp;
 
 	iddr_g : for i in ddr_dqi'range generate
@@ -263,14 +268,13 @@ begin
 		signal dqs_clk : std_logic;
 	begin
 
-		dqs_clk <= not ddr_dqsi;
 		iddr_i : iddr
 		generic map (
 			DDR_CLK_EDGE => "SAME_EDGE")
 		port map (
 			c  => sys_clk0,
 			ce => '1',
-			d  => dqs_clk,
+			d  => ddr_dqsi,
 			q1 => smp(0),
 			q2 => smp(1));
 
@@ -279,7 +283,9 @@ begin
 			if sys_wlreq='0' then
 				adjdqs_req <= '0';
 			elsif rising_edge(sys_iod_clk) then
-				adjdqs_req <= sys_sti(0);
+				if adjdqs_req='0' then
+					adjdqs_req <= sys_sti(0);
+				end if;
 			end if;
 		end process;
 
@@ -300,8 +306,8 @@ begin
 			sti => sys_sti(0),
 			sto => sys_sto(0),
 			smp => smp(1),
-			req => adjdqs_req,
-			rdy => adjdqs_rdy);
+			req => adjsto_req,
+			rdy => adjsto_rdy);
 
 		clk_n  <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto

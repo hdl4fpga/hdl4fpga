@@ -2,23 +2,35 @@ onerror {resume}
 quietly virtual signal -install /testbench { /testbench/dq(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_wlreq
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_wlreq
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/req
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sti
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sel
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/inc
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sto
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/smp
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/sync
-add wave -noupdate /testbench/clk_p(0)
+add wave -noupdate -expand /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/smp
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/dqs_clk
+add wave -noupdate /testbench/clk_p(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/sys_clk0
 add wave -noupdate /testbench/ml509_e/ddr2_dqi(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_dqiod_ce(0)
 add wave -noupdate /testbench/ml509_e/ddrphy_dqiod_inc(0)
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/din
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
 add wave -noupdate /testbench/ml509_e/ddr2_dqs_g(0)/dqsidelay_i/prcs_refclk/TapCount_var
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_e/rdy
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_e/req
 add wave -noupdate /testbench/dqs(0)
 add wave -noupdate /testbench/ml509_e/ddrs_clk0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_ce
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_clk
-add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_inc
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_rst
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/rdy
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/iod_inc
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/req
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp0
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(7)/ddrdqphy_i/dqso_b/adjdqs_e/smp1
@@ -27,6 +39,7 @@ add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sti
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dmt
 add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sto
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_rdy
 add wave -noupdate -divider dqi
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_dqsibuf
 add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/iddron_g/adjdqi_e/sys_clk0
@@ -100,14 +113,13 @@ add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer(0)
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_pgm_e/t
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {5652744 ps} 0} {{Cursor 3} {5681251 ps} 0} {{Cursor 4} {5698332 ps} 0} {{Cursor 5} {5792516 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 132
+WaveRestoreCursors {{Cursor 4} {5457500 ps} 0} {{Cursor 3} {5980231 ps} 0} {{Cursor 4} {6230655 ps} 0} {{Cursor 5} {9832500 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 189
 configure wave -valuecolwidth 103
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -121,4 +133,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {5076461 ps} {6446477 ps}
+WaveRestoreZoom {5966848 ps} {6026448 ps}

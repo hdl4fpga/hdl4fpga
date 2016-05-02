@@ -284,6 +284,7 @@ architecture virtex of ddrphy is
 	signal dqiod_ce  : byte_vector(word_size/byte_size-1 downto 0);
 	signal dqiod_inc : byte_vector(word_size/byte_size-1 downto 0);
 	signal wlrdy : std_logic_vector(ddr_dqsi'range);
+	signal wlcal : std_logic_vector(ddr_dqsi'range);
 
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
@@ -340,7 +341,7 @@ begin
 		aux := '1';
 		if rising_edge(sys_iod_clk) then
 			for i in wlrdy'range loop
-				aux := aux and wlrdy(i);
+				aux := aux and wlcal(i);
 			end loop;
 			sys_wlcal <= aux;
 		end if;
@@ -363,6 +364,7 @@ begin
 			sys_clk90 => sys_clk90,
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
+			sys_wlcal  => wlcal(i),
 
 			sys_sti => ssti(i),
 			sys_dmt => sdmt(i),

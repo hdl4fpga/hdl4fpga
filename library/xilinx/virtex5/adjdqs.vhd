@@ -23,6 +23,7 @@ architecture def of adjdqs is
 	constant pp : std_logic :='1';
 begin
 
+	smp0 <= smp;
 	process (iod_clk)
 		variable q : std_logic;
 	begin
@@ -32,7 +33,7 @@ begin
 	end process;
 
 	process (iod_clk)
-		variable ce  : unsigned(0 to 3-1);
+		variable ce : unsigned(0 to 3-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then

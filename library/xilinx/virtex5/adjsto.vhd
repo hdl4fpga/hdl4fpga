@@ -58,6 +58,8 @@ begin
 					else
 						ry <= '1';
 					end if;
+				else
+					ce := ce + 1;
 				end if;
 			end if;
 		end if;
