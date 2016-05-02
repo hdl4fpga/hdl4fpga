@@ -61,7 +61,6 @@ entity ddrdqphy is
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
-		ddr_sto  : out std_logic;
 		ddr_dqsi : in  std_logic;
 		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
@@ -258,19 +257,6 @@ begin
 			q   => ddr_dmo);
 	end block;
 
-	sto_i : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk0,
-		d   => sys_sti(0),
-		q   => ddr_sto);
-
---	sto_i : entity hdl4fpga.ddro
---	port map (
---		clk => sys_clk90,
---		dr  => sys_sti(0),
---		df  => sys_sti(1),
---		q   => ddr_sto);
---
 	dqso_b : block 
 		signal clk_n : std_logic;
 		signal smp : std_logic_vector(2-1 downto 0);
@@ -300,12 +286,22 @@ begin
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			sys_clk0 => sys_clk0,
-			smp => smp(1),
+			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
 			iod_clk => sys_iod_clk,
 			iod_ce  => dqsiod_ce,
 			iod_inc => dqsiod_inc);
+
+		adjsto_e : entity hdl4fpga.adjsto
+		port map (
+			sys_clk0 => sys_clk0,
+			iod_clk => sys_iod_clk,
+			sti => sys_sti(0),
+			sto => sys_sto(0),
+			smp => smp(1),
+			req => adjdqs_req,
+			rdy => adjdqs_rdy);
 
 		clk_n  <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto

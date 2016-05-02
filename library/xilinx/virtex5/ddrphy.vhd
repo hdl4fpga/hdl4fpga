@@ -90,9 +90,6 @@ entity ddrphy is
 		ddr_b   : out std_logic_vector(bank_size-1 downto 0);
 		ddr_a   : out std_logic_vector(addr_size-1 downto 0);
 
-		ddr_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		ddr_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
-
 		ddr_dm  : inout  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(word_size-1 downto 0);
 		ddr_dqi  : in  std_logic_vector(word_size-1 downto 0);
@@ -391,7 +388,6 @@ begin
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
-			ddr_sto  => ddr_sto(i),
 
 			ddr_dmt  => ddmt(i),
 			ddr_dmo  => ddmo(i),
@@ -414,19 +410,6 @@ begin
 
 	sys_dqiod_ce  <= to_stdlogicvector(dqiod_ce);
 	sys_dqiod_inc <= to_stdlogicvector(dqiod_inc);
-
-	process(ddr_dm, ddr_sti)
-	begin
-		for i in 0 to word_size/byte_size-1 loop
-			for j in 0 to data_gear-1 loop
-				if loopback then
-					sys_sto(data_gear*i+j) <= ddr_sti(i);
-				else
-					sys_sto(data_gear*i+j) <= ddr_dm(i);
-				end if;
-			end loop;
-		end loop;
-	end process;
 
 	ddr_dqt <= to_stdlogicvector(ddqt);
 	ddr_dqo <= to_stdlogicvector(ddqo);
