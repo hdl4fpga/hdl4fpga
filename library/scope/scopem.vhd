@@ -61,9 +61,11 @@ entity scope is
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
 		ddrs_ini : out std_logic;
-		ddr_wlreq : out std_logic;
-		ddr_wlrdy : in  std_logic := '-';
-		ddr_wlcal : in  std_logic := '-';
+		ddrs_wlreq : out std_logic;
+		ddrs_wlrdy : in  std_logic := '-';
+		ddrs_wlcal : in  std_logic := '-';
+		ddrs_phyini : in std_logic;
+		ddrs_phyrw : in std_logic;
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
@@ -531,40 +533,7 @@ begin
 	ddrs_pre <= ddr_pre;
 	
 	ddr_wlreq <= ddr_ini;
-	process (ddrs_clks(0))
-	begin
-		if rising_edge(ddrs_clks(0)) then
-			if ddrs_rst='1' then
-				xdr_ini <= '0';
-				rw  <= '0';
-				cmd_req <= '0';
-				cal <= '0';
-			elsif ddr_ini='1' then
-				if cmd_req='1' then
-					if ddr_cmd_rdy='0' then
-						if rw='0' then 
-							cmd_req <= '0';
-						elsif ddr_wlrdy='1' then
-							cmd_req <= '0';
-						elsif ddr_wlcal='1' then
-							cal <='1';
-						end if;
-					end if;
-				elsif ddr_cmd_rdy='1' then
-					if rw='0' then 
-						cmd_req <= '1';
-					else
-						xdr_ini <= '1';
-					end if;
-					rw <= '1';
-				end if;
-			elsif ddr_cmd_rdy='1' then
-				cmd_req <= '1';
-			end if;
-		end if;
-
-	end process;
-	ddr_rw <= ddrs_rw when xdr_ini='1' else rw;
+	ddr_rw <= ddrs_rw when ddrs_phyini='1' else ddrs_phyrw;
 	ddr_cmd_req <= ddrs_cmd_req when xdr_ini='1' else cmd_req;
 
 	ddr_e : entity hdl4fpga.xdr

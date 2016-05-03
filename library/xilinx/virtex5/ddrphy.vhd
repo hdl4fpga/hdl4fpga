@@ -46,6 +46,12 @@ entity ddrphy is
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
+		sys_ini : in  std_logic;
+		phy_ini : out std_logic;
+		phy_cmd_rdy : in  std_logic;
+		phy_cmd_req : out std_logic;
+		phy_rw : out std_logic;
+
 		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
 		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);
@@ -283,13 +289,20 @@ architecture virtex of ddrphy is
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
 	signal dqiod_ce  : byte_vector(word_size/byte_size-1 downto 0);
 	signal dqiod_inc : byte_vector(word_size/byte_size-1 downto 0);
-	signal wlrdy : std_logic_vector(ddr_dqsi'range);
-	signal wlcal : std_logic_vector(ddr_dqsi'range);
+	signal byte_wlrdy : std_logic_vector(ddr_dqsi'range);
+	signal byte_wlcal : std_logic_vector(ddr_dqsi'range);
 
 	signal dqrst : std_logic;
 	signal ph : std_logic_vector(0 to 6-1);
 	
-	signal dqsiod_taps : tapsw_vector(word_size/byte_size-1 downto 0);
+	signal phy_ba : std_logic_vector(sys_b'range);
+	signal phy_a  : std_logic_vector(sys_a'range);
+
+	signal ini : std_logic;
+	signal rw  : std_logic;
+	signal cmd_req : std_logic;
+	signal wlrdy : std_logic;
+
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
@@ -299,6 +312,43 @@ begin
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
 	end generate;
+
+	phy_ini <= ini;
+	phy_ba  <= sys_b  when ini='1' else (others => '0');
+	phy_a   <= sys_a  when ini='1' else (others => '0');
+	phy_rw  <= rw;
+	
+	process (sys_iod_clk)
+	begin
+		if rising_edge(sys_iod_clk) then
+			if phy_rst='1' then
+				ini <= '0';
+				rw  <= '0';
+				cmd_req <= '0';
+			elsif sys_ini='1' then
+				if cmd_req='1' then
+					if phy_cmd_rdy='0' then
+						if rw='0' then 
+							cmd_req <= '0';
+						elsif wlrdy='1' then
+							cmd_req <= '0';
+						end if;
+					end if;
+				elsif phy_cmd_rdy='1' then
+					if rw='0' then 
+						cmd_req <= '1';
+					else
+						ini <= '1';
+					end if;
+					rw <= '1';
+				end if;
+			elsif phy_cmd_rdy='1' then
+				cmd_req <= '1';
+			end if;
+		end if;
+
+	end process;
+	phy_cmd_req <= cmd_req;
 
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
@@ -340,10 +390,22 @@ begin
 	begin
 		aux := '1';
 		if rising_edge(sys_iod_clk) then
-			for i in wlrdy'range loop
-				aux := aux and wlcal(i);
+			for i in byte_wlcal'range loop
+				aux := aux and byte_wlcal(i);
 			end loop;
 			sys_wlcal <= aux;
+		end if;
+	end process;
+
+	process (sys_iod_clk)
+		variable aux : std_logic;
+	begin
+		aux := '1';
+		if rising_edge(sys_iod_clk) then
+			for i in byte_wlrdy'range loop
+				aux := aux and byte_wlrdy(i);
+			end loop;
+			wlrdy <= aux;
 		end if;
 	end process;
 
@@ -363,8 +425,8 @@ begin
 			sys_clk0  => sys_clk0,
 			sys_clk90 => sys_clk90,
 			sys_wlreq  => sys_wlreq,
-			sys_wlrdy  => wlrdy(i),
-			sys_wlcal  => wlcal(i),
+			sys_wlrdy  => byte_wlrdy(i),
+			sys_wlcal  => byte_wlcal(i),
 
 			sys_sti => ssti(i),
 			sys_dmt => sdmt(i),

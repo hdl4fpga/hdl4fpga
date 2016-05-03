@@ -25,7 +25,7 @@ architecture def of adjsto is
 begin
 
 	process (sys_clk0)
-		variable cnt : unsigned(2**3-1 downto 0);
+		variable cnt : unsigned(3-1 downto 0);
 	begin
 		if rising_edge(sys_clk0) then
 			if st='1' then
@@ -33,8 +33,8 @@ begin
 					cnt := cnt + 1;
 				end if;
 			else
-				inc <= cnt(0);
-				cnt := ('0', others => '1');
+				inc <= not cnt(cnt'left);
+				cnt := (0 => '0', others => '0');
 			end if;
 			st  <= word2byte(dly & sti, sel)(0);
 			dly <= dly(dly'left-1 downto 1) & sti;
