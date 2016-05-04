@@ -26,6 +26,7 @@ begin
 
 	process (sys_clk0)
 		variable cnt : unsigned(3-1 downto 0);
+		variable aux : std_logic_vector(0 to 0);
 	begin
 		if rising_edge(sys_clk0) then
 			if st='1' then
@@ -36,7 +37,8 @@ begin
 				inc <= not cnt(cnt'left);
 				cnt := (0 => '0', others => '0');
 			end if;
-			st  <= word2byte(dly & sti, sel)(0);
+			aux := word2byte(dly & sti, sel);
+			st  <= aux(0);
 			dly <= dly(dly'left-1 downto 1) & sti;
 		end if;
 	end process;

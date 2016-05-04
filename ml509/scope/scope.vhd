@@ -99,9 +99,13 @@ architecture scope of ml509 is
 	signal ddr_sti : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_sto : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
+	signal ddrphy_ini : std_logic;
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
 	signal ddrphy_wlcal : std_logic;
+	signal ddrphy_rw : std_logic;
+	signal ddrphy_cmd_req : std_logic;
+	signal ddrphy_cmd_rdy : std_logic;
 	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -238,9 +242,13 @@ begin
 		ddrs_cl  => "101",
 		ddrs_rtt => "11",
 		ddr_cke  => ddrphy_cke(0),
-		ddr_wlreq => ddrphy_wlreq,
-		ddr_wlrdy => ddrphy_wlrdy,
-		ddr_wlcal => ddrphy_wlcal,
+		ddrs_wlreq => ddrphy_wlreq,
+		ddrs_wlrdy => ddrphy_wlrdy,
+		ddrs_wlcal => ddrphy_wlcal,
+		ddrs_phyini => ddrphy_ini,
+		ddrs_phyrw => ddrphy_rw,
+		ddrs_phycmd_req => ddrphy_cmd_req,
+		ddrs_cmd_rdy => ddrphy_cmd_rdy,
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -308,6 +316,10 @@ begin
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
 		sys_wlcal => ddrphy_wlcal,
+		phy_ini => ddrphy_ini,
+		phy_rw => ddrphy_rw,
+		phy_cmd_rdy => ddrphy_cmd_rdy,
+		phy_cmd_req => ddrphy_cmd_req,
 		sys_dqsi => open,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
@@ -414,10 +426,11 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
-		bufio_i : bufio
-		port map (
-			i => dqsi_buf(i),
-			o => ddr2_dqsi(i));
+			ddr2_dqsi(i) <= dqsi_buf(i);
+--		bufio_i : bufio
+--		port map (
+--			i => dqsi_buf(i),
+--			o => ddr2_dqsi(i));
 
 	end generate;
 

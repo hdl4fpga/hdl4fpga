@@ -46,7 +46,6 @@ entity ddrphy is
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
-		sys_ini : in  std_logic;
 		phy_ini : out std_logic;
 		phy_cmd_rdy : in  std_logic;
 		phy_cmd_req : out std_logic;
@@ -302,6 +301,7 @@ architecture virtex of ddrphy is
 	signal rw  : std_logic;
 	signal cmd_req : std_logic;
 	signal wlrdy : std_logic;
+	signal lvl : std_logic;
 
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
@@ -314,8 +314,8 @@ begin
 	end generate;
 
 	phy_ini <= ini;
-	phy_ba  <= sys_b  when ini='1' else (others => '0');
-	phy_a   <= sys_a  when ini='1' else (others => '0');
+	phy_ba  <= sys_b  when lvl='0' else (others => '0');
+	phy_a   <= sys_a  when lvl='0' else (others => '0');
 	phy_rw  <= rw;
 	
 	process (sys_iod_clk)
@@ -325,7 +325,7 @@ begin
 				ini <= '0';
 				rw  <= '0';
 				cmd_req <= '0';
-			elsif sys_ini='1' then
+			elsif sys_wlreq='1' then
 				if cmd_req='1' then
 					if phy_cmd_rdy='0' then
 						if rw='0' then 
@@ -345,6 +345,7 @@ begin
 			elsif phy_cmd_rdy='1' then
 				cmd_req <= '1';
 			end if;
+			lvl <= sys_wlreq and not wlrdy;
 		end if;
 
 	end process;
@@ -360,8 +361,8 @@ begin
           
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
-		sys_b   => sys_b,
-		sys_a   => sys_a,
+		sys_b   => phy_ba, --sys_b,
+		sys_a   => phy_a, --sys_a,
 		sys_ras => sys_ras,
 		sys_cas => sys_cas,
 		sys_we  => sys_we,
@@ -393,7 +394,7 @@ begin
 			for i in byte_wlcal'range loop
 				aux := aux and byte_wlcal(i);
 			end loop;
-			sys_wlcal <= aux;
+			sys_wlcal <= aux and not wlrdy;
 		end if;
 	end process;
 

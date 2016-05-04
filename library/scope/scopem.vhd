@@ -66,6 +66,8 @@ entity scope is
 		ddrs_wlcal : in  std_logic := '-';
 		ddrs_phyini : in std_logic;
 		ddrs_phyrw : in std_logic;
+		ddrs_phycmd_req : in std_logic;
+		ddrs_cmd_rdy : out std_logic;
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
@@ -136,23 +138,12 @@ architecture def of scope is
 	signal ddr_lp_clk : std_logic;
 
 	signal ddr_ini : std_logic;
-	signal xdr_ini : std_logic;
 	signal ddr_cmd_req : std_logic;
-	signal ddr_cmd_rdy : std_logic;
-	signal ddr_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
-	signal xdr_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
-	signal ddr_act : std_logic;
-	signal xdr_cas : std_logic;
-	signal ddr_pre : std_logic;
 	signal ddr_rw  : std_logic;
-	signal ddr_di_rdy : std_logic;
-	signal ddr_di_req : std_logic;
-	signal ddr_do_rdy : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-
 
 	signal ddrs_ref_req : std_logic;
 	signal ddrs_cmd_req : std_logic;
-	signal ddrs_cmd_rdy : std_logic;
+	signal ddr_cmd_rdy : std_logic;
 	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
 	signal ddrs_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddrs_rowa  : std_logic_vector(0 to DDR_ADDRSIZE-1);
@@ -161,7 +152,6 @@ architecture def of scope is
 	signal ddrs_cas : std_logic;
 	signal ddrs_pre : std_logic;
 	signal ddrs_rw  : std_logic;
-	signal ddrs_wlreq : std_logic;
 
 	signal ddrs_di_rdy : std_logic;
 	signal ddrs_di_req : std_logic;
@@ -212,9 +202,6 @@ architecture def of scope is
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
 
-	signal rw : std_logic;
-	signal cmd_req : std_logic;
-	signal cal : std_logic;
 begin
 
 
@@ -232,7 +219,7 @@ begin
 --		end if;
 --	end process;
 
-	input_req <= xdr_ini and not input_rdy;
+	input_req <= ddrs_phyini and not input_rdy;
 	process (input_rst, input_clk)
 		constant n : natural := 15;
 		variable r : unsigned(0 to n);
@@ -332,7 +319,7 @@ begin
 
 	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
 
-	dataio_rst <= not xdr_ini;
+	dataio_rst <= not ddrs_phyini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE => PAGE_SIZE,
@@ -357,7 +344,7 @@ begin
 		ddrs_clk  => ddrs_clks(0),
 		ddrs_rreq => ddrs_ref_req,
 		ddrs_creq => ddrs_cmd_req,
-		ddrs_crdy => ddrs_cmd_rdy,
+		ddrs_crdy => ddr_cmd_rdy,
 		ddrs_bnka => ddrs_ba,
 		ddrs_rowa => ddrs_rowa,
 		ddrs_cola => ddrs_cola,
@@ -366,7 +353,7 @@ begin
 		ddrs_cas => ddrs_cas,
 		ddrs_pre => ddrs_pre,
 
-		ddrs_di_rdy => ddr_di_rdy,
+		ddrs_di_rdy => ddrs_di_rdy,
 		ddrs_di_req => ddrs_di_req,
 		ddrs_di => ddrs_di,
 		ddrs_do_rdy => ddrs_do_rdy(0),
@@ -490,10 +477,10 @@ begin
 		end if;
 	end process;
 
-	tpo(0) <= ddr_sti(0); --ddr_wlrdy; --xdr_ini; --miidma_rreq;
+	tpo(0) <= ddr_sti(0); --ddr_wlrdy; --ddrs_phyini; --miidma_rreq;
 	tpo(1) <= ddr_rw; --miidma_rrdy;
-	tpo(2) <= ddr_cmd_rdy; --miirx_udprdy;
-	tpo(3) <= xdr_ini; --miirx_udprdy;
+--	tpo(2) <= ddr_cmd_rdy; --miirx_udprdy;
+	tpo(3) <= ddrs_phyini; --miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
@@ -521,21 +508,13 @@ begin
 		end if;
 	end process;
 
-	ddrs_ini <= xdr_ini;
-	ddr_ba  <= ddrs_ba when xdr_ini='1' else (others => '0');
-	xdr_a   <= ddrs_a  when xdr_ini='1' else (others => '0');
-	ddrs_di_rdy <= ddr_di_rdy when xdr_ini='1' else ddr_di_req;
-	ddrs_di_req <= ddr_di_req  when xdr_ini='1' else '0';
-	ddrs_do_rdy <= ddr_do_rdy  when xdr_ini='1' else (others => '0');
-	ddrs_cmd_rdy <= ddr_cmd_rdy  when xdr_ini='1' else '0';
-	ddrs_act <= ddr_act;
-	ddrs_cas <= xdr_cas;
-	ddrs_pre <= ddr_pre;
+	ddrs_ini <= ddrs_phyini;
 	
-	ddr_wlreq <= ddr_ini;
+	ddrs_wlreq <= ddr_ini;
 	ddr_rw <= ddrs_rw when ddrs_phyini='1' else ddrs_phyrw;
-	ddr_cmd_req <= ddrs_cmd_req when xdr_ini='1' else cmd_req;
+	ddr_cmd_req <= ddrs_cmd_req when ddrs_phyini='1' else ddrs_phycmd_req;
 
+	ddrs_cmd_rdy <= ddr_cmd_rdy;
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		fpga => fpga,
@@ -564,18 +543,18 @@ begin
 		sys_cmd_req => ddr_cmd_req,
 		sys_cmd_rdy => ddr_cmd_rdy,
 		sys_wlreq => open, --ddr_wlreq,
-		sys_wlrdy => ddr_wlrdy,
-		sys_wlcal => cal,
-		sys_b   => ddr_ba,
-		sys_a   => xdr_a,
+		sys_wlrdy => ddrs_wlrdy,
+		sys_wlcal => ddrs_wlcal,
+		sys_b   => ddrs_ba,
+		sys_a   => ddrs_a,
 		sys_rw  => ddr_rw,
-		sys_act => ddr_act,
-		sys_cas => xdr_cas,
-		sys_pre => ddr_pre,
+		sys_act => ddrs_act,
+		sys_cas => ddrs_cas,
+		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
-		sys_di_req => ddr_di_req,
+		sys_di_req => ddrs_di_req,
 		sys_di  => ddrs_di,
-		sys_do_rdy => ddr_do_rdy,
+		sys_do_rdy => ddrs_do_rdy,
 		sys_do  => ddrs_do,
 
 		sys_ref => ddrs_ref_req,

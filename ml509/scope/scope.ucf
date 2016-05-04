@@ -107,7 +107,7 @@ NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 #NET video_clk     TNM_NET = FFS  FFS_videoclk;
 #NET video_clk     TNM_NET = RAMS RAMS_videoclk;
 
-TIMESPEC TS_xdr_ini = FROM FFS (scope_e/xdr_ini) TIG;
+#TIMESPEC TS_xdr_ini = FROM FFS (scope_e/xdr_ini) TIG;
 
 TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 #TIMESPEC TS_r2o_ddr2ddr1 = FROM RAMS_ddrsclk0 TO FFS_ddrsclk0  3.333 ns;
