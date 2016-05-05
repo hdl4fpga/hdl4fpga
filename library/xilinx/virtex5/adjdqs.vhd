@@ -32,17 +32,17 @@ begin
 		end if;
 	end process;
 
-	process (iod_clk)
+	process (iod_clk,req)
 		variable ce : unsigned(0 to 3-1);
 	begin
-		if rising_edge(iod_clk) then
 			if req='0' then
 				sync <= '0';
 				ce := (others => '0');
 				iod_inc <= '0';
 				iod_ce  <= '0';
 				rdy <= '0';
-			elsif sync='0' then
+		elsif rising_edge(iod_clk) then
+			if sync='0' then
 				if smp0=('0' xor pp) then
 					if smp1=('1' xor pp) then
 						sync  <= '1';

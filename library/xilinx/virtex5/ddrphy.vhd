@@ -350,6 +350,7 @@ begin
 
 	end process;
 	phy_cmd_req <= cmd_req;
+	sys_wlrdy <= wlrdy;
 
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (

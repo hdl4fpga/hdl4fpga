@@ -218,7 +218,6 @@ begin
 --	ddrs_di <= aux2;
 
 	input_rdy <= capture_rdy;
-	ddrs_rw   <= capture_rdy;
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
@@ -257,6 +256,14 @@ begin
 			end if;
 		end process;
 
+		process (ddrs_clk)
+		begin
+			if rising_edge(ddrs_clk) then
+				if ddrs_crdy='1' then
+					ddrs_rw  <= capture_rdy;
+				end if;
+			end if;
+		end process;
 --		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
 --		ddrios_c <= mux (
 --			i => 
@@ -304,14 +311,13 @@ begin
 		process (ddrs_clk, qo(ddr_clnmsize))
 			variable q : std_logic;
 		begin
-			ddrs_creq <= q;
 			if qo(ddr_clnmsize)='1' then
-				q := '0';
+				ddrs_creq <= '0';
 			elsif rising_edge(ddrs_clk) then
 				if creq='1' then
-					q := '0';
+					ddrs_creq <= '0';
 				elsif crdy='1' then
-					q := '1';
+					ddrs_creq <= '1';
 				end if;
 			end if;
 		end process;

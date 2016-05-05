@@ -65,7 +65,7 @@ TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
 #NET "ddr_sti*"      MAXDELAY = 1.000 ns;
 #NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
 #NET "ddrphy_dqi*"    MAXDELAY = 1.000 ns;
-NET "dqsi_buf[*]"    MAXDELAY = 0.100 ns;
+#NET "dqsi_buf[*]"    MAXDELAY = 0.100 ns;
 
 
 

@@ -21,15 +21,9 @@ architecture def of adjdqi is
 	signal smp1 : std_logic;
 	signal sync : std_logic;
 	signal edge : std_logic;
-	signal clk_n : std_logic;
 begin
 
-	clk_n <= not sys_clk0;
-	ff_e : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk0,
-		d => din,
-		q => smp0);
+	smp0 <= din;
 
 	process (iod_clk)
 	begin

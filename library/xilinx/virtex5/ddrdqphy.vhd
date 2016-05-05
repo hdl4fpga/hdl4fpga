@@ -111,9 +111,12 @@ begin
 	end process;
 	sys_wlcal <= adjsto_req;
 	sys_wlrdy <= wlrdy;
-	wlrdy <= adjsto_rdy;
+	wlrdy <= adjdqs_rdy;
 	sys_tp <= tp;
 
+	tp(0) <= adjdqs_rdy;
+	tp(1) <= adjdqs_req;
+	tp(2) <= adjsto_rdy;
 	iddr_g : for i in ddr_dqi'range generate
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
@@ -136,29 +139,11 @@ begin
 			sys_dqi(0*byte_size+i) <= q(0);
 			sys_dqi(1*byte_size+i) <= q(1);
 		
-			deb : if i=0 generate
-				process (ddr_dqi(i),adjdqi_req)
-					variable q : unsigned(4 downto 0);
-				begin
-					if adjdqi_req='0' then
-						q := (others =>'0');
-						tp(0) <= q(0);
-						tp(1) <= '0';
-					elsif rising_edge(ddr_dqi(i)) then
-						if q(0)='0' then
-							q := q + 1;
-						end if;
-						tp(1) <= '1';
-						tp(q'range) <= std_logic_vector(q);
-					end if;
-				end process;
-			end generate;
-
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
 			port map (
 				sys_clk0 => sys_clk0,
-				din => ddr_dqi(i),
+				din => q(0), --ddr_dqi(i),
 				req => adjdqi_req,
 				rdy => adjdqi_rdy(i),
 				tp => open,-- tp(i),
@@ -274,7 +259,7 @@ begin
 		port map (
 			c  => sys_clk0,
 			ce => '1',
-			d  => ddr_dqsi,
+			d  => sys_dqsibuf,
 			q1 => smp(0),
 			q2 => smp(1));
 

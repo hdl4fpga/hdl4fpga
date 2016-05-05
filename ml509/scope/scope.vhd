@@ -187,7 +187,19 @@ begin
 		I => user_clk,
 		O => sys_clk);
 
-	ictlr_rst <= gpio_sw_c;
+	process (gpio_sw_c, ictlr_clk)
+		variable tmr : unsigned(0 to 8-1);
+	begin
+		if gpio_sw_c='1' then
+			tmr := (others => '0');
+		elsif rising_edge(ictlr_clk) then
+			if tmr(0)='0' then
+				tmr := tmr + 1;
+			end if;
+		end if;
+		ictlr_rst <= not tmr(0);
+	end process;
+
 	idelayctrl_i : idelayctrl
 	port map (
 		rst => ictlr_rst,
@@ -426,11 +438,10 @@ begin
 			i   => dqsi,
 			o   => dqsi_buf(i));
 
-			ddr2_dqsi(i) <= dqsi_buf(i);
---		bufio_i : bufio
---		port map (
---			i => dqsi_buf(i),
---			o => ddr2_dqsi(i));
+		bufio_i : bufio
+		port map (
+			i => dqsi_buf(i),
+			o => ddr2_dqsi(i));
 
 	end generate;
 
@@ -459,12 +470,12 @@ begin
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= "000" & tp1(4 downto 0);
-	gpio_led_s <= tp1(1); --mii_txen; --'0';
+	gpio_led <= "00" & ictlr_rst  & idelay_rst  & ddrphy_ini & tp1(2 downto 0);
+	gpio_led_s <= '0';
 	gpio_led_w <= tpo(2);
 	gpio_led_c <= tpo(1);
 	gpio_led_e <= tpo(0);
-	gpio_led_n <= tp1(0);
+	gpio_led_n <= '0';
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
