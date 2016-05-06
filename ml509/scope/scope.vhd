@@ -168,6 +168,7 @@ architecture scope of ml509 is
 	signal ictlr_clk_ibufg : std_logic;
 	signal idelay_rst : std_logic;
 	signal ictlr_rst : std_logic;
+	signal tp2 : std_logic_vector(8-1 downto 0);
 begin
 		
 		
@@ -468,13 +469,17 @@ begin
 	dvi_de <= 'Z';
 	dvi_d <= (others => 'Z');
 
+	xxx : for i in 0 to 8-1 generate
+		tp2(i) <= tp1(i*8+4);
+	end generate;
+
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= "00" & ictlr_rst  & idelay_rst  & ddrphy_ini & tp1(2 downto 0);
+	gpio_led <= tp2;
 	gpio_led_s <= '0';
-	gpio_led_w <= tpo(2);
-	gpio_led_c <= tpo(1);
-	gpio_led_e <= tpo(0);
+	gpio_led_w <= '0';
+	gpio_led_c <= ddrphy_wlrdy;
+	gpio_led_e <= ddrphy_ini;
 	gpio_led_n <= '0';
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';

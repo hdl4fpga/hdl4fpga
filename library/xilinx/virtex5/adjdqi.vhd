@@ -33,7 +33,7 @@ begin
 	end process;
 
 	iod_inc <= not edge;
-	tp <= edge;
+--	tp <= sync;
 	process (iod_clk)
 		variable ce : unsigned(0 to 4-1);
 	begin
@@ -41,7 +41,7 @@ begin
 			if req='0' then
 				edge <= '0';
 				sync <= '0';
-				ce := ('0',  others => '1');
+				ce := (others => '0');
 				iod_ce <= '0';
 				rdy <= '0';
 			elsif sync='0' then
@@ -55,9 +55,10 @@ begin
 				end if;
 				iod_ce <= not ce(0);
 			elsif ce(0)='0' then
-				ce := ce - 1;
+				ce := ce + 1;
 				iod_ce <= not ce(0);
 				rdy <= ce(0);
+				tp <= ce(0);
 			end if;
 		end if;
 	end process;
