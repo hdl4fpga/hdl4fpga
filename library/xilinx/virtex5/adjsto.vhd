@@ -22,23 +22,32 @@ architecture def of adjsto is
 	signal sel : std_logic_vector(2-1 downto 0);
 	signal dly : std_logic_vector(2*sel'length-1 downto 1);
 	signal ry : std_logic;
+	signal st_d : std_logic_vector(0 to 0);
+	signal st_req : std_logic;
+	signal start : std_logic;
 begin
 
-	process (sys_clk0)
-		variable cnt : unsigned(3-1 downto 0);
-		variable aux : std_logic_vector(0 to 0);
+	st_d <= word2byte(reverse(dly & sti), sel);
+	process (st_req, sys_clk0)
+		variable cnt : unsigned(0 to 3-1);
 	begin
-		if rising_edge(sys_clk0) then
+		if st_req='0' then
+			cnt := (others => '0');
+			inc <= '0';
+			start <= '0';
+		elsif rising_edge(sys_clk0) then
+			if sti='0' then
+				start <= '1';
+			end if;
 			if st='1' then
 				if smp='1'  then
 					cnt := cnt + 1;
 				end if;
 			else
-				inc <= not cnt(cnt'left);
-				cnt := (0 => '0', others => '0');
+				inc <= not cnt(0);
+				cnt := (others => '0');
 			end if;
-			aux := word2byte(dly & sti, sel);
-			st  <= aux(0);
+			st  <= st_d(0);
 			dly <= dly(dly'left-1 downto 1) & sti;
 		end if;
 	end process;
@@ -52,16 +61,19 @@ begin
 				ry  <= '0';
 				ce  := (others => '0');
 				sel <= (others => '0');
+				st_req <= '0';
 			elsif ry='0' then 
-				if ce(0)='1' then
-					if inc='1' then
-						ce  := (others => '0');
-						sel <= std_logic_vector(unsigned(sel)+1);
+				if start='1' then
+					if ce(0)='1' then
+						if inc='1' then
+							ce  := (others => '0');
+							sel <= std_logic_vector(unsigned(sel)+1);
+						else
+							ry <= '1';
+						end if;
 					else
-						ry <= '1';
+						ce := ce + 1;
 					end if;
-				else
-					ce := ce + 1;
 				end if;
 			end if;
 		end if;

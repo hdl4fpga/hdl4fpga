@@ -38,19 +38,18 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(15) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(14) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(13) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(12) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(11) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(10) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(9) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(8) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(7) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(6) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(5) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(4) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(3) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(2) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(1) -radix hexadecimal} {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(0) -radix hexadecimal}} -subitemconfig {/testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(15) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(14) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(13) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(12) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(11) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(10) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(9) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(8) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(7) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(6) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(5) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(4) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(3) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(2) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(1) {-height 16 -radix hexadecimal} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di(0) {-height 16 -radix hexadecimal}} /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/di
 add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/sys_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/apll_q
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/ser_ena(0)
-add wave -noupdate -radix hexadecimal /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(1)/data_phases_g(0)/inbyte_i/phases_g(0)/aser_q
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/lat_timer(0)
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_rdy
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cen
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_mpu_cmd
-add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/xdr_mpu_e/xdr_state
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/pll_clk
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/pll_ena
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/pll_req
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/ser_ar
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/ser_clk
+add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/rdfifo_i/bytes_g(7)/data_phases_g(0)/inbyte_i/ser_ena
+add wave -noupdate /testbench/ml509_e/ddrphy_sti
+add wave -noupdate /testbench/ml509_e/ddrphy_sto
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sti
+add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_sto
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {5236427 ps} 0} {{Cursor 3} {5980231 ps} 0} {{Cursor 4} {6230655 ps} 0} {{Cursor 5} {9832500 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6188354 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 189
 configure wave -valuecolwidth 103
@@ -66,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {1015 ns} {7315 ns}
+WaveRestoreZoom {0 ps} {8400 ns}

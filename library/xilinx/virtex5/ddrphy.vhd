@@ -449,6 +449,7 @@ begin
 			sys_dqsiod_inc => sys_dqsiod_inc(i), 
 			sys_dqsibuf => sys_dqsibuf(i),
 			sys_tp => sys_tp((i+1)*byte_size-1 downto i*byte_size),
+			sys_sto => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 
 			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqi  => ddqi(i),

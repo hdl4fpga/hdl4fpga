@@ -92,6 +92,7 @@ architecture virtex of ddrdqphy is
 
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
+	signal smp : std_logic_vector(2-1 downto 0);
 begin
 
 	sys_iod_rst    <= adjdqs_req;
@@ -111,12 +112,14 @@ begin
 	end process;
 	sys_wlcal <= adjsto_req;
 	sys_wlrdy <= wlrdy;
-	wlrdy <= adjsto_rdy;
+	wlrdy <= '0'; --adjsto_rdy;
 	sys_tp <= tp;
 
 	tp(0) <= adjdqs_req;
 	tp(1) <= adjdqs_rdy;
 	tp(2) <= adjsto_rdy;
+	tp(5) <= adjsto_req;
+	tp(6) <= smp(1);
 	iddr_g : for i in ddr_dqi'range generate
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
@@ -137,10 +140,10 @@ begin
 				q1 => q(0),
 				q2 => q(1));
 
-			debug_g : if i=0 generate
+			debug_g : if i=4 generate
 				tp(3) <= q(0);
 				tp(4) <= q(1);
-				tp(5) <= adjdqi_rdy(i);
+--				tp(5) <= adjdqi_rdy(i);
 			end generate;
 
 			sys_dqi(0*byte_size+i) <= q(0);
@@ -256,8 +259,8 @@ begin
 
 	dqso_b : block 
 		signal clk_n : std_logic;
-		signal smp : std_logic_vector(2-1 downto 0);
 		signal dqs_clk : std_logic;
+		signal sto : std_logic;
 	begin
 
 		iddr_i : iddr
@@ -296,10 +299,11 @@ begin
 			sys_clk0 => sys_clk0,
 			iod_clk => sys_iod_clk,
 			sti => sys_sti(0),
-			sto => sys_sto(0),
+			sto => sto,
 			smp => smp(1),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
+		sys_sto <= (others => sto);
 
 		clk_n  <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto

@@ -33,7 +33,7 @@ begin
 	end process;
 
 	process (iod_clk)
-		variable ce : unsigned(0 to 3-1);
+		variable ce : unsigned(0 to 2-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
@@ -46,23 +46,20 @@ begin
 				if smp0=('0' xor pp) then
 					if smp1=('1' xor pp) then
 						sync  <= '1';
-						ce(0) := '1';
 						iod_inc <= '1';
 					else
-						ce(0) := '1';
 						iod_inc <= '0';
 					end if;
 				else 
-					ce(0) := '1';
 					iod_inc <= '0';
 				end if;
-				iod_ce  <= ce(0);
-			else
-				ce(0) := '0';
-				iod_ce <= ce(ce'right);
-				rdy <= not ce(ce'right);
+				iod_ce <= not ce(0);
+				rdy <= ce(0);
+			elsif ce(0)='0' then
+				ce :=  ce + 1;
+				iod_ce <= not ce(0);
+				rdy <= ce(0);
 			end if;
-			ce  := ce srl 1;
 		end if;
 	end process;
 	iod_rst <= not req;
