@@ -2,6 +2,22 @@ onerror {resume}
 quietly virtual signal -install /testbench { /testbench/dq(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider testbench
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/dly
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/finish
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/inc
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/iod_clk
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/rdy
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/req
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sel
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/smp
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/st
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/start
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sti
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sto
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sys_clk0
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__28/cnt
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__28/d
+add wave -noupdate /testbench/ml509_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__62/ce
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/ml509_e/scope_e/ddr_e/sys_ini
 add wave -noupdate /testbench/ml509_e/ddrphy_e/sys_wlreq

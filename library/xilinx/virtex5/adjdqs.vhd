@@ -20,7 +20,7 @@ architecture def of adjdqs is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
 	signal sync : std_logic;
-	constant pp : std_logic :='1';
+	constant pp : std_logic :='0';
 begin
 
 	smp0 <= smp;
@@ -33,32 +33,29 @@ begin
 	end process;
 
 	process (iod_clk)
-		variable ce : unsigned(0 to 2-1);
+		variable ce : unsigned(0 to 3-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
 				sync <= '0';
 				ce := (others => '0');
-				iod_inc <= '0';
 				iod_ce  <= '0';
 				rdy <= '0';
+				iod_inc <= '0';
 			elsif sync='0' then
 				if smp0=('0' xor pp) then
 					if smp1=('1' xor pp) then
 						sync  <= '1';
-						iod_inc <= '1';
-					else
-						iod_inc <= '0';
 					end if;
-				else 
-					iod_inc <= '0';
 				end if;
 				iod_ce <= not ce(0);
 				rdy <= ce(0);
+				iod_inc <= '0';
 			elsif ce(0)='0' then
 				ce :=  ce + 1;
 				iod_ce <= not ce(0);
 				rdy <= ce(0);
+				iod_inc <= '0';
 			end if;
 		end if;
 	end process;

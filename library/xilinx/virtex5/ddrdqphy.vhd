@@ -119,7 +119,6 @@ begin
 	tp(1) <= adjdqs_rdy;
 	tp(2) <= adjsto_rdy;
 	tp(5) <= adjsto_req;
-	tp(6) <= smp(1);
 	iddr_g : for i in ddr_dqi'range generate
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
@@ -263,6 +262,7 @@ begin
 		signal sto : std_logic;
 	begin
 
+		tp(6) <= smp(1);
 		iddr_i : iddr
 		generic map (
 			DDR_CLK_EDGE => "SAME_EDGE")
