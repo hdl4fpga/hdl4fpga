@@ -20,7 +20,7 @@ architecture def of adjdqs is
 	signal smp0 : std_logic;
 	signal smp1 : std_logic;
 	signal sync : std_logic;
-	constant pp : std_logic :='0';
+	constant pp : std_logic :='1';
 begin
 
 	smp0 <= smp;

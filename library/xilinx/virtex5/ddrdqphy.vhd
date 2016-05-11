@@ -139,14 +139,13 @@ begin
 				q1 => q(0),
 				q2 => q(1));
 
-			debug_g : if i=4 generate
-				tp(3) <= q(0);
-				tp(4) <= q(1);
---				tp(5) <= adjdqi_rdy(i);
-			end generate;
-
 			sys_dqi(0*byte_size+i) <= q(0);
 			sys_dqi(1*byte_size+i) <= q(1);
+			process (sys_clk0)
+			begin
+				if rising_edge(sys_clk0) then
+				end if;
+			end process;
 		
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
@@ -300,7 +299,7 @@ begin
 			iod_clk => sys_iod_clk,
 			sti => sys_sti(0),
 			sto => sto,
-			smp => smp(1),
+			smp => smp(0),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 		sys_sto <= (others => sto);

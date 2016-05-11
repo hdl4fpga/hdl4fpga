@@ -45,9 +45,9 @@ begin
 			d := word2byte(reverse(dly & sti), sel);
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & sti;
+			sto <= st;
 		end if;
 	end process;
-	sto <= st;
 
 	process (req, sys_clk0)
 	begin
