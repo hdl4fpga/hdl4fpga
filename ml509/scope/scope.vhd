@@ -470,7 +470,7 @@ begin
 	dvi_d <= (others => 'Z');
 
 	xxx : for i in 0 to 8-1 generate
-		tp2(i) <= tp1(i*8+2) when gpio_sw_e='1' else tp1(i*8+6) ;
+		tp2(i) <= tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
 	end generate;
 
 	dvi_gpio1 <= '1';

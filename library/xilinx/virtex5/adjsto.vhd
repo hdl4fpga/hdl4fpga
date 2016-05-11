@@ -20,7 +20,7 @@ architecture def of adjsto is
 	signal st  : std_logic;
 	signal inc : std_logic;
 	signal sel : std_logic_vector(2-1 downto 0);
-	signal dly : std_logic_vector(2*sel'length-1 downto 1);
+	signal dly : std_logic_vector(2**sel'length-1 downto 1);
 	signal start : std_logic;
 	signal finish : std_logic;
 begin

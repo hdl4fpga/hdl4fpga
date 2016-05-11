@@ -112,10 +112,10 @@ begin
 	end process;
 	sys_wlcal <= adjsto_req;
 	sys_wlrdy <= wlrdy;
-	wlrdy <= '0'; --adjsto_rdy;
+	wlrdy <= adjsto_rdy;
 	sys_tp <= tp;
 
-	tp(0) <= adjdqs_req;
+	tp(0) <= smp(0);
 	tp(1) <= adjdqs_rdy;
 	tp(2) <= adjsto_rdy;
 	tp(5) <= adjsto_req;
