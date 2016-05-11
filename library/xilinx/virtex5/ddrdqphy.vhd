@@ -111,8 +111,8 @@ begin
 		end if;
 	end process;
 	sys_wlcal <= adjsto_req;
-	sys_wlrdy <= wlrdy;
-	wlrdy <= adjsto_rdy;
+	sys_wlrdy <= '0'; --wlrdy;
+	wlrdy <= '0'; --adjsto_rdy;
 	sys_tp <= tp;
 
 	tp(0) <= smp(0);
@@ -141,11 +141,6 @@ begin
 
 			sys_dqi(0*byte_size+i) <= q(0);
 			sys_dqi(1*byte_size+i) <= q(1);
-			process (sys_clk0)
-			begin
-				if rising_edge(sys_clk0) then
-				end if;
-			end process;
 		
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi

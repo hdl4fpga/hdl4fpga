@@ -313,10 +313,16 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	phy_ini <= ini;
+	process (sys_clk0)
+	begin
+		if rising_edge(sys_clk0) then
+			phy_ini <= ini;
+			phy_rw  <= rw;
+			sys_wlrdy <= wlrdy;
+		end if;
+	end process;
 	phy_ba  <= sys_b  when lvl='0' else (others => '0');
 	phy_a   <= sys_a  when lvl='0' else (others => '0');
-	phy_rw  <= rw;
 	
 	process (sys_iod_clk)
 	begin
@@ -350,7 +356,6 @@ begin
 
 	end process;
 	phy_cmd_req <= cmd_req;
-	sys_wlrdy <= wlrdy;
 
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
