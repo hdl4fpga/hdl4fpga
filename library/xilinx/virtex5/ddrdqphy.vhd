@@ -111,8 +111,8 @@ begin
 		end if;
 	end process;
 	sys_wlcal <= adjsto_req;
-	sys_wlrdy <= '0'; --wlrdy;
-	wlrdy <= '0'; --adjsto_rdy;
+	sys_wlrdy <= wlrdy;
+	wlrdy <= adjsto_rdy;
 	sys_tp <= tp;
 
 	tp(0) <= smp(0);

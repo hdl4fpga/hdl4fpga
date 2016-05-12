@@ -300,6 +300,7 @@ architecture virtex of ddrphy is
 	signal ini : std_logic;
 	signal rw  : std_logic;
 	signal cmd_req : std_logic;
+	signal cmd_rdy : std_logic;
 	signal wlrdy : std_logic;
 	signal lvl : std_logic;
 
@@ -319,10 +320,13 @@ begin
 			phy_ini <= ini;
 			phy_rw  <= rw;
 			sys_wlrdy <= wlrdy;
+			phy_cmd_req <= cmd_req;
+			cmd_rdy <= phy_cmd_rdy;
 		end if;
 	end process;
-	phy_ba  <= sys_b  when lvl='0' else (others => '0');
-	phy_a   <= sys_a  when lvl='0' else (others => '0');
+
+	phy_ba  <= sys_b when lvl='0' else (others => '0');
+	phy_a   <= sys_a when lvl='0' else (others => '0');
 	
 	process (sys_iod_clk)
 	begin
@@ -331,31 +335,40 @@ begin
 				ini <= '0';
 				rw  <= '0';
 				cmd_req <= '0';
-			elsif sys_wlreq='1' then
-				if cmd_req='1' then
-					if phy_cmd_rdy='0' then
-						if rw='0' then 
-							cmd_req <= '0';
-						elsif wlrdy='1' then
-							cmd_req <= '0';
+				lvl  <= '0';
+			elsif ini='0' then
+				if sys_wlreq='1' then
+					if cmd_req='1' then
+						if cmd_rdy='0' then
+							if rw='0' then 
+								cmd_req <= '0';
+							elsif wlrdy='1' then
+								cmd_req <= '0';
+							end if;
 						end if;
+					elsif cmd_rdy='1' then
+						if rw='0' then 
+							cmd_req <= '1';
+						else
+							ini <= '1';
+						end if;
+						rw <= '1';
 					end if;
-				elsif phy_cmd_rdy='1' then
-					if rw='0' then 
-						cmd_req <= '1';
-					else
-						ini <= '1';
-					end if;
-					rw <= '1';
+					lvl <= '1';
+				elsif cmd_rdy='1' then
+					cmd_req <= '1';
+					lvl <= '0';
+				else
+					cmd_req <= '0';
+					lvl <= '0';
 				end if;
-			elsif phy_cmd_rdy='1' then
-				cmd_req <= '1';
+			else
+				cmd_req <= '0';
+				lvl <= '1';
 			end if;
-			lvl <= sys_wlreq and not wlrdy;
 		end if;
 
 	end process;
-	phy_cmd_req <= cmd_req;
 
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (

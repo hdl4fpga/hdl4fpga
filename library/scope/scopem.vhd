@@ -477,10 +477,9 @@ begin
 		end if;
 	end process;
 
-	tpo(0) <= ddr_sti(0); --ddr_wlrdy; --ddrs_phyini; --miidma_rreq;
-	tpo(1) <= ddr_rw; --miidma_rrdy;
---	tpo(2) <= ddr_cmd_rdy; --miirx_udprdy;
-	tpo(3) <= ddrs_phyini; --miirx_udprdy;
+	tpo(0) <= input_rdy; --miidma_rreq;
+	tpo(1) <= miidma_rrdy;
+	tpo(3) <= miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
@@ -497,14 +496,17 @@ begin
 
 	process (mii_rxc)
 		variable edge : std_logic;
+		variable a : std_logic := '0';
 	begin
 		if rising_edge(mii_rxc) then
 			if miirx_udprdy='1' then
 				if edge='0' then
 					pkt_cntr <= std_logic_vector(unsigned(pkt_cntr) + 1);
+					a := '1';
 				end if;
 			end if;
 			edge := miirx_udprdy;
+			tpo(2) <= a;
 		end if;
 	end process;
 

@@ -476,11 +476,11 @@ begin
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= tp2;
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
+	gpio_led_s <= tpo(0);
+	gpio_led_w <= ddrphy_wlcal;
 	gpio_led_c <= ddrphy_wlrdy;
-	gpio_led_e <= ddrphy_ini;
-	gpio_led_n <= '0';
+	gpio_led_e <= tpo(2);
+	gpio_led_n <= ddrphy_ini;
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
