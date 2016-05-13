@@ -34,6 +34,7 @@ entity miirx_mac is
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
 
+		tpo : out std_logic;
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic);
 end;
@@ -46,6 +47,20 @@ architecture def of miirx_mac is
 	signal dtxd  : std_logic_vector(mii_rxd'range);
 begin
 
+	process (mii_rxc)
+		variable a : std_logic := '0';
+		variable edge : std_logic;
+	begin
+		if rising_edge(mii_rxc) then
+			if dtreq='1' then
+				if edge='0' then
+					a := not a;
+				end if;
+			end if;
+			edge := dtreq;
+			tpo <= a;
+		end if;
+	end process;
 	miitx_pre_e : entity hdl4fpga.miirx_pre
 	port map (
 		mii_rxc  => mii_rxc,

@@ -93,6 +93,7 @@ int main (int argc, char *argv[])
 	}
 
 	for (i = 0; i < npkt; i++) {
+		while(1)
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			abort ();

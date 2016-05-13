@@ -377,7 +377,7 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
-	mii_rxc <= not phy_rxclk;
+	mii_rxc <=  not phy_rxclk;
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
@@ -479,7 +479,7 @@ begin
 	gpio_led_s <= tpo(0);
 	gpio_led_w <= ddrphy_wlcal;
 	gpio_led_c <= ddrphy_wlrdy;
-	gpio_led_e <= tpo(2);
+	gpio_led_e <= tpo(3);
 	gpio_led_n <= ddrphy_ini;
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';

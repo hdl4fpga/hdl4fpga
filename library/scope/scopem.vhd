@@ -374,6 +374,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
+		tpo => tpo(3),
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
 
@@ -479,7 +480,6 @@ begin
 
 	tpo(0) <= input_rdy; --miidma_rreq;
 	tpo(1) <= miidma_rrdy;
-	tpo(3) <= miirx_udprdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
@@ -502,8 +502,8 @@ begin
 			if miirx_udprdy='1' then
 				if edge='0' then
 					pkt_cntr <= std_logic_vector(unsigned(pkt_cntr) + 1);
-					a := '1';
 				end if;
+				a := not a ;
 			end if;
 			edge := miirx_udprdy;
 			tpo(2) <= a;
