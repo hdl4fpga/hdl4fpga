@@ -59,7 +59,7 @@ NET "ddr2_dqs_p[7]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "phy_rxclk" TNM_NET = phy_rxclk;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk" 8 ns HIGH 50%;
-#OFFSET = IN 0 ns VALID 8 ns BEFORE  phy_rxclk RISING;
+OFFSET = IN 10 ns VALID 10 ns BEFORE  phy_rxclk RISING;
 #NET "ddrphy_dqsi*"  MAXSKEW  = 0.300 ns;
 #NET "ddrphy_dqsi*"  MAXDELAY = 1.000 ns;
 #NET "ddr_sti*"      MAXSKEW  = 0.250 ns;

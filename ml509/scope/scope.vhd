@@ -377,7 +377,7 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
-	mii_rxc <=  not phy_rxclk;
+	mii_rxc <= phy_rxclk;
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
