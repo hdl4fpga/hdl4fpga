@@ -73,7 +73,7 @@ architecture scope of ml509 is
 	signal ddr2_clk  : std_logic_vector(2-1 downto 0);
 
 	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
+	signal tpo : std_logic_vector(0 to 8-1) := (others  => 'Z');
 	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
@@ -298,6 +298,7 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue,
+		tpi => gpio_sw_s,
 		tpo => tpo);
 
 
@@ -377,7 +378,11 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
-	mii_rxc <= phy_rxclk;
+	phy_rxclk_bufg_i : BUFG
+	port map (
+		i => phy_rxclk,
+		o => mii_rxc);
+
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 8)
@@ -470,16 +475,16 @@ begin
 	dvi_d <= (others => 'Z');
 
 	xxx : for i in 0 to 8-1 generate
-		tp2(i) <= tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
+		tp2(i) <= tpo(i) when gpio_sw_w='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
 	end generate;
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
 	gpio_led <= tp2;
-	gpio_led_s <= tpo(0);
+	gpio_led_s <= '0';
 	gpio_led_w <= ddrphy_wlcal;
 	gpio_led_c <= ddrphy_wlrdy;
-	gpio_led_e <= tpo(3);
+	gpio_led_e <= '0';
 	gpio_led_n <= ddrphy_ini;
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';

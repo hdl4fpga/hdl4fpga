@@ -48,6 +48,7 @@ entity scope is
 		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
+		tpi : std_logic;
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
@@ -108,7 +109,7 @@ entity scope is
 		vga_green : out std_logic_vector(8-1 downto 0);
 		vga_blue  : out std_logic_vector(8-1 downto 0);
 
-		tpo : out std_logic_vector(0 to 4-1) := (others  => 'Z'));
+		tpo : out std_logic_vector(0 to 8-1) := (others  => 'Z'));
 end;
 
 library hdl4fpga;
@@ -370,11 +371,12 @@ begin
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
+		tpi => tpi,
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		tpo => tpo(3),
+		tpo => tpo,
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
 
@@ -478,8 +480,8 @@ begin
 		end if;
 	end process;
 
-	tpo(0) <= input_rdy; --miidma_rreq;
-	tpo(1) <= miidma_rrdy;
+--	tpo(0) <= input_rdy; --miidma_rreq;
+--	tpo(1) <= miidma_rrdy;
 	mii_txen <= miitx_ena;
 	process (mii_txc)
 		variable edge : std_logic;
@@ -506,7 +508,7 @@ begin
 				a := not a ;
 			end if;
 			edge := miirx_udprdy;
-			tpo(2) <= a;
+		--	tpo(2) <= a;
 		end if;
 	end process;
 

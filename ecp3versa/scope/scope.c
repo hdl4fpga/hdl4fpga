@@ -93,16 +93,12 @@ int main (int argc, char *argv[])
 	}
 
 	for (i = 0; i < npkt; i++) {
-		while(1)
-		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
-			perror ("sendto()");
-			abort ();
-		}
-
 		do {
-			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
-				perror ("recvfrom");
-				abort ();
+			if ((n = recvfrom(s, sb_src, sizeof(sb_src), MSG_DONTWAIT, (struct sockaddr *) &sa_src, &sl_src)) <= 0) {
+				if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
+					perror ("sendto()");
+					abort ();
+				}
 			}
 		} while(htonl(sa_src.sin_addr.s_addr) != 0xc0a802c8);
 

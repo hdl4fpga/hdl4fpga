@@ -292,7 +292,7 @@ begin
 			std_logic_vector(
 				to_signed(0, DDR_BANKSIZE+1) &
 				to_signed(0, DDR_ADDRSIZE+1) & 
-				to_signed(1, DDR_CLNMSIZE+1));
+				to_signed(7, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

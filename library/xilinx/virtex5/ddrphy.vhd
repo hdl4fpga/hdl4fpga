@@ -364,7 +364,7 @@ begin
 				end if;
 			else
 				cmd_req <= '0';
-				lvl <= '1';
+				lvl <= '0';
 			end if;
 		end if;
 

@@ -60,10 +60,10 @@ begin
 			elsif prdy='0' then
 				for i in mii_rxd'length/nbb'length-1 downto 0 loop
 					nbb := std_logic_vector(rxd(nbb'range));
-					if nbb=reverse(x"5") then
+					if nbb=x"a" then
 						prdy := '0';
 						txen <= '0';
-					elsif nbb=reverse(x"d") and i=0 then
+					elsif nbb=x"b" and i=0 then
 						prdy := '1';
 						txen <= '1';
 						exit;
