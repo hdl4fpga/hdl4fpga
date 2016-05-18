@@ -65,7 +65,7 @@ OFFSET = IN 8 ns VALID 8 ns BEFORE  phy_rxclk RISING;
 #NET "ddr_sti*"      MAXSKEW  = 0.250 ns;
 #NET "ddr_sti*"      MAXDELAY = 1.000 ns;
 #NET "ddr2_dqi*"     MAXSKEW  = 0.300 ns;
-#NET "ddrphy_dqi*"    MAXDELAY = 1.000 ns;
+NET "ddrphy_dqi*"    MAXDELAY = 1.000 ns;
 #NET "dqsi_buf[*]"    MAXDELAY = 0.100 ns;
 
 
