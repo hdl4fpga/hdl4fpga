@@ -294,7 +294,7 @@ begin
 			iod_clk => sys_iod_clk,
 			sti => sys_sti(0),
 			sto => sto,
-			smp => smp(0),
+			smp => smp(1),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 		sys_sto <= (others => sto);
