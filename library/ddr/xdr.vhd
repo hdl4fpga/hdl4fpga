@@ -60,7 +60,7 @@ entity xdr is
 		sys_ini  : out std_logic;
 		sys_wlrdy : in  std_logic := '-';
 		sys_wlreq : out std_logic;
-		sys_wlcal : in  std_logic;
+		sys_wlcal : in  std_logic := '0';
 
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;

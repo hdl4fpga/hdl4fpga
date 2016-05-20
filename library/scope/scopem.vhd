@@ -49,6 +49,7 @@ entity scope is
 
 	port (
 		tpi : std_logic;
+		tpii : std_logic;
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
@@ -117,6 +118,7 @@ use hdl4fpga.std.all;
 --use hdl4fpga.cgafont.all;
 
 architecture def of scope is
+	signal tpoo : std_logic_vector(0 to 8-1);
 	signal video_don : std_logic;
 	signal video_frm : std_logic;
 	signal video_ena : std_logic;
@@ -376,7 +378,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		tpo => tpo,
+		tpo => tpoo,
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
 
@@ -483,6 +485,7 @@ begin
 --	tpo(0) <= input_rdy; --miidma_rreq;
 --	tpo(1) <= miidma_rrdy;
 	mii_txen <= miitx_ena;
+	tpo <= tpoo when tpii='1' else tpkt_cntr;
 	process (mii_txc)
 		variable edge : std_logic;
 	begin

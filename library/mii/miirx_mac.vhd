@@ -34,7 +34,7 @@ entity miirx_mac is
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
 
-		tpi : in std_logic;
+		tpi : in std_logic := '0';
 		tpo : out std_logic_vector(8-1 downto 0);
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic);
@@ -53,8 +53,13 @@ begin
 		if rising_edge(mii_rxc) then
 			if tpi='1' then
 				tpo <= (others => '0');
-			elsif (dtrdy and txen)='1' then
-				tpo <= (others => '1');
+			else
+				if dtreq='1' then
+					tpo(4 downto 0) <= (others => '1');
+				end if;
+				if (dtrdy and txen)='1' then
+					tpo(8-1 downto 5) <= (others => '1');
+				end if;
 			end if;
 		end if;
 	end process;

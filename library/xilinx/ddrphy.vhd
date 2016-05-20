@@ -310,7 +310,6 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			iddron => iddron,
 			registered_dout => registered_dout,
 			loopback => loopback,
 			gear => data_gear,

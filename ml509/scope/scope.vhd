@@ -299,6 +299,7 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue,
 		tpi => gpio_sw_s,
+		tpii => gpio_sw_n,
 		tpo => tpo);
 
 
@@ -378,10 +379,7 @@ begin
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
-	phy_rxclk_bufg_i : BUFG
-	port map (
-		i => phy_rxclk,
-		o => mii_rxc);
+	mii_rxc <= not phy_rxclk;
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
