@@ -48,8 +48,7 @@ entity scope is
 		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
-		tpi : std_logic;
-		tpii : std_logic;
+		tpi : std_logic_vector(0 to 1);
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
@@ -373,11 +372,11 @@ begin
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
-		tpi => tpi,
+		tpi(0) => tpi(0),
+		tpi(1) => tpi(1),
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-
 		tpo => tpoo,
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
@@ -485,7 +484,7 @@ begin
 --	tpo(0) <= input_rdy; --miidma_rreq;
 --	tpo(1) <= miidma_rrdy;
 	mii_txen <= miitx_ena;
-	tpo <= tpoo when tpii='1' else tpkt_cntr;
+	tpo <= tpoo;
 	process (mii_txc)
 		variable edge : std_logic;
 	begin

@@ -298,8 +298,8 @@ begin
 		vga_red   => vga_red,
 		vga_green => vga_green,
 		vga_blue  => vga_blue,
-		tpi => gpio_sw_s,
-		tpii => gpio_sw_n,
+		tpi(0) => gpio_sw_s,
+		tpi(1) => gpio_sw_n,
 		tpo => tpo);
 
 
@@ -473,7 +473,7 @@ begin
 	dvi_d <= (others => 'Z');
 
 	xxx : for i in 0 to 8-1 generate
-		tp2(i) <= tpo(i) when gpio_sw_w='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
+		tp2(i) <= tpo(i); -- when gpio_sw_w='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
 	end generate;
 
 	dvi_gpio1 <= '1';

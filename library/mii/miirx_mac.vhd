@@ -34,7 +34,7 @@ entity miirx_mac is
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
 
-		tpi : in std_logic := '0';
+		tpi : in std_logic_vector(0 to 1);
 		tpo : out std_logic_vector(8-1 downto 0);
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic);
@@ -46,30 +46,36 @@ architecture def of miirx_mac is
 	signal dtrdy : std_logic;
 	signal dtxen : std_logic;
 	signal dtxd  : std_logic_vector(mii_rxd'range);
+	signal tpo1 : std_logic_vector(8-1 downto 0);
+	signal tpo2 : std_logic_vector(8-1 downto 0);
+	signal tp1 : std_logic;
 begin
 
 	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
-			if tpi='1' then
-				tpo <= (others => '0');
+			if tpi(0)='1' then
+				tpo1 <= (others => '0');
 			else
 				if dtreq='1' then
-					tpo(4 downto 0) <= (others => '1');
+					tpo1(4 downto 0) <= (others => '1');
 				end if;
-				if (dtrdy and txen)='1' then
-					tpo(8-1 downto 5) <= (others => '1');
+				if tp1='1' then
+					tpo1(8-1 downto 5) <= (others => tp1);
 				end if;
 			end if;
 		end if;
 	end process;
+	tpo <= tpo2 when tpi(1)='1' else tpo1;
 
-	miitx_pre_e : entity hdl4fpga.miirx_pre
+	miirx_pre_e : entity hdl4fpga.miirx_pre
 	port map (
 		mii_rxc  => mii_rxc,
         mii_rxdv => mii_rxdv,
         mii_rxd  => mii_rxd,
-
+		tpi => tpi(0),
+		tp1 => tp1,
+		tp => tpo2,
 		mii_txen => dtreq);
 
 	miitx_dst_e : entity hdl4fpga.miitx_mem

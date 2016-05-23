@@ -139,8 +139,8 @@ begin
 				q1 => q(0),
 				q2 => q(1));
 
-			sys_dqi(0*byte_size+i) <= q(0);
-			sys_dqi(1*byte_size+i) <= q(1);
+			sys_dqi(0*byte_size+i) <= q(1);
+			sys_dqi(1*byte_size+i) <= q(0);
 		
 			adjdqi_req <= adjdqs_rdy;
 			adjdqi_e : entity hdl4fpga.adjdqi
