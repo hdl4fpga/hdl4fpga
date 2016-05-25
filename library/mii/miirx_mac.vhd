@@ -34,7 +34,7 @@ entity miirx_mac is
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
 
-		tpi : in std_logic_vector(0 to 1);
+		tpi : in std_logic_vector(0 to 1) := (others => '-');
 		tpo : out std_logic_vector(8-1 downto 0);
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic);

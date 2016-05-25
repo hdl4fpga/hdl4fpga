@@ -104,7 +104,7 @@ entity scope is
 		vga_green : out std_logic_vector(8-1 downto 0);
 		vga_blue  : out std_logic_vector(8-1 downto 0);
 
-		tpo : out std_logic_vector(0 to 4-1) := (others  => 'Z'));
+		tpo : out std_logic_vector(0 to 8-1) := (others  => 'Z'));
 end;
 
 library hdl4fpga;

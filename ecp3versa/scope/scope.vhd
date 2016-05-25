@@ -58,7 +58,7 @@ architecture scope of ecp3versa is
 	signal input_clk : std_logic;
 
 	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
+	signal tpo : std_logic_vector(0 to 8-1) := (others  => 'Z');
 
 	signal sto : std_logic;
 	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
