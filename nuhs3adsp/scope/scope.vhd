@@ -70,7 +70,7 @@ architecture scope of nuhs3adsp is
 	signal ddr_clk : std_logic_vector(0 downto 0);
 
 	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
+	signal tpo : std_logic_vector(0 to 8-1) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
