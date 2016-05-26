@@ -42,6 +42,7 @@ entity dataio is
 		input_req : in std_logic;
 		input_rdy : out std_logic;
 		input_dat : in std_logic_vector;
+		tp : out std_logic;
 
 		video_clk : in  std_logic;
 		video_ena : in  std_logic;
@@ -130,6 +131,7 @@ begin
 		output_req => ddrs_di_req,
 --		output_dat => ddrs_di
 		output_dat => output_dat);
+		tp <= datai_brst_req;
 
 --		ddrs_di <= x"76_54_32_10";
 --	process (ddrs_clk)
@@ -290,9 +292,9 @@ begin
 --				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 --				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			std_logic_vector(
-				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) &
-				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
-				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+				to_signed(0, DDR_BANKSIZE+1) &
+				to_signed(0, DDR_ADDRSIZE+1) & 
+				to_signed(1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

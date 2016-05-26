@@ -32,7 +32,7 @@ entity datai is
 		input_clk : in std_logic;
 		input_dat : in std_logic_vector;
 		input_req : in std_logic;
-		input_rdy : out std_logic;
+		input_rdy : out std_logic := '0';
 
 		output_clk  : in std_logic;
 		output_rdy  : out std_logic;

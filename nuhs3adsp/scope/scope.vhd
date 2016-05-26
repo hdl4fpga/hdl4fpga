@@ -390,7 +390,19 @@ begin
 	-- LEDs DAC --
 	--------------
 		
-	led18 <= '0';
+	process (mii_txc, sys_rst)
+		variable q : std_logic;
+	begin
+		if sys_rst='1' then
+			q := '0';
+		elsif rising_edge(mii_txc) then
+			if q='0' then
+				q := tpo(0);
+			end if;
+		end if;
+		led18 <= q;
+	end process;
+
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';

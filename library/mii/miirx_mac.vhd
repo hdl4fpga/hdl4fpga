@@ -66,7 +66,7 @@ begin
 			end if;
 		end if;
 	end process;
-	tpo <= tpo2 when tpi(1)='1' else tpo1;
+	tpo <= (others => dtrdy and txen);
 
 	miirx_pre_e : entity hdl4fpga.miirx_pre
 	port map (

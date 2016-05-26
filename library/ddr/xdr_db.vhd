@@ -135,7 +135,7 @@ package xdr_db is
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab := (
-		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_000),
+		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_0),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000),

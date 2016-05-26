@@ -48,7 +48,6 @@ entity scope is
 		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
-		tpi : std_logic_vector(0 to 1) := (others => '-');
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
@@ -61,15 +60,10 @@ entity scope is
 		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_ini : out std_logic;
-		ddrs_cmd_rdy : out std_logic;
-
+		ddrs_ini   : out std_logic;
 		ddr_wlreq : out std_logic;
 		ddr_wlrdy : in  std_logic := '-';
-		ddr_wlcal : in  std_logic := '-';
-		ddr_phyini : in std_logic := '1';
-		ddr_phyrw : in std_logic := '-';
-		ddr_phycmd_req : in std_logic := '0';
+
 
 		ddr_rst : out std_logic;
 		ddr_cke : out std_logic;
@@ -115,10 +109,9 @@ end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.xdr_db.all;
+--use hdl4fpga.cgafont.all;
 
 architecture def of scope is
-	signal tpoo : std_logic_vector(0 to 8-1);
 	signal video_don : std_logic;
 	signal video_frm : std_logic;
 	signal video_ena : std_logic;
@@ -141,13 +134,9 @@ architecture def of scope is
 	signal ddr_lp_clk : std_logic;
 
 	signal ddr_ini : std_logic;
-	signal ini : std_logic;
-	signal ddr_cmd_req : std_logic;
-	signal ddr_rw  : std_logic;
-
 	signal ddrs_ref_req : std_logic;
 	signal ddrs_cmd_req : std_logic;
-	signal cmd_rdy : std_logic;
+	signal ddrs_cmd_rdy : std_logic;
 	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
 	signal ddrs_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddrs_rowa  : std_logic_vector(0 to DDR_ADDRSIZE-1);
@@ -205,10 +194,10 @@ architecture def of scope is
 	signal tpkt_cntr : byte := x"00";
 	signal a0 : std_logic;
 	signal tp : nibble_vector(7 downto 0) := (others => "0000");
-	signal wlreq : std_logic;
 
 begin
 
+	ddrs_ini <= ddr_ini;
 
 --	process (input_clk)
 --		variable sample : unsigned(0 to 15) := (others => '0');
@@ -224,7 +213,7 @@ begin
 --		end if;
 --	end process;
 
-	input_req <= ini and not input_rdy;
+	input_req <= ddr_ini and not input_rdy;
 	process (input_rst, input_clk)
 		constant n : natural := 15;
 		variable r : unsigned(0 to n);
@@ -324,7 +313,7 @@ begin
 
 	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
 
-	dataio_rst <= not ini;
+	dataio_rst <= not ddr_ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE => PAGE_SIZE,
@@ -349,7 +338,7 @@ begin
 		ddrs_clk  => ddrs_clks(0),
 		ddrs_rreq => ddrs_ref_req,
 		ddrs_creq => ddrs_cmd_req,
-		ddrs_crdy => cmd_rdy,
+		ddrs_crdy => ddrs_cmd_rdy,
 		ddrs_bnka => ddrs_ba,
 		ddrs_rowa => ddrs_rowa,
 		ddrs_cola => ddrs_cola,
@@ -375,12 +364,10 @@ begin
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
-		tpi(0) => tpi(0),
-		tpi(1) => tpi(1),
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		tpo => tpoo,
+
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
 
@@ -484,10 +471,10 @@ begin
 		end if;
 	end process;
 
---	tpo(0) <= input_rdy; --miidma_rreq;
---	tpo(1) <= miidma_rrdy;
+	tpo(0) <= miidma_rreq;
+	tpo(1) <= miidma_rrdy;
+	tpo(2) <= miirx_udprdy;
 	mii_txen <= miitx_ena;
-	tpo <= (others => input_req);
 	process (mii_txc)
 		variable edge : std_logic;
 	begin
@@ -503,28 +490,17 @@ begin
 
 	process (mii_rxc)
 		variable edge : std_logic;
-		variable a : std_logic := '0';
 	begin
 		if rising_edge(mii_rxc) then
 			if miirx_udprdy='1' then
 				if edge='0' then
 					pkt_cntr <= std_logic_vector(unsigned(pkt_cntr) + 1);
 				end if;
-				a := not a ;
 			end if;
 			edge := miirx_udprdy;
-		--	tpo(2) <= a;
 		end if;
 	end process;
 
-	ddrs_ini <= ini;
-	ini <= ddr_phyini when fpga=virtex5 else ddr_ini;
-	
-	ddr_wlreq <= ddr_ini when fpga=virtex5 else wlreq;
-	ddr_rw <= ddrs_rw when ddr_phyini='1' else ddr_phyrw;
-	ddr_cmd_req <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
-
-	ddrs_cmd_rdy <= cmd_rdy;
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		fpga => fpga,
@@ -550,14 +526,13 @@ begin
 		sys_clks => ddrs_clks,
 		sys_ini  => ddr_ini,
 
-		sys_cmd_req => ddr_cmd_req,
-		sys_cmd_rdy => cmd_rdy,
-		sys_wlreq => wlreq,
+		sys_cmd_req => ddrs_cmd_req,
+		sys_cmd_rdy => ddrs_cmd_rdy,
+		sys_wlreq => ddr_wlreq,
 		sys_wlrdy => ddr_wlrdy,
-		sys_wlcal => ddr_wlcal,
 		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
-		sys_rw  => ddr_rw,
+		sys_rw  => ddrs_rw,
 		sys_act => ddrs_act,
 		sys_cas => ddrs_cas,
 		sys_pre => ddrs_pre,
@@ -566,7 +541,6 @@ begin
 		sys_di  => ddrs_di,
 		sys_do_rdy => ddrs_do_rdy,
 		sys_do  => ddrs_do,
-
 		sys_ref => ddrs_ref_req,
 
 		xdr_rst => ddr_rst,
