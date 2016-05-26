@@ -517,7 +517,7 @@ begin
 		end if;
 	end process;
 
-	ini <= ddr_phyini and ddr_ini;
+	ini <= ddr_phyini when fpga=virtex5 else ddr_ini;
 	
 	ddr_wlreq <= ddr_ini when fpga=virtex5 else wlreq;
 	ddr_rw <= ddrs_rw when ddr_phyini='1' else ddr_phyrw;
