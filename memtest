@@ -5,8 +5,8 @@ BLOCKS=${2:-65536};
 ./scope $BLOCKS $SIZE > pp1
 i=0
 while cmp pp pp1 > log ; do 
-	./scope $BLOCKS $SIZE > pp1
 	i=`expr $i + 1`
-	echo $i
+	TIMEFORMAT="$i %lR"
+	time ./scope $BLOCKS $SIZE > pp1
 done
 cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a pp|head; echo '-----'; tail -n +$a pp1|head)
