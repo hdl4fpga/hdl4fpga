@@ -66,7 +66,7 @@ entity scope is
 
 		ddr_wlreq : out std_logic;
 		ddr_wlrdy : in  std_logic := '-';
-		ddr_wlcal : in  std_logic := '-';
+		ddr_wlcal : in  std_logic := '0';
 		ddr_phyini : in std_logic := '1';
 		ddr_phyrw : in std_logic := '-';
 		ddr_phycmd_req : in std_logic := '0';
