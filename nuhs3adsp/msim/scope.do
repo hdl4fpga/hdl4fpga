@@ -18,6 +18,8 @@ add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sto
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/input_rdy
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/input_req
+add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sti(0)
+add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sto(0)
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/ddr_cmd_req
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/ddrs_cmd_req
 add wave -noupdate -divider {New Divider}
