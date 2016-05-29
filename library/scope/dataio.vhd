@@ -110,7 +110,6 @@ architecture def of dataio is
 
 	signal output_dat : std_logic_vector(ddrs_di'range);
 	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
-	signal di_rdy : std_logic;
 begin
 
 	process (input_clk)
@@ -181,7 +180,7 @@ begin
 		if rising_edge(ddrs_clk) then
 			if q='1' then
 				s  := (others => '1');
-			elsif di_rdy='1' then
+			elsif ddrs_di_req='1' then
 				aux1 := s(s'right);
 				for i in g'range loop
 					aux  := s(i);
@@ -195,29 +194,7 @@ begin
 --		aux2 <= X"01020304050607080910111213141516";
 	end process;
 
---	ddr_di_rdy_e : entity hdl4fpga.align
---	generic map (
---		n => 2,
---		d => (0 => 1, 1 => 1))
---	port map (
---		clk => ddrs_clk,
---		di(0) => ddrs_di_req,
---		di(1) => di_rdy,
---		do(0) => di_rdy,
---		do(1) => ddrs_di_rdy);
---
---	ddr_di_e : entity hdl4fpga.align
---	generic map (
---		n => ddrs_di'length,
---		d => (0 to ddrs_di'length-1 => 1))
---	port map (
---		clk => ddrs_clk,
---		di => aux2,
---		do => ddrs_di);
-
---	ddrs_di <= X"01020304050607080910111213141516";
 	ddrs_di_rdy <= ddrs_di_req;
-	di_rdy <= ddrs_di_req;
 	ddrs_di <= aux2;
 
 	input_rdy <= capture_rdy;
