@@ -56,11 +56,15 @@ int main (int argc, char *argv[])
 	int i;
 	for(i = 0;; i++) {
 		int k;
-		if (size=128)
-			if (!(scanf("%18llx", ((long long unsigned int *) &datum)+1)) > 0)
+		if (size!=32) {
+			if (size=128)
+				if (!(scanf("%18llx", ((long long unsigned int *) &datum)+1)) > 0)
+					break;
+			if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
 				break;
-		if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
-			break;
+		} else 
+			if (!(scanf("%10llx", (long long unsigned int *) &datum) > 0))
+				break;
 
 		datum &= mask;
 		if (!lfsr)
