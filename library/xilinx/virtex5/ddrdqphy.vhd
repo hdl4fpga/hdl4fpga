@@ -123,7 +123,7 @@ begin
 		port map (
 			c  => dqs_clk,
 			ce => '1',
-			d  => ddr_dqi(i),
+			d  => dqi(i),
 			q1 => q(0),
 			q2 => q(1));
 
