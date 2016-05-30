@@ -30,9 +30,6 @@ use hdl4fpga.std.all;
 
 entity ddrphy is
 	generic (
-		iddron : boolean := false;
-		registered_dout : boolean := true;
-		loopback : boolean;
 		cmd_phases : natural := 1;
 		data_gear : natural := 2;
 		bank_size : natural := 2;
@@ -69,7 +66,6 @@ entity ddrphy is
 
 		sys_dqso : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_tp :  out std_logic_vector(word_size-1 downto 0);
@@ -77,13 +73,7 @@ entity ddrphy is
 		sys_wlreq : in std_logic;
 		sys_wlrdy : out std_logic;
 		sys_wlcal : out std_logic;
-		sys_iod_rst : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_iod_clk : in  std_logic;
-		sys_dqiod_ce  : out std_logic_vector(word_size-1 downto 0);
-		sys_dqiod_inc : out std_logic_vector(word_size-1 downto 0);
-		sys_dqsiod_ce  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_dqsiod_inc : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_dqsibuf : in std_logic_vector(word_size/byte_size-1 downto 0);
+		sysiod_clk : in  std_logic;
 
 		ddr_cs  : out std_logic := '0';
 		ddr_cke : out std_logic := '1';
@@ -328,9 +318,9 @@ begin
 	phy_ba  <= sys_b when lvl='0' else (others => '0');
 	phy_a   <= sys_a when lvl='0' else (others => '0');
 	
-	process (sys_iod_clk)
+	process (sysiod_clk)
 	begin
-		if rising_edge(sys_iod_clk) then
+		if rising_edge(sysiod_clk) then
 			if phy_rst='1' then
 				ini <= '0';
 				rw  <= '0';
@@ -380,8 +370,8 @@ begin
           
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
-		sys_b   => phy_ba, --sys_b,
-		sys_a   => phy_a, --sys_a,
+		sys_b   => phy_ba,
+		sys_a   => phy_a,
 		sys_ras => sys_ras,
 		sys_cas => sys_cas,
 		sys_we  => sys_we,
@@ -405,11 +395,11 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	process (sys_iod_clk)
+	process (sysiod_clk)
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sys_iod_clk) then
+		if rising_edge(sysiod_clk) then
 			for i in byte_wlcal'range loop
 				aux := aux and byte_wlcal(i);
 			end loop;
@@ -417,11 +407,11 @@ begin
 		end if;
 	end process;
 
-	process (sys_iod_clk)
+	process (sysiod_clk)
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sys_iod_clk) then
+		if rising_edge(sysiod_clk) then
 			for i in byte_wlrdy'range loop
 				aux := aux and byte_wlrdy(i);
 			end loop;
@@ -435,9 +425,6 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			iddron => iddron,
-			registered_dout => registered_dout,
-			loopback => loopback,
 			gear => data_gear,
 			byte_size => byte_size)
 		port map (
@@ -459,13 +446,7 @@ begin
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
 
-			sys_iod_rst => sys_iod_rst(i), 
-			sys_iod_clk => sys_iod_clk,
-			sys_dqiod_ce  => dqiod_ce(i), 
-			sys_dqiod_inc => dqiod_inc(i), 
-			sys_dqsiod_ce  => sys_dqsiod_ce(i), 
-			sys_dqsiod_inc => sys_dqsiod_inc(i), 
-			sys_dqsibuf => sys_dqsibuf(i),
+			sysiod_clk => sysiod_clk,
 			sys_tp => sys_tp((i+1)*byte_size-1 downto i*byte_size),
 			sys_sto => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 
@@ -480,21 +461,7 @@ begin
 			ddr_dqst => ddr_dqst(i),
 			ddr_dqso => ddr_dqso(i));
 
-
-		dqs_delayed_e : entity hdl4fpga.pgm_delay
-		port map (
-			xi  => ddr_dqsi(i),
-			x_p => dqsi(0),
-			x_n => dqsi(1));
-			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
-			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
-
---			sys_dqsi(data_gear*i+0) <=     ddr_dqsi(i) after 1 ns;
---			sys_dqsi(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
 	end generate;
-
-	sys_dqiod_ce  <= to_stdlogicvector(dqiod_ce);
-	sys_dqiod_inc <= to_stdlogicvector(dqiod_inc);
 
 	ddr_dqt <= to_stdlogicvector(ddqt);
 	ddr_dqo <= to_stdlogicvector(ddqo);

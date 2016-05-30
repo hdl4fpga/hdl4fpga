@@ -67,7 +67,6 @@ architecture scope of ml509 is
 	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqi  : std_logic_vector(word_size-1 downto 0);
 	signal ddr2_dqo  : std_logic_vector(word_size-1 downto 0);
 	signal ddr2_dqt  : std_logic_vector(word_size-1 downto 0);
 	signal ddr2_clk  : std_logic_vector(2-1 downto 0);
@@ -166,7 +165,6 @@ architecture scope of ml509 is
 		return val;
 	end;
 	signal ictlr_clk_ibufg : std_logic;
-	signal idelay_rst : std_logic;
 	signal ictlr_rst : std_logic;
 	signal tp2 : std_logic_vector(8-1 downto 0);
 begin
@@ -206,8 +204,7 @@ begin
 		rst => ictlr_rst,
 		refclk => ictlr_clk,
 		rdy => ictlr_rdy);
-	idelay_rst <= not ictlr_rdy;
-	sys_rst    <= not ictlr_rdy;
+	sys_rst <= not ictlr_rdy;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -307,8 +304,6 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		iddron => true,
-		LOOPBACK => true,
 		BANK_SIZE => 2,
 		ADDR_SIZE => 13,
 		data_gear => data_gear,
@@ -335,7 +330,6 @@ begin
 		phy_rw => ddrphy_rw,
 		phy_cmd_rdy => ddrphy_cmd_rdy,
 		phy_cmd_req => ddrphy_cmd_req,
-		sys_dqsi => open,
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
 		sys_dmi => ddrphy_dmo,
@@ -347,13 +341,7 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
-		sys_dqsibuf => dqsi_buf,
-		sys_iod_rst => ddrphy_dqsiod_rst,
-		sys_iod_clk => ictlr_clk,
-		sys_dqiod_ce  => ddrphy_dqiod_ce,
-		sys_dqiod_inc => ddrphy_dqiod_inc,
-		sys_dqsiod_ce  => ddrphy_dqsiod_ce,
-		sys_dqsiod_inc => ddrphy_dqsiod_inc,
+		sysiod_clk => ictlr_clk,
 		sys_tp => tp1,
 		ddr_clk => ddr2_clk,
 		ddr_cke => ddr2_cke(0),
@@ -367,7 +355,7 @@ begin
 
 		ddr_dm   => ddr2_dm,
 		ddr_dqo  => ddr2_dqo,
-		ddr_dqi  => ddr2_dqi,
+		ddr_dqi  => ddr2_d,
 		ddr_dqt  => ddr2_dqt,
 		ddr_dqst => ddr2_dqst,
 		ddr_dqsi => ddr2_dqsi,
@@ -398,66 +386,37 @@ begin
 		iob_txd  => phy_txd,
 		iob_gtxclk => phy_txc_gtxclk);
 
-	ddr2_d_g : for i in ddr2_d'range generate
+	iob_b : block
 	begin
-		dqi_i : idelay 
-		generic map (
-			IOBDELAY_VALUE => 63,
-			IOBDELAY_TYPE => "VARIABLE")
-		port map (
-			rst => idelay_rst, --ddrphy_dqsiod_rst(i/(word_size/byte_size)),
-			c   => ictlr_clk,
-			ce  => ddrphy_dqiod_ce(i),
-			inc => ddrphy_dqiod_inc(i),
-			i   => ddr2_d(i),
-			o   => ddr2_dqi(i));
 
-		ddr2_d(i) <= 
-			ddr2_dqo(i) when ddr2_dqt(i)='0' else
-			'Z';
-	end generate;
+		ddr_clks_g : for i in ddr2_clk'range generate
+			ddr_ck_obufds : obufds
+			generic map (
+				iostandard => "DIFF_SSTL18_II")
+			port map (
+				i  => ddr2_clk(i),
+				o  => ddr2_clk_p(i),
+				ob => ddr2_clk_n(i));
+		end generate;
 
-	ddr2_dqs_g : for i in ddr2_dqs_p'range generate
-		signal dqsi : std_logic;
-	begin
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II_DCI")
-		port map (
-			t   => ddr2_dqst(i),
-			i   => ddr2_dqso(i),
-			o   => dqsi,
-			io  => ddr2_dqs_p(i),
-			iob => ddr2_dqs_n(i));
+		ddr_dqs_g : for i in ddr2_dqs_p'range generate
+			dqsiobuf_i : iobufds
+			generic map (
+				iostandard => "DIFF_SSTL18_II_DCI")
+			port map (
+				t   => ddr2_dqst(i),
+				i   => ddr2_dqso(i),
+				o   => ddr2_dqsi(i),
+				io  => ddr2_dqs_p(i),
+				iob => ddr2_dqs_n(i));
 
-		dqsidelay_i : idelay 
-		generic map (
-			IOBDELAY_VALUE => 63,
-			IOBDELAY_TYPE => "VARIABLE")
-		port map (
-			rst => idelay_rst, --ddrphy_dqsiod_rst(i),
-			c   => ictlr_clk,
-			ce  => ddrphy_dqsiod_ce(i),
-			inc => ddrphy_dqsiod_inc(i),
-			i   => dqsi,
-			o   => dqsi_buf(i));
+		end generate;
 
-		bufio_i : bufio
-		port map (
-			i => dqsi_buf(i),
-			o => ddr2_dqsi(i));
+		ddr_d_g : for i in ddr2_d'range generate
+			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
+		end generate;
 
-	end generate;
-
-	ddr_clks_g : for i in ddr2_clk'range generate
-		ddr_ck_obufds : obufds
-		generic map (
-			iostandard => "DIFF_SSTL18_II")
-		port map (
-			i  => ddr2_clk(i),
-			o  => ddr2_clk_p(i),
-			ob => ddr2_clk_n(i));
-	end generate;
+	end block;
 	
 	phy_reset <= not gtx_rst;
 	phy_txer <= '0';
@@ -473,7 +432,7 @@ begin
 	dvi_d <= (others => 'Z');
 
 	xxx : for i in 0 to 8-1 generate
-		tp2(i) <= tpo(i); -- when gpio_sw_w='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
+		tp2(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
 	end generate;
 
 	dvi_gpio1 <= '1';
@@ -482,7 +441,7 @@ begin
 	gpio_led_s <= '0';
 	gpio_led_w <= ddrphy_wlcal;
 	gpio_led_c <= ddrphy_wlrdy;
-	gpio_led_e <= '0';
+	gpio_led_e <= ddrphy_wlreq;
 	gpio_led_n <= ddrphy_ini;
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
