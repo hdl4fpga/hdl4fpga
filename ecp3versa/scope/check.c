@@ -48,23 +48,25 @@ int main (int argc, char *argv[])
 	if (size != 128) 
 		mask = ((1LL << size)-1);
 
-	unsigned __int128 p = 0xC200000000000000;
-	p <<= 64;
-
-	p = (size==128) ? p : (size==64) ? 0x5800000000000000 : 0x23000000;
+	unsigned __int128 p = (size==128) ? (__int128) 0xC200000000000000 << 64 : (size==64)  ? 0x5800000000000000 : 0x23000000;
 
 	int i;
 	for(i = 0;; i++) {
 		int k;
-		if (size!=32) {
-			if (size=128)
-				if (!(scanf("%18llx", ((long long unsigned int *) &datum)+1)) > 0)
+
+		if (!(scanf("%10x", (unsigned int *) &datum) > 0))
+			break;
+		if (size > 32) {
+			*(((unsigned int *) &datum)+1) = *(unsigned int *) &datum;
+			if (!(scanf("%8x", ((unsigned int *) &datum))) > 0)
+				break;
+
+			if (size > 64) {
+				*((long long unsigned int *) &datum+1) = *(long long unsigned int *) &datum;
+				if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
 					break;
-			if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
-				break;
-		} else 
-			if (!(scanf("%10llx", (long long unsigned int *) &datum) > 0))
-				break;
+			}
+		}
 
 		datum &= mask;
 		if (!lfsr)
