@@ -65,9 +65,6 @@ architecture def of dcms is
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
-	signal ictlr_fb : std_logic;
-	signal ictlr_buf : std_logic;
-	signal ictlr_lckd : std_logic;
 begin
 
 	dcm_rst <= sys_rst;
@@ -154,7 +151,7 @@ begin
 		lcks(0) <= input_lckd;
 		lcks(1) <= gtx_lckd;
 		lcks(2) <= video_lckd;
-		lcks(3) <= video_lckd;
+		lcks(3) <= ddr_lckd;
 
 		input_rst <= rsts(0);
 		gtx_rst   <= rsts(1);

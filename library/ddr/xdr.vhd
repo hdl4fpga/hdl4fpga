@@ -73,7 +73,6 @@ entity xdr is
 		sys_do_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_act : out std_logic;
 		sys_cas : out std_logic;
-		sys_pre : out std_logic;
 		sys_dm  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '0');
 		sys_di  : in  std_logic_vector(line_size-1 downto 0);
 		sys_do  : out std_logic_vector(line_size-1 downto 0);
@@ -124,12 +123,9 @@ architecture mix of xdr is
 	signal xdr_init_ras : std_logic;
 	signal xdr_init_cas : std_logic;
 	signal xdr_init_we  : std_logic;
-	signal xdr_init_zqc : std_logic := '1';
 	signal xdr_init_odt : std_logic;
 	signal xdr_init_a   : std_logic_vector(addr_size-1 downto 0);
 	signal xdr_init_b   : std_logic_vector(bank_size-1 downto 0);
-
-	signal dll_timer_rdy : std_logic;
 
 	signal xdr_pgm_cmd : std_logic_vector(0 to 2);
 
@@ -157,11 +153,7 @@ architecture mix of xdr is
 
 	signal xdr_win_dqs : std_logic_vector(xdr_dqsi'range);
 	signal xdr_win_dq  : std_logic_vector(xdr_dqsi'range);
-	signal xdr_wr_fifo_rst : std_logic;
-	signal xdr_wr_fifo_req : std_logic;
-	signal xdr_wr_fifo_ena : std_logic_vector(line_size/word_size-1 downto 0);
 	signal xdr_wr_dm : std_logic_vector(sys_dm'range);
-	signal xdr_wr_dq : std_logic_vector(sys_di'range);
 
 	signal rot_val : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0);
 	signal rot_di : std_logic_vector(sys_di'range);

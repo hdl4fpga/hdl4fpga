@@ -33,7 +33,6 @@ entity miitx_udp is
 		payload_size : natural := 512);
 	port (
 		miidma_rreq : out  std_logic;
-		miidma_rrdy : in std_logic;
 		miidma_rxen : in std_logic;
 		miidma_rxd  : in std_logic_vector;
 
@@ -84,17 +83,14 @@ begin
 			x"0800"         &   -- MAC Protocol ID
 			ipheader_checksumed(
 				x"4500"         &	-- IP  Version, header length, TOS
-	--			x"021c"         &	-- IP  Length
 				to_unsigned(payload_size+28,16) &	-- IP  Length
 				x"0000"         &	-- IP  Identification
 				x"0000"         &	-- IP  Fragmentation
 				x"0511"         &	-- IP  TTL, protocol
---				x"ee61"         &	-- IP  Checksum
 				x"0000"         &	-- IP  Checksum
 				x"c0a802c8"     &	-- IP  Source address
 				x"ffffffff")    &	-- IP  Destination address
 			x"04000400"     &	-- UDP Source port, Destination port
---			x"02080000")	   	-- UDP Length, Checksum
 			to_unsigned(payload_size+8,16) & -- UDP Length,
 			x"0000")	   	-- Checksum
 	port map (
@@ -106,15 +102,6 @@ begin
 		miidma_rreq <= txreq(txpld);
 		txena(txpld) <= miidma_rxen;
 		txdat(txpld) <= miidma_rxd;
-
---	miitx_pld_e : entity hdl4fpga.miitx_dma
---	port map (
---		sys_addr => sys_addr,
---		sys_data => sys_data,
---		mii_txc  => mii_txc,
---		mii_treq => txreq(txpld),
---		mii_txen => txena(txpld),
---		mii_txd  => txdat(txpld));
 
 	miitx_crc_e : entity hdl4fpga.miitx_crc
 	port map (

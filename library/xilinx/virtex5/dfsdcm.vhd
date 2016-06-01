@@ -49,6 +49,7 @@ architecture def of dfsdcm is
 	signal dcm_clkfb : std_logic;
 	signal dcm_clk0  : std_logic;
 	signal dcm_clk90 : std_logic;
+	signal dcm_lckd  : std_logic;
 begin
 
 	dfs_i : dcm_adv
@@ -64,7 +65,7 @@ begin
 		dfs_frequency_mode => "HIGH",
 		dll_frequency_mode => "LOW",
 		duty_cycle_correction => TRUE,
-		factory_jf   => X"C080",
+		factory_jf   => X"F0F0",
 		phase_shift  => 0,
 		startup_wait => FALSE)
 	port map (
@@ -78,22 +79,17 @@ begin
 		clkfx => dcm_clkin,
 		locked => dfs_lckd);
    
-	process (dfs_lckd, dcm_clkin)
-		variable srl16 : std_logic_vector(0 to 8-1) := (others => '1');
+	process (dfs_lckd, dfsdcm_clkin)
+		variable srl16 : std_logic_vector(0 to 16-1) := (others => '1');
 	begin
 		if dfs_lckd='0' then
 			dcm_rst <= '1';
-		elsif rising_edge(dcm_clkin) then
-			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
+		elsif rising_edge(dfsdcm_clkin) then
 			dcm_rst <= srl16(0) or not dfs_lckd;
+			srl16 := srl16(1 to srl16'right) & not dfs_lckd;
 		end if;
 	end process;
 
-	clk0_bufg_i : bufg
-	port map (
-		i => dcm_clk0,
-		o => dcm_clkfb);
-   
 	dcm_i : dcm_adv
 	generic map (
 		clk_feedback => "1x",
@@ -106,7 +102,7 @@ begin
 		dcm_autocalibration  => TRUE,
 		dcm_performance_mode => "MAX_SPEED",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "LOW",
+		dfs_frequency_mode => "HIGH",
 		dll_frequency_mode => "HIGH",
 		duty_cycle_correction => TRUE,
 		factory_jf   => X"F0F0",
@@ -116,7 +112,7 @@ begin
 	port map (
 		rst   => dcm_rst,
 		clkin => dcm_clkin,
-		clkfb => dcm_clkfb,
+		clkfb => dcm_clk0,
 		daddr => (others => '0'),
 		dclk  => '0',
 		den   => '0',
@@ -127,7 +123,24 @@ begin
 		psincdec => '0',
 		clk0  => dcm_clk0,
 		clk90 => dcm_clk90,
-		locked => dfsdcm_lckd);
+		locked => dcm_lckd);
+   
+
+	process (dcm_lckd, dfsdcm_clkin)
+		variable srl16 : std_logic_vector(0 to 16-1) := (others => '1');
+	begin
+		if dcm_lckd='0' then
+			dfsdcm_lckd <= '0';
+		elsif rising_edge(dfsdcm_clkin) then
+			dfsdcm_lckd <= not srl16(0) and dfs_lckd;
+			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
+		end if;
+	end process;
+
+	clk0_bufg_i : bufg
+	port map (
+		i => dcm_clk0,
+		o => dcm_clkfb);
    
 	dfsdcmclk90_bufg_i : bufg
 	port map (

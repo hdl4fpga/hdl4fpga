@@ -257,7 +257,6 @@ architecture virtex of ddrphy is
 		return val;
 	end;
 
-	signal dqsdel : std_logic;
 	signal sdmt : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi : bline_vector(word_size/byte_size-1 downto 0);
 	signal ssti : bline_vector(word_size/byte_size-1 downto 0);
@@ -271,19 +270,13 @@ architecture virtex of ddrphy is
 
 	signal ddmo : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal dsto : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal ddqi : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqt : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo : byte_vector(word_size/byte_size-1 downto 0);
-	signal dqiod_ce  : byte_vector(word_size/byte_size-1 downto 0);
-	signal dqiod_inc : byte_vector(word_size/byte_size-1 downto 0);
 	signal byte_wlrdy : std_logic_vector(ddr_dqsi'range);
 	signal byte_wlcal : std_logic_vector(ddr_dqsi'range);
 
-	signal dqrst : std_logic;
-	signal ph : std_logic_vector(0 to 6-1);
-	
 	signal phy_ba : std_logic_vector(sys_b'range);
 	signal phy_a  : std_logic_vector(sys_a'range);
 
@@ -420,8 +413,6 @@ begin
 	end process;
 
 	byte_g : for i in ddr_dqsi'range generate
-		signal dqsi : std_logic_vector(0 to 1);
-	begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (

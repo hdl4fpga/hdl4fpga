@@ -33,9 +33,6 @@ entity miirx_pre is
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
-		tpi : in std_logic;
-		tp1 : out std_logic;
-		tp : out std_logic_vector;
 
 		mii_txc  : out std_logic;
 		mii_txen : out std_logic);
@@ -44,8 +41,6 @@ end;
 
 architecture def of miirx_pre is
 	signal txen : std_logic;
-	signal pp : std_logic;
-
 begin
 
 	mii_txc  <= mii_rxc;
@@ -78,16 +73,7 @@ begin
 					end if;
 					rxd := rxd sll nbb'length;
 				end loop;
-				if pp='0' then
-					tp <= mii_rxd;
-					pp <= '1';
-				end if;
-			end if;
-			if tpi='1' then
-				tp <= (tp'range => '0');
-				pp <= '0';
 			end if;
 		end if;
-		tp1 <= prdy;
 	end process;
 end;

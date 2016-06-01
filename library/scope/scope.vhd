@@ -108,9 +108,7 @@ entity scope is
 		vga_frm   : out std_logic;
 		vga_red   : out std_logic_vector(8-1 downto 0);
 		vga_green : out std_logic_vector(8-1 downto 0);
-		vga_blue  : out std_logic_vector(8-1 downto 0);
-
-		tpo : out std_logic_vector(0 to 8-1) := (others  => 'Z'));
+		vga_blue  : out std_logic_vector(8-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -118,7 +116,6 @@ use hdl4fpga.std.all;
 use hdl4fpga.xdr_db.all;
 
 architecture def of scope is
-	signal tpoo : std_logic_vector(0 to 8-1);
 	signal video_don : std_logic;
 	signal video_frm : std_logic;
 	signal video_ena : std_logic;
@@ -356,7 +353,6 @@ begin
 		ddrs_rw  => ddrs_rw,
 		ddrs_act => ddrs_act,
 		ddrs_cas => ddrs_cas,
-		ddrs_pre => ddrs_pre,
 
 		ddrs_di_rdy => ddrs_di_rdy,
 		ddrs_di_req => ddrs_di_req,
@@ -375,12 +371,9 @@ begin
 
 	miirx_udp_e : entity hdl4fpga.miirx_mac
 	port map (
-		tpi(0) => tpi(0),
-		tpi(1) => tpi(1),
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		tpo => tpoo,
 		mii_txc  => open,
 		mii_txen => miirx_udprdy);
 
@@ -450,7 +443,6 @@ begin
 	generic map (
 		payload_size => 2**(PAGE_SIZE+1))
 	port map (
-		miidma_rrdy => miidma_rrdy,
 		miidma_rreq => miidma_rreq,
 		miidma_rxen => miidma_rxen,
 		miidma_rxd  => miidma_rxd,
@@ -484,10 +476,7 @@ begin
 		end if;
 	end process;
 
---	tpo(0) <= input_rdy; --miidma_rreq;
---	tpo(1) <= miidma_rrdy;
 	mii_txen <= miitx_ena;
-	tpo <= (others => input_req);
 	process (mii_txc)
 		variable edge : std_logic;
 	begin
@@ -513,7 +502,6 @@ begin
 				a := not a ;
 			end if;
 			edge := miirx_udprdy;
-		--	tpo(2) <= a;
 		end if;
 	end process;
 
@@ -560,7 +548,6 @@ begin
 		sys_rw  => ddr_rw,
 		sys_act => ddrs_act,
 		sys_cas => ddrs_cas,
-		sys_pre => ddrs_pre,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di_req => ddrs_di_req,
 		sys_di  => ddrs_di,

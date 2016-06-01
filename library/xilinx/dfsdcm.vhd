@@ -53,6 +53,7 @@ architecture spartan3 of dfsdcm is
 	signal dcm_clkfb : std_logic;
 	signal dcm_clk0  : std_logic;
 	signal dcm_clk90 : std_logic;
+	signal dcm_lckd : std_logic;
 
 begin
 
@@ -84,14 +85,14 @@ begin
 		clkfx => dcm_clkin,
 		locked => dfs_lckd);
 
-	process (dfs_lckd, dcm_clkin)
-		variable srl16 : std_logic_vector(0 to 8-1) := (others => '1');
+	process (dfs_lckd, dfsdcm_clkin)
+		variable srl16 : std_logic_vector(0 to 8-1);
 	begin
 		if dfs_lckd='0' then
 			dcm_rst <= '1';
-		elsif rising_edge(dcm_clkin) then
-			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
+		elsif rising_edge(dfsdcm_clkin) then
 			dcm_rst <= srl16(0) or not dfs_lckd;
+			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
 		end if;
 	end process;
 
@@ -121,7 +122,18 @@ begin
 		clkfb => dcm_clkfb,
 		clk0  => dcm_clk0,
 		clk90 => dcm_clk90,
-		locked => dfsdcm_lckd);
+		locked => dcm_lckd);
+
+	process (dcm_lckd, dcm_clkin)
+		variable srl6 : std_logic_vector(0 to 8-1);
+	begin
+		if dcm_lckd='0' then
+			dfsdcm_lckd <= '0';
+		elsif rising_edge(dcm_clkin) then
+			dfsdcm_lckd <= srl16(0) or dfs_lckd;
+			srl16 := srl16(1 to srl16'right) &  dfs_lckd;
+		end if;
+	end process;
 
 	dcm_clkfb_bufg : bufg
 	port map (

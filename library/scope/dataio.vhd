@@ -61,7 +61,6 @@ entity dataio is
 
 		ddrs_act : in std_logic;
 		ddrs_cas : in std_logic;
-		ddrs_pre : in std_logic;
 		ddrs_rw  : out std_logic;
 
 		ddrs_di_req : in  std_logic;
@@ -102,8 +101,6 @@ architecture def of dataio is
 	signal vsync_erq : std_logic;
 	signal hsync_erq : std_logic;
 
-	signal buff_ini  : std_logic;
-
 	signal video_page : std_logic_vector(0 to 3-1);
 	signal video_off  : std_logic_vector(0 to page_num*page_size-1);
 	signal video_di   : std_logic_vector(0 to page_num*2*DDR_LINESIZE-1);
@@ -131,32 +128,6 @@ begin
 --		output_dat => ddrs_di
 		output_dat => output_dat);
 		tp <= datai_brst_req;
-
---		ddrs_di <= x"76_54_32_10";
---	process (ddrs_clk)
---		variable aux : std_logic_vector(8-1 downto 0);
---		variable aux1 : std_logic_vector(ddrs_di'length-1 downto 0);
---		variable aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
---	begin
---		if rising_edge(ddrs_clk) then
---			if sys_rst='1' then
---				if ddrs_di'length > 32 then
---				aux2 := x"07_06_05_04_03_02_01_00";
---				else
---				aux2 := x"76_54_32_10";
---				end if;
---			elsif ddrs_di_rdy='1' then
---				aux1 := aux2;
---				for i in 0 to ddrs_di'length/8-1 loop
---					aux  := std_logic_vector(unsigned(aux1(8-1 downto 0))+ddrs_di'length/8);
---					aux1 := std_logic_vector(unsigned(aux1) srl 8);
---					aux1(aux1'left downto aux1'left-(8-1)) := aux;
---				end loop;
---				aux2 := aux1;
---			end if;
---		end if;
---		ddrs_di <= aux2;
---	end process;
 
 	process(ddrs_clk)
 		variable g : std_logic_vector(ddrs_di'length-1 downto 0);
@@ -191,7 +162,6 @@ begin
 			q := sys_rst;
 		end if;
 		aux2 <= s;
---		aux2 <= X"01020304050607080910111213141516";
 	end process;
 
 	ddrs_di_rdy <= ddrs_di_req;
@@ -208,17 +178,6 @@ begin
 		signal creq : std_logic;
 		signal crdy : std_logic;
 
-		function pencoder (
-			constant arg : std_logic_vector)
-			return natural is
-		begin
-			for i in arg'range loop
-				if arg(i)='1' then
-					return i;
-				end if;
-			end loop;
-			return arg'right;
-		end;
 	begin
 
 		process (ddrs_clk)
@@ -244,12 +203,7 @@ begin
 				end if;
 			end if;
 		end process;
---		ddrios_cid <= to_integer(pencoder(ddrios_reg), unsigned_num_bits(ddrios_reg'length));
---		ddrios_c <= mux (
---			i => 
---				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1) &
---				to_signed(4-1, DDR_BANKSIZE+1) & to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1),
---			s => ddrios_id);
+
 		process (datai_brst_req, ddrs_clk)
 			variable q : std_logic;
 		begin
@@ -261,24 +215,15 @@ begin
 --		ddrs_breq <= datai_brst_req or ddr2miitx_brst_req;
 
 		ddrs_addr <= 
---			std_logic_vector(
---				to_signed(4-1, DDR_BANKSIZE+1) & 
---				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
---				to_signed(2**DDR_CLNMSIZE-2, DDR_CLNMSIZE+1));
 			std_logic_vector(
 				to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
 				to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
 				to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
---			std_logic_vector(
---				to_signed(0, DDR_BANKSIZE+1) &
---				to_signed(0, DDR_ADDRSIZE+1) & 
---				to_signed(3, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
 		'1' when ddrs_rreq='1' else
 		'1' when ddrs_breq='0' else
---		'1' when qo(ddr_clnmsize)='1' else
 		'0';
 
 		crdy <=
@@ -312,7 +257,6 @@ begin
 			end if;
 		end process;
 		ddrs_rowa <= std_logic_vector(resize(shift_right(unsigned(qo),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-
 
 		crst <= sys_rst or co(0);
 		dcounter_e : entity hdl4fpga.counter

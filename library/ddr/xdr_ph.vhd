@@ -86,8 +86,9 @@ begin
 		end generate;
 	end generate;
 
-	xx: if clk_phases > 1 generate
+	clk_phases_g : if clk_phases > 1 generate
 		phi0 (delay_phase) <= sys_di;
+
 		g : for i in 1 to clk_phases-1 generate
 			constant left : natural := selecton (
 				clk_phases*((delay_phase+i)/clk_phases) > delay_phase,
@@ -95,7 +96,7 @@ begin
 				(delay_phase+i-1)/clk_phases+1);
 			signal q : std_logic_vector(left to (clk_phases-i)*(clks'length-1)/clk_phases-1) := (others => '-');
 		begin
-			xx : if q'length > 0 generate
+			q1_g : if q'length > 0 generate
 				process (clks(i))
 				begin
 					if rising_edge(clks(i)) then
@@ -105,12 +106,16 @@ begin
 						end loop;
 					end if;
 				end process;
+
 				phi0 ((i+clks'length-1) mod clks'length) <= q(q'left);
-				j: for j in q'range generate
+
+				qo_g : for j in q'range generate
 					qo(j*clk_phases+i) <= q(j);
 				end generate;
+
 			end generate;
 		end generate;
 	end generate;
+
 	ph_qo <= qo;
 end;

@@ -68,7 +68,6 @@ architecture def of miitxmem is
 	signal wr_ena  : std_logic;
 	signal wr_data : dword;
 
-	signal miitx_addr : std_logic_vector(0 to bram_size-1);
 	signal rd_address : std_logic_vector(0 to bram_size-1);
 	signal rd_data : dword;
 	signal rad : dword;

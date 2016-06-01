@@ -61,7 +61,7 @@ architecture def of miitx_mem is
 		return val;
 	end;
 
-	signal ramb : byte_vector(2**addr_size-1 downto 0) := ramb_init(mem_data);
+	constant ramb : byte_vector(2**addr_size-1 downto 0) := ramb_init(mem_data);
 	signal cntr : std_logic_vector(0 to addr_size+xxx);
 
 begin

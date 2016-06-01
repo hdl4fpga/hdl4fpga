@@ -4,7 +4,6 @@ use ieee.numeric_std.all;
 
 entity adjdqs is
 	port (
-		sys_clk0 : in  std_logic;
 		iod_clk  : in  std_logic;
 		smp : in  std_logic;
 		req : in  std_logic;

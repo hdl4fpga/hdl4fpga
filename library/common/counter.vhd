@@ -42,13 +42,12 @@ end;
 
 architecture def of counter is
 
-	signal cy : std_logic_vector(stage_size'length-1 downto 0) := (0 => '1', others => '0');
-	signal en : std_logic_vector(stage_size'length downto 0) := (0 => '1', others => '0');
+	signal en : std_logic_vector(stage_size'length-1 downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(stage_size'length-1 downto 0);
 
 begin
 
-	en <= q & ena;
+	en <= q(q'left-1 downto 0) & ena;
 
 	cntr_g : for i in 0 to stage_size'length-1 generate
 

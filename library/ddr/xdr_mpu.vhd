@@ -278,7 +278,6 @@ architecture arch of xdr_mpu is
 		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
 	end;
 
-	signal pp : signed(lat_timer'range);
 begin
 
 	xdr_mpu_p: process (xdr_mpu_clk)

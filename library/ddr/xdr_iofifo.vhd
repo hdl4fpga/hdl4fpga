@@ -40,7 +40,6 @@ entity iofifo is
 		ser_ar  : in  std_logic_vector(0 to data_phases-1) := (others => '1');
 		ser_clk : in  std_logic_vector(0 to data_phases-1);
 		ser_ena : in  std_logic_vector(0 to data_phases-1);
-		ser_rdy : out std_logic;
 
 		di  : in  std_logic_vector(word_size-1 downto 0);
 		do  : out std_logic_vector(word_size-1 downto 0));
@@ -58,7 +57,6 @@ architecture mix of iofifo is
 	signal fifo_di : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
-	signal ser_fifo_rdy : std_logic;
 
 	function to_stdlogicvector (
 		arg : byte_vector)

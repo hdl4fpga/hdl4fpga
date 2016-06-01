@@ -61,8 +61,6 @@ architecture scope of ml509 is
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
-	signal ddrs_wclks : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal ddrs_wenas : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -71,8 +69,6 @@ architecture scope of ml509 is
 	signal ddr2_dqt  : std_logic_vector(word_size-1 downto 0);
 	signal ddr2_clk  : std_logic_vector(2-1 downto 0);
 
-	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 8-1) := (others  => 'Z');
 	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
@@ -95,9 +91,6 @@ architecture scope of ml509 is
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(0 to line_size/byte_size-1);
 	signal ddrphy_sti : std_logic_vector(0 to line_size/byte_size-1);
-	signal ddr_sti : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_sto : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_eclkph : std_logic_vector(4-1 downto 0);
 	signal ddrphy_ini : std_logic;
 	signal ddrphy_wlreq : std_logic;
 	signal ddrphy_wlrdy : std_logic;
@@ -105,12 +98,6 @@ architecture scope of ml509 is
 	signal ddrphy_rw : std_logic;
 	signal ddrphy_cmd_req : std_logic;
 	signal ddrphy_cmd_rdy : std_logic;
-	signal ddrphy_dqsiod_rst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqsiod_ce  : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqsiod_inc : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddrphy_dqiod_ce  : std_logic_vector(word_size-1 downto 0);
-	signal ddrphy_dqiod_inc : std_logic_vector(word_size-1 downto 0);
-	signal dqsi_buf : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal gtx_clk  : std_logic;
 	signal gtx_rst  : std_logic;
@@ -131,9 +118,7 @@ architecture scope of ml509 is
 	signal dvdelay : std_logic_vector(0 to 2);
 
 	signal sys_rst   : std_logic;
-	signal valid : std_logic;
 
-	signal wlpha : std_logic_vector(8-1 downto 0);
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
 	-- Multiply by --  10     --   8     --   9     --
@@ -145,28 +130,9 @@ architecture scope of ml509 is
 	constant ddr_fbdiv : natural := 1;
 	constant r : natural := 0;
 	constant f : natural := 1;
-	signal ddr_eclk  : std_logic;
 
-	signal debug_clk : std_logic;
-	signal yyyy : std_logic_vector(ddrphy_a'range);
-
-	function shuffle (
-		constant arg : byte_vector)
-		return byte_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : byte_vector(dat'range);
-	begin
-		dat := arg;
-		for i in 2-1 downto 0 loop
-			for j in dat'length/2-1 downto 0 loop
-				val(dat'length/2*i+j) := dat(2*j+i);
-			end loop;
-		end loop;
-		return val;
-	end;
 	signal ictlr_clk_ibufg : std_logic;
 	signal ictlr_rst : std_logic;
-	signal tp2 : std_logic_vector(8-1 downto 0);
 begin
 		
 		
@@ -294,10 +260,7 @@ begin
 		vga_blank => vga_blank,
 		vga_red   => vga_red,
 		vga_green => vga_green,
-		vga_blue  => vga_blue,
-		tpi(0) => gpio_sw_s,
-		tpi(1) => gpio_sw_n,
-		tpo => tpo);
+		vga_blue  => vga_blue);
 
 
 	ddrphy_dqi2 <= ddrphy_dqi;
@@ -431,13 +394,12 @@ begin
 	dvi_de <= 'Z';
 	dvi_d <= (others => 'Z');
 
-	xxx : for i in 0 to 8-1 generate
-		tp2(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
+	tp_g : for i in 0 to 8-1 generate
+		gpio_led(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+6) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_n='1' else tp1(i*8+2) ;
 	end generate;
 
 	dvi_gpio1 <= '1';
 	bus_error <= (others => 'Z');
-	gpio_led <= tp2;
 	gpio_led_s <= '0';
 	gpio_led_w <= ddrphy_wlcal;
 	gpio_led_c <= ddrphy_wlrdy;

@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 
 entity miitx_crc is
     port (
-		mii_g    : in  std_logic_vector(31 downto 0) := x"04c11db7";
 		mii_ini  : in  std_logic_vector(31 downto 0) := (others => '1');
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;

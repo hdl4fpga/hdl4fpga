@@ -67,7 +67,7 @@ library hdl4fpga;
 
 architecture virtex of ddrdqphy is
 
-	signal dqi  : std_logic_vector(sys_dqi'range);
+	signal dqi  : std_logic_vector(ddr_dqi'range);
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
@@ -133,11 +133,9 @@ begin
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
 		port map (
-			sys_clk0 => sys_clk0,
 			din => q(1),
 			req => adjdqi_req,
 			rdy => adjdqi_rdy(i),
-			tp => t,
 			iod_clk => sysiod_clk,
 			iod_ce  => dqiod_ce,
 			iod_inc => dqiod_inc);
@@ -223,8 +221,7 @@ begin
 
 	dqso_b : block 
 		signal clk_n : std_logic;
-		signal dqs_clk : std_logic;
-	signal dqsi_buf : std_logic;
+		signal dqsi_buf : std_logic;
 		signal sto : std_logic;
 	begin
 
@@ -257,19 +254,20 @@ begin
 			q2 => smp(1));
 
 		process (sys_wlreq, sysiod_clk)
+			variable q : std_logic;
 		begin
 			if sys_wlreq='0' then
 				adjdqs_req <= '0';
 			elsif rising_edge(sysiod_clk) then
 				if adjdqs_req='0' then
-					adjdqs_req <= sys_sti(0);
+					adjdqs_req <= q;
+					q := sys_sti(0);
 				end if;
 			end if;
 		end process;
 
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
-			sys_clk0 => sys_clk0,
 			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,

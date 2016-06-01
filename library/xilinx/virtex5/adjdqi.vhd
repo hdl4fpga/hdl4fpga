@@ -4,11 +4,9 @@ use ieee.numeric_std.all;
 
 entity adjdqi is
 	port (
-		sys_clk0 : in std_logic;
 		din : in  std_logic;
 		req : in  std_logic;
 		rdy : out std_logic;
-		tp : out std_logic;
 		iod_clk  : in std_logic;
 		iod_ce  : out std_logic;
 		iod_inc : out std_logic);
@@ -33,7 +31,6 @@ begin
 	end process;
 
 	iod_inc <= not edge;
---	tp <= sync;
 	process (iod_clk)
 		variable ce : unsigned(0 to 4-1);
 	begin
@@ -58,7 +55,6 @@ begin
 				ce := ce + 1;
 				iod_ce <= not ce(0);
 				rdy <= ce(0);
-				tp <= ce(0);
 			end if;
 		end if;
 	end process;
