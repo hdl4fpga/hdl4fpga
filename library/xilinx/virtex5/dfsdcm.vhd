@@ -112,7 +112,7 @@ begin
 	port map (
 		rst   => dcm_rst,
 		clkin => dcm_clkin,
-		clkfb => dcm_clk0,
+		clkfb => dcm_clkfb,
 		daddr => (others => '0'),
 		dclk  => '0',
 		den   => '0',
