@@ -40,7 +40,7 @@ entity dfs is
 		dcm_lck : out std_logic);
 end;
 
-architecture spartan3 of dfs is
+architecture xilinx of dfs is
 
    signal dcm_clkfb  : std_logic;
    signal dcm_clk0   : std_logic;

@@ -69,7 +69,7 @@ begin
 		dfs_frequency_mode => dfs_mode,
 		dll_frequency_mode => "LOW",
 		duty_cycle_correction => TRUE,
-		factory_jf   => X"C080",
+		factory_jf   => X"F0F0",
 		phase_shift  => 0,
 		startup_wait => FALSE)
 	port map (

@@ -265,7 +265,7 @@
     <property xil_pn:name="Case Implementation Style" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="Change Device Speed To" xil_pn:value="-1" xil_pn:valueState="default"/>
     <property xil_pn:name="Change Device Speed To Post Trace" xil_pn:value="-1" xil_pn:valueState="default"/>
-    <property xil_pn:name="Combinatorial Logic Optimization" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Combinatorial Logic Optimization" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Compile EDK Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Compile SIMPRIM (Timing) Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Compile UNISIM (Functional) Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
@@ -299,7 +299,7 @@
     <property xil_pn:name="DCI Update Mode" xil_pn:value="As Required" xil_pn:valueState="default"/>
     <property xil_pn:name="DSP Utilization Ratio" xil_pn:value="100" xil_pn:valueState="default"/>
     <property xil_pn:name="Data Flow window" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Decoder Extraction" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Decoder Extraction" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Delay Values To Be Read from SDF ModelSim" xil_pn:value="Setup Time" xil_pn:valueState="default"/>
     <property xil_pn:name="Device" xil_pn:value="xc5vlx110t" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Device Family" xil_pn:value="Virtex5" xil_pn:valueState="non-default"/>
@@ -318,8 +318,8 @@
     <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="4" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Enable Outputs (Output Events)" xil_pn:value="Default (5)" xil_pn:valueState="default"/>
     <property xil_pn:name="Encrypt Bitstream" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="false" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Essential Bits" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Evaluation Development Board" xil_pn:value="None Specified" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of Deprecated EDK Cores" xil_pn:value="true" xil_pn:valueState="default"/>
@@ -389,7 +389,7 @@
     <property xil_pn:name="Log All Signals In Post-Map Simulation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Log All Signals In Post-Par Simulation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Log All Signals In Post-Translate Simulation" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Logical Shifter Extraction" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Logical Shifter Extraction" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Manual Implementation Compile Order" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Map Slice Logic into Unused Block RAMs" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Max Fanout" xil_pn:value="100000" xil_pn:valueState="default"/>
@@ -446,7 +446,7 @@
     <property xil_pn:name="Power Reduction Par" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Power Reduction Xst" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Preferred Language" xil_pn:value="VHDL" xil_pn:valueState="default"/>
-    <property xil_pn:name="Priority Encoder Extraction" xil_pn:value="No" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Priority Encoder Extraction" xil_pn:value="Yes" xil_pn:valueState="default"/>
     <property xil_pn:name="Process window" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Produce Verbose Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Project Description" xil_pn:value="" xil_pn:valueState="default"/>
@@ -485,7 +485,7 @@
     <property xil_pn:name="SelectMAP Abort Sequence" xil_pn:value="Enable" xil_pn:valueState="default"/>
     <property xil_pn:name="Selected Simulation Root Source Node Behavioral" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Selected Simulation Source Node" xil_pn:value="UUT" xil_pn:valueState="default"/>
-    <property xil_pn:name="Shift Register Extraction" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Shift Register Extraction" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Show All Models" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Signal window" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Simulation Model Target" xil_pn:value="VHDL" xil_pn:valueState="default"/>

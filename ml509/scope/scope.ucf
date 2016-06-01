@@ -81,15 +81,6 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 TIMESPEC TS_f2f_ddr2gtx = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 TIMESPEC TS_f2f_gtx2ddr = FROM FFS_gtxclk    TO FFS_ddrsclk0   TIG;
 
-TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-
 TIMESPEC TS_ddrt00 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TIG;
 TIMESPEC TS_ddrt01 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TIG;
 TIMESPEC TS_ddrt02 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TIG;

@@ -102,9 +102,9 @@ begin
 	sys_tp <= tp;
 
 	tp(0) <= smp(0);
-	tp(1) <= adjdqs_req;
-	tp(2) <= adjsto_rdy;
-	tp(5) <= adjsto_req;
+	tp(1) <= adjdqs_rdy;
+	tp(2) <= adjsto_req;
+	tp(5) <= adjsto_rdy;
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in ddr_dqi'range generate
@@ -258,11 +258,12 @@ begin
 		begin
 			if sys_wlreq='0' then
 				adjdqs_req <= '0';
+				q := '0';
 			elsif rising_edge(sysiod_clk) then
 				if adjdqs_req='0' then
 					adjdqs_req <= q;
-					q := sys_sti(0);
 				end if;
+				q := sys_sti(0);
 			end if;
 		end process;
 

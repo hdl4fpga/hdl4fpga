@@ -161,9 +161,9 @@ begin
 		rsts_g: for i in clks'range generate
 			signal q : std_logic;
 		begin
-			process (clks(i), lcks(i))
+			process (clks(i), sys_rst)
 			begin
-				if lcks(i)='0' then
+				if sys_rst='1' then
 					q <= '1';
 				elsif rising_edge(clks(i)) then
 					q <= not lcks(i);

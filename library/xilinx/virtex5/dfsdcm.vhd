@@ -42,6 +42,7 @@ use unisim.vcomponents.all;
 
 architecture def of dfsdcm is
 	signal dfs_clkfb  : std_logic;
+	signal dfs_clk0  : std_logic;
 	signal dfs_lckd  : std_logic;
 
 	signal dcm_rst : std_logic;
@@ -52,90 +53,41 @@ architecture def of dfsdcm is
 	signal dcm_lckd  : std_logic;
 begin
 
-	dfs_i : dcm_adv
+	dfs_i : dcm_base
 	generic map (
-		clk_feedback => "1X",
-		clkdv_divide => 2.0,
 		clkfx_divide => dfs_div,
 		clkfx_multiply => dfs_mul,
 		clkin_period => dcm_per,
-		clkin_divide_by_2 => FALSE,
-		clkout_phase_shift => "NONE",
-		deskew_adjust => "SYSTEM_SYNCHRONOUS",
 		dfs_frequency_mode => "HIGH",
-		dll_frequency_mode => "LOW",
-		duty_cycle_correction => TRUE,
-		factory_jf   => X"F0F0",
-		phase_shift  => 0,
 		startup_wait => FALSE)
 	port map (
 		rst   => dfsdcm_rst,
-		psclk => '0',
-		psen  => '0',
-		psincdec => '0',
 		clkfb => dfs_clkfb,
 		clkin => dfsdcm_clkin,
-		clk0  => dfs_clkfb,
+		clk0  => dfs_clk0,
 		clkfx => dcm_clkin,
 		locked => dfs_lckd);
    
-	process (dfs_lckd, dfsdcm_clkin)
-		variable srl16 : std_logic_vector(0 to 16-1) := (others => '1');
-	begin
-		if dfs_lckd='0' then
-			dcm_rst <= '1';
-		elsif rising_edge(dfsdcm_clkin) then
-			dcm_rst <= srl16(0) or not dfs_lckd;
-			srl16 := srl16(1 to srl16'right) & not dfs_lckd;
-		end if;
-	end process;
-
-	dcm_i : dcm_adv
+	dfs_clk0bufg_i : bufg
+	port map (
+		i => dfs_clk0,
+		o => dfs_clkfb);
+   
+	dcm_rst <= not dfs_lckd;
+	dcm_i : dcm_base
 	generic map (
-		clk_feedback => "1x",
-		clkin_divide_by_2 => FALSE,
 		clkin_period => (real(dfs_div)*dcm_per)/real(dfs_mul),
-		clkdv_divide => 2.0,
-		clkfx_divide => 1,
-		clkfx_multiply => 4,
-		clkout_phase_shift   => "NONE",
-		dcm_autocalibration  => TRUE,
-		dcm_performance_mode => "MAX_SPEED",
-		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "HIGH",
 		dll_frequency_mode => "HIGH",
-		duty_cycle_correction => TRUE,
-		factory_jf   => X"F0F0",
-		phase_shift  => 0,
-		startup_wait => FALSE,
-		sim_device   => "VIRTEX5")
+		startup_wait => FALSE)
 	port map (
 		rst   => dcm_rst,
 		clkin => dcm_clkin,
 		clkfb => dcm_clkfb,
-		daddr => (others => '0'),
-		dclk  => '0',
-		den   => '0',
-		di    => (others => '0'),
-		dwe   => '0',
-		psclk => '0',
-		psen  => '0',
-		psincdec => '0',
 		clk0  => dcm_clk0,
 		clk90 => dcm_clk90,
 		locked => dcm_lckd);
    
-
-	process (dcm_lckd, dfsdcm_clkin)
-		variable srl16 : std_logic_vector(0 to 16-1) := (others => '1');
-	begin
-		if dcm_lckd='0' then
-			dfsdcm_lckd <= '0';
-		elsif rising_edge(dfsdcm_clkin) then
-			dfsdcm_lckd <= not srl16(0) and dfs_lckd;
-			srl16 := srl16(1 to srl16'right) &  not dfs_lckd;
-		end if;
-	end process;
+	dfsdcm_lckd <= dfs_lckd;
 
 	clk0_bufg_i : bufg
 	port map (
