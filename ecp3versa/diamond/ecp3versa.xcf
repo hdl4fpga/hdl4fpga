@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <!DOCTYPE		ispXCF	SYSTEM	"IspXCF.dtd" >
-<ispXCF version="3.6.0">
+<ispXCF version="3.7.0">
 	<Comment></Comment>
 	<Chain>
 		<Comm>JTAG</Comm>
@@ -19,8 +19,8 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>C:/Users/msagre/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
-			<FileTime>03/07/16 18:47:46</FileTime>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
+			<FileTime>06/02/16 14:00:42</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
@@ -41,10 +41,11 @@
 		<StartTAP>TLR</StartTAP>
 		<EndTAP>TLR</EndTAP>
 		<VerifyUsercode value="FALSE"/>
+		<TCKDelay>1</TCKDelay>
 	</ProjectOptions>
 	<CableOptions>
 		<CableName>USB2</CableName>
 		<PortAdd>FTUSB-0</PortAdd>
-		<USBID>Dual RS232-HS A Location 0000 Serial A</USBID>
+		<USBID>DUAL RS232-HS A Location 0000</USBID>
 	</CableOptions>
 </ispXCF>
