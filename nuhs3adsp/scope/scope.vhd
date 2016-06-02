@@ -48,10 +48,25 @@ architecture scope of nuhs3adsp is
 	constant word_size   : natural := 16;
 	constant byte_size   : natural := 8;
 
-	signal sys_clk : std_logic;
+	signal sys_rst   : std_logic;
 
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --  20     --  25     --  10     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
+
+	constant sys_per : real    := 50.0;
+	constant ddr_mul : natural := 25;
+	constant ddr_div : natural :=  3;
+
+	signal sys_clk : std_logic;
 	signal input_clk : std_logic;
 	signal video_clk : std_logic;
+
+	signal input_rst : std_logic;
+	signal ddrs_rst  : std_logic;
+	signal vga_rst   : std_logic;
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
@@ -61,8 +76,8 @@ architecture scope of nuhs3adsp is
 	signal ddr_dqt  : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo  : std_logic_vector(ddr_dq'range);
 	signal ddr_clk  : std_logic_vector(0 downto 0);
-
 	signal ddr_lp_clk : std_logic;
+	signal ddr_sto1_open : std_logic;
 
 	signal ddrphy_cke  : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs   : std_logic_vector(cmd_phases-1 downto 0);
@@ -98,25 +113,6 @@ architecture scope of nuhs3adsp is
 	signal vga_red   : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
-
-	signal sys_rst   : std_logic;
-	signal valid : std_logic;
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
-
-	constant sys_per : real    := 50.0;
-	constant ddr_mul : natural := 25;
-	constant ddr_div : natural :=  3;
-
-	signal input_rst : std_logic;
-	signal ddrs_rst  : std_logic;
-	signal vga_rst   : std_logic;
-
-	signal sto1_open : std_logic;
 
 begin
 
@@ -254,7 +250,7 @@ begin
 		ddr_a   => ddr_a,
 
 		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => sto1_open,
+		ddr_sto(1) => ddr_sto1_open,
 		ddr_sti(0) => ddr_st_lp_dqs,
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => ddr_dm,
@@ -264,6 +260,28 @@ begin
 		ddr_dqst => ddr_dqst,
 		ddr_dqsi => ddr_dqs,
 		ddr_dqso => ddr_dqso);
+
+	ddr_dqs_g : for i in ddr_dqs'range generate
+		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
+	end generate;
+
+	process (ddr_dqt, ddr_dqo)
+	begin
+		for i in ddr_dq'range loop
+			ddr_dq(i) <= 'Z';
+			if ddr_dqt(i)='0' then
+				ddr_dq(i) <= ddr_dqo(i);
+			end if;
+		end loop;
+	end process;
+
+	ddr_clk_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => ddr_clk(0),
+			o  => ddr_ckp,
+			ob => ddr_ckn);
 
 	adcclkab_iob_b : block
 		signal clk_n : std_logic;
@@ -320,28 +338,6 @@ begin
 		mii_txd  => txd,
 		iob_txen => mii_txen,
 		iob_txd  => mii_txd);
-
-	ddr_dqs_g : for i in ddr_dqs'range generate
-		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
-	end generate;
-
-	process (ddr_dqt, ddr_dqo)
-	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= 'Z';
-			if ddr_dqt(i)='0' then
-				ddr_dq(i) <= ddr_dqo(i);
-			end if;
-		end loop;
-	end process;
-
-	ddr_clk_i : obufds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => ddr_clk(0),
-			o  => ddr_ckp,
-			ob => ddr_ckn);
 
 	hd_t_data <= 'Z';
 
