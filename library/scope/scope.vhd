@@ -48,7 +48,6 @@ entity scope is
 		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
-		tpi : std_logic_vector(0 to 1) := (others => '-');
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
@@ -201,7 +200,6 @@ architecture def of scope is
 	signal pkt_cntr : std_logic_vector(15 downto 0) := x"0000";
 	signal tpkt_cntr : byte := x"00";
 	signal a0 : std_logic;
-	signal tp : nibble_vector(7 downto 0) := (others => "0000");
 	signal wlreq : std_logic;
 
 begin

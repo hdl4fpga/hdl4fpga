@@ -70,7 +70,7 @@ architecture struct of xdr_rdfifo is
 		return std_logic_vector(val);
 	end;
 
-	function to_wordvector (
+	impure function to_wordvector (
 		constant arg : std_logic_vector) 
 		return word_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
@@ -84,7 +84,7 @@ architecture struct of xdr_rdfifo is
 		return val;
 	end;
 
-	function shuffle (
+	impure function shuffle (
 		constant arg : word_vector)
 		return byte_vector is
 		variable aux : word;

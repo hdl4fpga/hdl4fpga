@@ -40,21 +40,32 @@ use unisim.vcomponents.all;
 architecture scope of s3Estarter is
 	constant sclk_phases : natural := 4;
 	constant data_phases : natural := 2;
-	constant data_edges : natural := 2;
-	constant cmd_phases : natural := 1;
-	constant bank_size : natural := 2;
-	constant addr_size : natural := 13;
-	constant line_size : natural := 2*16;
-	constant word_size : natural := 16;
-	constant byte_size : natural := 8;
+	constant data_edges  : natural := 2;
+	constant cmd_phases  : natural := 1;
+	constant bank_size   : natural := 2;
+	constant addr_size   : natural := 13;
+	constant line_size   : natural := 2*16;
+	constant word_size   : natural := 16;
+	constant byte_size   : natural := 8;
 
+	constant sys_per : real := 20.0;
 
-	signal ictlr_clk : std_logic;
-	signal ictlr_rdy : std_logic;
-	signal ictlr_rst : std_logic;
-	signal grst : std_logic;
-
+	signal sys_rst   : std_logic;
 	signal sys_clk : std_logic;
+
+	--------------------------------------------------
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
+	-- Multiply by --   8     --  10     --   4     --
+	-- Divide by   --   3     --   3     --   1     --
+	--------------------------------------------------
+
+	constant ddr_mul : natural := 10;
+	constant ddr_div : natural :=  3;
+
+	signal input_rst : std_logic;
+	signal ddrs_rst  : std_logic;
+	signal vga_rst   : std_logic;
+
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
@@ -64,88 +75,49 @@ architecture scope of s3Estarter is
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
 
+	signal ddr_clk  : std_logic_vector(0 downto 0);
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt : std_logic_vector(sd_dq'range);
-	signal ddr_dqo : std_logic_vector(sd_dq'range);
-	signal ddr_clk : std_logic;
+	signal ddr_dqt  : std_logic_vector(sd_dq'range);
+	signal ddr_dqo  : std_logic_vector(sd_dq'range);
 
 	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 4-1) := (others  => 'Z');
+	signal ddr_sto1_open : std_logic;
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_cs  : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_ras : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
+	signal ddrphy_we  : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmd_phases*sd_ba'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmd_phases*sd_a'length-1 downto 0);
+	signal ddrphy_b   : std_logic_vector(cmd_phases*sd_ba'length-1 downto 0);
+	signal ddrphy_a   : std_logic_vector(cmd_phases*sd_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
-	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0) := x"f4_f3_f2_f1";
+	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
 	signal ddrphy_sti : std_logic_vector(line_size/byte_size-1 downto 0);
 
-	signal gtx_clk  : std_logic;
 	signal rxdv : std_logic;
 	signal rxd  : std_logic_vector(e_rxd'range);
 	signal txen : std_logic;
 	signal txd  : std_logic_vector(e_txd'range);
 
-	signal vga_clk : std_logic;
+	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
-	signal vga_frm : std_logic;
-	signal vga_red : std_logic_vector(8-1 downto 0);
+	signal vga_frm   : std_logic;
+	signal vga_red   : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
-	signal dvdelay : std_logic_vector(0 to 2);
 
-	signal sys_rst   : std_logic;
-	signal valid : std_logic;
-
-	signal wlpha : std_logic_vector(8-1 downto 0);
-	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
-	-- Multiply by --  10     --   8     --   9     --
-	-- Divide by   --   3     --   2     --   2     --
-	--------------------------------------------------
-
-	constant sys_per : real := 20.0;
-	constant ddr_mul : natural := 10;
-	constant ddr_div : natural :=  3;
-
-	signal input_rst : std_logic;
-	signal ddrs_rst : std_logic;
-	signal vga_rst : std_logic;
-
-	signal debug_clk : std_logic;
-	signal yyyy : std_logic_vector(ddrphy_a'range);
-
-	function shuffle (
-		constant arg : byte_vector)
-		return byte_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : byte_vector(dat'range);
-	begin
-		dat := arg;
-		for i in 2-1 downto 0 loop
-			for j in dat'length/2-1 downto 0 loop
-				val(dat'length/2*i+j) := dat(2*j+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-	signal xxx : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -153,20 +125,7 @@ begin
 		I => xtal ,
 		O => sys_clk);
 
-	process (sw0, sys_clk)
-		variable aux : std_logic_vector(0 to 3);
-	begin
-		if sw0='0' then
-			sys_rst <= '1';
-			aux := (others => '0');
-		elsif rising_edge(sys_clk) then
-			sys_rst <= not aux(0);
-			if aux(0)='0' then
-				aux := inc(gray(aux));
-			end if;
-		end if;
-	end process;
-
+	sys_rst <= not sw0;
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
@@ -179,10 +138,7 @@ begin
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
 		video_clk => video_clk,
-		-- mii_clk => mii_refclk,
-		-- input_rst => input_rst,
 		ddr_rst  => ddrs_rst, 
-    	-- mii_rst   => mii_rst,  
 		video_rst   => vga_rst);
 
 	scope_e : entity hdl4fpga.scope
@@ -225,7 +181,7 @@ begin
 		ddr_dqst => ddrphy_dqst,
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dqi2,
+		ddr_dqi  => ddrphy_dqi,
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
@@ -248,14 +204,10 @@ begin
 		vga_blank => vga_blank,
 		vga_red   => vga_red,
 		vga_green => vga_green,
-		vga_blue  => vga_blue,
-		tpo => tpo);
-
-	ddrphy_dqi2 <= ddrphy_dqi;
+		vga_blue  => vga_blue);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		-- loopback => TRUE,
 		loopback => false,
 		registered_dout => false,
 		BANK_SIZE => sd_ba'length,
@@ -298,7 +250,7 @@ begin
 		ddr_a   => sd_a,
 
 		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => xxx,
+		ddr_sto(1) => ddr_sto1_open,
 		ddr_sti(0) => ddr_st_lp_dqs,
 		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => sd_dm,
@@ -308,43 +260,6 @@ begin
 		ddr_dqst => ddr_dqst,
 		ddr_dqsi => sd_dqs,
 		ddr_dqso => ddr_dqso);
-
-	adcclkab_iob_b : block
-		signal clk_n : std_logic;
-	begin
-		clk_n <= input_clk;
-		oddr_i : oddr2
-		port map (
-			r => '0',
-			s => '0',
-			c0 => input_clk,
-			c1 => clk_n,
-			ce => '1',
-			d0 => '0',
-			d1 => '1',
-			q => adc_clkab);
-	end block;
-
-	-- vga_iob_e : entity hdl4fpga.adv7125_iob
-	-- port map (
-		-- sys_clk   => video_clk,
-		-- sys_hsync => vga_hsync,
-		-- sys_vsync => vga_vsync,
-		-- sys_blank => vga_blank,
-		-- sys_red   => vga_red,
-		-- sys_green => vga_green,
-		-- sys_blue  => vga_blue,
-
-		-- vga_clk => clk_videodac,
-		-- vga_hsync => hsync,
-		-- vga_vsync => vsync,
-		-- dac_blank => blank,
-		-- dac_sync  => sync,
-		-- dac_psave => psave,
-
-		-- dac_red   => red,
-		-- dac_green => green,
-		-- dac_blue  => blue);
 
 	e_mdc  <= '0';
 	e_mdio <= '0';
@@ -379,33 +294,14 @@ begin
 		end loop;
 	end process;
 
-	ddr_clk_b : block
-		signal diff_clk : std_logic;
-		signal clk_n : std_logic;
-	begin
-		clk_n <= not ddrs_clk0;
-		oddr_i : oddr2
-		port map (
-			r => '0',
-			s => '0',
-			c0 => clk_n,
-			c1 => ddrs_clk0,
-			ce => '1',
-			d0 => '1',
-			d1 => '0',
-			q => diff_clk);
+	ddr_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => ddr_clk(0),
+		o  => sd_ck_p,
+		ob => sd_ck_n);
 
-		obufds_i : obufds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => diff_clk,
-			o  => sd_ck_p,
-			ob => sd_ck_n);
-
-	end block;
-
-	-- hd_t_data <= 'Z';
 
 	-- LEDs DAC --
 	--------------

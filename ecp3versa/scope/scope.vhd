@@ -39,37 +39,57 @@ use ecp3.components.all;
 architecture scope of ecp3versa is
 	constant cmmd_phases : natural := 2;
 	constant data_phases : natural := 1;
-	constant bank_size : natural := 2;
-	constant addr_size : natural := 13;
-	constant line_size : natural := 4*ddr3_dq'length;
-	constant word_size : natural := ddr3_dq'length;
-	constant byte_size : natural := ddr3_dq'length/ddr3_dqs'length;
+	constant bank_size   : natural := 2;
+	constant addr_size   : natural := 13;
+	constant line_size   : natural := 4*ddr3_dq'length;
+	constant word_size   : natural := ddr3_dq'length;
+	constant byte_size   : natural := ddr3_dq'length/ddr3_dqs'length;
 
 	constant ns : natural := 1000;
 	constant uclk_period : natural := 10*ns;
 
-	signal dcm_rst  : std_logic;
-	signal dcm_lckd : std_logic;
-	signal ddr_pha : std_logic_vector(4-1 downto 0);
+	signal sys_rst   : std_logic;
+	signal sys_rst_n : std_logic;
+
+	signal dcm_rst   : std_logic;
+	signal input_rst : std_logic;
+	signal ddrs_rst  : std_logic;
+	signal mii_rst   : std_logic;
+	signal vga_rst   : std_logic;
+
+	signal dcm_lckd   : std_logic;
 	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
 	signal input_lckd : std_logic;
 
-	signal input_clk : std_logic;
+	---------------------------------------------
+	-- Frequency - 400 Mhz - 450 Mhz - 500 Mhz --
+	---------------------------------------------
+	-- ddr_clki  -   1     -   2     -    1    --
+	-- ddr_clkfb -   4     -   9     -    5	   --
+	-- ddr_clkop -   2     -   2     -    2    --
+	-- ddr_clkok -   2     -   2     -    2    --
+	---------------------------------------------
 
-	signal ddr_lp_clk : std_logic;
-	signal tpo : std_logic_vector(0 to 8-1) := (others  => 'Z');
+	constant ddr_clki  : natural := 1;
+	constant ddr_clkfb : natural := 5;
+	constant ddr_clkop : natural := 2;
+	constant ddr_clkok : natural := 2;
 
-	signal sto : std_logic;
+	signal ddr_sclk   : std_logic;
+	signal ddr_sclk2x : std_logic;
+	signal ddr_eclk   : std_logic;
+	signal ddr_pha    : std_logic_vector(4-1 downto 0);
+
 	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_cs  : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_ras : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_we : std_logic_vector(cmmd_phases-1 downto 0);
+	signal ddrphy_we  : std_logic_vector(cmmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
+	signal ddrphy_b   : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
+	signal ddrphy_a   : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -85,66 +105,21 @@ architecture scope of ecp3versa is
 	signal ddrphy_wlrdy : std_logic;
 	signal ddrphy_pll : std_logic_vector(8-1 downto 0);
 
+	signal input_clk : std_logic;
+
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
 
-	signal vga_clk : std_logic;
+	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
-	signal vga_frm : std_logic;
-	signal vga_red : std_logic_vector(8-1 downto 0);
+	signal vga_frm   : std_logic;
+	signal vga_red   : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
-	signal dvdelay : std_logic_vector(0 to 2);
-
-	signal sys_rst   : std_logic;
-	signal sys_rst_n : std_logic;
-	signal valid : std_logic;
-
-	--------------------------------------------------
-	-- Frequency -- 400 Mhz -- 450 Mhz -- 500 Mhz --
-	-- ddr_clki        1         2          1
-	-- ddr_clkfb       4         9          5
-	-- ddr_clkop       2         2          2
-	-- ddr_clkok       2         2          2
-	--------------------------------------------------
-
-	constant ddr_clki  : natural := 1; -- 1;
-	constant ddr_clkfb : natural := 5; -- 4;
-	constant ddr_clkop : natural := 2; -- 2;
-	constant ddr_clkok : natural := 2; -- 2;
-
-	constant r : natural := 0;
-	constant f : natural := 1;
-	signal ddr_sclk : std_logic;
-	signal ddr_sclk2x : std_logic;
-	signal ddr_eclk  : std_logic;
-
-	signal input_rst : std_logic;
-	signal ddrs_rst : std_logic;
-	signal mii_rst : std_logic;
-	signal vga_rst : std_logic;
-
-	signal debug_clk : std_logic;
-	signal yyyy : std_logic_vector(ddrphy_a'range);
-
-	function shuffle (
-		constant arg : byte_vector)
-		return byte_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : byte_vector(dat'range);
-	begin
-		dat := arg;
-		for i in 2-1 downto 0 loop
-			for j in dat'length/2-1 downto 0 loop
-				val(dat'length/2*i+j) := dat(2*j+i);
-			end loop;
-		end loop;
-		return val;
-	end;
 
 begin
 
@@ -238,8 +213,7 @@ begin
 		vga_blank => vga_blank,
 		vga_red   => vga_red,
 		vga_green => vga_green,
-		vga_blue  => vga_blue,
-		tpo => tpo);
+		vga_blue  => vga_blue);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
@@ -315,8 +289,6 @@ begin
 		iob_txd  => phy1_tx_d,
 		iob_gtxclk => phy1_gtxclk);
 
---	led <= '1' & not ddrphy_pll(6) & (1 to 6 => '1');
---	led <= (others => '1');
 	process (ddr_sclk, sys_rst)
 		variable led1 : std_logic_vector(led'range);
 		variable led2 : std_logic_vector(led'range);

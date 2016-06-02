@@ -62,6 +62,7 @@ entity ddrdqphy is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture virtex of ddrdqphy is
 
@@ -135,7 +136,7 @@ begin
 
 			dmi(i) <=
 				rdmi(i)    when registered_dout else 
-				sys_sti(i) when sys_dmt(i)='1' and not loopback else
+				reverse(sys_sti)(i) when sys_dmt(i)='1' and not loopback else
 				sys_dmi(i);
 
 		end generate;

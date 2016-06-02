@@ -42,7 +42,7 @@ NET "e_rx_clk" TNM_NET = e_rx_clk;
 TIMESPEC TS_e_tx_clk = PERIOD "e_rx_clk" 20 ns HIGH 50%;
 NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
 
-NET "sd_dqs[*]"    MAXSKEW  = 0.100 ns;
+NET "sd_dqs[*]"     MAXSKEW  = 0.100 ns;
 NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
 NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
 
@@ -53,8 +53,8 @@ NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
 NET "ddr_st_lp_dqs" OFFSET = IN 1.875 ns VALID 5.25 ns BEFORE sd_dqs[0] RISING;
 NET "ddr_st_lp_dqs" OFFSET = IN 1.875 ns VALID 5.25 ns BEFORE sd_dqs[1] RISING;
 
-OFFSET = IN -0.225 ns VALID 2.55 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.225 ns VALID 2.55 ns BEFORE sd_dqs[1] RISING;
+OFFSET = IN -0.200 ns VALID 2.6 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.200 ns VALID 2.6 ns BEFORE sd_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #

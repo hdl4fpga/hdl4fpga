@@ -48,7 +48,9 @@ architecture scope of nuhs3adsp is
 	constant word_size   : natural := 16;
 	constant byte_size   : natural := 8;
 
+	constant sys_per : real    := 50.0;
 	signal sys_rst   : std_logic;
+	signal sys_clk : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
@@ -56,11 +58,9 @@ architecture scope of nuhs3adsp is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant sys_per : real    := 50.0;
 	constant ddr_mul : natural := 25;
 	constant ddr_div : natural :=  3;
 
-	signal sys_clk : std_logic;
 	signal input_clk : std_logic;
 	signal video_clk : std_logic;
 
@@ -276,12 +276,12 @@ begin
 	end process;
 
 	ddr_clk_i : obufds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => ddr_clk(0),
-			o  => ddr_ckp,
-			ob => ddr_ckn);
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => ddr_clk(0),
+		o  => ddr_ckp,
+		ob => ddr_ckn);
 
 	adcclkab_iob_b : block
 		signal clk_n : std_logic;
