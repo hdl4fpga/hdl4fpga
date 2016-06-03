@@ -88,7 +88,7 @@ begin
 	begin
 		if dfsdcm_rst='1' then
 			dcm_rst <= '1';
-		elsif rising_edge(dcm_clkin) then
+		elsif rising_edge(dfsdcm_clkin) then
 			dcm_rst <= not dfs_lckd;
 		end if;
 	end process;

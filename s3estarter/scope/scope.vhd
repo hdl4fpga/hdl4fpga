@@ -249,10 +249,6 @@ begin
 		ddr_b   => sd_ba,
 		ddr_a   => sd_a,
 
-		ddr_sto(0) => ddr_st_dqs,
-		ddr_sto(1) => ddr_sto1_open,
-		ddr_sti(0) => ddr_st_lp_dqs,
-		ddr_sti(1) => ddr_st_lp_dqs,
 		ddr_dm  => sd_dm,
 		ddr_dqt  => ddr_dqt,
 		ddr_dqi  => sd_dq,
@@ -318,10 +314,6 @@ begin
 	-- RS232 Transceiver --
 	-----------------------
 
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
 	-- Ethernet Transceiver --
 	--------------------------
 
@@ -329,14 +321,5 @@ begin
 	e_mdio <= 'Z';
 	e_txd_4 <= '0';
 
-
-	-- LCD --
-	---------
-
-	lcd_e <= 'Z';
-	lcd_rs <= 'Z';
-	lcd_rw <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
 
 end;

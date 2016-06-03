@@ -135,7 +135,7 @@ package xdr_db is
 	type timing_tab is array (natural range <>) of timing_record;
 
 	constant timing_db : timing_tab := (
-		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_0),
+		timing_record'(mark => M6T,  param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => M6T,  param => tWR,   value => 15000),
 		timing_record'(mark => M6T,  param => tRP,   value => 15000),
 		timing_record'(mark => M6T,  param => tRCD,  value => 15000),
@@ -143,7 +143,7 @@ package xdr_db is
 		timing_record'(mark => M6T,  param => tMRD,  value => 12000),
 		timing_record'(mark => M6T,  param => tREFI, value => 7000000),
 
-		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_0),
+		timing_record'(mark => M3,  param => tPreRST, value => 200*1_000_000),
 		timing_record'(mark => M3,  param => tXPR,  value => 400000),
 		timing_record'(mark => M3,  param => tWR,   value => 15000),
 		timing_record'(mark => M3,  param => tRP,   value => 15000),
@@ -170,7 +170,7 @@ package xdr_db is
 		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSL,  value =>   1),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZL,  value =>   0),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNL,  value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => STRXL, value =>   1),
+		latency_record'(fpga => spartan3, stdr => DDR1, param => STRXL, value =>   2),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => RWNXL, value => 2*0),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSZXL, value =>  1),
 		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSXL, value =>   0),

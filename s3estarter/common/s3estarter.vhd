@@ -33,8 +33,6 @@ entity s3estarter is
 		--------------
 		-- switches --
 
-		dip : in std_logic_vector(3 downto 0) := (others => 'Z');
-
 		led0 : out std_logic := '0';
 		led1 : out std_logic := '0';
 		led2 : out std_logic := '0';
@@ -43,18 +41,6 @@ entity s3estarter is
 		led5 : out std_logic := '0';
 		led6 : out std_logic := '0';
 		led7 : out std_logic := '0';
-
-		-----------------------
-		-- RS232 Transceiver --
-
-		rs232_dcd : in std_logic := '1';
-		rs232_dsr : in std_logic := '1';
-		rs232_rd  : in std_logic := '1';
-		rs232_rts : out std_logic := '1';
-		rs232_td  : out std_logic := '1';
-		rs232_cts : in std_logic := '1';
-		rs232_dtr : out std_logic := '1';
-		rs232_ri  : in std_logic := '1';
 
 		------------------------------
 		-- MII ethernet Transceiver --
@@ -92,20 +78,8 @@ entity s3estarter is
 		sd_cke        : out std_logic := '1';
 		sd_ck_n       : out std_logic := '0';
 		sd_ck_p       : out std_logic := '1';
-		sd_ck_fb      : in std_logic := '0';
-		ddr_st_lp_dqs : in std_logic := 'Z';
-		ddr_st_dqs    : out std_logic := 'Z';
+		sd_ck_fb      : in std_logic := '0');
 
-		---------
-		-- LCD --
-
-		lcd_e         : out std_logic;
-		lcd_rs        : out std_logic;
-		lcd_rw        : out std_logic;
-		lcd_data      : inout std_logic_vector(0 to 7);
-		lcd_backlight : out std_logic
-	
-	);
 		
 	attribute loc : string;
 	attribute iostandard : string;
