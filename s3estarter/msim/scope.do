@@ -9,6 +9,7 @@ add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate /testbench/dqs
+add wave -noupdate /testbench/dm
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
