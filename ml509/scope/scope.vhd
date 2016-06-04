@@ -128,8 +128,6 @@ architecture scope of ml509 is
 	constant ddr_mul   : natural := 3; --10;
 	constant ddr_div   : natural := 1; --3;
 	constant ddr_fbdiv : natural := 1;
-	constant r : natural := 0;
-	constant f : natural := 1;
 
 	signal ictlr_clk_ibufg : std_logic;
 	signal ictlr_rst : std_logic;
