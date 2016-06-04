@@ -1,7 +1,6 @@
 #                                                                            #
 # Author(s):                                                                 #
 #   Miguel Angel Sagreras                                                    #
-#   Nicolas Alvarez                                                          #
 #                                                                            #
 # Copyright (C) 2015                                                         #
 #    Miguel Angel Sagreras                                                   #
@@ -42,16 +41,11 @@ NET "e_rx_clk" TNM_NET = e_rx_clk;
 TIMESPEC TS_e_tx_clk = PERIOD "e_rx_clk" 20 ns HIGH 50%;
 NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
 
-NET "sd_dqs[*]"     MAXSKEW  = 0.100 ns;
-NET "ddrphy_dqsi*"  MAXDELAY = 2.500 ns;
-NET "ddrphy_dqsi*"  MAXSKEW  = 0.750 ns;
+NET "sd_dm*" OFFSET = IN 4.75 ns VALID 3.5 ns BEFORE sd_dqs[0] RISING;
+NET "sd_dm*" OFFSET = IN 4.75 ns VALID 3.5 ns BEFORE sd_dqs[1] RISING;
 
-#NET "sd_dm*" OFFSET = IN 1.725 ns VALID 2.5 ns BEFORE sd_dqs[0] RISING;
-#NET "sd_dm*" OFFSET = IN .725 ns VALID 2.5 ns BEFORE sd_dqs[1] RISING;
-NET "sd_dm*" TIG;
-
-OFFSET = IN -0.250 ns VALID 2.5 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.250 ns VALID 2.5 ns BEFORE sd_dqs[1] RISING;
+OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
@@ -80,15 +74,15 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 # Data Byte 0 #
 # ########### #
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X0Y60;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y29;
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X0Y60;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y29;
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
 
 # Data Byte 1 #
 # ########### #
 
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X0Y82;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y72;
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X0Y82;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y72;
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;
