@@ -3,16 +3,26 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
-		gclk100 : in std_logic;
-		eth_rstn  : in std_logic;
+		btn0 : in std_logic;
+		btn1 : in std_logic;
+		btn2 : in std_logic;
+		btn3 : in std_logic;
+
+		sw0 : in std_logic;
+		sw1 : in std_logic;
+		sw2 : in std_logic;
+		sw3 : in std_logic;
+
+		gclk100   : in std_logic;
+		eth_rstn  : out std_logic;
 		eth_ref_clk : in std_logic;
-		eth_mdc   : in std_logic;
+		eth_mdio  : inout std_logic;
+		eth_mdc   : out std_logic;
 		eth_crs   : in std_logic;
 		eth_col   : in std_logic;
-		eth_mdio  : in std_logic;
 		eth_tx_clk  : in std_logic;
-		eth_tx_en : in std_logic;
-		eth_txd   : in std_logic_vector(0 to 4-1);
+		eth_tx_en : out std_logic;
+		eth_txd   : out std_logic_vector(0 to 4-1);
 		eth_rx_clk  : in std_logic;
 		eth_rxerr : in std_logic;
 		eth_rx_dv : in std_logic;
@@ -35,6 +45,16 @@ entity arty is
 		ddr3_odt : out std_logic := '1';
 
 	attribute loc : string;
+	attribute loc of btn0  : signal is "D9";
+	attribute loc of btn1  : signal is "C9";
+	attribute loc of btn2  : signal is "B9";
+	attribute loc of btn3  : signal is "B8";
+
+	attribute loc of sw0  : signal is "A8";
+	attribute loc of sw1  : signal is "C11";
+	attribute loc of sw2  : signal is "C10";
+	attribute loc of sw3  : signal is "D10";
+
 	attribute loc of gclk100  : signal is "E3";
 
 	attribute loc of eth_rstn  : signal is "C16";
