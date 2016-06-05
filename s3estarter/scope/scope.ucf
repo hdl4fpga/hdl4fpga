@@ -25,14 +25,6 @@ NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 20 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
 
-NET "sd_dqs[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%; # DDR 166 Mhz rate clock
-NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
-
-NET "sd_dqs[1]" TNM_NET = dqs1;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0; # INPUT_JITTER 200 ps;
-NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
-
 NET "e_tx_clk" TNM_NET = e_tx_clk;
 TIMESPEC TS_mii_txc = PERIOD "e_tx_clk" 20 ns HIGH 50%;
 NET "e_tx_clk" CLOCK_DEDICATED_ROUTE = false;
@@ -40,12 +32,6 @@ NET "e_tx_clk" CLOCK_DEDICATED_ROUTE = false;
 NET "e_rx_clk" TNM_NET = e_rx_clk;
 TIMESPEC TS_e_tx_clk = PERIOD "e_rx_clk" 20 ns HIGH 50%;
 NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
-
-NET "sd_dm*" OFFSET = IN 4.75 ns VALID 3.5 ns BEFORE sd_dqs[0] RISING;
-NET "sd_dm*" OFFSET = IN 4.75 ns VALID 3.5 ns BEFORE sd_dqs[1] RISING;
-
-OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #
@@ -64,25 +50,33 @@ TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 
-#TIMESPEC TS_rowid   = FROM FFS(*/*vsync_erq*) TO FFS(*sync_ena_val*) TIG;
-#TIMESPEC TS_rowpag  = FROM FFS(*/*hsync_erq*) TO FFS(*sync_dat_val*) TIG;
+# ############## #
+# DDR constrains #
+# ############## #
 
-# ######################## #
-# Read-FIFO DQS Delay Taps #
-# ######################## #
+NET "sd_dqs[0]" TNM_NET = dqs0;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%; # DDR 166 Mhz rate clock
+
+NET "sd_dqs[1]" TNM_NET = dqs1;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
+
+NET "sd_dm*" OFFSET = IN 4.75 ns VALID 4.5 ns BEFORE sd_dqs[0] RISING;
+NET "sd_dm*" OFFSET = IN 4.75 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
+
+OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[1] RISING;
+
+
+# ####################### #
+# Read-FIFO DQS Delay Tap #
+# ####################### #
 
 # Data Byte 0 #
-# ########### #
 
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y29;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" BEL = G;
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y29;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" BEL = F;
 
 # Data Byte 1 #
-# ########### #
 
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y72;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" BEL = G;
 INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y72;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" BEL = F;
