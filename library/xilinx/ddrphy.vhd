@@ -350,8 +350,6 @@ begin
 			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
 			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
 
---			sys_dqsi(data_gear*i+0) <=     ddr_dqsi(i) after 1 ns;
---			sys_dqsi(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
 	end generate;
 
 	process(ddr_dm, ddr_sti)
