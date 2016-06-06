@@ -54,13 +54,13 @@ architecture scope of s3Estarter is
 	signal sys_clk : std_logic;
 
 	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --   8     --  10     --   4     --
-	-- Divide by   --   3     --   3     --   1     --
+	-- Frequency   -- 133 Mhz -- 166 Mhz -- 166 Mhz --
+	-- Multiply by --   8     --   3     --  10     --
+	-- Divide by   --   3     --   1     --   3     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 10;
-	constant ddr_div : natural :=  3;
+	constant ddr_mul : natural := 3;
+	constant ddr_div : natural := 1;
 
 	signal input_rst : std_logic;
 	signal ddrs_rst  : std_logic;

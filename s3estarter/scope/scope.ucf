@@ -54,6 +54,8 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 # DDR constrains #
 # ############## #
 
+# DDR 150 Mhz rate clock #
+
 #NET "sd_dqs[0]" TNM_NET = dqs0;
 #TIMESPEC TS_dso0 = PERIOD "dqs0" 6 ns HIGH 50%; # DDR 166 Mhz rate clock
 #NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
@@ -68,8 +70,10 @@ TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 #OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[0] RISING;
 #OFFSET = IN -0.50 ns VALID 2 ns BEFORE sd_dqs[1] RISING;
 
+# DDR 150 Mhz rate clock #
+
 NET "sd_dqs[0]" TNM_NET = dqs0;
-TIMESPEC TS_dso0 = PERIOD "dqs0" 6.6666 ns HIGH 50%; # DDR 150 Mhz rate clock
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.6666 ns HIGH 50%;
 NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 
 NET "sd_dqs[1]" TNM_NET = dqs1;
@@ -82,8 +86,10 @@ NET "sd_dm*" OFFSET = IN 5 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
 OFFSET = IN -0.50 ns VALID 2.333 ns BEFORE sd_dqs[0] RISING;
 OFFSET = IN -0.50 ns VALID 2.333 ns BEFORE sd_dqs[1] RISING;
 
+# DDR 133 Mhz rate clock #
+
 #NET "sd_dqs[0]" TNM_NET = dqs0;
-#TIMESPEC TS_dso0 = PERIOD "dqs0" 7.5 ns HIGH 50%; # DDR 133 Mhz rate clock
+#TIMESPEC TS_dso0 = PERIOD "dqs0" 7.5 ns HIGH 50%;
 #NET "sd_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 #
 #NET "sd_dqs[1]" TNM_NET = dqs1;
