@@ -3,15 +3,10 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
-		btn0 : in std_logic;
-		btn1 : in std_logic;
-		btn2 : in std_logic;
-		btn3 : in std_logic;
-
-		sw0 : in std_logic;
-		sw1 : in std_logic;
-		sw2 : in std_logic;
-		sw3 : in std_logic;
+		btn : std_logic_vector(4-1 downto 0);
+		sw  : std_logic_vector(4-1 downto 0);
+		led : std_logic_vector(7-1 downto 4);
+		RGBled : std_logic_vector(4*3-1 downto 0);
 
 		gclk100   : in std_logic;
 		eth_rstn  : out std_logic;
@@ -37,23 +32,18 @@ entity arty is
 		ddr3_cas : out std_logic := '1';
 		ddr3_we  : out std_logic := '1';
 		ddr3_ba  : out std_logic_vector( 3-1 downto 0) := (others => '1');
-		ddr3_a   : out std_logic_vector(14-1 0) := (others => '1');
+		ddr3_a   : out std_logic_vector(14-1 downto 0) := (others => '1');
 		ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-		ddr3_odt : out std_logic := '1';
+		ddr3_odt : out std_logic := '1');
 
 	attribute loc : string;
-	attribute loc of btn0  : signal is "D9";
-	attribute loc of btn1  : signal is "C9";
-	attribute loc of btn2  : signal is "B9";
-	attribute loc of btn3  : signal is "B8";
-
-	attribute loc of sw0  : signal is "A8";
-	attribute loc of sw1  : signal is "C11";
-	attribute loc of sw2  : signal is "C10";
-	attribute loc of sw3  : signal is "D10";
+	attribute loc of btn : signal is "B8 B9 C9 D9";
+	attribute loc of sw  : signal is "D10 C10 C11 A8";
+	attribute loc of led : signal is "T10 T9 J5 H5";
+	attribute loc of RGBled : signal is "K1 H6 K2 J3 J2 H4 G3 J4 G4 G6 F6 E1";
 
 	attribute loc of gclk100  : signal is "E3";
 
@@ -80,7 +70,7 @@ entity arty is
 	attribute loc of ddr3_cas  : signal is "M4";
 	attribute loc of ddr3_we   : signal is "P5";
 	attribute loc of ddr3_ba   : signal is "P2 P4 R1";
-	attribute loc of ddr3_a    : signal is "T8 T6 U6 R6 V7 R8 U7 V6 R5 N6 T1 N4 M6 R2"
+	attribute loc of ddr3_a    : signal is "T8 T6 U6 R6 V7 R8 U7 V6 R5 N6 T1 N4 M6 R2";
 	attribute loc of ddr3_dm   : signal is "U1 L1";
 	attribute loc of ddr3_dqs_p : signal is "U2 N2";
 	attribute loc of ddr3_dqs_n : signal is "V2 N1";
