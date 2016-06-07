@@ -242,7 +242,7 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => gtx_clk,
+		mii_txc  => eth_tx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
@@ -324,7 +324,7 @@ begin
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
-		xd_len => 8)
+		xd_len => 4)
 	port map (
 		mii_rxc  => mii_rxc,
 		iob_rxdv => eth_rx_dv,
@@ -336,8 +336,7 @@ begin
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => eth_tx_en,
-		iob_txd  => eth_txd,
-		iob_gtxclk => phy_txc_gtxclk);
+		iob_txd  => eth_txd);
 
 	iob_b : block
 	begin
@@ -375,8 +374,8 @@ begin
 	eth_mdio <= '0';
 
 
-	tp_g : for i in 0 to 8-1 generate
-		gpio_led(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+2) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_w='1' else tp1(i*8+5) ;
+	tp_g : for i in 8-1 downto 4 generate
+		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5) ;
 	end generate;
 
 end;

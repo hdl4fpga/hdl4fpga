@@ -3,10 +3,10 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
-		btn : std_logic_vector(4-1 downto 0);
-		sw  : std_logic_vector(4-1 downto 0);
-		led : std_logic_vector(7-1 downto 4);
-		RGBled : std_logic_vector(4*3-1 downto 0);
+		btn : in std_logic_vector(4-1 downto 0);
+		sw  : in std_logic_vector(4-1 downto 0);
+		led : out std_logic_vector(7-1 downto 4);
+		RGBled : out std_logic_vector(4*3-1 downto 0);
 
 		gclk100   : in std_logic;
 		eth_rstn  : out std_logic;
