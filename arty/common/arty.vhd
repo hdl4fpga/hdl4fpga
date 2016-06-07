@@ -5,7 +5,7 @@ entity arty is
 	port (
 		btn : in std_logic_vector(4-1 downto 0);
 		sw  : in std_logic_vector(4-1 downto 0);
-		led : out std_logic_vector(7-1 downto 4);
+		led : out std_logic_vector(8-1 downto 4);
 		RGBled : out std_logic_vector(4*3-1 downto 0);
 
 		gclk100   : in std_logic;
@@ -40,6 +40,7 @@ entity arty is
 		ddr3_odt : out std_logic := '1');
 
 	attribute loc : string;
+	
 	attribute loc of btn : signal is "B8 B9 C9 D9";
 	attribute loc of sw  : signal is "D10 C10 C11 A8";
 	attribute loc of led : signal is "T10 T9 J5 H5";

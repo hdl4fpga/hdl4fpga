@@ -21,19 +21,13 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name sys_clk -period 10 ns -waveform {0 5} [get_ports sys_clk]
+create_clock -name sys_clk -period 10 -waveform {0 5} [get_ports gclk100]
 
-create_clock -name dqso0 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[0]]
-create_clock -name dqso1 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[1]]
-create_clock -name dqso2 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[2]]
-create_clock -name dqso3 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[3]]
-create_clock -name dqso4 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[4]]
-create_clock -name dqso5 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[5]]
-create_clock -name dqso6 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[6]]
-create_clock -name dqso7 -period 3 ns -waveform {0 1.5} [get_ports ddr2_dqs_p[7]]
+create_clock -name dqso0 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[0]]
+create_clock -name dqso1 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[1]]
 
-create_clock -name eth_rx_clk -period 40 ns -waveform {0 20} [get_ports eth_rx_clk]
-create_clock -name eth_tx_clk -period 40 ns -waveform {0 20} [get_ports eth_tx_clk]
+create_clock -name eth_rx_clk -period 40 -waveform {0 20} [get_ports eth_rx_clk]
+create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
 
 # ###################### #
 # Ignore crossclock time #
@@ -57,23 +51,23 @@ create_clock -name eth_tx_clk -period 40 ns -waveform {0 20} [get_ports eth_tx_c
 #TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
 #TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
 
-set_false_path -to [get_cells (ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].ddrto_i/ffd_i)]
+#set_false_path -to [get_cells (ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].ddrto_i/ffd_i)]
 
 # Others #
 # ###### #
 
 
-set_property IOSTANDARD DIFF_SSTL18_II     [get_ports ddr3_clk_p[*]]
-set_property IOSTANDARD DIFF_SSTL18_II     [get_ports ddr3_clk_n[*]]
-set_property IOSTANDARD DIFF_SSTL18_II_DCI [get_ports ddr3_dqs_p[*]]
-set_property IOSTANDARD DIFF_SSTL18_II_DCI [get_ports ddr3_dqs_n[*]]
-set_property IOSTANDARD SSTL18_II_DCI      [get_ports ddr3_d[*]]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_dm[*]]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_we]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_cas]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_ras]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_cs]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_cke]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_odt]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_ba[*]]
-set_property IOSTANDARD SSTL18_II          [get_ports ddr3_a[*]]
+set_property IOSTANDARD DIFF_SSTL135_R     [get_ports ddr3_clk_p]
+set_property IOSTANDARD DIFF_SSTL135_R     [get_ports ddr3_clk_n]
+set_property IOSTANDARD DIFF_SSTL135_R [get_ports ddr3_dqs_p[*]]
+set_property IOSTANDARD DIFF_SSTL135_R [get_ports ddr3_dqs_n[*]]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_dq[*]]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_dm[*]]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_we]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_cas]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_ras]
+set_property IOSTANDARD SSTL135_R         [get_ports ddr3_cs]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_cke]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_odt]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_ba[*]]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_a[*]]

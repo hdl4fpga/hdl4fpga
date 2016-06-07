@@ -42,8 +42,8 @@ architecture scope of arty is
 	constant data_phases : natural := 2;
 	constant data_edges : natural := 2;
 	constant cmd_phases : natural := 1;
-	constant bank_size : natural := 2;
-	constant addr_size : natural := 13;
+	constant bank_size : natural := ddr3_ba'length;
+	constant addr_size : natural := ddr3_a'length;
 	constant word_size : natural := ddr3_dq'length;
 	constant line_size : natural := 2*word_size;
 	constant byte_size : natural := 8;
@@ -77,8 +77,8 @@ architecture scope of arty is
 	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmd_phases*2-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmd_phases*13-1 downto 0);
+	signal ddrphy_b : std_logic_vector(cmd_phases*bank_size-1 downto 0);
+	signal ddrphy_a : std_logic_vector(cmd_phases*addr_size-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -192,8 +192,8 @@ begin
 		DDR_SCLKEDGES => sclk_edges,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,
-		DDR_BANKSIZE => 2, --ddr3_ba'length,
-		DDR_ADDRSIZE => 13,
+		DDR_BANKSIZE => BANK_SIZE, --ddr3_ba'length,
+		DDR_ADDRSIZE => ADDR_SIZE,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
 		DDR_DATAEDGES => data_edges,
@@ -223,8 +223,8 @@ begin
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
 		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(2-1 downto 0),
-		ddr_a    => ddrphy_a(13-1 downto 0),
+		ddr_b    => ddrphy_b,
+		ddr_a    => ddrphy_a,
 		ddr_dmi  => ddrphy_dmi,
 		ddr_dmt  => ddrphy_dmt,
 		ddr_dmo  => ddrphy_dmo,
@@ -261,8 +261,8 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		BANK_SIZE => 2,
-		ADDR_SIZE => 13,
+		BANK_SIZE => BANK_SIZE,
+        ADDR_SIZE => ADDR_SIZE,
 		data_gear => data_gear,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
@@ -369,13 +369,13 @@ begin
 		end generate;
 
 	end block;
-	
+	rgbled  <= (others => '0');
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 
 
-	tp_g : for i in 8-1 downto 4 generate
-		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5) ;
+	tp_g : for i in 2-1 downto 0 generate
+		led(i+4) <= tp1(i*2+1) when btn(1)='1' else tp1(i*2+2) when btn(2)='1' else tp1(i*2+0) when btn(3)='1' else tp1(i*2+5) ;
 	end generate;
 
 end;
