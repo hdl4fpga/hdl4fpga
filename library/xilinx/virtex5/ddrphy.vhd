@@ -242,7 +242,7 @@ architecture virtex of ddrphy is
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
 
-	function unshuffle(
+	impure function unshuffle(
 		constant arg : dline_vector) 
 		return byte_vector is
 		variable val : byte_vector(sys_dqi'length/byte_size-1 downto 0);

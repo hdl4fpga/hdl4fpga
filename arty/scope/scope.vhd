@@ -44,7 +44,7 @@ architecture scope of arty is
 	constant cmd_phases : natural := 1;
 	constant bank_size : natural := 2;
 	constant addr_size : natural := 13;
-	constant word_size : natural := ddr3_d'length;
+	constant word_size : natural := ddr3_dq'length;
 	constant line_size : natural := 2*word_size;
 	constant byte_size : natural := 8;
 	constant data_gear : natural := line_size/word_size;
@@ -69,7 +69,7 @@ architecture scope of arty is
 	signal ddr3_dqt  : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_clk  : std_logic_vector(1-1 downto 0);
 
-	signal tp1 : std_logic_vector(ddr3_d'range) := (others  => 'Z');
+	signal tp1 : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
 
 	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
 	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
@@ -101,9 +101,9 @@ architecture scope of arty is
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxc  : std_logic;
-	signal mii_rxd  : std_logic_vector(phy_rxd'range);
+	signal mii_rxd  : std_logic_vector(eth_rxd'range);
 	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy_txd'range);
+	signal mii_txd  : std_logic_vector(eth_txd'range);
 
 	signal vga_clk : std_logic;
 	signal vga_hsync : std_logic;
@@ -132,11 +132,11 @@ architecture scope of arty is
 begin
 		
 		
-	idelay_ibufg_i : IBUFGDS_LVPECL_25
-	port map (
-		I  => clk_fpga_p,
-		IB => clk_fpga_n,
-		O  => ictlr_clk_ibufg );
+--	idelay_ibufg_i : IBUFGDS_LVPECL_25
+--	port map (
+--		I  => clk_fpga_p,
+--		IB => clk_fpga_n,
+--		O  => ictlr_clk_ibufg );
 
 	idelay_bufg_i : BUFG
 	port map (
@@ -145,13 +145,13 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => user_clk,
+		I => gclk100,
 		O => sys_clk);
 
-	process (gpio_sw_c, ictlr_clk)
+	process (btn(0), ictlr_clk)
 		variable tmr : unsigned(0 to 8-1);
 	begin
-		if gpio_sw_c='1' then
+		if btn(0)='1' then
 			tmr := (others => '0');
 		elsif rising_edge(ictlr_clk) then
 			if tmr(0)='0' then
@@ -179,7 +179,6 @@ begin
 		input_clk => input_clk,
 		ddr_clk0 => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
-		gtx_clk => gtx_clk,
 		video_clk => open,
 		video_clk90 => open,
 		ddr_rst => ddrs_rst);
@@ -302,25 +301,25 @@ begin
 		sysiod_clk => ictlr_clk,
 		sys_tp => tp1,
 		ddr_clk => ddr3_clk,
-		ddr_cke => ddr3_cke(0),
-		ddr_cs  => ddr3_cs(0),
+		ddr_cke => ddr3_cke,
+		ddr_cs  => ddr3_cs,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,
 		ddr_we  => ddr3_we,
 		ddr_b   => ddr3_ba,
 		ddr_a   => ddr3_a,
-		ddr_odt => ddr3_odt(0),
+		ddr_odt => ddr3_odt,
 
 		ddr_dm   => ddr3_dm,
 		ddr_dqo  => ddr3_dqo,
-		ddr_dqi  => ddr3_d,
+		ddr_dqi  => ddr3_dq,
 		ddr_dqt  => ddr3_dqt,
 		ddr_dqst => ddr3_dqst,
 		ddr_dqsi => ddr3_dqsi,
 		ddr_dqso => ddr3_dqso);
 
 
-	phy_reset <= not sys_rst;
+	eth_rstn <= not sys_rst;
 	mii_rxc <= eth_rx_clk;
 
 	mii_iob_e : entity hdl4fpga.mii_iob
@@ -366,40 +365,18 @@ begin
 
 		end generate;
 
-		ddr_d_g : for i in ddr3_d'range generate
+		ddr_d_g : for i in ddr3_dq'range generate
 			ddr3_dq(i) <= ddr3_dqo(i) when ddr3_dqt(i)='0' else 'Z';
 		end generate;
 
 	end block;
 	
-	phy_txer <= '0';
-	phy_mdc  <= '0';
-	phy_mdio <= '0';
+	eth_mdc  <= '0';
+	eth_mdio <= '0';
 
-	dvi_reset <= '0';
-	dvi_xclk_p <= 'Z';
-	dvi_xclk_n <= 'Z';
-	dvi_v <= 'Z';
-	dvi_h <= 'Z';
-	dvi_de <= 'Z';
-	dvi_d <= (others => 'Z');
 
 	tp_g : for i in 0 to 8-1 generate
 		gpio_led(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+2) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_w='1' else tp1(i*8+5) ;
 	end generate;
-
-	dvi_gpio1 <= '1';
-	bus_error <= (others => 'Z');
-	gpio_led_n <= '0';
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
-	gpio_led_e <= '0';
-	gpio_led_c <= ddrphy_ini;
-	fpga_diff_clk_out_p <= 'Z';
-	fpga_diff_clk_out_n <= 'Z';
-
-	ddr3_cs(1 downto 1) <= "1";
-  	ddr3_cke(1 downto 1) <= "0";
-	ddr3_odt(1 downto 1) <= (others => 'Z');
 
 end;

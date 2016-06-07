@@ -62,6 +62,8 @@ begin
 		end;
 
 		constant size : natural := csize(i+1)-csize(i);
+		constant cntr_left : natural := csize(i)+size-1;
+		constant cntr_right  : natural := csize(i);
 		signal   cntr : unsigned(csize(i)+size-1 downto csize(i));
 
 	begin
@@ -81,7 +83,7 @@ begin
 			end if;
 		end process;
 
-		qo_g : for i in cntr'range generate
+		qo_g : for i in cntr_left downto cntr_right generate
 			qo(i) <= cntr(i);
 		end generate;
 		q(i) <= cntr(cntr'left);
