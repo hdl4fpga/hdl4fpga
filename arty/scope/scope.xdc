@@ -22,6 +22,7 @@
 #                                                                            #
 
 create_clock -name sys_clk -period 10 -waveform {0 5} [get_ports gclk100]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets dcms_e/ddrdcm_e/CLKIN]
 
 create_clock -name dqso0 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[0]]
 create_clock -name dqso1 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[1]]
@@ -57,10 +58,10 @@ create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
 # ###### #
 
 
-set_property IOSTANDARD DIFF_SSTL135_R     [get_ports ddr3_clk_p]
-set_property IOSTANDARD DIFF_SSTL135_R     [get_ports ddr3_clk_n]
-set_property IOSTANDARD DIFF_SSTL135_R [get_ports ddr3_dqs_p[*]]
-set_property IOSTANDARD DIFF_SSTL135_R [get_ports ddr3_dqs_n[*]]
+set_property IOSTANDARD DIFF_SSTL135     [get_ports ddr3_clk_p]
+set_property IOSTANDARD DIFF_SSTL135     [get_ports ddr3_clk_n]
+set_property IOSTANDARD DIFF_SSTL135 [get_ports ddr3_dqs_p[*]]
+set_property IOSTANDARD DIFF_SSTL135 [get_ports ddr3_dqs_n[*]]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_dq[*]]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_dm[*]]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_we]
@@ -71,3 +72,4 @@ set_property IOSTANDARD SSTL135_R          [get_ports ddr3_cke]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_odt]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_ba[*]]
 set_property IOSTANDARD SSTL135_R          [get_ports ddr3_a[*]]
+set_property IOSTANDARD SSTL135_R          [get_ports ddr3_reset]

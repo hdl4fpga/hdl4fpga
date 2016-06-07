@@ -92,7 +92,7 @@ begin
 	port map (
 		rst   => dcm_rst,
 		clkin => dcm_clkin,
-		clkfb => dcm_clkfb,
+		clkfb => dcm_clk0,
 		clk0  => dcm_clk0,
 		clk90 => dcm_clk90,
 		locked => dcm_lckd);
