@@ -80,7 +80,7 @@ set_property LOC B9 [get_ports btn[2]]
 set_property LOC C9 [get_ports btn[1]]
 set_property LOC D9 [get_ports btn[0]]
 
-set_property LOC D10 [get_ports sw[3]]
+set_property LOC A10 [get_ports sw[3]]
 set_property LOC C10 [get_ports sw[2]]
 set_property LOC C11 [get_ports sw[1]]
 set_property LOC A8  [get_ports sw[0]]
