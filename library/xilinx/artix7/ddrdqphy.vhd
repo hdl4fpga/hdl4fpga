@@ -237,11 +237,12 @@ begin
 			i   => ddr_dqsi,
 			o   => dqsi_buf);
 
-		bufio_i : bufio
-		port map (
-			i => dqsi_buf,
-			o => dqsi);
+--		bufio_i : bufio
+--		port map (
+--			i => dqsi_buf,
+--			o => dqsi);
 
+	dqsi <= dqsi_buf;
 		tp(6) <= smp(1);
 		iddr_i : iddr
 		generic map (

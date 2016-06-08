@@ -71,9 +71,9 @@ entity arty is
 --	attribute loc of ddr3_ras : signal is "P3";
 --	attribute loc of ddr3_cas : signal is "M4";
 --	attribute loc of ddr3_we  : signal is "P5";
---  attribute loc of ddr3_odt :  signal is "R5";
+--  attribute loc of ddr3_odt : signal is "R5";
 --	attribute loc of ddr3_ba  : signal is "P2 P4 R1";
---	attribute loc of ddr3_a   : signal is "T8 T6 U6 R6 V7 R8 U7 V6 R5 N6 T1 N4 M6 R2";
+--	attribute loc of ddr3_a   : signal is "T8 T6 U6 R6 V7 R8 U7 V6 R7 N6 T1 N4 M6 R2";
 --	attribute loc of ddr3_dm  : signal is "U1 L1";
 --	attribute loc of ddr3_dqs_p : signal is "U2 N2";
 --	attribute loc of ddr3_dqs_n : signal is "V2 N1";

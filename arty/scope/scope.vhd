@@ -344,7 +344,7 @@ begin
 		ddr_clks_g : for i in ddr3_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
-				iostandard => "DIFF_SSTL18_II")
+				iostandard => "DIFF_SSTL135")
 			port map (
 				i  => ddr3_clk(i),
 				o  => ddr3_clk_p,
@@ -354,7 +354,7 @@ begin
 		ddr_dqs_g : for i in ddr3_dqs_p'range generate
 			dqsiobuf_i : iobufds
 			generic map (
-				iostandard => "DIFF_SSTL18_II_DCI")
+				iostandard => "DIFF_SSTL135")
 			port map (
 				t   => ddr3_dqst(i),
 				i   => ddr3_dqso(i),
