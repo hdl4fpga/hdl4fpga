@@ -125,7 +125,6 @@ architecture scope of arty is
 
 	constant ddr_mul   : natural := 10;
 	constant ddr_div   : natural :=  3;
-	constant ddr_fbdiv : natural := 1;
 
 	signal ictlr_clk_ibufg : std_logic;
 	signal ictlr_rst : std_logic;
@@ -188,7 +187,7 @@ begin
 	generic map (
 		fpga => virtex5,
 		DDR_MARK => M3,
-		DDR_TCP => integer(uclk_period*1000.0)*ddr_div*ddr_fbdiv/ddr_mul,
+		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES => sclk_edges,
 		DDR_STROBE => "INTERNAL",
 		DDR_CLMNSIZE => 7,

@@ -33,19 +33,19 @@ use hdl4fpga.std.all;
 
 entity dcms is
 	generic (
-		ddr_mul : natural := 25;
-		ddr_div : natural := 9;
-		mii_mul : natural := 5;
-		mii_div : natural := 4;
-		sys_per : real := 50.0);
+		ddr_mul : natural;
+		ddr_div : natural;
+		mii_mul : natural;
+		mii_div : natural;
+		sys_per : real);
 	port (
 		sys_rst   : in  std_logic;
 		sys_clk   : in  std_logic;
-		input_clk : buffer std_logic;
-		ddr_clk0  : buffer std_logic;
+		input_clk : out std_logic;
+		ddr_clk0  : out std_logic;
 		ddr_clk90 : out std_logic;
-		video_clk : buffer std_logic;
-		mii_clk   : buffer std_logic;
+		video_clk : out std_logic;
+		mii_clk   : out std_logic;
 		input_rst : out std_logic;
 		ddr_rst  : out std_logic;
 		mii_rst   : out std_logic;
