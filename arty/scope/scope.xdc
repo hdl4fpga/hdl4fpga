@@ -22,7 +22,6 @@
 #                                                                            #
 
 create_clock -name sys_clk -period 10 -waveform {0 5} [get_ports gclk100]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets dcms_e/ddrdcm_e/CLKIN]
 
 create_clock -name dqso0 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[0]]
 create_clock -name dqso1 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[1]]

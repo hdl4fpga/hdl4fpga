@@ -57,6 +57,7 @@ architecture def of dcms is
     constant video : natural := 2;
     constant ddr   : natural := 3;
 
+	signal ddr_clkfb : std_logic;
 	signal clks : std_logic_vector(0 to 3);
 	signal lcks : std_logic_vector(clks'range);
 begin
@@ -72,28 +73,37 @@ begin
 --		dfs_clk => clks(video),
 --		dcm_lck => lcks(video));
 
-	ddrdcm_e : entity hdl4fpga.dfsdcm
+	dfs_i :  mmcme2_base
 	generic map (
-		dcm_per => sys_per,
-		dfs_mul => ddr_mul,
-		dfs_div => ddr_div)
+		divclk_divide => ddr_div,
+		clkfbout_mult_f => real(2*ddr_mul),
+		clkin1_period => sys_per,
+		clkout1_phase => 90.000,
+		clkout0_divide_f => 2.0,
+		clkout1_divide => 2,
+		bandwidth => "HIGH")
 	port map (
-		dfsdcm_rst => sys_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => clks(ddr),
-		dfsdcm_clk90 => ddr_clk90,
-		dfsdcm_lckd => lcks(ddr));
-
-	inputdcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
-	port map (
-		dcm_rst => sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => clks(input),
-		dcm_lck => lcks(input));
+		pwrdwn   => '0',
+		rst      => sys_rst,
+		clkin1   => sys_clk,
+		clkfbin  => ddr_clkfb,
+		clkfbout => ddr_clkfb,
+		clkout0  => clks(ddr),
+		clkout1  => ddr_clk90,
+		locked   => lcks(ddr));
+   
+	clks(input) <= clks(ddr);
+	lcks(input) <= lcks(ddr);
+--	inputdcm_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => 3,
+--		dfs_div => 2)
+--	port map (
+--		dcm_rst => sys_rst,
+--		dcm_clk => sys_clk,
+--		dfs_clk => clks(input),
+--		dcm_lck => lcks(input));
 
 --	mii_dfs_e : entity hdl4fpga.dfs
 --	generic map (
