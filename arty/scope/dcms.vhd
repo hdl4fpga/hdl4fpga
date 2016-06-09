@@ -35,8 +35,6 @@ entity dcms is
 	generic (
 		ddr_mul : natural;
 		ddr_div : natural;
-		mii_mul : natural;
-		mii_div : natural;
 		sys_per : real);
 	port (
 		sys_rst   : in  std_logic;
@@ -92,10 +90,10 @@ begin
 		dfs_mul => 3,
 		dfs_div => 2)
 	port map (
-		dcm_rst => dcm_rst,
+		dcm_rst => sys_rst,
 		dcm_clk => sys_clk,
-		dfs_clk => input_clk,
-		dcm_lck => input_lckd);
+		dfs_clk => clks(input),
+		dcm_lck => lcks(input));
 
 --	mii_dfs_e : entity hdl4fpga.dfs
 --	generic map (
