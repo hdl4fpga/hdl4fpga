@@ -63,16 +63,16 @@ architecture def of dcms is
 	signal lcks : std_logic_vector(clks'range);
 begin
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 15,
-		dfs_div => 2)
-	port map(
-		dcm_rst => sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => clks(video),
-		dcm_lck => lcks(video));
+--	videodcm_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => 15,
+--		dfs_div => 2)
+--	port map(
+--		dcm_rst => sys_rst,
+--		dcm_clk => sys_clk,
+--		dfs_clk => clks(video),
+--		dcm_lck => lcks(video));
 
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
@@ -86,23 +86,27 @@ begin
 		dfsdcm_clk90 => ddr_clk90,
 		dfsdcm_lckd => lcks(ddr));
 
-	inputdcm_e : entity hdl4fpga.dcmisdbt
-	port map (
-		sys_rst => sys_rst,
-		sys_clk => sys_clk,
-		dfs_clk => clks(input),
-		dcm_lck => lcks(input));
-
-	mii_dfs_e : entity hdl4fpga.dfs
+	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => 5,
-		dfs_div => 4)
+		dfs_mul => 3,
+		dfs_div => 2)
 	port map (
-		dcm_rst => sys_rst,
+		dcm_rst => dcm_rst,
 		dcm_clk => sys_clk,
-		dfs_clk => clks(mii),
-		dcm_lck => lcks(mii));
+		dfs_clk => input_clk,
+		dcm_lck => input_lckd);
+
+--	mii_dfs_e : entity hdl4fpga.dfs
+--	generic map (
+--		dcm_per => sys_per,
+--		dfs_mul => 5,
+--		dfs_div => 4)
+--	port map (
+--		dcm_rst => sys_rst,
+--		dcm_clk => sys_clk,
+--		dfs_clk => clks(mii),
+--		dcm_lck => lcks(mii));
 
 	rsts_b : block
 		signal rsts : std_logic_vector(clks'range);

@@ -176,10 +176,8 @@ begin
 		sys_rst => sys_rst,
 		sys_clk => sys_clk,
 		input_clk => input_clk,
-		ddr_clk0 => ddrs_clk0,
+		ddr_clk0  => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
-		video_clk => open,
-		video_clk90 => open,
 		ddr_rst => ddrs_rst);
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
