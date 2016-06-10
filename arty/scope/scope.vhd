@@ -118,13 +118,13 @@ architecture scope of arty is
 	signal sys_rst   : std_logic;
 
 	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
-	-- Multiply by --  10     --   4     --   9     --
-	-- Divide by   --   3     --   1     --   2     --
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz --
+	-- Multiply by --  10     --   7     --   4     --
+	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 7;
-	constant ddr_div   : natural := 2;
+	constant ddr_mul   : natural := 10;
+	constant ddr_div   : natural := 3;
 
 	signal ictlr_clk_ibufg : std_logic;
 	signal ictlr_rst : std_logic;
