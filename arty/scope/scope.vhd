@@ -123,8 +123,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   1     --   2     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 10;
-	constant ddr_div   : natural :=  3;
+	constant ddr_mul   : natural := 7;
+	constant ddr_div   : natural := 2;
 
 	signal ictlr_clk_ibufg : std_logic;
 	signal ictlr_rst : std_logic;

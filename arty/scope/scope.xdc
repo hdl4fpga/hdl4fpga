@@ -29,32 +29,13 @@ create_clock -name dqso1 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[1]]
 create_clock -name eth_rx_clk -period 40 -waveform {0 20} [get_ports eth_rx_clk]
 create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
 
-# ###################### #
-# Ignore crossclock time #
-# ###################### #
+set_clock_groups -asynchronous  -group {dqso0} -group {ddrs_clk0}
+set_clock_groups -asynchronous  -group {dqso1} -group {ddrs_clk0}
+set_clock_groups -asynchronous  -group {eth_rx_clk} -group {ddrs_clk0}
+set_clock_groups -asynchronous  -group {eth_tx_clk} -group {ddrs_clk0}
 
-#NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
-#NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
-#
-#NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-#NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-#NET input_clk  TNM_NET = FFS  FFS_adcclkab;
-#NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
-#NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
-#NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
-##NET video_clk     TNM_NET = FFS  FFS_videoclk;
-##NET video_clk     TNM_NET = RAMS RAMS_videoclk;
-
-#TIMESPEC TS_r2o_ddr2ddr = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
-#TIMESPEC TS_f2r_ddr2ddr = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
-#TIMESPEC TS_f2f_adc2ddr = FROM FFS_adcclkab  TO FFS_ddrsclk0   TIG;
-#TIMESPEC TS_r2f_adc2ddr = FROM RAMS_adcclkab TO FFS_ddrsclk0   TIG;
-#TIMESPEC TS_f2f_ddr2adc = FROM FFS_ddrsclk0  TO FFS_adcclkab   TIG;
-
-#set_false_path -to [get_cells (ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].ddrto_i/ffd_i)]
-
-# Others #
-# ###### #
+set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/D ]
+set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dmo_g.registered_g[*].dmi_reg[*]/D ]
 
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports gclk100]
 
