@@ -22,9 +22,9 @@
 #                                                                            #
 
 create_clock -name sys_clk -period 10 -waveform {0 5} [get_ports gclk100]
-
-create_clock -name dqso0 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[0]]
-create_clock -name dqso1 -period 3 -waveform {0 1.5} [get_ports ddr3_dqs_p[1]]
+1.429
+create_clock -name dqso0 -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[0]]
+create_clock -name dqso1 -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[1]]
 
 create_clock -name eth_rx_clk -period 40 -waveform {0 20} [get_ports eth_rx_clk]
 create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
