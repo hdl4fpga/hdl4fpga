@@ -50,10 +50,11 @@ architecture scope of arty is
 	constant data_gear : natural := line_size/word_size;
 	constant uclk_period : real := 10.0;
 
-	signal ictlr_clk : std_logic;
-	signal ictlr_rdy : std_logic;
+	signal dcm_rst : std_logic;
+	signal iodelay_rdy : std_logic;
 
 	signal sys_clk : std_logic;
+	signal ddr_rst  : std_logic;
 	signal ddrs_rst  : std_logic;
 	signal input_rst : std_logic;
 
@@ -126,46 +127,27 @@ architecture scope of arty is
 	constant ddr_mul   : natural := 7;
 	constant ddr_div   : natural := 2;
 
-	signal ictlr_clk_ibufg : std_logic;
-	signal ictlr_rst : std_logic;
+	signal iodelay_rst : std_logic;
+	signal iodelay_clk : std_logic;
 begin
 		
-		
---	idelay_ibufg_i : IBUFGDS_LVPECL_25
---	port map (
---		I  => clk_fpga_p,
---		IB => clk_fpga_n,
---		O  => ictlr_clk_ibufg );
-
-	idelay_bufg_i : BUFG
-	port map (
-		i => ictlr_clk_ibufg,
-		o => ictlr_clk);
-
 	clkin_ibufg : ibufg
 	port map (
 		I => gclk100,
 		O => sys_clk);
 
-	process (btn(0), ictlr_clk)
+	process (btn(0), sys_clk)
 		variable tmr : unsigned(0 to 8-1);
 	begin
 		if btn(0)='1' then
 			tmr := (others => '0');
-		elsif rising_edge(ictlr_clk) then
+		elsif rising_edge(sys_clk) then
 			if tmr(0)='0' then
 				tmr := tmr + 1;
 			end if;
 		end if;
-		ictlr_rst <= not tmr(0);
+		dcm_rst <= not tmr(0);
 	end process;
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy => ictlr_rdy);
-	sys_rst <= not ictlr_rdy;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -173,12 +155,22 @@ begin
 		ddr_div => ddr_div, 
 		sys_per => uclk_period)
 	port map (
-		sys_rst => sys_rst,
+		sys_rst => dcm_rst,
 		sys_clk => sys_clk,
 		input_clk => input_clk,
+		iodelay_clk => iodelay_clk,
+		iodelay_rst => iodelay_rst,
 		ddr_clk0  => ddrs_clk0,
 		ddr_clk90 => ddrs_clk90,
-		ddr_rst => ddrs_rst);
+		ddr_rst => ddr_rst);
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst => iodelay_rst,
+		refclk => iodelay_clk,
+		rdy => iodelay_rdy);
+	sys_rst <= not iodelay_rdy;
+	ddrs_rst <= sys_rst and ddr_rst;
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
@@ -295,7 +287,7 @@ begin
 		sys_odt => ddrphy_odt,
 		sys_sti => ddrphy_sto,
 		sys_sto => ddrphy_sti,
-		sysiod_clk => ictlr_clk,
+		sysiod_clk => iodelay_clk,
 		sys_tp => tp1,
 		ddr_clk => ddr3_clk,
 		ddr_cke => ddr3_cke,

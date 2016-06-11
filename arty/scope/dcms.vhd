@@ -37,28 +37,32 @@ entity dcms is
 		ddr_div : natural;
 		sys_per : real);
 	port (
-		sys_rst   : in  std_logic;
-		sys_clk   : in  std_logic;
-		input_clk : out std_logic;
-		ddr_clk0  : out std_logic;
-		ddr_clk90 : out std_logic;
-		video_clk : out std_logic;
-		mii_clk   : out std_logic;
-		input_rst : out std_logic;
-		ddr_rst   : out std_logic;
-		mii_rst   : out std_logic;
-		video_rst : out std_logic);
+		sys_rst     : in  std_logic;
+		sys_clk     : in  std_logic;
+		iodelay_clk : out  std_logic;
+		input_clk   : out std_logic;
+		ddr_clk0    : out std_logic;
+		ddr_clk90   : out std_logic;
+		video_clk   : out std_logic;
+		mii_clk     : out std_logic;
+		iodelay_rst : out std_logic;
+		input_rst   : out std_logic;
+		ddr_rst     : out std_logic;
+		mii_rst     : out std_logic;
+		video_rst   : out std_logic);
 end;
 
 architecture def of dcms is
 
-	constant input : natural := 0; 
-    constant mii   : natural := 1;
-    constant video : natural := 2;
-    constant ddr   : natural := 3;
+	constant input   : natural := 0; 
+    constant mii     : natural := 1;
+    constant video   : natural := 2;
+    constant ddr     : natural := 3;
+    constant iodelay : natural := 4;
 
 	signal ddr_clkfb : std_logic;
-	signal clks : std_logic_vector(0 to 3);
+	signal iodelay_clkfb : std_logic;
+	signal clks : std_logic_vector(0 to 4);
 	signal lcks : std_logic_vector(clks'range);
 begin
 
@@ -73,7 +77,22 @@ begin
 --		dfs_clk => clks(video),
 --		dcm_lck => lcks(video));
 
-	dfs_i :  mmcme2_base
+	iodelay_i :  mmcme2_base
+	generic map (
+		clkfbout_mult_f => 8.0,
+		clkin1_period => sys_per,
+		clkout0_divide_f => 4.0,
+		bandwidth => "LOW")
+	port map (
+		pwrdwn   => '0',
+		rst      => sys_rst,
+		clkin1   => sys_clk,
+		clkfbin  => iodelay_clkfb,
+		clkfbout => iodelay_clkfb,
+		clkout0  => clks(iodelay),
+		locked   => lcks(iodelay));
+   
+	ddr_i :  mmcme2_base
 	generic map (
 		divclk_divide => ddr_div,
 		clkfbout_mult_f => real(2*ddr_mul),
@@ -92,8 +111,8 @@ begin
 		clkout1  => ddr_clk90,
 		locked   => lcks(ddr));
    
-	clks(input) <= clks(ddr);
-	lcks(input) <= lcks(ddr);
+	clks(input) <= sys_clk;
+	lcks(input) <= not sys_rst;
 --	inputdcm_e : entity hdl4fpga.dfs
 --	generic map (
 --		dcm_per => sys_per,
@@ -120,10 +139,11 @@ begin
 		signal rsts : std_logic_vector(clks'range);
 	begin
 
-		input_rst <= rsts(input);
-		mii_rst   <= rsts(mii);
-		video_rst <= rsts(video);
-		ddr_rst   <= rsts(ddr);
+		input_rst   <= rsts(input);
+		mii_rst     <= rsts(mii);
+		video_rst   <= rsts(video);
+		ddr_rst     <= rsts(ddr);
+		iodelay_rst <= rsts(iodelay);
 
 		rsts_g: for i in clks'range generate
 			signal q : std_logic;
@@ -140,9 +160,10 @@ begin
 		end generate;
 	end block;
 
-	input_clk <= clks(input);
-	mii_clk   <= clks(mii);
-	video_clk <= clks(video);
-	ddr_clk0  <= clks(ddr);
+	input_clk   <= clks(input);
+	mii_clk     <= clks(mii);
+	video_clk   <= clks(video);
+	ddr_clk0    <= clks(ddr);
+	iodelay_clk <= clks(iodelay);
 
 end;

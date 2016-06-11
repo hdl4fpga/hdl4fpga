@@ -22,20 +22,26 @@
 #                                                                            #
 
 create_clock -name sys_clk -period 10 -waveform {0 5} [get_ports gclk100]
-1.429
 create_clock -name dqso0 -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[0]]
 create_clock -name dqso1 -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[1]]
 
 create_clock -name eth_rx_clk -period 40 -waveform {0 20} [get_ports eth_rx_clk]
 create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
 
+set_clock_groups -asynchronous  -group {sys_clk} -group {ddrs_clk0}
+set_clock_groups -asynchronous  -group {sys_clk} -group {iodelay_clk}
+set_clock_groups -asynchronous  -group {dqso0} -group {iodelay_clk}
+set_clock_groups -asynchronous  -group {dqso1} -group {iodelay_clk}
 set_clock_groups -asynchronous  -group {dqso0} -group {ddrs_clk0}
 set_clock_groups -asynchronous  -group {dqso1} -group {ddrs_clk0}
 set_clock_groups -asynchronous  -group {eth_rx_clk} -group {ddrs_clk0}
 set_clock_groups -asynchronous  -group {eth_tx_clk} -group {ddrs_clk0}
+set_clock_groups -asynchronous  -group {iodelay_clk} -group {ddrs_clk0}
 
 set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/D ]
 set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dmo_g.registered_g[*].dmi_reg[*]/D ]
+
+set_false_path -from [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/finish_reg/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/* ]
 
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports gclk100]
 
