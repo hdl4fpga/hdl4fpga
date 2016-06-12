@@ -140,7 +140,6 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
---		attribute iddrapps of iddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -160,7 +159,6 @@ begin
 	dmi_g : block
 		attribute iddrapps : string;
 		attribute iddrapps of iddrx2d_i : label is "DQS_ALIGNED";
---		attribute iddrapps of iddrx2d_i : label is "DDR_MEM_DQ";
 	begin
 		iddrx2d_i : iddrx2d
 		port map (
@@ -186,7 +184,6 @@ begin
 	oddr_g : for i in 0 to byte_size-1 generate
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
---		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -211,7 +208,6 @@ begin
 	dm_b : block
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2d_i : label is "DQS_ALIGNED";
---		attribute oddrapps of oddrx2d_i : label is "DDR3_MEM_DQ";
 	begin
 		oddrtdqa_i : oddrtdqa
 		port map (
@@ -239,7 +235,6 @@ begin
 		signal dqstclk : std_logic;
 		attribute oddrapps : string;
 		attribute oddrapps of oddrx2dqsa_i : label is "DQS_CENTERED";
---		attribute oddrapps of oddrx2dqsa_i : label is "DDR3_MEM_DQS";
 	begin
 
 		oddrtdqsa_i : oddrtdqsa
