@@ -176,7 +176,7 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga => virtex5,
-		DDR_MARK => M3,
+		DDR_MARK => M125,
 		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES => sclk_edges,
 		DDR_STROBE => "INTERNAL",
@@ -358,7 +358,7 @@ begin
 		end generate;
 
 	end block;
-	rgbled  <= (others => '0');
+	rgbled  <= (others => '1');
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 

@@ -47,6 +47,7 @@ package xdr_db is
 	constant M6T  : natural := 1;
 	constant M15E : natural := 2;
 	constant M3   : natural := 3;
+	constant M125 : natural := 3;
 
 	constant tPreRST : natural :=  1;
 	constant tPstRST : natural :=  2;
@@ -107,7 +108,8 @@ package xdr_db is
 	constant tmark_db : tmark_tab := (
 		tmark_record'(mark => M6T,  stdr => DDR1),
 		tmark_record'(mark => M3,   stdr => DDR2),
-		tmark_record'(mark => M15E, stdr => DDR3));
+		tmark_record'(mark => M15E, stdr => DDR3),
+		tmark_record'(mark => M125, stdr => DDR3));
 
 	type latency_record is record
 		fpga : natural;

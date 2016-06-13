@@ -248,23 +248,24 @@ begin
 		xdr_sch_odt(0) when stdr=3 else
 		'1';
 
-	mpu_sel_slr_e : entity hdl4fpga.align
-	generic map (
-		n => 2,
-		d => (0 to 1 => 1))
-	port map (
-		clk => sys_clks(0),
-		di(0) => xdr_init_rdy,
-		di(1) => init_rdy,
-		do(0) => init_rdy,
-		do(1) => xdr_mpu_sel);
+	init_rdy <= xdr_init_rdy;
+	xdr_mpu_sel <= init_rdy;
+--	mpu_sel_slr_e : entity hdl4fpga.align
+--	generic map (
+--		n => 2,
+--		d => (0 to 1 => 1))
+--	port map (
+--		clk => sys_clks(0),
+--		di(0) => xdr_init_rdy,
+--		di(1) => init_rdy,
+--		do(0) => init_rdy,
+--		do(1) => xdr_mpu_sel);
 
 	sys_ini <= init_rdy;
 	xdr_mpu_rst <= not init_rdy;
 	xdr_mpu_ref <= xdr_refi_req;
 
-	xdr_pgm_e : entity hdl4fpga.xdr_pgm --(registered)
---	xdr_pgm_e : entity hdl4fpga.xdr_pgm(non_registered)
+	xdr_pgm_e : entity hdl4fpga.xdr_pgm
 	port map (
 		xdr_pgm_rst => xdr_mpu_rst,
 		xdr_pgm_clk => sys_clks(0),
