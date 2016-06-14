@@ -1,4 +1,4 @@
---                                                                            --
+-                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
 --                                                                            --
@@ -31,30 +31,44 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_db.all;
---use hdl4fpga.cgafont.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of arty is
-	constant sclk_phases : natural := 4;
-	constant sclk_edges : natural := 2;
-	constant data_phases : natural := 2;
-	constant data_edges : natural := 2;
-	constant cmd_phases : natural := 1;
-	constant bank_size : natural := ddr3_ba'length;
-	constant addr_size : natural := ddr3_a'length;
-	constant word_size : natural := ddr3_dq'length;
-	constant line_size : natural := 2*word_size;
-	constant byte_size : natural := 8;
-	constant data_gear : natural := line_size/word_size;
-	constant uclk_period : real := 10.0;
+	constant UCLK_PERIOD : real    := 10.0;
 
-	signal dcm_rst : std_logic;
-	signal iodelay_rdy : std_logic;
+	constant SCLK_PHASES : natural := 4;
+	constant SCLK_EDGES  : natural := 2;
+	constant DATA_PHASES : natural := 2;
+	constant DATA_EDGES  : natural := 2;
+	constant CMD_PHASES  : natural := 1;
+	constant DATA_GEAR   : natural := 2;
 
-	signal sys_clk : std_logic;
-	signal ddr_rst  : std_logic;
+	constant BANK_SIZE   : natural := ddr3_ba'length;
+	constant ADDR_SIZE   : natural := ddr3_a'length;
+	constant WORD_SIZE   : natural := ddr3_dq'length;
+	constant BYTE_SIZE   : natural := ddr3_dq'length/ddr3_dqs_p'length;
+	constant LINE_SIZE   : natural := data_gear*word_size;
+
+	--------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz --
+	-- Multiply by --  10     --   7     --   4     --
+	-- Divide by   --   3     --   2     --   1     --
+	--------------------------------------------------
+
+	constant DDR_MUL : natural := 7;
+	constant DDR_DIV : natural := 2;
+
+	signal sys_rst   : std_logic;
+	signal sys_clk   : std_logic;
+
+	signal iodctrl_rst : std_logic;
+	signal iodctrl_clk : std_logic;
+	signal iodctrl_rdy : std_logic;
+
+	signal dcm_rst   : std_logic;
+	signal ddr_rst   : std_logic;
 	signal ddrs_rst  : std_logic;
 	signal input_rst : std_logic;
 
@@ -63,72 +77,56 @@ architecture scope of arty is
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
 
-	signal ddr3_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo  : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt  : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr3_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr3_dqsi : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr3_dqo  : std_logic_vector(WORD_SIZE-1 downto 0);
+	signal ddr3_dqt  : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr3_clk  : std_logic_vector(1-1 downto 0);
 
 	signal tp1 : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
 
-	signal ddrphy_cke : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_cs : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_ras : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_cas : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_we : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_odt : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b : std_logic_vector(cmd_phases*bank_size-1 downto 0);
-	signal ddrphy_a : std_logic_vector(cmd_phases*addr_size-1 downto 0);
-	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmi : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmt : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmo : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_dqi2 : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_dqt : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqo : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto : std_logic_vector(0 to line_size/byte_size-1);
-	signal ddrphy_sti : std_logic_vector(0 to line_size/byte_size-1);
-	signal ddrphy_ini : std_logic;
-	signal ddrphy_wlreq : std_logic;
-	signal ddrphy_wlrdy : std_logic;
-	signal ddrphy_wlcal : std_logic;
-	signal ddrphy_rw : std_logic;
+	signal ddrphy_cke     : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_cs      : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_ras     : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_cas     : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_we      : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_odt     : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(CMD_PHASES*BANK_SIZE-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(CMD_PHASES*ADDR_SIZE-1 downto 0);
+	signal ddrphy_dqsi    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmi     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmt     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmo     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqi     : std_logic_vector(LINE_SIZE-1 downto 0);
+	signal ddrphy_dqt     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqo     : std_logic_vector(LINE_SIZE-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
+	signal ddrphy_sti     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
+	signal ddrphy_ini     : std_logic;
+	signal ddrphy_rlreq   : std_logic;
+	signal ddrphy_rlrdy   : std_logic;
+	signal ddrphy_rlcal   : std_logic;
+	signal ddrphy_rw      : std_logic;
 	signal ddrphy_cmd_req : std_logic;
 	signal ddrphy_cmd_rdy : std_logic;
 
 	signal mii_rxdv : std_logic;
-	signal mii_rxc  : std_logic;
 	signal mii_rxd  : std_logic_vector(eth_rxd'range);
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(eth_txd'range);
 
-	signal vga_clk : std_logic;
+	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
 	signal vga_blank : std_logic;
-	signal vga_frm : std_logic;
-	signal vga_red : std_logic_vector(8-1 downto 0);
+	signal vga_frm   : std_logic;
+	signal vga_red   : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
-	signal dvdelay : std_logic_vector(0 to 2);
 
-	signal sys_rst   : std_logic;
-
-	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz --
-	-- Multiply by --  10     --   7     --   4     --
-	-- Divide by   --   3     --   2     --   1     --
-	--------------------------------------------------
-
-	constant ddr_mul   : natural := 7;
-	constant ddr_div   : natural := 2;
-
-	signal iodelay_rst : std_logic;
-	signal iodelay_clk : std_logic;
 begin
 		
 	clkin_ibufg : ibufg
@@ -151,46 +149,46 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		ddr_mul => ddr_mul,
-		ddr_div => ddr_div, 
-		sys_per => uclk_period)
+		DDR_MUL => DDR_MUL,
+		DDR_DIV => DDR_DIV, 
+		SYS_PER => UCLK_PERIOD)
 	port map (
-		sys_rst => dcm_rst,
-		sys_clk => sys_clk,
-		input_clk => input_clk,
-		iodelay_clk => iodelay_clk,
-		iodelay_rst => iodelay_rst,
-		ddr_clk0  => ddrs_clk0,
-		ddr_clk90 => ddrs_clk90,
-		ddr_rst => ddr_rst);
+		sys_rst     => dcm_rst,
+		sys_clk     => sys_clk,
+		input_clk   => input_clk,
+		iodctrl_clk => iodctrl_clk,
+		iodctrl_rst => iodctrl_rst,
+		ddr_clk0    => ddrs_clk0,
+		ddr_clk90   => ddrs_clk90,
+		ddr_rst     => ddr_rst);
 
 	idelayctrl_i : idelayctrl
 	port map (
-		rst => iodelay_rst,
-		refclk => iodelay_clk,
-		rdy => iodelay_rdy);
-	sys_rst <= not iodelay_rdy;
+		rst    => iodctrl_rst,
+		refclk => iodctrl_clk,
+		rdy    => iodctrl_rdy);
+
+	sys_rst  <= not iodctrl_rdy;
 	ddrs_rst <= sys_rst and ddr_rst;
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		fpga => virtex5,
-		DDR_MARK => M125,
-		DDR_TCP => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKEDGES => sclk_edges,
-		DDR_STROBE => "INTERNAL",
-		DDR_CLMNSIZE => 7,
-		DDR_BANKSIZE => BANK_SIZE, --ddr3_ba'length,
-		DDR_ADDRSIZE => ADDR_SIZE,
-		DDR_SCLKPHASES => sclk_phases,
-		DDR_DATAPHASES => data_phases,
-		DDR_DATAEDGES => data_edges,
-		DDR_LINESIZE => line_size,
-		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size)
+		FPGA           => VIRTEX5,
+		DDR_MARK       => M125,
+		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*DDR_DIV/DDR_MUL,
+		DDR_SCLKEDGES  => SCLK_EDGES,
+		DDR_STROBE     => "INTERNAL",
+		DDR_CLMNSIZE   => 7,
+		DDR_BANKSIZE   => BANK_SIZE,
+		DDR_ADDRSIZE   => ADDR_SIZE,
+		DDR_SCLKPHASES => SCLK_PHASES,
+		DDR_DATAPHASES => DATA_PHASES,
+		DDR_DATAEDGES  => DATA_EDGES,
+		DDR_LINESIZE   => LINE_SIZE,
+		DDR_WORDSIZE   => WORD_SIZE,
+		DDR_BYTESIZE   => BYTE_SIZE)
 	port map (
-
 --		input_rst => input_rst,
 		input_clk => input_clk,
 
@@ -200,14 +198,16 @@ begin
 		ddrs_bl  => "011",
 		ddrs_cl  => "101",
 		ddrs_rtt => "11",
-		ddr_cke  => ddrphy_cke(0),
-		ddr_wlreq => ddrphy_wlreq,
-		ddr_wlrdy => ddrphy_wlrdy,
-		ddr_wlcal => ddrphy_wlcal,
+
+		ddr_cke    => ddrphy_cke(0),
+		ddr_rlreq  => ddrphy_rlreq,
+		ddr_rlrdy  => ddrphy_rlrdy,
+		ddr_rlcal  => ddrphy_rlcal,
 		ddr_phyini => ddrphy_ini,
-		ddr_phyrw => ddrphy_rw,
+		ddr_phyrw  => ddrphy_rw,
 		ddr_phycmd_req => ddrphy_cmd_req,
 		ddrs_cmd_rdy => ddrphy_cmd_rdy,
+
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -220,7 +220,7 @@ begin
 		ddr_dqst => ddrphy_dqst,
 		ddr_dqsi => ddrphy_dqsi,
 		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dqi2,
+		ddr_dqi  => ddrphy_dqi,
 		ddr_dqt  => ddrphy_dqt,
 		ddr_dqo  => ddrphy_dqo,
 		ddr_odt  => ddrphy_odt(0),
@@ -228,7 +228,7 @@ begin
 		ddr_sti  => ddrphy_sti,
 
 --		mii_rst  => mii_rst,
-		mii_rxc  => mii_rxc,
+		mii_rxc  => eth_rx_clk,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 		mii_txc  => eth_tx_clk,
@@ -245,60 +245,63 @@ begin
 		vga_green => vga_green,
 		vga_blue  => vga_blue);
 
-
-	ddrphy_dqi2 <= ddrphy_dqi;
-
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE => BANK_SIZE,
         ADDR_SIZE => ADDR_SIZE,
-		data_gear => data_gear,
-		WORD_SIZE => word_size,
-		BYTE_SIZE => byte_size)
+		DATA_GEAR => DATA_GEAR,
+		WORD_SIZE => WORD_SIZE,
+		BYTE_SIZE => BYTE_SIZE)
 	port map (
-		sys_rst => sys_rst,
-		sys_clk0 => ddrs_clk0,
-		sys_clk90 => ddrs_clk90, 
-		phy_rst => ddrs_rst,
+		sys_tp    => tp1,
 
-		sys_cke => ddrphy_cke,
-		sys_cs  => ddrphy_cs,
-		sys_ras => ddrphy_ras,
-		sys_cas => ddrphy_cas,
-		sys_we  => ddrphy_we,
-		sys_b   => ddrphy_b,
-		sys_a   => ddrphy_a,
+		sys_rst   => sys_rst,
+		sys_clk0  => ddrs_clk0,
+		sys_clk90 => ddrs_clk90, 
+		sysiod_clk => iodctrl_clk,
 
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
-		sys_wlcal => ddrphy_wlcal,
-		phy_ini => ddrphy_ini,
-		phy_rw => ddrphy_rw,
+
+		sys_rlreq => ddrphy_rlreq,
+		sys_rlrdy => ddrphy_rlrdy,
+		sys_rlcal => ddrphy_rlcal,
+
+		phy_rst  => ddrs_rst,
+		phy_ini  => ddrphy_ini,
+		phy_rw   => ddrphy_rw,
 		phy_cmd_rdy => ddrphy_cmd_rdy,
 		phy_cmd_req => ddrphy_cmd_req,
+
+		sys_cke   => ddrphy_cke,
+		sys_cs    => ddrphy_cs,
+		sys_ras   => ddrphy_ras,
+		sys_cas   => ddrphy_cas,
+		sys_we    => ddrphy_we,
+		sys_b     => ddrphy_b,
+		sys_a     => ddrphy_a,
+
 		sys_dqst => ddrphy_dqst,
 		sys_dqso => ddrphy_dqso,
-		sys_dmi => ddrphy_dmo,
-		sys_dmt => ddrphy_dmt,
-		sys_dmo => ddrphy_dmi,
-		sys_dqi => ddrphy_dqi,
-		sys_dqt => ddrphy_dqt,
-		sys_dqo => ddrphy_dqo,
-		sys_odt => ddrphy_odt,
-		sys_sti => ddrphy_sto,
-		sys_sto => ddrphy_sti,
-		sysiod_clk => iodelay_clk,
-		sys_tp => tp1,
-		ddr_clk => ddr3_clk,
-		ddr_cke => ddr3_cke,
-		ddr_cs  => ddr3_cs,
-		ddr_ras => ddr3_ras,
-		ddr_cas => ddr3_cas,
-		ddr_we  => ddr3_we,
-		ddr_b   => ddr3_ba,
-		ddr_a   => ddr3_a,
-		ddr_odt => ddr3_odt,
+		sys_dmi  => ddrphy_dmo,
+		sys_dmt  => ddrphy_dmt,
+		sys_dmo  => ddrphy_dmi,
+		sys_dqi  => ddrphy_dqi,
+		sys_dqt  => ddrphy_dqt,
+		sys_dqo  => ddrphy_dqo,
+		sys_odt  => ddrphy_odt,
+		sys_sti  => ddrphy_sto,
+		sys_sto  => ddrphy_sti,
 
+		ddr_clk  => ddr3_clk,
+		ddr_cke  => ddr3_cke,
+		ddr_cs   => ddr3_cs,
+		ddr_ras  => ddr3_ras,
+		ddr_cas  => ddr3_cas,
+		ddr_we   => ddr3_we,
+		ddr_b    => ddr3_ba,
+		ddr_a    => ddr3_a,
+		ddr_odt  => ddr3_odt,
 		ddr_dm   => ddr3_dm,
 		ddr_dqo  => ddr3_dqo,
 		ddr_dqi  => ddr3_dq,
@@ -307,15 +310,15 @@ begin
 		ddr_dqsi => ddr3_dqsi,
 		ddr_dqso => ddr3_dqso);
 
-
 	eth_rstn <= not sys_rst;
-	mii_rxc <= eth_rx_clk;
+	eth_mdc  <= '0';
+	eth_mdio <= '0';
 
 	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
 		xd_len => 4)
 	port map (
-		mii_rxc  => mii_rxc,
+		mii_rxc  => eth_rx_clk,
 		iob_rxdv => eth_rx_dv,
 		iob_rxd  => eth_rxd,
 		mii_rxdv => mii_rxdv,
@@ -358,10 +361,8 @@ begin
 		end generate;
 
 	end block;
-	rgbled  <= (others => '1');
-	eth_mdc  <= '0';
-	eth_mdio <= '0';
 
+	rgbled  <= (others => '1');
 
 	tp_g : for i in 2-1 downto 0 generate
 		led(i+4) <= tp1(i*2+1) when btn(1)='1' else tp1(i*2+2) when btn(2)='1' else tp1(i*2+0) when btn(3)='1' else tp1(i*2+5) ;

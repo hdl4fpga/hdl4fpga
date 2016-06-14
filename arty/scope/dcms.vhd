@@ -39,13 +39,13 @@ entity dcms is
 	port (
 		sys_rst     : in  std_logic;
 		sys_clk     : in  std_logic;
-		iodelay_clk : out  std_logic;
+		iodctrl_clk : out  std_logic;
 		input_clk   : out std_logic;
 		ddr_clk0    : out std_logic;
 		ddr_clk90   : out std_logic;
 		video_clk   : out std_logic;
 		mii_clk     : out std_logic;
-		iodelay_rst : out std_logic;
+		iodctrl_rst : out std_logic;
 		input_rst   : out std_logic;
 		ddr_rst     : out std_logic;
 		mii_rst     : out std_logic;
@@ -58,10 +58,10 @@ architecture def of dcms is
     constant mii     : natural := 1;
     constant video   : natural := 2;
     constant ddr     : natural := 3;
-    constant iodelay : natural := 4;
+    constant iodctrl : natural := 4;
 
 	signal ddr_clkfb : std_logic;
-	signal iodelay_clkfb : std_logic;
+	signal iodctrl_clkfb : std_logic;
 	signal clks : std_logic_vector(0 to 4);
 	signal lcks : std_logic_vector(clks'range);
 begin
@@ -77,7 +77,7 @@ begin
 --		dfs_clk => clks(video),
 --		dcm_lck => lcks(video));
 
-	iodelay_i :  mmcme2_base
+	iodctrl_i :  mmcme2_base
 	generic map (
 		clkfbout_mult_f => 8.0,
 		clkin1_period => sys_per,
@@ -87,10 +87,10 @@ begin
 		pwrdwn   => '0',
 		rst      => sys_rst,
 		clkin1   => sys_clk,
-		clkfbin  => iodelay_clkfb,
-		clkfbout => iodelay_clkfb,
-		clkout0  => clks(iodelay),
-		locked   => lcks(iodelay));
+		clkfbin  => iodctrl_clkfb,
+		clkfbout => iodctrl_clkfb,
+		clkout0  => clks(iodctrl),
+		locked   => lcks(iodctrl));
    
 	ddr_i :  mmcme2_base
 	generic map (
@@ -143,7 +143,7 @@ begin
 		mii_rst     <= rsts(mii);
 		video_rst   <= rsts(video);
 		ddr_rst     <= rsts(ddr);
-		iodelay_rst <= rsts(iodelay);
+		iodctrl_rst <= rsts(iodctrl);
 
 		rsts_g: for i in clks'range generate
 			signal q : std_logic;
@@ -164,6 +164,6 @@ begin
 	mii_clk     <= clks(mii);
 	video_clk   <= clks(video);
 	ddr_clk0    <= clks(ddr);
-	iodelay_clk <= clks(iodelay);
+	iodctrl_clk <= clks(iodctrl);
 
 end;
