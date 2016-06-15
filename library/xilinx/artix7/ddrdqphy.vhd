@@ -30,33 +30,35 @@ use unisim.vcomponents.all;
 
 entity ddrdqphy is
 	generic (
-		gear : natural;
-		byte_size : natural);
+		GEAR : natural;
+		BYTE_SIZE : natural);
 	port (
-		sys_rst : in std_logic;
-		sys_clk0 : in  std_logic;
+		sys_rst   : in std_logic;
+		sys_clk0  : in  std_logic;
 		sys_clk90 : in  std_logic;
+		sysiod_clk : in std_logic;
 		sys_wlreq : in std_logic;
 		sys_wlrdy : out std_logic;
-		sys_wlcal : out std_logic;
-		sys_dmt  : in  std_logic_vector(0 to gear-1) := (others => '-');
-		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
-		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
-		sys_sto  : out std_logic_vector(0 to gear-1);
-		sys_dqo  : in  std_logic_vector(gear*byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(gear-1 downto 0);
-		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(0 to gear-1);
-		sys_dqst : in  std_logic_vector(0 to gear-1);
-		sysiod_clk : in std_logic;
-		sys_tp : out std_logic_vector(byte_size-1 downto 0);
+		sys_rlreq : in std_logic;
+		sys_rlrdy : out std_logic;
+		sys_rlcal : out std_logic;
+		sys_dmt   : in  std_logic_vector(0 to GEAR-1) := (others => '-');
+		sys_dmi   : in  std_logic_vector(GEAR-1 downto 0) := (others => '-');
+		sys_sti   : in  std_logic_vector(0 to GEAR-1) := (others => '-');
+		sys_sto   : out std_logic_vector(0 to GEAR-1);
+		sys_dqo   : in  std_logic_vector(GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqt   : in  std_logic_vector(GEAR-1 downto 0);
+		sys_dqi   : out std_logic_vector(GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqso  : in  std_logic_vector(0 to GEAR-1);
+		sys_dqst  : in  std_logic_vector(0 to GEAR-1);
+		sys_tp : out std_logic_vector(BYTE_SIZE-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
 		ddr_dqsi : in  std_logic;
-		ddr_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		ddr_dqt  : out std_logic_vector(byte_size-1 downto 0);
-		ddr_dqo  : out std_logic_vector(byte_size-1 downto 0);
+		ddr_dqi  : in  std_logic_vector(BYTE_SIZE-1 downto 0);
+		ddr_dqt  : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		ddr_dqo  : out std_logic_vector(BYTE_SIZE-1 downto 0);
 
 		ddr_dqst : out std_logic;
 		ddr_dqso : out std_logic);
@@ -74,7 +76,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
-	signal wlrdy : std_logic;
+	signal rlrdy : std_logic;
 
 	signal tp : std_logic_vector(ddr_dqi'range);
 
@@ -96,9 +98,9 @@ begin
 			adjsto_req <= aux;
 		end if;
 	end process;
-	sys_wlcal <= adjsto_req;
-	sys_wlrdy <= wlrdy;
-	wlrdy <= adjsto_rdy;
+	sys_rlcal <= adjsto_req;
+	sys_rlrdy <= rlrdy;
+	rlrdy <= adjsto_rdy;
 	sys_tp <= tp;
 
 	tp(0) <= smp(0);
@@ -127,8 +129,8 @@ begin
 			q1 => q(0),
 			q2 => q(1));
 
-		sys_dqi(0*byte_size+i) <= q(1);
-		sys_dqi(1*byte_size+i) <= q(0);
+		sys_dqi(0*BYTE_SIZE+i) <= q(1);
+		sys_dqi(1*BYTE_SIZE+i) <= q(0);
 	
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
@@ -157,23 +159,23 @@ begin
 
 	end generate;
 
-	oddr_g : for i in 0 to byte_size-1 generate
-		signal dqo  : std_logic_vector(0 to gear-1);
-		signal clks : std_logic_vector(0 to gear-1);
+	oddr_g : for i in 0 to BYTE_SIZE-1 generate
+		signal dqo  : std_logic_vector(0 to GEAR-1);
+		signal clks : std_logic_vector(0 to GEAR-1);
 	begin
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 
 		registered_g : for j in clks'range generate
-			process (wlrdy, clks(j))
+			process (rlrdy, clks(j))
 			begin
-				if wlrdy='0' then
+				if rlrdy='0' then
 					if j mod 2=0 then
 						dqo(j) <= '1';
 					else
 						dqo(j) <= '0';
 					end if;
 				elsif rising_edge(clks(j)) then
-					dqo(j) <= sys_dqo(j*byte_size+i);
+					dqo(j) <= sys_dqo(j*BYTE_SIZE+i);
 				end if;
 			end process;
 
@@ -196,7 +198,7 @@ begin
 	dmo_g : block
 		signal dmt  : std_logic_vector(sys_dmt'range);
 		signal dmi  : std_logic_vector(sys_dmi'range);
-		signal clks : std_logic_vector(0 to gear-1);
+		signal clks : std_logic_vector(0 to GEAR-1);
 	begin
 
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
@@ -254,10 +256,10 @@ begin
 			q1 => smp(0),
 			q2 => smp(1));
 
-		process (sys_wlreq, sysiod_clk)
+		process (sys_rlreq, sysiod_clk)
 			variable q : std_logic;
 		begin
-			if sys_wlreq='0' then
+			if sys_rlreq='0' then
 				adjdqs_req <= '0';
 				q := '0';
 			elsif rising_edge(sysiod_clk) then

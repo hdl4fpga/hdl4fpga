@@ -1,4 +1,4 @@
--                                                                            --
+--                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
 --                                                                            --
@@ -106,6 +106,8 @@ architecture scope of arty is
 	signal ddrphy_sto     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
 	signal ddrphy_sti     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
 	signal ddrphy_ini     : std_logic;
+	signal ddrphy_wlreq   : std_logic;
+	signal ddrphy_wlrdy   : std_logic;
 	signal ddrphy_rlreq   : std_logic;
 	signal ddrphy_rlrdy   : std_logic;
 	signal ddrphy_rlcal   : std_logic;
