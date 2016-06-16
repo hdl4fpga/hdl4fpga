@@ -38,8 +38,7 @@ set_clock_groups -asynchronous -group {eth_rx_clk} -group { ddrs_clk0 }
 set_clock_groups -asynchronous -group {eth_tx_clk} -group { ddrs_clk0 }
 set_clock_groups -asynchronous -group {iodctrl_clk} -group { ddrs_clk0 }
 
-set_false_path -from [ get_pins scope_e/od/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/D ]
-set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dmo_g.registered_g[*].dmi_reg[*]/D ]
+set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/*.registered_g[*].*_reg[*]/D ]
 
 set_false_path -from [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/finish_reg/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/* ]
 

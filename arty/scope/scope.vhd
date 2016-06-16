@@ -84,8 +84,6 @@ architecture scope of arty is
 	signal ddr3_dqt  : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr3_clk  : std_logic_vector(1-1 downto 0);
 
-	signal tp1 : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
-
 	signal ddrphy_cke     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cs      : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_ras     : std_logic_vector(CMD_PHASES-1 downto 0);
@@ -128,6 +126,8 @@ architecture scope of arty is
 	signal vga_red   : std_logic_vector(8-1 downto 0);
 	signal vga_green : std_logic_vector(8-1 downto 0);
 	signal vga_blue  : std_logic_vector(8-1 downto 0);
+
+	signal tp1 : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
 
 begin
 		
@@ -260,7 +260,13 @@ begin
 		sys_rst   => sys_rst,
 		sys_clk0  => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
-		sysiod_clk => iodctrl_clk,
+		sys_iodclk => iodctrl_clk,
+
+		phy_rst  => ddrs_rst,
+		phy_ini  => ddrphy_ini,
+		phy_rw   => ddrphy_rw,
+		phy_cmd_rdy => ddrphy_cmd_rdy,
+		phy_cmd_req => ddrphy_cmd_req,
 
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
@@ -268,12 +274,6 @@ begin
 		sys_rlreq => ddrphy_rlreq,
 		sys_rlrdy => ddrphy_rlrdy,
 		sys_rlcal => ddrphy_rlcal,
-
-		phy_rst  => ddrs_rst,
-		phy_ini  => ddrphy_ini,
-		phy_rw   => ddrphy_rw,
-		phy_cmd_rdy => ddrphy_cmd_rdy,
-		phy_cmd_req => ddrphy_cmd_req,
 
 		sys_cke   => ddrphy_cke,
 		sys_cs    => ddrphy_cs,
@@ -356,6 +356,7 @@ begin
 				io  => ddr3_dqs_p(i),
 				iob => ddr3_dqs_n(i));
 
+--			ddr3_dqs_p(i) <= ddr3_dqso(i) when ddr3_dqst(i)='0' else 'Z';
 		end generate;
 
 		ddr_d_g : for i in ddr3_dq'range generate

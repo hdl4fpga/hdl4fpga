@@ -30,71 +30,71 @@ use hdl4fpga.std.all;
 
 entity ddrphy is
 	generic (
-		CMD_PHASES : natural := 1;
-		DATA_GEAR  : natural := 2;
-		BANK_SIZE  : natural := 2;
-		ADDR_SIZE  : natural := 13;
-		WORD_SIZE  : natural := 16;
-		BYTE_SIZE  : natural := 8;
+		CMD_PHASES : natural   := 1;
+		DATA_GEAR  : natural   := 2;
+		BANK_SIZE  : natural   := 2;
+		ADDR_SIZE  : natural   := 13;
+		WORD_SIZE  : natural   := 16;
+		BYTE_SIZE  : natural   := 8;
 		CLKINV     : std_logic := '0');
 	port (
-		sys_tp     : out std_logic_vector(WORD_SIZE-1 downto 0);
+		sys_tp      : out std_logic_vector(WORD_SIZE-1 downto 0);
 
-		sys_rst    : in  std_logic;
-		sys_clk0   : in  std_logic;
-		sys_clk90  : in  std_logic;
-		sysiod_clk : in  std_logic;
+		sys_rst     : in  std_logic;
+		sys_iodclk  : in  std_logic;
+		sys_clk0    : in  std_logic;
+		sys_clk90   : in  std_logic;
 
-		phy_rst    : in  std_logic;
-		phy_ini    : out std_logic;
-		phy_rw     : out std_logic;
+		phy_rst     : in  std_logic;
+		phy_ini     : out std_logic;
+		phy_rw      : out std_logic;
 		phy_cmd_rdy : in  std_logic;
 		phy_cmd_req : out std_logic;
 
-		sys_wlreq : in std_logic;
-		sys_wlrdy : out std_logic;
-		sys_rlreq : in std_logic;
-		sys_rlrdy : out std_logic;
-		sys_rlcal : out std_logic;
+		sys_wlreq   : in std_logic;
+		sys_wlrdy   : out std_logic;
+		sys_rlreq   : in std_logic;
+		sys_rlrdy   : out std_logic;
+		sys_rlcal   : out std_logic;
 
-		sys_cke  : in  std_logic_vector(CMD_PHASES-1 downto 0);
-		sys_cs   : in  std_logic_vector(CMD_PHASES-1 downto 0) := (others => '0');
-		sys_ras  : in  std_logic_vector(CMD_PHASES-1 downto 0);
-		sys_cas  : in  std_logic_vector(CMD_PHASES-1 downto 0);
-		sys_we   : in  std_logic_vector(CMD_PHASES-1 downto 0);
-		sys_b    : in  std_logic_vector(CMD_PHASES*BANK_SIZE-1 downto 0);
-		sys_a    : in  std_logic_vector(CMD_PHASES*ADDR_SIZE-1 downto 0);
-		sys_odt  : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_cke     : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_cs      : in  std_logic_vector(CMD_PHASES-1 downto 0) := (others => '0');
+		sys_ras     : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_cas     : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_we      : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_b       : in  std_logic_vector(CMD_PHASES*BANK_SIZE-1 downto 0);
+		sys_a       : in  std_logic_vector(CMD_PHASES*ADDR_SIZE-1 downto 0);
+		sys_odt     : in  std_logic_vector(CMD_PHASES-1 downto 0);
 
-		sys_dmt  : in  std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
-		sys_dmi  : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dmo  : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dqt  : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dqo  : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-		sys_dqi  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_dmt     : in  std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
+		sys_dmi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_dmo     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_dqt     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_dqo     : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_dqi     : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
-		sys_dqso : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dqst : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_sti  : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0) := (others => '-');
-		sys_sto  : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_dqso    : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_dqst    : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_sti     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0) := (others => '-');
+		sys_sto     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 
-		ddr_cs   : out std_logic := '0';
-		ddr_cke  : out std_logic := '1';
-		ddr_clk  : out std_logic_vector;
-		ddr_odt  : out std_logic;
-		ddr_ras  : out std_logic;
-		ddr_cas  : out std_logic;
-		ddr_we   : out std_logic;
-		ddr_b    : out std_logic_vector(BANK_SIZE-1 downto 0);
-		ddr_a    : out std_logic_vector(ADDR_SIZE-1 downto 0);
+		ddr_cs      : out std_logic := '0';
+		ddr_cke     : out std_logic := '1';
+		ddr_clk     : out std_logic_vector;
+		ddr_odt     : out std_logic;
+		ddr_ras     : out std_logic;
+		ddr_cas     : out std_logic;
+		ddr_we      : out std_logic;
+		ddr_b       : out std_logic_vector(BANK_SIZE-1 downto 0);
+		ddr_a       : out std_logic_vector(ADDR_SIZE-1 downto 0);
 
-		ddr_dm   : inout std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-		ddr_dqt  : out std_logic_vector(WORD_SIZE-1 downto 0);
-		ddr_dqi  : in  std_logic_vector(WORD_SIZE-1 downto 0);
-		ddr_dqo  : out std_logic_vector(WORD_SIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-		ddr_dqsi : in  std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0));
+		ddr_dm      : inout std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqt     : out std_logic_vector(WORD_SIZE-1 downto 0);
+		ddr_dqi     : in  std_logic_vector(WORD_SIZE-1 downto 0);
+		ddr_dqo     : out std_logic_vector(WORD_SIZE-1 downto 0);
+		ddr_dqst    : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqsi    : in  std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+		ddr_dqso    : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0));
 
 end;
 
@@ -316,9 +316,9 @@ begin
 	phy_ba  <= sys_b when lvl='0' else (others => '0');
 	phy_a   <= sys_a when lvl='0' else (others => '0');
 	
-	process (sysiod_clk)
+	process (sys_iodclk)
 	begin
-		if rising_edge(sysiod_clk) then
+		if rising_edge(sys_iodclk) then
 			if phy_rst='1' then
 				ini <= '0';
 				rw  <= '0';
@@ -357,10 +357,10 @@ begin
 		end if;
 	end process;
 
-	process (sysiod_clk)
+	process (sys_iodclk)
 		variable aux : std_logic;
 	begin
-		if rising_edge(sysiod_clk) then
+		if rising_edge(sys_iodclk) then
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
@@ -404,11 +404,11 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	process (sysiod_clk)
+	process (sys_iodclk)
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sysiod_clk) then
+		if rising_edge(sys_iodclk) then
 			for i in byte_rlcal'range loop
 				aux := aux and byte_rlcal(i);
 			end loop;
@@ -416,11 +416,11 @@ begin
 		end if;
 	end process;
 
-	process (sysiod_clk)
+	process (sys_iodclk)
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sysiod_clk) then
+		if rising_edge(sys_iodclk) then
 			for i in byte_rlrdy'range loop
 				aux := aux and byte_rlrdy(i);
 			end loop;
@@ -455,7 +455,7 @@ begin
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
 
-			sysiod_clk => sysiod_clk,
+			sys_iodclk => sys_iodclk,
 			sys_tp => sys_tp((i+1)*byte_size-1 downto i*byte_size),
 			sys_sto => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 
