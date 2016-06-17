@@ -2,9 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity phase_dqs is
-	generic map (
+	generic (
 		DQS_AUTO_RECAL     : integer;
-		DQS_FIND_PATTERN   : string)
+		DQS_FIND_PATTERN   : string;
 		-- PHASER_IN --
 		PI_BURST_MODE      : string  := "TRUE";
 		PI_CLKOUT_DIV      : integer := 2;
@@ -16,7 +16,7 @@ entity phase_dqs is
 		PI_SYNC_IN_DIV_RST : string  := "FALSE");
 
 		-- PHASER_OUT
-		PO_CLKOUT_DIV      : integer := (PO_DATA_CTL == "FALSE") ? 4 :  2,
+		PO_CLKOUT_DIV      : integer := 4;
 		PO_FINE_DELAY      : integer := 0;
 		PO_COARSE_BYPASS   : string  := "FALSE";
 		PO_COARSE_DELAY    : integer := 0;
@@ -38,7 +38,7 @@ entity phase_dqs is
 		TCK                   : real    := 0.00;
 		SYNTHESIS             : string  := "FALSE");
 
-	port map (
+	port (
 		rst                    : in  std_logic;
 		phy_clk                : in  std_logic;
 		rst_pi_div2            : in  std_logic;
@@ -51,56 +51,56 @@ entity phase_dqs is
 		mem_dq_ts              : out std_logic_vector(BUS_WIDTH-1 downto 0);
 		mem_dq_in              : in  std_logic_vector(9 downto 0);
 		mem_dqs_out            : out std_logic;
-		mem_dqs_ts             : out std_logic;                       
-		mem_dqs_in             : in  std_logic;                       
+		mem_dqs_ts             : out std_logic;
+		mem_dqs_in             : in  std_logic;
 		ddr_ck_out             : out std_logic_vector(11 downto 0);
-		rclk                   : out std_logic;                       
+		rclk                   : out std_logic;
 		phy_din                : out std_logic_vector(79 downto 0);
 		phy_dout               : in  std_logic_vector(79 downto 0);
-		phy_cmd_wr_en          : in                        
-		phy_data_wr_en         : in                        
-		phy_rd_en              : in                        
-		:0] phaser_ctl_bus     : in [PHASER_CTL_BUS_WIDTH-1
-		idelay_inc             : in                        
-		idelay_ce              : in                        
-		idelay_ld              : in                        
-		if_rst                 : in                        
-		byte_rd_en_oth_lanes   : in [2:0]                  
-		byte_rd_en_oth_banks   : in [1:0]                  
-		byte_rd_en             : out                       
-							   :   
-		po_coarse_overflow     : out                       
-		po_fine_overflow       : out                       
-		po_counter_read_val    : out [8:0]                 
-		po_fine_enable         : in                        
-		po_coarse_enable       : in                        
-		po_en_calib            : in  [1:0]                 
-		po_fine_inc            : in                        
-		po_coarse_inc          : in                        
-		po_counter_load_en     : in                        
-		po_counter_read_en     : in                        
-		po_sel_fine_oclk_delay : in                        
-		po_counter_load_val    : in  [8:0]                 
-							   :   
-		pi_en_calib            : in  [1:0]                 
-		pi_rst_dqs_find        : in                        
-		pi_fine_enable         : in                        
-		pi_fine_inc            : in                        
-		pi_counter_load_en     : in                        
-		pi_counter_read_en     : in                        
-		pi_counter_load_val    : in  [5:0]                 
-							   :   
-		pi_iserdes_rst         : out wire                  
-		pi_phase_locked        : out                       
-		pi_fine_overflow       : out                       
-		pi_counter_read_val    : out [5:0]                 
-		pi_dqs_found           : out wire                  
-		dqs_out_of_range       : out                       
-		fine_delay             : in [29:0]                 
-		fine_delay_sel         : in                        
-);
+		phy_cmd_wr_en          : in  std_logic;
+		phy_data_wr_en         : in  std_logic;
+		phy_rd_en              : in  std_logic;
+		phaser_ctl_bus         : in  std_logic_vector(PHASER_CTL_BUS_WIDTH-1 downto 0);
+		idelay_inc             : in  std_logic;
+		idelay_ce              : in  std_logic;
+		idelay_ld              : in  std_logic;
+		if_rst                 : in  std_logic;
+		byte_rd_en_oth_lanes   : in  std_logic_vector(2 downto 0);
+		byte_rd_en_oth_banks   : in  std_logic_vector(1 downto 0);
+		byte_rd_en             : out std_logic;
+							   :
+		po_coarse_overflow     : out std_logic;
+		po_fine_overflow       : out std_logic;
+		po_counter_read_val    : out std_logic_vector(8 downto 0);
+		po_fine_enable         : in  std_logic;
+		po_coarse_enable       : in  std_logic;
+		po_en_calib            : in  std_logic_vector(1 downto 0);
+		po_fine_inc            : in  std_logic;
+		po_coarse_inc          : in  std_logic;
+		po_counter_load_en     : in  std_logic;
+		po_counter_read_en     : in  std_logic;
+		po_sel_fine_oclk_delay : in  std_logic;
+		po_counter_load_val    : in  std_logic_vector(8 downto 0);
+							   :
+		pi_en_calib            : in  std_logic_vector(1 downto 0);
+		pi_rst_dqs_find        : in  std_logic;
+		pi_fine_enable         : in  std_logic;
+		pi_fine_inc            : in  std_logic;
+		pi_counter_load_en     : in  std_logic;
+		pi_counter_read_en     : in  std_logic;
+		pi_counter_load_val    : in  std_logic_vector(5 downto 0);
+							   :
+		pi_iserdes_rst         : out std_logic;
+		pi_phase_locked        : out std_logic;
+		pi_fine_overflow       : out std_logic;
+		pi_counter_read_val    : out std_logic_vector(5 downto 0);
+		pi_dqs_found           : out std_logic;
+		dqs_out_of_range       : out std_logic;
+		fine_delay             : in  std_logic_vector(29 downto 0);
+		fine_delay_sel         : in  std_logic);
 
 end;
+
 library unisim;
 use unisim.vcomponents.all;
 
@@ -124,13 +124,13 @@ endgenerate
 
 generate
 if ( PO_DATA_CTL == "FALSE" ) begin : dq_gen_48
-   assign of_dqbus[48-1:0] = {of_q6[7:4], of_q5[7:4], of_q9, of_q8, of_q7, of_q6[3:0], of_q5[3:0], of_q4, of_q3, of_q2, of_q1, of_q0};
+   assign of_dqbus(48-1:0) = {of_q6(7:4), of_q5(7:4), of_q9, of_q8, of_q7, of_q6(3:0), of_q5(3:0), of_q4, of_q3, of_q2, of_q1, of_q0};
    assign phy_din =  80'h0;
    assign byte_rd_en = 1'b1;
 end
 else begin : dq_gen_40
 
-  assign of_dqbus[40-1:0] = {of_q9, of_q8, of_q7, of_q6[3:0], of_q5[3:0], of_q4, of_q3, of_q2, of_q1, of_q0};
+  assign of_dqbus(40-1:0) = {of_q9, of_q8, of_q7, of_q6(3:0), of_q5(3:0), of_q4, of_q3, of_q2, of_q1, of_q0};
   assign ififo_rd_en_in   = !if_empty_def ? ((&byte_rd_en_oth_banks) && (&byte_rd_en_oth_lanes) && byte_rd_en) :
                                             ((|byte_rd_en_oth_banks) || (|byte_rd_en_oth_lanes) || byte_rd_en);
 
@@ -141,10 +141,10 @@ else begin : dq_gen_40
 
    always @(posedge phy_clk) begin
      rd_data_r      <= #(025) rd_data;
-     if_empty_r[0]  <= #(025) if_empty_;
-     if_empty_r[1]  <= #(025) if_empty_;
-     if_empty_r[2]  <= #(025) if_empty_;
-     if_empty_r[3]  <= #(025) if_empty_;
+     if_empty_r(0)  <= #(025) if_empty_;
+     if_empty_r(1)  <= #(025) if_empty_;
+     if_empty_r(2)  <= #(025) if_empty_;
+     if_empty_r(3)  <= #(025) if_empty_;
    end
 
 
@@ -179,48 +179,19 @@ endgenerate
 assign { if_d9, if_d8, if_d7, if_d6, if_d5, if_d4, if_d3, if_d2, if_d1, if_d0} = iserdes_dout;
 
 
-wire [1:0]  rank_sel_i  = ((phaser_ctl_bus[MSB_RANK_SEL_I :MSB_RANK_SEL_I -7] >> (PHASER_INDEX << 1)) & 2'b11);
+wire (1:0)  rank_sel_i  = ((phaser_ctl_bus(MSB_RANK_SEL_I :MSB_RANK_SEL_I -7) >> (PHASER_INDEX << 1)) & 2'b11);
 
 
 
 
 generate
 
-if ( USE_PRE_POST_FIFO == "TRUE" ) begin : of_pre_fifo_gen
-  assign {of_d9, of_d8, of_d7, of_d6, of_d5, of_d4, of_d3, of_d2, of_d1, of_d0} = pre_fifo_dout;
-  mig_7series_v4_0_ddr_of_pre_fifo #
-    (
-     .TCQ   (25),    // simulation CK->Q delay
-     .DEPTH (9),     // depth - set to 9 to accommodate flow control
-     .WIDTH (80)     // width
-     )
-    u_ddr_of_pre_fifo
-        (
-       .clk       (phy_clk),
-       .rst       (ofifo_rst),
-       .full_in   (of_full),
-       .wr_en_in  (phy_wr_en),
-       .d_in      (phy_dout),
-       .wr_en_out (of_wren_pre),
-       .d_out     (pre_fifo_dout),
-       .afull     (pre_fifo_a_full)
-       );
-end
-else begin
-// wire direct to ofifo
-  assign {of_d9, of_d8, of_d7, of_d6, of_d5, of_d4, of_d3, of_d2, of_d1, of_d0} = phy_dout;
-  assign of_wren_pre = phy_wr_en;
-end
-
-
-endgenerate
-
 ///////////////////////////////////////////////////////////////////////////////
 // Synchronize pi_phase_locked to phy_clk domain
 ///////////////////////////////////////////////////////////////////////////////
 wire       pi_phase_locked_w;
 wire       pi_dqs_found_w;
-wire [5:0] pi_counter_read_val_w;
+wire (5:0) pi_counter_read_val_w;
 generate
   if (PI_DIV2_INCDEC == "TRUE") begin: phaser_in_div2_clk
     (* ASYNC_REG = "TRUE" *) reg  pi_phase_locked_r1;
@@ -233,10 +204,10 @@ generate
     (* ASYNC_REG = "TRUE" *) reg  pi_dqs_found_r3;
     reg  pi_dqs_found_r4;
 
-    (* ASYNC_REG = "TRUE" *) reg [5:0] pi_counter_read_val_r1;
-    (* ASYNC_REG = "TRUE" *) reg [5:0] pi_counter_read_val_r2;
-    (* ASYNC_REG = "TRUE" *) reg [5:0] pi_counter_read_val_r3;
-    reg [5:0] pi_counter_read_val_r4;
+    (* ASYNC_REG = "TRUE" *) reg (5:0) pi_counter_read_val_r1;
+    (* ASYNC_REG = "TRUE" *) reg (5:0) pi_counter_read_val_r2;
+    (* ASYNC_REG = "TRUE" *) reg (5:0) pi_counter_read_val_r3;
+    reg (5:0) pi_counter_read_val_r4;
 
     always @ (posedge phy_clk) begin
       pi_phase_locked_r1 <= pi_phase_locked_w;
@@ -291,18 +262,6 @@ if ( PO_DATA_CTL == "TRUE" || ((RCLK_SELECT_LANE==ABCD) && (CKE_ODT_AUX =="TRUE"
 if (PI_DIV2_INCDEC == "TRUE") begin
 
 PHASER_IN_PHY #(
-  .BURST_MODE                       ( PI_BURST_MODE),
-  .CLKOUT_DIV                       ( PI_CLKOUT_DIV),
-  .DQS_AUTO_RECAL                   ( DQS_AUTO_RECAL),
-  .DQS_FIND_PATTERN                 ( DQS_FIND_PATTERN),
-  .SEL_CLK_OFFSET                   ( PI_SEL_CLK_OFFSET),
-  .FINE_DELAY                       ( PI_FINE_DELAY),
-  .FREQ_REF_DIV                     ( PI_FREQ_REF_DIV),
-  .OUTPUT_CLK_SRC                   ( PI_OUTPUT_CLK_SRC),
-  .SYNC_IN_DIV_RST                  ( PI_SYNC_IN_DIV_RST),
-  .REFCLK_PERIOD                    ( L_FREQ_REF_PERIOD_NS),
-  .MEMREFCLK_PERIOD                 ( L_MEM_REF_PERIOD_NS),
-  .PHASEREFCLK_PERIOD               ( L_PHASE_REF_PERIOD_NS)
 ) phaser_in (
   .DQSFOUND                         (pi_dqs_found_w),
   .DQSOUTOFRANGE                    (dqs_out_of_range),
@@ -314,7 +273,7 @@ PHASER_IN_PHY #(
   .COUNTERREADVAL                   (pi_counter_read_val_w),
   .RCLK                             (rclk),
   .WRENABLE                         (ififo_wr_enable),
-  .BURSTPENDINGPHY                  (phaser_ctl_bus[MSB_BURST_PEND_PI - 3 + PHASER_INDEX]),
+  .BURSTPENDINGPHY                  (phaser_ctl_bus(MSB_BURST_PEND_PI - 3 + PHASER_INDEX)),
   .ENCALIBPHY                       (pi_en_calib),
   .FINEENABLE                       (pi_fine_enable),
   .FREQREFCLK                       (freq_refclk),
@@ -347,6 +306,7 @@ PHASER_IN_PHY #(
   .REFCLK_PERIOD                    ( L_FREQ_REF_PERIOD_NS),
   .MEMREFCLK_PERIOD                 ( L_MEM_REF_PERIOD_NS),
   .PHASEREFCLK_PERIOD               ( L_PHASE_REF_PERIOD_NS)
+
 ) phaser_in (
   .DQSFOUND                         (pi_dqs_found_w),
   .DQSOUTOFRANGE                    (dqs_out_of_range),
@@ -358,7 +318,7 @@ PHASER_IN_PHY #(
   .COUNTERREADVAL                   (pi_counter_read_val_w),
   .RCLK                             (rclk),
   .WRENABLE                         (ififo_wr_enable),
-  .BURSTPENDINGPHY                  (phaser_ctl_bus[MSB_BURST_PEND_PI - 3 + PHASER_INDEX]),
+  .BURSTPENDINGPHY                  (phaser_ctl_bus(MSB_BURST_PEND_PI - 3 + PHASER_INDEX)),
   .ENCALIBPHY                       (pi_en_calib),
   .FINEENABLE                       (pi_fine_enable),
   .FREQREFCLK                       (freq_refclk),
@@ -375,151 +335,53 @@ PHASER_IN_PHY #(
   .SYSCLK                           (phy_clk)
 );
 
-end
-end
-else begin
-   assign pi_dqs_found_w = 1'b1;
-//   assign pi_dqs_out_of_range = 1'b0;
-   assign pi_phase_locked_w = 1'b1;
-end
 
-endgenerate
-
-wire  #0 phase_ref = freq_refclk;
-
-wire oserdes_clk;
-
-
-PHASER_OUT_PHY #(
-  .CLKOUT_DIV                        ( PO_CLKOUT_DIV),
-  .DATA_CTL_N                        ( PO_DATA_CTL ),
-  .FINE_DELAY                        ( PO_FINE_DELAY),
-  .COARSE_BYPASS                     ( PO_COARSE_BYPASS ),
-  .COARSE_DELAY                      ( PO_COARSE_DELAY),
-  .OCLK_DELAY                        ( PO_OCLK_DELAY),
-  .OCLKDELAY_INV                     ( PO_OCLKDELAY_INV),
-  .OUTPUT_CLK_SRC                    ( PO_OUTPUT_CLK_SRC),
-  .SYNC_IN_DIV_RST                   ( PO_SYNC_IN_DIV_RST),
-  .REFCLK_PERIOD                     ( L_FREQ_REF_PERIOD_NS),
-  .PHASEREFCLK_PERIOD                ( 1), // dummy, not used
-  .PO                                ( PO_DCD_SETTING ),
-  .MEMREFCLK_PERIOD                  ( L_MEM_REF_PERIOD_NS)
-) phaser_out (
-  .COARSEOVERFLOW                    (po_coarse_overflow),
-  .CTSBUS                            (oserdes_dqs_ts),
-  .DQSBUS                            (oserdes_dqs),
-  .DTSBUS                            (oserdes_dq_ts),
-  .FINEOVERFLOW                      (po_fine_overflow),
-  .OCLKDIV                           (oserdes_clkdiv),
-  .OCLK                              (oserdes_clk),
-  .OCLKDELAYED                       (oserdes_clk_delayed),
-  .COUNTERREADVAL                    (po_counter_read_val),
-  .BURSTPENDINGPHY                   (phaser_ctl_bus[MSB_BURST_PEND_PO -3 + PHASER_INDEX]),
-  .ENCALIBPHY                        (po_en_calib),
-  .RDENABLE                          (po_rd_enable),
-  .FREQREFCLK                        (freq_refclk),
-  .MEMREFCLK                         (mem_refclk),
-  .PHASEREFCLK                       (/*phase_ref*/),
-  .RST                               (rst),
-  .OSERDESRST                        (po_oserdes_rst),
-  .COARSEENABLE                      (po_coarse_enable),
-  .FINEENABLE                        (po_fine_enable),
-  .COARSEINC                         (po_coarse_inc),
-  .FINEINC                           (po_fine_inc),
-  .SELFINEOCLKDELAY                  (po_sel_fine_oclk_delay),
-  .COUNTERLOADEN                     (po_counter_load_en),
-  .COUNTERREADEN                     (po_counter_read_en),
-  .COUNTERLOADVAL                    (po_counter_load_val),
-  .SYNCIN                            (sync_pulse),
-  .SYSCLK                            (phy_clk)
-);
+	: phaser_out_phy
+	generic_map (
+		CLKOUT_DIV          => PO_CLKOUT_DIV,
+		DATA_CTL_N          => PO_DATA_CTL,
+		FINE_DELAY          => PO_FINE_DELAY,
+		COARSE_BYPASS       => PO_COARSE_BYPASS,
+		COARSE_DELAY        => PO_COARSE_DELAY,
+		OCLK_DELAY          => PO_OCLK_DELAY
+		OCLKDELAY_INV       => PO_OCLKDELAY_INV,
+		OUTPUT_CLK_SRC      => PO_OUTPUT_CLK_SRC,
+		SYNC_IN_DIV_RST     => PO_SYNC_IN_DIV_RST,
+		REFCLK_PERIOD       => L_FREQ_REF_PERIOD_NS,
+		PHASEREFCLK_PERIOD  => 1, -- dummy, not used
+		PO                  => PO_DCD_SETTING,
+		MEMREFCLK_PERIOD    => L_MEM_REF_PERIOD_NS)
+	port map (
+		COARSEOVERFLOW      => (po_coarse_overflow),
+		CTSBUS              => (oserdes_dqs_ts),
+		DQSBUS              => (oserdes_dqs),
+		DTSBUS              => (oserdes_dq_ts),
+		FINEOVERFLOW        => (po_fine_overflow),
+		OCLKDIV             => (oserdes_clkdiv),
+		OCLK                => (oserdes_clk),
+		OCLKDELAYED         => (oserdes_clk_delayed),
+		COUNTERREADVAL      => (po_counter_read_val),
+		BURSTPENDINGPHY     => (phaser_ctl_bus(MSB_BURST_PEND_PO -3 + PHASER_INDEX)),
+		ENCALIBPHY          => (po_en_calib),
+		RDENABLE            => (po_rd_enable),
+		FREQREFCLK          => (freq_refclk),
+		MEMREFCLK           => (mem_refclk),
+		PHASEREFCLK         => (/*phase_ref*/),
+		RST                 => (rst),
+		OSERDESRST          => (po_oserdes_rst),
+		COARSEENABLE        => (po_coarse_enable),
+		FINEENABLE          => (po_fine_enable),
+		COARSEINC           => (po_coarse_inc),
+		FINEINC             => (po_fine_inc),
+		SELFINEOCLKDELAY    => (po_sel_fine_oclk_delay),
+		COUNTERLOADEN       => (po_counter_load_en),
+		COUNTERREADEN       => (po_counter_read_en),
+		COUNTERLOADVAL      => (po_counter_load_val),
+		SYNCIN              => (sync_pulse),
+		SYSCLK              => (phy_clk));
 
 
 generate
-
-if (PO_DATA_CTL == "TRUE")   begin : in_fifo_gen
-
-IN_FIFO #(
-  .ALMOST_EMPTY_VALUE                ( IF_ALMOST_EMPTY_VALUE ),
-  .ALMOST_FULL_VALUE                 ( IF_ALMOST_FULL_VALUE ),
-  .ARRAY_MODE                        ( L_IF_ARRAY_MODE),
-  .SYNCHRONOUS_MODE                  ( IF_SYNCHRONOUS_MODE)
-) in_fifo  (
-  .ALMOSTEMPTY                       (if_a_empty_),
-  .ALMOSTFULL                        (if_a_full_),
-  .EMPTY                             (if_empty_),
-  .FULL                              (if_full_),
-  .Q0                                (if_q0),
-  .Q1                                (if_q1),
-  .Q2                                (if_q2),
-  .Q3                                (if_q3),
-  .Q4                                (if_q4),
-  .Q5                                (if_q5),
-  .Q6                                (if_q6),
-  .Q7                                (if_q7),
-  .Q8                                (if_q8),
-  .Q9                                (if_q9),
-//===
-  .D0                                (if_d0),
-  .D1                                (if_d1),
-  .D2                                (if_d2),
-  .D3                                (if_d3),
-  .D4                                (if_d4),
-  .D5                                ({dummy_i5,if_d5}),
-  .D6                                ({dummy_i6,if_d6}),
-  .D7                                (if_d7),
-  .D8                                (if_d8),
-  .D9                                (if_d9),
-  .RDCLK                             (phy_clk),
-  .RDEN                              (phy_rd_en_),
-  .RESET                             (ififo_rst),
-  .WRCLK                             (iserdes_clkdiv),
-  .WREN                              (ififo_wr_enable)
-);
-end
-
-endgenerate
-
-
-
-OUT_FIFO #(
-  .ALMOST_EMPTY_VALUE             (OF_ALMOST_EMPTY_VALUE),
-  .ALMOST_FULL_VALUE              (OF_ALMOST_FULL_VALUE),
-  .ARRAY_MODE                     (L_OF_ARRAY_MODE),
-  .OUTPUT_DISABLE                 (OF_OUTPUT_DISABLE),
-  .SYNCHRONOUS_MODE               (OF_SYNCHRONOUS_MODE)
-) out_fifo (
-  .ALMOSTEMPTY                    (of_a_empty),
-  .ALMOSTFULL                     (of_a_full),
-  .EMPTY                          (of_empty),
-  .FULL                           (of_full),
-  .Q0                             (of_q0),
-  .Q1                             (of_q1),
-  .Q2                             (of_q2),
-  .Q3                             (of_q3),
-  .Q4                             (of_q4),
-  .Q5                             (of_q5),
-  .Q6                             (of_q6),
-  .Q7                             (of_q7),
-  .Q8                             (of_q8),
-  .Q9                             (of_q9),
-  .D0                             (of_d0),
-  .D1                             (of_d1),
-  .D2                             (of_d2),
-  .D3                             (of_d3),
-  .D4                             (of_d4),
-  .D5                             (of_d5),
-  .D6                             (of_d6),
-  .D7                             (of_d7),
-  .D8                             (of_d8),
-  .D9                             (of_d9),
-  .RDCLK                          (oserdes_clkdiv),
-  .RDEN                           (po_rd_enable),
-  .RESET                          (ofifo_rst),
-  .WRCLK                          (phy_clk),
-  .WREN                           (of_wren_pre)
-);
-
 
 mig_7series_v4_0_ddr_byte_group_io   #
    (
@@ -559,10 +421,10 @@ mig_7series_v4_0_ddr_byte_group_io   #
    .oserdes_clk              (oserdes_clk),
    .oserdes_clk_delayed      (oserdes_clk_delayed),
    .oserdes_clkdiv           (oserdes_clkdiv),
-   .oserdes_dqs              ({oserdes_dqs[1], oserdes_dqs[0]}),
-   .oserdes_dqsts            ({oserdes_dqs_ts[1], oserdes_dqs_ts[0]}),
+   .oserdes_dqs              ({oserdes_dqs(1), oserdes_dqs(0)}),
+   .oserdes_dqsts            ({oserdes_dqs_ts(1), oserdes_dqs_ts(0)}),
    .oserdes_dq               (of_dqbus),
-   .oserdes_dqts             ({oserdes_dq_ts[1], oserdes_dq_ts[0]}),
+   .oserdes_dqts             ({oserdes_dq_ts(1), oserdes_dq_ts(0)}),
    .fine_delay               (fine_delay),
    .fine_delay_sel           (fine_delay_sel)
     );
@@ -570,7 +432,7 @@ mig_7series_v4_0_ddr_byte_group_io   #
 genvar i;
 generate
   for (i = 0; i <= 5; i = i+1) begin : ddr_ck_gen_loop
-    if (PO_DATA_CTL== "FALSE" && (BYTELANES_DDR_CK[i*4+PHASER_INDEX])) begin : ddr_ck_gen
+    if (PO_DATA_CTL== "FALSE" && (BYTELANES_DDR_CK(i*4+PHASER_INDEX))) begin : ddr_ck_gen
       ODDR #(.DDR_CLK_EDGE  (ODDR_CLK_EDGE))
         ddr_ck (
         .C    (oserdes_clk),
@@ -579,12 +441,12 @@ generate
         .D1   (1'b0),
         .D2   (1'b1),
         .CE   (1'b1),
-        .Q    (ddr_ck_out_q[i])
+        .Q    (ddr_ck_out_q(i))
       );
-      OBUFDS ddr_ck_obuf  (.I(ddr_ck_out_q[i]), .O(ddr_ck_out[i*2]), .OB(ddr_ck_out[i*2+1]));
+      OBUFDS ddr_ck_obuf  (.I(ddr_ck_out_q(i)), .O(ddr_ck_out(i*2)), .OB(ddr_ck_out(i*2+1)));
     end // ddr_ck_gen
     else  begin : ddr_ck_null
-      assign ddr_ck_out[i*2+1:i*2] = 2'b0;
+      assign ddr_ck_out(i*2+1:i*2) = 2'b0;
     end
   end // ddr_ck_gen_loop
 endgenerate
