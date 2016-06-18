@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity is
+entity adjdqso is
 	generic (
 		BITLANES              : bit_vector(12-1 downto 0) := 12'b1111_1111_1111;
 		BITLANES_OUTONLY      : bit_vector(12-1 downto 0) := 12'b0000_0000_0000;
@@ -44,9 +44,10 @@ entity is
 		fine_delay_sel      : in  std_logic);
 end;
 
-architecture  of is
+architecture mix of adjqso is
 begin
-	: iserdese2
+
+	xxi : iserdese2
 	generic map (
 		DATA_RATE         => ISERDES_DQ_DATA_RATE,
 		DATA_WIDTH        => ISERDES_DQ_DATA_WIDTH,
@@ -66,319 +67,198 @@ begin
 		SRVAL_Q3          => ISERDES_DQ_SRVAL_Q3,
 		SRVAL_Q4          => ISERDES_DQ_SRVAL_Q4)
 	port map (
-         .O          => (),
-         .Q1         => (iserdes_dout(4*i + 3)),
-         .Q2         => (iserdes_dout(4*i + 2)),
-         .Q3         => (iserdes_dout(4*i + 1)),
-         .Q4         => (iserdes_dout(4*i + 0)),
-         .Q5         => (),
-         .Q6         => (),
-         .Q7         => (),
-         .Q8         => (),
-         .SHIFTOUT1  => (),
-         .SHIFTOUT2  => (),
+		O         => open,
 
-         .BITSLIP    => (1'b0),
-         .CE1        => (1'b1),
-         .CE2        => (1'b1),
-         .CLK        => (iserdes_clk_d),
-         .CLKB       => (!iserdes_clk_d),
-         .CLKDIVP    => (iserdes_clkdiv),
-         .CLKDIV     => (),
-         .DDLY       => (data_in_dly(i)),
-         .D          => (data_in(i)), // dedicated route to iob for debugging
-	                                           // or as needed, select with IOBDELAY
-         .DYNCLKDIVSEL               (1'b0),
-         .DYNCLKSEL                  (1'b0),
-// NOTE: OCLK is not used in this design, but is required to meet
-// a design rule check in map and bitgen. Do not disconnect it.
-         .OCLK                       (oserdes_clk),
-         .OCLKB                      (),
-         .OFB                        (),
-         .RST                        (1'b0),
-//         .RST                        (iserdes_rst),
-         .SHIFTIN1                   (1'b0),
-         .SHIFTIN2                   (1'b0)
-         );
+		Q1        => iserdes_dout(4*i + 3),
+		Q2        => iserdes_dout(4*i + 2),
+		Q3        => iserdes_dout(4*i + 1),
+		Q4        => iserdes_dout(4*i + 0),
+		Q5        => open,
+		Q6        => open,
+		Q7        => open,
+		Q8        => open,
+		SHIFTOUT1 => open,
+		SHIFTOUT2 => open,
 
-localparam IDELAYE2_CINVCTRL_SEL          = "FALSE";
-localparam IDELAYE2_DELAY_SRC             = "IDATAIN";
-localparam IDELAYE2_HIGH_PERFORMANCE_MODE = "TRUE";
-localparam IDELAYE2_PIPE_SEL              = "FALSE";
-localparam IDELAYE2_ODELAY_TYPE           = "FIXED";
-localparam IDELAYE2_REFCLK_FREQUENCY      = ((FPGA_SPEED_GRADE == 2 || FPGA_SPEED_GRADE == 3) && TCK <= 1500) ? 400.0 :
-                                             (FPGA_SPEED_GRADE == 1 && TCK <= 1500) ?  300.0 : 200.0;
-localparam IDELAYE2_SIGNAL_PATTERN        = "DATA";
-localparam IDELAYE2_FINEDELAY_IN          = "ADD_DLY";
+		BITSLIP   => '0',
+		CE1       => '1',
+		CE2       => '1',
+		CLK       => iserdes_clk_d,
+		CLKB      => !iserdes_clk_d,
+		CLKDIVP   => iserdes_clkdiv,
+		CLKDIV    => open,
+		DDLY      => data_in_dly(i),
+		D         => data_in(i),
+		DYNCLKDIVSEL => '0',
+		DYNCLKSEL    => '0',
+		OCLK      => oserdes_clk),
+		OCLKB     => ,
+		OFB       => ,
+		RST       => '0',
+		SHIFTIN1  => '0',
+		SHIFTIN2  => '0');
 
-    if(IDELAY_FINEDELAY_USE == "TRUE") begin: idelay_finedelay_dq
-      (* IODELAY_GROUP = IODELAY_GRP *)
-        IDELAYE2_FINEDELAY #(
-         .CINVCTRL_SEL             ( IDELAYE2_CINVCTRL_SEL),
-         .DELAY_SRC                ( IDELAYE2_DELAY_SRC),
-         .HIGH_PERFORMANCE_MODE    ( IDELAYE2_HIGH_PERFORMANCE_MODE),
-         .IDELAY_TYPE              ( IDELAYE2_IDELAY_TYPE),
-         .IDELAY_VALUE             ( IDELAYE2_IDELAY_VALUE),
-         .PIPE_SEL                 ( IDELAYE2_PIPE_SEL),
-         .FINEDELAY                ( IDELAYE2_FINEDELAY_IN),
-         .REFCLK_FREQUENCY         ( IDELAYE2_REFCLK_FREQUENCY ),
-         .SIGNAL_PATTERN           ( IDELAYE2_SIGNAL_PATTERN)
-         )
-         idelaye2
-         (
-         .CNTVALUEOUT              (),
-         .DATAOUT                  (data_in_dly(i)),
-         .C                        (phy_clk), // automatically wired by ISE
-         .CE                       (idelay_ce),
-         .CINVCTRL                 (),
-         .CNTVALUEIN               (5'b00000),
-         .DATAIN                   (1'b0),
-         .IDATAIN                  (data_in(i)),
-         .IFDLY                    (fine_delay_r(i*3+:3)),
-         .INC                      (idelay_inc),
-         .LD                       (idelay_ld | idelay_ld_rst),
-         .LDPIPEEN                 (1'b0),
-         .REGRST                   (rst)
-     );
-    end else begin : idelay_dq
-      (* IODELAY_GROUP = IODELAY_GRP *)
-        IDELAYE2 #(
-         .CINVCTRL_SEL             ( IDELAYE2_CINVCTRL_SEL),
-         .DELAY_SRC                ( IDELAYE2_DELAY_SRC),
-         .HIGH_PERFORMANCE_MODE    ( IDELAYE2_HIGH_PERFORMANCE_MODE),
-         .IDELAY_TYPE              ( IDELAYE2_IDELAY_TYPE),
-         .IDELAY_VALUE             ( IDELAYE2_IDELAY_VALUE),
-         .PIPE_SEL                 ( IDELAYE2_PIPE_SEL),
-         .REFCLK_FREQUENCY         ( IDELAYE2_REFCLK_FREQUENCY ),
-         .SIGNAL_PATTERN           ( IDELAYE2_SIGNAL_PATTERN)
-         )
-         idelaye2
-         (
-         .CNTVALUEOUT              (),
-         .DATAOUT                  (data_in_dly(i)),
-         .C                        (phy_clk), // automatically wired by ISE
-         .CE                       (idelay_ce),
-         .CINVCTRL                 (),
-         .CNTVALUEIN               (5'b00000),
-         .DATAIN                   (1'b0),
-         .IDATAIN                  (data_in(i)),
-         .INC                      (idelay_inc),
-         .LD                       (idelay_ld | idelay_ld_rst),
-         .LDPIPEEN                 (1'b0),
-         .REGRST                   (rst)
-     );
+--localparam IDELAYE2_CINVCTRL_SEL          = "FALSE";
+--localparam IDELAYE2_DELAY_SRC             = "IDATAIN";
+--localparam IDELAYE2_HIGH_PERFORMANCE_MODE = "TRUE";
+--localparam IDELAYE2_PIPE_SEL              = "FALSE";
+--localparam IDELAYE2_ODELAY_TYPE           = "FIXED";
+--localparam IDELAYE2_REFCLK_FREQUENCY      = ((FPGA_SPEED_GRADE == 2 || FPGA_SPEED_GRADE == 3) && TCK <= 1500) ? 400.0 :
+--                                             (FPGA_SPEED_GRADE == 1 && TCK <= 1500) ?  300.0 : 200.0;
+--localparam IDELAYE2_SIGNAL_PATTERN        = "DATA";
+--localparam IDELAYE2_FINEDELAY_IN          = "ADD_DLY";
 
-     end
-    end // iserdes_dq
-    else begin
-        assign iserdes_dout(4*i + 3) = 0;
-        assign iserdes_dout(4*i + 2) = 0;
-        assign iserdes_dout(4*i + 1) = 0;
-        assign iserdes_dout(4*i + 0) = 0;
-    end
-end // in_
-endgenerate			// iserdes_dq_
+	xxii : idelaye2_finedelay
+	generic map (
+		CINVCTRL_SEL          => IDELAYE2_CINVCTRL_SEL,
+		DELAY_SRC             => IDELAYE2_DELAY_SRC,
+		HIGH_PERFORMANCE_MODE => IDELAYE2_HIGH_PERFORMANCE_MODE,
+		IDELAY_TYPE           => IDELAYE2_IDELAY_TYPE,
+		IDELAY_VALUE          => IDELAYE2_IDELAY_VALUE,
+		PIPE_SEL              => IDELAYE2_PIPE_SEL,
+		FINEDELAY             => IDELAYE2_FINEDELAY_IN,
+		REFCLK_FREQUENCY      => IDELAYE2_REFCLK_FREQUENCY,
+		SIGNAL_PATTERN        => IDELAYE2_SIGNAL_PATTERN)
+	port map (
+		CNTVALUEOUT           => open,
+		DATAOUT               => data_in_dly(i),
+		C                     => phy_clk, /--automatically wired by ISE
+		CE                    => idelay_ce,
+		CINVCTRL              => open,
+		CNTVALUEIN            => 5'b00000,
+		DATAIN                => 1'b0,
+		IDATAIN               => data_in(i),
+		IFDLY                 => fine_delay_r(i*3+:3),
+		INC                   => idelay_inc,
+		LD                    => idelay_ld | idelay_ld_rst),
+		LDPIPEEN              => '0',
+		REGRST                => rst);
 
-localparam OSERDES_DQ_DATA_RATE_OQ    = OSERDES_DATA_RATE;
-localparam OSERDES_DQ_DATA_RATE_TQ    = OSERDES_DQ_DATA_RATE_OQ;
-localparam OSERDES_DQ_DATA_WIDTH      = OSERDES_DATA_WIDTH;
-localparam OSERDES_DQ_INIT_OQ         = 1'b1;
-localparam OSERDES_DQ_INIT_TQ         = 1'b1;
-localparam OSERDES_DQ_INTERFACE_TYPE  = "DEFAULT";
-localparam OSERDES_DQ_ODELAY_USED     = 0;
-localparam OSERDES_DQ_SERDES_MODE     = "MASTER";
-localparam OSERDES_DQ_SRVAL_OQ        = 1'b1;
-localparam OSERDES_DQ_SRVAL_TQ        = 1'b1;
-// note: obuf used in control path case, no ts in so width irrelevant
-localparam OSERDES_DQ_TRISTATE_WIDTH  = (OSERDES_DQ_DATA_RATE_OQ == "DDR") ? 4 : 1;
+--localparam OSERDES_DQ_DATA_RATE_OQ    = OSERDES_DATA_RATE;
+--localparam OSERDES_DQ_DATA_RATE_TQ    = OSERDES_DQ_DATA_RATE_OQ;
+--localparam OSERDES_DQ_DATA_WIDTH      = OSERDES_DATA_WIDTH;
+--localparam OSERDES_DQ_INIT_OQ         = 1'b1;
+--localparam OSERDES_DQ_INIT_TQ         = 1'b1;
+--localparam OSERDES_DQ_INTERFACE_TYPE  = "DEFAULT";
+--localparam OSERDES_DQ_ODELAY_USED     = 0;
+--localparam OSERDES_DQ_SERDES_MODE     = "MASTER";
+--localparam OSERDES_DQ_SRVAL_OQ        = 1'b1;
+--localparam OSERDES_DQ_SRVAL_TQ        = 1'b1;
+--// note: obuf used in control path case, no ts in so width irrelevant
+--localparam OSERDES_DQ_TRISTATE_WIDTH  = (OSERDES_DQ_DATA_RATE_OQ == "DDR") ? 4 : 1;
+--
+--localparam OSERDES_DQS_DATA_RATE_OQ   = "DDR";
+--localparam OSERDES_DQS_DATA_RATE_TQ   = "DDR";
+--localparam OSERDES_DQS_TRISTATE_WIDTH = 4;	// this is always ddr
+--localparam OSERDES_DQS_DATA_WIDTH     = 4;
+--localparam ODDR_CLK_EDGE              = "SAME_EDGE";
+--localparam OSERDES_TBYTE_CTL          = "TRUE";
 
-localparam OSERDES_DQS_DATA_RATE_OQ   = "DDR";
-localparam OSERDES_DQS_DATA_RATE_TQ   = "DDR";
-localparam OSERDES_DQS_TRISTATE_WIDTH = 4;	// this is always ddr
-localparam OSERDES_DQS_DATA_WIDTH     = 4;
-localparam ODDR_CLK_EDGE              = "SAME_EDGE";
-localparam OSERDES_TBYTE_CTL          = "TRUE";
+	xxiii : oserdese2 
+	generic map (
+		DATA_RATE_OQ    => OSERDES_DQ_DATA_RATE_OQ,
+		DATA_RATE_TQ    => OSERDES_DQ_DATA_RATE_TQ,
+		DATA_WIDTH      => OSERDES_DQ_DATA_WIDTH,
+		INIT_OQ         => OSERDES_DQ_INIT_OQ,
+		INIT_TQ         => OSERDES_DQ_INIT_TQ,
+		SERDES_MODE     => OSERDES_DQ_SERDES_MODE,
+		SRVAL_OQ        => OSERDES_DQ_SRVAL_OQ,
+		SRVAL_TQ        => OSERDES_DQ_SRVAL_TQ,
+		TRISTATE_WIDTH  => OSERDES_DQ_TRISTATE_WIDTH,
+		TBYTE_CTL       => "TRUE",
+		TBYTE_SRC       => "TRUE")
+	port map (
+		OFB       => open,
+		OQ        => open,
+		SHIFTOUT1 => open,
+		SHIFTOUT2 => open,
+		TFB       => open,
+		TQ        => open,
+		CLK       => oserdes_clk,
+		CLKDIV    => oserdes_clkdiv,
+		D1        => open,
+		D2        => open,
+		D3        => open,
+		D4        => open,
+		D5        => open,
+		D6        => open,
+		D7        => open,
+		D8        => open,
+		OCE       => '1',
+		RST       => oserdes_rst,
+		SHIFTIN1  => open
+		SHIFTIN2  => open
+		T1        => oserdes_dqts(0),
+		T2        => oserdes_dqts(0),
+		T3        => oserdes_dqts(1),
+		T4        => oserdes_dqts(1),
+		TCE       => '1',
+		TBYTEOUT  => tbyte_out,
+		TBYTEIN   => tbyte_out);
 
+	xxiv : oserdese2 
+	generic map (
+		DATA_RATE_OQ    => OSERDES_DQ_DATA_RATE_OQ,
+		DATA_RATE_TQ    => OSERDES_DQ_DATA_RATE_TQ,
+		DATA_WIDTH      => OSERDES_DQ_DATA_WIDTH,
+		INIT_OQ         => OSERDES_DQ_INIT_OQ,
+		INIT_TQ         => OSERDES_DQ_INIT_TQ,
+		SERDES_MODE     => OSERDES_DQ_SERDES_MODE,
+		SRVAL_OQ        => OSERDES_DQ_SRVAL_OQ,
+		SRVAL_TQ        => OSERDES_DQ_SRVAL_TQ,
+		TRISTATE_WIDTH  => OSERDES_DQ_TRISTATE_WIDTH,
+		TBYTE_CTL       => OSERDES_TBYTE_CTL,
+		TBYTE_SRC       => "FALSE")
+	port map (
+		OFB               open,
+		OQ                oserdes_dq_buf(i),
+		SHIFTOUT1 => open,
+		SHIFTOUT2 => open,
+		TFB       => open,
+		TQ        => open,
+		TQ        => oserdes_dqts_buf(i),
+		CLK       => oserdes_clk,
+		CLKDIV    => oserdes_clkdiv,
+		D1        => oserdes_dq(4 * i + 0),
+		D2        => oserdes_dq(4 * i + 1),
+		D3        => oserdes_dq(4 * i + 2),
+		D4        => oserdes_dq(4 * i + 3),
+		D5        => open,
+		D6        => open,
+		D7        => open,
+		D8        => open,
+		OCE       => '1',
+		RST       => oserdes_rst,
+		SHIFTIN1  => open
+		SHIFTIN2  => open
+		T1        => open,
+		T2        => open,
+		T3        => open,
+		T4        => open,
+		TCE       => '1',
+		TBYTEIN   => tbyte_out);
 
-generate
+	oddr_dqs : oddr
+	generic map (
+		DDR_CLK_EDGE => ODDR_CLK_EDGE)
+	port map (
+       .Q  => oserdes_dqs_buf,
+       .D1 => oserdes_dqs(0),
+       .D2 => oserdes_dqs(1),
+       .C  => oserdes_clk_delayed,
+       .R  => '0',
+       .S  => '0',
+       .CE => '1');
 
-localparam NUM_BITLANES = PO_DATA_CTL == "TRUE" ? 10 : BUS_WIDTH;
-
-     if ( PO_DATA_CTL == "TRUE" ) begin  : slave_ts
-           OSERDESE2 #(
-               .DATA_RATE_OQ         (OSERDES_DQ_DATA_RATE_OQ),
-               .DATA_RATE_TQ         (OSERDES_DQ_DATA_RATE_TQ),
-               .DATA_WIDTH           (OSERDES_DQ_DATA_WIDTH),
-               .INIT_OQ              (OSERDES_DQ_INIT_OQ),
-               .INIT_TQ              (OSERDES_DQ_INIT_TQ),
-               .SERDES_MODE          (OSERDES_DQ_SERDES_MODE),
-               .SRVAL_OQ             (OSERDES_DQ_SRVAL_OQ),
-               .SRVAL_TQ             (OSERDES_DQ_SRVAL_TQ),
-               .TRISTATE_WIDTH       (OSERDES_DQ_TRISTATE_WIDTH),
-               .TBYTE_CTL            ("TRUE"),
-               .TBYTE_SRC            ("TRUE")
-            )
-            oserdes_slave_ts
-            (
-                .OFB                 (),
-                .OQ                  (),
-                .SHIFTOUT1           (),	// not extended
-                .SHIFTOUT2           (),	// not extended
-                .TFB                 (),
-                .TQ                  (),
-                .CLK                 (oserdes_clk),
-                .CLKDIV              (oserdes_clkdiv),
-                .D1                  (),
-                .D2                  (),
-                .D3                  (),
-                .D4                  (),
-                .D5                  (),
-                .D6                  (),
-                .D7                  (),
-                .D8                  (),
-               .OCE                  (1'b1),
-               .RST                  (oserdes_rst),
-               .SHIFTIN1             (),     // not extended
-               .SHIFTIN2             (),     // not extended
-               .T1                   (oserdes_dqts(0)),
-               .T2                   (oserdes_dqts(0)),
-               .T3                   (oserdes_dqts(1)),
-               .T4                   (oserdes_dqts(1)),
-               .TCE                  (1'b1),
-               .TBYTEOUT             (tbyte_out),
-               .TBYTEIN              (tbyte_out)
-             );
-     end // slave_ts
-
-  for (i = 0; i != NUM_BITLANES; i=i+1) begin : out_
-     if ( BITLANES(i)) begin  : oserdes_dq_
-
-        if ( PO_DATA_CTL == "TRUE" ) begin  : ddr
-
-           OSERDESE2 #(
-               .DATA_RATE_OQ         (OSERDES_DQ_DATA_RATE_OQ),
-               .DATA_RATE_TQ         (OSERDES_DQ_DATA_RATE_TQ),
-               .DATA_WIDTH           (OSERDES_DQ_DATA_WIDTH),
-               .INIT_OQ              (OSERDES_DQ_INIT_OQ),
-               .INIT_TQ              (OSERDES_DQ_INIT_TQ),
-               .SERDES_MODE          (OSERDES_DQ_SERDES_MODE),
-               .SRVAL_OQ             (OSERDES_DQ_SRVAL_OQ),
-               .SRVAL_TQ             (OSERDES_DQ_SRVAL_TQ),
-               .TRISTATE_WIDTH       (OSERDES_DQ_TRISTATE_WIDTH),
-               .TBYTE_CTL            (OSERDES_TBYTE_CTL),
-               .TBYTE_SRC            ("FALSE")
-             )
-              oserdes_dq_i
-              (
-                .OFB               (),
-                .OQ                (oserdes_dq_buf(i)),
-                .SHIFTOUT1         (),	// not extended
-                .SHIFTOUT2         (),	// not extended
-                .TBYTEOUT          (),
-                .TFB               (),
-                .TQ                (oserdes_dqts_buf(i)),
-                .CLK               (oserdes_clk),
-                .CLKDIV            (oserdes_clkdiv),
-                .D1                (oserdes_dq(4 * i + 0)),
-                .D2                (oserdes_dq(4 * i + 1)),
-                .D3                (oserdes_dq(4 * i + 2)),
-                .D4                (oserdes_dq(4 * i + 3)),
-                .D5                (),
-                .D6                (),
-                .D7                (),
-                .D8                (),
-               .OCE                (1'b1),
-               .RST                (oserdes_rst),
-               .SHIFTIN1           (),     // not extended
-               .SHIFTIN2           (),     // not extended
-               .T1                 (/*oserdes_dqts(0)*/),
-               .T2                 (/*oserdes_dqts(0)*/),
-               .T3                 (/*oserdes_dqts(1)*/),
-               .T4                 (/*oserdes_dqts(1)*/),
-               .TCE                (1'b1),
-               .TBYTEIN            (tbyte_out)
-              );
-           end
-           else begin :  sdr
-           OSERDESE2 #(
-               .DATA_RATE_OQ         (OSERDES_DQ_DATA_RATE_OQ),
-               .DATA_RATE_TQ         (OSERDES_DQ_DATA_RATE_TQ),
-               .DATA_WIDTH           (OSERDES_DQ_DATA_WIDTH),
-               .INIT_OQ              (1'b0 /*OSERDES_DQ_INIT_OQ*/),
-               .INIT_TQ              (OSERDES_DQ_INIT_TQ),
-               .SERDES_MODE          (OSERDES_DQ_SERDES_MODE),
-               .SRVAL_OQ             (1'b0 /*OSERDES_DQ_SRVAL_OQ*/),
-               .SRVAL_TQ             (OSERDES_DQ_SRVAL_TQ),
-               .TRISTATE_WIDTH       (OSERDES_DQ_TRISTATE_WIDTH)
-              )
-              oserdes_dq_i
-              (
-                .OFB               (),
-                .OQ                (oserdes_dq_buf(i)),
-                .SHIFTOUT1         (),	// not extended
-                .SHIFTOUT2         (),	// not extended
-                .TBYTEOUT          (),
-                .TFB               (),
-                .TQ                (),
-                .CLK               (oserdes_clk),
-                .CLKDIV            (oserdes_clkdiv),
-                .D1                (oserdes_dq(4 * i + 0)),
-                .D2                (oserdes_dq(4 * i + 1)),
-                .D3                (oserdes_dq(4 * i + 2)),
-                .D4                (oserdes_dq(4 * i + 3)),
-                .D5                (),
-                .D6                (),
-                .D7                (),
-                .D8                (),
-               .OCE                (1'b1),
-               .RST                (oserdes_rst),
-               .SHIFTIN1           (),     // not extended
-               .SHIFTIN2           (),     // not extended
-               .T1                 (),
-               .T2                 (),
-               .T3                 (),
-               .T4                 (),
-               .TCE                (1'b1),
-               .TBYTEIN            ()
-              );
-           end // ddr
-     end // oserdes_dq_
-  end // out_
-
-endgenerate
-
-generate
-
- if ( PO_DATA_CTL == "TRUE" )  begin : dqs_gen
-
-   ODDR
-      #(.DDR_CLK_EDGE  (ODDR_CLK_EDGE))
-      oddr_dqs
-   (
-       .Q   (oserdes_dqs_buf),
-       .D1  (oserdes_dqs(0)),
-       .D2  (oserdes_dqs(1)),
-       .C   (oserdes_clk_delayed),
-       .R   (1'b0),
-       .S   (),
-       .CE  (1'b1)
-   );
-
-   ODDR
-     #(.DDR_CLK_EDGE  (ODDR_CLK_EDGE))
-     oddr_dqsts
-   (    .Q  (oserdes_dqsts_buf),
-        .D1 (oserdes_dqsts(0)),
-        .D2 (oserdes_dqsts(0)),
-        .C  (oserdes_clk_delayed),
-        .R  (),
-        .S  (1'b0),
-        .CE (1'b1)
-   );
-
- end // sdr rate
- else begin:null_dqs
- end
-endgenerate
-
-endmodule			// byte_group_io
+	oddr_dqsts : oddr
+	generic map (
+		DDR_CLK_EDGE => ODDR_CLK_EDGE)
+	port map (
+		Q  => oserdes_dqsts_buf,
+		D1 => oserdes_dqsts(0),
+		D2 => oserdes_dqsts(0),
+		C  => oserdes_clk_delayed,
+		R  => '0',
+		S  => '0',
+		CE => '1');
+end
