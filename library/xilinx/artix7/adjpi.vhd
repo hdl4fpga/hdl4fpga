@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 entity adjdqso is
 	generic (
-		BITLANES              : bit_vector(12-1 downto 0) := 12'b1111_1111_1111;
-		BITLANES_OUTONLY      : bit_vector(12-1 downto 0) := 12'b0000_0000_0000;
+		BITLANES              : bit_vector(12-1 downto 0) := b"1111_1111_1111";
+		BITLANES_OUTONLY      : bit_vector(12-1 downto 0) := b"0000_0000_0000";
 		PO_DATA_CTL           : string  := "FALSE";
 		OSERDES_DATA_RATE     : string  := "DDR";
 		OSERDES_DATA_WIDTH    : natural := 4;
@@ -14,13 +14,13 @@ entity adjdqso is
 		BUS_WIDTH             : natural := 12;
 		SYNTHESIS             : string  := "FALSE");
 	port (
-		mem_dq_in           : in  std_logic_vector(9 downto 0)
-		mem_dq_out          : out std_logic_vector(BUS_WIDTH-1 downto 0)
-		mem_dq_ts           : out std_logic_vector(BUS_WIDTH-1 downto 0)
+		mem_dq_in           : in  std_logic_vector(9 downto 0);
+		mem_dq_out          : out std_logic_vector(BUS_WIDTH-1 downto 0);
+		mem_dq_ts           : out std_logic_vector(BUS_WIDTH-1 downto 0);
 		mem_dqs_in          : in  std_logic;
 		mem_dqs_out         : out std_logic;
 		mem_dqs_ts          : out std_logic;
-		iserdes_dout        : out std_logic_vector((4*10)-1 downto 0)
+		iserdes_dout        : out std_logic_vector((4*10)-1 downto 0);
 		dqs_to_phaser       : out std_logic;
 		iserdes_clk         : in  std_logic;
 		iserdes_clkb        : in  std_logic;
@@ -29,10 +29,10 @@ entity adjdqso is
 		rst                 : in  std_logic;
 		oserdes_rst         : in  std_logic;
 		iserdes_rst         : in  std_logic;
-		oserdes_dqs         : in  std_logic_vector(1 downto 0)
-		oserdes_dqsts       : in  std_logic_vector(1 downto 0)
-		oserdes_dq          : in  std_logic_vector((4*BUS_WIDTH)-1 downto 0)
-		oserdes_dqts        : in  std_logic_vector(1 downto 0)
+		oserdes_dqs         : in  std_logic_vector(1 downto 0);
+		oserdes_dqsts       : in  std_logic_vector(1 downto 0);
+		oserdes_dq          : in  std_logic_vector((4*BUS_WIDTH)-1 downto 0);
+		oserdes_dqts        : in  std_logic_vector(1 downto 0);
 		oserdes_clk         : in  std_logic;
 		oserdes_clk_delayed : in  std_logic;
 		oserdes_clkdiv      : in  std_logic;
@@ -44,7 +44,10 @@ entity adjdqso is
 		fine_delay_sel      : in  std_logic);
 end;
 
-architecture mix of adjqso is
+library unisim;
+use unisim.vcomponents.all;
+
+architecture mix of adjdqso is
 begin
 
 	xxi : iserdese2
@@ -69,10 +72,10 @@ begin
 	port map (
 		O         => open,
 
-		Q1        => iserdes_dout(4*i + 3),
-		Q2        => iserdes_dout(4*i + 2),
-		Q3        => iserdes_dout(4*i + 1),
-		Q4        => iserdes_dout(4*i + 0),
+		Q1        => iserdes_dout(3),
+		Q2        => iserdes_dout(2),
+		Q3        => iserdes_dout(1),
+		Q4        => iserdes_dout(0),
 		Q5        => open,
 		Q6        => open,
 		Q7        => open,
@@ -84,16 +87,16 @@ begin
 		CE1       => '1',
 		CE2       => '1',
 		CLK       => iserdes_clk_d,
-		CLKB      => !iserdes_clk_d,
+		CLKB      => iserdes_clk_d, --!iserdes_clk_d,
 		CLKDIVP   => iserdes_clkdiv,
 		CLKDIV    => open,
 		DDLY      => data_in_dly(i),
 		D         => data_in(i),
 		DYNCLKDIVSEL => '0',
 		DYNCLKSEL    => '0',
-		OCLK      => oserdes_clk),
-		OCLKB     => ,
-		OFB       => ,
+		OCLK      => oserdes_clk,
+		OCLKB     => open,
+		OFB       => open,
 		RST       => '0',
 		SHIFTIN1  => '0',
 		SHIFTIN2  => '0');
