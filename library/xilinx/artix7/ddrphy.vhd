@@ -40,7 +40,6 @@ entity ddrphy is
 	port (
 		sys_tp      : out std_logic_vector(WORD_SIZE-1 downto 0);
 
-		sys_rst     : in  std_logic;
 		sys_iodclk  : in  std_logic;
 		sys_clk0    : in  std_logic;
 		sys_clk90   : in  std_logic;
@@ -57,6 +56,7 @@ entity ddrphy is
 		sys_rlrdy   : out std_logic;
 		sys_rlcal   : out std_logic;
 
+		sys_rst     : in  std_logic_vector(CMD_PHASES-1 downto 0) := (others => '-');
 		sys_cke     : in  std_logic_vector(CMD_PHASES-1 downto 0);
 		sys_cs      : in  std_logic_vector(CMD_PHASES-1 downto 0) := (others => '0');
 		sys_ras     : in  std_logic_vector(CMD_PHASES-1 downto 0);
@@ -78,6 +78,7 @@ entity ddrphy is
 		sys_sti     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0) := (others => '-');
 		sys_sto     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 
+		ddr_rst     : out std_logic := '0';
 		ddr_cs      : out std_logic := '0';
 		ddr_cke     : out std_logic := '1';
 		ddr_clk     : out std_logic_vector;
@@ -377,6 +378,7 @@ begin
 	port map (
 		sys_clk => sys_clk0,
           
+		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => phy_ba,
@@ -386,6 +388,7 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
         
+		ddr_rst => ddr_rst,
 		ddr_cke => ddr_cke,
 		ddr_odt => ddr_odt,
 		ddr_cs  => ddr_cs,
@@ -435,7 +438,7 @@ begin
 			gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			sys_rst    => sys_rst,
+			sys_rst    => phy_rst,
 			sys_clk0   => sys_clk0,
 			sys_clk90  => sys_clk90,
 			sys_wlreq  => wlreq,

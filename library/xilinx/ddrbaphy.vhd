@@ -32,6 +32,7 @@ entity ddrbaphy is
 	port (
 		sys_clk   : in  std_logic;
 
+		sys_rst  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_cs  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_cke : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_b   : in  std_logic_vector(cmd_phases*bank_size-1 downto 0);
@@ -57,6 +58,7 @@ library hdl4fpga;
 architecture virtex of ddrbaphy is
 	constant ddr_phases : natural := 2;
 
+	signal rst : std_logic_vector(ddr_phases-1 downto 0);
 	signal cs  : std_logic_vector(ddr_phases-1 downto 0);
 	signal cke : std_logic_vector(ddr_phases-1 downto 0);
 	signal b   : std_logic_vector(ddr_phases*bank_size-1 downto 0);
@@ -77,6 +79,7 @@ begin
 		cas <= (sys_cas'range => sys_cas(0)) & sys_cas;
 		we  <= (sys_we 'range => sys_we(0))  & sys_we;
 		odt <= (sys_odt'range => sys_odt(0)) & sys_odt;
+		rst <= (sys_odt'range => sys_rst(0)) & sys_rst;
 	end generate;
 
 	xxx1 : if not (cmd_phases < ddr_phases) generate
@@ -88,6 +91,7 @@ begin
 		cas <= sys_cas;
 		we  <= sys_we;
 		odt <= sys_odt;
+		odt <= sys_rst;
 	end generate;
 
 	b_g : for i in 0 to bank_size-1 generate
@@ -150,5 +154,12 @@ begin
 		d => odt(0),
 --		df => odt(1),
 		q  => ddr_odt);
+
+	rst_i : entity hdl4fpga.ff
+	port map (
+		clk => sys_clk,
+		d => sys_rst(0),
+--		df => odt(1),
+		q  => ddr_rst);
 
 end;

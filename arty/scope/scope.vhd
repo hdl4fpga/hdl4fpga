@@ -84,6 +84,7 @@ architecture scope of arty is
 	signal ddr3_dqt  : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr3_clk  : std_logic_vector(1-1 downto 0);
 
+	signal ddrphy_rst     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cke     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cs      : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_ras     : std_logic_vector(CMD_PHASES-1 downto 0);
@@ -171,13 +172,13 @@ begin
 		rdy    => iodctrl_rdy);
 
 	sys_rst  <= not iodctrl_rdy;
-	ddrs_rst <= sys_rst and ddr_rst;
+	ddrs_rst <= sys_rst or ddr_rst;
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
-		DDR_MARK       => M125,
+		DDR_MARK       => M15E,
 		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*DDR_DIV/DDR_MUL,
 		DDR_SCLKEDGES  => SCLK_EDGES,
 		DDR_STROBE     => "INTERNAL",
@@ -201,7 +202,6 @@ begin
 		ddrs_cl  => "101",
 		ddrs_rtt => "11",
 
-		ddr_cke    => ddrphy_cke(0),
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
 		ddr_rlreq  => ddrphy_rlreq,
@@ -212,6 +212,8 @@ begin
 		ddr_phycmd_req => ddrphy_cmd_req,
 		ddrs_cmd_rdy => ddrphy_cmd_rdy,
 
+		ddr_rst  => ddrphy_rst(0),
+		ddr_cke  => ddrphy_cke(0),
 		ddr_cs   => ddrphy_cs(0),
 		ddr_ras  => ddrphy_ras(0),
 		ddr_cas  => ddrphy_cas(0),
@@ -259,7 +261,6 @@ begin
 	port map (
 		sys_tp    => tp1,
 
-		sys_rst   => sys_rst,
 		sys_clk0  => ddrs_clk0,
 		sys_clk90 => ddrs_clk90, 
 		sys_iodclk => iodctrl_clk,
@@ -278,6 +279,7 @@ begin
 		sys_rlcal => ddrphy_rlcal,
 
 		sys_cke   => ddrphy_cke,
+		sys_rst   => ddrphy_rst,
 		sys_cs    => ddrphy_cs,
 		sys_ras   => ddrphy_ras,
 		sys_cas   => ddrphy_cas,
@@ -297,6 +299,7 @@ begin
 		sys_sti  => ddrphy_sto,
 		sys_sto  => ddrphy_sti,
 
+		ddr_rst  => ddr3_reset,
 		ddr_clk  => ddr3_clk,
 		ddr_cke  => ddr3_cke,
 		ddr_cs   => ddr3_cs,

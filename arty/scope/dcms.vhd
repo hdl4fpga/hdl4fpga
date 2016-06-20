@@ -66,6 +66,8 @@ architecture def of dcms is
 	signal lcks : std_logic_vector(clks'range);
 begin
 
+	clks(mii) <= sys_clk;
+	lcks(mii) <= not sys_rst;
 --	videodcm_e : entity hdl4fpga.dfs
 --	generic map (
 --		dcm_per => sys_per,
@@ -76,6 +78,9 @@ begin
 --		dcm_clk => sys_clk,
 --		dfs_clk => clks(video),
 --		dcm_lck => lcks(video));
+   
+	clks(video) <= sys_clk;
+	lcks(video) <= not sys_rst;
 
 	iodctrl_i :  mmcme2_base
 	generic map (

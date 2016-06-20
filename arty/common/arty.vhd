@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
-		btn : in std_logic_vector(4-1 downto 0);
-		sw  : in std_logic_vector(4-1 downto 0);
+		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
+		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
 		led : out std_logic_vector(8-1 downto 4);
 		RGBled : out std_logic_vector(4*3-1 downto 0);
 
