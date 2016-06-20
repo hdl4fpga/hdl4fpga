@@ -88,6 +88,7 @@ architecture virtex of ddrdqphy is
 	signal smp : std_logic_vector(2-1 downto 0);
 begin
 
+	sys_wlrdy <= sys_wlreq;
 	process (sys_iodclk)
 		variable aux : std_logic;
 	begin
@@ -225,7 +226,6 @@ begin
 	dqso_b : block 
 		signal clk_n : std_logic;
 		signal sto   : std_logic;
-		signal dqso  : std_logic;
 	begin
 
 		dqsidelay_i : idelay 
@@ -294,31 +294,10 @@ begin
 
 		ddro_i : entity hdl4fpga.ddro
 		port map (
-			clk => dqso, --sys_clk0,
+			clk => sys_clk0,
 			dr  => '0',
 			df  => sys_dqso(0),
 			q   => ddr_dqso);
-
-		dqsodelay_i : odelaye2 
-		generic map (
-			CINVCTRL_SEL   => "FALSE",
-			DELAY_SRC      => "CLKIN",
-			HIGH_PERFORMANCE_MODE => "TRUE",
-			ODELAY_TYPE    => "VAR_LOAD",
-			SIGNAL_PATTERN => "CLOCK",
-			PIPE_SEL       => "FALSE")
-		port map (
-			regrst => iod_rst,
-			c   => sys_iodclk,
-			ce  => '0',
-			inc => '-',
-			ld 	=> '0',
-			ldpipeen => '0',
-			cinvctrl => '0',
-			cntvaluein => (others => '0'),
-			odatain => '0',
-			clkin => sys_clk0, --dqso,
-			dataout => dqso);
 
 	end block;
 end;

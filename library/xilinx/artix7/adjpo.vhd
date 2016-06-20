@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity phase_dqs is
+entity adjpo is
 	generic (
 		L_FREQ_REF_PERIOD_NS  : real;
 		L_MEM_REF_PERIOD_NS   : real;
@@ -11,16 +11,6 @@ entity phase_dqs is
 		PHASER_CTL_BUS_WIDTH  : natural;
 		DQS_AUTO_RECAL        : bit;
 		DQS_FIND_PATTERN      : bit_vector(0 to 3-1);
-		-- PHASER_IN --
-		MSB_BURST_PEND_PI  : natural;
-		PI_BURST_MODE      : string  := "TRUE";
-		PI_CLKOUT_DIV      : natural := 2;
-		PI_FREQ_REF_DIV    : string  := "NONE";
-		PI_FINE_DELAY      : natural := 1;
-		PI_OUTPUT_CLK_SRC  : string  := "DELAYED_REF";
-		PI_SEL_CLK_OFFSET  : natural := 0;
-		PI_SYNC_IN_DIV_RST : string  := "FALSE";
-
 		-- PHASER_OUT
 		MSB_BURST_PEND_PO  : natural;
 		PO_CLKOUT_DIV      : natural := 4;
@@ -67,6 +57,16 @@ entity phase_dqs is
 		byte_rd_en_oth_banks   : in  std_logic_vector(1 downto 0);
 		byte_rd_en             : out std_logic;
 
+		oserdes_rst         : in  std_logic;
+		iserdes_rst         : in  std_logic;
+		oserdes_dqs         : in  std_logic_vector(1 downto 0);
+		oserdes_dqsts       : in  std_logic_vector(1 downto 0);
+		oserdes_dq          : in  std_logic_vector((4*BUS_WIDTH)-1 downto 0);
+		oserdes_dqts        : in  std_logic_vector(1 downto 0);
+		oserdes_clk         : in  std_logic;
+		oserdes_clk_delayed : in  std_logic;
+		oserdes_clkdiv      : in  std_logic;
+
 		po_rst                 : in  std_logic;
 		po_phy_clk             : in  std_logic;
 		po_coarse_overflow     : out std_logic;
@@ -82,31 +82,14 @@ entity phase_dqs is
 		po_sel_fine_oclk_delay : in  std_logic;
 		po_counter_load_val    : in  std_logic_vector(8 downto 0);
 
-		pi_rst                 : in  std_logic;
-		pi_phy_clk             : in  std_logic;
-		pi_en_calib            : in  std_logic_vector(1 downto 0);
-		pi_rst_dqs_find        : in  std_logic;
-		pi_fine_enable         : in  std_logic;
-		pi_fine_inc            : in  std_logic;
-		pi_counter_load_en     : in  std_logic;
-		pi_counter_read_en     : in  std_logic;
-		pi_counter_load_val    : in  std_logic_vector(5 downto 0);
-
-		pi_iserdes_rst         : out std_logic;
-		pi_phase_locked        : out std_logic;
-		pi_fine_overflow       : out std_logic;
-		pi_counter_read_val    : out std_logic_vector(5 downto 0);
-		pi_dqs_found           : out std_logic;
-		dqs_out_of_range       : out std_logic;
-		fine_delay             : in  std_logic_vector(29 downto 0);
-		fine_delay_sel         : in  std_logic);
+	);
 
 end;
 
 library unisim;
 use unisim.vcomponents.all;
 
-architecture xxx of phase_dqs is
+architecture xxx of adjpo is
 	signal phase_ref : std_logic;
 	signal pi_dqs_found_w : std_logic;
 	signal pi_phase_locked_w : std_logic;
@@ -125,47 +108,6 @@ architecture xxx of phase_dqs is
 	signal po_rd_enable : std_logic;
 	signal po_oserdes_rst : std_logic;
 begin
-
-	pi_phy_i : phaser_in_phy
-	generic map (
-		BURST_MODE         => PI_BURST_MODE,
-		CLKOUT_DIV         => PI_CLKOUT_DIV,
-		DQS_AUTO_RECAL     => DQS_AUTO_RECAL,
-		DQS_FIND_PATTERN   => DQS_FIND_PATTERN,
-		SEL_CLK_OFFSET     => PI_SEL_CLK_OFFSET,
-		FINE_DELAY         => PI_FINE_DELAY,
-		FREQ_REF_DIV       => PI_FREQ_REF_DIV,
-		OUTPUT_CLK_SRC     => PI_OUTPUT_CLK_SRC,
-		SYNC_IN_DIV_RST    => PI_SYNC_IN_DIV_RST,
-		REFCLK_PERIOD      => L_FREQ_REF_PERIOD_NS,
-		MEMREFCLK_PERIOD   => L_MEM_REF_PERIOD_NS,
-		PHASEREFCLK_PERIOD => L_PHASE_REF_PERIOD_NS)
-	port map (
-		dqsfound           => pi_dqs_found_w,
-		dqsoutofrange      => dqs_out_of_range,
-		fineoverflow       => pi_fine_overflow,
-		phaselocked        => pi_phase_locked_w,
-		iserdesrst         => pi_iserdes_rst,
-		iclkdiv            => iserdes_clkdiv,
-		iclk               => iserdes_clk,
-		counterreadval     => pi_counter_read_val_w,
-		rclk               => rclk,
-		wrenable           => ififo_wr_enable,
-		burstpendingphy    => phaser_ctl_bus(MSB_BURST_PEND_PI - 3 + PHASER_INDEX),
-		encalibphy         => pi_en_calib,
-		fineenable         => pi_fine_enable,
-		freqrefclk         => freq_refclk,
-		memrefclk          => mem_refclk,
-		rankselphy         => rank_sel_i,
-		phaserefclk        => dqs_to_phaser, -- <-- mem_dqs_in
-		rstdqsfind         => pi_rst_dqs_find,
-		rst                => pi_rst,
-		fineinc            => pi_fine_inc,
-		counterloaden      => pi_counter_load_en,
-		counterreaden      => pi_counter_read_en,
-		counterloadval     => pi_counter_load_val,
-		syncin             => sync_pulse,
-		sysclk             => pi_phy_clk);
 
 	po_phy_i : phaser_out_phy
 	generic map (
@@ -211,4 +153,131 @@ begin
 		syncin              => sync_pulse,
 		sysclk              => po_phy_clk);
 
+--localparam OSERDES_DQ_DATA_RATE_OQ    = OSERDES_DATA_RATE;
+--localparam OSERDES_DQ_DATA_RATE_TQ    = OSERDES_DQ_DATA_RATE_OQ;
+--localparam OSERDES_DQ_DATA_WIDTH      = OSERDES_DATA_WIDTH;
+--localparam OSERDES_DQ_INIT_OQ         = 1'b1;
+--localparam OSERDES_DQ_INIT_TQ         = 1'b1;
+--localparam OSERDES_DQ_INTERFACE_TYPE  = "DEFAULT";
+--localparam OSERDES_DQ_ODELAY_USED     = 0;
+--localparam OSERDES_DQ_SERDES_MODE     = "MASTER";
+--localparam OSERDES_DQ_SRVAL_OQ        = 1'b1;
+--localparam OSERDES_DQ_SRVAL_TQ        = 1'b1;
+--// note: obuf used in control path case, no ts in so width irrelevant
+--localparam OSERDES_DQ_TRISTATE_WIDTH  = (OSERDES_DQ_DATA_RATE_OQ == "DDR") ? 4 : 1;
+--
+--localparam OSERDES_DQS_DATA_RATE_OQ   = "DDR";
+--localparam OSERDES_DQS_DATA_RATE_TQ   = "DDR";
+--localparam OSERDES_DQS_TRISTATE_WIDTH = 4;	// this is always ddr
+--localparam OSERDES_DQS_DATA_WIDTH     = 4;
+--localparam ODDR_CLK_EDGE              = "SAME_EDGE";
+--localparam OSERDES_TBYTE_CTL          = "TRUE";
+
+	xxiii : oserdese2 
+	generic map (
+		DATA_RATE_OQ    => OSERDES_DQ_DATA_RATE_OQ,
+		DATA_RATE_TQ    => OSERDES_DQ_DATA_RATE_TQ,
+		DATA_WIDTH      => OSERDES_DQ_DATA_WIDTH,
+		INIT_OQ         => OSERDES_DQ_INIT_OQ,
+		INIT_TQ         => OSERDES_DQ_INIT_TQ,
+		SERDES_MODE     => OSERDES_DQ_SERDES_MODE,
+		SRVAL_OQ        => OSERDES_DQ_SRVAL_OQ,
+		SRVAL_TQ        => OSERDES_DQ_SRVAL_TQ,
+		TRISTATE_WIDTH  => OSERDES_DQ_TRISTATE_WIDTH,
+		TBYTE_CTL       => "TRUE",
+		TBYTE_SRC       => "TRUE")
+	port map (
+		OFB       => open,
+		OQ        => open,
+		SHIFTOUT1 => open,
+		SHIFTOUT2 => open,
+		TFB       => open,
+		TQ        => open,
+		CLK       => oserdes_clk,
+		CLKDIV    => oserdes_clkdiv,
+		D1        => open,
+		D2        => open,
+		D3        => open,
+		D4        => open,
+		D5        => open,
+		D6        => open,
+		D7        => open,
+		D8        => open,
+		OCE       => '1',
+		RST       => oserdes_rst,
+		SHIFTIN1  => open
+		SHIFTIN2  => open
+		T1        => oserdes_dqts(0),
+		T2        => oserdes_dqts(0),
+		T3        => oserdes_dqts(1),
+		T4        => oserdes_dqts(1),
+		TCE       => '1',
+		TBYTEOUT  => tbyte_out,
+		TBYTEIN   => tbyte_out);
+
+	xxiv : oserdese2 
+	generic map (
+		DATA_RATE_OQ    => OSERDES_DQ_DATA_RATE_OQ,
+		DATA_RATE_TQ    => OSERDES_DQ_DATA_RATE_TQ,
+		DATA_WIDTH      => OSERDES_DQ_DATA_WIDTH,
+		INIT_OQ         => OSERDES_DQ_INIT_OQ,
+		INIT_TQ         => OSERDES_DQ_INIT_TQ,
+		SERDES_MODE     => OSERDES_DQ_SERDES_MODE,
+		SRVAL_OQ        => OSERDES_DQ_SRVAL_OQ,
+		SRVAL_TQ        => OSERDES_DQ_SRVAL_TQ,
+		TRISTATE_WIDTH  => OSERDES_DQ_TRISTATE_WIDTH,
+		TBYTE_CTL       => OSERDES_TBYTE_CTL,
+		TBYTE_SRC       => "FALSE")
+	port map (
+		OFB               open,
+		OQ                oserdes_dq_buf(i),
+		SHIFTOUT1 => open,
+		SHIFTOUT2 => open,
+		TFB       => open,
+		TQ        => open,
+		TQ        => oserdes_dqts_buf(i),
+		CLK       => oserdes_clk,
+		CLKDIV    => oserdes_clkdiv,
+		D1        => oserdes_dq(4 * i + 0),
+		D2        => oserdes_dq(4 * i + 1),
+		D3        => oserdes_dq(4 * i + 2),
+		D4        => oserdes_dq(4 * i + 3),
+		D5        => open,
+		D6        => open,
+		D7        => open,
+		D8        => open,
+		OCE       => '1',
+		RST       => oserdes_rst,
+		SHIFTIN1  => open
+		SHIFTIN2  => open
+		T1        => open,
+		T2        => open,
+		T3        => open,
+		T4        => open,
+		TCE       => '1',
+		TBYTEIN   => tbyte_out);
+
+	oddr_dqs : oddr
+	generic map (
+		DDR_CLK_EDGE => ODDR_CLK_EDGE)
+	port map (
+       .Q  => oserdes_dqs_buf,
+       .D1 => oserdes_dqs(0),
+       .D2 => oserdes_dqs(1),
+       .C  => oserdes_clk_delayed,
+       .R  => '0',
+       .S  => '0',
+       .CE => '1');
+
+	oddr_dqsts : oddr
+	generic map (
+		DDR_CLK_EDGE => ODDR_CLK_EDGE)
+	port map (
+		Q  => oserdes_dqsts_buf,
+		D1 => oserdes_dqsts(0),
+		D2 => oserdes_dqsts(0),
+		C  => oserdes_clk_delayed,
+		R  => '0',
+		S  => '0',
+		CE => '1');
 end;
