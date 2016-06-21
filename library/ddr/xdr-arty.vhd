@@ -36,6 +36,7 @@ entity xdr is
 		STROBE : string  := "NO_LOOPBACK";
 		MARK   : natural := M6T;
 		TCP    : natural := 6000;
+		CMD_GEAR : natural := 1;
 
 		BANK_SIZE   : natural :=  2;
 		ADDR_SIZE   : natural := 13;
@@ -142,7 +143,7 @@ architecture mix of xdr is
 	signal xdr_mpu_rwin : std_logic;
 	signal xdr_mpu_wwin : std_logic;
 
-	signal xdr_sch_odt : std_logic_vector(0 to gear-1);
+	signal xdr_sch_odt : std_logic_vector(0 to cmd_gear-1);
 	signal xdr_sch_dqsz : std_logic_vector(0 to gear-1);
 	signal xdr_sch_dqs : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_dqz : std_logic_vector(xdr_sch_dqsz'range);
@@ -320,7 +321,7 @@ begin
 		data_phases => data_phases,
 		clk_phases => sclk_phases,
 		clk_edges => sclk_edges,
-		gear => gear,
+		data_gear => gear,
 		profile => virtex5,
 		CL_COD    => CL_COD,
 		CWL_COD   => CWL_COD,

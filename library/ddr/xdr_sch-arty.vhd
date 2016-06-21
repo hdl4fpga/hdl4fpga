@@ -38,7 +38,8 @@ entity xdr_sch is
 		clk_edges  : natural := 2;
 		profile : natural;
 
-		gear : natural;
+		data_gear : natural;
+		cmd_gear  : natural := 1;
 
 		CL_COD  : std_logic_vector;
 		CWL_COD : std_logic_vector;
@@ -65,15 +66,15 @@ entity xdr_sch is
 		sys_rea : in  std_logic;
 		sys_wri : in  std_logic;
 
-		xdr_rwn : out std_logic_vector(0 to gear-1);
-		xdr_st  : out std_logic_vector(0 to gear-1);
+		xdr_rwn : out std_logic_vector(0 to data_gear-1);
+		xdr_st  : out std_logic_vector(0 to data_gear-1);
 
-		xdr_dqsz : out std_logic_vector(0 to gear-1);
-		xdr_dqs  : out std_logic_vector(0 to gear-1);
+		xdr_dqsz : out std_logic_vector(0 to data_gear-1);
+		xdr_dqs  : out std_logic_vector(0 to data_gear-1);
 
-		xdr_dqz  : out std_logic_vector(0 to gear-1);
-		xdr_wwn  : out std_logic_vector(0 to gear-1);
-		xdr_odt  : out std_logic_vector(0 to gear-1));
+		xdr_dqz  : out std_logic_vector(0 to data_gear-1);
+		xdr_wwn  : out std_logic_vector(0 to data_gear-1);
+		xdr_odt  : out std_logic_vector(0 to cmd_gear-1));
 
 end;
 
@@ -160,7 +161,7 @@ begin
 
 	xdr_st <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
 		lat_tab => strl_tab,
@@ -170,7 +171,7 @@ begin
 
 	xdr_rwn <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 
 		lat_val => sys_cl,
 		lat_cod => cl_cod,
@@ -181,7 +182,7 @@ begin
 
 	xdr_dqsz <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
@@ -192,7 +193,7 @@ begin
 
 	xdr_dqs <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
@@ -203,7 +204,7 @@ begin
 
 	xdr_dqz <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
@@ -214,7 +215,7 @@ begin
 
 	xdr_wwn <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => data_gear,
 
 		lat_val => sys_cwl,
 		lat_cod => cwl_cod,
@@ -225,12 +226,12 @@ begin
 
 	xdr_odt <= xdr_task (
 		clk_phases => clk_edges,
-		gear => gear,
+		gear => 1,
 
 		lat_val => "000",
 		lat_cod => "000",
 		lat_tab => (0 to 0 => 0),
 		lat_sch => wpho0,
-		lat_ext => 1*gear,
+		lat_ext => 2*cmd_gear,
 		lat_wid => WID_LAT);
 end;

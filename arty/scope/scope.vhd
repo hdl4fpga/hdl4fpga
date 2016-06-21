@@ -137,6 +137,13 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
+	process (sys_clk)
+		variable div : unsigned(0 to 1) := (others => '0');
+	begin
+		div := div + 1;
+		eth_ref_clk <= div(0);
+	end process;
+
 	process (btn(0), sys_clk)
 		variable tmr : unsigned(0 to 8-1);
 	begin
@@ -198,9 +205,10 @@ begin
 		ddrs_rst => ddrs_rst,
 		ddrs_clks(0) => ddrs_clk0,
 		ddrs_clks(1) => ddrs_clk90,
-		ddrs_bl  => "011",
-		ddrs_cl  => "101",
-		ddrs_rtt => "11",
+		ddrs_bl  => "000",
+		ddrs_cl  => "001",
+		ddrs_cwl => "000",
+		ddrs_rtt => "001",
 
 		ddr_wlreq => ddrphy_wlreq,
 		ddr_wlrdy => ddrphy_wlrdy,
@@ -370,10 +378,20 @@ begin
 
 	end block;
 
-	rgbled  <= (others => '1');
+	rgbled  <= (others => dcm_rst);
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i+4) <= tp1(i*2+1) when btn(1)='1' else tp1(i*2+2) when btn(2)='1' else tp1(i*2+0) when btn(3)='1' else tp1(i*2+5) ;
+		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5) ;
 	end generate;
 
+	led(2) <= '0'; --ddrphy_rlrdy;
+	process (eth_rx_clk)
+	begin
+		if rising_edge(eth_rx_clk) then
+			led(3) <= '1';
+			if dcm_rst='1' then
+				led(3) <= '0';
+			end if;
+		end if;
+	end process;
 end;

@@ -84,7 +84,7 @@ architecture scope of testbench is
 			
 			gclk100   : in std_logic;
 			eth_rstn  : out std_logic;
-			eth_ref_clk : in std_logic;
+			eth_ref_clk : out std_logic;
 			eth_mdio  : inout std_logic;
 			eth_mdc   : out std_logic;
 			eth_crs   : in std_logic;
@@ -199,7 +199,7 @@ begin
 
 		gclk100     => xtal,
 		eth_rstn    => open,
-		eth_ref_clk => mii_rxc,
+		eth_ref_clk => open,
 		eth_mdc     => open,
 		eth_crs     => '-',
 		eth_col     => '-',

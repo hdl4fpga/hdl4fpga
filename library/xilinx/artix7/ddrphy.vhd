@@ -285,7 +285,6 @@ architecture virtex of ddrphy is
 	signal phy_a  : std_logic_vector(sys_a'range);
 
 	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
-	signal wlreq : std_logic;
 	signal ini : std_logic;
 	signal rw  : std_logic;
 	signal cmd_req : std_logic;
@@ -441,7 +440,7 @@ begin
 			sys_rst    => phy_rst,
 			sys_clk0   => sys_clk0,
 			sys_clk90  => sys_clk90,
-			sys_wlreq  => wlreq,
+			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
 			sys_rlreq  => sys_rlreq,
 			sys_rlrdy  => byte_rlrdy(i),

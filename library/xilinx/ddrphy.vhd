@@ -45,6 +45,8 @@ entity ddrphy is
 		sys_clk90 : in std_logic;
 		phy_rst : in std_logic;
 
+		
+		sys_rst  : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '1');
 		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
 		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
 		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);
@@ -277,6 +279,7 @@ begin
 	port map (
 		sys_clk => sys_clk0,
           
+		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sys_b,

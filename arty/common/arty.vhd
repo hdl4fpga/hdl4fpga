@@ -5,12 +5,12 @@ entity arty is
 	port (
 		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
 		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
-		led : out std_logic_vector(8-1 downto 4);
+		led : out std_logic_vector(4-1 downto 0);
 		RGBled : out std_logic_vector(4*3-1 downto 0);
 
 		gclk100   : in std_logic;
 		eth_rstn  : out std_logic;
-		eth_ref_clk : in std_logic;
+		eth_ref_clk : out std_logic;
 		eth_mdio  : inout std_logic;
 		eth_mdc   : out std_logic;
 		eth_crs   : in std_logic;
