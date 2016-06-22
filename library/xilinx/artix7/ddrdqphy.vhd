@@ -131,8 +131,13 @@ begin
 			q1 => q(0),
 			q2 => q(1));
 
-		sys_dqi(0*BYTE_SIZE+i) <= q(1);
-		sys_dqi(1*BYTE_SIZE+i) <= q(0);
+		process (sys_clk0)
+		begin
+			if rising_edge(sys_clk0) then
+				sys_dqi(0*BYTE_SIZE+i) <= q(1);
+				sys_dqi(1*BYTE_SIZE+i) <= q(0);
+			end if;
+		end process;
 	
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
@@ -283,8 +288,14 @@ begin
 			smp => smp(1),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
-		sys_sto <= (others => sto);
 
+		process (sys_clk0)
+		begin
+			if rising_edge(sys_clk0) then
+				sys_sto <= (others => sto);
+			end if;
+		end process;
+	
 		clk_n  <= not sys_clk0;
 		ddrto_i : entity hdl4fpga.ddrto
 		port map (

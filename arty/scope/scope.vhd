@@ -63,6 +63,9 @@ architecture scope of arty is
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
 
+	signal eth_rx_clk_bufg : std_logic;
+	signal eth_tx_clk_bufg : std_logic;
+
 	signal iodctrl_rst : std_logic;
 	signal iodctrl_clk : std_logic;
 	signal iodctrl_rdy : std_logic;
@@ -137,11 +140,23 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
+	eth_rx_clk_ibufg : ibufg
+	port map (
+		I => eth_rx_clk,
+		O => eth_rx_clk_bufg);
+
+	eth_tx_clk_ibufg : ibufg
+	port map (
+		I => eth_tx_clk,
+		O => eth_tx_clk_bufg);
+
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
 	begin
-		div := div + 1;
-		eth_ref_clk <= div(0);
+		if rising_edge(sys_clk) then
+			div := div + 1;
+			eth_ref_clk <= div(0);
+		end if;
 	end process;
 
 	process (btn(0), sys_clk)
@@ -242,10 +257,10 @@ begin
 		ddr_sti  => ddrphy_sti,
 
 --		mii_rst  => mii_rst,
-		mii_rxc  => eth_rx_clk,
+		mii_rxc  => eth_rx_clk_bufg,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txc  => eth_tx_clk,
+		mii_txc  => eth_tx_clk_bufg,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 
@@ -333,13 +348,13 @@ begin
 	generic map (
 		xd_len => 4)
 	port map (
-		mii_rxc  => eth_rx_clk,
+		mii_rxc  => eth_rx_clk_bufg,
 		iob_rxdv => eth_rx_dv,
 		iob_rxd  => eth_rxd,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => eth_tx_clk,
+		mii_txc  => eth_tx_clk_bufg,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => eth_tx_en,
@@ -369,7 +384,6 @@ begin
 				io  => ddr3_dqs_p(i),
 				iob => ddr3_dqs_n(i));
 
---			ddr3_dqs_p(i) <= ddr3_dqso(i) when ddr3_dqst(i)='0' else 'Z';
 		end generate;
 
 		ddr_d_g : for i in ddr3_dq'range generate
@@ -378,20 +392,11 @@ begin
 
 	end block;
 
-	rgbled  <= (others => dcm_rst);
+	rgbled  <= (others => '0');
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5) ;
+		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5);
 	end generate;
+	led(3 downto 2) <= (others => '0');
 
-	led(2) <= '0'; --ddrphy_rlrdy;
-	process (eth_rx_clk)
-	begin
-		if rising_edge(eth_rx_clk) then
-			led(3) <= '1';
-			if dcm_rst='1' then
-				led(3) <= '0';
-			end if;
-		end if;
-	end process;
 end;

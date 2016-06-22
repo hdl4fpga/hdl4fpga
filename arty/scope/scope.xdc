@@ -21,24 +21,23 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name sys_clk -period 10    -waveform {0 5 }     [get_ports gclk100]
-create_clock -name dqso0   -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[0]]
-create_clock -name dqso1   -period 2.857 -waveform {0 1.429 } [get_ports ddr3_dqs_p[1]]
+create_clock -name sys_clk -period 10 -waveform { 0   5   } [ get_ports gclk100       ]
+create_clock -name dqso0   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[0] ]
+create_clock -name dqso1   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[1] ]
 
-create_clock -name eth_rx_clk -period 40 -waveform {0 20} [get_ports eth_rx_clk]
-create_clock -name eth_tx_clk -period 40 -waveform {0 20} [get_ports eth_tx_clk]
-#create_clock -name eth_ref_clk -period 40 -waveform {0 20} [get_ports eth_ref_clk]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets eth_ref_clk_IBUF ]
+create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
+create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
+ 
+#set_max_delay -datapath_only 1.4 -from [ get_clocks dqso1 ] -to [ get_clocks ddrs_clk0 ]
+#set_max_delay -datapath_only 1.4 -from [ get_clocks dqso0 ] -to [ get_clocks ddrs_clk0 ]
 
-set_clock_groups -asynchronous -group {sys_clk}     -group { ddrs_clk0   }
-set_clock_groups -asynchronous -group {sys_clk}     -group { iodctrl_clk }
-set_clock_groups -asynchronous -group {dqso0}       -group { iodctrl_clk }
-set_clock_groups -asynchronous -group {dqso1}       -group { iodctrl_clk }
-set_clock_groups -asynchronous -group {dqso0}       -group { ddrs_clk0 }
-set_clock_groups -asynchronous -group {dqso1}       -group { ddrs_clk0 }
-set_clock_groups -asynchronous -group {eth_rx_clk}  -group { ddrs_clk0 }
-set_clock_groups -asynchronous -group {eth_tx_clk}  -group { ddrs_clk0 }
-set_clock_groups -asynchronous -group {iodctrl_clk} -group { ddrs_clk0 }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddrs_clk0   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { iodctrl_clk }
+set_clock_groups -asynchronous -group { dqso0       } -group { iodctrl_clk }
+set_clock_groups -asynchronous -group { dqso1       } -group { iodctrl_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddrs_clk0   }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { ddrs_clk0   }
+set_clock_groups -asynchronous -group { iodctrl_clk } -group { ddrs_clk0   }
 
 set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/*.registered_g[*].*_reg[*]/D ]
 set_false_path -from [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/finish_reg/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/* ]
