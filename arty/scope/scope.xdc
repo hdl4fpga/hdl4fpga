@@ -28,8 +28,8 @@ create_clock -name dqso1   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
 create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
  
-#set_max_delay -datapath_only 1.4 -from [ get_clocks dqso1 ] -to [ get_clocks ddrs_clk0 ]
-#set_max_delay -datapath_only 1.4 -from [ get_clocks dqso0 ] -to [ get_clocks ddrs_clk0 ]
+set_max_delay -datapath_only 2.0 -from [ get_clocks dqso1 ] -to [ get_clocks ddrs_clk0 ]
+set_max_delay -datapath_only 2.0 -from [ get_clocks dqso0 ] -to [ get_clocks ddrs_clk0 ]
 
 set_clock_groups -asynchronous -group { sys_clk     } -group { ddrs_clk0   }
 set_clock_groups -asynchronous -group { sys_clk     } -group { iodctrl_clk }

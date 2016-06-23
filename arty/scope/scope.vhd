@@ -395,8 +395,8 @@ begin
 	rgbled  <= (others => '0');
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+0) when btn(3)='1' else tp1(i*8+5);
+		led(i+0) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+2) when btn(3)='1' else tp1(i*8+5);
+		led(i+2) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+1) when btn(3)='1' else tp1(i*8+0);
 	end generate;
-	led(3 downto 2) <= (others => '0');
 
 end;

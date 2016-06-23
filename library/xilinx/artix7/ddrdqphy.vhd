@@ -152,17 +152,17 @@ begin
 		iod_ce  <= dqiod_ce  or dqsiod_ce;
 		iod_inc <= dqiod_inc when adjdqi_req='1' else dqsiod_inc;
 
-		dqi_i : idelay 
+		dqi_i : idelaye2 
 		generic map (
-			IOBDELAY_VALUE => 31,
-			IOBDELAY_TYPE => "VARIABLE")
+			IDELAY_VALUE => 31,
+			IDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => iod_rst,
+			regrst => iod_rst,
 			c   => sys_iodclk,
 			ce  => iod_ce,
 			inc => iod_inc,
-			i   => ddr_dqi(i),
-			o   => dqi(i));
+			idatain   => ddr_dqi(i),
+			dataout   => dqi(i));
 
 	end generate;
 
@@ -285,7 +285,7 @@ begin
 			iod_clk => sys_iodclk,
 			sti => sys_sti(0),
 			sto => sto,
-			smp => smp(1),
+			smp => smp(0),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 
