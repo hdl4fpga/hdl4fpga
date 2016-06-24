@@ -183,6 +183,7 @@ begin
 		input_clk   => input_clk,
 		iodctrl_clk => iodctrl_clk,
 		iodctrl_rst => iodctrl_rst,
+		ddr_rdinv   => '0',
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		ddr_rst     => ddr_rst);

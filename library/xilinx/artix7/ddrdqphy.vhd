@@ -154,15 +154,21 @@ begin
 
 		dqi_i : idelaye2 
 		generic map (
+			DELAY_SRC => "IDATAIN",
 			IDELAY_VALUE => 31,
 			IDELAY_TYPE => "VARIABLE")
 		port map (
 			regrst => iod_rst,
+			cinvctrl => '0',
+			cntvaluein => (others => '-'),
+			ld => '0',
+			ldpipeen => '0',
 			c   => sys_iodclk,
 			ce  => iod_ce,
 			inc => iod_inc,
-			idatain   => ddr_dqi(i),
-			dataout   => dqi(i));
+			datain => '-',
+			idatain => ddr_dqi(i),
+			dataout => dqi(i));
 
 	end generate;
 
@@ -233,17 +239,24 @@ begin
 		signal sto   : std_logic;
 	begin
 
-		dqsidelay_i : idelay 
+		dqsidelay_i : idelaye2 
 		generic map (
-			IOBDELAY_VALUE => 31,
-			IOBDELAY_TYPE => "VARIABLE")
+			DELAY_SRC => "IDATAIN",
+			SIGNAL_PATTERN => "CLOCK",
+			IDELAY_VALUE => 31,
+			IDELAY_TYPE => "VARIABLE")
 		port map (
-			rst => iod_rst,
+			regrst => iod_rst,
+			cinvctrl => '0',
 			c   => sys_iodclk,
 			ce  => dqsiod_ce,
 			inc => dqsiod_inc,
-			i   => ddr_dqsi,
-			o   => dqsi);
+			ld  => '0',
+			cntvaluein => (others => '-'),
+			ldpipeen => '0',
+			datain => '-',
+			idatain  => ddr_dqsi,
+			dataout  => dqsi);
 
 		tp(6) <= smp(1);
 		iddr_i : iddr

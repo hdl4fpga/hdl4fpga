@@ -39,10 +39,12 @@ entity dcms is
 	port (
 		sys_rst     : in  std_logic;
 		sys_clk     : in  std_logic;
-		iodctrl_clk : out  std_logic;
+		iodctrl_clk : out std_logic;
 		input_clk   : out std_logic;
 		ddr_clk0    : out std_logic;
 		ddr_clk90   : out std_logic;
+		ddr_rdinv   : in  std_logic;
+		ddr_rdclk   : out std_logic;
 		video_clk   : out std_logic;
 		mii_clk     : out std_logic;
 		iodctrl_rst : out std_logic;
@@ -61,6 +63,10 @@ architecture def of dcms is
     constant iodctrl : natural := 4;
 
 	signal ddr_clkfb : std_logic;
+	signal ddr_clk0_mmce2   : std_logic;
+	signal ddr_clk90_mmce2  : std_logic;
+	signal ddr_clk180_mmce2 : std_logic;
+
 	signal iodctrl_clkfb : std_logic;
 	signal clks : std_logic_vector(0 to 4);
 	signal lcks : std_logic_vector(clks'range);
@@ -103,6 +109,7 @@ begin
 		clkfbout_mult_f => real(2*ddr_mul),
 		clkin1_period => sys_per,
 		clkout1_phase => 90.000,
+		clkout2_phase => 180.000,
 		clkout0_divide_f => 2.0,
 		clkout1_divide => 2,
 		bandwidth => "HIGH")
@@ -112,10 +119,28 @@ begin
 		clkin1   => sys_clk,
 		clkfbin  => ddr_clkfb,
 		clkfbout => ddr_clkfb,
-		clkout0  => clks(ddr),
-		clkout1  => ddr_clk90,
+		clkout0  => ddr_clk0_mmce2,
+		clkout1  => ddr_clk90_mmce2,
+		clkout2  => ddr_clk180_mmce2,
 		locked   => lcks(ddr));
-   
+    
+	ddr_clk90_bufg : bufg
+	port map (
+		i => ddr_clk90_mmce2,
+		o => ddr_clk90);
+
+	ddr_clk0_bufg : bufg
+	port map (
+		i => ddr_clk0_mmce2,
+		o => clks(ddr));
+
+	ddr_clk180_bufg : bufgmux
+	port map (
+		s  => ddr_rdinv,
+		i0 => ddr_clk0_mmce2,
+		i1 => ddr_clk180_mmce2,
+		o  => ddr_rdclk);
+
 	clks(input) <= sys_clk;
 	lcks(input) <= not sys_rst;
 --	inputdcm_e : entity hdl4fpga.dfs
