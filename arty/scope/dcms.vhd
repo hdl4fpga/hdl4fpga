@@ -112,6 +112,7 @@ begin
 		clkout2_phase => 180.000,
 		clkout0_divide_f => 2.0,
 		clkout1_divide => 2,
+		clkout2_divide => 2,
 		bandwidth => "HIGH")
 	port map (
 		pwrdwn   => '0',

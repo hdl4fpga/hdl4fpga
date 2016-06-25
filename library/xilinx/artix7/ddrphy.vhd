@@ -50,7 +50,9 @@ entity ddrphy is
 		phy_cmd_rdy : in  std_logic;
 		phy_cmd_req : out std_logic;
 
-		sys_wlreq   : in std_logic;
+		sys_rdsel   : out std_logic;
+		sys_rdclk   : in  std_logic;
+		sys_wlreq   : in  std_logic;
 		sys_wlrdy   : out std_logic;
 		sys_rlreq   : in std_logic;
 		sys_rlrdy   : out std_logic;
@@ -431,6 +433,12 @@ begin
 	end process;
 
 	byte_g : for i in ddr_dqsi'range generate
+		signal rdsel : std_logic;
+	begin
+
+		rdsel_g : if i=0 generate
+			sys_rdsel <= rdsel;
+		end generate;
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
@@ -440,6 +448,8 @@ begin
 			sys_rst    => phy_rst,
 			sys_clk0   => sys_clk0,
 			sys_clk90  => sys_clk90,
+			sys_rdsel  => rdsel,
+			sys_rdclk  => sys_rdclk,
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
 			sys_rlreq  => sys_rlreq,

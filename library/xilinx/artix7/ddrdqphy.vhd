@@ -39,6 +39,8 @@ entity ddrdqphy is
 		sys_iodclk : in  std_logic;
 		sys_clk0   : in  std_logic;
 		sys_clk90  : in  std_logic;
+		sys_rdsel  : out std_logic;
+		sys_rdclk  : in  std_logic;
 		sys_wlreq  : in  std_logic;
 		sys_wlrdy  : out std_logic;
 		sys_rlreq  : in  std_logic;
@@ -131,9 +133,9 @@ begin
 			q1 => q(0),
 			q2 => q(1));
 
---		process (sys_clk0)
+--		process (sys_rdclk)
 --		begin
---			if rising_edge(sys_clk0) then
+--			if rising_edge(sys_rdclk) then
 				sys_dqi(0*BYTE_SIZE+i) <= q(1);
 				sys_dqi(1*BYTE_SIZE+i) <= q(0);
 --			end if;
@@ -263,7 +265,7 @@ begin
 		generic map (
 			DDR_CLK_EDGE => "SAME_EDGE")
 		port map (
-			c  => sys_clk0,
+			c  => sys_rdclk,
 			ce => '1',
 			d  => dqsi,
 			q1 => smp(0),
@@ -288,23 +290,24 @@ begin
 			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
+			rdsel => sys_rdsel,
 			iod_clk => sys_iodclk,
 			iod_ce  => dqsiod_ce,
 			iod_inc => dqsiod_inc);
 
 		adjsto_e : entity hdl4fpga.adjsto
 		port map (
-			sys_clk0 => sys_clk0,
+			sys_clk0 => sys_rdclk,
 			iod_clk => sys_iodclk,
 			sti => sys_sti(0),
 			sto => sto,
-			smp => smp(0),
+			smp => smp(1),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 
---		process (sys_clk0)
+--		process (sys_rdclk)
 --		begin
---			if rising_edge(sys_clk0) then
+--			if rising_edge(sys_rdclk) then
 				sys_sto <= (others => sto);
 --			end if;
 --		end process;

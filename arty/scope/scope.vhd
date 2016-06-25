@@ -79,6 +79,9 @@ architecture scope of arty is
 
 	signal ddrs_clk0  : std_logic;
 	signal ddrs_clk90 : std_logic;
+	signal ddrs_rdclk : std_logic;
+	signal ddrs_rdsel : std_ulogic;
+
 
 	signal ddr3_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr3_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -183,7 +186,8 @@ begin
 		input_clk   => input_clk,
 		iodctrl_clk => iodctrl_clk,
 		iodctrl_rst => iodctrl_rst,
-		ddr_rdinv   => '0',
+		ddr_rdinv   => ddrs_rdsel,
+		ddr_rdclk   => ddrs_rdclk,
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		ddr_rst     => ddr_rst);
@@ -197,7 +201,7 @@ begin
 	sys_rst  <= not iodctrl_rdy;
 	ddrs_rst <= sys_rst or ddr_rst;
 
-	ddrphy_dqsi <= (others => ddrs_clk0);
+	ddrphy_dqsi <= (others => ddrs_rdclk);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
@@ -294,6 +298,9 @@ begin
 		phy_rw   => ddrphy_rw,
 		phy_cmd_rdy => ddrphy_cmd_rdy,
 		phy_cmd_req => ddrphy_cmd_req,
+
+		sys_rdsel => ddrs_rdsel,
+		sys_rdclk => ddrs_rdclk,
 
 		sys_wlreq => ddrphy_wlreq,
 		sys_wlrdy => ddrphy_wlrdy,
