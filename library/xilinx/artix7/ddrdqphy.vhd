@@ -301,7 +301,7 @@ begin
 			iod_clk => sys_iodclk,
 			sti => sys_sti(0),
 			sto => sto,
-			smp => smp(1),
+			smp => smp(0),
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 

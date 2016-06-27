@@ -60,7 +60,7 @@ begin
 			elsif tmr(0)='1' then
 				if smp_rdy='0' then 
 					smp_rdy := '1';
-					rdsel <= not smp0;
+					rdsel <= smp0;
 				else
 					start <= '1';
 				end if;
@@ -74,7 +74,7 @@ begin
 		if rising_edge(iod_clk) then
 			if start='0' then
 				sync <= '0';
-				ce := to_signed(0, ce'length);
+				ce := to_signed(3, ce'length);
 				iod_ce  <= '0';
 				stop <= '0';
 				iod_inc <= '0';
@@ -95,7 +95,7 @@ begin
 				ce :=  ce - 1;
 				iod_ce <= not ce(0);
 				stop <= ce(0);
-				iod_inc <= '0';
+				iod_inc <= '1';
 			end if;
 		end if;
 	end process;
