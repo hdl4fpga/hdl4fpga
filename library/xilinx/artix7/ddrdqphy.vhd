@@ -88,6 +88,7 @@ architecture virtex of ddrdqphy is
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
 	signal smp : std_logic_vector(2-1 downto 0);
+	signal rdsel : std_logic;
 begin
 
 	sys_wlrdy <= sys_wlreq;
@@ -239,6 +240,8 @@ begin
 	dqso_b : block 
 		signal clk_n : std_logic;
 		signal sto   : std_logic;
+		signal sti   : std_logic;
+		signal st : std_logic;
 	begin
 
 		dqsidelay_i : idelaye2 
@@ -257,8 +260,8 @@ begin
 			cntvaluein => (others => '-'),
 			ldpipeen => '0',
 			datain => '-',
-			idatain  => ddr_dqsi,
-			dataout  => dqsi);
+			idatain => ddr_dqsi,
+			dataout => dqsi);
 
 		tp(6) <= smp(1);
 		iddr_i : iddr
@@ -284,24 +287,26 @@ begin
 				q := sys_sti(0);
 			end if;
 		end process;
-
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
 			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
-			rdsel => sys_rdsel,
+			rdsel => rdsel,
 			iod_clk => sys_iodclk,
 			iod_ce  => dqsiod_ce,
 			iod_inc => dqsiod_inc);
+		sys_rdsel <= rdsel;
 
+		sti <= sys_sti(0) when rdsel='0' else sys_sti(1);
+		st <= smp(0) or smp(1);
 		adjsto_e : entity hdl4fpga.adjsto
 		port map (
 			sys_clk0 => sys_rdclk,
 			iod_clk => sys_iodclk,
-			sti => sys_sti(0),
+			sti => sti,
 			sto => sto,
-			smp => smp(0),
+			smp => st,
 			req => adjsto_req,
 			rdy => adjsto_rdy);
 
