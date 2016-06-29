@@ -57,8 +57,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL : natural := 3;
-	constant DDR_DIV : natural := 1;
+	constant DDR_MUL : natural := 10;
+	constant DDR_DIV : natural := 3;
 
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
@@ -93,6 +93,7 @@ architecture scope of arty is
 	signal ddrphy_rst     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cke     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cs      : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_act     : std_logic;
 	signal ddrphy_ras     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_cas     : std_logic_vector(CMD_PHASES-1 downto 0);
 	signal ddrphy_we      : std_logic_vector(CMD_PHASES-1 downto 0);
@@ -239,6 +240,7 @@ begin
 		ddr_phyrw  => ddrphy_rw,
 		ddr_phycmd_req => ddrphy_cmd_req,
 		ddrs_cmd_rdy => ddrphy_cmd_rdy,
+		ddrs_act => ddrphy_act,
 
 		ddr_rst  => ddrphy_rst(0),
 		ddr_cke  => ddrphy_cke(0),
@@ -298,6 +300,7 @@ begin
 		phy_rw   => ddrphy_rw,
 		phy_cmd_rdy => ddrphy_cmd_rdy,
 		phy_cmd_req => ddrphy_cmd_req,
+		sys_act => ddrphy_act,
 
 		sys_rdsel => ddrs_rdsel,
 		sys_rdclk => ddrs_rdclk,

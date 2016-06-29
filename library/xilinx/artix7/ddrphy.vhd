@@ -64,6 +64,7 @@ entity ddrphy is
 		sys_ras     : in  std_logic_vector(CMD_PHASES-1 downto 0);
 		sys_cas     : in  std_logic_vector(CMD_PHASES-1 downto 0);
 		sys_we      : in  std_logic_vector(CMD_PHASES-1 downto 0);
+		sys_act     : in  std_logic;
 		sys_b       : in  std_logic_vector(CMD_PHASES*BANK_SIZE-1 downto 0);
 		sys_a       : in  std_logic_vector(CMD_PHASES*ADDR_SIZE-1 downto 0);
 		sys_odt     : in  std_logic_vector(CMD_PHASES-1 downto 0);
@@ -354,7 +355,9 @@ begin
 				end if;
 			else
 				cmd_req <= '0';
-				lvl <= '0';
+				if sys_act='1' then
+					lvl <= '0';
+				end if;
 			end if;
 		end if;
 	end process;

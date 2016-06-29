@@ -61,6 +61,7 @@ entity scope is
 		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
 		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
 		ddrs_ini : out std_logic;
+		ddrs_act : out std_logic;
 		ddrs_cmd_rdy : out std_logic;
 
 		ddr_wlreq : out std_logic;
@@ -150,7 +151,7 @@ architecture def of scope is
 	signal ddrs_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddrs_rowa  : std_logic_vector(0 to DDR_ADDRSIZE-1);
 	signal ddrs_cola  : std_logic_vector(0 to DDR_ADDRSIZE-1);
-	signal ddrs_act : std_logic;
+	signal ddr_act : std_logic;
 	signal ddrs_cas : std_logic;
 	signal ddrs_pre : std_logic;
 	signal ddrs_rw  : std_logic;
@@ -319,7 +320,8 @@ begin
 --
 --	video_ena <= setif(win_rowid="11");
 
-	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
+	ddrs_a <= ddrs_rowa when ddr_act='1' else ddrs_cola;
+	ddrs_act <= ddr_act;
 
 	dataio_rst <= not ini;
 	dataio_e : entity hdl4fpga.dataio 
@@ -351,7 +353,7 @@ begin
 		ddrs_rowa => ddrs_rowa,
 		ddrs_cola => ddrs_cola,
 		ddrs_rw  => ddrs_rw,
-		ddrs_act => ddrs_act,
+		ddrs_act => ddr_act,
 		ddrs_cas => ddrs_cas,
 
 		ddrs_di_rdy => ddrs_di_rdy,
@@ -548,7 +550,7 @@ begin
 		sys_b   => ddrs_ba,
 		sys_a   => ddrs_a,
 		sys_rw  => ddr_rw,
-		sys_act => ddrs_act,
+		sys_act => ddr_act,
 		sys_cas => ddrs_cas,
 		sys_di_rdy => ddrs_di_rdy,
 		sys_di_req => ddrs_di_req,
