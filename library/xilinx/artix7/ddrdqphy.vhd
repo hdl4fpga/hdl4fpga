@@ -89,6 +89,7 @@ architecture virtex of ddrdqphy is
 	signal dqsiod_ce  : std_logic;
 	signal smp : std_logic_vector(2-1 downto 0);
 	signal rdsel : std_logic;
+	signal dqs_clk   : std_logic;
 begin
 
 	sys_wlrdy <= sys_wlreq;
@@ -114,16 +115,15 @@ begin
 	tp(5) <= adjsto_rdy;
 
 	iod_rst <= not adjdqs_req;
+	dqs_clk <= not dqsi;
 	iddr_g : for i in ddr_dqi'range generate
 		signal q : std_logic_vector(2-1 downto 0);
 		signal t : std_logic;
-		signal dqs_clk   : std_logic;
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
 		signal iod_inc   : std_logic;
 		signal iod_ce    : std_logic;
 	begin
-		dqs_clk <= not dqsi;
 		iddr_i : iddr
 		generic map (
 			DDR_CLK_EDGE => "SAME_EDGE")

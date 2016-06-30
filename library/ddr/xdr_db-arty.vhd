@@ -154,8 +154,8 @@ package xdr_db is
 		timing_record'(mark => M3,  param => tRPA,  value => 15000),
 		timing_record'(mark => M3,  param => tREFI, value => 7800000),
 
-		timing_record'(mark => M15E, param => tPreRST, value => 200*1_000_000),
-		timing_record'(mark => M15E, param => tPstRST, value => 500*1_000_000),
+		timing_record'(mark => M15E, param => tPreRST, value => 200*1_000_0),
+		timing_record'(mark => M15E, param => tPstRST, value => 500*1_000_0),
 		timing_record'(mark => M15E, param => tWR,   value => 15000),
 		timing_record'(mark => M15E, param => tRCD,  value => 13910),
 		timing_record'(mark => M15E, param => tRP,   value => 13910),
@@ -199,7 +199,7 @@ package xdr_db is
 		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_LAT, value => 4),
 
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => cDLL,  value => 500),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   4),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   2),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNL,  value =>   4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSL,  value =>  -4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZL, value =>  -2),

@@ -74,7 +74,7 @@ begin
 		if rising_edge(iod_clk) then
 			if start='0' then
 				sync <= '0';
-				ce := to_signed(1, ce'length);
+				ce := to_signed(3, ce'length);
 				iod_ce  <= '0';
 				stop <= '0';
 				iod_inc <= '0';
