@@ -14,19 +14,11 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/ba(2) -radix hex
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate -radix hexadecimal /testbench/dq
 add wave -noupdate /testbench/dqs_p
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(7)/dqs_clk
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/sys_dqi
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_dqi
-add wave -noupdate /testbench/arty_e/scope_e/ddr_sti(0)
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/smp
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/line__28/cnt
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_e/rdsel
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqso_b/adjsto_e/smp
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_e/start
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_e/tmr(0)
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/sys_rdclk
-add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/dqsidelay_i/CNTVALUEOUT
+add wave -noupdate /testbench/arty_e/scope_e/dataio_e/ddrs_bnka
+add wave -noupdate /testbench/arty_e/scope_e/dataio_e/ddrs_rowa
+add wave -noupdate /testbench/arty_e/scope_e/dataio_e/ddrs_cola
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {13417600 ps} 0} {{Cursor 2} {21214448 ps} 0}
 quietly wave cursor active 1
@@ -44,4 +36,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {13395041 ps} {13440159 ps}
+WaveRestoreZoom {13395041 ps} {13438459 ps}
