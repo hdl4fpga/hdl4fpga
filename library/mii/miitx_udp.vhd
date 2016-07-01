@@ -31,39 +31,43 @@ use hdl4fpga.std.all;
 entity miitx_udp is
 	generic (
 		payload_size : natural := 512);
-	port (
-		miidma_rreq : out  std_logic;
-		miidma_rxen : in std_logic;
-		miidma_rxd  : in std_logic_vector;
 
-		mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_trdy : out std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector);
+	port (
+		mii_txc     : in  std_logic;
+
+		miidma_req  : out std_logic;
+		miidma_rxen : in  std_logic;
+		miidma_rxd  : in  std_logic_vector;
+
+		mii_treq    : in  std_logic;
+		mii_trdy    : out std_logic;
+		mii_txen    : out std_logic;
+		mii_txd     : out std_logic_vector);
 end;
 
 architecture mix of miitx_udp is
+
 	subtype xword is std_logic_vector(mii_txd'range);
 	type xword_vector is array (natural range <>) of xword;
 
-	constant n : natural := 3;
+	constant n     : natural := 3;
 
 	constant txpre : natural := 0;
 	constant txmac : natural := 1;
 	constant txpld : natural := 2;
 	constant txcrc : natural := 3;
 
-	signal txdat : xword_vector(n downto 0);
-	signal txena : std_logic_vector(n   downto 0);
-	signal txreq : std_logic_vector(n+1 downto 0);
+	signal txdat   : xword_vector(n downto 0);
+	signal txena   : std_logic_vector(n   downto 0);
+	signal txreq   : std_logic_vector(n+1 downto 0);
 
-	signal txen : std_logic;
-	signal txd : std_logic_vector(0 to mii_txd'length-1);
-	signal rdy : std_logic_vector(n downto 0);
-	signal dat : xword_vector(n downto 0);
-	signal ena : std_logic_vector(n downto 0);
+	signal txen    : std_logic;
+	signal txd     : std_logic_vector(0 to mii_txd'length-1);
+	signal rdy     : std_logic_vector(n downto 0);
+	signal dat     : xword_vector(n downto 0);
+	signal ena     : std_logic_vector(n downto 0);
 	signal crc_ted : std_logic;
+
 begin
 
 	miitx_pre_e  : entity hdl4fpga.miitx_mem
@@ -78,9 +82,9 @@ begin
 	miitx_macudp_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => 
-			x"ffffffffffff" &	-- MAC Destination Address
-			x"000000010203"	&	-- MAC Source Address
-			x"0800"         &   -- MAC Protocol ID
+			x"ffffffffffff" &       -- MAC Destination Address
+			x"000000010203"	&       -- MAC Source Address
+			x"0800"         &       -- MAC Protocol ID
 			ipheader_checksumed(
 				x"4500"         &	-- IP  Version, header length, TOS
 				to_unsigned(payload_size+28,16) &	-- IP  Length
@@ -90,18 +94,18 @@ begin
 				x"0000"         &	-- IP  Checksum
 				x"c0a802c8"     &	-- IP  Source address
 				x"ffffffff")    &	-- IP  Destination address
-			x"04000400"     &	-- UDP Source port, Destination port
+			x"04000400"         &   -- UDP Source port, Destination port
 			to_unsigned(payload_size+8,16) & -- UDP Length,
-			x"0000")	   	-- Checksum
+			x"0000")	   	        -- Checksum
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => txreq(txmac),
 		mii_txen => txena(txmac),
 		mii_txd  => txdat(txmac));
 
-		miidma_rreq <= txreq(txpld);
-		txena(txpld) <= miidma_rxen;
-		txdat(txpld) <= miidma_rxd;
+	miidma_req   <= txreq(txpld);
+	txena(txpld) <= miidma_rxen;
+	txdat(txpld) <= miidma_rxd;
 
 	miitx_crc_e : entity hdl4fpga.miitx_crc
 	port map (
@@ -113,7 +117,7 @@ begin
 		mii_txd  => txdat(txcrc));
 
 	crc_ted  <= rdy(0) and not rdy(n-1);
-	txen <= (ena(0) or rdy(0)) and not rdy(n) and mii_treq; 
+	txen     <= (ena(0) or rdy(0)) and not rdy(n) and mii_treq; 
 	mii_txen <= txen;
 
 	txreq(0) <= mii_treq;
