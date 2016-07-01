@@ -71,8 +71,8 @@ entity dataio is
 		
 		mii_rst   : in  std_logic;
 		mii_txc   : in  std_logic;
-		miirx_req : in  std_logic;
-		miirx_rdy : out std_logic;
+		ddr2mii_req : in  std_logic;
+		ddr2mii_rdy : out std_logic;
 		miitx_req : in  std_logic;
 		miitx_rdy : out std_logic;
 		miitx_ena : out std_logic;
@@ -214,9 +214,12 @@ begin
 		end process;
 
 		ddrs_addr <= std_logic_vector(
-			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
-			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
-			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+--			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+--			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
+--			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+			to_signed(0, DDR_BANKSIZE+1) & 
+			to_signed(0, DDR_ADDRSIZE+1) & 
+			to_signed(0, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
@@ -287,8 +290,8 @@ begin
 	port map (
 		ddrs_clk => ddrs_clk,
 		ddrs_gnt => miitx_gnt,
-		ddrs_rdy => miirx_rdy,
-		ddrs_req => miirx_req,
+		ddrs_rdy => ddr2mii_rdy,
+		ddrs_req => ddr2mii_req,
 		ddrs_dirdy => ddrs_do_rdy,
 		ddrs_direq => ddr2miitx_brst_req,
 		ddrs_di  => ddrs_do,

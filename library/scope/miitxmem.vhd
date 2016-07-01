@@ -83,25 +83,28 @@ architecture def of miitxmem is
 begin
 
 	process (ddrs_clk)
+		variable rdy : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
 			if ddrs_gnt='0' then
 				addri <= to_unsigned(2**addri'length-1, addri'length);
 				addri_edge <='1';
 				dirdy <= '0';
-				ddrs_rdy <= '0';
+				rdy := '0';
 				ddrs_direq <= '0';
 			else
 				if dirdy='1' then
 					if (addri(bram_num-1) xor addri_edge)='1' then
-						ddrs_rdy <= '1';
+						rdy := '1';
 						ddrs_direq <= '0';
 					end if;
 				elsif ddrs_req='1' then
-					ddrs_rdy <= '0';
 					ddrs_direq <= '1';
+					if rdy='1' then
+						ddrs_direq <= '0';
+					end if;
 				else
-					ddrs_rdy <= '0';
+					rdy := '0';
 					ddrs_direq <= '0';
 				end if;
 
@@ -112,6 +115,7 @@ begin
 				addri_edge <= addri(bram_num-1);
 				dirdy <= ddrs_dirdy;
 			end if;
+			ddrs_rdy <= rdy;
 		end if;
 	end process; 
 

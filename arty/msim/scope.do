@@ -1,6 +1,23 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst
+add wave -noupdate /testbench/arty_e/scope_e/dataio_rst
+add wave -noupdate /testbench/arty_e/scope_e/miirx_b/pktrx_rdy
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/miirx_b/cntr
+add wave -noupdate /testbench/mii_txen
+add wave -noupdate /testbench/arty_e/eth_tx_clk
+add wave -noupdate /testbench/arty_e/eth_tx_en
+add wave -noupdate -radix hexadecimal /testbench/arty_e/eth_txd
+add wave -noupdate /testbench/arty_e/eth_rx_dv
+add wave -noupdate -radix hexadecimal /testbench/arty_e/eth_rxd
+add wave -noupdate /testbench/arty_e/scope_e/ddr2mii_req
+add wave -noupdate /testbench/arty_e/scope_e/ddr2mii_rdy
+add wave -noupdate /testbench/arty_e/scope_e/miitx_req
+add wave -noupdate /testbench/arty_e/scope_e/miitx_rdy
+add wave -noupdate /testbench/arty_e/scope_e/miidma_req
+add wave -noupdate /testbench/arty_e/scope_e/miidma_rdy
+add wave -noupdate /testbench/arty_e/scope_e/miidma_txen
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/miidma_txd
 add wave -noupdate /testbench/arty_e/gclk100
 add wave -noupdate /testbench/ddr_clk_p
 add wave -noupdate /testbench/cke
@@ -32,8 +49,8 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdq
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__28/cnt(0)
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {22033182 ps} 0} {{Cursor 2} {23512921 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {17781000 ps} 0} {{Cursor 2} {107420000 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -48,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {25200 ns}
+WaveRestoreZoom {0 ps} {168 us}

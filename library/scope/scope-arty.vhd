@@ -181,6 +181,8 @@ architecture def of scope is
 
 	signal miirx_req    : std_logic;
 	signal miirx_rdy    : std_logic;
+	signal ddr2mii_req    : std_logic;
+	signal ddr2mii_rdy    : std_logic;
 	signal miitx_req    : std_logic;
 	signal miitx_rdy    : std_logic;
 	signal miidma_req   : std_logic;
@@ -306,9 +308,9 @@ begin
 --	video_ena <= setif(win_rowid="11");
 
 	miirx_b : block
-		signal mii_txen  : std_logic;
-		signal pktrx_req : std_logic;
 		signal pktrx_rdy : std_logic;
+		signal pkttx_req : std_logic;
+		signal cntr : unsigned(0 to 3);
 	begin
 
 		miirx_udp_e : entity hdl4fpga.miirx_mac
@@ -317,28 +319,30 @@ begin
 			mii_rxdv => mii_rxdv,
 			mii_rxd  => mii_rxd,
 			mii_txc  => open,
-			mii_txen => mii_txen);
-
-		ddr2miirx_e : entity hdl4fpga.align
-		generic map (
-			d => (0 to 0 => 1))
-		port map (
-			clk   => mii_rxc,
-			di(0) => miitx_rdy,
-			do(0) => pktrx_req);
+			mii_txen => pktrx_rdy);
 
 		process (mii_rxc)
-			variable edge : std_logic;
+			variable rdy_edge : std_logic;
+			variable req_edge : std_logic;
 		begin
-			if rising_edge(mii_rxc) then
-				if pktrx_req='1' then
-					pktrx_rdy <= '0';
-				elsif edge='0' then
-					if mii_txen='1' then
-						pktrx_rdy <= '1';
+			if dataio_rst='1' then
+				pkttx_req <= '0';
+				cntr <= (others => '0');
+			elsif rising_edge(mii_rxc) then
+				if miirx_req='1' then
+					pkttx_req <= '0';
+					if req_edge='0' then
+						cntr <= cntr - 1;
 					end if;
+				elsif pktrx_rdy='1' then
+					if rdy_edge='0' then
+						cntr <= cntr + 1;
+					end if;
+				elsif cntr(0)='0' then
+					pkttx_req <= '1';
 				end if;
-				edge := mii_txen;
+				rdy_edge := pktrx_rdy;
+				req_edge := miirx_req;
 			end if;
 		end process;
 
@@ -347,8 +351,8 @@ begin
 			d => (0 to 0 => 1))
 		port map (
 			clk   => ddrs_clks(0),
-			di(0) => pktrx_rdy,
-			do(0) => miirx_req);
+			di(0) => pkttx_req,
+			do(0) => ddr2mii_req);
 
 	end block;
 
@@ -396,8 +400,8 @@ begin
 
 		mii_rst      => mii_rst,
 		mii_txc      => mii_txc,
-		miirx_req    => miirx_req,
-		miirx_rdy    => miirx_rdy,
+		ddr2mii_req  => ddr2mii_req,
+		ddr2mii_rdy  => ddr2mii_rdy,
 		miitx_req    => miidma_req,
 		miitx_rdy    => miidma_rdy,
 		miitx_ena    => miidma_txen,
@@ -411,7 +415,7 @@ begin
 			d => (0 to 0 => 1))
 		port map (
 			clk   => mii_txc,
-			di(0) => miirx_rdy,
+			di(0) => ddr2mii_rdy,
 			do(0) => miitx_req);
 
 		miitx_udp_e : entity hdl4fpga.miitx_udp
@@ -426,6 +430,14 @@ begin
 			miidma_req   => miidma_req,
 			miidma_rxen  => miidma_txen,
 			miidma_rxd   => miidma_txd);
+
+		miitx2rx_e : entity hdl4fpga.align
+		generic map (
+			d => (0 to 0 => 1))
+		port map (
+			clk   => mii_rxc,
+			di(0) => miitx_rdy,
+			do(0) => miirx_req);
 
 	end block;
 

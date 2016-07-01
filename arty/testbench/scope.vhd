@@ -67,6 +67,7 @@ architecture scope of testbench is
 
 	signal mii_refclk : std_logic := '0';
 	signal mii_treq : std_logic := '0';
+	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_rxdv_d : std_logic;
@@ -154,29 +155,25 @@ begin
 	mii_freq <= not mii_freq after 20 ns;
 	mii_rxc <= mii_freq;
 
-	process (mii_strt, rst)
-	begin
-		if rst='1'then
-			mii_strt <= '0', '1' after 12 us, '0' after 22 us;
-		elsif falling_edge(mii_strt) then
-			mii_strt <= '1', '0' after 10 us;
-		end if;
-	end process;
 
-	process (mii_refclk, mii_strt)
+	mii_strt <= '0', '1' after 16 us;
+	process (mii_strt, mii_rxc)
+		constant edge : std_logic := '1';
 		variable txen_edge : std_logic;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 20 us;
-		elsif rising_edge(mii_refclk) then
-			if mii_txen='1' then
-				if txen_edge='0' then
-					mii_treq <= '0';
+			mii_treq <= '0';
+			txen_edge := '0';
+		elsif rising_edge(mii_rxc) then
+			mii_treq <= not mii_trdy;
+			if txen_edge='1' then
+				if mii_treq='1' then
+					mii_treq <= not mii_trdy;
 				end if;
-			elsif txen_edge='1' then
-				mii_treq <= mii_strt;
 			end if;
-			txen_edge := mii_txen;
+			if mii_txen='1' then
+				txen_edge := '1';
+			end if;
 		end if;
 	end process;
 
@@ -187,6 +184,7 @@ begin
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_txen => mii_rxdv_d,
+		mii_trdy => mii_trdy,
 		mii_txd  => mii_rxd_d);
 
 		mii_rxdv <= mii_rxdv_d after 1 ns;
@@ -204,7 +202,7 @@ begin
 		eth_crs     => '-',
 		eth_col     => '-',
 		eth_tx_clk  => mii_rxc,
-		eth_tx_en   => open,
+		eth_tx_en   => mii_txen,
 		eth_txd     => open,
 		eth_rx_clk  => mii_rxc,
 		eth_rxerr   => '-',
