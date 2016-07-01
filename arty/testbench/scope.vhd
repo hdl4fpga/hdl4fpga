@@ -158,22 +158,24 @@ begin
 
 	mii_strt <= '0', '1' after 16 us;
 	process (mii_strt, mii_rxc)
-		constant edge : std_logic := '1';
-		variable txen_edge : std_logic;
+		variable edge : std_logic;
+		variable cnt  : natural := 0;
 	begin
 		if mii_strt='0' then
 			mii_treq <= '0';
-			txen_edge := '0';
+			edge := '0';
 		elsif rising_edge(mii_rxc) then
-			mii_treq <= not mii_trdy;
-			if txen_edge='1' then
-				if mii_treq='1' then
-					mii_treq <= not mii_trdy;
+			if mii_trdy='1' then
+				if edge='0' then
+					mii_treq <= '0';
+				end if;
+			elsif cnt < 2 then
+				mii_treq <= '1';
+				if mii_treq='0' then
+					cnt := cnt + 1;
 				end if;
 			end if;
-			if mii_txen='1' then
-				txen_edge := '1';
-			end if;
+			edge := mii_trdy;
 		end if;
 	end process;
 

@@ -327,7 +327,7 @@ begin
 		begin
 			if dataio_rst='1' then
 				pkttx_req <= '0';
-				cntr <= (others => '0');
+				cntr <= (others => '1');
 			elsif rising_edge(mii_rxc) then
 				if miirx_req='1' then
 					pkttx_req <= '0';
