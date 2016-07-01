@@ -48,8 +48,8 @@ begin
 					q(i) <= '0';
 					shr := (others => '0');
 			else
-				q(i) <= shr(0);
 				shr := shr(1 to 1) & d(i);
+				q(i) <= shr(0);
 				end if;
 			end if;
 		end process;
