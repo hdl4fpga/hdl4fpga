@@ -57,8 +57,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL : natural := 22;
-	constant DDR_DIV : natural := 7;
+	constant DDR_MUL : natural := 10;
+	constant DDR_DIV : natural := 3;
 
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
