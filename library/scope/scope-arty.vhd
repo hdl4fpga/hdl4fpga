@@ -324,23 +324,27 @@ begin
 		process (mii_rxc)
 			variable rdy_edge : std_logic;
 			variable req_edge : std_logic;
+			variable aux : unsigned(cntr'range);
 		begin
 			if dataio_rst='1' then
 				pkttx_req <= '0';
 				cntr <= (others => '1');
 			elsif rising_edge(mii_rxc) then
+				aux := cntr;
 				if miirx_req='1' then
 					pkttx_req <= '0';
 					if req_edge='0' then
-						cntr <= cntr - 1;
-					end if;
-				elsif pktrx_rdy='1' then
-					if rdy_edge='0' then
-						cntr <= cntr + 1;
+						aux := aux -1;
 					end if;
 				elsif cntr(0)='0' then
 					pkttx_req <= '1';
 				end if;
+				if pktrx_rdy='1' then
+					if rdy_edge='0' then
+						aux := aux + 1;
+					end if;
+				end if;
+				cntr <= aux;
 				rdy_edge := pktrx_rdy;
 				req_edge := miirx_req;
 			end if;

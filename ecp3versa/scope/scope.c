@@ -45,7 +45,7 @@ int main (int argc, char *argv[])
 	socklen_t sl_src  = sizeof(sa_src);
 	socklen_t sl_trgt = sizeof(sa_trgt);
 
-	int i, j, n;
+	int i, j, n, k;
 	int npkt;
 	int size;
 
@@ -92,11 +92,44 @@ int main (int argc, char *argv[])
 		abort ();
 	}
 
-	for (i = 0; i < npkt; i++) {
+	for (k = 0; k < 4 && npkt > 0; k++, npkt--) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			abort ();
 		}
+	}
+
+	for (i = 0; i < npkt; i++) {
+		do {
+			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
+				perror ("recvfrom");
+				abort ();
+			}
+		} while(htonl(sa_src.sin_addr.s_addr) != 0xc0a802c8);
+
+		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
+			perror ("sendto()");
+			abort ();
+		}
+
+		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
+			switch (size) {
+			case 32:
+				printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j)));
+				break;
+			case 64:
+				printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
+				break;
+			case 128:
+				printf("0x%016llx%016llx\n",
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8)));
+				break;
+			}
+		}
+	}
+
+	for (i = 0; i < k; i++) {
 
 		do {
 			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
@@ -120,6 +153,8 @@ int main (int argc, char *argv[])
 				break;
 			}
 		}
+
 	}
+
 	return 0;
 }
