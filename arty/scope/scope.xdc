@@ -34,6 +34,7 @@ set_clock_groups -asynchronous -group { I1          } -group { iodctrl_clk }
 set_clock_groups -asynchronous -group { sys_clk     } -group { iodctrl_clk }
 set_clock_groups -asynchronous -group { dqso0       } -group { iodctrl_clk }
 set_clock_groups -asynchronous -group { dqso1       } -group { iodctrl_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { iodctrl_clk }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { I   }
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { I   }
 set_clock_groups -asynchronous -group { iodctrl_clk } -group { I   }
