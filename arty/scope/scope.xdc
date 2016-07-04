@@ -21,7 +21,7 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name sys_clk -period 10 -waveform { 0   5   } [ get_ports gclk100       ]
+create_clock -name sys_clk -period 10 -waveform { 0.0 5.0 } [ get_ports gclk100       ]
 create_clock -name dqso0   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[0] ]
 create_clock -name dqso1   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[1] ]
 
@@ -153,4 +153,3 @@ set_property -dict { PACKAGE_PIN T1  IOSTANDARD SSTL135 IOB TRUE } [ get_ports d
 set_property -dict { PACKAGE_PIN N4  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_a[ 2] ] 
 set_property -dict { PACKAGE_PIN M6  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_a[ 1] ] 
 set_property -dict { PACKAGE_PIN R2  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_a[ 0] ] 
-#set_property IOB TRUE [ list [ all_inputs ] [ all_outputs ] ]
