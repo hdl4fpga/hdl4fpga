@@ -308,7 +308,6 @@ begin
 	process (sys_clk0)
 	begin
 		if rising_edge(sys_clk0) then
-			phy_ini <= ini;
 			phy_rw  <= rw;
 			sys_rlrdy <= rlrdy;
 			phy_cmd_req <= cmd_req;
@@ -327,6 +326,7 @@ begin
 				rw  <= '0';
 				cmd_req <= '0';
 				lvl  <= '0';
+				phy_ini <= '0';
 			elsif ini='0' then
 				if sys_rlreq='1' then
 					if cmd_req='1' then
@@ -357,6 +357,7 @@ begin
 				cmd_req <= '0';
 				if sys_act='1' then
 					lvl <= '0';
+					phy_ini <= '1';
 				end if;
 			end if;
 		end if;

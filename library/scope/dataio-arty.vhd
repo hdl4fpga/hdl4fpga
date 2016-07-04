@@ -160,8 +160,8 @@ begin
 				end loop;
 			end if;
 			q := sys_rst;
+			aux2 <= s;
 		end if;
-		aux2 <= s;
 	end process;
 
 	ddrs_di_rdy <= ddrs_di_req;

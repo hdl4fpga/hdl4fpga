@@ -57,8 +57,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL : natural := 3;
-	constant DDR_DIV : natural := 1;
+	constant DDR_MUL : natural := 22;
+	constant DDR_DIV : natural := 7;
 
 	signal sys_rst   : std_logic;
 	signal sys_clk   : std_logic;
@@ -202,6 +202,39 @@ begin
 	sys_rst  <= not iodctrl_rdy;
 	ddrs_rst <= sys_rst or ddr_rst;
 
+	process(ddrs_rdclk)
+		variable g : std_logic_vector(ddrphy_dqi'length-1 downto 0);
+		variable s : std_logic_vector(g'range);
+		variable aux  : std_logic;
+		variable aux1 : std_logic;
+	begin
+
+		case ddrphy_dqo'length is
+		when 32 =>
+			g := X"23000000";
+		when 64 =>
+			g := X"5800000000000000";
+		when 128 =>
+			g := X"C2000000000000000000000000000000";
+		when others =>
+			g := (others => '-');
+		end case;
+
+		if rising_edge(ddrs_rdclk) then
+			if ddrphy_ini='0' then
+				s  := (others => '1');
+			elsif ddrphy_sti(0)='1' then
+				ddrphy_dqi <= std_logic_vector(unsigned(s) ror 4);
+				aux1 := s(s'right);
+				for i in g'range loop
+					aux  := s(i);
+					s(i) := aux1 xor (s(s'right) and g(i));
+					aux1 := aux;
+				end loop;
+			end if;
+		end if;
+	end process;
+
 	ddrphy_dqsi <= (others => ddrs_rdclk);
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -326,7 +359,7 @@ begin
 		sys_dmi  => ddrphy_dmo,
 		sys_dmt  => ddrphy_dmt,
 		sys_dmo  => ddrphy_dmi,
-		sys_dqi  => ddrphy_dqi,
+--		sys_dqi  => ddrphy_dqi,
 		sys_dqt  => ddrphy_dqt,
 		sys_dqo  => ddrphy_dqo,
 		sys_odt  => ddrphy_odt,
