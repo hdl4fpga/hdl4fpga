@@ -29,6 +29,8 @@ entity omdr is
 	port (
 		rst : in  std_logic;
 		clk : in  std_logic_vector;
+		t   : in  std_logic_vector;
+		tq  : out std_logic_vector;
 		d   : in  std_logic_vector;
 		q   : out std_logic_vector);
 end;
@@ -38,7 +40,9 @@ use unisim.vcomponents.all;
 
 architecture beh of omdr is
 	constant gear : natural := d'length/q'length;
-	signal so : std_logic_vector(0 to q'length-1);
+
+	signal sqo  : std_logic_vector(0 to q'length-1);
+	signal sto : std_logic_vector(0 to t'length-1);
 begin
 
 	reg_g : for i in q'range generate
@@ -67,18 +71,19 @@ begin
 			d6       => si(5),
 			d7       => si(6),
 			d8       => si(7),
-			oq       => so(i),
+			oq       => sqo(i),
 
 			t1       => '0',
 			t2       => '0',
 			t3       => '0',
 			t4       => '0',
+			tq       => sto(i)
 			oce      => '1',
 			shiftin1 => '0',
 			shiftin2 => '0',
 			tce      => '1',
 			tbytein  => '0');
 	end generate;
-	q <= so;
+	q <= sqo;
 
 end;
