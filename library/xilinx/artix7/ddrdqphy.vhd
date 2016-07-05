@@ -248,7 +248,7 @@ begin
 		generic map (
 			DELAY_SRC => "IDATAIN",
 			SIGNAL_PATTERN => "CLOCK",
-			IDELAY_VALUE => 31,
+			IDELAY_VALUE => 27,
 			IDELAY_TYPE => "VARIABLE")
 		port map (
 			regrst => iod_rst,
