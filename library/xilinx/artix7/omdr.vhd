@@ -26,10 +26,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity omdr is
-	port map (
-		clk : std_logic_vector;
-		d   : std_logic_vector;
-		q   : std_logic_vector);
+	port (
+		rst : in  std_logic;
+		clk : in  std_logic_vector;
+		d   : in  std_logic_vector;
+		q   : out std_logic_vector);
 end;
 
 library unisim;
@@ -37,45 +38,47 @@ use unisim.vcomponents.all;
 
 architecture beh of omdr is
 	constant gear : natural := d'length/q'length;
+	signal so : std_logic_vector(0 to q'length-1);
 begin
 
-	reg_g : for i in generate
-		signal odi : std_logic_vector(0 to 8-1);
+	reg_g : for i in q'range generate
+		signal si : std_logic_vector(0 to 8-1);
 	begin
 		process (d)
 			variable aux : std_logic_vector(0 to d'length-1);
 		begin
 			aux := d;
-			odi <= (others => '-');
+			si <= (others => '-');
 			for j in aux'range loop
-				odi(j) <= di(j);
+				si(j) <= aux(gear*i+j);
 			end loop;
 		end process;
 
 		ser_i : oserdese2
 		port map (
-			rst    => sys_rst,
-			clk    => clk(0),
-			clkdiv => clk(1),
-			d1     => odi(0),
-			d2     => odi(1),
-			d3     => odi(2),
-			d4     => odi(3),
-			d5     => odi(4),
-			d6     => odi(5),
-			d7     => odi(6),
-			d4     => odi(7),
-			oq     => q(i),
+			rst      => rst,
+			clk      => clk(0),
+			clkdiv   => clk(1),
+			d1       => si(0),
+			d2       => si(1),
+			d3       => si(2),
+			d4       => si(3),
+			d5       => si(4),
+			d6       => si(5),
+			d7       => si(6),
+			d8       => si(7),
+			oq       => so(i),
 
-			t1     => '0',
-			t2     => '0',
-			t3     => '0',
-			t4     => '0',
+			t1       => '0',
+			t2       => '0',
+			t3       => '0',
+			t4       => '0',
 			oce      => '1',
 			shiftin1 => '0',
 			shiftin2 => '0',
 			tce      => '1',
 			tbytein  => '0');
 	end generate;
+	q <= so;
 
-end process;
+end;
