@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity mdro is
+entity omdr is
 	port map (
 		clk : std_logic_vector;
 		d   : std_logic_vector;
@@ -35,7 +35,7 @@ end;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture beh of mdro is
+architecture beh of omdr is
 	constant gear : natural := d'length/q'length;
 begin
 
