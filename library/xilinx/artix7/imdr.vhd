@@ -25,76 +25,60 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity omdr is
+entity imdr is
 	generic (
 		size : natural;
 		gear : natural);
 	port (
 		rst : in  std_logic;
 		clk : in  std_logic_vector;
-		t   : in  std_logic_vector(0 to gear*size-1) := (others => '0');
-		tq  : out std_logic_vector(0 to size-1);
-		d   : in  std_logic_vector(0 to gear*size-1);
+		d   : in  std_logic_vector(0 to size*gear-1);
 		q   : out std_logic_vector(0 to size-1));
 end;
 
 library unisim;
 use unisim.vcomponents.all;
 
-architecture beh of omdr is
+architecture beh of imdr is
+	constant gear : natural := q'length/d'length;
 
 begin
 
 	reg_g : for i in q'range generate
-		signal pi  : std_logic_vector(0 to 8-1);
-		signal pit : std_logic_vector(0 to 8-1);
+		signal po : std_logic_vector(0 to 4-1);
 	begin
 
-		process (d)
-			variable aux : std_logic_vector(0 to d'length-1);
-		begin
-			aux := d;
-			pi <= (others => '-');
-			for j in aux'range loop
-				pi(j) <= aux(gear*i+j);
-			end loop;
-		end process;
-
-		process (t)
-			variable aux : std_logic_vector(0 to t'length-1);
-		begin
-			aux := d;
-			pit <= (others => '-');
-			for j in aux'range loop
-				pit(j) <= aux(gear*i+j);
-			end loop;
-		end process;
-
-		ser_i : oserdese2
+		iser_i : iserdese2
 		port map (
-			rst      => rst,
-			clk      => clk(0),
-			clkdiv   => clk(1),
-			d1       => pi(0),
-			d2       => pi(1),
-			d3       => pi(2),
-			d4       => pi(3),
-			d5       => pi(4),
-			d6       => pi(5),
-			d7       => pi(6),
-			d8       => pi(7),
-			oq       => q(i),
+			rst          => rst,
+			clk          => clk(0),
+			oclk         => clk(1),
+			clkdiv       => clk(2),
+			d            => d(i),
+			q1           => po(0),
+			q2           => po(1),
+			q3           => po(2),
+			q4           => po(3),
 
-			t1       => pit(0),
-			t2       => pit(1),
-			t3       => pit(2),
-			t4       => pit(3),
-			tq       => tq(i),
-			oce      => '1',
-			shiftin1 => '0',
-			shiftin2 => '0',
-			tce      => '1',
-			tbytein  => '0');
+			bitslip      => '0',
+			clkb         => '1',
+			ce1          => '1',
+			ce2          => '1',
+			clkdivp      => '0',
+			ddly         => '1',
+			dynclkdivsel => '0',
+			dynclksel    => '0',
+			oclkb        => '0',
+			ofb          => '0',
+			shiftin1     => '0',
+			shiftin2     => '0');
+
+		process (po)
+		begin
+			for j in po'range loop
+				q(gear*i+j) <= po(j);
+			end loop;
+		end process;
 
 	end generate;
 

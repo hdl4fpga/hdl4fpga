@@ -30,8 +30,9 @@ entity ddrbaphy is
 		bank_size  : natural := 2;
 		addr_size  : natural := 13);
 	port (
-		sys_clks : in  std_logic_vector;
+		sys_clk  : in  std_logic_vector;
 
+		sys_mrst : in  std_logic;
 		sys_rst  : in  std_logic_vector(gear-1 downto 0);
 		sys_cs   : in  std_logic_vector(gear-1 downto 0);
 		sys_cke  : in  std_logic_vector(gear-1 downto 0);
@@ -57,69 +58,96 @@ library hdl4fpga;
 
 architecture virtex of ddrbaphy is
 
-	signal rst : std_logic_vector(gear-1 downto 0);
-	signal cs  : std_logic_vector(gear-1 downto 0);
-	signal cke : std_logic_vector(gear-1 downto 0);
-	signal b   : std_logic_vector(gear*bank_size-1 downto 0);
-	signal a   : std_logic_vector(gear*addr_size-1 downto 0);
-	signal ras : std_logic_vector(gear-1 downto 0);
-	signal cas : std_logic_vector(gear-1 downto 0);
-	signal we  : std_logic_vector(gear-1 downto 0);
-	signal odt : std_logic_vector(gear-1 downto 0);
-
 begin
 
-	ba_i : entity hdl4fpga.mdr
+	rst_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
 	port map (
-		clk => sys_clks,
-		d   => b,
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_rst,
+		q(0) => ddr_rst);
+
+	cke_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_cke,
+		q(0) => ddr_cke);
+
+	cs_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_cs,
+		q(0) => ddr_cs);
+
+	ras_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_ras,
+		q(0) => ddr_ras);
+
+	cas_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_cas,
+		q(0) => ddr_cas);
+
+	we_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_we,
+		q(0) => ddr_we);
+
+	odt_i : entity hdl4fpga.omdr
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => sys_mrst,
+		clk  => sys_clk,
+		d    => sys_odt,
+		q(0) => ddr_odt);
+
+	ba_i : entity hdl4fpga.omdr
+	generic map (
+		size => ddr_b'length,
+		gear => gear)
+	port map (
+		rst => sys_mrst,
+		clk => sys_clk,
+		d   => sys_b,
 		q   => ddr_b);
 
-	a_i : entity hdl4fpga.mdr
+	a_i : entity hdl4fpga.omdr
+	generic map (
+		size => ddr_a'length,
+		gear => gear)
 	port map (
-		clk => sys_clks,
-		d   => a,
+		rst => sys_mrst,
+		clk => sys_clk,
+		d   => sys_a,
 		q   => ddr_a);
 
-	ras_i : entity hdl4fpga.mdr
-	port map (
-		clk => sys_clks,
-		d   => ras,
-		q   => ddr_ras);
-
-	cas_i : entity hdl4fpga.mdr
-	port map (
-		clk => sys_clks,
-		d   => cas,
-		q   => ddr_cas);
-
-	we_i : entity hdl4fpga.mdr
-	port map (
-		clk => sys_clks,
-		d   => we,
-		q   => ddr_we);
-
-	cs_i : entity hdl4fpga.mdr
-	port map (
-		clk => sys_clk,
-		d   => cs,
-		q   => ddr_cs);
-
-	cke_i : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk,
-		d   => cke(0),
-		q   => ddr_cke);
-
-	odt_i : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk,
-		d   => odt(0),
-		q   => ddr_odt);
-
-	rst_i : entity hdl4fpga.ff
-	port map (
-		clk => sys_clk,
-		d   => sys_rst(0),
-		q   => ddr_rst);
 end;
