@@ -40,14 +40,14 @@ entity ddrphy is
 	port (
 		sys_tp      : out std_logic_vector(WORD_SIZE-1 downto 0);
 
-		sys_iodclk  : in  std_logic;
+		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
 		sys_clk0div  : in  std_logic;
 		sys_clk90    : in  std_logic;
 		sys_clk90div : in  std_logic;
-		sys_rdsel    : out std_logic;
 		sys_rdclk    : in  std_logic;
 		sys_rdclkdiv : in  std_logic;
+		sys_rdsel    : out std_logic;
 
 		phy_rst     : in  std_logic;
 		phy_ini     : out std_logic;
@@ -55,8 +55,6 @@ entity ddrphy is
 		phy_cmd_rdy : in  std_logic;
 		phy_cmd_req : out std_logic;
 
-		sys_rdsel   : out std_logic;
-		sys_rdclk   : in  std_logic;
 		sys_wlreq   : in  std_logic;
 		sys_wlrdy   : out std_logic;
 		sys_rlreq   : in std_logic;
@@ -387,7 +385,7 @@ begin
 		BANK_SIZE => BANK_SIZE,
 		ADDR_SIZE => ADDR_SIZE)
 	port map (
-		sys_clk  => bc_clk,
+		sys_clk  => ba_clk,
      	sys_mrst => phy_rst,
 		sys_rst  => sys_rst,
 		sys_cs   => sys_cs,
@@ -457,9 +455,12 @@ begin
 		port map (
 			sys_rst    => phy_rst,
 			sys_clk0   => sys_clk0,
+			sys_clk0div   => sys_clk0div,
 			sys_clk90  => sys_clk90,
-			sys_rdsel  => rdsel,
+			sys_clk90div  => sys_clk90div,
 			sys_rdclk  => sys_rdclk,
+			sys_rdclkdiv  => sys_rdclkdiv,
+			sys_rdsel  => rdsel,
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
 			sys_rlreq  => sys_rlreq,

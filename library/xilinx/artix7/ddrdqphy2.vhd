@@ -141,10 +141,12 @@ begin
 			d(0) => dqi(i),
 			q    => dq);
 
-		sys_dqo(0*BYTE_SIZE+i) <= dq(0);
-		sys_dqo(1*BYTE_SIZE+i) <= dq(1);
-		sys_dqo(2*BYTE_SIZE+i) <= dq(2);
-		sys_dqo(3*BYTE_SIZE+i) <= dq(3);
+		process (dq)
+		begin
+			for i in dq'range loop
+				sys_dqo(i*BYTE_SIZE+i) <= dq(i);
+			end loop;
+		end process;
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi

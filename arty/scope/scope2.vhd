@@ -42,7 +42,7 @@ architecture scope of arty is
 	constant SCLK_EDGES   : natural := 2;
 	constant DATA_PHASES  : natural := 2;
 	constant DATA_EDGES   : natural := 2;
-	constant CMD_PHASES   : natural := 1;
+	constant CMMD_PHASES  : natural := 1;
 	constant DATA_GEAR    : natural := 2;
 
 	constant BANK_SIZE    : natural := ddr3_ba'length;
@@ -92,16 +92,16 @@ architecture scope of arty is
 	signal ddr3_dqt       : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 
-	signal ddrphy_rst     : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_cke     : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(CMD_PHASES-1 downto 0);
+	signal ddrphy_rst     : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_cke     : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_cs      : std_logic_vector(CMMD_PHASES-1 downto 0);
 	signal ddrphy_act     : std_logic;
-	signal ddrphy_ras     : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(CMD_PHASES-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(CMD_PHASES*BANK_SIZE-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(CMD_PHASES*ADDR_SIZE-1 downto 0);
+	signal ddrphy_ras     : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_cas     : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_we      : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_odt     : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(CMMD_PHASES*BANK_SIZE-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(CMMD_PHASES*ADDR_SIZE-1 downto 0);
 	signal ddrphy_dqsi    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dqst    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dqso    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
@@ -137,7 +137,7 @@ architecture scope of arty is
 	signal vga_green      : std_logic_vector(8-1 downto 0);
 	signal vga_blue       : std_logic_vector(8-1 downto 0);
 
-	signal tp1            : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
+	signal tp             : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
 
 begin
 		
@@ -180,9 +180,10 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		DDR_MUL => DDR_MUL,
-		DDR_DIV => DDR_DIV, 
-		SYS_PER => UCLK_PERIOD)
+		DDR_MUL  => DDR_MUL,
+		DDR_DIV  => DDR_DIV, 
+		DDR_GEAR => DATA_GEAR, 
+		SYS_PER  => UCLK_PERIOD)
 	port map (
 		sys_rst    => dcm_rst,
 		sys_clk    => sys_clk,
@@ -291,7 +292,7 @@ begin
 		WORD_SIZE    => WORD_SIZE,
 		BYTE_SIZE    => BYTE_SIZE)
 	port map (
-		sys_tp       => tp1,
+		sys_tp       => tp,
 
 		sys_clk0     => ddrs_clk0,
 		sys_clk0div  => ddrs_clk0div,
@@ -410,8 +411,8 @@ begin
 	rgbled  <= (others => '0');
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i+0) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+2) when btn(3)='1' else tp1(i*8+5);
-		led(i+2) <= tp1(i*8+1) when btn(1)='1' else tp1(i*8+2) when btn(2)='1' else tp1(i*8+1) when btn(3)='1' else tp1(i*8+0);
+		led(i+0) <= tp(i*8+1) when btn(1)='1' else tp(i*8+2) when btn(2)='1' else tp(i*8+2) when btn(3)='1' else tp(i*8+5);
+		led(i+2) <= tp(i*8+1) when btn(1)='1' else tp(i*8+2) when btn(2)='1' else tp(i*8+1) when btn(3)='1' else tp(i*8+0);
 	end generate;
 
 end;

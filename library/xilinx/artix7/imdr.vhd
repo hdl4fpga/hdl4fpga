@@ -27,24 +27,22 @@ use ieee.numeric_std.all;
 
 entity imdr is
 	generic (
-		size : natural;
-		gear : natural);
+		SIZE : natural;
+		GEAR : natural);
 	port (
-		rst : in  std_logic;
-		clk : in  std_logic_vector;
-		d   : in  std_logic_vector(0 to size*gear-1);
-		q   : out std_logic_vector(0 to size-1));
+		rst  : in  std_logic;
+		clk  : in  std_logic_vector;
+		d    : in  std_logic_vector(0 to SIZE-1);
+		q    : out std_logic_vector(0 to SIZE*GEAR-1));
 end;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture beh of imdr is
-	constant gear : natural := q'length/d'length;
-
 begin
 
-	reg_g : for i in q'range generate
+	reg_g : for i in d'range generate
 		signal po : std_logic_vector(0 to 4-1);
 	begin
 

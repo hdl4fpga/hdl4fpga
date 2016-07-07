@@ -27,15 +27,15 @@ use ieee.numeric_std.all;
 
 entity omdr is
 	generic (
-		size : natural;
-		gear : natural);
+		SIZE : natural;
+		GEAR : natural);
 	port (
 		rst : in  std_logic;
 		clk : in  std_logic_vector;
-		t   : in  std_logic_vector(0 to gear*size-1) := (others => '0');
-		tq  : out std_logic_vector(0 to size-1);
-		d   : in  std_logic_vector(0 to gear*size-1);
-		q   : out std_logic_vector(0 to size-1));
+		t   : in  std_logic_vector(0 to GEAR*SIZE-1) := (others => '0');
+		tq  : out std_logic_vector(0 to SIZE-1);
+		d   : in  std_logic_vector(0 to GEAR*SIZE-1);
+		q   : out std_logic_vector(0 to SIZE-1));
 end;
 
 library unisim;
@@ -55,7 +55,7 @@ begin
 		begin
 			aux := d;
 			pi <= (others => '-');
-			for j in aux'range loop
+			for j in pi'range loop
 				pi(j) <= aux(gear*i+j);
 			end loop;
 		end process;
@@ -65,7 +65,7 @@ begin
 		begin
 			aux := d;
 			pit <= (others => '-');
-			for j in aux'range loop
+			for j in pit'range loop
 				pit(j) <= aux(gear*i+j);
 			end loop;
 		end process;

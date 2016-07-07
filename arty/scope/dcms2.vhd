@@ -119,7 +119,7 @@ begin
 		clkout0_divide_f => 2.0,
 		clkout1_divide => 2,
 		clkout2_divide => 2,
-		clkout3_divide => DDR_GEAR)
+		clkout3_divide => DDR_GEAR,
 		clkout4_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
