@@ -235,31 +235,18 @@ begin
 		xdr_refi_rdy => xdr_refi_rdy);
 
 	xdr_rst <= xdr_init_rst;
-	xdr_cs  <= '0'         when xdr_mpu_sel='1' else xdr_init_cs;
 	xdr_cke <= xdr_init_cke;
-	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
-	xdr_ras <= xdr_mpu_ras when xdr_mpu_sel='1' else xdr_init_ras;
-	xdr_cas <= xdr_mpu_cas when xdr_mpu_sel='1' else xdr_init_cas;
-	xdr_we  <= xdr_mpu_we  when xdr_mpu_sel='1' else xdr_init_we;
-	xdr_a   <= sys_a       when xdr_mpu_sel='1' else xdr_init_a;
-	xdr_b   <= sys_b       when xdr_mpu_sel='1' else xdr_init_b;
-	xdr_odt <= 
-		xdr_init_odt   when xdr_mpu_sel='0' else
-		xdr_sch_odt(0) when stdr=3 else
-		'1';
+	xdr_cs  <= '0'          when xdr_mpu_sel='1' else xdr_init_cs;
+	xdr_ras <= xdr_mpu_ras  when xdr_mpu_sel='1' else xdr_init_ras;
+	xdr_ras <= xdr_mpu_ras  when xdr_mpu_sel='1' else xdr_init_ras;
+	xdr_cas <= xdr_mpu_cas  when xdr_mpu_sel='1' else xdr_init_cas;
+	xdr_we  <= xdr_mpu_we   when xdr_mpu_sel='1' else xdr_init_we;
+	xdr_a   <= sys_a        when xdr_mpu_sel='1' else xdr_init_a;
+	xdr_b   <= sys_b        when xdr_mpu_sel='1' else xdr_init_b;
+	xdr_odt <= xdr_init_odt when xdr_mpu_sel='0' else xdr_sch_odt(0) when stdr=3 else '1';
 
-	init_rdy <= xdr_init_rdy;
+	init_rdy    <= xdr_init_rdy;
 	xdr_mpu_sel <= init_rdy;
---	mpu_sel_slr_e : entity hdl4fpga.align
---	generic map (
---		n => 2,
---		d => (0 to 1 => 1))
---	port map (
---		clk => sys_clks(0),
---		di(0) => xdr_init_rdy,
---		di(1) => init_rdy,
---		do(0) => init_rdy,
---		do(1) => xdr_mpu_sel);
 
 	sys_ini <= init_rdy;
 	xdr_mpu_rst <= not init_rdy;

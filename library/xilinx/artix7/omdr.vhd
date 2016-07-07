@@ -51,22 +51,18 @@ begin
 	begin
 
 		process (d)
-			variable aux : std_logic_vector(0 to d'length-1);
 		begin
-			aux := d;
-			pi <= (others => '-');
-			for j in pi'range loop
-				pi(j) <= aux(gear*i+j);
+			pi <= (others => '0');
+			for j in 0 to GEAR-1 loop
+				pi(j) <= d(GEAR*i+j);
 			end loop;
 		end process;
 
 		process (t)
-			variable aux : std_logic_vector(0 to t'length-1);
 		begin
-			aux := d;
-			pit <= (others => '-');
-			for j in pit'range loop
-				pit(j) <= aux(gear*i+j);
+			pit <= (others => '0');
+			for j in 0 to GEAR-1 loop
+				pit(j) <= t(GEAR*i+j);
 			end loop;
 		end process;
 

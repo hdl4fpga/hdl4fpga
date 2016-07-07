@@ -73,8 +73,8 @@ begin
 
 		process (po)
 		begin
-			for j in po'range loop
-				q(gear*i+j) <= po(j);
+			for j in 0 to GEAR-1 loop
+				q(GEAR*i+j) <= po(j);
 			end loop;
 		end process;
 

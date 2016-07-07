@@ -48,7 +48,6 @@ entity dcms is
 		ddr_clk90div : out std_logic;
 		ddr_rdinv    : in  std_logic;
 		ddr_rdclk    : out std_logic;
-		ddr_rdclkdiv : out std_logic;
 		video_clk    : out std_logic;
 		mii_clk      : out std_logic;
 		ioctrl_rst   : out std_logic;
@@ -114,8 +113,9 @@ begin
 		divclk_divide => ddr_div,
 		clkfbout_mult_f => real(DDR_GEAR*ddr_mul),
 		clkin1_period => sys_per,
-		clkout1_phase => 90.000,
+		clkout1_phase => 90.0*real((DDR_GEAR/2) mod 4),
 		clkout2_phase => 180.000,
+		clkout4_phase => 90.0,
 		clkout0_divide_f => 2.0,
 		clkout1_divide => 2,
 		clkout2_divide => 2,

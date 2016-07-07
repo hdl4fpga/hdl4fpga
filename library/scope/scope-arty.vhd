@@ -360,7 +360,7 @@ begin
 
 	end block;
 
-	ddrs_a <= ddrs_rowa when ddr_act='1' else ddrs_cola;
+	ddrs_a   <= ddrs_rowa when ddr_act='1' else ddrs_cola;
 	ddrs_act <= ddr_act;
 
 	dataio_rst <= not ini;
@@ -416,7 +416,7 @@ begin
 
 		ddr2miitx_e : entity hdl4fpga.align
 		generic map (
-			d => (0 to 0 => 1))
+			D     => (0 to 0 => 1))
 		port map (
 			clk   => mii_txc,
 			di(0) => ddr2mii_rdy,
@@ -444,80 +444,77 @@ begin
 			do(0) => miirx_req);
 
 	end block;
-
-
-	ddrs_ini <= ini;
-	ini <= ddr_phyini when fpga=virtex5 else ddr_ini;
 	
-	ddr_rlreq <= ddr_ini when fpga=virtex5 else rlreq;
-	ddr_rw <= ddrs_rw when ddr_phyini='1' else ddr_phyrw;
-	ddr_cmd_req <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
-
+	ini          <= ddr_phyini   when FPGA=VIRTEX5   else ddr_ini;
+	ddr_rlreq    <= ddr_ini      when FPGA=VIRTEX5   else rlreq;
+	ddr_cmd_req  <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
+	ddr_rw       <= ddrs_rw      when ddr_phyini='1' else ddr_phyrw;
+	ddrs_ini     <= ini;
 	ddrs_cmd_rdy <= cmd_rdy;
+
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
-		fpga => fpga,
-		mark => DDR_MARK,
-		strobe    => DDR_STROBE,
-		sclk_phases => DDR_SCLKPHASES,
-		sclk_edges  => DDR_SCLKEDGES,
-		data_phases => DDR_DATAPHASES,
-		data_edges => DDR_DATAEDGES,
-		bank_size => DDR_BANKSIZE,
-		addr_size => DDR_ADDRSIZE,
-		line_size => DDR_LINESIZE,
-		word_size => DDR_WORDSIZE,
-		byte_size => DDR_BYTESIZE,
-		tCP  => DDR_tCP)
+		FPGA        => FPGA,
+		MARK        => DDR_MARK,
+		SCLK_PHASES => DDR_SCLKPHASES,
+		SCLK_EDGES  => DDR_SCLKEDGES,
+		DATA_PHASES => DDR_DATAPHASES,
+		DATA_EDGES  => DDR_DATAEDGES,
+		BANK_SIZE   => DDR_BANKSIZE,
+		ADDR_SIZE   => DDR_ADDRSIZE,
+		LINE_SIZE   => DDR_LINESIZE,
+		WORD_SIZE   => DDR_WORDSIZE,
+		BYTE_SIZE   => DDR_BYTESIZE,
+		TCP         => DDR_TCP)
 	port map (
-		sys_rst => ddrs_rst,
-		sys_rtt => ddrs_rtt,
-		sys_bl  => ddrs_bl,
-		sys_cl  => ddrs_cl,
-		sys_cwl => ddrs_cwl,
-		sys_wr  => ddrs_wr,
-		sys_clks => ddrs_clks,
-		sys_ini  => ddr_ini,
+		sys_rst     => ddrs_rst,
+		sys_rtt     => ddrs_rtt,
+		sys_bl      => ddrs_bl,
+		sys_cl      => ddrs_cl,
+		sys_cwl     => ddrs_cwl,
+		sys_wr      => ddrs_wr,
+		sys_clks    => ddrs_clks,
+		sys_ini     => ddr_ini,
 
 		sys_cmd_req => ddr_cmd_req,
 		sys_cmd_rdy => cmd_rdy,
-		sys_wlreq => ddr_wlreq,
-		sys_wlrdy => ddr_wlrdy,
-		sys_rlreq => rlreq,
-		sys_rlrdy => ddr_rlrdy,
-		sys_rlcal => ddr_rlcal,
-		sys_b   => ddrs_ba,
-		sys_a   => ddrs_a,
-		sys_rw  => ddr_rw,
-		sys_act => ddr_act,
-		sys_cas => ddrs_cas,
-		sys_di_rdy => ddrs_di_rdy,
-		sys_di_req => ddrs_di_req,
-		sys_di  => ddrs_di,
-		sys_do_rdy => ddrs_do_rdy,
-		sys_do  => ddrs_do,
+		sys_wlreq   => ddr_wlreq,
+		sys_wlrdy   => ddr_wlrdy,
+		sys_rlreq   => rlreq,
+		sys_rlrdy   => ddr_rlrdy,
+		sys_rlcal   => ddr_rlcal,
+		sys_b       => ddrs_ba,
+		sys_a       => ddrs_a,
+		sys_rw      => ddr_rw,
+		sys_act     => ddr_act,
+		sys_cas     => ddrs_cas,
+		sys_di_rdy  => ddrs_di_rdy,
+		sys_di_req  => ddrs_di_req,
+		sys_di      => ddrs_di,
+		sys_do_rdy  => ddrs_do_rdy,
+		sys_do      => ddrs_do,
 
-		sys_ref => ddrs_ref_req,
+		sys_ref     => ddrs_ref_req,
 
-		xdr_rst => ddr_rst,
-		xdr_cke => ddr_cke,
-		xdr_cs  => ddr_cs,
-		xdr_ras => ddr_ras,
-		xdr_cas => ddr_cas,
-		xdr_we  => ddr_we,
-		xdr_b   => ddr_b,
-		xdr_a   => ddr_a,
-		xdr_dmi  => ddr_dmi,
-		xdr_dmt  => ddr_dmt,
-		xdr_dmo  => ddr_dmo,
-		xdr_dqst => ddr_dqst,
-		xdr_dqsi => ddr_dqsi,
-		xdr_dqso => ddr_dqso,
-		xdr_dqt => ddr_dqt,
-		xdr_dqi => ddr_dqi,
-		xdr_dqo => ddr_dqo,
-		xdr_odt => ddr_odt,
+		xdr_rst     => ddr_rst,
+		xdr_cke     => ddr_cke,
+		xdr_cs      => ddr_cs,
+		xdr_ras     => ddr_ras,
+		xdr_cas     => ddr_cas,
+		xdr_we      => ddr_we,
+		xdr_b       => ddr_b,
+		xdr_a       => ddr_a,
+		xdr_dmi     => ddr_dmi,
+		xdr_dmt     => ddr_dmt,
+		xdr_dmo     => ddr_dmo,
+		xdr_dqst    => ddr_dqst,
+		xdr_dqsi    => ddr_dqsi,
+		xdr_dqso    => ddr_dqso,
+		xdr_dqt     => ddr_dqt,
+		xdr_dqi     => ddr_dqi,
+		xdr_dqo     => ddr_dqo,
+		xdr_odt     => ddr_odt,
 
-		xdr_sti => ddr_sti,
-		xdr_sto => ddr_sto);
+		xdr_sti     => ddr_sti,
+		xdr_sto     => ddr_sto);
 end;

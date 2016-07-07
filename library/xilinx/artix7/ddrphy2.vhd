@@ -46,7 +46,6 @@ entity ddrphy is
 		sys_clk90    : in  std_logic;
 		sys_clk90div : in  std_logic;
 		sys_rdclk    : in  std_logic;
-		sys_rdclkdiv : in  std_logic;
 		sys_rdsel    : out std_logic;
 
 		phy_rst     : in  std_logic;
@@ -459,7 +458,6 @@ begin
 			sys_clk90  => sys_clk90,
 			sys_clk90div  => sys_clk90div,
 			sys_rdclk  => sys_rdclk,
-			sys_rdclkdiv  => sys_rdclkdiv,
 			sys_rdsel  => rdsel,
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),

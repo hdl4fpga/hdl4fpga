@@ -43,7 +43,6 @@ entity ddrdqphy is
 		sys_clk90div : in  std_logic;
 		sys_rdsel    : out std_logic;
 		sys_rdclk    : in  std_logic;
-		sys_rdclkdiv : in  std_logic;
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
 		sys_rlreq    : in  std_logic;
@@ -203,15 +202,15 @@ begin
 
 		end generate;
 
-		omdr_i : entity hdl4fpga.omdr
-		generic map (
-			size => 1,
-			gear => gear)
-		port map (
-			rst  => sys_rst,
-			clk  => omdr_clk,
-			d    => dqo,
-			q(0) => ddr_dqo(i));
+--		omdr_i : entity hdl4fpga.omdr
+--		generic map (
+--			size => 1,
+--			gear => gear)
+--		port map (
+--			rst  => sys_rst,
+--			clk  => omdr_clk,
+--			d    => dqo,
+--			q(0) => ddr_dqo(i));
 
 	end generate;
 
