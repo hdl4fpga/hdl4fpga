@@ -112,14 +112,15 @@ begin
 	ddr_i :  mmcme2_base
 	generic map (
 		divclk_divide => ddr_div,
-		clkfbout_mult_f => real(2*ddr_mul),
+		clkfbout_mult_f => real(DDR_GEAR*ddr_mul),
 		clkin1_period => sys_per,
 		clkout1_phase => 90.000,
 		clkout2_phase => 180.000,
 		clkout0_divide_f => 2.0,
 		clkout1_divide => 2,
 		clkout2_divide => 2,
-		bandwidth => "HIGH")
+		clkout3_divide => DDR_GEAR)
+		clkout4_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
 		rst      => sys_rst,
@@ -129,9 +130,8 @@ begin
 		clkout0  => ddr_clk0_mmce2,
 		clkout1  => ddr_clk90_mmce2,
 		clkout2  => ddr_clk180_mmce2,
-		clkout3  => ddr_clk180_mmce2,
-		clkout4  => ddr_clk180_mmce2,
-		clkout4  => ddr_clk180_mmce2,
+		clkout3  => ddr_clk0div_mmce2,
+		clkout4  => ddr_clk90div_mmce2,
 		locked   => lcks(ddr));
     
 	ddr_clk90_bufg : bufg
@@ -150,6 +150,16 @@ begin
 		i0 => ddr_clk0_mmce2,
 		i1 => ddr_clk180_mmce2,
 		o  => ddr_rdclk);
+
+	ddr_clk0div_bufg : bufg
+	port map (
+		i => ddr_clk0div_mmce2,
+		o => ddr_clk0div);
+
+	ddr_clk90div_bufg : bufg
+	port map (
+		i => ddr_clk90div_mmce2,
+		o => ddr_clk90div);
 
 	clks(input) <= sys_clk;
 	lcks(input) <= not sys_rst;
