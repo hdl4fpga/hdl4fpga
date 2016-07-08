@@ -38,11 +38,11 @@ use unisim.vcomponents.all;
 architecture scope of arty is
 	constant UCLK_PERIOD  : real    := 10.0;
 
-	constant SCLK_PHASES  : natural := 4;
-	constant SCLK_EDGES   : natural := 2;
+	constant SCLK_PHASES  : natural := 1;
+	constant SCLK_EDGES   : natural := 1;
 	constant DATA_PHASES  : natural := 4;
 	constant DATA_EDGES   : natural := 1;
-	constant CMMD_PHASES  : natural := 1;
+	constant CMMD_GEAR    : natural := 2;
 	constant DATA_GEAR    : natural := 4;
 
 	constant BANK_SIZE    : natural := ddr3_ba'length;
@@ -92,16 +92,18 @@ architecture scope of arty is
 	signal ddr3_dqt       : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 
-	signal ddrphy_rst     : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_cke     : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(CMMD_PHASES-1 downto 0);
+	signal ddr_b          : std_logic_vector(ddr3_ba'range);
+	signal ddr_a          : std_logic_vector(ddr3_a'range);
+	signal ddrphy_rst     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cke     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cs      : std_logic_vector(CMMD_GEAR-1 downto 0);
 	signal ddrphy_act     : std_logic;
-	signal ddrphy_ras     : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(CMMD_PHASES-1 downto 0);
-	signal ddrphy_b       : std_logic_vector(CMMD_PHASES*BANK_SIZE-1 downto 0);
-	signal ddrphy_a       : std_logic_vector(CMMD_PHASES*ADDR_SIZE-1 downto 0);
+	signal ddrphy_ras     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cas     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_we      : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_odt     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_b       : std_logic_vector(CMMD_GEAR*BANK_SIZE-1 downto 0);
+	signal ddrphy_a       : std_logic_vector(CMMD_GEAR*ADDR_SIZE-1 downto 0);
 	signal ddrphy_dqsi    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dqst    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dqso    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
@@ -182,7 +184,7 @@ begin
 	generic map (
 		DDR_MUL    => DDR_MUL,
 		DDR_DIV    => DDR_DIV, 
-		DDR_GEAR   => DATA_GEAR*2, 
+		DDR_GEAR   => DATA_GEAR, 
 		SYS_PER    => UCLK_PERIOD)
 	port map (
 		sys_rst      => dcm_rst,
@@ -229,10 +231,9 @@ begin
 
 		ddrs_rst       => ddrs_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
-		ddrs_clks(1)   => ddrs_clk90div,
 		ddrs_bl        => "000",
-		ddrs_cl        => "001",
-		ddrs_cwl       => "000",
+		ddrs_cl        => "101",
+		ddrs_cwl       => "010",
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
@@ -252,8 +253,9 @@ begin
 		ddr_ras        => ddrphy_ras(0),
 		ddr_cas        => ddrphy_cas(0),
 		ddr_we         => ddrphy_we(0),
-		ddr_b          => ddrphy_b,
-		ddr_a          => ddrphy_a,
+		ddr_b          => ddr_b,
+		ddr_a          => ddr_a,
+		ddr_odt        => ddrphy_odt(0),
 		ddr_dmi        => ddrphy_dmi,
 		ddr_dmt        => ddrphy_dmt,
 		ddr_dmo        => ddrphy_dmo,
@@ -263,7 +265,6 @@ begin
 		ddr_dqi        => ddrphy_dqo,
 		ddr_dqt        => ddrphy_dqt,
 		ddr_dqo        => ddrphy_dqi,
-		ddr_odt        => ddrphy_odt(0),
 		ddr_sto        => ddrphy_sto,
 		ddr_sti        => ddrphy_sti,
 
@@ -285,11 +286,38 @@ begin
 		vga_green      => vga_green,
 		vga_blue       => vga_blue);
 
-	ddrphy_dqsi <= (others => ddrs_rdclk);
+	ddrphy_rst(1) <= ddrphy_rst(0);
+	ddrphy_cke(1) <= ddrphy_cke(0);
+	ddrphy_cs(1)  <= ddrphy_cs(0);
+	ddrphy_ras(1) <= '1';
+	ddrphy_cas(1) <= '1';
+	ddrphy_we(1)  <= '1';
+	ddrphy_odt(1) <= ddrphy_odt(0);
+
+	process (ddr_b)
+	begin
+		for i in ddr_b'range loop
+			for j in 0 to CMMD_GEAR-1 loop
+				ddrphy_b(i*CMMD_GEAR+j) <= ddr_b(i);
+			end loop;
+		end loop;
+	end process;
+
+	process (ddr_a)
+	begin
+		for i in ddr_a'range loop
+			for j in 0 to CMMD_GEAR-1 loop
+				ddrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
+			end loop;
+		end loop;
+	end process;
+
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+
 		BANK_SIZE    => BANK_SIZE,
         ADDR_SIZE    => ADDR_SIZE,
+		CMMD_GEAR    => CMMD_GEAR,
 		DATA_GEAR    => DATA_GEAR,
 		WORD_SIZE    => WORD_SIZE,
 		BYTE_SIZE    => BYTE_SIZE)

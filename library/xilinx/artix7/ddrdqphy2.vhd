@@ -93,11 +93,12 @@ architecture virtex of ddrdqphy is
 	signal rdsel      : std_logic;
 	signal dqs_clk    : std_logic;
 	signal imdr_clk   : std_logic_vector(0 to 3-1);
-	signal omdr_clk   : std_logic_vector(0 to 3-1);
+	signal omdr_clk   : std_logic_vector(0 to 2-1);
 
 begin
 
 	imdr_clk <= (0 => dqs_clk, 1 => sys_clk0, 2 => sys_clk0div);
+	omdr_clk <= (0 => sys_clk0div, 1 => sys_clk0);
 	sys_wlrdy <= sys_wlreq;
 	process (sys_iodclk)
 		variable aux : std_logic;
@@ -282,6 +283,7 @@ begin
 		signal sti  : std_logic;
 		signal st   : std_logic;
 		signal mclk : std_logic_vector(0 to 3-1);
+		signal dqso : std_logic_vector(sys_dqso'range);
 	begin
 
 		dqsidelay_i : idelaye2 
@@ -353,6 +355,16 @@ begin
 
 		sys_sto <= (others => sto);
 	
+		process (sys_dqso)
+		begin
+			dqso <= (others => '0');
+			for i in dqso'range loop
+				if i mod 2 = 0 then
+					dqso(i) <= sys_dqso(i);
+				end if;
+			end loop;
+		end process;
+
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
@@ -362,7 +374,7 @@ begin
 			clk  => omdr_clk,
 			t    => sys_dqst,
 			tq(0)=> ddr_dqst,
-			d    => sys_dqso,
+			d    => dqso,
 			q(0) => ddr_dqso);
 
 	end block;

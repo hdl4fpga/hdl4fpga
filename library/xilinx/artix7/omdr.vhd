@@ -31,7 +31,7 @@ entity omdr is
 		GEAR : natural);
 	port (
 		rst : in  std_logic;
-		clk : in  std_logic_vector;
+		clk : in  std_logic_vector(0 to 2-1);
 		t   : in  std_logic_vector(0 to GEAR*SIZE-1) := (others => '0');
 		tq  : out std_logic_vector(0 to SIZE-1);
 		d   : in  std_logic_vector(0 to GEAR*SIZE-1);
@@ -40,6 +40,8 @@ end;
 
 library unisim;
 use unisim.vcomponents.all;
+
+library hdl4fpga;
 
 architecture beh of omdr is
 
@@ -66,31 +68,67 @@ begin
 			end loop;
 		end process;
 
-		ser_i : oserdese2
-		port map (
-			rst      => rst,
-			clk      => clk(0),
-			clkdiv   => clk(1),
-			d1       => pi(0),
-			d2       => pi(1),
-			d3       => pi(2),
-			d4       => pi(3),
-			d5       => pi(4),
-			d6       => pi(5),
-			d7       => pi(6),
-			d8       => pi(7),
-			oq       => q(i),
+		ff_g : if GEAR = 1 generate
+			fft_i : entity hdl4fpga.ff
+			port map (
+				clk => clk(0),
+				d   => pit(0),
+				q   => tq(i));
 
-			t1       => pit(0),
-			t2       => pit(1),
-			t3       => pit(2),
-			t4       => pit(3),
-			tq       => tq(i),
-			oce      => '1',
-			shiftin1 => '0',
-			shiftin2 => '0',
-			tce      => '1',
-			tbytein  => '0');
+			ff_i : entity hdl4fpga.ff
+			port map (
+				clk => clk(0),
+				d   => pi(0),
+				q   => q(i));
+		end generate;
+
+		ddr_g : if GEAR = 2 generate
+			fft_i : entity hdl4fpga.ff
+			port map (
+				clk => clk(0),
+				d   => pit(0),
+				q   => tq(i));
+
+			oddr_i : oddr
+			generic map (
+				DDR_CLK_EDGE => "SAME_EDGE")
+			port map (
+				c  => clk(1),
+				ce => '1',
+				d1 => pi(0),
+				d2 => pi(1),
+				q  => q(i));
+		end generate;
+
+		ser_g : if GEAR > 2 generate
+			oser_i : oserdese2
+			generic map (
+				DATA_WIDTH => GEAR)
+			port map (
+				rst      => rst,
+				clk      => clk(1),
+				clkdiv   => clk(0),
+				d1       => pi(0),
+				d2       => pi(1),
+				d3       => pi(2),
+				d4       => pi(3),
+				d5       => pi(4),
+				d6       => pi(5),
+				d7       => pi(6),
+				d8       => pi(7),
+				oq       => q(i),
+
+				t1       => pit(0),
+				t2       => pit(1),
+				t3       => pit(2),
+				t4       => pit(3),
+				tq       => tq(i),
+				oce      => '1',
+				shiftin1 => '0',
+				shiftin2 => '0',
+				tce      => '1',
+				tbytein  => '0');
+		end generate;
 
 	end generate;
 
