@@ -182,7 +182,7 @@ begin
 	generic map (
 		DDR_MUL    => DDR_MUL,
 		DDR_DIV    => DDR_DIV, 
-		DDR_GEAR   => DATA_GEAR, 
+		DDR_GEAR   => DATA_GEAR*2, 
 		SYS_PER    => UCLK_PERIOD)
 	port map (
 		sys_rst      => dcm_rst,

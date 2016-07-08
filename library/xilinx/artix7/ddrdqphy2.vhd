@@ -237,19 +237,32 @@ begin
 	dmo_g : block
 		signal dmt  : std_logic_vector(sys_dmt'range);
 		signal dmi  : std_logic_vector(sys_dmi'range);
-		signal clks : std_logic_vector(0 to DATA_GEAR-1);
+		signal clks : std_logic_vector(0 to 2-1);
 	begin
 
-
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
-		registered_g : for i in clks'range generate
-			process (clks(i))
-			begin
-				if rising_edge(clks(i)) then
-					dmi(i) <= sys_dmi(i);
-				end if;
-			end process;
+		edge_g : if DATA_EDGE generate
+			registered_g : for i in clks'range generate
+				process (clks(i))
+				begin
+					if rising_edge(clks(i)) then
+						dmi(i) <= sys_dmi(i);
+					end if;
+				end process;
 
+			end generate;
+		end generate;
+
+		noedge_g : if not DATA_EDGE generate
+			registered_g : for i in 0 to DATA_GEAR-1 generate
+				process (clks(0))
+				begin
+					if rising_edge(clks(0)) then
+						dmi(i) <= sys_dmi(i);
+					end if;
+				end process;
+
+			end generate;
 		end generate;
 
 		omdr_i : entity hdl4fpga.omdr
