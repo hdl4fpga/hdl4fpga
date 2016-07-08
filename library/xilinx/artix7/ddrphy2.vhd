@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity ddrphy is
 	generic (
 		CMMD_GEAR   : natural   :=  1;
+		DATA_EDGE   : boolean   := FALSE;
 		DATA_GEAR   : natural   :=  2;
 		BANK_SIZE   : natural   :=  2;
 		ADDR_SIZE   : natural   := 13;
@@ -449,7 +450,8 @@ begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
-			GEAR       => DATA_GEAR,
+			DATA_GEAR  => DATA_GEAR,
+			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
 			sys_rst    => phy_rst,

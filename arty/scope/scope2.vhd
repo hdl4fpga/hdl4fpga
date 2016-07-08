@@ -40,10 +40,10 @@ architecture scope of arty is
 
 	constant SCLK_PHASES  : natural := 4;
 	constant SCLK_EDGES   : natural := 2;
-	constant DATA_PHASES  : natural := 2;
-	constant DATA_EDGES   : natural := 2;
+	constant DATA_PHASES  : natural := 4;
+	constant DATA_EDGES   : natural := 1;
 	constant CMMD_PHASES  : natural := 1;
-	constant DATA_GEAR    : natural := 2;
+	constant DATA_GEAR    : natural := 4;
 
 	constant BANK_SIZE    : natural := ddr3_ba'length;
 	constant ADDR_SIZE    : natural := ddr3_a'length;
@@ -83,6 +83,7 @@ architecture scope of arty is
 	signal ddrs_clk90     : std_logic;
 	signal ddrs_rdclk     : std_logic;
 	signal ddrs_rdsel     : std_logic;
+	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
 	signal ddr3_dqst      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr3_dqso      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -181,19 +182,21 @@ begin
 	generic map (
 		DDR_MUL    => DDR_MUL,
 		DDR_DIV    => DDR_DIV, 
-		DDR_GEAR   => 4*DATA_GEAR, 
+		DDR_GEAR   => DATA_GEAR, 
 		SYS_PER    => UCLK_PERIOD)
 	port map (
-		sys_rst    => dcm_rst,
-		sys_clk    => sys_clk,
-		input_clk  => input_clk,
-		ioctrl_clk => ioctrl_clk,
-		ioctrl_rst => ioctrl_rst,
-		ddr_rdinv  => ddrs_rdsel,
-		ddr_rdclk  => ddrs_rdclk,
-		ddr_clk0   => ddrs_clk0,
-		ddr_clk90  => ddrs_clk90,
-		ddr_rst    => ddr_rst);
+		sys_rst      => dcm_rst,
+		sys_clk      => sys_clk,
+		input_clk    => input_clk,
+		ioctrl_clk   => ioctrl_clk,
+		ioctrl_rst   => ioctrl_rst,
+		ddr_rdinv    => ddrs_rdsel,
+		ddr_rdclk    => ddrs_rdclk,
+		ddr_clk0     => ddrs_clk0,
+		ddr_clk0div  => ddrs_clk0div,
+		ddr_clk90    => ddrs_clk90,
+		ddr_clk90div => ddrs_clk90div,
+		ddr_rst      => ddr_rst);
 
 	idelayctrl_i : idelayctrl
 	port map (
@@ -204,7 +207,6 @@ begin
 	sys_rst  <= not ioctrl_rdy;
 	ddrs_rst <= sys_rst or ddr_rst;
 
-	ddrphy_dqsi <= (others => ddrs_rdclk);
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
@@ -226,8 +228,8 @@ begin
 		input_clk => input_clk,
 
 		ddrs_rst       => ddrs_rst,
-		ddrs_clks(0)   => ddrs_clk0,
-		ddrs_clks(1)   => ddrs_clk90,
+		ddrs_clks(0)   => ddrs_clk0div,
+		ddrs_clks(1)   => ddrs_clk90div,
 		ddrs_bl        => "000",
 		ddrs_cl        => "001",
 		ddrs_cwl       => "000",
@@ -283,6 +285,7 @@ begin
 		vga_green      => vga_green,
 		vga_blue       => vga_blue);
 
+	ddrphy_dqsi <= (others => ddrs_rdclk);
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		BANK_SIZE    => BANK_SIZE,

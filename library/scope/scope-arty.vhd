@@ -29,7 +29,7 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant fpga : natural;
+		constant FPGA : natural;
 		constant DDR_TCP      : natural;
 		constant DDR_SCLKPHASES : natural;
 		constant DDR_SCLKEDGES : natural;
