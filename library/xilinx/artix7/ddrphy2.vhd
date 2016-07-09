@@ -289,15 +289,19 @@ architecture virtex of ddrphy is
 
 	signal phy_ba : std_logic_vector(sys_b'range);
 	signal phy_a  : std_logic_vector(sys_a'range);
+	signal ba_ras : std_logic_vector(sys_ras'range);
+	signal ba_cas : std_logic_vector(sys_cas'range);
+	signal ba_we  : std_logic_vector(sys_we'range);
+	signal rotba  : unsigned(0 to unsigned_num_bits(CMMD_GEAR-1)-1);
 
-	signal wlrdy : std_logic_vector(0 to word_size/byte_size-1);
-	signal ini : std_logic;
-	signal rw  : std_logic;
+	signal wlrdy   : std_logic_vector(0 to word_size/byte_size-1);
+	signal ini     : std_logic;
+	signal rw      : std_logic;
 	signal cmd_req : std_logic;
 	signal cmd_rdy : std_logic;
-	signal rlrdy : std_logic;
-	signal lvl : std_logic;
-	signal ba_clk : std_logic_vector(0 to 2-1);
+	signal rlrdy   : std_logic;
+	signal lvl     : std_logic;
+	signal rlcal   : std_logic;
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
@@ -378,34 +382,84 @@ begin
 		end if;
 	end process;
 
-	ba_clk <= (0 => sys_clk0div, 1 => sys_clk0div);
+	process (sys_clk0div)
+	begin
+		if rising_edge(sys_clk0div) then
+			if rlcal='0' then
+				rotba <= (others => '0');
+			elsif ini='1' then
+				if sys_act='1' then
+					rotba <= (others => '0');
+				end if;
+			elsif sys_cas(0)='0' then
+				rotba <= rotba + 1;
+			end if;
+		end if;
+	end process;
+
+	rotcmmd_g : if CMMD_GEAR > 1 generate
+		rotras_i : entity hdl4fpga.barrel
+		generic map (
+			n => sys_ras'length,
+			m => rotba'length)
+		port map (
+			rot  => std_logic_vector(rotba),
+			din  => sys_ras,
+			dout => ba_ras);
+			
+		rotcas_i : entity hdl4fpga.barrel
+		generic map (
+			n => sys_cas'length,
+			m => rotba'length)
+		port map (
+			rot  => std_logic_vector(rotba),
+			din  => sys_cas,
+			dout => ba_cas);
+			
+		rotwe_i : entity hdl4fpga.barrel
+		generic map (
+			n => sys_we'length,
+			m => rotba'length)
+		port map (
+			rot  => std_logic_vector(rotba),
+			din  => sys_we,
+			dout => ba_we);
+	end generate;
+
+	dircmmd_g : if CMMD_GEAR=1 generate
+		ba_ras <= sys_ras;
+		ba_cas <= sys_cas;
+		ba_we  <= sys_we;
+	end generate;
+		
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
 		GEAR      => CMMD_GEAR,
 		BANK_SIZE => BANK_SIZE,
 		ADDR_SIZE => ADDR_SIZE)
 	port map (
-		sys_clk  => ba_clk,
-     	sys_mrst => phy_rst,
-		sys_rst  => sys_rst,
-		sys_cs   => sys_cs,
-		sys_cke  => sys_cke,
-		sys_b    => phy_ba,
-		sys_a    => phy_a,
-		sys_ras  => sys_ras,
-		sys_cas  => sys_cas,
-		sys_we   => sys_we,
-		sys_odt  => sys_odt,
+		sys_clk(0) => sys_clk0div,
+		sys_clk(1) => sys_clk0,
+     	sys_mrst   => phy_rst,
+		sys_rst    => sys_rst,
+		sys_cs     => sys_cs,
+		sys_cke    => sys_cke,
+		sys_b      => phy_ba,
+		sys_a      => phy_a,
+		sys_ras    => ba_ras,
+		sys_cas    => ba_cas,
+		sys_we     => ba_we,
+		sys_odt    => sys_odt,
         
-		ddr_rst  => ddr_rst,
-		ddr_cke  => ddr_cke,
-		ddr_odt  => ddr_odt,
-		ddr_cs   => ddr_cs,
-		ddr_ras  => ddr_ras,
-		ddr_cas  => ddr_cas,
-		ddr_we   => ddr_we,
-		ddr_b    => ddr_b,
-		ddr_a    => ddr_a);
+		ddr_rst    => ddr_rst,
+		ddr_cke    => ddr_cke,
+		ddr_odt    => ddr_odt,
+		ddr_cs     => ddr_cs,
+		ddr_ras    => ddr_ras,
+		ddr_cas    => ddr_cas,
+		ddr_we     => ddr_we,
+		ddr_b      => ddr_b,
+		ddr_a      => ddr_a);
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	ssti  <= to_blinevector(sys_sti);
@@ -424,9 +478,10 @@ begin
 			for i in byte_rlcal'range loop
 				aux := aux and byte_rlcal(i);
 			end loop;
-			sys_rlcal <= aux and not rlrdy;
+			rlcal <= aux and not rlrdy;
 		end if;
 	end process;
+	sys_rlcal <= rlcal;
 
 	process (sys_iodclk)
 		variable aux : std_logic;

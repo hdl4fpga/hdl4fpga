@@ -26,11 +26,11 @@ use ieee.std_logic_1164.all;
 
 entity ddrbaphy is
 	generic (
-		gear       : natural := 2;
-		bank_size  : natural := 2;
-		addr_size  : natural := 13);
+		GEAR       : natural := 2;
+		BANK_SIZE  : natural := 2;
+		ADDR_SIZE  : natural := 13);
 	port (
-		sys_clk  : in  std_logic_vector;
+		sys_clk  : in  std_logic_vector(0 to 2-1);
 
 		sys_mrst : in  std_logic;
 		sys_rst  : in  std_logic_vector(gear-1 downto 0);

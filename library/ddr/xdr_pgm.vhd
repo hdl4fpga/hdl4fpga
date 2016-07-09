@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity xdr_pgm is
+	generic (
+		CMMD_GEAR : natural := 1);
 	port (
 		xdr_pgm_rst : in  std_logic := '0';
 		xdr_pgm_clk : in  std_logic := '0';
@@ -41,6 +43,9 @@ entity xdr_pgm is
 		xdr_pgm_cmd : out std_logic_vector(0 to 2));
 
 end;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture registered of xdr_pgm is
 
@@ -222,13 +227,13 @@ begin
 
 	process (xdr_pgm_clk)
 		variable pc : std_logic_vector(xdr_pgm_pc'range);
-		variable t : std_logic;
+		variable t : unsigned(0 to unsigned_num_bits(CMMD_GEAR)-1);
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			if xdr_pgm_rst='0' then
 				if xdr_pgm_cal='1' then
 					if xdr_pgm_req='1' then
-						if t='1' then
+						if t(0)='0' then
 							xdr_pgm_cmd <= pgm_cmd;
 						else
 							xdr_pgm_cmd <= "111";
@@ -243,7 +248,11 @@ begin
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
 					if xdr_pgm_cal='1' then
-						t := not t;
+						if t(0)='0' then
+							t := t - 1;
+						else
+							t := to_unsigned(CMMD_GEAR-1, t'length);
+						end if;
 					end if;
 					xdr_pgm_pc <= pc; 
 				end if;
@@ -263,7 +272,7 @@ begin
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
 				xdr_pgm_rrdy <= '0';
-				t := '0';
+				t := to_unsigned(CMMD_GEAR-1, t'length);
 			end if;
 		end if;
 	end process;

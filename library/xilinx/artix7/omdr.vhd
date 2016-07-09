@@ -93,7 +93,7 @@ begin
 			generic map (
 				DDR_CLK_EDGE => "SAME_EDGE")
 			port map (
-				c  => clk(1),
+				c  => clk(0),
 				ce => '1',
 				d1 => pi(0),
 				d2 => pi(1),
