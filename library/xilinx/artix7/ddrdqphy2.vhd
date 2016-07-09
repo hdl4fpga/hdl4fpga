@@ -71,6 +71,7 @@ entity ddrdqphy is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture virtex of ddrdqphy is
 
@@ -93,12 +94,14 @@ architecture virtex of ddrdqphy is
 	signal rdsel      : std_logic;
 	signal dqs_clk    : std_logic;
 	signal imdr_clk   : std_logic_vector(0 to 3-1);
-	signal omdr_clk   : std_logic_vector(0 to 2-1);
+	signal omdr_dqsclk : std_logic_vector(0 to 2-1);
+	signal omdr_dqclk : std_logic_vector(0 to 2-1);
 
 begin
 
 	imdr_clk <= (0 => dqs_clk, 1 => sys_clk0, 2 => sys_clk0div);
-	omdr_clk <= (0 => sys_clk0div, 1 => sys_clk0);
+	omdr_dqsclk <= (0 => sys_clk0div,  1 => sys_clk0);
+	omdr_dqclk  <= (0 => sys_clk90div, 1 => sys_clk90);
 	sys_wlrdy <= sys_wlreq;
 	process (sys_iodclk)
 		variable aux : std_logic;
@@ -184,6 +187,7 @@ begin
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
 		signal dqo  : std_logic_vector(0 to DATA_GEAR-1);
 		signal clks : std_logic_vector(0 to 2-1);
+		signal dqt  : std_logic_vector(sys_dqt'range);
 	begin
 		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 
@@ -223,15 +227,18 @@ begin
 			end generate;
 		end generate;
 
+		dqt <= reverse(sys_dqt);
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => sys_rst,
-			clk  => omdr_clk,
-			d    => dqo,
-			q(0) => ddr_dqo(i));
+			rst   => sys_rst,
+			clk   => omdr_dqclk,
+			t     => dqt,
+			tq(0) => ddr_dqt(i),
+			d     => dqo,
+			q(0)  => ddr_dqo(i));
 
 	end generate;
 
@@ -272,7 +279,7 @@ begin
 			GEAR => DATA_GEAR)
 		port map (
 			rst  => sys_rst,
-			clk  => omdr_clk,
+			clk  => omdr_dqclk,
 			d    => dmi,
 			q(0) => ddr_dmo);
 
@@ -284,6 +291,7 @@ begin
 		signal st   : std_logic;
 		signal mclk : std_logic_vector(0 to 3-1);
 		signal dqso : std_logic_vector(sys_dqso'range);
+		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
 
 		dqsidelay_i : idelaye2 
@@ -359,20 +367,21 @@ begin
 		begin
 			dqso <= (others => '0');
 			for i in dqso'range loop
-				if i mod 2 = 0 then
-					dqso(i) <= sys_dqso(i);
+				if i mod 2 = 1 then
+					dqso(i) <= reverse(sys_dqso)(i);
 				end if;
 			end loop;
 		end process;
 
+		dqst <= reverse(sys_dqst);
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
 			rst  => sys_rst,
-			clk  => omdr_clk,
-			t    => sys_dqst,
+			clk  => omdr_dqsclk,
+			t    => dqst,
 			tq(0)=> ddr_dqst,
 			d    => dqso,
 			q(0) => ddr_dqso);
