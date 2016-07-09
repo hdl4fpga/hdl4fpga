@@ -1,5 +1,9 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
+add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/clk
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/d(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/clk(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/q
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/arty_e/scope_e/dataio_rst
 add wave -noupdate /testbench/arty_e/scope_e/miirx_b/pktrx_rdy
@@ -49,7 +53,7 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdq
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__28/cnt(0)
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17781000 ps} 0} {{Cursor 2} {107420000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {16173750 ps} 0} {{Cursor 2} {107420000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -65,4 +69,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {168 us}
+WaveRestoreZoom {24454102 ps} {24485890 ps}

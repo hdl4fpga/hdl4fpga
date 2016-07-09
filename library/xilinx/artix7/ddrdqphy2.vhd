@@ -313,7 +313,7 @@ begin
 			idatain => ddr_dqsi,
 			dataout => dqsi);
 
-		mclk <= (0 => dqs_clk, 1 => sys_clk0, 2 => sys_clk0div);
+		mclk <= (0 => sys_clk0, 1 => not sys_clk0, 2 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,

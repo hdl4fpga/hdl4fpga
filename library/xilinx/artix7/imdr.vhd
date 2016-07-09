@@ -47,23 +47,27 @@ begin
 	begin
 
 		iser_i : iserdese2
+		generic map (
+			INTERFACE_TYPE => "NETWORKING",
+			IOBDELAY => "BOTH",
+			NUM_CE => 1)
 		port map (
 			rst          => rst,
 			clk          => clk(0),
-			oclk         => clk(1),
+			clkb         => clk(1),
 			clkdiv       => clk(2),
-			d            => d(i),
+			ddly         => d(i),
 			q1           => po(0),
 			q2           => po(1),
 			q3           => po(2),
 			q4           => po(3),
 
 			bitslip      => '0',
-			clkb         => '1',
+			oclk         => '1',
 			ce1          => '1',
 			ce2          => '1',
 			clkdivp      => '0',
-			ddly         => '1',
+			d            => '-',
 			dynclkdivsel => '0',
 			dynclksel    => '0',
 			oclkb        => '0',
