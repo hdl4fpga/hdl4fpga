@@ -55,53 +55,54 @@ entity scope is
 		input_rst : in std_logic := '0';
 		input_clk : in std_logic;
 
-		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
-		ddrs_rtt : in std_logic_vector;
-		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
-		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_ini : out std_logic;
-		ddrs_act : out std_logic;
+		ddrs_clks  : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
+		ddrs_rtt   : in std_logic_vector;
+		ddrs_bl    : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_cl    : in std_logic_vector(3-1 downto 0) := "010";
+		ddrs_cwl   : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_wr    : in std_logic_vector(3-1 downto 0) := "101";
+		ddrs_ini   : out std_logic;
+		ddrs_act   : out std_logic;
 		ddrs_cmd_rdy : out std_logic;
 
-		ddr_wlreq : out std_logic;
-		ddr_wlrdy : in  std_logic := '-';
-		ddr_rlreq : out std_logic;
-		ddr_rlrdy : in  std_logic := '-';
-		ddr_rlcal : in  std_logic := '0';
+		ddr_wlreq  : out std_logic;
+		ddr_wlrdy  : in  std_logic := '-';
+		ddr_rlreq  : out std_logic;
+		ddr_rlrdy  : in  std_logic := '-';
+		ddr_rlcal  : in  std_logic := '0';
+		ddr_rlseq  : out std_logic := '0';
 		ddr_phyini : in std_logic := '1';
-		ddr_phyrw : in std_logic := '-';
+		ddr_phyrw  : in std_logic := '-';
 		ddr_phycmd_req : in std_logic := '0';
 
-		ddr_rst : out std_logic;
-		ddr_cke : out std_logic;
-		ddr_cs  : out std_logic;
-		ddr_ras : out std_logic;
-		ddr_cas : out std_logic;
-		ddr_we  : out std_logic;
-		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqsi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqi : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
-		ddr_dqo : out std_logic_vector(DDR_LINESIZE-1 downto 0);
-		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_rst   : out std_logic;
+		ddr_cke   : out std_logic;
+		ddr_cs    : out std_logic;
+		ddr_ras   : out std_logic;
+		ddr_cas   : out std_logic;
+		ddr_we    : out std_logic;
+		ddr_b     : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_a     : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_dmi   : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqsi  : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqi   : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_dqo   : out std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_odt   : out std_logic;
+		ddr_sto   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti   : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
-		mii_rst  : in std_logic := '0';
-		mii_rxc  : in std_logic;
-		mii_rxdv : in std_logic;
-		mii_rxd  : in std_logic_vector;
-		mii_txc  : in std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector;
+		mii_rst   : in std_logic := '0';
+		mii_rxc   : in std_logic;
+		mii_rxdv  : in std_logic;
+		mii_rxd   : in std_logic_vector;
+		mii_txc   : in std_logic;
+		mii_txen  : out std_logic;
+		mii_txd   : out std_logic_vector;
 
 		vga_rst   : in  std_logic := '0';
 		vga_clk   : in  std_logic;
@@ -182,8 +183,8 @@ architecture def of scope is
 
 	signal miirx_req    : std_logic;
 	signal miirx_rdy    : std_logic;
-	signal ddr2mii_req    : std_logic;
-	signal ddr2mii_rdy    : std_logic;
+	signal ddr2mii_req  : std_logic;
+	signal ddr2mii_rdy  : std_logic;
 	signal miitx_req    : std_logic;
 	signal miitx_rdy    : std_logic;
 	signal miidma_req   : std_logic;
@@ -485,6 +486,7 @@ begin
 		sys_rlreq   => rlreq,
 		sys_rlrdy   => ddr_rlrdy,
 		sys_rlcal   => ddr_rlcal,
+		sys_rlseq   => ddr_rlseq,
 		sys_b       => ddrs_ba,
 		sys_a       => ddrs_a,
 		sys_rw      => ddr_rw,

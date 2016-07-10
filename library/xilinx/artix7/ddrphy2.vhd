@@ -57,9 +57,10 @@ entity ddrphy is
 
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
-		sys_rlreq    : in std_logic;
+		sys_rlreq    : in  std_logic;
 		sys_rlrdy    : out std_logic;
 		sys_rlcal    : out std_logic;
+		sys_rlseq    : in  std_logic;
 
 		sys_rst      : in  std_logic_vector(0 to CMMD_GEAR-1) := (others => '-');
 		sys_cke      : in  std_logic_vector(0 to CMMD_GEAR-1);
@@ -389,7 +390,7 @@ begin
 				rotba <= (others => '0');
 			elsif ini='1' then
 					rotba <= (others => '0');
-				else
+			elsif sys_rlseq='1' then
 				rotba <= rotba + 1;
 			end if;
 		end if;

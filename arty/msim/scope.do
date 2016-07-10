@@ -1,11 +1,16 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/arty_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cal
-add wave -noupdate /testbench/arty_e/ddrphy_e/ini
-add wave -noupdate /testbench/arty_e/ddrphy_e/sys_act
-add wave -noupdate /testbench/arty_e/ddrphy_e/rotba
-add wave -noupdate -expand /testbench/arty_e/scope_e/ddr_e/xdr_pgm_e/line__228/t
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/ddrbaphy_i/cas_i/d
+add wave -noupdate /testbench/cas_n
+add wave -noupdate /testbench/arty_e/ddrphy_e/sys_cas(0)
+add wave -noupdate /testbench/cas_n
+add wave -noupdate /testbench/arty_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_req
+add wave -noupdate /testbench/dqs_p(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/rotba(0)
+add wave -noupdate /testbench/arty_e/ddrs_clk0div
+add wave -noupdate /testbench/arty_e/ddrphy_e/sys_rlseq
+add wave -noupdate /testbench/arty_e/ddrphy_e/ddrbaphy_i/sys_cas
+add wave -noupdate /testbench/arty_e/scope_e/ddr_e/xdr_pgm_e/xdr_pgm_cmd
 add wave -noupdate /testbench/arty_e/ddrphy_e/rlcal
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/arty_e/scope_e/dataio_rst
@@ -56,8 +61,8 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdq
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__28/cnt(0)
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16563750 ps} 0} {{Cursor 2} {16500854 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {16563750 ps} 0} {{Cursor 2} {16496825 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -72,4 +77,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {16453891 ps} {16724387 ps}
+WaveRestoreZoom {16421515 ps} {16556763 ps}

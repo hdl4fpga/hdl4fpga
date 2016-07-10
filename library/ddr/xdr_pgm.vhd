@@ -40,6 +40,7 @@ entity xdr_pgm is
 		xdr_pgm_req : in  std_logic := '1';
 		xdr_pgm_rw  : in  std_logic := '1';
 		xdr_pgm_cas : out std_logic := '0';
+		xdr_pgm_seq : out std_logic := '0';
 		xdr_pgm_cmd : out std_logic_vector(0 to 2));
 
 end;
@@ -227,9 +228,10 @@ begin
 
 	process (xdr_pgm_clk)
 		variable pc : std_logic_vector(xdr_pgm_pc'range);
-		variable t : unsigned(0 to unsigned_num_bits(CMMD_GEAR)-1);
+		variable t : signed(0 to unsigned_num_bits(CMMD_GEAR)-1);
 	begin
 		if rising_edge(xdr_pgm_clk) then
+			xdr_pgm_seq <= t(0);
 			if xdr_pgm_rst='0' then
 				if xdr_pgm_cal='1' then
 					if xdr_pgm_req='1' then
@@ -251,7 +253,7 @@ begin
 						if t(0)='0' then
 							t := t - 1;
 						else
-							t := to_unsigned(CMMD_GEAR-1, t'length);
+							t := to_signed(CMMD_GEAR-1, t'length);
 						end if;
 					end if;
 					xdr_pgm_pc <= pc; 
@@ -272,7 +274,7 @@ begin
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
 				xdr_pgm_rrdy <= '0';
-				t := to_unsigned(CMMD_GEAR-1, t'length);
+				t := to_signed(CMMD_GEAR-1, t'length);
 			end if;
 		end if;
 	end process;

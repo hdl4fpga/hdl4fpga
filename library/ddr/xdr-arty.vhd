@@ -62,6 +62,7 @@ entity xdr is
 		sys_rlrdy   : in  std_logic := '-';
 		sys_rlreq   : out std_logic;
 		sys_rlcal   : in  std_logic := '0';
+		sys_rlseq   : out std_logic;
 
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
@@ -258,9 +259,9 @@ begin
 		xdr_pgm_cal   => sys_rlcal,
 		xdr_pgm_rdy   => sys_cmd_rdy,
 		xdr_pgm_req   => xdr_mpu_rdy,
+		xdr_pgm_seq   => sys_rlseq,
 		xdr_pgm_rw    => sys_rw);
 
-				   
 	xdr_mpu_rst <= not init_rdy;
 	xdr_mpu_sel <= init_rdy;
 	xdr_mpu_ref <= xdr_refi_req;

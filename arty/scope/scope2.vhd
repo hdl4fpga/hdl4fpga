@@ -121,6 +121,7 @@ architecture scope of arty is
 	signal ddrphy_rlreq   : std_logic;
 	signal ddrphy_rlrdy   : std_logic;
 	signal ddrphy_rlcal   : std_logic;
+	signal ddrphy_rlseq   : std_logic;
 	signal ddrphy_rw      : std_logic;
 	signal ddrphy_cmd_req : std_logic;
 	signal ddrphy_cmd_rdy : std_logic;
@@ -242,6 +243,7 @@ begin
 		ddr_rlreq      => ddrphy_rlreq,
 		ddr_rlrdy      => ddrphy_rlrdy,
 		ddr_rlcal      => ddrphy_rlcal,
+		ddr_rlseq      => ddrphy_rlseq,
 		ddr_phyini     => ddrphy_ini,
 		ddr_phyrw      => ddrphy_rw,
 		ddr_phycmd_req => ddrphy_cmd_req,
@@ -331,6 +333,7 @@ begin
 		sys_clk90div => ddrs_clk90div, 
 		sys_rdsel    => ddrs_rdsel,
 		sys_rdclk    => ddrs_rdclk,
+		sys_rlseq    => ddrphy_rlseq,
 		sys_iodclk   => sys_clk,
 
 		phy_rst      => ddrs_rst,
