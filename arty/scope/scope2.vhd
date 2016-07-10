@@ -94,14 +94,14 @@ architecture scope of arty is
 
 	signal ddr_b          : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
-	signal ddrphy_rst     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cke     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cs      : std_logic_vector(CMMD_GEAR-1 downto 0);
 	signal ddrphy_act     : std_logic;
-	signal ddrphy_ras     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_cas     : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_we      : std_logic_vector(CMMD_GEAR-1 downto 0);
-	signal ddrphy_odt     : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_rst     : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_cke     : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_cs      : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_ras     : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_cas     : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_we      : std_logic_vector(0 to CMMD_GEAR-1);
+	signal ddrphy_odt     : std_logic_vector(0 to CMMD_GEAR-1);
 	signal ddrphy_b       : std_logic_vector(CMMD_GEAR*BANK_SIZE-1 downto 0);
 	signal ddrphy_a       : std_logic_vector(CMMD_GEAR*ADDR_SIZE-1 downto 0);
 	signal ddrphy_dqsi    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);

@@ -23,11 +23,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity barrel is
-		generic (
-			N : natural;
-			M : natural);
+	generic (
+		D : string := "LEFT";
+		N : natural;
+		M : natural);
 	port (
 		rot  : in  std_logic_vector(M-1 downto 0);
 		din  : in  std_logic_vector(N-1 downto 0);
@@ -38,25 +40,32 @@ architecture beh of barrel is
 begin
 	process (din, rot)
 
-		function RotateLeft (val: std_logic_vector; disp : natural) 
-			return std_logic_vector is
-			variable aux : std_logic_vector (val'length-1 downto 0) := val;
-		begin
-			return aux(aux'left-disp downto 0) & aux(aux'left downto aux'left-disp+1);
-		end;
+--		function rotate (val: std_logic_vector; disp : natural, dir : string) 
+--			return std_logic_vector is
+--			variable aux : std_logic_vector (val'length-1 downto 0) := val;
+--		begin
+--			if dir="LEFT" then
+--				return aux(aux'left-disp downto 0) & aux(aux'left downto aux'left-disp+1);
+--			else
+--				return aux(disp-1 downto 0)        & aux(aux'left downto disp);
+--			end if;
+--		end;
 
-		variable auxIn:  std_logic_vector(din'length-1 downto 0);
-		variable auxSht: std_logic_vector(rot'length-1 downto 0);
+		variable aux :  unsigned(din'length-1 downto 0);
 		
 	begin
-		auxIn  := din;
+		aux := unsigned(din);
 
 		for i in rot'range loop
 			if rot(i)= '1' then
-				auxIn := RotateLeft(auxIn, 2**i);
+				if d="LEFT" then
+					aux := aux rol 2**i;
+				else
+					aux := aux ror 2**i;
+				end if;
 			end if;
 		end loop;
 
-		dout<= auxIn;
+		dout <= std_logic_vector(aux);
 	end process;
 end;

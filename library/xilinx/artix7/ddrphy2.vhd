@@ -61,16 +61,16 @@ entity ddrphy is
 		sys_rlrdy    : out std_logic;
 		sys_rlcal    : out std_logic;
 
-		sys_rst      : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '-');
-		sys_cke      : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_cs       : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
-		sys_ras      : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_cas      : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_we       : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_rst      : in  std_logic_vector(0 to CMMD_GEAR-1) := (others => '-');
+		sys_cke      : in  std_logic_vector(0 to CMMD_GEAR-1);
+		sys_cs       : in  std_logic_vector(0 to CMMD_GEAR-1) := (others => '0');
+		sys_ras      : in  std_logic_vector(0 to CMMD_GEAR-1);
+		sys_cas      : in  std_logic_vector(0 to CMMD_GEAR-1);
+		sys_we       : in  std_logic_vector(0 to CMMD_GEAR-1);
 		sys_act      : in  std_logic;
 		sys_b        : in  std_logic_vector(CMMD_GEAR*BANK_SIZE-1 downto 0);
 		sys_a        : in  std_logic_vector(CMMD_GEAR*ADDR_SIZE-1 downto 0);
-		sys_odt      : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_odt      : in  std_logic_vector(0 to CMMD_GEAR-1);
 
 		sys_dmt      : in  std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
 		sys_dmi      : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -388,9 +388,8 @@ begin
 			if rlcal='0' then
 				rotba <= (others => '0');
 			elsif ini='1' then
-				if sys_act='1' then
 					rotba <= (others => '0');
-				end if;
+--			elsif sys_act='1' then
 			elsif sys_cas(0)='0' then
 				rotba <= rotba + 1;
 			end if;
@@ -400,6 +399,7 @@ begin
 	rotcmmd_g : if CMMD_GEAR > 1 generate
 		rotras_i : entity hdl4fpga.barrel
 		generic map (
+			d => "RIGHT", 
 			n => sys_ras'length,
 			m => rotba'length)
 		port map (
@@ -409,6 +409,7 @@ begin
 			
 		rotcas_i : entity hdl4fpga.barrel
 		generic map (
+			d => "RIGHT", 
 			n => sys_cas'length,
 			m => rotba'length)
 		port map (
@@ -418,6 +419,7 @@ begin
 			
 		rotwe_i : entity hdl4fpga.barrel
 		generic map (
+			d => "RIGHT", 
 			n => sys_we'length,
 			m => rotba'length)
 		port map (
