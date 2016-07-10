@@ -30,6 +30,7 @@ use std.textio.all;
 entity scope is
 	generic (
 		constant FPGA : natural;
+		constant CMMD_GEAR    : natural;
 		constant DDR_TCP      : natural;
 		constant DDR_SCLKPHASES : natural;
 		constant DDR_SCLKEDGES : natural;
@@ -456,6 +457,7 @@ begin
 	generic map (
 		FPGA        => FPGA,
 		MARK        => DDR_MARK,
+		CMMD_GEAR   => CMMD_GEAR,
 		SCLK_PHASES => DDR_SCLKPHASES,
 		SCLK_EDGES  => DDR_SCLKEDGES,
 		DATA_PHASES => DDR_DATAPHASES,

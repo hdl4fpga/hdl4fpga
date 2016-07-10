@@ -244,6 +244,8 @@ begin
 	sys_ini     <= init_rdy;
 
 	xdr_pgm_e : entity hdl4fpga.xdr_pgm
+	generic map (
+		CMMD_GEAR => CMMD_GEAR)
 	port map (
 		xdr_pgm_rst   => xdr_mpu_rst,
 		xdr_pgm_clk   => sys_clks(0),
@@ -299,6 +301,7 @@ begin
 	xdr_sch_e : entity hdl4fpga.xdr_sch
 	generic map (
 		PROFILE     => FPGA,
+		CMMD_GEAR   => CMMD_GEAR,
 		DATA_PHASES => DATA_PHASES,
 		CLK_PHASES  => SCLK_PHASES,
 		CLK_EDGES   => SCLK_EDGES,

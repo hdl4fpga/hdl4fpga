@@ -389,8 +389,7 @@ begin
 				rotba <= (others => '0');
 			elsif ini='1' then
 					rotba <= (others => '0');
---			elsif sys_act='1' then
-			elsif sys_cas(0)='0' then
+				else
 				rotba <= rotba + 1;
 			end if;
 		end if;

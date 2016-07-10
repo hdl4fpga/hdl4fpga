@@ -225,7 +225,7 @@ begin
 
 	xdr_odt <= xdr_task (
 		clk_phases => CLK_EDGES,
-		gear       => 1,
+		gear       => CMMD_GEAR,
 		lat_cod    => "000",
 		lat_tab    => (0 TO 0 => 0),
 		lat_ext    => 2*CMMD_GEAR,

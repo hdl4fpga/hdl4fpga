@@ -212,6 +212,7 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
+		CMMD_GEAR      => CMMD_GEAR,
 		DDR_MARK       => M15E,
 		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*DDR_DIV/DDR_MUL,
 		DDR_SCLKEDGES  => SCLK_EDGES,
