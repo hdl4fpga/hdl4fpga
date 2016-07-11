@@ -92,14 +92,13 @@ architecture virtex of ddrdqphy is
 	signal dqsiod_ce  : std_logic;
 	signal smp        : std_logic_vector(DATA_GEAR-1 downto 0);
 	signal rdsel      : std_logic;
-	signal dqs_clk    : std_logic;
-	signal imdr_clk   : std_logic_vector(0 to 3-1);
+	signal imdr_clk   : std_logic_vector(0 to 5-1);
 	signal omdr_dqsclk : std_logic_vector(0 to 2-1);
 	signal omdr_dqclk : std_logic_vector(0 to 2-1);
 
 begin
 
-	imdr_clk <= (0 => dqs_clk, 1 => sys_clk0, 2 => sys_clk0div);
+	imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 	omdr_dqsclk <= (0 => sys_clk0div,  1 => sys_clk0);
 	omdr_dqclk  <= (0 => sys_clk90div, 1 => sys_clk90);
 	sys_wlrdy <= sys_wlreq;
@@ -125,7 +124,6 @@ begin
 	tp(5) <= adjsto_rdy;
 
 	iod_rst <= not adjdqs_req;
-	dqs_clk <= not dqsi;
 	iddr_g : for i in ddr_dqi'range generate
 		signal t : std_logic;
 		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
@@ -289,7 +287,8 @@ begin
 		signal sto  : std_logic;
 		signal sti  : std_logic;
 		signal st   : std_logic;
-		signal mclk : std_logic_vector(0 to 3-1);
+		signal ctrl : std_logic_vector(0 to 2-1);
+		signal mclk : std_logic_vector(0 to 5-1);
 		signal dqso : std_logic_vector(sys_dqso'range);
 		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
@@ -313,7 +312,8 @@ begin
 			idatain => ddr_dqsi,
 			dataout => dqsi);
 
-		mclk <= (0 => sys_clk0, 1 => not sys_clk0, 2 => sys_clk0div);
+		ctrl <= (others => '0');
+		mclk <= (0 => sys_clk0, 1 => not sys_clk0, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
@@ -321,6 +321,7 @@ begin
 		port map (
 			rst  => sys_rst,
 			clk  => mclk,
+			ctrl => ctrl,
 			d(0) => dqsi,
 			q    => smp);
 
@@ -343,23 +344,23 @@ begin
 			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
-			rdsel => rdsel,
 			iod_clk => sys_iodclk,
 			iod_ce  => dqsiod_ce,
 			iod_inc => dqsiod_inc);
 		sys_rdsel <= rdsel;
 
 		sti <= sys_sti(0) when rdsel='0' else sys_sti(1);
-		st <= smp(0) or smp(1);
 		adjsto_e : entity hdl4fpga.adjsto
+		generic map (
+			GEAR => DATA_GEAR)
 		port map (
-			sys_clk0 => sys_rdclk,
+			ddr_clk => sys_clk0div,
 			iod_clk => sys_iodclk,
-			sti => sti,
-			sto => sto,
-			smp => st,
-			req => adjsto_req,
-			rdy => adjsto_rdy);
+			ddr_sti => sti,
+			ddr_sto => sto,
+			ddr_smp => smp,
+			sys_req => adjsto_req,
+			sys_rdy => adjsto_rdy);
 
 		sys_sto <= (others => sto);
 	

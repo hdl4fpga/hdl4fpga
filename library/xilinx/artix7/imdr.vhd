@@ -31,7 +31,8 @@ entity imdr is
 		GEAR : natural);
 	port (
 		rst  : in  std_logic;
-		clk  : in  std_logic_vector;
+		clk  : in  std_logic_vector(0 to 5-1);
+		ctrl : in  std_logic_vector(0 to 2-1) := (others => '0');
 		d    : in  std_logic_vector(0 to SIZE-1);
 		q    : out std_logic_vector(0 to SIZE*GEAR-1));
 end;
@@ -50,12 +51,18 @@ begin
 		generic map (
 			INTERFACE_TYPE => "MEMORY",
 			IOBDELAY => "BOTH",
+			DYN_CLKDIV_INV_EN => "TRUE",
+			DYN_CLK_INV_EN => "TRUE",
 			NUM_CE => 1)
 		port map (
 			rst          => rst,
+			dynclksel    => ctrl(1),
 			clk          => clk(0),
-			oclk         => clk(0),
-			clkdiv       => clk(2),
+			clkb         => clk(1),
+			dynclkdivsel => ctrl(0),
+			oclk         => clk(2),
+			oclkb        => clk(3),
+			clkdiv       => clk(4),
 			ddly         => d(i),
 			q1           => po(0),
 			q2           => po(1),
@@ -63,14 +70,10 @@ begin
 			q4           => po(3),
 
 			bitslip      => '0',
-			clkb         => clk(1),
 			ce1          => '1',
 			ce2          => '1',
 			clkdivp      => '0',
 			d            => d(i),
-			dynclkdivsel => '0',
-			dynclksel    => '0',
-			oclkb        => clk(1),
 			ofb          => '0',
 			shiftin1     => '0',
 			shiftin2     => '0');
