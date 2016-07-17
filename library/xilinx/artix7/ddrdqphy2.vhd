@@ -291,6 +291,8 @@ begin
 		signal mclk     : std_logic_vector(0 to 5-1);
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
+		signal imdr_rst : std_logic;
+		signal imdr_inv : std_logic;
 		signal adjsto_imdrrst : std_logic;
 	begin
 
