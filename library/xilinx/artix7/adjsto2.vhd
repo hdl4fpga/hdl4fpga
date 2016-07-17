@@ -4,29 +4,32 @@ use ieee.numeric_std.all;
 
 entity adjsto is
 	generic (
-		GEAR : natural);
+		GEAR     : natural);
 	port (
-		iod_clk : in  std_logic;
-		sys_req : in  std_logic;
-		sys_rdy : out std_logic;
-		isr_rst : out std_logic;
-		ddr_clk : in  std_logic;
-		ddr_smp : in  std_logic_vector(0 to GEAR-1);
-		ddr_sti : in  std_logic;
-		ddr_sto : out std_logic);
+		iod_clk  : in  std_logic;
+		sys_req  : in  std_logic;
+		sys_rdy  : out std_logic;
+		imdr_rst : out std_logic;
+		imdr_inv : out std_logic;
+		ddr_clk  : in  std_logic;
+		ddr_smp  : in  std_logic_vector(0 to GEAR-1);
+		ddr_sti  : in  std_logic;
+		ddr_sto  : out std_logic);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of adjsto is
-	constant bl : natural := 8/2;
-	signal st  : std_logic;
-	signal inc : std_logic;
-	signal dly : std_logic_vector(bl-1 downto 1);
-	signal sel : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
-	signal start : std_logic;
-	signal finish : std_logic;
+
+	constant bl     : natural := 8/2;
+	signal   st     : std_logic;
+	signal   inc    : std_logic;
+	signal   dly    : std_logic_vector(bl-1 downto 1);
+	signal   sel    : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
+	signal   start  : std_logic;
+	signal   finish : std_logic;
+
 begin
 
 	process (ddr_clk)
@@ -66,12 +69,15 @@ begin
 	end process;
 
 	process (start, iod_clk)
-		variable tmr : unsigned(0 to 4-1);
+		variable tmr      : unsigned(0 to 4-1);
+		variable rst_imdr : std_logic;
 	begin
 		if start='0' then
-			finish  <= '0';
-			tmr := (others => '0');
-			sel <= (others => '0');
+			tmr      := (others => '0');
+			sel      <= (others => '0');
+			finish   <= '0';
+			imdr_rst <= '1';
+			rst_imdr := '0'';
 		elsif rising_edge(iod_clk) then
 			if finish='0' then 
 				if start='1' then
@@ -86,7 +92,8 @@ begin
 						else
 							tmr := tmr + 1;
 						end if;
-					else
+						imdr_rst <= '0';
+					elsif rst_imdr='1' then
 						if tmr(0)='1' then
 							if inc='1' then
 								tmr := (others => '0');
@@ -97,10 +104,14 @@ begin
 						else
 							tmr := tmr + 1;
 						end if;
+						imdr_rst <= '0';
+					else
+						imdr_rst <= '1';
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 	sys_rdy <= finish;
+	imdr_inv <= sel(0);
 end;
