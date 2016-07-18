@@ -38,7 +38,7 @@ begin
 		if rising_edge(ddr_clk) then
 			if start='0' then
 				inc <= '0';
-				cnt := to_unsigned(1, cnt'length);
+				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			elsif st='1' then
 				for i in 0 to GEAR/2-1 loop
 					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
@@ -47,7 +47,7 @@ begin
 				end loop;
 			else
 				inc <= not cnt(0);
-				cnt := to_unsigned(1, cnt'length);
+				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
 			d        := word2byte(reverse(dly & ddr_sti), sel);
 			st       <= d(0);

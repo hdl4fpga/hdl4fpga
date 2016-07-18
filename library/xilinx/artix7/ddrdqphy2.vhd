@@ -142,12 +142,9 @@ begin
 			d(0) => dqi(i),
 			q    => dq);
 
-		process (dq)
-		begin
-			for i in dq'range loop
-				sys_dqo(i*BYTE_SIZE+i) <= dq(i);
-			end loop;
-		end process;
+		xxx_g : for j in dq'range generate
+			sys_dqo(j*BYTE_SIZE+i) <= dq(j);
+		end generate;
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi

@@ -40,13 +40,14 @@ add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/d(0)
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/q
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_rdy
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/imdr_i/q
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_req
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_rdy
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/imdr_i/clk
 add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/imdr_i/d
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/imdr_i/q
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/ddr_smp
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__70/tmr(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sel
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/ddrs_bnka
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/ddrs_rowa
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/ddrs_cola
@@ -54,13 +55,12 @@ add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rdsel
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/st
 add wave -noupdate -color Red /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rdclk
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sel
 add wave -noupdate /testbench/arty_e/ddrphy_e/sys_iodclk
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/dqsidelay_i/CNTVALUEOUT
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16986750 ps} 0} {{Cursor 2} {15745000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {17458286 ps} 0} {{Cursor 2} {15745000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 275
 configure wave -valuecolwidth 100
@@ -76,4 +76,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {16985847 ps} {17000745 ps}
+WaveRestoreZoom {17443278 ps} {17562462 ps}
