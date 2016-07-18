@@ -234,7 +234,7 @@ begin
 		ddrs_rst       => ddrs_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
 		ddrs_bl        => "000",
-		ddrs_cl        => "101",
+		ddrs_cl        => "110",
 		ddrs_cwl       => "010",
 		ddrs_rtt       => "001",
 
