@@ -291,9 +291,6 @@ begin
 		signal mclk     : std_logic_vector(0 to 5-1);
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
-		signal imdr_rst : std_logic;
-		signal imdr_inv : std_logic;
-		signal adjsto_imdrrst : std_logic;
 	begin
 
 		dqsidelay_i : idelaye2 
@@ -315,15 +312,14 @@ begin
 			idatain => ddr_dqsi,
 			dataout => dqsi);
 
-		ctrl <= (0 => imdr_inv, others => '0');
+		ctrl <= (others => '0');
 		mclk <= (0 => sys_clk0, 1 => not sys_clk0, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
-		imdr_rst <= adjsto_imdrrst or sys_rst;
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => imdr_rst,
+			rst  => sys_rst,
 			clk  => mclk,
 			ctrl => ctrl,
 			d(0) => dqsi,
@@ -360,8 +356,6 @@ begin
 		port map (
 			ddr_clk  => sys_clk0div,
 			iod_clk  => sys_iodclk,
-			imdr_rst => adjsto_imdrrst,
-			imdr_inv => imdr_inv,
 			ddr_sti  => sti,
 			ddr_sto  => sto,
 			ddr_smp  => smp,

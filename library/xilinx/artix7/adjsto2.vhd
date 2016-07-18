@@ -21,22 +21,23 @@ use hdl4fpga.std.all;
 
 architecture def of adjsto is
 
-	constant bl     : natural := 8/4;
-	signal   st     : std_logic;
-	signal   inc    : std_logic;
-	signal   dly    : std_logic_vector(bl-1 downto 1);
-	signal   sel    : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
-	signal   start  : std_logic;
-	signal   finish : std_logic;
-	signal   smp_d  : std_logic_vector(ddr_smp'range);
-	signal   smp_q  : std_logic_vector(ddr_smp'range);
+	constant bl       : natural := 8/4;
+	signal   st       : std_logic;
+	signal   inc      : std_logic;
+	signal   dly      : std_logic_vector(bl-1 downto 1);
+	signal   sel      : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
+	signal   start    : std_logic;
+	signal   finish   : std_logic;
+	signal   smp_d    : std_logic_vector(ddr_smp'range);
+	signal   ddr_smp0 : std_logic_vector(ddr_smp'range);
 
 begin
 
 	process (ddr_clk)
-		variable cnt : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
-		variable d   : std_logic_vector(0 to 0);
-		variable smp : std_logic_vector(ddr_smp'range);
+		constant mask : std_logic_vector(ddr_smp'range) := to_unsigned(2**GEAR-4**ODD, ddr_smp'length);
+		variable cnt  : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
+		variable d    : std_logic_vector(0 to 0);
+		variable smp  : std_logic_vector(ddr_smp'range);
 	begin
 		if rising_edge(ddr_clk) then
 			if start='0' then
@@ -52,11 +53,12 @@ begin
 				inc <= not cnt(0);
 				cnt := (others => '0');
 			end if;
-			d     := word2byte(reverse(dly & ddr_sti), sel);
-			st    <= d(0);
-			dly   <= dly(dly'left-1 downto 1) & ddr_sti;
-			smp_q <= ddr_smp;
-			smp := smp_q and or smp_ddr and 
+			d        := word2byte(reverse(dly & ddr_sti), sel);
+			st       <= d(0);
+			dly      <= dly(dly'left-1 downto 1) & ddr_sti;
+			smp      := (std_logic_vector(unsigned(ddr_smp)  rol (2*odd)) and mask);
+			smp      := (std_logic_vector(unsigned(ddr_smp0) rol (2*odd)) and mask) or smp;
+			ddr_smp0 <= ddr_smp;
 		end if;
 	end process;
 	ddr_sto <= st;
@@ -79,7 +81,6 @@ begin
 			tmr      := (others => '0');
 			sel      <= (others => '0');
 			finish   <= '0';
-			imdr_rst <= '0';
 		elsif rising_edge(iod_clk) then
 			if finish='0' then 
 				if start='1' then
@@ -100,5 +101,4 @@ begin
 		end if;
 	end process;
 	sys_rdy <= finish;
-	imdr_inv <= sel(0);
 end;
