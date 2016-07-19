@@ -73,7 +73,7 @@ begin
 			ce1          => '1',
 			ce2          => '1',
 			clkdivp      => '0',
-			d            => d(i),
+			d            => '0', --d(i),
 			ofb          => '0',
 			shiftin1     => '0',
 			shiftin2     => '0');

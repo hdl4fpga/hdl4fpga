@@ -57,8 +57,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : natural := 10;
-	constant DDR_DIV      : natural := 3;
+	constant DDR_MUL      : natural := 2*16;
+	constant DDR_DIV      : natural := 7;
 
 	signal sys_rst        : std_logic;
 	signal sys_clk        : std_logic;
@@ -81,8 +81,6 @@ architecture scope of arty is
 	signal ddrs_clk0div   : std_logic;
 	signal ddrs_clk90div  : std_logic;
 	signal ddrs_clk90     : std_logic;
-	signal ddrs_rdclk     : std_logic;
-	signal ddrs_rdsel     : std_logic;
 	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
 	signal ddr3_dqst      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -193,8 +191,6 @@ begin
 		input_clk    => input_clk,
 		ioctrl_clk   => ioctrl_clk,
 		ioctrl_rst   => ioctrl_rst,
-		ddr_rdinv    => ddrs_rdsel,
-		ddr_rdclk    => ddrs_rdclk,
 		ddr_clk0     => ddrs_clk0,
 		ddr_clk0div  => ddrs_clk0div,
 		ddr_clk90    => ddrs_clk90,
@@ -331,8 +327,6 @@ begin
 		sys_clk0div  => ddrs_clk0div,
 		sys_clk90    => ddrs_clk90, 
 		sys_clk90div => ddrs_clk90div, 
-		sys_rdsel    => ddrs_rdsel,
-		sys_rdclk    => ddrs_rdclk,
 		sys_rlseq    => ddrphy_rlseq,
 		sys_iodclk   => sys_clk,
 
@@ -389,6 +383,7 @@ begin
 		ddr_dqsi     => ddr3_dqsi,
 		ddr_dqso     => ddr3_dqso);
 
+	ddrphy_dqsi <= (others => ddrs_clk90div);
 	eth_rstn <= not sys_rst;
 	eth_mdc  <= '0';
 	eth_mdio <= '0';

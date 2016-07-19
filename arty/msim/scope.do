@@ -31,21 +31,28 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/ba(2) -radix hex
 add wave -noupdate -radix hexadecimal /testbench/addr
 add wave -noupdate -expand /testbench/dqs_p
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_rdy
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_req
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/ctrl
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/clk
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/d(0)
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/imdr_i/q
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_rdy
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_req
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjsto_rdy
-add wave -noupdate -expand /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/imdr_i/d
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/d(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/clk(0)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/clk(2)
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/q
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/clk(4)
+add wave -noupdate /testbench/arty_e/ddrphy_e/sys_sto(0)
+add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/sys_dqo
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_e/rdfifo_i/xdr_dqi
+add wave -noupdate /testbench/arty_e/scope_e/ddr_e/rdfifo_i/xdr_dqsi
+add wave -noupdate /testbench/arty_e/scope_e/ddr_e/rdfifo_i/xdr_win_dqs(7)
+add wave -noupdate /testbench/arty_e/scope_e/ddr_e/rdfifo_i/xdr_win_dq(7)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/ddr_smp
-add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(0)
+add wave -noupdate -radix unsigned -childformat {{/testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(0) -radix unsigned} {/testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(1) -radix unsigned} {/testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(2) -radix unsigned} {/testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(3) -radix unsigned}} -subitemconfig {/testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(0) {-height 15 -radix unsigned} /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(1) {-height 15 -radix unsigned} /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(2) {-height 15 -radix unsigned} /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt(3) {-height 15 -radix unsigned}} /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__33/cnt
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/line__70/tmr(0)
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/sel
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/ddrs_bnka
@@ -54,14 +61,13 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/ddrs_co
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rdsel
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjsto_e/st
 add wave -noupdate -color Red /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/sys_rdclk
-add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqsi
 add wave -noupdate /testbench/arty_e/ddrphy_e/sys_iodclk
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/dqsidelay_i/CNTVALUEOUT
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/smp(0)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17458286 ps} 0} {{Cursor 2} {15745000 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {15175390 ps} 0} {{Cursor 2} {19959100 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 275
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -76,4 +82,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {17443278 ps} {17562462 ps}
+WaveRestoreZoom {19952947 ps} {19973445 ps}
