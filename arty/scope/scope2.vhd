@@ -40,7 +40,6 @@ architecture scope of arty is
 
 	constant SCLK_PHASES  : natural := 1;
 	constant SCLK_EDGES   : natural := 1;
-	constant DATA_PHASES  : natural := 4;
 	constant DATA_EDGES   : natural := 1;
 	constant CMMD_GEAR    : natural := 2;
 	constant DATA_GEAR    : natural := 4;
@@ -211,14 +210,14 @@ begin
 		FPGA           => VIRTEX5,
 		CMMD_GEAR      => CMMD_GEAR,
 		DDR_MARK       => M15E,
-		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*DDR_DIV/DDR_MUL,
+		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*2*DDR_DIV/DDR_MUL,
 		DDR_SCLKEDGES  => SCLK_EDGES,
 		DDR_STROBE     => "INTERNAL",
 		DDR_CLMNSIZE   => 7,
 		DDR_BANKSIZE   => BANK_SIZE,
 		DDR_ADDRSIZE   => ADDR_SIZE,
 		DDR_SCLKPHASES => SCLK_PHASES,
-		DDR_DATAPHASES => DATA_PHASES,
+		DDR_DATAPHASES => DATA_GEAR,
 		DDR_DATAEDGES  => DATA_EDGES,
 		DDR_LINESIZE   => LINE_SIZE,
 		DDR_WORDSIZE   => WORD_SIZE,

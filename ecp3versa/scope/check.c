@@ -45,8 +45,11 @@ int main (int argc, char *argv[])
 	if (argc > 1) 
 		sscanf (argv[1], "%d", &size);
 
-	if (size != 128) 
-		mask = ((1LL << size)-1);
+	if (size != 128) { 
+		mask = 1;
+		mask <<= size;
+		mask -= 1;
+	}
 
 	unsigned __int128 p = (size==128) ? (__int128) 0xC200000000000000 << 64 : (size==64)  ? 0x5800000000000000 : 0x23000000;
 

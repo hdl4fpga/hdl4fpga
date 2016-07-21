@@ -114,11 +114,10 @@ begin
 		clkout1_phase => 90.0,
 		clkout2_phase => 180.000,
 		clkout4_phase => 22.5,
-		clkout0_divide_f => real(2*DDR_GEAR/2),
-		clkout1_divide => 2*DDR_GEAR/2,
-		clkout2_divide => 2*DDR_GEAR/2,
-		clkout3_divide => 2*DDR_GEAR,
-		clkout4_divide => 2*DDR_GEAR)
+		clkout0_divide_f => real(DDR_GEAR/2),
+		clkout1_divide => DDR_GEAR/2,
+		clkout3_divide => DDR_GEAR,
+		clkout4_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
 		rst      => sys_rst,
@@ -127,35 +126,34 @@ begin
 		clkfbout => ddr_clkfb,
 		clkout0  => ddr_clk0_mmce2,
 		clkout1  => ddr_clk90_mmce2,
-		clkout2  => ddr_clk180_mmce2,
 		clkout3  => ddr_clk0div_mmce2,
 		clkout4  => ddr_clk90div_mmce2,
 		locked   => lcks(ddr));
     
---	ddr_clk0_bufg : bufg
---	port map (
---		i => ddr_clk0_mmce2,
---		o => clks(ddr));
---
---	ddr_clk90_bufg : bufg
---	port map (
---		i => ddr_clk90_mmce2,
---		o => ddr_clk90);
---
---	ddr_clk0div_bufg : bufg
---	port map (
---		i => ddr_clk0div_mmce2,
---		o => ddr_clk0div);
---
---	ddr_clk90div_bufg : bufg
---	port map (
---		i => ddr_clk90div_mmce2,
---		o => ddr_clk90div);
---
-		clks(ddr)    <= ddr_clk0_mmce2;
-		ddr_clk90    <= ddr_clk90_mmce2;
-		ddr_clk0div  <= ddr_clk0div_mmce2;
-		ddr_clk90div <= ddr_clk90div_mmce2;
+	ddr_clk0_bufg : bufg
+	port map (
+		i => ddr_clk0_mmce2,
+		o => clks(ddr));
+
+	ddr_clk90_bufg : bufg
+	port map (
+		i => ddr_clk90_mmce2,
+		o => ddr_clk90);
+
+	ddr_clk0div_bufg : bufg
+	port map (
+		i => ddr_clk0div_mmce2,
+		o => ddr_clk0div);
+
+	ddr_clk90div_bufg : bufg
+	port map (
+		i => ddr_clk90div_mmce2,
+		o => ddr_clk90div);
+
+--		clks(ddr)    <= ddr_clk0_mmce2;
+--		ddr_clk90    <= ddr_clk90_mmce2;
+--		ddr_clk0div  <= ddr_clk0div_mmce2;
+--		ddr_clk90div <= ddr_clk90div_mmce2;
 
 	clks(input) <= sys_clk;
 	lcks(input) <= not sys_rst;

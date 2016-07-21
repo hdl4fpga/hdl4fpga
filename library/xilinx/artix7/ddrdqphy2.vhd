@@ -97,7 +97,7 @@ architecture virtex of ddrdqphy is
 begin
 
 	imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
-	omdr_dqsclk <= (0 => sys_clk90div,  1 => sys_clk90);
+	omdr_dqsclk <= (0 => sys_clk0div,  1 => sys_clk0);
 	omdr_dqclk  <= (0 => sys_clk90div, 1 => sys_clk90);
 	sys_wlrdy <= sys_wlreq;
 	dqsi_n <= not dqsi;
@@ -194,9 +194,9 @@ begin
 		signal clks : std_logic_vector(0 to 2-1);
 		signal dqt  : std_logic_vector(sys_dqt'range);
 	begin
-		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 
 		edge_g : if DATA_EDGE generate
+			clks <= (0 => sys_clk90div, 1 => not sys_clk90div);
 			registered_g : for j in clks'range generate
 				process (rlrdy, clks(j))
 				begin
@@ -215,6 +215,7 @@ begin
 		end generate;
 
 		noedge_g : if not DATA_EDGE generate
+			clks <= (0 => not sys_clk90div, 1 => sys_clk90div);
 			registered_g : for j in 0 to DATA_GEAR-1 generate
 				process (rlrdy, clks(0))
 				begin
@@ -230,9 +231,15 @@ begin
 				end process;
 
 			end generate;
+
+			process (clks(0))
+			begin
+				if rising_edge(clks(0)) then
+					dqt <= sys_dqt;
+				end if;
+			end process;
 		end generate;
 
-		dqt <= reverse(sys_dqt);
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
@@ -253,8 +260,8 @@ begin
 		signal clks : std_logic_vector(0 to 2-1);
 	begin
 
-		clks <= (0 => sys_clk90, 1 => not sys_clk90);
 		edge_g : if DATA_EDGE generate
+			clks <= (0 => sys_clk90div, 1 => not sys_clk90div);
 			registered_g : for i in clks'range generate
 				process (clks(i))
 				begin
@@ -267,6 +274,7 @@ begin
 		end generate;
 
 		noedge_g : if not DATA_EDGE generate
+			clks <= (0 => not sys_clk90div, 1 => sys_clk90div);
 			registered_g : for i in 0 to DATA_GEAR-1 generate
 				process (clks(0))
 				begin
@@ -276,6 +284,7 @@ begin
 				end process;
 
 			end generate;
+
 		end generate;
 
 		omdr_i : entity hdl4fpga.omdr
@@ -301,6 +310,7 @@ begin
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
 		signal dq       : std_logic_vector(smp'range);
+		signal smp1     : std_logic_vector(smp'range);
 	begin
 
 		dqsidelay_i : idelaye2 
@@ -323,7 +333,7 @@ begin
 			dataout => dqsi);
 
 		ctrl <= (others => '0');
-		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
+		mclk <= (0 => not sys_clk90, 1 => sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
@@ -358,7 +368,21 @@ begin
 			iod_ce  => dqsiod_ce,
 			iod_inc => dqsiod_inc);
 
-		sti <= sys_sti(0);
+		xxx_g : for j in dq'range generate
+			reg_g : if j < 2 generate
+				process (sys_clk90div)
+				begin
+					if rising_edge(sys_clk90div) then
+						smp1(j) <= smp(j);
+					end if;
+				end process;
+			end generate;
+
+			noreg_g : if j >= 2 generate
+				smp1(j) <= smp(j);
+			end generate;
+		end generate;
+
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
@@ -382,8 +406,9 @@ begin
 				end if;
 			end loop;
 		end process;
-
 		dqst <= reverse(sys_dqst);
+
+		sti <= sys_sti(0);
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
