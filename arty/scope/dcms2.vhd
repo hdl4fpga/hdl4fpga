@@ -50,7 +50,8 @@ entity dcms is
 		mii_clk      : out std_logic;
 		ioctrl_rst   : out std_logic;
 		input_rst    : out std_logic;
-		ddr_rst      : out std_logic;
+		ddr0div_rst  : out std_logic;
+		ddr90div_rst : out std_logic;
 		mii_rst      : out std_logic;
 		video_rst    : out std_logic);
 end;
@@ -60,8 +61,9 @@ architecture def of dcms is
 	constant input            : natural := 0; 
     constant mii              : natural := 1;
     constant video            : natural := 2;
-    constant ddr              : natural := 3;
-    constant ioctrl           : natural := 4;
+    constant ddr0div          : natural := 3;
+    constant ddr90div         : natural := 4;
+    constant ioctrl           : natural := 5;
 
 	signal ddr_clkfb          : std_logic;
 	signal ddr_clk0_mmce2     : std_logic;
@@ -71,7 +73,7 @@ architecture def of dcms is
 	signal ddr_clk180_mmce2   : std_logic;
 
 	signal ioctrl_clkfb : std_logic;
-	signal clks : std_logic_vector(0 to 4);
+	signal clks : std_logic_vector(0 to ioctrl);
 	signal lcks : std_logic_vector(clks'range);
 begin
 
@@ -128,12 +130,13 @@ begin
 		clkout1  => ddr_clk90_mmce2,
 		clkout3  => ddr_clk0div_mmce2,
 		clkout4  => ddr_clk90div_mmce2,
-		locked   => lcks(ddr));
+		locked   => lcks(ddr0div));
+	lcks(ddr90div) <= lcks(ddr0div);
     
 	ddr_clk0_bufg : bufg
 	port map (
 		i => ddr_clk0_mmce2,
-		o => clks(ddr));
+		o => ddr_clk0);
 
 	ddr_clk90_bufg : bufg
 	port map (
@@ -143,12 +146,12 @@ begin
 	ddr_clk0div_bufg : bufg
 	port map (
 		i => ddr_clk0div_mmce2,
-		o => ddr_clk0div);
+		o => clks(ddr0div));
 
 	ddr_clk90div_bufg : bufg
 	port map (
 		i => ddr_clk90div_mmce2,
-		o => ddr_clk90div);
+		o => clks(ddr90div));
 
 --		clks(ddr)    <= ddr_clk0_mmce2;
 --		ddr_clk90    <= ddr_clk90_mmce2;
@@ -183,11 +186,12 @@ begin
 		signal rsts : std_logic_vector(clks'range);
 	begin
 
-		input_rst  <= rsts(input);
-		mii_rst    <= rsts(mii);
-		video_rst  <= rsts(video);
-		ddr_rst    <= rsts(ddr);
-		ioctrl_rst <= rsts(ioctrl);
+		input_rst    <= rsts(input);
+		mii_rst      <= rsts(mii);
+		video_rst    <= rsts(video);
+		ddr0div_rst  <= rsts(ddr0div);
+		ddr90div_rst <= rsts(ddr90div);
+		ioctrl_rst   <= rsts(ioctrl);
 
 		rsts_g: for i in clks'range generate
 			signal q : std_logic;
@@ -204,10 +208,11 @@ begin
 		end generate;
 	end block;
 
-	input_clk  <= clks(input);
-	mii_clk    <= clks(mii);
-	video_clk  <= clks(video);
-	ddr_clk0   <= clks(ddr);
-	ioctrl_clk <= clks(ioctrl);
+	input_clk    <= clks(input);
+	mii_clk      <= clks(mii);
+	video_clk    <= clks(video);
+	ddr_clk0div  <= clks(ddr0div);
+	ddr_clk90div <= clks(ddr90div);
+	ioctrl_clk   <= clks(ioctrl);
 
 end;

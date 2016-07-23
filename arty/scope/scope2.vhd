@@ -70,8 +70,11 @@ architecture scope of arty is
 	signal ioctrl_rdy     : std_logic;
 
 	signal dcm_rst        : std_logic;
-	signal ddr_rst        : std_logic;
-	signal ddrs_rst       : std_logic;
+	signal ddr0div_rst    : std_logic;
+	signal ddr90div_rst   : std_logic;
+	signal ddrs0div_rst   : std_logic;
+	signal ddrs90div_rst  : std_logic;
+	signal ddrsiod_rst    : std_logic;
 	signal input_rst      : std_logic;
 
 	signal input_clk      : std_logic;
@@ -194,7 +197,8 @@ begin
 		ddr_clk0div  => ddrs_clk0div,
 		ddr_clk90    => ddrs_clk90,
 		ddr_clk90div => ddrs_clk90div,
-		ddr_rst      => ddr_rst);
+		ddr0div_rst  => ddr0div_rst,
+		ddr90div_rst => ddr90div_rst);
 
 	idelayctrl_i : idelayctrl
 	port map (
@@ -202,8 +206,16 @@ begin
 		refclk => ioctrl_clk,
 		rdy    => ioctrl_rdy);
 
-	sys_rst  <= not ioctrl_rdy;
-	ddrs_rst <= sys_rst or ddr_rst;
+	sys_rst       <= not ioctrl_rdy;
+	ddrs0div_rst  <= sys_rst or ddr0div_rst;
+	ddrs90div_rst <= sys_rst or ddr90div_rst;
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			ddrsiod_rst <= sys_rst;
+		end if;
+	end process;
+	
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -226,7 +238,7 @@ begin
 --		input_rst => input_rst,
 		input_clk => input_clk,
 
-		ddrs_rst       => ddrs_rst,
+		ddrs_rst       => ddrs0div_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
 		ddrs_bl        => "000",
 		ddrs_cl        => "110",
@@ -329,7 +341,9 @@ begin
 		sys_rlseq    => ddrphy_rlseq,
 		sys_iodclk   => sys_clk,
 
-		phy_rst      => ddrs_rst,
+		phy0div_rst  => ddrs0div_rst,
+		phy90div_rst => ddrs90div_rst,
+		phyiod_rst   => ddrsiod_rst,
 		phy_ini      => ddrphy_ini,
 		phy_rw       => ddrphy_rw,
 		phy_cmd_rdy  => ddrphy_cmd_rdy,

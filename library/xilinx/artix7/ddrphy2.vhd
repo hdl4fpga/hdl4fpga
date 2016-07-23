@@ -47,7 +47,9 @@ entity ddrphy is
 		sys_clk90    : in  std_logic;
 		sys_clk90div : in  std_logic;
 
-		phy_rst      : in  std_logic;
+		phy0div_rst  : in  std_logic;
+		phy90div_rst : in  std_logic;
+		phyiod_rst   : in  std_logic;
 		phy_ini      : out std_logic;
 		phy_rw       : out std_logic;
 		phy_cmd_rdy  : in  std_logic;
@@ -311,9 +313,9 @@ begin
 			q  => ddr_clk(i));
 	end generate;
 
-	process (sys_clk0)
+	process (sys_clk0div)
 	begin
-		if rising_edge(sys_clk0) then
+		if rising_edge(sys_clk0div) then
 			phy_rw  <= rw;
 			sys_rlrdy <= rlrdy;
 			phy_cmd_req <= cmd_req;
@@ -327,7 +329,7 @@ begin
 	process (sys_iodclk)
 	begin
 		if rising_edge(sys_iodclk) then
-			if phy_rst='1' then
+			if phyiod_rst='1' then
 				ini <= '0';
 				rw  <= '0';
 				cmd_req <= '0';
@@ -440,7 +442,7 @@ begin
 	port map (
 		sys_clk(0) => sys_clk0div,
 		sys_clk(1) => sys_clk0,
-     	sys_mrst   => phy_rst,
+     	sys_mrst   => phy0div_rst,
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
 		sys_cke    => sys_cke,
@@ -503,7 +505,8 @@ begin
 			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
-			sys_rst    => phy_rst,
+			sys0div_rst  => phy0div_rst,
+			sys90div_rst => phy90div_rst,
 			sys_clk0   => sys_clk0,
 			sys_clk0div   => sys_clk0div,
 			sys_clk90  => sys_clk90,

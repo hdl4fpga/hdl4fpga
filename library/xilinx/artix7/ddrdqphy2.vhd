@@ -36,7 +36,8 @@ entity ddrdqphy is
 	port (
 		sys_tp       : out std_logic_vector(BYTE_SIZE-1 downto 0);
 
-		sys_rst      : in  std_logic;
+		sys0div_rst  : in  std_logic;
+		sys90div_rst : in  std_logic;
 		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
 		sys_clk0div  : in  std_logic;
@@ -136,7 +137,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => sys_rst,
+			rst  => sys90div_rst,
 			clk  => imdr_clk,
 			d(0) => dqi(i),
 			q    => dq);
@@ -245,7 +246,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst   => sys_rst,
+			rst   => sys90div_rst,
 			clk   => omdr_dqclk,
 			t     => dqt,
 			tq(0) => ddr_dqt(i),
@@ -292,7 +293,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => sys_rst,
+			rst  => sys90div_rst,
 			clk  => omdr_dqclk,
 			t     => (others => '0'),
 			tq(0) => ddr_dmt,
@@ -333,13 +334,13 @@ begin
 			dataout => dqsi);
 
 		ctrl <= (others => '0');
-		mclk <= (0 => not sys_clk90, 1 => sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
+		mclk <= (0 => not sys_clk0, 1 => sys_clk0, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => sys_rst,
+			rst  => sys0div_rst,
 			clk  => mclk,
 			ctrl => ctrl,
 			d(0) => dqsi,
@@ -370,9 +371,9 @@ begin
 
 		xxx_g : for j in dq'range generate
 			reg_g : if j < 2 generate
-				process (sys_clk90div)
+				process (sys_clk0div)
 				begin
-					if rising_edge(sys_clk90div) then
+					if rising_edge(sys_clk0div) then
 						smp1(j) <= smp(j);
 					end if;
 				end process;
@@ -391,7 +392,7 @@ begin
 			iod_clk  => sys_iodclk,
 			ddr_sti  => sti,
 			ddr_sto  => sto,
-			ddr_smp  => smp,
+			ddr_smp  => smp1,
 			sys_req  => adjsto_req,
 			sys_rdy  => adjsto_rdy);
 
@@ -414,7 +415,7 @@ begin
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
-			rst  => sys_rst,
+			rst  => sys0div_rst,
 			clk  => omdr_dqsclk,
 			t    => dqst,
 			tq(0)=> ddr_dqst,
