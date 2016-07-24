@@ -34,7 +34,7 @@ use hdl4fpga.std.all;
 entity dcms is
 	generic (
 		SYS_PER      : real;
-		DDR_MUL      : natural;
+		DDR_MUL      : real;
 		DDR_DIV      : natural;
 		DDR_GEAR     : natural);
 	port (
@@ -111,11 +111,11 @@ begin
 	ddr_i :  mmcme2_base
 	generic map (
 		divclk_divide => ddr_div,
-		clkfbout_mult_f => real(2*ddr_mul),
+		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
 		clkout1_phase => 90.0,
 		clkout2_phase => 180.000,
-		clkout4_phase => 22.5,
+		clkout4_phase => 45.0,
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
 		clkout3_divide => DDR_GEAR,

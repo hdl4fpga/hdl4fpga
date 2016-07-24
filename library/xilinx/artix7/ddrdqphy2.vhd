@@ -334,7 +334,7 @@ begin
 			dataout => dqsi);
 
 		ctrl <= (others => '0');
-		mclk <= (0 => not sys_clk0, 1 => sys_clk0, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
+		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
@@ -388,7 +388,7 @@ begin
 		generic map (
 			GEAR => DATA_GEAR)
 		port map (
-			ddr_clk  => sys_clk90div,
+			ddr_clk  => sys_clk0div,
 			iod_clk  => sys_iodclk,
 			ddr_sti  => sti,
 			ddr_sto  => sto,
@@ -396,7 +396,12 @@ begin
 			sys_req  => adjsto_req,
 			sys_rdy  => adjsto_rdy);
 
-		sys_sto <= (others => sto);
+		process (sys_clk90div)
+		begin
+			if falling_edge(sys_clk90div) then
+				sys_sto <= (others => sto);
+			end if;
+		end process;
 	
 		process (sys_dqso)
 		begin

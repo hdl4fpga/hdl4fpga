@@ -56,8 +56,8 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : natural := 2*16;
-	constant DDR_DIV      : natural := 7;
+	constant DDR_MUL      : real    := 16.0; --18;
+	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
 	signal sys_clk        : std_logic;
@@ -222,7 +222,7 @@ begin
 		FPGA           => VIRTEX5,
 		CMMD_GEAR      => CMMD_GEAR,
 		DDR_MARK       => M15E,
-		DDR_TCP        => integer(UCLK_PERIOD*1000.0)*2*DDR_DIV/DDR_MUL,
+		DDR_TCP        => integer(UCLK_PERIOD*1000.0*2.0*real(DDR_DIV)/DDR_MUL),
 		DDR_SCLKEDGES  => SCLK_EDGES,
 		DDR_STROBE     => "INTERNAL",
 		DDR_CLMNSIZE   => 7,
