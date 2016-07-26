@@ -22,7 +22,6 @@ architecture def of adjsto is
 
 	constant bl       : natural := 8/2;
 	signal   st       : std_logic;
-	signal   sto      : std_logic;
 	signal   inc      : std_logic;
 	signal   dly      : std_logic_vector(bl-1 downto 1);
 	signal   sel      : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
@@ -40,7 +39,7 @@ begin
 			if start='0' then
 				inc <= '0';
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
-			elsif sto='1' then
+			elsif st='1' then
 				for i in 0 to GEAR/2-1 loop
 					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
 						cnt := cnt + 1;
@@ -51,12 +50,11 @@ begin
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
 			d   := word2byte(reverse(dly & ddr_sti), sel);
-			sto <= st;
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
 		end if;
 	end process;
-	ddr_sto <= sto;
+	ddr_sto <= st;
 
 	process (sys_req, ddr_clk)
 	begin

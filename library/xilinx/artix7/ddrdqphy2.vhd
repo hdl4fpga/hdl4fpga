@@ -97,7 +97,7 @@ architecture virtex of ddrdqphy is
 
 begin
 
-	imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
+	imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
 	omdr_dqsclk <= (0 => sys_clk0div,  1 => sys_clk0);
 	omdr_dqclk  <= (0 => sys_clk90div, 1 => sys_clk90);
 	sys_wlrdy <= sys_wlreq;
@@ -236,7 +236,7 @@ begin
 			process (clks(0))
 			begin
 				if rising_edge(clks(0)) then
-					dqt <= sys_dqt;
+					dqt <= reverse(sys_dqt);
 				end if;
 			end process;
 		end generate;

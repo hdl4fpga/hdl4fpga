@@ -160,7 +160,6 @@ architecture mix of xdr is
 
 	signal xdr_mpu_rst    : std_logic;
 	signal xdr_mpu_rdy    : std_logic;
-	signal xdr_mpu_req    : std_logic;
 	signal xdr_mpu_ref    : std_logic;
 	signal xdr_mpu_ras    : std_logic;
 	signal xdr_mpu_cas    : std_logic;
@@ -255,7 +254,7 @@ begin
 		xdr_pgm_cmd   => xdr_pgm_cmd,
 		xdr_pgm_ref   => xdr_mpu_ref,
 		xdr_pgm_rrdy  => xdr_refi_rdy,
-		xdr_pgm_start => xdr_mpu_req,
+		xdr_pgm_start => sys_cmd_req,
 		xdr_pgm_cal   => sys_rlcal,
 		xdr_pgm_rdy   => sys_cmd_rdy,
 		xdr_pgm_req   => xdr_mpu_rdy,
@@ -265,7 +264,6 @@ begin
 	xdr_mpu_rst <= not init_rdy;
 	xdr_mpu_sel <= init_rdy;
 	xdr_mpu_ref <= xdr_refi_req;
-	xdr_mpu_req <= sys_cmd_req;
 	xdr_mpu_e : entity hdl4fpga.xdr_mpu
 	generic map (
 		GEAR        => DATA_GEAR,

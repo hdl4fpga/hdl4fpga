@@ -342,7 +342,9 @@ begin
 							if rw='0' then 
 								cmd_req <= '0';
 							elsif rlrdy='1' then
-								cmd_req <= '0';
+								if sys_rlseq='1' then 
+									cmd_req <= rlcal;--'0';
+								end if;
 							end if;
 						end if;
 					elsif cmd_rdy='1' then
@@ -358,11 +360,11 @@ begin
 					cmd_req <= '1';
 					lvl <= '0';
 				else
-					cmd_req <= '0';
+					cmd_req <= rlcal; --'0';
 					lvl <= '0';
 				end if;
 			else
-				cmd_req <= '0';
+				cmd_req <= rlcal; --'0';
 				if sys_act='1' then
 					lvl <= '0';
 					phy_ini <= '1';
@@ -389,7 +391,7 @@ begin
 			if rlcal='0' then
 				rotba <= (others => '0');
 			elsif ini='1' then
-					rotba <= (others => '0');
+				rotba <= (others => '0');
 			elsif sys_rlseq='1' then
 				rotba <= rotba + 1;
 			end if;

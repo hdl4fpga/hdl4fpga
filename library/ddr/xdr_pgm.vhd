@@ -220,6 +220,7 @@ architecture registered of xdr_pgm is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of xdr_pgm_pc : signal is "compact";
 
+	signal cal : std_logic;
 begin
 
 	xdr_input(2) <= xdr_pgm_ref;
@@ -228,12 +229,12 @@ begin
 
 	process (xdr_pgm_clk)
 		variable pc : std_logic_vector(xdr_pgm_pc'range);
-		variable t : signed(0 to unsigned_num_bits(CMMD_GEAR)-1);
+		variable t  : signed(0 to unsigned_num_bits(CMMD_GEAR)-1);
 	begin
 		if rising_edge(xdr_pgm_clk) then
 			xdr_pgm_seq <= t(0);
 			if xdr_pgm_rst='0' then
-				if xdr_pgm_cal='1' then
+				if cal='1' then
 					if xdr_pgm_req='1' then
 						if t(0)='0' then
 							xdr_pgm_cmd <= pgm_cmd;
@@ -245,11 +246,21 @@ begin
 					xdr_pgm_cmd  <= pgm_cmd;
 				end if;
 
+				if xdr_pgm_req='1' then
+					if xdr_pgm_cal='0' then
+						if t(0)='1' then
+							cal <= '0';
+						end if;
+					else
+						cal <= xdr_pgm_cal;
+					end if;
+				end if;
+
 				xdr_pgm_rdy  <= pgm_rdy;
 				sys_pgm_ref  <= sys_ref;
 				xdr_pgm_rrdy <= pgm_rrdy;
 				if xdr_pgm_req='1' then
-					if xdr_pgm_cal='1' then
+					if cal='1' then
 						if t(0)='0' then
 							t := t - 1;
 						else
@@ -274,7 +285,8 @@ begin
 				xdr_pgm_rdy <= '1';
 				sys_pgm_ref <= '0';
 				xdr_pgm_rrdy <= '0';
-				t := to_signed(CMMD_GEAR-1, t'length);
+				t   := to_signed(CMMD_GEAR-1, t'length);
+				cal <= '0';
 			end if;
 		end if;
 	end process;

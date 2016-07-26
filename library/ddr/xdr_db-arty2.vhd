@@ -203,7 +203,7 @@ package xdr_db is
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNL,  value =>   4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSL,  value =>  -4),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZL, value =>  -4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZL,  value =>  0),
+		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZL,  value =>  -2),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WWNL,  value =>  -2),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRXL, value =>   0),
 		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNXL, value =>   0),
