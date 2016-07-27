@@ -40,6 +40,7 @@ entity ddrphy is
 		CLKINV       : std_logic := '0');
 	port (
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
+		tp1 : out std_logic;
 
 		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
@@ -330,11 +331,12 @@ begin
 	begin
 		if rising_edge(sys_iodclk) then
 			if phyiod_rst='1' then
-				ini <= '0';
-				rw  <= '0';
+				ini     <= '0';
+				rw      <= '0';
 				cmd_req <= '0';
-				lvl  <= '0';
+				lvl     <= '0';
 				phy_ini <= '0';
+				tp1 <= '0';
 			elsif ini='0' then
 				if sys_rlreq='1' then
 					if cmd_req='1' then
@@ -351,22 +353,23 @@ begin
 						if rw='0' then 
 							cmd_req <= '1';
 						else
-							ini <= '1';
+						tp1 <= '1';
+							ini     <= '1';
 						end if;
 						rw <= '1';
 					end if;
-					lvl <= '1';
+					lvl     <= '1';
 				elsif cmd_rdy='1' then
 					cmd_req <= '1';
-					lvl <= '0';
+					lvl     <= '0';
 				else
 					cmd_req <= rlcal; --'0';
-					lvl <= '0';
+					lvl     <= '0';
 				end if;
 			else
 				cmd_req <= rlcal; --'0';
 				if sys_act='1' then
-					lvl <= '0';
+					lvl     <= '0';
 					phy_ini <= '1';
 				end if;
 			end if;

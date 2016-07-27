@@ -160,7 +160,7 @@ begin
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
 		port map (
-			din => dq(0),
+			din => dq,
 			req => adjdqi_req,
 			rdy => adjdqi_rdy(i),
 			iod_clk => sys_iodclk,
@@ -362,7 +362,7 @@ begin
 
 		adjdqs_e : entity hdl4fpga.adjdqs
 		port map (
-			smp => smp(0),
+			smp => smp,
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
 			iod_clk => sys_iodclk,

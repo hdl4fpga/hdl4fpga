@@ -156,7 +156,7 @@ begin
 	mii_rxc <= mii_freq;
 
 
-	mii_strt <= '0', '1' after 20.25 us;
+	mii_strt <= '0', '1' after 22.25 us;
 	process (mii_strt, mii_rxc)
 		variable edge : std_logic;
 		variable cnt  : natural := 0;
