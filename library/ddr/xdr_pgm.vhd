@@ -248,9 +248,7 @@ begin
 
 				if xdr_pgm_req='1' then
 					if xdr_pgm_cal='0' then
-						if t(0)='1' then
 							cal <= '0';
-						end if;
 					else
 						cal <= xdr_pgm_cal;
 					end if;

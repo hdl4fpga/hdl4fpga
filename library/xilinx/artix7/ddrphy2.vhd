@@ -315,16 +315,25 @@ begin
 	end generate;
 
 	process (sys_clk0div)
+		variable rlcal_h2l : std_logic;
 	begin
 		if rising_edge(sys_clk0div) then
 			phy_rw      <= rw;
 			sys_rlrdy   <= rlrdy;
-			if ini='0' and sys_rlreq='1' and cmd_req='1' and cmd_rdy='0' and rw='1' and rlrdy='1' then
-				if sys_rlseq='1' then 
-					phy_cmd_req <= cmd_req;
+
+			phy_cmd_req <= cmd_req;
+			if rlcal_h2l='1' then 
+				if rlcal='0' then 
+					if sys_rlseq='1' then 
+						phy_cmd_req <= cmd_req;
+					end if;
 				end if;
+			end if;
+
+			if phyiod_rst='1' then
+				rlcal_h2l := '0';
 			else
-				phy_cmd_req <= cmd_req;
+				rlcal_h2l := rlcal;
 			end if;
 		end if;
 	end process;
