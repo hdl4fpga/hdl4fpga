@@ -40,7 +40,7 @@ entity ddrphy is
 		CLKINV       : std_logic := '0');
 	port (
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
-		tp1 : out std_logic;
+		tp1 : out std_logic_vector(6-1 downto 0);
 
 		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
@@ -317,9 +317,21 @@ begin
 	process (sys_clk0div)
 	begin
 		if rising_edge(sys_clk0div) then
-			phy_rw  <= rw;
-			sys_rlrdy <= rlrdy;
-			phy_cmd_req <= cmd_req;
+			phy_rw      <= rw;
+			sys_rlrdy   <= rlrdy;
+			if ini='0' and sys_rlreq='1' and cmd_req='1' and cmd_rdy='0' and rw='1' and rlrdy='1' then
+				if sys_rlseq='1' then 
+					phy_cmd_req <= cmd_req;
+				end if;
+			else
+				phy_cmd_req <= cmd_req;
+			end if;
+		end if;
+	end process;
+
+	process (sys_iodclk)
+	begin
+		if rising_edge(sys_iodclk) then
 			cmd_rdy <= phy_cmd_rdy;
 		end if;
 	end process;
@@ -336,7 +348,7 @@ begin
 				cmd_req <= '0';
 				lvl     <= '0';
 				phy_ini <= '0';
-				tp1 <= '0';
+				tp1     <= (others => '0');
 			elsif ini='0' then
 				if sys_rlreq='1' then
 					if cmd_req='1' then
@@ -344,21 +356,18 @@ begin
 							if rw='0' then 
 								cmd_req <= '0';
 							elsif rlrdy='1' then
-								if sys_rlseq='1' then 
-									cmd_req <= rlcal;--'0';
-								end if;
+								cmd_req <= rlcal;--'0';
 							end if;
 						end if;
 					elsif cmd_rdy='1' then
 						if rw='0' then 
 							cmd_req <= '1';
 						else
-						tp1 <= '1';
-							ini     <= '1';
+							ini <= '1';
 						end if;
 						rw <= '1';
 					end if;
-					lvl     <= '1';
+					lvl <= '1';
 				elsif cmd_rdy='1' then
 					cmd_req <= '1';
 					lvl     <= '0';
@@ -373,6 +382,12 @@ begin
 					phy_ini <= '1';
 				end if;
 			end if;
+			tp1(0) <= cmd_rdy;
+			tp1(1) <= cmd_req;
+			tp1(2) <= rlcal;
+			tp1(3) <= rw;
+			tp1(4) <= rlrdy;
+			tp1(5) <= lvl;
 		end if;
 	end process;
 

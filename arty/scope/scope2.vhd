@@ -141,7 +141,7 @@ architecture scope of arty is
 	signal vga_blue       : std_logic_vector(8-1 downto 0);
 
 	signal tp             : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
-	signal tp1 : std_logic;
+	signal tp1            : std_logic_vector(6-1 downto 0);
 begin
 		
 	clkin_ibufg : ibufg
@@ -453,8 +453,8 @@ begin
 	rgbled  <= (others => '0');
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i+0) <= ddrphy_ini   when btn(2)='1' else tp(i*8+2) when btn(1)='1' else tp(i*8+5);
-		led(i+2) <= tp1 when btn(2)='1' else tp(i*8+1) when btn(1)='1' else tp(i*8+0);
+		led(i+0) <= tp1(i+4) when btn(3)='1' else ddrphy_ini when btn(2)='1' else tp(i*8+2) when btn(1)='1' else tp(i*8+5);
+		led(i+2) <= tp1(i+2) when btn(3)='1' else tp1(i)     when btn(2)='1' else tp(i*8+1) when btn(1)='1' else tp(i*8+0);
 	end generate;
 
 end;
