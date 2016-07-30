@@ -50,7 +50,7 @@ begin
 			if req='0' then
 				edge   <= '0';
 				sync   <= '0';
-				ce     := to_signed(0, ce'length);
+				ce     := to_signed(2, ce'length);
 				iod_ce <= '0';
 				rdy    <= '0';
 				tmr    <= (others => '0');

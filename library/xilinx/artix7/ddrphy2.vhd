@@ -46,6 +46,7 @@ entity ddrphy is
 		sys_clk0     : in  std_logic;
 		sys_clk0div  : in  std_logic;
 		sys_clk90    : in  std_logic;
+		sys_clk90_n  : in  std_logic;
 		sys_clk90div : in  std_logic;
 
 		phy0div_rst  : in  std_logic;
@@ -538,6 +539,7 @@ begin
 			sys90div_rst => phy90div_rst,
 			sys_clk0   => sys_clk0,
 			sys_clk0div   => sys_clk0div,
+			sys_clk90_n  => sys_clk90_n,
 			sys_clk90  => sys_clk90,
 			sys_clk90div  => sys_clk90div,
 			sys_wlreq  => sys_wlreq,

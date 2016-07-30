@@ -83,6 +83,7 @@ architecture scope of arty is
 	signal ddrs_clk0div   : std_logic;
 	signal ddrs_clk90div  : std_logic;
 	signal ddrs_clk90     : std_logic;
+	signal ddrs_clk90_n   : std_logic;
 	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
 	signal ddr3_dqst      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -196,6 +197,7 @@ begin
 		ddr_clk0     => ddrs_clk0,
 		ddr_clk0div  => ddrs_clk0div,
 		ddr_clk90    => ddrs_clk90,
+		ddr_clk90_n  => ddrs_clk90_n,
 		ddr_clk90div => ddrs_clk90div,
 		ddr0div_rst  => ddr0div_rst,
 		ddr90div_rst => ddr90div_rst);
@@ -338,6 +340,7 @@ begin
 		sys_clk0     => ddrs_clk0,
 		sys_clk0div  => ddrs_clk0div,
 		sys_clk90    => ddrs_clk90, 
+		sys_clk90_n  => ddrs_clk90_n,
 		sys_clk90div => ddrs_clk90div, 
 		sys_rlseq    => ddrphy_rlseq,
 		sys_iodclk   => sys_clk,

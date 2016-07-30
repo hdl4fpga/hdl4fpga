@@ -45,6 +45,7 @@ entity dcms is
 		ddr_clk0     : out std_logic;
 		ddr_clk0div  : out std_logic;
 		ddr_clk90    : out std_logic;
+		ddr_clk90_n  : out std_logic;
 		ddr_clk90div : out std_logic;
 		video_clk    : out std_logic;
 		mii_clk      : out std_logic;
@@ -69,6 +70,7 @@ architecture def of dcms is
 	signal ddr_clk0_mmce2     : std_logic;
 	signal ddr_clk0div_mmce2  : std_logic;
 	signal ddr_clk90_mmce2    : std_logic;
+	signal ddr_clk90_mmce2_n  : std_logic;
 	signal ddr_clk90div_mmce2 : std_logic;
 	signal ddr_clk180_mmce2   : std_logic;
 
@@ -114,10 +116,12 @@ begin
 		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
 		clkout1_phase => 90.0,
+		clkout5_phase => 90.0+180.0,
 		clkout2_phase => 180.000,
 		clkout4_phase => 45.0,
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
+		clkout5_divide => DDR_GEAR/2,
 		clkout3_divide => DDR_GEAR,
 		clkout4_divide => DDR_GEAR)
 	port map (
@@ -128,6 +132,7 @@ begin
 		clkfbout => ddr_clkfb,
 		clkout0  => ddr_clk0_mmce2,
 		clkout1  => ddr_clk90_mmce2,
+		clkout5  => ddr_clk90_mmce2_n,
 		clkout3  => ddr_clk0div_mmce2,
 		clkout4  => ddr_clk90div_mmce2,
 		locked   => lcks(ddr0div));
@@ -142,6 +147,11 @@ begin
 	port map (
 		i => ddr_clk90_mmce2,
 		o => ddr_clk90);
+
+	ddr_clk90_n_bufg : bufg
+	port map (
+		i => ddr_clk90_mmce2_n,
+		o => ddr_clk90_n);
 
 	ddr_clk0div_bufg : bufg
 	port map (

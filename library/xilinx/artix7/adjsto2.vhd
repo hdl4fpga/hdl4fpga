@@ -34,6 +34,7 @@ begin
 		variable cnt  : unsigned(0 to (unsigned_num_bits(GEAR-1)-1)+3-1);
 		variable d    : std_logic_vector(0 to 0);
 		variable smp  : std_logic_vector(ddr_smp'range);
+		variable sto  : std_logic;
 	begin
 		if rising_edge(ddr_clk) then
 			if start='0' then
@@ -52,9 +53,11 @@ begin
 			d   := word2byte(reverse(dly & ddr_sti), sel);
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
+			
+			ddr_sto <= sto;
+			sto := st;
 		end if;
 	end process;
-	ddr_sto <= st;
 
 	process (sys_req, ddr_clk)
 	begin
