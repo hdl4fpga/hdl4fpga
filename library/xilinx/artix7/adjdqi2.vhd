@@ -9,7 +9,8 @@ entity adjdqi is
 		rdy     : out std_logic;
 		iod_clk : in  std_logic;
 		iod_ce  : out std_logic;
-		iod_inc : out std_logic);
+		iod_inc : out std_logic;
+		tp      : out std_logic_vector);
 end;
 
 library hdl4fpga;
@@ -25,6 +26,7 @@ begin
 
 	smp0 <= din;
 	smp2 <= smp0 xor smp1;
+	tp <= smp1;
 
 	process (iod_clk)
 		variable aux : unsigned(din'range);

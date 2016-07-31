@@ -35,6 +35,7 @@ entity ddrdqphy is
 		BYTE_SIZE    : natural);
 	port (
 		sys_tp       : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		tpdq      :  out std_logic_vector(0 to DATA_GEAR-1);
 
 		sys0div_rst  : in  std_logic;
 		sys90div_rst : in  std_logic;
@@ -120,15 +121,17 @@ begin
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in ddr_dqi'range generate
-	signal imdr_clk   : std_logic_vector(0 to 5-1);
+		signal imdr_clk   : std_logic_vector(0 to 5-1);
 		signal t : std_logic;
 		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
 		signal dqiod_inc : std_logic;
 		signal dqiod_ce  : std_logic;
 		signal iod_inc   : std_logic;
 		signal iod_ce    : std_logic;
+		signal tpd       : std_logic_vector(0 to DATA_GEAR-1);
 	begin
-	imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
+		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
+
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
@@ -147,19 +150,22 @@ begin
 					end if;
 				end process;
 			end generate;
-						sys_dqo(j*BYTE_SIZE+i) <= dq(j);
+			sys_dqo(j*BYTE_SIZE+i) <= dq(j);
 
 			noreg_g : if j >= 2 generate
 				sys_dqo(j*BYTE_SIZE+i) <= dq(j);
 			end generate;
 		end generate;
-
+		tp_g : if i=0 generate
+			tpdq <= tpd;
+		end generate;
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
 		port map (
 			din => dq,
 			req => adjdqi_req,
 			rdy => adjdqi_rdy(i),
+			tp => tpd,
 			iod_clk => sys_iodclk,
 			iod_ce  => dqiod_ce,
 			iod_inc => dqiod_inc);

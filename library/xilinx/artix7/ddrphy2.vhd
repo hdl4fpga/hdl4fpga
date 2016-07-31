@@ -41,6 +41,7 @@ entity ddrphy is
 	port (
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
 		tp1 : out std_logic_vector(6-1 downto 0);
+		tpdq : out std_logic_vector(data_gear-1 downto 0);
 
 		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
@@ -528,7 +529,12 @@ begin
 	end process;
 
 	byte_g : for i in ddr_dqsi'range generate
+		signal tpd : std_logic_vector(0 to data_gear-1);
+	begin
 
+		xxx : if i=0 generate
+			tpdq <= tpd;
+		end generate;
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			DATA_GEAR  => DATA_GEAR,
@@ -547,6 +553,7 @@ begin
 			sys_rlreq  => sys_rlreq,
 			sys_rlrdy  => byte_rlrdy(i),
 			sys_rlcal  => byte_rlcal(i),
+			tpdq => tpd,
 
 			sys_sti    => ssti(i),
 			sys_dmt    => sdmt(i),
