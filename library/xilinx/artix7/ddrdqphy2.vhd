@@ -30,12 +30,15 @@ use unisim.vcomponents.all;
 
 entity ddrdqphy is
 	generic (
+		TCP          : natural;
+		TAP_DLY      : natural;
 		DATA_GEAR    : natural;
 		DATA_EDGE    : boolean;
 		BYTE_SIZE    : natural);
 	port (
 		sys_tp       : out std_logic_vector(BYTE_SIZE-1 downto 0);
 		tpdq      :  out std_logic_vector(0 to DATA_GEAR-1);
+		tp_dqsdly    : out std_logic_vector(6-1 downto 0);
 
 		sys0div_rst  : in  std_logic;
 		sys90div_rst : in  std_logic;
@@ -43,7 +46,6 @@ entity ddrdqphy is
 		sys_clk0     : in  std_logic;
 		sys_clk0div  : in  std_logic;
 		sys_clk90    : in  std_logic;
-		sys_clk90_n  : in  std_logic;
 		sys_clk90div : in  std_logic;
 		sys_wlreq    : in  std_logic;
 		sys_wlrdy    : out std_logic;
@@ -130,7 +132,7 @@ begin
 		signal iod_ce    : std_logic;
 		signal tpd       : std_logic_vector(0 to DATA_GEAR-1);
 	begin
-		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
+		imdr_clk <= (0 => not dqsi, 1 => dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -310,56 +312,64 @@ begin
 	end block;
 
 	dqso_b : block 
-		signal sto      : std_logic;
-		signal sti      : std_logic;
-		signal st       : std_logic;
-		signal ctrl     : std_logic_vector(0 to 2-1);
-		signal mclk     : std_logic_vector(0 to 5-1);
-		signal dqso     : std_logic_vector(sys_dqso'range);
-		signal dqst     : std_logic_vector(sys_dqst'range);
-		signal dq       : std_logic_vector(smp'range);
-		signal smp1     : std_logic_vector(smp'range);
-	signal omdr_dqsclk : std_logic_vector(0 to 2-1);
+		signal sto       : std_logic;
+		signal sti       : std_logic;
+		signal mclk      : std_logic_vector(0 to 5-1);
+		signal dqso      : std_logic_vector(sys_dqso'range);
+		signal dqst      : std_logic_vector(sys_dqst'range);
+		signal dqsclk    : std_logic_vector(0 to 2-1);
+		signal iod_ld    : std_logic;
+		signal dqsdly    : std_logic_vector(0 to 5);
+		signal imdr_rst  : std_logic;
+		signal adjdqs_st : std_logic;
 	begin
 
+		iod_ld <= adjdqs_req and not adjdqs_rdy;
 		dqsidelay_i : idelaye2 
 		generic map (
 			DELAY_SRC => "IDATAIN",
 			SIGNAL_PATTERN => "CLOCK",
 			IDELAY_VALUE => 31,
-			IDELAY_TYPE => "VARIABLE")
+			IDELAY_TYPE => "VAR_LOAD")
 		port map (
-			regrst => iod_rst,
-			cinvctrl => '0',
-			c   => sys_iodclk,
-			ce  => dqsiod_ce,
-			inc => dqsiod_inc,
-			ld  => '0',
-			cntvaluein => (others => '-'),
-			ldpipeen => '0',
-			datain => '-',
-			idatain => ddr_dqsi,
-			dataout => dqsi);
+			regrst     => iod_rst,
+			cinvctrl   => '0',
+			c          => sys_iodclk,
+			ce         => '0',
+			inc        => '0',
+			ld         => iod_ld,
+			cntvaluein => dqsdly(1 to 5),
+			ldpipeen   => '0',
+			datain     => '0',
+			idatain    => ddr_dqsi,
+			dataout    => dqsi);
 
-		ctrl <= (others => '0');
+		process (sys_iodclk)
+		begin
+			if rising_edge(sys_iodclk) then
+				imdr_rst <= sys0div_rst or adjdqs_st;
+			end if;
+		end process;
+
 		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
-			SIZE => 1,
-			GEAR => DATA_GEAR)
+			SIZE    => 1,
+			GEAR    => DATA_GEAR)
 		port map (
-			rst  => sys0div_rst,
-			clk  => mclk,
-			ctrl => ctrl,
-			d(0) => dqsi,
-			q    => smp);
+			rst     => imdr_rst,
+			clk     => mclk,
+			ctrl(0) => '0',
+			ctrl(1) => dqsdly(0),
+			d(0)    => dqsi,
+			q       => smp);
 
 		process (sys_rlreq, sys_iodclk)
 			variable q : std_logic;
 		begin
 			if sys_rlreq='0' then
 				adjdqs_req <= '0';
-				q := '0';
+				q          := '0';
 			elsif rising_edge(sys_iodclk) then
 				if adjdqs_req='0' then
 					adjdqs_req <= q;
@@ -369,29 +379,18 @@ begin
 		end process;
 
 		adjdqs_e : entity hdl4fpga.adjdqs
+		generic map (
+			TCP     => TCP,
+			TAP_DLY => TAP_DLY)
 		port map (
-			smp => smp,
+			clk => sys_iodclk,
+			smp => smp(0),
 			req => adjdqs_req,
 			rdy => adjdqs_rdy,
-			iod_clk => sys_iodclk,
-			iod_ce  => dqsiod_ce,
-			iod_inc => dqsiod_inc);
+			st  => adjdqs_st,
+			dly => dqsdly);
 
-		xxx_g : for j in dq'range generate
-			reg_g : if j < 2 generate
-				process (sys_clk0div)
-				begin
-					if rising_edge(sys_clk0div) then
-						smp1(j) <= smp(j);
-					end if;
-				end process;
-			end generate;
-
-			noreg_g : if j >= 2 generate
-				smp1(j) <= smp(j);
-			end generate;
-		end generate;
-
+		sti <= sys_sti(0);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
@@ -400,7 +399,7 @@ begin
 			iod_clk  => sys_iodclk,
 			ddr_sti  => sti,
 			ddr_sto  => sto,
-			ddr_smp  => smp1,
+			ddr_smp  => smp,
 			sys_req  => adjsto_req,
 			sys_rdy  => adjsto_rdy);
 
@@ -422,19 +421,19 @@ begin
 		end process;
 		dqst <= reverse(sys_dqst);
 
-	omdr_dqsclk <= (0 => sys_clk0div,  1 => sys_clk0);
-		sti <= sys_sti(0);
+		dqsclk <= (0 => sys_clk0div, 1 => sys_clk0);
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
 			rst  => sys0div_rst,
-			clk  => omdr_dqsclk,
+			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> ddr_dqst,
 			d    => dqso,
 			q(0) => ddr_dqso);
 
+			tp_dqsdly <= dqsdly;
 	end block;
 end;

@@ -54,7 +54,7 @@ begin
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
 			
-			ddr_sto <= sto;
+			ddr_sto <= st;
 			sto := st;
 		end if;
 	end process;

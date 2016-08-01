@@ -18,13 +18,11 @@ architecture def of adjdqs is
 	constant edge  : std_logic :='0';
 	signal   smp0  : std_logic_vector(smp'range);
 	signal   smp1  : std_logic_vector(smp'range);
-	signal   smp2  : std_logic_vector(smp'range);
 	signal   sync  : std_logic;
 	signal   tmr   : unsigned(0 to 4-1);
 	signal   stop  : std_logic;
 begin
 
-	smp2 <= smp1 xor smp0;
 	smp0 <= smp;
 	process (iod_clk)
 		variable aux : unsigned(smp'range);

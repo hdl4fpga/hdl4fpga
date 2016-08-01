@@ -313,13 +313,13 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqs2.vhd">
+      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqi2.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqi2.vhd">
+      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqs3.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

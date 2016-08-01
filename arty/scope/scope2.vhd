@@ -83,7 +83,6 @@ architecture scope of arty is
 	signal ddrs_clk0div   : std_logic;
 	signal ddrs_clk90div  : std_logic;
 	signal ddrs_clk90     : std_logic;
-	signal ddrs_clk90_n   : std_logic;
 	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
 	signal ddr3_dqst      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
@@ -144,6 +143,7 @@ architecture scope of arty is
 	signal tp             : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
 	signal tp1            : std_logic_vector(6-1 downto 0);
 	signal tpd            : std_logic_vector(data_gear-1 downto 0);
+	signal dqsdly      :  std_logic_vector(6-1 downto 0);
 begin
 		
 	clkin_ibufg : ibufg
@@ -198,7 +198,6 @@ begin
 		ddr_clk0     => ddrs_clk0,
 		ddr_clk0div  => ddrs_clk0div,
 		ddr_clk90    => ddrs_clk90,
-		ddr_clk90_n  => ddrs_clk90_n,
 		ddr_clk90div => ddrs_clk90div,
 		ddr0div_rst  => ddr0div_rst,
 		ddr90div_rst => ddr90div_rst);
@@ -328,6 +327,8 @@ begin
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 
+		TCP          => integer(UCLK_PERIOD*1000.0*real(DDR_DIV)/DDR_MUL),
+		TAP_DELAY    => 78,
 		BANK_SIZE    => BANK_SIZE,
         ADDR_SIZE    => ADDR_SIZE,
 		CMMD_GEAR    => CMMD_GEAR,
@@ -337,12 +338,13 @@ begin
 	port map (
 	tp1 => tp1,
 	tpdq => tpd,
+	
+		tp_dqsdly    => dqsdly,
 		sys_tp       => tp,
 
 		sys_clk0     => ddrs_clk0,
 		sys_clk0div  => ddrs_clk0div,
 		sys_clk90    => ddrs_clk90, 
-		sys_clk90_n  => ddrs_clk90_n,
 		sys_clk90div => ddrs_clk90div, 
 		sys_rlseq    => ddrphy_rlseq,
 		sys_iodclk   => sys_clk,
@@ -455,7 +457,21 @@ begin
 
 	end block;
 
-	rgbled  <= (others => '0');
+	process (dqsdly)
+		variable aux1 : std_logic_vector(3 downto 0);
+		variable aux0 : std_logic_vector(3 downto 0);
+	begin
+		rgbled  <= (others => '0');
+		aux0 := dqsdly(3 downto 0);
+		aux1 := "00" & dqsdly(5 downto 4);
+		for i in 4-1 downto 0 loop
+			if btn(1)='1' then
+				rgbled(3*i+2) <= aux0(i);
+			else
+				rgbled(3*i+2) <= aux1(i);
+			end if;
+		end loop;
+	end process;
 
 	tp_g : for i in 2-1 downto 0 generate
 		led(i+0) <= tp1(i+4) when btn(3)='1' else tpd(i) when btn(2)='1' else tp(i*8+2) when btn(1)='1' else tp(i*8+5);
