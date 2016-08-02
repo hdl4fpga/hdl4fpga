@@ -147,7 +147,7 @@ begin
 		end generate;
 
 		tp_g : if i=0 generate
-			tp_dqidly <= "100101"; --dqidly;
+			tp_dqidly <= dqidly;
 		end generate;
 
 		adjdqi_req <= adjdqs_rdy;
