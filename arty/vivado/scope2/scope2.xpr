@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="14" Path="C:/Users/msagre/hdl4fpga/arty/vivado/scope2/scope2.xpr">
+<Project Version="7" Minor="14" Path="/home/msagre/work/hdl4fpga/arty/vivado/scope2/scope2.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="c40e07c37e3241c3bfafb1b2af162698"/>
@@ -313,13 +313,13 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqi2.vhd">
+      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqs3.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqs3.vhd">
+      <File Path="$PPRDIR/../../../library/xilinx/artix7/adjdqi3.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -373,9 +373,6 @@
     </Simulator>
     <Simulator Name="Riviera">
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
-    </Simulator>
-    <Simulator Name="ActiveHDL">
-      <Option Name="Description" Val="Active-HDL Simulator"/>
     </Simulator>
   </Simulators>
   <Runs Version="1" Minor="10">

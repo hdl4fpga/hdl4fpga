@@ -42,9 +42,9 @@ entity ddrphy is
 		CLKINV       : std_logic := '0');
 	port (
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
-		tp1 : out std_logic_vector(6-1 downto 0);
-		tpdq : out std_logic_vector(data_gear-1 downto 0);
-	   	tp_dqsdly : out std_logic_vector(6-1 downto 0);
+		tp1          : out std_logic_vector(6-1 downto 0);
+		tp_dqidly    : out std_logic_vector(6-1 downto 0);
+	   	tp_dqsdly    : out std_logic_vector(6-1 downto 0);
 
 		sys_iodclk   : in  std_logic;
 		sys_clk0     : in  std_logic;
@@ -531,13 +531,13 @@ begin
 	end process;
 
 	byte_g : for i in ddr_dqsi'range generate
-		signal tpd       : std_logic_vector(0 to data_gear-1);
 	   	signal dqsdly : std_logic_vector(6-1 downto 0);
+	   	signal dqidly : std_logic_vector(6-1 downto 0);
 	begin
 
 		xxx : if i=0 generate
-			tpdq <= tpd;
 			tp_dqsdly  <= dqsdly;
+			tp_dqidly  <= dqidly;
 		end generate;
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
@@ -548,6 +548,7 @@ begin
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
 			tp_dqsdly   => dqsdly,
+			tp_dqidly   => dqidly,
 			sys0div_rst  => phy0div_rst,
 			sys90div_rst => phy90div_rst,
 			sys_clk0   => sys_clk0,
@@ -559,7 +560,6 @@ begin
 			sys_rlreq  => sys_rlreq,
 			sys_rlrdy  => byte_rlrdy(i),
 			sys_rlcal  => byte_rlcal(i),
-			tpdq => tpd,
 
 			sys_sti    => ssti(i),
 			sys_dmt    => sdmt(i),

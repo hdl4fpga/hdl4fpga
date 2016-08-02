@@ -37,8 +37,8 @@ entity ddrdqphy is
 		BYTE_SIZE    : natural);
 	port (
 		sys_tp       : out std_logic_vector(BYTE_SIZE-1 downto 0);
-		tpdq      :  out std_logic_vector(0 to DATA_GEAR-1);
 		tp_dqsdly    : out std_logic_vector(6-1 downto 0);
+		tp_dqidly    : out std_logic_vector(6-1 downto 0);
 
 		sys0div_rst  : in  std_logic;
 		sys90div_rst : in  std_logic;
@@ -123,75 +123,62 @@ begin
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in ddr_dqi'range generate
-		signal imdr_clk   : std_logic_vector(0 to 5-1);
-		signal t : std_logic;
+		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
-		signal dqiod_inc : std_logic;
-		signal dqiod_ce  : std_logic;
-		signal iod_inc   : std_logic;
-		signal iod_ce    : std_logic;
-		signal tpd       : std_logic_vector(0 to DATA_GEAR-1);
+		signal iod_ld   : std_logic;
+		signal dqidly    : std_logic_vector(0 to 5);
 	begin
 		imdr_clk <= (0 => not dqsi, 1 => dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
-			SIZE => 1,
-			GEAR => DATA_GEAR)
+			SIZE    => 1,
+			GEAR    => DATA_GEAR)
 		port map (
-			rst  => sys90div_rst,
-			clk  => imdr_clk,
-			d(0) => dqi(i),
-			q    => dq);
+			rst     => sys90div_rst,
+			clk     => imdr_clk,
+			ctrl(0) => '0',
+			ctrl(1) => dqidly(0),
+			d(0)    => dqi(i),
+			q       => dq);
 
-		xxx_g : for j in dq'range generate
-			reg_g : if j < 2 generate
-				process (sys_clk90div)
-				begin
-					if rising_edge(sys_clk90div) then
-					end if;
-				end process;
-			end generate;
+		cpy_g : for j in dq'range generate
 			sys_dqo(j*BYTE_SIZE+i) <= dq(j);
+		end generate;
 
-			noreg_g : if j >= 2 generate
-				sys_dqo(j*BYTE_SIZE+i) <= dq(j);
-			end generate;
-		end generate;
 		tp_g : if i=0 generate
-			tpdq <= tpd;
+			tp_dqidly <= "100101"; --dqidly;
 		end generate;
+
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_e : entity hdl4fpga.adjdqi
+		generic map (
+			TCP     => TCP,
+			TAP_DLY => TAP_DLY)
 		port map (
-			din => dq,
+			clk => sys_iodclk,
 			req => adjdqi_req,
 			rdy => adjdqi_rdy(i),
-			tp => tpd,
-			iod_clk => sys_iodclk,
-			iod_ce  => dqiod_ce,
-			iod_inc => dqiod_inc);
+			smp => dq(0),
+			dly => dqidly(1 to 5));
 
-		iod_ce  <= dqiod_ce  or dqsiod_ce;
-		iod_inc <= dqiod_inc when adjdqi_req='1' else dqsiod_inc;
-
+		iod_ld <= adjdqi_req and not adjdqi_rdy(i);
 		dqi_i : idelaye2 
 		generic map (
-			DELAY_SRC => "IDATAIN",
-			IDELAY_VALUE => 31,
-			IDELAY_TYPE => "VARIABLE")
+			DELAY_SRC    => "IDATAIN",
+			IDELAY_TYPE  => "VAR_LOAD")
 		port map (
-			regrst => iod_rst,
-			cinvctrl => '0',
-			cntvaluein => (others => '-'),
-			ld => '0',
-			ldpipeen => '0',
-			c   => sys_iodclk,
-			ce  => iod_ce,
-			inc => iod_inc,
-			datain => '-',
-			idatain => ddr_dqi(i),
-			dataout => dqi(i));
+			regrst     => iod_rst,
+			c          => sys_iodclk,
+			ld         => iod_ld,
+			cntvaluein => dqidly(1 to 5),
+			idatain    => ddr_dqi(i),
+			dataout    => dqi(i),
+			cinvctrl   => '0',
+			ce         => '0',
+			inc        => '0',
+			ldpipeen   => '0',
+			datain     => '0');
 
 	end generate;
 
@@ -327,22 +314,21 @@ begin
 		iod_ld <= adjdqs_req and not adjdqs_rdy;
 		dqsidelay_i : idelaye2 
 		generic map (
-			DELAY_SRC => "IDATAIN",
-			SIGNAL_PATTERN => "CLOCK",
-			IDELAY_VALUE => 31,
-			IDELAY_TYPE => "VAR_LOAD")
+			DELAY_SRC      => "IDATAIN",
+			IDELAY_TYPE    => "VAR_LOAD",
+			SIGNAL_PATTERN => "CLOCK")
 		port map (
 			regrst     => iod_rst,
-			cinvctrl   => '0',
 			c          => sys_iodclk,
-			ce         => '0',
-			inc        => '0',
 			ld         => iod_ld,
 			cntvaluein => dqsdly(1 to 5),
-			ldpipeen   => '0',
-			datain     => '0',
 			idatain    => ddr_dqsi,
-			dataout    => dqsi);
+			dataout    => dqsi,
+			cinvctrl   => '0',
+			ce         => '0',
+			inc        => '0',
+			ldpipeen   => '0',
+			datain     => '0');
 
 		process (sys_iodclk)
 		begin
