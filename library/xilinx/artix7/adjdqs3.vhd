@@ -102,6 +102,9 @@ begin
 				step <= to_unsigned(num_of_steps-1, step'length);
 				pha  <= (others => '0');
 				phb  <= (others => '0');
+				dly  <= (others => '0');
+				st   <= (others => '0');
+				rdy  <= '0';
 			elsif step(0)='0' then
 				if tmr(0)='1' then
 					if smp=edge then
@@ -110,11 +113,17 @@ begin
 					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
 					step <= step - 1;
 				end if;
+				st  <= tmr(0);
+				dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+				rdy <= '0';
+			elsif then
+				st  <= '1';
+				dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+				rdy <= '1';
+			else
+				st  <= '1';
 			end if;
 		end if;
 	end process;
-	st  <= tmr(0);
-	dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
-	rdy <= step(0);
 
 end;

@@ -462,14 +462,18 @@ begin
 		variable aux2 : std_logic_vector(3 downto 0);
 		variable aux1 : std_logic_vector(3 downto 0);
 		variable aux0 : std_logic_vector(3 downto 0);
+		variable sel  : std_logic_vector(2-1 downto 0);
+
 	begin
 		rgbled <= (others => '0');
 		aux3 := "00" & dqidly(5 downto 4);
 		aux2 := dqidly(3 downto 0);
 		aux1 := "00" & dqsdly(5 downto 4);
 		aux0 := dqsdly(3 downto 0);
+		sel(0) := btn(1);
+		sel(1) := sw(0);
 		for i in 4-1 downto 0 loop
-			case btn(2 downto 1) is
+			case sel is
 			when "00" =>
 				rgbled(3*i+2) <= aux1(i);
 			when "01" =>

@@ -54,10 +54,10 @@ begin
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
 			
-			ddr_sto <= st;
 			sto := st;
 		end if;
 	end process;
+	ddr_sto <= st;
 
 	process (sys_req, ddr_clk)
 	begin
