@@ -30,6 +30,7 @@ create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_c
  
 set_clock_groups -asynchronous -group { sys_clk     } -group { I           }
 set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_10  }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_4   }
 set_clock_groups -asynchronous -group { dqso0       } -group { I           }
 set_clock_groups -asynchronous -group { dqso0       } -group { sys_clk     }
 set_clock_groups -asynchronous -group { dqso0       } -group { ddr_i_n_4   }

@@ -337,6 +337,7 @@ begin
 		BYTE_SIZE    => BYTE_SIZE)
 	port map (
 	
+		tp_sel => sw(1),
 		tp_dqsdly    => dqsdly,
 		tp_dqidly    => dqidly,
 		tp1          => tp1,

@@ -33,17 +33,17 @@ use hdl4fpga.std.all;
 
 entity adjdqi is
 	generic (
-		edge    : std_logic := '0';
 		tCP     : natural;
 		tap_dly : natural := 27);
 	port (
 		
-		clk : in  std_logic;
-		req : in  std_logic;
-		rdy : out std_logic;
-		smp : in  std_logic;
-		st  : out std_logic;
-		dly : out std_logic_vector);
+		edge : in  std_logic;
+		clk  : in  std_logic;
+		req  : in  std_logic;
+		rdy  : out std_logic;
+		smp  : in  std_logic;
+		st   : out std_logic;
+		dly  : out std_logic_vector);
 
 end;
 
@@ -78,6 +78,7 @@ architecture beh of adjdqi is
 	signal phc  : gap_word;
 	signal tmr  : unsigned(0 to 4-1);
 	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
+	signal stop : std_logic;
 
 begin
   
@@ -102,6 +103,8 @@ begin
 				step <= to_unsigned(num_of_steps-1, step'length);
 				pha  <= (others => '0');
 				phb  <= (others => '0');
+				stop <= '0';
+				st   <= '0';
 			elsif step(0)='0' then
 				if tmr(0)='1' then
 					if smp=edge then
@@ -110,11 +113,19 @@ begin
 					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
 					step <= step - 1;
 				end if;
+				st   <= tmr(0);
+				stop <= '0';
+				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+			elsif stop='0' then
+				st   <= '1';
+				stop <= '1';
+				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+			else
+				st   <= '0';
+				stop <= '1';
 			end if;
 		end if;
 	end process;
-	st  <= tmr(0);
-	dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
-	rdy <= step(0);
+	rdy <= stop;
 
 end;
