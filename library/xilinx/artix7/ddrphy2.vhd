@@ -41,7 +41,7 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		tp_sel : in std_logic;
+		tp_sel : in std_logic_vector(1 downto 0);
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
 		tp1          : out std_logic_vector(6-1 downto 0);
 		tp_dqidly    : out std_logic_vector(6-1 downto 0);
@@ -309,6 +309,8 @@ architecture virtex of ddrphy is
 	signal rlrdy   : std_logic;
 	signal lvl     : std_logic;
 	signal rlcal   : std_logic;
+	signal dqsdly : std_logic_vector(2*6-1 downto 0);
+	signal dqidly : std_logic_vector(2*6-1 downto 0);
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
@@ -531,15 +533,10 @@ begin
 		end if;
 	end process;
 
+	tp_dqsdly <= dqsdly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqsdly(6*(0+1)-1 downto 6*0);
+	tp_dqidly <= dqidly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqidly(6*(0+1)-1 downto 6*0);
 	byte_g : for i in ddr_dqsi'range generate
-	   	signal dqsdly : std_logic_vector(6-1 downto 0);
-	   	signal dqidly : std_logic_vector(6-1 downto 0);
-	begin
 
-		xxx : if i=0 generate
-			tp_dqsdly  <= dqsdly;
-			tp_dqidly  <= dqidly;
-		end generate;
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			TCP        => TCP,
@@ -548,9 +545,9 @@ begin
 			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
-			tp_sel => tp_sel,
-			tp_dqsdly   => dqsdly,
-			tp_dqidly   => dqidly,
+			tp_sel => tp_sel(0),
+			tp_dqsdly   => dqsdly(6*(i+1)-1 downto 6*i),
+			tp_dqidly   => dqidly(6*(i+1)-1 downto 6*i),
 			sys0div_rst  => phy0div_rst,
 			sys90div_rst => phy90div_rst,
 			sys_clk0   => sys_clk0,

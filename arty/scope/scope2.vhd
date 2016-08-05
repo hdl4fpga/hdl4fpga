@@ -337,7 +337,7 @@ begin
 		BYTE_SIZE    => BYTE_SIZE)
 	port map (
 	
-		tp_sel => sw(1),
+		tp_sel => sw(1 downto 0),
 		tp_dqsdly    => dqsdly,
 		tp_dqidly    => dqidly,
 		tp1          => tp1,
@@ -472,7 +472,7 @@ begin
 		aux1 := "00" & dqsdly(5 downto 4);
 		aux0 := dqsdly(3 downto 0);
 		sel(0) := btn(1);
-		sel(1) := sw(0);
+		sel(1) := sw(3);
 		for i in 4-1 downto 0 loop
 			case sel is
 			when "00" =>

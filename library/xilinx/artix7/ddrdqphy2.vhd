@@ -135,7 +135,7 @@ begin
 			end if;
 		end process;
 
-		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
+		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => not sys_clk90div);
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -437,7 +437,7 @@ begin
 			d    => dqso,
 			q(0) => ddr_dqso);
 
-		tp_dqsdly <= dqsdly when tp_sel='0' else "00" & smp;
+		tp_dqsdly <= dqsdly when tp_sel='0' else ("00" & smp);
 		tp(0) <= smp(0);
 	end block;
 end;
