@@ -328,7 +328,7 @@ begin
 	generic map (
 
 		TCP          => integer(UCLK_PERIOD*1000.0*real(DDR_DIV)/DDR_MUL),
-		TAP_DELAY    => 75,
+		TAP_DELAY    => 78,
 		BANK_SIZE    => BANK_SIZE,
         ADDR_SIZE    => ADDR_SIZE,
 		CMMD_GEAR    => CMMD_GEAR,
