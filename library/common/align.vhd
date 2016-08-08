@@ -49,7 +49,9 @@ begin
 		begin
 			if rising_edge(clk) then
 				if ena='1' then
-					q(0 to q'right-1) <= q(1 to q'right);
+					if dly(i) > 0 then
+						q(0 to q'right-1) <= q(1 to q'right);
+					end if;
 				end if;
 			end if;
 		end process;

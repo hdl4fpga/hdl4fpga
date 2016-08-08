@@ -83,7 +83,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
-	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
+	signal adjdqi_rdy  : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
 	signal rlrdy      : std_logic;
@@ -149,9 +149,17 @@ begin
 			d(0)    => dqi(i),
 			q       => dq);
 
-		cpy_g : for j in dq'range generate
-			sys_dqo(j*BYTE_SIZE+i) <= dq(j);
-		end generate;
+		dly_g : entity hdl4fpga.align
+		generic map (
+			n => 4,
+			d => (1, 1, 0, 0))
+		port map (
+			clk => sys_clk90div,
+			di  => dq,
+		    do(0) => sys_dqo(0*BYTE_SIZE+i),
+		    do(1) => sys_dqo(1*BYTE_SIZE+i),
+		    do(2) => sys_dqo(2*BYTE_SIZE+i),
+		    do(3) => sys_dqo(3*BYTE_SIZE+i));
 
 		tp_g : if i=0 generate
 			tp_dqidly <= dqidly when tp_sel='0' else imdr_inv & "0" & dq;
@@ -316,6 +324,7 @@ begin
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
 		signal dqsdly    : std_logic_vector(0 to 5);
+		signal adjdqsdly : std_logic_vector(0 to 5);
 		signal imdr_rst  : std_logic;
 		signal adjdqs_st : std_logic;
 	begin
@@ -391,9 +400,13 @@ begin
 			req  => adjdqs_req,
 			rdy  => adjdqs_rdy,
 			st   => adjdqs_st,
-			dly  => dqsdly);
+			dly  => adjdqsdly);
 
 		sti <= sys_sti(0);
+
+		dqsdly(1 to 5) <= std_logic_vector(unsigned(adjdqsdly(1 to 5))+2) when adjsto_req='1' and adjsto_rdy='0' else adjdqsdly(1 to 5);
+		dqsdly(0) <= adjdqsdly(0);
+
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
 			GEAR => DATA_GEAR)
@@ -407,9 +420,11 @@ begin
 			sys_rdy  => adjsto_rdy);
 
 		process (sys_clk90div)
+			variable st : std_logic;
 		begin
 			if falling_edge(sys_clk90div) then
 				sys_sto <= (others => sto);
+				st := sto;
 			end if;
 		end process;
 	
