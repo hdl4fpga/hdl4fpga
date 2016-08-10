@@ -56,7 +56,7 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : real    := 16.0; --18;
+	constant DDR_MUL      : real    := 13.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -243,7 +243,7 @@ begin
 		ddrs_rst       => ddrs0div_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
 		ddrs_bl        => "000",
-		ddrs_cl        => "110",
+		ddrs_cl        => "101", --"110",
 		ddrs_cwl       => "010",
 		ddrs_rtt       => "001",
 

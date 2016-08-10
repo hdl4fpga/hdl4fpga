@@ -135,7 +135,7 @@ begin
 			end if;
 		end process;
 
-		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
+		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => not sys_clk90, 3 => sys_clk90, 4 => sys_clk90div);
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -152,7 +152,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
+			d => (1,1, 0, 0))
 		port map (
 			clk => sys_clk90div,
 			di  => dq,
@@ -354,7 +354,7 @@ begin
 			end if;
 		end process;
 
-		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => not sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
+		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
@@ -365,7 +365,7 @@ begin
 			d(0) => dqsi,
 			q    => smp);
 
-		dqsdly <= adjdly(dqsdly'range) when adjsto_req='0' else std_logic_vector(unsigned(adjdly(dqsdly'range))+2);
+		dqsdly <= adjdly(dqsdly'range) when adjdqi_req='0' else std_logic_vector(unsigned(adjdly(dqsdly'range))+2);
 ----		dqsdly <= adjdly(dqsdly'range);
 
 		process (sys_rlreq, sys_iodclk)
