@@ -119,7 +119,7 @@ begin
 			elsif stop='0' then
 				st   <= '1';
 				stop <= '1';
-				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0)+2, dly'length-1));
+				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1)-3);
 			else
 				st   <= '0';
 				stop <= '1';

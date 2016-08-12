@@ -49,7 +49,7 @@ begin
 
 		iser_i : iserdese2
 		generic map (
-			INTERFACE_TYPE => "MEMORY",
+--			INTERFACE_TYPE => "MEMORY",
 			IOBDELAY => "BOTH",
 			DYN_CLKDIV_INV_EN => "TRUE",
 			DYN_CLK_INV_EN => "TRUE",

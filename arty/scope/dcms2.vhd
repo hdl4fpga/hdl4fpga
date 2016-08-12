@@ -114,13 +114,11 @@ begin
 		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
 		clkout1_phase => 90.0,
-		clkout5_phase => 90.0+180.0,
-		clkout2_phase => 180.000,
-		clkout4_phase => 45.0,
+		clkout2_phase => 45.0*2.0/2.0,
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
-		clkout3_divide => DDR_GEAR,
-		clkout4_divide => DDR_GEAR)
+		clkout2_divide => DDR_GEAR,
+		clkout3_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
 		rst      => sys_rst,
@@ -129,8 +127,8 @@ begin
 		clkfbout => ddr_clkfb,
 		clkout0  => ddr_clk0_mmce2,
 		clkout1  => ddr_clk90_mmce2,
+		clkout2  => ddr_clk90div_mmce2,
 		clkout3  => ddr_clk0div_mmce2,
-		clkout4  => ddr_clk90div_mmce2,
 		locked   => lcks(ddr0div));
 	lcks(ddr90div) <= lcks(ddr0div);
     

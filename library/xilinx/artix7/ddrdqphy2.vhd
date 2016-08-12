@@ -83,7 +83,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
-	signal adjdqi_rdy  : std_logic_vector(ddr_dqi'range);
+	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
 	signal rlrdy      : std_logic;
@@ -153,7 +153,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0,0, 1, 1))
+			d => (0, 0, 0, 0))
 		port map (
 			clk => sys_clk90div,
 			di  => dq,
@@ -163,7 +163,7 @@ begin
 		    do(3) => sys_dqo(3*BYTE_SIZE+i));
 
 		tp_g : if i=0 generate
-			tp_dqidly <= dqidly when tp_sel='0' else imdr_inv & "0" & dq;
+			tp_dqidly <= '0' & dqidly(1 to 5) when tp_sel='0' else imdr_inv & "0" & dq;
 		end generate;
 
 		adjdqi_req <= adjdqs_rdy;
@@ -368,14 +368,14 @@ begin
 			d(0) => dqsi,
 			q    => smp);
 
-		dqsdly <= adjdly(dqsdly'range) when adjsto_req='0' else std_logic_vector(unsigned(adjdly(dqsdly'range))+2);
+		dqsdly <= adjdly(dqsdly'range) when adjsto_req='0' else std_logic_vector(unsigned(adjdly(dqsdly'range))+3);
 
 		process (sys_rlreq, sys_iodclk)
 			variable q : std_logic;
 		begin
 			if sys_rlreq='0' then
 				adjdqs_req <= '0';
-				q          := '0';
+				q := '0';
 			elsif rising_edge(sys_iodclk) then
 				if adjdqs_req='0' then
 					adjdqs_req <= q;
@@ -396,7 +396,7 @@ begin
 
 		adjdqs_e : entity hdl4fpga.adjdqs
 		generic map (
-			TCP     => 2*TCP,
+			TCP     => TCP,
 			TAP_DLY => TAP_DLY)
 		port map (
 			clk  => sys_iodclk,
