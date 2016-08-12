@@ -11,6 +11,7 @@ SET I=1
 		GOTO NEXT
 	)
 	for /f "delims=" %%i in ('awk "{print $7}" log') do set a=%%i
-tail -n +%a% pp|head
+echo line %a%
+tail -n +%a% pp 2>nul|head
 echo '-----'
-tail -n +%a% pp1|head
+tail -n +%a% pp1 2>nul|head
