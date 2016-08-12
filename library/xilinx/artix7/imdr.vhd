@@ -51,8 +51,8 @@ begin
 		generic map (
 			INTERFACE_TYPE => "MEMORY",
 			IOBDELAY => "BOTH",
-			DYN_CLKDIV_INV_EN => "FALSE",
-			DYN_CLK_INV_EN => "FALSE",
+			DYN_CLKDIV_INV_EN => "TRUE",
+			DYN_CLK_INV_EN => "TRUE",
 			NUM_CE => 1)
 		port map (
 			rst          => rst,
