@@ -95,6 +95,7 @@ architecture virtex of ddrdqphy is
 	signal dqsiod_inc : std_logic;
 	signal dqsiod_ce  : std_logic;
 	signal imdr_inv   : std_logic;
+	signal clk90div   : std_logic;
 
 begin
 
@@ -118,6 +119,15 @@ begin
 	tp(1) <= adjdqs_rdy;
 	tp(2) <= adjsto_req;
 	tp(5) <= adjsto_rdy;
+
+	bufr_i : bufr
+	generic map (
+		BUFR_DIVIDE => "2")
+	port map (
+		clr => sys90div_rst,
+		ce  => '1',
+		i   => sys_clk90,
+		o   => clk90div);
 
 	iod_rst <= not adjdqs_req;
 	iddr_g : for i in ddr_dqi'range generate
@@ -145,8 +155,6 @@ begin
 		port map (
 			rst     => imdr_rst,
 			clk     => imdr_clk,
-			ctrl(0) => '0',
-			ctrl(1) => '0',--imdr_inv,
 			d(0)    => dqi(i),
 			q       => dq);
 
@@ -320,7 +328,7 @@ begin
 		signal smp       : std_logic_vector(0 to DATA_GEAR-1);
 		signal sto       : std_logic;
 		signal sti       : std_logic;
-		signal mclk      : std_logic_vector(0 to 5-1);
+		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal dqso      : std_logic_vector(sys_dqso'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
@@ -357,14 +365,14 @@ begin
 			end if;
 		end process;
 
-		mclk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
+		imdr_clk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk0, 3 => not sys_clk0, 4 => sys_clk0div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE => 1,
 			GEAR => DATA_GEAR)
 		port map (
 			rst  => imdr_rst,
-			clk  => mclk,
+			clk  => imdr_clk,
 			d(0) => dqsi,
 			q    => smp);
 

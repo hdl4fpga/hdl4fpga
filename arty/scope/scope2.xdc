@@ -42,6 +42,7 @@ set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_8   }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_i_n_8   }
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
@@ -50,6 +51,7 @@ set_input_delay -clock dqso1 -max 0 [get_ports ddr3_dq[*] ]
 
 set_false_path -from [ get_pins dcms_e/rsts_b.rsts_g[3].q_reg*/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.q_reg*/D ]
 
+set_false_path -from [ get_pins scope_e/ddr_e/rdfifo_i/sys_do_win_reg/C ] -to [ get_pins scope_e/ddr_e/rdfifo_i/bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ar_g.gcntr_g[*].ffd_i/ffd_i/CLR]
 set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/*.registered_g[*].*_reg[*]/D ]
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports gclk100]
 

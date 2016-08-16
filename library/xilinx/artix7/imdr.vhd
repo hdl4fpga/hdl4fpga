@@ -32,7 +32,6 @@ entity imdr is
 	port (
 		rst  : in  std_logic;
 		clk  : in  std_logic_vector(0 to 5-1);
-		ctrl : in  std_logic_vector(0 to 2-1) := (others => '0');
 		d    : in  std_logic_vector(0 to SIZE-1);
 		q    : out std_logic_vector(0 to SIZE*GEAR-1));
 end;
@@ -49,17 +48,13 @@ begin
 
 		iser_i : iserdese2
 		generic map (
---			INTERFACE_TYPE => "MEMORY",
-			IOBDELAY => "BOTH",
-			DYN_CLKDIV_INV_EN => "TRUE",
-			DYN_CLK_INV_EN => "TRUE",
-			NUM_CE => 1)
+			INTERFACE_TYPE => "MEMORY",
+			DATA_RATE => "DDR",
+			IOBDELAY  => "BOTH")
 		port map (
 			rst          => rst,
-			dynclksel    => ctrl(1),
 			clk          => clk(0),
 			clkb         => clk(1),
-			dynclkdivsel => ctrl(0),
 			oclk         => clk(2),
 			oclkb        => clk(3),
 			clkdiv       => clk(4),
@@ -69,11 +64,13 @@ begin
 			q3           => po(1),
 			q4           => po(0),
 
+			dynclksel    => '0',
+			dynclkdivsel => '0',
 			bitslip      => '0',
 			ce1          => '1',
 			ce2          => '1',
 			clkdivp      => '0',
-			d            => '0', --d(i),
+			d            => '0',
 			ofb          => '0',
 			shiftin1     => '0',
 			shiftin2     => '0');
