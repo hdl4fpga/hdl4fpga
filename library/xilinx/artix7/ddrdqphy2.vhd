@@ -136,6 +136,7 @@ begin
 		signal adjdqi_st : std_logic;
 		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
 		signal dqidly    : std_logic_vector(0 to 5);
+		signal dqidly0   : std_logic_vector(1 to 5);
 	begin
 
 		process (sys_clk90div)
@@ -171,7 +172,7 @@ begin
 		    do(3) => sys_dqo(3*BYTE_SIZE+i));
 
 		tp_g : if i=0 generate
-			tp_dqidly <= '0' & dqidly(1 to 5) when tp_sel='0' else imdr_inv & "0" & dq;
+			tp_dqidly <= '0' & dqidly0 when tp_sel='0' else imdr_inv & "0" & dq;
 		end generate;
 
 		adjdqi_req <= adjdqs_rdy;
@@ -193,17 +194,18 @@ begin
 			DELAY_SRC    => "IDATAIN",
 			IDELAY_TYPE  => "VAR_LOAD")
 		port map (
-			regrst     => iod_rst,
-			c          => sys_iodclk,
-			ld         => '1',
-			cntvaluein => dqidly(1 to 5),
-			idatain    => ddr_dqi(i),
-			dataout    => dqi(i),
-			cinvctrl   => '0',
-			ce         => '0',
-			inc        => '0',
-			ldpipeen   => '0',
-			datain     => '0');
+			regrst      => iod_rst,
+			c           => sys_iodclk,
+			ld          => '1',
+			cntvaluein  => dqidly(1 to 5),
+			cntvalueout => dqidly0,
+			idatain     => ddr_dqi(i),
+			dataout     => dqi(i),
+			cinvctrl    => '0',
+			ce          => '0',
+			inc         => '0',
+			ldpipeen    => '0',
+			datain      => '0');
 
 	end generate;
 
