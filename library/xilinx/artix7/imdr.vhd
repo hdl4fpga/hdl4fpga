@@ -48,7 +48,7 @@ begin
 
 		iser_i : iserdese2
 		generic map (
-			INTERFACE_TYPE => "MEMORY",
+			INTERFACE_TYPE => "MEMORY_DDR3",
 			DATA_RATE => "DDR",
 			IOBDELAY  => "BOTH")
 		port map (
@@ -57,7 +57,7 @@ begin
 			clkb         => clk(1),
 			oclk         => clk(2),
 			oclkb        => clk(3),
-			clkdiv       => clk(4),
+			clkdiv       => '0', --clk(4),
 			ddly         => d(i),
 			q1           => po(3),
 			q2           => po(2),
@@ -69,7 +69,7 @@ begin
 			bitslip      => '0',
 			ce1          => '1',
 			ce2          => '1',
-			clkdivp      => '0',
+			clkdivp      => clk(4),
 			d            => '0',
 			ofb          => '0',
 			shiftin1     => '0',

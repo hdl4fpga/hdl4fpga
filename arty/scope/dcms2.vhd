@@ -114,7 +114,7 @@ begin
 		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
 		clkout1_phase => 90.0,
-		clkout2_phase => 45.0*2.0/2.0,
+		clkout2_phase => 45.0*4.0/4.0,
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
 		clkout2_divide => DDR_GEAR,

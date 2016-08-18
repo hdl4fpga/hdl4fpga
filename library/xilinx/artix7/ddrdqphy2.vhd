@@ -148,7 +148,7 @@ begin
 			end if;
 		end process;
 
-		imdr_clk <= (0 => dqsi, 1 => not dqsi, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
+		imdr_clk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
 			SIZE    => 1,
@@ -162,7 +162,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
+			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clk90div,
 			di  => dq,
@@ -185,7 +185,7 @@ begin
 			clk  => sys_iodclk,
 			req  => adjdqi_req,
 			rdy  => adjdqi_rdy(i),
-			smp  => dq(0),
+			smp  => dq(1),
 			st   => adjdqi_st,
 			dly  => dqidly);
 
