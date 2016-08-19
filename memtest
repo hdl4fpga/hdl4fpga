@@ -1,12 +1,12 @@
 rm pp pp1
 SIZE=${2:-64};
 BLOCKS=${1:-262144};
-./scope $BLOCKS $SIZE > pp
-./scope $BLOCKS $SIZE > pp1
+./scope2 $BLOCKS $SIZE > pp
+./scope2 $BLOCKS $SIZE > pp1
 i=0
 while cmp pp pp1 > log ; do 
 	i=`expr $i + 1`
 	TIMEFORMAT="$i %lR"
-	time ./scope $BLOCKS $SIZE > pp1
+	time ./scope2 $BLOCKS $SIZE > pp1
 done
 cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a pp|head; echo '-----'; tail -n +$a pp1|head)
