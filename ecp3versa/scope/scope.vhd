@@ -37,7 +37,7 @@ library ecp3;
 use ecp3.components.all;
 
 architecture scope of ecp3versa is
-	constant cmmd_phases : natural := 2;
+	constant CMMD_GEAR : natural := 2;
 	constant data_phases : natural := 1;
 	constant bank_size   : natural := 2;
 	constant addr_size   : natural := 13;
@@ -81,15 +81,15 @@ architecture scope of ecp3versa is
 	signal ddr_eclk   : std_logic;
 	signal ddr_pha    : std_logic_vector(4-1 downto 0);
 
-	signal ddrphy_rst : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cke : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cs  : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_ras : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_cas : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_we  : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_odt : std_logic_vector(cmmd_phases-1 downto 0);
-	signal ddrphy_b   : std_logic_vector(cmmd_phases*ddr3_b'length-1 downto 0);
-	signal ddrphy_a   : std_logic_vector(cmmd_phases*ddr3_a'length-1 downto 0);
+	signal ddrphy_rst : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cke : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cs  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_ras : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cas : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_we  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_odt : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_b   : std_logic_vector(CMMD_GEAR*ddr3_b'length-1 downto 0);
+	signal ddrphy_a   : std_logic_vector(CMMD_GEAR*ddr3_a'length-1 downto 0);
 	signal ddrphy_dqsi : std_logic_vector(ddr3_dqs'length-1 downto 0);
 	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
 	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
@@ -150,20 +150,21 @@ begin
 	input_clk <= ddr_sclk;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		fpga => LatticeECP3,
-		DDR_tCP => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
+		FPGA           => LatticeECP3,
+		CMMD_GEAR      => CMMD_GEAR,
+		DDR_tCP        => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_SCLKPHASES => 1,
 		DDR_SCLKEDGES  => 1,
-		DDR_MARK => M15E,
-		DDR_STROBE => "INTERNAL",
+		DDR_MARK       => M15E,
+		DDR_STROBE     => "INTERNAL",
 		DDR_DATAPHASES => 1,
-		DDR_DATAEDGES => 1,
-		DDR_BANKSIZE => ddr3_b'length,
-		DDR_ADDRSIZE => ddr3_a'length,
-		DDR_CLMNSIZE => 7,
-		DDR_LINESIZE => line_size,
-		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size)
+		DDR_DATAEDGES  => 1,
+		DDR_BANKSIZE   => ddr3_b'length,
+		DDR_ADDRSIZE   => ddr3_a'length,
+		DDR_CLMNSIZE   => 7,
+		DDR_LINESIZE   => line_size,
+		DDR_WORDSIZE   => word_size,
+		DDR_BYTESIZE   => byte_size)
 	port map (
 
 		input_rst => ddrs_rst,
