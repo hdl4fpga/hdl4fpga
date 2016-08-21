@@ -291,7 +291,13 @@ begin
 		signal dqsdllb_uddcntln : std_logic;
 		signal rst : std_logic;
 	begin
-		rst <= phy_rst; 
+		process(sys_sclk2x)
+		begin
+			if rising_edge(sys_sclk2x) then
+				rst <= phy_rst; 
+			end if;
+		end process;
+
 		dqsdllb_i : dqsdllb
 		port map (
 			rst => rst,

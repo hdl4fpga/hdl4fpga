@@ -161,13 +161,13 @@
         <Source name="../../library/scope/scope-arty.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/dataio-arty.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/ddr/xdr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/ddr/xdr-arty.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/ddr/xdr_sch.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/ddr/xdr_sch-arty.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/dataio.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
