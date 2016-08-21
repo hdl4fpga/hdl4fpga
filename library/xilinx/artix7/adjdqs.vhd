@@ -79,7 +79,6 @@ architecture beh of adjdqs is
 	signal phc  : gap_word;
 	signal tmr  : unsigned(0 to 4-1);
 	signal step : unsigned(0 to unsigned_num_bits(num_of_steps-1));
-	signal stop : std_logic;
 
 begin
   
@@ -88,11 +87,14 @@ begin
 		if rising_edge(clk) then
 			if req='0' then
 				tmr <= (others => '0');
+			elsif step(0)='1' then
+				tmr <= (others => '0');
 			elsif tmr(0)='1' then
 				tmr <= (others => '0');
-			elsif step(0)='0' then
+			else
 				tmr <= tmr + 1;
 			end if;
+			st <= tmr(0);
 		end if;
 	end process;
 
@@ -105,8 +107,6 @@ begin
 				pha  <= (others => '0');
 				phb  <= (others => '0');
 				dly  <= (dly'range => '0');
-				st   <= '0';
-				stop <= '0';
 			elsif step(0)='0' then
 				if tmr(0)='1' then
 					if smp=edge then
@@ -115,19 +115,10 @@ begin
 					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
 					step <= step - 1;
 				end if;
-				st   <= tmr(0);
-				stop <= '0';
-				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
-			elsif stop='0' then
-				st   <= '1';
-				stop <= '1';
-				dly  <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
-			else
-				st   <= '0';
-				stop <= '1';
+				dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
 			end if;
 		end if;
 	end process;
-	rdy <= stop;
+	rdy <= step(0);
 
 end;
