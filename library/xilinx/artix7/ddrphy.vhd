@@ -373,7 +373,7 @@ begin
 							if rw='0' then 
 								cmd_req <= '0';
 							elsif rlrdy='1' then
-								cmd_req <= rlcal;--'0';
+								cmd_req <= rlcal;
 							end if;
 						end if;
 					elsif cmd_rdy='1' then
@@ -389,11 +389,11 @@ begin
 					cmd_req <= '1';
 					lvl     <= '0';
 				else
-					cmd_req <= rlcal; --'0';
+					cmd_req <= rlcal;
 					lvl     <= '0';
 				end if;
 			else
-				cmd_req <= rlcal; --'0';
+				cmd_req <= rlcal;
 				if sys_act='1' then
 					lvl     <= '0';
 					phy_ini <= '1';
@@ -537,8 +537,6 @@ begin
 	tp_dqsdly <= dqsdly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqsdly(6*(0+1)-1 downto 6*0);
 	tp_dqidly <= dqidly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqidly(6*(0+1)-1 downto 6*0);
 	byte_g : for i in ddr_dqsi'range generate
-	begin
-
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			TCP        => TCP,
