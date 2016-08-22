@@ -29,23 +29,24 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant fpga : natural;
-		constant DDR_TCP      : natural;
+		constant FPGA           : natural;
+		constant CMMD_GEAR      : natural;
+		constant DDR_TCP        : natural;
 		constant DDR_SCLKPHASES : natural;
-		constant DDR_SCLKEDGES : natural;
+		constant DDR_SCLKEDGES  : natural;
 		constant DDR_DATAPHASES : natural :=  1;
-		constant DDR_DATAEDGES : natural :=  1;
+		constant DDR_DATAEDGES  : natural :=  1;
 		constant DDR_CMNDPHASES : natural :=  2;
-		constant DDR_MARK     : natural;
-		constant DDR_STROBE   : string := "NONE";
-		constant DDR_BANKSIZE : natural :=  3;
-		constant DDR_ADDRSIZE : natural := 13;
-		constant DDR_CLMNSIZE : natural :=  6;
-		constant DDR_LINESIZE : natural := 16;
-		constant DDR_WORDSIZE : natural := 16;
-		constant DDR_BYTESIZE : natural :=  8;
-		constant PAGE_SIZE    : natural := 9;
-		constant NIBBLE_SIZE  : natural := 4);
+		constant DDR_MARK       : natural;
+		constant DDR_STROBE     : string  := "NONE";
+		constant DDR_BANKSIZE   : natural :=  3;
+		constant DDR_ADDRSIZE   : natural := 13;
+		constant DDR_CLMNSIZE   : natural :=  6;
+		constant DDR_LINESIZE   : natural := 16;
+		constant DDR_WORDSIZE   : natural := 16;
+		constant DDR_BYTESIZE   : natural :=  8;
+		constant PAGE_SIZE      : natural := 9;
+		constant NIBBLE_SIZE    : natural := 4);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -54,50 +55,54 @@ entity scope is
 		input_rst : in std_logic := '0';
 		input_clk : in std_logic;
 
-		ddrs_clks : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
-		ddrs_rtt : in std_logic_vector;
-		ddrs_bl  : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_cl  : in std_logic_vector(3-1 downto 0) := "010";
-		ddrs_cwl : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_wr  : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_ini : out std_logic;
+		ddrs_clks  : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
+		ddrs_rtt   : in std_logic_vector;
+		ddrs_bl    : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_cl    : in std_logic_vector(3-1 downto 0) := "010";
+		ddrs_cwl   : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_wr    : in std_logic_vector(3-1 downto 0) := "101";
+		ddrs_ini   : out std_logic;
+		ddrs_act   : out std_logic;
 		ddrs_cmd_rdy : out std_logic;
 
-		ddr_wlreq : out std_logic;
-		ddr_wlrdy : in  std_logic := '-';
-		ddr_wlcal : in  std_logic := '0';
+		ddr_wlreq  : out std_logic;
+		ddr_wlrdy  : in  std_logic := '-';
+		ddr_rlreq  : out std_logic;
+		ddr_rlrdy  : in  std_logic := '-';
+		ddr_rlcal  : in  std_logic := '0';
+		ddr_rlseq  : out std_logic := '0';
 		ddr_phyini : in std_logic := '1';
-		ddr_phyrw : in std_logic := '-';
+		ddr_phyrw  : in std_logic := '-';
 		ddr_phycmd_req : in std_logic := '0';
 
-		ddr_rst : out std_logic;
-		ddr_cke : out std_logic;
-		ddr_cs  : out std_logic;
-		ddr_ras : out std_logic;
-		ddr_cas : out std_logic;
-		ddr_we  : out std_logic;
-		ddr_b   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_a   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqsi : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqi : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
-		ddr_dqo : out std_logic_vector(DDR_LINESIZE-1 downto 0);
-		ddr_odt : out std_logic;
-		ddr_sto : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_sti : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_rst   : out std_logic;
+		ddr_cke   : out std_logic;
+		ddr_cs    : out std_logic;
+		ddr_ras   : out std_logic;
+		ddr_cas   : out std_logic;
+		ddr_we    : out std_logic;
+		ddr_b     : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_a     : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_dmi   : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqsi  : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqi   : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_dqo   : out std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_odt   : out std_logic;
+		ddr_sto   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti   : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
-		mii_rst  : in std_logic := '0';
-		mii_rxc  : in std_logic;
-		mii_rxdv : in std_logic;
-		mii_rxd  : in std_logic_vector;
-		mii_txc  : in std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector;
+		mii_rst   : in std_logic := '0';
+		mii_rxc   : in std_logic;
+		mii_rxdv  : in std_logic;
+		mii_rxd   : in std_logic_vector;
+		mii_txc   : in std_logic;
+		mii_txen  : out std_logic;
+		mii_txd   : out std_logic_vector;
 
 		vga_rst   : in  std_logic := '0';
 		vga_clk   : in  std_logic;
@@ -132,75 +137,62 @@ architecture def of scope is
 	signal cga_don : std_logic;
 	signal cga_code : byte;
 
-	signal ddrs_clk180 : std_logic;
+	signal ddrs_clk180  : std_logic;
 
-	signal ddr_lp_clk : std_logic;
+	signal ddr_lp_clk   : std_logic;
 
-	signal ddr_ini : std_logic;
-	signal ini : std_logic;
-	signal ddr_cmd_req : std_logic;
-	signal ddr_rw  : std_logic;
+	signal ddr_ini      : std_logic;
+	signal ini          : std_logic;
+	signal ddr_cmd_req  : std_logic;
+	signal ddr_rw       : std_logic;
 
+	signal cmd_rdy      : std_logic;
 	signal ddrs_ref_req : std_logic;
 	signal ddrs_cmd_req : std_logic;
-	signal cmd_rdy : std_logic;
-	signal ddrs_ba : std_logic_vector(0 to DDR_BANKSIZE-1);
-	signal ddrs_a  : std_logic_vector(0 to DDR_ADDRSIZE-1);
-	signal ddrs_rowa  : std_logic_vector(0 to DDR_ADDRSIZE-1);
-	signal ddrs_cola  : std_logic_vector(0 to DDR_ADDRSIZE-1);
-	signal ddrs_act : std_logic;
-	signal ddrs_cas : std_logic;
-	signal ddrs_pre : std_logic;
-	signal ddrs_rw  : std_logic;
+	signal ddrs_ba      : std_logic_vector(0 to DDR_BANKSIZE-1);
+	signal ddrs_a       : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal ddrs_rowa    : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal ddrs_cola    : std_logic_vector(0 to DDR_ADDRSIZE-1);
+	signal ddr_act      : std_logic;
+	signal ddrs_cas     : std_logic;
+	signal ddrs_pre     : std_logic;
+	signal ddrs_rw      : std_logic;
 
-	signal ddrs_di_rdy : std_logic;
-	signal ddrs_di_req : std_logic;
-	signal ddrs_di : std_logic_vector(DDR_LINESIZE-1 downto 0);
-	signal ddrs_do_rdy : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-	signal ddrs_do : std_logic_vector(DDR_LINESIZE-1 downto 0);
+	signal ddrs_di_rdy  : std_logic;
+	signal ddrs_di_req  : std_logic;
+	signal ddrs_di      : std_logic_vector(DDR_LINESIZE-1 downto 0);
+	signal ddrs_do_rdy  : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+	signal ddrs_do      : std_logic_vector(DDR_LINESIZE-1 downto 0);
 
-	signal dataio_rst : std_logic;
-	signal input_rdy : std_logic := '0';
-	signal input_req : std_logic := '0';
-	signal input_dat : std_logic_vector(0 to 15);
+	signal dataio_rst   : std_logic;
+	signal input_rdy    : std_logic := '0';
+	signal input_req    : std_logic := '0';
+	signal input_dat    : std_logic_vector(0 to 15);
 	
-	signal win_rowid  : std_logic_vector(2-1 downto 0);
-	signal win_rowpag : std_logic_vector(5-1 downto 0);
-    signal win_rowoff : std_logic_vector(7-1 downto 0);
-    signal win_colid  : std_logic_vector(2-1 downto 0);
-    signal win_colpag : std_logic_vector(2-1 downto 0);
-    signal win_coloff : std_logic_vector(13-1 downto 0);
+	signal win_rowid    : std_logic_vector(2-1 downto 0);
+	signal win_rowpag   : std_logic_vector(5-1 downto 0);
+    signal win_rowoff   : std_logic_vector(7-1 downto 0);
+    signal win_colid    : std_logic_vector(2-1 downto 0);
+    signal win_colpag   : std_logic_vector(2-1 downto 0);
+    signal win_coloff   : std_logic_vector(13-1 downto 0);
 
-    signal chann_dat : std_logic_vector(32-1 downto 0);
+    signal chann_dat    : std_logic_vector(32-1 downto 0);
 
-	signal grid_dot : std_logic;
-	signal plot_dot : std_logic_vector(0 to 2-1);
+	signal grid_dot     : std_logic;
+	signal plot_dot     : std_logic_vector(0 to 2-1);
 
-	signal miirx_req  : std_logic;
-	signal miirx_rdy  : std_logic;
-	signal miitx_req  : std_logic;
-	signal miidma_rreq : std_logic;
-	signal miidma_rrdy : std_logic;
-	signal miidma_rxen : std_logic;
-	signal miidma_rxd  : std_logic_vector(mii_txd'length-1 downto 0);
-	signal miitx_addr : std_logic_vector(0 to 10-unsigned_num_bits(DDR_DATAPHASES*DDR_LINESIZE/mii_rxd'length-1));
-	signal miitx_dat : std_logic_vector(mii_txd'length-1 downto 0);
-	signal miitx_ena  : std_logic;
+	signal miirx_req    : std_logic;
+	signal miirx_rdy    : std_logic;
+	signal ddr2mii_req  : std_logic;
+	signal ddr2mii_rdy  : std_logic;
+	signal miitx_req    : std_logic;
+	signal miitx_rdy    : std_logic;
+	signal miidma_req   : std_logic;
+	signal miidma_rdy   : std_logic;
+	signal miidma_txen  : std_logic;
+	signal miidma_txd   : std_logic_vector(mii_txd'length-1 downto 0);
 
-	signal miitx_udprdy : std_logic := '0';
-	signal miitxudp_rdy : std_logic := '0';
-	signal miitxudp_req : std_logic := '0';
-	signal miitx_udpreq : std_logic := '0';
-	signal miirx_udprdy : std_logic;
-	signal udptx_rdy : std_logic;
-	signal udprx_rdy : std_logic;
-
-	signal rxdv : std_logic;
-	signal rxd  : nibble;
-	signal pkt_cntr : std_logic_vector(15 downto 0) := x"0000";
-	signal tpkt_cntr : byte := x"00";
-	signal a0 : std_logic;
-	signal wlreq : std_logic;
+	signal rlreq : std_logic;
 
 begin
 
@@ -317,262 +309,216 @@ begin
 --
 --	video_ena <= setif(win_rowid="11");
 
-	ddrs_a <= ddrs_rowa when ddrs_act='1' else ddrs_cola;
+	miirx_b : block
+		signal pktrx_rdy : std_logic;
+		signal pkttx_req : std_logic;
+		signal cntr : unsigned(0 to 3);
+	begin
+
+		miirx_udp_e : entity hdl4fpga.miirx_mac
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd,
+			mii_txc  => open,
+			mii_txen => pktrx_rdy);
+
+		process (mii_rxc)
+			variable rdy_edge : std_logic;
+			variable req_edge : std_logic;
+			variable aux : unsigned(cntr'range);
+		begin
+			if dataio_rst='1' then
+				pkttx_req <= '0';
+				cntr <= (others => '1');
+			elsif rising_edge(mii_rxc) then
+				aux := cntr;
+				if miirx_req='1' then
+					pkttx_req <= '0';
+					if req_edge='0' then
+						aux := aux -1;
+					end if;
+				elsif cntr(0)='0' then
+					pkttx_req <= '1';
+				end if;
+				if pktrx_rdy='1' then
+					if rdy_edge='0' then
+						aux := aux + 1;
+					end if;
+				end if;
+				cntr <= aux;
+				rdy_edge := pktrx_rdy;
+				req_edge := miirx_req;
+			end if;
+		end process;
+
+		miirx2ddr_e : entity hdl4fpga.align
+		generic map (
+			d => (0 to 0 => 1))
+		port map (
+			clk   => ddrs_clks(0),
+			di(0) => pkttx_req,
+			do(0) => ddr2mii_req);
+
+	end block;
+
+	ddrs_a   <= ddrs_rowa when ddr_act='1' else ddrs_cola;
+	ddrs_act <= ddr_act;
 
 	dataio_rst <= not ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
-		PAGE_SIZE => PAGE_SIZE,
+		PAGE_SIZE    => PAGE_SIZE,
 		DDR_BANKSIZE => DDR_BANKSIZE,
 		DDR_ADDRSIZE => DDR_ADDRSIZE,
 		DDR_CLNMSIZE => DDR_CLMNSIZE,
 		DDR_LINESIZE => DDR_LINESIZE)
 	port map (
-		sys_rst   => dataio_rst,
+		sys_rst      => dataio_rst,
 
-		input_req => input_req,
-		input_rdy => input_rdy,
-		input_clk => input_clk,
-		input_dat => input_dat,
+		input_req    => input_req,
+		input_rdy    => input_rdy,
+		input_clk    => input_clk,
+		input_dat    => input_dat,
 
-		video_clk => vga_clk,
-		video_ena => video_ena,
-		video_row => win_rowpag(3 downto 0),
-		video_col => win_coloff,
-		video_do  => chann_dat,
+		video_clk    => vga_clk,
+		video_ena    => video_ena,
+		video_row    => win_rowpag(3 downto 0),
+		video_col    => win_coloff,
+		video_do     => chann_dat,
 
-		ddrs_clk  => ddrs_clks(0),
-		ddrs_rreq => ddrs_ref_req,
-		ddrs_creq => ddrs_cmd_req,
-		ddrs_crdy => cmd_rdy,
-		ddrs_bnka => ddrs_ba,
-		ddrs_rowa => ddrs_rowa,
-		ddrs_cola => ddrs_cola,
-		ddrs_rw  => ddrs_rw,
-		ddrs_act => ddrs_act,
-		ddrs_cas => ddrs_cas,
+		ddrs_clk     => ddrs_clks(0),
+		ddrs_rreq    => ddrs_ref_req,
+		ddrs_creq    => ddrs_cmd_req,
+		ddrs_crdy    => cmd_rdy,
+		ddrs_bnka    => ddrs_ba,
+		ddrs_rowa    => ddrs_rowa,
+		ddrs_cola    => ddrs_cola,
+		ddrs_rw      => ddrs_rw,
+		ddrs_act     => ddr_act,
+		ddrs_cas     => ddrs_cas,
 
-		ddrs_di_rdy => ddrs_di_rdy,
-		ddrs_di_req => ddrs_di_req,
-		ddrs_di => ddrs_di,
-		ddrs_do_rdy => ddrs_do_rdy(0),
-		ddrs_do => ddrs_do,
+		ddrs_di_rdy  => ddrs_di_rdy,
+		ddrs_di_req  => ddrs_di_req,
+		ddrs_di      => ddrs_di,
+		ddrs_do_rdy  => ddrs_do_rdy(0),
+		ddrs_do      => ddrs_do,
 
-		mii_rst => mii_rst,
-		mii_txc => mii_txc,
-		miirx_req => miirx_req,
-		miirx_rdy => miirx_rdy,
-		miitx_req => miidma_rreq,
-		miitx_rdy => miidma_rrdy,
-		miitx_ena => miidma_rxen,
-		miitx_dat => miidma_rxd);
-
-	miirx_udp_e : entity hdl4fpga.miirx_mac
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-		mii_txc  => open,
-		mii_txen => miirx_udprdy);
-
-	ddrsync_i : entity hdl4fpga.ffdasync
-	generic map (
-		n => 2)
-	port map (
-		arst => ddrs_rst,
-		clk  => ddrs_clks(0),
-		d(0) => miirx_udprdy,
-		d(1) => miitxudp_rdy,
-		q(0) => udprx_rdy,
-		q(1) => udptx_rdy);
-
-	rx_p : process (ddrs_clks(0))
-		variable req_edge : std_logic;
-		variable rdy_edge : std_logic;
-	begin
-		if rising_edge(ddrs_clks(0)) then
-			if ddrs_rst='1' then
-				miirx_req <= '0';
-			elsif miirx_req='0' then
-				if req_edge='0' then
-					if udprx_rdy='1' then
-						miirx_req <= '1';
-					end if;
-				end if;
-			elsif miirx_rdy='1' then
-				if rdy_edge='0' then
-					miirx_req <= rdy_edge;
-				end if;
-			end if;
-			rdy_edge := miirx_rdy;
-			req_edge := udprx_rdy;
-		end if;
-	end process;
-
-	tx_p : process (ddrs_clks(0))
-		variable req_edge : std_logic;
-		variable rdy_edge : std_logic;
-	begin
-		if rising_edge(ddrs_clks(0)) then
-			if ddrs_rst='1' then
-				miitx_req <= '0';
-			elsif miirx_rdy='1' then
-				if req_edge='0' then
-					miitx_req <= '1';
-				end if;
-			elsif udptx_rdy='1' then
-				if rdy_edge='0' then
-					miitx_req <= '0';
-				end if;
-			end if;
-			req_edge := miirx_rdy;
-			rdy_edge := udptx_rdy;
-		end if;
-	end process;
-
-	miitxsync_i : entity hdl4fpga.ffdasync
-	port map (
-		arst => ddrs_rst,
-		clk  => mii_txc,
-		d(0) => miitx_req,
-		q(0) => miitxudp_req);
-
-	miitx_udp_e : entity hdl4fpga.miitx_udp
-	generic map (
-		payload_size => 2**(PAGE_SIZE+1))
-	port map (
-		miidma_rreq => miidma_rreq,
-		miidma_rxen => miidma_rxen,
-		miidma_rxd  => miidma_rxd,
-		mii_txc  => mii_txc,
-		mii_treq => miitx_udpreq,
-		mii_trdy => miitx_udprdy,
-		mii_txen => miitx_ena,
-		mii_txd  => mii_txd);
-
-	process (mii_txc)
-		variable req_edge : std_logic;
-		variable rdy_edge : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			if miitx_udpreq='0' then
-				if miitxudp_req='1' then
-					if  req_edge='0' then
-						miitx_udpreq <= '1';
-						miitxudp_rdy <= '0';
-					end if;
-				end if;
-			elsif miitx_udprdy='1' then
-				if rdy_edge='0' then
-					miitx_udpreq <= '0';
-					miitxudp_rdy <= '1';
-				end if;
-			end if;
-
-			req_edge := miitxudp_req;
-			rdy_edge := miitx_udprdy;
-		end if;
-	end process;
-
-	mii_txen <= miitx_ena;
-	process (mii_txc)
-		variable edge : std_logic;
-	begin
-		if rising_edge(mii_txc) then
-			if miitx_ena='1' then
-				if edge='0' then
-					tpkt_cntr <= byte(unsigned(tpkt_cntr) + 1);
-				end if;
-			end if;
-			edge := miitx_ena;
-		end if;
-	end process;
-
-	process (mii_rxc)
-		variable edge : std_logic;
-		variable a : std_logic := '0';
-	begin
-		if rising_edge(mii_rxc) then
-			if miirx_udprdy='1' then
-				if edge='0' then
-					pkt_cntr <= std_logic_vector(unsigned(pkt_cntr) + 1);
-				end if;
-				a := not a ;
-			end if;
-			edge := miirx_udprdy;
-		end if;
-	end process;
-
-	ddrs_ini <= ini;
-	ini <= ddr_phyini when fpga=virtex5 else ddr_ini;
+		mii_rst      => mii_rst,
+		mii_txc      => mii_txc,
+		ddr2mii_req  => ddr2mii_req,
+		ddr2mii_rdy  => ddr2mii_rdy,
+		miitx_req    => miidma_req,
+		miitx_rdy    => miidma_rdy,
+		miitx_ena    => miidma_txen,
+		miitx_dat    => miidma_txd);
 	
-	ddr_wlreq <= ddr_ini when fpga=virtex5 else wlreq;
-	ddr_rw <= ddrs_rw when ddr_phyini='1' else ddr_phyrw;
-	ddr_cmd_req <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
+	miitx_b : block
+	begin
 
+		ddr2miitx_e : entity hdl4fpga.align
+		generic map (
+			D     => (0 to 0 => 1))
+		port map (
+			clk   => mii_txc,
+			di(0) => ddr2mii_rdy,
+			do(0) => miitx_req);
+
+		miitx_udp_e : entity hdl4fpga.miitx_udp
+		generic map (
+			payload_size => 2**(PAGE_SIZE+1))
+		port map (
+			mii_txc      => mii_txc,
+			mii_treq     => miitx_req,
+			mii_trdy     => miitx_rdy,
+			mii_txen     => mii_txen,
+			mii_txd      => mii_txd,
+			miidma_req   => miidma_req,
+			miidma_rxen  => miidma_txen,
+			miidma_rxd   => miidma_txd);
+
+		miitx2rx_e : entity hdl4fpga.align
+		generic map (
+			d => (0 to 0 => 1))
+		port map (
+			clk   => mii_rxc,
+			di(0) => miitx_rdy,
+			do(0) => miirx_req);
+
+	end block;
+	
+	ini          <= ddr_phyini   when FPGA=VIRTEX5   else ddr_ini;
+	ddr_rlreq    <= ddr_ini      when FPGA=VIRTEX5   else rlreq;
+	ddr_cmd_req  <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
+	ddr_rw       <= ddrs_rw      when ddr_phyini='1' else ddr_phyrw;
+	ddrs_ini     <= ini;
 	ddrs_cmd_rdy <= cmd_rdy;
+
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
-		fpga => fpga,
-		mark => DDR_MARK,
-		strobe    => DDR_STROBE,
-		sclk_phases => DDR_SCLKPHASES,
-		sclk_edges  => DDR_SCLKEDGES,
-		data_phases => DDR_DATAPHASES,
-		data_edges => DDR_DATAEDGES,
-		bank_size => DDR_BANKSIZE,
-		addr_size => DDR_ADDRSIZE,
-		line_size => DDR_LINESIZE,
-		word_size => DDR_WORDSIZE,
-		byte_size => DDR_BYTESIZE,
-		tCP  => DDR_tCP)
+		FPGA        => FPGA,
+		MARK        => DDR_MARK,
+		CMMD_GEAR   => CMMD_GEAR,
+		SCLK_PHASES => DDR_SCLKPHASES,
+		SCLK_EDGES  => DDR_SCLKEDGES,
+		DATA_PHASES => DDR_DATAPHASES,
+		DATA_EDGES  => DDR_DATAEDGES,
+		BANK_SIZE   => DDR_BANKSIZE,
+		ADDR_SIZE   => DDR_ADDRSIZE,
+		LINE_SIZE   => DDR_LINESIZE,
+		WORD_SIZE   => DDR_WORDSIZE,
+		BYTE_SIZE   => DDR_BYTESIZE,
+		TCP         => DDR_TCP)
 	port map (
-		sys_rst => ddrs_rst,
-		sys_rtt => ddrs_rtt,
-		sys_bl  => ddrs_bl,
-		sys_cl  => ddrs_cl,
-		sys_cwl => ddrs_cwl,
-		sys_wr  => ddrs_wr,
-		sys_clks => ddrs_clks,
-		sys_ini  => ddr_ini,
+		sys_rst     => ddrs_rst,
+		sys_rtt     => ddrs_rtt,
+		sys_bl      => ddrs_bl,
+		sys_cl      => ddrs_cl,
+		sys_cwl     => ddrs_cwl,
+		sys_wr      => ddrs_wr,
+		sys_clks    => ddrs_clks,
+		sys_ini     => ddr_ini,
 
 		sys_cmd_req => ddr_cmd_req,
 		sys_cmd_rdy => cmd_rdy,
-		sys_wlreq => wlreq,
-		sys_wlrdy => ddr_wlrdy,
-		sys_wlcal => ddr_wlcal,
-		sys_b   => ddrs_ba,
-		sys_a   => ddrs_a,
-		sys_rw  => ddr_rw,
-		sys_act => ddrs_act,
-		sys_cas => ddrs_cas,
-		sys_di_rdy => ddrs_di_rdy,
-		sys_di_req => ddrs_di_req,
-		sys_di  => ddrs_di,
-		sys_do_rdy => ddrs_do_rdy,
-		sys_do  => ddrs_do,
+		sys_wlreq   => ddr_wlreq,
+		sys_wlrdy   => ddr_wlrdy,
+		sys_rlreq   => rlreq,
+		sys_rlrdy   => ddr_rlrdy,
+		sys_rlcal   => ddr_rlcal,
+		sys_rlseq   => ddr_rlseq,
+		sys_b       => ddrs_ba,
+		sys_a       => ddrs_a,
+		sys_rw      => ddr_rw,
+		sys_act     => ddr_act,
+		sys_cas     => ddrs_cas,
+		sys_di_rdy  => ddrs_di_rdy,
+		sys_di_req  => ddrs_di_req,
+		sys_di      => ddrs_di,
+		sys_do_rdy  => ddrs_do_rdy,
+		sys_do      => ddrs_do,
 
-		sys_ref => ddrs_ref_req,
+		sys_ref     => ddrs_ref_req,
 
-		xdr_rst => ddr_rst,
-		xdr_cke => ddr_cke,
-		xdr_cs  => ddr_cs,
-		xdr_ras => ddr_ras,
-		xdr_cas => ddr_cas,
-		xdr_we  => ddr_we,
-		xdr_b   => ddr_b,
-		xdr_a   => ddr_a,
-		xdr_dmi  => ddr_dmi,
-		xdr_dmt  => ddr_dmt,
-		xdr_dmo  => ddr_dmo,
-		xdr_dqst => ddr_dqst,
-		xdr_dqsi => ddr_dqsi,
-		xdr_dqso => ddr_dqso,
-		xdr_dqt => ddr_dqt,
-		xdr_dqi => ddr_dqi,
-		xdr_dqo => ddr_dqo,
-		xdr_odt => ddr_odt,
+		xdr_rst     => ddr_rst,
+		xdr_cke     => ddr_cke,
+		xdr_cs      => ddr_cs,
+		xdr_ras     => ddr_ras,
+		xdr_cas     => ddr_cas,
+		xdr_we      => ddr_we,
+		xdr_b       => ddr_b,
+		xdr_a       => ddr_a,
+		xdr_dmi     => ddr_dmi,
+		xdr_dmt     => ddr_dmt,
+		xdr_dmo     => ddr_dmo,
+		xdr_dqst    => ddr_dqst,
+		xdr_dqsi    => ddr_dqsi,
+		xdr_dqso    => ddr_dqso,
+		xdr_dqt     => ddr_dqt,
+		xdr_dqi     => ddr_dqi,
+		xdr_dqo     => ddr_dqo,
+		xdr_odt     => ddr_odt,
 
-		xdr_sti => ddr_sti,
-		xdr_sto => ddr_sto);
+		xdr_sti     => ddr_sti,
+		xdr_sto     => ddr_sto);
 end;
