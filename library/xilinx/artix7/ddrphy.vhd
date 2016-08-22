@@ -41,7 +41,7 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		tp_sel : in std_logic_vector(1 downto 0);
+		tp_sel       : in std_logic_vector(1 downto 0);
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
 		tp1          : out std_logic_vector(6-1 downto 0);
 		tp_dqidly    : out std_logic_vector(6-1 downto 0);
