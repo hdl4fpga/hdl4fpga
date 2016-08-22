@@ -36,22 +36,40 @@ entity dlyctlr is
 		clk     : in  std_logic;
 		req     : in  std_logic;
 		rdy     : out std_logic;
-		st      : out std_logic);
+		dly     : in  std_logic_vector;
+		iod_rst : out std_logic;
+		iod_ce  : out std_logic);
 
 end;
 
 architecture beh of dlyctlr is
+	signal aux : unsigned(0 to dly'length);
 begin
   
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				tmr <= (others => '0');
-			else
-				tmr <= tmr + 1;
+				aux <= resize(unsigned(dly), aux'length);
+			elsif aux(0)='0' then
+				aux <= aux - 1;
 			end if;
-			st <= tmr(0);
+		end if;
+	end process;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if req='0' then
+				iod_rst <= '1';
+				iod_ce  <= '1';
+			elsif aux(0)='0' then
+				iod_rst <= '0';
+				iod_ce  <= '1';
+			else
+				iod_rst <= '0';
+				iod_ce  <= '0';
+			end if;
 		end if;
 	end process;
 
