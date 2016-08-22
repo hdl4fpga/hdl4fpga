@@ -30,7 +30,7 @@ use std.textio.all;
 entity scope is
 	generic (
 		constant FPGA           : natural;
-		constant CMMD_GEAR      : natural;
+		constant DDR_CMMDGEAR   : natural;
 		constant DDR_TCP        : natural;
 		constant DDR_SCLKPHASES : natural;
 		constant DDR_SCLKEDGES  : natural;
@@ -42,11 +42,11 @@ entity scope is
 		constant DDR_BANKSIZE   : natural :=  3;
 		constant DDR_ADDRSIZE   : natural := 13;
 		constant DDR_CLMNSIZE   : natural :=  6;
-		constant DDR_LINESIZE   : natural := 16;
+		constant DDR_DATAGEAR   : natural :=  2;
 		constant DDR_WORDSIZE   : natural := 16;
 		constant DDR_BYTESIZE   : natural :=  8;
-		constant PAGE_SIZE      : natural := 9;
-		constant NIBBLE_SIZE    : natural := 4);
+		constant PAGE_SIZE      : natural :=  9;
+		constant NIBBLE_SIZE    : natural :=  4);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -83,17 +83,17 @@ entity scope is
 		ddr_we    : out std_logic;
 		ddr_b     : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_a     : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi   : in  std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmi   : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_dqsi  : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso  : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqi   : in  std_logic_vector(DDR_LINESIZE-1 downto 0);
-		ddr_dqo   : out std_logic_vector(DDR_LINESIZE-1 downto 0);
+		ddr_dqst  : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso  : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqi   : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
+		ddr_dqo   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 		ddr_odt   : out std_logic;
-		ddr_sto   : out std_logic_vector(DDR_LINESIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sto   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 		ddr_sti   : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
 		mii_rst   : in std_logic := '0';
@@ -160,9 +160,9 @@ architecture def of scope is
 
 	signal ddrs_di_rdy  : std_logic;
 	signal ddrs_di_req  : std_logic;
-	signal ddrs_di      : std_logic_vector(DDR_LINESIZE-1 downto 0);
+	signal ddrs_di      : std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 	signal ddrs_do_rdy  : std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-	signal ddrs_do      : std_logic_vector(DDR_LINESIZE-1 downto 0);
+	signal ddrs_do      : std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 
 	signal dataio_rst   : std_logic;
 	signal input_rdy    : std_logic := '0';
@@ -372,7 +372,7 @@ begin
 		DDR_BANKSIZE => DDR_BANKSIZE,
 		DDR_ADDRSIZE => DDR_ADDRSIZE,
 		DDR_CLNMSIZE => DDR_CLMNSIZE,
-		DDR_LINESIZE => DDR_LINESIZE)
+		DDR_LINESIZE => DDR_DATAGEAR*DDR_WORDSIZE)
 	port map (
 		sys_rst      => dataio_rst,
 
@@ -458,14 +458,13 @@ begin
 	generic map (
 		FPGA        => FPGA,
 		MARK        => DDR_MARK,
-		CMMD_GEAR   => CMMD_GEAR,
+		CMMD_GEAR   => DDR_CMMDGEAR,
+		DATA_GEAR   => DDR_DATAGEAR,
 		SCLK_PHASES => DDR_SCLKPHASES,
 		SCLK_EDGES  => DDR_SCLKEDGES,
-		DATA_PHASES => DDR_DATAPHASES,
 		DATA_EDGES  => DDR_DATAEDGES,
 		BANK_SIZE   => DDR_BANKSIZE,
 		ADDR_SIZE   => DDR_ADDRSIZE,
-		LINE_SIZE   => DDR_LINESIZE,
 		WORD_SIZE   => DDR_WORDSIZE,
 		BYTE_SIZE   => DDR_BYTESIZE,
 		TCP         => DDR_TCP)

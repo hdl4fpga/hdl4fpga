@@ -37,13 +37,12 @@ entity xdr is
 		TCP         : natural := 6000;
 
 		CMMD_GEAR   : natural :=  1;
+		DATA_GEAR   : natural :=  2;
 		BANK_SIZE   : natural :=  2;
 		ADDR_SIZE   : natural := 13;
 		SCLK_PHASES : natural :=  4;
 		SCLK_EDGES  : natural :=  2;
-		DATA_PHASES : natural :=  2;
 		DATA_EDGES  : natural :=  2;
-		LINE_SIZE   : natural := 32;
 		WORD_SIZE   : natural := 16;
 		BYTE_SIZE   : natural :=  8);
 	port (
@@ -74,9 +73,9 @@ entity xdr is
 		sys_do_rdy  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_act     : out std_logic;
 		sys_cas     : out std_logic;
-		sys_dm      : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '0');
-		sys_di      : in  std_logic_vector(line_size-1 downto 0);
-		sys_do      : out std_logic_vector(line_size-1 downto 0);
+		sys_dm      : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0) := (others => '0');
+		sys_di      : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_do      : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 		sys_ref     : out std_logic;
 
 		xdr_rst     : out std_logic;
@@ -88,19 +87,19 @@ entity xdr is
 		xdr_b       : out std_logic_vector(bank_size-1 downto 0);
 		xdr_a       : out std_logic_vector(addr_size-1 downto 0);
 		xdr_odt     : out std_logic;
-		xdr_dmi     : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dmt     : out std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dmo     : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dmi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dmt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dmo     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
 
-		xdr_dqi     : in  std_logic_vector(line_size-1 downto 0);
-		xdr_dqt     : out std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dqo     : out std_logic_vector(line_size-1 downto 0);
+		xdr_dqi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		xdr_dqt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dqo     : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 		xdr_sti     : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_sto     : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_sto     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
 
 		xdr_dqsi    : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqso    : out std_logic_vector(line_size/byte_size-1 downto 0);
-		xdr_dqst    : out std_logic_vector(line_size/byte_size-1 downto 0));
+		xdr_dqso    : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dqst    : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0));
 
 end;
 
@@ -108,7 +107,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr is
-	constant DATA_GEAR    : natural := line_size/word_size;
+	constant LINE_SIZE    : natural := DATA_GEAR*word_size;
 	constant STDR         : natural := xdr_stdr(mark);
 
 	constant STRX_LAT     : natural          := xdr_latency(STDR, STRXL);
@@ -301,7 +300,6 @@ begin
 	generic map (
 		PROFILE     => FPGA,
 		CMMD_GEAR   => CMMD_GEAR,
-		DATA_PHASES => DATA_PHASES,
 		CLK_PHASES  => SCLK_PHASES,
 		CLK_EDGES   => SCLK_EDGES,
 		DATA_GEAR   => DATA_GEAR,

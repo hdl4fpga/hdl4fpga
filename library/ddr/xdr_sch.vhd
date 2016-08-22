@@ -34,7 +34,6 @@ entity xdr_sch is
 		PROFILE           : natural;
 		DELAY_SIZE        : natural := 64;
 		REGISTERED_OUTPUT : boolean := false;
-		DATA_PHASES       : natural := 2;
 		CLK_PHASES        : natural := 4;
 		CLK_EDGES         : natural := 2;
 

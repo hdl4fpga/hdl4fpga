@@ -39,14 +39,12 @@ use unisim.vcomponents.all;
 architecture scope of ml509 is
 	constant SCLK_PHASES : natural := 4;
 	constant SCLK_EDGES  : natural := 2;
-	constant DATA_PHASES : natural := 2;
 	constant DATA_EDGES  : natural := 2;
 	constant CMMD_GEAR   : natural := 1;
-	constant DATA_GEAR   : natural := line_size/word_size;
+	constant DATA_GEAR   : natural := 2;
 	constant BANK_SIZE   : natural := 2;
 	constant ADDR_SIZE   : natural := 13;
 	constant WORD_SIZE   : natural := ddr2_d'length;
-	constant LINE_SIZE   : natural := 2*word_size;
 	constant BYTE_SIZE   : natural := 8;
 	constant UCLK_PERIOD : real := 10.0;
 
@@ -81,17 +79,17 @@ architecture scope of ml509 is
 	signal ddrphy_odt     : std_logic_vector(CMMD_GEAR-1 downto 0);
 	signal ddrphy_b       : std_logic_vector(CMMD_GEAR*2-1 downto 0);
 	signal ddrphy_a       : std_logic_vector(CMMD_GEAR*13-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(0 to line_size/byte_size-1);
-	signal ddrphy_sti     : std_logic_vector(0 to line_size/byte_size-1);
+	signal ddrphy_dqsi    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmi     : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmt     : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmo     : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqi     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ddrphy_dqt     : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqo     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/byte_size-1);
+	signal ddrphy_sti     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/byte_size-1);
 	signal ddrphy_ini     : std_logic;
 	signal ddrphy_rlreq   : std_logic;
 	signal ddrphy_rlrdy   : std_logic;
@@ -171,25 +169,26 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		ddr_mul => ddr_mul,
-		ddr_div => ddr_div, 
-		sys_per => uclk_period)
+		ddr_mul     => ddr_mul,
+		ddr_div     => ddr_div, 
+		sys_per     => uclk_period)
 	port map (
-		sys_rst => sys_rst,
-		sys_clk => sys_clk,
-		input_clk => input_clk,
-		ddr_clk0 => ddrs_clk0,
-		ddr_clk90 => ddrs_clk90,
-		gtx_clk => gtx_clk,
-		video_clk => open,
+		sys_rst     => sys_rst,
+		sys_clk     => sys_clk,
+		input_clk   => input_clk,
+		ddr_clk0    => ddrs_clk0,
+		ddr_clk90   => ddrs_clk90,
+		gtx_clk     => gtx_clk,
+		video_clk   => open,
 		video_clk90 => open,
-		ddr_rst => ddrs_rst,
-		gtx_rst => gtx_rst);
+		ddr_rst     => ddrs_rst,
+		gtx_rst     => gtx_rst);
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		fpga => virtex5,
+		FPGA           => virtex5,
+		CMMD_GEAR      => CMMD_GEAR,
 		DDR_MARK       => M3,
 		DDR_TCP        => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES  => sclk_edges,
@@ -198,9 +197,8 @@ begin
 		DDR_BANKSIZE   => 2, --ddr2_ba'length,
 		DDR_ADDRSIZE   => 13,
 		DDR_SCLKPHASES => sclk_phases,
-		DDR_DATAPHASES => data_phases,
+		DDR_DATAGEAR   => data_gear,
 		DDR_DATAEDGES  => data_edges,
-		DDR_LINESIZE   => line_size,
 		DDR_WORDSIZE   => word_size,
 		DDR_BYTESIZE   => byte_size)
 	port map (
@@ -340,8 +338,11 @@ begin
 		ddr_dqsi    => ddr2_dqsi,
 		ddr_dqso    => ddr2_dqso);
 
+	ddr2_cs (1 downto 1)   <= "1";
+  	ddr2_cke(1 downto 1)   <= "0";
+	ddr2_odt(1 downto 1)   <= (others => 'Z');
 	ddr2_a(14-1 downto 13) <= (others => '0');
-	ddr2_ba(3-1 downto 2)  <= (others => '0');
+	ddr2_ba(3-1 downto  2) <= (others => '0');
 
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
@@ -397,10 +398,10 @@ begin
 
 	end block;
 	
-	phy_reset <= not gtx_rst;
-	phy_txer  <= '0';
-	phy_mdc   <= '0';
-	phy_mdio  <= '0';
+	phy_reset  <= not gtx_rst;
+	phy_txer   <= '0';
+	phy_mdc    <= '0';
+	phy_mdio   <= '0';
 
 	dvi_reset  <= '0';
 	dvi_xclk_p <= 'Z';
@@ -421,13 +422,10 @@ begin
 	gpio_led_e <= '0';
 	gpio_led_c <= ddrphy_ini;
 
-	bus_error <= (others => 'Z');
+	bus_error  <= (others => 'Z');
 
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
-	ddr2_cs(1 downto 1)  <= "1";
-  	ddr2_cke(1 downto 1) <= "0";
-	ddr2_odt(1 downto 1) <= (others => 'Z');
 
 end;
