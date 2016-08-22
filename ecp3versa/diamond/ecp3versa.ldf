@@ -158,7 +158,7 @@
         <Source name="../../library/latticesemi/ecp3/clkstart.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scope-arty.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/scope.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/ddr/xdr.vhd" type="VHDL" type_short="VHDL">
