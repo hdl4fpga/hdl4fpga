@@ -479,7 +479,7 @@ begin
 	port map (
 		sys_clk(0) => sys_clk0div,
 		sys_clk(1) => sys_clk0,
-     	sys_mrst   => phy0div_rst,
+     	phy_rst    => phy0div_rst,
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
 		sys_cke    => sys_cke,

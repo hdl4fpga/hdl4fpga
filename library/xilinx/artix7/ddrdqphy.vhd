@@ -151,13 +151,13 @@ begin
 		imdr_clk <= (0 => sys_clk90, 1 => not sys_clk90, 2 => sys_clk90, 3 => not sys_clk90, 4 => sys_clk90div);
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
-			SIZE    => 1,
-			GEAR    => DATA_GEAR)
+			SIZE => 1,
+			GEAR => DATA_GEAR)
 		port map (
-			rst     => imdr_rst,
-			clk     => imdr_clk,
-			d(0)    => dqi(i),
-			q       => dq);
+			rst  => imdr_rst,
+			clk  => imdr_clk,
+			d(0) => dqi(i),
+			q     => dq);
 
 		dly_g : entity hdl4fpga.align
 		generic map (

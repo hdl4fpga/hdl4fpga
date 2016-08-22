@@ -56,6 +56,7 @@ begin
 			end if;
 		end if;
 	end process;
+	rdy <= aux(0);
 
 	process (clk)
 	begin
