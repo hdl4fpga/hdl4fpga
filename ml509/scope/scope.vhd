@@ -37,35 +37,35 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of ml509 is
-	constant SCLK_PHASES : natural := 4;
-	constant SCLK_EDGES  : natural := 2;
-	constant DATA_EDGES  : natural := 2;
-	constant CMMD_GEAR   : natural := 1;
-	constant DATA_GEAR   : natural := 2;
-	constant BANK_SIZE   : natural := 2;
-	constant ADDR_SIZE   : natural := 13;
-	constant WORD_SIZE   : natural := ddr2_d'length;
-	constant BYTE_SIZE   : natural := 8;
-	constant UCLK_PERIOD : real := 10.0;
+	constant UCLK_PERIOD  : real    := 10.0;
+	constant BANK_SIZE    : natural := 2;
+	constant ADDR_SIZE    : natural := 13;
+	constant WORD_SIZE    : natural := ddr2_d'length;
+	constant BYTE_SIZE    : natural := 8;
+	constant SCLK_PHASES  : natural := 4;
+	constant SCLK_EDGES   : natural := 2;
+	constant CMMD_GEAR    : natural := 1;
+	constant DATA_GEAR    : natural := 2;
+	constant DATA_PHASES  : natural := 2;
 
-	signal ictlr_clk : std_logic;
-	signal ictlr_rdy : std_logic;
+	signal ictlr_clk      : std_logic;
+	signal ictlr_rdy      : std_logic;
 
-	signal sys_clk : std_logic;
-	signal ddrs_rst  : std_logic;
-	signal input_rst : std_logic;
+	signal sys_clk        : std_logic;
+	signal ddrs_rst       : std_logic;
+	signal input_rst      : std_logic;
 
-	signal input_clk : std_logic;
+	signal input_clk      : std_logic;
 
-	signal ddrs_clk0  : std_logic;
-	signal ddrs_clk90 : std_logic;
+	signal ddrs_clk0      : std_logic;
+	signal ddrs_clk90     : std_logic;
 
-	signal ddr2_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqsi : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqo  : std_logic_vector(word_size-1 downto 0);
-	signal ddr2_dqt  : std_logic_vector(word_size-1 downto 0);
-	signal ddr2_clk  : std_logic_vector(2-1 downto 0);
+	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqo       : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_clk       : std_logic_vector(2-1 downto 0);
 
 	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
 
@@ -113,10 +113,10 @@ architecture scope of ml509 is
 	signal vga_frm        : std_logic;
 	signal vga_red        : std_logic_vector(8-1 downto 0);
 	signal vga_green      : std_logic_vector(8-1 downto 0);
-	signal vga_blue  : std_logic_vector(8-1 downto 0);
-	signal dvdelay : std_logic_vector(0 to 2);
+	signal vga_blue       : std_logic_vector(8-1 downto 0);
+	signal dvdelay        : std_logic_vector(0 to 2);
 
-	signal sys_rst   : std_logic;
+	signal sys_rst        : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
@@ -188,17 +188,17 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => virtex5,
-		CMMD_GEAR      => CMMD_GEAR,
-		DDR_MARK       => M3,
 		DDR_TCP        => integer(uclk_period*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKEDGES  => sclk_edges,
-		DDR_STROBE     => "INTERNAL",
+		DDR_MARK       => M3,
+		CMMD_GEAR      => CMMD_GEAR,
+		DDR_SCLKPHASES => sclk_phases,
+		DDR_SCLKEDGE   => TRUE,
 		DDR_CLMNSIZE   => 7,
 		DDR_BANKSIZE   => 2, --ddr2_ba'length,
 		DDR_ADDRSIZE   => 13,
-		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAGEAR   => data_gear,
-		DDR_DATAEDGES  => data_edges,
+		DDR_DATAEDGE   => TRUE,
+		DDR_DATAPHASES => TRUE,
 		DDR_WORDSIZE   => word_size,
 		DDR_BYTESIZE   => byte_size)
 	port map (

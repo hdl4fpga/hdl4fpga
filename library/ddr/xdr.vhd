@@ -41,7 +41,7 @@ entity xdr is
 		BANK_SIZE   : natural :=  2;
 		ADDR_SIZE   : natural := 13;
 		SCLK_PHASES : natural :=  4;
-		SCLK_EDGES  : natural :=  2;
+		SCLK_EDGE   : boolean := TRUE;
 		DATA_PHASES : natural :=  2;
 		DATA_EDGE   : boolean := TRUE;
 		WORD_SIZE   : natural := 16;
@@ -54,7 +54,7 @@ entity xdr is
 		sys_rtt     : in std_logic_vector;
 
 		sys_rst     : in std_logic;
-		sys_clks    : in std_logic_vector(0 to SCLK_PHASES/SCLK_EDGES-1);
+		sys_clks    : in std_logic_vector;
 		sys_ini     : out std_logic;
 
 		sys_wlrdy   : in  std_logic := '-';
@@ -301,7 +301,7 @@ begin
 		PROFILE     => FPGA,
 		CMMD_GEAR   => CMMD_GEAR,
 		CLK_PHASES  => SCLK_PHASES,
-		CLK_EDGES   => SCLK_EDGES,
+		CLK_EDGE    => SCLK_EDGE ,
 		DATA_GEAR   => DATA_GEAR,
 		CL_COD      => CL_COD,
 		CWL_COD     => CWL_COD,
