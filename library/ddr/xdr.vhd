@@ -42,7 +42,8 @@ entity xdr is
 		ADDR_SIZE   : natural := 13;
 		SCLK_PHASES : natural :=  4;
 		SCLK_EDGES  : natural :=  2;
-		DATA_EDGES  : natural :=  2;
+		DATA_PHASES : natural :=  2;
+		DATA_EDGE   : boolean := TRUE;
 		WORD_SIZE   : natural := 16;
 		BYTE_SIZE   : natural :=  8);
 	port (
@@ -53,7 +54,7 @@ entity xdr is
 		sys_rtt     : in std_logic_vector;
 
 		sys_rst     : in std_logic;
-		sys_clks    : in std_logic_vector(0 to sclk_phases/sclk_edges-1);
+		sys_clks    : in std_logic_vector(0 to SCLK_PHASES/SCLK_EDGES-1);
 		sys_ini     : out std_logic;
 
 		sys_wlrdy   : in  std_logic := '-';
@@ -66,14 +67,14 @@ entity xdr is
 		sys_cmd_req : in  std_logic;
 		sys_cmd_rdy : out std_logic;
 		sys_rw      : in  std_logic;
-		sys_b       : in  std_logic_vector(bank_size-1 downto 0);
-		sys_a       : in  std_logic_vector(addr_size-1 downto 0);
+		sys_b       : in  std_logic_vector(BANK_SIZE-1 downto 0);
+		sys_a       : in  std_logic_vector(ADDR_SIZE-1 downto 0);
 		sys_di_rdy  : in  std_logic;
 		sys_di_req  : out std_logic;
-		sys_do_rdy  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sys_do_rdy  : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
 		sys_act     : out std_logic;
 		sys_cas     : out std_logic;
-		sys_dm      : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0) := (others => '0');
+		sys_dm      : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0) := (others => '0');
 		sys_di      : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 		sys_do      : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 		sys_ref     : out std_logic;
@@ -84,22 +85,22 @@ entity xdr is
 		xdr_ras     : out std_logic;
 		xdr_cas     : out std_logic;
 		xdr_we      : out std_logic;
-		xdr_b       : out std_logic_vector(bank_size-1 downto 0);
-		xdr_a       : out std_logic_vector(addr_size-1 downto 0);
+		xdr_b       : out std_logic_vector(BANK_SIZE-1 downto 0);
+		xdr_a       : out std_logic_vector(ADDR_SIZE-1 downto 0);
 		xdr_odt     : out std_logic;
-		xdr_dmi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		xdr_dmt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		xdr_dmo     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dmi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		xdr_dmt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		xdr_dmo     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 
 		xdr_dqi     : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-		xdr_dqt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_dqt     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 		xdr_dqo     : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-		xdr_sti     : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_sto     : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		xdr_sti     : in  std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		xdr_sto     : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 
-		xdr_dqsi    : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		xdr_dqso    : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
-		xdr_dqst    : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0));
+		xdr_dqsi    : in  std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		xdr_dqso    : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		xdr_dqst    : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0));
 
 end;
 
@@ -107,7 +108,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of xdr is
-	constant LINE_SIZE    : natural := DATA_GEAR*word_size;
 	constant STDR         : natural := xdr_stdr(mark);
 
 	constant STRX_LAT     : natural          := xdr_latency(STDR, STRXL);
@@ -138,7 +138,7 @@ architecture mix of xdr is
 	constant WWNL_TAB     : natural_vector   := xdr_schtab(STDR, WWNL);
 	constant RDFIFO_DELAY : boolean          := xdr_cntlrcnfg(FPGA, hdl4fpga.xdr_db.RDFIFO_DELAY);
 
-	subtype byte is std_logic_vector(0 to byte_size-1);
+	subtype byte is std_logic_vector(0 to BYTE_SIZE-1);
 	type byte_vector is array (natural range <>) of byte;
 
 	signal xdr_refi_rdy   : std_logic;
@@ -152,8 +152,8 @@ architecture mix of xdr is
 	signal xdr_init_cas   : std_logic;
 	signal xdr_init_we    : std_logic;
 	signal xdr_init_odt   : std_logic;
-	signal xdr_init_a     : std_logic_vector(addr_size-1 downto 0);
-	signal xdr_init_b     : std_logic_vector(bank_size-1 downto 0);
+	signal xdr_init_a     : std_logic_vector(ADDR_SIZE-1 downto 0);
+	signal xdr_init_b     : std_logic_vector(BANK_SIZE-1 downto 0);
 
 	signal xdr_pgm_cmd    : std_logic_vector(0 to 2);
 
@@ -175,14 +175,14 @@ architecture mix of xdr is
 	signal xdr_sch_st     : std_logic_vector(xdr_sch_dqsz'range);
 	signal xdr_sch_wwn    : std_logic_vector(0 to DATA_GEAR-1);
 	signal xdr_sch_rwn    : std_logic_vector(xdr_sch_dqsz'range);
-	signal xdr_wclks      : std_logic_vector(0 to data_phases*word_size/byte_size-1);
-	signal xdr_wenas      : std_logic_vector(0 to data_phases*word_size/byte_size-1);
+	signal xdr_wclks      : std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
+	signal xdr_wenas      : std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
 
 	signal xdr_win_dqs    : std_logic_vector(xdr_dqsi'range);
 	signal xdr_win_dq     : std_logic_vector(xdr_dqsi'range);
 	signal xdr_wr_dm      : std_logic_vector(sys_dm'range);
 
-	signal rot_val        : std_logic_vector(unsigned_num_bits(line_size-1)-1 downto 0);
+	signal rot_val        : std_logic_vector(unsigned_num_bits(DATA_GEAR*WORD_SIZE-1)-1 downto 0);
 	signal rot_di         : std_logic_vector(sys_di'range);
 
 	signal xdr_cwl        : std_logic_vector(sys_cwl'range);
@@ -349,7 +349,7 @@ begin
 		xdr_sch_rwn,
 		xdr_sch_wwn)
 	begin
-		for i in 0 to word_size/byte_size-1 loop
+		for i in 0 to WORD_SIZE/BYTE_SIZE-1 loop
 			for j in 0 to DATA_GEAR-1 loop
 				xdr_dqt(i*DATA_GEAR+j)  <= xdr_sch_dqz(j);
 				xdr_dmt(i*DATA_GEAR+j)  <= reverse(xdr_sch_dqz)(j);
@@ -358,33 +358,33 @@ begin
 				xdr_sto(i*DATA_GEAR+j)  <= reverse(xdr_sch_st)(j);
 				xdr_dmo(i*DATA_GEAR+j) <= xdr_wr_dm(i*DATA_GEAR+j);
 			end loop;
-			for j in 0 to data_phases-1 loop
-				xdr_wenas(i*data_phases+j) <= xdr_sch_wwn(j);
+			for j in 0 to DATA_PHASES-1 loop
+				xdr_wenas(i*DATA_PHASES+j) <= xdr_sch_wwn(j);
 			end loop;
 		end loop;
 	end process;
 
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
-		data_phases => data_phases,
-		line_size => line_size,
-		word_size => word_size,
-		byte_size => byte_size,
-		data_delay => RDFIFO_LAT,
-		acntr_delay => RDFIFO_DELAY)
+		DATA_PHASES => DATA_PHASES,
+		DATA_GEAR   => DATA_GEAR,
+		WORD_SIZE   => WORD_SIZE,
+		BYTE_SIZE   => BYTE_SIZE,
+		DATA_DELAY  => RDFIFO_LAT,
+		ACNTR_DELAY => RDFIFO_DELAY)
 	port map (
-		sys_clk => sys_clks(0),
-		sys_rdy => sys_do_rdy,
-		sys_rea => xdr_mpu_rea,
-		sys_do  => sys_do,
+		sys_clk     => sys_clks(0),
+		sys_rdy     => sys_do_rdy,
+		sys_rea     => xdr_mpu_rea,
+		sys_do      => sys_do,
 		xdr_win_dq  => xdr_win_dq,
 		xdr_win_dqs => xdr_win_dqs,
-		xdr_dqsi => xdr_dqsi,
-		xdr_dqi  => xdr_dqi);
+		xdr_dqsi    => xdr_dqsi,
+		xdr_dqi     => xdr_dqi);
 		
 	rot_val <= xdr_rotval (
-		line_size => line_size,
-		word_size => word_size,
+		line_size => DATA_GEAR*WORD_SIZE,
+		WORD_SIZE => WORD_SIZE,
 		lat_val => sys_cwl,
 		lat_cod => CWL_COD,
 		lat_tab => WWNL_TAB);
@@ -392,7 +392,7 @@ begin
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
 		n => sys_di'length,
-		m => unsigned_num_bits(line_size-1))
+		m => unsigned_num_bits(DATA_GEAR*WORD_SIZE-1))
 	port map (
 		rot  => rot_val,
 		din  => sys_di,
@@ -400,11 +400,11 @@ begin
 		
 	process (sys_clks(sys_clks'high))
 	begin
-		for k in 0 to word_size/byte_size-1 loop
-			for i in 0 to data_phases-1 loop
-				xdr_wclks(k*data_phases+i) <= sys_clks(sys_clks'high);
-				if data_edges > 1 then
-					xdr_wclks(k*data_phases+1) <= not sys_clks(sys_clks'high);
+		for k in 0 to WORD_SIZE/BYTE_SIZE-1 loop
+			for i in 0 to DATA_PHASES-1 loop
+				xdr_wclks(k*DATA_PHASES+i) <= sys_clks(sys_clks'high);
+				if DATA_EDGE then
+					xdr_wclks(k*DATA_PHASES+1) <= not sys_clks(sys_clks'high);
 				end if;
 			end loop;
 		end loop;
@@ -412,19 +412,19 @@ begin
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
-		data_phases  => data_phases,
-		line_size => line_size,
-		word_size => word_size,
-		byte_size => byte_size)
+		DATA_PHASES => DATA_PHASES,
+		DATA_GEAR   => DATA_GEAR,
+		WORD_SIZE   => WORD_SIZE,
+		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		sys_clk => sys_clks(0),
-		sys_dqi => rot_di,
-		sys_ena => sys_di_rdy,
-		sys_req => xdr_mpu_wri,
-		sys_dmi => sys_dm,
-		xdr_clks => xdr_wclks,
-		xdr_dmo => xdr_wr_dm,
-		xdr_enas => xdr_wenas, 
-		xdr_dqo => xdr_dqo);
+		sys_clk     => sys_clks(0),
+		sys_dqi     => rot_di,
+		sys_ena     => sys_di_rdy,
+		sys_req     => xdr_mpu_wri,
+		sys_dmi     => sys_dm,
+		xdr_clks    => xdr_wclks,
+		xdr_dmo     => xdr_wr_dm,
+		xdr_enas    => xdr_wenas, 
+		xdr_dqo     => xdr_dqo);
 
 end;

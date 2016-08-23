@@ -30,21 +30,20 @@ use std.textio.all;
 entity scope is
 	generic (
 		constant FPGA           : natural;
-		constant DDR_CMMDGEAR   : natural;
 		constant DDR_TCP        : natural;
 		constant DDR_SCLKPHASES : natural;
-		constant DDR_SCLKEDGES  : natural;
-		constant DDR_DATAPHASES : natural :=  1;
-		constant DDR_DATAEDGES  : natural :=  1;
-		constant DDR_CMNDPHASES : natural :=  2;
+		constant DDR_SCLKEDGE   : boolean;
 		constant DDR_MARK       : natural;
-		constant DDR_STROBE     : string  := "NONE";
+		constant DDR_CMMDGEAR   : natural;
 		constant DDR_BANKSIZE   : natural :=  3;
 		constant DDR_ADDRSIZE   : natural := 13;
 		constant DDR_CLMNSIZE   : natural :=  6;
 		constant DDR_DATAGEAR   : natural :=  2;
+		constant DDR_DATAPHASES : natural :=  2;
+		constant DDR_DATAEDGE   : boolean :=  TRUE;
 		constant DDR_WORDSIZE   : natural := 16;
 		constant DDR_BYTESIZE   : natural :=  8;
+
 		constant PAGE_SIZE      : natural :=  9;
 		constant NIBBLE_SIZE    : natural :=  4);
 
@@ -457,17 +456,18 @@ begin
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		FPGA        => FPGA,
+		TCP         => DDR_TCP,
+		SCLK_PHASES => DDR_SCLKPHASES,
+		SCLK_EDGE   => DDR_SCLKEDGE,
 		MARK        => DDR_MARK,
 		CMMD_GEAR   => DDR_CMMDGEAR,
 		DATA_GEAR   => DDR_DATAGEAR,
-		SCLK_PHASES => DDR_SCLKPHASES,
-		SCLK_EDGES  => DDR_SCLKEDGES,
-		DATA_EDGES  => DDR_DATAEDGES,
+		DATA_EDGE   => DDR_DATAEDGE,
+		DATA_PHASES => DDR_DATAPHASES,
 		BANK_SIZE   => DDR_BANKSIZE,
 		ADDR_SIZE   => DDR_ADDRSIZE,
 		WORD_SIZE   => DDR_WORDSIZE,
-		BYTE_SIZE   => DDR_BYTESIZE,
-		TCP         => DDR_TCP)
+		BYTE_SIZE   => DDR_BYTESIZE)
 	port map (
 		sys_rst     => ddrs_rst,
 		sys_rtt     => ddrs_rtt,
