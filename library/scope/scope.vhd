@@ -29,89 +29,90 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant FPGA           : natural;
-		constant DDR_TCP        : natural;
+		constant FPGA : natural;
+		constant DDR_CMMDGEAR : natural;
+		constant DDR_TCP      : natural;
 		constant DDR_SCLKPHASES : natural;
-		constant DDR_SCLKEDGE   : boolean;
-		constant DDR_MARK       : natural;
-		constant DDR_CMMDGEAR   : natural;
-		constant DDR_BANKSIZE   : natural :=  3;
-		constant DDR_ADDRSIZE   : natural := 13;
-		constant DDR_CLMNSIZE   : natural :=  6;
-		constant DDR_DATAGEAR   : natural :=  2;
-		constant DDR_DATAPHASES : natural :=  2;
-		constant DDR_DATAEDGE   : boolean := TRUE;
-		constant DDR_WORDSIZE   : natural := 16;
-		constant DDR_BYTESIZE   : natural :=  8;
-
-		constant PAGE_SIZE      : natural :=  9;
-		constant NIBBLE_SIZE    : natural :=  4);
+		constant DDR_SCLKEDGES : natural;
+		constant DDR_DATAPHASES : natural :=  1;
+		constant DDR_DATAEDGES : natural :=  1;
+		constant DDR_CMNDPHASES : natural :=  2;
+		constant DDR_MARK     : natural;
+		constant DDR_STROBE   : string := "NONE";
+		constant DDR_BANKSIZE : natural :=  3;
+		constant DDR_ADDRSIZE : natural := 13;
+		constant DDR_CLMNSIZE : natural :=  6;
+		constant DDR_DATAGEAR : natural := 16;
+		constant DDR_WORDSIZE : natural := 16;
+		constant DDR_BYTESIZE : natural :=  8;
+		constant PAGE_SIZE    : natural := 9;
+		constant NIBBLE_SIZE  : natural := 4);
 
 	port (
-		ddrs_rst     : in std_logic;
-		sys_ini      : out std_logic;
+		ddrs_rst : in std_logic;
+		sys_ini : out std_logic;
 
-		input_rst    : in std_logic := '0';
-		input_clk    : in std_logic;
+		input_rst : in std_logic := '0';
+		input_clk : in std_logic;
 
-		ddrs_clks    : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
-		ddrs_rtt     : in std_logic_vector;
-		ddrs_bl      : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_cl      : in std_logic_vector(3-1 downto 0) := "010";
-		ddrs_cwl     : in std_logic_vector(3-1 downto 0) := "000";
-		ddrs_wr      : in std_logic_vector(3-1 downto 0) := "101";
-		ddrs_ini     : out std_logic;
-		ddrs_act     : out std_logic;
+		ddrs_clks  : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
+		ddrs_rtt   : in std_logic_vector;
+		ddrs_bl    : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_cl    : in std_logic_vector(3-1 downto 0) := "010";
+		ddrs_cwl   : in std_logic_vector(3-1 downto 0) := "000";
+		ddrs_wr    : in std_logic_vector(3-1 downto 0) := "101";
+		ddrs_ini   : out std_logic;
+		ddrs_act   : out std_logic;
 		ddrs_cmd_rdy : out std_logic;
 
-		ddr_wlreq    : out std_logic;
-		ddr_wlrdy    : in  std_logic := '-';
-		ddr_rlreq    : out std_logic;
-		ddr_rlrdy    : in  std_logic := '-';
-		ddr_rlcal    : in  std_logic := '0';
-		ddr_rlseq    : out std_logic := '0';
-		ddr_phyini   : in std_logic := '1';
-		ddr_phyrw    : in std_logic := '-';
+		ddr_wlreq  : out std_logic;
+		ddr_wlrdy  : in  std_logic := '-';
+		ddr_rlreq  : out std_logic;
+		ddr_rlrdy  : in  std_logic := '-';
+		ddr_rlcal  : in  std_logic := '0';
+		ddr_rlseq  : out std_logic := '0';
+		ddr_phyini : in std_logic := '1';
+		ddr_phyrw  : in std_logic := '-';
 		ddr_phycmd_req : in std_logic := '0';
 
-		ddr_rst      : out std_logic;
-		ddr_cke      : out std_logic;
-		ddr_cs       : out std_logic;
-		ddr_ras      : out std_logic;
-		ddr_cas      : out std_logic;
-		ddr_we       : out std_logic;
-		ddr_b        : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_a        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_dmi      : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmo      : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dmt      : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqsi     : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqst     : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqso     : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqt      : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_dqi      : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
-		ddr_dqo      : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
-		ddr_odt      : out std_logic;
-		ddr_sto      : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
-		ddr_sti      : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_rst   : out std_logic;
+		ddr_cke   : out std_logic;
+		ddr_cs    : out std_logic;
+		ddr_ras   : out std_logic;
+		ddr_cas   : out std_logic;
+		ddr_we    : out std_logic;
+		ddr_b     : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_a     : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_dmi   : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmo   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dmt   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqsi  : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqst  : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqso  : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqt   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_dqi   : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
+		ddr_dqo   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
+		ddr_odt   : out std_logic;
+		ddr_sto   : out std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
+		ddr_sti   : in  std_logic_vector(DDR_DATAPHASES*DDR_WORDSIZE/DDR_BYTESIZE-1 downto 0);
 
-		mii_rst      : in std_logic := '0';
-		mii_rxc      : in std_logic;
-		mii_rxdv     : in std_logic;
-		mii_rxd      : in std_logic_vector;
-		mii_txc      : in std_logic;
-		mii_txen     : out std_logic;
-		mii_txd      : out std_logic_vector;
+		mii_rst   : in std_logic := '0';
+		mii_rxc   : in std_logic;
+		mii_rxdv  : in std_logic;
+		mii_rxd   : in std_logic_vector;
+		mii_txc   : in std_logic;
+		mii_txen  : out std_logic;
+		mii_txd   : out std_logic_vector;
 
-		vga_rst      : in  std_logic := '0';
-		vga_clk      : in  std_logic;
-		vga_hsync    : out std_logic;
-		vga_vsync    : out std_logic;
-		vga_blank    : out std_logic;
-		vga_frm      : out std_logic;
-		vga_red      : out std_logic_vector(8-1 downto 0);
-		vga_green    : out std_logic_vector(8-1 downto 0);
-		vga_blue     : out std_logic_vector(8-1 downto 0));
+		vga_rst   : in  std_logic := '0';
+		vga_clk   : in  std_logic;
+		vga_hsync : out std_logic;
+		vga_vsync : out std_logic;
+		vga_blank : out std_logic;
+		vga_frm   : out std_logic;
+		vga_red   : out std_logic_vector(8-1 downto 0);
+		vga_green : out std_logic_vector(8-1 downto 0);
+		vga_blue  : out std_logic_vector(8-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -456,18 +457,18 @@ begin
 	ddr_e : entity hdl4fpga.xdr
 	generic map (
 		FPGA        => FPGA,
-		TCP         => DDR_TCP,
 		MARK        => DDR_MARK,
+		CMMD_GEAR   => DDR_CMMDGEAR,
 		SCLK_PHASES => DDR_SCLKPHASES,
-		SCLK_EDGE   => DDR_SCLKEDGE,
+		SCLK_EDGES  => DDR_SCLKEDGES,
+		DATA_PHASES => DDR_DATAPHASES,
+		DATA_EDGES  => DDR_DATAEDGES,
 		BANK_SIZE   => DDR_BANKSIZE,
 		ADDR_SIZE   => DDR_ADDRSIZE,
+		DATA_GEAR   => DDR_DATAGEAR,
 		WORD_SIZE   => DDR_WORDSIZE,
 		BYTE_SIZE   => DDR_BYTESIZE,
-		CMMD_GEAR   => DDR_CMMDGEAR,
-		DATA_GEAR   => DDR_DATAGEAR,
-		DATA_EDGE   => DDR_DATAEDGE,
-		DATA_PHASES => DDR_DATAPHASES)
+		TCP         => DDR_TCP)
 	port map (
 		sys_rst     => ddrs_rst,
 		sys_rtt     => ddrs_rtt,

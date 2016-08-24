@@ -33,8 +33,8 @@ entity xdr_init is
 	generic (
 		ddr_stdr : natural;
 		timers : natural_vector := (0 to 0 => 0);
-		addr_size : natural := 13;
-		bank_size : natural := 3);
+		ADDR_SIZE : natural := 13;
+		BANK_SIZE : natural := 3);
 	port (
 		xdr_init_bl   : std_logic_vector;
 		xdr_init_bt   : std_logic_vector;

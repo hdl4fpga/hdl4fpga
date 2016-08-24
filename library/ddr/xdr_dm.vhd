@@ -27,23 +27,23 @@ use ieee.std_logic_1164.all;
 entity xdr_dm is
 	generic (
 		data_strobe : string  := "NONE_LOOPBACK";
-		data_edges  : natural := 2;
-		data_phases : natural := 2);
+		DATA_EDGES  : natural := 2;
+		DATA_PHASES : natural := 2);
 	port (
-		sys_clks : in  std_logic_vector(data_phases/data_edges-1 downto 0);
-		sys_dmi  : in  std_logic_vector(data_phases-1 downto 0);
-		sys_st   : in  std_logic_vector(data_phases-1 downto 0);
-		sys_dmx  : in  std_logic_vector(data_phases-1 downto 0);
-		xdr_dmo  : out std_logic_vector(data_phases-1 downto 0));
+		sys_clks : in  std_logic_vector(DATA_PHASES/DATA_EDGES-1 downto 0);
+		sys_dmi  : in  std_logic_vector(DATA_PHASES-1 downto 0);
+		sys_st   : in  std_logic_vector(DATA_PHASES-1 downto 0);
+		sys_dmx  : in  std_logic_vector(DATA_PHASES-1 downto 0);
+		xdr_dmo  : out std_logic_vector(DATA_PHASES-1 downto 0));
 end;
 
 architecture arch of xdr_dm is
-	signal clks : std_logic_vector(data_phases-1 downto 0);
+	signal clks : std_logic_vector(DATA_PHASES-1 downto 0);
 begin
 
 	clks(xdr_clks'range) <= sys_clks;
-	falling_edge_g : if data_edges /= 1 generate
-		clks(data_phases-1 downto data_phases/data_edges) <= not sys_clks;
+	falling_edge_g : if DATA_EDGES /= 1 generate
+		clks(DATA_PHASES-1 downto DATA_PHASES/DATA_EDGES) <= not sys_clks;
 	end generate;
 
 	dmff_g: for i in clks'range generate

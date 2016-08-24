@@ -152,8 +152,8 @@ package xdr_param is
 		return natural_vector;
 
 	function xdr_rotval (
-		constant line_size : natural;
-		constant word_size : natural;
+		constant LINE_SIZE : natural;
+		constant WORD_SIZE : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
@@ -340,20 +340,20 @@ use hdl4fpga.std.all;
 package body xdr_param is
 
 	function xdr_rotval (
-		constant line_size : natural;
-		constant word_size : natural;
+		constant LINE_SIZE : natural;
+		constant WORD_SIZE : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
 		return std_logic_vector is
 
-		subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
+		subtype word is std_logic_vector(unsigned_num_bits(LINE_SIZE/WORD_SIZE-1)-1 downto 0);
 		type word_vector is array(natural range <>) of word;
 		
 		subtype latword is std_logic_vector(0 to lat_val'length-1);
 		type latword_vector is array (natural range <>) of latword;
 
-		constant algn : natural := unsigned_num_bits(word_size-1);
+		constant algn : natural := unsigned_num_bits(WORD_SIZE-1);
 		
 		function to_latwordvector(
 			constant arg : std_logic_vector)
@@ -390,13 +390,13 @@ package body xdr_param is
 		constant lc   : latword_vector := to_latwordvector(lat_cod);
 		
 		variable sel_sch : word_vector(lc'range);
-		variable val : unsigned(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
+		variable val : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
 		variable disp : natural;
 
 	begin
 
 		setup_l : for i in 0 to lat_tab'length-1 loop
-			sel_sch(i) := to_unsigned(lat_tab(i) mod (line_size/word_size), word'length);
+			sel_sch(i) := to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length);
 		end loop;
 		
 		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
@@ -463,7 +463,7 @@ package body xdr_param is
 				clk_phases => clk_phases,
 				phase     => lat_sch,
 				latency   => lat_tab(i),
-				word_size => word'length,
+				WORD_SIZE => word'length,
 				extension => lat_ext,
 				width     => lat_wid);
 		end loop;

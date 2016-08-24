@@ -32,7 +32,7 @@ entity ddrbaphy is
 	port (
 		sys_clk  : in  std_logic_vector(0 to 2-1);
 
-		phy_rst : in  std_logic;
+		phy_rst  : in  std_logic;
 		sys_rst  : in  std_logic_vector(gear-1 downto 0);
 		sys_cs   : in  std_logic_vector(gear-1 downto 0);
 		sys_cke  : in  std_logic_vector(gear-1 downto 0);

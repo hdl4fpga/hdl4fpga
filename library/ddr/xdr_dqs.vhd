@@ -26,8 +26,8 @@ use ieee.std_logic_1164.all;
 
 entity xdr_dqs is
 	generic (
-		data_phases : natural := 2;
-		data_edges  : natural := 2);
+		DATA_PHASES : natural := 2;
+		DATA_EDGES  : natural := 2);
 	port (
 		sys_dclk : in  std_logic;
 		sys_dqso : in  std_logic;

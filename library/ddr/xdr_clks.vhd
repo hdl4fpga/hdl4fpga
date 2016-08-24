@@ -27,19 +27,19 @@ use ieee.numeric_std.all;
 
 entity xdr_clks is
 	generic (
-		data_phases : natural := 2;
-		data_edges  : natural := 2;
+		DATA_PHASES : natural := 2;
+		DATA_EDGES  : natural := 2;
 		data_bytes  : natural := 2);
 	port (
 		sys_ini   : in  std_logic;
 		sys_clk0  : in  std_logic;
 		sys_clk90 : in  std_logic;
-		clk_phs0  : out std_logic_vector(data_phases*data_edges-1 downto 0);
-		clk_phs90 : out std_logic_vector(data_phases*data_edges-1 downto 0);
+		clk_phs0  : out std_logic_vector(DATA_PHASES*DATA_EDGES-1 downto 0);
+		clk_phs90 : out std_logic_vector(DATA_PHASES*DATA_EDGES-1 downto 0);
 
 		dqs_rst  : in  std_logic;
 		ddr_dqsi : in  std_logic_vector(data_bytes-1 downto 0);
-		dqs_phs  : out std_logic_vector(data_bytes*data_phases*data_edges-1 downto 0));
+		dqs_phs  : out std_logic_vector(data_bytes*DATA_PHASES*DATA_EDGES-1 downto 0));
 
 	constant r : natural := 0;
 	constant f : natural := 1;
@@ -48,27 +48,27 @@ end;
 library hdl4fpga;
 
 architecture uni of xdr_clks is
-	type ephs_vector is array (natural range <>) of std_logic_vector(data_phases-1 downto 0);
+	type ephs_vector is array (natural range <>) of std_logic_vector(DATA_PHASES-1 downto 0);
 
-	signal clks  : std_logic_vector(2*data_edges-1 downto 0);
+	signal clks  : std_logic_vector(2*DATA_EDGES-1 downto 0);
 	signal eclks : ephs_vector(clks'range);
-	signal ephs  : ephs_vector(data_bytes*data_edges-1 downto 0);
+	signal ephs  : ephs_vector(data_bytes*DATA_EDGES-1 downto 0);
 
 	signal srst : std_ulogic_vector(clks'range);
-	constant wave : std_logic_vector(data_phases-1 downto 0) := (0 to data_phases/2-1 => '0') & (0 to data_phases/2-1 => '1');
+	constant wave : std_logic_vector(DATA_PHASES-1 downto 0) := (0 to DATA_PHASES/2-1 => '0') & (0 to DATA_PHASES/2-1 => '1');
 begin
 
 	clks <= (
 		2*r+0 => sys_clk0, 2*r+1 => sys_clk90,
 		2*f+0 => not sys_clk0, 2*f+1 => not sys_clk90);
 
-	assert data_phases=2 
-		report "data_phases /= 2"
+	assert DATA_PHASES=2 
+		report "DATA_PHASES /= 2"
 		severity FAILURE;
 
 	srst(0) <= sys_ini;
 	eclk_e : for i in clks'range generate
-		signal phs : std_logic_vector(0 to data_phases-1);
+		signal phs : std_logic_vector(0 to DATA_PHASES-1);
 	begin
 		ini_g : if i /= 1 generate 
 			process (clks(i))
@@ -107,7 +107,7 @@ begin
 	end process;
 
 	phsdqs_e : for i in ddr_dqsi'range generate
-		signal delayed_dqsi : std_logic_vector(data_edges-1 downto 0);
+		signal delayed_dqsi : std_logic_vector(DATA_EDGES-1 downto 0);
 	begin
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
@@ -116,7 +116,7 @@ begin
 			x_n => delayed_dqsi(f));
 
 		dqsi_e : for j in delayed_dqsi'range generate
-			signal cphs : std_logic_vector(0 to data_phases-1);
+			signal cphs : std_logic_vector(0 to DATA_PHASES-1);
 		begin
 			process (dqs_rst, delayed_dqsi(i))
 			begin
@@ -134,8 +134,8 @@ begin
 	begin
 		for i in data_bytes-1 downto 0 loop
 			for j in ephs(0)'range loop
-				for k in data_edges-1 downto 0 loop
-					dqs_phs((i*data_phases+j)*data_edges+k) <= ephs(i*data_edges)(j);
+				for k in DATA_EDGES-1 downto 0 loop
+					dqs_phs((i*DATA_PHASES+j)*DATA_EDGES+k) <= ephs(i*DATA_EDGES)(j);
 				end loop;
 			end loop;
 		end loop;
