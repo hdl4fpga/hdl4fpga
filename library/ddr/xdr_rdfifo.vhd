@@ -27,22 +27,22 @@ use ieee.numeric_std.all;
 
 entity xdr_rdfifo is
 	generic (
-		DATA_DELAY  : natural := 1;
-		DATA_PHASES : natural := 1;
-		DATA_GEAR   : natural := 4;
-		WORD_SIZE   : natural := 16;
-		BYTE_SIZE   : natural := 8;
-		ACNTR_DELAY : boolean := FALSE);
+		data_delay  : natural := 1;
+		data_phases : natural := 1;
+		line_size   : natural := 64;
+		word_size   : natural := 16;
+		byte_size   : natural := 8;
+		acntr_delay   : boolean := FALSE);
 	port (
 		sys_clk : in  std_logic;
-		sys_rdy : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_rea : in  std_logic;
-		sys_do  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_do  : out std_logic_vector(line_size-1 downto 0);
 
-		xdr_win_dq  : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_win_dqs : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqsi    : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqi     : in std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
+		xdr_win_dq  : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_win_dqs : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_dqsi    : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		xdr_dqi     : in std_logic_vector(line_size-1 downto 0));
 
 end;
 
@@ -50,10 +50,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture struct of xdr_rdfifo is
-	subtype byte is std_logic_vector(BYTE_SIZE-1 downto 0);
+	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype word is std_logic_vector(DATA_GEAR*WORD_SIZE/xdr_dqsi'length-1 downto 0);
+	subtype word is std_logic_vector(line_size/xdr_dqsi'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
 	function to_stdlogicvector (
@@ -118,39 +118,39 @@ begin
 	end process;
 
 	di  <= to_wordvector(xdr_dqi);
-	bytes_g : for i in WORD_SIZE/BYTE_SIZE-1 downto 0 generate
-		DATA_PHASES_g : for j in 0 to DATA_PHASES-1 generate
+	bytes_g : for i in word_size/byte_size-1 downto 0 generate
+		data_phases_g : for j in 0 to data_phases-1 generate
 			signal pll_req : std_logic;
 		begin
 
 			process (sys_clk)
-				variable q : std_logic_vector(0 to DATA_DELAY);
+				variable q : std_logic_vector(0 to data_delay);
 			begin 
 				if rising_edge(sys_clk) then
-					q := q(1 to q'right) & xdr_win_dq(i*DATA_PHASES+j);
+					q := q(1 to q'right) & xdr_win_dq(i*data_phases+j);
 					pll_req <= q(0);
 				end if;
 			end process;
-			sys_rdy(i*DATA_PHASES+j) <= pll_req;
+			sys_rdy(i*data_phases+j) <= pll_req;
 
 
 			inbyte_i : entity hdl4fpga.iofifo
 			generic map (
-				ACNTR_DELAY => ACNTR_DELAY,
-				PLL2SER     => false,
-				DATA_PHASES => 1,
-				WORD_SIZE   => word'length,
-				BYTE_SIZE   => byte'length)
+				acntr_delay => acntr_delay,
+				pll2ser => false,
+				data_phases => 1,
+				word_size  => word'length,
+				byte_size  => byte'length)
 			port map (
 				pll_clk => sys_clk,
 				pll_req => pll_req,
 
 				ser_ar(0)  => sys_do_win,
-				ser_ena(0) => xdr_win_dqs(i*DATA_PHASES+j),
-				ser_clk(0) => xdr_dqsi(i*DATA_PHASES+j),
+				ser_ena(0) => xdr_win_dqs(i*data_phases+j),
+				ser_clk(0) => xdr_dqsi(i*data_phases+j),
 
-				di  => di(i*DATA_PHASES+j),
-				do  => do(j*WORD_SIZE/BYTE_SIZE+i));
+				di  => di(i*data_phases+j),
+				do  => do(j*word_size/byte_size+i));
 		end generate;
 	end generate;
 	sys_do <= to_stdlogicvector(shuffle(do));

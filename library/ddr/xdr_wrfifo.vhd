@@ -30,21 +30,21 @@ use ieee.std_logic_textio.all;
 
 entity xdr_wrfifo is
 	generic (
-		DATA_PHASES : natural;
-		DATA_GEAR   : natural;
-		WORD_SIZE   : natural;
-		BYTE_SIZE   : natural);
+		data_phases : natural;
+		line_size   : natural;
+		word_size   : natural;
+		byte_size   : natural);
 	port (
 		sys_clk : in  std_logic;
 		sys_req : in  std_logic;
 		sys_ena : in  std_logic;
-		sys_dmi : in  std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sys_dqi : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_dmi : in  std_logic_vector(line_size/byte_size-1 downto 0);
+		sys_dqi : in  std_logic_vector(line_size-1 downto 0);
 
-		xdr_clks : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
-		xdr_enas : in  std_logic_vector(0 to DATA_PHASES*WORD_SIZE/BYTE_SIZE-1);
-		xdr_dmo  : out std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		xdr_dqo  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
+		xdr_clks : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		xdr_enas : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		xdr_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
+		xdr_dqo  : out std_logic_vector(line_size-1 downto 0));
 
 end;
 
@@ -55,7 +55,7 @@ use std.textio.all;
 
 architecture struct of xdr_wrfifo is
 
-	subtype byte is std_logic_vector(BYTE_SIZE downto 0);
+	subtype byte is std_logic_vector(byte_size downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
 	impure function merge (
@@ -70,8 +70,8 @@ architecture struct of xdr_wrfifo is
 		dat2 := unsigned(arg2);
 		for i in dat2'range loop
 			val  := val  srl byte'length;
-			val(0 to BYTE_SIZE) := dat2(0) & dat1(BYTE_SIZE-1 downto 0);
-			dat1 := dat1 srl BYTE_SIZE;
+			val(0 to byte_size) := dat2(0) & dat1(byte_size-1 downto 0);
+			dat1 := dat1 srl byte_size;
 			dat2 := dat2 srl 1;
 		end loop;
 		return std_logic_vector(val);
@@ -86,7 +86,7 @@ architecture struct of xdr_wrfifo is
 		dat := unsigned(arg);
 		for i in val'range loop
 			val := val srl 1;
-			val(0) := dat(BYTE_SIZE);
+			val(0) := dat(byte_size);
 			dat := dat srl byte'length;
 		end loop;
 		return std_logic_vector(val);
@@ -100,8 +100,8 @@ architecture struct of xdr_wrfifo is
 	begin
 		dat := unsigned(arg);
 		for i in xdr_dmo'range loop
-			val := val srl BYTE_SIZE;
-			val(0 to BYTE_SIZE-1) := dat(BYTE_SIZE-1 downto 0);
+			val := val srl byte_size;
+			val(0 to byte_size-1) := dat(byte_size-1 downto 0);
 			dat := dat srl byte'length;
 		end loop;
 		return std_logic_vector(val);
@@ -135,10 +135,10 @@ architecture struct of xdr_wrfifo is
 		return std_logic_vector(val);
 	end;
 
-	subtype word is std_logic_vector(byte'length*DATA_GEAR*WORD_SIZE-1 downto 0);
+	subtype word is std_logic_vector(byte'length*line_size/word_size-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	subtype shuffleword is byte_vector(DATA_GEAR*WORD_SIZE/WORD_SIZE-1 downto 0);
+	subtype shuffleword is byte_vector(line_size/word_size-1 downto 0);
 
 	impure function unshuffle (
 		arg : word_vector)
@@ -149,7 +149,7 @@ architecture struct of xdr_wrfifo is
 		for i in arg'range loop
 			aux := to_bytevector(arg(i));
 			for j in aux'range loop
-				val(j*(WORD_SIZE/BYTE_SIZE)+i) := aux(j);
+				val(j*(word_size/byte_size)+i) := aux(j);
 			end loop;
 		end loop;
 		return val;
@@ -157,12 +157,12 @@ architecture struct of xdr_wrfifo is
 
 	signal di : byte_vector(sys_dmi'range);
 	signal do : byte_vector(xdr_dmo'range);
-	signal dqo : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
+	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
 begin
 
 	di <= to_bytevector(merge(sys_dqi, sys_dmi));
-	xdr_fifo_g : for i in 0 to WORD_SIZE/BYTE_SIZE-1 generate
+	xdr_fifo_g : for i in 0 to word_size/byte_size-1 generate
 		signal ser_clk : std_logic_vector(xdr_clks'range);
 		signal ser_ena : std_logic_vector(xdr_enas'range);
 
@@ -178,29 +178,29 @@ begin
 		begin
 			aux := arg1;
 			for i in val'range loop
-				val(i) := aux((WORD_SIZE/BYTE_SIZE)*i+arg2);
+				val(i) := aux((word_size/byte_size)*i+arg2);
 			end loop;
 			return val;
 		end;
 
 	begin
 		dqi <= shuffle(di, i);
-		ser_clk <= std_logic_vector(unsigned(xdr_clks) sll (i*DATA_PHASES));
-		ser_ena <= std_logic_vector(unsigned(xdr_enas) sll (i*DATA_PHASES));
+		ser_clk <= std_logic_vector(unsigned(xdr_clks) sll (i*data_phases));
+		ser_ena <= std_logic_vector(unsigned(xdr_enas) sll (i*data_phases));
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.iofifo
 		generic map (
-			PLL2SER     => TRUE,
-			DATA_PHASES => DATA_PHASES,
-			WORD_SIZE   => word'length,
-			BYTE_SIZE   => byte'length)
+			pll2ser => true,
+			data_phases => data_phases,
+			word_size => word'length,
+			byte_size => byte'length)
 		port map (
 			pll_clk => sys_clk,
 			pll_req => sys_req,
 			pll_ena => sys_ena,
-			ser_clk => ser_clk(0 to DATA_PHASES-1),
-			ser_ena => ser_ena(0 to DATA_PHASES-1),
+			ser_clk => ser_clk(0 to data_phases-1),
+			ser_ena => ser_ena(0 to data_phases-1),
 			di  => fifo_di,
 			do  => dqo(i));
 

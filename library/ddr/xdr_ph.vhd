@@ -27,12 +27,12 @@ use ieee.numeric_std.all;
 
 entity xdr_ph is
 	generic (
-		clk_phases  : natural := 1;
-		clk_edge    : boolean := TRUE;
+		clk_phases : natural := 1;
+		clk_edges  : natural := 1;
 		delay_phase : natural := 2;
 		delay_size  : natural := 2);
 	port (
-		sys_clks : in std_logic_vector;
+		sys_clks : in std_logic_vector(0 to clk_phases/clk_edges-1);
 		sys_di : in std_logic;
 		ph_qo  : out std_logic_vector(0 to delay_size));
 end;
@@ -43,17 +43,16 @@ use hdl4fpga.std.all;
 use std.textio.all;
 
 architecture slr of xdr_ph is
-	constant CLK_EDGES : natural := selecton(CLK_EDGE,2,1);
-	signal   clks      : std_logic_vector(0 to clk_phases-1) := (others => '-');
-	signal   phi       : std_logic_vector(clks'range) := (others => '-');
-	signal   phi0      : std_logic_vector(clks'range) := (others => '-');
-	signal   qo        : std_logic_vector(0 to delay_size);
+	signal clks : std_logic_vector(0 to clk_phases-1) := (others => '-');
+	signal phi  : std_logic_vector(clks'range) := (others => '-');
+	signal phi0 : std_logic_vector(clks'range) := (others => '-');
+	signal qo : std_logic_vector(0 to delay_size);
 
 begin
 	
 	clks(sys_clks'range) <= sys_clks;
-	falling_edge_g : if clk_edge generate
-		clks(clk_phases/CLK_EDGES to clk_phases-1) <= not sys_clks;
+	falling_edge_g : if clk_edges /= 1 generate
+		clks(clk_phases/clk_edges to clk_phases-1) <= not sys_clks;
 	end generate;
 
 	g0: block

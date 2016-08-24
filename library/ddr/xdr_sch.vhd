@@ -34,8 +34,9 @@ entity xdr_sch is
 		PROFILE           : natural;
 		DELAY_SIZE        : natural := 64;
 		REGISTERED_OUTPUT : boolean := false;
+		DATA_PHASES       : natural := 2;
 		CLK_PHASES        : natural := 4;
-		CLK_EDGE          : boolean := TRUE;
+		CLK_EDGES         : natural := 2;
 
 		DATA_GEAR         : natural;
 		CMMD_GEAR         : natural := 1;
@@ -58,7 +59,7 @@ entity xdr_sch is
 		WWNX_LAT          : natural;
 		WID_LAT           : natural);
 	port (
-		sys_clks          : in  std_logic_vector;
+		sys_clks          : in  std_logic_vector(0 to CLK_PHASES/CLK_EDGES-1);
 		sys_cl            : in  std_logic_vector;
 		sys_cwl           : in  std_logic_vector;
 		sys_rea           : in  std_logic;
@@ -84,21 +85,20 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 architecture def of xdr_sch is
-	constant CLK_EDGES : natural := selecton(CLK_EDGE,2,1);
-	constant PH90      : natural := 1 mod sys_clks'length;
+	constant PH90 : natural := 1 mod sys_clks'length;
 
-	signal   wphi      : std_logic;
-	signal   rphi      : std_logic;
+	signal wphi   : std_logic;
+	signal rphi   : std_logic;
 
-	signal   rpho      : std_logic_vector(0 to DELAY_SIZE);
-	signal   rpho0     : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
-	signal   rpho90    : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
+	signal rpho   : std_logic_vector(0 to DELAY_SIZE);
+	signal rpho0  : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
+	signal rpho90 : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
 
-	signal   wpho      : std_logic_vector(0 to DELAY_SIZE);
-	signal   wpho0     : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
-	signal   wpho90    : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
+	signal wpho   : std_logic_vector(0 to DELAY_SIZE);
+	signal wpho0  : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
+	signal wpho90 : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
 
-	signal   stpho     : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
+	signal stpho  : std_logic_vector(0 to DELAY_SIZE/CLK_EDGES-1);
 
 begin
 	
@@ -107,7 +107,7 @@ begin
 
 	xdr_rph_e : entity hdl4fpga.xdr_ph
 	generic map (
-		CLK_EDGE    => CLK_EDGE,
+		CLK_EDGES   => CLK_EDGES,
 		CLK_PHASES  => CLK_PHASES,
 		DELAY_SIZE  => DELAY_SIZE,
 		DELAY_PHASE => 2)

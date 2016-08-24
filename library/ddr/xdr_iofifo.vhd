@@ -29,27 +29,27 @@ entity iofifo is
 	generic (
 		pll2ser : boolean;
 		acntr_delay : boolean := false;
-		DATA_PHASES : natural;
-		WORD_SIZE   : natural;
-		BYTE_SIZE   : natural);
+		data_phases : natural;
+		word_size   : natural;
+		byte_size   : natural);
 	port (
 		pll_clk : in  std_logic;
 		pll_req : in  std_logic := '-';
 		pll_ena : in  std_logic := '1';
 
-		ser_ar  : in  std_logic_vector(0 to DATA_PHASES-1) := (others => '1');
-		ser_clk : in  std_logic_vector(0 to DATA_PHASES-1);
-		ser_ena : in  std_logic_vector(0 to DATA_PHASES-1);
+		ser_ar  : in  std_logic_vector(0 to data_phases-1) := (others => '1');
+		ser_clk : in  std_logic_vector(0 to data_phases-1);
+		ser_ena : in  std_logic_vector(0 to data_phases-1);
 
-		di  : in  std_logic_vector(WORD_SIZE-1 downto 0);
-		do  : out std_logic_vector(WORD_SIZE-1 downto 0));
+		di  : in  std_logic_vector(word_size-1 downto 0);
+		do  : out std_logic_vector(word_size-1 downto 0));
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of iofifo is
-	subtype byte is std_logic_vector(WORD_SIZE/DATA_PHASES-1 downto 0);
+	subtype byte is std_logic_vector(word_size/data_phases-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
 	signal fifo_clk : std_logic;
