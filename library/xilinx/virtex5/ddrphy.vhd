@@ -41,7 +41,7 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		tp_sel       : in std_logic_vector(1 downto 0);
+		tp_sel       : in std_logic_vector(1 downto 0) := (others => '-');
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
 		tp1          : out std_logic_vector(6-1 downto 0);
 		tp_dqidly    : out std_logic_vector(6-1 downto 0);
@@ -54,12 +54,12 @@ entity ddrphy is
 		phy_cmd_rdy  : in  std_logic;
 		phy_cmd_req  : out std_logic;
 
-		sys_wlreq    : in  std_logic;
+		sys_wlreq    : in  std_logic := '0';
 		sys_wlrdy    : out std_logic;
-		sys_rlreq    : in  std_logic;
+		sys_rlreq    : in  std_logic := '0';
 		sys_rlrdy    : out std_logic;
 		sys_rlcal    : out std_logic;
-		sys_rlseq    : in  std_logic;
+		sys_rlseq    : in  std_logic := '0';
 
 		sys_rst      : in  std_logic_vector(0 to CMMD_GEAR-1) := (others => '-');
 		sys_cke      : in  std_logic_vector(0 to CMMD_GEAR-1);
@@ -103,11 +103,11 @@ entity ddrphy is
 		ddr_dqsi     : in  std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 		ddr_dqso     : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0));
 
-		constant sys_clk0     : natural := 0; 
-		constant sys_clk90    : natural := 1;
+		constant sys_clk0div  : natural := 0; 
+		constant sys_clk90div : natural := 1;
 		constant sys_iodclk   : natural := 2;
-		constant sys_clk0div  : natural := 3; 
-		constant sys_clk90div : natural := 4;
+		constant sys_clk0     : natural := 3; 
+		constant sys_clk90    : natural := 4;
 
 		constant phyiod_rst   : natural := 1;
 
@@ -315,12 +315,18 @@ architecture virtex of ddrphy is
 	signal dqidly : std_logic_vector(2*6-1 downto 0);
 begin
 	ddr_clk_g : for i in ddr_clk'range generate
-		ck_i : entity hdl4fpga.ddro
+		signal clks : std_logic_vector (0 to 2-1);
+	begin
+		clks <= (others => sys_clks(sys_clk0));
+		clk_i : entity hdl4fpga.omdr
+		generic map (
+			SIZE => 1,
+			GEAR => 2)
 		port map (
-			clk => sys_clks(sys_clk0),
-			dr => '0' xor clkinv,
-			df => '1' xor clkinv,
-			q  => ddr_clk(i));
+			clk  => clks,
+			d(0) => '0' xor clkinv,
+			d(1) => '1' xor clkinv,
+			q(0) => ddr_clk(i));
 	end generate;
 
 	process (sys_clks(sys_clk0div))
@@ -543,6 +549,7 @@ begin
 			TCP        => TCP,
 			TAP_DLY    => TAP_DELAY,
 			GEAR       => DATA_GEAR,
+			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
 --			tp_sel     => tp_sel(0),

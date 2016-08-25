@@ -213,7 +213,7 @@ begin
 		signal dqo  : std_logic_vector(0 to DATA_GEAR-1);
 		signal clks : std_logic_vector(0 to 2-1);
 		signal dqt  : std_logic_vector(sys_dqt'range);
-	signal omdr_dqclk : std_logic_vector(0 to 2-1);
+		signal omdr_dqclk : std_logic_vector(0 to 2-1);
 	begin
 
 		omdr_dqclk  <= (0 => sys_clk90div, 1 => sys_clk90);

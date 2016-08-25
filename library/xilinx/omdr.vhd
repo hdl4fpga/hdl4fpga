@@ -30,7 +30,7 @@ entity omdr is
 		SIZE : natural;
 		GEAR : natural);
 	port (
-		rst : in  std_logic;
+		rst : in  std_logic := '0';
 		clk : in  std_logic_vector(0 to 2-1);
 		t   : in  std_logic_vector(0 to GEAR*SIZE-1) := (others => '0');
 		tq  : out std_logic_vector(0 to SIZE-1);
@@ -75,7 +75,7 @@ begin
 				ce => '1',
 				s  => '0',
 				r  => '0',
-				d  => pit(i),
+				d  => pit(0),
 				q  => tq(0));
 
 			ffd_i : fdrse
