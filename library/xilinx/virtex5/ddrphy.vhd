@@ -427,20 +427,20 @@ begin
 		end if;
 	end process;
 
-	process (sys_clks(sys_clk0div))
-	begin
-		if rising_edge(sys_clks(sys_clk0div)) then
-			if rlcal='0' then
-				rotba <= (others => '0');
-			elsif ini='1' then
-				rotba <= (others => '0');
-			elsif sys_rlseq='1' then
-				rotba <= rotba + 1;
-			end if;
-		end if;
-	end process;
-
 	rotcmmd_g : if CMMD_GEAR > 1 generate
+		process (sys_clks(sys_clk0div))
+		begin
+			if rising_edge(sys_clks(sys_clk0div)) then
+				if rlcal='0' then
+					rotba <= (others => '0');
+				elsif ini='1' then
+					rotba <= (others => '0');
+				elsif sys_rlseq='1' then
+					rotba <= rotba + 1;
+				end if;
+			end if;
+		end process;
+
 		rotras_i : entity hdl4fpga.barrel
 		generic map (
 			d => "RIGHT", 

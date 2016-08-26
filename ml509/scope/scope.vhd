@@ -266,33 +266,33 @@ begin
 		vga_red        => vga_red,
 		vga_green      => vga_green,
 		vga_blue       => vga_blue);
-
-	gear_g : if CMMD_GEAR=2 generate
-		ddrphy_cke(1) <= ddrphy_cke(0);
-		ddrphy_cs(1)  <= ddrphy_cs(0);
-		ddrphy_ras(1) <= '1';
-		ddrphy_cas(1) <= '1';
-		ddrphy_we(1)  <= '1';
-		ddrphy_odt(1) <= ddrphy_odt(0);
-
-		process (ddr_b)
-		begin
-			for i in ddr_b'range loop
-				for j in 0 to CMMD_GEAR-1 loop
-					ddrphy_b(i*CMMD_GEAR+j) <= ddr_b(i);
-				end loop;
-			end loop;
-		end process;
-
-		process (ddr_a)
-		begin
-			for i in ddr_a'range loop
-				for j in 0 to CMMD_GEAR-1 loop
-					ddrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
-				end loop;
-			end loop;
-		end process;
+	
+	gear_g : for i in 1 to CMMD_GEAR-1 generate
+		ddrphy_cke(i) <= ddrphy_cke(0);
+		ddrphy_cs(i)  <= ddrphy_cs(0);
+		ddrphy_ras(i) <= '1';
+		ddrphy_cas(i) <= '1';
+		ddrphy_we(i)  <= '1';
+		ddrphy_odt(i) <= ddrphy_odt(0);
 	end generate;
+
+	process (ddr_b)
+	begin
+		for i in ddr_b'range loop
+			for j in 0 to CMMD_GEAR-1 loop
+				ddrphy_b(i*CMMD_GEAR+j) <= ddr_b(i);
+			end loop;
+		end loop;
+	end process;
+
+	process (ddr_a)
+	begin
+		for i in ddr_a'range loop
+			for j in 0 to CMMD_GEAR-1 loop
+				ddrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
+			end loop;
+		end loop;
+	end process;
 
 	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => ictlr_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
 	phy_rsts <= (0 => ddrs_rst, 2 => sys_rst, others => '0');

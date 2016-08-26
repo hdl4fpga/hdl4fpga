@@ -99,7 +99,7 @@ begin
 		clk90 => dcm_clk90,
 		locked => dcm_lckd);
    
-	dfsdcm_lckd <= dfs_lckd;
+	dfsdcm_lckd <= dcm_lckd;
 
 	clk0_bufg_i : bufg
 	port map (

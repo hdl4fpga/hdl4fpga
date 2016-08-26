@@ -59,8 +59,6 @@ entity xdr is
 
 		sys_wlrdy   : in  std_logic := '-';
 		sys_wlreq   : out std_logic;
-		sys_rlrdy   : in  std_logic := '-';
-		sys_rlreq   : out std_logic;
 		sys_rlcal   : in  std_logic := '0';
 		sys_rlseq   : out std_logic;
 
