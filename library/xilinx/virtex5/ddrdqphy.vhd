@@ -88,8 +88,6 @@ architecture virtex of ddrdqphy is
 
 	signal tp : std_logic_vector(ddr_dqi'range);
 
-	signal dqsi : std_logic;
-	signal smp : std_logic_vector(0 to GEAR-1);
 begin
 
 	process (sys_clks(sys_iodclk))
@@ -108,7 +106,6 @@ begin
 	rlrdy     <= adjsto_rdy;
 	sys_tp    <= tp;
 
-	tp(0) <= smp(0);
 	tp(1) <= adjdqs_rdy;
 	tp(2) <= adjsto_req;
 	tp(5) <= adjsto_rdy;
@@ -223,7 +220,7 @@ begin
 		port map (
 			rst   => sys_rsts(sys90div_rst),
 			clk   => dqclk,
-			t     => dqt,
+			t     => sys_dqt,
 			tq(0) => ddr_dqt(i),
 			d     => dqo,
 			q(0)  => ddr_dqo(i));
@@ -270,14 +267,16 @@ begin
 		signal clk_n    : std_logic;
 		signal dqsclk   : std_logic_vector(0 to 2-1);
 		signal dqsi_buf : std_logic;
+		signal dqsi : std_logic;
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
 		signal sto      : std_logic;
+		signal smp : std_logic_vector(0 to GEAR-1);
 		signal imdr_clk : std_logic_vector(0 to 5-1);
 	begin
 
 		adjdqs_b : block
-			signal delay     : std_logic_vector(0 to 5-1);
+			signal delay     : std_logic_vector(0 to 7-1);
 			signal dc_iodrst : std_logic;
 			signal dly_rdy   : std_logic;
 			signal dly_req   : std_logic;
@@ -303,11 +302,9 @@ begin
 				clk     => sys_clks(sys_iodclk),
 				req     => dly_req,
 				rdy     => dly_rdy,
-				dly     => delay,
-				iod_rst => dc_iodrst,
+				dly     => delay(1 to delay'right),
+				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
-
-			iod_rst <= dc_iodrst and not adjdqs_rdy;
 
 			dqsidelay_i : idelay 
 			generic map (
@@ -327,7 +324,7 @@ begin
 			i => dqsi_buf,
 			o => dqsi);
 
-		tp(6) <= smp(0);
+		tp(0) <= smp(0);
 
 		imdr_clk <= (
 			0 => sys_clks(sys_clk0div),
@@ -370,6 +367,17 @@ begin
 			ddr_smp => smp,
 			sys_req => adjsto_req,
 			sys_rdy => adjsto_rdy);
+
+		process (sys_dqso)
+		begin
+			dqso <= (others => '0');
+			for i in dqso'range loop
+				if i mod 2 = 1 then
+					dqso(i) <= sys_dqso(i);
+				end if;
+			end loop;
+		end process;
+		dqst <= sys_dqst;
 
 		sys_sto <= (others => sto);
 

@@ -47,28 +47,37 @@ architecture beh of dlyctlr is
 begin
   
 	process (clk)
+		variable q : unsigned(0 to 4-1);
 	begin
 		if rising_edge(clk) then
 			if req='0' then
 				aux <= resize(unsigned(dly), aux'length);
+				q := (others => '0');
 			elsif aux(0)='0' then
 				aux <= aux - 1;
+				q := (others => '0');
+			elsif q(0)='0' then
+				q := q + 1;
 			end if;
+			rdy <= q(0);
 		end if;
 	end process;
-	rdy <= aux(0);
 
 	process (clk)
+		variable rst : std_logic;
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				iod_rst <= '1';
-				iod_ce  <= '1';
-			elsif aux(0)='0' then
 				iod_rst <= '0';
+				rst     := '1';
+				iod_ce  <= '0';
+			elsif aux(0)='0' then
+				iod_rst <= rst;
+				rst     := '0';
 				iod_ce  <= '1';
 			else
 				iod_rst <= '0';
+				rst     := '0';
 				iod_ce  <= '0';
 			end if;
 		end if;

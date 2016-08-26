@@ -109,7 +109,7 @@ entity ddrphy is
 		constant sys_clk0     : natural := 3; 
 		constant sys_clk90    : natural := 4;
 
-		constant phyiod_rst   : natural := 1;
+		constant phyiod_rst   : natural := 2;
 
 end;
 

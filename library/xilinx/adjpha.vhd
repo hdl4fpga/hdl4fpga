@@ -41,7 +41,7 @@ entity adjpha is
 		req     : in  std_logic;
 		rdy     : out std_logic;
 		dly_rdy : in  std_logic;
-		dly_req : out std_logic;
+		dly_req : buffer std_logic;
 		edge    : in  std_logic;
 		smp     : in  std_logic;
 		st      : out std_logic;
@@ -52,7 +52,7 @@ end;
 architecture beh of adjpha is
 	constant num_of_taps  : natural := tCP/(2*tap_dly);
 	constant num_of_steps : natural := unsigned_num_bits(num_of_taps)+2;
-	subtype gap_word is unsigned(num_of_steps-2 downto 0);
+	subtype gap_word is unsigned(dly'length-1 downto 0);
 	type gword_vector is array(natural range <>) of gap_word;
 
 	function create_gaps (
@@ -82,28 +82,40 @@ architecture beh of adjpha is
 
 begin
   
-	phc <= pha when smp=edge else phb;
 	process(req, clk)
 	begin
 		if rising_edge(clk) then
 			if req='0' then
 				step <= to_unsigned(num_of_steps-1, step'length);
-				pha  <= (others => '0');
 				phb  <= (others => '0');
-				dly  <= (dly'range => '0');
+				pha  <= (others => '0');
+				rdy  <= '0';
+				dly_req <= '0';
 			elsif step(0)='0' then
 				if dly_rdy='1' then
-					if smp=edge then
-						phb <= pha;
+					if dly_req='1' then
+						if smp=edge then
+							phb <= pha;
+						end if;
+						pha  <= phc + gaptab(to_integer(step(1 to step'right)));
+						step <= step - 1;
 					end if;
-					pha  <= phc + gaptab(to_integer(step(1 to step'right)));
-					step <= step - 1;
+					dly_req <= '0';
+				else
+					if smp=edge then
+						phc <= pha;
+					else
+						phc <= phb;
+					end if;
+					dly_req <= '1';
 				end if;
-				dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
+				rdy <= '0';
+			elsif dly_rdy='0' then
+				dly_req <= '1';
+				rdy <= '1';
 			end if;
 		end if;
 	end process;
-	dly_req <= (not dly_rdy or not step(0)) and req;
-	rdy     <= step(0);
+	dly <= std_logic_vector(pha(pha'left) & resize(pha(pha'left-1 downto 0), dly'length-1));
 
 end;
