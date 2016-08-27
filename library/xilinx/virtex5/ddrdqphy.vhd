@@ -138,7 +138,7 @@ begin
 	
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
-			signal delay     : std_logic_vector(0 to 5-1);
+			signal delay     : std_logic_vector(0 to 7-1);
 			signal dc_iodrst : std_logic;
 			signal dly_rdy   : std_logic;
 			signal dly_req   : std_logic;
@@ -147,7 +147,7 @@ begin
 		begin
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
-				TCP => TCP,
+				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
 				edge    => '0',
@@ -164,11 +164,9 @@ begin
 				clk     => sys_clks(sys_iodclk),
 				req     => dly_req,
 				rdy     => dly_rdy,
-				dly     => delay,
-				iod_rst => dc_iodrst,
+				dly     => delay(1 to delay'right),
+				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
-
-			iod_rst <= dc_iodrst and not adjdqi_rdy(i);
 
 			dqi_i : idelay 
 			generic map (
@@ -285,7 +283,7 @@ begin
 		begin
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
-				TCP => TCP,
+				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
 				edge    => '1',

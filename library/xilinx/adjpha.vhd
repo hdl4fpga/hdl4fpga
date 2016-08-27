@@ -112,7 +112,8 @@ begin
 				rdy <= '0';
 			elsif dly_rdy='0' then
 				dly_req <= '1';
-				rdy <= '1';
+			elsif dly_req='1' then
+				rdy <= dly_rdy;
 			end if;
 		end if;
 	end process;
