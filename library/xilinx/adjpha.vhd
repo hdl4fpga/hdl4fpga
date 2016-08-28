@@ -39,7 +39,7 @@ entity adjpha is
 		
 		clk     : in  std_logic;
 		req     : in  std_logic;
-		rdy     : out std_logic;
+		rdy     : buffer std_logic;
 		dly_rdy : in  std_logic;
 		dly_req : buffer std_logic;
 		edge    : in  std_logic;
@@ -110,10 +110,12 @@ begin
 					dly_req <= '1';
 				end if;
 				rdy <= '0';
-			elsif dly_rdy='0' then
-				dly_req <= '1';
-			elsif dly_req='1' then
-				rdy <= dly_rdy;
+			elsif rdy='0' then
+				if dly_rdy='0' then
+					dly_req <= '1';
+				elsif dly_req='1' then
+					rdy <= dly_rdy;
+				end if;
 			end if;
 		end if;
 	end process;
