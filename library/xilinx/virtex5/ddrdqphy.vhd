@@ -254,7 +254,7 @@ begin
 		port map (
 			rst   => sys_rsts(sys90div_rst),
 			clk   => dqclk,
-			t     => (others => '0'),
+			t     => (1 to GEAR => '0'),
 			tq(0) => ddr_dmt,
 			d     => dmi,
 			q(0)  => ddr_dmo);

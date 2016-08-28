@@ -76,7 +76,7 @@ begin
 				s  => '0',
 				r  => '0',
 				d  => pit(0),
-				q  => tq(0));
+				q  => tq(i));
 
 			ffd_i : fdrse
 			port map (
@@ -97,7 +97,7 @@ begin
 				s  => '0',
 				r  => '0',
 				d  => pit(i),
-				q  => tq(0));
+				q  => tq(i));
 
 			oddr_i : oddr
 			generic map (
