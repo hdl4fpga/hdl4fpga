@@ -22,7 +22,6 @@ architecture def of adjsto is
 
 	constant bl       : natural := 8/2;
 	signal   st       : std_logic;
-	signal   sto      : std_logic;
 	signal   inc      : std_logic;
 	signal   dly      : std_logic_vector(bl-1 downto 1);
 	signal   sel      : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);

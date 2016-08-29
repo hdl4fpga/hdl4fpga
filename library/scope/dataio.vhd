@@ -44,12 +44,6 @@ entity dataio is
 		input_dat : in std_logic_vector;
 		tp : out std_logic;
 
-		video_clk : in  std_logic;
-		video_ena : in  std_logic;
-		video_row : in  std_logic_vector;
-		video_col : in  std_logic_vector;
-		video_do  : out std_logic_vector;
-
 		ddrs_clk : in  std_logic;
 		ddrs_rreq : in std_logic;
 		ddrs_creq : out std_logic;
@@ -86,24 +80,12 @@ architecture def of dataio is
 	subtype aword is std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 
 	signal capture_rdy : std_logic;
-	signal ddrios_addr : aword;
 
 	signal datai_brst_req : std_logic;
-	signal datao_brst_req : std_logic;
-	signal ddr2video_brst_req : std_logic;
 	signal ddr2miitx_brst_req : std_logic;
 
 	signal miitx_gnt : std_logic;
 	signal datai_req : std_logic;
-
-	signal ddrios_brst_req : std_logic;
-
-	signal vsync_erq : std_logic;
-	signal hsync_erq : std_logic;
-
-	signal video_page : std_logic_vector(0 to 3-1);
-	signal video_off  : std_logic_vector(0 to page_num*page_size-1);
-	signal video_di   : std_logic_vector(0 to page_num*2*DDR_LINESIZE-1);
 
 	signal output_dat : std_logic_vector(ddrs_di'range);
 	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);

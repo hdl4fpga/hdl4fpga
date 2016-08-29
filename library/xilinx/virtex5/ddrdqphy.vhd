@@ -112,14 +112,11 @@ begin
 
 	iddr_g : for i in ddr_dqi'range generate
 		signal q         : std_logic_vector(2-1 downto 0);
-		signal t         : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
-		signal dqiod_inc : std_logic;
-		signal dqiod_ce  : std_logic;
 	begin
 		imdr_clk <= (
 			0 => sys_clks(sys_clk0),
-			1 => sys_clks(sys_clk0),
+			1 => sys_clks(sys_clk90),
 			2 => sys_clks(sys_clk0div),
 			3 => not sys_clks(sys_clk90),
 			4 => not sys_clks(sys_clk0));
@@ -205,7 +202,6 @@ begin
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
 		signal dqo  : std_logic_vector(0 to GEAR-1);
-		signal dqt  : std_logic_vector(sys_dqt'range);
 		signal clks : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
@@ -227,7 +223,6 @@ begin
 					end if;
 				elsif rising_edge(clks(j)) then
 					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
-					dqt(j) <= reverse(sys_dqt)(j);
 				end if;
 			end process;
 		end generate;
@@ -285,8 +280,7 @@ begin
 	dqso_b : block 
 		signal clk_n    : std_logic;
 		signal dqsclk   : std_logic_vector(0 to 2-1);
-		signal dqsi_buf : std_logic;
-		signal dqsi : std_logic;
+		signal dqsi     : std_logic;
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
 		signal sto      : std_logic;
@@ -299,7 +293,6 @@ begin
 			signal adjpha_dly    : std_logic_vector(0 to 7-1);
 			signal adjsto_dlyreq : std_logic;
 			signal adjpha_dlyreq : std_logic;
-			signal adjdly_req    : std_logic;
 			signal dly_rdy       : std_logic;
 			signal dly_req       : std_logic;
 			signal iod_rst       : std_logic;
@@ -352,14 +345,9 @@ begin
 				ce  => iod_ce,
 				inc => '1',
 				i   => ddr_dqsi,
-				o   => dqsi_buf);
+				o   => dqsi);
 
 		end block;
-
-		bufio_i : bufio
-		port map (
-			i => dqsi_buf,
-			o => dqsi);
 
 		tp(0) <= smp(0);
 

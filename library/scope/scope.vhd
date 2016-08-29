@@ -102,17 +102,8 @@ entity scope is
 		mii_rxd   : in std_logic_vector;
 		mii_txc   : in std_logic;
 		mii_txen  : out std_logic;
-		mii_txd   : out std_logic_vector;
+		mii_txd   : out std_logic_vector);
 
-		vga_rst   : in  std_logic := '0';
-		vga_clk   : in  std_logic;
-		vga_hsync : out std_logic;
-		vga_vsync : out std_logic;
-		vga_blank : out std_logic;
-		vga_frm   : out std_logic;
-		vga_red   : out std_logic_vector(8-1 downto 0);
-		vga_green : out std_logic_vector(8-1 downto 0);
-		vga_blue  : out std_logic_vector(8-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -169,18 +160,6 @@ architecture def of scope is
 	signal input_req    : std_logic := '0';
 	signal input_dat    : std_logic_vector(0 to 15);
 	
-	signal win_rowid    : std_logic_vector(2-1 downto 0);
-	signal win_rowpag   : std_logic_vector(5-1 downto 0);
-    signal win_rowoff   : std_logic_vector(7-1 downto 0);
-    signal win_colid    : std_logic_vector(2-1 downto 0);
-    signal win_colpag   : std_logic_vector(2-1 downto 0);
-    signal win_coloff   : std_logic_vector(13-1 downto 0);
-
-    signal chann_dat    : std_logic_vector(32-1 downto 0);
-
-	signal grid_dot     : std_logic;
-	signal plot_dot     : std_logic_vector(0 to 2-1);
-
 	signal miirx_req    : std_logic;
 	signal miirx_rdy    : std_logic;
 	signal ddr2mii_req  : std_logic;
@@ -295,12 +274,6 @@ begin
 		input_rdy    => input_rdy,
 		input_clk    => input_clk,
 		input_dat    => input_dat,
-
-		video_clk    => vga_clk,
-		video_ena    => video_ena,
-		video_row    => win_rowpag(3 downto 0),
-		video_col    => win_coloff,
-		video_do     => chann_dat,
 
 		ddrs_clk     => ddrs_clks(0),
 		ddrs_rreq    => ddrs_ref_req,

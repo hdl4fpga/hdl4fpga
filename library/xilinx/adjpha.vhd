@@ -44,7 +44,6 @@ entity adjpha is
 		dly_req : buffer std_logic;
 		edge    : in  std_logic;
 		smp     : in  std_logic;
-		st      : out std_logic;
 		dly     : out std_logic_vector);
 
 end;

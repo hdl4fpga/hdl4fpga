@@ -107,17 +107,6 @@ architecture scope of ml509 is
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(phy_txd'range);
 
-	signal vga_clk        : std_logic;
-	signal vga_hsync      : std_logic;
-	signal vga_vsync      : std_logic;
-	signal vga_blank      : std_logic;
-	signal vga_frm        : std_logic;
-	signal vga_red        : std_logic_vector(8-1 downto 0);
-	signal vga_green      : std_logic_vector(8-1 downto 0);
-	signal vga_blue       : std_logic_vector(8-1 downto 0);
-
-	signal dvdelay        : std_logic_vector(0 to 2);
-
 	signal sys_rst        : std_logic;
 	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
@@ -255,17 +244,7 @@ begin
 		mii_rxd        => mii_rxd,
 		mii_txc        => gtx_clk,
 		mii_txen       => mii_txen,
-		mii_txd        => mii_txd,
-
---		vga_rst        => vga_rst,
-		vga_clk        => vga_clk,
-		vga_hsync      => vga_hsync,
-		vga_vsync      => vga_vsync,
-		vga_frm        => vga_frm,
-		vga_blank      => vga_blank,
-		vga_red        => vga_red,
-		vga_green      => vga_green,
-		vga_blue       => vga_blue);
+		mii_txd        => mii_txd);
 	
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ddrphy_cke(i) <= ddrphy_cke(0);
