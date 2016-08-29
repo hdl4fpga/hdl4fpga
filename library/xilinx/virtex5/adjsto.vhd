@@ -51,13 +51,12 @@ begin
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
 			d   := word2byte(reverse(dly & ddr_sti), sel);
-			sto <= st;
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
 			
-			ddr_sto <= sto;
 		end if;
 	end process;
+	ddr_sto <= st;
 
 	process (sys_req, ddr_clk)
 	begin

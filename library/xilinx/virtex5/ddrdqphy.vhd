@@ -118,11 +118,11 @@ begin
 		signal dqiod_ce  : std_logic;
 	begin
 		imdr_clk <= (
-			0 => sys_clks(sys_clk90),
-			2 => sys_clks(sys_clk0),
-			4 => sys_clks(sys_clk0div),
-			1 => not sys_clks(sys_clk90),
-			3 => not sys_clks(sys_clk0));
+			0 => sys_clks(sys_clk0),
+			1 => sys_clks(sys_clk0),
+			2 => sys_clks(sys_clk0div),
+			3 => not sys_clks(sys_clk90),
+			4 => not sys_clks(sys_clk0));
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
@@ -133,26 +133,32 @@ begin
 			d(0) => dqi(i),
 			q    => q);
 
-		sys_dqo(0*byte_size+i) <= q(1);
-		sys_dqo(1*byte_size+i) <= q(0);
+		sys_dqo(0*byte_size+i) <= q(0);
+		sys_dqo(1*byte_size+i) <= q(1);
 	
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
-			signal adjpha_dly : std_logic_vector(0 to 7-1);
-			signal adjdly_req : std_logic;
-			signal delay      : std_logic_vector(1 to 7-1);
-			signal dly_rdy   : std_logic;
-			signal dly_req   : std_logic;
-			signal iod_ce    : std_logic;
-			signal iod_rst   : std_logic;
+			signal delay         : std_logic_vector(1 to 7-1);
+			signal adjpha_dly    : std_logic_vector(0 to 7-1);
+			signal adjdqi_dlyreq : std_logic;
+			signal adjpha_dlyreq : std_logic;
+			signal adjpha_rdy    : std_logic;
+			signal dly_rdy       : std_logic;
+			signal dly_req       : std_logic;
+			signal iod_ce        : std_logic;
+			signal iod_rst       : std_logic;
 		begin
 			process (sys_clks(sys_iodclk))
 			begin
 				if rising_edge(sys_clks(sys_iodclk)) then
-					if adjdqs_rdy='0'then
+					if adjpha_rdy='0'then
 						adjdqi_dlyreq <= '0';
+						adjdqi_rdy(i) <= '0';
 					elsif dly_rdy='0' then
 						adjdqi_dlyreq <= '1';
+						adjdqi_rdy(i) <= '0';
+					else
+						adjdqi_rdy(i) <= '1';
 					end if;
 				end if;
 			end process;
@@ -165,13 +171,13 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '0',
+				edge    => '1',
 				clk     => sys_clks(sys_iodclk),
 				req     => adjdqi_req,
-				rdy     => adjdqi_rdy(i),
-				dly_req => adjdly_req,
+				rdy     => adjpha_rdy,
+				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(0),
+				smp     => q(1),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -289,13 +295,15 @@ begin
 	begin
 
 		adjdqs_b : block
-			signal adjpha_dly : std_logic_vector(0 to 7-1);
-			signal adjdly_req : std_logic;
-			signal delay      : std_logic_vector(1 to 7-1);
-			signal dly_rdy    : std_logic;
-			signal dly_req    : std_logic;
-			signal iod_rst    : std_logic;
-			signal iod_ce     : std_logic;
+			signal delay         : std_logic_vector(1 to 7-1);
+			signal adjpha_dly    : std_logic_vector(0 to 7-1);
+			signal adjsto_dlyreq : std_logic;
+			signal adjpha_dlyreq : std_logic;
+			signal adjdly_req    : std_logic;
+			signal dly_rdy       : std_logic;
+			signal dly_req       : std_logic;
+			signal iod_rst       : std_logic;
+			signal iod_ce        : std_logic;
 		begin
 
 			process (sys_clks(sys_iodclk))
@@ -309,20 +317,20 @@ begin
 				end if;
 			end process;
 
-			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '1',
+				edge    => '0',
 				clk     => sys_clks(sys_iodclk),
 				req     => adjdqs_req,
 				rdy     => adjdqs_rdy,
 				dly_rdy => dly_rdy,
-				dly_req => dly_req,
+				dly_req => adjpha_dlyreq,
 				smp     => smp(0),
 				dly     => adjpha_dly);
 
