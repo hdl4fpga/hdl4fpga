@@ -201,6 +201,7 @@ begin
 	end generate;
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
+		signal dqt  : std_logic_vector(0 to GEAR-1);
 		signal dqo  : std_logic_vector(0 to GEAR-1);
 		signal clks : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
@@ -214,6 +215,7 @@ begin
 
 		registered_g : for j in clks'range generate
 			process (rlrdy, clks(j))
+				variable aux : std_logic_vector(dqo'range);
 			begin
 				if rlrdy='0' then
 					if j mod 2=0 then
@@ -222,10 +224,12 @@ begin
 						dqo(j) <= '0';
 					end if;
 				elsif rising_edge(clks(j)) then
-					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
+					aux(j) := sys_dqi(j*BYTE_SIZE+i);
+					dqo(j) <= reverse(aux)(j);
 				end if;
 			end process;
 		end generate;
+		dqt <= reverse(sys_dqt);
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
@@ -234,7 +238,7 @@ begin
 		port map (
 			rst   => sys_rsts(sys90div_rst),
 			clk   => dqclk,
-			t     => sys_dqt,
+			t     => dqt,
 			tq(0) => ddr_dqt(i),
 			d     => dqo,
 			q(0)  => ddr_dqo(i));
@@ -258,7 +262,7 @@ begin
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
-					dmi(i) <= sys_dmi(i);
+					dmi(i) <= reverse(sys_dmi)(i);
 				end if;
 			end process;
 		end generate;
@@ -402,7 +406,7 @@ begin
 				end if;
 			end loop;
 		end process;
-		dqst <= sys_dqst;
+		dqst <= reverse(sys_dqst);
 
 		sys_sto <= (others => sto);
 
