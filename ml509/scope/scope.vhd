@@ -124,6 +124,7 @@ architecture scope of ml509 is
 	signal ictlr_rst      : std_logic;
 
 	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
+	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 begin
 		
 		
@@ -273,18 +274,21 @@ begin
 		end loop;
 	end process;
 
-	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => ictlr_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
+	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => sys_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
 	phy_rsts <= (0 => ddrs_rst, 2 => sys_rst, others => '0');
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		TCP         => integer(UCLK_PERIOD*1000.0)*ddr_div/ddr_mul,
 		TAP_DELAY   => 78,
+		DATA_EDGE   => TRUE,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,
 		DATA_GEAR   => DATA_GEAR,
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
+		tp_sel => gpio_sw_s,
+		tp_delay    => tp_delay,
 		sys_clks    => sys_clks,
 		phy_rsts    => phy_rsts,
 
@@ -410,9 +414,7 @@ begin
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
 
-	tp_g : for i in 0 to 8-1 generate
-		gpio_led(i) <= tp1(i*8+1) when gpio_sw_n='1' else tp1(i*8+2) when gpio_sw_e='1' else tp1(i*8+0) when gpio_sw_w='1' else tp1(i*8+5) ;
-	end generate;
+	gpio_led <= "00" & reverse(tp_delay(6-1 downto 0));
 
 	bus_error <= (others => 'Z');
 	gpio_led_n <= '0';

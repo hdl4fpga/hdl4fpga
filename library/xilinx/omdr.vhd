@@ -100,8 +100,8 @@ begin
 				q  => tq(i));
 
 			oddr_i : oddr
-			generic map (
-				DDR_CLK_EDGE => "SAME_EDGE")
+--			generic map (
+--				DDR_CLK_EDGE => "SAME_EDGE")
 			port map (
 				c  => clk(0),
 				ce => '1',

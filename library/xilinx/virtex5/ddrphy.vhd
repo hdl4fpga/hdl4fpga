@@ -41,11 +41,10 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		tp_sel       : in std_logic_vector(1 downto 0) := (others => '-');
 		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
 		tp1          : out std_logic_vector(6-1 downto 0);
-		tp_dqidly    : out std_logic_vector(6-1 downto 0);
-	   	tp_dqsdly    : out std_logic_vector(6-1 downto 0);
+		tp_sel       : in  std_logic := '0';
+	   	tp_delay     : out std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 
 		sys_clks     : in  std_logic_vector(0 to 5-1);
 		phy_rsts     : in  std_logic_vector(0 to 3-1);
@@ -541,8 +540,6 @@ begin
 		end if;
 	end process;
 
-	tp_dqsdly <= dqsdly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqsdly(6*(0+1)-1 downto 6*0);
-	tp_dqidly <= dqidly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqidly(6*(0+1)-1 downto 6*0);
 	byte_g : for i in ddr_dqsi'range generate
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
@@ -552,9 +549,8 @@ begin
 			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
---			tp_sel     => tp_sel(0),
---			tp_dqsdly  => dqsdly(6*(i+1)-1 downto 6*i),
---			tp_dqidly  => dqidly(6*(i+1)-1 downto 6*i),
+			tp_sel     => tp_sel,
+			tp_delay   => tp_delay(6*(i+1)-1 downto 6*i),
 
 			sys_rsts   => phy_rsts,
 			sys_clks   => sys_clks,

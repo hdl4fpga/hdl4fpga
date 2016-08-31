@@ -339,7 +339,13 @@ begin
 	ddr_rlreq    <= ddr_ini;
 	ddr_cmd_req  <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
 	ddr_rw       <= ddrs_rw      when ddr_phyini='1' else ddr_phyrw;
-	ddrs_ini     <= ini;
+	process(ddrs_clks(0))
+	begin
+		if rising_edge(ddrs_clks(0)) then
+			ddrs_ini     <= ini;
+		end if;
+	end process;
+
 	ddrs_cmd_rdy <= cmd_rdy;
 
 	ddr_e : entity hdl4fpga.xdr

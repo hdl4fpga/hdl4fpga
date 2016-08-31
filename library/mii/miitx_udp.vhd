@@ -82,7 +82,8 @@ begin
 	miitx_macudp_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => 
-			x"ffffffffffff" &       -- MAC Destination Address
+--			x"ffffffffffff" &       -- MAC Destination Address
+			x"00270e0ff595" &       -- MAC Destination Address
 			x"000000010203"	&       -- MAC Source Address
 			x"0800"         &       -- MAC Protocol ID
 			ipheader_checksumed(

@@ -37,6 +37,8 @@ entity ddrdqphy is
 		byte_size  : natural);
 	port (
 		sys_tp     : out std_logic_vector(byte_size-1 downto 0);
+		tp_sel     : in std_logic := '0';
+		tp_delay   : out std_logic_vector(6-1 downto 0);
 		sys_rsts   : in std_logic_vector;
 		sys_clks   : in std_logic_vector;
 		sys_rlreq  : in std_logic;
@@ -87,8 +89,12 @@ architecture virtex of ddrdqphy is
 	signal rlrdy : std_logic;
 
 	signal tp : std_logic_vector(ddr_dqi'range);
+	signal tp_dqidly : std_logic_vector(0 to 6-1);
+	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
 begin
+
+	tp_delay <= tp_dqidly when tp_sel='0' else tp_dqsdly;
 
 	process (sys_clks(sys_iodclk))
 		variable aux : std_logic;
@@ -161,8 +167,11 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
 
+			xx_g : if i=0 generate
+				tp_dqidly <= delay;
+			end generate;
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
@@ -215,7 +224,6 @@ begin
 
 		registered_g : for j in clks'range generate
 			process (rlrdy, clks(j))
-				variable aux : std_logic_vector(dqo'range);
 			begin
 				if rlrdy='0' then
 					if j mod 2=0 then
@@ -224,8 +232,7 @@ begin
 						dqo(j) <= '0';
 					end if;
 				elsif rising_edge(clks(j)) then
-					aux(j) := sys_dqi(j*BYTE_SIZE+i);
-					dqo(j) <= reverse(aux)(j);
+					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
 				end if;
 			end process;
 		end generate;
@@ -262,7 +269,7 @@ begin
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
-					dmi(i) <= reverse(sys_dmi)(i);
+					dmi(i) <= sys_dmi(i);
 				end if;
 			end process;
 		end generate;
@@ -351,6 +358,7 @@ begin
 				i   => ddr_dqsi,
 				o   => dqsi);
 
+			tp_dqsdly <= delay;
 		end block;
 
 		tp(0) <= smp(0);
@@ -402,7 +410,7 @@ begin
 			dqso <= (others => '0');
 			for i in dqso'range loop
 				if i mod 2 = 1 then
-					dqso(i) <= sys_dqso(i);
+					dqso(i) <= reverse(sys_dqso)(i);
 				end if;
 			end loop;
 		end process;
