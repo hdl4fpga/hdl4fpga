@@ -36,7 +36,7 @@ entity ddrdqphy is
 		data_edge  : boolean;
 		byte_size  : natural);
 	port (
-		sys_tp     : out std_logic_vector(byte_size-1 downto 0);
+		tp_bit     : out std_logic_vector(5-1 downto 0);
 		tp_sel     : in std_logic := '0';
 		tp_delay   : out std_logic_vector(6-1 downto 0);
 		sys_rsts   : in std_logic_vector;
@@ -88,13 +88,12 @@ architecture virtex of ddrdqphy is
 	signal adjsto_rdy : std_logic;
 	signal rlrdy : std_logic;
 
-	signal tp : std_logic_vector(ddr_dqi'range);
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
 begin
 
-	tp_delay <= tp_dqidly when tp_sel='0' else tp_dqsdly;
+	tp_delay <= tp_dqidly when tp_sel='1' else tp_dqsdly;
 
 	process (sys_clks(sys_iodclk))
 		variable aux : std_logic;
@@ -110,11 +109,10 @@ begin
 	sys_rlcal <= adjsto_req;
 	sys_rlrdy <= rlrdy;
 	rlrdy     <= adjsto_rdy;
-	sys_tp    <= tp;
 
-	tp(1) <= adjdqs_rdy;
-	tp(2) <= adjsto_req;
-	tp(5) <= adjsto_rdy;
+	tp_bit(1) <= adjdqs_rdy;
+	tp_bit(2) <= adjsto_req;
+	tp_bit(3) <= adjsto_rdy;
 
 	iddr_g : for i in ddr_dqi'range generate
 		signal q         : std_logic_vector(2-1 downto 0);
@@ -167,17 +165,18 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
+				tp_bit(4) <= q(1);
 			end generate;
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '1',
+				edge    => '0',
 				clk     => sys_clks(sys_iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
@@ -322,7 +321,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -361,7 +360,7 @@ begin
 			tp_dqsdly <= delay;
 		end block;
 
-		tp(0) <= smp(0);
+		tp_bit(0) <= smp(0);
 
 		imdr_clk <= (
 			0 => sys_clks(sys_clk0div),

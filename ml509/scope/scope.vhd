@@ -44,7 +44,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := ddr2_d'length;
+	constant WORD_SIZE    : natural := 16;-- ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -123,8 +123,8 @@ architecture scope of ml509 is
 	signal ictlr_clk_ibuf : std_logic;
 	signal ictlr_rst      : std_logic;
 
-	signal tp1 : std_logic_vector(ddr2_d'range) := (others  => 'Z');
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
+	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 begin
 		
 		
@@ -287,8 +287,9 @@ begin
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		tp_sel => gpio_sw_s,
+		tp_sel      => gpio_sw_s,
 		tp_delay    => tp_delay,
+		tp_bit      => tp_bit,
 		sys_clks    => sys_clks,
 		phy_rsts    => phy_rsts,
 
@@ -321,7 +322,6 @@ begin
 		sys_odt     => ddrphy_odt,
 		sys_sti     => ddrphy_sto,
 		sys_sto     => ddrphy_sti,
-		sys_tp      => tp1,
 		ddr_clk     => ddr2_clk,
 		ddr_cke     => ddr2_cke(0),
 		ddr_cs      => ddr2_cs(0),
@@ -332,9 +332,9 @@ begin
 		ddr_a       => ddr2_a(ADDR_SIZE-1 downto 0),
 		ddr_odt     => ddr2_odt(0),
 
-		ddr_dm      => ddr2_dm,
+		ddr_dm      => ddr2_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr2_d,
+		ddr_dqi     => ddr2_d(WORD_SIZE-1 downto 0),
 		ddr_dqt     => ddr2_dqt,
 		ddr_dqst    => ddr2_dqst,
 		ddr_dqsi    => ddr2_dqsi,
@@ -345,6 +345,7 @@ begin
 	ddr2_cs(1 downto 1)    <= "1";
   	ddr2_cke(1 downto 1)   <= "0";
 	ddr2_odt(1 downto 1)   <= (others => 'Z');
+	ddr2_d(ddr2_d'left downto WORD_SIZE) <= (others => 'Z');
 
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
@@ -382,19 +383,31 @@ begin
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
-			dqsiobuf_i : iobufds
-			generic map (
-				iostandard => "DIFF_SSTL18_II_DCI")
-			port map (
-				t   => ddr2_dqst(i),
-				i   => ddr2_dqso(i),
-				o   => ddr2_dqsi(i),
-				io  => ddr2_dqs_p(i),
-				iob => ddr2_dqs_n(i));
+			xx : if i < WORD_SIZE/BYTE_SIZE generate
+				dqsiobuf_i : iobufds
+				generic map (
+					iostandard => "DIFF_SSTL18_II_DCI")
+				port map (
+					t   => ddr2_dqst(i),
+					i   => ddr2_dqso(i),
+					o   => ddr2_dqsi(i),
+					io  => ddr2_dqs_p(i),
+					iob => ddr2_dqs_n(i));
+			end generate;
 
+			xx_g : if i >= WORD_SIZE/BYTE_SIZE generate
+				dqsiobuf_i : iobufds
+				generic map (
+					iostandard => "DIFF_SSTL18_II_DCI")
+				port map (
+					t   => '1',
+					i   => '0',
+					io  => ddr2_dqs_p(i),
+					iob => ddr2_dqs_n(i));
+			end generate;
 		end generate;
 
-		ddr_d_g : for i in ddr2_d'range generate
+		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
 			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
 		end generate;
 
@@ -414,14 +427,14 @@ begin
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
 
-	gpio_led <= "00" & reverse(tp_delay(6-1 downto 0));
+	gpio_led <= reverse("00" & tp_delay(6-1 downto 0));
 
 	bus_error <= (others => 'Z');
-	gpio_led_n <= '0';
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
-	gpio_led_e <= '0';
-	gpio_led_c <= ddrphy_ini;
+	gpio_led_n <= tp_bit(0);
+	gpio_led_s <= tp_bit(1);
+	gpio_led_w <= tp_bit(2);
+	gpio_led_e <= tp_bit(3);
+	gpio_led_c <= tp_bit(4);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

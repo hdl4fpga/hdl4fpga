@@ -41,10 +41,9 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
-		tp1          : out std_logic_vector(6-1 downto 0);
-		tp_sel       : in  std_logic := '0';
+		tp_bit       : out std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	   	tp_delay     : out std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
+		tp_sel       : in  std_logic := '0';
 
 		sys_clks     : in  std_logic_vector(0 to 5-1);
 		phy_rsts     : in  std_logic_vector(0 to 3-1);
@@ -371,7 +370,6 @@ begin
 				cmd_req <= '0';
 				lvl     <= '0';
 				phy_ini <= '0';
-				tp1     <= (others => '0');
 			elsif ini='0' then
 				if sys_rlreq='1' then
 					if cmd_req='1' then
@@ -405,12 +403,6 @@ begin
 					phy_ini <= '1';
 				end if;
 			end if;
-			tp1(0) <= cmd_rdy;
-			tp1(1) <= cmd_req;
-			tp1(2) <= rlcal;
-			tp1(3) <= rw;
-			tp1(4) <= rlrdy;
-			tp1(5) <= lvl;
 		end if;
 	end process;
 
@@ -549,6 +541,7 @@ begin
 			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
+			tp_bit     => tp_bit(5*(i+1)-1 downto 5*i),
 			tp_sel     => tp_sel,
 			tp_delay   => tp_delay(6*(i+1)-1 downto 6*i),
 
@@ -569,7 +562,6 @@ begin
 			sys_dqso   => sdqsi(i),
 			sys_dqst   => sdqst(i),
 
-			sys_tp     => sys_tp((i+1)*byte_size-1 downto i*byte_size),
 			sys_sto    => ssto(i),
 
 			ddr_dqsi   => ddr_dqsi(i),
