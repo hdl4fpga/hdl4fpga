@@ -427,7 +427,14 @@ begin
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
 
-	gpio_led <= reverse("00" & tp_delay(6-1 downto 0));
+	process (tp_delay,gpio_sw_n)
+	begin
+		if gpio_sw_n='1' then
+			gpio_led <= reverse("00" & tp_delay(6*2-1 downto 6));
+		else
+			gpio_led <= reverse("00" & tp_delay(6-1 downto 0));
+		end if;
+	end process;
 
 	bus_error <= (others => 'Z');
 	gpio_led_n <= tp_bit(0);

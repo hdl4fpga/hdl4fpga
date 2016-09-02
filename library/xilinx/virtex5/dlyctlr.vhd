@@ -68,7 +68,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if req='0' then
-				iod_rst <= '0';
+				iod_rst <= '1';
 				rst     := '1';
 				iod_ce  <= '0';
 			elsif aux(0)='0' then

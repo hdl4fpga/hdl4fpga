@@ -99,7 +99,17 @@ begin
 		clk90 => dcm_clk90,
 		locked => dcm_lckd);
    
-	dfsdcm_lckd <= dcm_lckd;
+	process (dfsdcm_rst, dcm_clkfb)
+		variable q : std_logic;
+	begin
+		if dfsdcm_rst='1' then
+			dfsdcm_lckd <= '0';
+			q  := '0';
+		elsif rising_edge(dcm_clkfb) then
+			dfsdcm_lckd <= q;
+			q := dcm_lckd;
+		end if;
+	end process;
 
 	clk0_bufg_i : bufg
 	port map (

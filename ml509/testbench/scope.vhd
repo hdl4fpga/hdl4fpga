@@ -204,7 +204,7 @@ begin
 	clk_fpga_p <= clk_fpga;
 	clk_fpga_n <= not clk_fpga;
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 1.1 us;
+	rst <= '1', '0' after 1.1 us; -- '1' after 24 us, '0' after 25 us;
 
 --	mii_strt <= '0', '1' after 240 us;
 	mii_strt <= '0', '1' after 22.25 us;

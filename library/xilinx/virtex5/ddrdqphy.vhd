@@ -86,6 +86,7 @@ architecture virtex of ddrdqphy is
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
+	signal dqs_buf   : std_logic;
 	signal rlrdy : std_logic;
 
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
@@ -106,6 +107,7 @@ begin
 			adjsto_req <= aux;
 		end if;
 	end process;
+
 	sys_rlcal <= adjsto_req;
 	sys_rlrdy <= rlrdy;
 	rlrdy     <= adjsto_rdy;
@@ -165,7 +167,22 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
+--			process (
+--				adjpha_dly,
+--				adjpha_rdy)
+--				constant k1  : unsigned(adjpha_dly'range) := 2*TCP/TAP_DLY;
+--				constant k2  : unsigned(adjpha_dly'range) := 2*delay'length-1-k1;
+--				variable aux : unsigned(adjpha_dly'range);
+--				constant pp  : unsigned(adjpha_dly'range) := to_unsigned(2**delay'length-2*TCP/TAP_DLY, aux'length);
+--			begin
+--				aux := (others => '0');
+--				aux(delay'range) := adjpha_dly(delay'range);
+--				aux := aux + pp;
+--				if aux(0) then
+--					aux := aa
+--
+--			end process;
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+7);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -182,7 +199,7 @@ begin
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(1),
+				smp     => q(0),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -321,7 +338,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -359,6 +376,11 @@ begin
 
 			tp_dqsdly <= delay;
 		end block;
+
+		buf_f : bufio 
+		port map (
+			i => dqsi,
+			o => dqs_buf);
 
 		tp_bit(0) <= smp(0);
 

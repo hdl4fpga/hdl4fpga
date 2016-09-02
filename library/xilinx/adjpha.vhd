@@ -37,14 +37,14 @@ entity adjpha is
 		TAP_DLY : natural := 27);
 	port (
 		
-		clk     : in  std_logic;
-		req     : in  std_logic;
+		clk     : in     std_logic;
+		req     : in     std_logic;
 		rdy     : buffer std_logic;
-		dly_rdy : in  std_logic;
+		dly_rdy : in     std_logic;
 		dly_req : buffer std_logic;
-		edge    : in  std_logic;
-		smp     : in  std_logic;
-		dly     : out std_logic_vector);
+		edge    : in     std_logic;
+		smp     : in     std_logic;
+		dly     : out    std_logic_vector);
 
 end;
 
