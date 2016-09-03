@@ -193,13 +193,13 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '0',
+				edge    => '1',
 				clk     => sys_clks(sys_iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(0),
+				smp     => q(1),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -324,6 +324,7 @@ begin
 			signal dly_req       : std_logic;
 			signal iod_rst       : std_logic;
 			signal iod_ce        : std_logic;
+			signal ddqsi : std_logic;
 		begin
 
 			process (sys_clks(sys_iodclk))
@@ -363,6 +364,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
+			ddqsi <= ddr_dqsi after 1.5 ns;
 			dqsidelay_i : idelay 
 			generic map (
 				IOBDELAY_TYPE => "VARIABLE")
@@ -371,7 +373,7 @@ begin
 				c   => sys_clks(sys_iodclk),
 				ce  => iod_ce,
 				inc => '1',
-				i   => ddr_dqsi,
+				i   => ddqsi,
 				o   => dqsi);
 
 			tp_dqsdly <= delay;
