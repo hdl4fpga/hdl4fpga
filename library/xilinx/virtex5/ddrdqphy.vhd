@@ -121,11 +121,11 @@ begin
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 	begin
 		imdr_clk <= (
-			0 => sys_clks(sys_clk0),
-			1 => sys_clks(sys_clk90),
-			2 => sys_clks(sys_clk0div),
-			3 => not sys_clks(sys_clk90),
-			4 => not sys_clks(sys_clk0));
+			0 => sys_clks(sys_clk0div),
+			1 => sys_clks(sys_clk0),
+			2 => sys_clks(sys_clk90),
+			3 => not sys_clks(sys_clk0),
+			4 => not sys_clks(sys_clk90));
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (
