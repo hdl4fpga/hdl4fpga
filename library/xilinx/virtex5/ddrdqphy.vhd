@@ -150,6 +150,7 @@ begin
 			signal dly_req       : std_logic;
 			signal iod_ce        : std_logic;
 			signal iod_rst       : std_logic;
+			signal ddqi : std_logic;
 		begin
 			process (sys_clks(sys_iodclk))
 			begin
@@ -211,6 +212,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
+			ddqi <= ddr_dqi(i) after 1.5 ns;
 			dqi_i : idelay 
 			generic map (
 				IOBDELAY_TYPE => "VARIABLE")
@@ -219,7 +221,7 @@ begin
 				c   => sys_clks(sys_iodclk),
 				ce  => iod_ce,
 				inc => '1',
-				i   => ddr_dqi(i),
+				i   => ddqi,
 				o   => dqi(i));
 		end block;
 
