@@ -79,9 +79,9 @@ begin
 				IOBDELAY       => "BOTH")
 			port map (
 				rst          => rst,
-				clk          => clk(0),
+				clk          => clk(2),
 				oclk         => clk(1),
-				clkdivp      => clk(2),
+				clkdivp      => clk(0),
 				clkb         => clk(3),
 				oclkb        => clk(4),
 				ddly         => d(i),

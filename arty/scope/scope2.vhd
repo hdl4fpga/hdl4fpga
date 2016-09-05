@@ -386,13 +386,14 @@ begin
 		ddr_b        => ddr3_ba,
 		ddr_a        => ddr3_a,
 		ddr_odt      => ddr3_odt,
-		ddr_dm       => ddr3_dm,
+--		ddr_dm       => ddr3_dm,
 		ddr_dqo      => ddr3_dqo,
 		ddr_dqi      => ddr3_dq,
 		ddr_dqt      => ddr3_dqt,
 		ddr_dqst     => ddr3_dqst,
 		ddr_dqsi     => ddr3_dqsi,
 		ddr_dqso     => ddr3_dqso);
+	ddr3_dm <= (others => '0');
 
 	ddrphy_dqsi <= (others => ddrs_clk90div);
 	eth_rstn <= not sys_rst;

@@ -75,6 +75,7 @@ entity ddrdqphy is
 
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
+		constant rstiod   : natural := 1;
 end;
 
 library hdl4fpga;
@@ -232,7 +233,7 @@ begin
 				c           => sys_clks(iodclk),
 				ld          => '1',
 				cntvaluein  => delay(1 to delay'right),
-				idatain     => ddr_dqi(i),
+				idatain     => ddqi,
 				dataout     => dqi(i),
 				cinvctrl    => '0',
 				ce          => '0',
@@ -357,7 +358,6 @@ begin
 		signal dqso      : std_logic_vector(sys_dqso'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
-		signal dqsdly    : std_logic_vector(1 to 5);
 		signal adjdly    : std_logic_vector(0 to 5);
 		signal imdr_rst  : std_logic;
 		signal adjdqs_st : std_logic;
@@ -412,11 +412,11 @@ begin
 				IDELAY_TYPE    => "VAR_LOAD",
 				SIGNAL_PATTERN => "CLOCK")
 			port map (
-				regrst     => iod_rst,
+				regrst     => sys_rsts(rstiod),
 				c          => sys_clks(iodclk),
 				ld         => '1',
-				cntvaluein => dqsdly,
-				idatain    => ddr_dqsi,
+				cntvaluein => delay,
+				idatain    => ddqsi,
 				dataout    => dqsi,
 				cinvctrl   => '0',
 				ce         => '0',
@@ -431,7 +431,7 @@ begin
 		begin
 			if rising_edge(sys_clks(clk90div)) then
 				imdr_rst <= q;
-				q := sys_rsts(rst0div) or adjdqs_st;
+				q := sys_rsts(rst90div);
 			end if;
 		end process;
 
@@ -452,7 +452,6 @@ begin
 			d(0) => dqsi,
 			q    => smp);
 
-		dqsdly <= adjdly(dqsdly'range) when adjsto_req='0' else std_logic_vector(unsigned(adjdly(dqsdly'range))+3);
 
 		process (sys_rlreq, sys_clks(iodclk))
 			variable q : std_logic;
