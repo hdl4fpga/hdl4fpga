@@ -96,7 +96,7 @@ begin
 				ce => '1',
 				s  => '0',
 				r  => '0',
-				d  => pit(i),
+				d  => pit(0),
 				q  => tq(i));
 
 			oddr_i : oddr
