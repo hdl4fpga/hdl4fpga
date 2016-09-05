@@ -41,21 +41,14 @@ entity ddrphy is
 		BYTE_SIZE    : natural   :=  8;
 		CLKINV       : std_logic := '0');
 	port (
-		tp_sel       : in std_logic_vector(1 downto 0);
-		sys_tp       : out std_logic_vector(WORD_SIZE-1 downto 0);
+		tp_bit       : out std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+	   	tp_delay     : out std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+		tp_sel       : in  std_logic := '0';
 		tp1          : out std_logic_vector(6-1 downto 0);
-		tp_dqidly    : out std_logic_vector(6-1 downto 0);
-	   	tp_dqsdly    : out std_logic_vector(6-1 downto 0);
 
-		sys_iodclk   : in  std_logic;
-		sys_clk0     : in  std_logic;
-		sys_clk0div  : in  std_logic;
-		sys_clk90    : in  std_logic;
-		sys_clk90div : in  std_logic;
+		sys_clks     : in  std_logic_vector(0 to 5-1);
+		phy_rsts     : in  std_logic_vector(0 to 3-1);
 
-		phy0div_rst  : in  std_logic;
-		phy90div_rst : in  std_logic;
-		phyiod_rst   : in  std_logic;
 		phy_ini      : out std_logic;
 		phy_rw       : out std_logic;
 		phy_cmd_rdy  : in  std_logic;
@@ -110,6 +103,15 @@ entity ddrphy is
 		ddr_dqsi     : in  std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 		ddr_dqso     : out std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0));
 
+		constant clk0div  : natural := 0; 
+		constant clk90div : natural := 1;
+		constant iodclk   : natural := 2;
+		constant clk0     : natural := 3; 
+		constant clk90    : natural := 4;
+
+		constant rst0div  : natural := 0;
+		constant rst90div : natural := 1;
+		constant rstiod   : natural := 2;
 end;
 
 library hdl4fpga;
@@ -316,16 +318,16 @@ begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clk0,
+			clk => sys_clks(clk0),
 			dr => '0' xor clkinv,
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
 	end generate;
 
-	process (sys_clk0div)
+	process (sys_clks(clk0div))
 		variable rlcal_h2l : std_logic;
 	begin
-		if rising_edge(sys_clk0div) then
+		if rising_edge(sys_clks(clk0div)) then
 			phy_rw      <= rw;
 			sys_rlrdy   <= rlrdy;
 
@@ -338,7 +340,7 @@ begin
 				end if;
 			end if;
 
-			if phyiod_rst='1' then
+			if phy_rsts(rstiod)='1' then
 				rlcal_h2l := '0';
 			else
 				rlcal_h2l := rlcal;
@@ -346,9 +348,9 @@ begin
 		end if;
 	end process;
 
-	process (sys_iodclk)
+	process (sys_clks(iodclk))
 	begin
-		if rising_edge(sys_iodclk) then
+		if rising_edge(sys_clks(iodclk)) then
 			cmd_rdy <= phy_cmd_rdy;
 		end if;
 	end process;
@@ -356,10 +358,10 @@ begin
 	phy_ba  <= sys_b when lvl='0' else (others => '0');
 	phy_a   <= sys_a when lvl='0' else (others => '0');
 	
-	process (sys_iodclk)
+	process (sys_clks(iodclk))
 	begin
-		if rising_edge(sys_iodclk) then
-			if phyiod_rst='1' then
+		if rising_edge(sys_clks(iodclk)) then
+			if phy_rsts(rstiod)='1' then
 				ini     <= '0';
 				rw      <= '0';
 				cmd_req <= '0';
@@ -408,10 +410,10 @@ begin
 		end if;
 	end process;
 
-	process (sys_iodclk)
+	process (sys_clks(iodclk))
 		variable aux : std_logic;
 	begin
-		if rising_edge(sys_iodclk) then
+		if rising_edge(sys_clks(iodclk)) then
 			aux := '1';
 			for i in wlrdy'range loop
 				aux := aux and wlrdy(i);
@@ -421,9 +423,9 @@ begin
 	end process;
 
 	rotcmmd_g : if CMMD_GEAR > 1 generate
-		process (sys_clk0div)
+		process (sys_clks(clk0div))
 		begin
-			if rising_edge(sys_clk0div) then
+			if rising_edge(sys_clks(clk0div)) then
 				if rlcal='0' then
 					rotba <= (others => '0');
 				elsif ini='1' then
@@ -477,9 +479,9 @@ begin
 		BANK_SIZE => BANK_SIZE,
 		ADDR_SIZE => ADDR_SIZE)
 	port map (
-		sys_clk(0) => sys_clk0div,
-		sys_clk(1) => sys_clk0,
-     	phy_rst    => phy0div_rst,
+		sys_clks(0) => sys_clks(clk0div),
+		sys_clks(1) => sys_clks(clk0),
+     	phy_rst    => phy_rsts(rst0div),
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
 		sys_cke    => sys_cke,
@@ -509,11 +511,11 @@ begin
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	process (sys_iodclk)
+	process (sys_clks(iodclk))
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sys_iodclk) then
+		if rising_edge(sys_clks(iodclk)) then
 			for i in byte_rlcal'range loop
 				aux := aux and byte_rlcal(i);
 			end loop;
@@ -522,11 +524,11 @@ begin
 	end process;
 	sys_rlcal <= rlcal;
 
-	process (sys_iodclk)
+	process (sys_clks(iodclk))
 		variable aux : std_logic;
 	begin
 		aux := '1';
-		if rising_edge(sys_iodclk) then
+		if rising_edge(sys_clks(iodclk)) then
 			for i in byte_rlrdy'range loop
 				aux := aux and byte_rlrdy(i);
 			end loop;
@@ -534,8 +536,6 @@ begin
 		end if;
 	end process;
 
-	tp_dqsdly <= dqsdly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqsdly(6*(0+1)-1 downto 6*0);
-	tp_dqidly <= dqidly(6*(1+1)-1 downto 6*1) when tp_sel(1)='1' else dqidly(6*(0+1)-1 downto 6*0);
 	byte_g : for i in ddr_dqsi'range generate
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
 		generic map (
@@ -545,15 +545,11 @@ begin
 			DATA_EDGE  => DATA_EDGE,
 			BYTE_SIZE  => BYTE_SIZE)
 		port map (
-			tp_sel => tp_sel(0),
-			tp_dqsdly   => dqsdly(6*(i+1)-1 downto 6*i),
-			tp_dqidly   => dqidly(6*(i+1)-1 downto 6*i),
-			sys0div_rst  => phy0div_rst,
-			sys90div_rst => phy90div_rst,
-			sys_clk0   => sys_clk0,
-			sys_clk0div   => sys_clk0div,
-			sys_clk90  => sys_clk90,
-			sys_clk90div  => sys_clk90div,
+			tp_sel     => tp_sel,
+			tp_delay   => tp_delay(5*(i+1)-1 downto 5*i),
+			tp_bit     => tp_bit(5*(i+1)-1 downto i*5),
+			sys_clks   => sys_clks,
+			sys_rsts   => phy_rsts,
 			sys_wlreq  => sys_wlreq,
 			sys_wlrdy  => wlrdy(i),
 			sys_rlreq  => sys_rlreq,
@@ -571,8 +567,6 @@ begin
 			sys_dqso   => sdqsi(i),
 			sys_dqst   => sdqst(i),
 
-			sys_iodclk => sys_iodclk,
-			sys_tp     => sys_tp((i+1)*byte_size-1 downto i*byte_size),
 			sys_sto    => ssto(i),
 
 			ddr_dqsi   => ddr_dqsi(i),

@@ -36,6 +36,16 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of arty is
+	constant clk0div  : natural := 0; 
+	constant clk90div : natural := 1;
+	constant iodclk   : natural := 2;
+	constant clk0     : natural := 3; 
+	constant clk90    : natural := 4;
+
+	constant rst0div  : natural := 0;
+	constant rst90div : natural := 1;
+	constant rstiod   : natural := 2;
+
 	constant UCLK_PERIOD  : real    := 10.0;
 
 	constant SCLK_PHASES  : natural := 1;
@@ -48,7 +58,6 @@ architecture scope of arty is
 	constant ADDR_SIZE    : natural := ddr3_a'length;
 	constant WORD_SIZE    : natural := ddr3_dq'length;
 	constant BYTE_SIZE    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-	constant LINE_SIZE    : natural := data_gear*word_size;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz --
@@ -104,17 +113,17 @@ architecture scope of arty is
 	signal ddrphy_odt     : std_logic_vector(0 to CMMD_GEAR-1);
 	signal ddrphy_b       : std_logic_vector(CMMD_GEAR*BANK_SIZE-1 downto 0);
 	signal ddrphy_a       : std_logic_vector(CMMD_GEAR*ADDR_SIZE-1 downto 0);
-	signal ddrphy_dqsi    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqst    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqso    : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmi     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmt     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dmo     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqi     : std_logic_vector(LINE_SIZE-1 downto 0);
-	signal ddrphy_dqt     : std_logic_vector(LINE_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqo     : std_logic_vector(LINE_SIZE-1 downto 0);
-	signal ddrphy_sto     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
-	signal ddrphy_sti     : std_logic_vector(0 to LINE_SIZE/BYTE_SIZE-1);
+	signal ddrphy_dqsi    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqst    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqso    : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmi     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmt     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dmo     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqi     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ddrphy_dqt     : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddrphy_dqo     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ddrphy_sto     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
+	signal ddrphy_sti     : std_logic_vector(0 to DATA_GEAR*WORD_SIZE/BYTE_SIZE-1);
 	signal ddrphy_ini     : std_logic;
 	signal ddrphy_wlreq   : std_logic;
 	signal ddrphy_wlrdy   : std_logic;
@@ -131,19 +140,13 @@ architecture scope of arty is
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
 
-	signal vga_clk        : std_logic;
-	signal vga_hsync      : std_logic;
-	signal vga_vsync      : std_logic;
-	signal vga_blank      : std_logic;
-	signal vga_frm        : std_logic;
-	signal vga_red        : std_logic_vector(8-1 downto 0);
-	signal vga_green      : std_logic_vector(8-1 downto 0);
-	signal vga_blue       : std_logic_vector(8-1 downto 0);
+	signal sys_clks       : std_logic_vector(0 to 5-1);
+	signal phy_rsts       : std_logic_vector(0 to 3-1);
 
-	signal tp             : std_logic_vector(ddr3_dq'range) := (others  => 'Z');
+	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
 	signal tp1            : std_logic_vector(6-1 downto 0);
-	signal dqsdly         : std_logic_vector(6-1 downto 0);
-	signal dqidly         : std_logic_vector(6-1 downto 0);
+	signal tp_delay       : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+
 begin
 		
 	clkin_ibufg : ibufg
@@ -222,7 +225,8 @@ begin
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
-		CMMD_GEAR      => CMMD_GEAR,
+		DDR_CMMDGEAR   => CMMD_GEAR,
+		DDR_DATAGEAR   => DATA_GEAR,
 		DDR_MARK       => M15E,
 		DDR_TCP        => integer(UCLK_PERIOD*1000.0*2.0*real(DDR_DIV)/DDR_MUL),
 		DDR_SCLKEDGES  => SCLK_EDGES,
@@ -233,7 +237,6 @@ begin
 		DDR_SCLKPHASES => SCLK_PHASES,
 		DDR_DATAPHASES => DATA_GEAR,
 		DDR_DATAEDGES  => DATA_EDGES,
-		DDR_LINESIZE   => LINE_SIZE,
 		DDR_WORDSIZE   => WORD_SIZE,
 		DDR_BYTESIZE   => BYTE_SIZE)
 	port map (
@@ -286,17 +289,8 @@ begin
 		mii_rxd        => mii_rxd,
 		mii_txc        => eth_txclk_bufg,
 		mii_txen       => mii_txen,
-		mii_txd        => mii_txd,
+		mii_txd        => mii_txd);
 
---		vga_rst        => vga_rst,
-		vga_clk        => vga_clk,
-		vga_hsync      => vga_hsync,
-		vga_vsync      => vga_vsync,
-		vga_frm        => vga_frm,
-		vga_blank      => vga_blank,
-		vga_red        => vga_red,
-		vga_green      => vga_green,
-		vga_blue       => vga_blue);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	ddrphy_cke(1) <= ddrphy_cke(0);
@@ -324,6 +318,9 @@ begin
 		end loop;
 	end process;
 
+	sys_clks <= (clk0div => ddrs_clk0div, clk90div => ddrs_clk90div, iodclk => sys_clk, clk0 => ddrs_clk0, clk90 => ddrs_clk90);
+	phy_rsts <= (rst0div => ddrs0div_rst, rst90div => ddrs90div_rst, rstiod => ddrsiod_rst);
+
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 
@@ -337,22 +334,13 @@ begin
 		BYTE_SIZE    => BYTE_SIZE)
 	port map (
 	
-		tp_sel => sw(1 downto 0),
-		tp_dqsdly    => dqsdly,
-		tp_dqidly    => dqidly,
-		tp1          => tp1,
-		sys_tp       => tp,
+		tp_sel    => sw(3),
+		tp_delay  => tp_delay,
+		tp1       => tp1,
+		tp_bit    => tp_bit,
 
-		sys_clk0     => ddrs_clk0,
-		sys_clk0div  => ddrs_clk0div,
-		sys_clk90    => ddrs_clk90, 
-		sys_clk90div => ddrs_clk90div, 
-		sys_rlseq    => ddrphy_rlseq,
-		sys_iodclk   => sys_clk,
-
-		phy0div_rst  => ddrs0div_rst,
-		phy90div_rst => ddrs90div_rst,
-		phyiod_rst   => ddrsiod_rst,
+		sys_clks => sys_clks,
+		phy_rsts => phy_rsts,
 		phy_ini      => ddrphy_ini,
 		phy_rw       => ddrphy_rw,
 		phy_cmd_rdy  => ddrphy_cmd_rdy,
@@ -365,6 +353,7 @@ begin
 		sys_rlreq    => ddrphy_rlreq,
 		sys_rlrdy    => ddrphy_rlrdy,
 		sys_rlcal    => ddrphy_rlcal,
+		sys_rlseq    => ddrphy_rlseq,
 
 		sys_cke      => ddrphy_cke,
 		sys_rst      => ddrphy_rst,
@@ -458,39 +447,28 @@ begin
 
 	end block;
 
-	process (dqsdly)
-		variable aux3 : std_logic_vector(3 downto 0);
-		variable aux2 : std_logic_vector(3 downto 0);
+	process (tp_delay)
 		variable aux1 : std_logic_vector(3 downto 0);
 		variable aux0 : std_logic_vector(3 downto 0);
 		variable sel  : std_logic_vector(2-1 downto 0);
 
 	begin
 		rgbled <= (others => '0');
-		aux3 := "00" & dqidly(5 downto 4);
-		aux2 := dqidly(3 downto 0);
-		aux1 := "00" & dqsdly(5 downto 4);
-		aux0 := dqsdly(3 downto 0);
+		aux1 := "00" & tp_delay(5 downto 4);
+		aux0 := tp_delay(3 downto 0);
 		sel(0) := btn(1);
-		sel(1) := sw(3);
 		for i in 4-1 downto 0 loop
-			case sel is
-			when "00" =>
+			if btn(1)='1' then
 				rgbled(3*i+2) <= aux1(i);
-			when "01" =>
+			else
 				rgbled(3*i+2) <= aux0(i);
-			when "10" =>
-				rgbled(3*i+2) <= aux3(i);
-			when "11" =>
-				rgbled(3*i+2) <= aux2(i);
-			when others =>
-			end case;
+			end if;
 		end loop;
 	end process;
 
 	tp_g : for i in 2-1 downto 0 generate
-		led(i+0) <= tp1(i+4) when btn(3)='1' else tp(i*8+2) when btn(1)='1' else tp(i*8+5);
-		led(i+2) <= tp1(i+2) when btn(3)='1' else tp(i*8+1) when btn(1)='1' else tp(i*8+0);
+		led(i+0) <= tp1(i+4) when btn(3)='1' else tp_bit(i*5+2) when btn(1)='1' else tp_bit(i*5+3);
+		led(i+2) <= tp1(i+2) when btn(3)='1' else tp_bit(i*5+1) when btn(1)='1' else tp_bit(i*5+0);
 	end generate;
 
 end;

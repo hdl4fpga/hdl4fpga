@@ -118,7 +118,7 @@ begin
 	tp_bit(3) <= adjsto_rdy;
 
 	iddr_g : for i in ddr_dqi'range generate
-		signal q         : std_logic_vector(2-1 downto 0);
+		signal q         : std_logic_vector(0 to GEAR-1);
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 	begin
 		imdr_clk <= (
@@ -169,21 +169,6 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
---			process (
---				adjpha_dly,
---				adjpha_rdy)
---				constant k1  : unsigned(adjpha_dly'range) := 2*TCP/TAP_DLY;
---				constant k2  : unsigned(adjpha_dly'range) := 2*delay'length-1-k1;
---				variable aux : unsigned(adjpha_dly'range);
---				constant pp  : unsigned(adjpha_dly'range) := to_unsigned(2**delay'length-2*TCP/TAP_DLY, aux'length);
---			begin
---				aux := (others => '0');
---				aux(delay'range) := adjpha_dly(delay'range);
---				aux := aux + pp;
---				if aux(0) then
---					aux := aa
---
---			end process;
 			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+7);
 
 			xx_g : if i=0 generate

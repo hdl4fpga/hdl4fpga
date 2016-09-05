@@ -30,7 +30,7 @@ entity ddrbaphy is
 		BANK_SIZE  : natural := 2;
 		ADDR_SIZE  : natural := 13);
 	port (
-		sys_clk  : in  std_logic_vector(0 to 2-1);
+		sys_clks  : in  std_logic_vector(0 to 2-1);
 
 		phy_rst  : in  std_logic;
 		sys_rst  : in  std_logic_vector(gear-1 downto 0);
@@ -66,7 +66,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_rst,
 		q(0) => ddr_rst);
 
@@ -76,7 +76,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_cke,
 		q(0) => ddr_cke);
 
@@ -86,7 +86,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_cs,
 		q(0) => ddr_cs);
 
@@ -96,7 +96,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_ras,
 		q(0) => ddr_ras);
 
@@ -106,7 +106,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_cas,
 		q(0) => ddr_cas);
 
@@ -116,7 +116,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_we,
 		q(0) => ddr_we);
 
@@ -126,7 +126,7 @@ begin
 		gear => gear)
 	port map (
 		rst  => phy_rst,
-		clk  => sys_clk,
+		clk  => sys_clks,
 		d    => sys_odt,
 		q(0) => ddr_odt);
 
@@ -136,7 +136,7 @@ begin
 		gear => gear)
 	port map (
 		rst => phy_rst,
-		clk => sys_clk,
+		clk => sys_clks,
 		d   => sys_b,
 		q   => ddr_b);
 
@@ -146,7 +146,7 @@ begin
 		gear => gear)
 	port map (
 		rst => phy_rst,
-		clk => sys_clk,
+		clk => sys_clks,
 		d   => sys_a,
 		q   => ddr_a);
 
