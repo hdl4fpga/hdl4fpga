@@ -92,6 +92,7 @@ architecture virtex of ddrdqphy is
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
+	constant line_delay : time := 3 ns;
 begin
 
 	tp_delay <= tp_dqidly when tp_sel='1' else tp_dqsdly;
@@ -212,7 +213,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
-			ddqi <= ddr_dqi(i) after 1.5 ns;
+			ddqi <= transport ddr_dqi(i) after line_delay;
 			dqi_i : idelay 
 			generic map (
 				IOBDELAY_TYPE => "VARIABLE")
@@ -366,7 +367,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
-			ddqsi <= ddr_dqsi after 1.5 ns;
+			ddqsi <= transport ddr_dqsi after line_delay;
 			dqsidelay_i : idelay 
 			generic map (
 				IOBDELAY_TYPE => "VARIABLE")
