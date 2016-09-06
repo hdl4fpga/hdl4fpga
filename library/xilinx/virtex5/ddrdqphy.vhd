@@ -37,7 +37,7 @@ entity ddrdqphy is
 		byte_size  : natural);
 	port (
 		tp_bit     : out std_logic_vector(5-1 downto 0);
-		tp_sel     : in std_logic := '0';
+		tp_sel     : in std_logic_vector(0 to 1) := (others => '0');
 		tp_delay   : out std_logic_vector(6-1 downto 0);
 		sys_rsts   : in std_logic_vector;
 		sys_clks   : in std_logic_vector;
@@ -92,10 +92,10 @@ architecture virtex of ddrdqphy is
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
-	constant line_delay : time := 3 ns;
+	constant line_delay : time := 1.1 ns;
 begin
 
-	tp_delay <= tp_dqidly when tp_sel='1' else tp_dqsdly;
+	tp_delay <= tp_dqidly when tp_sel(0)='1' else tp_dqsdly;
 
 	process (sys_clks(sys_iodclk))
 		variable aux : std_logic;
@@ -105,7 +105,7 @@ begin
 			for i in adjdqi_rdy'range loop
 				aux := aux and adjdqi_rdy(i);
 			end loop;
-			adjsto_req <= aux;
+			adjsto_req <= aux and tp_sel(1);
 		end if;
 	end process;
 
@@ -169,7 +169,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+7);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -180,13 +180,13 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '1',
+				edge    => '0',
 				clk     => sys_clks(sys_iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(1),
+				smp     => q(0),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr

@@ -125,6 +125,7 @@ architecture scope of ml509 is
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+	signal tst : std_logic;
 begin
 		
 		
@@ -164,6 +165,17 @@ begin
 		rdy    => ictlr_rdy);
 	sys_rst <= not ictlr_rdy;
 
+	process (gpio_sw_c, sys_clk)
+	begin
+		if gpio_sw_c='1' then
+			tst <= '0';
+		elsif rising_edge(sys_clk) then
+			if gpio_sw_w='1' then
+				tst <= '1';
+			end if;
+		end if;
+	end process;
+
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul     => ddr_mul,
@@ -176,8 +188,6 @@ begin
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		gtx_clk     => gtx_clk,
-		video_clk   => open,
-		video_clk90 => open,
 		ddr_rst     => ddrs_rst,
 		gtx_rst     => gtx_rst);
 
@@ -287,7 +297,8 @@ begin
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		tp_sel      => gpio_sw_s,
+		tp_sel(0)   => gpio_sw_s,
+		tp_sel(1)   => tst,
 		tp_delay    => tp_delay,
 		tp_bit      => tp_bit,
 		sys_clks    => sys_clks,

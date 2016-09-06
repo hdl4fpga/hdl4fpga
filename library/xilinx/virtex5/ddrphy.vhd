@@ -43,7 +43,7 @@ entity ddrphy is
 	port (
 		tp_bit       : out std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	   	tp_delay     : out std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
-		tp_sel       : in  std_logic := '0';
+		tp_sel       : in  std_logic_vector(0 to 1) := (others => '0');
 
 		sys_clks     : in  std_logic_vector(0 to 5-1);
 		phy_rsts     : in  std_logic_vector(0 to 3-1);
@@ -475,8 +475,8 @@ begin
 		BANK_SIZE => BANK_SIZE,
 		ADDR_SIZE => ADDR_SIZE)
 	port map (
-		sys_clk(0) => sys_clks(sys_clk0div),
-		sys_clk(1) => sys_clks(sys_clk0),
+		sys_clks(0) => sys_clks(sys_clk0div),
+		sys_clks(1) => sys_clks(sys_clk0),
      	phy_rst    => phy_rsts(0),
 		sys_rst    => sys_rst,
 		sys_cs     => sys_cs,
