@@ -42,13 +42,10 @@ entity dcms is
 		input_clk : buffer std_logic;
 		ddr_clk0  : buffer std_logic;
 		ddr_clk90 : out std_logic;
-		video_clk : buffer std_logic;
-		video_clk90 : out std_logic;
 		gtx_clk   : buffer std_logic;
 		ddr_rst   : out std_logic;
 		input_rst : out std_logic;
-		gtx_rst   : out std_logic;
-		video_rst : out std_logic);
+		gtx_rst   : out std_logic);
 end;
 
 architecture def of dcms is
@@ -61,47 +58,12 @@ architecture def of dcms is
 
 	signal dcm_rst : std_logic;
 
-	signal video_lckd : std_logic;
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
 	signal gtx_lckd : std_logic;
 begin
 
 	dcm_rst <= sys_rst;
-	video_dcm_e : entity hdl4fpga.dfsdcm
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
-	port map (
-		dfsdcm_rst => dcm_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => video_clk,
-		dfsdcm_clk90 => video_clk90,
-		dfsdcm_lckd => video_lckd);
-
---	videodcm_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		dfs_mul => 3,
---		dfs_div => 2)
---	port map(
---		dcm_rst => dcm_rst,
---		dcm_clk => sclk_bufg,
---		dfs_clk => video_clk,
---		dcm_lck => video_lckd);
-
---	ddrdcm_e : entity hdl4fpga.plldcm
---	generic map (
---		pll_per => sys_per,
---		dfs_mul => ddr_multiply,
---		dfs_div => ddr_divide)
---	port map (
---		plldcm_rst => dcm_rst,
---		plldcm_clkin => sclk_bufg,
---		plldcm_clk0  => ddr_clk0,
---		plldcm_clk90 => ddr_clk90,
---		plldcm_lckd => ddr_lckd);
 
 	gmii_dfs_e : entity hdl4fpga.dfs
 	generic map (
@@ -145,17 +107,14 @@ begin
 	begin
 		clks(0) <= input_clk;
 		clks(1) <= gtx_clk;
-		clks(2) <= video_clk;
 		clks(3) <= ddr_clk0;
 
 		lcks(0) <= input_lckd;
 		lcks(1) <= gtx_lckd;
-		lcks(2) <= video_lckd;
 		lcks(3) <= ddr_lckd;
 
 		input_rst <= rsts(0);
 		gtx_rst   <= rsts(1);
-		video_rst <= rsts(2);
 		ddr_rst   <= rsts(3);
 
 		rsts_g: for i in clks'range generate

@@ -33,7 +33,10 @@ NET "phy_txclk" TNM_NET = phy_txclk;
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 #OFFSET = OUT 4 ns VALID 8 ns BEFORE  gtx_clk rising;
 #
-#NET "ddrphy_dqi*"    MAXDELAY = 1.500 ns;
+NET "ddrphy_dqi*"    MAXDELAY = 1.500 ns;
+NET "ddr2_d[*]"    MAXDELAY = 0 ns;
+NET "ddr2_d[*]"    MAXDELAY = 0 ns;
+net "ddrphy_e/byte_g[*].ddrdqphy_i/dqi[*]" maxdelay = 0 ns;
 
 # ###################### #
 # Ignore crossclock time #
@@ -56,8 +59,8 @@ TIMESPEC TS_f2f_sclk2ddr = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2sclk = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
 #
 
-TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
-TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
+#TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
+#TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
 #TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
 #TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
 #TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;

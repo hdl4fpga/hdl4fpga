@@ -76,14 +76,14 @@ begin
 		o => dfs_clkfb);
    
 	process (dfsdcm_rst, dcm_clkin)
-		variable q : std_logic;
+		variable q : std_logic_vector(0 to 4-1);
 	begin
 		if dfsdcm_rst='1' then
-			dcm_rst <= '1';
-			q  := '1';
+			q := (others => '1');
+			dcm_rst <= q(0);
 		elsif rising_edge(dcm_clkin) then
-			dcm_rst <= q;
-			q := not dfs_lckd;
+			q := q(1 to q'right) & not dfs_lckd;
+			dcm_rst <= q(0);
 		end if;
 	end process;
 
@@ -100,14 +100,14 @@ begin
 		locked => dcm_lckd);
    
 	process (dfsdcm_rst, dcm_clkfb)
-		variable q : std_logic;
+		variable q : std_logic_vector(0 to 4-1);
 	begin
 		if dfsdcm_rst='1' then
-			dfsdcm_lckd <= '0';
-			q  := '0';
+			q := (others => '0');
+			dfsdcm_lckd <= q(0);
 		elsif rising_edge(dcm_clkfb) then
-			dfsdcm_lckd <= q;
-			q := dcm_lckd;
+			q := q(1 to q'right) & dcm_lckd;
+			dfsdcm_lckd <= q(0);
 		end if;
 	end process;
 

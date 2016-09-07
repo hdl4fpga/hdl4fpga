@@ -298,7 +298,7 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		tp_sel(0)   => gpio_sw_s,
-		tp_sel(1)   => tst,
+		tp_sel(1)   => '1', --tst,
 		tp_delay    => tp_delay,
 		tp_bit      => tp_bit,
 		sys_clks    => sys_clks,
