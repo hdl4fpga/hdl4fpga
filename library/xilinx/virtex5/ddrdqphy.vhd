@@ -172,7 +172,7 @@ begin
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= iod_rst; --q(1);
+				tp_bit(4) <= q(1);
 			end generate;
 
 			adjdqi_e : entity hdl4fpga.adjpha
