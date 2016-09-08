@@ -35,7 +35,6 @@ TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 #
 NET "ddrphy_dqi*"    MAXDELAY = 1.500 ns;
 NET "ddr2_d[*]"    MAXDELAY = 0 ns;
-NET "ddr2_d[*]"    MAXDELAY = 0 ns;
 net "ddrphy_e/byte_g[*].ddrdqphy_i/dqi[*]" maxdelay = 0 ns;
 
 # ###################### #

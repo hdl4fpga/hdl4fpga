@@ -98,7 +98,6 @@ begin
 
 	tp_delay <= tp_dqidly when tp_sel(0)='0' else tp_dqsdly;
 
-	adjsto_req <= setif(adjdqi_rdy=(adjdqi_rdy'range => '1'));
 
 	sys_rlcal <= adjsto_req;
 	sys_rlrdy <= rlrdy;
@@ -108,15 +107,8 @@ begin
 	tp_bit(2) <= adjsto_req;
 	tp_bit(3) <= adjsto_rdy;
 
-	process (sys_rsts(rstiod), sys_clks(sys_iodclk))
-	begin
-		if sys_rsts(rstiod)='1' then
-			adjdqi_req <= '0';
-		elsif rising_edge(sys_clks(sys_iodclk)) then
-			adjdqi_req <= adjdqs_rdy;
-		end if;
-	end process;
-
+	adjdqi_req <= adjdqs_rdy;
+	adjsto_req <= tp_sel(1) and setif(adjdqi_rdy=(adjdqi_rdy'range => '1'));
 	iddr_g : for i in ddr_dqi'range generate
 		signal q         : std_logic_vector(0 to GEAR-1);
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
@@ -141,8 +133,8 @@ begin
 		sys_dqo(1*byte_size+i) <= q(1);
 	
 		adjdqi_b : block
-			signal delay         : std_logic_vector(1 to 7-1);
-			signal adjpha_dly    : std_logic_vector(0 to 7-1);
+			signal delay         : std_logic_vector(1 to 6);
+			signal adjpha_dly    : std_logic_vector(0 to 6);
 			signal adjdqi_dlyreq : std_logic;
 			signal adjpha_dlyreq : std_logic;
 			signal adjpha_rdy    : std_logic;
@@ -150,7 +142,7 @@ begin
 			signal dly_req       : std_logic;
 			signal iod_ce        : std_logic;
 			signal iod_rst       : std_logic;
-			signal ddqi : std_logic;
+			signal ddqi          : std_logic;
 		begin
 			process (sys_clks(sys_iodclk))
 			begin
@@ -194,7 +186,7 @@ begin
 				clk     => sys_clks(sys_iodclk),
 				req     => dly_req,
 				rdy     => dly_rdy,
-				dly     => delay(1 to delay'right),
+				dly     => delay,
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
@@ -299,7 +291,6 @@ begin
 	end block;
 
 	dqso_b : block 
-		signal clk_n    : std_logic;
 		signal dqsclk   : std_logic_vector(0 to 2-1);
 		signal dqsi     : std_logic;
 		signal dqso     : std_logic_vector(sys_dqso'range);
@@ -310,8 +301,8 @@ begin
 	begin
 
 		adjdqs_b : block
-			signal delay         : std_logic_vector(1 to 7-1);
-			signal adjpha_dly    : std_logic_vector(0 to 7-1);
+			signal delay         : std_logic_vector(1 to 6);
+			signal adjpha_dly    : std_logic_vector(0 to 6);
 			signal adjsto_dlyreq : std_logic;
 			signal adjpha_dlyreq : std_logic;
 			signal dly_rdy       : std_logic;
