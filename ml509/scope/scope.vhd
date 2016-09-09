@@ -110,6 +110,7 @@ architecture scope of ml509 is
 	signal sys_rst        : std_logic;
 	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
+	signal phy_iodrst     : std_logic;
 
 	--------------------------------------------------
 	-- Frequency   -- 333 Mhz -- 400 Mhz -- 450 Mhz --
@@ -285,7 +286,16 @@ begin
 	end process;
 
 	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => sys_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
-	phy_rsts <= (0 => ddrs_rst, 2 => sys_rst, others => '0');
+	phy_rsts <= (0 => ddrs_rst, 2 => phy_iodrst, others => '0');
+	process (sys_rst, sys_clk)
+	begin
+		if sys_rst='1' then
+			phy_iodrst <= '1';
+		elsif rising_edge(sys_clk) then
+			phy_iodrst <= ddrs_rst;
+		end if;
+	end process;
+
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		TCP         => integer(UCLK_PERIOD*1000.0)*ddr_div/ddr_mul,

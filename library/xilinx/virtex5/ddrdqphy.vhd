@@ -107,14 +107,14 @@ begin
 	tp_bit(2) <= adjsto_req;
 	tp_bit(3) <= adjsto_rdy;
 
-	adjdqi_req <= adjdqs_rdy;
 	adjsto_req <= tp_sel(1) and setif(adjdqi_rdy=(adjdqi_rdy'range => '1'));
 	iddr_g : for i in ddr_dqi'range generate
 		signal q         : std_logic_vector(0 to GEAR-1);
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 	begin
 		imdr_clk <= (
-			0 => sys_clks(sys_clk0div),
+--			0 => sys_clks(sys_clk0div),
+			0 => not dqs_buf,
 			1 => sys_clks(sys_clk0),
 			2 => sys_clks(sys_clk90),
 			3 => not sys_clks(sys_clk0),
@@ -153,18 +153,19 @@ begin
 					elsif dly_rdy='0' then
 						adjdqi_dlyreq <= '1';
 						adjdqi_rdy(i) <= '0';
-					else
+					elsif adjdqi_dlyreq='1' then
+						adjdqi_dlyreq <= '1';
 						adjdqi_rdy(i) <= '1';
 					end if;
 				end if;
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+7);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= q(1);
+				tp_bit(4) <= q(0);
 			end generate;
 
 			adjdqi_e : entity hdl4fpga.adjpha
@@ -317,14 +318,19 @@ begin
 				if rising_edge(sys_clks(sys_iodclk)) then
 					if adjdqs_rdy='0'then
 						adjsto_dlyreq <= '0';
+						adjdqi_req    <= '0';
 					elsif dly_rdy='0' then
 						adjsto_dlyreq <= '1';
+						adjdqi_req    <= '0';
+					elsif adjsto_dlyreq='1' then
+						adjsto_dlyreq <= '1';
+						adjdqi_req    <= '1';
 					end if;
 				end if;
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+2);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
