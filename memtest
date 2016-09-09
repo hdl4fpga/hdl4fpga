@@ -2,7 +2,7 @@ rm pp pp1
 SIZE=${1:-32};
 BLOCKS=${2:-262144};
 BLOCKS=${2:-65536};
-BLOCKS=${2:-1};
+#BLOCKS=${2:-1};
 TIMEFORMAT="$i %lR"
 ./scope2 $BLOCKS $SIZE > pp
 ./scope2 $BLOCKS $SIZE > pp1
