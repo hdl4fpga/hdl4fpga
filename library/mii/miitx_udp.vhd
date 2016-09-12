@@ -83,7 +83,8 @@ begin
 	generic map (
 		mem_data => 
 --			x"ffffffffffff" &       -- MAC Destination Address
-			x"00270e0ff595" &       -- MAC Destination Address
+--			x"00270e0ff595" &       -- MAC Destination Address
+			x"00270e0a90e9" &       -- MAC Destination Address
 			x"000000010203"	&       -- MAC Source Address
 			x"0800"         &       -- MAC Protocol ID
 			ipheader_checksumed(
