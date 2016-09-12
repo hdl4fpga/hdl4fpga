@@ -246,56 +246,36 @@ begin
 	end generate;
 
 	oddr_g : for i in 0 to BYTE_SIZE-1 generate
-		signal dqo  : std_logic_vector(0 to DATA_GEAR-1);
-		signal clks : std_logic_vector(0 to 2-1);
-		signal dqt  : std_logic_vector(sys_dqt'range);
-		signal omdr_dqclk : std_logic_vector(0 to 2-1);
+		signal dqo   : std_logic_vector(0 to DATA_GEAR-1);
+		signal clks  : std_logic_vector(0 to 2-1);
+		signal dqt   : std_logic_vector(sys_dqt'range);
+		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
 
-		omdr_dqclk  <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
-		edge_g : if DATA_EDGE generate
-			clks <= (0 => sys_clks(clk90div), 1 => not sys_clks(clk90div));
-			registered_g : for j in clks'range generate
+		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
+
+		clks <= 
+			(0 => sys_clks(clk90div),     1 => not sys_clks(clk90div)) when DATA_EDGE else
+			(0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
+
+		registered_g : for j in clks'range generate
+			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
 				process (rlrdy, clks(j))
 				begin
 					if rlrdy='0' then
 						if j mod 2=0 then
-							dqo(j) <= '1';
+							dqo(l*DATA_GEAR/clks'length+j) <= '1';
 						else
-							dqo(j) <= '0';
+							dqo(l*DATA_GEAR/clks'length+j) <= '0';
 						end if;
 					elsif rising_edge(clks(j)) then
-						dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
+						dqo(l*DATA_GEAR/clks'length+j) <= sys_dqi((l*DATA_GEAR/clks'length+j)*BYTE_SIZE+i);
+					end if;
+					if rising_edge(clks(j)) then
+						dqt(l*DATA_GEAR/clks'length+j) <= reverse(sys_dqt)(l*DATA_GEAR/clks'length+j);
 					end if;
 				end process;
-
 			end generate;
-		end generate;
-
-		noedge_g : if not DATA_EDGE generate
-			clks <= (0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
-			registered_g : for j in 0 to DATA_GEAR-1 generate
-				process (rlrdy, clks(0))
-				begin
-					if rlrdy='0' then
-						if j mod 2=0 then
-							dqo(j) <= '1';
-						else
-							dqo(j) <= '0';
-						end if;
-					elsif rising_edge(clks(0)) then
-						dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
-					end if;
-				end process;
-
-			end generate;
-
-			process (clks(0))
-			begin
-				if rising_edge(clks(0)) then
-					dqt <= reverse(sys_dqt);
-				end if;
-			end process;
 		end generate;
 
 		omdr_i : entity hdl4fpga.omdr
@@ -304,7 +284,7 @@ begin
 			GEAR => DATA_GEAR)
 		port map (
 			rst   => sys_rsts(rst90div),
-			clk   => omdr_dqclk,
+			clk   => dqclk,
 			t     => dqt,
 			tq(0) => ddr_dqt(i),
 			d     => dqo,
@@ -319,20 +299,21 @@ begin
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
 
-		dqclk <= (0 => sys_clks(clk90), 1 => sys_clks(clk90div));
+		dqclk <= (0 => sys_clks(clk90div), 1 => sys_clks(clk90));
 
 		clks <= 
 			(0 => sys_clks(clk90div), 1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => sys_clks(clk90div), 1 => sys_clks(clk90div));
 
 		registered_g : for i in clks'range generate
-			process (clks(i))
-			begin
-				if rising_edge(clks(i)) then
-					dmi(i) <= sys_dmi(i);
-				end if;
-			end process;
-
+			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
+				process (clks(i))
+				begin
+					if rising_edge(clks(i)) then
+						dmi(l*DATA_GEAR/clks'length+i) <= sys_dmi(l*DATA_GEAR/clks'length+i);
+					end if;
+				end process;
+			end generate;
 		end generate;
 
 		omdr_i : entity hdl4fpga.omdr
@@ -388,7 +369,7 @@ begin
 
 			dly_rdy <= dly_req;
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -483,7 +464,7 @@ begin
 		port map (
 			ddr_clk  => sys_clks(clk0div),
 			iod_clk  => sys_clks(iodclk),
-			ddr_sti  => sti,
+			ddr_sti  => sys_sti(0),
 			ddr_sto  => sto,
 			ddr_smp  => smp,
 			sys_req  => adjsto_req,

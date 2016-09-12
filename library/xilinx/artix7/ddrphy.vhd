@@ -475,6 +475,7 @@ begin
 		
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
+		DATA_EDGE => "SAME_EDGE",
 		GEAR      => CMMD_GEAR,
 		BANK_SIZE => BANK_SIZE,
 		ADDR_SIZE => ADDR_SIZE)

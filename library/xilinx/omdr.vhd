@@ -28,7 +28,8 @@ use ieee.numeric_std.all;
 entity omdr is
 	generic (
 		SIZE : natural;
-		GEAR : natural);
+		GEAR : natural;
+		DATA_EDGE : string := "SAME_EDGE");
 	port (
 		rst : in  std_logic := '0';
 		clk : in  std_logic_vector(0 to 2-1);
@@ -100,8 +101,8 @@ begin
 				q  => tq(i));
 
 			oddr_i : oddr
---			generic map (
---				DDR_CLK_EDGE => "SAME_EDGE")
+			generic map (
+				DDR_CLK_EDGE => DATA_EDGE)
 			port map (
 				c  => clk(0),
 				ce => '1',

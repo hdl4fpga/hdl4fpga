@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 
 entity ddrbaphy is
 	generic (
+		DATA_EDGE  : string  := "OPPOSITE_EDGE";
 		GEAR       : natural := 2;
 		BANK_SIZE  : natural := 2;
 		ADDR_SIZE  : natural := 13);
@@ -62,6 +63,7 @@ begin
 
 	rst_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -72,6 +74,7 @@ begin
 
 	cke_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -82,6 +85,7 @@ begin
 
 	cs_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -92,6 +96,7 @@ begin
 
 	ras_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -102,6 +107,7 @@ begin
 
 	cas_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -112,6 +118,7 @@ begin
 
 	we_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -122,6 +129,7 @@ begin
 
 	odt_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => 1,
 		gear => gear)
 	port map (
@@ -132,6 +140,7 @@ begin
 
 	ba_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => ddr_b'length,
 		gear => gear)
 	port map (
@@ -142,6 +151,7 @@ begin
 
 	a_i : entity hdl4fpga.omdr
 	generic map (
+		DATA_EDGE => DATA_EDGE,
 		size => ddr_a'length,
 		gear => gear)
 	port map (
