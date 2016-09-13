@@ -243,6 +243,7 @@ begin
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
+			DATA_EDGE => "OPPOSITE_EDGE",
 			SIZE => 1,
 			GEAR => GEAR)
 		port map (
@@ -279,6 +280,7 @@ begin
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
+			DATA_EDGE => "OPPOSITE_EDGE",
 			SIZE => 1,
 			GEAR => GEAR)
 		port map (
@@ -330,7 +332,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -435,6 +437,7 @@ begin
 		dqsclk <= (0 => sys_clks(clk0div), 1 => sys_clks(clk0));
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
+			DATA_EDGE => "OPPOSITE_EDGE",
 			SIZE => 1,
 			GEAR => GEAR)
 		port map (
