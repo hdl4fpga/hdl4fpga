@@ -44,7 +44,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := ddr2_d'length;
+	constant WORD_SIZE    : natural := 16; --ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -308,7 +308,7 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		tp_sel(0)   => gpio_sw_s,
-		tp_sel(1)   => '1', --tst,
+		tp_sel(1)   => tst,
 		tp_delay    => tp_delay,
 		tp_bit      => tp_bit,
 		sys_clks    => sys_clks,

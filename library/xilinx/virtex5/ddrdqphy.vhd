@@ -93,7 +93,7 @@ architecture virtex of ddrdqphy is
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
-	constant line_delay : time := 1.1 ns;
+	constant line_delay : time := 1.3 ns;
 begin
 
 	tp_delay <= tp_dqidly when tp_sel(0)='0' else tp_dqsdly;
@@ -161,7 +161,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -170,7 +170,7 @@ begin
 
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
-				TCP => 2*TCP,
+				TCP => TCP/2,
 				TAP_DLY => TAP_DLY)
 			port map (
 				edge    => '1',
@@ -197,7 +197,7 @@ begin
 				DELAY_SRC      => "I",
 				IDELAY_VALUE   => 0,
 				IDELAY_TYPE    => "VARIABLE",
-				SIGNAL_PATTERN => "DATA")
+				SIGNAL_PATTERN => "CLOCK")
 			port map (
 				rst     => iod_rst,
 				c       => sys_clks(iodclk),
@@ -212,7 +212,7 @@ begin
 
 	end generate;
 
-	oddr_g : for i in 0 to BYTE_SIZE-1 generate
+	oddr_g : for i in ddr_dqo'range generate
 		signal dqt  : std_logic_vector(0 to GEAR-1);
 		signal dqo  : std_logic_vector(0 to GEAR-1);
 		signal clks : std_logic_vector(0 to 2-1);
@@ -332,7 +332,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
