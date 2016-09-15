@@ -37,15 +37,17 @@ entity dcms is
 		ddr_div : natural := 3;
 		sys_per : real := 10.0);
 	port (
-		sys_rst   : in  std_logic;
-		sys_clk   : in  std_logic;
-		input_clk : buffer std_logic;
-		ddr_clk0  : buffer std_logic;
-		ddr_clk90 : out std_logic;
-		gtx_clk   : buffer std_logic;
-		ddr_rst   : out std_logic;
-		input_rst : out std_logic;
-		gtx_rst   : out std_logic);
+		sys_rst     : in     std_logic;
+		sys_clk     : in     std_logic;
+		input_clk   : buffer std_logic;
+		ddr_clk0    : buffer std_logic;
+		ddr_clk90   : out    std_logic;
+		iodctlr_clk : buffer std_logic;
+		gtx_clk     : buffer std_logic;
+		ddr_rst     : out    std_logic;
+		input_rst   : out    std_logic;
+		iodctlr_rst : out    std_logic;
+		gtx_rst     : out    std_logic);
 end;
 
 architecture def of dcms is
@@ -60,7 +62,9 @@ architecture def of dcms is
 
 	signal ddr_lckd : std_logic;
 	signal input_lckd : std_logic;
+	signal iodctlr_lckd : std_logic;
 	signal gtx_lckd : std_logic;
+	signal iodctlr_clkfb : std_logic;
 begin
 
 	dcm_rst <= sys_rst;
@@ -89,6 +93,17 @@ begin
 		dfsdcm_clk90 => ddr_clk90,
 		dfsdcm_lckd => ddr_lckd);
 
+	dcm_i : dcm_base
+	generic map (
+		clkin_period => sys_per)
+	port map (
+		rst    => dcm_rst,
+		clkin  => sys_clk,
+		clk0   => iodctlr_clkfb,
+		clkfb  => iodctlr_clkfb,
+		clk2x  => iodctlr_clk,
+		locked => iodctlr_lckd);
+   
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => sys_per,
@@ -107,15 +122,18 @@ begin
 	begin
 		clks(0) <= input_clk;
 		clks(1) <= gtx_clk;
+		clks(2) <= iodctlr_clk;
 		clks(3) <= ddr_clk0;
 
 		lcks(0) <= input_lckd;
 		lcks(1) <= gtx_lckd;
+		lcks(2) <= iodctlr_lckd;
 		lcks(3) <= ddr_lckd;
 
-		input_rst <= rsts(0);
-		gtx_rst   <= rsts(1);
-		ddr_rst   <= rsts(3);
+		input_rst    <= rsts(0);
+		gtx_rst      <= rsts(1);
+		iodctlr_rst  <= rsts(2);
+		ddr_rst      <= rsts(3);
 
 		rsts_g: for i in clks'range generate
 			signal q : std_logic;
@@ -124,11 +142,12 @@ begin
 			begin
 				if sys_rst='1' then
 					q <= '1';
+					rsts(i) <= '1';
 				elsif rising_edge(clks(i)) then
-					q <= not lcks(i);
+					q <= not lcks(i) or not iodctlr_lckd;
+					rsts(i) <= q;
 				end if;
 			end process;
-			rsts(i) <= q;
 		end generate;
 	end block;
 end;

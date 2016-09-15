@@ -69,8 +69,8 @@ TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.omdr_i/reg_g[0]
 # Others #
 # ###### #
 
-NET "clk_fpga_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
-NET "clk_fpga_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+#NET "clk_fpga_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+#NET "clk_fpga_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "ddr2_clk_p[*]" IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_clk_n[*]" IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_dqs_p[*]" IOSTANDARD = DIFF_SSTL18_II_DCI;

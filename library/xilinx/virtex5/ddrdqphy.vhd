@@ -170,7 +170,7 @@ begin
 
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
-				TCP => TCP/2,
+				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
 				edge    => '1',

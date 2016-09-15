@@ -121,62 +121,19 @@ architecture scope of ml509 is
 	constant DDR_MUL      : natural := 3; --10;
 	constant DDR_DIV      : natural := 1; --3;
 
-	signal ictlr_clk_ibuf : std_logic;
 	signal ictlr_rst      : std_logic;
 
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	signal tst : std_logic;
 begin
-		
-		
-	idelay_ibufg_i : IBUFGDS_LVPECL_25
-	port map (
-		I  => clk_fpga_p,
-		IB => clk_fpga_n,
-		O  => ictlr_clk_ibuf );
-
-	idelay_bufg_i : BUFG
-	port map (
-		i => ictlr_clk_ibuf,
-		o => ictlr_clk);
 
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
 		O => sys_clk);
 
-	process (gpio_sw_c, ictlr_clk)
-		variable tmr : unsigned(0 to 8-1);
-	begin
-		if gpio_sw_c='1' then
-			tmr := (others => '0');
-		elsif rising_edge(ictlr_clk) then
-			if tmr(0)='0' then
-				tmr := tmr + 1;
-			end if;
-		end if;
-		ictlr_rst <= not tmr(0);
-	end process;
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst    => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy    => ictlr_rdy);
-	sys_rst <= not ictlr_rdy;
-
-	process (gpio_sw_c, sys_clk)
-	begin
-		if gpio_sw_c='1' then
-			tst <= '0';
-		elsif rising_edge(sys_clk) then
-			if gpio_sw_w='1' then
-				tst <= '1';
-			end if;
-		end if;
-	end process;
-
+	sys_rst <= gpio_sw_c;
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul     => ddr_mul,
@@ -186,11 +143,19 @@ begin
 		sys_rst     => sys_rst,
 		sys_clk     => sys_clk,
 		input_clk   => input_clk,
+		iodctlr_clk => ictlr_clk,
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		gtx_clk     => gtx_clk,
 		ddr_rst     => ddrs_rst,
+		iodctlr_rst => ictlr_rst,
 		gtx_rst     => gtx_rst);
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => ictlr_rst,
+		refclk => ictlr_clk,
+		rdy    => ictlr_rdy);
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
