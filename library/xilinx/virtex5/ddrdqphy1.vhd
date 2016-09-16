@@ -49,12 +49,11 @@ entity ddrdqphy is
 		sys_dmi  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(0 to gear-1) := (others => '-');
 		sys_sto  : out std_logic_vector(0 to gear-1);
-		sys_dqo  : in  std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqi  : in  std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(gear-1 downto 0);
-		sys_dqi  : out std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqo  : out std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqso : in  std_logic_vector(0 to gear-1);
 		sys_dqst : in  std_logic_vector(0 to gear-1);
-		sys_tp : out std_logic_vector(byte_size-1 downto 0);
 
 		ddr_dmt  : out std_logic;
 		ddr_dmo  : out std_logic;
@@ -139,8 +138,8 @@ begin
 			q1 => q(0),
 			q2 => q(1));
 
-		sys_dqi(0*byte_size+i) <= q(1);
-		sys_dqi(1*byte_size+i) <= q(0);
+		sys_dqo(0*byte_size+i) <= q(0);
+		sys_dqo(1*byte_size+i) <= q(1);
 	
 		xx_g : if i=0 generate
 			tp_bit(4) <= q(0);
@@ -189,7 +188,7 @@ begin
 						dqo(j) <= '0';
 					end if;
 				elsif rising_edge(clks(j)) then
-					dqo(j) <= sys_dqo(j*byte_size+i);
+					dqo(j) <= sys_dqi(j*byte_size+i);
 				end if;
 			end process;
 
