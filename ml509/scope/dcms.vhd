@@ -42,6 +42,7 @@ entity dcms is
 		input_clk   : buffer std_logic;
 		ddr_clk0    : buffer std_logic;
 		ddr_clk90   : out    std_logic;
+		iodctlr_rdy : in     std_logic;
 		iodctlr_clk : buffer std_logic;
 		gtx_clk     : buffer std_logic;
 		ddr_rst     : out    std_logic;
@@ -128,7 +129,7 @@ begin
 		lcks(0) <= input_lckd;
 		lcks(1) <= gtx_lckd;
 		lcks(2) <= iodctlr_lckd;
-		lcks(3) <= ddr_lckd;
+		lcks(3) <= ddr_lckd and iodctlr_rdy;
 
 		input_rst    <= rsts(0);
 		gtx_rst      <= rsts(1);
@@ -144,7 +145,7 @@ begin
 					q <= '1';
 					rsts(i) <= '1';
 				elsif rising_edge(clks(i)) then
-					q <= not lcks(i) or not iodctlr_lckd;
+					q <= not lcks(i);
 					rsts(i) <= q;
 				end if;
 			end process;

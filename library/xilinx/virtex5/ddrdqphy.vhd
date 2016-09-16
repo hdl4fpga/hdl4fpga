@@ -93,7 +93,7 @@ architecture virtex of ddrdqphy is
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
-	constant line_delay : time := 1.3 ns;
+	constant line_delay : time := 1.2 ns;
 begin
 
 	tp_delay <= tp_dqidly when tp_sel(0)='0' else tp_dqsdly;
@@ -161,7 +161,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -197,7 +197,7 @@ begin
 				DELAY_SRC      => "I",
 				IDELAY_VALUE   => 0,
 				IDELAY_TYPE    => "VARIABLE",
-				SIGNAL_PATTERN => "CLOCK")
+				SIGNAL_PATTERN => "DATA")
 			port map (
 				rst     => iod_rst,
 				c       => sys_clks(iodclk),

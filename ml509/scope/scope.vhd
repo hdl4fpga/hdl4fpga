@@ -144,6 +144,7 @@ begin
 		sys_clk     => sys_clk,
 		input_clk   => input_clk,
 		iodctlr_clk => ictlr_clk,
+		iodctlr_rdy => ictlr_rdy,
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		gtx_clk     => gtx_clk,
@@ -256,8 +257,12 @@ begin
 	begin
 		if sys_rst='1' then
 			phy_iodrst <= '1';
+			tst <= '0';
 		elsif rising_edge(sys_clk) then
 			phy_iodrst <= ddrs_rst;
+			if gpio_sw_w='1'   then
+				tst <= '1';
+			end if;
 		end if;
 	end process;
 
@@ -273,7 +278,7 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		tp_sel(0)   => gpio_sw_s,
-		tp_sel(1)   => tst,
+		tp_sel(1)   => '1',
 		tp_delay    => tp_delay,
 		tp_bit      => tp_bit,
 		sys_clks    => sys_clks,
