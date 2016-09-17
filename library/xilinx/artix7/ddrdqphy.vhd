@@ -138,7 +138,7 @@ begin
 		begin
 			if rising_edge(sys_clks(clk90div)) then
 				imdr_rst <= q;
-				q := sys_rsts(rst90div) or adjdqi_st;
+				q := sys_rsts(rst90div); -- or adjdqi_st;
 			end if;
 		end process;
 

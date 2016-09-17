@@ -248,6 +248,8 @@ begin
 		ddrs_bl        => "000",
 		ddrs_cl        => "011",
 		ddrs_cwl       => "001",
+--		ddrs_cl        => "010",
+--		ddrs_cwl       => "000",
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
