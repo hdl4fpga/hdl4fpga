@@ -138,7 +138,7 @@ begin
 		begin
 			if rising_edge(sys_clks(clk90div)) then
 				imdr_rst <= q;
-				q := sys_rsts(rst90div); -- or adjdqi_st;
+				q := sys_rsts(rst90div) or not adjdqs_req;
 			end if;
 		end process;
 
@@ -200,7 +200,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+7);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -303,7 +303,7 @@ begin
 
 		clks <= 
 			(0 => sys_clks(clk90div), 1 => not sys_clks(clk90div)) when DATA_EDGE else
-			(0 => sys_clks(clk90div), 1 => sys_clks(clk90div));
+			(0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
 
 		registered_g : for i in clks'range generate
 			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
@@ -369,7 +369,7 @@ begin
 
 			dly_rdy <= dly_req;
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -407,12 +407,12 @@ begin
 
 		end block;
 
-		process (sys_clks(clk90div))
+		process (sys_clks(clk0div))
 			variable q : std_logic;
 		begin
-			if rising_edge(sys_clks(clk90div)) then
+			if rising_edge(sys_clks(clk0div)) then
 				imdr_rst <= q;
-				q := sys_rsts(rst90div);
+				q := sys_rsts(rst0div);
 			end if;
 		end process;
 
