@@ -161,7 +161,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
