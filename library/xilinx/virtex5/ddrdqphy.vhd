@@ -173,7 +173,7 @@ begin
 				TCP => 2*TCP,
 				TAP_DLY => TAP_DLY)
 			port map (
-				edge    => '0',
+				edge    => '1',
 				clk     => sys_clks(iodclk),
 				req     => adjdqi_req,
 				rdy     => adjpha_rdy,
