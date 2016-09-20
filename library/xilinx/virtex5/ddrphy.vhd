@@ -118,22 +118,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture virtex of ddrphy is
-	subtype tapsw is std_logic_vector(6-1 downto 0);
-	type tapsw_vector is array (natural range <>) of tapsw;
-
-	function to_stdlogicvector (
-		constant arg : tapsw_vector)
-		return std_logic_vector is
-		variable dat : tapsw_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
 
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
@@ -163,20 +147,6 @@ architecture virtex of ddrphy is
 		return bline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_dlinevector (
-		constant arg : std_logic_vector) 
-		return dline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
 	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
@@ -248,6 +218,21 @@ architecture virtex of ddrphy is
 		return dline_vector is
 		variable dat : byte_vector(0 to arg'length/byte'length-1);
 		variable val : byte_vector(dat'range);
+
+		function to_dlinevector (
+			constant arg : std_logic_vector) 
+			return dline_vector is
+			variable dat : unsigned(arg'length-1 downto 0);
+			variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
+		begin	
+			dat := unsigned(arg);
+			for i in val'reverse_range loop
+				val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
+				dat := dat srl val(val'left)'length;
+			end loop;
+			return val;
+		end;
+
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
@@ -262,12 +247,12 @@ architecture virtex of ddrphy is
 		constant arg : dline_vector) 
 		return byte_vector is
 		variable val : byte_vector(sys_dqo'length/byte_size-1 downto 0);
-		variable aux : byte_vector(0 to data_gear-1);
+		variable dat : byte_vector(val'range);
 	begin	
-		for i in arg'range loop
-			aux := to_bytevector(arg(i));
-			for j in aux'range loop
-				val(j*arg'length+i) := aux(j);
+		dat := to_bytevector(to_stdlogicvector(arg));
+		for i in word_size/byte_size-1 downto 0 loop
+			for j in data_gear-1 downto 0 loop
+				val(j*word_size/byte_size+i) := dat(i*data_gear+j);
 			end loop;
 		end loop;
 		return val;
@@ -592,5 +577,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqo <= to_stdlogicvector(sdqo);
+	sys_dqo <= to_stdlogicvector(unshuffle(sdqo));
 end;

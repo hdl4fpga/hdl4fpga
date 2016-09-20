@@ -129,8 +129,8 @@ begin
 			d(0) => dqi(i),
 			q    => q);
 
-		sys_dqo(0*byte_size+i) <= q(0);
-		sys_dqo(1*byte_size+i) <= q(1);
+		sys_dqo(0*byte_size+i) <= q(1);
+		sys_dqo(1*byte_size+i) <= q(0);
 	
 		adjdqi_b : block
 			signal delay         : std_logic_vector(1 to 6);
