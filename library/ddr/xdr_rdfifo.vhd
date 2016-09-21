@@ -57,9 +57,9 @@ architecture struct of xdr_rdfifo is
 	type word_vector is array (natural range <>) of word;
 
 	function to_stdlogicvector (
-		arg : byte_vector)
+		constant arg : word_vector)
 		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
+		variable dat : word_vector(arg'length-1 downto 0);
 		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
 		dat := arg;
@@ -80,24 +80,6 @@ architecture struct of xdr_rdfifo is
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(word'length-1 downto 0));
 			dat := dat srl word'length;
-		end loop;
-		return val;
-	end;
-
-	impure function shuffle (
-		constant arg : word_vector)
-		return byte_vector is
-		variable aux : word;
-		variable aux2 : word_vector(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length*word'length/byte'length-1 downto 0);
-	begin
-		aux2 := arg;
-		for i in arg'range loop
-			aux := arg(i);
-			for j in 0 to word'length/byte'length-1 loop
-				val(j*arg'length+i) := aux(byte'range);
-				aux := std_logic_vector(unsigned(aux) srl byte'length);
-			end loop;
 		end loop;
 		return val;
 	end;
@@ -153,6 +135,6 @@ begin
 				do  => do(j*WORD_SIZE/BYTE_SIZE+i));
 		end generate;
 	end generate;
-	sys_do <= to_stdlogicvector(shuffle(do));
+	sys_do <= to_stdlogicvector(do);
 
 end;

@@ -577,5 +577,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqo <= to_stdlogicvector(unshuffle(sdqo));
+	sys_dqo <= to_stdlogicvector(sdqo);
 end;

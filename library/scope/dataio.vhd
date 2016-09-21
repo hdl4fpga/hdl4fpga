@@ -143,6 +143,17 @@ begin
 			end if;
 			q := sys_rst;
 			aux2 <= s;
+--		case ddrs_di'length is
+--		when 32 =>
+--			aux2 <= X"01020304";
+--		when 64 =>
+--			aux2 <= X"0102030405060708";
+--		when 128 =>
+--			aux2 <= X"0102030405060708090a0b0c0d0e0f00";
+--		when others =>
+--			aux2 <= (others => '-');
+--		end case;
+
 		end if;
 	end process;
 

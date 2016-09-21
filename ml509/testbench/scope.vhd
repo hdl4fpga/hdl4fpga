@@ -280,7 +280,7 @@ begin
 --		ddr2_sda  => sda
 	);
 
-	gg : for i in 4/2-1 downto 0 generate
+	gg : for i in 2/2-1 downto 0 generate
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck    => clk_p(0),

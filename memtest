@@ -7,8 +7,8 @@ BLOCKS=${2:-131072};
 #BLOCKS=${2:-65536};
 #BLOCKS=${2:-1};
 TIMEFORMAT="$i %lR"
-./scope2 $BLOCKS $SIZE > pp
-./scope2 $BLOCKS $SIZE > pp1
+./scope $BLOCKS $SIZE > pp
+./scope $BLOCKS $SIZE > pp1
 i=0
 while cmp pp pp1 > log ; do 
 	i=`expr $i + 1`
