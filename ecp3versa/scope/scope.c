@@ -92,7 +92,7 @@ int main (int argc, char *argv[])
 		abort ();
 	}
 
-	for (k = 0; k < 4 && npkt > 0; k++, npkt--) {
+	for (k = 0; k < 1 && npkt > 0; k++, npkt--) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			abort ();

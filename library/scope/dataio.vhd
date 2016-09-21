@@ -212,7 +212,7 @@ begin
 --			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 			to_signed(0, DDR_BANKSIZE+1) & 
 			to_signed(0, DDR_ADDRSIZE+1) & 
-			to_signed(1, DDR_CLNMSIZE+1));
+			to_signed(2**5-1, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
@@ -287,7 +287,7 @@ begin
 		ddrs_req => ddr2mii_req,
 		ddrs_dirdy => ddrs_do_rdy,
 		ddrs_direq => ddr2miitx_brst_req,
-		ddrs_di  => ddrs_do,
+		ddrs_di  => X"0102030405060708", --ddrs_do,
 
 		miitx_clk => mii_txc,
 		miitx_rdy => miitx_rdy,

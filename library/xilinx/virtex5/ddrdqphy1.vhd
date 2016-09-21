@@ -138,8 +138,8 @@ begin
 			q1 => q(0),
 			q2 => q(1));
 
-		sys_dqo(0*byte_size+i) <= q(0);
-		sys_dqo(1*byte_size+i) <= q(1);
+		sys_dqo(0*byte_size+i) <= q(1);
+		sys_dqo(1*byte_size+i) <= q(0);
 	
 		xx_g : if i=0 generate
 			tp_bit(4) <= q(0);

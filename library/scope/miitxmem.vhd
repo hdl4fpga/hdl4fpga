@@ -207,7 +207,7 @@ begin
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
-	rad <= std_logic_vector(unsigned(rd_data) ror (data_size/2+miitx_dat'length)); -- 1,3,7 2*n/2-1 n= number of bytes
+	rad <= std_logic_vector(unsigned(rd_data) ror (data_size/2+miitx_dat'length));
 	txd <= word2byte (
 		word => rad,
 		addr => bysel);
