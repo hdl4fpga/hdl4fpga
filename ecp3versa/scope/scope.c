@@ -28,7 +28,7 @@
 #include <math.h>
 
 #define PORT	1024
-
+#define QUEUE   1
 int main (int argc, char *argv[])
 {
 #ifdef WINDOWS
@@ -92,7 +92,7 @@ int main (int argc, char *argv[])
 		abort ();
 	}
 
-	for (k = 0; k < 1 && npkt > 0; k++, npkt--) {
+	for (k = 0; k < QUEUE && npkt > 0; k++, npkt--) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
 			abort ();
@@ -116,19 +116,19 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n", *(unsigned int *)(sb_src+j));
-//				printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j)));
+				/* printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j))); */
 				break;
 			case 64:
-				printf("0x%016llx\n", (long long unsigned int)*(long long unsigned int *)(sb_src+j));
-//				printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
+				printf("0x%016lx\n", *(long unsigned int *)(sb_src+j));
+				/* printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j))); */
 				break;
 			case 128:
-				printf("0x%016llx%016llx\n",
-					(long long unsigned int)*(long long unsigned int *)(sb_src+j+8),
-					(long long unsigned int)*(long long unsigned int *)(sb_src+j));
-//				printf("0x%016llx%016llx\n",
-//					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
-//					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8)));
+				printf("0x%016lx%016lx\n",
+					*(long unsigned int *)(sb_src+j+8),
+					*(long unsigned int *)(sb_src+j));
+				/* printf("0x%016llx%016llx\n",
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8))); */
 				break;
 			}
 		}
@@ -147,23 +147,22 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n", *(unsigned int *)(sb_src+j));
-//				printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j)));
+				/* printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j))); */
 				break;
 			case 64:
-				printf("0x%016llx\n", (long long unsigned int)*(long long unsigned int *)(sb_src+j));
-//				printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)));
+				printf("0x%016lx\n", *(long unsigned int *)(sb_src+j));
+				/* printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j))); */
 				break;
 			case 128:
-				printf("0x%016llx%016llx\n",
-					(long long unsigned int)*(long long unsigned int *)(sb_src+j+8),
-					(long long unsigned int)*(long long unsigned int *)(sb_src+j));
-//				printf("0x%016llx%016llx\n",
-//					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
-//					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8)));
+				printf("0x%016lx%016lx\n",
+					*(long unsigned int *)(sb_src+j+8),
+					*(long unsigned int *)(sb_src+j));
+				/* printf("0x%016llx%016llx\n",
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
+					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8))); */
 				break;
 			}
 		}
-
 	}
 
 	return 0;

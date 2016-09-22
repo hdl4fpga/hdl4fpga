@@ -35,12 +35,12 @@ begin
 	end process;
 
 	process (iod_clk)
-		variable ce : signed(0 to 4-1);
+		variable ce : signed(0 to 5-1);
 	begin
 		if rising_edge(iod_clk) then
 			if req='0' then
 				sync <= '0';
-				ce := to_signed(0, ce'length);
+				ce := to_signed(5, ce'length);
 				tmr <= (others => '0');
 				iod_ce  <= '0';
 				rdy <= '0';
