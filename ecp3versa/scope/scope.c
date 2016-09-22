@@ -28,7 +28,7 @@
 #include <math.h>
 
 #define PORT	1024
-#define QUEUE   1
+#define QUEUE   4
 int main (int argc, char *argv[])
 {
 #ifdef WINDOWS
