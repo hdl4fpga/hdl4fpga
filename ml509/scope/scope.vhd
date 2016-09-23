@@ -127,7 +127,7 @@ architecture scope of ml509 is
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	signal tst : std_logic;
-	signal tp_sel : std_logic_vector(0 to 3-1);
+	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE)-1);
 begin
 
 	idelay_ibufg_i : IBUFGDS_LVPECL_25
@@ -442,20 +442,21 @@ begin
 	dvi_d      <= (others => 'Z');
 
 	process (gpio_sw_c, gpio_sw_e)
+		variable sel : unsigned(tp_sel'range);
 	begin
 		if gpio_sw_c='1' then
+			sel := (others => '0');
 		elsif rising_edge(gpio_sw_e) then
+			sel := sel + 1;
 		end if;
+		tp_sel <= std_logic_vector(sel);
 	end process;
 
-	process (tp_delay,gpio_sw_n)
-	begin
-		if gpio_sw_n='1' then
-			gpio_led <= reverse("00" & tp_delay(6*2-1 downto 6));
-		else
-			gpio_led <= reverse("00" & tp_delay(6-1 downto 0));
-		end if;
-	end process;
+
+	gpio_led <= 
+		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else
+		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
+
 
 	bus_error <= (others => 'Z');
 	gpio_led_n <= tp_bit(0);

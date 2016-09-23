@@ -32,10 +32,8 @@ NET "phy_txclk" TNM_NET = phy_txclk;
 
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 #OFFSET = OUT 4 ns VALID 8 ns BEFORE  gtx_clk rising;
-##
-#NET "ddrphy_dqi*"    MAXDELAY = .75 ns;
-NET "ddr2_d[*]"    MAXDELAY = 0 ns;
-net "ddrphy_e/byte_g[*].ddrdqphy_i/dqi[*]" maxdelay = 0 ns;
+
+NET "gpio_sw_e" CLOCK_DEDICATED_ROUTE = FALSE;
 
 # ###################### #
 # Ignore crossclock time #
