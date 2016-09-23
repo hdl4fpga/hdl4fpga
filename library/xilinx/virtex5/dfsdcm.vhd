@@ -28,9 +28,7 @@ entity dfsdcm is
 	generic (
 		dcm_per : real;
 		dfs_div : natural;
-		dfs_mul : natural;
-		dfs_frequency_mode : string := "HIGH";
-		dll_frequency_mode : string := "HIGH");
+		dfs_mul : natural);
 	port ( 
 		dfsdcm_rst : in std_logic; 
 		dfsdcm_clkin : in std_logic; 
@@ -60,7 +58,7 @@ begin
 		clkfx_divide => dfs_div,
 		clkfx_multiply => dfs_mul,
 		clkin_period => dcm_per,
-		dfs_frequency_mode => dfs_frequency_mode,
+		dfs_frequency_mode => "HIGH",
 		startup_wait => FALSE)
 	port map (
 		rst   => dfsdcm_rst,
@@ -90,7 +88,7 @@ begin
 	dcm_i : dcm_base
 	generic map (
 		clkin_period => (real(dfs_div)*dcm_per)/real(dfs_mul),
-		dll_frequency_mode => dll_frequency_mode)
+		dll_frequency_mode => "HIGH")
 	port map (
 		rst   => dcm_rst,
 		clkin => dcm_clkin,

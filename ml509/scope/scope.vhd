@@ -44,11 +44,12 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := 32; --ddr2_d'length;
+	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
 
+	signal ictlr_clk_bufg : std_logic;
 	signal ictlr_clk      : std_logic;
 	signal ictlr_rdy      : std_logic;
 
@@ -126,14 +127,45 @@ architecture scope of ml509 is
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	signal tst : std_logic;
+	signal tp_sel : std_logic_vector(0 to 3-1);
 begin
+
+	idelay_ibufg_i : IBUFGDS_LVPECL_25
+	port map (
+		I  => clk_fpga_p,
+		IB => clk_fpga_n,
+		O  => ictlr_clk_bufg );
+
+	idelay_bufg_i : BUFG
+	port map (
+		i => ictlr_clk_bufg,
+		o => ictlr_clk);
 
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
 		O => sys_clk);
 
-	sys_rst <= gpio_sw_c;
+	process (gpio_sw_c, ictlr_clk)
+		variable tmr : unsigned(0 to 8-1);
+	begin
+		if gpio_sw_c='1' then
+			tmr := (others => '0');
+		elsif rising_edge(ictlr_clk) then
+			if tmr(0)='0' then
+				tmr := tmr + 1;
+			end if;
+		end if;
+		ictlr_rst <= not tmr(0);
+	end process;
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => ictlr_rst,
+		refclk => ictlr_clk,
+		rdy    => ictlr_rdy);
+
+	sys_rst <= not ictlr_rdy;
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul     => ddr_mul,
@@ -143,20 +175,11 @@ begin
 		sys_rst     => sys_rst,
 		sys_clk     => sys_clk,
 		input_clk   => input_clk,
-		iodctlr_clk => ictlr_clk,
-		iodctlr_rdy => ictlr_rdy,
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		gtx_clk     => gtx_clk,
 		ddr_rst     => ddrs_rst,
-		iodctlr_rst => ictlr_rst,
 		gtx_rst     => gtx_rst);
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst    => ictlr_rst,
-		refclk => ictlr_clk,
-		rdy    => ictlr_rdy);
 
 	ddrphy_dqsi <= (others => ddrs_clk0);
 	scope_e : entity hdl4fpga.scope
@@ -417,6 +440,13 @@ begin
 	dvi_h      <= 'Z';
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
+
+	process (gpio_sw_c, gpio_sw_e)
+	begin
+		if gpio_sw_c='1' then
+		elsif rising_edge(gpio_sw_e) then
+		end if;
+	end process;
 
 	process (tp_delay,gpio_sw_n)
 	begin

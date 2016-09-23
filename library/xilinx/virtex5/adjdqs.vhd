@@ -40,7 +40,7 @@ begin
 		if rising_edge(iod_clk) then
 			if req='0' then
 				sync <= '0';
-				ce := to_signed(5, ce'length);
+				ce := to_signed(1, ce'length);
 				tmr <= (others => '0');
 				iod_ce  <= '0';
 				rdy <= '0';
@@ -64,7 +64,7 @@ begin
 				ce :=  ce - 1;
 				iod_ce <= not ce(0);
 				rdy <= ce(0);
-				iod_inc <= '0';
+				iod_inc <= '1';
 			end if;
 		end if;
 	end process;

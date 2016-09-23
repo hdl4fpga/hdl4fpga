@@ -1,9 +1,9 @@
 rm pp pp1
 SIZE=${1:-128};
-SIZE=${1:-64};
+#SIZE=${1:-64};
 #SIZE=${1:-32};
 BLOCKS=${2:-262144};
-BLOCKS=${2:-131072};
+#BLOCKS=${2:-131072};
 #BLOCKS=${2:-65536};
 #BLOCKS=${2:-2};
 TIMEFORMAT="$i %lR"
