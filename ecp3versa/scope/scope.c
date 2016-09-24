@@ -115,20 +115,20 @@ int main (int argc, char *argv[])
 		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
 			switch (size) {
 			case 32:
-				printf("0x%08x\n", *(unsigned int *)(sb_src+j));
-				/* printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j))); */
+				printf("0x%08x\n",
+					htonl(*(unsigned int *)(sb_src+j)));
 				break;
 			case 64:
-				printf("0x%016lx\n", *(long unsigned int *)(sb_src+j));
-				/* printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j))); */
+				printf("0x%08x%08x\n",
+					htonl(*(long unsigned int *)(sb_src+j)),
+					htonl(*(long unsigned int *)(sb_src+j+4)));
 				break;
 			case 128:
-				printf("0x%016lx%016lx\n",
-					*(long unsigned int *)(sb_src+j+8),
-					*(long unsigned int *)(sb_src+j));
-				/* printf("0x%016llx%016llx\n",
-					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
-					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8))); */
+				printf("0x%08x%08x%08x%08x\n",
+					htonl(*(long unsigned int *)(sb_src+j)),
+					htonl(*(long unsigned int *)(sb_src+j+4)),
+					htonl(*(long unsigned int *)(sb_src+j+8)),
+					htonl(*(long unsigned int *)(sb_src+j+12)));
 				break;
 			}
 		}
@@ -146,20 +146,20 @@ int main (int argc, char *argv[])
 		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
 			switch (size) {
 			case 32:
-				printf("0x%08x\n", *(unsigned int *)(sb_src+j));
-				/* printf("0x%08lx\n", (long unsigned int)htonl(*(long unsigned int *)(sb_src+j))); */
+				printf("0x%08x\n",
+					htonl(*(unsigned int *)(sb_src+j)));
 				break;
 			case 64:
-				printf("0x%016lx\n", *(long unsigned int *)(sb_src+j));
-				/* printf("0x%016llx\n", (long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j))); */
+				printf("0x%08x%08x\n",
+					htonl(*(long unsigned int *)(sb_src+j)),
+					htonl(*(long unsigned int *)(sb_src+j+4)));
 				break;
 			case 128:
-				printf("0x%016lx%016lx\n",
-					*(long unsigned int *)(sb_src+j+8),
-					*(long unsigned int *)(sb_src+j));
-				/* printf("0x%016llx%016llx\n",
-					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j)),
-					(long long unsigned int)htobe64(*(long long unsigned int *)(sb_src+j+8))); */
+				printf("0x%08x%08x%08x%08x\n",
+					htonl(*(long unsigned int *)(sb_src+j)),
+					htonl(*(long unsigned int *)(sb_src+j+4)),
+					htonl(*(long unsigned int *)(sb_src+j+8)),
+					htonl(*(long unsigned int *)(sb_src+j+12)));
 				break;
 			}
 		}

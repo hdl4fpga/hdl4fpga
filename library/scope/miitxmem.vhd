@@ -207,9 +207,9 @@ begin
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
-	rad <= std_logic_vector(unsigned(rd_data) ror (data_size/2+miitx_dat'length));
+	rad <= std_logic_vector(unsigned(rd_data) rol (data_size/2+miitx_dat'length));
 	txd <= word2byte (
-		word => rad,
+		word => reverse(rad),
 		addr => bysel);
-	miitx_dat <= reverse (txd);
+	miitx_dat <= txd;
 end;
