@@ -36,11 +36,12 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture scope of arty is
-	constant clk0div  : natural := 0; 
-	constant clk90div : natural := 1;
-	constant iodclk   : natural := 2;
-	constant clk0     : natural := 3; 
-	constant clk90    : natural := 4;
+	constant clk0div   : natural := 0; 
+	constant clk90div  : natural := 1;
+	constant iodclk    : natural := 2;
+	constant clk0      : natural := 3; 
+	constant clk90     : natural := 4;
+	constant clk270div : natural := 5;
 
 	constant rst0div  : natural := 0;
 	constant rst90div : natural := 1;
@@ -65,7 +66,7 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : real    := 16.0; --18;
+	constant DDR_MUL      : real    := 22.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -91,6 +92,7 @@ architecture scope of arty is
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk0div   : std_logic;
 	signal ddrs_clk90div  : std_logic;
+	signal ddrs_clk270div : std_logic;
 	signal ddrs_clk90     : std_logic;
 	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
@@ -140,7 +142,7 @@ architecture scope of arty is
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
 
-	signal sys_clks       : std_logic_vector(0 to 5-1);
+	signal sys_clks       : std_logic_vector(0 to 6-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
 
 	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
@@ -188,22 +190,23 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		DDR_MUL    => DDR_MUL,
-		DDR_DIV    => DDR_DIV, 
-		DDR_GEAR   => DATA_GEAR, 
-		SYS_PER    => UCLK_PERIOD)
+		DDR_MUL       => DDR_MUL,
+		DDR_DIV       => DDR_DIV, 
+		DDR_GEAR      => DATA_GEAR, 
+		SYS_PER       => UCLK_PERIOD)
 	port map (
-		sys_rst      => dcm_rst,
-		sys_clk      => sys_clk,
-		input_clk    => input_clk,
-		ioctrl_clk   => ioctrl_clk,
-		ioctrl_rst   => ioctrl_rst,
-		ddr_clk0     => ddrs_clk0,
-		ddr_clk0div  => ddrs_clk0div,
-		ddr_clk90    => ddrs_clk90,
-		ddr_clk90div => ddrs_clk90div,
-		ddr0div_rst  => ddr0div_rst,
-		ddr90div_rst => ddr90div_rst);
+		sys_rst       => dcm_rst,
+		sys_clk       => sys_clk,
+		input_clk     => input_clk,
+		ioctrl_clk    => ioctrl_clk,
+		ioctrl_rst    => ioctrl_rst,
+		ddr_clk0      => ddrs_clk0,
+		ddr_clk0div   => ddrs_clk0div,
+		ddr_clk90     => ddrs_clk90,
+		ddr_clk90div  => ddrs_clk90div,
+		ddr_clk270div => ddrs_clk270div,
+		ddr0div_rst   => ddr0div_rst,
+		ddr90div_rst  => ddr90div_rst);
 
 	idelayctrl_i : idelayctrl
 	port map (
@@ -320,7 +323,7 @@ begin
 		end loop;
 	end process;
 
-	sys_clks <= (clk0div => ddrs_clk0div, clk90div => ddrs_clk90div, iodclk => sys_clk, clk0 => ddrs_clk0, clk90 => ddrs_clk90);
+	sys_clks <= (clk0div => ddrs_clk0div, clk90div => ddrs_clk90div, iodclk => sys_clk, clk0 => ddrs_clk0, clk90 => ddrs_clk90, clk270div => ddrs_clk270div);
 	phy_rsts <= (rst0div => ddrs0div_rst, rst90div => ddrs90div_rst, rstiod => ddrsiod_rst);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
