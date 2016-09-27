@@ -169,7 +169,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
+			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
@@ -269,69 +269,70 @@ begin
 			(0 => sys_clks(clk90div),     1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
 
---		registered_g : for j in clks'range generate
---			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
---				process (rlrdy, clks(j))
---				begin
---					if rlrdy='0' then
---						if j mod 2=0 then
---							dqo(l*DATA_GEAR/clks'length+j) <= '1';
---						else
---							dqo(l*DATA_GEAR/clks'length+j) <= '0';
---						end if;
---					elsif rising_edge(clks(j)) then
---						dqo(l*DATA_GEAR/clks'length+j) <= sys_dqi((l*DATA_GEAR/clks'length+j)*BYTE_SIZE+i);
---					end if;
---					if rising_edge(clks(j)) then
---						dqt(l*DATA_GEAR/clks'length+j) <= reverse(sys_dqt)(l*DATA_GEAR/clks'length+j);
---					end if;
---				end process;
---			end generate;
---		end generate;
-
-		process (rlrdy, sys_dqi)
-		begin
-			for j in dqo'range loop
-				if rlrdy='0' then
-					if j mod 2=0 then
-						dqo(j) <= '1';
-					else
-						dqo(j) <= '0';
+		registered_g : for j in clks'range generate
+			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
+				process (rlrdy, clks(j))
+				begin
+					if rlrdy='0' then
+						if j mod 2=0 then
+							dqo(l*DATA_GEAR/clks'length+j) <= '1';
+						else
+							dqo(l*DATA_GEAR/clks'length+j) <= '0';
+						end if;
+					elsif rising_edge(clks(j)) then
+						dqo(l*DATA_GEAR/clks'length+j) <= sys_dqi((l*DATA_GEAR/clks'length+j)*BYTE_SIZE+i);
 					end if;
-				else
-					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
-				end if;
-			end loop;
-		end process;
-		dqt <= reverse(sys_dqt);
+					if rising_edge(clks(j)) then
+						dqt(l*DATA_GEAR/clks'length+j) <= reverse(sys_dqt)(l*DATA_GEAR/clks'length+j);
+					end if;
+				end process;
+			end generate;
+		end generate;
+		dq090 <= dqt & dqo;
 
-		dq000 <= dqt & dqo;
-		a270_g : entity hdl4fpga.align
-		generic map (
-			n => 2*DATA_GEAR,
-			d => (0 to 2*DATA_GEAR-1 => 1))
-		port map (
-			clk => sys_clks(clk270div),
-			di  => dq000,
-		    do  => dq270);
-
-		a180_g : entity hdl4fpga.align
-		generic map (
-			n => 2*DATA_GEAR,
-			d => (0 to 2*DATA_GEAR-1 => 1))
-		port map (
-			clk => clk180div,
-			di  => dq270,
-		    do  => dq180);
-
-		a090_g : entity hdl4fpga.align
-		generic map (
-			n => 2*DATA_GEAR,
-			d => (0 to 2*DATA_GEAR-1 => 1))
-		port map (
-			clk => clk090div,
-			di  => dq180,
-		    do  => dq090);
+--		process (rlrdy, sys_dqi)
+--		begin
+--			for j in dqo'range loop
+--				if rlrdy='0' then
+--					if j mod 2=0 then
+--						dqo(j) <= '1';
+--					else
+--						dqo(j) <= '0';
+--					end if;
+--				else
+--					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
+--				end if;
+--			end loop;
+--		end process;
+--		dqt <= reverse(sys_dqt);
+--
+--		dq000 <= dqt & dqo;
+--		a270_g : entity hdl4fpga.align
+--		generic map (
+--			n => 2*DATA_GEAR,
+--			d => (0 to 2*DATA_GEAR-1 => 1))
+--		port map (
+--			clk => sys_clks(clk270div),
+--			di  => dq000,
+--		    do  => dq270);
+--
+--		a180_g : entity hdl4fpga.align
+--		generic map (
+--			n => 2*DATA_GEAR,
+--			d => (0 to 2*DATA_GEAR-1 => 1))
+--		port map (
+--			clk => clk180div,
+--			di  => dq270,
+--		    do  => dq180);
+--
+--		a090_g : entity hdl4fpga.align
+--		generic map (
+--			n => 2*DATA_GEAR,
+--			d => (0 to 2*DATA_GEAR-1 => 1))
+--		port map (
+--			clk => clk090div,
+--			di  => dq180,
+--		    do  => dq090);
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
@@ -373,33 +374,34 @@ begin
 				end process;
 			end generate;
 		end generate;
+		dq090 <= dmi;
 
-		a270_g : entity hdl4fpga.align
-		generic map (
-			n => DATA_GEAR,
-			d => (0 to DATA_GEAR-1 => 1))
-		port map (
-			clk => sys_clks(clk270div),
-			di => dmi,
-		    do => dq270);
-
-		a180_g : entity hdl4fpga.align
-		generic map (
-			n => DATA_GEAR,
-			d => (0 to DATA_GEAR-1 => 1))
-		port map (
-			clk => clk180div,
-			di  => dq270,
-		    do  => dq180);
-
-		a090_g : entity hdl4fpga.align
-		generic map (
-			n => DATA_GEAR,
-			d => (0 to DATA_GEAR-1 => 1))
-		port map (
-			clk => clk090div,
-			di  => dq180,
-		    do  => dq090);
+--		a270_g : entity hdl4fpga.align
+--		generic map (
+--			n => DATA_GEAR,
+--			d => (0 to DATA_GEAR-1 => 1))
+--		port map (
+--			clk => sys_clks(clk270div),
+--			di => dmi,
+--		    do => dq270);
+--
+--		a180_g : entity hdl4fpga.align
+--		generic map (
+--			n => DATA_GEAR,
+--			d => (0 to DATA_GEAR-1 => 1))
+--		port map (
+--			clk => clk180div,
+--			di  => dq270,
+--		    do  => dq180);
+--
+--		a090_g : entity hdl4fpga.align
+--		generic map (
+--			n => DATA_GEAR,
+--			d => (0 to DATA_GEAR-1 => 1))
+--		port map (
+--			clk => clk090div,
+--			di  => dq180,
+--		    do  => dq090);
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (

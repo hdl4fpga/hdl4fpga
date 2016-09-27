@@ -66,7 +66,7 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : real    := 16.0; --18;
+	constant DDR_MUL      : real    := 17.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -249,10 +249,14 @@ begin
 		ddrs_rst       => ddrs0div_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
 		ddrs_bl        => "000",
---		ddrs_cl        => "011",
---		ddrs_cwl       => "001",
-		ddrs_cl        => "010",
-		ddrs_cwl       => "000",
+--		ddrs_cl        => "010",	-- 400 Mhz --
+--		ddrs_cwl       => "000",	-- 400 Mhz --
+--		ddrs_cl        => "011",	-- 425 Mhz --
+--		ddrs_cwl       => "001",	-- 425 Mhz --
+--		ddrs_cl        => "100",	-- 500 Mhz --
+--		ddrs_cwl       => "001",	-- 500 Mhz --
+--		ddrs_cl        => "101",	-- 550 Mhz --
+--		ddrs_cwl       => "010",	-- 550 Mhz --
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
@@ -323,7 +327,14 @@ begin
 		end loop;
 	end process;
 
-	sys_clks <= (clk0div => ddrs_clk0div, clk90div => ddrs_clk90div, iodclk => sys_clk, clk0 => ddrs_clk0, clk90 => ddrs_clk90, clk270div => ddrs_clk270div);
+	sys_clks <= (
+		clk0div   => ddrs_clk0div,
+		clk90div  => ddrs_clk90div,
+		iodclk    => sys_clk,
+		clk0      => ddrs_clk0,
+		clk90     => ddrs_clk90,
+		clk270div => ddrs_clk270div);
+
 	phy_rsts <= (rst0div => ddrs0div_rst, rst90div => ddrs90div_rst, rstiod => ddrsiod_rst);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
