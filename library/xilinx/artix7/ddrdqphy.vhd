@@ -169,7 +169,8 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 1, 1))
+			d => (0, 0, 0, 0))
+--			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
@@ -207,7 +208,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+2);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -269,70 +270,70 @@ begin
 			(0 => sys_clks(clk90div),     1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
 
-		registered_g : for j in clks'range generate
-			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
-				process (rlrdy, clks(j))
-				begin
-					if rlrdy='0' then
-						if j mod 2=0 then
-							dqo(l*DATA_GEAR/clks'length+j) <= '1';
-						else
-							dqo(l*DATA_GEAR/clks'length+j) <= '0';
-						end if;
-					elsif rising_edge(clks(j)) then
-						dqo(l*DATA_GEAR/clks'length+j) <= sys_dqi((l*DATA_GEAR/clks'length+j)*BYTE_SIZE+i);
-					end if;
-					if rising_edge(clks(j)) then
-						dqt(l*DATA_GEAR/clks'length+j) <= reverse(sys_dqt)(l*DATA_GEAR/clks'length+j);
-					end if;
-				end process;
-			end generate;
-		end generate;
-		dq090 <= dqt & dqo;
-
---		process (rlrdy, sys_dqi)
---		begin
---			for j in dqo'range loop
---				if rlrdy='0' then
---					if j mod 2=0 then
---						dqo(j) <= '1';
---					else
---						dqo(j) <= '0';
+--		registered_g : for j in clks'range generate
+--			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
+--				process (rlrdy, clks(j))
+--				begin
+--					if rlrdy='0' then
+--						if j mod 2=0 then
+--							dqo(l*DATA_GEAR/clks'length+j) <= '1';
+--						else
+--							dqo(l*DATA_GEAR/clks'length+j) <= '0';
+--						end if;
+--					elsif rising_edge(clks(j)) then
+--						dqo(l*DATA_GEAR/clks'length+j) <= sys_dqi((l*DATA_GEAR/clks'length+j)*BYTE_SIZE+i);
 --					end if;
---				else
---					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
---				end if;
---			end loop;
---		end process;
---		dqt <= reverse(sys_dqt);
---
---		dq000 <= dqt & dqo;
---		a270_g : entity hdl4fpga.align
---		generic map (
---			n => 2*DATA_GEAR,
---			d => (0 to 2*DATA_GEAR-1 => 1))
---		port map (
---			clk => sys_clks(clk270div),
---			di  => dq000,
---		    do  => dq270);
---
---		a180_g : entity hdl4fpga.align
---		generic map (
---			n => 2*DATA_GEAR,
---			d => (0 to 2*DATA_GEAR-1 => 1))
---		port map (
---			clk => clk180div,
---			di  => dq270,
---		    do  => dq180);
---
---		a090_g : entity hdl4fpga.align
---		generic map (
---			n => 2*DATA_GEAR,
---			d => (0 to 2*DATA_GEAR-1 => 1))
---		port map (
---			clk => clk090div,
---			di  => dq180,
---		    do  => dq090);
+--					if rising_edge(clks(j)) then
+--						dqt(l*DATA_GEAR/clks'length+j) <= reverse(sys_dqt)(l*DATA_GEAR/clks'length+j);
+--					end if;
+--				end process;
+--			end generate;
+--		end generate;
+--		dq090 <= dqt & dqo;
+
+		process (rlrdy, sys_dqi)
+		begin
+			for j in dqo'range loop
+				if rlrdy='0' then
+					if j mod 2=0 then
+						dqo(j) <= '1';
+					else
+						dqo(j) <= '0';
+					end if;
+				else
+					dqo(j) <= sys_dqi(j*BYTE_SIZE+i);
+				end if;
+			end loop;
+		end process;
+		dqt <= reverse(sys_dqt);
+
+		dq000 <= dqt & dqo;
+		a270_g : entity hdl4fpga.align
+		generic map (
+			n => 2*DATA_GEAR,
+			d => (0 to 2*DATA_GEAR-1 => 1))
+		port map (
+			clk => sys_clks(clk270div),
+			di  => dq000,
+		    do  => dq270);
+
+		a180_g : entity hdl4fpga.align
+		generic map (
+			n => 2*DATA_GEAR,
+			d => (0 to 2*DATA_GEAR-1 => 1))
+		port map (
+			clk => clk180div,
+			di  => dq270,
+		    do  => dq180);
+
+		a090_g : entity hdl4fpga.align
+		generic map (
+			n => 2*DATA_GEAR,
+			d => (0 to 2*DATA_GEAR-1 => 1))
+		port map (
+			clk => clk090div,
+			di  => dq180,
+		    do  => dq090);
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
@@ -364,44 +365,44 @@ begin
 			(0 => sys_clks(clk90div), 1 => not sys_clks(clk90div)) when DATA_EDGE else
 			(0 => not sys_clks(clk90div), 1 => not sys_clks(clk90div));
 
-		registered_g : for i in clks'range generate
-			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
-				process (clks(i))
-				begin
-					if rising_edge(clks(i)) then
-						dmi(l*DATA_GEAR/clks'length+i) <= sys_dmi(l*DATA_GEAR/clks'length+i);
-					end if;
-				end process;
-			end generate;
-		end generate;
-		dq090 <= dmi;
+--		registered_g : for i in clks'range generate
+--			gear_g : for l in 0 to DATA_GEAR/clks'length-1 generate
+--				process (clks(i))
+--				begin
+--					if rising_edge(clks(i)) then
+--						dmi(l*DATA_GEAR/clks'length+i) <= sys_dmi(l*DATA_GEAR/clks'length+i);
+--					end if;
+--				end process;
+--			end generate;
+--		end generate;
+--		dq090 <= dmi;
 
---		a270_g : entity hdl4fpga.align
---		generic map (
---			n => DATA_GEAR,
---			d => (0 to DATA_GEAR-1 => 1))
---		port map (
---			clk => sys_clks(clk270div),
---			di => dmi,
---		    do => dq270);
---
---		a180_g : entity hdl4fpga.align
---		generic map (
---			n => DATA_GEAR,
---			d => (0 to DATA_GEAR-1 => 1))
---		port map (
---			clk => clk180div,
---			di  => dq270,
---		    do  => dq180);
---
---		a090_g : entity hdl4fpga.align
---		generic map (
---			n => DATA_GEAR,
---			d => (0 to DATA_GEAR-1 => 1))
---		port map (
---			clk => clk090div,
---			di  => dq180,
---		    do  => dq090);
+		a270_g : entity hdl4fpga.align
+		generic map (
+			n => DATA_GEAR,
+			d => (0 to DATA_GEAR-1 => 1))
+		port map (
+			clk => sys_clks(clk270div),
+			di => dmi,
+		    do => dq270);
+
+		a180_g : entity hdl4fpga.align
+		generic map (
+			n => DATA_GEAR,
+			d => (0 to DATA_GEAR-1 => 1))
+		port map (
+			clk => clk180div,
+			di  => dq270,
+		    do  => dq180);
+
+		a090_g : entity hdl4fpga.align
+		generic map (
+			n => DATA_GEAR,
+			d => (0 to DATA_GEAR-1 => 1))
+		port map (
+			clk => clk090div,
+			di  => dq180,
+		    do  => dq090);
 
 		omdr_i : entity hdl4fpga.omdr
 		generic map (
@@ -456,7 +457,7 @@ begin
 
 			dly_rdy <= dly_req;
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+1);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
