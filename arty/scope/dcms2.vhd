@@ -93,7 +93,6 @@ begin
 		clkin1_period => sys_per,
 		clkout1_phase => 90.0+180.0,
 		clkout3_phase => 90.0/real((DDR_GEAR/2))+270.0,
-		clkout4_phase => 270.0+90.0/real(DDR_GEAR),
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
 		clkout2_divide => DDR_GEAR,
@@ -144,17 +143,17 @@ begin
 		ioctrl_rst   <= rsts(ioctrl);
 
 		rsts_g: for i in clks'range generate
-			signal q : std_logic;
+			signal q : std_logic_vector(0 to 1);
 		begin
 			process (clks(i), sys_rst)
 			begin
 				if sys_rst='1' then
-					q <= '1';
+					q <= (others => '1');
 				elsif rising_edge(clks(i)) then
-					q <= not lcks(i);
+					q <= q(1 to q'right) & not lcks(i);
 				end if;
 			end process;
-			rsts(i) <= q;
+			rsts(i) <= q(0);
 		end generate;
 	end block;
 

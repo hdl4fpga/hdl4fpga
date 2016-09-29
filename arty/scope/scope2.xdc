@@ -21,17 +21,19 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name sys_clk -period 10 -waveform { 0.0 5.0 } [ get_ports gclk100       ]
-create_clock -name dqso0   -period  3 -waveform { 1.077 2.155 } [ get_ports ddr3_dqs_p[0] ]
-create_clock -name dqso1   -period  3 -waveform { 1.077 2.155 } [ get_ports ddr3_dqs_p[1] ]
+create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
+create_clock -name dqso0   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[0] ]
+create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[1] ]
 
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
 create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
+set_input_delay -eth_tx_clk -min 0 [get_ports eth_rxd[*] ]
+set_input_delay -eth_tx_clk -min 0 [get_ports eth_rx_dv ]
  
 set_clock_groups -asynchronous -group { sys_clk     } -group { I           }
 set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_6   }
 set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_4   }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_10  }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ioctrl_clk  }
 set_clock_groups -asynchronous -group { dqso0       } -group { I           }
 set_clock_groups -asynchronous -group { dqso0       } -group { sys_clk     }
 set_clock_groups -asynchronous -group { dqso0       } -group { ddr_i_n_4   }
