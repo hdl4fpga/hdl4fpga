@@ -66,7 +66,7 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : real    := 20.0; --18;
+	constant DDR_MUL      : real    := 24.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -92,7 +92,6 @@ architecture scope of arty is
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk0div   : std_logic;
 	signal ddrs_clk90div  : std_logic;
-	signal ddrs_clk270div : std_logic;
 	signal ddrs_clk90     : std_logic;
 	signal ddrs_clks      : std_logic_vector(0 to 2-1);
 
@@ -142,7 +141,7 @@ architecture scope of arty is
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
 
-	signal sys_clks       : std_logic_vector(0 to 6-1);
+	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
 
 	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0) := (others  => 'Z');
@@ -204,7 +203,6 @@ begin
 		ddr_clk0div   => ddrs_clk0div,
 		ddr_clk90     => ddrs_clk90,
 		ddr_clk90div  => ddrs_clk90div,
-		ddr_clk270div => ddrs_clk270div,
 		ddr0div_rst   => ddr0div_rst,
 		ddr90div_rst  => ddr90div_rst);
 
@@ -257,6 +255,8 @@ begin
 		ddrs_cwl       => "001",	-- 500 Mhz --
 --		ddrs_cl        => "101",	-- 550 Mhz --
 --		ddrs_cwl       => "010",	-- 550 Mhz --
+--		ddrs_cl        => "110",	-- 600 Mhz --
+--		ddrs_cwl       => "010",	-- 600 Mhz --
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
@@ -332,8 +332,7 @@ begin
 		clk90div  => ddrs_clk90div,
 		iodclk    => sys_clk,
 		clk0      => ddrs_clk0,
-		clk90     => ddrs_clk90,
-		clk270div => ddrs_clk270div);
+		clk90     => ddrs_clk90);
 
 	phy_rsts <= (rst0div => ddrs0div_rst, rst90div => ddrs90div_rst, rstiod => ddrsiod_rst);
 

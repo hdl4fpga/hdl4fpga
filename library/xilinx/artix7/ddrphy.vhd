@@ -46,7 +46,7 @@ entity ddrphy is
 		tp_sel       : in  std_logic := '0';
 		tp1          : out std_logic_vector(6-1 downto 0);
 
-		sys_clks     : in  std_logic_vector(0 to 6-1);
+		sys_clks     : in  std_logic_vector(0 to 5-1);
 		phy_rsts     : in  std_logic_vector(0 to 3-1);
 
 		phy_ini      : out std_logic;

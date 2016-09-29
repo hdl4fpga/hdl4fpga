@@ -46,7 +46,6 @@ entity dcms is
 		ddr_clk0div   : out std_logic;
 		ddr_clk90     : out std_logic;
 		ddr_clk90div  : out std_logic;
-		ddr_clk270div : out std_logic;
 		ioctrl_rst    : out std_logic;
 		input_rst     : out std_logic;
 		ddr0div_rst   : out std_logic;
@@ -92,14 +91,13 @@ begin
 		divclk_divide => ddr_div,
 		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
-		clkout1_phase => 90.0,
-		clkout3_phase => 90.0/real((DDR_GEAR/2)),
+		clkout1_phase => 90.0+180.0,
+		clkout3_phase => 90.0/real((DDR_GEAR/2))+270.0,
 		clkout4_phase => 270.0+90.0/real(DDR_GEAR),
 		clkout0_divide_f => real(DDR_GEAR/2),
 		clkout1_divide => DDR_GEAR/2,
 		clkout2_divide => DDR_GEAR,
-		clkout3_divide => DDR_GEAR,
-		clkout4_divide => DDR_GEAR)
+		clkout3_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
 		rst      => sys_rst,
@@ -110,7 +108,6 @@ begin
 		clkout1  => ddr_clk90_mmce2,
 		clkout2  => ddr_clk0div_mmce2,
 		clkout3  => ddr_clk90div_mmce2,
-		clkout4  => ddr_clk270div_mmce2,
 		locked   => lcks(ddr0div));
 	lcks(ddr90div) <= lcks(ddr0div);
     
@@ -133,11 +130,6 @@ begin
 	port map (
 		i => ddr_clk90div_mmce2,
 		o => clks(ddr90div));
-
-	ddr_clk270div_bufg : bufg
-	port map (
-		i => ddr_clk270div_mmce2,
-		o => ddr_clk270div);
 
 	clks(input) <= sys_clk;
 	lcks(input) <= not sys_rst;
