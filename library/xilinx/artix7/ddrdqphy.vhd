@@ -100,7 +100,7 @@ architecture virtex of ddrdqphy is
 
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	constant line_delay : time := 0 ns;
+	constant line_delay : time := 0.4 ns;
 begin
 
 
@@ -167,10 +167,10 @@ begin
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
-		    do(0) => sys_dqo(1*BYTE_SIZE+i),
-		    do(1) => sys_dqo(2*BYTE_SIZE+i),
-		    do(2) => sys_dqo(3*BYTE_SIZE+i),
-		    do(3) => sys_dqo(0*BYTE_SIZE+i));
+		    do(0) => sys_dqo(2*BYTE_SIZE+i),
+		    do(1) => sys_dqo(3*BYTE_SIZE+i),
+		    do(2) => sys_dqo(0*BYTE_SIZE+i),
+		    do(3) => sys_dqo(1*BYTE_SIZE+i));
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
@@ -201,7 +201,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -390,7 +390,7 @@ begin
 				rdy     => adjdqs_rdy,
 				dly_rdy => dly_rdy,
 				dly_req => adjpha_dlyreq,
-				smp     => smp(0),
+				smp     => smp(1),
 				dly     => adjpha_dly);
 
 			ddqsi <= transport ddr_dqsi after line_delay;

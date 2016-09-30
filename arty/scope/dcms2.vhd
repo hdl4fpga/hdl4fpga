@@ -110,12 +110,12 @@ begin
 		locked   => lcks(ddr0div));
 	lcks(ddr90div) <= lcks(ddr0div);
     
-	ddr_clk0_bufg : bufio
+	ddr_clk0_bufg : bufg
 	port map (
 		i => ddr_clk0_mmce2,
 		o => ddr_clk0);
 
-	ddr_clk90_bufg : bufio
+	ddr_clk90_bufg : bufg
 	port map (
 		i => ddr_clk90_mmce2,
 		o => ddr_clk90);

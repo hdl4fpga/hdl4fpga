@@ -30,6 +30,8 @@ add wave -noupdate -expand /testbench/dqs_p
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
 add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/CNTVALUEOUT
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/dqsidelay_i/CNTVALUEOUT
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_rdy
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqi_req
@@ -40,7 +42,9 @@ add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imd
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/imdr_inv
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(7)/imdr_rst
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/dq(0)
 add wave -noupdate -color {Orange Red} /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/iddr_g(6)/imdr_i/d(0)
+add wave -noupdate /testbench/arty_e/ddrs_clk90
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(1)/ddrdqphy_i/dqsi
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/smp
 add wave -noupdate -divider {New Divider}
@@ -95,7 +99,7 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_e/wrfifo_i/x
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(1)/outbyte_i/do
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23951600 ps} 0}
+WaveRestoreCursors {{Cursor 1} {17007127 ps} 0} {{Cursor 2} {17039308 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 153
 configure wave -valuecolwidth 140
@@ -111,4 +115,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {23914584 ps} {24054040 ps}
+WaveRestoreZoom {17053991 ps} {17089881 ps}
