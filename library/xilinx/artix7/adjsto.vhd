@@ -40,7 +40,7 @@ begin
 			if start='0' then
 				inc <= '0';
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
-			elsif st='1' then
+			elsif sto='1' then
 				for i in 0 to GEAR/2-1 loop
 					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
 						cnt := cnt + 1;
@@ -54,8 +54,8 @@ begin
 			sto <= st;
 			st  <= d(0);
 			dly <= dly(dly'left-1 downto 1) & ddr_sti;
-			ddr_sto <= st;
 			
+			ddr_sto <= st;
 		end if;
 	end process;
 

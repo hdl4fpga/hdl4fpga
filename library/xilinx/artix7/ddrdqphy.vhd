@@ -131,7 +131,6 @@ begin
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal adjdqi_st : std_logic;
 		signal dq        : std_logic_vector(0 to DATA_GEAR-1);
-		signal q         : std_logic_vector(0 to DATA_GEAR-1);
 	begin
 
 		process (sys_clks(clk90div))
@@ -163,15 +162,15 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
---			d => (0, 0, 0, 0))
 			d => (0, 1, 1, 1))
+--			d => (0, 1, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
 		    do(0) => sys_dqo(1*BYTE_SIZE+i),
-		    do(1) => sys_dqo(0*BYTE_SIZE+i),
+		    do(1) => sys_dqo(2*BYTE_SIZE+i),
 		    do(2) => sys_dqo(3*BYTE_SIZE+i),
-		    do(3) => sys_dqo(2*BYTE_SIZE+i));
+		    do(3) => sys_dqo(0*BYTE_SIZE+i));
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
@@ -206,7 +205,7 @@ begin
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= q(1);
+				tp_bit(4) <= dq(1);
 			end generate;
 
 			adjdqi_e : entity hdl4fpga.adjpha
@@ -220,7 +219,7 @@ begin
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(1),
+				smp     => dq(1),
 				dly     => adjpha_dly);
 
 
@@ -428,9 +427,9 @@ begin
 		imdr_clk <= (
 			0 => sys_clks(clk0div),
 			1 => sys_clks(clk0),
-			2 => sys_clks(clk90),
+			2 => not sys_clks(clk90),
 			3 => not sys_clks(clk0),
-			4 => not sys_clks(clk90));
+			4 => sys_clks(clk90));
 
 		imdr_i : entity hdl4fpga.imdr
 		generic map (

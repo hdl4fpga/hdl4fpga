@@ -66,7 +66,7 @@ architecture scope of arty is
 	-- Divide by   --   3     --   2     --   1     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : real    := 23.0; --18;
+	constant DDR_MUL      : real    := 16.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -247,12 +247,12 @@ begin
 		ddrs_rst       => ddrs0div_rst,
 		ddrs_clks(0)   => ddrs_clk0div,
 		ddrs_bl        => "000",
---		ddrs_cl        => "010",	-- 400 Mhz --
---		ddrs_cwl       => "000",	-- 400 Mhz --
+		ddrs_cl        => "010",	-- 400 Mhz --
+		ddrs_cwl       => "000",	-- 400 Mhz --
 --		ddrs_cl        => "011",	-- 425 Mhz --
 --		ddrs_cwl       => "001",	-- 425 Mhz --
-		ddrs_cl        => "100",	-- 500 Mhz --
-		ddrs_cwl       => "001",	-- 500 Mhz --
+--		ddrs_cl        => "100",	-- 500 Mhz --
+--		ddrs_cwl       => "001",	-- 500 Mhz --
 --		ddrs_cl        => "101",	-- 550 Mhz --
 --		ddrs_cwl       => "010",	-- 550 Mhz --
 --		ddrs_cl        => "110",	-- 600 Mhz --
