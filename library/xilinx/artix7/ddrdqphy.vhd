@@ -197,11 +197,16 @@ begin
 					else
 						adjdqi_rdy(i) <= '1';
 					end if;
+					if adjpha_rdy='0' then
+						dly_req <= adjpha_dlyreq;
+					else
+						dly_req <= adjdqi_dlyreq;
+					end if;
 				end if;
 			end process;
 
-			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+0);
+--			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -372,11 +377,17 @@ begin
 					elsif dly_rdy='0' then
 						adjsto_dlyreq <= '1';
 					end if;
+
+					if adjdqs_rdy='0' then
+						dly_req <= adjpha_dlyreq;
+					else
+						dly_req <= adjsto_dlyreq;
+					end if;
 				end if;
 			end process;
 
 			dly_rdy <= dly_req;
-			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
+--			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
 			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
 
 			adjdqs_e : entity hdl4fpga.adjpha

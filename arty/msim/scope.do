@@ -31,6 +31,9 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix he
 add wave -noupdate /testbench/dqs_p(1)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/dqi_i/CNTVALUEOUT
+add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/smp
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/dly
+add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/gaptab
 add wave -noupdate -radix unsigned /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/dqso_b/adjdqs_b/dqsidelay_i/CNTVALUEOUT
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/arty_e/ddrphy_e/byte_g(0)/ddrdqphy_i/adjdqs_rdy
@@ -115,4 +118,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {17053991 ps} {17089881 ps}
+WaveRestoreZoom {17113618 ps} {17257178 ps}
