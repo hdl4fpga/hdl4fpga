@@ -117,6 +117,7 @@ begin
 		variable aux  : std_logic;
 		variable aux1 : std_logic;
 		variable q : std_logic;
+		variable xx : unsigned(aux2'range) := x"0807060504030201";
 	begin
 
 		case ddrs_di'length is
@@ -133,7 +134,9 @@ begin
 		if rising_edge(ddrs_clk) then
 			if q='1' then
 				s  := (others => '1');
+		 xx := x"0807060504030201";
 			elsif ddrs_di_req='1' then
+		xx := xx + x"0808080808080808";
 				aux1 := s(s'right);
 				for i in g'range loop
 					aux  := s(i);
@@ -153,7 +156,7 @@ begin
 --		when others =>
 --			aux2 <= (others => '-');
 --		end case;
-		aux2 <= x"0807060504030201";
+--		aux2 <= std_logic_vector(xx);
 		end if;
 	end process;
 
@@ -207,12 +210,12 @@ begin
 		end process;
 
 		ddrs_addr <= std_logic_vector(
---			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
---			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
---			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
-			to_signed(0, DDR_BANKSIZE+1) & 
-			to_signed(0, DDR_ADDRSIZE+1) & 
-			to_signed(0, DDR_CLNMSIZE+1));
+			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
+			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+--			to_signed(0, DDR_BANKSIZE+1) & 
+--			to_signed(0, DDR_ADDRSIZE+1) & 
+--			to_signed(0, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else

@@ -100,7 +100,7 @@ architecture virtex of ddrdqphy is
 
 	signal tp_dqidly : std_logic_vector(0 to 5-1);
 	signal tp_dqsdly : std_logic_vector(0 to 5-1);
-	constant line_delay : time := 0.4 ns;
+	constant line_delay : time := 1.17 ns;
 begin
 
 
@@ -162,8 +162,8 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 1, 1, 1))
---			d => (0, 1, 1, 1))
+			d => (0, 0, 0, 0))
+--			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
@@ -206,7 +206,7 @@ begin
 			end process;
 
 --			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+4);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -388,7 +388,7 @@ begin
 
 			dly_rdy <= dly_req;
 --			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+3);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+2);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
