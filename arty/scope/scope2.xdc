@@ -27,8 +27,6 @@ create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports dd
 
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
 create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
-set_input_delay -eth_tx_clk -min 0 [get_ports eth_rxd[*] ]
-set_input_delay -eth_tx_clk -min 0 [get_ports eth_rx_dv ]
  
 set_clock_groups -asynchronous -group { sys_clk     } -group { I           }
 set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_6   }
