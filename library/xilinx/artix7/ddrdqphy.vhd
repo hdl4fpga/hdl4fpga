@@ -162,15 +162,15 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
---			d => (0, 0, 1, 1))
+--			d => (0, 0, 0, 0))
+			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
-		    do(0) => sys_dqo(2*BYTE_SIZE+i),
-		    do(1) => sys_dqo(3*BYTE_SIZE+i),
-		    do(2) => sys_dqo(0*BYTE_SIZE+i),
-		    do(3) => sys_dqo(1*BYTE_SIZE+i));
+		    do(0) => sys_dqo(0*BYTE_SIZE+i),
+		    do(1) => sys_dqo(1*BYTE_SIZE+i),
+		    do(2) => sys_dqo(2*BYTE_SIZE+i),
+		    do(3) => sys_dqo(3*BYTE_SIZE+i));
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block
@@ -388,7 +388,7 @@ begin
 
 			dly_rdy <= dly_req;
 --			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+2);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
