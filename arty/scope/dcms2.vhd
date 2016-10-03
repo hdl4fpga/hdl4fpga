@@ -73,7 +73,7 @@ begin
 
 	ioctrl_i :  mmcme2_base
 	generic map (
-		clkfbout_mult_f => 8.0,
+		clkfbout_mult_f => 8.0,		-- 200 MHz
 		clkin1_period => sys_per,
 		clkout0_divide_f => 4.0,
 		bandwidth => "LOW")
