@@ -186,6 +186,7 @@ begin
 			signal ddqi : std_logic;
 		begin
 			process (sys_clks(iodclk))
+				variable q : std_logic;
 			begin
 				if rising_edge(sys_clks(iodclk)) then
 					if adjpha_rdy='0'then
@@ -197,15 +198,17 @@ begin
 					else
 						adjdqi_rdy(i) <= '1';
 					end if;
-					if adjpha_rdy='0' then
-						dly_req <= adjpha_dlyreq;
+
+					if dly_req='0' then
+						dly_rdy <= '0';
 					else
-						dly_req <= adjdqi_dlyreq;
+						dly_rdy <= q;
 					end if;
+					q := dly_req;
 				end if;
 			end process;
 
---			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
+			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
 			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
 
 			tp_g : if i=0 generate
@@ -228,7 +231,6 @@ begin
 				dly     => adjpha_dly);
 
 
-			dly_rdy <= dly_req;
 			ddqi <= transport ddr_dqi(i) after line_delay;
 			dqi_i : idelaye2 
 			generic map (
@@ -370,6 +372,7 @@ begin
 		begin
 
 			process (sys_clks(iodclk))
+				variable q : std_logic;
 			begin
 				if rising_edge(sys_clks(iodclk)) then
 					if adjdqs_rdy='0'then
@@ -378,16 +381,16 @@ begin
 						adjsto_dlyreq <= '1';
 					end if;
 
-					if adjdqs_rdy='0' then
-						dly_req <= adjpha_dlyreq;
+					if dly_req='0' then
+						dly_rdy <= '0';
 					else
-						dly_req <= adjsto_dlyreq;
+						dly_rdy <= q;
 					end if;
+					q := dly_req;
 				end if;
 			end process;
 
-			dly_rdy <= dly_req;
---			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
+			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
 			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
 
 			adjdqs_e : entity hdl4fpga.adjpha

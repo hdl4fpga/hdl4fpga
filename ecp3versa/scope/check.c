@@ -58,16 +58,16 @@ int main (int argc, char *argv[])
 		int k;
 
 		if (!(scanf("%10x", (unsigned int *) &datum) > 0))
-			break;
+			return 0;
 		if (size > 32) {
 			*(((unsigned int *) &datum)+1) = *(unsigned int *) &datum;
 			if (!(scanf("%8x", ((unsigned int *) &datum))) > 0)
-				break;
+				return 0;
 
 			if (size > 64) {
 				*((long long unsigned int *) &datum+1) = *(long long unsigned int *) &datum;
 				if (!(scanf("%16llx", (long long unsigned int *) &datum) > 0))
-					break;
+					return 0;
 			}
 		}
 
