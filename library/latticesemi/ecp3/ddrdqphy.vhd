@@ -198,10 +198,10 @@ begin
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_dqi(0*byte_size+i),
-			db0 => sys_dqi(1*byte_size+i),
-			da1 => sys_dqi(2*byte_size+i),
-			db1 => sys_dqi(3*byte_size+i),
+			da0 => sys_dqi(2*byte_size+i),
+			db0 => sys_dqi(3*byte_size+i),
+			da1 => sys_dqi(0*byte_size+i),
+			db1 => sys_dqi(1*byte_size+i),
 			q   => ddr_dqo(i));
 	end generate;
 
