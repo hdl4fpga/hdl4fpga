@@ -41,7 +41,7 @@ architecture scope of ecp3versa is
 	constant bank_size   : natural := 2;
 	constant addr_size   : natural := 13;
 	constant DATA_GEAR   : natural := 4;
-	constant DATA_EDGES   : natural := 1;
+	constant DATA_EDGES  : natural := 1;
 	constant word_size   : natural := ddr3_dq'length;
 	constant byte_size   : natural := ddr3_dq'length/ddr3_dqs'length;
 
@@ -134,17 +134,17 @@ begin
 		ddr_clkok => ddr_clkok,
 		sys_per => real(uclk_period/ns))
 	port map (
-		sys_rst => sys_rst,
-		sys_clk => clk,
+		sys_rst    => sys_rst,
+		sys_clk    => clk,
 
-		ddr_eclk => ddr_eclk,
-		ddr_sclk => ddr_sclk, 
+		ddr_eclk   => ddr_eclk,
+		ddr_sclk   => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
-		ddr_rst   => ddrs_rst,
-		ddr_pha => ddr_pha,
+		ddr_rst    => ddrs_rst,
+		ddr_pha    => ddr_pha,
 
 		video_clk0 => vga_clk,
-		video_rst => vga_rst);
+		video_rst  => vga_rst);
 
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	input_clk <= ddr_sclk;
@@ -167,51 +167,51 @@ begin
 		DDR_BYTESIZE   => byte_size)
 	port map (
 
-		input_rst => ddrs_rst,
-		input_clk => input_clk,
+		input_rst    => ddrs_rst,
+		input_clk    => input_clk,
 
-		ddrs_rst => ddrs_rst,
+		ddrs_rst     => ddrs_rst,
 		ddrs_clks(0) => ddr_sclk,
-		ddrs_cl => "100",
-		ddrs_cwl => "001",
-		ddrs_rtt => "001",
-		ddr_rst  => ddrphy_rst(0),
-		ddr_cke  => ddrphy_cke(0),
-		ddr_wlreq => ddrphy_wlreq,
-		ddr_wlrdy => ddrphy_wlrdy,
-		ddr_cs   => ddrphy_cs(0),
-		ddr_ras  => ddrphy_ras(0),
-		ddr_cas  => ddrphy_cas(0),
-		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(ddr3_b'length-1 downto 0),
-		ddr_a    => ddrphy_a(ddr3_a'length-1 downto 0),
-		ddr_dmi  => ddrphy_dmi,
-		ddr_dmt  => ddrphy_dmt,
-		ddr_dmo  => ddrphy_dmo,
-		ddr_dqst => ddrphy_dqst,
-		ddr_dqsi => ddrphy_dqsi,
-		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dqi,
-		ddr_dqt  => ddrphy_dqt,
-		ddr_dqo  => ddrphy_dqo,
-		ddr_odt  => ddrphy_odt(0),
-		ddr_sto  => ddrphy_sto,
-		ddr_sti  => ddrphy_sti,
+		ddrs_cl      => "100",
+		ddrs_cwl     => "001",
+		ddrs_rtt     => "001",
+		ddr_rst      => ddrphy_rst(0),
+		ddr_cke      => ddrphy_cke(0),
+		ddr_wlreq    => ddrphy_wlreq,
+		ddr_wlrdy    => ddrphy_wlrdy,
+		ddr_cs       => ddrphy_cs(0),
+		ddr_ras      => ddrphy_ras(0),
+		ddr_cas      => ddrphy_cas(0),
+		ddr_we       => ddrphy_we(0),
+		ddr_b        => ddrphy_b(ddr3_b'length-1 downto 0),
+		ddr_a        => ddrphy_a(ddr3_a'length-1 downto 0),
+		ddr_dmi      => ddrphy_dmi,
+		ddr_dmt      => ddrphy_dmt,
+		ddr_dmo      => ddrphy_dmo,
+		ddr_dqst     => ddrphy_dqst,
+		ddr_dqsi     => ddrphy_dqso,
+		ddr_dqso     => ddrphy_dqsi,
+		ddr_dqi      => ddrphy_dqo,
+		ddr_dqt      => ddrphy_dqt,
+		ddr_dqo      => ddrphy_dqi,
+		ddr_odt      => ddrphy_odt(0),
+		ddr_sto      => ddrphy_sti,
+		ddr_sti      => ddrphy_sto,
 
-		mii_rst  => sys_rst,
-		mii_rxc  => phy1_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-		mii_txc  => phy1_125clk,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd);
+		mii_rst      => sys_rst,
+		mii_rxc      => phy1_rxc,
+		mii_rxdv     => mii_rxdv,
+		mii_rxd      => mii_rxd,
+		mii_txc      => phy1_125clk,
+		mii_txen     => mii_txen,
+		mii_txd      => mii_txd);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
 		tCP => (uclk_period*ddr_clki)/ddr_clkfb,
 		BANK_SIZE => ddr3_b'length,
 		ADDR_SIZE => ddr3_a'length,
-		LINE_SIZE => DATA_GEAR*WORD_SIZE,
+		DATA_GEAR => DATA_GEAR,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (

@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 entity ddrdqphy is
 	generic (
 		tcp : natural;
-		line_size : natural;
+		DATA_GEAR : natural;
 		byte_size : natural);
 	port (
 		dqsbufd_rst : in  std_logic;
@@ -40,14 +40,14 @@ entity ddrdqphy is
 		sys_rw : in  std_logic;
 		sys_wlreq : in  std_logic;
 		sys_wlrdy : out std_logic;
-		sys_dmt  : in  std_logic_vector(0 to line_size/byte_size-1) := (others => '-');
-		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0) := (others => '-');
-		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(0 to line_size/byte_size-1);
-		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(0 to line_size/byte_size-1);
-		sys_dqst : in  std_logic_vector(0 to line_size/byte_size-1);
+		sys_dmt  : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
+		sys_dmi  : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
+		sys_dmo  : out std_logic_vector(DATA_GEAR-1 downto 0);
+		sys_dqo  : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqt  : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqi  : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
+		sys_dqso : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqst : in  std_logic_vector(0 to DATA_GEAR-1);
 		sys_wlpha : out std_logic_vector(8-1 downto 0);
 
 		ddr_dmt  : out std_logic;
@@ -149,10 +149,10 @@ begin
 			ddrclkpol => ddrclkpol,
 			ddrlat => ddrlat,
 			d   => ddr_dqi(i),
-			qa0 => sys_dqi(0*byte_size+i),
-			qb0 => sys_dqi(1*byte_size+i),
-			qa1 => sys_dqi(2*byte_size+i),
-			qb1 => sys_dqi(3*byte_size+i));
+			qa0 => sys_dqo(0*byte_size+i),
+			qb0 => sys_dqo(1*byte_size+i),
+			qa1 => sys_dqo(2*byte_size+i),
+			qb1 => sys_dqo(3*byte_size+i));
 	end generate;
 	wlok <= ddr_dqi(0);
 
@@ -198,10 +198,10 @@ begin
 			sclk => sys_sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0 => sys_dqo(0*byte_size+i),
-			db0 => sys_dqo(1*byte_size+i),
-			da1 => sys_dqo(2*byte_size+i),
-			db1 => sys_dqo(3*byte_size+i),
+			da0 => sys_dqi(0*byte_size+i),
+			db0 => sys_dqi(1*byte_size+i),
+			da1 => sys_dqi(2*byte_size+i),
+			db1 => sys_dqi(3*byte_size+i),
 			q   => ddr_dqo(i));
 	end generate;
 

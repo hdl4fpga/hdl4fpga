@@ -36,7 +36,7 @@ entity ddrphy is
 		cmnd_phases : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		line_size : natural := 32;
+		DATA_GEAR : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural := 8;
 		tcp : natural);
@@ -46,29 +46,29 @@ entity ddrphy is
 		sys_eclk : in  std_logic;
 		phy_rst : in std_logic;
 
-		sys_rst  : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_rst   : in  std_logic_vector(cmnd_phases-1 downto 0);
 		sys_wlreq : in  std_logic;
-		sys_wlrdy : out  std_logic;
-		sys_cs   : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
-		sys_sti  : out  std_logic_vector(word_size/byte_size-1 downto 0);
-		sys_sto  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_b    : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
-		sys_cke  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_ras  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_cas  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_we   : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_odt  : in  std_logic_vector(cmnd_phases-1 downto 0);
-		sys_dmt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dmi  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dmo  : out std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqt  : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(line_size-1 downto 0);
-		sys_dqi  : out std_logic_vector(line_size-1 downto 0);
-		sys_dqso : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqst : in  std_logic_vector(line_size/byte_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		sys_pll : out std_logic_vector(8-1 downto 0);
+		sys_wlrdy : out std_logic;
+		sys_cs    : in  std_logic_vector(cmnd_phases-1 downto 0) := (others => '0');
+		sys_sti   : in  std_logic_vector(DATA_GEAR*word_size/byte_size-1 downto 0);
+		sys_sto   : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_b     : in  std_logic_vector(cmnd_phases*bank_size-1 downto 0);
+		sys_a     : in  std_logic_vector(cmnd_phases*addr_size-1 downto 0);
+		sys_cke   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_ras   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_cas   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_we    : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_odt   : in  std_logic_vector(cmnd_phases-1 downto 0);
+		sys_dmt   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dmi   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dmo   : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dqt   : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dqo   : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_dqi   : in  std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_dqso  : out std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dqst  : in  std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+		sys_dqsi  : in  std_logic_vector(DATA_GEAR*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_pll   : out std_logic_vector(8-1 downto 0);
 
 		ddr_rst : out std_logic;
 		ddr_cs  : out std_logic := '0';
@@ -84,7 +84,6 @@ entity ddrphy is
 		ddr_dm  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dq  : inout std_logic_vector(word_size-1 downto 0);
 		ddr_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0));
-	constant gear : natural := line_size/word_size;
 end;
 
 library hdl4fpga;
@@ -94,10 +93,10 @@ architecture ecp3 of ddrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(byte_size*line_size/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(byte_size*DATA_GEAR*WORD_SIZE/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(line_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(DATA_GEAR*WORD_SIZE/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 
@@ -193,8 +192,8 @@ architecture ecp3 of ddrphy is
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in line_size/word_size-1 downto 0 loop
-				val(i*line_size/word_size+j) := dat(j*word_size/byte_size+i);
+			for j in DATA_GEAR*WORD_SIZE/word_size-1 downto 0 loop
+				val(i*DATA_GEAR*WORD_SIZE/word_size+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
@@ -280,9 +279,9 @@ begin
 	sdmi <= to_blinevector(sys_dmi);
 	sdmt <= to_blinevector(not sys_dmt);
 	sdqt <= to_blinevector(not sys_dqt);
-	sdqi <= shuffle_dlinevector(sys_dqo);
+	sdqi <= shuffle_dlinevector(sys_dqi);
 	ddqi <= to_bytevector(ddr_dq);
-	sdqsi <= to_blinevector(sys_dqso);
+	sdqsi <= to_blinevector(sys_dqsi);
 	sdqst <= to_blinevector(sys_dqst);
 
 	dqsdll_b : block
@@ -398,7 +397,7 @@ begin
 		ddr3phy_i : entity hdl4fpga.ddrdqphy
 		generic map (
 			tcp => tcp,
-			line_size => line_size*byte_size/word_size,
+			DATA_GEAR => DATA_GEAR,
 			byte_size => byte_size)
 		port map (
 			dqsbufd_rst => dqsbufd_rst,
@@ -407,7 +406,7 @@ begin
 			sys_eclk => sys_eclk,
 			sys_eclkw => yyy,
 			sys_dqsdel => dqsdllb_dqsdel,
-			sys_rw => sys_sto(i*gear+0),
+			sys_rw => sys_sti(i*DATA_GEAR+0),
 			sys_wlreq => wlreq,
 			sys_wlrdy => wlrdy(i),
 			sys_wlpha => wlpha(i),
@@ -416,9 +415,9 @@ begin
 			sys_dmi => sdmi(i),
 			sys_dmo => sdmo(i),
 
-			sys_dqo => sdqi(i),
+			sys_dqi => sdqi(i),
 			sys_dqt => sdqt(i),
-			sys_dqi => sdqo(i),
+			sys_dqo => sdqo(i),
 
 			sys_dqso => sdqsi(i),
 			sys_dqst => sdqst(i),
@@ -436,16 +435,16 @@ begin
 			ddr_dqso => ddqsi(i));
 
 
-		wr_address_i : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => 3))
-		port map (
-			clk => sys_sclk,
-			di(0)  => sys_sto(i*gear+0),
-			do(0)  => sys_sti(i));
-
 	end generate;
+
+	sto_i : entity hdl4fpga.align
+	generic map (
+		n => 2*DATA_GEAR,
+		d => (0 to 2*DATA_GEAR-1 => 3))
+	port map (
+		clk => sys_sclk,
+		di  => sys_sti,
+		do  => sys_sto);
 
 	process (ddqsi, ddqst)
 	begin
@@ -484,7 +483,7 @@ begin
 		end loop;
 	end process;
 
-	sys_dqsi <= (others => sys_sclk);
-	sys_dmo <= to_stdlogicvector(sdmo);
-	sys_dqi <= to_stdlogicvector(sdqo);
+	sys_dqso <= (others => sys_sclk);
+	sys_dmo  <= to_stdlogicvector(sdmo);
+	sys_dqo  <= to_stdlogicvector(sdqo);
 end;

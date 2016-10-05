@@ -74,6 +74,7 @@ architecture scope of testbench is
 	signal mii_rxd_d  : std_logic_vector(0 to 8-1);
 	signal mii_rxc  : std_logic;
 	signal mii_txen : std_logic;
+	signal mii_trdy : std_logic;
 	signal mii_strt : std_logic;
 
 	component ecp3versa is
@@ -176,29 +177,26 @@ begin
 	mii_rxc <= phy1_125clk;
 	mii_refclk <= phy1_125clk;
 
-	process (mii_strt, rst)
-	begin
-		if rst='1'then
-			mii_strt <= '0', '1' after 12 us, '0' after 22 us;
-		elsif falling_edge(mii_strt) then
-			mii_strt <= '1', '0' after 10 us;
-		end if;
-	end process;
-
+	mii_strt <= '0', '1' after 22.25 us;
 	process (mii_refclk, mii_strt)
-		variable txen_edge : std_logic;
+		variable edge : std_logic;
+		variable cnt  : natural := 0;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 20 us;
+			mii_treq <= '0';
+			edge := '0';
 		elsif rising_edge(mii_refclk) then
-			if mii_txen='1' then
-				if txen_edge='0' then
+			if mii_trdy='1' then
+				if edge='0' then
 					mii_treq <= '0';
 				end if;
-			elsif txen_edge='1' then
-				mii_treq <= mii_strt;
+			elsif cnt < 2 then
+				mii_treq <= '1';
+				if mii_treq='0' then
+					cnt := cnt + 1;
+				end if;
 			end if;
-			txen_edge := mii_txen;
+			edge := mii_txen;
 		end if;
 	end process;
 
@@ -209,6 +207,7 @@ begin
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
 		mii_txen => mii_rxdv_d,
+		mii_trdy => mii_trdy,
 		mii_txd  => mii_rxd_d);
 
 		mii_rxdv <= mii_rxdv_d after 1 ns;
