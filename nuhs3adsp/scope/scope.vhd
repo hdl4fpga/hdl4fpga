@@ -39,12 +39,13 @@ use unisim.vcomponents.all;
 architecture scope of nuhs3adsp is
 
 	constant sclk_phases : natural := 4;
+	constant sclk_edges  : natural := 2;
 	constant data_phases : natural := 2;
 	constant data_edges  : natural := 2;
-	constant cmd_phases  : natural := 1;
+	constant cmmd_gear   : natural := 1;
 	constant bank_size   : natural := 2;
 	constant addr_size   : natural := 13;
-	constant line_size   : natural := 2*16;
+	constant DATA_GEAR   : natural := 2;
 	constant word_size   : natural := 16;
 	constant byte_size   : natural := 8;
 
@@ -60,6 +61,9 @@ architecture scope of nuhs3adsp is
 
 	constant ddr_mul : natural := 25;
 	constant ddr_div : natural :=  3;
+	constant clk0    : natural :=  0;
+	constant clk90   : natural :=  1;
+	signal ddrs_clks : std_logic_vector(0 to 2-1);
 
 	signal input_clk : std_logic;
 	signal video_clk : std_logic;
@@ -67,9 +71,6 @@ architecture scope of nuhs3adsp is
 	signal input_rst : std_logic;
 	signal ddrs_rst  : std_logic;
 	signal vga_rst   : std_logic;
-
-	signal ddrs_clk0  : std_logic;
-	signal ddrs_clk90 : std_logic;
 
 	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -79,26 +80,26 @@ architecture scope of nuhs3adsp is
 	signal ddr_lp_clk : std_logic;
 	signal ddr_sto1_open : std_logic;
 
-	signal ddrphy_cke  : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_cs   : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_ras  : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_cas  : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_we   : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_odt  : std_logic_vector(cmd_phases-1 downto 0);
-	signal ddrphy_b    : std_logic_vector(cmd_phases*ddr_ba'length-1 downto 0);
-	signal ddrphy_a    : std_logic_vector(cmd_phases*ddr_a'length-1 downto 0);
-	signal ddrphy_dqsi : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqst : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqso : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmi  : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmt  : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dmo  : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqi  : std_logic_vector(line_size-1 downto 0);
+	signal ddrphy_cke  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cs   : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_ras  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_cas  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_we   : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_odt  : std_logic_vector(CMMD_GEAR-1 downto 0);
+	signal ddrphy_b    : std_logic_vector(CMMD_GEAR*ddr_ba'length-1 downto 0);
+	signal ddrphy_a    : std_logic_vector(CMMD_GEAR*ddr_a'length-1 downto 0);
+	signal ddrphy_dqsi : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqst : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqso : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmi  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmt  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dmo  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqi  : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
-	signal ddrphy_dqt  : std_logic_vector(line_size/byte_size-1 downto 0);
-	signal ddrphy_dqo  : std_logic_vector(line_size-1 downto 0);
-	signal ddrphy_sto  : std_logic_vector(data_phases*line_size/word_size-1 downto 0);
-	signal ddrphy_sti  : std_logic_vector(line_size/byte_size-1 downto 0);
+	signal ddrphy_dqt  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_dqo  : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	signal ddrphy_sto  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
+	signal ddrphy_sti  : std_logic_vector(DATA_GEAR*WORD_SIZE/byte_size-1 downto 0);
 
 	signal rxdv : std_logic;
 	signal rxd  : std_logic_vector(mii_rxd'range);
@@ -125,86 +126,77 @@ begin
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
-		ddr_mul => ddr_mul,
-		ddr_div => ddr_div,
-		sys_per => sys_per)
+		ddr_mul   => ddr_mul,
+		ddr_div   => ddr_div,
+		sys_per   => sys_per)
 	port map (
-		sys_rst => sys_rst,
-		sys_clk => sys_clk,
+		sys_rst   => sys_rst,
+		sys_clk   => sys_clk,
 		input_clk => input_clk,
-		ddr_clk0 => ddrs_clk0,
-		ddr_clk90 => ddrs_clk90,
+		ddr_clk0  => ddrs_clks(clk0),
+		ddr_clk90 => ddrs_clks(clk90),
 		video_clk => video_clk,
-		mii_clk => mii_refclk,
+		mii_clk   => mii_refclk,
 		input_rst => input_rst,
-		ddr_rst  => ddrs_rst, 
+		ddr_rst   => ddrs_rst, 
     	mii_rst   => mii_rst,  
-		video_rst   => vga_rst);
+		video_rst => vga_rst);
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		FPGA => spartan3,
-		DDR_MARK => M6T,
-		DDR_TCP => integer(sys_per*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKEDGES => 2,
-		DDR_STROBE => "INTERNAL",
-		DDR_CLMNSIZE => 6,
-		DDR_BANKSIZE => ddr_ba'length,
-		DDR_ADDRSIZE => ddr_a'length,
+		FPGA           => SPARTAN3,
+		DDR_MARK       => M6T,
+		DDR_TCP        => integer(sys_per*1000.0)*ddr_div/ddr_mul,
+		DDR_SCLKEDGES  => SCLK_EDGES,
+		DDR_STROBE     => "INTERNAL",
+		DDR_CLMNSIZE   => 6,
+		DDR_BANKSIZE   => ddr_ba'length,
+		DDR_ADDRSIZE   => ddr_a'length,
 		DDR_SCLKPHASES => sclk_phases,
 		DDR_DATAPHASES => data_phases,
-		DDR_DATAEDGES => data_edges,
-		DDR_LINESIZE => line_size,
-		DDR_WORDSIZE => word_size,
-		DDR_BYTESIZE => byte_size)
+		DDR_DATAEDGES  => data_edges,
+		DDR_DATAGEAR   => DATA_GEAR,
+		ddr_cmmdgear   => CMMD_GEAR,
+		DDR_WORDSIZE   => word_size,
+		DDR_BYTESIZE   => byte_size)
 	port map (
 
---		input_rst => input_rst,
-		input_clk => input_clk,
+--		input_rst      => input_rst,
+		input_clk      => input_clk,
 
-		ddrs_rst => ddrs_rst,
-		ddrs_clks(0) => ddrs_clk0,
-		ddrs_clks(1) => ddrs_clk90,
-		ddrs_bl  => "011",
-		ddrs_cl  => "110",
-		ddrs_rtt => "--",
-		ddr_cke  => ddrphy_cke(0),
-		ddr_cs   => ddrphy_cs(0),
-		ddr_ras  => ddrphy_ras(0),
-		ddr_cas  => ddrphy_cas(0),
-		ddr_we   => ddrphy_we(0),
-		ddr_b    => ddrphy_b(ddr_ba'length-1 downto 0),
-		ddr_a    => ddrphy_a(ddr_a'length-1 downto 0),
-		ddr_dmi  => ddrphy_dmi,
-		ddr_dmt  => ddrphy_dmt,
-		ddr_dmo  => ddrphy_dmo,
-		ddr_dqst => ddrphy_dqst,
-		ddr_dqsi => ddrphy_dqsi,
-		ddr_dqso => ddrphy_dqso,
-		ddr_dqi  => ddrphy_dqi,
-		ddr_dqt  => ddrphy_dqt,
-		ddr_dqo  => ddrphy_dqo,
-		ddr_odt  => ddrphy_odt(0),
-		ddr_sto  => ddrphy_sto,
-		ddr_sti  => ddrphy_sti,
+		ddrs_rst       => ddrs_rst,
+		ddrs_clks(0)   => ddrs_clks(clk0),
+		ddrs_clks(1)   => ddrs_clks(clk90),
+		ddrs_bl        => "011",
+		ddrs_cl        => "110",
+		ddrs_rtt       => "--",
+		ddr_cke        => ddrphy_cke(0),
+		ddr_cs         => ddrphy_cs(0),
+		ddr_ras        => ddrphy_ras(0),
+		ddr_cas        => ddrphy_cas(0),
+		ddr_we         => ddrphy_we(0),
+		ddr_b          => ddrphy_b(ddr_ba'length-1 downto 0),
+		ddr_a          => ddrphy_a(ddr_a'length-1 downto 0),
+		ddr_dmi        => ddrphy_dmi,
+		ddr_dmt        => ddrphy_dmt,
+		ddr_dmo        => ddrphy_dmo,
+		ddr_dqst       => ddrphy_dqst,
+		ddr_dqsi       => ddrphy_dqso,
+		ddr_dqso       => ddrphy_dqsi,
+		ddr_dqi        => ddrphy_dqo,
+		ddr_dqt        => ddrphy_dqt,
+		ddr_dqo        => ddrphy_dqi,
+		ddr_odt        => ddrphy_odt(0),
+		ddr_sto        => ddrphy_sti,
+		ddr_sti        => ddrphy_sto,
 
---		mii_rst  => mii_rst,
-		mii_rxc  => mii_rxc,
-		mii_rxdv => rxdv,
-		mii_rxd  => rxd,
-		mii_txc  => mii_txc,
-		mii_txen => txen,
-		mii_txd  => txd,
-
---		vga_rst   => vga_rst,
-		vga_clk   => vga_clk,
-		vga_hsync => vga_hsync,
-		vga_vsync => vga_vsync,
-		vga_frm   => vga_frm,
-		vga_blank => vga_blank,
-		vga_red   => vga_red,
-		vga_green => vga_green,
-		vga_blue  => vga_blue);
+--		mii_rst        => mii_rst,
+		mii_rxc        => mii_rxc,
+		mii_rxdv       => rxdv,
+		mii_rxd        => rxd,
+		mii_txc        => mii_txc,
+		mii_txen       => txen,
+		mii_txd        => txd);
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
@@ -212,12 +204,13 @@ begin
 		registered_dout => false,
 		BANK_SIZE => ddr_ba'length,
 		ADDR_SIZE => ddr_a'length,
-		data_gear => line_size/word_size,
+		cmmd_gear => CMMD_GEAR,
+		data_gear => DATA_GEAR,
 		WORD_SIZE => word_size,
 		BYTE_SIZE => byte_size)
 	port map (
-		sys_clk0 => ddrs_clk0,
-		sys_clk90 => ddrs_clk90, 
+		sys_clks(clk0)  => ddrs_clks(clk0),
+		sys_clks(clk90) => ddrs_clks(clk90), 
 		phy_rst => ddrs_rst,
 
 		sys_cke => ddrphy_cke,
@@ -237,8 +230,8 @@ begin
 		sys_dqt => ddrphy_dqt,
 		sys_dqo => ddrphy_dqo,
 		sys_odt => ddrphy_odt,
-		sys_sti => ddrphy_sto,
-		sys_sto => ddrphy_sti,
+		sys_sti => ddrphy_sti,
+		sys_sto => ddrphy_sto,
 
 		ddr_clk => ddr_clk,
 		ddr_cke => ddr_cke,

@@ -57,10 +57,10 @@ OFFSET = IN -0.500 ns VALID 2 ns BEFORE ddr_dqs[1] RISING;
 # Ignore crossclock time #
 # ###################### #
 
-NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
-NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
-NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
+NET ddrs_clks[0]  TNM_NET = FFS  FFS_ddrsclk0;
+NET ddrs_clks[0]  TNM_NET = RAMS RAMS_ddrsclk0;
+NET ddrs_clks[1] TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrs_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
 NET input_clk  TNM_NET = FFS  FFS_adcclkab;
 NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
 

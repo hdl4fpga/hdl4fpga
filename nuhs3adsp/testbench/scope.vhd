@@ -57,6 +57,7 @@ architecture scope of testbench is
 	signal x : std_logic;
 	signal mii_refclk : std_logic;
 	signal mii_treq : std_logic := '0';
+	signal mii_trdy : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : nibble;
 	signal mii_rxc  : std_logic;
@@ -230,19 +231,24 @@ begin
 
 	mii_strt <= '0', '1' after 8 us;
 	process (mii_refclk, mii_strt)
-		variable txen_edge : std_logic;
+		variable edge : std_logic;
+		variable cnt  : natural := 0;
 	begin
 		if mii_strt='0' then
-			mii_treq <= '1' after 8 us;
+			mii_treq <= '0';
+			edge := '0';
 		elsif rising_edge(mii_refclk) then
-			if mii_txen='1' then
-				if txen_edge='0' then
+			if mii_trdy='1' then
+				if edge='0' then
 					mii_treq <= '0';
 				end if;
-			elsif txen_edge='1' then
-				mii_treq <= mii_strt;
+			elsif cnt < 2 then
+				mii_treq <= '1';
+				if mii_treq='0' then
+					cnt := cnt + 1;
+				end if;
 			end if;
-			txen_edge := mii_txen;
+			edge := mii_txen;
 		end if;
 	end process;
 
@@ -252,6 +258,7 @@ begin
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => mii_treq,
+		mii_trdy => mii_trdy,
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 

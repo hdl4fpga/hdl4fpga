@@ -33,7 +33,7 @@ entity ddrphy is
 		iddron : boolean := false;
 		registered_dout : boolean := true;
 		loopback : boolean;
-		cmd_phases : natural := 1;
+		CMMD_GEAR : natural := 1;
 		data_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -41,31 +41,30 @@ entity ddrphy is
 		byte_size : natural := 8;
 		clkinv : std_logic := '0');
 	port (
-		sys_clk0  : in std_logic;
-		sys_clk90 : in std_logic;
-		phy_rst : in std_logic;
+		sys_clks : in std_logic_vector(0 to 2-1);
+		phy_rst  : in std_logic;
 
 		
-		sys_rst  : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '1');
-		sys_cs   : in  std_logic_vector(cmd_phases-1 downto 0) := (others => '0');
-		sys_cke  : in  std_logic_vector(cmd_phases-1 downto 0);
-		sys_ras  : in  std_logic_vector(cmd_phases-1 downto 0);
-		sys_cas  : in  std_logic_vector(cmd_phases-1 downto 0);
-		sys_we   : in  std_logic_vector(cmd_phases-1 downto 0);
-		sys_b    : in  std_logic_vector(cmd_phases*bank_size-1 downto 0);
-		sys_a    : in  std_logic_vector(cmd_phases*addr_size-1 downto 0);
-		sys_odt  : in  std_logic_vector(cmd_phases-1 downto 0);
+		sys_rst  : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
+		sys_cs   : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
+		sys_cke  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_ras  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_cas  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_we   : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_b    : in  std_logic_vector(CMMD_GEAR*bank_size-1 downto 0);
+		sys_a    : in  std_logic_vector(CMMD_GEAR*addr_size-1 downto 0);
+		sys_odt  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
 
 		sys_dmt  : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		sys_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqt  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqo  : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		sys_dqi  : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqi  : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqst : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqsi : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_dqso : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sti  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -265,7 +264,7 @@ begin
 	ddr_clk_g : for i in ddr_clk'range generate
 		ck_i : entity hdl4fpga.ddro
 		port map (
-			clk => sys_clk0,
+			clk => sys_clks(0),
 			dr => '0' xor clkinv,
 			df => '1' xor clkinv,
 			q  => ddr_clk(i));
@@ -273,12 +272,13 @@ begin
 
 	ddrbaphy_i : entity hdl4fpga.ddrbaphy
 	generic map (
-		cmd_phases => cmd_phases,
+		GEAR      => CMMD_GEAR,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		sys_clk => sys_clk0,
+		sys_clks => sys_clks,
           
+		phy_rst => phy_rst,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
@@ -302,13 +302,13 @@ begin
 	ssti  <= to_blinevector(sys_sti);
 	sdmt  <= to_blinevector(not sys_dmt);
 	sdqt  <= to_blinevector(not sys_dqt);
-	sdqi  <= shuffle_dlinevector(sys_dqo);
+	sdqi  <= shuffle_dlinevector(sys_dqi);
 	ddqi  <= to_bytevector(ddr_dqi);
-	sdqsi <= to_blinevector(sys_dqso);
+	sdqsi <= to_blinevector(sys_dqsi);
 	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
-		signal dqsi : std_logic_vector(0 to 1);
+		signal dqso : std_logic_vector(0 to 1);
 	begin
 
 		ddrdqphy_i : entity hdl4fpga.ddrdqphy
@@ -318,21 +318,19 @@ begin
 			gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			sys_clk0  => sys_clk0,
-			sys_clk90 => sys_clk90,
+			sys_clks => sys_clks,
 
 			sys_sti => ssti(i),
 			sys_dmt => sdmt(i),
 			sys_dmi => sdmi(i),
 
-			sys_dqo  => sdqi(i),
+			sys_dqi  => sdqi(i),
 			sys_dqt  => sdqt(i),
-			sys_dqi  => sdqo(i),
+			sys_dqo  => sdqo(i),
 
-			sys_dqso => sdqsi(i),
+			sys_dqsi => sdqsi(i),
 			sys_dqst => sdqst(i),
 
-			ddr_dqsi => ddr_dqsi(i),
 			ddr_dqi  => ddqi(i),
 			ddr_dqt  => ddqt(i),
 			ddr_dqo  => ddqo(i),
@@ -348,10 +346,10 @@ begin
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
 		port map (
 			xi  => ddr_dqsi(i),
-			x_p => dqsi(0),
-			x_n => dqsi(1));
-			sys_dqsi(data_gear*i+0) <= dqsi(0) after 1 ns;
-			sys_dqsi(data_gear*i+1) <= dqsi(1) after 1 ns;
+			x_p => dqso(0),
+			x_n => dqso(1));
+		sys_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
+		sys_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
 
 	end generate;
 
@@ -382,5 +380,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqi <= to_stdlogicvector(sdqo);
+	sys_dqo <= to_stdlogicvector(sdqo);
 end;

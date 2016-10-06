@@ -37,12 +37,12 @@ NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = false;
 # Ignore crossclock time #
 # ###################### #
 
-NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
-NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
-NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-NET input_clk  TNM_NET = FFS  FFS_adcclkab;
-NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+NET ddrs_clks[0] TNM_NET = FFS  FFS_ddrsclk0;
+NET ddrs_clks[0] TNM_NET = RAMS RAMS_ddrsclk0;
+NET ddrs_clks[1] TNM_NET = FFS  FFS_ddrsclk90;
+NET ddrs_clks[1] TNM_NET = RAMS RAMS_ddrsclk90;
+NET input_clk    TNM_NET = FFS  FFS_adcclkab;
+NET input_clk    TNM_NET = RAMS RAMS_adcclkab;
 
 TIMESPEC TS_ram2oddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_ff2ram      = FROM FFS_ddrsclk0  TO RAMS_ddrsclk90 TIG;
@@ -83,8 +83,8 @@ NET "sd_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 NET "sd_dm*" OFFSET = IN 5 ns VALID 4.5 ns BEFORE sd_dqs[0] RISING;
 NET "sd_dm*" OFFSET = IN 5 ns VALID 4.5 ns BEFORE sd_dqs[1] RISING;
 
-OFFSET = IN -0.50 ns VALID 2.333 ns BEFORE sd_dqs[0] RISING;
-OFFSET = IN -0.50 ns VALID 2.333 ns BEFORE sd_dqs[1] RISING;
+OFFSET = IN -0.445 ns VALID 2.343 ns BEFORE sd_dqs[0] RISING;
+OFFSET = IN -0.445 ns VALID 2.343 ns BEFORE sd_dqs[1] RISING;
 
 # DDR 133 Mhz rate clock #
 

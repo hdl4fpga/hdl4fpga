@@ -35,8 +35,6 @@ entity dcms is
 	generic (
 		ddr_mul : natural;
 		ddr_div : natural;
-		mii_mul : natural;
-		mii_div : natural;
 		sys_per : real);
 	port (
 		sys_rst   : in  std_logic;

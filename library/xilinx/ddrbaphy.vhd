@@ -34,7 +34,7 @@ entity ddrbaphy is
 		sys_clks  : in  std_logic_vector(0 to 2-1);
 
 		phy_rst  : in  std_logic;
-		sys_rst  : in  std_logic_vector(gear-1 downto 0);
+		sys_rst  : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_cs   : in  std_logic_vector(gear-1 downto 0);
 		sys_cke  : in  std_logic_vector(gear-1 downto 0);
 		sys_b    : in  std_logic_vector(gear*bank_size-1 downto 0);
