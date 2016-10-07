@@ -51,7 +51,8 @@ int main (int argc, char *argv[])
 		mask -= 1;
 	}
 
-	unsigned __int128 p = (size==128) ? (__int128) 0xC200000000000000 << 64 : (size==64)  ? 0x5800000000000000 : 0x23000000;
+	unsigned __int128 p = (size==128) ? (__int128) 0xE100000000000000 << 64 : (size==64)  ? 0xD800000000000000 : 0xA3000000;
+	p ^= (((__int128) 1) << (size-1));
 
 	int i;
 	for(i = 0;; i++) {

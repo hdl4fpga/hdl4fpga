@@ -112,21 +112,30 @@ begin
 		tp <= datai_brst_req;
 
 	process(ddrs_clk)
-		variable g : std_logic_vector(ddrs_di'length-1 downto 0);
+		variable g : std_logic_vector(ddrs_di'length downto 1);
 		variable s : std_logic_vector(g'range);
 		variable aux  : std_logic;
 		variable aux1 : std_logic;
 		variable q : std_logic;
-	--	variable xx : unsigned(aux2'range) := x"0807060504030201";
 	begin
 
+		g := (others => '0');
 		case ddrs_di'length is
 		when 32 =>
-			g := X"23000000";
+			g(32) := '1';
+			g(30) := '1';
+			g(26) := '1';
+			g(25) := '1';
 		when 64 =>
-			g := X"5800000000000000";
+			g(64) := '1';
+			g(63) := '1';
+			g(61) := '1';
+			g(60) := '1';
 		when 128 =>
-			g := X"C2000000000000000000000000000000";
+			g(128) := '1';
+			g(127) := '1';
+			g(126) := '1';
+			g(121) := '1';
 		when others =>
 			g := (others => '-');
 		end case;
@@ -134,29 +143,16 @@ begin
 		if rising_edge(ddrs_clk) then
 			if q='1' then
 				s  := (others => '1');
-	--	 xx := x"0807060504030201";
 			elsif ddrs_di_req='1' then
---		xx := xx + x"0808080808080808";
-				aux1 := s(s'right);
+				aux1 := '0';
 				for i in g'range loop
 					aux  := s(i);
 					s(i) := aux1 xor (s(s'right) and g(i));
 					aux1 := aux;
 				end loop;
 			end if;
-			q := sys_rst;
 			aux2 <= s;
---		case ddrs_di'length is
---		when 32 =>
---			aux2 <= X"01020304";
---		when 64 =>
---			aux2 <= X"0102030405060708";
---		when 128 =>
---			aux2 <= X"0102030405060708090a0b0c0d0e0f00";
---		when others =>
---			aux2 <= (others => '-');
---		end case;
---		aux2 <= std_logic_vector(xx);
+			q := sys_rst;
 		end if;
 	end process;
 

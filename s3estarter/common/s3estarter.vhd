@@ -29,6 +29,8 @@ entity s3estarter is
 	port (
 		xtal       : in std_logic := '0';
 		sw0        : in std_logic := '1';
+		btn_north  : in std_logic := '1';
+
 
 		--------------
 		-- switches --
@@ -91,9 +93,11 @@ entity s3estarter is
 
 	attribute loc of xtal : signal is "C9";
 	attribute loc of sw0  : signal is "L13";
+	attribute loc of btn_north  : signal is "V4";
 	
 	attribute iostandard of xtal : signal is "LVCMOS33";
 	attribute iostandard of sw0 : signal is "LVCMOS33";
+	attribute iostandard of btn_north : signal is "LVCMOS33";
 
 	attribute drive of xtal : signal is "4";
 
