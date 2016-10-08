@@ -1,2 +1,0 @@
-rm pp*
-SCOPE 262144 32  > PP
