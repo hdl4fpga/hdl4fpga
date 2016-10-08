@@ -1,10 +1,9 @@
 @ECHO OFF
-DEL PP PP1
-SCOPE 262144 128 > PP
+SCOPE %1 %2 > dump0
 SET I=1
 :NEXT
-	SCOPE 262144 128  > PP1
-	CMP pp pp1
+	SCOPE %1 %2  > dump
+	CMP dump0 dump
 	IF %ERRORLEVEL% EQU 0 (
 		ECHO READ NUMBER %I%
 		SET /A I=%I%+1
