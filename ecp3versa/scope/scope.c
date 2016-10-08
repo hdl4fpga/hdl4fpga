@@ -116,19 +116,19 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n",
-					htonl(*(unsigned int *)(sb_src+j)));
+					*(long unsigned int *)(sb_src+j));
 				break;
 			case 64:
 				printf("0x%08x%08x\n",
-					htonl(*(long unsigned int *)(sb_src+j)),
-					htonl(*(long unsigned int *)(sb_src+j+4)));
+					*(long unsigned int *)(sb_src+j+4),
+					*(long unsigned int *)(sb_src+j)),
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
-					htonl(*(long unsigned int *)(sb_src+j)),
-					htonl(*(long unsigned int *)(sb_src+j+4)),
-					htonl(*(long unsigned int *)(sb_src+j+8)),
-					htonl(*(long unsigned int *)(sb_src+j+12)));
+					*(long unsigned int *)(sb_src+j),
+					*(long unsigned int *)(sb_src+j+4),
+					*(long unsigned int *)(sb_src+j+8),
+					*(long unsigned int *)(sb_src+j+12));
 				break;
 			}
 		}
@@ -147,19 +147,18 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n",
-					htonl(*(unsigned int *)(sb_src+j)));
+					*(long unsigned int *)(sb_src+j));
 				break;
 			case 64:
 				printf("0x%08x%08x\n",
-					htonl(*(long unsigned int *)(sb_src+j)),
-					htonl(*(long unsigned int *)(sb_src+j+4)));
+					*(long unsigned int *)(sb_src+j+4),
+					*(long unsigned int *)(sb_src+j)),
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
-					htonl(*(long unsigned int *)(sb_src+j)),
-					htonl(*(long unsigned int *)(sb_src+j+4)),
-					htonl(*(long unsigned int *)(sb_src+j+8)),
-					htonl(*(long unsigned int *)(sb_src+j+12)));
+					*(long unsigned int *)(sb_src+j),
+					*(long unsigned int *)(sb_src+j+4),
+					*(long unsigned int *)(sb_src+j+8),
 				break;
 			}
 		}

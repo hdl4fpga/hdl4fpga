@@ -6,15 +6,6 @@
 #ifdef WINDOWS
 #include <ws2tcpip.h>
 #include <wininet.h>
-#define htobe64(x) \
-	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x0000000000ff0000ULL) << 24) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x00000000ff000000ULL) <<  8) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x000000ff00000000ULL) >>  8) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x0000ff0000000000ULL) >> 24) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x00ff000000000000ULL) >> 40) |\
-	 (((unsigned long long)(x) & (unsigned long long)0xff00000000000000ULL) >> 56))
 #else
 #include <arpa/inet.h>
 #endif
@@ -77,7 +68,7 @@ int main (int argc, char *argv[])
 			lfsr = mask;
 					        
 		check = lfsr;
-		check = (size==128) ? htobe128(check) : (size==64) ? htobe64(check) : htonl(check);
+		check = (size==128) ? check : (size==64) ? check : check;
 
 		if (check != (datum)){
 			fprintf(stderr, "Failed %d : ", i+1);
