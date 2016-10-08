@@ -121,7 +121,7 @@ int main (int argc, char *argv[])
 			case 64:
 				printf("0x%08x%08x\n",
 					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j)),
+					*(long unsigned int *)(sb_src+j));
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
@@ -152,13 +152,13 @@ int main (int argc, char *argv[])
 			case 64:
 				printf("0x%08x%08x\n",
 					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j)),
+					*(long unsigned int *)(sb_src+j));
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
 					*(long unsigned int *)(sb_src+j),
 					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j+8),
+					*(long unsigned int *)(sb_src+j+8));
 				break;
 			}
 		}

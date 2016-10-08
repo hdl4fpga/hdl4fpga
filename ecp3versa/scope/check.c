@@ -3,26 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef WINDOWS
-#include <ws2tcpip.h>
-#include <wininet.h>
-#else
-#include <arpa/inet.h>
-#endif
-  
-unsigned __int128 htobe128 (unsigned __int128 num)
-{
-	unsigned __int128 a;
-
-	a   = ~0;
-	a <<= 64;
-	a   = ~a;
-	a = htobe64(num & a);
-	a <<= 64;
-	a |= htobe64(num >> 64);
-	return a;
-}
-
 int main (int argc, char *argv[])
 {
 	unsigned __int128 lfsr = 0;
