@@ -21,34 +21,41 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name sys_clk -period 10 -waveform { 0.0 5.0 } [ get_ports gclk100       ]
-create_clock -name dqso0   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[0] ]
-create_clock -name dqso1   -period  3 -waveform { 1.5 3.0 } [ get_ports ddr3_dqs_p[1] ]
+create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
+create_clock -name dqso0   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[0] ]
+create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports ddr3_dqs_p[1] ]
 
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
 create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
  
-set_clock_groups -asynchronous -group { sys_clk     } -group { I   }
-set_clock_groups -asynchronous -group { I1          } -group { I   }
-set_clock_groups -asynchronous -group { I1          } -group { iodctrl_clk }
-set_clock_groups -asynchronous -group { sys_clk     } -group { iodctrl_clk }
-set_clock_groups -asynchronous -group { dqso0       } -group { iodctrl_clk }
-set_clock_groups -asynchronous -group { dqso1       } -group { iodctrl_clk }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { iodctrl_clk }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { I   }
-set_clock_groups -asynchronous -group { eth_tx_clk  } -group { I   }
-set_clock_groups -asynchronous -group { iodctrl_clk } -group { I   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { I           }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_6   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_4   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ioctrl_clk  }
+set_clock_groups -asynchronous -group { dqso0       } -group { I           }
+set_clock_groups -asynchronous -group { dqso0       } -group { sys_clk     }
+set_clock_groups -asynchronous -group { dqso0       } -group { ddr_i_n_4   }
+set_clock_groups -asynchronous -group { dqso1       } -group { I           }
+set_clock_groups -asynchronous -group { dqso1       } -group { sys_clk     }
+set_clock_groups -asynchronous -group { dqso1       } -group { ddr_i_n_4   }
+set_clock_groups -asynchronous -group { ddr_i_n_6   } -group { sys_clk     }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_i_n_6   }
+set_clock_groups -asynchronous -group { ddr_i_n_6   } -group { eth_tx_clk  }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
 
-set_max_delay -datapath_only 2.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
-set_max_delay -datapath_only 2.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
+set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
+set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
+set_input_delay -clock dqso0 -max 0 [get_ports ddr3_dq[*] ]
+set_input_delay -clock dqso1 -max 0 [get_ports ddr3_dq[*] ]
 
-set_false_path -from [ get_ports ddr3_dqs_p[*] ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.iddr_i/D ]
-set_false_path -from [ get_pins scope_e/ddr_e/wrfifo_i/xdr_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/*.registered_g[*].*_reg[*]/D ]
-set_false_path -from [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/finish_reg/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/oddr_g[*].registered_g[*].dqo_reg[*]/* ]
+set_false_path -from [ get_pins dcms_e/rsts_b.rsts_g[3].q_reg*/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.q_reg*/D ]
 
-set_max_delay -datapath_only 2.0 -from [ get_pins scope_e/ddr_e/xdr_sch_e/xdr_rph_e/gn[*].q_reg[*]__0/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/st_reg/D ]
-set_max_delay -datapath_only 2.0 -from [ get_pins scope_e/ddr_e/xdr_sch_e/xdr_rph_e/gn[*].q_reg[*]__0/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/start_reg/D ]
-set_max_delay -datapath_only 2.0 -from [ get_pins scope_e/ddr_e/xdr_sch_e/xdr_rph_e/gn[*].q_reg[*]__0/C ] -to [ get_pins ddrphy_e/byte_g[*].ddrdqphy_i/dqso_b.adjsto_e/dly_reg[*]/D ]
+set_false_path -from [ get_pins scope_e/ddr_e/rdfifo_i/sys_do_win_reg/C ] -to [ get_pins scope_e/ddr_e/rdfifo_i/bytes_g[*].DATA_PHASES_g[*].inbyte_i/phases_g[*].ar_g.gcntr_g[*].ffd_i/ffd_i/CLR ]
+set_false_path -from [ get_pins scope_e/ddr_e/rdfifo_i/bytes_g[*].DATA_PHASES_g[*].inbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK ] -to [ get_pins scope_e/dataio_e/miitxmem_e/wr_data_i/delay[*].q_reg[*]/D ]
 
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports gclk100]
 
@@ -80,19 +87,19 @@ set_property -dict { PACKAGE_PIN G6  IOSTANDARD LVCMOS33 } [ get_ports RGBled[2]
 set_property -dict { PACKAGE_PIN F6  IOSTANDARD LVCMOS33 } [ get_ports RGBled[1]]
 set_property -dict { PACKAGE_PIN E1  IOSTANDARD LVCMOS33 } [ get_ports RGBled[0]]
 
-set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rstn]
+set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 } [ get_ports eth_rstn]
 set_property -dict { PACKAGE_PIN G18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_ref_clk]
-set_property -dict { PACKAGE_PIN F16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_mdc]
+set_property -dict { PACKAGE_PIN F16 IOSTANDARD LVCMOS33 } [ get_ports eth_mdc]
 set_property -dict { PACKAGE_PIN G14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_crs]
 set_property -dict { PACKAGE_PIN D17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_col]
-set_property -dict { PACKAGE_PIN K13 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_mdio]
+set_property -dict { PACKAGE_PIN K13 IOSTANDARD LVCMOS33 } [ get_ports eth_mdio]
 set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_tx_clk]
 set_property -dict { PACKAGE_PIN H15 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_tx_en]
 set_property -dict { PACKAGE_PIN D18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[0]]
 set_property -dict { PACKAGE_PIN E17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[1]]
 set_property -dict { PACKAGE_PIN E18 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[2]]
 set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxd[3]]
-set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rx_clk]
+set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [ get_ports eth_rx_clk]
 set_property -dict { PACKAGE_PIN C17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxerr]
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rx_dv]
 set_property -dict { PACKAGE_PIN H14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[0]]
@@ -104,29 +111,29 @@ set_property INTERNAL_VREF 0.675 [get_iobanks 34]
 
 set_property -dict { PACKAGE_PIN U9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_p    ]
 set_property -dict { PACKAGE_PIN V9  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_clk_n    ]
-set_property -dict { PACKAGE_PIN U2  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_dqs_p[1] ]
-set_property -dict { PACKAGE_PIN V2  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_dqs_n[1] ]
-set_property -dict { PACKAGE_PIN N2  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_dqs_p[0] ]
-set_property -dict { PACKAGE_PIN N1  IOSTANDARD DIFF_SSTL135 IOB TRUE } [ get_ports ddr3_dqs_n[0] ]
+set_property -dict { PACKAGE_PIN U2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_p[1] ]
+set_property -dict { PACKAGE_PIN V2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_n[1] ]
+set_property -dict { PACKAGE_PIN N2  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_p[0] ]
+set_property -dict { PACKAGE_PIN N1  IOSTANDARD DIFF_SSTL135 } [ get_ports ddr3_dqs_n[0] ]
 
-set_property -dict { PACKAGE_PIN R3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[15] ]  
-set_property -dict { PACKAGE_PIN U3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[14] ]  
-set_property -dict { PACKAGE_PIN T3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[13] ]  
-set_property -dict { PACKAGE_PIN V1  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[12] ]  
-set_property -dict { PACKAGE_PIN V5  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[11] ]  
-set_property -dict { PACKAGE_PIN U4  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[10] ]   
-set_property -dict { PACKAGE_PIN T5  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 9] ]   
-set_property -dict { PACKAGE_PIN V4  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 8] ]   
-set_property -dict { PACKAGE_PIN M2  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 7] ]   
-set_property -dict { PACKAGE_PIN L4  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 6] ]   
-set_property -dict { PACKAGE_PIN M1  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 5] ]   
-set_property -dict { PACKAGE_PIN M3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 4] ]   
-set_property -dict { PACKAGE_PIN L6  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 3] ]   
-set_property -dict { PACKAGE_PIN K3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 2] ]   
-set_property -dict { PACKAGE_PIN L3  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 1] ]   
-set_property -dict { PACKAGE_PIN K5  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dq[ 0] ]   
-set_property -dict { PACKAGE_PIN U1  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dm[ 1] ]   
-set_property -dict { PACKAGE_PIN L1  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_dm[ 0] ]   
+set_property -dict { PACKAGE_PIN R3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[15] ]  
+set_property -dict { PACKAGE_PIN U3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[14] ]  
+set_property -dict { PACKAGE_PIN T3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[13] ]  
+set_property -dict { PACKAGE_PIN V1  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[12] ]  
+set_property -dict { PACKAGE_PIN V5  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[11] ]  
+set_property -dict { PACKAGE_PIN U4  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[10] ]   
+set_property -dict { PACKAGE_PIN T5  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 9] ]   
+set_property -dict { PACKAGE_PIN V4  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 8] ]   
+set_property -dict { PACKAGE_PIN M2  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 7] ]   
+set_property -dict { PACKAGE_PIN L4  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 6] ]   
+set_property -dict { PACKAGE_PIN M1  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 5] ]   
+set_property -dict { PACKAGE_PIN M3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 4] ]   
+set_property -dict { PACKAGE_PIN L6  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 3] ]   
+set_property -dict { PACKAGE_PIN K3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 2] ]   
+set_property -dict { PACKAGE_PIN L3  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 1] ]   
+set_property -dict { PACKAGE_PIN K5  IOSTANDARD SSTL135 } [ get_ports ddr3_dq[ 0] ]   
+set_property -dict { PACKAGE_PIN U1  IOSTANDARD SSTL135 } [ get_ports ddr3_dm[ 1] ]   
+set_property -dict { PACKAGE_PIN L1  IOSTANDARD SSTL135 } [ get_ports ddr3_dm[ 0] ]   
 
 set_property -dict { PACKAGE_PIN K6  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_reset ]
 set_property -dict { PACKAGE_PIN N5  IOSTANDARD SSTL135 IOB TRUE } [ get_ports ddr3_cke   ]
