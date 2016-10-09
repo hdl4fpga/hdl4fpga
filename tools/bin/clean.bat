@@ -1,2 +1,2 @@
-del *.*~ /s
-del dump*
+del *~ /s
+del dump* log

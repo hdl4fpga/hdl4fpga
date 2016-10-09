@@ -8,4 +8,4 @@ rm -rf ecp3versa/diamond/*.xml
 rm -rf ecp3versa/diamond/*.html
 rm -rf doc/*.pdf
 rm -rf doc/*.eps
-rm -f dump*
+rm -f dump* log
