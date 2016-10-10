@@ -1,17 +1,10 @@
-rm pp pp1
-SIZE=${1:-128};
-SIZE=${1:-64};
-#SIZE=${1:-32};
-BLOCKS=${2:-262144};
-#BLOCKS=${2:-131072};
-#BLOCKS=${2:-65536};
-#BLOCKS=${2:-2};
+rm -f dump0 dump1
 TIMEFORMAT="$i %lR"
-./scope $BLOCKS $SIZE > pp
-./scope $BLOCKS $SIZE > pp1
+./scope -p $1 -d $2 -h $3 > dump0
+./scope -p $1 -d $2 -h $3 > dump1
 i=0
-while cmp pp pp1 > log ; do 
+while cmp dump0 dump1 > log ; do 
 	i=`expr $i + 1`
-	echo -n $i ; time ./scope $BLOCKS $SIZE > pp1
+	echo -n $i ; time ./scope -p $1 -d $2 -h $3 > dump1
 done
-cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a pp|head; echo '-----'; tail -n +$a pp1|head)
+cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a dump0|head; echo '-----'; tail -n +$a dump1|head)
