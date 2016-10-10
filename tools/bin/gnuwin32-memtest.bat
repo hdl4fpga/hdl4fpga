@@ -1,10 +1,11 @@
 @ECHO OFF
+FOR %%F IN (%0) DO SET DIRNAME=%%~DPF
 DEL DUMP0 DUMP
-SCOPE %1 %2 > DUMP0
+"%DIRNAME%"SCOPE -p %1 -d %2 -h %3 > DUMP0
 IF %ERRORLEVEL% NEQ 0 EXIT
 SET I=1
 :NEXT
-  	SCOPE %1 %2 > DUMP
+  	"%DIRNAME%"SCOPE -p %1 -d %2 -h %3 > DUMP
 	IF %ERRORLEVEL% NEQ 0 EXIT
  	CMP DUMP0 DUMP > LOG
 	IF %ERRORLEVEL% EQU 0 (
@@ -12,8 +13,8 @@ SET I=1
 		SET /A I=%I%+1
 		GOTO NEXT
 	)
-	for /f "delims=" %%I in ('awk "{print $7}" LOG') do set a=%%I
-echo line %a%
-tail -n +%a% DUMP0 2>nul|head
-echo '-----'
-tail -n +%a% DUMP1 2>nul|head
+	FOR /F "DELIMS=" %%I IN ('AWK "{PRINT $7}" LOG') DO SET A=%%I
+ECHO LINE %A%
+TAIL -N +%A% DUMP0 2>NUL|HEAD
+ECHO '-----'
+TAIL -N +%A% DUMP1 2>NUL|HEAD

@@ -1,8 +1,9 @@
 @ECHO OFF
-SCOPE %1 %2 > dump0
+FOR %%F IN (%0) DO SET DIRNAME=%%~DPF
+"%DIRNAME%"SCOPE -p %1 -d %2 -h %3 > DUMP0
 SET I=1
 :NEXT
-	SCOPE %1 %2  > dump
+	"%DIRNAME%"SCOPE -p %1 -d %2 -h %3 > DUMP0
 	CMP dump0 dump
 	IF %ERRORLEVEL% EQU 0 (
 		ECHO READ NUMBER %I%

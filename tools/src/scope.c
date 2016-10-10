@@ -48,7 +48,7 @@ int main (int argc, char *argv[])
 #endif
 	
 	nopt = 0;
-	while ((c = getopt (argc, argv, "p:d:h:")) != -1) {
+	while ((c = getopt (argc, argv, "p:d:h::")) != -1) {
 		switch (c) {
 		case 'p':
 			nopt++;
@@ -59,7 +59,8 @@ int main (int argc, char *argv[])
 			sscanf (optarg, "%d", &size);
 			break;
 		case 'h':
-			sscanf (optarg, "%s", hostname);
+			if (optarg)
+				sscanf (optarg, "%s", hostname);
 			break;
 		case '?':
 			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]");
@@ -75,12 +76,12 @@ int main (int argc, char *argv[])
 	}
 
 	if (!strlen(hostname)) {
-		fprintf (stderr, "using 'kit' as hostname");
+		fprintf (stderr, "using 'kit' as hostname\n");
 		strcpy (hostname, "kit");
 	}
 
 	if (!(host=gethostbyname(hostname))) {
-		fprintf (stderr, "hostname '%s' not found", hostname);
+		fprintf (stderr, "hostname '%s' not found\n", hostname);
 		exit(1);
 	}
 
