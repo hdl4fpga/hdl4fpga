@@ -1,2 +1,2 @@
-gcc -O2 -DWINDOWS src\scope.c -o bin\scope -static -lwsock32
-gcc -O2 src\check.c -o bin\check -static 
+gcc -O2 -DWINDOWS tools\src\scope.c -o tools\bin\scope -static -lwsock32
+gcc -O2 tools\src\check.c -o tools\bin\check -static 
