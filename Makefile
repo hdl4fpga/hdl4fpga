@@ -13,3 +13,7 @@ tools\bin\scope : tools\src\scope.c
 
 tools\bin\check: tools\src\check.c
 	gcc -O2 tools\src\check.c -o tools\bin\check -static 
+
+clean :
+	del tools\bin\check.exe tools\bin\scope.exe
+	rm  tools\bin\check tools\bin\scope
