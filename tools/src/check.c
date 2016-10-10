@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 
 int main (int argc, char *argv[])
 {
+	char c;
+	int nopt;
 	unsigned __int128 lfsr = 0;
 	unsigned __int128 mask = ~0;
 	unsigned __int128 datum;
@@ -13,8 +16,25 @@ int main (int argc, char *argv[])
 
 	int size = 32;
 
-	if (argc > 1) 
-		sscanf (argv[1], "%d", &size);
+	nopt = 0;
+	while ((c = getopt (argc, argv, "d:")) != -1) {
+		switch (c) {
+		case 'd':
+			nopt++;
+			sscanf (optarg, "%d", &size);
+			break;
+		case '?':
+			fprintf (stderr, "usage : check -d data_size");
+			exit(1);
+		default:
+			exit(1);
+		}
+	}
+
+	if (nopt < 1) {
+		fprintf (stderr, "usage : check -d data_size");
+		exit(1);
+	}
 
 	if (size != 128) { 
 		mask = 1;

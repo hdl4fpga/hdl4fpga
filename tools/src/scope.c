@@ -1,22 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef WINDOWS
 #include <ws2tcpip.h>
 #include <wininet.h>
-#define htobe64(x) \
-	((((unsigned long long)(x) & (unsigned long long)0x00000000000000ffULL) << 56) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x000000000000ff00ULL) << 40) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x0000000000ff0000ULL) << 24) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x00000000ff000000ULL) <<  8) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x000000ff00000000ULL) >>  8) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x0000ff0000000000ULL) >> 24) |\
-	 (((unsigned long long)(x) & (unsigned long long)0x00ff000000000000ULL) >> 40) |\
-	 (((unsigned long long)(x) & (unsigned long long)0xff00000000000000ULL) >> 56))
-
 #else
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -34,7 +24,10 @@ int main (int argc, char *argv[])
 #ifdef WINDOWS
 	WSADATA wsaData;
 #endif
-	struct hostent *hostname;
+	int    nopt;
+	char   c;
+	char   hostname[256] = "";
+	struct hostent *host = NULL;
 	struct sockaddr_in sa_host;
 	struct sockaddr_in sa_src;
 	struct sockaddr_in sa_trgt;
@@ -54,28 +47,47 @@ int main (int argc, char *argv[])
 		exit(-1);
 #endif
 	
-	if (!(argc > 1)) {
-		fprintf (stderr, "no argument %d", argc);
-		exit(-1);
+	nopt = 0;
+	while ((c = getopt (argc, argv, "p:d:h:")) != -1) {
+		switch (c) {
+		case 'p':
+			nopt++;
+			sscanf (optarg, "%d", &npkt);
+			break;
+		case 'd':
+			nopt++;
+			sscanf (optarg, "%d", &size);
+			break;
+		case 'h':
+			sscanf (optarg, "%s", hostname);
+			break;
+		case '?':
+			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]");
+			exit(1);
+		default:
+			exit(1);
+		}
 	}
 
-	sscanf (argv[1], "%d", &npkt);
-
-	if (!(hostname = gethostbyname("kit"))) {
-		perror ("hostbyname");
-		exit (-1);
+	if (nopt < 2) {
+		fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]");
+		exit(1);
 	}
 
-	if (argc > 2) {
-		sscanf (argv[2], "%d", &size);
-	} else {
-		size = 64;
+	if (!strlen(hostname)) {
+		fprintf (stderr, "using 'kit' as hostname");
+		strcpy (hostname, "kit");
+	}
+
+	if (!(host=gethostbyname(hostname))) {
+		fprintf (stderr, "hostname '%s' not found", hostname);
+		exit(1);
 	}
 
 	memset (&sa_trgt, 0, sizeof (sa_trgt));
 	sa_trgt.sin_family = AF_INET;
 	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, hostname->h_addr, sizeof(sa_trgt.sin_addr));
+	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
 
 	memset (&sa_host, 0, sizeof (sa_host));
 	sa_host.sin_family = AF_INET;
@@ -83,12 +95,12 @@ int main (int argc, char *argv[])
 	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("can't get a socket");
+		perror ("can't open socket");
 		abort ();
 	}
 
 	if (bind (s, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
-		perror ("can't bind the socket");
+		perror ("can't bind socket");
 		abort ();
 	}
 
