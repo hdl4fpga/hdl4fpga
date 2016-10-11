@@ -27,9 +27,11 @@ use ieee.std_logic_1164.all;
 
 entity s3estarter is
 	port (
-		xtal       : in std_logic := '0';
-		sw0        : in std_logic := '1';
-		btn_north  : in std_logic := '1';
+		xtal      : in std_logic := '0';
+		sw0       : in std_logic := '1';
+		btn_north : in std_logic := '1';
+		btn_east  : in std_logic := '1';
+		btn_west  : in std_logic := '1';
 
 
 		--------------
@@ -89,15 +91,19 @@ entity s3estarter is
 	attribute slew : string;
 	attribute nodelay : string;
 	attribute drive : string;
-	attribute pullup : string;
+	attribute pulldown : string;
 
 	attribute loc of xtal : signal is "C9";
 	attribute loc of sw0  : signal is "L13";
 	attribute loc of btn_north  : signal is "V4";
+	attribute loc of btn_east   : signal is "H3";
+	attribute loc of btn_west   : signal is "D18";
 	
 	attribute iostandard of xtal : signal is "LVCMOS33";
 	attribute iostandard of sw0 : signal is "LVCMOS33";
 	attribute iostandard of btn_north : signal is "LVCMOS33";
+	attribute iostandard of btn_east  : signal is "LVCMOS33";
+	attribute iostandard of btn_west  : signal is "LVCMOS33";
 
 	attribute drive of xtal : signal is "4";
 
@@ -112,6 +118,7 @@ entity s3estarter is
 	attribute loc of led6 : signal is "E9";
 	attribute loc of led7 : signal is "F9";
 
+	attribute pulldown of led0 : signal is "YES";
 	attribute iostandard of led0 : signal is "LVCMOS25";
 	attribute iostandard of led1 : signal is "LVCMOS25";
 	attribute iostandard of led2 : signal is "LVCMOS25";
@@ -130,14 +137,14 @@ entity s3estarter is
 	attribute drive of led6 : signal is "8";
 	attribute drive of led7 : signal is "8";
 	
-	attribute slew of led0 : signal is "slow";
-	attribute slew of led1 : signal is "slow";
-	attribute slew of led2 : signal is "slow";
-	attribute slew of led3 : signal is "slow";
-	attribute slew of led4 : signal is "slow";
-	attribute slew of led5 : signal is "slow";
-	attribute slew of led6 : signal is "slow";
-	attribute slew of led7 : signal is "slow";
+	attribute slew of led0 : signal is "fast";
+	attribute slew of led1 : signal is "fast";
+	attribute slew of led2 : signal is "fast";
+	attribute slew of led3 : signal is "fast";
+	attribute slew of led4 : signal is "fast";
+	attribute slew of led5 : signal is "fast";
+	attribute slew of led6 : signal is "fast";
+	attribute slew of led7 : signal is "fast";
 
 	--------------------------
 	-- Ethernet Transceiver --

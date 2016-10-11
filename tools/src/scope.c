@@ -129,19 +129,19 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n",
-					*(long unsigned int *)(sb_src+j));
+					*(unsigned int *)(sb_src+j));
 				break;
 			case 64:
 				printf("0x%08x%08x\n",
-					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j));
+					*(unsigned int *)(sb_src+j+4),
+					*(unsigned int *)(sb_src+j));
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
-					*(long unsigned int *)(sb_src+j),
-					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j+8),
-					*(long unsigned int *)(sb_src+j+12));
+					*(unsigned int *)(sb_src+j+12),
+					*(unsigned int *)(sb_src+j+8),
+					*(unsigned int *)(sb_src+j+4),
+					*(unsigned int *)(sb_src+j));
 				break;
 			}
 		}
@@ -160,18 +160,19 @@ int main (int argc, char *argv[])
 			switch (size) {
 			case 32:
 				printf("0x%08x\n",
-					*(long unsigned int *)(sb_src+j));
+					*(unsigned int *)(sb_src+j));
 				break;
 			case 64:
 				printf("0x%08x%08x\n",
-					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j));
+					*(unsigned int *)(sb_src+j+4),
+					*(unsigned int *)(sb_src+j));
 				break;
 			case 128:
 				printf("0x%08x%08x%08x%08x\n",
-					*(long unsigned int *)(sb_src+j),
-					*(long unsigned int *)(sb_src+j+4),
-					*(long unsigned int *)(sb_src+j+8));
+					*(unsigned int *)(sb_src+j+12),
+					*(unsigned int *)(sb_src+j+8),
+					*(unsigned int *)(sb_src+j+4),
+					*(unsigned int *)(sb_src+j));
 				break;
 			}
 		}

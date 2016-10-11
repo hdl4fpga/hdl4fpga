@@ -1,19 +1,19 @@
 windows : tools\bin\scope.exe tools\bin\check.exe
 
 tools\bin\scope.exe : tools\src\scope.c
-	gcc -O2 -DWINDOWS tools\src\scope.c -o tools\bin\scope.exe -static -lwsock32
+	gcc -O2 -DWINDOWS tools\src\scope.c -o tools\bin\scope.exe -lwsock32
 
 tools\bin\check.exe: tools\src\check.c
-	gcc -O2 tools\src\check.c -o tools\bin\check.exe -static 
+	gcc -O2 tools\src\check.c -o tools\bin\check.exe
 
-linux : tools\bin\scope tools\bin\check
+linux : tools/bin/scope tools/bin/check
 
-tools\bin\scope : tools\src\scope.c
-	gcc -O2 tools\src\scope.c -o tools\bin\scope -static -lwsock32
+tools/bin/scope : tools/src/scope.c
+	gcc -O2 tools/src/scope.c -o tools/bin/scope 
 
-tools\bin\check: tools\src\check.c
-	gcc -O2 tools\src\check.c -o tools\bin\check -static 
+tools/bin/check: tools/src/check.c
+	gcc -O2 tools/src/check.c -o tools/bin/check
 
 clean :
 	del tools\bin\check.exe tools\bin\scope.exe
-	rm  tools\bin\check tools\bin\scope
+	rm  tools/bin/check tools/bin/scope

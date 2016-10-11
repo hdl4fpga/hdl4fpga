@@ -60,8 +60,8 @@ architecture scope of s3Estarter is
 	-- Divide by   --   3     --   1     --   3     --
 	--------------------------------------------------
 
-	constant ddr_mul   : natural := 3;
-	constant ddr_div   : natural := 1;
+	constant ddr_mul   : natural := 8; --3;
+	constant ddr_div   : natural := 3; --1;
 
 	signal input_rst   : std_logic;
 	signal ddrs_rst    : std_logic;
@@ -114,7 +114,7 @@ begin
 		I => xtal ,
 		O => sys_clk);
 
-	sys_rst <= not sw0;
+	sys_rst <= btn_west;
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
 		ddr_mul => ddr_mul,
@@ -153,7 +153,7 @@ begin
 		ddrs_rst => ddrs_rst,
 		ddrs_clks => ddrs_clks,
 		ddrs_bl  => "011",
-		ddrs_cl  => "110",
+		ddrs_cl  => "010",
 		ddrs_rtt => "--",
 		ddr_cke  => ddrphy_cke(0),
 		ddr_cs   => ddrphy_cs(0),
@@ -279,14 +279,14 @@ begin
 	-- LEDs DAC --
 	--------------
 		
-	led0 <= '0';
+	led0 <= sys_rst;
 	led1 <= '0';
 	led2 <= '0';
 	led3 <= '0';
 	led4 <= '0';
-	led5  <= '0';
-	led6  <= '0';
-	led7  <= not sys_rst;
+	led5 <= '0';
+	led6 <= '0';
+	led7 <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
