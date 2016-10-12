@@ -71,6 +71,7 @@ architecture scope of testbench is
 		port (
 			xtal       : in std_logic := '0';
 			sw0        : in std_logic := '1';
+			btn_west   : in std_logic := '1';
 
 			--------------
 			-- switches --
@@ -188,11 +189,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			vrst := vrst sll 1;
-			rst <= not vrst(1) after 5 ns;
+			rst <= vrst(1) after 5 ns;
 		end if;
 	end process;
 
 	mii_strt <= '0', '1' after 8 us;
+
 	process (mii_refclk, mii_strt)
 		variable edge : std_logic;
 		variable cnt  : natural := 0;
@@ -226,10 +228,11 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_rxc <= not mii_rxc after 10 ns;
+	mii_refclk <= mii_rxc;
 	s3estarter_e : s3estarter
 	port map (
 		xtal => clk,
-		sw0  => rst,
+		btn_west  => rst,
 
 		e_tx_clk => mii_refclk,
 		e_rx_clk => mii_rxc,

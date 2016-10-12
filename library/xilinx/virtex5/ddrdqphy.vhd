@@ -258,7 +258,7 @@ begin
 
 	dmo_g : block
 		signal dmt  : std_logic_vector(sys_dmt'range);
-		signal dmi  : std_logic_vector(sys_dmi'range);
+		signal dmi  : std_logic_vector(sys_dmi'reverse_range);
 		signal clks : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin

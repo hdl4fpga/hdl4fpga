@@ -1,10 +1,11 @@
+dir=`dirname $0`
 rm -f dump0 dump1
 TIMEFORMAT="$i %lR"
-./scope -p $1 -d $2 -h $3 > dump0
-./scope -p $1 -d $2 -h $3 > dump1
+$dir/scope -p $1 -d $2 -h $3 > dump0
+$dir/scope -p $1 -d $2 -h $3 > dump1 2> /dev/null
 i=0
 while cmp dump0 dump1 > log ; do 
 	i=`expr $i + 1`
-	echo -n $i ; time ./scope -p $1 -d $2 -h $3 > dump1
+	echo -n $i ; time $dir/scope -p $1 -d $2 -h $3 > dump1 2> /dev/null
 done
 cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a dump0|head; echo '-----'; tail -n +$a dump1|head)
