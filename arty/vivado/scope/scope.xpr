@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="14" Path="C:/Users/msagre/hdl4fpga/arty/vivado/scope/scope.xpr">
+<Project Version="7" Minor="14" Path="/home/msagre/work/hdl4fpga/arty/vivado/scope/scope.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="c40e07c37e3241c3bfafb1b2af162698"/>
@@ -367,21 +367,18 @@
     <Simulator Name="Riviera">
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
     </Simulator>
-    <Simulator Name="ActiveHDL">
-      <Option Name="Description" Val="Active-HDL Simulator"/>
-    </Simulator>
   </Simulators>
   <Runs Version="1" Minor="10">
     <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Higher performance designs, resource sharing is turned off, the global fanout guide is set to a lower number, FSM extraction forced to one-hot, LUT combining is disabled, equivalent registers are preserved, SRL are inferred  with a larger threshold" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Flow_PerfOptimized_high" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design">
-          <Option Id="ResourceSharing">2</Option>
           <Option Id="RepFanoutThreshold">400</Option>
+          <Option Id="ResourceSharing">2</Option>
           <Option Id="FsmExtraction">1</Option>
           <Option Id="KeepEquivalentRegisters">1</Option>
-          <Option Id="NoCombineLuts">1</Option>
           <Option Id="ShregMinSize">5</Option>
+          <Option Id="NoCombineLuts">1</Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
