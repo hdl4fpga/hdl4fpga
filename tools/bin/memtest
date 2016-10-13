@@ -5,22 +5,21 @@ if [ "$dir" = "" ]; then
 	dir=$(dirname $(which "$0"));
 fi
 rm -f dump.dat dump1.dat
-echo "Dumping memory"
 exec 3>&1
 tm=$(time ($dir/scope -p $1 -d $2 -h $3 2>&3 > dump.dat) 2>&1)
-echo "Dump time $tm"
-echo "Checking lfsr data"
+echo "Memory dumped $tm"
+echo -n "Checking lfsr data "
 tm=$(time ($dir/check -d $2 < dump.dat 2>&3) 2>&1)
 if [ $? -ne 0 ]; then
 	echo "Unsuccessful check"
 	exit 1;
 fi
-
+echo $tm
 tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
 i=0
 while cmp=$(cmp dump.dat dump1.dat) ; do 
 	i=$(expr $i + 1)
-	echo "Pass $i $tm" 1>&1
+	echo "Dump $i OK, $tm" 1>&1
 	tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
 done
 line=$(echo $cmp|awk '{print $7}')

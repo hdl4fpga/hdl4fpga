@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
 				sscanf (optarg, "%s", hostname);
 			break;
 		case '?':
-			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]");
+			fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
 			exit(1);
 		default:
 			exit(1);
@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
 	}
 
 	if (nopt < 2) {
-		fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]");
+		fprintf (stderr, "usage : scope -p num_of_packets -d data_size [ -h hostname ]\n");
 		exit(1);
 	}
 
