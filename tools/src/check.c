@@ -13,18 +13,23 @@ int main (int argc, char *argv[])
 	unsigned __int128 datum;
 	unsigned __int128 check;
 	unsigned __int128 diff;
+	char v;
 
 	int size = 32;
 
 	nopt = 0;
-	while ((c = getopt (argc, argv, "d:")) != -1) {
+	v = 0;
+	while ((c = getopt (argc, argv, "d:v")) != -1) {
 		switch (c) {
 		case 'd':
 			nopt++;
 			sscanf (optarg, "%d", &size);
 			break;
+		case 'v':
+			v = 1;
+			break;
 		case '?':
-			fprintf (stderr, "usage : check -d data_size");
+			fprintf (stderr, "usage : check -v -d data_size");
 			exit(1);
 		default:
 			exit(1);
@@ -32,7 +37,7 @@ int main (int argc, char *argv[])
 	}
 
 	if (nopt < 1) {
-		fprintf (stderr, "usage : check -d data_size");
+		fprintf (stderr, "usage : check -v -d data_size");
 		exit(1);
 	}
 
@@ -93,6 +98,8 @@ int main (int argc, char *argv[])
 				fprintf(stderr,"invalid size\n");
 				return -1;
 			}
+			if (!v)
+				exit(1);
 		}
 
 		lfsr = ((lfsr>>1)|((lfsr&1)<<(size-1))) ^ (((lfsr&1) ? mask : 0) & p);

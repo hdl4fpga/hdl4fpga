@@ -1,11 +1,30 @@
-dir=`dirname $0`
-rm -f dump0 dump1
-TIMEFORMAT="$i %lR"
-$dir/scope -p $1 -d $2 -h $3 > dump0
-$dir/scope -p $1 -d $2 -h $3 > dump1 2> /dev/null
+#!/bin/bash
+TIMEFORMAT="%lR"
+dir=$(dirname $(readlink -f "$0"))
+if [ "$dir" = "" ]; then
+	dir=$(dirname $(which "$0"));
+fi
+rm -f dump.dat dump1.dat
+echo "Dumping memory"
+exec 3>&1
+tm=$(time ($dir/scope -p $1 -d $2 -h $3 2>&3 > dump.dat) 2>&1)
+echo "Dump time $tm"
+echo "Checking lfsr data"
+tm=$(time ($dir/check -d $2 < dump.dat 2>&3) 2>&1)
+if [ $? -ne 0 ]; then
+	echo "Unsuccessful check"
+	exit 1;
+fi
+
+tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
 i=0
-while cmp dump0 dump1 > log ; do 
-	i=`expr $i + 1`
-	echo -n $i ; time $dir/scope -p $1 -d $2 -h $3 > dump1 2> /dev/null
+while cmp=$(cmp dump.dat dump1.dat) ; do 
+	i=$(expr $i + 1)
+	echo "Pass $i $tm" 1>&1
+	tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
 done
-cat log |(read g f e d c b a ; cat log ; echo '' ; tail -n +$a dump0|head; echo '-----'; tail -n +$a dump1|head)
+line=$(echo $cmp|awk '{print $7}')
+echo "Line $line are different"
+tail -n +$line dump.dat|head;
+echo '----------------------';
+tail -n +$line dump1.dat|head

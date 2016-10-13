@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
 	if (!strlen(hostname)) {
 		strcpy (hostname, "kit");
 	}
-	fprintf (stderr, "using %s as hostname\n", hostname);
+	fprintf (stderr, "Set kit as hostname\n", hostname);
 
 	if (!(host=gethostbyname(hostname))) {
 		fprintf (stderr, "hostname '%s' not found\n", hostname);
@@ -96,19 +96,19 @@ int main (int argc, char *argv[])
 	sa_host.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		perror ("can't open socket");
-		abort ();
+		perror ("Can't open socket");
+		exit (1);
 	}
 
 	if (bind (s, (const struct sockaddr *) &sa_host, sizeof(sa_host)) < 0) {
 		perror ("can't bind socket");
-		abort ();
+		exit (1);
 	}
 
 	for (k = 0; k < QUEUE && npkt > 0; k++, npkt--) {
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
-			abort ();
+			exit (1);
 		}
 	}
 
@@ -116,13 +116,13 @@ int main (int argc, char *argv[])
 		do {
 			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 				perror ("recvfrom");
-				abort ();
+				exit (1);
 			}
 		} while(htonl(sa_src.sin_addr.s_addr) != 0xc0a802c8);
 
 		if (sendto(s, sb_trgt, sizeof(sb_trgt), 0, (struct sockaddr *) &sa_trgt, sl_trgt)==-1) {
 			perror ("sendto()");
-			abort ();
+			exit (1);
 		}
 
 		for (j = 0; j < sizeof(sb_src); j += (size/8)) {
@@ -152,7 +152,7 @@ int main (int argc, char *argv[])
 		do {
 			if ((n = recvfrom(s, sb_src, sizeof(sb_src), 0, (struct sockaddr *) &sa_src, &sl_src)) < 0) {
 				perror ("recvfrom");
-				abort ();
+				exit (1);
 			}
 		} while(htonl(sa_src.sin_addr.s_addr) != 0xc0a802c8);
 
