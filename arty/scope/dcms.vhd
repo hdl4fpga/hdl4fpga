@@ -33,64 +33,47 @@ use hdl4fpga.std.all;
 
 entity dcms is
 	generic (
-		ddr_mul : natural;
-		ddr_div : natural;
-		sys_per : real);
+		SYS_PER       : real;
+		DDR_MUL       : real;
+		DDR_DIV       : natural;
+		DDR_GEAR      : natural);
 	port (
-		sys_rst     : in  std_logic;
-		sys_clk     : in  std_logic;
-		iodctrl_clk : out std_logic;
-		input_clk   : out std_logic;
-		ddr_clk0    : out std_logic;
-		ddr_clk90   : out std_logic;
-		ddr_rdinv   : in  std_logic;
-		ddr_rdclk   : out std_logic;
-		video_clk   : out std_logic;
-		mii_clk     : out std_logic;
-		iodctrl_rst : out std_logic;
-		input_rst   : out std_logic;
-		ddr_rst     : out std_logic;
-		mii_rst     : out std_logic;
-		video_rst   : out std_logic);
+		sys_rst       : in  std_logic;
+		sys_clk       : in  std_logic;
+		ioctrl_clk    : out std_logic;
+		input_clk     : out std_logic;
+		ddr_clk0      : out std_logic;
+		ddr_clk0div   : out std_logic;
+		ddr_clk90     : out std_logic;
+		ddr_clk90div  : out std_logic;
+		ioctrl_rst    : out std_logic;
+		input_rst     : out std_logic;
+		ddr0div_rst   : out std_logic;
+		ddr90div_rst  : out std_logic);
 end;
 
 architecture def of dcms is
 
-	constant input   : natural := 0; 
-    constant mii     : natural := 1;
-    constant video   : natural := 2;
-    constant ddr     : natural := 3;
-    constant iodctrl : natural := 4;
+	constant input             : natural := 0; 
+    constant ddr0div           : natural := 1;
+    constant ddr90div          : natural := 2;
+    constant ioctrl            : natural := 3;
 
-	signal ddr_clkfb : std_logic;
-	signal ddr_clk0_mmce2   : std_logic;
-	signal ddr_clk90_mmce2  : std_logic;
-	signal ddr_clk180_mmce2 : std_logic;
+	signal ddr_clkfb           : std_logic;
+	signal ddr_clk0_mmce2      : std_logic;
+	signal ddr_clk0div_mmce2   : std_logic;
+	signal ddr_clk90_mmce2     : std_logic;
+	signal ddr_clk90div_mmce2  : std_logic;
+	signal ddr_clk270div_mmce2 : std_logic;
 
-	signal iodctrl_clkfb : std_logic;
-	signal clks : std_logic_vector(0 to 4);
+	signal ioctrl_clkfb : std_logic;
+	signal clks : std_logic_vector(0 to ioctrl);
 	signal lcks : std_logic_vector(clks'range);
 begin
 
-	clks(mii) <= sys_clk;
-	lcks(mii) <= not sys_rst;
---	videodcm_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		dfs_mul => 15,
---		dfs_div => 2)
---	port map(
---		dcm_rst => sys_rst,
---		dcm_clk => sys_clk,
---		dfs_clk => clks(video),
---		dcm_lck => lcks(video));
-   
-	clks(video) <= sys_clk;
-	lcks(video) <= not sys_rst;
-
-	iodctrl_i :  mmcme2_base
+	ioctrl_i :  mmcme2_base
 	generic map (
-		clkfbout_mult_f => 8.0,
+		clkfbout_mult_f => 8.0,		-- 200 MHz
 		clkin1_period => sys_per,
 		clkout0_divide_f => 4.0,
 		bandwidth => "LOW")
@@ -98,22 +81,22 @@ begin
 		pwrdwn   => '0',
 		rst      => sys_rst,
 		clkin1   => sys_clk,
-		clkfbin  => iodctrl_clkfb,
-		clkfbout => iodctrl_clkfb,
-		clkout0  => clks(iodctrl),
-		locked   => lcks(iodctrl));
+		clkfbin  => ioctrl_clkfb,
+		clkfbout => ioctrl_clkfb,
+		clkout0  => clks(ioctrl),
+		locked   => lcks(ioctrl));
    
 	ddr_i :  mmcme2_base
 	generic map (
 		divclk_divide => ddr_div,
-		clkfbout_mult_f => real(2*ddr_mul),
+		clkfbout_mult_f => 2.0*ddr_mul,
 		clkin1_period => sys_per,
-		clkout1_phase => 90.000,
-		clkout2_phase => 180.000,
-		clkout0_divide_f => 2.0,
-		clkout1_divide => 2,
-		clkout2_divide => 2,
-		bandwidth => "HIGH")
+		clkout1_phase => 90.0+180.0,
+		clkout3_phase => 90.0/real((DDR_GEAR/2))+270.0,
+		clkout0_divide_f => real(DDR_GEAR/2),
+		clkout1_divide => DDR_GEAR/2,
+		clkout2_divide => DDR_GEAR,
+		clkout3_divide => DDR_GEAR)
 	port map (
 		pwrdwn   => '0',
 		rst      => sys_rst,
@@ -122,79 +105,61 @@ begin
 		clkfbout => ddr_clkfb,
 		clkout0  => ddr_clk0_mmce2,
 		clkout1  => ddr_clk90_mmce2,
-		clkout2  => ddr_clk180_mmce2,
-		locked   => lcks(ddr));
+		clkout2  => ddr_clk0div_mmce2,
+		clkout3  => ddr_clk90div_mmce2,
+		locked   => lcks(ddr0div));
+	lcks(ddr90div) <= lcks(ddr0div);
     
-	ddr_clk90_bufg : bufg
+	ddr_clk0_bufg : bufio
+	port map (
+		i => ddr_clk0_mmce2,
+		o => ddr_clk0);
+
+	ddr_clk90_bufg : bufio
 	port map (
 		i => ddr_clk90_mmce2,
 		o => ddr_clk90);
 
-	ddr_clk0_bufg : bufg
+	ddr_clk0div_bufg : bufg
 	port map (
-		i => ddr_clk0_mmce2,
-		o => clks(ddr));
+		i => ddr_clk0div_mmce2,
+		o => clks(ddr0div));
 
-	ddr_clk180_bufg : bufgmux
+	ddr_clk90div_bufg : bufg
 	port map (
-		s  => ddr_rdinv,
-		i0 => ddr_clk0_mmce2,
-		i1 => ddr_clk180_mmce2,
-		o  => ddr_rdclk);
+		i => ddr_clk90div_mmce2,
+		o => clks(ddr90div));
 
 	clks(input) <= sys_clk;
 	lcks(input) <= not sys_rst;
---	inputdcm_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		dfs_mul => 3,
---		dfs_div => 2)
---	port map (
---		dcm_rst => sys_rst,
---		dcm_clk => sys_clk,
---		dfs_clk => clks(input),
---		dcm_lck => lcks(input));
-
---	mii_dfs_e : entity hdl4fpga.dfs
---	generic map (
---		dcm_per => sys_per,
---		dfs_mul => 5,
---		dfs_div => 4)
---	port map (
---		dcm_rst => sys_rst,
---		dcm_clk => sys_clk,
---		dfs_clk => clks(mii),
---		dcm_lck => lcks(mii));
 
 	rsts_b : block
 		signal rsts : std_logic_vector(clks'range);
 	begin
 
-		input_rst   <= rsts(input);
-		mii_rst     <= rsts(mii);
-		video_rst   <= rsts(video);
-		ddr_rst     <= rsts(ddr);
-		iodctrl_rst <= rsts(iodctrl);
+		input_rst    <= rsts(input);
+		ddr0div_rst  <= rsts(ddr0div);
+		ddr90div_rst <= rsts(ddr90div);
+		ioctrl_rst   <= rsts(ioctrl);
 
 		rsts_g: for i in clks'range generate
-			signal q : std_logic;
+			signal q : std_logic_vector(0 to 1);
 		begin
 			process (clks(i), sys_rst)
 			begin
 				if sys_rst='1' then
-					q <= '1';
+					q <= (others => '1');
 				elsif rising_edge(clks(i)) then
-					q <= not lcks(i);
+					q <= q(1 to q'right) & not lcks(i);
 				end if;
 			end process;
-			rsts(i) <= q;
+			rsts(i) <= q(0);
 		end generate;
 	end block;
 
-	input_clk   <= clks(input);
-	mii_clk     <= clks(mii);
-	video_clk   <= clks(video);
-	ddr_clk0    <= clks(ddr);
-	iodctrl_clk <= clks(iodctrl);
+	input_clk    <= clks(input);
+	ddr_clk0div  <= clks(ddr0div);
+	ddr_clk90div <= clks(ddr90div);
+	ioctrl_clk   <= clks(ioctrl);
 
 end;
