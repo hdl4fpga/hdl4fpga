@@ -24,7 +24,12 @@ while cmp=$(cmp dump.dat dump1.dat) ; do
 	tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
 done
 line=$(echo $cmp|awk '{print $7}')
-echo "Line $line are different"
-tail -n +$line dump.dat|head;
-echo '----------------------';
+echo "Line $line is different"
+echo "------------" 
+echo "- dump.dat -" 
+echo "------------" 
+tail -n +$line dump.dat |head
+echo "-------------" 
+echo "- dump1.dat -"
+echo "-------------" 
 tail -n +$line dump1.dat|head
