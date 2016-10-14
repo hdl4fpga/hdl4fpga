@@ -1,2 +1,2 @@
 del *~ /s
-del dump* log
+del master.dat dump.dat /s

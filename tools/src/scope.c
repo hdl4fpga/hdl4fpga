@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
 	if (!strlen(hostname)) {
 		strcpy (hostname, "kit");
 	}
-	fprintf (stderr, "Set kit as hostname\n", hostname);
+	fprintf (stderr, "Setting 'kit' as hostname\n", hostname);
 
 	if (!(host=gethostbyname(hostname))) {
 		fprintf (stderr, "hostname '%s' not found\n", hostname);

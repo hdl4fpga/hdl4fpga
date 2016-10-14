@@ -4,31 +4,34 @@ dir=$(dirname $(readlink -e "$0"))
 if [ "$dir" = "" ]; then
 	dir=$(dirname $(which "$0"));
 fi
-rm -f dump.dat dump1.dat
+rm -f master.dat dump.dat
 exec 3>&1
-tm=$(time ($dir/scope -p $1 -d $2 -h $3 2>&3 > dump.dat) 2>&1)
+tm=$(time ($dir/scope -p $1 -d $2 -h $3 2>&3 > master.dat) 2>&1)
 echo "Memory dumped $tm"
-echo -n "Checking lfsr data "
-tm=$(time ($dir/check -d $2 < dump.dat 2>&3) 2>&1)
+echo -n "Checking lfsr data : "
+tm=$(time ($dir/check -d $2 < master.dat 2>&3) 2>&1)
 if [ $? -ne 0 ]; then
 	echo "Unsuccessful check"
 	exit 1;
 fi
-echo $tm
-tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
-i=0
-while cmp=$(cmp dump.dat dump1.dat) ; do 
-	i=$(expr $i + 1)
+echo "Master dump OK, $tm" 1>&1
+i=1
+tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump.dat 2> /dev/null) 2>&1)
+while cmp=$(cmp master.dat dump.dat) ; do 
 	echo "Dump $i OK, $tm" 1>&1
-	tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump1.dat 2> /dev/null) 2>&1)
+	tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump.dat 2> /dev/null) 2>&1)
+	i=$(($i + 1))
 done
+if [ "$cmp" = "" ]; then
+	exit 1;
+fi
 line=$(echo $cmp|awk '{print $7}')
 echo "Line $line is different"
+echo "--------------" 
+echo "- master.dat -" 
+echo "--------------" 
+tail -n +$line master.dat|head
 echo "------------" 
-echo "- dump.dat -" 
+echo "- dump.dat -"
 echo "------------" 
-tail -n +$line dump.dat |head
-echo "-------------" 
-echo "- dump1.dat -"
-echo "-------------" 
-tail -n +$line dump1.dat|head
+tail -n +$line dump.dat|head
