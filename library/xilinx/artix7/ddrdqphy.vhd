@@ -76,6 +76,7 @@ entity ddrdqphy is
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
 		constant rstiod   : natural := 1;
+		constant TCP4     : natural := (TCP/TAP_DLY)/4;
 end;
 
 library hdl4fpga;
@@ -162,7 +163,6 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
---			d => (0, 0, 0, 0))
 			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
@@ -209,7 +209,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			tp_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -391,7 +391,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
+			delay   <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
