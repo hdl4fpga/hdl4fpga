@@ -62,9 +62,6 @@
         <Source name="../../library/common/mux.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/latticesemi/pgm_delay.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../scope/dcms.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
