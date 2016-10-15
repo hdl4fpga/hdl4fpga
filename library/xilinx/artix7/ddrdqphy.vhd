@@ -167,10 +167,10 @@ begin
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
-		    do(0) => sys_dqo(0*BYTE_SIZE+i),
-		    do(1) => sys_dqo(1*BYTE_SIZE+i),
-		    do(2) => sys_dqo(2*BYTE_SIZE+i),
-		    do(3) => sys_dqo(3*BYTE_SIZE+i));
+		    do(0) => sys_dqo(2*BYTE_SIZE+i),
+		    do(1) => sys_dqo(3*BYTE_SIZE+i),
+		    do(2) => sys_dqo(0*BYTE_SIZE+i),
+		    do(3) => sys_dqo(1*BYTE_SIZE+i));
 
 		adjdqi_req <= adjdqs_rdy;
 		adjdqi_b : block

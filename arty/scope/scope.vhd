@@ -251,10 +251,10 @@ begin
 --		ddrs_cwl       => "000",	-- 400 Mhz --
 --		ddrs_cl        => "011",	-- 425 Mhz --
 --		ddrs_cwl       => "001",	-- 425 Mhz --
-		ddrs_cl        => "100",	-- 500 Mhz --
-		ddrs_cwl       => "001",	-- 500 Mhz --
---		ddrs_cl        => "101",	-- 550 Mhz --
---		ddrs_cwl       => "010",	-- 550 Mhz --
+--		ddrs_cl        => "100",	-- 500 Mhz --
+--		ddrs_cwl       => "001",	-- 500 Mhz --
+		ddrs_cl        => "101",	-- 550 Mhz --
+		ddrs_cwl       => "010",	-- 550 Mhz --
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
@@ -338,7 +338,7 @@ begin
 	generic map (
 
 		TCP          => integer(UCLK_PERIOD*1000.0*real(DDR_DIV)/DDR_MUL),
-		TAP_DELAY    => 78,
+		TAP_DELAY    => 52, --78,
 		BANK_SIZE    => BANK_SIZE,
         ADDR_SIZE    => ADDR_SIZE,
 		CMMD_GEAR    => CMMD_GEAR,
