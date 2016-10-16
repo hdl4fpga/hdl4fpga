@@ -60,13 +60,13 @@ architecture scope of arty is
 	constant WORD_SIZE    : natural := ddr3_dq'length;
 	constant BYTE_SIZE    : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
-	--------------------------------------------------
-	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz --
-	-- Multiply by --  10     --   7     --   4     --
-	-- Divide by   --   3     --   2     --   1     --
-	--------------------------------------------------
+	--------------------------------------------------------------------------------
+	-- Frequency   -- 333 Mhz -- 350 Mhz -- 400 Mhz -- 500 Mhz -- 525 Mhz 550 Mhz --
+	-- Multiply by --  10     --   7     --   4     --  20     --  21      22     --
+	-- Divide by   --   3     --   2     --   1     --   4     --   4       4     --
+	--------------------------------------------------------------------------------
 
-	constant DDR_MUL      : real    := 22.0; --18;
+	constant DDR_MUL      : real    := 21.0; --18;
 	constant DDR_DIV      : natural := 4;  --4;
 
 	signal sys_rst        : std_logic;
@@ -251,10 +251,10 @@ begin
 --		ddrs_cwl       => "000",	-- 400 Mhz --
 --		ddrs_cl        => "011",	-- 425 Mhz --
 --		ddrs_cwl       => "001",	-- 425 Mhz --
---		ddrs_cl        => "100",	-- 500 Mhz --
---		ddrs_cwl       => "001",	-- 500 Mhz --
-		ddrs_cl        => "101",	-- 550 Mhz --
-		ddrs_cwl       => "010",	-- 550 Mhz --
+		ddrs_cl        => "100",	-- 500 Mhz --
+		ddrs_cwl       => "001",	-- 500 Mhz --
+--		ddrs_cl        => "101",	-- 550 Mhz --
+--		ddrs_cwl       => "010",	-- 550 Mhz --
 		ddrs_rtt       => "001",
 
 		ddr_wlreq      => ddrphy_wlreq,
