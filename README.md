@@ -1,4 +1,4 @@
-| Kit        | Family         | Manufacurer    | Device     | Grade | DRAM Clock | Transfer  |
+| Kit        | Family         | Manufacturer   | Device     | Grade | DRAM Clock | Transfer  |
 | ---------- | :------------- | :------------- | :--------- | ----: | ---------: | --------: |
 | ARTY       | Artix-7        | Xilinx         | XC7A35T    | 1LI   |    550 MHz | 1100 MT/s |
 | ECP3VERSA  | ECP3           | Latticesemi    | LFE3-35EA  | 8     |    500 Mhz | 1000 MT/s |
