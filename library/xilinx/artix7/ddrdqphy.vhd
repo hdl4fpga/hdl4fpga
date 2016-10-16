@@ -76,7 +76,7 @@ entity ddrdqphy is
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
 		constant rstiod   : natural := 1;
-		constant TCP4     : natural := (TCP/TAP_DLY)/4;
+		constant TCP4     : natural := (TCP/TAP_DLY+3)/4-1;
 end;
 
 library hdl4fpga;
@@ -163,7 +163,7 @@ begin
 		dly_g : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0, 0, 0, 0))
+			d => (0, 0, 1, 1))
 		port map (
 			clk => sys_clks(clk90div),
 			di  => dq,
