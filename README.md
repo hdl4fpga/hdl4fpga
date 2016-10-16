@@ -5,3 +5,6 @@
 | ML509      | Virtex 5       | Xilinx         | XC5LX110t  | 1     |    300 MHz |  600 MT/s |
 | NUHS3ADSP  | Spartan 3A DSP | Xilinx         | XC3SD1800A | 4     |    166 MHz |  333 MT/s |
 | S3EStarter | Spartan 3E     | Xilinx         | XC3S500E   | 4     |    150 MHz |  300 MT/s |
+
+Fully constrain design
+Frequencies are according to the trace tool of their respecting manufactures
