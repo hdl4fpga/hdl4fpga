@@ -7,5 +7,5 @@
 | S3EStarter | Spartan 3E     | Xilinx         | XC3S500E   | 4     |    150 MHz |  300 MT/s |
 
   * Fully constrain designs 
-  * Frequencies are according to the trace tool of their respecting manufactures.
+  * Frequencies are according to the trace tools of their respecting manufactures.
 
