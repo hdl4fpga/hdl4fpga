@@ -52,9 +52,10 @@ entity scope is
 		ddrs_rst : in std_logic;
 		sys_ini : out std_logic;
 
-		input_rst : in  std_logic := '0';
-		input_clk : in  std_logic;
-		input_rdy : out std_logic;
+		input_rst  : in  std_logic := '0';
+		input_clk  : in  std_logic;
+		input_rdy  : buffer std_logic;
+		input_data : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 
 		ddrs_clks  : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
 		ddrs_rtt   : in std_logic_vector;
@@ -157,7 +158,6 @@ architecture def of scope is
 	signal ddrs_do      : std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 
 	signal dataio_rst   : std_logic;
-	signal input_rdy    : std_logic := '0';
 	signal input_req    : std_logic := '0';
 	signal input_dat    : std_logic_vector(0 to 15);
 	
@@ -172,37 +172,9 @@ architecture def of scope is
 	signal miidma_txen  : std_logic;
 	signal miidma_txd   : std_logic_vector(mii_txd'length-1 downto 0);
 
-
 begin
 
-
---	process (input_clk)
---		variable sample : unsigned(0 to 15) := (others => '0');
---	begin
---		if falling_edge(input_clk) then
---			input_dat <= std_logic_vector(resize(sample, input_dat'length));
---			if ddrs_ini='0' then
---				input_req <= '0';
---			elsif input_rdy='0' then
---				input_req <= '1';
---			end if;
---			sample := sample + 1;
---		end if;
---	end process;
-
 	input_req <= ini and not input_rdy;
-	process (input_rst, input_clk)
-		constant n : natural := 15;
-		variable r : unsigned(0 to n);
-	begin
-		if input_rst='0' then
-			r := to_unsigned(61, r'length);
-		elsif rising_edge(input_clk) then
-			input_dat <= std_logic_vector(resize(signed(r(0 to n)), input_dat'length));
---			input_dat <= (others => r(n-2));
-			r := r + 1;
-		end if;
-	end process;
 
 	miirx_b : block
 		signal pktrx_rdy : std_logic;
@@ -274,7 +246,7 @@ begin
 		input_req    => input_req,
 		input_rdy    => input_rdy,
 		input_clk    => input_clk,
-		input_dat    => input_dat,
+		input_data   => input_data,
 
 		ddrs_clk     => ddrs_clks(0),
 		ddrs_rreq    => ddrs_ref_req,

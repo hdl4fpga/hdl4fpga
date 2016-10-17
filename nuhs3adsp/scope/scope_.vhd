@@ -145,39 +145,12 @@ begin
     	mii_rst   => mii_rst,  
 		video_rst => vga_rst);
 
-	process(input_clk)
-		variable g : std_logic_vector(ddrphy_dqii'length downto 1);
-		variable s : std_logic_vector(g'range);
-		variable q : std_logic;
-		variable si  : std_logic;
-		variable si1 : std_logic;
-	begin
-
-		case ddrs_di'length is
-		when 32 =>
-			g := ( 32 => '1',  30 => '1',  26 => '1',  25 => '1', others => '0');
-		when 64 =>                                     
-			g := ( 64 => '1',  63 => '1',  61 => '1',  60 => '1', others => '0');
-		when 128 =>
-			g := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-		when others =>
-			g := (others => '-');
-		end case;
-
-		if rising_edge(input_clk) then
-			if sys_rst='1' then
-				s  := (others => '1');
-			elsif input_rdy='1' then
-				si1 := '0';
-				for i in g'range loop
-					si   := s(i);
-					s(i) := si1 xor (s(s'right) and g(i));
-					si1  := si;
-				end loop;
-			end if;
-			input_data <= s;
-		end if;
-	end process;
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	port map (
+		clk => input_clk,
+		rst => sys_rst,
+		req => input_rdy,
+		so  => input_data);
 
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -200,7 +173,7 @@ begin
 
 		input_clk      => input_clk,
 		input_rdy      => input_rdy,
-		input_data     => input_data;
+		input_data     => input_data,
 
 		ddrs_rst       => ddrs_rst,
 		ddrs_clks(0)   => ddrs_clks(clk0),
