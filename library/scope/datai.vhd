@@ -85,9 +85,11 @@ begin
 		rd_data => output_dat);
 
 	process (output_clk)
+		variable q : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			output_rdy <= setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+			output_rdy <= q;
+			q := setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
 		end if;
 	end process;
 
