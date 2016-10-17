@@ -1,2 +1,2 @@
-del *~ /s
-del master.dat dump.dat /s
+DEL *~ /S
+DEL CMP.LOG MASTER.DAT DUMP.DAT /S
