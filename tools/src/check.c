@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
 			v = 1;
 			break;
 		case '?':
-			fprintf (stderr, "usage : check -v -d data_size");
+			fprintf (stderr, "usage : check -v -d lfsr_size");
 			exit(1);
 		default:
 			exit(1);
@@ -37,7 +37,7 @@ int main (int argc, char *argv[])
 	}
 
 	if (nopt < 1) {
-		fprintf (stderr, "usage : check -v -d data_size");
+		fprintf (stderr, "usage : check -v -d lfsr_size");
 		exit(1);
 	}
 

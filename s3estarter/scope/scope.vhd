@@ -186,6 +186,7 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
+		gate_delay => 2,
 		loopback => false,
 		registered_dout => false,
 		BANK_SIZE => sd_ba'length,

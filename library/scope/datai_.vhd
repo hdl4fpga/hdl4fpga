@@ -23,59 +23,73 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
-entity pgm_delay is
+entity datai is
 	generic (
-		n : natural := 1);
+		fifo_size : natural := 5);
 	port (
-		xi  : in  std_logic;
---		ena : in  std_logic_vector(n-1 downto 0) := (others => '1');
-		x_p : out std_logic;
-		x_n : out std_logic);
-end;
+		input_clk   : in std_logic;
+		input_data  : in std_logic_vector;
+		input_req   : in std_logic;
 
-library unisim;
-use unisim.vcomponents.all;
+		output_clk  : in std_logic;
+		output_rdy  : out std_logic;
+		output_req  : in std_logic;
+		output_data : out std_logic_vector);
+end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mix of pgm_delay is
-	constant blut : string(1 to 2) := "FG";
-	signal d : std_logic_vector(0 to n-1);
-	constant ena : unsigned(n-1 downto 0) := to_unsigned(2**(n-1),n);
-
+architecture def of datai is
+	signal wr_addr : std_logic_vector(0 to fifo_size-1);
+	signal rd_addr : std_logic_vector(0 to fifo_size-1);
 begin
-	d(n-1) <= '-';
-	chain_g: for i in n-1 downto 1 generate
+
+	process (input_clk)
 	begin
-		lut : lut4 
-		generic map (
-			init => x"00ca")
-		port map (
-			i0 => d(i),
-			i1 => xi,
-			i2 => ena(i),
-			i3 => '0',
-			o  => d(i-1));
-	end generate;
-	lutp : lut4 
-	generic map (
-		init => x"00ca")
+		if rising_edge(input_clk) then
+			if input_req='0' then
+				wr_addr <= (others => '0');
+			else
+				wr_addr <= inc(gray(wr_addr));
+			end if;
+		end if;
+	end process;
+
+	process (output_clk)
+		variable rst  : std_logic_vector(0 to 1);
+	begin
+		if rising_edge(output_clk) then
+			if rst(0)='0' then
+				rd_addr <= (others => '0');
+			elsif output_req='1' then
+				rd_addr <= inc(gray(rd_addr));
+			end if;
+			rst := rst(1 to 1) & input_req;
+		end if;
+	end process;
+
+
+	fifo_e : entity hdl4fpga.dpram
 	port map (
-		i0 => d(0),
-		i1 => xi,
-		i2 => ena(0),
-		i3 => '0',
-		o  => x_p);
-	lutn : lut4 
-	generic map (
-		init => x"0035")
-	port map (
-		i0 => d(0),
-		i1 => xi,
-		i2 => ena(0),
-		i3 => '0',
-		o  => x_n);
+		wr_clk  => input_clk,
+		wr_addr => wr_addr, 
+		wr_data => input_data,
+		wr_ena  => '1',
+
+		rd_clk  => output_clk,
+		rd_ena  => output_req,
+		rd_addr => rd_addr,
+		rd_data => output_data);
+
+	process (output_clk)
+		variable q : std_logic;
+	begin
+		if rising_edge(output_clk) then
+			output_rdy <= q;
+			q := setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+		end if;
+	end process;
+
 end;

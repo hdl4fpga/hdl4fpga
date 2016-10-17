@@ -33,6 +33,7 @@ entity ddrphy is
 		iddron : boolean := false;
 		registered_dout : boolean := true;
 		loopback : boolean;
+		gate_delay : natural := 1;
 		CMMD_GEAR : natural := 1;
 		data_gear : natural := 2;
 		bank_size : natural := 2;
@@ -344,6 +345,8 @@ begin
 
 
 		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		generic map(
+			n => gate_delay)
 		port map (
 			xi  => ddr_dqsi(i),
 			x_p => dqso(0),
