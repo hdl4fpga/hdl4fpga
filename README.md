@@ -2,7 +2,6 @@ HDL4FPGA is a library whose main component is a DDR core. It is meant to be
 high performance but portable too.
 
 Tested Kits
------------
 
 | Kit        | Family         | Manufacturer   | Device     | Grade | DRAM Clock | Transfer  |
 | ---------- | :------------- | :------------- | :--------- | ----: | ---------: | --------: |
