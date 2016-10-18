@@ -55,6 +55,7 @@ entity scope is
 		input_rst  : in  std_logic := '0';
 		input_clk  : in  std_logic;
 		input_rdy  : buffer std_logic;
+		input_req  : in  std_logic := '1';
 		input_data : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 
 		ddrs_clks  : in std_logic_vector(0 to ddr_sclkphases/ddr_sclkedges-1);
@@ -158,7 +159,6 @@ architecture def of scope is
 	signal ddrs_do      : std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 
 	signal dataio_rst   : std_logic;
-	signal input_req    : std_logic := '0';
 	signal input_dat    : std_logic_vector(0 to 15);
 	
 	signal miirx_req    : std_logic;
@@ -173,8 +173,6 @@ architecture def of scope is
 	signal miidma_txd   : std_logic_vector(mii_txd'length-1 downto 0);
 
 begin
-
-	input_req <= ini and not input_rdy;
 
 	miirx_b : block
 		signal pktrx_rdy : std_logic;
@@ -315,7 +313,7 @@ begin
 	process(ddrs_clks(0))
 	begin
 		if rising_edge(ddrs_clks(0)) then
-			ddrs_ini     <= ini;
+			ddrs_ini <= ini;
 		end if;
 	end process;
 

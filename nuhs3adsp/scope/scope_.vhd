@@ -148,7 +148,7 @@ begin
 	testpattern_e : entity hdl4fpga.lfsr_gen
 	port map (
 		clk => input_clk,
-		rst => sys_rst,
+		rst => input_rst,
 		req => input_rdy,
 		so  => input_data);
 

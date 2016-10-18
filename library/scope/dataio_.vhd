@@ -39,7 +39,7 @@ entity dataio is
 		sys_rst     : in std_logic;
 
 		input_clk   : in  std_logic;
-		input_req   : in  std_logic;
+		input_req   : in  std_logic := '1';
 		input_rdy   : out std_logic;
 		input_data  : in  std_logic_vector;
 
@@ -104,9 +104,14 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
-	ddrs_di_rdy <= ddrs_di_req;
+	process(ddrs_clk)
+	begin
+		if rising_edge(ddrs_clk) then
+			ddrs_di_rdy <= ddrs_di_req;
+		end if;
+	end process;
 
-	input_rdy <= capture_rdy and datai_req;
+	input_rdy <= datai_req;
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
@@ -124,8 +129,8 @@ begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1' then
 					capture_rdy <= '0';
---				elsif input_req='0' then
---					capture_rdy <= '0';
+				elsif input_req='0' then
+					capture_rdy <= '0';
 				elsif capture_rdy='0' then
 					capture_rdy <= co(0);
 				else
