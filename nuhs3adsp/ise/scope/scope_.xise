@@ -46,15 +46,15 @@
     </file>
     <file xil_pn:name="../../../library/mii/mii_iob.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="106"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="42"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/scope/dataio.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/scope/dataio_.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="8"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="33"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/scope/datai.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/scope/datai_.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="9"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="15"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -164,7 +164,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="36"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../library/ddr/xdr_db.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/ddr/xdr_db_.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="68"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="2"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -218,11 +218,11 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="scope.ipf" xil_pn:type="FILE_USERDOC"/>
-    <file xil_pn:name="../../scope/scope.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../scope/scope_.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="137"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="44"/>
     </file>
-    <file xil_pn:name="../../../library/scope/scope.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../library/scope/scope_.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="189"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="41"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -230,6 +230,11 @@
     <file xil_pn:name="../../../library/xilinx/omdr.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="46"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="13"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../library/scope/lfsr_gen.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="60"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="42"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
@@ -354,7 +359,7 @@
     <property xil_pn:name="Ignore User Timing Constraints Par" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Ignore Version Check" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Implementation Top" xil_pn:value="Architecture|nuhs3adsp|scope" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Implementation Top File" xil_pn:value="../../scope/scope.vhd" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Implementation Top File" xil_pn:value="../../scope/scope_.vhd" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Implementation Top Instance Path" xil_pn:value="/nuhs3adsp" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Include 'uselib Directive in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Include SIMPRIM Models in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>
