@@ -61,12 +61,11 @@ begin
 		variable rst  : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(output_clk) then
-			if rst(0)='0' then
+			if input_req='0' then
 				rd_addr <= (others => '0');
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
 			end if;
-			rst := rst(1 to 1) & input_req;
 		end if;
 	end process;
 
@@ -87,8 +86,9 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			output_rdy <= q;
-			q := setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+			output_rdy <= setif(
+				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
+				(wr_addr(0 to 1) /= rd_addr(0 to 1)));
 		end if;
 	end process;
 

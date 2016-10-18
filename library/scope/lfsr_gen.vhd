@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity lfsr_gen is
 	port (
@@ -57,13 +58,16 @@ begin
 		if rising_edge(clk) then
 			if rst='1' then
 				s  := (others => '1');
+				s  := (others => '0');
 			elsif req='1' then
 				s2 := '0';
 				for i in g'range loop
 					s1   := s(i);
-					s(i) := s2 xor (s(s'right) and g(i));
+--					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
 				end loop;
+				s := std_logic_vector(unsigned(s)+1);
+	s := x"12345678";
 			end if;
 			so <= s;
 		end if;

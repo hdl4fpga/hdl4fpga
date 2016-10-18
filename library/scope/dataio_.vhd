@@ -89,7 +89,11 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			datai_req <= not sys_rst and not capture_rdy;
+			if input_req='0' then
+				datai_req <= '0';
+			else
+				datai_req <= not capture_rdy;
+			end if;
 		end if;
 	end process;
 
@@ -104,10 +108,10 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
+	ddrs_di_rdy <= ddrs_di_req;
 	process(ddrs_clk)
 	begin
 		if rising_edge(ddrs_clk) then
-			ddrs_di_rdy <= ddrs_di_req;
 		end if;
 	end process;
 

@@ -12,16 +12,11 @@ add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/ba
 add wave -noupdate -radix hexadecimal /testbench/addr
-add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/rst
-add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/clk
-add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/req
-add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/testpattern_e/so
-add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/input_data
-add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/input_rdy
 add wave -noupdate -expand /testbench/dqs
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/dq(15) -radix hexadecimal} {/testbench/dq(14) -radix hexadecimal} {/testbench/dq(13) -radix hexadecimal} {/testbench/dq(12) -radix hexadecimal} {/testbench/dq(11) -radix hexadecimal} {/testbench/dq(10) -radix hexadecimal} {/testbench/dq(9) -radix hexadecimal} {/testbench/dq(8) -radix hexadecimal} {/testbench/dq(7) -radix hexadecimal} {/testbench/dq(6) -radix hexadecimal} {/testbench/dq(5) -radix hexadecimal} {/testbench/dq(4) -radix hexadecimal} {/testbench/dq(3) -radix hexadecimal} {/testbench/dq(2) -radix hexadecimal} {/testbench/dq(1) -radix hexadecimal} {/testbench/dq(0) -radix hexadecimal}} -subitemconfig {/testbench/dq(15) {-height 16 -radix hexadecimal} /testbench/dq(14) {-height 16 -radix hexadecimal} /testbench/dq(13) {-height 16 -radix hexadecimal} /testbench/dq(12) {-height 16 -radix hexadecimal} /testbench/dq(11) {-height 16 -radix hexadecimal} /testbench/dq(10) {-height 16 -radix hexadecimal} /testbench/dq(9) {-height 16 -radix hexadecimal} /testbench/dq(8) {-height 16 -radix hexadecimal} /testbench/dq(7) {-height 16 -radix hexadecimal} /testbench/dq(6) {-height 16 -radix hexadecimal} /testbench/dq(5) {-height 16 -radix hexadecimal} /testbench/dq(4) {-height 16 -radix hexadecimal} /testbench/dq(3) {-height 16 -radix hexadecimal} /testbench/dq(2) {-height 16 -radix hexadecimal} /testbench/dq(1) {-height 16 -radix hexadecimal} /testbench/dq(0) {-height 16 -radix hexadecimal}} /testbench/dq
 add wave -noupdate /testbench/dm
 add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sto
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/input_rdy
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/input_req
 add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sti(0)
 add wave -noupdate /testbench/nuhs3adsp_e/ddrphy_e/sys_sto(0)
@@ -32,6 +27,21 @@ add wave -noupdate /testbench/mii_treq
 add wave -noupdate /testbench/mii_strt
 add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/ddrphy_dqo
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/ddr_sto
+add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/clk
+add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/req
+add wave -noupdate /testbench/nuhs3adsp_e/testpattern_e/rst
+add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/testpattern_e/so
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/wr_addr
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/input_clk
+add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/input_data
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/input_req
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/rd_addr
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/output_clk
+add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/output_data
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/output_rdy
+add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/datai_e/output_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/ddrs_creq
 add wave -noupdate /testbench/nuhs3adsp_e/scope_e/dataio_e/ddrio_b/creq
@@ -67,7 +77,7 @@ add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/ddrphy_e/byte_g(1)/
 add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/ddrphy_e/byte_g(1)/ddrdqphy_i/ddr_dqo
 add wave -noupdate -radix hexadecimal /testbench/nuhs3adsp_e/scope_e/ddr_e/wrfifo_i/xdr_dqo
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2602720 ps} 0}
+WaveRestoreCursors {{Cursor 1} {5169116 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 251
 configure wave -valuecolwidth 100
@@ -83,4 +93,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {13068072 ps}
+WaveRestoreZoom {0 ps} {10500 ns}
