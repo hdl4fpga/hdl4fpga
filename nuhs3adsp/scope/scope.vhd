@@ -72,11 +72,15 @@ architecture scope of nuhs3adsp is
 	signal ddrs_rst  : std_logic;
 	signal vga_rst   : std_logic;
 
-	signal ddr_dqst : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt  : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo  : std_logic_vector(ddr_dq'range);
-	signal ddr_clk  : std_logic_vector(0 downto 0);
+	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
+	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+
+	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt     : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo     : std_logic_vector(ddr_dq'range);
+	signal ddr_clk     : std_logic_vector(0 downto 0);
 	signal ddr_lp_clk : std_logic;
 	signal ddr_sto1_open : std_logic;
 
@@ -142,6 +146,14 @@ begin
     	mii_rst   => mii_rst,  
 		video_rst => vga_rst);
 
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	port map (
+		clk => input_clk,
+		rst => input_rst,
+		req => input_req,
+		so  => input_data);
+
+	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => SPARTAN3,
@@ -161,8 +173,10 @@ begin
 		DDR_BYTESIZE   => byte_size)
 	port map (
 
---		input_rst      => input_rst,
 		input_clk      => input_clk,
+		input_req      => input_req,
+		input_rdy      => input_rdy,
+		input_data     => input_data,
 
 		ddrs_rst       => ddrs_rst,
 		ddrs_clks(0)   => ddrs_clks(clk0),
