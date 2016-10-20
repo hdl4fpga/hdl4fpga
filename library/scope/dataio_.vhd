@@ -110,20 +110,6 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
-	process (ddrs_clk)
-		variable i : natural := 0;
-	begin
-		if rising_edge(ddrs_clk) then
-			if ddrs_di_req='1' then
-				assert i=to_integer(unsigned(ddrs_di))
-				report "FALLE"
-				severity FAILURE;
-
-				i := i +1;
-			end if;
-		end if;
-	end process;
-
 	ddrs_di_rdy <= ddrs_di_req;
 
 	input_req <= datai_req;

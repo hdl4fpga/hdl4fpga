@@ -54,8 +54,10 @@ begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
 				wr_addr <= (others => '0');
+				output_rst <= '1';
 			else
 				wr_addr <= inc(gray(wr_addr));
+				output_rst <= '0';
 			end if;
 		end if;
 	end process;
@@ -65,29 +67,12 @@ begin
 		if rising_edge(output_clk) then
 			if output_rst='1' then
 				rd_addr <= (others => '0');
+				output_flush <= '1';
 			elsif output_flush='1' then
 				rd_addr <= inc(gray(rd_addr));
+				output_flush <= '0';
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
-			end if;
-			output_rst <= not input_req;
-		end if;
-	end process;
-
-	process (output_clk)
-		variable flushed : std_logic;
-	begin
-		if rising_edge(output_clk) then
-			if output_rst='1' then
-				flushed      := '0';
-				output_flush <= '0';
-			elsif flushed='0' then
-				if inc(gray((rd_addr(0 to 1)))) = wr_addr(0 to 1) then
-					flushed      := '1';
-					output_flush <= '1';
-				end if;
-			else
-				flushed      := '1';
 				output_flush <= '0';
 			end if;
 		end if;
