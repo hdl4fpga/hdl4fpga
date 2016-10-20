@@ -36,43 +36,40 @@ entity dataio is
 		DDR_CLNMSIZE : natural :=  6;
 		DDR_LINESIZE : natural := 16);
 	port (
-		sys_rst   : in std_logic;
+		sys_rst     : in std_logic;
 
-		input_clk : in std_logic;
-		input_req : in std_logic;
-		input_rdy : out std_logic;
-		input_dat : in std_logic_vector;
-		tp : out std_logic;
+		input_clk   : in  std_logic;
+		input_req   : out std_logic := '1';
+		input_rdy   : in  std_logic;
+		input_data  : in  std_logic_vector;
 
-		ddrs_clk : in  std_logic;
-		ddrs_rreq : in std_logic;
-		ddrs_creq : out std_logic;
-		ddrs_crdy : in std_logic;
+		ddrs_clk    : in  std_logic;
+		ddrs_rreq   : in  std_logic;
+		ddrs_creq   : out std_logic;
+		ddrs_crdy   : in  std_logic;
 
-		ddrs_bnka : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddrs_rowa : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddrs_cola : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddrs_bnka   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddrs_rowa   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddrs_cola   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
 
-		ddrs_act : in std_logic;
-		ddrs_cas : in std_logic;
-		ddrs_rw  : out std_logic;
+		ddrs_act    : in  std_logic;
+		ddrs_cas    : in  std_logic;
+		ddrs_rw     : out std_logic;
 
 		ddrs_di_req : in  std_logic;
 		ddrs_di_rdy : out std_logic;
-		ddrs_di  : out  std_logic_vector;
-		ddrs_do_rdy : in std_logic;
-		ddrs_do  : in std_logic_vector;
+		ddrs_di     : buffer std_logic_vector;
+		ddrs_do_rdy : in  std_logic;
+		ddrs_do     : in  std_logic_vector;
 		
-		mii_rst   : in  std_logic;
-		mii_txc   : in  std_logic;
+		mii_rst     : in  std_logic;
+		mii_txc     : in  std_logic;
 		ddr2mii_req : in  std_logic;
 		ddr2mii_rdy : out std_logic;
-		miitx_req : in  std_logic;
-		miitx_rdy : out std_logic;
-		miitx_ena : out std_logic;
-		miitx_dat : out std_logic_vector);
-		
-	constant page_num  : natural := 6;
+		miitx_req   : in  std_logic;
+		miitx_rdy   : out std_logic;
+		miitx_ena   : out std_logic;
+		miitx_dat   : out std_logic_vector);
 end;
 
 
@@ -87,85 +84,41 @@ architecture def of dataio is
 	signal miitx_gnt : std_logic;
 	signal datai_req : std_logic;
 
-	signal output_dat : std_logic_vector(ddrs_di'range);
-	signal aux2 : std_logic_vector(ddrs_di'length-1 downto 0);
 begin
 
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			datai_req <= not sys_rst and not capture_rdy;
+			if sys_rst='1' then
+				datai_req <= '0';
+			elsif input_rdy='0' then
+				datai_req <= '0';
+			else
+				datai_req <= not capture_rdy;
+			end if;
 		end if;
 	end process;
 
 	datai_e : entity hdl4fpga.datai
 	port map (
-		input_clk => input_clk,
-		input_dat => input_dat,
-		input_req => datai_req, 
+		input_clk   => input_clk,
+		input_req   => datai_req, 
+		input_data  => input_data,
 
-		output_clk => ddrs_clk,
-		output_rdy => datai_brst_req,
-		output_req => ddrs_di_req,
---		output_dat => ddrs_di
-		output_dat => output_dat);
-		tp <= datai_brst_req;
-
-	process(ddrs_clk)
-		variable g : std_logic_vector(ddrs_di'length downto 1);
-		variable s : std_logic_vector(g'range);
-		variable aux  : std_logic;
-		variable aux1 : std_logic;
-		variable q : std_logic;
-	begin
-
-		g := (others => '0');
-		case ddrs_di'length is
-		when 32 =>
-			g(32) := '1';
-			g(30) := '1';
-			g(26) := '1';
-			g(25) := '1';
-		when 64 =>
-			g(64) := '1';
-			g(63) := '1';
-			g(61) := '1';
-			g(60) := '1';
-		when 128 =>
-			g(128) := '1';
-			g(127) := '1';
-			g(126) := '1';
-			g(121) := '1';
-		when others =>
-			g := (others => '-');
-		end case;
-
-		if rising_edge(ddrs_clk) then
-			if q='1' then
-				s  := (others => '1');
-			elsif ddrs_di_req='1' then
-				aux1 := '0';
-				for i in g'range loop
-					aux  := s(i);
-					s(i) := aux1 xor (s(s'right) and g(i));
-					aux1 := aux;
-				end loop;
-			end if;
-			aux2 <= s;
-			q := sys_rst;
-		end if;
-	end process;
+		output_clk  => ddrs_clk,
+		output_rdy  => datai_brst_req,
+		output_req  => ddrs_di_req,
+		output_data => ddrs_di);
 
 	ddrs_di_rdy <= ddrs_di_req;
-	ddrs_di <= aux2;
 
-	input_rdy <= capture_rdy;
+	input_req <= datai_req;
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
 
-		signal qo : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
-		signal co : std_logic_vector(0 to 3-1);
+		signal qo   : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
+		signal co   : std_logic_vector(0 to 3-1);
 		signal crst : std_logic;
 		signal creq : std_logic;
 		signal crdy : std_logic;
@@ -177,8 +130,8 @@ begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1' then
 					capture_rdy <= '0';
---				elsif input_req='0' then
---					capture_rdy <= '0';
+				elsif input_rdy='0' then
+					capture_rdy <= '0';
 				elsif capture_rdy='0' then
 					capture_rdy <= co(0);
 				else

@@ -26,25 +26,27 @@ use ieee.std_logic_1164.all;
 
 entity datai is
 	generic (
-		fifo_size : natural := 5);
+		fifo_size : natural := 8);
 	port (
-		input_clk : in std_logic;
-		input_dat : in std_logic_vector;
-		input_req : in std_logic;
-		input_rdy : out std_logic := '0';
+		input_clk   : in std_logic;
+		input_data  : in std_logic_vector;
+		input_req   : in std_logic;
 
 		output_clk  : in std_logic;
 		output_rdy  : out std_logic;
 		output_req  : in std_logic;
-		output_dat  : out std_logic_vector);
+		output_data : out std_logic_vector);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of datai is
-	signal wr_addr : std_logic_vector(0 to fifo_size-1);
-	signal rd_addr : std_logic_vector(0 to fifo_size-1);
+	signal wr_addr    : std_logic_vector(0 to fifo_size-1);
+	signal rd_addr    : std_logic_vector(0 to fifo_size-1);
+	signal rd_ena     : std_logic;
+	signal output_flush : std_logic;
+	signal output_rst : std_logic;
 begin
 
 	process (input_clk)
@@ -52,44 +54,49 @@ begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
 				wr_addr <= (others => '0');
+				output_rst <= '1';
 			else
 				wr_addr <= inc(gray(wr_addr));
+				output_rst <= '0';
 			end if;
 		end if;
 	end process;
 
 	process (output_clk)
-		variable rst  : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(output_clk) then
-			if rst(0)='0' then
+			if output_rst='1' then
 				rd_addr <= (others => '0');
+				output_flush <= '1';
+			elsif output_flush='1' then
+				rd_addr <= inc(gray(rd_addr));
+				output_flush <= '0';
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
+				output_flush <= '0';
 			end if;
-			rst := rst(1 to 1) & input_req;
 		end if;
 	end process;
 
-
+	rd_ena <= output_req or output_flush;
 	fifo_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => input_clk,
 		wr_addr => wr_addr, 
-		wr_data => input_dat,
+		wr_data => input_data,
 		wr_ena  => '1',
 
 		rd_clk  => output_clk,
-		rd_ena  => output_req,
+		rd_ena  => rd_ena,
 		rd_addr => rd_addr,
-		rd_data => output_dat);
+		rd_data => output_data);
 
 	process (output_clk)
-		variable q : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			output_rdy <= q;
-			q := setif((wr_addr(0 to 1) xor rd_addr(0 to 1)) = "11");
+			output_rdy <= setif(
+				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
+				(wr_addr(0 to 1) /= rd_addr(0 to 1)));
 		end if;
 	end process;
 
