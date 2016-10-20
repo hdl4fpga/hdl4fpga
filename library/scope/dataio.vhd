@@ -30,11 +30,12 @@ use hdl4fpga.std.all;
 
 entity dataio is
 	generic (
-		PAGE_SIZE    : natural :=  9;
-		DDR_BANKSIZE : natural :=  2;
-		DDR_ADDRSIZE : natural := 13;
-		DDR_CLNMSIZE : natural :=  6;
-		DDR_LINESIZE : natural := 16);
+		PAGE_SIZE       : natural :=  9;
+		DDR_BANKSIZE    : natural :=  2;
+		DDR_ADDRSIZE    : natural := 13;
+		DDR_CLNMSIZE    : natural :=  6;
+		DDR_LINESIZE    : natural := 16;
+		BUFFERED_OUTPUT : boolean := TRUE);
 	port (
 		sys_rst     : in std_logic;
 
@@ -100,6 +101,8 @@ begin
 	end process;
 
 	datai_e : entity hdl4fpga.datai
+	generic map (
+		BUFFERED_OUTPUT => BUFFERED_OUTPUT)
 	port map (
 		input_clk   => input_clk,
 		input_req   => datai_req, 
@@ -110,7 +113,16 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
-	ddrs_di_rdy <= ddrs_di_req;
+	process (ddrs_clk, ddrs_di_req)
+	begin
+		if BUFFERED_OUTPUT then
+			if rising_edge(ddrs_clk) then
+				ddrs_di_rdy <= ddrs_di_req;
+			end if;
+		else
+			ddrs_di_rdy <= ddrs_di_req;
+		end if;
+	end process;
 
 	input_req <= datai_req;
 	ddrio_b: block

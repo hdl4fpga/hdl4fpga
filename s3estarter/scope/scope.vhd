@@ -159,7 +159,8 @@ begin
 		ddr_cmmdgear => CMMD_GEAR,
 		DDR_DATAGEAR   => DATA_GEAR,
 		DDR_WORDSIZE   => word_size,
-		DDR_BYTESIZE   => byte_size)
+		DDR_BYTESIZE   => byte_size,
+		BUFFERED_OUTPUT => FALSE)
 	port map (
 
 		input_clk      => input_clk,

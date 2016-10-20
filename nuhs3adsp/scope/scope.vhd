@@ -159,21 +159,22 @@ begin
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		FPGA           => SPARTAN3,
-		DDR_MARK       => M6T,
-		DDR_TCP        => integer(sys_per*1000.0)*ddr_div/ddr_mul,
-		DDR_SCLKEDGES  => SCLK_EDGES,
-		DDR_STROBE     => "INTERNAL",
-		DDR_CLMNSIZE   => 6,
-		DDR_BANKSIZE   => ddr_ba'length,
-		DDR_ADDRSIZE   => ddr_a'length,
-		DDR_SCLKPHASES => sclk_phases,
-		DDR_DATAPHASES => data_phases,
-		DDR_DATAEDGES  => data_edges,
-		DDR_DATAGEAR   => DATA_GEAR,
-		ddr_cmmdgear   => CMMD_GEAR,
-		DDR_WORDSIZE   => word_size,
-		DDR_BYTESIZE   => byte_size)
+		FPGA            => SPARTAN3,
+		DDR_MARK        => M6T,
+		DDR_TCP         => integer(sys_per*1000.0)*ddr_div/ddr_mul,
+		DDR_SCLKEDGES   => SCLK_EDGES,
+		DDR_STROBE      => "INTERNAL",
+		DDR_CLMNSIZE    => 6,
+		DDR_BANKSIZE    => ddr_ba'length,
+		DDR_ADDRSIZE    => ddr_a'length,
+		DDR_SCLKPHASES  => sclk_phases,
+		DDR_DATAPHASES  => data_phases,
+		DDR_DATAEDGES   => data_edges,
+		DDR_DATAGEAR    => DATA_GEAR,
+		ddr_cmmdgear    => CMMD_GEAR,
+		DDR_WORDSIZE    => word_size,
+		DDR_BYTESIZE    => byte_size,
+		BUFFERED_OUTPUT => FALSE)
 	port map (
 		input_clk      => input_clk,
 		input_req      => input_req,

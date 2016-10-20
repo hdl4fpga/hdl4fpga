@@ -29,24 +29,25 @@ use std.textio.all;
 
 entity scope is
 	generic (
-		constant FPGA : natural;
-		constant DDR_CMMDGEAR : natural;
-		constant DDR_TCP      : natural;
-		constant DDR_SCLKPHASES : natural;
-		constant DDR_SCLKEDGES : natural;
-		constant DDR_DATAPHASES : natural :=  1;
-		constant DDR_DATAEDGES : natural :=  1;
-		constant DDR_CMNDPHASES : natural :=  2;
-		constant DDR_MARK     : natural;
-		constant DDR_STROBE   : string := "NONE";
-		constant DDR_BANKSIZE : natural :=  3;
-		constant DDR_ADDRSIZE : natural := 13;
-		constant DDR_CLMNSIZE : natural :=  6;
-		constant DDR_DATAGEAR : natural := 16;
-		constant DDR_WORDSIZE : natural := 16;
-		constant DDR_BYTESIZE : natural :=  8;
-		constant PAGE_SIZE    : natural := 9;
-		constant NIBBLE_SIZE  : natural := 4);
+		FPGA            : natural;
+		DDR_CMMDGEAR    : natural;
+		DDR_TCP         : natural;
+		DDR_SCLKPHASES  : natural;
+		DDR_SCLKEDGES   : natural;
+		DDR_DATAPHASES  : natural :=  1;
+		DDR_DATAEDGES   : natural :=  1;
+		DDR_CMNDPHASES  : natural :=  2;
+		DDR_MARK        : natural;
+		DDR_STROBE      : string := "NONE";
+		DDR_BANKSIZE    : natural :=  3;
+		DDR_ADDRSIZE    : natural := 13;
+		DDR_CLMNSIZE    : natural :=  6;
+		DDR_DATAGEAR    : natural := 16;
+		DDR_WORDSIZE    : natural := 16;
+		DDR_BYTESIZE    : natural :=  8;
+		PAGE_SIZE       : natural := 9;
+		NIBBLE_SIZE     : natural := 4;
+		BUFFERED_OUTPUT : boolean := TRUE);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -234,11 +235,12 @@ begin
 	dataio_rst <= not ini;
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
-		PAGE_SIZE    => PAGE_SIZE,
-		DDR_BANKSIZE => DDR_BANKSIZE,
-		DDR_ADDRSIZE => DDR_ADDRSIZE,
-		DDR_CLNMSIZE => DDR_CLMNSIZE,
-		DDR_LINESIZE => DDR_DATAGEAR*DDR_WORDSIZE)
+		PAGE_SIZE       => PAGE_SIZE,
+		DDR_BANKSIZE    => DDR_BANKSIZE,
+		DDR_ADDRSIZE    => DDR_ADDRSIZE,
+		DDR_CLNMSIZE    => DDR_CLMNSIZE,
+		DDR_LINESIZE    => DDR_DATAGEAR*DDR_WORDSIZE,
+		BUFFERED_OUTPUT => BUFFERED_OUTPUT)
 	port map (
 		sys_rst      => dataio_rst,
 
