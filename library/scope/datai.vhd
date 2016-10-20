@@ -98,14 +98,13 @@ begin
 		rd_addr => rd_addr,
 		rd_data => rd_data);
 
-	buff_ena <= output_req or flush(0);
 	buffer_e : entity hdl4fpga.align
 	generic map (
 		n =>  output_data'length,
 		d => (1 to output_data'length => 1))
 	port map (
 		clk => output_clk,
-		ena => buff_ena,
+		ena => output_req,
 		di  => rd_data,
 		do  => output_data);
 		
