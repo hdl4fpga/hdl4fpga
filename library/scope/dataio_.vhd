@@ -39,8 +39,8 @@ entity dataio is
 		sys_rst     : in std_logic;
 
 		input_clk   : in  std_logic;
-		input_req   : in  std_logic := '1';
-		input_rdy   : out std_logic;
+		input_req   : out std_logic := '1';
+		input_rdy   : in  std_logic;
 		input_data  : in  std_logic_vector;
 
 		ddrs_clk    : in  std_logic;
@@ -58,7 +58,7 @@ entity dataio is
 
 		ddrs_di_req : in  std_logic;
 		ddrs_di_rdy : out std_logic;
-		ddrs_di     : out std_logic_vector;
+		ddrs_di     : buffer std_logic_vector;
 		ddrs_do_rdy : in  std_logic;
 		ddrs_do     : in  std_logic_vector;
 		
@@ -89,7 +89,9 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			if input_req='0' then
+			if sys_rst='1' then
+				datai_req <= '0';
+			elsif input_rdy='0' then
 				datai_req <= '0';
 			else
 				datai_req <= not capture_rdy;
@@ -108,14 +110,23 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
-	ddrs_di_rdy <= ddrs_di_req;
-	process(ddrs_clk)
+	process (ddrs_clk)
+		variable i : natural := 0;
 	begin
 		if rising_edge(ddrs_clk) then
+			if ddrs_di_req='1' then
+				assert i=to_integer(unsigned(ddrs_di))
+				report "FALLE"
+				severity FAILURE;
+
+				i := i +1;
+			end if;
 		end if;
 	end process;
 
-	input_rdy <= datai_req;
+	ddrs_di_rdy <= ddrs_di_req;
+
+	input_req <= datai_req;
 	ddrio_b: block
 		signal ddrs_breq : std_logic;
 		signal ddrs_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
@@ -133,7 +144,7 @@ begin
 			if rising_edge(ddrs_clk) then
 				if sys_rst='1' then
 					capture_rdy <= '0';
-				elsif input_req='0' then
+				elsif input_rdy='0' then
 					capture_rdy <= '0';
 				elsif capture_rdy='0' then
 					capture_rdy <= co(0);

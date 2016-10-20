@@ -78,11 +78,11 @@ begin
 		dfs_mul => ddr_mul,
 		dfs_div => ddr_div)
 	port map (
-		dfsdcm_rst => sys_rst,
+		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
 		dfsdcm_clk0  => clks(ddr),
 		dfsdcm_clk90 => ddr_clk90,
-		dfsdcm_lckd => lcks(ddr));
+		dfsdcm_lckd  => lcks(ddr));
 
 	inputdcm_e : entity hdl4fpga.dcmisdbt
 	port map (

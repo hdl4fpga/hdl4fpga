@@ -26,7 +26,7 @@ use ieee.std_logic_1164.all;
 
 entity datai is
 	generic (
-		fifo_size : natural := 5);
+		fifo_size : natural := 8);
 	port (
 		input_clk   : in std_logic;
 		input_data  : in std_logic_vector;
@@ -42,8 +42,11 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of datai is
-	signal wr_addr : std_logic_vector(0 to fifo_size-1);
-	signal rd_addr : std_logic_vector(0 to fifo_size-1);
+	signal wr_addr    : std_logic_vector(0 to fifo_size-1);
+	signal rd_addr    : std_logic_vector(0 to fifo_size-1);
+	signal rd_ena     : std_logic;
+	signal output_flush : std_logic;
+	signal output_rst : std_logic;
 begin
 
 	process (input_clk)
@@ -58,18 +61,39 @@ begin
 	end process;
 
 	process (output_clk)
-		variable rst  : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(output_clk) then
-			if input_req='0' then
+			if output_rst='1' then
 				rd_addr <= (others => '0');
+			elsif output_flush='1' then
+				rd_addr <= inc(gray(rd_addr));
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
+			end if;
+			output_rst <= not input_req;
+		end if;
+	end process;
+
+	process (output_clk)
+		variable flushed : std_logic;
+	begin
+		if rising_edge(output_clk) then
+			if output_rst='1' then
+				flushed      := '0';
+				output_flush <= '0';
+			elsif flushed='0' then
+				if inc(gray((rd_addr(0 to 1)))) = wr_addr(0 to 1) then
+					flushed      := '1';
+					output_flush <= '1';
+				end if;
+			else
+				flushed      := '1';
+				output_flush <= '0';
 			end if;
 		end if;
 	end process;
 
-
+	rd_ena <= output_req or output_flush;
 	fifo_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => input_clk,
@@ -78,12 +102,11 @@ begin
 		wr_ena  => '1',
 
 		rd_clk  => output_clk,
-		rd_ena  => output_req,
+		rd_ena  => rd_ena,
 		rd_addr => rd_addr,
 		rd_data => output_data);
 
 	process (output_clk)
-		variable q : std_logic;
 	begin
 		if rising_edge(output_clk) then
 			output_rdy <= setif(

@@ -66,8 +66,7 @@ begin
 --					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
 				end loop;
-				s := std_logic_vector(unsigned(s)+1);
-	s := x"12345678";
+				s := std_logic_vector(unsigned(s) + 1);
 			end if;
 			so <= s;
 		end if;

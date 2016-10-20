@@ -73,6 +73,7 @@ architecture scope of nuhs3adsp is
 	signal vga_rst   : std_logic;
 
 	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
 	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
 	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -149,9 +150,10 @@ begin
 	port map (
 		clk => input_clk,
 		rst => input_rst,
-		req => input_rdy,
+		req => input_req,
 		so  => input_data);
 
+	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => SPARTAN3,
@@ -172,6 +174,7 @@ begin
 	port map (
 
 		input_clk      => input_clk,
+		input_req      => input_req,
 		input_rdy      => input_rdy,
 		input_data     => input_data,
 
