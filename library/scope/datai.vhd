@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity datai is
 	generic (
@@ -45,8 +46,10 @@ architecture def of datai is
 	signal wr_addr    : std_logic_vector(0 to fifo_size-1);
 	signal rd_addr    : std_logic_vector(0 to fifo_size-1);
 	signal rd_ena     : std_logic;
-	signal output_flush : std_logic;
+	signal rd_data    : std_logic_vector(output_data'range);
+	signal buff_ena   : std_logic;
 	signal output_rst : std_logic;
+	signal flush      : unsigned(0 to 2-1);
 begin
 
 	process (input_clk)
@@ -56,8 +59,12 @@ begin
 				wr_addr <= (others => '0');
 				output_rst <= '1';
 			else
-				wr_addr <= inc(gray(wr_addr));
-				output_rst <= '0';
+				if output_rst='1' then
+					if wr_addr(2)='1' then
+						output_rst <='0';
+					end if;
+				end if;
+				wr_addr <= inc(wr_addr);
 			end if;
 		end if;
 	end process;
@@ -67,18 +74,18 @@ begin
 		if rising_edge(output_clk) then
 			if output_rst='1' then
 				rd_addr <= (others => '0');
-				output_flush <= '1';
-			elsif output_flush='1' then
-				rd_addr <= inc(gray(rd_addr));
-				output_flush <= '0';
+				flush   <= (others => '1');
+			elsif flush(0)='1' then
+				rd_addr <= inc(rd_addr);
+				flush <= flush sll 1;
 			elsif output_req='1' then
-				rd_addr <= inc(gray(rd_addr));
-				output_flush <= '0';
+				rd_addr <= inc(rd_addr);
+				flush <= flush sll 1;
 			end if;
 		end if;
 	end process;
 
-	rd_ena <= output_req or output_flush;
+	rd_ena <= output_req or flush(0);
 	fifo_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => input_clk,
@@ -89,8 +96,19 @@ begin
 		rd_clk  => output_clk,
 		rd_ena  => rd_ena,
 		rd_addr => rd_addr,
-		rd_data => output_data);
+		rd_data => rd_data);
 
+	buff_ena <= output_req or flush(0);
+	buffer_e : entity hdl4fpga.align
+	generic map (
+		n =>  output_data'length,
+		d => (1 to output_data'length => 1))
+	port map (
+		clk => output_clk,
+		ena => buff_ena,
+		di  => rd_data,
+		do  => output_data);
+		
 	process (output_clk)
 	begin
 		if rising_edge(output_clk) then
