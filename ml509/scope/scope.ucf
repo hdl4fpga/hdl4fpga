@@ -33,7 +33,7 @@ OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk falling;
 NET "phy_txclk" TNM_NET = phy_txclk;
 
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
-NET "ddrphy_dqi*"    MAXDELAY = .75 ns;
+#NET "ddrphy_dqi*"    MAXDELAY = .75 ns;
 
 # ###################### #
 # Ignore crossclock time #
@@ -44,8 +44,8 @@ NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
 
 NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
 NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-NET input_clk  TNM_NET = FFS  FFS_adcclkab;
-NET input_clk  TNM_NET = RAMS RAMS_adcclkab;
+NET input_clk  TNM_NET = FFS  FFS_input;
+NET input_clk  TNM_NET = RAMS RAMS_input;
 NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
 NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 
@@ -53,6 +53,7 @@ TIMESPEC TS_r2o_ddr2ddr  = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_f2f_ddr2gtx  = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 TIMESPEC TS_f2f_sclk2ddr = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2sclk = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
+TIMESPEC TS_f2f_sclk2input = FROM FFS_sysclk  TO FFS_input      TIG;
 
 #TIMESPEC TS_ddrt00 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[0].omdr_i/reg_g[0].gear2_g.fft_i) TIG;
 #TIMESPEC TS_ddrt01 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[1].omdr_i/reg_g[0].gear2_g.fft_i) TIG;

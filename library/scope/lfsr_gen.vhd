@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity lfsr_gen is
+	generic (
+		g : std_logic_vector);
 	port (
 		clk : in  std_logic;
 		rst : in  std_logic;
@@ -37,28 +39,15 @@ architecture beh of lfsr_gen is
 
 begin
 	process(clk)
-		variable g  : std_logic_vector(so'length downto 1);
 		variable s  : std_logic_vector(g'range);
 		variable q  : std_logic;
 		variable s1 : std_logic;
 		variable s2 : std_logic;
 	begin
 
-		case g'length is
-		when 32 =>
-			g := ( 32 => '1',  30 => '1',  26 => '1',  25 => '1', others => '0');
-		when 64 =>                                     
-			g := ( 64 => '1',  63 => '1',  61 => '1',  60 => '1', others => '0');
-		when 128 =>
-			g := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-		when others =>
-			g := (others => '-');
-		end case;
-
 		if rising_edge(clk) then
 			if rst='1' then
 				s  := (others => '1');
---				s  := (others => '0');
 			elsif req='1' then
 				s2 := '0';
 				for i in g'range loop
@@ -66,7 +55,6 @@ begin
 					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
 				end loop;
---				s := std_logic_vector(unsigned(s) + 1);
 			end if;
 			so <= s;
 		end if;

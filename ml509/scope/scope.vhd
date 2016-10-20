@@ -58,6 +58,10 @@ architecture scope of ml509 is
 	signal input_rst      : std_logic;
 
 	signal input_clk      : std_logic;
+	signal input_rdy      : std_logic;
+	signal input_req      : std_logic;
+	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk90     : std_logic;
@@ -147,7 +151,7 @@ begin
 		O => sys_clk);
 
 	process (gpio_sw_c, ictlr_clk)
-		variable tmr : unsigned(0 to 8-1);
+		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
 		if gpio_sw_c='1' then
 			tmr := (others => '0');
@@ -178,10 +182,21 @@ begin
 		ddr_clk0    => ddrs_clk0,
 		ddr_clk90   => ddrs_clk90,
 		gtx_clk     => gtx_clk,
+		input_rst   => input_rst,
 		ddr_rst     => ddrs_rst,
 		gtx_rst     => gtx_rst);
 
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g => g)
+	port map (
+		clk => input_clk,
+		rst => input_rst,
+		req => input_req,
+		so  => input_data);
+
 	ddrphy_dqsi <= (others => ddrs_clk0);
+	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga           => VIRTEX5,
@@ -201,8 +216,10 @@ begin
 		DDR_BYTESIZE   => BYTE_SIZE)
 	port map (
 
---		input_rst      => input_rst,
 		input_clk      => input_clk,
+		input_req      => input_req,
+		input_rdy      => input_rdy,
+		input_data     => input_data,
 
 		ddrs_rst       => ddrs_rst,
 		ddrs_clks(0)   => ddrs_clk0,

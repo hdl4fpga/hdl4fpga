@@ -54,7 +54,7 @@ entity scope is
 
 		input_rst  : in  std_logic := '0';
 		input_clk  : in  std_logic;
-		input_req  : buffer std_logic;
+		input_req  : out std_logic;
 		input_rdy  : in  std_logic := '1';
 		input_data : in  std_logic_vector(DDR_DATAGEAR*DDR_WORDSIZE-1 downto 0);
 

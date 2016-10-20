@@ -52,7 +52,6 @@ architecture scope of ecp3versa is
 	signal sys_rst_n : std_logic;
 
 	signal dcm_rst   : std_logic;
-	signal input_rst : std_logic;
 	signal ddrs_rst  : std_logic;
 	signal mii_rst   : std_logic;
 	signal vga_rst   : std_logic;
@@ -60,7 +59,6 @@ architecture scope of ecp3versa is
 	signal dcm_lckd   : std_logic;
 	signal video_lckd : std_logic;
 	signal ddrs_lckd  : std_logic;
-	signal input_lckd : std_logic;
 
 	---------------------------------------------
 	-- Frequency - 400 Mhz - 450 Mhz - 500 Mhz --
@@ -105,7 +103,12 @@ architecture scope of ecp3versa is
 	signal ddrphy_wlrdy : std_logic;
 	signal ddrphy_pll : std_logic_vector(8-1 downto 0);
 
-	signal input_clk : std_logic;
+	signal input_rst  : std_logic;
+	signal input_clk  : std_logic;
+	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
+	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
 
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
@@ -145,9 +148,20 @@ begin
 
 		video_clk0 => vga_clk,
 		video_rst  => vga_rst);
+	input_clk <= clk;
+	input_rst <= sys_rst;
 
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g => g)
+	port map (
+		clk => input_clk,
+		rst => input_rst,
+		req => input_req,
+		so  => input_data);
+
+	input_rdy <= not input_rst;
 	ddrphy_rst(1) <= ddrphy_rst(0);
-	input_clk <= ddr_sclk;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => LatticeECP3,
@@ -166,9 +180,10 @@ begin
 		DDR_WORDSIZE   => word_size,
 		DDR_BYTESIZE   => byte_size)
 	port map (
-
-		input_rst    => ddrs_rst,
-		input_clk    => input_clk,
+		input_clk      => input_clk,
+		input_req      => input_req,
+		input_rdy      => input_rdy,
+		input_data     => input_data,
 
 		ddrs_rst     => ddrs_rst,
 		ddrs_clks(0) => ddr_sclk,

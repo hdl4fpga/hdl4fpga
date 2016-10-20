@@ -53,6 +53,18 @@ architecture scope of nuhs3adsp is
 	signal sys_rst   : std_logic;
 	signal sys_clk : std_logic;
 
+	signal video_clk : std_logic;
+
+	signal ddrs_rst  : std_logic;
+	signal vga_rst   : std_logic;
+
+	signal input_rst : std_logic;
+	signal input_clk : std_logic;
+	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
+	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
+
 	--------------------------------------------------
 	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
 	-- Multiply by --  20     --  25     --  10     --
@@ -64,17 +76,6 @@ architecture scope of nuhs3adsp is
 	constant clk0    : natural :=  0;
 	constant clk90   : natural :=  1;
 	signal ddrs_clks : std_logic_vector(0 to 2-1);
-
-	signal input_clk : std_logic;
-	signal video_clk : std_logic;
-
-	signal input_rst : std_logic;
-	signal ddrs_rst  : std_logic;
-	signal vga_rst   : std_logic;
-
-	signal input_rdy  : std_logic;
-	signal input_req  : std_logic;
-	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 
 	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -147,6 +148,8 @@ begin
 		video_rst => vga_rst);
 
 	testpattern_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g => g)
 	port map (
 		clk => input_clk,
 		rst => input_rst,
@@ -172,7 +175,6 @@ begin
 		DDR_WORDSIZE   => word_size,
 		DDR_BYTESIZE   => byte_size)
 	port map (
-
 		input_clk      => input_clk,
 		input_req      => input_req,
 		input_rdy      => input_rdy,

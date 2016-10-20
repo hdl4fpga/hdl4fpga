@@ -85,9 +85,14 @@ architecture scope of arty is
 	signal ddrs0div_rst   : std_logic;
 	signal ddrs90div_rst  : std_logic;
 	signal ddrsiod_rst    : std_logic;
-	signal input_rst      : std_logic;
 
-	signal input_clk      : std_logic;
+	signal input_rst  : std_logic;
+	signal input_clk  : std_logic;
+	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
+	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
+
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk0div   : std_logic;
@@ -197,6 +202,7 @@ begin
 		sys_rst       => dcm_rst,
 		sys_clk       => sys_clk,
 		input_clk     => input_clk,
+		input_rst     => input_rst,
 		ioctrl_clk    => ioctrl_clk,
 		ioctrl_rst    => ioctrl_rst,
 		ddr_clk0      => ddrs_clk0,
@@ -222,7 +228,16 @@ begin
 		end if;
 	end process;
 	
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g => g)
+	port map (
+		clk => input_clk,
+		rst => input_rst,
+		req => input_req,
+		so  => input_data);
 
+	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		FPGA           => VIRTEX5,
@@ -241,8 +256,10 @@ begin
 		DDR_WORDSIZE   => WORD_SIZE,
 		DDR_BYTESIZE   => BYTE_SIZE)
 	port map (
---		input_rst => input_rst,
-		input_clk => input_clk,
+		input_clk      => input_clk,
+		input_req      => input_req,
+		input_rdy      => input_rdy,
+		input_data     => input_data,
 
 		ddrs_rst       => ddrs0div_rst,
 		ddrs_clks(0)   => ddrs_clk0div,

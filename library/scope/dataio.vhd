@@ -58,7 +58,7 @@ entity dataio is
 
 		ddrs_di_req : in  std_logic;
 		ddrs_di_rdy : out std_logic;
-		ddrs_di     : buffer std_logic_vector;
+		ddrs_di     : out std_logic_vector;
 		ddrs_do_rdy : in  std_logic;
 		ddrs_do     : in  std_logic_vector;
 		

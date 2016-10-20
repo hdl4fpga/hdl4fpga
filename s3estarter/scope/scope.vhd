@@ -70,11 +70,16 @@ architecture scope of s3Estarter is
 	signal ddrs_lckd   : std_logic;
 	signal input_lckd  : std_logic;
 
-	signal input_clk   : std_logic;
 
 	signal ddrs_clks   : std_logic_vector(0 to 2-1);
 	constant clk0      : natural := 0;
 	constant clk90     : natural := 1;
+
+	signal input_clk   : std_logic;
+	signal input_rdy  : std_logic;
+	signal input_req  : std_logic;
+	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddr_clk     : std_logic_vector(0 downto 0);
 	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -128,6 +133,16 @@ begin
 		ddr_clk90 => ddrs_clks(clk90),
 		ddr_rst   => ddrs_rst);
 
+	testpattern_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g => g)
+	port map (
+		clk => input_clk,
+		rst => input_rst,
+		req => input_req,
+		so  => input_data);
+
+	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
 		fpga => spartan3,
@@ -147,8 +162,11 @@ begin
 		DDR_BYTESIZE   => byte_size)
 	port map (
 
---		input_rst => input_rst,
-		input_clk => input_clk,
+		input_clk      => input_clk,
+		input_req      => input_req,
+		input_rdy      => input_rdy,
+		input_data     => input_data,
+
 
 		ddrs_rst => ddrs_rst,
 		ddrs_clks => ddrs_clks,
