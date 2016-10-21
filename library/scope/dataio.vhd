@@ -113,16 +113,16 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => ddrs_di);
 
-	process (ddrs_clk, ddrs_di_req)
-	begin
-		if BUFFERED_OUTPUT then
-			if rising_edge(ddrs_clk) then
-				ddrs_di_rdy <= ddrs_di_req;
-			end if;
-		else
 			ddrs_di_rdy <= ddrs_di_req;
-		end if;
-	end process;
+--	process (ddrs_clk, ddrs_di_req)
+--	begin
+--		if BUFFERED_OUTPUT then
+--			if rising_edge(ddrs_clk) then
+--				ddrs_di_rdy <= ddrs_di_req;
+--			end if;
+--		else
+--		end if;
+--	end process;
 
 	input_req <= datai_req;
 	ddrio_b: block
