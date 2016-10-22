@@ -24,6 +24,12 @@ add wave -noupdate /testbench/ras_n
 add wave -noupdate /testbench/cas_n
 add wave -noupdate /testbench/we_n
 add wave -noupdate /testbench/odt
+add wave -noupdate /testbench/arty_e/scope_e/dataio_e/datai_e/output_flush
+add wave -noupdate /testbench/arty_e/scope_e/dataio_e/datai_e/output_rst
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/datai_e/output_data
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/datai_e/wr_addr
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/datai_e/rd_addr
+add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/dataio_e/datai_e/rd_data
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/ba(2) -radix hexadecimal} {/testbench/ba(1) -radix hexadecimal} {/testbench/ba(0) -radix hexadecimal}} -subitemconfig {/testbench/ba(2) {-height 16 -radix hexadecimal} /testbench/ba(1) {-height 16 -radix hexadecimal} /testbench/ba(0) {-height 16 -radix hexadecimal}} /testbench/ba
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/addr(13) -radix hexadecimal} {/testbench/addr(12) -radix hexadecimal} {/testbench/addr(11) -radix hexadecimal} {/testbench/addr(10) -radix hexadecimal} {/testbench/addr(9) -radix hexadecimal} {/testbench/addr(8) -radix hexadecimal} {/testbench/addr(7) -radix hexadecimal} {/testbench/addr(6) -radix hexadecimal} {/testbench/addr(5) -radix hexadecimal} {/testbench/addr(4) -radix hexadecimal} {/testbench/addr(3) -radix hexadecimal} {/testbench/addr(2) -radix hexadecimal} {/testbench/addr(1) -radix hexadecimal} {/testbench/addr(0) -radix hexadecimal}} -subitemconfig {/testbench/addr(13) {-height 16 -radix hexadecimal} /testbench/addr(12) {-height 16 -radix hexadecimal} /testbench/addr(11) {-height 16 -radix hexadecimal} /testbench/addr(10) {-height 16 -radix hexadecimal} /testbench/addr(9) {-height 16 -radix hexadecimal} /testbench/addr(8) {-height 16 -radix hexadecimal} /testbench/addr(7) {-height 16 -radix hexadecimal} /testbench/addr(6) {-height 16 -radix hexadecimal} /testbench/addr(5) {-height 16 -radix hexadecimal} /testbench/addr(4) {-height 16 -radix hexadecimal} /testbench/addr(3) {-height 16 -radix hexadecimal} /testbench/addr(2) {-height 16 -radix hexadecimal} /testbench/addr(1) {-height 16 -radix hexadecimal} /testbench/addr(0) {-height 16 -radix hexadecimal}} /testbench/addr
 add wave -noupdate -expand /testbench/dqs_p
@@ -102,8 +108,8 @@ add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_e/wrfifo_i/x
 add wave -noupdate -radix hexadecimal /testbench/arty_e/scope_e/ddr_e/wrfifo_i/xdr_fifo_g(1)/outbyte_i/do
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17007127 ps} 0} {{Cursor 2} {17039308 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {19702918 ps} 0} {{Cursor 2} {18465389 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 153
 configure wave -valuecolwidth 140
 configure wave -justifyvalue left
@@ -118,4 +124,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {17113618 ps} {17257178 ps}
+WaveRestoreZoom {18405194 ps} {18486406 ps}

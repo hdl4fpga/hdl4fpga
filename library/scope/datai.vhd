@@ -53,23 +53,32 @@ architecture def of datai is
 begin
 
 	process (input_clk)
+		variable flush_cycles : unsigned(0 to 2-1);
 	begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
 				wr_addr <= (others => '0');
-				output_rst <= '1';
+				if not BUFFERED_OUTPUT then
+					flush_cycles := to_unsigned(0,flush_cycles'length);
+				else
+					flush_cycles := to_unsigned(1,flush_cycles'length);
+				end if;
 			else
+				if output_rst='1' then
+					flush_cycles := flush_cycles - 1;
+				end if;
 				wr_addr <= inc(gray(wr_addr));
-				output_rst <= '0';
 			end if;
+			output_rst <= not flush_cycles(0);
 		end if;
 	end process;
 
 	process (output_clk)
 		variable flush_cycles : unsigned(0 to 2-1);
+		variable sync_rst : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			if output_rst='1' then
+			if sync_rst='1' then
 				rd_addr <= (others => '0');
 				if not BUFFERED_OUTPUT then
 					flush_cycles := to_unsigned(0,flush_cycles'length);
@@ -82,6 +91,7 @@ begin
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
 			end if;
+			sync_rst := output_rst;
 			output_flush <= not flush_cycles(0);
 		end if;
 	end process;
