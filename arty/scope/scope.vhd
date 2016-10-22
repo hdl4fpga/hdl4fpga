@@ -255,7 +255,7 @@ begin
 		DDR_DATAEDGES  => DATA_EDGES,
 		DDR_WORDSIZE   => WORD_SIZE,
 		DDR_BYTESIZE   => BYTE_SIZE,
-		BUFFERED_OUTPUT => FALSE)
+		BUFFERED_OUTPUT => TRUE)
 	port map (
 		input_clk      => input_clk,
 		input_req      => input_req,

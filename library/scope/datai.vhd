@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity datai is
 	generic (
@@ -65,18 +66,23 @@ begin
 	end process;
 
 	process (output_clk)
+		variable flush_cycles : unsigned(0 to 2-1);
 	begin
 		if rising_edge(output_clk) then
 			if output_rst='1' then
 				rd_addr <= (others => '0');
-				output_flush <= '1';
+				if not BUFFERED_OUTPUT then
+					flush_cycles := to_unsigned(0,flush_cycles'length);
+				else
+					flush_cycles := to_unsigned(1,flush_cycles'length);
+				end if;
 			elsif output_flush='1' then
 				rd_addr <= inc(gray(rd_addr));
-				output_flush <= '0';
+				flush_cycles := flush_cycles - 1;
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
-				output_flush <= '0';
 			end if;
+			output_flush <= not flush_cycles(0);
 		end if;
 	end process;
 
@@ -93,21 +99,20 @@ begin
 		rd_addr => rd_addr,
 		rd_data => rd_data);
 
-	buffer_g : if BUFFERED_OUTPUT generate	
-		register_e : entity hdl4fpga.align
-		generic map (
-			n =>  output_data'length,
-			d => (1 to output_data'length => 1))
-		port map (
-			clk => output_clk,
-			ena => output_req,
-			di  => rd_data,
-			do  => output_data);
-	end generate;
-
-	no_buffer_g : if not BUFFERED_OUTPUT generate	
-		output_data <= rd_data;
-	end generate;
+	process (output_clk, rd_data)
+	begin
+		if BUFFERED_OUTPUT then	
+			if rising_edge(output_clk) then
+				if output_req='1' then
+					output_data <= rd_data;
+				elsif output_flush='1' then
+					output_data <= rd_data;
+				end if;
+			end if;
+		else
+			output_data <= rd_data;
+		end if;
+	end process;
 
 	process (output_clk)
 	begin
