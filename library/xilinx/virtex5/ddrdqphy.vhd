@@ -424,11 +424,13 @@ begin
 			sys_rdy => adjsto_rdy);
 
 		process (sys_dqso)
+			variable pp : std_logic_vector(dqso'range);
 		begin
 			dqso <= (others => '0');
 			for i in dqso'range loop
 				if i mod 2 = 1 then
-					dqso(i) <= reverse(sys_dqso)(i);
+					dqso(i) <= pp(i);
+					pp(i) := reverse(sys_dqso)(i);
 				end if;
 			end loop;
 		end process;

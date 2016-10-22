@@ -33,7 +33,7 @@ OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk falling;
 NET "phy_txclk" TNM_NET = phy_txclk;
 
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
-NET "ddrphy_dqi*"    MAXDELAY = .75 ns;
+#NET "ddrphy_dqi*"    MAXDELAY = .75 ns;
 
 # ###################### #
 # Ignore crossclock time #

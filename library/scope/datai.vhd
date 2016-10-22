@@ -109,6 +109,16 @@ begin
 		rd_addr => rd_addr,
 		rd_data => rd_data);
 
+--	shr_e : entity hdl4fpga.align
+--	generic map (
+--		n => output_dat'length,
+--		d => (1 to output_dat'length => 1))
+--	port map (
+--		clk => output_clk,
+--		ena => 
+--		di  => rd_data,
+--		do  => output_data);
+
 	process (output_clk, rd_data)
 	begin
 		if BUFFERED_OUTPUT then	
