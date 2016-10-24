@@ -190,7 +190,7 @@ begin
 			mii_txc  => open,
 			mii_txen => pktrx_rdy);
 
-		process (mii_rxc)
+		process (dataio_rst, mii_rxc)
 			variable rdy_edge : std_logic;
 			variable req_edge : std_logic;
 			variable aux : unsigned(cntr'range);
