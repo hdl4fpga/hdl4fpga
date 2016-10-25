@@ -49,7 +49,6 @@ architecture scope of ecp3versa is
 	constant uclk_period : natural := 10*ns;
 
 	signal sys_rst   : std_logic;
-	signal sys_rst_n : std_logic;
 
 	signal dcm_rst   : std_logic;
 	signal ddrs_rst  : std_logic;
@@ -69,8 +68,8 @@ architecture scope of ecp3versa is
 	-- ddr_clkok -   2     -   2     -    2    --
 	---------------------------------------------
 
-	constant ddr_clki  : natural := 1;
-	constant ddr_clkfb : natural := 5;
+	constant ddr_clki  : natural := 2;
+	constant ddr_clkfb : natural := 9;
 	constant ddr_clkop : natural := 2;
 	constant ddr_clkok : natural := 2;
 
@@ -126,8 +125,18 @@ architecture scope of ecp3versa is
 
 begin
 
-	sys_rst   <= not fpga_gsrn;
-	sys_rst_n <= not sys_rst;
+	process (fpga_gsrn, clk)
+		variable tmr : unsigned(0 to 3-1);
+	begin
+		if fpga_gsrn='0' then
+			tmr := (others => '0');
+		elsif rising_edge(clk) then
+			if tmr(0)='0' then
+				tmr := tmr + 1;
+			end if;
+		end if;
+		sys_rst <= not tmr(0);
+	end process;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
@@ -274,7 +283,7 @@ begin
 		ddr_dqs => ddr3_dqs);
 	ddr3_dm <= (others => '0');
 
-	phy1_rst  <= sys_rst_n;
+	phy1_rst  <= fpga_gsrn;
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 

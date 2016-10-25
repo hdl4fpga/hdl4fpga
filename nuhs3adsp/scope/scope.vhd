@@ -71,18 +71,18 @@ architecture scope of nuhs3adsp is
 	-- Divide by   --   3     --   3     --   1     --
 	--------------------------------------------------
 
-	constant ddr_mul : natural := 25;
-	constant ddr_div : natural :=  3;
-	constant clk0    : natural :=  0;
-	constant clk90   : natural :=  1;
-	signal ddrs_clks : std_logic_vector(0 to 2-1);
+	constant ddr_mul   : natural := 25;
+	constant ddr_div   : natural :=  3;
+	constant clk0      : natural :=  0;
+	constant clk90     : natural :=  1;
+	signal ddrs_clks   : std_logic_vector(0 to 2-1);
 
 	signal ddr_dqst    : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso    : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqt     : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo     : std_logic_vector(ddr_dq'range);
 	signal ddr_clk     : std_logic_vector(0 downto 0);
-	signal ddr_lp_clk : std_logic;
+	signal ddr_lp_clk  : std_logic;
 	signal ddr_sto1_open : std_logic;
 
 	signal ddrphy_cke  : std_logic_vector(CMMD_GEAR-1 downto 0);
