@@ -93,7 +93,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_dmi : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dmt : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dmo : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddrphy_dqi : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0) := x"f8_f7_f6_f5_f4_f3_f2_f1";
+	signal ddrphy_dqi : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 	signal ddrphy_dqt : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddrphy_dqo : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 	signal ddrphy_sto : std_logic_vector(DATA_GEAR*WORD_SIZE/BYTE_SIZE-1 downto 0);

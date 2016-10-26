@@ -31,7 +31,6 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.xdr_db.all;
---use hdl4fpga.cgafont.all;
 
 library unisim;
 use unisim.vcomponents.all;

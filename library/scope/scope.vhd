@@ -51,7 +51,6 @@ entity scope is
 
 	port (
 		ddrs_rst : in std_logic;
-		sys_ini : out std_logic;
 
 		input_rst  : in  std_logic := '0';
 		input_clk  : in  std_logic;

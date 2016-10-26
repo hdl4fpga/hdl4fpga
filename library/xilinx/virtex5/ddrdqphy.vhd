@@ -429,8 +429,7 @@ begin
 			dqso <= (others => '0');
 			for i in dqso'range loop
 				if i mod 2 = 1 then
-					dqso(i) <= pp(i);
-					pp(i) := reverse(sys_dqso)(i);
+					dqso(i) <= reverse(sys_dqso)(i);
 				end if;
 			end loop;
 		end process;
