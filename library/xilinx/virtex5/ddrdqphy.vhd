@@ -73,6 +73,7 @@ entity ddrdqphy is
 		constant rst0div  : natural := 0;
 		constant rst90div : natural := 1;
 		constant rstiod   : natural := 2;
+		constant TCP4     : natural := tcp/(tap_dly*4);
 end;
 
 library hdl4fpga;
@@ -161,8 +162,8 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
---			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp/4);
+--			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp4);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -333,8 +334,8 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
---			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp/4);
+--			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp4);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -423,16 +424,32 @@ begin
 			sys_req => adjsto_req,
 			sys_rdy => adjsto_rdy);
 
-		process (sys_dqso)
+		process (sys_clks(clk0div))
 		begin
-			dqso <= (others => '0');
-			for i in dqso'range loop
-				if i mod 2 = 1 then
-					dqso(i) <= reverse(sys_dqso)(i);
-				end if;
-			end loop;
+			if falling_edge(sys_clks(clk0div)) then
+				dqso <= (others => '0');
+				for i in dqso'range loop
+					if i mod 2 = 1 then
+						dqso(i) <= reverse(sys_dqso)(i);
+					end if;
+				end loop;
+			end if;
+
+			if rising_edge(sys_clks(clk0div)) then
+				dqst <= reverse(sys_dqst);
+			end if;
 		end process;
-		dqst <= reverse(sys_dqst);
+
+--		process (sys_dqso)
+--		begin
+--			dqso <= (others => '0');
+--			for i in dqso'range loop
+--				if i mod 2 = 1 then
+--					dqso(i) <= reverse(sys_dqso)(i);
+--				end if;
+--			end loop;
+--		end process;
+--		dqst <= reverse(sys_dqst);
 
 		sys_sto <= (others => sto);
 
