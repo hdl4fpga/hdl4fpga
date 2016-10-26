@@ -47,7 +47,7 @@ begin
 
 		if rising_edge(clk) then
 			if rst='1' then
---				s  := (others => '1');
+				s  := (others => '1');
 				s  := (others => '0');
 			elsif req='1' then
 				s2 := '0';
@@ -55,8 +55,8 @@ begin
 					s1   := s(i);
 --					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
-					s := std_logic_vector(unsigned(s) + 1);
 				end loop;
+				s := std_logic_vector(unsigned(s) + 1);
 			end if;
 			so <= s;
 		end if;
