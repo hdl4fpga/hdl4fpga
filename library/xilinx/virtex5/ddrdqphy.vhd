@@ -424,7 +424,6 @@ begin
 			sys_rdy => adjsto_rdy);
 
 		process (sys_dqso)
-			variable pp : std_logic_vector(dqso'range);
 		begin
 			dqso <= (others => '0');
 			for i in dqso'range loop
