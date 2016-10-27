@@ -66,22 +66,22 @@ TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.omdr_i/reg_g[0]
 # Others #
 # ###### #
 
-NET "clk_fpga_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
-NET "clk_fpga_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
-NET "ddr2_clk_p[*]" IOSTANDARD = DIFF_SSTL18_II;
-NET "ddr2_clk_n[*]" IOSTANDARD = DIFF_SSTL18_II;
-NET "ddr2_dqs_p[*]" IOSTANDARD = DIFF_SSTL18_II_DCI;
-NET "ddr2_dqs_n[*]" IOSTANDARD = DIFF_SSTL18_II_DCI;
-NET "ddr2_d[*]"     IOSTANDARD = SSTL18_II_DCI;
-NET "ddr2_dm[*]"    IOSTANDARD = SSTL18_II;
-NET "ddr2_we"       IOSTANDARD = SSTL18_II;
-NET "ddr2_cas"      IOSTANDARD = SSTL18_II;
-NET "ddr2_ras"      IOSTANDARD = SSTL18_II;
-NET "ddr2_cs[*]"    IOSTANDARD = SSTL18_II;
-NET "ddr2_cke[*]"   IOSTANDARD = SSTL18_II;
-NET "ddr2_ba[*]"    IOSTANDARD = SSTL18_II;
-NET "ddr2_a[*]"     IOSTANDARD = SSTL18_II;
-NET "ddr2_odt[*]"   IOSTANDARD = SSTL18_II;
+NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "ddr2_clk_p[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II;
+NET "ddr2_clk_n[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II;
+NET "ddr2_dqs_p[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II_DCI;
+NET "ddr2_dqs_n[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II_DCI;
+NET "ddr2_d[*]"     IOB=TRUE | IOSTANDARD = SSTL18_II_DCI;
+NET "ddr2_dm[*]"    IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_we"       IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_cas"      IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_ras"      IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_cs[*]"    IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_cke[*]"   IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_ba[*]"    IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_a[*]"     IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_odt[*]"   IOB=TRUE | IOSTANDARD = SSTL18_II;
 NET "dvi_gpio1"     IOSTANDARD = SSTL18_II;
 
 #NET "ddr2_scl"       IOSTANDARD = SSTL18_II;
