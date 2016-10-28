@@ -61,7 +61,7 @@ begin
 				if not BUFFERED_OUTPUT then
 					flush_cycles := to_unsigned(0,flush_cycles'length);
 				else
-					flush_cycles := to_unsigned(1,flush_cycles'length);
+					flush_cycles := to_unsigned(3,flush_cycles'length);
 				end if;
 			else
 				if output_rst='1' then
