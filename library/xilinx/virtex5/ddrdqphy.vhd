@@ -64,22 +64,23 @@ entity ddrdqphy is
 		ddr_dqst   : out std_logic;
 		ddr_dqso   : out std_logic);
 
-		constant clk0div  : natural := 0; 
-		constant clk90div : natural := 1;
-		constant iodclk   : natural := 2;
-		constant clk0     : natural := 3; 
-		constant clk90    : natural := 4;
-
-		constant rst0div  : natural := 0;
-		constant rst90div : natural := 1;
-		constant rstiod   : natural := 2;
-		constant TCP4     : natural := tcp/(tap_dly*4);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture virtex of ddrdqphy is
+
+	constant TCP4     : natural := ((TCP/TAP_DLY)+3)/4-1;
+	constant clk0div  : natural := 0; 
+	constant clk90div : natural := 1;
+	constant iodclk   : natural := 2;
+	constant clk0     : natural := 3; 
+	constant clk90    : natural := 4;
+
+	constant rst0div  : natural := 0;
+	constant rst90div : natural := 1;
+	constant rstiod   : natural := 2;
 
 	signal dqi        : std_logic_vector(ddr_dqi'range);
 	signal adjdqs_req : std_logic;
@@ -88,13 +89,13 @@ architecture virtex of ddrdqphy is
 	signal adjdqi_rdy : std_logic_vector(ddr_dqi'range);
 	signal adjsto_req : std_logic;
 	signal adjsto_rdy : std_logic;
-	signal dqs_buf   : std_logic;
-	signal rlrdy : std_logic;
+	signal dqs_buf    : std_logic;
+	signal rlrdy      : std_logic;
 
 	signal tp_dqidly : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly : std_logic_vector(0 to 6-1);
 
-	constant line_delay : time := 1.2 ns;
+	constant LINE_DELAY : time := 1.2 ns;
 begin
 
 	tp_delay <= tp_dqidly when tp_sel(0)='0' else tp_dqsdly;
@@ -115,7 +116,6 @@ begin
 	begin
 		imdr_clk <= (
 			0 => sys_clks(clk0div),
---			0 => not dqs_buf,
 			1 => sys_clks(clk0),
 			2 => sys_clks(clk90),
 			3 => not sys_clks(clk0),
@@ -162,8 +162,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq           when adjpha_rdy='0' else adjdqi_dlyreq;
---			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+10);
-			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp4);
+			delay   <= adjpha_dly(delay'range) when adjpha_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
@@ -193,7 +192,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
-			ddqi <= transport ddr_dqi(i) after line_delay;
+			ddqi <= transport ddr_dqi(i) after LINE_DELAY;
 			dqi_i : iodelay 
 			generic map (
 				DELAY_SRC      => "I",
@@ -334,8 +333,7 @@ begin
 			end process;
 
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
---			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+5);
-			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+tcp4);
+			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
@@ -360,7 +358,7 @@ begin
 				iod_rst => iod_rst,
 				iod_ce  => iod_ce);
 
-			ddqsi <= transport ddr_dqsi after line_delay;
+			ddqsi <= transport ddr_dqsi after LINE_DELAY;
 			dqsidelay_i : idelay 
 			generic map (
 				IOBDELAY_TYPE => "VARIABLE")

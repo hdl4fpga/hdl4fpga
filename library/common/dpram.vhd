@@ -26,16 +26,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity dpram is
-	generic (
-		READ_REGISTER : BOOLEAN := TRUE);
 	port (
-		rd_clk  : in std_logic;
-		rd_ena  : in std_logic := '1';
 		rd_addr : in std_logic_vector;
 		rd_data : out std_logic_vector;
 
 		wr_clk  : in std_logic := '-';
-		wr_ena  : in std_logic;
+		wr_ena  : in std_logic := '1';
 		wr_addr : in std_logic_vector;
 		wr_data : in std_logic_vector);
 end;
@@ -45,20 +41,7 @@ architecture def of dpram is
 
 	signal RAM : word_vector(0 to 2**rd_addr'length-1);
 begin
-	register_g : if READ_REGISTER generate
-		process (rd_clk)
-			begin
-			if rising_edge(rd_clk) then
-				if rd_ena='1' then
-					rd_data <= ram(to_integer(unsigned(rd_addr)));
-				end if;
-			end if;
-		end process;
-	end generate;
-		
-	no_register_g : if not READ_REGISTER generate
-		rd_data <= ram(to_integer(unsigned(rd_addr)));
-	end generate;
+	rd_data <= ram(to_integer(unsigned(rd_addr)));
 		
 	process (wr_clk)
 	begin

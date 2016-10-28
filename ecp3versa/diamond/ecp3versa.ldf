@@ -17,15 +17,6 @@
         <Source name="../../library/scope/mem2vio.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/scope/plot.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/scope/videomem.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/scope/win_scope.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../library/common/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -64,12 +55,6 @@
         </Source>
         <Source name="../scope/dcms.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/video/win_sytm.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
         </Source>
         <Source name="../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
             <Options/>

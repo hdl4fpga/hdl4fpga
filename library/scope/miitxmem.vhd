@@ -199,15 +199,20 @@ begin
 
 	bram_e : entity hdl4fpga.dpram
 	port map (
-		wr_clk => ddrs_clk,
+		wr_clk  => ddrs_clk,
 		wr_addr => wr_address, 
-		wr_ena => wr_ena,
+		wr_ena  => wr_ena,
 		wr_data => wr_data,
-		rd_clk => miitx_clk,
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
-	rad <= std_logic_vector(unsigned(rd_data) rol (miitx_dat'length));
+	process (miitx_clk)
+	begin
+		if rising_edge(miitx_clk) then
+			rad <= std_logic_vector(unsigned(rd_data) rol (miitx_dat'length));
+		end if;
+	end process;
+
 	txd <= word2byte (
 		word => reverse(rad),
 		addr => bysel);
