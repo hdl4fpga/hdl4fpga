@@ -53,7 +53,7 @@ architecture def of datai is
 begin
 
 	process (input_clk)
-		variable flush_cycles : unsigned(0 to 2-1);
+		variable flush_cycles : unsigned(0 to 3-1);
 	begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
