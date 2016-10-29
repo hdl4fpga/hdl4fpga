@@ -75,14 +75,16 @@ begin
 
 	process (output_clk)
 		variable flush_cycles : unsigned(0 to 2-1);
+		variable rst : std_logic;
+		variable sync_rst : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			if output_rst='1' then
+			if rst='1' then
 				rd_addr <= (others => '0');
 				if not BUFFERED_OUTPUT then
 					flush_cycles := to_unsigned(0,flush_cycles'length);
 				else
-					flush_cycles := to_unsigned(1,flush_cycles'length);
+					flush_cycles := to_unsigned(0,flush_cycles'length);
 				end if;
 			elsif output_flush='1' then
 				rd_addr <= inc(gray(rd_addr));
@@ -91,6 +93,8 @@ begin
 				rd_addr <= inc(gray(rd_addr));
 			end if;
 			output_flush <= not flush_cycles(0);
+			rst := sync_rst;
+			sync_rst := output_rst;
 		end if;
 	end process;
 
