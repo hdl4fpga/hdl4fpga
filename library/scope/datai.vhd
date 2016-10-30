@@ -108,18 +108,28 @@ begin
 		rd_addr => rd_addr,
 		rd_data => rd_data);
 
-	process (output_clk, rd_data)
-	begin
-		if BUFFERED_OUTPUT then	
-			if rising_edge(output_clk) then
-				if rd_ena='1' then
-					output_data <= rd_data;
-				end if;
-			end if;
-		else
-			output_data <= rd_data;
-		end if;
-	end process;
+	reg_output_e : entity hdl4fpga.align
+	generic map (
+		n => input_data'length,
+		d => (1 to input_data'length => 2))
+	port map (
+		clk => output_clk,
+		ena => rd_ena,
+		di  => rd_data,
+		do  => output_data);
+	
+--	process (output_clk, rd_data)
+--	begin
+--		if BUFFERED_OUTPUT then	
+--			if rising_edge(output_clk) then
+--				if rd_ena='1' then
+--					output_data <= rd_data;
+--				end if;
+--			end if;
+--		else
+--			output_data <= rd_data;
+--		end if;
+--	end process;
 
 	process (output_clk)
 	begin

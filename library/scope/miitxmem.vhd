@@ -69,8 +69,8 @@ architecture def of miitxmem is
 	signal wr_data : dword;
 
 	signal rd_address : std_logic_vector(0 to bram_size-1);
-	signal rd_data : dword;
-	signal rad : dword;
+	signal rd_data    : dword;
+	signal tx_data    : dword;
 	signal bysel : std_logic_vector(1 to unsigned_num_bits(ddrs_di'length/miitx_dat'length-1));
 
 	signal addri_edge : std_logic;
@@ -206,15 +206,17 @@ begin
 		rd_addr => rd_address,
 		rd_data => rd_data);
 
-	process (miitx_clk)
-	begin
-		if rising_edge(miitx_clk) then
-			rad <= std_logic_vector(unsigned(rd_data) rol (miitx_dat'length));
-		end if;
-	end process;
+	tx_register_e : entity hdl4fpga.align
+	generic map (
+		n => rd_data'length,
+		d => (rd_data'range=> 1))
+	port map (
+		clk => miitx_clk,
+		di  => rd_data,
+		do  => tx_data);
 
 	txd <= word2byte (
-		word => reverse(rad),
+		word => reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),
 		addr => bysel);
 	miitx_dat <= txd;
 end;

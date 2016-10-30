@@ -49,11 +49,14 @@ NET input_clk  TNM_NET = RAMS RAMS_input;
 NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
 NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 
-TIMESPEC TS_r2o_ddr2ddr  = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
-TIMESPEC TS_f2f_ddr2gtx  = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
-TIMESPEC TS_f2f_sclk2ddr = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
-TIMESPEC TS_f2f_ddr2sclk = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
-TIMESPEC TS_f2f_sclk2input = FROM FFS_sysclk  TO FFS_input      TIG;
+TIMESPEC TS_r2o_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
+TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+TIMESPEC TS_r2f_ddr2gtx    = FROM RAMS_ddrsclk0 TO FFS_gtxclk     TIG;
+TIMESPEC TS_f2f_sclk2ddr   = FROM FFS_sysclk    TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2f_ddr2sclk   = FROM FFS_ddrsclk0  TO FFS_sysclk     TIG;
+TIMESPEC TS_r2f_input2ddr  = FROM RAMS_input    TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2f_input2ddr  = FROM FFS_input     TO FFS_ddrsclk0   TIG;
+TIMESPEC TS_f2f_sclk2input = FROM FFS_sysclk    TO FFS_input      TIG;
 
 TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
 TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.omdr_i/reg_g[0].gear2_g.fft_i) TIG;
