@@ -67,6 +67,7 @@ architecture def of miitxmem is
 	signal wr_address : std_logic_vector(0 to bram_size-1);
 	signal wr_ena  : std_logic;
 	signal wr_data : dword;
+	signal dummy   : dword;
 
 	signal rd_address : std_logic_vector(0 to bram_size-1);
 	signal rd_data    : dword;
@@ -128,15 +129,15 @@ begin
 				addro <= to_unsigned(2**addro'length-1, addro'length);
 				addro_edge <= '1';
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
-				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
-				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
+				bydly := std_logic_vector(to_unsigned(2**(bycnt'length-1)-3, bydly'length)); 
+				bysel <= std_logic_vector(to_unsigned(2**(bycnt'length-1)-2, bysel'length)); 
 				ena <= '1';
 				rdy <= '0';
 			elsif miitx_req='0' then
 				addro_edge <= addro(bram_num-1);
 				bycnt := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
-				bydly := to_unsigned(2**(bycnt'length-1)-3, bydly'length); 
-				bysel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
+				bydly := std_logic_vector(to_unsigned(2**(bycnt'length-1)-3, bydly'length)); 
+				bysel <= std_logic_vector(to_unsigned(2**(bycnt'length-1)-2, bysel'length)); 
 				ena <= '1';
 				rdy <= '0';
 			else
@@ -184,36 +185,23 @@ begin
 		n => 1,
 		d => (1 to 1 => wr_delay-1))
 	port map (
-		clk => ddrs_clk,
+		clk   => ddrs_clk,
 		di(0) => dirdy,
 		do(0) => wr_ena);
 
-	rd_address_i : entity hdl4fpga.align
-	generic map (
-		n => rd_address'length,
-		d => (rd_address'range => 1))
+	bram_e : entity hdl4fpga.bram
 	port map (
-		clk => miitx_clk,
-		di  => std_logic_vector(addro),
-		do  => rd_address);
+		clka  => ddrs_clk,
+		wea   => wr_ena,
+		addra => wr_address, 
+		dia   => wr_data,
+		doa   => dummy,
 
-	bram_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => ddrs_clk,
-		wr_addr => wr_address, 
-		wr_ena  => wr_ena,
-		wr_data => wr_data,
-		rd_addr => rd_address,
-		rd_data => rd_data);
-
-	tx_register_e : entity hdl4fpga.align
-	generic map (
-		n => rd_data'length,
-		d => (rd_data'range=> 1))
-	port map (
-		clk => miitx_clk,
-		di  => rd_data,
-		do  => tx_data);
+		clkb  => miitx_clk,
+		web   => '0',
+		addrb => std_logic_vector(addro), 
+		dib   => wr_data, 
+		dob   => tx_data);
 
 	txd <= word2byte (
 		word => reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),

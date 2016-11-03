@@ -27,8 +27,7 @@ use ieee.numeric_std.all;
 
 entity datai is
 	generic (
-		FIFO_SIZE : natural := 8;
-		BUFFERED_OUTPUT : boolean := TRUE);
+		FIFO_SIZE : natural := 8);
 	port (
 		input_clk   : in std_logic;
 		input_data  : in std_logic_vector;
@@ -44,92 +43,67 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of datai is
-	signal wr_addr    : std_logic_vector(0 to FIFO_SIZE-1);
-	signal rd_addr    : std_logic_vector(0 to FIFO_SIZE-1);
-	signal rd_data    : std_logic_vector(output_data'range);
-	signal rd_ena     : std_logic;
+	signal wr_addr      : std_logic_vector(0 to FIFO_SIZE-1);
+	signal rd_addr      : std_logic_vector(0 to FIFO_SIZE-1);
+	signal rd_ena       : std_logic;
+	signal dummy        : std_logic_vector(output_data'range);
 	signal output_flush : std_logic;
-	signal output_rst : std_logic;
+	signal output_rst   : std_logic;
 begin
 
 	process (input_clk)
-		variable flush_cycles : unsigned(0 to 3-1);
+		variable flush  : unsigned(0 to 3-1);
 	begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
 				wr_addr <= (others => '0');
-				if not BUFFERED_OUTPUT then
-					flush_cycles := to_unsigned(0,flush_cycles'length);
-				else
-					flush_cycles := to_unsigned(3,flush_cycles'length);
-				end if;
+				flush   := to_unsigned(3,flush'length);
 			else
+				wr_addr  <= inc(gray(wr_addr));
 				if output_rst='1' then
-					flush_cycles := flush_cycles - 1;
+					flush := flush - 1;
 				end if;
-				wr_addr <= inc(gray(wr_addr));
 			end if;
-			output_rst <= not flush_cycles(0);
+			output_rst <= not flush(0);
 		end if;
 	end process;
 
 	process (output_clk)
-		variable flush_cycles : unsigned(0 to 2-1);
-		variable rst : std_logic;
+		variable flush    : unsigned(0 to 3-1);
+		variable rst      : std_logic;
 		variable sync_rst : std_logic;
 	begin
 		if rising_edge(output_clk) then
 			if rst='1' then
 				rd_addr <= (others => '0');
-				if not BUFFERED_OUTPUT then
-					flush_cycles := to_unsigned(0,flush_cycles'length);
-				else
-					flush_cycles := to_unsigned(0,flush_cycles'length);
-				end if;
+				flush   := to_unsigned(1,flush'length);
 			elsif output_flush='1' then
 				rd_addr <= inc(gray(rd_addr));
-				flush_cycles := flush_cycles - 1;
+				flush   := flush - 1;
 			elsif output_req='1' then
 				rd_addr <= inc(gray(rd_addr));
 			end if;
-			output_flush <= not flush_cycles(0);
-			rst := sync_rst;
-			sync_rst := output_rst;
+			output_flush <= not flush(0);
+			rst          := sync_rst;
+			sync_rst     := output_rst;
 		end if;
 	end process;
 
 	rd_ena <= output_req or output_flush;
-	fifo_e : entity hdl4fpga.dpram
+	fifo_e : entity hdl4fpga.bram
 	port map (
-		wr_clk  => input_clk,
-		wr_addr => wr_addr, 
-		wr_data => input_data,
+		clka  => input_clk,
+		wea   => '1',
+		addra => wr_addr, 
+		dia   => input_data,
+		doa   => dummy,
 
-		rd_addr => rd_addr,
-		rd_data => rd_data);
-
-	reg_output_e : entity hdl4fpga.align
-	generic map (
-		n => input_data'length,
-		d => (1 to input_data'length => 2))
-	port map (
-		clk => output_clk,
-		ena => rd_ena,
-		di  => rd_data,
-		do  => output_data);
-	
---	process (output_clk, rd_data)
---	begin
---		if BUFFERED_OUTPUT then	
---			if rising_edge(output_clk) then
---				if rd_ena='1' then
---					output_data <= rd_data;
---				end if;
---			end if;
---		else
---			output_data <= rd_data;
---		end if;
---	end process;
+		clkb  => output_clk,
+		enab  => rd_ena,
+		web   => '0',
+		addrb => rd_addr, 
+		dib   => input_data, 
+		dob   => output_data);
 
 	process (output_clk)
 	begin

@@ -396,7 +396,7 @@ package body xdr_param is
 	begin
 
 		setup_l : for i in 0 to lat_tab'length-1 loop
-			sel_sch(i) := to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length);
+			sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length));
 		end loop;
 		
 		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));

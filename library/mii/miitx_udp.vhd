@@ -83,13 +83,13 @@ begin
 	generic map (
 		mem_data => 
 --			x"ffffffffffff" &       -- MAC Destination Address
---			x"00270e0ff595" &       -- MAC Destination Address UNSAM
-			x"00270e0a90e9" &       -- MAC Destination Address casa
+			x"00270e0ff595" &       -- MAC Destination Address UNSAM
+--			x"00270e0a90e9" &       -- MAC Destination Address casa
 			x"000000010203"	&       -- MAC Source Address
 			x"0800"         &       -- MAC Protocol ID
 			ipheader_checksumed(
 				x"4500"         &	-- IP  Version, header length, TOS
-				to_unsigned(payload_size+28,16) &	-- IP  Length
+				std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
 				x"0000"         &	-- IP  Identification
 				x"0000"         &	-- IP  Fragmentation
 				x"0511"         &	-- IP  TTL, protocol
@@ -97,7 +97,7 @@ begin
 				x"c0a802c8"     &	-- IP  Source address
 				x"ffffffff")    &	-- IP  Destination address
 			x"04000400"         &   -- UDP Source port, Destination port
-			to_unsigned(payload_size+8,16) & -- UDP Length,
+			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
 			x"0000")	   	        -- Checksum
 	port map (
 		mii_txc  => mii_txc,

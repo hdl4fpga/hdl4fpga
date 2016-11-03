@@ -60,16 +60,6 @@ package std is
 		constant arg2 : natural)
 		return std_logic_vector;
 
-	function to_unsigned (
-		constant arg1 : natural;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector;
-
-	function to_unsigned (
-		constant arg1 : natural;
-		constant arg2 : natural)
-		return std_logic_vector;
-
 	--------------------
 	-- Counter functions
 	--------------------
@@ -491,22 +481,6 @@ package body std is
 			cntr <= val;
 		end if;
 	end procedure;
-
-	function to_unsigned (
-		constant arg1 : natural;
-		constant arg2 : natural)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(unsigned'(to_unsigned(arg1,arg2)));
-	end;
-
-	function to_unsigned (
-		constant arg1 : natural;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector is
-	begin
-		return std_logic_vector(unsigned'(to_unsigned(arg1,arg2'length)));
-	end;
 
 	function mux (
 		constant i : std_logic_vector;

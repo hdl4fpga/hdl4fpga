@@ -34,8 +34,7 @@ entity dataio is
 		DDR_BANKSIZE    : natural :=  2;
 		DDR_ADDRSIZE    : natural := 13;
 		DDR_CLNMSIZE    : natural :=  6;
-		DDR_LINESIZE    : natural := 16;
-		BUFFERED_OUTPUT : boolean := TRUE);
+		DDR_LINESIZE    : natural := 16);
 	port (
 		sys_rst     : in std_logic;
 
@@ -101,8 +100,6 @@ begin
 	end process;
 
 	datai_e : entity hdl4fpga.datai
-	generic map (
-		BUFFERED_OUTPUT => BUFFERED_OUTPUT)
 	port map (
 		input_clk   => input_clk,
 		input_req   => datai_req, 

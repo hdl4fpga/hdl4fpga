@@ -46,8 +46,7 @@ entity scope is
 		DDR_WORDSIZE    : natural := 16;
 		DDR_BYTESIZE    : natural :=  8;
 		PAGE_SIZE       : natural := 9;
-		NIBBLE_SIZE     : natural := 4;
-		BUFFERED_OUTPUT : boolean := TRUE);
+		NIBBLE_SIZE     : natural := 4);
 
 	port (
 		ddrs_rst : in std_logic;
@@ -238,8 +237,7 @@ begin
 		DDR_BANKSIZE    => DDR_BANKSIZE,
 		DDR_ADDRSIZE    => DDR_ADDRSIZE,
 		DDR_CLNMSIZE    => DDR_CLMNSIZE,
-		DDR_LINESIZE    => DDR_DATAGEAR*DDR_WORDSIZE,
-		BUFFERED_OUTPUT => BUFFERED_OUTPUT)
+		DDR_LINESIZE    => DDR_DATAGEAR*DDR_WORDSIZE)
 	port map (
 		sys_rst      => dataio_rst,
 

@@ -61,6 +61,7 @@ architecture scope of ml509 is
 	signal input_req      : std_logic;
 	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
+--	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk90     : std_logic;
@@ -468,11 +469,9 @@ begin
 		tp_sel <= std_logic_vector(sel);
 	end process;
 
-
 	gpio_led <= 
 		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else
 		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
-
 
 	bus_error <= (others => 'Z');
 	gpio_led_n <= tp_bit(0);

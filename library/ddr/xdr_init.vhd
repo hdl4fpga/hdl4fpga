@@ -172,7 +172,7 @@ begin
 				xdr_mr_addr <= row.mr;
 			else
 				xdr_init_pc  <= sc_rst;
-				xdr_timer_id <= to_unsigned(TMR_RST, xdr_timer_id'length);
+				xdr_timer_id <= std_logic_vector(to_unsigned(TMR_RST, xdr_timer_id'length));
 				xdr_init_rst <= '0';
 				xdr_init_cke <= '0';
 				init_rdy <= '0';

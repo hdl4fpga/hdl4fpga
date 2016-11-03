@@ -366,20 +366,20 @@ begin
 	rdfifo_i : entity hdl4fpga.xdr_rdfifo
 	generic map (
 		DATA_PHASES => DATA_PHASES,
-		DATA_GEAR => DATA_GEAR,
-		WORD_SIZE => WORD_SIZE,
-		BYTE_SIZE => BYTE_SIZE,
-		data_delay => RDFIFO_LAT,
+		DATA_GEAR   => DATA_GEAR,
+		WORD_SIZE   => WORD_SIZE,
+		BYTE_SIZE   => BYTE_SIZE,
+		data_delay  => RDFIFO_LAT,
 		acntr_delay => RDFIFO_DELAY)
 	port map (
-		sys_clk => sys_clks(0),
-		sys_rdy => sys_do_rdy,
-		sys_rea => xdr_mpu_rea,
-		sys_do  => sys_do,
+		sys_clk     => sys_clks(0),
+		sys_rdy     => sys_do_rdy,
+		sys_rea     => xdr_mpu_rea,
+		sys_do      => sys_do,
 		xdr_win_dq  => xdr_win_dq,
 		xdr_win_dqs => xdr_win_dqs,
-		xdr_dqsi => xdr_dqsi,
-		xdr_dqi  => xdr_dqi);
+		xdr_dqsi    => xdr_dqsi,
+		xdr_dqi     => xdr_dqi);
 		
 	rot_val <= xdr_rotval (
 		LINE_SIZE => DATA_GEAR*WORD_SIZE,
@@ -411,19 +411,19 @@ begin
 
 	wrfifo_i : entity hdl4fpga.xdr_wrfifo
 	generic map (
-		DATA_PHASES  => DATA_PHASES,
-		DATA_GEAR => DATA_GEAR,
-		WORD_SIZE => WORD_SIZE,
-		BYTE_SIZE => BYTE_SIZE)
+		DATA_PHASES => DATA_PHASES,
+		DATA_GEAR   => DATA_GEAR,
+		WORD_SIZE   => WORD_SIZE,
+		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		sys_clk => sys_clks(0),
-		sys_dqi => rot_di,
-		sys_ena => sys_di_rdy,
-		sys_req => xdr_mpu_wri,
-		sys_dmi => sys_dm,
-		xdr_clks => xdr_wclks,
-		xdr_dmo => xdr_wr_dm,
-		xdr_enas => xdr_wenas, 
-		xdr_dqo => xdr_dqo);
+		sys_clk     => sys_clks(0),
+		sys_dqi     => rot_di,
+		sys_ena     => sys_di_rdy,
+		sys_req     => xdr_mpu_wri,
+		sys_dmi     => sys_dm,
+		xdr_clks    => xdr_wclks,
+		xdr_dmo     => xdr_wr_dm,
+		xdr_enas    => xdr_wenas, 
+		xdr_dqo     => xdr_dqo);
 
 end;
