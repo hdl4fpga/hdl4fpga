@@ -105,7 +105,23 @@ begin
 		signal clks : std_logic_vector(0 to 3);
 		signal rsts : std_logic_vector(clks'range);
 		signal lcks : std_logic_vector(clks'range);
+		signal grst : std_logic;
 	begin
+		process (sys_rst, sys_clk)
+			variable sync1 : std_logic;
+			variable sync2 : std_logic;
+		begin
+			if sys_rst='1' then
+				grst  <= '1';
+				sync1 := '1';
+				sync2 := '1';
+			elsif rising_edge(sys_clk) then
+				grst  <= sync2;
+				sync2 := sync1;
+				sync1 := not (ddr_lckd and input_lckd and gtx_lckd);
+			end if;
+		end process;
+
 		clks(0) <= input_clk;
 		clks(1) <= gtx_clk;
 		clks(3) <= ddr_clk0;
@@ -119,16 +135,19 @@ begin
 		ddr_rst      <= rsts(3);
 
 		rsts_g: for i in clks'range generate
-			signal q : std_logic;
 		begin
-			process (clks(i), sys_rst)
+			process (clks(i), grst)
+				variable sync1 : std_logic;
+				variable sync2 : std_logic;
 			begin
-				if sys_rst='1' then
-					q <= '1';
+				if grst='1' then
 					rsts(i) <= '1';
+					sync1   := '1';
+					sync2   := '1';
 				elsif rising_edge(clks(i)) then
-					q <= not lcks(i);
-					rsts(i) <= q;
+					rsts(i) <= sync2;
+					sync2   := sync1;
+					sync1   := not lcks(i);
 				end if;
 			end process;
 		end generate;

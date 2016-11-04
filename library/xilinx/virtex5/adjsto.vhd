@@ -27,6 +27,7 @@ architecture def of adjsto is
 	signal   sel      : std_logic_vector(0 to unsigned_num_bits(dly'length-1)-1);
 	signal   start    : std_logic;
 	signal   finish   : std_logic;
+	signal   sync_inc : std_logic;
 
 begin
 
@@ -68,13 +69,22 @@ begin
 		end if;
 	end process;
 
+	process (iod_clk)
+		variable sync_inc1 : std_logic;
+	begin
+		if rising_edge(iod_clk) then
+			sync_inc  <= sync_inc1;
+			sync_inc1 := inc;
+		end if;
+	end process;
+
 	process (start, iod_clk)
-		variable tmr : unsigned(0 to 4-1);
+		variable tmr   : unsigned(0 to 4-1);
 	begin
 		if start='0' then
-			tmr      := (others => '0');
-			sel      <= (others => '0');
-			finish   <= '0';
+			tmr       := (others => '0');
+			sel       <= (others => '0');
+			finish    <= '0';
 		elsif rising_edge(iod_clk) then
 			if finish='0' then 
 				if start='1' then

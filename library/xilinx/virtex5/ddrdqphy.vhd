@@ -112,6 +112,7 @@ begin
 	adjsto_req <= tp_sel(1) and setif(adjdqi_rdy=(adjdqi_rdy'range => '1'));
 	iddr_g : for i in ddr_dqi'range generate
 		signal q         : std_logic_vector(0 to GEAR-1);
+		signal q_sync    : std_logic;
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 	begin
 		imdr_clk <= (
@@ -166,8 +167,17 @@ begin
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= q(0);
+				tp_bit(4) <= q_sync;
 			end generate;
+
+			process(sys_clks(iodclk))
+				variable sync1 : std_logic;
+			begin
+				if rising_edge(sys_clks(iodclk)) then
+					q_sync <= sync1;
+					sync1  := q(1);
+				end if;
+			end process;
 
 			adjdqi_e : entity hdl4fpga.adjpha
 			generic map (
@@ -180,7 +190,7 @@ begin
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q(0),
+				smp     => q_sync,
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -300,7 +310,8 @@ begin
 		signal dqso     : std_logic_vector(sys_dqso'range);
 		signal dqst     : std_logic_vector(sys_dqst'range);
 		signal sto      : std_logic;
-		signal smp : std_logic_vector(0 to GEAR-1);
+		signal smp      : std_logic_vector(0 to GEAR-1);
+		signal smp_sync : std_logic_vector(0 to GEAR-1);
 		signal imdr_clk : std_logic_vector(0 to 5-1);
 	begin
 
@@ -335,6 +346,15 @@ begin
 			dly_req <= adjpha_dlyreq when adjdqs_rdy='0' else adjsto_dlyreq;
 			delay <= adjpha_dly(delay'range) when adjdqs_rdy='0' else std_logic_vector(unsigned(adjpha_dly(delay'range))+TCP4);
 
+			process(sys_clks(iodclk))
+				variable sync1 : std_logic_vector(smp'range);
+			begin
+				if rising_edge(sys_clks(iodclk)) then
+					smp_sync <= sync1;
+					sync1    := smp;
+				end if;
+			end process;
+
 			adjdqs_e : entity hdl4fpga.adjpha
 			generic map (
 				TCP => 2*TCP,
@@ -346,7 +366,7 @@ begin
 				rdy     => adjdqs_rdy,
 				dly_rdy => dly_rdy,
 				dly_req => adjpha_dlyreq,
-				smp     => smp(0),
+				smp     => smp_sync(0),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -378,7 +398,7 @@ begin
 			i => dqsi,
 			o => dqs_buf);
 
-		tp_bit(0) <= smp(0);
+		tp_bit(0) <= smp_sync(0);
 
 		imdr_clk <= (
 			0 => sys_clks(clk0div),
