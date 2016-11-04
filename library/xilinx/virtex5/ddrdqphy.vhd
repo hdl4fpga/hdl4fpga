@@ -175,7 +175,7 @@ begin
 			begin
 				if rising_edge(sys_clks(iodclk)) then
 					q_sync <= sync1;
-					sync1  := q(1);
+					sync1  := q(0);
 				end if;
 			end process;
 
