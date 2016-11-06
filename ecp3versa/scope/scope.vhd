@@ -52,7 +52,7 @@ architecture scope of ecp3versa is
 
 	signal dcm_rst   : std_logic;
 	signal ddrs_rst  : std_logic;
-	signal mii_rst   : std_logic;
+	signal gtx_rst   : std_logic;
 	signal vga_rst   : std_logic;
 
 	signal dcm_lckd   : std_logic;
@@ -109,10 +109,11 @@ architecture scope of ecp3versa is
 	signal input_data : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
 
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
-	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(phy1_tx_d'range);
+	signal gtx_clk   : std_logic;
+	signal mii_rxdv  : std_logic;
+	signal mii_rxd   : std_logic_vector(phy1_rx_d'range);
+	signal mii_txen  : std_logic;
+	signal mii_txd   : std_logic_vector(phy1_tx_d'range);
 
 	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
@@ -148,17 +149,20 @@ begin
 	port map (
 		sys_rst    => sys_rst,
 		sys_clk    => clk,
+		phy_clk    => phy1_125clk,
 
+		gtx_clk    => gtx_clk,
+		gtx_rst    => gtx_rst,
+		input_clk  => input_clk,
+		input_rst  => input_rst,
 		ddr_eclk   => ddr_eclk,
 		ddr_sclk   => ddr_sclk, 
 		ddr_sclk2x => ddr_sclk2x, 
 		ddr_rst    => ddrs_rst,
 		ddr_pha    => ddr_pha,
 
-		video_clk0 => vga_clk,
+		video_clk  => vga_clk,
 		video_rst  => vga_rst);
-	input_clk <= clk;
-	input_rst <= sys_rst;
 
 	testpattern_e : entity hdl4fpga.lfsr_gen
 	generic map (
@@ -222,11 +226,11 @@ begin
 		ddr_sto      => ddrphy_sti,
 		ddr_sti      => ddrphy_sto,
 
-		mii_rst      => sys_rst,
+		mii_rst      => gtx_rst,
 		mii_rxc      => phy1_rxc,
 		mii_rxdv     => mii_rxdv,
 		mii_rxd      => mii_rxd,
-		mii_txc      => phy1_125clk,
+		mii_txc      => gtx_clk,
 		mii_txen     => mii_txen,
 		mii_txd      => mii_txd);
 
@@ -271,7 +275,7 @@ begin
 		ddr_ck  => ddr3_clk,
 		ddr_cke => ddr3_cke,
 		ddr_odt => ddr3_odt,
-		ddr_cs => ddr3_cs,
+		ddr_cs  => ddr3_cs,
 		ddr_ras => ddr3_ras,
 		ddr_cas => ddr3_cas,
 		ddr_we  => ddr3_we,
@@ -283,7 +287,7 @@ begin
 		ddr_dqs => ddr3_dqs);
 	ddr3_dm <= (others => '0');
 
-	phy1_rst  <= fpga_gsrn;
+	phy1_rst  <= not gtx_rst;
 	phy1_mdc  <= '0';
 	phy1_mdio <= '0';
 
@@ -297,7 +301,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 
-		mii_txc  => phy1_125clk,
+		mii_txc  => gtx_clk,
 		mii_txen => mii_txen,
 		mii_txd  => mii_txd,
 		iob_txen => phy1_tx_en,

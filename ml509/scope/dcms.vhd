@@ -102,7 +102,7 @@ begin
 		dcm_lck => input_lckd);
 
 	rsts_b : block
-		signal clks : std_logic_vector(0 to 3);
+		signal clks : std_logic_vector(0 to 2);
 		signal rsts : std_logic_vector(clks'range);
 		signal lcks : std_logic_vector(clks'range);
 		signal grst : std_logic;
@@ -124,15 +124,15 @@ begin
 
 		clks(0) <= input_clk;
 		clks(1) <= gtx_clk;
-		clks(3) <= ddr_clk0;
+		clks(2) <= ddr_clk0;
 
 		lcks(0) <= input_lckd;
 		lcks(1) <= gtx_lckd;
-		lcks(3) <= ddr_lckd;
+		lcks(2) <= ddr_lckd;
 
-		input_rst    <= rsts(0);
-		gtx_rst      <= rsts(1);
-		ddr_rst      <= rsts(3);
+		input_rst <= rsts(0);
+		gtx_rst   <= rsts(1);
+		ddr_rst   <= rsts(2);
 
 		rsts_g: for i in clks'range generate
 		begin

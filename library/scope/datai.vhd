@@ -106,11 +106,13 @@ begin
 		dob   => output_data);
 
 	process (output_clk)
+		variable sync : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			output_rdy <= setif(
+			sync := setif(
 				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
 				(wr_addr(0 to 1) /= rd_addr(0 to 1)));
+			output_rdy <= sync;
 		end if;
 	end process;
 
