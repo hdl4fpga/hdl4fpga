@@ -47,7 +47,7 @@ begin
 					end if;
 				end loop;
 			else
-				inc <= not cnt(0);
+				inc <= cnt(0);
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
 			d   := word2byte(reverse(dly & ddr_sti), sel);
@@ -66,15 +66,6 @@ begin
 			if ddr_sti='0' then
 				start <= '1';
 			end if;
-		end if;
-	end process;
-
-	process (iod_clk)
-		variable sync_inc1 : std_logic;
-	begin
-		if rising_edge(iod_clk) then
-			sync_inc  <= sync_inc1;
-			sync_inc1 := inc;
 		end if;
 	end process;
 

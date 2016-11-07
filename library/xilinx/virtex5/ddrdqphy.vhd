@@ -71,7 +71,7 @@ use hdl4fpga.std.all;
 
 architecture virtex of ddrdqphy is
 
-	constant TCP4     : natural := ((TCP/TAP_DLY)+3)/4-1;
+	constant TCP4     : natural := ((TCP/TAP_DLY)+3)/4+1;
 	constant clk0div  : natural := 0; 
 	constant clk90div : natural := 1;
 	constant iodclk   : natural := 2;
@@ -167,7 +167,7 @@ begin
 
 			xx_g : if i=0 generate
 				tp_dqidly <= delay;
-				tp_bit(4) <= q_sync;
+				tp_bit(4) <= q(0);
 			end generate;
 
 			process(sys_clks(iodclk))
@@ -190,7 +190,7 @@ begin
 				rdy     => adjpha_rdy,
 				dly_req => adjpha_dlyreq,
 				dly_rdy => dly_rdy,
-				smp     => q_sync,
+				smp     => q(0),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -366,7 +366,7 @@ begin
 				rdy     => adjdqs_rdy,
 				dly_rdy => dly_rdy,
 				dly_req => adjpha_dlyreq,
-				smp     => smp_sync(0),
+				smp     => smp(0),
 				dly     => adjpha_dly);
 
 			dlyctlr : entity hdl4fpga.dlyctlr
@@ -398,7 +398,7 @@ begin
 			i => dqsi,
 			o => dqs_buf);
 
-		tp_bit(0) <= smp_sync(0);
+		tp_bit(0) <= smp(0);
 
 		imdr_clk <= (
 			0 => sys_clks(clk0div),
