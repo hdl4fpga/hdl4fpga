@@ -42,12 +42,12 @@ begin
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			elsif st='1' then
 				for i in 0 to GEAR/2-1 loop
-					if ddr_smp(i*GEAR/2)='1' or ddr_smp(i*GEAR/2+1)='1' then
+					if ddr_smp(i*GEAR/2)='1' xor ddr_smp(i*GEAR/2+1)='1' then
 						cnt := cnt + 1;
 					end if;
 				end loop;
 			else
-				inc <= cnt(0);
+				inc <= not cnt(0);
 				cnt := to_unsigned((GEAR/2)-1, cnt'length);
 			end if;
 			d   := word2byte(reverse(dly & ddr_sti), sel);

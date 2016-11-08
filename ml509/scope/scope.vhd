@@ -43,7 +43,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := ddr2_d'length;
+	constant WORD_SIZE    : natural := 16; --ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -60,8 +60,8 @@ architecture scope of ml509 is
 	signal input_rdy      : std_logic;
 	signal input_req      : std_logic;
 	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
---	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
+--	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
+	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk90     : std_logic;
@@ -131,7 +131,7 @@ architecture scope of ml509 is
 	signal tp_delay : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	signal tst : std_logic;
-	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE)-1);
+	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 begin
 
 	idelay_ibufg_i : IBUFGDS_LVPECL_25
@@ -294,15 +294,14 @@ begin
 	sys_clks <= (0 => ddrs_clk0, 1 => ddrs_clk90, 2 => sys_clk, 3 => ddrs_clk0, 4 => ddrs_clk90);
 	phy_rsts <= (0 => ddrs_rst, 2 => phy_iodrst, others => '0');
 	process (sys_rst, sys_clk)
+		variable sync : std_logic;
 	begin
 		if sys_rst='1' then
 			phy_iodrst <= '1';
-			tst <= '0';
+			sync := '1';
 		elsif rising_edge(sys_clk) then
-			phy_iodrst <= ddrs_rst;
-			if gpio_sw_w='1'   then
-				tst <= '1';
-			end if;
+			phy_iodrst <= sync;
+			sync := '0';
 		end if;
 	end process;
 
@@ -317,7 +316,7 @@ begin
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		tp_sel(0)   => gpio_sw_s,
+		tp_sel(0)   => '1', --gpio_sw_s,
 		tp_sel(1)   => '1',
 		tp_delay    => tp_delay,
 		tp_bit      => tp_bit,
@@ -458,16 +457,29 @@ begin
 	dvi_de     <= 'Z';
 	dvi_d      <= (others => 'Z');
 
-	process (gpio_sw_c, gpio_sw_e)
-		variable sel : unsigned(tp_sel'range);
+	sel_b : block
+		signal clk : std_logic;
 	begin
-		if gpio_sw_c='1' then
-			sel := (others => '0');
-		elsif rising_edge(gpio_sw_e) then
-			sel := sel + 1;
-		end if;
-		tp_sel <= std_logic_vector(sel);
-	end process;
+		process (gpio_sw_w, gpio_sw_e)
+		begin
+			if gpio_sw_w='1' then
+				clk <= '1';
+			elsif gpio_sw_e='1' then
+				clk <= '0';
+			end if;
+		end process;
+
+		process (gpio_sw_c, clk)
+			variable sel : unsigned(tp_sel'range);
+		begin
+			if gpio_sw_c='1' then
+				sel := (others => '0');
+			elsif rising_edge(clk) then
+				sel := sel + 1;
+			end if;
+			tp_sel <= std_logic_vector(sel);
+		end process;
+	end block;
 
 	gpio_led <= 
 		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else

@@ -8,13 +8,13 @@ rm -f master.dat dump.dat
 exec 3>&1
 tm=$(time ($dir/scope -p $1 -d $2 -h $3 2>&3 > master.dat) 2>&1)
 echo "Memory dumped $tm"
-echo -n "Checking lfsr data : "
-tm=$(time ($dir/check -d $2 < master.dat 2>&3) 2>&1)
-if [ $? -ne 0 ]; then
-	echo "Unsuccessful check"
-	exit 1;
-fi
-echo "Master dump OK, $tm" 1>&1
+#echo -n "Checking lfsr data : "
+#tm=$(time ($dir/check -d $2 < master.dat 2>&3) 2>&1)
+#if [ $? -ne 0 ]; then
+#	echo "Unsuccessful check"
+#	exit 1;
+#fi
+#echo "Master dump OK, $tm" 1>&1
 i=1
 tm=$(time ($dir/scope -p $1 -d $2 -h $3 > dump.dat 2> /dev/null) 2>&1)
 while cmp=$(cmp master.dat dump.dat) ; do 

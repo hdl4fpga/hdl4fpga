@@ -71,7 +71,7 @@ use hdl4fpga.std.all;
 
 architecture virtex of ddrdqphy is
 
-	constant TCP4     : natural := ((TCP/TAP_DLY)+3)/4+1;
+	constant TCP4     : natural := 3; --((TCP/TAP_DLY)+3)/4+1;
 	constant clk0div  : natural := 0; 
 	constant clk90div : natural := 1;
 	constant iodclk   : natural := 2;
@@ -457,17 +457,6 @@ begin
 				dqst <= reverse(sys_dqst);
 			end if;
 		end process;
-
---		process (sys_dqso)
---		begin
---			dqso <= (others => '0');
---			for i in dqso'range loop
---				if i mod 2 = 1 then
---					dqso(i) <= reverse(sys_dqso)(i);
---				end if;
---			end loop;
---		end process;
---		dqst <= reverse(sys_dqst);
 
 		sys_sto <= (others => sto);
 
