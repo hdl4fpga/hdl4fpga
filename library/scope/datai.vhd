@@ -52,12 +52,12 @@ architecture def of datai is
 begin
 
 	process (input_clk)
-		variable flush  : unsigned(0 to 3-1);
+		variable flush  : unsigned(0 to 4-1);
 	begin
 		if rising_edge(input_clk) then
 			if input_req='0' then
 				wr_addr <= (others => '0');
-				flush   := to_unsigned(3,flush'length);
+				flush   := to_unsigned(7,flush'length);
 			else
 				wr_addr  <= inc(gray(wr_addr));
 				if output_rst='1' then

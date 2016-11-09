@@ -43,7 +43,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := 16; --ddr2_d'length;
+	constant WORD_SIZE    : natural := 32; --ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -61,7 +61,8 @@ architecture scope of ml509 is
 	signal input_req      : std_logic;
 	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
 --	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
+	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
+--	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk90     : std_logic;
@@ -486,11 +487,8 @@ begin
 		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
 
 	bus_error <= (others => 'Z');
-	gpio_led_n <= tp_bit(0);
-	gpio_led_s <= tp_bit(1);
-	gpio_led_w <= tp_bit(2);
-	gpio_led_e <= tp_bit(3);
-	gpio_led_c <= tp_bit(4);
+	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= 
+		word2byte(word => tp_bit, addr => tp_sel);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
