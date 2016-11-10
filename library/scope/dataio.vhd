@@ -85,8 +85,8 @@ architecture def of dataio is
 	signal datai_req : std_logic;
 
 	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
-	signal dummy : std_logic_vector(ddrs_di'range);
-	signal kk : std_logic;
+	constant test_core : boolean := FALSE;
+	signal lfsr_rst  : std_logic;
 	signal lfsr_data : std_logic_vector(ddrs_di'range);
 	signal output_data : std_logic_vector(ddrs_di'range);
 begin
@@ -115,16 +115,16 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => output_data);
 
-	kk <= not datai_req;
+	lfsr_rst <= not datai_req;
 	dataii_e : entity hdl4fpga.lfsr_gen
 	generic map (
 		g   => g)
 	port map (
 		clk => ddrs_clk,
-		rst => kk,
+		rst => lfsr_rst,
 		req => ddrs_di_req, 
 		so  => lfsr_data);
-	ddrs_di <= output_data when false else lfsr_data;
+	ddrs_di <= output_data when not test_core else lfsr_data;
 
 	ddrs_di_rdy <= ddrs_di_req;
 
