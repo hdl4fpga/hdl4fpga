@@ -49,19 +49,19 @@ begin
 		if rising_edge(clk) then
 			if rst='1' then
 				s  := (others => '1');
-				s  := to_unsigned(1,s'length);
-				s  := x"0807060504030201";
+--				s  := to_unsigned(1,s'length);
+--				s  := x"0807060504030201";
 			elsif req='1' then
 				s2 := '0';
 				for i in g'range loop
 					s1   := s(i);
---					s(i) := s2 xor (s(s'right) and g(i));
+					s(i) := s2 xor (s(s'right) and g(i));
 					s2   := s1;
 				end loop;
-				for i in 0 to s'length/8-1 loop
-					s(aux'range) := s(aux'range) + 1;
-					s := s ror aux'length;
-				end loop;
+--				for i in 0 to s'length/8-1 loop
+--					s(aux'range) := s(aux'range) + 1;
+--					s := s ror aux'length;
+--				end loop;
 --				s := (1 to s'length-32 => '0') & (s(32 downto 1) + 1);
 			end if;
 			so <= std_logic_vector(s);

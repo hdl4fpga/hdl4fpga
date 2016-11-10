@@ -84,6 +84,11 @@ architecture def of dataio is
 	signal miitx_gnt : std_logic;
 	signal datai_req : std_logic;
 
+	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
+	signal dummy : std_logic_vector(ddrs_di'range);
+	signal kk : std_logic;
+	signal lfsr_data : std_logic_vector(ddrs_di'range);
+	signal output_data : std_logic_vector(ddrs_di'range);
 begin
 
 	process (input_clk)
@@ -107,15 +112,19 @@ begin
 
 		output_clk  => ddrs_clk,
 		output_rdy  => datai_brst_req,
-		output_req  => ddrs_di_req); --,
---		output_data => ddrs_di);
+		output_req  => ddrs_di_req,
+		output_data => output_data);
 
+	kk <= not datai_req;
 	dataii_e : entity hdl4fpga.lfsr_gen
+	generic map (
+		g   => g)
 	port map (
 		clk => ddrs_clk,
-		rst => datai_req,
+		rst => kk,
 		req => ddrs_di_req, 
-		so  => ddrs_di);
+		so  => lfsr_data);
+	ddrs_di <= output_data when false else lfsr_data;
 
 	ddrs_di_rdy <= ddrs_di_req;
 
@@ -166,12 +175,12 @@ begin
 		end process;
 
 		ddrs_addr <= std_logic_vector(
---			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
---			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
---			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
-			to_signed(0, DDR_BANKSIZE+1) & 
-			to_signed(0, DDR_ADDRSIZE+1) & 
-			to_signed(63, DDR_CLNMSIZE+1));
+			to_signed(2**DDR_BANKSIZE-1, DDR_BANKSIZE+1) & 
+			to_signed(2**DDR_ADDRSIZE-1, DDR_ADDRSIZE+1) & 
+			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
+--			to_signed(0, DDR_BANKSIZE+1) & 
+--			to_signed(0, DDR_ADDRSIZE+1) & 
+--			to_signed(63, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
