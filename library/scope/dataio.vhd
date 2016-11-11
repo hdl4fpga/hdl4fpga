@@ -87,7 +87,7 @@ architecture def of dataio is
 --	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 --	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
 	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-	constant TEST_CORE : boolean := TRUE;
+	constant TEST_CORE : boolean := FALSE;
 	signal lfsr_rst  : std_logic;
 	signal lfsr_data : std_logic_vector(ddrs_di'range);
 	signal output_data : std_logic_vector(ddrs_di'range);
