@@ -62,7 +62,7 @@ begin
 --					s(aux'range) := s(aux'range) + 1;
 --					s := s ror aux'length;
 --				end loop;
---				s := (1 to s'length-32 => '0') & (s(32 downto 1) + 1);
+--				s := (1 to s'length-16 => '0') & (s(16 downto 1) + 1);
 			end if;
 			so <= std_logic_vector(s);
 		end if;

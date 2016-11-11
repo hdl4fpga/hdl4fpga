@@ -43,7 +43,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := 32; --ddr2_d'length;
+	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -60,8 +60,8 @@ architecture scope of ml509 is
 	signal input_rdy      : std_logic;
 	signal input_req      : std_logic;
 	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
---	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
+	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
+--	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
 --	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
