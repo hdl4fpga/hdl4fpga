@@ -30,46 +30,47 @@ use hdl4fpga.std.all;
 
 entity dataio is
 	generic (
-		PAGE_SIZE       : natural :=  9;
-		DDR_BANKSIZE    : natural :=  2;
-		DDR_ADDRSIZE    : natural := 13;
-		DDR_CLNMSIZE    : natural :=  6;
-		DDR_LINESIZE    : natural := 16);
+		PAGE_SIZE    : natural :=  9;
+		DDR_BANKSIZE : natural :=  2;
+		DDR_ADDRSIZE : natural := 13;
+		DDR_CLNMSIZE : natural :=  6;
+		DDR_LINESIZE : natural := 16;
+		DDRCORE_TEST : boolean := TRUE);
 	port (
-		sys_rst     : in std_logic;
+		sys_rst      : in std_logic;
 
-		input_clk   : in  std_logic;
-		input_req   : out std_logic := '1';
-		input_rdy   : in  std_logic;
-		input_data  : in  std_logic_vector;
+		input_clk    : in  std_logic;
+		input_req    : out std_logic := '1';
+		input_rdy    : in  std_logic;
+		input_data   : in  std_logic_vector;
 
-		ddrs_clk    : in  std_logic;
-		ddrs_rreq   : in  std_logic;
-		ddrs_creq   : out std_logic;
-		ddrs_crdy   : in  std_logic;
+		ddrs_clk     : in  std_logic;
+		ddrs_rreq    : in  std_logic;
+		ddrs_creq    : out std_logic;
+		ddrs_crdy    : in  std_logic;
 
-		ddrs_bnka   : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddrs_rowa   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddrs_cola   : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddrs_bnka    : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddrs_rowa    : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddrs_cola    : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
 
-		ddrs_act    : in  std_logic;
-		ddrs_cas    : in  std_logic;
-		ddrs_rw     : out std_logic;
+		ddrs_act     : in  std_logic;
+		ddrs_cas     : in  std_logic;
+		ddrs_rw      : out std_logic;
 
-		ddrs_di_req : in  std_logic;
-		ddrs_di_rdy : out std_logic;
-		ddrs_di     : out std_logic_vector;
-		ddrs_do_rdy : in  std_logic;
-		ddrs_do     : in  std_logic_vector;
+		ddrs_di_req  : in  std_logic;
+		ddrs_di_rdy  : out std_logic;
+		ddrs_di      : out std_logic_vector;
+		ddrs_do_rdy  : in  std_logic;
+		ddrs_do      : in  std_logic_vector;
 		
-		mii_rst     : in  std_logic;
-		mii_txc     : in  std_logic;
-		ddr2mii_req : in  std_logic;
-		ddr2mii_rdy : out std_logic;
-		miitx_req   : in  std_logic;
-		miitx_rdy   : out std_logic;
-		miitx_ena   : out std_logic;
-		miitx_dat   : out std_logic_vector);
+		mii_rst      : in  std_logic;
+		mii_txc      : in  std_logic;
+		ddr2mii_req  : in  std_logic;
+		ddr2mii_rdy  : out std_logic;
+		miitx_req    : in  std_logic;
+		miitx_rdy    : out std_logic;
+		miitx_ena    : out std_logic;
+		miitx_dat    : out std_logic_vector);
 end;
 
 
@@ -84,10 +85,23 @@ architecture def of dataio is
 	signal miitx_gnt : std_logic;
 	signal datai_req : std_logic;
 
---	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
---	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
-	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
-	constant TEST_CORE : boolean := FALSE;
+	function g (
+		constant size : natural)
+		return std_logic_vector is
+		constant g32  : std_logic_vector(32  downto 1) := (32  => '1', 30  => '1', 26  => '1', 25  => '1', others => '0');
+		constant g64  : std_logic_vector(64  downto 1) := (64  => '1', 63  => '1', 61  => '1', 60  => '1', others => '0');
+		constant g128 : std_logic_vector(128 downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
+	begin
+		case size is
+		when 32 =>
+			return g32;
+		when 64 =>
+			return g64;
+		when others =>
+			return g128;
+		end case;
+	end;
+
 	signal lfsr_rst  : std_logic;
 	signal lfsr_data : std_logic_vector(ddrs_di'range);
 	signal output_data : std_logic_vector(ddrs_di'range);
@@ -120,13 +134,13 @@ begin
 	lfsr_rst <= not datai_req;
 	dataii_e : entity hdl4fpga.lfsr_gen
 	generic map (
-		g   => g)
+		g   => g(input_data'length))
 	port map (
 		clk => ddrs_clk,
 		rst => lfsr_rst,
 		req => ddrs_di_req, 
 		so  => lfsr_data);
-	ddrs_di <= lfsr_data when TEST_CORE else output_data;
+	ddrs_di <= lfsr_data when DDRCORE_TEST else output_data;
 
 	ddrs_di_rdy <= ddrs_di_req;
 

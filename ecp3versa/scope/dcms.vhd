@@ -254,25 +254,26 @@ begin
 	rsts_b : block
 		signal grst : std_logic;
 	begin
-		process (sys_rst, sys_clk)
-			variable sync1 : std_logic;
-			variable sync2 : std_logic;
-		begin
-			if sys_rst='1' then
-				grst  <= '1';
-				sync1 := '1';
-				sync2 := '1';
-			elsif rising_edge(sys_clk) then
-				grst  <= sync2;
-				sync2 := sync1;
-				sync1 := '1';
-				for i in pll'range loop
-					sync1 := sync1 and pll(i).lckd;
-				end loop;
-				sync1 := not sync1;
-			end if;
-		end process;
+--		process (sys_rst, sys_clk)
+--			variable sync1 : std_logic;
+--			variable sync2 : std_logic;
+--		begin
+--			if sys_rst='1' then
+--				grst  <= '1';
+--				sync1 := '1';
+--				sync2 := '1';
+--			elsif rising_edge(sys_clk) then
+--				grst  <= sync2;
+--				sync2 := sync1;
+--				sync1 := '1';
+--				for i in pll'range loop
+--					sync1 := sync1 and pll(i).lckd;
+--				end loop;
+--				sync1 := not sync1;
+--			end if;
+--		end process;
 
+		grst <= sys_rst;
 		rsts_g: for i in pll'range generate
 		begin
 			process (pll(i).clk, grst)

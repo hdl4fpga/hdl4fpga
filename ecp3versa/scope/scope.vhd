@@ -126,18 +126,19 @@ architecture scope of ecp3versa is
 
 begin
 
-	process (fpga_gsrn, clk)
-		variable tmr : unsigned(0 to 3-1);
-	begin
-		if fpga_gsrn='0' then
-			tmr := (others => '0');
-		elsif rising_edge(clk) then
-			if tmr(0)='0' then
-				tmr := tmr + 1;
-			end if;
-		end if;
-		sys_rst <= not tmr(0);
-	end process;
+--	process (fpga_gsrn, clk)
+--		variable tmr : unsigned(0 to 3-1);
+--	begin
+--		if fpga_gsrn='0' then
+--			tmr := (others => '0');
+--		elsif rising_edge(clk) then
+--			if tmr(0)='0' then
+--				tmr := tmr + 1;
+--			end if;
+--		end if;
+--		sys_rst <= not tmr(0);
+--	end process;
+	sys_rst <= not fpga_gsrn;
 
 	dcms_e : entity hdl4fpga.dcms
 	generic map (
