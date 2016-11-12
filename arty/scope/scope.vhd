@@ -254,8 +254,7 @@ begin
 		DDR_DATAPHASES => DATA_GEAR,
 		DDR_DATAEDGES  => DATA_EDGES,
 		DDR_WORDSIZE   => WORD_SIZE,
-		DDR_BYTESIZE   => BYTE_SIZE,
-		BUFFERED_OUTPUT => TRUE)
+		DDR_BYTESIZE   => BYTE_SIZE)
 	port map (
 		input_clk      => input_clk,
 		input_req      => input_req,
