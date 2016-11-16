@@ -43,7 +43,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := ddr2_d'length;
+	constant WORD_SIZE    : natural := 16; --ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -60,9 +60,9 @@ architecture scope of ml509 is
 	signal input_rdy      : std_logic;
 	signal input_req      : std_logic;
 	signal input_data     : std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
-	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
+--	constant g : std_logic_vector(input_data'length downto 1) := (128 => '1', 127 => '1', 126 => '1', 121 => '1', others => '0');
 --	constant g : std_logic_vector(input_data'length downto 1) := (64 => '1', 63 => '1', 61 => '1', 60 => '1', others => '0');
---	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
+	constant g  : std_logic_vector(input_data'length downto 1) := (32 => '1', 30 => '1', 26 => '1', 25 => '1', others => '0');
 
 	signal ddrs_clk0      : std_logic;
 	signal ddrs_clk90     : std_logic;
@@ -133,6 +133,14 @@ architecture scope of ml509 is
 	signal tp_bit   : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
 	signal tst : std_logic;
 	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
+
+	signal ddr_d    : std_logic_vector(WORD_SIZE-1 downto 0);
+	signal ddr_dm   : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dqsi : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+
+
 begin
 
 	idelay_ibufg_i : IBUFGDS_LVPECL_25
@@ -363,9 +371,9 @@ begin
 		ddr_a       => ddr2_a(ADDR_SIZE-1 downto 0),
 		ddr_odt     => ddr2_odt(0),
 
-		ddr_dm      => ddr2_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dm      => ddr_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr2_d(WORD_SIZE-1 downto 0),
+		ddr_dqi     => ddr_d(WORD_SIZE-1 downto 0),
 		ddr_dqt     => ddr2_dqt,
 		ddr_dqst    => ddr2_dqst,
 		ddr_dqsi    => ddr2_dqsi,
@@ -439,7 +447,8 @@ begin
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
-			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
+--			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
+			ddr_d(i)  <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
 		end generate;
 
 	end block;
