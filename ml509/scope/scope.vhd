@@ -134,6 +134,7 @@ architecture scope of ml509 is
 	signal tst : std_logic;
 	signal tp_sel : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
+	constant ddr_bytes : std_logic_vector(ddr2_d'length/BYTE_SIZE-1 downto 0) := (0 => '1', 7 => '1', others => '0');
 	signal ddr_d    : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr_dm   : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
