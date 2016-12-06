@@ -43,7 +43,7 @@ architecture scope of ml509 is
 	constant CMMD_GEAR    : natural := 1;
 	constant BANK_SIZE    : natural := 2;
 	constant ADDR_SIZE    : natural := 13;
-	constant WORD_SIZE    : natural := 16; --ddr2_d'length;
+	constant WORD_SIZE    : natural := ddr2_d'length;
 	constant DATA_GEAR    : natural := 2;
 	constant BYTE_SIZE    : natural := 8;
 	constant UCLK_PERIOD  : real := 10.0;
@@ -205,7 +205,7 @@ begin
 		req => input_req,
 		so  => input_data);
 
-	ddrphy_dqsi <= (others => ddrs_clk0);
+	ddrphy_ini <= ddrphy_rlreq;
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
@@ -257,8 +257,8 @@ begin
 		ddr_dmt        => ddrphy_dmt,
 		ddr_dmo        => ddrphy_dmo,
 		ddr_dqst       => ddrphy_dqst,
-		ddr_dqsi       => ddrphy_dqsi,
-		ddr_dqso       => ddrphy_dqso,
+		ddr_dqsi       => ddrphy_dqso,
+		ddr_dqso       => ddrphy_dqsi,
 		ddr_dqi        => ddrphy_dqo,
 		ddr_dqt        => ddrphy_dqt,
 		ddr_dqo        => ddrphy_dqi,
@@ -317,22 +317,15 @@ begin
 
 	ddrphy_e : entity hdl4fpga.ddrphy
 	generic map (
-		TCP         => integer(UCLK_PERIOD*1000.0)*ddr_div/ddr_mul,
-		TAP_DELAY   => 78,
-		DATA_EDGE   => TRUE,
+		LOOPBACK    => FALSE,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,
 		DATA_GEAR   => DATA_GEAR,
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		tp_sel(0)   => '1', --gpio_sw_s,
-		tp_sel(1)   => '1',
-		tp_delay    => tp_delay,
-		tp_bit      => tp_bit,
-		sys_clks    => sys_clks,
-		phy_rsts    => phy_rsts,
-
+		phy_rst     => phy_rsts(0),
+		sys_clks    => sys_clks(0 to 1),
 		sys_rst     => (others => '-'),
 		sys_cke     => ddrphy_cke,
 		sys_cs      => ddrphy_cs,
@@ -342,17 +335,9 @@ begin
 		sys_b       => ddrphy_b,
 		sys_a       => ddrphy_a,
 
-		sys_rlreq   => ddrphy_rlreq,
-		sys_rlrdy   => ddrphy_rlrdy,
-		sys_rlcal   => ddrphy_rlcal,
-		sys_rlseq   => ddrphy_rlseq,
-		phy_ini     => ddrphy_ini,
-		phy_rw      => ddrphy_rw,
-		phy_cmd_rdy => ddrphy_cmd_rdy,
-		phy_cmd_req => ddrphy_cmd_req,
-		sys_act     => ddrphy_act,
 		sys_dqst    => ddrphy_dqst,
 		sys_dqso    => ddrphy_dqso,
+		sys_dqsi    => ddrphy_dqsi,
 		sys_dmi     => ddrphy_dmo,
 		sys_dmt     => ddrphy_dmt,
 		sys_dmo     => ddrphy_dmi,
@@ -372,9 +357,9 @@ begin
 		ddr_a       => ddr2_a(ADDR_SIZE-1 downto 0),
 		ddr_odt     => ddr2_odt(0),
 
-		ddr_dm      => ddr_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dm      => ddr2_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr_d(WORD_SIZE-1 downto 0),
+		ddr_dqi     => ddr2_d(WORD_SIZE-1 downto 0),
 		ddr_dqt     => ddr2_dqt,
 		ddr_dqst    => ddr2_dqst,
 		ddr_dqsi    => ddr2_dqsi,
@@ -423,33 +408,21 @@ begin
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
-			xx : if i < WORD_SIZE/BYTE_SIZE generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => ddr2_dqst(i),
-					i   => ddr2_dqso(i),
-					o   => ddr2_dqsi(i),
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
+			dqsiobuf_i : iobufds
+			generic map (
+				iostandard => "DIFF_SSTL18_II_DCI")
+			port map (
+				t   => ddr2_dqst(i),
+				i   => ddr2_dqso(i),
+				o   => ddr2_dqsi(i),
+				io  => ddr2_dqs_p(i),
+				iob => ddr2_dqs_n(i));
 
-			xx_g : if i >= WORD_SIZE/BYTE_SIZE generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => '1',
-					i   => '0',
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
+			
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
---			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
-			ddr_d(i)  <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
+			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
 		end generate;
 
 	end block;
