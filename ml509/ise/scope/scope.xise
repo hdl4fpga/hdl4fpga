@@ -244,7 +244,7 @@
     </file>
     <file xil_pn:name="../../../library/xilinx/pgm_delay.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="308"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="308"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
