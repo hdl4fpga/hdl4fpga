@@ -50,7 +50,7 @@ begin
 			if rst='1' then
 				s  := (others => '1');
 --				s  := to_unsigned(1,s'length);
---				s  := x"0807060504030201";
+--				s  := x"100f0e0d0c0b0a090807060504030201";
 			elsif req='1' then
 				s2 := '0';
 				for i in g'range loop

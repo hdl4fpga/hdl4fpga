@@ -139,8 +139,8 @@ architecture scope of ml509 is
 	signal ddr_dm   : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr_dqsi : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-
+	attribute buffer_type : string;
+	attribute buffer_type of ddr2_dqsi : signal is "none";
 
 begin
 
@@ -417,7 +417,6 @@ begin
 				o   => ddr2_dqsi(i),
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
-
 			
 		end generate;
 

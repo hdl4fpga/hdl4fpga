@@ -196,7 +196,7 @@ begin
 			to_signed(2**DDR_CLNMSIZE-1, DDR_CLNMSIZE+1));
 --			to_signed(0, DDR_BANKSIZE+1) & 
 --			to_signed(0, DDR_ADDRSIZE+1) & 
---			to_signed(63, DDR_CLNMSIZE+1));
+--			to_signed(0, DDR_CLNMSIZE+1));
 
 		creq <= 
 		'1' when sys_rst='1'   else
