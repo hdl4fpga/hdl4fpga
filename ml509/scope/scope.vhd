@@ -70,9 +70,9 @@ architecture scope of ml509 is
 	signal ddr_a          : std_logic_vector(ADDR_SIZE-1 downto 0);
 
 	signal ddr2_clk       : std_logic_vector(2-1 downto 0);
-	signal ddr2_dqst      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr2_dqso      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr2_dqsi      : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
+	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
+	signal ddr2_dqsi      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqo       : std_logic_vector(WORD_SIZE-1 downto 0);
 	signal ddr2_dqt       : std_logic_vector(WORD_SIZE-1 downto 0);
 
@@ -359,11 +359,11 @@ begin
 
 		ddr_dm      => ddr2_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
 		ddr_dqo     => ddr2_dqo,
-		ddr_dqi     => ddr2_d(WORD_SIZE-1 downto 0),
+		ddr_dqi     => ddr_d(WORD_SIZE-1 downto 0),
 		ddr_dqt     => ddr2_dqt,
-		ddr_dqst    => ddr2_dqst,
-		ddr_dqsi    => ddr2_dqsi,
-		ddr_dqso    => ddr2_dqso);
+		ddr_dqst    => ddr2_dqst(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dqsi    => ddr2_dqsi(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dqso    => ddr2_dqso(WORD_SIZE/BYTE_SIZE-1 downto 0));
 
 	ddr2_a(14-1 downto ADDR_SIZE) <= (others => '0');
 	ddr2_ba(3-1 downto 2)  <= (others => '0');
@@ -407,17 +407,43 @@ begin
 				ob => ddr2_clk_n(i));
 		end generate;
 
+		ddr_dq_g : for i  in WORD_SIZE-1 downto 0 generate
+			ddr_d(i) <= ddr2_d(i);
+--			idelay_i : idelay
+--			port map (
+--				rst => '0',
+--				i   => ddr2_d(i),
+--				c   => '0',
+--				ce  => '0',
+--				inc => '0',
+--				o   => ddr_d(i));
+		end generate;
+
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
+			signal dqsi : std_logic;
+		begin
 			dqsiobuf_i : iobufds
 			generic map (
 				iostandard => "DIFF_SSTL18_II_DCI")
 			port map (
 				t   => ddr2_dqst(i),
 				i   => ddr2_dqso(i),
-				o   => ddr2_dqsi(i),
+				o   => dqsi,
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 			
+			idelay_i : idelay
+--			generic map (
+--				IOBDELAY_TYPE => "FIXED",
+--				IOBDELAY_VALUE => 48)
+			port map (
+				rst => '0',
+				i   => dqsi,
+				c   => '0',
+				ce  => '0',
+				inc => '0',
+				o   => ddr2_dqsi(i));
+--			ddr2_dqsi(i) <= dqsi;
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate

@@ -240,7 +240,7 @@ begin
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		FPGA           => VIRTEX5,
+		FPGA           => VIRTEX7,
 		DDR_CMMDGEAR   => CMMD_GEAR,
 		DDR_DATAGEAR   => DATA_GEAR,
 		DDR_MARK       => M15E,

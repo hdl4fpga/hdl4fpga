@@ -33,11 +33,12 @@ use hdl4fpga.std.all;
 
 package xdr_db is
 
-	constant ANY  : natural := 0;
+	constant ANY         : natural := 0;
 
-	constant spartan3 : natural := 1;
-	constant virtex5  : natural := 2;
-	constant LatticeECP3 : natural := 3;
+	constant SPARTAN3    : natural := 1;
+	constant VIRTEX5     : natural := 2;
+	constant LATTICEECP3 : natural := 3;
+	constant VIRTEX7     : natural := 4;
 
 
 	constant DDR1 : natural := 1;

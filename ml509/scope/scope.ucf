@@ -49,8 +49,11 @@ NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 
 TIMESPEC TS_r2f_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+#TIMESPEC TS_f2r_ddr2gtx    = FROM FFS_ddrsclk0  TO RAMS_gtxclk     TIG;
 TIMESPEC TS_f2f_input2ddr  = FROM FFS_input     TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2input  = FROM FFS_ddrsclk0  TO FFS_input      TIG;
+
+NET "ddr2_dqs_p[*]" CLOCK_DEDICATED_ROUTE = FALSE;
 
 NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
 NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
@@ -60,7 +63,6 @@ NET "ddr2_dqs_p[4]" TNM_NET = dqs4;
 NET "ddr2_dqs_p[5]" TNM_NET = dqs5;
 NET "ddr2_dqs_p[6]" TNM_NET = dqs6;
 NET "ddr2_dqs_p[7]" TNM_NET = dqs7;
-NET "ddr2_dqs_p[*]" CLOCK_DEDICATED_ROUTE = FALSE;
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 3.333 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
@@ -98,6 +100,23 @@ TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) 
 TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y29;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y29;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutn" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutp" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X2Y50;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X2Y50;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutn" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutp" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutn" LOC = SLICE_X2Y128;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutp" LOC = SLICE_X2Y128;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutn" LOC = SLICE_X2Y130;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y130;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y131;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y131;
 
 NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
