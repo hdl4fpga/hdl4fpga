@@ -432,18 +432,18 @@ begin
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 			
-			idelay_i : idelay
+--			idelay_i : idelay
 --			generic map (
 --				IOBDELAY_TYPE => "FIXED",
 --				IOBDELAY_VALUE => 48)
-			port map (
-				rst => '0',
-				i   => dqsi,
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr2_dqsi(i));
---			ddr2_dqsi(i) <= dqsi;
+--			port map (
+--				rst => '0',
+--				i   => dqsi,
+--				c   => '0',
+--				ce  => '0',
+--				inc => '0',
+--				o   => ddr2_dqsi(i));
+			ddr2_dqsi(i) <= dqsi;
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate

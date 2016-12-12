@@ -101,22 +101,22 @@ TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) 
 TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y48;
-INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y48;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y29;
-INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y29;
-INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutn" LOC = SLICE_X2Y31;
-INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutp" LOC = SLICE_X2Y31;
-INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X2Y50;
-INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X2Y50;
-INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutn" LOC = SLICE_X2Y51;
-INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutp" LOC = SLICE_X2Y51;
-INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutn" LOC = SLICE_X2Y128;
-INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutp" LOC = SLICE_X2Y128;
-INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutn" LOC = SLICE_X2Y130;
-INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y130;
-INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y131;
-INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y131;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y45;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y46;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutn" LOC = SLICE_X2Y37;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutp" LOC = SLICE_X2Y37;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutn" LOC = SLICE_X2Y55;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutp" LOC = SLICE_X2Y55;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutn" LOC = SLICE_X2Y122;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutp" LOC = SLICE_X2Y122;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutn" LOC = SLICE_X2Y129;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y129;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 
 NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
