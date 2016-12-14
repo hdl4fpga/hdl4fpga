@@ -124,8 +124,8 @@ architecture scope of ml509 is
 	-- Divide by   --   3     --   2     --   2     --
 	--------------------------------------------------
 
-	constant DDR_MUL      : natural := 3; --10;
-	constant DDR_DIV      : natural := 1; --3;
+	constant DDR_MUL      : natural := 11; --3; --10;
+	constant DDR_DIV      : natural := 4; --1; --3;
 
 	signal ictlr_rst      : std_logic;
 

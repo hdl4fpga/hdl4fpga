@@ -118,6 +118,9 @@ INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y129;
 INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
 INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 
+#INST "scope_e/ddr_e" AREA_GROUP=DDR;
+#AREA_GROUP "DDR" RANGE=SLICE_X0Y42:SLICE_X7Y141;
+
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[0].inbyte_i" AREA_GROUP=RAM0;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[1].inbyte_i" AREA_GROUP=RAM0;
 INST "scope_e/ddr_e/rdfifo_i/bytes_g[1].DATA_PHASES_g[0].inbyte_i" AREA_GROUP=RAM1;
@@ -144,6 +147,7 @@ AREA_GROUP "RAM4" RANGE=SLICE_X0Y52:SLICE_X7Y59;
 AREA_GROUP "RAM5" RANGE=SLICE_X0Y119:SLICE_X7Y126;
 AREA_GROUP "RAM6" RANGE=SLICE_X0Y126:SLICE_X7Y133;
 AREA_GROUP "RAM7" RANGE=SLICE_X0Y134:SLICE_X7Y141;
+INST "scope_e/ddr_e" AREA_GROUP=DDR;
 
 NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
