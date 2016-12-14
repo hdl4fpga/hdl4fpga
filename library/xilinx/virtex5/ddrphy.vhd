@@ -82,7 +82,9 @@ entity ddrphy is
 		ddr_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		ddr_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
 
-		ddr_dm  : inout  std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dmi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dmo  : out  std_logic_vector(word_size/byte_size-1 downto 0);
+		ddr_dmt  : out  std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqt  : out std_logic_vector(word_size-1 downto 0);
 		ddr_dqi  : in  std_logic_vector(word_size-1 downto 0);
 		ddr_dqo  : out std_logic_vector(word_size-1 downto 0);
@@ -358,32 +360,23 @@ begin
 
 	end generate;
 
-	process(ddr_dm, ddr_sti)
+	process(ddr_dmi, ddr_sti)
 	begin
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to data_gear-1 loop
 				if loopback then
 					sys_sto(data_gear*i+j) <= ddr_sti(i);
 				else
-					sys_sto(data_gear*i+j) <= ddr_dm(i);
+					sys_sto(data_gear*i+j) <= ddr_dmi(i);
 				end if;
 			end loop;
 		end loop;
 	end process;
 
+	ddr_dmt <= ddmt;
+	ddr_dmo <= ddmo;
 	ddr_dqt <= to_stdlogicvector(ddqt);
 	ddr_dqo <= to_stdlogicvector(ddqo);
-
-	process (ddmo, ddmt)
-	begin
-		for i in ddmo'range loop
-			if ddmt(i)='1' then
-				ddr_dm(i) <= 'Z';
-			else
-				ddr_dm(i) <= ddmo(i);
-			end if;
-		end loop;
-	end process;
 
 	sys_dqo <= to_stdlogicvector(sdqo);
 end;

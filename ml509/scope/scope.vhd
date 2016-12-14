@@ -136,7 +136,9 @@ architecture scope of ml509 is
 
 	constant ddr_bytes : std_logic_vector(ddr2_d'length/BYTE_SIZE-1 downto 0) := (0 => '1', 7 => '1', others => '0');
 	signal ddr_d    : std_logic_vector(WORD_SIZE-1 downto 0);
-	signal ddr_dm   : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dmi  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dmo  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_dmt  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	attribute buffer_type : string;
@@ -357,7 +359,9 @@ begin
 		ddr_a       => ddr2_a(ADDR_SIZE-1 downto 0),
 		ddr_odt     => ddr2_odt(0),
 
-		ddr_dm      => ddr2_dm(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dmt     => ddr_dmt(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dmi     => ddr_dmi(WORD_SIZE/BYTE_SIZE-1 downto 0),
+		ddr_dmo     => ddr_dmo(WORD_SIZE/BYTE_SIZE-1 downto 0),
 		ddr_dqo     => ddr2_dqo,
 		ddr_dqi     => ddr_d(WORD_SIZE-1 downto 0),
 		ddr_dqt     => ddr2_dqt,
@@ -408,20 +412,31 @@ begin
 		end generate;
 
 		ddr_dq_g : for i  in WORD_SIZE-1 downto 0 generate
-			ddr_d(i) <= ddr2_d(i);
---			idelay_i : idelay
---			port map (
---				rst => '0',
---				i   => ddr2_d(i),
---				c   => '0',
---				ce  => '0',
---				inc => '0',
---				o   => ddr_d(i));
+--			ddr_d(i) <= ddr2_d(i);
+			idelay_i : idelay
+			port map (
+				rst => '0',
+				i   => ddr2_d(i),
+				c   => '0',
+				ce  => '0',
+				inc => '0',
+				o   => ddr_d(i));
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 			signal dqsi : std_logic;
 		begin
+			dmidelay_i : idelay
+			port map (
+				rst => '0',
+				i   => ddr2_dm(i),
+				c   => '0',
+				ce  => '0',
+				inc => '0',
+				o   => ddr_dmi(i));
+
+			ddr2_dm(i) <= ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
+
 			dqsiobuf_i : iobufds
 			generic map (
 				iostandard => "DIFF_SSTL18_II_DCI")
@@ -432,18 +447,18 @@ begin
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 			
---			idelay_i : idelay
---			generic map (
---				IOBDELAY_TYPE => "FIXED",
---				IOBDELAY_VALUE => 48)
---			port map (
---				rst => '0',
---				i   => dqsi,
---				c   => '0',
---				ce  => '0',
---				inc => '0',
---				o   => ddr2_dqsi(i));
-			ddr2_dqsi(i) <= dqsi;
+			dqsidelay_i : idelay
+			generic map (
+				IOBDELAY_TYPE => "FIXED",
+				IOBDELAY_VALUE => 50)
+			port map (
+				rst => '0',
+				i   => dqsi,
+				c   => '0',
+				ce  => '0',
+				inc => '0',
+				o   => ddr2_dqsi(i));
+--			ddr2_dqsi(i) <= dqsi;
 		end generate;
 
 		ddr_d_g : for i in 0 to WORD_SIZE-1 generate
