@@ -448,9 +448,9 @@ begin
 				iob => ddr2_dqs_n(i));
 			
 			dqsidelay_i : idelay
-			generic map (
-				IOBDELAY_TYPE => "FIXED",
-				IOBDELAY_VALUE => 50)
+--			generic map (
+--				IOBDELAY_TYPE => "FIXED",
+--				IOBDELAY_VALUE => 55)
 			port map (
 				rst => '0',
 				i   => dqsi,
