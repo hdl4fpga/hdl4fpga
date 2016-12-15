@@ -117,10 +117,17 @@ begin
 		begin
 			dmt(i) <= '0';
 
-			rdmi(i) <= s when t='1' and not loopback else d;
+			--rdmi(i) <= s when t='1' and not loopback else d;
 			process (clks(i))
 			begin
 				if rising_edge(clks(i)) then
+				
+					if t='1' and not loopback then
+						rdmi(i) <= s;
+					else
+						rdmi(i) <= d;
+					end if;
+					
 					t <= sys_dmt(i);
 					d <= sys_dmi(i);
 					s <= sys_sti(i);

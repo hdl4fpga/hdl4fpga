@@ -49,6 +49,7 @@ NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
 
 TIMESPEC TS_r2f_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+#TIMESPEC TS_f2f_gtx2ddr    = FROM FFS_gtxclk    TO FFS_ddrsclk90  TIG;
 #TIMESPEC TS_f2r_ddr2gtx    = FROM FFS_ddrsclk0  TO RAMS_gtxclk     TIG;
 TIMESPEC TS_f2f_input2ddr  = FROM FFS_input     TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2input  = FROM FFS_ddrsclk0  TO FFS_input      TIG;
