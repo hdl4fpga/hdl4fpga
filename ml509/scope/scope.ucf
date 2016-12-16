@@ -65,7 +65,7 @@ NET "ddr2_dqs_p[5]" TNM_NET = dqs5;
 NET "ddr2_dqs_p[6]" TNM_NET = dqs6;
 NET "ddr2_dqs_p[7]" TNM_NET = dqs7;
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 3.636 ns HIGH 50%;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 3.750 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso2 = PERIOD "dqs2" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso3 = PERIOD "dqs3" TS_dso0 HIGH 50% PHASE 0.0;
@@ -74,24 +74,23 @@ TIMESPEC TS_dso5 = PERIOD "dqs5" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso6 = PERIOD "dqs6" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso7 = PERIOD "dqs7" TS_dso0 HIGH 50% PHASE 0.0;
 
-NET "ddr2_dm[0]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[1] RISING;
-NET "ddr2_dm[2]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[2] RISING;
-NET "ddr2_dm[3]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[3] RISING;
-NET "ddr2_dm[4]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[4] RISING;
-NET "ddr2_dm[5]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[5] RISING;
-NET "ddr2_dm[6]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[6] RISING;
-NET "ddr2_dm[7]" OFFSET = IN .833 ns VALID 3.636 ns BEFORE ddr2_dqs_p[7] RISING;
+NET "ddr2_dm[0]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[2]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[2] RISING;
+NET "ddr2_dm[3]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[3] RISING;
+NET "ddr2_dm[4]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[4] RISING;
+NET "ddr2_dm[5]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[5] RISING;
+NET "ddr2_dm[6]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[6] RISING;
+NET "ddr2_dm[7]" OFFSET = IN .9375 ns VALID 3.750 ns BEFORE ddr2_dqs_p[7] RISING;
 
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[0] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[1] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[2] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[3] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[4] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[5] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[6] RISING;
-OFFSET = IN -0.340 ns VALID 1.240 ns BEFORE ddr2_dqs_p[7] RISING;
-
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[0] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[1] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[2] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[3] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[4] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[5] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[6] RISING;
+OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[7] RISING;
 
 TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
 TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
@@ -119,8 +118,8 @@ INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y129;
 INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
 INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 
-#INST "scope_e/ddr_e" AREA_GROUP=DDR;
-#AREA_GROUP "DDR" RANGE=SLICE_X0Y42:SLICE_X7Y141;
+INST "scope_e/ddr_e" AREA_GROUP=DDR;
+AREA_GROUP "DDR" RANGE=SLICE_X0Y42:SLICE_X7Y141;
 
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[0].inbyte_i" AREA_GROUP=RAM0;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[1].inbyte_i" AREA_GROUP=RAM0;
@@ -148,7 +147,7 @@ INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 #AREA_GROUP "RAM5" RANGE=SLICE_X0Y119:SLICE_X7Y126;
 #AREA_GROUP "RAM6" RANGE=SLICE_X0Y126:SLICE_X7Y133;
 #AREA_GROUP "RAM7" RANGE=SLICE_X0Y134:SLICE_X7Y141;
-#INST "scope_e/ddr_e" AREA_GROUP=DDR;
+
 
 NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
