@@ -119,7 +119,7 @@ INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
 INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 
 INST "scope_e/ddr_e" AREA_GROUP=DDR;
-AREA_GROUP "DDR" RANGE=SLICE_X0Y42:SLICE_X7Y141;
+AREA_GROUP "DDR" RANGE=SLICE_X0Y45:SLICE_X7Y137;
 
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[0].inbyte_i" AREA_GROUP=RAM0;
 #INST "scope_e/ddr_e/rdfifo_i/bytes_g[0].DATA_PHASES_g[1].inbyte_i" AREA_GROUP=RAM0;
