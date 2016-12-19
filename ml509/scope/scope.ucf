@@ -32,7 +32,7 @@ OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk falling;
 NET "phy_txclk" TNM_NET = phy_txclk;
 
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
-
+ 
 # ###################### #
 # Ignore crossclock time #
 # ###################### #
@@ -92,14 +92,87 @@ OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[5] RISING;
 OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[6] RISING;
 OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[7] RISING;
 
-TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
-TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TIG;
+TIMESPEC TS_dqst0 = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst1 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst2 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst3 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst4 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst5 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst6 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqst7 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/dqso_b.ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+
+TIMESPEC TS_dqt0  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt1  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt2  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt3  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt4  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt5  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt6  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt7  = TO FFS (ddrphy_e/byte_g[0].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt8  = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt9  = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt10 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt11 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt12 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt13 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt14 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt15 = TO FFS (ddrphy_e/byte_g[1].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt16 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt17 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt18 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt19 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt20 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt21 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt22 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt23 = TO FFS (ddrphy_e/byte_g[2].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt24 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt25 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt26 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt27 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt28 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt29 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt30 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt31 = TO FFS (ddrphy_e/byte_g[3].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt32 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt33 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt34 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt35 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt36 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt37 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt38 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt39 = TO FFS (ddrphy_e/byte_g[4].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt40 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt41 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt42 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt43 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt44 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt45 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt46 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt47 = TO FFS (ddrphy_e/byte_g[5].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt48 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt49 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt50 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt51 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt52 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt53 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt54 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt55 = TO FFS (ddrphy_e/byte_g[6].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+
+TIMESPEC TS_dqt56 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[0].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt57 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[1].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt58 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[2].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt59 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[3].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt60 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[4].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt61 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt62 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
+TIMESPEC TS_dqt63 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) TS_dcms_e_ddrdcm_e_dcm_clk0_0*2;
 
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y45;
 INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y45;
