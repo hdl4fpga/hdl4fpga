@@ -184,7 +184,7 @@ package xdr_db is
 
 		latency_record'(fpga => virtex5, stdr => DDR2, param => cDLL,  value => 200),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => MRD,   value =>   2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>   0),
+		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>   -4),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNL,  value =>   4),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSL,  value =>  -0),
 		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZL, value =>  -2),
