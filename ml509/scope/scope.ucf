@@ -74,14 +74,14 @@ TIMESPEC TS_dso5 = PERIOD "dqs5" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso6 = PERIOD "dqs6" TS_dso0 HIGH 50% PHASE 0.0;
 TIMESPEC TS_dso7 = PERIOD "dqs7" TS_dso0 HIGH 50% PHASE 0.0;
 
-NET "ddr2_dm[0]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[0] RISING;
-NET "ddr2_dm[1]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[1] RISING;
-NET "ddr2_dm[2]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[2] RISING;
-NET "ddr2_dm[3]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[3] RISING;
-NET "ddr2_dm[4]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[4] RISING;
-NET "ddr2_dm[5]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[5] RISING;
-NET "ddr2_dm[6]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[6] RISING;
-NET "ddr2_dm[7]" OFFSET = IN 0.9375 ns VALID 1.750 ns BEFORE ddr2_dqs_p[7] RISING;
+NET "ddr2_dm[0]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[0] RISING;
+NET "ddr2_dm[1]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[1] RISING;
+NET "ddr2_dm[2]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[2] RISING;
+NET "ddr2_dm[3]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[3] RISING;
+NET "ddr2_dm[4]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[4] RISING;
+NET "ddr2_dm[5]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[5] RISING;
+NET "ddr2_dm[6]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[6] RISING;
+NET "ddr2_dm[7]" OFFSET = IN 0.9375 ns VALID 1.250 ns BEFORE ddr2_dqs_p[7] RISING;
 
 OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[0] RISING;
 OFFSET = IN -0.340 ns VALID 1.295 ns BEFORE ddr2_dqs_p[1] RISING;
