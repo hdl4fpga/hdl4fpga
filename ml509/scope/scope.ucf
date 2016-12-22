@@ -54,7 +54,6 @@ TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 TIMESPEC TS_f2f_input2ddr  = FROM FFS_input     TO FFS_ddrsclk0   TIG;
 TIMESPEC TS_f2f_ddr2input  = FROM FFS_ddrsclk0  TO FFS_input      TIG;
 
-NET "ddr2_dqs_p[*]" CLOCK_DEDICATED_ROUTE = FALSE;
 
 NET "ddr2_dqs_p[0]" TNM_NET = dqs0;
 NET "ddr2_dqs_p[1]" TNM_NET = dqs1;
@@ -64,6 +63,15 @@ NET "ddr2_dqs_p[4]" TNM_NET = dqs4;
 NET "ddr2_dqs_p[5]" TNM_NET = dqs5;
 NET "ddr2_dqs_p[6]" TNM_NET = dqs6;
 NET "ddr2_dqs_p[7]" TNM_NET = dqs7;
+
+NET "ddr2_dqs_p[0]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[1]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[2]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[3]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[4]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[5]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[6]" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "ddr2_dqs_p[7]" CLOCK_DEDICATED_ROUTE = FALSE;
 
 TIMESPEC TS_dso0 = PERIOD "dqs0" 3.750 ns HIGH 50%;
 TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0;
@@ -174,22 +182,22 @@ TIMESPEC TS_dqt61 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[5].ddrto_i/ffd_
 TIMESPEC TS_dqt62 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[6].ddrto_i/ffd_i) 7.5 ns;
 TIMESPEC TS_dqt63 = TO FFS (ddrphy_e/byte_g[7].ddrdqphy_i/oddr_g[7].ddrto_i/ffd_i) 7.5 ns;
 
-#INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y45;
-#INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y45;
-#INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y31;
-#INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y31;
-#INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutn" LOC = SLICE_X2Y37;
-#INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutp" LOC = SLICE_X2Y37;
-#INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X2Y51;
-#INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X2Y51;
-#INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutn" LOC = SLICE_X2Y55;
-#INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutp" LOC = SLICE_X2Y55;
-#INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutn" LOC = SLICE_X2Y122;
-#INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutp" LOC = SLICE_X2Y122;
-#INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutn" LOC = SLICE_X2Y129;
-#INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y129;
-#INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
-#INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutn" LOC = SLICE_X2Y45;
+INST "ddrphy_e/byte_g[0].dqs_delayed_e/lutp" LOC = SLICE_X2Y45;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutn" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[1].dqs_delayed_e/lutp" LOC = SLICE_X2Y31;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutn" LOC = SLICE_X2Y37;
+INST "ddrphy_e/byte_g[2].dqs_delayed_e/lutp" LOC = SLICE_X2Y37;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutn" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[3].dqs_delayed_e/lutp" LOC = SLICE_X2Y51;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutn" LOC = SLICE_X2Y55;
+INST "ddrphy_e/byte_g[4].dqs_delayed_e/lutp" LOC = SLICE_X2Y55;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutn" LOC = SLICE_X2Y122;
+INST "ddrphy_e/byte_g[5].dqs_delayed_e/lutp" LOC = SLICE_X2Y122;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutn" LOC = SLICE_X2Y129;
+INST "ddrphy_e/byte_g[6].dqs_delayed_e/lutp" LOC = SLICE_X2Y129;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutn" LOC = SLICE_X2Y137;
+INST "ddrphy_e/byte_g[7].dqs_delayed_e/lutp" LOC = SLICE_X2Y137;
 
 INST "scope_e/ddr_e" AREA_GROUP=DDR;
 AREA_GROUP "DDR" RANGE=SLICE_X0Y45:SLICE_X7Y137;

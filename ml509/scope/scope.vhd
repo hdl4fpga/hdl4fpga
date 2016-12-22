@@ -140,10 +140,6 @@ architecture scope of ml509 is
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
-	attribute buffer_type : string;
-	attribute buffer_type of ddr2_dqsi   : signal is "none";
-	attribute buffer_type of ddrphy_dqso : signal is "none";
-
 	attribute keep : string;
 	attribute keep of ddr2_dqsi   : signal is "TRUE";
 	attribute keep of ddrphy_dqso : signal is "TRUE";
@@ -415,28 +411,30 @@ begin
 		end generate;
 
 		ddr_dq_g : for i  in WORD_SIZE-1 downto 0 generate
---			ddr_d(i) <= ddr2_d(i);
-			idelay_i : idelay
-			port map (
-				rst => '0',
-				i   => ddr2_d(i),
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr_d(i));
+--			idelay_i : idelay
+--			port map (
+--				rst => '0',
+--				i   => ddr2_d(i),
+--				c   => '0',
+--				ce  => '0',
+--				inc => '0',
+--				o   => ddr_d(i));
+			ddr_d(i) <= ddr2_d(i);
 		end generate;
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 			signal dqsi : std_logic;
+			attribute keep of dqsi        : signal is "TRUE";
 		begin
-			dmidelay_i : idelay
-			port map (
-				rst => '0',
-				i   => ddr2_dm(i),
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr_dmi(i));
+--			dmidelay_i : idelay
+--			port map (
+--				rst => '0',
+--				i   => ddr2_dm(i),
+--				c   => '0',
+--				ce  => '0',
+--				inc => '0',
+--				o   => ddr_dmi(i));
+			ddr_dmi(i) <= ddr2_dm(i);
 
 			ddr2_dm(i) <= ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
 
@@ -446,21 +444,19 @@ begin
 			port map (
 				t   => ddr2_dqst(i),
 				i   => ddr2_dqso(i),
-				o   => dqsi,
+--				o   => dqsi,
+				o   => ddr2_dqsi(i),
 				io  => ddr2_dqs_p(i),
 				iob => ddr2_dqs_n(i));
 			
-			dqsidelay_i : idelay
---			generic map (
---				IOBDELAY_TYPE => "FIXED",
---				IOBDELAY_VALUE => 55)
-			port map (
-				rst => '0',
-				i   => dqsi,
-				c   => '0',
-				ce  => '0',
-				inc => '0',
-				o   => ddr2_dqsi(i));
+--			dqsidelay_i : idelay
+--			port map (
+--				rst => '0',
+--				i   => dqsi,
+--				c   => '0',
+--				ce  => '0',
+--				inc => '0',
+--				o   => ddr2_dqsi(i));
 --			ddr2_dqsi(i) <= dqsi;
 		end generate;
 

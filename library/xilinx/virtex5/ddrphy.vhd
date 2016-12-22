@@ -92,10 +92,6 @@ entity ddrphy is
 		ddr_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		ddr_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
 
-	attribute buffer_type : string;
-	attribute buffer_type of ddr_dqsi : signal is "none";
-	attribute buffer_type of sys_dqso : signal is "none";
-
 	attribute keep : string;
 	attribute keep of sys_dqso : signal is "TRUE";
 	attribute keep of ddr_dqsi : signal is "TRUE";
@@ -353,17 +349,17 @@ begin
 			ddr_dqso => ddr_dqso(i));
 
 
---		dqs_delayed_e : entity hdl4fpga.pgm_delay
---		generic map(
---			n => gate_delay)
---		port map (
---			xi  => ddr_dqsi(i),
---			x_p => dqso(0),
---			x_n => dqso(1));
---		sys_dqso(data_gear*i+1) <= dqso(0) after 1 ns;
---		sys_dqso(data_gear*i+0) <= dqso(1) after 1 ns;
-		sys_dqso(data_gear*i+0) <= ddr_dqsi(i) after 1 ns;
-		sys_dqso(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		generic map(
+			n => gate_delay)
+		port map (
+			xi  => ddr_dqsi(i),
+			x_p => dqso(0),
+			x_n => dqso(1));
+		sys_dqso(data_gear*i+1) <= dqso(0) after 1 ns;
+		sys_dqso(data_gear*i+0) <= dqso(1) after 1 ns;
+--		sys_dqso(data_gear*i+0) <= ddr_dqsi(i) after 1 ns;
+--		sys_dqso(data_gear*i+1) <= not ddr_dqsi(i) after 1 ns;
 
 	end generate;
 

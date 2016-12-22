@@ -42,6 +42,7 @@ use unisim.vcomponents.all;
 
 architecture def of dfsdcm is
 	signal dfs_clkfb  : std_logic;
+	signal dfs_clkfx  : std_logic;
 	signal dfs_clk0  : std_logic;
 	signal dfs_lckd  : std_logic;
 
@@ -65,8 +66,13 @@ begin
 		clkfb => dfs_clkfb,
 		clkin => dfsdcm_clkin,
 		clk0  => dfs_clk0,
-		clkfx => dcm_clkin,
+		clkfx => dfs_clkfx,
 		locked => dfs_lckd);
+   
+	dfs_clkfxbufg_i : bufg
+	port map (
+		i => dfs_clkfx,
+		o => dcm_clkin);
    
 	dfs_clk0bufg_i : bufg
 	port map (
