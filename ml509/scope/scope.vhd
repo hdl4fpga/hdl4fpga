@@ -139,9 +139,14 @@ architecture scope of ml509 is
 	signal ddr_dmt  : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqst : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 	signal ddr_dqso : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	attribute buffer_type : string;
-	attribute buffer_type of ddr2_dqsi : signal is "none";
 
+	attribute buffer_type : string;
+	attribute buffer_type of ddr2_dqsi   : signal is "none";
+	attribute buffer_type of ddrphy_dqso : signal is "none";
+
+	attribute keep : string;
+	attribute keep of ddr2_dqsi   : signal is "TRUE";
+	attribute keep of ddrphy_dqso : signal is "TRUE";
 begin
 
 	idelay_ibufg_i : IBUFGDS_LVPECL_25
