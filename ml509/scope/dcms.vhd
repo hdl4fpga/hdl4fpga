@@ -92,9 +92,10 @@ begin
 
 	inputdcm_e : entity hdl4fpga.dfs
 	generic map (
+		dfs_mode => "LOW",
 		dcm_per => sys_per,
-		dfs_mul => 3,
-		dfs_div => 2)
+		dfs_mul => 4,
+		dfs_div => 3)
 	port map (
 		dcm_rst => dcm_rst,
 		dcm_clk => sys_clk,
