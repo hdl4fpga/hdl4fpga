@@ -94,8 +94,8 @@ begin
 	generic map (
 		dfs_mode => "LOW",
 		dcm_per => sys_per,
-		dfs_mul => 4,
-		dfs_div => 3)
+		dfs_mul => 5,
+		dfs_div => 4)
 	port map (
 		dcm_rst => dcm_rst,
 		dcm_clk => sys_clk,
