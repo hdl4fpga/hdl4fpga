@@ -38,6 +38,7 @@ package xdr_db is
 	constant spartan3 : natural := 1;
 	constant virtex5  : natural := 2;
 	constant LatticeECP3 : natural := 3;
+	constant VIRTEX7     : natural := 4;
 
 
 	constant DDR1 : natural := 1;
@@ -221,6 +222,7 @@ package xdr_db is
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => virtex5,     param => RDFIFO_DELAY, value => FALSE),
+		cntlrcnfg_boolean'(fpga => virtex7,     param => RDFIFO_DELAY, value => FALSE),
 		cntlrcnfg_boolean'(fpga => latticeECP3, param => RDFIFO_DELAY, value => FALSE));
 		
 	constant cnfglat_db : cnfglat_tab := (
@@ -586,7 +588,8 @@ package body xdr_db is
 				end if;
 			end if;
 		end loop;
-		assert FALSE severity FAILURE;
+		assert FALSE report "Pase por aca" 
+		severity FAILURE;
 		return FALSE;
 	end;
 

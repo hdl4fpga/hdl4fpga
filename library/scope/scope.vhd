@@ -306,7 +306,7 @@ begin
 
 	end block;
 	
-	ini          <= ddr_phyini   when FPGA=VIRTEX5   else ddr_ini;
+	ini          <= ddr_phyini   when FPGA=VIRTEX5 or FPGA=VIRTEX7   else ddr_ini;
 	ddr_rlreq    <= ddr_ini;
 	ddr_cmd_req  <= ddrs_cmd_req when ddr_phyini='1' else ddr_phycmd_req;
 	ddr_rw       <= ddrs_rw      when ddr_phyini='1' else ddr_phyrw;

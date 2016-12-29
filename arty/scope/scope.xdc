@@ -28,23 +28,18 @@ create_clock -name dqso1   -period  1.667 -waveform { 0.0 0.833 } [ get_ports dd
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
 create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
  
-set_clock_groups -asynchronous -group { sys_clk     } -group { I           }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_6   }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_4   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_clk0div_mmce2   }
+set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_clk90div_mmce2   }
 set_clock_groups -asynchronous -group { sys_clk     } -group { ioctrl_clk  }
-set_clock_groups -asynchronous -group { dqso0       } -group { I           }
 set_clock_groups -asynchronous -group { dqso0       } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso0       } -group { ddr_i_n_4   }
-set_clock_groups -asynchronous -group { dqso1       } -group { I           }
 set_clock_groups -asynchronous -group { dqso1       } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso1       } -group { ddr_i_n_4   }
-set_clock_groups -asynchronous -group { ddr_i_n_6   } -group { sys_clk     }
-set_clock_groups -asynchronous -group { sys_clk     } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { dqso0       } -group { ddr_clk90_mmce2   }
+set_clock_groups -asynchronous -group { dqso1       } -group { ddr_clk90_mmce2   }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2   } -group { sys_clk     }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_i_n_8   }
-set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_i_n_6   }
-set_clock_groups -asynchronous -group { ddr_i_n_6   } -group { eth_tx_clk  }
-set_clock_groups -asynchronous -group { eth_tx_clk  } -group { ddr_i_n_8   }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { ddr_clk0div_mmce2   }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2   } -group { eth_tx_clk  }
+set_clock_groups -asynchronous -group { ddr_clk0div_mmce2   } -group { eth_rx_clk  }
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
