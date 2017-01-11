@@ -131,7 +131,7 @@ begin
 		output_req  => ddrs_di_req,
 		output_data => output_data);
 
-	lfsr_rst <= not datai_req;
+	lfsr_rst <= not datai_req; -- or sys_rst;
 	dataii_e : entity hdl4fpga.lfsr_gen
 	generic map (
 		g   => g(input_data'length))

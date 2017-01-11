@@ -102,6 +102,7 @@ architecture scope of ecp3versa is
 	signal ddrphy_wlrdy : std_logic;
 	signal ddrphy_pll : std_logic_vector(8-1 downto 0);
 
+	signal lfsr_rst   : std_logic;
 	signal input_rst  : std_logic;
 	signal input_clk  : std_logic;
 	signal input_rdy  : std_logic;
@@ -165,12 +166,13 @@ begin
 		video_clk  => vga_clk,
 		video_rst  => vga_rst);
 
+	lfsr_rst <= input_rst or sys_rst;
 	testpattern_e : entity hdl4fpga.lfsr_gen
 	generic map (
 		g => g)
 	port map (
 		clk => input_clk,
-		rst => input_rst,
+		rst => lfsr_rst,
 		req => input_req,
 		so  => input_data);
 
