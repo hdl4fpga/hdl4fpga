@@ -1,36 +1,24 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <!DOCTYPE		ispXCF	SYSTEM	"IspXCF.dtd" >
-<ispXCF version="3.7.0">
+<ispXCF version="3.6.0">
 	<Comment></Comment>
 	<Chain>
 		<Comm>JTAG</Comm>
 		<Device>
 			<SelectedProg value="TRUE"/>
 			<Pos>1</Pos>
-			<Vendor>Lattice</Vendor>
-			<Family>LatticeECP3</Family>
-			<Name>LFE3-35EA</Name>
-			<IDCode>0x01012043</IDCode>
-			<Package>All</Package>
-			<PON>LFE3-35EA</PON>
+			<Family>Generic JTAG Device</Family>
+			<Name>JTAG-NOP</Name>
 			<Bypass>
-				<InstrLen>8</InstrLen>
-				<InstrVal>11111111</InstrVal>
+				<InstrLen>0</InstrLen>
+				<InstrVal></InstrVal>
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>C:/Users/msagre/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
-			<FileTime>10/05/16 13:24:58</FileTime>
-			<Operation>Fast Program</Operation>
+			<Operation>Bypass</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
-				<IOState>HighZ</IOState>
-				<PreloadLength>675</PreloadLength>
-				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
-				<TCKFrequency>1.000000 MHz</TCKFrequency>
 				<SVFProcessor>SVF Processor</SVFProcessor>
-				<Usercode>0x00000000</Usercode>
-				<AccessMode>JTAG</AccessMode>
 			</Option>
 		</Device>
 	</Chain>
@@ -41,11 +29,9 @@
 		<StartTAP>TLR</StartTAP>
 		<EndTAP>TLR</EndTAP>
 		<VerifyUsercode value="FALSE"/>
-		<TCKDelay>1</TCKDelay>
 	</ProjectOptions>
 	<CableOptions>
 		<CableName>USB2</CableName>
 		<PortAdd>FTUSB-0</PortAdd>
-		<USBID>Dual RS232-HS A Location 0000 Serial A</USBID>
 	</CableOptions>
 </ispXCF>
