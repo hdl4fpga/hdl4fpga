@@ -105,11 +105,15 @@ begin
 		dib   => input_data, 
 		dob   => output_data);
 
-	process (output_clk)
+	process (output_rst, output_clk)
 		variable sync : std_logic;
 		variable wr : std_logic_vector(0 to 1);
 	begin
-		if rising_edge(output_clk) then
+        if output_rst='1' then
+            sync := '0';
+            wr   := (others => '0');
+            output_rdy <= '0';
+		elsif rising_edge(output_clk) then
 			output_rdy <= sync;
 			sync := setif(
 --				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
