@@ -7,18 +7,28 @@
 		<Device>
 			<SelectedProg value="TRUE"/>
 			<Pos>1</Pos>
-			<Family>Generic JTAG Device</Family>
-			<Name>JTAG-NOP</Name>
+			<Vendor>Lattice</Vendor>
+			<Family>LatticeECP3</Family>
+			<Name>LFE3-35EA</Name>
+			<IDCode>0x01012043</IDCode>
+			<Package>All</Package>
+			<PON>LFE3-35EA</PON>
 			<Bypass>
-				<InstrLen>0</InstrLen>
-				<InstrVal></InstrVal>
+				<InstrLen>8</InstrLen>
+				<InstrVal>11111111</InstrVal>
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<Operation>Bypass</Operation>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scope/ecp3versa_scope.bit</File>
+			<FileTime>01/16/17 15:07:32</FileTime>
+			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
-				<SVFProcessor>SVF Processor</SVFProcessor>
+				<IOState>HighZ</IOState>
+				<PreloadLength>675</PreloadLength>
+				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
+				<Usercode>0x00000000</Usercode>
+				<AccessMode>JTAG</AccessMode>
 			</Option>
 		</Device>
 	</Chain>
@@ -33,5 +43,6 @@
 	<CableOptions>
 		<CableName>USB2</CableName>
 		<PortAdd>FTUSB-0</PortAdd>
+		<USBID>DUAL RS232-HS A Location 0000 Serial Dual RS232-HS A</USBID>
 	</CableOptions>
 </ispXCF>

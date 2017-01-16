@@ -35,7 +35,7 @@ entity dataio is
 		DDR_ADDRSIZE : natural := 13;
 		DDR_CLNMSIZE : natural :=  6;
 		DDR_LINESIZE : natural := 16;
-		DDRCORE_TEST : boolean := FALSE);
+		DDRCORE_TEST : boolean := TRUE);
 	port (
 		sys_rst      : in std_logic;
 
