@@ -166,7 +166,7 @@ begin
 		video_clk  => vga_clk,
 		video_rst  => vga_rst);
 
-	lfsr_rst <= input_rst or sys_rst;
+	lfsr_rst <= input_rst;
 	testpattern_e : entity hdl4fpga.lfsr_gen
 	generic map (
 		g => g)

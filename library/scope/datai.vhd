@@ -49,6 +49,7 @@ architecture def of datai is
 	signal dummy        : std_logic_vector(output_data'range);
 	signal output_flush : std_logic;
 	signal output_rst   : std_logic;
+	signal flush_rdy    : std_logic;
 begin
 
 	process (input_clk)
@@ -60,11 +61,11 @@ begin
 				flush   := to_unsigned(7,flush'length);
 			else
 				wr_addr  <= inc(gray(wr_addr));
-				if output_rst='1' then
+				if flush_rdy='1' then
 					flush := flush - 1;
 				end if;
 			end if;
-			output_rst <= not flush(0);
+			flush_rdy <= not flush(0);
 		end if;
 	end process;
 
@@ -74,7 +75,7 @@ begin
 		variable sync_rst : std_logic;
 	begin
 		if rising_edge(output_clk) then
-			if rst='1' then
+			if output_rst='1' then
 				rd_addr <= (others => '0');
 				flush   := to_unsigned(1,flush'length);
 			elsif output_flush='1' then
@@ -84,8 +85,8 @@ begin
 				rd_addr <= inc(gray(rd_addr));
 			end if;
 			output_flush <= not flush(0);
-			rst          := sync_rst;
-			sync_rst     := output_rst;
+			output_rst   <= sync_rst;
+			sync_rst     := flush_rdy;
 		end if;
 	end process;
 
