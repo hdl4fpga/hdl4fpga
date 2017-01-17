@@ -107,26 +107,19 @@ begin
 
 	process (output_rst, output_clk)
 		variable sync : std_logic;
-		variable wr  : std_logic_vector(0 to 1);
-		variable rd0 : std_logic_vector(0 to 1);
-		variable rd1 : std_logic_vector(0 to 1);
+		variable wr : std_logic_vector(0 to 1);
 	begin
         if output_rst='1' then
             sync := '0';
             wr   := (others => '0');
-            rd1  := inc(gray(others => '0')));
-            rd0  := (others => '0');
             output_rdy <= '0';
 		elsif rising_edge(output_clk) then
 			output_rdy <= sync;
 			sync := setif(
 --				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
---				(inc(gray((rd_addr(0 to 1)))) /= wr) and
-				(wr /= rd1) and
-				(wr /= rd0));
-			rd1 := inc(gray(rd_addr(0 to 1)));
-			rd0 := rd_addr(0 to 1);
-			wr  := wr_addr(0 to 1);
+				(inc(gray((rd_addr(0 to 1)))) /= wr) and
+				(wr_addr(0 to 1) /= rd_addr(0 to 1)));
+			wr := wr_addr(0 to 1);
 		end if;
 	end process;
 
