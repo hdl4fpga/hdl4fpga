@@ -69,10 +69,21 @@ begin
 		end if;
 	end process;
 
-	process (output_clk)
-		variable flush    : unsigned(0 to 3-1);
+	process (input_req, output_clk)
 		variable rst      : std_logic;
 		variable sync_rst : std_logic;
+	begin
+		if input_req='0' then
+			output_rst   <= '1';
+			sync_rst     := '1';
+		elsif rising_edge(output_clk) then
+			output_rst   <= sync_rst;
+			sync_rst     := flush_rdy;
+		end if;
+	end process;
+
+	process (output_clk)
+		variable flush    : unsigned(0 to 3-1);
 	begin
 		if rising_edge(output_clk) then
 			if output_rst='1' then
@@ -85,8 +96,6 @@ begin
 				rd_addr <= inc(gray(rd_addr));
 			end if;
 			output_flush <= not flush(0);
-			output_rst   <= sync_rst;
-			sync_rst     := flush_rdy;
 		end if;
 	end process;
 
