@@ -176,19 +176,19 @@ entity ml509 is
 --	attribute iostandard of ddr2_sda : signal is "SSTL18_II";
 --	attribute iostandard of ddr2_scl : signal is "SSTL18_II";
 
-	attribute nodelay of ddr2_clk_p : signal is "true";
-	attribute nodelay of ddr2_clk_n : signal is "true";
-	attribute nodelay of ddr2_cke : signal is "true";
-	attribute nodelay of ddr2_cs  : signal is "true";
-	attribute nodelay of ddr2_ras : signal is "true";
-	attribute nodelay of ddr2_cas : signal is "true";
-	attribute nodelay of ddr2_we  : signal is "true";
-	attribute nodelay of ddr2_ba  : signal is "true";
-	attribute nodelay of ddr2_a   : signal is "true";
-	attribute nodelay of ddr2_dm  : signal is "true";
-	attribute nodelay of ddr2_dqs_p : signal is "true";
-	attribute nodelay of ddr2_dqs_n : signal is "true";
-	attribute nodelay of ddr2_odt : signal is "true";
+--	attribute nodelay of ddr2_clk_p : signal is "true";
+--	attribute nodelay of ddr2_clk_n : signal is "true";
+--	attribute nodelay of ddr2_cke : signal is "true";
+--	attribute nodelay of ddr2_cs  : signal is "true";
+--	attribute nodelay of ddr2_ras : signal is "true";
+--	attribute nodelay of ddr2_cas : signal is "true";
+--	attribute nodelay of ddr2_we  : signal is "true";
+--	attribute nodelay of ddr2_ba  : signal is "true";
+--	attribute nodelay of ddr2_a   : signal is "true";
+--	attribute nodelay of ddr2_dm  : signal is "true";
+--	attribute nodelay of ddr2_dqs_p : signal is "true";
+--	attribute nodelay of ddr2_dqs_n : signal is "true";
+--	attribute nodelay of ddr2_odt : signal is "true";
 
 	attribute loc of dvi_xclk_p : signal is "AL11";
 	attribute loc of dvi_xclk_n : signal is "AL10";
