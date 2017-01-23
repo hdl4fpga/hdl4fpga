@@ -108,13 +108,13 @@ use hdl4fpga.std.all;
 architecture mix of xdr is
 	constant STDR         : natural := xdr_stdr(mark);
 
-	constant STRX_LAT     : natural          := xdr_latency(STDR, STRXL);
-	constant RWNX_LAT     : natural          := xdr_latency(STDR, RWNXL);
-	constant DQSZX_LAT    : natural          := xdr_latency(STDR, DQSZXL);
-	constant DQSX_LAT     : natural          := xdr_latency(STDR, DQSXL);
-	constant DQZX_LAT     : natural          := xdr_latency(STDR, DQZXL);
-	constant RDFIFO_LAT   : natural          := xdr_latency(STDR, hdl4fpga.xdr_db.RDFIFO_LAT);
-	constant TLWR         : natural          := xdr_timing(mark, tWR)+xdr_latency(stdr, DQSXL);
+	constant STRX_LAT     : natural          := xdr_latency(FPGA, STRXL);
+	constant RWNX_LAT     : natural          := xdr_latency(FPGA, RWNXL);
+	constant DQSZX_LAT    : natural          := xdr_latency(FPGA, DQSZXL);
+	constant DQSX_LAT     : natural          := xdr_latency(FPGA, DQSXL);
+	constant DQZX_LAT     : natural          := xdr_latency(FPGA, DQZXL);
+	constant RDFIFO_LAT   : natural          := xdr_latency(FPGA, hdl4fpga.xdr_db.RDFIFO_LAT);
+	constant TLWR         : natural          := xdr_timing(mark, tWR)+xdr_latency(FPGA, DQSXL);
 	constant LRCD         : natural          := to_xdrlatency(tCP, MARK, TRCD);
 	constant LRFC         : natural          := to_xdrlatency(tCP, MARK, TRFC);
 	constant LWR          : natural          := to_xdrlatency(tCP, TLWR);
@@ -126,14 +126,14 @@ architecture mix of xdr is
 	constant CWL_COD      : std_logic_vector := xdr_latcod(STDR, xdr_selcwl(STDR));
 	constant BL_TAB       : natural_vector   := xdr_lattab(STDR, BL);
 	constant CL_TAB       : natural_vector   := xdr_lattab(STDR, CL);
-	constant CWL_TAB      : natural_vector   := xdr_schtab(STDR, CWL);
-	constant STRL_TAB     : natural_vector   := xdr_schtab(STDR, STRL);
-	constant RWNL_TAB     : natural_vector   := xdr_schtab(STDR, RWNL);
-	constant DQSZL_TAB    : natural_vector   := xdr_schtab(STDR, DQSZL);
-	constant DQSOL_TAB    : natural_vector   := xdr_schtab(STDR, DQSL);
-	constant DQZL_TAB     : natural_vector   := xdr_schtab(STDR, DQZL);
+	constant CWL_TAB      : natural_vector   := xdr_schtab(STDR, FPGA, CWL);
+	constant STRL_TAB     : natural_vector   := xdr_schtab(STDR, FPGA, STRL);
+	constant RWNL_TAB     : natural_vector   := xdr_schtab(STDR, FPGA, RWNL);
+	constant DQSZL_TAB    : natural_vector   := xdr_schtab(STDR, FPGA, DQSZL);
+	constant DQSOL_TAB    : natural_vector   := xdr_schtab(STDR, FPGA, DQSL);
+	constant DQZL_TAB     : natural_vector   := xdr_schtab(STDR, FPGA, DQZL);
 	constant TIMERS       : natural_vector   := ddr_timers(TCP, mark);
-	constant WWNL_TAB     : natural_vector   := xdr_schtab(STDR, WWNL);
+	constant WWNL_TAB     : natural_vector   := xdr_schtab(STDR, FPGA, WWNL);
 	constant RDFIFO_DELAY : boolean          := xdr_cntlrcnfg(FPGA, hdl4fpga.xdr_db.RDFIFO_DELAY);
 
 	subtype byte is std_logic_vector(0 to BYTE_SIZE-1);

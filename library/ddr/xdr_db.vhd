@@ -113,8 +113,7 @@ package xdr_db is
 		tmark_record'(mark => M125, stdr => DDR3));
 
 	type latency_record is record
-		fpga : natural;
-		stdr  : natural;
+		fpga  : natural;
 		param : natural; -- Latency
 		value : integer;
 	end record;
@@ -166,58 +165,78 @@ package xdr_db is
 		timing_record'(mark => M15E, param => tREFI, value => 7800000));
 
 	constant latency_db : latency_tab := (
-		latency_record'(fpga => spartan3, stdr => DDR1, param => cDLL,  value => 200),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => STRL,  value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => RWNL,  value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSZL, value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSL,  value =>   1),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZL,  value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNL,  value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => STRXL, value =>   2),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => RWNXL, value => 2*0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSZXL, value =>  1),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQSXL, value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => DQZXL, value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => WWNXL, value =>   0),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => WIDL,  value =>   1),
-		latency_record'(fpga => spartan3, stdr => DDR1, param => RDFIFO_LAT, value => 2),
+		latency_record'(fpga => spartan3,    param => cDLL,       value => 200),
+		latency_record'(fpga => spartan3,    param => STRL,       value =>   0),
+		latency_record'(fpga => spartan3,    param => RWNL,       value =>   0),
+		latency_record'(fpga => spartan3,    param => DQSZL,      value =>   0),
+		latency_record'(fpga => spartan3,    param => DQSL,       value =>   1),
+		latency_record'(fpga => spartan3,    param => DQZL,       value =>   0),
+		latency_record'(fpga => spartan3,    param => WWNL,       value =>   0),
+		latency_record'(fpga => spartan3,    param => STRXL,      value =>   2),
+		latency_record'(fpga => spartan3,    param => RWNXL,      value => 2*0),
+		latency_record'(fpga => spartan3,    param => DQSZXL,     value =>  1),
+		latency_record'(fpga => spartan3,    param => DQSXL,      value =>   0),
+		latency_record'(fpga => spartan3,    param => DQZXL,      value =>   0),
+		latency_record'(fpga => spartan3,    param => WWNXL,      value =>   0),
+		latency_record'(fpga => spartan3,    param => WIDL,       value =>   1),
+		latency_record'(fpga => spartan3,    param => RDFIFO_LAT, value => 2),
 
-		latency_record'(fpga => virtex5, stdr => DDR2, param => cDLL,  value => 200),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => MRD,   value =>   2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => STRL,  value =>   -4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNL,  value =>   4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSL,  value =>  -0),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZL, value =>  -2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZL,  value =>  -2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNL,  value =>  -4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => STRXL, value =>   1),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => RWNXL, value =>   0),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSXL, value =>   0),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQSZXL, value =>  4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => DQZXL, value =>   2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => WWNXL, value =>   2),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => WIDL,  value =>   4),
-		latency_record'(fpga => virtex5, stdr => DDR2, param => RDFIFO_LAT, value => 2),
+		latency_record'(fpga => virtex5,     param => cDLL,       value => 200),
+		latency_record'(fpga => virtex5,     param => MRD,        value =>   2),
+		latency_record'(fpga => virtex5,     param => STRL,       value =>   -4),
+		latency_record'(fpga => virtex5,     param => RWNL,       value =>   4),
+		latency_record'(fpga => virtex5,     param => DQSL,       value =>  -0),
+		latency_record'(fpga => virtex5,     param => DQSZL,      value =>  -2),
+		latency_record'(fpga => virtex5,     param => DQZL,       value =>  -2),
+		latency_record'(fpga => virtex5,     param => WWNL,       value =>  -4),
+		latency_record'(fpga => virtex5,     param => STRXL,      value =>   1),
+		latency_record'(fpga => virtex5,     param => RWNXL,      value =>   0),
+		latency_record'(fpga => virtex5,     param => DQSXL,      value =>   0),
+		latency_record'(fpga => virtex5,     param => DQSZXL,     value =>  4),
+		latency_record'(fpga => virtex5,     param => DQZXL,      value =>   2),
+		latency_record'(fpga => virtex5,     param => WWNXL,      value =>   2),
+		latency_record'(fpga => virtex5,     param => WIDL,       value =>   4),
+		latency_record'(fpga => virtex5,     param => RDFIFO_LAT, value => 2),
 
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => cDLL,  value => 500),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRL,  value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNL,  value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSL,  value =>  -4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZL, value =>  -2),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZL,  value =>   0),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WWNL,  value =>   0),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => STRXL, value =>   0),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RWNXL, value =>   0),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSXL, value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQSZXL, value =>  4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => DQZXL, value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WWNXL, value =>   2),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => ZQINIT, value => 500),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MRD,   value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => MODu,  value =>  12),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => XPR,   value =>   5),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => WIDL,  value =>   4),
-		latency_record'(fpga => latticeECP3, stdr => DDR3, param => RDFIFO_LAT, value => 3));
+		latency_record'(fpga => latticeECP3, param => cDLL,       value => 500),
+		latency_record'(fpga => latticeECP3, param => STRL,       value =>   4),
+		latency_record'(fpga => latticeECP3, param => RWNL,       value =>   4),
+		latency_record'(fpga => latticeECP3, param => DQSL,       value =>  -4),
+		latency_record'(fpga => latticeECP3, param => DQSZL,      value =>  -2),
+		latency_record'(fpga => latticeECP3, param => DQZL,       value =>   0),
+		latency_record'(fpga => latticeECP3, param => WWNL,       value =>   0),
+		latency_record'(fpga => latticeECP3, param => STRXL,      value =>   0),
+		latency_record'(fpga => latticeECP3, param => RWNXL,      value =>   0),
+		latency_record'(fpga => latticeECP3, param => DQSXL,      value =>   4),
+		latency_record'(fpga => latticeECP3, param => DQSZXL,     value =>  4),
+		latency_record'(fpga => latticeECP3, param => DQZXL,      value =>   4),
+		latency_record'(fpga => latticeECP3, param => WWNXL,      value =>   2),
+		latency_record'(fpga => latticeECP3, param => ZQINIT,     value => 500),
+		latency_record'(fpga => latticeECP3, param => MRD,        value =>   4),
+		latency_record'(fpga => latticeECP3, param => MODu,       value =>  12),
+		latency_record'(fpga => latticeECP3, param => XPR,        value =>   5),
+		latency_record'(fpga => latticeECP3, param => WIDL,       value =>   4),
+		latency_record'(fpga => latticeECP3, param => RDFIFO_LAT, value => 3),
+	
+		latency_record'(fpga => virtex7,     param => cDLL,       value => 500),
+		latency_record'(fpga => virtex7,     param => STRL,       value =>   0),
+		latency_record'(fpga => virtex7,     param => RWNL,       value =>   4),
+		latency_record'(fpga => virtex7,     param => DQSL,       value =>  -4),
+		latency_record'(fpga => virtex7,     param => DQSZL,      value =>  -4),
+		latency_record'(fpga => virtex7,     param => DQZL,       value =>  -5),
+		latency_record'(fpga => virtex7,     param => WWNL,       value =>  -5),
+		latency_record'(fpga => virtex7,     param => STRXL,      value =>   0),
+		latency_record'(fpga => virtex7,     param => RWNXL,      value =>   0),
+		latency_record'(fpga => virtex7,     param => DQSXL,      value =>   2),
+		latency_record'(fpga => virtex7,     param => DQSZXL,     value =>  4),
+		latency_record'(fpga => virtex7,     param => DQZXL,      value =>   0),
+		latency_record'(fpga => virtex7,     param => WWNXL,      value =>   0),
+		latency_record'(fpga => virtex7,     param => ZQINIT,     value => 500),
+		latency_record'(fpga => virtex7,     param => MRD,        value =>   4),
+		latency_record'(fpga => virtex7,     param => MODu,       value =>  12),
+		latency_record'(fpga => virtex7,     param => XPR,        value =>   5),
+		latency_record'(fpga => virtex7,     param => WIDL,       value =>   4),
+		latency_record'(fpga => virtex7,     param => RDFIFO_LAT, value => 4));
 
 	constant cntlrcnfgboolean_db : cntlrcnfgboolean_tab := (
 		cntlrcnfg_boolean'(fpga => spartan3,    param => RDFIFO_DELAY, value => FALSE),
@@ -327,7 +346,7 @@ package xdr_db is
 		return natural;
 
 	function xdr_latency (
-		constant stdr  : natural;
+		constant fpga  : natural;
 		constant param : natural)
 		return integer;
 
@@ -338,6 +357,7 @@ package xdr_db is
 
 	function xdr_schtab (
 		constant stdr  : natural;
+		constant fpga  : natural;
 		constant tabid : natural)
 		return natural_vector;
 
@@ -452,12 +472,12 @@ package body xdr_db is
 	end;
 
 	function xdr_latency (
-		constant stdr  : natural;
+		constant fpga  : natural;
 		constant param : natural)
 		return integer is
 	begin
 		for i in latency_db'range loop
-			if latency_db(i).stdr = stdr then
+			if latency_db(i).fpga = fpga then
 				if latency_db(i).param = param then
 					return latency_db(i).value;
 				end if;
@@ -503,6 +523,7 @@ package body xdr_db is
 
 	function xdr_schtab (
 		constant stdr  : natural;
+		constant fpga  : natural;
 		constant tabid : natural)
 		return natural_vector is
 
@@ -510,7 +531,7 @@ package body xdr_db is
 		constant cltab  : natural_vector := xdr_lattab(stdr, CL);
 		constant cwltab : natural_vector := xdr_lattab(stdr, cwlsel);
 
-		variable lat : integer := xdr_latency(stdr, tabid);
+		variable lat : integer := xdr_latency(fpga, tabid);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 
