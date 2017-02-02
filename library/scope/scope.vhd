@@ -46,7 +46,8 @@ entity scope is
 		DDR_WORDSIZE    : natural := 16;
 		DDR_BYTESIZE    : natural :=  8;
 		PAGE_SIZE       : natural := 9;
-		NIBBLE_SIZE     : natural := 4);
+		NIBBLE_SIZE     : natural := 4;
+		MAC_DESTADDR    : std_logic_vector(0 to 48-1) := x"ffffffffffff");
 
 	port (
 		ddrs_rst : in std_logic;
@@ -285,6 +286,7 @@ begin
 
 		miitx_udp_e : entity hdl4fpga.miitx_udp
 		generic map (
+			MAC_DESTADDR => MAC_DESTADDR,
 			payload_size => 2**(PAGE_SIZE+1))
 		port map (
 			mii_txc      => mii_txc,

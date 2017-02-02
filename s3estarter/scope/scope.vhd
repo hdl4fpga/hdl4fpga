@@ -145,7 +145,9 @@ begin
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		fpga => spartan3,
+		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
+--		MAC_DESTADDR => x"00270e0a90e9",	-- MAC Destination Address casa
+		FPGA => spartan3,
 		DDR_MARK => M6T,
 		DDR_TCP        => integer(sys_per*1000.0)*ddr_div/ddr_mul,
 		DDR_SCLKEDGES  => SCLK_EDGES,

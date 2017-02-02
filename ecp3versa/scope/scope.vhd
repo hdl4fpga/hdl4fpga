@@ -180,6 +180,8 @@ begin
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
+		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
+--		MAC_DESTADDR => x"00270e0a90e9",	-- MAC Destination Address casa
 		FPGA           => LatticeECP3,
 		DDR_tCP        => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_CMMDGEAR   => CMMD_GEAR,

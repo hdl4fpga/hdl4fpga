@@ -30,7 +30,8 @@ use hdl4fpga.std.all;
 
 entity miitx_udp is
 	generic (
-		payload_size : natural := 512);
+		payload_size : natural := 512;
+		mac_destaddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
 
 	port (
 		mii_txc     : in  std_logic;
@@ -82,9 +83,7 @@ begin
 	miitx_macudp_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => 
-			x"ffffffffffff" &       -- MAC Destination Address
---			x"00270e0ff595" &       -- MAC Destination Address UNSAM
---			x"00270e0a90e9" &       -- MAC Destination Address casa
+			mac_destaddr    &
 			x"000000010203"	&       -- MAC Source Address
 			x"0800"         &       -- MAC Protocol ID
 			ipheader_checksumed(
