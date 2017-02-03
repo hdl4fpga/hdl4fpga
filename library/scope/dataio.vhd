@@ -35,7 +35,7 @@ entity dataio is
 		DDR_ADDRSIZE : natural := 13;
 		DDR_CLNMSIZE : natural :=  6;
 		DDR_LINESIZE : natural := 16;
-		DDRCORE_TEST : boolean := FALSE);
+		DDR_TESTCORE : boolean := FALSE);
 	port (
 		sys_rst      : in std_logic;
 
@@ -140,7 +140,7 @@ begin
 		rst => lfsr_rst,
 		req => ddrs_di_req, 
 		so  => lfsr_data);
-	ddrs_di <= lfsr_data when DDRCORE_TEST else output_data;
+	ddrs_di <= lfsr_data when DDR_TESTCORE else output_data;
 
 	ddrs_di_rdy <= ddrs_di_req;
 

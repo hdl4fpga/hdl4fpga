@@ -37,7 +37,7 @@ library ecp3;
 use ecp3.components.all;
 
 architecture scope of ecp3versa is
-	constant CMMD_GEAR : natural := 2;
+	constant CMMD_GEAR   : natural := 2;
 	constant bank_size   : natural := 2;
 	constant addr_size   : natural := 13;
 	constant DATA_GEAR   : natural := 4;
@@ -180,9 +180,10 @@ begin
 	ddrphy_rst(1) <= ddrphy_rst(0);
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
---		MAC_DESTADDR => x"00270e0a90e9",	-- MAC Destination Address casa
+--		MAC_DESTADDR   => x"00270e0ff595",	-- MAC Destination Address UNSAM
+--		MAC_DESTADDR   => x"00270e0a90e9",	-- MAC Destination Address casa
 		FPGA           => LatticeECP3,
+		DDR_TESTCORE   => "FALSE",
 		DDR_tCP        => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_CMMDGEAR   => CMMD_GEAR,
 		DDR_DATAGEAR   => DATA_GEAR,

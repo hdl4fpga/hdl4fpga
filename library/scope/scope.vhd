@@ -45,6 +45,7 @@ entity scope is
 		DDR_DATAGEAR    : natural := 16;
 		DDR_WORDSIZE    : natural := 16;
 		DDR_BYTESIZE    : natural :=  8;
+		DDR_TESTCORE    : boolean := FALSE);
 		PAGE_SIZE       : natural := 9;
 		NIBBLE_SIZE     : natural := 4;
 		MAC_DESTADDR    : std_logic_vector(0 to 48-1) := x"ffffffffffff");
@@ -235,6 +236,7 @@ begin
 	dataio_e : entity hdl4fpga.dataio 
 	generic map (
 		PAGE_SIZE       => PAGE_SIZE,
+		DDR_TESTCORE    => DDR_TESTCORE,
 		DDR_BANKSIZE    => DDR_BANKSIZE,
 		DDR_ADDRSIZE    => DDR_ADDRSIZE,
 		DDR_CLNMSIZE    => DDR_CLMNSIZE,

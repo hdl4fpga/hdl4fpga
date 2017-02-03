@@ -240,9 +240,10 @@ begin
 	input_rdy <= not input_rst;
 	scope_e : entity hdl4fpga.scope
 	generic map (
-		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
+--		MAC_DESTADDR => x"00270e0ff595",	-- MAC Destination Address UNSAM
 --		MAC_DESTADDR => x"00270e0a90e9",	-- MAC Destination Address casa
 		FPGA           => VIRTEX7,
+		DDR_TESTCORE   => "FALSE",
 		DDR_CMMDGEAR   => CMMD_GEAR,
 		DDR_DATAGEAR   => DATA_GEAR,
 		DDR_MARK       => M15E,
