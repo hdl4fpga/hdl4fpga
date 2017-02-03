@@ -183,7 +183,7 @@ begin
 --		MAC_DESTADDR   => x"00270e0ff595",	-- MAC Destination Address UNSAM
 --		MAC_DESTADDR   => x"00270e0a90e9",	-- MAC Destination Address casa
 		FPGA           => LatticeECP3,
-		DDR_TESTCORE   => "FALSE",
+		DDR_TESTCORE   => FALSE,
 		DDR_tCP        => (uclk_period*ddr_clki*ddr_clkok)/ddr_clkfb,
 		DDR_CMMDGEAR   => CMMD_GEAR,
 		DDR_DATAGEAR   => DATA_GEAR,
