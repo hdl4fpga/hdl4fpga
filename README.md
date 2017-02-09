@@ -1,5 +1,4 @@
-HDL4FPGA is a library whose main component is a DDR core. It is meant to be
-high performance but portable too.
+HDL4FPGA's DDR performance table.
 
 Tested Kits
 
