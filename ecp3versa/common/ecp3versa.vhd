@@ -47,21 +47,21 @@ entity ecp3versa is
 		ddr3_odt : out std_logic := '1';
 
 
-		phy1_125clk : in std_logic;
-		phy1_rst : out std_logic;
-		phy1_coma : out std_logic := 'Z';
-		phy1_mdio : inout std_logic;
-		phy1_mdc : out std_logic;
-		phy1_gtxclk : out std_logic;
-		phy1_crs : out std_logic;
-		phy1_col : out std_logic;
-		phy1_txc : in std_logic;
-		phy1_tx_d : out std_logic_vector(0 to 8-1);
-		phy1_tx_en : out std_logic;
-		phy1_rxc : in std_logic;
-		phy1_rx_er : in std_logic;
-		phy1_rx_dv : in std_logic;
-		phy1_rx_d : in std_logic_vector(0 to 8-1);
+		phy1_125clk : in    std_logic;
+		phy1_rst    : out   std_logic;
+		phy1_coma   : out   std_logic := 'Z';
+		phy1_mdio   : inout std_logic;
+		phy1_mdc    : out   std_logic;
+		phy1_gtxclk : out   std_logic;
+		phy1_crs    : out   std_logic;
+		phy1_col    : out   std_logic;
+		phy1_txc    : in    std_logic;
+		phy1_tx_d   : out   std_logic_vector(0 to 8-1);
+		phy1_tx_en  : out   std_logic;
+		phy1_rxc    : in    std_logic;
+		phy1_rx_er  : in    std_logic;
+		phy1_rx_dv  : in    std_logic;
+		phy1_rx_d   : in    std_logic_vector(0 to 8-1);
 --
 --		phy2_125clk : in std_logic;
 --		phy2_rst : out std_logic;
@@ -79,6 +79,6 @@ entity ecp3versa is
 --		phy2_rx_dv : in std_logic;
 --		phy2_rx_d : in std_logic_vector(0 to 8-1);
 
---		expansion : inout std_logic_vector(0 to 46-1)
+		expansionx4 : inout std_logic_vector(3 to 7);
 		fpga_gsrn : in std_logic);
 end;
