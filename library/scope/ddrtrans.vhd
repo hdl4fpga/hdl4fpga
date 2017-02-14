@@ -34,13 +34,14 @@ entity ddrtrans is
 		DDR_ADDRSIZE : natural := 13;
 		DDR_CLNMSIZE : natural :=  6);
 	port (
-		ddr_rst       : in std_logic;
+		ddr_rst       : in  std_logic;
 		ddr_clk       : in  std_logic;
 
-		ddr_base_addr : in  std_logic_vector(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto 0);
 		ddr_ref_req   : in  std_logic;
 		ddr_cmd_req   : out std_logic;
 		ddr_cmd_rdy   : in  std_logic;
+		ddr_base_addr : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		ddr_dma_addr  : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 
 		ddr_bnk       : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_row       : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
@@ -49,16 +50,15 @@ entity ddrtrans is
 		ddr_act       : in  std_logic;
 		ddr_cas       : in  std_logic;
 
-		ddr_trans_req : in  std_logic);
+		dev_trans_req : in  std_logic);
 	);
 end;
 
 
 architecture def of ddrtrans is
-	signal ddr_addr      : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE downto 0);
-	signal base_co   : std_logic_vector(0 to 3-1);
-	signal base_load : std_logic;
-	signal base_addr : std_logic_vector(ddr_addr'range);
+	signal ddr_addr      : std_logic_vector(ddr_dma_addr'range);
+	signal ddr_base_co   : std_logic_vector(0 to 3-1);
+	signal ddr_base_load : std_logic;
 begin
 
 	process (ddr_clk, ddr_addr(ddr_clnmsize))
@@ -70,10 +70,10 @@ begin
 				ddr_cmd_req <= '0';
 			elsif ddr_ref_req='1' then
 				ddr_cmd_req <= '0';
-			elsif ddr_trans_req='0' then
+			elsif dev_trans_req='0' then
 				ddr_cmd_req <= '0';
 			elsif ddr_cmd_rdy='1' then
-				if ddr_trans_req='1' then
+				if dev_trans_req='1' then
 					ddr_cmd_req <= '1';
 				end if;
 			end if;
@@ -91,12 +91,7 @@ begin
 		end if;
 	end process;
 
-	base_addr <= std_logic_vector(
-		resize(shift_right(unsigned(ddr_addr), DDR_ADDRSIZE+DDR_CLNMSIZE+0)(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto DDR_ADDRSIZE+DDR_CLNMSIZE+0)), DDR_BANKSIZE+1)) &
-		resize(shift_right(unsigned(ddr_addr),              DDR_CLNMSIZE+0)(             DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto              DDR_CLNMSIZE+0)), DDR_ADDRSIZE+1)) &
-		resize(shift_right(unsigned(ddr_addr),                           0)(                          DDR_CLNMSIZE-1 downto                           0)), DDR_CLNMSIZE+1));
-
-	base_load <= ddr_req or base_co(0);
+	ddr_base_load <= ddr_req or ddr_base_co(0);
 	dma_cntr_e : entity hdl4fpga.counter
 	generic map (
 		stage_size => (
@@ -105,10 +100,11 @@ begin
 			0 => DDR_CLNMSIZE+1))
 	port map (
 		clk  => ddr_clk,
-		load => base_load,
+		load => ddr_base_load,
 		ena  => ddr_cas,
-		data => base_addr,
+		data => ddr_base_addr,
 		qo   => ddr_addr,
-		co   => base_co);
+		co   => ddr_base_co);
+	ddr_dma_addr <= ddr_addr;
 
 end;
