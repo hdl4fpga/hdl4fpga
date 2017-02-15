@@ -1,10 +1,10 @@
-#### Linux
+### Linux
 
 make linux
 
 arp -s your-kit-ip-address 00:00:00:01:02:03
 
-Dumping the data 
+##### Dumping the data 
 
 * Latticesemi
 	* LatticeECP3 Versa Development Kit
@@ -18,7 +18,7 @@ Dumping the data
 	* NU HORIZONS Spartan 3A DSP Reference Kit
 	nuhs3adsp/bin/memtest
 
-#### Windows
+### Windows
 
 make windows
 
