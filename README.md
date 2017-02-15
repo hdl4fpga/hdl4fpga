@@ -7,7 +7,7 @@ the downloaded data can be checked into the PC. The application was tested on fi
 FPGA kits and one to Lattice Semiconductor's FPGA kit.
 The application is ready to be synthesized by theirs rescpective tools. The project's location for each kit can be found on 
 the table below. The steps to generate the programs along with the computer's network configuration to download the data is
-described in the section *PC steps*.
+described in the section *PC configuration*.
 
 The data downloaded by **scope** is stored in the file master.dat.Then, master.dat is check by **check** to verified
 its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equal
@@ -24,11 +24,11 @@ a new dump is downloaded and checked it again.
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | ISE Design Suite     | hdl4fpga/ml509/ise/scope/scope.xise      |
 
 
-PC steps
-=========
+PC configuration
+================
 
-| Step                      | Linux                                              | Windows        |
-| ------------------------- | ------------------------------------------------- | --------------- |
+| Step                      | Linux                                          | Windows         |
+| ------------------------- | ---------------------------------------------- | --------------- |
 | Program compiling 1)      | make linux                                     | make windows |
 | Network Configuriation 2) | arp -s *your-kit-ip-address* 00:00:00:01:02:03 | netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03 |
 
