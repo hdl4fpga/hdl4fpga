@@ -7,7 +7,7 @@ the downloaded data can be checked into the PC. The application was tested on fi
 FPGA kits and one to Lattice Semiconductor's FPGA kit.
 The application is ready to be synthesized by theirs rescpective tools. The project's location for each kit can be found on 
 the table below. The steps to generate the programs along with the computer's network configuration to download the data is
-described in the section *Software*.
+described in the section *PC steps*.
 
 The data downloaded by **scope** is stored in the file master.dat.Then, master.dat is check by **check** to verified
 its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equal
@@ -24,8 +24,8 @@ a new dump is downloaded and checked it again.
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | ISE Design Suite     | hdl4fpga/ml509/ise/scope/scope.xise      |
 
 
-Software
-========
+PC steps
+=========
 
 | Step                      | Linux                                              | Windows        |
 | ------------------------- | ------------------------------------------------- | --------------- |
@@ -41,8 +41,6 @@ Sometimes Windows changes it so check your ethernet's name and replace it by "Et
 Dumping the data
 ----------------
 
-### Linux or Windows
-
 | Kit                                               | Command                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
 | Artix-7 35T Arty FPGA Evaluation Kit              | hdl4fpga/arty/bin/memtest your-kit-ip-address        |
@@ -50,6 +48,8 @@ Dumping the data
 | NU HORIZONS Spartan 3A DSP Reference Kit          | hdl4fpga/nuhs3adsp/bin/memtest your-kit-ip-address   |
 | Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest your-kit-ip-address  |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest your-kit-ip-address       |
+
+* Linux or Windows*
 
 HDL4FPGA's DDR performance
 --------------------------
