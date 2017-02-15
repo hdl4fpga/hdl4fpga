@@ -9,15 +9,19 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 * Latticesemi
 	* LatticeECP3 Versa Development Kit
 
-	  ecp3versa/bin/memtest
+ecp3versa/bin/memtest
 
 * Xilinx
 	* Artix-7 35T Arty FPGA Evaluation Kit
-	arty/bin/memtest
+
+arty/bin/memtest
+
 	* Virtex-5 OpenSPARC FPGA Development Board : ML509 
-	ml509/bin/memtest
+
+ml509/bin/memtest
+
 	* NU HORIZONS Spartan 3A DSP Reference Kit
-	nuhs3adsp/bin/memtest
+nuhs3adsp/bin/memtest
 
 ### Windows
 
