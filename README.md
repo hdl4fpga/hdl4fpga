@@ -12,7 +12,7 @@
 
 ### Linux
 
-##### Compiling
+#### Compiling
 
 make linux
 
@@ -23,19 +23,19 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 ### Windows
 
 
-##### Compiling
+#### Compiling
 
 Requires GNU CC which can be download at http://www.mingw.org/
 
 make windows
 
-##### Configuring 
+#### Configuring 
 
 netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02-03
 
 ### Linux or Windows
 
-##### Dumping the data 
+#### Dumping the data 
 
 | Kit                                               | Command                           |
 | ------------------------------------------------- | --------------------------------- |
