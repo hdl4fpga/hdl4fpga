@@ -39,7 +39,7 @@ PC configuration
 Sometimes Windows changes it so check your ethernet's name and replace it by "Ethernet" if it is different.*
 
 Dumping the data
-----------------
+================
 
 | Kit                                               | Command                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
