@@ -10,6 +10,7 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 
 ### Windows
 
+Requires GNU CC which can be download from (http://www.mingw.org/)
 ##### Compiling
 
 make windows
