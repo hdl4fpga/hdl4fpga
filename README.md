@@ -24,16 +24,15 @@ a new dump is downloaded and checked it again.
 
 ### Software
 
-
 #### Program generation
 
 ##### Linux
 
-make linux
+**make linux**
 
 ##### Windows
 
-make windows
+**make windows**
 
 *Requires GNU CC which can be download at http://www.mingw.org/*
 
@@ -41,12 +40,14 @@ make windows
 
 ##### Linux
 
-arp -s your-kit-ip-address 00:00:00:01:02:03
+**arp -s *your-kit-ip-address* 00:00:00:01:02:03**
 
 ##### Windows
 
-netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02-03
+**netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03**
 
+*"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
+and replace it by "Ethernet" if it is different.*
 
 #### Dumping the data 
 
