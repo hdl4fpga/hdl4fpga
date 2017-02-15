@@ -27,31 +27,14 @@ a new dump is downloaded and checked it again.
 Software
 ========
 
-Program compiling
------------------
+| Step                      | Linux                                              | Windows        |
+| ------------------------- | ------------------------------------------------- | --------------- |
+| Program compiling 1)      | make linux                                     | make windows |
+| Network Configuriation 2) | arp -s *your-kit-ip-address* 00:00:00:01:02:03 | netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03 |
 
-### Linux
 
-**make linux**
-
-### Windows
-
-**make windows**
-
-*Requires GNU CC which can be download at http://www.mingw.org/*
-
-Network Configuriation
-----------------------
-
-### Linux
-
-**arp -s *your-kit-ip-address* 00:00:00:01:02:03**
-
-### Windows
-
-**netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03**
-
-*"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
+1) *Windows* Requires GNU CC which can be download at http://www.mingw.org/ *
+2) *"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
 and replace it by "Ethernet" if it is different.*
 
 Dumping the data
