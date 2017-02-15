@@ -16,7 +16,7 @@
 
 make linux
 
-##### Configuring 
+#### Configuring 
 
 arp -s your-kit-ip-address 00:00:00:01:02:03
 
@@ -37,13 +37,13 @@ netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02
 
 #### Dumping the data 
 
-| Kit                                               | Command                           |
-| ------------------------------------------------- | --------------------------------- |
-| Artix-7 35T Arty FPGA Evaluation Kit              | hdl4fpga/arty/bin/memtest         |
-| LatticeECP3 Versa Development Kit                 | hdl4fpga/ecp3versa/bin/memtest    |
-| NU HORIZONS Spartan 3A DSP Reference Kit          | hdl4fpga/nuhs3adsp/bin/memtest    |
-| Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest   |
-| Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest        |
+| Kit                                               | Command                                              |
+| ------------------------------------------------- | ---------------------------------------------------- |
+| Artix-7 35T Arty FPGA Evaluation Kit              | hdl4fpga/arty/bin/memtest your-kit-ip-address        |
+| LatticeECP3 Versa Development Kit                 | hdl4fpga/ecp3versa/bin/memtest your-kit-ip-address   |
+| NU HORIZONS Spartan 3A DSP Reference Kit          | hdl4fpga/nuhs3adsp/bin/memtest your-kit-ip-address   |
+| Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest your-kit-ip-address  |
+| Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest your-kit-ip-address       |
 
 ### HDL4FPGA's DDR performance table.
 
