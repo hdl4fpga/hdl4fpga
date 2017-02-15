@@ -24,34 +24,34 @@ a new dump is downloaded and checked it again.
 
 ### Software
 
-#### Program generation
+### Program compiling
 
-##### Linux
+#### Linux
 
 **make linux**
 
-##### Windows
+#### Windows
 
 **make windows**
 
 *Requires GNU CC which can be download at http://www.mingw.org/*
 
-##### Network Configuriation 
+#### Network Configuriation 
 
-##### Linux
+#### Linux
 
 **arp -s *your-kit-ip-address* 00:00:00:01:02:03**
 
-##### Windows
+#### Windows
 
 **netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03**
 
 *"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
 and replace it by "Ethernet" if it is different.*
 
-#### Dumping the data 
+### Dumping the data 
 
-##### Linux or Windows
+#### Linux or Windows
 
 | Kit                                               | Command                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
