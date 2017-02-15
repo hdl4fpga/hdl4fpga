@@ -1,8 +1,8 @@
 ### Scope
 
 Scope is a FPGA applicaction to capture data, send it to DDR RAM. After capturing it, the data can be downloaded to a
-computer by ehternet. In the application, an lfsr is used to generate the data so that the consistency of the downloaded data 
-can be checked into the PC
+computer throught the kit's ethernet. An lfsr is used to generate the data so that the consistency of the downloaded data
+can be checked into the PC.
 
 ### Location of the FPGA Projects
 
