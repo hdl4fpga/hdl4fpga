@@ -9,8 +9,7 @@ The application is ready to be synthesized by theirs rescpective tools. The proj
 the table below. The steps to generate the programs along with the computer's network configuration to download the data is
 described in the section **PC configuration**.
 
-The data is downloaded and stored in the file **master.dat** by program **scope**. Then master.dat is check by **check**
-to verified its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equala new dump is downloaded and checked it again.
+
 
 **Location of the FPGA Projects**
 
@@ -22,6 +21,8 @@ to verified its consistency. A new data dump, named dump.dat, is downloaded and 
 | Spartan-3E Starter Board                          | ISE Design Suite     | hdl4fpga/s3estarter/ise/scope/scope.xise |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | ISE Design Suite     | hdl4fpga/ml509/ise/scope/scope.xise      |
 
+The data is downloaded and stored in the file **master.dat** by program **scope**. Then master.dat is check by **check**
+to verified its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equala new dump is downloaded and checked it again.
 
 PC configuration
 ================
