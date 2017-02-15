@@ -1,3 +1,22 @@
+### FPGA project location
+
+* LatticeECP3 Versa Development Kit
+
+Lattice Diamond Software project -> hdl4fpga/ecp3versa/diamond/ecp3versa.ldf
+
+* Artix-7 35T Arty FPGA Evaluation Kit
+
+Vivado Design Suite -> hdl4fpga/arty/bin/memtest
+
+* Virtex-5 OpenSPARC FPGA Development Board : ML509 
+
+ml509/bin/memtest
+
+* NU HORIZONS Spartan 3A DSP Reference Kit
+nuhs3adsp/bin/memtest
+
+### Software
+
 ### Linux
 
 ##### Compiling
@@ -10,7 +29,8 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 
 ### Windows
 
-Requires GNU CC which can be download from (http://www.mingw.org/)
+Requires GNU CC which can be download at http://www.mingw.org/
+
 ##### Compiling
 
 make windows
@@ -25,18 +45,19 @@ netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02
 
 * LatticeECP3 Versa Development Kit
 
-ecp3versa/bin/memtest
+hdl4fpga/ecp3versa/bin/memtest
 
 * Artix-7 35T Arty FPGA Evaluation Kit
 
-arty/bin/memtest
+hdl4fpga/arty/bin/memtest
 
 * Virtex-5 OpenSPARC FPGA Development Board : ML509 
 
-ml509/bin/memtest
+hdl4fpga/ml509/bin/memtest
 
 * NU HORIZONS Spartan 3A DSP Reference Kit
-nuhs3adsp/bin/memtest
+
+hdl4fpga/nuhs3adsp/bin/memtest
 
 ### HDL4FPGA's DDR performance table.
 
