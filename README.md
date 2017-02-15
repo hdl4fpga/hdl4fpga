@@ -1,17 +1,21 @@
 ### Linux
 
+##### Compiling
+
 make linux
+
+##### Configuring 
 
 arp -s your-kit-ip-address 00:00:00:01:02:03
 
 ##### Dumping the data 
 
-##### Latticesemi
+###### Latticesemi
 * LatticeECP3 Versa Development Kit
 
 ecp3versa/bin/memtest
 
-##### Xilinx
+###### Xilinx
 * Artix-7 35T Arty FPGA Evaluation Kit
 
 arty/bin/memtest
