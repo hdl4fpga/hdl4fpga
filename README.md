@@ -1,4 +1,5 @@
-## Scope
+Scope
+=====
 
 Scope is a FPGA applicaction to capture data and send it to DDR RAM. After capturing it, the data can be downloaded to a
 computer throught the kit's ethernet interface by UDP. A *lfsr* is used to generate the data so that the consistency of
@@ -12,7 +13,7 @@ The data downloaded by **scope** is stored in the file master.dat.Then, master.d
 its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equal
 a new dump is downloaded and checked it again.
 
-### Location of the FPGA Projects
+**Location of the FPGA Projects**
 
 | Kit                                               | FPGA synthesis tool  | Location                                 |
 | ------------------------------------------------- | -------------------- | ---------------------------------------- |
@@ -22,36 +23,41 @@ a new dump is downloaded and checked it again.
 | Spartan-3E Starter Board                          | ISE Design Suite     | hdl4fpga/s3estarter/ise/scope/scope.xise |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | ISE Design Suite     | hdl4fpga/ml509/ise/scope/scope.xise      |
 
-### Software
 
-### Program compiling
+Software
+========
 
-#### Linux
+Program compiling
+-----------------
+
+### Linux
 
 **make linux**
 
-#### Windows
+### Windows
 
 **make windows**
 
 *Requires GNU CC which can be download at http://www.mingw.org/*
 
-#### Network Configuriation 
+Network Configuriation
+----------------------
 
-#### Linux
+### Linux
 
 **arp -s *your-kit-ip-address* 00:00:00:01:02:03**
 
-#### Windows
+### Windows
 
 **netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03**
 
 *"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
 and replace it by "Ethernet" if it is different.*
 
-### Dumping the data 
+Dumping the data
+----------------
 
-#### Linux or Windows
+### Linux or Windows
 
 | Kit                                               | Command                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
@@ -61,7 +67,8 @@ and replace it by "Ethernet" if it is different.*
 | Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest your-kit-ip-address  |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest your-kit-ip-address       |
 
-### HDL4FPGA's DDR performance table.
+HDL4FPGA's DDR performance
+--------------------------
 
 Tested Kits
 
