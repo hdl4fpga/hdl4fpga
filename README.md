@@ -25,7 +25,7 @@ a new dump is downloaded and checked it again.
 ### Software
 
 
-#### Program's generation
+#### Program generation
 
 ##### Linux
 
