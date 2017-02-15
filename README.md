@@ -41,7 +41,7 @@ Sometimes Windows changes it so check your ethernet's name and replace it by "Et
 Dumping the data
 ================
 
-| Kit                                               | Command                                              |
+| Kit                                               | Command 3)                                             |
 | ------------------------------------------------- | ---------------------------------------------------- |
 | Artix-7 35T Arty FPGA Evaluation Kit              | hdl4fpga/arty/bin/memtest your-kit-ip-address        |
 | LatticeECP3 Versa Development Kit                 | hdl4fpga/ecp3versa/bin/memtest your-kit-ip-address   |
@@ -49,7 +49,7 @@ Dumping the data
 | Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest your-kit-ip-address  |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest your-kit-ip-address       |
 
-*Linux or Windows*
+3) Linux or Windows
 
 HDL4FPGA's DDR performance
 --------------------------
