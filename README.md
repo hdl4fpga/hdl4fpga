@@ -1,7 +1,7 @@
 Scope
 =====
 
-Scope is a FPGA applicaction to capture data and send it to DDR RAM. After capturing it, the data can be downloaded to a
+**Scope** is a FPGA applicaction to capture data and send it to DDR RAM. After capturing it, the data can be downloaded to a
 computer throught the kit's ethernet interface by UDP. A *lfsr* is used to generate the data so that the consistency of
 the downloaded data can be checked into the PC. The application was tested on five kits: four of them correspond to Xilinx's 
 FPGA kits and one to Lattice Semiconductor's FPGA kit.
