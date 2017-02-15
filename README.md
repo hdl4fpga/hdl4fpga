@@ -2,7 +2,7 @@
 
 Scope is a FPGA applicaction to capture data and send it to DDR RAM. After capturing it, the data can be downloaded to a
 computer throught the kit's ethernet. A *lfsr* is used to generate the data so that the consistency of the downloaded data
-can be checked into the PC. The application was tested on five kits: four of them corresponding to Xilinx's FPGA kits and one 
+can be checked into the PC. The application was tested on five kits: four of them correspond to Xilinx's FPGA kits and one 
 to Lattice Semiconductor's FPGA kit.
 The appliacion is ready to be synthesized by theirs rescpective tools. The project's location for each kit can be found on 
 the table below. The steps to generate the programs along with the computer's network configuration to download the data is
