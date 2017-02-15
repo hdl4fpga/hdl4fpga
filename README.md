@@ -1,18 +1,18 @@
 ### FPGA project location
 
-* LatticeECP3 Versa Development Kit
+###### LatticeECP3 Versa Development Kit
 
 Lattice Diamond Software project -> hdl4fpga/ecp3versa/diamond/ecp3versa.ldf
 
-* Artix-7 35T Arty FPGA Evaluation Kit
+###### Artix-7 35T Arty FPGA Evaluation Kit
 
 Vivado Design Suite -> hdl4fpga/arty/bin/memtest
 
-* Virtex-5 OpenSPARC FPGA Development Board : ML509 
+###### Virtex-5 OpenSPARC FPGA Development Board : ML509 
 
 ml509/bin/memtest
 
-* NU HORIZONS Spartan 3A DSP Reference Kit
+###### NU HORIZONS Spartan 3A DSP Reference Kit
 nuhs3adsp/bin/memtest
 
 ### Software
@@ -42,22 +42,12 @@ netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02
 ### Linux or Windows
 
 ##### Dumping the data 
-
-* LatticeECP3 Versa Development Kit
-
-hdl4fpga/ecp3versa/bin/memtest
-
-* Artix-7 35T Arty FPGA Evaluation Kit
-
-hdl4fpga/arty/bin/memtest
-
-* Virtex-5 OpenSPARC FPGA Development Board : ML509 
-
-hdl4fpga/ml509/bin/memtest
-
-* NU HORIZONS Spartan 3A DSP Reference Kit
-
-hdl4fpga/nuhs3adsp/bin/memtest
+| Kit                                               | Command                           |
+| ------------------------------------------------- | --------------------------------- |
+| LatticeECP3 Versa Development Kit                 | hdl4fpga/ecp3versa/bin/memtest    |
+| Artix-7 35T Arty FPGA Evaluation Kit              | hdl4fpga/arty/bin/memtest         |
+| Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest        |
+| NU HORIZONS Spartan 3A DSP Reference Kit          | hdl4fpga/nuhs3adsp/bin/memtest    |
 
 ### HDL4FPGA's DDR performance table.
 
