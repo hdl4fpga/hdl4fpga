@@ -8,6 +8,18 @@ make linux
 
 arp -s your-kit-ip-address 00:00:00:01:02:03
 
+### Windows
+
+##### Compiling
+
+make windows
+
+##### Configuring 
+
+netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02-03
+
+### Linux or Windows
+
 ##### Dumping the data 
 
 * LatticeECP3 Versa Development Kit
@@ -25,18 +37,7 @@ ml509/bin/memtest
 * NU HORIZONS Spartan 3A DSP Reference Kit
 nuhs3adsp/bin/memtest
 
-### Windows
-
-make windows
-
-netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02-03
-
-ml509/bin/memtest.bat
-ecp3versa/bin/memtest.bat
-nuhs3adsp/bin/memtest.bat
-ecp3versa/bin/memtest.bat
-
-HDL4FPGA's DDR performance table.
+### HDL4FPGA's DDR performance table.
 
 Tested Kits
 
