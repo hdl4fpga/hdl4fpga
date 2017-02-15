@@ -34,6 +34,7 @@ Software
 
 
 1) *Windows* Requires GNU CC which can be download at http://www.mingw.org/ *
+
 2) *"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
 and replace it by "Ethernet" if it is different.*
 
