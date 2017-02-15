@@ -1,9 +1,12 @@
-### Scope
+## Scope
 
 Scope is a FPGA applicaction to capture data and send it to DDR RAM. After capturing it, the data can be downloaded to a
 computer throught the kit's ethernet. An lfsr is used to generate the data so that the consistency of the downloaded data
-can be checked into the PC. The application was tested on five kits: four of them corresponding to Xilinx's FPGA kits and one to Lattice Semiconductor's FPGA kit.
-The appliacion is ready to be synthesized by theirs rescpective tools. The project's locations for each kit can be found on the table below. The steps to generate the programs to download the data is described in the section *Software*, 
+can be checked into the PC. The application was tested on five kits: four of them corresponding to Xilinx's FPGA kits and one 
+to Lattice Semiconductor's FPGA kit.
+The appliacion is ready to be synthesized by theirs rescpective tools. The project's locations for each kit can be found on 
+the table below. The steps to generate the programs along with the computer's network configuration to download the data is
+described in the section *Software*
 
 ### Location of the FPGA Projects
 
@@ -17,32 +20,33 @@ The appliacion is ready to be synthesized by theirs rescpective tools. The proje
 
 ### Software
 
-### Linux
 
-#### Compiling
+#### Program's generation
+
+##### Linux
 
 make linux
 
-#### Configuring 
-
-arp -s your-kit-ip-address 00:00:00:01:02:03
-
-### Windows
-
-
-#### Compiling
-
-Requires GNU CC which can be download at http://www.mingw.org/
+##### Windows
 
 make windows
 
-#### Configuring 
+*Requires GNU CC which can be download at http://www.mingw.org/*
+
+##### Network Configuriation 
+
+##### Linux
+
+arp -s your-kit-ip-address 00:00:00:01:02:03
+
+##### Windows
 
 netsh interface ipv4 add neighbors "Ethernet" your-kit-ip-address 00-00-00-01-02-03
 
-### Linux or Windows
 
 #### Dumping the data 
+
+##### Linux or Windows
 
 | Kit                                               | Command                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
