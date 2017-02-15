@@ -1,6 +1,6 @@
-### FPGA project location
+### FPGA 
 
-| Kit                                               | FPGA synthesis tool  | Location                                 |
+| Kit                                               | FPGA synthesis tool  | Project location location                |
 | ------------------------------------------------- | -------------------- | ---------------------------------------- |
 | Artix-7 35T Arty FPGA Evaluation Kit              | Vivado Design Suite  | hdl4fpga/arty/vivado/scope/scope.xpr     |
 | LatticeECP3 Versa Development Kit                 | Lattice Diamond      | hdl4fpga/ecp3versa/diamond/ecp3versa.ldf |
