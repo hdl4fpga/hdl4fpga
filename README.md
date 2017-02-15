@@ -6,16 +6,16 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 
 Dumping the data 
 
-* Item Latticesemi
+* Latticesemi
 	* Item LatticeECP3 Versa Development Kit
 	ecp3versa/bin/memtest
 
-* Item Xilinx
-	* Item Artix-7 35T Arty FPGA Evaluation Kit
+* Xilinx
+	* Artix-7 35T Arty FPGA Evaluation Kit
 	arty/bin/memtest
-	* Item Virtex-5 OpenSPARC FPGA Development Board : ML509 
+	* Virtex-5 OpenSPARC FPGA Development Board : ML509 
 	ml509/bin/memtest
-	* Item NU HORIZONS Spartan 3A DSP Reference Kit
+	* NU HORIZONS Spartan 3A DSP Reference Kit
 	nuhs3adsp/bin/memtest
 
 Windows
