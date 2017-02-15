@@ -7,7 +7,7 @@ the downloaded data can be checked into the PC. The application was tested on fi
 FPGA kits and one to Lattice Semiconductor's FPGA kit.
 The application is ready to be synthesized by theirs rescpective tools. The project's location for each kit can be found on 
 the table below. The steps to generate the programs along with the computer's network configuration to download the data is
-described in the section *PC configuration*.
+described in the section **PC configuration**.
 
 The data downloaded by **scope** is stored in the file master.dat.Then, master.dat is check by **check** to verified
 its consistency. A new data dump, named dump.dat, is downloaded and comparared against master.dat. if the files are equal
