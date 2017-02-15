@@ -1,4 +1,4 @@
-##### Linux
+#### Linux
 
 make linux
 
@@ -18,7 +18,7 @@ Dumping the data
 	* NU HORIZONS Spartan 3A DSP Reference Kit
 	nuhs3adsp/bin/memtest
 
-Windows
+#### Windows
 
 make windows
 
