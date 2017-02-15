@@ -8,6 +8,7 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 
 * Latticesemi
 	* LatticeECP3 Versa Development Kit
+
 	  ecp3versa/bin/memtest
 
 * Xilinx
