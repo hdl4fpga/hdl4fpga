@@ -49,7 +49,7 @@ Dumping the data
 | Spartan-3E Starter Board                          | hdl4fpga/s3estarter/bin/memtest your-kit-ip-address  |
 | Virtex-5 OpenSPARC FPGA Development Board : ML509 | hdl4fpga/ml509/bin/memtest your-kit-ip-address       |
 
-3) Linux or Windows
+3) *Linux or Windows*
 
 HDL4FPGA's DDR performance
 --------------------------
