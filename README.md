@@ -33,10 +33,8 @@ Software
 | Network Configuriation 2) | arp -s *your-kit-ip-address* 00:00:00:01:02:03 | netsh interface ipv4 add neighbors "Ethernet" *your-kit-ip-address* 00-00-00-01-02-03 |
 
 
-1) *Windows* Requires GNU CC which can be download at http://www.mingw.org/ *
-
-2) *"Ethernet" is the LAN's interface where the kit is connected. Sometimes Windows changes it so check your ethernet's name
-and replace it by "Ethernet" if it is different.*
+1) *Windows* Requires GNU CC which can be download at http://www.mingw.org/ * \
+2) *"Ethernet" is the Windows' interface name in which the PC is connected to the same LAN where the kit is connected to. Sometimes Windows changes it so check your ethernet's name and replace it by "Ethernet" if it is different.*
 
 Dumping the data
 ----------------
