@@ -7,7 +7,7 @@ arp -s your-kit-ip-address 00:00:00:01:02:03
 Dumping the data 
 
 * Latticesemi
-	* Item LatticeECP3 Versa Development Kit
+	* LatticeECP3 Versa Development Kit
 	ecp3versa/bin/memtest
 
 * Xilinx
