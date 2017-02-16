@@ -41,7 +41,6 @@ entity dma is
 		dma_trans_req  : out std_logic := '1';
 
 		dev_trans_id   : in  std_logic_vector;
-		dev_trans_addr : in  std_logic_vector;
 		dev_trans_addr : in  std_logic_vector);
 end;
 
@@ -54,16 +53,28 @@ architecture def of dataio is
 		return std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0) is 
 	begin
 		return std_logic_vector(
-			resize(shift_right(unsigned(ddr_addr), DDR_ADDRSIZE+DDR_CLNMSIZE+0)(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto DDR_ADDRSIZE+DDR_CLNMSIZE+0)), DDR_BANKSIZE+1)) &
-			resize(shift_right(unsigned(ddr_addr),              DDR_CLNMSIZE+0)(             DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto              DDR_CLNMSIZE+0)), DDR_ADDRSIZE+1)) &
-			resize(shift_right(unsigned(ddr_addr),                           0)(                          DDR_CLNMSIZE-1 downto                           0)), DDR_CLNMSIZE+1));
+			resize(
+				shift_right(
+					unsigned(ddr_addr),
+					DDR_ADDRSIZE+DDR_CLNMSIZE+0)(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto DDR_ADDRSIZE+DDR_CLNMSIZE+0),
+				DDR_BANKSIZE+1) &
+			resize(
+				shift_right(
+					unsigned(ddr_addr),
+					DDR_CLNMSIZE+0)(DDR_ADDRSIZE+DDR_CLNMSIZE-1 downto DDR_CLNMSIZE+0),
+				DDR_ADDRSIZE+1) &
+			resize(
+				shift_right(
+					unsigned(ddr_addr),
+					0)(DDR_CLNMSIZE-1 downto 0),
+				DDR_CLNMSIZE+1));
 	end;
 
 begin
 
 	dma_dev_addr <= 
-	   to_dmaaddr(dev_trans_id) when else
-	   dma;
+	   to_dmaaddr(dev_trans_addr) when else
+	   dma_ddr_addr;
 
 	dma_file_e : entity hdl4fpga.dpram
 	port map (
