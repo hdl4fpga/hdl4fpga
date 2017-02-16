@@ -30,35 +30,36 @@ use hdl4fpga.std.all;
 
 entity ddrtrans is
 	generic (
-		DDR_BANKSIZE : natural :=  2;
-		DDR_ADDRSIZE : natural := 13;
-		DDR_CLNMSIZE : natural :=  6);
+		DDR_BURSTLENTH : natural :=  8;
+		DDR_BANKSIZE   : natural :=  2;
+		DDR_ADDRSIZE   : natural := 13;
+		DDR_CLNMSIZE   : natural :=  6);
 	port (
-		ddr_rst       : in  std_logic;
-		ddr_clk       : in  std_logic;
+		ddr_rst        : in  std_logic;
+		ddr_clk        : in  std_logic;
 
-		ddr_ref_req   : in  std_logic;
-		ddr_cmd_req   : out std_logic;
-		ddr_cmd_rdy   : in  std_logic;
-		ddr_base_addr : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
-		ddr_dma_addr  : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		ddr_ref_req    : in  std_logic;
+		ddr_cmd_req    : out std_logic;
+		ddr_cmd_rdy    : in  std_logic;
+		ddr_base_addr  : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		ddr_dma_addr   : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 
-		ddr_bnk       : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_row       : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_col       : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_bnk        : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_row        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_col        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
 
-		ddr_act       : in  std_logic;
-		ddr_cas       : in  std_logic;
+		ddr_act        : in  std_logic;
+		ddr_cas        : in  std_logic;
 
-		dev_trans_req : in  std_logic);
+		ddr_dma_req    : in  std_logic;
+		ddr_dma_rdy    : out std_logic);
 	);
 end;
 
 
 architecture def of ddrtrans is
 	signal ddr_addr      : std_logic_vector(ddr_dma_addr'range);
-	signal ddr_base_co   : std_logic_vector(0 to 3-1);
-	signal ddr_base_load : std_logic;
+	signal ddr_cntr_load : std_logic;
 begin
 
 	process (ddr_clk, ddr_addr(ddr_clnmsize))
@@ -70,10 +71,10 @@ begin
 				ddr_cmd_req <= '0';
 			elsif ddr_ref_req='1' then
 				ddr_cmd_req <= '0';
-			elsif dev_trans_req='0' then
+			elsif ddr_dma_req='0' then
 				ddr_cmd_req <= '0';
 			elsif ddr_cmd_rdy='1' then
-				if dev_trans_req='1' then
+				if ddr_dma_req='1' then
 					ddr_cmd_req <= '1';
 				end if;
 			end if;
@@ -81,17 +82,18 @@ begin
 	end process;
 
 	process (ddr_clk)
+		constant offset : natural := unsigned_num_bits(DDR_BURSTLENTH)-1;
 	begin
 		if rising_edge(ddr_clk) then
 			if ddr_act='1' then
 				ddr_bnka <= std_logic_vector(resize(shift_right(unsigned(ddr_addr),1+DDR_ADDRSIZE+1+DDR_CLNMSIZE), DDR_BANKSIZE)); 
 			end if;
 			ddr_rowa <= std_logic_vector(resize(shift_right(unsigned(ddr_addr),1+DDR_CLNMSIZE), DDR_ADDRSIZE)); 
-			ddr_cola <= std_logic_vector(resize(resize(shift_left (unsigned(ddr_addr), 3), DDR_CLNMSIZE+3), DDR_ADDRSIZE)); 
+			ddr_cola <= std_logic_vector(resize(resize(shift_left (unsigned(ddr_addr), offset), DDR_CLNMSIZE+offset), DDR_ADDRSIZE)); 
 		end if;
 	end process;
 
-	ddr_base_load <= ddr_req or ddr_base_co(0);
+	ddr_cntr_load <= not ddr_dma_req and ddr_cmd_rdy;
 	dma_cntr_e : entity hdl4fpga.counter
 	generic map (
 		stage_size => (
@@ -100,11 +102,11 @@ begin
 			0 => DDR_CLNMSIZE+1))
 	port map (
 		clk  => ddr_clk,
-		load => ddr_base_load,
+		load => ddr_cntr_load,
 		ena  => ddr_cas,
 		data => ddr_base_addr,
-		qo   => ddr_addr,
-		co   => ddr_base_co);
+		qo   => ddr_addr);
 	ddr_dma_addr <= ddr_addr;
+	ddr_dma_rdy  <= ddr_cntr_load;
 
 end;
