@@ -61,10 +61,10 @@ begin
 			return stage_size(i-1);
 		end;
 
-		constant size : natural := csize(i+1)-csize(i);
-		constant cntr_left : natural := csize(i)+size-1;
-		constant cntr_right  : natural := csize(i);
-		signal   cntr : unsigned(csize(i)+size-1 downto csize(i));
+		constant size       : natural := csize(i+1)-csize(i);
+		constant cntr_left  : natural := csize(i)+size-1;
+		constant cntr_right : natural := csize(i);
+		signal   cntr       : unsigned(csize(i)+size-1 downto csize(i));
 
 	begin
 
