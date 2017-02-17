@@ -37,8 +37,7 @@ entity dma is
 		dma_clk        : in  std_logic;
 		dma_base_addr  : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 		dma_ddr_addr   : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
-		dma_ddr_req    : out std_logic := '1';
-		dma_ddr_rdy    : in  std_logic := '1';
+		dma_ddr_rdy    : in  std_logic;
 
 		dma_devid      : in  std_logic_vector;
 		dma_devwe_ena  : out std_logic;

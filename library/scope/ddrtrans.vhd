@@ -42,7 +42,7 @@ entity ddrtrans is
 		ddr_cmd_req    : out std_logic;
 		ddr_cmd_rdy    : in  std_logic;
 		ddr_base_addr  : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
-		ddr_dma_addr   : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		dma_ddr_addr   : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 
 		ddr_bnk        : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
 		ddr_row        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
@@ -51,14 +51,14 @@ entity ddrtrans is
 		ddr_act        : in  std_logic;
 		ddr_cas        : in  std_logic;
 
-		ddr_dma_req    : in  std_logic;
-		ddr_dma_rdy    : out std_logic);
+		dma_ddr_req    : in  std_logic;
+		dma_ddr_rdy    : out std_logic);
 	);
 end;
 
 
 architecture def of ddrtrans is
-	signal ddr_addr      : std_logic_vector(ddr_dma_addr'range);
+	signal ddr_addr      : std_logic_vector(dma_ddr_addr'range);
 	signal ddr_cntr_load : std_logic;
 begin
 
@@ -71,10 +71,10 @@ begin
 				ddr_cmd_req <= '0';
 			elsif ddr_ref_req='1' then
 				ddr_cmd_req <= '0';
-			elsif ddr_dma_req='0' then
+			elsif dma_ddr_req='0' then
 				ddr_cmd_req <= '0';
 			elsif ddr_cmd_rdy='1' then
-				if ddr_dma_req='1' then
+				if dma_ddr_req='1' then
 					ddr_cmd_req <= '1';
 				end if;
 			end if;
@@ -93,7 +93,7 @@ begin
 		end if;
 	end process;
 
-	ddr_cntr_load <= not ddr_dma_req and ddr_cmd_rdy;
+	ddr_cntr_load <= not dma_ddr_req and ddr_cmd_rdy;
 	dma_cntr_e : entity hdl4fpga.counter
 	generic map (
 		stage_size => (
@@ -106,7 +106,7 @@ begin
 		ena  => ddr_cas,
 		data => ddr_base_addr,
 		qo   => ddr_addr);
-	ddr_dma_addr <= ddr_addr;
-	ddr_dma_rdy  <= ddr_cntr_load;
+	dma_ddr_addr <= ddr_addr;
+	dma_ddr_rdy  <= ddr_cntr_load;
 
 end;
