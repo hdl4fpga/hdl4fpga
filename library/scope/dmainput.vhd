@@ -25,28 +25,28 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity datai is
+entity dmainput is
 	generic (
 		FIFO_SIZE : natural := 8);
 	port (
-		input_clk   : in std_logic;
-		input_data  : in std_logic_vector;
-		input_req   : in std_logic;
+		input_clk       : in std_logic;
+		input_req       : in std_logic_vector;
+		input_data      : in std_logic;
 
-		output_clk  : in std_logic;
-		output_rdy  : out std_logic;
-		output_req  : in std_logic;
-		output_data : out std_logic_vector);
+		dmainput_clk    : in std_logic;         
+		dmainput_req    : out std_logic;        
+		dmainput_do_req : in std_logic;         
+		dmainput_do     : out std_logic_vector);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of datai is
+architecture def of dmainput is
 	signal wr_addr      : std_logic_vector(0 to FIFO_SIZE-1);
 	signal rd_addr      : std_logic_vector(0 to FIFO_SIZE-1);
 	signal rd_ena       : std_logic;
-	signal dummy        : std_logic_vector(output_data'range);
+	signal dummy        : std_logic_vector(dmainput_do'range);
 	signal output_flush : std_logic;
 	signal output_rst   : std_logic;
 	signal flush_rdy    : std_logic;
@@ -69,37 +69,37 @@ begin
 		end if;
 	end process;
 
-	process (input_req, output_clk)
+	process (input_req, dmainput_clk)
 		variable rst      : std_logic;
 		variable sync_rst : std_logic;
 	begin
 		if input_req='0' then
 			output_rst   <= '1';
 			sync_rst     := '1';
-		elsif rising_edge(output_clk) then
+		elsif rising_edge(dmainput_clk) then
 			output_rst   <= sync_rst;
 			sync_rst     := flush_rdy;
 		end if;
 	end process;
 
-	process (output_clk)
+	process (dmainput_clk)
 		variable flush    : unsigned(0 to 3-1);
 	begin
-		if rising_edge(output_clk) then
+		if rising_edge(dmainput_clk) then
 			if output_rst='1' then
 				rd_addr <= (others => '0');
 				flush   := to_unsigned(1,flush'length);
 			elsif output_flush='1' then
 				rd_addr <= inc(gray(rd_addr));
 				flush   := flush - 1;
-			elsif output_req='1' then
+			elsif dmainput_do_req='1' then
 				rd_addr <= inc(gray(rd_addr));
 			end if;
 			output_flush <= not flush(0);
 		end if;
 	end process;
 
-	rd_ena <= output_req or output_flush;
+	rd_ena <= dmainput_do_req or output_flush;
 	fifo_e : entity hdl4fpga.bram
 	port map (
 		clka  => input_clk,
@@ -108,25 +108,24 @@ begin
 		dia   => input_data,
 		doa   => dummy,
 
-		clkb  => output_clk,
+		clkb  => dmainput_clk,
 		enab  => rd_ena,
 		web   => '0',
 		addrb => rd_addr, 
 		dib   => input_data, 
-		dob   => output_data);
+		dob   => dmainput_do);
 
-	process (output_rst, output_clk)
+	process (output_rst, dmainput_clk)
 		variable sync : std_logic;
 		variable wr : std_logic_vector(0 to 1);
 	begin
         if output_rst='1' then
             sync := '0';
             wr   := (others => '0');
-            output_rdy <= '0';
-		elsif rising_edge(output_clk) then
-			output_rdy <= sync;
+            dmainput_rdy <= '0';
+		elsif rising_edge(dmainput_clk) then
+			dmainput_rdy <= sync;
 			sync := setif(
---				(inc(gray((rd_addr(0 to 1)))) /= wr_addr(0 to 1)) and
 				(inc(gray((rd_addr(0 to 1)))) /= wr) and
 				(wr_addr(0 to 1) /= rd_addr(0 to 1)));
 			wr := wr_addr(0 to 1);

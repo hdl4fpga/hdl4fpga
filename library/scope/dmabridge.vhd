@@ -58,7 +58,6 @@ entity dmabridge is
 		
 		input_clk     : in  std_logic;
 		input_req     : in  std_logic;
-		input_rdy     : out std_logic;
 		input_data    : in  std_logic_vector;
 
 		miitx_clk     : in  std_logic;
@@ -105,10 +104,8 @@ begin
 
 	dmainput_e : entity hdl4fpga.dmainput
 	port map (
-		input_rst        => input_rst,
 		input_clk        => input_clk,
 		input_req        => input_req, 
-		input_rdy        => input_rdy, 
 		input_data       => input_data,
 
 		dmainput_clk     => dmabridge_clk,
@@ -127,9 +124,9 @@ begin
 		dmamii_di_rdy => ddr_do_rdy,
 		dmamii_di     => ddr_do,
 
-		miitx_clk => miitx_clk,
-		miitx_rdy => miitx_rdy,
-		miitx_req => miitx_req,
-		miitx_ena => miitx_ena,
-		miitx_dat => miitx_dat);
+		miitx_clk     => miitx_clk,
+		miitx_rdy     => miitx_rdy,
+		miitx_req     => miitx_req,
+		miitx_ena     => miitx_ena,
+		miitx_dat     => miitx_dat);
 end;
