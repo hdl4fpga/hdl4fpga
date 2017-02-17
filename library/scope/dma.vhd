@@ -40,10 +40,6 @@ entity dma is
 		dma_ddr_req    : out std_logic := '1';
 		dma_ddr_rdy    : in  std_logic := '1';
 
-		ddr_bnk        : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_row        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_col        : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-
 		dma_devid      : in  std_logic_vector;
 		dma_devwe_ena  : out std_logic;
 		dma_devwe_req  : in  std_logic;

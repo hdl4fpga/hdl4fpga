@@ -35,7 +35,7 @@ entity ddrtrans is
 		DDR_ADDRSIZE   : natural := 13;
 		DDR_CLNMSIZE   : natural :=  6);
 	port (
-		ddr_rst        : in  std_logic;
+		ddrtrans_rst   : in  std_logic;
 		ddr_clk        : in  std_logic;
 
 		ddr_ref_req    : in  std_logic;
@@ -67,7 +67,7 @@ begin
 		if ddr_addr(ddr_clnmsize)='1' then
 			ddr_cmd_req <= '0';
 		elsif rising_edge(ddr_clk) then
-			if ddr_rst='1' then
+			if ddrtrans_rst='1' then
 				ddr_cmd_req <= '0';
 			elsif ddr_ref_req='1' then
 				ddr_cmd_req <= '0';
