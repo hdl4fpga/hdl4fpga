@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity dma is
+entity dmafile is
 	generic (
 		DDR_BANKSIZE   : natural :=  2;
 		DDR_ADDRSIZE   : natural := 13;
@@ -45,7 +45,7 @@ entity dma is
 		dma_devaddr    : in  std_logic_vector);
 end;
 
-architecture def of dataio is
+architecture def of dmafile is
 
 	function to_dmaaddr (
 		constant addr : std_logic_vector)

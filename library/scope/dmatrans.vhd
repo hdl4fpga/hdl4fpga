@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ddrtrans is
+entity dmatrans is
 	generic (
 		DDR_BURSTLENTH : natural :=  8;
 		DDR_BANKSIZE   : natural :=  2;
@@ -57,7 +57,7 @@ entity ddrtrans is
 end;
 
 
-architecture def of ddrtrans is
+architecture def of dmatrans is
 	signal ddr_addr      : std_logic_vector(dma_ddr_addr'range);
 	signal ddr_cntr_load : std_logic;
 begin
