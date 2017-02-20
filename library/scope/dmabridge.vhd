@@ -73,24 +73,33 @@ architecture def of dataio is
 	signal dmactrl_devid   : std_logic_vector(1-1 downto 0);
 	signal dmactrl_devreq  : std_logic;
 	signal dmactrl_devaddr : std_logic_vector(num_of_dev*(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE)-1 downto 0);
-	signal bus_req         : std_logic_vector;
-	signal bus_devid       : std_logic_vector;
+	signal dev_busreq      : std_logic_vector;
+	signal bus_id          : std_logic_vector;
 	signal bus_gnt         : std_logic_vector;
+	signal bus_busy        : std_logic;
 
 begin
+
+	process (bus_req)
+		variable id : std_logic_vector(bus_id'range);
+	begin
+		id := (others => '-');
+		for i in bus_req'reverse_range loop
+			if bus_req(i)='1' then
+				id := std_logic_vector(to_unsigned(i, id'length));
+			end if;
+		end if;
+		bus_id <= id;
+	end process;
 
 	process (dmactrl_clk)
 	begin
 		if rising_edge(dmactrl_clk) then
 			for i in bus_req'range loop
-						bus_devid  <= to_unsigned(i, bus_devid'length);
-				if bus_gnt(i)='0' then
-					if bus_req(i)='1' then
-						bus_gnt    <= (others => '0');
-						if bus_gnt=(bus_gnt'range => '0') then
-							bus_gnt(i) <= '1';
-						end if;
-						exit;
+				if bus_busy='1' then
+					bus_gnt <= (others => '0');
+					if bus_gnt=(bus_gnt'range => '0') then
+						bus_gnt(i) <= '1';
 					end if;
 				end if;
 			end loop;
