@@ -32,29 +32,15 @@ entity dmamii is
 		dmamii_clk    : in  std_logic;
 		dmamii_dmareq : in  std_logic;
 		dmamii_rdy    : out std_logic;
-		dmamii_req    : out std_logic;
 		dmamii_di_req : in  std_logic;
 		dmamii_di     : out std_logic;
 
+		dmamii_req    : in  std_logic;
 		miitx_clk     => miitx_clk,
 		miitx_rdy     => miitx_rdy,
 		miitx_req     => miitx_req,
 		miitx_ena     => miitx_ena,
 		miitx_dat     => miitx_dat);
-	port (
-		ddrs_clk   : in  std_logic;
-		ddr_ini   : in  std_logic;
-		dmamii_req   : in  std_logic := '1';
-		ddrs_rdy   : out std_logic;
-		ddrs_direq : out std_logic;
-		ddrs_dirdy : in  std_logic;
-		ddrs_di    : in  std_logic_vector(data_size-1 downto 0);
-
-		miitx_clk : in  std_logic;
-		miitx_req : in  std_logic := '1';
-		miitx_ena : out std_logic;
-		miitx_rdy : out std_logic;
-		miitx_dat : out std_logic_vector);
 end;
 
 library hdl4fpga;
@@ -84,7 +70,6 @@ architecture def of dmaii is
 	signal rd_address : std_logic_vector(0 to bram_size-1);
 	signal rd_data    : dword;
 	signal tx_data    : dword;
-	signal bysel : unsigned(1 to unsigned_num_bits(ddrs_di'length/miitx_dat'length-1));
 
 	signal addri_edge : std_logic;
 	signal addro_edge : std_logic;
@@ -98,46 +83,36 @@ begin
 		variable msb  : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
-			if dmamii_req='0' then
-				addr := to_unsigned(2**addri'length-1, addri'length);
-				msb  := addr(0);
+			if miitx_req='0' then
+				addr := (others => '0');
 			elsif dmamii_di_rdy='1' then
-				if (addr(bram_num-1) xor msb)='1' then
+				if addr(0)='1' then
 					dmamii_req <= '0';
+				else
+					addr := addr + 1;
 				end if;
-				msb  := addr(bram_num-1);
-				addr := addr - 1;
-			else
 			end if;
+			addri <= addr;
 		end if;
 	end process; 
 
 	process (miitx_clk)
-		variable addr  : unsigned(addri'range);
-		variable msb   : std_logic;
+		variable addr : unsigned(addri'range);
+		variable msb  : std_logic;
 	begin
 		if rising_edge(miitx_clk) then
-			if dmamii_req='0' then
-				addr     := to_unsigned(2**addro'length-1, addro'length);
-				msb      := addr(0);
-				byte_sel := to_unsigned(2**(bycnt'length-1)-4, bycnt'length); 
-			elsif miitx_req='0' then
-				msb      := addr(bram_num-1);
-				byte_sel <= to_unsigned(2**(bycnt'length-1)-2, bysel'length); 
-			else
-				rdy <= addr(bram_num-1) xor msb;
-				byte_sel := std_logic_vector(bycnt(bydly'range));
-					if bycnt(0)='1' then
-						addro_edge <= addro(bram_num-1);
-						bycnt := to_unsigned(2**(bycnt'length-1)-2, bycnt'length); 
-						if (addro(bram_num-1) xor addro_edge)='0' then
-							addro <= addro - 1;
-						end if;
-					else
-						byte_sel := byte_sel - 1;
-					end if;
+			if miitx_req='0' then
+				addr := (others => '0');
+				bsel <= (others => '0');
+			elsif bsel(0)='1' then
+				bsel <= (others => '0');
+				if addr(0)='0' then
+					addr := addr + 1;
 				end if;
+			else
+				bsel <= bsel + 1;
 			end if;
+			addro <= addr;
 		end if;
 	end process;
 	miitx_rdy <= not ena;
@@ -186,6 +161,6 @@ begin
 
 	txd <= word2byte (
 		word => reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),
-		addr => bysel);
+		addr => bsel);
 	miitx_dat <= txd;
 end;
