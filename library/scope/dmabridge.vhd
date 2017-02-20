@@ -67,15 +67,35 @@ entity dmabridge is
 		miitx_dat     : out std_logic_vector);
 end;
 
-
 architecture def of dataio is
-	constant num_of_dev : natural := 2;
+	constant num_of_dev    : natural := 2;
 
 	signal dmactrl_devid   : std_logic_vector(1-1 downto 0);
 	signal dmactrl_devreq  : std_logic;
 	signal dmactrl_devaddr : std_logic_vector(num_of_dev*(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE)-1 downto 0);
+	signal bus_req         : std_logic_vector;
+	signal bus_devid       : std_logic_vector;
+	signal bus_gnt         : std_logic_vector;
 
 begin
+
+	process (dmactrl_clk)
+	begin
+		if rising_edge(dmactrl_clk) then
+			for i in bus_req'range loop
+						bus_devid  <= to_unsigned(i, bus_devid'length);
+				if bus_gnt(i)='0' then
+					if bus_req(i)='1' then
+						bus_gnt    <= (others => '0');
+						if bus_gnt=(bus_gnt'range => '0') then
+							bus_gnt(i) <= '1';
+						end if;
+						exit;
+					end if;
+				end if;
+			end loop;
+		end if;
+	end process;
 
 	dmactrl_e : entity hdl4fpga.dmactrl
 	generic map (
