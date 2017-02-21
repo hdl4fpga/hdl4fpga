@@ -34,6 +34,8 @@ entity dmabridge is
 		DDR_ADDRSIZE  : natural := 13;
 		DDR_CLNMSIZE  : natural :=  6;
 		DDR_LINESIZE  : natural := 16;
+		PAGE_SIZE     : natural :=  9;
+		DDR_TESTCORE  : boolean := FALSE);
 	port (
 		dmabridge_rst : in std_logic;
 
@@ -54,21 +56,27 @@ entity dmabridge is
 		ddr_do_rdy    : in  std_logic;
 		ddr_do        : in  std_logic_vector;
 		
-		dev_data      : in  std_logic_vector;
-		dev_req       : in  std_logic_vector;
-		dev_gnt       : out std_logic_vector);
+		input_clk     : in  std_logic;
+		input_req     : in  std_logic;
+		input_data    : in  std_logic_vector;
+
+		miitx_clk     : in  std_logic;
+		miitx_req     : in  std_logic;
+		miitx_rdy     : out std_logic;
+		miitx_ena     : out std_logic;
+		miitx_dat     : out std_logic_vector);
 end;
 
 architecture def of dataio is
 	constant num_of_dev : natural := 2;
 
+	signal dmactrl_id   : std_logic_vector(1-1 downto 0);
 	signal dmactrl_req  : std_logic;
 	signal dmactrl_addr : std_logic_vector(num_of_dev*(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE)-1 downto 0);
 	signal gnt_id       : unsigned;
 	signal req_id       : unsigned;
 	signal bus_gnt      : std_logic_vector;
 	signal bus_busy     : std_logic;
-	signal bus_gntd     : std_logic;
 
 begin
 
@@ -85,20 +93,18 @@ begin
 	end process;
 
 	process (dmactrl_clk)
-		variable busy : std_logic;
 	begin
 		if rising_edge(dmactrl_clk) then
-			if dmactrl_req='1' then
-				if req_id > gnt_id then
-					dev_gnt <= (others => '0');
-				elsif bus_req = (bus_req'range => '0') then
-					dev_gnt <= (others => '0');
+			if bus_busy='1' then
+				if req_id < gnt_id then
+					bus_gnt <= (others => '0');
 				end if;
 			elsif bus_req /= (bus_req'range => '0') then
 				bus_gnt(to_unsigned(req_id)) <= '1';
-				dmactrl_req <= '1';
+			end loop;
+			if dmactrl_rdy='1' then
+				bus_busy <= not setif(bus_gnt = (bus_gnt'range => '0'));
 			end if;
-			gnt_id <= req_id;
 		end if;
 	end process;
 
@@ -108,11 +114,11 @@ begin
 		DDR_ADDRSIZE  => DDR_ADDRSIZE,
 		DDR_CLNMSIZE  => DDR_CLNMSIZE)
 	port map (
-		dmactrl_rst   => dmabridge_rst,
-		dmactrl_clk   => dmabridge_clk,
+		dmactrl_rst   => dmabrigge_rst,
+		dmactrl_clk   => dmabrigge_clk,
 		dmactrl_req   => dmactrl_req,
 		dmactrl_rdy   => dmactrl_rdy,
-		dmactrl_id    => gnt_id,
+		dmactrl_id    => dmactrl_id,
 		dmactrl_addr  => dmactrl_addr,
 		dmactrl_weena => dmactrl_weena,
 		dmactrl_wereq => dmactrl_wereq,
@@ -127,4 +133,31 @@ begin
 		ddr_rowa      => ddr_rowa,
 		ddr_cola      => ddr_cola);
 
+	dmainput_e : entity hdl4fpga.dmainput
+	port map (
+		input_clk        => input_clk,
+		input_req        => input_req, 
+		input_data       => input_data,
+
+		dmainput_clk     => dmabridge_clk,
+		dmainput_req     => dmainput_req,
+		dmainput_do_req  => inputddr_di_req,
+		dmainput_do      => inputddr_di);
+
+	dmamii_e : entity hdl4fpga.dmamii
+	generic map (
+		BRAM_SIZE => unsigned_num_bits(2**PAGE_SIZE*32/DDR_LINESIZE-1),
+		DATA_SIZE => DDR_LINESIZE)
+	port map (
+		dmamii_clk    => dmabrige_clk,
+		dmamii_rdy    => ddr2mii_rdy,
+		dmamii_req    => ddr2mii_req,
+		dmamii_di_rdy => ddr_do_rdy,
+		dmamii_di     => ddr_do,
+
+		miitx_clk     => miitx_clk,
+		miitx_rdy     => miitx_rdy,
+		miitx_req     => miitx_req,
+		miitx_ena     => miitx_ena,
+		miitx_dat     => miitx_dat);
 end;

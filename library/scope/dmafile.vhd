@@ -30,19 +30,19 @@ use hdl4fpga.std.all;
 
 entity dmafile is
 	generic (
-		DDR_BANKSIZE   : natural :=  2;
-		DDR_ADDRSIZE   : natural := 13;
-		DDR_CLNMSIZE   : natural :=  6);
+		DDR_BANKSIZE  : natural :=  2;
+		DDR_ADDRSIZE  : natural := 13;
+		DDR_CLNMSIZE  : natural :=  6);
 	port (
-		dma_clk        : in  std_logic;
-		dma_base_addr  : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
-		dma_ddr_addr   : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
-		dma_ddr_rdy    : in  std_logic;
+		dma_clk       : in  std_logic;
+		dma_base_addr : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		dma_ddr_addr  : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
+		dma_ddr_rdy   : in  std_logic;
 
-		dma_devid      : in  std_logic_vector;
-		dma_devwe_ena  : out std_logic;
-		dma_devwe_req  : in  std_logic;
-		dma_devaddr    : in  std_logic_vector);
+		dma_regid     : in  std_logic_vector;
+		dma_we_ena    : out std_logic;
+		dma_we_req    : in  std_logic;
+		dma_addr      : in  std_logic_vector);
 end;
 
 architecture def of dmafile is
@@ -69,10 +69,10 @@ architecture def of dmafile is
 				DDR_CLNMSIZE+1));
 	end;
 
-	signal dma_id        : std_logic_vector(dma_devid'range);
+	signal dmaid         : std_logic_vector(dma_regid'range);
+	signal dmafile_raddr : std_logic_vector(dma_id'range);
 	signal dmafile_we    : std_logic;
 	signal dmafile_waddr : std_logic_vector;
-	signal dmafile_raddr : std_logic_vector;
 	signal dmawe_ena     : std_logic;
 	signal dly_ddrrdy    : std_logic;
 
@@ -85,21 +85,30 @@ begin
 		end if;
 	end process;
 
-	dmawe_dis <= dly_ddrrdy and not dma_ddr_rdy;
+	process (ddr_clk)
+	begin
+		if rising_edge(ddr_clk) then
+			if dma_ddr_rdy='1' then
+				dma_id <= dma_reqid;
+			end if;
+		end if;
+	end process;
+
+	dmawe_dis <= not dly_ddrrdy and dma_ddr_rdy;
 	dmafile_we <= 
-		'1' when dmawe_dis='1'     else
-		'1' when dma_devwe_req='1' else
+		'1' when dmawe_dis='1'  else
+		'1' when dma_we_req='1' else
 		'0';
 
 	dmafile_waddr <= 
-		dma_id when dmawe_dis='1' else;
-		dma_devid;
+		dma_regid when dmawe_dis='1' else;
+		dma_id;
 
 	dmafile_wdata <= 
 		dma_ddr_addr when dmawe_dis='1' else
 		to_dmaaddr(dev_addr) when dma_ddr_rdy='1' else
 	
-	dmafile_raddr <= dma_id;
+	dmafile_raddr <= dma_regid;
 	dmafile_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => dma_clk,
@@ -108,5 +117,5 @@ begin
 		wr_data => dmafile_wdata,
 		rd_addr => dmafile_raddr,
 		rd_data => dma_base_addr);
-	dma_devwe_ena  <= not dmawe_dis;
+	dma_we_ena  <= not dmawe_dis;
 end;

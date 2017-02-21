@@ -35,37 +35,37 @@ entity dmactrl is
 		DDR_CLNMSIZE     : natural :=  6);
 	port (
 
-		dmactrl_rst      : in  std_logic;
-		dmactrl_clk      : in  std_logic;
-		dmactrl_devreq   : in  std_logic_vector;
-		dmactrl_devrdy   : out std_logic;
-		dmactrl_devid    : in  std_logic_vector;
-		dmactrl_devaddr  : in  std_logic_vector;
-		dmactrl_devweena : out std_logic;
-		dmactrl_devwereq : in  std_logic;
+		dmactrl_rst   : in  std_logic;
+		dmactrl_clk   : in  std_logic;
+		dmactrl_req   : in  std_logic_vector;
+		dmactrl_rdy   : out std_logic;
+		dmactrl_id    : in  std_logic_vector;
+		dmactrl_addr  : in  std_logic_vector;
+		dmactrl_weena : out std_logic;
+		dmactrl_wereq : in  std_logic;
 
-		ddr_ref_req      : in  std_logic;
-		ddr_cmd_req      : out std_logic;
-		ddr_cmd_rdy      : in  std_logic;
+		ddr_ref_req   : in  std_logic;
+		ddr_cmd_req   : out std_logic;
+		ddr_cmd_rdy   : in  std_logic;
 
-		ddr_act          : in  std_logic;
-		ddr_cas          : in  std_logic;
-		ddr_bnka         : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_rowa         : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_cola         : out std_logic_vector(DDR_ADDRSIZE-1 downto 0));
+		ddr_act       : in  std_logic;
+		ddr_cas       : in  std_logic;
+		ddr_bnka      : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_rowa      : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_cola      : out std_logic_vector(DDR_ADDRSIZE-1 downto 0));
 
 end;
 
 
 architecture def of dmactrl is
-	signal dma_addr      : std_logic_vector(dmactrl_devaddr'length/2**dmactrl_devid'length-1 downto 0);
+	signal dma_addr      : std_logic_vector(dmactrl_addr'length/2**dmactrl_id'length-1 downto 0);
 	signal ddr_base_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 	signal dma_ddr_addr  : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 	signal dma_ddr_req   : std_logic;
 	signal ddr_rdy       : std_logic;
 begin
 
-	dma_addr <= word2byte(dmactrl_devaddr, dmactrl_devid);
+	dma_addr <= word2byte(dmactrl_addr, dmactrl_id);
 
 	dmafile_e : entity hdl4fpga.dmafile
 	port map (
@@ -73,10 +73,10 @@ begin
 		ddr_base_addr => ddr_base_addr,
 		dma_ddr_addr  => dma_ddr_addr,
 		dma_ddr_rdy   => ddr_rdy,
-		dma_devid     => dmactrl_devid,
-		dma_devwe_ena => dmactrl_devweena,
-		dma_devwe_req => dmactrl_devwereq,
-		dma_devaddr   => dma_addr);
+		dma_regid     => dmactrl_id,
+		dma_we_ena    => dmactrl_weena,
+		dma_we_req    => dmactrl_wereq,
+		dma_addr      => dma_addr);
 
 	dmatans_e : entity hdl4fpga.dmatrans
 	port map (
@@ -87,7 +87,7 @@ begin
 		ddr_ref_req   => ddr_ref_req,
 		ddr_cmd_req   => ddr_cmd_req,
 		ddr_cmd_rdy   => ddr_cmd_rdy,
-		dma_ddr_req   => dmactrl_devreq,
+		dma_ddr_req   => dmactrl_req,
 		dma_ddr_rdy   => ddr_rdy,
 
 		ddr_act       => ddr_act,
@@ -96,5 +96,5 @@ begin
 		ddr_rowa      => ddr_rowa,
 		ddr_cola      => ddr_cola);
 
-	dmactrl_devrdy <= ddr_rdy;
+	dmactrl_rdy <= ddr_rdy;
 end;
