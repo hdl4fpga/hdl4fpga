@@ -39,9 +39,10 @@ entity dmactrl is
 		dmactrl_clk   : in  std_logic;
 		dmactrl_req   : in  std_logic_vector;
 		dmactrl_rdy   : out std_logic;
-		dmactrl_id    : in  std_logic_vector;
+		dmactrl_act   : in  std_logic_vector;
 		dmactrl_addr  : in  std_logic_vector;
 		dmactrl_we    : in  std_logic;
+		dmactrl_reg   : in  std_logic_vector;
 
 		ddr_ref_req   : in  std_logic;
 		ddr_cmd_req   : out std_logic;
@@ -57,14 +58,14 @@ end;
 
 
 architecture def of dmactrl is
-	signal dma_addr      : std_logic_vector(dmactrl_addr'length/2**dmactrl_id'length-1 downto 0);
+	signal dma_addr      : std_logic_vector(dmactrl_addr'length/2**dmactrl_act'length-1 downto 0);
 	signal ddr_base_addr : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 	signal dma_ddr_addr  : std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 	signal dma_ddr_req   : std_logic;
 	signal ddr_rdy       : std_logic;
 begin
 
-	dma_addr <= word2byte(dmactrl_addr, dmactrl_id);
+	dma_addr <= word2byte(dmactrl_addr, dmactrl_act);
 
 	dmafile_e : entity hdl4fpga.dmafile
 	port map (
@@ -72,8 +73,9 @@ begin
 		ddr_base_addr => ddr_base_addr,
 		dma_ddr_addr  => dma_ddr_addr,
 		dma_ddr_rdy   => ddr_rdy,
-		dma_regid     => dmactrl_id,
-		dma_we        => dmactrl_we,
+		dma_ddr_act   => dmactrl_act,
+		dma_reg_id    => dmactrl_reg,
+		dma_req_we    => dmactrl_we,
 		dma_addr      => dma_addr);
 
 	dmatans_e : entity hdl4fpga.dmatrans

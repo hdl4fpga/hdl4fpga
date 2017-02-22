@@ -79,22 +79,16 @@ begin
 		if rising_edge(ddr_clk) then
 			if dma_reg_we='0' then
 				ddr_addr <= dma_ddr_addr;
-			end if;
-		end if;
-	end process;
-
-	process (ddr_clk)
-	begin
-		if rising_edge(ddr_clk) then
-			if dma_ddr_rdy='1' then
-				dma_act <= ddr_dma_act;
+				if dma_ddr_rdy='1' then
+					dma_act <= ddr_dma_act;
+				end if;
 			end if;
 		end if;
 	end process;
 
 	dmafile_waddr <= 
-		ddr_reg_wid when dma_reg_we='0' else;
-		dma_act;
+		dma_act when dma_reg_we='0' else;
+		ddr_reg_id;
 
 	dmafile_wdata <= 
 		ddr_addr when dma_reg_we='0' else
@@ -107,6 +101,6 @@ begin
 		wr_ena  => '1',
 		wr_addr => dmafile_waddr,
 		wr_data => dmafile_wdata,
-		rd_addr => dmafile_raddr,
+		rd_addr => ddr_dma_act,
 		rd_data => dma_base_addr);
 end;

@@ -37,9 +37,9 @@ entity dmabridge is
 	port (
 		dmabridge_rst  : in  std_logic;
 		dmabridge_addr : in  std_logic_vector;
-		dmactrl_wrena  : out std_logic;
-		dmactrl_weena  : out std_logic;
-		dmactrl_wereq  : in  std_logic;
+		dmactrl_we     : out std_logic;
+		dmactrl_reg    : in  std_logic_vector;
+		dmactrl_req    : in  std_logic_vector;
 
 		ddr_ref_req    : in  std_logic;
 		ddr_cmd_req    : out std_logic;
@@ -109,10 +109,10 @@ begin
 		dmactrl_clk   => dmabridge_clk,
 		dmactrl_req   => dmactrl_req,
 		dmactrl_rdy   => dmactrl_rdy,
-		dmactrl_id    => gnt_id,
+		dmactrl_act   => gnt_id,
 		dmactrl_addr  => dmactrl_addr,
-		dmactrl_wrena => dmactrl_weena,
-		dmactrl_wrreq => dmactrl_wereq,
+		dmactrl_we    => dmactrl_we,
+		dmactrl_reg   => dmactrl_reg,
 
 		ddr_ref_req   => ddr_ref_req,
 		ddr_cmd_req   => ddr_cmd_req,
