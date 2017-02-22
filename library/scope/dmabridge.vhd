@@ -30,40 +30,37 @@ use hdl4fpga.std.all;
 
 entity dmabridge is
 	generic (
-		DDR_BANKSIZE  : natural :=  2;
-		DDR_ADDRSIZE  : natural := 13;
-		DDR_CLNMSIZE  : natural :=  6;
-		DDR_LINESIZE  : natural := 16;
+		DDR_BANKSIZE   : natural :=  2;
+		DDR_ADDRSIZE   : natural := 13;
+		DDR_CLNMSIZE   : natural :=  6;
+		DDR_LINESIZE   : natural := 16;
 	port (
-		dmabridge_rst : in std_logic;
+		dmabridge_rst  : in  std_logic;
+		dmabridge_addr : in  std_logic_vector;
+		dmactrl_wrena  : out std_logic;
+		dmactrl_weena  : out std_logic;
+		dmactrl_wereq  : in  std_logic;
 
-		ddr_ref_req   : in  std_logic;
-		ddr_cmd_req   : out std_logic;
-		ddr_cmd_rdy   : in  std_logic;
+		ddr_ref_req    : in  std_logic;
+		ddr_cmd_req    : out std_logic;
+		ddr_cmd_rdy    : in  std_logic;
 
-		ddr_act       : in  std_logic;
-		ddr_cas       : in  std_logic;
-		ddr_rw        : out std_logic;
-		ddr_bnka      : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
-		ddr_rowa      : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
-		ddr_cola      : out std_logic_vector(DDR_ADDRSIZE-1 downto 0));
+		ddr_act        : in  std_logic;
+		ddr_cas        : in  std_logic;
+		ddr_rw         : out std_logic;
+		ddr_bnka       : out std_logic_vector(DDR_BANKSIZE-1 downto 0);
+		ddr_rowa       : out std_logic_vector(DDR_ADDRSIZE-1 downto 0);
+		ddr_cola       : out std_logic_vector(DDR_ADDRSIZE-1 downto 0));
 
-		ddr_di_req    : in  std_logic;
-		ddr_di_rdy    : out std_logic;
-		ddr_di        : out std_logic_vector;
-		ddr_do_rdy    : in  std_logic;
-		ddr_do        : in  std_logic_vector;
-		
-		dev_data      : in  std_logic_vector;
-		dev_req       : in  std_logic_vector;
-		dev_gnt       : out std_logic_vector);
+		dev_data       : in  std_logic_vector;
+		dev_req        : in  std_logic_vector;
+		dev_gnt        : out std_logic_vector);
 end;
 
 architecture def of dataio is
 	constant num_of_dev : natural := 2;
 
 	signal dmactrl_req  : std_logic;
-	signal dmactrl_addr : std_logic_vector(num_of_dev*(DDR_BANKSIZE+DDR_ADDRSIZE+DDR_CLNMSIZE)-1 downto 0);
 	signal gnt_id       : unsigned;
 	signal req_id       : unsigned;
 	signal bus_gnt      : std_logic_vector;
@@ -114,8 +111,8 @@ begin
 		dmactrl_rdy   => dmactrl_rdy,
 		dmactrl_id    => gnt_id,
 		dmactrl_addr  => dmactrl_addr,
-		dmactrl_weena => dmactrl_weena,
-		dmactrl_wereq => dmactrl_wereq,
+		dmactrl_wrena => dmactrl_weena,
+		dmactrl_wrreq => dmactrl_wereq,
 
 		ddr_ref_req   => ddr_ref_req,
 		ddr_cmd_req   => ddr_cmd_req,

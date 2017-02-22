@@ -40,8 +40,7 @@ entity dmafile is
 		dma_ddr_rdy   : in  std_logic;
 
 		dma_regid     : in  std_logic_vector;
-		dma_we_ena    : out std_logic;
-		dma_we_req    : in  std_logic;
+		dma_reg_we    : in  std_logic;
 		dma_addr      : in  std_logic_vector);
 end;
 
@@ -99,6 +98,13 @@ begin
 		'1' when dmawe_dis='1'  else
 		'1' when dma_we_req='1' else
 		'0';
+
+	process (ddr_clk)
+	begin
+		if rising_edge(ddr_clk) then
+
+		end if;
+	end process;
 
 	dmafile_waddr <= 
 		dma_regid when dmawe_dis='1' else;
