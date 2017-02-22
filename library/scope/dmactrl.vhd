@@ -41,8 +41,7 @@ entity dmactrl is
 		dmactrl_rdy   : out std_logic;
 		dmactrl_id    : in  std_logic_vector;
 		dmactrl_addr  : in  std_logic_vector;
-		dmactrl_weena : out std_logic;
-		dmactrl_wereq : in  std_logic;
+		dmactrl_we    : in  std_logic;
 
 		ddr_ref_req   : in  std_logic;
 		ddr_cmd_req   : out std_logic;
@@ -74,8 +73,7 @@ begin
 		dma_ddr_addr  => dma_ddr_addr,
 		dma_ddr_rdy   => ddr_rdy,
 		dma_regid     => dmactrl_id,
-		dma_we_ena    => dmactrl_weena,
-		dma_we_req    => dmactrl_wereq,
+		dma_we        => dmactrl_we,
 		dma_addr      => dma_addr);
 
 	dmatans_e : entity hdl4fpga.dmatrans

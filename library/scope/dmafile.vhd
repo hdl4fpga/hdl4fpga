@@ -38,8 +38,8 @@ entity dmafile is
 		dma_base_addr : out std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 		dma_ddr_addr  : in  std_logic_vector(DDR_BANKSIZE+1+DDR_ADDRSIZE+1+DDR_CLNMSIZE+1-1 downto 0);
 		dma_ddr_rdy   : in  std_logic;
-
-		dma_regid     : in  std_logic_vector;
+		dma_ddr_act   : in  std_logic_vector;
+		dma_reg_id    : in  std_logic_vector;
 		dma_reg_we    : in  std_logic;
 		dma_addr      : in  std_logic_vector);
 end;
@@ -68,19 +68,18 @@ architecture def of dmafile is
 				DDR_CLNMSIZE+1));
 	end;
 
-	signal dmaid         : std_logic_vector(dma_regid'range);
-	signal dmafile_raddr : std_logic_vector(dma_id'range);
-	signal dmafile_we    : std_logic;
+	signal dmafile_raddr : std_logic_vector(dma_wid'range);
 	signal dmafile_waddr : std_logic_vector;
-	signal dmawe_ena     : std_logic;
-	signal dly_ddrrdy    : std_logic;
-
+	signal ddr_addr      : std_logic_vector(dma_ddr_addr'range);
+	signal dma_act       : std_logic_vector(dma_ddr_act'range);
 begin
 
 	process (ddr_clk)
 	begin
 		if rising_edge(ddr_clk) then
-			dly_ddrrdy <= dma_ddr_rdy;
+			if dma_reg_we='0' then
+				ddr_addr <= dma_ddr_addr;
+			end if;
 		end if;
 	end process;
 
@@ -88,40 +87,26 @@ begin
 	begin
 		if rising_edge(ddr_clk) then
 			if dma_ddr_rdy='1' then
-				dma_id <= dma_reqid;
+				dma_act <= ddr_dma_act;
 			end if;
 		end if;
 	end process;
 
-	dmawe_dis <= not dly_ddrrdy and dma_ddr_rdy;
-	dmafile_we <= 
-		'1' when dmawe_dis='1'  else
-		'1' when dma_we_req='1' else
-		'0';
-
-	process (ddr_clk)
-	begin
-		if rising_edge(ddr_clk) then
-
-		end if;
-	end process;
-
 	dmafile_waddr <= 
-		dma_regid when dmawe_dis='1' else;
-		dma_id;
+		ddr_reg_wid when dma_reg_we='0' else;
+		dma_act;
 
 	dmafile_wdata <= 
-		dma_ddr_addr when dmawe_dis='1' else
-		to_dmaaddr(dev_addr) when dma_ddr_rdy='1' else
+		ddr_addr when dma_reg_we='0' else
+		to_dmaaddr(dev_addr);
 	
 	dmafile_raddr <= dma_regid;
 	dmafile_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => dma_clk,
-		wr_ena  => dmafile_we,
+		wr_ena  => '1',
 		wr_addr => dmafile_waddr,
 		wr_data => dmafile_wdata,
 		rd_addr => dmafile_raddr,
 		rd_data => dma_base_addr);
-	dma_we_ena  <= not dmawe_dis;
 end;
