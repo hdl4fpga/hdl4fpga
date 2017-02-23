@@ -30,17 +30,16 @@ entity dmamii is
 		DATA_SIZE  : natural := 32);
 	port (
 		dmamii_clk    : in  std_logic;
-		dmamii_dmareq : in  std_logic;
+		dmamii_gnt    : in  std_logic;
 		dmamii_rdy    : out std_logic;
 		dmamii_di_req : in  std_logic;
 		dmamii_di     : out std_logic;
 
-		dmamii_req    : in  std_logic;
-		miitx_clk     => miitx_clk,
-		miitx_rdy     => miitx_rdy,
-		miitx_req     => miitx_req,
-		miitx_ena     => miitx_ena,
-		miitx_dat     => miitx_dat);
+		miitx_clk     : in  std_logic;
+		miitx_req     : in  std_logic;
+		miitx_rdy     : out std_logic;
+		miitx_ena     : in  std_logic;
+		miitx_dat     : in  std_logic);
 end;
 
 library hdl4fpga;
@@ -83,14 +82,14 @@ begin
 		variable msb  : std_logic;
 	begin
 		if rising_edge(ddrs_clk) then
-			if miitx_req='0' then
+			if dmamii_gnt='0' then
 				addr := (others => '0');
+				dmamii_rdy <= '0';
 			elsif dmamii_di_rdy='1' then
-				if addr(0)='1' then
-					dmamii_req <= '0';
-				else
+				if addr(0)='0' then
 					addr := addr + 1;
 				end if;
+				dmamii_rdy <= addr(0);
 			end if;
 			addri <= addr;
 		end if;
@@ -112,11 +111,10 @@ begin
 			else
 				bsel <= bsel + 1;
 			end if;
+			miitx_rdy <= addr(0);
 			addro <= addr;
 		end if;
 	end process;
-	miitx_rdy <= not ena;
-	miitx_ena <= miitx_req and ena;
 
 	wr_address_i : entity hdl4fpga.align
 	generic map (

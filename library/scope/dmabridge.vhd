@@ -36,6 +36,7 @@ entity dmabridge is
 		DDR_LINESIZE   : natural := 16;
 	port (
 		dmabridge_rst  : in  std_logic;
+		dmabridge_clk  : in  std_logic;
 		dmabridge_addr : in  std_logic_vector;
 		dmactrl_we     : out std_logic;
 		dmactrl_reg    : in  std_logic_vector;
@@ -57,7 +58,7 @@ entity dmabridge is
 		dev_gnt        : out std_logic_vector);
 end;
 
-architecture def of dataio is
+architecture def of dmabridge is
 	constant num_of_dev : natural := 2;
 
 	signal dmactrl_req  : std_logic;
@@ -69,13 +70,13 @@ architecture def of dataio is
 
 begin
 
-	process (bus_req)
+	process (dmctrl_req)
 		variable id : unsigned(bus_id'range);
 	begin
-		id := (others => '0');
-		for i in bus_req'reverse_range loop
-			if bus_req(i)='1' then
-				id := to_unsigned(i+1, id'length);
+		id := (others => '1');
+		for i in dmctrl_req'reverse_range loop
+			if dmctrl_req(i)='1' then
+				id := to_unsigned(i, id'length);
 			end if;
 		end if;
 		req_id <= id;
@@ -86,18 +87,18 @@ begin
 	begin
 		if rising_edge(dmactrl_clk) then
 			if dmactrl_req='1' then
-				if req_id > gnt_id then
+				if req_id < gnt_id then
 					dev_gnt <= (others => '0');
-				elsif bus_req = (bus_req'range => '0') then
+				elsif dmctrl_req = (dmctrl_req'range => '0') then
 					dev_gnt <= (others => '0');
 				end if;
-			elsif bus_req /= (bus_req'range => '0') then
+			elsif dmctrl_req /= (dmctrl_req'range => '0') then
 				bus_gnt(to_unsigned(req_id)) <= '1';
-				dmactrl_req <= '1';
 			end if;
 			gnt_id <= req_id;
 		end if;
 	end process;
+	dmactrl_req <= '1';
 
 	dmactrl_e : entity hdl4fpga.dmactrl
 	generic map (
