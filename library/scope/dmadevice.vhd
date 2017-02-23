@@ -59,7 +59,7 @@ entity dmadevice is
 		input_clk     : in  std_logic;
 		input_req     : in  std_logic;
 		input_rdy     : out std_logic;
-		input_addr    : in  std_logic;
+		input_addr    : in  std_logic_vector;
 		input_data    : in  std_logic_vector;
 
 		miitx_clk     : in  std_logic;
@@ -79,8 +79,9 @@ begin
 
 	with dmactrl_reg select
 	dmabridge_addr <=
-   		input_addr when "0",
-		miitx_addr when "1";
+   		input_addr when "00",
+		miitx_addr when "01";
+		video_addr when "01";
 
 	process (dmabridge_clk)
 		variable cntr : unsigned(0 to dmacltr_req'length);
