@@ -35,11 +35,13 @@ entity dmamii is
 		dmamii_di_req : in  std_logic;
 		dmamii_di     : out std_logic;
 
-		miitx_clk     : in  std_logic;
-		miitx_req     : in  std_logic;
-		miitx_rdy     : out std_logic;
-		miitx_ena     : in  std_logic;
-		miitx_dat     : in  std_logic);
+		mii_clk       : in  std_logic;
+		mii_req       : in  std_logic;
+		mii_rdy       : out std_logic;
+		mii_ena       : in  std_logic;
+		miirx_ena     : in  std_logic;
+		miirx_dat     : in  std_logic);
+		miitx_dat     : out std_logic);
 end;
 
 library hdl4fpga;
@@ -52,32 +54,12 @@ use ieee.std_logic_textio.all;
 architecture def of dmaii is
 	constant bram_num : natural := (unsigned_num_bits(ddrs_di'length-1)+bram_size)-(unsigned_num_bits(1024/2**0*8-1));
 
-	subtype aword is std_logic_vector(bram_size-1 downto 0);
-	type aword_vector is array(natural range <>) of aword;
-
-	subtype dword is std_logic_vector(data_size-1 downto 0);
-	type dword_vector is array(natural range <>) of dword;
-
-	signal addri : unsigned(0 to bram_size-1);
-	signal addro : unsigned(0 to bram_size-1);
-
-	signal wr_address : std_logic_vector(0 to bram_size-1);
-	signal wr_ena  : std_logic;
-	signal wr_data : dword;
-	signal dummy   : dword;
-
-	signal rd_address : std_logic_vector(0 to bram_size-1);
-	signal rd_data    : dword;
-	signal tx_data    : dword;
-
-	signal addri_edge : std_logic;
-	signal addro_edge : std_logic;
-	signal ena : std_logic;
-	signal txd : std_logic_vector(miitx_dat'range);
+	signal dma_addr : unsigned(0 to bram_size-1);
+	signal mii_addr : unsigned(0 to bram_size-1);
 
 begin
 
-	process (ddrs_clk)
+	process (dmamii_clk)
 		variable addr : unsigned(addri'range);
 		variable msb  : std_logic;
 	begin
@@ -91,16 +73,16 @@ begin
 				end if;
 				dmamii_rdy <= addr(0);
 			end if;
-			addri <= addr;
+			dma_addr <= addr;
 		end if;
 	end process; 
 
-	process (miitx_clk)
+	process (mii_clk)
 		variable addr : unsigned(addri'range);
 		variable msb  : std_logic;
 	begin
-		if rising_edge(miitx_clk) then
-			if miitx_req='0' then
+		if rising_edge(mii_clk) then
+			if mii_req='0' then
 				addr := (others => '0');
 				bsel <= (others => '0');
 			elsif bsel(0)='1' then
@@ -111,51 +93,24 @@ begin
 			else
 				bsel <= bsel + 1;
 			end if;
-			miitx_rdy <= addr(0);
-			addro <= addr;
+			mii_rdy  <= addr(0);
+			mii_addr <= addr;
 		end if;
 	end process;
 
-	wr_address_i : entity hdl4fpga.align
-	generic map (
-		n => wr_address'length,
-		d => (wr_address'range => wr_delay))
-	port map (
-		clk => ddrs_clk,
-		di  => std_logic_vector(addri(wr_address'range)),
-		do  => wr_address);
-
-	wr_data_i : entity hdl4fpga.align
-	generic map (
-		n => ddrs_di'length,
-		d => (ddrs_di'range => wr_delay))
-	port map (
-		clk => ddrs_clk,
-		di  => ddrs_di,
-		do  => wr_data);
-
-	wr_ena_i : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (1 to 1 => wr_delay-1))
-	port map (
-		clk   => ddrs_clk,
-		di(0) => di_rdy,
-		do(0) => wr_ena);
-
 	bram_e : entity hdl4fpga.bram
 	port map (
-		clka  => ddrs_clk,
+		clka  => dmamii_clk,
 		wea   => wr_ena,
-		addra => wr_address, 
+		addra => dmamii_addr, 
 		dia   => wr_data,
 		doa   => dummy,
 
-		clkb  => miitx_clk,
+		clkb  => mii_clk,
 		web   => '0',
-		addrb => std_logic_vector(addro), 
-		dib   => wr_data, 
-		dob   => tx_data);
+		addrb => mii_addr
+		dib   => miirx_dat, 
+		dob   => miitx_dat);
 
 	txd <= word2byte (
 		word => reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),

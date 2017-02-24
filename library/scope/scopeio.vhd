@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity scopeio is
+entity scopeio_miirx is
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxdv  : in  std_logic;
@@ -34,17 +34,17 @@ entity scopeio is
 		dma_addr  : out std_logic_vector;
 		dma_size  : out std_logic_vector;
 		mem_addr  : in  std_logic_vector;
+		mem_ena   : out std_logic;
 		mem_data  : out std_logic_vector);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of scopeio is
+architecture def of scopeio_miirx is
 	signal mac_rdy  : std_logic;
 	signal udp_rdy  : std_logic;
 	signal dma_rdy  : std_logic;
-	signal word_rdy : std_logic;
 
 	signal dma_data : unsigned;
 begin
@@ -96,41 +96,21 @@ begin
 	end process;
 
 	process(mii_rxc)
-		variable byte_cntr : unsigned;
-		variable word_cntr : unsigned;
+		variable cntr : unsigned;
+		variable data : unsigned(mem_data'range);
 	begin
 		if rising_edge(mii_rxc) then
 			if dma_rdy='0' then
-				byte_cntr := to_unsigned(0, cntr'length);
-				word_cntr := to_unsigned(0, cntr'length);
-			elsif word_cntr(0)='0' then
-				if byte_cntr(0)='0' then
-					byte_cntr := byte_cntr - 1;
-				else
-					byte_cntr := to_unsigned(0, cntr'length);
-					word_cntr := word_cntr + 1;
-				end if;
+				cntr := to_unsigned(mem_data'length/mii_rxd'length-1, cntr'length);
+			elsif cntr(0)='1' then
+				cntr := to_unsigned(mem_data'length/mii_rxd'length-1, cntr'length);
+			else
+				cntr := cntr - 1;
 			end if;
-			mem_datai := mem_datai sll mii_rxd'length;
-			mem_datai(mii_rxd) := mii_rxd;
-			mem_addri <= word_cntr;
-			word_rdy  <= byte_cntr(0);
+			mem_ena  <= cntr(0);
+			mem_data <= data;
+			data := data sll mii_rxd'length;
+			data(mii_rxd'reverse_range) := reverse(mii_rxd);
 		end if;
 	end process;
-
-	mem_e : entity hld4pga.bram
-	port map (
-		clka  => mii_rxc,
-		addra => mem_addri,
-		enaa  => '1',
-		wea   => word_rdy,
-		dia   => mem_datai,
-
-		clkb  => mem_clk,
-		addrb => mem_addr,
-		enab  => '1',
-		web   => '0',
-		dib   => (mem_data'range => '-'),
-		dob   => mem_data);
-
 end;
