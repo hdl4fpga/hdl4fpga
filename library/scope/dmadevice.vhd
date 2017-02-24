@@ -34,8 +34,7 @@ entity dmadevice is
 		DDR_ADDRSIZE  : natural := 13;
 		DDR_CLNMSIZE  : natural :=  6;
 		DDR_LINESIZE  : natural := 16;
-		PAGE_SIZE     : natural :=  9;
-		DDR_TESTCORE  : boolean := FALSE);
+		PAGE_SIZE     : natural :=  9);
 	port (
 		dmabridge_rst : in std_logic;
 
