@@ -63,7 +63,7 @@ architecture def of xdr_timer is
 		return val;
 	end;
 
-	impure function pp 
+	impure function to_twordvector 
 		return tword_vector is
 		variable val : tword_vector(timers'range);
 		variable csize : natural;
@@ -79,7 +79,7 @@ architecture def of xdr_timer is
 		return val;
 	end;
 
-	constant timer_values : tword_vector := pp;
+	constant timer_values : tword_vector := to_twordvector;
 	constant xx : natural_vector(stages-1 downto 0) := stage_size(stages downto 1);
 
 	signal data : tword;
