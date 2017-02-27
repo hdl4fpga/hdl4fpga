@@ -40,11 +40,11 @@ entity scopeio_miitx is
 
 		mem_txdv  : out std_logic;
 		mem_txd   : in  std_logic_vector);
-
 end;
 
 architecture mix of scopeio_miitx is
-
+	signal udp_ena : std_logic;
+	signal udp_rdy : std_logic;
 begin
 
 	miitx_macudp_e  : entity hdl4fpga.miitx_mem
@@ -68,13 +68,9 @@ begin
 			x"0000")	   	            -- UPD Checksum
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => ,
-		mii_txen => ,
-		mii_txd  => ipudp_dat);
-
-	txena(txpld) <= miidma_rxen;
-	txdat(txpld) <= miidma_rxd;
-	mem_ena   <= txreq(txpld);
+		mii_treq => mii_treq,
+		mii_txen => udp_ena,
+		mii_txd  => udp_dat);
 
 	miitx_crc_e : entity hdl4fpga.miitx_crc
 	port map (
@@ -85,6 +81,4 @@ begin
 		mii_txen => crc_txen,
 		mii_txd  => crc_dat));
 
-	mii_trdy <= rdy(n);
-	mii_txd  <= txdat(n) when rdy(n-1)='1' else txd;
 end;
