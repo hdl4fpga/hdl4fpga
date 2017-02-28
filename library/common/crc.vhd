@@ -32,28 +32,58 @@ entity test is
 end;
 
 architecture mix of test is
-	subtype word is unsigned(0 to 4-1);
-	constant p   : unsigned(0 to 8)   := b"100000111";
+	subtype  word is unsigned(0 to 4-1);
+	signal   data : word;
+	signal   crc  : unsigned(0 to 8-1);
+	constant p    : unsigned(0 to 8)   := b"100000111";
+	signal clk : std_logic := '0';
+	signal rst : std_logic :='1';
 begin
-	process
-		variable data : unsigned(0 to 8-1) := b"11101010"; --b"01010111";
-		variable aux  : unsigned(p'range)  := (others => '0');
-		variable msg  : line;
+	process (clk)
+		variable msg : line;
+		variable aux : unsigned(p'range) := (others => '0');
 	begin
-		for k in 0 to data'length/word'length-1 loop
-			aux(word'range) := aux(word'range) xor data(word'range);
-			for i in word'range loop
-				if aux(0)='1' then
-					for j in p'range loop
-						aux(j) := aux(j) xor p(j);
-					end loop;
-				end if;
-				aux  := aux  sll 1;
-			end loop;
-			data := data sll word'length;
-		end loop;
-		write (msg, std_logic_vector(aux(0 to aux'right-1)));
-		writeline (output, msg);
-		wait;
+		if rising_edge(clk) then
+			if rst='1' then
+				aux := (others => '0');
+			else
+				aux(data'range) := aux(data'range) xor data;
+				for i in data'range loop
+					if aux(0)='1' then
+						for j in p'range loop
+							aux(j) := aux(j) xor p(j);
+						end loop;
+					end if;
+					aux  := aux  sll 1;
+				end loop;
+			end if;
+			crc <= aux(crc'range);
+		end if;
+	end process;
+
+	process (clk)
+		variable msg : line;
+		variable kkk : unsigned(0 to 8-1) := b"01010111";
+		variable cnt : natural := 0;
+	begin
+		if cnt < 4 then
+			clk <= not clk after 1 ns;
+		end if;
+		if rising_edge(clk) then
+			case cnt is
+			when 0 =>
+				rst <= '0';
+				data <= kkk(data'range);
+				kkk  := kkk sll data'length;
+			when 1|2 =>
+				rst <= '0';
+				data <= kkk(data'range);
+				kkk  := kkk sll data'length;
+			when others =>
+				write (msg, std_logic_vector(crc(crc'range)));
+				writeline (output, msg);
+			end case;
+			cnt := cnt + 1;
+		end if;
 	end process;
 end;
