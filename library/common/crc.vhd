@@ -32,22 +32,28 @@ entity test is
 end;
 
 architecture mix of test is
+	subtype word is unsigned(0 to 4-1);
+	constant p   : unsigned(0 to 8)   := b"100000111";
 begin
 	process
-		variable data : unsigned(0 to 8) := b"111010100"; --b"010101110";
-		constant p    : unsigned(0 to 8)   := b"100000111";
+		variable data : unsigned(0 to 8-1) := b"11101010"; --b"01010111";
+		variable aux  : unsigned(p'range)  := (others => '0');
 		variable msg  : line;
 	begin
-		for k in 0 to data'right-1	loop
-			if data(0)='1' then
-				for j in p'range loop
-					data(j) := data(j) xor p(j);
-				end loop;
-			end if;
-			data := data sll 1;
-			write (msg, std_logic_vector(data(0 to data'right-1)));
-			writeline (output, msg);
+		for k in 0 to data'length/word'length-1 loop
+			aux(word'range) := aux(word'range) xor data(word'range);
+			for i in word'range loop
+				if aux(0)='1' then
+					for j in p'range loop
+						aux(j) := aux(j) xor p(j);
+					end loop;
+				end if;
+				aux  := aux  sll 1;
+			end loop;
+			data := data sll word'length;
 		end loop;
+		write (msg, std_logic_vector(aux(0 to aux'right-1)));
+		writeline (output, msg);
 		wait;
 	end process;
 end;
