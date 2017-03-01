@@ -35,7 +35,7 @@ entity crc is
 		crc  : out std_logic_vector);
 end;
 
-architecture mix of test is
+architecture mix of crc is
 begin
 	process (clk)
 		variable aux : unsigned(p'range) := (others => '0');
@@ -45,7 +45,7 @@ begin
 				aux := (others => '0');
 				aux(data'range) := aux(data'range);
 			else
-				aux(data'range) := aux(data'range) xor data;
+				aux(data'range) := aux(data'range) xor unsigned(data);
 			end if;
 
 			for i in data'range loop
@@ -56,7 +56,7 @@ begin
 				end if;
 				aux  := aux  sll 1;
 			end loop;
-			crc <= aux(crc'range);
+			crc <= std_logic_vector(aux(crc'range));
 		end if;
 	end process;
 

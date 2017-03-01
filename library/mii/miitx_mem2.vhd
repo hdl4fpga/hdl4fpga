@@ -28,57 +28,66 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_miitx is
+entity miitx_mem is
 	generic (
-		payload_size : natural := 512;
-		mac_destaddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
-	port (
-		mii_treq  : in  std_logic;
-		mii_txc   : in  std_logic;
-		mii_txdv  : out std_logic;
-		mii_txd   : out std_logic_vector;
-
-		mem_txdv  : out std_logic;
-		mem_txd   : in  std_logic_vector);
+		mem_data : std_logic_vector);
+    port (
+        mii_txc  : in  std_logic;
+		mii_treq : in  std_logic;
+		mii_trdy : out std_logic;
+        mii_txen : out std_logic;
+        mii_txd  : out std_logic_vector);
 end;
 
-architecture mix of scopeio_miitx is
-	signal pkt_ena : std_logic;
-	signal pkt_rdy : std_logic;
+architecture def of miitx_mem is
+	constant addr_size : natural := unsigned_num_bits((mem_data'length+byte'length-1)/byte'length-1);
+	constant ramb_size : natural := (mem_data'length+byte'length-1)/byte'length;
+	constant xxx : natural := unsigned_num_bits(2*byte'length/mii_txd'length-1)-1;
+
+	function ramb_init (
+		constant arg : std_logic_vector)
+		return byte_vector is
+
+		variable aux : unsigned(arg'length-1 downto 0) := (others => '-');
+		variable val : byte_vector(2**addr_size-1 downto 0) := (others => (others => '-'));
+
+	begin
+		aux(arg'length-1 downto 0) := unsigned(arg);
+		for i in 0 to ramb_size-1 loop
+			val(i) := reverse(std_logic_vector(aux(byte'range)));
+			aux := aux srl byte'length;
+		end loop;
+
+		return val;
+	end;
+
+	constant ramb : byte_vector(2**addr_size-1 downto 0) := ramb_init(mem_data);
+	signal cntr : std_logic_vector(0 to addr_size+xxx);
+
 begin
 
-	miitx_macudp_e  : entity hdl4fpga.miitx_mem
-	generic map (
-		mem_data => 
-			x"5555_5555_5555_55d5" &
-			mac_destaddr           &
-			x"000000010203"	       &    -- MAC Source Address
-			x"0800"                &    -- MAC Protocol ID
-			ipheader_checksumed(
-				x"4500"            &    -- IP  Version, header length, TOS
-				std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
-				x"0000"            &    -- IP  Identification
-				x"0000"            &    -- IP  Fragmentation
-				x"0511"            &    -- IP  TTL, protocol
-				x"0000"            &    -- IP  Checksum
-				x"c0a802c8"        &    -- IP  Source address
-				x"ffffffff")       &    -- IP  Destination address
-			x"04000400"            &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"0000")	   	            -- UPD Checksum
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => mii_treq,
-		mii_txen => pkt_ena,
-		mii_txd  => pkt_dat);
+	process (mii_txc)
+		variable ena : std_logic;
+	begin
+		if rising_edge(mii_txc) then
+			cntr <= dec (
+				cntr => cntr,
+				ena  => not mii_treq or not cntr(0),
+				load => not mii_treq,
+				data => ramb_size*2**xxx-1);
+		end if;
+	end process;
 
-	miitx_crc_e : entity hdl4fpga.crc
-	generic (
-		p => "1" & X"04C11DB7",
-	port map (
-		clk  => mii_txc,
-		load => mii_treq,
-		data => pkt_dat,
-		crc  => crc_txd);
+	mii_trdy <= cntr(0) and mii_treq;
+	mii_txen <= mii_treq and not cntr(0);
 
+	nomuxed_g : if mii_txd'length=byte'length generate
+		mii_txd  <= ramb(to_integer(unsigned(cntr(1 to addr_size))));
+	end generate;
+
+	muxed_g : if mii_txd'length/=byte'length generate
+		mii_txd  <= word2byte(
+			word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
+			addr => cntr(addr_size+1 to addr_size+xxx));
+	end generate;
 end;
