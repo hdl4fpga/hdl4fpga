@@ -38,16 +38,22 @@ entity scopeio_miitx is
 		mii_txdv  : out std_logic;
 		mii_txd   : out std_logic_vector;
 
-		mem_txdv  : out std_logic;
-		mem_txd   : in  std_logic_vector);
+		mem_req   : out std_logic;
+		mem_rdy   : in  std_logic;
+		mem_dat   : in  std_logic_vector);
 end;
 
 architecture mix of scopeio_miitx is
-	signal pkt_ena : std_logic;
+	constant crc32 : std_logic_vector(0 to 32) := "1" & X"04C11DB7";
+	signal crc     : std_logic_vector(0 to 32-1);
+	signal crc_dv  : std_logic;
+	signal crc_dat : std_logic_vector(mii_txd'range);
+	signal pkt_dv  : std_logic;
 	signal pkt_rdy : std_logic;
+	signal pkt_dat : std_logic_vector(mii_txd'range);
 begin
 
-	miitx_macudp_e  : entity hdl4fpga.miitx_mem
+	miitx_pkt_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => 
 			x"5555_5555_5555_55d5" &
@@ -69,16 +75,66 @@ begin
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
-		mii_txen => pkt_ena,
+		mii_txen => pkt_dv,
 		mii_txd  => pkt_dat);
+
+	pktmem_b : block 
+		signal dly_dat : std_logic_vector(pkt_dat'range);
+	begin
+		dlypktdat_e: entity hdl4fpga.align
+		generic map (
+			n => pkt_dat,
+			d => (pkt_dat'range => 2))
+		port map (
+			clk => mii_txc,
+			di  => pkt_dat,
+			do  => dly_dat);
+
+		crc_dat <= word2byte (
+			word => dly_dat & mem_dat,
+			byte => mem_rdy);
+	end block;
 
 	miitx_crc_e : entity hdl4fpga.crc
 	generic (
-		p => "1" & X"04C11DB7",
+		p    => crc32,
 	port map (
 		clk  => mii_txc,
 		load => mii_treq,
-		data => pkt_dat,
-		crc  => crc_txd);
+		data => crc_dat,
+		crc  => crc);
 
+	process (mii_txc)
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1));
+	begin
+		if rising_edge(mii_txc) then
+			if mii_trdy='0' then
+				cntr := (others => '0');
+			elsif pkt_ena='1' then
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				cntr := cntr + 1;
+			end if;
+			crc_dv <= cntr(0);
+		end if;
+	end process;
+
+	synccrc_b : block
+	begin
+		dlydat_e: entity hdl4fpga.align
+		generic map (
+			n => pkt_dat,
+			d => (pkt_dat'range => 2))
+		port map (
+			clk => mii_txc,
+			di  => crc(dly_dat'range),
+			do  => dly_dat);
+
+		mii_txd <=
+			pkt_dat when pkt_ena='1' else
+			crc(mii_txd'range);
+	end block;
+
+
+	mii_txdv <= pkt_dv or crc_dv; 
 end;
