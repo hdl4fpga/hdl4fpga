@@ -40,11 +40,10 @@ entity miitx_mem is
 end;
 
 architecture def of miitx_mem is
+	constant mem_size  : natural := (mem_data'length+byte'length-1)/byte'length;
 	constant addr_size : natural := unsigned_num_bits((mem_data'length+byte'length-1)/byte'length-1);
-	constant ramb_size : natural := (mem_data'length+byte'length-1)/byte'length;
-	constant xxx : natural := unsigned_num_bits(2*byte'length/mii_txd'length-1)-1;
 
-	function ramb_init (
+	function mem_init (
 		constant arg : std_logic_vector)
 		return byte_vector is
 
@@ -53,7 +52,7 @@ architecture def of miitx_mem is
 
 	begin
 		aux(arg'length-1 downto 0) := unsigned(arg);
-		for i in 0 to ramb_size-1 loop
+		for i in 0 to mem_size-1 loop
 			val(i) := reverse(std_logic_vector(aux(byte'range)));
 			aux := aux srl byte'length;
 		end loop;
@@ -61,33 +60,35 @@ architecture def of miitx_mem is
 		return val;
 	end;
 
-	constant ramb : byte_vector(2**addr_size-1 downto 0) := ramb_init(mem_data);
-	signal cntr : std_logic_vector(0 to addr_size+xxx);
+	constant nib : natural := unsigned_num_bits(2*byte'length/mii_txd'length-1)-1;
+	constant mem : byte_vector(2**addr_size-1 downto 0) := mem_init(mem_data);
+
+	signal cntr : unsigned(0 to addr_size+nib);
 
 begin
 
 	process (mii_txc)
-		variable ena : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			cntr <= dec (
-				cntr => cntr,
-				ena  => not mii_treq or not cntr(0),
-				load => not mii_treq,
-				data => ramb_size*2**xxx-1);
+			if mii_treq='0' then
+				cntr <= to_unsigned(mem_size*2*nib-1, cntr'length);
+			elsif cntr(0)='0' then
+				cntr <= cntr - 1;
+			end if;
 		end if;
 	end process;
 
-	mii_trdy <= cntr(0) and mii_treq;
+	mii_trdy <= mii_treq and cntr(0);
 	mii_txen <= mii_treq and not cntr(0);
 
 	nomuxed_g : if mii_txd'length=byte'length generate
-		mii_txd  <= ramb(to_integer(unsigned(cntr(1 to addr_size))));
+		mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 	end generate;
 
 	muxed_g : if mii_txd'length/=byte'length generate
 		mii_txd  <= word2byte(
-			word => ramb(to_integer(unsigned(cntr(1 to addr_size)))),
-			addr => cntr(addr_size+1 to addr_size+xxx));
+			word => mem(to_integer(unsigned(cntr(1 to addr_size)))),
+			addr => std_logic_vector(cntr(addr_size+1 to addr_size+nib)));
 	end generate;
+
 end;
