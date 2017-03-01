@@ -21,69 +21,43 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
-entity test is
+entity crc is
+	generic (
+		p    : std_logic_vector);
+	port (
+		clk  : in  std_logic;
+		load : in  std_logic;
+		data : in  std_logic_vector;
+		crc  : out std_logic_vector);
 end;
 
 architecture mix of test is
-	subtype  word is unsigned(0 to 4-1);
-	signal   data : word;
-	signal   crc  : unsigned(0 to 8-1);
-	constant p    : unsigned(0 to 8)   := b"100000111";
-	signal clk : std_logic := '0';
-	signal rst : std_logic :='1';
 begin
 	process (clk)
-		variable msg : line;
 		variable aux : unsigned(p'range) := (others => '0');
 	begin
 		if rising_edge(clk) then
-			if rst='1' then
+			if load='1' then
 				aux := (others => '0');
+				aux(data'range) := aux(data'range);
 			else
 				aux(data'range) := aux(data'range) xor data;
-				for i in data'range loop
-					if aux(0)='1' then
-						for j in p'range loop
-							aux(j) := aux(j) xor p(j);
-						end loop;
-					end if;
-					aux  := aux  sll 1;
-				end loop;
 			end if;
+
+			for i in data'range loop
+				if aux(0)='1' then
+					for j in p'range loop
+						aux(j) := aux(j) xor p(j);
+					end loop;
+				end if;
+				aux  := aux  sll 1;
+			end loop;
 			crc <= aux(crc'range);
 		end if;
 	end process;
 
-	process (clk)
-		variable msg : line;
-		variable kkk : unsigned(0 to 8-1) := b"01010111";
-		variable cnt : natural := 0;
-	begin
-		if cnt < 4 then
-			clk <= not clk after 1 ns;
-		end if;
-		if rising_edge(clk) then
-			case cnt is
-			when 0 =>
-				rst <= '0';
-				data <= kkk(data'range);
-				kkk  := kkk sll data'length;
-			when 1|2 =>
-				rst <= '0';
-				data <= kkk(data'range);
-				kkk  := kkk sll data'length;
-			when others =>
-				write (msg, std_logic_vector(crc(crc'range)));
-				writeline (output, msg);
-			end case;
-			cnt := cnt + 1;
-		end if;
-	end process;
 end;
