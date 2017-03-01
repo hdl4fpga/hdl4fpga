@@ -30,11 +30,9 @@ use hdl4fpga.std.all;
 
 entity miirx_mac is
     port (
-		mii_rxc  : in std_logic;
-        mii_rxdv : in std_logic;
-        mii_rxd  : in std_logic_vector;
-
-		mii_txc  : out std_logic;
+		mii_rxc  : in  std_logic;
+        mii_rxdv : in  std_logic;
+        mii_rxd  : in  std_logic_vector;
 		mii_txen : out std_logic);
 end;
 
@@ -43,6 +41,7 @@ architecture def of miirx_mac is
 	signal dtreq : std_logic;
 	signal dtrdy : std_logic;
 	signal dtxen : std_logic;
+	signal drdy  : std_logic;
 	signal dtxd  : std_logic_vector(mii_rxd'range);
 begin
 
@@ -64,26 +63,17 @@ begin
 		mii_txd  => dtxd);
 
 	process (mii_rxc)
-		variable drdy : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if dtreq='0' then
-				drdy := '0';
 				txen <= '0';
-			elsif drdy='0' then
+			elsif txen='0' then
 				if dtxen='1' then
-					if mii_rxd=dtxd then
-						drdy := '0';
-						txen <= '1';
-					else
-						drdy := '1';
-						txen <= '0';
-					end if;
+					txen <= setif(mii_rxd = dtxd);
 				end if;
 			end if;
 		end if;
 	end process;
 
-	mii_txc  <= mii_rxc;
 	mii_txen <= dtrdy and txen;
 end;
