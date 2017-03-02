@@ -30,7 +30,8 @@ entity crc is
 		p    : std_logic_vector);
 	port (
 		clk  : in  std_logic;
-		load : in  std_logic;
+		rst  : in  std_logic := '0';
+		load : in  std_logic := '0';
 		data : in  std_logic_vector;
 		crc  : out std_logic_vector);
 end;
@@ -39,24 +40,28 @@ architecture mix of crc is
 begin
 
 	process (clk)
-		variable aux : unsigned(p'range) := (others => '0');
+		variable aux : unsigned(0 to p'right) := (others => '0');
 	begin
 		if rising_edge(clk) then
-			if load='1' then
+			if rst='1' then
 				aux := (others => '0');
-				aux(data'range) := aux(data'range);
 			else
-				aux(data'range) := aux(data'range) xor unsigned(data);
-			end if;
-
-			for i in data'range loop
-				if aux(0)='1' then
-					for j in p'range loop
-						aux(j) := aux(j) xor p(j);
-					end loop;
+				if load='1' then
+					aux := (others => '0');
+					aux(data'range) := aux(data'range);
+				else
+					aux(data'range) := aux(data'range) xor unsigned(data);
 				end if;
-				aux := aux sll 1;
-			end loop;
+
+				for i in data'range loop
+					if aux(0)='1' then
+						for j in p'range loop
+							aux(j) := aux(j) xor p(j);
+						end loop;
+					end if;
+					aux := aux sll 1;
+				end loop;
+			end if;
 			crc <= std_logic_vector(aux(crc'range));
 		end if;
 	end process;

@@ -30,8 +30,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_miitx is
 	generic (
-		payload_size : natural := 512;
-		mac_destaddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
+		mac_daddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
 	port (
 		mii_treq  : in  std_logic;
 		mii_txc   : in  std_logic;
@@ -42,14 +41,17 @@ entity scopeio_miitx is
 		mem_rdy   : in  std_logic;
 		mem_ena   : in  std_logic;
 		mem_dat   : in  std_logic_vector);
+
+	constant payload_size : natural := 512;
 end;
 
 architecture mix of scopeio_miitx is
 	constant crc32 : std_logic_vector(1 to 32) := X"04C11DB7";
 	signal crc      : std_logic_vector(0 to 32-1);
 	signal crc_dv   : std_logic;
+	signal crc_req0 : std_logic;
 	signal crc_req  : std_logic;
-	signal crc_load : std_logic;
+	signal crc_rst  : std_logic;
 	signal crc_dat  : std_logic_vector(mii_txd'range);
 	signal pkt_dv   : std_logic;
 	signal pkt_rdy  : std_logic;
@@ -60,7 +62,7 @@ begin
 	generic map (
 		mem_data => 
 			x"5555_5555_5555_55d5" &
-			mac_destaddr           &
+			mac_daddr              &
 			x"000000010203"	       &    -- MAC Source Address
 			x"0800"                &    -- MAC Protocol ID
 			ipheader_checksumed(
@@ -74,7 +76,7 @@ begin
 				x"ffffffff")       &    -- IP  Destination address
 			x"04000400"            &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"0000")	   	            -- UPD Checksum
+			x"1234")	   	            -- UPD Checksum
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
@@ -105,49 +107,59 @@ begin
 			di(0) => pkt_dv,
 			do(0) => dly_dv);
 
+		crc_req0 <= (dly_dv or mem_ena);
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
 				crc_dat <= word2byte (
 					word => dly_dat & mem_dat,
-					addr => (0 => mem_ena));
-				crc_req <= (dly_dv or mem_ena);
+					addr => (0 => not dly_dv));
+				if dly_dv='0' then
+					if mem_ena='0' then
+						crc_dat <= (others => '0');
+					end if;
+				end if;
+				crc_req <= crc_req0;
 			end if;
 		end process;
-
 	end block;
 
-	crc_load <= not crc_req;
+	crc_rst <= not crc_req;
 	miitx_crc_e : entity hdl4fpga.crc
 	generic map (
 		p    => crc32)
 	port map (
 		clk  => mii_txc,
-		load => crc_load,
+		rst  => crc_rst,
 		data => crc_dat,
 		crc  => crc);
 
-	process (mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1));
+			mii_txd  <= crc_dat;
+			mii_txdv <= crc_req or crc_dv;
+	process (mii_treq, mii_txc)
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1)) := (others => 'U');
 	begin
-		if rising_edge(mii_txc) then
+		if mii_treq='0' then
+			cntr := (others => '0');
+			crc_dv <= '0';
+		elsif rising_edge(mii_txc) then
 			if crc_req='0' then
-				cntr := (others => '0');
-			elsif cntr(0)='0' then
-				cntr := cntr + 1;
+				if cntr(0)='0' then
+					cntr := cntr + 1;
+				end if;
+				crc_dv <= not cntr(0);
 			end if;
-			crc_dv <= not cntr(0) and crc_req;
 		end if;
 	end process;
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			mii_txd <= crc(crc_dat'range);
-			if crc_req='0' then
-				mii_txd <= crc_dat;
-			end if;
-			mii_txdv <= pkt_dv or crc_dv; 
+--			mii_txd <= crc(crc_dat'range);
+--			if crc_req='1' then
+--				mii_txd <= crc_dat;
+--			end if;
+--			mii_txdv <= crc_req or crc_dv; 
 		end if;
 	end process;
 
