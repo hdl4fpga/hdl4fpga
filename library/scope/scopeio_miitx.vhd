@@ -89,29 +89,29 @@ begin
 	begin
 		dlypktdat_e: entity hdl4fpga.align
 		generic map (
-			n => pkt_dat,
+			n => pkt_dat'length,
 			d => (pkt_dat'range => 2))
 		port map (
 			clk => mii_txc,
 			di  => pkt_dat,
 			do  => dly_dat);
 
-		dlypktdat_e: entity hdl4fpga.align
+		dlypktdly_e: entity hdl4fpga.align
 		generic map (
 			n => 1,
 			d => (0 => 2))
 		port map (
-			clk => mii_txc,
-			di  => pkt_dv,
-			do  => dly_dv);
+			clk   => mii_txc,
+			di(0) => pkt_dv,
+			do(0) => dly_dv);
 
 		process (mii_txc)
 		begin
-			if risisng_edge(mii_txc) then
+			if rising_edge(mii_txc) then
 				crc_dat <= word2byte (
 					word => dly_dat & mem_dat,
-					byte => mem_ena);
-				crc_req <= (dly_dv or mem_ena) and not mii_rdy;
+					addr => (0 => mem_ena));
+				crc_req <= (dly_dv or mem_ena);
 			end if;
 		end process;
 
@@ -119,8 +119,8 @@ begin
 
 	crc_load <= not crc_req;
 	miitx_crc_e : entity hdl4fpga.crc
-	generic (
-		p    => crc32,
+	generic map (
+		p    => crc32)
 	port map (
 		clk  => mii_txc,
 		load => crc_load,
@@ -143,9 +143,10 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			mii_txd <=
-				crc_dat when crc_req='0' else
-				crc(crc_dat'range);
+			mii_txd <= crc(crc_dat'range);
+			if crc_req='0' then
+				mii_txd <= crc_dat;
+			end if;
 			mii_txdv <= pkt_dv or crc_dv; 
 		end if;
 	end process;
