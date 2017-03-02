@@ -45,7 +45,7 @@ entity scopeio_miitx is
 end;
 
 architecture mix of scopeio_miitx is
-	constant crc32 : std_logic_vector(0 to 32) := "1" & X"04C11DB7";
+	constant crc32 : std_logic_vector(1 to 32) := X"04C11DB7";
 	signal crc      : std_logic_vector(0 to 32-1);
 	signal crc_dv   : std_logic;
 	signal crc_req  : std_logic;

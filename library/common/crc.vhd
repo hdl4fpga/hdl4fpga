@@ -37,6 +37,7 @@ end;
 
 architecture mix of crc is
 begin
+
 	process (clk)
 		variable aux : unsigned(p'range) := (others => '0');
 	begin
@@ -54,7 +55,7 @@ begin
 						aux(j) := aux(j) xor p(j);
 					end loop;
 				end if;
-				aux  := aux  sll 1;
+				aux := aux sll 1;
 			end loop;
 			crc <= std_logic_vector(aux(crc'range));
 		end if;
