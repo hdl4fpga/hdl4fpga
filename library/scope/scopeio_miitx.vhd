@@ -49,7 +49,6 @@ architecture mix of scopeio_miitx is
 	constant crc32 : std_logic_vector(1 to 32) := X"04C11DB7";
 	signal crc      : std_logic_vector(0 to 32-1);
 	signal crc_dv   : std_logic;
-	signal crc_req0 : std_logic;
 	signal crc_req  : std_logic;
 	signal crc_rst  : std_logic;
 	signal crc_dat  : std_logic_vector(mii_txd'range);
@@ -107,24 +106,30 @@ begin
 			di(0) => pkt_dv,
 			do(0) => dly_dv);
 
-		crc_req0 <= (dly_dv or mem_ena);
 		process (mii_txc)
+			variable dlydat : std_logic_vector(crc_dat'range);
+			variable dlyreq : std_logic;
 		begin
 			if rising_edge(mii_txc) then
-				crc_dat <= word2byte (
+				crc_dat <= dlydat;
+				dlydat  := word2byte (
 					word => dly_dat & mem_dat,
 					addr => (0 => not dly_dv));
+
 				if dly_dv='0' then
 					if mem_ena='0' then
-						crc_dat <= (others => '0');
+						dlydat := (others => '0');
 					end if;
 				end if;
-				crc_req <= crc_req0;
+
+				crc_rst <= not dlyreq;
+				dlyreq  := dly_dv or mem_ena;
+				crc_req <= dlyreq;
 			end if;
 		end process;
+
 	end block;
 
-	crc_rst <= not crc_req;
 	miitx_crc_e : entity hdl4fpga.crc
 	generic map (
 		p    => crc32)
@@ -135,20 +140,17 @@ begin
 		crc  => crc);
 
 			mii_txd  <= crc_dat;
-			mii_txdv <= crc_req or crc_dv;
-	process (mii_treq, mii_txc)
+			mii_txdv <= crc_dv;
+	process (mii_txc)
 		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1)) := (others => 'U');
 	begin
-		if mii_treq='0' then
-			cntr := (others => '0');
-			crc_dv <= '0';
-		elsif rising_edge(mii_txc) then
+		if rising_edge(mii_txc) then
 			if crc_req='0' then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
-				crc_dv <= not cntr(0);
+				cntr := (others => '0');
+			elsif cntr(0)='0' then
+				cntr := cntr + 1;
 			end if;
+			crc_dv <= not cntr(0);
 		end if;
 	end process;
 
