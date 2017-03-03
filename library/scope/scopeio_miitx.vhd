@@ -62,24 +62,24 @@ begin
 
 	miitx_pkt_e  : entity hdl4fpga.miitx_mem
 	generic map (
---		mem_data => x"55")
-		mem_data => 
-			x"5555_5555_5555_55d5" &
-			mac_daddr              &
-			x"000000010203"	       &    -- MAC Source Address
-			x"0800"                &    -- MAC Protocol ID
-			ipheader_checksumed(
-				x"4500"            &    -- IP  Version, header length, TOS
-				std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
-				x"0000"            &    -- IP  Identification
-				x"0000"            &    -- IP  Fragmentation
-				x"0511"            &    -- IP  TTL, protocol
-				x"0000"            &    -- IP  Checksum
-				x"c0a802c8"        &    -- IP  Source address
-				x"ffffffff")       &    -- IP  Destination address
-			x"04000400"            &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"1234")	   	            -- UPD Checksum
+		mem_data => x"01")
+--		mem_data => 
+--			x"5555_5555_5555_55d5" &
+--			mac_daddr              &
+--			x"000000010203"	       &    -- MAC Source Address
+--			x"0800"                &    -- MAC Protocol ID
+--			ipheader_checksumed(
+--				x"4500"            &    -- IP  Version, header length, TOS
+--				std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
+--				x"0000"            &    -- IP  Identification
+--				x"0000"            &    -- IP  Fragmentation
+--				x"0511"            &    -- IP  TTL, protocol
+--				x"0000"            &    -- IP  Checksum
+--				x"c0a802c8"        &    -- IP  Source address
+--				x"ffffffff")       &    -- IP  Destination address
+--			x"04000400"            &    -- UDP Source port, Destination port
+--			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+--			x"1234")	   	            -- UPD Checksum
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
