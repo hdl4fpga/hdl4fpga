@@ -51,7 +51,6 @@ architecture mix of scopeio_miitx is
 	signal crc_dv     : std_logic;
 	signal crc_req    : std_logic;
 	signal crc_rst    : std_logic;
-	signal crc_rst_n  : std_logic;
 	signal crc_dat    : std_logic_vector(mii_txd'range);
 	signal pkt_dv     : std_logic;
 	signal pkt_rdy    : std_logic;
@@ -63,6 +62,7 @@ begin
 
 	miitx_pkt_e  : entity hdl4fpga.miitx_mem
 	generic map (
+--		mem_data => x"55")
 		mem_data => 
 			x"5555_5555_5555_55d5" &
 			mac_daddr              &
@@ -89,8 +89,8 @@ begin
 
 	mem_req <= pkt_rdy;
 	pktmem_b : block 
-		signal dlypkt_dat    : std_logic_vector(pkt_dat'range);
-		signal dlypkt_dv     : std_logic;
+		signal dlypkt_dat : std_logic_vector(pkt_dat'range);
+		signal dlypkt_dv  : std_logic;
 		signal pktmem_mux : std_logic_vector(pkt_dat'range); 
 	begin
 		dlypktdat_e: entity hdl4fpga.align
@@ -145,7 +145,7 @@ begin
 			di(1) => pktmem_rdy,
 			do(0) => rst_n,
 			do(1) => crc_req);
-		crc_rst <= not rst_n;
+		crc_rst <= not rst_n and not crc_dv;
 	end block;
 
 	miitx_crc_e : entity hdl4fpga.crc
