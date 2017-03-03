@@ -145,7 +145,7 @@ begin
 			di(1) => pktmem_rdy,
 			do(0) => rst_n,
 			do(1) => crc_req);
-		crc_rst <= not rst_n and not crc_dv;
+		crc_rst <= not rst_n;
 	end block;
 
 	miitx_crc_e : entity hdl4fpga.crc
@@ -174,6 +174,7 @@ begin
 	end process;
 
 	process (mii_txc)
+		variable cpy_crc : std_logic_vector(crc'length);
 	begin
 		if rising_edge(mii_txc) then
 			mii_txd <= crc(crc_dat'range);
