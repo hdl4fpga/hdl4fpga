@@ -163,11 +163,13 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if crc_req='0' then
-				cntr := (others => '0');
 				crc_dv <= '0';
+				cntr := (others => '0');
 			elsif cntr(0)='0' then
-				cntr := cntr + 1;
 				crc_dv <= not cntr(0);
+				cntr := cntr + 1;
+			else 
+				crc_dv <= '0';
 			end if;
 		end if;
 	end process;
@@ -179,7 +181,7 @@ begin
 --			if crc_req='1' then
 --				mii_txd <= crc_dat;
 --			end if;
-			mii_txdv <= crc_rst or crc_dv; 
+			mii_txdv <= not crc_rst or crc_dv; 
 		end if;
 	end process;
 
