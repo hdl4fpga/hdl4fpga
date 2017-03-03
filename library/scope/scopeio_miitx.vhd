@@ -128,7 +128,7 @@ begin
 		dlypmdat_e : entity hdl4fpga.align
 		generic map (
 			n => pktmem_dat'length,
-			d => (pktmem_dat'range => 2))
+			d => (pktmem_dat'range => 1))
 		port map (
 			clk => mii_txc,
 			di  => pktmem_dat,
@@ -148,7 +148,6 @@ begin
 		crc_rst <= not rst_n;
 	end block;
 
-	mii_txd  <= crc_dat;
 	miitx_crc_e : entity hdl4fpga.crc
 	generic map (
 		p    => crc32)
@@ -159,7 +158,7 @@ begin
 		crc  => crc);
 
 	process (mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1)) := (others => 'U');
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1));
 	begin
 		if rising_edge(mii_txc) then
 			if crc_req='0' then
@@ -177,10 +176,10 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
---			mii_txd <= crc(crc_dat'range);
---			if crc_req='1' then
---				mii_txd <= crc_dat;
---			end if;
+			mii_txd <= crc(crc_dat'range);
+			if crc_dv='0' then
+				mii_txd <= crc_dat;
+			end if;
 			mii_txdv <= not crc_rst or crc_dv; 
 		end if;
 	end process;
