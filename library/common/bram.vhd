@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity bram is
+	generic (
+		data  : std_logic_vector := (0 to 0 => '-'));
 	port (
 		clka  : in  std_logic;
 		addra : in  std_logic_vector;
@@ -49,8 +51,27 @@ use hdl4fpga.std.all;
 architecture def of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
+	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
+	constant data_size  : natural := (data'length+word'length-1)/word'length;
 
-	shared variable ram : word_vector (2**hdl4fpga.std.min(addra'length,addrb'length)-1 downto 0);
+	function mem_init (
+		constant arg : std_logic_vector)
+		return word_vector is
+
+		variable aux : unsigned(arg'length-1 downto 0) := (others => '-');
+		variable val : word_vector(2**addr_size-1 downto 0) := (others => (others => '-'));
+
+	begin
+		aux(arg'length-1 downto 0) := unsigned(arg);
+		for i in 0 to data_size-1 loop
+			val(i) := std_logic_vector(aux(word'range));
+			aux := aux srl word'length;
+		end loop;
+
+		return val;
+	end;
+
+	shared variable ram : word_vector(2**addr_size-1 downto 0) := mem_init(data);
 begin
 	process (clka)
 		variable addr : std_logic_vector(addra'range);

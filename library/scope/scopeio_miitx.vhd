@@ -21,9 +21,12 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -58,11 +61,12 @@ architecture mix of scopeio_miitx is
 	signal pktmem_dat : std_logic_vector(mii_txd'range);
 	signal pktmem_dv  : std_logic;
 	signal pktmem_rdy : std_logic;
+	signal dlycrc_dat : std_logic_vector(mii_txd'range);
 begin
 
 	miitx_pkt_e  : entity hdl4fpga.miitx_mem
 	generic map (
-		mem_data => x"01")
+		mem_data => x"10")
 --		mem_data => 
 --			x"5555_5555_5555_55d5" &
 --			mac_daddr              &
@@ -92,6 +96,7 @@ begin
 		signal dlypkt_dat : std_logic_vector(pkt_dat'range);
 		signal dlypkt_dv  : std_logic;
 		signal pktmem_mux : std_logic_vector(pkt_dat'range); 
+		signal rst_n      : std_logic;
 	begin
 		dlypktdat_e: entity hdl4fpga.align
 		generic map (
@@ -120,11 +125,6 @@ begin
 			pktmem_mux when pktmem_dv='1' else
 			(others => '0');
 
-	end block;
-
-	syncrc_b : block
-		signal rst_n : std_logic;
-	begin
 		dlypmdat_e : entity hdl4fpga.align
 		generic map (
 			n => pktmem_dat'length,
@@ -138,11 +138,11 @@ begin
 		dlypmdv_e : entity hdl4fpga.align
 		generic map (
 			n => 2,
-			d => (0 => 1, 1 => 2))
+			d => (0 to 1 => 1))
 		port map (
 			clk   => mii_txc,
 			di(0) => pktmem_dv,
-			di(1) => pktmem_rdy,
+			di(1) => rst_n,
 			do(0) => rst_n,
 			do(1) => crc_req);
 		crc_rst <= not rst_n;
@@ -157,31 +157,35 @@ begin
 		data => crc_dat,
 		crc  => crc);
 
-	process (mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1));
-	begin
-		if rising_edge(mii_txc) then
-			if crc_req='0' then
-				crc_dv <= '0';
-				cntr := (others => '0');
-			elsif cntr(0)='0' then
-				crc_dv <= not cntr(0);
-				cntr := cntr + 1;
-			else 
-				crc_dv <= '0';
-			end if;
-		end if;
-	end process;
+	dlycrcdat_e : entity hdl4fpga.align
+	generic map (
+		n => crc_dat'length,
+		d => (crc_dat'range => 1))
+	port map (
+		clk => mii_txc,
+		di  => crc_dat,
+		do  => dlycrc_dat);
 
 	process (mii_txc)
-		variable cpy_crc : std_logic_vector(crc'length);
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/pkt_dat'length-1));
+		variable aux  : unsigned(crc'range);
+		variable msg  : line;
 	begin
 		if rising_edge(mii_txc) then
-			mii_txd <= crc(crc_dat'range);
-			if crc_dv='0' then
-				mii_txd <= crc_dat;
+			if crc_req='1' then
+				mii_txd  <= dlycrc_dat;
+				mii_txdv <= '1';
+				cntr     := (others => '0');
+				aux      := unsigned(crc);
+			elsif cntr(0)='0' then
+				mii_txd  <= std_logic_vector(aux(dlycrc_dat'range));
+				mii_txdv <= '1';
+				cntr     := cntr + 1;
+				aux      := aux  sll dlycrc_dat'length;
+			else
+				mii_txd  <= (mii_txd'range => '0');
+				mii_txdv <= '0';
 			end if;
-			mii_txdv <= not crc_rst or crc_dv; 
 		end if;
 	end process;
 
