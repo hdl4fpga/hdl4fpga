@@ -37,7 +37,7 @@ begin
 		mem_req  => mem_req,
 		mem_rdy  => '1',
 		mem_ena  => mem_ena,
-		mem_dat  => mem_dat);
+		mem_dat  => x"f"); --mem_dat);
 
 	pp_e : entity hdl4fpga.align
 	generic map (
