@@ -30,7 +30,8 @@ use hdl4fpga.std.all;
 entity align is
 	generic (
 		n : natural := 1;
-		d : natural_vector);
+		d : natural_vector;
+		i : std_logic_vector := (0 to 0 => '-'));
 	port (
 		clk : in  std_logic;
 		rst : in  std_logic := '0';
@@ -41,6 +42,7 @@ end;
 
 architecture arch of align is
 	constant dly : natural_vector(0 to d'length-1) := d;
+	constant ini : std_logic_vector(0 to i'length-1) := i;
 begin
 	delay: for i in 0 to n-1 generate
 		signal q : std_logic_vector(0 to dly(i));
@@ -51,7 +53,7 @@ begin
 			if rising_edge(clk) then
 				if dly(i) > 0 then
 					if rst='1' then
-						q(0 to q'right-1) <= (others => '0');
+						q(0 to q'right-1) <= (others => ini(i));
 					elsif ena='1' then
 						q(0 to q'right-1) <= q(1 to q'right);
 					end if;

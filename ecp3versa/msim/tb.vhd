@@ -11,6 +11,7 @@ entity tb is
 end;
 
 architecture beh of tb is
+	signal align_rst : std_logic;
 	signal mii_treq : std_logic := '0';
 	signal mii_txc  : std_logic := '0';
 	signal mii_txdv : std_logic;
@@ -39,14 +40,17 @@ begin
 		mem_ena  => mem_ena,
 		mem_dat  => mem_dat);
 
+	align_rst <= not mii_treq;
 	pp_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 to 1 => 2))
+		d => (0 to 1 => 2),
+		i => (0 to 1 => '0'))
 	port map (
 		clk   => mii_txc,
+		rst   => align_rst,
 		di(0) => ena,
-		di(1) => q0,
+		di(1) => mem_req,
 		do(0) => mem_ena,
 		do(1) => mem_rdy);
 

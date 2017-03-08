@@ -51,6 +51,7 @@ end;
 
 architecture mix of scopeio_miitx is
 	constant crc32 : std_logic_vector(1 to 32) := X"04C11DB7";
+	signal align_rst  : std_logic;
 	signal pre_dv     : std_logic;
 	signal pre_rdy    : std_logic;
 	signal pre_dat    : std_logic_vector(mii_txd'range);
@@ -65,11 +66,13 @@ architecture mix of scopeio_miitx is
 	signal crc        : std_logic_vector(0 to 32-1);
 	signal crc_rst    : std_logic;
 	signal crc_req    : std_logic;
+	signal crc_rdy    : std_logic;
 	signal crc_dat    : std_logic_vector(mii_txd'range);
 	signal pkt_dv     : std_logic;
 	signal pkt_txd    : std_logic_vector(mii_txd'range);
 begin
 
+	align_rst <= not mii_treq;
 	miitx_pre_e  : entity hdl4fpga.miitx_mem
 	generic map (
 		mem_data => x"5555_5555_5555_55d5")
@@ -82,7 +85,7 @@ begin
 
 	miitx_hdr_e  : entity hdl4fpga.miitx_mem
 	generic map (
-		mem_data => x"00")
+		mem_data => x"80")
 --			mac_daddr              &
 --			x"000000010203"	       &    -- MAC Source Address
 --			x"0800"                &    -- MAC Protocol ID
@@ -130,9 +133,11 @@ begin
 		dlyhdrdv_e: entity hdl4fpga.align
 		generic map (
 			n => 2,
-			d => (0 => 2, 1 => 3))
+			d => (0 => 2, 1 => 3),
+			i => (0 to 1 => '0'))
 		port map (
 			clk   => mii_txc,
+			rst   => align_rst,
 			di(0) => hdr_dv,
 			di(1) => pre_dv,
 			do(0) => dlyhdr_dv,
@@ -156,9 +161,11 @@ begin
 		dlypmdv_e : entity hdl4fpga.align
 		generic map (
 			n => 2,
-			d => (0 => 1, 1 => 1))
+			d => (0 => 1, 1 => 1),
+			i => (0 to 1 => '0'))
 		port map (
 			clk   => mii_txc,
+			rst   => align_rst,
 			di(0) => hdrmem_dv,
 			di(1) => dv,
 			do(0) => dlyhdrmem_dv,
@@ -179,9 +186,11 @@ begin
 	crcreq_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 2))
+		d => (0 to 0 => 2),
+		i => (0 to 1 => '0'))
 	port map (
-		clk => mii_txc,
+		clk   => mii_txc,
+		rst   => align_rst,
 		di(0) => mem_rdy,
 		do(0) => crc_req);
 
@@ -194,34 +203,18 @@ begin
 		di  => crc_dat,
 		do  => pkt_txd);
 
-	xxxx : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => 4))
-	port map (
-		clk => mii_txc,
-		rst => mii_treq,
-		di  => '1',
-		do  => pkt_txd);
-
 	process (mii_txc)
 		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/hdr_dat'length-1));
 		variable aux  : unsigned(crc'range);
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				mii_txdv <= '0';
-				mii_txd  <= (mii_txd'range => '-');
-				mii_trdy <= '0';
-				cntr     := (others => '0');
-				aux      := unsigned(crc);
-			elsif crc_req='0' then
+			if crc_req='0' then
 				mii_txdv <= pkt_dv;
 				mii_txd  <= pkt_txd;
 				mii_trdy <= '0';
 				cntr     := (others => '0');
 				aux      := unsigned(crc);
-			elsif cntr(0)='0' then
+			elsif crc_rdy='0' then
 				mii_txd  <= std_logic_vector(aux(crc_dat'range));
 				mii_txdv <= '1';
 				mii_trdy <= '0';
@@ -232,6 +225,7 @@ begin
 				mii_txdv <= '0';
 				mii_trdy <= '1';
 			end if;
+			crc_rdy <= cntr(0);
 		end if;
 	end process;
 
