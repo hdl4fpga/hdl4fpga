@@ -35,20 +35,22 @@ begin
 		mii_txd  => mii_txd,
 
 		mem_req  => mem_req,
-		mem_rdy  => '1',
+		mem_rdy  => mem_rdy,
 		mem_ena  => mem_ena,
-		mem_dat  => x"f"); --mem_dat);
+		mem_dat  => mem_dat);
 
 	pp_e : entity hdl4fpga.align
 	generic map (
-		n => 1,
-		d => (0 to 0 => 2))
+		n => 2,
+		d => (0 to 1 => 2))
 	port map (
 		clk   => mii_txc,
 		di(0) => ena,
-		do(0) => mem_ena);
+		di(1) => q0,
+		do(0) => mem_ena,
+		do(1) => mem_rdy);
 
-	ena <= mem_req and q0;
+	ena <= mem_req and not q0;
 	process (mii_txc)
 		variable cntr : unsigned(0 to mem_addr'length);
 	begin
@@ -58,14 +60,14 @@ begin
 			elsif cntr(0)='0' then
 				cntr := cntr + 1;
 			end if;
-			q0 <= not cntr(0);
+			q0 <= cntr(0);
 			mem_addr <= std_logic_vector(cntr(1 to cntr'right));
 		end if;
 	end process;
 
 	mem_e : entity hdl4fpga.bram
 	generic map (
-		data => x"67")
+		data => x"80")
 	port map (
 		clka  => '0',
 		addra => (0 to 0 => '0'),

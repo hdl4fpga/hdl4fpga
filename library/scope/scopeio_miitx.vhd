@@ -54,20 +54,19 @@ architecture mix of scopeio_miitx is
 	signal pre_rdy    : std_logic;
 	signal pre_dat    : std_logic_vector(mii_txd'range);
 
-	signal frm_dv     : std_logic;
-	signal frm_rdy    : std_logic;
-	signal frm_dat    : std_logic_vector(mii_txd'range);
+	signal hdr_dv     : std_logic;
+	signal hdr_rdy    : std_logic;
+	signal hdr_dat    : std_logic_vector(mii_txd'range);
 
-	signal frmmem_dat : std_logic_vector(mii_txd'range);
-	signal frmmem_dv  : std_logic;
+	signal hdrmem_dat : std_logic_vector(mii_txd'range);
+	signal hdrmem_dv  : std_logic;
 
 	signal crc        : std_logic_vector(0 to 32-1);
-	signal crc_dv     : std_logic;
-	signal crc_req    : std_logic;
 	signal crc_rst    : std_logic;
+	signal crc_req    : std_logic;
 	signal crc_dat    : std_logic_vector(mii_txd'range);
-	signal dlycrc_dat : std_logic_vector(mii_txd'range);
-	signal pktmux_dat : std_logic_vector(mii_txd'range);
+	signal pkt_dv     : std_logic;
+	signal pkt_txd    : std_logic_vector(mii_txd'range);
 begin
 
 	miitx_pre_e  : entity hdl4fpga.miitx_mem
@@ -80,9 +79,9 @@ begin
 		mii_txen => pre_dv,
 		mii_txd  => pre_dat);
 
-	miitx_frm_e  : entity hdl4fpga.miitx_mem
+	miitx_hdr_e  : entity hdl4fpga.miitx_mem
 	generic map (
-		mem_data => x"14")
+		mem_data => x"00")
 --			mac_daddr              &
 --			x"000000010203"	       &    -- MAC Source Address
 --			x"0800"                &    -- MAC Protocol ID
@@ -101,68 +100,70 @@ begin
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => pre_rdy,
-		mii_trdy => frm_rdy,
-		mii_txen => frm_dv,
-		mii_txd  => frm_dat);
+		mii_trdy => hdr_rdy,
+		mii_txen => hdr_dv,
+		mii_txd  => hdr_dat);
 
-	mem_req <= frm_rdy;
-	frmmem_b : block 
-		signal prefrm_dat : std_logic_vector(frm_dat'range);
-		signal prefrm_dv  : std_logic;
-		signal dlyfrm_dat : std_logic_vector(frm_dat'range);
-		signal frmcrc_rst : std_logic;
-		signal frmmem_rst : std_logic;
-		signal frm_dv_n   : std_logic;
+	mem_req <= hdr_rdy;
+	hdrmem_b : block 
+		signal prehdr_dat   : std_logic_vector(hdr_dat'range);
+		signal dlyhdr_dat   : std_logic_vector(hdr_dat'range);
+		signal dlypre_dv    : std_logic;
+		signal dlyhdr_dv    : std_logic;
+		signal dlyhdrmem_dv : std_logic;
+		signal dv           : std_logic;
 	begin
-		prefrm_dat <= word2byte (
-			word => pre_dat & frm_dat,
-			addr => (0 => frm_dv));
+		prehdr_dat <= word2byte (
+			word => pre_dat & hdr_dat,
+			addr => (0 => hdr_dv));
 
-		dlyfrmdat_e: entity hdl4fpga.align
+		dlyhdrdat_e: entity hdl4fpga.align
 		generic map (
-			n => frm_dat'length,
-			d => (frm_dat'range => 2))
+			n => hdr_dat'length,
+			d => (hdr_dat'range => 2))
 		port map (
 			clk => mii_txc,
-			di  => prefrm_dat,
-			do  => dlyfrm_dat);
+			di  => prehdr_dat,
+			do  => dlyhdr_dat);
 
-		prefrm_dv <= pre_dv or frm_dv;
-		frm_dv_n  <= not frm_dv;
-		dlyfrmdv_e: entity hdl4fpga.align
+		dlyhdrdv_e: entity hdl4fpga.align
 		generic map (
-			n => 1,
-			d => (0 => 2))
+			n => 2,
+			d => (0 => 2, 1 => 3))
 		port map (
 			clk   => mii_txc,
-			di(0) => frm_dv_n,
-			do(0) => frmcrc_rst);
+			di(0) => hdr_dv,
+			di(1) => pre_dv,
+			do(0) => dlyhdr_dv,
+			do(1) => dlypre_dv);
+		hdrmem_dv <= dlyhdr_dv or mem_ena;
 
-		frmmem_dat <= word2byte (
-			word => dlyfrm_dat & mem_dat,
+		hdrmem_dat <= word2byte (
+			word => dlyhdr_dat & mem_dat,
 			addr => (0 => mem_ena));
-
-		frmmem_rst <= frmcrc_rst and not mem_ena;
 
 		dlypmdat_e : entity hdl4fpga.align
 		generic map (
-			n => frmmem_dat'length,
-			d => (frmmem_dat'range => 1))
+			n => hdrmem_dat'length,
+			d => (hdrmem_dat'range => 1))
 		port map (
 			clk => mii_txc,
-			di  => frmmem_dat,
+			di  => hdrmem_dat,
 			do  => crc_dat);
 
+		dv <= dlyhdrmem_dv or dlypre_dv;
 		dlypmdv_e : entity hdl4fpga.align
 		generic map (
 			n => 2,
-			d => (0 to 1 => 1))
+			d => (0 => 1, 1 => 1))
 		port map (
 			clk   => mii_txc,
-			di(0) => frmcrc_rst,
-			di(1) => crc_rst,
-			do(0) => crc_rst,
-			do(1) => crc_req);
+			di(0) => hdrmem_dv,
+			di(1) => dv,
+			do(0) => dlyhdrmem_dv,
+			do(1) => pkt_dv);
+
+		crc_rst <= not dlyhdrmem_dv;
 	end block;
 
 	miitx_crc_e : entity hdl4fpga.crc
@@ -174,35 +175,39 @@ begin
 		data => crc_dat,
 		crc  => crc);
 
-	pktmux_dat <= word2byte(
-		data => 
-	dlycrcdat_e : entity hdl4fpga.align
+	crcreq_e : entity hdl4fpga.align
 	generic map (
-		n => crc_dat'length,
-		d => (crc_dat'range => 1))
+		n => 1,
+		d => (0 to 0 => 2))
 	port map (
 		clk => mii_txc,
-		di  => crc_dat,
-		do  => dlycrc_dat);
+		di(0) => mem_rdy,
+		do(0) => crc_req);
 
---		mii_txd <= crc_dat;
---		mii_txdv <= frmmem_rst;
+	crcdat_e : entity hdl4fpga.align
+	generic map (
+		n => mii_txd'length,
+		d => (mii_txd'range => 1))
+	port map (
+		clk => mii_txc,
+		di => crc_dat,
+		do => pkt_txd);
+
 	process (mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/frm_dat'length-1));
+		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/hdr_dat'length-1));
 		variable aux  : unsigned(crc'range);
-		variable msg  : line;
 	begin
 		if rising_edge(mii_txc) then
 			if crc_req='0' then
-				mii_txd  <= dlycrc_dat;
-				mii_txdv <= '1';
+				mii_txdv <= pkt_dv;
+				mii_txd  <= pkt_txd;
 				cntr     := (others => '0');
 				aux      := unsigned(crc);
 			elsif cntr(0)='0' then
-				mii_txd  <= std_logic_vector(aux(dlycrc_dat'range));
+				mii_txd  <= std_logic_vector(aux(crc_dat'range));
 				mii_txdv <= '1';
 				cntr     := cntr + 1;
-				aux      := aux  sll dlycrc_dat'length;
+				aux      := aux  sll crc_dat'length;
 			else
 				mii_txd  <= (mii_txd'range => '0');
 				mii_txdv <= '0';
