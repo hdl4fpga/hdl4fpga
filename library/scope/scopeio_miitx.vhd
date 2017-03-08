@@ -36,6 +36,7 @@ entity scopeio_miitx is
 		mac_daddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
 	port (
 		mii_treq  : in  std_logic;
+		mii_trdy  : out std_logic;
 		mii_txc   : in  std_logic;
 		mii_txdv  : out std_logic;
 		mii_txd   : out std_logic_vector;
@@ -190,27 +191,46 @@ begin
 		d => (mii_txd'range => 1))
 	port map (
 		clk => mii_txc,
-		di => crc_dat,
-		do => pkt_txd);
+		di  => crc_dat,
+		do  => pkt_txd);
+
+	xxxx : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 4))
+	port map (
+		clk => mii_txc,
+		rst => mii_treq,
+		di  => '1',
+		do  => pkt_txd);
 
 	process (mii_txc)
 		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/hdr_dat'length-1));
 		variable aux  : unsigned(crc'range);
 	begin
 		if rising_edge(mii_txc) then
-			if crc_req='0' then
+			if mii_treq='0' then
+				mii_txdv <= '0';
+				mii_txd  <= (mii_txd'range => '-');
+				mii_trdy <= '0';
+				cntr     := (others => '0');
+				aux      := unsigned(crc);
+			elsif crc_req='0' then
 				mii_txdv <= pkt_dv;
 				mii_txd  <= pkt_txd;
+				mii_trdy <= '0';
 				cntr     := (others => '0');
 				aux      := unsigned(crc);
 			elsif cntr(0)='0' then
 				mii_txd  <= std_logic_vector(aux(crc_dat'range));
 				mii_txdv <= '1';
+				mii_trdy <= '0';
 				cntr     := cntr + 1;
 				aux      := aux  sll crc_dat'length;
 			else
 				mii_txd  <= (mii_txd'range => '0');
 				mii_txdv <= '0';
+				mii_trdy <= '1';
 			end if;
 		end if;
 	end process;

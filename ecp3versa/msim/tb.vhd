@@ -23,7 +23,7 @@ architecture beh of tb is
 	signal mem_addr : std_logic_vector(0 to 0);
 	signal dummy    : std_logic_vector(mem_dat'range);
 	signal ena      : std_logic;
-	signal q0 : std_logic;
+	signal q0       : std_logic;
 begin
 
 	mii_txc <= not mii_txc after 5 ns;
@@ -85,9 +85,11 @@ begin
 
 	process (mii_txc)
 		variable msg : line;
+		variable pp : std_logic := '0';
 	begin
 		if rising_edge(mii_txc) then
-			mii_treq <= '1';
+			mii_treq <= pp after 1 ns;
+			pp := '1';
 			write (msg, string'("mii_txd : "));
 			hwrite(msg, mii_txd);
 			write (msg, string'(" : mii_txdv : "));

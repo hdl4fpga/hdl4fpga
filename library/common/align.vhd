@@ -33,6 +33,7 @@ entity align is
 		d : natural_vector);
 	port (
 		clk : in  std_logic;
+		rst : in  std_logic := '0';
 		ena : in  std_logic := '1';
 		di  : in  std_logic_vector(0 to n-1);
 		do  : out std_logic_vector(0 to n-1));
@@ -48,8 +49,10 @@ begin
 		process (clk)
 		begin
 			if rising_edge(clk) then
-				if ena='1' then
-					if dly(i) > 0 then
+				if dly(i) > 0 then
+					if rst='1' then
+						q(0 to q'right-1) <= (others => '0');
+					elsif ena='1' then
 						q(0 to q'right-1) <= q(1 to q'right);
 					end if;
 				end if;
