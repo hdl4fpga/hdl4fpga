@@ -118,12 +118,13 @@ begin
 		signal dv           : std_logic;
 	begin
 		prehdr_dat <= word2byte (
-			word => pre_dat & hdr_dat,
+			word => hdr_dat & pre_dat,
 			addr => (0 => hdr_dv));
 
 		dlyhdrdat_e: entity hdl4fpga.align
 		generic map (
 			n => hdr_dat'length,
+			i => (mii_txd'range => '-'),
 			d => (hdr_dat'range => 2))
 		port map (
 			clk => mii_txc,
@@ -145,12 +146,13 @@ begin
 		hdrmem_dv <= dlyhdr_dv or mem_ena;
 
 		hdrmem_dat <= word2byte (
-			word => dlyhdr_dat & mem_dat,
+			word =>  reverse(mem_dat) & dlyhdr_dat,
 			addr => (0 => mem_ena));
 
 		dlypmdat_e : entity hdl4fpga.align
 		generic map (
 			n => hdrmem_dat'length,
+			i => (mii_txd'range => '-'),
 			d => (hdrmem_dat'range => 1))
 		port map (
 			clk => mii_txc,
@@ -197,6 +199,7 @@ begin
 	crcdat_e : entity hdl4fpga.align
 	generic map (
 		n => mii_txd'length,
+		i => (mii_txd'range => '-'),
 		d => (mii_txd'range => 1))
 	port map (
 		clk => mii_txc,

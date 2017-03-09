@@ -523,10 +523,12 @@ package body std is
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
+		variable aux  : std_logic_vector(word'length-1 downto 0);
 		variable byte : std_logic_vector(word'length/2**addr'length-1 downto 0); 
 	begin
+		aux := word;
 		for i in byte'range loop
-			byte(i) := word(byte'length*to_integer(unsigned(addr))+i+word'low);
+			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
 		end loop;
 		return byte;
 	end;
