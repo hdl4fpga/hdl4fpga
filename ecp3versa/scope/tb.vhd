@@ -27,6 +27,7 @@ architecture beh of ecp3versa is
 	attribute oddrapps of phy1gtxclk_i : label is "SCLK_ALIGNED";
 begin
 
+	phy1_rst <= fpga_gsrn;
 	dut : entity hdl4fpga.scopeio_miitx
 	port map (
 		mii_treq => mii_treq,
