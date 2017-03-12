@@ -18,7 +18,7 @@ architecture beh of ecp3versa is
 	signal mem_rdy  : std_logic;
 	signal mem_ena  : std_logic;
 	signal mem_dat  : std_logic_vector(mii_txd'range);
-	signal mem_addr : std_logic_vector(0 to 1-1);
+	signal mem_addr : std_logic_vector(0 to 10-1);
 	signal dummy    : std_logic_vector(mem_dat'range);
 	signal ena      : std_logic;
 	signal q0       : std_logic;

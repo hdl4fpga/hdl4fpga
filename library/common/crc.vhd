@@ -27,11 +27,10 @@ use ieee.numeric_std.all;
 
 entity crc is
 	generic (
-		p    : std_logic_vector);
+		p    : std_logic_vector );
 	port (
 		clk  : in  std_logic;
 		rst  : in  std_logic := '0';
-		load : in  std_logic := '0';
 		data : in  std_logic_vector;
 		crc  : out std_logic_vector);
 end;
@@ -39,26 +38,27 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
+use std.textio.all;
+library ieee;
+use ieee.std_logic_textio.all;
+
 architecture mix of crc is
 begin
 
 	process (clk)
 		variable dat : unsigned(data'length-1 downto 0);
 		variable aux : unsigned(0 to p'right) := (others => '0');
+		variable msg : line;
 	begin
 		if rising_edge(clk) then
 			for i in dat'range loop
 				dat(i) := data(data'low+i);
 			end loop;
+			dat := unsigned(data);
 			if rst='1' then
-				aux := (others => '0');
+				aux := (crc'range => '1') & "0";
 			else
-				if load='1' then
-					aux := (others => '0');
-					aux(dat'reverse_range) := aux(dat'reverse_range);
-				else
-					aux(dat'reverse_range) := aux(dat'reverse_range) xor dat;
-				end if;
+				aux(dat'reverse_range) := aux(dat'reverse_range) xor dat;
 
 				for i in dat'range loop
 					if aux(0)='1' then
@@ -69,7 +69,9 @@ begin
 					aux := aux sll 1;
 				end loop;
 			end if;
-			crc <= (std_logic_vector(aux(crc'range)));
+--			hwrite (msg, std_logic_vector(aux(crc'range)));
+--			writeline (output, msg);
+			crc <= not std_logic_vector(aux(crc'range));
 		end if;
 	end process;
 
