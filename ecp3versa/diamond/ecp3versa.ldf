@@ -35,6 +35,9 @@
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
+        <Source name="mii_tx/mii_tx.xcf" type="Programming Project File" type_short="Programming">
+            <Options/>
+        </Source>
     </Implementation>
     <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.ddr3iob" lib="hdl4fpga" top="ecp3versa"/>

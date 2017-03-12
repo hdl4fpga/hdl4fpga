@@ -85,7 +85,7 @@ begin
 
 	miitx_hdr_e  : entity hdl4fpga.miitx_mem
 	generic map (
-		mem_data => x"80")
+		mem_data => x"0000")
 --			mac_daddr              &
 --			x"000000010203"	       &    -- MAC Source Address
 --			x"0800"                &    -- MAC Protocol ID
@@ -218,7 +218,7 @@ begin
 				cntr     := (others => '0');
 				aux      := unsigned(crc);
 			elsif crc_rdy='0' then
-				mii_txd  <= std_logic_vector(aux(crc_dat'range));
+				mii_txd  <= (std_logic_vector(aux(crc_dat'range)));
 				mii_txdv <= '1';
 				mii_trdy <= '0';
 				cntr     := cntr + 1;

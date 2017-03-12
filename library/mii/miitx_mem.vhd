@@ -71,7 +71,7 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
-				cntr <= to_unsigned(mem_size*2*nib-1, cntr'length);
+				cntr <= to_unsigned(mem_size*2**nib-1, cntr'length);
 			elsif cntr(0)='0' then
 				cntr <= cntr - 1;
 			end if;

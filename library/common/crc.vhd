@@ -36,24 +36,31 @@ entity crc is
 		crc  : out std_logic_vector);
 end;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 architecture mix of crc is
 begin
 
 	process (clk)
+		variable dat : unsigned(data'length-1 downto 0);
 		variable aux : unsigned(0 to p'right) := (others => '0');
 	begin
 		if rising_edge(clk) then
+			for i in dat'range loop
+				dat(i) := data(data'low+i);
+			end loop;
 			if rst='1' then
 				aux := (others => '0');
 			else
 				if load='1' then
 					aux := (others => '0');
-					aux(data'range) := aux(data'range);
+					aux(dat'reverse_range) := aux(dat'reverse_range);
 				else
-					aux(data'range) := aux(data'range) xor unsigned(data);
+					aux(dat'reverse_range) := aux(dat'reverse_range) xor dat;
 				end if;
 
-				for i in data'range loop
+				for i in dat'range loop
 					if aux(0)='1' then
 						for j in p'range loop
 							aux(j) := aux(j) xor p(j);
@@ -62,7 +69,7 @@ begin
 					aux := aux sll 1;
 				end loop;
 			end if;
-			crc <= std_logic_vector(aux(crc'range));
+			crc <= (std_logic_vector(aux(crc'range)));
 		end if;
 	end process;
 

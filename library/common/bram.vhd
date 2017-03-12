@@ -59,7 +59,7 @@ architecture def of bram is
 		return word_vector is
 
 		variable aux : unsigned(arg'length-1 downto 0) := (others => '-');
-		variable val : word_vector(2**addr_size-1 downto 0) := (others => (others => '-'));
+		variable val : word_vector(2**addr_size-1 downto 0) := (others => (others => '0'));
 
 	begin
 		aux(arg'length-1 downto 0) := unsigned(arg);
