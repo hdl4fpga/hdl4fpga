@@ -46,21 +46,16 @@ architecture mix of crc is
 begin
 
 	process (clk)
-		variable dat : unsigned(data'length-1 downto 0);
 		variable aux : unsigned(0 to p'right) := (others => '0');
 		variable msg : line;
 	begin
 		if rising_edge(clk) then
-			for i in dat'range loop
-				dat(i) := data(data'low+i);
-			end loop;
-			dat := unsigned(data);
 			if rst='1' then
 				aux := (crc'range => '1') & "0";
 			else
-				aux(dat'reverse_range) := aux(dat'reverse_range) xor dat;
+				aux(data'range) := aux(data'range) xor unsigned(data);
 
-				for i in dat'range loop
+				for i in data'range loop
 					if aux(0)='1' then
 						for j in p'range loop
 							aux(j) := aux(j) xor p(j);
