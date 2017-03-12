@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE		ispXCF	SYSTEM	"IspXCF.dtd" >
+<ispXCF version="3.7.0">
+	<Comment></Comment>
+	<Chain>
+		<Comm>JTAG</Comm>
+		<Device>
+			<SelectedProg value="TRUE"/>
+			<Pos>1</Pos>
+			<Vendor>Lattice</Vendor>
+			<Family>LatticeECP3</Family>
+			<Name>LAE3-35EA</Name>
+			<IDCode>0x01012043</IDCode>
+			<Package>All</Package>
+			<PON>LAE3-35EA</PON>
+			<Bypass>
+				<InstrLen>8</InstrLen>
+				<InstrVal>11111111</InstrVal>
+				<BScanLen>1</BScanLen>
+				<BScanVal>0</BScanVal>
+			</Bypass>
+			<File>C:/Users/msagre/hdl4fpga/ecp3versa/diamond/mii_tx/ecp3versa_mii_tx.bit</File>
+			<FileTime>03/12/17 12:56:30</FileTime>
+			<Operation>Fast Program</Operation>
+			<Option>
+				<SVFVendor>JTAG STANDARD</SVFVendor>
+				<IOState>HighZ</IOState>
+				<PreloadLength>675</PreloadLength>
+				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
+				<TCKFrequency>1.000000 MHz</TCKFrequency>
+				<Usercode>0x00000000</Usercode>
+				<AccessMode>JTAG</AccessMode>
+			</Option>
+		</Device>
+	</Chain>
+	<ProjectOptions>
+		<Program>SEQUENTIAL</Program>
+		<Process>ENTIRED CHAIN</Process>
+		<OperationOverride>No Override</OperationOverride>
+		<StartTAP>TLR</StartTAP>
+		<EndTAP>TLR</EndTAP>
+		<VerifyUsercode value="FALSE"/>
+		<TCKDelay>1</TCKDelay>
+	</ProjectOptions>
+	<CableOptions>
+		<CableName>USB2</CableName>
+		<PortAdd>FTUSB-1</PortAdd>
+		<USBID>Dual RS232-HS A Location 0001 Serial A</USBID>
+		<JTAGPinSetting>
+			TRST	ABSENT;
+			ISPEN	ABSENT;
+		</JTAGPinSetting>
+		<TRSTConnect value="TRUE"/>
+		<ISPENConnect value="TRUE"/>
+	</CableOptions>
+</ispXCF>
