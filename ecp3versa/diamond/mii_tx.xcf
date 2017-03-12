@@ -9,10 +9,10 @@
 			<Pos>1</Pos>
 			<Vendor>Lattice</Vendor>
 			<Family>LatticeECP3</Family>
-			<Name>LAE3-35EA</Name>
+			<Name>LFE3-35EA</Name>
 			<IDCode>0x01012043</IDCode>
 			<Package>All</Package>
-			<PON>LAE3-35EA</PON>
+			<PON>LFE3-35EA</PON>
 			<Bypass>
 				<InstrLen>8</InstrLen>
 				<InstrVal>11111111</InstrVal>
@@ -28,7 +28,6 @@
 				<PreloadLength>675</PreloadLength>
 				<IOVectorData>0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</IOVectorData>
 				<TCKFrequency>1.000000 MHz</TCKFrequency>
-				<Usercode>0x00000000</Usercode>
 				<AccessMode>JTAG</AccessMode>
 			</Option>
 		</Device>
@@ -50,7 +49,5 @@
 			TRST	ABSENT;
 			ISPEN	ABSENT;
 		</JTAGPinSetting>
-		<TRSTConnect value="TRUE"/>
-		<ISPENConnect value="TRUE"/>
 	</CableOptions>
 </ispXCF>
