@@ -33,190 +33,38 @@ use hdl4fpga.std.all;
 
 entity scopeio_miitx is
 	port (
-		mii_treq  : in  std_logic;
-		mii_trdy  : out std_logic;
 		mii_rxc   : in  std_logic;
 		mii_rxdv  : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 
+		pall_data : out std_logic_vector
 		mem_req   : out std_logic;
 		mem_rdy   : in  std_logic;
 		mem_ena   : in  std_logic;
 		mem_dat   : in  std_logic_vector);
 
-	constant payload_size : natural := 512;
 end;
 
 architecture mix of scopeio_miitx is
 begin
 
-	miirx_pre_e  : entity hdl4fpga.mii_mem
-	generic map (
-		mem_data => x"5555_5555_5555_55d5")
+	miirxpre_e : entity hdl4fpga.miirx_pre
 	port map (
-		mii_txc  => mii_txc,
-		mii_treq => mii_treq,
-		mii_trdy => pre_rdy,
-		mii_txen => pre_dv,
-		mii_txd  => pre_dat);
+		mii_rxc  => mii_rxc,
+		mii_rxv  => mii_rxv,
+		mii_rxdv => mii_rxdv,
+		mii_rrdy => pre_rdy);
 
 	process(mii_rxc)
+		variable data : unsigned(0 to pall_data'length-1);
+		variable cntr : unsigned(0 to unsigned_nun_bits(pall_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
-			if pre_rdy='1' then
-			elsif pre_dv='1' then
-				if pre_dat=mii_rxd then
-				end if;
+			if pre_rdy='0' then
+			elsif pre_rdy='1' then
+				data(mii_rxd'range) := mii_rxd;
+				data := data srl mii_rxd'length;
 			end if;
-		end if;
-	end process;
-
-	miitx_hdr_e  : entity hdl4fpga.miitx_mem
-	generic map (
---		mem_data => x"00000000")
-			mac_daddr              &
-			x"000000010203"	       &    -- MAC Source Address
-			x"0800"                &    -- MAC Protocol ID
-			ipheader_checksumed(
-				x"4500"            &    -- IP  Version, header length, TOS
-				std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
-				x"0000"            &    -- IP  Identification
-				x"0000"            &    -- IP  Fragmentation
-				x"0511"            &    -- IP  TTL, protocol
-				x"0000"            &    -- IP  Checksum
-				x"c0a802c8"        &    -- IP  Source address
-				x"ffffffff")       &    -- IP  Destination address
-			x"04000400"            &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"0000")	   	            -- UPD Checksum
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => pre_rdy,
-		mii_trdy => hdr_rdy,
-		mii_txen => hdr_dv,
-		mii_txd  => hdr_dat);
-
-	mem_req <= hdr_rdy;
-	hdrmem_b : block 
-		signal prehdr_dat   : std_logic_vector(hdr_dat'range);
-		signal dlyhdr_dat   : std_logic_vector(hdr_dat'range);
-		signal dlypre_dv    : std_logic;
-		signal dlyhdr_dv    : std_logic;
-		signal dlyhdrmem_dv : std_logic;
-		signal dv           : std_logic;
-	begin
-		prehdr_dat <= word2byte (
-			word => hdr_dat & pre_dat,
-			addr => (0 => hdr_dv));
-
-		dlyhdrdat_e: entity hdl4fpga.align
-		generic map (
-			n => hdr_dat'length,
-			i => (mii_txd'range => '-'),
-			d => (hdr_dat'range => 2))
-		port map (
-			clk => mii_txc,
-			di  => prehdr_dat,
-			do  => dlyhdr_dat);
-
-		dlyhdrdv_e: entity hdl4fpga.align
-		generic map (
-			n => 2,
-			d => (0 => 2, 1 => 3),
-			i => (0 to 1 => '0'))
-		port map (
-			clk   => mii_txc,
-			rst   => align_rst,
-			di(0) => hdr_dv,
-			di(1) => pre_dv,
-			do(0) => dlyhdr_dv,
-			do(1) => dlypre_dv);
-		hdrmem_dv <= dlyhdr_dv or mem_ena;
-
-		hdrmem_dat <= word2byte (
-			word =>  reverse(mem_dat) & dlyhdr_dat,
-			addr => (0 => mem_ena));
-
-		dlypmdat_e : entity hdl4fpga.align
-		generic map (
-			n => hdrmem_dat'length,
-			i => (mii_txd'range => '-'),
-			d => (hdrmem_dat'range => 1))
-		port map (
-			clk => mii_txc,
-			di  => hdrmem_dat,
-			do  => crc_dat);
-
-		dv <= dlyhdrmem_dv or dlypre_dv;
-		dlypmdv_e : entity hdl4fpga.align
-		generic map (
-			n => 2,
-			d => (0 => 1, 1 => 1),
-			i => (0 to 1 => '0'))
-		port map (
-			clk   => mii_txc,
-			rst   => align_rst,
-			di(0) => hdrmem_dv,
-			di(1) => dv,
-			do(0) => dlyhdrmem_dv,
-			do(1) => pkt_dv);
-
-		crc_rst <= not dlyhdrmem_dv;
-	end block;
-
-	miitx_crc_e : entity hdl4fpga.crc
-	generic map (
-		p    => crc32)
-	port map (
-		clk  => mii_txc,
-		rst  => crc_rst,
-		data => crc_dat,
-		crc  => crc);
-
-	crcreq_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => 2),
-		i => (0 to 1 => '0'))
-	port map (
-		clk   => mii_txc,
-		rst   => align_rst,
-		di(0) => mem_rdy,
-		do(0) => crc_req);
-
-	crcdat_e : entity hdl4fpga.align
-	generic map (
-		n => mii_txd'length,
-		i => (mii_txd'range => '-'),
-		d => (mii_txd'range => 1))
-	port map (
-		clk => mii_txc,
-		di  => crc_dat,
-		do  => pkt_txd);
-
-	process (mii_txc)
-		variable cntr : unsigned(0 to unsigned_num_bits(crc'length/hdr_dat'length-1));
-		variable aux  : unsigned(crc'range);
-	begin
-		if rising_edge(mii_txc) then
-			if crc_req='0' then
-				mii_txdv <= pkt_dv;
-				mii_txd  <= pkt_txd;
-				mii_trdy <= '0';
-				cntr     := (others => '0');
-				aux      := unsigned(crc);
-			elsif crc_rdy='0' then
-				mii_txd  <= (std_logic_vector(aux(crc_dat'range)));
-				mii_txdv <= '1';
-				mii_trdy <= '0';
-				cntr     := cntr + 1;
-				aux      := aux  sll crc_dat'length;
-			else
-				mii_txd  <= (mii_txd'range => '0');
-				mii_txdv <= '0';
-				mii_trdy <= '1';
-			end if;
-			crc_rdy <= cntr(0);
 		end if;
 	end process;
 

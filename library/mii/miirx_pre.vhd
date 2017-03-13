@@ -33,47 +33,43 @@ entity miirx_pre is
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
-
-		mii_txc  : out std_logic;
-		mii_txen : out std_logic);
+		mii_prdy : out std_logic);
 
 end;
 
 architecture def of miirx_pre is
-	signal txen : std_logic;
+	signal prdy : std_logic;
 begin
 
-	mii_txc  <= mii_rxc;
-	mii_txen <= mii_rxdv and txen;
-
-	process (mii_rxc)
-		variable prdy : std_logic;
-		variable rxd : unsigned(0 to mii_rxd'length-1);
-		variable nbb : std_logic_vector(0 to 4-1);
+	process(mii_rxc)
+		variable data : unsigned(0 to mii_txd'length);
+		variable carr : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			rxd := unsigned(mii_rxd);
 			if mii_rxdv='0' then
-				prdy := '0';
-				txen <= '0';
-			elsif prdy='0' then
-				for i in mii_rxd'length/nbb'length-1 downto 0 loop
-					nbb := std_logic_vector(rxd(nbb'range));
-					if nbb=x"a" then
-						prdy := '0';
-						txen <= '0';
-					elsif nbb=x"b" and i=0 then
-						prdy := '1';
-						txen <= '1';
-						exit;
-					else
-						prdy := '1';
-						txen <= '0';
-						exit;
-					end if;
-					rxd := rxd sll nbb'length;
-				end loop;
+				prdy <= '0';
+				carr := '0';
+				data := (others => '0');
+			elsif mii_rxdv='1' then
+				if prdy='0' the 
+					data := data(0) & mii_rxd;
+					for i in mii_rxd'range loop
+						if (data(0) xnor data(1))='1' then
+							if carr='1' then
+								if data(0)='1' then
+									prdy <= '1';
+								end if;
+							end if;
+							carr := '0'
+						else
+							carr := '1'
+						end if;
+						data := data sll 1;
+					end loop;
+				end if;
 			end if;
 		end if;
 	end process;
+	mii_prdy <= prdy;
+
 end;
