@@ -32,14 +32,12 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_miitx is
-	generic (
-		mac_daddr : std_logic_vector(0 to 48-1) := x"ffffffffffff");
 	port (
 		mii_treq  : in  std_logic;
 		mii_trdy  : out std_logic;
-		mii_txc   : in  std_logic;
-		mii_txdv  : out std_logic;
-		mii_txd   : out std_logic_vector;
+		mii_rxc   : in  std_logic;
+		mii_rxdv  : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
 
 		mem_req   : out std_logic;
 		mem_rdy   : in  std_logic;
@@ -50,30 +48,9 @@ entity scopeio_miitx is
 end;
 
 architecture mix of scopeio_miitx is
-	constant crc32 : std_logic_vector(1 to 32) := X"04C11DB7";
-	signal align_rst  : std_logic;
-	signal pre_dv     : std_logic;
-	signal pre_rdy    : std_logic;
-	signal pre_dat    : std_logic_vector(mii_txd'range);
-
-	signal hdr_dv     : std_logic;
-	signal hdr_rdy    : std_logic;
-	signal hdr_dat    : std_logic_vector(mii_txd'range);
-
-	signal hdrmem_dat : std_logic_vector(mii_txd'range);
-	signal hdrmem_dv  : std_logic;
-
-	signal crc        : std_logic_vector(0 to 32-1);
-	signal crc_rst    : std_logic;
-	signal crc_req    : std_logic;
-	signal crc_rdy    : std_logic;
-	signal crc_dat    : std_logic_vector(mii_txd'range);
-	signal pkt_dv     : std_logic;
-	signal pkt_txd    : std_logic_vector(mii_txd'range);
 begin
 
-	align_rst <= not mii_treq;
-	miitx_pre_e  : entity hdl4fpga.mii_mem
+	miirx_pre_e  : entity hdl4fpga.mii_mem
 	generic map (
 		mem_data => x"5555_5555_5555_55d5")
 	port map (
@@ -83,7 +60,18 @@ begin
 		mii_txen => pre_dv,
 		mii_txd  => pre_dat);
 
-	miitx_hdr_e  : entity hdl4fpga.mii_mem
+	process(mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if pre_rdy='1' then
+			elsif pre_dv='1' then
+				if pre_dat=mii_rxd then
+				end if;
+			end if;
+		end if;
+	end process;
+
+	miitx_hdr_e  : entity hdl4fpga.miitx_mem
 	generic map (
 --		mem_data => x"00000000")
 			mac_daddr              &
