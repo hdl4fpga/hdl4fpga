@@ -41,7 +41,7 @@ entity scopeio_miitx is
 		mem_req   : out std_logic;
 		mem_rdy   : in  std_logic;
 		mem_ena   : in  std_logic;
-		mem_dat   : in  std_logic_vector);
+		mem_data  : in  std_logic_vector);
 
 end;
 
@@ -57,7 +57,6 @@ begin
 
 	process(mii_rxc)
 		variable data : unsigned(0 to pall_data'length-1);
-		variable cntr : unsigned(0 to unsigned_nun_bits(pall_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
 			if pre_rdy='0' then
@@ -65,6 +64,20 @@ begin
 				data(mii_rxd'range) := mii_rxd;
 				data := data srl mii_rxd'length;
 			end if;
+			pall_data <= data;
+		end if;
+	end process;
+
+	process(mii_rxc)
+		variable data : unsigned(0 to mem_data'length-1);
+		variable cntr : unsigned(0 to unsigned_num_bits(mem_data'length/mii_rxd'length-1));
+	begin
+		if rising_edge(mii_rxc) then
+			data(mii_rxd'range) := mii_rxd;
+			data := data srl mii_rxd'length;
+			for i in data'range loop
+				mem_data(i+mem_data'low) := data(i);
+			end loop;
 		end if;
 	end process;
 
