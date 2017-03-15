@@ -33,15 +33,15 @@ use hdl4fpga.std.all;
 
 entity scopeio_miitx is
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
+		mii_rxc  : in  std_logic;
+		mii_rxdv : in  std_logic;
+		mii_rxd  : in  std_logic_vector;
+		mii_rdy  : out std_logic;
 
-		pall_data : out std_logic_vector
-		mem_req   : out std_logic;
-		mem_rdy   : in  std_logic;
-		mem_ena   : in  std_logic;
-		mem_data  : in  std_logic_vector);
+		pll_rdy  : out std_logic;
+		pll_data : out std_logic_vector
+		ser_ena  : in  std_logic;
+		ser_data : in  std_logic_vector);
 
 end;
 
@@ -56,29 +56,40 @@ begin
 		mii_rrdy => pre_rdy);
 
 	process(mii_rxc)
-		variable data : unsigned(0 to pall_data'length-1);
+		variable data : unsigned(0 to pll_data'length-1);
+		variable cntr : unsigned(0 to unsigned_num_bits(pll_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
 			if pre_rdy='0' then
-			elsif pre_rdy='1' then
+				cntr := to_unsigned(pll_data'length/mii_rxd'length-2,cntr'length);
+			elsif cntr(0)='0' then
 				data(mii_rxd'range) := mii_rxd;
 				data := data srl mii_rxd'length;
+				cntr := cntr - 1;
 			end if;
-			pall_data <= data;
+			pll_data <= data;
+			pll_rdy <= cntr(0);
 		end if;
 	end process;
 
 	process(mii_rxc)
-		variable data : unsigned(0 to mem_data'length-1);
-		variable cntr : unsigned(0 to unsigned_num_bits(mem_data'length/mii_rxd'length-1));
+		variable data : unsigned(0 to ser_data'length-1);
+		variable cntr : unsigned(0 to unsigned_num_bits(ser_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
-			data(mii_rxd'range) := mii_rxd;
+			if pll_rdy='1' then
+				cntr := to_unsigned(ser_data'length/mii_rxd'length-2,cntr'length);
+			else
+				cntr := cntr - 1;
+			end if;
 			data := data srl mii_rxd'length;
+			data(mii_rxd'range) := mii_rxd;
 			for i in data'range loop
-				mem_data(i+mem_data'low) := data(i);
+				ser_data(i+ser_data'low) := data(i);
 			end loop;
+			ser_ena <= cntr(0);
 		end if;
 	end process;
+	mii_rrdy <= not mii_rxdv;
 
 end;
