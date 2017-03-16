@@ -31,29 +31,31 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_miitx is
+entity scopeio_miirx is
 	port (
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
-		mii_rdy  : out std_logic;
+		mii_rrdy : out std_logic;
 
 		pll_rdy  : out std_logic;
-		pll_data : out std_logic_vector
-		ser_ena  : in  std_logic;
-		ser_data : in  std_logic_vector);
+		pll_data : out std_logic_vector;
+		ser_ena  : out std_logic;
+		ser_data : out std_logic_vector);
 
 end;
 
-architecture mix of scopeio_miitx is
+architecture mix of scopeio_miirx is
+	signal pre_rdy : std_logic;
+	signal prdy    : std_logic;
 begin
 
 	miirxpre_e : entity hdl4fpga.miirx_pre
 	port map (
 		mii_rxc  => mii_rxc,
-		mii_rxv  => mii_rxv,
+		mii_rxd  => mii_rxd,
 		mii_rxdv => mii_rxdv,
-		mii_rrdy => pre_rdy);
+		mii_rdy  => pre_rdy);
 
 	process(mii_rxc)
 		variable data : unsigned(0 to pll_data'length-1);
@@ -61,33 +63,34 @@ begin
 	begin
 		if rising_edge(mii_rxc) then
 			if pre_rdy='0' then
-				cntr := to_unsigned(pll_data'length/mii_rxd'length-2,cntr'length);
+				cntr := to_unsigned(pll_data'length/mii_rxd'length-1,cntr'length);
 			elsif cntr(0)='0' then
-				data(mii_rxd'range) := mii_rxd;
 				data := data srl mii_rxd'length;
+				data(mii_rxd'range) := unsigned(mii_rxd);
 				cntr := cntr - 1;
 			end if;
-			pll_data <= data;
-			pll_rdy <= cntr(0);
+			pll_data <= reverse(std_logic_vector(data));
+			prdy     <= cntr(0);
 		end if;
 	end process;
+	pll_rdy <= prdy;
 
 	process(mii_rxc)
 		variable data : unsigned(0 to ser_data'length-1);
-		variable cntr : unsigned(0 to unsigned_num_bits(ser_data'length/mii_rxd'length-1));
+		variable cntr : signed(0 to unsigned_num_bits(ser_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
-			if pll_rdy='1' then
-				cntr := to_unsigned(ser_data'length/mii_rxd'length-2,cntr'length);
+			if prdy='0' then
+				cntr := to_signed(ser_data'length/mii_rxd'length-1,cntr'length);
+			elsif cntr(0)='1' then
+				cntr := to_signed(ser_data'length/mii_rxd'length-2,cntr'length);
 			else
 				cntr := cntr - 1;
 			end if;
 			data := data srl mii_rxd'length;
-			data(mii_rxd'range) := mii_rxd;
-			for i in data'range loop
-				ser_data(i+ser_data'low) := data(i);
-			end loop;
-			ser_ena <= cntr(0);
+			data(mii_rxd'range) := unsigned(mii_rxd);
+			ser_data <= reverse(std_logic_vector(data));
+			ser_ena  <= cntr(0) and prdy and mii_rxdv;
 		end if;
 	end process;
 	mii_rrdy <= not mii_rxdv;

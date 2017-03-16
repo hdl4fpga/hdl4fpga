@@ -33,36 +33,36 @@ entity miirx_pre is
 		mii_rxc  : in std_logic;
         mii_rxdv : in std_logic;
         mii_rxd  : in std_logic_vector;
-		mii_prdy : out std_logic);
+		mii_rdy  : out std_logic);
 
 end;
 
 architecture def of miirx_pre is
-	signal prdy : std_logic;
+	signal rdy : std_logic;
 begin
 
 	process(mii_rxc)
-		variable data : unsigned(0 to mii_txd'length);
+		variable data : unsigned(0 to mii_rxd'length);
 		variable carr : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				prdy <= '0';
+				rdy  <= '0';
 				carr := '0';
 				data := (others => '0');
 			elsif mii_rxdv='1' then
-				if prdy='0' the 
-					data := data(0) & mii_rxd;
+				if rdy='0' then
+					data := data(0) & unsigned(mii_rxd);
 					for i in mii_rxd'range loop
 						if (data(0) xnor data(1))='1' then
 							if carr='1' then
 								if data(0)='1' then
-									prdy <= '1';
+									rdy <= '1';
 								end if;
 							end if;
-							carr := '0'
+							carr := '0';
 						else
-							carr := '1'
+							carr := '1';
 						end if;
 						data := data sll 1;
 					end loop;
@@ -70,6 +70,6 @@ begin
 			end if;
 		end if;
 	end process;
-	mii_prdy <= prdy;
+	mii_rdy <= rdy;
 
 end;
