@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_mem is
+entity mii_mem is
 	generic (
 		mem_data : std_logic_vector);
     port (
@@ -39,7 +39,7 @@ entity miitx_mem is
         mii_txd  : out std_logic_vector);
 end;
 
-architecture def of miitx_mem is
+architecture def of mii_mem is
 	constant mem_size  : natural := (mem_data'length+byte'length-1)/byte'length;
 	constant addr_size : natural := unsigned_num_bits((mem_data'length+byte'length-1)/byte'length-1);
 

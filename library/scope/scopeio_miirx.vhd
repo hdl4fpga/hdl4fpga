@@ -46,8 +46,13 @@ entity scopeio_miirx is
 end;
 
 architecture mix of scopeio_miirx is
-	signal pre_rdy : std_logic;
-	signal prdy    : std_logic;
+	signal mac_rdy  : std_logic;
+	signal mac_rxd  : std_logic_vector(mii_rxd'range);
+	signal mac_rxdv : std_logic;
+	signal mac_vld  : std_logic;
+
+	signal pre_rdy  : std_logic;
+	signal prdy     : std_logic;
 begin
 
 	miirxpre_e : entity hdl4fpga.miirx_pre
@@ -57,12 +62,33 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rdy  => pre_rdy);
 
-	process(mii_rxc)
+	miirxmac_e  : entity hdl4fpga.mii_mem
+	generic map (
+		mem_data => x"00_00_00_01_02_03")
+	port map (
+		mii_txc  => mii_rxc,
+		mii_treq => pre_rdy,
+		mii_trdy => mac_rdy,
+		mii_txen => mac_rxdv,
+		mii_txd  => mac_rxd);
+
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if pre_rdy='0' then
+				mac_vld <= '1';
+			elsif mac_rdy='0' then
+				mac_vld <= mac_vld and setif(mac_rxd=mii_rxd);
+			end if;
+		end if;
+	end process;
+
+	pll_p : process(mii_rxc)
 		variable data : unsigned(0 to pll_data'length-1);
 		variable cntr : unsigned(0 to unsigned_num_bits(pll_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
-			if pre_rdy='0' then
+			if mac_rdy='0' then
 				cntr := to_unsigned(pll_data'length/mii_rxd'length-1,cntr'length);
 			elsif cntr(0)='0' then
 				data := data srl mii_rxd'length;
@@ -70,12 +96,12 @@ begin
 				cntr := cntr - 1;
 			end if;
 			pll_data <= reverse(std_logic_vector(data));
-			prdy     <= cntr(0);
+			prdy     <= cntr(0) and mac_vld and mii_rxdv;
 		end if;
 	end process;
 	pll_rdy <= prdy;
 
-	process(mii_rxc)
+	ser_p : process(mii_rxc)
 		variable data : unsigned(0 to ser_data'length-1);
 		variable cntr : signed(0 to unsigned_num_bits(ser_data'length/mii_rxd'length-1));
 	begin

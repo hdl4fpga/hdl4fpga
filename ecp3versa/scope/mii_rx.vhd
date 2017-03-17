@@ -8,8 +8,10 @@ library hdl4fpga;
 
 architecture beh of ecp3versa is
 
-	signal ser_data : std_logic_vector(2*phy1_rx_d'length-1 downto 0);
-	signal pll_data : std_logic_vector(64-1 downto 0);
+	signal hdr_data : std_logic_vector(288-1 downto 0);
+	signal pld_data : std_logic_vector(288-1 downto 0);
+	signal pll_data : std_logic_vector(hdr_data'length+pld_data'length-1 downto 0);
+	signal ser_data : std_logic_vector(32/phy1_rx_d'length-1 downto 0);
 
 begin
 
