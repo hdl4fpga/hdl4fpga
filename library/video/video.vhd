@@ -43,8 +43,8 @@ architecture mix of video_timing_rom is
 	type natural_matrix is array (natural range <>, natural range <>) of natural range 0 to 2**n-1;
 
 	constant h_tab : natural_matrix (0 to 8, 3 downto 0) := (
-		0 => ( 32,  3,  5,  6),
---		0 => ( 640,  24,  56,  80),	 --   640x480C@60Hz pclk  23.75MHz
+--		0 => ( 32,  3,  5,  6),
+		0 => ( 640,  24,  56,  80),	 --   640x480C@60Hz pclk  23.75MHz
 		1 => ( 800,  32,  80, 112),	 --   800x600C@60Hz pclk  38.25MHz
 		2 => (1024,  48, 104, 152),	 --  1024x768C@60Hz pclk  63.50MHz
 		3 => (1280,  48,  32,  80),	 -- 1280x1024R@60Hz pclk  90.75MHz
@@ -56,8 +56,8 @@ architecture mix of video_timing_rom is
 		8 => (1920, 128, 200, 328)); -- 1920x1080R@60Hz pclk 173.00MHz
 
 	constant v_tab : natural_matrix (0 to 8, 3 downto 0) := (
-		0 => ( 24, 3, 4, 5),
---		0 => ( 480, 3, 4, 13),	--   640x480C@60Hz pclk  23.75MHz
+--		0 => ( 24, 3, 4, 5),
+		0 => ( 480, 3, 4, 13),	--   640x480C@60Hz pclk  23.75MHz
 		1 => ( 600, 3, 4, 17),	--   800x600C@60Hz pclk  38.25MHz
 		2 => ( 768, 3, 4, 23),	--  1024x768C@60Hz pclk  63.50MHz
 		3 => (1024, 3, 7, 20),	-- 1280x1024R@60Hz pclk  90.75MHz
@@ -99,19 +99,19 @@ entity video_timing_gen is
 	generic (
 		n : natural := 12);
 	port (
-		clk : in std_logic;
+		clk   : in  std_logic;
 
-		hdata : in std_logic_vector(n downto 0);
-		htmg : out std_logic_vector(0 to 1);
-		hpos : out std_logic_vector(n-1 downto 0);
-		heot : buffer std_logic;
-		heof : out std_logic;
+		hdata : in  std_logic_vector(n downto 0);
+		htmg  : out std_logic_vector(0 to 1);
+		hpos  : out std_logic_vector(n-1 downto 0);
+		heot  : buffer std_logic;
+		heof  : out std_logic;
 
-		vdata : in std_logic_vector(n downto 0);
-		vtmg : out std_logic_vector(0 to 1);
-		vpos : out std_logic_vector(n-1 downto 0);
-		veot : out std_logic;
-		veof : out std_logic);
+		vdata : in  std_logic_vector(n downto 0);
+		vtmg  : out std_logic_vector(0 to 1);
+		vpos  : out std_logic_vector(n-1 downto 0);
+		veot  : out std_logic;
+		veof  : out std_logic);
 	end;
 
 architecture beh of video_timing_gen is
@@ -135,11 +135,13 @@ architecture beh of video_timing_gen is
 	constant fp : std_logic_vector(0 to 1) := "00";
 begin
 	process (clk)
-		variable vparm : unsigned(0 to 2) := (others => '0');
-		variable hparm : unsigned(0 to 2) := (others => '0');
-		variable hcntr : unsigned(0 to n) := (others => '0');
-		variable vcntr : unsigned(0 to n) := (others => '0');
-		variable heoc  : std_logic;
+		variable vparm     : unsigned(0 to 2)   := (others => '0');
+		variable hparm     : unsigned(0 to 2)   := (others => '0');
+		variable hcntr     : unsigned(0 to n)   := (others => '0');
+		variable vcntr     : unsigned(0 to n)   := (others => '0');
+		variable hcntrp    : unsigned(0 to n-1) := (others => '0');
+		variable vcntrp    : unsigned(0 to n-1) := (others => '0');
+		variable heoc      : std_logic;
 		variable ena_vcntr : std_logic;
 		variable ena_hparm : std_logic;
 		variable ena_vparm : std_logic;
@@ -150,23 +152,44 @@ begin
 			ena_vparm := ena_vcntr and vcntr(0);
 
 			if ena_vparm='1' then
-				vparm := dec(vparm(0), vparm, bp);
+				if vpara(0)='1' then
+					vparm := bp;
+				else
+					vparm := vparm - 1;
+				end if;
 			end if;
 
 			if ena_vcntr='1' then
-				vcntr := dec(vcntr(0), vcntr, vdata);
+				if vcntr(0)='1' then
+					vcntr  := vdata;
+					vcntrp := (others => '0');
+				else
+					vcntr  := vcntr  - 1;
+					vcntrp := vcntrp + 1;
+				end if;
 			end if;
 
 			if ena_hparm='1' then
-				hparm := dec(hparm(0), hparm, bp);
+				if hparm(0)='1' then
+					hparm := bp;
+				else
+					hparm := hparm - 1;
+				end if;
 			end if;
-			hcntr := dec(hcntr(0), hcntr, hdata);
+
+			if hcntr(0)='1' then
+				hcntr  := hdata;
+				hcntrp := (others => '0');
+			else
+				hcntr  := hcntr  - 1;
+				hcntrp := hcntrp + 1;
+			end if;
 
 			htmg <= std_logic_vector(hparm(1 to 2));
 			vtmg <= std_logic_vector(vparm(1 to 2));
 
-			hpos <= std_logic_vector(hcntr(1 to n));
-			vpos <= std_logic_vector(vcntr(1 to n));
+			hpos <= std_logic_vector(hcntrp);
+			vpos <= std_logic_vector(vcntrp);
 			heot <= heoc;
 			heoc := hcntr(0);
 			veot <= vcntr(0);
