@@ -206,4 +206,4 @@ LOCATE COMP "expansionx4[3]" SITE "B11";
 LOCATE COMP "expansionx4[4]" SITE "B12";
 LOCATE COMP "expansionx4[5]" SITE "A12";
 LOCATE COMP "expansionx4[6]" SITE "A13";
-LOCATE COMP "expansionx4[6]" SITE "E12";
+LOCATE COMP "expansionx4[7]" SITE "E12";

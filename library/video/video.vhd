@@ -152,8 +152,8 @@ begin
 			ena_vparm := ena_vcntr and vcntr(0);
 
 			if ena_vparm='1' then
-				if vpara(0)='1' then
-					vparm := bp;
+				if vparm(0)='1' then
+					vparm := resize(unsigned(bp), vparm'length);
 				else
 					vparm := vparm - 1;
 				end if;
@@ -161,7 +161,7 @@ begin
 
 			if ena_vcntr='1' then
 				if vcntr(0)='1' then
-					vcntr  := vdata;
+					vcntr  := resize(unsigned(vdata), vcntr'length);
 					vcntrp := (others => '0');
 				else
 					vcntr  := vcntr  - 1;
@@ -171,14 +171,14 @@ begin
 
 			if ena_hparm='1' then
 				if hparm(0)='1' then
-					hparm := bp;
+					hparm := resize(unsigned(bp), hparm'length);
 				else
 					hparm := hparm - 1;
 				end if;
 			end if;
 
 			if hcntr(0)='1' then
-				hcntr  := hdata;
+				hcntr  := resize(unsigned(hdata), hcntr'length);
 				hcntrp := (others => '0');
 			else
 				hcntr  := hcntr  - 1;

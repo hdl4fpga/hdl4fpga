@@ -32,14 +32,14 @@ entity bram is
 		clka  : in  std_logic;
 		addra : in  std_logic_vector;
 		enaa  : in  std_logic := '1';
-		wea   : in  std_logic;
+		wea   : in  std_logic := '0';
 		dia   : in  std_logic_vector;
 		doa   : out std_logic_vector;
 
 		clkb  : in  std_logic;
 		addrb : in  std_logic_vector;
 		enab  : in  std_logic := '1';
-		web   : in  std_logic;
+		web   : in  std_logic := '0';
 		dib   : in  std_logic_vector;
 		dob   : out std_logic_vector);
 		
@@ -58,7 +58,7 @@ architecture def of bram is
 		constant arg : std_logic_vector)
 		return word_vector is
 
-		variable aux : unsigned(arg'length-1 downto 0) := (others => '-');
+		variable aux : unsigned(max(arg'length,word'length)-1 downto 0) := (others => '-');
 		variable val : word_vector(2**addr_size-1 downto 0) := (others => (others => '0'));
 
 	begin

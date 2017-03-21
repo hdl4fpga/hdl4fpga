@@ -52,6 +52,8 @@ architecture def of cgaram is
 
 	signal wr_addr : std_logic_vector(wr_row'length+wr_col'length-1 downto 0);
 	signal rd_addr : std_logic_vector(rd_row'length+rd_col'length-1 downto 0);
+	signal dummyoa : std_logic_vector(wr_code'range);
+	signal dummyib : std_logic_vector(rd_code'range);
 
 begin
 
@@ -60,14 +62,16 @@ begin
 	assert rd_addr'length=wr_addr'length
 		report "cgaram"
 		severity ERROR;
-	dpram_e : entity hdl4fpga.dpram
+	dpram_e : entity hdl4fpga.bram
 	port map (
-		wr_clk => wr_clk,
-		wr_ena => wr_ena,
-		wr_addr => wr_addr,
-		wr_data => wr_code,
+		clka  => wr_clk,
+		wea   => wr_ena,
+		addra => wr_addr,
+		dia   => wr_code,
+		doa   => dummyoa,
 
-		rd_clk => rd_clk,
-		rd_addr => rd_addr,
-		rd_data => rd_code);
+		clkb  => rd_clk,
+		addrb => rd_addr,
+		dib   => dummyib,
+		dob   => rd_code);
 end;

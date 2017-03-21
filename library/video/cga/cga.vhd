@@ -61,33 +61,21 @@ architecture def of cga is
 	signal cga_col : std_logic_vector(vga_col'length-1 downto 0);
 	signal cga_sel : std_logic_vector(unsigned_num_bits(width-1)-1 downto 0);
 
-	signal cgaram_row  : std_logic_vector(vga_row'length-1 downto vga_row'length-sys_row'length);
-	signal cgaram_col  : std_logic_vector(vga_col'length-1 downto vga_col'length-sys_col'length);
-	signal cgaram_code : std_logic_vector(sys_code'length-1 downto 0);
 
 	signal font_code : std_logic_vector(sys_code'length-1 downto 0);
 	signal font_row  : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
 	signal font_line : std_logic_vector(width-1 downto 0);
 
-	signal cga_line  : std_logic_vector(width-1 downto 0);
 
 begin
 
 	cga_row <= vga_row;
 	cga_col <= vga_col;
 
-	cga_line   <= font_line;
-	process (vga_clk)
-	begin
-		if rising_edge(vga_clk) then
-			cgaram_row <= cga_row(cgaram_row'range);
-			cgaram_col <= cga_col(cgaram_col'range);
-		end if;
-	end process;
-
 	fontrow_e : entity hdl4fpga.align
 	generic map (
 		n => font_row'length,
+		i => (font_row'range => '-'),
 		d => (font_row'range => 3))
 	port map (
 		clk => vga_clk,
@@ -103,18 +91,9 @@ begin
 		wr_code => sys_code,
 
 		rd_clk  => vga_clk,
-		rd_row  => cgaram_row,
-		rd_col  => cgaram_col,
-		rd_code => cgaram_code);
-
-	fontcode_e : entity hdl4fpga.align
-	generic map (
-		n => cgaram_code'length,
-		d => (cgaram_code'range => 1))
-	port map (
-		clk => vga_clk,
-		di  => cgaram_code,
-		do  => font_code);
+		rd_row  => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
+		rd_col  => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length),
+		rd_code => font_code);
 
 	fontrom_e : entity hdl4fpga.fontrom
 	generic map (
@@ -134,17 +113,12 @@ begin
 	cgasel_e : entity hdl4fpga.align
 	generic map (
 		n => cga_sel'length,
+		i => (cga_sel'range => '-'),
 		d => (cga_sel'range => 4))
 	port map (
 		clk => vga_clk,
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	mux_e : entity hdl4fpga.mux
-	generic map (
-		m => cga_sel'length)
-	port map (
-		sel => cga_sel,
-		di  => cga_line,
-		do  => vga_dot);
+	vga_dot <= word2byte(font_line, cga_sel)(0);
 end;
