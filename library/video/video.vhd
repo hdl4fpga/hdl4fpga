@@ -51,8 +51,8 @@ architecture mix of video_timing_rom is
 		4 => (1280,  48, 112, 248),	 -- 1280x1024C@60Hz pclk 108.00MHz
 		5 => (1680,  48,  32,  80),	 -- 1680x1050R@60Hz pclk 119.00MHz
 		6 => (1920,  48,  32,  80),	 -- 1920x1080R@60Hz pclk 138.50MHz
---		7 => (1920,  92,  56, 132),  -- 1920x1080R@60Hz pclk 148.50MHz
-		7 => (1920,  76,  128, 76),  -- 1920x1080R@60Hz pclk 148.50MHz
+		7 => (1920,  92,  56, 132),  -- 1920x1080R@60Hz pclk 148.50MHz
+--		7 => (1920,  76,  128, 76),  -- 1920x1080R@60Hz pclk 148.50MHz
 		8 => (1920, 128, 200, 328)); -- 1920x1080R@60Hz pclk 173.00MHz
 
 	constant v_tab : natural_matrix (0 to 8, 3 downto 0) := (
@@ -64,8 +64,8 @@ architecture mix of video_timing_rom is
 		4 => (1024, 1, 3, 38),	-- 1280x1024C@60Hz pclk 108.00MHz
 		5 => (1050, 3, 6, 21),	-- 1680x1050R@60Hz pclk 119.00MHz
 		6 => (1080, 3, 5, 23),	-- 1920x1080R@60Hz pclk 138.50MHz
---		7 => (1080, 2, 6, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
-		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
+		7 => (1080, 2, 6, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
+--		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 		8 => (1080, 3, 5, 32));	-- 1920x1080C@60Hz pclk 173.00MHz
 
 	subtype word is std_logic_vector(n-1 downto 0);

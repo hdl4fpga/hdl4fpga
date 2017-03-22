@@ -201,6 +201,7 @@ LOCATE COMP "seg[14]" SITE "W5" ;
 DEFINE PORT GROUP "segs" "seg[*]";
 IOBUF GROUP "segs" IO_TYPE=LVCMOS33 ;
 
+DEFINE PORT GROUP "expansionx4" "expansionx4[*]";
 IOBUF GROUP "expansionx4" IO_TYPE=LVTTL33;
 LOCATE COMP "expansionx4[3]" SITE "B11";
 LOCATE COMP "expansionx4[4]" SITE "B12";

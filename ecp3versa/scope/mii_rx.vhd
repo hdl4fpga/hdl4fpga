@@ -17,7 +17,7 @@ architecture beh of ecp3versa is
 	signal ser_data  : std_logic_vector(32-1 downto 0);
 
 	signal cga_we    : std_logic;
-	signal cga_row   : std_logic_vector(6-1 downto 0);
+	signal cga_row   : std_logic_vector(5-1 downto 0);
 	signal cga_col   : std_logic_vector(7-1 downto 0);
 	signal cga_code  : std_logic_vector(8-1 downto 0);
 	signal char_dot  : std_logic;
@@ -25,11 +25,49 @@ architecture beh of ecp3versa is
 	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
+	signal vga_frm   : std_logic;
+	signal vga_don   : std_logic;
 	signal vga_rgb   : std_logic_vector(3-1 downto 0);
-	signal vga_vcntr : std_logic_vector(0 to 11-1);
-	signal vga_hcntr : std_logic_vector(0 to 11-1);
+	signal vga_vcntr : std_logic_vector(11-1 downto 0);
+	signal vga_hcntr : std_logic_vector(11-1 downto 0);
 
 begin
+
+	video_b : block
+		attribute FREQUENCY_PIN_CLKI  : string; 
+		attribute FREQUENCY_PIN_CLKOP : string; 
+		attribute FREQUENCY_PIN_CLKI  of PLL_I : label is "100.000000";
+		attribute FREQUENCY_PIN_CLKOP of PLL_I : label is "150.000000";
+
+		signal clkfb : std_logic;
+		signal lock  : std_logic;
+	begin
+		pll_i : ehxpllf
+        generic map (
+			FEEDBK_PATH  => "INTERNAL", CLKOK_BYPASS=> "DISABLED", 
+			CLKOS_BYPASS => "DISABLED", CLKOP_BYPASS=> "DISABLED", 
+			CLKOK_INPUT  => "CLKOP", DELAY_PWD=> "DISABLED", DELAY_VAL=>  0, 
+			CLKOS_TRIM_DELAY=> 0, CLKOS_TRIM_POL=> "RISING", 
+			CLKOP_TRIM_DELAY=> 0, CLKOP_TRIM_POL=> "RISING", 
+			PHASE_DELAY_CNTL=> "STATIC", DUTY=>  8, PHASEADJ=> "0.0", 
+			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
+			FIN=> "100.000000")
+		port map (
+			rst         => '0', 
+			rstk        => '0',
+			clki        => clk,
+			wrdel       => '0',
+			drpai3      => '0', drpai2 => '0', drpai1 => '0', drpai0 => '0', 
+			dfpai3      => '0', dfpai2 => '0', dfpai1 => '0', dfpai0 => '0', 
+			fda3        => '0', fda2   => '0', fda1   => '0', fda0   => '0', 
+			clkintfb    => clkfb,
+			clkfb       => clkfb,
+			clkop       => vga_clk, 
+			clkos       => open,
+			clkok       => open,
+			clkok2      => open,
+			lock        => lock);
+	end block;
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
 	port map (
@@ -66,7 +104,9 @@ begin
 		hsync => vga_hsync,
 		vsync => vga_vsync,
 		hcntr => vga_hcntr,
-		vcntr => vga_vcntr);
+		vcntr => vga_vcntr,
+		don   => vga_don,
+		frm   => vga_frm);
 
 	cga_e : entity hdl4fpga.cga
 	generic map (
@@ -75,19 +115,23 @@ begin
 		width    =>  8)
 	port map (
 		sys_clk  => phy1_125clk,
-		sys_we   => cga_we,
-		sys_row  => cga_row,
-		sys_col  => cga_col,
-		sys_code => cga_code,
+		sys_we   => '1', --cga_we,
+		sys_row  => (cga_row'range => '0'),
+		sys_col  => (cga_col'range => '0'),
+		sys_code => x"41", --cga_code,
 		vga_clk  => vga_clk,
-		vga_row  => vga_vcntr,
-		vga_col  => vga_hcntr,
+		vga_row  => vga_vcntr(10-1 downto 1),
+		vga_col  => vga_hcntr(11-1 downto 1),
 		vga_dot  => char_dot);
 
+	process()
+	begin
 
-	expansionx4(3) <= vga_rgb(1); -- green
-	expansionx4(4) <= vga_rgb(0); -- blue
-	expansionx4(5) <= vga_rgb(2); -- red
-	expansionx4(6) <= vga_hsync;
-	expansionx4(7) <= vga_vsync;
+		vga_rgb <= (others => char_dot and vga_don and vga_frm); --(others => vga_frm and vga_don);
+		expansionx4(3) <= vga_rgb(1); -- green
+		expansionx4(4) <= vga_rgb(0); -- blue
+		expansionx4(5) <= vga_rgb(2); -- red
+		expansionx4(6) <= vga_hsync;
+		expansionx4(7) <= vga_vsync;
+	end process;
 end;

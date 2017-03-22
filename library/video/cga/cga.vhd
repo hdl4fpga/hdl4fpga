@@ -106,7 +106,7 @@ begin
 		col_reverse => col_reverse)
 	port map (
 		clk  => vga_clk,
-		code => font_code,
+		code => x"41", --font_code,
 		row  => font_row,
 		data => font_line);
 
@@ -120,5 +120,5 @@ begin
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	vga_dot <= word2byte(font_line, cga_sel)(0);
+	vga_dot <= word2byte(reverse(font_line), cga_sel)(0);
 end;
