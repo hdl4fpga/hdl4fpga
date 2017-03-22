@@ -31,6 +31,7 @@ architecture beh of ecp3versa is
 	signal vga_vcntr : std_logic_vector(11-1 downto 0);
 	signal vga_hcntr : std_logic_vector(11-1 downto 0);
 
+	signal expansionx4_d : std_logic_vector(expansionx4'range);
 begin
 
 	video_b : block
@@ -124,14 +125,22 @@ begin
 		vga_col  => vga_hcntr(11-1 downto 1),
 		vga_dot  => char_dot);
 
-	process()
-	begin
+	vga_rgb <= (others => char_dot and vga_don and vga_frm);
+	expansionx4_d(3) <= vga_rgb(1); -- green
+	expansionx4_d(4) <= vga_rgb(0); -- blue
+	expansionx4_d(5) <= vga_rgb(2); -- red
+	expansionx4_d(6) <= vga_hsync;
+	expansionx4_d(7) <= vga_vsync;
 
-		vga_rgb <= (others => char_dot and vga_don and vga_frm); --(others => vga_frm and vga_don);
-		expansionx4(3) <= vga_rgb(1); -- green
-		expansionx4(4) <= vga_rgb(0); -- blue
-		expansionx4(5) <= vga_rgb(2); -- red
-		expansionx4(6) <= vga_hsync;
-		expansionx4(7) <= vga_vsync;
-	end process;
+	io_e : entity hdl4fpga.align
+	generic map (
+		n => expansionx4'length,
+		i => (expansionx4'range => '-'),
+		d => (expansionx4'range => 1)
+	port map (
+		clk => vga_clk,
+		di  => expansionx4_d,
+		do  => expansionx4);
+
+
 end;
