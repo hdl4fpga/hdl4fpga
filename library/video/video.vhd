@@ -115,69 +115,47 @@ entity video_timing_gen is
 	end;
 
 architecture beh of video_timing_gen is
-
-	function dec (
-		succ : std_logic;
-		cntr : unsigned;
-		data : std_logic_vector)
-		return unsigned is
-	begin
-		if succ='1' then
-			return resize(unsigned(data),cntr'length);
-		else
-			return cntr-1;
-		end if;
-	end;
-
 	constant dp : std_logic_vector(0 to 1) := "11";
 	constant bp : std_logic_vector(0 to 1) := "10";
 	constant pw : std_logic_vector(0 to 1) := "01";
 	constant fp : std_logic_vector(0 to 1) := "00";
 begin
 	process (clk)
-		variable vparm     : unsigned(0 to 2)   := (others => '0');
-		variable hparm     : unsigned(0 to 2)   := (others => '0');
-		variable hcntr     : unsigned(0 to n)   := (others => '0');
-		variable vcntr     : unsigned(0 to n)   := (others => '0');
-		variable hcntrp    : unsigned(0 to n-1) := (others => '0');
-		variable vcntrp    : unsigned(0 to n-1) := (others => '0');
-		variable heoc      : std_logic;
-		variable ena_vcntr : std_logic;
-		variable ena_hparm : std_logic;
-		variable ena_vparm : std_logic;
+		variable vparm  : unsigned(0 to 2)   := (others => '0');
+		variable hparm  : unsigned(0 to 2)   := (others => '0');
+		variable hcntr  : unsigned(0 to n)   := (others => '0');
+		variable vcntr  : unsigned(0 to n)   := (others => '0');
+		variable hcntrp : unsigned(0 to n-1) := (others => '0');
+		variable vcntrp : unsigned(0 to n-1) := (others => '0');
 	begin
 		if rising_edge(clk) then
-			ena_hparm := heot;
-			ena_vcntr := ena_hparm and hparm(0);
-			ena_vparm := ena_vcntr and vcntr(0);
+			if hcntr(0)='1' then
+				if hparm(0)='1' then
+					if vcntr(0)='1' then
+						if vparm(0)='1' then
+							vparm := resize(unsigned(bp), vparm'length);
+						else
+							vparm := vparm - 1;
+						end if;
+					end if;
 
-			if ena_vparm='1' then
-				if vparm(0)='1' then
-					vparm := resize(unsigned(bp), vparm'length);
-				else
-					vparm := vparm - 1;
+					if vcntr(0)='1' then
+						vcntr  := resize(unsigned(vdata), vcntr'length);
+						vcntrp := (others => '0');
+					else
+						vcntr  := vcntr  - 1;
+						vcntrp := vcntrp + 1;
+					end if;
 				end if;
 			end if;
 
-			if ena_vcntr='1' then
-				if vcntr(0)='1' then
-					vcntr  := resize(unsigned(vdata), vcntr'length);
-					vcntrp := (others => '0');
-				else
-					vcntr  := vcntr  - 1;
-					vcntrp := vcntrp + 1;
-				end if;
-			end if;
-
-			if ena_hparm='1' then
+			if hcntr(0)='1' then
 				if hparm(0)='1' then
 					hparm := resize(unsigned(bp), hparm'length);
 				else
 					hparm := hparm - 1;
 				end if;
-			end if;
 
-			if hcntr(0)='1' then
 				hcntr  := resize(unsigned(hdata), hcntr'length);
 				hcntrp := (others => '0');
 			else
@@ -190,8 +168,7 @@ begin
 
 			hpos <= std_logic_vector(hcntrp);
 			vpos <= std_logic_vector(vcntrp);
-			heot <= heoc;
-			heoc := hcntr(0);
+			heot <= hcntr(0);
 			veot <= vcntr(0);
 			heof <= hparm(0);
 			veof <= vparm(0);
@@ -263,18 +240,18 @@ begin
 		veof  => veof, 
 		vpos  => vpos);
 
+	vcntr <= vpos;
+	hcntr <= hpos;
+	frm   <= setif(vparm="11");
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			hdata <= rom_hdata;
 			vdata <= rom_vdata;
-			vcntr <= vpos;
-			hcntr <= hpos;
 
 			if heot='1' then
-				don   <= setif(vparm="10" and hparm="11");
-				frm   <= setif(vparm="10");
-				hsync <= setif(hparm="01");
+				don   <= setif(hparm="11");
+				hsync <= setif(hparm="10");
 				if heof='1' then
 					vsync <= setif(vparm="00");
 				end if;

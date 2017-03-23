@@ -63,6 +63,8 @@ begin
 		report "cgaram"
 		severity ERROR;
 	dpram_e : entity hdl4fpga.bram
+	generic map (
+		data => to_stdlogicvector(string'("hola")))
 	port map (
 		clka  => wr_clk,
 		wea   => wr_ena,

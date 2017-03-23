@@ -76,7 +76,7 @@ begin
 	generic map (
 		n => font_row'length,
 		i => (font_row'range => '-'),
-		d => (font_row'range => 3))
+		d => (font_row'range => 2))
 	port map (
 		clk => vga_clk,
 		di  => cga_row(font_row'range),
@@ -106,7 +106,7 @@ begin
 		col_reverse => col_reverse)
 	port map (
 		clk  => vga_clk,
-		code => x"41", --font_code,
+		code => font_code,
 		row  => font_row,
 		data => font_line);
 
@@ -114,7 +114,7 @@ begin
 	generic map (
 		n => cga_sel'length,
 		i => (cga_sel'range => '-'),
-		d => (cga_sel'range => 4))
+		d => (cga_sel'range => 3))
 	port map (
 		clk => vga_clk,
 		di  => cga_col(cga_sel'range),

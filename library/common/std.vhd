@@ -43,6 +43,10 @@ package std is
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
+	function to_stdlogicvector (
+		constant arg : string)
+		return std_logic_vector;
+
 	function to_bytevector (
 		constant arg : string)
 		return byte_vector;
@@ -311,6 +315,18 @@ package body std is
 		end loop;
 		return val;
 	end;
+
+	function to_stdlogicvector (
+		constant arg : string)
+		return std_logic_vector is
+		variable val : unsigned(arg'length*byte'length-1 downto 0);
+	begin
+		for i in arg'range loop
+			val := val sll byte'length;
+			val(byte'range) := to_unsigned(character'pos(arg(i)),byte'length);
+		end loop;
+		return std_logic_vector(val);
+	end function;
 
 	function to_bytevector (
 		constant arg : string)
