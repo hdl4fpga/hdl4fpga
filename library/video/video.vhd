@@ -207,7 +207,6 @@ architecture arch of video_vga is
 	signal heot : std_logic;
 	signal veot : std_logic;
 	signal veof : std_logic;
-	signal vpos : std_logic_vector(n-1 downto 0);
 	signal hpos : std_logic_vector(n-1 downto 0);
 begin
 	sync_rom : entity hdl4fpga.video_timing_rom
@@ -232,17 +231,14 @@ begin
 		hdata => hdata,
 		heot  => heot,
 		heof  => heof,
-		hpos  => hpos,
+		hpos  => hcntr,
 
 		vtmg  => vparm,
 		vdata => vdata,
 		veot  => veot,
 		veof  => veof, 
-		vpos  => vpos);
+		vpos  => vcntr);
 
-	vcntr <= vpos;
-	hcntr <= hpos;
-	frm   <= setif(vparm="11");
 	process (clk)
 	begin
 		if rising_edge(clk) then
@@ -251,9 +247,12 @@ begin
 
 			if heot='1' then
 				don   <= setif(hparm="11");
-				hsync <= setif(hparm="10");
+				hsync <= setif(hparm="01");
 				if heof='1' then
-					vsync <= setif(vparm="00");
+					if veot='1' then
+						frm   <= setif(vparm="11");
+						vsync <= setif(vparm="01");
+					end if;
 				end if;
 			end if;
 		end if;
