@@ -120,7 +120,7 @@ begin
 		width    =>  8)
 	port map (
 		sys_clk  => vga_clk, --phy1_125clk,
-		sys_we   => '0', --cga_we,
+		sys_we   => '1', --cga_we,
 		sys_row  => vga_vcntr(10-1 downto 10-cga_row'length), --(cga_row'range => '0'),
 		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length), --(cga_col'range => '0'),
 		sys_code => x"41", --vga_vcntr(11-1 downto 11-8), --(cga_col'range => '0'),
