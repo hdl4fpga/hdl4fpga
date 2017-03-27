@@ -123,7 +123,7 @@ begin
 		sys_we   => '1', --cga_we,
 		sys_row  => vga_vcntr(10-1 downto 10-cga_row'length), --(cga_row'range => '0'),
 		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length), --(cga_col'range => '0'),
-		sys_code => x"41", --vga_vcntr(11-1 downto 11-8), --(cga_col'range => '0'),
+		sys_code => vga_hcntr(11-1 downto 11-8), --(cga_col'range => '0'),
 		vga_clk  => vga_clk,
 		vga_row  => vga_vcntr(10-1 downto 1),
 		vga_col  => vga_hcntr(11-1 downto 1),
