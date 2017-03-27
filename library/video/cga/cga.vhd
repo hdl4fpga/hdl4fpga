@@ -65,6 +65,7 @@ architecture def of cga is
 	signal font_code : std_logic_vector(sys_code'length-1 downto 0);
 	signal font_row  : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
 	signal font_line : std_logic_vector(width-1 downto 0);
+	signal dot : std_logic_vector(1-1 downto 0);
 
 
 begin
@@ -120,5 +121,6 @@ begin
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	vga_dot <= word2byte(reverse(font_line), cga_sel)(0);
+	dot <= word2byte(reverse(font_line), cga_sel);
+	vga_dot <= dot(0);
 end;
