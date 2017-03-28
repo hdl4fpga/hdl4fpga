@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library ecp3;
 use ecp3.components.all;
@@ -39,6 +40,22 @@ architecture beh of ecp3versa is
 
 	signal vga_io    : std_logic_vector(0 to 3-1);
 	signal rst : std_logic;
+	
+	function sinctab (
+		constant x0 : integer;
+		constant x1 : integer)
+		return signed is
+	begin
+		for x in x0 to x1 loop
+			if x /= 0 then
+				sin(real(x))/real(x);
+			else
+				1.0;
+			end if;
+		end loop;
+		return ;
+	end;
+
 begin
 
 	rst <= not fpga_gsrn;
