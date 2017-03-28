@@ -30,8 +30,8 @@ entity pipe_le is
 		n : natural:= 64);
 	port (
 		clk : in std_logic;
-		a : in unsigned(0 to n-1);
-		b : in unsigned(0 to n-1);
+		a : in std_logic_vector(0 to n-1);
+		b : in std_logic_vector(0 to n-1);
 		eq : out std_logic;
 		le : out std_logic);
 end;

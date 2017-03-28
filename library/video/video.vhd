@@ -280,12 +280,15 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of grid is
-	alias row1 : std_logic_vector(row'length-1 downto 0) is row;
-	alias col1 : std_logic_vector(col'length-1 downto 0) is col;
+	signal row1 : std_logic_vector(row'length-1 downto 0);
+	signal col1 : std_logic_vector(col'length-1 downto 0);
 begin
+	row1 <= row;
+	col1 <= col;
+
 	process(clk) 
-		variable col_eq : std_logic;
-		variable row_eq : std_logic;
+		variable col_eq   : std_logic;
+		variable row_eq   : std_logic;
 		variable draw_row : std_logic;
 		variable draw_col : std_logic;
 	begin
@@ -308,8 +311,8 @@ entity draw_vline is
 		n : natural := 12);
 	port(
 		video_clk  : in  std_logic;
-		video_row1 : in  unsigned(n-1 downto 0);
-		video_row2 : in  unsigned(n-1 downto 0);
+		video_row1 : in  std_logic_vector(n-1 downto 0);
+		video_row2 : in  std_logic_vector(n-1 downto 0);
 		video_dot  : out std_logic);
 end;
 
