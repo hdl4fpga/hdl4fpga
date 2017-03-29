@@ -221,7 +221,7 @@ begin
 		video_dot  => video_dot);
 
 
-	vga_rgb <= (others => vga_io(2) and video_dot);
+	vga_rgb <= (others => vga_io(2) and char_dot);
 	expansionx4io_e : entity hdl4fpga.align
 	generic map (
 		n => expansionx4'length,

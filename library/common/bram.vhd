@@ -58,19 +58,19 @@ architecture def of bram is
 		constant arg : std_logic_vector)
 		return word_vector is
 
-		variable aux : unsigned(max(arg'length,word'length)-1 downto 0) := (others => '-');
-		variable val : word_vector(2**addr_size-1 downto 0) := (others => (others => '0'));
+		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '0'));
 
 	begin
-		aux(arg'length-1 downto 0) := unsigned(arg);
 		for i in 0 to data_size-1 loop
-			val(i) := std_logic_vector(aux(word'length*(i+1)-1 downto word'length*i));
+			for j in 0 to word'length-1 loop
+				val(i)(j) := arg(word'length*i+j);
+			end loop;
 		end loop;
 
 		return val;
 	end;
 
-	shared variable ram : word_vector(2**addr_size-1 downto 0) := mem_init(data);
+	shared variable ram : word_vector(0 to 2**addr_size-1) := mem_init(data);
 begin
 	process (clka)
 		variable addr : std_logic_vector(addra'range);
