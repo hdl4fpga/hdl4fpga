@@ -62,7 +62,7 @@ architecture def of bram is
 
 	begin
 		for i in 0 to data_size-1 loop
-			for j in word'range-1 loop
+			for j in word'range loop
 				val(i)(j) := arg(word'length*i+j);
 			end loop;
 		end loop;
