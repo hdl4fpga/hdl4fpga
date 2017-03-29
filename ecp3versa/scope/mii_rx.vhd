@@ -41,21 +41,31 @@ architecture beh of ecp3versa is
 	signal vga_io    : std_logic_vector(0 to 3-1);
 	signal rst : std_logic;
 	
+	constant sample_size : natural := 11;
+
 	function sinctab (
 		constant x0 : integer;
-		constant x1 : integer)
-		return signed is
+		constant x1 : integer;
+		constant n  : integer)
+		return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(n*(x1-x0+1)-1 downto 0);
 	begin
-		for x in x0 to x1 loop
-			if x /= 0 then
-				sin(real(x))/real(x);
+		for i in 0 to x1-x0 loop
+			if (i+x0) /= 0 then
+				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
 			else
-				1.0;
+				y := 1.0;
 			end if;
+			aux((i+1)*n-1 downto i*n) := std_logic_vector(to_unsigned(integer(-real(2**(n-2)-1)*y)+2**(n-2),n));
 		end loop;
-		return ;
+		return aux;
 	end;
 
+	constant data : std_logic_vector(sample_size*2048-1 downto 0) := sinctab(-960, 1087, sample_size);
+	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
+	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
+	signal sample      : std_logic_vector(sample_size-1 downto 0);
 begin
 
 	rst <= not fpga_gsrn;
@@ -141,7 +151,7 @@ begin
 	generic map (
 		n => vga_io'length,
 		i => (vga_io'range => '-'),
-		d => (vga_io'range => 3+9))
+		d => (vga_io'range => 3+9+2))
 	port map (
 		clk   => vga_clk,
 		di(0) => vga_hsync,
@@ -164,7 +174,7 @@ begin
 	galign_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 1+10))
+		d => (0 to 0 => 2+9+2))
 	port map (
 		clk   => vga_clk,
 		di(0) => grid_dot,
@@ -186,17 +196,32 @@ begin
 		vga_col  => vga_hcntr(11-1 downto cga_zoom),
 		vga_dot  => char_dot);
 
+	samples_e : entity hdl4fpga.bram
+	generic map (
+		data => data)
+	port map (
+		clka  => vga_clk,
+		addra => (0 to 11-1 => '0'),
+		enaa  => '0',
+		dia   => (0 to sample_size-1 => '-'),
+		doa   => samples_doa,
+
+		clkb  => vga_clk,
+		addrb => vga_hcntr,
+		dib   => samples_dib,
+		dob   => sample);
+		
 	draw_vline : entity hdl4fpga.draw_vline
 	generic map (
 		n => 11)
 	port map (
 		video_clk  => vga_clk,
-		video_row1 => vga_hcntr(vga_vcntr'range),
-		video_row2 => vga_vcntr,
+		video_row1 => vga_vcntr(vga_vcntr'range),
+		video_row2 => sample,
 		video_dot  => video_dot);
 
-	vga_rgb <= (others => vga_io(2) and video_dot);
 
+	vga_rgb <= (others => vga_io(2) and video_dot);
 	expansionx4io_e : entity hdl4fpga.align
 	generic map (
 		n => expansionx4'length,

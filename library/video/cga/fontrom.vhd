@@ -86,13 +86,32 @@ architecture def of fontrom is
 
 	constant rom : word_vector(num_of_char*height-1 downto 0) := cgadata(bitrom);
 
+	signal ddoa : std_logic_vector(data'range);
+	signal ddib : std_logic_vector(data'range);
+	signal addrb : std_logic_vector(code'length+row'length-1 downto 0);
 begin
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			data <= rom(to_integer(unsigned(std_logic_vector'(code & row))));
-		end if;
-	end process;
+	addrb <= code & row;
+	samples_e : entity hdl4fpga.bram
+	generic map (
+		data =>  bitrom)
+	port map (
+		clka  => clk,
+		addra => addrb,
+		enaa  => '0',
+		dia   => (data'range => '-'),
+		doa   => ddoa,
+
+		clkb  => clk,
+		addrb => addrb,
+		dib   => ddib,
+		dob   => data);
+		
+--	process (clk)
+--	begin
+--		if rising_edge(clk) then
+--			data <= rom(to_integer(unsigned(std_logic_vector'(code & row))));
+--		end if;
+--	end process;
 
 end;

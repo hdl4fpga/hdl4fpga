@@ -64,8 +64,7 @@ architecture def of bram is
 	begin
 		aux(arg'length-1 downto 0) := unsigned(arg);
 		for i in 0 to data_size-1 loop
-			val(i) := std_logic_vector(aux(word'range));
-			aux := aux srl word'length;
+			val(i) := std_logic_vector(aux(word'length*(i+1)-1 downto word'length*i));
 		end loop;
 
 		return val;
