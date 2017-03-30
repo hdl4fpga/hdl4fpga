@@ -28,20 +28,20 @@ use ieee.numeric_std.all;
 entity cga is
 
 	generic (
-		bitrom : std_logic_vector;	-- Font Bit Rom
-		width  : natural);			-- Character's Width
+		bitrom   : std_logic_vector;	-- Font Bit Rom
+		width    : natural);			-- Character's Width
 
 	port (
-		sys_clk  : in std_logic;
-		sys_row  : in std_logic_vector;
-		sys_col  : in std_logic_vector;
-		sys_we   : in std_logic;
-		sys_code : in std_logic_vector;
+		sys_clk  : in  std_logic;
+		sys_row  : in  std_logic_vector;
+		sys_col  : in  std_logic_vector;
+		sys_we   : in  std_logic;
+		sys_code : in  std_logic_vector;
 
-		vga_clk : in  std_logic;
-		vga_row : in  std_logic_vector;
-		vga_col : in  std_logic_vector;
-		vga_dot : out std_logic);
+		vga_clk  : in  std_logic;
+		vga_row  : in  std_logic_vector;
+		vga_col  : in  std_logic_vector;
+		vga_dot  : out std_logic);
 
 end;
 
@@ -57,9 +57,8 @@ architecture def of cga is
 
 	signal font_code : std_logic_vector(sys_code'length-1 downto 0);
 	signal font_row  : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
-	signal font_line : std_logic_vector(width-1 downto 0);
-	signal dot : std_logic_vector(1-1 downto 0);
-
+	signal font_line : std_logic_vector(0 to width-1);
+	signal dot       : std_logic_vector(1-1 downto 0);
 
 begin
 
@@ -102,12 +101,12 @@ begin
 	generic map (
 		n => cga_sel'length,
 		i => (cga_sel'range => '-'),
-		d => (cga_sel'range => 3))
+		d => (cga_sel'range => 4))
 	port map (
 		clk => vga_clk,
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	dot <= word2byte(font_line, cga_sel);
+	dot <= word2byte(reverse(font_line), cga_sel);
 	vga_dot <= dot(0);
 end;

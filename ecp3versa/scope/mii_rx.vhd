@@ -131,7 +131,7 @@ begin
 		data     := data srl cga_row'length;
 		cga_col  <= std_logic_vector(data(cga_col'range));
 	end process;
-	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+0);
+	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+1);
 
 	vga_e : entity hdl4fpga.video_vga
 	generic map (
@@ -209,7 +209,7 @@ begin
 		addrb => vga_hcntr,
 		dib   => samples_dib,
 		dob   => sample);
-		
+  	
 	draw_vline : entity hdl4fpga.draw_vline
 	generic map (
 		n => 11)

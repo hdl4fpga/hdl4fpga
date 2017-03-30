@@ -41,8 +41,7 @@ use hdl4fpga.std.all;
 
 architecture def of fontrom is
 
-	signal ddoa : std_logic_vector(data'range);
-	signal ddib : std_logic_vector(data'range);
+	signal ddoa  : std_logic_vector(data'range);
 	signal addrb : std_logic_vector(code'length+row'length-1 downto 0);
 begin
 
@@ -52,14 +51,14 @@ begin
 		data =>  bitrom)
 	port map (
 		clka  => clk,
-		addra => addrb,
+		addra => (addrb'range => '-'),
 		enaa  => '0',
 		dia   => (data'range => '-'),
 		doa   => ddoa,
 
 		clkb  => clk,
 		addrb => addrb,
-		dib   => ddib,
+		dib   => (data'range => '-'),
 		dob   => data);
 		
 end;

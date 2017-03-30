@@ -52,24 +52,23 @@ architecture def of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
-	constant data_size  : natural := (data'length+word'length-1)/word'length;
+	constant data_size : natural := (data'length+word'length-1)/word'length;
 
 	function mem_init (
 		constant arg : std_logic_vector)
 		return word_vector is
 
-		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '0'));
+		variable aux : std_logic_vector(0 to max(arg'length,word'length)-1) := (others => '-');
+		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '-'));
 
 	begin
-		for i in val'range loop
-			for j in word'range loop
-				val(i)(j) := arg(word'length*i+j);
-			end loop;
+		aux(0 to arg'length-1) := arg;
+		for i in 0 to data_size-1 loop
+			val(i) := aux(word'length*i to word'length*(i+1)-1);
 		end loop;
 
 		return val;
 	end;
-
 	shared variable ram : word_vector(0 to 2**addr_size-1) := mem_init(data);
 begin
 	process (clka)
