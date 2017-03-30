@@ -28,8 +28,10 @@ use ieee.numeric_std.all;
 entity cga is
 
 	generic (
-		bitrom   : std_logic_vector;	-- Font Bit Rom
-		width    : natural);			-- Character's Width
+		bitrom     : std_logic_vector;	-- Font Bit Rom
+		cga_width  : natural := 240;
+		cga_height : natural := 68;
+		char_width : natural);
 
 	port (
 		sys_clk  : in  std_logic;
@@ -52,12 +54,12 @@ architecture def of cga is
 
 	signal cga_row : std_logic_vector(vga_row'length-1 downto 0);
 	signal cga_col : std_logic_vector(vga_col'length-1 downto 0);
-	signal cga_sel : std_logic_vector(unsigned_num_bits(width-1)-1 downto 0);
+	signal cga_sel : std_logic_vector(unsigned_num_bits(char_width-1)-1 downto 0);
 
 
 	signal font_code : std_logic_vector(sys_code'length-1 downto 0);
 	signal font_row  : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
-	signal font_line : std_logic_vector(0 to width-1);
+	signal font_line : std_logic_vector(0 to char_width-1);
 	signal dot       : std_logic_vector(1-1 downto 0);
 
 begin
@@ -75,6 +77,21 @@ begin
 		di  => cga_row(font_row'range),
 		do  => font_row);
 
+	addra <=
+	dpram_e : entity hdl4fpga.bram
+	generic map (
+		data => to_stdlogicvector(string'("hola")))
+	port map (
+		clka  => sys_clk,
+		wea   => sys_we,
+		addra => addra,
+		dia   => sys_code,
+		doa   => dummyoa,
+
+		clkb  => rd_clk,
+		addrb => rd_addr,
+		dib   => (font_code'range => '-'),
+		dob   => rd_code);
 	cgaram_e  : entity hdl4fpga.cgaram
 	port map (
 		wr_clk  => sys_clk,
