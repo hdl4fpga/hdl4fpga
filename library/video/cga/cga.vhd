@@ -29,12 +29,7 @@ entity cga is
 
 	generic (
 		bitrom : std_logic_vector;	-- Font Bit Rom
-		height : natural;			-- Character's Height
-		width  : natural;			-- Character's Width
-		row_offset  : integer := 0;
-		row_reverse : boolean := false;
-		col_offset  : integer := 0;
-		col_reverse : boolean := false);
+		width  : natural);			-- Character's Width
 
 	port (
 		sys_clk  : in std_logic;
@@ -47,8 +42,6 @@ entity cga is
 		vga_row : in  std_logic_vector;
 		vga_col : in  std_logic_vector;
 		vga_dot : out std_logic);
-
-	constant num_of_char : natural := bitrom'length/(width*height);
 
 end;
 
@@ -98,13 +91,7 @@ begin
 
 	fontrom_e : entity hdl4fpga.fontrom
 	generic map (
-		bitrom => bitrom,
-		height => height,
-		width  => width,
-		row_offset  => col_offset,
-		row_reverse => row_reverse,
-		col_offset  => col_offset,
-		col_reverse => col_reverse)
+		bitrom => bitrom)
 	port map (
 		clk  => vga_clk,
 		code => font_code,
@@ -121,6 +108,6 @@ begin
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	dot <= word2byte(reverse(font_line), cga_sel);
+	dot <= word2byte(font_line, cga_sel);
 	vga_dot <= dot(0);
 end;

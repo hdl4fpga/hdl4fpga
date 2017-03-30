@@ -183,7 +183,6 @@ begin
 	cga_e : entity hdl4fpga.cga
 	generic map (
 		bitrom   => psf1cp850x8x16,
-		height   => 16,
 		width    =>  8)
 	port map (
 		sys_clk  => vga_clk, --phy1_125clk,
