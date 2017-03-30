@@ -49,7 +49,7 @@ architecture beh of ecp3versa is
 		constant n  : integer)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(n*(x1-x0+1)-1 downto 0);
+		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
 			if (i+x0) /= 0 then
@@ -150,7 +150,7 @@ begin
 	generic map (
 		n => vga_io'length,
 		i => (vga_io'range => '-'),
-		d => (vga_io'range => 3+9+1))
+		d => (vga_io'range => 2+11))
 	port map (
 		clk   => vga_clk,
 		di(0) => vga_hsync,
@@ -173,7 +173,7 @@ begin
 	galign_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 1+9))
+		d => (0 to 0 => 0+11))
 	port map (
 		clk   => vga_clk,
 		di(0) => grid_dot,
