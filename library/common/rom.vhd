@@ -25,20 +25,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity fontrom is
+entity rom is
 	generic (
-		bitrom : std_logic_vector);		-- Font Bit Rom
+		bitrom : std_logic_vector);
 	port (
 		clk  : in  std_logic;
-		code : in  std_logic_vector;
-		row  : in  std_logic_vector;
+		addr : in  std_logic_vector;
 		data : out std_logic_vector);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of fontrom is
+architecture def of rom is
 
 	subtype word is std_logic_vector(data'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
@@ -47,8 +46,8 @@ architecture def of fontrom is
 		constant arg : std_logic_vector)
 		return word_vector is
 
-		variable aux : std_logic_vector(0 to arg'length-1) := (others => '-');
-		variable val : word_vector(0 to 2**(code'length+row'length)-1) := (others => (others => '-'));
+		variable aux : std_logic_vector(0 to data'length*2**addr'length-1) := (others => '-');
+		variable val : word_vector(0 to 2**addr'length-1) := (others => (others => '-'));
 
 	begin
 		aux(0 to arg'length-1) := arg;
@@ -59,14 +58,14 @@ architecture def of fontrom is
 		return val;
 	end;
 
-	constant rom : word_vector(0 to 2**(code'length+row'length)-1) := init_rom(bitrom);
+	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom);
 
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			data <= rom(to_integer(unsigned(std_logic_vector'(code & row))));
+			data <= rom(to_integer(unsigned(addr)));
 		end if;
 	end process;
 

@@ -101,7 +101,7 @@ begin
 	generic map (
 		n => cga_sel'length,
 		i => (cga_sel'range => '-'),
-		d => (cga_sel'range => 4))
+		d => (cga_sel'range => 3))
 	port map (
 		clk => vga_clk,
 		di  => cga_col(cga_sel'range),
