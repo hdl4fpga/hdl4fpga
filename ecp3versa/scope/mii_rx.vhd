@@ -62,7 +62,6 @@ architecture beh of ecp3versa is
 		return aux;
 	end;
 
-	constant data : std_logic_vector(sample_size*2048-1 downto 0) := sinctab(-960, 1087, sample_size);
 	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
 	signal sample      : std_logic_vector(sample_size-1 downto 0);
@@ -195,20 +194,13 @@ begin
 		vga_col  => vga_hcntr(11-1 downto cga_zoom),
 		vga_dot  => char_dot);
 
-	samples_e : entity hdl4fpga.bram
+	samples_e : entity hdl4fpga.rom
 	generic map (
-		data => data)
+		bitrom => sinctab(-960, 1087, sample_size))
 	port map (
-		clka  => vga_clk,
-		addra => (0 to 11-1 => '0'),
-		enaa  => '0',
-		dia   => (0 to sample_size-1 => '-'),
-		doa   => samples_doa,
-
-		clkb  => vga_clk,
-		addrb => vga_hcntr,
-		dib   => samples_dib,
-		dob   => sample);
+		clk  => vga_clk,
+		addr => vga_hcntr,
+		data => sample);
   	
 	draw_vline : entity hdl4fpga.draw_vline
 	generic map (
@@ -220,7 +212,7 @@ begin
 		video_dot  => video_dot);
 
 
-	vga_rgb <= (others => vga_io(2) and char_dot);
+	vga_rgb <= (others => vga_io(2) and video_dot);
 	expansionx4io_e : entity hdl4fpga.align
 	generic map (
 		n => expansionx4'length,

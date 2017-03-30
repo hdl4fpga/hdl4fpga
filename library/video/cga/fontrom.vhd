@@ -39,35 +39,16 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of fontrom is
-
-	subtype word is std_logic_vector(data'length-1 downto 0);
-	type word_vector is array (natural range <>) of word;
-
-	function init_rom (
-		constant arg : std_logic_vector)
-		return word_vector is
-
-		variable aux : std_logic_vector(0 to arg'length-1) := (others => '-');
-		variable val : word_vector(0 to 2**(code'length+row'length)-1) := (others => (others => '-'));
-
-	begin
-		aux(0 to arg'length-1) := arg;
-		for i in val'range loop
-			val(i) := aux(word'length*i to word'length*(i+1)-1);
-		end loop;
-
-		return val;
-	end;
-
-	constant rom : word_vector(0 to 2**(code'length+row'length)-1) := init_rom(bitrom);
-
+	signal addr : std_logic_vector(code'length+row'length-1 downto 0);
 begin
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			data <= rom(to_integer(unsigned(std_logic_vector'(code & row))));
-		end if;
-	end process;
+	addr <= code & row;
+	rom_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => bitrom)
+	port map (
+		clk  => clk,
+		addr => addr,
+		data => data);
 
 end;
