@@ -30,10 +30,10 @@ entity pipe_le is
 		n : natural:= 64);
 	port (
 		clk : in std_logic;
-		a : in std_logic_vector(0 to n-1);
-		b : in std_logic_vector(0 to n-1);
-		eq : out std_logic;
-		le : out std_logic);
+		a   : in std_logic_vector(0 to n-1);
+		b   : in std_logic_vector(0 to n-1);
+		eq  : out std_logic;
+		le  : out std_logic);
 end;
 
 architecture def of pipe_le is
@@ -44,7 +44,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			peq(0) <= a(0) xnor b(0);
-			if a(0)/=b(0) then
+			if a(0) /= b(0) then
 				ple(0) <= b(0);
 			else
 				ple(0) <= '1';

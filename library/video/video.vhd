@@ -327,10 +327,10 @@ begin
 		n => n)
 	port map (
 		clk => video_clk,
-		a  => video_row1,
-		b  => video_row2,
-		le => le2,
-		eq => eq2);
+		a   => video_row1,
+		b   => video_row2,
+		le  => le2,
+		eq  => eq2);
 
 	process (video_clk)
 	begin
