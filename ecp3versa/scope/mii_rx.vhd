@@ -150,7 +150,7 @@ begin
 	generic map (
 		n => vga_io'length,
 		i => (vga_io'range => '-'),
-		d => (vga_io'range => 3+9+2))
+		d => (vga_io'range => 3+9+1))
 	port map (
 		clk   => vga_clk,
 		di(0) => vga_hsync,
@@ -173,7 +173,7 @@ begin
 	galign_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => 2+9+2))
+		d => (0 to 0 => 1+9))
 	port map (
 		clk   => vga_clk,
 		di(0) => grid_dot,
@@ -212,7 +212,7 @@ begin
 		video_dot  => video_dot);
 
 
-	vga_rgb <= (others => vga_io(2) and video_dot);
+	vga_rgb <= (others => vga_io(2) and (video_dot or galign_dot));
 	expansionx4io_e : entity hdl4fpga.align
 	generic map (
 		n => expansionx4'length,
