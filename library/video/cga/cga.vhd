@@ -68,12 +68,12 @@ architecture def of cga is
 		constant row : std_logic_vector;
 		constant col : std_logic_vector)
 		return std_logic_vector is
-		variable aux : unsigned(cgaram_addri'range);
+		variable aux : unsigned(cgaram_addri'range) := (others => '0');
 	begin
-		aux(row'length-1 downto 0) := unsigned(row);
-		aux := aux sll 4;
-		aux := aux - unsigned(row);
-		aux := aux sll 4;
+--		aux(row'length-1 downto 0) := unsigned(row);
+--		aux := aux sll 4;
+--		aux := aux - unsigned(row);
+--		aux := aux sll 4;
 		aux := aux + unsigned(col);
 		return std_logic_vector(aux);
 	end;
