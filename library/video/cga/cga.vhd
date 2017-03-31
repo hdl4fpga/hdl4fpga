@@ -52,15 +52,30 @@ use hdl4fpga.std.all;
 
 architecture def of cga is
 
-	signal cga_row : std_logic_vector(vga_row'length-1 downto 0);
-	signal cga_col : std_logic_vector(vga_col'length-1 downto 0);
-	signal cga_sel : std_logic_vector(unsigned_num_bits(char_width-1)-1 downto 0);
+	signal cga_row      : std_logic_vector(vga_row'length-1 downto 0);
+	signal cga_col      : std_logic_vector(vga_col'length-1 downto 0);
+	signal cga_sel      : std_logic_vector(unsigned_num_bits(char_width-1)-1 downto 0);
+	signal font_code    : std_logic_vector(sys_code'length-1 downto 0);
+	signal font_row     : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
+	signal font_line    : std_logic_vector(0 to char_width-1);
+	signal dot          : std_logic_vector(1-1 downto 0);
+	signal cgaram_ddo   : std_logic_vector(sys_code'length-1 downto 0);
+	signal cgaram_addri : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
+	signal cgaram_addro : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
 
-
-	signal font_code : std_logic_vector(sys_code'length-1 downto 0);
-	signal font_row  : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
-	signal font_line : std_logic_vector(0 to char_width-1);
-	signal dot       : std_logic_vector(1-1 downto 0);
+	function cgaram_addr (
+		constant row : std_logic_vector;
+		constant col : std_logic_vector)
+		return std_logic_vector is
+		variable aux : unsigned(cgaram_addr'range);
+	begin
+		aux(row'length-1 downto 0) := unsigned(row);
+		aux := aux sll 4;
+		aux := aux - unsigned(row);
+		aux := aux sll 4;
+		aux := aux + unsigned(col);
+		return std_logic_vector(aux);
+	end;
 
 begin
 
@@ -77,33 +92,38 @@ begin
 		di  => cga_row(font_row'range),
 		do  => font_row);
 
-	addra <=
+	cgaram_addri <= cgaram_addr(
+		row => sys_row,
+		col => sys_col);
+	cgaram_addro <= cgaram_addr(
+		row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
+		col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
+
 	dpram_e : entity hdl4fpga.bram
-	generic map (
-		data => to_stdlogicvector(string'("hola")))
 	port map (
 		clka  => sys_clk,
 		wea   => sys_we,
-		addra => addra,
+		addra => cgaram_addri,
 		dia   => sys_code,
-		doa   => dummyoa,
+		doa   => cgaram_ddo,
 
-		clkb  => rd_clk,
-		addrb => rd_addr,
+		clkb  => vga_clk,
+		addrb => cgaram_addro,
 		dib   => (font_code'range => '-'),
-		dob   => rd_code);
-	cgaram_e  : entity hdl4fpga.cgaram
-	port map (
-		wr_clk  => sys_clk,
-		wr_ena  => sys_we,
-		wr_row  => sys_row,
-		wr_col  => sys_col,
-		wr_code => sys_code,
+		dob   => font_code);
 
-		rd_clk  => vga_clk,
-		rd_row  => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
-		rd_col  => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length),
-		rd_code => font_code);
+--	cgaram_e  : entity hdl4fpga.cgaram
+--	port map (
+--		wr_clk  => sys_clk,
+--		wr_ena  => sys_we,
+--		wr_row  => sys_row,
+--		wr_col  => sys_col,
+--		wr_code => sys_code,
+--
+--		rd_clk  => vga_clk,
+--		rd_row  => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
+--		rd_col  => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length),
+--		rd_code => font_code);
 
 	fontrom_e : entity hdl4fpga.fontrom
 	generic map (
