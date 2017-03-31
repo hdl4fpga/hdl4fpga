@@ -200,7 +200,7 @@ begin
 	cga_align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => -3+13))
+		d => (0 to 0 => -4+13))
 	port map (
 		clk   => vga_clk,
 		di(0) => char_dot,

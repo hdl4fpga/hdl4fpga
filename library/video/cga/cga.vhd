@@ -60,6 +60,7 @@ architecture def of cga is
 	signal font_line    : std_logic_vector(0 to char_width-1);
 	signal dot          : std_logic_vector(1-1 downto 0);
 	signal cgaram_ddo   : std_logic_vector(sys_code'length-1 downto 0);
+	signal cgaram_ddi   : std_logic_vector(sys_code'length-1 downto 0);
 	signal cgaram_addri : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
 	signal cgaram_addro : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
 
@@ -95,9 +96,15 @@ begin
 	cgaram_addri <= cgaram_addr(
 		row => sys_row,
 		col => sys_col);
-	cgaram_addro <= cgaram_addr(
-		row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
-		col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
+
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
+			cgaram_addro <= cgaram_addr(
+				row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
+				col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
+		end if;
+	end process;
 
 	dpram_e : entity hdl4fpga.bram
 	port map (
@@ -109,21 +116,8 @@ begin
 
 		clkb  => vga_clk,
 		addrb => cgaram_addro,
-		dib   => (font_code'range => '-'),
+		dib   => cgaram_ddi,
 		dob   => font_code);
-
---	cgaram_e  : entity hdl4fpga.cgaram
---	port map (
---		wr_clk  => sys_clk,
---		wr_ena  => sys_we,
---		wr_row  => sys_row,
---		wr_col  => sys_col,
---		wr_code => sys_code,
---
---		rd_clk  => vga_clk,
---		rd_row  => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
---		rd_col  => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length),
---		rd_code => font_code);
 
 	fontrom_e : entity hdl4fpga.fontrom
 	generic map (
@@ -138,7 +132,7 @@ begin
 	generic map (
 		n => cga_sel'length,
 		i => (cga_sel'range => '-'),
-		d => (cga_sel'range => 3))
+		d => (cga_sel'range => 4))
 	port map (
 		clk => vga_clk,
 		di  => cga_col(cga_sel'range),
