@@ -177,10 +177,10 @@ begin
 		char_width => 8)
 	port map (
 		sys_clk  => vga_clk, --phy1_125clk,
-		sys_we   => '1', --cga_we,
+		sys_we   => '0',--vga_don, --cga_we,
 		sys_row  => vga_vcntr(10-1 downto 10-cga_row'length),
 		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length),
-		sys_code => cga_code,
+		sys_code => x"41", --cga_code,
 		vga_clk  => vga_clk,
 		vga_row  => vga_vcntr(10-1 downto cga_zoom),
 		vga_col  => vga_hcntr(11-1 downto cga_zoom),

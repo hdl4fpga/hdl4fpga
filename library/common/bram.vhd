@@ -58,8 +58,8 @@ architecture def of bram is
 		constant arg : std_logic_vector)
 		return word_vector is
 
-		variable aux : std_logic_vector(0 to max(arg'length,word'length)-1) := (others => '-');
-		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '-'));
+		variable aux : std_logic_vector(0 to max(arg'length,word'length)-1) := (others => '0');
+		variable val : word_vector(0 to 2**addr_size-1) := (others => (others => '0'));
 
 	begin
 		aux(0 to arg'length-1) := arg;
