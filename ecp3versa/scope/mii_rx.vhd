@@ -19,7 +19,7 @@ architecture beh of ecp3versa is
 
 	constant cga_zoom : natural := 0;
 	signal cga_we     : std_logic;
-	signal cga_row    : std_logic_vector(6-1-cga_zoom downto 0);
+	signal cga_row    : std_logic_vector(7-1-cga_zoom downto 0);
 	signal cga_col    : std_logic_vector(8-1-cga_zoom downto 0);
 	signal cga_code   : std_logic_vector(8-1 downto 0);
 	signal char_dot   : std_logic;
@@ -189,11 +189,11 @@ begin
 	port map (
 		sys_clk  => vga_clk, --phy1_125clk,
 		sys_we   => '1', --cga_we,
-		sys_row  => vga_vcntr(10-1 downto 10-cga_row'length),
+		sys_row  => vga_vcntr(11-1 downto 11-cga_row'length),
 		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length),
 		sys_code => cga_code,
 		vga_clk  => vga_clk,
-		vga_row  => vga_vcntr(10-1 downto cga_zoom),
+		vga_row  => vga_vcntr(11-1 downto cga_zoom),
 		vga_col  => vga_hcntr(11-1 downto cga_zoom),
 		vga_dot  => char_dot);
 

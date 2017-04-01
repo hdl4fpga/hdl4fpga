@@ -59,6 +59,8 @@ architecture def of cga is
 	signal font_row     : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
 	signal font_line    : std_logic_vector(0 to char_width-1);
 	signal dot          : std_logic_vector(1-1 downto 0);
+	signal cgaram_we    : std_logic;
+	signal cgaram_code  : std_logic_vector(sys_code'length-1 downto 0);
 	signal cgaram_ddo   : std_logic_vector(sys_code'length-1 downto 0);
 	signal cgaram_ddi   : std_logic_vector(sys_code'length-1 downto 0);
 	signal cgaram_addri : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
@@ -70,12 +72,11 @@ architecture def of cga is
 		return std_logic_vector is
 		variable aux : unsigned(cgaram_addri'range) := (others => '0');
 	begin
---		aux(row'length-1 downto 0) := unsigned(row);
---		aux := aux sll 4;
---		aux := aux - unsigned(row);
---		aux := aux sll 4;
---		aux := aux + unsigned(col);
---		return std_logic_vector(resize(unsigned(col(col'left-1 downto col'right)),cgaram_addri'length)); --aux);
+		aux(row'length-1 downto 0) := unsigned(row);
+		aux := aux sll 4;
+		aux := aux - unsigned(row);
+		aux := aux sll 4;
+		aux := aux + unsigned(col);
 		return std_logic_vector(aux);
 	end;
 
@@ -94,29 +95,26 @@ begin
 		di  => cga_row(font_row'range),
 		do  => font_row);
 
---	cgaram_addri <= cgaram_addr(
---		row => sys_row,
---		col => sys_col);
---
---	process (vga_clk)
---	begin
---		if rising_edge(vga_clk) then
---			cgaram_addro <= cgaram_addr(
---				row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
---				col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
---		end if;
---	end process;
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
+			cgaram_we    <= sys_we;
+			cgaram_code  <= sys_code;
+			cgaram_addri <= cgaram_addr(
+				row => sys_row,
+				col => sys_col);
+			cgaram_addro <= cgaram_addr(
+				row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
+				col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
+		end if;
+	end process;
 
-	cgaram_addri <= (others => '0');
-	cgaram_addro <= (others => '0');
 	dpram_e : entity hdl4fpga.bram
---	generic map (
---		data  => to_stdlogicvector(string'("hola")))
 	port map (
 		clka  => sys_clk,
-		wea   => '1', --sys_we,
+		wea   => cgaram_we,
 		addra => cgaram_addri,
-		dia   => x"41",
+		dia   => cgaram_code,
 		doa   => cgaram_ddo,
 
 		clkb  => vga_clk,
@@ -129,7 +127,7 @@ begin
 		bitrom => bitrom)
 	port map (
 		clk  => vga_clk,
-		code => x"41", --font_code,
+		code => font_code,
 		row  => font_row,
 		data => font_line);
 
