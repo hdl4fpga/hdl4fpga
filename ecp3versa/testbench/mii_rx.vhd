@@ -153,7 +153,7 @@ begin
 	mii_rxc <= phy1_125clk;
 	mii_refclk <= phy1_125clk;
 
-	mii_strt <= '0', '1' after 22.25 us;
+	mii_strt <= '0', '1' after 1 us;
 	process (mii_refclk, mii_strt)
 		variable edge : std_logic;
 		variable cnt  : natural := 0;
@@ -175,6 +175,19 @@ begin
 			edge := mii_txen;
 		end if;
 	end process;
+
+	eth_e: entity hdl4fpga.mii_mem
+	generic map (
+		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff_00000000_000000ff")
+	port map (
+		mii_txc  => mii_rxc,
+		mii_treq => mii_treq,
+		mii_txen => mii_rxdv_d,
+		mii_trdy => mii_trdy,
+		mii_txd  => mii_rxd_d);
+
+		mii_rxdv <= mii_rxdv_d after 1 ns;
+		mii_rxd  <= mii_rxd_d  after 1 ns;
 
 	ecp3versa_e : ecp3versa
 	port map (

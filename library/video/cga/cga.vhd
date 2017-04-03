@@ -95,7 +95,7 @@ begin
 		di  => cga_row(font_row'range),
 		do  => font_row);
 
-	process (vga_clk)
+	process (sys_clk)
 	begin
 		if rising_edge(vga_clk) then
 			cgaram_we    <= sys_we;
@@ -103,6 +103,12 @@ begin
 			cgaram_addri <= cgaram_addr(
 				row => sys_row,
 				col => sys_col);
+		end if;
+	end process;
+
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
 			cgaram_addro <= cgaram_addr(
 				row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
 				col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
@@ -118,6 +124,7 @@ begin
 		doa   => cgaram_ddo,
 
 		clkb  => vga_clk,
+		web   => '0',
 		addrb => cgaram_addro,
 		dib   => cgaram_ddi,
 		dob   => font_code);

@@ -13,7 +13,7 @@ use hdl4fpga.cgafont.all;
 architecture beh of ecp3versa is
 
 	signal hdr_data  : std_logic_vector(288-1 downto 0);
-	signal pld_data  : std_logic_vector(288-1 downto 0);
+	signal pld_data  : std_logic_vector(32-1 downto 0);
 	signal pll_data  : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
 	signal ser_data  : std_logic_vector(32-1 downto 0);
 
@@ -125,13 +125,13 @@ begin
 		variable data : unsigned(pld_data'range);
 	begin
 		data     := unsigned(pld_data);
-	--	cga_code <= std_logic_vector(data(cga_code'range));
+		cga_code <= std_logic_vector(data(cga_code'range));
 		data     := data srl cga_code'length;
 		cga_row  <= std_logic_vector(data(cga_row'range));
 		data     := data srl cga_row'length;
 		cga_col  <= std_logic_vector(data(cga_col'range));
 	end process;
-	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+1);
+--	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+1);
 
 	vga_e : entity hdl4fpga.video_vga
 	generic map (
@@ -180,6 +180,20 @@ begin
 		di(0) => grid_dot,
 		do(0) => ga_dot);
 
+	process (phy1_125clk)
+		variable edge : std_logic;
+	begin
+		if rising_edge(phy1_125clk) then
+			cga_we <= '0';
+			if phy1_rx_dv='0' then
+				if edge='1' then
+					cga_we <= '1';
+				end if;
+			end if;
+			edge := phy1_rx_dv;
+		end if;
+	end process;
+
 	cga_e : entity hdl4fpga.cga
 	generic map (
 		bitrom     => psf1cp850x8x16,
@@ -187,10 +201,10 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk  => vga_clk, --phy1_125clk,
-		sys_we   => '1', --cga_we,
-		sys_row  => vga_vcntr(11-1 downto 11-cga_row'length),
-		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length),
+		sys_clk  => phy1_125clk,
+		sys_we   => cga_we,
+		sys_row  => cga_row,	--vga_vcntr(11-1 downto 11-cga_row'length),
+		sys_col  => cga_col,	--vga_hcntr(11-1 downto 11-cga_col'length),
 		sys_code => cga_code,
 		vga_clk  => vga_clk,
 		vga_row  => vga_vcntr(11-1 downto cga_zoom),
