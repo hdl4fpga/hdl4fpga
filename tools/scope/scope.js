@@ -1,7 +1,14 @@
-chrome.app.runtime.onLaunched.addListener(function() {
-	chrome.app.window.create('main.html', {
-		id: "scope",
-			innerBounds : {
-				width   : 680,
-				height  : 480 } } );
-	});
+window.addEventListener("load", function() {
+	var connect = document.getElementById("connect");
+	var address = document.getElementById("address");
+
+	connect.onclick = function(ev) {
+		var socket = chrome.sockets.udp;
+		console.log("onclick");
+	};
+
+	address.onkeydown = function(ev) {
+		console.log("onkeydown");
+	};
+
+});
