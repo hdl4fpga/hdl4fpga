@@ -1,5 +1,16 @@
 body {
 	background-color : lightblue }
 
+#address {
+	width   : 100%;
+}
+
+input[type=button] {
+	width   : 100%;
+	display : inline-block;
+	border  : 1px solid lightgray;
+	text-decoration : none;
+}
+
 div {
-	text-align : center }
+	text-align : left }

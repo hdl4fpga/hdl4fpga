@@ -15,6 +15,7 @@ architecture beh of ecp3versa is
 	signal hdr_data  : std_logic_vector(288-1 downto 0);
 	signal pld_data  : std_logic_vector(32-1 downto 0);
 	signal pll_data  : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
+	signal pll_rdy   : std_logic;
 	signal ser_data  : std_logic_vector(32-1 downto 0);
 
 	constant cga_zoom : natural := 0;
@@ -105,12 +106,14 @@ begin
 			lock        => lock);
 	end block;
 
+	phy1_rst <= not rst;
 	miirx_e : entity hdl4fpga.scopeio_miirx
 	port map (
-		mii_rxc  => phy1_125clk,
+		mii_rxc  => phy1_rxc,
 		mii_rxdv => phy1_rx_dv,
 		mii_rxd  => phy1_rx_d,
 		pll_data => pll_data,
+		pll_rdy  => pll_rdy,
 		ser_data => ser_data);
 
 	process (ser_data)
@@ -125,13 +128,12 @@ begin
 		variable data : unsigned(pld_data'range);
 	begin
 		data     := unsigned(pld_data);
-		cga_code <= std_logic_vector(data(cga_code'range));
+		cga_code <= reverse(std_logic_vector(data(cga_code'range)));
 		data     := data srl cga_code'length;
-		cga_row  <= std_logic_vector(data(cga_row'range));
-		data     := data srl cga_row'length;
-		cga_col  <= std_logic_vector(data(cga_col'range));
+		cga_col  <= reverse(std_logic_vector(data(cga_col'range)));
+		data     := data srl cga_col'length;
+		cga_row  <= reverse(std_logic_vector(data(cga_row'range)));
 	end process;
---	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+1);
 
 	vga_e : entity hdl4fpga.video_vga
 	generic map (
@@ -180,17 +182,17 @@ begin
 		di(0) => grid_dot,
 		do(0) => ga_dot);
 
-	process (phy1_125clk)
+	process (phy1_rxc)
 		variable edge : std_logic;
 	begin
-		if rising_edge(phy1_125clk) then
+		if rising_edge(phy1_rxc) then
 			cga_we <= '0';
-			if phy1_rx_dv='0' then
+			if pll_rdy='0' then
 				if edge='1' then
 					cga_we <= '1';
 				end if;
 			end if;
-			edge := phy1_rx_dv;
+			edge := pll_rdy;
 		end if;
 	end process;
 
@@ -201,10 +203,10 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk  => phy1_125clk,
+		sys_clk  => phy1_rxc,
 		sys_we   => cga_we,
-		sys_row  => cga_row,	--vga_vcntr(11-1 downto 11-cga_row'length),
-		sys_col  => cga_col,	--vga_hcntr(11-1 downto 11-cga_col'length),
+		sys_row  => cga_row,
+		sys_col  => cga_col,
 		sys_code => cga_code,
 		vga_clk  => vga_clk,
 		vga_row  => vga_vcntr(11-1 downto cga_zoom),
