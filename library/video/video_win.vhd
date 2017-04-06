@@ -26,43 +26,35 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity video_win is
-	port(
+	generic (
+		bittab : std_logic_vector)
+	port (
 		video_clk : in  std_logic;
 		video_x   : in  std_logic;
 		video_y   : in  std_logic;
-		video_frm : in  std_logic;
-		video_don : in  std_logic;
 		win_id    : out std_logic_vector;
 		win_x     : out std_logic_vector;
 		win_y     : out std_logic_vector);
-
 end;
 
 architecture def of video_win is
 
-	subtype is natural range 0                         to win_x'length-1;
-	subtype is natural range win_x'length              to win_x'length+win_y'length-1;
-	subtype is natural range win_x'length+win_y'length to win_x'length+win_y'length+win_id'length;
+	subtype word_x    is natural range 0                         to win_x'length-1;
+	subtype word_y    is natural range win_x'length              to win_x'length+win_y'length-1;
+	subtype word_id   is natural range win_x'length+win_y'length to win_x'length+win_y'length+win_id'length;
+	subtype word_xy   is natural range 0 to win_x'length+win_y'length;
+	subtype word_xyid is natural range 0 to win_x'length+win_y'length+win_id'length;
 
+	signal addr : std_logic_vector(word_xy'range);
+	signal data : std_logic_vector(word_xyid'range);
 begin
 
-	bram_e : entity hdl4fpga.bram
-	generic (
-		data  : std_logic_vector := (0 to 0 => '-'));
-	port (
-		clka  => video_clk,
-		addra : in  std_logic_vector;
-		enaa  : in  std_logic := '1';
-		wea   => '0',
-		dia   : in  std_logic_vector;
-		doa   : out std_logic_vector;
-
-		clkb  : in  std_logic;
-		addrb : in  std_logic_vector;
-		enab  : in  std_logic := '1';
-		web   : in  std_logic := '0';
-		dib   : in  std_logic_vector;
-		dob   : out std_logic_vector);
-
+	cam_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => bittab)
+	port map (
+		clk    => video_clk,
+		addr   => addr,
+		data   => data);
 
 end;
