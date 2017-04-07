@@ -161,17 +161,38 @@ begin
 		di(2) => vga_vld,
 		do    => vga_io);
 
-	grid_e : entity hdl4fpga.grid
-	generic map (
-		row_div  => "000",
-		row_line => "00",
-		col_div  => "000",
-		col_line => "00")
-	port map (
-		clk => vga_clk,
-		row => vga_vcntr,
-		col => vga_hcntr,
-		dot => grid_dot);
+	grid_b : block
+		signal x : unsigned(10-1 downto 0);
+		signal y : unsigned(10-1 downto 0);
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				if win_hon='0' then
+					x <= (others => '0');
+				else
+					x <= x + 1;
+				end if;
+				if win_frm='0' then
+					y <= (others => '0');
+				else
+					y <= y + 1;
+				end if;
+			end if;
+		end process;
+
+		grid_e : entity hdl4fpga.grid
+		generic map (
+			row_div  => "000",
+			row_line => "00",
+			col_div  => "000",
+			col_line => "00")
+		port map (
+			clk => vga_clk,
+			row => vga_vcntr,
+			col => vga_hcntr,
+			dot => grid_dot);
+	end block;
 
 	grid_align_e : entity hdl4fpga.align
 	generic map (
