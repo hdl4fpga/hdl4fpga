@@ -27,10 +27,10 @@ use ieee.numeric_std.all;
 
 entity video_win is
 	port (
-		video_clk : in  std_logic;
-		video_x   : in  std_logic;
-		video_y   : in  std_logic;
-		win_id    : out std_logic_vector);
+		video_clk  : in  std_logic;
+		video_x    : in  std_logic;
+		video_y    : in  std_logic;
+		video_mask : out std_logic_vector);
 end;
 
 architecture def of video_win is
@@ -59,7 +59,7 @@ architecture def of video_win is
 			width := to_integer(aux(0 to size-1));
 			aux   := aux sll size;
 			for j in x to x+width-1 loop
-					retval(j*2**win_id'length+i) := '1';
+					retval(2**win_id'length*j+i) := '1';
 				end loop;
 			end loop;
 		end loop;
@@ -74,7 +74,7 @@ begin
 	port map (
 		clk    => video_clk,
 		addr   => video_x,
-		data   => data);
+		data   => video_maskx);
 
 	y_e : entity hdl4fpga.rom
 	generic map (
@@ -82,6 +82,8 @@ begin
 	port map (
 		clk    => video_clk,
 		addr   => video_y,
-		data   => data);
+		data   => video_masky);
+
+	video_mask <= video_masky and video_maskx;
 
 end;
