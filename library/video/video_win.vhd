@@ -26,8 +26,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity video_win is
-	generic (
-		bittab : std_logic_vector)
 	port (
 		video_clk : in  std_logic;
 		video_x   : in  std_logic;
@@ -47,6 +45,20 @@ architecture def of video_win is
 
 	signal addr : std_logic_vector(word_xy'range);
 	signal data : std_logic_vector(word_xyid'range);
+
+	constant wintab : std_logic_vector := (
+		b"01110" & b"00000" & "10000" & "01000" & "0000_0111", 
+		b"01110" & b"01000" & "10000" & "01000" & "0000_0110");
+	function to_bitrom (
+		constant wintab : std_logic_vector)
+		return std_logic_vector is
+		variable retval : std_logic_vector();
+	begin
+		for i in loop
+		end loop;
+		return 
+	end;
+
 begin
 
 	cam_e : entity hdl4fpga.rom
