@@ -30,43 +30,57 @@ entity video_win is
 		video_clk : in  std_logic;
 		video_x   : in  std_logic;
 		video_y   : in  std_logic;
-		win_id    : out std_logic_vector;
-		win_x     : out std_logic_vector;
-		win_y     : out std_logic_vector);
+		win_id    : out std_logic_vector);
 end;
 
 architecture def of video_win is
 
-	subtype word_x    is natural range 0                         to win_x'length-1;
-	subtype word_y    is natural range win_x'length              to win_x'length+win_y'length-1;
-	subtype word_id   is natural range win_x'length+win_y'length to win_x'length+win_y'length+win_id'length;
-	subtype word_xy   is natural range 0 to win_x'length+win_y'length;
-	subtype word_xyid is natural range 0 to win_x'length+win_y'length+win_id'length;
+	constant xtab : unsigned := (
+		b"011_1000_0000" & b"000_0000_0000" & b"100_0000_0000" & b"001_0000_0000" &
+		b"011_1000_0000" & b"001_0000_0000" & b"100_0000_0000" & b"001_0000_0000");
 
-	signal addr : std_logic_vector(word_xy'range);
-	signal data : std_logic_vector(word_xyid'range);
+	subtype x      is 0*video_x'length to 1*video_x'length-1;
+	subtype y      is 1*video_x'length to 2*video_x'length-1;
+	subtype width  is 2*video_x'length to 3*video_x'length-1;
+	subtype height is 3*video_x'length to 4*video_x'length-1;
 
-	constant wintab : std_logic_vector := (
-		b"01110" & b"00000" & "10000" & "01000" & "0000_0111", 
-		b"01110" & b"01000" & "10000" & "01000" & "0000_0110");
-	function to_bitrom (
-		constant wintab : std_logic_vector)
+	function init_data (
+		constant wintab : std_logic_vector);
 		return std_logic_vector is
-		variable retval : std_logic_vector();
+		variable x      : natural;
+		variable width  : natural;
+		variable aux    : unsigned(wintab'range);
+		variable retval : std_logic_vector(0 to 2**'length*win_id'length-1) := (others => '0');
 	begin
-		for i in loop
+		aux := wintab;
+		for i in win_id'range loop
+			x     := to_integer(aux(x));
+			width := to_integer(aux(width));
+			for j in x to x+width-1 loop
+					retval(j*2**win_id'length+i) := '1';
+				end loop;
+			end loop;
+			aux := aux sll width'right+1;
 		end loop;
 		return 
 	end;
 
 begin
 
-	cam_e : entity hdl4fpga.rom
+	x_e : entity hdl4fpga.rom
 	generic map (
 		bitrom => bittab)
 	port map (
 		clk    => video_clk,
-		addr   => addr,
+		addr   => video_x,
+		data   => data);
+
+	y_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => bittab)
+	port map (
+		clk    => video_clk,
+		addr   => video_y,
 		data   => data);
 
 end;
