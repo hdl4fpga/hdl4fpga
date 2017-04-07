@@ -36,40 +36,41 @@ end;
 architecture def of video_win is
 
 	constant xtab : unsigned := (
-		b"011_1000_0000" & b"000_0000_0000" & b"100_0000_0000" & b"001_0000_0000" &
-		b"011_1000_0000" & b"001_0000_0000" & b"100_0000_0000" & b"001_0000_0000");
+		b"011_1000_0000" & b"100_0000_0000" &
+		b"011_1000_0000" & b"100_0000_0000");
 
-	subtype x      is 0*video_x'length to 1*video_x'length-1;
-	subtype y      is 1*video_x'length to 2*video_x'length-1;
-	subtype width  is 2*video_x'length to 3*video_x'length-1;
-	subtype height is 3*video_x'length to 4*video_x'length-1;
+	constant ytab : unsigned := (
+		b"000_0000_0000" & b"010_0000_0000" &
+		b"010_0000_0000" & b"010_0000_0000");
 
 	function init_data (
-		constant wintab : std_logic_vector);
+		constant tab  : std_logic_vector;
+		variable size : natural)
 		return std_logic_vector is
 		variable x      : natural;
 		variable width  : natural;
-		variable aux    : unsigned(wintab'range);
-		variable retval : std_logic_vector(0 to 2**'length*win_id'length-1) := (others => '0');
+		variable aux    : unsigned(tab'range);
+		variable retval : std_logic_vector(0 to 2**size*win_id'length-1) := (others => '0');
 	begin
-		aux := wintab;
+		aux := tab;
 		for i in win_id'range loop
-			x     := to_integer(aux(x));
-			width := to_integer(aux(width));
+			x     := to_integer(aux(0 to size-1));
+			aux   := aux sll size;
+			width := to_integer(aux(0 to size-1));
+			aux   := aux sll size;
 			for j in x to x+width-1 loop
 					retval(j*2**win_id'length+i) := '1';
 				end loop;
 			end loop;
-			aux := aux sll width'right+1;
 		end loop;
-		return 
+		return retval;
 	end;
 
 begin
 
 	x_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => bittab)
+		bitrom => init_data(xtab, video_x'length))
 	port map (
 		clk    => video_clk,
 		addr   => video_x,
@@ -77,7 +78,7 @@ begin
 
 	y_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => bittab)
+		bitrom =>  init_data(ytab, video_y'length))
 	port map (
 		clk    => video_clk,
 		addr   => video_y,
