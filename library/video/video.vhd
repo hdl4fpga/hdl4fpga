@@ -189,8 +189,10 @@ entity video_vga is
 		hcntr : out std_logic_vector(n-1 downto 0);
 		vsync : out std_logic;
 		vcntr : out std_logic_vector(n-1 downto 0);
-		frm   : out std_logic;
-		don   : out std_logic);
+		frm   : buffer std_logic;
+		don   : buffer std_logic;
+		frm_e : out std_logic;
+		don_e : out std_logic);
 end;
 
 library hdl4fpga;
@@ -240,11 +242,15 @@ begin
 		vpos  => vcntr);
 
 	process (clk)
+		variable edge_don : std_logic;
+		variable edge_frm : std_logic;
 	begin
 		if rising_edge(clk) then
 			hdata <= rom_hdata;
 			vdata <= rom_vdata;
 
+			frm_e <= edge_frm and not frm;
+			don_e <= edge_don and not don;
 			if heot='1' then
 				don   <= setif(hparm="11");
 				hsync <= setif(hparm="01");
@@ -255,6 +261,8 @@ begin
 					end if;
 				end if;
 			end if;
+			edge_frm := frm;
+			edge_don := don;
 		end if;
 	end process;
 end;

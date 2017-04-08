@@ -66,7 +66,9 @@ architecture beh of nuhs3adsp is
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
 	signal sample      : std_logic_vector(sample_size-1 downto 0);
 
-	signal sys_clk : std_logic;
+	signal sys_clk  : std_logic;
+	signal win_mask : std_logic_vector(0 to 18-1);
+	signal win_ena  : std_logic_vector(0 to 18-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -148,6 +150,16 @@ begin
 		di(2) => vga_vld,
 		do    => vga_io);
 
+	video_win : entity hdl4fpga.video_win
+	port map (
+		video_clk  => vga_clk,
+		video_x    => vga_hcntr,
+		video_y    => vga_vcntr,
+		video_don  => '1',
+		video_frm  => '1',
+		video_mask => win_mask,
+		video_ena  => win_ena);
+
 	grid_e : entity hdl4fpga.grid
 	generic map (
 		row_div  => "000",
@@ -213,7 +225,7 @@ begin
 		video_dot  => video_dot);
 
 
-	vga_rgb <= (others => vga_io(2) and (video_dot xor ga_dot xor ca_dot));
+	vga_rgb <= (others => vga_io(2) and (win_mask(0) or win_mask(1))); --(video_dot xor ga_dot xor ca_dot));
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then

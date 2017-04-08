@@ -34,18 +34,19 @@ entity video_win is
 		video_y    : in  std_logic_vector;
 		video_frm  : in  std_logic;
 		video_don  : in  std_logic;
-		video_mask : out std_logic_vector);
+		video_mask : out std_logic_vector;
+		video_ena  : out std_logic_vector);
 end;
 
 architecture def of video_win is
 
 	constant xtab : std_logic_vector := (
-		b"011_1000_0000" & b"100_0000_0000" &
-		b"011_1000_0000" & b"100_0000_0000");
+		b"001_1000_0000" & b"110_0000_0000" &
+		b"001_1000_0000" & b"110_0000_0000");
 
 	constant ytab : std_logic_vector := (
 		b"000_0000_0000" & b"010_0000_0000" &
-		b"010_0000_0000" & b"010_0000_0000");
+		b"010_0000_1000" & b"010_0000_0000");
 
 	function init_data (
 		constant tab    : std_logic_vector;
@@ -63,7 +64,7 @@ architecture def of video_win is
 			width := to_integer(aux(0 to size-1));
 			aux   := aux sll size;
 			for j in x to x+width-1 loop
-				retval(2**video_mask'length*j+i) := '1';
+				retval(video_mask'length*j+i) := '1';
 			end loop;
 		end loop;
 		return retval;
@@ -71,6 +72,8 @@ architecture def of video_win is
 
 	signal mask_y : std_logic_vector(video_mask'range);
 	signal mask_x : std_logic_vector(video_mask'range);
+	signal edge_x : std_logic_vector(video_mask'range);
+
 begin
 
 	x_e : entity hdl4fpga.rom
@@ -90,5 +93,12 @@ begin
 		data   => mask_y);
 
 	video_mask <= mask_y and mask_x and (video_mask'range => video_frm and video_don);
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			video_ena <= edge_x and not (mask_x and mask_y);
+			edge_x    <= mask_x and mask_y;
+		end if;
+	end process;
 
 end;
