@@ -12,27 +12,28 @@ use hdl4fpga.cgafont.all;
 
 architecture beh of nuhs3adsp is
 
-	signal hdr_data  : std_logic_vector(288-1 downto 0);
-	signal pld_data  : std_logic_vector(288-1 downto 0);
-	signal pll_data  : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
-	signal ser_data  : std_logic_vector(32-1 downto 0);
+	signal hdr_data   : std_logic_vector(288-1 downto 0);
+	signal pld_data   : std_logic_vector(288-1 downto 0);
+	signal pll_data   : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
+	signal ser_data   : std_logic_vector(32-1 downto 0);
 
 	constant cga_zoom : natural := 0;
-	signal cga_we    : std_logic;
-	signal cga_row   : std_logic_vector(7-1-cga_zoom downto 0);
-	signal cga_col   : std_logic_vector(8-1-cga_zoom downto 0);
-	signal cga_code  : std_logic_vector(8-1 downto 0);
-	signal char_dot  : std_logic;
+	signal cga_we     : std_logic;
+	signal cga_row    : std_logic_vector(7-1-cga_zoom downto 0);
+	signal cga_col    : std_logic_vector(8-1-cga_zoom downto 0);
+	signal cga_code   : std_logic_vector(8-1 downto 0);
+	signal char_dot   : std_logic;
 
-	signal vga_clk   : std_logic;
-	signal vga_hsync : std_logic;
-	signal vga_vsync : std_logic;
-	signal vga_frm   : std_logic;
-	signal vga_don   : std_logic;
-	signal vga_vld   : std_logic;
-	signal vga_rgb   : std_logic_vector(3-1 downto 0);
-	signal vga_vcntr : std_logic_vector(11-1 downto 0);
-	signal vga_hcntr : std_logic_vector(11-1 downto 0);
+	signal vga_clk    : std_logic;
+	signal vga_hsync  : std_logic;
+	signal vga_vsync  : std_logic;
+	signal vga_frm    : std_logic;
+	signal vga_don    : std_logic;
+	signal vga_nhl    : std_logic;
+	signal vga_vld    : std_logic;
+	signal vga_rgb    : std_logic_vector(3-1 downto 0);
+	signal vga_vcntr  : std_logic_vector(11-1 downto 0);
+	signal vga_hcntr  : std_logic_vector(11-1 downto 0);
 
 	signal grid_dot   : std_logic;
 	signal ga_dot     : std_logic;
@@ -57,7 +58,7 @@ architecture beh of nuhs3adsp is
 			else
 				y := 1.0;
 			end if;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-2)-1)*y)+2**(n-2),n));
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
 		end loop;
 		return aux;
 	end;
@@ -66,10 +67,10 @@ architecture beh of nuhs3adsp is
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
 	signal sample      : std_logic_vector(sample_size-1 downto 0);
 
-	signal sys_clk  : std_logic;
-	signal nw_hl    : std_logic;
-	signal win_mask : std_logic_vector(0 to 18-1);
-	signal win_ena  : std_logic_vector(0 to 18-1);
+	signal sys_clk     : std_logic;
+	signal win_don     : std_logic_vector(0 to 18-1);
+	signal win_nhl     : std_logic_vector(0 to 18-1);
+	signal win_frm     : std_logic_vector(0 to 18-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -117,13 +118,12 @@ begin
 		variable data : unsigned(pld_data'range);
 	begin
 		data     := unsigned(pld_data);
-	--	cga_code <= std_logic_vector(data(cga_code'range));
+		cga_code <= std_logic_vector(data(cga_code'range));
 		data     := data srl cga_code'length;
 		cga_row  <= std_logic_vector(data(cga_row'range));
 		data     := data srl cga_row'length;
 		cga_col  <= std_logic_vector(data(cga_col'range));
 	end process;
-	cga_code <= std_logic_vector(resize(unsigned(vga_hcntr(11-1 downto 11-cga_col'length)), cga_code'length)+unsigned(vga_vcntr(11-1 downto 11-cga_row'length)));
 
 	vga_e : entity hdl4fpga.video_vga
 	generic map (
@@ -136,7 +136,7 @@ begin
 		vcntr => vga_vcntr,
 		don   => vga_don,
 		frm   => vga_frm,
-		nw_hl => nw_hl);
+		nhl   => vga_nhl);
 
 	vga_vld <= vga_don and vga_frm;
 
@@ -152,41 +152,24 @@ begin
 		di(2) => vga_vld,
 		do    => vga_io);
 
-	video_win : entity hdl4fpga.video_win
+	video_win_e : entity hdl4fpga.video_win
 	port map (
 		video_clk  => vga_clk,
 		video_x    => vga_hcntr,
 		video_y    => vga_vcntr,
-		video_don  => '1',
-		video_frm  => '1',
-		video_mask => win_mask,
-		video_ena  => win_ena);
+		video_don  => vga_don,
+		video_frm  => vga_frm,
+		win_don    => win_don,
+		win_nhl    => win_nhl,
+		win_frm    => win_frm);
 
-	gwin_e : entity hdl4fpga.win
-	port map (
-		video_clk => vga_clk,
-		win_x =>
-		win_y => );
-	grid_e : entity hdl4fpga.grid
+	samples_e : entity hdl4fpga.rom
 	generic map (
-		row_div  => "000",
-		row_line => "00",
-		col_div  => "000",
-		col_line => "00")
+		bitrom => sinctab(-960, 1087, sample_size))
 	port map (
-		clk => vga_clk,
-		row => gwin_x,
-		col => gwin_y,
-		dot => grid_dot);
-
-	grid_align_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => -2+13))
-	port map (
-		clk   => vga_clk,
-		di(0) => grid_dot,
-		do(0) => ga_dot);
+		clk  => vga_clk,
+		addr => x,
+		data => sample);
 
 	cga_e : entity hdl4fpga.cga
 	generic map (
@@ -195,15 +178,15 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk  => vga_clk,
-		sys_we   => vga_don,
-		sys_row  => vga_vcntr(11-1 downto 11-cga_row'length),
-		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length),
-		sys_code => cga_code,
-		vga_clk  => vga_clk,
-		vga_row  => vga_vcntr(11-1 downto cga_zoom),
-		vga_col  => vga_hcntr(11-1 downto cga_zoom),
-		vga_dot  => char_dot);
+		sys_clk    => vga_clk,
+		sys_we     => vga_don,
+		sys_row    => vga_vcntr(11-1 downto 11-cga_row'length),
+		sys_col    => vga_hcntr(11-1 downto 11-cga_col'length),
+		sys_code   => cga_code,
+		vga_clk    => vga_clk,
+		vga_row    => vga_vcntr(11-1 downto cga_zoom),
+		vga_col    => vga_hcntr(11-1 downto cga_zoom),
+		vga_dot    => char_dot);
 
 	cga_align_e : entity hdl4fpga.align
 	generic map (
@@ -214,25 +197,7 @@ begin
 		di(0) => char_dot,
 		do(0) => ca_dot);
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(-960, 1087, sample_size))
-	port map (
-		clk  => vga_clk,
-		addr => vga_hcntr,
-		data => sample);
-  	
-	draw_vline : entity hdl4fpga.draw_vline
-	generic map (
-		n => 11)
-	port map (
-		video_clk  => vga_clk,
-		video_row1 => vga_vcntr(vga_vcntr'range),
-		video_row2 => sample,
-		video_dot  => video_dot);
-
-
-	vga_rgb <= (others => vga_io(2) and (win_mask(0) or win_mask(1))); --(video_dot xor ga_dot xor ca_dot));
+	vga_rgb <= (others => vga_io(2) and (ga_dot or video_dot)); --(video_dot xor ga_dot xor ca_dot));
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
@@ -246,7 +211,6 @@ begin
 		end if;
 	end process;
 	psave <= '1';
-
 
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (

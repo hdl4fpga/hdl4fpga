@@ -191,7 +191,7 @@ entity video_vga is
 		vcntr  : out std_logic_vector(n-1 downto 0);
 		frm    : buffer std_logic;
 		don    : buffer std_logic;
-		hzln  : out std_logic);
+		nhl    : out std_logic);
 end;
 
 library hdl4fpga;
@@ -248,7 +248,7 @@ begin
 			hdata <= rom_hdata;
 			vdata <= rom_vdata;
 
-			hzln  <= edge_don and not don;
+			nhl  <= edge_don and not don;
 			if heot='1' then
 				don   <= setif(hparm="11");
 				hsync <= setif(hparm="01");
@@ -276,9 +276,10 @@ entity grid is
 		col_div  : std_logic_vector;
 		col_line : std_logic_vector);
 	port(
-		clk : in std_logic;
-		row : in std_logic_vector;
-		col : in std_logic_vector;
+		clk : in  std_logic;
+		don : in  std_logic := '1';
+		row : in  std_logic_vector;
+		col : in  std_logic_vector;
 		dot : out std_logic);
 end;
 
@@ -297,13 +298,15 @@ begin
 		variable row_eq   : std_logic;
 		variable draw_row : std_logic;
 		variable draw_col : std_logic;
+		variable don1     : std_logic;
 	begin
 		if rising_edge(clk) then
-			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1'));
+			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1')) and don1;
 			row_eq   := setif(row1(row_div'length-1 downto 0)=row_div);
 			col_eq   := setif(col1(col_div'length-1 downto 0)=col_div);
 			draw_row := setif(row1(row_line'length+row_div'length-1 downto 0)=row_line&row_div);
 			draw_col := setif(col1(col_line'length+col_div'length-1 downto 0)=col_line&col_div);
+			don1     := don;
 		end if;
 	end process;
 end;
