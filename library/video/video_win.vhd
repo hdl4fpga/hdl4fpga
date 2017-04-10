@@ -102,3 +102,36 @@ begin
 	end process;
 
 end;
+
+entity win is
+	port map (
+		video_clk : in  std_logic;
+		win_ena   : in  std_logic;
+		win_eol   : in  std_logic;
+		win_frm   : in  std_logic;
+		win_x     : out std_logic_vector;
+		win_y     : out std_logic_vector);
+end;
+
+architecture def of win is
+	process (vga_clk)
+		variable x : unsigned(win_x);
+		variable y : unsigned(win_y);
+	begin
+		if rising_edge(vga_clk) then
+			if win_ena='0' then
+				x := (others => '0');
+			else
+				x := x + 1;
+			end if;
+			if win_frm='0' then
+				y := (others => '0');
+			elsif win_eol='1' then
+				y := y + 1;
+			end if;
+			win_x <= std_logic_vector(x);
+			win_y <= std_logic_vector(y);
+		end if;
+	end process;
+end architecture;
+

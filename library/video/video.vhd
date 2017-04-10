@@ -184,15 +184,14 @@ entity video_vga is
 	generic (
 		n : natural := 12);
 	port (
-		clk   : in std_logic;
-		hsync : out std_logic;
-		hcntr : out std_logic_vector(n-1 downto 0);
-		vsync : out std_logic;
-		vcntr : out std_logic_vector(n-1 downto 0);
-		frm   : buffer std_logic;
-		don   : buffer std_logic;
-		frm_e : out std_logic;
-		don_e : out std_logic);
+		clk    : in std_logic;
+		hsync  : out std_logic;
+		hcntr  : out std_logic_vector(n-1 downto 0);
+		vsync  : out std_logic;
+		vcntr  : out std_logic_vector(n-1 downto 0);
+		frm    : buffer std_logic;
+		don    : buffer std_logic;
+		hzln  : out std_logic);
 end;
 
 library hdl4fpga;
@@ -249,8 +248,7 @@ begin
 			hdata <= rom_hdata;
 			vdata <= rom_vdata;
 
-			frm_e <= edge_frm and not frm;
-			don_e <= edge_don and not don;
+			hzln  <= edge_don and not don;
 			if heot='1' then
 				don   <= setif(hparm="11");
 				hsync <= setif(hparm="01");

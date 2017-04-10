@@ -67,6 +67,7 @@ architecture beh of nuhs3adsp is
 	signal sample      : std_logic_vector(sample_size-1 downto 0);
 
 	signal sys_clk  : std_logic;
+	signal nw_hl    : std_logic;
 	signal win_mask : std_logic_vector(0 to 18-1);
 	signal win_ena  : std_logic_vector(0 to 18-1);
 begin
@@ -134,7 +135,8 @@ begin
 		hcntr => vga_hcntr,
 		vcntr => vga_vcntr,
 		don   => vga_don,
-		frm   => vga_frm);
+		frm   => vga_frm,
+		nw_hl => nw_hl);
 
 	vga_vld <= vga_don and vga_frm;
 
@@ -160,6 +162,11 @@ begin
 		video_mask => win_mask,
 		video_ena  => win_ena);
 
+	gwin_e : entity hdl4fpga.win
+	port map (
+		video_clk => vga_clk,
+		win_x =>
+		win_y => );
 	grid_e : entity hdl4fpga.grid
 	generic map (
 		row_div  => "000",
@@ -168,8 +175,8 @@ begin
 		col_line => "00")
 	port map (
 		clk => vga_clk,
-		row => vga_vcntr,
-		col => vga_hcntr,
+		row => gwin_x,
+		col => gwin_y,
 		dot => grid_dot);
 
 	grid_align_e : entity hdl4fpga.align
@@ -188,8 +195,8 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk  => vga_clk, --phy1_125clk,
-		sys_we   => vga_don, --cga_we,
+		sys_clk  => vga_clk,
+		sys_we   => vga_don,
 		sys_row  => vga_vcntr(11-1 downto 11-cga_row'length),
 		sys_col  => vga_hcntr(11-1 downto 11-cga_col'length),
 		sys_code => cga_code,
