@@ -320,6 +320,7 @@ entity draw_vline is
 		n : natural := 12);
 	port(
 		video_clk  : in  std_logic;
+		video_ena  : in  std_logic := '1';
 		video_row1 : in  std_logic_vector(n-1 downto 0);
 		video_row2 : in  std_logic_vector(n-1 downto 0);
 		video_dot  : out std_logic);
@@ -330,7 +331,18 @@ library hdl4fpga;
 architecture arc of draw_vline is
 	signal le1, le2 : std_logic;
 	signal eq1, eq2 : std_logic;
+	signal ena : std_logic;
 begin
+	ena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => n),
+		i => (0 to 0 => '-'))
+	port map (
+		clk => video_clk,
+		di(0) => video_ena,
+		do(0) => ena);
+
 	leq_e : entity hdl4fpga.pipe_le
 	generic map (
 		n => n)
@@ -344,7 +356,7 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			video_dot <= (le1 xor le2) or eq2 or eq1;
+			video_dot <= ((le1 xor le2) or eq2 or eq1) and ena;
 			le1 <= le2;
 			eq1 <= eq2;
 		end if;

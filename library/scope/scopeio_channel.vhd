@@ -85,6 +85,7 @@ begin
 			n => unsigned_num_bits(height-1))
 		port map (
 			video_clk  => video_clk,
+			video_ena  => won,
 			video_row1 => y,
 			video_row2 => samples(i),
 			video_dot  => dot(i));

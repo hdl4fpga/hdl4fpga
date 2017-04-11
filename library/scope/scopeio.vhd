@@ -128,7 +128,7 @@ begin
 	generic map (
 		n => video_io'length,
 		i => (video_io'range => '-'),
-		d => (video_io'range => 13))
+		d => (video_io'range => 14))
 	port map (
 		clk   => video_clk,
 		di(0) => video_hs,
