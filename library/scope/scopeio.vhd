@@ -1,116 +1,285 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
-entity scopeio_miirx is
-	port (
-		mii_rxc   : in  std_logic;
-		mii_rxdv  : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		scope_cmd : out std_logic_vector;
-		dma_addr  : out std_logic_vector;
-		dma_size  : out std_logic_vector;
-		mem_addr  : in  std_logic_vector;
-		mem_ena   : out std_logic;
-		mem_data  : out std_logic_vector);
-end;
+library unisim;
+use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.cgafont.all;
 
-architecture def of scopeio_miirx is
-	signal mac_rdy  : std_logic;
-	signal udp_rdy  : std_logic;
-	signal dma_rdy  : std_logic;
+architecture beh of nuhs3adsp is
 
-	signal dma_data : unsigned;
+	signal hdr_data   : std_logic_vector(288-1 downto 0);
+	signal pld_data   : std_logic_vector(288-1 downto 0);
+	signal pll_data   : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
+	signal ser_data   : std_logic_vector(32-1 downto 0);
+
+	constant cga_zoom : natural := 0;
+	signal cga_we     : std_logic;
+	signal cga_row    : std_logic_vector(7-1-cga_zoom downto 0);
+	signal cga_col    : std_logic_vector(8-1-cga_zoom downto 0);
+	signal cga_code   : std_logic_vector(8-1 downto 0);
+	signal char_dot   : std_logic;
+
+	signal vga_clk    : std_logic;
+	signal vga_hsync  : std_logic;
+	signal vga_vsync  : std_logic;
+	signal vga_frm    : std_logic;
+	signal vga_don    : std_logic;
+	signal vga_nhl    : std_logic;
+	signal vga_vld    : std_logic;
+	signal vga_rgb    : std_logic_vector(3-1 downto 0);
+	signal vga_vcntr  : std_logic_vector(11-1 downto 0);
+	signal vga_hcntr  : std_logic_vector(11-1 downto 0);
+
+	signal grid_dot   : std_logic;
+	signal ga_dot     : std_logic;
+	signal ca_dot     : std_logic;
+	signal video_dot  : std_logic;
+
+	signal vga_io    : std_logic_vector(0 to 3-1);
+	
+	constant sample_size : natural := 11;
+
+	function sinctab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : integer)
+		return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+	begin
+		for i in 0 to x1-x0 loop
+			if (i+x0) /= 0 then
+				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
+			else
+				y := 1.0;
+			end if;
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
+		end loop;
+		return aux;
+	end;
+
+	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
+	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
+	signal sample      : std_logic_vector(sample_size-1 downto 0);
+
+	signal sys_clk     : std_logic;
+	signal win_don     : std_logic_vector(0 to 18-1);
+	signal win_nhl     : std_logic_vector(0 to 18-1);
+	signal win_frm     : std_logic_vector(0 to 18-1);
 begin
 
-	miirx_mac_e : entity hdl4fpga.miirx_mac
+	clkin_ibufg : ibufg
+	port map (
+		I => xtal,
+		O => sys_clk);
+
+	videodcm_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => 15,
+		dfs_div => 2)
+	port map(
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => vga_clk);
+
+	mii_dfs_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => 5,
+		dfs_div => 4)
+	port map (
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => mii_refclk);
+
+	miirx_e : entity hdl4fpga.scopeio_miirx
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		mii_txen => mac_rdy);
+		pll_data => pll_data,
+		ser_data => ser_data);
 
-	miirx_udp_p : process(mii_rxc)
-		variable cntr : unsigned;
+	process (ser_data)
+		variable data : unsigned(pll_data'range);
 	begin
-		if rising_edge(mii_rxc) then
-			if mac_rdy='0' then
-				cntr := to_unsigned(0, cntr'length);
-			elsif cntr(0)='0' then
-				cnt := cntr - 1;
-			end if;
-			udp_rdy <= cntr(0);
+		data     := unsigned(pll_data);
+		data     := data sll hdr_data'length;
+		pld_data <= reverse(std_logic_vector(data(pld_data'reverse_range)));
+	end process;
+
+	process (pld_data)
+		variable data : unsigned(pld_data'range);
+	begin
+		data     := unsigned(pld_data);
+		cga_code <= std_logic_vector(data(cga_code'range));
+		data     := data srl cga_code'length;
+		cga_row  <= std_logic_vector(data(cga_row'range));
+		data     := data srl cga_row'length;
+		cga_col  <= std_logic_vector(data(cga_col'range));
+	end process;
+
+	vga_e : entity hdl4fpga.video_vga
+	generic map (
+		n => 11)
+	port map (
+		clk   => vga_clk,
+		hsync => vga_hsync,
+		vsync => vga_vsync,
+		hcntr => vga_hcntr,
+		vcntr => vga_vcntr,
+		don   => vga_don,
+		frm   => vga_frm,
+		nhl   => vga_nhl);
+
+	vga_vld <= vga_don and vga_frm;
+
+	vgaio_e : entity hdl4fpga.align
+	generic map (
+		n => vga_io'length,
+		i => (vga_io'range => '-'),
+		d => (vga_io'range => 13))
+	port map (
+		clk   => vga_clk,
+		di(0) => vga_hsync,
+		di(1) => vga_vsync,
+		di(2) => vga_vld,
+		do    => vga_io);
+
+	video_win_e : entity hdl4fpga.video_win
+	port map (
+		video_clk  => vga_clk,
+		video_x    => vga_hcntr,
+		video_y    => vga_vcntr,
+		video_don  => vga_don,
+		video_frm  => vga_frm,
+		win_don    => win_don,
+		win_nhl    => win_nhl,
+		win_frm    => win_frm);
+
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(-960, 1087, sample_size))
+	port map (
+		clk  => vga_clk,
+		addr => x,
+		data => sample);
+
+	cga_e : entity hdl4fpga.cga
+	generic map (
+		bitrom     => psf1cp850x8x16,
+		cga_width  => 240,
+		cga_height => 68,
+		char_width => 8)
+	port map (
+		sys_clk    => vga_clk,
+		sys_we     => vga_don,
+		sys_row    => vga_vcntr(11-1 downto 11-cga_row'length),
+		sys_col    => vga_hcntr(11-1 downto 11-cga_col'length),
+		sys_code   => cga_code,
+		vga_clk    => vga_clk,
+		vga_row    => vga_vcntr(11-1 downto cga_zoom),
+		vga_col    => vga_hcntr(11-1 downto cga_zoom),
+		vga_dot    => char_dot);
+
+	cga_align_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => -4+13))
+	port map (
+		clk   => vga_clk,
+		di(0) => char_dot,
+		do(0) => ca_dot);
+
+	vga_rgb <= (others => vga_io(2) and (ga_dot or video_dot)); --(video_dot xor ga_dot xor ca_dot));
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
+			red   <= (others => vga_rgb(2));
+			green <= (others => vga_rgb(1));
+			blue  <= (others => vga_rgb(0));
+			blank <= vga_io(2);
+			hsync <= vga_io(0);
+			vsync <= vga_io(1);
+			sync  <= not vga_io(1) and not vga_io(0);
 		end if;
 	end process;
+	psave <= '1';
 
-	process(mii_rxc)
-		variable cntr : unsigned;
-	begin
-		if rising_edge(mii_rxc) then
-			if udp_rdy='0' then
-				cntr := to_unsigned(0, cntr'length);
-			elsif cntr(0)='0' then
-				dma_data := dma_data sll mii_rxd'length;
-				dma_data(mii_rxd'reverse_range) := reverse(mii_rxd);
-				cntr := cntr - 1;
-			end if;
-			dma_rdy <= cntr(0);
-		end if;
-	end process;
+	clk_videodac_e : entity hdl4fpga.ddro
+	port map (
+		clk => vga_clk,
+		dr => '0',
+		df => '1',
+		q => clk_videodac);
 
-	process(dma_data)
-		variable data : unsigned(dma_data'range);
-	begin
-		data      := dma_data;
-		dma_addr  <= data(dma_addr'range);
-		data      := data sll dma_addr'length;
-		dma_size  <= data(dma_size'range);
-		data      := data sll dma_addr'length;
-		scope_cmd <= data(scope_cmd'range);
-	end process;
+	adc_clkab <= '0';
+	hd_t_data <= 'Z';
 
-	process(mii_rxc)
-		variable cntr : unsigned;
-		variable data : unsigned(mem_data'range);
-	begin
-		if rising_edge(mii_rxc) then
-			if dma_rdy='0' then
-				cntr := to_unsigned(mem_data'length/mii_rxd'length-1, cntr'length);
-			elsif cntr(0)='1' then
-				cntr := to_unsigned(mem_data'length/mii_rxd'length-1, cntr'length);
-			else
-				cntr := cntr - 1;
-			end if;
-			mem_ena  <= cntr(0);
-			mem_data <= data;
-			data := data sll mii_rxd'length;
-			data(mii_rxd'reverse_range) := reverse(mii_rxd);
-		end if;
-	end process;
+	-- LEDs DAC --
+	--------------
+		
+	led18 <= '0';
+	led16 <= '0';
+	led15 <= '0';
+	led13 <= '0';
+	led11 <= '0';
+	led9  <= '0';
+	led8  <= '0';
+	led7  <= '0';
+
+	-- RS232 Transceiver --
+	-----------------------
+
+	rs232_rts <= '0';
+	rs232_td  <= '0';
+	rs232_dtr <= '0';
+
+	-- Ethernet Transceiver --
+	--------------------------
+
+	mii_rst  <= '1';
+	mii_txen <= 'Z';
+	mii_txd  <= (others => 'Z');
+	mii_mdc  <= '0';
+	mii_mdio <= 'Z';
+
+	-- LCD --
+	---------
+
+	lcd_e <= 'Z';
+	lcd_rs <= 'Z';
+	lcd_rw <= 'Z';
+	lcd_data <= (others => 'Z');
+	lcd_backlight <= 'Z';
+
+	-- DDR --
+	---------
+
+	ddr_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => 'Z',
+		o  => ddr_ckp,
+		ob => ddr_ckn);
+
+	ddr_st_dqs <= 'Z';
+	ddr_cke    <= 'Z';
+	ddr_cs     <= 'Z';
+	ddr_ras    <= 'Z';
+	ddr_cas    <= 'Z';
+	ddr_we     <= 'Z';
+	ddr_ba     <= (others => 'Z');
+	ddr_a      <= (others => 'Z');
+	ddr_dm     <= (others => 'Z');
+	ddr_dqs    <= (others => 'Z');
+	ddr_dq     <= (others => 'Z');
+
 end;
