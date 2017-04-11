@@ -43,7 +43,7 @@ architecture def of video_win is
 
 	constant xtab : std_logic_vector := (
 		b"001_0111_1111" & b"110_0000_0001" &
-		b"001_0111_1111" & b"110_0000_0001");
+		b"001_0001_1111" & b"110_0000_0001");
 
 	constant ytab : std_logic_vector := (
 		b"000_0000_0000" & b"010_0000_0001" &
@@ -55,7 +55,7 @@ architecture def of video_win is
 		return            std_logic_vector is
 		variable x      : natural;
 		variable width  : natural;
-		variable aux    : unsigned(0 to tab'length);
+		variable aux    : unsigned(0 to tab'length-1);
 		variable retval : std_logic_vector(0 to 2**size*win_don'length-1) := (others => '0');
 	begin
 		aux := unsigned(tab);

@@ -3,44 +3,53 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-architecture beh of nuhs3adsp is
+entity scopeio is
+	port (
+		mii_rxc     : in  std_logic;
+		mii_rxdv    : in  std_logic;
+		mii_rxd     : in  std_logic_vector;
+		video_clk   : in  std_logic;
+		video_red   : out std_logic;
+		video_green : out std_logic;
+		video_blue  : out std_logic;
+		video_hsync : out std_logic;
+		video_vsync : out std_logic;
+		video_blank : out std_logic;
+		video_sync  : out std_logic);
+end;
 
-	signal hdr_data   : std_logic_vector(288-1 downto 0);
-	signal pld_data   : std_logic_vector(288-1 downto 0);
-	signal pll_data   : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
-	signal ser_data   : std_logic_vector(32-1 downto 0);
+architecture beh of scopeio is
 
-	constant cga_zoom : natural := 0;
-	signal cga_we     : std_logic;
-	signal cga_row    : std_logic_vector(7-1-cga_zoom downto 0);
-	signal cga_col    : std_logic_vector(8-1-cga_zoom downto 0);
-	signal cga_code   : std_logic_vector(8-1 downto 0);
-	signal char_dot   : std_logic;
+	signal hdr_data     : std_logic_vector(288-1 downto 0);
+	signal pld_data     : std_logic_vector(288-1 downto 0);
+	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
+	signal ser_data     : std_logic_vector(32-1 downto 0);
 
-	signal vga_clk    : std_logic;
-	signal vga_hsync  : std_logic;
-	signal vga_vsync  : std_logic;
-	signal vga_frm    : std_logic;
-	signal vga_don    : std_logic;
-	signal vga_nhl    : std_logic;
-	signal vga_vld    : std_logic;
-	signal vga_rgb    : std_logic_vector(3-1 downto 0);
-	signal vga_vcntr  : std_logic_vector(11-1 downto 0);
-	signal vga_hcntr  : std_logic_vector(11-1 downto 0);
+	constant cga_zoom   : natural := 0;
+	signal cga_we       : std_logic;
+	signal cga_row      : std_logic_vector(7-1-cga_zoom downto 0);
+	signal cga_col      : std_logic_vector(8-1-cga_zoom downto 0);
+	signal cga_code     : std_logic_vector(8-1 downto 0);
+	signal char_dot     : std_logic;
 
-	signal grid_dot   : std_logic;
-	signal ga_dot     : std_logic;
-	signal ca_dot     : std_logic;
-	signal video_dot  : std_logic;
+	signal video_hs     : std_logic;
+	signal video_vs     : std_logic;
+	signal video_frm    : std_logic;
+	signal video_don    : std_logic;
+	signal video_nhl    : std_logic;
+	signal video_vld    : std_logic;
+	signal video_vcntr  : std_logic_vector(11-1 downto 0);
+	signal video_hcntr  : std_logic_vector(11-1 downto 0);
 
-	signal vga_io    : std_logic_vector(0 to 3-1);
+	signal ca_dot       : std_logic;
+	signal video_dot    : std_logic;
+
+	signal video_io     : std_logic_vector(0 to 3-1);
+	signal input_addr   : std_logic_vector(11-1 downto 0);
 	
 	constant sample_size : natural := 11;
 
@@ -73,31 +82,6 @@ architecture beh of nuhs3adsp is
 	signal win_frm     : std_logic_vector(0 to 18-1);
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => xtal,
-		O => sys_clk);
-
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 15,
-		dfs_div => 2)
-	port map(
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => vga_clk);
-
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => mii_refclk);
-
 	miirx_e : entity hdl4fpga.scopeio_miirx
 	port map (
 		mii_rxc  => mii_rxc,
@@ -125,40 +109,40 @@ begin
 		cga_col  <= std_logic_vector(data(cga_col'range));
 	end process;
 
-	vga_e : entity hdl4fpga.video_vga
+	video_e : entity hdl4fpga.video_vga
 	generic map (
 		n => 11)
 	port map (
-		clk   => vga_clk,
-		hsync => vga_hsync,
-		vsync => vga_vsync,
-		hcntr => vga_hcntr,
-		vcntr => vga_vcntr,
-		don   => vga_don,
-		frm   => vga_frm,
-		nhl   => vga_nhl);
+		clk   => video_clk,
+		hsync => video_hs,
+		vsync => video_vs,
+		hcntr => video_hcntr,
+		vcntr => video_vcntr,
+		don   => video_don,
+		frm   => video_frm,
+		nhl   => video_nhl);
 
-	vga_vld <= vga_don and vga_frm;
+	video_vld <= video_don and video_frm;
 
 	vgaio_e : entity hdl4fpga.align
 	generic map (
-		n => vga_io'length,
-		i => (vga_io'range => '-'),
-		d => (vga_io'range => 13))
+		n => video_io'length,
+		i => (video_io'range => '-'),
+		d => (video_io'range => 13))
 	port map (
-		clk   => vga_clk,
-		di(0) => vga_hsync,
-		di(1) => vga_vsync,
-		di(2) => vga_vld,
-		do    => vga_io);
+		clk   => video_clk,
+		di(0) => video_hs,
+		di(1) => video_vs,
+		di(2) => video_vld,
+		do    => video_io);
 
 	video_win_e : entity hdl4fpga.video_win
 	port map (
-		video_clk  => vga_clk,
-		video_x    => vga_hcntr,
-		video_y    => vga_vcntr,
-		video_don  => vga_don,
-		video_frm  => vga_frm,
+		video_clk  => video_clk,
+		video_x    => video_hcntr,
+		video_y    => video_vcntr,
+		video_don  => video_don,
+		video_frm  => video_frm,
 		win_don    => win_don,
 		win_nhl    => win_nhl,
 		win_frm    => win_frm);
@@ -167,9 +151,24 @@ begin
 	generic map (
 		bitrom => sinctab(-960, 1087, sample_size))
 	port map (
-		clk  => vga_clk,
-		addr => x,
+		clk  => video_clk,
+		addr => input_addr,
 		data => sample);
+
+	scopeio_channel_e : entity hdl4fpga.scopeio_channel
+	generic map (
+		channels   => 2,
+		inputs     => 1,
+		width      => 1536,
+		height     => 1080)
+	port map (
+		video_clk  => video_clk,
+		video_nhl  => video_nhl,
+		input_data => sample,
+		input_addr => input_addr,
+		win_frm    => win_frm,
+		win_on     => win_don,
+		video_dot  => video_dot);
 
 	cga_e : entity hdl4fpga.cga
 	generic map (
@@ -178,14 +177,14 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk    => vga_clk,
-		sys_we     => vga_don,
-		sys_row    => vga_vcntr(11-1 downto 11-cga_row'length),
-		sys_col    => vga_hcntr(11-1 downto 11-cga_col'length),
+		sys_clk    => video_clk,
+		sys_we     => video_don,
+		sys_row    => video_vcntr(11-1 downto 11-cga_row'length),
+		sys_col    => video_hcntr(11-1 downto 11-cga_col'length),
 		sys_code   => cga_code,
-		vga_clk    => vga_clk,
-		vga_row    => vga_vcntr(11-1 downto cga_zoom),
-		vga_col    => vga_hcntr(11-1 downto cga_zoom),
+		vga_clk    => video_clk,
+		vga_row    => video_vcntr(11-1 downto cga_zoom),
+		vga_col    => video_hcntr(11-1 downto cga_zoom),
 		vga_dot    => char_dot);
 
 	cga_align_e : entity hdl4fpga.align
@@ -193,93 +192,16 @@ begin
 		n => 1,
 		d => (0 to 0 => -4+13))
 	port map (
-		clk   => vga_clk,
+		clk   => video_clk,
 		di(0) => char_dot,
 		do(0) => ca_dot);
 
-	vga_rgb <= (others => vga_io(2) and (ga_dot or video_dot)); --(video_dot xor ga_dot xor ca_dot));
-	process (vga_clk)
-	begin
-		if rising_edge(vga_clk) then
-			red   <= (others => vga_rgb(2));
-			green <= (others => vga_rgb(1));
-			blue  <= (others => vga_rgb(0));
-			blank <= vga_io(2);
-			hsync <= vga_io(0);
-			vsync <= vga_io(1);
-			sync  <= not vga_io(1) and not vga_io(0);
-		end if;
-	end process;
-	psave <= '1';
-
-	clk_videodac_e : entity hdl4fpga.ddro
-	port map (
-		clk => vga_clk,
-		dr => '0',
-		df => '1',
-		q => clk_videodac);
-
-	adc_clkab <= '0';
-	hd_t_data <= 'Z';
-
-	-- LEDs DAC --
-	--------------
-		
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
-	led8  <= '0';
-	led7  <= '0';
-
-	-- RS232 Transceiver --
-	-----------------------
-
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
-	-- Ethernet Transceiver --
-	--------------------------
-
-	mii_rst  <= '1';
-	mii_txen <= 'Z';
-	mii_txd  <= (others => 'Z');
-	mii_mdc  <= '0';
-	mii_mdio <= 'Z';
-
-	-- LCD --
-	---------
-
-	lcd_e <= 'Z';
-	lcd_rs <= 'Z';
-	lcd_rw <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
-
-	-- DDR --
-	---------
-
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => 'Z',
-		o  => ddr_ckp,
-		ob => ddr_ckn);
-
-	ddr_st_dqs <= 'Z';
-	ddr_cke    <= 'Z';
-	ddr_cs     <= 'Z';
-	ddr_ras    <= 'Z';
-	ddr_cas    <= 'Z';
-	ddr_we     <= 'Z';
-	ddr_ba     <= (others => 'Z');
-	ddr_a      <= (others => 'Z');
-	ddr_dm     <= (others => 'Z');
-	ddr_dqs    <= (others => 'Z');
-	ddr_dq     <= (others => 'Z');
+	video_red   <= video_io(2) and video_dot;
+	video_green <= video_io(2) and video_dot;
+	video_blue  <= video_io(2) and video_dot;
+	video_blank <= video_io(2);
+	video_hsync <= video_io(0);
+	video_vsync <= video_io(1);
+	video_sync  <= not video_io(1) and not video_io(0);
 
 end;

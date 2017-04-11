@@ -163,13 +163,13 @@ begin
 		win_nhl    => win_nhl,
 		win_frm    => win_frm);
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(-960, 1087, sample_size))
-	port map (
-		clk  => vga_clk,
-		addr => x,
-		data => sample);
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(-960, 1087, sample_size))
+--	port map (
+--		clk  => vga_clk,
+--		addr => x,
+--		data => sample);
 
 	cga_e : entity hdl4fpga.cga
 	generic map (

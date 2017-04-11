@@ -2,9 +2,9 @@
 
 # Define path to each library
 LIB_ECP3 = /opt/diamond/3.9_x64/ispfpga/vhdl/data/ecp3/mti/work
+LIB_WORK = hdl4fpga
 LIB_STD = /opt/modeltech/linux_x86_64/../std
 LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
-LIB_WORK = hdl4fpga
 LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
@@ -14,6 +14,10 @@ IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
+HDL4FPGA__win__def = $(LIB_HDL4FPGA)/win/def.dat
+HDL4FPGA__win = $(LIB_HDL4FPGA)/win/_primary.dat
+HDL4FPGA__video_win__def = $(LIB_HDL4FPGA)/video_win/def.dat
+HDL4FPGA__video_win = $(LIB_HDL4FPGA)/video_win/_primary.dat
 HDL4FPGA__video_vga__arch = $(LIB_HDL4FPGA)/video_vga/arch.dat
 HDL4FPGA__video_vga = $(LIB_HDL4FPGA)/video_vga/_primary.dat
 HDL4FPGA__video_timing_rom__mix = $(LIB_HDL4FPGA)/video_timing_rom/mix.dat
@@ -28,6 +32,7 @@ HDL4FPGA__sff__lttsm = $(LIB_HDL4FPGA)/sff/lttsm.dat
 HDL4FPGA__sff = $(LIB_HDL4FPGA)/sff/_primary.dat
 HDL4FPGA__scopeio_miirx__mix = $(LIB_HDL4FPGA)/scopeio_miirx/mix.dat
 HDL4FPGA__scopeio_miirx = $(LIB_HDL4FPGA)/scopeio_miirx/_primary.dat
+HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
 HDL4FPGA__pipe_le__def = $(LIB_HDL4FPGA)/pipe_le/def.dat
@@ -62,7 +67,11 @@ VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(HDL4FPGA__video_vga__arch) \
+whole_library :     $(HDL4FPGA__win__def) \
+    $(HDL4FPGA__win) \
+    $(HDL4FPGA__video_win__def) \
+    $(HDL4FPGA__video_win) \
+    $(HDL4FPGA__video_vga__arch) \
     $(HDL4FPGA__video_vga) \
     $(HDL4FPGA__video_timing_rom__mix) \
     $(HDL4FPGA__video_timing_rom) \
@@ -76,6 +85,7 @@ whole_library :     $(HDL4FPGA__video_vga__arch) \
     $(HDL4FPGA__sff) \
     $(HDL4FPGA__scopeio_miirx__mix) \
     $(HDL4FPGA__scopeio_miirx) \
+    $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
     $(HDL4FPGA__pipe_le__def) \
@@ -125,7 +135,7 @@ $(HDL4FPGA__bram__def) : ../../library/common/bram.vhd \
 $(HDL4FPGA__cga) \
 $(HDL4FPGA__cga__def) : ../../library/video/cga/cga.vhd \
 		$(HDL4FPGA__fontrom) \
-		$(HDL4FPGA__cgaram) \
+		$(HDL4FPGA__bram) \
 		$(HDL4FPGA__align) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -152,15 +162,9 @@ $(HDL4FPGA__ecp3versa) : ../common/ecp3versa.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/ecp3versa.vhd
 
-$(HDL4FPGA__ecp3versa__beh) : ../../ecp3versa/scope/mii_rx.vhd \
-		$(HDL4FPGA__draw_vline) \
-		$(HDL4FPGA__bram) \
-		$(HDL4FPGA__cga) \
-		$(HDL4FPGA__grid) \
+$(HDL4FPGA__ecp3versa__beh) : ../../ecp3versa/scope/scopeio.vhd \
 		$(HDL4FPGA__align) \
-		$(HDL4FPGA__video_vga) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__scopeio_miirx) \
+		$(HDL4FPGA__scopeio) \
 		$(HDL4FPGA__ecp3versa) \
 		$(HDL4FPGA__cgafont) \
 		$(HDL4FPGA__std) \
@@ -169,10 +173,11 @@ $(HDL4FPGA__ecp3versa__beh) : ../../ecp3versa/scope/mii_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2008 -work hdl4fpga ../../ecp3versa/scope/mii_rx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../../ecp3versa/scope/scopeio.vhd
 
 $(HDL4FPGA__fontrom) \
 $(HDL4FPGA__fontrom__def) : ../../library/video/cga/fontrom.vhd \
+		$(HDL4FPGA__rom) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
@@ -209,6 +214,15 @@ $(HDL4FPGA__rom__def) : ../../library/common/rom.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../../library/common/rom.vhd
+
+$(HDL4FPGA__scopeio) : ../../library/scope/scopeio.vhd \
+		$(HDL4FPGA__cgafont) \
+		$(HDL4FPGA__std) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio.vhd
 
 $(HDL4FPGA__scopeio_miirx) \
 $(HDL4FPGA__scopeio_miirx__mix) : ../../library/scope/scopeio_miirx.vhd \
@@ -247,6 +261,7 @@ $(HDL4FPGA__testbench) : ../../library/testbench/testbench.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../../library/testbench/testbench.vhd
 
 $(HDL4FPGA__testbench__scope) : ../testbench/mii_rx.vhd \
+		$(HDL4FPGA__mii_mem) \
 		$(HDL4FPGA__testbench) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
@@ -270,5 +285,15 @@ $(HDL4FPGA__video_vga__arch) : ../../library/video/video.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2008 -work hdl4fpga ../../library/video/video.vhd
+	$(VCOM) -2002 -work hdl4fpga ../../library/video/video.vhd
+
+$(HDL4FPGA__video_win) \
+$(HDL4FPGA__video_win__def) \
+$(HDL4FPGA__win) \
+$(HDL4FPGA__win__def) : ../../library/video/video_win.vhd \
+		$(HDL4FPGA__rom) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/video/video_win.vhd
 
