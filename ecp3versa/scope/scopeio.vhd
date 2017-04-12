@@ -20,6 +20,32 @@ architecture beh of ecp3versa is
 	signal vga_green  : std_logic;
 	signal vga_blue   : std_logic;
 
+	constant sample_size : natural := 9;
+
+	function sinctab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : integer)
+		return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+	begin
+		for i in 0 to x1-x0 loop
+			if (i+x0) /= 0 then
+				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
+			else
+				y := 1.0;
+			end if;
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
+		end loop;
+		return aux;
+	end;
+
+	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
+	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
+	signal sample      : std_logic_vector(sample_size-1 downto 0);
+
+	signal input_addr : std_logic_vector(11-1 downto 0);
 begin
 
 	rst <= not fpga_gsrn;
@@ -59,12 +85,22 @@ begin
 			lock        => lock);
 	end block;
 
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(-960, 1087, sample_size))
+	port map (
+		clk  => vga_clk,
+		addr => input_addr,
+		data => sample);
+
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
 		mii_rxc     => phy1_rxc,
 		mii_rxdv    => phy1_rx_dv,
 		mii_rxd     => phy1_rx_d,
+		input_addr  => input_addr,
+		input_data  => sample,
 		video_clk   => vga_clk,
 		video_red   => vga_red,
 		video_green => vga_green,

@@ -12,6 +12,8 @@ entity scopeio is
 		mii_rxc     : in  std_logic;
 		mii_rxdv    : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
+		input_addr  : out std_logic_vector;
+		input_data  : in  std_logic_vector;
 		video_clk   : in  std_logic;
 		video_red   : out std_logic;
 		video_green : out std_logic;
@@ -39,47 +41,20 @@ architecture beh of scopeio is
 	signal video_hs     : std_logic;
 	signal video_vs     : std_logic;
 	signal video_frm    : std_logic;
-	signal video_don    : std_logic;
+	signal video_hon    : std_logic;
 	signal video_nhl    : std_logic;
 	signal video_vld    : std_logic;
 	signal video_vcntr  : std_logic_vector(11-1 downto 0);
 	signal video_hcntr  : std_logic_vector(11-1 downto 0);
 
 	signal ca_dot       : std_logic;
-	signal video_dot    : std_logic;
+	signal video_dot    : std_logic_vector(0 to 19-1);
 
 	signal video_io     : std_logic_vector(0 to 3-1);
-	signal input_addr   : std_logic_vector(11-1 downto 0);
 	
-	constant sample_size : natural := 11;
-
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : integer)
-		return std_logic_vector is
-		variable y   : real;
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
-	begin
-		for i in 0 to x1-x0 loop
-			if (i+x0) /= 0 then
-				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
-			else
-				y := 1.0;
-			end if;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
-		end loop;
-		return aux;
-	end;
-
-	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
-	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
-	signal sample      : std_logic_vector(sample_size-1 downto 0);
-
-	signal sys_clk     : std_logic;
-	signal win_don     : std_logic_vector(0 to 18-1);
-	signal win_nhl     : std_logic_vector(0 to 18-1);
-	signal win_frm     : std_logic_vector(0 to 18-1);
+	signal win_don      : std_logic_vector(0 to 18-1);
+	signal win_nhl      : std_logic_vector(0 to 18-1);
+	signal win_frm      : std_logic_vector(0 to 18-1);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -118,11 +93,11 @@ begin
 		vsync => video_vs,
 		hcntr => video_hcntr,
 		vcntr => video_vcntr,
-		don   => video_don,
+		don   => video_hon,
 		frm   => video_frm,
 		nhl   => video_nhl);
 
-	video_vld <= video_don and video_frm;
+	video_vld <= video_hon and video_frm;
 
 	vgaio_e : entity hdl4fpga.align
 	generic map (
@@ -141,30 +116,22 @@ begin
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
 		video_y    => video_vcntr,
-		video_don  => video_don,
+		video_don  => video_hon,
 		video_frm  => video_frm,
 		win_don    => win_don,
 		win_nhl    => win_nhl,
 		win_frm    => win_frm);
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(-960, 1087, sample_size))
-	port map (
-		clk  => video_clk,
-		addr => input_addr,
-		data => sample);
-
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		channels   => 2,
 		inputs     => 1,
-		width      => 1536,
-		height     => 1080)
+		width      => 1537,
+		height     => 257)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
-		input_data => sample,
+		input_data => input_data,
 		input_addr => input_addr,
 		win_frm    => win_frm,
 		win_on     => win_don,
@@ -178,7 +145,7 @@ begin
 		char_width => 8)
 	port map (
 		sys_clk    => video_clk,
-		sys_we     => video_don,
+		sys_we     => video_hon,
 		sys_row    => video_vcntr(11-1 downto 11-cga_row'length),
 		sys_col    => video_hcntr(11-1 downto 11-cga_col'length),
 		sys_code   => cga_code,
@@ -196,9 +163,9 @@ begin
 		di(0) => char_dot,
 		do(0) => ca_dot);
 
-	video_red   <= video_io(2) and video_dot;
-	video_green <= video_io(2) and video_dot;
-	video_blue  <= video_io(2) and video_dot;
+	video_red   <= video_io(2) and (video_dot(1));
+	video_green <= video_io(2) and (video_dot(1));
+	video_blue  <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);

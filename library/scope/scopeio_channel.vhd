@@ -18,7 +18,7 @@ entity scopeio_channel is
 		input_addr : out std_logic_vector;
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
-		video_dot  : out std_logic);
+		video_dot  : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -37,9 +37,8 @@ architecture def of scopeio_channel is
 	signal y        : word_y;
 	signal gon      : std_logic;
 	signal won      : std_logic;
-	signal dot      : std_logic_vector(win_on'range);
+	signal plot_dot : std_logic_vector(win_on'range);
 	signal grid_dot : std_logic;
-	signal ga_dot   : std_logic;
 
 begin
 
@@ -79,7 +78,15 @@ begin
 		end loop;
 	end process;
 
-	plot_e : for i in 0 to inputs-1 generate
+	plot_g : for i in 0 to inputs-1 generate
+		signal ena : std_logic;
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+			end if;
+		end process;
+
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
 			n => unsigned_num_bits(height-1))
@@ -88,32 +95,34 @@ begin
 			video_ena  => won,
 			video_row1 => y,
 			video_row2 => samples(i),
-			video_dot  => dot(i));
+			video_dot  => plot_dot(i));
 	end generate;
 
---	video_dot <= setif(dot=(dot'range => '0')) and not setif(win_on=(win_on'range => '0')) and grid_dot;
-	video_dot <= ga_dot or dot(0);
+	grid_b : block
+		signal dot : std_logic;
+	begin
+		grid_e : entity hdl4fpga.grid
+		generic map (
+			row_div  => "000",
+			row_line => "00",
+			col_div  => "000",
+			col_line => "00")
+		port map (
+			clk => video_clk,
+			don => won,
+			row => x,
+			col => y,
+			dot => dot);
 
-	grid_e : entity hdl4fpga.grid
-	generic map (
-		row_div  => "000",
-		row_line => "00",
-		col_div  => "000",
-		col_line => "00")
-	port map (
-		clk => video_clk,
-		don => won,
-		row => x,
-		col => y,
-		dot => grid_dot);
+		grid_align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(0) => grid_dot);
+	end block;
 
-	grid_align_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => -3+13))
-	port map (
-		clk   => video_clk,
-		di(0) => grid_dot,
-		do(0) => ga_dot);
-
+	video_dot <= grid_dot & plot_dot;
 end;
