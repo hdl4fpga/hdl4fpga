@@ -7,7 +7,6 @@ use hdl4fpga.std.all;
 
 entity scopeio_channel is
 	generic(
-		channels   : natural;
 		inputs     : natural;
 		width      : natural;
 		height     : natural);
@@ -22,51 +21,31 @@ entity scopeio_channel is
 end;
 
 architecture def of scopeio_channel is
-	subtype word_x is std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-	subtype word_y is std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	subtype word_s is std_logic_vector(input_data'length/inputs-1 downto 0);
-	type wordx_vector is array (natural range <>) of word_x;
-	type wordy_vector is array (natural range <>) of word_y;
 	type words_vector is array (natural range <>) of word_s;
 
-	signal win_x   : wordx_vector(win_on'range);
-	signal win_y   : wordy_vector(win_on'range);
 	signal samples : words_vector(inputs-1 downto 0);
 
-	signal x        : word_x;
-	signal y        : word_y;
+	signal x        : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+	signal y        : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal gon      : std_logic;
 	signal won      : std_logic;
+	signal frm      : std_logic;
 	signal plot_dot : std_logic_vector(win_on'range);
 	signal grid_dot : std_logic;
 
 begin
+	won <= '0'; --setif(win_on  /= (win_on'range => '0'));
+	frm <= setif(win_frm /= (win_frm'range => '0'));
 
-	win_g : for i in win_on'range generate
-		win_e : entity hdl4fpga.win
-		port map (
-			video_clk => video_clk,
-			video_nhl => video_nhl,
-			win_frm   => win_frm(i),
-			win_ena   => win_on(i),
-			win_x     => win_x(i),
-			win_y     => win_y(i));
-	end generate;
-
-	process(win_on)
-	begin
-		x   <= (others => '-');
-		y   <= (others => '-');
-		won <='0';
-		for i in win_on'range loop
-			if win_on(i)='1' then
-				x   <= win_x(i);
-				y   <= win_y(i);
-				won <= win_on(i);
-			end if;
-		end loop;
-	end process;
-	input_addr <= x;
+	win_e : entity hdl4fpga.win
+	port map (
+		video_clk => video_clk,
+		video_nhl => video_nhl,
+		win_frm   => frm,
+		win_ena   => won,
+		win_x     => x,
+		win_y     => y);
 
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);
@@ -124,5 +103,6 @@ begin
 			do(0) => grid_dot);
 	end block;
 
-	video_dot <= grid_dot & plot_dot;
+	video_dot  <= grid_dot & plot_dot;
+	input_addr <= x;
 end;

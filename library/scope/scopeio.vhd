@@ -124,7 +124,6 @@ begin
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
-		channels   => 2,
 		inputs     => 1,
 		width      => 1537,
 		height     => 257)
@@ -163,8 +162,8 @@ begin
 		di(0) => char_dot,
 		do(0) => ca_dot);
 
-	video_red   <= video_io(2) and (video_dot(1));
-	video_green <= video_io(2) and (video_dot(1));
+	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
+	video_green <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_blue  <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);

@@ -12,37 +12,16 @@ use hdl4fpga.cgafont.all;
 
 architecture beh of nuhs3adsp is
 
-	signal hdr_data   : std_logic_vector(288-1 downto 0);
-	signal pld_data   : std_logic_vector(288-1 downto 0);
-	signal pll_data   : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
-	signal ser_data   : std_logic_vector(32-1 downto 0);
-
-	constant cga_zoom : natural := 0;
-	signal cga_we     : std_logic;
-	signal cga_row    : std_logic_vector(7-1-cga_zoom downto 0);
-	signal cga_col    : std_logic_vector(8-1-cga_zoom downto 0);
-	signal cga_code   : std_logic_vector(8-1 downto 0);
-	signal char_dot   : std_logic;
-
+	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
-	signal vga_frm    : std_logic;
-	signal vga_don    : std_logic;
-	signal vga_nhl    : std_logic;
-	signal vga_vld    : std_logic;
-	signal vga_rgb    : std_logic_vector(3-1 downto 0);
-	signal vga_vcntr  : std_logic_vector(11-1 downto 0);
-	signal vga_hcntr  : std_logic_vector(11-1 downto 0);
+	signal vga_red    : std_logic;
+	signal vga_green  : std_logic;
+	signal vga_blue   : std_logic;
+	signal vga_blank  : std_logic;
 
-	signal grid_dot   : std_logic;
-	signal ga_dot     : std_logic;
-	signal ca_dot     : std_logic;
-	signal video_dot  : std_logic;
-
-	signal vga_io    : std_logic_vector(0 to 3-1);
-	
-	constant sample_size : natural := 11;
+	constant sample_size : natural := 9;
 
 	function sinctab (
 		constant x0 : integer;
@@ -67,10 +46,8 @@ architecture beh of nuhs3adsp is
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
 	signal sample      : std_logic_vector(sample_size-1 downto 0);
 
-	signal sys_clk     : std_logic;
-	signal win_don     : std_logic_vector(0 to 18-1);
-	signal win_nhl     : std_logic_vector(0 to 18-1);
-	signal win_frm     : std_logic_vector(0 to 18-1);
+	signal input_addr : std_logic_vector(11-1 downto 0);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -98,116 +75,39 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
-	miirx_e : entity hdl4fpga.scopeio_miirx
-	port map (
-		mii_rxc  => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-		pll_data => pll_data,
-		ser_data => ser_data);
-
-	process (ser_data)
-		variable data : unsigned(pll_data'range);
-	begin
-		data     := unsigned(pll_data);
-		data     := data sll hdr_data'length;
-		pld_data <= reverse(std_logic_vector(data(pld_data'reverse_range)));
-	end process;
-
-	process (pld_data)
-		variable data : unsigned(pld_data'range);
-	begin
-		data     := unsigned(pld_data);
-		cga_code <= std_logic_vector(data(cga_code'range));
-		data     := data srl cga_code'length;
-		cga_row  <= std_logic_vector(data(cga_row'range));
-		data     := data srl cga_row'length;
-		cga_col  <= std_logic_vector(data(cga_col'range));
-	end process;
-
-	vga_e : entity hdl4fpga.video_vga
+	samples_e : entity hdl4fpga.rom
 	generic map (
-		n => 11)
+		bitrom => sinctab(-960, 1087, sample_size))
 	port map (
-		clk   => vga_clk,
-		hsync => vga_hsync,
-		vsync => vga_vsync,
-		hcntr => vga_hcntr,
-		vcntr => vga_vcntr,
-		don   => vga_don,
-		frm   => vga_frm,
-		nhl   => vga_nhl);
+		clk  => vga_clk,
+		addr => input_addr,
+		data => sample);
 
-	vga_vld <= vga_don and vga_frm;
-
-	vgaio_e : entity hdl4fpga.align
-	generic map (
-		n => vga_io'length,
-		i => (vga_io'range => '-'),
-		d => (vga_io'range => 13))
+	scopeio_e : entity hdl4fpga.scopeio
 	port map (
-		clk   => vga_clk,
-		di(0) => vga_hsync,
-		di(1) => vga_vsync,
-		di(2) => vga_vld,
-		do    => vga_io);
+		mii_rxc     => mii_rxc,
+		mii_rxdv    => mii_rxdv,
+		mii_rxd     => mii_rxd,
+		input_addr  => input_addr,
+		input_data  => sample,
+		video_clk   => vga_clk,
+		video_red   => vga_red,
+		video_green => vga_green,
+		video_blue  => vga_blue,
+		video_hsync => vga_hsync,
+		video_vsync => vga_vsync,
+		video_blank => vga_blank);
 
-	video_win_e : entity hdl4fpga.video_win
-	port map (
-		video_clk  => vga_clk,
-		video_x    => vga_hcntr,
-		video_y    => vga_vcntr,
-		video_don  => vga_don,
-		video_frm  => vga_frm,
-		win_don    => win_don,
-		win_nhl    => win_nhl,
-		win_frm    => win_frm);
-
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(-960, 1087, sample_size))
---	port map (
---		clk  => vga_clk,
---		addr => x,
---		data => sample);
-
-	cga_e : entity hdl4fpga.cga
-	generic map (
-		bitrom     => psf1cp850x8x16,
-		cga_width  => 240,
-		cga_height => 68,
-		char_width => 8)
-	port map (
-		sys_clk    => vga_clk,
-		sys_we     => vga_don,
-		sys_row    => vga_vcntr(11-1 downto 11-cga_row'length),
-		sys_col    => vga_hcntr(11-1 downto 11-cga_col'length),
-		sys_code   => cga_code,
-		vga_clk    => vga_clk,
-		vga_row    => vga_vcntr(11-1 downto cga_zoom),
-		vga_col    => vga_hcntr(11-1 downto cga_zoom),
-		vga_dot    => char_dot);
-
-	cga_align_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => -4+13))
-	port map (
-		clk   => vga_clk,
-		di(0) => char_dot,
-		do(0) => ca_dot);
-
-	vga_rgb <= (others => vga_io(2) and (ga_dot or video_dot)); --(video_dot xor ga_dot xor ca_dot));
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
-			red   <= (others => vga_rgb(2));
-			green <= (others => vga_rgb(1));
-			blue  <= (others => vga_rgb(0));
-			blank <= vga_io(2);
-			hsync <= vga_io(0);
-			vsync <= vga_io(1);
-			sync  <= not vga_io(1) and not vga_io(0);
+			red   <= (others => vga_red);
+			green <= (others => vga_green);
+			blue  <= (others => vga_blue);
+			blank <= vga_blank;
+			hsync <= vga_hsync;
+			vsync <= vga_vsync;
+			sync  <= not vga_hsync and not vga_vsync;
 		end if;
 	end process;
 	psave <= '1';
