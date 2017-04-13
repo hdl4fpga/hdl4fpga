@@ -35,8 +35,8 @@ architecture def of scopeio_channel is
 	signal grid_dot : std_logic;
 
 begin
-	won <= '0'; --setif(win_on  /= (win_on'range => '0'));
-	frm <= setif(win_frm /= (win_frm'range => '0'));
+	won <= not setif(win_on=(win_on'range => '0'));
+	frm <= not setif(win_frm=(win_frm'range => '0'));
 
 	win_e : entity hdl4fpga.win
 	port map (

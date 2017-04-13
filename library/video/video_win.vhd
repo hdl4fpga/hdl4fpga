@@ -26,8 +26,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity video_win is
+	generic (
+		wintab     : natural_vector);
 	port (
 		video_clk  : in  std_logic;
 		video_x    : in  std_logic_vector;
@@ -41,42 +44,24 @@ end;
 
 architecture def of video_win is
 
-	constant xtab : std_logic_vector := (
-		b"001_0111_1111" & b"110_0000_0001" &
-		b"001_0111_1111" & b"110_0000_0001" &
-		b"001_0111_1111" & b"110_0000_0001" &
-		b"001_0111_1111" & b"110_0000_0001");
-
-	constant ytab : std_logic_vector := (
-		b"000_0000_0000" & b"001_0000_0001" &
-		b"001_0001_0010" & b"001_0000_0001" &
-		b"010_0010_0100" & b"001_0000_0001" &
-		b"011_0011_0111" & b"001_0000_0001");
-
 	impure function init_data (
-		constant tab    : std_logic_vector;
-		constant size   : natural)
-		return            std_logic_vector is
-		variable x      : natural;
-		variable width  : natural;
-		variable aux    : unsigned(0 to tab'length-1);
+		constant tab  : natural_vector;
+		constant side : natural;
+		constant size : natural)
+		return std_logic_vector is
 		variable retval : std_logic_vector(0 to 2**size*win_don'length-1) := (others => '0');
+		constant t : natural_vector(0 to tab'length-1) := tab;
 	begin
-		aux := unsigned(tab);
-		for i in win_don'range loop
-			x     := to_integer(aux(0 to size-1));
-			aux   := aux sll size;
-			width := to_integer(aux(0 to size-1));
-			aux   := aux sll size;
-			for j in x to x+width-1 loop
+		for i in 0 to t'length/4-1 loop
+			for j in t(4*i+side) to t(4*i+side)+t(4*i+2+side)-1 loop
 				retval(win_don'length*j+i) := '1';
 			end loop;
 		end loop;
 		return retval;
 	end;
 
-	constant xtab_bit : std_logic_vector := init_data(xtab, video_x'length);
-	constant ytab_bit : std_logic_vector := init_data(ytab, video_y'length);
+	constant xtab_bit : std_logic_vector := init_data(wintab, 0, video_x'length);
+	constant ytab_bit : std_logic_vector := init_data(wintab, 1, video_y'length);
 
 	signal mask_y     : std_logic_vector(win_don'range);
 	signal mask_x     : std_logic_vector(win_don'range);

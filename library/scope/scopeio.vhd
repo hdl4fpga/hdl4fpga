@@ -51,6 +51,7 @@ architecture beh of scopeio is
 	signal video_dot    : std_logic_vector(0 to 19-1);
 
 	signal video_io     : std_logic_vector(0 to 3-1);
+	signal addr         : std_logic_vector(video_hcntr'range);
 	
 	signal win_don      : std_logic_vector(0 to 18-1);
 	signal win_nhl      : std_logic_vector(0 to 18-1);
@@ -112,6 +113,12 @@ begin
 		do    => video_io);
 
 	video_win_e : entity hdl4fpga.video_win
+	generic map (
+		wintab => (
+			383, 0*257,    1537, 257,
+			383, 1*257+17, 1537, 257,
+			383, 2*257+35, 1537, 257,
+			383, 3*257+52, 1537, 257))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -122,6 +129,20 @@ begin
 		win_nhl    => win_nhl,
 		win_frm    => win_frm);
 
+	process (video_clk)
+		variable base : unsigned(addr'range);
+	begin
+		if rising_edge(video_clk) then
+			base := (others => '-');
+			for i in win_don'range loop
+				if win_don(i)='1' then
+					base := to_unsigned(i*1536, base'length);
+				end if;
+			end loop;
+			input_addr <= std_logic_vector(resize(unsigned(addr),base'length) + base);
+		end if;
+	end process;
+
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs     => 1,
@@ -131,7 +152,7 @@ begin
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		input_data => input_data,
-		input_addr => input_addr,
+		input_addr => addr,
 		win_frm    => win_frm,
 		win_on     => win_don,
 		video_dot  => video_dot);
@@ -164,7 +185,7 @@ begin
 
 	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_green <= video_io(2) and (video_dot(1) or video_dot(0));
-	video_blue  <= video_io(2) and (video_dot(1) or video_dot(0));
+	video_blue  <= video_io(2) and (video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
