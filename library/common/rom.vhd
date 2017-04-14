@@ -27,9 +27,10 @@ use ieee.numeric_std.all;
 
 entity rom is
 	generic (
+		synchronous : boolean := TRUE;
 		bitrom : std_logic_vector);
 	port (
-		clk  : in  std_logic;
+		clk  : in  std_logic := '-';
 		addr : in  std_logic_vector;
 		data : out std_logic_vector);
 end;
@@ -62,11 +63,17 @@ architecture def of rom is
 
 begin
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			data <= rom(to_integer(unsigned(addr)));
-		end if;
-	end process;
+	synchronous_g : if synchronous generate
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				data <= rom(to_integer(unsigned(addr)));
+			end if;
+		end process;
+	end generate;
+
+	not_synchronous_g : if not synchronous generate
+		data <= rom(to_integer(unsigned(addr)));
+	end generate;
 
 end;
