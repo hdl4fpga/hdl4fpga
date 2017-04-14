@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity video_win is
+entity win_mngr is
 	generic (
 		wintab     : natural_vector);
 	port (
@@ -42,7 +42,7 @@ entity video_win is
 		win_frm    : out std_logic_vector);
 end;
 
-architecture def of video_win is
+architecture def of win_mngr is
 
 	impure function init_data (
 		constant tab  : natural_vector;

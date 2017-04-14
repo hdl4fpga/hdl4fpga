@@ -38,14 +38,47 @@ begin
 	won <= not setif(win_on=(win_on'range => '0'));
 	frm <= not setif(win_frm=(win_frm'range => '0'));
 
-	win_e : entity hdl4fpga.win
-	port map (
-		video_clk => video_clk,
-		video_nhl => video_nhl,
-		win_frm   => frm,
-		win_ena   => won,
-		win_x     => x,
-		win_y     => y);
+	win_b : block
+		signal vcntr     : std_logic_vector();
+		signal dummy_don : std_logic_vector;
+		signal dummy_nhl : std_logic_vector;
+		signal dummy_xi  : std_logic_vector;
+		signal win_frm   : std_logic_vector(0 to 1);
+	begin
+		main_e : entity hdl4fpga.win
+		port map (
+			video_clk => video_clk,
+			video_nhl => video_nhl,
+			win_frm   => frm,
+			win_ena   => won,
+			win_x     => x,
+			win_y     => vcntr);
+
+		video_win_e : entity hdl4fpga.win_mngr
+		generic map (
+			wintab => (
+				0, 0,         width, height-16,
+				0, height-16, width, 16))
+		port map (
+			video_clk  => video_clk,
+			video_x    => (others => '-'),
+			video_y    => video_vcntr,
+			video_don  => '-',
+			video_frm  => frm,
+			win_don    => dummy_don,
+			win_nhl    => dummy_nhl,
+			win_frm    => win_frm);
+
+		channel_e : entity hdl4fpga.win
+		port map (
+			video_clk => video_clk,
+			video_nhl => video_nhl,
+			win_frm   => win_frm(0),
+			win_ena   => won,
+			win_x     => x,
+			win_y     => y);
+
+	end block;
 
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);

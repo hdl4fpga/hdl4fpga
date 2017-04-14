@@ -112,7 +112,7 @@ begin
 		di(2) => video_vld,
 		do    => video_io);
 
-	video_win_e : entity hdl4fpga.video_win
+	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		wintab => (
 			383, 0*257,    1537, 257,
