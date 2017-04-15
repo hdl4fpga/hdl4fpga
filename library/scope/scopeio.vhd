@@ -114,11 +114,11 @@ begin
 
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
-		wintab => (
-			383, 0*257,    1537, 257,
-			383, 1*257+17, 1537, 257,
-			383, 2*257+35, 1537, 257,
-			383, 3*257+52, 1537, 257))
+		tab => (
+			383, 0*270,    1537, 257,
+			383, 1*270, 1537, 257,
+			383, 2*270, 1537, 257,
+			383, 3*270, 1537, 257))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -147,7 +147,7 @@ begin
 	generic map (
 		inputs     => 1,
 		width      => 1537,
-		height     => 257)
+		height     => 270)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,

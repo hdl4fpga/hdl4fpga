@@ -30,16 +30,17 @@ use hdl4fpga.std.all;
 
 entity win_mngr is
 	generic (
-		wintab     : natural_vector);
+		synchronous : boolean := TRUE;
+		tab         : natural_vector);
 	port (
-		video_clk  : in  std_logic;
-		video_x    : in  std_logic_vector;
-		video_y    : in  std_logic_vector;
-		video_frm  : in  std_logic;
-		video_don  : in  std_logic;
-		win_don    : out std_logic_vector;
-		win_nhl    : out std_logic_vector;
-		win_frm    : out std_logic_vector);
+		video_clk   : in  std_logic;
+		video_x     : in  std_logic_vector;
+		video_y     : in  std_logic_vector;
+		video_frm   : in  std_logic;
+		video_don   : in  std_logic;
+		win_don     : out std_logic_vector;
+		win_nhl     : out std_logic_vector;
+		win_frm     : out std_logic_vector);
 end;
 
 architecture def of win_mngr is
@@ -60,8 +61,8 @@ architecture def of win_mngr is
 		return retval;
 	end;
 
-	constant xtab_bit : std_logic_vector := init_data(wintab, 0, video_x'length);
-	constant ytab_bit : std_logic_vector := init_data(wintab, 1, video_y'length);
+	constant xtab_bit : std_logic_vector := init_data(tab, 0, video_x'length);
+	constant ytab_bit : std_logic_vector := init_data(tab, 1, video_y'length);
 
 	signal mask_y     : std_logic_vector(win_don'range);
 	signal mask_x     : std_logic_vector(win_don'range);
@@ -81,19 +82,21 @@ begin
 
 	x_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => xtab_bit)
+		synchronous => synchronous,
+		bitrom      => xtab_bit)
 	port map (
-		clk    => video_clk,
-		addr   => video_x,
-		data   => mask_x);
+		clk         => video_clk,
+		addr        => video_x,
+		data        => mask_x);
 
 	y_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => ytab_bit)
+		synchronous => synchronous,
+		bitrom      => ytab_bit)
 	port map (
-		clk    => video_clk,
-		addr   => video_y,
-		data   => mask_y);
+		clk         => video_clk,
+		addr        => video_y,
+		data        => mask_y);
 
 	win_don <= mask_y and mask_x and (win_don'range => frm and don);
 	process (video_clk)
