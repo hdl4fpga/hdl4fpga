@@ -39,12 +39,8 @@ begin
 	frm <= not setif(win_frm=(win_frm'range => '0'));
 
 	win_b : block
-		signal vcntr     : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
-		signal dummy_x   : std_logic_vector(0 to 0) := (others => '-');
-		signal dummy_don : std_logic_vector(0 to 2-1);
-		signal dummy_nhl : std_logic_vector(0 to 2-1);
-		signal dummy_wx  : std_logic_vector(0 to 0) := (others => '-');
-		signal win_frm   : std_logic_vector(0 to 2-1);
+		signal vcntr    : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
+		signal win_frm  : std_logic_vector(0 to 2-1);
 	begin
 		main_e : entity hdl4fpga.win
 		port map (
@@ -55,29 +51,23 @@ begin
 			win_x     => x,
 			win_y     => vcntr);
 
-		video_win_e : entity hdl4fpga.win_mngr
+		winside_e : entity hdl4fpga.win_side
 		generic map (
 			synchronous => FALSE,
 			tab => (
-				0, 0,         0, height-13,
-				0, height-13, 0, 16))
+				0, height-13,
+				height-13, 13))
 		port map (
-			video_clk  => video_clk,
-			video_x    => dummy_x,
-			video_y    => vcntr,
-			video_don  => '-',
-			video_frm  => frm,
-			win_don    => dummy_don,
-			win_nhl    => dummy_nhl,
-			win_frm    => win_frm);
+			video_clk => video_clk,
+			video_on  => frm,
+			video_x   => vcntr,
+			win_on    => win_frm);
 
-		channel_e : entity hdl4fpga.win
+		channel_e : entity hdl4fpga.win_y
 		port map (
 			video_clk => video_clk,
 			video_nhl => video_nhl,
 			win_frm   => win_frm(0),
-			win_ena   => won,
-			win_x     => dummy_wx,
 			win_y     => y);
 
 	end block;

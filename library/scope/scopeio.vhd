@@ -54,7 +54,6 @@ architecture beh of scopeio is
 	signal addr         : std_logic_vector(video_hcntr'range);
 	
 	signal win_don      : std_logic_vector(0 to 18-1);
-	signal win_nhl      : std_logic_vector(0 to 18-1);
 	signal win_frm      : std_logic_vector(0 to 18-1);
 begin
 
@@ -126,7 +125,6 @@ begin
 		video_don  => video_hon,
 		video_frm  => video_frm,
 		win_don    => win_don,
-		win_nhl    => win_nhl,
 		win_frm    => win_frm);
 
 	process (video_clk)

@@ -28,6 +28,59 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
+entity win_side is
+	generic (
+		synchronous : boolean := TRUE;
+		tab         : natural_vector);
+	port (
+		video_clk   : in  std_logic;
+		video_on    : in  std_logic;
+		video_x     : in  std_logic_vector;
+		win_on      : out std_logic_vector);
+end;
+
+architecture def of win_side is
+
+	impure function init_data (
+		constant tab  : natural_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable retval : std_logic_vector(0 to 2**size*win_on'length-1) := (others => '0');
+		constant t : natural_vector(0 to tab'length-1) := tab;
+	begin
+		for i in 0 to t'length/2-1 loop
+			for j in t(2*i) to t(2*i)+t(2*i+1)-1 loop
+				retval(win_on'length*j+i) := '1';
+			end loop;
+		end loop;
+		return retval;
+	end;
+
+	constant tab_bit : std_logic_vector := init_data(tab, video_x'length);
+	signal   won     : std_logic_vector(win_on'range);
+
+begin
+
+	rom_e : entity hdl4fpga.rom
+	generic map (
+		synchronous => synchronous,
+		bitrom      => tab_bit)
+	port map (
+		clk         => video_clk,
+		addr        => video_x,
+		data        => won);
+
+	win_on <= won and (win_on'range => video_on);
+
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity win_mngr is
 	generic (
 		synchronous : boolean := TRUE;
@@ -39,30 +92,26 @@ entity win_mngr is
 		video_frm   : in  std_logic;
 		video_don   : in  std_logic;
 		win_don     : out std_logic_vector;
-		win_nhl     : out std_logic_vector;
 		win_frm     : out std_logic_vector);
+
+	constant x : natural := 0;
+	constant y : natural := 1;
 end;
 
 architecture def of win_mngr is
 
 	impure function init_data (
 		constant tab  : natural_vector;
-		constant side : natural;
-		constant size : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(0 to 2**size*win_don'length-1) := (others => '0');
+		constant side : natural)
+		return natural_vector is
+		variable retval : natural_vector(0 to tab'length/2-1) := (others => 0);
 		constant t : natural_vector(0 to tab'length-1) := tab;
 	begin
-		for i in 0 to t'length/4-1 loop
-			for j in t(4*i+side) to t(4*i+side)+t(4*i+2+side)-1 loop
-				retval(win_don'length*j+i) := '1';
-			end loop;
+		for i in 0 to t'length/2-1 loop
+			retval(i) := t(2*i+side);
 		end loop;
 		return retval;
 	end;
-
-	constant xtab_bit : std_logic_vector := init_data(tab, 0, video_x'length);
-	constant ytab_bit : std_logic_vector := init_data(tab, 1, video_y'length);
 
 	signal mask_y     : std_logic_vector(win_don'range);
 	signal mask_x     : std_logic_vector(win_don'range);
@@ -80,34 +129,57 @@ begin
 		end if;
 	end process;
 
-	x_e : entity hdl4fpga.rom
+	x_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		bitrom      => xtab_bit)
+		tab         => init_data(tab, x))
 	port map (
-		clk         => video_clk,
-		addr        => video_x,
-		data        => mask_x);
+		video_clk   => video_clk,
+		video_on    => don,
+		video_x     => video_x,
+		win_on      => mask_x);
 
-	y_e : entity hdl4fpga.rom
+	y_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		bitrom      => ytab_bit)
+		tab         => init_data(tab, y))
 	port map (
-		clk         => video_clk,
-		addr        => video_y,
-		data        => mask_y);
+		video_clk   => video_clk,
+		video_on    => frm,
+		video_x     => video_y,
+		win_on      => mask_y);
 
-	win_don <= mask_y and mask_x and (win_don'range => frm and don);
+	win_don <= mask_y and mask_x;
+	win_frm <= mask_y;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity win_y is
+	port (
+		video_clk : in  std_logic;
+		video_nhl : in  std_logic;
+		win_frm   : in  std_logic;
+		win_y     : out std_logic_vector);
+end;
+
+architecture def of win_y is
+begin
 	process (video_clk)
+		variable y : unsigned(win_y'range);
 	begin
 		if rising_edge(video_clk) then
-			win_nhl <= edge_x and not (mask_x and mask_y);
-			edge_x  <= mask_x and mask_y;
+			if win_frm='0' then
+				y := (others => '0');
+			elsif video_nhl='1' then
+				y := y + 1;
+			end if;
+			win_y <= std_logic_vector(y);
 		end if;
 	end process;
-	win_frm <= mask_y and (win_frm'range => frm);
-end;
+end architecture;
 
 library ieee;
 use ieee.std_logic_1164.all;
