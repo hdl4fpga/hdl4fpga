@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.cgafont.all;
 
 entity scopeio_channel is
 	generic(
@@ -26,21 +27,25 @@ architecture def of scopeio_channel is
 
 	signal samples : words_vector(inputs-1 downto 0);
 
-	signal x        : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-	signal y        : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
-	signal gon      : std_logic;
-	signal won      : std_logic;
-	signal frm      : std_logic;
-	signal plot_dot : std_logic_vector(win_on'range);
-	signal grid_dot : std_logic;
+	signal x         : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+	signal y         : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal gon       : std_logic;
+	signal won       : std_logic;
+	signal frm       : std_logic;
+	signal win_frm1  : std_logic_vector(0 to 2-1);
+	signal plot_dot  : std_logic_vector(win_on'range);
+	signal grid_dot  : std_logic;
+	signal char_row  : std_logic_vector(3-1 downto 0);
+	signal char_line : std_logic_vector(8-1 downto 0);
+	signal char_addr : std_logic_vector(8-1 downto 0);
+	signal char_dot  : std_logic;
 
 begin
-	won <= not setif(win_on=(win_on'range => '0'));
-	frm <= not setif(win_frm=(win_frm'range => '0'));
+	won <= win_on(0);
+	frm <= win_frm(0);
 
 	win_b : block
 		signal vcntr    : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
-		signal win_frm  : std_logic_vector(0 to 2-1);
 	begin
 		main_e : entity hdl4fpga.win
 		port map (
@@ -56,20 +61,36 @@ begin
 			synchronous => FALSE,
 			tab => (
 				0, height-13,
-				height-13, 13))
+				height-13, 8))
 		port map (
 			video_clk => video_clk,
 			video_on  => frm,
 			video_x   => vcntr,
-			win_on    => win_frm);
+			win_on    => win_frm1);
 
 		channel_e : entity hdl4fpga.win_y
 		port map (
 			video_clk => video_clk,
 			video_nhl => video_nhl,
-			win_frm   => win_frm(0),
+			win_frm   => win_frm1(0),
 			win_y     => y);
 
+		char_e : entity hdl4fpga.win_y
+		port map (
+			video_clk => video_clk,
+			video_nhl => video_nhl,
+			win_frm   => win_frm1(1),
+			win_y     => char_row);
+
+		charrom_e : entity hdl4fpga.fontrom
+		generic map (
+			bitrom => psf1unitx8x8)
+		port map (
+			clk  => video_clk,
+			code => "0000",
+			row  => char_row,
+			data => char_line);
+		char_dot <= word2byte(char_line, addr => x(2 downto 0))(0) and win_frm1(1);
 	end block;
 
 	process (input_data)
@@ -96,7 +117,7 @@ begin
 			n => unsigned_num_bits(height-1))
 		port map (
 			video_clk  => video_clk,
-			video_ena  => won,
+			video_ena  => win_frm1(0),
 			video_row1 => y,
 			video_row2 => samples(i),
 			video_dot  => plot_dot(i));
@@ -113,7 +134,7 @@ begin
 			col_line => "00")
 		port map (
 			clk => video_clk,
-			don => won,
+			don => win_on(0),
 			row => x,
 			col => y,
 			dot => dot);
