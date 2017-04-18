@@ -114,10 +114,10 @@ begin
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		tab => (
-			383, 0*270, 1537, 269,
-			383, 1*270, 1537, 269,
-			383, 2*270, 1537, 269,
-			383, 3*270, 1537, 269))
+			383-(4*8+4), 0*270, 1537+(4*8+4), 269,
+			383-(4*8+4), 1*270, 1537+(4*8+4), 269,
+			383-(4*8+4), 2*270, 1537+(4*8+4), 269,
+			383-(4*8+4), 3*270, 1537+(4*8+4), 269))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -144,8 +144,8 @@ begin
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs     => 1,
-		width      => 1537,
-		height     => 270)
+		width      => 1537+(4*8+4),
+		height     => 269)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
