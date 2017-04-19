@@ -30,93 +30,78 @@ architecture def of scopeio_channel is
 	signal x         : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 	signal y         : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal gon       : std_logic;
-	signal won       : std_logic;
-	signal frm       : std_logic;
+	signal plot_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
 	signal grid_dot  : std_logic;
-	signal char_row  : std_logic_vector(3-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_addr : std_logic_vector(8-1 downto 0);
 	signal char_dot  : std_logic;
 	signal char_code : std_logic_vector(4-1 downto 0);
-	signal chann_on  : std_logic;
 
 begin
-	won <= not setif(win_on=(win_on'range => '0'));
-	frm <= not setif(win_frm=(win_frm'range => '0'));
 
 	win_b : block
+		signal phon  : std_logic;
+		signal pfrm  : std_logic;
 		signal vcntr : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
 		signal hcntr : std_logic_vector(0 to unsigned_num_bits(width-1)-1);
-		signal wfrm  : std_logic_vector(0 to 2-1);
-		signal whon  : std_logic_vector(0 to 2-1);
+		signal cfrm  : std_logic_vector(0 to 3-1);
+		signal cdon  : std_logic_vector(0 to 3-1);
+		signal wena  : std_logic;
+		signal wfrm  : std_logic;
 	begin
-		main_e : entity hdl4fpga.win
+		phon <= not setif(win_on=(win_on'range => '0'));
+		pfrm <= not setif(win_frm=(win_frm'range => '0'));
+
+		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
 			video_nhl => video_nhl,
-			win_frm   => frm,
-			win_ena   => won,
+			win_frm   => pfrm,
+			win_ena   => phon,
 			win_x     => hcntr,
 			win_y     => vcntr);
 
-		winx_e : entity hdl4fpga.win_side
+		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
-			synchronous => FALSE,
 			tab => (
-				    0, 4*8+4,
-				4*8+4, 1537))
+				4*8+4,         0, width-(4*8+4), height-12,
+				4*8+4, height-10, width-(4*8+4), 8,
+				    0,         0,       (4*8+3), height-13))
 		port map (
-			video_clk => video_clk,
-			video_on  => won,
-			video_x   => hcntr,
-			win_on    => whon);
+			video_clk  => video_clk,
+			video_x    => hcntr,
+			video_y    => vcntr,
+			video_don  => phon,
+			video_frm  => pfrm,
+			win_don    => cdon,
+			win_frm    => cfrm);
 
-		channx_e : entity hdl4fpga.win_x
-		port map (
-			video_clk => video_clk,
-			win_on    => whon(1),
-			win_x     => x);
+		wena <= not setif(cdon=(cdon'range => '0'));
+		wfrm <= not setif(cfrm=(cfrm'range => '0'));
 
-		winy_e : entity hdl4fpga.win_side
-		generic map (
-			synchronous => FALSE,
-			tab => (
-				0, height-12,
-				height-11, 8))
+		win_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			video_on  => frm,
-			video_x   => vcntr,
-			win_on    => wfrm);
-
-		channy_e : entity hdl4fpga.win_y
-		port map (
-			video_clk => video_clk,
-			win_nhl   => video_nhl,
-			win_frm   => wfrm(0),
+			video_nhl => video_nhl,
+			win_frm   => wfrm,
+			win_ena   => wena,
+			win_x     => x,
 			win_y     => y);
-		chann_on <= whon(1) and wfrm(0);
+		plot_on <= cdon(0);
 
-		char_e : entity hdl4fpga.win_y
-		port map (
-			video_clk => video_clk,
-			win_nhl   => video_nhl,
-			win_frm   => wfrm(1),
-			win_y     => char_row);
-
-		char_code <= x(5-1 downto 3) & "00";
 		charrom_e : entity hdl4fpga.fontrom
 		generic map (
 			bitrom => psf1unitx8x8)
 		port map (
 			clk  => video_clk,
 			code => x(7-1 downto 3),
-			row  => char_row,
+			row  => y(3-1 downto 0),
 			data => char_line);
 		char_dot <= word2byte(
 			reverse(std_logic_vector(unsigned(char_line) ror 1)), 
-			x(2 downto 0))(0) and wfrm(1) and whon(1) and setif(x(8-1 downto 5)=(1 to 3 =>'0'));
+			x(2 downto 0))(0) and (cdon(1) or cdon(2)) and setif(x(8-1 downto 5)=(1 to 3 =>'0'))
+			and setif(y(5-1 downto 3)=(1 to 2 =>'0'));
 	end block;
 
 	process (input_data)
@@ -143,7 +128,7 @@ begin
 			n => unsigned_num_bits(height-1))
 		port map (
 			video_clk  => video_clk,
-			video_ena  => chann_on,
+			video_ena  => plot_on,
 			video_row1 => y,
 			video_row2 => samples(i),
 			video_dot  => plot_dot(i));
@@ -160,7 +145,7 @@ begin
 			col_line => "00")
 		port map (
 			clk => video_clk,
-			don => chann_on,
+			don => plot_on,
 			row => x,
 			col => y,
 			dot => dot);

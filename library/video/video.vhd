@@ -226,7 +226,7 @@ begin
 	generic map (
 		n => n)
 	port map (
-		clk => clk,
+		clk   => clk,
 
 		htmg  => hparm,
 		hdata => hdata,
@@ -248,7 +248,7 @@ begin
 			hdata <= rom_hdata;
 			vdata <= rom_vdata;
 
-			nhl  <= edge_don and not don;
+			nhl <= edge_don and not don;
 			if heot='1' then
 				don   <= setif(hparm="11");
 				hsync <= setif(hparm="01");

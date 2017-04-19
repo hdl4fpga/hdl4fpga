@@ -157,61 +157,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity win_x is
-	port (
-		video_clk : in  std_logic;
-		win_on    : in  std_logic;
-		win_x     : out std_logic_vector);
-end;
-
-architecture def of win_x is
-begin
-	process (video_clk)
-		variable x : unsigned(win_x'range);
-	begin
-		if rising_edge(video_clk) then
-			if win_on='0' then
-				x := (others => '0');
-			else
-				x := x + 1;
-			end if;
-			win_x <= std_logic_vector(x);
-		end if;
-	end process;
-end architecture;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity win_y is
-	port (
-		video_clk : in  std_logic;
-		win_nhl   : in  std_logic;
-		win_frm   : in  std_logic;
-		win_y     : out std_logic_vector);
-end;
-
-architecture def of win_y is
-begin
-	process (video_clk)
-		variable y : unsigned(win_y'range);
-	begin
-		if rising_edge(video_clk) then
-			if win_frm='0' then
-				y := (others => '0');
-			elsif win_nhl='1' then
-				y := y + 1;
-			end if;
-			win_y <= std_logic_vector(y);
-		end if;
-	end process;
-end architecture;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 entity win is
 	port (
 		video_clk : in  std_logic;
