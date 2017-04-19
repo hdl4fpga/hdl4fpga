@@ -59,7 +59,7 @@ package std is
 		constant arg : std_logic_vector)
 		return std_logic_vector;
 	
-	function resize (
+	function bin2bcd (
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector;
@@ -267,24 +267,6 @@ package body std is
 		return aux;
 	end;
 
-	function resize (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector is
-		variable aux : unsigned(0 to arg1'length-1);
-		variable val : unsigned(arg2-1 downto 0);
-	begin
-		val :=(others => '0');
-		aux := unsigned(arg1);
-		for i in aux'range loop
-			val := val sll 1;
-			val(0) := aux(0);
-			aux := aux sll 1;
-		end loop;
-		return std_logic_vector(val);
-
-	end;
-
 	------------------
 	-- Array functions
 	------------------
@@ -300,6 +282,22 @@ package body std is
 		end loop;
 		val := aux;
 		return val;
+	end;
+
+	function bin2bcd(
+		constant arg1 : std_logic_vector;
+		constant arg2 : natural)
+		return std_logic_vector is
+		variable aux := unsigned(arg2+bin'length-1 downto 0);
+	begin
+		aux(bin'range) := unsigned(bin);
+		for i in 0 to arg2/4-1 loop
+			if aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) >= unsigned'("0101")  then
+				aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) := aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) + 3;
+			end if;
+			aux := aux sll 1;
+		end if;
+		return std_logic_vector(aux(aux'left downto bin'length));
 	end;
 
 	function to_bytevector (

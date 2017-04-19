@@ -33,6 +33,7 @@ architecture def of scopeio_channel is
 	signal plot_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
 	signal grid_dot  : std_logic;
+	signal text_on   : std_logic;
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_addr : std_logic_vector(8-1 downto 0);
 	signal char_dot  : std_logic;
@@ -66,7 +67,7 @@ begin
 		generic map (
 			tab => (
 				4*8+4,         0, width-(4*8+4), height-12,
-				4*8+4, height-10, width-(4*8+4), 8,
+				0, height-10, width-(4*8+4), 8,
 				    0,         0,       (4*8+3), height-13))
 		port map (
 			video_clk  => video_clk,
@@ -88,22 +89,40 @@ begin
 			win_ena   => wena,
 			win_x     => x,
 			win_y     => y);
+
 		plot_on <= cdon(0);
+		text_on <= cdon(1) or cdon(2);
 
 	end block;
 
-	charrom_e : entity hdl4fpga.fontrom
-	generic map (
-		bitrom => psf1unitx8x8)
-	port map (
-		clk  => video_clk,
-		code => x(7-1 downto 3),
-		row  => y(3-1 downto 0),
-		data => char_line);
-	char_dot <= word2byte(
-		reverse(std_logic_vector(unsigned(char_line) ror 1)), 
-		x(2 downto 0))(0) and (cdon(1) or cdon(2)) and setif(x(8-1 downto 5)=(1 to 3 =>'0'))
-		and setif(y(5-1 downto 3)=(1 to 2 =>'0'));
+	axis_b: block
+		signal dot : std_logic;
+	begin
+		charrom_e : entity hdl4fpga.fontrom
+		generic map (
+			bitrom => psf1unitx8x8)
+		port map (
+			clk  => video_clk,
+			code => x(7-1 downto 3),
+			row  => y(3-1 downto 0),
+			data => char_line);
+		dot <= 
+			word2byte(
+				reverse(std_logic_vector(unsigned(char_line) ror 1)), 
+				x(2 downto 0))(0) and
+			text_on and 
+			setif(x(8-1 downto 5)=(1 to 3 =>'0')) and 
+			setif(y(6-1 downto 3)=(1 to 3 =>'0'));
+
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(0) => char_dot);
+	end block;
 
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);
