@@ -90,19 +90,20 @@ begin
 			win_y     => y);
 		plot_on <= cdon(0);
 
-		charrom_e : entity hdl4fpga.fontrom
-		generic map (
-			bitrom => psf1unitx8x8)
-		port map (
-			clk  => video_clk,
-			code => x(7-1 downto 3),
-			row  => y(3-1 downto 0),
-			data => char_line);
-		char_dot <= word2byte(
-			reverse(std_logic_vector(unsigned(char_line) ror 1)), 
-			x(2 downto 0))(0) and (cdon(1) or cdon(2)) and setif(x(8-1 downto 5)=(1 to 3 =>'0'))
-			and setif(y(5-1 downto 3)=(1 to 2 =>'0'));
 	end block;
+
+	charrom_e : entity hdl4fpga.fontrom
+	generic map (
+		bitrom => psf1unitx8x8)
+	port map (
+		clk  => video_clk,
+		code => x(7-1 downto 3),
+		row  => y(3-1 downto 0),
+		data => char_line);
+	char_dot <= word2byte(
+		reverse(std_logic_vector(unsigned(char_line) ror 1)), 
+		x(2 downto 0))(0) and (cdon(1) or cdon(2)) and setif(x(8-1 downto 5)=(1 to 3 =>'0'))
+		and setif(y(5-1 downto 3)=(1 to 2 =>'0'));
 
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);
