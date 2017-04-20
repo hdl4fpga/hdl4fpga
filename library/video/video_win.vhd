@@ -113,11 +113,14 @@ architecture def of win_mngr is
 		return retval;
 	end;
 
-	signal mask_y     : std_logic_vector(win_don'range);
-	signal mask_x     : std_logic_vector(win_don'range);
-	signal edge_x     : std_logic_vector(win_don'range);
-	signal frm        : std_logic;
-	signal don        : std_logic;
+	constant tabx : natural_vector := init_data(tab, x);
+	constant taby : natural_vector := init_data(tab, y);
+
+	signal mask_y : std_logic_vector(win_don'range);
+	signal mask_x : std_logic_vector(win_don'range);
+	signal edge_x : std_logic_vector(win_don'range);
+	signal frm    : std_logic;
+	signal don    : std_logic;
 
 begin
 
@@ -132,7 +135,7 @@ begin
 	x_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		tab         => init_data(tab, x))
+		tab         => tabx)
 	port map (
 		video_clk   => video_clk,
 		video_on    => don,
@@ -142,7 +145,7 @@ begin
 	y_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		tab         => init_data(tab, y))
+		tab         => taby)
 	port map (
 		video_clk   => video_clk,
 		video_on    => frm,

@@ -67,7 +67,7 @@ begin
 		generic map (
 			tab => (
 				4*8+4,         0, width-(4*8+4), height-12,
-				0, height-10, width-(4*8+4), 8,
+				    0, height-10, width-(4*8+4), 8,
 				    0,         0,       (4*8+3), height-13))
 		port map (
 			video_clk  => video_clk,
@@ -96,21 +96,38 @@ begin
 	end block;
 
 	axis_b: block
+		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
+		signal bcd : std_logic_vector(16-1 downto 0);
+		signal char_code : std_logic_vector(4-1 downto 0);
+		function (
+			constant arg1 : real)
+			return std_logic_vector is
+			variable aux  : natural;
+			variable int  : unsigned;
+			variable frac : unsigned;
+		begin
+			int  := to_bcd(natural(floor(sign(arg1)*arg1)));
+			frac := to_bcd(natural(sign(arg1)*arg1-floor(sign(arg1)*arg1)));
+		end;
+
 	begin
-		charrom_e : entity hdl4fpga.fontrom
-		generic map (
-			bitrom => psf1unitx8x8)
-		port map (
-			clk  => video_clk,
-			code => x(7-1 downto 3),
-			row  => y(3-1 downto 0),
-			data => char_line);
-		dot <= 
+		bcd <= 
+			word2byte(
+				to_bcd("1.23", 16) &
+				to_bcd("3.14", 16) &
+				to_bcd("6.28", 16) &
+				to_bcd("9.99", 16), 
+				y(7 downto 6));
+		char_code <= reverse(word2byte (reverse(bcd), x(5-1 downto 3)));
+		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+
+		aux<= 
 			word2byte(
 				reverse(std_logic_vector(unsigned(char_line) ror 1)), 
-				x(2 downto 0))(0) and
-			text_on and 
+				x(2 downto 0));
+
+		dot <= aux(0) and	text_on and 
 			setif(x(8-1 downto 5)=(1 to 3 =>'0')) and 
 			setif(y(6-1 downto 3)=(1 to 3 =>'0'));
 

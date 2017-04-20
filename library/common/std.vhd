@@ -64,6 +64,16 @@ package std is
 		constant arg2 : natural)
 		return std_logic_vector;
 
+	function to_bcd (
+		constant arg1 : natural;
+		constant arg2 : natural)
+		return std_logic_vector;
+
+	function to_bcd (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return std_logic_vector;
+
 	--------------------
 	-- Counter functions
 	--------------------
@@ -288,16 +298,58 @@ package body std is
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector is
-		variable aux := unsigned(arg2+bin'length-1 downto 0);
+		variable aux : unsigned(arg2+arg1'length-1 downto 0);
 	begin
-		aux(bin'range) := unsigned(bin);
-		for i in 0 to arg2/4-1 loop
-			if aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) >= unsigned'("0101")  then
-				aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) := aux(4*(i+1)+bin'length-1 downto 4*i+bin'length) + 3;
-			end if;
+		aux(arg1'length-1 downto 0) := unsigned(arg1);
+		for i in 0 to arg1'length-1 loop
+			for j in 0 to arg2/4-1 loop
+				if aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) >= unsigned'("0101")  then
+					aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) := aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) + 3;
+				end if;
+			end loop;
 			aux := aux sll 1;
-		end if;
-		return std_logic_vector(aux(aux'left downto bin'length));
+		end loop;
+		return std_logic_vector(aux(aux'left downto arg1'length));
+	end;
+
+	function to_bcd(
+		constant arg1   : natural;
+		constant arg2   : natural)
+		return std_logic_vector is
+		variable aux    : natural;
+		variable retval : unsigned(arg2-1 downto 0) := (others => '0');
+	begin
+		aux := arg1;
+		for i in 0 to arg2/4-1 loop
+			retval := retval srl 4;
+			retval(0 to 4-1) := to_unsigned(aux mod 10, 4);
+			aux    := aux / 10;
+			exit when aux=0;
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
+	function to_bcd(
+		constant arg1 : string;
+		constant arg2 : natural)
+		return std_logic_vector is
+		constant tab    : natural_vector(0 to 12) := (
+			character'pos('0'), character'pos('1'), character'pos('2'), character'pos('3'),
+			character'pos('4'), character'pos('5'), character'pos('6'), character'pos('7'),
+			character'pos('8'), character'pos('9'), character'pos('.'), character'pos('+'),
+		   	character'pos('-'));
+		variable retval : unsigned(arg2-1 downto 0) := (others => '0');
+	begin
+		for i in arg1'range loop
+			retval := retval sll 4;
+			for j in tab'range loop
+				if character'pos(arg1(i))=tab(j) then
+					retval(4-1 downto 0) := to_unsigned(j, 4);
+					exit;
+				end if;
+			end loop;
+		end loop;
+		return std_logic_vector(retval);
 	end;
 
 	function to_bytevector (
