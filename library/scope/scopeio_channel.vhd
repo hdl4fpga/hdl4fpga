@@ -135,6 +135,13 @@ begin
 			end loop;
 			return std_logic_vector(retval);
 		end;
+0.05 1.25
+0.10 2.50
+0.20 5.00
+0.50 12.5
+1.00 25.0
+2.00 50.0
+5.00 12.5
 
 	begin
 		bcd <= 
