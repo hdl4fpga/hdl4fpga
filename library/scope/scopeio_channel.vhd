@@ -100,24 +100,49 @@ begin
 		signal dot : std_logic;
 		signal bcd : std_logic_vector(16-1 downto 0);
 		signal char_code : std_logic_vector(4-1 downto 0);
-		function (
-			constant arg1 : real)
+
+		function to_bcd (
+			constant arg1   : real;
+			constant arg2   : natural)
 			return std_logic_vector is
-			variable aux  : natural;
-			variable int  : unsigned;
-			variable frac : unsigned;
+			variable i      : natural;
+			variable int    : real;
+			variable frac   : real;
+			variable retval : unsigned(0 to arg2-1);
 		begin
-			int  := to_bcd(natural(floor(sign(arg1)*arg1)));
-			frac := to_bcd(natural(sign(arg1)*arg1-floor(sign(arg1)*arg1)));
+			int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1);
+			frac := ieee.math_real.sign(arg1)*arg1-int;
+			i    := 0;
+			while i < arg2 loop
+				if int >= 1.0 or i=0 then
+					retval           := retval srl 4;
+					retval(0 to 4-1) := to_unsigned(natural(ieee.math_real.floor(int)) mod 10, 4);
+					int              := int / 10.0;
+				else
+					exit;
+				end if;
+				i := i + 4;
+			end loop;
+			if i < arg2 then
+				retval := retval srl arg2-i;
+				retval := retval(4 to arg2-1) & to_unsigned(10, 4);
+				i := i + 4;
+			end if;
+			while i < arg2 loop
+				frac := frac * 10.0;
+				retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
+				i := i + 4;
+			end loop;
+			return std_logic_vector(retval);
 		end;
 
 	begin
 		bcd <= 
 			word2byte(
-				to_bcd("1.23", 16) &
-				to_bcd("3.14", 16) &
-				to_bcd("6.28", 16) &
-				to_bcd("9.99", 16), 
+				to_bcd(0.0, 16) &
+				to_bcd(300.0, 16) &
+				to_bcd(6.28, 16) &
+				to_bcd(9.99, 16), 
 				y(7 downto 6));
 		char_code <= reverse(word2byte (reverse(bcd), x(5-1 downto 3)));
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
