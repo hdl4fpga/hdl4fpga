@@ -65,13 +65,13 @@ package std is
 		return std_logic_vector;
 
 	function to_bcd (
-		constant arg1 : natural;
+		constant arg1 : string;
 		constant arg2 : natural)
 		return std_logic_vector;
 
 	function to_bcd (
-		constant arg1 : string;
-		constant arg2 : natural)
+		constant arg1   : real;
+		constant arg2   : natural)
 		return std_logic_vector;
 
 	--------------------
@@ -312,19 +312,37 @@ package body std is
 		return std_logic_vector(aux(aux'left downto arg1'length));
 	end;
 
-	function to_bcd(
-		constant arg1   : natural;
+	function to_bcd (
+		constant arg1   : real;
 		constant arg2   : natural)
 		return std_logic_vector is
-		variable aux    : natural;
-		variable retval : unsigned(arg2-1 downto 0) := (others => '0');
+		variable i      : natural;
+		variable int    : real;
+		variable frac   : real;
+		variable retval : unsigned(0 to arg2-1);
 	begin
-		aux := arg1;
-		for i in 0 to arg2/4-1 loop
-			retval := retval srl 4;
-			retval(0 to 4-1) := to_unsigned(aux mod 10, 4);
-			aux    := aux / 10;
-			exit when aux=0;
+		int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1);
+		frac := ieee.math_real.sign(arg1)*arg1-int;
+		i    := 0;
+		while i < arg2 loop
+			if int >= 1.0 or i=0 then
+				retval           := retval srl 4;
+				retval(0 to 4-1) := to_unsigned(natural(ieee.math_real.floor(int)) mod 10, 4);
+				int              := int / 10.0;
+			else
+				exit;
+			end if;
+			i := i + 4;
+		end loop;
+		if i < arg2 then
+			retval := retval srl arg2-i;
+			retval := retval(4 to arg2-1) & to_unsigned(10, 4);
+			i := i + 4;
+		end if;
+		while i < arg2 loop
+			frac := frac * 10.0;
+			retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
+			i := i + 4;
 		end loop;
 		return std_logic_vector(retval);
 	end;

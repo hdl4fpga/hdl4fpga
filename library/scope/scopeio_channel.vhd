@@ -98,60 +98,36 @@ begin
 	axis_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
-		signal bcd : std_logic_vector(16-1 downto 0);
 		signal char_code : std_logic_vector(4-1 downto 0);
 
-		function to_bcd (
-			constant arg1   : real;
-			constant arg2   : natural)
+		function marks (
+			constant step   : real;
+			constant num    : natural)
 			return std_logic_vector is
-			variable i      : natural;
-			variable int    : real;
-			variable frac   : real;
-			variable retval : unsigned(0 to arg2-1);
+			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4-1 downto 0) := (others => '-');
+			type real_vector is array (natural range <>) of real;
+			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 2.5);
+			variable aux    : real;
 		begin
-			int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1);
-			frac := ieee.math_real.sign(arg1)*arg1-int;
-			i    := 0;
-			while i < arg2 loop
-				if int >= 1.0 or i=0 then
-					retval           := retval srl 4;
-					retval(0 to 4-1) := to_unsigned(natural(ieee.math_real.floor(int)) mod 10, 4);
-					int              := int / 10.0;
-				else
-					exit;
-				end if;
-				i := i + 4;
-			end loop;
-			if i < arg2 then
-				retval := retval srl arg2-i;
-				retval := retval(4 to arg2-1) & to_unsigned(10, 4);
-				i := i + 4;
-			end if;
-			while i < arg2 loop
-				frac := frac * 10.0;
-				retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
-				i := i + 4;
+			for i in 0 to num-1 loop
+				for j in 0 to 3-1 loop
+					aux := 0.0;
+					for k in 0 to 3-1 loop
+						retval := retval sll 16;
+						retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
+						aux := aux + scales(k)*step*real(10**j);
+					end loop;
+					retval := retval sll 16;
+					retval(16-1 downto 0) := (others => '-');
+				end loop;
+				retval := retval sll (16*4);
+				retval(16*4-1 downto 0) := (others => '-');
 			end loop;
 			return std_logic_vector(retval);
 		end;
-0.05 1.25
-0.10 2.50
-0.20 5.00
-0.50 12.5
-1.00 25.0
-2.00 50.0
-5.00 12.5
 
 	begin
-		bcd <= 
-			word2byte(
-				to_bcd(0.0, 16) &
-				to_bcd(300.0, 16) &
-				to_bcd(6.28, 16) &
-				to_bcd(9.99, 16), 
-				y(7 downto 6));
-		char_code <= reverse(word2byte (reverse(bcd), x(5-1 downto 3)));
+		char_code <= reverse(word2byte(reverse(marks(0.05, 25)), "0000000" & x(5-1 downto 3)));
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 
 		aux<= 
