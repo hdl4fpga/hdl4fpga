@@ -98,26 +98,29 @@ begin
 	axis_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
+		signal time_line : std_logic_vector(16-1 downto 0);
 		signal char_code : std_logic_vector(4-1 downto 0);
 
 		function marks (
 			constant step   : real;
 			constant num    : natural)
 			return std_logic_vector is
-			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4-1 downto 0) := (others => '-');
+			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
 			type real_vector is array (natural range <>) of real;
-			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 2.5);
+			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
 			variable aux    : real;
 		begin
-			for i in 0 to 3-1 loop
+			for i in 0 to 4-1 loop
 				for j in 0 to 4-1 loop
-					aux := 0.0;
 					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 						retval := retval sll 16;
 						if j < 3 then
 							if k < num then
+								if (k mod 8)=0 then
+									aux := real((k/8)) * 6.0 * scales(j)*step*real(10**i);
+								end if;
 								retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
-								aux := aux + scales(0)*step*real(10**0);
+								aux := aux + scales(j)*step*real(10**i);
 							end if;
 						end if;
 					end loop;
@@ -127,8 +130,17 @@ begin
 		end;
 
 	begin
-		char_code <= reverse(word2byte(reverse(marks(0.05, 25)), "0001" & x(11-1 downto 8)  & x(5-1 downto 3) ));
-		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+		process (video_clk)
+			variable sel : std_logic_vector(1 downto 0);
+		begin
+			if rising_edge(video_clk) then
+				sel(0) := win_on(1) or win_on(3);
+				sel(1) := win_on(2) or win_on(3);
+				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), "1010" & sel));
+				char_code <= reverse(word2byte(time_line, x(11-1 downto 8) & x(5-1 downto 3) ));
+				char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+			end if;
+		end process;
 
 		aux<= 
 			word2byte(
