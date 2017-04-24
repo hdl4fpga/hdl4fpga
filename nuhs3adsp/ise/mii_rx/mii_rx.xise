@@ -113,6 +113,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="14"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
+    <file xil_pn:name="mii_rx.ipf" xil_pn:type="FILE_USERDOC"/>
   </files>
 
   <properties>
