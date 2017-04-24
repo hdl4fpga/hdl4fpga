@@ -104,31 +104,30 @@ begin
 			constant step   : real;
 			constant num    : natural)
 			return std_logic_vector is
-			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4-1 downto 0) := (others => '0');
+			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4-1 downto 0) := (others => '-');
 			type real_vector is array (natural range <>) of real;
 			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 2.5);
 			variable aux    : real;
 		begin
---			for j in 0 to 3-1 loop
---				for k in 0 to 3-1 loop
+			for i in 0 to 3-1 loop
+				for j in 0 to 4-1 loop
 					aux := 0.0;
-					for i in 0 to num-1 loop
+					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 						retval := retval sll 16;
-						retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
-						aux := aux + scales(0)*step*real(10**0);
+						if j < 3 then
+							if k < num then
+								retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
+								aux := aux + scales(0)*step*real(10**0);
+							end if;
+						end if;
 					end loop;
---					retval := retval sll 16;
---					retval(16-1 downto 0) := (others => '-');
---				end loop;
---				retval := retval sll (16*4);
---				retval(16*4-1 downto 0) := (others => '-');
---			end loop;
-			retval := retval sll (retval'length-num*16);
+				end loop;
+			end loop;
 			return std_logic_vector(retval);
 		end;
 
 	begin
-		char_code <= reverse(word2byte(reverse(marks(0.05, 25)), "0000" & x(11-1 downto 8)  & x(5-1 downto 3) ));
+		char_code <= reverse(word2byte(reverse(marks(0.05, 25)), "0001" & x(11-1 downto 8)  & x(5-1 downto 3) ));
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 
 		aux<= 
