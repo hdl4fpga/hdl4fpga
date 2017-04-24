@@ -134,10 +134,10 @@ begin
 			variable sel : std_logic_vector(1 downto 0);
 		begin
 			if rising_edge(video_clk) then
-				sel(0) := win_on(1) or win_on(3);
-				sel(1) := win_on(2) or win_on(3);
-				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), "1010" & sel));
-				char_code <= reverse(word2byte(time_line, x(11-1 downto 8) & x(5-1 downto 3) ));
+				sel(0) := '0'; --win_on(1) or win_on(3);
+				sel(1) := '0'; --win_on(2) or win_on(3);
+				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), "1010" & sel & x(11-1 downto 8) ));
+				char_code <= reverse(word2byte(reverse(time_line), x(5-1 downto 3) ));
 				char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 			end if;
 		end process;
