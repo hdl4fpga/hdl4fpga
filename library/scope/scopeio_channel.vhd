@@ -16,6 +16,7 @@ entity scopeio_channel is
 		video_nhl  : in  std_logic;
 		input_data : in  std_logic_vector;
 		input_addr : out std_logic_vector;
+		scale      : in  std_logic_vector(4-1 downto 0);
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
 		video_dot  : out std_logic_vector);
@@ -67,7 +68,7 @@ begin
 		generic map (
 			tab => (
 				4*8+4,         0, width-(4*8+4), height-12,
-				    0, height-10, width-(4*8+4), 8,
+				    0, height-10, width, 8,
 				    0,         0,       (4*8+3), height-13))
 		port map (
 			video_clk  => video_clk,
@@ -98,7 +99,7 @@ begin
 	axis_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
-		signal time_line : std_logic_vector(16-1 downto 0);
+		signal time_line : std_logic_vector(128-1 downto 0);
 		signal char_code : std_logic_vector(4-1 downto 0);
 
 		function marks (
@@ -115,7 +116,7 @@ begin
 					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 						retval := retval sll 16;
 						if j < 3 then
-							if k < num then
+							if i < 3 then
 								if (k mod 8)=0 then
 									aux := real((k/8)) * 6.0 * scales(j)*step*real(10**i);
 								end if;
@@ -136,11 +137,11 @@ begin
 			if rising_edge(video_clk) then
 				sel(0) := win_on(1) or win_on(3);
 				sel(1) := win_on(2) or win_on(3);
-				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), "1010" & sel & x(11-1 downto 8) ));
+				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), scale & sel));
 			end if;
 		end process;
-				char_code <= reverse(word2byte(time_line, x(5-1 downto 3) ));
-				char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+		char_code <= reverse(word2byte(reverse(time_line),  x(11-1 downto 8) & x(5-1 downto 3)));
+		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 
 		aux<= 
 			word2byte(

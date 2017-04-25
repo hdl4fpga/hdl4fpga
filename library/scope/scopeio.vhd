@@ -27,7 +27,7 @@ end;
 architecture beh of scopeio is
 
 	signal hdr_data     : std_logic_vector(288-1 downto 0);
-	signal pld_data     : std_logic_vector(288-1 downto 0);
+	signal pld_data     : std_logic_vector(3*8-1 downto 0);
 	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
 	signal ser_data     : std_logic_vector(32-1 downto 0);
 
@@ -55,6 +55,8 @@ architecture beh of scopeio is
 	
 	signal win_don      : std_logic_vector(0 to 18-1);
 	signal win_frm      : std_logic_vector(0 to 18-1);
+	signal scale        : std_logic_vector(4-1 downto 0);
+	signal pll_rdy      : std_logic;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -63,6 +65,7 @@ begin
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
 		pll_data => pll_data,
+		pll_rdy  => pll_rdy,
 		ser_data => ser_data);
 
 	process (ser_data)
@@ -77,11 +80,20 @@ begin
 		variable data : unsigned(pld_data'range);
 	begin
 		data     := unsigned(pld_data);
-		cga_code <= std_logic_vector(data(cga_code'range));
+		cga_code <= reverse(std_logic_vector(data(cga_code'range)));
 		data     := data srl cga_code'length;
 		cga_row  <= std_logic_vector(data(cga_row'range));
 		data     := data srl cga_row'length;
 		cga_col  <= std_logic_vector(data(cga_col'range));
+	end process;
+
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if pll_rdy='1' then
+				scale <= cga_code(3 downto 0);
+			end if;
+		end if;
 	end process;
 
 	video_e : entity hdl4fpga.video_vga
@@ -151,6 +163,7 @@ begin
 		video_nhl  => video_nhl,
 		input_data => input_data,
 		input_addr => addr,
+		scale      => scale,
 		win_frm    => win_frm,
 		win_on     => win_don,
 		video_dot  => video_dot);
@@ -162,10 +175,10 @@ begin
 		cga_height => 68,
 		char_width => 8)
 	port map (
-		sys_clk    => video_clk,
-		sys_we     => video_hon,
-		sys_row    => video_vcntr(11-1 downto 11-cga_row'length),
-		sys_col    => video_hcntr(11-1 downto 11-cga_col'length),
+		sys_clk    => mii_rxc,
+		sys_we     => pll_rdy,
+		sys_row    => (11-1 downto 11-cga_row'length => '0'), --video_vcntr(11-1 downto 11-cga_row'length),
+		sys_col    => (11-1 downto 11-cga_col'length => '0'), --video_hcntr(11-1 downto 11-cga_col'length),
 		sys_code   => cga_code,
 		vga_clk    => video_clk,
 		vga_row    => video_vcntr(11-1 downto cga_zoom),
