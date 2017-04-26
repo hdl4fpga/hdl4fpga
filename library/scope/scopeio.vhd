@@ -57,6 +57,9 @@ architecture beh of scopeio is
 	signal win_frm      : std_logic_vector(0 to 18-1);
 	signal scale        : std_logic_vector(4-1 downto 0);
 	signal pll_rdy      : std_logic;
+
+	constant width  : natural := 25*64+1+2*(4*8+4);
+	constant height : natural := 269;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -126,10 +129,10 @@ begin
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		tab => (
-			383-(4*8+4), 0*270, 1537+(4*8+4), 269,
-			383-(4*8+4), 1*270, 1537+(4*8+4), 269,
-			383-(4*8+4), 2*270, 1537+(4*8+4), 269,
-			383-(4*8+4), 3*270, 1537+(4*8+4), 269))
+			319-2*(4*8+4), 0*270, width, height,
+			319-2*(4*8+4), 1*270, width, height,
+			319-2*(4*8+4), 2*270, width, height,
+			319-2*(4*8+4), 3*270, width, height))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -156,8 +159,8 @@ begin
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs     => 1,
-		width      => 1537+(4*8+4),
-		height     => 269)
+		width      => width,
+		height     => height)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,

@@ -34,7 +34,8 @@ architecture def of scopeio_channel is
 	signal plot_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
 	signal grid_dot  : std_logic;
-	signal text_on   : std_logic;
+	signal text_x    : std_logic;
+	signal text_y    : std_logic;
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_addr : std_logic_vector(8-1 downto 0);
 	signal char_dot  : std_logic;
@@ -67,9 +68,9 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				4*8+4,         0, width-(4*8+4), height-12,
-				    0, height-10, width, 8,
-				    0,         0,       (4*8+3), height-13))
+				4*8+4,         0, width-2*(4*8+4), height-12,
+				4*8+4, height-10, width-1*(4*8+4),         8,
+				    0,         0,       1*(4*8+3), height-13))
 		port map (
 			video_clk  => video_clk,
 			video_x    => hcntr,
@@ -92,7 +93,8 @@ begin
 			win_y     => y);
 
 		plot_on <= cdon(0);
-		text_on <= cdon(1) or cdon(2);
+		text_x  <= cdon(1);
+		text_y  <= cdon(2);
 
 	end block;
 
@@ -130,7 +132,28 @@ begin
 			return std_logic_vector(retval);
 		end;
 
+		signal seg  : std_logic_vector(4-1 downto 0);
+		signal mark : std_logic_vector(3-1 downto 0);
 	begin
+		process (video_clk)
+			variable edge : std_logic;
+		begin
+			if rising_edge(video_clk) then
+				if text_x='0' then
+					seg  <= (others => '0');
+					mark <= (others => '0');
+				elsif (x(5) xor edge)='1' then
+					if (seg(3) and seg(0))='1' then
+						seg  <= (others => '0');
+						mark <= std_logic_vector(unsigned(mark) + 1);
+					else
+						seg  <= std_logic_vector(unsigned(seg)  + 1);
+					end if;
+				end if;
+				edge := x(5);
+			end if;
+		end process;
+
 		process (video_clk)
 			variable sel : std_logic_vector(1 downto 0);
 		begin
@@ -138,18 +161,14 @@ begin
 				sel(0) := win_on(1) or win_on(3);
 				sel(1) := win_on(2) or win_on(3);
 				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), scale & sel));
+				char_code <= reverse(word2byte(reverse(time_line), mark & x(5-1 downto 3)));
 			end if;
 		end process;
-		char_code <= reverse(word2byte(reverse(time_line),  x(11-1 downto 8) & x(5-1 downto 3)));
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(2 downto 0));
 
-		aux<= 
-			word2byte(
-				reverse(std_logic_vector(unsigned(char_line) ror 1)), 
-				x(2 downto 0));
-
-		dot <= aux(0) and	text_on and 
-			setif(x(8-1 downto 5)=(1 to 3 =>'0')) and 
+		dot <= aux(0) and text_x and 
+			setif(seg=(1 to 4 =>'0')) and 
 			setif(y(6-1 downto 3)=(1 to 3 =>'0'));
 
 		align_e : entity hdl4fpga.align
