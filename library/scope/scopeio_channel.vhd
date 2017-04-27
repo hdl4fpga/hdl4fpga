@@ -70,7 +70,7 @@ begin
 			tab => (
 				4*8+4,         0, width-2*(4*8+4), height-12,
 				4*8+4, height-10, width-1*(4*8+4),         8,
-				    0,         0,       1*(4*8+3), height-13))
+				    0,         0,       1*(4*8), height-13))
 		port map (
 			video_clk  => video_clk,
 			video_x    => hcntr,
@@ -101,6 +101,8 @@ begin
 	axis_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
+		signal dot_y : std_logic;
+		signal dot_x : std_logic;
 		signal time_line : std_logic_vector(128-1 downto 0);
 		signal char_code : std_logic_vector(4-1 downto 0);
 
@@ -120,7 +122,7 @@ begin
 						if j < 3 then
 							if i < 3 then
 								if (k mod 8)=0 then
-									aux := real((k/8)) * 6.0 * scales(j)*step*real(10**i);
+									aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
 								end if;
 								retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
 								aux := aux + scales(j)*step*real(10**i);
@@ -134,6 +136,7 @@ begin
 
 		signal seg  : std_logic_vector(4-1 downto 0);
 		signal mark : std_logic_vector(3-1 downto 0);
+		signal addr : std_logic_vector(5-1 downto 0);
 	begin
 		process (video_clk)
 			variable edge : std_logic;
@@ -155,19 +158,20 @@ begin
 		end process;
 
 		process (video_clk)
-			variable sel : std_logic_vector(1 downto 0);
+			variable sel  : std_logic_vector(1 downto 0);
 		begin
 			if rising_edge(video_clk) then
 				sel(0) := win_on(1) or win_on(3);
 				sel(1) := win_on(2) or win_on(3);
 				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), scale & sel));
-				char_code <= reverse(word2byte(reverse(time_line), mark & x(5-1 downto 3)));
+				char_code <= reverse(word2byte(reverse(time_line), mark & addr));
+				addr   <= x(addr'range);
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
-		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(2 downto 0));
+		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 2)), addr(2 downto 0));
 
-		dot <= aux(0) and text_x and 
+		dot <= aux(0) and (text_y or text_x) and 
 			setif(seg=(1 to 4 =>'0')) and 
 			setif(y(6-1 downto 3)=(1 to 3 =>'0'));
 
@@ -179,6 +183,7 @@ begin
 			clk   => video_clk,
 			di(0) => dot,
 			do(0) => char_dot);
+
 	end block;
 
 	process (input_data)
