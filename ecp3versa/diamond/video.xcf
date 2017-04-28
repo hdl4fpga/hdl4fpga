@@ -20,7 +20,7 @@
 				<BScanVal>0</BScanVal>
 			</Bypass>
 			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/video/ecp3versa_video.bit</File>
-			<FileTime>04/27/17 12:34:03</FileTime>
+			<FileTime>04/28/17 14:29:37</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>

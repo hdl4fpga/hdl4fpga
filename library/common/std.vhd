@@ -314,12 +314,13 @@ package body std is
 
 	function to_bcd (
 		constant arg1   : real;
-		constant arg2   : natural)
+		constant arg2   : natural;
+		constant sign   : boolean := false)
 		return std_logic_vector is
 		variable i      : natural;
 		variable int    : real;
 		variable frac   : real;
-		variable retval : unsigned(0 to arg2-1);
+		variable retval : unsigned(0 to arg2-1) := (others => '-');
 	begin
 		int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1);
 		frac := ieee.math_real.sign(arg1)*arg1-int;
@@ -335,8 +336,13 @@ package body std is
 			i := i + 4;
 		end loop;
 		if i < arg2 then
-			retval := retval srl arg2-i;
-			retval := retval(4 to arg2-1) & to_unsigned(10, 4);
+			if i+4 < arg2 then
+				retval := retval srl arg2-i;
+				retval := retval(4 to arg2-1) & to_unsigned(10, 4);
+			else
+				retval := retval srl arg2-i;
+				retval := retval(4 to arg2-1) & "1111";
+			end if;
 			i := i + 4;
 		end if;
 		while i < arg2 loop
@@ -344,6 +350,15 @@ package body std is
 			retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
 			i := i + 4;
 		end loop;
+		if sign then
+			retval           := retval srl 4;
+			retval(0 to 4-1) := "1111";
+			if ieee.math_real.sign(arg1) < 0.0 then
+				retval(0 to 4-1) := to_unsigned(12, 4);
+			elsif ieee.math_real.sign(arg1) > 0.0 then
+				retval(0 to 4-1) := to_unsigned(11, 4);
+			end if;
+		end if;
 		return std_logic_vector(retval);
 	end;
 

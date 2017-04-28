@@ -108,7 +108,8 @@ begin
 
 		function marks (
 			constant step   : real;
-			constant num    : natural)
+			constant num    : natural;
+			constant sign   : boolean)
 			return std_logic_vector is
 			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
 			type real_vector is array (natural range <>) of real;
@@ -124,7 +125,7 @@ begin
 								if (k mod 8)=0 then
 									aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
 								end if;
-								retval(16-1 downto 0) := unsigned(to_bcd(aux,16));
+								retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
 								aux := aux + scales(j)*step*real(10**i);
 							end if;
 						end if;
@@ -163,13 +164,13 @@ begin
 			if rising_edge(video_clk) then
 				sel(0) := win_on(1) or win_on(3);
 				sel(1) := win_on(2) or win_on(3);
-				time_line <= reverse(word2byte(reverse(marks(0.05001, 25)), scale & sel));
-				char_code <= reverse(word2byte(reverse(time_line), mark & addr));
+				time_line <= reverse(word2byte(reverse(marks(0.05001, 25, false)), scale & sel));
+				char_code <= reverse(word2byte(reverse(time_line), mark & addr(4 downto 3)));
 				addr   <= x(addr'range);
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
-		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 2)), addr(2 downto 0));
+		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), addr(2 downto 0));
 
 		dot <= aux(0) and (text_y or text_x) and 
 			setif(seg=(1 to 4 =>'0')) and 
