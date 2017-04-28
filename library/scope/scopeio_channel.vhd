@@ -98,12 +98,70 @@ begin
 
 	end block;
 
-	axis_b: block
+	axisy_b: block
+		signal aux : std_logic_vector(0 to 0);
+		signal dot : std_logic;
+		signal ordinate : std_logic_vector(128-1 downto 0);
+
+		signal char_code : std_logic_vector(4-1 downto 0);
+
+		function marks (
+			constant step   : real;
+			constant num    : natural)
+			return std_logic_vector is
+			type real_vector is array (natural range <>) of real;
+			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
+			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
+			variable aux    : real;
+		begin
+			for i in 0 to 4-1 loop
+				for j in 0 to 4-1 loop
+					aux := -real(num/2)*scales(j)*step*real(10**i);
+					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
+						retval := retval sll 16;
+						if j < 3 then
+							if i < 3 then
+								retval(16-1 downto 0) := unsigned(to_bcd(aux,16, true));
+								aux := aux + scales(j)*step*real(10**i);
+							end if;
+						end if;
+					end loop;
+				end loop;
+			end loop;
+			return std_logic_vector(retval);
+		end;
+
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), scale & "00"));
+				char_code <= reverse(word2byte(reverse(ordinate), x(5-1 downto 3)));
+			end if;
+		end process;
+		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(3-1 downto 0));
+
+		dot <= aux(0) and text_x and setif(y(6-1 downto 0)=(1 to 3 => '0'));
+
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(0) => char_dot);
+
+	end block;
+
+	axisx_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
 		signal dot_y : std_logic;
 		signal dot_x : std_logic;
-		signal time_line : std_logic_vector(128-1 downto 0);
+		signal abscissa : std_logic_vector(128-1 downto 0);
+
 		signal char_code : std_logic_vector(4-1 downto 0);
 
 		function marks (
@@ -162,19 +220,17 @@ begin
 			variable sel  : std_logic_vector(1 downto 0);
 		begin
 			if rising_edge(video_clk) then
-				sel(0) := win_on(1) or win_on(3);
-				sel(1) := win_on(2) or win_on(3);
-				time_line <= reverse(word2byte(reverse(marks(0.05001, 25, false)), scale & sel));
-				char_code <= reverse(word2byte(reverse(time_line), mark & addr(4 downto 3)));
-				addr   <= x(addr'range);
+				sel(0)    := win_on(1) or win_on(3);
+				sel(1)    := win_on(2) or win_on(3);
+				abscissa  <= reverse(word2byte(reverse(marks(0.05001, 25, false)), scale & sel));
+				char_code <= reverse(word2byte(reverse(abscissa), mark & addr(4 downto 3)));
+				addr      <= x(addr'range);
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), addr(2 downto 0));
 
-		dot <= aux(0) and (text_y or text_x) and 
-			setif(seg=(1 to 4 =>'0')) and 
-			setif(y(6-1 downto 3)=(1 to 3 =>'0'));
+		dot <= aux(0) and text_x and setif(seg=(1 to 4 =>'0'));
 
 		align_e : entity hdl4fpga.align
 		generic map (

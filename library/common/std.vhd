@@ -71,7 +71,8 @@ package std is
 
 	function to_bcd (
 		constant arg1   : real;
-		constant arg2   : natural)
+		constant arg2   : natural;
+		constant sign   : boolean := false)
 		return std_logic_vector;
 
 	--------------------
