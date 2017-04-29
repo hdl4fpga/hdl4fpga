@@ -111,7 +111,7 @@ begin
 			return std_logic_vector is
 			type real_vector is array (natural range <>) of real;
 			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
-			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
+			constant scales : real_vector(0 to 4-1) := (1.0, 2.0, 5.0,0.0);
 			variable aux    : real;
 		begin
 			for i in 0 to 4-1 loop
@@ -135,8 +135,8 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), scale & "00"));
-				char_code <= reverse(word2byte(reverse(ordinate), x(5-1 downto 3)));
+				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), "0000"));
+				char_code <= reverse(word2byte(reverse(ordinate), y(6-1 downto 3) & x(5-1 downto 3)));
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
@@ -239,7 +239,8 @@ begin
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
-			do(0) => char_dot);
+			do(0) => open);
+--			do(0) => char_dot);
 
 	end block;
 
