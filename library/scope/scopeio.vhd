@@ -171,22 +171,22 @@ begin
 		win_on     => win_don,
 		video_dot  => video_dot);
 
-	cga_e : entity hdl4fpga.cga
-	generic map (
-		bitrom     => psf1cp850x8x16,
-		cga_width  => 240,
-		cga_height => 68,
-		char_width => 8)
-	port map (
-		sys_clk    => mii_rxc,
-		sys_we     => pll_rdy,
-		sys_row    => (11-1 downto 11-cga_row'length => '0'), --video_vcntr(11-1 downto 11-cga_row'length),
-		sys_col    => (11-1 downto 11-cga_col'length => '0'), --video_hcntr(11-1 downto 11-cga_col'length),
-		sys_code   => cga_code,
-		vga_clk    => video_clk,
-		vga_row    => video_vcntr(11-1 downto cga_zoom),
-		vga_col    => video_hcntr(11-1 downto cga_zoom),
-		vga_dot    => char_dot);
+--	cga_e : entity hdl4fpga.cga
+--	generic map (
+--		bitrom     => psf1cp850x8x16,
+--		cga_width  => 240,
+--		cga_height => 68,
+--		char_width => 8)
+--	port map (
+--		sys_clk    => mii_rxc,
+--		sys_we     => pll_rdy,
+--		sys_row    => video_vcntr(11-1 downto 11-cga_row'length),
+--		sys_col    => video_hcntr(11-1 downto 11-cga_col'length),
+--		sys_code   => cga_code,
+--		vga_clk    => video_clk,
+--		vga_row    => video_vcntr(11-1 downto cga_zoom),
+--		vga_col    => video_hcntr(11-1 downto cga_zoom),
+--		vga_dot    => char_dot);
 
 	cga_align_e : entity hdl4fpga.align
 	generic map (

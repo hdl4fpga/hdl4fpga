@@ -135,14 +135,14 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), "0000"));
-				char_code <= reverse(word2byte(reverse(ordinate), y(6-1 downto 3) & x(5-1 downto 3)));
+				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), "1010"));
+				char_code <= reverse(word2byte(reverse(ordinate), y(8-1 downto 5) & x(5-1 downto 3)));
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
 		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(3-1 downto 0));
 
-		dot <= aux(0) and text_x and setif(y(6-1 downto 0)=(1 to 3 => '0'));
+		dot <= text_y and aux(0) and setif(y(5-1 downto 3)=(1 to 2 => '0'));
 
 		align_e : entity hdl4fpga.align
 		generic map (
@@ -155,95 +155,95 @@ begin
 
 	end block;
 
-	axisx_b: block
-		signal aux : std_logic_vector(0 to 0);
-		signal dot : std_logic;
-		signal dot_y : std_logic;
-		signal dot_x : std_logic;
-		signal abscissa : std_logic_vector(128-1 downto 0);
-
-		signal char_code : std_logic_vector(4-1 downto 0);
-
-		function marks (
-			constant step   : real;
-			constant num    : natural;
-			constant sign   : boolean)
-			return std_logic_vector is
-			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
-			type real_vector is array (natural range <>) of real;
-			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
-			variable aux    : real;
-		begin
-			for i in 0 to 4-1 loop
-				for j in 0 to 4-1 loop
-					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
-						retval := retval sll 16;
-						if j < 3 then
-							if i < 3 then
-								if (k mod 8)=0 then
-									aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
-								end if;
-								retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
-								aux := aux + scales(j)*step*real(10**i);
-							end if;
-						end if;
-					end loop;
-				end loop;
-			end loop;
-			return std_logic_vector(retval);
-		end;
-
-		signal seg  : std_logic_vector(4-1 downto 0);
-		signal mark : std_logic_vector(3-1 downto 0);
-		signal addr : std_logic_vector(5-1 downto 0);
-	begin
-		process (video_clk)
-			variable edge : std_logic;
-		begin
-			if rising_edge(video_clk) then
-				if text_x='0' then
-					seg  <= (others => '0');
-					mark <= (others => '0');
-				elsif (x(5) xor edge)='1' then
-					if (seg(3) and seg(0))='1' then
-						seg  <= (others => '0');
-						mark <= std_logic_vector(unsigned(mark) + 1);
-					else
-						seg  <= std_logic_vector(unsigned(seg)  + 1);
-					end if;
-				end if;
-				edge := x(5);
-			end if;
-		end process;
-
-		process (video_clk)
-			variable sel  : std_logic_vector(1 downto 0);
-		begin
-			if rising_edge(video_clk) then
-				sel(0)    := win_on(1) or win_on(3);
-				sel(1)    := win_on(2) or win_on(3);
-				abscissa  <= reverse(word2byte(reverse(marks(0.05001, 25, false)), scale & sel));
-				char_code <= reverse(word2byte(reverse(abscissa), mark & addr(4 downto 3)));
-				addr      <= x(addr'range);
-			end if;
-		end process;
-		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
-		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), addr(2 downto 0));
-
-		dot <= aux(0) and text_x and setif(seg=(1 to 4 =>'0'));
-
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
-		port map (
-			clk   => video_clk,
-			di(0) => dot,
-			do(0) => open);
---			do(0) => char_dot);
-
-	end block;
-
+--	axisx_b: block
+--		signal aux : std_logic_vector(0 to 0);
+--		signal dot : std_logic;
+--		signal dot_y : std_logic;
+--		signal dot_x : std_logic;
+--		signal abscissa : std_logic_vector(128-1 downto 0);
+--
+--		signal char_code : std_logic_vector(4-1 downto 0);
+--
+--		function marks (
+--			constant step   : real;
+--			constant num    : natural;
+--			constant sign   : boolean)
+--			return std_logic_vector is
+--			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
+--			type real_vector is array (natural range <>) of real;
+--			constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
+--			variable aux    : real;
+--		begin
+--			for i in 0 to 4-1 loop
+--				for j in 0 to 4-1 loop
+--					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
+--						retval := retval sll 16;
+--						if j < 3 then
+--							if i < 3 then
+--								if (k mod 8)=0 then
+--									aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
+--								end if;
+--								retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
+--								aux := aux + scales(j)*step*real(10**i);
+--							end if;
+--						end if;
+--					end loop;
+--				end loop;
+--			end loop;
+--			return std_logic_vector(retval);
+--		end;
+--
+--		signal seg  : std_logic_vector(4-1 downto 0);
+--		signal mark : std_logic_vector(3-1 downto 0);
+--		signal addr : std_logic_vector(5-1 downto 0);
+--	begin
+--		process (video_clk)
+--			variable edge : std_logic;
+--		begin
+--			if rising_edge(video_clk) then
+--				if text_x='0' then
+--					seg  <= (others => '0');
+--					mark <= (others => '0');
+--				elsif (x(5) xor edge)='1' then
+--					if (seg(3) and seg(0))='1' then
+--						seg  <= (others => '0');
+--						mark <= std_logic_vector(unsigned(mark) + 1);
+--					else
+--						seg  <= std_logic_vector(unsigned(seg)  + 1);
+--					end if;
+--				end if;
+--				edge := x(5);
+--			end if;
+--		end process;
+--
+--		process (video_clk)
+--			variable sel  : std_logic_vector(1 downto 0);
+--		begin
+--			if rising_edge(video_clk) then
+--				sel(0)    := win_on(1) or win_on(3);
+--				sel(1)    := win_on(2) or win_on(3);
+--				abscissa  <= reverse(word2byte(reverse(marks(0.05001, 25, false)), scale & sel));
+--				char_code <= reverse(word2byte(reverse(abscissa), mark & addr(4 downto 3)));
+--				addr      <= x(addr'range);
+--			end if;
+--		end process;
+--		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+--		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), addr(2 downto 0));
+--
+--		dot <= aux(0) and text_x and setif(seg=(1 to 4 =>'0'));
+--
+--		align_e : entity hdl4fpga.align
+--		generic map (
+--			n => 1,
+--			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
+--		port map (
+--			clk   => video_clk,
+--			di(0) => dot,
+--			do(0) => open);
+----			do(0) => char_dot);
+--
+--	end block;
+--
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);
 	begin
