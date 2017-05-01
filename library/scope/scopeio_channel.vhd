@@ -68,9 +68,9 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				4*8+4,         0, width-2*(4*8+4), height-12,
-				4*8+4, height-10, width-1*(4*8+4),         8,
-				    0,         0,       1*(4*8), height-13))
+				5*8+4,         0, width-(4*8+4+5*8+4), height-12,
+				5*8+4, height-10, width-(5*8+4),       8,
+				    0,         0,       (5*8),         height-13))
 		port map (
 			video_clk  => video_clk,
 			video_x    => hcntr,
@@ -101,7 +101,7 @@ begin
 	axisy_b: block
 		signal aux : std_logic_vector(0 to 0);
 		signal dot : std_logic;
-		signal ordinate : std_logic_vector(128-1 downto 0);
+		signal ordinate : std_logic_vector(16*(20+12)-1 downto 0);
 
 		signal char_code : std_logic_vector(4-1 downto 0);
 
@@ -110,19 +110,19 @@ begin
 			constant num    : natural)
 			return std_logic_vector is
 			type real_vector is array (natural range <>) of real;
-			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
+			variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*(20+12)-1 downto 0) := (others => '-');
 			constant scales : real_vector(0 to 4-1) := (1.0, 2.0, 5.0,0.0);
 			variable aux    : real;
 		begin
 			for i in 0 to 4-1 loop
 				for j in 0 to 4-1 loop
-					aux := -real(num/2)*scales(j)*step*real(10**i);
+					aux := real((num-1)/2)*scales(j)*step*real(10**i);
 					for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
-						retval := retval sll 16;
+						retval := retval sll (20+12);
 						if j < 3 then
 							if i < 3 then
-								retval(16-1 downto 0) := unsigned(to_bcd(aux,16, true));
-								aux := aux + scales(j)*step*real(10**i);
+								retval((20+12)-1 downto 0) := unsigned(to_bcd(aux,20, true)) & (1 to 12 => '-');
+								aux := aux - scales(j)*step*real(10**i);
 							end if;
 						end if;
 					end loop;
@@ -135,8 +135,8 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 5)), "1010"));
-				char_code <= reverse(word2byte(reverse(ordinate), y(8-1 downto 5) & x(5-1 downto 3)));
+				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 16)), "0010"));
+				char_code <= reverse(word2byte(reverse(ordinate), y(9-1 downto 5) & x(6-1 downto 3)));
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));

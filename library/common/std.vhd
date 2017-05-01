@@ -351,12 +351,15 @@ package body std is
 			retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
 			i := i + 4;
 		end loop;
+		int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1*10.0**(arg2-2));
+		int  := ieee.math_real.sign(arg1)*int;
+		int  := ieee.math_real.sign(int);
 		if sign then
 			retval           := retval srl 4;
 			retval(0 to 4-1) := "1111";
-			if ieee.math_real.sign(arg1) < 0.0 then
+			if int < 0.0 then
 				retval(0 to 4-1) := to_unsigned(12, 4);
-			elsif ieee.math_real.sign(arg1) > 0.0 then
+			elsif int > 0.0 then
 				retval(0 to 4-1) := to_unsigned(11, 4);
 			end if;
 		end if;
