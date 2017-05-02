@@ -130,27 +130,28 @@ begin
 			end loop;
 			return std_logic_vector(retval);
 		end;
-
+			signal xxx : unsigned(y'range); 
 	begin
 		process (video_clk)
+			variable zzz : unsigned(y'range); 
 		begin
 			if rising_edge(video_clk) then
 				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 16)), scale ));
 				char_code <= reverse(word2byte(reverse(ordinate), y(9-1 downto 5) & x(6-1 downto 3)));
-				if then
-					zzz <= "";
-				elsif
-					zzz <= "";
+				if unsigned(y(8-1 downto 2))>unsigned'(B"100_000") then
+					zzz := b"0_0000_0100";
+				elsif unsigned(y(8-1 downto 2))>unsigned'(B"011_110") then
+					zzz := b"0_0000_1000";
 				else
-					zzz <= (others => '0');
+					zzz := (others => '0');
 				end if;
-				xxx <= y + zzz;
+				xxx <= unsigned(y) + zzz;
 			end if;
 		end process;
-		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
+		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & xxx(3-1 downto 0)));
 		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(3-1 downto 0));
 
-		dot <= text_y and aux(0) and setif(y(5-1 downto 3)=(1 to 2 => '0'));
+		dot <= text_y and aux(0) and setif(xxx(5-1 downto 3)=(1 to 2 => '0'));
 
 		align_e : entity hdl4fpga.align
 		generic map (
