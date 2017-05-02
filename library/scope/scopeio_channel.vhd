@@ -135,8 +135,16 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 16)), "0010"));
+				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 16)), scale ));
 				char_code <= reverse(word2byte(reverse(ordinate), y(9-1 downto 5) & x(6-1 downto 3)));
+				if then
+					zzz <= "";
+				elsif
+					zzz <= "";
+				else
+					zzz <= (others => '0');
+				end if;
+				xxx <= y + zzz;
 			end if;
 		end process;
 		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & y(3-1 downto 0)));
