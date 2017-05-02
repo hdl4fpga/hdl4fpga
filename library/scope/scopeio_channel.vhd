@@ -148,7 +148,7 @@ begin
 				xxx <= unsigned(y) + zzz;
 			end if;
 		end process;
-		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & xxx(3-1 downto 0)));
+		char_line <= reverse(word2byte(reverse(psf1unitx8x8), char_code & std_logic_vector(xxx(3-1 downto 0))));
 		aux <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), x(3-1 downto 0));
 
 		dot <= text_y and aux(0) and setif(xxx(5-1 downto 3)=(1 to 2 => '0'));
