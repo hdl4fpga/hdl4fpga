@@ -137,18 +137,20 @@ begin
 	begin
 		process (video_clk)
 			variable zzz : unsigned(y'range); 
+			variable aux : unsigned(y'range); 
 		begin
 			if rising_edge(video_clk) then
 				ordinate  <= reverse(word2byte(reverse(marks(0.05001, 16)), scale ));
 				char_code <= reverse(word2byte(reverse(ordinate), std_logic_vector(xx1) & x(6-1 downto 3)));
-				if unsigned(y(8-1 downto 2))>unsigned'(B"100_000") then
+				if aux(9-1 downto 2)>unsigned'(B"0_100_000") then
 					zzz := b"0_0000_1000";
-				elsif unsigned(y(8-1 downto 2))>unsigned'(B"011_110") then
+				elsif aux(9-1 downto 2)>unsigned'(B"0_011_110") then
 					zzz := b"0_0000_0100";
 				else
 					zzz := (others => '0');
 				end if;
-				xxx <= unsigned(y) + zzz;
+				xxx <= aux + zzz;
+				aux := unsigned(y) + unsigned'(B"0_0001_0011");
 				xx1 <= unsigned(xxx(9-1 downto 5)) + unsigned'(B"0011");
 			end if;
 		end process;
