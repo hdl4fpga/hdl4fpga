@@ -37,6 +37,7 @@ architecture def of scopeio_channel is
 	signal axisx_don : std_logic;
 	signal axisy_on  : std_logic;
 	signal axisy_don : std_logic;
+	signal axis_don  : std_logic;
 	signal axis_dot  : std_logic;
 
 begin
@@ -96,64 +97,39 @@ begin
 
 	end block;
 
-	axisy_b : block
-		signal dot : std_logic;
-	begin
-		axisy_e : entity hdl4fpga.scopeio_axisy
-		generic map (
-			fonts      => psf1unitx8x8)
-		port map (
-			video_clk  => video_clk,
-			win_x      => x,
-			win_y      => y,
-			axis_on    => axisy_on,
-			axis_scale => scale,
-			axis_dot   => dot);
+	axisy_e : entity hdl4fpga.scopeio_axisy
+	generic map (
+		fonts      => psf1unitx8x8)
+	port map (
+		video_clk  => video_clk,
+		win_x      => x,
+		win_y      => y,
+		axis_on    => axisy_on,
+		axis_scale => scale,
+		axis_dot   => axisy_don);
 
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => -2+unsigned_num_bits(height-1)))
-		port map (
-			clk   => video_clk,
-			di(0) => dot,
-			do(0) => axisy_don);
-	end block;
+	axisx_e : entity hdl4fpga.scopeio_axisx
+	generic map (
+		fonts      => psf1unitx8x8)
+	port map (
+		video_clk  => video_clk,
+		win_on     => win_on,
+		win_x      => x,
+		win_y      => y,
+		axis_on    => axisx_on,
+		axis_scale => scale,
+		axis_dot   => axisx_don);
 
+	axis_don <= axisx_don or axisy_don;
 
-	axisx_b: block
-		signal dot : std_logic;
-	begin
-		axisx_e : entity hdl4fpga.scopeio_axisx
-		generic map (
-			fonts      => psf1unitx8x8)
-		port map (
-			video_clk  => video_clk,
-			win_on     => win_on,
-			win_x      => x,
-			win_y      => y,
-			axis_on    => axisx_on,
-			axis_scale => scale,
-			axis_dot   => dot);
-
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 to 0 => -2+unsigned_num_bits(height-1)))
-		port map (
-			clk   => video_clk,
-			di(0) => dot,
-			do(0) => axisx_don);
-		
-	end block;
-
-	process(video_clk)
-	begin
-		if rising_edge(video_clk) then
-			axis_dot <= axisx_don or axisy_don;
---			axis_dot <= axisx_don;
-		end if;
-	end process;
+	align_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => -2+unsigned_num_bits(height-1)))
+	port map (
+		clk   => video_clk,
+		di(0) => axis_don,
+		do(0) => axis_dot);
 
 	process (input_data)
 		variable aux : unsigned(input_data'length-1 downto 0);

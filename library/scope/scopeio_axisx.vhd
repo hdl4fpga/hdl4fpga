@@ -81,12 +81,11 @@ begin
 		variable sel  : std_logic_vector(1 downto 0);
 	begin
 		if rising_edge(video_clk) then
-			sel(0) := win_on(1) or win_on(3);
-			sel(1) := win_on(2) or win_on(3);
-			marks  <= reverse(word2byte(reverse(marker(0.05001, 25, false)), axis_scale & sel));
-
+			marks     <= reverse(word2byte(reverse(marker(0.05001, 25, false)), axis_scale & sel));
 			char_code <= reverse(word2byte(reverse(marks), mark & char_digt(4 downto 3)));
 			char_digt <= win_x(char_digt'range);
+			sel(0)    := win_on(1) or win_on(3);
+			sel(1)    := win_on(2) or win_on(3);
 		end if;
 	end process;
 
