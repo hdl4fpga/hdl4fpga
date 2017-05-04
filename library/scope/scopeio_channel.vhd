@@ -37,7 +37,7 @@ architecture def of scopeio_channel is
 	signal axisx_don : std_logic;
 	signal axisy_on  : std_logic;
 	signal axisy_don : std_logic;
-	signal axis_don  : std_logic;
+	signal axis_don  : std_logic := '0';
 	signal axis_dot  : std_logic;
 
 begin
@@ -97,28 +97,28 @@ begin
 
 	end block;
 
-	axisy_e : entity hdl4fpga.scopeio_axisy
-	generic map (
-		fonts      => psf1unitx8x8)
-	port map (
-		video_clk  => video_clk,
-		win_x      => x,
-		win_y      => y,
-		axis_on    => axisy_on,
-		axis_scale => scale,
-		axis_dot   => axisy_don);
-
-	axisx_e : entity hdl4fpga.scopeio_axisx
-	generic map (
-		fonts      => psf1unitx8x8)
-	port map (
-		video_clk  => video_clk,
-		win_on     => win_on,
-		win_x      => x,
-		win_y      => y,
-		axis_on    => axisx_on,
-		axis_scale => scale,
-		axis_dot   => axisx_don);
+--	axisy_e : entity hdl4fpga.scopeio_axisy
+--	generic map (
+--		fonts      => psf1unitx8x8)
+--	port map (
+--		video_clk  => video_clk,
+--		win_x      => x,
+--		win_y      => y,
+--		axis_on    => axisy_on,
+--		axis_scale => scale,
+--		axis_dot   => axisy_don);
+--
+--	axisx_e : entity hdl4fpga.scopeio_axisx
+--	generic map (
+--		fonts      => psf1unitx8x8)
+--	port map (
+--		video_clk  => video_clk,
+--		win_on     => win_on,
+--		win_x      => x,
+--		win_y      => y,
+--		axis_on    => axisx_on,
+--		axis_scale => scale,
+--		axis_dot   => axisx_don);
 
 	axis_don <= axisx_don or axisy_don;
 

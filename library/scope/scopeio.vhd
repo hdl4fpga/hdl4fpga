@@ -199,7 +199,7 @@ begin
 
 	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_green <= video_io(2) and (video_dot(1) or video_dot(0));
-	video_blue  <= video_io(2) and (video_dot(0));
+	video_blue  <= video_io(2) and (not video_dot(1) and video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
