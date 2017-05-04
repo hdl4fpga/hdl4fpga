@@ -10,7 +10,6 @@ entity scopeio_axisy is
 		fonts      : std_logic_vector);
 	port (
 		video_clk  : in  std_logic;
-		win_on     : in  std_logic_vector;
 		win_x      : in  std_logic_vector;
 		win_y      : in  std_logic_vector;
 		axis_on    : in  std_logic;
@@ -63,9 +62,9 @@ begin
 			char_code <= reverse(word2byte(reverse(marks), std_logic_vector(bias) & win_x(6-1 downto 3)));
 
 			if refn(refn'left downto 2) > to_unsigned(32,refn'length-2) then
-				bsln := to_unsigned(  8,bsln'length-2);
+				bsln := to_unsigned(  8,bsln'length);
 			elsif refn(refn'left downto 2) >= to_unsigned(32-1,refn'length-2) then
-				bsln := to_unsigned(8/2,bsln'length-2);
+				bsln := to_unsigned(8/2,bsln'length);
 			else
 				bsln := (others => '0');
 			end if;

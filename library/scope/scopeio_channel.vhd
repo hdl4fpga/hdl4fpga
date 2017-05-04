@@ -33,7 +33,6 @@ architecture def of scopeio_channel is
 	signal plot_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
 	signal grid_dot  : std_logic;
-	signal text_x    : std_logic;
 	signal axisx_on  : std_logic;
 	signal axisx_don : std_logic;
 	signal axisy_on  : std_logic;
@@ -91,9 +90,9 @@ begin
 			win_x     => x,
 			win_y     => y);
 
-		plot_on <= cdon(0);
-		text_x  <= cdon(1);
-		axisy_on  <= cdon(2);
+		plot_on  <= cdon(0);
+		axisx_on <= cdon(1);
+		axisy_on <= cdon(2);
 
 	end block;
 
@@ -105,7 +104,6 @@ begin
 			fonts      => psf1unitx8x8)
 		port map (
 			video_clk  => video_clk,
-			win_on     => win_on,
 			win_x      => x,
 			win_y      => y,
 			axis_on    => axisy_on,
@@ -145,7 +143,7 @@ begin
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
-			do(0) => axisy_don);
+			do(0) => axisx_don);
 		
 	end block;
 
@@ -153,6 +151,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			axis_dot <= axisx_don or axisy_don;
+--			axis_dot <= axisx_don;
 		end if;
 	end process;
 

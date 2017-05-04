@@ -56,7 +56,7 @@ architecture def of scopeio_axisx is
 	signal char_digt : std_logic_vector(5-1 downto 0);
 	signal char_code : std_logic_vector(4-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
-	signal char_dot  : std_logic_vector(0 to 0);
+	signal dot       : std_logic_vector(0 to 0);
 begin
 	process (video_clk)
 		variable edge : std_logic;
@@ -91,7 +91,7 @@ begin
 	end process;
 
 	char_line <= reverse(word2byte(reverse(fonts), char_code & win_y(3-1 downto 0)));
-	char_dot  <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), char_digt(2 downto 0));
-	axis_dot  <= char_dot(0) and axis_on and setif(sgmt=(1 to 4 =>'0'));
+	dot       <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), char_digt(2 downto 0));
+	axis_dot  <= dot(0) and axis_on and setif(sgmt=(1 to 4 =>'0'));
 
 end;
