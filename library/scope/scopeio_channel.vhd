@@ -91,6 +91,12 @@ begin
 			win_x     => x,
 			win_y     => y);
 
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+			end if;
+		end process;
+
 		plot_on  <= cdon(0);
 		axisx_on <= cdon(1);
 		axisy_on <= cdon(2);
@@ -144,12 +150,6 @@ begin
 	plot_g : for i in 0 to inputs-1 generate
 		signal ena : std_logic;
 	begin
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-			end if;
-		end process;
-
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
 			n => unsigned_num_bits(height-1))
@@ -180,7 +180,7 @@ begin
 		grid_align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => -1+unsigned_num_bits(height-1)))
+			d => (0 to 0 => unsigned_num_bits(height-1)))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
