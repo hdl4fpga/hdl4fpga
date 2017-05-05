@@ -58,8 +58,9 @@ architecture beh of scopeio is
 	signal scale        : std_logic_vector(4-1 downto 0);
 	signal pll_rdy      : std_logic;
 
-	constant width  : natural := 25*64+1+(4*8+4)+(5*8+4);
-	constant height : natural := 269;
+	constant ch_size : natural := 25*64;
+	constant width   : natural := ch_size+1+(4*8+4)+(5*8+4);
+	constant height  : natural := 269;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -149,7 +150,7 @@ begin
 			base := (others => '-');
 			for i in win_don'range loop
 				if win_don(i)='1' then
-					base := to_unsigned(i*1600, base'length);
+					base := to_unsigned(i*ch_size, base'length);
 				end if;
 			end loop;
 			input_addr <= std_logic_vector(resize(unsigned(addr),base'length) + base);
