@@ -28,9 +28,10 @@ architecture def of scopeio_channel is
 
 	signal samples : words_vector(inputs-1 downto 0);
 
-	signal x         : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-	signal y         : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal win_x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
+	signal grid_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
 	signal grid_dot  : std_logic;
 	signal axisx_on  : std_logic;
@@ -43,6 +44,7 @@ architecture def of scopeio_channel is
 begin
 
 	win_b : block
+		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 		signal phon  : std_logic;
 		signal pfrm  : std_logic;
 		signal vcntr : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
@@ -89,17 +91,34 @@ begin
 			win_frm   => wfrm,
 			win_ena   => wena,
 			win_x     => x,
-			win_y     => y);
+			win_y     => win_y);
+		input_addr <= x;
 
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-			end if;
-		end process;
+		dondly_e : entity hdl4fpga.align
+		generic map (
+			n => 4,
+			d => (1 => 1, 2 => 1, 3 to 4 => 1),
+			i => (1 to 4 => '-'))
+		port map (
+			clk   => video_clk,
+			di(0) => cdon(0),
+			di(1) => grid_on,
+			di(2) => cdon(1),
+			di(3) => cdon(2),
+			do(0) => grid_on,
+			do(1) => plot_on,
+			do(2) => axisx_on,
+			do(3) => axisy_on);
 
-		plot_on  <= cdon(0);
-		axisx_on <= cdon(1);
-		axisy_on <= cdon(2);
+		xdly_e : entity hdl4fpga.align
+		generic map (
+			n => x'length,
+			d => (x'range => 1),
+			i => (x'range => '-'))
+		port map (
+			clk => video_clk,
+			di  => x,
+			do  => win_x);
 
 	end block;
 
@@ -108,8 +127,8 @@ begin
 --		fonts      => psf1unitx8x8)
 --	port map (
 --		video_clk  => video_clk,
---		win_x      => x,
---		win_y      => y,
+--		win_x      => win_x
+--		win_y      => win_y,
 --		axis_on    => axisy_on,
 --		axis_scale => scale,
 --		axis_dot   => axisy_don);
@@ -120,8 +139,8 @@ begin
 --	port map (
 --		video_clk  => video_clk,
 --		win_on     => win_on,
---		win_x      => x,
---		win_y      => y,
+--		win_x      => win_x
+--		win_y      => win_y,
 --		axis_on    => axisx_on,
 --		axis_scale => scale,
 --		axis_dot   => axisx_don);
@@ -156,7 +175,7 @@ begin
 		port map (
 			video_clk  => video_clk,
 			video_ena  => plot_on,
-			video_row1 => y,
+			video_row1 => win_y,
 			video_row2 => samples(i),
 			video_dot  => plot_dot(i));
 	end generate;
@@ -172,9 +191,9 @@ begin
 			col_line => "00")
 		port map (
 			clk => video_clk,
-			don => plot_on,
-			row => x,
-			col => y,
+			don => grid_on,
+			row => win_x,
+			col => win_y,
 			dot => dot);
 
 		grid_align_e : entity hdl4fpga.align
@@ -188,5 +207,4 @@ begin
 	end block;
 
 	video_dot  <= (grid_dot or axis_dot) & plot_dot;
-	input_addr <= x;
 end;

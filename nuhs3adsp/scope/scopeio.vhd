@@ -38,6 +38,11 @@ architecture beh of nuhs3adsp is
 				y := 1.0;
 			end if;
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
+			if i=1600 then
+				aux(i*n to (i+1)*n-1) := (others => '0');
+			else
+				aux(i*n to (i+1)*n-1) := ('1',others => '0');
+			end if;
 		end loop;
 		return aux;
 	end;

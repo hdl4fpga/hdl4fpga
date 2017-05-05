@@ -149,7 +149,7 @@ begin
 			base := (others => '-');
 			for i in win_don'range loop
 				if win_don(i)='1' then
-					base := to_unsigned(i*1536, base'length);
+					base := to_unsigned(i*1600, base'length);
 				end if;
 			end loop;
 			input_addr <= std_logic_vector(resize(unsigned(addr),base'length) + base);
