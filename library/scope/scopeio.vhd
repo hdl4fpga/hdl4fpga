@@ -143,6 +143,26 @@ begin
 		win_don    => win_don,
 		win_frm    => win_frm);
 
+	videomem_e : block
+		signal rd_addr : std_logic_vector(input_addr'range);
+		signal rd_data : std_logic_vector(input_data'range);
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				rd_addr <= input_addr;
+				rd_data <= input_data;
+			end if;
+		end process;
+		dpram_e : entity hdl4fpga.dpram
+		port map (
+			rd_addr => rd_addr,
+			rd_data =>
+			wr_clk  => input_clk,
+			wr_addr => input_addr,
+			wr_data => input_data);
+	end block;
+
 	process (video_clk)
 		variable base : unsigned(addr'range);
 	begin
