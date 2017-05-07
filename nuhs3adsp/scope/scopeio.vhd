@@ -88,12 +88,19 @@ begin
 		addr => input_addr,
 		data => sample);
 
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
+
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_addr  => input_addr,
+		input_clk   => vga_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_red   => vga_red,

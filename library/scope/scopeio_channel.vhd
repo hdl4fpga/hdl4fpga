@@ -14,8 +14,8 @@ entity scopeio_channel is
 	port (
 		video_clk  : in  std_logic;
 		video_nhl  : in  std_logic;
-		input_data : in  std_logic_vector;
-		input_addr : out std_logic_vector;
+		abscisa    : out std_logic_vector;
+		ordinates  : in  std_logic_vector;
 		scale      : in  std_logic_vector(4-1 downto 0);
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
@@ -23,7 +23,7 @@ entity scopeio_channel is
 end;
 
 architecture def of scopeio_channel is
-	subtype word_s is std_logic_vector(input_data'length/inputs-1 downto 0);
+	subtype word_s is std_logic_vector(ordinates'length/inputs-1 downto 0);
 	type words_vector is array (natural range <>) of word_s;
 
 	signal samples : words_vector(inputs-1 downto 0);
@@ -92,7 +92,7 @@ begin
 			win_ena   => wena,
 			win_x     => x,
 			win_y     => win_y);
-		input_addr <= x;
+		abscisa <= x;
 
 		dondly_e : entity hdl4fpga.align
 		generic map (
@@ -156,10 +156,10 @@ begin
 		di(0) => axis_don,
 		do(0) => axis_dot);
 
-	process (input_data)
-		variable aux : unsigned(input_data'length-1 downto 0);
+	process (ordinates)
+		variable aux : unsigned(ordinates'length-1 downto 0);
 	begin
-		aux := unsigned(input_data);
+		aux := unsigned(ordinates);
 		for i in 0 to inputs-1 loop
 			samples(i) <= std_logic_vector(aux(word_s'range));
 			aux        := aux srl word_s'length;

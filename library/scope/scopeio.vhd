@@ -8,11 +8,13 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
 entity scopeio is
+	generic (
+		inputs      : natural := 1);
 	port (
 		mii_rxc     : in  std_logic;
 		mii_rxdv    : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
-		input_addr  : out std_logic_vector;
+		input_clk   : in  std_logic;
 		input_data  : in  std_logic_vector;
 		video_clk   : in  std_logic;
 		video_red   : out std_logic;
@@ -51,7 +53,8 @@ architecture beh of scopeio is
 	signal video_dot    : std_logic_vector(0 to 19-1);
 
 	signal video_io     : std_logic_vector(0 to 3-1);
-	signal addr         : std_logic_vector(video_hcntr'range);
+	signal abscisa      : std_logic_vector(video_hcntr'range);
+	signal ordinates    : std_logic_vector(input_data'range);
 	
 	signal win_don      : std_logic_vector(0 to 18-1);
 	signal win_frm      : std_logic_vector(0 to 18-1);
@@ -61,6 +64,9 @@ architecture beh of scopeio is
 	constant ch_size : natural := 25*64;
 	constant width   : natural := ch_size+1+(4*8+4)+(5*8+4);
 	constant height  : natural := 269;
+
+	signal input_addr   : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
+	signal full_addr    : std_logic_vector(input_addr'range);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -143,28 +149,84 @@ begin
 		win_don    => win_don,
 		win_frm    => win_frm);
 
-	videomem_e : block
-		signal rd_addr : std_logic_vector(input_addr'range);
-		signal rd_data : std_logic_vector(input_data'range);
+	trigger_b  : block
+		subtype word_s is std_logic_vector(ordinates'length/inputs-1 downto 0);
+		type words_vector is array (natural range <>) of word_s;
+		signal input_level : word_s;
+		signal channels    : words_vector(inputs-1 downto 0);
+		signal input_ena   : std_logic;
 	begin
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				if pll_rdy='1' then
+					input_level <= std_logic_vector(resize(unsigned(cga_code),input_level'length));
+				end if;
+			end if;
+		end process;
+
+		process (ordinates)
+			variable aux : unsigned(ordinates'length-1 downto 0);
+		begin
+			aux := unsigned(ordinates);
+			for i in 0 to inputs-1 loop
+				channels(i) <= std_logic_vector(aux(word_s'range));
+				aux        := aux srl word_s'length;
+			end loop;
+		end process;
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					if input_addr(0)='1' then
+						if video_frm='0' then
+							input_ena <= '0';
+						end if;
+					end if;
+				elsif unsigned(channels(0)) >= unsigned(input_level) then
+					input_ena <= '1';
+				end if;
+			end if;
+		end process;
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='0' then
+					input_addr <= (others => '0');
+				elsif input_addr(0)='0' then
+					input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+				end if;
+			end if;
+		end process;
+
+	end block;
+
+	videomem_b : block
+		signal rd_addr   : std_logic_vector(input_addr'range);
+		signal rd_data   : std_logic_vector(input_data'range);
+	begin
+
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				rd_addr <= input_addr;
-				rd_data <= input_data;
+				rd_addr   <= full_addr;
+				ordinates <= rd_data;
 			end if;
 		end process;
+
 		dpram_e : entity hdl4fpga.dpram
 		port map (
-			rd_addr => rd_addr,
-			rd_data =>
 			wr_clk  => input_clk,
 			wr_addr => input_addr,
-			wr_data => input_data);
+			wr_data => input_data,
+			rd_addr => rd_addr,
+			rd_data => rd_data);
 	end block;
 
 	process (video_clk)
-		variable base : unsigned(addr'range);
+		variable base : unsigned(input_addr'range);
 	begin
 		if rising_edge(video_clk) then
 			base := (others => '-');
@@ -173,20 +235,20 @@ begin
 					base := to_unsigned(i*ch_size, base'length);
 				end if;
 			end loop;
-			input_addr <= std_logic_vector(resize(unsigned(addr),base'length) + base);
+			full_addr <= std_logic_vector(resize(unsigned(abscisa),full_addr'length) + base);
 		end if;
 	end process;
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
-		inputs     => 1,
+		inputs     => inputs,
 		width      => width,
 		height     => height)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
-		input_data => input_data,
-		input_addr => addr,
+		ordinates  => ordinates,
+		abscisa    => abscisa,
 		scale      => scale,
 		win_frm    => win_frm,
 		win_on     => win_don,
