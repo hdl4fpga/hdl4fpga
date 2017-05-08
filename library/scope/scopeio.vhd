@@ -72,6 +72,7 @@ architecture beh of scopeio is
 	type words_vector is array (natural range <>) of word_s;
 
 	signal channels     : words_vector(inputs-1 downto 0);
+	signal offset       : words_vector(inputs-1 downto 0);
 	signal vm_addr      : std_logic_vector(input_addr'range);
 	signal vm_data      : std_logic_vector(input_data'range);
 begin
@@ -156,14 +157,41 @@ begin
 		win_don    => win_don,
 		win_frm    => win_frm);
 
-	process (input_data)
-		variable aux : unsigned(input_data'length-1 downto 0);
+	process (input_clk)
+		variable input_aux : unsigned(input_data'length-1 downto 0);
+		variable amp_aux   : unsigned(input_amp'length-1 downto 0);
+		variable scales    : words_vector(0 to 4*4*4-1) := (others => (others => '-'));
+		variable chan_aux  : words_vector(channels'range) := (others => (others => '-'));
 	begin
-		aux := input_data;
-		for i in 0 to inputs-1 loop
-			channles(i) := aux(word_s'range);
-			aux         := aux srl word_s'length;
-		end loop;
+		if rising_edge(input_clk) then
+			for k in 0 to 4-1 loop                  -- Units m, u, n;
+				if k < 4-1 then
+					for i in 0 to 4-1 loop          -- 1, 10, 100
+						if i < 4-1 then
+							for j in 0 to 4-1 loop  -- 1, 2 , 5
+								case j is
+								when 0 =>           -- 1
+									scales(4*4*k+4*i+j) := to_unsigned(1*((10**3)**k)*(10**i),word_s'length);
+								when 1 =>           -- 2
+									scales(4*4*k+4*i+j) := to_unsigned(2*((10**3)**k)*(10**i),word_s'length);
+								when 2 =>           -- 3
+									scales(4*4*k+4*i+j) := to_unsigned(5*((10**3)**k)*(10**i),word_s'length);
+								end case;
+							end loop;
+						end if;
+					end loop;
+				end if;
+			end loop;
+
+			amp_aux  := input_amp;
+			for i in 0 to inputs-1 loop
+				channels(i) <= std_logic_vector(unsigned(chan_aux) + offset(i));
+				chan_aux(i) := std_logic_vector(input_aux(word_s'range)*unsigned(scales(to_integer(amp_aux(6-1 downto 0)))));
+				input_aux   := input_aux srl word_s'length;
+				amp_aux     := amp_aux   srl scale'length;
+			end loop;
+			input_aux := input_data;
+		end if;
 	end process;
 
 	trigger_b  : block
