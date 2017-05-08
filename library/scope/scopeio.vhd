@@ -61,12 +61,19 @@ architecture beh of scopeio is
 	signal scale        : std_logic_vector(4-1 downto 0);
 	signal pll_rdy      : std_logic;
 
-	constant ch_size : natural := 25*64;
-	constant width   : natural := ch_size+1+(4*8+4)+(5*8+4);
-	constant height  : natural := 269;
+	constant ch_size    : natural := 25*64;
+	constant width      : natural := ch_size+1+(4*8+4)+(5*8+4);
+	constant height     : natural := 269;
 
 	signal input_addr   : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
 	signal full_addr    : std_logic_vector(input_addr'range);
+
+	subtype word_s is std_logic_vector(ordinates'length/inputs-1 downto 0);
+	type words_vector is array (natural range <>) of word_s;
+
+	signal channels     : words_vector(inputs-1 downto 0);
+	signal vm_addr      : std_logic_vector(input_addr'range);
+	signal vm_data      : std_logic_vector(input_data'range);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -149,11 +156,18 @@ begin
 		win_don    => win_don,
 		win_frm    => win_frm);
 
+	process (input_data)
+		variable aux : unsigned(input_data'length-1 downto 0);
+	begin
+		aux := input_data;
+		for i in 0 to inputs-1 loop
+			channles(i) := aux(word_s'range);
+			aux         := aux srl word_s'length;
+		end loop;
+	end process;
+
 	trigger_b  : block
-		subtype word_s is std_logic_vector(ordinates'length/inputs-1 downto 0);
-		type words_vector is array (natural range <>) of word_s;
 		signal input_level : word_s;
-		signal channels    : words_vector(inputs-1 downto 0);
 		signal input_ena   : std_logic;
 	begin
 		process (mii_rxc)
@@ -163,16 +177,6 @@ begin
 					input_level <= std_logic_vector(resize(unsigned(cga_code),input_level'length));
 				end if;
 			end if;
-		end process;
-
-		process (ordinates)
-			variable aux : unsigned(ordinates'length-1 downto 0);
-		begin
-			aux := unsigned(ordinates);
-			for i in 0 to inputs-1 loop
-				channels(i) <= std_logic_vector(aux(word_s'range));
-				aux        := aux srl word_s'length;
-			end loop;
 		end process;
 
 		process (input_clk)
@@ -204,9 +208,26 @@ begin
 	end block;
 
 	videomem_b : block
-		signal rd_addr   : std_logic_vector(input_addr'range);
-		signal rd_data   : std_logic_vector(input_data'range);
+		signal wr_addr : std_logic_vector(input_addr'range);
+		signal wr_data : std_logic_vector(input_data'range);
+		signal rd_addr : std_logic_vector(input_addr'range);
+		signal rd_data : std_logic_vector(input_data'range);
 	begin
+
+		process (channels)
+			variable aux : unsigned(input_data'length-1 downto 0);
+		begin
+			aux := (others => '-');
+			for i in 0 to inputs-1 loop
+				aux               := aux sll word_s'length;
+				aux(word_s'range) := channels(i);
+			end loop;
+			vm_data <= aux;
+		end process;
+
+
+		wr_data <= vm_data;
+		wr_addr <= vm_addr;
 
 		process (video_clk)
 		begin
@@ -219,8 +240,8 @@ begin
 		dpram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => input_clk,
-			wr_addr => input_addr,
-			wr_data => input_data,
+			wr_addr => wr_addr,
+			wr_data => wr_data,
 			rd_addr => rd_addr,
 			rd_data => rd_data);
 	end block;
