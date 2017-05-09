@@ -64,6 +64,8 @@ HDL4FPGA__ecp3versa__beh = $(LIB_HDL4FPGA)/ecp3versa/beh.dat
 HDL4FPGA__ecp3versa = $(LIB_HDL4FPGA)/ecp3versa/_primary.dat
 HDL4FPGA__draw_vline__arc = $(LIB_HDL4FPGA)/draw_vline/arc.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
+HDL4FPGA__dpram__def = $(LIB_HDL4FPGA)/dpram/def.dat
+HDL4FPGA__dpram = $(LIB_HDL4FPGA)/dpram/_primary.dat
 HDL4FPGA__cgaram__def = $(LIB_HDL4FPGA)/cgaram/def.dat
 HDL4FPGA__cgaram = $(LIB_HDL4FPGA)/cgaram/_primary.dat
 HDL4FPGA__cgafont = $(LIB_HDL4FPGA)/cgafont/_primary.dat
@@ -130,6 +132,8 @@ whole_library :     $(HDL4FPGA__win_y__def) \
     $(HDL4FPGA__ecp3versa) \
     $(HDL4FPGA__draw_vline__arc) \
     $(HDL4FPGA__draw_vline) \
+    $(HDL4FPGA__dpram__def) \
+    $(HDL4FPGA__dpram) \
     $(HDL4FPGA__cgaram__def) \
     $(HDL4FPGA__cgaram) \
     $(HDL4FPGA__cgafont) \
@@ -182,6 +186,13 @@ $(HDL4FPGA__cgaram__def) : ../../library/video/cga/cgaram.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2008 -work hdl4fpga ../../library/video/cga/cgaram.vhd
+
+$(HDL4FPGA__dpram) \
+$(HDL4FPGA__dpram__def) : ../../library/common/dpram.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/common/dpram.vhd
 
 $(HDL4FPGA__ecp3versa) : ../common/ecp3versa.vhd \
 		$(STD__textio) \
@@ -278,9 +289,7 @@ $(HDL4FPGA__scopeio_channel) \
 $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
 		$(HDL4FPGA__grid) \
 		$(HDL4FPGA__draw_vline) \
-		$(HDL4FPGA__scopeio_axisx) \
 		$(HDL4FPGA__align) \
-		$(HDL4FPGA__scopeio_axisy) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \
 		$(HDL4FPGA__cgafont) \

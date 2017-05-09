@@ -94,7 +94,7 @@ begin
 	generic map (
 		bitrom => sinctab(-960, 1087, sample_size))
 	port map (
-		clk  => vga_clk,
+		clk  => clk,
 		addr => input_addr,
 		data => sample);
 
@@ -104,7 +104,7 @@ begin
 		mii_rxc     => phy1_rxc,
 		mii_rxdv    => phy1_rx_dv,
 		mii_rxd     => phy1_rx_d,
-		input_addr  => input_addr,
+		input_clk   => vga_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_red   => vga_red,
@@ -120,7 +120,7 @@ begin
 		i => (expansionx4'range => '-'),
 		d => (expansionx4'range => 1))
 	port map (
-		clk   => vga_clk,
+		clk   => clk,
 		di(0) => vga_green,
 		di(1) => vga_blue,
 		di(2) => vga_red,
