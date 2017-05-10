@@ -33,50 +33,50 @@ architecture beh of scopeio is
 	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
 	signal ser_data     : std_logic_vector(32-1 downto 0);
 
-	constant cga_zoom   : natural := 0;
-	signal cga_we       : std_logic;
-	signal cga_row      : std_logic_vector(7-1-cga_zoom downto 0);
-	signal cga_col      : std_logic_vector(8-1-cga_zoom downto 0);
-	signal cga_code     : std_logic_vector(8-1 downto 0);
-	signal char_dot     : std_logic;
+	constant cga_zoom  : natural := 0;
+	signal cga_we      : std_logic;
+	signal cga_row     : std_logic_vector(7-1-cga_zoom downto 0);
+	signal cga_col     : std_logic_vector(8-1-cga_zoom downto 0);
+	signal cga_code    : std_logic_vector(8-1 downto 0);
+	signal char_dot    : std_logic;
 
-	signal video_hs     : std_logic;
-	signal video_vs     : std_logic;
-	signal video_frm    : std_logic;
-	signal video_hon    : std_logic;
-	signal video_nhl    : std_logic;
-	signal video_vld    : std_logic;
-	signal video_vcntr  : std_logic_vector(11-1 downto 0);
-	signal video_hcntr  : std_logic_vector(11-1 downto 0);
+	signal video_hs    : std_logic;
+	signal video_vs    : std_logic;
+	signal video_frm   : std_logic;
+	signal video_hon   : std_logic;
+	signal video_nhl   : std_logic;
+	signal video_vld   : std_logic;
+	signal video_vcntr : std_logic_vector(11-1 downto 0);
+	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
-	signal ca_dot       : std_logic;
-	signal video_dot    : std_logic_vector(0 to 19-1);
+	signal ca_dot      : std_logic;
+	signal video_dot   : std_logic_vector(0 to 19-1);
 
-	signal video_io     : std_logic_vector(0 to 3-1);
-	signal abscisa      : std_logic_vector(video_hcntr'range);
-	signal ordinates    : std_logic_vector(input_data'range);
+	signal video_io    : std_logic_vector(0 to 3-1);
+	signal abscisa     : std_logic_vector(video_hcntr'range);
+	signal ordinates   : std_logic_vector(input_data'range);
 	
-	signal win_don      : std_logic_vector(0 to 18-1);
-	signal win_frm      : std_logic_vector(0 to 18-1);
-	signal pll_rdy      : std_logic;
+	signal win_don     : std_logic_vector(0 to 18-1);
+	signal win_frm     : std_logic_vector(0 to 18-1);
+	signal pll_rdy     : std_logic;
 
-	constant ch_size    : natural := 25*64;
-	constant width      : natural := ch_size+1+(4*8+4)+(5*8+4);
-	constant height     : natural := 269;
+	constant ch_size   : natural := 25*64;
+	constant width     : natural := ch_size+1+(4*8+4)+(5*8+4);
+	constant height    : natural := 269;
 
-	signal input_addr   : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
-	signal full_addr    : std_logic_vector(input_addr'range);
+	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
+	signal full_addr   : std_logic_vector(input_addr'range);
 
 	subtype word  is std_logic_vector(ordinates'length/inputs-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	signal scale        : std_logic_vector(4-1 downto 0);
-	signal amp          : std_logic_vector(6*inputs-1 downto 0);
-	signal offset       : word_vector(inputs-1 downto 0);
+	signal scale       : std_logic_vector(4-1 downto 0);
+	signal amp         : std_logic_vector(4*inputs-1 downto 0);
+	signal offset      : word_vector(inputs-1 downto 0);
 
-	signal channels     : word_vector(inputs-1 downto 0);
-	signal vm_addr      : std_logic_vector(input_addr'range);
-	signal vm_data      : std_logic_vector(input_data'range);
+	signal vm_inputs   : word_vector(inputs-1 downto 0);
+	signal vm_addr     : std_logic_vector(input_addr'range);
+	signal vm_data     : std_logic_vector(input_data'range);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -160,40 +160,42 @@ begin
 		win_frm    => win_frm);
 
 	process (input_clk)
-		subtype dword is unsigned(2*ordinates'length/inputs-1 downto 0);
+		subtype dword is unsigned(2*word'length-1 downto 0);
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'length-1 downto 0);
-		variable scales    : word_vector(0 to 8*4-1) := (others => (others => '-'));
-		variable chan_aux  : word_vector(channels'range) := (others => (others => '-'));
+		variable scales    : word_vector(0 to (8-(-7)))  := (others => (others => '-'));
+		variable chan_aux  : word_vector(vm_inputs'range) := (others => (others => '-'));
 		variable dword_aux : dword;
 		variable aux       : real;
 		variable n         : natural;
 	begin
 		if rising_edge(input_clk) then
-			for n in -4 to 3 loop          -- 1, 10, 100
-				for j in 0 to 4-1 loop  -- 1, 2 , 5
-					case j is
-					when 0 =>           -- 1
-						aux := 5.0**(n+0)*2.0**(n+0);
-					when 1 =>           -- 2
-						aux := 5.0**(n+0)*2.0**(n+1);
-					when 2 =>           -- 3
-						aux := 5.0**(n+1)*2.0**(n+0);
-						when others =>
-					end case;
-					scales(4*(n+4)+j) := aux;
-				end loop;
+			for i in -7 to 8 loop          -- 1, 10, 100
+				n := (i - i mod 3) / 3;
+				case i mod 3 is
+				when 0 =>           -- 1.0
+					aux := 5.0**(n+0)*2.0**(n+0);
+				when 1 =>           -- 2.0
+					aux := 5.0**(n+0)*2.0**(n+1);
+				when 2 =>           -- 5.0
+					aux := 5.0**(n+1)*2.0**(n+0);
+				when others =>
+				end case;
+				scales(i-(-7)) := std_logic_vector(to_unsigned(natural(round(2.0**(word'length/2)*aux)),word'length));
 			end loop;
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				channels(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
-				dword_aux   := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(6-1 downto 0))));
-				dword_aux   := dword_aux srl (word'length/2);
-				chan_aux(i) := std_logic_vector(dword_aux(word'range));
-				input_aux   := input_aux srl word'length;
-				amp_aux     := amp_aux   srl scale'length;
+				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
+				vm_inputs(i) <= std_logic_vector(input_aux(word'range));
+--				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)));
+				dword_aux    := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(4-1 downto 0))));
+				dword_aux    := input_aux(word'range)*unsigned'("000010000");
+				dword_aux    := dword_aux srl (word'length/2);
+				chan_aux(i)  := std_logic_vector(dword_aux(word'range));
+				input_aux    := input_aux srl word'length;
+				amp_aux      := amp_aux   srl scale'length;
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
@@ -213,6 +215,7 @@ begin
 		end process;
 
 		process (input_clk)
+			variable input_aux : unsigned(input_data'length-1 downto 0);
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -221,9 +224,11 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(channels(0)) >= unsigned(input_level) then
+				elsif unsigned(input_aux(word'range)) <= unsigned'(b"0_0000_0001") then
 					input_ena <= '1';
 				end if;
+					input_ena <= '1';
+				input_aux := unsigned(input_data);
 			end if;
 		end process;
 
@@ -247,20 +252,20 @@ begin
 		signal rd_data : std_logic_vector(input_data'range);
 	begin
 
-		process (channels)
+		process (vm_inputs)
 			variable aux : unsigned(input_data'length-1 downto 0);
 		begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
 				aux               := aux sll word'length;
-				aux(word'range) := unsigned(channels(i));
+				aux(word'range) := unsigned(vm_inputs(i));
 			end loop;
 			vm_data <= std_logic_vector(aux);
 		end process;
 
 
 		wr_data <= vm_data;
-		wr_addr <= vm_addr;
+		wr_addr <= input_addr;
 
 		process (video_clk)
 		begin

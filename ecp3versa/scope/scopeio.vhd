@@ -37,11 +37,11 @@ architecture beh of ecp3versa is
 				y := 1.0;
 			end if;
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(-real(2**(n-3))*y)+2**(n-3),n));
-			if i=1599 then
-				aux(i*n to (i+1)*n-1) := (others => '0');
-			else
-				aux(i*n to (i+1)*n-1) := ('1',others => '0');
-			end if;
+--			if i=1599 then
+--				aux(i*n to (i+1)*n-1) := (others => '0');
+--			else
+--				aux(i*n to (i+1)*n-1) := ('1',others => '0');
+--			end if;
 		end loop;
 		return aux;
 	end;
@@ -98,6 +98,13 @@ begin
 		addr => input_addr,
 		data => sample);
 
+	process (vga_clk)
+	begin
+		if rising_edge(vga_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
+
 	phy1_rst <= not rst;
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
@@ -120,7 +127,7 @@ begin
 		i => (expansionx4'range => '-'),
 		d => (expansionx4'range => 1))
 	port map (
-		clk   => clk,
+		clk   => vga_clk,
 		di(0) => vga_green,
 		di(1) => vga_blue,
 		di(2) => vga_red,
