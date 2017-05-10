@@ -164,31 +164,26 @@ begin
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'length-1 downto 0);
-		variable scales    : word_vector(0 to 4*4*4-1) := (others => (others => '-'));
+		variable scales    : word_vector(0 to 8*4-1) := (others => (others => '-'));
 		variable chan_aux  : word_vector(channels'range) := (others => (others => '-'));
 		variable dword_aux : dword;
-		variable aux       : natural;
+		variable aux       : real;
+		variable n         : natural;
 	begin
 		if rising_edge(input_clk) then
-			for k in 0 to 4-1 loop                  -- Units m, u, n;
-				if k < 4-1 then
-					for i in 0 to 4-1 loop          -- 1, 10, 100
-						if i < 4-1 then
-							for j in 0 to 4-1 loop  -- 1, 2 , 5
-								case j is
-								when 0 =>           -- 1
-									scales(4*4*k+4*i+j) := std_logic_vector(to_unsigned(1*(10**(3*k))*(10**i),word'length));
-								when 1 =>           -- 2
-									scales(4*4*k+4*i+j) := std_logic_vector(to_unsigned(2*(10**(3*k))*(10**i),word'length));
-								when 2 =>           -- 3
-									scales(4*4*k+4*i+j) := std_logic_vector(to_unsigned(5*(10**(3*k))*(10**i),word'length));
-								when others =>
-								end case;
-								scales(4*4*k+4*i+j) := aux;
-							end loop;
-						end if;
-					end loop;
-				end if;
+			for n in -4 to 3 loop          -- 1, 10, 100
+				for j in 0 to 4-1 loop  -- 1, 2 , 5
+					case j is
+					when 0 =>           -- 1
+						aux := 5.0**(n+0)*2.0**(n+0);
+					when 1 =>           -- 2
+						aux := 5.0**(n+0)*2.0**(n+1);
+					when 2 =>           -- 3
+						aux := 5.0**(n+1)*2.0**(n+0);
+						when others =>
+					end case;
+					scales(4*(n+4)+j) := aux;
+				end loop;
 			end loop;
 
 			amp_aux := unsigned(amp);
