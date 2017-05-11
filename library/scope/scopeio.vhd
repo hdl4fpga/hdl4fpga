@@ -191,7 +191,7 @@ begin
 				vm_inputs(i) <= std_logic_vector(input_aux(word'range));
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)));
 				dword_aux    := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(4-1 downto 0))));
-				dword_aux    := input_aux(word'range)*unsigned(scales(9));
+				dword_aux    := input_aux(word'range)*unsigned(scales(5));
 				dword_aux    := dword_aux srl (word'length/2);
 				chan_aux(i)  := std_logic_vector(dword_aux(word'range));
 				input_aux    := input_aux srl word'length;
@@ -224,7 +224,7 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(input_aux(word'range)) <= unsigned'(b"0_0000_0001") then
+				elsif unsigned(input_aux(word'range)) <= unsigned'(b"0_0000_0000") then
 					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
