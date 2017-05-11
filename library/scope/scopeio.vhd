@@ -189,9 +189,9 @@ begin
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
 				vm_inputs(i) <= std_logic_vector(input_aux(word'range));
---				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)));
+				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)));
 				dword_aux    := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(4-1 downto 0))));
-				dword_aux    := input_aux(word'range)*unsigned'("000010000");
+				dword_aux    := input_aux(word'range)*unsigned(scales(9));
 				dword_aux    := dword_aux srl (word'length/2);
 				chan_aux(i)  := std_logic_vector(dword_aux(word'range));
 				input_aux    := input_aux srl word'length;
