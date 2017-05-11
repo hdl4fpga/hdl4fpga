@@ -7,13 +7,18 @@
   <body>
 		<table style="width:100%">
 				<tr>
+					<!--
 						<td> <input type="text"   id="address" value="kit"/> </td>
 						<td> <input type="button" id="connect" value="send"/> </td>
+					-->
 				</tr>
 				<tr>
-						<td> <select id="character"></select> </td>
-						<td> <input type="number" value="1" min="0" max="240" id="column"/> </td>
-						<td> <input type="number" value="1" min="0" max="67"  id="row"/>    </td>
+					<td> <select id="amp"></select> </td> 
+					<td> <input  id="offset"  type="number" value="0" min="0" max="255"/> </td>
+					<td> <input  id="trigger" type="number" value="0" min="0" max="255"/> </td>
+					<!-- 
+					<td> <input type="number" value="7" min="0" max="15" id="amp"/> </td>
+					<td> <select id="command"></select> </td> -->
 				</tr>
 		</table>
   </body>

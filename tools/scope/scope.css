@@ -12,5 +12,12 @@ input[type=button] {
 	text-decoration : none;
 }
 
+select {
+	direction : rtl;
+	text-align : right;
+	text-align-last : right;
+}
+
+
 div {
 	text-align : left }

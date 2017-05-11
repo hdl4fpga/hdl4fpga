@@ -29,15 +29,14 @@ end;
 architecture beh of scopeio is
 
 	signal hdr_data     : std_logic_vector(288-1 downto 0);
-	signal pld_data     : std_logic_vector(3*8-1 downto 0);
+	signal pld_data     : std_logic_vector(2*8-1 downto 0);
 	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
 	signal ser_data     : std_logic_vector(32-1 downto 0);
 
 	constant cga_zoom  : natural := 0;
 	signal cga_we      : std_logic;
-	signal cga_row     : std_logic_vector(7-1-cga_zoom downto 0);
-	signal cga_col     : std_logic_vector(8-1-cga_zoom downto 0);
-	signal cga_code    : std_logic_vector(8-1 downto 0);
+	signal scope_cmd   : std_logic_vector(8-1 downto 0);
+	signal scope_data  : std_logic_vector(8-1 downto 0);
 	signal char_dot    : std_logic;
 
 	signal video_hs    : std_logic;
@@ -73,6 +72,7 @@ architecture beh of scopeio is
 	signal scale       : std_logic_vector(4-1 downto 0);
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
 	signal offset      : word_vector(inputs-1 downto 0);
+	signal trigger_lvl : word_vector(inputs-1 downto 0);
 
 	signal vm_inputs   : word_vector(inputs-1 downto 0);
 	signal vm_addr     : std_logic_vector(input_addr'range);
@@ -99,19 +99,25 @@ begin
 	process (pld_data)
 		variable data : unsigned(pld_data'range);
 	begin
-		data     := unsigned(pld_data);
-		cga_code <= reverse(std_logic_vector(data(cga_code'range)));
-		data     := data srl cga_code'length;
-		cga_row  <= std_logic_vector(data(cga_row'range));
-		data     := data srl cga_row'length;
-		cga_col  <= std_logic_vector(data(cga_col'range));
+		data       := unsigned(pld_data);
+		scope_cmd  <= reverse(std_logic_vector(data(scope_cmd'range)));
+		data       := data srl scope_cmd'length;
+		scope_data <= reverse(std_logic_vector(data(scope_data'range)));
 	end process;
 
 	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
 			if pll_rdy='1' then
-				scale <= cga_code(3 downto 0);
+				case scope_cmd(3 downto 0) is
+				when "0000" =>
+					amp            <= scope_data(3 downto 0);
+				when "0001" =>
+					offset(0)      <= std_logic_vector(resize(unsigned(scope_data), word'length));
+				when "0010" =>
+					trigger_lvl(0) <= std_logic_vector(resize(unsigned(scope_data), word'length));
+				when others =>
+				end case;
 			end if;
 		end if;
 	end process;
@@ -171,7 +177,7 @@ begin
 		variable n         : natural;
 	begin
 		if rising_edge(input_clk) then
-			for i in -7 to 8 loop          -- 1, 10, 100
+			for i in -8 to 7 loop          -- 1, 10, 100
 				n := (i - i mod 3) / 3;
 				case i mod 3 is
 				when 0 =>           -- 1.0
@@ -182,16 +188,13 @@ begin
 					aux := 5.0**(n+1)*2.0**(n+0);
 				when others =>
 				end case;
-				scales(i-(-7)) := std_logic_vector(to_unsigned(natural(round(2.0**(word'length/2)*aux)),word'length));
+				scales(i-(-8)) := std_logic_vector(to_unsigned(natural(2.0**(word'length/2)*aux),word'length));
 			end loop;
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
-				vm_inputs(i) <= std_logic_vector(input_aux(word'range));
-				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)));
 				dword_aux    := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(4-1 downto 0))));
-				dword_aux    := input_aux(word'range)*unsigned(scales(5));
 				dword_aux    := dword_aux srl (word'length/2);
 				chan_aux(i)  := std_logic_vector(dword_aux(word'range));
 				input_aux    := input_aux srl word'length;
@@ -205,15 +208,6 @@ begin
 		signal input_level : word;
 		signal input_ena   : std_logic;
 	begin
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if pll_rdy='1' then
-					input_level <= std_logic_vector(resize(unsigned(cga_code),input_level'length));
-				end if;
-			end if;
-		end process;
-
 		process (input_clk)
 			variable input_aux : unsigned(input_data'length-1 downto 0);
 		begin
@@ -224,7 +218,7 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(input_aux(word'range)) <= unsigned'(b"0_0000_0000") then
+				elsif unsigned(input_aux(word'range)) <= unsigned(trigger_lvl(0)) then
 					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
