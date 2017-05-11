@@ -227,7 +227,6 @@ begin
 				elsif unsigned(input_aux(word'range)) <= unsigned'(b"0_0000_0001") then
 					input_ena <= '1';
 				end if;
-					input_ena <= '1';
 				input_aux := unsigned(input_data);
 			end if;
 		end process;
