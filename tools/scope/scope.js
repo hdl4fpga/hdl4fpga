@@ -1,34 +1,24 @@
-var socketID;
+const dgram        = require('dgram');
 
-chrome.sockets.udp.create({}, function(si) {
-	socketID = si.socketId;
-	chrome.sockets.udp.bind(socketID, "0.0.0.0", 0, function(si) {
+var server = dgram.createSocket('udp4');
+
+server.on(
+	'listening',
+   	function () {
+		const address = server.address();
+		console.log('listening -> ' + address.address + ":" + address.port);
 	});
-});
 
-window.addEventListener("load", function() {
-	for (i = 1; i < 17; i++) {
-		var opt = document.createElement("option");
-		var mod = i % 3;
-		var quo = ((i-mod) / 3) - 3;
-		var aux;
-		switch(mod) {
-		case 0:
-			aux = Math.pow(10.0, quo)*1.0;
-			break;
-		case 1:
-			aux = Math.pow(10.0, quo)*2.0;
-			break;
-		case 2:
-			aux = Math.pow(10.0, quo)*5.0;
-			break;
-		}
-		if (aux < 1)
-			aux = 1000*aux + 'm';
-		opt.innerHTML = aux;
-		document.getElementById("amp").appendChild(opt);
-	}
-});
+server.on(
+	'message',
+	function (data, remote) {
+		msgRecv = 1;
+		const msg = JSON.parse(data.toString());
+		console.log('message -> ' + data.toString());
+		sbEmitter.emit(msg.type, msg);
+	});
+
+server.bind(config.dcs.port, config.dcs.ip);
 
 window.addEventListener("load", function() {
 	var address = "kit";
