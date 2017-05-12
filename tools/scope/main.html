@@ -2,6 +2,7 @@
   <head>
     <title>Scope</title>
 	<link rel="stylesheet" href="scope.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="scope.js"></script>
   </head>
   <body>
@@ -13,12 +14,14 @@
 					-->
 				</tr>
 				<tr>
-					<td> <select id="amp"></select> </td> 
-					<td> <input  id="offset"  type="number" value="0" min="0" max="255"/> </td>
-					<td> <input  id="trigger" type="number" value="0" min="0" max="255"/> </td>
-					<!-- 
-					<td> <input type="number" value="7" min="0" max="15" id="amp"/> </td>
-					<td> <select id="command"></select> </td> -->
+					<td>
+
+					<label for="amp"> Amplifier</label>
+					<input id="amp"     type="range" class="vertical" value="7"   min="0" max="15">
+					<label for="offset"> Offset</label>
+					<input id="offset"  type="range" class="vertical" value="128" min="0" max="255"/>
+					<label for="trigger">Trigger</label>
+					<input id="trigger" type="range" class="vertical" value="128" min="0" max="255"/>
 				</tr>
 		</table>
   </body>

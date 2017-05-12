@@ -1,5 +1,5 @@
 body {
-	background-color : lightblue }
+	background-color : gray }
 
 #address {
 	width   : 100%;
@@ -12,6 +12,19 @@ input[type=button] {
 	text-decoration : none;
 }
 
+input[type=button] {
+	width   : 100%;
+	display : inline-block;
+	border  : 1px solid lightgray;
+	text-decoration : none;
+}
+
+input.vertical {
+	display : inline-block;
+	height : 200;
+	-webkit-appearance: slider-vertical;
+	writing-mode: bt-lr;
+}
 select {
 	direction : rtl;
 	text-align : right;
