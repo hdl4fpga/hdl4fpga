@@ -1,27 +1,7 @@
-const dgram        = require('dgram');
+const dgram = require('dgram');
 
-var server = dgram.createSocket('udp4');
-
-server.on(
-	'listening',
-   	function () {
-		const address = server.address();
-		console.log('listening -> ' + address.address + ":" + address.port);
-	});
-
-server.on(
-	'message',
-	function (data, remote) {
-		msgRecv = 1;
-		const msg = JSON.parse(data.toString());
-		console.log('message -> ' + data.toString());
-		sbEmitter.emit(msg.type, msg);
-	});
-
-server.bind(config.dcs.port, config.dcs.ip);
-
+var client = dgram.createSocket('udp4');
 window.addEventListener("load", function() {
-	var address = "kit";
 
 	function send (cmd, data) {
 		var buffer = new ArrayBuffer(2);
@@ -38,14 +18,12 @@ window.addEventListener("load", function() {
 
 	//	console.log(bufvie[1]);
 	//	console.log(bufvie[2]);
-		chrome.sockets.udp.send(
-			socketID,
-			buffer,
-			host,
-			port,
-			function(si) {
+		client.send(buffer, 0, buffer.length, 57001, 'kit' , function(err, bytes) {
+			if (err) throw err;
+			console.log('UDP message sent to ' + HOST +':'+ PORT);
+			client.close();
 		});
-	};
+	}
 
 	document.getElementById("amp").onchange = function(ev) {
 		send (0, document.getElementById("amp").selectedIndex);
@@ -58,9 +36,5 @@ window.addEventListener("load", function() {
 	document.getElementById("trigger").onchange = function(ev) {
 		send (2, document.getElementById("trigger").value);
 	}
-
-	address.onkeydown = function(ev) {
-		console.log("onkeydown");
-	};
 
 });
