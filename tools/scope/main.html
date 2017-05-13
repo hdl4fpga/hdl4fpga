@@ -2,26 +2,25 @@
   <head>
     <title>Scope</title>
 	<link rel="stylesheet" href="scope.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="scope.js"></script>
   </head>
-  <body>
-		<table style="width:100%">
+  <body >
+		<table >
 				<tr>
-					<!--
-						<td> <input type="text"   id="address" value="kit"/> </td>
-						<td> <input type="button" id="connect" value="send"/> </td>
-					-->
+					<td><input id="amp"     type="range" class="vertical" value="7"   min="0" max="15"></td>
+					<td><input id="offset"  type="range" class="vertical" value="127" min="0" max="255"/></td>
+					<td><input id="trigger" type="range" class="vertical" value="127" min="0" max="255"/></td>
 				</tr>
-				<tr>
-					<td>
-
-					<label for="amp"> Amplifier</label>
-					<input id="amp"     type="range" class="vertical" value="7"   min="0" max="15">
-					<label for="offset"> Offset</label>
-					<input id="offset"  type="range" class="vertical" value="128" min="0" max="255"/>
-					<label for="trigger">Trigger</label>
-					<input id="trigger" type="range" class="vertical" value="128" min="0" max="255"/>
+				<tr style="text-align:center;">
+					<td style="width:33%;"> <label>Amplifier</label> </td>
+					<td style="width:33%;"> <label>Offset</label>    </td>
+					<td style="width:33%;"> <label>Trigger</label>   </td>
 				</tr>
 		</table>
   </body>

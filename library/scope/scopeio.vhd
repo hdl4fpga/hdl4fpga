@@ -100,9 +100,9 @@ begin
 		variable data : unsigned(pld_data'range);
 	begin
 		data       := unsigned(pld_data);
-		scope_cmd  <= reverse(std_logic_vector(data(scope_cmd'range)));
+		scope_cmd  <= std_logic_vector(data(scope_cmd'range));
 		data       := data srl scope_cmd'length;
-		scope_data <= reverse(std_logic_vector(data(scope_data'range)));
+		scope_data <= std_logic_vector(data(scope_data'range));
 	end process;
 
 	process (mii_rxc)

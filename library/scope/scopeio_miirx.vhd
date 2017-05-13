@@ -95,7 +95,7 @@ begin
 				data(mii_rxd'range) := unsigned(mii_rxd);
 				cntr := cntr - 1;
 			end if;
-			pll_data <= reverse(std_logic_vector(data));
+			pll_data <= std_logic_vector(data);
 			prdy     <= cntr(0) and mac_vld and mii_rxdv;
 		end if;
 	end process;
@@ -115,7 +115,7 @@ begin
 			end if;
 			data := data srl mii_rxd'length;
 			data(mii_rxd'range) := unsigned(mii_rxd);
-			ser_data <= reverse(std_logic_vector(data));
+			ser_data <= std_logic_vector(data);
 			ser_ena  <= cntr(0) and prdy and mii_rxdv;
 		end if;
 	end process;

@@ -1,16 +1,5 @@
 body {
-	background-color : gray }
-
-#address {
-	width   : 100%;
-}
-
-input[type=button] {
-	width   : 100%;
-	display : inline-block;
-	border  : 1px solid lightgray;
-	text-decoration : none;
-}
+	background-color : white; }
 
 input[type=button] {
 	width   : 100%;
@@ -20,17 +9,10 @@ input[type=button] {
 }
 
 input.vertical {
+	width : 50;
 	display : inline-block;
-	height : 200;
+	height  : 200;
+	background-color : gray;
 	-webkit-appearance: slider-vertical;
 	writing-mode: bt-lr;
 }
-select {
-	direction : rtl;
-	text-align : right;
-	text-align-last : right;
-}
-
-
-div {
-	text-align : left }
