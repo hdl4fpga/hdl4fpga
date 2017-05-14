@@ -66,15 +66,15 @@ architecture beh of scopeio is
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
 	signal full_addr   : std_logic_vector(input_addr'range);
 
-	subtype word  is std_logic_vector(ordinates'length/inputs-1 downto 0);
-	type word_vector is array (natural range <>) of word;
+	subtype sample_word  is std_logic_vector(ordinates'length/inputs-1 downto 0);
+	type sword_vector is array (natural range <>) of sample_word;
 
 	signal scale       : std_logic_vector(4-1 downto 0);
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
-	signal offset      : word_vector(inputs-1 downto 0);
-	signal trigger_lvl : word_vector(inputs-1 downto 0);
+	signal offset      : sword_vector(inputs-1 downto 0);
+	signal trigger_lvl : sword_vector(inputs-1 downto 0);
 
-	signal vm_inputs   : word_vector(inputs-1 downto 0);
+	signal vm_inputs   : sword_vector(inputs-1 downto 0);
 	signal vm_addr     : std_logic_vector(input_addr'range);
 	signal vm_data     : std_logic_vector(input_data'range);
 begin
@@ -113,9 +113,9 @@ begin
 				when "0000" =>
 					amp            <= scope_data(3 downto 0);
 				when "0001" =>
-					offset(0)      <= std_logic_vector(resize(unsigned(scope_data), word'length));
+					offset(0)      <= std_logic_vector(resize(unsigned(scope_data), sample_word'length));
 				when "0010" =>
-					trigger_lvl(0) <= std_logic_vector(resize(unsigned(scope_data), word'length));
+					trigger_lvl(0) <= std_logic_vector(resize(unsigned(scope_data), sample_word'length));
 				when others =>
 				end case;
 			end if;
@@ -166,46 +166,50 @@ begin
 		win_frm    => win_frm);
 
 	process (input_clk)
-		subtype dword is unsigned(2*word'length-1 downto 0);
+		type  mword_vector  is array (natural range <>) of signed(1*18-1 downto 0);
+		type  mdword_vector is array (natural range <>) of signed(2*18-1 downto 0);
+
+		variable m         : mdword_vector(0 to inputs-1);
+		variable a         : mword_vector(0 to inputs-1);
+		variable scales    : mword_vector(0 to 16-1)  := (others => (others => '-'));
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'length-1 downto 0);
-		variable scales    : word_vector(0 to (8-(-7)))  := (others => (others => '-'));
-		variable chan_aux  : word_vector(vm_inputs'range) := (others => (others => '-'));
-		variable dword_aux : dword;
-		variable aux       : real;
+		variable chan_aux  : sword_vector(vm_inputs'range) := (others => (others => '-'));
 		variable n         : natural;
+		variable j         : natural;
 	begin
 		if rising_edge(input_clk) then
-			for i in -8 to 7 loop          -- 1, 10, 100
-				n := (i - i mod 3) / 3;
-				case i mod 3 is
+			for i in scale'range loop 
+				j := i + 2;
+				n := (j - j mod 3) / 3 - 3;
+				case j mod 3 is
 				when 0 =>           -- 1.0
-					aux := 5.0**(n+0)*2.0**(n+0);
+					scales(i) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
 				when 1 =>           -- 2.0
-					aux := 5.0**(n+0)*2.0**(n+1);
+					scales(i) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), scales(0)'length);
 				when 2 =>           -- 5.0
-					aux := 5.0**(n+1)*2.0**(n+0);
+					scales(i) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), scales(0)'length);
 				when others =>
 				end case;
-				scales(i-(-8)) := std_logic_vector(to_unsigned(natural(round(2.0**(word'length/2)*aux)),word'length));
 			end loop;
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
-				dword_aux    := input_aux(word'range)*unsigned(scales(to_integer(amp_aux(4-1 downto 0))));
-				dword_aux    := dword_aux srl (word'length/2);
-				chan_aux(i)  := std_logic_vector(dword_aux(word'range));
-				input_aux    := input_aux srl word'length;
+				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
+				m(i)         := shift_right(m(i), a(0)'length/2);
+				chan_aux(i)  := std_logic_vector(m(i)(sample_word'range));
+				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;
+				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
 	end process;
 
 	trigger_b  : block
-		signal input_level : word;
+		signal input_level : sample_word;
 		signal input_ena   : std_logic;
 	begin
 		process (input_clk)
@@ -218,7 +222,7 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(input_aux(word'range)) >= unsigned(trigger_lvl(0)) then
+				elsif unsigned(input_aux(sample_word'range)) >= unsigned(trigger_lvl(0)) then
 					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
@@ -250,8 +254,8 @@ begin
 		begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
-				aux               := aux sll word'length;
-				aux(word'range) := unsigned(vm_inputs(i));
+				aux := aux sll sample_word'length;
+				aux(sample_word'range) := unsigned(vm_inputs(i));
 			end loop;
 			vm_data <= std_logic_vector(aux);
 		end process;
