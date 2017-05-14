@@ -218,7 +218,7 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(input_aux(word'range)) <= unsigned(trigger_lvl(0)) then
+				elsif unsigned(input_aux(word'range)) >= unsigned(trigger_lvl(0)) then
 					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
