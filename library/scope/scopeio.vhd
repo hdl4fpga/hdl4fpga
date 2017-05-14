@@ -188,7 +188,7 @@ begin
 					aux := 5.0**(n+1)*2.0**(n+0);
 				when others =>
 				end case;
-				scales(i-(-8)) := std_logic_vector(to_unsigned(natural(2.0**(word'length/2)*aux),word'length));
+				scales(i-(-8)) := std_logic_vector(to_unsigned(natural(round(2.0**(word'length/2)*aux)),word'length));
 			end loop;
 
 			amp_aux := unsigned(amp);
