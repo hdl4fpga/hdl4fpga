@@ -197,12 +197,13 @@ begin
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i))); -- + unsigned(offset(i)));
-				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
+--				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
+				m(i)         := a(i)*uns;
 				m(i)         := shift_right(m(i), a(0)'length/2);
-				--m(i)         := a(i) sll a(0)'length;
-				chan_aux(i)  := std_logic_vector(a(i)(sample_word'range));
-				a(i)         := b"00_0000_0000_1000_0000"; --resize(signed(input_aux(sample_word'range)), a(0)'length);
-				a(i)(sample_word'range) := input_aux(sample_word'range);
+				m(i)         := m(i) srl a(0)'length;
+				chan_aux(i)  := std_logic_vector(m(i)(sample_word'range));
+--				a(i)(sample_word'range) := input_aux(sample_word'range);
+				a(i)         := b"00_0000_0000_1100_0000"; --resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;
 			end loop;
