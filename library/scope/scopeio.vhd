@@ -66,7 +66,7 @@ architecture beh of scopeio is
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
 	signal full_addr   : std_logic_vector(input_addr'range);
 
-	subtype sample_word  is std_logic_vector(ordinates'length/inputs-1 downto 0);
+	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 	type sword_vector is array (natural range <>) of sample_word;
 
 	signal scale       : std_logic_vector(4-1 downto 0);
@@ -197,13 +197,11 @@ begin
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i))); -- + unsigned(offset(i)));
---				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
-				m(i)         := a(i)*uns;
-				m(i)         := shift_right(m(i), a(0)'length/2);
-				m(i)         := m(i) srl a(0)'length;
+				m(i)         := a(i)*signed'(b"01_1111_1111_1111_1111");
+				m(i)         := shift_right(m(i), (a(0)'length-1));
 				chan_aux(i)  := std_logic_vector(m(i)(sample_word'range));
---				a(i)(sample_word'range) := input_aux(sample_word'range);
-				a(i)         := b"00_0000_0000_1100_0000"; --resize(signed(input_aux(sample_word'range)), a(0)'length);
+				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
+--				a(i)         := b"00_0000_0000_1100_0000"; --resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;
 			end loop;
@@ -226,9 +224,9 @@ begin
 						end if;
 					end if;
 				elsif unsigned(input_aux(sample_word'range)) >= unsigned(trigger_lvl(0)) then
+					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
-					input_ena <= '1';
 			end if;
 		end process;
 
