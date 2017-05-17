@@ -180,9 +180,9 @@ begin
 		variable j         : natural;
 	begin
 		if rising_edge(input_clk) then
-			for i in scale'range loop 
+			for i in scales'range loop 
 				j := i + 2;
-				n := (j - j mod 3) / 3 - 3;
+				n := (j - (j mod 3)) / 3 - 3;
 				case j mod 3 is
 				when 0 =>           -- 1.0
 					scales(i) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
@@ -196,12 +196,11 @@ begin
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i))); -- + unsigned(offset(i)));
-				m(i)         := a(i)*signed'(b"01_1111_1111_1111_1111");
-				m(i)         := shift_right(m(i), (a(0)'length-1));
+				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) + unsigned(offset(i)));
+				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
+				m(i)         := shift_right(m(i), (a(0)'length/2));
 				chan_aux(i)  := std_logic_vector(m(i)(sample_word'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
---				a(i)         := b"00_0000_0000_1100_0000"; --resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;
 			end loop;
@@ -224,8 +223,8 @@ begin
 						end if;
 					end if;
 				elsif unsigned(input_aux(sample_word'range)) >= unsigned(trigger_lvl(0)) then
-					input_ena <= '1';
 				end if;
+					input_ena <= '1';
 				input_aux := unsigned(input_data);
 			end if;
 		end process;
@@ -236,8 +235,8 @@ begin
 				if input_ena='0' then
 					input_addr <= (others => '0');
 				elsif input_addr(0)='0' then
-					input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 				end if;
+					input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 			end if;
 		end process;
 
