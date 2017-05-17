@@ -23,13 +23,13 @@ entity scopeio_channel is
 end;
 
 architecture def of scopeio_channel is
-	subtype word_s is std_logic_vector(ordinates'length/inputs-1 downto 0);
-	type words_vector is array (natural range <>) of word_s;
+	subtype vmword is std_logic_vector(unsigned_num_bits(height-1)-1  downto 0);
+	type vmword_vector is array (natural range <>) of vmword;
 
-	signal samples : words_vector(inputs-1 downto 0);
+	signal samples : vmword_vector(inputs-1 downto 0);
 
 	signal win_x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal win_y     : vmword;
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
@@ -161,8 +161,8 @@ begin
 	begin
 		aux := unsigned(ordinates);
 		for i in 0 to inputs-1 loop
-			samples(i) <= std_logic_vector(aux(word_s'range));
-			aux        := aux srl word_s'length;
+			samples(i) <= std_logic_vector(aux(vmword'range));
+			aux        := aux srl vmword'length;
 		end loop;
 	end process;
 

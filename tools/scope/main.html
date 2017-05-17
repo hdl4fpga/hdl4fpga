@@ -4,16 +4,19 @@
 	<link rel="stylesheet" href="scope.css">
 	  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="/resources/demos/style.css">
+  <link rel="stylesheet" href="https:///code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="https:///code.jquery.com/resources/demos/style.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="scope.js"></script>
+    <script>
+	$(function(){ $( "#xxx" ).slider(); });
+    </script>
   </head>
   <body >
 		<table >
 				<tr>
-					<td><input id="amp"     type="range" class="vertical" value="7"   min="0" max="15"></td>
+					<td><input id="amp"     type="range" class="vertical" value="0"   min="-8" max="8"></td>
 					<td><input id="offset"  type="range" class="vertical" value="127" min="0" max="255"/></td>
 					<td><input id="trigger" type="range" class="vertical" value="127" min="0" max="255"/></td>
 				</tr>
@@ -22,6 +25,6 @@
 					<td style="width:33%;"> <label>Offset</label>    </td>
 					<td style="width:33%;"> <label>Trigger</label>   </td>
 				</tr>
-		</table>
+		</table><div id="xxx"></div>
   </body>
 </html>

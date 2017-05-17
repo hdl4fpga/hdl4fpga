@@ -13,6 +13,7 @@ window.addEventListener("load", function() {
 	
 		buffer[0] = cmd;
 		buffer[1] = data;
+		console.log(data);
 	//	bufvie[2] = document.getElementById("row").value*2;
 
 	//	console.log(bufvie[1]);
@@ -24,7 +25,7 @@ window.addEventListener("load", function() {
 	}
 
 	document.getElementById("amp").onchange = function(ev) {
-		send (0, document.getElementById("amp").value);
+		send (0, (parseInt(document.getElementById("amp").value)+16)%16);
 	}
 
 	document.getElementById("offset").onchange = function(ev) {
