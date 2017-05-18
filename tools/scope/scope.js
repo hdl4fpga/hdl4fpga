@@ -29,11 +29,11 @@ window.addEventListener("load", function() {
 	}
 
 	document.getElementById("offset").onchange = function(ev) {
-		send (1, document.getElementById("offset").value);
+		send (1, (parseInt(document.getElementById("offset").value)+256)%256);
 	}
 
 	document.getElementById("trigger").onchange = function(ev) {
-		send (2, document.getElementById("trigger").value);
+		send (2, (parseInt(document.getElementById("trigger").value)+256)%256);
 	}
 
 });

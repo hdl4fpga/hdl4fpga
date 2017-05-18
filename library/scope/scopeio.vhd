@@ -58,11 +58,12 @@ architecture beh of scopeio is
 	signal win_frm     : std_logic_vector(0 to 18-1);
 	signal pll_rdy     : std_logic;
 
-	constant ch_size   : natural := 25*64;
-	constant width     : natural := ch_size+1+(4*8+4)+(5*8+4);
-	constant height    : natural := 269;
+	constant ch_width  : natural := 25*64;
+	constant ch_height : natural := 257;
+	constant width     : natural := ch_width+1+(4*8+4)+(5*8+4);
+	constant height    : natural := ch_height+12;
 
-	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_size-1));
+	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_width-1));
 	signal full_addr   : std_logic_vector(input_addr'range);
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
@@ -72,7 +73,7 @@ architecture beh of scopeio is
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
 	signal trigger_lvl : sword_vector(inputs-1 downto 0);
 
-	subtype vmword is std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	subtype vmword is unsigned(unsigned_num_bits(height-1) downto 0);
 	type    vmword_vector is array (natural range <>) of vmword;
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
 	signal  vm_addr     : std_logic_vector(input_addr'range);
@@ -115,9 +116,9 @@ begin
 				when "0000" =>
 					amp            <= scope_data(3 downto 0);
 				when "0001" =>
-					offset(0)      <= std_logic_vector(resize(unsigned(scope_data), vmword'length));
+					offset(0)      <= unsigned(resize(signed(scope_data), vmword'length));
 				when "0010" =>
-					trigger_lvl(0) <= std_logic_vector(resize(unsigned(scope_data), sample_word'length));
+					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
 				when others =>
 				end case;
 			end if;
@@ -178,7 +179,7 @@ begin
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'length-1 downto 0);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
-		variable n,j,k     : natural;
+		variable n,j,k     : integer;
 	begin
 		if rising_edge(input_clk) then
 			for i in scales'range loop 
@@ -198,10 +199,10 @@ begin
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				vm_inputs(i) <= std_logic_vector(unsigned(chan_aux(i)) - unsigned(offset(i)));
+				vm_inputs(i) <= unsigned(chan_aux(i)) - unsigned(offset(i));
 				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
 				m(i)         := shift_right(m(i), (a(0)'length/2));
-				chan_aux(i)  := std_logic_vector(269-m(i)(vmword'range));
+				chan_aux(i)  := to_unsigned(ch_height/2, vmword'length)-unsigned(m(i)(vmword'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;
@@ -224,9 +225,9 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif unsigned(input_aux(sample_word'range)) >= unsigned(trigger_lvl(0)) then
-				end if;
+				elsif signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)) then
 					input_ena <= '1';
+				end if;
 				input_aux := unsigned(input_data);
 			end if;
 		end process;
@@ -237,8 +238,8 @@ begin
 				if input_ena='0' then
 					input_addr <= (others => '0');
 				elsif input_addr(0)='0' then
-				end if;
 					input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+				end if;
 			end if;
 		end process;
 
@@ -257,7 +258,7 @@ begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
 				aux := aux sll vmword'length;
-				aux(vmword'range) := unsigned(vm_inputs(i));
+				aux(vmword'range) := vm_inputs(i);
 			end loop;
 			vm_data <= std_logic_vector(aux);
 		end process;
@@ -290,7 +291,7 @@ begin
 			base := (others => '-');
 			for i in win_don'range loop
 				if win_don(i)='1' then
-					base := to_unsigned(i*ch_size, base'length);
+					base := to_unsigned(i*ch_width, base'length);
 				end if;
 			end loop;
 			full_addr <= std_logic_vector(resize(unsigned(abscisa),full_addr'length) + base);
