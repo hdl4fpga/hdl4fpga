@@ -29,7 +29,7 @@ architecture def of scopeio_channel is
 	signal samples : vmword_vector(inputs-1 downto 0);
 
 	signal win_x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-	signal win_y     : vmword;
+	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range);
@@ -168,15 +168,16 @@ begin
 	end process;
 
 	plot_g : for i in 0 to inputs-1 generate
-		signal row1 : std_logic_vector(win_y'range);
+		signal row1 : vmword;
 	begin
+		row1 <= unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length));
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
 			n => unsigned_num_bits(height-1)+1)
 		port map (
 			video_clk  => video_clk,
 			video_ena  => plot_on,
-			video_row1 => win_y,
+			video_row1 => row1,
 			video_row2 => samples(i),
 			video_dot  => plot_dot(i));
 	end generate;
