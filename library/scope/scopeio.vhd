@@ -203,7 +203,7 @@ begin
 				vm_inputs(i) <= unsigned(signed(chan_aux(i)) - signed(offset(i)));
 				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
 				m(i)         := shift_right(m(i), (a(0)'length/2));
-				chan_aux(i)  := to_unsigned(2**(vmword'length-1), vmword'length)-unsigned(m(i)(vmword'range));
+				chan_aux(i)  := to_unsigned(2**(vmword'length-2)+ch_height/2, vmword'length)-unsigned(m(i)(vmword'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl scale'length;

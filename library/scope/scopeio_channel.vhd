@@ -170,7 +170,7 @@ begin
 	plot_g : for i in 0 to inputs-1 generate
 		signal row1 : vmword;
 	begin
-		row1 <= unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length));
+		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
 			n => unsigned_num_bits(height-1)+1)
