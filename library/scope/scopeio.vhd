@@ -64,7 +64,6 @@ architecture beh of scopeio is
 	constant height    : natural := ch_height+12;
 
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_width-1));
-	signal full_addr   : std_logic_vector(input_addr'range);
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 	type sword_vector is array (natural range <>) of sample_word;
@@ -77,7 +76,8 @@ architecture beh of scopeio is
 	type    vmword_vector  is array (natural range <>) of vmword;
 
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
-	signal  vm_addr     : std_logic_vector(input_addr'range);
+	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
+	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
 	signal  ordinates   : std_logic_vector(vm_data'range);
@@ -266,7 +266,7 @@ begin
 
 
 		wr_data <= vm_data;
-		wr_addr <= input_addr;
+		wr_addr <= input_addr(vm_addr'range);
 
 		process (video_clk)
 		begin
@@ -286,7 +286,7 @@ begin
 	end block;
 
 	process (video_clk)
-		variable base : unsigned(input_addr'range);
+		variable base : unsigned(vm_addr'range);
 	begin
 		if rising_edge(video_clk) then
 			base := (others => '-');
