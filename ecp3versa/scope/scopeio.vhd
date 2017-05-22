@@ -30,13 +30,14 @@ architecture beh of ecp3versa is
 		variable y   : real;
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
-		for i in 0 to x1-x0 loop
+		for i in 0 to 2048-1 loop
 			if (i+x0) /= 0 then
 				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
 			else
 				y := 1.0;
 			end if;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-3))*y),n));
+			y := sin(2.0*MATH_PI*real((i))/128.0);
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
 --			if i=1599 then
 --				aux(i*n to (i+1)*n-1) := (others => '0');
 --			else
@@ -92,7 +93,7 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-960, 1087, sample_size))
+		bitrom => sinctab(0, 2047, sample_size))
 	port map (
 		clk  => vga_clk,
 		addr => input_addr,
