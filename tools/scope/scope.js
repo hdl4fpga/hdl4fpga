@@ -3,7 +3,7 @@ const dgram = require('dgram');
 var client = dgram.createSocket('udp4');
 window.addEventListener("load", function() {
 
-	function send (cmd, data) {
+	function send (id, data) {
 		var buffer = Buffer.alloc(2);
 		var host = "kit";
 		var port = 57001;
@@ -11,29 +11,44 @@ window.addEventListener("load", function() {
 		if (typeof port === "undefined")
 			port = 57001;
 	
-		buffer[0] = cmd;
-		buffer[1] = data;
+		buffer[1] = parseInt(data);
+		switch(id) {
+		case "amp":
+			buffer[0] = 0;
+			break;
+		case "offset":
+			buffer[0] = 1;
+			break;
+		case "trigger":
+			buffer[0] = 2;
+			break;
+		}
 		console.log(data);
-	//	bufvie[2] = document.getElementById("row").value*2;
-
-	//	console.log(bufvie[1]);
-	//	console.log(bufvie[2]);
 		client.send(buffer, port, host , function(err, bytes) {
 			if (err) throw err;
 			console.log('UDP message sent to ' + host +':'+ "57001");
 		});
 	}
 
+	function mouseWheelCb (e) {
+		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+		send (this.id, this.value);
+	}
+
+	document.getElementById("amp").addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("offset").addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("trigger").addEventListener("wheel", mouseWheelCb, false);
+
 	document.getElementById("amp").onchange = function(ev) {
-		send (0, (parseInt(document.getElementById("amp").value)+16)%16);
+		send (this.id, (parseInt(this.value)+16)%16);
 	}
 
 	document.getElementById("offset").onchange = function(ev) {
-		send (1, (parseInt(document.getElementById("offset").value)+256)%256);
+		send (this.id, (parseInt(this.value)+256)%256);
 	}
 
 	document.getElementById("trigger").onchange = function(ev) {
-		send (2, (parseInt(document.getElementById("trigger").value)+256)%256);
+		send (this.id, (parseInt(this.value)+256)%256);
 	}
 
 });
