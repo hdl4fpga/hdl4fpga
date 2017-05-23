@@ -28,15 +28,15 @@ architecture beh of ecp3versa is
 		constant n  : integer)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
 	begin
-		for i in 0 to 2048-1 loop
-			if (i+x0) /= 0 then
-				y := sin(real((i+x0))/100.0)/(real((i+x0))/100.0);
+		for i in x0 to x1 loop
+			if i /= 0 then
+				y := sin(2.0*MATH_PI*real((i))/128.0)/(2.0*MATH_PI*real((i))/128.0);
 			else
 				y := 1.0;
 			end if;
-			y := sin(2.0*MATH_PI*real((i))/128.0);
+--			y := sin(2.0*MATH_PI*real((i))/128.0);
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
 --			if i=1599 then
 --				aux(i*n to (i+1)*n-1) := (others => '0');
@@ -99,9 +99,9 @@ begin
 		addr => input_addr,
 		data => sample);
 
-	process (vga_clk)
+	process (clk)
 	begin
-		if rising_edge(vga_clk) then
+		if rising_edge(clk) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
