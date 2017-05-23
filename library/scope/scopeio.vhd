@@ -217,7 +217,9 @@ begin
 		signal input_ena   : std_logic;
 	begin
 		process (input_clk)
-			variable input_aux : unsigned(input_data'length-1 downto 0);
+			variable input_aux  : unsigned(input_data'length-1 downto 0);
+			variable input_ge   : std_logic;
+			variable input_trgr : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -226,10 +228,16 @@ begin
 							input_ena <= '0';
 						end if;
 					end if;
-				elsif signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)) then
+					input_trgr := '0';
+				elsif input_trgr='0' then
+					if input_ge='0' then
+						input_trgr := '1';
+					end if;
+				elsif input_ge='1' then
 					input_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
+				input_ge  := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
 			end if;
 		end process;
 
