@@ -22,6 +22,9 @@ window.addEventListener("load", function() {
 		case "trigger":
 			buffer[0] = 2;
 			break;
+		case "time":
+			buffer[0] = 3;
+			break;
 		}
 		console.log(data);
 		client.send(buffer, port, host , function(err, bytes) {
@@ -35,11 +38,12 @@ window.addEventListener("load", function() {
 		send (this.id, this.value);
 	}
 
-	document.getElementById("amp").addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("offset").addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("trigger").addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "unit"    ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "offset"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "trigger" ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "time"    ).addEventListener("wheel", mouseWheelCb, false);
 
-	document.getElementById("amp").onchange = function(ev) {
+	document.getElementById("unit").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+16)%16);
 	}
 
@@ -49,6 +53,10 @@ window.addEventListener("load", function() {
 
 	document.getElementById("trigger").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256);
+	}
+
+	document.getElementById("time").onchange = function(ev) {
+		send (this.id, parseInt(this.value));
 	}
 
 });

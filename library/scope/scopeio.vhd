@@ -64,6 +64,7 @@ architecture beh of scopeio is
 	constant height    : natural := ch_height+12;
 
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_width-1));
+	signal input_we    : std_logic;
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 	type sword_vector is array (natural range <>) of sample_word;
@@ -81,6 +82,7 @@ architecture beh of scopeio is
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
 	signal  ordinates   : std_logic_vector(vm_data'range);
+	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -115,11 +117,13 @@ begin
 			if pll_rdy='1' then
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
-					amp            <= scope_data(3 downto 0);
+					amp       <= scope_data(3 downto 0);
 				when "0001" =>
-					offset(0)      <= unsigned(resize(signed(scope_data), vmword'length));
+					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
 				when "0010" =>
 					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
+				when "0011" =>
+					tdiv_sel  <= scope_data(3 downto 0);
 				when others =>
 				end case;
 			end if;
@@ -168,6 +172,35 @@ begin
 		video_frm  => video_frm,
 		win_don    => win_don,
 		win_frm    => win_frm);
+
+	process (input_clk)
+		subtype tdiv_word is signed(0 to 16);
+		type tdiv_vector is array (natural range <> ) of tdiv_word;
+
+		variable tdiv_scales : tdiv_vector(0 to 16-1);
+		variable scaler : tdiv_word;
+	begin
+		for i in tdiv_scales'range loop
+			case i mod 3 is
+			when 0 =>           -- 1.0
+				tdiv_scales(i) := to_signed(5**(i/3+0)*2**(i/3+0)-2, tdiv_scales(0)'length);
+			when 1 =>           -- 2.0
+				tdiv_scales(i) := to_signed(5**(i/3+0)*2**(i/3+1)-2, tdiv_scales(0)'length);
+			when 2 =>           -- 5.0
+				tdiv_scales(i) := to_signed(5**(i/3+1)*2**(i/3+0)-2, tdiv_scales(0)'length);
+			when others =>
+			end case;
+		end loop;
+
+		if rising_edge(input_clk) then
+			if scaler(0)='1' then
+				scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
+			else
+				scaler := scaler  - 1;
+			end if;
+			input_we <= scaler(0);
+		end if;
+	end process;
 
 	process (input_clk)
 		type  mword_vector  is array (natural range <>) of signed(1*18-1 downto 0);
@@ -247,7 +280,9 @@ begin
 				if input_ena='0' then
 					input_addr <= (others => '0');
 				elsif input_addr(0)='0' then
-					input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+					if input_we='1' then
+						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+					end if;
 				end if;
 			end if;
 		end process;
