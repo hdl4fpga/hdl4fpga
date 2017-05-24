@@ -64,5 +64,4 @@ Tested Kits
 | S3EStarter | Spartan 3E     | Xilinx         | XC3S500E   | 4     |    150 MHz |  300 MT/s |  16 bits    |
 | ML509      | Virtex 5       | Xilinx         | XC5LX110t  | 1     |    267 MHz |  533 MT/s |  72 bits    |
 
-  * Fully constrain designs 
-https://drive.google.com/open?id=0B3vSgEQm-wwJVXFXRU1kUWpNdXc
+  * Fully constrain designs
