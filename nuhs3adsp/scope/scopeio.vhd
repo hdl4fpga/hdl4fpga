@@ -32,7 +32,7 @@ architecture beh of nuhs3adsp is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(real((i+x0))/64.0); --/(real((i+x0))/100.0);
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0); --/(real((i+x0))/100.0);
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
 --			if i=1599 then
 --				aux(i*n to (i+1)*n-1) := (others => '0');
@@ -80,13 +80,13 @@ begin
 	generic map (
 		bitrom => sinctab(0, 2047, sample_size))
 	port map (
-		clk  => vga_clk,
+		clk  => sys_clk,
 		addr => input_addr,
 		data => sample);
 
-	process (vga_clk)
+	process (sys_clk)
 	begin
-		if rising_edge(vga_clk) then
+		if rising_edge(sys_clk) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
@@ -96,7 +96,7 @@ begin
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => vga_clk,
+		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_red   => vga_red,
