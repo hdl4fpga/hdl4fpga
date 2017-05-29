@@ -351,6 +351,7 @@ begin
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		ordinates  => ordinates,
+		offset     => offset(0),
 		abscisa    => abscisa,
 		scale      => scale,
 		win_frm    => win_frm,

@@ -16,6 +16,7 @@ entity scopeio_channel is
 		video_nhl  : in  std_logic;
 		abscisa    : out std_logic_vector;
 		ordinates  : in  std_logic_vector;
+		offset     : in  std_logic_vector;
 		scale      : in  std_logic_vector(4-1 downto 0);
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
@@ -40,6 +41,7 @@ architecture def of scopeio_channel is
 	signal axisy_don : std_logic;
 	signal axis_don  : std_logic := '0';
 	signal axis_dot  : std_logic;
+	signal axis_y    : std_logic_vector(win_y'range);
 
 begin
 
@@ -97,7 +99,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 => 1+3, 1 => 0, 2 to 3 => 1),
+			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3),
 			i => (0 to 3 => '-'))
 		port map (
 			clk   => video_clk,
@@ -122,13 +124,14 @@ begin
 
 	end block;
 
+	axis_y <= std_logic_vector(unsigned(win_y)+resize(unsigned(offset),axis_y'length));
 	axisy_e : entity hdl4fpga.scopeio_axisy
 	generic map (
 		fonts      => psf1unitx8x8)
 	port map (
 		video_clk  => video_clk,
 		win_x      => win_x,
-		win_y      => win_y,
+		win_y      => axis_y, 
 		axis_on    => axisy_on,
 		axis_scale => scale,
 		axis_dot   => axisy_don);
@@ -195,7 +198,7 @@ begin
 			clk => video_clk,
 			don => grid_on,
 			row => win_x,
-			col => win_y,
+			col => axis_y, --win_y,
 			dot => dot);
 
 		grid_align_e : entity hdl4fpga.align
