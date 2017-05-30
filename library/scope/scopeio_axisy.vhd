@@ -30,7 +30,8 @@ architecture def of scopeio_axisy is
 	begin
 		for i in 0 to 4-1 loop
 			for j in 0 to 4-1 loop
-				aux := real((num-1)/2)*scales(j)*step*real(10**i);
+--				aux := real((num-1)/2)*scales(j)*step*real(10**i);
+				aux := real((num-0)/2)*scales(j)*step*real(10**i);
 				for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 					retval := retval sll (20+12);
 					if j < 3 then
@@ -70,7 +71,7 @@ begin
 			end if;
 
 			pstn <= refn + bsln;
-			refn := unsigned(win_y) + unsigned'(B"0_0001_0011");
+			refn := unsigned(win_y) + unsigned'(B"0_0000_0011");
 			bias := unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0011");
 		end if;
 	end process;
