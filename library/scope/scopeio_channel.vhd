@@ -33,14 +33,15 @@ architecture def of scopeio_channel is
 	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
-	signal plot_dot  : std_logic_vector(win_on'range);
+	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
 	signal grid_dot  : std_logic;
 	signal axisx_on  : std_logic;
-	signal axisx_don : std_logic;
+	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
 	signal axisy_don : std_logic;
 	signal axis_don  : std_logic := '0';
 	signal axis_dot  : std_logic;
+	signal axisy_off : std_logic_vector(win_y'range);
 
 begin
 
@@ -123,13 +124,14 @@ begin
 
 	end block;
 
+	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 	axisy_e : entity hdl4fpga.scopeio_axisy
 	generic map (
 		fonts      => psf1unitx8x8)
 	port map (
 		video_clk  => video_clk,
 		win_x      => win_x,
-		win_y      => win_y, 
+		win_y      => axisy_off, 
 		axis_on    => axisy_on,
 		axis_scale => scale,
 		axis_dot   => axisy_don);

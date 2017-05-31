@@ -256,6 +256,7 @@ $(HDL4FPGA__rom__def) : ../../library/common/rom.vhd \
 $(HDL4FPGA__scopeio) \
 $(HDL4FPGA__scopeio__beh) : ../../library/scope/scopeio.vhd \
 		$(HDL4FPGA__scopeio_channel) \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__video_vga) \
@@ -280,15 +281,17 @@ $(HDL4FPGA__scopeio_axisx__def) : ../../library/scope/scopeio_axisx.vhd \
 $(HDL4FPGA__scopeio_axisy) \
 $(HDL4FPGA__scopeio_axisy__def) : ../../library/scope/scopeio_axisy.vhd \
 		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_axisy.vhd
 
 $(HDL4FPGA__scopeio_channel) \
 $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
 		$(HDL4FPGA__grid) \
-		$(HDL4FPGA__draw_vline) \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__scopeio_axisy) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \
