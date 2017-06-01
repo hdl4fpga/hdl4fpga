@@ -64,18 +64,18 @@ begin
 			marks     <= reverse(word2byte(reverse(marker(0.05001, 16)), axis_scale));
 			char_code <= reverse(word2byte(reverse(marks), std_logic_vector(bias) & win_x(6-1 downto 3)));
 
-			if signed(refn) > to_signed(0, refn'length) then
+			if signed(refn(refn'left downto 3)) > to_signed(0, refn'length-3) then
 				bsln := to_unsigned(  8,bsln'length);
-			elsif signed(refn) < to_signed(0, refn'length) then
-				bsln := (others => '0');
-			else
+			elsif signed(refn(refn'left downto 3)) < to_signed(0, refn'length-3) then
 				bsln := to_unsigned(8/2,bsln'length);
+			else
+				bsln := (others => '0');
 			end if;
 
 			pstn <= refn + bsln;
 			refn := unsigned(win_y) + unsigned'(B"0_0000_0000");
 			refn := unsigned(win_y);
-			bias := unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0011");
+			bias := unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0000");
 		end if;
 	end process;
 
