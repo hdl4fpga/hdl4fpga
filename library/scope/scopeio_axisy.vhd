@@ -34,7 +34,6 @@ architecture def of scopeio_axisy is
 		for i in 0 to 4-1 loop
 			for j in 0 to 4-1 loop
 				aux := real((num-1)/2)*scales(j)*step*real(10**i);
-				aux := real((num-1)/2)*scales(j)*step*real(10**i);
 				for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 					retval := retval sll (20+12);
 					if j < 3 then
@@ -65,16 +64,16 @@ begin
 			marks     <= reverse(word2byte(reverse(marker(0.05001, 16)), axis_scale));
 			char_code <= reverse(word2byte(reverse(marks), std_logic_vector(bias) & win_x(6-1 downto 3)));
 
-			if refn(refn'left downto 2) > to_unsigned(32,refn'length-2) then
+			if signed(refn) > to_signed(0, refn'length) then
 				bsln := to_unsigned(  8,bsln'length);
-			elsif refn(refn'left downto 2) >= to_unsigned(32-1,refn'length-2) then
-				bsln := to_unsigned(8/2,bsln'length);
-			else
+			elsif signed(refn) < to_signed(0, refn'length) then
 				bsln := (others => '0');
+			else
+				bsln := to_unsigned(8/2,bsln'length);
 			end if;
 
 			pstn <= refn + bsln;
-			refn := unsigned(win_y) + unsigned'(B"0_0010_0000");
+			refn := unsigned(win_y) + unsigned'(B"0_0000_0000");
 			refn := unsigned(win_y);
 			bias := unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0011");
 		end if;
