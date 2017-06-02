@@ -124,7 +124,7 @@ begin
 
 	end block;
 
-	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y)+unsigned'(b"0_0000_0000"));
+	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 	axisy_e : entity hdl4fpga.scopeio_axisy
 	generic map (
 		fonts      => psf1unitx8x8)
