@@ -118,6 +118,7 @@ begin
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
 					amp       <= scope_data(3 downto 0);
+					scale     <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
 				when "0010" =>
@@ -239,7 +240,7 @@ begin
 				chan_aux(i)  := to_unsigned(2**(vmword'length-2)+ch_height/2, vmword'length)-unsigned(m(i)(vmword'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
-				amp_aux      := amp_aux   srl scale'length;
+				amp_aux      := amp_aux   srl (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
