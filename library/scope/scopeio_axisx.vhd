@@ -29,21 +29,22 @@ architecture def of scopeio_axisx is
 		constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
 		variable aux    : real;
+		variable i, j   : natural;
 	begin
-		for i in 0 to 4-1 loop
-			for j in 0 to 4-1 loop
-				for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
-					retval := retval sll 16;
-					if j < 3 then
-						if i < 3 then
-							if (k mod 8)=0 then
-								aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
-							end if;
-							retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
-							aux := aux + scales(j)*step*real(10**i);
+		for l in 0 to 16-1 loop
+			i := (l / 3) mod 3;
+			j := l mod 3;
+			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
+				retval := retval sll 16;
+				if j < 3 then
+					if i < 3 then
+						if (k mod 8)=0 then
+							aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
 						end if;
+						retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
+						aux := aux + scales(j)*step*real(10**i);
 					end if;
-				end loop;
+				end if;
 			end loop;
 		end loop;
 		return std_logic_vector(retval);

@@ -136,17 +136,17 @@ begin
 		axis_scale => scale,
 		axis_dot   => axisy_don);
 
---	axisx_e : entity hdl4fpga.scopeio_axisx
---	generic map (
---		fonts      => psf1unitx8x8)
---	port map (
---		video_clk  => video_clk,
---		win_on     => win_on,
---		win_x      => win_x,
---		win_y      => win_y,
---		axis_on    => axisx_on,
---		axis_scale => scale,
---		axis_dot   => axisx_don);
+	axisx_e : entity hdl4fpga.scopeio_axisx
+	generic map (
+		fonts      => psf1unitx8x8)
+	port map (
+		video_clk  => video_clk,
+		win_on     => win_on,
+		win_x      => win_x,
+		win_y      => win_y,
+		axis_on    => axisx_on,
+		axis_scale => scale,
+		axis_dot   => axisx_don);
 
 	axis_don <= axisx_don or axisy_don;
 
