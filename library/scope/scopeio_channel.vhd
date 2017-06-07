@@ -50,6 +50,8 @@ begin
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 		signal phon  : std_logic;
 		signal pfrm  : std_logic;
+		signal shon  : std_logic;
+		signal sfrm  : std_logic;
 		signal vcntr : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
 		signal hcntr : std_logic_vector(0 to unsigned_num_bits(width-1)-1);
 		signal cfrm  : std_logic_vector(0 to 3-1);
@@ -69,7 +71,10 @@ begin
 			win_x     => hcntr,
 			win_y     => vcntr);
 
-		mngr_e : entity hdl4fpga.win_mngr
+		shon <= not setif(win_on(0 to 4-1)=(1 to 4 => '0'));
+		sfrm <= not setif(win_frm(0 to 4-1)=(1 to 4 => '0'));
+
+		sgmt_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
 				5*8+4,         0, width-(4*8+4+5*8+4), height-12,
@@ -79,8 +84,8 @@ begin
 			video_clk  => video_clk,
 			video_x    => hcntr,
 			video_y    => vcntr,
-			video_don  => phon,
-			video_frm  => pfrm,
+			video_don  => shon,
+			video_frm  => sfrm,
 			win_don    => cdon,
 			win_frm    => cfrm);
 

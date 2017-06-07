@@ -166,7 +166,8 @@ begin
 			319-(4*8+4+5*8+4), 0*270, width, height,
 			319-(4*8+4+5*8+4), 1*270, width, height,
 			319-(4*8+4+5*8+4), 2*270, width, height,
-			319-(4*8+4+5*8+4), 3*270, width, height))
+			319-(4*8+4+5*8+4), 3*270, width, height,
+			0,                 0,     224,   height))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -337,7 +338,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			base := (others => '-');
-			for i in win_don'range loop
+			for i in 0 to 4-1 loop
 				if win_don(i)='1' then
 					base := to_unsigned(i*ch_width, base'length);
 				end if;
