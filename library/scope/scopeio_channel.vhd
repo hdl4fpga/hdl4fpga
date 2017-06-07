@@ -133,7 +133,7 @@ begin
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 	axisy_e : entity hdl4fpga.scopeio_axisy
 	generic map (
-		fonts      => psf1unitx8x8)
+		fonts      => psf1digit8x8)
 	port map (
 		video_clk  => video_clk,
 		win_x      => win_x,
@@ -144,7 +144,7 @@ begin
 
 	axisx_e : entity hdl4fpga.scopeio_axisx
 	generic map (
-		fonts      => psf1unitx8x8)
+		fonts      => psf1digit8x8)
 	port map (
 		video_clk  => video_clk,
 		win_on     => win_on,
@@ -175,6 +175,10 @@ begin
 			aux        := aux srl sample_word'length;
 		end loop;
 	end process;
+
+	meter_e : block
+	begin
+	end block;
 
 	plot_g : for i in 0 to inputs-1 generate
 		signal row1 : vmword;
