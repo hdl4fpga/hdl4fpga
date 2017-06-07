@@ -27,13 +27,13 @@ architecture def of scopeio_axisy is
 		constant num    : natural)
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
-		constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
+		constant scales : real_vector(3-1 downto 0) := (1.0, 2.0, 5.0);
 		variable aux    : real;
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*(20+12)-1 downto 0) := (others => '0');
 		variable i, j   : natural;
 	begin
 		for l in 0 to 16-1 loop
-			i := (l / 3) mod 3;
+			i := (3-1) - (l / 3) mod 3;
 			j := l mod 3;
 			aux := real((num-1)/2)*scales(j)*step*real(10**i);
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop

@@ -69,7 +69,8 @@ architecture beh of scopeio is
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 	type sword_vector is array (natural range <>) of sample_word;
 
-	signal scale       : std_logic_vector(4-1 downto 0);
+	signal scale_y     : std_logic_vector(4-1 downto 0);
+	signal scale_x     : std_logic_vector(4-1 downto 0);
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
 	signal trigger_lvl : sword_vector(inputs-1 downto 0);
 
@@ -118,13 +119,14 @@ begin
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
 					amp       <= scope_data(3 downto 0);
-					scale     <= scope_data(3 downto 0);
+					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
 				when "0010" =>
 					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
+					scale_x   <= scope_data(3 downto 0);
 				when others =>
 				end case;
 			end if;
@@ -164,7 +166,8 @@ begin
 			319-(4*8+4+5*8+4), 0*270, width, height,
 			319-(4*8+4+5*8+4), 1*270, width, height,
 			319-(4*8+4+5*8+4), 2*270, width, height,
-			319-(4*8+4+5*8+4), 3*270, width, height))
+			319-(4*8+4+5*8+4), 3*270, width, height,
+			0,                 0,     239,   1079))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -221,6 +224,7 @@ begin
 				j := i + 1;
 				n := (j - (j mod 3)) / 3 - 3;
 				k := (i + scales'length/2) mod scales'length;
+				k := i;
 				case j mod 3 is
 				when 0 =>           -- 1.0
 					scales(k) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
@@ -354,7 +358,8 @@ begin
 		ordinates  => ordinates,
 		offset     => std_logic_vector(offset(0)),
 		abscisa    => abscisa,
-		scale      => scale,
+		scale_x    => scale_x,
+		scale_y    => scale_y,
 		win_frm    => win_frm,
 		win_on     => win_don,
 		video_dot  => video_dot);

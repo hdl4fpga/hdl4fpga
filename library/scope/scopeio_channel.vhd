@@ -17,7 +17,8 @@ entity scopeio_channel is
 		abscisa    : out std_logic_vector;
 		ordinates  : in  std_logic_vector;
 		offset     : in  std_logic_vector;
-		scale      : in  std_logic_vector(4-1 downto 0);
+		scale_x    : in  std_logic_vector(4-1 downto 0);
+		scale_y    : in  std_logic_vector(4-1 downto 0);
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
 		video_dot  : out std_logic_vector);
@@ -133,7 +134,7 @@ begin
 		win_x      => win_x,
 		win_y      => axisy_off, 
 		axis_on    => axisy_on,
-		axis_scale => scale,
+		axis_scale => scale_y,
 		axis_dot   => axisy_don);
 
 	axisx_e : entity hdl4fpga.scopeio_axisx
@@ -145,7 +146,7 @@ begin
 		win_x      => win_x,
 		win_y      => win_y,
 		axis_on    => axisx_on,
-		axis_scale => scale,
+		axis_scale => scale_x,
 		axis_dot   => axisx_don);
 
 	axis_don <= axisx_don or axisy_don;
@@ -170,20 +171,20 @@ begin
 		end loop;
 	end process;
 
---	plot_g : for i in 0 to inputs-1 generate
---		signal row1 : vmword;
---	begin
---		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
---		draw_vline : entity hdl4fpga.draw_vline
---		generic map (
---			n => unsigned_num_bits(height-1)+1)
---		port map (
---			video_clk  => video_clk,
---			video_ena  => plot_on,
---			video_row1 => row1,
---			video_row2 => samples(i),
---			video_dot  => plot_dot(i));
---	end generate;
+	plot_g : for i in 0 to inputs-1 generate
+		signal row1 : vmword;
+	begin
+		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
+		draw_vline : entity hdl4fpga.draw_vline
+		generic map (
+			n => unsigned_num_bits(height-1)+1)
+		port map (
+			video_clk  => video_clk,
+			video_ena  => plot_on,
+			video_row1 => row1,
+			video_row2 => samples(i),
+			video_dot  => plot_dot(i));
+	end generate;
 
 	grid_b : block
 		signal dot : std_logic;
@@ -197,8 +198,8 @@ begin
 		port map (
 			clk => video_clk,
 			don => grid_on,
-			row => win_x,
-			col => win_y,
+			row => axisy_off,
+			col => win_x,
 			dot => dot);
 
 		grid_align_e : entity hdl4fpga.align
