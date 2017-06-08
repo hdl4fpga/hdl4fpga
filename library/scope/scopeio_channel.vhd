@@ -30,12 +30,15 @@ architecture def of scopeio_channel is
 
 	signal samples : vmword_vector(inputs-1 downto 0);
 
+	signal pwin_y    : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal pwin_x    : std_logic_vector(unsigned_num_bits(width-1)-1 downto 0);
 	signal win_x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
 	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
 	signal grid_dot  : std_logic;
+	signal meter_dot : std_logic;
 	signal axisx_on  : std_logic;
 	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
@@ -52,8 +55,6 @@ begin
 		signal pfrm  : std_logic;
 		signal shon  : std_logic;
 		signal sfrm  : std_logic;
-		signal vcntr : std_logic_vector(0 to unsigned_num_bits(height-1)-1);
-		signal hcntr : std_logic_vector(0 to unsigned_num_bits(width-1)-1);
 		signal cfrm  : std_logic_vector(0 to 3-1);
 		signal cdon  : std_logic_vector(0 to 3-1);
 		signal wena  : std_logic;
@@ -68,8 +69,8 @@ begin
 			video_nhl => video_nhl,
 			win_frm   => pfrm,
 			win_ena   => phon,
-			win_x     => hcntr,
-			win_y     => vcntr);
+			win_x     => pwin_x,
+			win_y     => pwin_y);
 
 		shon <= not setif(win_on(0 to 4-1)=(1 to 4 => '0'));
 		sfrm <= not setif(win_frm(0 to 4-1)=(1 to 4 => '0'));
@@ -82,8 +83,8 @@ begin
 				    0,         0,       (5*8),         height-13))
 		port map (
 			video_clk  => video_clk,
-			video_x    => hcntr,
-			video_y    => vcntr,
+			video_x    => pwin_x,
+			video_y    => pwin_y,
 			video_don  => shon,
 			video_frm  => sfrm,
 			win_don    => cdon,
@@ -159,7 +160,7 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => -2+unsigned_num_bits(height-1)))
+		d => (0 to 0 => unsigned_num_bits(height-1)))
 	port map (
 		clk   => video_clk,
 		di(0) => axis_don,
@@ -177,7 +178,17 @@ begin
 	end process;
 
 	meter_e : block
+		signal dot : std_logic;
 	begin
+		dot <= reverse(word2byte(reverse(shuffle(psf1unit32x16,32,16)), pwin_y(5-1 downto 0) & pwin_x(4-1 downto 0)))(2);
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => unsigned_num_bits(height-1)+7))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(0) => meter_dot);
 	end block;
 
 	plot_g : for i in 0 to inputs-1 generate
@@ -221,5 +232,5 @@ begin
 			do(0) => grid_dot);
 	end block;
 
-	video_dot  <= (grid_dot or axis_dot) & plot_dot;
+	video_dot  <= (grid_dot or axis_dot or (meter_dot and win_on(4))) & plot_dot;
 end;

@@ -167,7 +167,7 @@ begin
 			319-(4*8+4+5*8+4), 1*270, width, height,
 			319-(4*8+4+5*8+4), 2*270, width, height,
 			319-(4*8+4+5*8+4), 3*270, width, height,
-			0,                 0,     224,   height))
+			0,                 0,     224,   256))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
