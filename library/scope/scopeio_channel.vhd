@@ -9,6 +9,7 @@ use hdl4fpga.cgafont.all;
 entity scopeio_channel is
 	generic(
 		inputs     : natural;
+		ch_width   : natural;
 		width      : natural;
 		height     : natural);
 	port (
@@ -53,10 +54,8 @@ begin
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 		signal phon  : std_logic;
 		signal pfrm  : std_logic;
-		signal shon  : std_logic;
-		signal sfrm  : std_logic;
-		signal cfrm  : std_logic_vector(0 to 3-1);
-		signal cdon  : std_logic_vector(0 to 3-1);
+		signal cfrm  : std_logic_vector(0 to 4-1);
+		signal cdon  : std_logic_vector(0 to 4-1);
 		signal wena  : std_logic;
 		signal wfrm  : std_logic;
 	begin
@@ -72,21 +71,19 @@ begin
 			win_x     => pwin_x,
 			win_y     => pwin_y);
 
-		shon <= not setif(win_on(0 to 4-1)=(1 to 4 => '0'));
-		sfrm <= not setif(win_frm(0 to 4-1)=(1 to 4 => '0'));
-
-		sgmt_e : entity hdl4fpga.win_mngr
+		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				5*8+4,         0, width-(4*8+4+5*8+4), height-12,
-				5*8+4, height-10, width-(5*8+4),       8,
-				    0,         0,       (5*8),         height-13))
+				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width,       height-12,
+				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
+				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
+				0, 0, 240, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
 			video_y    => pwin_y,
-			video_don  => shon,
-			video_frm  => sfrm,
+			video_don  => phon,
+			video_frm  => pfrm,
 			win_don    => cdon,
 			win_frm    => cfrm);
 
@@ -180,7 +177,7 @@ begin
 	meter_e : block
 		signal dot : std_logic;
 	begin
-		dot <= reverse(word2byte(reverse(shuffle(psf1unit32x16,32,16)), pwin_y(5-1 downto 0) & pwin_x(4-1 downto 0)))(2);
+		dot <= word2byte(reverse(shuffle(psf1unit32x16,32,16)), pwin_y(5-1 downto 0) & pwin_x(4-1 downto 0))(1);
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
@@ -232,5 +229,5 @@ begin
 			do(0) => grid_dot);
 	end block;
 
-	video_dot  <= (grid_dot or axis_dot or (meter_dot and win_on(4))) & plot_dot;
+	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
 end;

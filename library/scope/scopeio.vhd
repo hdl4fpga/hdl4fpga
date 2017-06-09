@@ -60,7 +60,7 @@ architecture beh of scopeio is
 
 	constant ch_width  : natural := 25*64;
 	constant ch_height : natural := 257;
-	constant width     : natural := ch_width+1+(4*8+4)+(5*8+4);
+	constant width     : natural := 1920;
 	constant height    : natural := ch_height+12;
 
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_width-1));
@@ -163,11 +163,10 @@ begin
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		tab => (
-			319-(4*8+4+5*8+4), 0*270, width, height,
-			319-(4*8+4+5*8+4), 1*270, width, height,
-			319-(4*8+4+5*8+4), 2*270, width, height,
-			319-(4*8+4+5*8+4), 3*270, width, height,
-			0,                 0,     224,   256))
+			0, 0, 0*270, width, height,
+			0, 0, 1*270, width, height,
+			0, 0, 2*270, width, height,
+			0, 0, 3*270, width, height))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -350,6 +349,7 @@ begin
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs     => inputs,
+		ch_width   => ch_width,
 		width      => width,
 		height     => height)
 	port map (
