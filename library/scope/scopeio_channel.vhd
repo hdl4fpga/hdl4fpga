@@ -77,7 +77,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width,       height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				0, 0, 240, 256))
+				0, 0, 4*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -175,9 +175,24 @@ begin
 	end process;
 
 	meter_e : block
-		signal dot : std_logic;
+		constant font_width  : natural := 16;
+		constant font_height : natural := 32;
+		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
+		signal   code_char   : std_logic_vector(0 to unisigned_num_bits(code_dots'length-1)-1);
+		signal   code_dot    : std_logic;
 	begin
-		dot <= word2byte(reverse(shuffle(psf1unit32x16,32,16)), pwin_y(5-1 downto 0) & pwin_x(4-1 downto 0))(1);
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				code_dots <= word2byte(
+					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
+					pwin_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
+					pwin_x(unsigned_num_bits(font_width-1)-1  downto 0));
+				code_char <= word2byte(to_bcd("0000"), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
+			end if;
+		process;
+		code_dot <= word2byte(code_dots, code);
+
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
