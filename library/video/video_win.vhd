@@ -30,13 +30,13 @@ use hdl4fpga.std.all;
 
 entity win_side is
 	generic (
-		synchronous : boolean := TRUE;
 		tab         : natural_vector);
 	port (
 		video_clk   : in  std_logic;
 		video_on    : in  std_logic;
 		video_x     : in  std_logic_vector;
 		win_on      : out std_logic_vector);
+		win_rst     : out std_logic_vector);
 end;
 
 architecture def of win_side is
@@ -63,14 +63,21 @@ begin
 
 	rom_e : entity hdl4fpga.rom
 	generic map (
-		synchronous => synchronous,
+		synchronous => false,
 		bitrom      => tab_bit)
 	port map (
-		clk         => video_clk,
 		addr        => video_x,
 		data        => won);
 
 	win_on <= won and (win_on'range => video_on);
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			win_rst <= win_on and q0;
+			win_on  <= q0;
+			q0      := won;
+		end if;
+	end process;
 
 end;
 
@@ -91,6 +98,8 @@ entity win_mngr is
 		video_y     : in  std_logic_vector;
 		video_frm   : in  std_logic;
 		video_don   : in  std_logic;
+		win_rdon    : out std_logic_vector;
+		win_rfrm    : out std_logic_vector;
 		win_don     : out std_logic_vector;
 		win_frm     : out std_logic_vector);
 
@@ -134,22 +143,22 @@ begin
 
 	x_e : entity hdl4fpga.win_side
 	generic map (
-		synchronous => synchronous,
 		tab         => tabx)
 	port map (
 		video_clk   => video_clk,
 		video_on    => don,
 		video_x     => video_x,
+		win_rst     => win_rdon,
 		win_on      => mask_x);
 
 	y_e : entity hdl4fpga.win_side
 	generic map (
-		synchronous => synchronous,
 		tab         => taby)
 	port map (
 		video_clk   => video_clk,
 		video_on    => frm,
 		video_x     => video_y,
+		win_rst     => win_rfrm,
 		win_on      => mask_y);
 
 	win_don <= mask_y and mask_x;
