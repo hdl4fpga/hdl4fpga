@@ -74,8 +74,8 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			q3  <= q1 and q0 and not don;
-			q2  <= q1 and don;
+			q3  <= not q1 or  don;
+			q2  <=     q1 and don;
 			q1  <= q0;
 			q0  <= don;
 		end if;
