@@ -104,7 +104,6 @@ entity win_mngr is
 		pwin_fon  : in  std_logic;
 		pwin_lon  : in  std_logic;
 		win_leof  : out std_logic_vector;
-		win_feof  : out std_logic_vector;
 		win_lrst  : out std_logic_vector;
 		win_frst  : out std_logic_vector;
 		win_lon   : out std_logic_vector;
@@ -134,6 +133,8 @@ architecture def of win_mngr is
 
 	signal mask_y : std_logic_vector(win_lon'range);
 	signal mask_x : std_logic_vector(win_fon'range);
+	signal feof   : std_logic_vector(win_fon'range);
+
 
 begin
 
@@ -155,7 +156,7 @@ begin
 		video_clk => video_clk,
 		pwin_on   => pwin_fon,
 		pwin_x    => pwin_y,
-		win_eof   => win_feof,
+		win_eof   => feof,
 		win_rst   => win_frst,
 		win_on    => mask_y);
 

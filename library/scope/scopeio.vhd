@@ -55,6 +55,7 @@ architecture beh of scopeio is
 	signal abscisa     : std_logic_vector(video_hcntr'range);
 	
 	signal win_rdon    : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_leof    : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_rfrm    : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_don     : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_frm     : std_logic_vector(0 to 18-1) := (others => '0');
@@ -170,15 +171,16 @@ begin
 --			0, 0, 2*270, width, height,
 			0, 0, 0*270, width, height))
 	port map (
-		video_clk  => video_clk,
-		video_x    => video_hcntr,
-		video_y    => video_vcntr,
-		video_don  => video_hon,
-		video_frm  => video_frm,
-		win_rdon   => win_rdon,
-		win_rfrm   => win_rfrm,
-		win_don    => win_don,
-		win_frm    => win_frm);
+		video_clk => video_clk,
+		pwin_x    => video_hcntr,
+		pwin_y    => video_vcntr,
+		pwin_lon  => video_hon,
+		pwin_fon  => video_frm,
+		win_lrst  => win_rdon,
+		win_frst  => win_rfrm,
+		win_leof  => win_leof,
+		win_lon   => win_don,
+		win_fon   => win_frm);
 
 	process (input_clk)
 		subtype tdiv_word is signed(0 to 16);
@@ -358,16 +360,16 @@ begin
 		height     => height)
 	port map (
 		video_clk  => video_clk,
-		video_nhl  => video_nhl,
 		ordinates  => ordinates,
 		offset     => std_logic_vector(offset(0)),
 		abscisa    => abscisa,
 		scale_x    => scale_x,
 		scale_y    => scale_y,
-		win_rfrm   => win_rfrm,
-		win_ron    => win_rdon,
-		win_frm    => win_frm,
-		win_on     => win_don,
+		win_frst   => win_rfrm,
+		win_lrst   => win_rdon,
+		win_leof   => win_leof,
+		win_fon    => win_frm,
+		win_lon    => win_don,
 		video_dot  => video_dot);
 
 --	cga_e : entity hdl4fpga.cga
