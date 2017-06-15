@@ -54,10 +54,10 @@ architecture beh of scopeio is
 	signal video_io    : std_logic_vector(0 to 3-1);
 	signal abscisa     : std_logic_vector(video_hcntr'range);
 	
-	signal win_rdon    : std_logic_vector(0 to 18-1);
-	signal win_rfrm    : std_logic_vector(0 to 18-1);
-	signal win_don     : std_logic_vector(0 to 18-1);
-	signal win_frm     : std_logic_vector(0 to 18-1);
+	signal win_rdon    : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_rfrm    : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_don     : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_frm     : std_logic_vector(0 to 18-1) := (others => '0');
 	signal pll_rdy     : std_logic;
 
 	constant ch_width  : natural := 25*64;
@@ -168,7 +168,7 @@ begin
 --			0, 0, 0*270, width, height,
 --			0, 0, 1*270, width, height,
 --			0, 0, 2*270, width, height,
-			0, 0, 3*270, width, height))
+			0, 0, 0*270, width, height))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,

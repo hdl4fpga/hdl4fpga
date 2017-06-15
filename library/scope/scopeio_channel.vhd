@@ -74,9 +74,9 @@ begin
 		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			video_nhl => video_nhl,
-			win_frm   => rpfrm,
-			win_ena   => rphon,
+			win_lrst  => phon,
+			win_leof  => video_nhl,
+			win_frst  => rpfrm,
 			win_x     => pwin_x,
 			win_y     => pwin_y);
 
@@ -88,15 +88,17 @@ begin
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13)) --,
 --				0, 0, 4*16, 256))
 		port map (
-			video_clk  => video_clk,
-			video_x    => pwin_x,
-			video_y    => pwin_y,
-			video_don  => phon,
-			video_frm  => pfrm,
-			win_rdon   => crdon,
-			win_rfrm   => crfrm,
-			win_don    => cdon,
-			win_frm    => cfrm);
+			video_clk => video_clk,
+			pwin_x    => pwin_x,
+			pwin_y    => pwin_y,
+			pwin_lon  => phon,
+			pwin_fon  => pfrm,
+			win_lrst  => crdon,
+			win_frst  => crfrm,
+			win_leof  => crdon,
+			win_feof  => crfrm,
+			win_lon   => cdon,
+			win_fon   => cfrm);
 
 		wena <= not setif(crdon=(crdon'range => '0'));
 		wfrm <= not setif(crfrm=(crfrm'range => '0'));
@@ -105,9 +107,9 @@ begin
 		win_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			video_nhl => video_nhl,
-			win_frm   => wfrm,
-			win_ena   => wena,
+			win_lrst  => wena,
+			win_leof  => wena,
+			win_frst  => wfrm,
 			win_x     => x,
 			win_y     => win_y);
 		abscisa <= x;
