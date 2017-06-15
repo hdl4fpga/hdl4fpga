@@ -20,6 +20,8 @@ entity scopeio_channel is
 		offset     : in  std_logic_vector;
 		scale_x    : in  std_logic_vector(4-1 downto 0);
 		scale_y    : in  std_logic_vector(4-1 downto 0);
+		win_rfrm   : in  std_logic_vector;
+		win_ron    : in  std_logic_vector;
 		win_frm    : in  std_logic_vector;
 		win_on     : in  std_logic_vector;
 		video_dot  : out std_logic_vector);
@@ -40,6 +42,7 @@ architecture def of scopeio_channel is
 	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
 	signal grid_dot  : std_logic;
 	signal meter_dot : std_logic;
+	signal meter_on  : std_logic;
 	signal axisx_on  : std_logic;
 	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
@@ -52,22 +55,28 @@ begin
 
 	win_b : block
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+		signal rphon  : std_logic;
+		signal rpfrm  : std_logic;
 		signal phon  : std_logic;
 		signal pfrm  : std_logic;
+		signal crfrm : std_logic_vector(0 to 4-1);
+		signal crdon : std_logic_vector(0 to 4-1);
 		signal cfrm  : std_logic_vector(0 to 4-1);
 		signal cdon  : std_logic_vector(0 to 4-1);
 		signal wena  : std_logic;
 		signal wfrm  : std_logic;
 	begin
-		phon <= not setif(win_on=(win_on'range => '0'));
-		pfrm <= not setif(win_frm=(win_frm'range => '0'));
+		rphon <= not setif(win_ron=(win_ron'range => '0'));
+		rpfrm <= not setif(win_rfrm=(win_rfrm'range => '0'));
+		phon  <= not setif(win_on=(win_on'range => '0'));
+		pfrm  <= not setif(win_frm=(win_frm'range => '0'));
 
 		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
 			video_nhl => video_nhl,
-			win_frm   => pfrm,
-			win_ena   => phon,
+			win_frm   => rpfrm,
+			win_ena   => rphon,
 			win_x     => pwin_x,
 			win_y     => pwin_y);
 
@@ -76,19 +85,22 @@ begin
 			tab => (
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width,       height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
-				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				0, 0, 4*16, 256))
+				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13)) --,
+--				0, 0, 4*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
 			video_y    => pwin_y,
 			video_don  => phon,
 			video_frm  => pfrm,
+			win_rdon   => crdon,
+			win_rfrm   => crfrm,
 			win_don    => cdon,
 			win_frm    => cfrm);
 
-		wena <= not setif(cdon=(cdon'range => '0'));
-		wfrm <= not setif(cfrm=(cfrm'range => '0'));
+		wena <= not setif(crdon=(crdon'range => '0'));
+		wfrm <= not setif(crfrm=(crfrm'range => '0'));
+		meter_on <= cdon(3);
 
 		win_e : entity hdl4fpga.win
 		port map (
@@ -178,8 +190,8 @@ begin
 		constant font_width  : natural := 16;
 		constant font_height : natural := 32;
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
-		signal   code_char   : std_logic_vector(0 to unisigned_num_bits(code_dots'length-1)-1);
-		signal   code_dot    : std_logic;
+		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
+		signal   code_dot    : std_logic_vector(0 to 0);
 	begin
 		process (video_clk)
 		begin
@@ -188,10 +200,10 @@ begin
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
 					pwin_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					pwin_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= word2byte(to_bcd("0000"), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= '0' & word2byte(to_bcd("0000", 16), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
-		process;
-		code_dot <= word2byte(code_dots, code);
+		end process;
+		code_dot <= word2byte(std_logic_vector(resize(unsigned(code_dots), 2**code_char'length)), code_char);
 
 		align_e : entity hdl4fpga.align
 		generic map (
@@ -199,7 +211,7 @@ begin
 			d => (0 to 0 => unsigned_num_bits(height-1)+7))
 		port map (
 			clk   => video_clk,
-			di(0) => dot,
+			di(0) => code_dot(0),
 			do(0) => meter_dot);
 	end block;
 
@@ -244,5 +256,6 @@ begin
 			do(0) => grid_dot);
 	end block;
 
-	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
+--	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
+	video_dot  <= (video_dot'range => grid_dot);
 end;

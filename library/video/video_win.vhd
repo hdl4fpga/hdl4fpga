@@ -35,7 +35,7 @@ entity win_side is
 		video_clk   : in  std_logic;
 		video_on    : in  std_logic;
 		video_x     : in  std_logic_vector;
-		win_on      : out std_logic_vector);
+		win_on      : out std_logic_vector;
 		win_rst     : out std_logic_vector);
 end;
 
@@ -69,13 +69,13 @@ begin
 		addr        => video_x,
 		data        => won);
 
-	win_on <= won and (win_on'range => video_on);
 	process (video_clk)
+		variable q0 : std_logic_vector(win_on'range);
 	begin
 		if rising_edge(video_clk) then
-			win_rst <= win_on and q0;
+			win_rst <= won and q0;
 			win_on  <= q0;
-			q0      := won;
+			q0      := won and (win_on'range => video_on);
 		end if;
 	end process;
 

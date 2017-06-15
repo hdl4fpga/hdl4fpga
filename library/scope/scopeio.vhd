@@ -54,6 +54,8 @@ architecture beh of scopeio is
 	signal video_io    : std_logic_vector(0 to 3-1);
 	signal abscisa     : std_logic_vector(video_hcntr'range);
 	
+	signal win_rdon    : std_logic_vector(0 to 18-1);
+	signal win_rfrm    : std_logic_vector(0 to 18-1);
 	signal win_don     : std_logic_vector(0 to 18-1);
 	signal win_frm     : std_logic_vector(0 to 18-1);
 	signal pll_rdy     : std_logic;
@@ -163,9 +165,9 @@ begin
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		tab => (
-			0, 0, 0*270, width, height,
-			0, 0, 1*270, width, height,
-			0, 0, 2*270, width, height,
+--			0, 0, 0*270, width, height,
+--			0, 0, 1*270, width, height,
+--			0, 0, 2*270, width, height,
 			0, 0, 3*270, width, height))
 	port map (
 		video_clk  => video_clk,
@@ -173,6 +175,8 @@ begin
 		video_y    => video_vcntr,
 		video_don  => video_hon,
 		video_frm  => video_frm,
+		win_rdon   => win_rdon,
+		win_rfrm   => win_rfrm,
 		win_don    => win_don,
 		win_frm    => win_frm);
 
@@ -338,7 +342,7 @@ begin
 		if rising_edge(video_clk) then
 			base := (others => '-');
 			for i in 0 to 4-1 loop
-				if win_don(i)='1' then
+				if win_rdon(i)='1' then
 					base := to_unsigned(i*ch_width, base'length);
 				end if;
 			end loop;
@@ -360,6 +364,8 @@ begin
 		abscisa    => abscisa,
 		scale_x    => scale_x,
 		scale_y    => scale_y,
+		win_rfrm   => win_rfrm,
+		win_ron    => win_rdon,
 		win_frm    => win_frm,
 		win_on     => win_don,
 		video_dot  => video_dot);
