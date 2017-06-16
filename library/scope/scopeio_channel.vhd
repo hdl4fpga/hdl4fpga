@@ -55,10 +55,10 @@ begin
 
 	win_b : block
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-		signal rphon  : std_logic;
-		signal rpfrm  : std_logic;
-		signal phon  : std_logic;
-		signal pfrm  : std_logic;
+		signal plrst : std_logic;
+		signal pfrst : std_logic;
+		signal plon  : std_logic;
+		signal pfon  : std_logic;
 		signal pleof : std_logic;
 		signal cfrst : std_logic_vector(0 to 4-1);
 		signal clrst : std_logic_vector(0 to 4-1);
@@ -70,17 +70,17 @@ begin
 		signal frst  : std_logic;
 	begin
 		pleof <= not setif(win_leof=(win_leof'range => '0'));
-		rphon <= not setif(win_lrst=(win_lrst'range => '0'));
-		rpfrm <= not setif(win_frst=(win_frst'range => '0'));
-		phon  <= not setif(win_lon=(win_lon'range => '0'));
-		pfrm  <= not setif(win_fon=(win_fon'range => '0'));
+		plrst <= not setif(win_lrst=(win_lrst'range => '0'));
+		pfrst <= not setif(win_frst=(win_frst'range => '0'));
+		plon  <= not setif(win_lon=(win_lon'range => '0'));
+		pfon  <= not setif(win_fon=(win_fon'range => '0'));
 
 		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			win_lrst  => phon,
+			win_lrst  => plon,
 			win_leof  => pleof,
-			win_frst  => rpfrm,
+			win_frst  => pfrst,
 			win_x     => pwin_x,
 			win_y     => pwin_y);
 
@@ -95,8 +95,8 @@ begin
 			video_clk => video_clk,
 			pwin_x    => pwin_x,
 			pwin_y    => pwin_y,
-			pwin_lon  => phon,
-			pwin_fon  => pfrm,
+			pwin_lon  => plon,
+			pwin_fon  => pfon,
 			win_lrst  => clrst,
 			win_frst  => cfrst,
 			win_leof  => cleof,
