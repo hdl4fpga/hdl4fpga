@@ -54,10 +54,10 @@ architecture beh of scopeio is
 	signal video_io    : std_logic_vector(0 to 3-1);
 	signal abscisa     : std_logic_vector(video_hcntr'range);
 	
-	signal win_rdon    : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_lrst    : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_leof    : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_rfrm    : std_logic_vector(0 to 18-1) := (others => '0');
-	signal win_don     : std_logic_vector(0 to 18-1) := (others => '0');
+	signal win_lon     : std_logic_vector(0 to 18-1) := (others => '0');
 	signal win_frm     : std_logic_vector(0 to 18-1) := (others => '0');
 	signal pll_rdy     : std_logic;
 
@@ -166,20 +166,20 @@ begin
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
 		tab => (
---			0, 0, 0*270, width, height,
---			0, 0, 1*270, width, height,
---			0, 0, 2*270, width, height,
-			0, 0, 0*270, width, height))
+--			0, 0*270, width, height,
+--			0, 1*270, width, height,
+--			0, 2*270, width, height,
+			0, 0*270, width, height))
 	port map (
 		video_clk => video_clk,
 		pwin_x    => video_hcntr,
 		pwin_y    => video_vcntr,
 		pwin_lon  => video_hon,
 		pwin_fon  => video_frm,
-		win_lrst  => win_rdon,
+		win_lrst  => win_lrst,
 		win_frst  => win_rfrm,
 		win_leof  => win_leof,
-		win_lon   => win_don,
+		win_lon   => win_lon,
 		win_fon   => win_frm);
 
 	process (input_clk)
@@ -344,7 +344,7 @@ begin
 		if rising_edge(video_clk) then
 			base := (others => '-');
 			for i in 0 to 4-1 loop
-				if win_rdon(i)='1' then
+				if win_lrst(i)='1' then
 					base := to_unsigned(i*ch_width, base'length);
 				end if;
 			end loop;
@@ -360,16 +360,18 @@ begin
 		height     => height)
 	port map (
 		video_clk  => video_clk,
+		video_nhl  => video_nhl,
+		video_frm  => video_frm,
 		ordinates  => ordinates,
 		offset     => std_logic_vector(offset(0)),
 		abscisa    => abscisa,
 		scale_x    => scale_x,
 		scale_y    => scale_y,
 		win_frst   => win_rfrm,
-		win_lrst   => win_rdon,
+		win_lrst   => win_lrst,
 		win_leof   => win_leof,
 		win_fon    => win_frm,
-		win_lon    => win_don,
+		win_lon    => win_lon,
 		video_dot  => video_dot);
 
 --	cga_e : entity hdl4fpga.cga
@@ -398,9 +400,9 @@ begin
 		di(0) => char_dot,
 		do(0) => ca_dot);
 
-	video_red   <= video_io(2); and video_dot(0); --(video_dot(1) or video_dot(0));
-	video_green <= video_io(2); and video_dot(0); --(video_dot(1) or video_dot(0));
-	video_blue  <= video_io(2); and video_dot(0); --(not video_dot(1) and video_dot(0));
+	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
+	video_green <= video_io(2) and (video_dot(1) or video_dot(0));
+	video_blue  <= video_io(2) and (not video_dot(1) and video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);

@@ -14,6 +14,8 @@ entity scopeio_channel is
 		height     : natural);
 	port (
 		video_clk  : in  std_logic;
+		video_nhl  : in  std_logic;
+		video_frm  : in  std_logic;
 		abscisa    : out std_logic_vector;
 		ordinates  : in  std_logic_vector;
 		offset     : in  std_logic_vector;
@@ -51,13 +53,13 @@ architecture def of scopeio_channel is
 	signal axis_dot  : std_logic;
 	signal axisy_off : std_logic_vector(win_y'range);
 
+		signal plon  : std_logic;
 begin
 
 	win_b : block
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
 		signal plrst : std_logic;
 		signal pfrst : std_logic;
-		signal plon  : std_logic;
 		signal pfon  : std_logic;
 		signal pleof : std_logic;
 		signal cfrst : std_logic_vector(0 to 4-1);
@@ -69,16 +71,16 @@ begin
 		signal lrst  : std_logic;
 		signal frst  : std_logic;
 	begin
-		pleof <= not setif(win_leof=(win_leof'range => '0'));
-		plrst <= not setif(win_lrst=(win_lrst'range => '0'));
-		pfrst <= not setif(win_frst=(win_frst'range => '0'));
+		pleof <= video_nhl;
+		pfrst <= video_frm;
+		plrst <= setif(win_lrst=(win_lrst'range => '1'));
 		plon  <= not setif(win_lon=(win_lon'range => '0'));
-		pfon  <= not setif(win_fon=(win_fon'range => '0'));
+		pfon  <= video_frm;
 
 		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			win_lrst  => plon,
+			win_lrst  => plrst,
 			win_leof  => pleof,
 			win_frst  => pfrst,
 			win_x     => pwin_x,
@@ -103,9 +105,9 @@ begin
 			win_lon   => cdon,
 			win_fon   => cfrm);
 
-		leof <= not setif(cleof=(cleof'range => '0'));
-		lrst <= not setif(clrst=(clrst'range => '0'));
-		frst <= not setif(cfrst=(cfrst'range => '0'));
+		leof <= video_nhl;
+		frst <= video_frm;
+		lrst <= setif(clrst=(clrst'range => '1'));
 		meter_on <= cdon(3);
 
 		win_e : entity hdl4fpga.win
@@ -263,5 +265,5 @@ begin
 	end block;
 
 --	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
-	video_dot  <= (video_dot'range => grid_dot);
+	video_dot  <= (others => plon);
 end;
