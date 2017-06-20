@@ -134,6 +134,7 @@ architecture def of win_mngr is
 	signal mask_y : std_logic_vector(win_lon'range);
 	signal mask_x : std_logic_vector(win_fon'range);
 	signal feof   : std_logic_vector(win_fon'range);
+	signal lrst   : std_logic_vector(win_fon'range);
 
 
 begin
@@ -146,7 +147,7 @@ begin
 		pwin_on   => pwin_lon,
 		pwin_x    => pwin_x,
 		win_eof   => win_leof,
-		win_rst   => win_lrst,
+		win_rst   => lrst,
 		win_on    => mask_x);
 
 	y_e : entity hdl4fpga.win_side
@@ -160,8 +161,9 @@ begin
 		win_rst   => win_frst,
 		win_on    => mask_y);
 
-	win_lon <= mask_y and mask_x;
-	win_fon <= mask_y;
+	win_lrst <= mask_y and lrst;
+	win_lon  <= mask_y and mask_x;
+	win_fon  <= mask_y;
 end;
 
 library ieee;

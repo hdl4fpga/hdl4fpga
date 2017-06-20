@@ -54,16 +54,16 @@ architecture def of scopeio_channel is
 	signal axisy_off : std_logic_vector(win_y'range);
 
 		signal plon  : std_logic;
+		signal clrst : std_logic_vector(0 to 4-1);
+		signal plrst : std_logic;
 begin
 
 	win_b : block
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-		signal plrst : std_logic;
 		signal pfrst : std_logic;
 		signal pfon  : std_logic;
 		signal pleof : std_logic;
 		signal cfrst : std_logic_vector(0 to 4-1);
-		signal clrst : std_logic_vector(0 to 4-1);
 		signal cleof : std_logic_vector(0 to 4-1);
 		signal cfrm  : std_logic_vector(0 to 4-1);
 		signal cdon  : std_logic_vector(0 to 4-1);
@@ -73,7 +73,7 @@ begin
 	begin
 		pleof <= video_nhl;
 		pfrst <= video_frm;
-		plrst <= setif(win_lrst=(win_lrst'range => '1'));
+		plrst <= not setif(win_lrst=(win_lrst'range => '0'));
 		plon  <= not setif(win_lon=(win_lon'range => '0'));
 		pfon  <= video_frm;
 
@@ -148,31 +148,31 @@ begin
 
 	end block;
 
-	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
-	axisy_e : entity hdl4fpga.scopeio_axisy
-	generic map (
-		fonts      => psf1digit8x8)
-	port map (
-		video_clk  => video_clk,
-		win_x      => win_x,
-		win_y      => axisy_off, 
-		axis_on    => axisy_on,
-		axis_scale => scale_y,
-		axis_dot   => axisy_don);
-
-	axisx_e : entity hdl4fpga.scopeio_axisx
-	generic map (
-		fonts      => psf1digit8x8)
-	port map (
-		video_clk  => video_clk,
-		win_on     => win_lon,
-		win_x      => win_x,
-		win_y      => win_y,
-		axis_on    => axisx_on,
-		axis_scale => scale_x,
-		axis_dot   => axisx_don);
-
-	axis_don <= axisx_don or axisy_don;
+--	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
+--	axisy_e : entity hdl4fpga.scopeio_axisy
+--	generic map (
+--		fonts      => psf1digit8x8)
+--	port map (
+--		video_clk  => video_clk,
+--		win_x      => win_x,
+--		win_y      => axisy_off, 
+--		axis_on    => axisy_on,
+--		axis_scale => scale_y,
+--		axis_dot   => axisy_don);
+--
+--	axisx_e : entity hdl4fpga.scopeio_axisx
+--	generic map (
+--		fonts      => psf1digit8x8)
+--	port map (
+--		video_clk  => video_clk,
+--		win_on     => win_lon,
+--		win_x      => win_x,
+--		win_y      => win_y,
+--		axis_on    => axisx_on,
+--		axis_scale => scale_x,
+--		axis_dot   => axisx_don);
+--
+--	axis_don <= axisx_don or axisy_don;
 
 	align_e : entity hdl4fpga.align
 	generic map (
@@ -265,5 +265,5 @@ begin
 	end block;
 
 --	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
-	video_dot  <= (others => plon);
+	video_dot  <= (video_dot'range => clrst(1));
 end;
