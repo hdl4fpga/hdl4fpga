@@ -78,7 +78,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				0, 0, 4*16, 256))
+				8, 0, 7*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -90,7 +90,6 @@ begin
 
 		wena <= not setif(cdon=(cdon'range => '0'));
 		wfrm <= not setif(cfrm=(cfrm'range => '0'));
-		meter_on <= cdon(3);
 
 		win_e : entity hdl4fpga.win
 		port map (
@@ -104,19 +103,21 @@ begin
 
 		dondly_e : entity hdl4fpga.align
 		generic map (
-			n => 4,
-			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3),
-			i => (0 to 3 => '-'))
+			n => 5,
+			d => (0 => 1+3, 1 => 0, 2 to 4 => 1+3),
+			i => (0 to 4 => '-'))
 		port map (
 			clk   => video_clk,
 			di(0) => cdon(0),
 			di(1) => grid_on,
 			di(2) => cdon(1),
 			di(3) => cdon(2),
+			di(4) => cdon(3),
 			do(0) => grid_on,
 			do(1) => plot_on,
 			do(2) => axisx_on,
-			do(3) => axisy_on);
+			do(3) => axisy_on,
+			do(4) => meter_on);
 
 		xdly_e : entity hdl4fpga.align
 		generic map (
@@ -182,15 +183,20 @@ begin
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
+
 	begin
+		process (scale_x)
+		begin
+		end process;
+
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
 				code_dots <= word2byte(
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
-					pwin_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
-					pwin_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(to_bcd("0000",16), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
+					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
+					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
+				code_char <= '0' & word2byte(to_bcd(1.222,2*16), win_x(unsigned_num_bits(8*16-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
 		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);
