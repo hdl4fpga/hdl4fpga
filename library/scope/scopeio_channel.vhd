@@ -104,7 +104,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 5,
-			d => (0 => 1+3, 1 => 0, 2 to 4 => 1+3),
+			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3, 4 => 5+1),
 			i => (0 to 4 => '-'))
 		port map (
 			clk   => video_clk,
