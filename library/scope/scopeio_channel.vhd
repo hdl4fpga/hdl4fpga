@@ -15,17 +15,13 @@ entity scopeio_channel is
 	port (
 		video_clk  : in  std_logic;
 		video_nhl  : in  std_logic;
-		video_frm  : in  std_logic;
 		abscisa    : out std_logic_vector;
 		ordinates  : in  std_logic_vector;
 		offset     : in  std_logic_vector;
 		scale_x    : in  std_logic_vector(4-1 downto 0);
 		scale_y    : in  std_logic_vector(4-1 downto 0);
-		win_frst   : in  std_logic_vector;
-		win_lrst   : in  std_logic_vector;
-		win_leof   : in  std_logic_vector;
-		win_fon    : in  std_logic_vector;
-		win_lon    : in  std_logic_vector;
+		win_frm    : in  std_logic_vector;
+		win_on     : in  std_logic_vector;
 		video_dot  : out std_logic_vector);
 end;
 
@@ -41,10 +37,9 @@ architecture def of scopeio_channel is
 	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
-	signal plot_dot  : std_logic_vector(win_lon'range) := (others => '0');
+	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
 	signal grid_dot  : std_logic;
 	signal meter_dot : std_logic;
-	signal meter_on  : std_logic;
 	signal axisx_on  : std_logic;
 	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
@@ -52,70 +47,57 @@ architecture def of scopeio_channel is
 	signal axis_don  : std_logic := '0';
 	signal axis_dot  : std_logic;
 	signal axisy_off : std_logic_vector(win_y'range);
+	signal meter_on  : std_logic;
 
-		signal plon  : std_logic;
-		signal clrst : std_logic_vector(0 to 4-1);
-		signal plrst : std_logic;
 begin
 
 	win_b : block
 		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
-		signal pfrst : std_logic;
-		signal pfon  : std_logic;
-		signal pleof : std_logic;
-		signal cfrst : std_logic_vector(0 to 4-1);
-		signal cleof : std_logic_vector(0 to 4-1);
+		signal phon  : std_logic;
+		signal pfrm  : std_logic;
 		signal cfrm  : std_logic_vector(0 to 4-1);
 		signal cdon  : std_logic_vector(0 to 4-1);
-		signal leof  : std_logic;
-		signal lrst  : std_logic;
-		signal frst  : std_logic;
+		signal wena  : std_logic;
+		signal wfrm  : std_logic;
 	begin
-		pleof <= video_nhl;
-		pfrst <= video_frm;
-		plrst <= not setif(win_lrst=(win_lrst'range => '0'));
-		plon  <= not setif(win_lon=(win_lon'range => '0'));
-		pfon  <= video_frm;
+		phon <= not setif(win_on=(win_on'range => '0'));
+		pfrm <= not setif(win_frm=(win_frm'range => '0'));
 
 		parent_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			win_lrst  => plrst,
-			win_leof  => pleof,
-			win_frst  => pfrst,
+			video_nhl => video_nhl,
+			win_frm   => pfrm,
+			win_ena   => phon,
 			win_x     => pwin_x,
 			win_y     => pwin_y);
 
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width,       height-12,
+				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
-				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13)) --,
---				0, 0, 4*16, 256))
+				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
+				0, 0, 4*16, 256))
 		port map (
-			video_clk => video_clk,
-			pwin_x    => pwin_x,
-			pwin_y    => pwin_y,
-			pwin_lon  => plon,
-			pwin_fon  => pfon,
-			win_lrst  => clrst,
-			win_frst  => cfrst,
-			win_leof  => cleof,
-			win_lon   => cdon,
-			win_fon   => cfrm);
+			video_clk  => video_clk,
+			video_x    => pwin_x,
+			video_y    => pwin_y,
+			video_don  => phon,
+			video_frm  => pfrm,
+			win_don    => cdon,
+			win_frm    => cfrm);
 
-		leof <= video_nhl;
-		frst <= video_frm;
-		lrst <= setif(clrst=(clrst'range => '1'));
+		wena <= not setif(cdon=(cdon'range => '0'));
+		wfrm <= not setif(cfrm=(cfrm'range => '0'));
 		meter_on <= cdon(3);
 
 		win_e : entity hdl4fpga.win
 		port map (
 			video_clk => video_clk,
-			win_lrst  => lrst,
-			win_leof  => leof,
-			win_frst  => frst,
+			video_nhl => video_nhl,
+			win_frm   => wfrm,
+			win_ena   => wena,
 			win_x     => x,
 			win_y     => win_y);
 		abscisa <= x;
@@ -148,31 +130,31 @@ begin
 
 	end block;
 
---	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
---	axisy_e : entity hdl4fpga.scopeio_axisy
---	generic map (
---		fonts      => psf1digit8x8)
---	port map (
---		video_clk  => video_clk,
---		win_x      => win_x,
---		win_y      => axisy_off, 
---		axis_on    => axisy_on,
---		axis_scale => scale_y,
---		axis_dot   => axisy_don);
---
---	axisx_e : entity hdl4fpga.scopeio_axisx
---	generic map (
---		fonts      => psf1digit8x8)
---	port map (
---		video_clk  => video_clk,
---		win_on     => win_lon,
---		win_x      => win_x,
---		win_y      => win_y,
---		axis_on    => axisx_on,
---		axis_scale => scale_x,
---		axis_dot   => axisx_don);
---
---	axis_don <= axisx_don or axisy_don;
+	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
+	axisy_e : entity hdl4fpga.scopeio_axisy
+	generic map (
+		fonts      => psf1digit8x8)
+	port map (
+		video_clk  => video_clk,
+		win_x      => win_x,
+		win_y      => axisy_off, 
+		axis_on    => axisy_on,
+		axis_scale => scale_y,
+		axis_dot   => axisy_don);
+
+	axisx_e : entity hdl4fpga.scopeio_axisx
+	generic map (
+		fonts      => psf1digit8x8)
+	port map (
+		video_clk  => video_clk,
+		win_on     => win_on,
+		win_x      => win_x,
+		win_y      => win_y,
+		axis_on    => axisx_on,
+		axis_scale => scale_x,
+		axis_dot   => axisx_don);
+
+	axis_don <= axisx_don or axisy_don;
 
 	align_e : entity hdl4fpga.align
 	generic map (
@@ -208,10 +190,10 @@ begin
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
 					pwin_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					pwin_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(to_bcd("0000", 16), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= '0' & word2byte(to_bcd("0000",16), pwin_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
-		code_dot <= word2byte(std_logic_vector(resize(unsigned(code_dots), 2**code_char'length)), code_char);
+		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);
 
 		align_e : entity hdl4fpga.align
 		generic map (
@@ -264,6 +246,5 @@ begin
 			do(0) => grid_dot);
 	end block;
 
---	video_dot  <= (grid_dot or axis_dot or (meter_dot and meter_on)) & plot_dot;
-	video_dot  <= (video_dot'range => clrst(1));
+	video_dot  <= (grid_dot or axis_dot or meter_dot) & plot_dot;
 end;

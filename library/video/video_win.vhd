@@ -30,14 +30,13 @@ use hdl4fpga.std.all;
 
 entity win_side is
 	generic (
+		synchronous : boolean := TRUE;
 		tab         : natural_vector);
 	port (
-		video_clk : in  std_logic;
-		pwin_on   : in  std_logic;
-		pwin_x    : in  std_logic_vector;
-		win_rst   : out std_logic_vector;
-		win_on    : out std_logic_vector;
-		win_eof   : out std_logic_vector);
+		video_clk   : in  std_logic;
+		video_on    : in  std_logic;
+		video_x     : in  std_logic_vector;
+		win_on      : out std_logic_vector);
 end;
 
 architecture def of win_side is
@@ -57,32 +56,21 @@ architecture def of win_side is
 		return retval;
 	end;
 
-	constant tab_bit     : std_logic_vector := init_data(tab, pwin_x'length);
-	signal   won, don    : std_logic_vector(win_on'range);
-	signal   q0,q1,q2,q3 : std_logic_vector(win_on'range);
+	constant tab_bit : std_logic_vector := init_data(tab, video_x'length);
+	signal   won     : std_logic_vector(win_on'range);
+
 begin
 
 	rom_e : entity hdl4fpga.rom
 	generic map (
-		synchronous => false,
+		synchronous => synchronous,
 		bitrom      => tab_bit)
 	port map (
-		addr        => pwin_x,
+		clk         => video_clk,
+		addr        => video_x,
 		data        => won);
-	don <= won and (win_on'range => pwin_on);
 
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			q3  <= not q0 or  don;
-			q2  <=     q0 and don;
-			q1  <= q0;
-			q0  <= don;
-		end if;
-	end process;
-	win_on  <= q1;
-	win_rst <= q2;
-	win_eof <= q3;
+	win_on <= won and (win_on'range => video_on);
 
 end;
 
@@ -98,16 +86,13 @@ entity win_mngr is
 		synchronous : boolean := TRUE;
 		tab         : natural_vector);
 	port (
-		video_clk : in  std_logic;
-		pwin_x    : in  std_logic_vector;
-		pwin_y    : in  std_logic_vector;
-		pwin_fon  : in  std_logic;
-		pwin_lon  : in  std_logic;
-		win_leof  : out std_logic_vector;
-		win_lrst  : out std_logic_vector;
-		win_frst  : out std_logic_vector;
-		win_lon   : out std_logic_vector;
-		win_fon   : out std_logic_vector);
+		video_clk   : in  std_logic;
+		video_x     : in  std_logic_vector;
+		video_y     : in  std_logic_vector;
+		video_frm   : in  std_logic;
+		video_don   : in  std_logic;
+		win_don     : out std_logic_vector;
+		win_frm     : out std_logic_vector);
 
 	constant x : natural := 0;
 	constant y : natural := 1;
@@ -131,39 +116,44 @@ architecture def of win_mngr is
 	constant tabx : natural_vector := init_data(tab, x);
 	constant taby : natural_vector := init_data(tab, y);
 
-	signal mask_y : std_logic_vector(win_lon'range);
-	signal mask_x : std_logic_vector(win_fon'range);
-	signal feof   : std_logic_vector(win_fon'range);
-	signal lrst   : std_logic_vector(win_fon'range);
-
+	signal mask_y : std_logic_vector(win_don'range);
+	signal mask_x : std_logic_vector(win_don'range);
+	signal edge_x : std_logic_vector(win_don'range);
+	signal frm    : std_logic;
+	signal don    : std_logic;
 
 begin
 
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			frm <= video_frm;
+			don <= video_don;
+		end if;
+	end process;
+
 	x_e : entity hdl4fpga.win_side
 	generic map (
-		tab       => tabx)
+		synchronous => synchronous,
+		tab         => tabx)
 	port map (
-		video_clk => video_clk,
-		pwin_on   => pwin_lon,
-		pwin_x    => pwin_x,
-		win_eof   => win_leof,
-		win_rst   => lrst,
-		win_on    => mask_x);
+		video_clk   => video_clk,
+		video_on    => don,
+		video_x     => video_x,
+		win_on      => mask_x);
 
 	y_e : entity hdl4fpga.win_side
 	generic map (
-		tab       => taby)
+		synchronous => synchronous,
+		tab         => taby)
 	port map (
-		video_clk => video_clk,
-		pwin_on   => pwin_fon,
-		pwin_x    => pwin_y,
-		win_eof   => feof,
-		win_rst   => win_frst,
-		win_on    => mask_y);
+		video_clk   => video_clk,
+		video_on    => frm,
+		video_x     => video_y,
+		win_on      => mask_y);
 
-	win_lrst <= mask_y and lrst;
-	win_lon  <= mask_y and mask_x;
-	win_fon  <= mask_y;
+	win_don <= mask_y and mask_x;
+	win_frm <= mask_y;
 end;
 
 library ieee;
@@ -173,9 +163,9 @@ use ieee.numeric_std.all;
 entity win is
 	port (
 		video_clk : in  std_logic;
-		win_frst  : in  std_logic;
-		win_lrst  : in  std_logic;
-		win_leof  : in  std_logic;
+		video_nhl : in  std_logic;
+		win_frm   : in  std_logic;
+		win_ena   : in  std_logic;
 		win_x     : out std_logic_vector;
 		win_y     : out std_logic_vector);
 end;
@@ -187,15 +177,14 @@ begin
 		variable y : unsigned(win_y'range);
 	begin
 		if rising_edge(video_clk) then
-			if win_lrst='0' then
+			if win_ena='0' then
 				x := (others => '0');
 			else
 				x := x + 1;
 			end if;
-
-			if win_frst='0' then
+			if win_frm='0' then
 				y := (others => '0');
-			elsif win_leof='0' then
+			elsif video_nhl='1' then
 				y := y + 1;
 			end if;
 			win_x <= std_logic_vector(x);
