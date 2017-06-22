@@ -238,6 +238,12 @@ package std is
 		constant ipheader : std_logic_vector)
 		return std_logic_vector;
 
+	function bcd_add (
+		constant a      : std_logic_vector;
+		constant b      : std_logic_vector;
+		constant cin    : std_logic := '0')
+		return std_logic_vector;
+
 end;
 
 use std.textio.all;
@@ -246,6 +252,39 @@ library ieee;
 use ieee.std_logic_textio.all;
 
 package body std is
+
+	function bcd_add (
+		constant a      : std_logic_vector;
+		constant b      : std_logic_vector;
+		constant cin    : std_logic := '0')
+		return std_logic_vector is
+		variable op1    : unsigned(a'length-1 downto 0);
+		variable op2    : unsigned(b'length-1 downto 0);
+		variable bcd    : unsigned(4 downto 0);
+		variable cy     : std_logic;
+		variable retval : unsigned(4*((max(b'length,a'length)+4-1)/4)-1 downto 0) := (others => '0');
+
+	begin
+		cy  := cin;
+		op1 := unsigned(a);
+		op2 := unsigned(b);
+		for i in 0 to retval'length/4-1 loop
+			bcd := resize(op1(4-1 downto 0), bcd'length) + resize(op2(4-1 downto 0), bcd'length);
+			if cy='1' then
+				bcd := bcd + 1;
+			end if;
+			retval(4-1 downto 0) := bcd(4-1 downto 0);
+			bcd := bcd + unsigned'("00110");
+			if bcd(4)='1' then
+				retval(4-1 downto 0) := bcd(4-1 downto 0);
+			end if;
+			cy     := bcd(4);
+			op1    := op1 srl 4;
+			op2    := op2 srl 4;
+			retval := retval ror 4;
+		end loop;
+		return std_logic_vector(retval);
+	end function;
 
 	function oneschecksum (
 		constant data : std_logic_vector;
