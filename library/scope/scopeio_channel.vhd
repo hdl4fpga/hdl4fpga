@@ -189,11 +189,21 @@ begin
 
 	begin
 		process (meter_clk)
-			variable a : std_logic_vector(4-1 downto 0) := "0111";
 		begin
 			if rising_edge(meter_clk) then
 				if offset_inc='1' then
-					s <= bcd_add(s , a);
+					for i in 0 to 2**scale_y'length-1 loop
+						if to_integer(unsigned(scale_y))=i then
+							case i mod 3 is
+							when 0 =>
+								s <= bcd_add(s, "0001");
+							when 1 => 
+								s <= bcd_add(s, "0010");
+							when others =>
+								s <= bcd_add(s, "0101");
+							end case;
+						end if;
+					end loop;
 				end if;
 			end if;
 		end process;
