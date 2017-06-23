@@ -185,11 +185,11 @@ begin
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
-		signal   s           : std_logic_vector(4*4-1 downto 0) := (others => '0');
+		signal   s           : std_logic_vector(0 to 4*4-1) := (others => '0');
 
 	begin
 		process (meter_clk)
-			variable a : std_logic_vector(4-1 downto 0) := "0101";
+			variable a : std_logic_vector(4-1 downto 0) := "0111";
 		begin
 			if rising_edge(meter_clk) then
 				if offset_inc='1' then
@@ -205,7 +205,7 @@ begin
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
 					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(s, win_x(unsigned_num_bits(4*16-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= '0' & word2byte(s, not win_x(unsigned_num_bits(4*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
 		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);

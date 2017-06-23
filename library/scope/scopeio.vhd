@@ -114,6 +114,7 @@ begin
 	end process;
 
 	process (mii_rxc)
+		variable pp : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			offset_inc <= '0';
@@ -124,7 +125,9 @@ begin
 					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
-					offset_inc <= '1';
+					if pp='0' then
+						offset_inc <= '1';
+					end if;
 				when "0010" =>
 					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
 				when "0011" =>
@@ -133,6 +136,7 @@ begin
 				when others =>
 				end case;
 			end if;
+			pp := pll_rdy;
 		end if;
 	end process;
 
