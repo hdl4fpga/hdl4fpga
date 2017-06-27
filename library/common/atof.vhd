@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity fractobcd is
+entity frac2bcd is
 	port (
 		clk  : in  std_logic;
 		load : in  std_logic;
@@ -10,7 +10,7 @@ entity fractobcd is
 		bcd  : out std_logic_vector);
 end;
 
-architecture def of fractobcd is
+architecture def of frac2bcd is
 begin
 	process (clk)
 		variable aux : unsigned(0 to 4+fix'length-1);
@@ -28,5 +28,21 @@ begin
 	end process;
 end;
 
-entity inttobcd is
+entity int2bcd is
+	port (
+		clk  : in  std_logic;
+		load : in  std_logic;
+		int  : in  std_logic_vector;
+		bcd  : out std_logic_vector);
+end;
+
+architecture def of int2bcd is
+begin
+	process(clk)
+		variable aux : unsigned(bcd'length-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			aux
+		end if;
+	end process;
 end;
