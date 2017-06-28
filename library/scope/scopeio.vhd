@@ -84,7 +84,6 @@ architecture beh of scopeio is
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
-	signal  offset_inc  : std_logic;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -117,7 +116,6 @@ begin
 		variable pp : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			offset_inc <= '0';
 			if pll_rdy='1' then
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
@@ -125,9 +123,6 @@ begin
 					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
-					if pp='0' then
-						offset_inc <= '1';
-					end if;
 				when "0010" =>
 					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
 				when "0011" =>
@@ -360,8 +355,6 @@ begin
 		width      => width,
 		height     => height)
 	port map (
-		meter_clk  => mii_rxc,
-		offset_inc => offset_inc,
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		ordinates  => ordinates,

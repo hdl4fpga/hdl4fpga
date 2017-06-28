@@ -13,8 +13,6 @@ entity scopeio_channel is
 		width      : natural;
 		height     : natural);
 	port (
-		meter_clk  : in  std_logic;
-		offset_inc : in  std_logic;
 		video_clk  : in  std_logic;
 		video_nhl  : in  std_logic;
 		abscisa    : out std_logic_vector;
@@ -188,26 +186,10 @@ begin
 		signal   s           : std_logic_vector(0 to 4*4-1) := (others => '0');
 
 	begin
-		process (meter_clk)
-		begin
-			if rising_edge(meter_clk) then
-				if offset_inc='1' then
-					for i in 0 to 2**scale_y'length-1 loop
-						if to_integer(unsigned(scale_y))=i then
-							case i mod 3 is
-							when 0 =>
-								s <= bcd_add(s, "0001");
-							when 1 => 
-								s <= bcd_add(s, "0010");
-							when others =>
-								s <= bcd_add(s, "0101");
-							end case;
-						end if;
-					end loop;
-				end if;
-			end if;
-		end process;
-
+		pp : entity hdl4fpga.frac2bcd 
+		port map (
+			frac => offset(5-1 downto 0),
+			bcd  => s);
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then

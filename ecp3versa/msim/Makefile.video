@@ -54,8 +54,12 @@ HDL4FPGA__miirx_pre__def = $(LIB_HDL4FPGA)/miirx_pre/def.dat
 HDL4FPGA__miirx_pre = $(LIB_HDL4FPGA)/miirx_pre/_primary.dat
 HDL4FPGA__mii_mem__def = $(LIB_HDL4FPGA)/mii_mem/def.dat
 HDL4FPGA__mii_mem = $(LIB_HDL4FPGA)/mii_mem/_primary.dat
+HDL4FPGA__int2bcd__def = $(LIB_HDL4FPGA)/int2bcd/def.dat
+HDL4FPGA__int2bcd = $(LIB_HDL4FPGA)/int2bcd/_primary.dat
 HDL4FPGA__grid__def = $(LIB_HDL4FPGA)/grid/def.dat
 HDL4FPGA__grid = $(LIB_HDL4FPGA)/grid/_primary.dat
+HDL4FPGA__frac2bcd__def = $(LIB_HDL4FPGA)/frac2bcd/def.dat
+HDL4FPGA__frac2bcd = $(LIB_HDL4FPGA)/frac2bcd/_primary.dat
 HDL4FPGA__fontrom__def = $(LIB_HDL4FPGA)/fontrom/def.dat
 HDL4FPGA__fontrom = $(LIB_HDL4FPGA)/fontrom/_primary.dat
 HDL4FPGA__ff__lttsm = $(LIB_HDL4FPGA)/ff/lttsm.dat
@@ -68,6 +72,7 @@ HDL4FPGA__dpram__def = $(LIB_HDL4FPGA)/dpram/def.dat
 HDL4FPGA__dpram = $(LIB_HDL4FPGA)/dpram/_primary.dat
 HDL4FPGA__cgaram__def = $(LIB_HDL4FPGA)/cgaram/def.dat
 HDL4FPGA__cgaram = $(LIB_HDL4FPGA)/cgaram/_primary.dat
+HDL4FPGA__cgafont__body = $(LIB_HDL4FPGA)/cgafont/body.dat
 HDL4FPGA__cgafont = $(LIB_HDL4FPGA)/cgafont/_primary.dat
 HDL4FPGA__cga__def = $(LIB_HDL4FPGA)/cga/def.dat
 HDL4FPGA__cga = $(LIB_HDL4FPGA)/cga/_primary.dat
@@ -122,8 +127,12 @@ whole_library :     $(HDL4FPGA__win_y__def) \
     $(HDL4FPGA__miirx_pre) \
     $(HDL4FPGA__mii_mem__def) \
     $(HDL4FPGA__mii_mem) \
+    $(HDL4FPGA__int2bcd__def) \
+    $(HDL4FPGA__int2bcd) \
     $(HDL4FPGA__grid__def) \
     $(HDL4FPGA__grid) \
+    $(HDL4FPGA__frac2bcd__def) \
+    $(HDL4FPGA__frac2bcd) \
     $(HDL4FPGA__fontrom__def) \
     $(HDL4FPGA__fontrom) \
     $(HDL4FPGA__ff__lttsm) \
@@ -136,6 +145,7 @@ whole_library :     $(HDL4FPGA__win_y__def) \
     $(HDL4FPGA__dpram) \
     $(HDL4FPGA__cgaram__def) \
     $(HDL4FPGA__cgaram) \
+    $(HDL4FPGA__cgafont__body) \
     $(HDL4FPGA__cgafont) \
     $(HDL4FPGA__cga__def) \
     $(HDL4FPGA__cga) \
@@ -173,7 +183,8 @@ $(HDL4FPGA__cga__def) : ../../library/video/cga/cga.vhd \
 		$(HDL4FPGA__std)
 	$(VCOM) -2008 -work hdl4fpga ../../library/video/cga/cga.vhd
 
-$(HDL4FPGA__cgafont) : ../../library/video/cga/cgafonts.vhd \
+$(HDL4FPGA__cgafont) \
+$(HDL4FPGA__cgafont__body) : ../../library/video/cga/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../../library/video/cga/cgafonts.vhd
@@ -221,6 +232,15 @@ $(HDL4FPGA__fontrom__def) : ../../library/video/cga/fontrom.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../../library/video/cga/fontrom.vhd
+
+$(HDL4FPGA__frac2bcd) \
+$(HDL4FPGA__frac2bcd__def) \
+$(HDL4FPGA__int2bcd) \
+$(HDL4FPGA__int2bcd__def) : ../../library/common/atof.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/common/atof.vhd
 
 $(HDL4FPGA__mii_mem) \
 $(HDL4FPGA__mii_mem__def) : ../../library/mii/mii_mem.vhd \
@@ -289,9 +309,6 @@ $(HDL4FPGA__scopeio_axisy__def) : ../../library/scope/scopeio_axisy.vhd \
 
 $(HDL4FPGA__scopeio_channel) \
 $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
-		$(HDL4FPGA__grid) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__scopeio_axisy) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \
