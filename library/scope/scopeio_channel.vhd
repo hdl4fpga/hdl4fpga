@@ -186,10 +186,15 @@ begin
 		signal   s           : std_logic_vector(0 to 4*4-1) := (others => '0');
 
 	begin
-		pp : entity hdl4fpga.frac2bcd 
+		frac_e : entity hdl4fpga.frac2bcd 
 		port map (
 			frac => offset(5-1 downto 0),
-			bcd  => s);
+			bcd  => s(4 to s'right));
+
+		int_e : entity hdl4fpga.int2bcd
+		port map (
+			int => offset(offset'left-1 downto 5),
+			bcd => s(0 to 4-1));
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
