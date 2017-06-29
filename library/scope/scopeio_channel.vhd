@@ -78,7 +78,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				8, 0, 4*16, 256))
+				8, 0, 5*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -183,18 +183,25 @@ begin
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
-		signal   s           : std_logic_vector(0 to 4*4-1) := (others => '0');
+		signal   s           : std_logic_vector(0 to 8*4-1) := (others => '0');
+		signal   fix         : std_logic_vector(offset'left-1 downto 0);
+		signal   bcd_frac    : std_logic_vector(0 to 2*4-1);
+		signal   bcd_int     : std_logic_vector(0 to 1*4-1);
+		signal   sign        : std_logic_vector(4-1 downto 0);
 
 	begin
+		fix <= std_logic_vector(unsigned(not offset(fix'range)) + 1) when offset(fix'left)='1' else offset(fix'range);
 		frac_e : entity hdl4fpga.frac2bcd 
 		port map (
-			frac => offset(5-1 downto 0),
-			bcd  => s(4 to s'right));
+			frac => fix(5-1 downto 0),
+			bcd  => bcd_frac);
 
 		int_e : entity hdl4fpga.int2bcd
 		port map (
-			int => offset(offset'left-1 downto 5),
-			bcd => s(0 to 4-1));
+			int => fix(fix'left downto 5),
+			bcd => bcd_int);
+		sign <= "1100" when offset(fix'left)='1' else "1011";
+		s(0 to 5*4-1) <= sign & bcd_int & "1010" & bcd_frac;
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
@@ -202,7 +209,7 @@ begin
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
 					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(s, not win_x(unsigned_num_bits(4*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= '0' & word2byte(s, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
 		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);
