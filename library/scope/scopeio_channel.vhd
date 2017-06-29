@@ -78,7 +78,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				8, 0, 5*16, 256))
+				8, 0, 6*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -185,9 +185,10 @@ begin
 		signal   code_dot    : std_logic_vector(0 to 0);
 		signal   s           : std_logic_vector(0 to 8*4-1) := (others => '0');
 		signal   fix         : std_logic_vector(offset'left-1 downto 0);
-		signal   bcd_frac    : std_logic_vector(0 to 2*4-1);
-		signal   bcd_int     : std_logic_vector(0 to 1*4-1);
+		signal   bcd_frac    : std_logic_vector(0 to 3*4-1);
+		signal   bcd_int     : std_logic_vector(2*4-1 downto 0);
 		signal   sign        : std_logic_vector(4-1 downto 0);
+		signal   space       : std_logic_vector(4-1 downto 0) := "1101";
 
 	begin
 		fix <= std_logic_vector(unsigned(not offset(fix'range)) + 1) when offset(fix'left)='1' else offset(fix'range);
@@ -201,7 +202,20 @@ begin
 			int => fix(fix'left downto 5),
 			bcd => bcd_int);
 		sign <= "1100" when offset(fix'left)='1' else "1011";
-		s(0 to 5*4-1) <= sign & bcd_int & "1010" & bcd_frac;
+		process (scale_x)
+		begin
+			for i in 0 to 2**scale_y'length-1 loop
+				if i=to_integer(unsigned(scale_y)) then
+					case i mod 3 is
+					when 0 => 
+						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
+					when others =>
+						s(0 to 6*4-1) <= sign & bcd_int(2*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
+					end case;
+				end if;
+			end loop;
+
+		end process;
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
