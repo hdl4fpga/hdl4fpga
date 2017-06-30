@@ -191,7 +191,7 @@ begin
 		signal   space       : std_logic_vector(4-1 downto 0) := "1101";
 
 	begin
-		fix <= std_logic_vector(unsigned(not offset(fix'range)) + 1) when offset(fix'left)='1' else offset(fix'range);
+
 		frac_e : entity hdl4fpga.frac2bcd 
 		port map (
 			frac => fix(5-1 downto 0),
@@ -202,19 +202,34 @@ begin
 			int => fix(fix'left downto 5),
 			bcd => bcd_int);
 		sign <= "1100" when offset(fix'left)='1' else "1011";
-		process (scale_x)
+		process (scale_y, offset)
+			variable aux : unsigned(fix'range);
 		begin
+			if offset(aux'left)='1' then
+				aux := unsigned(not offset(aux'range)) + 1;
+			else
+				aux := unsigned(offset(aux'range));
+			end if;
+
 			for i in 0 to 2**scale_y'length-1 loop
 				if i=to_integer(unsigned(scale_y)) then
 					case i mod 3 is
 					when 0 => 
 						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
+					when 1 => 
+						aux := aux sll 1;
+						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
 					when others =>
-						s(0 to 6*4-1) <= sign & bcd_int(2*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
+						aux := (aux sll 2) + (aux sll 0);
+						if bcd_int(2*4-1 downto 4)=(1 to 4 => '0') then
+							s(0 to 6*4-1) <= sign & "1111" & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
+						else
+							s(0 to 6*4-1) <= sign & bcd_int(2*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
+						end if;
 					end case;
 				end if;
 			end loop;
-
+			fix <= std_logic_vector(aux);
 		end process;
 		process (video_clk)
 		begin
