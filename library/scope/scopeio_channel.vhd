@@ -203,7 +203,9 @@ begin
 			bcd => bcd_int);
 		sign <= "1100" when offset(fix'left)='1' else "1011";
 		process (scale_y, offset)
-			variable aux : unsigned(fix'range);
+			variable aux  : unsigned(fix'range);
+			variable auxs : unsigned(s'range);
+			variable auxf : unsigned(bcd_frac'range);
 		begin
 			if offset(aux'left)='1' then
 				aux := unsigned(not offset(aux'range)) + 1;
@@ -220,6 +222,20 @@ begin
 						aux := aux sll 1;
 						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
 					when others =>
+						--
+						--
+						auxs := bcd_int;
+						for j in loop
+							auxs := auxs sll 4;
+							if then
+								auxs(4-1 downto 0) := auxf(0 to 4);
+								auxf := auxf sll 4;
+							else
+								auxs(4-1 downto 0) := "1010";
+							end if;
+						end loop;
+						--
+						--
 						aux := (aux sll 2) + (aux sll 0);
 						if bcd_int(2*4-1 downto 4)=(1 to 4 => '0') then
 							s(0 to 6*4-1) <= sign & "1111" & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
