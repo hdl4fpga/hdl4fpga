@@ -57,3 +57,11 @@ begin
 		bcd <= std_logic_vector(aux2(bcd'length-1 downto 0));
 	end process;
 end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity fix2bcd is
+	port (
+		in

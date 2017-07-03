@@ -205,6 +205,7 @@ begin
 		process (scale_y, offset)
 			variable aux  : unsigned(fix'range);
 			variable auxs : unsigned(s'range);
+			variable auxi : unsigned(bcd_int'range);
 			variable auxf : unsigned(bcd_frac'range);
 		begin
 			if offset(aux'left)='1' then
@@ -215,33 +216,24 @@ begin
 
 			for i in 0 to 2**scale_y'length-1 loop
 				if i=to_integer(unsigned(scale_y)) then
+					auxs := sign & bcd_int & bcd_frac & "----";
+					auxs := auxs ror (bcd_int'length+bcd_frac'length);
+					for i in 0 to bcd_int'length/4+(i mod 9)/3-1 loop
+						auxs := auxs rol 4;
+						if auxs(4-1 downto 0)="0000" then
+							auxs(4-1 downto 0)="1111";
+						else
+							auxs := auxs rol (aux'length-i);
+							exit;
+						end if;
+					end loop;
+
 					case i mod 3 is
-					when 0 => 
-						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
 					when 1 => 
 						aux := aux sll 1;
-						s(0 to 6*4-1) <= sign & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 3*4-1);
-					when others =>
-						--
-						--
-						auxs := bcd_int;
-						for j in loop
-							auxs := auxs sll 4;
-							if then
-								auxs(4-1 downto 0) := auxf(0 to 4);
-								auxf := auxf sll 4;
-							else
-								auxs(4-1 downto 0) := "1010";
-							end if;
-						end loop;
-						--
-						--
+					when 2 =>
 						aux := (aux sll 2) + (aux sll 0);
-						if bcd_int(2*4-1 downto 4)=(1 to 4 => '0') then
-							s(0 to 6*4-1) <= sign & "1111" & bcd_int(1*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
-						else
-							s(0 to 6*4-1) <= sign & bcd_int(2*4-1 downto 0) & "1010" & bcd_frac(0 to 2*4-1);
-						end if;
+					when others => 
 					end case;
 				end if;
 			end loop;
