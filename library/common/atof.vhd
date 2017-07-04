@@ -62,6 +62,52 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+
 entity fix2bcd is
+	generic (
+		sign : boolean;
+		frac : natural;
+		exp  : nattural := 0);
 	port (
-		in
+		fix      : in  std_logic_vector;
+		bcd_sign : out std_logic_vector(4-1 downto 0);
+		bcd_int  : out std_logic_vector;
+		bcd_frac : out std_logic_vector);
+end;
+
+architecture def of fix2bcd is
+	signal auxf : std_logic_vector(fix'length-1 downto 0);
+	signal auxi : std_logic_vector(bcd_int'length-1 downto 0);
+	signal auxc : std_logic_vector(0 to bcd_frac'length+4*exp-1);
+	signal int  : std_logic_vector(bcd_int'length-1 downto 0);
+begin
+	auxf <= std_logic_vector(unsigned(not fix) + 1) when fix(fix'left)='1' else fix;
+	int2bcd_e : entity hdl4fpga.int2bcd
+	port map (
+		int => auxf(fix'length-2 downto frac),
+		bcd => auxi(bcd_int'length-4*exp-1 downto 0);
+
+	frac2bcd_e : entity hdl4fpga.frac2bcd
+	port map (
+		frac => auxf(frac-1 downto 0),
+		bcd  => bcd_frac);
+
+	process (auxc)
+		variable aux : unsigned(auxi'range);
+	begin
+		for i in 1 to auxi'length/4 loop
+			aux := aux rol 4;
+			if aux(4-1 downto 0)="0000" then
+				aux(4-1 downto 0) := "1111";
+			else
+				aux := aux rol (aux'length-4*i);
+				exit;
+			end if;
+		end loop;
+
+		bcd_int  <= std_logic_vector(aux);
+	end process;
+
+	bcd_sign <= "1100" when fix(fix'left)='1' else "1011";
+end;

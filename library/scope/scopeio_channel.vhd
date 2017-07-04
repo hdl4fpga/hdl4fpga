@@ -184,50 +184,53 @@ begin
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
 		signal   s           : std_logic_vector(0 to 8*4-1) := (others => '0');
-		signal   fix         : std_logic_vector(offset'left-1 downto 0);
 		signal   bcd_frac    : std_logic_vector(0 to 3*4-1);
 		signal   bcd_int     : std_logic_vector(2*4-1 downto 0);
-		signal   sign        : std_logic_vector(4-1 downto 0);
-		signal   space       : std_logic_vector(4-1 downto 0) := "1101";
 
 	begin
 
-		frac_e : entity hdl4fpga.frac2bcd 
+		fix2bcd : entity hdl4fpga.fix2bcd 
+		generic map (
+			frac  => 5)
 		port map (
-			frac => fix(5-1 downto 0),
-			bcd  => bcd_frac);
+			fix      => fix,
+			bcd_frac => bcd_frac);
+			bcd_int  => bcd_int);
 
-		int_e : entity hdl4fpga.int2bcd
-		port map (
-			int => fix(fix'left downto 5),
-			bcd => bcd_int);
-		sign <= "1100" when offset(fix'left)='1' else "1011";
 		process (scale_y, offset)
 			variable aux  : unsigned(fix'range);
 			variable auxs : unsigned(s'range);
-			variable auxi : unsigned(bcd_int'range);
-			variable auxf : unsigned(bcd_frac'range);
+			variable auxi : unsigned(bcd_int'length+4*((9-1)/3)-1 downto 0);
+			variable auxf : unsigned(0 to bcd_frac'length-1);
+			
 		begin
-			if offset(aux'left)='1' then
-				aux := unsigned(not offset(aux'range)) + 1;
-			else
-				aux := unsigned(offset(aux'range));
-			end if;
 
 			for i in 0 to 2**scale_y'length-1 loop
-				if i=to_integer(unsigned(scale_y)) then
-					auxs := sign & bcd_int & bcd_frac & "----";
-					auxs := auxs ror (bcd_int'length+bcd_frac'length);
-					for i in 0 to bcd_int'length/4+(i mod 9)/3-1 loop
-						auxs := auxs rol 4;
-						if auxs(4-1 downto 0)="0000" then
-							auxs(4-1 downto 0)="1111";
-						else
-							auxs := auxs rol (aux'length-i);
-							exit;
-						end if;
-					end loop;
 
+				auxi(bcd_int'length-1 downto 0) := unsigned(bcd_int);
+				auxf := unsigned(bcd_frac);
+				if ((i mod 9)/3) > 0 then
+					for k in 0 to ((i mod 9)/3)-1 loop
+						auxi := auxi sll 4;
+						auxi(4-1 downto 0) := auxf(0 to 4-1);
+						auxf := auxf sll 4;
+					end loop
+				end if;
+				for k in 1 to bcd_int'length/4+((i mod 9)/3)-1 loop
+					auxi := auxi rol 4;
+					if auxi(4-1 downto 0)="0000" then
+						auxi(4-1 downto 0) := "1111";
+					else
+						auxi := auxi rol (auxi'length-4*k);
+						exit;
+					end if;
+				end loop;
+				s := 
+					std_logic_vector(auxi(bcd_int'length/4+4*((i mod 9)/3)-1 downto 0)) & 
+					"1010" & 
+					std_logic_vector(auxf(0 to bcd_frac'length-4*((i mod 9)/3)-1));
+
+				if i=to_integer(unsigned(scale_y)) then
 					case i mod 3 is
 					when 1 => 
 						aux := aux sll 1;
