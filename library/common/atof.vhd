@@ -39,7 +39,7 @@ architecture def of int2bcd is
 begin
 	process(int)
 		variable aux1 : unsigned(0 to int'length-1);
-		variable aux2 : unsigned(4*((bcd'length+4-1)/4)-1 downto 0);
+		variable aux2 : unsigned(4*((bcd'length+4-1)/4)-1 downto 0) := (others => '0');
 	begin
 		aux1 := unsigned(int);
 		aux2 := (others => '0');
