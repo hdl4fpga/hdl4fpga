@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -184,39 +186,42 @@ begin
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
 		signal   s           : std_logic_vector(0 to 8*4-1) := (others => '0');
+		signal   bcd_sign    : std_logic_vector(0 to 4-1);
 		signal   bcd_frac    : std_logic_vector(0 to 3*4-1);
 		signal   bcd_int     : std_logic_vector(2*4-1 downto 0);
+		signal   fix         : std_logic_vector(8-1 downto 0);
 
 	begin
 
 		fix2bcd : entity hdl4fpga.fix2bcd 
 		generic map (
-			frac  => 5)
+			frac  => 5,
+			spce => false)
 		port map (
 			fix      => fix,
-			bcd_frac => bcd_frac);
+			bcd_sign => bcd_sign,
+			bcd_frac => bcd_frac,
 			bcd_int  => bcd_int);
 
-		process (scale_y, offset)
+		process (scale_y, offset, bcd_int, bcd_frac, bcd_sign)
 			variable aux  : unsigned(fix'range);
-			variable auxs : unsigned(s'range);
 			variable auxi : unsigned(bcd_int'length+4*((9-1)/3)-1 downto 0);
 			variable auxf : unsigned(0 to bcd_frac'length-1);
-			
 		begin
 
 			for i in 0 to 2**scale_y'length-1 loop
-
-				auxi(bcd_int'length-1 downto 0) := unsigned(bcd_int);
+				aux  := unsigned(offset(fix'range));
+				auxi := resize(unsigned(bcd_int), auxi'length);
 				auxf := unsigned(bcd_frac);
+
 				if ((i mod 9)/3) > 0 then
 					for k in 0 to ((i mod 9)/3)-1 loop
 						auxi := auxi sll 4;
 						auxi(4-1 downto 0) := auxf(0 to 4-1);
 						auxf := auxf sll 4;
-					end loop
+					end loop;
 				end if;
-				for k in 1 to bcd_int'length/4+((i mod 9)/3)-1 loop
+				for k in 1 to auxi'length/4-1 loop
 					auxi := auxi rol 4;
 					if auxi(4-1 downto 0)="0000" then
 						auxi(4-1 downto 0) := "1111";
@@ -225,12 +230,16 @@ begin
 						exit;
 					end if;
 				end loop;
-				s := 
-					std_logic_vector(auxi(bcd_int'length/4+4*((i mod 9)/3)-1 downto 0)) & 
-					"1010" & 
-					std_logic_vector(auxf(0 to bcd_frac'length-4*((i mod 9)/3)-1));
+				auxi := auxi rol 4;
 
 				if i=to_integer(unsigned(scale_y)) then
+					s(0 to 32-1) <=
+						bcd_sign &
+						std_logic_vector(auxi(bcd_int'length+4*((i mod 9)/3)-1 downto 0)) & 
+						"1010" & 
+						std_logic_vector(auxf(0 to bcd_frac'length-4*((i mod 9)/3)-1)) &
+						"----";
+
 					case i mod 3 is
 					when 1 => 
 						aux := aux sll 1;
@@ -240,8 +249,9 @@ begin
 					end case;
 				end if;
 			end loop;
-			fix <= std_logic_vector(aux);
+			fix <= "00000000"; --std_logic_vector(aux);
 		end process;
+
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
