@@ -5,29 +5,12 @@ use std.textio.all;
 use ieee.std_logic_textio.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
-
-entity scopeio_meter is
-	generic(
-		inputs     : natural;
-		ch_width   : natural;
-		width      : natural;
-		height     : natural);
-	port (
-		video_clk  : in  std_logic;
-		video_nhl  : in  std_logic;
-		abscisa    : out std_logic_vector;
-		ordinates  : in  std_logic_vector;
-		offset     : in  std_logic_vector;
-		scale_x    : in  std_logic_vector(4-1 downto 0);
-		scale_y    : in  std_logic_vector(4-1 downto 0);
-		win_frm    : in  std_logic_vector;
-		win_on     : in  std_logic_vector;
-		video_dot  : out std_logic_vector);
-end;
 
 entity is
+	generic (
+		frac : natural;
+		dec  : natural;
+		int  : natural);
 	port (
 		scale : in  std_logic_vector;
 		value : in  std_logic_vector;
@@ -37,8 +20,8 @@ end;
 architecture def of is
 begin
 	signal bcd_sign : std_logic_vector(0 to 4-1);
-	signal bcd_frac : std_logic_vector(0 to 3*4-1);
-	signal bcd_int  : std_logic_vector(2*4-1 downto 0);
+	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
+	signal bcd_int  : std_logic_vector(0 to 4*int-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1)-1 downto 0);
 end;
 
@@ -71,11 +54,12 @@ end;
 	end process;
 
 	fmt_p : process (scale, value, bcd_int, bcd_frac, bcd_sign)
-		variable auxi : unsigned(bcd_int'length+4*((9-1)/3)-1 downto 0);
+		variable auxi : unsigned(0 to bcd_int'length+4*((9-1)/3)-1);
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(xxxxx'length-1 downt 0);
 	begin
 		auxs := (others => '-');
+		xxxxx <= (others => '-');
 		for i in 0 to 2**scale'length-1 loop
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
@@ -119,7 +103,6 @@ end;
 
 			if i=to_integer(unsigned(scale_y)) then
 				xxxxx := std_logic_vector(auxs);
-
 			end if;
 		end loop;
 	end process;
