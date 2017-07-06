@@ -45,7 +45,7 @@ begin
 		aux2 := (others => '0');
 		for i in 0 to int'length-1 loop
 			for j in 0 to aux2'length/4-1 loop
-				if aux2(3-1 downto 0) >= "101" then
+				if aux2(4-1 downto 0) >= "0101" then
 					aux2(4-1 downto 0) := aux2(4-1 downto 0) + "0011";
 				end if;
 				aux2 := aux2 rol 4;
@@ -102,7 +102,7 @@ begin
 				if aux(4-1 downto 0)="0000" then
 					aux(4-1 downto 0) := "1111";
 				else
-					aux := aux rol (aux'length-4*i);
+					aux := aux rol (aux'length-4*(i+1));
 					exit;
 				end if;
 			end loop;

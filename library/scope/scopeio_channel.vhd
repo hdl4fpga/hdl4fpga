@@ -80,7 +80,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				8, 0, 6*16, 256))
+				8, 0, 8*16, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -189,13 +189,13 @@ begin
 		signal   bcd_sign    : std_logic_vector(0 to 4-1);
 		signal   bcd_frac    : std_logic_vector(0 to 3*4-1);
 		signal   bcd_int     : std_logic_vector(2*4-1 downto 0);
-		signal   fix         : std_logic_vector(8-1 downto 0);
+		signal   fix         : std_logic_vector(11-1 downto 0);
 
 	begin
 
 		fix2bcd : entity hdl4fpga.fix2bcd 
 		generic map (
-			frac  => 5,
+			frac => 5,
 			spce => false)
 		port map (
 			fix      => fix,
@@ -203,14 +203,17 @@ begin
 			bcd_frac => bcd_frac,
 			bcd_int  => bcd_int);
 
-		process (scale_y, offset, bcd_int, bcd_frac, bcd_sign)
-			variable aux  : unsigned(fix'range);
+		process ( scale_y, offset, bcd_int, bcd_frac, bcd_sign)
+			variable aux  : signed(fix'range);
 			variable auxi : unsigned(bcd_int'length+4*((9-1)/3)-1 downto 0);
 			variable auxf : unsigned(0 to bcd_frac'length-1);
 		begin
 
+			fix <= (others => '-');
+			s   <= (others => '-');
+			aux := (others => '-');
 			for i in 0 to 2**scale_y'length-1 loop
-				aux  := unsigned(offset(fix'range));
+				aux  := resize(signed(offset(8-1 downto 0)),aux'length);
 				auxi := resize(unsigned(bcd_int), auxi'length);
 				auxf := unsigned(bcd_frac);
 
@@ -221,25 +224,19 @@ begin
 						auxf := auxf sll 4;
 					end loop;
 				end if;
+
 				for k in 1 to auxi'length/4-1 loop
 					auxi := auxi rol 4;
 					if auxi(4-1 downto 0)="0000" then
 						auxi(4-1 downto 0) := "1111";
 					else
-						auxi := auxi rol (auxi'length-4*k);
+						auxi := auxi rol (auxi'length-4*(k+1));
 						exit;
 					end if;
 				end loop;
 				auxi := auxi rol 4;
 
 				if i=to_integer(unsigned(scale_y)) then
-					s(0 to 32-1) <=
-						bcd_sign &
-						std_logic_vector(auxi(bcd_int'length+4*((i mod 9)/3)-1 downto 0)) & 
-						"1010" & 
-						std_logic_vector(auxf(0 to bcd_frac'length-4*((i mod 9)/3)-1)) &
-						"----";
-
 					case i mod 3 is
 					when 1 => 
 						aux := aux sll 1;
@@ -247,9 +244,17 @@ begin
 						aux := (aux sll 2) + (aux sll 0);
 					when others => 
 					end case;
+					fix <= std_logic_vector(aux);
+
+					s(0 to 32-1) <=
+						bcd_sign &
+						std_logic_vector(auxi(bcd_int'length+4*((i mod 9)/3)-1 downto 0)) & 
+						"1010" & 
+						std_logic_vector(auxf(0 to bcd_frac'length-4*((i mod 9)/3)-1)) &
+						"1111";
+
 				end if;
 			end loop;
-			fix <= "00000000"; --std_logic_vector(aux);
 		end process;
 
 		process (video_clk)

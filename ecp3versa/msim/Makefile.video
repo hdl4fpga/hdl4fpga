@@ -62,6 +62,8 @@ HDL4FPGA__frac2bcd__def = $(LIB_HDL4FPGA)/frac2bcd/def.dat
 HDL4FPGA__frac2bcd = $(LIB_HDL4FPGA)/frac2bcd/_primary.dat
 HDL4FPGA__fontrom__def = $(LIB_HDL4FPGA)/fontrom/def.dat
 HDL4FPGA__fontrom = $(LIB_HDL4FPGA)/fontrom/_primary.dat
+HDL4FPGA__fix2bcd__def = $(LIB_HDL4FPGA)/fix2bcd/def.dat
+HDL4FPGA__fix2bcd = $(LIB_HDL4FPGA)/fix2bcd/_primary.dat
 HDL4FPGA__ff__lttsm = $(LIB_HDL4FPGA)/ff/lttsm.dat
 HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
 HDL4FPGA__ecp3versa__beh = $(LIB_HDL4FPGA)/ecp3versa/beh.dat
@@ -135,6 +137,8 @@ whole_library :     $(HDL4FPGA__win_y__def) \
     $(HDL4FPGA__frac2bcd) \
     $(HDL4FPGA__fontrom__def) \
     $(HDL4FPGA__fontrom) \
+    $(HDL4FPGA__fix2bcd__def) \
+    $(HDL4FPGA__fix2bcd) \
     $(HDL4FPGA__ff__lttsm) \
     $(HDL4FPGA__ff) \
     $(HDL4FPGA__ecp3versa__beh) \
@@ -233,6 +237,8 @@ $(HDL4FPGA__fontrom__def) : ../../library/video/cga/fontrom.vhd \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../../library/video/cga/fontrom.vhd
 
+$(HDL4FPGA__fix2bcd) \
+$(HDL4FPGA__fix2bcd__def) \
 $(HDL4FPGA__frac2bcd) \
 $(HDL4FPGA__frac2bcd__def) \
 $(HDL4FPGA__int2bcd) \
@@ -309,11 +315,13 @@ $(HDL4FPGA__scopeio_axisy__def) : ../../library/scope/scopeio_axisy.vhd \
 
 $(HDL4FPGA__scopeio_channel) \
 $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
+		$(HDL4FPGA__fix2bcd) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \
 		$(HDL4FPGA__cgafont) \
 		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
