@@ -5,6 +5,7 @@ use std.textio.all;
 use ieee.std_logic_textio.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity meter_display is
 	generic (
@@ -18,12 +19,11 @@ entity meter_display is
 end;
 
 architecture def of meter_display is
-begin
 	signal bcd_sign : std_logic_vector(0 to 4-1);
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to 4*int-1);
-	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1)-1 downto 0);
-end;
+	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
+begin
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
 	generic map (
@@ -56,10 +56,10 @@ end;
 	fmt_p : process (scale, value, bcd_int, bcd_frac, bcd_sign)
 		variable auxi : unsigned(0 to bcd_int'length+4*((9-1)/3)-1);
 		variable auxf : unsigned(0 to bcd_frac'length-1);
-		variable auxs : unsigned(xxxxx'length-1 downt 0);
+		variable auxs : unsigned(xxxxx'length-1 downto 0);
 	begin
-		auxs := (others => '-');
-		xxxxx <= (others => '-');
+		auxs  := (others => '-');
+		xxxxx <= (xxxxx'range => '-');
 		for i in 0 to 2**scale'length-1 loop
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
@@ -95,14 +95,14 @@ end;
 			auxs := auxs rol 4;
 			auxs(4-1 downto 0) := unsigned'("1010");
 
-			for j 0 to auxf'left-((i mod 9)/3)-1 loop
+			for j in 0 to auxf'left-((i mod 9)/3)-1 loop
 				auxs := auxs sll 4;
 				auxs(4-1 downto 0) := auxf(0 to 4-1);
 				auxf := auxf sll 4;
 			end loop;
 
-			if i=to_integer(unsigned(scale_y)) then
-				xxxxx := std_logic_vector(auxs);
+			if i=to_integer(unsigned(scale)) then
+				xxxxx <= std_logic_vector(auxs);
 			end if;
 		end loop;
 	end process;
