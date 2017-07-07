@@ -6,7 +6,7 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 
-entity is
+entity meter_display is
 	generic (
 		frac : natural;
 		dec  : natural;
@@ -17,7 +17,7 @@ entity is
 		xxxxx : out std_logic_vector);
 end;
 
-architecture def of is
+architecture def of meter_display is
 begin
 	signal bcd_sign : std_logic_vector(0 to 4-1);
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
