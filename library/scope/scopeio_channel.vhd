@@ -17,6 +17,9 @@ entity scopeio_channel is
 	port (
 		video_clk  : in  std_logic;
 		video_nhl  : in  std_logic;
+		text_clk   : in  std_logic;
+		text_data  : in  std_logic_vector;
+		text_addr  : in  std_logic_vector;
 		abscisa    : out std_logic_vector;
 		ordinates  : in  std_logic_vector;
 		offset     : in  std_logic_vector;
@@ -80,7 +83,7 @@ begin
 				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
 				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
 				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				8, 0, 8*16, 256))
+				0, 0, 24*8, 256))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -185,18 +188,17 @@ begin
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
-		signal   s           : std_logic_vector(0 to 8*4-1) := (others => '1');
+		signal   vmem_addr   : std_logic_vector();
+		signal   vmem_data   : std_logic_vector();
 
 	begin
-		offset_display_e : entity hdl4fpga.meter_display
-		generic map (
-			frac => 5,
-			int  => 2,
-			dec  => 2)
+		mem_e : entity hdl4fgpa.dprom
 		port map (
-			value => offset(8-1 downto 0),
-			scale => scale_y,
-			fmtds => s(0 to 6*4-1));	
+			wr_clk  => text_clk,
+			wr_addr => text_address,
+			wr_data => text_data),
+			rd_addr => ,
+			rd_data =>);
 
 		process (video_clk)
 		begin
@@ -205,7 +207,7 @@ begin
 					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
 					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(s, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= '0' & word2byte(meter_disp, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
 		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);

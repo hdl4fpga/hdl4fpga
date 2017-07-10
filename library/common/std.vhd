@@ -188,8 +188,16 @@ package std is
 		return string;
 
 	function to_ascii (
+		constant arg : string)
+		return std_logic_vector;
+
+	function to_ascii (
 		constant arg : nibble)
 		return ascii;
+
+	function align (
+		constant arg  : string;
+		constant size : natural);
 
 	function to_nibble (
 		constant arg : std_logic_vector)
@@ -805,6 +813,24 @@ package body std is
 	begin
 		return ascii(rom(to_integer(unsigned(arg))));
 	end function;
+
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector) is
+	begin
+		return to_stdlogicvector(arg);
+	end;
+
+	function align (
+		constant arg  : string;
+		constant size : natural) is
+		variable val  : string(0 to 10) := (others => ' ');
+	begin
+		for i in arg'range loop
+			val(i) := arg(i);
+		end loop;
+		return val;
+	end;
 
 	function to_nibble (
 		constant arg : std_logic_vector)

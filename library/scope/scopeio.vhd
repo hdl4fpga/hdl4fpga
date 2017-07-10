@@ -84,6 +84,8 @@ architecture beh of scopeio is
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
+	signal  text_data   : std_logic_vector(8-1 downto 0);
+	signal  text_addr   : std_logic_vector(8-1 downto 0);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -348,6 +350,68 @@ begin
 		end if;
 	end process;
 
+	meter_b : block
+
+		function bcd2ascii (
+			constant arg : std_logic_vector)
+			return std_logic_vector is
+			variable aux : unsigned(arg'length-1 downto 0);
+			variable val : unsigned(8*arg'length/2-1 downto 0);
+		begin
+			val := (others => '-');
+			aux := unsigned(arg);
+			for i 0 to aux'length/4-1 loop
+				val := val sll 8;
+				if to_integer(unsigned(arg)) < 10 then
+					val(8-1 downto 0) := unsigned("0011" & aux(4-1 downto 0));
+				elsif to_integer(unsigned(arg) < 15 then
+					val(8-1 downto 0) := unsigned("0010" & aux(4-1 downto 0));
+				else
+					val(8-1 downto 0) := x"20";
+				end if;
+				aux := aux sll 4;
+			end loop;
+			return std_logic_vector(val);
+		end;
+
+		signal row : unsigned(0 to 4-1);
+		signal col : unsigned(0 to 5-1);
+
+	begin
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				word2byte(display);
+			end if;
+		end process;
+
+		display_e : entity hdl4fpga.meter_display
+		generic map (
+			frac => 5,
+			int  => 2,
+			dec  => 2)
+		port map (
+			value => offset(8-1 downto 0),
+			scale => scale_y,
+			fmtds => display);	
+
+		process (display)
+			type label_vector is array (range <>) of string(10);
+			constant labels : label_vector(0 to 16-1) := (
+				0 => align("Offset  :", 10),
+				1 => align("Scale X :", 10),
+				2 => align("Scale Y :", 10),
+				3 => align("Trigger :", 10),
+				others => align("", 10));
+
+		begin
+			aux := to_ascii(labels(to_integer(unsigned(row))) & display & ;
+
+		end process;
+
+	end block;
+
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs     => inputs,
@@ -358,6 +422,9 @@ begin
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		ordinates  => ordinates,
+		text_clk   => mii_rxc,
+		text_addr  => text_addr,
+		text_data  => text_data,
 		offset     => std_logic_vector(offset(0)),
 		abscisa    => abscisa,
 		scale_x    => scale_x,
