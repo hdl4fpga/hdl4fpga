@@ -197,7 +197,8 @@ package std is
 
 	function align (
 		constant arg  : string;
-		constant size : natural);
+		constant size : natural)
+		return string;
 
 	function to_nibble (
 		constant arg : std_logic_vector)
@@ -816,15 +817,16 @@ package body std is
 
 	function to_ascii(
 		constant arg : string)
-		return std_logic_vector) is
+		return std_logic_vector is
 	begin
 		return to_stdlogicvector(arg);
 	end;
 
 	function align (
 		constant arg  : string;
-		constant size : natural) is
-		variable val  : string(0 to 10) := (others => ' ');
+		constant size : natural)
+		return string is
+		variable val  : string(1 to 10) := (others => ' ');
 	begin
 		for i in arg'range loop
 			val(i) := arg(i);

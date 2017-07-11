@@ -374,17 +374,8 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal row : unsigned(0 to 4-1);
-		signal col : unsigned(0 to 5-1);
-
+		signal display : std_logic_vector(0 to 22*4-1) := (others => '-');
 	begin
-
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				word2byte(display);
-			end if;
-		end process;
 
 		display_e : entity hdl4fpga.meter_display
 		generic map (
@@ -394,9 +385,9 @@ begin
 		port map (
 			value => offset(8-1 downto 0),
 			scale => scale_y,
-			fmtds => display);	
+			fmtds => display(0 to 6*4-1));	
 
-		process (display)
+		process (mii_txc)
 			type label_vector is array (range <>) of string(10);
 			constant labels : label_vector(0 to 16-1) := (
 				0 => align("Offset  :", 10),
@@ -404,9 +395,15 @@ begin
 				2 => align("Scale Y :", 10),
 				3 => align("Trigger :", 10),
 				others => align("", 10));
-
+			variable row : unsigned(0 to 4-1);
+			variable col : unsigned(0 to 5-1);
 		begin
-			aux := to_ascii(labels(to_integer(unsigned(row))) & display & ;
+			if rising_edge(mii_txc) then
+				text_data <= word2byte(
+					to_ascii(labels(to_integer(unsigned(row))) & bcd2ascii(display), 
+					std_logic_vector(col));
+				text_addr <= std_logic_vector(row & col);
+			end if;
 
 		end process;
 

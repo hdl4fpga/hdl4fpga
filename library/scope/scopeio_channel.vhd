@@ -18,6 +18,7 @@ entity scopeio_channel is
 		video_clk  : in  std_logic;
 		video_nhl  : in  std_logic;
 		text_clk   : in  std_logic;
+		text_we    : in  std_logic := '1';
 		text_data  : in  std_logic_vector;
 		text_addr  : in  std_logic_vector;
 		abscisa    : out std_logic_vector;
@@ -183,31 +184,32 @@ begin
 --	end process;
 --
 	meter_b : block
-		constant font_width  : natural := 16;
-		constant font_height : natural := 32;
+		constant font_width  : natural := 8;
+		constant font_height : natural := 16;
 		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
-		signal   vmem_addr   : std_logic_vector();
-		signal   vmem_data   : std_logic_vector();
+		signal   vmem_addr   : std_logic_vector(9-1 downto 0);
+		signal   vmem_data   : std_logic_vector(8-1 downto 0);
 
 	begin
-		mem_e : entity hdl4fgpa.dprom
+		mem_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => text_clk,
-			wr_addr => text_address,
-			wr_data => text_data),
-			rd_addr => ,
-			rd_data =>);
+			wr_ena  => text_we,
+			wr_addr => text_addr,
+			wr_data => text_data,
+			rd_addr => vmem_addr,
+			rd_data => vmem_data);
 
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
 				code_dots <= word2byte(
-					reverse(shuffle_code(psf1mag32x16, font_width, font_height)),
+					psf1cp850x8x16,
 					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= '0' & word2byte(meter_disp, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
+				code_char <= word2byte(meter_disp, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
 			end if;
 		end process;
 		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);
