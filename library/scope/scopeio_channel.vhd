@@ -186,7 +186,10 @@ begin
 	meter_b : block
 		constant font_width  : natural := 8;
 		constant font_height : natural := 16;
-		signal   code_dots   : std_logic_vector(0 to psf1mag32x16'length/(font_width*font_height)-1);
+		constant disp_width  : natural := 32;
+		constant disp_height : natural := 16;
+
+		signal   code_dots   : std_logic_vector(0 to 0);
 		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
 		signal   code_dot    : std_logic_vector(0 to 0);
 		signal   vmem_addr   : std_logic_vector(9-1 downto 0);
@@ -205,14 +208,15 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				code_dots <= word2byte(
+				code_dot <= word2byte(
 					psf1cp850x8x16,
-					win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
-					win_x(unsigned_num_bits(font_width-1)-1  downto 0));
-				code_char <= word2byte(meter_disp, not win_x(unsigned_num_bits(8*font_width-1)-1 downto unsigned_num_bits(font_width-1)));
+					vmem_data & win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
+					win_x(unsigned_num_bits(font_width-1)-1  downto 0)) and (code_dot'range => meter_on);
+				vmem_addr <= 
+					win_y(unsigned_num_bits(disp_width*font_width-1)-1  downto unsigned_num_bits(font_width-1)) &
+					win_x(unsigned_num_bits(disp_height*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 			end if;
 		end process;
-		code_dot <= word2byte(code_dots, code_char) and (code_dot'range => meter_on);
 
 		align_e : entity hdl4fpga.align
 		generic map (

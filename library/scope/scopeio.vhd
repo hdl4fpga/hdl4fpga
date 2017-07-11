@@ -85,7 +85,7 @@ architecture beh of scopeio is
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
-	signal  text_addr   : std_logic_vector(8-1 downto 0);
+	signal  text_addr   : std_logic_vector(9-1 downto 0) := (others => '0');
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -356,16 +356,16 @@ begin
 			constant arg : std_logic_vector)
 			return std_logic_vector is
 			variable aux : unsigned(arg'length-1 downto 0);
-			variable val : unsigned(8*arg'length/2-1 downto 0);
+			variable val : unsigned(8*arg'length/4-1 downto 0);
 		begin
 			val := (others => '-');
 			aux := unsigned(arg);
-			for i 0 to aux'length/4-1 loop
+			for i in 0 to aux'length/4-1 loop
 				val := val sll 8;
 				if to_integer(unsigned(arg)) < 10 then
-					val(8-1 downto 0) := unsigned("0011" & aux(4-1 downto 0));
-				elsif to_integer(unsigned(arg) < 15 then
-					val(8-1 downto 0) := unsigned("0010" & aux(4-1 downto 0));
+					val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(4-1 downto 0));
+				elsif to_integer(unsigned(arg)) < 15 then
+					val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(4-1 downto 0));
 				else
 					val(8-1 downto 0) := x"20";
 				end if;
@@ -383,26 +383,24 @@ begin
 			int  => 2,
 			dec  => 2)
 		port map (
-			value => offset(8-1 downto 0),
+			value => std_logic_vector(offset(0)(8-1 downto 0)),
 			scale => scale_y,
 			fmtds => display(0 to 6*4-1));	
 
-		process (mii_txc)
-			type label_vector is array (range <>) of string(10);
+		process (mii_rxc)
+			type label_vector is array (natural range <>) of string(1 to 10);
 			constant labels : label_vector(0 to 16-1) := (
 				0 => align("Offset  :", 10),
 				1 => align("Scale X :", 10),
 				2 => align("Scale Y :", 10),
 				3 => align("Trigger :", 10),
 				others => align("", 10));
-			variable row : unsigned(0 to 4-1);
-			variable col : unsigned(0 to 5-1);
 		begin
-			if rising_edge(mii_txc) then
+			if rising_edge(mii_rxc) then
 				text_data <= word2byte(
-					to_ascii(labels(to_integer(unsigned(row))) & bcd2ascii(display), 
-					std_logic_vector(col));
-				text_addr <= std_logic_vector(row & col);
+					to_ascii(labels(to_integer(unsigned(text_addr(9-1 downto 5))))) & bcd2ascii(display), 
+					not text_addr(5-1 downto 0));
+				text_addr <= std_logic_vector(unsigned(text_addr) + 1);
 			end if;
 
 		end process;
