@@ -110,7 +110,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 5,
-			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3, 4 => 4+1),
+			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3, 4 => 4+4),
 			i => (0 to 4 => '-'))
 		port map (
 			clk   => video_clk,
@@ -189,13 +189,16 @@ begin
 		constant disp_width  : natural := 32;
 		constant disp_height : natural := 16;
 
-		signal   code_dots   : std_logic_vector(0 to 0);
-		signal   code_char   : std_logic_vector(0 to unsigned_num_bits(code_dots'length-1)-1);
-		signal   code_dot    : std_logic_vector(0 to 0);
-		signal   vmem_addr   : std_logic_vector(9-1 downto 0);
-		signal   vmem_data   : std_logic_vector(8-1 downto 0);
+		signal vmem_addr : std_logic_vector(9-1 downto 0);
+		signal vmem_data : std_logic_vector(8-1 downto 0);
+		signal char_code : std_logic_vector(vmem_data'range);
+		signal char_line : std_logic_vector(0 to font_width-1);
+		signal char_dot  : std_logic_vector(0 to 0);
+		signal sel_line  : std_logic_vector(0 to vmem_data'length+unsigned_num_bits(font_height-1)-1);
+		signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
 
 	begin
+
 		mem_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => text_clk,
@@ -205,18 +208,35 @@ begin
 			rd_addr => vmem_addr,
 			rd_data => vmem_data);
 
+		cgarom : entity hdl4fpga.rom
+		generic map (
+			bitrom => psf1cp850x8x16)
+		port map (
+			clk  => video_clk,
+			addr => sel_line,
+			data => char_line);
+
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				code_dot <= word2byte(
-					reverse(psf1cp850x8x16),
-					vmem_data & win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
-					win_x(unsigned_num_bits(font_width-1)-1  downto 0)) and (code_dot'range => meter_on);
+				sel_line <= char_code & win_y(unsigned_num_bits(font_height-1)-1 downto 0); 
+				char_code <= vmem_data;
 				vmem_addr <= 
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 			end if;
 		end process;
+
+		char_dot <= word2byte(char_line, not sel_dot) and (char_dot'range => meter_on);
+
+		align_x : entity hdl4fpga.align
+		generic map (
+			n => sel_dot'length,
+			d => (sel_dot'range => 4))
+		port map (
+			clk => video_clk,
+			di  => win_x(sel_dot'range),
+			do  => sel_dot);
 
 		align_e : entity hdl4fpga.align
 		generic map (
@@ -224,7 +244,7 @@ begin
 			d => (0 to 0 => unsigned_num_bits(height-1)+7))
 		port map (
 			clk   => video_clk,
-			di(0) => code_dot(0),
+			di(0) => char_dot(0),
 			do(0) => meter_dot);
 	end block;
 --
