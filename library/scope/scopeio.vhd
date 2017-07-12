@@ -85,7 +85,7 @@ architecture beh of scopeio is
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
-	signal  text_addr   : std_logic_vector(9-1 downto 0) := (others => '0');
+	signal  text_addr   : std_logic_vector(9-1 downto 0);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -355,17 +355,17 @@ begin
 		function bcd2ascii (
 			constant arg : std_logic_vector)
 			return std_logic_vector is
-			variable aux : unsigned(arg'length-1 downto 0);
+			variable aux : unsigned(0 to arg'length-1);
 			variable val : unsigned(8*arg'length/4-1 downto 0);
 		begin
 			val := (others => '-');
 			aux := unsigned(arg);
 			for i in 0 to aux'length/4-1 loop
 				val := val sll 8;
-				if to_integer(unsigned(arg)) < 10 then
-					val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(4-1 downto 0));
-				elsif to_integer(unsigned(arg)) < 15 then
-					val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(4-1 downto 0));
+				if to_integer(unsigned(aux(0 to 4-1))) < 10 then
+					val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(0 to 4-1));
+				elsif to_integer(unsigned(aux(0 to 4-1))) < 15 then
+					val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(0 to 4-1));
 				else
 					val(8-1 downto 0) := x"20";
 				end if;
@@ -374,7 +374,7 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal display : std_logic_vector(0 to 22*4-1) := (others => '-');
+		signal display : std_logic_vector(0 to 22*4-1) := (others => '1');
 	begin
 
 		display_e : entity hdl4fpga.meter_display
@@ -395,12 +395,15 @@ begin
 				2 => align("Scale Y :", 10),
 				3 => align("Trigger :", 10),
 				others => align("", 10));
+			variable addr : unsigned(text_addr'range) := (others => '0');
 		begin
 			if rising_edge(mii_rxc) then
+				text_addr <= std_logic_vector(addr);
 				text_data <= word2byte(
-					to_ascii(labels(to_integer(unsigned(text_addr(9-1 downto 5))))) & bcd2ascii(display), 
-					not text_addr(5-1 downto 0));
-				text_addr <= std_logic_vector(unsigned(text_addr) + 1);
+					to_ascii(labels(to_integer(unsigned(addr(9-1 downto 5))))) & bcd2ascii(display), 
+--					to_ascii(labels(to_integer(unsigned(addr(9-1 downto 5))))),
+					not std_logic_vector(addr(5-1 downto 0)));
+				addr := addr + 1;
 			end if;
 
 		end process;

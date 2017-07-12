@@ -112,5 +112,5 @@ begin
 		end if;
 	end process;
 
-	bcd_sign <= "1100" when fix(fix'left)='1' else "1011";
+	bcd_sign <= "1101" when fix(fix'left)='1' else "1011";
 end;

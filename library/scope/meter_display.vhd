@@ -96,7 +96,7 @@ begin
 
 			if dec > ((i mod 9)/3) then
 				auxs := auxs sll 4;
-				auxs(4-1 downto 0) := unsigned'("1010");
+				auxs(4-1 downto 0) := unsigned'("1110");
 			end if;
 
 			for j in 0 to auxf'length/4-((i mod 9)/3)-1 loop

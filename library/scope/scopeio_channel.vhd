@@ -209,12 +209,12 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				code_dot <= word2byte(
-					psf1cp850x8x16,
+					reverse(psf1cp850x8x16),
 					vmem_data & win_y(unsigned_num_bits(font_height-1)-1 downto 0) & 
 					win_x(unsigned_num_bits(font_width-1)-1  downto 0)) and (code_dot'range => meter_on);
 				vmem_addr <= 
-					win_y(unsigned_num_bits(disp_width*font_width-1)-1  downto unsigned_num_bits(font_width-1)) &
-					win_x(unsigned_num_bits(disp_height*font_width-1)-1 downto unsigned_num_bits(font_width-1));
+					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
+					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 			end if;
 		end process;
 

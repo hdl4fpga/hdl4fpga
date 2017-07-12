@@ -826,10 +826,12 @@ package body std is
 		constant arg  : string;
 		constant size : natural)
 		return string is
-		variable val  : string(1 to 10) := (others => ' ');
+		variable aux  : string(1 to arg'length);
+		variable val  : string(1 to size) := (others => ' ');
 	begin
-		for i in arg'range loop
-			val(i) := arg(i);
+		aux := arg;
+		for i in aux'range loop
+			val(i) := aux(i);
 		end loop;
 		return val;
 	end;
