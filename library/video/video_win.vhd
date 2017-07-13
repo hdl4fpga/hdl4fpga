@@ -70,7 +70,12 @@ begin
 		addr        => video_x,
 		data        => won);
 
-	win_on <= won and (win_on'range => video_on);
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			win_on <= won and (win_on'range => video_on);
+		end if;
+	end process;
 
 end;
 
