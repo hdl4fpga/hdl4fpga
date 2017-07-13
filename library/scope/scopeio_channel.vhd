@@ -65,6 +65,7 @@ begin
 		signal cdon  : std_logic_vector(0 to 4-1);
 		signal wena  : std_logic;
 		signal wfrm  : std_logic;
+		signal txon : std_logic;
 	begin
 		phon <= not setif(win_on=(win_on'range => '0'));
 		pfrm <= not setif(win_frm=(win_frm'range => '0'));
@@ -107,6 +108,7 @@ begin
 			win_y     => win_y);
 		abscisa <= x;
 
+		txon <= win_on(0) and cdon(3);
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 5,
@@ -118,7 +120,7 @@ begin
 			di(1) => grid_on,
 			di(2) => cdon(1),
 			di(3) => cdon(2),
-			di(4) => cdon(3),
+			di(4) => txon,
 			do(0) => grid_on,
 			do(1) => plot_on,
 			do(2) => axisx_on,

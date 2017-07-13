@@ -374,7 +374,7 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal display : std_logic_vector(0 to 22*4-1) := (others => '1');
+		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
 	begin
 
 		display_e : entity hdl4fpga.meter_display
@@ -396,12 +396,14 @@ begin
 				3 => align("Trigger :", 10),
 				others => align("", 10));
 			variable addr : unsigned(text_addr'range) := (others => '0');
+			variable sel : std_logic_vector(0 to 0);
 		begin
 			if rising_edge(mii_rxc) then
 				text_addr <= std_logic_vector(addr);
+				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
-					to_ascii(labels(to_integer(unsigned(addr(9-1 downto 5))))) & bcd2ascii(display), 
---					to_ascii(labels(to_integer(unsigned(addr(9-1 downto 5))))),
+					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
+					word2byte(display & (1 to 6*4 => '1'), not sel) & (1 to 4*16 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 			end if;
