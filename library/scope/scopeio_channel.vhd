@@ -139,7 +139,7 @@ begin
 
 	end block;
 
---	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
+	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 --	axisy_e : entity hdl4fpga.scopeio_axisy
 --	generic map (
 --		fonts      => psf1digit8x8)
@@ -173,18 +173,18 @@ begin
 --		clk   => video_clk,
 --		di(0) => axis_don,
 --		do(0) => axis_dot);
---
---	process (ordinates)
---		subtype sample_word is unsigned(ordinates'length/inputs-1 downto 0);
---		variable aux : unsigned(ordinates'length-1 downto 0);
---	begin
---		aux := unsigned(ordinates);
---		for i in 0 to inputs-1 loop
---			samples(i) <= std_logic_vector(resize(aux(vmword'range),vmword'length));
---			aux        := aux srl sample_word'length;
---		end loop;
---	end process;
---
+
+	process (ordinates)
+		subtype sample_word is unsigned(ordinates'length/inputs-1 downto 0);
+		variable aux : unsigned(ordinates'length-1 downto 0);
+	begin
+		aux := unsigned(ordinates);
+		for i in 0 to inputs-1 loop
+			samples(i) <= std_logic_vector(resize(aux(vmword'range),vmword'length));
+			aux        := aux srl sample_word'length;
+		end loop;
+	end process;
+
 	meter_b : block
 		constant font_width  : natural := 8;
 		constant font_height : natural := 16;
@@ -249,48 +249,49 @@ begin
 			di(0) => char_dot(0),
 			do(0) => meter_dot);
 	end block;
---
---	plot_g : for i in 0 to inputs-1 generate
---		signal row1 : vmword;
---	begin
---		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
---		draw_vline : entity hdl4fpga.draw_vline
---		generic map (
---			n => unsigned_num_bits(height-1)+1)
---		port map (
---			video_clk  => video_clk,
---			video_ena  => plot_on,
---			video_row1 => row1,
---			video_row2 => samples(i),
---			video_dot  => plot_dot(i));
---	end generate;
---
---	grid_b : block
---		signal dot : std_logic;
---	begin
---		grid_e : entity hdl4fpga.grid
---		generic map (
---			row_div  => "000",
---			row_line => "00",
---			col_div  => "000",
---			col_line => "00")
---		port map (
---			clk => video_clk,
---			don => grid_on,
---			row => axisy_off,
---			col => win_x,
---			dot => dot);
---
---		grid_align_e : entity hdl4fpga.align
---		generic map (
---			n => 1,
---			d => (0 to 0 => unsigned_num_bits(height-1)))
---		port map (
---			clk   => video_clk,
---			di(0) => dot,
---			do(0) => grid_dot);
---	end block;
---
+
+	plot_g : for i in 0 to inputs-1 generate
+		signal row1 : vmword;
+	begin
+		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
+		draw_vline : entity hdl4fpga.draw_vline
+		generic map (
+			n => unsigned_num_bits(height-1)+1)
+		port map (
+			video_clk  => video_clk,
+			video_ena  => plot_on,
+			video_row1 => row1,
+			video_row2 => samples(i),
+			video_dot  => plot_dot(i));
+	end generate;
+
+	grid_b : block
+		signal dot : std_logic;
+	begin
+		grid_e : entity hdl4fpga.grid
+		generic map (
+			row_div  => "000",
+			row_line => "00",
+			col_div  => "000",
+			col_line => "00")
+		port map (
+			clk => video_clk,
+			don => grid_on,
+			row => axisy_off,
+			col => win_x,
+			dot => dot);
+
+		grid_align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 to 0 => unsigned_num_bits(height-1)))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(0) => grid_dot);
+	end block;
+
 --	video_dot  <= (grid_dot or axis_dot or meter_dot) & plot_dot;
-	video_dot  <= (video_dot'range => meter_dot);
+	video_dot  <= (grid_dot or  meter_dot) & plot_dot;
+--	video_dot  <= (video_dot'range => meter_dot);
 end;

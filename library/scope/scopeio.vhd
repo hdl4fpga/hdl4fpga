@@ -115,7 +115,6 @@ begin
 	end process;
 
 	process (mii_rxc)
-		variable pp : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if pll_rdy='1' then
@@ -133,7 +132,6 @@ begin
 				when others =>
 				end case;
 			end if;
-			pp := pll_rdy;
 		end if;
 	end process;
 
@@ -376,17 +374,29 @@ begin
 
 		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
 		signal scale   : std_logic_vector(0 to 4-1);
-		signal value   : std_logic_vector(0 to 8-1);
+		signal value   : std_logic_vector(0 to 9-1);
 	begin
 
+		process(scale_y, text_addr, offset)
+		begin
 		case text_addr(7-1 downto 5) is
 		when "00" =>
+			scale <= (others => '0');
+			value <= amp & (1 to 5 => '0');
+		when "01" =>
+			scale <= (others => '0');
+			value <= scale_x & (1 to 5 => '0');
+		when "10" =>
 			scale <= scale_y;
-			value <= std_logic_vector(offset(0)(8-1 downto 0)),
+			value <= std_logic_vector(offset(0)(9-1 downto 0));
+		when "11" =>
+			scale <= (others => '0');
+			value <= trigger_lvl(0)(9-1 downto 0);
 		when others =>
 			scale <= (others => '0');
 			value <= (others => '0');
 		end case;
+		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
 			frac => 5,
@@ -400,9 +410,9 @@ begin
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 10);
 			constant labels : label_vector(0 to 16-1) := (
-				0 => align("Offset  :", 10),
+				0 => align("Scale Y :", 10),
 				1 => align("Scale X :", 10),
-				2 => align("Scale Y :", 10),
+				2 => align("Offset  :", 10),
 				3 => align("Trigger :", 10),
 				others => align("", 10));
 			variable addr : unsigned(text_addr'range) := (others => '0');
