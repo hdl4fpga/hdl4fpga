@@ -375,16 +375,26 @@ begin
 		end;
 
 		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
+		signal scale   : std_logic_vector(0 to 4-1);
+		signal value   : std_logic_vector(0 to 8-1);
 	begin
 
+		case text_addr(7-1 downto 5) is
+		when "00" =>
+			scale <= scale_y;
+			value <= std_logic_vector(offset(0)(8-1 downto 0)),
+		when others =>
+			scale <= (others => '0');
+			value <= (others => '0');
+		end case;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
 			frac => 5,
 			int  => 2,
 			dec  => 2)
 		port map (
-			value => std_logic_vector(offset(0)(8-1 downto 0)),
-			scale => scale_y,
+			value => value,
+			scale => scale,
 			fmtds => display(0 to 6*4-1));	
 
 		process (mii_rxc)
