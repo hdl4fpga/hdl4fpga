@@ -54,13 +54,15 @@ architecture def of scopeio_axisx is
 	end;
 
 	signal mark      : std_logic_vector(3-1 downto 0);
-	signal sgmt      : std_logic_vector(4-1 downto 0);
 	signal axis_sgmt : std_logic_vector(1 downto 0);
 
 	signal char_addr : std_logic_vector(0 to axis_scale'length+axis_sgmt'length+mark'length);
 	signal char_code : std_logic_vector(2*4-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_dot  : std_logic_vector(0 to 0);
+	signal dot_on    : std_logic;
+	signal dot_on1   : std_logic;
+	signal dot_on2   : std_logic;
 
 	signal sel_code  : std_logic_vector(0 to 0);
 	signal sel_line  : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
@@ -69,25 +71,27 @@ architecture def of scopeio_axisx is
 begin
 	process (video_clk)
 		variable edge : std_logic;
+		variable sgmt : std_logic_vector(4-1 downto 0);
 	begin
 		if rising_edge(video_clk) then
 			if axis_on='0' then
-				sgmt <= (others => '0');
+				sgmt := (others => '0');
 				mark <= (others => '0');
 			elsif (win_x(5) xor edge)='1' then
 				if (sgmt(3) and sgmt(0))='1' then
-					sgmt <= (others => '0');
+					sgmt := (others => '0');
 					mark <= std_logic_vector(unsigned(mark) + 1);
 				else
-					sgmt <= std_logic_vector(unsigned(sgmt)  + 1);
+					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
 			edge := win_x(5);
+			dot_on1 <= setif(sgmt=(1 to 4 =>'0'));
 		end if;
 	end process;
 
-	axis_sgmt <= "00"; --(0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
-	char_addr <= "0000" & axis_sgmt & "000" & win_x(4);
+	axis_sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
+	char_addr <= axis_scale & axis_sgmt & mark & win_x(4);
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -99,20 +103,24 @@ begin
 
 	winx_e : entity hdl4fpga.align
 	generic map (
-		n => 4,
-		d => (0 to 2 => 4,  3 => 2))
+		n => 6,
+		d => (0 to 2 => 4,  3 => 2, 4 => 4, 5 => 3))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
 		di(1)  => win_x(1),
 		di(2)  => win_x(2),
 		di(3)  => win_x(3),
+		di(4)  => axis_on,
+		di(5)  => dot_on1,
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
 		do(2)  => sel_dot(2),
-		do(3)  => sel_code(0));
+		do(3)  => sel_code(0),
+		do(4)  => dot_on,
+		do(5)  => dot_on2);
 
-	sel_line <= "0010" & win_y(3-1 downto 0);
+	sel_line <= word2byte(char_code, not sel_code) & win_y(3-1 downto 0);
 	cgarom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -122,7 +130,7 @@ begin
 		addr => sel_line,
 		data => char_line);
 
-	char_dot <= word2byte(reverse(char_line), sel_dot);
-	axis_dot <= axis_on and char_dot(0);
+	char_dot <= word2byte(char_line, not sel_dot);
+	axis_dot <= dot_on and dot_on2 and char_dot(0);
 
 end;
