@@ -20,6 +20,9 @@ end;
 
 architecture def of scopeio_axisx is
 
+	constant font_width  : natural := 8;
+	constant font_height : natural := 8;
+
 	function marker (
 		constant step   : real;
 		constant num    : natural;
@@ -50,14 +53,19 @@ architecture def of scopeio_axisx is
 		return std_logic_vector(retval);
 	end;
 
-	signal marks     : std_logic_vector(128-1 downto 0);
 	signal mark      : std_logic_vector(3-1 downto 0);
 	signal sgmt      : std_logic_vector(4-1 downto 0);
+	signal axis_sgmt : std_logic_vector(1 downto 0);
 
-	signal char_digt : std_logic_vector(5-1 downto 0);
-	signal char_code : std_logic_vector(4-1 downto 0);
+	signal char_addr : std_logic_vector(0 to axis_scale'length+axis_sgmt'length+mark'length);
+	signal char_code : std_logic_vector(2*4-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
-	signal dot       : std_logic_vector(0 to 0);
+	signal char_dot  : std_logic_vector(0 to 0);
+
+	signal sel_code  : std_logic_vector(0 to 0);
+	signal sel_line  : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
+	signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+
 begin
 	process (video_clk)
 		variable edge : std_logic;
@@ -78,20 +86,43 @@ begin
 		end if;
 	end process;
 
-	process (video_clk)
-		variable sel  : std_logic_vector(1 downto 0);
-	begin
-		if rising_edge(video_clk) then
-			marks     <= reverse(word2byte(reverse(marker(0.05001, 25, false)), axis_scale & sel));
-			char_code <= reverse(word2byte(reverse(marks), mark & char_digt(4 downto 3)));
-			char_digt <= win_x(char_digt'range);
-			sel(0)    := win_on(1) or win_on(3);
-			sel(1)    := win_on(2) or win_on(3);
-		end if;
-	end process;
+	axis_sgmt <= "00"; --(0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
+	char_addr <= "0000" & axis_sgmt & "000" & win_x(4);
+	charrom : entity hdl4fpga.rom
+	generic map (
+		synchronous => 2,
+		bitrom => marker(0.05001, 25, false))
+	port map (
+		clk  => video_clk,
+		addr => char_addr,
+		data => char_code);
 
-	char_line <= reverse(word2byte(reverse(fonts), char_code & win_y(3-1 downto 0)));
-	dot       <= word2byte(reverse(std_logic_vector(unsigned(char_line) ror 1)), char_digt(2 downto 0));
-	axis_dot  <= dot(0) and axis_on and setif(sgmt=(1 to 4 =>'0'));
+	winx_e : entity hdl4fpga.align
+	generic map (
+		n => 4,
+		d => (0 to 2 => 4,  3 => 2))
+	port map (
+		clk => video_clk,
+		di(0)  => win_x(0),
+		di(1)  => win_x(1),
+		di(2)  => win_x(2),
+		di(3)  => win_x(3),
+		do(0)  => sel_dot(0),
+		do(1)  => sel_dot(1),
+		do(2)  => sel_dot(2),
+		do(3)  => sel_code(0));
+
+	sel_line <= "0010" & win_y(3-1 downto 0);
+	cgarom : entity hdl4fpga.rom
+	generic map (
+		synchronous => 2,
+		bitrom => fonts)
+	port map (
+		clk  => video_clk,
+		addr => sel_line,
+		data => char_line);
+
+	char_dot <= word2byte(reverse(char_line), sel_dot);
+	axis_dot <= axis_on and char_dot(0);
 
 end;

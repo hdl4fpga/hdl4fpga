@@ -151,28 +151,29 @@ begin
 --		axis_scale => scale_y,
 --		axis_dot   => axisy_don);
 --
---	axisx_e : entity hdl4fpga.scopeio_axisx
---	generic map (
---		fonts      => psf1digit8x8)
---	port map (
---		video_clk  => video_clk,
---		win_on     => win_on,
---		win_x      => win_x,
---		win_y      => win_y,
---		axis_on    => axisx_on,
---		axis_scale => scale_x,
---		axis_dot   => axisx_don);
---
+	axisx_e : entity hdl4fpga.scopeio_axisx
+	generic map (
+		fonts      => psf1digit8x8)
+	port map (
+		video_clk  => video_clk,
+		win_on     => win_on,
+		win_x      => win_x,
+		win_y      => win_y,
+		axis_on    => axisx_on,
+		axis_scale => scale_x,
+		axis_dot   => axisx_don);
+
+	axis_don <= axisx_don;
 --	axis_don <= axisx_don or axisy_don;
 --
---	align_e : entity hdl4fpga.align
---	generic map (
---		n => 1,
---		d => (0 to 0 => unsigned_num_bits(height-1)))
---	port map (
---		clk   => video_clk,
---		di(0) => axis_don,
---		do(0) => axis_dot);
+	align_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => unsigned_num_bits(height-1)))
+	port map (
+		clk   => video_clk,
+		di(0) => axis_don,
+		do(0) => axis_dot);
 
 	process (ordinates)
 		subtype sample_word is unsigned(ordinates'length/inputs-1 downto 0);
@@ -291,7 +292,7 @@ begin
 			do(0) => grid_dot);
 	end block;
 
---	video_dot  <= (grid_dot or axis_dot or meter_dot) & plot_dot;
-	video_dot  <= (grid_dot or  meter_dot) & plot_dot;
+	video_dot  <= (grid_dot or axis_dot or meter_dot) & plot_dot;
+--	video_dot  <= (grid_dot or  meter_dot) & plot_dot;
 --	video_dot  <= (video_dot'range => meter_dot);
 end;

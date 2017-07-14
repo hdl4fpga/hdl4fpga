@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity win_side is
 	generic (
-		synchronous : boolean := TRUE;
+		synchronous : natural := 1;
 		tab         : natural_vector);
 	port (
 		video_clk   : in  std_logic;
@@ -88,7 +88,7 @@ use hdl4fpga.std.all;
 
 entity win_mngr is
 	generic (
-		synchronous : boolean := TRUE;
+		synchronous : natural := 1;
 		tab         : natural_vector);
 	port (
 		video_clk   : in  std_logic;
