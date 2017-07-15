@@ -48,7 +48,6 @@ architecture beh of scopeio is
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
-	signal ca_dot      : std_logic;
 	signal video_dot   : std_logic_vector(0 to 19-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
@@ -452,32 +451,6 @@ begin
 		win_frm    => win_frm,
 		win_on     => win_don,
 		video_dot  => video_dot);
-
---	cga_e : entity hdl4fpga.cga
---	generic map (
---		bitrom     => psf1cp850x8x16,
---		cga_width  => 240,
---		cga_height => 68,
---		char_width => 8)
---	port map (
---		sys_clk    => mii_rxc,
---		sys_we     => pll_rdy,
---		sys_row    => video_vcntr(11-1 downto 11-cga_row'length),
---		sys_col    => video_hcntr(11-1 downto 11-cga_col'length),
---		sys_code   => cga_code,
---		vga_clk    => video_clk,
---		vga_row    => video_vcntr(11-1 downto cga_zoom),
---		vga_col    => video_hcntr(11-1 downto cga_zoom),
---		vga_dot    => char_dot);
-
-	cga_align_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (0 to 0 => -4+13))
-	port map (
-		clk   => video_clk,
-		di(0) => char_dot,
-		do(0) => ca_dot);
 
 	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
 	video_green <= video_io(2) and (video_dot(1) or video_dot(0));

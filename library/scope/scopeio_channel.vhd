@@ -140,17 +140,17 @@ begin
 	end block;
 
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
---	axisy_e : entity hdl4fpga.scopeio_axisy
---	generic map (
---		fonts      => psf1digit8x8)
---	port map (
---		video_clk  => video_clk,
---		win_x      => win_x,
---		win_y      => axisy_off, 
---		axis_on    => axisy_on,
---		axis_scale => scale_y,
---		axis_dot   => axisy_don);
---
+	axisy_e : entity hdl4fpga.scopeio_axisy
+	generic map (
+		fonts      => psf1digit8x8)
+	port map (
+		video_clk  => video_clk,
+		win_x      => win_x,
+		win_y      => axisy_off, 
+		axis_on    => axisy_on,
+		axis_scale => scale_y,
+		axis_dot   => axisy_don);
+
 	axisx_e : entity hdl4fpga.scopeio_axisx
 	generic map (
 		fonts      => psf1digit8x8)
@@ -163,8 +163,7 @@ begin
 		axis_scale => scale_x,
 		axis_dot   => axisx_don);
 
-	axis_don <= axisx_don;
---	axis_don <= axisx_don or axisy_don;
+	axis_don <= axisx_don or axisy_don;
 --
 	align_e : entity hdl4fpga.align
 	generic map (

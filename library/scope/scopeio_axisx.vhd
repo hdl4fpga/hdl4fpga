@@ -60,9 +60,8 @@ architecture def of scopeio_axisx is
 	signal char_code : std_logic_vector(2*4-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_dot  : std_logic_vector(0 to 0);
+	signal mark_on   : std_logic;
 	signal dot_on    : std_logic;
-	signal dot_on1   : std_logic;
-	signal dot_on2   : std_logic;
 
 	signal sel_code  : std_logic_vector(0 to 0);
 	signal sel_line  : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
@@ -72,6 +71,7 @@ begin
 	process (video_clk)
 		variable edge : std_logic;
 		variable sgmt : std_logic_vector(4-1 downto 0);
+		variable aon  : std_logic;
 	begin
 		if rising_edge(video_clk) then
 			if axis_on='0' then
@@ -85,8 +85,9 @@ begin
 					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
-			edge := win_x(5);
-			dot_on1 <= setif(sgmt=(1 to 4 =>'0'));
+			aon     := axis_on;
+			mark_on <= setif(sgmt=(1 to 4 =>'0')) and aon;
+			edge    := win_x(5);
 		end if;
 	end process;
 
@@ -103,22 +104,20 @@ begin
 
 	winx_e : entity hdl4fpga.align
 	generic map (
-		n => 6,
-		d => (0 to 2 => 4,  3 => 2, 4 => 4, 5 => 3))
+		n => 5,
+		d => (0 to 2 => 4,  3 => 2, 4 => 3))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
 		di(1)  => win_x(1),
 		di(2)  => win_x(2),
 		di(3)  => win_x(3),
-		di(4)  => axis_on,
-		di(5)  => dot_on1,
+		di(4)  => mark_on,
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
 		do(2)  => sel_dot(2),
 		do(3)  => sel_code(0),
-		do(4)  => dot_on,
-		do(5)  => dot_on2);
+		do(4)  => dot_on);
 
 	sel_line <= word2byte(char_code, not sel_code) & win_y(3-1 downto 0);
 	cgarom : entity hdl4fpga.rom
@@ -131,6 +130,6 @@ begin
 		data => char_line);
 
 	char_dot <= word2byte(char_line, not sel_dot);
-	axis_dot <= dot_on and dot_on2 and char_dot(0);
+	axis_dot <= dot_on and char_dot(0);
 
 end;
