@@ -55,6 +55,8 @@ architecture def of scopeio_axisx is
 
 	signal mark      : std_logic_vector(3-1 downto 0);
 	signal axis_sgmt : std_logic_vector(1 downto 0);
+	signal sgmt      : std_logic_vector(axis_sgmt'range);
+	signal win_x4    : std_logic;
 
 	signal char_addr : std_logic_vector(0 to axis_scale'length+axis_sgmt'length+mark'length);
 	signal char_code : std_logic_vector(2*4-1 downto 0);
@@ -85,14 +87,13 @@ begin
 					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
-			aon     := axis_on;
-			mark_on <= setif(sgmt=(1 to 4 =>'0')) and aon;
-			edge    := win_x(5);
+			aon       := axis_on;
+			mark_on   <= setif(sgmt=(1 to 4 =>'0')) and aon;
+			edge      := win_x(5);
 		end if;
 	end process;
 
-	axis_sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
-	char_addr <= axis_scale & axis_sgmt & mark & win_x(4);
+	char_addr <= axis_scale & axis_sgmt & mark & win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -102,22 +103,29 @@ begin
 		addr => char_addr,
 		data => char_code);
 
+	sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
 	winx_e : entity hdl4fpga.align
 	generic map (
-		n => 5,
-		d => (0 to 2 => 4,  3 => 2, 4 => 3))
+		n => 8,
+		d => (0 to 2 => 6,  3 => 4, 4 => 2, 5 => 4, 6 to 7 => 2))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
 		di(1)  => win_x(1),
 		di(2)  => win_x(2),
 		di(3)  => win_x(3),
-		di(4)  => mark_on,
+		di(4)  => win_x(4),
+		di(5)  => mark_on,
+		di(6)  => sgmt(0),
+		di(7)  => sgmt(1),
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
 		do(2)  => sel_dot(2),
 		do(3)  => sel_code(0),
-		do(4)  => dot_on);
+		do(4)  => win_x4,
+		do(5)  => dot_on,
+		do(6)  => axis_sgmt(0),
+		do(7)  => axis_sgmt(1));
 
 	sel_line <= word2byte(char_code, not sel_code) & win_y(3-1 downto 0);
 	cgarom : entity hdl4fpga.rom
