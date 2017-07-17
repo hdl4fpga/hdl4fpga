@@ -277,7 +277,7 @@ begin
 		port map (
 			clk => video_clk,
 			don => grid_on,
-			row => axisy_off,
+			row => win_y,
 			col => win_x,
 			dot => dot);
 

@@ -23,6 +23,8 @@ architecture def of meter_display is
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to 4*int-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
+	constant pp : natural := 0;
+	constant ppp : natural := 1;
 begin
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
@@ -41,7 +43,7 @@ begin
 		aux := resize(signed(value), aux'length);
 		for i in 0 to 2**scale'length-1 loop
 			if i=to_integer(unsigned(scale)) then
-				case i mod 3 is
+				case 2-i mod 3 is
 				when 1 => 
 					aux := aux sll 1;
 				when 2 =>
@@ -54,7 +56,7 @@ begin
 	end process;
 
 	fmt_p : process (scale, bcd_int, bcd_frac, bcd_sign)
-		variable auxi : unsigned(0 to bcd_int'length+4*((9-1)/3)-1);
+		variable auxi : unsigned(0 to bcd_int'length+4*((ppp-1)/3)-1);
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(fmtds'length-1 downto 0);
 		constant i : natural := 2;
@@ -71,7 +73,7 @@ begin
 				auxi := auxi sll 4;
 			end loop;
 
-			for j in 1 to ((i mod 9)/3) loop
+			for j in 1 to (((ppp-1)-(i+pp) mod ppp)/3) loop
 				auxs := auxs sll 4;
 				auxs(4-1 downto 0) := auxf(0 to 4-1);
 				auxf := auxf sll 4;
@@ -94,12 +96,12 @@ begin
 				end if;
 			end loop;
 
-			if dec > ((i mod 9)/3) then
+			if dec > (((ppp-1)-(i+pp) mod ppp)/3) then
 				auxs := auxs sll 4;
 				auxs(4-1 downto 0) := unsigned'("1110");
 			end if;
 
-			for j in 0 to auxf'length/4-((i mod 9)/3)-1 loop
+			for j in 0 to auxf'length/4-(((ppp-1)-(i+pp) mod ppp)/3)-1 loop
 				auxs := auxs sll 4;
 				auxs(4-1 downto 0) := auxf(0 to 4-1);
 				auxf := auxf sll 4;

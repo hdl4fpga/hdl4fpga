@@ -398,7 +398,7 @@ begin
 		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
-			frac => 5,
+			frac => 6,
 			int  => 2,
 			dec  => 2)
 		port map (
