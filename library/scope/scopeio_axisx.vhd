@@ -68,6 +68,7 @@ architecture def of scopeio_axisx is
 	signal sel_code  : std_logic_vector(0 to 0);
 	signal sel_line  : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
 	signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+	signal sel_winy  : std_logic_vector(3-1 downto 0);
 
 begin
 	process (video_clk)
@@ -87,8 +88,8 @@ begin
 					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
-			aon       := axis_on;
 			mark_on   <= setif(sgmt=(1 to 4 =>'0')) and aon;
+			aon       := axis_on;
 			edge      := win_x(5);
 		end if;
 	end process;
@@ -127,7 +128,16 @@ begin
 		do(6)  => axis_sgmt(0),
 		do(7)  => axis_sgmt(1));
 
-	sel_line <= word2byte(char_code, not sel_code) & win_y(3-1 downto 0);
+	winy_e : entity hdl4fpga.align
+	generic map (
+		n => 3,
+		d => (0 to 2 => 6))
+	port map (
+		clk => video_clk,
+		di  => win_y(3-1 downto 0),
+		do  => sel_winy);
+
+	sel_line <= word2byte(char_code, not sel_code) & sel_winy;
 	cgarom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,

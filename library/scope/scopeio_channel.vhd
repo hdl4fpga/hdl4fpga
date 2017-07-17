@@ -164,11 +164,11 @@ begin
 		axis_dot   => axisx_don);
 
 	axis_don <= axisx_don or axisy_don;
---
+
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => unsigned_num_bits(height-1)))
+		d => (0 to 0 => unsigned_num_bits(height-1)-3))
 	port map (
 		clk   => video_clk,
 		di(0) => axis_don,
@@ -243,7 +243,7 @@ begin
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 to 0 => unsigned_num_bits(height-1)+7))
+			d => (0 to 0 => unsigned_num_bits(height-1)+17))
 		port map (
 			clk   => video_clk,
 			di(0) => char_dot(0),
@@ -292,6 +292,4 @@ begin
 	end block;
 
 	video_dot  <= (grid_dot or axis_dot or meter_dot) & plot_dot;
---	video_dot  <= (grid_dot or  meter_dot) & plot_dot;
---	video_dot  <= (video_dot'range => meter_dot);
 end;
