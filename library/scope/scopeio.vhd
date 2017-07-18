@@ -380,8 +380,8 @@ begin
 		begin
 		case text_addr(7-1 downto 5) is
 		when "00" =>
-			scale <= (others => '0');
-			value <= amp & (1 to 5 => '0');
+			scale <= amp; 
+			value <= std_logic_vector(to_unsigned(32,value'length));
 		when "01" =>
 			scale <= (others => '0');
 			value <= scale_x & (1 to 5 => '0');

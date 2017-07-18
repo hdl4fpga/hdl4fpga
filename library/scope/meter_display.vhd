@@ -72,11 +72,14 @@ begin
 				auxs(4-1 downto 0) := auxi(0 to 4-1);
 				auxi := auxi sll 4;
 			end loop;
+			auxs := auxs sll 4;
+			auxs(4-1 downto 0) := auxf(0 to 4-1);
+			auxf := auxf sll 4;
 
-			for j in 1 to (((ppp-1)-(i+pp) mod ppp)/3) loop
-				auxs := auxs sll 4;
-				auxs(4-1 downto 0) := auxf(0 to 4-1);
-				auxf := auxf sll 4;
+			for j in 1 to (i mod 9)/3 loop
+				auxf := auxf srl 4;
+				auxf(0 to 4-1) := auxs(4-1 downto 0);
+				auxs := auxs srl 4;
 			end loop;
 
 			for j in 1 to auxs'length/4 loop
@@ -96,12 +99,10 @@ begin
 				end if;
 			end loop;
 
-			if dec > (((ppp-1)-(i+pp) mod ppp)/3) then
-				auxs := auxs sll 4;
-				auxs(4-1 downto 0) := unsigned'("1110");
-			end if;
+			auxs := auxs sll 4;
+			auxs(4-1 downto 0) := unsigned'("1110");
 
-			for j in 0 to auxf'length/4-(((ppp-1)-(i+pp) mod ppp)/3)-1 loop
+			for j in 0 to auxf'length/4-1 loop
 				auxs := auxs sll 4;
 				auxs(4-1 downto 0) := auxf(0 to 4-1);
 				auxf := auxf sll 4;
