@@ -96,6 +96,7 @@ begin
 	e_txd  <= (others => 'Z');
 	e_mdc  <= '0';
 	e_mdio <= 'Z';
+	e_txd_4 <= '0';
 
 	-- DDR --
 	---------

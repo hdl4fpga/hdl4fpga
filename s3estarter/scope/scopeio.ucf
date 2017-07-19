@@ -24,3 +24,4 @@
 NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = FALSE;
