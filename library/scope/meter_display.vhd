@@ -23,8 +23,6 @@ architecture def of meter_display is
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to 4*int-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
-	constant pp : natural := 0;
-	constant ppp : natural := 1;
 begin
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
@@ -56,7 +54,7 @@ begin
 	end process;
 
 	fmt_p : process (scale, bcd_int, bcd_frac, bcd_sign)
-		variable auxi : unsigned(0 to bcd_int'length+4*((ppp-1)/3)-1);
+		variable auxi : unsigned(0 to bcd_int'length-1);
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(fmtds'length-1 downto 0);
 		constant i : natural := 2;

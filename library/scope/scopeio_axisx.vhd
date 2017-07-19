@@ -40,13 +40,11 @@ architecture def of scopeio_axisx is
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 				retval := retval sll 16;
 				if j < 3 then
-					if i < 3 then
-						if (k mod 8)=0 then
-							aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
-						end if;
-						retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
-						aux := aux + scales(j)*step*real(10**i);
+					if (k mod 8)=0 then
+						aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
 					end if;
+					retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
+					aux := aux + scales(j)*step*real(10**i);
 				end if;
 			end loop;
 		end loop;
@@ -98,7 +96,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.05001, 25, false))
+		bitrom => marker(0.50001, 25, false))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

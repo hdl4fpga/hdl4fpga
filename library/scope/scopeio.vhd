@@ -371,7 +371,7 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
+		signal display : std_logic_vector(0 to 7*4-1) := (others => '1');
 		signal scale   : std_logic_vector(0 to 4-1);
 		signal value   : std_logic_vector(0 to 9-1);
 	begin
@@ -383,8 +383,13 @@ begin
 			scale <= amp; 
 			value <= std_logic_vector(to_unsigned(32,value'length));
 		when "01" =>
-			scale <= (others => '0');
-			value <= scale_x & (1 to 5 => '0');
+			scale <= (others => '-');
+			for x in 0 to 2**scale_x'length-1 loop
+				if x=to_integer(unsigned(scale_x)) then
+					scale <= std_logic_vector(to_unsigned(8-(x mod 9), scale'length));
+				end if;
+			end loop;
+			value <= std_logic_vector(to_unsigned(32,value'length));
 		when "10" =>
 			scale <= scale_y;
 			value <= std_logic_vector(offset(0)(9-1 downto 0));
@@ -400,11 +405,11 @@ begin
 		generic map (
 			frac => 6,
 			int  => 2,
-			dec  => 2)
+			dec  => 3)
 		port map (
 			value => value,
 			scale => scale,
-			fmtds => display(0 to 6*4-1));	
+			fmtds => display);	
 
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 10);
@@ -422,7 +427,7 @@ begin
 				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
 					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
-					word2byte(display & (1 to 6*4 => '1'), not sel) & (1 to 4*16 => '1')), 
+					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 			end if;
