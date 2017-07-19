@@ -120,4 +120,8 @@ begin
 	sd_dqs    <= (others => 'Z');
 	sd_dq     <= (others => 'Z');
 
+	spi_sck  <= '0';
+	spi_mosi <= '0';
+	amp_cs   <= '1';
+	amp_shdn <= '0';
 end;
