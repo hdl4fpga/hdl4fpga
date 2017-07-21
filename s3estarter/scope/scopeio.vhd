@@ -43,13 +43,14 @@ architecture beh of s3estarter is
 	signal spiclk_fd : std_logic;
 	signal sckamp_rd : std_logic;
 	signal sckamp_fd : std_logic;
-	signal amp_sdi   : std_logic;
 	signal amp_spi   : std_logic;
+	signal amp_sdi   : std_logic;
 	signal amp_rdy   : std_logic;
 	signal adc_spi   : std_logic;
 	signal adconv    : std_logic;
 	signal ampcs     : std_logic;
 	signal spi_rst   : std_logic;
+	signal dac_sdi   : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -67,111 +68,130 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
-	spidcm_e : entity hdl4fpga.dfs2dfs
-	generic map (
-		dcm_per => 20.0,
-		dfs1_mul => 32,
-		dfs1_div => 25,
-		dfs2_mul => 4,
-		dfs2_div => 5)
-	port map(
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => spi_clk,
-		dcm_lck => spi_rst);
-
 	spiclk_rd <= sckamp_rd when amp_spi='1' else '1' ;
 	spiclk_fd <= sckamp_fd when amp_spi='1' else '0' ;
-	spi_mosi  <= amp_sdi;
-
-	spi_sck_e : entity hdl4fpga.ddro
-	port map (
-		clk => spi_clk,
-		dr  => spiclk_rd,
-		df  => spiclk_fd,
-		q   => spi_sck);
-
-	ampclkr_p : process (spi_rst, spi_clk)
-		variable cntr : unsigned(0 to 4-1);
+	spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
+	adc_b: block
 	begin
-		if spi_rst='0' then
-			cntr := (others => '0');
-			sckamp_rd <= cntr(0);
-			adc_spi <= '1';
-		elsif rising_edge(spi_clk) then
-			cntr := cntr + 1;
-			sckamp_rd <= cntr(0);
-		end if;
-	end process;
+		spidcm_e : entity hdl4fpga.dfs2dfs
+		generic map (
+			dcm_per => 20.0,
+			dfs1_mul => 32,
+			dfs1_div => 25,
+			dfs2_mul => 4,
+			dfs2_div => 5)
+		port map(
+			dcm_rst => '0',
+			dcm_clk => sys_clk,
+			dfs_clk => spi_clk,
+			dcm_lck => spi_rst);
 
-	ampclkf_p: process (spi_clk)
-	begin
-		if spi_rst='0' then
-			sckamp_fd <= '0';
-		elsif falling_edge(spi_clk) then
-			sckamp_fd <= sckamp_rd;
-		end if;
-	end process;
 
-	ampp2sr_p : process (spi_rst, sckamp_fd)
-	begin
-		if spi_rst='0' then
-			ampcs <= '1';
-		elsif falling_edge(sckamp_fd) then
-			ampcs <= not amp_rdy;
-		end if;
-	end process;
-	amp_cs <= ampcs;
+		spi_sck_e : entity hdl4fpga.ddro
+		port map (
+			clk => spi_clk,
+			dr  => spiclk_rd,
+			df  => spiclk_fd,
+			q   => spi_sck);
 
-	ampp2sf_p : process (spi_rst, sckamp_fd)
-		variable cntr : unsigned(0 to 3);
-		variable val  : unsigned(0 to 8-1) := B"0001_0001";
-	begin
-		if spi_rst='0' then
-			amp_spi <= '0';
-			amp_rdy <= '0';
-			amp_sdi <= '0';
-			cntr    := "0001";
-		elsif falling_edge(sckamp_fd) then
-			if ampcs='0' then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-					val  := val sll 1;
-				end if;
+		ampclkr_p : process (spi_rst, spi_clk)
+			variable cntr : unsigned(0 to 4-1);
+		begin
+			if spi_rst='0' then
+				cntr := (others => '0');
+				sckamp_rd <= cntr(0);
+				adc_spi <= '1';
+			elsif rising_edge(spi_clk) then
+				cntr := cntr + 1;
+				sckamp_rd <= cntr(0);
 			end if;
-			amp_sdi <= val(0);
-			amp_rdy <= not cntr(0);
-			amp_spi <= not cntr(0) or not ampcs;
-		end if;
-	end process;
+		end process;
 
-	adcs2p_p : process (spi_clk)
-		variable cntr : unsigned(0 to 5) := (others => '0');
-		variable adin : unsigned(0 to 2*16);
-		variable aux  : unsigned(adin'range);
-		variable aux1 : unsigned(sample'range);
+		ampclkf_p: process (spi_clk)
+		begin
+			if spi_rst='0' then
+				sckamp_fd <= '0';
+			elsif falling_edge(spi_clk) then
+				sckamp_fd <= sckamp_rd;
+			end if;
+		end process;
+
+		ampp2sr_p : process (spi_rst, sckamp_fd)
+		begin
+			if spi_rst='0' then
+				ampcs <= '1';
+			elsif falling_edge(sckamp_fd) then
+				ampcs <= not amp_rdy;
+			end if;
+		end process;
+		amp_cs <= ampcs;
+
+		ampp2sf_p : process (spi_rst, sckamp_fd)
+			variable cntr : unsigned(0 to 3);
+			variable val  : unsigned(0 to 8-1) := B"0001_0001";
+		begin
+			if spi_rst='0' then
+				amp_spi <= '0';
+				amp_rdy <= '0';
+				amp_sdi <= '0';
+				cntr    := "0001";
+			elsif falling_edge(sckamp_fd) then
+				if ampcs='0' then
+					if cntr(0)='0' then
+						cntr := cntr + 1;
+						val  := val sll 1;
+					end if;
+				end if;
+				amp_sdi <= val(0);
+				amp_rdy <= not cntr(0);
+				amp_spi <= not cntr(0) or not ampcs;
+			end if;
+		end process;
+
+		adcs2p_p : process (spi_clk)
+			variable cntr : unsigned(0 to 5) := (others => '0');
+			variable adin : unsigned(0 to 2*16);
+			variable aux  : unsigned(adin'range);
+			variable aux1 : unsigned(sample'range);
+		begin
+			if rising_edge(spi_clk) then
+				adconv  <= cntr(0);
+				aux     := adin;
+				aux1    := unsigned(sample);
+				if cntr(0)='1' then
+					for i in 0 to 2-1 loop
+						aux := aux sll ((adin'length-sample'length)/2);
+						aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
+						aux1 := aux1 sll sample_size;
+						aux  := aux  srl 16;
+					end loop;
+					sample <= std_logic_vector(aux1);
+					cntr   := to_unsigned(2**cntr'right-2, cntr'length);
+				else
+					cntr := cntr - 1;
+				end if;
+				adin    := adin sll 1;
+				adin(0) := spi_miso;
+			end if;
+		end process;
+		ad_conv <= '0' when amp_spi='1' else adconv;
+	end block;
+
+	dac_p : process(xtal)
+		variable cntr : unsigned(0 to 5);
+		variable aux  : unsigned(0 to 24);
 	begin
-		if rising_edge(spi_clk) then
-			adconv  <= cntr(0);
-			aux     := adin;
-			aux1    := unsigned(sample);
+		if rising_edge(xtal) then
 			if cntr(0)='1' then
-				for i in 0 to 2-1 loop
-					aux := aux sll ((adin'length-sample'length)/2);
-					aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
-					aux1 := aux1 sll sample_size;
-					aux  := aux  srl 16;
-				end loop;
-				sample <= std_logic_vector(aux1);
-				cntr   := to_unsigned(2**cntr'right-2, cntr'length);
+				cntr := to_unsigned(24-1, cntr'length);
+				aux  := '-' ;
 			else
 				cntr := cntr - 1;
+				aux  := aux sll 1;
 			end if;
-			adin    := adin sll 1;
-			adin(0) := spi_miso;
+			dac_sdi <= aux(0);
 		end if;
 	end process;
-	ad_conv <= '0' when amp_spi='1' else adconv;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
