@@ -64,9 +64,6 @@ architecture scope of testbench is
 	signal mii_txen : std_logic;
 	signal mii_strt : std_logic;
 
-	signal ddr3_rst : std_logic;
-	signal ddr_lp_dqs : std_logic;
-
 	component s3estarter is
 		port (
 			xtal       : in std_logic := '0';
@@ -105,6 +102,7 @@ architecture scope of testbench is
 			e_mdc    : out std_logic := 'Z';
 			e_mdio   : inout std_logic := 'Z';
 
+
 			---------
 			-- VGA --
 		
@@ -118,7 +116,7 @@ architecture scope of testbench is
 			-- SPI --
 
 			spi_sck  : out std_logic;
-			spi_miso : in  std_logic;
+			spi_miso : in  std_logic := 'U';
 			spi_mosi : out std_logic;
 
 			---------
@@ -126,13 +124,12 @@ architecture scope of testbench is
 
 			amp_cs   : out std_logic := '0';
 			amp_shdn : out std_logic := '0';
-			amp_dout : in  std_logic;
+			amp_dout : in  std_logic := 'U';
 
 			---------
 			-- ADC --
 
 			ad_conv  : out std_logic;
-
 
 			-------------
 			-- DDR RAM --
@@ -153,64 +150,7 @@ architecture scope of testbench is
 
 	end component;
 
-	component ddr_model is
-		port (
-			clk   : in std_logic;
-			clk_n : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm    : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
-	end component;
-
-	component ddr2_model is
-		port (
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(1 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_rdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			rdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
-
-	component ddr3_model is
-		port (
-			rst_n : in std_logic;
-			ck    : in std_logic;
-			ck_n  : in std_logic;
-			cke   : in std_logic;
-			cs_n  : in std_logic;
-			ras_n : in std_logic;
-			cas_n : in std_logic;
-			we_n  : in std_logic;
-			ba    : in std_logic_vector(2 downto 0);
-			addr  : in std_logic_vector(addr_bits - 1 downto 0);
-			dm_tdqs : in std_logic_vector(data_bytes - 1 downto 0);
-			dq    : inout std_logic_vector(data_bits - 1 downto 0);
-			dqs   : inout std_logic_vector(data_bytes - 1 downto 0);
-			dqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			tdqs_n : inout std_logic_vector(data_bytes - 1 downto 0);
-			odt   : in std_logic);
-	end component;
-
-	constant delay : time := 1 ns;
 begin
-
 	clk <= not clk after 10 ns;
 	process (clk)
 		variable vrst : unsigned(1 to 16) := (others => '1');
@@ -245,7 +185,7 @@ begin
 		end if;
 	end process;
 
-	eth_e: entity hdl4fpga.miitx_mem
+	eth_e: entity hdl4fpga.mii_mem
 	generic map (
 		mem_data => x"5555_5555_5555_55d5_00_00_00_01_02_03_00000000_000000ff")
 	port map (
@@ -283,72 +223,4 @@ begin
 		sd_dqs => dqs,
 		sd_dq  => dq);
 
-	ddr_model_g: ddr_model
-	port map (
-		Clk   => clk_p,
-		Clk_n => clk_n,
-		Cke   => cke,
-		Cs_n  => cs_n,
-		Ras_n => ras_n,
-		Cas_n => cas_n,
-		We_n  => we_n,
-		Ba    => ba,
-		Addr  => addr,
-		Dm    => dm,
-		Dq    => dq,
-		Dqs   => dqs);
-
-end;
-
-library micron;
-
-configuration s3estarter_structure_md of testbench is
-	for scope 
-		for all :  s3estarter
-			use entity hdl4fpga.s3estarter(structure);
-		end for;
-		for all: ddr_model
-			use entity micron.ddr_model
-			port map (
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr,
-				Dm    => dm,
-				Dq    => dq,
-				Dqs   => dqs);
-		end for;
-	end for;
-end;
-
-library micron;
-
-configuration s3estarter_scope_md of testbench is
-	for scope 
-		for all : s3estarter 
-			use entity hdl4fpga.s3estarter(scope);
-		end for;
-			for all : ddr_model 
-			use entity micron.ddr_model
-			port map (
-				Clk   => clk_p,
-				Clk_n => clk_n,
-				Cke   => cke,
-				Cs_n  => cs_n,
-				Ras_n => ras_n,
-				Cas_n => cas_n,
-				We_n  => we_n,
-				Ba    => ba,
-				Addr  => addr,
-				Dm    => dm,
-				Dq    => dq,
-				Dqs   => dqs);
-
-		end for;
-	end for;
 end;

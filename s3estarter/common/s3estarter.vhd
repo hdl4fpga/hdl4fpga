@@ -86,13 +86,18 @@ entity s3estarter is
 		-- AMP --
 
 		amp_cs   : out std_logic := '0';
-		amp_shdn : out std_logic;
+		amp_shdn : out std_logic := '0';
 		amp_dout : in  std_logic;
 
 		---------
 		-- ADC --
 
 		ad_conv  : out std_logic;
+
+		---------
+		-- DAC --
+
+		dac_cs  : out std_logic;
 
 		-------------
 		-- DDR RAM --
@@ -253,20 +258,28 @@ entity s3estarter is
 	attribute loc   of amp_cs     : signal is "N7";
 	attribute loc   of amp_shdn   : signal is "P7";
 	attribute loc   of amp_dout   : signal is "E18";
+	attribute loc   of dac_cs     : signal is "N8";
+	attribute loc   of dac_clr    : signal is "P8";
 
-	attribute iostandard   of spi_sck    : signal is "LVCMOS33";
-	attribute iostandard   of spi_miso   : signal is "LVCMOS33";
-	attribute iostandard   of spi_mosi   : signal is "LVCMOS33";
-	attribute iostandard   of amp_cs     : signal is "LVCMOS33";
-	attribute iostandard   of amp_shdn   : signal is "LVCMOS33";
-	attribute iostandard   of amp_dout   : signal is "LVCMOS33";
+	attribute iostandard of spi_sck    : signal is "LVCMOS33";
+	attribute iostandard of spi_miso   : signal is "LVCMOS33";
+	attribute iostandard of spi_mosi   : signal is "LVCMOS33";
+	attribute iostandard of amp_cs     : signal is "LVCMOS33";
+	attribute iostandard of amp_shdn   : signal is "LVCMOS33";
+	attribute iostandard of amp_dout   : signal is "LVCMOS33";
+	attribute iostandard of dac_cs     : signal is "LVCMOS33";
+	attribute iostandard of dac_cs     : signal is "LVCMOS33";
+	attribute iostandard of dac_clr    : signal is "LVCMOS33";
 
-	attribute drive of spi_sck    : signal is "6";
+	attribute drive of spi_sck    : signal is "8";
 	attribute drive of spi_miso   : signal is "6";
-	attribute drive of spi_mosi   : signal is "6";
+	attribute drive of spi_mosi   : signal is "8";
 	attribute drive of amp_cs     : signal is "6";
 	attribute drive of amp_shdn   : signal is "6";
 	attribute drive of amp_dout   : signal is "6";
+	attribute drive of amp_dout   : signal is "6";
+	attribute drive of dac_cs     : signal is "8";
+	attribute drive of dac_clr    : signal is "8";
 
 	attribute slew  of spi_sck    : signal is "slow";
 	attribute slew  of spi_miso   : signal is "slow";
@@ -274,6 +287,8 @@ entity s3estarter is
 	attribute slew  of amp_cs     : signal is "slow";
 	attribute slew  of amp_shdn   : signal is "slow";
 	attribute slew  of amp_dout   : signal is "slow";
+	attribute slew  of dac_cs     : signal is "8";
+	attribute slew  of dac_clr    : signal is "8";
 	
 
 	attribute loc   of vga_red   : signal is "H14";

@@ -15,6 +15,7 @@ entity scopeio is
 		mii_rxdv    : in  std_logic;
 		mii_rxd     : in  std_logic_vector;
 		input_clk   : in  std_logic;
+		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
 		video_clk   : in  std_logic;
 		video_red   : out std_logic;
@@ -197,12 +198,14 @@ begin
 		end loop;
 
 		if rising_edge(input_clk) then
-			if scaler(0)='1' then
-				scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
-			else
-				scaler := scaler  - 1;
+			input_we <= scaler(0) and input_ena;
+			if input_ena='1' then
+				if scaler(0)='1' then
+					scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
+				else
+					scaler := scaler - 1;
+				end if;
 			end if;
-			input_we <= scaler(0);
 		end if;
 	end process;
 
@@ -252,7 +255,7 @@ begin
 
 	trigger_b  : block
 		signal input_level : sample_word;
-		signal input_ena   : std_logic;
+		signal trigger_ena : std_logic;
 	begin
 		process (input_clk)
 			variable input_aux  : unsigned(input_data'length-1 downto 0);
@@ -260,10 +263,10 @@ begin
 			variable input_trgr : std_logic;
 		begin
 			if rising_edge(input_clk) then
-				if input_ena='1' then
+				if trigger_ena='1' then
 					if input_addr(0)='1' then
 						if video_frm='0' then
-							input_ena <= '0';
+							trigger_ena <= '0';
 						end if;
 					end if;
 					input_trgr := '0';
@@ -272,7 +275,7 @@ begin
 						input_trgr := '1';
 					end if;
 				elsif input_ge='1' then
-					input_ena <= '1';
+					trigger_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
 				input_ge  := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
@@ -282,7 +285,7 @@ begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if input_ena='0' then
+				if trigger_ena='0' then
 					input_addr <= (others => '0');
 				elsif input_addr(0)='0' then
 					if input_we='1' then
