@@ -36,17 +36,17 @@ entity dfs2dfs is
 		dfs2_mul : natural := 10;
 		dfs2_div : natural := 3);
 	port ( 
-		sys_rst : in  std_logic; 
-		sys_clk : in  std_logic; 
+		dcm_rst : in  std_logic; 
+		dcm_clk : in  std_logic; 
 		dfs_clk : out std_logic; 
 		dcm_lck : out std_logic);
 end;
 
-architecture behavioral of dfs2dfs2 is
+architecture behavioral of dfs2dfs is
 	signal dfs_lck : std_logic;
     signal dfs_clkfb  : std_logic;
 
-	signal dcm_rst : std_logic;
+	signal dcm1_rst : std_logic;
 	signal dcm_clkin : std_logic;
 	signal dcm_clkfb : std_logic;
 	signal dcm_clk0  : std_logic;
@@ -63,7 +63,7 @@ begin
 		clkfx_divide => dfs1_div,
 		clkfx_multiply => dfs1_mul,
 		clkin_divide_by_2 => FALSE,
-		clkin_period => 50.0,
+		clkin_period => dcm_per,
 		clkout_phase_shift => "NONE",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
 		dfs_frequency_mode => "LOW",
@@ -78,21 +78,21 @@ begin
 		psen   => '0',
 		psincdec =>'0',
 
-		rst   => sys_rst,
-		clkin  => sys_clk,
+		rst   => dcm_rst,
+		clkin  => dcm_clk,
 		clkfb  => dfs_clkfb,
 		clk0   => dfs_clkfb,
 		clkfx => dcm_clkin,
 		locked => dfs_lck);
 
-	process (dfs_lck, sys_clk)
+	process (dfs_lck, dcm_clk)
 		variable srl16 : std_logic_vector(0 to 8-1) := (others => '1');
 	begin
 		if dfs_lck='0' then
-			dcm_rst <= '1';
-		elsif rising_edge(sys_clk) then
+			dcm1_rst <= '1';
+		elsif rising_edge(dcm_clk) then
 			srl16 := srl16(1 to srl16'right) &  not dfs_lck;
-			dcm_rst <= srl16(0) or not dfs_lck;
+			dcm1_rst <= srl16(0) or not dfs_lck;
 		end if;
 	end process;
 
@@ -103,7 +103,7 @@ begin
 		clkfx_divide => dfs2_div,
 		clkfx_multiply => dfs2_mul,
 		clkin_divide_by_2 => FALSE,
-		clkin_period   => (dfs_per*dfs1_div)/real(dfs1_mul),
+		clkin_period   => (dcm_per*real(dfs1_div))/real(dfs1_mul),
 		clkout_phase_shift => "NONE",
 		deskew_adjust => "SYSTEM_SYNCHRONOUS",
 		dfs_frequency_mode => "LOW",
@@ -117,7 +117,7 @@ begin
 		psclk    => '0',
 		psen     => '0',
 		psincdec => '0',
-		rst      => dcm_rst,
+		rst      => dcm1_rst,
 		clkin    => dcm_clkin,
 		clkfb    => dcm_clkfb,
 		clkfx    => dcm_clkfx,

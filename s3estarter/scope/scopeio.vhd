@@ -67,11 +67,13 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
-	spidcm_e : entity hdl4fpga.dfs
+	spidcm_e : entity hdl4fpga.dfs2dfs
 	generic map (
 		dcm_per => 20.0,
-		dfs_mul => 32,
-		dfs_div => 25)
+		dfs1_mul => 32,
+		dfs1_div => 25,
+		dfs2_mul => 4,
+		dfs2_div => 5)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -218,5 +220,7 @@ begin
 	sd_dq     <= (others => 'Z');
 
 	amp_shdn <= '1';
+	dac_clr <= '0';
+	dac_cs <= '0';
 
 end;

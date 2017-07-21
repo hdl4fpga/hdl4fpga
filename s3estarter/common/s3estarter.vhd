@@ -98,6 +98,7 @@ entity s3estarter is
 		-- DAC --
 
 		dac_cs  : out std_logic;
+		dac_clr : out std_logic;
 
 		-------------
 		-- DDR RAM --
@@ -268,7 +269,6 @@ entity s3estarter is
 	attribute iostandard of amp_shdn   : signal is "LVCMOS33";
 	attribute iostandard of amp_dout   : signal is "LVCMOS33";
 	attribute iostandard of dac_cs     : signal is "LVCMOS33";
-	attribute iostandard of dac_cs     : signal is "LVCMOS33";
 	attribute iostandard of dac_clr    : signal is "LVCMOS33";
 
 	attribute drive of spi_sck    : signal is "8";
@@ -276,7 +276,6 @@ entity s3estarter is
 	attribute drive of spi_mosi   : signal is "8";
 	attribute drive of amp_cs     : signal is "6";
 	attribute drive of amp_shdn   : signal is "6";
-	attribute drive of amp_dout   : signal is "6";
 	attribute drive of amp_dout   : signal is "6";
 	attribute drive of dac_cs     : signal is "8";
 	attribute drive of dac_clr    : signal is "8";
