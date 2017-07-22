@@ -8,7 +8,6 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 architecture beh of s3estarter is
 
@@ -68,17 +67,14 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
-	spiclk_rd <= sckamp_rd when amp_spi='1' else '1' ;
-	spiclk_fd <= sckamp_fd when amp_spi='1' else '0' ;
-	spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
-	adc_b: block
+	spi_b: block
 	begin
 		spidcm_e : entity hdl4fpga.dfs2dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs1_mul => 32,
+			dfs1_mul => 17,
 			dfs1_div => 25,
-			dfs2_mul => 4,
+			dfs2_mul => 8,
 			dfs2_div => 5)
 		port map(
 			dcm_rst => '0',
@@ -86,6 +82,10 @@ begin
 			dfs_clk => spi_clk,
 			dcm_lck => spi_rst);
 
+
+		spiclk_rd <= sckamp_rd when amp_spi='1' else '0' ;
+		spiclk_fd <= sckamp_fd when amp_spi='1' else '1' ;
+		spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
 
 		spi_sck_e : entity hdl4fpga.ddro
 		port map (
@@ -149,49 +149,40 @@ begin
 		end process;
 
 		adcs2p_p : process (spi_clk)
-			variable cntr : unsigned(0 to 5) := (others => '0');
-			variable adin : unsigned(0 to 2*16);
+			variable cntr : unsigned(0 to 6) := (others => '0');
+			variable adin : unsigned(2*17-1 downto 0);
 			variable aux  : unsigned(adin'range);
 			variable aux1 : unsigned(sample'range);
+			variable aux2 : unsigned(0 to 32-1);
+			variable adac : std_logic;
 		begin
 			if rising_edge(spi_clk) then
-				adconv  <= cntr(0);
 				aux     := adin;
 				aux1    := unsigned(sample);
 				if cntr(0)='1' then
 					for i in 0 to 2-1 loop
 						aux := aux sll ((adin'length-sample'length)/2);
-						aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
+						aux1(sample_size-1 downto 0) := aux(sample_size-1 downto 0);
 						aux1 := aux1 sll sample_size;
-						aux  := aux  srl 16;
+						aux  := aux  srl (aux'length/2);
 					end loop;
 					sample <= std_logic_vector(aux1);
-					cntr   := to_unsigned(2**cntr'right-2, cntr'length);
+					cntr   := to_unsigned(34-2, cntr'length);
+					aux2 := (others => '0');
+					adac := not setif(adac/='0');
 				else
 					cntr := cntr - 1;
+					aux2 := aux2 sll 1;
 				end if;
 				adin    := adin sll 1;
 				adin(0) := spi_miso;
+				adconv  <= adac or setif(cntr=(cntr'range=>'0')) or cntr(0) or amp_spi;
+				dac_cs  <= (not adac or cntr(0)) or amp_spi;
 			end if;
 		end process;
-		ad_conv <= '0' when amp_spi='1' else adconv;
-	end block;
+		ad_conv <= adconv;
 
-	dac_p : process(xtal)
-		variable cntr : unsigned(0 to 5);
-		variable aux  : unsigned(0 to 24);
-	begin
-		if rising_edge(xtal) then
-			if cntr(0)='1' then
-				cntr := to_unsigned(24-1, cntr'length);
-				aux  := '-' ;
-			else
-				cntr := cntr - 1;
-				aux  := aux sll 1;
-			end if;
-			dac_sdi <= aux(0);
-		end if;
-	end process;
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
@@ -241,6 +232,5 @@ begin
 
 	amp_shdn <= '1';
 	dac_clr <= '0';
-	dac_cs <= '0';
 
 end;
