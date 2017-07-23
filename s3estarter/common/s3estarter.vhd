@@ -33,7 +33,6 @@ entity s3estarter is
 		btn_east  : in std_logic := '1';
 		btn_west  : in std_logic := '1';
 
-
 		--------------
 		-- switches --
 
@@ -45,6 +44,13 @@ entity s3estarter is
 		led5 : out std_logic := '0';
 		led6 : out std_logic := '0';
 		led7 : out std_logic := '0';
+
+		-----------------
+		-- Rotary shat --
+
+		rot_a      : in std_logic;
+		rot_b      : in std_logic;
+		rot_center : in std_logic;
 
 		------------------------------
 		-- MII ethernet Transceiver --
@@ -125,6 +131,7 @@ entity s3estarter is
 	attribute nodelay : string;
 	attribute drive : string;
 	attribute pulldown : string;
+	attribute pullup : string;
 
 	attribute loc of xtal : signal is "C9";
 	attribute loc of sw0  : signal is "L13";
@@ -178,6 +185,18 @@ entity s3estarter is
 	attribute slew of led5 : signal is "fast";
 	attribute slew of led6 : signal is "fast";
 	attribute slew of led7 : signal is "fast";
+
+	attribute loc of rot_a      : signal is "K18";
+	attribute loc of rot_b      : signal is "G18";
+	attribute loc of rot_center : signal is "V16";
+
+	attribute iostandard of rot_a      : signal is "LVTTL";
+	attribute iostandard of rot_b      : signal is "LVTTL";
+	attribute iostandard of rot_center : signal is "LVTTL";
+
+	attribute pullup   of rot_a      : signal is "yes";
+	attribute pullup   of rot_b      : signal is "yes";
+	attribute pulldown of rot_center : signal is "yes";
 
 	--------------------------
 	-- Ethernet Transceiver --

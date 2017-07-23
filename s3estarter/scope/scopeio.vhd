@@ -50,6 +50,8 @@ architecture beh of s3estarter is
 	signal ampcs     : std_logic;
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
+	signal rot_cwse  : std_logic;
+	signal rot_rdy   : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -183,6 +185,22 @@ begin
 		ad_conv <= adconv;
 
 	end block;
+
+	process (xtal, rot_a, rot_b)
+		variable cntr : unsigned(0 to 7);
+	begin
+		if (rot_a or rot_b)='1' then
+			if cntr(0)='1' then
+				cntr := (others => '0');
+			end if;
+			rot_cwse <= rot_a;
+		elsif rising_edge(xtal) then
+			if cntr(0)='0' then
+				cntr := cntr + 1;
+			end if;
+			rot_rdy <= cntr(0);
+		end if;
+	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
