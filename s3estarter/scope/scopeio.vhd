@@ -186,8 +186,8 @@ begin
 
 	end block;
 
-	process (xtal, rot_a, rot_b)
-		variable cntr : unsigned(0 to 7);
+	process (e_rx_clk, rot_a, rot_b)
+		variable cntr : unsigned(0 to 12);
 	begin
 		if (rot_a or rot_b)='1' then
 			if cntr(0)='1' then

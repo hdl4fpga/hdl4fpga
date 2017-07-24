@@ -11,9 +11,12 @@ entity scopeio is
 	generic (
 		inputs      : natural := 1);
 	port (
-		mii_rxc     : in  std_logic;
-		mii_rxdv    : in  std_logic;
+		mii_rxc     : in  std_logic := '-';
+		mii_rxdv    : in  std_logic := '0';
 		mii_rxd     : in  std_logic_vector;
+		cmd_sel     : in  std_logic_vector(0 to 2-1) := "--";
+		cmd_inc     : in  std_logic := '-';
+		cmd_rdy     : in  std_logic := '0';
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -115,6 +118,7 @@ begin
 	end process;
 
 	process (mii_rxc)
+		variable cmd_edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if pll_rdy='1' then
@@ -132,6 +136,9 @@ begin
 				when others =>
 				end case;
 			end if;
+			if cmd_rdy='1' and cmd_edge='0' then
+			end if;
+			cmd_edge := cmd_rdy;
 		end if;
 	end process;
 
