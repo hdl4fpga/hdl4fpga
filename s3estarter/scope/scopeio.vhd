@@ -160,7 +160,7 @@ begin
 		begin
 			if amp_spi='1' then
 				cntr    := to_unsigned(35-2, cntr'length);
-				aux2    := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
+				aux2    := "-1--------00110000100000000000----";
 				adac    := not setif(adac/='0');
 				dac_sdi <= '0';
 				dac_cs  <= '1';
@@ -177,6 +177,7 @@ begin
 					sample <= std_logic_vector(aux1);
 					cntr   := to_unsigned(35-2, cntr'length);
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
+					aux2   := "-1--------00110000010000000000-00-";
 					adac   := not setif(adac/='0');
 				else
 					cntr := cntr - 1;
@@ -256,6 +257,14 @@ begin
 	sd_dq     <= (others => 'Z');
 
 	amp_shdn <= '1';
-	dac_clr <= '0';
+	dac_clr <= '1';
 
+	led0 <= '1';
+	led1 <= '1';
+	led2 <= '1';
+	led3 <= '1';
+	led4 <= '1';
+	led5 <= '1';
+	led6 <= '1';
+	led7 <= '1';
 end;
