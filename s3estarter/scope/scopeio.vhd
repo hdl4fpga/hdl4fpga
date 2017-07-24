@@ -123,7 +123,7 @@ begin
 			if spi_rst='0' then
 				ampcs <= '1';
 			elsif falling_edge(sckamp_fd) then
-				ampcs <= not amp_rdy;
+				ampcs <= not amp_rdy or not amp_spi;
 			end if;
 		end process;
 		amp_cs <= ampcs;
@@ -133,7 +133,7 @@ begin
 			variable val  : unsigned(0 to 8-1) := B"0001_0001";
 		begin
 			if spi_rst='0' then
-				amp_spi <= '0';
+				amp_spi <= '1';
 				amp_rdy <= '0';
 				amp_sdi <= '0';
 				cntr    := "0001";
@@ -150,28 +150,34 @@ begin
 			end if;
 		end process;
 
-		adcs2p_p : process (spi_clk)
+		adcs2p_p : process (amp_spi, spi_clk)
 			variable cntr : unsigned(0 to 6) := (others => '0');
 			variable adin : unsigned(2*17-1 downto 0);
 			variable aux  : unsigned(adin'range);
 			variable aux1 : unsigned(sample'range);
-			variable aux2 : unsigned(0 to 32-1);
+			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
 		begin
-			if rising_edge(spi_clk) then
+			if amp_spi='1' then
+				cntr    := to_unsigned(35-2, cntr'length);
+				aux2    := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
+				adac    := not setif(adac/='0');
+				dac_sdi <= '0';
+				dac_cs  <= '1';
+			elsif rising_edge(spi_clk) then
 				aux     := adin;
 				aux1    := unsigned(sample);
 				if cntr(0)='1' then
 					for i in 0 to 2-1 loop
-						aux := aux sll ((adin'length-sample'length)/2);
+						aux  := aux sll ((adin'length-sample'length)/2);
 						aux1(sample_size-1 downto 0) := aux(sample_size-1 downto 0);
 						aux1 := aux1 sll sample_size;
 						aux  := aux  srl (aux'length/2);
 					end loop;
 					sample <= std_logic_vector(aux1);
-					cntr   := to_unsigned(34-2, cntr'length);
-					aux2 := (others => '0');
-					adac := not setif(adac/='0');
+					cntr   := to_unsigned(35-2, cntr'length);
+					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
+					adac   := not setif(adac/='0');
 				else
 					cntr := cntr - 1;
 					aux2 := aux2 sll 1;
@@ -180,6 +186,7 @@ begin
 				adin(0) := spi_miso;
 				adconv  <= adac or setif(cntr=(cntr'range=>'0')) or cntr(0) or amp_spi;
 				dac_cs  <= (not adac or cntr(0)) or amp_spi;
+				dac_sdi <= aux2(0);
 			end if;
 		end process;
 		ad_conv <= adconv;

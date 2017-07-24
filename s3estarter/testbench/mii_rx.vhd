@@ -82,6 +82,13 @@ architecture scope of testbench is
 			led6 : out std_logic := '0';
 			led7 : out std_logic := '0';
 
+			-----------------
+			-- Rotary shat --
+
+			rot_a      : in std_logic := '0';
+			rot_b      : in std_logic := '0';
+			rot_center : in std_logic := '0';
+
 			------------------------------
 			-- MII ethernet Transceiver --
 

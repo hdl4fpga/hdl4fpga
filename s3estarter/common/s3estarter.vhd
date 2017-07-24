@@ -48,9 +48,9 @@ entity s3estarter is
 		-----------------
 		-- Rotary shat --
 
-		rot_a      : in std_logic;
-		rot_b      : in std_logic;
-		rot_center : in std_logic;
+		rot_a      : in std_logic := '0';
+		rot_b      : in std_logic := '0';
+		rot_center : in std_logic := '0';
 
 		------------------------------
 		-- MII ethernet Transceiver --
