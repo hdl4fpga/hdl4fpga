@@ -36,7 +36,7 @@ architecture beh of s3estarter is
 		return aux;
 	end;
 
-	signal sample    : std_logic_vector(2*sample_size-1 downto 0);
+	signal sample    : std_logic_vector(1*sample_size-1 downto 0);
 	signal spi_clk   : std_logic;
 	signal spiclk_rd : std_logic;
 	signal spiclk_fd : std_logic;
@@ -52,6 +52,7 @@ architecture beh of s3estarter is
 	signal dac_sdi   : std_logic;
 	signal rot_cwse  : std_logic;
 	signal rot_rdy   : std_logic;
+	signal input_ena : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -71,13 +72,11 @@ begin
 
 	spi_b: block
 	begin
-		spidcm_e : entity hdl4fpga.dfs2dfs
+		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs1_mul => 17,
-			dfs1_div => 25,
-			dfs2_mul => 8,
-			dfs2_div => 5)
+			dfs_mul => 28,
+			dfs_div => 25)
 		port map(
 			dcm_rst => '0',
 			dcm_clk => sys_clk,
@@ -129,18 +128,18 @@ begin
 		amp_cs <= ampcs;
 
 		ampp2sf_p : process (spi_rst, sckamp_fd)
-			variable cntr : unsigned(0 to 3);
-			variable val  : unsigned(0 to 8-1) := B"0001_0001";
+			variable cntr : unsigned(0 to 4);
+			variable val  : unsigned(0 to 10-1) := B"000001_0001";
 		begin
 			if spi_rst='0' then
 				amp_spi <= '1';
 				amp_rdy <= '0';
 				amp_sdi <= '0';
-				cntr    := "0001";
+				cntr    := to_unsigned(val'length-2,cntr'length);
 			elsif falling_edge(sckamp_fd) then
 				if ampcs='0' then
 					if cntr(0)='0' then
-						cntr := cntr + 1;
+						cntr := cntr - 1;
 						val  := val sll 1;
 					end if;
 				end if;
@@ -152,11 +151,13 @@ begin
 
 		adcs2p_p : process (amp_spi, spi_clk)
 			variable cntr : unsigned(0 to 6) := (others => '0');
-			variable adin : unsigned(2*17-1 downto 0);
+			variable adin : unsigned(2*17-1 downto 0) := (others => '0');
 			variable aux  : unsigned(adin'range);
 			variable aux1 : unsigned(sample'range);
 			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
+			variable pp   : unsigned(0 to 12-1);
+			variable xx : std_logic;
 		begin
 			if amp_spi='1' then
 				cntr    := to_unsigned(35-2, cntr'length);
@@ -166,18 +167,19 @@ begin
 				dac_cs  <= '1';
 			elsif rising_edge(spi_clk) then
 				aux     := adin;
-				aux1    := unsigned(sample);
 				if cntr(0)='1' then
-					for i in 0 to 2-1 loop
-						aux  := aux sll ((adin'length-sample'length)/2);
-						aux1(sample_size-1 downto 0) := aux(sample_size-1 downto 0);
+					for i in 0 to 1-1 loop
 						aux1 := aux1 sll sample_size;
-						aux  := aux  srl (aux'length/2);
+						aux1(sample_size-1 downto 0) := aux(sample_size-1 downto 0);
+						aux  := aux srl (aux'length/2);
 					end loop;
 					sample <= std_logic_vector(aux1);
 					cntr   := to_unsigned(35-2, cntr'length);
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
-					aux2   := "-1--------00110000010000000000-00-";
+					aux2   := "-1--------00110000" & pp & "-00-";
+					if adac='1' then
+						pp := pp + 1;
+					end if;
 					adac   := not setif(adac/='0');
 				else
 					cntr := cntr - 1;
@@ -186,6 +188,8 @@ begin
 				adin    := adin sll 1;
 				adin(0) := spi_miso;
 				adconv  <= adac or setif(cntr=(cntr'range=>'0')) or cntr(0) or amp_spi;
+				input_ena  <= not adac and cntr(0) and not amp_spi;
+
 				dac_cs  <= (not adac or cntr(0)) or amp_spi;
 				dac_sdi <= aux2(0);
 			end if;
@@ -216,7 +220,7 @@ begin
 		mii_rxdv    => e_rx_dv,
 		mii_rxd     => e_rxd,
 		input_clk   => spi_clk,
-		input_ena   => adconv,
+		input_ena   => input_ena,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_red   => vga_red,
@@ -256,7 +260,7 @@ begin
 	sd_dqs    <= (others => 'Z');
 	sd_dq     <= (others => 'Z');
 
-	amp_shdn <= '1';
+	amp_shdn <= '0';
 	dac_clr <= '1';
 
 	led0 <= '1';

@@ -190,7 +190,7 @@ begin
 		type tdiv_vector is array (natural range <> ) of tdiv_word;
 
 		variable tdiv_scales : tdiv_vector(0 to 16-1);
-		variable scaler : tdiv_word;
+		variable scaler : tdiv_word := (others => '1');
 	begin
 		for i in tdiv_scales'range loop
 			case i mod 3 is
@@ -206,6 +206,7 @@ begin
 
 		if rising_edge(input_clk) then
 			input_we <= scaler(0) and input_ena;
+			input_we <= input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
 					scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
@@ -292,9 +293,9 @@ begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if trigger_ena='0' then
+				if  false and trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif input_addr(0)='0' then
+				elsif true or input_addr(0)='0' then
 					if input_we='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;

@@ -27,5 +27,5 @@ NET "xtal" CLOCK_DEDICATED_ROUTE = true;
 NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = FALSE;
 
 TIMEGRP "vga_grp" = net "vga_clk1";
-TIMEGRP "spi_grp" = net "spi_b_spidcm_e_dcm_clkfx";
+TIMEGRP "spi_grp" = net "spi_clk1";
 TIMESPEC "TSpci_async1"=FROM "vga_grp" TO "spi_grp" TIG;
