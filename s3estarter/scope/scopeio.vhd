@@ -53,6 +53,8 @@ architecture beh of s3estarter is
 	signal rot_cwse  : std_logic;
 	signal rot_rdy   : std_logic;
 	signal input_ena : std_logic;
+	signal xx : std_logic;
+	signal ppp : std_logic_vector(32-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -75,8 +77,8 @@ begin
 		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 28,
-			dfs_div => 25)
+			dfs_mul => 25,
+			dfs_div => 32)
 		port map(
 			dcm_rst => '0',
 			dcm_clk => sys_clk,
@@ -105,6 +107,7 @@ begin
 			elsif rising_edge(spi_clk) then
 				cntr := cntr + 1;
 				sckamp_rd <= cntr(0);
+				amp_cs <= ampcs;
 			end if;
 		end process;
 
@@ -125,11 +128,10 @@ begin
 				ampcs <= not amp_rdy or not amp_spi;
 			end if;
 		end process;
-		amp_cs <= ampcs;
 
 		ampp2sf_p : process (spi_rst, sckamp_fd)
 			variable cntr : unsigned(0 to 4);
-			variable val  : unsigned(0 to 10-1) := B"000001_0001";
+			variable val  : unsigned(0 to 8-1) := B"0001_0001";
 		begin
 			if spi_rst='0' then
 				amp_spi <= '1';
@@ -151,13 +153,12 @@ begin
 
 		adcs2p_p : process (amp_spi, spi_clk)
 			variable cntr : unsigned(0 to 6) := (others => '0');
-			variable adin : unsigned(2*17-1 downto 0) := (others => '0');
-			variable aux  : unsigned(adin'range);
+			variable adin : unsigned(33-1 downto 0) := (others => '0');
+			variable aux  : unsigned(0 to 33-1);
 			variable aux1 : unsigned(sample'range);
 			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
 			variable pp   : unsigned(0 to 12-1);
-			variable xx : std_logic;
 		begin
 			if amp_spi='1' then
 				cntr    := to_unsigned(35-2, cntr'length);
@@ -170,10 +171,15 @@ begin
 				if cntr(0)='1' then
 					for i in 0 to 1-1 loop
 						aux1 := aux1 sll sample_size;
-						aux1(sample_size-1 downto 0) := aux(sample_size-1 downto 0);
-						aux  := aux srl (aux'length/2);
+						aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
+						aux  := aux sll 16;
 					end loop;
-					sample <= std_logic_vector(aux1);
+					if adac='0' then
+						sample <= std_logic_vector(aux1(sample_size-1 downto 0));
+						ppp <= std_logic_vector(adin(32-1 downto 0));
+						ppp <= std_logic_vector(resize(unsigned(sample),32));
+						ppp <= std_logic_vector(resize(aux1(sample_size-1 downto 0),32));
+					end if;
 					cntr   := to_unsigned(35-2, cntr'length);
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
 					aux2   := "-1--------00110000" & pp & "-00-";
@@ -186,16 +192,23 @@ begin
 					aux2 := aux2 sll 1;
 				end if;
 				adin    := adin sll 1;
-				adin(0) := spi_miso;
-				adconv  <= adac or setif(cntr=(cntr'range=>'0')) or cntr(0) or amp_spi;
+				adin(0) := xx; --spi_miso;
+				adconv  <= adac and cntr(0) and not amp_spi;
 				input_ena  <= not adac and cntr(0) and not amp_spi;
 
 				dac_cs  <= (not adac or cntr(0)) or amp_spi;
 				dac_sdi <= aux2(0);
 			end if;
 		end process;
+
 		ad_conv <= adconv;
 
+		process (spi_clk)
+		begin
+			if falling_edge(spi_clk) then
+				xx <= spi_miso;
+			end if;
+		end process;
 	end block;
 
 	process (e_rx_clk, rot_a, rot_b)
@@ -219,6 +232,7 @@ begin
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,
 		mii_rxd     => e_rxd,
+		data => ppp,
 		input_clk   => spi_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
@@ -262,6 +276,9 @@ begin
 
 	amp_shdn <= '0';
 	dac_clr <= '1';
+	sf_ce0 <= '1';
+	fpga_init_b <= '0';
+	spi_ss_b <= '0';
 
 	led0 <= '1';
 	led1 <= '1';

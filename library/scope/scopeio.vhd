@@ -17,6 +17,7 @@ entity scopeio is
 		cmd_sel     : in  std_logic_vector(0 to 2-1) := "--";
 		cmd_inc     : in  std_logic := '-';
 		cmd_rdy     : in  std_logic := '0';
+		data        : in  std_logic_vector(32-1 downto 0) := (others => '1');
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -206,7 +207,6 @@ begin
 
 		if rising_edge(input_clk) then
 			input_we <= scaler(0) and input_ena;
-			input_we <= input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
 					scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
@@ -295,7 +295,7 @@ begin
 			if rising_edge(input_clk) then
 				if  false and trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif true or input_addr(0)='0' then
+				elsif input_addr(0)='0' or true then
 					if input_we='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -432,15 +432,30 @@ begin
 				others => align("", 10));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable sel : std_logic_vector(0 to 0);
+			variable ascii : unsigned(8*10-1 downto 0);
+			variable aux  : unsigned(0 to data'length-1);
 		begin
 			if rising_edge(mii_rxc) then
 				text_addr <= std_logic_vector(addr);
 				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
-					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
+					std_logic_vector(ascii) 
+--					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
+					 & bcd2ascii(
 					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
+				aux := unsigned(data);
+				ascii := (others => '0');
+				for i in 1 to 8 loop
+					if to_integer(aux(0 to 4-1)) < 10 then
+						 ascii(8-1 downto 0) := unsigned'("0011") & aux(0 to 4-1);
+					else
+						 ascii(8-1 downto 0) := unsigned'("00110111") + aux(0 to 4-1);
+					end if;
+					aux := aux sll 4;
+					ascii := ascii sll 8;
+				end loop;
 			end if;
 
 		end process;

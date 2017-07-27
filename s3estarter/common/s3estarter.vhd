@@ -100,6 +100,12 @@ entity s3estarter is
 
 		ad_conv  : out std_logic;
 
+		-- StrataFlash --
+
+		sf_ce0   : out std_logic;
+		fpga_init_b : out std_logic;
+		spi_ss_b : out std_logic;
+
 		---------
 		-- DAC --
 
@@ -272,41 +278,55 @@ entity s3estarter is
 	attribute nodelay of sd_dm    : signal is "true";
 	attribute nodelay of sd_dqs   : signal is "true";
 
-	attribute loc   of spi_sck    : signal is "U16";
-	attribute loc   of spi_miso   : signal is "N10";
-	attribute loc   of spi_mosi   : signal is "T4";
-	attribute loc   of amp_cs     : signal is "N7";
-	attribute loc   of amp_shdn   : signal is "P7";
-	attribute loc   of amp_dout   : signal is "E18";
-	attribute loc   of dac_cs     : signal is "N8";
-	attribute loc   of dac_clr    : signal is "P8";
+	attribute loc   of spi_sck      : signal is "U16";
+	attribute loc   of spi_miso     : signal is "N10";
+	attribute loc   of spi_mosi     : signal is "T4";
+	attribute loc   of amp_cs       : signal is "N7";
+	attribute loc   of amp_shdn     : signal is "P7";
+	attribute loc   of amp_dout     : signal is "E18";
+	attribute loc   of dac_cs       : signal is "N8";
+	attribute loc   of dac_clr      : signal is "P8";
+	attribute loc   of ad_conv      : signal is "P11";
+	attribute loc   of sf_ce0       : signal is "D16";
+	attribute loc   of fpga_init_b  : signal is "T3";
+	attribute loc   of spi_ss_b     : signal is "U3";
 
-	attribute iostandard of spi_sck    : signal is "LVCMOS33";
-	attribute iostandard of spi_miso   : signal is "LVCMOS33";
-	attribute iostandard of spi_mosi   : signal is "LVCMOS33";
-	attribute iostandard of amp_cs     : signal is "LVCMOS33";
-	attribute iostandard of amp_shdn   : signal is "LVCMOS33";
-	attribute iostandard of amp_dout   : signal is "LVCMOS33";
-	attribute iostandard of dac_cs     : signal is "LVCMOS33";
-	attribute iostandard of dac_clr    : signal is "LVCMOS33";
+	attribute iostandard of spi_sck     : signal is "LVCMOS33";
+	attribute iostandard of spi_miso    : signal is "LVCMOS33";
+	attribute iostandard of spi_mosi    : signal is "LVCMOS33";
+	attribute iostandard of amp_cs      : signal is "LVCMOS33";
+	attribute iostandard of amp_shdn    : signal is "LVCMOS33";
+	attribute iostandard of amp_dout    : signal is "LVCMOS33";
+	attribute iostandard of dac_cs      : signal is "LVCMOS33";
+	attribute iostandard of dac_clr     : signal is "LVCMOS33";
+	attribute iostandard of ad_conv     : signal is "LVCMOS33";
+	attribute iostandard of sf_ce0      : signal is "LVCMOS33";
+	attribute iostandard of fpga_init_b : signal is "LVCMOS33";
+	attribute iostandard of spi_ss_b    : signal is "LVCMOS33";
 
 	attribute drive of spi_sck    : signal is "8";
-	attribute drive of spi_miso   : signal is "6";
 	attribute drive of spi_mosi   : signal is "8";
 	attribute drive of amp_cs     : signal is "6";
 	attribute drive of amp_shdn   : signal is "6";
 	attribute drive of amp_dout   : signal is "6";
 	attribute drive of dac_cs     : signal is "8";
 	attribute drive of dac_clr    : signal is "8";
+	attribute drive of ad_conv    : signal is "6";
+	attribute drive of sf_ce0     : signal is "4";
+	attribute drive of fpga_init_b : signal is "4";
+	attribute drive of spi_ss_b : signal is "6";
 
 	attribute slew  of spi_sck    : signal is "slow";
-	attribute slew  of spi_miso   : signal is "slow";
 	attribute slew  of spi_mosi   : signal is "slow";
 	attribute slew  of amp_cs     : signal is "slow";
 	attribute slew  of amp_shdn   : signal is "slow";
 	attribute slew  of amp_dout   : signal is "slow";
-	attribute slew  of dac_cs     : signal is "8";
-	attribute slew  of dac_clr    : signal is "8";
+	attribute slew  of dac_cs     : signal is "slow";
+	attribute slew  of dac_clr    : signal is "slow";
+	attribute slew  of ad_conv    : signal is "slow";
+	attribute slew  of sf_ce0     : signal is "slow";
+	attribute slew  of fpga_init_b : signal is "slow";
+	attribute slew  of spi_ss_b   : signal is "slow";
 	
 
 	attribute loc   of vga_red   : signal is "H14";
