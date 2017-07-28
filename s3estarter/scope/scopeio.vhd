@@ -68,7 +68,7 @@ begin
 		dfs_mul => 3,
 		dfs_div => 1)
 	port map(
-		dcm_rst => '0',
+		dcm_rst => btn_north,
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
@@ -80,14 +80,14 @@ begin
 			dfs_mul => 25,
 			dfs_div => 32)
 		port map(
-			dcm_rst => '0',
+			dcm_rst => btn_north ,
 			dcm_clk => sys_clk,
 			dfs_clk => spi_clk,
 			dcm_lck => spi_rst);
 
 
-		spiclk_rd <= sckamp_rd when amp_spi='1' else '0' ;
-		spiclk_fd <= sckamp_fd when amp_spi='1' else '1' ;
+		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
+		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
 		spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
 
 		spi_sck_e : entity hdl4fpga.ddro
@@ -131,18 +131,19 @@ begin
 
 		ampp2sf_p : process (spi_rst, sckamp_fd)
 			variable cntr : unsigned(0 to 4);
-			variable val  : unsigned(0 to 8-1) := B"0001_0001";
+			variable val  : unsigned(0 to 8-1);
 		begin
 			if spi_rst='0' then
 				amp_spi <= '1';
 				amp_rdy <= '0';
 				amp_sdi <= '0';
 				cntr    := to_unsigned(val'length-2,cntr'length);
+				val     := B"0001_0001";
 			elsif falling_edge(sckamp_fd) then
 				if ampcs='0' then
 					if cntr(0)='0' then
 						cntr := cntr - 1;
-						val  := val sll 1;
+						val  := val rol 1;
 					end if;
 				end if;
 				amp_sdi <= val(0);
@@ -169,7 +170,7 @@ begin
 			elsif rising_edge(spi_clk) then
 				aux     := adin;
 				if cntr(0)='1' then
-					for i in 0 to 1-1 loop
+					for i in 0 to 2-1 loop
 						aux1 := aux1 sll sample_size;
 						aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
 						aux  := aux sll 16;
@@ -192,8 +193,8 @@ begin
 					aux2 := aux2 sll 1;
 				end if;
 				adin    := adin sll 1;
-				adin(0) := xx; --spi_miso;
-				adconv  <= adac and cntr(0) and not amp_spi;
+				adin(0) := spi_miso;
+				adconv  <= adac and (setif(cntr=(cntr'range =>'0'))) and not amp_spi;
 				input_ena  <= not adac and cntr(0) and not amp_spi;
 
 				dac_cs  <= (not adac or cntr(0)) or amp_spi;
@@ -203,12 +204,6 @@ begin
 
 		ad_conv <= adconv;
 
-		process (spi_clk)
-		begin
-			if falling_edge(spi_clk) then
-				xx <= spi_miso;
-			end if;
-		end process;
 	end block;
 
 	process (e_rx_clk, rot_a, rot_b)

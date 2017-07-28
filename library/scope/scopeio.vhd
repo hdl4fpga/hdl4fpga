@@ -90,6 +90,14 @@ architecture beh of scopeio is
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
 	signal  text_addr   : std_logic_vector(9-1 downto 0);
+-- type is record 
+--  width     : natural;
+--  height    : natural;
+--  ch_x      : natural;
+--	ch_width  : natural;
+--	ch_height : natural;
+
+-- end record;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -282,7 +290,7 @@ begin
 					if input_ge='0' then
 						input_trgr := '1';
 					end if;
-				elsif input_ge='1' then
+				elsif input_ge='0' then
 					trigger_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
@@ -293,9 +301,9 @@ begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if  false and trigger_ena='0' then
+				if trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif input_addr(0)='0' or true then
+				elsif input_addr(0)='0' then
 					if input_we='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -439,9 +447,9 @@ begin
 				text_addr <= std_logic_vector(addr);
 				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
-					std_logic_vector(ascii) 
---					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
-					 & bcd2ascii(
+--					std_logic_vector(ascii) 
+--					 & bcd2ascii(
+					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
 					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
