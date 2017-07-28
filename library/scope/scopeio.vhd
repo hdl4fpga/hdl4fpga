@@ -94,8 +94,10 @@ architecture beh of scopeio is
 --  width     : natural;
 --  height    : natural;
 --  ch_x      : natural;
+--  ch_y      : natural;
 --	ch_width  : natural;
 --	ch_height : natural;
+--  mt_width  : natural;
 
 -- end record;
 begin
@@ -290,11 +292,13 @@ begin
 					if input_ge='0' then
 						input_trgr := '1';
 					end if;
-				elsif input_ge='0' then
+				elsif input_ge='1' then
 					trigger_ena <= '1';
 				end if;
 				input_aux := unsigned(input_data);
-				input_ge  := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
+				if input_we='1' then
+					input_ge  := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
+				end if;
 			end if;
 		end process;
 
