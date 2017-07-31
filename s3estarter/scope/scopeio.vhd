@@ -160,6 +160,7 @@ begin
 			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
 			variable pp   : unsigned(0 to 12-1);
+			variable pppp  : unsigned(1 to 12-1);
 		begin
 			if amp_spi='1' then
 				cntr    := to_unsigned(35-2, cntr'length);
@@ -185,7 +186,8 @@ begin
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
 					aux2   := "-1--------00110000" & pp & "-00-";
 					if adac='1' then
-						pp := pp + 1;
+						pp  := resize(pppp, pp'length) + unsigned'(b"0100_0000_0000"); 
+						pppp := pppp + 1;
 					end if;
 					adac   := not setif(adac/='0');
 				else

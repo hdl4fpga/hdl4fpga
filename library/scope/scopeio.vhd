@@ -297,7 +297,7 @@ begin
 				end if;
 				input_aux := unsigned(input_data);
 				if input_we='1' then
-					input_ge  := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
+					input_ge := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
 				end if;
 			end if;
 		end process;
