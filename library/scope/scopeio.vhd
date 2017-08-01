@@ -140,7 +140,7 @@ begin
 				when "0001" =>
 					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
 				when "0010" =>
-					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length));
+					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length) sll (sample_word'length-scope_data'length));
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
@@ -295,10 +295,10 @@ begin
 				elsif input_ge='1' then
 					trigger_ena <= '1';
 				end if;
-				input_aux := unsigned(input_data);
 				if input_we='1' then
 					input_ge := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
 				end if;
+				input_aux := unsigned(input_data);
 			end if;
 		end process;
 
@@ -418,7 +418,7 @@ begin
 			value <= std_logic_vector(offset(0)(9-1 downto 0));
 		when "11" =>
 			scale <= (others => '0');
-			value <= trigger_lvl(0)(9-1 downto 0);
+			value <= std_logic_vector(unsigned(trigger_lvl(0)) srl (sample_word'length-scope_data'length));
 		when others =>
 			scale <= (others => '0');
 			value <= (others => '0');
@@ -451,8 +451,6 @@ begin
 				text_addr <= std_logic_vector(addr);
 				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
---					std_logic_vector(ascii) 
---					 & bcd2ascii(
 					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
 					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));

@@ -73,14 +73,28 @@ begin
 		dfs_clk => vga_clk);
 
 	spi_b: block
+		signal dfs_rst : std_logic;
 	begin
+		process (btn_north, sys_clk)
+			variable cntr : unsigned(0 to 8) := (others => '0');
+		begin 
+			if btn_north='1' then
+				cntr := (others => '0');
+			elsif rising_edge(sys_clk) then
+				if cntr(0)='0' then
+					cntr := cntr + 1;
+				end if;
+			end if;
+			dfs_rst <= not cntr(0);
+		end process;
+
 		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 25,
+			dfs_mul => 29,
 			dfs_div => 32)
 		port map(
-			dcm_rst => btn_north ,
+			dcm_rst => dfs_rst,
 			dcm_clk => sys_clk,
 			dfs_clk => spi_clk,
 			dcm_lck => spi_rst);
@@ -160,7 +174,8 @@ begin
 			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
 			variable pp   : unsigned(0 to 12-1);
-			variable pppp  : unsigned(1 to 12-1);
+			variable pppp  : unsigned(0 to 12-1);
+			constant p2p  : natural := 3100;
 		begin
 			if amp_spi='1' then
 				cntr    := to_unsigned(35-2, cntr'length);
@@ -186,8 +201,12 @@ begin
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
 					aux2   := "-1--------00110000" & pp & "-00-";
 					if adac='1' then
-						pp  := resize(pppp, pp'length) + unsigned'(b"0100_0000_0000"); 
-						pppp := pppp + 1;
+						pp  := pppp;
+						if to_integer(pppp)=(2048+p2p/2) then
+							pppp := to_unsigned(2048-p2p/2, pppp'length);
+						else
+							pppp := pppp + 1;
+						end if;
 					end if;
 					adac   := not setif(adac/='0');
 				else
@@ -201,6 +220,13 @@ begin
 
 				dac_cs  <= (not adac or cntr(0)) or amp_spi;
 				dac_sdi <= aux2(0);
+			end if;
+		end process;
+
+		process (spi_clk)
+		begin
+			if falling_edge(spi_clk) then
+				xx <= spi_miso;
 			end if;
 		end process;
 
