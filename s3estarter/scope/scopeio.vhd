@@ -80,11 +80,13 @@ begin
 			dfs_rst <= not cntr(0);
 		end process;
 
-		spidcm_e : entity hdl4fpga.dfs
+		spidcm_e : entity hdl4fpga.dfs2dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 16,
-			dfs_div => 25)
+			dfs1_mul => 32,
+			dfs1_div => 25,
+			dfs2_mul => 17,
+			dfs2_div => 25)
 		port map(
 			dcm_rst => dfs_rst,
 			dcm_clk => sys_clk,
