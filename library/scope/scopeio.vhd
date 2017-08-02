@@ -400,6 +400,7 @@ begin
 	begin
 
 		process(scale_y, text_addr, offset)
+			variable xxx : unsigned(sample_word'range);
 		begin
 		case text_addr(7-1 downto 5) is
 		when "00" =>
@@ -418,7 +419,8 @@ begin
 			value <= std_logic_vector(offset(0)(9-1 downto 0));
 		when "11" =>
 			scale <= (others => '0');
-			value <= std_logic_vector(unsigned(trigger_lvl(0)) srl (sample_word'length-scope_data'length));
+			xxx   := unsigned(trigger_lvl(0)) srl (sample_word'length-scope_data'length-1);
+			value <= std_logic_vector(xxx(9-1 downto 0));
 		when others =>
 			scale <= (others => '0');
 			value <= (others => '0');

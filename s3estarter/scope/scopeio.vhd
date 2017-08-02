@@ -91,7 +91,7 @@ begin
 		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 29,
+			dfs_mul => 34,
 			dfs_div => 32)
 		port map(
 			dcm_rst => dfs_rst,
@@ -168,23 +168,26 @@ begin
 
 		adcs2p_p : process (amp_spi, spi_clk)
 			variable cntr : unsigned(0 to 6) := (others => '0');
-			variable adin : unsigned(33-1 downto 0) := (others => '0');
-			variable aux  : unsigned(0 to 33-1);
+			variable adin : unsigned(32-1 downto 0) := (others => '0');
+			variable aux  : unsigned(0 to 32-1);
 			variable aux1 : unsigned(sample'range);
 			variable aux2 : unsigned(0 to 34-1);
 			variable adac : std_logic;
 			variable pp   : unsigned(0 to 12-1);
 			variable pppp  : unsigned(0 to 12-1);
 			constant p2p  : natural := 3100;
+			constant cycle : natural := 34;
 		begin
 			if amp_spi='1' then
-				cntr    := to_unsigned(35-2, cntr'length);
+				cntr    := to_unsigned(cycle-2, cntr'length);
 				aux2    := "-1--------00110000100000000000----";
 				adac    := not setif(adac/='0');
 				dac_sdi <= '0';
 				dac_cs  <= '1';
 			elsif rising_edge(spi_clk) then
 				aux     := adin;
+				adconv  <= adac and cntr(0) and not amp_spi;
+				input_ena  <=  cntr(0) and not adac and not amp_spi;
 				if cntr(0)='1' then
 					for i in 0 to 2-1 loop
 						aux1 := aux1 sll sample_size;
@@ -197,7 +200,7 @@ begin
 						ppp <= std_logic_vector(resize(unsigned(sample),32));
 						ppp <= std_logic_vector(resize(aux1(sample_size-1 downto 0),32));
 					end if;
-					cntr   := to_unsigned(35-2, cntr'length);
+					cntr   := to_unsigned(cycle-2, cntr'length);
 					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
 					aux2   := "-1--------00110000" & pp & "-00-";
 					if adac='1' then
@@ -216,12 +219,12 @@ begin
 				adin    := adin sll 1;
 				adin(0) := spi_miso;
 				adconv  <= adac and (setif(cntr=(cntr'range =>'0'))) and not amp_spi;
-				input_ena  <= not adac and cntr(0) and not amp_spi;
 
-				dac_cs  <= (not adac or cntr(0)) or amp_spi;
+				dac_cs  <= (not adac ) or amp_spi;
 				dac_sdi <= aux2(0);
 			end if;
 		end process;
+		ad_conv <= adconv;
 
 		process (spi_clk)
 		begin
@@ -230,7 +233,6 @@ begin
 			end if;
 		end process;
 
-		ad_conv <= adconv;
 
 	end block;
 

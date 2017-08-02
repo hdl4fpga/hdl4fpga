@@ -28,10 +28,10 @@ use ieee.std_logic_1164.all;
 entity s3estarter is
 	port (
 		xtal      : in std_logic := '0';
-		sw0       : in std_logic := '1';
-		btn_north : in std_logic := '1';
-		btn_east  : in std_logic := '1';
-		btn_west  : in std_logic := '1';
+		sw0       : in std_logic := '0';
+		btn_north : in std_logic := '0';
+		btn_east  : in std_logic := '0';
+		btn_west  : in std_logic := '0';
 
 		--------------
 		-- switches --
