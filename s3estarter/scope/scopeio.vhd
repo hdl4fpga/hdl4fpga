@@ -25,13 +25,8 @@ architecture beh of s3estarter is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/64.0); --/(real((i+x0))/100.0);
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0);
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
---			if i=1599 then
---				aux(i*n to (i+1)*n-1) := (others => '0');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
 		end loop;
 		return aux;
 	end;
@@ -85,13 +80,11 @@ begin
 			dfs_rst <= not cntr(0);
 		end process;
 
-		spidcm_e : entity hdl4fpga.dfs2dfs
+		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs1_mul => 32,
-			dfs1_div => 25,
-			dfs2_mul => 4,
-			dfs2_div => 5)
+			dfs_mul => 16,
+			dfs_div => 25)
 		port map(
 			dcm_rst => dfs_rst,
 			dcm_clk => sys_clk,
