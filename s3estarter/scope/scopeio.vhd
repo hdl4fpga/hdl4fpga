@@ -46,15 +46,12 @@ architecture beh of s3estarter is
 	signal amp_sdi   : std_logic;
 	signal amp_rdy   : std_logic;
 	signal adc_spi   : std_logic;
-	signal adconv    : std_logic;
 	signal ampcs     : std_logic;
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
 	signal rot_cwse  : std_logic;
 	signal rot_rdy   : std_logic;
 	signal input_ena : std_logic;
-	signal xx : std_logic;
-	signal ppp : std_logic_vector(32-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -88,11 +85,13 @@ begin
 			dfs_rst <= not cntr(0);
 		end process;
 
-		spidcm_e : entity hdl4fpga.dfs
+		spidcm_e : entity hdl4fpga.dfs2dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 25,
-			dfs_div => 32)
+			dfs1_mul => 32,
+			dfs1_div => 25,
+			dfs2_mul => 4,
+			dfs2_div => 5)
 		port map(
 			dcm_rst => dfs_rst,
 			dcm_clk => sys_clk,
@@ -143,7 +142,7 @@ begin
 			end if;
 		end process;
 
-		ampp2sf_p : process (spi_rst, sckamp_fd)
+		amp_p : process (spi_rst, sckamp_fd)
 			variable cntr : unsigned(0 to 4);
 			variable val  : unsigned(0 to 8-1);
 		begin
@@ -166,73 +165,59 @@ begin
 			end if;
 		end process;
 
-		adcs2p_p : process (amp_spi, spi_clk)
-			variable cntr : unsigned(0 to 6) := (others => '0');
-			variable adin : unsigned(32-1 downto 0) := (others => '0');
-			variable aux  : unsigned(0 to 32-1);
-			variable aux1 : unsigned(sample'range);
-			variable aux2 : unsigned(0 to 34-1);
-			variable adac : std_logic;
-			variable pp   : unsigned(0 to 12-1);
-			variable pppp  : unsigned(0 to 12-1);
-			constant p2p  : natural := 3100;
-			constant cycle : natural := 34;
+		adcdac_p : process (amp_spi, spi_clk)
+			constant p2p        : natural := 3100;
+			constant cycle      : natural := 34;
+			variable cntr       : unsigned(0 to 6) := (others => '0');
+			variable adin       : unsigned(32-1 downto 0);
+			variable aux        : unsigned(sample'range);
+			variable dac_shr    : unsigned(0 to 30-1);
+			variable adcdac_sel : std_logic;
+			variable dac_data   : unsigned(0 to 12-1);
+			variable dac_chan   : unsigned(0 to 2-1);
 		begin
 			if amp_spi='1' then
-				cntr    := to_unsigned(cycle-2, cntr'length);
-				aux2    := "-1--------00110000100000000000----";
-				adac    := not setif(adac/='0');
-				dac_sdi <= '0';
-				dac_cs  <= '1';
+				cntr       := to_unsigned(cycle-2, cntr'length);
+				adcdac_sel := '0';
+				dac_sdi    <= '0';
+				dac_cs     <= '1';
 			elsif rising_edge(spi_clk) then
-				aux     := adin;
-				adconv  <= adac and cntr(0) and not amp_spi;
-				input_ena  <=  cntr(0) and not adac and not amp_spi;
 				if cntr(0)='1' then
-					for i in 0 to 2-1 loop
-						aux1 := aux1 sll sample_size;
-						aux1(sample_size-1 downto 0) := aux(0 to sample_size-1);
-						aux  := aux sll 16;
-					end loop;
-					if adac='0' then
-						sample <= std_logic_vector(aux1(sample_size-1 downto 0));
-						ppp <= std_logic_vector(adin(32-1 downto 0));
-						ppp <= std_logic_vector(resize(unsigned(sample),32));
-						ppp <= std_logic_vector(resize(aux1(sample_size-1 downto 0),32));
+					if adcdac_sel ='0' then
+						for i in 1 to 2-1 loop
+							aux  := aux  sll sample_size;
+							aux(sample_size-1 downto 0) := adin(sample_size-1 downto 0);
+							adin := adin srl (adin'length/2);
+						end loop;
+						sample <= std_logic_vector(aux);
 					end if;
-					cntr   := to_unsigned(cycle-2, cntr'length);
-					aux2   := b"10_1000_1000_1000_1000_1000_1000_1000_1001";
-					aux2   := "-1--------00110000" & pp & "-00-";
-					if adac='1' then
-						pp  := pppp;
-						if to_integer(pppp)=(2048+p2p/2) then
-							pppp := to_unsigned(2048-p2p/2, pppp'length);
+					dac_shr := "----------0011" & "00" & dac_chan & dac_data;
+					if adcdac_sel ='1' then
+						if to_integer(dac_data)=(2048+p2p/2) then
+							dac_data := to_unsigned(2048-p2p/2, dac_data'length);
 						else
-							pppp := pppp + 1;
+							dac_data := dac_data + 1;
 						end if;
+						ad_conv <= not amp_spi;
+					else
+						input_ena <= not amp_spi;
+						ad_conv   <= '0';
 					end if;
-					adac   := not setif(adac/='0');
+					adcdac_sel := not adcdac_sel;
+					cntr       := to_unsigned(cycle-2, cntr'length);
 				else
-					cntr := cntr - 1;
-					aux2 := aux2 sll 1;
+					input_ena <= '0';
+					ad_conv   <= '0';
+					dac_shr   := dac_shr sll 1;
+					cntr      := cntr - 1;
 				end if;
 				adin    := adin sll 1;
 				adin(0) := spi_miso;
-				adconv  <= adac and (setif(cntr=(cntr'range =>'0'))) and not amp_spi;
 
-				dac_cs  <= (not adac ) or amp_spi;
-				dac_sdi <= aux2(0);
+				dac_cs  <= not adcdac_sel or amp_spi;
+				dac_sdi <= dac_shr(0);
 			end if;
 		end process;
-		ad_conv <= adconv;
-
-		process (spi_clk)
-		begin
-			if falling_edge(spi_clk) then
-				xx <= spi_miso;
-			end if;
-		end process;
-
 
 	end block;
 
@@ -257,7 +242,6 @@ begin
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,
 		mii_rxd     => e_rxd,
-		data => ppp,
 		input_clk   => spi_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
