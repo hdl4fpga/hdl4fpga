@@ -91,7 +91,7 @@ begin
 		spidcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => 20.0,
-			dfs_mul => 34,
+			dfs_mul => 25,
 			dfs_div => 32)
 		port map(
 			dcm_rst => dfs_rst,
