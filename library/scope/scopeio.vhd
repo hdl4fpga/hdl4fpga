@@ -9,6 +9,7 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
+		layout_id   : natural := 1;
 		inputs      : natural := 1);
 	port (
 		mii_rxc     : in  std_logic := '-';
@@ -32,6 +33,35 @@ entity scopeio is
 end;
 
 architecture beh of scopeio is
+
+	type layout is record 
+		scr_width   : natural;
+		num_of_chan : natural;
+		chan_x      : natural;
+		chan_y      : natural;
+		chan_width  : natural;
+		chan_height : natural;
+	end record;
+
+	type layout_vector is array (natural range <>) of layout;
+	constant ly_dptr : layout_vector(0 to 1) := (
+--		0 => (scr_width | num_of_chan | chan_x | chan_y | chan_width | chan_height
+		0 => (     1920,            4,     320,     270,       50*32,          256),
+		1 => (      800,            2,     320,     300,       15*32,          256));
+
+	function to_naturalvector (
+		constant arg : layout)
+		return natural_vector is
+		variable rval : natural_vector(0 to 4*arg.num_of_chan-1);
+	begin
+		for i in 0 to arg.num_of_chan-1 loop
+			rval(i*4+0) := 0;
+			rval(i*4+1) := i*arg.chan_y;
+			rval(i*4+2) := arg.scr_width;
+			rval(i*4+3) := arg.chan_y-1;
+		end loop;
+		return rval;
+	end;
 
 	signal hdr_data     : std_logic_vector(288-1 downto 0);
 	signal pld_data     : std_logic_vector(2*8-1 downto 0);
@@ -62,12 +92,7 @@ architecture beh of scopeio is
 	signal win_frm     : std_logic_vector(0 to 18-1);
 	signal pll_rdy     : std_logic;
 
-	constant ch_width  : natural := 25*64;
-	constant ch_height : natural := 257;
-	constant width     : natural := 1920;
-	constant height    : natural := ch_height+12;
-
-	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(4*ch_width-1));
+	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_chan*ly_dptr(layout_id).chan_width-1));
 	signal input_we    : std_logic;
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
@@ -78,7 +103,7 @@ architecture beh of scopeio is
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
 	signal trigger_lvl : sword_vector(inputs-1 downto 0);
 
-	subtype vmword  is unsigned(unsigned_num_bits(height-1) downto 0);
+	subtype vmword  is unsigned(unsigned_num_bits(ly_dptr(layout_id).chan_y-1) downto 0);
 	type    vmword_vector  is array (natural range <>) of vmword;
 
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
@@ -90,16 +115,7 @@ architecture beh of scopeio is
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
 	signal  text_addr   : std_logic_vector(9-1 downto 0);
--- type is record 
---  width     : natural;
---  height    : natural;
---  ch_x      : natural;
---  ch_y      : natural;
---	ch_width  : natural;
---	ch_height : natural;
---  mt_width  : natural;
 
--- end record;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -182,11 +198,7 @@ begin
 
 	win_mngr_e : entity hdl4fpga.win_mngr
 	generic map (
-		tab => (
-			0, 0*270, width, height,
-			0, 1*270, width, height,
-			0, 2*270, width, height,
-			0, 3*270, width, height))
+		tab => to_naturalvector(ly_dptr(layout_id)))
 	port map (
 		video_clk  => video_clk,
 		video_x    => video_hcntr,
@@ -262,7 +274,7 @@ begin
 				vm_inputs(i) <= unsigned(signed(chan_aux(i)) - signed(offset(i)));
 				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
 				m(i)         := shift_right(m(i), (a(0)'length/2));
-				chan_aux(i)  := to_unsigned(2**(vmword'length-2)+ch_height/2, vmword'length)-unsigned(m(i)(vmword'range));
+				chan_aux(i)  := to_unsigned(2**(vmword'length-2)+ly_dptr(layout_id).chan_height/2, vmword'length)-unsigned(m(i)(vmword'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl (amp'length/inputs);
@@ -363,7 +375,7 @@ begin
 			base := (others => '-');
 			for i in 0 to 4-1 loop
 				if win_don(i)='1' then
-					base := to_unsigned(i*ch_width, base'length);
+					base := to_unsigned(i*ly_dptr(layout_id).chan_width, base'length);
 				end if;
 			end loop;
 			full_addr <= std_logic_vector(resize(unsigned(abscisa),full_addr'length) + base);
@@ -476,10 +488,12 @@ begin
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
-		inputs     => inputs,
-		ch_width   => ch_width,
-		width      => width,
-		height     => height)
+		inputs      => inputs,
+		chan_x      => ly_dptr(layout_id).chan_x,
+		chan_width  => ly_dptr(layout_id).chan_width,
+		chan_height => ly_dptr(layout_id).chan_height,
+		scr_width   => ly_dptr(layout_id).scr_width,
+		height      => ly_dptr(layout_id).chan_y)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,

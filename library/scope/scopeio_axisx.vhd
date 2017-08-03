@@ -7,6 +7,8 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisx is
 	generic (
+		num_of_seg  : natural := 2;
+		div_per_seg : natural := 3;
 		fonts      : std_logic_vector);
 	port (
 		video_clk  : in  std_logic;
@@ -23,6 +25,7 @@ architecture def of scopeio_axisx is
 	constant font_width  : natural := 8;
 	constant font_height : natural := 8;
 
+	signal mark  : std_logic_vector(unsigned_num_bits(div_per_seg-1)-1 downto 0);
 	function marker (
 		constant step   : real;
 		constant num    : natural;
@@ -40,8 +43,8 @@ architecture def of scopeio_axisx is
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 				retval := retval sll 16;
 				if j < 3 then
-					if (k mod 8)=0 then
-						aux := real((k/8)) * 5.0 * scales(j)*step*real(10**i);
+					if (k mod (2**mark'length))=0 then
+						aux := real((k/(2**mark'length))*div_per_seg) * scales(j)*step*real(10**i);
 					end if;
 					retval(16-1 downto 0) := unsigned(to_bcd(aux,16, sign));
 					aux := aux + scales(j)*step*real(10**i);
@@ -51,8 +54,7 @@ architecture def of scopeio_axisx is
 		return std_logic_vector(retval);
 	end;
 
-	signal mark      : std_logic_vector(3-1 downto 0);
-	signal axis_sgmt : std_logic_vector(1 downto 0);
+	signal axis_sgmt : std_logic_vector(unsigned_num_bits(win_on'length-1)-1 downto 0);
 	signal sgmt      : std_logic_vector(axis_sgmt'range);
 	signal win_x4    : std_logic;
 
@@ -71,7 +73,7 @@ architecture def of scopeio_axisx is
 begin
 	process (video_clk)
 		variable edge : std_logic;
-		variable sgmt : std_logic_vector(4-1 downto 0);
+		variable sgmt : std_logic_vector(3-1 downto 0);
 		variable aon  : std_logic;
 	begin
 		if rising_edge(video_clk) then
@@ -79,14 +81,14 @@ begin
 				sgmt := (others => '0');
 				mark <= (others => '0');
 			elsif (win_x(5) xor edge)='1' then
-				if (sgmt(3) and sgmt(0))='1' then
+				if (sgmt(2) and not sgmt(0))='1' then
 					sgmt := (others => '0');
 					mark <= std_logic_vector(unsigned(mark) + 1);
 				else
 					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
-			mark_on   <= setif(sgmt=(1 to 4 =>'0')) and aon;
+			mark_on   <= setif(sgmt=(1 to 3 =>'0')) and aon;
 			aon       := axis_on;
 			edge      := win_x(5);
 		end if;
@@ -96,13 +98,27 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.50001, 25, false))
+		bitrom => marker(0.50001, num_of_seg*div_per_seg+1, false))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,
 		data => char_code);
 
-	sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
+	process(win_on)
+	begin
+	 	sgmt <= (others => '0');
+	     for i in 0 to 2**2-1 loop
+			if i=to_integer(unsigned(win_on)) then
+				for j in 0 to 2-1 loop
+					if i=2**j then
+						sgmt <= std_logic_vector(to_unsigned(j, sgmt'length));
+					end if;
+				end loop;
+			end if;
+	 	end loop;
+	 end process;
+
+--	sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 8,

@@ -10,25 +10,27 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio_channel is
 	generic(
-		inputs     : natural;
-		ch_width   : natural;
-		width      : natural;
-		height     : natural);
+		inputs      : natural;
+		chan_x      : natural;
+		chan_width  : natural;
+		chan_height : natural;
+		scr_width   : natural;
+		height      : natural);
 	port (
-		video_clk  : in  std_logic;
-		video_nhl  : in  std_logic;
-		text_clk   : in  std_logic;
-		text_we    : in  std_logic := '1';
-		text_data  : in  std_logic_vector;
-		text_addr  : in  std_logic_vector;
-		abscisa    : out std_logic_vector;
-		ordinates  : in  std_logic_vector;
-		offset     : in  std_logic_vector;
-		scale_x    : in  std_logic_vector(4-1 downto 0);
-		scale_y    : in  std_logic_vector(4-1 downto 0);
-		win_frm    : in  std_logic_vector;
-		win_on     : in  std_logic_vector;
-		video_dot  : out std_logic_vector);
+		video_clk   : in  std_logic;
+		video_nhl   : in  std_logic;
+		text_clk    : in  std_logic;
+		text_we     : in  std_logic := '1';
+		text_data   : in  std_logic_vector;
+		text_addr   : in  std_logic_vector;
+		abscisa     : out std_logic_vector;
+		ordinates   : in  std_logic_vector;
+		offset      : in  std_logic_vector;
+		scale_x     : in  std_logic_vector(4-1 downto 0);
+		scale_y     : in  std_logic_vector(4-1 downto 0);
+		win_frm     : in  std_logic_vector;
+		win_on      : in  std_logic_vector;
+		video_dot   : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -38,8 +40,8 @@ architecture def of scopeio_channel is
 	signal samples : vmword_vector(inputs-1 downto 0);
 
 	signal pwin_y    : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
-	signal pwin_x    : std_logic_vector(unsigned_num_bits(width-1)-1 downto 0);
-	signal win_x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+	signal pwin_x    : std_logic_vector(unsigned_num_bits(scr_width-1)-1 downto 0);
+	signal win_x     : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
 	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
@@ -58,7 +60,7 @@ architecture def of scopeio_channel is
 begin
 
 	win_b : block
-		signal x     : std_logic_vector(unsigned_num_bits(width-1)-1  downto 0);
+		signal x     : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
 		signal phon  : std_logic;
 		signal pfrm  : std_logic;
 		signal cfrm  : std_logic_vector(0 to 4-1);
@@ -82,10 +84,10 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				319-(4*8+4+5*8+4)+5*8+4,         0, ch_width+1,     height-12,
-				319-(4*8+4+5*8+4)+5*8+4, height-10, ch_width+4*8+4, 8,
-				319-(4*8+4+5*8+4)+    0,         0, 5*8,            height-13,
-				0, 0, 24*8, 256))
+				chan_x-(4*8+4+5*8+4)+5*8+4,             0,     chan_width+1, chan_height+1,
+				chan_x-(4*8+4+5*8+4)+5*8+4, chan_height+2, chan_width+4*8+4,             8,
+				chan_x-(4*8+4+5*8+4)+    0,             0,              5*8, chan_height+1,
+				                         0,             0,             24*8, chan_height+1))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
