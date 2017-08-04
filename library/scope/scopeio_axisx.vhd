@@ -106,16 +106,12 @@ begin
 
 	process(win_on)
 	begin
-	 	sgmt <= (others => '0');
-	     for i in 0 to 2**2-1 loop
-			if i=to_integer(unsigned(win_on)) then
-				for j in 0 to 2-1 loop
-					if i=2**j then
-						sgmt <= std_logic_vector(to_unsigned(j, sgmt'length));
-					end if;
-				end loop;
+	 	sgmt <= (others => '-');
+		for i in 0 to win_on'length-1 loop
+			if unsigned(win_on)=to_unsigned(2**i,win_on'length) then
+				sgmt <= std_logic_vector(to_unsigned(i, sgmt'length));
 			end if;
-	 	end loop;
+		end loop;
 	 end process;
 
 --	sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
