@@ -10,14 +10,16 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisy is
 	generic (
-		fonts      : std_logic_vector);
+		fonts       : std_logic_vector;
+		input_bias  : real    := 0.0;
+		scale_start : natural := 0);
 	port (
-		video_clk  : in  std_logic;
-		win_x      : in  std_logic_vector;
-		win_y      : in  std_logic_vector;
-		axis_on    : in  std_logic;
-		axis_scale : in  std_logic_vector(4-1 downto 0);
-		axis_dot   : out std_logic);
+		video_clk   : in  std_logic;
+		win_x       : in  std_logic_vector;
+		win_y       : in  std_logic_vector;
+		axis_on     : in  std_logic;
+		axis_scale  : in  std_logic_vector(4-1 downto 0);
+		axis_dot    : out std_logic);
 end;
 
 architecture def of scopeio_axisy is
@@ -27,7 +29,9 @@ architecture def of scopeio_axisy is
 
 	function marker (
 		constant step   : real;
-		constant num    : natural)
+		constant num    : natural;
+		constant bias   : real;
+		constant start  : natural)
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
 		constant scales : real_vector(3-1 downto 0) := (1.0, 2.0, 5.0);
@@ -36,9 +40,9 @@ architecture def of scopeio_axisy is
 		variable i, j   : natural;
 	begin
 		for l in 0 to 16-1 loop
-			i := (3-1) - (l / 3) mod 3;
-			j := l mod 3;
-			aux := real((num-1)/2)*scales(j)*step*real(10**i);
+			i := (3-1) - ((l+start) / 3) mod 3;
+			j := (l+start) mod 3;
+			aux := real((num-1)/2)*scales(j)*step*real(10**i)+ bias*real(10**(3*((l+start) / 9)));
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 				retval := retval sll (20+12);
 				retval((20+12)-1 downto 0) := unsigned(to_bcd(aux,20, true)) & (1 to 12 => '0');
@@ -49,9 +53,9 @@ architecture def of scopeio_axisy is
 	end;
 
 	signal pstn      : std_logic_vector(win_y'length-1 downto 0); 
-	signal bias      : std_logic_vector(pstn'left downto 5); 
+	signal offset    : std_logic_vector(pstn'left downto 5); 
 
-	signal char_addr : std_logic_vector(0 to axis_scale'length+bias'length+2-1);
+	signal char_addr : std_logic_vector(0 to axis_scale'length+offset'length+2-1);
 	signal char_code : std_logic_vector(2*4-1 downto 0);
 	signal char_line : std_logic_vector(0 to 8-1);
 	signal char_dot  : std_logic_vector(0 to 0);
@@ -81,19 +85,19 @@ begin
 				bsln := to_unsigned(8/2,bsln'length);
 			end if;
 
-			pstn <= std_logic_vector(refn + bsln);
-			refn := unsigned(win_y);
-			bias <= std_logic_vector(unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0011"));
+			pstn    <= std_logic_vector(refn + bsln);
+			refn    := unsigned(win_y);
+			offset  <= std_logic_vector(unsigned(pstn(pstn'left downto 5)) + unsigned'(B"0011"));
 			aon     := axis_on;
 			mark_on <= setif(pstn(5-1 downto 3)=(1 to 2 => '0')) and aon;
 		end if;
 	end process;
 
-	char_addr <= axis_scale & bias & win_x(6-1 downto 4);
+	char_addr <= axis_scale & offset & win_x(6-1 downto 4);
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.05001, 16))
+		bitrom => marker(0.05001, 16, input_bias, scale_start))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

@@ -82,16 +82,16 @@ begin
 
 		spidcm_e : entity hdl4fpga.dfs2dfs
 		generic map (
-			dcm_per => 20.0,
+			dcm_per  => 20.0,
 			dfs1_mul => 32,
 			dfs1_div => 25,
 			dfs2_mul => 17,
 			dfs2_div => 25)
 		port map(
-			dcm_rst => dfs_rst,
-			dcm_clk => sys_clk,
-			dfs_clk => spi_clk,
-			dcm_lck => spi_rst);
+			dcm_rst  => dfs_rst,
+			dcm_clk  => sys_clk,
+			dfs_clk  => spi_clk,
+			dcm_lck  => spi_rst);
 
 
 		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
@@ -119,7 +119,7 @@ begin
 			end if;
 		end process;
 
-		ampclkf_p: process (spi_clk)
+		ampclkf_p : process (spi_clk)
 		begin
 			if spi_rst='0' then
 				sckamp_fd <= '0';
@@ -186,7 +186,7 @@ begin
 						end loop;
 						sample <= std_logic_vector(aux);
 					end if;
-					dac_shr := "----------0011" & "00" & dac_chan & dac_data;
+					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
 					if adcdac_sel ='1' then
 						if to_integer(dac_data)=(2048+p2p/2) then
 							dac_data := to_unsigned(2048-p2p/2, dac_data'length);
@@ -213,7 +213,6 @@ begin
 				dac_sdi <= dac_shr(0);
 			end if;
 		end process;
-
 	end block;
 
 	process (e_rx_clk, rot_a, rot_b)
@@ -233,6 +232,9 @@ begin
 	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		input_bias := 1.65,
+		input_unit := 1.25/8192.0)
 	port map (
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,

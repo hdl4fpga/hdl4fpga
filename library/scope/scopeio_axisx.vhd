@@ -7,17 +7,17 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisx is
 	generic (
-		num_of_seg  : natural := 2;
-		div_per_seg : natural := 3;
-		fonts      : std_logic_vector);
+		fonts       : std_logic_vector;
+		scale_start : natural := 0;
+		div_per_seg : natural := 1);
 	port (
-		video_clk  : in  std_logic;
-		win_on     : in  std_logic_vector;
-		win_x      : in  std_logic_vector;
-		win_y      : in  std_logic_vector;
-		axis_on    : in  std_logic;
-		axis_scale : in  std_logic_vector(4-1 downto 0);
-		axis_dot   : out std_logic);
+		video_clk   : in  std_logic;
+		win_on      : in  std_logic_vector;
+		win_x       : in  std_logic_vector;
+		win_y       : in  std_logic_vector;
+		axis_on     : in  std_logic;
+		axis_scale  : in  std_logic_vector(4-1 downto 0);
+		axis_dot    : out std_logic);
 end;
 
 architecture def of scopeio_axisx is
@@ -98,7 +98,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.50001, num_of_seg*div_per_seg+1, false))
+		bitrom => marker(0.25001, win_on'length*div_per_seg+1, false))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,
@@ -108,13 +108,12 @@ begin
 	begin
 	 	sgmt <= (others => '-');
 		for i in 0 to win_on'length-1 loop
-			if unsigned(win_on)=to_unsigned(2**i,win_on'length) then
+			if unsigned(reverse(win_on))=to_unsigned(2**i,win_on'length) then
 				sgmt <= std_logic_vector(to_unsigned(i, sgmt'length));
 			end if;
 		end loop;
 	 end process;
 
---	sgmt <= (0 => win_on(1) or win_on(3), 1 => win_on(2) or win_on(3));
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 8,

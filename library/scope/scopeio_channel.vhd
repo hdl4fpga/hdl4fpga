@@ -10,27 +10,29 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio_channel is
 	generic(
-		inputs      : natural;
-		chan_x      : natural;
-		chan_width  : natural;
-		chan_height : natural;
-		scr_width   : natural;
-		height      : natural);
+		inputs       : natural;
+		input_bias   : real    := 0.0;
+		scaley_start : natural := 0;
+		chan_x       : natural;
+		chan_width   : natural;
+		chan_height  : natural;
+		scr_width    : natural;
+		height       : natural);
 	port (
-		video_clk   : in  std_logic;
-		video_nhl   : in  std_logic;
-		text_clk    : in  std_logic;
-		text_we     : in  std_logic := '1';
-		text_data   : in  std_logic_vector;
-		text_addr   : in  std_logic_vector;
-		abscisa     : out std_logic_vector;
-		ordinates   : in  std_logic_vector;
-		offset      : in  std_logic_vector;
-		scale_x     : in  std_logic_vector(4-1 downto 0);
-		scale_y     : in  std_logic_vector(4-1 downto 0);
-		win_frm     : in  std_logic_vector;
-		win_on      : in  std_logic_vector;
-		video_dot   : out std_logic_vector);
+		video_clk    : in  std_logic;
+		video_nhl    : in  std_logic;
+		text_clk     : in  std_logic;
+		text_we      : in  std_logic := '1';
+		text_data    : in  std_logic_vector;
+		text_addr    : in  std_logic_vector;
+		abscisa      : out std_logic_vector;
+		ordinates    : in  std_logic_vector;
+		offset       : in  std_logic_vector;
+		scale_x      : in  std_logic_vector(4-1 downto 0);
+		scale_y      : in  std_logic_vector(4-1 downto 0);
+		win_frm      : in  std_logic_vector;
+		win_on       : in  std_logic_vector;
+		video_dot    : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -144,18 +146,21 @@ begin
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 	axisy_e : entity hdl4fpga.scopeio_axisy
 	generic map (
-		fonts      => psf1digit8x8)
+		fonts       => psf1digit8x8,
+		scale_start => scaley_start,
+		input_bias  => input_bias)
 	port map (
-		video_clk  => video_clk,
-		win_x      => win_x,
-		win_y      => axisy_off, 
-		axis_on    => axisy_on,
-		axis_scale => scale_y,
-		axis_dot   => axisy_don);
+		video_clk   => video_clk,
+		win_x       => win_x,
+		win_y       => axisy_off, 
+		axis_on     => axisy_on,
+		axis_scale  => scale_y,
+		axis_dot    => axisy_don);
 
 	axisx_e : entity hdl4fpga.scopeio_axisx
 	generic map (
-		fonts      => psf1digit8x8)
+		fonts       => psf1digit8x8,
+		div_per_seg => chan_width/(32*5))
 	port map (
 		video_clk  => video_clk,
 		win_on     => win_on,

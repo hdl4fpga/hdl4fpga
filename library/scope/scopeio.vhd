@@ -9,8 +9,10 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
-		layout_id   : natural := 1;
-		inputs      : natural := 1);
+		layout_id   : natural := 0;
+		inputs      : natural := 1;
+		input_unit  : real := 1.0;
+		input_bias  : real := 0.0);
 	port (
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
@@ -260,11 +262,11 @@ begin
 				k := i;
 				case j mod 3 is
 				when 0 =>           -- 1.0
-					scales(k) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
+					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
 				when 1 =>           -- 2.0
-					scales(k) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), scales(0)'length);
+					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), scales(0)'length);
 				when 2 =>           -- 5.0
-					scales(k) := to_signed(natural(round(2.0**(scales(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), scales(0)'length);
+					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), scales(0)'length);
 				when others =>
 				end case;
 			end loop;
@@ -489,6 +491,7 @@ begin
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs      => inputs,
+		input_bias  => input_bias,
 		chan_x      => ly_dptr(layout_id).chan_x,
 		chan_width  => ly_dptr(layout_id).chan_width,
 		chan_height => ly_dptr(layout_id).chan_height,

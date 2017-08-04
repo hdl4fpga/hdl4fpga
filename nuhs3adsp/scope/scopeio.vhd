@@ -92,6 +92,9 @@ begin
 	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		input_bias  => 1.65,
+		input_unit  => 1.25/8192.0)
 	port map (
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
