@@ -161,7 +161,7 @@ begin
 		end process;
 
 		adcdac_p : process (amp_spi, spi_clk)
-			constant p2p        : natural := 1550;
+			constant p2p        : natural := 2*1550;
 			constant cycle      : natural := 34;
 			variable cntr       : unsigned(0 to 6) := (others => '0');
 			variable adin       : unsigned(32-1 downto 0);
@@ -181,7 +181,7 @@ begin
 					if adcdac_sel ='0' then
 						for i in 1 to 2-1 loop
 							aux  := aux  sll sample_size;
-							aux(sample_size-1 downto 0) := adin(sample_size-1 downto 0);
+							aux(sample_size-1 downto 0) := not adin(sample_size-1 downto 0) + 1;
 							adin := adin srl (adin'length/2);
 						end loop;
 						sample <= std_logic_vector(aux);
