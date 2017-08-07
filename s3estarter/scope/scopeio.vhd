@@ -161,7 +161,7 @@ begin
 		end process;
 
 		adcdac_p : process (amp_spi, spi_clk)
-			constant p2p        : natural := 3100;
+			constant p2p        : natural := 1550;
 			constant cycle      : natural := 34;
 			variable cntr       : unsigned(0 to 6) := (others => '0');
 			variable adin       : unsigned(32-1 downto 0);
@@ -233,8 +233,9 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		input_bias := 1.65,
-		input_unit := 1.25/8192.0)
+		layout_id  => 1,
+		input_bias => 1.65,
+		input_unit => (1.25*625.0/8192.0))
 	port map (
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,
