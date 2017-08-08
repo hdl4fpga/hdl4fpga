@@ -181,7 +181,7 @@ begin
 					if adcdac_sel ='0' then
 						for i in 1 to 2-1 loop
 							aux  := aux  sll sample_size;
-							aux(sample_size-1 downto 0) := not adin(sample_size-1 downto 0) + 1;
+							aux(sample_size-1 downto 0) := not adin(sample_size-1 downto 0);
 							adin := adin srl (adin'length/2);
 						end loop;
 						sample <= std_logic_vector(aux);

@@ -12,6 +12,7 @@ entity scopeio_channel is
 	generic(
 		inputs       : natural;
 		input_bias   : real    := 0.0;
+		num_of_seg   : natural;
 		scaley_start : natural := 0;
 		chan_x       : natural;
 		chan_width   : natural;
@@ -160,6 +161,7 @@ begin
 	axisx_e : entity hdl4fpga.scopeio_axisx
 	generic map (
 		fonts       => psf1digit8x8,
+		num_of_seg  => num_of_seg,
 		div_per_seg => chan_width/(32*5))
 	port map (
 		video_clk  => video_clk,

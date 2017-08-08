@@ -9,6 +9,7 @@ entity scopeio_axisx is
 	generic (
 		fonts       : std_logic_vector;
 		scale_start : natural := 0;
+		num_of_seg  : natural;
 		div_per_seg : natural := 1);
 	port (
 		video_clk   : in  std_logic;
@@ -33,7 +34,7 @@ architecture def of scopeio_axisx is
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
 		constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
-		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '-');
+		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '1');
 		variable aux    : real;
 		variable i, j   : natural;
 	begin
@@ -54,7 +55,7 @@ architecture def of scopeio_axisx is
 		return std_logic_vector(retval);
 	end;
 
-	signal axis_sgmt : std_logic_vector(unsigned_num_bits(win_on'length-1)-1 downto 0);
+	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
 	signal sgmt      : std_logic_vector(axis_sgmt'range);
 	signal win_x4    : std_logic;
 
@@ -98,26 +99,35 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.25001, win_on'length*div_per_seg+1, false))
+		bitrom => marker(0.25001, 2*div_per_seg+1, false))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,
 		data => char_code);
 
-	process(win_on)
+	process(win_on(0 to num_of_seg-1))
 	begin
 	 	sgmt <= (others => '-');
-		for i in 0 to win_on'length-1 loop
-			if unsigned(reverse(win_on))=to_unsigned(2**i,win_on'length) then
+		for i in 0 to num_of_seg-1 loop
+			if unsigned(reverse(win_on(0 to num_of_seg-1)))=to_unsigned(2**i, num_of_seg) then
 				sgmt <= std_logic_vector(to_unsigned(i, sgmt'length));
 			end if;
 		end loop;
 	 end process;
 
+	sgmt_e : entity hdl4fpga.align
+	generic map (
+		n => sgmt'length,
+		d => (sgmt'range => 2))
+	port map (
+		clk => video_clk,
+		di  => sgmt,
+		do  => axis_sgmt);
+
 	winx_e : entity hdl4fpga.align
 	generic map (
-		n => 8,
-		d => (0 to 2 => 6,  3 => 4, 4 => 2, 5 => 4, 6 to 7 => 2))
+		n => 6,
+		d => (0 to 2 => 6,  3 => 4, 4 => 2, 5 => 4))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
@@ -126,16 +136,12 @@ begin
 		di(3)  => win_x(3),
 		di(4)  => win_x(4),
 		di(5)  => mark_on,
-		di(6)  => sgmt(0),
-		di(7)  => sgmt(1),
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
 		do(2)  => sel_dot(2),
 		do(3)  => sel_code(0),
 		do(4)  => win_x4,
-		do(5)  => dot_on,
-		do(6)  => axis_sgmt(0),
-		do(7)  => axis_sgmt(1));
+		do(5)  => dot_on);
 
 	winy_e : entity hdl4fpga.align
 	generic map (

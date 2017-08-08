@@ -38,7 +38,7 @@ architecture beh of scopeio is
 
 	type layout is record 
 		scr_width   : natural;
-		num_of_chan : natural;
+		num_of_seg  : natural;
 		chan_x      : natural;
 		chan_y      : natural;
 		chan_width  : natural;
@@ -47,16 +47,16 @@ architecture beh of scopeio is
 
 	type layout_vector is array (natural range <>) of layout;
 	constant ly_dptr : layout_vector(0 to 1) := (
---		0 => (scr_width | num_of_chan | chan_x | chan_y | chan_width | chan_height
-		0 => (     1920,            4,     320,     270,       50*32,          256),
-		1 => (      800,            2,     320,     300,       15*32,          256));
+--		0 => (scr_width | num_of_seg | chan_x | chan_y | chan_width | chan_height
+		0 => (     1920,           4,     320,     270,       50*32,          256),
+		1 => (      800,           2,     320,     300,       15*32,          256));
 
 	function to_naturalvector (
 		constant arg : layout)
 		return natural_vector is
-		variable rval : natural_vector(0 to 4*arg.num_of_chan-1);
+		variable rval : natural_vector(0 to 4*arg.num_of_seg-1);
 	begin
-		for i in 0 to arg.num_of_chan-1 loop
+		for i in 0 to arg.num_of_seg-1 loop
 			rval(i*4+0) := 0;
 			rval(i*4+1) := i*arg.chan_y;
 			rval(i*4+2) := arg.scr_width;
@@ -88,13 +88,13 @@ architecture beh of scopeio is
 	signal video_dot   : std_logic_vector(0 to 19-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
-	signal abscisa     : std_logic_vector(video_hcntr'range);
+	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1));
 	
 	signal win_don     : std_logic_vector(0 to 18-1);
 	signal win_frm     : std_logic_vector(0 to 18-1);
 	signal pll_rdy     : std_logic;
 
-	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_chan*ly_dptr(layout_id).chan_width-1));
+	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg*ly_dptr(layout_id).chan_width-1));
 	signal input_we    : std_logic;
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
@@ -492,6 +492,7 @@ begin
 	generic map (
 		inputs      => inputs,
 		input_bias  => input_bias,
+		num_of_seg  => ly_dptr(layout_id).num_of_seg,
 		chan_x      => ly_dptr(layout_id).chan_x,
 		chan_width  => ly_dptr(layout_id).chan_width,
 		chan_height => ly_dptr(layout_id).chan_height,
