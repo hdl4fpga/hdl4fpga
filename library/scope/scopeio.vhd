@@ -153,7 +153,11 @@ begin
 			if pll_rdy='1' then
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
-					amp       <= scope_data(3 downto 0);
+					for i in 0 to inputs-1 loop
+						amp(4-1 downto 0) <= scope_data(3 downto 0);
+						amp <= std_logic_vector(unsigned(amp) sll 4);
+					end loop;
+					amp <= scope_data(3 downto 0) & scope_data(3 downto 0);
 					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(0) <= resize(signed(scope_data), vmword'length);
@@ -274,8 +278,8 @@ begin
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
 				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
-				m(i)         := shift_right(m(i), (a(0)'length/2));
-				vm_inputs(i) <= signed(m(i)(vmword'range));
+				m(i)         := shift_right(m(i), a(0)'length/2);
+				vm_inputs(i) <= m(i)(vmword'range);
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl (amp'length/inputs);
@@ -416,7 +420,7 @@ begin
 		begin
 			case text_addr(7-1 downto 5) is
 			when "00" =>
-				scale <= amp; 
+				scale <= amp(4-1 downto 0); 
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "01" =>
 				scale <= (others => '-');
@@ -510,9 +514,9 @@ begin
 		win_on     => win_don,
 		video_dot  => video_dot);
 
-	video_red   <= video_io(2) and (video_dot(1) or video_dot(0));
-	video_green <= video_io(2) and (video_dot(1) or video_dot(0));
-	video_blue  <= video_io(2) and (not video_dot(1) and video_dot(0));
+	video_red   <= video_io(2) and (video_dot(1) or video_dot(0) or video_dot(2));
+	video_green <= video_io(2) and (video_dot(1) or video_dot(0) or video_dot(2));
+	video_blue  <= video_io(2) and (not video_dot(1) and video_dot(0) and not video_dot(2));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
