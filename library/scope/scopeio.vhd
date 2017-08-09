@@ -103,13 +103,13 @@ architecture beh of scopeio is
 	signal scale_y     : std_logic_vector(4-1 downto 0);
 	signal scale_x     : std_logic_vector(4-1 downto 0);
 	signal amp         : std_logic_vector(4*inputs-1 downto 0);
-	signal trigger_lvl : sword_vector(inputs-1 downto 0);
 
-	subtype vmword  is unsigned(unsigned_num_bits(ly_dptr(layout_id).chan_y-1) downto 0);
+	subtype vmword  is signed(unsigned_num_bits(ly_dptr(layout_id).chan_y)-1 downto 0);
 	type    vmword_vector  is array (natural range <>) of vmword;
 
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
 	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
+	signal  trigger_lvl : vmword_vector(inputs-1 downto 0);
 	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
@@ -156,9 +156,9 @@ begin
 					amp       <= scope_data(3 downto 0);
 					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
-					offset(0) <= unsigned(resize(signed(scope_data), vmword'length));
+					offset(0) <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
-					trigger_lvl(0) <= std_logic_vector(resize(signed(scope_data), sample_word'length) sll (sample_word'length-scope_data'length));
+					trigger_lvl(0) <= resize(signed(scope_data), vmword'length);
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
@@ -273,10 +273,9 @@ begin
 
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				vm_inputs(i) <= unsigned(signed(chan_aux(i)) - signed(offset(i)));
 				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
 				m(i)         := shift_right(m(i), (a(0)'length/2));
-				chan_aux(i)  := to_unsigned(2**(vmword'length-2)+ly_dptr(layout_id).chan_height/2, vmword'length)-unsigned(m(i)(vmword'range));
+				vm_inputs(i) <= signed(m(i)(vmword'range));
 				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
 				input_aux    := input_aux srl sample_word'length;
 				amp_aux      := amp_aux   srl (amp'length/inputs);
@@ -286,11 +285,11 @@ begin
 	end process;
 
 	trigger_b  : block
-		signal input_level : sample_word;
+		signal input_level : vmword;
 		signal trigger_ena : std_logic;
 	begin
 		process (input_clk)
-			variable input_aux  : unsigned(input_data'length-1 downto 0);
+			variable input_aux  : vmword;
 			variable input_ge   : std_logic;
 			variable input_trgr : std_logic;
 		begin
@@ -310,9 +309,9 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge := setif(signed(input_aux(sample_word'range)) >= signed(trigger_lvl(0)));
+					input_ge := setif(input_aux >= trigger_lvl(0));
 				end if;
-				input_aux := unsigned(input_data);
+				input_aux := vm_inputs(0);
 			end if;
 		end process;
 
@@ -339,12 +338,12 @@ begin
 	begin
 
 		process (vm_inputs)
-			variable aux : unsigned(vm_data'length-1 downto 0);
+			variable aux  : signed(vm_data'length-1 downto 0);
 		begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
 				aux := aux sll vm_inputs(0)'length;
-				aux(vmword'range) := vm_inputs(i);
+				aux(vmword'range) := vm_inputs(i)+offset(i);
 			end loop;
 			vm_data <= std_logic_vector(aux);
 		end process;
@@ -414,31 +413,29 @@ begin
 	begin
 
 		process(scale_y, text_addr, offset)
-			variable xxx : unsigned(sample_word'range);
 		begin
-		case text_addr(7-1 downto 5) is
-		when "00" =>
-			scale <= amp; 
-			value <= std_logic_vector(to_unsigned(32,value'length));
-		when "01" =>
-			scale <= (others => '-');
-			for x in 0 to 2**scale_x'length-1 loop
-				if x=to_integer(unsigned(scale_x)) then
-					scale <= std_logic_vector(to_unsigned(8-(x mod 9), scale'length));
-				end if;
-			end loop;
-			value <= std_logic_vector(to_unsigned(32,value'length));
-		when "10" =>
-			scale <= scale_y;
-			value <= std_logic_vector(offset(0)(9-1 downto 0));
-		when "11" =>
-			scale <= (others => '0');
-			xxx   := unsigned(trigger_lvl(0)) srl (sample_word'length-scope_data'length-1);
-			value <= std_logic_vector(xxx(9-1 downto 0));
-		when others =>
-			scale <= (others => '0');
-			value <= (others => '0');
-		end case;
+			case text_addr(7-1 downto 5) is
+			when "00" =>
+				scale <= amp; 
+				value <= std_logic_vector(to_unsigned(32,value'length));
+			when "01" =>
+				scale <= (others => '-');
+				for x in 0 to 2**scale_x'length-1 loop
+					if x=to_integer(unsigned(scale_x)) then
+						scale <= std_logic_vector(to_unsigned(8-(x mod 9), scale'length));
+					end if;
+				end loop;
+				value <= std_logic_vector(to_unsigned(32,value'length));
+			when "10" =>
+				scale <= scale_y;
+				value <= std_logic_vector(offset(0)(9-1 downto 0));
+			when "11" =>
+				scale <= scale_y;
+				value <= std_logic_vector(trigger_lvl(0)(9-1 downto 0));
+			when others =>
+				scale <= (others => '0');
+				value <= (others => '0');
+			end case;
 		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (

@@ -37,7 +37,7 @@ entity scopeio_channel is
 end;
 
 architecture def of scopeio_channel is
-	subtype vmword is std_logic_vector(unsigned_num_bits(height-1)  downto 0);
+	subtype vmword is std_logic_vector(0 to unsigned_num_bits(chan_height-1));
 	type vmword_vector is array (natural range <>) of vmword;
 
 	signal samples : vmword_vector(inputs-1 downto 0);
@@ -185,12 +185,12 @@ begin
 
 	process (ordinates)
 		subtype sample_word is unsigned(ordinates'length/inputs-1 downto 0);
-		variable aux : unsigned(ordinates'length-1 downto 0);
+		variable aux : unsigned(0 to ordinates'length-1);
 	begin
 		aux := unsigned(ordinates);
 		for i in 0 to inputs-1 loop
-			samples(i) <= std_logic_vector(resize(aux(vmword'range),vmword'length));
-			aux        := aux srl sample_word'length;
+			samples(i) <= std_logic_vector(3*chan_height/2-aux(vmword'range));
+			aux        := aux sll sample_word'length;
 		end loop;
 	end process;
 
@@ -265,7 +265,7 @@ begin
 		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
-			n => unsigned_num_bits(height-1)+1)
+			n => unsigned_num_bits(chan_height-1)+1)
 		port map (
 			video_clk  => video_clk,
 			video_ena  => plot_on,
