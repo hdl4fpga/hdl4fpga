@@ -37,7 +37,7 @@ entity scopeio_channel is
 end;
 
 architecture def of scopeio_channel is
-	subtype vmword is std_logic_vector(0 to unsigned_num_bits(chan_height-1));
+	subtype vmword is std_logic_vector(0 to unsigned_num_bits(chan_height-1)+1);
 	type vmword_vector is array (natural range <>) of vmword;
 
 	signal samples : vmword_vector(inputs-1 downto 0);
@@ -183,15 +183,16 @@ begin
 		di(0) => axis_don,
 		do(0) => axis_dot);
 
-	process (ordinates)
-		subtype sample_word is unsigned(ordinates'length/inputs-1 downto 0);
-		variable aux : unsigned(0 to ordinates'length-1);
+	process (video_clk)
+		variable aux : signed(0 to ordinates'length-1);
 	begin
-		aux := unsigned(ordinates);
-		for i in 0 to inputs-1 loop
-			samples(i) <= std_logic_vector(3*chan_height/2-aux(vmword'range));
-			aux        := aux sll sample_word'length;
-		end loop;
+		if rising_edge(video_clk) then
+			aux := signed(ordinates);
+			for i in 0 to inputs-1 loop
+				samples(i) <= std_logic_vector(3*chan_height/2-resize(aux(0 to ordinates'length/inputs),vmword'length));
+				aux        := aux sll ordinates'length/inputs;
+			end loop;
+		end if;
 	end process;
 
 	meter_b : block
@@ -265,7 +266,7 @@ begin
 		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
 		draw_vline : entity hdl4fpga.draw_vline
 		generic map (
-			n => unsigned_num_bits(chan_height-1)+1)
+			n => vmword'length)
 		port map (
 			video_clk  => video_clk,
 			video_ena  => plot_on,
