@@ -189,7 +189,7 @@ begin
 		if rising_edge(video_clk) then
 			aux := signed(ordinates);
 			for i in 0 to inputs-1 loop
-				samples(i) <= std_logic_vector(3*chan_height/2-resize(aux(0 to ordinates'length/inputs),vmword'length));
+				samples(i) <= std_logic_vector(3*chan_height/2-resize(aux(0 to ordinates'length/inputs-1),vmword'length));
 				aux        := aux sll ordinates'length/inputs;
 			end loop;
 		end if;
