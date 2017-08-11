@@ -1,7 +1,11 @@
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
+
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -98,7 +102,6 @@ architecture beh of scopeio is
 	signal input_we    : std_logic;
 
 	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
-	type sword_vector is array (natural range <>) of sample_word;
 
 	signal scale_y     : std_logic_vector(4-1 downto 0);
 	signal scale_x     : std_logic_vector(4-1 downto 0);
@@ -248,41 +251,48 @@ begin
 	process (input_clk)
 		type  mword_vector  is array (natural range <>) of signed(1*18-1 downto 0);
 		type  mdword_vector is array (natural range <>) of signed(2*18-1 downto 0);
+		variable m : mdword_vector(0 to inputs-1);
+		variable a : mword_vector(0 to inputs-1);
 
-		variable m         : mdword_vector(0 to inputs-1);
-		variable a         : mword_vector(0 to inputs-1);
-		variable scales    : mword_vector(0 to 16-1)  := (others => (others => '-'));
+		function scales_init (
+			constant size : natural)
+			return mword_vector is
+			variable j : natural;
+			variable k : natural;
+			variable n : integer;
+			variable rval : mword_vector(0 to size-1);
+		begin
+			for i in 0 to size-1 loop 
+				j := i + 1;
+				n := (j - (j mod 3)) / 3 - 3;
+				case j mod 3 is
+				when 0 =>           -- 1.0
+					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), rval(0)'length);
+				when 1 =>           -- 2.0
+					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), rval(0)'length);
+				when 2 =>           -- 5.0
+					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), rval(0)'length);
+				when others =>
+				end case;
+			end loop;
+			return rval;
+		end;
+
+		constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'length-1 downto 0);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
-		variable n,j,k     : integer;
 	begin
 		if rising_edge(input_clk) then
-			for i in scales'range loop 
-				j := i + 1;
-				n := (j - (j mod 3)) / 3 - 3;
-				k := (i + scales'length/2) mod scales'length;
-				k := i;
-				case j mod 3 is
-				when 0 =>           -- 1.0
-					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), scales(0)'length);
-				when 1 =>           -- 2.0
-					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), scales(0)'length);
-				when 2 =>           -- 5.0
-					scales(k) := to_signed(natural(round(input_unit*2.0**(scales(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), scales(0)'length);
-				when others =>
-				end case;
-			end loop;
-
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				m(i)         := a(i)*scales(to_integer(amp_aux(4-1 downto 0)));
-				m(i)         := shift_right(m(i), a(0)'length/2);
+				m(i) := shift_right(a(i)*scales(to_integer(amp_aux(4-1 downto 0))), a(0)'length/2);
 				vm_inputs(i) <= m(i)(vmword'range);
-				a(i)         := resize(signed(input_aux(sample_word'range)), a(0)'length);
-				input_aux    := input_aux srl sample_word'length;
-				amp_aux      := amp_aux   srl (amp'length/inputs);
+				a(i) := resize(signed(input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), a(0)'length);
+--				a(i) := resize(signed(input_aux(sample_word'length-1 downto 0)), a(0)'length);
+--				input_aux    := input_aux srl (input_aux'length/2);
+--				amp_aux      := amp_aux   srl (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
@@ -346,7 +356,7 @@ begin
 		begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
-				aux := aux sll vm_inputs(0)'length;
+				aux := aux sll vmword'length;
 				aux(vmword'range) := vm_inputs(i)+offset(i);
 			end loop;
 			vm_data <= std_logic_vector(aux);
@@ -514,9 +524,9 @@ begin
 		win_on     => win_don,
 		video_dot  => video_dot);
 
-	video_red   <= video_io(2) and (video_dot(1) or video_dot(0) or video_dot(2));
-	video_green <= video_io(2) and (video_dot(1) or video_dot(0) or video_dot(2));
-	video_blue  <= video_io(2) and (not video_dot(1) and video_dot(0) and not video_dot(2));
+	video_red   <= video_io(2) and (video_dot(0) or video_dot(1));
+	video_green <= video_io(2) and (video_dot(0) or video_dot(2));
+	video_blue  <= video_io(2) and (video_dot(0));
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);

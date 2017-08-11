@@ -181,15 +181,14 @@ begin
 				if cntr(0)='1' then
 					if adcdac_sel ='0' then
 
-						for i in 0 to inputs-1 loop
-							aux := aux sll sample_size;
-							aux(sample_size-1 downto 0) := not adin(0*16+sample_size-1 downto 0*16);
---							adin := adin srl (adin'length/2);
-						end loop;
-
+--						for i in 0 to inputs-1 loop
+--							aux := aux sll sample_size;
+--							aux(sample_size-1 downto 0) := not adin(sample_size-1 downto 0);
+--							adin := adin srl (adin'length/inputs);
+--						end loop;
 --						sample <= std_logic_vector(aux);
 						sample <= std_logic_vector(
-							adin(0*16+sample_size-1 downto 0*16) &
+							not adin(1*16+sample_size-1 downto 1*16) &
 							not adin(0*16+sample_size-1 downto 0*16));
 					end if;
 					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
