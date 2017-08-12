@@ -249,8 +249,8 @@ begin
 	end process;
 
 	process (input_clk)
-		type  mword_vector  is array (natural range <>) of signed(1*18-1 downto 0);
-		type  mdword_vector is array (natural range <>) of signed(2*18-1 downto 0);
+		type  mword_vector  is array (natural range <>) of signed(1*17-1 downto 0);
+		type  mdword_vector is array (natural range <>) of signed(2*17-1 downto 0);
 		variable m : mdword_vector(0 to inputs-1);
 		variable a : mword_vector(0 to inputs-1);
 
