@@ -1,10 +1,11 @@
 const dgram = require('dgram');
 
-var client = dgram.createSocket('udp4');
+var client  = dgram.createSocket('udp4');
+var channel = 0;
 window.addEventListener("load", function() {
 
 	function send (id, data) {
-		var buffer = Buffer.alloc(2);
+		var buffer = Buffer.alloc(3);
 		var host = "kit";
 		var port = 57001;
 
@@ -12,6 +13,8 @@ window.addEventListener("load", function() {
 			port = 57001;
 	
 		buffer[1] = parseInt(data);
+		buffer[2] = parseInt(channel);
+		console.log(channel);
 		switch(id) {
 		case "amp":
 			buffer[0] = 0;
@@ -57,6 +60,22 @@ window.addEventListener("load", function() {
 
 	document.getElementById("time").onchange = function(ev) {
 		send (this.id, parseInt(this.value));
+	}
+
+	document.getElementById("ch1").onclick = function(ev) {
+		channel = 0;
+		console.log("Pase por aca 1");
+	}
+
+	document.getElementById("ch2").onclick = function(ev) {
+		channel = 1;
+		console.log("Pase por aca 2");
+	}
+
+	document.getElementById("neg").onclick = function(ev) {
+	}
+
+	document.getElementById("pos").onclick = function(ev) {
 	}
 
 });

@@ -7,18 +7,38 @@
   </head>
   <body >
 		<table >
-				<tr>
-					<td><input id="unit"    type="range" class="vertical" value="0" min="0"   max="15"></td>
-					<td><input id="offset"  type="range" class="vertical" value="0" min="-128" max="128"/></td>
-					<td><input id="time"    type="range" class="vertical" value="0" min="0"    max="15"/></td>
-					<td><input id="trigger" type="range" class="vertical" value="0" min="-128" max="128"/></td>
+				<tr style="vertical-align:top">
+					<td style="vertical-align:top">
+						<input id="ch1" name="channel" type="radio" value="ch1">Canal 1
+						<input id="ch2" name="channel" type="radio" value="ch2">Canal 2
+					</td>
 				</tr>
-				<tr style="text-align:center;">
-					<td > <label>Unit</label> </td>
-					<td > <label>Offset</label>    </td>
-					<td > <label>Time</label>   </td>
-					<td > <label>Trigger</label>   </td>
+				<tr style="text-align:center;vertical-align:top">
+					<td style="vertical-align:top">
+						<div style="display:inline-block;vertical-align:top">
+							<input id="unit" type="range" class="vertical" value="0" min="0"   max="15">
+							<label style="display:block;">Escala<br>Vertical</label>
+						</div>
+						<div style="display:inline-block;vertical-align:top">
+							<input id="offset" type="range" class="vertical" value="0" min="-128" max="128"/>
+							<label style="display:block;">Position<br>Vertical</label>
+						</div>
+						<div style="display:inline-block;vertical-align:top">
+							<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>
+							<label style="display:block;">Escala<br>Horizontal</label>
+						</div>
+						<div style="display:inline-block;vertical-align:top">
+							<div style="display:inline-block;vertical-align:top">
+							<input id="trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
+							<label style="display:block;">Disparo</label>
+							</div>
+							<div style="display:inline-block;vertical-align:top;text-align:left">
+							<input id="pos" name="slope" type="radio" value="ch1">+<br>
+							<input id="neg" name="slope" type="radio" value="ch2">-
+							</div>
+						</div>
+					</td>
 				</tr>
-		</table><div id="xxx"></div>
+		</table>
   </body>
 </html>

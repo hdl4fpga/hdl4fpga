@@ -70,7 +70,7 @@ architecture beh of scopeio is
 	end;
 
 	signal hdr_data     : std_logic_vector(288-1 downto 0);
-	signal pld_data     : std_logic_vector(2*8-1 downto 0);
+	signal pld_data     : std_logic_vector(3*8-1 downto 0);
 	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
 	signal ser_data     : std_logic_vector(32-1 downto 0);
 
@@ -78,6 +78,7 @@ architecture beh of scopeio is
 	signal cga_we      : std_logic;
 	signal scope_cmd   : std_logic_vector(8-1 downto 0);
 	signal scope_data  : std_logic_vector(8-1 downto 0);
+	signal scope_chan  : std_logic_vector(8-1 downto 0);
 	signal char_dot    : std_logic;
 
 	signal video_hs    : std_logic;
@@ -112,7 +113,8 @@ architecture beh of scopeio is
 
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
 	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
-	signal  trigger_lvl : vmword_vector(inputs-1 downto 0);
+	signal  trigger_lvl : vmword;
+	signal  trigger_chn : std_logic_vector(8-1 downto 0);
 	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
@@ -147,6 +149,8 @@ begin
 		scope_cmd  <= std_logic_vector(data(scope_cmd'range));
 		data       := data srl scope_cmd'length;
 		scope_data <= std_logic_vector(data(scope_data'range));
+		data       := data srl scope_data'length;
+		scope_chan <= std_logic_vector(data(scope_chan'range));
 	end process;
 
 	process (mii_rxc)
@@ -157,22 +161,21 @@ begin
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
 					for i in 0 to inputs-1 loop
-						amp(4-1 downto 0) <= scope_data(3 downto 0);
-						amp <= std_logic_vector(unsigned(amp) sll 4);
+						if i=to_integer(unsigned(scope_chan(0 downto 0))) then
+							amp((i+1)*4-1 downto 4*i) <= scope_data(3 downto 0);
+						end if;
 					end loop;
-					amp <= scope_data(3 downto 0) & scope_data(3 downto 0);
 					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
-					offset(0) <= resize(signed(scope_data), vmword'length);
+					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
-					trigger_lvl(0) <= resize(signed(scope_data), vmword'length);
+					trigger_lvl <= resize(signed(scope_data), vmword'length);
+					trigger_chn <= scope_chan;
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
 				when others =>
 				end case;
-			end if;
-			if cmd_rdy='1' and cmd_edge='0' then
 			end if;
 			cmd_edge := cmd_rdy;
 		end if;
@@ -281,7 +284,7 @@ begin
 		constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
-		variable amp_aux   : unsigned(amp'length-1 downto 0);
+		variable amp_aux   : unsigned(amp'range);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
 	begin
 		if rising_edge(input_clk) then
@@ -292,7 +295,7 @@ begin
 				a(i) := resize(signed(input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), a(0)'length);
 --				a(i) := resize(signed(input_aux(sample_word'length-1 downto 0)), a(0)'length);
 --				input_aux    := input_aux srl (input_aux'length/2);
---				amp_aux      := amp_aux   srl (amp'length/inputs);
+				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
@@ -323,9 +326,9 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge := setif(input_aux >= trigger_lvl(0));
+					input_ge := setif(input_aux >= trigger_lvl);
 				end if;
-				input_aux := vm_inputs(0);
+				input_aux := vm_inputs((to_integer(unsigned(trigger_chn(0 downto 0)))));
 			end if;
 		end process;
 
@@ -422,30 +425,30 @@ begin
 		end;
 
 		signal display : std_logic_vector(0 to 7*4-1) := (others => '1');
-		signal scale   : std_logic_vector(0 to 4-1);
-		signal value   : std_logic_vector(0 to 9-1);
+		signal scale   : std_logic_vector(inputs*4-1 downto 0);
+		signal value   : std_logic_vector(inputs*9-1 downto 0);
 	begin
 
 		process(scale_y, text_addr, offset)
 		begin
 			case text_addr(7-1 downto 5) is
 			when "00" =>
-				scale <= amp(4-1 downto 0); 
+				scale(4-1 downto 0) <= amp(4-1 downto 0); 
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "01" =>
 				scale <= (others => '-');
 				for x in 0 to 2**scale_x'length-1 loop
 					if x=to_integer(unsigned(scale_x)) then
-						scale <= std_logic_vector(to_unsigned(8-(x mod 9), scale'length));
+						scale(4-1 downto 0) <= std_logic_vector(to_unsigned(8-(x mod 9),4));
 					end if;
 				end loop;
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "10" =>
-				scale <= scale_y;
+				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(offset(0)(9-1 downto 0));
 			when "11" =>
-				scale <= scale_y;
-				value <= std_logic_vector(trigger_lvl(0)(9-1 downto 0));
+				scale(4-1 downto 0) <= scale_y;
+				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
 			when others =>
 				scale <= (others => '0');
 				value <= (others => '0');
@@ -457,8 +460,8 @@ begin
 			int  => 2,
 			dec  => 3)
 		port map (
-			value => value,
-			scale => scale,
+			value => value(9-1 downto 0),
+			scale => scale(4-1 downto 0),
 			fmtds => display);	
 
 		process (mii_rxc)
