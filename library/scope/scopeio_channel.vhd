@@ -13,7 +13,7 @@ entity scopeio_channel is
 		inputs       : natural;
 		input_bias   : real    := 0.0;
 		num_of_seg   : natural;
-		scaley_start : natural := 0;
+		scaley_start : natural := 1;
 		chan_x       : natural;
 		chan_width   : natural;
 		chan_height  : natural;

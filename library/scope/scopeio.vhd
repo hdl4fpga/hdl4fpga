@@ -115,6 +115,7 @@ architecture beh of scopeio is
 	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
 	signal  trigger_lvl : vmword;
 	signal  trigger_chn : std_logic_vector(8-1 downto 0);
+	signal  trigger_edg : std_logic;
 	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
@@ -122,6 +123,36 @@ architecture beh of scopeio is
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
 	signal  text_addr   : std_logic_vector(9-1 downto 0);
+
+	subtype mword  is signed(0 to 18-1);
+	subtype mdword is signed(0 to 2*mword'length-1);
+	type  mword_vector  is array (natural range <>) of mword;
+	type  mdword_vector is array (natural range <>) of mdword;
+	function scales_init (
+		constant size : natural)
+		return mword_vector is
+		variable j : natural;
+		variable k : natural;
+		variable n : integer;
+		variable rval : mword_vector(0 to size-1);
+	begin
+		for i in 1 to size loop 
+			j := i;
+			n := (j - (j mod 3)) / 3;
+			case j mod 3 is
+			when 0 =>           -- 1.0
+				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
+			when 1 =>           -- 2.0
+				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
+			when 2 =>           -- 5.0
+				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
+			when others =>
+			end case;
+		end loop;
+		return rval;
+	end;
+
+	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 begin
 
@@ -145,12 +176,12 @@ begin
 	process (pld_data)
 		variable data : unsigned(pld_data'range);
 	begin
-		data       := unsigned(pld_data);
-		scope_cmd  <= std_logic_vector(data(scope_cmd'range));
-		data       := data srl scope_cmd'length;
-		scope_data <= std_logic_vector(data(scope_data'range));
-		data       := data srl scope_data'length;
-		scope_chan <= std_logic_vector(data(scope_chan'range));
+		data        := unsigned(pld_data);
+		scope_cmd   <= std_logic_vector(data(scope_cmd'range));
+		data        := data srl scope_cmd'length;
+		scope_data  <= std_logic_vector(data(scope_data'range));
+		data        := data srl scope_data'length;
+		scope_chan  <= std_logic_vector(data(scope_chan'range));
 	end process;
 
 	process (mii_rxc)
@@ -170,7 +201,8 @@ begin
 					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
 					trigger_lvl <= resize(signed(scope_data), vmword'length);
-					trigger_chn <= scope_chan;
+					trigger_chn <= scope_chan and x"7f";
+					trigger_edg <= scope_chan(scope_chan'left);
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
@@ -252,47 +284,21 @@ begin
 	end process;
 
 	process (input_clk)
-		type  mword_vector  is array (natural range <>) of signed(1*17-1 downto 0);
-		type  mdword_vector is array (natural range <>) of signed(2*17-1 downto 0);
-		variable m : mdword_vector(0 to inputs-1);
-		variable a : mword_vector(0 to inputs-1);
-
-		function scales_init (
-			constant size : natural)
-			return mword_vector is
-			variable j : natural;
-			variable k : natural;
-			variable n : integer;
-			variable rval : mword_vector(0 to size-1);
-		begin
-			for i in 0 to size-1 loop 
-				j := i + 1;
-				n := (j - (j mod 3)) / 3 - 3;
-				case j mod 3 is
-				when 0 =>           -- 1.0
-					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+0)*2.0**(n+0))), rval(0)'length);
-				when 1 =>           -- 2.0
-					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+0)*2.0**(n+1))), rval(0)'length);
-				when 2 =>           -- 5.0
-					rval(i) := to_signed(natural(round(input_unit*2.0**(rval(0)'length/2) * 5.0**(n+1)*2.0**(n+0))), rval(0)'length);
-				when others =>
-				end case;
-			end loop;
-			return rval;
-		end;
-
-		constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'range);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
+		variable m : mdword_vector(0 to inputs-1);
+		variable a : mword_vector(0 to inputs-1);
+		variable scale : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				m(i) := shift_right(a(i)*scales(to_integer(amp_aux(4-1 downto 0))), a(0)'length/2);
-				vm_inputs(i) <= m(i)(vmword'range);
-				a(i) := resize(signed(input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), a(0)'length);
+				m(i) := a(i)*scale(i);
+				scale(i) := scales(to_integer(amp_aux(4-1 downto 0)));
+				vm_inputs(i) <= resize(m(i)(0 to a(0)'length+2),vmword'length);
+				a(i) := resize(signed(input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length) sll (mword'length-sample_word'length);
 --				a(i) := resize(signed(input_aux(sample_word'length-1 downto 0)), a(0)'length);
 --				input_aux    := input_aux srl (input_aux'length/2);
 				amp_aux      := amp_aux   ror (amp'length/inputs);
@@ -326,7 +332,7 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge := setif(input_aux >= trigger_lvl);
+					input_ge := trigger_edg xnor setif(input_aux >= trigger_lvl);
 				end if;
 				input_aux := vm_inputs((to_integer(unsigned(trigger_chn(0 downto 0)))));
 			end if;
@@ -370,10 +376,12 @@ begin
 		wr_addr <= input_addr(vm_addr'range);
 
 		process (video_clk)
+			variable pp : std_logic_vector(rd_data'range);
 		begin
 			if rising_edge(video_clk) then
 				rd_addr   <= full_addr;
-				ordinates <= rd_data;
+				ordinates <= pp;
+				pp := rd_data;
 			end if;
 		end process;
 
@@ -433,7 +441,7 @@ begin
 		begin
 			case text_addr(7-1 downto 5) is
 			when "00" =>
-				scale(4-1 downto 0) <= amp(4-1 downto 0); 
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))+1); 
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "01" =>
 				scale <= (others => '-');
@@ -445,7 +453,7 @@ begin
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "10" =>
 				scale(4-1 downto 0) <= scale_y;
-				value <= std_logic_vector(offset(0)(9-1 downto 0));
+				value(9-1 downto 0) <= std_logic_vector(offset(0)(9-1 downto 0));
 			when "11" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
