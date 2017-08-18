@@ -295,12 +295,10 @@ begin
 		if rising_edge(input_clk) then
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				m(i) := a(i)*scale(i);
-				scale(i) := scales(to_integer(amp_aux(4-1 downto 0)));
-				vm_inputs(i) <= resize(m(i)(0 to a(0)'length+2),vmword'length);
-				a(i) := resize(signed(input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length) sll (mword'length-sample_word'length);
---				a(i) := resize(signed(input_aux(sample_word'length-1 downto 0)), a(0)'length);
---				input_aux    := input_aux srl (input_aux'length/2);
+				vm_inputs(i) <= resize(m(i)(0 to a(0)'length+1),vmword'length);
+				m(i)         := a(i)*scale(i);
+				scale(i)     := scales(to_integer(amp_aux(4-1 downto 0)));
+				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length) sll (mword'length-sample_word'length);
 				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
