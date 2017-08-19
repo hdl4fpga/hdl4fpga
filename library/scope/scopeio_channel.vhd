@@ -261,7 +261,7 @@ begin
 			do(0) => meter_dot);
 	end block;
 
-	plot_g : for i in 0 to 2-1 generate
+	plot_g : for i in 0 to inputs-1 generate
 		signal row1 : vmword;
 	begin
 		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));

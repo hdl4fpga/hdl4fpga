@@ -21,24 +21,21 @@ architecture beh of nuhs3adsp is
 	signal vga_blue   : std_logic;
 	signal vga_blank  : std_logic;
 
-	constant sample_size : natural := 9;
+	constant sample_size : natural := 14;
 
 	function sinctab (
 		constant x0 : integer;
 		constant x1 : integer;
 		constant n  : integer)
 		return std_logic_vector is
-		variable y   : real;
+		variable pp  : std_logic_vector(0 to n-1) := ('1', others => '0');
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/64.0); --/(real((i+x0))/100.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
---			if i=1599 then
---				aux(i*n to (i+1)*n-1) := (others => '0');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
+			if i mod 64 = 63 then
+				pp := not pp;
+			end if;
+			aux(i*n to (i+1)*n-1) := pp;
 		end loop;
 		return aux;
 	end;
@@ -92,9 +89,11 @@ begin
 	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
-	generic map (
-		input_bias  => 1.65,
-		input_unit  => 1.25/8192.0)
+	generic map (		layout_id  => 1,
+		inputs => 1,
+		input_bias => 0.0, --1.65,
+		input_unit => 1.25/2.0)
+	
 	port map (
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,

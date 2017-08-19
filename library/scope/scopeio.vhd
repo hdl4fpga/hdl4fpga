@@ -152,7 +152,7 @@ architecture beh of scopeio is
 		return rval;
 	end;
 
-	constant scales    : mword_vector(0 to 8-1)  := scales_init(8);
+	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 begin
 
@@ -297,7 +297,7 @@ begin
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= resize(m(i)(0 to a(0)'length),vmword'length);
 				m(i)         := a(i)*scale(i);
-				scale(i)     := scales(to_integer(amp_aux(3-1 downto 0)));
+				scale(i)     := scales(to_integer(amp_aux(4-1 downto 0)));
 				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length) sll 1;
 				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
