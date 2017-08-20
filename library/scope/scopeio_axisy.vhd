@@ -97,7 +97,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.02001, 16, input_bias, 4))
+		bitrom => marker(0.05001, 16, input_bias, 4))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

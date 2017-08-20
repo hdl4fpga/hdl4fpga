@@ -141,11 +141,11 @@ architecture beh of scopeio is
 			n := (j - (j mod 3)) / 3;
 			case j mod 3 is
 			when 0 =>           -- 1.0
-				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
+				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
 			when 1 =>           -- 2.0
-				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
+				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
 			when 2 =>           -- 5.0
-				rval(size-i) := to_signed(integer(round(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
+				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
 			when others =>
 			end case;
 		end loop;
@@ -295,10 +295,10 @@ begin
 		if rising_edge(input_clk) then
 			amp_aux := unsigned(amp);
 			for i in 0 to inputs-1 loop
-				vm_inputs(i) <= resize(m(i)(0 to a(0)'length),vmword'length);
+				vm_inputs(i) <= resize(m(i)(0 to a(0)'length-1),vmword'length);
 				m(i)         := a(i)*scale(i);
 				scale(i)     := scales(to_integer(amp_aux(4-1 downto 0)));
-				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length) sll 1;
+				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length);
 				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
