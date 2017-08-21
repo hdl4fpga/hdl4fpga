@@ -439,8 +439,8 @@ begin
 		begin
 			case text_addr(7-1 downto 5) is
 			when "00" =>
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))+1); 
-				value <= std_logic_vector(to_unsigned(32,value'length));
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
+				value <= std_logic_vector(to_unsigned(5*32,value'length));
 			when "01" =>
 				scale <= (others => '-');
 				for x in 0 to 2**scale_x'length-1 loop
