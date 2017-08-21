@@ -92,7 +92,7 @@ begin
 	generic map (		layout_id  => 1,
 		inputs => 1,
 		input_bias => 0.0, --1.65,
-		input_unit => (1.25*32.0*200.0)/8192.0)
+		input_unit => 100.0*(1.25*64.0)/8192.0)
 	
 	port map (
 		mii_rxc     => mii_rxc,
