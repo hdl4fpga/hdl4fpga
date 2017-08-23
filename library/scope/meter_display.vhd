@@ -41,7 +41,7 @@ begin
 		aux := resize(signed(value), aux'length);
 		for i in 0 to 2**scale'length-1 loop
 			if i=to_integer(unsigned(scale)) then
-				case 2-i mod 3 is
+				case i mod 3 is
 				when 1 => 
 					aux := aux sll 1;
 				when 2 =>
@@ -70,35 +70,9 @@ begin
 				auxs(4-1 downto 0) := auxi(0 to 4-1);
 				auxi := auxi sll 4;
 			end loop;
-			auxs := auxs sll 4;
-			auxs(4-1 downto 0) := auxf(0 to 4-1);
-			auxf := auxf sll 4;
-
-			for j in 1 to (i mod 9)/3 loop
-				auxf := auxf srl 4;
-				auxf(0 to 4-1) := auxs(4-1 downto 0);
-				auxs := auxs srl 4;
-			end loop;
-
-			for j in 1 to auxs'length/4 loop
-				if j /= auxs'length/4 then
-					auxs := auxs rol 4;
-					if auxs(4-1 downto 0)="0000" then
-						auxs(4-1 downto 0) := "1111";
-					else
-						auxs := auxs ror 4;
-						auxs(4-1 downto 0) := unsigned(bcd_sign);
-						auxs := auxs rol (auxs'length-4*(j-1));
-						exit;
-					end if;
-				else
-					auxs(4-1 downto 0) := unsigned(bcd_sign);
-					auxs := auxs rol 4;
-				end if;
-			end loop;
-
-			auxs := auxs sll 4;
-			auxs(4-1 downto 0) := unsigned'("1110");
+--			auxs := auxs sll 4;
+--			auxs(4-1 downto 0) := auxf(0 to 4-1);
+--			auxf := auxf sll 4;
 
 			for j in 0 to auxf'length/4-1 loop
 				auxs := auxs sll 4;
@@ -106,6 +80,24 @@ begin
 				auxf := auxf sll 4;
 			end loop;
 
+			auxs := auxs rol auxs'length-4*(int+dec);
+			for j in 0 to int-1 loop
+--				if j >= (i mod 9)/3 then
+					auxs := auxs rol 4;
+					if auxs(4-1 downto 0)="0000" then
+						auxs(4-1 downto 0) := "1111";
+					else
+						auxs := auxs ror 4;
+						auxs(4-1 downto 0) := unsigned(bcd_sign);
+						auxs := auxs rol (4*(int-j));
+						exit;
+					end if;
+			end loop;
+
+			auxs := auxs rol 4;
+			auxs(4-1 downto 0) := unsigned'("1110");
+
+--			auxs := auxs rol ((i mod 9)/3);
 --			auxs := auxs rol 4;
 --			auxs(4-1 downto 0) := unsigned(bcd_sign);
 --			auxs := auxs ror 4;

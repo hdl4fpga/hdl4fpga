@@ -34,19 +34,21 @@ architecture def of scopeio_axisy is
 		constant start  : natural)
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
-		constant scales : real_vector(3-1 downto 0) := (1.0, 2.0, 5.0);
+		constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
 		variable aux    : real;
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*(20+12)-1 downto 0) := (others => '0');
 		variable i, j   : natural;
+		variable a : real;
 	begin
 		for l in 0 to 16-1 loop
-			i := (3-1) - ((l+start) / 3) mod 3;
-			j := (l+start) mod 3;
-			aux := real((num-1)/2)*scales(j)*step*real(10**i)+ bias*real(10**(3*((l+start) / 9)));
+			i := ((l / 3)) mod 3;
+			j := l mod 3;
+			a := 10.0**(i);
+			aux := real((num-1)/2)*scales(j)*step*a; --bias/real(10**(3*((l+start) / 9)));
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 				retval := retval sll (20+12);
 				retval((20+12)-1 downto 0) := unsigned(to_bcd(aux,20, true)) & (1 to 12 => '0');
-				aux := aux - scales(j)*step*real(10**i);
+				aux := aux - scales(j)*step*a;
 			end loop;
 		end loop;
 		return std_logic_vector(retval);
@@ -97,7 +99,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.05001, 16, input_bias, 4))
+		bitrom => marker(0.01001, 16, input_bias, 4))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

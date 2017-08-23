@@ -141,11 +141,11 @@ architecture beh of scopeio is
 			n := (j - (j mod 3)) / 3;
 			case j mod 3 is
 			when 0 =>           -- 1.0
-				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
+				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
 			when 1 =>           -- 2.0
-				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
+				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
 			when 2 =>           -- 5.0
-				rval(size-i) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
+				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
 			when others =>
 			end case;
 		end loop;
@@ -440,7 +440,7 @@ begin
 			case text_addr(7-1 downto 5) is
 			when "00" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
-				value <= std_logic_vector(to_unsigned(5*32,value'length));
+				value <= std_logic_vector(to_unsigned(64,value'length));
 			when "01" =>
 				scale <= (others => '-');
 				for x in 0 to 2**scale_x'length-1 loop
