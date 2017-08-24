@@ -23,6 +23,7 @@ architecture def of meter_display is
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to 4*int-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
+	constant pp : integer := -1;
 begin
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
@@ -65,43 +66,38 @@ begin
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
 
-			for j in 0 to auxi'length/4-1 loop
-				auxs := auxs sll 4;
-				auxs(4-1 downto 0) := auxi(0 to 4-1);
-				auxi := auxi sll 4;
+			for j in 0 to int+dec loop
+				auxs := auxs rol 4;
+				if j=int+pp then
+					auxs(4-1 downto 0) := unsigned'("1110");
+				else
+					if (j < int-pp  and pp < 0) or (j < int and pp >=0) then
+						auxs(4-1 downto 0) := auxi(0 to 4-1);
+						auxi := auxi rol 4;
+					else 
+						auxs(4-1 downto 0) := auxf(0 to 4-1);
+						auxf := auxf rol 4;
+					end if;
+				end if;
 			end loop;
---			auxs := auxs sll 4;
---			auxs(4-1 downto 0) := auxf(0 to 4-1);
---			auxf := auxf sll 4;
 
-			for j in 0 to auxf'length/4-1 loop
-				auxs := auxs sll 4;
-				auxs(4-1 downto 0) := auxf(0 to 4-1);
-				auxf := auxf sll 4;
-			end loop;
-
-			auxs := auxs rol auxs'length-4*(int+dec);
-			for j in 0 to int-1 loop
---				if j >= (i mod 9)/3 then
+			for j in 1 to int+pp loop
+				if j /= int+pp then
 					auxs := auxs rol 4;
 					if auxs(4-1 downto 0)="0000" then
 						auxs(4-1 downto 0) := "1111";
 					else
-						auxs := auxs ror 4;
-						auxs(4-1 downto 0) := unsigned(bcd_sign);
-						auxs := auxs rol (4*(int-j));
+--						auxs := auxs ror 4;
+--						auxs(4-1 downto 0) := unsigned(bcd_sign);
+--						auxs := auxs rol (4*(int+dec+1-(j-1)));
 						exit;
 					end if;
+				else
+					auxs(4-1 downto 0) := unsigned(bcd_sign);
+					auxs := auxs rol (4*(int+dec+1+pp-(j-1)));
+				end if;
 			end loop;
-
-			auxs := auxs rol 4;
-			auxs(4-1 downto 0) := unsigned'("1110");
-
---			auxs := auxs rol ((i mod 9)/3);
---			auxs := auxs rol 4;
---			auxs(4-1 downto 0) := unsigned(bcd_sign);
---			auxs := auxs ror 4;
-
+------			auxs := auxs rol 4*((auxs'length-1-int)-((i mod 9)/3));
 			if i=to_integer(unsigned(scale)) then
 				fmtds <= std_logic_vector(auxs);
 			end if;
