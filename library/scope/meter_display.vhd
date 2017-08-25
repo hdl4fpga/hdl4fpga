@@ -58,13 +58,14 @@ begin
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(fmtds'length-1 downto 0);
 		constant i : natural := 0;
-	constant pp : integer := 2;
+		variable point : integer := -2;
 	begin
 		fmtds <= (fmtds'range => '-');
---		for i in 0 to 2**scale'length-1 loop
+		for i in 0 to 2**scale'length-1 loop
 			auxs := (others => '0');
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
+			point := ((i mod 9)/3)-2;
 
 			for j in 0 to int-1 loop
 				auxs := auxs rol 4;
@@ -78,13 +79,13 @@ begin
 				auxf := auxf rol 4;
 			end loop;
 
-			auxs := auxs ror 4*(dec-pp);
-			auxs((int+pp+1)*4-1 downto 0) := auxs((int+pp+1)*4-1 downto 0) sll 4;
+			auxs := auxs ror 4*(dec-point);
+			auxs((int+point+1)*4-1 downto 0) := auxs((int+point+1)*4-1 downto 0) sll 4;
 			auxs(4-1 downto 0) := unsigned'("1110");
-			auxs := auxs rol 4*(dec-pp);
+			auxs := auxs rol 4*(dec-point);
 
-			for j in 1 to auxs'length/4-dec-pp loop
-				if j /= auxs'length/4-dec-pp then
+			for j in 1 to auxs'length/4-(dec-point)-1 loop
+				if j /= auxs'length/4-(dec-point)-1 then
 					auxs := auxs rol 4;
 					if auxs(4-1 downto 0)="0000" then
 						auxs(4-1 downto 0) := "1111";
@@ -96,19 +97,15 @@ begin
 					end if;
 				else
 					auxs(4-1 downto 0) := unsigned(bcd_sign);
-					auxs := auxs rol 4*(dec+pp+1);
+					auxs := auxs rol 4*(dec-point+2);
 				end if;
 			end loop;
---
---			if pp+int < 1 then
---				auxs(4-1 downto 0) := unsigned(bcd_sign);
---				auxs := auxs rol 4*(int+dec+2);
---			end if;
-------			auxs := auxs rol 4*((auxs'length-1-int)-((i mod 9)/3));
+
+----			auxs := auxs rol 4*((auxs'length-1-int)-((i mod 9)/3));
 			if i=to_integer(unsigned(scale)) then
 				fmtds <= std_logic_vector(auxs);
 			end if;
---		end loop;
+		end loop;
 	end process;
 
 end;
