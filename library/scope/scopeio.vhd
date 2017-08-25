@@ -430,7 +430,7 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
+		signal display : std_logic_vector(0 to 7*4-1) := (others => '1');
 		signal scale   : std_logic_vector(inputs*4-1 downto 0);
 		signal value   : std_logic_vector(inputs*9-1 downto 0);
 	begin
@@ -459,8 +459,8 @@ begin
 				scale <= (others => '0');
 				value <= (others => '0');
 			end case;
---			value(9-1 downto 0) <= b"0_0110_0001"; --value(9-1 downto 0),
---			scale(4-1 downto 0) <= (0 to 4-1 => '0'); --scale(4-1 downto 0),
+			value(9-1 downto 0) <= b"0_0100_0001"; --value(9-1 downto 0),
+			scale(4-1 downto 0) <= (0 to 4-1 => '0'); --scale(4-1 downto 0),
 		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
@@ -490,7 +490,7 @@ begin
 				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
 					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
-					word2byte(display & (display'range => '1'), not sel) & (1 to 5*16-4 => '1')), 
+					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 				aux := unsigned(data);
