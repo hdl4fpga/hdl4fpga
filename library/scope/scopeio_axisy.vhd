@@ -41,7 +41,7 @@ architecture def of scopeio_axisy is
 		variable a : real;
 	begin
 		for l in 0 to 16-1 loop
-			i := (((l+start) / 3)) mod 3;
+			i := ((((l+start) mod 9)+3)/6+) mod 3 +2;
 			j := (l+start) mod 3;
 			a := 10.0**(i);
 			aux := real((num-1)/2)*scales(j)*step*a; --bias/real(10**(3*((l+start) / 9)));
@@ -99,7 +99,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(1.0001, 16, input_bias, 3))
+		bitrom => marker(0.010001, 16, input_bias, 0))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

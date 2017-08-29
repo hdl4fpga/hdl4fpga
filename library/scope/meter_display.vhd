@@ -66,7 +66,7 @@ begin
 			auxs := (others => '0');
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
-			point := ((i mod 9)/3)+1;
+			point := (((i+3) mod 9)/3);
 
 			for j in 0 to int-1 loop
 				auxs := auxs rol 4;

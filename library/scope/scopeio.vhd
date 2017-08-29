@@ -466,7 +466,7 @@ begin
 		generic map (
 			frac => 6,
 			int  => 2,
-			dec  => 3)
+			dec  => 2)
 		port map (
 			value => value(9-1 downto 0),
 			scale => scale(4-1 downto 0),
