@@ -459,14 +459,14 @@ begin
 				scale <= (others => '0');
 				value <= (others => '0');
 			end case;
-			value(9-1 downto 0) <= b"0_1100_0000"; --value(9-1 downto 0),
-			scale(4-1 downto 0) <= "0011"; --scale(4-1 downto 0),
+--			value(9-1 downto 0) <= b"0_0100_0001"; --value(9-1 downto 0),
+--			scale(4-1 downto 0) <= "0011"; --scale(4-1 downto 0),
 		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
 			frac => 6,
 			int  => 2,
-			dec  => 2)
+			dec  => 3)
 		port map (
 			value => value(9-1 downto 0),
 			scale => scale(4-1 downto 0),

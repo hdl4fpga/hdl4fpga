@@ -57,12 +57,12 @@ begin
 		variable auxi : unsigned(0 to bcd_int'length-1);
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(fmtds'length-1 downto 0);
-		variable point : integer := -2;
+		variable point : integer := -1;
 		variable pp : natural;
 		constant i : natural := 3;
 	begin
 		fmtds <= (fmtds'range => '-');
---		for i in 0 to 2**scale'length-1 loop
+		for i in 0 to 2**scale'length-1 loop
 			auxs := (others => '0');
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
@@ -89,7 +89,28 @@ begin
 				auxs := auxs srl 4;
 			end if;
 
-			if dec-point=0 then
+			if dec>point then
+				for j in 1 to auxs'length/4-(dec-point)-1 loop
+					if j /= auxs'length/4-(dec-point)-1 then
+						auxs := auxs rol 4;
+						if auxs(4-1 downto 0)="0000" then
+							auxs(4-1 downto 0) := "1111";
+						else
+							auxs := auxs ror 4;
+							auxs(4-1 downto 0) := unsigned(bcd_sign);
+							auxs := auxs rol auxs'length-(j-1)*4;
+							exit;
+						end if;
+					else
+						auxs(4-1 downto 0) := unsigned(bcd_sign);
+						if int+point > 0 then
+							auxs := auxs rol 4*(dec-point+2);
+						else
+							auxs := auxs rol 4*(dec-point+1);
+						end if;
+					end if;
+				end loop;
+			else
 				for j in 1 to auxs'length/4 loop
 					if j /= auxs'length/4 then
 						auxs := auxs rol 4;
@@ -111,7 +132,7 @@ begin
 			if i=to_integer(unsigned(scale)) then
 				fmtds <= std_logic_vector(auxs);
 			end if;
---		end loop;
+		end loop;
 	end process;
 
 end;
