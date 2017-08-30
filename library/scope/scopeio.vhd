@@ -102,7 +102,6 @@ architecture beh of scopeio is
 	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg*ly_dptr(layout_id).chan_width-1));
 	signal input_we    : std_logic;
 
-	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 
 	signal scale_y     : std_logic_vector(4-1 downto 0);
 	signal scale_x     : std_logic_vector(4-1 downto 0);
@@ -288,6 +287,9 @@ begin
 		variable input_aux : unsigned(input_data'length-1 downto 0);
 		variable amp_aux   : unsigned(amp'range);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
+		subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
+		type sample_vector is array (natural range <>) of sample_word;
+		variable samples : sample_vector(0 to inputs-1);
 		variable m : mdword_vector(0 to inputs-1);
 		variable a : mword_vector(0 to inputs-1);
 		variable scale : mword_vector(0 to inputs-1);
@@ -298,7 +300,9 @@ begin
 				vm_inputs(i) <= resize(m(i)(0 to a(0)'length-1),vmword'length);
 				m(i)         := a(i)*scale(i);
 				scale(i)     := scales(to_integer(amp_aux(4-1 downto 0)));
-				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length);
+				a(i)         := resize(signed(samples(i)), mword'length);
+				samples(i)   := not std_logic_vector(input_aux(sample_word'length-1 downto 0));
+				input_aux    := input_aux ror (sample_word'length/inputs);
 				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
