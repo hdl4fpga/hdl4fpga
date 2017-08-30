@@ -39,7 +39,7 @@ architecture def of scopeio_axisy is
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*(20+12)-1 downto 0) := (others => '0');
 		variable i, j   : natural;
 		variable a : real;
-		constant pp : natural_vector(0 to 16-1) := (3, 3, 3, 4, 4, 4, 2, 2, 2, 3, 3, 3, 4, 4, 4, 2);
+		constant pp : natural_vector(0 to 16-1) := (3, 3, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 1, 1, 1, 2);
 			
 	begin
 		for l in 0 to 16-1 loop

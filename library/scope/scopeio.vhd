@@ -121,7 +121,7 @@ architecture beh of scopeio is
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
-	signal  text_addr   : std_logic_vector(9-1 downto 0);
+	signal  text_addr   : std_logic_vector(10-1 downto 0);
 
 	subtype mword  is signed(0 to 18-1);
 	subtype mdword is signed(0 to 2*mword'length-1);
@@ -300,9 +300,10 @@ begin
 				vm_inputs(i) <= resize(m(i)(0 to a(0)'length-1),vmword'length);
 				m(i)         := a(i)*scale(i);
 				scale(i)     := scales(to_integer(amp_aux(4-1 downto 0)));
-				a(i)         := resize(signed(samples(i)), mword'length);
-				samples(i)   := not std_logic_vector(input_aux(sample_word'length-1 downto 0));
-				input_aux    := input_aux ror (sample_word'length/inputs);
+				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length);
+--				a(i)         := resize(signed(samples(i)), mword'length);
+--				samples(i)   := not std_logic_vector(input_aux(sample_word'length-1 downto 0));
+--				input_aux    := input_aux ror (sample_word'length/inputs);
 				amp_aux      := amp_aux   ror (amp'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
@@ -446,6 +447,9 @@ begin
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 			when "01" =>
+				scale(4-1 downto 0) <= scale_y;
+				value(9-1 downto 0) <= std_logic_vector(offset(0)(9-1 downto 0));
+			when "10" =>
 				scale <= (others => '-');
 				for x in 0 to 2**scale_x'length-1 loop
 					if x=to_integer(unsigned(scale_x)) then
@@ -453,9 +457,6 @@ begin
 					end if;
 				end loop;
 				value <= std_logic_vector(to_unsigned(32,value'length));
-			when "10" =>
-				scale(4-1 downto 0) <= scale_y;
-				value(9-1 downto 0) <= std_logic_vector(offset(0)(9-1 downto 0));
 			when "11" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
@@ -479,10 +480,10 @@ begin
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 10);
 			constant labels : label_vector(0 to 16-1) := (
-				0 => align("Scale Y :", 10),
-				1 => align("Scale X :", 10),
-				2 => align("Offset  :", 10),
-				3 => align("Trigger :", 10),
+				0 => align("Escala Y :", 10),
+				1 => align("Posicion :", 10),
+				2 => align("Escala X :", 10),
+				3 => align("Disparo  :", 10),
 				others => align("", 10));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable sel : std_logic_vector(0 to 0);

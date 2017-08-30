@@ -259,6 +259,9 @@ package std is
 		constant cin    : std_logic := '0')
 		return std_logic_vector;
 
+	function encoder (
+		constant inp : std_logic_vector)
+		return         std_logic_vector;
 end;
 
 use std.textio.all;
@@ -332,6 +335,22 @@ package body std is
 		end loop;
 		return std_logic_vector(retval);
 	end function;
+
+	function encoder (
+		constant inp : std_logic_vector)
+		return         std_logic_vector is
+		variable val : std_logic_vector(unsigned_num_bits(inp'length-1)-1 downto 0);
+	begin
+		val := (others => '-');
+		for i in 0 to 2**val'length-1 loop
+			if i < inp'length then
+				if inp=std_logic_vector(to_unsigned(2**i,inp'length)) then
+					val := std_logic_vector(to_unsigned(i, val'length));
+				end if;
+			end if;
+		end loop;
+		return val;
+	end;
 
 	function oneschecksum (
 		constant data : std_logic_vector;

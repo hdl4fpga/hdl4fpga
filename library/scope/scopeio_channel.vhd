@@ -190,7 +190,6 @@ begin
 			aux := signed(ordinates);
 			for i in 0 to inputs-1 loop
 				samples(i) <= std_logic_vector(3*chan_height/2-resize(aux(0 to ordinates'length/inputs-1),vmword'length));
---				samples(i) <= std_logic_vector(3*chan_height/2-to_signed(i*32+32,vmword'length));
 				aux        := aux sll (ordinates'length/inputs);
 			end loop;
 		end if;
@@ -202,7 +201,7 @@ begin
 		constant disp_width  : natural := 32;
 		constant disp_height : natural := 16;
 
-		signal vmem_addr : std_logic_vector(9-1 downto 0);
+		signal vmem_addr : std_logic_vector(10-1 downto 0);
 		signal vmem_data : std_logic_vector(8-1 downto 0);
 		signal char_code : std_logic_vector(vmem_data'range);
 		signal char_line : std_logic_vector(0 to font_width-1);
@@ -234,7 +233,7 @@ begin
 			if rising_edge(video_clk) then
 				sel_line <= char_code & win_y(unsigned_num_bits(font_height-1)-1 downto 0); 
 				char_code <= vmem_data;
-				vmem_addr <= 
+				vmem_addr <= encoder(win_on(0 to num_of_seg-1)) &
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 			end if;
