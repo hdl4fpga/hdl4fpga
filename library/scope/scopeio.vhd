@@ -448,8 +448,11 @@ begin
 				value <= std_logic_vector(to_unsigned(64,value'length));
 			when "01" =>
 				scale(4-1 downto 0) <= scale_y;
-				value(9-1 downto 0) <= std_logic_vector(offset(0)(9-1 downto 0));
+				value(9-1 downto 0) <= std_logic_vector(offset(0)(8-1 downto 0)&'0');
 			when "10" =>
+				scale(4-1 downto 0) <= scale_y;
+				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
+			when "11" =>
 				scale <= (others => '-');
 				for x in 0 to 2**scale_x'length-1 loop
 					if x=to_integer(unsigned(scale_x)) then
@@ -457,9 +460,6 @@ begin
 					end if;
 				end loop;
 				value <= std_logic_vector(to_unsigned(32,value'length));
-			when "11" =>
-				scale(4-1 downto 0) <= scale_y;
-				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
 			when others =>
 				scale <= (others => '0');
 				value <= (others => '0');
@@ -480,10 +480,16 @@ begin
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 10);
 			constant labels : label_vector(0 to 16-1) := (
-				0 => align("Escala Y :", 10),
-				1 => align("Posicion :", 10),
-				2 => align("Escala X :", 10),
-				3 => align("Disparo  :", 10),
+				 0 => align("Canal 1",     10),
+				 1 => align("Escala V  :", 10),
+				 2 => align("Posicion  :", 10),
+				 4 => align("Canal 2",     10),
+				 5 => align("Escala V  :", 10),
+				 6 => align("Posicion  :", 10),
+				 8 => align("Disparo",     10),
+				 9 => align("Nivel     :", 10),
+				10 => align("Pendiente :", 10),
+				12 => align("Escala H  :", 10),
 				others => align("", 10));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable sel : std_logic_vector(0 to 0);
