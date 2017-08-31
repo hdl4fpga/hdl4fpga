@@ -435,37 +435,80 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		signal display : std_logic_vector(0 to 7*4-1) := (others => '1');
+		signal meassure : std_logic_vector(0 to 6*4-1) := (others => '1');
+		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
 		signal scale   : std_logic_vector(inputs*4-1 downto 0);
 		signal value   : std_logic_vector(inputs*9-1 downto 0);
+		signal buf     : std_logic_vector(0 to 2*8-1);
 	begin
 
-		process(scale_y, text_addr, offset)
+		process (mii_rxc)
 		begin
-			case text_addr(7-1 downto 5) is
-			when "00" =>
+			if rising_edge(mii_rxc) then
+			display <= meassure;
+			buf <= (others => '0');
+			case text_addr(10-1 downto 5) is
+			when "00001" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
-			when "01" =>
-				scale(4-1 downto 0) <= scale_y;
+				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
+					buf <= to_ascii(string'("KV"));
+				elsif to_integer(unsigned(amp(4-1 downto 0))) > 2 then
+					buf <= to_ascii(string'(" V"));
+				else
+					buf <= to_ascii(string'("mV"));
+				end if;
+			when "00010" =>
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
 				value(9-1 downto 0) <= std_logic_vector(offset(0)(8-1 downto 0)&'0');
-			when "10" =>
+				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
+					buf <= to_ascii(string'("KV"));
+				elsif to_integer(unsigned(amp(4-1 downto 0))) > 2 then
+					buf <= to_ascii(string'(" V"));
+				else
+					buf <= to_ascii(string'("mV"));
+				end if;
+			when "00101" =>
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4))); 
+				value <= std_logic_vector(to_unsigned(64,value'length));
+				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
+					buf <= to_ascii(string'("KV"));
+				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
+					buf <= to_ascii(string'(" V"));
+				else
+					buf <= to_ascii(string'("mV"));
+				end if;
+			when "00110" =>
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
+				value(9-1 downto 0) <= std_logic_vector(offset(1)(8-1 downto 0)&'0');
+				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
+					buf <= to_ascii(string'("KV"));
+				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
+					buf <= to_ascii(string'(" V"));
+				else
+					buf <= to_ascii(string'("mV"));
+				end if;
+			when "01001" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
-			when "11" =>
+			when "01100" =>
 				scale <= (others => '-');
-				for x in 0 to 2**scale_x'length-1 loop
-					if x=to_integer(unsigned(scale_x)) then
-						scale(4-1 downto 0) <= std_logic_vector(to_unsigned(8-(x mod 9),4));
-					end if;
-				end loop;
+				if to_integer(unsigned(scale_x)) > 8 then
+					buf <= to_ascii(string'(" s"));
+				else
+					buf <= to_ascii(string'("ms"));
+				end if;
+				scale(4-1 downto 0) <= scale_x;
+				scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when others =>
 				scale <= (others => '0');
 				value <= (others => '0');
+				display <= (others => '1');
 			end case;
 --			value(9-1 downto 0) <= b"0_0100_0001"; --value(9-1 downto 0),
 --			scale(4-1 downto 0) <= "0011"; --scale(4-1 downto 0),
+		end if;
 		end process;
 		display_e : entity hdl4fpga.meter_display
 		generic map (
@@ -475,33 +518,31 @@ begin
 		port map (
 			value => value(9-1 downto 0),
 			scale => scale(4-1 downto 0),
-			fmtds => display);	
+			fmtds => meassure);	
 
 		process (mii_rxc)
-			type label_vector is array (natural range <>) of string(1 to 10);
-			constant labels : label_vector(0 to 16-1) := (
-				 0 => align("Canal 1",     10),
-				 1 => align("Escala V  :", 10),
-				 2 => align("Posicion  :", 10),
-				 4 => align("Canal 2",     10),
-				 5 => align("Escala V  :", 10),
-				 6 => align("Posicion  :", 10),
-				 8 => align("Disparo",     10),
-				 9 => align("Nivel     :", 10),
-				10 => align("Pendiente :", 10),
-				12 => align("Escala H  :", 10),
-				others => align("", 10));
+			type label_vector is array (natural range <>) of string(1 to 11);
+			constant labels : label_vector(0 to 32-1) := (
+				 0 => align("Canal 1",     11),
+				 1 => align("Escala V  :", 11),
+				 2 => align("Posicion  :", 11),
+				 4 => align("Canal 2",     11),
+				 5 => align("Escala V  :", 11),
+				 6 => align("Posicion  :", 11),
+				 8 => align("Disparo",     11),
+				 9 => align("Nivel     :", 11),
+				10 => align("Pendiente :", 11),
+				12 => align("Escala H  :", 11),
+				others => align("", 11));
 			variable addr : unsigned(text_addr'range) := (others => '0');
-			variable sel : std_logic_vector(0 to 0);
 			variable ascii : unsigned(8*10-1 downto 0);
 			variable aux  : unsigned(0 to data'length-1);
 		begin
 			if rising_edge(mii_rxc) then
 				text_addr <= std_logic_vector(addr);
-				sel(0) := setif(to_integer(addr(9-1 downto 5)) >= 4);
 				text_data <= word2byte(
-					to_ascii(labels(to_integer(addr(9-1 downto 5)))) & bcd2ascii(
-					word2byte(display & (display'range => '1'), not sel) & (1 to 4*16-4 => '1')), 
+					to_ascii(labels(to_integer(addr(10-1 downto 5)))) & bcd2ascii(
+					display) & to_ascii(string'(" ")) & buf & to_ascii(string'("            ")), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 				aux := unsigned(data);

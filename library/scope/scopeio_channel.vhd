@@ -113,7 +113,7 @@ begin
 			win_y     => win_y);
 		abscisa <= x;
 
-		txon <= win_on(0) and cdon(3);
+		txon <= setif(win_on(0 to num_of_seg-1)/=(0 to num_of_seg-1 => '0')) and cdon(3);
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 5,
@@ -233,7 +233,7 @@ begin
 			if rising_edge(video_clk) then
 				sel_line <= char_code & win_y(unsigned_num_bits(font_height-1)-1 downto 0); 
 				char_code <= vmem_data;
-				vmem_addr <= encoder(win_on(0 to num_of_seg-1)) &
+				vmem_addr <= encoder(reverse(win_on(0 to num_of_seg-1))) &
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 			end if;

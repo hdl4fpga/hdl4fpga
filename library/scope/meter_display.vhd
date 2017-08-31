@@ -58,15 +58,15 @@ begin
 		variable auxf : unsigned(0 to bcd_frac'length-1);
 		variable auxs : unsigned(fmtds'length-1 downto 0);
 		variable point : integer := -1;
-		variable pp : natural;
 		constant i : natural := 3;
+		constant pp : integer_vector(0 to 16-1) := (1, 1, 1, -1, -1, -1, 0, 0, 0, 1, 1, 1, -1, -1, -1, 0);
 	begin
 		fmtds <= (fmtds'range => '-');
 		for i in 0 to 2**scale'length-1 loop
 			auxs := (others => '0');
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
-			point := (((i+3) mod 9)/3);
+			point := pp(i);
 
 			for j in 0 to int-1 loop
 				auxs := auxs rol 4;
