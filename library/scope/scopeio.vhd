@@ -448,7 +448,7 @@ begin
 			display <= meassure;
 			buf <= (others => '0');
 			case text_addr(10-1 downto 5) is
-			when "00001" =>
+			when "00000" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
@@ -458,7 +458,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "00010" =>
+			when "00001" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
 				value(9-1 downto 0) <= std_logic_vector(offset(0)(8-1 downto 0)&'0');
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
@@ -468,7 +468,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "00101" =>
+			when "00010" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
@@ -478,7 +478,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "00110" =>
+			when "00011" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
 				value(9-1 downto 0) <= std_logic_vector(offset(1)(8-1 downto 0)&'0');
 				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
@@ -491,6 +491,13 @@ begin
 			when "01001" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
+				if to_integer(unsigned(scale_y)) > 11 then
+					buf <= to_ascii(string'("KV"));
+				elsif to_integer(unsigned(scale_y)) > 2 then
+					buf <= to_ascii(string'(" V"));
+				else
+					buf <= to_ascii(string'("mV"));
+				end if;
 			when "01100" =>
 				scale <= (others => '-');
 				if to_integer(unsigned(scale_x)) > 8 then
@@ -523,16 +530,14 @@ begin
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 11);
 			constant labels : label_vector(0 to 32-1) := (
-				 0 => align("Canal 1",     11),
-				 1 => align("Escala V  :", 11),
-				 2 => align("Posicion  :", 11),
-				 4 => align("Canal 2",     11),
-				 5 => align("Escala V  :", 11),
-				 6 => align("Posicion  :", 11),
-				 8 => align("Disparo",     11),
-				 9 => align("Nivel     :", 11),
+				 0 => align("Escala    :", 11),
+				 1 => align("Posicion  :", 11),
+				 2 => align("Escala    :", 11),
+				 3 => align("Posicion  :", 11),
+				 5 => align("Disparo",     11),
+				 6 => align("Nivel     :", 11),
 				10 => align("Pendiente :", 11),
-				12 => align("Escala H  :", 11),
+				12 => align("Tiempo    :", 11),
 				others => align("", 11));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable ascii : unsigned(8*10-1 downto 0);

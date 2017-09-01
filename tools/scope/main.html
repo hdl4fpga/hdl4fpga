@@ -6,22 +6,25 @@
     <script src="scope.js"></script>
   </head>
   <body >
-		<table >
-				<tr style="vertical-align:top">
-					<td style="vertical-align:top">
-						<input id="ch1" name="channel" type="radio" value="ch1">Canal 1
-						<input id="ch2" name="channel" type="radio" value="ch2">Canal 2
-					</td>
-				</tr>
-				<tr style="text-align:center;vertical-align:top">
-					<td style="vertical-align:top">
-						<div style="display:inline-block;vertical-align:top">
-							<input id="unit" type="range" class="vertical" value="0" min="0"   max="15">
-							<label style="display:block;">Escala<br>Vertical</label>
+						<div style="display:inline-block;vertical-align:top;color:green;border:solid lightgray 1pt;">
+							<div style="display:inline-block;vertical-align:top">
+								<input id="green-unit" type="range" class="vertical" value="0" min="0"   max="15">
+								<label style="display:block;">Escala</label>
+							</div>
+							<div style="display:inline-block;vertical-align:top">
+								<input id="green-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
+								<label style="display:block;">Position</label>
+							</div>
 						</div>
-						<div style="display:inline-block;vertical-align:top">
-							<input id="offset" type="range" class="vertical" value="0" min="-128" max="128"/>
-							<label style="display:block;">Position<br>Vertical</label>
+						<div style="display:inline-block;vertical-align:top;color:red">
+							<div style="display:inline-block;vertical-align:top">
+								<input id="red-unit" type="range" class="vertical" value="0" min="0"   max="15">
+								<label style="display:block;">Escala</label>
+							</div>
+							<div style="display:inline-block;vertical-align:top">
+								<input id="red-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
+								<label style="display:block;">Position</label>
+							</div>
 						</div>
 						<div style="display:inline-block;vertical-align:top">
 							<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>
@@ -33,12 +36,13 @@
 							<label style="display:block;">Disparo</label>
 							</div>
 							<div style="display:inline-block;vertical-align:top;text-align:left">
-							<input id="pos" name="slope" type="radio" value="ch1">+<br>
-							<input id="neg" name="slope" type="radio" value="ch2">-
+								<input id="pos" name="slope" type="radio" value="ch1">+<br>
+								<input id="neg" name="slope" type="radio" value="ch2">-
+							</div>
+							<div style="vertical-align:top;text-align:left">
+								<input id="green" name="channel" type="radio" value="green" style="background-color:green;"><br>
+								<input id="red"   name="channel" type="radio" value="red"   style="background-color:red;">
 							</div>
 						</div>
-					</td>
-				</tr>
-		</table>
   </body>
 </html>
