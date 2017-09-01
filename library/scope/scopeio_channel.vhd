@@ -51,6 +51,7 @@ architecture def of scopeio_channel is
 	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
 	signal grid_dot  : std_logic;
 	signal meter_dot : std_logic;
+	signal chan_dot  : std_logic_vector(0 to 1);
 	signal axisx_on  : std_logic;
 	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
@@ -208,6 +209,7 @@ begin
 		signal char_dot  : std_logic_vector(0 to 0);
 		signal sel_line  : std_logic_vector(0 to vmem_data'length+unsigned_num_bits(font_height-1)-1);
 		signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+		signal chan_fld  : std_logic_vector(0 to 1);
 
 	begin
 
@@ -236,6 +238,8 @@ begin
 				vmem_addr <= encoder(reverse(win_on(0 to num_of_seg-1))) &
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
+				chan_fld (0) <= setif(win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)+1)="0000");
+				chan_fld (1) <= setif(win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)+1)="0001");
 			end if;
 		end process;
 
@@ -252,12 +256,16 @@ begin
 
 		align_e : entity hdl4fpga.align
 		generic map (
-			n => 1,
-			d => (0 to 0 => unsigned_num_bits(height-1)+17))
+			n => 3,
+			d => (0 to 2 => unsigned_num_bits(height-1)+17))
 		port map (
 			clk   => video_clk,
 			di(0) => char_dot(0),
-			do(0) => meter_dot);
+			di(1) => chan_fld(0),
+			di(2) => chan_fld(0),
+			do(0) => meter_dot,
+			do(1) => chan_dot(0),
+			do(2) => chan_dot(1));
 	end block;
 
 	plot_g : for i in 0 to inputs-1 generate
