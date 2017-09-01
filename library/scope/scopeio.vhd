@@ -488,7 +488,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "01001" =>
+			when "00110" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
 				if to_integer(unsigned(scale_y)) > 11 then
@@ -498,7 +498,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "01100" =>
+			when "01001" =>
 				scale <= (others => '-');
 				if to_integer(unsigned(scale_x)) > 8 then
 					buf <= to_ascii(string'(" s"));
@@ -536,8 +536,8 @@ begin
 				 3 => align("Posicion  :", 11),
 				 5 => align("Disparo",     11),
 				 6 => align("Nivel     :", 11),
-				10 => align("Pendiente :", 11),
-				12 => align("Tiempo    :", 11),
+				 7 => align("Pendiente :", 11),
+				 9 => align("Tiempo    :", 11),
 				others => align("", 11));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable ascii : unsigned(8*10-1 downto 0);
