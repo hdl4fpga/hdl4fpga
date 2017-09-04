@@ -90,7 +90,9 @@ architecture beh of scopeio is
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
-	signal video_dot   : std_logic_vector(0 to 19-1);
+	signal video_bg   : std_logic_vector(0 to 6-1);
+	signal video_fg   : std_logic_vector(0 to 6-1);
+	signal plot_fg    : std_logic_vector(0 to 18-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
 	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1));
@@ -153,6 +155,7 @@ architecture beh of scopeio is
 
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
+	signal video_rgb : std_logic_vector(3-1 downto 0);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -590,11 +593,34 @@ begin
 		scale_y    => scale_y,
 		win_frm    => win_frm,
 		win_on     => win_don,
-		video_dot  => video_dot);
+		plot_fg    => plot_fg,
+		video_bg   => video_bg,
+		video_fg   => video_fg);
 
-	video_red   <= video_io(2) and ((not (video_dot(0) or video_dot(1)) and video_dot(1)) or video_dot(0));
-	video_green <= video_io(2) and ((not (video_dot(0) or video_dot(1)) and video_dot(1)) or video_dot(1));
-	video_blue  <= video_io(2) and  (not (video_dot(0) or video_dot(1)) and video_dot(1));
+	process(video_clk)
+		variable vcolor_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
+		variable pcolor_sel : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg-1)-1);
+		variable plot_on    : std_logic;
+		variable video_on   : std_logic;
+	begin
+		if rising_edge(video_clk) then
+			if plot_on='1' then
+				video_rgb <= word2byte (b"100_001", pcolor_sel);
+			elsif video_on='1' then
+				video_rgb <= word2byte (b"001_100_111_010_001_100_111_010", vcolor_sel);
+			else
+				video_rgb <= (others => '1');
+			end if;
+			vcolor_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_fg), 2**vcolor_sel'length))));
+			pcolor_sel := encoder(plot_fg(0 to ly_dptr(layout_id).num_of_seg-1));
+			plot_on    := setif(plot_fg /= (plot_fg'range => '0'));
+			video_on   := setif(video_fg /= (video_fg'range => '0'));
+		end if;
+	end process;
+
+	video_red   <= video_io(2) and video_rgb(2);
+	video_green <= video_io(2) and video_rgb(1);
+	video_blue  <= video_io(2) and video_rgb(0);
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
