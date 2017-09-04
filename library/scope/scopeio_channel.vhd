@@ -309,5 +309,5 @@ begin
 			do(0) => grid_dot);
 	end block;
 
-	video_dot  <= (axis_dot or meter_dot or grid_dot) & plot_dot;
+	video_dot  <= plot_dot & axis_dot & grid_dot & meter_dot;
 end;
