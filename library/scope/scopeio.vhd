@@ -610,7 +610,7 @@ begin
 		variable axisy : std_logic_vector(3-1 downto 0):= "101";
 		constant axisx : std_logic_vector(3-1 downto 0):= "011";
 		constant trigg : std_logic_vector(3-1 downto 0):= "110";
-		constant grid  : std_logic_vector(3-1 downto 0):= "000";
+		constant grid  : std_logic_vector(3-1 downto 0):= "111";
 	begin
 		if rising_edge(video_clk) then
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
