@@ -58,8 +58,8 @@ architecture def of scopeio_channel is
 	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
 	signal axisy_don : std_logic;
-	signal axis_don  : std_logic_vector(2-1 downto 0);
-	signal axis_dot  : std_logic_vector(2-1 downto 0);
+	signal axis_fg   : std_logic_vector(2-1 downto 0);
+	signal axis_bg   : std_logic_vector(2-1 downto 0);
 	signal axisy_off : std_logic_vector(win_y'range);
 	signal meter_on  : std_logic;
 
@@ -175,17 +175,20 @@ begin
 		axis_scale => scale_x,
 		axis_dot   => axisx_don);
 
-	axis_don(1) <= axisx_don or axisy_don;
-	axis_don(0) <= axisy_on or axisx_on;
-
 	align_e : entity hdl4fpga.align
 	generic map (
-		n => 2,
-		d => (0 to 1 => unsigned_num_bits(height-1)-3))
+		n => 4,
+		d => (1 to 4 => unsigned_num_bits(height-1)-3))
 	port map (
-		clk => video_clk,
-		di  => axis_don,
-		do  => axis_dot);
+		clk   => video_clk,
+		di(0) => axisx_don,
+		di(1) => axisy_don,
+		di(2) => axisx_on,
+		di(3) => axisy_on,
+		do(0) => axis_fg(0),
+		do(1) => axis_fg(1),
+		do(2) => axis_bg(0),
+		do(3) => axis_bg(1));
 
 	process (video_clk)
 		variable aux : signed(0 to ordinates'length-1);
@@ -243,11 +246,10 @@ begin
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
---				row := reverse(demux("00000"));
-				meter_fld(0) <= meter_on and (setif(row(0 to 1)/=(0 to 1 => '0')));
-				meter_fld(1) <= meter_on and (setif(row(2 to 3)/=(2 to 3 => '0')));
-				meter_fld(2) <= meter_on and (setif(row(5 to 7)/=(5 to 7 => '0')));
-				meter_fld(3) <= meter_on and (setif(row(9 to 9)/=(9 to 9 => '0')));
+				meter_fld(0) <= meter_on and (setif(row(0 to 1)/=(0 to 1 => '0'))) and win_on(0);
+				meter_fld(1) <= meter_on and (setif(row(2 to 3)/=(2 to 3 => '0'))) and win_on(0);
+				meter_fld(2) <= meter_on and (setif(row(5 to 7)/=(5 to 7 => '0'))) and win_on(0);
+				meter_fld(3) <= meter_on and (setif(row(9 to 9)/=(9 to 9 => '0'))) and win_on(0);
 			end if;
 		end process;
 
@@ -323,6 +325,6 @@ begin
 	end block;
 
 	plot_fg  <= plot_dot;
-	video_fg <= axis_dot(1) & grid_dot(1) & chan_dot;
-	video_bg <= axis_dot(0) & grid_dot(0) & (1 to 4 => meter_dot);
+	video_fg <= axis_fg & grid_dot(1) & ((1 to 4 => meter_dot) and chan_dot);
+	video_bg <= axis_bg & grid_dot(0) & chan_dot;
 end;

@@ -90,8 +90,8 @@ architecture beh of scopeio is
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
-	signal video_bg   : std_logic_vector(0 to 6-1);
-	signal video_fg   : std_logic_vector(0 to 6-1);
+	signal video_bg   : std_logic_vector(0 to 7-1);
+	signal video_fg   : std_logic_vector(0 to 7-1);
 	signal plot_fg    : std_logic_vector(0 to 18-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
@@ -601,20 +601,24 @@ begin
 		variable vcolor_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
 		variable pcolor_sel : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg-1)-1);
 		variable plot_on    : std_logic;
-		variable video_on   : std_logic;
+		variable video_fgon : std_logic;
+		variable video_bgon : std_logic;
 	begin
 		if rising_edge(video_clk) then
 			if plot_on='1' then
-				video_rgb <= word2byte (b"100_001", pcolor_sel);
-			elsif video_on='1' then
-				video_rgb <= word2byte (b"001_100_111_010_001_100_111_010", vcolor_sel);
-			else
+				video_rgb <= word2byte (b"001_100", pcolor_sel);
+			elsif video_fgon='1' then
+				video_rgb <= word2byte (b"000_110_001_100_000_000_001_011", vcolor_sel);
+			elsif video_bgon='1' then
 				video_rgb <= (others => '1');
+			else
+				video_rgb <= (others => '0');
 			end if;
 			vcolor_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_fg), 2**vcolor_sel'length))));
-			pcolor_sel := encoder(plot_fg(0 to ly_dptr(layout_id).num_of_seg-1));
+			pcolor_sel := encoder(reverse(plot_fg(0 to ly_dptr(layout_id).num_of_seg-1)));
 			plot_on    := setif(plot_fg /= (plot_fg'range => '0'));
-			video_on   := setif(video_fg /= (video_fg'range => '0'));
+			video_fgon := setif(video_fg /= (video_fg'range => '0'));
+			video_bgon := setif(video_bg /= (video_bg'range => '0'));
 		end if;
 	end process;
 
