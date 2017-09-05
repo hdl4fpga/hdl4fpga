@@ -156,6 +156,7 @@ architecture beh of scopeio is
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 	signal video_rgb : std_logic_vector(3-1 downto 0);
+	signal selchan   : std_logic;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -196,9 +197,10 @@ begin
 					for i in 0 to inputs-1 loop
 						if i=to_integer(unsigned(scope_chan(0 downto 0))) then
 							amp((i+1)*4-1 downto 4*i) <= scope_data(3 downto 0);
+							scale_y   <= scope_data(3 downto 0);
+							selchan <= setif(i=1);
 						end if;
 					end loop;
-					scale_y   <= scope_data(3 downto 0);
 				when "0001" =>
 					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
@@ -603,14 +605,21 @@ begin
 		variable plot_on    : std_logic;
 		variable video_fgon : std_logic;
 		variable video_bgon : std_logic;
+		constant chan1 : std_logic_vector(3-1 downto 0):= "001";
+		constant chan2 : std_logic_vector(3-1 downto 0):= "100";
+		variable axisy : std_logic_vector(3-1 downto 0):= "101";
+		constant axisx : std_logic_vector(3-1 downto 0):= "011";
+		constant trigg : std_logic_vector(3-1 downto 0):= "110";
+		constant grid  : std_logic_vector(3-1 downto 0):= "000";
 	begin
 		if rising_edge(video_clk) then
+			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
 			if plot_on='1' then
-				video_rgb <= word2byte (b"001_100", pcolor_sel);
+				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);
 			elsif video_fgon='1' then
-				video_rgb <= word2byte (b"000_110_001_100_000_000_001_011", vcolor_sel);
+				video_rgb <= word2byte (axisx & trigg & chan1 & chan2 & grid & axisx & axisy & "000", vcolor_sel);
 			elsif video_bgon='1' then
-				video_rgb <= (others => '1');
+				video_rgb <= (others => '0');
 			else
 				video_rgb <= (others => '0');
 			end if;
