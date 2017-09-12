@@ -493,7 +493,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "00110" =>
+			when "00101" =>
 				scale(4-1 downto 0) <= scale_y;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
 				if to_integer(unsigned(scale_y)) > 11 then
@@ -503,7 +503,7 @@ begin
 				else
 					buf <= to_ascii(string'("mV"));
 				end if;
-			when "01001" =>
+			when "00100" =>
 				scale <= (others => '-');
 				if to_integer(unsigned(scale_x)) > 8 then
 					buf <= to_ascii(string'(" s"));
@@ -533,17 +533,15 @@ begin
 			fmtds => meassure);	
 
 		process (mii_rxc)
-			type label_vector is array (natural range <>) of string(1 to 11);
+			type label_vector is array (natural range <>) of string(1 to 13);
 			constant labels : label_vector(0 to 32-1) := (
-				 0 => align("Escala    :", 11),
-				 1 => align("Posicion  :", 11),
-				 2 => align("Escala    :", 11),
-				 3 => align("Posicion  :", 11),
-				 5 => align("Disparo",     11),
-				 6 => align("Nivel     :", 11),
-				 7 => align("Pendiente :", 11),
-				 9 => align("Tiempo    :", 11),
-				others => align("", 11));
+				 0 => align("Escala     : ", 13),
+				 1 => align("Posicion   : ", 13),
+				 2 => align("Escala     : ", 13),
+				 3 => align("Posicion   : ", 13),
+				 4 => align("Horizontal : ", 13),
+				 5 => align("Disparo    : ", 13),
+				others => align("", 13));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable ascii : unsigned(8*10-1 downto 0);
 			variable aux  : unsigned(0 to data'length-1);
@@ -552,7 +550,7 @@ begin
 				text_addr <= std_logic_vector(addr);
 				text_data <= word2byte(
 					to_ascii(labels(to_integer(addr(10-1 downto 5)))) & bcd2ascii(
-					display) & to_ascii(string'(" ")) & buf & to_ascii(string'("            ")), 
+					display) & to_ascii(string'(" ")) & buf & to_ascii(string'("          ")), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 				aux := unsigned(data);
@@ -622,7 +620,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
-			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
+			trigg := word2byte(chan1 & chan2, (1 to 1 => selchan));
 			if plot_on='1' then
 				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);
 			elsif video_fgon='1' then
