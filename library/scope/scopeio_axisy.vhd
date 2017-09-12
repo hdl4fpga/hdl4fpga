@@ -87,6 +87,7 @@ begin
 			else
 				bsln := to_unsigned(8/2,bsln'length);
 			end if;
+			bsln := bsln - 1;
 
 			pstn    <= std_logic_vector(refn + bsln);
 			refn    := unsigned(win_y);

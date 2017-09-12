@@ -601,16 +601,24 @@ begin
 
 	process(video_clk)
 		variable vcolor_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
+		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
 		variable pcolor_sel : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg-1)-1);
 		variable plot_on    : std_logic;
 		variable video_fgon : std_logic;
 		variable video_bgon : std_logic;
-		constant chan1 : std_logic_vector(3-1 downto 0):= "001";
-		constant chan2 : std_logic_vector(3-1 downto 0):= "100";
+		constant chan1 : std_logic_vector(3-1 downto 0):= "011";
+		constant chan2 : std_logic_vector(3-1 downto 0):= "110";
+		constant axisx : std_logic_vector(3-1 downto 0):= "010";
+		constant trigg : std_logic_vector(3-1 downto 0):= "101";
+		constant grid  : std_logic_vector(3-1 downto 0):= "100";
+		constant chan1_bg : std_logic_vector(3-1 downto 0):= "000";
+		constant chan2_bg : std_logic_vector(3-1 downto 0):= "000";
+		constant axisx_bg : std_logic_vector(3-1 downto 0):= "000";
+		constant trigg_bg : std_logic_vector(3-1 downto 0):= "000";
+		constant grid_bg  : std_logic_vector(3-1 downto 0):= "000";
+
 		variable axisy : std_logic_vector(3-1 downto 0):= "101";
-		constant axisx : std_logic_vector(3-1 downto 0):= "011";
-		constant trigg : std_logic_vector(3-1 downto 0):= "110";
-		constant grid  : std_logic_vector(3-1 downto 0):= "111";
+		variable axisy_bg : std_logic_vector(3-1 downto 0):= "000";
 	begin
 		if rising_edge(video_clk) then
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
@@ -619,11 +627,12 @@ begin
 			elsif video_fgon='1' then
 				video_rgb <= word2byte (axisx & trigg & chan1 & chan2 & grid & axisx & axisy & "000", vcolor_sel);
 			elsif video_bgon='1' then
-				video_rgb <= (others => '0');
+				video_rgb <= word2byte (axisx_bg & trigg_bg & chan1_bg & chan2_bg & grid_bg & axisx_bg & axisy_bg & "000", vcolorbg_sel);
 			else
 				video_rgb <= (others => '0');
 			end if;
 			vcolor_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_fg), 2**vcolor_sel'length))));
+			vcolorbg_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_bg), 2**vcolorbg_sel'length))));
 			pcolor_sel := encoder(reverse(plot_fg(0 to ly_dptr(layout_id).num_of_seg-1)));
 			plot_on    := setif(plot_fg /= (plot_fg'range => '0'));
 			video_fgon := setif(video_fg /= (video_fg'range => '0'));
