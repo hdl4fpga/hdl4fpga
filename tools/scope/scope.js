@@ -25,14 +25,15 @@ window.addEventListener("load", function() {
 		case "red-offset":
 			buffer[0] = 1;
 			break;
-		case "trigger":
+		case "green-trigger":
+		case "red-trigger":
 			buffer[0] = 2;
 			break;
 		case "time":
 			buffer[0] = 3;
 			break;
 		}
-//		console.log(data);
+		console.log(data);
 		client.send(buffer, port, host , function(err, bytes) {
 			if (err) throw err;
 			console.log('UDP message sent to ' + host +':'+ "57001");
@@ -44,18 +45,28 @@ window.addEventListener("load", function() {
 		document.getElementById(this.id).onchange(e);
 	}
 
+	document.getElementById("time").onchange = function(ev) {
+		send (this.id, parseInt(this.value), trigger_channel);
+	}
+
 	document.getElementById( "green-unit"  ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "green-offset").addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "red-unit"    ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "red-offset"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "trigger"     ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "green-trigger" ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "red-trigger"  ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "time"        ).addEventListener("wheel", mouseWheelCb, false);
 
 	document.getElementById("green-unit").onchange = function(ev) {
+		console.log("pase por aca" );
 		send (this.id, (parseInt(this.value)+16)%16, 1);
 	}
 
 	document.getElementById("green-offset").onchange = function(ev) {
+		send (this.id, (parseInt(this.value)+256)%256, 1);
+	}
+
+	document.getElementById("green-trigger").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256, 1);
 	}
 
@@ -67,12 +78,8 @@ window.addEventListener("load", function() {
 		send (this.id, (parseInt(this.value)+256)%256, 0);
 	}
 
-	document.getElementById("trigger").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, trigger_channel);
-	}
-
-	document.getElementById("time").onchange = function(ev) {
-		send (this.id, parseInt(this.value), trigger_channel);
+	document.getElementById("red-trigger").onchange = function(ev) {
+		send (this.id, (parseInt(this.value)+256)%256, 0);
 	}
 
 	document.getElementById("neg").onclick = function(ev) {

@@ -609,7 +609,6 @@ begin
 		constant chan1 : std_logic_vector(3-1 downto 0):= "011";
 		constant chan2 : std_logic_vector(3-1 downto 0):= "110";
 		constant axisx : std_logic_vector(3-1 downto 0):= "010";
-		constant trigg : std_logic_vector(3-1 downto 0):= "101";
 		constant grid  : std_logic_vector(3-1 downto 0):= "100";
 		constant chan1_bg : std_logic_vector(3-1 downto 0):= "000";
 		constant chan2_bg : std_logic_vector(3-1 downto 0):= "000";
@@ -619,8 +618,10 @@ begin
 
 		variable axisy : std_logic_vector(3-1 downto 0):= "101";
 		variable axisy_bg : std_logic_vector(3-1 downto 0):= "000";
+		variable trigg : std_logic_vector(3-1 downto 0):= "101";
 	begin
 		if rising_edge(video_clk) then
+			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
 			if plot_on='1' then
 				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);

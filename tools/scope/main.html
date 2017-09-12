@@ -5,8 +5,8 @@
 	  <meta charset="utf-8">
     <script src="scope.js"></script>
   </head>
-  <body style="background-color:#202020">
-						<div style="display:inline-block;vertical-align:top;color:#00ffff;border:solid lightgray 1pt;">
+  <body style="background-color:#080808">
+						<div style="padding:5pt;display:inline-block;vertical-align:top;color:#00ffff;border:solid #404040 1pt;">
 							<div style="display:inline-block;vertical-align:top">
 								<input id="green-unit" type="range" class="vertical" value="0" min="0"   max="15">
 								<label style="display:block;">Escala</label>
@@ -15,8 +15,12 @@
 								<input id="green-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
 								<label style="display:block;">Position</label>
 							</div>
+							<div style="display:inline-block;vertical-align:top">
+								<input id="green-trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
+								<label style="display:block;">Disparo</label>
+							</div>
 						</div>
-						<div style="display:inline-block;vertical-align:top;color:#ffff00">
+						<div style="padding:5pt;display:inline-block;vertical-align:top;color:#ffff00;border:solid #404040 1pt;">
 							<div style="display:inline-block;vertical-align:top">
 								<input id="red-unit" type="range" class="vertical" value="0" min="0"   max="15">
 								<label style="display:block;">Escala</label>
@@ -25,6 +29,10 @@
 								<input id="red-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
 								<label style="display:block;">Position</label>
 							</div>
+							<div style="display:inline-block;vertical-align:top">
+								<input id="red-trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
+								<label style="display:block;">Disparo</label>
+							</div>
 						</div>
 						<div style="display:inline-block;vertical-align:top;color:#00ff00">
 							<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>
@@ -32,7 +40,6 @@
 						</div>
 						<div style="display:inline-block;vertical-align:top;color:#00ff00">
 							<div style="display:inline-block;vertical-align:top">
-							<input id="trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
 							<label style="display:block;">Disparo</label>
 							</div>
 							<div style="display:inline-block;vertical-align:top;text-align:left">
