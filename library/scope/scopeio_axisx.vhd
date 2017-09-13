@@ -76,6 +76,7 @@ begin
 		variable aon  : std_logic;
 	begin
 		if rising_edge(video_clk) then
+			mark_on <= setif(sgmt=(1 to 3 =>'0')) and aon;
 			if axis_on='0' then
 				sgmt := (others => '0');
 				mark <= (others => '0');
@@ -87,9 +88,8 @@ begin
 					sgmt := std_logic_vector(unsigned(sgmt)  + 1);
 				end if;
 			end if;
-			mark_on   <= setif(sgmt=(1 to 3 =>'0')) and aon;
-			aon       := axis_on;
-			edge      := win_x(5);
+			aon  := axis_on;
+			edge := win_x(5);
 		end if;
 	end process;
 
@@ -116,7 +116,7 @@ begin
 	sgmt_e : entity hdl4fpga.align
 	generic map (
 		n => sgmt'length,
-		d => (sgmt'range => 2))
+		d => (sgmt'range => 3))
 	port map (
 		clk => video_clk,
 		di  => sgmt,

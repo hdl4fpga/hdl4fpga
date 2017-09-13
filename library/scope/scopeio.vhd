@@ -444,7 +444,7 @@ begin
 		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
 		signal scale   : std_logic_vector(inputs*4-1 downto 0);
 		signal value   : std_logic_vector(inputs*9-1 downto 0);
-		signal buf     : std_logic_vector(0 to 2*8-1);
+		signal buf     : std_logic_vector(0 to 4*8-1);
 	begin
 
 		process (mii_rxc)
@@ -457,62 +457,62 @@ begin
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
-					buf <= to_ascii(string'("KV"));
+					buf <= to_ascii(string'("KV  "));
 				elsif to_integer(unsigned(amp(4-1 downto 0))) > 2 then
-					buf <= to_ascii(string'(" V"));
+					buf <= to_ascii(string'(" V  "));
 				else
-					buf <= to_ascii(string'("mV"));
+					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00001" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
 				value(9-1 downto 0) <= std_logic_vector(offset(0)(8-1 downto 0)&'0');
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
-					buf <= to_ascii(string'("KV"));
+					buf <= to_ascii(string'("KV  "));
 				elsif to_integer(unsigned(amp(4-1 downto 0))) > 2 then
-					buf <= to_ascii(string'(" V"));
+					buf <= to_ascii(string'(" V  "));
 				else
-					buf <= to_ascii(string'("mV"));
+					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00010" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4))); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
-					buf <= to_ascii(string'("KV"));
+					buf <= to_ascii(string'("KV  "));
 				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
-					buf <= to_ascii(string'(" V"));
+					buf <= to_ascii(string'(" V  "));
 				else
-					buf <= to_ascii(string'("mV"));
+					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00011" =>
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
 				value(9-1 downto 0) <= std_logic_vector(offset(1)(8-1 downto 0)&'0');
 				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
-					buf <= to_ascii(string'("KV"));
+					buf <= to_ascii(string'("KV  "));
 				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
-					buf <= to_ascii(string'(" V"));
+					buf <= to_ascii(string'(" V  "));
 				else
-					buf <= to_ascii(string'("mV"));
-				end if;
-			when "00101" =>
-				scale(4-1 downto 0) <= scale_y;
-				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
-				if to_integer(unsigned(scale_y)) > 11 then
-					buf <= to_ascii(string'("KV"));
-				elsif to_integer(unsigned(scale_y)) > 2 then
-					buf <= to_ascii(string'(" V"));
-				else
-					buf <= to_ascii(string'("mV"));
+					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00100" =>
 				scale <= (others => '-');
 				if to_integer(unsigned(scale_x)) > 8 then
-					buf <= to_ascii(string'(" s"));
+					buf <= to_ascii(string'(" s  "));
 				else
-					buf <= to_ascii(string'("ms"));
+					buf <= to_ascii(string'("ms  "));
 				end if;
 				scale(4-1 downto 0) <= scale_x;
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
 				value <= std_logic_vector(to_unsigned(32,value'length));
+			when "00101" =>
+				scale(4-1 downto 0) <= scale_y;
+				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
+				if to_integer(unsigned(scale_y)) > 11 then
+					buf <= to_ascii(string'("KV")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
+				elsif to_integer(unsigned(scale_y)) > 2 then
+					buf <= to_ascii(string'(" V")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
+				else
+					buf <= to_ascii(string'("mV")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
+				end if;
 			when others =>
 				scale <= (others => '0');
 				value <= (others => '0');
@@ -550,7 +550,8 @@ begin
 				text_addr <= std_logic_vector(addr);
 				text_data <= word2byte(
 					to_ascii(labels(to_integer(addr(10-1 downto 5)))) & bcd2ascii(
-					display) & to_ascii(string'(" ")) & buf & to_ascii(string'("          ")), 
+					display) & to_ascii(string'(" ")) & buf &
+					to_ascii(string'("        ")), 
 					not std_logic_vector(addr(5-1 downto 0)));
 				addr := addr + 1;
 				aux := unsigned(data);

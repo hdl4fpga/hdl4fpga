@@ -249,10 +249,10 @@ begin
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
-				meter_fld(0) <= meter_on and (setif(row(0 to 1)/=(0 to 1 => '0'))) and win_on(0);
-				meter_fld(1) <= meter_on and (setif(row(2 to 3)/=(2 to 3 => '0'))) and win_on(0);
-				meter_fld(2) <= meter_on and (setif(row(5 to 5)/=(5 to 5 => '0'))) and win_on(0);
-				meter_fld(3) <= meter_on and (setif(row(4 to 4)/=(4 to 4 => '0'))) and win_on(0);
+				meter_fld(0) <= (setif(row(0 to 1)/=(0 to 1 => '0'))) and meter_on;
+				meter_fld(1) <= (setif(row(2 to 3)/=(2 to 3 => '0'))) and meter_on;
+				meter_fld(2) <= (setif(row(5 to 5)/=(5 to 5 => '0'))) and meter_on;
+				meter_fld(3) <= (setif(row(4 to 4)/=(4 to 4 => '0'))) and meter_on;
 			end if;
 		end process;
 
