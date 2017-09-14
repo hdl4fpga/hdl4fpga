@@ -90,10 +90,10 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				chan_x-(4*8+4+5*8+4)+5*8+4,             0,     chan_width+1, chan_height+1,
-				chan_x-(4*8+4+5*8+4)+5*8+4, chan_height+2, chan_width+4*8+4,             8,
-				chan_x-(4*8+4+5*8+4)+    0,             0,              5*8, chan_height+1,
-				                         0,             0,             24*8, chan_height+1))
+				chan_x-(4*8+4+5*8+4)+5*8+4,             0,   chan_width+1, chan_height+1,
+				chan_x-(4*8+4+5*8+4)+5*8+4, chan_height+2, chan_width+4*8,             8,
+				chan_x-(4*8+4+5*8+4)+    3,             0,            5*8, chan_height+1,
+				                         0,             0,           24*8, chan_height+1))
 		port map (
 			video_clk  => video_clk,
 			video_x    => pwin_x,
@@ -120,7 +120,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 5,
-			d => (0 => 1+3, 1 => 0, 2 to 3 => 1+3, 4 => 4+4),
+			d => (0 => 1+3, 1 => 2, 2 to 3 => 1+3, 4 => 4+4),
 			i => (0 to 4 => '-'))
 		port map (
 			clk   => video_clk,
@@ -178,10 +178,10 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 4,
-		d => (1 => unsigned_num_bits(height-1)-3,
-		      2 => unsigned_num_bits(height-1)-3,
-		      3 => unsigned_num_bits(height-1)-3+5,
-		      4 => unsigned_num_bits(height-1)-3+5))
+		d => (0 => unsigned_num_bits(height-1)-2,
+		      1 => unsigned_num_bits(height-1)-0,
+		      2 => unsigned_num_bits(height-1)-1+5,
+		      3 => unsigned_num_bits(height-1)-1+5))
 	port map (
 		clk   => video_clk,
 		di(0) => axisx_don,
@@ -325,8 +325,8 @@ begin
 		generic map (
 			n => 2,
 			d => (
-				0 => unsigned_num_bits(height-1), 
-				1 => unsigned_num_bits(height-1)+2))
+				0 => unsigned_num_bits(height-1)+2, 
+				1 => unsigned_num_bits(height-1)+2+2))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,

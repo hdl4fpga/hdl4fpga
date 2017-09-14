@@ -383,13 +383,31 @@ begin
 		wr_data <= vm_data;
 		wr_addr <= input_addr(vm_addr'range);
 
+--		data_e : entity hdl4fpga.align
+--		generic map (
+--			n => wr_data'length,
+--			d => (wr_data'range => 18))
+--		port map (
+--			clk => input_clk,
+--			di  => vm_data,
+--			do  => wr_data);
+--
+--		addr_e : entity hdl4fpga.align
+--		generic map (
+--			n => wr_addr'length,
+--			d => (wr_addr'range => 1))
+--		port map (
+--			clk => input_clk,
+--			di  => input_addr(vm_addr'range),
+--			do  => wr_addr);
+
 		process (video_clk)
-			variable pp : std_logic_vector(rd_data'range);
+			variable d : std_logic_vector(rd_data'range);
 		begin
 			if rising_edge(video_clk) then
 				rd_addr   <= full_addr;
-				ordinates <= pp;
-				pp := rd_data;
+				ordinates <= d;
+				d         := rd_data;
 			end if;
 		end process;
 
@@ -615,7 +633,7 @@ begin
 		constant trigg_bg : std_logic_vector(3-1 downto 0):= "000";
 		constant grid_bg  : std_logic_vector(3-1 downto 0):= "000";
 
-		variable axisy : std_logic_vector(3-1 downto 0):= "101";
+		variable axisy : std_logic_vector(3-1 downto 0):= "000";
 		variable axisy_bg : std_logic_vector(3-1 downto 0):= "000";
 		variable trigg : std_logic_vector(3-1 downto 0):= "101";
 	begin
