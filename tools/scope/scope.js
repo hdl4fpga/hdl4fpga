@@ -25,8 +25,8 @@ window.addEventListener("load", function() {
 		case "red-offset":
 			buffer[0] = 1;
 			break;
-		case "green-trigger":
-		case "red-trigger":
+		case "green-level":
+		case "red-level":
 			buffer[0] = 2;
 			break;
 		case "time":
@@ -40,6 +40,10 @@ window.addEventListener("load", function() {
 		});
 	}
 
+	function pru() {
+		console.log("hola");
+	}
+
 	function mouseWheelCb (e) {
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 		document.getElementById(this.id).onchange(e);
@@ -49,12 +53,28 @@ window.addEventListener("load", function() {
 		send (this.id, parseInt(this.value), trigger_channel);
 	}
 
+	document.getElementById("red-scale").onclick = function(ev) {
+		console.log("red");
+	}
+
+	document.getElementById("green-scale").onclick = function(ev) {
+		console.log("green");
+	}
+
+	document.getElementById("red-trigger").onclick = function(ev) {
+		console.log("red-trigger");
+	}
+
+	document.getElementById("green-trigger").onclick = function(ev) {
+		console.log("green-trigger");
+	}
+
 	document.getElementById( "green-unit"  ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "green-offset").addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "red-unit"    ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "red-offset"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "green-trigger" ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "red-trigger"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "green-level" ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById( "red-level"  ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById( "time"        ).addEventListener("wheel", mouseWheelCb, false);
 
 	document.getElementById("green-unit").onchange = function(ev) {
@@ -66,7 +86,7 @@ window.addEventListener("load", function() {
 		send (this.id, (parseInt(this.value)+256)%256, 1);
 	}
 
-	document.getElementById("green-trigger").onchange = function(ev) {
+	document.getElementById("green-level").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256, 1);
 	}
 
@@ -78,24 +98,24 @@ window.addEventListener("load", function() {
 		send (this.id, (parseInt(this.value)+256)%256, 0);
 	}
 
-	document.getElementById("red-trigger").onchange = function(ev) {
+	document.getElementById("red-level").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256, 0);
 	}
 
-	document.getElementById("neg").onclick = function(ev) {
-		trigger_edge = 0x00;
-	}
+//	document.getElementById("neg").onclick = function(ev) {
+//		trigger_edge = 0x00;
+//	}
+//
+//	document.getElementById("pos").onclick = function(ev) {
+//		trigger_edge = 0x80;
+//	}
 
-	document.getElementById("pos").onclick = function(ev) {
-		trigger_edge = 0x80;
-	}
-
-	document.getElementById("green").onclick = function(ev) {
-		trigger_channel = 0;
-	}
-
-	document.getElementById("red").onclick = function(ev) {
-		trigger_channel = 1;
-	}
+//	document.getElementById("green").onclick = function(ev) {
+//		trigger_channel = 0;
+//	}
+//
+//	document.getElementById("red").onclick = function(ev) {
+//		trigger_channel = 1;
+//	}
 
 });

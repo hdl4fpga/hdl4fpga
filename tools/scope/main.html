@@ -1,55 +1,68 @@
 <html>
-  <head>
-    <title>Scope</title>
-	<link rel="stylesheet" href="scope.css">
-	  <meta charset="utf-8">
-    <script src="scope.js"></script>
-  </head>
-  <body style="background-color:#080808">
-						<div style="padding:5pt;display:inline-block;vertical-align:top;color:#00ffff;border:solid #404040 1pt;">
-							<div style="display:inline-block;vertical-align:top">
-								<input id="green-unit" type="range" class="vertical" value="0" min="0"   max="15">
-								<label style="display:block;">Escala</label>
-							</div>
-							<div style="display:inline-block;vertical-align:top">
-								<input id="green-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
-								<label style="display:block;">Position</label>
-							</div>
-							<div style="display:inline-block;vertical-align:top">
-								<input id="green-trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
-								<label style="display:block;">Disparo</label>
-							</div>
-						</div>
-						<div style="padding:5pt;display:inline-block;vertical-align:top;color:#ffff00;border:solid #404040 1pt;">
-							<div style="display:inline-block;vertical-align:top">
-								<input id="red-unit" type="range" class="vertical" value="0" min="0"   max="15">
-								<label style="display:block;">Escala</label>
-							</div>
-							<div style="display:inline-block;vertical-align:top">
-								<input id="red-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
-								<label style="display:block;">Position</label>
-							</div>
-							<div style="display:inline-block;vertical-align:top">
-								<input id="red-trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
-								<label style="display:block;">Disparo</label>
-							</div>
-						</div>
-						<div style="display:inline-block;vertical-align:top;color:#00ff00">
-							<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>
-							<label style="display:block;">Escala<br>Horizontal</label>
-						</div>
-						<div style="display:inline-block;vertical-align:top;color:#00ff00">
-							<div style="display:inline-block;vertical-align:top">
-							<label style="display:block;">Disparo</label>
-							</div>
-							<div style="display:inline-block;vertical-align:top;text-align:left">
-								<input id="pos" name="slope" type="radio" value="ch1">+<br>
-								<input id="neg" name="slope" type="radio" value="ch2">-
-							</div>
-							<div style="vertical-align:top;text-align:left">
-								<input id="green" name="channel" type="radio" value="green" style="background-color:green;"><br>
-								<input id="red"   name="channel" type="radio" value="red"   style="background-color:red;">
-							</div>
-						</div>
-  </body>
+	<head>
+		<title>Scope</title>
+		<link rel="stylesheet" href="scope.css">
+		<meta charset="utf-8">
+		<script src="scope.js"></script>
+	</head>
+	<body style="background-color:#080808;width:1024px;">
+		<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:#00ffff;border:solid #404040 1pt;">
+			<div id="green-scale" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">
+				<div style="display:inline-block;vertical-align:top">
+					<input id="green-unit" type="range" class="vertical" value="0" min="0"   max="15">
+					<label style="display:block;">Escala</label>
+				</div>
+				<div style="display:inline-block;vertical-align:top">
+					<input id="green-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block;">Position</label>
+				</div>
+				<label style="display:block;">Vertical</label>
+			</div>
+			<div id="green-trigger" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">
+				<div style="display:inline-block;vertical-align:top">
+					<input id="green-level" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block">Nivel</label>
+				</div>
+				<div style="display:inline-block;vertical-align:top">
+					<input id="green-slope" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block">Pendiente</label>
+				</div>
+				<label style="display:block;">Disparo</label>
+			</div>
+		</div>
+
+		<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:#ffff00;border:solid #404040 1pt;">
+			<div id="red-scale" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">
+				<div style="display:inline-block;vertical-align:top">
+					<input id="red-unit" type="range" class="vertical" value="0" min="0"   max="15">
+					<label style="display:block;">Escala</label>
+				</div>
+				<div style="display:inline-block;vertical-align:top">
+					<input id="red-offset" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block;">Position</label>
+				</div>
+				<label style="display:block;">Vertical</label>
+			</div>
+			<div id="red-trigger" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">
+				<div style="display:inline-block;vertical-align:top">
+					<input id="red-level" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block">Nivel</label>
+				</div>
+				<div style="display:inline-block;vertical-align:top">
+					<input id="red-slope" type="range" class="vertical" value="0" min="-128" max="128"/>
+					<label style="display:block">Pendiente</label>
+				</div>
+				<label style="display:block;">Disparo</label>
+			</div>
+		</div>
+		<div style="padding:2pt;text-align:center;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">
+			<div style="padding:2pt;display:inline-block;vertical-align:top;">
+				<div style="display:inline-block;vertical-align:top;padding:1pt">
+					<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>
+					<label style="display:block;">Escala</label>
+				</div>
+				<label style="display:block;">Horizontal</label>
+			</div>
+		</div>
+	</body>
 </html>
