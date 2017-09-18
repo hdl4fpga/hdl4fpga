@@ -1,15 +1,16 @@
 const dgram = require('dgram');
 
 var client  = dgram.createSocket('udp4');
-var trigger_edge = 0;
-var trigger_channel = 0;
 
 const chan = [
-	{ color : "#00ffff" },
-	{ color : "#ffff00" } ];
+	{ color  : "#ffff00",
+	  shaded : "#808000" },
+	{ color  : "#00ffff",
+	  shaded : "#008080" } ];
+
 window.addEventListener("load", function() {
 
-	function send (id, data, channel) {
+	function send (id, data, channel, edge) {
 		var buffer = Buffer.alloc(3);
 		var host = "kit";
 		var port = 57001;
@@ -18,7 +19,12 @@ window.addEventListener("load", function() {
 			port = 57001;
 	
 		buffer[1] = parseInt(data);
-		buffer[2] = parseInt(channel + trigger_edge);
+		
+		if (typeof edge !== "undefined")
+			if (edge != 0) 
+				channel += 128;
+		buffer[2] = parseInt(channel);
+
 		console.log(channel);
 		switch(id) {
 		case "chan0-unit":
@@ -61,10 +67,10 @@ window.addEventListener("load", function() {
 			if (this.id === idTrigger)
 				for (j=0; j < 2; j++) {
 					idTrigger = "chan" + j + "-trigger";
-					if (this.id === idTrigger)
+					if (this.id === idTrigger) {
 						this.style.color = chan[j].color;
-					else
-						document.getElementById(idTrigger).style.color = "#808080";
+					} else
+						document.getElementById(idTrigger).style.color =  chan[j].shaded;
 				}
 			else if (this.id === idScale)
 				for (j=0; j < 2; j++) {
@@ -72,12 +78,12 @@ window.addEventListener("load", function() {
 					if (this.id === idScale)
 						this.style.color = chan[j].color;
 					else
-						document.getElementById(idScale).style.color = "#808080";
+						document.getElementById(idScale).style.color = chan[j].shaded;
 				}
 		}
 	}
 	document.getElementById("time").onchange = function(ev) {
-		send (this.id, parseInt(this.value), trigger_channel);
+		send(this.id, parseInt(this.value));
 	}
 
 	document.getElementById("chan0-scale").onclick   = chanSelect;
@@ -85,53 +91,52 @@ window.addEventListener("load", function() {
 	document.getElementById("chan0-trigger").onclick = chanSelect;
 	document.getElementById("chan1-trigger").onclick = chanSelect;
 
-	document.getElementById( "chan0-unit"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "chan0-offset").addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "chan1-unit"    ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "chan1-offset"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "chan0-level" ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "chan1-level"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById( "time"        ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan0-unit"   ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan0-offset" ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan0-level"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan0-slope"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan0-scale"  ).addEventListener("wheel", chanSelect, false);
+	document.getElementById("chan0-trigger").addEventListener("wheel", chanSelect, false);
+	document.getElementById("chan1-unit"   ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan1-offset" ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan1-level"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan1-slope"  ).addEventListener("wheel", mouseWheelCb, false);
+	document.getElementById("chan1-trigger").addEventListener("wheel", chanSelect, false);
+	document.getElementById("chan1-scale"  ).addEventListener("wheel", chanSelect, false);
+	document.getElementById("time"         ).addEventListener("wheel", mouseWheelCb, false);
 
 	document.getElementById("chan0-unit").onchange = function(ev) {
-		console.log("pase por aca" );
-		send (this.id, (parseInt(this.value)+16)%16, 1);
-	}
-
-	document.getElementById("chan0-offset").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 1);
-	}
-
-	document.getElementById("chan0-level").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 1);
-	}
-
-	document.getElementById("chan1-unit").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+16)%16, 0);
 	}
 
-	document.getElementById("chan1-offset").onchange = function(ev) {
+	document.getElementById("chan0-offset").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256, 0);
+		document.getElementById("chan0-unit").onchange(ev);
+	}
+
+	document.getElementById("chan0-level").onchange = function(ev) {
+		send (this.id, (parseInt(this.value)+256)%256, 0, document.getElementById("chan0-slope").value);
+	}
+
+	document.getElementById("chan0-slope").onchange = function(ev) {
+		document.getElementById("chan0-level").onchange(ev);
+	}
+
+	document.getElementById("chan1-unit").onchange = function(ev) {
+		send (this.id, (parseInt(this.value)+16)%16, 1);
+	}
+
+	document.getElementById("chan1-offset").onchange = function(ev) {
+		send (this.id, (parseInt(this.value)+256)%256, 1);
+		document.getElementById("chan1-unit").onchange(ev);
 	}
 
 	document.getElementById("chan1-level").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 0);
+		send (this.id, (parseInt(this.value)+256)%256, 1, document.getElementById("chan1-slope").value);
 	}
 
-//	document.getElementById("neg").onclick = function(ev) {
-//		trigger_edge = 0x00;
-//	}
-//
-//	document.getElementById("pos").onclick = function(ev) {
-//		trigger_edge = 0x80;
-//	}
-
-//	document.getElementById("chan0").onclick = function(ev) {
-//		trigger_channel = 0;
-//	}
-//
-//	document.getElementById("chan1").onclick = function(ev) {
-//		trigger_channel = 1;
-//	}
+	document.getElementById("chan1-slope").onchange = function(ev) {
+		document.getElementById("chan1-level").onchange(ev);
+	}
 
 });

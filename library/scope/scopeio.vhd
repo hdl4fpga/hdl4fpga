@@ -120,6 +120,7 @@ architecture beh of scopeio is
 	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
+	signal  scale_offset: vmword;
 	signal  ordinates   : std_logic_vector(vm_data'range);
 	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
@@ -157,6 +158,7 @@ architecture beh of scopeio is
 
 	signal video_rgb : std_logic_vector(3-1 downto 0);
 	signal selchan   : std_logic;
+	signal triggchan : std_logic;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -203,10 +205,12 @@ begin
 					end loop;
 				when "0001" =>
 					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
+					scale_offset <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
 					trigger_lvl <= resize(signed(scope_data), vmword'length);
 					trigger_chn <= scope_chan and x"7f";
 					trigger_edg <= scope_chan(scope_chan'left);
+					triggchan   <= scope_chan(0);
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
@@ -522,7 +526,11 @@ begin
 				scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
 				value <= std_logic_vector(to_unsigned(32,value'length));
 			when "00101" =>
-				scale(4-1 downto 0) <= scale_y;
+				if triggchan='0' then
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
+				else
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
+				end if;
 				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
 				if to_integer(unsigned(scale_y)) > 11 then
 					buf <= to_ascii(string'("KV")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
@@ -606,7 +614,7 @@ begin
 		text_clk   => mii_rxc,
 		text_addr  => text_addr,
 		text_data  => text_data,
-		offset     => std_logic_vector(offset(0)),
+		offset     => std_logic_vector(scale_offset),
 		abscisa    => abscisa,
 		scale_x    => scale_x,
 		scale_y    => scale_y,
@@ -639,7 +647,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
-			trigg := word2byte(chan1 & chan2, (1 to 1 => selchan));
+			trigg := word2byte(chan1 & chan2, (1 to 1 => triggchan));
 			if plot_on='1' then
 				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);
 			elsif video_fgon='1' then

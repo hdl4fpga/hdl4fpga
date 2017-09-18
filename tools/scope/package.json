@@ -1,4 +1,6 @@
 {
   "name": "helloworld",
-  "main": "main.html"
+  "main": "main.html",
+  "window" : {
+	  	"width" : 1024 }
 }
