@@ -69,15 +69,17 @@ window.addEventListener("load", function() {
 					idTrigger = "chan" + j + "-trigger";
 					if (this.id === idTrigger) {
 						this.style.color = chan[j].color;
+						document.getElementById("chan" + j + "-slope").onchange(ev);
 					} else
 						document.getElementById(idTrigger).style.color =  chan[j].shaded;
 				}
 			else if (this.id === idScale)
 				for (j=0; j < 2; j++) {
 					idScale = "chan" + j + "-scale";
-					if (this.id === idScale)
+					if (this.id === idScale) {
 						this.style.color = chan[j].color;
-					else
+						document.getElementById("chan" + j + "-offset").onchange(ev);
+					} else
 						document.getElementById(idScale).style.color = chan[j].shaded;
 				}
 		}
