@@ -29,6 +29,7 @@ entity scopeio_channel is
 		abscisa      : out std_logic_vector;
 		ordinates    : in  std_logic_vector;
 		offset       : in  std_logic_vector;
+		trigger      : in  std_logic_vector;
 		scale_x      : in  std_logic_vector(4-1 downto 0);
 		scale_y      : in  std_logic_vector(4-1 downto 0);
 		win_frm      : in  std_logic_vector;
@@ -62,6 +63,7 @@ architecture def of scopeio_channel is
 	signal axis_bg   : std_logic_vector(2-1 downto 0);
 	signal axisy_off : std_logic_vector(win_y'range);
 	signal meter_on  : std_logic;
+	signal trigger_dot : std_logic;
 
 begin
 
@@ -90,9 +92,9 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				chan_x-(4*8+4+5*8+4)+5*8+4,             0,   chan_width+1, chan_height+1,
-				chan_x-(4*8+4+5*8+4)+5*8+4, chan_height+2, chan_width+4*8,             8,
-				chan_x-(4*8+4+5*8+4)+    3,             0,            5*8, chan_height+1,
+				chan_x-(4*8+4+5*8+4)+5*8+0,             0,   chan_width+1, chan_height+1,
+				chan_x-(4*8+4+5*8+4)+5*8+0, chan_height+2, chan_width+4*8,             8,
+				chan_x-(4*8+4+5*8+4)+  0-1,             0,            5*8, chan_height+1,
 				                         0,             0,           24*8, chan_height+1))
 		port map (
 			video_clk  => video_clk,
@@ -334,7 +336,21 @@ begin
 			do    => grid_dot);
 	end block;
 
+	trigger_b : block
+		signal dot : std_logic;
+	begin
+		dot <= win_x(1) and setif(resize(unsigned(win_y), trigger'length)=unsigned(trigger)) and grid_on;
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => unsigned_num_bits(height-1)+2+2))
+		port map (
+			clk   => video_clk,
+			di(0) => dot,
+			do(1) => trigger_dot);
+	end block;
+
 	plot_fg  <= plot_dot;
-	video_fg <= axis_fg & grid_dot(1) & ((1 to 4 => meter_dot) and chan_dot);
+	video_fg <= trigger_dot & axis_fg & grid_dot(1) & ((1 to 4 => meter_dot) and chan_dot);
 	video_bg <= axis_bg & grid_dot(0) & chan_dot;
 end;

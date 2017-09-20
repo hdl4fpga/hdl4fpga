@@ -58,8 +58,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 20.0,
-		dfs_mul => 3,
-		dfs_div => 1)
+		dfs_mul => 4,
+		dfs_div => 5)
 	port map(
 		dcm_rst => btn_north,
 		dcm_clk => sys_clk,

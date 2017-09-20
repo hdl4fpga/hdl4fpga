@@ -182,6 +182,7 @@ use ieee.numeric_std.all;
 
 entity video_vga is
 	generic (
+		mode : natural := 7;
 		n : natural := 12);
 	port (
 		clk    : in std_logic;
@@ -213,7 +214,7 @@ begin
 	sync_rom : entity hdl4fpga.video_timing_rom
 	generic map (
 		n => n+1,
-		mode  => 7)
+		mode  => mode)
 	port map (
 
 		hparm => hparm,

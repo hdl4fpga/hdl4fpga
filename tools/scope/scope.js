@@ -93,6 +93,15 @@ window.addEventListener("load", function() {
 	document.getElementById("chan0-trigger").onclick = chanSelect;
 	document.getElementById("chan1-trigger").onclick = chanSelect;
 
+	document.getElementById("chan0-unit").onfocus    = function(ev) { this.parentElement.parentElement.onclick(ev); }
+	document.getElementById("chan0-offset").onfocus  = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan0-level").onfocus   = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan0-slope").onfocus   = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan1-unit").onfocus    = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan1-offset").onfocus  = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan1-level").onfocus   = document.getElementById("chan0-unit").onfocus;
+	document.getElementById("chan1-slope").onfocus   = document.getElementById("chan0-unit").onfocus;
+
 	document.getElementById("chan0-unit"   ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById("chan0-offset" ).addEventListener("wheel", mouseWheelCb, false);
 	document.getElementById("chan0-level"  ).addEventListener("wheel", mouseWheelCb, false);
@@ -115,6 +124,7 @@ window.addEventListener("load", function() {
 		send (this.id, (parseInt(this.value)+256)%256, 0);
 		document.getElementById("chan0-unit").onchange(ev);
 	}
+
 
 	document.getElementById("chan0-level").onchange = function(ev) {
 		send (this.id, (parseInt(this.value)+256)%256, 0, document.getElementById("chan0-slope").value);

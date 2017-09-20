@@ -41,6 +41,7 @@ end;
 architecture beh of scopeio is
 
 	type layout is record 
+		mode        : natural;
 		scr_width   : natural;
 		num_of_seg  : natural;
 		chan_x      : natural;
@@ -51,9 +52,9 @@ architecture beh of scopeio is
 
 	type layout_vector is array (natural range <>) of layout;
 	constant ly_dptr : layout_vector(0 to 1) := (
---		0 => (scr_width | num_of_seg | chan_x | chan_y | chan_width | chan_height
-		0 => (     1920,           4,     320,     270,       50*32,          256),
-		1 => (      800,           2,     320,     300,       15*32,          256));
+--		0 => (mode, scr_width | num_of_seg | chan_x | chan_y | chan_width | chan_height
+		0 => (   7,      1920,           4,     320,     270,       50*32,          256),
+		1 => (   1,       800,           2,     320,     300,       15*32,          256));
 
 	function to_naturalvector (
 		constant arg : layout)
@@ -91,7 +92,7 @@ architecture beh of scopeio is
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
 	signal video_bg   : std_logic_vector(0 to 7-1);
-	signal video_fg   : std_logic_vector(0 to 7-1);
+	signal video_fg   : std_logic_vector(0 to 8-1);
 	signal plot_fg    : std_logic_vector(0 to 18-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
@@ -115,6 +116,7 @@ architecture beh of scopeio is
 	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
 	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
 	signal  trigger_lvl : vmword;
+	signal  trigger     : vmword;
 	signal  trigger_chn : std_logic_vector(8-1 downto 0);
 	signal  trigger_edg : std_logic;
 	signal  full_addr   : std_logic_vector(vm_addr'range);
@@ -193,6 +195,10 @@ begin
 		variable cmd_edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
+			trigger <= -(
+				trigger_lvl +
+				offset(to_integer(unsigned(trigger_chn(0 downto 0)))) -
+				vmword'(b"0_1000_0000"));
 			if pll_rdy='1' then
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
@@ -223,7 +229,8 @@ begin
 
 	video_e : entity hdl4fpga.video_vga
 	generic map (
-		n => 11)
+		mode => ly_dptr(layout_id).mode,
+		n    => 11)
 	port map (
 		clk   => video_clk,
 		hsync => video_hs,
@@ -615,6 +622,7 @@ begin
 		text_addr  => text_addr,
 		text_data  => text_data,
 		offset     => std_logic_vector(scale_offset),
+		trigger    => std_logic_vector(trigger),
 		abscisa    => abscisa,
 		scale_x    => scale_x,
 		scale_y    => scale_y,
@@ -644,6 +652,7 @@ begin
 		variable axisy : std_logic_vector(3-1 downto 0):= "000";
 		variable axisy_bg : std_logic_vector(3-1 downto 0):= "000";
 		variable trigg : std_logic_vector(3-1 downto 0):= "101";
+
 	begin
 		if rising_edge(video_clk) then
 			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
@@ -651,7 +660,7 @@ begin
 			if plot_on='1' then
 				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);
 			elsif video_fgon='1' then
-				video_rgb <= word2byte (axisx & trigg & chan1 & chan2 & grid & axisx & axisy & "000", vcolor_sel);
+				video_rgb <= word2byte (axisx & trigg & chan1 & chan2 & grid & axisx & axisy & trigg, vcolor_sel);
 			elsif video_bgon='1' then
 				video_rgb <= word2byte (axisx_bg & trigg_bg & chan1_bg & chan2_bg & grid_bg & axisx_bg & axisy_bg & "000", vcolorbg_sel);
 			else
