@@ -45,7 +45,7 @@ architecture def of scopeio_axisy is
 		for l in 0 to 16-1 loop
 			j := (l+start) mod 3;
 			a := 10.0**pp(l);
-			aux := real((num-1)/2)*scales(j)*step*a; --bias/real(10**(3*((l+start) / 9)));
+			aux := real((num-1)/2)*scales(j)*step*a + bias*real(10**pp(l));
 			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
 				retval := retval sll (20+12);
 				retval((20+12)-1 downto 0) := unsigned(to_bcd(aux,20, true)) & (1 to 12 => '0');

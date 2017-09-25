@@ -538,7 +538,7 @@ begin
 				else
 					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
 				end if;
-				value <= std_logic_vector(trigger_lvl(9-1 downto 0));
+				value <= std_logic_vector(trigger_lvl(8-1 downto 0) & '0');
 				if to_integer(unsigned(scale_y)) > 11 then
 					buf <= to_ascii(string'("KV")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
 				elsif to_integer(unsigned(scale_y)) > 2 then
