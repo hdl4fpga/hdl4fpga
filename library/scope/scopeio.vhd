@@ -21,6 +21,7 @@ entity scopeio is
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
 		mii_rxd     : in  std_logic_vector;
+		tdiv        : out std_logic_vector(4-1 downto 0);
 		cmd_sel     : in  std_logic_vector(0 to 2-1) := "--";
 		cmd_inc     : in  std_logic := '-';
 		cmd_rdy     : in  std_logic := '0';
@@ -226,6 +227,7 @@ begin
 			cmd_edge := cmd_rdy;
 		end if;
 	end process;
+	tdiv <= tdiv_sel;
 
 	video_e : entity hdl4fpga.video_vga
 	generic map (
@@ -273,17 +275,22 @@ begin
 
 		variable tdiv_scales : tdiv_vector(0 to 16-1);
 		variable scaler : tdiv_word := (others => '1');
+		variable i : natural;
 	begin
-		for i in tdiv_scales'range loop
-			case i mod 3 is
-			when 0 =>           -- 1.0
-				tdiv_scales(i) := to_signed(5**(i/3+0)*2**(i/3+0)-2, tdiv_scales(0)'length);
-			when 1 =>           -- 2.0
-				tdiv_scales(i) := to_signed(5**(i/3+0)*2**(i/3+1)-2, tdiv_scales(0)'length);
-			when 2 =>           -- 5.0
-				tdiv_scales(i) := to_signed(5**(i/3+1)*2**(i/3+0)-2, tdiv_scales(0)'length);
-			when others =>
-			end case;
+		for j in tdiv_scales'range loop
+			tdiv_scales(0) := to_signed(-1, tdiv_scales(0)'length);
+			if j > 0 then
+				i := j -1;
+				case i mod 3 is
+				when 0 =>           -- 1.0
+					tdiv_scales(j) := to_signed(5**(i/3+0)*2**(i/3+0)-2, tdiv_scales(0)'length);
+				when 1 =>           -- 2.0
+					tdiv_scales(j) := to_signed(5**(i/3+0)*2**(i/3+1)-2, tdiv_scales(0)'length);
+				when 2 =>           -- 5.0
+					tdiv_scales(j) := to_signed(5**(i/3+1)*2**(i/3+0)-2, tdiv_scales(0)'length);
+				when others =>
+				end case;
+			end if;
 		end loop;
 
 		if rising_edge(input_clk) then
@@ -524,14 +531,22 @@ begin
 				end if;
 			when "00100" =>
 				scale <= (others => '-');
-				if to_integer(unsigned(scale_x)) > 8 then
+				if to_integer(unsigned(scale_x)) > 6 then
 					buf <= to_ascii(string'(" s  "));
 				else
 					buf <= to_ascii(string'("ms  "));
 				end if;
 				scale(4-1 downto 0) <= scale_x;
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
-				value <= std_logic_vector(to_unsigned(32,value'length));
+				if tdiv_sel=(1 to 4 => '0') then
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
+					value <= std_logic_vector(to_unsigned(16,value'length));
+				elsif to_integer(unsigned(scale_x)) > 6 then
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 0);
+					value <= std_logic_vector(to_unsigned(16,value'length));
+				else
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 2);
+					value <= std_logic_vector(to_unsigned(32,value'length));
+				end if;
 			when "00101" =>
 				if triggchan='0' then
 					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));

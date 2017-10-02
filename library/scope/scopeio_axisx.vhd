@@ -33,10 +33,10 @@ architecture def of scopeio_axisx is
 		constant sign   : boolean)
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
-		constant scales : real_vector(0 to 3-1) := (1.0, 2.0, 5.0);
+		constant scales : real_vector(0 to 3-1) := (5.0, 1.0, 2.0);
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '1');
 		variable aux    : real;
-		constant pp : natural_vector(0 to 16-1) := (0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2);
+		constant pp : natural_vector(0 to 16-1) := (0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2);
 		variable j   : natural;
 	begin
 		for l in 0 to 16-1 loop
@@ -97,7 +97,7 @@ begin
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
-		bitrom => marker(0.25001, 2*div_per_seg+1, false))
+		bitrom => marker(0.0250001, 2*div_per_seg+1, false))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,

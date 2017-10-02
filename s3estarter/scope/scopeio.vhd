@@ -48,6 +48,7 @@ architecture beh of s3estarter is
 	signal rot_cwse  : std_logic;
 	signal rot_rdy   : std_logic;
 	signal input_ena : std_logic;
+	signal tdiv      : std_logic_vector(4-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -190,20 +191,26 @@ begin
 						sample <= std_logic_vector(
 							not adin(1*16+sample_size-1 downto 1*16) &
 							not adin(0*16+sample_size-1 downto 0*16));
-					end if;
-					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
-					if adcdac_sel ='1' then
+
+						input_ena <= not amp_spi;
+						ad_conv   <= '0';
+					else
 						if to_integer(dac_data)=(2048+p2p/2) then
 							dac_data := to_unsigned(2048-p2p/2, dac_data'length);
 						else
 							dac_data := dac_data + 1;
 						end if;
 						ad_conv <= not amp_spi;
-					else
-						input_ena <= not amp_spi;
-						ad_conv   <= '0';
 					end if;
-					adcdac_sel := not adcdac_sel;
+
+					if tdiv=(1 to 4 => '0') then
+						adcdac_sel := '0';
+						ad_conv    <= '1';
+					else 
+						adcdac_sel := not adcdac_sel;
+					end if;
+
+					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
 					cntr       := to_unsigned(cycle-2, cntr'length);
 				else
 					input_ena <= '0';
@@ -246,6 +253,7 @@ begin
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,
 		mii_rxd     => e_rxd,
+		tdiv        => tdiv,
 		input_clk   => spi_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
