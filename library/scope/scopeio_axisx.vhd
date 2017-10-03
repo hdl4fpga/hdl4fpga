@@ -36,7 +36,7 @@ architecture def of scopeio_axisx is
 		constant scales : real_vector(0 to 3-1) := (5.0, 1.0, 2.0);
 		variable retval : unsigned(4*4*2**unsigned_num_bits(num-1)*4*4-1 downto 0) := (others => '1');
 		variable aux    : real;
-		constant pp : natural_vector(0 to 16-1) := (0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2);
+		constant pp : natural_vector(0 to 16-1) := (0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 1, 1, 1, 2, 2, 2);
 		variable j   : natural;
 	begin
 		for l in 0 to 16-1 loop

@@ -94,6 +94,8 @@ begin
 			dcm_clk  => sys_clk,
 			dfs_clk  => spi_clk,
 			dcm_lck  => spi_rst);
+--		spi_clk <= sys_clk;
+--		spi_rst <= not dfs_rst;
 
 
 		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
@@ -121,7 +123,7 @@ begin
 			end if;
 		end process;
 
-		ampclkf_p : process (spi_clk)
+		ampclkf_p : process (spi_rst, spi_clk)
 		begin
 			if spi_rst='0' then
 				sckamp_fd <= '0';

@@ -531,7 +531,7 @@ begin
 				end if;
 			when "00100" =>
 				scale <= (others => '-');
-				if to_integer(unsigned(scale_x)) > 6 then
+				if to_integer(unsigned(scale_x)) > 9 then
 					buf <= to_ascii(string'(" s  "));
 				else
 					buf <= to_ascii(string'("ms  "));
@@ -540,9 +540,9 @@ begin
 				if tdiv_sel=(1 to 4 => '0') then
 					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
 					value <= std_logic_vector(to_unsigned(16,value'length));
-				elsif to_integer(unsigned(scale_x)) > 6 then
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 0);
-					value <= std_logic_vector(to_unsigned(16,value'length));
+				elsif to_integer(unsigned(scale_x)) > 13 then
+					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)-7);
+					value <= std_logic_vector(to_unsigned(32,value'length));
 				else
 					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 2);
 					value <= std_logic_vector(to_unsigned(32,value'length));
