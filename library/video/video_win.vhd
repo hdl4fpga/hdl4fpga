@@ -61,14 +61,19 @@ architecture def of win_side is
 
 begin
 
-	rom_e : entity hdl4fpga.rom
-	generic map (
-		synchronous => synchronous,
-		bitrom      => tab_bit)
-	port map (
-		clk         => video_clk,
-		addr        => video_x,
-		data        => won);
+	g1 : for i in won'range generate
+		g2 : if i < tab'length/2 generate
+			constant low  : natural := tab(2*i);
+			constant high : natural := tab(2*i)+tab(2*i+1);
+		begin
+			process(video_clk)
+			begin
+				if rising_edge(video_clk) then
+					won(i) <= setif(low <= to_integer(unsigned(video_x)) and to_integer(unsigned(video_x)) < high);
+				end if;
+			end process;
+		end generate;
+	end generate;
 
 	process(video_clk)
 	begin
