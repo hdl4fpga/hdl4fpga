@@ -26,6 +26,8 @@ HDL4FPGA__video_timing_rom__mix = $(LIB_HDL4FPGA)/video_timing_rom/mix.dat
 HDL4FPGA__video_timing_rom = $(LIB_HDL4FPGA)/video_timing_rom/_primary.dat
 HDL4FPGA__video_timing_gen__beh = $(LIB_HDL4FPGA)/video_timing_gen/beh.dat
 HDL4FPGA__video_timing_gen = $(LIB_HDL4FPGA)/video_timing_gen/_primary.dat
+HDL4FPGA__testbench__scope = $(LIB_HDL4FPGA)/testbench/scope.dat
+HDL4FPGA__testbench = $(LIB_HDL4FPGA)/testbench/_primary.dat
 HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
 HDL4FPGA__scopeio_miirx__mix = $(LIB_HDL4FPGA)/scopeio_miirx/mix.dat
@@ -89,6 +91,8 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__video_timing_rom) \
     $(HDL4FPGA__video_timing_gen__beh) \
     $(HDL4FPGA__video_timing_gen) \
+    $(HDL4FPGA__testbench__scope) \
+    $(HDL4FPGA__testbench) \
     $(HDL4FPGA__std__body) \
     $(HDL4FPGA__std) \
     $(HDL4FPGA__scopeio_miirx__mix) \
@@ -332,6 +336,21 @@ $(HDL4FPGA__std__body) : ../../library/common/std.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2008 -work hdl4fpga ../../library/common/std.vhd
+
+$(HDL4FPGA__testbench) : ../../library/testbench/testbench.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/testbench/testbench.vhd
+
+$(HDL4FPGA__testbench__scope) : ../testbench/mii_rx.vhd \
+		$(HDL4FPGA__mii_mem) \
+		$(HDL4FPGA__testbench) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__std)
+	$(VCOM) -2002 -work hdl4fpga ../testbench/mii_rx.vhd
 
 $(HDL4FPGA__draw_vline) \
 $(HDL4FPGA__grid) \
