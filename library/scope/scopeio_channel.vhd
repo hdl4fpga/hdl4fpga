@@ -13,7 +13,7 @@ entity scopeio_channel is
 		inputs       : natural;
 		input_bias   : real    := 0.0;
 		num_of_seg   : natural;
-		scaley_start : natural := 1;
+		scales_x     : real_vector;
 		chan_x       : natural;
 		chan_width   : natural;
 		chan_height  : natural;
@@ -65,6 +65,7 @@ architecture def of scopeio_channel is
 	signal meter_on  : std_logic;
 	signal trigger_dot : std_logic;
 
+	signal axis_sgmt    : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
 begin
 
 	win_b : block
@@ -150,29 +151,56 @@ begin
 	end block;
 
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
-	axisy_e : entity hdl4fpga.scopeio_axisy
+--	axisy_e : entity hdl4fpga.scopeio_axisy
+--	generic map (
+--		fonts       => psf1digit8x8,
+--		input_bias  => input_bias)
+--	port map (
+--		video_clk   => video_clk,
+--		win_x       => win_x,
+--		win_y       => axisy_off, 
+--		axis_on     => axisy_on,
+--		axis_scale  => scale_y,
+--		axis_dot    => axisy_don);
+
+	axisy_e : entity hdl4fpga.scopeio_axisx
 	generic map (
+		horizontal  => false,
+		scales      => scales_x,
 		fonts       => psf1digit8x8,
-		scale_start => scaley_start,
-		input_bias  => input_bias)
+		num_of_seg  => 1,
+		div_per_seg => 7)
 	port map (
-		video_clk   => video_clk,
-		win_x       => win_x,
-		win_y       => axisy_off, 
-		axis_on     => axisy_on,
-		axis_scale  => scale_y,
-		axis_dot    => axisy_don);
+		video_clk  => video_clk,
+		win_x      => win_x,
+		win_y      => axisy_off,
+		axis_sgmt  => "0",
+		axis_on    => axisy_on,
+		axis_scale => scale_y,
+		axis_dot   => axisy_don);
+
+	process(win_on(0 to num_of_seg-1))
+	begin
+	 	axis_sgmt <= (others => '-');
+		for i in 0 to num_of_seg-1 loop
+			if unsigned(reverse(win_on(0 to num_of_seg-1)))=to_unsigned(2**i, num_of_seg) then
+				axis_sgmt <= std_logic_vector(to_unsigned(i, axis_sgmt'length));
+			end if;
+		end loop;
+	 end process;
 
 	axisx_e : entity hdl4fpga.scopeio_axisx
 	generic map (
+		horizontal  => true,
+		scales      => scales_x,
 		fonts       => psf1digit8x8,
 		num_of_seg  => num_of_seg,
 		div_per_seg => chan_width/(32*5))
 	port map (
 		video_clk  => video_clk,
-		win_on     => win_on,
 		win_x      => win_x,
 		win_y      => win_y,
+		axis_sgmt  => axis_sgmt,
 		axis_on    => axisx_on,
 		axis_scale => scale_x,
 		axis_dot   => axisx_don);
@@ -347,7 +375,7 @@ begin
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
-			do(1) => trigger_dot);
+			do(0) => trigger_dot);
 	end block;
 
 	plot_fg  <= plot_dot;

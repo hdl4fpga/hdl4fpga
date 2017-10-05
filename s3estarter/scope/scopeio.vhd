@@ -11,6 +11,11 @@ use hdl4fpga.std.all;
 
 architecture beh of s3estarter is
 
+	constant scales_x : real_vector := (
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0);
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
@@ -213,7 +218,7 @@ begin
 					end if;
 
 					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
-					cntr       := to_unsigned(cycle-2, cntr'length);
+					cntr    := to_unsigned(cycle-2, cntr'length);
 				else
 					input_ena <= '0';
 					ad_conv   <= '0';
@@ -247,6 +252,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		scales_x   => scales_x,
 		layout_id  => 1,
 		inputs => inputs,
 		input_bias => 0.0,

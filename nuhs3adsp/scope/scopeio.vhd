@@ -46,6 +46,11 @@ architecture beh of nuhs3adsp is
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
+	constant scales_x : real_vector := (
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0, 1.0);
 begin
 
 	clkin_ibufg : ibufg
@@ -89,7 +94,9 @@ begin
 	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
-	generic map (		layout_id  => 1,
+	generic map (
+		layout_id  => 0,
+		scales_x   => scales_x,
 		inputs => 1,
 		input_bias => 0.0, --1.65,
 		input_unit => 100.0*(1.25*64.0)/8192.0)

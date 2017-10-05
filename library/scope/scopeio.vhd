@@ -14,6 +14,7 @@ use hdl4fpga.cgafont.all;
 entity scopeio is
 	generic (
 		layout_id   : natural := 0;
+		scales_x    : real_vector;
 		inputs      : natural := 1;
 		input_unit  : real := 1.0;
 		input_bias  : real := 0.0);
@@ -97,7 +98,7 @@ architecture beh of scopeio is
 	signal plot_fg    : std_logic_vector(0 to 18-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
-	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1));
+	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
 	
 	signal win_don     : std_logic_vector(0 to 18-1);
 	signal win_frm     : std_logic_vector(0 to 18-1);
@@ -519,16 +520,16 @@ begin
 				else
 					buf <= to_ascii(string'("mV  "));
 				end if;
-			when "00011" =>
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
-				value(9-1 downto 0) <= std_logic_vector(offset(1)(8-1 downto 0)&'0');
-				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
-					buf <= to_ascii(string'("KV  "));
-				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
-					buf <= to_ascii(string'(" V  "));
-				else
-					buf <= to_ascii(string'("mV  "));
-				end if;
+--			when "00011" =>
+--				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
+--				value(9-1 downto 0) <= std_logic_vector(offset(1)(8-1 downto 0)&'0');
+--				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
+--					buf <= to_ascii(string'("KV  "));
+--				elsif to_integer(unsigned(amp(8-1 downto 4))) > 2 then
+--					buf <= to_ascii(string'(" V  "));
+--				else
+--					buf <= to_ascii(string'("mV  "));
+--				end if;
 			when "00100" =>
 				scale <= (others => '-');
 				if to_integer(unsigned(scale_x)) > 9 then
@@ -628,7 +629,8 @@ begin
 		chan_width  => ly_dptr(layout_id).chan_width,
 		chan_height => ly_dptr(layout_id).chan_height,
 		scr_width   => ly_dptr(layout_id).scr_width,
-		height      => ly_dptr(layout_id).chan_y)
+		height      => ly_dptr(layout_id).chan_y,
+		scales_x    => scales_x)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
