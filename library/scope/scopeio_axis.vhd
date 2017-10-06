@@ -7,7 +7,6 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisx is
 	generic (
-		horizontal   : boolean;
 		fonts        : std_logic_vector;
 		num_of_seg   : natural;
 		scales       : real_vector;
@@ -17,6 +16,8 @@ entity scopeio_axisx is
 		video_clk    : in  std_logic;
 		win_x        : in  std_logic_vector;
 		win_y        : in  std_logic_vector;
+
+		axis_hztl    : in  std_logic;
 		axis_sgmt    : in  std_logic_vector;
 		axis_on      : in  std_logic;
 		axis_scale   : in  std_logic_vector(4-1 downto 0);
@@ -90,7 +91,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			mark_on <= setif(sgmt_x=(sgmt_x'range => '0')) and aon;
-			if horizontal then 
+			if axis_hztl='1' then 
 				if axis_on='0' then
 					sgmt_x := (others => '0');
 					mark   <= (others => '0');

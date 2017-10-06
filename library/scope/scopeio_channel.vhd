@@ -56,16 +56,20 @@ architecture def of scopeio_channel is
 	signal meter_dot : std_logic;
 	signal chan_dot  : std_logic_vector(0 to 4-1);
 	signal axisx_on  : std_logic;
-	signal axisx_don : std_logic := '0';
 	signal axisy_on  : std_logic;
+	signal axis_on   : std_logic;
+	signal axisx_don : std_logic := '0';
 	signal axisy_don : std_logic;
+	signal axis_don  : std_logic;
 	signal axis_fg   : std_logic_vector(2-1 downto 0);
 	signal axis_bg   : std_logic_vector(2-1 downto 0);
 	signal axisy_off : std_logic_vector(win_y'range);
+	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
+	signal axis_hztl : std_logic;
+
 	signal meter_on  : std_logic;
 	signal trigger_dot : std_logic;
 
-	signal axis_sgmt    : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
 begin
 
 	win_b : block
@@ -151,47 +155,22 @@ begin
 	end block;
 
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
---	axisy_e : entity hdl4fpga.scopeio_axisy
---	generic map (
---		fonts       => psf1digit8x8,
---		input_bias  => input_bias)
---	port map (
---		video_clk   => video_clk,
---		win_x       => win_x,
---		win_y       => axisy_off, 
---		axis_on     => axisy_on,
---		axis_scale  => scale_y,
---		axis_dot    => axisy_don);
 
-	axisy_e : entity hdl4fpga.scopeio_axisx
-	generic map (
-		horizontal  => false,
-		scales      => scales_x,
-		fonts       => psf1digit8x8,
-		num_of_seg  => 1,
-		div_per_seg => 7)
-	port map (
-		video_clk  => video_clk,
-		win_x      => win_x,
-		win_y      => axisy_off,
-		axis_sgmt  => "0",
-		axis_on    => axisy_on,
-		axis_scale => scale_y,
-		axis_dot   => axisy_don);
-
+	axis_on <= axisy_on or axisx_on;
 	process(win_on(0 to num_of_seg-1))
 	begin
-	 	axis_sgmt <= (others => '-');
-		for i in 0 to num_of_seg-1 loop
-			if unsigned(reverse(win_on(0 to num_of_seg-1)))=to_unsigned(2**i, num_of_seg) then
-				axis_sgmt <= std_logic_vector(to_unsigned(i, axis_sgmt'length));
-			end if;
-		end loop;
+	 	axis_sgmt <= (others => '0');
+		if axisy_on='0' then
+			for i in 0 to num_of_seg-1 loop
+				if unsigned(reverse(win_on(0 to num_of_seg-1)))=to_unsigned(2**i, num_of_seg) then
+					axis_sgmt <= std_logic_vector(to_unsigned(i, axis_sgmt'length));
+				end if;
+			end loop;
+		end if;
 	 end process;
 
-	axisx_e : entity hdl4fpga.scopeio_axisx
+	axis_e : entity hdl4fpga.scopeio_axisx
 	generic map (
-		horizontal  => true,
 		scales      => scales_x,
 		fonts       => psf1digit8x8,
 		num_of_seg  => num_of_seg,
@@ -200,10 +179,13 @@ begin
 		video_clk  => video_clk,
 		win_x      => win_x,
 		win_y      => win_y,
+		axis_hztl  => axisx_on,
 		axis_sgmt  => axis_sgmt,
-		axis_on    => axisx_on,
+		axis_on    => axis_on,
 		axis_scale => scale_x,
-		axis_dot   => axisx_don);
+		axis_dot   => axis_don);
+	axisx_don <= axis_don and axisx_on;
+	axisy_don <= axis_don and axisy_on;
 
 	align_e : entity hdl4fpga.align
 	generic map (
