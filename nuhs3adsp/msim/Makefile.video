@@ -34,8 +34,6 @@ HDL4FPGA__scopeio_miirx__mix = $(LIB_HDL4FPGA)/scopeio_miirx/mix.dat
 HDL4FPGA__scopeio_miirx = $(LIB_HDL4FPGA)/scopeio_miirx/_primary.dat
 HDL4FPGA__scopeio_channel__def = $(LIB_HDL4FPGA)/scopeio_channel/def.dat
 HDL4FPGA__scopeio_channel = $(LIB_HDL4FPGA)/scopeio_channel/_primary.dat
-HDL4FPGA__scopeio_axisy__def = $(LIB_HDL4FPGA)/scopeio_axisy/def.dat
-HDL4FPGA__scopeio_axisy = $(LIB_HDL4FPGA)/scopeio_axisy/_primary.dat
 HDL4FPGA__scopeio_axisx__def = $(LIB_HDL4FPGA)/scopeio_axisx/def.dat
 HDL4FPGA__scopeio_axisx = $(LIB_HDL4FPGA)/scopeio_axisx/_primary.dat
 HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
@@ -100,8 +98,6 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__scopeio_miirx) \
     $(HDL4FPGA__scopeio_channel__def) \
     $(HDL4FPGA__scopeio_channel) \
-    $(HDL4FPGA__scopeio_axisy__def) \
-    $(HDL4FPGA__scopeio_axisy) \
     $(HDL4FPGA__scopeio_axisx__def) \
     $(HDL4FPGA__scopeio_axisx) \
     $(HDL4FPGA__scopeio__beh) \
@@ -280,25 +276,14 @@ $(HDL4FPGA__scopeio__beh) : ../../library/scope/scopeio.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio.vhd
 
 $(HDL4FPGA__scopeio_axisx) \
-$(HDL4FPGA__scopeio_axisx__def) : ../../library/scope/scopeio_axisx.vhd \
-		$(HDL4FPGA__align) \
+$(HDL4FPGA__scopeio_axisx__def) : ../../library/scope/scopeio_axis.vhd \
 		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__align) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_axisx.vhd
-
-$(HDL4FPGA__scopeio_axisy) \
-$(HDL4FPGA__scopeio_axisy__def) : ../../library/scope/scopeio_axisy.vhd \
-		$(HDL4FPGA__align) \
-		$(HDL4FPGA__rom) \
-		$(HDL4FPGA__std) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
-	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_axisy.vhd
+	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_axis.vhd
 
 $(HDL4FPGA__scopeio_channel) \
 $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
@@ -307,7 +292,6 @@ $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__scopeio_axisx) \
-		$(HDL4FPGA__scopeio_axisy) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \

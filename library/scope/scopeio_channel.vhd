@@ -157,17 +157,8 @@ begin
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 
 	axis_on <= axisy_on or axisx_on;
-	process(win_on(0 to num_of_seg-1))
-	begin
-	 	axis_sgmt <= (others => '0');
-		if axisy_on='0' then
-			for i in 0 to num_of_seg-1 loop
-				if unsigned(reverse(win_on(0 to num_of_seg-1)))=to_unsigned(2**i, num_of_seg) then
-					axis_sgmt <= std_logic_vector(to_unsigned(i, axis_sgmt'length));
-				end if;
-			end loop;
-		end if;
-	 end process;
+--	axis_sgmt <= encoder(win_on(0 to num_of_seg-1));
+	axis_sgmt <= encoder("1000");
 
 	axis_e : entity hdl4fpga.scopeio_axisx
 	generic map (

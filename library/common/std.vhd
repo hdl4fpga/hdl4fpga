@@ -342,7 +342,7 @@ package body std is
 		return         std_logic_vector is
 		variable val : std_logic_vector(unsigned_num_bits(inp'length-1)-1 downto 0);
 	begin
-		val := (others => '-');
+		val := (others => '0');
 		for i in 0 to 2**val'length-1 loop
 			if i < inp'length then
 				if inp=std_logic_vector(to_unsigned(2**i,inp'length)) then

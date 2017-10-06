@@ -31,22 +31,20 @@ architecture def of scopeio_axisx is
 	constant code_size    : natural := 4;
 	constant num_of_digit : natural := 4;
 
-	signal mark  : std_logic_vector(unsigned_num_bits(div_per_seg)-1 downto 0);
+	signal mark  : std_logic_vector(unsigned_num_bits(num_of_seg*div_per_seg+1)-1 downto 0);
 
 	function marker (
 		constant num  : natural;
 		constant sign : boolean)
 		return std_logic_vector is
 		type real_vector is array (natural range <>) of real;
-		variable retval : unsigned(2**axis_scale'length*2**unsigned_num_bits(num-1)*num_of_digit*code_size-1 downto 0) := (others => '1');
+		variable retval : unsigned(2**axis_scale'length*num*num_of_digit*code_size-1 downto 0) := (others => '1');
 		variable aux    : real;
 	begin
 		for l in 0 to 2**axis_scale'length-1 loop
-			for k in 0 to 2**unsigned_num_bits(num-1)-1 loop
+			aux := 0.0;
+			for k in 0 to num-1 loop
 				retval := retval sll (num_of_digit*code_size);
-				if (k mod (2**mark'length))=0 then
-					aux := real((k/(2**mark'length))*div_per_seg)*scales(l);
-				end if;
 				retval(num_of_digit*code_size-1 downto 0) := unsigned(to_bcd(aux, num_of_digit*code_size, sign));
 				aux := aux + scales(l);
 			end loop;
@@ -57,7 +55,7 @@ architecture def of scopeio_axisx is
 	signal sgmt      : std_logic_vector(axis_sgmt'range);
 	signal win_x4    : std_logic;
 
-	signal char_addr : std_logic_vector(0 to axis_scale'length+sgmt'length+mark'length);
+	signal char_addr : std_logic_vector(0 to axis_scale'length+mark'length);
 	signal char_code : std_logic_vector(2*code_size-1 downto 0);
 	signal char_line : std_logic_vector(0 to font_width-1);
 	signal char_dot  : std_logic_vector(0 to 1-1);
@@ -88,13 +86,25 @@ begin
 		variable next_x : std_logic;
 		variable aon    : std_logic;
 
+		function pp
+			return natural_vector is
+			variable jj : natural_vector(0 to num_of_seg-1);
+		begin
+			for i in jj'range loop
+				jj(i) := i;
+			end loop;
+			return jj;
+		end;
+
+		constant kk : natural_vector(0 to num_of_seg-1) := pp;
+
 	begin
 		if rising_edge(video_clk) then
 			mark_on <= setif(sgmt_x=(sgmt_x'range => '0')) and aon;
 			if axis_hztl='1' then 
 				if axis_on='0' then
 					sgmt_x := (others => '0');
-					mark   <= (others => '0');
+					mark   <= std_logic_vector(to_unsigned(kk(to_integer(unsigned(axis_sgmt))), mark'length));
 				elsif next_x='1' then
 					if to_integer(sgmt_x)=mark_per_seg-1 then
 						sgmt_x := (others => '0');
@@ -104,14 +114,15 @@ begin
 					end if;
 				end if;
 			else
-				mark <= win_y(5+mark'length-1 downto 5);
+				mark <= std_logic_vector(resize(unsigned(win_y(win_y'left downto 5)),mark'length));
+				mark  <= std_logic_vector(to_unsigned(1, mark'length));
 			end if;
 			aon  := axis_on and aon_y;
 			next_x := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
 		end if;
 	end process;
 
-	char_addr <= axis_scale & sgmt & mark & win_x4;
+	char_addr <= axis_scale & mark & win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
