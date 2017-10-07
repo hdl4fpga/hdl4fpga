@@ -157,8 +157,7 @@ begin
 	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
 
 	axis_on <= axisy_on or axisx_on;
---	axis_sgmt <= encoder(win_on(0 to num_of_seg-1));
-	axis_sgmt <= encoder("1000");
+	axis_sgmt <= encoder(reverse(win_on(0 to num_of_seg-1)));
 
 	axis_e : entity hdl4fpga.scopeio_axisx
 	generic map (

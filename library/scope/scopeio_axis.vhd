@@ -91,7 +91,7 @@ begin
 			variable jj : natural_vector(0 to num_of_seg-1);
 		begin
 			for i in jj'range loop
-				jj(i) := i;
+				jj(i) := i*div_per_seg;
 			end loop;
 			return jj;
 		end;
@@ -101,11 +101,11 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			mark_on <= setif(sgmt_x=(sgmt_x'range => '0')) and aon;
-			if axis_hztl='1' then 
-				if axis_on='0' then
-					sgmt_x := (others => '0');
-					mark   <= std_logic_vector(to_unsigned(kk(to_integer(unsigned(axis_sgmt))), mark'length));
-				elsif next_x='1' then
+			if axis_on='0' then
+				sgmt_x := (others => '0');
+				mark   <= std_logic_vector(to_unsigned(kk(to_integer(unsigned(axis_sgmt))), mark'length));
+			elsif axis_hztl='1' then 
+				if next_x='1' then
 					if to_integer(sgmt_x)=mark_per_seg-1 then
 						sgmt_x := (others => '0');
 						mark   <= std_logic_vector(unsigned(mark) + 1);
@@ -115,7 +115,6 @@ begin
 				end if;
 			else
 				mark <= std_logic_vector(resize(unsigned(win_y(win_y'left downto 5)),mark'length));
-				mark  <= std_logic_vector(to_unsigned(1, mark'length));
 			end if;
 			aon  := axis_on and aon_y;
 			next_x := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
