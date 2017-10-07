@@ -11,9 +11,9 @@ use hdl4fpga.cgafont.all;
 entity scopeio_channel is
 	generic(
 		inputs       : natural;
-		input_bias   : real    := 0.0;
 		num_of_seg   : natural;
-		scales_x     : real_vector;
+		hz_scales    : scale_vector;
+		vt_scales    : scale_vector;
 		chan_x       : natural;
 		chan_width   : natural;
 		chan_height  : natural;
@@ -159,9 +159,10 @@ begin
 	axis_on <= axisy_on or axisx_on;
 	axis_sgmt <= encoder(reverse(win_on(0 to num_of_seg-1)));
 
-	axis_e : entity hdl4fpga.scopeio_axisx
+	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		scales      => scales_x,
+		hz_scales   => hz_scales,
+		vt_scales   => vt_scales,
 		fonts       => psf1digit8x8,
 		num_of_seg  => num_of_seg,
 		div_per_seg => chan_width/(32*5))

@@ -263,6 +263,14 @@ package std is
 	function encoder (
 		constant inp : std_logic_vector)
 		return         std_logic_vector;
+
+	type scale_t is record
+		from : real;
+		step : real;
+	end record;
+
+	type scale_vector is array (natural range <>) of scale_t;
+
 end;
 
 use std.textio.all;

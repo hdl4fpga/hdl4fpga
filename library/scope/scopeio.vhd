@@ -14,10 +14,10 @@ use hdl4fpga.cgafont.all;
 entity scopeio is
 	generic (
 		layout_id   : natural := 0;
-		scales_x    : real_vector;
+		hz_scales   : scale_vector;
+		vt_scales   : scale_vector;
 		inputs      : natural := 1;
-		input_unit  : real := 1.0;
-		input_bias  : real := 0.0);
+		input_unit  : real := 1.0);
 	port (
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
@@ -623,14 +623,14 @@ begin
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
 		inputs      => inputs,
-		input_bias  => input_bias,
 		num_of_seg  => ly_dptr(layout_id).num_of_seg,
 		chan_x      => ly_dptr(layout_id).chan_x,
 		chan_width  => ly_dptr(layout_id).chan_width,
 		chan_height => ly_dptr(layout_id).chan_height,
 		scr_width   => ly_dptr(layout_id).scr_width,
 		height      => ly_dptr(layout_id).chan_y,
-		scales_x    => scales_x)
+		hz_scales   => hz_scales,
+		vt_scales   => vt_scales)
 	port map (
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,

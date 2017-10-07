@@ -5,11 +5,12 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_axisx is
+entity scopeio_axis is
 	generic (
 		fonts        : std_logic_vector;
 		num_of_seg   : natural;
-		scales       : real_vector;
+		hz_scales    : scale_vector;
+		vt_scales    : scale_vector;
 		mark_per_seg : natural := 5;
 		div_per_seg  : natural := 1);
 	port (
@@ -24,7 +25,7 @@ entity scopeio_axisx is
 		axis_dot     : out std_logic);
 end;
 
-architecture def of scopeio_axisx is
+architecture def of scopeio_axis is
 
 	constant font_width   : natural := 8;
 	constant font_height  : natural := 8;
@@ -42,11 +43,11 @@ architecture def of scopeio_axisx is
 		variable aux    : real;
 	begin
 		for l in 0 to 2**axis_scale'length-1 loop
-			aux := 0.0;
+			aux :=  hz_scales(l).from;
 			for k in 0 to num-1 loop
 				retval := retval sll (num_of_digit*code_size);
 				retval(num_of_digit*code_size-1 downto 0) := unsigned(to_bcd(aux, num_of_digit*code_size, sign));
-				aux := aux + scales(l);
+				aux := aux + hz_scales(l).step;
 			end loop;
 		end loop;
 		return std_logic_vector(retval);
