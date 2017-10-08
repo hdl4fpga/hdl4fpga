@@ -64,6 +64,7 @@ architecture def of scopeio_channel is
 	signal axis_fg   : std_logic_vector(2-1 downto 0);
 	signal axis_bg   : std_logic_vector(2-1 downto 0);
 	signal axisy_off : std_logic_vector(win_y'range);
+	signal vt_offset : std_logic_vector(win_y'range);
 	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
 	signal axis_hztl : std_logic;
 
@@ -154,22 +155,30 @@ begin
 
 	end block;
 
-	axisy_off <= std_logic_vector(resize(unsigned(offset),win_y'length)+unsigned(win_y));
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			vt_offset <= std_logic_vector(resize(unsigned(offset),win_y'length)+(96+4)+unsigned(win_y));
+		end if;
+	end process;
+
+	axisy_off <= vt_offset when axisx_on='0' else win_y;
 
 	axis_on <= axisy_on or axisx_on;
 	axis_sgmt <= encoder(reverse(win_on(0 to num_of_seg-1)));
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		hz_scales   => hz_scales,
-		vt_scales   => vt_scales,
-		fonts       => psf1digit8x8,
-		num_of_seg  => num_of_seg,
-		div_per_seg => chan_width/(32*5))
+		fonts          => psf1digit8x8,
+		vt_scales      => vt_scales,
+		vt_div_per_seg => 2*chan_height/32,
+		hz_scales      => hz_scales,
+		hz_num_of_seg  => num_of_seg,
+		hz_div_per_seg => chan_width/(32*5))
 	port map (
 		video_clk  => video_clk,
 		win_x      => win_x,
-		win_y      => win_y,
+		win_y      => axisy_off,
 		axis_hztl  => axisx_on,
 		axis_sgmt  => axis_sgmt,
 		axis_on    => axis_on,
