@@ -13,11 +13,19 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
-		layout_id   : natural := 0;
-		hz_scales   : scale_vector;
-		vt_scales   : scale_vector;
 		inputs      : natural := 1;
-		input_unit  : real := 1.0);
+		input_unit  : real    := 1.0;
+		layout_id   : natural := 0;
+
+		channels_fg : std_logic_vector;
+		channels_bg : std_logic_vector;
+		hzaxis_fg   : std_logic_vector;
+		hzaxis_bg   : std_logic_vector;
+		grid_fg     : std_logic_vector := "100";
+		grid_bg     : std_logic_vector := "000";
+
+		hz_scales   : scale_vector;
+		vt_scales   : scale_vector);
 	port (
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
@@ -95,7 +103,7 @@ architecture beh of scopeio is
 
 	signal video_bg   : std_logic_vector(0 to 7-1);
 	signal video_fg   : std_logic_vector(0 to 8-1);
-	signal plot_fg    : std_logic_vector(0 to 18-1);
+	signal plot_fg    : std_logic_vector(0 to inputs-1);
 
 	signal video_io    : std_logic_vector(0 to 3-1);
 	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
@@ -161,8 +169,8 @@ architecture beh of scopeio is
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 	signal video_rgb : std_logic_vector(3-1 downto 0);
-	signal selchan   : std_logic;
-	signal triggchan : std_logic;
+	signal selchan   : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
+	signal triggchan : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -208,17 +216,17 @@ begin
 						if i=to_integer(unsigned(scope_chan(0 downto 0))) then
 							amp((i+1)*4-1 downto 4*i) <= scope_data(3 downto 0);
 							scale_y   <= scope_data(3 downto 0);
-							selchan <= setif(i=1);
+							selchan(0) <= setif(i=1);
 						end if;
 					end loop;
 				when "0001" =>
 					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
 					scale_offset <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
-					trigger_lvl <= resize(signed(scope_data), vmword'length);
-					trigger_chn <= scope_chan and x"7f";
-					trigger_edg <= scope_chan(scope_chan'left);
-					triggchan   <= scope_chan(0);
+					trigger_lvl  <= resize(signed(scope_data), vmword'length);
+					trigger_chn  <= scope_chan and x"7f";
+					trigger_edg  <= scope_chan(scope_chan'left);
+					triggchan(0) <= scope_chan(0);
 				when "0011" =>
 					tdiv_sel  <= scope_data(3 downto 0);
 					scale_x   <= scope_data(3 downto 0);
@@ -479,7 +487,7 @@ begin
 
 		signal meassure : std_logic_vector(0 to 6*4-1) := (others => '1');
 		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
-		signal scale   : std_logic_vector(inputs*4-1 downto 0);
+		signal scale   : std_logic_vector(4-1 downto 0);
 		signal value   : std_logic_vector(inputs*9-1 downto 0);
 		signal buf     : std_logic_vector(0 to 4*8-1);
 	begin
@@ -491,7 +499,7 @@ begin
 			buf <= (others => '0');
 			case text_addr(10-1 downto 5) is
 			when "00000" =>
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0))); 
+				scale <= amp(4-1 downto 0); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
 					buf <= to_ascii(string'("KV  "));
@@ -501,7 +509,7 @@ begin
 					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00001" =>
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
+				scale <= amp(4-1 downto 0);
 				value(9-1 downto 0) <= std_logic_vector(offset(0)(8-1 downto 0)&'0');
 				if to_integer(unsigned(amp(4-1 downto 0))) > 11 then
 					buf <= to_ascii(string'("KV  "));
@@ -511,7 +519,7 @@ begin
 					buf <= to_ascii(string'("mV  "));
 				end if;
 			when "00010" =>
-				scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4))); 
+				scale <= amp(8-1 downto 4); 
 				value <= std_logic_vector(to_unsigned(64,value'length));
 				if to_integer(unsigned(amp(8-1 downto 4))) > 11 then
 					buf <= to_ascii(string'("KV  "));
@@ -537,23 +545,19 @@ begin
 				else
 					buf <= to_ascii(string'("ms  "));
 				end if;
-				scale(4-1 downto 0) <= scale_x;
+				scale <= scale_x;
 				if tdiv_sel=(1 to 4 => '0') then
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 3);
+					scale <= std_logic_vector(unsigned(scale_x)+ 3);
 					value <= std_logic_vector(to_unsigned(16,value'length));
 				elsif to_integer(unsigned(scale_x)) > 13 then
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)-7);
+					scale <= std_logic_vector(unsigned(scale_x)-7);
 					value <= std_logic_vector(to_unsigned(32,value'length));
 				else
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(scale_x)+ 2);
+					scale <= std_logic_vector(unsigned(scale_x)+ 2);
 					value <= std_logic_vector(to_unsigned(32,value'length));
 				end if;
 			when "00101" =>
-				if triggchan='0' then
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(4-1 downto 0)));
-				else
-					scale(4-1 downto 0) <= std_logic_vector(unsigned(amp(8-1 downto 4)));
-				end if;
+				scale <= word2byte(amp, triggchan);
 				value <= std_logic_vector(trigger_lvl(8-1 downto 0) & '0');
 				if to_integer(unsigned(scale_y)) > 11 then
 					buf <= to_ascii(string'("KV")) & to_ascii(string'(" ")) & word2byte(b"0001_1000_0001_1001",(1 to 1 => trigger_edg));
@@ -578,18 +582,18 @@ begin
 			dec  => 2)
 		port map (
 			value => value(9-1 downto 0),
-			scale => scale(4-1 downto 0),
+			scale => scale,
 			fmtds => meassure);	
 
 		process (mii_rxc)
 			type label_vector is array (natural range <>) of string(1 to 13);
 			constant labels : label_vector(0 to 32-1) := (
-				 0 => align("Escala     : ", 13),
-				 1 => align("Posicion   : ", 13),
+				 0 => align("Horizontal : ", 13),
+				 1 => align("Disparo    : ", 13),
 				 2 => align("Escala     : ", 13),
 				 3 => align("Posicion   : ", 13),
-				 4 => align("Horizontal : ", 13),
-				 5 => align("Disparo    : ", 13),
+				 4 => align("Escala     : ", 13),
+				 5 => align("Posicion   : ", 13),
 				others => align("", 13));
 			variable addr : unsigned(text_addr'range) := (others => '0');
 			variable ascii : unsigned(8*10-1 downto 0);
@@ -650,45 +654,41 @@ begin
 		video_fg   => video_fg);
 
 	process(video_clk)
-		variable vcolor_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
+		variable vcolorfg_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
 		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
 		variable pcolor_sel : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg-1)-1);
+
 		variable plot_on    : std_logic;
 		variable video_fgon : std_logic;
 		variable video_bgon : std_logic;
-		constant chan1 : std_logic_vector(3-1 downto 0):= "011";
-		constant chan2 : std_logic_vector(3-1 downto 0):= "110";
-		constant axisx : std_logic_vector(3-1 downto 0):= "010";
-		constant grid  : std_logic_vector(3-1 downto 0):= "100";
-		constant chan1_bg : std_logic_vector(3-1 downto 0):= "000";
-		constant chan2_bg : std_logic_vector(3-1 downto 0):= "000";
-		constant axisx_bg : std_logic_vector(3-1 downto 0):= "000";
-		constant trigg_bg : std_logic_vector(3-1 downto 0):= "000";
-		constant grid_bg  : std_logic_vector(3-1 downto 0):= "000";
 
-		variable axisy : std_logic_vector(3-1 downto 0):= "000";
-		variable axisy_bg : std_logic_vector(3-1 downto 0):= "000";
-		variable trigg : std_logic_vector(3-1 downto 0):= "101";
+		variable vtaxis_fg  : std_logic_vector(3-1 downto 0);
+		variable vtaxis_bg  : std_logic_vector(3-1 downto 0);
+		variable trigger_fg : std_logic_vector(3-1 downto 0);
+		variable trigger_bg : std_logic_vector(3-1 downto 0);
 
 	begin
 		if rising_edge(video_clk) then
-			axisy := word2byte(chan1 & chan2, (1 to 1 => selchan));
-			trigg := word2byte(chan1 & chan2, (1 to 1 => triggchan));
+			vtaxis_fg  := word2byte(fill(channels_fg, 2**selchan'length), selchan);
+			trigger_fg := word2byte(fill(channels_fg, 2**selchan'length), triggchan);
+			trigger_bg := word2byte(fill(channels_bg, 2**selchan'length), triggchan);
+
 			if plot_on='1' then
-				video_rgb <= word2byte (chan1 & chan2, pcolor_sel);
+				video_rgb <= word2byte (fill(channels_fg, 2**selchan'length), pcolor_sel);
 			elsif video_fgon='1' then
-				video_rgb <= word2byte (axisx & trigg & chan1 & chan2 & grid & axisx & axisy & trigg, vcolor_sel);
-			elsif video_bgon='1' then
-				video_rgb <= word2byte (axisx_bg & trigg_bg & chan1_bg & chan2_bg & grid_bg & axisx_bg & axisy_bg & "000", vcolorbg_sel);
+				video_rgb <= word2byte (fill(channels_fg & hzaxis_fg & trigger_fg & grid_fg & hzaxis_fg & vtaxis_fg, 2**vcolorfg_sel'length), vcolorfg_sel);
+			elsif video_bgon='1' then                                               
+				video_rgb <= word2byte (fill(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg, 2**vcolorfg_sel'length), vcolorbg_sel);
 			else
 				video_rgb <= (others => '0');
 			end if;
-			vcolor_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_fg), 2**vcolor_sel'length))));
+
+			vcolorfg_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_fg), 2**vcolorfg_sel'length))));
 			vcolorbg_sel := encoder(reverse(std_logic_vector(resize(unsigned(video_bg), 2**vcolorbg_sel'length))));
-			pcolor_sel := encoder(reverse(plot_fg(0 to ly_dptr(layout_id).num_of_seg-1)));
-			plot_on    := setif(plot_fg /= (plot_fg'range => '0'));
-			video_fgon := setif(video_fg /= (video_fg'range => '0'));
-			video_bgon := setif(video_bg /= (video_bg'range => '0'));
+			pcolor_sel   := encoder(reverse(plot_fg(0 to inputs-1)));
+			plot_on      := setif(plot_fg  /= (plot_fg'range => '0'));
+			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
+			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
 		end if;
 	end process;
 

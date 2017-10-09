@@ -271,6 +271,12 @@ package std is
 
 	type scale_vector is array (natural range <>) of scale_t;
 
+	function fill (
+		constant data  : std_logic_vector;
+		constant size  : natural;
+		constant left  : boolean := true;
+		constant value : std_logic := '-')
+		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -1053,6 +1059,24 @@ package body std is
 			pulses(ph) := pulse;
 		end loop;
 		return pulses;
+	end;
+
+	function fill (
+		constant data  : std_logic_vector;
+		constant size  : natural;
+		constant left : boolean := true;
+		constant value : std_logic := '-')
+		return std_logic_vector is
+		variable aux    : std_logic_vector(0 to data'length-1);
+		variable retval_left  : std_logic_vector(0 to size-1)     := (others => value);
+		variable retval_right : std_logic_vector(size-1 downto 0) := (others => value);
+	begin
+		retval_left(0 to data'length-1)      := data;
+		retval_right(data'length-1 downto 0) := data;
+		if not left then
+			return retval_right;
+		end if;
+		return retval_left;
 	end;
 
 end;

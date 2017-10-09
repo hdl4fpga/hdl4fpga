@@ -24,7 +24,8 @@ entity scopeio_axis is
 		axis_hztl    : in  std_logic;
 		axis_sgmt    : in  std_logic_vector;
 		axis_on      : in  std_logic;
-		axis_scale   : in  std_logic_vector(4-1 downto 0);
+		axis_hzscale : in  std_logic_vector(4-1 downto 0);
+		axis_vtscale : in  std_logic_vector(4-1 downto 0);
 		axis_dot     : out std_logic);
 end;
 
@@ -60,24 +61,25 @@ architecture def of scopeio_axis is
 		return std_logic_vector(retval);
 	end;
 
-	signal mark      : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
-	signal sgmt      : std_logic_vector(axis_sgmt'range);
-	signal win_x4    : std_logic;
+	signal mark       : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
+	signal sgmt       : std_logic_vector(axis_sgmt'range);
+	signal win_x4     : std_logic;
 
-	signal char_addr : std_logic_vector(0 to axis_scale'length+mark'length);
-	signal char_code : std_logic_vector(2*code_size-1 downto 0);
-	signal char_line : std_logic_vector(0 to font_width-1);
-	signal char_dot  : std_logic_vector(0 to 1-1);
-	signal mark_on   : std_logic;
-	signal dot_on    : std_logic;
+	signal char_scale : std_logic_vector(0 to max(axis_hzscale'length,axis_vtscale'length)-1);
+	signal char_addr  : std_logic_vector(0 to char_scale'length+mark'length);
+	signal char_code  : std_logic_vector(2*code_size-1 downto 0);
+	signal char_line  : std_logic_vector(0 to font_width-1);
+	signal char_dot   : std_logic_vector(0 to 1-1);
+	signal mark_on    : std_logic;
+	signal dot_on     : std_logic;
 
-	signal sel_code  : std_logic_vector(0 to 0);
-	signal sel_line  : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
-	signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-	signal sel_winy  : std_logic_vector(3-1 downto 0);
+	signal sel_code   : std_logic_vector(0 to 0);
+	signal sel_line   : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
+	signal sel_dot    : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
+	signal sel_winy   : std_logic_vector(3-1 downto 0);
 
-	signal mark_y    : std_logic;
-	signal aon_y     : std_logic;
+	signal mark_y     : std_logic;
+	signal aon_y      : std_logic;
 
 begin
 	mark_y <= setif(win_y(5-1 downto 3)=(5-1 downto 3 => '0'));
@@ -132,7 +134,11 @@ begin
 		end if;
 	end process;
 
-	char_addr <= mark & axis_scale & win_x4;
+	char_scale <=
+		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
+		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
+
+	char_addr  <= mark & char_scale & win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,

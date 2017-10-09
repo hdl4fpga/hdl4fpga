@@ -51,10 +51,10 @@ architecture def of scopeio_channel is
 	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
 	signal plot_on   : std_logic;
 	signal grid_on   : std_logic;
-	signal plot_dot  : std_logic_vector(win_on'range) := (others => '0');
+	signal plot_dot  : std_logic_vector(0 to inputs-1) := (others => '0');
 	signal grid_dot  : std_logic_vector(2-1 downto 0);
 	signal meter_dot : std_logic;
-	signal chan_dot  : std_logic_vector(0 to 4-1);
+	signal chan_dot  : std_logic_vector(0 to 2+inputs-1);
 	signal axisx_on  : std_logic;
 	signal axisy_on  : std_logic;
 	signal axis_on   : std_logic;
@@ -176,14 +176,15 @@ begin
 		hz_num_of_seg  => num_of_seg,
 		hz_div_per_seg => chan_width/(32*5))
 	port map (
-		video_clk  => video_clk,
-		win_x      => win_x,
-		win_y      => axisy_off,
-		axis_hztl  => axisx_on,
-		axis_sgmt  => axis_sgmt,
-		axis_on    => axis_on,
-		axis_scale => scale_x,
-		axis_dot   => axis_don);
+		video_clk    => video_clk,
+		win_x        => win_x,
+		win_y        => axisy_off,
+		axis_hztl    => axisx_on,
+		axis_sgmt    => axis_sgmt,
+		axis_on      => axis_on,
+		axis_hzscale => scale_x,
+		axis_vtscale => scale_y,
+		axis_dot     => axis_don);
 	axisx_don <= axis_don and axisx_on;
 	axisy_don <= axis_don and axisy_on;
 
@@ -230,7 +231,7 @@ begin
 		signal char_dot  : std_logic_vector(0 to 0);
 		signal sel_line  : std_logic_vector(0 to vmem_data'length+unsigned_num_bits(font_height-1)-1);
 		signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-		signal meter_fld  : std_logic_vector(0 to 4-1);
+		signal meter_fld  : std_logic_vector(0 to 2+inputs-1);
 
 	begin
 
@@ -261,10 +262,12 @@ begin
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
-				meter_fld(0) <= (setif(row(0 to 1)/=(0 to 1 => '0'))) and meter_on;
-				meter_fld(1) <= (setif(row(2 to 3)/=(2 to 3 => '0'))) and meter_on;
-				meter_fld(2) <= (setif(row(5 to 5)/=(5 to 5 => '0'))) and meter_on;
-				meter_fld(3) <= (setif(row(4 to 4)/=(4 to 4 => '0'))) and meter_on;
+				for i in 0 to 2-1 loop
+					meter_fld(i) <= row(i) and meter_on;
+				end loop;
+				for i in 0 to inputs-1 loop
+					meter_fld(i) <= (setif(row(2+inputs*i to 2+inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
+				end loop;
 			end if;
 		end process;
 
@@ -281,25 +284,21 @@ begin
 
 		align_e : entity hdl4fpga.align
 		generic map (
-			n => 5,
-			d => (
-				0 => unsigned_num_bits(height-1)+17,
-				1 => unsigned_num_bits(height-1)+15,
-				2 => unsigned_num_bits(height-1)+15,
-				3 => unsigned_num_bits(height-1)+15,
-				4 => unsigned_num_bits(height-1)+15))
+			n => 1,
+			d => (0 => unsigned_num_bits(height-1)+17))
 		port map (
 			clk   => video_clk,
 			di(0) => char_dot(0),
-			di(1) => meter_fld(0),
-			di(2) => meter_fld(1),
-			di(3) => meter_fld(2),
-			di(4) => meter_fld(3),
-			do(0) => meter_dot,
-			do(1) => chan_dot(0),
-			do(2) => chan_dot(1),
-			do(3) => chan_dot(2),
-			do(4) => chan_dot(3));
+			do(0) => meter_dot);
+
+		align1_e : entity hdl4fpga.align
+		generic map (
+			n => 2+inputs,
+			d => (1 to 2+inputs => unsigned_num_bits(height-1)+15))
+		port map (
+			clk => video_clk,
+			di  => meter_fld,
+			do  => chan_dot);
 	end block;
 
 	plot_g : for i in 0 to inputs-1 generate

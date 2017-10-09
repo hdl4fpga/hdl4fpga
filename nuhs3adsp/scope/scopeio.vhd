@@ -136,11 +136,15 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		layout_id  => 0,
-		hz_scales  => hz_scales,
-		vt_scales  => vt_scales,
-		inputs => 1,
-		input_unit => 100.0*(1.25*64.0)/8192.0)
+		layout_id   => 0,
+		hz_scales   => hz_scales,
+		vt_scales   => vt_scales,
+		inputs      => 1,
+		input_unit  => 100.0*(1.25*64.0)/8192.0,
+		channels_fg => "110",
+		channels_bg => "000",
+		hzaxis_fg   => "100",
+		hzaxis_bg   => "000")
 	
 	port map (
 		mii_rxc     => mii_rxc,
