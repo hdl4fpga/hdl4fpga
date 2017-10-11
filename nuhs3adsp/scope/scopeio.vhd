@@ -143,7 +143,7 @@ begin
 		input_unit  => 100.0*(1.25*64.0)/8192.0,
 		channels_fg => "110",
 		channels_bg => "000",
-		hzaxis_fg   => "100",
+		hzaxis_fg   => "010",
 		hzaxis_bg   => "000")
 	
 	port map (

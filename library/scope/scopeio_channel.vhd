@@ -61,8 +61,8 @@ architecture def of scopeio_channel is
 	signal axisx_don : std_logic := '0';
 	signal axisy_don : std_logic;
 	signal axis_don  : std_logic;
-	signal axis_fg   : std_logic_vector(2-1 downto 0);
-	signal axis_bg   : std_logic_vector(2-1 downto 0);
+	signal axis_fg   : std_logic_vector(0 to 2-1);
+	signal axis_bg   : std_logic_vector(0 to 2-1);
 	signal axisy_off : std_logic_vector(win_y'range);
 	signal vt_offset : std_logic_vector(win_y'range);
 	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
@@ -165,7 +165,7 @@ begin
 	axisy_off <= vt_offset when axisx_on='0' else win_y;
 
 	axis_on <= axisy_on or axisx_on;
-	axis_sgmt <= encoder(reverse(win_on(0 to num_of_seg-1)));
+	axis_sgmt <= encoder(win_on(0 to num_of_seg-1));
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
@@ -224,7 +224,7 @@ begin
 		constant disp_width  : natural := 32;
 		constant disp_height : natural := 16;
 
-		signal vmem_addr : std_logic_vector(10-1 downto 0);
+		signal vmem_addr : std_logic_vector(11-1 downto 0);
 		signal vmem_data : std_logic_vector(8-1 downto 0);
 		signal char_code : std_logic_vector(vmem_data'range);
 		signal char_line : std_logic_vector(0 to font_width-1);
@@ -258,7 +258,7 @@ begin
 			if rising_edge(video_clk) then
 				sel_line <= char_code & win_y(unsigned_num_bits(font_height-1)-1 downto 0); 
 				char_code <= vmem_data;
-				vmem_addr <= encoder(reverse(win_on(0 to num_of_seg-1))) &
+				vmem_addr <= encoder(win_on(0 to num_of_seg-1)) &
 					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
@@ -266,7 +266,7 @@ begin
 					meter_fld(i) <= row(i) and meter_on;
 				end loop;
 				for i in 0 to inputs-1 loop
-					meter_fld(i) <= (setif(row(2+inputs*i to 2+inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
+					meter_fld(i+2) <= (setif(row(2+inputs*i to 2+inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
 				end loop;
 			end if;
 		end process;
@@ -360,6 +360,6 @@ begin
 	end block;
 
 	plot_fg  <= plot_dot;
-	video_fg <= trigger_dot & axis_fg & grid_dot(1) & ((1 to 4 => meter_dot) and chan_dot);
+	video_fg <= trigger_dot & axis_fg & grid_dot(1) & ((1 to 2+inputs => meter_dot) and chan_dot);
 	video_bg <= axis_bg & grid_dot(0) & chan_dot;
 end;

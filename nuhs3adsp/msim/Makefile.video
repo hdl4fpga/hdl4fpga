@@ -36,6 +36,8 @@ HDL4FPGA__scopeio_channel__def = $(LIB_HDL4FPGA)/scopeio_channel/def.dat
 HDL4FPGA__scopeio_channel = $(LIB_HDL4FPGA)/scopeio_channel/_primary.dat
 HDL4FPGA__scopeio_axisx__def = $(LIB_HDL4FPGA)/scopeio_axisx/def.dat
 HDL4FPGA__scopeio_axisx = $(LIB_HDL4FPGA)/scopeio_axisx/_primary.dat
+HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
+HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
 HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
 HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
@@ -68,7 +70,6 @@ HDL4FPGA__ddrto__spartan3 = $(LIB_HDL4FPGA)/ddrto/spartan3.dat
 HDL4FPGA__ddrto = $(LIB_HDL4FPGA)/ddrto/_primary.dat
 HDL4FPGA__ddro__spartan3 = $(LIB_HDL4FPGA)/ddro/spartan3.dat
 HDL4FPGA__ddro = $(LIB_HDL4FPGA)/ddro/_primary.dat
-HDL4FPGA__dcms = $(LIB_HDL4FPGA)/dcms/_primary.dat
 HDL4FPGA__cgafont__body = $(LIB_HDL4FPGA)/cgafont/body.dat
 HDL4FPGA__cgafont = $(LIB_HDL4FPGA)/cgafont/_primary.dat
 HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
@@ -100,6 +101,8 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__scopeio_channel) \
     $(HDL4FPGA__scopeio_axisx__def) \
     $(HDL4FPGA__scopeio_axisx) \
+    $(HDL4FPGA__scopeio_axis__def) \
+    $(HDL4FPGA__scopeio_axis) \
     $(HDL4FPGA__scopeio__beh) \
     $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rom__def) \
@@ -132,7 +135,6 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__ddrto) \
     $(HDL4FPGA__ddro__spartan3) \
     $(HDL4FPGA__ddro) \
-    $(HDL4FPGA__dcms) \
     $(HDL4FPGA__cgafont__body) \
     $(HDL4FPGA__cgafont) \
     $(HDL4FPGA__align__arch) \
@@ -151,14 +153,6 @@ $(HDL4FPGA__cgafont__body) : ../../library/video/cga/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../../library/video/cga/cgafonts.vhd
-
-$(HDL4FPGA__dcms) : ../scope/dcms.vhd \
-		$(HDL4FPGA__std) \
-		$(UNISIM__vcomponents) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/dcms.vhd
 
 $(HDL4FPGA__ddro) \
 $(HDL4FPGA__ddro__spartan3) \
@@ -275,6 +269,8 @@ $(HDL4FPGA__scopeio__beh) : ../../library/scope/scopeio.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio.vhd
 
+$(HDL4FPGA__scopeio_axis) \
+$(HDL4FPGA__scopeio_axis__def) \
 $(HDL4FPGA__scopeio_axisx) \
 $(HDL4FPGA__scopeio_axisx__def) : ../../library/scope/scopeio_axis.vhd \
 		$(HDL4FPGA__rom) \
@@ -291,7 +287,7 @@ $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
 		$(HDL4FPGA__draw_vline) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__scopeio_axisx) \
+		$(HDL4FPGA__scopeio_axis) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__win_mngr) \
 		$(HDL4FPGA__win) \

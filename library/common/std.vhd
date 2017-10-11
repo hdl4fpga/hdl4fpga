@@ -146,6 +146,11 @@ package std is
 		constant addr : std_logic_vector)
 		return std_logic_vector;
 
+	function word2byte (
+		constant word : string;
+		constant addr : std_logic_vector)
+		return string;
+
 	function byte2word (
 		constant byte : std_logic_vector;
 		constant mask : std_logic_vector;
@@ -261,7 +266,7 @@ package std is
 		return std_logic_vector;
 
 	function encoder (
-		constant inp : std_logic_vector)
+		constant arg : std_logic_vector)
 		return         std_logic_vector;
 
 	type scale_t is record
@@ -274,7 +279,7 @@ package std is
 	function fill (
 		constant data  : std_logic_vector;
 		constant size  : natural;
-		constant left  : boolean := true;
+		constant right : boolean := true;
 		constant value : std_logic := '-')
 		return std_logic_vector;
 end;
@@ -352,16 +357,15 @@ package body std is
 	end function;
 
 	function encoder (
-		constant inp : std_logic_vector)
+		constant arg : std_logic_vector)
 		return         std_logic_vector is
-		variable val : std_logic_vector(unsigned_num_bits(inp'length-1)-1 downto 0);
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable aux : std_logic_vector(0 to 2**val'length-1) := (others => '0');
 	begin
-		val := (others => '0');
-		for i in 0 to 2**val'length-1 loop
-			if i < inp'length then
-				if inp=std_logic_vector(to_unsigned(2**i,inp'length)) then
-					val := std_logic_vector(to_unsigned(i, val'length));
-				end if;
+		aux(0 to arg'length-1) := arg;
+		for i in 0 to arg'length-1 loop
+			if reverse(arg)=std_logic_vector(to_unsigned(2**i,arg'length)) then
+				val := std_logic_vector(to_unsigned(i, val'length));
 			end if;
 		end loop;
 		return val;
@@ -759,6 +763,20 @@ package body std is
 		return byte;
 	end;
 
+	function word2byte (
+		constant word : string;
+		constant addr : std_logic_vector)
+		return string is
+		variable aux  : string(word'length downto 1);
+		variable byte : string(word'length/2**addr'length downto 1); 
+	begin
+		aux := word;
+		for i in byte'range loop
+			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
+		end loop;
+		return byte;
+	end;
+
 	function byte2word (
 		constant byte : std_logic_vector;
 		constant mask : std_logic_vector;
@@ -1064,16 +1082,16 @@ package body std is
 	function fill (
 		constant data  : std_logic_vector;
 		constant size  : natural;
-		constant left : boolean := true;
+		constant right : boolean := true;
 		constant value : std_logic := '-')
 		return std_logic_vector is
 		variable aux    : std_logic_vector(0 to data'length-1);
-		variable retval_left  : std_logic_vector(0 to size-1)     := (others => value);
-		variable retval_right : std_logic_vector(size-1 downto 0) := (others => value);
+		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
+		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
-		retval_left(0 to data'length-1)      := data;
-		retval_right(data'length-1 downto 0) := data;
-		if not left then
+		retval_right(0 to data'length-1)    := data;
+		retval_left(data'length-1 downto 0) := data;
+		if right then
 			return retval_right;
 		end if;
 		return retval_left;
