@@ -282,6 +282,10 @@ package std is
 		constant right : boolean := true;
 		constant value : std_logic := '-')
 		return std_logic_vector;
+
+	function bcd2ascii (
+		constant arg : std_logic_vector)
+		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -1095,6 +1099,28 @@ package body std is
 			return retval_right;
 		end if;
 		return retval_left;
+	end;
+
+	function bcd2ascii (
+		constant arg : std_logic_vector)
+		return std_logic_vector is
+		variable aux : unsigned(0 to arg'length-1);
+		variable val : unsigned(8*arg'length/4-1 downto 0);
+	begin
+		val := (others => '-');
+		aux := unsigned(arg);
+		for i in 0 to aux'length/4-1 loop
+			val := val sll 8;
+			if to_integer(unsigned(aux(0 to 4-1))) < 10 then
+				val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(0 to 4-1));
+			elsif to_integer(unsigned(aux(0 to 4-1))) < 15 then
+				val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(0 to 4-1));
+			else
+				val(8-1 downto 0) := x"20";
+			end if;
+			aux := aux sll 4;
+		end loop;
+		return std_logic_vector(val);
 	end;
 
 end;
