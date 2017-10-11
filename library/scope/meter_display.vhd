@@ -54,11 +54,10 @@ begin
 	end process;
 
 	fmt_p : process (scale, bcd_int, bcd_frac, bcd_sign)
-		variable auxi : unsigned(0 to bcd_int'length-1);
-		variable auxf : unsigned(0 to bcd_frac'length-1);
-		variable auxs : unsigned(fmtds'length-1 downto 0);
+		variable auxi  : unsigned(0 to bcd_int'length-1);
+		variable auxf  : unsigned(0 to bcd_frac'length-1);
+		variable auxs  : unsigned(fmtds'length-1 downto 0);
 		variable point : integer := -1;
-		constant i : natural := 3;
 		constant pp : integer_vector(0 to 16-1) := (1, 1, 1, -1, -1, -1, 0, 0, 0, 1, 1, 1, -1, -1, -1, 0);
 	begin
 		fmtds <= (fmtds'range => '-');
