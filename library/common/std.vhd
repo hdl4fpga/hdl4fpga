@@ -201,11 +201,6 @@ package std is
 		constant arg : nibble)
 		return ascii;
 
-	function align (
-		constant arg  : string;
-		constant size : natural)
-		return string;
-
 	function to_nibble (
 		constant arg : std_logic_vector)
 		return nibble_vector;
@@ -282,6 +277,13 @@ package std is
 		constant right : boolean := true;
 		constant value : std_logic := '-')
 		return std_logic_vector;
+
+	function fill (
+		constant data  : string;
+		constant size  : natural;
+		constant right : boolean := true;
+		constant value : character := ' ')
+		return string;
 
 	function bcd2ascii (
 		constant arg : std_logic_vector)
@@ -878,20 +880,6 @@ package body std is
 		return to_stdlogicvector(arg);
 	end;
 
-	function align (
-		constant arg  : string;
-		constant size : natural)
-		return string is
-		variable aux  : string(1 to arg'length);
-		variable val  : string(1 to size) := (others => ' ');
-	begin
-		aux := arg;
-		for i in aux'range loop
-			val(i) := aux(i);
-		end loop;
-		return val;
-	end;
-
 	function to_nibble (
 		constant arg : std_logic_vector)
 		return nibble_vector is
@@ -1095,6 +1083,24 @@ package body std is
 	begin
 		retval_right(0 to data'length-1)    := data;
 		retval_left(data'length-1 downto 0) := data;
+		if right then
+			return retval_right;
+		end if;
+		return retval_left;
+	end;
+
+	function fill (
+		constant data  : string;
+		constant size  : natural;
+		constant right : boolean := true;
+		constant value : character := ' ')
+		return string is
+		variable aux    : string(0 to data'length-1);
+		variable retval_right : string(1 to size)     := (others => value);
+		variable retval_left  : string(size downto 1) := (others => value);
+	begin
+		retval_right(1 to data'length)    := data;
+		retval_left(data'length downto 1) := data;
 		if right then
 			return retval_right;
 		end if;
