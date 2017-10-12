@@ -13,22 +13,22 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
-		inputs      : natural := 1;
-		input_unit  : real    := 1.0;
-		layout_id   : natural := 0;
-
+		inputs         : natural := 1;
+		input_unit     : real    := 1.0;
+		layout_id      : natural := 0;
+		gauge_labels   : string;
 		trigger_scales : std_logic_vector;
 		time_scales    : std_logic_vector;
 
-		channels_fg : std_logic_vector;
-		channels_bg : std_logic_vector;
-		hzaxis_fg   : std_logic_vector;
-		hzaxis_bg   : std_logic_vector;
-		grid_fg     : std_logic_vector := "100";
-		grid_bg     : std_logic_vector := "000";
+		channels_fg    : std_logic_vector;
+		channels_bg    : std_logic_vector;
+		hzaxis_fg      : std_logic_vector;
+		hzaxis_bg      : std_logic_vector;
+		grid_fg        : std_logic_vector := "100";
+		grid_bg        : std_logic_vector := "000";
 
-		hz_scales   : scale_vector;
-		vt_scales   : scale_vector);
+		hz_scales      : scale_vector;
+		vt_scales      : scale_vector);
 	port (
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
@@ -119,25 +119,24 @@ architecture beh of scopeio is
 	signal input_we    : std_logic;
 
 
-	signal scale_y     : std_logic_vector(4-1 downto 0);
-	signal scale_x     : std_logic_vector(4-1 downto 0);
-	signal amp         : std_logic_vector(4*inputs-1 downto 0);
+	signal vt_scale      : std_logic_vector(4-1 downto 0);
+	signal channel_scale : std_logic_vector(4*inputs-1 downto 0);
 
 	subtype vmword  is signed(unsigned_num_bits(ly_dptr(layout_id).chan_y)-1 downto 0);
 	type    vmword_vector  is array (natural range <>) of vmword;
 
-	signal  vm_inputs   : vmword_vector(inputs-1 downto 0);
+	signal  vm_inputs   : std_logic_vector(vmword'length*inputs-1 downto 0);
 	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
-	signal  trigger_lvl : vmword;
-	signal  trigger     : vmword;
-	signal  trigger_chn : std_logic_vector(8-1 downto 0);
-	signal  trigger_edg : std_logic;
+	signal  trigger_level : vmword;
+	signal  trigger_offset     : vmword;
+	signal  trigger_channel : std_logic_vector(8-1 downto 0);
+	signal  trigger_edge : std_logic;
 	signal  full_addr   : std_logic_vector(vm_addr'range);
 	signal  vm_data     : std_logic_vector(vmword'length*inputs-1 downto 0);
-	signal  offset      : vmword_vector(inputs-1 downto 0) := (others => (others => '0'));
+	signal  channel_offset : std_logic_vector(vmword'length*inputs-1 downto 0) := (others => '0');
 	signal  scale_offset: vmword;
 	signal  ordinates   : std_logic_vector(vm_data'range);
-	signal  tdiv_sel    : std_logic_vector(4-1 downto 0);
+	signal  hz_scale    : std_logic_vector(4-1 downto 0);
 	signal  text_data   : std_logic_vector(8-1 downto 0);
 	signal  text_addr   : std_logic_vector(10-1 downto 0);
 
@@ -172,8 +171,8 @@ architecture beh of scopeio is
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 	signal pixel       : std_logic_vector(video_rgb'range);
-	signal channel_sel : input_sel;
-	signal trigger_sel : input_sel;
+	signal channel_select : input_sel;
+	signal trigger_select : input_sel;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -208,38 +207,37 @@ begin
 		variable cmd_edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			trigger <= -(
-				trigger_lvl +
-				offset(to_integer(unsigned(trigger_chn(0 downto 0)))) -
+			trigger_offset <= -(
+				trigger_level +
+				channel_offset(to_integer(unsigned(trigger_channel(0 downto 0)))) -
 				vmword'(b"0_1000_0000"));
 			if pll_rdy='1' then
 				case scope_cmd(3 downto 0) is
 				when "0000" =>
 					for i in 0 to inputs-1 loop
 						if i=to_integer(unsigned(scope_chan(0 downto 0))) then
-							amp((i+1)*4-1 downto 4*i) <= scope_data(3 downto 0);
-							scale_y   <= scope_data(3 downto 0);
-							channel_sel(0) <= setif(i=1);
+							channel_scale((i+1)*4-1 downto 4*i) <= scope_data(3 downto 0);
+							vt_scale   <= scope_data(3 downto 0);
+							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 						end if;
 					end loop;
 				when "0001" =>
-					offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
+					channel_offset(to_integer(unsigned(scope_chan(0 downto 0)))) <= resize(signed(scope_data), vmword'length);
 					scale_offset <= resize(signed(scope_data), vmword'length);
 				when "0010" =>
-					trigger_lvl  <= resize(signed(scope_data), vmword'length);
-					trigger_chn  <= scope_chan and x"7f";
-					trigger_edg  <= scope_chan(scope_chan'left);
-					trigger_sel(0) <= scope_chan(0);
+					trigger_level   <= resize(signed(scope_data), vmword'length);
+					trigger_channel <= scope_chan and x"7f";
+					trigger_edge    <= scope_chan(scope_chan'left);
+					trigger_select  <= scope_chan(tigger_select'range);
 				when "0011" =>
-					tdiv_sel  <= scope_data(3 downto 0);
-					scale_x   <= scope_data(3 downto 0);
+					hz_scale  <= scope_data(3 downto 0);
 				when others =>
 				end case;
 			end if;
 			cmd_edge := cmd_rdy;
 		end if;
 	end process;
-	tdiv <= tdiv_sel;
+	tdiv <= hz_scale;
 
 	video_e : entity hdl4fpga.video_vga
 	generic map (
@@ -309,7 +307,7 @@ begin
 			input_we <= scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
-					scaler := tdiv_scales(to_integer(unsigned(tdiv_sel)));
+					scaler := tdiv_scales(to_integer(unsigned(hz_scale)));
 				else
 					scaler := scaler - 1;
 				end if;
@@ -320,7 +318,7 @@ begin
 	process (input_clk)
 
 		variable input_aux : unsigned(input_data'length-1 downto 0);
-		variable amp_aux   : unsigned(amp'range);
+		variable amp_aux   : unsigned(channel_scale'range);
 		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
 		subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
 		type sample_vector is array (natural range <>) of sample_word;
@@ -330,7 +328,7 @@ begin
 		variable scale : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
-			amp_aux := unsigned(amp);
+			amp_aux := unsigned(channel_scale);
 			for i in 0 to inputs-1 loop
 				vm_inputs(i) <= resize(m(i)(0 to a(0)'length-1),vmword'length);
 				m(i)         := a(i)*scale(i);
@@ -339,7 +337,7 @@ begin
 --				a(i)         := resize(signed(samples(i)), mword'length);
 --				samples(i)   := not std_logic_vector(input_aux(sample_word'length-1 downto 0));
 --				input_aux    := input_aux ror (sample_word'length/inputs);
-				amp_aux      := amp_aux   ror (amp'length/inputs);
+				amp_aux      := amp_aux   ror (channel_scale'length/inputs);
 			end loop;
 			input_aux := unsigned(input_data);
 		end if;
@@ -370,9 +368,9 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge := trigger_edg xnor setif(input_aux >= trigger_lvl);
+					input_ge := trigger_edge xnor setif(input_aux >= trigger_level);
 				end if;
-				input_aux := vm_inputs((to_integer(unsigned(trigger_chn(0 downto 0)))));
+				input_aux := vm_inputs((to_integer(unsigned(trigger_channel(0 downto 0)))));
 			end if;
 		end process;
 
@@ -404,7 +402,7 @@ begin
 			aux := (others => '-');
 			for i in 0 to inputs-1 loop
 				aux := aux sll vmword'length;
-				aux(vmword'range) := vm_inputs(i)+offset(i);
+				aux(vmword'range) := vm_inputs(i)+channel_offset(i);
 			end loop;
 			vm_data <= std_logic_vector(aux);
 		end process;
@@ -464,95 +462,24 @@ begin
 		end if;
 	end process;
 
-	meter_b : block
-
-		function bcd2ascii (
-			constant arg : std_logic_vector)
-			return std_logic_vector is
-			variable aux : unsigned(0 to arg'length-1);
-			variable val : unsigned(8*arg'length/4-1 downto 0);
-		begin
-			val := (others => '-');
-			aux := unsigned(arg);
-			for i in 0 to aux'length/4-1 loop
-				val := val sll 8;
-				if to_integer(unsigned(aux(0 to 4-1))) < 10 then
-					val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(0 to 4-1));
-				elsif to_integer(unsigned(aux(0 to 4-1))) < 15 then
-					val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(0 to 4-1));
-				else
-					val(8-1 downto 0) := x"20";
-				end if;
-				aux := aux sll 4;
-			end loop;
-			return std_logic_vector(val);
-		end;
-
-		signal meassure : std_logic_vector(0 to 6*4-1) := (others => '1');
-		signal display : std_logic_vector(0 to 6*4-1) := (others => '1');
-
-		signal scale   : std_logic_vector(4-1 downto 0);
-		signal value   : std_logic_vector(inputs*9-1 downto 0);
-		signal unit    : std_logic_vector(0 to 4*8-1);
-	begin
-
-		process (mii_rxc)
-			constant rtxt_size : natural := unsigned_num_bits(2+inputs-1);
-		begin
-			if rising_edge(mii_rxc) then
-				name <= word2byte(fill(
-					names,
-					2**rtxt_size*scale'length, value => '1'),
-					text_addr(rtxt_size+5-1 downto 5));
-				scale <= word2byte(fill(
-					word2byte(time_scales,    scale_x)     &
-					word2byte(trigger_scales, trigger_sel) &
-					amp,
-					2**rtxt_size*scale'length, value => '1'),
-					text_addr(rtxt_size+5-1 downto 5));
-
-				value <= word2byte(fill(
-					word2byte(time_value,    scale_x);
-					word2byte(trigger_value, trigger_sel) &
-					offset,
-					2**rtxt_size*scale'length, value => '1'),
-					text_addr(rtxt_size+5-1 downto 5));
-
-				unit <= word2byte(
-					word2byte(time_scales,    scale_x)     &
-					word2byte(trigger_scales, trigger_sel) &
-					unit,
-					2**rtxt_size*scale'length, value => '1'),
-					text_addr(rtxt_size+5-1 downto 5));
-			end if;
-		end process;
-
-		display_e : entity hdl4fpga.meter_display
-		generic map (
-			frac => 6,
-			int  => 2,
-			dec  => 2)
-		port map (
-			value => value(9-1 downto 0),
-			scale => scale,
-			fmtds => meassure);	
-
-		process (mii_rxc)
-			variable addr : unsigned(text_addr'range) := (others => '0');
-			variable aux  : unsigned(0 to data'length-1);
-		begin
-			if rising_edge(mii_rxc) then
-				text_addr <= std_logic_vector(addr);
-				text_data <= word2byte(fill(
-					to_ascii(name) & bcd2ascii(display) & to_ascii(unit))
-					not std_logic_vector(addr(5-1 downto 0)));
-				addr := addr + 1;
-				aux  := unsigned(data);
-			end if;
-
-		end process;
-
-	end block;
+	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
+	generic map (
+		inputs         => inputs,
+		gauge_labels   => guage_labels,
+		trigger_scales => trigger_scales,
+		time_scales    => time_scales,
+		hz_scales      => hz_scales,
+		vt_scales      => vt_scales);
+	port (
+		pannel_clk     => mii_rxc,
+		hz_scale       => hz_scale,
+		hz_value       => ,
+		trigger_scale  => trigger_scale,
+		trigger_value  => std_logic_vector(trigger_level),
+		channel_scale  => channel_scale,
+		channel_level  : in  std_logic_vector;
+		text_addr      : out std_logic_vector;
+		text_data      : out std_logic_vector);
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
@@ -573,10 +500,10 @@ begin
 		text_addr  => text_addr,
 		text_data  => text_data,
 		offset     => std_logic_vector(scale_offset),
-		trigger    => std_logic_vector(trigger),
+		trigger    => std_logic_vector(trigger_offset),
 		abscisa    => abscisa,
-		scale_x    => scale_x,
-		scale_y    => scale_y,
+		hz_scale   => hz_scale,
+		vt_scale   => vt_scale,
 		win_frm    => win_frm,
 		win_on     => win_don,
 		plot_fg    => plot_fg,
@@ -599,9 +526,9 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
-			vtaxis_fg  := word2byte(fill(channels_fg, 2**channel_sel'length*vtaxis_fg'length),  not channel_sel);
-			trigger_fg := word2byte(fill(channels_fg, 2**trigger_sel'length*trigger_fg'length), not trigger_sel);
-			trigger_bg := word2byte(fill(channels_bg, 2**trigger_sel'length*trigger_bg'length), not trigger_sel);
+			vtaxis_fg  := word2byte(fill(channels_fg, 2**channel_select'length*vtaxis_fg'length),  not channel_select);
+			trigger_fg := word2byte(fill(channels_fg, 2**trigger_select'length*trigger_fg'length), not trigger_select);
+			trigger_bg := word2byte(fill(channels_bg, 2**trigger_select'length*trigger_bg'length), not trigger_select);
 
 			if plot_on='1' then
 				pixel <= word2byte(fill(channels_fg, 2**pcolor_sel'length*pixel'length), not pcolor_sel);

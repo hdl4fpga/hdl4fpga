@@ -30,8 +30,8 @@ entity scopeio_channel is
 		ordinates    : in  std_logic_vector;
 		offset       : in  std_logic_vector;
 		trigger      : in  std_logic_vector;
-		scale_x      : in  std_logic_vector(4-1 downto 0);
-		scale_y      : in  std_logic_vector(4-1 downto 0);
+		hz_scale     : in  std_logic_vector(4-1 downto 0);
+		vt_scale     : in  std_logic_vector(4-1 downto 0);
 		win_frm      : in  std_logic_vector;
 		win_on       : in  std_logic_vector;
 		plot_fg      : out std_logic_vector;
@@ -182,8 +182,8 @@ begin
 		axis_hztl    => axisx_on,
 		axis_sgmt    => axis_sgmt,
 		axis_on      => axis_on,
-		axis_hzscale => scale_x,
-		axis_vtscale => scale_y,
+		axis_hzscale => hz_scale,
+		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
 	axisx_don <= axis_don and axisx_on;
 	axisy_don <= axis_don and axisy_on;

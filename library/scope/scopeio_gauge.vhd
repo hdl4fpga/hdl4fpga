@@ -7,7 +7,7 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity meter_display is
+entity scopeio_gauge is
 	generic (
 		frac  : natural;
 		dec   : natural;
@@ -18,7 +18,7 @@ entity meter_display is
 		fmtds : out std_logic_vector);
 end;
 
-architecture def of meter_display is
+architecture def of scopeio_gauge is
 	signal bcd_sign : std_logic_vector(0 to 4-1);
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to 4*int-1);
