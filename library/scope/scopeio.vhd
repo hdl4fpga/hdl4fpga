@@ -504,16 +504,16 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
-			vtaxis_fg  := word2byte(fill(channels_fg, 2**channel_select'length*vtaxis_fg'length),  not channel_select);
-			trigger_fg := word2byte(fill(channels_fg, 2**trigger_select'length*trigger_fg'length), not trigger_select);
-			trigger_bg := word2byte(fill(channels_bg, 2**trigger_select'length*trigger_bg'length), not trigger_select);
+			vtaxis_fg  := word2byte(fill(channels_fg, 2**channel_select'length*vtaxis_fg'length),  channel_select);
+			trigger_fg := word2byte(fill(channels_fg, 2**trigger_select'length*trigger_fg'length), trigger_select);
+			trigger_bg := word2byte(fill(channels_bg, 2**trigger_select'length*trigger_bg'length), trigger_select);
 
 			if plot_on='1' then
-				pixel <= word2byte(fill(channels_fg, 2**pcolor_sel'length*pixel'length), not pcolor_sel);
+				pixel <= word2byte(fill(channels_fg, 2**pcolor_sel'length*pixel'length), pcolor_sel);
 			elsif video_fgon='1' then
-				pixel <= word2byte(fill(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, 2**vcolorfg_sel'length*pixel'length), not vcolorfg_sel);
+				pixel <= word2byte(fill(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, 2**vcolorfg_sel'length*pixel'length), vcolorfg_sel);
 			elsif video_bgon='1' then                                                                                                                       
-				pixel <= word2byte(fill(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg, 2**vcolorbg_sel'length*pixel'length), not vcolorbg_sel);
+				pixel <= word2byte(fill(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg, 2**vcolorbg_sel'length*pixel'length), vcolorbg_sel);
 			else
 				pixel <= (others => '0');
 			end if;

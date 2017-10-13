@@ -271,7 +271,7 @@ begin
 			end if;
 		end process;
 
-		char_dot <= word2byte(char_line, not sel_dot) and (char_dot'range => meter_on);
+		char_dot <= word2byte(char_line, sel_dot) and (char_dot'range => meter_on);
 
 		align_x : entity hdl4fpga.align
 		generic map (

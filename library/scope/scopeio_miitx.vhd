@@ -118,7 +118,7 @@ begin
 		signal dv           : std_logic;
 	begin
 		prehdr_dat <= word2byte (
-			word => hdr_dat & pre_dat,
+			word => pre_dat & hdr_dat,
 			addr => (0 => hdr_dv));
 
 		dlyhdrdat_e: entity hdl4fpga.align
@@ -146,7 +146,7 @@ begin
 		hdrmem_dv <= dlyhdr_dv or mem_ena;
 
 		hdrmem_dat <= word2byte (
-			word =>  reverse(mem_dat) & dlyhdr_dat,
+			word =>  dlyhdr_dat & reverse(mem_dat),
 			addr => (0 => mem_ena));
 
 		dlypmdat_e : entity hdl4fpga.align

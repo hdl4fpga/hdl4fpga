@@ -65,7 +65,7 @@ architecture def of dmactrl is
 	signal ddr_rdy       : std_logic;
 begin
 
-	dma_addr <= word2byte(dmactrl_addr, dmactrl_act);
+	dma_addr <= word2byte(dmactrl_addr, not dmactrl_act);
 
 	dmafile_e : entity hdl4fpga.dmafile
 	port map (

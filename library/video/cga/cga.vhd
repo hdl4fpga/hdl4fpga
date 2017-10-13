@@ -148,6 +148,6 @@ begin
 		di  => cga_col(cga_sel'range),
 		do  => cga_sel);
 
-	dot <= word2byte(reverse(font_line), cga_sel);
+	dot <= word2byte(font_line, cga_sel);
 	vga_dot <= dot(0);
 end;

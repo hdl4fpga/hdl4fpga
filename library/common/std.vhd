@@ -759,8 +759,8 @@ package body std is
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
-		variable aux  : std_logic_vector(word'length-1 downto 0);
-		variable byte : std_logic_vector(word'length/2**addr'length-1 downto 0); 
+		variable aux  : std_logic_vector(0 to word'length-1);
+		variable byte : std_logic_vector(0 to word'length/2**addr'length-1); 
 	begin
 		aux := word;
 		for i in byte'range loop

@@ -508,12 +508,12 @@ begin
 	end block;
 
 	gpio_led <= 
-		reverse("00" & word2byte (word => tp_delay, addr => tp_sel)) when gpio_sw_n='0' else
+		reverse("00" & word2byte (word => tp_delay, addr => not tp_sel)) when gpio_sw_n='0' else
 		reverse(std_logic_vector(resize(unsigned(tp_sel),gpio_led'length)));
 
 	bus_error <= (others => 'Z');
 	(0 => gpio_led_n, 1 => gpio_led_s, 2 => gpio_led_w, 3 => gpio_led_e, 4 => gpio_led_c) <= 
-		word2byte(word => tp_bit, addr => tp_sel);
+		word2byte(word => tp_bit, addr => not tp_sel);
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 

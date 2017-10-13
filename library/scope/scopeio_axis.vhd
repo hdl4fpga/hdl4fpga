@@ -193,7 +193,7 @@ begin
 		di  => win_y(3-1 downto 0),
 		do  => sel_winy);
 
-	sel_line <= word2byte(char_code, not sel_code) & sel_winy;
+	sel_line <= word2byte(char_code, sel_code) & sel_winy;
 	cgarom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -203,7 +203,7 @@ begin
 		addr => sel_line,
 		data => char_line);
 
-	char_dot <= word2byte(char_line, not sel_dot);
+	char_dot <= word2byte(char_line, sel_dot);
 	axis_dot <= dot_on and char_dot(0);
 
 end;

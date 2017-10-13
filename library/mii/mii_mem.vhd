@@ -87,8 +87,8 @@ begin
 
 	muxed_g : if mii_txd'length/=byte'length generate
 		mii_txd  <= word2byte(
-			word => mem(to_integer(unsigned(cntr(1 to addr_size)))),
-			addr => std_logic_vector(cntr(addr_size+1 to addr_size+nib)));
+			mem(to_integer(unsigned(cntr(1 to addr_size)))),
+			not std_logic_vector(cntr(addr_size+1 to addr_size+nib)));
 	end generate;
 
 end;

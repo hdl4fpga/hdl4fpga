@@ -144,7 +144,7 @@ begin
 		do  => byte_addr);
 
 	txd <= word2byte(
-		word => reverse(miitx_dat),
-		addr => byte_addr);
+		reverse(miitx_dat),
+		not byte_addr);
 	miitx_dat <= txd;
 end;

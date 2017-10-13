@@ -204,7 +204,7 @@ begin
 		dob   => tx_data);
 
 	txd <= word2byte (
-		word => reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),
-		addr => bysel);
+		reverse(std_logic_vector(unsigned(tx_data) rol (miitx_dat'length))),
+		not bysel);
 	miitx_dat <= txd;
 end;
