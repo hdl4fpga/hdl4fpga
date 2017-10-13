@@ -16,9 +16,7 @@ architecture beh of nuhs3adsp is
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
-	signal vga_red    : std_logic;
-	signal vga_green  : std_logic;
-	signal vga_blue   : std_logic;
+	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
 	signal vga_blank  : std_logic;
 
 	constant sample_size : natural := 14;
@@ -140,7 +138,11 @@ begin
 		hz_scales   => hz_scales,
 		vt_scales   => vt_scales,
 		inputs      => 1,
+		gauge_labels => "hola",
 		input_unit  => 100.0*(1.25*64.0)/8192.0,
+		trigger_scales => "010101",
+		time_scales => "010101",
+		prescaler_tab => (0,0),
 		channels_fg => "110",
 		channels_bg => "000",
 		hzaxis_fg   => "010",
@@ -153,9 +155,7 @@ begin
 		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
-		video_red   => vga_red,
-		video_green => vga_green,
-		video_blue  => vga_blue,
+		video_rgb   => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_blank => vga_blank);
@@ -163,9 +163,9 @@ begin
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
-			red   <= (others => vga_red);
-			green <= (others => vga_green);
-			blue  <= (others => vga_blue);
+			red   <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 8);
+			green <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 8);
+			blue  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 8);
 			blank <= vga_blank;
 			hsync <= vga_hsync;
 			vsync <= vga_vsync;

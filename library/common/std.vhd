@@ -147,20 +147,28 @@ package std is
 		return std_logic_vector;
 
 	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
+
+	function word2byte (
 		constant word : string;
 		constant addr : std_logic_vector)
 		return string;
 
-	function byte2word (
-		constant byte : std_logic_vector;
-		constant mask : std_logic_vector;
-		constant word : std_logic_vector)
-		return std_logic_vector;
+	function word2byte (
+		constant word : string;
+		constant addr : std_logic_vector;
+		constant size : natural)
+		return string;
 
 	function byte2word (
-		constant di : byte_vector)
+		constant word : std_logic_vector;
+		constant byte : std_logic_vector;
+		constant mask : std_logic_vector)
 		return std_logic_vector;
-	
+
 	subtype gray is std_logic_vector;
 
 	function inc (
@@ -214,7 +222,7 @@ package std is
 		return std_logic_vector;
 
 	function max (
-		constant data : natural_vector)
+		constant data : integer_vector)
 		return natural;
 
 	function max (
@@ -770,11 +778,22 @@ package body std is
 	end;
 
 	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable aux  : std_logic_vector(0 to size*2**addr'length-1);
+		variable byte : std_logic_vector(0 to size-1); 
+	begin
+		return word2byte(fill(word, size*2**addr'length), addr);
+	end;
+
+	function word2byte (
 		constant word : string;
 		constant addr : std_logic_vector)
 		return string is
-		variable aux  : string(word'length downto 1);
-		variable byte : string(word'length/2**addr'length downto 1); 
+		variable aux  : string(1 to word'length);
+		variable byte : string(1 to word'length/2**addr'length); 
 	begin
 		aux := word;
 		for i in byte'range loop
@@ -783,10 +802,19 @@ package body std is
 		return byte;
 	end;
 
+	function word2byte (
+		constant word : string;
+		constant addr : std_logic_vector;
+		constant size : natural)
+		return string is
+	begin
+		return word2byte(fill(word, size*2**addr'length), addr);
+	end;
+
 	function byte2word (
+		constant word : std_logic_vector;
 		constant byte : std_logic_vector;
-		constant mask : std_logic_vector;
-		constant word : std_logic_vector)
+		constant mask : std_logic_vector)
 		return std_logic_vector is
 		variable di : unsigned(0 to byte'length-1);
 		variable do : unsigned(0 to word'length-1);
@@ -798,18 +826,6 @@ package body std is
 				do(di'range) := di;
 			end if;
 			do := do rol di'length;
-		end loop;
-		return std_logic_vector(do);
-	end;
-
-	function byte2word (
-		constant di : byte_vector)
-		return std_logic_vector is
-		variable do : unsigned(di'length*di(di'left)'length-1 downto 0);
-	begin
-		for i in di'range loop
-			do(di(di'left)'range) := unsigned(di(i));
-			do := do sll di'length;
 		end loop;
 		return std_logic_vector(do);
 	end;
@@ -923,9 +939,9 @@ package body std is
 	end;
 
 	function max (
-		constant data : natural_vector) 
+		constant data : integer_vector) 
 		return natural is
-		variable val : natural := 0;
+		variable val : integer:= data(data'left);
 	begin
 		for i in data'range loop
 			if val < data(i) then

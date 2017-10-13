@@ -66,7 +66,7 @@ architecture beh of scopeio is
 		1 => (   1,       800,           2,     320,     300,       15*32,          256));
 
 	function to_naturalvector (
-		constant arg : layout)
+		constant arg  : layout)
 		return natural_vector is
 		variable rval : natural_vector(0 to 4*arg.num_of_seg-1);
 	begin
@@ -79,67 +79,69 @@ architecture beh of scopeio is
 		return rval;
 	end;
 
-	signal hdr_data     : std_logic_vector(288-1 downto 0);
-	signal pld_data     : std_logic_vector(3*8-1 downto 0);
-	signal pll_data     : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
-	signal ser_data     : std_logic_vector(32-1 downto 0);
+	subtype vmword is signed(unsigned_num_bits(ly_dptr(layout_id).chan_y)-1 downto 0);
 
-	constant cga_zoom  : natural := 0;
-	signal cga_we      : std_logic;
-	signal scope_cmd   : std_logic_vector(8-1 downto 0);
-	signal scope_data  : std_logic_vector(8-1 downto 0);
-	signal scope_channel  : std_logic_vector(8-1 downto 0);
-	signal char_dot    : std_logic;
+	signal hdr_data         : std_logic_vector(288-1 downto 0);
+	signal pld_data         : std_logic_vector(3*8-1 downto 0);
+	signal pll_data         : std_logic_vector(0 to hdr_data'length+pld_data'length-1);
+	signal ser_data         : std_logic_vector(32-1 downto 0);
 
-	signal video_hs    : std_logic;
-	signal video_vs    : std_logic;
-	signal video_frm   : std_logic;
-	signal video_hon   : std_logic;
-	signal video_nhl   : std_logic;
-	signal video_vld   : std_logic;
-	signal video_vcntr : std_logic_vector(11-1 downto 0);
-	signal video_hcntr : std_logic_vector(11-1 downto 0);
+	constant cga_zoom       : natural := 0;
+	signal cga_we           : std_logic;
+	signal scope_cmd        : std_logic_vector(8-1 downto 0);
+	signal scope_data       : std_logic_vector(8-1 downto 0);
+	signal scope_channel    : std_logic_vector(8-1 downto 0);
+	signal char_dot         : std_logic;
 
-	signal video_bg   : std_logic_vector(0 to 5+inputs-1);
-	signal video_fg   : std_logic_vector(0 to 6+inputs-1);
-	signal plot_fg    : std_logic_vector(0 to inputs-1);
+	signal video_hs         : std_logic;
+	signal video_vs         : std_logic;
+	signal video_frm        : std_logic;
+	signal video_hon        : std_logic;
+	signal video_nhl        : std_logic;
+	signal video_vld        : std_logic;
+	signal video_vcntr      : std_logic_vector(11-1 downto 0);
+	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
-	signal video_io    : std_logic_vector(0 to 3-1);
-	signal abscisa     : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
+	signal video_bg         : std_logic_vector(0 to 5+inputs-1);
+	signal video_fg         : std_logic_vector(0 to 6+inputs-1);
+	signal plot_fg          : std_logic_vector(0 to inputs-1);
+
+	signal video_io         : std_logic_vector(0 to 3-1);
+	signal abscisa          : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
 	
-	signal win_don     : std_logic_vector(0 to 18-1);
-	signal win_frm     : std_logic_vector(0 to 18-1);
-	signal pll_rdy     : std_logic;
+	signal win_don          : std_logic_vector(0 to 18-1);
+	signal win_frm          : std_logic_vector(0 to 18-1);
+	signal pll_rdy          : std_logic;
 
-	signal input_addr  : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg*ly_dptr(layout_id).chan_width-1));
-	signal input_we    : std_logic;
+	signal input_addr       : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg*ly_dptr(layout_id).chan_width-1));
+	signal input_we         : std_logic;
 
+	signal vt_scale         : std_logic_vector(4-1 downto 0);
+	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1);
 
-	signal vt_scale      : std_logic_vector(4-1 downto 0);
-	signal channel_scale : std_logic_vector(4*inputs-1 downto 0);
+	signal channel_select   : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
 
-	subtype vmword  is signed(unsigned_num_bits(ly_dptr(layout_id).chan_y)-1 downto 0);
-	subtype channel_select
+	signal  vm_inputs       : std_logic_vector(0 to vmword'length*inputs-1);
+	signal  vm_addr         : std_logic_vector(1 to input_addr'right);
+	signal  trigger_level   : vmword;
+	signal  trigger_offset  : vmword;
+	signal  trigger_edge    : std_logic;
+	signal  trigger_select  : std_logic_vector(channel_select'range);
+	signal  trigger_channel : std_logic_vector(trigger_select'range);
+	signal  trigger_scale   : std_logic_vector(vt_scale'range);
+	signal  full_addr       : std_logic_vector(vm_addr'range);
+	signal  channel_offset  : std_logic_vector(vmword'length*inputs-1 downto 0) := (others => '0');
+	signal  scale_offset    : vmword;
+	signal  ordinates       : std_logic_vector(vm_inputs'range);
+	signal  hz_scale        : std_logic_vector(4-1 downto 0);
+	signal  text_data       : std_logic_vector(8-1 downto 0);
+	signal  text_addr       : std_logic_vector(10-1 downto 0);
 
-	signal  vm_inputs   : std_logic_vector(vmword'length*inputs-1 downto 0);
-	signal  vm_addr     : std_logic_vector(1 to input_addr'right);
-	signal  trigger_level : vmword;
-	signal  trigger_offset     : vmword;
-	signal  trigger_channel : std_logic_vector(8-1 downto 0);
-	signal  trigger_edge : std_logic;
-	signal  full_addr      : std_logic_vector(vm_addr'range);
-	signal  vm_data        : std_logic_vector(vmword'length*inputs-1 downto 0);
-	signal  channel_offset : std_logic_vector(vmword'length*inputs-1 downto 0) := (others => '0');
-	signal  scale_offset: vmword;
-	signal  ordinates   : std_logic_vector(vm_data'range);
-	signal  hz_scale    : std_logic_vector(4-1 downto 0);
-	signal  text_data   : std_logic_vector(8-1 downto 0);
-	signal  text_addr   : std_logic_vector(10-1 downto 0);
+	subtype mword         is signed(0 to 18-1);
+	subtype mdword        is signed(0 to 2*mword'length-1);
+	type    mword_vector  is array (natural range <>) of mword;
+	type    mdword_vector is array (natural range <>) of mdword;
 
-	subtype mword  is signed(0 to 18-1);
-	subtype mdword is signed(0 to 2*mword'length-1);
-	type  mword_vector  is array (natural range <>) of mword;
-	type  mdword_vector is array (natural range <>) of mdword;
 	function scales_init (
 		constant size : natural)
 		return mword_vector is
@@ -167,8 +169,6 @@ architecture beh of scopeio is
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 	signal pixel       : std_logic_vector(video_rgb'range);
-	signal channel_select : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
-	signal trigger_select : std_logic_vector(channel_select'range);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -205,7 +205,10 @@ begin
 		if rising_edge(mii_rxc) then
 			trigger_offset <= -(
 				trigger_level +
-				channel_offset(to_integer(unsigned(trigger_channel(0 downto 0)))) -
+				signed(word2byte(
+					channel_offset, 
+					trigger_channel,
+					vmword'length)) -
 				vmword'(b"0_1000_0000"));
 
 			if pll_rdy='1' then
@@ -213,11 +216,11 @@ begin
 					if i=to_integer(unsigned(scope_channel(channel_select'range))) then
 						case scope_cmd(3 downto 0) is
 						when "0000" =>
-							channel_scale  <= byte2word(channel_scale,   reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_scale  <= byte2word(channel_scale, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
-							channel_offset <= byte2word(channel_offset,  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_offset <= byte2word(channel_offset, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							scale_offset   <= resize(signed(scope_data), scale_offset'length);
 						when others =>
 						end case;
@@ -227,9 +230,9 @@ begin
 				case scope_cmd(3 downto 0) is
 				when "0010" =>
 					trigger_level   <= resize(signed(scope_data), vmword'length);
-					trigger_channel <= scope_chan and x"7f";
-					trigger_edge    <= scope_chan(scope_chan'left);
-					trigger_select  <= scope_chan(tigger_select'range);
+					trigger_channel <= scope_channel and x"7f";
+					trigger_edge    <= scope_channel(scope_channel'left);
+					trigger_select  <= scope_channel(trigger_select'range);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
 				when others =>
@@ -287,7 +290,7 @@ begin
 			input_we <= scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
-					scaler := to_signed(prescaler_tab((unsigned(hz_scale))), scaler'length);
+					scaler := to_signed(prescaler_tab(to_integer((unsigned(hz_scale)))), scaler'length);
 				else
 					scaler := scaler - 1;
 				end if;
@@ -296,28 +299,29 @@ begin
 	end process;
 
 	process (input_clk)
-
-		variable input_aux : unsigned(input_data'length-1 downto 0);
-		variable amp_aux   : unsigned(channel_scale'range);
-		variable chan_aux  : vmword_vector(vm_inputs'range) := (others => (others => '-'));
-		subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
-		type sample_vector is array (natural range <>) of sample_word;
-		variable samples : sample_vector(0 to inputs-1);
 		variable m : mdword_vector(0 to inputs-1);
 		variable a : mword_vector(0 to inputs-1);
-		variable scale : mword_vector(0 to inputs-1);
+		variable s : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
-			amp_aux := unsigned(channel_scale);
 			for i in 0 to inputs-1 loop
-				vm_inputs(i) <= resize(m(i)(0 to a(0)'length-1),vmword'length);
-				m(i)         := a(i)*scale(i);
-				scale(i)     := scales(to_integer(
-				amp_aux(4-1 downto 0)));
-				a(i)         := resize(signed(not input_aux((i+1)*sample_word'length-1 downto i*sample_word'length)), mword'length);
-				amp_aux      := amp_aux   ror (channel_scale'length/inputs);
+				vm_inputs <= byte2word(
+					vm_inputs, 
+					std_logic_vector(resize(m(i)(0 to a(0)'length-1),vmword'length)),
+					std_logic_vector(to_unsigned(2**i, channel_select'length)));
+				m(i) := a(i)*s(i);
+				s(i) := scales(to_integer(unsigned(
+					word2byte(
+						channel_scale,
+						std_logic_vector(to_unsigned(i, channel_select'length)),
+					   	vt_scale'length))));
+				a(i) := resize(signed(not 
+					word2byte(
+						input_data, 
+						std_logic_vector(to_unsigned(i, channel_select'length)),
+						input_data'length/inputs)),
+					mword'length);
 			end loop;
-			input_aux := unsigned(input_data);
 		end if;
 	end process;
 
@@ -348,7 +352,7 @@ begin
 				if input_we='1' then
 					input_ge := trigger_edge xnor setif(input_aux >= trigger_level);
 				end if;
-				input_aux := vm_inputs((to_integer(unsigned(trigger_channel(0 downto 0)))));
+				input_aux := vmword(word2byte(vm_inputs, trigger_channel));
 			end if;
 		end process;
 
@@ -369,24 +373,12 @@ begin
 
 	videomem_b : block
 		signal wr_addr : std_logic_vector(vm_addr'range);
-		signal wr_data : std_logic_vector(vm_data'range);
+		signal wr_data : std_logic_vector(vm_inputs'range);
 		signal rd_addr : std_logic_vector(vm_addr'range);
-		signal rd_data : std_logic_vector(vm_data'range);
+		signal rd_data : std_logic_vector(vm_inputs'range);
 	begin
 
-		process (vm_inputs)
-			variable aux  : signed(vm_data'length-1 downto 0);
-		begin
-			aux := (others => '-');
-			for i in 0 to inputs-1 loop
-				aux := aux sll vmword'length;
-				aux(vmword'range) := vm_inputs(i)+channel_offset(i);
-			end loop;
-			vm_data <= std_logic_vector(aux);
-		end process;
-
-
-		wr_data <= vm_data;
+		wr_data <= vm_inputs;
 		wr_addr <= input_addr(vm_addr'range);
 
 --		data_e : entity hdl4fpga.align
@@ -395,7 +387,7 @@ begin
 --			d => (wr_data'range => 18))
 --		port map (
 --			clk => input_clk,
---			di  => vm_data,
+--			di  => vm_inputs,
 --			do  => wr_data);
 --
 --		addr_e : entity hdl4fpga.align
@@ -443,21 +435,21 @@ begin
 	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
 	generic map (
 		inputs         => inputs,
-		gauge_labels   => guage_labels,
+		gauge_labels   => gauge_labels,
 		trigger_scales => trigger_scales,
 		time_scales    => time_scales,
 		hz_scales      => hz_scales,
-		vt_scales      => vt_scales);
-	port (
+		vt_scales      => vt_scales)
+	port map (
 		pannel_clk     => mii_rxc,
-		hz_scale       => hz_scale,
-		hz_value       => ,
+		time_scale     => hz_scale,
+		time_value     => "----",
 		trigger_scale  => trigger_scale,
 		trigger_value  => std_logic_vector(trigger_level),
 		channel_scale  => channel_scale,
-		channel_level  : in  std_logic_vector;
-		text_addr      : out std_logic_vector;
-		text_data      : out std_logic_vector);
+		channel_level  => (vmword'range => '-'),
+		text_addr      => "-----",
+		text_data      => text_data);
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
@@ -504,16 +496,16 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
-			vtaxis_fg  := word2byte(fill(channels_fg, 2**channel_select'length*vtaxis_fg'length),  channel_select);
-			trigger_fg := word2byte(fill(channels_fg, 2**trigger_select'length*trigger_fg'length), trigger_select);
-			trigger_bg := word2byte(fill(channels_bg, 2**trigger_select'length*trigger_bg'length), trigger_select);
+			vtaxis_fg  := word2byte(channels_fg, channel_select, vtaxis_fg'length);
+			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
+			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
 
 			if plot_on='1' then
-				pixel <= word2byte(fill(channels_fg, 2**pcolor_sel'length*pixel'length), pcolor_sel);
+				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
-				pixel <= word2byte(fill(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, 2**vcolorfg_sel'length*pixel'length), vcolorfg_sel);
-			elsif video_bgon='1' then                                                                                                                       
-				pixel <= word2byte(fill(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg, 2**vcolorbg_sel'length*pixel'length), vcolorbg_sel);
+				pixel <= word2byte(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
+			elsif video_bgon='1' then
+				pixel <= word2byte(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg , vcolorbg_sel, pixel'length);
 			else
 				pixel <= (others => '0');
 			end if;

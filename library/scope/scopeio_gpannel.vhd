@@ -26,7 +26,6 @@ entity scopeio_gpannel is
 end;
 
 architecture beh of scopeio_gpannel is
-	constant row_length : natural := unsigned_num_bits(row_size-1);
 
 	signal glabel  : std_logic_vector(0 to ascii'length*(gauge_labels'length/(2+2*inputs))-1);
 	signal amp     : std_logic_vector(4*inputs-1 downto 0);
@@ -38,34 +37,34 @@ architecture beh of scopeio_gpannel is
 begin
 
 	process (pannel_clk)
-		constant rtxt_size : natural := unsigned_num_bits(2+inputs-1);
+		constant rtxt_size : natural := unsigned_num_bits(2+2*inputs-1);
 	begin
 		if rising_edge(pannel_clk) then
-			glabel <= to_ascii(word2byte(fill(
-				gauge_labels,
-				2**rtxt_size*scale'length, value => '1'),
-				addr(rtxt_size+row_length-1 downto row_length)));
+			glabel <= word2byte(
+				to_ascii(gauge_labels),
+				text_addr,
+				scale'length);
 
-			scale <= word2byte(fill(
+			scale <= word2byte(
 				word2byte(time_scales,    time_scale)    &
 				word2byte(trigger_scales, trigger_scale) &
 				amp,
-				2**rtxt_size*scale'length, value => '1'),
-				addr(rtxt_size+row_length-1 downto row_length));
+				text_addr,
+				scale'length);
 
-			value <= word2byte(fill(
+			value <= word2byte(
 				word2byte(time_value,    time_scale)    &
 				word2byte(trigger_value, trigger_scale) &
 				channel_level,
-				2**rtxt_size*scale'length, value => '1'),
-				addr(rtxt_size+row_length-1 downto row_length));
+				text_addr,
+				scale'length);
 
-			unit <= word2byte(fill(
+			unit <= word2byte(
 				word2byte(time_scales,    time_scale)    &
 				word2byte(trigger_scales, trigger_scale) &
 				unit,
-				2**rtxt_size*scale'length, value => '1'),
-				addr(rtxt_size+row_length-1 downto row_length));
+				text_addr,
+				scale'length);
 		end if;
 	end process;
 
