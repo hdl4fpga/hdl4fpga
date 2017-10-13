@@ -134,20 +134,22 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		layout_id   => 0,
-		hz_scales   => hz_scales,
-		vt_scales   => vt_scales,
-		inputs      => 1,
-		gauge_labels => "hola",
-		input_unit  => 100.0*(1.25*64.0)/8192.0,
-		trigger_scales => "010101",
-		time_scales => "010101",
-		prescaler_tab => (0,0),
-		channels_fg => "110",
-		channels_bg => "000",
-		hzaxis_fg   => "010",
-		hzaxis_bg   => "000")
-	
+		layout_id    => 0,
+		hz_scales    => hz_scales,
+		vt_scales    => vt_scales,
+		inputs       => 1,
+		gauge_labels => 
+			"Horizontal : " &
+			"Disparo    : " &
+			"Escala     : " &
+			"Posicion   : ",
+		input_unit   => 100.0*(1.25*64.0)/8192.0,
+		channels_fg  => b"11111111_11111111_00000000",
+		channels_bg  => b"00000000_00000000_00000000",
+		hzaxis_fg    => b"00000000_11111111_00000000",
+		hzaxis_bg    => b"00000000_00000000_00000000",
+		grid_fg      => b"11111111_00000000_00000000",
+		grid_bg      => b"00000000_00000000_00000000")
 	port map (
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,

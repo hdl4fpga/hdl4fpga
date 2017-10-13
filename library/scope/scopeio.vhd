@@ -12,20 +12,29 @@ entity scopeio is
 		inputs         : natural := 1;
 		input_unit     : real    := 1.0;
 		layout_id      : natural := 0;
+		hz_scales      : scale_vector;
+		vt_scales      : scale_vector;
 		gauge_labels   : string;
-		trigger_scales : std_logic_vector;
-		time_scales    : std_logic_vector;
-		prescaler_tab  : integer_vector;
-
+		trigger_scales : std_logic_vector :=
+			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
+			"1000" & "1010" & "1010" & "1011" & "1100" & "1101" & "1110" & "1111";
+		time_scales    : std_logic_vector :=
+			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
+			"1000" & "1010" & "1010" & "1011" & "1100" & "1101" & "1110" & "1111";
+		prescaler_tab  : integer_vector := (
+			1**1*10**0, 2**1*10**0, 5**1*10**0,
+			1**1*10**1, 2**1*10**1, 5**1*10**1,
+			1**1*10**2, 2**1*10**2, 5**1*10**2,
+			1**1*10**3, 2**1*10**3, 5**1*10**3,
+			1**1*10**4, 2**1*10**4, 5**1*10**4,
+			1**1*10**6);
 		channels_fg    : std_logic_vector;
 		channels_bg    : std_logic_vector;
 		hzaxis_fg      : std_logic_vector;
 		hzaxis_bg      : std_logic_vector;
-		grid_fg        : std_logic_vector := "100";
-		grid_bg        : std_logic_vector := "000";
+		grid_fg        : std_logic_vector;
+		grid_bg        : std_logic_vector);
 
-		hz_scales      : scale_vector;
-		vt_scales      : scale_vector);
 	port (
 		mii_rxc     : in  std_logic := '-';
 		mii_rxdv    : in  std_logic := '0';
@@ -284,13 +293,26 @@ begin
 		win_frm    => win_frm);
 
 	prescaler_p : process (input_clk)
+
+		function adjtab (
+			constant arg : integer_vector)
+			return integer_vector is
+			variable retval : integer_vector(arg'range);
+		begin
+			for i in retval'range loop
+				retval(i) := arg(i)-2;
+			end loop;
+			return retval;
+		end;
+
+		constant ajdtab : integer_vector(prescaler_tab'range) := adjtab(prescaler_tab);
 		variable scaler : signed(0 to signed_num_bits(max(prescaler_tab)-1)-1);
 	begin
 		if rising_edge(input_clk) then
 			input_we <= scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
-					scaler := to_signed(prescaler_tab(to_integer((unsigned(hz_scale)))), scaler'length);
+					scaler := to_signed(ajdtab(to_integer((unsigned(hz_scale)))-2), scaler'length);
 				else
 					scaler := scaler - 1;
 				end if;
