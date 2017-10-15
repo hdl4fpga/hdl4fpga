@@ -374,7 +374,7 @@ begin
 				if input_we='1' then
 					input_ge := trigger_edge xnor setif(input_aux >= trigger_level);
 				end if;
-				input_aux := vmword(word2byte(vm_inputs, trigger_channel));
+				input_aux := vmword(word2byte(vm_inputs, trigger_channel, vmword'length));
 			end if;
 		end process;
 
@@ -469,9 +469,16 @@ begin
 		trigger_scale  => trigger_scale,
 		trigger_value  => std_logic_vector(trigger_level),
 		channel_scale  => channel_scale,
-		channel_level  => (vmword'range => '-'),
-		text_addr      => "-----",
+--		channel_level  => (1 to 9 => '-'),
+		text_addr      => text_addr,
 		text_data      => text_data);
+
+	process(mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			text_addr <= std_logic_vector(unsigned(text_addr) + 1);
+		end if;
+	end process;
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
@@ -511,10 +518,10 @@ begin
 		variable video_fgon : std_logic;
 		variable video_bgon : std_logic;
 
-		variable vtaxis_fg  : std_logic_vector(3-1 downto 0);
-		variable vtaxis_bg  : std_logic_vector(3-1 downto 0);
-		variable trigger_fg : std_logic_vector(3-1 downto 0);
-		variable trigger_bg : std_logic_vector(3-1 downto 0);
+		variable vtaxis_fg  : std_logic_vector(video_rgb'range);
+		variable vtaxis_bg  : std_logic_vector(video_rgb'range);
+		variable trigger_fg : std_logic_vector(video_rgb'range);
+		variable trigger_bg : std_logic_vector(video_rgb'range);
 
 	begin
 		if rising_edge(video_clk) then

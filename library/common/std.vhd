@@ -20,10 +20,12 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
+use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 package std is
 
@@ -141,27 +143,16 @@ package std is
 		constant e : std_logic := '1')
 		return std_logic_vector;
 
-	function word2byte (
+	impure function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector;
 
-	function word2byte (
+	impure function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector;
 		constant size : natural)
 		return std_logic_vector;
-
-	function word2byte (
-		constant word : string;
-		constant addr : std_logic_vector)
-		return string;
-
-	function word2byte (
-		constant word : string;
-		constant addr : std_logic_vector;
-		constant size : natural)
-		return string;
 
 	function byte2word (
 		constant word : std_logic_vector;
@@ -204,6 +195,10 @@ package std is
 	function to_ascii (
 		constant arg : string)
 		return std_logic_vector;
+
+	function to_ascii (
+		constant arg : string)
+		return byte_vector;
 
 	function to_ascii (
 		constant arg : nibble)
@@ -545,6 +540,15 @@ package body std is
 	end;
 
 	function to_stdlogicvector (
+		constant arg : character)
+		return std_logic_vector is
+		variable val : unsigned(byte'length-1 downto 0);
+	begin
+		val(byte'range) := to_unsigned(character'pos(arg),byte'length);
+		return std_logic_vector(val);
+	end function;
+
+	function to_stdlogicvector (
 		constant arg : string)
 		return std_logic_vector is
 		variable val : unsigned(arg'length*byte'length-1 downto 0);
@@ -763,7 +767,7 @@ package body std is
 		return o;
 	end;
 
-	function word2byte (
+	impure function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
@@ -777,38 +781,13 @@ package body std is
 		return byte;
 	end;
 
-	function word2byte (
+	impure function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector;
 		constant size : natural)
 		return std_logic_vector is
-		variable aux  : std_logic_vector(0 to size*2**addr'length-1);
-		variable byte : std_logic_vector(0 to size-1); 
 	begin
-		return word2byte(fill(word, size*2**addr'length), addr);
-	end;
-
-	function word2byte (
-		constant word : string;
-		constant addr : std_logic_vector)
-		return string is
-		variable aux  : string(1 to word'length);
-		variable byte : string(1 to word'length/2**addr'length); 
-	begin
-		aux := word;
-		for i in byte'range loop
-			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
-		end loop;
-		return byte;
-	end;
-
-	function word2byte (
-		constant word : string;
-		constant addr : std_logic_vector;
-		constant size : natural)
-		return string is
-	begin
-		return word2byte(fill(word, size*2**addr'length), addr);
+		return word2byte(fill(word, size*(2**addr'length)), addr);
 	end;
 
 	function byte2word (
@@ -894,6 +873,17 @@ package body std is
 		return std_logic_vector is
 	begin
 		return to_stdlogicvector(arg);
+	end;
+
+	function to_ascii(
+		constant arg : string)
+		return byte_vector is
+		variable retval : byte_vector(arg'range);
+	begin
+		for i in retval'range loop
+			retval(i) := to_stdlogicvector(arg(i));
+		end loop;
+		return retval;
 	end;
 
 	function to_nibble (
@@ -1093,7 +1083,6 @@ package body std is
 		constant right : boolean := true;
 		constant value : std_logic := '-')
 		return std_logic_vector is
-		variable aux    : std_logic_vector(0 to data'length-1);
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
@@ -1111,7 +1100,6 @@ package body std is
 		constant right : boolean := true;
 		constant value : character := ' ')
 		return string is
-		variable aux    : string(0 to data'length-1);
 		variable retval_right : string(1 to size)     := (others => value);
 		variable retval_left  : string(size downto 1) := (others => value);
 	begin
