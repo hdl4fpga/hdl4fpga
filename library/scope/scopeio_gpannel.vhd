@@ -28,19 +28,22 @@ end;
 architecture beh of scopeio_gpannel is
 
 	constant label_size : natural := gauge_labels'length/(2+2*inputs);
-	signal   row_addr   : std_logic_vector(unsigned_num_bits(label_size-1)-1 downto 0);
-	function fmt_labels (
-		constant arg : string)
-		return string is
-		variable retval : std_logic_vector(1 to ascii'length*2**row_addr'length*(2+2*inputs));
-		variable aux    : string(1 to label_size);
+	signal   col_addr   : std_logic_vector(unsigned_num_bits(label_size-1)-1 downto 0);
+	signal   row_addr   : std_logic_vector(unsigned_num_bits((2+2*inputs)-1)+col_addr'length-1 downto 0);
+	constant row_size   : natural := 2**row_addr'length;
+
+	impure function init_rom 
+		return std_logic_vector is
+		variable retval : std_logic_vector(0 to ascii'length*2**col_addr'length*(2+2*inputs)-1);
 	begin 
-		for i in 1 to 2+2*inputs loop
-			to_ascii(gauge_labels);
+		for i in 2+2*inputs-1 downto 0 loop
+			retval(0 to retval'length/(2+2*inputs)-1) := fill(to_ascii(gauge_labels(i*label_size+1 to (i+1)*label_size)), ascii'length*2**col_addr'length);
+			retval := std_logic_vector(unsigned(retval) ror (ascii'length*2**col_addr'length));
 		end loop;
+		return retval;
 	end;
 
-	constant glabels : byte_vector(0 to row_size*(2+2*inputs)-1) :=
+	constant label_rom : byte_vector(0 to row_size*(2+2*inputs)-1) := to_bytevector(init_rom);
 	signal amp     : std_logic_vector(4*inputs-1 downto 0);
 
 	signal scale   : std_logic_vector(4-1 downto 0);
@@ -90,7 +93,7 @@ begin
 	process (pannel_clk)
 	begin
 		if rising_edge(pannel_clk) then
-			text_data <= glabels(to_integer(unsigned(text_addr)));
+			text_data <= label_rom(to_integer(unsigned(text_addr(row_addr'range))));
 --			text_data <= word2byte(
 --				glabel & bcd2ascii(reading) & unit,
 --				not text_addr,
