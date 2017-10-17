@@ -43,11 +43,11 @@ architecture beh of scopeio_gpannel is
 		return retval;
 	end;
 
-	constant label_rom : byte_vector(0 to row_size*(2+2*inputs)-1) := to_bytevector(init_rom);
+	constant label_rom : byte_vector(0 to row_size-1) := to_bytevector(init_rom);
 	signal amp     : std_logic_vector(4*inputs-1 downto 0);
 
-	signal scale   : std_logic_vector(4-1 downto 0);
-	signal value   : std_logic_vector(inputs*9-1 downto 0);
+	signal scale   : std_logic_vector(4-1 downto 0) := b"0000";
+	signal value   : std_logic_vector(inputs*9-1 downto 0) := b"0_1110_0000";
 	signal unit    : std_logic_vector(0 to 4*8-1);
 	signal reading : std_logic_vector(16-1 downto 0);
 begin
@@ -90,16 +90,13 @@ begin
 		scale => scale,
 		fmtds => reading);	
 
-	process (pannel_clk)
-	begin
-		if rising_edge(pannel_clk) then
-			text_data <= label_rom(to_integer(unsigned(text_addr(row_addr'range))));
+	text_data <=
+		label_rom(to_integer(unsigned(std_logic_vector'(text_addr(row_addr'left+2 downto row_addr'left) & text_addr(col_addr'range)))))
+		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < 4*((label_size)/4)-1 else
+		word2byte(bcd2ascii(reading), "00");
 --			text_data <= word2byte(
 --				glabel & bcd2ascii(reading) & unit,
 --				not text_addr,
 --				text_data'length);
-		end if;
-
-	end process;
 
 end;

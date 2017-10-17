@@ -144,7 +144,7 @@ architecture beh of scopeio is
 	signal  ordinates       : std_logic_vector(vm_inputs'range);
 	signal  hz_scale        : std_logic_vector(4-1 downto 0);
 	signal  text_data       : std_logic_vector(8-1 downto 0);
-	signal  text_addr       : std_logic_vector(10-1 downto 0);
+	signal  text_addr       : std_logic_vector(10-1 downto 0) := (others => '0');
 
 	subtype mword         is signed(0 to 18-1);
 	subtype mdword        is signed(0 to 2*mword'length-1);
@@ -338,10 +338,10 @@ begin
 						std_logic_vector(to_unsigned(i, channel_select'length)),
 					   	vt_scale'length))));
 				a(i) := resize(signed(not 
-					word2byte(
+					std_logic_vector'(word2byte(
 						input_data, 
 						std_logic_vector(to_unsigned(i, channel_select'length)),
-						input_data'length/inputs)),
+						input_data'length/inputs))),
 					mword'length);
 			end loop;
 		end if;
