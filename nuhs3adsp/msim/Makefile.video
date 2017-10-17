@@ -9,11 +9,11 @@ LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
-IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
+IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 HDL4FPGA__win_side__def = $(LIB_HDL4FPGA)/win_side/def.dat
 HDL4FPGA__win_side = $(LIB_HDL4FPGA)/win_side/_primary.dat
 HDL4FPGA__win_mngr__def = $(LIB_HDL4FPGA)/win_mngr/def.dat
@@ -32,6 +32,10 @@ HDL4FPGA__std__body = $(LIB_HDL4FPGA)/std/body.dat
 HDL4FPGA__std = $(LIB_HDL4FPGA)/std/_primary.dat
 HDL4FPGA__scopeio_miirx__mix = $(LIB_HDL4FPGA)/scopeio_miirx/mix.dat
 HDL4FPGA__scopeio_miirx = $(LIB_HDL4FPGA)/scopeio_miirx/_primary.dat
+HDL4FPGA__scopeio_gpannel__beh = $(LIB_HDL4FPGA)/scopeio_gpannel/beh.dat
+HDL4FPGA__scopeio_gpannel = $(LIB_HDL4FPGA)/scopeio_gpannel/_primary.dat
+HDL4FPGA__scopeio_gauge__def = $(LIB_HDL4FPGA)/scopeio_gauge/def.dat
+HDL4FPGA__scopeio_gauge = $(LIB_HDL4FPGA)/scopeio_gauge/_primary.dat
 HDL4FPGA__scopeio_channel__def = $(LIB_HDL4FPGA)/scopeio_channel/def.dat
 HDL4FPGA__scopeio_channel = $(LIB_HDL4FPGA)/scopeio_channel/_primary.dat
 HDL4FPGA__scopeio_axisx__def = $(LIB_HDL4FPGA)/scopeio_axisx/def.dat
@@ -50,8 +54,6 @@ HDL4FPGA__miirx_pre__def = $(LIB_HDL4FPGA)/miirx_pre/def.dat
 HDL4FPGA__miirx_pre = $(LIB_HDL4FPGA)/miirx_pre/_primary.dat
 HDL4FPGA__mii_mem__def = $(LIB_HDL4FPGA)/mii_mem/def.dat
 HDL4FPGA__mii_mem = $(LIB_HDL4FPGA)/mii_mem/_primary.dat
-HDL4FPGA__meter_display__def = $(LIB_HDL4FPGA)/meter_display/def.dat
-HDL4FPGA__meter_display = $(LIB_HDL4FPGA)/meter_display/_primary.dat
 HDL4FPGA__int2bcd__def = $(LIB_HDL4FPGA)/int2bcd/def.dat
 HDL4FPGA__int2bcd = $(LIB_HDL4FPGA)/int2bcd/_primary.dat
 HDL4FPGA__grid__def = $(LIB_HDL4FPGA)/grid/def.dat
@@ -97,6 +99,10 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__std) \
     $(HDL4FPGA__scopeio_miirx__mix) \
     $(HDL4FPGA__scopeio_miirx) \
+    $(HDL4FPGA__scopeio_gpannel__beh) \
+    $(HDL4FPGA__scopeio_gpannel) \
+    $(HDL4FPGA__scopeio_gauge__def) \
+    $(HDL4FPGA__scopeio_gauge) \
     $(HDL4FPGA__scopeio_channel__def) \
     $(HDL4FPGA__scopeio_channel) \
     $(HDL4FPGA__scopeio_axisx__def) \
@@ -115,8 +121,6 @@ whole_library :     $(HDL4FPGA__win_side__def) \
     $(HDL4FPGA__miirx_pre) \
     $(HDL4FPGA__mii_mem__def) \
     $(HDL4FPGA__mii_mem) \
-    $(HDL4FPGA__meter_display__def) \
-    $(HDL4FPGA__meter_display) \
     $(HDL4FPGA__int2bcd__def) \
     $(HDL4FPGA__int2bcd) \
     $(HDL4FPGA__grid__def) \
@@ -142,6 +146,7 @@ whole_library :     $(HDL4FPGA__win_side__def) \
 
 $(HDL4FPGA__align) \
 $(HDL4FPGA__align__arch) : ../../library/common/align.vhd \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
@@ -189,18 +194,9 @@ $(HDL4FPGA__int2bcd__def) : ../../library/common/atof.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../../library/common/atof.vhd
 
-$(HDL4FPGA__meter_display) \
-$(HDL4FPGA__meter_display__def) : ../../library/scope/meter_display.vhd \
-		$(HDL4FPGA__fix2bcd) \
-		$(HDL4FPGA__std) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../../library/scope/meter_display.vhd
-
 $(HDL4FPGA__mii_mem) \
 $(HDL4FPGA__mii_mem__def) : ../../library/mii/mii_mem.vhd \
+		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -209,6 +205,7 @@ $(HDL4FPGA__mii_mem__def) : ../../library/mii/mii_mem.vhd \
 
 $(HDL4FPGA__miirx_pre) \
 $(HDL4FPGA__miirx_pre__def) : ../../library/mii/miirx_pre.vhd \
+		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -245,9 +242,10 @@ $(HDL4FPGA__pipe_le__def) : ../../library/common/pipe_le.vhd \
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../../library/common/rom.vhd \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../../library/common/rom.vhd
 
@@ -273,6 +271,7 @@ $(HDL4FPGA__scopeio_axis) \
 $(HDL4FPGA__scopeio_axis__def) \
 $(HDL4FPGA__scopeio_axisx) \
 $(HDL4FPGA__scopeio_axisx__def) : ../../library/scope/scopeio_axis.vhd \
+		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__align) \
 		$(HDL4FPGA__std) \
@@ -299,6 +298,26 @@ $(HDL4FPGA__scopeio_channel__def) : ../../library/scope/scopeio_channel.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_channel.vhd
 
+$(HDL4FPGA__scopeio_gauge) \
+$(HDL4FPGA__scopeio_gauge__def) : ../../library/scope/scopeio_gauge.vhd \
+		$(HDL4FPGA__fix2bcd) \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_gauge.vhd
+
+$(HDL4FPGA__scopeio_gpannel) \
+$(HDL4FPGA__scopeio_gpannel__beh) : ../../library/scope/scopeio_gpannel.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__scopeio_gauge) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../library/scope/scopeio_gpannel.vhd
+
 $(HDL4FPGA__scopeio_miirx) \
 $(HDL4FPGA__scopeio_miirx__mix) : ../../library/scope/scopeio_miirx.vhd \
 		$(HDL4FPGA__mii_mem) \
@@ -315,8 +334,8 @@ $(HDL4FPGA__std__body) : ../../library/common/std.vhd \
 		$(IEEE__math_real) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
 	$(VCOM) -2008 -work hdl4fpga ../../library/common/std.vhd
 
 $(HDL4FPGA__testbench) : ../../library/testbench/testbench.vhd \
@@ -328,9 +347,10 @@ $(HDL4FPGA__testbench) : ../../library/testbench/testbench.vhd \
 $(HDL4FPGA__testbench__scope) : ../testbench/mii_rx.vhd \
 		$(HDL4FPGA__mii_mem) \
 		$(HDL4FPGA__testbench) \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../testbench/mii_rx.vhd
 
@@ -346,9 +366,10 @@ $(HDL4FPGA__video_vga) \
 $(HDL4FPGA__video_vga__arch) : ../../library/video/video.vhd \
 		$(HDL4FPGA__pipe_le) \
 		$(HDL4FPGA__align) \
+		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
-		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 -work hdl4fpga ../../library/video/video.vhd
 
@@ -358,6 +379,7 @@ $(HDL4FPGA__win_mngr) \
 $(HDL4FPGA__win_mngr__def) \
 $(HDL4FPGA__win_side) \
 $(HDL4FPGA__win_side__def) : ../../library/video/video_win.vhd \
+		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
