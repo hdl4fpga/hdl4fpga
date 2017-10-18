@@ -92,8 +92,8 @@ begin
 
 	text_data <=
 		label_rom(to_integer(unsigned(std_logic_vector'(text_addr(row_addr'left+2 downto row_addr'left) & text_addr(col_addr'range)))))
-		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < 4*((label_size)/4)-1 else
-		word2byte(bcd2ascii(reading), "00");
+		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < 4*((label_size+4-1)/4) else
+		word2byte(bcd2ascii(reading), text_addr(2-1 downto 0));
 --			text_data <= word2byte(
 --				glabel & bcd2ascii(reading) & unit,
 --				not text_addr,
