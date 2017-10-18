@@ -143,15 +143,15 @@ package std is
 		constant e : std_logic := '1')
 		return std_logic_vector;
 
-	impure function word2byte (
+	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector;
 
-	impure function word2byte (
-		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant size : natural)
+	function word2byte (
+		constant word  : std_logic_vector;
+		constant addr  : std_logic_vector;
+		constant size  : natural)
 		return std_logic_vector;
 
 	function byte2word (
@@ -270,6 +270,7 @@ package std is
 	type scale_t is record
 		from : real;
 		step : real;
+		mult : integer;
 	end record;
 
 	type scale_vector is array (natural range <>) of scale_t;
@@ -767,7 +768,7 @@ package body std is
 		return o;
 	end;
 
-	impure function word2byte (
+	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
@@ -781,10 +782,10 @@ package body std is
 		return byte;
 	end;
 
-	impure function word2byte (
-		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant size : natural)
+	function word2byte (
+		constant word  : std_logic_vector;
+		constant addr  : std_logic_vector;
+		constant size  : natural)
 		return std_logic_vector is
 	begin
 		return word2byte(fill(word, size*(2**addr'length)), addr);
