@@ -47,7 +47,7 @@ architecture beh of scopeio_gpannel is
 	signal amp     : std_logic_vector(4*inputs-1 downto 0);
 
 	signal scale   : std_logic_vector(4-1 downto 0) := b"0000";
-	signal value   : std_logic_vector(inputs*9-1 downto 0) := b"0_1110_0000";
+	signal value   : std_logic_vector(inputs*9-1 downto 0) := b"0_0000_0000";
 	signal unit    : std_logic_vector(0 to 4*8-1);
 	signal reading : std_logic_vector(16-1 downto 0);
 begin
