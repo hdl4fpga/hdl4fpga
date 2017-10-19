@@ -270,7 +270,7 @@ package std is
 	type scale_t is record
 		from : real;
 		step : real;
-		mult : integer;
+		mult : character;
 	end record;
 
 	type scale_vector is array (natural range <>) of scale_t;

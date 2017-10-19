@@ -16,9 +16,6 @@ entity scopeio is
 		vt_scales      : scale_vector;
 		gauge_labels   : string;
 		
-		trigger_scales : std_logic_vector :=
-			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
-			"1000" & "1010" & "1010" & "1011" & "1100" & "1101" & "1110" & "1111";
 		time_scales    : std_logic_vector :=
 			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
 			"1000" & "1010" & "1010" & "1011" & "1100" & "1101" & "1110" & "1111";
@@ -459,7 +456,6 @@ begin
 	generic map (
 		inputs         => inputs,
 		gauge_labels   => gauge_labels,
-		trigger_scales => trigger_scales,
 		time_scales    => time_scales,
 		hz_scales      => hz_scales,
 		vt_scales      => vt_scales)
