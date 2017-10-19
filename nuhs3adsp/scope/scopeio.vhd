@@ -139,10 +139,10 @@ begin
 		vt_scales    => vt_scales,
 		inputs       => 1,
 		gauge_labels => 
-			"Horizontal : " &
-			"Disparo    : " &
 			"Escala     : " &
-			"Posicion   : ",
+			"Posicion   : " &
+			"Horizontal : " &
+			"Disparo    : ",
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
 		channels_fg  => b"11111111_11111111_00000000",
 		channels_bg  => b"00000000_00000000_00000000",

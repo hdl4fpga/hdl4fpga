@@ -263,10 +263,10 @@ begin
 					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
 				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
 				for i in 0 to 2-1 loop
-					meter_fld(i) <= row(i) and meter_on;
+					meter_fld(i) <= row(i+2*inputs) and meter_on;
 				end loop;
 				for i in 0 to inputs-1 loop
-					meter_fld(i+2) <= (setif(row(2+inputs*i to 2+inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
+					meter_fld(i+2) <= (setif(row(inputs*i to inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
 				end loop;
 			end if;
 		end process;
