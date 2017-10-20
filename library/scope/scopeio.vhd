@@ -109,9 +109,9 @@ architecture beh of scopeio is
 	signal video_vcntr      : std_logic_vector(11-1 downto 0);
 	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
-	signal video_bg         : std_logic_vector(0 to 5+inputs-1);
-	signal video_fg         : std_logic_vector(0 to 6+inputs-1);
 	signal plot_fg          : std_logic_vector(0 to inputs-1);
+	signal video_fg         : std_logic_vector(0 to 4-1);
+	signal video_bg         : std_logic_vector(0 to 3-1);
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	signal abscisa          : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
@@ -176,6 +176,11 @@ architecture beh of scopeio is
 	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
 
 	signal pixel       : std_logic_vector(video_rgb'range);
+
+	signal gpannel_on  : std_logic_vector(0 to ly_dptr(layout_id).num_of_seg-1);
+	signal gpannel_x   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).scr_width-1)-1 downto 0);
+	signal gpannel_y   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 0);
+
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -467,7 +472,7 @@ begin
 		trigger_value  => std_logic_vector(trigger_level),
 		channel_scale  => channel_scale,
 --		channel_level  => (1 to 9 => '-'),
-		text_addr      => text_addr,
+		text_row      => text_addr,
 		text_data      => text_data);
 
 	process(mii_rxc)
@@ -476,6 +481,61 @@ begin
 			text_addr <= std_logic_vector(unsigned(text_addr) + 1);
 		end if;
 	end process;
+
+	cga_b : block
+		constant font_width  : natural := 8;
+		constant font_height : natural := 16;
+
+		signal   font_code : std_logic_vector(ascii'range);
+		signal   font_row  : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
+		signal   font_addr : std_logic_vector(font_code'length+font_row'length-1 downto 0);
+		signal   font_col  : std_logic_vector(unsigned_num_bits(font_width-1)-1  downto 0);
+		signal   font_line : std_logic_vector(0 to font_width-1);
+		signal   font_dot  : std_logic_vector(0 to 0);
+
+	begin
+
+		font_addr <= cga_code & gpannel_y(font_row);
+
+		cgarom : entity hdl4fpga.rom
+		generic map (
+			bitrom => psf1cp850x8x16)
+		port map (
+			clk  => video_clk,
+			addr => font_addr,
+			data => font_line);
+
+		align_x : entity hdl4fpga.align
+		generic map (
+			n => font_col'length,
+			d => (font_col'range => 4))
+		port map (
+			clk => video_clk,
+			di  => gpannel_x(font_col'range),
+			do  => font_col);
+
+		font_dot <= word2byte(font_line, font_col);
+
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => unsigned_num_bits(height-1)+17))
+		port map (
+			clk   => video_clk,
+			di    => font_dot,
+			do(0) => cga_dot);
+
+		align1_e : entity hdl4fpga.align
+		generic map (
+			n => 2+inputs,
+			d => (1 to 2+inputs => unsigned_num_bits(height-1)+15))
+		port map (
+			clk => video_clk,
+			di  => meter_fld,
+		do  => chan_dot);
+
+	end block;
+
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
@@ -502,6 +562,9 @@ begin
 		vt_scale   => vt_scale,
 		win_frm    => win_frm,
 		win_on     => win_don,
+		gpannel_on => gpannel_on,
+		gpannel_x  => gpannel_x,
+		gpannel_y  => gpannel_y,
 		plot_fg    => plot_fg,
 		video_bg   => video_bg,
 		video_fg   => video_fg);

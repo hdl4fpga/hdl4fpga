@@ -20,8 +20,12 @@ entity scopeio_gpannel is
 		trigger_value  : in  std_logic_vector;
 		channel_scale  : in  std_logic_vector;
 		--channel_level  : in  std_logic_vector;
-		text_addr      : in  std_logic_vector;
-		text_data      : out std_logic_vector);
+		video_clk      : in  std_logic;
+		gpannel_row    : in  std_logic_vector;
+		gpannel_col    : in  std_logic_vector;
+		gpannel_on     : in  std_logic_vector;
+		gauge_on       : out std_logic_vector;
+		gauge_code     : out std_logic_vector);
 end;
 
 architecture beh of scopeio_gpannel is
@@ -66,7 +70,9 @@ architecture beh of scopeio_gpannel is
 	signal   reading1  : std_logic_vector(20-1 downto 0);
 
 	signal   ut_mult   : std_logic_vector(ascii'range);
-	signal   unit      : std_logic_vector(ascii'range);
+	signal   ut_symb   : std_logic_vector(ascii'range);
+	signal chan_dot  : std_logic_vector(0 to 2+inputs-1);
+		signal meter_fld  : std_logic_vector(0 to 2+inputs-1);
 begin
 
 	process (pannel_clk)
@@ -102,26 +108,21 @@ begin
 
 		if rising_edge(pannel_clk) then
 			scale <= word2byte(
-				dup(channel_scale),
-				word2byte(time_scales, time_scale)    &
-				trigger_scale &
-				text_addr(row_addr'left+2 downto row_addr'left),
-				scale'length);
-
---			value <= word2byte(
---				word2byte(time_value,    time_scale)    &
---				word2byte(trigger_value, trigger_scale) &
---				channel_level,
---				text_addr,
---				scale'length);
-
+				dup(channel_scale) &
+				time_scale         &
+				trigger_scale      &
+				text_row, scale'length);
 
 			ut_mult <= word2byte(
-				dup(vt_mult) & hz_mult & tg_mult,
-				text_addr(row_addr'left+1 downto row_addr'left), ascii'length);
-			unit <= word2byte(
+				dup(vt_mult) & 
+				hz_mult      & 
+				tg_mult,
+				text_addr, ascii'length);
+
+			ut_symb <= word2byte(
 				dup(to_ascii(string'(1 to 1 => 'V'))) & to_ascii(string'("s")) & to_ascii(string'("V")),
 				text_addr(row_addr'left+1 downto row_addr'left), ascii'length);
+
 			aux := channel_scale;
 			vt_mult := (others => '0');
 			for i in 0 to inputs-1 loop
@@ -146,13 +147,36 @@ begin
 		scale => scale,
 		fmtds => reading);	
 
-	text_data <=
-		label_rom(to_integer(unsigned(std_logic_vector'(text_addr(row_addr'left+2 downto row_addr'left) & text_addr(col_addr'range))))) 
-		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < label_size else
-		word2byte(bcd2ascii(reading1), std_logic_vector(unsigned(text_addr(3-1 downto 0))+((8-(label_size mod 8)) mod 8)), ascii'length)
-		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < label_size+reading1'length/4 else
-		word2byte(to_ascii(string'(" ")) & ut_mult & unit & to_ascii(string'(" ")), std_logic_vector(unsigned(text_addr(2-1 downto 0))+((4-((label_size+reading1'length/4) mod 4)) mod 4)), ascii'length)
-		when to_integer(unsigned(text_addr(col_addr'length downto 0))) < label_size+reading1'length/4+4 else
-		(text_data'range => '0');
+	process(video_clk)
+		variable row : unsigned(gpannel_row'range);
+		variable col : unsigned(gpannel_col'range);
+		variable rea : std_logic_vector(reading'range);
+		variable unt : std_logic_vector(
+	begin
+
+		row := unsigned(gpannel_row);
+		col := unsigned(gpannel_col);
+		rea := std_logic_vector(unsigned(bcd2ascii(reading1)) rol ((label_size mod 8)*ascii'length));
+		unt := std_logic_vector(unsigned(to_ascii(string'(" ")) & ut_mult & ut_symb & to_ascii(string'(" "))) mod ((label_size+rea'length/4) mod 4)),
+
+		if col < label_size then
+			text_data <= label_rom(row & col);
+		elsif col < label_size+rea'length/4 else
+			text_data <= word2byte(rea, gpannel_col(3-1 downto 0), ascii'length)
+		elsif col < label_size+rea'length/4+4 else
+			text_data <= word2byte(unt, gpannel_col(2-1 downto 0), ascii'length);
+		else
+			(text_data'range => '0');
+		end if;
+
+	for i in 0 to inputs+2-1 loop
+		if i < 2*inputs then
+			gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 '0')) and meter_on;
+			row         := row sll 2;
+		else
+			gauge_on(i) <= row(i) and meter_on;
+			row         := row sll 1;
+		end if;
+	end loop;
 
 end;

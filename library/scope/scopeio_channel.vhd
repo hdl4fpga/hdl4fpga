@@ -22,10 +22,6 @@ entity scopeio_channel is
 	port (
 		video_clk    : in  std_logic;
 		video_nhl    : in  std_logic;
-		text_clk     : in  std_logic;
-		text_we      : in  std_logic := '1';
-		text_data    : in  std_logic_vector;
-		text_addr    : in  std_logic_vector;
 		abscisa      : out std_logic_vector;
 		ordinates    : in  std_logic_vector;
 		offset       : in  std_logic_vector;
@@ -34,6 +30,9 @@ entity scopeio_channel is
 		vt_scale     : in  std_logic_vector(4-1 downto 0);
 		win_frm      : in  std_logic_vector;
 		win_on       : in  std_logic_vector;
+		gpannel_on   : out std_logic_vector;
+		gpannel_y    : out std_logic_vector;
+		gpannel_x    : out std_logic_vector;
 		plot_fg      : out std_logic_vector;
 		video_fg     : out std_logic_vector;
 		video_bg     : out std_logic_vector);
@@ -54,7 +53,6 @@ architecture def of scopeio_channel is
 	signal plot_dot  : std_logic_vector(0 to inputs-1) := (others => '0');
 	signal grid_dot  : std_logic_vector(2-1 downto 0);
 	signal meter_dot : std_logic;
-	signal chan_dot  : std_logic_vector(0 to 2+inputs-1);
 	signal axisx_on  : std_logic;
 	signal axisy_on  : std_logic;
 	signal axis_on   : std_logic;
@@ -68,20 +66,19 @@ architecture def of scopeio_channel is
 	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
 	signal axis_hztl : std_logic;
 
-	signal meter_on  : std_logic;
 	signal trigger_dot : std_logic;
 
 begin
 
 	win_b : block
-		signal x     : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
-		signal phon  : std_logic;
-		signal pfrm  : std_logic;
-		signal cfrm  : std_logic_vector(0 to 4-1);
-		signal cdon  : std_logic_vector(0 to 4-1);
-		signal wena  : std_logic;
-		signal wfrm  : std_logic;
-		signal txon : std_logic;
+		signal x    : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
+		signal phon : std_logic;
+		signal pfrm : std_logic;
+		signal cfrm : std_logic_vector(0 to 4-1);
+		signal cdon : std_logic_vector(0 to 4-1);
+		signal wena : std_logic;
+		signal wfrm : std_logic;
+		signal txon : std_logic_vector(0 to num_of_seg-1);
 	begin
 		phon <= not setif(win_on=(win_on'range => '0'));
 		pfrm <= not setif(win_frm=(win_frm'range => '0'));
@@ -124,24 +121,31 @@ begin
 			win_y     => win_y);
 		abscisa <= x;
 
-		txon <= setif(win_on(0 to num_of_seg-1)/=(0 to num_of_seg-1 => '0')) and cdon(3);
+		txon <= win_on(0 to num_of_seg-1) and cdon(3);
 		dondly_e : entity hdl4fpga.align
 		generic map (
-			n => 5,
-			d => (0 => 1+3, 1 => 2, 2 to 3 => 1+3, 4 => 4+4),
-			i => (0 to 4 => '-'))
+			n => 4,
+			d => (0 => 1+3, 1 => 2, 2 to 3 => 1+3),
+			i => (1 to 4 => '-'))
 		port map (
 			clk   => video_clk,
 			di(0) => cdon(0),
 			di(1) => grid_on,
 			di(2) => cdon(1),
 			di(3) => cdon(2),
-			di(4) => txon,
 			do(0) => grid_on,
 			do(1) => plot_on,
 			do(2) => axisx_on,
-			do(3) => axisy_on,
-			do(4) => meter_on);
+			do(3) => axisy_on);
+
+		gpanneldly_e : entity hdl4fpga.aling
+		generic map (
+			n => win_on'length,
+			d => (win_on'range => 4+4))
+		generic map (
+			clk => video_clk,
+			di  => txon,
+			do  => gpannel_on);
 
 		xdly_e : entity hdl4fpga.align
 		generic map (
@@ -153,6 +157,8 @@ begin
 			di  => x,
 			do  => win_x);
 
+		gpannel_x <= win_x;
+		gpannel_y <= win_y;
 	end block;
 
 	process (video_clk)
@@ -218,89 +224,6 @@ begin
 		end if;
 	end process;
 
-	meter_b : block
-		constant font_width  : natural := 8;
-		constant font_height : natural := 16;
-		constant disp_width  : natural := 32;
-		constant disp_height : natural := 16;
-
-		signal vmem_addr : std_logic_vector(11-1 downto 0);
-		signal vmem_data : std_logic_vector(8-1 downto 0);
-		signal char_code : std_logic_vector(vmem_data'range);
-		signal char_line : std_logic_vector(0 to font_width-1);
-		signal char_dot  : std_logic_vector(0 to 0);
-		signal sel_line  : std_logic_vector(0 to vmem_data'length+unsigned_num_bits(font_height-1)-1);
-		signal sel_dot   : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-		signal meter_fld  : std_logic_vector(0 to 2+inputs-1);
-
-	begin
-
-		mem_e : entity hdl4fpga.dpram
-		port map (
-			wr_clk  => text_clk,
-			wr_ena  => text_we,
-			wr_addr => text_addr,
-			wr_data => text_data,
-			rd_addr => vmem_addr,
-			rd_data => vmem_data);
-
-		cgarom : entity hdl4fpga.rom
-		generic map (
-			bitrom => psf1cp850x8x16)
-		port map (
-			clk  => video_clk,
-			addr => sel_line,
-			data => char_line);
-
-		process (video_clk)
-			variable row : std_logic_vector(0 to 2*disp_height-1);
-		begin
-			if rising_edge(video_clk) then
-				sel_line <= char_code & win_y(unsigned_num_bits(font_height-1)-1 downto 0); 
-				char_code <= vmem_data;
-				vmem_addr <= encoder(win_on(0 to num_of_seg-1)) &
-					win_y(unsigned_num_bits(disp_height*font_height-1)-1  downto unsigned_num_bits(font_height-1)) &
-					win_x(unsigned_num_bits(disp_width*font_width-1)-1 downto unsigned_num_bits(font_width-1));
-				row := reverse(demux(win_y(unsigned_num_bits(disp_height*font_height-1)  downto unsigned_num_bits(font_height-1))));
-				for i in 0 to 2-1 loop
-					meter_fld(i) <= row(i+2*inputs) and meter_on;
-				end loop;
-				for i in 0 to inputs-1 loop
-					meter_fld(i+2) <= (setif(row(inputs*i to inputs*(i+1))/=(1 to 2 => '0'))) and meter_on;
-				end loop;
-			end if;
-		end process;
-
-		char_dot <= word2byte(char_line, sel_dot) and (char_dot'range => meter_on);
-
-		align_x : entity hdl4fpga.align
-		generic map (
-			n => sel_dot'length,
-			d => (sel_dot'range => 4))
-		port map (
-			clk => video_clk,
-			di  => win_x(sel_dot'range),
-			do  => sel_dot);
-
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => unsigned_num_bits(height-1)+17))
-		port map (
-			clk   => video_clk,
-			di(0) => char_dot(0),
-			do(0) => meter_dot);
-
-		align1_e : entity hdl4fpga.align
-		generic map (
-			n => 2+inputs,
-			d => (1 to 2+inputs => unsigned_num_bits(height-1)+15))
-		port map (
-			clk => video_clk,
-			di  => meter_fld,
-			do  => chan_dot);
-	end block;
-
 	plot_g : for i in 0 to inputs-1 generate
 		signal row1 : vmword;
 	begin
@@ -360,6 +283,6 @@ begin
 	end block;
 
 	plot_fg  <= plot_dot;
-	video_fg <= trigger_dot & axis_fg & grid_dot(1) & ((1 to 2+inputs => meter_dot) and chan_dot);
-	video_bg <= axis_bg & grid_dot(0) & chan_dot;
+	video_fg <= axis_fg & grid_dot(1) & trigger_dot;
+	video_bg <= axis_bg & grid_dot(0);
 end;
