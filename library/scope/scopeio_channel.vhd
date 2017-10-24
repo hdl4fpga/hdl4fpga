@@ -121,7 +121,7 @@ begin
 			win_y     => win_y);
 		abscisa <= x;
 
-		txon <= win_on(0 to num_of_seg-1) and cdon(3);
+		txon <= win_on(0 to num_of_seg-1) and (1 to num_of_seg => cdon(3));
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
@@ -138,11 +138,11 @@ begin
 			do(2) => axisx_on,
 			do(3) => axisy_on);
 
-		gpanneldly_e : entity hdl4fpga.aling
+		gpanneldly_e : entity hdl4fpga.align
 		generic map (
 			n => win_on'length,
 			d => (win_on'range => 4+4))
-		generic map (
+		port map (
 			clk => video_clk,
 			di  => txon,
 			do  => gpannel_on);

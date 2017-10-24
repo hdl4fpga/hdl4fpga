@@ -138,11 +138,11 @@ begin
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
 		inputs       => 1,
-		gauge_labels => to_ascii(
+		gauge_labels => to_ascii(string'(
 			"Escala     : " &
 			"Posicion   : " &
 			"Horizontal : " &
-			"Disparo    : "),
+			"Disparo    : ")),
 		unit_symbols => to_ascii(string'(
 			"V" &
 			"V" &

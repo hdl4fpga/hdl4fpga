@@ -182,6 +182,10 @@ architecture beh of scopeio is
 	signal gpannel_x   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).scr_width-1)-1 downto 0);
 	signal gpannel_y   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 0);
 
+	signal gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto 2**3);
+	signal gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 2**3);
+	signal cga_code    : std_logic_vector(ascii'range);
+	signal cga_dot    : std_logic;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -474,8 +478,12 @@ begin
 		trigger_value  => std_logic_vector(trigger_level),
 		channel_scale  => channel_scale,
 --		channel_level  => (1 to 9 => '-'),
-		text_row      => text_addr,
-		text_data      => text_data);
+		video_clk      => video_clk,
+		gpannel_row    => gpannel_row,
+		gpannel_col    => gpannel_col,
+		gpannel_on     => gpannel_on,
+--		gauge_on       => ,
+		gauge_code     => cga_code);
 
 	process(mii_rxc)
 	begin
@@ -497,7 +505,7 @@ begin
 
 	begin
 
-		font_addr <= cga_code & gpannel_y(font_row);
+		font_addr <= cga_code & gpannel_y(gpannel_row'range);
 
 		cgarom : entity hdl4fpga.rom
 		generic map (
@@ -521,20 +529,20 @@ begin
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => unsigned_num_bits(height-1)+17))
+			d => (0 => unsigned_num_bits(ly_dptr(layout_id).chan_y-1)+17))
 		port map (
 			clk   => video_clk,
 			di    => font_dot,
 			do(0) => cga_dot);
 
-		align1_e : entity hdl4fpga.align
-		generic map (
-			n => 2+inputs,
-			d => (1 to 2+inputs => unsigned_num_bits(height-1)+15))
-		port map (
-			clk => video_clk,
-			di  => meter_fld,
-		do  => chan_dot);
+--		align1_e : entity hdl4fpga.align
+--		generic map (
+--			n => 2+inputs,
+--			d => (1 to 2+inputs => unsigned_num_bits(ly_dptr(layout_id).chan_y-1)+15))
+--		port map (
+--			clk => video_clk,
+--			di  => meter_fld,
+--		do  => chan_dot);
 
 	end block;
 
@@ -554,9 +562,6 @@ begin
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		ordinates  => ordinates,
-		text_clk   => mii_rxc,
-		text_addr  => text_addr,
-		text_data  => text_data,
 		offset     => std_logic_vector(scale_offset),
 		trigger    => std_logic_vector(trigger_offset),
 		abscisa    => abscisa,
