@@ -14,7 +14,8 @@ entity scopeio is
 		layout_id      : natural := 0;
 		hz_scales      : scale_vector;
 		vt_scales      : scale_vector;
-		gauge_labels   : string;
+		gauge_labels   : std_logic_vector;
+		unit_symbols   : std_logic_vector;
 		
 		time_scales    : std_logic_vector :=
 			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
@@ -461,6 +462,7 @@ begin
 	generic map (
 		inputs         => inputs,
 		gauge_labels   => gauge_labels,
+		unit_symbols   => unit_symbols,
 		time_scales    => time_scales,
 		hz_scales      => hz_scales,
 		vt_scales      => vt_scales)
