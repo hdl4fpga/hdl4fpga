@@ -140,8 +140,8 @@ begin
 
 		gpanneldly_e : entity hdl4fpga.align
 		generic map (
-			n => win_on'length,
-			d => (win_on'range => 4+4))
+			n => num_of_seg,
+			d => (1 to num_of_seg => 4+4))
 		port map (
 			clk => video_clk,
 			di  => txon,

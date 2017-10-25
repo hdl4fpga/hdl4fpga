@@ -39,8 +39,8 @@ architecture beh of scopeio_gpannel is
 		variable aux    : std_logic_vector(0 to gauge_labels'length-1);
 		variable aux1   : std_logic_vector(0 to unit_symbols'length-1);
 		variable retval : std_logic_vector(0 to ascii'length*2**gpannel_col'length*(2*inputs+2)-1);
-		constant ssize  : natural := (aux'length*ascii'length)/(2+2*inputs);
-		constant ssize1 : natural := (aux1'length*ascii'length)/(2+2*inputs);
+		constant ssize  : natural := aux'length/(2+2*inputs);
+		constant ssize1 : natural := aux1'length/(2+2*inputs);
 	begin 
 		aux  := std_logic_vector(gauge_labels);
 		aux1 := std_logic_vector(unit_symbols);
@@ -73,7 +73,7 @@ architecture beh of scopeio_gpannel is
 	constant hz_mults  : std_logic_vector(0 to ascii'length*hz_scales'length-1) := init_mult(hz_scales);
 	constant vt_mults  : std_logic_vector(0 to ascii'length*vt_scales'length-1) := init_mult(vt_scales);
 
-	signal   mem       : byte_vector(0 to 2**gpannel_col'length-1) := to_bytevector(init_rom);
+	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0000";
 	signal   value     : std_logic_vector(inputs*9-1 downto 0) := b"0_1110_0000";
 	signal   reading1  : std_logic_vector(20-1 downto 0);
@@ -168,28 +168,28 @@ begin
 	begin
 
 		if rising_edge(pannel_clk) then
-			scale <= word2byte(
-				dup(channel_scale) &
-				time_scale         &
-				trigger_scale,
-				text_row, scale'length);
-
-			ut_mult <= word2byte(
-				dup(vt_mult) & 
-				hz_mult      & 
-				tg_mult,
-				text_row, ascii'length);
-
-			aux := channel_scale;
-			vt_mult := (others => '0');
-			for i in 0 to inputs-1 loop
-				vt_mult := std_logic_vector(unsigned(vt_mult) srl scale'length);
-				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
-				aux     := std_logic_vector(unsigned(aux) sll scale'length);
-			end loop;
-			hz_mult := word2byte(hz_mults, time_scale);
-			tg_mult := word2byte(vt_mults, trigger_scale);
-			reading1 <= reading;
+--			scale <= word2byte(
+--				dup(channel_scale) &
+--				time_scale         &
+--				trigger_scale,
+--				text_row, scale'length);
+--
+--			ut_mult <= word2byte(
+--				dup(vt_mult) & 
+--				hz_mult      & 
+--				tg_mult,
+--				text_row, ascii'length);
+--
+--			aux := channel_scale;
+--			vt_mult := (others => '0');
+--			for i in 0 to inputs-1 loop
+--				vt_mult := std_logic_vector(unsigned(vt_mult) srl scale'length);
+--				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
+--				aux     := std_logic_vector(unsigned(aux) sll scale'length);
+--			end loop;
+--			hz_mult := word2byte(hz_mults, time_scale);
+--			tg_mult := word2byte(vt_mults, trigger_scale);
+--			reading1 <= reading;
 
 		end if;
 	end process;

@@ -182,10 +182,12 @@ architecture beh of scopeio is
 	signal gpannel_x   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).scr_width-1)-1 downto 0);
 	signal gpannel_y   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 0);
 
-	signal gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto 2**3);
-	signal gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 2**3);
-	signal cga_code    : std_logic_vector(ascii'range);
-	signal cga_dot    : std_logic;
+	constant font_width  : natural := 8;
+	constant font_height : natural := 16;
+	signal   cga_code    : std_logic_vector(ascii'range);
+	signal   cga_dot     : std_logic;
+	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_height-1));
+	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto unsigned_num_bits(font_width-1));
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -493,8 +495,6 @@ begin
 	end process;
 
 	cga_b : block
-		constant font_width  : natural := 8;
-		constant font_height : natural := 16;
 
 		signal   font_code : std_logic_vector(ascii'range);
 		signal   font_row  : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
@@ -505,7 +505,7 @@ begin
 
 	begin
 
-		font_addr <= cga_code & gpannel_y(gpannel_row'range);
+		font_addr <= cga_code & gpannel_y(gpannel_row'right-1 downto 0);
 
 		cgarom : entity hdl4fpga.rom
 		generic map (
@@ -599,9 +599,11 @@ begin
 			if plot_on='1' then
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
-				pixel <= word2byte(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
+				pixel <= word2byte(hzaxis_fg & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
+--				pixel <= word2byte(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
 			elsif video_bgon='1' then
-				pixel <= word2byte(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg , vcolorbg_sel, pixel'length);
+--				pixel <= word2byte(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg , vcolorbg_sel, pixel'length);
+				pixel <= word2byte(hzaxis_bg & vtaxis_bg & grid_bg, vcolorbg_sel, pixel'length);
 			else
 				pixel <= (others => '0');
 			end if;
