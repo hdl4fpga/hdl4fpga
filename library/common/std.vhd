@@ -761,7 +761,7 @@ package body std is
 		constant s : std_logic_vector;
 		constant e : std_logic := '1')
 		return std_logic_vector is
-		variable o : std_logic_vector(2**s'length-1 downto 0);
+		variable o : std_logic_vector(0 to 2**s'length-1);
 	begin
 		o := (others => '0');
 		o(to_integer(unsigned(s))) := e;

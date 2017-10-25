@@ -67,7 +67,7 @@
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_miirx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="12"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="14"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="13"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../common/nuhs3adsp.vhd" xil_pn:type="FILE_VHDL">
@@ -105,12 +105,12 @@
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_channel.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="71"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="16"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="15"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/dpram.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="75"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="13"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="16"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/atof.vhd" xil_pn:type="FILE_VHDL">
@@ -135,7 +135,7 @@
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_gpannel.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="77"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="15"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="14"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>

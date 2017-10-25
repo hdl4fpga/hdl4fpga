@@ -25,7 +25,7 @@ entity scopeio_gpannel is
 		gpannel_row    : in  std_logic_vector;
 		gpannel_col    : in  std_logic_vector;
 		gpannel_on     : in  std_logic_vector;
---		gauge_on       : out std_logic_vector;
+		gauge_on       : out std_logic_vector;
 		gauge_code     : out std_logic_vector);
 end;
 
@@ -204,19 +204,19 @@ begin
 		scale => scale,
 		fmtds => reading);	
 
---	process(video_clk)
---		variable fmt : std_logic_vector(0 to 2**unsigned_num_bits(reading'length+2*ascii'length-1)-1);
---	begin
---
---
---	for i in 0 to inputs+2-1 loop
---		if i < 2*inputs then
---			gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 '0')) and meter_on;
---			row         := row sll 2;
---		else
---			gauge_on(i) <= row(i) and meter_on;
---			row         := row sll 1;
---		end if;
---	end loop;
+	process(video_clk)
+		variable row : unsigned(0 to 2**unsigned_num_bits(2+2*inputs-1)-1);
+	begin
+		row := unsigned(demux(gpannel_row(gpannel_row'right+unsigned_num_bits(2+2*inputs-1)-1 downto gpannel_row'right)));
+		for i in 0 to inputs+2-1 loop
+			if i < inputs then
+				gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 => '0')) and setif(gpannel_on/=(gpannel_on'range => '0'));
+				row         := row sll 2;
+			else
+				gauge_on(i) <= row(0) and setif(gpannel_on/=(gpannel_on'range => '0'));
+				row         := row sll 1;
+			end if;
+		end loop;
+	end process;
 
 end;

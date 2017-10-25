@@ -188,6 +188,7 @@ architecture beh of scopeio is
 	signal   cga_dot     : std_logic;
 	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_height-1));
 	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto unsigned_num_bits(font_width-1));
+	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -484,7 +485,7 @@ begin
 		gpannel_row    => gpannel_row,
 		gpannel_col    => gpannel_col,
 		gpannel_on     => gpannel_on,
---		gauge_on       => ,
+		gauge_on       => gauge_on,
 		gauge_code     => cga_code);
 
 	process(mii_rxc)
@@ -580,15 +581,17 @@ begin
 		variable pcolor_sel   : std_logic_vector(channel_select'range);
 		variable vcolorfg_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
 		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
+		variable gauge_sel    : std_logic_vector(0 to unsigned_num_bits(2+inputs-1)-1);
 
-		variable plot_on    : std_logic;
-		variable video_fgon : std_logic;
-		variable video_bgon : std_logic;
+		variable plot_on      : std_logic;
+		variable video_fgon   : std_logic;
+		variable video_bgon   : std_logic;
+		variable gauges_on    : std_logic;
 
-		variable vtaxis_fg  : std_logic_vector(video_rgb'range);
-		variable vtaxis_bg  : std_logic_vector(video_rgb'range);
-		variable trigger_fg : std_logic_vector(video_rgb'range);
-		variable trigger_bg : std_logic_vector(video_rgb'range);
+		variable vtaxis_fg    : std_logic_vector(video_rgb'range);
+		variable vtaxis_bg    : std_logic_vector(video_rgb'range);
+		variable trigger_fg   : std_logic_vector(video_rgb'range);
+		variable trigger_bg   : std_logic_vector(video_rgb'range);
 
 	begin
 		if rising_edge(video_clk) then
@@ -599,21 +602,25 @@ begin
 			if plot_on='1' then
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
-				pixel <= word2byte(hzaxis_fg & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
+				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
 --				pixel <= word2byte(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
 			elsif video_bgon='1' then
 --				pixel <= word2byte(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg , vcolorbg_sel, pixel'length);
-				pixel <= word2byte(hzaxis_bg & vtaxis_bg & grid_bg, vcolorbg_sel, pixel'length);
+				pixel <= word2byte(hzaxis_bg   & vtaxis_bg & grid_bg, vcolorbg_sel, pixel'length);
+			elsif gauges_on='1' then
+				pixel <= word2byte(channels_fg & hzaxis_fg & trigger_fg, gauge_sel, pixel'length);
 			else
 				pixel <= (others => '0');
 			end if;
 
 			vcolorfg_sel := encoder(video_fg);
 			vcolorbg_sel := encoder(video_bg);
+			gauge_sel    := encoder(gauge_on);
 			pcolor_sel   := encoder(plot_fg);
 			plot_on      := setif(plot_fg  /= (plot_fg'range => '0'));
 			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
+			gauges_on    := setif(gauge_on /= (gauge_on'range => '0'));
 		end if;
 	end process;
 
