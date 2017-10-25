@@ -168,28 +168,28 @@ begin
 	begin
 
 		if rising_edge(pannel_clk) then
---			scale <= word2byte(
---				dup(channel_scale) &
---				time_scale         &
---				trigger_scale,
---				text_row, scale'length);
---
---			ut_mult <= word2byte(
---				dup(vt_mult) & 
---				hz_mult      & 
---				tg_mult,
---				text_row, ascii'length);
---
---			aux := channel_scale;
---			vt_mult := (others => '0');
---			for i in 0 to inputs-1 loop
---				vt_mult := std_logic_vector(unsigned(vt_mult) srl scale'length);
---				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
---				aux     := std_logic_vector(unsigned(aux) sll scale'length);
---			end loop;
---			hz_mult := word2byte(hz_mults, time_scale);
---			tg_mult := word2byte(vt_mults, trigger_scale);
---			reading1 <= reading;
+			scale <= word2byte(
+				dup(channel_scale) &
+				time_scale         &
+				trigger_scale,
+				text_row, scale'length);
+
+			ut_mult <= word2byte(
+				dup(vt_mult) & 
+				hz_mult      & 
+				tg_mult,
+				text_row, ascii'length);
+
+			aux := channel_scale;
+			vt_mult := (others => '0');
+			for i in 0 to inputs-1 loop
+				vt_mult := std_logic_vector(unsigned(vt_mult) srl scale'length);
+				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
+				aux     := std_logic_vector(unsigned(aux) sll scale'length);
+			end loop;
+			hz_mult := word2byte(hz_mults, time_scale);
+			tg_mult := word2byte(vt_mults, trigger_scale);
+			reading1 <= reading;
 
 		end if;
 	end process;
