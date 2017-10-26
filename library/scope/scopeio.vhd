@@ -482,8 +482,8 @@ begin
 		channel_scale  => channel_scale,
 --		channel_level  => (1 to 9 => '-'),
 		video_clk      => video_clk,
-		gpannel_row    => gpannel_row,
-		gpannel_col    => gpannel_col,
+		gpannel_row    => gpannel_y(gpannel_row'range),
+		gpannel_col    => gpannel_x(gpannel_col'range),
 		gpannel_on     => gpannel_on,
 		gauge_on       => gauge_on,
 		gauge_code     => cga_code);
@@ -510,6 +510,7 @@ begin
 
 		cgarom : entity hdl4fpga.rom
 		generic map (
+			synchronous => 2,
 			bitrom => psf1cp850x8x16)
 		port map (
 			clk  => video_clk,
@@ -586,7 +587,7 @@ begin
 		variable plot_on      : std_logic;
 		variable video_fgon   : std_logic;
 		variable video_bgon   : std_logic;
-		variable gauges_on    : std_logic;
+		variable gauges_fgon  : std_logic;
 
 		variable vtaxis_fg    : std_logic_vector(video_rgb'range);
 		variable vtaxis_bg    : std_logic_vector(video_rgb'range);
@@ -603,12 +604,10 @@ begin
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
 				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
---				pixel <= word2byte(trigger_fg  & hzaxis_fg & vtaxis_fg  & grid_fg & hzaxis_fg & trigger_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
 			elsif video_bgon='1' then
---				pixel <= word2byte(channels_bg & hzaxis_bg & trigger_bg & grid_bg & hzaxis_bg & vtaxis_bg , vcolorbg_sel, pixel'length);
-				pixel <= word2byte(hzaxis_bg   & vtaxis_bg & grid_bg, vcolorbg_sel, pixel'length);
-			elsif gauges_on='1' then
-				pixel <= word2byte(channels_fg & hzaxis_fg & trigger_fg, gauge_sel, pixel'length);
+				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
+			elsif gauges_fgon='1' then
+				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
 			else
 				pixel <= (others => '0');
 			end if;
@@ -617,10 +616,10 @@ begin
 			vcolorbg_sel := encoder(video_bg);
 			gauge_sel    := encoder(gauge_on);
 			pcolor_sel   := encoder(plot_fg);
-			plot_on      := setif(plot_fg  /= (plot_fg'range => '0'));
+			plot_on      := setif(plot_fg  /= (plot_fg'range  => '0'));
 			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
-			gauges_on    := setif(gauge_on /= (gauge_on'range => '0'));
+			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;
 		end if;
 	end process;
 

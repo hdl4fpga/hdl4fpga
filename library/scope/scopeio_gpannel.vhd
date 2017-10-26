@@ -36,24 +36,24 @@ architecture beh of scopeio_gpannel is
 
 	function init_rom 
 		return std_logic_vector is
-		variable aux    : std_logic_vector(0 to gauge_labels'length-1);
-		variable aux1   : std_logic_vector(0 to unit_symbols'length-1);
+		variable aux    : std_logic_vector(gauge_labels'length-1 downto 0);
+		variable aux1   : std_logic_vector(unit_symbols'length-1 downto 0);
 		variable retval : std_logic_vector(0 to ascii'length*2**gpannel_col'length*(2*inputs+2)-1);
 		constant ssize  : natural := aux'length/(2+2*inputs);
 		constant ssize1 : natural := aux1'length/(2+2*inputs);
 	begin 
 		aux  := std_logic_vector(gauge_labels);
 		aux1 := std_logic_vector(unit_symbols);
-		for i in 2+2*inputs-1 downto 0 loop
+		for i in 0 to 2*inputs+2-1 loop
 			retval := std_logic_vector(unsigned(retval) ror (ascii'length*2**gpannel_col'length));
 			retval(0 to retval'length/(2+2*inputs)-1) := fill(
-				aux(0 to ssize-1)        & 
+				aux(ssize-1 downto 0)        & 
 				fill("", reading'length) &
 				to_ascii(string'("  "))   &
-				aux1(0 to ssize1-1),
+				aux1(ssize1-1 downto 0),
 				ascii'length*2**gpannel_col'length, value => '0');
-			aux  := std_logic_vector(unsigned(aux)  sll ssize);
-			aux1 := std_logic_vector(unsigned(aux1) sll ssize1);
+			aux  := std_logic_vector(unsigned(aux)  srl ssize);
+			aux1 := std_logic_vector(unsigned(aux1) srl ssize1);
 		end loop;
 		return retval;
 	end;
@@ -76,7 +76,7 @@ architecture beh of scopeio_gpannel is
 	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0000";
 	signal   value     : std_logic_vector(inputs*9-1 downto 0) := b"0_1110_0000";
-	signal   reading1  : std_logic_vector(20-1 downto 0);
+	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
 
 	signal   ut_mult   : std_logic_vector(ascii'range);
 	signal   chan_dot  : std_logic_vector(0 to 2+inputs-1);
@@ -87,15 +87,16 @@ architecture beh of scopeio_gpannel is
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector is
-		constant size : natural := 2**unsigned_num_bits(arg1'length-1);
 	begin
-		return std_logic_vector(unsigned(fill(arg1, size)) ror (arg2 mod size));
+		return std_logic_vector(unsigned(fill(arg1, 2**gpannel_col'length*ascii'length)) ror arg2 );
 	end;
 
-	signal text_col  : std_logic_vector(gpannel_col'length-1 downto 0);
-	signal text_row  : std_logic_vector(unsigned_num_bits(2+2*inputs-1)-1+text_col'length downto text_col'length);
+	signal text_col  : std_logic_vector(gpannel_col'left downto gpannel_col'right);
+	signal text_row  : std_logic_vector(gpannel_row'left downto gpannel_row'right);
 	signal text_addr : std_logic_vector(text_row'length+text_col'length-1 downto 0);
 	signal text_data : std_logic_vector(ascii'range);
+
+		signal pp : byte;
 begin
 
 	process (pannel_clk)
@@ -104,14 +105,14 @@ begin
 	begin
 		if rising_edge(pannel_clk) then
 			if unsigned(text_col) < (finish-1) then
+				text_col <= std_logic_vector(unsigned(text_col) + 1);
+			else
 				text_col <= std_logic_vector(to_unsigned(start, text_col'length));
 				if unsigned(text_row) < (4-1) then
 					text_row <= std_logic_vector(unsigned(text_row) + 1);
 				else
 					text_row <= (others => '0');
 				end if;
-			else
-				text_col <= std_logic_vector(unsigned(text_col) + 1);
 			end if;
 		end if;
 	end process;
@@ -123,7 +124,7 @@ begin
 	port map (
 		clk => pannel_clk,
 		di  => text_col,
-		do  => text_addr(text_col'range));
+		do  => text_addr(text_col'length-1 downto 0));
 
 	textrow_align_e : entity hdl4fpga.align
 	generic map (
@@ -132,9 +133,17 @@ begin
 	port map (
 		clk => pannel_clk,
 		di  => text_row,
-		do  => text_addr(text_row'range));
+		do  => text_addr(text_row'length+text_col'length-1 downto text_col'length));
 
-	text_data <= word2byte(fmt_reading(reading & to_ascii(string'(" ")) & ut_mult, label_size), text_addr(text_col'range), ascii'length);
+
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			mem(to_integer(unsigned(text_addr))) <= pp;
+			pp <= word2byte(fmt_reading(bcd2ascii(reading1), label_size*ascii'length), text_addr(text_col'length-1 downto 0), ascii'length);
+--			mem(to_integer(unsigned(text_addr))) <= word2byte(to_ascii(string'(" ")) & ut_mult, text_addr(text_col'range), ascii'length);
+		end if;
+	end process;
 
 	process (pannel_clk)
 		constant rtxt_size : natural := unsigned_num_bits(2*inputs+2-1);
@@ -189,7 +198,7 @@ begin
 			end loop;
 			hz_mult := word2byte(hz_mults, time_scale);
 			tg_mult := word2byte(vt_mults, trigger_scale);
-			reading1 <= reading;
+--			reading1 <= reading;
 
 		end if;
 	end process;
@@ -205,9 +214,16 @@ begin
 		fmtds => reading);	
 
 	process(video_clk)
-		variable row : unsigned(0 to 2**unsigned_num_bits(2+2*inputs-1)-1);
 	begin
-		row := unsigned(demux(gpannel_row(gpannel_row'right+unsigned_num_bits(2+2*inputs-1)-1 downto gpannel_row'right)));
+		if rising_edge(video_clk) then
+			gauge_code <= mem(to_integer(unsigned(std_logic_vector'(gpannel_row & gpannel_col))));
+		end if;
+	end process;
+
+	process(video_clk)
+		variable row : unsigned(0 to 2**gpannel_row'length-1);
+	begin
+		row := unsigned(demux(gpannel_row));
 		for i in 0 to inputs+2-1 loop
 			if i < inputs then
 				gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 => '0')) and setif(gpannel_on/=(gpannel_on'range => '0'));
