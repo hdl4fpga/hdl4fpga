@@ -47,9 +47,9 @@ architecture beh of scopeio_gpannel is
 		for i in 0 to 2*inputs+2-1 loop
 			retval := std_logic_vector(unsigned(retval) ror (ascii'length*2**gpannel_col'length));
 			retval(0 to retval'length/(2+2*inputs)-1) := fill(
-				aux(ssize-1 downto 0)        & 
-				fill("", reading'length) &
-				to_ascii(string'("  "))   &
+				aux(ssize-1 downto 0)    & 
+				fill("", ascii'length*reading'length/4) &
+				to_ascii(string'("  "))  &
 				aux1(ssize1-1 downto 0),
 				ascii'length*2**gpannel_col'length, value => '0');
 			aux  := std_logic_vector(unsigned(aux)  srl ssize);
@@ -97,6 +97,7 @@ architecture beh of scopeio_gpannel is
 	signal text_data : std_logic_vector(ascii'range);
 
 		signal pp : byte;
+		signal we : std_logic := '0';
 begin
 
 	process (pannel_clk)
@@ -108,6 +109,7 @@ begin
 				text_col <= std_logic_vector(unsigned(text_col) + 1);
 			else
 				text_col <= std_logic_vector(to_unsigned(start, text_col'length));
+				we <= '1';
 				if unsigned(text_row) < (4-1) then
 					text_row <= std_logic_vector(unsigned(text_row) + 1);
 				else
@@ -136,11 +138,15 @@ begin
 		do  => text_addr(text_row'length+text_col'length-1 downto text_col'length));
 
 
-	process(video_clk)
+	process(pannel_clk)
+		variable addr : std_logic_vector(text_addr'range);
 	begin
-		if rising_edge(video_clk) then
-			mem(to_integer(unsigned(text_addr))) <= pp;
-			pp <= word2byte(fmt_reading(bcd2ascii(reading1), label_size*ascii'length), text_addr(text_col'length-1 downto 0), ascii'length);
+		if rising_edge(pannel_clk) then
+			if we='1' then
+				mem(to_integer(unsigned(addr))) <= pp;
+			end if;
+			addr := text_addr;
+			pp <= word2byte(fmt_reading(bcd2ascii(reading1) & to_ascii(string'(" ")) & ut_mult, label_size*ascii'length), text_addr(text_col'length-1 downto 0), ascii'length);
 --			mem(to_integer(unsigned(text_addr))) <= word2byte(to_ascii(string'(" ")) & ut_mult, text_addr(text_col'range), ascii'length);
 		end if;
 	end process;
@@ -198,7 +204,7 @@ begin
 			end loop;
 			hz_mult := word2byte(hz_mults, time_scale);
 			tg_mult := word2byte(vt_mults, trigger_scale);
---			reading1 <= reading;
+			reading1 <= reading;
 
 		end if;
 	end process;
