@@ -465,28 +465,28 @@ begin
 		end if;
 	end process;
 
-	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
-	generic map (
-		inputs         => inputs,
-		gauge_labels   => gauge_labels,
-		unit_symbols   => unit_symbols,
-		time_scales    => time_scales,
-		hz_scales      => hz_scales,
-		vt_scales      => vt_scales)
-	port map (
-		pannel_clk     => mii_rxc,
-		time_scale     => hz_scale,
-		time_value     => b"001_100000",
-		trigger_scale  => trigger_scale,
-		trigger_value  => trigger_level,
-		channel_scale  => channel_scale,
-		channel_level  => channel_offset,
-		video_clk      => video_clk,
-		gpannel_row    => gpannel_y(gpannel_row'range),
-		gpannel_col    => gpannel_x(gpannel_col'range),
-		gpannel_on     => gpannel_on,
-		gauge_on       => gauge_on,
-		gauge_code     => cga_code);
+--	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
+--	generic map (
+--		inputs         => inputs,
+--		gauge_labels   => gauge_labels,
+--		unit_symbols   => unit_symbols,
+--		time_scales    => time_scales,
+--		hz_scales      => hz_scales,
+--		vt_scales      => vt_scales)
+--	port map (
+--		pannel_clk     => mii_rxc,
+--		time_scale     => hz_scale,
+--		time_value     => b"001_100000",
+--		trigger_scale  => trigger_scale,
+--		trigger_value  => trigger_level,
+--		channel_scale  => channel_scale,
+--		channel_level  => channel_offset,
+--		video_clk      => video_clk,
+--		gpannel_row    => gpannel_y(gpannel_row'range),
+--		gpannel_col    => gpannel_x(gpannel_col'range),
+--		gpannel_on     => gpannel_on,
+--		gauge_on       => gauge_on,
+--		gauge_code     => cga_code);
 
 	process(mii_rxc)
 	begin

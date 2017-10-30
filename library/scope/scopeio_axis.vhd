@@ -86,7 +86,7 @@ begin
 	alignrow_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 => 4))
+		d => (0 => 0))
 	port map (
 		clk => video_clk,
 		di(0) => mark_y,
@@ -138,7 +138,7 @@ begin
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
 
-	char_addr  <= mark & char_scale & win_x4;
+	char_addr  <= mark & char_scale &  win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -168,7 +168,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 6,
-		d => (0 to 2 => 6,  3 => 4, 4 => 2, 5 => 4))
+		d => (0 to 2 => 8,  3 => 6, 4 => 4, 5 => 6))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
