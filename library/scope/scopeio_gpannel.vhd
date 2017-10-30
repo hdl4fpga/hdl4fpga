@@ -191,10 +191,8 @@ begin
 				text_row, scale'length);
 
 			value <= word2byte(
---				b"000_000000"         &
-				dup(vt_value) &
-				b"000_000000"         &
---				b"000_000000",
+				vt_value      &
+				time_value    &
 				trigger_value,
 				text_row, value'length);
 
@@ -205,21 +203,20 @@ begin
 				text_row, ascii'length);
 
 			aux  := channel_scale;
---			aux1 := channel_level;
+			aux1 := channel_level;
 			vt_mult := (others => '0');
 			for i in 0 to inputs-1 loop
-				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
+				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
 				vt_value(0 to 9-1) := aux1(0 to 9-1);
-				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
-				vt_value(0 to 9-1) := b"0_0010_0000";
-				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
+				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
+				vt_value(0 to 9-1) := b"000_100000";
 				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
 				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
 				aux  := std_logic_vector(unsigned(aux)  sll scale'length);
 				aux1 := std_logic_vector(unsigned(aux1) sll 9);
 			end loop;
---			hz_mult := word2byte(hz_mults, time_scale);
---			tg_mult := word2byte(vt_mults, trigger_scale);
+			hz_mult := word2byte(hz_mults, time_scale);
+			tg_mult := word2byte(vt_mults, trigger_scale);
 			reading1 <= reading;
 
 		end if;

@@ -223,26 +223,25 @@ begin
 		variable cmd_edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
---			trigger_offset <= std_logic_vector(-(
---				signed(trigger_level) +
---				signed(word2byte(
---					channel_offset, 
---					trigger_channel,
---					vt_size)) -
---				signed'(b"0_1000_0000")));
+			trigger_offset <= std_logic_vector(-(
+				signed(trigger_level) +
+				signed(word2byte(
+					channel_offset, 
+					trigger_channel,
+					vt_size)) -
+				signed'(b"0_1000_0000")));
 
 			if pll_rdy='1' then
 				for i in 0 to inputs-1 loop
 					if i=to_integer(unsigned(scope_channel(channel_select'range))) then
 						case scope_cmd(3 downto 0) is
 						when "0000" =>
-							channel_scale  <= "0000"; --byte2word(channel_scale, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_scale  <= byte2word(channel_scale, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
-							channel_offset <= b"000_000000"; --byte2word(channel_offset, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_offset <= byte2word(channel_offset, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							scale_offset   <= std_logic_vector(resize(signed(scope_data), scale_offset'length));
---							scale_offset   <= "0" & scope_data;
 						when others =>
 						end case;
 					end if;
@@ -250,7 +249,7 @@ begin
 
 				case scope_cmd(3 downto 0) is
 				when "0010" =>
-					trigger_level   <= b"100_000000"; --std_logic_vector(resize(signed(scope_data), vt_size));
+					trigger_level   <= std_logic_vector(resize(signed(scope_data), vt_size));
 					trigger_channel <= scope_channel and x"7f";
 					trigger_edge    <= scope_channel(scope_channel'left);
 					trigger_select  <= scope_channel(trigger_select'range);
@@ -477,7 +476,7 @@ begin
 	port map (
 		pannel_clk     => mii_rxc,
 		time_scale     => hz_scale,
-		time_value     => b"000_000000",
+		time_value     => b"001_100000",
 		trigger_scale  => trigger_scale,
 		trigger_value  => trigger_level,
 		channel_scale  => channel_scale,
