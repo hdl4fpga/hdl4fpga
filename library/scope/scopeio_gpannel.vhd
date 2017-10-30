@@ -75,7 +75,7 @@ architecture beh of scopeio_gpannel is
 
 	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0000";
-	signal   value     : std_logic_vector(0 to 9-1) := b"0_1110_0000";
+	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_1110_0000";
 	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
 
 	signal   ut_mult   : std_logic_vector(ascii'range);
@@ -190,13 +190,13 @@ begin
 				trigger_scale,
 				text_row, scale'length);
 
---			value <= word2byte(
+			value <= word2byte(
 --				b"000_000000"         &
-----				dup(vt_value) &
---				b"000_000000"         &
+				dup(vt_value) &
+				b"000_000000"         &
 --				b"000_000000",
-----				trigger_value,
---				text_row, value'length);
+				trigger_value,
+				text_row, value'length);
 
 			ut_mult <= word2byte(
 				dup(vt_mult) & 
@@ -204,23 +204,23 @@ begin
 				tg_mult,
 				text_row, ascii'length);
 
---			aux  := channel_scale;
+			aux  := channel_scale;
 --			aux1 := channel_level;
---			vt_mult := (others => '0');
---			for i in 0 to inputs-1 loop
---				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
---				vt_value(0 to 9-1) := aux1(0 to 9-1);
---				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
---				vt_value(0 to 9-1) := b"0_0010_0000";
---				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
---				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
---				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
---				aux  := std_logic_vector(unsigned(aux)  sll scale'length);
---				aux1 := std_logic_vector(unsigned(aux1) sll 9);
---			end loop;
+			vt_mult := (others => '0');
+			for i in 0 to inputs-1 loop
+				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
+				vt_value(0 to 9-1) := aux1(0 to 9-1);
+				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
+				vt_value(0 to 9-1) := b"0_0010_0000";
+				vt_value := std_logic_vector(unsigned(vt_value) srl 9);
+				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
+				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
+				aux  := std_logic_vector(unsigned(aux)  sll scale'length);
+				aux1 := std_logic_vector(unsigned(aux1) sll 9);
+			end loop;
 --			hz_mult := word2byte(hz_mults, time_scale);
 --			tg_mult := word2byte(vt_mults, trigger_scale);
---			reading1 <= reading;
+			reading1 <= reading;
 
 		end if;
 	end process;
