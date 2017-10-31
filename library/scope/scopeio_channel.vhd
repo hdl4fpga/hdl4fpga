@@ -197,10 +197,10 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 4,
-		d => (0 => unsigned_num_bits(height-1)-2,
-		      1 => unsigned_num_bits(height-1)-0,
-		      2 => unsigned_num_bits(height-1)-1+5,
-		      3 => unsigned_num_bits(height-1)-1+5))
+		d => (0 => unsigned_num_bits(height-1)-2-2,
+		      1 => unsigned_num_bits(height-1)-0-2,
+		      2 => unsigned_num_bits(height-1)-1+3,
+		      3 => unsigned_num_bits(height-1)-1+3))
 	port map (
 		clk   => video_clk,
 		di(0) => axisx_don,
