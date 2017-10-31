@@ -191,16 +191,16 @@ begin
 		axis_hzscale => hz_scale,
 		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
-	axisx_don <= axis_don and axisx_on;
-	axisy_don <= axis_don and axisy_on;
+	axisx_don <= axis_don; -- and axisx_on;
+	axisy_don <= '0'; -- axis_don; -- and axisy_on;
 
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 4,
 		d => (0 => unsigned_num_bits(height-1)-2-2,
-		      1 => unsigned_num_bits(height-1)-0-2,
-		      2 => unsigned_num_bits(height-1)-1+3,
-		      3 => unsigned_num_bits(height-1)-1+3))
+		      1 => unsigned_num_bits(height-1)-0+4,
+		      2 => unsigned_num_bits(height-1)-1+5-2,
+		      3 => unsigned_num_bits(height-1)-1+5+4))
 	port map (
 		clk   => video_clk,
 		di(0) => axisx_don,

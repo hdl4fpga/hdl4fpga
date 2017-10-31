@@ -138,7 +138,8 @@ begin
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
 
-	char_addr  <= mark & char_scale &  win_x4;
+--	char_addr  <= mark & char_scale &  win_x4;
+	char_addr  <= std_logic_vector(to_unsigned(1,mark'length)) & char_scale &  win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
