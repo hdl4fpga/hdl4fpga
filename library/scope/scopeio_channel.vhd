@@ -58,6 +58,8 @@ architecture def of scopeio_channel is
 	signal axis_on   : std_logic;
 	signal axisx_don : std_logic := '0';
 	signal axisy_don : std_logic;
+	signal axisx_ena : std_logic := '0';
+	signal axisy_ena : std_logic;
 	signal axis_don  : std_logic;
 	signal axis_fg   : std_logic_vector(0 to 2-1);
 	signal axis_bg   : std_logic_vector(0 to 2-1);
@@ -191,26 +193,32 @@ begin
 		axis_hzscale => hz_scale,
 		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
-	axisx_don <= axis_don; -- and axisx_on;
-	axisy_don <= '0'; -- axis_don; -- and axisy_on;
+	axisx_don <= axis_don and axisx_ena;
+	axisy_don <= axis_don and axisy_ena;
 
 	align_e : entity hdl4fpga.align
 	generic map (
-		n => 4,
+		n => 6,
 		d => (0 => unsigned_num_bits(height-1)-2-2,
-		      1 => unsigned_num_bits(height-1)-0+4,
-		      2 => unsigned_num_bits(height-1)-1+5-2,
-		      3 => unsigned_num_bits(height-1)-1+5+4))
+		      1 => unsigned_num_bits(height-1)-2-2,
+		      2 => 8,
+		      3 => 8,
+		      4 => unsigned_num_bits(height-1)-1+5-2-8,
+		      5 => unsigned_num_bits(height-1)-1+5-2-8))
 	port map (
 		clk   => video_clk,
 		di(0) => axisx_don,
 		di(1) => axisy_don,
 		di(2) => axisx_on,
 		di(3) => axisy_on,
+		di(4) => axisx_ena,
+		di(5) => axisy_ena,
 		do(0) => axis_fg(0),
 		do(1) => axis_fg(1),
-		do(2) => axis_bg(0),
-		do(3) => axis_bg(1));
+		do(2) => axisx_ena,
+		do(3) => axisy_ena,
+		do(4) => axis_bg(0),
+		do(5) => axis_bg(1));
 
 	process (video_clk)
 		variable aux : signed(0 to ordinates'length-1);
