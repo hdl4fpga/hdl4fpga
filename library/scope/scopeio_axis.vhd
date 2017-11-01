@@ -34,16 +34,17 @@ architecture def of scopeio_axis is
 	constant font_width   : natural := 8;
 	constant font_height  : natural := 8;
 	constant code_size    : natural := 4;
-	constant num_of_digit : natural := 4;
 
 	function marker (
-		constant scales      : scale_vector;
-		constant num_of_seg  : natural;
-		constant div_per_seg : natural;
-		constant sign        : boolean := false)
+		constant scales       : scale_vector;
+		constant num_of_seg   : natural;
+		constant div_per_seg  : natural;
+		constant num_of_digit : natural;
+		constant sign         : boolean := false)
 		return   std_logic_vector is
 		constant num         : natural := num_of_seg*div_per_seg+1;
-		variable retval      : unsigned(num*scales'length*num_of_digit*code_size-1 downto 0) := (others => '1');
+		constant word_size   : natural := 2**unsigned_num_bits(num_of_digit-1);
+		variable retval      : unsigned(num*scales'length*word_size*code_size-1 downto 0) := (others => '1');
 		variable aux         : real_vector(0 to scales'length-1);
 	begin
 		for j in 0 to scales'length-1 loop
@@ -51,8 +52,11 @@ architecture def of scopeio_axis is
 		end loop;
 		for i in 0 to num-1 loop
 			for j in 0 to scales'length-1 loop
-				retval := retval sll (num_of_digit*code_size);
+				retval := retval sll (word_size*code_size);
 				retval(num_of_digit*code_size-1 downto 0) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
+				if sign then
+					retval(num_of_digit*code_size-1 downto 0) := x"12345";
+				end if;
 			end loop;
 			for j in 0 to scales'length-1 loop
 				aux(j) := aux(j) + scales(j).step;
@@ -138,20 +142,22 @@ begin
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
 
-	char_addr  <= mark1 & char_scale &  win_x4;
---	char_addr  <= std_logic_vector(to_unsigned(1,mark'length)) & char_scale &  win_x4;
+	char_addr  <= mark1 & char_scale & win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
 		bitrom => 
 			marker (
-				scales      => hz_scales,
-				num_of_seg  => hz_num_of_seg,
-				div_per_seg => hz_div_per_seg) &
+				scales       => hz_scales,
+				num_of_seg   => hz_num_of_seg,
+				num_of_digit => 4,
+				div_per_seg  => hz_div_per_seg) &
 			marker (
-				scales      => vt_scales,
-				num_of_seg  => vt_num_of_seg,
-				div_per_seg => vt_div_per_seg))
+				scales       => vt_scales,
+				num_of_seg   => vt_num_of_seg,
+				num_of_digit => 5,
+				div_per_seg  => vt_div_per_seg,
+				sign         => true))
 	port map (
 		clk  => video_clk,
 		addr => char_addr,
@@ -169,7 +175,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 6,
-		d => (0 to 2 => 8,  3 => 6, 4 => 4, 5 => 6))
+		d => (0 to 2 => 8,  3 => 6, 4 to 5 => 4, 6 => 6))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),

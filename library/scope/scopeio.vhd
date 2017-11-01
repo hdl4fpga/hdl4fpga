@@ -600,7 +600,7 @@ begin
 			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
 			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
 
-			if plot_on='1' and false then
+			if plot_on='1'and false then
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
 				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
