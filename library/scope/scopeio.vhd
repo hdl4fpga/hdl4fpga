@@ -240,7 +240,7 @@ begin
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
-							channel_offset <= byte2word(channel_offset, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_offset <= byte2word(channel_offset, std_logic_vector(resize(signed(scope_data), vt_size)), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							scale_offset   <= std_logic_vector(resize(signed(scope_data), scale_offset'length));
 						when others =>
 						end case;

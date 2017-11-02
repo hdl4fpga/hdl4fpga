@@ -43,9 +43,10 @@ architecture def of scopeio_axis is
 		constant sign         : boolean := false)
 		return   std_logic_vector is
 		constant num         : natural := num_of_seg*div_per_seg+1;
-		constant word_size   : natural := 2**unsigned_num_bits(num_of_digit-1);
+		constant word_size   : natural := 8; --2**unsigned_num_bits(num_of_digit-1);
 		variable retval      : unsigned(num*scales'length*word_size*code_size-1 downto 0) := (others => '1');
 		variable aux         : real_vector(0 to scales'length-1);
+		variable aux1        : unsigned(0 to word_size*code_size-1);
 	begin
 		for j in 0 to scales'length-1 loop
 			aux(j) := scales(j).from;
@@ -53,10 +54,14 @@ architecture def of scopeio_axis is
 		for i in 0 to num-1 loop
 			for j in 0 to scales'length-1 loop
 				retval := retval sll (word_size*code_size);
-				retval(num_of_digit*code_size-1 downto 0) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
-				if sign then
-					retval(num_of_digit*code_size-1 downto 0) := x"12345";
+				aux1 := (others => '1');
+				aux1(0 to num_of_digit*code_size-1) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
+				if not sign then
+					if i mod 2 = 1 then
+						aux1 := aux1 rol (aux1'length/2);
+					end if;
 				end if;
+				retval(word_size*code_size-1 downto 0) := aux1;
 			end loop;
 			for j in 0 to scales'length-1 loop
 				aux(j) := aux(j) + scales(j).step;
@@ -68,9 +73,10 @@ architecture def of scopeio_axis is
 	signal mark       : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
 	signal mark1      : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
 	signal win_x4     : std_logic;
+	signal win_x5     : std_logic;
 
 	signal char_scale : std_logic_vector(0 to max(axis_hzscale'length,axis_vtscale'length)-1);
-	signal char_addr  : std_logic_vector(0 to char_scale'length+mark'length);
+	signal char_addr  : std_logic_vector(0 to char_scale'length+mark'length+2-1);
 	signal char_code  : std_logic_vector(2*code_size-1 downto 0);
 	signal char_line  : std_logic_vector(0 to font_width-1);
 	signal char_dot   : std_logic_vector(0 to 1-1);
@@ -115,7 +121,7 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
-			mark_on <= setif(sgmt_x=(sgmt_x'range => '0')) and aon;
+			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
@@ -129,9 +135,9 @@ begin
 					end if;
 				end if;
 			else
-			mark <= std_logic_vector(
-				resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
-				hz_num_of_seg*hz_div_per_seg+1);
+				mark <= std_logic_vector(
+					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
+					hz_num_of_seg*hz_div_per_seg+1);
 			end if;
 			aon  := axis_on and aon_y;
 			next_x := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
@@ -142,7 +148,7 @@ begin
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
 
-	char_addr  <= mark1 & char_scale & win_x4;
+	char_addr  <= mark1 & char_scale & win_x5 & win_x4;
 	charrom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -174,7 +180,7 @@ begin
 
 	winx_e : entity hdl4fpga.align
 	generic map (
-		n => 6,
+		n => 7,
 		d => (0 to 2 => 8,  3 => 6, 4 to 5 => 4, 6 => 6))
 	port map (
 		clk => video_clk,
@@ -183,13 +189,15 @@ begin
 		di(2)  => win_x(2),
 		di(3)  => win_x(3),
 		di(4)  => win_x(4),
-		di(5)  => mark_on,
+		di(5)  => win_x(5),
+		di(6)  => mark_on,
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
 		do(2)  => sel_dot(2),
 		do(3)  => sel_code(0),
 		do(4)  => win_x4,
-		do(5)  => dot_on);
+		do(5)  => win_x5,
+		do(6)  => dot_on);
 
 	winy_e : entity hdl4fpga.align
 	generic map (
