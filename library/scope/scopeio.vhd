@@ -564,7 +564,7 @@ begin
 		video_clk  => video_clk,
 		video_nhl  => video_nhl,
 		ordinates  => ordinates,
-		offset     => b"000_000000", --scale_offset,
+		offset     => scale_offset,
 		trigger    => trigger_offset,
 		abscisa    => abscisa,
 		hz_scale   => hz_scale,

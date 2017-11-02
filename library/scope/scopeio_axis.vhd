@@ -121,6 +121,7 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
+--			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
 			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
 			if axis_on='0' then
 				sgmt_x := (others => '0');
@@ -135,6 +136,7 @@ begin
 					end if;
 				end if;
 			else
+				sgmt_x := (others => '0');
 				mark <= std_logic_vector(
 					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
 					hz_num_of_seg*hz_div_per_seg+1);
@@ -149,30 +151,10 @@ begin
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
 
 	char_addr  <= mark1 & char_scale & win_x5 & win_x4;
-	charrom : entity hdl4fpga.rom
-	generic map (
-		synchronous => 2,
-		bitrom => 
-			marker (
-				scales       => hz_scales,
-				num_of_seg   => hz_num_of_seg,
-				num_of_digit => 4,
-				div_per_seg  => hz_div_per_seg) &
-			marker (
-				scales       => vt_scales,
-				num_of_seg   => vt_num_of_seg,
-				num_of_digit => 5,
-				div_per_seg  => vt_div_per_seg,
-				sign         => true))
-	port map (
-		clk  => video_clk,
-		addr => char_addr,
-		data => char_code);
-
 	mrk_e : entity hdl4fpga.align
 	generic map (
 		n => mark'length,
-		d => (1 to mark'length => 3))
+		d => (1 to mark'length => 4))
 	port map (
 		clk => video_clk,
 		di  => mark,
@@ -181,7 +163,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 7,
-		d => (0 to 2 => 8,  3 => 6, 4 to 5 => 4, 6 => 6))
+		d => (0 to 2 => 6,  3 => 6-2, 4 to 5 => 6-4, 6 => 6))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
@@ -207,6 +189,26 @@ begin
 		clk => video_clk,
 		di  => win_y(3-1 downto 0),
 		do  => sel_winy);
+
+	charrom : entity hdl4fpga.rom
+	generic map (
+		synchronous => 2,
+		bitrom => 
+			marker (
+				scales       => hz_scales,
+				num_of_seg   => hz_num_of_seg,
+				num_of_digit => 4,
+				div_per_seg  => hz_div_per_seg) &
+			marker (
+				scales       => vt_scales,
+				num_of_seg   => vt_num_of_seg,
+				num_of_digit => 5,
+				div_per_seg  => vt_div_per_seg,
+				sign         => true))
+	port map (
+		clk  => video_clk,
+		addr => char_addr,
+		data => char_code);
 
 	sel_line <= word2byte(char_code, sel_code) & sel_winy;
 	cgarom : entity hdl4fpga.rom
