@@ -193,8 +193,8 @@ begin
 		axis_hzscale => hz_scale,
 		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
-	axisx_don <= axis_don and axisx_ena;
-	axisy_don <= axis_don and axisy_ena;
+	axisx_don <= axis_don; -- and axisx_ena;
+	axisy_don <= axis_don; -- and axisy_ena;
 
 	align_e : entity hdl4fpga.align
 	generic map (

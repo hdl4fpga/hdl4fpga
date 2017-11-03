@@ -121,7 +121,6 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
---			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
