@@ -54,7 +54,7 @@ architecture def of scopeio_axis is
 		for i in 0 to num-1 loop
 			for j in 0 to scales'length-1 loop
 				retval := retval sll (word_size*code_size);
-				aux1 := (others => '1');
+				aux1 := (others => '0');
 				aux1(0 to num_of_digit*code_size-1) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
 				if not sign then
 					if i mod 2 = 1 then
@@ -124,8 +124,8 @@ begin
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
-			elsif axis_hztl='1' then 
-				if next_x='1' then
+			elsif true or axis_hztl='1' then 
+				if win_x(5-1 downto 0)=(1 to 5 => '1') then
 					if to_integer(sgmt_x)=hz_mark_per_seg-1 then
 						sgmt_x := (others => '0');
 						mark   <= std_logic_vector(unsigned(mark) + 1);
@@ -139,25 +139,14 @@ begin
 					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
 					hz_num_of_seg*hz_div_per_seg+1);
 			end if;
-			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
-			aon     := axis_on and aon_y;
-			next_x  := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
+			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and axis_on;
+			aon     := axis_on; -- and aon_y;
 		end if;
 	end process;
 
 	char_scale <=
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
-
-	char_addr  <= mark1 & char_scale & win_x5 & win_x4;
-	mrk_e : entity hdl4fpga.align
-	generic map (
-		n => mark'length,
-		d => (1 to mark'length => 2))
-	port map (
-		clk => video_clk,
-		di  => mark,
-		do  => mark1);
 
 	winx_e : entity hdl4fpga.align
 	generic map (
@@ -168,9 +157,12 @@ begin
 		di(0)  => win_x(0),
 		di(1)  => win_x(1),
 		di(2)  => win_x(2),
+
 		di(3)  => win_x(3),
+
 		di(4)  => win_x(4),
 		di(5)  => win_x(5),
+
 		di(6)  => mark_on,
 		do(0)  => sel_dot(0),
 		do(1)  => sel_dot(1),
@@ -188,6 +180,17 @@ begin
 		clk => video_clk,
 		di  => win_y(3-1 downto 0),
 		do  => sel_winy);
+
+	mark_e : entity hdl4fpga.align
+	generic map (
+		n => mark'length,
+		d => (1 to mark'length => 1))
+	port map (
+		clk => video_clk,
+		di  => mark,
+		do  => mark1);
+
+	char_addr  <= mark & char_scale & win_x5 & win_x4;
 
 	charrom : entity hdl4fpga.rom
 	generic map (

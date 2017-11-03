@@ -100,7 +100,7 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 15,
+		dfs_mul => 4, --15,
 		dfs_div => 2)
 	port map(
 		dcm_rst => '0',
@@ -134,7 +134,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		layout_id    => 0,
+		layout_id    => 1,
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
 		inputs       => 1,

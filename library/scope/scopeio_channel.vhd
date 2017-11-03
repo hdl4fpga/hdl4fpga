@@ -172,7 +172,7 @@ begin
 
 	axisy_off <= vt_offset when axisx_on='0' else win_y;
 
-	axis_on <= axisy_on or axisx_on;
+	axis_on <= axisx_on;
 	axis_sgmt <= encoder(win_on(0 to num_of_seg-1));
 
 	axis_e : entity hdl4fpga.scopeio_axis

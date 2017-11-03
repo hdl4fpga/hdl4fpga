@@ -282,8 +282,7 @@ begin
 	vgaio_e : entity hdl4fpga.align
 	generic map (
 		n => video_io'length,
-		i => (video_io'range => '-'),
-		d => (video_io'range => 14))
+		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2))
 	port map (
 		clk   => video_clk,
 		di(0) => video_hs,
@@ -600,18 +599,6 @@ begin
 			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
 			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
 
-			if plot_on='1'and false then
-				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
-			elsif video_fgon='1' then
-				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
-			elsif video_bgon='1' then
-				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
-			elsif gauges_fgon='1' then
-				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
-			else
-				pixel <= (others => '0');
-			end if;
-
 			vcolorfg_sel := encoder(video_fg);
 			vcolorbg_sel := encoder(video_bg);
 			gauge_sel    := encoder(gauge_on);
@@ -620,11 +607,28 @@ begin
 			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
 			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;
+
+			if plot_on='1'and false then
+				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
+			elsif video_fgon='1' then
+				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
+--			elsif video_bgon='1' then
+--				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
+--			elsif gauges_fgon='1' then
+--				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
+			else
+				pixel <= (others => '0');
+			end if;
+				pixel <= (others => '0');
+			if video_fg(2)='1' then
+				pixel <= grid_fg;
+			end if;
+
 		end if;
 	end process;
 
-	video_rgb   <= (video_rgb'range => video_io(2)) and pixel;
-	video_blank <= video_io(2);
+	video_rgb   <= pixel; --(video_rgb'range => video_io(2)); -- and pixel;
+	video_blank <= '1'; --video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);
