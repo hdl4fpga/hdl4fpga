@@ -122,7 +122,6 @@ begin
 	begin
 		if rising_edge(video_clk) then
 --			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
-			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
@@ -141,8 +140,9 @@ begin
 					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
 					hz_num_of_seg*hz_div_per_seg+1);
 			end if;
-			aon  := axis_on and aon_y;
-			next_x := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
+			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and aon;
+			aon     := axis_on and aon_y;
+			next_x  := setif(win_x(5-1 downto 0)=(1 to 5 => '1'));
 		end if;
 	end process;
 
@@ -154,7 +154,7 @@ begin
 	mrk_e : entity hdl4fpga.align
 	generic map (
 		n => mark'length,
-		d => (1 to mark'length => 4))
+		d => (1 to mark'length => 2))
 	port map (
 		clk => video_clk,
 		di  => mark,
@@ -184,7 +184,7 @@ begin
 	winy_e : entity hdl4fpga.align
 	generic map (
 		n => 3,
-		d => (0 to 2 => 6))
+		d => (0 to 2 => 4))
 	port map (
 		clk => video_clk,
 		di  => win_y(3-1 downto 0),
