@@ -282,7 +282,7 @@ begin
 	vgaio_e : entity hdl4fpga.align
 	generic map (
 		n => video_io'length,
-		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2))
+		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+20))
 	port map (
 		clk   => video_clk,
 		di(0) => video_hs,
@@ -622,6 +622,8 @@ begin
 				pixel <= (others => '0');
 			if video_fg(2)='1' then
 				pixel <= grid_fg;
+			elsif video_bg(2)='1' then
+				pixel <= (others => '1');
 			end if;
 
 		end if;
