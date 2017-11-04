@@ -58,7 +58,7 @@ architecture def of scopeio_axis is
 				aux1(0 to num_of_digit*code_size-1) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
 				if not sign then
 					if i mod 2 = 1 then
-						aux1 := aux1 rol (aux1'length/2);
+						--aux1 := aux1 rol (aux1'length/2);
 					end if;
 				end if;
 				retval(word_size*code_size-1 downto 0) := aux1;
@@ -140,7 +140,6 @@ begin
 					hz_num_of_seg*hz_div_per_seg+1);
 			end if;
 			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and axis_on;
-			mark_on <= axis_on;
 			aon     := axis_on; -- and aon_y;
 		end if;
 	end process;
@@ -152,7 +151,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 7,
-		d => (0 to 2 => 4,  3 => 4-2, 4 to 5 => 0, 6 => 0))
+		d => (0 to 2 => 4,  3 => 4-2, 4 to 5 => 0, 6 => 3))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
@@ -176,7 +175,7 @@ begin
 	winy_e : entity hdl4fpga.align
 	generic map (
 		n => 3,
-		d => (0 to 2 => 4))
+		d => (0 to 2 => 2))
 	port map (
 		clk => video_clk,
 		di  => win_y(3-1 downto 0),
@@ -213,7 +212,7 @@ begin
 		addr => char_addr,
 		data => char_code);
 
-	sel_line <= word2byte("00000000", sel_code) & sel_winy;
+	sel_line <= word2byte(char_code, sel_code) & sel_winy;
 	cgarom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,

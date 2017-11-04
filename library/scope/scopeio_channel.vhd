@@ -121,13 +121,13 @@ begin
 			win_ena   => wena,
 			win_x     => x,
 			win_y     => win_y);
-		abscisa <= x;
+		abscisa <= std_logic_vector(resize(unsigned(x),abscisa'length));
 
 		txon <= win_on(0 to num_of_seg-1) and (1 to num_of_seg => cdon(3));
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 => 1+3, 1 => 2, 2 to 3 => 1+3),
+			d => (0 => 0, 1 => 2, 2 to 3 => 0),
 			i => (1 to 4 => '-'))
 		port map (
 			clk   => video_clk,
@@ -152,7 +152,7 @@ begin
 		xdly_e : entity hdl4fpga.align
 		generic map (
 			n => x'length,
-			d => (x'range => 1+3),
+			d => (x'range => 0),
 			i => (x'range => '-'))
 		port map (
 			clk => video_clk,
