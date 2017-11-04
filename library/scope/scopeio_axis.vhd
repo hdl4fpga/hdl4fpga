@@ -151,7 +151,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 7,
-		d => (0 to 2 => 6,  3 => 6-2, 4 to 5 => 6-4, 6 => 6))
+		d => (0 to 2 => 6,  3 => 6-2, 4 to 5 => 6-4, 6 => 5))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),

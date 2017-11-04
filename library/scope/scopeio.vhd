@@ -612,25 +612,19 @@ begin
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
 				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
---			elsif video_bgon='1' then
---				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
---			elsif gauges_fgon='1' then
---				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
+			elsif video_bgon='1' then
+				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
+			elsif gauges_fgon='1' then
+				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
 			else
 				pixel <= (others => '0');
-			end if;
-				pixel <= (others => '0');
-			if video_fg(2)='1' then
-				pixel <= grid_fg;
-			elsif video_bg(2)='1' then
-				pixel <= (others => '1');
 			end if;
 
 		end if;
 	end process;
 
-	video_rgb   <= pixel; --(video_rgb'range => video_io(2)); -- and pixel;
-	video_blank <= '1'; --video_io(2);
+	video_rgb   <= (video_rgb'range => video_io(2)) and pixel;
+	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);
