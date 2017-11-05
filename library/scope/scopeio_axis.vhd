@@ -84,7 +84,6 @@ architecture def of scopeio_axis is
 
 	signal mark_y     : std_logic;
 	signal aon_y      : std_logic;
-	signal pp : std_logic;
 
 begin
 	mark_y <= setif(win_y(5-1 downto 3)=(5-1 downto 3 => '0'));
@@ -100,7 +99,6 @@ begin
 	process (video_clk)
 		variable sgmt_x : unsigned(unsigned_num_bits(hz_mark_per_seg-1)-1 downto 0);
 		variable next_x : std_logic;
-		variable aon    : std_logic;
 
 		function init_start
 			return natural_vector is
@@ -119,7 +117,7 @@ begin
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
-			elsif true or axis_hztl='1' then 
+			elsif axis_hztl='1' then 
 				if win_x(5-1 downto 0)=(1 to 5 => '1') then
 					if to_integer(sgmt_x)=hz_mark_per_seg-1 then
 						sgmt_x := (others => '0');
@@ -128,14 +126,14 @@ begin
 						sgmt_x := sgmt_x + 1;
 					end if;
 				end if;
+				mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and axis_on;
 			else
 				sgmt_x := (others => '0');
 				mark <= std_logic_vector(
 					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
 					hz_num_of_seg*hz_div_per_seg+1);
+				mark_on <= aon_y and axis_on;
 			end if;
-			mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and axis_on;
-			aon     := axis_on; -- and aon_y;
 		end if;
 	end process;
 
@@ -176,8 +174,12 @@ begin
 		di  => win_y(3-1 downto 0),
 		do  => sel_winy);
 
-	pp <= mark(0) xor (axis_sgmt(axis_sgmt'right) and setif(hz_div_per_seg mod 2=1));
-	char_addr  <= mark & char_scale & (win_x5 xor pp) & win_x4;
+	char_addr  <= 
+		mark & char_scale & (
+		win_x5 xor (
+			(mark(0) xor (axis_sgmt(axis_sgmt'right) and setif(hz_div_per_seg mod 2=1))) and
+			axis_hztl)) &
+		win_x4;
 
 	charrom : entity hdl4fpga.rom
 	generic map (
