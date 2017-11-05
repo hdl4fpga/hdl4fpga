@@ -56,11 +56,6 @@ architecture def of scopeio_axis is
 				retval := retval sll (word_size*code_size);
 				aux1 := (others => '0');
 				aux1(0 to num_of_digit*code_size-1) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
-				if not sign then
-					if i mod 2 = 1 then
-						--aux1 := aux1 rol (aux1'length/2);
-					end if;
-				end if;
 				retval(word_size*code_size-1 downto 0) := aux1;
 			end loop;
 			for j in 0 to scales'length-1 loop
@@ -70,8 +65,7 @@ architecture def of scopeio_axis is
 		return std_logic_vector(retval);
 	end;
 
-	signal mark       : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
-	signal mark1      : std_logic_vector(0 to unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1);
+	signal mark       : std_logic_vector(unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1 downto 0);
 	signal win_x4     : std_logic;
 	signal win_x5     : std_logic;
 
@@ -90,6 +84,7 @@ architecture def of scopeio_axis is
 
 	signal mark_y     : std_logic;
 	signal aon_y      : std_logic;
+	signal pp : std_logic;
 
 begin
 	mark_y <= setif(win_y(5-1 downto 3)=(5-1 downto 3 => '0'));
@@ -151,7 +146,7 @@ begin
 	winx_e : entity hdl4fpga.align
 	generic map (
 		n => 7,
-		d => (0 to 2 => 4,  3 => 4-2, 4 to 5 => 0, 6 => 3))
+		d => (0 to 2 => 4,  3 => 4-2, 4 to 5 => 4-4, 6 => 4-1))
 	port map (
 		clk => video_clk,
 		di(0)  => win_x(0),
@@ -174,23 +169,15 @@ begin
 
 	winy_e : entity hdl4fpga.align
 	generic map (
-		n => 3,
+		n => 4-1,
 		d => (0 to 2 => 2))
 	port map (
 		clk => video_clk,
 		di  => win_y(3-1 downto 0),
 		do  => sel_winy);
 
-	mark_e : entity hdl4fpga.align
-	generic map (
-		n => mark'length,
-		d => (1 to mark'length => 1))
-	port map (
-		clk => video_clk,
-		di  => mark,
-		do  => mark1);
-
-	char_addr  <= mark & char_scale & win_x5 & win_x4;
+	pp <= mark(0) xor (axis_sgmt(axis_sgmt'right) and setif(hz_div_per_seg mod 2=1));
+	char_addr  <= mark & char_scale & (win_x5 xor pp) & win_x4;
 
 	charrom : entity hdl4fpga.rom
 	generic map (
