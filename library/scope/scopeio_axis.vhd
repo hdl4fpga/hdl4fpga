@@ -84,6 +84,7 @@ architecture def of scopeio_axis is
 
 	signal mark_y     : std_logic;
 	signal aon_y      : std_logic;
+	signal my : std_logic_vector(mark'range);
 
 begin
 	mark_y <= setif(win_y(5-1 downto 3)=(5-1 downto 3 => '0'));
@@ -117,6 +118,7 @@ begin
 			if axis_on='0' then
 				sgmt_x := (others => '0');
 				mark   <= std_logic_vector(to_unsigned(start(to_integer(unsigned(axis_sgmt))), mark'length));
+				mark_on <= '0';
 			elsif axis_hztl='1' then 
 				if win_x(5-1 downto 0)=(1 to 5 => '1') then
 					if to_integer(sgmt_x)=hz_mark_per_seg-1 then
@@ -126,17 +128,21 @@ begin
 						sgmt_x := sgmt_x + 1;
 					end if;
 				end if;
-				mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0')) and axis_on;
+				mark_on <= setif(sgmt_x(sgmt_x'left downto 1)=(1 to sgmt_x'length-1 => '0'));
 			else
 				sgmt_x := (others => '0');
 				mark <= std_logic_vector(
 					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
 					hz_num_of_seg*hz_div_per_seg+1);
-				mark_on <= aon_y and axis_on;
+				mark_on <= aon_y;
 			end if;
 		end if;
 	end process;
 
+	my <= mark when axis_hztl='1' else
+std_logic_vector(
+					resize(unsigned(win_y(win_y'left downto 5)),mark'length)+
+					hz_num_of_seg*hz_div_per_seg+1);
 	char_scale <=
 		std_logic_vector(resize(unsigned(axis_hzscale), char_scale'length)) when axis_hztl='1' else
 		std_logic_vector(resize(unsigned(axis_vtscale), char_scale'length));
@@ -175,7 +181,7 @@ begin
 		do  => sel_winy);
 
 	char_addr  <= 
-		mark & char_scale & (
+		my & char_scale & (
 		win_x5 xor (
 			(mark(0) xor (axis_sgmt(axis_sgmt'right) and setif(hz_div_per_seg mod 2=1))) and
 			axis_hztl)) &

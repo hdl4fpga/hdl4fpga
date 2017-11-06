@@ -97,7 +97,7 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				chan_x-(4*8+4+5*8+4)+5*8+0,             0,   chan_width+1, chan_height+1,
+				chan_x-(4*8+4+5*8+4)+5*8+0,             0, chan_width+1,   chan_height+1,
 				chan_x-(4*8+4+5*8+4)+5*8+0, chan_height+2, chan_width+4*8,             8,
 				chan_x-(4*8+4+5*8+4)+  0-1,             0,            5*8, chan_height+1,
 				                         0,             0,           24*8, chan_height+1))
@@ -172,7 +172,7 @@ begin
 
 	axisy_off <= vt_offset when axisx_on='0' else win_y;
 
-	axis_on <= axisx_on;
+	axis_on <= axisx_on or axisy_on;
 	axis_sgmt <= encoder(win_on(0 to num_of_seg-1));
 
 	axis_e : entity hdl4fpga.scopeio_axis
@@ -193,16 +193,16 @@ begin
 		axis_hzscale => hz_scale,
 		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
-	axisx_don <= axis_don; -- and axisx_ena;
-	axisy_don <= axis_don; -- and axisy_ena;
+	axisx_don <= axis_don and axisx_ena;
+	axisy_don <= axis_don and axisy_ena;
 
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 6,
 		d => (0 => unsigned_num_bits(height-1)-2-2,
 		      1 => unsigned_num_bits(height-1)-2-2,
-		      2 => 8,
-		      3 => 8,
+		      2 => 4,
+		      3 => 4,
 		      4 => unsigned_num_bits(height-1)-1+5-2-8,
 		      5 => unsigned_num_bits(height-1)-1+5-2-8))
 	port map (
