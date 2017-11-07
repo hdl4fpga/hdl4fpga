@@ -41,6 +41,7 @@ end;
 architecture def of scopeio_channel is
 	subtype vmword is std_logic_vector(0 to unsigned_num_bits(chan_height-1)+1);
 	type vmword_vector is array (natural range <>) of vmword;
+	constant delay : natural := (vmword'length+2)+1;
 
 	signal samples : vmword_vector(inputs-1 downto 0);
 
@@ -127,8 +128,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 => 0, 1 => 2, 2 to 3 => 0),
-			i => (1 to 4 => '-'))
+			d => (0 => 0, 1 => 2, 2 to 3 => 0))
 		port map (
 			clk   => video_clk,
 			di(0) => cdon(0),
@@ -143,7 +143,7 @@ begin
 		gpanneldly_e : entity hdl4fpga.align
 		generic map (
 			n => num_of_seg,
-			d => (1 to num_of_seg => 4+4))
+			d => (1 to num_of_seg => 0))
 		port map (
 			clk => video_clk,
 			di  => txon,
@@ -152,8 +152,7 @@ begin
 		xdly_e : entity hdl4fpga.align
 		generic map (
 			n => x'length,
-			d => (x'range => 0),
-			i => (x'range => '-'))
+			d => (x'range => 0))
 		port map (
 			clk => video_clk,
 			di  => x,
@@ -199,24 +198,31 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 6,
-		d => (0 => unsigned_num_bits(height-1)-2-2,
-		      1 => unsigned_num_bits(height-1)-2-2,
-		      2 => 4,
-		      3 => 4,
-		      4 => unsigned_num_bits(height-1)-1+5-2-8,
-		      5 => unsigned_num_bits(height-1)-1+5-2-8))
+		d => (
+		      0 => 4,
+		      1 => 4,
+		      2 => delay-4,
+		      3 => delay-4,
+		      4 => delay-4,
+		      5 => delay-4))
 	port map (
 		clk   => video_clk,
-		di(0) => axisx_don,
-		di(1) => axisy_don,
-		di(2) => axisx_on,
-		di(3) => axisy_on,
+		di(0) => axisx_on,
+		di(1) => axisy_on,
+
+		di(2) => axisx_don,
+		di(3) => axisy_don,
+
+
 		di(4) => axisx_ena,
 		di(5) => axisy_ena,
-		do(0) => axis_fg(0),
-		do(1) => axis_fg(1),
-		do(2) => axisx_ena,
-		do(3) => axisy_ena,
+
+		do(0) => axisx_ena,
+		do(1) => axisy_ena,
+
+		do(2) => axis_fg(0),
+		do(3) => axis_fg(1),
+
 		do(4) => axis_bg(0),
 		do(5) => axis_bg(1));
 
@@ -267,8 +273,8 @@ begin
 		generic map (
 			n => 2,
 			d => (
-				0 => unsigned_num_bits(height-1)+2, 
-				1 => unsigned_num_bits(height-1)+2+2))
+				0 => delay-2,
+				1 => delay))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
@@ -283,7 +289,7 @@ begin
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => unsigned_num_bits(height-1)+2+2))
+			d => (0 => delay))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,

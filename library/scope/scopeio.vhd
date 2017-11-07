@@ -282,7 +282,7 @@ begin
 	vgaio_e : entity hdl4fpga.align
 	generic map (
 		n => video_io'length,
-		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+20))
+		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2))
 	port map (
 		clk   => video_clk,
 		di(0) => video_hs,
@@ -464,28 +464,28 @@ begin
 		end if;
 	end process;
 
---	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
---	generic map (
---		inputs         => inputs,
---		gauge_labels   => gauge_labels,
---		unit_symbols   => unit_symbols,
---		time_scales    => time_scales,
---		hz_scales      => hz_scales,
---		vt_scales      => vt_scales)
---	port map (
---		pannel_clk     => mii_rxc,
---		time_scale     => hz_scale,
---		time_value     => b"001_100000",
---		trigger_scale  => trigger_scale,
---		trigger_value  => trigger_level,
---		channel_scale  => channel_scale,
---		channel_level  => channel_offset,
---		video_clk      => video_clk,
---		gpannel_row    => gpannel_y(gpannel_row'range),
---		gpannel_col    => gpannel_x(gpannel_col'range),
---		gpannel_on     => gpannel_on,
---		gauge_on       => gauge_on,
---		gauge_code     => cga_code);
+	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
+	generic map (
+		inputs         => inputs,
+		gauge_labels   => gauge_labels,
+		unit_symbols   => unit_symbols,
+		time_scales    => time_scales,
+		hz_scales      => hz_scales,
+		vt_scales      => vt_scales)
+	port map (
+		pannel_clk     => mii_rxc,
+		time_scale     => hz_scale,
+		time_value     => b"001_100000",
+		trigger_scale  => trigger_scale,
+		trigger_value  => trigger_level,
+		channel_scale  => channel_scale,
+		channel_level  => channel_offset,
+		video_clk      => video_clk,
+		gpannel_row    => gpannel_y(gpannel_row'range),
+		gpannel_col    => gpannel_x(gpannel_col'range),
+		gpannel_on     => gpannel_on,
+		gauge_on       => gauge_on,
+		gauge_code     => cga_code);
 
 	process(mii_rxc)
 	begin
@@ -530,20 +530,11 @@ begin
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => unsigned_num_bits(ly_dptr(layout_id).chan_y-1)+17))
+			d => (0 => 2))
 		port map (
 			clk   => video_clk,
 			di    => font_dot,
 			do(0) => cga_dot);
-
---		align1_e : entity hdl4fpga.align
---		generic map (
---			n => 2+inputs,
---			d => (1 to 2+inputs => unsigned_num_bits(ly_dptr(layout_id).chan_y-1)+15))
---		port map (
---			clk => video_clk,
---			di  => meter_fld,
---		do  => chan_dot);
 
 	end block;
 
@@ -608,7 +599,7 @@ begin
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
 			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;
 
-			if plot_on='1'and false then
+			if plot_on='1' then
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
 				pixel <= word2byte(hzaxis_fg   & trigger_fg & grid_fg & vtaxis_fg, vcolorfg_sel, pixel'length);
@@ -617,6 +608,8 @@ begin
 			elsif gauges_fgon='1' then
 				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
 			else
+				pixel <= b"00000000_00000000_11111111"; --(others => '1');
+				pixel <= (others => '1');
 				pixel <= (others => '0');
 			end if;
 
