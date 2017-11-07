@@ -189,6 +189,7 @@ architecture beh of scopeio is
 	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_height-1));
 	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto unsigned_num_bits(font_width-1));
 	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
+	constant delay       : natural := 4;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -282,7 +283,7 @@ begin
 	vgaio_e : entity hdl4fpga.align
 	generic map (
 		n => video_io'length,
-		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2))
+		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2+delay))
 	port map (
 		clk   => video_clk,
 		di(0) => video_hs,
@@ -410,26 +411,26 @@ begin
 		signal rd_data : std_logic_vector(vm_inputs'range);
 	begin
 
-		wr_data <= vm_inputs;
-		wr_addr <= input_addr(vm_addr'range);
+--		wr_data <= vm_inputs;
+--		wr_addr <= input_addr(vm_addr'range);
 
---		data_e : entity hdl4fpga.align
---		generic map (
---			n => wr_data'length,
---			d => (wr_data'range => 18))
---		port map (
---			clk => input_clk,
---			di  => vm_inputs,
---			do  => wr_data);
---
---		addr_e : entity hdl4fpga.align
---		generic map (
---			n => wr_addr'length,
---			d => (wr_addr'range => 1))
---		port map (
---			clk => input_clk,
---			di  => input_addr(vm_addr'range),
---			do  => wr_addr);
+		data_e : entity hdl4fpga.align
+		generic map (
+			n => wr_data'length,
+			d => (wr_data'range => delay))
+		port map (
+			clk => input_clk,
+			di  => vm_inputs,
+			do  => wr_data);
+
+		addr_e : entity hdl4fpga.align
+		generic map (
+			n => wr_addr'length,
+			d => (wr_addr'range => 0))
+		port map (
+			clk => input_clk,
+			di  => input_addr(vm_addr'range),
+			do  => wr_addr);
 
 		process (video_clk)
 			variable d : std_logic_vector(rd_data'range);
@@ -541,6 +542,7 @@ begin
 
 	scopeio_channel_e : entity hdl4fpga.scopeio_channel
 	generic map (
+		delay       => delay,
 		inputs      => inputs,
 		num_of_seg  => ly_dptr(layout_id).num_of_seg,
 		chan_x      => ly_dptr(layout_id).chan_x,

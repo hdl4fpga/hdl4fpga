@@ -33,7 +33,8 @@ architecture beh of nuhs3adsp is
 			if i mod 64 = 63 then
 				pp := not pp;
 			end if;
-			aux(i*n to (i+1)*n-1) := sin(2.0*MATH_PI*real(i)/real(x1-x0+1));
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer((2.0**(n-1)-1.0)*sin(2.0*MATH_PI*real(i)/real(x1-x0+1))), n));
+					aux(i*n to (i+1)*n-1) := pp;
 		end loop;
 		return aux;
 	end;

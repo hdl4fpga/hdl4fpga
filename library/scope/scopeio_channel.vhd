@@ -10,6 +10,7 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio_channel is
 	generic(
+		delay        : natural := 4;
 		inputs       : natural;
 		num_of_seg   : natural;
 		hz_scales    : scale_vector;
@@ -41,7 +42,7 @@ end;
 architecture def of scopeio_channel is
 	subtype vmword is std_logic_vector(0 to unsigned_num_bits(chan_height-1)+1);
 	type vmword_vector is array (natural range <>) of vmword;
-	constant delay : natural := (vmword'length+2)+1;
+	constant total_delay : natural := (vmword'length+2)+1+delay;
 
 	signal samples : vmword_vector(inputs-1 downto 0);
 
@@ -128,7 +129,7 @@ begin
 		dondly_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
-			d => (0 => 0, 1 => 2, 2 to 3 => 0))
+			d => (0 => 0, 1 => 2+delay, 2 to 3 => 0))
 		port map (
 			clk   => video_clk,
 			di(0) => cdon(0),
@@ -143,7 +144,7 @@ begin
 		gpanneldly_e : entity hdl4fpga.align
 		generic map (
 			n => num_of_seg,
-			d => (1 to num_of_seg => 0))
+			d => (1 to num_of_seg => delay))
 		port map (
 			clk => video_clk,
 			di  => txon,
@@ -201,10 +202,10 @@ begin
 		d => (
 		      0 => 4,
 		      1 => 4,
-		      2 => delay-4,
-		      3 => delay-4,
-		      4 => delay-4,
-		      5 => delay-4))
+		      2 => total_delay-4,
+		      3 => total_delay-4,
+		      4 => total_delay-4,
+		      5 => total_delay-4))
 	port map (
 		clk   => video_clk,
 		di(0) => axisx_on,
@@ -273,8 +274,8 @@ begin
 		generic map (
 			n => 2,
 			d => (
-				0 => delay-2,
-				1 => delay))
+				0 => total_delay-2,
+				1 => total_delay))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
@@ -289,7 +290,7 @@ begin
 		align_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => delay))
+			d => (0 => total_delay))
 		port map (
 			clk   => video_clk,
 			di(0) => dot,
