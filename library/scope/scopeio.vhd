@@ -189,6 +189,7 @@ architecture beh of scopeio is
 	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_height-1));
 	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto unsigned_num_bits(font_width-1));
 	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
+	signal trigger_ena : std_logic;
 	constant delay       : natural := 4;
 begin
 
@@ -323,7 +324,7 @@ begin
 			input_we <= scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
-					scaler := to_signed(ajdtab(to_integer((unsigned(hz_scale)))-2), scaler'length);
+					scaler := to_signed(ajdtab(to_integer((unsigned(hz_scale)))), scaler'length);
 				else
 					scaler := scaler - 1;
 				end if;
@@ -360,7 +361,7 @@ begin
 
 	trigger_b  : block
 		signal input_level : std_logic_vector(0 to vt_size-1);
-		signal trigger_ena : std_logic;
+		signal input_inc   : std_logic;
 	begin
 		process (input_clk)
 			variable input_aux  : std_logic_vector(input_level'range);
@@ -383,19 +384,28 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge := trigger_edge xnor setif(signed(input_aux) >= signed(trigger_level));
+					input_ge  := trigger_edge xnor setif(signed(input_aux) >= signed(trigger_level));
+					input_aux := word2byte(vm_inputs, trigger_channel, vt_size);
 				end if;
-				input_aux := word2byte(vm_inputs, trigger_channel, vt_size);
 			end if;
 		end process;
 
-		process (input_clk)
+		iwe_e : entity hdl4fpga.align 
+		generic map (
+			n => 1,
+			d => (0 => 4))
+		port map (
+			clk => input_clk,
+			di(0) => input_we,
+			do(1) => input_inc);
+
+		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
 				if trigger_ena='0' then
 					input_addr <= (others => '0');
 				elsif input_addr(0)='0' then
-					if input_we='1' then
+					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
 				end if;
@@ -409,10 +419,11 @@ begin
 		signal wr_data : std_logic_vector(vm_inputs'range);
 		signal rd_addr : std_logic_vector(vm_addr'range);
 		signal rd_data : std_logic_vector(vm_inputs'range);
+		signal wr_ena  : std_logic;
 	begin
 
---		wr_data <= vm_inputs;
---		wr_addr <= input_addr(vm_addr'range);
+		wr_addr <= input_addr(vm_addr'range);
+		wr_ena  <= not input_addr(input_addr'left) and trigger_ena;
 
 		data_e : entity hdl4fpga.align
 		generic map (
@@ -422,15 +433,6 @@ begin
 			clk => input_clk,
 			di  => vm_inputs,
 			do  => wr_data);
-
-		addr_e : entity hdl4fpga.align
-		generic map (
-			n => wr_addr'length,
-			d => (wr_addr'range => 0))
-		port map (
-			clk => input_clk,
-			di  => input_addr(vm_addr'range),
-			do  => wr_addr);
 
 		process (video_clk)
 			variable d : std_logic_vector(rd_data'range);
@@ -445,6 +447,7 @@ begin
 		dpram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => input_clk,
+			wr_ena  => wr_ena,
 			wr_addr => wr_addr,
 			wr_data => wr_data,
 			rd_addr => rd_addr,
@@ -465,28 +468,28 @@ begin
 		end if;
 	end process;
 
-	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
-	generic map (
-		inputs         => inputs,
-		gauge_labels   => gauge_labels,
-		unit_symbols   => unit_symbols,
-		time_scales    => time_scales,
-		hz_scales      => hz_scales,
-		vt_scales      => vt_scales)
-	port map (
-		pannel_clk     => mii_rxc,
-		time_scale     => hz_scale,
-		time_value     => b"001_100000",
-		trigger_scale  => trigger_scale,
-		trigger_value  => trigger_level,
-		channel_scale  => channel_scale,
-		channel_level  => channel_offset,
-		video_clk      => video_clk,
-		gpannel_row    => gpannel_y(gpannel_row'range),
-		gpannel_col    => gpannel_x(gpannel_col'range),
-		gpannel_on     => gpannel_on,
-		gauge_on       => gauge_on,
-		gauge_code     => cga_code);
+--	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
+--	generic map (
+--		inputs         => inputs,
+--		gauge_labels   => gauge_labels,
+--		unit_symbols   => unit_symbols,
+--		time_scales    => time_scales,
+--		hz_scales      => hz_scales,
+--		vt_scales      => vt_scales)
+--	port map (
+--		pannel_clk     => mii_rxc,
+--		time_scale     => hz_scale,
+--		time_value     => b"001_100000",
+--		trigger_scale  => trigger_scale,
+--		trigger_value  => trigger_level,
+--		channel_scale  => channel_scale,
+--		channel_level  => channel_offset,
+--		video_clk      => video_clk,
+--		gpannel_row    => gpannel_y(gpannel_row'range),
+--		gpannel_col    => gpannel_x(gpannel_col'range),
+--		gpannel_on     => gpannel_on,
+--		gauge_on       => gauge_on,
+--		gauge_code     => cga_code);
 
 	process(mii_rxc)
 	begin

@@ -159,8 +159,26 @@ begin
 			di  => x,
 			do  => win_x);
 
-		gpannel_x <= win_x;
-		gpannel_y <= win_y;
+		gpxdly_e : entity hdl4fpga.align
+		generic map (
+			n => win_x'length,
+			d => (win_x'range => delay-1))
+		port map (
+			clk => video_clk,
+			di  => win_x,
+			do  => gpannel_x);
+
+		gpydly_e : entity hdl4fpga.align
+		generic map (
+			n => win_y'length,
+			d => (win_y'range => delay-1))
+		port map (
+			clk => video_clk,
+			di  => win_y,
+			do  => gpannel_y);
+
+--		gpannel_x <= win_x;
+--		gpannel_y <= win_y;
 	end block;
 
 	process (video_clk)
