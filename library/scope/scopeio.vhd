@@ -393,7 +393,7 @@ begin
 		iwe_e : entity hdl4fpga.align 
 		generic map (
 			n => 1,
-			d => (0 => 4))
+			d => (0 => 0))
 		port map (
 			clk => input_clk,
 			di(0) => input_we,
