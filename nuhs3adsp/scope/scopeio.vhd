@@ -33,8 +33,8 @@ architecture beh of nuhs3adsp is
 			if i mod 64 = 63 then
 				pp := not pp;
 			end if;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer((2.0**(n-1)-1.0)*sin(2.0*MATH_PI*real(i)/real(x1-x0+1))), n));
 			aux(i*n to (i+1)*n-1) := pp;
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer((2.0**(n-1)-1.0)*sin(2.0*MATH_PI*real(i)/real(x1-x0+1))), n));
 		end loop;
 		return aux;
 	end;
@@ -101,7 +101,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 4, --15,
+		dfs_mul => 15,
+--		dfs_mul => 4, --15,
 		dfs_div => 2)
 	port map(
 		dcm_rst => '0',
@@ -135,7 +136,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		layout_id    => 1,
+		layout_id    => 0,
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
 		inputs       => 1,
