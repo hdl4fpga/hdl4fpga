@@ -431,6 +431,7 @@ begin
 			d => (wr_data'range => delay))
 		port map (
 			clk => input_clk,
+			ena => input_we,
 			di  => vm_inputs,
 			do  => wr_data);
 
