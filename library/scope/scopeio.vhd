@@ -397,7 +397,7 @@ begin
 		port map (
 			clk   => input_clk,
 			di(0) => input_we,
-			do(1) => input_inc);
+			do(0) => input_inc);
 
 		process (input_clk) 
 		begin
@@ -540,7 +540,7 @@ begin
 			di  => gpannel_x(font_col'range),
 			do  => font_col);
 
-		font_dot <= word2byte(font_line, font_col);
+		font_dot <= word2byte(font_line, font_col) and win_don(0 to 0);
 
 		align_e : entity hdl4fpga.align
 		generic map (
