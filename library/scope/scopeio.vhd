@@ -123,6 +123,7 @@ architecture beh of scopeio is
 
 	signal input_addr       : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).num_of_seg*ly_dptr(layout_id).chan_width-1));
 	signal input_we         : std_logic;
+	signal input_inc        : std_logic;
 
 	signal vt_scale         : std_logic_vector(4-1 downto 0);
 	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1);
@@ -361,7 +362,6 @@ begin
 
 	trigger_b  : block
 		signal input_level : std_logic_vector(0 to vt_size-1);
-		signal input_inc   : std_logic;
 	begin
 		process (input_clk)
 			variable input_aux  : std_logic_vector(input_level'range);
@@ -390,12 +390,12 @@ begin
 			end if;
 		end process;
 
-		iwe_e : entity hdl4fpga.align 
+		inpwedly_e : entity hdl4fpga.align 
 		generic map (
 			n => 1,
-			d => (0 => 0))
+			d => (0 => 2))
 		port map (
-			clk => input_clk,
+			clk   => input_clk,
 			di(0) => input_we,
 			do(1) => input_inc);
 
@@ -420,19 +420,29 @@ begin
 		signal rd_addr : std_logic_vector(vm_addr'range);
 		signal rd_data : std_logic_vector(vm_inputs'range);
 		signal wr_ena  : std_logic;
+		signal data1   : std_logic_vector(vm_inputs'range);
 	begin
 
 		wr_addr <= input_addr(vm_addr'range);
-		wr_ena  <= not input_addr(input_addr'left) and trigger_ena;
+		wr_ena  <= not input_addr(input_addr'left) and trigger_ena and input_inc;
 
-		data_e : entity hdl4fpga.align
+		data1_e : entity hdl4fpga.align
 		generic map (
 			n => wr_data'length,
-			d => (wr_data'range => delay))
+			d => (wr_data'range => 2))
 		port map (
 			clk => input_clk,
 			ena => input_we,
 			di  => vm_inputs,
+			do  => data1);
+
+		data_e : entity hdl4fpga.align
+		generic map (
+			n => wr_data'length,
+			d => (wr_data'range => 2))
+		port map (
+			clk => input_clk,
+			di  => data1,
 			do  => wr_data);
 
 		process (video_clk)
