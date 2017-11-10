@@ -74,8 +74,8 @@ architecture beh of scopeio_gpannel is
 	constant vt_mults  : std_logic_vector(0 to ascii'length*vt_scales'length-1) := init_mult(vt_scales);
 
 	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
-	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0000";
-	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_1110_0000";
+	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
+	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
 	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
 
 	signal   ut_mult   : std_logic_vector(ascii'range);
@@ -184,17 +184,17 @@ begin
 	begin
 
 		if rising_edge(pannel_clk) then
-			scale <= word2byte(
-				dup(channel_scale) &
-				time_scale         &
-				trigger_scale,
-				text_row, scale'length);
+--			scale <= word2byte(
+--				dup(channel_scale) &
+--				time_scale         &
+--				trigger_scale,
+--				text_row, scale'length);
 
-			value <= word2byte(
-				vt_value      &
-				time_value    &
-				trigger_value,
-				text_row, value'length);
+--			value <= word2byte(
+--				vt_value      &
+--				time_value    &
+--				trigger_value,
+--				text_row, value'length);
 
 			ut_mult <= word2byte(
 				dup(vt_mult) & 
