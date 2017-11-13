@@ -13,7 +13,8 @@ entity scopeio_gauge is
 		dec   : natural;
 		int   : natural);
 	port (
-		scale : in  std_logic_vector;
+		order : in  std_logic_vector(0 to 2-1);
+		scale : in  std_logic_vector(0 to 2-1);
 		value : in  std_logic_vector;
 		fmtds : out std_logic_vector);
 end;
@@ -25,6 +26,18 @@ architecture def of scopeio_gauge is
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
 begin
 
+	scale_p : process (scale, value)
+	begin
+		case scale is
+		when "10"   =>
+			return shift_left(resize(signed(value), aux'length), 1);
+		when "11"   =>
+			return shift_right(resize(signed(value), aux'length), 1);
+		when others =>
+			return resize(signed(value), aux'length);
+		end case;
+	end process;
+
 	fix2bcd : entity hdl4fpga.fix2bcd 
 	generic map (
 		frac => frac,
@@ -35,53 +48,34 @@ begin
 		bcd_frac => bcd_frac,
 		bcd_int  => bcd_int);
 
-	scale_p : process (scale, value)
-		variable aux : signed(fix'range);
-	begin
-		aux := resize(signed(value), aux'length);
-		for i in 0 to 2**scale'length-1 loop
-			if i=to_integer(unsigned(scale)) then
-				case i mod 3 is
-				when 1 => 
-					aux := aux sll 1;
-				when 2 =>
-					aux := (aux sll 2) + (aux sll 0);
-				when others => 
-				end case;
-			end if;
-		end loop;
-		fix <= std_logic_vector(aux);
-	end process;
-
-	fmt_p : process (scale, bcd_int, bcd_frac, bcd_sign)
+	fmt_p : process (order, bcd_int, bcd_frac, bcd_sign)
 		variable auxi  : unsigned(0 to bcd_int'length-1);
 		variable auxf  : unsigned(0 to bcd_frac'length-1);
-		variable auxs  : unsigned(fmtds'length-1 downto 0);
-		variable point : integer := -1;
-		constant pp : integer_vector(0 to 16-1) := (1, 1, 1, -1, -1, -1, 0, 0, 0, 1, 1, 1, -1, -1, -1, 0);
-		variable i : natural;
+		variable auxs  : unsigned(0 to auxi¿egnth);
+		variable point : natural range 0 to 3-1;
 	begin
 		fmtds <= (fmtds'range => '-');
-		i := 3; --to_integer(unsigned(scale));
-		for i in 0 to 2**scale'length-1 loop
-			auxs := (others => '0');
-			auxi := resize(unsigned(bcd_int), auxi'length);
-			auxf := unsigned(bcd_frac);
-			point := pp(i);
+		auxs := (others => '0');
+		auxs := resize(unsigned(bcd_int), auxi'length);
+		auxf := unsigned(bcd_frac);
 
-			for j in 0 to int-1 loop
-				auxs := auxs rol 4;
-				auxs(4-1 downto 0) := auxi(0 to 4-1);
-				auxi := auxi rol 4;
-			end loop;
+		for j in 0 to int-1 loop
+			auxs := auxs rol 4;
+			auxs(4-1 downto 0) := auxi(0 to 4-1);
+			auxi := auxi rol 4;
+		end loop;
 
-			for j in 0 to dec-1 loop
-				auxs := auxs rol 4;
-				auxs(4-1 downto 0) := auxf(0 to 4-1);
-				auxf := auxf rol 4;
-			end loop;
+		for j in 0 to dec-1 loop
+			auxs := auxs rol 4;
+			auxs(4-1 downto 0) := auxf(0 to 4-1);
+			auxf := auxf rol 4;
+		end loop;
 
-			auxs := auxs ror 4*(dec-point);
+		auxs := auxs ror 4*dec;
+		for i in 0 to 3-1 loop
+		end loop;
+			
+			-point);
 			auxs((int+point+1)*4-1 downto 0) := auxs((int+point+1)*4-1 downto 0) sll 4;
 			auxs(4-1 downto 0) := unsigned'("1110");
 			if dec-point > 0 then
@@ -133,7 +127,6 @@ begin
 			if i=to_integer(unsigned(scale)) then
 				fmtds <= std_logic_vector(auxs);
 			end if;
-		end loop;
 	end process;
 
 end;
