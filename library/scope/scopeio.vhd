@@ -490,7 +490,7 @@ begin
 	port map (
 		pannel_clk     => mii_rxc,
 		time_scale     => hz_scale,
-		time_value     => b"001_100000",
+		time_value     => b"010_100000",
 		trigger_scale  => trigger_scale,
 		trigger_value  => trigger_level,
 		channel_scale  => channel_scale,

@@ -184,17 +184,17 @@ begin
 	begin
 
 		if rising_edge(pannel_clk) then
---			scale <= word2byte(
---				dup(channel_scale) &
---				time_scale         &
---				trigger_scale,
---				text_row, scale'length);
+			scale <= word2byte(
+				dup(channel_scale) &
+				time_scale         &
+				trigger_scale,
+				text_row, scale'length);
 
---			value <= word2byte(
---				vt_value      &
---				time_value    &
---				trigger_value,
---				text_row, value'length);
+			value <= word2byte(
+				vt_value      &
+				time_value    &
+				trigger_value,
+				text_row, value'length);
 
 			ut_mult <= word2byte(
 				dup(vt_mult) & 

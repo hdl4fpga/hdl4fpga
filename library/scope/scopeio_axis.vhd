@@ -194,7 +194,7 @@ std_logic_vector(
 			marker (
 				scales       => hz_scales,
 				num_of_seg   => hz_num_of_seg,
-				num_of_digit => 4,
+				num_of_digit => 6,
 				div_per_seg  => hz_div_per_seg) &
 			marker (
 				scales       => vt_scales,

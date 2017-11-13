@@ -63,7 +63,7 @@ begin
 	begin
 		fmtds <= (fmtds'range => '-');
 		i := 3; --to_integer(unsigned(scale));
---		for i in 0 to 2**scale'length-1 loop
+		for i in 0 to 2**scale'length-1 loop
 			auxs := (others => '0');
 			auxi := resize(unsigned(bcd_int), auxi'length);
 			auxf := unsigned(bcd_frac);
@@ -104,11 +104,11 @@ begin
 						end if;
 					else
 						auxs(4-1 downto 0) := unsigned(bcd_sign);
---						if int+point > 0 then
---							auxs := auxs rol 4*(dec-point+2);
---						else
---							auxs := auxs rol 4*(dec-point+1);
---						end if;
+						if int+point > 1 then
+							auxs := auxs rol 4*(dec-point+2);
+						else
+							auxs := auxs rol 4*(dec-point+1);
+						end if;
 					end if;
 				end loop;
 			else
@@ -133,7 +133,7 @@ begin
 			if i=to_integer(unsigned(scale)) then
 				fmtds <= std_logic_vector(auxs);
 			end if;
---		end loop;
+		end loop;
 	end process;
 
 end;
