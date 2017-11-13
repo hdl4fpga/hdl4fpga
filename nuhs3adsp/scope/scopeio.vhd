@@ -92,6 +92,7 @@ architecture beh of nuhs3adsp is
 		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => 'u'));
 
 begin
+	--
 
 	clkin_ibufg : ibufg
 	port map (
