@@ -48,7 +48,7 @@ begin
 		bcd_int  => bcd_int);
 
 	fmt_p : process (order, bcd_int, bcd_frac, bcd_sign)
-		variable auxs  : unsigned(0 to fmtds'length);
+		variable auxs  : unsigned(0 to fmtds'length-1);
 		variable auxd1 : unsigned(0 to 4-1);
 		variable auxd2 : unsigned(0 to 4-1);
 	begin
@@ -65,15 +65,13 @@ begin
 				auxd1 := auxs(auxd1'range);
 				auxs(auxd1'range) := unsigned'("1110");
 			else
+				auxs  := auxs ror 4;
 				auxd2 := auxs(auxd1'range);
-				if auxd2=(auxd2'range => '0') then
-					auxd2 := unsigned'("1111");
-				end if;
 				auxs(auxd1'range) := auxd1;
 				auxd1 := auxd2;
-				auxs  := auxs ror 4;
 			end if;
 		end loop;
+		auxs  := auxs ror 4;
 		auxs(auxd1'range) := auxd1;
 		fmtds <= std_logic_vector(auxs);
 
