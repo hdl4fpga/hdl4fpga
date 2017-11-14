@@ -10,8 +10,7 @@ use hdl4fpga.std.all;
 entity scopeio_gauge is
 	generic (
 		frac  : natural;
-		dec   : natural;
-		int   : natural);
+		dec   : natural);
 	port (
 		order : in  std_logic_vector(0 to 2-1);
 		scale : in  std_logic_vector(0 to 2-1);
@@ -22,7 +21,7 @@ end;
 architecture def of scopeio_gauge is
 	signal bcd_sign : std_logic_vector(0 to 4-1);
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
-	signal bcd_int  : std_logic_vector(0 to 4*int-1);
+	signal bcd_int  : std_logic_vector(0 to fmtds'length-4*(dec+1)-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
 begin
 
@@ -30,11 +29,11 @@ begin
 	begin
 		case scale is
 		when "10"   =>
-			return shift_left(resize(signed(value), aux'length), 1);
+			fix <= std_logic_vector(shift_left(resize(signed(value),  fix'length), 1));
 		when "11"   =>
-			return shift_right(resize(signed(value), aux'length), 1);
+			fix <= std_logic_vector(shift_right(resize(signed(value), fix'length), 1));
 		when others =>
-			return resize(signed(value), aux'length);
+			fix <= std_logic_vector(resize(signed(value), fix'length));
 		end case;
 	end process;
 
@@ -49,84 +48,35 @@ begin
 		bcd_int  => bcd_int);
 
 	fmt_p : process (order, bcd_int, bcd_frac, bcd_sign)
-		variable auxi  : unsigned(0 to bcd_int'length-1);
-		variable auxf  : unsigned(0 to bcd_frac'length-1);
-		variable auxs  : unsigned(0 to auxi¿egnth);
-		variable point : natural range 0 to 3-1;
+		variable auxs  : unsigned(0 to fmtds'length);
+		variable auxd1 : unsigned(0 to 4-1);
+		variable auxd2 : unsigned(0 to 4-1);
 	begin
 		fmtds <= (fmtds'range => '-');
-		auxs := (others => '0');
-		auxs := resize(unsigned(bcd_int), auxi'length);
-		auxf := unsigned(bcd_frac);
 
-		for j in 0 to int-1 loop
-			auxs := auxs rol 4;
-			auxs(4-1 downto 0) := auxi(0 to 4-1);
-			auxi := auxi rol 4;
-		end loop;
-
-		for j in 0 to dec-1 loop
-			auxs := auxs rol 4;
-			auxs(4-1 downto 0) := auxf(0 to 4-1);
-			auxf := auxf rol 4;
-		end loop;
-
-		auxs := auxs ror 4*dec;
+		auxd1 := (others => '-');
+		auxd2 := (others => '-');
+		auxs  := resize(unsigned(std_logic_vector'(bcd_int & bcd_frac)), auxs'length);
+		auxs  := auxs rol bcd_int'length+bcd_frac'length;
 		for i in 0 to 3-1 loop
+			if i<to_integer(unsigned(order)) then
+				auxs := auxs ror 4;
+			elsif i=to_integer(unsigned(order)) then
+				auxd1 := auxs(auxd1'range);
+				auxs(auxd1'range) := unsigned'("1110");
+			else
+				auxd2 := auxs(auxd1'range);
+				if auxd2=(auxd2'range => '0') then
+					auxd2 := unsigned'("1111");
+				end if;
+				auxs(auxd1'range) := auxd1;
+				auxd1 := auxd2;
+				auxs  := auxs ror 4;
+			end if;
 		end loop;
-			
-			-point);
-			auxs((int+point+1)*4-1 downto 0) := auxs((int+point+1)*4-1 downto 0) sll 4;
-			auxs(4-1 downto 0) := unsigned'("1110");
-			if dec-point > 0 then
-				auxs := auxs rol 4*(dec-point);
-			else
-				auxs := auxs srl 4;
-			end if;
+		auxs(auxd1'range) := auxd1;
+		fmtds <= std_logic_vector(auxs);
 
-			if dec>point then
-				for j in 1 to auxs'length/4-(dec-point)-1 loop
-					if j /= auxs'length/4-(dec-point)-1 then
-						auxs := auxs rol 4;
-						if auxs(4-1 downto 0)="0000" then
-							auxs(4-1 downto 0) := "1111";
-						else
-							auxs := auxs ror 4;
-							auxs(4-1 downto 0) := unsigned(bcd_sign);
-							auxs := auxs rol auxs'length-(j-1)*4;
-							exit;
-						end if;
-					else
-						auxs(4-1 downto 0) := unsigned(bcd_sign);
-						if int+point > 1 then
-							auxs := auxs rol 4*(dec-point+2);
-						else
-							auxs := auxs rol 4*(dec-point+1);
-						end if;
-					end if;
-				end loop;
-			else
-				for j in 1 to auxs'length/4 loop
-					if j /= auxs'length/4 then
-						auxs := auxs rol 4;
-						if auxs(4-1 downto 0)="0000" then
-							auxs(4-1 downto 0) := "1111";
-						else
-							auxs := auxs ror 4;
-							auxs(4-1 downto 0) := unsigned(bcd_sign);
-							auxs := auxs rol auxs'length-(j-1)*4;
-							exit;
-						end if;
-					else
-						auxs(4-1 downto 0) := unsigned(bcd_sign);
-						auxs := auxs rol 4;
-					end if;
-				end loop;
-			end if;
-
-			if i=to_integer(unsigned(scale)) then
-				fmtds <= std_logic_vector(auxs);
-			end if;
 	end process;
 
 end;

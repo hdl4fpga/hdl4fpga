@@ -225,11 +225,11 @@ begin
 	display_e : entity hdl4fpga.scopeio_gauge
 	generic map (
 		frac => 6,
-		int  => 2,
 		dec  => 2)
 	port map (
 		value => value,
-		scale => scale,
+		order => "00",
+		scale => "01",
 		fmtds => reading);	
 
 	process(video_clk)
