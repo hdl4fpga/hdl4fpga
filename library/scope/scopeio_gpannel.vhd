@@ -32,7 +32,7 @@ end;
 architecture beh of scopeio_gpannel is
 
 	constant label_size : natural := gauge_labels'length/((2*inputs+2)*ascii'length);
-	signal   reading    : std_logic_vector(20-1 downto 0);
+	signal   reading    : std_logic_vector(5*4-1 downto 0);
 
 	function init_rom 
 		return std_logic_vector is
@@ -76,7 +76,7 @@ architecture beh of scopeio_gpannel is
 	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
 	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
-	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
+	signal   reading1  : std_logic_vector(reading'range):= (others => '0');
 
 	signal   ut_mult   : std_logic_vector(ascii'range);
 	signal   chan_dot  : std_logic_vector(0 to 2+inputs-1);
@@ -97,6 +97,8 @@ architecture beh of scopeio_gpannel is
 	signal text_data : std_logic_vector(ascii'range);
 
 		signal we : std_logic := '0';
+	signal gg_order : std_logic_vector(0 to 2-1);
+	signal gg_scale : std_logic_vector(0 to 2-1);
 begin
 
 	process (pannel_clk)
@@ -209,7 +211,7 @@ begin
 				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
 				vt_value(0 to 9-1) := aux1(0 to 9-1);
 				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
-				vt_value(0 to 9-1) := b"000_100000";
+				vt_value(0 to 9-1) := b"0001_00000";
 				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
 				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
 				aux  := std_logic_vector(unsigned(aux)  sll scale'length);
@@ -222,14 +224,26 @@ begin
 		end if;
 	end process;
 
+	process (scale)
+	begin
+		gg_scale <= (others => '0');
+		gg_order <= (others => '0');
+		for i in 0 to 2**scale'length-1 loop
+			if i=to_integer(unsigned(scale)) then
+				gg_scale <= std_logic_vector(to_unsigned((i+2) mod 3, gg_scale'length));
+				gg_order <= std_logic_vector(to_unsigned((i+2)  /  3, gg_order'length));
+			end if;
+		end loop;
+	end process;
+
 	display_e : entity hdl4fpga.scopeio_gauge
 	generic map (
 		frac => 6,
-		dec  => 2)
+		dec  => 3)
 	port map (
-		value => b"010_100000",
-		order => "00",
-		scale => "01",
+		value => b"000_100000", --value,
+		order => gg_order,
+		scale => gg_scale,
 		fmtds => reading);	
 
 	process(video_clk)

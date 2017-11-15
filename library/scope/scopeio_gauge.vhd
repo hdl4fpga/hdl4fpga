@@ -28,10 +28,10 @@ begin
 	scale_p : process (scale, value)
 	begin
 		case scale is
+		when "00"   =>
+			fix <= std_logic_vector(shift_right(resize(signed(value), fix'length), 1));
 		when "10"   =>
 			fix <= std_logic_vector(shift_left(resize(signed(value),  fix'length), 1));
-		when "11"   =>
-			fix <= std_logic_vector(shift_right(resize(signed(value), fix'length), 1));
 		when others =>
 			fix <= std_logic_vector(resize(signed(value), fix'length));
 		end case;
@@ -56,23 +56,45 @@ begin
 
 		auxd1 := (others => '-');
 		auxd2 := (others => '-');
-		auxs  := resize(unsigned(std_logic_vector'(bcd_int & bcd_frac)), auxs'length);
-		auxs  := auxs rol bcd_int'length+bcd_frac'length;
-		for i in 0 to 3-1 loop
+		auxs  := (others => '0');
+		auxs(0 to auxs'length-auxd1'length-1) := unsigned(std_logic_vector'(bcd_int & bcd_frac));
+		fmtds <= std_logic_vector(auxs);
+		for i in 0 to auxs'length/auxd1'length-1 loop
 			if i<to_integer(unsigned(order)) then
-				auxs := auxs ror 4;
+				auxs := auxs rol auxd1'length;
 			elsif i=to_integer(unsigned(order)) then
 				auxd1 := auxs(auxd1'range);
 				auxs(auxd1'range) := unsigned'("1110");
 			else
-				auxs  := auxs ror 4;
+				auxs  := auxs rol auxd1'length;
 				auxd2 := auxs(auxd1'range);
 				auxs(auxd1'range) := auxd1;
 				auxd1 := auxd2;
 			end if;
 		end loop;
-		auxs  := auxs ror 4;
-		auxs(auxd1'range) := auxd1;
+		auxs  := auxs rol auxd1'length;
+		for i in 0 to auxs'length/auxd1'length-1 loop
+			if auxs(auxd1'range)=(auxd1'range => '0') then
+				auxs(auxd1'range) := unsigned'("1111");
+			elsif auxs(auxd1'range)= unsigned'("1110") then
+				auxs := auxs ror auxd1'length;
+				auxs(auxd1'range) := unsigned'("0000");
+				auxs := auxs ror auxd1'length;
+				auxs(auxd1'range) := unsigned(bcd_sign);
+				if i > 2 then
+					auxs := auxs ror (auxd1'length*(i-2));
+				end if;
+				exit;
+			else
+				auxs := auxs ror auxd1'length;
+				auxs(auxd1'range) := unsigned(bcd_sign);
+				if i > 1 then
+					auxs := auxs ror (auxd1'length*(i-1));
+				end if;
+				exit;
+			end if;
+			auxs := auxs rol auxd1'length;
+		end loop;
 		fmtds <= std_logic_vector(auxs);
 
 	end process;
