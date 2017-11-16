@@ -12,6 +12,7 @@ entity scopeio_gauge is
 		frac  : natural;
 		dec   : natural);
 	port (
+		clk   : in  std_logic;
 		order : in  std_logic_vector(0 to 2-1);
 		mult  : in  std_logic_vector(0 to 2-1);
 		value : in  std_logic_vector;
@@ -19,6 +20,9 @@ entity scopeio_gauge is
 end;
 
 architecture def of scopeio_gauge is
+	signal isign : std_logic_vector(0 to 4-1);
+	signal ifrac : std_logic_vector(0 to 4*dec-1);
+	signal iint  : std_logic_vector(0 to fmtds'length-4*(dec+1)-1);
 	signal bcd_sign : std_logic_vector(0 to 4-1);
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to fmtds'length-4*(dec+1)-1);
@@ -46,6 +50,15 @@ begin
 		bcd_sign => bcd_sign,
 		bcd_frac => bcd_frac,
 		bcd_int  => bcd_int);
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			bcd_sign <= isign;
+			bcd_frac <= ifrac;
+			bcd_int  <= iint;
+		end if;
+	end process;
 
 	fmt_p : process (order, bcd_int, bcd_frac, bcd_sign)
 		variable auxs  : unsigned(0 to fmtds'length-1);

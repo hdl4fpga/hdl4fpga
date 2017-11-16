@@ -245,6 +245,7 @@ begin
 		frac => 6,
 		dec  => 3)
 	port map (
+		clk   => pannel_clk,
 		value => b"000_100000", --value,
 		mult  => mult,
 		order => order,
