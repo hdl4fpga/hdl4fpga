@@ -13,7 +13,7 @@ entity scopeio_gauge is
 		dec   : natural);
 	port (
 		order : in  std_logic_vector(0 to 2-1);
-		scale : in  std_logic_vector(0 to 2-1);
+		mult  : in  std_logic_vector(0 to 2-1);
 		value : in  std_logic_vector;
 		fmtds : out std_logic_vector);
 end;
@@ -25,9 +25,9 @@ architecture def of scopeio_gauge is
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
 begin
 
-	scale_p : process (scale, value)
+	scale_p : process (mult , value)
 	begin
-		case scale is
+		case mult  is
 		when "00"   =>
 			fix <= std_logic_vector(shift_right(resize(signed(value), fix'length), 1));
 		when "10"   =>
