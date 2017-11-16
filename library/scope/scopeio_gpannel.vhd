@@ -235,7 +235,7 @@ begin
 			end loop;
 			hz_deca := word2byte(hz_decas,  time_scale);
 			tg_deca := word2byte(vt_decas, trigger_scale);
---			reading1 <= reading;
+			reading1 <= reading;
 
 		end if;
 	end process;
