@@ -12,14 +12,57 @@ use hdl4fpga.cgafont.all;
 
 architecture beh of ecp3versa is
 
+	constant hz_scales : scale_vector(0 to 16-1) := (
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => "00", order => "00", deca => 'm'),
+                                                                             
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => "00", order => "00", deca => 'm'),
+                                                                             
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => "00", order => "00", deca => 'm'),
+                                                                             
+		(from => 0.0, step => 1.00001*5.0*10.0**(+2), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+2), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+2), mult => "00", order => "00", deca => 'm'),
+                                                                             
+		(from => 0.0, step => 1.00001*5.0*10.0**(+3), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+3), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+3), mult => "00", order => "00", deca => 'm'),
+                                                                             
+		(from => 0.0, step => 1.00001*5.0*10.0**(+4), mult => "00", order => "00", deca => 'm'),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+4), mult => "00", order => "00", deca => 'm'));
+
+	constant vt_scales : scale_vector(0 to 16-1) := (
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => "10", order => "01", deca => 'u'),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => "00", order => "10", deca => 'u'),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => "01", order => "10", deca => 'u'),
+                                                                                               
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => "10", order => "10", deca => 'u'),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => "00", order => "11", deca => 'u'),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => "01", order => "11", deca => 'u'),
+                                                                                               
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => "10", order => "11", deca => 'u'),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => "00", order => "01", deca => 'u'),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => "01", order => "01", deca => 'u'),
+                                                                                               
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => "10", order => "01", deca => 'u'),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => "00", order => "10", deca => 'u'),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => "01", order => "10", deca => 'u'),
+                                                                                               
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => "10", order => "10", deca => 'u'),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => "00", order => "11", deca => 'u'),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => "01", order => "11", deca => 'u'),
+                                                                                               
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => "10", order => "11", deca => 'u'));
+
 	signal rst        : std_logic;
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
-	signal vga_red    : std_logic;
-	signal vga_green  : std_logic;
-	signal vga_blue   : std_logic;
-
+	signal vga_rgb    : std_logic_vector(0 to 3-1);
 	constant sample_size : natural := 9;
 
 	function sinctab (
@@ -107,7 +150,30 @@ begin
 	end process;
 
 	phy1_rst <= not rst;
+
 	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		layout_id    => 0,
+		hz_scales    => hz_scales,
+		vt_scales    => vt_scales,
+		inputs       => 1,
+		gauge_labels => to_ascii(string'(
+			"Escala     : " &
+			"Posicion   : " &
+			"Horizontal : " &
+			"Disparo    : ")),
+		unit_symbols => to_ascii(string'(
+			"V" &
+			"V" &
+			"s" &
+			"V")),
+		input_unit   => 100.0*(1.25*64.0)/8192.0,
+		channels_fg  => b"110",
+		channels_bg  => b"000",
+		hzaxis_fg    => b"010",
+		hzaxis_bg    => b"000",
+		grid_fg      => b"100",
+		grid_bg      => b"000")
 	port map (
 		mii_rxc     => phy1_rxc,
 		mii_rxdv    => phy1_rx_dv,
@@ -115,9 +181,7 @@ begin
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
-		video_red   => vga_red,
-		video_green => vga_green,
-		video_blue  => vga_blue,
+		video_rgb   => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_blank => open);
@@ -129,9 +193,9 @@ begin
 		d => (expansionx4'range => 1))
 	port map (
 		clk   => vga_clk,
-		di(0) => vga_green,
-		di(1) => vga_blue,
-		di(2) => vga_red,
+		di(0) => vga_rgb(1),
+		di(1) => vga_rgb(2),
+		di(2) => vga_rgb(0),
 		di(3) => vga_hsync,
 		di(4) => vga_vsync,
 		do    => expansionx4);

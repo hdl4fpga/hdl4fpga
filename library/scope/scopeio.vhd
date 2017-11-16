@@ -253,7 +253,7 @@ begin
 				case scope_cmd(3 downto 0) is
 				when "0010" =>
 					trigger_level   <= std_logic_vector(resize(signed(scope_data), vt_size));
-					trigger_channel <= scope_channel and x"7f";
+					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
 					trigger_edge    <= scope_channel(scope_channel'left);
 					trigger_select  <= scope_channel(trigger_select'range);
 				when "0011" =>
@@ -624,7 +624,7 @@ begin
 			elsif gauges_fgon='1' then
 				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
 			else
-				pixel <= b"00000000_00000000_11111111"; --(others => '1');
+--				pixel <= b"00000000_00000000_11111111"; --(others => '1');
 				pixel <= (others => '1');
 				pixel <= (others => '0');
 			end if;

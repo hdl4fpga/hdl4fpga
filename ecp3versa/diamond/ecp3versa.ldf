@@ -190,7 +190,7 @@
         </Source>
     </Implementation>
     <Implementation title="video" dir="video" description="video" synthesis="synplify" default_strategy="Timing">
-        <Options def_top="hdl4fpga.scopeio_axisx" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.scopeio_gauge" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -245,19 +245,19 @@
         <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_axisy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../library/scope/scopeio_axisx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/common/dpram.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../library/common/atof.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/meter_display.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/scope/scopeio_axis.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_gauge.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_gpannel.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
