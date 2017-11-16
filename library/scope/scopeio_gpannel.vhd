@@ -96,7 +96,7 @@ architecture beh of scopeio_gpannel is
 	signal text_addr : std_logic_vector(text_row'length+text_col'length-1 downto 0);
 	signal text_data : std_logic_vector(ascii'range);
 
-	signal we : std_logic := '0';
+	signal we : std_logic;
 	signal mult  : std_logic_vector(0 to 2-1);
 	signal order : std_logic_vector(0 to 2-1);
 begin
@@ -185,14 +185,6 @@ begin
 	begin
 
 		if rising_edge(pannel_clk) then
-			for i in 0 to inputs-1 loop
-				aux_mult := std_logic_vector(unsigned(aux_mult) srl mult'length);
-				aux_mult(0 to 2-1) := vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult;
-
-				aux_order := std_logic_vector(unsigned(aux_order) srl order'length);
-				aux_order(0 to 2-1) := vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).order;
-			end loop;
-
 			mult <= word2byte(
 				dup(aux_mult) &
 				hz_scales(to_integer(unsigned(time_scale))).mult &
@@ -204,6 +196,16 @@ begin
 				hz_scales(to_integer(unsigned(time_scale))).order &
 				hz_scales(to_integer(unsigned(trigger_scale))).order,
 				text_row, order'length);
+
+			aux_mult  := (others => '0');
+			aux_order := (others => '0');
+			for i in 0 to inputs-1 loop
+				aux_mult := std_logic_vector(unsigned(aux_mult) srl mult'length);
+				aux_mult(0 to 2-1) := vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult;
+
+				aux_order := std_logic_vector(unsigned(aux_order) srl order'length);
+				aux_order(0 to 2-1) := vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).order;
+			end loop;
 
 			value <= word2byte(
 				vt_value      &
