@@ -277,8 +277,7 @@ package std is
 		from  : real;
 		step  : real;
 		deca  : character;
-		mult  : std_logic_vector(0 to 2-1);
-		order : std_logic_vector(0 to 2-1);
+		scale : std_logic_vector(0 to 4-1);
 	end record;
 
 	type scale_vector is array (natural range <>) of scale_t;

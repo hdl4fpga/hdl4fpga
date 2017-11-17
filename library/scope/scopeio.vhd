@@ -239,7 +239,9 @@ begin
 					if i=to_integer(unsigned(scope_channel(channel_select'range))) then
 						case scope_cmd(3 downto 0) is
 						when "0000" =>
-							channel_scale  <= byte2word(channel_scale, scope_data(vt_scale'range), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_scale  <= byte2word(channel_scale, 
+											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
+											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>

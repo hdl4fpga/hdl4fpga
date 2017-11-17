@@ -12,9 +12,7 @@ entity scopeio_gauge is
 		frac  : natural;
 		dec   : natural);
 	port (
-		clk   : in  std_logic;
-		order : in  std_logic_vector(0 to 2-1);
-		mult  : in  std_logic_vector(0 to 2-1);
+		scale : in  std_logic_vector(0 to 4-1);
 		value : in  std_logic_vector;
 		fmtds : out std_logic_vector);
 end;
@@ -27,12 +25,17 @@ architecture def of scopeio_gauge is
 	signal bcd_frac : std_logic_vector(0 to 4*dec-1);
 	signal bcd_int  : std_logic_vector(0 to fmtds'length-4*(dec+1)-1);
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
+	signal order    : std_logic_vector(0 to 2-1);
+	signal mult     : std_logic_vector(0 to 2-1);
 begin
+
+	order <= scale(0 to 2-1);
+	mult <= scale(2 to 4-1);
 
 	with mult select
 	fix <= 
 		std_logic_vector(shift_right(resize(signed(value), fix'length), 1)) when "00",
-		std_logic_vector(resize(signed(value), fix'length)                  when "01",
+		std_logic_vector(resize(signed(value), fix'length))                 when "01",
 		std_logic_vector(shift_left(resize(signed(value),  fix'length), 1)) when "10",
 		(others => '-') when others;
 
@@ -42,19 +45,14 @@ begin
 		spce => false)
 	port map (
 		fix      => fix,
-		bcd_sign => bcd_sign,
-		bcd_frac => bcd_frac,
-		bcd_int  => bcd_int);
-
+		bcd_sign => isign,
+		bcd_frac => ifrac,
+		bcd_int  => iint);
+		
 			bcd_sign <= isign;
 			bcd_frac <= ifrac;
 			bcd_int  <= iint;
-	process (clk)
-	begin
-		if rising_edge(clk) then
-		end if;
-	end process;
-
+	
 	fmt_p : process (order, bcd_int, bcd_frac, bcd_sign)
 		variable auxs  : unsigned(0 to fmtds'length-1);
 		variable auxd1 : unsigned(0 to 4-1);
