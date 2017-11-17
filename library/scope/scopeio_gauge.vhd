@@ -29,17 +29,12 @@ architecture def of scopeio_gauge is
 	signal fix      : std_logic_vector(signed_num_bits(5*2**(value'length-1))-1 downto 0);
 begin
 
-	scale_p : process (mult , value)
-	begin
-		case mult  is
-		when "00"   =>
-			fix <= std_logic_vector(shift_right(resize(signed(value), fix'length), 1));
-		when "10"   =>
-			fix <= std_logic_vector(shift_left(resize(signed(value),  fix'length), 1));
-		when others =>
-			fix <= std_logic_vector(resize(signed(value), fix'length));
-		end case;
-	end process;
+	with mult select
+	fix <= 
+		std_logic_vector(shift_right(resize(signed(value), fix'length), 1)) when "00",
+		std_logic_vector(resize(signed(value), fix'length)                  when "01",
+		std_logic_vector(shift_left(resize(signed(value),  fix'length), 1)) when "10",
+		(others => '-') when others;
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
 	generic map (
@@ -51,12 +46,12 @@ begin
 		bcd_frac => bcd_frac,
 		bcd_int  => bcd_int);
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
 			bcd_sign <= isign;
 			bcd_frac <= ifrac;
 			bcd_int  <= iint;
+	process (clk)
+	begin
+		if rising_edge(clk) then
 		end if;
 	end process;
 
