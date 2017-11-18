@@ -227,7 +227,7 @@ begin
 		frac => 6,
 		dec  => 2)
 	port map (
-		value => b"010_100000",
+		value => b"000_100000",
 		scale => scale,
 		fmtds => reading);	
 

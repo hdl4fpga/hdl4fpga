@@ -66,9 +66,9 @@ begin
 		auxs(0 to auxs'length-auxd1'length-1) := unsigned(std_logic_vector'(bcd_int & bcd_frac));
 		fmtds <= std_logic_vector(auxs);
 		for i in 0 to auxs'length/auxd1'length-1 loop
-			if i<to_integer(unsigned(order)) then
+			if (i-1)<to_integer(unsigned(order)) then
 				auxs := auxs rol auxd1'length;
-			elsif i=to_integer(unsigned(order)) then
+			elsif (i-1)=to_integer(unsigned(order)) then
 				auxd1 := auxs(auxd1'range);
 				auxs(auxd1'range) := unsigned'("1110");
 			else
