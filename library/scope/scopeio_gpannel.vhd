@@ -209,7 +209,7 @@ begin
 				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
 				vt_value(0 to 9-1) := aux1(0 to 9-1);
 				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
-				vt_value(0 to 9-1) := b"000_100000";
+				vt_value(0 to 9-1) := b"0001_00000";
 				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
 				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
 				aux  := std_logic_vector(unsigned(aux)  sll scale'length);

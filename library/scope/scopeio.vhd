@@ -192,6 +192,7 @@ architecture beh of scopeio is
 	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
 	signal trigger_ena : std_logic;
 	constant delay       : natural := 4;
+	signal g_hzscale : std_logic_vector(hz_scale'range);
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_miirx
@@ -260,6 +261,7 @@ begin
 					trigger_select  <= scope_channel(trigger_select'range);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
+					g_hzscale       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).scale;
 				when others =>
 				end case;
 			end if;
@@ -491,8 +493,8 @@ begin
 		vt_scales      => vt_scales)
 	port map (
 		pannel_clk     => mii_rxc,
-		time_scale     => hz_scale,
-		time_value     => b"010_100000",
+		time_scale     => g_hzscale,
+		time_value     => b"0001_00000",
 		trigger_scale  => trigger_scale,
 		trigger_value  => trigger_level,
 		channel_scale  => channel_scale,
