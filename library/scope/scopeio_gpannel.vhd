@@ -224,10 +224,10 @@ begin
 
 	display_e : entity hdl4fpga.scopeio_gauge
 	generic map (
-		frac => 6,
+		frac => 5,
 		dec  => 2)
 	port map (
-		value => b"000_100000",
+		value => value,
 		scale => scale,
 		fmtds => reading);	
 

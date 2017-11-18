@@ -32,12 +32,22 @@ begin
 	order <= scale(0 to 2-1);
 	mult <= scale(2 to 4-1);
 
-	with mult select
-	fix <= 
-		std_logic_vector(shift_right(resize(signed(value), fix'length), 1)) when "00",
-		std_logic_vector(resize(signed(value), fix'length))                 when "01",
-		std_logic_vector(shift_left(resize(signed(value),  fix'length), 1)) when "10",
-		(others => '-') when others;
+	process (value, mult)
+		variable aux : signed(fix'range);
+	begin
+		aux := resize(signed(value), aux'length);
+		aux := aux + shift_left(aux, 2);
+		case mult is
+		when "00" =>
+			fix <= std_logic_vector(resize(signed(value), aux'length));
+		when "01" =>
+			fix <= std_logic_vector(shift_right(aux,1));
+		when "10" =>
+			fix <= std_logic_vector(aux);
+		when others =>
+			fix <= (others => '-');
+		end case;
+	end process;
 
 	fix2bcd : entity hdl4fpga.fix2bcd 
 	generic map (
