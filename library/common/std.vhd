@@ -199,6 +199,10 @@ package std is
 		return string;
 
 	function to_ascii (
+		constant arg : character)
+		return std_logic_vector;
+
+	function to_ascii (
 		constant arg : string)
 		return std_logic_vector;
 
@@ -886,6 +890,13 @@ package body std is
 	begin
 		return ascii(rom(to_integer(unsigned(arg))));
 	end function;
+
+	function to_ascii(
+		constant arg : character)
+		return std_logic_vector is
+	begin
+		return to_stdlogicvector(string'(0 to 0 => arg));
+	end;
 
 	function to_ascii(
 		constant arg : string)

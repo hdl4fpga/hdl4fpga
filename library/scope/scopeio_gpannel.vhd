@@ -9,18 +9,18 @@ entity scopeio_gpannel is
 	generic (
 		inputs         : natural;
 		gauge_labels   : std_logic_vector;
-		unit_symbols   : std_logic_vector;
-		time_scales    : std_logic_vector;
-		hz_scales      : scale_vector;
-		vt_scales      : scale_vector);
+		unit_symbols   : std_logic_vector);
 	port (
 		pannel_clk     : in  std_logic;
 		time_scale     : in  std_logic_vector;
 		time_value     : in  std_logic_vector;
+		time_deca      : in  std_logic_vector(ascii'range);
 		trigger_scale  : in  std_logic_vector;
+		trigger_deca      : in  std_logic_vector(ascii'range);
 		trigger_value  : in  std_logic_vector;
 		channel_scale  : in  std_logic_vector;
 		channel_level  : in  std_logic_vector;
+		channel_decas  : in  std_logic_vector;
 		video_clk      : in  std_logic;
 		gpannel_row    : in  std_logic_vector;
 		gpannel_col    : in  std_logic_vector;
@@ -57,21 +57,6 @@ architecture beh of scopeio_gpannel is
 		end loop;
 		return retval;
 	end;
-
-	function init_mult (
-		constant arg : scale_vector)
-		return std_logic_vector is
-		variable retval : unsigned(arg'length*ascii'length-1 downto 0);
-	begin
-		for i in arg'range loop
-			retval(ascii'range) := unsigned(std_logic_vector'(to_ascii(string'((1 => arg(i).deca)))));
-			retval := retval rol ascii'length;
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
-	constant hz_mults  : std_logic_vector(0 to ascii'length*hz_scales'length-1) := init_mult(hz_scales);
-	constant vt_mults  : std_logic_vector(0 to ascii'length*vt_scales'length-1) := init_mult(vt_scales);
 
 	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
@@ -174,9 +159,7 @@ begin
 		end;
 
 		variable vt_value : std_logic_vector(0 to 2*inputs*9-1);
-		variable hz_mult  : std_logic_vector(0 to ascii'length-1);
 		variable vt_mult  : std_logic_vector(0 to ascii'length*inputs-1);
-		variable tg_mult  : std_logic_vector(0 to ascii'length-1);
 
 		variable aux      : std_logic_vector(channel_scale'range);
 		variable aux1     : std_logic_vector(channel_level'range);
@@ -198,8 +181,8 @@ begin
 
 			ut_mult <= word2byte(
 				dup(vt_mult) & 
-				hz_mult      & 
-				tg_mult,
+				time_deca    & 
+				trigger_deca,
 				text_row, ascii'length);
 
 			aux  := channel_scale;
@@ -211,12 +194,10 @@ begin
 				vt_value := std_logic_vector(unsigned(vt_value) srl value'length);
 				vt_value(0 to 9-1) := b"0001_00000";
 				vt_mult  := std_logic_vector(unsigned(vt_mult)  srl scale'length);
-				vt_mult(0 to ascii'length-1) := word2byte(vt_mults, aux(0 to scale'length-1));
+				vt_mult(0 to ascii'length-1) := word2byte(channel_decas, i, ascii'length);
 				aux  := std_logic_vector(unsigned(aux)  sll scale'length);
 				aux1 := std_logic_vector(unsigned(aux1) sll 9);
 			end loop;
-			hz_mult := word2byte(hz_mults, time_scale);
-			tg_mult := word2byte(vt_mults, trigger_scale);
 			reading1 <= reading;
 
 		end if;

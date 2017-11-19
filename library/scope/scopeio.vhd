@@ -127,8 +127,10 @@ architecture beh of scopeio is
 
 	signal vt_scale         : std_logic_vector(4-1 downto 0);
 	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1);
+	signal channel_decas    : std_logic_vector(0 to ascii'length*inputs-1);
 
 	signal channel_select   : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
+	signal time_deca        : std_logic_vector(ascii'range);
 
 	signal  vm_inputs       : std_logic_vector(0 to inputs*vt_size-1);
 	signal  trigger_level   : std_logic_vector(0 to vt_size-1);
@@ -138,6 +140,7 @@ architecture beh of scopeio is
 	signal  trigger_select  : std_logic_vector(channel_select'range);
 	signal  trigger_channel : std_logic_vector(trigger_select'range);
 	signal  trigger_scale   : std_logic_vector(vt_scale'range);
+	signal  trigger_deca    : std_logic_vector(ascii'range);
 	signal  full_addr       : std_logic_vector(vm_addr'range);
 	signal  channel_offset  : std_logic_vector(0 to inputs*vt_size-1) := (others => '0');
 	signal  scale_offset    : std_logic_vector(0 to inputs*vt_size-1);
@@ -243,6 +246,9 @@ begin
 							channel_scale  <= byte2word(channel_scale, 
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
 											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+							channel_decas  <= byte2word(channel_decas, 
+											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
+											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
@@ -259,8 +265,11 @@ begin
 					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
 					trigger_edge    <= scope_channel(scope_channel'left);
 					trigger_select  <= scope_channel(trigger_select'range);
+					trigger_scale   <= word2byte(channe_scale,
+					trigger_deca    <= scope_channel(trigger_select'range);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
+					time_deca       <= to_ascii(hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca);
 					g_hzscale       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).scale;
 				when others =>
 				end case;
@@ -487,18 +496,18 @@ begin
 	generic map (
 		inputs         => inputs,
 		gauge_labels   => gauge_labels,
-		unit_symbols   => unit_symbols,
-		time_scales    => time_scales,
-		hz_scales      => hz_scales,
-		vt_scales      => vt_scales)
+		unit_symbols   => unit_symbols)
 	port map (
 		pannel_clk     => mii_rxc,
+		time_deca      => time_deca,
 		time_scale     => g_hzscale,
 		time_value     => b"0001_00000",
 		trigger_scale  => trigger_scale,
+		trigger_deca   => trigger_deca,
 		trigger_value  => trigger_level,
 		channel_scale  => channel_scale,
 		channel_level  => channel_offset,
+		channel_decas  => channel_decas,
 		video_clk      => video_clk,
 		gpannel_row    => gpannel_y(gpannel_row'range),
 		gpannel_col    => gpannel_x(gpannel_col'range),
