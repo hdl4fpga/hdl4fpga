@@ -265,8 +265,8 @@ begin
 					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
 					trigger_edge    <= scope_channel(scope_channel'left);
 					trigger_select  <= scope_channel(trigger_select'range);
-					trigger_scale   <= word2byte(channe_scale,
-					trigger_deca    <= scope_channel(trigger_select'range);
+					trigger_scale   <= word2byte(channel_scale, scope_channel(trigger_select'range), channel_scale'length/inputs);
+					trigger_deca    <= word2byte(channel_decas, scope_channel(trigger_select'range), ascii'length);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
 					time_deca       <= to_ascii(hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca);
