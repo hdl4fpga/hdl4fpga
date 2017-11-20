@@ -247,7 +247,7 @@ begin
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
 											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_decas  <= byte2word(channel_decas, 
-											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
+											  to_ascii(vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca)
 											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
@@ -265,8 +265,6 @@ begin
 					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
 					trigger_edge    <= scope_channel(scope_channel'left);
 					trigger_select  <= scope_channel(trigger_select'range);
-					trigger_scale   <= word2byte(channel_scale, scope_channel(trigger_select'range), channel_scale'length/inputs);
-					trigger_deca    <= word2byte(channel_decas, scope_channel(trigger_select'range), ascii'length);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
 					time_deca       <= to_ascii(hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca);
@@ -277,6 +275,8 @@ begin
 			cmd_edge := cmd_rdy;
 		end if;
 	end process;
+	trigger_scale <= word2byte(channel_scale, trigger_channel, channel_scale'length/inputs);
+	trigger_deca  <= word2byte(channel_decas, trigger_channel, ascii'length);
 	tdiv <= hz_scale;
 
 	video_e : entity hdl4fpga.video_vga
