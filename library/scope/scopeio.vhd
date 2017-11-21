@@ -462,9 +462,16 @@ begin
 			variable d : std_logic_vector(rd_data'range);
 		begin
 			if rising_edge(video_clk) then
-				rd_addr   <= full_addr;
-				ordinates <= d;
-				d         := rd_data;
+				rd_addr <= full_addr;
+				for i in 0 to inputs-1 loop
+					ordinates <= byte2word(
+						ordinates, 
+						std_logic_vector(
+							signed(word2byte(d,              i, vt_size)) + 
+							signed(word2byte(channel_offset, i, vt_size))),
+						reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+				end loop;
+				d       := rd_data;
 			end if;
 		end process;
 

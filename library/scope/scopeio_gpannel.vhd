@@ -34,31 +34,32 @@ architecture beh of scopeio_gpannel is
 	constant label_size : natural := gauge_labels'length/((2*inputs+2)*ascii'length);
 	signal   reading    : std_logic_vector(20-1 downto 0);
 
-	function init_rom 
+	function init_rom (
+		constant size : natural)
 		return std_logic_vector is
 		variable aux    : std_logic_vector(gauge_labels'length-1 downto 0);
 		variable aux1   : std_logic_vector(unit_symbols'length-1 downto 0);
-		variable retval : std_logic_vector(0 to ascii'length*2**gpannel_col'length*(2*inputs+2)-1);
+		variable retval : std_logic_vector(0 to ascii'length*size*(2*inputs+2)-1);
 		constant ssize  : natural := aux'length/(2+2*inputs);
 		constant ssize1 : natural := aux1'length/(2+2*inputs);
 	begin 
 		aux  := std_logic_vector(gauge_labels);
 		aux1 := std_logic_vector(unit_symbols);
 		for i in 0 to 2*inputs+2-1 loop
-			retval := std_logic_vector(unsigned(retval) ror (ascii'length*2**gpannel_col'length));
+			retval := std_logic_vector(unsigned(retval) ror (ascii'length*size));
 			retval(0 to retval'length/(2+2*inputs)-1) := fill(
 				aux(ssize-1 downto 0)    & 
 				fill("", ascii'length*reading'length/4) &
 				to_ascii(string'("  "))  &
 				aux1(ssize1-1 downto 0),
-				ascii'length*2**gpannel_col'length, value => '0');
+				ascii'length*size, value => '0');
 			aux  := std_logic_vector(unsigned(aux)  srl ssize);
 			aux1 := std_logic_vector(unsigned(aux1) srl ssize1);
 		end loop;
 		return retval;
 	end;
 
-	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom);
+	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom(2**gpannel_col'length));
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
 	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
 	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
