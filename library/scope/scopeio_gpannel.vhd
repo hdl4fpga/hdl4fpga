@@ -82,9 +82,6 @@ architecture beh of scopeio_gpannel is
 	signal text_addr : std_logic_vector(text_row'length+text_col'length-1 downto 0);
 	signal text_data : std_logic_vector(ascii'range);
 
-	signal vt_value : std_logic_vector(0 to 2*inputs*value'length-1);
-	signal vt_deca  : std_logic_vector(0 to 2*inputs*ascii'length-1);
-	signal vt_scale : std_logic_vector(0 to 2*inputs*ascii'length-1);
 	signal we : std_logic := '0';
 begin
 
@@ -140,40 +137,44 @@ begin
 	end process;
 
 	process (pannel_clk)
+		variable vt_value  : std_logic_vector(0 to 2*inputs*value'length-1);
+		variable vt_deca   : std_logic_vector(0 to 2*inputs*ascii'length-1);
+		variable vt_scale  : std_logic_vector(0 to 2*inputs*ascii'length-1);
 	begin
 		if rising_edge(pannel_clk) then
-	scale <= word2byte(
-		vt_scale    &
-		time_scale  &
-		trigger_scale,
-		text_row, scale'length);
+			scale <= word2byte(
+				vt_scale    &
+				time_scale  &
+				trigger_scale,
+				text_row, scale'length);
 
-	value <= word2byte(
-		vt_value    &
-		time_value  &
-		trigger_value,
-		text_row, value'length);
+			value <= word2byte(
+				vt_value    &
+				time_value  &
+				trigger_value,
+				text_row, value'length);
 
-	deca <= word2byte(
-		vt_deca    & 
-		time_deca  & 
-		trigger_deca,
-		text_row, ascii'length);
+			deca <= word2byte(
+				vt_deca    & 
+				time_deca  & 
+				trigger_deca,
+				text_row, ascii'length);
 
 			for i in 0 to inputs-1 loop
-				vt_value <= byte2word(
+				vt_value := byte2word(
 					vt_value, 
 					word2byte(channel_level, i, value'length) & b"0001_00000", 
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-				vt_deca  <= byte2word(
+				vt_deca  := byte2word(
 					vt_deca, 
 					word2byte(channel_decas, i, ascii'length) & word2byte(channel_decas, i, ascii'length),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-				vt_scale <= byte2word(
+				vt_scale := byte2word(
 					vt_scale, 
 					word2byte(channel_scale, i, ascii'length) & word2byte(channel_scale, i, ascii'length),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 			end loop;
+
 			reading1 <= reading;
 		end if;
 	end process;
