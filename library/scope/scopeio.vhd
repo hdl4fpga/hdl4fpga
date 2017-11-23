@@ -354,7 +354,7 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			aux := vm_inputs;
-			for i in 0 to inputs-1 loop
+			for i in 1 to inputs-1 loop
 				aux := byte2word(
 					aux, 
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1),vt_size)),
