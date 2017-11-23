@@ -353,12 +353,11 @@ begin
 		variable s   : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
-			aux := vm_inputs;
-			for i in 1 to inputs-1 loop
+			for i in 0 to 1 loop
 				aux := byte2word(
 					aux, 
-					std_logic_vector(resize(m(i)(0 to a(0)'length-1),vt_size)),
-					std_logic_vector(to_unsigned(2**i, channel_select'length)));
+					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
+					std_logic_vector(to_unsigned(2**i, inputs)));
 				m(i) := a(i)*s(i);
 				s(i) := scales(to_integer(unsigned(word2byte(channel_scale, i, vt_scale'length))));
 				a(i) := resize(signed(std_logic_vector'(not word2byte(input_data, i, input_data'length/inputs))), mword'length);
@@ -409,9 +408,9 @@ begin
 		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
-				if trigger_ena='0' then
+				if false and trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif input_addr(0)='0' then
+				elsif true or input_addr(0)='0' then
 					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
