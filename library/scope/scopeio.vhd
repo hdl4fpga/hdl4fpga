@@ -347,29 +347,23 @@ begin
 	end process;
 
 	process (input_clk)
-		variable m : mdword_vector(0 to inputs-1);
-		variable a : mword_vector(0 to inputs-1);
-		variable s : mword_vector(0 to inputs-1);
+		variable aux : std_logic_vector(vm_inputs'range);
+		variable m   : mdword_vector(0 to inputs-1);
+		variable a   : mword_vector(0 to inputs-1);
+		variable s   : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
+			aux := vm_inputs;
 			for i in 0 to inputs-1 loop
-				vm_inputs <= byte2word(
-					vm_inputs, 
+				aux := byte2word(
+					aux, 
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1),vt_size)),
 					std_logic_vector(to_unsigned(2**i, channel_select'length)));
 				m(i) := a(i)*s(i);
-				s(i) := scales(to_integer(unsigned(
-					word2byte(
-						channel_scale,
-						std_logic_vector(to_unsigned(i, channel_select'length)),
-					   	vt_scale'length))));
-				a(i) := resize(signed(not 
-					std_logic_vector'(word2byte(
-						input_data, 
-						std_logic_vector(to_unsigned(i, channel_select'length)),
-						input_data'length/inputs))),
-					mword'length);
+				s(i) := scales(to_integer(unsigned(word2byte(channel_scale, i, vt_scale'length))));
+				a(i) := resize(signed(std_logic_vector'(not word2byte(input_data, i, input_data'length/inputs))), mword'length);
 			end loop;
+			vm_inputs <= aux;
 		end if;
 	end process;
 
