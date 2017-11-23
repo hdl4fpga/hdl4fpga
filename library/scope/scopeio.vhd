@@ -135,7 +135,7 @@ architecture beh of scopeio is
 	signal  vm_inputs       : std_logic_vector(0 to inputs*vt_size-1);
 	signal  trigger_level   : std_logic_vector(0 to vt_size-1);
 	signal  vm_addr         : std_logic_vector(1 to input_addr'right);
-	signal  trigger_offset  : std_logic_vector(0 to inputs*vt_size-1);
+	signal  trigger_offset  : std_logic_vector(0 to vt_size-1);
 	signal  trigger_edge    : std_logic;
 	signal  trigger_select  : std_logic_vector(channel_select'range);
 	signal  trigger_channel : std_logic_vector(trigger_select'range);
@@ -247,8 +247,8 @@ begin
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
 											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_decas  <= byte2word(channel_decas, 
-											  to_ascii(vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca)
-											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca,
+											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
@@ -267,7 +267,7 @@ begin
 					trigger_select  <= scope_channel(trigger_select'range);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
-					time_deca       <= to_ascii(hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca);
+					time_deca       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca;
 					g_hzscale       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).scale;
 				when others =>
 				end case;

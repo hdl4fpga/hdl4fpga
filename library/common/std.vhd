@@ -280,7 +280,7 @@ package std is
 	type scale_t is record
 		from  : real;
 		step  : real;
-		deca  : character;
+		deca  : std_logic_vector(ascii'range);
 		scale : std_logic_vector(0 to 4-1);
 	end record;
 
@@ -895,7 +895,7 @@ package body std is
 		constant arg : character)
 		return std_logic_vector is
 	begin
-		return to_stdlogicvector(string'(0 to 0 => arg));
+		return to_stdlogicvector(string'(1 to 1 => arg));
 	end;
 
 	function to_ascii(

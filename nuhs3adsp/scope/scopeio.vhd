@@ -39,57 +39,58 @@ architecture beh of nuhs3adsp is
 		return aux;
 	end;
 
+	constant inputs : natural := 2;
 	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
-	signal sample      : std_logic_vector(sample_size-1 downto 0);
+	signal sample      : std_logic_vector(inputs*sample_size-1 downto 0);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => 'm'),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => 'm'),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => 'm'),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => 'm'),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => 'm'),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => 'm'),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => 'm'),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), scale => "1010", deca => 'm'),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), scale => "0000", deca => ' '),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => ' '),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => ' '),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => ' '),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => ' '),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => ' '),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => ' '),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => ' '));
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('m')),
+                                                                               
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('m')),
+                                                                               
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), scale => "1010", deca => to_ascii('m')),
+                                                                               
+		(from => 0.0, step => 1.00001*5.0*10.0**(-1), scale => "0000", deca => to_ascii('n')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('n')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('n')),
+                                                                               
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('n')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('n')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('n')),
+                                                                               
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('n')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('n')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => 'u'),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => 'u'),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => 'u'),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('u')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('u')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('u')),
                                                                                      
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => 'u'),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => 'u'),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => 'u'),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('u')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('u')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('u')),
                                                                                      
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => 'u'),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), scale => "0101", deca => 'u'),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), scale => "0110", deca => 'u'),
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('u')),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), scale => "0101", deca => to_ascii('u')),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), scale => "0110", deca => to_ascii('u')),
                                                                                      
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => 'm'),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => 'm'),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => 'm'),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('m')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('m')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('m')),
                                                                                      
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => 'm'),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => 'm'),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => 'm'),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('m')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('m')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('m')),
                                                                                      
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => 'm'));
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('m')));
 
 begin
 
@@ -125,8 +126,9 @@ begin
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
-		data => sample);
+		data => sample(sample_size-1 downto 0));
 
+	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
@@ -139,8 +141,10 @@ begin
 		layout_id    => 0,
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
-		inputs       => 1,
+		inputs       => inputs,
 		gauge_labels => to_ascii(string'(
+			"Escala     : " &
+			"Posicion   : " &
 			"Escala     : " &
 			"Posicion   : " &
 			"Horizontal : " &
@@ -148,11 +152,13 @@ begin
 		unit_symbols => to_ascii(string'(
 			"V" &
 			"V" &
+			"V" &
+			"V" &
 			"s" &
 			"V")),
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
-		channels_fg  => b"11111111_11111111_00000000",
-		channels_bg  => b"00000000_00000000_00000000",
+		channels_fg  => b"11111111_11111111_00000000" & b"00000000_11111111_11111111",
+		channels_bg  => b"00000000_00000000_00000000" & b"00000000_00000000_00000000",
 		hzaxis_fg    => b"00000000_11111111_00000000",
 		hzaxis_bg    => b"00000000_00000000_00000000",
 		grid_fg      => b"11111111_00000000_00000000",
