@@ -139,7 +139,7 @@ begin
 	process (pannel_clk)
 		variable vt_value  : std_logic_vector(0 to 2*inputs*value'length-1);
 		variable vt_deca   : std_logic_vector(0 to 2*inputs*ascii'length-1);
-		variable vt_scale  : std_logic_vector(0 to 2*inputs*ascii'length-1);
+		variable vt_scale  : std_logic_vector(0 to 2*inputs*scale'length-1);
 	begin
 		if rising_edge(pannel_clk) then
 			scale <= word2byte(
@@ -163,7 +163,7 @@ begin
 			for i in 0 to inputs-1 loop
 				vt_value := byte2word(
 					vt_value, 
-					word2byte(channel_level, i, value'length) & b"0001_00000", 
+					std_logic_vector(to_unsigned(32, value'length)) & word2byte(channel_level, i, value'length),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				vt_deca  := byte2word(
 					vt_deca, 
@@ -171,7 +171,7 @@ begin
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				vt_scale := byte2word(
 					vt_scale, 
-					word2byte(channel_scale, i, ascii'length) & word2byte(channel_scale, i, ascii'length),
+					word2byte(channel_scale, i, scale'length) & word2byte(channel_scale, i, scale'length),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 			end loop;
 

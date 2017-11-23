@@ -244,8 +244,8 @@ begin
 						case scope_cmd(3 downto 0) is
 						when "0000" =>
 							channel_scale  <= byte2word(channel_scale, 
-											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale
-											  , reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale,
+											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_decas  <= byte2word(channel_decas, 
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca,
 											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));

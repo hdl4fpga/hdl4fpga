@@ -12,50 +12,50 @@ use hdl4fpga.std.all;
 architecture beh of s3estarter is
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1)),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1)),
-
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0)),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0)),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0)),
-                                     
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1)),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1)),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1)),
-                                     
-		(from => 0.0, step => 1.00001*5.0*10.0**(+2)),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+2)),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+2)),
-                                     
-		(from => 0.0, step => 1.00001*5.0*10.0**(+3)),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+3)),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+3)),
-
-		(from => 0.0, step => 1.00001*5.0*10.0**(+4)),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+4)));
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('a')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('b')),
+                                                                       
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('c')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('d')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('e')),
+                                                                       
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('f')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('g')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), scale => "1010", deca => to_ascii('h')),
+                                                                       
+		(from => 0.0, step => 1.00001*5.0*10.0**(-1), scale => "0000", deca => to_ascii('i')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('j')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('k')),
+                                                                       
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('l')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('n')),
+                                                                       
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('o')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('p')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1)),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1)),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1)),
-
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1)),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1)),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1)),
-
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0)),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0)),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0)),
-
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1)),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1)),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1)),
-
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1)),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1)),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1)),
-
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0)));
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('0')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('1')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('2')),
+                                                                                                      
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('3')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('4')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('5')),
+                                                                                                      
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('6')),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), scale => "0101", deca => to_ascii('7')),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), scale => "0110", deca => to_ascii('9')),
+                                                                                                      
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('9')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('A')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('B')),
+                                                                                     
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('C')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('D')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('E')),
+                                                                                     
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('F')));
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
@@ -95,6 +95,7 @@ architecture beh of s3estarter is
 	signal rot_rdy   : std_logic;
 	signal input_ena : std_logic;
 	signal tdiv      : std_logic_vector(4-1 downto 0);
+	signal vga_rgb   : std_logic_vector(3-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -294,10 +295,30 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		layout_id  => 1,
-		hz_scales  => hz_scales,
-		vt_scales  => vt_scales,
-		inputs => inputs,
-		input_unit => 100.0*(1.25*64.0)/8192.0)
+		hz_scales    => hz_scales,
+		vt_scales    => vt_scales,
+		inputs       => 2,
+		gauge_labels => to_ascii(string'(
+			"Escala     : " &
+			"Posicion   : " &
+			"Escala     : " &
+			"Posicion   : " &
+			"Horizontal : " &
+			"Disparo    : ")),
+		unit_symbols => to_ascii(string'(
+			"V" &
+			"V" &
+			"V" &
+			"V" &
+			"s" &
+			"V")),
+		input_unit   => 100.0*(1.25*64.0)/8192.0,
+		channels_fg  => b"110" & "011",
+		channels_bg  => b"000" & "000",
+		hzaxis_fg    => b"010",
+		hzaxis_bg    => b"000",
+		grid_fg      => b"100",
+		grid_bg      => b"000")
 	port map (
 		mii_rxc     => e_rx_clk,
 		mii_rxdv    => e_rx_dv,
@@ -307,12 +328,13 @@ begin
 		input_ena   => input_ena,
 		input_data  => sample,
 		video_clk   => vga_clk,
-		video_red   => vga_red,
-		video_green => vga_green,
-		video_blue  => vga_blue,
+		video_rgb   => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync);
 
+	vga_red   <= vga_rgb(2);
+	vga_green <= vga_rgb(1);
+	vga_blue  <= vga_rgb(0);
 	-- Ethernet Transceiver --
 	--------------------------
 
