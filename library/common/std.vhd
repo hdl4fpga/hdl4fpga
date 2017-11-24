@@ -282,6 +282,7 @@ package std is
 		step  : real;
 		deca  : std_logic_vector(ascii'range);
 		scale : std_logic_vector(0 to 4-1);
+		mult  : integer;
 	end record;
 
 	type scale_vector is array (natural range <>) of scale_t;

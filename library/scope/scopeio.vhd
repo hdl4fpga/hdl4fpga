@@ -17,9 +17,6 @@ entity scopeio is
 		gauge_labels   : std_logic_vector;
 		unit_symbols   : std_logic_vector;
 		
-		time_scales    : std_logic_vector :=
-			"0000" & "0010" & "0010" & "0011" & "0100" & "0101" & "0110" & "0111" &
-			"1000" & "1010" & "1010" & "1011" & "1100" & "1101" & "1110" & "1111";
 		prescaler_tab  : integer_vector := (
 			1**1*10**0, 2**1*10**0, 5**1*10**0,
 			1**1*10**1, 2**1*10**1, 5**1*10**1,
@@ -154,32 +151,7 @@ architecture beh of scopeio is
 	type    mword_vector  is array (natural range <>) of mword;
 	type    mdword_vector is array (natural range <>) of mdword;
 
-	function scales_init (
-		constant size : natural)
-		return mword_vector is
-		variable j : natural;
-		variable k : natural;
-		variable n : integer;
-		variable rval : mword_vector(0 to size-1);
-	begin
-		for i in 1 to size loop 
-			j := i;
-			n := (j - (j mod 3)) / 3;
-			case j mod 3 is
-			when 0 =>           -- 1.0
-				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+0)))), rval(0)'length);
-			when 1 =>           -- 2.0
-				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+0)*2.0**(n+1)))), rval(0)'length);
-			when 2 =>           -- 5.0
-				rval(i-1) := to_signed(integer(trunc(-(input_unit*2.0**(rval(0)'length)) / (5.0**(n+1)*2.0**(n+0)))), rval(0)'length);
-			when others =>
-			end case;
-		end loop;
-		return rval;
-	end;
-
-	constant scales    : mword_vector(0 to 16-1)  := scales_init(16);
-
+	signal scales           : std_logic_vector(0 to inputs*mword'length-1);
 	signal pixel       : std_logic_vector(video_rgb'range);
 
 	signal gpannel_on  : std_logic_vector(0 to ly_dptr(layout_id).num_of_seg-1);
@@ -250,6 +222,11 @@ begin
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca,
 											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
+							scales          <= byte2word(scales,
+											  std_logic_vector(
+												to_signed(vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).mult, mword'length)),
+											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
 							channel_offset <= byte2word(channel_offset, std_logic_vector(resize(signed(scope_data), vt_size)), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
@@ -357,9 +334,9 @@ begin
 				aux := byte2word(
 					aux, 
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
-					std_logic_vector(to_unsigned(2**i, inputs)));
+					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				m(i) := a(i)*s(i);
-				s(i) := scales(to_integer(unsigned(word2byte(channel_scale, i, vt_scale'length))));
+				s(i) := signed(word2byte(scales, i, mword'length));
 				a(i) := resize(signed(std_logic_vector'(not word2byte(input_data, i, input_data'length/inputs))), mword'length);
 			end loop;
 			vm_inputs <= aux;

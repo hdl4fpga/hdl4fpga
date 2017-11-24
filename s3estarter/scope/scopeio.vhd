@@ -12,50 +12,50 @@ use hdl4fpga.std.all;
 architecture beh of s3estarter is
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('a')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('b')),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('c')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('d')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('e')),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('f')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('g')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), scale => "1010", deca => to_ascii('h')),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), scale => "0000", deca => to_ascii('i')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), scale => "0001", deca => to_ascii('j')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), scale => "0010", deca => to_ascii('k')),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), scale => "0100", deca => to_ascii('l')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), scale => "0101", deca => to_ascii('m')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), scale => "0110", deca => to_ascii('n')),
-                                                                       
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), scale => "1000", deca => to_ascii('o')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), scale => "1001", deca => to_ascii('p')));
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1001", deca => to_ascii('u')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1010", deca => to_ascii('u')),
+                                                                                                 
+		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**0*2**1*5**0, scale => "0000", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**1, scale => "0001", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**1*2**0*5**0, scale => "0010", deca => to_ascii('m')),
+                                                                                                 
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**2*2**0*5**0, scale => "0100", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**2*2**1*5**0, scale => "0101", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**2*2**0*5**1, scale => "0110", deca => to_ascii('m')),
+                                                                                                 
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**3*2**0*5**0, scale => "1000", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**3*2**1*5**0, scale => "1001", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**3*2**0*5**1, scale => "1010", deca => to_ascii('m')),
+                                                                                                 
+		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**4*2**0*5**0, scale => "0000", deca => to_ascii(' ')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**4*2**1*5**0, scale => "0001", deca => to_ascii(' ')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**4*2**0*5**1, scale => "0010", deca => to_ascii(' ')),
+                                                                                                 
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**5*2**0*5**0, scale => "0100", deca => to_ascii(' ')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**5*2**0*5**0, scale => "0101", deca => to_ascii(' ')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('0')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('1')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('2')),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => 2**17/(10**0*2**0*5**0), scale => "1000", deca => to_ascii('0')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => 2**17/(10**0*2**1*5**0), scale => "1001", deca => to_ascii('1')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => 2**17/(10**0*2**0*5**1), scale => "1010", deca => to_ascii('2')),
                                                                                                       
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('3')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('4')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('5')),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => 2**17/(10**1*2**0*5**0), scale => "0000", deca => to_ascii('3')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => 2**17/(10**1*2**1*5**0), scale => "0001", deca => to_ascii('4')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => 2**17/(10**1*2**0*5**1), scale => "0010", deca => to_ascii('5')),
                                                                                                       
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('6')),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), scale => "0101", deca => to_ascii('7')),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), scale => "0110", deca => to_ascii('9')),
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => 2**17/(10**2*2**0*5**0), scale => "0100", deca => to_ascii('6')),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => 2**17/(10**2*2**1*5**0), scale => "0101", deca => to_ascii('7')),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => 2**17/(10**2*2**0*5**1), scale => "0110", deca => to_ascii('9')),
                                                                                                       
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), scale => "1000", deca => to_ascii('9')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), scale => "1001", deca => to_ascii('A')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), scale => "1010", deca => to_ascii('B')),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => 2**17/(10**3*2**0*5**0), scale => "1000", deca => to_ascii('9')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => 2**17/(10**3*2**1*5**0), scale => "1001", deca => to_ascii('A')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => 2**17/(10**3*2**0*5**1), scale => "1010", deca => to_ascii('B')),
                                                                                      
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), scale => "0000", deca => to_ascii('C')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), scale => "0001", deca => to_ascii('D')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), scale => "0010", deca => to_ascii('E')),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => 2**17/(10**4*2**0*5**0), scale => "0000", deca => to_ascii('C')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => 2**17/(10**4*2**1*5**0), scale => "0001", deca => to_ascii('D')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => 2**17/(10**4*2**0*5**1), scale => "0010", deca => to_ascii('E')),
                                                                                      
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), scale => "0100", deca => to_ascii('F')));
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => 2**17/(10**5*2**0*5**0), scale => "0100", deca => to_ascii('F')));
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
@@ -230,17 +230,9 @@ begin
 			elsif rising_edge(spi_clk) then
 				if cntr(0)='1' then
 					if adcdac_sel ='0' then
-
---						for i in 0 to inputs-1 loop
---							aux := aux sll sample_size;
---							aux(sample_size-1 downto 0) := not adin(sample_size-1 downto 0);
---							adin := adin srl (adin'length/inputs);
---						end loop;
---						sample <= std_logic_vector(aux);
 						sample <= std_logic_vector(
 							not adin(1*16+sample_size-1 downto 1*16) &
 							not adin(0*16+sample_size-1 downto 0*16));
-
 						input_ena <= not amp_spi;
 						ad_conv   <= '0';
 					else
