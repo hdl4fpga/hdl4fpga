@@ -353,7 +353,7 @@ begin
 		variable s   : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
-			for i in 0 to 1 loop
+			for i in 0 to inputs-1 loop
 				aux := byte2word(
 					aux, 
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
@@ -408,9 +408,9 @@ begin
 		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
-				if false and trigger_ena='0' then
+				if trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif true or input_addr(0)='0' then
+				elsif input_addr(0)='0' then
 					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -453,18 +453,20 @@ begin
 
 		process (video_clk)
 			variable d : std_logic_vector(rd_data'range);
+			variable aux : std_logic_vector(ordinates'range);
 		begin
 			if rising_edge(video_clk) then
 				rd_addr <= full_addr;
 				for i in 0 to inputs-1 loop
-					ordinates <= byte2word(
-						ordinates, 
+					aux := byte2word(
+						aux, 
 						std_logic_vector(
 							signed(word2byte(d,              i, vt_size)) + 
 							signed(word2byte(channel_offset, i, vt_size))),
 						reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				end loop;
 				d       := rd_data;
+				ordinates <= aux;
 			end if;
 		end process;
 
