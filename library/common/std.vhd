@@ -819,16 +819,19 @@ package body std is
 		constant byte : std_logic_vector;
 		constant mask : std_logic_vector)
 		return std_logic_vector is
-		variable di : unsigned(0 to byte'length-1);
-		variable do : unsigned(0 to word'length-1);
+		variable di : std_logic_vector(0 to byte'length-1);
+		variable do : std_logic_vector(0 to word'length-1);
+		variable mi : std_logic_vector(0 to mask'length-1);
 	begin
-		di := unsigned(byte);
-		do := unsigned(word);
-		for i in mask'range loop
-			if mask(i)='1' then
-				do(di'range) := di;
+		di := byte;
+		do := word;
+		mi := mask;
+		for i in mi'range loop
+			if mi(i)='1' then
+				for j in di'range loop
+					do((i*di'length+j) mod do'length) := di(j);
+				end loop;
 			end if;
-			do := do rol di'length;
 		end loop;
 		return std_logic_vector(do);
 	end;

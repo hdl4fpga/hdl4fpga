@@ -16,14 +16,6 @@ entity scopeio is
 		vt_scales      : scale_vector;
 		gauge_labels   : std_logic_vector;
 		unit_symbols   : std_logic_vector;
-		
-		prescaler_tab  : integer_vector := (
-			1**1*10**0, 2**1*10**0, 5**1*10**0,
-			1**1*10**1, 2**1*10**1, 5**1*10**1,
-			1**1*10**2, 2**1*10**2, 5**1*10**2,
-			1**1*10**3, 2**1*10**3, 5**1*10**3,
-			1**1*10**4, 2**1*10**4, 5**1*10**4,
-			1**1*10**6);
 		channels_fg    : std_logic_vector;
 		channels_bg    : std_logic_vector;
 		hzaxis_fg      : std_logic_vector;
@@ -125,6 +117,7 @@ architecture beh of scopeio is
 	signal vt_scale         : std_logic_vector(4-1 downto 0);
 	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1);
 	signal channel_decas    : std_logic_vector(0 to ascii'length*inputs-1);
+	signal gp_vtscale       : std_logic_vector(0 to vt_scale'length*inputs-1);
 
 	signal channel_select   : std_logic_vector(unsigned_num_bits(inputs-1)-1 downto 0);
 	signal time_deca        : std_logic_vector(ascii'range);
@@ -216,16 +209,12 @@ begin
 						case scope_cmd(3 downto 0) is
 						when "0000" =>
 							channel_scale  <= byte2word(channel_scale, 
-											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).scale,
+											  scope_data(vt_scale'range),
 											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_decas  <= byte2word(channel_decas, 
 											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca,
 											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
-							scales          <= byte2word(scales,
-											  std_logic_vector(
-												to_signed(vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).mult, mword'length)),
-											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 
 							vt_scale       <= scope_data(vt_scale'range);
 						when "0001" =>
@@ -252,7 +241,7 @@ begin
 			cmd_edge := cmd_rdy;
 		end if;
 	end process;
-	trigger_scale <= word2byte(channel_scale, trigger_channel, channel_scale'length/inputs);
+	trigger_scale <= vt_scales(to_integer(unsigned(word2byte(channel_scale, trigger_channel, channel_scale'length/inputs)))).scale;
 	trigger_deca  <= word2byte(channel_decas, trigger_channel, ascii'length);
 	tdiv <= hz_scale;
 
@@ -298,24 +287,24 @@ begin
 	prescaler_p : process (input_clk)
 
 		function adjtab (
-			constant arg : integer_vector)
+			constant arg : scale_vector)
 			return integer_vector is
 			variable retval : integer_vector(arg'range);
 		begin
 			for i in retval'range loop
-				retval(i) := arg(i)-2;
+				retval(i) := arg(i).mult-2;
 			end loop;
 			return retval;
 		end;
 
-		constant ajdtab : integer_vector(prescaler_tab'range) := adjtab(prescaler_tab);
-		variable scaler : signed(0 to signed_num_bits(max(prescaler_tab)-1)-1);
+		constant table  : integer_vector(hz_scales'range) := adjtab(hz_scales);
+		variable scaler : signed(0 to signed_num_bits(max(table)-1)-1);
 	begin
 		if rising_edge(input_clk) then
-			input_we <= scaler(0) and input_ena;
+			input_we <= '1'; --scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
-					scaler := to_signed(ajdtab(to_integer((unsigned(hz_scale)))), scaler'length);
+					scaler := to_signed(table(to_integer((unsigned(hz_scale)))), scaler'length);
 				else
 					scaler := scaler - 1;
 				end if;
@@ -336,7 +325,7 @@ begin
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				m(i) := a(i)*s(i);
-				s(i) := signed(word2byte(scales, i, mword'length));
+				s(i) := to_signed(vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult, mword'length);
 				a(i) := resize(signed(std_logic_vector'(not word2byte(input_data, i, input_data'length/inputs))), mword'length);
 			end loop;
 			vm_inputs <= aux;
@@ -379,15 +368,15 @@ begin
 			d => (0 => 2))
 		port map (
 			clk   => input_clk,
-			di(0) => input_we,
+			di(0) => '1', --input_we,
 			do(0) => input_inc);
 
 		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
-				if trigger_ena='0' then
+				if false and trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif input_addr(0)='0' then
+				elsif true or input_addr(0)='0' then
 					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -415,7 +404,7 @@ begin
 			d => (wr_data'range => 2))
 		port map (
 			clk => input_clk,
-			ena => input_we,
+			ena => '1', --input_we,
 			di  => vm_inputs,
 			do  => data1);
 
@@ -450,7 +439,7 @@ begin
 		dpram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => input_clk,
-			wr_ena  => wr_ena,
+			wr_ena  => '1', --wr_ena,
 			wr_addr => wr_addr,
 			wr_data => wr_data,
 			rd_addr => rd_addr,
@@ -471,6 +460,18 @@ begin
 		end if;
 	end process;
 
+	process(channel_scale)
+		variable aux : std_logic_vector(gp_vtscale'range);
+	begin
+		for i in 0 to inputs-1 loop
+			aux := byte2word(
+				aux, 
+				vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).scale,
+				reverse(std_logic_vector(to_unsigned(2**i, inputs))));
+		end loop;
+		gp_vtscale <= aux;
+	end process;
+
 	scopeio_gpannel_e : entity hdl4fpga.scopeio_gpannel
 	generic map (
 		inputs         => inputs,
@@ -484,7 +485,7 @@ begin
 		trigger_scale  => trigger_scale,
 		trigger_deca   => trigger_deca,
 		trigger_value  => trigger_level,
-		channel_scale  => channel_scale,
+		channel_scale  => gp_vtscale,
 		channel_level  => channel_offset,
 		channel_decas  => channel_decas,
 		video_clk      => video_clk,
