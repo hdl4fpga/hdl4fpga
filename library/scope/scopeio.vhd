@@ -115,7 +115,7 @@ architecture beh of scopeio is
 	signal input_inc        : std_logic;
 
 	signal vt_scale         : std_logic_vector(4-1 downto 0);
-	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1);
+	signal channel_scale    : std_logic_vector(0 to vt_scale'length*inputs-1):= (others => '0');
 	signal channel_decas    : std_logic_vector(0 to ascii'length*inputs-1);
 	signal gp_vtscale       : std_logic_vector(0 to vt_scale'length*inputs-1);
 
@@ -301,7 +301,7 @@ begin
 		variable scaler : signed(0 to signed_num_bits(max(table)-1)-1);
 	begin
 		if rising_edge(input_clk) then
-			input_we <= '1'; --scaler(0) and input_ena;
+			input_we <= scaler(0) and input_ena;
 			if input_ena='1' then
 				if scaler(0)='1' then
 					scaler := to_signed(table(to_integer((unsigned(hz_scale)))), scaler'length);
@@ -368,15 +368,15 @@ begin
 			d => (0 => 2))
 		port map (
 			clk   => input_clk,
-			di(0) => '1', --input_we,
+			di(0) => input_we,
 			do(0) => input_inc);
 
 		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
-				if false and trigger_ena='0' then
+				if trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif true or input_addr(0)='0' then
+				elsif input_addr(0)='0' then
 					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -397,6 +397,7 @@ begin
 
 		wr_addr <= input_addr(vm_addr'range);
 		wr_ena  <= not input_addr(input_addr'left) and trigger_ena and input_inc;
+--		wr_ena  <= input_inc;
 
 		data1_e : entity hdl4fpga.align
 		generic map (
@@ -404,7 +405,7 @@ begin
 			d => (wr_data'range => 2))
 		port map (
 			clk => input_clk,
-			ena => '1', --input_we,
+			ena => input_we,
 			di  => vm_inputs,
 			do  => data1);
 
@@ -439,7 +440,7 @@ begin
 		dpram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => input_clk,
-			wr_ena  => '1', --wr_ena,
+			wr_ena  => wr_ena,
 			wr_addr => wr_addr,
 			wr_data => wr_data,
 			rd_addr => rd_addr,
