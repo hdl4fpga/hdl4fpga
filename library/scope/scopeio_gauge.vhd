@@ -111,6 +111,12 @@ begin
 			end if;
 			auxs := auxs rol auxd1'length;
 		end loop;
+		auxs := auxs ror auxd1'length;
+		if auxs(auxd1'range)=unsigned'("1110") then
+			auxs(auxd1'range) := unsigned'("1111");
+		end if;
+		auxs := auxs rol auxd1'length;
+
 		fmtds <= std_logic_vector(auxs);
 
 	end process;

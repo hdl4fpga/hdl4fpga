@@ -221,7 +221,6 @@ begin
 			variable adcdac_sel : std_logic;
 			variable dac_data   : unsigned(0 to 12-1);
 			variable dac_chan   : unsigned(0 to 2-1);
-			variable cntr0      : unsigned(0 to 8);
 		begin
 			if amp_spi='1' then
 				cntr       := to_unsigned(cycle-2, cntr'length);
@@ -237,12 +236,11 @@ begin
 						input_ena <= not amp_spi;
 						ad_conv   <= '0';
 					else
-						if cntr0(0)='1' then
-							dac_data := (others => '1');
+						if to_integer(dac_data)=(2048+p2p/2) then
+							dac_data := to_unsigned(2048-p2p/2, dac_data'length);
 						else
-							dac_data := (others => '0');
+							dac_data := dac_data + 1;
 						end if;
-						cntr0 := cntr0 + 1;
 						ad_conv <= not amp_spi;
 					end if;
 

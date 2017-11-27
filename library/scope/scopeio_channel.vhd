@@ -99,9 +99,9 @@ begin
 		mngr_e : entity hdl4fpga.win_mngr
 		generic map (
 			tab => (
-				chan_x-(4*8+4+5*8+4)+5*8+0,             0, chan_width+1,   chan_height+1,
-				chan_x-(4*8+4+5*8+4)+5*8+0, chan_height+2, chan_width+4*8,             8,
-				chan_x-(4*8+4+5*8+4)+  0-1,             0,            5*8, chan_height+1,
+				chan_x-(8*8+4+5*8+4)+5*8+0,             0, chan_width+1,   chan_height+1,
+				chan_x-(8*8+4+5*8+4)+5*8+0, chan_height+2, chan_width+8*8,             8,
+				chan_x-(8*8+4+5*8+4)+  0-1,             0,            5*8, chan_height+1,
 				                         0,             0,           24*8, chan_height+1))
 		port map (
 			video_clk  => video_clk,
