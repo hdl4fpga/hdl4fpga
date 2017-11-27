@@ -13,11 +13,11 @@ entity scopeio_gpannel is
 	port (
 		pannel_clk     : in  std_logic;
 		time_scale     : in  std_logic_vector;
-		time_value     : in  std_logic_vector;
 		time_deca      : in  std_logic_vector(ascii'range);
 		trigger_scale  : in  std_logic_vector;
 		trigger_deca   : in  std_logic_vector(ascii'range);
-		trigger_value  : in  std_logic_vector;
+		trigger_edge   : in  std_logic;
+		trigger_value     : in  std_logic_vector;
 		channel_decas  : in  std_logic_vector;
 		channel_scale  : in  std_logic_vector;
 		channel_level  : in  std_logic_vector;
@@ -50,7 +50,7 @@ architecture beh of scopeio_gpannel is
 			retval(0 to retval'length/(2+2*inputs)-1) := fill(
 				aux(ssize-1 downto 0)    & 
 				fill("", ascii'length*reading'length/4) &
-				to_ascii(string'("  "))  &
+				to_ascii(string'("   "))  &
 				aux1(ssize1-1 downto 0),
 				ascii'length*size, value => '0');
 			aux  := std_logic_vector(unsigned(aux)  srl ssize);
@@ -87,7 +87,7 @@ begin
 
 	process (pannel_clk)
 		constant start  : natural := label_size;
-		constant finish : natural := start+reading'length/4+2;
+		constant finish : natural := start+reading'length/4+3;
 	begin
 		if rising_edge(pannel_clk) then
 			if unsigned(text_col) < (finish-1) then
@@ -126,13 +126,21 @@ begin
 	process(pannel_clk)
 		variable addr : std_logic_vector(text_addr'range);
 		variable data : std_logic_vector(ascii'range);
+		variable edge : std_logic_vector(ascii'range);
 	begin
 		if rising_edge(pannel_clk) then
 			if we='1' then
 				mem(to_integer(unsigned(addr))) <= data;
 			end if;
 			addr := text_addr;
-			data := word2byte(fmt_reading(bcd2ascii(reading1) & to_ascii(string'(" ")) & deca, label_size*ascii'length), text_addr(text_col'length-1 downto 0), ascii'length);
+			edge := x"20";
+			if text_addr(text_row'length+text_col'length-1 downto text_col'length)=std_logic_vector(to_unsigned(2+2*inputs-1,text_row'length)) then
+				edge := x"19";
+				if trigger_edge='1' then
+					edge := x"18";
+				end if;
+			end if;
+			data := word2byte(fmt_reading(bcd2ascii(reading1) & edge & x"20" & deca, label_size*ascii'length), text_addr(text_col'length-1 downto 0), ascii'length);
 		end if;
 	end process;
 
@@ -150,7 +158,7 @@ begin
 
 			value <= word2byte(
 				vt_value    &
-				time_value  &
+				std_logic_vector(to_unsigned(32, value'length)) &
 				trigger_value,
 				text_row, value'length);
 

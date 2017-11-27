@@ -482,7 +482,7 @@ begin
 		pannel_clk     => mii_rxc,
 		time_deca      => time_deca,
 		time_scale     => g_hzscale,
-		time_value     => b"0001_00000",
+		trigger_edge   => trigger_edge,
 		trigger_scale  => trigger_scale,
 		trigger_deca   => trigger_deca,
 		trigger_value  => trigger_level,
