@@ -116,7 +116,6 @@ begin
 	generic map (
 		dcm_per => 50.0,
 		dfs_mul => 15,
---		dfs_mul => 4, --15,
 		dfs_div => 2)
 	port map(
 		dcm_rst => '0',
@@ -133,18 +132,19 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(0, 2047, sample_size))
-	port map (
-		clk  => adc_clk,
-		addr => input_addr,
-		data => sample(sample_size-1 downto 0));
-
-	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	process (adc_clk)
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(0, 2047, sample_size))
+--	port map (
+--		clk  => adc_clkout,
+--		addr => input_addr,
+--		data => sample(sample_size-1 downto 0));
+--
+--	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
+	sample <= adc_da & adc_db;
+	process (adc_clkout)
 	begin
-		if rising_edge(adc_clk) then
+		if rising_edge(adc_clkout) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
@@ -180,7 +180,7 @@ begin
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => adc_clk,
+		input_clk   => adc_clkout,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
@@ -202,6 +202,13 @@ begin
 	end process;
 	psave <= '1';
 
+	adcclkab_e : entity hdl4fpga.ddro
+	port map (
+		clk => adc_clk,
+		dr  => '0',
+		df  => '1',
+		q   => adc_clkab);
+
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (
 		clk => vga_clk,
@@ -209,7 +216,6 @@ begin
 		df => '1',
 		q => clk_videodac);
 
-	adc_clkab <= '0';
 	hd_t_data <= 'Z';
 
 	-- LEDs DAC --
