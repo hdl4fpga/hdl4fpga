@@ -24,3 +24,7 @@
 NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+
+TIMEGRP "vga_grp" = net "vga_clk1";
+TIMEGRP "adc_grp" = net "adc_clk1";
+TIMESPEC "TS_vgaadc"=FROM "vga_grp" TO "adc_grp" TIG;

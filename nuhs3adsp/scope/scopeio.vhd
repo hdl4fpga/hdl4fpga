@@ -43,55 +43,56 @@ architecture beh of nuhs3adsp is
 	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
 	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
 	signal sample      : std_logic_vector(inputs*sample_size-1 downto 0);
+	signal adc_clk     : std_logic;
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1001", deca => to_ascii('u')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1010", deca => to_ascii('u')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0001", deca => x"E6"),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0010", deca => x"E6"),
                                                                                                  
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**0*2**1*5**0, scale => "0000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**1, scale => "0001", deca => to_ascii('m')),
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**0*2**1*5**0, scale => "0100", deca => x"E6"),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**0*2**0*5**1, scale => "0101", deca => x"E6"),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**1*2**0*5**0, scale => "0110", deca => x"E6"),
+                                                   
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**1*2**1*5**0, scale => "1000", deca => x"E6"),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**1*2**0*5**1, scale => "1001", deca => x"E6"),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**2*2**0*5**0, scale => "1010", deca => x"E6"),
+                                                   
+		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**2*2**1*5**0, scale => "0000", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**2*2**0*5**1, scale => "0001", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**3*2**0*5**0, scale => "0010", deca => to_ascii('m')),
 
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**1*2**0*5**0, scale => "0010", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**1*2**1*5**0, scale => "0100", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**1*2**0*5**1, scale => "0101", deca => to_ascii('m')),
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**3*2**1*5**0, scale => "0100", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**3*2**0*5**1, scale => "0101", deca => to_ascii('m')),
+		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**4*2**0*5**0, scale => "0110", deca => to_ascii('m')),
 
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**2*2**0*5**0, scale => "0110", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**2*2**1*5**0, scale => "1000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**2*2**0*5**1, scale => "1001", deca => to_ascii('m')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**3*2**0*5**0, scale => "1010", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**3*2**1*5**0, scale => "0000", deca => to_ascii(' ')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**3*2**0*5**1, scale => "0001", deca => to_ascii(' ')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**4*2**0*5**0, scale => "0010", deca => to_ascii(' ')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**4*2**1*5**0, scale => "0100", deca => to_ascii(' ')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**4*2**0*5**1, scale => "0101", deca => to_ascii(' ')));
+		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**4*2**1*5**0, scale => "1000", deca => to_ascii('m')),
+		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**4*2**0*5**1, scale => "1001", deca => to_ascii('m')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => 2**17/(10**0*2**0*5**0), scale => "1000", deca => to_ascii('0')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => 2**17/(10**0*2**1*5**0), scale => "1001", deca => to_ascii('1')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => 2**17/(10**0*2**0*5**1), scale => "1010", deca => to_ascii('2')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => 2**17/(10**1*2**0*5**0), scale => "0000", deca => to_ascii('3')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => 2**17/(10**1*2**1*5**0), scale => "0001", deca => to_ascii('4')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => 2**17/(10**1*2**0*5**1), scale => "0010", deca => to_ascii('5')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => 2**17/(10**2*2**0*5**0), scale => "0100", deca => to_ascii('6')),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => 2**17/(10**2*2**1*5**0), scale => "0101", deca => to_ascii('7')),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => 2**17/(10**2*2**0*5**1), scale => "0110", deca => to_ascii('9')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => 2**17/(10**3*2**0*5**0), scale => "1000", deca => to_ascii('9')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => 2**17/(10**3*2**1*5**0), scale => "1001", deca => to_ascii('A')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => 2**17/(10**3*2**0*5**1), scale => "1010", deca => to_ascii('B')),
-                                                                                     
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => 2**17/(10**4*2**0*5**0), scale => "0000", deca => to_ascii('C')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => 2**17/(10**4*2**1*5**0), scale => "0001", deca => to_ascii('D')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => 2**17/(10**4*2**0*5**1), scale => "0010", deca => to_ascii('E')),
-                                                                                     
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => 2**17/(10**5*2**0*5**0), scale => "0100", deca => to_ascii('F')));
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**1*5**0), scale => "1000", deca => to_ascii('m')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**0*5**1), scale => "1001", deca => to_ascii('m')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**1*5**1), scale => "1010", deca => to_ascii('m')),
+                                                                                                                
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**1*5**0), scale => "0000", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**0*5**1), scale => "0001", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**1*5**1), scale => "0010", deca => to_ascii(' ')),
+                                                                                                                
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**1*5**0), scale => "0100", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**0*5**1), scale => "0101", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**1*5**1), scale => "0110", deca => to_ascii(' ')),
+                                                                                                                
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**1*5**0), scale => "1000", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**0*5**1), scale => "1001", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**1*5**1), scale => "1010", deca => to_ascii(' ')),
+                                                                                                              
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**1*5**0), scale => "0000", deca => to_ascii('k')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**0*5**1), scale => "0001", deca => to_ascii('k')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**1*5**1), scale => "0010", deca => to_ascii('k')),
+                                                                                                              
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
 
 
 begin
@@ -100,6 +101,16 @@ begin
 	port map (
 		I => xtal,
 		O => sys_clk);
+
+	adc_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 50.0,
+		dfs_mul => 32,
+		dfs_div => 5)
+	port map(
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => adc_clk);
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -126,14 +137,14 @@ begin
 	generic map (
 		bitrom => sinctab(0, 2047, sample_size))
 	port map (
-		clk  => sys_clk,
+		clk  => adc_clk,
 		addr => input_addr,
 		data => sample(sample_size-1 downto 0));
 
 	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	process (sys_clk)
+	process (adc_clk)
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(adc_clk) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
@@ -169,7 +180,7 @@ begin
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => sys_clk,
+		input_clk   => adc_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
