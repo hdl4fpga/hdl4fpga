@@ -325,7 +325,7 @@ begin
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				m(i) := a(i)*s(i);
-				s(i) := to_signed(vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult, mword'length);
+				s(i) := to_signed(-vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult, mword'length);
 				a(i) := resize(signed(std_logic_vector'(not word2byte(input_data, i, input_data'length/inputs))), mword'length);
 			end loop;
 			vm_inputs <= aux;
