@@ -34,7 +34,7 @@ architecture beh of scopeio_gpannel is
 	constant label_size : natural := gauge_labels'length/((2*inputs+2)*ascii'length);
 	signal   reading    : std_logic_vector(20-1 downto 0);
 
-	function init_rom (
+	impure function init_rom (
 		constant size : natural)
 		return std_logic_vector is
 		variable aux    : std_logic_vector(gauge_labels'length-1 downto 0);
@@ -69,7 +69,7 @@ architecture beh of scopeio_gpannel is
 	signal   meter_fld : std_logic_vector(0 to 2+inputs-1);
 
 
-	function fmt_reading (
+	impure function fmt_reading (
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
 		return std_logic_vector is

@@ -10,7 +10,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-architecture beh of nuhs3adsp is
+architecture beh of arty is
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
@@ -99,7 +99,7 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal,
+		I => gclk100,
 		O => sys_clk);
 
 	adc_e : entity hdl4fpga.dfs
@@ -115,8 +115,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 15,
-		dfs_div => 2)
+		dfs_mul => 1,
+		dfs_div => 32)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -130,24 +130,85 @@ begin
 	port map (
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
-		dfs_clk => mii_refclk);
+		dfs_clk => eth_ref_clk);
 
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => adc_clkout,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
---
---	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	sample <= adc_da & adc_db;
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(0, 2047, sample_size))
+	port map (
+		clk  => adc_clkout,
+		addr => input_addr,
+		data => sample(sample_size-1 downto 0));
+
+	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
+	--sample <= adc_da & adc_db;
 	process (adc_clkout)
 	begin
 		if rising_edge(adc_clkout) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
+
+	XADC_inst : XADC
+	generic map (
+		init_40 => X"0000",
+		init_41 => X"0000",
+		init_42 => X"0800",
+		init_48 => X"0000",
+		init_49 => X"0000",
+		init_4a => X"0000",
+		init_4b => X"0000",
+		init_4c => X"0000",
+		init_4d => X"0000",
+		init_4f => X"0000",
+		init_4e => X"0000",
+		init_50 => X"0000",
+		init_51 => X"0000",
+		init_52 => X"0000",
+		init_53 => X"0000",
+		init_54 => X"0000",
+		init_55 => X"0000",
+		init_56 => X"0000",
+		init_57 => X"0000",
+		init_58 => X"0000",
+		init_5c => X"0000",
+		SIM_DEVICE => "7SERIES",
+		SIM_MONITOR_FILE => "design.txt")
+		port map (
+			ALM => ALM,
+			OT  => OT,
+
+			DO   => DO, -- 16-bit output: DRP output data bus
+			DRDY => DRDY, -- 1-bit output: DRP data ready
+			-- STATUS: 1-bit (each) output: XADC status ports
+			BUSY         => BUSY,    -- 1-bit output: ADC busy output
+			CHANNEL      => CHANNEL, -- 5-bit output: Channel selection outputs
+			EOC          => EOC,     -- 1-bit output: End of Conversion
+			EOS          => EOS,     -- 1-bit output: End of Sequence
+			JTAGBUSY     => JTAGBUSY,     -- 1-bit output: JTAG DRP transaction in progress output
+			JTAGLOCKED   => JTAGLOCKED,   -- 1-bit output: JTAG requested DRP port lock
+			JTAGMODIFIED => JTAGMODIFIED, -- 1-bit output: JTAG Write to the DRP has occurred
+			MUXADDR      => MUXADDR,      -- 5-bit output: External MUX channel decode
+
+			-- Auxiliary Analog-Input Pairs: 16-bit (each) input: VAUXP[15:0], VAUXN[15:0]
+			VAUXN  => VAUXN, -- 16-bit input: N-side auxiliary analog input
+			VAUXP  => VAUXP, -- 16-bit input: P-side auxiliary analog input
+
+			-- CONTROL and CLOCK: 1-bit (each) input: Reset, conversion start and clock inputs
+			CONVST    => CONVST, -- 1-bit input: Convert start input
+			CONVSTCLK => CONVSTCLK, -- 1-bit input: Convert start input
+			RESET     => RESET, -- 1-bit input: Active-high reset
+
+			-- Dedicated Analog Input Pair: 1-bit (each) input: VP/VN
+			VN => VN, -- 1-bit input: N-side analog input
+			VP => VP, -- 1-bit input: P-side analog input
+
+			-- Dynamic Reconfiguration Port (DRP): 7-bit (each) input: Dynamic Reconfiguration Ports
+			DADDR => DADDR, --  7-bit input: DRP address bus
+			DCLK  => DCLK,  --  1-bit input: DRP clock
+			DEN   => DEN,   --  1-bit input: DRP enable signal
+			DI    => (others => '0'),    -- 16-bit input: DRP input data bus
+			DWE   => DWE);  --  1-bit input: DRP write enable
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (

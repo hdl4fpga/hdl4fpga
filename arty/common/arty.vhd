@@ -3,6 +3,10 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
+		ck_an_p : in std_logic_vector(0 to 8-1);
+		ck_an_n : in std_logic_vector(0 to 8-1);
+		vp : in std_logic_vector(0 to 1-1); 
+		vn : in std_logic_vector(0 to 1-1); 
 		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
 		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
 		led : out std_logic_vector(4-1 downto 0);
