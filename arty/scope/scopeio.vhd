@@ -149,66 +149,39 @@ begin
 		end if;
 	end process;
 
-	XADC_inst : XADC
-	generic map (
-		init_40 => X"0000",
-		init_41 => X"0000",
-		init_42 => X"0800",
-		init_48 => X"0000",
-		init_49 => X"0000",
-		init_4a => X"0000",
-		init_4b => X"0000",
-		init_4c => X"0000",
-		init_4d => X"0000",
-		init_4f => X"0000",
-		init_4e => X"0000",
-		init_50 => X"0000",
-		init_51 => X"0000",
-		init_52 => X"0000",
-		init_53 => X"0000",
-		init_54 => X"0000",
-		init_55 => X"0000",
-		init_56 => X"0000",
-		init_57 => X"0000",
-		init_58 => X"0000",
-		init_5c => X"0000",
-		SIM_DEVICE => "7SERIES",
-		SIM_MONITOR_FILE => "design.txt")
+	xadc_b : block
+		signal vauxp : std_logic_vector(0 downto 16-1);
+		signal vauxn : std_logic_vector(0 downto 16-1);
+		signal convstclk : std_logic;
+		signal convst : std_logic;
+		signal busy : std_logic;
+		signal eoc : std_logic;
+		signal eos : std_logic;
+		signal den : std_logic;
+	begin
+		vauxp := ck_an_p & (1 to 7 => '-');
+		vauxp := ck_an_n & (1 to 7 => '-');
+
+		xadc_e : xadc
 		port map (
-			ALM => ALM,
-			OT  => OT,
+			reset     => '0',
+			vauxp     => vauxp,
+			vauxn     => vauxn,
+			vp        => vp(0),
+			vn        => vn(0),
+			convstclk => convstclk,
+			convst    => convst,
+			busy      => busy,
+			eoc       => eoc,
+			eos       => eos,
 
-			DO   => DO, -- 16-bit output: DRP output data bus
-			DRDY => DRDY, -- 1-bit output: DRP data ready
-			-- STATUS: 1-bit (each) output: XADC status ports
-			BUSY         => BUSY,    -- 1-bit output: ADC busy output
-			CHANNEL      => CHANNEL, -- 5-bit output: Channel selection outputs
-			EOC          => EOC,     -- 1-bit output: End of Conversion
-			EOS          => EOS,     -- 1-bit output: End of Sequence
-			JTAGBUSY     => JTAGBUSY,     -- 1-bit output: JTAG DRP transaction in progress output
-			JTAGLOCKED   => JTAGLOCKED,   -- 1-bit output: JTAG requested DRP port lock
-			JTAGMODIFIED => JTAGMODIFIED, -- 1-bit output: JTAG Write to the DRP has occurred
-			MUXADDR      => MUXADDR,      -- 5-bit output: External MUX channel decode
+			dclk      => gclk100,
+			daddr     => b"000_0011",
+			den       => den,
+			dwe       => '0'
+			di        => (others => '0')); 
 
-			-- Auxiliary Analog-Input Pairs: 16-bit (each) input: VAUXP[15:0], VAUXN[15:0]
-			VAUXP  => VAUXP, -- 16-bit input: P-side auxiliary analog input
-			VAUXN  => VAUXN, -- 16-bit input: N-side auxiliary analog input
-
-			-- CONTROL and CLOCK: 1-bit (each) input: Reset, conversion start and clock inputs
-			CONVST    => CONVST, -- 1-bit input: Convert start input
-			CONVSTCLK => CONVSTCLK, -- 1-bit input: Convert start input
-			RESET     => '0', -- 1-bit input: Active-high reset
-
-			-- Dedicated Analog Input Pair: 1-bit (each) input: VP/VN
-			VP => vp(0), -- 1-bit input: P-side analog input
-			VN => vn(0), -- 1-bit input: N-side analog input
-
-			-- Dynamic Reconfiguration Port (DRP): 7-bit (each) input: Dynamic Reconfiguration Ports
-			DADDR => ,
-			DCLK  => gclk100,
-			DEN   => DEN,
-			DI    => (others => '0'), 
-			DWE   => '0'); 
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
