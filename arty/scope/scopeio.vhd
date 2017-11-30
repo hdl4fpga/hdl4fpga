@@ -191,24 +191,24 @@ begin
 			MUXADDR      => MUXADDR,      -- 5-bit output: External MUX channel decode
 
 			-- Auxiliary Analog-Input Pairs: 16-bit (each) input: VAUXP[15:0], VAUXN[15:0]
-			VAUXN  => VAUXN, -- 16-bit input: N-side auxiliary analog input
 			VAUXP  => VAUXP, -- 16-bit input: P-side auxiliary analog input
+			VAUXN  => VAUXN, -- 16-bit input: N-side auxiliary analog input
 
 			-- CONTROL and CLOCK: 1-bit (each) input: Reset, conversion start and clock inputs
 			CONVST    => CONVST, -- 1-bit input: Convert start input
 			CONVSTCLK => CONVSTCLK, -- 1-bit input: Convert start input
-			RESET     => RESET, -- 1-bit input: Active-high reset
+			RESET     => '0', -- 1-bit input: Active-high reset
 
 			-- Dedicated Analog Input Pair: 1-bit (each) input: VP/VN
-			VN => VN, -- 1-bit input: N-side analog input
-			VP => VP, -- 1-bit input: P-side analog input
+			VP => vp(0), -- 1-bit input: P-side analog input
+			VN => vn(0), -- 1-bit input: N-side analog input
 
 			-- Dynamic Reconfiguration Port (DRP): 7-bit (each) input: Dynamic Reconfiguration Ports
-			DADDR => DADDR, --  7-bit input: DRP address bus
-			DCLK  => DCLK,  --  1-bit input: DRP clock
-			DEN   => DEN,   --  1-bit input: DRP enable signal
-			DI    => (others => '0'),    -- 16-bit input: DRP input data bus
-			DWE   => DWE);  --  1-bit input: DRP write enable
+			DADDR => ,
+			DCLK  => gclk100,
+			DEN   => DEN,
+			DI    => (others => '0'), 
+			DWE   => '0'); 
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
