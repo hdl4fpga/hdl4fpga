@@ -94,7 +94,7 @@ architecture beh of nuhs3adsp is
                                                                                                               
 		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
 
-
+	signal input_clk : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -105,12 +105,13 @@ begin
 	adc_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 32,
+		dfs_mul => 16,
 		dfs_div => 5)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => adc_clk);
+	input_clk <= adc_clkout; --adc_clk;
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -132,19 +133,19 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => adc_clkout,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
---
---	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	sample <= adc_da & adc_db;
-	process (adc_clkout)
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(0, 2047, sample_size))
+	port map (
+		clk  => input_clk,
+		addr => input_addr,
+		data => sample(sample_size-1 downto 0));
+
+	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
+--	sample <= adc_da & adc_db;
+	process (input_clk)
 	begin
-		if rising_edge(adc_clkout) then
+		if rising_edge(input_clk) then
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
@@ -180,7 +181,7 @@ begin
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => adc_clkout,
+		input_clk   => input_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
