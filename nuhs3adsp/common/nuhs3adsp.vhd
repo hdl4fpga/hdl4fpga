@@ -67,6 +67,7 @@ entity nuhs3adsp is
 		adc_clkout : in std_logic := '0';
 		adc_da : in std_logic_vector(14-1 downto 0) := (others => '0');
 		adc_db : in std_logic_vector(14-1 downto 0) := (others => '0');
+		adc_daac_enable : in std_logic;
 
 		-----------------------
 		-- RS232 Transceiver --
@@ -257,10 +258,12 @@ entity nuhs3adsp is
 	attribute loc of adc_clkout : signal is "B9";
 	attribute loc of adc_da : signal is "E6 D6 D7 E7 D9  E8  F8  F9  G8  B4  A5  C5  B6  A6";
 	attribute loc of adc_db : signal is "C6 A7 C7 C8 C9 A10 C10 A11 B11 D10 E10 A12 C12 F12";
+	attribute loc of adc_daac_enable : signal is "A20";
 	
 	attribute iostandard of adc_clkab : signal is "lvttl";	
 	attribute iostandard of adc_da : signal is "lvttl";
 	attribute iostandard of adc_db : signal is "lvttl";
+	attribute iostandard of adc_daac_enable : signal is "lvttl";
 	attribute drive of adc_clkab : signal is "24";
 	attribute drive of adc_da : signal is "24";
 	attribute drive of adc_db : signal is "24";

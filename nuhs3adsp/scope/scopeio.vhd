@@ -19,7 +19,7 @@ architecture beh of nuhs3adsp is
 	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
 	signal vga_blank  : std_logic;
 
-	constant sample_size : natural := 14;
+	constant sample_size : natural := adc_da'length;
 
 	function sinctab (
 		constant x0 : integer;
@@ -105,13 +105,13 @@ begin
 	adc_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 16,
+		dfs_mul => 2*16,
 		dfs_div => 5)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => adc_clk);
-	input_clk <= adc_clkout; --adc_clk;
+	input_clk <= not adc_clk;
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -133,19 +133,19 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(0, 2047, sample_size))
-	port map (
-		clk  => input_clk,
-		addr => input_addr,
-		data => sample(sample_size-1 downto 0));
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(0, 2047, sample_size))
+--	port map (
+--		clk  => input_clk,
+--		addr => input_addr,
+--		data => sample(sample_size-1 downto 0));
 
-	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
---	sample <= adc_da & adc_db;
+--	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
+			sample <= (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '0', 2 to adc_db'length => '0'));
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
