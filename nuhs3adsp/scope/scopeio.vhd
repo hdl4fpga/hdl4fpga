@@ -145,7 +145,7 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			sample <= (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '0', 2 to adc_db'length => '0'));
+			sample <= (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
