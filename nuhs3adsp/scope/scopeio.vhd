@@ -105,13 +105,13 @@ begin
 	adc_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 2*16,
+		dfs_mul => 16,
 		dfs_div => 5)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => adc_clk);
-	input_clk <= not adc_clk;
+	input_clk <= not adc_clkout;
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
