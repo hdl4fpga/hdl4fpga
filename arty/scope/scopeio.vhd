@@ -16,7 +16,7 @@ architecture beh of arty is
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
-	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
+	signal vga_rgb    : std_logic_vector(0 to 3-1);
 	signal vga_blank  : std_logic;
 
 	constant sample_size : natural := 14;
@@ -94,6 +94,13 @@ architecture beh of arty is
                                                                                                               
 		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
 
+
+	signal eth_rxclk_bufg : std_logic;
+	signal eth_txclk_bufg : std_logic;
+	signal mii_rxdv       : std_logic;
+	signal mii_rxd        : std_logic_vector(eth_rxd'range);
+	signal mii_txen       : std_logic;
+	signal mii_txd        : std_logic_vector(eth_txd'range);
 
 begin
 
@@ -204,12 +211,12 @@ begin
 			"s" &
 			"V")),
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
-		channels_fg  => b"11111111_11111111_00000000" & b"00000000_11111111_11111111",
-		channels_bg  => b"00000000_00000000_00000000" & b"00000000_00000000_00000000",
-		hzaxis_fg    => b"00000000_11111111_00000000",
-		hzaxis_bg    => b"00000000_00000000_00000000",
-		grid_fg      => b"11111111_00000000_00000000",
-		grid_bg      => b"00000000_00000000_00000000")
+		channels_fg  => b"110" & b"011",
+		channels_bg  => b"000" & b"000",
+		hzaxis_fg    => b"010",
+		hzaxis_bg    => b"000",
+		grid_fg      => b"100",
+		grid_bg      => b"000")
 	port map (
 		mii_rxc     => mii_rxc,
 		mii_rxdv    => mii_rxdv,
@@ -225,91 +232,59 @@ begin
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
-			red   <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 8);
-			green <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 8);
-			blue  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 8);
+			red   <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1);
+			green <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1);
+			blue  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1);
 			blank <= vga_blank;
 			hsync <= vga_hsync;
 			vsync <= vga_vsync;
 			sync  <= not vga_hsync and not vga_vsync;
 		end if;
 	end process;
-	psave <= '1';
-
-	adcclkab_e : entity hdl4fpga.ddro
+  
+	eth_rx_clk_ibufg : ibufg
 	port map (
-		clk => adc_clk,
-		dr  => '0',
-		df  => '1',
-		q   => adc_clkab);
+		I => eth_rx_clk,
+		O => eth_rxclk_bufg);
 
-	clk_videodac_e : entity hdl4fpga.ddro
+	eth_tx_clk_ibufg : ibufg
 	port map (
-		clk => vga_clk,
-		dr => '0',
-		df => '1',
-		q => clk_videodac);
+		I => eth_tx_clk,
+		O => eth_txclk_bufg);
 
-	hd_t_data <= 'Z';
-
-	-- LEDs DAC --
-	--------------
-		
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
-	led8  <= '0';
-	led7  <= '0';
-
-	-- RS232 Transceiver --
-	-----------------------
-
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
-
-	-- Ethernet Transceiver --
-	--------------------------
-
-	mii_rst  <= '1';
-	mii_txen <= 'Z';
-	mii_txd  <= (others => 'Z');
-	mii_mdc  <= '0';
-	mii_mdio <= 'Z';
-
-	-- LCD --
-	---------
-
-	lcd_e <= 'Z';
-	lcd_rs <= 'Z';
-	lcd_rw <= 'Z';
-	lcd_data <= (others => 'Z');
-	lcd_backlight <= 'Z';
-
-	-- DDR --
-	---------
-
-	ddr_clk_i : obufds
+	mii_iob_e : entity hdl4fpga.mii_iob
 	generic map (
-		iostandard => "DIFF_SSTL2_I")
+		xd_len => 4)
 	port map (
-		i  => 'Z',
-		o  => ddr_ckp,
-		ob => ddr_ckn);
+		mii_rxc  => eth_rxclk_bufg,
+		iob_rxdv => eth_rx_dv,
+		iob_rxd  => eth_rxd,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
 
-	ddr_st_dqs <= 'Z';
-	ddr_cke    <= 'Z';
-	ddr_cs     <= 'Z';
-	ddr_ras    <= 'Z';
-	ddr_cas    <= 'Z';
-	ddr_we     <= 'Z';
-	ddr_ba     <= (others => 'Z');
-	ddr_a      <= (others => 'Z');
-	ddr_dm     <= (others => 'Z');
-	ddr_dqs    <= (others => 'Z');
-	ddr_dq     <= (others => 'Z');
+		mii_txc  => eth_txclk_bufg,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd,
+		iob_txen => eth_tx_en,
+		iob_txd  => eth_txd);
 
+	eth_rstn <= not sys_rst;
+	eth_mdc  <= '0';
+	eth_mdio <= '0';
+
+	ddr3_reset <= 'Z';
+	ddr3_clk_p <= 'Z';
+	ddr3_clk_n <= 'Z';
+	ddr3_cke   <= 'Z';
+	ddr3_cs    <= 'Z';
+	ddr3_ras   <= 'Z';
+	ddr3_cas   <= 'Z';
+	ddr3_we    <= 'Z';
+	ddr3_ba    <= (others => '1');
+	ddr3_a     <= (others => '1');
+	ddr3_dm    <= (others => 'Z');
+	ddr3_dqs_p <= (others => 'Z');
+	ddr3_dqs_n <= (others => 'Z');
+	ddr3_dq    <= (others => 'Z');
+	ddr3_odt   <= 'Z';
 end;
