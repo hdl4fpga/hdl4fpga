@@ -268,6 +268,8 @@ entity nuhs3adsp is
 	attribute drive of adc_da : signal is "24";
 	attribute drive of adc_db : signal is "24";
 	attribute fast of adc_clkab : signal is "true";
+	attribute nodelay of adc_da : signal is "true";
+	attribute nodelay of adc_db : signal is "true";
 
 	-----------------------
 	-- RS232 Transceiver --
