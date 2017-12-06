@@ -206,8 +206,8 @@ begin
 	adcclkab_e : entity hdl4fpga.ddro
 	port map (
 		clk => adc_clk,
-		dr  => '0',
-		df  => '1',
+		dr  => '1',
+		df  => '0',
 		q   => adc_clkab);
 
 	clk_videodac_e : entity hdl4fpga.ddro
