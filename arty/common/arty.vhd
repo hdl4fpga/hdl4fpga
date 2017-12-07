@@ -3,16 +3,18 @@ use ieee.std_logic_1164.all;
 
 entity arty is
 	port (
+		gclk100   : in std_logic;
+
+		ja  : inout std_logic_vector(1 to 10);
 		ck_an_p : in std_logic_vector(0 to 9-1);
 		ck_an_n : in std_logic_vector(0 to 9-1);
-		vp : in std_logic_vector(0 to 1-1); 
-		vn : in std_logic_vector(0 to 1-1); 
+		v_p : in std_logic_vector(0 to 1-1); 
+		v_n : in std_logic_vector(0 to 1-1); 
 		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
 		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
 		led : out std_logic_vector(4-1 downto 0);
 		RGBled : out std_logic_vector(4*3-1 downto 0);
 
-		gclk100   : in std_logic;
 		eth_rstn  : out std_logic;
 		eth_ref_clk : out std_logic;
 		eth_mdio  : inout std_logic;
@@ -43,7 +45,7 @@ entity arty is
 		ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 		ddr3_odt : out std_logic := '1');
 
---! Bus signal doesnt work in Vivado !-
+--! Bus signal doesnt work on Vivado !-
 
 --	attribute loc : string;
 --	attribute loc of btn : signal is "B8 B9 C9 D9";

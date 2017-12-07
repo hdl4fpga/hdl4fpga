@@ -17,9 +17,8 @@ architecture beh of arty is
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
-	signal vga_blank  : std_logic;
 
-	constant sample_size : natural := 14;
+	constant sample_size : natural := 16;
 
 	function sinctab (
 		constant x0 : integer;
@@ -39,11 +38,8 @@ architecture beh of arty is
 		return aux;
 	end;
 
-	constant inputs : natural := 2;
-	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
-	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
-	signal sample      : std_logic_vector(inputs*sample_size-1 downto 0);
-	signal adc_clk     : std_logic;
+	constant inputs : natural := 1;
+	signal sample   : std_logic_vector(inputs*sample_size-1 downto 0);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
@@ -109,52 +105,31 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
-	adc_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 32,
-		dfs_div => 5)
-	port map(
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => adc_clk);
-
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 1,
-		dfs_div => 32)
+		dcm_per => 10.0,
+		dfs_mul => 3,
+		dfs_div => 2)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
-	mii_dfs_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => eth_ref_clk);
-
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(0, 2047, sample_size))
-	port map (
-		clk  => adc_clkout,
-		addr => input_addr,
-		data => sample(sample_size-1 downto 0));
-
-	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	--sample <= adc_da & adc_db;
-	process (adc_clkout)
-	begin
-		if rising_edge(adc_clkout) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(0, 2047, sample_size))
+--	port map (
+--		clk  => adc_clkout,
+--		addr => input_addr,
+--		data => sample(sample_size-1 downto 0));
+--
+--	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
+--	process (adc_clkout)
+--	begin
+--		if rising_edge(adc_clkout) then
+--			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+--		end if;
+--	end process;
 
 	xadc_b : block
 		signal vauxp : std_logic_vector(0 downto 16-1);
@@ -166,27 +141,28 @@ begin
 		signal eos : std_logic;
 		signal den : std_logic;
 	begin
-		vauxp := ck_an_p & (1 to 7 => '-');
-		vauxp := ck_an_n & (1 to 7 => '-');
+		vauxp(ck_an_p'range) <= ck_an_p;
+		vauxn(ck_an_n'range) <= ck_an_n;
 
 		xadc_e : xadc
 		port map (
 			reset     => '0',
 			vauxp     => vauxp,
 			vauxn     => vauxn,
-			vp        => vp(0),
-			vn        => vn(0),
+			vp        => v_p(0),
+			vn        => v_n(0),
 			convstclk => convstclk,
 			convst    => convst,
 			busy      => busy,
 			eoc       => eoc,
 			eos       => eos,
 
-			dclk      => gclk100,
+			dclk      => sys_clk,
 			daddr     => b"000_0011",
 			den       => den,
-			dwe       => '0'
-			di        => (others => '0')); 
+			dwe       => '0',
+			di        => (others => '0'),
+			do        => sample); 
 
 	end block;
 
@@ -218,27 +194,25 @@ begin
 		grid_fg      => b"100",
 		grid_bg      => b"000")
 	port map (
-		mii_rxc     => mii_rxc,
+		mii_rxc     => eth_rxclk_bufg,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => adc_clkout,
+		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
-		video_blank => vga_blank);
+		video_blank => open);
 
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
-			red   <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1);
-			green <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1);
-			blue  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1);
-			blank <= vga_blank;
-			hsync <= vga_hsync;
-			vsync <= vga_vsync;
-			sync  <= not vga_hsync and not vga_vsync;
+			ja(1)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1)(0);
+			ja(2)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1)(0);
+			ja(3)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1)(0);
+			ja(9)  <= vga_hsync;
+			ja(10) <= vga_vsync;
 		end if;
 	end process;
   
@@ -268,7 +242,7 @@ begin
 		iob_txen => eth_tx_en,
 		iob_txd  => eth_txd);
 
-	eth_rstn <= not sys_rst;
+	eth_rstn <= '1';
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 
@@ -283,8 +257,11 @@ begin
 	ddr3_ba    <= (others => '1');
 	ddr3_a     <= (others => '1');
 	ddr3_dm    <= (others => 'Z');
-	ddr3_dqs_p <= (others => 'Z');
-	ddr3_dqs_n <= (others => 'Z');
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
+
+	ddr3_dqs_p <= (others => 'Z');
+	ddr3_dqs_n <= (others => 'Z');
+
+
 end;
