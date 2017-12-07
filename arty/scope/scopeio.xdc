@@ -28,6 +28,8 @@ create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_c
  
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
 set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { vga_clk     }
+set_clock_groups -asynchronous -group { vga_clk     } -group { sys_clk     }
 
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports gclk100]
 

@@ -105,16 +105,24 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 10.0,
-		dfs_mul => 3,
-		dfs_div => 2)
-	port map(
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => vga_clk);
-
+	videodcm_e : block
+		signal clkfb : std_logic;
+	begin
+		mmcme2base_i : mmcme2_base
+		generic map (
+			clkin1_period    => 10.0,
+			clkfbout_mult_f  => 6.0,		-- 200 MHz
+			clkout0_divide_f => 4.0,
+			bandwidth        => "LOW")
+		port map (
+			pwrdwn   => '0',
+			rst      => '0',
+			clkin1   => sys_clk,
+			clkfbin  => clkfb,
+			clkfbout => clkfb,
+			clkout0  => vga_clk);
+	end block;
+   
 --	samples_e : entity hdl4fpga.rom
 --	generic map (
 --		bitrom => sinctab(0, 2047, sample_size))
