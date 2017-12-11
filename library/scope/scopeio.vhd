@@ -424,6 +424,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				rd_addr <= full_addr;
+--				aux := (others => '0');
 				for i in 0 to inputs-1 loop
 					aux := byte2word(
 						aux, 

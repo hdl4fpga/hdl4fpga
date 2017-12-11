@@ -19,34 +19,11 @@ architecture beh of nuhs3adsp is
 	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
 	signal vga_blank  : std_logic;
 
-	constant sample_size : natural := adc_da'length;
-
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : integer)
-		return std_logic_vector is
-		variable pp  : std_logic_vector(0 to n-1) := ('1', others => '0');
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
-	begin
-		for i in 0 to x1-x0 loop
-			if i mod 64 = 63 then
-				pp := not pp;
-			end if;
-			aux(i*n to (i+1)*n-1) := pp;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer((2.0**(n-1)-1.0)*sin(2.0*MATH_PI*real(i)/real(x1-x0+1))), n));
-		end loop;
-		return aux;
-	end;
-
 	constant inputs : natural := 2;
-	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
-	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
-	signal sample      : std_logic_vector(inputs*sample_size-1 downto 0);
+	signal samples_doa : std_logic_vector(adc_da'length-1 downto 0);
+	signal samples_dib : std_logic_vector(adc_da'length-1 downto 0);
+	signal sample      : std_logic_vector(inputs*adc_da'length-1 downto 0);
 	signal adc_clk     : std_logic;
-
-	signal input_addr : std_logic_vector(11-1 downto 0);
-
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
 		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0001", deca => x"E6"),
@@ -133,22 +110,12 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => mii_refclk);
 
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => input_clk,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
-
---	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
 	process (input_clk)
-		variable aux : std_logic_vector(sample'range);
+		variable ff : std_logic_vector(sample'range);
 	begin
 		if rising_edge(input_clk) then
-			sample <= aux;
-			aux    := (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+			sample <= ff;
+			ff     := (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
 		end if;
 	end process;
 
