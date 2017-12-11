@@ -143,9 +143,11 @@ begin
 
 --	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
 	process (input_clk)
+		variable aux : std_logic_vector(sample'range);
 	begin
 		if rising_edge(input_clk) then
-			sample <= (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
+			sample <= aux;
+			aux    := (adc_da xor (1 => '1', 2 to adc_da'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
 			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;

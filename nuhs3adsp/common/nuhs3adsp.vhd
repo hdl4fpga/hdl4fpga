@@ -138,6 +138,7 @@ entity nuhs3adsp is
 	attribute nodelay : string;
 	attribute drive : string;
 	attribute pullup : string;
+	attribute buffer_type : string;
 
 	attribute loc of xtal : signal is "F10";
 	attribute loc of sw1  : signal is "A15";
@@ -270,6 +271,7 @@ entity nuhs3adsp is
 	attribute fast of adc_clkab : signal is "true";
 	attribute nodelay of adc_da : signal is "true";
 	attribute nodelay of adc_db : signal is "true";
+--	attribute buffer_type of adc_clkout : signal is "ibuf";
 
 	-----------------------
 	-- RS232 Transceiver --

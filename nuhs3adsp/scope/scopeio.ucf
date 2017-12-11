@@ -33,3 +33,4 @@ OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
 TIMEGRP "vga_grp" = net "vga_clk1";
 TIMEGRP "adc_grp" = net "adc_clk1";
 TIMESPEC "TS_vgaadc"=FROM "vga_grp" TO "adc_grp" TIG;
+TIMESPEC "TS_adcvga"=FROM "adc_grp" TO "vga_grp" TIG;
