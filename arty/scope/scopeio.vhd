@@ -123,56 +123,56 @@ begin
 			clkout0  => vga_clk);
 	end block;
    
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => adc_clkout,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
---
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(0, 2047, sample_size))
+	port map (
+		clk  => sys_clk,
+		addr => input_addr,
+		data => sample(sample_size-1 downto 0));
+
 --	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
---	process (adc_clkout)
---	begin
---		if rising_edge(adc_clkout) then
---			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
---		end if;
---	end process;
-
-	xadc_b : block
-		signal vauxp : std_logic_vector(0 downto 16-1);
-		signal vauxn : std_logic_vector(0 downto 16-1);
-		signal convstclk : std_logic;
-		signal convst : std_logic;
-		signal busy : std_logic;
-		signal eoc : std_logic;
-		signal eos : std_logic;
-		signal den : std_logic;
+	process (sys_clk)
 	begin
-		vauxp(ck_an_p'range) <= ck_an_p;
-		vauxn(ck_an_n'range) <= ck_an_n;
+		if rising_edge(sys_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
 
-		xadc_e : xadc
-		port map (
-			reset     => '0',
-			vauxp     => vauxp,
-			vauxn     => vauxn,
-			vp        => v_p(0),
-			vn        => v_n(0),
-			convstclk => convstclk,
-			convst    => convst,
-			busy      => busy,
-			eoc       => eoc,
-			eos       => eos,
-
-			dclk      => sys_clk,
-			daddr     => b"000_0011",
-			den       => den,
-			dwe       => '0',
-			di        => (others => '0'),
-			do        => sample); 
-
-	end block;
+--	xadc_b : block
+--		signal vauxp : std_logic_vector(0 downto 16-1);
+--		signal vauxn : std_logic_vector(0 downto 16-1);
+--		signal convstclk : std_logic;
+--		signal convst : std_logic;
+--		signal busy : std_logic;
+--		signal eoc : std_logic;
+--		signal eos : std_logic;
+--		signal den : std_logic;
+--	begin
+--		vauxp(ck_an_p'range) <= ck_an_p;
+--		vauxn(ck_an_n'range) <= ck_an_n;
+--
+--		xadc_e : xadc
+--		port map (
+--			reset     => '0',
+--			vauxp     => vauxp,
+--			vauxn     => vauxn,
+--			vp        => v_p(0),
+--			vn        => v_n(0),
+--			convstclk => convstclk,
+--			convst    => convst,
+--			busy      => busy,
+--			eoc       => eoc,
+--			eos       => eos,
+--
+--			dclk      => sys_clk,
+--			daddr     => b"000_0011",
+--			den       => den,
+--			dwe       => '0',
+--			di        => (others => '0'),
+--			do        => sample); 
+--
+--	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -183,13 +183,9 @@ begin
 		gauge_labels => to_ascii(string'(
 			"Escala     : " &
 			"Posicion   : " &
-			"Escala     : " &
-			"Posicion   : " &
 			"Horizontal : " &
 			"Disparo    : ")),
 		unit_symbols => to_ascii(string'(
-			"V" &
-			"V" &
 			"V" &
 			"V" &
 			"s" &
@@ -219,11 +215,20 @@ begin
 			ja(1)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1)(0);
 			ja(2)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1)(0);
 			ja(3)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1)(0);
-			ja(9)  <= vga_hsync;
+			ja(4)  <= vga_hsync;
 			ja(10) <= vga_vsync;
 		end if;
 	end process;
   
+	process (sys_clk)
+		variable div : unsigned(0 to 1) := (others => '0');
+	begin
+		if rising_edge(sys_clk) then
+			div := div + 1;
+			eth_ref_clk <= div(0);
+		end if;
+	end process;
+
 	eth_rx_clk_ibufg : ibufg
 	port map (
 		I => eth_rx_clk,
