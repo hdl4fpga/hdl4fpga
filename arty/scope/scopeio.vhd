@@ -17,6 +17,7 @@ architecture beh of arty is
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
+	signal input_clk  : std_logic;
 
 	constant sample_size : natural := 16;
 
@@ -97,6 +98,7 @@ architecture beh of arty is
 	signal mii_rxd        : std_logic_vector(eth_rxd'range);
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
+	signal eoc : std_logic;
 
 begin
 
@@ -105,74 +107,110 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
-	videodcm_e : block
-		signal clkfb : std_logic;
+	dcm_e : block
+		signal vga_clkfb : std_logic;
+		signal adc_clkfb : std_logic;
+		signal adc_clkin : std_logic;
 	begin
-		mmcme2base_i : mmcme2_base
+		vga_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 6.0,		-- 200 MHz
 			clkout0_divide_f => 4.0,
+			clkout1_divide   => 48,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
 			clkin1   => sys_clk,
-			clkfbin  => clkfb,
-			clkfbout => clkfb,
-			clkout0  => vga_clk);
+			clkfbin  => vga_clkfb,
+			clkfbout => vga_clkfb,
+			clkout0  => vga_clk,
+			clkout1  => adc_clkin);
+
+		adc_i : mmcme2_base
+		generic map (
+			clkin1_period    => 10.0*48.0/6.0,
+			clkfbout_mult_f  => 13.0*4.0,		-- 200 MHz
+			clkout0_divide_f => 25.0,
+			bandwidth        => "LOW")
+		port map (
+			pwrdwn   => '0',
+			rst      => '0',
+			clkin1   => adc_clkin,
+			clkfbin  => adc_clkfb,
+			clkfbout => adc_clkfb,
+			clkout0  => input_clk);
 	end block;
    
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(0, 2047, sample_size))
-	port map (
-		clk  => sys_clk,
-		addr => input_addr,
-		data => sample(sample_size-1 downto 0));
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(0, 2047, sample_size))
+--	port map (
+--		clk  => input_clk,
+--		addr => input_addr,
+--		data => sample(sample_size-1 downto 0));
 
 --	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
-
---	xadc_b : block
---		signal vauxp : std_logic_vector(0 downto 16-1);
---		signal vauxn : std_logic_vector(0 downto 16-1);
---		signal convstclk : std_logic;
---		signal convst : std_logic;
---		signal busy : std_logic;
---		signal eoc : std_logic;
---		signal eos : std_logic;
---		signal den : std_logic;
+--	process (input_clk)
 --	begin
---		vauxp(ck_an_p'range) <= ck_an_p;
---		vauxn(ck_an_n'range) <= ck_an_n;
---
---		xadc_e : xadc
---		port map (
---			reset     => '0',
---			vauxp     => vauxp,
---			vauxn     => vauxn,
---			vp        => v_p(0),
---			vn        => v_n(0),
---			convstclk => convstclk,
---			convst    => convst,
---			busy      => busy,
---			eoc       => eoc,
---			eos       => eos,
---
---			dclk      => sys_clk,
---			daddr     => b"000_0011",
---			den       => den,
---			dwe       => '0',
---			di        => (others => '0'),
---			do        => sample); 
---
---	end block;
+--		if rising_edge(input_clk) then
+--			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+--		end if;
+--	end process;
+
+	xadc_b : block
+		signal vauxp : std_logic_vector(0 downto 16-1);
+		signal vauxn : std_logic_vector(0 downto 16-1);
+	begin
+		vauxp(ck_an_p'range) <= ck_an_p;
+		vauxn(ck_an_n'range) <= ck_an_n;
+
+		xadc_e : xadc
+		generic map (
+			-- INIT_40 - INIT_42: XADC configuration registers
+			INIT_40 => X"0003",
+			INIT_41 => X"0000",
+			INIT_42 => X"0000",
+			-- INIT_48 - INIT_4F: Sequence Registers
+			INIT_48 => x"0800",
+			INIT_49 => X"0000",
+			INIT_4A => X"0000",
+			INIT_4B => X"0000",
+			INIT_4C => X"0000",
+			INIT_4D => X"0000",
+			INIT_4E => X"0000",
+			INIT_4F => X"0000",
+			-- Sequence register 6
+			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
+			INIT_50 => X"0000",
+			INIT_51 => X"0000",
+			INIT_52 => X"0000",
+			INIT_53 => X"0000",
+			INIT_54 => X"0000",
+			INIT_55 => X"0000",
+			INIT_56 => X"0000",
+			INIT_57 => X"0000",
+			INIT_58 => X"0000",
+			INIT_5C => X"0000")
+		port map (
+			reset     => '0',
+			vauxp     => vauxp,
+			vauxn     => vauxn,
+			vp        => v_p(0),
+			vn        => v_n(0),
+			convstclk => '-',
+			convst    => '-',
+			eoc       => eoc,
+
+			dclk      => input_clk,
+			daddr     => b"000_0011",
+			den       => '0',
+			dwe       => '0',
+			di        => (others => '0'),
+			do        => sample); 
+
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -201,7 +239,8 @@ begin
 		mii_rxc     => eth_rxclk_bufg,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
-		input_clk   => sys_clk,
+		input_clk   => input_clk,
+		input_ena   => '1',
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
