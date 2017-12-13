@@ -43,7 +43,7 @@ architecture def of rom is
 	subtype word is std_logic_vector(data'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	function init_rom (
+	impure function init_rom (
 		constant arg : std_logic_vector)
 		return word_vector is
 

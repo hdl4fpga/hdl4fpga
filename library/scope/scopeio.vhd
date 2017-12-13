@@ -356,7 +356,7 @@ begin
 					trigger_ena <= '1';
 				end if;
 				if input_we='1' then
-					input_ge  := trigger_edge xnor setif(signed(input_aux) >= signed(trigger_level));
+					input_ge  := '1'; -- trigger_edge xnor setif(signed(input_aux) >= signed(trigger_level));
 					input_aux := word2byte(vm_inputs, trigger_channel, vt_size);
 				end if;
 			end if;

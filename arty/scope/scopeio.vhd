@@ -117,7 +117,7 @@ begin
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 6.0,		-- 200 MHz
 			clkout0_divide_f => 4.0,
-			clkout1_divide   => 48,
+			clkout1_divide   => 15,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -130,9 +130,9 @@ begin
 
 		adc_i : mmcme2_base
 		generic map (
-			clkin1_period    => 10.0*48.0/6.0,
-			clkfbout_mult_f  => 13.0*4.0,		-- 200 MHz
-			clkout0_divide_f => 25.0,
+			clkin1_period    => 10.0*15.0/6.0,
+			clkfbout_mult_f  => 13.0*2.0,		-- 200 MHz
+			clkout0_divide_f => 20.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -143,75 +143,75 @@ begin
 			clkout0  => input_clk);
 	end block;
    
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => input_clk,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(0, 2047, sample_size))
+	port map (
+		clk  => input_clk,
+		addr => input_addr,
+		data => sample(sample_size-1 downto 0));
 
---	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
---	process (input_clk)
---	begin
---		if rising_edge(input_clk) then
---			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
---		end if;
---	end process;
-
-	xadc_b : block
-		signal vauxp : std_logic_vector(0 downto 16-1);
-		signal vauxn : std_logic_vector(0 downto 16-1);
+	process (input_clk)
 	begin
-		vauxp(ck_an_p'range) <= ck_an_p;
-		vauxn(ck_an_n'range) <= ck_an_n;
+		if rising_edge(input_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
 
-		xadc_e : xadc
-		generic map (
-			-- INIT_40 - INIT_42: XADC configuration registers
-			INIT_40 => X"0003",
-			INIT_41 => X"0000",
-			INIT_42 => X"0000",
-			-- INIT_48 - INIT_4F: Sequence Registers
-			INIT_48 => x"0800",
-			INIT_49 => X"0000",
-			INIT_4A => X"0000",
-			INIT_4B => X"0000",
-			INIT_4C => X"0000",
-			INIT_4D => X"0000",
-			INIT_4E => X"0000",
-			INIT_4F => X"0000",
-			-- Sequence register 6
-			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
-			INIT_50 => X"0000",
-			INIT_51 => X"0000",
-			INIT_52 => X"0000",
-			INIT_53 => X"0000",
-			INIT_54 => X"0000",
-			INIT_55 => X"0000",
-			INIT_56 => X"0000",
-			INIT_57 => X"0000",
-			INIT_58 => X"0000",
-			INIT_5C => X"0000")
-		port map (
-			reset     => '0',
-			vauxp     => vauxp,
-			vauxn     => vauxn,
-			vp        => v_p(0),
-			vn        => v_n(0),
-			convstclk => '-',
-			convst    => '-',
-			eoc       => eoc,
+--	xadc_b : block
+--		signal vauxp : std_logic_vector(0 downto 16-1);
+--		signal vauxn : std_logic_vector(0 downto 16-1);
+--	begin
+--		vauxp(ck_an_p'range) <= ck_an_p;
+--		vauxn(ck_an_n'range) <= ck_an_n;
+--
+--		xadc_e : xadc
+--		generic map (
+--			-- INIT_40 - INIT_42: XADC configuration registers
+--			INIT_40 => X"0003",
+--			INIT_41 => X"0000",
+--			INIT_42 => X"0000",
+--			-- INIT_48 - INIT_4F: Sequence Registers
+--			INIT_48 => x"0800",
+--			INIT_49 => X"0000",
+--			INIT_4A => X"0000",
+--			INIT_4B => X"0000",
+--			INIT_4C => X"0000",
+--			INIT_4D => X"0000",
+--			INIT_4E => X"0000",
+--			INIT_4F => X"0000",
+--			-- Sequence register 6
+--			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
+--			INIT_50 => X"0000",
+--			INIT_51 => X"0000",
+--			INIT_52 => X"0000",
+--			INIT_53 => X"0000",
+--			INIT_54 => X"0000",
+--			INIT_55 => X"0000",
+--			INIT_56 => X"0000",
+--			INIT_57 => X"0000",
+--			INIT_58 => X"0000",
+--			INIT_5C => X"0000")
+--		port map (
+--			reset     => '0',
+--			vauxp     => vauxp,
+--			vauxn     => vauxn,
+--			vp        => v_p(0),
+--			vn        => v_n(0),
+--			convstclk => '-',
+--			convst    => '-',
+--			eoc       => eoc,
+--
+--			dclk      => input_clk,
+--			daddr     => b"000_0011",
+--			den       => '0',
+--			dwe       => '0',
+--			di        => (others => '0'),
+--			do        => open); 
+--
+--	end block;
 
-			dclk      => input_clk,
-			daddr     => b"000_0011",
-			den       => '0',
-			dwe       => '0',
-			di        => (others => '0'),
-			do        => sample); 
-
-	end block;
-
+--	sample <= x"7fff";
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		layout_id    => 0,
