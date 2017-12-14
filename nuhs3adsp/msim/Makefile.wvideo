@@ -2,9 +2,9 @@
 
 # Define path to each library
 LIB_UNISIM = F:/Xilinx/14.7/ISE_DS/EDK/unisim
-LIB_WORK = hdl4fpga
 LIB_STD = C:/modeltech64_10.1c/win64/../std
 LIB_IEEE = C:/modeltech64_10.1c/win64/../ieee
+LIB_WORK = hdl4fpga
 LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
