@@ -18,6 +18,7 @@ architecture beh of arty is
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3-1);
 	signal input_clk  : std_logic;
+	signal input_ena  : std_logic;
 
 	constant sample_size : natural := 16;
 
@@ -143,75 +144,92 @@ begin
 			clkout0  => input_clk);
 	end block;
    
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sinctab(0, 2047, sample_size))
-	port map (
-		clk  => input_clk,
-		addr => input_addr,
-		data => sample(sample_size-1 downto 0));
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sinctab(0, 2047, sample_size))
+--	port map (
+--		clk  => input_clk,
+--		addr => input_addr,
+--		data => sample(sample_size-1 downto 0));
 
-	process (input_clk)
-	begin
-		if rising_edge(input_clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
-
---	xadc_b : block
---		signal vauxp : std_logic_vector(0 downto 16-1);
---		signal vauxn : std_logic_vector(0 downto 16-1);
+--	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
+--	process (input_clk)
 --	begin
---		vauxp(ck_an_p'range) <= ck_an_p;
---		vauxn(ck_an_n'range) <= ck_an_n;
---
---		xadc_e : xadc
---		generic map (
---			-- INIT_40 - INIT_42: XADC configuration registers
---			INIT_40 => X"0003",
---			INIT_41 => X"0000",
---			INIT_42 => X"0000",
---			-- INIT_48 - INIT_4F: Sequence Registers
---			INIT_48 => x"0800",
---			INIT_49 => X"0000",
---			INIT_4A => X"0000",
---			INIT_4B => X"0000",
---			INIT_4C => X"0000",
---			INIT_4D => X"0000",
---			INIT_4E => X"0000",
---			INIT_4F => X"0000",
---			-- Sequence register 6
---			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
---			INIT_50 => X"0000",
---			INIT_51 => X"0000",
---			INIT_52 => X"0000",
---			INIT_53 => X"0000",
---			INIT_54 => X"0000",
---			INIT_55 => X"0000",
---			INIT_56 => X"0000",
---			INIT_57 => X"0000",
---			INIT_58 => X"0000",
---			INIT_5C => X"0000")
---		port map (
---			reset     => '0',
---			vauxp     => vauxp,
---			vauxn     => vauxn,
---			vp        => v_p(0),
---			vn        => v_n(0),
---			convstclk => '-',
---			convst    => '-',
---			eoc       => eoc,
---
---			dclk      => input_clk,
---			daddr     => b"000_0011",
---			den       => '0',
---			dwe       => '0',
---			di        => (others => '0'),
---			do        => open); 
---
---	end block;
+--		if rising_edge(input_clk) then
+--			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+--		end if;
+--	end process;
 
---	sample <= x"7fff";
+	xadc_b : block
+		signal vauxp : std_logic_vector(0 downto 16-1);
+		signal vauxn : std_logic_vector(0 downto 16-1);
+	begin
+		vauxp(ck_an_p'range) <= ck_an_p;
+		vauxn(ck_an_n'range) <= ck_an_n;
+
+		xadc_e : xadc
+		generic map (
+			-- INIT_40 - INIT_42: XADC configuration registers
+			INIT_40 => X"0403",
+			INIT_41 => X"2000",
+			INIT_42 => X"0000",
+			-- INIT_48 - INIT_4F: Sequence Registers
+			INIT_48 => x"0800",
+			INIT_49 => X"0000",
+			INIT_4A => X"0000",
+			INIT_4B => X"0000",
+			INIT_4C => X"0800",
+			INIT_4D => X"0000",
+			INIT_4E => X"0000",
+			INIT_4F => X"0000",
+			-- Sequence register 6
+			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
+			INIT_50 => X"0000",
+			INIT_51 => X"0000",
+			INIT_52 => X"0000",
+			INIT_53 => X"0000",
+			INIT_54 => X"0000",
+			INIT_55 => X"0000",
+			INIT_56 => X"0000",
+			INIT_57 => X"0000",
+			INIT_58 => X"0000",
+			INIT_5C => X"0000")
+		port map (
+			reset     => '0',
+			vauxp     => vauxp,
+			vauxn     => vauxn,
+			vp        => v_p(0),
+			vn        => v_n(0),
+			convstclk => '-',
+			convst    => '-',
+			eoc       => eoc,
+
+			dclk      => input_clk,
+			drdy      => input_ena,
+			daddr     => b"000_0011",
+			den       => den,
+			dwe       => '0',
+			di        => (others => '0'),
+			do        => sample); 
+
+		process(input_clk)
+			variable reset : std_logic := '0';
+		begin
+			if rising_edge(input_clk) then
+				den <= '0';
+				if input_ena='1' then
+					den   <= '1';
+					reset <= '1';
+				elsif reset='0' then
+					den   <= '1';
+					reset <= '1';
+				end if;
+			end if;
+		end process;
+
+	end block;
+
+--	sample <= x"00ff";
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		layout_id    => 0,
@@ -229,8 +247,8 @@ begin
 			"s" &
 			"V")),
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
-		channels_fg  => b"110" & b"011",
-		channels_bg  => b"000" & b"000",
+		channels_fg  => b"110",
+		channels_bg  => b"000",
 		hzaxis_fg    => b"010",
 		hzaxis_bg    => b"000",
 		grid_fg      => b"100",
@@ -240,7 +258,7 @@ begin
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
 		input_clk   => input_clk,
-		input_ena   => '1',
+		input_ena   => input_ena,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
