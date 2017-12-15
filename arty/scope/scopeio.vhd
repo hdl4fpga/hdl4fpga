@@ -133,7 +133,7 @@ begin
 		generic map (
 			clkin1_period    => 10.0*15.0/6.0,
 			clkfbout_mult_f  => 13.0*2.0,		-- 200 MHz
-			clkout0_divide_f => 20.0,
+			clkout0_divide_f => 40.0, --20.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -161,11 +161,10 @@ begin
 --	end process;
 
 	xadc_b : block
-		signal vauxp : std_logic_vector(0 downto 16-1);
-		signal vauxn : std_logic_vector(0 downto 16-1);
+		signal den : std_logic;
 	begin
-		vauxp(ck_an_p'range) <= ck_an_p;
-		vauxn(ck_an_n'range) <= ck_an_n;
+--		vauxp(ck_an_p'range) <= ck_an_p;
+--		vauxn(ck_an_n'range) <= ck_an_n;
 
 		xadc_e : xadc
 		generic map (
@@ -196,8 +195,8 @@ begin
 			INIT_5C => X"0000")
 		port map (
 			reset     => '0',
-			vauxp     => vauxp,
-			vauxn     => vauxn,
+			vauxp     => (others => '-'),
+			vauxn     => (others => '-'),
 			vp        => v_p(0),
 			vn        => v_n(0),
 			convstclk => '-',
@@ -219,10 +218,10 @@ begin
 				den <= '0';
 				if input_ena='1' then
 					den   <= '1';
-					reset <= '1';
+					reset := '1';
 				elsif reset='0' then
 					den   <= '1';
-					reset <= '1';
+					reset := '1';
 				end if;
 			end if;
 		end process;

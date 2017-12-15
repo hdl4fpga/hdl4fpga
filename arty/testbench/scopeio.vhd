@@ -28,8 +28,8 @@ architecture scope of testbench is
 	constant ddr_std  : positive := 1;
 
 	constant ddr_period : time := 6 ns;
-	constant bank_bits  : natural := 2;
-	constant addr_bits  : natural := 13;
+	constant bank_bits  : natural := 3;
+	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -42,9 +42,10 @@ architecture scope of testbench is
 	signal led7  : std_logic;
 
 	signal dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector (1 downto 0) := "00";
+	signal dqs_p : std_logic_vector (1 downto 0) := "00";
+	signal dqs_n : std_logic_vector (1 downto 0) := "00";
 	signal addr  : std_logic_vector (addr_bits - 1 downto 0);
-	signal ba    : std_logic_vector (1 downto 0);
+	signal ba    : std_logic_vector (bank_bits -1 downto 0);
 	signal clk_p : std_logic := '0';
 	signal clk_n : std_logic := '0';
 	signal cke   : std_logic := '1';
@@ -53,6 +54,7 @@ architecture scope of testbench is
 	signal cas_n : std_logic;
 	signal we_n  : std_logic;
 	signal dm    : std_logic_vector(1 downto 0);
+	signal rst_n : std_logic;
 
 	signal x : std_logic;
 	signal mii_refclk : std_logic;
@@ -67,101 +69,67 @@ architecture scope of testbench is
 	signal ddr3_rst : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
-	component nuhs3adsp is
+	component arty is
 		port (
-			xtal : in std_logic;
-			sw1 : in std_logic;
-
-			hd_t_data  : inout std_logic := '1';
-			hd_t_clock : in std_logic := '0';
-
-			dip : in std_logic_vector(0 to 7) := (others => 'Z');
-			led18 : out std_logic := 'Z';
-			led16 : out std_logic := 'Z';
-			led15 : out std_logic := 'Z';
-			led13 : out std_logic := 'Z';
-			led11 : out std_logic := 'Z';
-			led9  : out std_logic := 'Z';
-			led8  : out std_logic := 'Z';
-			led7  : out std_logic := 'Z';
-
-			---------------
-			-- Video DAC --
+			btn : in std_logic_vector(4-1 downto 0) := (others => '-');
+			sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
+			led : out std_logic_vector(8-1 downto 4);
+			RGBled : out std_logic_vector(4*3-1 downto 0);
+			ja  : inout std_logic_vector(1 to 10);
+			ck_an_p : in std_logic_vector(0 to 9-1);
+			ck_an_n : in std_logic_vector(0 to 9-1);
+			v_p : in std_logic_vector(0 to 1-1); 
+			v_n : in std_logic_vector(0 to 1-1); 
 			
-			hsync : out std_logic := '0';
-			vsync : out std_logic := '0';
-			clk_videodac : out std_logic := 'Z';
-			blank : out std_logic := 'Z';
-			sync  : out std_logic := 'Z';
-			psave : out std_logic := 'Z';
-			red   : out std_logic_vector(8-1 downto 0) := (others => 'Z');
-			green : out std_logic_vector(8-1 downto 0) := (others => 'Z');
-			blue  : out std_logic_vector(8-1 downto 0) := (others => 'Z');
+			gclk100   : in std_logic;
+			eth_rstn  : out std_logic;
+			eth_ref_clk : out std_logic;
+			eth_mdio  : inout std_logic;
+			eth_mdc   : out std_logic;
+			eth_crs   : in std_logic;
+			eth_col   : in std_logic;
+			eth_tx_clk  : in std_logic;
+			eth_tx_en : out std_logic;
+			eth_txd   : out std_logic_vector(0 to 4-1);
+			eth_rx_clk  : in std_logic;
+			eth_rxerr : in std_logic;
+			eth_rx_dv : in std_logic;
+			eth_rxd   : in std_logic_vector(0 to 4-1);
+			
+			ddr3_reset : out std_logic := '0';
+			ddr3_clk_p : out std_logic := '0';
+			ddr3_clk_n : out std_logic := '0';
+			ddr3_cke : out std_logic := '0';
+			ddr3_cs  : out std_logic := '1';
+			ddr3_ras : out std_logic := '1';
+			ddr3_cas : out std_logic := '1';
+			ddr3_we  : out std_logic := '1';
+			ddr3_ba  : out std_logic_vector( 3-1 downto 0) := (others => '1');
+			ddr3_a   : out std_logic_vector(14-1 downto 0) := (others => '1');
+			ddr3_dm  : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddr3_dqs_p : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddr3_dqs_n : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+			ddr3_dq  : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+			ddr3_odt : out std_logic := '1');
 
-			---------
-			-- ADC --
-
-			adc_clkab : out std_logic := 'Z';
-			adc_clkout : in std_logic := 'Z';
-			adc_da : in std_logic_vector(14-1 downto 0) := (others => 'Z');
-			adc_db : in std_logic_vector(14-1 downto 0) := (others => 'Z');
-
-			-----------------------
-			-- RS232 Transceiver --
-
-			rs232_dcd : in std_logic := 'Z';
-			rs232_dsr : in std_logic := 'Z';
-			rs232_rd  : in std_logic := 'Z';
-			rs232_rts : out std_logic := 'Z';
-			rs232_td  : out std_logic := 'Z';
-			rs232_cts : in std_logic := 'Z';
-			rs232_dtr : out std_logic := 'Z';
-			rs232_ri  : in std_logic := 'Z';
-
-			------------------------------
-			-- MII ethernet Transceiver --
-
-			mii_rst  : out std_logic := 'Z';
-			mii_refclk : out std_logic := 'Z';
-			mii_intrp  : in std_logic := 'Z';
-
-			mii_mdc  : out std_logic := 'Z';
-			mii_mdio : inout std_logic := 'Z';
-
-			mii_txc  : in  std_logic := 'Z';
-			mii_txen : out std_logic := 'Z';
-			mii_txd  : out std_logic_vector(4-1 downto 0) := (others => 'Z');
-
-			mii_rxc  : in std_logic := 'Z';
-			mii_rxdv : in std_logic := 'Z';
-			mii_rxer : in std_logic := 'Z';
-			mii_rxd  : in std_logic_vector(4-1 downto 0) := (others => 'Z');
-
-			mii_crs  : in std_logic := 'Z';
-			mii_col  : in std_logic := 'Z';
-
-			-------------
-			-- DDR RAM --
-
-			ddr_ckp : out std_logic := 'Z';
-			ddr_ckn : out std_logic := 'Z';
-			ddr_lp_ckp : in std_logic := 'Z';
-			ddr_lp_ckn : in std_logic := 'Z';
-			ddr_st_lp_dqs : in std_logic := 'Z';
-			ddr_st_dqs : out std_logic := 'Z';
-			ddr_cke : out std_logic := 'Z';
-			ddr_cs  : out std_logic := 'Z';
-			ddr_ras : out std_logic := 'Z';
-			ddr_cas : out std_logic := 'Z';
-			ddr_we  : out std_logic := 'Z';
-			ddr_ba  : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => 'Z');
-			ddr_a   : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => 'Z');
-			ddr_dm  : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dqs : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
 	end component;
 
+	signal reset_n : std_logic;
+	signal xtal   : std_logic := '0';
+	signal xtal_n : std_logic := '0';
+	signal xtal_p : std_logic := '0';
+	signal mii_freq : std_logic := '0';
 begin
+
+	rst   <= '1', '0' after 1.1 us;
+	reset_n <= not rst;
+
+	xtal   <= not xtal after 5 ns;
+	xtal_p <= not xtal after 5 ns;
+	xtal_n <=     xtal after 5 ns;
+
+	mii_freq <= not mii_freq after 20 ns;
+	mii_rxc <= mii_freq;
 
 	clk <= not clk after 25 ns;
 	process (clk)
@@ -207,48 +175,45 @@ begin
 		mii_txd  => mii_rxd);
 
 	mii_rxc <= mii_refclk after 5 ps;
-	nuhs3adsp_e : nuhs3adsp
+	arty_e : arty
 	port map (
-		xtal => clk,
-		sw1  => rst,
-		led7 => led7,
-		dip => b"0000_0001",
+		btn(0) => rst,
+		btn(4-1 downto 1) => (1 to 3 => '-'),
 
-		---------
-		-- ADC --
-
-		adc_da => (others => '0'),
-		adc_db => (others => '0'),
-
-		adc_clkab  => x,
-		adc_clkout => x,
-
-		hd_t_clock => rst,
-
-		mii_refclk => mii_refclk,
-		mii_txc => mii_refclk,
-		mii_rxc => mii_rxc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd => mii_rxd,
-		mii_txen => mii_txen,
-		-------------
+		ck_an_p => (others => '0'),
+		ck_an_n => (others => '0'),
+		v_p => (others => '0'),
+		v_n => (others => '0'),
+		gclk100     => xtal,
+		eth_rstn    => open,
+		eth_ref_clk => open,
+		eth_mdc     => open,
+		eth_crs     => '-',
+		eth_col     => '-',
+		eth_tx_clk  => mii_rxc,
+		eth_tx_en   => mii_txen,
+		eth_txd     => open,
+		eth_rx_clk  => mii_rxc,
+		eth_rxerr   => '-',
+		eth_rx_dv   => mii_rxdv,  
+		eth_rxd     => mii_rxd, 
+			
 		-- DDR RAM --
 
-		ddr_ckp => clk_p,
-		ddr_ckn => clk_n,
-		ddr_lp_ckp => clk_p,
-		ddr_lp_ckn => clk_n,
-		ddr_st_lp_dqs => ddr_lp_dqs,
-		ddr_st_dqs => ddr_lp_dqs,
-		ddr_cke => cke,
-		ddr_cs  => cs_n,
-		ddr_ras => ras_n,
-		ddr_cas => cas_n,
-		ddr_we  => we_n,
-		ddr_ba  => ba,
-		ddr_a   => addr,
-		ddr_dm  => dm,
-		ddr_dqs => dqs,
-		ddr_dq  => dq);
+		ddr3_reset => rst_n,
+		ddr3_clk_p => clk_p,
+		ddr3_clk_n => clk_n,
+		ddr3_cke   => cke,
+		ddr3_cs    => cs_n,
+		ddr3_ras   => ras_n,
+		ddr3_cas   => cas_n,
+		ddr3_we    => we_n,
+		ddr3_ba    => ba,
+		ddr3_a     => addr,
+		ddr3_dqs_p => dqs_p,
+		ddr3_dqs_n => dqs_n,
+		ddr3_dq    => dq,
+		ddr3_dm    => dm,
+		ddr3_odt   => open);
 
 end;
