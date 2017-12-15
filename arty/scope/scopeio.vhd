@@ -221,7 +221,6 @@ begin
 					reset := '1';
 				elsif reset='0' then
 					den   <= '1';
-					reset := '1';
 				end if;
 			end if;
 		end process;

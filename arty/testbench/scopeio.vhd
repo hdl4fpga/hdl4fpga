@@ -76,8 +76,8 @@ architecture scope of testbench is
 			led : out std_logic_vector(8-1 downto 4);
 			RGBled : out std_logic_vector(4*3-1 downto 0);
 			ja  : inout std_logic_vector(1 to 10);
-			ck_an_p : in std_logic_vector(0 to 9-1);
-			ck_an_n : in std_logic_vector(0 to 9-1);
+			vaux_p : in std_logic_vector(0 to 16-1);
+			vaux_n : in std_logic_vector(0 to 16-1);
 			v_p : in std_logic_vector(0 to 1-1); 
 			v_n : in std_logic_vector(0 to 1-1); 
 			
@@ -180,8 +180,8 @@ begin
 		btn(0) => rst,
 		btn(4-1 downto 1) => (1 to 3 => '-'),
 
-		ck_an_p => (others => '0'),
-		ck_an_n => (others => '0'),
+		vaux_p => (others => '0'),
+		vaux_n => (others => '0'),
 		v_p => (others => '0'),
 		v_n => (others => '0'),
 		gclk100     => xtal,

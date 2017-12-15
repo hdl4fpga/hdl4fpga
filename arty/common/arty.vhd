@@ -6,7 +6,6 @@ entity arty is
 		gclk100   : in std_logic;
 
 		ja  : inout std_logic_vector(1 to 10);
-		v : in std_logic_vector(0 to 9-1);
 		vaux_p : in std_logic_vector(0 to 16-1);
 		vaux_n : in std_logic_vector(0 to 16-1);
 		v_p : in std_logic_vector(0 to 1-1); 
