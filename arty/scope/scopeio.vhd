@@ -70,27 +70,27 @@ architecture beh of arty is
 		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**4*2**0*5**1, scale => "1001", deca => to_ascii('m')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**1*5**0), scale => "1000", deca => to_ascii('m')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**0*5**1), scale => "1001", deca => to_ascii('m')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (100*2**18)/(128*10**0*2**1*5**1), scale => "1010", deca => to_ascii('m')),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (50*2**18)/(512*10**0*2**1*5**0), scale => "1000", deca => to_ascii('m')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (50*2**18)/(512*10**0*2**0*5**1), scale => "1001", deca => to_ascii('m')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (50*2**18)/(512*10**0*2**1*5**1), scale => "1010", deca => to_ascii('m')),
                                                                                                                 
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**1*5**0), scale => "0000", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**0*5**1), scale => "0001", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (100*2**18)/(128*10**1*2**1*5**1), scale => "0010", deca => to_ascii(' ')),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (50*2**18)/(512*10**1*2**1*5**0), scale => "0000", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (50*2**18)/(512*10**1*2**0*5**1), scale => "0001", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (50*2**18)/(512*10**1*2**1*5**1), scale => "0010", deca => to_ascii(' ')),
                                                                                                                 
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**1*5**0), scale => "0100", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**0*5**1), scale => "0101", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => (100*2**18)/(128*10**2*2**1*5**1), scale => "0110", deca => to_ascii(' ')),
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (50*2**18)/(512*10**2*2**1*5**0), scale => "0100", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => (50*2**18)/(512*10**2*2**0*5**1), scale => "0101", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => (50*2**18)/(512*10**2*2**1*5**1), scale => "0110", deca => to_ascii(' ')),
                                                                                                                 
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**1*5**0), scale => "1000", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**0*5**1), scale => "1001", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (100*2**18)/(128*10**3*2**1*5**1), scale => "1010", deca => to_ascii(' ')),
+		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (50*2**18)/(512*10**3*2**1*5**0), scale => "1000", deca => to_ascii(' ')),
+		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => (50*2**18)/(512*10**3*2**0*5**1), scale => "1001", deca => to_ascii(' ')),
+		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => (50*2**18)/(512*10**3*2**1*5**1), scale => "1010", deca => to_ascii(' ')),
                                                                                                               
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**1*5**0), scale => "0000", deca => to_ascii('k')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**0*5**1), scale => "0001", deca => to_ascii('k')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (100*2**18)/(128*10**4*2**1*5**1), scale => "0010", deca => to_ascii('k')),
+		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => (50*2**18)/(512*10**4*2**1*5**0), scale => "0000", deca => to_ascii('k')),
+		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => (50*2**18)/(512*10**4*2**0*5**1), scale => "0001", deca => to_ascii('k')),
+		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => (50*2**18)/(512*10**4*2**1*5**1), scale => "0010", deca => to_ascii('k')),
                                                                                                               
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
+		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (50*2**18)/(512*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
 
 
 	signal eth_rxclk_bufg : std_logic;
@@ -99,7 +99,7 @@ architecture beh of arty is
 	signal mii_rxd        : std_logic_vector(eth_rxd'range);
 	signal mii_txen       : std_logic;
 	signal mii_txd        : std_logic_vector(eth_txd'range);
-	signal eoc : std_logic;
+	signal tdiv           : std_logic_vector(0 to 4-1);
 
 begin
 
@@ -133,7 +133,7 @@ begin
 		generic map (
 			clkin1_period    => 10.0*15.0/6.0,
 			clkfbout_mult_f  => 13.0*2.0,		-- 200 MHz
-			clkout0_divide_f => 40.0, --20.0,
+			clkout0_divide_f => 20.0,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -161,28 +161,37 @@ begin
 --	end process;
 
 	xadc_b : block
-		signal den : std_logic;
+		signal eoc     : std_logic;
+		signal di      : std_logic_vector(0 to 16-1);
+		signal dwe     : std_logic;
+		signal den     : std_logic;
+		signal daddr   : std_logic_vector(0 to 7-1);
+		signal channel : std_logic_vector(0 to 5-1);
+		signal vauxp   : std_logic_vector(0 to 16-1);
+		signal vauxn   : std_logic_vector(0 to 16-1);
 	begin
---		vauxp(ck_an_p'range) <= ck_an_p;
---		vauxn(ck_an_n'range) <= ck_an_n;
+		vauxp(vaux_p'range) <= vaux_p;
+--		vauxn(vaux_n'range) <= vaux_n;
 
 		xadc_e : xadc
 		generic map (
-			-- INIT_40 - INIT_42: XADC configuration registers
+		
 			INIT_40 => X"0403",
 			INIT_41 => X"2000",
 			INIT_42 => X"0000",
-			-- INIT_48 - INIT_4F: Sequence Registers
+			
 			INIT_48 => x"0800",
 			INIT_49 => X"0000",
+
 			INIT_4A => X"0000",
 			INIT_4B => X"0000",
+
 			INIT_4C => X"0800",
 			INIT_4D => X"0000",
+
 			INIT_4E => X"0000",
 			INIT_4F => X"0000",
-			-- Sequence register 6
-			-- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
+
 			INIT_50 => X"0000",
 			INIT_51 => X"0000",
 			INIT_52 => X"0000",
@@ -195,33 +204,57 @@ begin
 			INIT_5C => X"0000")
 		port map (
 			reset     => '0',
-			vauxp     => (others => '-'),
-			vauxn     => (others => '-'),
+			vauxp     => vauxp,
+			vauxn     => vauxn,
 			vp        => v_p(0),
 			vn        => v_n(0),
 			convstclk => '-',
 			convst    => '-',
-			eoc       => eoc,
 
+			eoc       => eoc,
 			dclk      => input_clk,
 			drdy      => input_ena,
-			daddr     => b"000_0011",
+			channel   => channel,
+			daddr     => daddr,
 			den       => den,
-			dwe       => '0',
-			di        => (others => '0'),
+			dwe       => dwe,
+			di        => di,
 			do        => sample); 
 
 		process(input_clk)
-			variable reset : std_logic := '0';
+			variable reset    : std_logic := '1';
+			variable den_req  : std_logic;
+			variable tdiv_aux : std_logic_vector(tdiv'range);
 		begin
 			if rising_edge(input_clk) then
 				den <= '0';
-				if input_ena='1' then
+				if eoc='1' then
 					den   <= '1';
-					reset := '1';
-				elsif reset='0' then
-					den   <= '1';
+					reset := '0';
+
+					daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+--					if tdiv_aux /= tdiv then
+--						dwe   <= '1';
+--						daddr <= b"100_1001";
+--						case tdiv is
+--						when "0000" =>
+--							di <= x"0000";
+--						when "0001" =>
+--							di <= x"0001";
+--						when "0010" => 
+--							di <= x"0007";
+--						when "0011" => 
+--							di <= x"08ff";
+--						when others => 
+--							di <= x"ffff";
+--						end case;
+--					end if;
+--					tdiv_aux := tdiv;
+				elsif reset='1' then
+--					den   <= '1';
 				end if;
+
+				dwe <= '0';
 			end if;
 		end process;
 
@@ -258,6 +291,7 @@ begin
 		input_clk   => input_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
+		tdiv        => tdiv,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
 		video_hsync => vga_hsync,
