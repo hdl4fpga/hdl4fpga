@@ -167,11 +167,12 @@ begin
 		signal den     : std_logic;
 		signal daddr   : std_logic_vector(0 to 7-1);
 		signal channel : std_logic_vector(0 to 5-1);
-		signal vauxp   : std_logic_vector(0 to 16-1);
-		signal vauxn   : std_logic_vector(0 to 16-1);
+		signal vauxp   : std_logic_vector(16-1 downto 0);
+		signal vauxn   : std_logic_vector(16-1 downto 0);
+		signal convst : std_logic;
 	begin
-		vauxp(vaux_p'range) <= vaux_p;
---		vauxn(vaux_n'range) <= vaux_n;
+		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
+		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
 
 		xadc_e : xadc
 		generic map (
@@ -208,8 +209,8 @@ begin
 			vauxn     => vauxn,
 			vp        => v_p(0),
 			vn        => v_n(0),
-			convstclk => '-',
-			convst    => '-',
+			convstclk => input_ena,
+			convst    => input_ena,
 
 			eoc       => eoc,
 			dclk      => input_clk,
@@ -222,39 +223,62 @@ begin
 			do        => sample); 
 
 		process(input_clk)
-			variable reset    : std_logic := '1';
-			variable den_req  : std_logic;
-			variable tdiv_aux : std_logic_vector(tdiv'range);
+			variable reset     : std_logic := '1';
+			variable den_req   : std_logic := '1';
+			variable tdiv_aux  : std_logic_vector(tdiv'range);
+			variable cfg_req   : std_logic := '0';
+			variable cfg_state : unsigned(0 to 1) := "00";
 		begin
 			if rising_edge(input_clk) then
 				den <= '0';
-				if eoc='1' then
+--				den <= reset;
+				dwe <= '0';
+				if cfg_req='1' then
+					dwe <= '0';
+					den <= '0';
+					if input_ena='1' then
+						case cfg_state is 
+						when "00" => 
+							den       <= '1';
+							daddr     <= b"100_0001";
+							dwe       <= '1';
+							di        <= x"0000";
+							cfg_state := "01";
+							cfg_req   := '1';
+						when "01" =>
+							den       <= '1';
+							daddr     <= b"100_1001";
+							dwe       <= '1';
+							di        <= x"f0f0";
+							cfg_state := "10";
+							cfg_req   := '1';
+						when "10" =>
+							den       <= '1';
+							daddr     <= b"100_0001";
+							dwe       <= '1';
+							di        <= x"3000";
+							cfg_state := "11";
+							cfg_req   := '1';
+						when others =>
+							den       <= '1';
+							daddr     <= b"000_0011";
+					daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+							dwe       <= '0';
+							cfg_state := "00";
+							cfg_req   := '0';
+						end case;
+					end if;
+				elsif eoc='1' then
 					den   <= '1';
 					reset := '0';
 
 					daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
 --					if tdiv_aux /= tdiv then
---						dwe   <= '1';
---						daddr <= b"100_1001";
---						case tdiv is
---						when "0000" =>
---							di <= x"0000";
---						when "0001" =>
---							di <= x"0001";
---						when "0010" => 
---							di <= x"0007";
---						when "0011" => 
---							di <= x"08ff";
---						when others => 
---							di <= x"ffff";
---						end case;
+						cfg_req := '1';
 --					end if;
---					tdiv_aux := tdiv;
-				elsif reset='1' then
---					den   <= '1';
+					tdiv_aux := tdiv;
 				end if;
 
-				dwe <= '0';
 			end if;
 		end process;
 

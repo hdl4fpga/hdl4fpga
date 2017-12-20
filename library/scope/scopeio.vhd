@@ -374,9 +374,9 @@ begin
 		process (input_clk) 
 		begin
 			if rising_edge(input_clk) then
-				if trigger_ena='0' then
+				if false and trigger_ena='0' then
 					input_addr <= (others => '0');
-				elsif input_addr(0)='0' then
+				elsif true or input_addr(0)='0' then
 					if input_inc='1' then
 						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 					end if;
@@ -396,7 +396,7 @@ begin
 	begin
 
 		wr_addr <= input_addr(vm_addr'range);
-		wr_ena  <= not input_addr(input_addr'left) and trigger_ena and input_inc;
+		wr_ena  <= '1'; --not input_addr(input_addr'left) and trigger_ena and input_inc;
 --		wr_ena  <= input_inc;
 
 		data1_e : entity hdl4fpga.align
