@@ -144,22 +144,6 @@ begin
 			clkout0  => input_clk);
 	end block;
    
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(0, 2047, sample_size))
---	port map (
---		clk  => input_clk,
---		addr => input_addr,
---		data => sample(sample_size-1 downto 0));
-
---	sample(2*sample_size-1 downto sample_size) <= not sample(sample_size-1 downto 0);
---	process (input_clk)
---	begin
---		if rising_edge(input_clk) then
---			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
---		end if;
---	end process;
-
 	xadc_b : block
 		signal eoc     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
@@ -231,6 +215,7 @@ begin
 			variable cfg_req   : std_logic := '0';
 			variable cfg_state : unsigned(0 to 1) := "00";
 			variable drp_rdy   : std_logic;
+			variable aux : std_logic_vector(tdiv_aux'range);
 		begin
 			if rising_edge(input_clk) then
 				if reset='0' then 
@@ -252,7 +237,16 @@ begin
 								den       <= '1';
 								daddr     <= b"100_1001";
 								dwe       <= '1';
-								di        <= x"f0f0";
+								case tdiv is 
+								when "0000" => 
+									di <= x"0000";
+								when "0001" => 
+									di <= x"0010";
+								when "0010" => 
+									di <= x"7000";
+								when others =>
+									di <= x"f0f0";
+								end case;
 								cfg_state := "10";
 								cfg_req   := '1';
 							when "10" =>
@@ -275,10 +269,10 @@ begin
 						if tdiv_aux /= tdiv then
 							cfg_req := '1';
 						end if;
-
 						tdiv_aux := tdiv;
 					end if;
-				elsif busy='0' then
+				else
+					den <= '1';
 					drp_rdy := '1';
 					reset   := '0';
 				end if;
