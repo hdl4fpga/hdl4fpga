@@ -21,27 +21,23 @@ architecture beh of arty is
 	signal input_ena  : std_logic;
 
 	constant sample_size : natural := 16;
+	constant gauge_labels : string(1 to 9*26) := 
+			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
+			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
+			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
+			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
+			"Escala     : Posicion   : ";
+	constant unit_symbols : string(1 to 9*2) := (
+   			"VV" & "VV" & "VV" & "VV" &
+   			"VV" & "VV" & "VV" & "VV" & "VV");
 
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : integer)
-		return std_logic_vector is
-		variable pp  : std_logic_vector(0 to n-1) := ('1', others => '0');
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
-	begin
-		for i in 0 to x1-x0 loop
-			if i mod 64 = 63 then
-				pp := not pp;
-			end if;
-			aux(i*n to (i+1)*n-1) := pp;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer((2.0**(n-1)-1.0)*sin(2.0*MATH_PI*real(i)/real(x1-x0+1))), n));
-		end loop;
-		return aux;
-	end;
 
-	constant inputs : natural := 3;
+	constant inputs : natural := 2;
 	signal samples  : std_logic_vector(inputs*sample_size-1 downto 0);
+	constant channels_bg : std_logic_vector(0 to 9*vga_rgb'length-1) := (others => '0');
+	constant channels_fg : std_logic_vector(0 to 9*vga_rgb'length-1) := b"110_011_101_111_001_110_011_101_111";
+	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
+
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
@@ -144,159 +140,164 @@ begin
 			clkout0  => input_clk);
 	end block;
    
---	xadc_b : block
---		signal eoc     : std_logic;
---		signal di      : std_logic_vector(0 to 16-1);
---		signal dwe     : std_logic;
---		signal den     : std_logic;
---		signal daddr   : std_logic_vector(0 to 7-1);
---		signal channel : std_logic_vector(0 to 5-1);
---		signal vauxp   : std_logic_vector(16-1 downto 0);
---		signal vauxn   : std_logic_vector(16-1 downto 0);
---		signal sample  : std_logic_vector(sample_size-1 downto 0);
---	begin
---		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
---		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
---
---		xadc_e : xadc
---		generic map (
---		
---			INIT_40 => X"0403",
---			INIT_41 => X"2000",
---			INIT_42 => X"0400",
---			
---			INIT_48 => x"0800",
---			INIT_49 => X"0000",
---
---			INIT_4A => X"0000",
---			INIT_4B => X"0000",
---
---			INIT_4C => X"0800",
---			INIT_4D => X"0000",
---
---			INIT_4E => X"0000",
---			INIT_4F => X"0000",
---
---			INIT_50 => X"0000",
---			INIT_51 => X"0000",
---			INIT_52 => X"0000",
---			INIT_53 => X"0000",
---			INIT_54 => X"0000",
---			INIT_55 => X"0000",
---			INIT_56 => X"0000",
---			INIT_57 => X"0000",
---			INIT_58 => X"0000",
---			INIT_5C => X"0000")
---		port map (
---			reset     => '0',
---			vauxp     => vauxp,
---			vauxn     => vauxn,
---			vp        => v_p(0),
---			vn        => v_n(0),
---			convstclk => '0',
---			convst    => '0',
---
---			eoc       => eoc,
---			dclk      => input_clk,
---			drdy      => input_ena,
---			channel   => channel,
---			daddr     => daddr,
---			den       => den,
---			dwe       => dwe,
---			di        => di,
---			do        => sample); 
---
---		process(input_clk)
---			constant mp  : std_logic_vector(0 to 9*32-1) := (
---				(1 to 2*9 => '0') & b"1000_0000_0" & (1 to 13*9 => '0') &
---				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
---				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
---
---		begin
---			if rising_edge(input_clk) then
---				if input_ena='1' then
---					samples <= byte2word(samples, sample, word2byte(mp ,daddr));
---				end if;
---			end if;
---		end process;
---
---		process(input_clk)
---			variable reset     : std_logic := '1';
---			variable den_req   : std_logic := '1';
---			variable tdiv_aux  : std_logic_vector(tdiv'range);
---			variable cfg_req   : std_logic := '0';
---			variable cfg_state : unsigned(0 to 1) := "00";
---			variable drp_rdy   : std_logic;
---			variable aux : std_logic_vector(tdiv_aux'range);
---		begin
---			if rising_edge(input_clk) then
---				if reset='0' then 
---					den <= '0';
---					dwe <= '0';
---					if cfg_req='1' then
---						dwe <= '0';
---						den <= '0';
---						if drp_rdy='1' then
---							case cfg_state is 
---							when "00" => 
---								den       <= '1';
---								daddr     <= b"100_0001";
---								dwe       <= '1';
---								di        <= x"0000";
---								cfg_state := "01";
---								cfg_req   := '1';
---							when "01" =>
---								den       <= '1';
---								daddr     <= b"100_1001";
---								dwe       <= '1';
---								case tdiv is 
---								when "0000" => 
---									di <= x"0000";
---								when "0001" => 
---									di <= x"1000";
---								when "0010" => 
---									di <= x"7000";
---								when others =>
---									di <= x"f0f0";
---								end case;
---								cfg_state := "10";
---								cfg_req   := '1';
---							when "10" =>
---								den       <= '1';
---								daddr     <= b"100_0001";
---								dwe       <= '1';
---								di        <= x"2000";
---								cfg_state := "00";
---								cfg_req   := '0';
---							when others =>
---							end case;
---							drp_rdy := '0';
---						end if;
---					elsif eoc='1' then
---						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
---						if drp_rdy='1' then
---							den     <= '1';
---							drp_rdy := '0';
---						end if;
---						if tdiv_aux /= tdiv then
---							cfg_req := '1';
---						end if;
---						tdiv_aux := tdiv;
---					end if;
---				else
---					den <= '1';
---					drp_rdy := '1';
---					reset   := '0';
---				end if;
---				if input_ena='1' then
---					drp_rdy := '1';
---				end if;
---
---			end if;
---		end process;
---
---	end block;
+	xadc_b : block
+		signal eoc     : std_logic;
+		signal di      : std_logic_vector(0 to 16-1);
+		signal dwe     : std_logic;
+		signal den     : std_logic;
+		signal daddr   : std_logic_vector(0 to 7-1);
+		signal channel : std_logic_vector(0 to 5-1);
+		signal vauxp   : std_logic_vector(16-1 downto 0);
+		signal vauxn   : std_logic_vector(16-1 downto 0);
+		signal sample  : std_logic_vector(sample_size-1 downto 0);
+	begin
+		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
+		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
 
+		xadc_e : xadc
+		generic map (
+		
+			INIT_40 => X"0403",
+			INIT_41 => X"2000",
+			INIT_42 => X"0400",
+			
+			INIT_48 => x"0800",
+			INIT_49 => X"0000",
+
+			INIT_4A => X"0000",
+			INIT_4B => X"0000",
+
+			INIT_4C => X"0800",
+			INIT_4D => X"0000",
+
+			INIT_4E => X"0000",
+			INIT_4F => X"0000",
+
+			INIT_50 => X"0000",
+			INIT_51 => X"0000",
+			INIT_52 => X"0000",
+			INIT_53 => X"0000",
+			INIT_54 => X"0000",
+			INIT_55 => X"0000",
+			INIT_56 => X"0000",
+			INIT_57 => X"0000",
+			INIT_58 => X"0000",
+			INIT_5C => X"0000")
+		port map (
+			reset     => '0',
+			vauxp     => vauxp,
+			vauxn     => vauxn,
+			vp        => v_p(0),
+			vn        => v_n(0),
+			convstclk => '0',
+			convst    => '0',
+
+			eoc       => eoc,
+			dclk      => input_clk,
+			drdy      => input_ena,
+			channel   => channel,
+			daddr     => daddr,
+			den       => den,
+			dwe       => dwe,
+			di        => di,
+			do        => sample); 
+
+		process(input_clk)
+			constant mp  : std_logic_vector(0 to 9*32-1) := (
+				(1 to 2*9 => '0') & b"1000_0000_0" & (1 to 13*9 => '0') &
+				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
+				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
+
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					samples <= byte2word(samples, sample, word2byte(mp ,daddr));
+				end if;
+			end if;
+		end process;
+
+		process(input_clk)
+			variable reset     : std_logic := '1';
+			variable den_req   : std_logic := '1';
+			variable tdiv_aux  : std_logic_vector(tdiv'range);
+			variable cfg_req   : std_logic := '0';
+			variable cfg_state : unsigned(0 to 1) := "00";
+			variable drp_rdy   : std_logic;
+			variable aux : std_logic_vector(tdiv_aux'range);
+		begin
+			if rising_edge(input_clk) then
+				if reset='0' then 
+					den <= '0';
+					dwe <= '0';
+					if cfg_req='1' then
+						dwe <= '0';
+						den <= '0';
+						if drp_rdy='1' then
+							case cfg_state is 
+							when "00" => 
+								den       <= '1';
+								daddr     <= b"100_0001";
+								dwe       <= '1';
+								di        <= x"0000";
+								cfg_state := "01";
+								cfg_req   := '1';
+							when "01" =>
+								den       <= '1';
+								daddr     <= b"100_1001";
+								dwe       <= '1';
+								case tdiv is
+								when "0000" =>
+									di <= x"0000";
+									channel_ena <= b"1000_0000_0";
+								when "0001" =>
+									di <= x"1000";
+									channel_ena <= b"1100_0000_0";
+								when "0010" =>
+									di <= x"7000";
+									channel_ena <= b"1111_0000_0";
+								when others =>
+									di <= x"f0f0";
+									channel_ena <= b"1111_1111_1";
+								end case;
+								cfg_state := "10";
+								cfg_req   := '1';
+							when "10" =>
+								den       <= '1';
+								daddr     <= b"100_0001";
+								dwe       <= '1';
+								di        <= x"2000";
+								cfg_state := "00";
+								cfg_req   := '0';
+							when others =>
+							end case;
+							drp_rdy := '0';
+						end if;
+					elsif eoc='1' then
+						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+						if drp_rdy='1' then
+							den     <= '1';
+							drp_rdy := '0';
+						end if;
+						if tdiv_aux /= tdiv then
+							cfg_req := '1';
+						end if;
+						tdiv_aux := tdiv;
+					end if;
+				else
+					den <= '1';
+					drp_rdy := '1';
+					reset   := '0';
+				end if;
+				if input_ena='1' then
+					drp_rdy := '1';
+				end if;
+
+			end if;
+		end process;
+
+	end block;
+
+			
 --	sample <= x"00ff";
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -304,27 +305,11 @@ begin
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
 		inputs       => inputs,
-		gauge_labels => to_ascii(string'(
-			"Escala     : " &
-			"Posicion   : " &
-			"Escala     : " &
-			"Posicion   : " &
-			"Escala     : " &
-			"Posicion   : " &
-			"Horizontal : " &
-			"Disparo    : ")),
-		unit_symbols => to_ascii(string'(
-			"V" &
-			"V" &
-			"V" &
-			"V" &
-			"V" &
-			"V" &
-			"s" &
-			"V")),
+		gauge_labels => to_ascii(gauge_labels(1 to inputs*26) & "Horizontal : " & "Disparo    : "),
+		unit_symbols => to_ascii(unit_symbols(1 to inputs*2) & "s" & "V"),
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
-		channels_fg  => b"011_110_101",
-		channels_bg  => b"000_000_000",
+		channels_fg  => channels_fg(0 to vga_rgb'length*inputs-1),
+		channels_bg  => channels_bg(0 to vga_rgb'length*inputs-1),
 		hzaxis_fg    => b"010",
 		hzaxis_bg    => b"000",
 		grid_fg      => b"100",
@@ -333,9 +318,10 @@ begin
 		mii_rxc     => eth_rxclk_bufg,
 		mii_rxdv    => mii_rxdv,
 		mii_rxd     => mii_rxd,
+		channel_ena => channel_ena(0 to inputs-1),
 		input_clk   => input_clk,
-		input_ena   => '1', -- input_ena,
-		input_data  => b"0100_0000_0000_0000" & b"0000_1000_0000_0000" & b"0001_1000_0000_0000",
+		input_ena   => input_ena,
+		input_data  => samples,
 		tdiv        => tdiv,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,

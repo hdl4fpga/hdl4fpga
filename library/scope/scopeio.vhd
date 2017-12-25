@@ -31,7 +31,7 @@ entity scopeio is
 		cmd_sel     : in  std_logic_vector(0 to 2-1) := "--";
 		cmd_inc     : in  std_logic := '-';
 		cmd_rdy     : in  std_logic := '0';
-		data        : in  std_logic_vector(32-1 downto 0) := (others => '1');
+		channel_ena : in  std_logic_vector(0 to inputs-1) := (others => '1');
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -618,8 +618,8 @@ begin
 			vcolorfg_sel := encoder(video_fg);
 			vcolorbg_sel := encoder(video_bg);
 			gauge_sel    := encoder(gauge_on);
-			pcolor_sel   := encoder(plot_fg);
-			plot_on      := setif(plot_fg  /= (plot_fg'range  => '0'));
+			pcolor_sel   := encoder(plot_fg and channel_ena);
+			plot_on      := setif((plot_fg and channel_ena)  /= (plot_fg'range  => '0'));
 			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
 			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;

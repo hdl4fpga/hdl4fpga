@@ -386,7 +386,7 @@ package body std is
 	begin
 		aux(0 to arg'length-1) := arg;
 		aux := reverse(aux);
-		for i in 0 to arg'length-1 loop
+		for i in 0 to aux'length-1 loop
 			if aux=std_logic_vector(to_unsigned(2**i,aux'length)) then
 				val := std_logic_vector(to_unsigned(i, val'length));
 			end if;
