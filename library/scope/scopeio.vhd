@@ -579,8 +579,8 @@ begin
 		video_bg   => video_bg,
 		video_fg   => video_fg);
 
-	process(video_clk)
-		variable pcolor_sel   : std_logic_vector(channel_select'range);
+	xxx: process(video_clk)
+		variable pcolor_sel   : std_logic_vector(0 to unsigned_num_bits(inputs-1)-1);
 		variable vcolorfg_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
 		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
 		variable gauge_sel    : std_logic_vector(0 to unsigned_num_bits(2+inputs-1)-1);
@@ -597,19 +597,6 @@ begin
 
 	begin
 		if rising_edge(video_clk) then
-			vtaxis_fg  := word2byte(channels_fg, channel_select, vtaxis_fg'length);
-			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
-			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
-
-			vcolorfg_sel := encoder(video_fg);
-			vcolorbg_sel := encoder(video_bg);
-			gauge_sel    := encoder(gauge_on);
-			pcolor_sel   := encoder(plot_fg);
-			plot_on      := setif(plot_fg  /= (plot_fg'range  => '0'));
-			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
-			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
-			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;
-
 			if plot_on='1' then
 				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
@@ -623,6 +610,19 @@ begin
 				pixel <= (others => '1');
 				pixel <= (others => '0');
 			end if;
+
+			vtaxis_fg  := word2byte(channels_fg, channel_select, vtaxis_fg'length);
+			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
+			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
+
+			vcolorfg_sel := encoder(video_fg);
+			vcolorbg_sel := encoder(video_bg);
+			gauge_sel    := encoder(gauge_on);
+			pcolor_sel   := encoder(plot_fg);
+			plot_on      := setif(plot_fg  /= (plot_fg'range  => '0'));
+			video_fgon   := setif(video_fg /= (video_fg'range => '0'));
+			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
+			gauges_fgon  := setif(gauge_on /= (gauge_on'range => '0')) and cga_dot;
 
 		end if;
 	end process;
