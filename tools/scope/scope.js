@@ -1,4 +1,5 @@
 const dgram = require('dgram');
+const inputs = 2;
 
 var client  = dgram.createSocket('udp4');
 
@@ -6,11 +7,16 @@ const chan = [
 	{ color  : "#ffff00",
 	  shaded : "#808000" },
 	{ color  : "#00ffff",
-	  shaded : "#008080" } ];
+	  shaded : "#008080" },
+	{ color  : "#ff00ff",
+	  shaded : "#008080" },
+	{ color  : "#ffffff",
+	  shaded : "#008080" },
+	  ];
 
 window.addEventListener("load", function() {
 
-	function send (id, data, channel, edge) {
+	function send (cmd, data, channel, edge) {
 		var buffer = Buffer.alloc(3);
 		var host = "kit";
 		var port = 57001;
@@ -25,47 +31,38 @@ window.addEventListener("load", function() {
 				channel += 128;
 		buffer[2] = parseInt(channel);
 
-		console.log(channel);
-		switch(id) {
-		case "chan0-unit":
-		case "chan1-unit":
+		console.log("channel : ", channel, "command : ", cmd);
+		switch(cmd) {
+		case "unit":
 			buffer[0] = 0;
 			break;
-		case "chan0-offset":
-		case "chan1-offset":
+		case "offset":
 			buffer[0] = 1;
 			break;
-		case "chan0-level":
-		case "chan1-level":
+		case "level":
 			buffer[0] = 2;
 			break;
 		case "time":
 			buffer[0] = 3;
 			break;
 		}
-		console.log(data);
 		client.send(buffer, port, host , function(err, bytes) {
 			if (err) throw err;
 			console.log('UDP message sent to ' + host +':'+ "57001");
 		});
 	}
 
-	function pru() {
-		console.log("hola");
-	}
-
 	function mouseWheelCb (e) {
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
-		document.getElementById(this.id).onchange(e);
 	}
 
 	function chanSelect (ev) {
-		for(i=0 ; i < 2; i++) {
+		for(i=0 ; i < inputs; i++) {
 			var idTrigger = "chan" + i + "-trigger";
 			var idScale   = "chan" + i + "-scale";
 
 			if (this.id === idTrigger)
-				for (j=0; j < 2; j++) {
+				for (j=0; j < inputs; j++) {
 					idTrigger = "chan" + j + "-trigger";
 					if (this.id === idTrigger) {
 						this.style.color = chan[j].color;
@@ -74,7 +71,7 @@ window.addEventListener("load", function() {
 						document.getElementById(idTrigger).style.color =  chan[j].shaded;
 				}
 			else if (this.id === idScale)
-				for (j=0; j < 2; j++) {
+				for (j=0; j < inputs; j++) {
 					idScale = "chan" + j + "-scale";
 					if (this.id === idScale) {
 						this.style.color = chan[j].color;
@@ -84,71 +81,90 @@ window.addEventListener("load", function() {
 				}
 		}
 	}
+	body = document.getElementsByTagName("body");
+	for (i = 0; i < inputs; i++) {
+		body[0].innerHTML = body[0].innerHTML + 
+			'<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:'+ chan[i % chan.length].color + ';border:solid #404040 1pt;">' +
+				'<div id="chan' + i + '-scale" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">' +
+					'<div style="display:inline-block;vertical-align:top">' +
+						'<input id="chan' + i + '-unit" type="range" class="vertical" value="0" min="0" max="15">' +
+						'<label style="display:block;">Escala</label>' +
+					'</div>' +
+					'<div style="display:inline-block;vertical-align:top">' +
+						'<input id="chan' + i + '-offset" type="range" class="vertical" value="0" min="-128" max="128"/>' +
+						'<label style="display:block;">Position</label>' + 
+					'</div>' + 
+					'<label style="display:block;">Vertical</label>' + 
+				'</div>' + 
+				'<div id="chan' + i + '-trigger" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">' +
+					'<div style="display:inline-block;vertical-align:top">' +
+						'<input id="chan' + i + '-level" type="range" class="vertical" value="0" min="-128" max="128"/>' +
+						'<label style="display:block">Nivel</label>' +
+					'</div>' +
+					'<div style="display:inline-block;vertical-align:top">' +
+						'<input id="chan' + i + '-slope" type="range" class="vertical" value="0" min="0" max="1"/>' +
+						'<label style="display:block">Pendiente</label>' +
+					'</div>' +
+					'<label style="display:block;">Disparo</label>' +
+				'</div>' +
+			'</div>';
+	}
+
+	body[0].innerHTML = body[0].innerHTML + 
+		'<div style="padding:2pt;text-align:center;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
+			'<div style="padding:2pt;display:inline-block;vertical-align:top;">' +
+				'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
+					'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
+					'<label style="display:block;">Escala</label>' +
+				'</div>' +
+				'<label style="display:block;">Horizontal</label>' +
+			'</div>' +
+		'</div>';
+
 	document.getElementById("time").onchange = function(ev) {
-		send(this.id, parseInt(this.value));
+		send("time", parseInt(this.value));
 	}
 
-	document.getElementById("chan0-scale").onclick   = chanSelect;
-	document.getElementById("chan1-scale").onclick   = chanSelect;
-	document.getElementById("chan0-trigger").onclick = chanSelect;
-	document.getElementById("chan1-trigger").onclick = chanSelect;
+	for (i=0; i < inputs; i++) {
+		document.getElementById("chan" + i + "-scale").onclick   = chanSelect;
+		document.getElementById("chan" + i + "-trigger").onclick = chanSelect;
 
-	document.getElementById("chan0-unit").onfocus    = function(ev) { this.parentElement.parentElement.onclick(ev); }
-	document.getElementById("chan0-offset").onfocus  = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan0-level").onfocus   = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan0-slope").onfocus   = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan1-unit").onfocus    = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan1-offset").onfocus  = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan1-level").onfocus   = document.getElementById("chan0-unit").onfocus;
-	document.getElementById("chan1-slope").onfocus   = document.getElementById("chan0-unit").onfocus;
+		if (i == 0)
+			document.getElementById("chan0-unit").onfocus = function(ev) { this.parentElement.parentElement.onclick(ev); };
+		else
+			document.getElementById("chan" + i + "-unit").onfocus = document.getElementById("chan0-unit").onfocus;
 
-	document.getElementById("chan0-unit"   ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan0-offset" ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan0-level"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan0-slope"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan0-scale"  ).addEventListener("wheel", chanSelect, false);
-	document.getElementById("chan0-trigger").addEventListener("wheel", chanSelect, false);
-	document.getElementById("chan1-unit"   ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan1-offset" ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan1-level"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan1-slope"  ).addEventListener("wheel", mouseWheelCb, false);
-	document.getElementById("chan1-trigger").addEventListener("wheel", chanSelect, false);
-	document.getElementById("chan1-scale"  ).addEventListener("wheel", chanSelect, false);
+		document.getElementById("chan" + i + "-offset").onfocus  = document.getElementById("chan0-unit").onfocus;
+		document.getElementById("chan" + i + "-level").onfocus   = document.getElementById("chan0-unit").onfocus;
+		document.getElementById("chan" + i + "-slope").onfocus   = document.getElementById("chan0-unit").onfocus;
+
+		document.getElementById("chan" + i + "-unit"   ).addEventListener("wheel", mouseWheelCb, false);
+		document.getElementById("chan" + i + "-offset" ).addEventListener("wheel", mouseWheelCb, false);
+		document.getElementById("chan" + i + "-level"  ).addEventListener("wheel", mouseWheelCb, false);
+		document.getElementById("chan" + i + "-slope"  ).addEventListener("wheel", mouseWheelCb, false);
+		document.getElementById("chan" + i + "-scale"  ).addEventListener("wheel", chanSelect, false);
+		document.getElementById("chan" + i + "-trigger").addEventListener("wheel", chanSelect, false);
+
+		document.getElementById("chan" + i + "-unit").onchange = function(ev) {
+			send ("unit", (parseInt(this.value)+16)%16, this.id.match(/\d+/)[0]);
+		}
+
+		document.getElementById("chan" + i + "-offset").onchange = function(ev) {
+			send ("offset", (parseInt(this.value)+256)%256, );
+			document.getElementById("chan" + this.id.match(/\d+/)[0] + "-unit").onchange(ev);
+		}
+
+		document.getElementById("chan" + i + "-level").onchange = function(ev) {
+			send ("level", (parseInt(this.value)+256)%256, this.id.match(/\d+/)[0], document.getElementById("chan" + this.id.match(/\d+/)[0] + "-slope").value);
+		}
+
+		document.getElementById("chan" + i + "-slope").onchange = function(ev) {
+			document.getElementById("chan" + this.id.match(/\d+/)[0] + "-level").onchange(ev);
+		}
+
+	}
+
+
 	document.getElementById("time"         ).addEventListener("wheel", mouseWheelCb, false);
-
-	document.getElementById("chan0-unit").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+16)%16, 0);
-	}
-
-	document.getElementById("chan0-offset").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 0);
-		document.getElementById("chan0-unit").onchange(ev);
-	}
-
-
-	document.getElementById("chan0-level").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 0, document.getElementById("chan0-slope").value);
-	}
-
-	document.getElementById("chan0-slope").onchange = function(ev) {
-		document.getElementById("chan0-level").onchange(ev);
-	}
-
-	document.getElementById("chan1-unit").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+16)%16, 1);
-	}
-
-	document.getElementById("chan1-offset").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 1);
-		document.getElementById("chan1-unit").onchange(ev);
-	}
-
-	document.getElementById("chan1-level").onchange = function(ev) {
-		send (this.id, (parseInt(this.value)+256)%256, 1, document.getElementById("chan1-slope").value);
-	}
-
-	document.getElementById("chan1-slope").onchange = function(ev) {
-		document.getElementById("chan1-level").onchange(ev);
-	}
 
 });
