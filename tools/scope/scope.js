@@ -1,5 +1,5 @@
 const dgram = require('dgram');
-const inputs = 2;
+const inputs = 4;
 
 var client  = dgram.createSocket('udp4');
 
@@ -9,9 +9,9 @@ const chan = [
 	{ color  : "#00ffff",
 	  shaded : "#008080" },
 	{ color  : "#ff00ff",
-	  shaded : "#008080" },
+	  shaded : "#800080" },
 	{ color  : "#ffffff",
-	  shaded : "#008080" },
+	  shaded : "#808080" },
 	  ];
 
 window.addEventListener("load", function() {
@@ -28,7 +28,7 @@ window.addEventListener("load", function() {
 		
 		if (typeof edge !== "undefined")
 			if (edge != 0) 
-				channel += 128;
+				channel = parseInt(channel) + 128;
 		buffer[2] = parseInt(channel);
 
 		console.log("channel : ", channel, "command : ", cmd);
@@ -150,7 +150,7 @@ window.addEventListener("load", function() {
 		}
 
 		document.getElementById("chan" + i + "-offset").onchange = function(ev) {
-			send ("offset", (parseInt(this.value)+256)%256, );
+			send ("offset", (parseInt(this.value)+256)%256, this.id.match(/\d+/)[0] );
 			document.getElementById("chan" + this.id.match(/\d+/)[0] + "-unit").onchange(ev);
 		}
 
