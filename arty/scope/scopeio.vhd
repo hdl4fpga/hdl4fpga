@@ -32,7 +32,7 @@ architecture beh of arty is
    			"VV" & "VV" & "VV" & "VV" & "VV");
 
 
-	constant inputs : natural := 2;
+	constant inputs : natural := 4;
 	signal samples  : std_logic_vector(inputs*sample_size-1 downto 0);
 	constant channels_bg : std_logic_vector(0 to 9*vga_rgb'length-1) := (others => '0');
 	constant channels_fg : std_logic_vector(0 to 9*vga_rgb'length-1) := b"110_011_101_111_001_110_011_101_111";
