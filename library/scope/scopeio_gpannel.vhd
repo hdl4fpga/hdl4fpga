@@ -203,7 +203,7 @@ begin
 		end if;
 	end process;
 
-	process(video_clk)
+	process(gpannel_row, gpannel_on)
 		variable row : unsigned(0 to 2**gpannel_row'length-1);
 	begin
 		row := unsigned(demux(gpannel_row));

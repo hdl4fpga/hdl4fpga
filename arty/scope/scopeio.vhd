@@ -162,7 +162,7 @@ begin
 			INIT_42 => X"0400",
 			
 			INIT_48 => x"0800",
-			INIT_49 => X"0000",
+			INIT_49 => X"f0f0",
 
 			INIT_4A => X"0000",
 			INIT_4B => X"0000",
@@ -204,14 +204,15 @@ begin
 
 		process(input_clk)
 			constant mp  : std_logic_vector(0 to 9*32-1) := (
-				(1 to 2*9 => '0') & b"1000_0000_0" & (1 to 13*9 => '0') &
+				(1 to 3*9 => '0') & b"1000_0000_0" & (1 to 12*9 => '0') &
 				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
 				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
+			variable pp : std_logic_vector(0 to 9-1);
 
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
-					samples <= byte2word(samples, sample, word2byte(mp ,daddr));
+					samples <= byte2word(samples, sample, word2byte(fill(mp, 9*128) ,daddr));
 				end if;
 			end if;
 		end process;

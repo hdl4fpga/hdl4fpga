@@ -121,10 +121,6 @@ window.addEventListener("load", function() {
 			'</div>' +
 		'</div>';
 
-	document.getElementById("time").onchange = function(ev) {
-		send("time", parseInt(this.value));
-	}
-
 	for (i=0; i < inputs; i++) {
 		document.getElementById("chan" + i + "-scale").onclick   = chanSelect;
 		document.getElementById("chan" + i + "-trigger").onclick = chanSelect;
@@ -164,7 +160,17 @@ window.addEventListener("load", function() {
 
 	}
 
+	document.getElementById("time").addEventListener("wheel",
+		function (e) { 
+			this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1)); 
+			this.onchange(e);
+		},
+		false);
+	document.getElementById("time").onchange = function(ev) {
+		console.log("pase por aca");
+		send("time", parseInt(this.value));
+	}
 
-	document.getElementById("time"         ).addEventListener("wheel", mouseWheelCb, false);
+
 
 });
