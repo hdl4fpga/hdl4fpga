@@ -33,7 +33,7 @@ architecture beh of arty is
 
 
 	constant inputs : natural := 4;
-	signal samples  : std_logic_vector(inputs*sample_size-1 downto 0);
+	signal samples  : std_logic_vector(0 to 9*sample_size-1);
 	constant channels_bg : std_logic_vector(0 to 9*vga_rgb'length-1) := (others => '0');
 	constant channels_fg : std_logic_vector(0 to 9*vga_rgb'length-1) := b"110_011_101_111_001_110_011_101_111";
 	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
@@ -104,6 +104,14 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
+	process (sys_clk)
+		variable cntr : unsigned(0 to 18-1);
+	begin
+		if rising_edge(sys_clk) then
+			cntr := cntr + 1;
+			jd(1 to 4) <= std_logic_vector(cntr(0 to 4-1));
+		end if;
+	end process;
 	dcm_e : block
 		signal vga_clkfb : std_logic;
 		signal adc_clkfb : std_logic;
@@ -162,13 +170,13 @@ begin
 			INIT_42 => X"0400",
 			
 			INIT_48 => x"0800",
-			INIT_49 => X"f0f0",
+			INIT_49 => X"0000",
 
 			INIT_4A => X"0000",
 			INIT_4B => X"0000",
 
 			INIT_4C => X"0800",
-			INIT_4D => X"0000",
+			INIT_4D => X"f0f0",
 
 			INIT_4E => X"0000",
 			INIT_4F => X"0000",
@@ -182,7 +190,8 @@ begin
 			INIT_56 => X"0000",
 			INIT_57 => X"0000",
 			INIT_58 => X"0000",
-			INIT_5C => X"0000")
+			INIT_5C => X"0000",
+			SIM_MONITOR_FILE => "design.txt")
 		port map (
 			reset     => '0',
 			vauxp     => vauxp,
@@ -247,7 +256,7 @@ begin
 								daddr     <= b"100_1001";
 								dwe       <= '1';
 								case tdiv is
-								when "0000" =>
+								when "000" =>
 									di <= x"0000";
 									channel_ena <= b"1000_0000_0";
 								when "0001" =>
@@ -322,7 +331,7 @@ begin
 		channel_ena => channel_ena(0 to inputs-1),
 		input_clk   => input_clk,
 		input_ena   => input_ena,
-		input_data  => samples,
+		input_data  => samples(0 to sample_size*inputs-1),
 		tdiv        => tdiv,
 		video_clk   => vga_clk,
 		video_rgb   => vga_rgb,
