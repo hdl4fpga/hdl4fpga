@@ -46,7 +46,7 @@ architecture beh of arty is
 		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0001", deca => x"E6"),
 		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0010", deca => x"E6"),
                                                                                                  
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**0*2**1*5**0, scale => "0100", deca => x"E6"),
+		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**0*2**0*5**0, scale => "0100", deca => x"E6"),
 		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**0*2**0*5**1, scale => "0101", deca => x"E6"),
 		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**1*2**0*5**0, scale => "0110", deca => x"E6"),
                                                    
@@ -149,6 +149,7 @@ begin
 	end block;
    
 	xadc_b : block
+		signal drdy    : std_logic;
 		signal eoc     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
@@ -201,9 +202,10 @@ begin
 			convstclk => '0',
 			convst    => '0',
 
+			eos       => input_ena,
 			eoc       => eoc,
 			dclk      => input_clk,
-			drdy      => input_ena,
+			drdy      => drdy,
 			channel   => channel,
 			daddr     => daddr,
 			den       => den,
@@ -220,8 +222,8 @@ begin
 
 		begin
 			if rising_edge(input_clk) then
-				if input_ena='1' then
-					samples <= byte2word(samples, sample, word2byte(fill(mp, 9*128) ,daddr));
+				if drdy='1' then
+					samples <= byte2word(samples, sample, word2byte(fill(mp, 9*128, value => '0') ,daddr));
 				end if;
 			end if;
 		end process;
@@ -298,7 +300,7 @@ begin
 					drp_rdy := '1';
 					reset   := '0';
 				end if;
-				if input_ena='1' then
+				if drdy='1' then
 					drp_rdy := '1';
 				end if;
 
