@@ -32,38 +32,38 @@ architecture beh of arty is
    			"VV" & "VV" & "VV" & "VV" & "VV");
 
 
-	constant inputs : natural := 4;
+	constant inputs : natural := 9;
 	signal samples  : std_logic_vector(0 to 9*sample_size-1);
 	constant channels_bg : std_logic_vector(0 to 9*vga_rgb'length-1) := (others => '0');
 	constant channels_fg : std_logic_vector(0 to 9*vga_rgb'length-1) := b"110_011_101_111_001_110_011_101_111";
-	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
+	signal   channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
 
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0001", deca => x"E6"),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0010", deca => x"E6"),
-                                                                                                 
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**0*2**0*5**0, scale => "0100", deca => x"E6"),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**0*2**0*5**1, scale => "0101", deca => x"E6"),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**1*2**0*5**0, scale => "0110", deca => x"E6"),
-                                                   
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**1*2**1*5**0, scale => "1000", deca => x"E6"),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**1*2**0*5**1, scale => "1001", deca => x"E6"),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**2*2**0*5**0, scale => "1010", deca => x"E6"),
-                                                   
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**2*2**1*5**0, scale => "0000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**2*2**0*5**1, scale => "0001", deca => to_ascii('m')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**3*2**0*5**0, scale => "0010", deca => to_ascii('m')),
+		(from => 0.0, step =>  40.0001*5.0*10.0**(+0), mult => 10**0*2**0*5**0, scale => "1000", deca => x"E6"),
+		(from => 0.0, step =>  80.0001*5.0*10.0**(+0), mult => 10**0*2**0*5**0, scale => "1011", deca => x"E6"),
+		(from => 0.0, step => 200.0001*5.0*10.0**(+0), mult => 10**0*2**0*5**0, scale => "1010", deca => x"E6"),
 
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**3*2**1*5**0, scale => "0100", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**3*2**0*5**1, scale => "0101", deca => to_ascii('m')),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**4*2**0*5**0, scale => "0110", deca => to_ascii('m')),
+		(from => 0.0, step =>  40.0001*5.0*10.0**(-2), mult => 10**0*2**0*5**0, scale => "0000", deca => to_ascii('m')),
+		(from => 0.0, step =>  80.0001*5.0*10.0**(-2), mult => 10**0*2**1*5**0, scale => "0011", deca => to_ascii('m')),
+		(from => 0.0, step => 200.0001*5.0*10.0**(-2), mult => 10**0*2**0*5**1, scale => "0010", deca => to_ascii('m')),
 
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**4*2**1*5**0, scale => "1000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**4*2**0*5**1, scale => "1001", deca => to_ascii('m')));
+		(from => 0.0, step =>  40.0001*5.0*10.0**(-1), mult => 10**1*2**0*5**0, scale => "0100", deca => to_ascii('m')),
+		(from => 0.0, step =>  80.0001*5.0*10.0**(-1), mult => 10**1*2**1*5**0, scale => "0111", deca => to_ascii('m')),
+		(from => 0.0, step => 200.0001*5.0*10.0**(-1), mult => 10**1*2**0*5**1, scale => "0110", deca => to_ascii('m')),
+
+		(from => 0.0, step =>  40.0001*5.0*10.0**(+0), mult => 10**2*2**0*5**0, scale => "1000", deca => to_ascii('m')),
+		(from => 0.0, step =>  80.0001*5.0*10.0**(+0), mult => 10**2*2**1*5**0, scale => "1011", deca => to_ascii('m')),
+		(from => 0.0, step => 200.0001*5.0*10.0**(+0), mult => 10**2*2**0*5**1, scale => "1010", deca => to_ascii('m')),
+                                                   
+		(from => 0.0, step =>  40.0001*5.0*10.0**(-2), mult => 10**3*2**0*5**0, scale => "0000", deca => to_ascii(' ')),
+		(from => 0.0, step =>  80.0001*5.0*10.0**(-2), mult => 10**3*2**1*5**0, scale => "0011", deca => to_ascii(' ')),
+		(from => 0.0, step => 200.0001*5.0*10.0**(-2), mult => 10**3*2**0*5**1, scale => "0010", deca => to_ascii(' ')),
+
+		(from => 0.0, step =>  40.0001*5.0*10.0**(-1), mult => 10**4*2**1*5**1, scale => "0100", deca => to_ascii(' ')));
 
 	constant vt_scales : scale_vector(0 to 16-1) := (
 		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => (50*2**18)/(512*10**0*2**1*5**0), scale => "1000", deca => to_ascii('m')),
@@ -120,9 +120,9 @@ begin
 		vga_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
-			clkfbout_mult_f  => 6.0,		-- 200 MHz
-			clkout0_divide_f => 4.0,
-			clkout1_divide   => 15,
+			clkfbout_mult_f  => 12.0,		-- 200 MHz
+			clkout0_divide_f => 8.0,
+			clkout1_divide   => 75,
 			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
@@ -135,8 +135,8 @@ begin
 
 		adc_i : mmcme2_base
 		generic map (
-			clkin1_period    => 10.0*15.0/6.0,
-			clkfbout_mult_f  => 13.0*2.0,		-- 200 MHz
+			clkin1_period    => 10.0*75.0/12.0,
+			clkfbout_mult_f  => 13.0*4.0,		-- 200 MHz
 			clkout0_divide_f => 10.0,
 			bandwidth        => "LOW")
 		port map (
@@ -218,7 +218,6 @@ begin
 				(1 to 3*9 => '0') & b"1000_0000_0" & (1 to 12*9 => '0') &
 				(1 to 4*9 => '0') & b"0000_0100_0" & b"0000_0010_0" & b"0000_0001_0" & b"0000_0000_1" &
 				(1 to 4*9 => '0') & b"0100_0000_0" & b"0010_0000_0" & b"0001_0000_0" & b"0000_1000_0");
-			variable pp : std_logic_vector(0 to 9-1);
 
 		begin
 			if rising_edge(input_clk) then
@@ -265,10 +264,10 @@ begin
 									di <= x"1000";
 									channel_ena <= b"1100_0000_0";
 								when "0010" =>
-									di <= x"7000";
-									channel_ena <= b"1111_0000_0";
+									di <= x"f000";
+									channel_ena <= b"1111_1000_0";
 								when others =>
-									di <= x"f0f0";
+									di <= x"f0f1";
 									channel_ena <= b"1111_1111_1";
 								end case;
 								cfg_state := "10";
@@ -318,6 +317,7 @@ begin
 		vt_scales    => vt_scales,
 		inputs       => inputs,
 		gauge_labels => to_ascii(gauge_labels(1 to inputs*26) & "Horizontal : " & "Disparo    : "),
+--		gauge_frac   => 3,
 		unit_symbols => to_ascii(unit_symbols(1 to inputs*2) & "s" & "V"),
 		input_unit   => 100.0*(1.25*64.0)/8192.0,
 		channels_fg  => channels_fg(0 to vga_rgb'length*inputs-1),

@@ -8,6 +8,7 @@ use hdl4fpga.std.all;
 entity scopeio_gpannel is
 	generic (
 		inputs         : natural;
+		gauge_frac     : natural;
 		gauge_labels   : std_logic_vector;
 		unit_symbols   : std_logic_vector);
 	port (
@@ -32,7 +33,7 @@ end;
 architecture beh of scopeio_gpannel is
 
 	constant label_size : natural := gauge_labels'length/((2*inputs+2)*ascii'length);
-	signal   reading    : std_logic_vector(20-1 downto 0);
+	signal   reading    : std_logic_vector(24-1 downto 0);
 
 	impure function init_rom (
 		constant size : natural)
@@ -63,7 +64,7 @@ architecture beh of scopeio_gpannel is
 	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
 	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
 	signal   deca      : std_logic_vector(ascii'range);
-	signal   reading1  : std_logic_vector(20-1 downto 0):= (others => '0');
+	signal   reading1  : std_logic_vector(reading'range):= (others => '0');
 
 	signal   chan_dot  : std_logic_vector(0 to 2+inputs-1);
 	signal   meter_fld : std_logic_vector(0 to 2+inputs-1);
@@ -158,7 +159,7 @@ begin
 
 			value <= word2byte(
 				vt_value    &
-				std_logic_vector(to_unsigned(32, value'length)) &
+				std_logic_vector(to_unsigned(128, value'length)) &
 				trigger_value,
 				text_row, value'length);
 
@@ -189,8 +190,8 @@ begin
 
 	display_e : entity hdl4fpga.scopeio_gauge
 	generic map (
-		frac => 5,
-		dec  => 2)
+		frac => gauge_frac,
+		dec  => 3)
 	port map (
 		value => value,
 		scale => scale,

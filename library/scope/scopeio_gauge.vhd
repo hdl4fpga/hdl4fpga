@@ -39,11 +39,13 @@ begin
 		aux := aux + shift_left(aux, 2);
 		case mult is
 		when "00" =>
-			fix <= std_logic_vector(resize(signed(value), aux'length));
+			fix <= std_logic_vector(resize(signed(value), fix'length));
 		when "01" =>
 			fix <= std_logic_vector(shift_right(aux,1));
 		when "10" =>
 			fix <= std_logic_vector(aux);
+		when "11" =>
+			fix <= std_logic_vector(shift_left(resize(signed(value), fix'length),1));
 		when others =>
 			fix <= (others => '-');
 		end case;
