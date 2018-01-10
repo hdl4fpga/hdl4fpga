@@ -60,14 +60,15 @@ architecture beh of scopeio_gpannel is
 		return retval;
 	end;
 
-	signal   mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom(2**gpannel_col'length));
-	signal   scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
-	signal   value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
-	signal   deca      : std_logic_vector(ascii'range);
-	signal   reading1  : std_logic_vector(reading'range):= (others => '0');
+	signal mem       : byte_vector(0 to (2*inputs+2)*2**gpannel_col'length-1) := to_bytevector(init_rom(2**gpannel_col'length));
+	signal scale     : std_logic_vector(0 to channel_scale'length/inputs-1) := b"0011";
+	signal value     : std_logic_vector(0 to channel_level'length/inputs-1) := b"0_0010_0000";
+	signal deca      : std_logic_vector(ascii'range);
+	signal reading1  : std_logic_vector(reading'range):= (others => '0');
 
-	signal   chan_dot  : std_logic_vector(0 to 2+inputs-1);
-	signal   meter_fld : std_logic_vector(0 to 2+inputs-1);
+	signal chan_dot  : std_logic_vector(0 to 2+inputs-1);
+	signal meter_fld : std_logic_vector(0 to 2+inputs-1);
+	signal page      : std_logic_vector(unsigned_num_bits(gpannel_on'length-1)-1 downto 0);
 
 
 	impure function fmt_reading (
@@ -79,13 +80,14 @@ architecture beh of scopeio_gpannel is
 	end;
 
 	signal text_col  : std_logic_vector(gpannel_col'left downto gpannel_col'right);
-	signal text_row  : std_logic_vector(gpannel_row'left downto gpannel_row'right);
+	signal text_row  : std_logic_vector(page'length+gpannel_row'left downto gpannel_row'right);
 	signal text_addr : std_logic_vector(text_row'length+text_col'length-1 downto 0);
 	signal text_data : std_logic_vector(ascii'range);
 
 	signal we : std_logic := '0';
 begin
 
+	page <= encoder(gpannel_on);
 	process (pannel_clk)
 		constant start  : natural := label_size;
 		constant finish : natural := start+reading'length/4+3;
@@ -198,23 +200,32 @@ begin
 		fmtds => reading);	
 
 	process(video_clk)
+		variable address : unsigned(unsigned_num_bits(mem'length-1)-1 downto 0);
 	begin
 		if rising_edge(video_clk) then
-			gauge_code <= mem(to_integer(unsigned(std_logic_vector'(gpannel_row & gpannel_col))));
+			address(page'range) := unsigned(page);
+			address := address sll gpannel_row'length;
+			address(gpannel_row'length-1 downto 0) := unsigned(gpannel_row);
+			address := address sll gpannel_col'length;
+			address(gpannel_col'length-1 downto 0) := unsigned(gpannel_col);
+			gauge_code <= mem(to_integer(address));
 		end if;
 	end process;
 
 	process(gpannel_row, gpannel_on)
-		variable row : unsigned(0 to 2**gpannel_row'length-1);
+		variable row : unsigned(0 to 2**(page'length+gpannel_row'length)-1);
 	begin
-		row := unsigned(demux(gpannel_row));
+		row := unsigned(demux(page & gpannel_row));
+		gauge_on <= (gauge_on'range => '0');
 		for i in 0 to inputs+2-1 loop
-			if i < inputs then
-				gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 => '0')) and setif(gpannel_on/=(gpannel_on'range => '0'));
-				row         := row sll 2;
-			else
-				gauge_on(i) <= row(0) and setif(gpannel_on/=(gpannel_on'range => '0'));
-				row         := row sll 1;
+			if gpannel_on/=(gpannel_on'range => '0') then
+				if i < inputs then
+					gauge_on(i) <= setif(row(0 to 2-1) /= (0 to 2-1 => '0'));
+					row         := row sll 2;
+				else
+					gauge_on(i) <= row(0);
+					row         := row sll 1;
+				end if;
 			end if;
 		end loop;
 	end process;

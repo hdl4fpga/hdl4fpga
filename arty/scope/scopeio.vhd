@@ -257,7 +257,7 @@ begin
 								daddr     <= b"100_1001";
 								dwe       <= '1';
 								case tdiv is
-								when "000" =>
+								when "0000" =>
 									di <= x"0000";
 									channel_ena <= b"1000_0000_0";
 								when "0001" =>

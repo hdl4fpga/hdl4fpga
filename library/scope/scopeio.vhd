@@ -156,8 +156,8 @@ architecture beh of scopeio is
 	constant font_height : natural := 16;
 	signal   cga_code    : std_logic_vector(ascii'range);
 	signal   cga_dot     : std_logic;
-	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_height-1));
-	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto unsigned_num_bits(font_width-1));
+	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y)-2 downto unsigned_num_bits(font_height-1));
+	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_width-1));
 	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
 	signal trigger_ena : std_logic;
 	constant delay       : natural := 4;
@@ -537,7 +537,7 @@ begin
 			di  => gpannel_x(font_col'range),
 			do  => font_col);
 
-		font_dot <= word2byte(font_line, font_col) and win_don(0 to 0);
+		font_dot <= word2byte(font_line, font_col);
 
 		align_e : entity hdl4fpga.align
 		generic map (
