@@ -105,11 +105,14 @@ begin
 		O => sys_clk);
 
 	process (sys_clk)
-		variable cntr : unsigned(0 to 18-1);
+		variable cntr : unsigned(0 to 20-1);
 	begin
 		if rising_edge(sys_clk) then
 			cntr := cntr + 1;
 			jd(1 to 4) <= std_logic_vector(cntr(0 to 4-1));
+			jd(7 to 10) <= std_logic_vector(cntr(4 to 8-1));
+			jc(1) <= cntr(9-1);
+
 		end if;
 	end process;
 	dcm_e : block

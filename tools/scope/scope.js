@@ -1,5 +1,5 @@
 const dgram = require('dgram');
-const inputs = 4;
+const inputs = 9;
 
 var client  = dgram.createSocket('udp4');
 
@@ -74,10 +74,10 @@ window.addEventListener("load", function() {
 				for (j=0; j < inputs; j++) {
 					idScale = "chan" + j + "-scale";
 					if (this.id === idScale) {
-						this.style.color = chan[j].color;
+						this.style.color = chan[j % chan.length ].color;
 						document.getElementById("chan" + j + "-offset").onchange(ev);
 					} else
-						document.getElementById(idScale).style.color = chan[j].shaded;
+						document.getElementById(idScale).style.color = chan[j % chan.length ].shaded;
 				}
 		}
 	}
