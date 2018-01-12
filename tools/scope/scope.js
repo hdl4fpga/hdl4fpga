@@ -65,10 +65,10 @@ window.addEventListener("load", function() {
 				for (j=0; j < inputs; j++) {
 					idTrigger = "chan" + j + "-trigger";
 					if (this.id === idTrigger) {
-						this.style.color = chan[j].color;
+						this.style.color = chan[j % chan.length ].color;
 						document.getElementById("chan" + j + "-slope").onchange(ev);
 					} else
-						document.getElementById(idTrigger).style.color =  chan[j].shaded;
+						document.getElementById(idTrigger).style.color =  chan[j % chan.length ].shaded;
 				}
 			else if (this.id === idScale)
 				for (j=0; j < inputs; j++) {
