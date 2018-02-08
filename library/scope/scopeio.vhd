@@ -10,7 +10,7 @@ use hdl4fpga.cgafont.all;
 entity scopeio is
 	generic (
 		inputs         : natural := 1;
-		input_unit     : real    := 1.0;
+		input_preamp   : real_vector;
 		layout_id      : natural := 0;
 		hz_scales      : scale_vector;
 		vt_scales      : scale_vector;
@@ -314,19 +314,25 @@ begin
 	end process;
 
 	process (input_clk)
-		variable aux : std_logic_vector(vm_inputs'range);
-		variable m   : mdword_vector(0 to inputs-1);
-		variable a   : mword_vector(0 to inputs-1);
-		variable s   : mword_vector(0 to inputs-1);
+		variable scales : integer_vector(vt_scales'range);
+		variable aux    : std_logic_vector(vm_inputs'range);
+		variable m      : mdword_vector(0 to inputs-1);
+		variable a      : mword_vector(0 to inputs-1);
+		variable s      : mword_vector(0 to inputs-1);
 	begin
 		if rising_edge(input_clk) then
 			for i in 0 to inputs-1 loop
+
+				for j in scales'range loop
+					scales(j) := integer(input_preamp(i)*real(vt_scales(j).mult));
+				end loop;
+
 				aux := byte2word(
 					aux, 
 					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				m(i) := a(i)*s(i);
-				s(i) := to_signed(vt_scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))).mult, mword'length);
+				s(i) := to_signed(scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))), mword'length);
 				a(i) := resize(signed(std_logic_vector'(word2byte(input_data, i, input_data'length/inputs))), mword'length);
 			end loop;
 			vm_inputs <= aux;
