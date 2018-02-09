@@ -12,6 +12,8 @@ const chan = [
 	  shaded : "#800080" },
 	{ color  : "#ffffff",
 	  shaded : "#808080" },
+	{ color  : "#0000ff",
+	  shaded : "#000080" },
 	  ];
 
 window.addEventListener("load", function() {
@@ -82,6 +84,18 @@ window.addEventListener("load", function() {
 		}
 	}
 	body = document.getElementsByTagName("body");
+
+	body[0].innerHTML = body[0].innerHTML + 
+		'<div style="padding:2pt;text-align:center;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
+			'<div style="padding:2pt;display:inline-block;vertical-align:top;">' +
+				'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
+					'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
+					'<label style="display:block;">Escala</label>' +
+				'</div>' +
+				'<label style="display:block;">Horizontal</label>' +
+			'</div>' +
+		'</div>';
+
 	for (i = 0; i < inputs; i++) {
 		body[0].innerHTML = body[0].innerHTML + 
 			'<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:'+ chan[i % chan.length].color + ';border:solid #404040 1pt;">' +
@@ -109,18 +123,6 @@ window.addEventListener("load", function() {
 				'</div>' +
 			'</div>';
 	}
-
-	body[0].innerHTML = body[0].innerHTML + 
-		'<div style="padding:2pt;text-align:center;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
-			'<div style="padding:2pt;display:inline-block;vertical-align:top;">' +
-				'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
-					'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
-					'<label style="display:block;">Escala</label>' +
-				'</div>' +
-				'<label style="display:block;">Horizontal</label>' +
-			'</div>' +
-		'</div>';
-
 	for (i=0; i < inputs; i++) {
 		document.getElementById("chan" + i + "-scale").onclick   = chanSelect;
 		document.getElementById("chan" + i + "-trigger").onclick = chanSelect;

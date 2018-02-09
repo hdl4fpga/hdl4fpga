@@ -109,9 +109,17 @@ begin
 	begin
 		if rising_edge(sys_clk) then
 			cntr := cntr + 1;
-			jd(7 to 10) <= std_logic_vector(cntr(0 to 4-1));
-			jd(1 to 4) <= std_logic_vector(cntr(4 to 8-1));
-			jc(1) <= cntr(9-1);
+			jd(1)  <= cntr(8);
+			jd(2)  <= cntr(7);
+			jd(3)  <= cntr(6);
+			jd(4)  <= cntr(5);
+			jd(10) <= cntr(4);
+			jc(1)  <= cntr(3);
+
+			jd(7)  <= cntr(2);
+			jd(8)  <= cntr(1);
+			jd(9)  <= cntr(0);
+
 
 		end if;
 	end process;
