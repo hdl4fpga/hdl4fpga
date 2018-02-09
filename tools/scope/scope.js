@@ -85,8 +85,9 @@ window.addEventListener("load", function() {
 	}
 	body = document.getElementsByTagName("body");
 
-	body[0].innerHTML = body[0].innerHTML + 
-		'<div style="padding:2pt;text-align:center;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
+	var pp = "";
+	pp = pp + 
+		'<div style="text-align:center;margin:2pt;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
 			'<div style="padding:2pt;display:inline-block;vertical-align:top;">' +
 				'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
 					'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
@@ -96,8 +97,9 @@ window.addEventListener("load", function() {
 			'</div>' +
 		'</div>';
 
+	pp = pp + '<div id="hola" style="margin:2pt;display:inline-block;text-align:left">';
 	for (i = 0; i < inputs; i++) {
-		body[0].innerHTML = body[0].innerHTML + 
+		pp = pp + 
 			'<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:'+ chan[i % chan.length].color + ';border:solid #404040 1pt;">' +
 				'<div id="chan' + i + '-scale" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">' +
 					'<div style="display:inline-block;vertical-align:top">' +
@@ -122,7 +124,14 @@ window.addEventListener("load", function() {
 					'<label style="display:block;">Disparo</label>' +
 				'</div>' +
 			'</div>';
+		if ((i+1) % 5) 
+			pp = pp + "";
+		else
+			pp = pp + '<br>';
 	}
+	pp = pp + '</div>';
+	body[0].innerHTML = pp;
+
 	for (i=0; i < inputs; i++) {
 		document.getElementById("chan" + i + "-scale").onclick   = chanSelect;
 		document.getElementById("chan" + i + "-trigger").onclick = chanSelect;
