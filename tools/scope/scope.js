@@ -87,8 +87,8 @@ window.addEventListener("load", function() {
 
 	var pp = "";
 	pp = pp + 
-		'<div style="text-align:center;margin:2pt;padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;color:#00ff00">' +
-			'<div style="padding:2pt;display:inline-block;vertical-align:top;">' +
+		'<div style="text-align:center;margin:3pt;padding:0pt;background-color:#080808;display:inline-block;vertical-align:top;border:solid #888888 1pt;color:#00ff00">' +
+			'<div style="padding:1pt;display:inline-block;vertical-align:top;">' +
 				'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
 					'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
 					'<label style="display:block;">Escala</label>' +
@@ -97,11 +97,11 @@ window.addEventListener("load", function() {
 			'</div>' +
 		'</div>';
 
-	pp = pp + '<div id="hola" style="margin:2pt;display:inline-block;text-align:left">';
+	pp = pp + '<div id="hola" style="margin:1pt;display:inline-block;text-align:left">';
 	for (i = 0; i < inputs; i++) {
 		pp = pp + 
-			'<div style="text-align:center;padding:2pt;display:inline-block;vertical-align:top;color:'+ chan[i % chan.length].color + ';border:solid #404040 1pt;">' +
-				'<div id="chan' + i + '-scale" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">' +
+			'<div style="text-align:center;padding:0pt;margin:1pt;background-color:#444444;display:inline-block;vertical-align:top;color:'+ chan[i % chan.length].color + ';border:solid #404040 1pt;">' +
+				'<div id="chan' + i + '-scale" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:top;border:solid #888888 1pt;">' +
 					'<div style="display:inline-block;vertical-align:top">' +
 						'<input id="chan' + i + '-unit" type="range" class="vertical" value="0" min="0" max="15">' +
 						'<label style="display:block;">Escala</label>' +
@@ -112,7 +112,7 @@ window.addEventListener("load", function() {
 					'</div>' + 
 					'<label style="display:block;">Vertical</label>' + 
 				'</div>' + 
-				'<div id="chan' + i + '-trigger" style="padding:2pt;display:inline-block;vertical-align:top;border:solid #404040 1pt;">' +
+				'<div id="chan' + i + '-trigger" style="background-color:#080808;padding:2pt;margin:0pt;display:inline-block;vertical-align:top;border:solid #888888 1pt;">' +
 					'<div style="display:inline-block;vertical-align:top">' +
 						'<input id="chan' + i + '-level" type="range" class="vertical" value="0" min="-128" max="128"/>' +
 						'<label style="display:block">Nivel</label>' +

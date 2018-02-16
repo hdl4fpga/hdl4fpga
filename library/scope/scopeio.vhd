@@ -598,11 +598,12 @@ begin
 		variable video_bgon   : std_logic;
 		variable gauges_fgon  : std_logic;
 
-		variable vtaxis_fg    : std_logic_vector(video_rgb'range);
-		variable vtaxis_bg    : std_logic_vector(video_rgb'range);
-		variable trigger_fg   : std_logic_vector(video_rgb'range);
-		variable triggerfg_e  : std_logic_vector(0 to 0);
-		variable trigger_bg   : std_logic_vector(video_rgb'range);
+		variable vtaxis_fg   : std_logic_vector(video_rgb'range);
+		variable vtaxisfg_e  : std_logic_vector(0 to 0);
+		variable vtaxis_bg   : std_logic_vector(video_rgb'range);
+		variable trigger_fg  : std_logic_vector(video_rgb'range);
+		variable triggerfg_e : std_logic_vector(0 to 0);
+		variable trigger_bg  : std_logic_vector(video_rgb'range);
 
 	begin
 		if rising_edge(video_clk) then
@@ -620,11 +621,14 @@ begin
 				pixel <= (others => '0');
 			end if;
 
+			vtaxisfg_e  := word2byte(channel_ena, channel_select, 1);
+			vtaxis_fg   := word2byte(channels_fg, channel_select, vtaxis_fg'length);
+			vtaxis_fg   := vtaxis_fg and (vtaxis_fg'range => vtaxisfg_e(0));
+			vtaxis_bg   := word2byte(channels_bg, channel_select, vtaxis_bg'length);
 			triggerfg_e := word2byte(channel_ena, trigger_select, 1);
-			vtaxis_bg  := word2byte(channels_bg, channel_select, vtaxis_bg'length);
-			trigger_fg := word2byte(channels_fg, trigger_select, trigger_fg'length);
-			trigger_fg := trigger_fg and (trigger_fg'range => triggerfg_e(0));
-			trigger_bg := word2byte(channels_bg, trigger_select, trigger_bg'length);
+			trigger_fg  := word2byte(channels_fg, trigger_select, trigger_fg'length);
+			trigger_fg  := trigger_fg and (trigger_fg'range => triggerfg_e(0));
+			trigger_bg  := word2byte(channels_bg, trigger_select, trigger_bg'length);
 
 			vcolorfg_sel := encoder(video_fg);
 			vcolorbg_sel := encoder(video_bg);

@@ -2,5 +2,6 @@
   "name": "helloworld",
   "main": "main.html",
   "window" : {
-	  	"width" : 648 }
+	  	"width" : 1500,
+  		"height": 520 }
 }
