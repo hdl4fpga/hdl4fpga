@@ -168,7 +168,7 @@ begin
 			"V" &
 			"s" &
 			"V")),
-		input_unit   => 100.0*(1.25*64.0)/8192.0,
+		input_preamp => (0 to 1 => 1.0),
 		channels_fg  => b"110",
 		channels_bg  => b"000",
 		hzaxis_fg    => b"010",
