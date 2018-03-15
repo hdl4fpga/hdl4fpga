@@ -15,6 +15,7 @@ entity scopeio_gpannel is
 		pannel_clk     : in  std_logic;
 		time_scale     : in  std_logic_vector;
 		time_deca      : in  std_logic_vector(ascii'range);
+		time_value     : in  std_logic_vector;
 		trigger_scale  : in  std_logic_vector;
 		trigger_deca   : in  std_logic_vector(ascii'range);
 		trigger_edge   : in  std_logic;
@@ -161,7 +162,7 @@ begin
 
 			value <= word2byte(
 				vt_value    &
-				std_logic_vector(to_unsigned(128, value'length)) &
+				std_logic_vector(resize(unsigned(time_value), value'length)) &
 				trigger_value,
 				text_row, value'length);
 
