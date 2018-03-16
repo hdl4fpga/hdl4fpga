@@ -82,7 +82,7 @@ architecture beh of ecp3versa is
 			end if;
 			y := sin(2.0*MATH_PI*real((i))/real(x1-x0+1));
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
---			if i=1599 then
+--			if i < (x0+x1)/2 then
 --				aux(i*n to (i+1)*n-1) := (others => '0');
 --			else
 --				aux(i*n to (i+1)*n-1) := ('1',others => '0');
