@@ -155,7 +155,6 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		layout_id    => 0,
-		ht_div       => b"0_0010_0000",
 		hz_scales    => hz_scales,
 		vt_scales    => vt_scales,
 		inputs       => 1,

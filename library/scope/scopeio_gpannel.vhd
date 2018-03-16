@@ -15,11 +15,12 @@ entity scopeio_gpannel is
 		pannel_clk     : in  std_logic;
 		time_scale     : in  std_logic_vector;
 		time_deca      : in  std_logic_vector(ascii'range);
-		time_value     : in  std_logic_vector;
+		time_div       : in  std_logic_vector;
 		trigger_scale  : in  std_logic_vector;
 		trigger_deca   : in  std_logic_vector(ascii'range);
 		trigger_edge   : in  std_logic;
-		trigger_value     : in  std_logic_vector;
+		trigger_value  : in  std_logic_vector;
+		channel_div    : in  std_logic_vector;
 		channel_decas  : in  std_logic_vector;
 		channel_scale  : in  std_logic_vector;
 		channel_level  : in  std_logic_vector;
@@ -162,7 +163,7 @@ begin
 
 			value <= word2byte(
 				vt_value    &
-				std_logic_vector(resize(unsigned(time_value), value'length)) &
+				std_logic_vector(resize(unsigned(time_div), value'length)) &
 				trigger_value,
 				text_row, value'length);
 
@@ -175,7 +176,7 @@ begin
 			for i in 0 to inputs-1 loop
 				vt_value := byte2word(
 					vt_value, 
-					std_logic_vector(to_unsigned(32, value'length)) & word2byte(channel_level, i, value'length),
+					std_logic_vector(resize(unsigned(channel_div), value'length)) & word2byte(channel_level, i, value'length),
 					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
 				vt_deca  := byte2word(
 					vt_deca, 

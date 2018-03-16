@@ -12,7 +12,8 @@ entity scopeio is
 		inputs         : natural := 1;
 		input_preamp   : real_vector;
 		layout_id      : natural := 0;
-		ht_div         : std_logic_vector;
+		vt_div         : std_logic_vector := b"0_0010_0000";
+		ht_div         : std_logic_vector := b"0_0010_0000";
 		hz_scales      : scale_vector;
 		vt_scales      : scale_vector;
 		gauge_labels   : std_logic_vector;
@@ -492,11 +493,12 @@ begin
 		pannel_clk     => mii_rxc,
 		time_deca      => time_deca,
 		time_scale     => g_hzscale,
-		time_value     => ht_div,
+		time_div       => ht_div,
 		trigger_edge   => trigger_edge,
 		trigger_scale  => trigger_scale,
 		trigger_deca   => trigger_deca,
 		trigger_value  => trigger_level,
+		channel_div    => vt_div,
 		channel_scale  => gp_vtscale,
 		channel_level  => channel_offset,
 		channel_decas  => channel_decas,
