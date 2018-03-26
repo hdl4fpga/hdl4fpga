@@ -31,8 +31,6 @@ entity scopeio is
 		mii_rxdv    : in  std_logic := '0';
 		mii_rxd     : in  std_logic_vector;
 		tdiv        : out std_logic_vector(4-1 downto 0);
-		cmd_sel     : in  std_logic_vector(0 to 2-1) := "--";
-		cmd_inc     : in  std_logic := '-';
 		cmd_rdy     : in  std_logic := '0';
 		channel_ena : in  std_logic_vector(0 to inputs-1) := (others => '1');
 		input_clk   : in  std_logic;
@@ -195,7 +193,6 @@ begin
 	end process;
 
 	process (mii_rxc)
-		variable cmd_edge : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			trigger_offset <= std_logic_vector(-(
@@ -241,7 +238,6 @@ begin
 				when others =>
 				end case;
 			end if;
-			cmd_edge := cmd_rdy;
 		end if;
 	end process;
 	trigger_scale <= vt_scales(to_integer(unsigned(word2byte(channel_scale, trigger_channel, channel_scale'length/inputs)))).scale;
