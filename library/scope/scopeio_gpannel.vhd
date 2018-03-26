@@ -8,7 +8,6 @@ use hdl4fpga.std.all;
 entity scopeio_gpannel is
 	generic (
 		inputs         : natural;
-		gauge_frac     : natural;
 		gauge_labels   : std_logic_vector;
 		unit_symbols   : std_logic_vector);
 	port (
@@ -194,7 +193,7 @@ begin
 
 	display_e : entity hdl4fpga.scopeio_gauge
 	generic map (
-		frac => gauge_frac,
+		frac => 5,
 		dec  => 3)
 	port map (
 		value => value,

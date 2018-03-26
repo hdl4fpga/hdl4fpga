@@ -487,7 +487,6 @@ begin
 	generic map (
 		inputs         => inputs,
 		gauge_labels   => gauge_labels,
-		gauge_frac     => gauge_frac,
 		unit_symbols   => unit_symbols)
 	port map (
 		pannel_clk     => mii_rxc,
