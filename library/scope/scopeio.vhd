@@ -10,7 +10,7 @@ use hdl4fpga.cgafont.all;
 entity scopeio is
 	generic (
 		inputs         : natural := 1;
-		input_preamp   : real_vector(0 to inputs-1) := (others => 1.0);
+		input_preamp   : real_vector;
 		layout_id      : natural := 0;
 		vt_div         : std_logic_vector := b"0_0010_0000";
 		ht_div         : std_logic_vector := b"0_0010_0000";
