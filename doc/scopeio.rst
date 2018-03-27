@@ -4,23 +4,25 @@ entity scopeio
 generic
 -------
 
-============== ================ ==============
-inputs         natural          1
-input_preamp   real_vector
-layout_id      natural          0
-vt_div         std_logic_vector b"0_0010_0000"
-ht_div         std_logic_vector b"0_0010_0000"
-hz_scales      scale_vector
-vt_scales      scale_vector
-gauge_labels   std_logic_vector
-unit_symbols   std_logic_vector
-channels_fg    std_logic_vector
-channels_bg    std_logic_vector
-hzaxis_fg      std_logic_vector
-hzaxis_bg      std_logic_vector
-grid_fg        std_logic_vector
-grid_bg        std_logic_vector
-============== ================ ==============
+============== ================ ============== ===========================
+Parameter      Type             Default        Description
+============== ================ ============== ===========================
+inputs         natural          1              Number of input channels
+input_preamp   real_vector                     Analog input Preamplifier  
+layout_id      natural          0              Display layouts 
+vt_div         std_logic_vector b"0_0010_0000" Vertical division unit
+ht_div         std_logic_vector b"0_0010_0000" Horizontal division unit
+hz_scales      scale_vector                    Horizontal scale descriptor 
+vt_scales      scale_vector                    Vertical scale descriptor
+gauge_labels   std_logic_vector                Gauge labels
+unit_symbols   std_logic_vector                Unit Symbols
+channels_fg    std_logic_vector                Channel foreground colors
+channels_bg    std_logic_vector                Channel background colors
+hzaxis_fg      std_logic_vector                Horzontal foreground colors
+hzaxis_bg      std_logic_vector                Horzontal background colors
+grid_fg        std_logic_vector                Grid foreground colors
+grid_bg        std_logic_vector                Grid background colors
+============== ================ ============== ===========================
 
 .. comment
 	port (
