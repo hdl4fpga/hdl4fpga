@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# ScopeIO documentation build configuration file, created by
-# sphinx-quickstart on Tue Mar 27 14:32:31 2018.
+# sc documentation build configuration file, created by
+# sphinx-quickstart on Tue Mar 27 15:31:46 2018.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -30,11 +30,7 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.imgmath',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages']
+extensions = ['sphinx.ext.autodoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -50,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ScopeIO'
-copyright = u'2018, Miguel Angel'
+copyright = u'2018'
 author = u'Miguel Angel'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -118,7 +114,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ScopeIOdoc'
+htmlhelp_basename = 'scdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -145,8 +141,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ScopeIO.tex', u'ScopeIO Documentation',
-     u'Miguel Angel', 'manual'),
+    (master_doc, 'sc.tex', u'sc Documentation',
+     u'pp', 'manual'),
 ]
 
 
@@ -155,7 +151,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'scopeio', u'ScopeIO Documentation',
+    (master_doc, 'sc', u'sc Documentation',
      [author], 1)
 ]
 
@@ -166,8 +162,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ScopeIO', u'ScopeIO Documentation',
-     author, 'ScopeIO', 'One line description of project.',
+    (master_doc, 'sc', u'sc Documentation',
+     author, 'sc', 'One line description of project.',
      'Miscellaneous'),
 ]
 

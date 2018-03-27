@@ -17,7 +17,6 @@ entity scopeio is
 		hz_scales      : scale_vector;
 		vt_scales      : scale_vector;
 		gauge_labels   : std_logic_vector;
-		gauge_frac     : natural := 5;
 		unit_symbols   : std_logic_vector;
 		channels_fg    : std_logic_vector;
 		channels_bg    : std_logic_vector;

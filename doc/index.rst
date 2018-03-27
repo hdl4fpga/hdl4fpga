@@ -10,7 +10,7 @@ Welcome to ScopeIO's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   scopeio
 
 Indices and tables
 ==================
