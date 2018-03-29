@@ -199,9 +199,14 @@ Enable the corresponing channel to be plotted
 input_clk
 ~~~~~~~~~
 
-Input samples data clock
+Input sample data clock
+
+.. _input_ena:
 
 input_ena
 ~~~~~~~~~
 
+Enable input sample data
+
+.. _input_data:
 
