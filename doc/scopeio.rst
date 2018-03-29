@@ -210,3 +210,49 @@ Enable input sample data
 
 .. _input_data:
 
+input_data
+~~~~~~~~~~
+
+Input sample data
+
+.. _video_clk:
+
+video_clk
+~~~~~~~~~
+
+Video dot clock
+
+.. _video_rgb:
+
+video_rgb
+~~~~~~~~~
+
+Video output pixel
+
+.. _video_vsync:
+
+video_vsync
+~~~~~~~~~~~
+
+Vertical sync output
+
+.. _video_hsync:
+
+video_hsync
+~~~~~~~~~~~
+
+Horizontal sync output
+
+.. _video_blank:
+
+video_blank
+~~~~~~~~~~~
+
+Video blank
+
+.. _video_sync:
+
+video_sync
+~~~~~~~~~~
+
+Video sync signal
