@@ -1,6 +1,9 @@
 entity scopeio
 ==============
 
+.. comment: .. raw:: html
+    <object with="80" data="input_data.svg" type="image/svg+xml"></object>
+
 generic
 -------
 
@@ -184,6 +187,13 @@ mii_rxd
 
 Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy
 
+.. _tdiv:
+
+tdiv
+~~~~
+
+Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy
+
 
 .. _channel_ena:
 
@@ -214,6 +224,8 @@ input_data
 ~~~~~~~~~~
 
 Input sample data
+
+.. image:: input_data.svg
 
 .. _video_clk:
 
