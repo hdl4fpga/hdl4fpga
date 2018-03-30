@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="788.00006"
+   width="925.00006"
    height="557.5"
-   viewBox="0 0 208.49168 147.50521"
+   viewBox="0 0 244.7396 147.50521"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
@@ -876,9 +876,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="207.36745"
-     inkscape:cy="260.4781"
+     inkscape:zoom="5.6"
+     inkscape:cx="128.92605"
+     inkscape:cy="131.74149"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -902,8 +902,8 @@
        visible="true"
        spacingx="1.0583333"
        spacingy="1.0583333"
-       originx="227.54164"
-       originy="-190.23544" />
+       originx="225.5573"
+       originy="-190.23547" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -921,7 +921,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(227.54166,40.740606)"
+     transform="translate(225.55733,40.740606)"
      style="display:inline">
     <rect
        ry="1.0583354"
@@ -1298,7 +1298,7 @@
        id="text15338"><tspan
          sodipodi:role="line"
          x="-227.54166"
-         y="58.875015"
+         y="63.244774"
          style="stroke-width:0.26458332"
          id="tspan15340" /></text>
     <path
@@ -1827,12 +1827,12 @@
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332">five digit fix point fraction vector</tspan><tspan
          sodipodi:role="line"
          x="-201.08336"
-         y="0.1375514"
+         y="0.13755149"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332"
          id="tspan39360">default value := b&quot;0001_00000&quot;</tspan><tspan
          sodipodi:role="line"
          x="-201.08336"
-         y="2.7833846"
+         y="2.7833848"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332"
          id="tspan39366">equal to 1.0</tspan></text>
     <text
@@ -1884,7 +1884,7 @@
          style="fill:#ffca3b;fill-opacity:1;stroke-width:0.26458332">horizontal scales</tspan></text>
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker44794)"
-       d="m -136.52501,1.7250513 -3.175,0 -11.64167,-11.6416663"
+       d="m -136.52501,1.7250513 h -3.175 L -151.34168,-9.916615"
        id="path44790"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccc" />
@@ -1892,7 +1892,7 @@
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path48378"
-       d="m -133.35001,-3.5666152 h -4.23334 l -9.525,-9.5249998 0,-5.291666"
+       d="m -133.35001,-3.5666152 h -4.23334 l -9.525,-9.5249998 v -5.291666"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker48382)" />
     <rect
        style="fill:#000000;fill-opacity:1;stroke:#ffca3b;stroke-width:0.26458332;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -1995,17 +1995,17 @@
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332">plus the horizontal and the trigger readings.</tspan><tspan
          sodipodi:role="line"
          x="-78.316681"
-         y="-14.679116"
+         y="-14.679115"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332"
          id="tspan58500">Units examples : V, s, etc.</tspan><tspan
          id="tspan58484"
          sodipodi:role="line"
          x="-78.316681"
-         y="-12.033283"
+         y="-12.033282"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332" /><tspan
          sodipodi:role="line"
          x="-78.316681"
-         y="-9.3874502"
+         y="-9.3874493"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332"
          id="tspan58486" /></text>
     <text
@@ -2023,7 +2023,7 @@
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path58508"
-       d="m -70.908348,-2.5082819 2.116667,0 7.408333,-5.2916665 0,-4.2333336"
+       d="m -70.908348,-2.5082819 h 2.116667 l 7.408333,-5.2916665 v -4.2333336"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker58512)" />
     <rect
        style="fill:#000000;fill-opacity:1;stroke:#ffca3b;stroke-width:0.26458332;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -2061,7 +2061,7 @@
          sodipodi:role="line" /></text>
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker62956)"
-       d="m -70.908348,2.7833846 15.875,0"
+       d="m -70.908348,2.7833846 h 15.875"
        id="path62952"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -2148,7 +2148,7 @@
          id="tspan66356">One pixel each one</tspan><tspan
          id="tspan66358"
          style="fill:#fcdc87;fill-opacity:1;stroke-width:0.26458332"
-         y="31.88755"
+         y="31.887552"
          x="-41.275017"
          sodipodi:role="line" /></text>
     <path
@@ -2159,13 +2159,13 @@
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker68860)" />
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker70582)"
-       d="m -136.52501,8.0750511 -3.175,0 -7.40833,-7.4083331 h -6.35"
+       d="m -136.52501,8.0750511 h -3.175 l -7.40833,-7.4083331 h -6.35"
        id="path70578"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker65292)"
-       d="m -63.500018,13.366718 12.7,0"
+       d="m -63.500018,13.366718 h 12.7"
        id="path358"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -2173,7 +2173,96 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path360"
-       d="m -57.150018,18.658384 6.35,0"
+       d="m -57.150018,18.658384 h 6.35"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker63904)" />
-  </g>
+    <rect
+       y="39.825062"
+       x="-225.42503"
+       height="10.583343"
+       width="32.808353"
+       id="rect362"
+       style="fill:#ffca3b;fill-opacity:1;stroke:#000000;stroke-width:0.26458332;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       id="text366"
+       y="43.000065"
+       x="-224.3667"
+       style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none"
+       xml:space="preserve"><tspan
+         style="font-size:3.17499995px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         y="43.000065"
+         x="-224.3667"
+         sodipodi:role="line"
+         id="tspan1505">video clock</tspan></text>
+    <text
+       id="text1518"
+       y="46.175072"
+       x="-224.36668"
+       style="font-style:normal;font-weight:normal;font-size:2.11666656px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         id="tspan1516"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         y="46.175072"
+         x="-224.36668"
+         sodipodi:role="line">0 -&gt; 1920x1080 -&gt; 150 MHz</tspan><tspan
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         y="48.820904"
+         x="-224.36668"
+         sodipodi:role="line"
+         id="tspan1525">1 -&gt;     800x600 -&gt;    40 MHz</tspan></text>
+    <rect
+       style="fill:#ffca3b;fill-opacity:1;stroke:#000000;stroke-width:0.26458332;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect1857"
+       width="38.100006"
+       height="14.816668"
+       x="-225.42502"
+       y="53.583401" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none"
+       x="-224.36668"
+       y="56.758404"
+       id="text1861"><tspan
+         id="tspan1859"
+         sodipodi:role="line"
+         x="-224.36668"
+         y="56.758404"
+         style="font-size:3.17499995px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">mii receiving interface</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:2.11666656px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="-224.36667"
+       y="59.933411"
+       id="text1867"><tspan
+         id="tspan1865"
+         sodipodi:role="line"
+         x="-224.36667"
+         y="59.933411"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332">ethernet or whatever ieee 802.3.</tspan><tspan
+         sodipodi:role="line"
+         x="-224.36667"
+         y="62.579243"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         id="tspan1871">mii_rxd is an unconstraint array</tspan><tspan
+         sodipodi:role="line"
+         x="-224.36667"
+         y="65.225075"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         id="tspan1873">that could be connected to </tspan><tspan
+         sodipodi:role="line"
+         x="-224.36667"
+         y="67.870911"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         id="tspan1875">1, 4 or 8 bit wide interface</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot1881"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458334,0,0,0.26458334,-225.55733,-40.740606)"><flowRegion
+         id="flowRegion1883"><rect
+           id="rect1885"
+           width="160"
+           height="76"
+           x="-11.499904"
+           y="348.50018" /></flowRegion><flowPara
+         id="flowPara1887"></flowPara></flowRoot>  </g>
 </svg>
