@@ -10,8 +10,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="788.00006"
-   height="441.15625"
-   viewBox="0 0 208.49168 116.72259"
+   height="557.5"
+   viewBox="0 0 208.49168 147.50521"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
@@ -801,7 +801,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="367.19724"
+     inkscape:cx="367.19723"
      inkscape:cy="308.01428"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -845,7 +845,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(227.54166,9.9579919)"
+     transform="translate(227.54166,40.740606)"
      style="display:inline">
     <rect
        ry="1.0583354"
@@ -1704,7 +1704,7 @@
          id="tspan34408">1 -&gt;     800x600</tspan></text>
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker35006)"
-       d="m -157.69167,29.241683 h -3.175 l -6.35,6.35 -7.40833,0"
+       d="m -157.69167,29.241683 h -3.175 l -6.35,6.35 h -7.40833"
        id="path35002"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
@@ -1718,7 +1718,7 @@
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path38128"
-       d="m -153.45834,18.65835 -7.40833,0 -6.35,-6.35 h -7.40833"
+       d="m -153.45834,18.65835 h -7.40833 l -6.35,-6.35 h -7.40833"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker38132)" />
     <rect
        y="-8.8583155"
@@ -1761,7 +1761,7 @@
          id="tspan39366">equal to 1.0</tspan></text>
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker39378)"
-       d="m -141.81668,13.366683 -12.69999,0 -12.7,-12.69999912 -7.40833,0"
+       d="m -141.81668,13.366683 h -12.69999 l -12.7,-12.69999912 h -7.40833"
        id="path39374"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
@@ -1769,7 +1769,7 @@
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path40676"
-       d="m -136.52502,8.0750165 -17.99165,5e-7 -12.7,-12.6999996 -7.40833,0"
+       d="m -136.52502,8.0750165 -17.99165,5e-7 -12.7,-12.6999996 h -7.40833"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker40680)" />
     <text
        xml:space="preserve"
