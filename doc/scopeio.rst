@@ -49,7 +49,7 @@ This parameter is required to set the analog inputs when to have different scale
 layout_id
 ~~~~~~~~~
 
-layout_id selects one of the two display layouts. The table below shows the parameter's value to set according to the resolution required.
+layout_id selects one of the two display layouts. The table below shows the parameter's values to be seti, according to the resolution required.
 
 ===== ========== ===============
 Value Resolution Video frequency
@@ -58,7 +58,7 @@ Value Resolution Video frequency
     1    800x600          40 MHz
 ===== ========== ===============
 
-There is a nano-windows in which others layouts can be described pretty easily. So far, there are only two.
+There is a nano-window system in which other layouts can be described pretty easily. So far, there are only two.
 
 .. _vt_div:
 
