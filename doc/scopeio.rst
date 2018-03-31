@@ -41,9 +41,8 @@ The number of channel inputs which scopeio is going to plot.
 input_preamp
 ~~~~~~~~~~~~
 
-This parameter is required to set the analog inputs when to have different scales. If all the inputs have the same voltage resolution, assing 
-
-input_preamp => (0 to number_of_inputs-1 => 1.0)
+This parameter is required to set the analog inputs when to have different scales. If all the inputs have the same voltage resolution, set it to
+(0 to inputs-1 => 1.0)
 
 .. _layout_id:
 
