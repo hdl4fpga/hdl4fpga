@@ -14,7 +14,7 @@
    viewBox="0 0 219.25517 75.678409"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    sodipodi:docname="scale_vector.svg">
   <defs
      id="defs2">
@@ -285,9 +285,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="308.74461"
-     inkscape:cy="367.45332"
+     inkscape:zoom="0.70000001"
+     inkscape:cx="70.57877"
+     inkscape:cy="511.52529"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -296,9 +296,9 @@
      gridtolerance="10000"
      guidetolerance="10000"
      inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="1072"
+     inkscape:window-height="1051"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:snap-text-baseline="true"
      fit-margin-top="0"
@@ -394,116 +394,16 @@
          id="tspan1118"
          x="-401.00754"
          y="37.708351"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal">constant hz_scales : scale_vector(0 to 16-1) := (</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332">constant hz_scales : scale_vector(0 to 16-1) := (</tspan><tspan
          sodipodi:role="line"
          x="-401.00754"
-         y="43.881962"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
+         y="43.920887"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
          id="tspan1122">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1000&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
          sodipodi:role="line"
          x="-401.00754"
-         y="50.055573"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1124">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1011&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="56.229183"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1126">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1010&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="62.402794"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1128" /><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="68.576401"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1130">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;0000&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="74.750015"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1132">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**1*5**0, scale =&gt; &quot;0011&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="80.92363"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1134">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**0*5**1, scale =&gt; &quot;0010&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="87.097237"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1136" /><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="93.270844"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1138">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**0*5**0, scale =&gt; &quot;0100&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="99.444458"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1140">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**1*5**0, scale =&gt; &quot;0111&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="105.61807"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1142">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**0*5**1, scale =&gt; &quot;0110&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="111.79168"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1144" /><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="117.96529"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1146">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**0*5**0, scale =&gt; &quot;1000&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="124.1389"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1148">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**1*5**0, scale =&gt; &quot;1011&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="130.31252"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1150">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**0*5**1, scale =&gt; &quot;1010&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="136.48611"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1152">                                                   </tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="142.65973"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1154">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**0*5**0, scale =&gt; &quot;0000&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="148.83334"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1156">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**1*5**0, scale =&gt; &quot;0011&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="155.00696"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1158">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**0*5**1, scale =&gt; &quot;0010&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="161.18057"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1160" /><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="167.35417"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
-         id="tspan1162">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-1), mult =&gt; 10**4*2**1*5**1, scale =&gt; &quot;0100&quot;, deca =&gt; to_ascii(' ')));</tspan><tspan
-         sodipodi:role="line"
-         x="-401.00754"
-         y="173.52779"
-         style="text-align:start;text-anchor:start;stroke-width:0.26458332;-inkscape-font-specification:'Courier New Bold';font-family:'Courier New';font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal"
+         y="50.133427"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
          id="tspan1164" /></text>
     <rect
        style="opacity:1;fill:none;fill-opacity:1;stroke:#e6c800;stroke-width:0.5291667;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -711,5 +611,126 @@
        id="path4372"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
+    <text
+       id="text165"
+       y="191.16667"
+       x="-391.58331"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.93888855px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="191.16667"
+         x="-391.58331"
+         id="tspan119"
+         sodipodi:role="line">constant hz_scales : scale_vector(0 to 16-1) := (</tspan><tspan
+         id="tspan121"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="197.37921"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1000&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
+         id="tspan123"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="203.59175"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1011&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
+         id="tspan125"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="209.80429"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(+0), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;1010&quot;, deca =&gt; x&quot;E6&quot;),</tspan><tspan
+         id="tspan127"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="216.01683"
+         x="-391.58331"
+         sodipodi:role="line" /><tspan
+         id="tspan129"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="222.19043"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**0*5**0, scale =&gt; &quot;0000&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan131"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="228.40297"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**1*5**0, scale =&gt; &quot;0011&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan133"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="234.61551"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-2), mult =&gt; 10**0*2**0*5**1, scale =&gt; &quot;0010&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan135"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="240.82805"
+         x="-391.58331"
+         sodipodi:role="line" /><tspan
+         id="tspan137"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="247.00165"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**0*5**0, scale =&gt; &quot;0100&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan139"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="253.21419"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**1*5**0, scale =&gt; &quot;0111&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan141"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="259.42673"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-1), mult =&gt; 10**1*2**0*5**1, scale =&gt; &quot;0110&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan143"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="265.63925"
+         x="-391.58331"
+         sodipodi:role="line" /><tspan
+         id="tspan145"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="271.81287"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**0*5**0, scale =&gt; &quot;1000&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan147"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="278.02542"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**1*5**0, scale =&gt; &quot;1011&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan149"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="284.23795"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(+0), mult =&gt; 10**2*2**0*5**1, scale =&gt; &quot;1010&quot;, deca =&gt; to_ascii('m')),</tspan><tspan
+         id="tspan151"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="290.45047"
+         x="-391.58331"
+         sodipodi:role="line" /><tspan
+         id="tspan153"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="296.62408"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**0*5**0, scale =&gt; &quot;0000&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
+         id="tspan155"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="302.83664"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  80.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**1*5**0, scale =&gt; &quot;0011&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
+         id="tspan157"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="309.04916"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt; 200.0001*5.0*10.0**(-2), mult =&gt; 10**3*2**0*5**1, scale =&gt; &quot;0010&quot;, deca =&gt; to_ascii(' ')),</tspan><tspan
+         id="tspan159"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="315.26172"
+         x="-391.58331"
+         sodipodi:role="line" /><tspan
+         id="tspan161"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="321.4353"
+         x="-391.58331"
+         sodipodi:role="line">		(from =&gt; 0.0, step =&gt;  40.0001*5.0*10.0**(-1), mult =&gt; 10**4*2**1*5**1, scale =&gt; &quot;0100&quot;, deca =&gt; to_ascii(' ')));</tspan><tspan
+         id="tspan163"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:start;text-anchor:start;stroke-width:0.26458332"
+         y="327.64786"
+         x="-391.58331"
+         sodipodi:role="line" /></text>
   </g>
 </svg>
