@@ -9,25 +9,25 @@ entity scopeio
 generic
 -------
 
-=================== ================ ============== ===========================
-Parameter           Type             Default        Description
-=================== ================ ============== ===========================
-:ref:`inputs`       natural          1              Number of channel inputs
-:ref:`input_preamp` real_vector                     Analog input Preamplifier  
-:ref:`layout_id`    natural          0              Display layouts 
-:ref:`vt_div`       std_logic_vector b"0_001_00000" Vertical division unit
-:ref:`ht_div`       std_logic_vector b"0_001_00000" Horizontal division unit
-:ref:`vt_scales`    scale_vector                    Vertical scale descriptor
-:ref:`hz_scales`    scale_vector                    Horizontal scale descriptor 
-:ref:`gauge_labels` std_logic_vector                Gauge labels
-:ref:`unit_symbols` std_logic_vector                Unit Symbols
-:ref:`channels_fg`  std_logic_vector                Channel foreground colors
-:ref:`channels_bg`  std_logic_vector                Channel background colors
-:ref:`hzaxis_fg`    std_logic_vector                Horzontal foreground color
-:ref:`hzaxis_bg`    std_logic_vector                Horzontal background color
-:ref:`grid_fg`      std_logic_vector                Grid foreground colors
-:ref:`grid_bg`      std_logic_vector                Grid background colors
-=================== ================ ============== ===========================
+=================== =================== ============== ===========================
+Parameter           Type                Default        Description
+=================== =================== ============== ===========================
+:ref:`inputs`       natural             1              Number of channel inputs
+:ref:`input_preamp` real_vector                        Analog input Preamplifier  
+:ref:`layout_id`    natural             0              Display layouts 
+:ref:`vt_div`       std_logic_vector    b"0_001_00000" Vertical division unit
+:ref:`ht_div`       std_logic_vector    b"0_001_00000" Horizontal division unit
+:ref:`vt_scales`    :ref:`scale_vector`                Vertical scale descriptor
+:ref:`hz_scales`    :ref:`scale_vector`                Horizontal scale descriptor 
+:ref:`gauge_labels` std_logic_vector                   Gauge labels
+:ref:`unit_symbols` std_logic_vector                   Unit Symbols
+:ref:`channels_fg`  std_logic_vector                   Channel foreground colors
+:ref:`channels_bg`  std_logic_vector                   Channel background colors
+:ref:`hzaxis_fg`    std_logic_vector                   Horzontal foreground color
+:ref:`hzaxis_bg`    std_logic_vector                   Horzontal background color
+:ref:`grid_fg`      std_logic_vector                   Grid foreground colors
+:ref:`grid_bg`      std_logic_vector                   Grid background colors
+=================== =================== ============== ===========================
 
 .. _inputs:
 
@@ -73,6 +73,23 @@ ht_div
 ~~~~~~
 
 It represents the horizontal base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
+
+.. _scale_vector:
+
+scale_vector
+~~~~~~~~~~~~
+
+====== ================ =================================
+member type             description
+====== ================ =================================
+from   real       Scale starting point
+scale  real       Scale base unit
+mult   integer          input data adjusment
+scale  std_logic_vector Gauge reading scale select
+                        most left two significant bits select the decimal point
+                        the most right multiply factor select the multiplying factor
+deca   std_logic_vector ascii code
+===== ================= ===============
 
 .. _vt_scales:
 
