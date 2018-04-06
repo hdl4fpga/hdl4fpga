@@ -103,7 +103,7 @@ hz_scales
 
 It describes the horizontal scales using ht_div as base to display the value on the screen.
 
-.. image:: scale_vector.svg
+.. image:: hzscale_vector.svg
 
 .. _gauge_labels:
 
