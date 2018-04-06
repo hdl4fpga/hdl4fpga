@@ -82,14 +82,12 @@ scale_vector
 ====== ================ =================================
 member type             description
 ====== ================ =================================
-from   real       Scale starting point
-scale  real       Scale base unit
+from   real             Scale starting point
+scale  real             Scale base unit
 mult   integer          input data adjusment
 scale  std_logic_vector Gauge reading scale select
-                        most left two significant bits select the decimal point
-                        the most right multiply factor select the multiplying factor
 deca   std_logic_vector ascii code
-===== ================= ===============
+====== ================ =================================
 
 .. _vt_scales:
 
@@ -104,6 +102,8 @@ hz_scales
 ~~~~~~~~~
 
 It describes the horizontal scales using ht_div as base to display the value on the screen.
+
+.. image:: scale_vector.svg
 
 .. _gauge_labels:
 
