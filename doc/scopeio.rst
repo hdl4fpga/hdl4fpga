@@ -101,7 +101,7 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-It describes the horizontal scales using ht_div as base to display the value on the screen.
+It describes the horizontal scales using ht_div as base to display the corrresponding value on the screen. There are sixteen(16) 
 
 .. image:: hzscale_vector.svg
 
