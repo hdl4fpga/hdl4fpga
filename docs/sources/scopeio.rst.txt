@@ -5,6 +5,7 @@ entity scopeio
     <object with="80" data="input_data.svg" type="image/svg+xml"></object>
 
 .. image:: scopeio.svg
+   :target: images/scopeio.svg
 
 generic
 -------
@@ -104,6 +105,8 @@ hz_scales
 It describes the horizontal scales using ht_div as base to display the corrresponding value on the screen. There are sixteen(16) 
 
 .. image:: hzscale_vector.svg
+   :target: images/hzscale_vector.svg
+  
 
 .. _gauge_labels:
 
@@ -244,6 +247,7 @@ input_data
 Input sample data
 
 .. image:: input_data.svg
+   :target: images/input_data.svg
 
 .. _video_clk:
 
