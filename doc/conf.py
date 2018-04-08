@@ -173,3 +173,5 @@ texinfo_documents = [
 
 
 html_show_sphinx = False
+html_show_sourcelink = False
+show_source = False

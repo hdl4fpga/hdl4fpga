@@ -228,7 +228,7 @@
          inkscape:connector-curvature="0"
          id="path31369"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill:#e50505;fill-opacity:1;fill-rule:evenodd;stroke:#e50505;stroke-width:1.00000003pt;stroke-opacity:1"
+         style="fill:#001de6;fill-opacity:1;fill-rule:evenodd;stroke:#001de6;stroke-width:1.00000003pt;stroke-opacity:1"
          transform="matrix(-0.2,0,0,-0.2,-1.2,0)" />
     </marker>
     <marker
@@ -1035,9 +1035,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.073443666"
-     inkscape:cx="-3110.6632"
-     inkscape:cy="-1382.7085"
+     inkscape:zoom="2.3501973"
+     inkscape:cx="566.88778"
+     inkscape:cy="305.36166"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -1076,7 +1076,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2502,18 +2502,18 @@
        id="ellipse15653"
        ry="13.758324"
        rx="13.758334"
-       cy="-195.12505"
-       cx="-158.72131" />
+       cy="-163.16188"
+       cx="97.952286" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
-       x="-164.65378"
-       y="-189.27458"
+       x="92.019821"
+       y="-157.31142"
        id="text15657"><tspan
          sodipodi:role="line"
          id="tspan15655"
-         x="-164.65378"
-         y="-189.27458"
+         x="92.019821"
+         y="-157.31142"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#000000;fill-opacity:1;stroke-width:0.26458335">C</tspan></text>
     <ellipse
        cx="259.29135"
