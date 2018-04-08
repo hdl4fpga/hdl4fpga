@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1080.7576mm"
-   height="553.5083mm"
-   viewBox="0 0 1080.7575 553.50832"
+   width="1080.7576"
+   height="553.5083"
+   viewBox="0 0 1080.7576 553.5083"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
-   sodipodi:docname="scale_vector.svg">
+   sodipodi:docname="hzscale_vector.svg">
   <defs
      id="defs2">
     <marker
@@ -1035,20 +1035,20 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.3501973"
-     inkscape:cx="3007.8418"
-     inkscape:cy="366.36972"
+     inkscape:zoom="0.073443666"
+     inkscape:cx="-3110.6632"
+     inkscape:cy="-1382.7085"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     units="mm"
+     units="px"
      showborder="true"
      gridtolerance="10000"
      guidetolerance="10000"
      inkscape:window-width="1920"
-     inkscape:window-height="1051"
+     inkscape:window-height="1015"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="1080"
      inkscape:window-maximized="1"
      inkscape:snap-text-baseline="false"
      fit-margin-top="0"
@@ -1057,15 +1057,16 @@
      fit-margin-bottom="0"
      inkscape:snap-global="true"
      inkscape:snap-center="true"
-     showguides="false">
+     showguides="false"
+     scale-x="1">
     <inkscape:grid
        type="xygrid"
        id="grid815"
        visible="true"
        spacingx="1.0583333"
        spacingy="1.0583333"
-       originx="621.61133"
-       originy="-37.570763" />
+       originx="2349.3972"
+       originy="-725.70054" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -2245,7 +2246,7 @@
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path38541"
-       d="m -89.958341,182.70005 -2.9e-4,-12.70006 332.316661,0 v 12.7"
+       d="m -89.958341,182.70005 -2.9e-4,-12.70006 H 242.35803 v 12.7"
        style="fill:none;fill-opacity:1;stroke:#0002e8;stroke-width:2.11666679;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2163)" />
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:2.11666679;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"

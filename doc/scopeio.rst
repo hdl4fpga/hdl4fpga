@@ -102,7 +102,21 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-It describes the horizontal scales using ht_div as base to display the corrresponding value on the screen. There are sixteen(16) 
+It describes the horizontal scales using ht_div as base division to display the corrresponding value on the screen. There are sixteen(16) record elements in which the first one is smallest base division. The steps to fill up the scale_vector for hz_scales are the following:
+
+A
+    Choose your sample rate: in the exmaple it is 800 KS/s
+B
+    Each division has 32 pixels, The base divisios is got by dividing 32 per the sample rate. In the example the result is 40 us as the sample rate is .8 MS/s
+C
+    Fill the record member step with 40.00. Step controls the increment of the horizontal marks on horizontal axis.
+D
+    Get the factor, in this case u and set its ascii code in the deca member.
+E
+    The ht_base parameter is composed by five fraction bits, three integer bits and one sign bit. Three integer bits means that number must have only one decimal digit number.
+    The base division must be algin according to that. Lets see the exaample: the result is 40.00, so to have a proper align number, the decimal point should be shift one position
+    to the left 4.000. Its binary representation is 0_100_00000 in which the first _ charater separates the sign bit and second one the fraction bits.  
+
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
