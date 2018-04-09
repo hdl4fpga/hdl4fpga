@@ -1,9 +1,6 @@
 package std
 ===========
 
-.. comment: .. raw:: html
-    <object with="80" data="input_data.svg" type="image/svg+xml"></object>
-
 .. _scale_vector:
 
 scale_vector
@@ -38,9 +35,9 @@ Scale increment step. It could be a positive as well as a negative number.
 mult
 ~~~~
 
-Adjusting input value. Mult is used to adjust the vetical input value to plot
-the data accordint to the selected scale, and it is used to devide the input
-data clk for the horizontal scale.
+Adjusting input value. Mult is used to adjust the vertical input value to plot
+the data according to the selected vertical axis' scale, and also to devide the
+input data clk for the horizontal axis' scale.
 
 .. _scale:
 
