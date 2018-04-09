@@ -146,7 +146,7 @@ Unit symbols that readings are about. One character per reading.
 channels_fg
 ~~~~~~~~~~~
 
-The color which input channels are going to be plot
+The colors which input channels are going to be plot
 
 .. image:: channel_fg.svg
    :target: images/channel_fg.svg
@@ -156,7 +156,7 @@ The color which input channels are going to be plot
 channels_bg
 ~~~~~~~~~~~
 
-The background color to which readings are associated
+The background colors to which readings are associated
 
 .. image:: channel_bg.svg
    :target: images/channel_bg.svg
