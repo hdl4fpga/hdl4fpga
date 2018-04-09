@@ -156,7 +156,7 @@ The color which input channels are going to be plot
 channels_bg
 ~~~~~~~~~~~
 
-The background color with which readings are associated
+The background color to which readings are associated
 
 .. image:: channel_bg.svg
    :target: images/channel_bg.svg
