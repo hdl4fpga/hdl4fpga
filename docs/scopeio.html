@@ -89,7 +89,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#layout-id">layout_id</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vt-div">vt_div</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ht-div">ht_div</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scale-vector">scale_vector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vt-scales">vt_scales</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hz-scales">hz_scales</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gauge-labels">gauge_labels</a></li>
@@ -210,12 +209,12 @@
 <td>Horizontal division unit</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a></td>
-<td><a class="reference internal" href="#scale-vector"><span class="std std-ref">scale_vector</span></a></td>
+<td><a class="reference internal" href="std.html#scale-vector"><span class="std std-ref">scale_vector</span></a></td>
 <td>&#160;</td>
 <td>Vertical scale descriptor</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a></td>
-<td><a class="reference internal" href="#scale-vector"><span class="std std-ref">scale_vector</span></a></td>
+<td><a class="reference internal" href="std.html#scale-vector"><span class="std std-ref">scale_vector</span></a></td>
 <td>&#160;</td>
 <td>Horizontal scale descriptor</td>
 </tr>
@@ -306,50 +305,12 @@
 <span id="id5"></span><h3>ht_div<a class="headerlink" href="#ht-div" title="Permalink to this headline">¶</a></h3>
 <p>It represents the horizontal base division. The least five significant bits represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
 </div>
-<div class="section" id="scale-vector">
-<span id="id6"></span><h3>scale_vector<a class="headerlink" href="#scale-vector" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="docutils">
-<colgroup>
-<col width="11%" />
-<col width="29%" />
-<col width="60%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">member</th>
-<th class="head">type</th>
-<th class="head">description</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>from</td>
-<td>real</td>
-<td>Scale starting point</td>
-</tr>
-<tr class="row-odd"><td>scale</td>
-<td>real</td>
-<td>Scale base unit</td>
-</tr>
-<tr class="row-even"><td>mult</td>
-<td>integer</td>
-<td>input data adjusment</td>
-</tr>
-<tr class="row-odd"><td>scale</td>
-<td>std_logic_vector</td>
-<td>Gauge reading scale select</td>
-</tr>
-<tr class="row-even"><td>deca</td>
-<td>std_logic_vector</td>
-<td>ascii code</td>
-</tr>
-</tbody>
-</table>
-</div>
 <div class="section" id="vt-scales">
-<span id="id7"></span><h3>vt_scales<a class="headerlink" href="#vt-scales" title="Permalink to this headline">¶</a></h3>
+<span id="id6"></span><h3>vt_scales<a class="headerlink" href="#vt-scales" title="Permalink to this headline">¶</a></h3>
 <p>It describes the vertical scales using vt_div as base to display the value on the screen.</p>
 </div>
 <div class="section" id="hz-scales">
-<span id="id8"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
+<span id="id7"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
 <p>hz_scales is sixteen long vector whose elements are records. Each element describes one of the the sixteen horizontal scales using <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> as base division to display the
 corresponding values on the display. The steps to fill up hz_scales are the following:</p>
 <dl class="docutils">
@@ -388,35 +349,35 @@ of the four bits.</dd>
 <a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
 </div>
 <div class="section" id="gauge-labels">
-<span id="id9"></span><h3>gauge_labels<a class="headerlink" href="#gauge-labels" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>gauge_labels<a class="headerlink" href="#gauge-labels" title="Permalink to this headline">¶</a></h3>
 <p>The labels that are going to be displayed describing the reading.</p>
 </div>
 <div class="section" id="unit-symbols">
-<span id="id10"></span><h3>unit_symbols<a class="headerlink" href="#unit-symbols" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3>unit_symbols<a class="headerlink" href="#unit-symbols" title="Permalink to this headline">¶</a></h3>
 <p>Unit symbols that readings are about. One character per reading.</p>
 </div>
 <div class="section" id="channels-fg">
-<span id="id11"></span><h3>channels_fg<a class="headerlink" href="#channels-fg" title="Permalink to this headline">¶</a></h3>
+<span id="id10"></span><h3>channels_fg<a class="headerlink" href="#channels-fg" title="Permalink to this headline">¶</a></h3>
 <p>The color which input channels are going to be plot</p>
 </div>
 <div class="section" id="channels-bg">
-<span id="id12"></span><h3>channels_bg<a class="headerlink" href="#channels-bg" title="Permalink to this headline">¶</a></h3>
+<span id="id11"></span><h3>channels_bg<a class="headerlink" href="#channels-bg" title="Permalink to this headline">¶</a></h3>
 <p>The background color with which readings are associated</p>
 </div>
 <div class="section" id="hzaxis-fg">
-<span id="id13"></span><h3>hzaxis_fg<a class="headerlink" href="#hzaxis-fg" title="Permalink to this headline">¶</a></h3>
+<span id="id12"></span><h3>hzaxis_fg<a class="headerlink" href="#hzaxis-fg" title="Permalink to this headline">¶</a></h3>
 <p>The foreground color which the horizontal axis is going to be plot</p>
 </div>
 <div class="section" id="hzaxis-bg">
-<span id="id14"></span><h3>hzaxis_bg<a class="headerlink" href="#hzaxis-bg" title="Permalink to this headline">¶</a></h3>
+<span id="id13"></span><h3>hzaxis_bg<a class="headerlink" href="#hzaxis-bg" title="Permalink to this headline">¶</a></h3>
 <p>The background color with which the horizontal axis is going to be plot</p>
 </div>
 <div class="section" id="grid-fg">
-<span id="id15"></span><h3>grid_fg<a class="headerlink" href="#grid-fg" title="Permalink to this headline">¶</a></h3>
+<span id="id14"></span><h3>grid_fg<a class="headerlink" href="#grid-fg" title="Permalink to this headline">¶</a></h3>
 <p>The foreground color which the grid is going to be displayed</p>
 </div>
 <div class="section" id="grid-bg">
-<span id="id16"></span><h3>grid_bg<a class="headerlink" href="#grid-bg" title="Permalink to this headline">¶</a></h3>
+<span id="id15"></span><h3>grid_bg<a class="headerlink" href="#grid-bg" title="Permalink to this headline">¶</a></h3>
 <p>The background color which the grid is going to be displayed</p>
 </div>
 </div>
@@ -526,60 +487,60 @@ of the four bits.</dd>
 </tbody>
 </table>
 <div class="section" id="mii-rxc">
-<span id="id17"></span><h3>mii_rxc<a class="headerlink" href="#mii-rxc" title="Permalink to this headline">¶</a></h3>
+<span id="id16"></span><h3>mii_rxc<a class="headerlink" href="#mii-rxc" title="Permalink to this headline">¶</a></h3>
 <p>Ethernet phy receive clock</p>
 </div>
 <div class="section" id="mii-rxdv">
-<span id="id18"></span><h3>mii_rxdv<a class="headerlink" href="#mii-rxdv" title="Permalink to this headline">¶</a></h3>
+<span id="id17"></span><h3>mii_rxdv<a class="headerlink" href="#mii-rxdv" title="Permalink to this headline">¶</a></h3>
 <p>Ethernet phy received data valid clock. Connect it to mii phy</p>
 </div>
 <div class="section" id="mii-rxd">
-<span id="id19"></span><h3>mii_rxd<a class="headerlink" href="#mii-rxd" title="Permalink to this headline">¶</a></h3>
+<span id="id18"></span><h3>mii_rxd<a class="headerlink" href="#mii-rxd" title="Permalink to this headline">¶</a></h3>
 <p>Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy</p>
 </div>
 <div class="section" id="tdiv">
-<span id="id20"></span><h3>tdiv<a class="headerlink" href="#tdiv" title="Permalink to this headline">¶</a></h3>
+<span id="id19"></span><h3>tdiv<a class="headerlink" href="#tdiv" title="Permalink to this headline">¶</a></h3>
 <p>Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy</p>
 </div>
 <div class="section" id="channel-ena">
-<span id="id21"></span><h3>channel_ena<a class="headerlink" href="#channel-ena" title="Permalink to this headline">¶</a></h3>
+<span id="id20"></span><h3>channel_ena<a class="headerlink" href="#channel-ena" title="Permalink to this headline">¶</a></h3>
 <p>Enable the corresponing channel to be plotted</p>
 </div>
 <div class="section" id="input-clk">
-<span id="id22"></span><h3>input_clk<a class="headerlink" href="#input-clk" title="Permalink to this headline">¶</a></h3>
+<span id="id21"></span><h3>input_clk<a class="headerlink" href="#input-clk" title="Permalink to this headline">¶</a></h3>
 <p>Input sample data clock</p>
 </div>
 <div class="section" id="input-ena">
-<span id="id23"></span><h3>input_ena<a class="headerlink" href="#input-ena" title="Permalink to this headline">¶</a></h3>
+<span id="id22"></span><h3>input_ena<a class="headerlink" href="#input-ena" title="Permalink to this headline">¶</a></h3>
 <p>Enable input sample data</p>
 </div>
 <div class="section" id="input-data">
-<span id="id24"></span><h3>input_data<a class="headerlink" href="#input-data" title="Permalink to this headline">¶</a></h3>
+<span id="id23"></span><h3>input_data<a class="headerlink" href="#input-data" title="Permalink to this headline">¶</a></h3>
 <p>Input sample data</p>
 <a class="reference external image-reference" href="images/input_data.svg"><img alt="images/input_data.svg" src="images/input_data.svg" /></a>
 </div>
 <div class="section" id="video-clk">
-<span id="id25"></span><h3>video_clk<a class="headerlink" href="#video-clk" title="Permalink to this headline">¶</a></h3>
+<span id="id24"></span><h3>video_clk<a class="headerlink" href="#video-clk" title="Permalink to this headline">¶</a></h3>
 <p>Video dot clock</p>
 </div>
 <div class="section" id="video-rgb">
-<span id="id26"></span><h3>video_rgb<a class="headerlink" href="#video-rgb" title="Permalink to this headline">¶</a></h3>
+<span id="id25"></span><h3>video_rgb<a class="headerlink" href="#video-rgb" title="Permalink to this headline">¶</a></h3>
 <p>Video output pixel</p>
 </div>
 <div class="section" id="video-vsync">
-<span id="id27"></span><h3>video_vsync<a class="headerlink" href="#video-vsync" title="Permalink to this headline">¶</a></h3>
+<span id="id26"></span><h3>video_vsync<a class="headerlink" href="#video-vsync" title="Permalink to this headline">¶</a></h3>
 <p>Vertical sync output</p>
 </div>
 <div class="section" id="video-hsync">
-<span id="id28"></span><h3>video_hsync<a class="headerlink" href="#video-hsync" title="Permalink to this headline">¶</a></h3>
+<span id="id27"></span><h3>video_hsync<a class="headerlink" href="#video-hsync" title="Permalink to this headline">¶</a></h3>
 <p>Horizontal sync output</p>
 </div>
 <div class="section" id="video-blank">
-<span id="id29"></span><h3>video_blank<a class="headerlink" href="#video-blank" title="Permalink to this headline">¶</a></h3>
+<span id="id28"></span><h3>video_blank<a class="headerlink" href="#video-blank" title="Permalink to this headline">¶</a></h3>
 <p>Video blank</p>
 </div>
 <div class="section" id="video-sync">
-<span id="id30"></span><h3>video_sync<a class="headerlink" href="#video-sync" title="Permalink to this headline">¶</a></h3>
+<span id="id29"></span><h3>video_sync<a class="headerlink" href="#video-sync" title="Permalink to this headline">¶</a></h3>
 <p>Video sync signal</p>
 </div>
 </div>

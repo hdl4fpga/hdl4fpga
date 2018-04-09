@@ -4,6 +4,8 @@ package std
 .. comment: .. raw:: html
     <object with="80" data="input_data.svg" type="image/svg+xml"></object>
 
+.. _scale_vector:
+
 scale_vector
 ------------
 

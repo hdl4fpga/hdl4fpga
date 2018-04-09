@@ -75,21 +75,6 @@ ht_div
 
 It represents the horizontal base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
 
-.. _scale_vector:
-
-scale_vector
-~~~~~~~~~~~~
-
-====== ================ =================================
-member type             description
-====== ================ =================================
-from   real             Scale starting point
-scale  real             Scale base unit
-mult   integer          input data adjusment
-scale  std_logic_vector Gauge reading scale select
-deca   std_logic_vector ascii code
-====== ================ =================================
-
 .. _vt_scales:
 
 vt_scales
