@@ -111,7 +111,7 @@ D
     Get the corresponding factor character's ascii code and set it to :ref:`deca`. In
     the example: the corresponding factor is micro.
 E
-    The :ref:`hz_div` parameter is composed by five fraction bits, three
+    The :ref:`hz_div` parameter is composed of five fraction bits, three
     integer bits and one sign bit. Three integer bits mean that :ref:`hz_div`
     must be one-digit-only integer number. The horizontal base division must be
     aligned according to that. 
