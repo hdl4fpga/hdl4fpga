@@ -12,11 +12,11 @@ scale_vector
 =================== =================== ===========================
 Parameter           Type                Description
 =================== =================== ===========================
-:ref:`from`         natural             Scale starting point
-:ref:`step`         real_vector         Increment of the scale
+:ref:`from`         real                Scale's starting point
+:ref:`step`         real                Scale's increment step
 :ref:`mult`         natural             Adjusting input value
 :ref:`scale`        std_logic_vector    Scale reading control
-:ref:`deca`         std_logic_vector    Scale factor
+:ref:`deca`         std_logic_vector    Scale factor's ascii code
 =================== =================== ===========================
 
 .. _from:
@@ -24,38 +24,41 @@ Parameter           Type                Description
 from
 ~~~~
 
-The number of channel inputs which scopeio is going to plot.
+Scale starting point. It could be a positive as well as a negative number.
 
 .. _step:
 
 step
 ~~~~
 
-This parameter is required to set the analog inputs when to have different
-scales. If all the inputs have the same voltage resolution, set it to (0 to
-inputs-1 => 1.0)
+Scale increment step. It could be a positive as well as a negative number.
 
 .. _mult:
 
 mult
 ~~~~
 
-layout_id selects one of the two display layouts. The table below shows the
-parameter's values to be seti, according to the resolution required.
+Adjusting input value. Mult is used to adjust the vetical input value to plot
+the data accordint to the selected scale, and it is used to devide the input
+data clk for the horizontal scale.
 
 .. _scale:
 
 scale
 ~~~~~
 
-It represents the vertical base division. The least five significant bits
-represent the binary point. The default value b"0_001_00000" means 1.00000.
+Scale is a four bit std_logic_vector whose two most left bits shift the decimal
+point of base divisions: :ref:`vt_div` or :ref:`hz_div` while the other two
+most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which those base
+divisions are multiplied. The proper number is selected by combining all of the
+four bits.
+
+.. image:: scale.svg
+   :target: images/scale.svg
 
 .. _deca:
 
 deca
 ~~~~
 
-It represents the horizontal base division. The least five significant bits
-represent the binary point. The default value b"0_001_00000" means 1.00000.
-
+It is the corresponding ascii code to be displayed according to the scale factor.

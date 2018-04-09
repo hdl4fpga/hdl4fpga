@@ -88,7 +88,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#input-preamp">input_preamp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#layout-id">layout_id</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vt-div">vt_div</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ht-div">ht_div</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hz-div">hz_div</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#vt-scales">vt_scales</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hz-scales">hz_scales</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gauge-labels">gauge_labels</a></li>
@@ -203,7 +203,7 @@
 <td>b”0_001_00000”</td>
 <td>Vertical division unit</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a></td>
 <td>std_logic_vector</td>
 <td>b”0_001_00000”</td>
 <td>Horizontal division unit</td>
@@ -301,8 +301,8 @@
 <span id="id4"></span><h3>vt_div<a class="headerlink" href="#vt-div" title="Permalink to this headline">¶</a></h3>
 <p>It represents the vertical base division. The least five significant bits represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
 </div>
-<div class="section" id="ht-div">
-<span id="id5"></span><h3>ht_div<a class="headerlink" href="#ht-div" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="hz-div">
+<span id="id5"></span><h3>hz_div<a class="headerlink" href="#hz-div" title="Permalink to this headline">¶</a></h3>
 <p>It represents the horizontal base division. The least five significant bits represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
 </div>
 <div class="section" id="vt-scales">
@@ -311,8 +311,11 @@
 </div>
 <div class="section" id="hz-scales">
 <span id="id7"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
-<p>hz_scales is sixteen long vector whose elements are records. Each element describes one of the the sixteen horizontal scales using <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> as base division to display the
-corresponding values on the display. The steps to fill up hz_scales are the following:</p>
+<p>hz_scales is sixteen long vector whose elements are records. Each element
+describes one of the the sixteen horizontal scales using <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> as base
+division to display the corresponding values on the display. The steps to fill
+up hz_scales are the following:</p>
+<a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
 <dl class="docutils">
 <dt>A</dt>
 <dd>Choose your sample rate: in the exmaple it is 800 KS/s</dd>
@@ -324,29 +327,28 @@ the sample rate. In the example the result is 40 us as the sample rate is
 <dd>Fill the record member step with 40.00. Step only controls the increment of
 the horizontal axis’ marks.</dd>
 <dt>D</dt>
-<dd>Get the corresponding factor character. In the example: u and the
-corresponding ascii code is set in the record member deca.</dd>
+<dd>Get the corresponding factor character. In the example: the
+corresponding ascii code for u is set in the record member deca.</dd>
 <dt>E</dt>
-<dd>The <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> parameter is composed by five fraction bits, three integer bits
-and one sign bit. Three integer bits mean that <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> must be only
+<dd>The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed by five fraction bits, three integer bits
+and one sign bit. Three integer bits mean that <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be only
 one digit integer number. The horizontal base division must be aligned
 according to that.
 Following the example:
-The result of the horizontal base division is 40.00. To fit it in <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a>,
+The result of the horizontal base division is 40.00. To fit it in <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>,
 the decimal point should be shift one position to the left to get one digit
 integer number. The result, then, is 4.000, and the corresponding binary
 representation is 0_100_00000 in which the first ‘_’ charater separates the
 sign bit and second one the fraction bits.</dd>
 <dt>F</dt>
-<dd>Once the correct value is selected for <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a>, the record member
+<dd>Once the correct value is selected for <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the record member
 scale should be fill according to the scale table to display the correct
 horizontal base division value on the display. The scale member is a four
 bit vector whose two most left bits shift the decimal point while the other
 two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
-<a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> is multiplied. The proper number is selected by combining all
+<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> is multiplied. The proper number is selected by combining all
 of the four bits.</dd>
 </dl>
-<a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
 </div>
 <div class="section" id="gauge-labels">
 <span id="id8"></span><h3>gauge_labels<a class="headerlink" href="#gauge-labels" title="Permalink to this headline">¶</a></h3>

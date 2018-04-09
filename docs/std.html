@@ -153,12 +153,12 @@
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><a class="reference internal" href="#from"><span class="std std-ref">from</span></a></td>
-<td>natural</td>
-<td>Scale starting point</td>
+<td>real</td>
+<td>Scale’s starting point</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#step"><span class="std std-ref">step</span></a></td>
-<td>real_vector</td>
-<td>Increment of the scale</td>
+<td>real</td>
+<td>Scale’s increment step</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#mult"><span class="std std-ref">mult</span></a></td>
 <td>natural</td>
@@ -170,34 +170,36 @@
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#deca"><span class="std std-ref">deca</span></a></td>
 <td>std_logic_vector</td>
-<td>Scale factor</td>
+<td>Scale factor’s ascii code</td>
 </tr>
 </tbody>
 </table>
 <div class="section" id="from">
 <span id="id2"></span><h3>from<a class="headerlink" href="#from" title="Permalink to this headline">¶</a></h3>
-<p>The number of channel inputs which scopeio is going to plot.</p>
+<p>Scale starting point. It could be a positive as well as a negative number.</p>
 </div>
 <div class="section" id="step">
 <span id="id3"></span><h3>step<a class="headerlink" href="#step" title="Permalink to this headline">¶</a></h3>
-<p>This parameter is required to set the analog inputs when to have different
-scales. If all the inputs have the same voltage resolution, set it to (0 to
-inputs-1 =&gt; 1.0)</p>
+<p>Scale increment step. It could be a positive as well as a negative number.</p>
 </div>
 <div class="section" id="mult">
 <span id="id4"></span><h3>mult<a class="headerlink" href="#mult" title="Permalink to this headline">¶</a></h3>
-<p>layout_id selects one of the two display layouts. The table below shows the
-parameter’s values to be seti, according to the resolution required.</p>
+<p>Adjusting input value. Mult is used to adjust the vetical input value to plot
+the data accordint to the selected scale, and it is used to devide the input
+data clk for the horizontal scale.</p>
 </div>
 <div class="section" id="scale">
 <span id="id5"></span><h3>scale<a class="headerlink" href="#scale" title="Permalink to this headline">¶</a></h3>
-<p>It represents the vertical base division. The least five significant bits
-represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
+<p>Scale is a four bit std_logic_vector whose two most left bits shift the decimal
+point of base divisions: <a class="reference internal" href="scopeio.html#vt-div"><span class="std std-ref">vt_div</span></a> or <a class="reference internal" href="scopeio.html#hz-div"><span class="std std-ref">hz_div</span></a> while the other two
+most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which those base
+divisions are multiplied. The proper number is selected by combining all of the
+four bits.</p>
+<a class="reference external image-reference" href="images/scale.svg"><img alt="images/scale.svg" src="images/scale.svg" /></a>
 </div>
 <div class="section" id="deca">
 <span id="id6"></span><h3>deca<a class="headerlink" href="#deca" title="Permalink to this headline">¶</a></h3>
-<p>It represents the horizontal base division. The least five significant bits
-represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
+<p>It is the corresponding ascii code to be displayed according to the scale factor.</p>
 </div>
 </div>
 </div>

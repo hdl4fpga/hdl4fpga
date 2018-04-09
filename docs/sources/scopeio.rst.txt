@@ -17,7 +17,7 @@ Parameter           Type                Default        Description
 :ref:`input_preamp` real_vector                        Analog input Preamplifier  
 :ref:`layout_id`    natural             0              Display layouts 
 :ref:`vt_div`       std_logic_vector    b"0_001_00000" Vertical division unit
-:ref:`ht_div`       std_logic_vector    b"0_001_00000" Horizontal division unit
+:ref:`hz_div`       std_logic_vector    b"0_001_00000" Horizontal division unit
 :ref:`vt_scales`    :ref:`scale_vector`                Vertical scale descriptor
 :ref:`hz_scales`    :ref:`scale_vector`                Horizontal scale descriptor 
 :ref:`gauge_labels` std_logic_vector                   Gauge labels
@@ -68,9 +68,9 @@ vt_div
 
 It represents the vertical base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
 
-.. _ht_div:
+.. _hz_div:
 
-ht_div
+hz_div
 ~~~~~~
 
 It represents the horizontal base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
@@ -87,9 +87,14 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-hz_scales is sixteen long vector whose elements are records. Each element describes one of the the sixteen horizontal scales using :ref:`ht_div` as base division to display the
-corresponding values on the display. The steps to fill up hz_scales are the following:
+hz_scales is sixteen long vector whose elements are records. Each element
+describes one of the the sixteen horizontal scales using :ref:`hz_div` as base
+division to display the corresponding values on the display. The steps to fill
+up hz_scales are the following:
 
+.. image:: hzscale_vector.svg
+   :target: images/hzscale_vector.svg
+  
 A
     Choose your sample rate: in the exmaple it is 800 KS/s
 B
@@ -100,31 +105,27 @@ C
     Fill the record member step with 40.00. Step only controls the increment of
     the horizontal axis' marks.
 D
-    Get the corresponding factor character. In the example: u and the
-    corresponding ascii code is set in the record member deca.
+    Get the corresponding factor character. In the example: the
+    corresponding ascii code for u is set in the record member deca.
 E
-    The :ref:`ht_div` parameter is composed by five fraction bits, three integer bits
-    and one sign bit. Three integer bits mean that :ref:`ht_div` must be only
+    The :ref:`hz_div` parameter is composed by five fraction bits, three integer bits
+    and one sign bit. Three integer bits mean that :ref:`hz_div` must be only
     one digit integer number. The horizontal base division must be aligned
     according to that. 
     Following the example:
-    The result of the horizontal base division is 40.00. To fit it in :ref:`ht_div`,
+    The result of the horizontal base division is 40.00. To fit it in :ref:`hz_div`,
     the decimal point should be shift one position to the left to get one digit
     integer number. The result, then, is 4.000, and the corresponding binary
     representation is 0_100_00000 in which the first '_' charater separates the
     sign bit and second one the fraction bits.  
 F
-    Once the correct value is selected for :ref:`ht_div`, the record member
+    Once the correct value is selected for :ref:`hz_div`, the record member
     scale should be fill according to the scale table to display the correct
     horizontal base division value on the display. The scale member is a four
     bit vector whose two most left bits shift the decimal point while the other
     two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
-    :ref:`ht_div` is multiplied. The proper number is selected by combining all
+    :ref:`hz_div` is multiplied. The proper number is selected by combining all
     of the four bits.
-
-.. image:: hzscale_vector.svg
-   :target: images/hzscale_vector.svg
-  
 
 .. _gauge_labels:
 
