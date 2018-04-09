@@ -154,8 +154,6 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="sources/scopeio.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
   </ul>
@@ -350,7 +348,43 @@
 </div>
 <div class="section" id="hz-scales">
 <span id="id8"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
-<p>It describes the horizontal scales using ht_div as base to display the corrresponding value on the screen. There are sixteen(16)</p>
+<p>It describes the horizontal scales using <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> as base division to display the
+corrresponding value on the screen. There are sixteen record elements in
+which the first one is smallest base division. The steps to fill up the
+scale_vector for hz_scales are the following:</p>
+<dl class="docutils">
+<dt>A</dt>
+<dd>Choose your sample rate: in the exmaple it is 800 KS/s</dd>
+<dt>B</dt>
+<dd>Each division has 32 pixels, The base division is got by dividing 32 per
+the sample rate. In the example the result is 40 us as the sample rate is
+.8 MS/s</dd>
+<dt>C</dt>
+<dd>Fill the record member step with 40.00. Step only controls the increment of
+the horizontal axis’ marks.</dd>
+<dt>D</dt>
+<dd>Get the corresponding factor character. In the example: u and the
+corresponding ascii code is set in the record member deca.</dd>
+<dt>E</dt>
+<dd>The <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> parameter is composed by five fraction bits, three integer bits
+and one sign bit. Three integer bits mean that <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> must be only
+one digit integer number. The horizontal base division must be aligned
+according to that.
+Following the example:
+The result of the horizontal base division is 40.00. To fit it in <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a>,
+the decimal point should be shift one position to the left to get one digit
+integer number. The result, then, is 4.000, and the corresponding binary
+representation is 0_100_00000 in which the first ‘_’ charater separates the
+sign bit and second one the fraction bits.</dd>
+<dt>F</dt>
+<dd>Once the correct value is selected for <a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a>, the record member
+scale should be fill according to the scale table to display the correct
+horizontal base division value on the display. The scale member is a four
+bit vector whose two most left bits shift the decimal point while the other
+two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
+<a class="reference internal" href="#ht-div"><span class="std std-ref">ht_div</span></a> is multiplied. The proper number is selected by combining all
+of the four bits.</dd>
+</dl>
 <a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
 </div>
 <div class="section" id="gauge-labels">

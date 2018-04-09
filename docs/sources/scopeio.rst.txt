@@ -102,7 +102,42 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-It describes the horizontal scales using ht_div as base to display the corrresponding value on the screen. There are sixteen(16) 
+It describes the horizontal scales using :ref:`ht_div` as base division to display the
+corrresponding value on the screen. There are sixteen record elements in
+which the first one is smallest base division. The steps to fill up the
+scale_vector for hz_scales are the following:
+
+A
+    Choose your sample rate: in the exmaple it is 800 KS/s
+B
+    Each division has 32 pixels, The base division is got by dividing 32 per
+    the sample rate. In the example the result is 40 us as the sample rate is
+    .8 MS/s 
+C
+    Fill the record member step with 40.00. Step only controls the increment of
+    the horizontal axis' marks.
+D
+    Get the corresponding factor character. In the example: u and the
+    corresponding ascii code is set in the record member deca.
+E
+    The :ref:`ht_div` parameter is composed by five fraction bits, three integer bits
+    and one sign bit. Three integer bits mean that :ref:`ht_div` must be only
+    one digit integer number. The horizontal base division must be aligned
+    according to that. 
+    Following the example:
+    The result of the horizontal base division is 40.00. To fit it in :ref:`ht_div`,
+    the decimal point should be shift one position to the left to get one digit
+    integer number. The result, then, is 4.000, and the corresponding binary
+    representation is 0_100_00000 in which the first '_' charater separates the
+    sign bit and second one the fraction bits.  
+F
+    Once the correct value is selected for :ref:`ht_div`, the record member
+    scale should be fill according to the scale table to display the correct
+    horizontal base division value on the display. The scale member is a four
+    bit vector whose two most left bits shift the decimal point while the other
+    two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
+    :ref:`ht_div` is multiplied. The proper number is selected by combining all
+    of the four bits.
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
