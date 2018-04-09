@@ -102,10 +102,8 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-It describes the horizontal scales using :ref:`ht_div` as base division to display the
-corrresponding value on the screen. There are sixteen record elements in
-which the first one is smallest base division. The steps to fill up the
-scale_vector for hz_scales are the following:
+hz_scales is sixteen long vector whose elements are records. Each element describes one of the the sixteen horizontal scales using :ref:`ht_div` as base division to display the
+corresponding values on the display. The steps to fill up hz_scales are the following:
 
 A
     Choose your sample rate: in the exmaple it is 800 KS/s

@@ -11,6 +11,7 @@ Welcome to ScopeIO's documentation!
    :caption: Contents:
 
    scopeio
+   std
 
 .. Indices and tables
 .. ==================
