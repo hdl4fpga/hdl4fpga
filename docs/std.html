@@ -83,7 +83,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="scopeio.html">entity scopeio</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">package std</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#scale-vector">scale_vector</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#scale-t">scale_t</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#from">from</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#step">step</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mult">mult</a></li>
@@ -91,6 +91,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#deca">deca</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#scale-vector">scale_vector</a></li>
 </ul>
 </li>
 </ul>
@@ -137,8 +138,8 @@
             
   <div class="section" id="package-std">
 <h1>package std<a class="headerlink" href="#package-std" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="scale-vector">
-<span id="id1"></span><h2>scale_vector<a class="headerlink" href="#scale-vector" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scale-t">
+<span id="id1"></span><h2>scale_t<a class="headerlink" href="#scale-t" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="docutils">
 <colgroup>
 <col width="29%" />
@@ -200,6 +201,13 @@ four bits.</p>
 <div class="section" id="deca">
 <span id="id6"></span><h3>deca<a class="headerlink" href="#deca" title="Permalink to this headline">¶</a></h3>
 <p>It is the corresponding ascii code to be displayed according to the scale factor.</p>
+</div>
+</div>
+<div class="section" id="scale-vector">
+<span id="id7"></span><h2>scale_vector<a class="headerlink" href="#scale-vector" title="Permalink to this headline">¶</a></h2>
+<p>It is an unconstraint array vector of <a class="reference internal" href="#scale-t"><span class="std std-ref">scale_t</span></a>.</p>
+<div class="highlight-vhdl"><div class="highlight"><pre><span></span><span class="k">type</span> <span class="n">scale_vector</span> <span class="k">is</span> <span class="k">array</span> <span class="p">(</span><span class="kt">natural</span> <span class="k">range</span> <span class="o">&lt;&gt;</span><span class="p">)</span> <span class="k">of</span> <span class="n">scale_t</span><span class="p">;</span>
+</pre></div>
 </div>
 </div>
 </div>

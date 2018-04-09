@@ -87,7 +87,7 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-hz_scales is sixteen long vector whose elements are records. Each element
+hz_scales is sixteen long vector whose elements are :ref:`scale_t` records. Each element
 describes one of the the sixteen horizontal scales using :ref:`hz_div` as base
 division to display the corresponding values on the display. The steps to fill
 up hz_scales are the following:
@@ -102,11 +102,11 @@ B
     the sample rate. In the example the result is 40 us as the sample rate is
     .8 MS/s 
 C
-    Fill the record member step with 40.00. Step only controls the increment of
+    Fill the record member :ref:`step` with 40.00. :ref:`step` only controls the increment of
     the horizontal axis' marks.
 D
-    Get the corresponding factor character. In the example: the
-    corresponding ascii code for u is set in the record member deca.
+    Get the corresponding ascii factor character and fill it in :ref:`deca`. In
+    the example: the corresponding factor is u.
 E
     The :ref:`hz_div` parameter is composed by five fraction bits, three integer bits
     and one sign bit. Three integer bits mean that :ref:`hz_div` must be only
@@ -120,8 +120,8 @@ E
     sign bit and second one the fraction bits.  
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
-    scale should be fill according to the scale table to display the correct
-    horizontal base division value on the display. The scale member is a four
+    :ref:`scale` should be fill according to the scale table to display the correct
+    horizontal base division value on the display. The :ref:`scale` member is a four
     bit vector whose two most left bits shift the decimal point while the other
     two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
     :ref:`hz_div` is multiplied. The proper number is selected by combining all

@@ -311,7 +311,7 @@
 </div>
 <div class="section" id="hz-scales">
 <span id="id7"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
-<p>hz_scales is sixteen long vector whose elements are records. Each element
+<p>hz_scales is sixteen long vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a> records. Each element
 describes one of the the sixteen horizontal scales using <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> as base
 division to display the corresponding values on the display. The steps to fill
 up hz_scales are the following:</p>
@@ -324,11 +324,11 @@ up hz_scales are the following:</p>
 the sample rate. In the example the result is 40 us as the sample rate is
 .8 MS/s</dd>
 <dt>C</dt>
-<dd>Fill the record member step with 40.00. Step only controls the increment of
+<dd>Fill the record member <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> with 40.00. <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> only controls the increment of
 the horizontal axis’ marks.</dd>
 <dt>D</dt>
-<dd>Get the corresponding factor character. In the example: the
-corresponding ascii code for u is set in the record member deca.</dd>
+<dd>Get the corresponding ascii factor character and fill it in <a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In
+the example: the corresponding factor is u.</dd>
 <dt>E</dt>
 <dd>The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed by five fraction bits, three integer bits
 and one sign bit. Three integer bits mean that <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be only
@@ -342,8 +342,8 @@ representation is 0_100_00000 in which the first ‘_’ charater separates the
 sign bit and second one the fraction bits.</dd>
 <dt>F</dt>
 <dd>Once the correct value is selected for <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the record member
-scale should be fill according to the scale table to display the correct
-horizontal base division value on the display. The scale member is a four
+<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be fill according to the scale table to display the correct
+horizontal base division value on the display. The <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> member is a four
 bit vector whose two most left bits shift the decimal point while the other
 two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> is multiplied. The proper number is selected by combining all

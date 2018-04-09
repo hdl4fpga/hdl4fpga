@@ -1,10 +1,10 @@
 package std
 ===========
 
-.. _scale_vector:
+.. _scale_t:
 
-scale_vector
-------------
+scale_t
+-------
 
 =================== =================== ===========================
 Parameter           Type                Description
@@ -59,3 +59,15 @@ deca
 ~~~~
 
 It is the corresponding ascii code to be displayed according to the scale factor.
+
+.. _scale_vector:
+
+scale_vector
+------------
+
+It is an unconstraint array vector of :ref:`scale_t`.
+
+.. code-block:: vhdl
+
+    type scale_vector is array (natural range <>) of scale_t;
+
