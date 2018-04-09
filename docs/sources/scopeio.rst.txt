@@ -112,13 +112,14 @@ D
     the example: the corresponding factor is micro.
 E
     The :ref:`hz_div` parameter is composed of five fraction bits, three
-    integer bits and one sign bit. Three integer bits mean that :ref:`hz_div`
-    must be one-digit-only integer number. The horizontal base division must be
+    integer bits and one sign bit. Three integer bits mean that :ref:`hz_div`'s
+    integer part must be one digit only. The horizontal base division must be
     aligned according to that. 
+
     Following the example:
     The result of the horizontal base division is 40.00. To fit it in
     :ref:`hz_div`, the decimal point should be shift one position to the left
-    to get the one-digit-only integer number. The result, then, is 4.000, and
+    to get the one-digit-only integer part. The result, then, is 4.000, and
     the corresponding binary representation is 0_100_00000 in which the first
     '_' charater separates the sign bit and second one the fraction bits.  
 
