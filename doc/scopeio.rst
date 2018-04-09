@@ -101,7 +101,7 @@ steps to set up each element of hz_scales are the followings:
 A
     Choose your sample rate: in the exmaple it is 800 KS/s
 B
-    Each division has 32 pixels, The base division is got by dividing 32 per
+    Each division has 32 pixels, The base division is got by dividing 32 by
     the sample rate. In the example the result is 40 us as the sample rate is
     .8 MS/s 
 C
