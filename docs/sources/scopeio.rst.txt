@@ -148,12 +148,18 @@ channels_fg
 
 The color which input channels are going to be plot
 
+.. image:: channel_fg.svg
+   :target: images/channel_fg.svg
+
 .. _channels_bg:
 
 channels_bg
 ~~~~~~~~~~~
 
 The background color with which readings are associated
+
+.. image:: channel_bg.svg
+   :target: images/channel_bg.svg
 
 .. _hzaxis_fg:
 
