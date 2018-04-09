@@ -133,7 +133,7 @@ F
     of the four bits.
 
 H
-    Fill the record member :ref:`mult` according to by how much the
+    Set the record member :ref:`mult` according to by how much the
     :ref:`input_clk` should be devided. if the division is going to be made by
     multiplexing the analog digital converter's input channel set it to 1. Use
     :ref:`tdiv` to know which scale has been selected.
