@@ -80,7 +80,7 @@ It represents the horizontal base division. The least five significant bits repr
 vt_scales
 ~~~~~~~~~
 
-ht_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
+ref:`vt_scales` is sixteen-elements-long vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of vt_scales are the following:
@@ -90,7 +90,7 @@ steps to set up each element of vt_scales are the following:
 hz_scales
 ~~~~~~~~~
 
-hz_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
+:ref:`hz_scales` is sixteen-elements-long vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen horizontal scales using
 :ref:`hz_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of hz_scales are the following:
