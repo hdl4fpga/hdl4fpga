@@ -84,7 +84,7 @@ ht_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of vt_scales are the following:
-
+  
 .. _hz_scales:
 
 hz_scales
