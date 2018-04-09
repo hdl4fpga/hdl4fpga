@@ -93,7 +93,7 @@ hz_scales
 :ref:`hz_scales` is sixteen-elements-long vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen horizontal scales using
 :ref:`hz_div` as a base to display the corresponding values on the screen. The
-steps to set up each element of hz_scales are the following:
+steps to set up each element of hz_scales are the followings:
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
