@@ -108,7 +108,7 @@ C
     Set the record member :ref:`step` with 40.00. :ref:`step` only controls the increment of
     the horizontal axis' marks.
 D
-    Get the corresponding factor character's ascii code and set it in :ref:`deca`. In
+    Get the corresponding factor character's ascii code and set it to :ref:`deca`. In
     the example: the corresponding factor is micro.
 E
     The :ref:`hz_div` parameter is composed by five fraction bits, three
