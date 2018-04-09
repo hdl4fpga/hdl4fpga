@@ -80,7 +80,10 @@ It represents the horizontal base division. The least five significant bits repr
 vt_scales
 ~~~~~~~~~
 
-It describes the vertical scales using vt_div as base to display the value on the screen.
+ht_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
+records. Each one describes one of the the sixteen vertical scales using
+:ref:`vt_div` as a base to display the corresponding values on the screen. The
+steps to set up each element of vt_scales are the following:
 
 .. _hz_scales:
 
@@ -90,7 +93,7 @@ hz_scales
 hz_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen horizontal scales using
 :ref:`hz_div` as a base to display the corresponding values on the screen. The
-steps to fill up each element of hz_scales are the following:
+steps to set up each element of hz_scales are the following:
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
@@ -129,10 +132,10 @@ F
     of the four bits.
 
 H
-    Fill the record member :ref:`mult` according to how much the
+    Fill the record member :ref:`mult` according to by how much the
     :ref:`input_clk` should be devided. if the division is going to be made by
     multiplexing the analog digital converter's input channel set it to 1. Use
-    :ref:`tdiv` to know which the scale selected is.
+    :ref:`tdiv` to know which scale has been selected.
 
 .. _gauge_labels:
 

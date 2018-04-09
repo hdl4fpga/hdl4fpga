@@ -307,14 +307,17 @@
 </div>
 <div class="section" id="vt-scales">
 <span id="id6"></span><h3>vt_scales<a class="headerlink" href="#vt-scales" title="Permalink to this headline">¶</a></h3>
-<p>It describes the vertical scales using vt_div as base to display the value on the screen.</p>
+<p>ht_scales is sixteen-elements long vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
+records. Each one describes one of the the sixteen vertical scales using
+<a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> as a base to display the corresponding values on the screen. The
+steps to set up each element of vt_scales are the following:</p>
 </div>
 <div class="section" id="hz-scales">
 <span id="id7"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
 <p>hz_scales is sixteen-elements long vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
 records. Each one describes one of the the sixteen horizontal scales using
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> as a base to display the corresponding values on the screen. The
-steps to fill up each element of hz_scales are the following:</p>
+steps to set up each element of hz_scales are the following:</p>
 <a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
 <dl class="docutils">
 <dt>A</dt>
@@ -349,10 +352,10 @@ two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> is multiplied. The proper number is selected by combining all
 of the four bits.</dd>
 <dt>H</dt>
-<dd>Fill the record member <a class="reference internal" href="std.html#mult"><span class="std std-ref">mult</span></a> according to how much the
+<dd>Fill the record member <a class="reference internal" href="std.html#mult"><span class="std std-ref">mult</span></a> according to by how much the
 <a class="reference internal" href="#input-clk"><span class="std std-ref">input_clk</span></a> should be devided. if the division is going to be made by
 multiplexing the analog digital converter’s input channel set it to 1. Use
-<a class="reference internal" href="#tdiv"><span class="std std-ref">tdiv</span></a> to know which the scale selected is.</dd>
+<a class="reference internal" href="#tdiv"><span class="std std-ref">tdiv</span></a> to know which scale has been selected.</dd>
 </dl>
 </div>
 <div class="section" id="gauge-labels">
