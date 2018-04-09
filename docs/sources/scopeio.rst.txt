@@ -87,10 +87,10 @@ It describes the vertical scales using vt_div as base to display the value on th
 hz_scales
 ~~~~~~~~~
 
-hz_scales is sixteen long vector whose elements are :ref:`scale_t` records. Each element
-describes one of the the sixteen horizontal scales using :ref:`hz_div` as base
-division to display the corresponding values on the display. The steps to fill
-up hz_scales are the following:
+hz_scales is sixteen-elements long vector whose elements are :ref:`scale_t`
+records. Each one describes one of the the sixteen horizontal scales using
+:ref:`hz_div` as a base to display the corresponding values on the screen. The
+steps to fill up each element of hz_scales are the following:
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
@@ -105,27 +105,34 @@ C
     Fill the record member :ref:`step` with 40.00. :ref:`step` only controls the increment of
     the horizontal axis' marks.
 D
-    Get the corresponding ascii factor character and fill it in :ref:`deca`. In
-    the example: the corresponding factor is u.
+    Get the corresponding factor character's ascii code and fill it in :ref:`deca`. In
+    the example: the corresponding factor is micro.
 E
-    The :ref:`hz_div` parameter is composed by five fraction bits, three integer bits
-    and one sign bit. Three integer bits mean that :ref:`hz_div` must be only
-    one digit integer number. The horizontal base division must be aligned
-    according to that. 
+    The :ref:`hz_div` parameter is composed by five fraction bits, three
+    integer bits and one sign bit. Three integer bits mean that :ref:`hz_div`
+    must be one-digit-only integer number. The horizontal base division must be
+    aligned according to that. 
     Following the example:
-    The result of the horizontal base division is 40.00. To fit it in :ref:`hz_div`,
-    the decimal point should be shift one position to the left to get one digit
-    integer number. The result, then, is 4.000, and the corresponding binary
-    representation is 0_100_00000 in which the first '_' charater separates the
-    sign bit and second one the fraction bits.  
+    The result of the horizontal base division is 40.00. To fit it in
+    :ref:`hz_div`, the decimal point should be shift one position to the left
+    to get the one-digit-only integer number. The result, then, is 4.000, and
+    the corresponding binary representation is 0_100_00000 in which the first
+    '_' charater separates the sign bit and second one the fraction bits.  
+
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
     :ref:`scale` should be fill according to the scale table to display the correct
-    horizontal base division value on the display. The :ref:`scale` member is a four
+    horizontal base division value on the screen. The :ref:`scale` member is a four
     bit vector whose two most left bits shift the decimal point while the other
     two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
     :ref:`hz_div` is multiplied. The proper number is selected by combining all
     of the four bits.
+
+H
+    Fill the record member :ref:`mult` according to how much the
+    :ref:`input_clk` should be devided. if the division is going to be made by
+    multiplexing the analog digital converter's input channel set it to 1. Use
+    :ref:`tdiv` to know which the scale selected is.
 
 .. _gauge_labels:
 

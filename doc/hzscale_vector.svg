@@ -1097,9 +1097,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.6618404"
-     inkscape:cx="323.33942"
-     inkscape:cy="455.60712"
+     inkscape:zoom="6.6473616"
+     inkscape:cx="574.42183"
+     inkscape:cy="433.93866"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -1962,8 +1962,8 @@
        id="rect24473"
        style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:2.11666679;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <ellipse
-       cx="4.3680754"
-       cy="-154.90837"
+       cx="103.379"
+       cy="-157.87021"
        rx="13.758334"
        ry="13.758324"
        id="ellipse15647"
@@ -2435,13 +2435,13 @@
          id="tspan1164" /></text>
     <text
        id="text15651"
-       y="-149.05791"
-       x="-1.5643736"
+       y="-152.01974"
+       x="97.446548"
        style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#000000;fill-opacity:1;stroke-width:0.26458335"
-         y="-149.05791"
-         x="-1.5643736"
+         y="-152.01974"
+         x="97.446548"
          id="tspan15649"
          sodipodi:role="line">B</tspan></text>
     <rect
@@ -2548,18 +2548,18 @@
        id="ellipse15653"
        ry="13.758324"
        rx="13.758334"
-       cy="-163.16188"
-       cx="97.952286" />
+       cy="-152.57855"
+       cx="8.0229063" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
-       x="92.019821"
-       y="-157.31142"
+       x="2.0904417"
+       y="-146.72809"
        id="text15657"><tspan
          sodipodi:role="line"
          id="tspan15655"
-         x="92.019821"
-         y="-157.31142"
+         x="2.0904417"
+         y="-146.72809"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#000000;fill-opacity:1;stroke-width:0.26458335">C</tspan></text>
     <ellipse
        cx="259.29135"
