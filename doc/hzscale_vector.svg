@@ -1097,9 +1097,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="6.6473616"
-     inkscape:cx="574.42183"
-     inkscape:cy="433.93866"
+     inkscape:zoom="13.294723"
+     inkscape:cx="460.65654"
+     inkscape:cy="407.06042"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -2663,12 +2663,30 @@
        id="path3219"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
+    <ellipse
+       cx="-161.72522"
+       cy="-140.93689"
+       rx="13.758334"
+       ry="13.758324"
+       id="ellipse1622"
+       style="fill:#000000;fill-opacity:1;stroke:#c80000;stroke-width:1.0583334;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <path
        sodipodi:nodetypes="cccc"
        inkscape:connector-curvature="0"
        id="path6554"
        d="m -574.08936,-258.41188 v -26.45833 l 333.37499,0 153.45833,238.124993"
        style="fill:none;fill-opacity:1;stroke:#38e505;stroke-width:2.11666679;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6558)" />
+    <text
+       id="text1626"
+       y="-135.08643"
+       x="-161.39725"
+       style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.26458335"
+         y="-135.08643"
+         x="-161.39725"
+         id="tspan1624"
+         sodipodi:role="line">H</tspan></text>
     <path
        style="fill:none;fill-opacity:1;stroke:#001de6;stroke-width:2.11666679;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker31371)"
        d="m -312.20832,-106.22498 v -55.03333 h 291.041654 v 10.58333"
