@@ -119,7 +119,7 @@ E
     Following the example:
     The result of the horizontal base division is 40.00. To fit it in
     :ref:`hz_div`, the decimal point should be shifted one position to the left
-    to get the one-digit-only integer part. The result, then, is 4.000, and
+    to get the one-digit-only integer part. The new value, then, is 4.000, and
     the corresponding binary representation is 0_100_00000 in which the first
     '_' charater separates the sign bit and second one the fraction bits.  
 
