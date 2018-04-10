@@ -101,42 +101,42 @@ steps to set up each element of hz_scales are the followings:
 A
     Choose your sample rate: in the exmaple it is 800 KS/s
 B
-    Each division has 32 pixels, The base division is got by dividing 32 by
+    Each division has 32 pixels, The base division is gotten by dividing 32 by
     the sample rate. In the example the result is 40 us as the sample rate is
     .8 MS/s 
 C
-    Set the record member :ref:`step` with 40.00. :ref:`step` only controls the increment of
+    Set the record member :ref:`step` to 40.00. :ref:`step` only controls the increment of
     the horizontal axis' marks.
 D
-    Get the corresponding factor character's ascii code and set it to :ref:`deca`. In
+    Get the corresponding ascii code of factor character and set it to :ref:`deca`. In
     the example: the corresponding factor is micro.
 E
     The :ref:`hz_div` parameter is composed of five fraction bits, three
-    integer bits and one sign bit. Three integer bits mean that :ref:`hz_div`'s
-    integer part must be one digit only. The horizontal base division must be
+    integer bits and one sign bit. Three integer bits mean that integer part
+    of :ref:`hz_div` must be one digit only. The horizontal base division must be
     aligned according to that. 
 
     Following the example:
     The result of the horizontal base division is 40.00. To fit it in
-    :ref:`hz_div`, the decimal point should be shift one position to the left
+    :ref:`hz_div`, the decimal point should be shifted one position to the left
     to get the one-digit-only integer part. The result, then, is 4.000, and
     the corresponding binary representation is 0_100_00000 in which the first
     '_' charater separates the sign bit and second one the fraction bits.  
 
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
-    :ref:`scale` should be fill according to the scale table to display the correct
+    :ref:`scale` should be set according to the scale table, to display the correct
     horizontal base division value on the screen. The :ref:`scale` member is a four
-    bit vector whose two most left bits shift the decimal point while the other
-    two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
+    bit vector whose two left bits shift the decimal point while the other
+    two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
     :ref:`hz_div` is multiplied. The proper number is selected by combining all
     of the four bits.
 
 H
     Set the record member :ref:`mult` according to by how much the
     :ref:`input_clk` should be devided. if the division is going to be made by
-    multiplexing the analog digital converter's input channel set it to 1. Use
-    :ref:`tdiv` to know which scale has been selected.
+    multiplexing the input channel of ADCs set it to 1. Use
+    :ref:`tdiv` to know which scale has been selected by the user.
 
 .. _gauge_labels:
 

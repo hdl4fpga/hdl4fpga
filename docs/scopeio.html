@@ -323,40 +323,40 @@ steps to set up each element of hz_scales are the followings:</p>
 <dt>A</dt>
 <dd>Choose your sample rate: in the exmaple it is 800 KS/s</dd>
 <dt>B</dt>
-<dd>Each division has 32 pixels, The base division is got by dividing 32 by
+<dd>Each division has 32 pixels, The base division is gotten by dividing 32 by
 the sample rate. In the example the result is 40 us as the sample rate is
 .8 MS/s</dd>
 <dt>C</dt>
-<dd>Set the record member <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> with 40.00. <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> only controls the increment of
+<dd>Set the record member <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> to 40.00. <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> only controls the increment of
 the horizontal axis’ marks.</dd>
 <dt>D</dt>
-<dd>Get the corresponding factor character’s ascii code and set it to <a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In
+<dd>Get the corresponding ascii code of factor character and set it to <a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In
 the example: the corresponding factor is micro.</dd>
 <dt>E</dt>
 <dd><p class="first">The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed of five fraction bits, three
-integer bits and one sign bit. Three integer bits mean that <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>’s
-integer part must be one digit only. The horizontal base division must be
+integer bits and one sign bit. Three integer bits mean that integer part
+of <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be one digit only. The horizontal base division must be
 aligned according to that.</p>
 <p class="last">Following the example:
 The result of the horizontal base division is 40.00. To fit it in
-<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal point should be shift one position to the left
+<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal point should be shifted one position to the left
 to get the one-digit-only integer part. The result, then, is 4.000, and
 the corresponding binary representation is 0_100_00000 in which the first
 ‘_’ charater separates the sign bit and second one the fraction bits.</p>
 </dd>
 <dt>F</dt>
 <dd>Once the correct value is selected for <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the record member
-<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be fill according to the scale table to display the correct
+<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set according to the scale table, to display the correct
 horizontal base division value on the screen. The <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> member is a four
-bit vector whose two most left bits shift the decimal point while the other
-two most right bits select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
+bit vector whose two left bits shift the decimal point while the other
+two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> is multiplied. The proper number is selected by combining all
 of the four bits.</dd>
 <dt>H</dt>
 <dd>Set the record member <a class="reference internal" href="std.html#mult"><span class="std std-ref">mult</span></a> according to by how much the
 <a class="reference internal" href="#input-clk"><span class="std std-ref">input_clk</span></a> should be devided. if the division is going to be made by
-multiplexing the analog digital converter’s input channel set it to 1. Use
-<a class="reference internal" href="#tdiv"><span class="std std-ref">tdiv</span></a> to know which scale has been selected.</dd>
+multiplexing the input channel of ADCs set it to 1. Use
+<a class="reference internal" href="#tdiv"><span class="std std-ref">tdiv</span></a> to know which scale has been selected by the user.</dd>
 </dl>
 </div>
 <div class="section" id="gauge-labels">
