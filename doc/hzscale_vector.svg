@@ -1098,8 +1098,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.3236808"
-     inkscape:cx="586.15324"
-     inkscape:cy="406.85481"
+     inkscape:cx="805.40282"
+     inkscape:cy="238.36691"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -1108,9 +1108,9 @@
      gridtolerance="10000"
      guidetolerance="10000"
      inkscape:window-width="1920"
-     inkscape:window-height="1015"
-     inkscape:window-x="0"
-     inkscape:window-y="1080"
+     inkscape:window-height="1051"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:snap-text-baseline="false"
      fit-margin-top="0"
@@ -2447,8 +2447,8 @@
     <rect
        y="-96.69989"
        x="165.09996"
-       height="17.991661"
-       width="73.025002"
+       height="18.204674"
+       width="59.852325"
        id="rect4620"
        style="fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:2.11666679;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <text
@@ -2461,7 +2461,7 @@
          id="tspan4622"
          x="169.33331"
          y="-83.999947"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#ffffff;fill-opacity:1;stroke-width:0.26458332">32 samples</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#ffffff;fill-opacity:1;stroke-width:0.26458332">32 pixels</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#e5be05;stroke-width:2.11666679;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect4626"
