@@ -133,10 +133,10 @@ F
     of the four bits.
 
 H
-    Set the record member :ref:`mult` according to by how much the
-    :ref:`input_clk` should be devided. if the division is going to be made by
-    multiplexing the input channel of ADCs set it to 1. Use
-    :ref:`tdiv` to know which scale has been selected by the user.
+    Set the record member :ref:`mult` according to the required downsampling.
+    if the downsampling is going to be made by multiplexing the input channel
+    of ADCs set it to 1. Use :ref:`tdiv` to know which scale has been selected
+    by the user.
 
 .. _gauge_labels:
 
