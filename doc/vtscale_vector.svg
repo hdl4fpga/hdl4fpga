@@ -1228,9 +1228,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="231.29294"
-     inkscape:cy="263.2361"
+     inkscape:zoom="4"
+     inkscape:cx="931.46725"
+     inkscape:cy="340.98585"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -2275,18 +2275,18 @@
        id="path1498"
        ry="13.758324"
        rx="13.758334"
-       cy="-226.66188"
-       cx="-214.25583" />
+       cy="-327.20352"
+       cx="-60.797508" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458335"
-       x="-220.18828"
-       y="-220.81142"
+       x="-66.729973"
+       y="-321.35306"
        id="text1502"><tspan
          sodipodi:role="line"
          id="tspan1500"
-         x="-220.18828"
-         y="-220.81142"
+         x="-66.729973"
+         y="-321.35306"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#ffffff;fill-opacity:1;stroke-width:0.26458335">A</tspan></text>
     <text
        xml:space="preserve"
@@ -2813,5 +2813,23 @@
          x="-440.14438"
          y="219.33965"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';text-align:end;text-anchor:end;fill:#e5be05;fill-opacity:1;stroke-width:0.26458332">0.100 mV</tspan></text>
+    <ellipse
+       cx="399.57748"
+       cy="-115.53687"
+       rx="13.758334"
+       ry="13.758324"
+       id="ellipse61113"
+       style="fill:#ffffff;fill-opacity:1;stroke:#c80000;stroke-width:1.0583334;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       id="text61117"
+       y="-109.68641"
+       x="393.64502"
+       style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#000000;fill-opacity:1;stroke-width:0.26458335"
+         y="-109.68641"
+         x="393.64502"
+         id="tspan61115"
+         sodipodi:role="line">B</tspan></text>
   </g>
 </svg>
