@@ -42,7 +42,8 @@ The number of channel inputs which scopeio is going to plot.
 input_preamp
 ~~~~~~~~~~~~
 
-This parameter is required to set the analog inputs when to have different scales. If all the inputs have the same voltage resolution, set it to
+This parameter is required to set the analog inputs when to have different
+volatge resolution. If all the inputs have the same resolution, set it to
 (0 to inputs-1 => 1.0)
 
 .. _layout_id:
@@ -50,7 +51,8 @@ This parameter is required to set the analog inputs when to have different scale
 layout_id
 ~~~~~~~~~
 
-layout_id selects one of the two display layouts. The table below shows the parameter's values to be seti, according to the resolution required.
+layout_id selects one of the two display layouts. The table below shows the
+parameter values to be set, according to the video resolution required.
 
 ===== ========== ===============
 Value Resolution Video frequency
@@ -59,21 +61,26 @@ Value Resolution Video frequency
     1    800x600          40 MHz
 ===== ========== ===============
 
-There is a nano-window system in which other layouts can be described pretty easily. So far, there are only two.
+There is a nano-window system in which other layouts can be described pretty
+easily. So far, there are only two.
 
 .. _vt_div:
 
 vt_div
 ~~~~~~
 
-It represents the vertical base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
+It represents the vertical base division. The least five significant bits
+represent the binary point. The default value b"0_001_00000" means 1.00000.
+See :ref:`vt_scales` for more explanation.
 
 .. _hz_div:
 
 hz_div
 ~~~~~~
 
-It represents the horizontal base division. The least five significant bits represent the binary point. The default value b"0_001_00000" means 1.00000.
+It represents the horizontal base division. The least five significant bits
+represent the binary point. The default value b"0_001_00000" means 1.00000.
+See :ref:`hz_scales` for more explanation.
 
 .. _vt_scales:
 

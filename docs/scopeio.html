@@ -266,12 +266,14 @@
 </div>
 <div class="section" id="input-preamp">
 <span id="id2"></span><h3>input_preamp<a class="headerlink" href="#input-preamp" title="Permalink to this headline">¶</a></h3>
-<p>This parameter is required to set the analog inputs when to have different scales. If all the inputs have the same voltage resolution, set it to
+<p>This parameter is required to set the analog inputs when to have different
+volatge resolution. If all the inputs have the same resolution, set it to
 (0 to inputs-1 =&gt; 1.0)</p>
 </div>
 <div class="section" id="layout-id">
 <span id="id3"></span><h3>layout_id<a class="headerlink" href="#layout-id" title="Permalink to this headline">¶</a></h3>
-<p>layout_id selects one of the two display layouts. The table below shows the parameter’s values to be seti, according to the resolution required.</p>
+<p>layout_id selects one of the two display layouts. The table below shows the
+parameter values to be set, according to the video resolution required.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="17%" />
@@ -295,15 +297,20 @@
 </tr>
 </tbody>
 </table>
-<p>There is a nano-window system in which other layouts can be described pretty easily. So far, there are only two.</p>
+<p>There is a nano-window system in which other layouts can be described pretty
+easily. So far, there are only two.</p>
 </div>
 <div class="section" id="vt-div">
 <span id="id4"></span><h3>vt_div<a class="headerlink" href="#vt-div" title="Permalink to this headline">¶</a></h3>
-<p>It represents the vertical base division. The least five significant bits represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
+<p>It represents the vertical base division. The least five significant bits
+represent the binary point. The default value b”0_001_00000” means 1.00000.
+See <a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> for more explanation.</p>
 </div>
 <div class="section" id="hz-div">
 <span id="id5"></span><h3>hz_div<a class="headerlink" href="#hz-div" title="Permalink to this headline">¶</a></h3>
-<p>It represents the horizontal base division. The least five significant bits represent the binary point. The default value b”0_001_00000” means 1.00000.</p>
+<p>It represents the horizontal base division. The least five significant bits
+represent the binary point. The default value b”0_001_00000” means 1.00000.
+See <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> for more explanation.</p>
 </div>
 <div class="section" id="vt-scales">
 <span id="id6"></span><h3>vt_scales<a class="headerlink" href="#vt-scales" title="Permalink to this headline">¶</a></h3>
