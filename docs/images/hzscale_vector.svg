@@ -1098,8 +1098,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.6618404"
-     inkscape:cx="386.17988"
-     inkscape:cy="276.66127"
+     inkscape:cx="426.19576"
+     inkscape:cy="252.59157"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -2703,5 +2703,23 @@
        sodipodi:nodetypes="cc"
        inkscape:transform-center-x="-14.894179"
        inkscape:transform-center-y="1.1940787" />
+    <ellipse
+       cx="-277.75604"
+       cy="53.796448"
+       rx="13.758334"
+       ry="13.758324"
+       id="ellipse65265"
+       style="fill:#000000;fill-opacity:1;stroke:#c80000;stroke-width:1.0583334;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       id="text65269"
+       y="59.646912"
+       x="-277.42807"
+       style="font-style:normal;font-weight:normal;font-size:16.93333435px;line-height:1.25;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:19.75555611px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.26458335"
+         y="59.646912"
+         x="-277.42807"
+         id="tspan65267"
+         sodipodi:role="line">I</tspan></text>
   </g>
 </svg>

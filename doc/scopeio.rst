@@ -85,6 +85,9 @@ records. Each one describes one of the the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of vt_scales are the following:
   
+.. image:: vtscale_vector.svg
+   :target: images/vtscale_vector.svg
+  
 .. _hz_scales:
 
 hz_scales
