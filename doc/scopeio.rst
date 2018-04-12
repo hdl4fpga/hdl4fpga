@@ -92,6 +92,55 @@ records. Each one describes one of the the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of vt_scales are the following:
   
+A
+    Get the resolution and input range of the ADC from where the signal is
+    going to be converted to.  In the example those parameters are 16 and 1 V
+    respectively.  Select the desire Vertical Division which in the example is
+    10 mV.
+
+B
+    Calculate the value to be set to :ref:'mult': by multiplying the input
+    range of the ADC per 32 - 32 pixels per division - per 2**18 - the FPGA
+    multiplier input width - and divide it by the vertical division and 2 to
+    the power of the resolution of the ADC.
+    In the example, this : (1 V x 32 x 2*18)/(10 mV x 2**16).
+
+C
+    Set the record member :ref:`from` to 7 per the selected vertical division.
+    According to the example this is 7 x 10.00. Set :ref:`step` to the negative
+    value of the selected vertical division, that is -10 in the example.
+    Also, set the ascii code of the selected vertical division to :ref:`deca`.
+
+D
+    Get the corresponding ascii code of the factor character and set it to
+    :ref:`deca`. In the example: the corresponding factor is micro.
+
+D
+    The :ref:`vt_div` parameter is composed of five fraction bits, three
+    integer bits and one sign bit. Three integer bits mean that integer part of
+    :ref:`vt_div` must be one digit only. The vertical base division must be
+    aligned according to that. 
+
+    Following the example:
+    The result of the horizontal base division is 10.00. To fit it in
+    :ref:`vt_div`, the decimal point should be shifted one position to the left
+    to get the one-digit-only integer part. The new value, then, is 1.000, and
+    the corresponding binary representation is 0_100_00000 in which the first
+    '_' charater separates the sign bit and second one, the fraction bits.  
+
+E
+    Once the correct value is selected for :ref:`vt_div`, the record member
+    :ref:`scale` should be set, according to the scale table, to display the correct
+    horizontal base division value on the screen. The :ref:`scale` member is a four
+    bit vector whose two left bits shift the decimal point while the other
+    two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
+    :ref:`vt_div` is multiplied. The proper number is selected by combining all
+    of the four bits.
+
+H
+    Check the examples. There, :ref:`from` is set to 0.0 and :ref:`mult` should
+    be set as it is decribed on G.
+
 .. image:: vtscale_vector.svg
    :target: images/vtscale_vector.svg
   
@@ -153,7 +202,8 @@ G
     by the user.
 
 H
-    Check the examples.
+    Check the examples. There, :ref:`from` is set to 0.0 and :ref:`mult` should
+    be set as it is decribed on G.
 
 .. _gauge_labels:
 
