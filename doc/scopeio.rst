@@ -146,11 +146,14 @@ F
     :ref:`hz_div` is multiplied. The proper number is selected by combining all
     of the four bits.
 
-H
+G
     Set the record member :ref:`mult` according to the required downsampling.
     if the downsampling is going to be made by multiplexing the input channel
     of ADCs set it to 1. Use :ref:`tdiv` to know which scale has been selected
     by the user.
+
+H
+    Check the examples.
 
 .. _gauge_labels:
 
