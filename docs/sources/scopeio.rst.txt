@@ -110,20 +110,24 @@ steps to set up each element of hz_scales are the followings:
   
 A
     Choose your sample rate: in the exmaple it is 800 KS/s
+
 B
     Each division has 32 pixels, The base division is gotten by dividing 32 by
     the sample rate. In the example the result is 40 us as the sample rate is
     0.8 MS/s 
+
 C
     Set the record member :ref:`step` to 40.00. :ref:`step` only controls the increment of
-    the horizontal axis' marks.
+    the horizontal axis marks.
+
 D
-    Get the corresponding ascii code of factor character and set it to :ref:`deca`. In
-    the example: the corresponding factor is micro.
+    Get the corresponding ascii code of the factor character and set it to
+    :ref:`deca`. In the example: the corresponding factor is micro.
+
 E
     The :ref:`hz_div` parameter is composed of five fraction bits, three
-    integer bits and one sign bit. Three integer bits mean that integer part
-    of :ref:`hz_div` must be one digit only. The horizontal base division must be
+    integer bits and one sign bit. Three integer bits mean that integer part of
+    :ref:`hz_div` must be one digit only. The horizontal base division must be
     aligned according to that. 
 
     Following the example:
