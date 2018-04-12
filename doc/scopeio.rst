@@ -1,9 +1,6 @@
 entity scopeio
 ==============
 
-.. comment: .. raw:: html
-    <object with="80" data="input_data.svg" type="image/svg+xml"></object>
-
 .. image:: scopeio.svg
    :target: images/scopeio.svg
 
@@ -91,7 +88,7 @@ vt_scales
 records. Each one describes one of the the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of vt_scales are the following:
-  
+
 A
     Get the resolution and input range of the ADC from where the signal is
     going to be converted to.  In the example those parameters are 16 bits and
@@ -99,35 +96,29 @@ A
     is 10 mV.
 
 B
-    Calculate the value to be set to :ref:'mult': by multiplying the input
-    range of the ADC per 32 - 32 pixels per division - per 2**18 - the FPGA
-    multiplier input width - and divide it by the vertical division and 2 to
-    the power of the resolution of the ADC.
-    In the example, this : (1 V x 32 x 2**18)/(10 mV x 2**16).
+    Calculate the value to be set to :ref:'mult': member by multiplying the
+    input range of the ADC per 32 - 32 pixels per division - per 2**18 - the
+    FPGA multiplier input width - and divide it by the vertical division and 2
+    to the power of the resolution of the ADC.  In the example, this : (1 V x
+    32 x 2**18)/(10 mV x 2**16).
 
 C
-    Set the record member :ref:`from` to 7 multiplied by the selected vertical
-    division. According to the example: this is 7 x 10.00. Set :ref:`step` to
-    the negative value of the selected vertical division, that is -10 in the
-    example.  Also, set the ascii code of the selected vertical division to
-    :ref:`deca`.
-
-D
-    Get the corresponding ascii code of the factor character and set it to
-    :ref:`deca`. In the example: the corresponding factor is micro.
+    Set the record member :ref:`from` member to 7 multiplied by the selected
+    vertical division. According to the example: this is 7 x 10.00. Set
+    :ref:`step` member to the negative value of the selected vertical division
+    too.  This is -10 in the example.  Also, set :ref:`deca` member to the
+    ascii code of the selected factor of vertical division.
 
 D
     The :ref:`vt_div` parameter is composed of five fraction bits, three
     integer bits and one sign bit. Three integer bits mean that integer part of
     :ref:`vt_div` must be one digit only. The vertical base division must be
-    aligned according to that. 
-
-    Following the example:
-    The result of the horizontal base division is 10.00. To fit it in
-    :ref:`vt_div`, the decimal point should be shifted one position to the left
-    to get the one-digit-only integer part. The new value, then, is 1.000, and
-    the corresponding binary representation is 0_100_00000 in which the first
-    '_' charater separates the sign bit and second one, the fraction bits.  
+    aligned according to that.  Following the example: The result of the
+    horizontal base division is 10.00. To fit it in :ref:`vt_div`, the decimal
+    point should be shifted one position to the left to get the one-digit-only
+    integer part. The new value, then, is 1.000, and the corresponding binary
+    representation is 0_100_00000 in which the first '_' charater separates the
+    sign bit and second one, the fraction bits.  
 
 E
     Once the correct value is selected for :ref:`vt_div`, the record member
@@ -139,8 +130,7 @@ E
     of the four bits.
 
 H
-    Check the examples. There, :ref:`from` is set to 0.0 and :ref:`mult` should
-    be set as it is decribed on G.
+    Check the examples in the corresponding figure.. 
 
 .. image:: vtscale_vector.svg
    :target: images/vtscale_vector.svg
@@ -178,14 +168,12 @@ E
     The :ref:`hz_div` parameter is composed of five fraction bits, three
     integer bits and one sign bit. Three integer bits mean that integer part of
     :ref:`hz_div` must be one digit only. The horizontal base division must be
-    aligned according to that. 
-
-    Following the example:
-    The result of the horizontal base division is 40.00. To fit it in
-    :ref:`hz_div`, the decimal point should be shifted one position to the left
-    to get the one-digit-only integer part. The new value, then, is 4.000, and
-    the corresponding binary representation is 0_100_00000 in which the first
-    '_' charater separates the sign bit and second one, the fraction bits.  
+    aligned according to that.  Following the example: The result of the
+    horizontal base division is 40.00. To fit it in :ref:`hz_div`, the decimal
+    point should be shifted one position to the left to get the one-digit-only
+    integer part. The new value, then, is 4.000, and the corresponding binary
+    representation is 0_100_00000 in which the first '_' charater separates the
+    sign bit and second one, the fraction bits.  
 
 F
     Once the correct value is selected for :ref:`hz_div`, the record member

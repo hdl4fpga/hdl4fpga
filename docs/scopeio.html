@@ -324,32 +324,27 @@ going to be converted to.  In the example those parameters are 16 bits and
 1 V respectively.  Select the desire Vertical Division which in the example
 is 10 mV.</dd>
 <dt>B</dt>
-<dd>Calculate the value to be set to :ref:’mult’: by multiplying the input
-range of the ADC per 32 - 32 pixels per division - per 2**18 - the FPGA
-multiplier input width - and divide it by the vertical division and 2 to
-the power of the resolution of the ADC.
-In the example, this : (1 V x 32 x 2**18)/(10 mV x 2**16).</dd>
+<dd>Calculate the value to be set to :ref:’mult’: member by multiplying the
+input range of the ADC per 32 - 32 pixels per division - per 2**18 - the
+FPGA multiplier input width - and divide it by the vertical division and 2
+to the power of the resolution of the ADC.  In the example, this : (1 V x
+32 x 2**18)/(10 mV x 2**16).</dd>
 <dt>C</dt>
-<dd>Set the record member <a class="reference internal" href="std.html#from"><span class="std std-ref">from</span></a> to 7 multiplied by the selected vertical
-division. According to the example: this is 7 x 10.00. Set <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> to
-the negative value of the selected vertical division, that is -10 in the
-example.  Also, set the ascii code of the selected vertical division to
-<a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>.</dd>
+<dd>Set the record member <a class="reference internal" href="std.html#from"><span class="std std-ref">from</span></a> member to 7 multiplied by the selected
+vertical division. According to the example: this is 7 x 10.00. Set
+<a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> member to the negative value of the selected vertical division
+too.  This is -10 in the example.  Also, set <a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a> member to the
+ascii code of the selected factor of vertical division.</dd>
 <dt>D</dt>
-<dd>Get the corresponding ascii code of the factor character and set it to
-<a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In the example: the corresponding factor is micro.</dd>
-<dt>D</dt>
-<dd><p class="first">The <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> parameter is composed of five fraction bits, three
+<dd>The <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> parameter is composed of five fraction bits, three
 integer bits and one sign bit. Three integer bits mean that integer part of
 <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> must be one digit only. The vertical base division must be
-aligned according to that.</p>
-<p class="last">Following the example:
-The result of the horizontal base division is 10.00. To fit it in
-<a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a>, the decimal point should be shifted one position to the left
-to get the one-digit-only integer part. The new value, then, is 1.000, and
-the corresponding binary representation is 0_100_00000 in which the first
-‘_’ charater separates the sign bit and second one, the fraction bits.</p>
-</dd>
+aligned according to that.  Following the example: The result of the
+horizontal base division is 10.00. To fit it in <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a>, the decimal
+point should be shifted one position to the left to get the one-digit-only
+integer part. The new value, then, is 1.000, and the corresponding binary
+representation is 0_100_00000 in which the first ‘_’ charater separates the
+sign bit and second one, the fraction bits.</dd>
 <dt>E</dt>
 <dd>Once the correct value is selected for <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a>, the record member
 <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set, according to the scale table, to display the correct
@@ -359,8 +354,7 @@ two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
 <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> is multiplied. The proper number is selected by combining all
 of the four bits.</dd>
 <dt>H</dt>
-<dd>Check the examples. There, <a class="reference internal" href="std.html#from"><span class="std std-ref">from</span></a> is set to 0.0 and <a class="reference internal" href="std.html#mult"><span class="std std-ref">mult</span></a> should
-be set as it is decribed on G.</dd>
+<dd>Check the examples in the corresponding figure..</dd>
 </dl>
 <a class="reference external image-reference" href="images/vtscale_vector.svg"><img alt="images/vtscale_vector.svg" src="images/vtscale_vector.svg" /></a>
 </div>
@@ -385,17 +379,15 @@ the horizontal axis marks.</dd>
 <dd>Get the corresponding ascii code of the factor character and set it to
 <a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In the example: the corresponding factor is micro.</dd>
 <dt>E</dt>
-<dd><p class="first">The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed of five fraction bits, three
+<dd>The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed of five fraction bits, three
 integer bits and one sign bit. Three integer bits mean that integer part of
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be one digit only. The horizontal base division must be
-aligned according to that.</p>
-<p class="last">Following the example:
-The result of the horizontal base division is 40.00. To fit it in
-<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal point should be shifted one position to the left
-to get the one-digit-only integer part. The new value, then, is 4.000, and
-the corresponding binary representation is 0_100_00000 in which the first
-‘_’ charater separates the sign bit and second one, the fraction bits.</p>
-</dd>
+aligned according to that.  Following the example: The result of the
+horizontal base division is 40.00. To fit it in <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal
+point should be shifted one position to the left to get the one-digit-only
+integer part. The new value, then, is 4.000, and the corresponding binary
+representation is 0_100_00000 in which the first ‘_’ charater separates the
+sign bit and second one, the fraction bits.</dd>
 <dt>F</dt>
 <dd>Once the correct value is selected for <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the record member
 <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set, according to the scale table, to display the correct
