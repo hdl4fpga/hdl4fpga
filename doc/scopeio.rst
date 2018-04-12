@@ -106,10 +106,11 @@ B
     In the example, this : (1 V x 32 x 2**18)/(10 mV x 2**16).
 
 C
-    Set the record member :ref:`from` to 7 per the selected vertical division.
-    According to the example this is 7 x 10.00. Set :ref:`step` to the negative
-    value of the selected vertical division, that is -10 in the example.
-    Also, set the ascii code of the selected vertical division to :ref:`deca`.
+    Set the record member :ref:`from` to 7 multiplied by the selected vertical
+    division. According to the example: this is 7 x 10.00. Set :ref:`step` to
+    the negative value of the selected vertical division, that is -10 in the
+    example.  Also, set the ascii code of the selected vertical division to
+    :ref:`deca`.
 
 D
     Get the corresponding ascii code of the factor character and set it to
