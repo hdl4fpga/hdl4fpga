@@ -135,11 +135,11 @@ E
     :ref:`hz_div`, the decimal point should be shifted one position to the left
     to get the one-digit-only integer part. The new value, then, is 4.000, and
     the corresponding binary representation is 0_100_00000 in which the first
-    '_' charater separates the sign bit and second one the fraction bits.  
+    '_' charater separates the sign bit and second one, the fraction bits.  
 
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
-    :ref:`scale` should be set according to the scale table, to display the correct
+    :ref:`scale` should be set, according to the scale table, to display the correct
     horizontal base division value on the screen. The :ref:`scale` member is a four
     bit vector whose two left bits shift the decimal point while the other
     two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
