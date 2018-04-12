@@ -94,9 +94,9 @@ steps to set up each element of vt_scales are the following:
   
 A
     Get the resolution and input range of the ADC from where the signal is
-    going to be converted to.  In the example those parameters are 16 and 1 V
-    respectively.  Select the desire Vertical Division which in the example is
-    10 mV.
+    going to be converted to.  In the example those parameters are 16 bits and
+    1 V respectively.  Select the desire Vertical Division which in the example
+    is 10 mV.
 
 B
     Calculate the value to be set to :ref:'mult': by multiplying the input
