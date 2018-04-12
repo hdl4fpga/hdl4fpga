@@ -113,7 +113,7 @@ A
 B
     Each division has 32 pixels, The base division is gotten by dividing 32 by
     the sample rate. In the example the result is 40 us as the sample rate is
-    .8 MS/s 
+    0.8 MS/s 
 C
     Set the record member :ref:`step` to 40.00. :ref:`step` only controls the increment of
     the horizontal axis' marks.
