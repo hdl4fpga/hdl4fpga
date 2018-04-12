@@ -328,7 +328,7 @@ is 10 mV.</dd>
 range of the ADC per 32 - 32 pixels per division - per 2**18 - the FPGA
 multiplier input width - and divide it by the vertical division and 2 to
 the power of the resolution of the ADC.
-In the example, this : (1 V x 32 x 2*18)/(10 mV x 2**16).</dd>
+In the example, this : (1 V x 32 x 2**18)/(10 mV x 2**16).</dd>
 <dt>C</dt>
 <dd>Set the record member <a class="reference internal" href="std.html#from"><span class="std std-ref">from</span></a> to 7 per the selected vertical division.
 According to the example this is 7 x 10.00. Set <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> to the negative
