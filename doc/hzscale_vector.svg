@@ -1097,9 +1097,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.6618404"
-     inkscape:cx="552.54351"
-     inkscape:cy="491.48453"
+     inkscape:zoom="9.4007889"
+     inkscape:cx="650.26966"
+     inkscape:cy="535.95858"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -1112,7 +1112,7 @@
      inkscape:window-x="0"
      inkscape:window-y="1080"
      inkscape:window-maximized="1"
-     inkscape:snap-text-baseline="false"
+     inkscape:snap-text-baseline="true"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -2355,13 +2355,13 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:14.11111164px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#3fd9ff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="47.498863"
-       y="-275.68558"
+       x="47.498932"
+       y="-274.62729"
        id="text20973"><tspan
          sodipodi:role="line"
          id="tspan20971"
-         x="47.498863"
-         y="-275.68558"
+         x="47.498932"
+         y="-274.62729"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.11111164px;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#3fd9ff;fill-opacity:1;stroke-width:0.26458332">Sample Rate</tspan></text>
     <text
        xml:space="preserve"
@@ -2376,13 +2376,13 @@
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.11111164px;font-family:'Courier New';-inkscape-font-specification:'Courier New Bold';fill:#e50505;fill-opacity:1;stroke-width:0.26458335">40</tspan></text>
     <text
        id="text1744"
-       y="-276.14206"
-       x="158.84779"
+       y="-275.08374"
+       x="156.66971"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#3fd9ff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#3fd9ff;fill-opacity:1;stroke-width:0.26458332"
-         y="-276.14206"
-         x="158.84779"
+         y="-275.08374"
+         x="156.66971"
          id="tspan1742"
          sodipodi:role="line">800 KS/s</tspan></text>
     <text
