@@ -85,7 +85,7 @@ vt_scales
 ~~~~~~~~~
 
 :ref:`vt_scales` is a sixteen-element vector whose elements are :ref:`scale_t`
-records. Each one describes one of the the sixteen vertical scales using
+records. Each one describes one of the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of the :ref:`vt_scales` are the following:
 
@@ -127,22 +127,26 @@ steps to set up each element of the :ref:`vt_scales` are the following:
     Three integer bits mean that integer part of :ref:`vt_div` can represent
     one decimal digit only. The vertical base division must be aligned
     according to that.
-    Following the example:
-    The result of the vertical base division is 10.00. To fit it in
-    :ref:`vt_div`, the decimal point should be shifted one position to the left
-    to get the one-decimal-digit-only integer part. The new value, then, is
-    1.000, and the corresponding binary representation is 0_100_00000 in which
-    the first '_' character separates the sign bit, and second one separates
-    the fraction bits.
+
+    Following the example: the result of the vertical base division is 10.00.
+    To fit it in :ref:`vt_div`, the decimal point should be shifted one
+    position to the left to get the one-decimal-digit-only integer part. The
+    new value, then, is 1.000, and the corresponding binary representation is
+    0_100_00000 in which the first '_' character separates the sign bit, and
+    second one separates the fraction bits.
 
 - E
     Once the correct value is selected for :ref:`vt_div`, the record member
     :ref:`scale` should be set, according to the scale table, to display the
     correct vertical division value on the screen. The :ref:`scale` member is a
-    four bit vector whose two left bits shift the decimal point while the right 
-    two bits on the select a number from: 1.0, 2.5, 5.0 or 2.0 by which
-    the :ref:`vt_div` is multiplied. The proper number is selected by combining
-    all of the four bits.
+    four bit vector whose two left bits shift the decimal point while the right
+    two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
+    ref:`vt_div`. 
+
+    In the example, the two left bits are "10" which shift the decimal point
+    one place to the right and the two right bits are "00" which multiply the
+    by 1.0.  Being the decimal representation of :ref:`vt_div` 1.000, the value
+    to be displayed will be 10.00.
 
 - H
     Check the examples in the corresponding figure.. 
