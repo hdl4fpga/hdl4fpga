@@ -148,7 +148,7 @@ steps to set up each element of the :ref:`vt_scales` are the following:
     by 1.0.  Being the decimal representation of :ref:`vt_div` 1.000, the value
     to be displayed will be 10.00.
 
-- H
+- F
     Check the examples in the corresponding figure.. 
 
 .. image:: vtscale_vector.svg
