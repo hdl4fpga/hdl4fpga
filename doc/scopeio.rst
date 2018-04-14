@@ -168,12 +168,12 @@ steps to set up each element of :ref:`hz_scales` are the followings:
    :target: images/hzscale_vector.svg
   
 - A
-    Choose your sample rate: in the exmaple it is 800 KS/s
+    Choose the sample rate: in the exmaple it is 800 KS/s
 
 - B
     The base division is gotten dividing 32 by the sample rate as each division
-    is 32-pixel wide.  In the example the result is 40 us as the sample rate is
-    0.8 MS/s 
+    is 32-pixel wide. In the example the result is 40 us as the sample rate
+    selected 0.8 MS/s 
 
 - C
     Set the record member :ref:`step` to the base division value gotten before.
@@ -184,25 +184,29 @@ steps to set up each element of :ref:`hz_scales` are the followings:
     Get the corresponding ascii code of the factor character and set it to
     :ref:`deca`. In the example: the corresponding factor is micro.
 
-E
-    The :ref:`hz_div` parameter is composed of five fraction bits, three
-    integer bits and one sign bit. Three integer bits mean that integer part of
-    :ref:`hz_div` must be one digit only. The horizontal base division must be
-    aligned according to that.  Following the example: The result of the
-    horizontal base division is 40.00. To fit it in :ref:`hz_div`, the decimal
-    point should be shifted one position to the left to get the one-digit-only
-    integer part. The new value, then, is 4.000, and the corresponding binary
-    representation is 0_100_00000 in which the first '_' charater separates the
-    sign bit and second one, the fraction bits.  
+- E
+    The :ref:`hz_div` parameter is composed of:
+
+    - Five fraction bits.
+    - Three integer bits.
+    - One sign bit. 
+
+    Three integer bits mean that integer part of :ref:`hz_div` must be one
+    decimal digit only. The horizontal base division must be aligned according
+    to that. Following the example: The result of the horizontal base division
+    is 40.00. To fit it in :ref:`hz_div`, the decimal point should be shifted
+    one position to the left to get the one-decimal-digit-only integer part.
+    The new value, then, is 4.000, and the corresponding binary representation
+    is 0_100_00000 in which the first '_' charater separates the sign bit and
+    second one separates the fraction bits.  
 
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
-    :ref:`scale` should be set, according to the scale table, to display the correct
-    horizontal base division value on the screen. The :ref:`scale` member is a four
-    bit vector whose two left bits shift the decimal point while the other
-    two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
-    :ref:`hz_div` is multiplied. The proper number is selected by combining all
-    of the four bits.
+    :ref:`scale` should be set, according to the scale table, to display the
+    correct horizontal division value on the screen. The :ref:`scale` member is
+    a four bit vector whose two left bits shift the decimal point while the
+    right two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
+    ref:`vt_div`. 
 
 G
     Set the record member :ref:`mult` according to the required downsampling.
