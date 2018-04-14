@@ -137,7 +137,7 @@ steps to set up each element of the :ref:`vt_scales` are the following:
 
 - E
     Once the correct value is selected for :ref:`vt_div`, the record member
-    :ref:`scale` should be set, according to the scale table, to display the
+    :ref:`scale` should be set according to the scale table to display the
     correct vertical division value on the screen. The :ref:`scale` member is a
     four bit vector whose two left bits shift the decimal point while the right
     two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
@@ -149,7 +149,7 @@ steps to set up each element of the :ref:`vt_scales` are the following:
     to be displayed will be 10.00.
 
 - F
-    Check the examples in the corresponding figure.. 
+    Check the examples in the corresponding figure. 
 
 .. image:: vtscale_vector.svg
    :target: images/vtscale_vector.svg
@@ -159,27 +159,28 @@ steps to set up each element of the :ref:`vt_scales` are the following:
 hz_scales
 ~~~~~~~~~
 
-:ref:`hz_scales` is a sixteen-elements vector whose elements are :ref:`scale_t`
+:ref:`hz_scales` is a sixteen-element vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen horizontal scales using
 :ref:`hz_div` as a base to display the corresponding values on the screen. The
-steps to set up each element of hz_scales are the followings:
+steps to set up each element of :ref:`hz_scales` are the followings:
 
 .. image:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
   
-A
+- A
     Choose your sample rate: in the exmaple it is 800 KS/s
 
-B
-    Each division has 32 pixels, The base division is gotten by dividing 32 by
-    the sample rate. In the example the result is 40 us as the sample rate is
+- B
+    The base division is gotten dividing 32 by the sample rate as each division
+    is 32-pixel wide.  In the example the result is 40 us as the sample rate is
     0.8 MS/s 
 
-C
-    Set the record member :ref:`step` to 40.00. :ref:`step` only controls the increment of
-    the horizontal axis marks.
+- C
+    Set the record member :ref:`step` to the base division value gotten before.
+    :ref:`step` only controls the increment of the horizontal axis marks.
+    In the example 
 
-D
+- D
     Get the corresponding ascii code of the factor character and set it to
     :ref:`deca`. In the example: the corresponding factor is micro.
 
