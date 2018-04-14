@@ -239,7 +239,7 @@ labels should be twenty.
 unit_symbols
 ~~~~~~~~~~~~
 
-Each reading has its own unit symbolshat readings are about. As the
+Each reading has its own unit symbols that readings are about. As the
 guage_labels, It is a catenation of the readings units and each one should be
 the same size long. As mention, in :ref:`gauge_labels`, there are two readings
 per input channel plus the horizontal division reading and the trigger reading.
