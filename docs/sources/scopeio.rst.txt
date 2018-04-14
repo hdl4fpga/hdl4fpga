@@ -223,14 +223,29 @@ H
 gauge_labels
 ~~~~~~~~~~~~
 
-The labels that are going to be displayed describing the reading.
+The labels that are going to be displayed describing the reading. The parameter
+is a catenation of all of the reading labels. All labels should be the same
+size long. There are two readings per input channel, plus the horizontal
+division reading and tigger reading.
 
+In the example there are nine input channels, therefore the total number of
+labels should be twenty. 
+
+.. image:: gauge_labels.svg
+   :target: images/gauge_labels.svg
+  
 .. _unit_symbols:
 
 unit_symbols
 ~~~~~~~~~~~~
 
-Unit symbols that readings are about. One character per reading.
+Each reading has its own unit symbolshat readings are about. As the
+guage_labels, It is a catenation of the readings units and each one should be
+the same size long. As mention, in :ref:`gauge_labels`, there are two readings
+per input channel plus the horizontal division reading and the trigger reading.
+Also, all the ref:`unit_sybols` should be the same size long. In the example of
+the total number of :ref:`unit_symbols` is twenty and all of them are one
+character length.
 
 .. _channels_fg:
 

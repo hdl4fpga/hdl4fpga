@@ -478,11 +478,23 @@ be set as it is decribed on G.</dd>
 </div>
 <div class="section" id="gauge-labels">
 <span id="id8"></span><h3>gauge_labels<a class="headerlink" href="#gauge-labels" title="Permalink to this headline">¶</a></h3>
-<p>The labels that are going to be displayed describing the reading.</p>
+<p>The labels that are going to be displayed describing the reading. The parameter
+is a catenation of all of the reading labels. All labels should be the same
+size long. There are two readings per input channel, plus the horizontal
+division reading and tigger reading.</p>
+<p>In the example there are nine input channels, therefore the total number of
+labels should be twenty.</p>
+<a class="reference external image-reference" href="images/gauge_labels.svg"><img alt="images/gauge_labels.svg" src="images/gauge_labels.svg" /></a>
 </div>
 <div class="section" id="unit-symbols">
 <span id="id9"></span><h3>unit_symbols<a class="headerlink" href="#unit-symbols" title="Permalink to this headline">¶</a></h3>
-<p>Unit symbols that readings are about. One character per reading.</p>
+<p>Each reading has its own unit symbolshat readings are about. As the
+guage_labels, It is a catenation of the readings units and each one should be
+the same size long. As mention, in <a class="reference internal" href="#gauge-labels"><span class="std std-ref">gauge_labels</span></a>, there are two readings
+per input channel plus the horizontal division reading and the trigger reading.
+Also, all the ref:<cite>unit_sybols</cite> should be the same size long. In the example of
+the total number of <a class="reference internal" href="#unit-symbols"><span class="std std-ref">unit_symbols</span></a> is twenty and all of them are one
+character length.</p>
 </div>
 <div class="section" id="channels-fg">
 <span id="id10"></span><h3>channels_fg<a class="headerlink" href="#channels-fg" title="Permalink to this headline">¶</a></h3>
