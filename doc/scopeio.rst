@@ -40,8 +40,8 @@ input_preamp
 ~~~~~~~~~~~~
 
 This parameter is required to set the analog inputs when to have different
-volatge resolution. If all the inputs have the same resolution, set it to
-(0 to inputs-1 => 1.0)
+volatge resolution. If all the inputs have the same resolution respect to the
+analog input, set it to (0 to inputs-1 => 1.0)
 
 .. _layout_id:
 
@@ -89,6 +89,9 @@ records. Each one describes one of the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
 steps to set up each element of the :ref:`vt_scales` are the following:
 
+.. image:: vtscale_vector.svg
+   :target: images/vtscale_vector.svg
+  
 - A
     Get the resolution and input range of the ADC into which the signal is
     going to be converted. In the example those parameters are 16 bits and 1 V
@@ -151,9 +154,6 @@ steps to set up each element of the :ref:`vt_scales` are the following:
 - F
     Check the examples in the corresponding figure. 
 
-.. image:: vtscale_vector.svg
-   :target: images/vtscale_vector.svg
-  
 .. _hz_scales:
 
 hz_scales
