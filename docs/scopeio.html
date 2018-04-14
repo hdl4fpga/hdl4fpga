@@ -266,8 +266,8 @@
 <div class="section" id="input-preamp">
 <span id="id2"></span><h3>input_preamp<a class="headerlink" href="#input-preamp" title="Permalink to this headline">¶</a></h3>
 <p>This parameter is required to set the analog inputs when to have different
-volatge resolution. If all the inputs have the same resolution, set it to
-(0 to inputs-1 =&gt; 1.0)</p>
+volatge resolution. If all the inputs have the same resolution respect to the
+analog input, set it to (0 to inputs-1 =&gt; 1.0)</p>
 </div>
 <div class="section" id="layout-id">
 <span id="id3"></span><h3>layout_id<a class="headerlink" href="#layout-id" title="Permalink to this headline">¶</a></h3>
@@ -317,6 +317,7 @@ See <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz
 records. Each one describes one of the sixteen vertical scales using
 <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> as a base to display the corresponding values on the screen. The
 steps to set up each element of the <a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> are the following:</p>
+<a class="reference external image-reference" href="images/vtscale_vector.svg"><img alt="images/vtscale_vector.svg" src="images/vtscale_vector.svg" /></a>
 <ul>
 <li><dl class="first docutils">
 <dt>A</dt>
@@ -380,7 +381,7 @@ second one separates the fraction bits.</p>
 <li><dl class="first docutils">
 <dt>E</dt>
 <dd><p class="first">Once the correct value is selected for <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a>, the record member
-<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set, according to the scale table, to display the
+<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set according to the scale table to display the
 correct vertical division value on the screen. The <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> member is a
 four bit vector whose two left bits shift the decimal point while the right
 two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
@@ -394,51 +395,77 @@ to be displayed will be 10.00.</p>
 </li>
 <li><dl class="first docutils">
 <dt>F</dt>
-<dd><p class="first last">Check the examples in the corresponding figure..</p>
+<dd><p class="first last">Check the examples in the corresponding figure.</p>
 </dd>
 </dl>
 </li>
 </ul>
-<a class="reference external image-reference" href="images/vtscale_vector.svg"><img alt="images/vtscale_vector.svg" src="images/vtscale_vector.svg" /></a>
 </div>
 <div class="section" id="hz-scales">
 <span id="id7"></span><h3>hz_scales<a class="headerlink" href="#hz-scales" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> is a sixteen-elements vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
+<p><a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> is a sixteen-element vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
 records. Each one describes one of the the sixteen horizontal scales using
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> as a base to display the corresponding values on the screen. The
-steps to set up each element of hz_scales are the followings:</p>
+steps to set up each element of <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> are the followings:</p>
 <a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
-<dl class="docutils">
+<ul>
+<li><dl class="first docutils">
 <dt>A</dt>
-<dd>Choose your sample rate: in the exmaple it is 800 KS/s</dd>
+<dd><p class="first last">Choose the sample rate: in the exmaple it is 800 KS/s</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
 <dt>B</dt>
-<dd>Each division has 32 pixels, The base division is gotten by dividing 32 by
-the sample rate. In the example the result is 40 us as the sample rate is
-0.8 MS/s</dd>
+<dd><p class="first last">The base division is gotten dividing 32 by the sample rate as each division
+is 32-pixel wide. In the example the result is 40 us as the sample rate
+selected 0.8 MS/s</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
 <dt>C</dt>
-<dd>Set the record member <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> to 40.00. <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> only controls the increment of
-the horizontal axis marks.</dd>
+<dd><p class="first last">Set the record member <a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> to the base division value gotten before.
+<a class="reference internal" href="std.html#step"><span class="std std-ref">step</span></a> only controls the increment of the horizontal axis marks.
+In the example</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
 <dt>D</dt>
-<dd>Get the corresponding ascii code of the factor character and set it to
-<a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In the example: the corresponding factor is micro.</dd>
+<dd><p class="first last">Get the corresponding ascii code of the factor character and set it to
+<a class="reference internal" href="std.html#deca"><span class="std std-ref">deca</span></a>. In the example: the corresponding factor is micro.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
 <dt>E</dt>
-<dd>The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed of five fraction bits, three
-integer bits and one sign bit. Three integer bits mean that integer part of
-<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be one digit only. The horizontal base division must be
-aligned according to that.  Following the example: The result of the
-horizontal base division is 40.00. To fit it in <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal
-point should be shifted one position to the left to get the one-digit-only
-integer part. The new value, then, is 4.000, and the corresponding binary
-representation is 0_100_00000 in which the first ‘_’ charater separates the
-sign bit and second one, the fraction bits.</dd>
+<dd><p class="first">The <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> parameter is composed of:</p>
+<ul class="simple">
+<li>Five fraction bits.</li>
+<li>Three integer bits.</li>
+<li>One sign bit.</li>
+</ul>
+<p class="last">Three integer bits mean that integer part of <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> must be one
+decimal digit only. The horizontal base division must be aligned according
+to that. Following the example: The result of the horizontal base division
+is 40.00. To fit it in <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the decimal point should be shifted
+one position to the left to get the one-decimal-digit-only integer part.
+The new value, then, is 4.000, and the corresponding binary representation
+is 0_100_00000 in which the first ‘_’ charater separates the sign bit and
+second one separates the fraction bits.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
 <dt>F</dt>
 <dd>Once the correct value is selected for <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a>, the record member
-<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set, according to the scale table, to display the correct
-horizontal base division value on the screen. The <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> member is a four
-bit vector whose two left bits shift the decimal point while the other
-two bits on the right select a number from: 1.0, 2.5, 5.0 or 2.0 by which the
-<a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> is multiplied. The proper number is selected by combining all
-of the four bits.</dd>
+<a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> should be set, according to the scale table, to display the
+correct horizontal division value on the screen. The <a class="reference internal" href="std.html#scale"><span class="std std-ref">scale</span></a> member is
+a four bit vector whose two left bits shift the decimal point while the
+right two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
+ref:<cite>vt_div</cite>.</dd>
 <dt>G</dt>
 <dd>Set the record member <a class="reference internal" href="std.html#mult"><span class="std std-ref">mult</span></a> according to the required downsampling.
 if the downsampling is going to be made by multiplexing the input channel
