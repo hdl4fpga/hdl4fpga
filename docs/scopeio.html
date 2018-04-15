@@ -675,62 +675,73 @@ reading will be printed</p>
 </table>
 <div class="section" id="mii-rxc">
 <span id="id16"></span><h3>mii_rxc<a class="headerlink" href="#mii-rxc" title="Permalink to this headline">¶</a></h3>
-<p>Ethernet phy receive clock</p>
+<p>It is the receiving input clock to connect directly to the ethernet phy.</p>
 </div>
 <div class="section" id="mii-rxdv">
 <span id="id17"></span><h3>mii_rxdv<a class="headerlink" href="#mii-rxdv" title="Permalink to this headline">¶</a></h3>
-<p>Ethernet phy received data valid clock. Connect it to mii phy</p>
+<p>It is the input data valid to connect directly to the ethernet phy.</p>
 </div>
 <div class="section" id="mii-rxd">
 <span id="id18"></span><h3>mii_rxd<a class="headerlink" href="#mii-rxd" title="Permalink to this headline">¶</a></h3>
-<p>Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy</p>
+<p>It is an unconstraint std_logic_vector input data of the Ethernet phy. The
+first element of the vector is at the left. They are connected directly to the
+ethernet phy.</p>
 </div>
 <div class="section" id="tdiv">
 <span id="id19"></span><h3>tdiv<a class="headerlink" href="#tdiv" title="Permalink to this headline">¶</a></h3>
-<p>Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy</p>
+<p>It is the user selected horizontal scale. It can be used to do the downsampling
+externally by multiplexing analog ADC inputs.</p>
 </div>
 <div class="section" id="channel-ena">
 <span id="id20"></span><h3>channel_ena<a class="headerlink" href="#channel-ena" title="Permalink to this headline">¶</a></h3>
-<p>Enable the corresponing channel to be plotted</p>
+<p>It is a std_logic_vector. Each element enables the plotting of the corresponing
+channel. Its default value is (0 to <a class="reference internal" href="#inputs"><span class="std std-ref">inputs</span></a>-1 =&gt; ‘1’).</p>
 </div>
 <div class="section" id="input-clk">
 <span id="id21"></span><h3>input_clk<a class="headerlink" href="#input-clk" title="Permalink to this headline">¶</a></h3>
-<p>Input sample data clock</p>
+<p>It is the input sampling data clock.</p>
 </div>
 <div class="section" id="input-ena">
 <span id="id22"></span><h3>input_ena<a class="headerlink" href="#input-ena" title="Permalink to this headline">¶</a></h3>
-<p>Enable input sample data</p>
+<p>It enables the acquisition of input-sample data. It can be used with serial
+analog digital converters.</p>
 </div>
 <div class="section" id="input-data">
 <span id="id23"></span><h3>input_data<a class="headerlink" href="#input-data" title="Permalink to this headline">¶</a></h3>
-<p>Input sample data</p>
-<div class="figure">
-<a class="reference external image-reference" href="images/input_data.svg"><img alt="images/input_data.svg" src="images/input_data.svg" /></a>
+<p>It is a std_logic_vector whose value is the catenation of all of the
+input sample data word. There shoud be as many words as there are
+<a class="reference internal" href="#inputs"><span class="std std-ref">inputs</span></a>. See the <a class="reference internal" href="#input-data-figure"><span class="std std-ref">input_data description</span></a>.</p>
+<div class="figure" id="id36">
+<span id="input-data-figure"></span><a class="reference external image-reference" href="images/input_data.svg"><img alt="images/input_data.svg" src="images/input_data.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#input-data"><span class="std std-ref">input_data</span></a> description</span></p>
 </div>
 </div>
 <div class="section" id="video-clk">
 <span id="id24"></span><h3>video_clk<a class="headerlink" href="#video-clk" title="Permalink to this headline">¶</a></h3>
-<p>Video dot clock</p>
+<p>It is the video dot clock. It should be configure as the desired video <a class="reference internal" href="#layout-id"><span class="std std-ref">layout_id</span></a>.</p>
 </div>
 <div class="section" id="video-rgb">
 <span id="id25"></span><h3>video_rgb<a class="headerlink" href="#video-rgb" title="Permalink to this headline">¶</a></h3>
-<p>Video output pixel</p>
+<p>It is the video output pixel word. Its size should be the same as the words used
+to describe all the other colors and depends on the hardware video output.</p>
 </div>
 <div class="section" id="video-vsync">
 <span id="id26"></span><h3>video_vsync<a class="headerlink" href="#video-vsync" title="Permalink to this headline">¶</a></h3>
-<p>Vertical sync output</p>
+<p>It is the vertical synchronization output.</p>
 </div>
 <div class="section" id="video-hsync">
 <span id="id27"></span><h3>video_hsync<a class="headerlink" href="#video-hsync" title="Permalink to this headline">¶</a></h3>
-<p>Horizontal sync output</p>
+<p>It is the horizontal synchronization output.</p>
 </div>
 <div class="section" id="video-blank">
 <span id="id28"></span><h3>video_blank<a class="headerlink" href="#video-blank" title="Permalink to this headline">¶</a></h3>
-<p>Video blank</p>
+<p>It is an active low signal that indicates the video blank output. It is used by
+some video DACs. It can be left open.</p>
 </div>
 <div class="section" id="video-sync">
 <span id="id29"></span><h3>video_sync<a class="headerlink" href="#video-sync" title="Permalink to this headline">¶</a></h3>
-<p>Video sync signal</p>
+<p>It is the video synchronization output. It is used by some video DACs. It can
+be left open.</p>
 </div>
 </div>
 </div>
