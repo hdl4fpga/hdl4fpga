@@ -392,7 +392,7 @@ tdiv
 ~~~~
 
 It is the user selected horizontal scale. It can be used to do the downsampling
-externally by multiplexing analog ADC inputs.
+externally by multiplexing analog ADC inputs. It can be left open.
 
 .. _channel_ena:
 
