@@ -1,9 +1,9 @@
 Library composition
 ===================
 
-================================== ==============================
+================================== ================================
 File                               Description
-================================== ==============================
+================================== ================================
 library/common/align.vhd
 library/common/dpram.vhd
 library/common/pipe_le.vhd
@@ -21,6 +21,6 @@ library/video/video_win.vhd
 library/mii/miirx_pre.vhd
 library/mii/mii_iob.vhd
 library/mii/mii_mem.vhd
-library/xilinx/ff.vhd              Specific manufacure components
-library/xilinx/spartan3/ddro.vhd   Specific manufacure components
-================================== ==============================
+library/xilinx/ff.vhd              Specific manufacturer components
+library/xilinx/spartan3/ddro.vhd   Specific manufacturer components
+================================== ================================
