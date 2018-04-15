@@ -164,7 +164,10 @@
             
   <div class="section" id="entity-scopeio">
 <h1>entity scopeio<a class="headerlink" href="#entity-scopeio" title="Permalink to this headline">¶</a></h1>
+<div class="figure" id="id30">
 <a class="reference external image-reference" href="images/scopeio.svg"><img alt="images/scopeio.svg" src="images/scopeio.svg" /></a>
+<p class="caption"><span class="caption-text">scopeio entity block diagram</span></p>
+</div>
 <div class="section" id="generic">
 <h2>generic<a class="headerlink" href="#generic" title="Permalink to this headline">¶</a></h2>
 <table border="1" class="docutils">
@@ -261,18 +264,18 @@
 </table>
 <div class="section" id="inputs">
 <span id="id1"></span><h3>inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h3>
-<p>The number of channel inputs which scopeio is going to plot.</p>
+<p>The number of channel inputs which scopeio is going to plotted.</p>
 </div>
 <div class="section" id="input-preamp">
 <span id="id2"></span><h3>input_preamp<a class="headerlink" href="#input-preamp" title="Permalink to this headline">¶</a></h3>
-<p>This parameter is required to set the analog inputs when to have different
+<p>This parameter is required to be set when the analog inputs have different
 volatge resolution. If all the inputs have the same resolution respect to the
 analog input, set it to (0 to inputs-1 =&gt; 1.0)</p>
 </div>
 <div class="section" id="layout-id">
 <span id="id3"></span><h3>layout_id<a class="headerlink" href="#layout-id" title="Permalink to this headline">¶</a></h3>
-<p>layout_id selects one of the two display layouts. The table below shows the
-parameter values to be set, according to the video resolution required.</p>
+<p><a class="reference internal" href="#layout-id"><span class="std std-ref">layout_id</span></a> selects one of the two display layouts. The table below shows
+the parameter values to be set, according to the video resolution required.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="17%" />
@@ -301,23 +304,43 @@ easily. So far, there are only two.</p>
 </div>
 <div class="section" id="vt-div">
 <span id="id4"></span><h3>vt_div<a class="headerlink" href="#vt-div" title="Permalink to this headline">¶</a></h3>
-<p>It represents the vertical base division. The least five significant bits
-represent the binary point. The default value b”0_001_00000” means 1.00000.
-See <a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> for more explanation.</p>
+<p>It is a std_logic_vector that represents the vertical base division.
+It is composed of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>one sign bit,</li>
+<li>three integer bits and</li>
+<li>five fraction bits.</li>
+</ul>
+</div></blockquote>
+<p>The default value is b”0_001_00000” and means 1.000 in decimal.  See
+<a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> for more explanation.</p>
 </div>
 <div class="section" id="hz-div">
 <span id="id5"></span><h3>hz_div<a class="headerlink" href="#hz-div" title="Permalink to this headline">¶</a></h3>
-<p>It represents the horizontal base division. The least five significant bits
-represent the binary point. The default value b”0_001_00000” means 1.00000.
-See <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> for more explanation.</p>
+<p>It is a std_logic_vector that represents the horizontal base division.
+It is composed of:</p>
+<blockquote>
+<div><ul class="simple">
+<li>one sign bit,</li>
+<li>three integer bits and</li>
+<li>five fraction bits.</li>
+</ul>
+</div></blockquote>
+<p>The default value is b”0_001_00000” and means 1.000 in decimal.  See
+<a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> for more explanation.</p>
 </div>
 <div class="section" id="vt-scales">
 <span id="id6"></span><h3>vt_scales<a class="headerlink" href="#vt-scales" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> is a sixteen-element vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
 records. Each one describes one of the sixteen vertical scales using
 <a class="reference internal" href="#vt-div"><span class="std std-ref">vt_div</span></a> as a base to display the corresponding values on the screen. The
-steps to set up each element of the <a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> are the following:</p>
-<a class="reference external image-reference" href="images/vtscale_vector.svg"><img alt="images/vtscale_vector.svg" src="images/vtscale_vector.svg" /></a>
+steps to set up each element of the <a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> are the following - see
+<a class="reference internal" href="#vt-scales-figure"><span class="std std-ref">vt_scales setup example</span></a> -.</p>
+<div class="figure" id="id31">
+<span id="vt-scales-figure"></span><a class="reference external image-reference" href="images/vtscale_vector.svg"><img alt="images/vtscale_vector.svg" src="images/vtscale_vector.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#vt-scales"><span class="std std-ref">vt_scales</span></a> setup example</span></p>
+</div>
 <ul>
 <li><dl class="first docutils">
 <dt>A</dt>
@@ -406,8 +429,12 @@ to be displayed will be 10.00.</p>
 <p><a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> is a sixteen-element vector whose elements are <a class="reference internal" href="std.html#scale-t"><span class="std std-ref">scale_t</span></a>
 records. Each one describes one of the the sixteen horizontal scales using
 <a class="reference internal" href="#hz-div"><span class="std std-ref">hz_div</span></a> as a base to display the corresponding values on the screen. The
-steps to set up each element of <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> are the followings:</p>
-<a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
+steps to set up each element of <a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> are the followings: - see
+<a class="reference internal" href="#hz-scales-figure"><span class="std std-ref">hz_scales setup example</span></a> -.</p>
+<div class="figure" id="id32">
+<span id="hz-scales-figure"></span><a class="reference external image-reference" href="images/hzscale_vector.svg"><img alt="images/hzscale_vector.svg" src="images/hzscale_vector.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#hz-scales"><span class="std std-ref">hz_scales</span></a> setup example</span></p>
+</div>
 <ul>
 <li><dl class="first docutils">
 <dt>A</dt>
@@ -479,48 +506,66 @@ be set as it is decribed on G.</dd>
 <div class="section" id="gauge-labels">
 <span id="id8"></span><h3>gauge_labels<a class="headerlink" href="#gauge-labels" title="Permalink to this headline">¶</a></h3>
 <p>The labels that are going to be displayed describing the reading. The parameter
-is a catenation of all of the reading labels. All labels should be the same
-size long. There are two readings per input channel, plus the horizontal
-division reading and tigger reading.</p>
-<p>In the example there are nine input channels, therefore the total number of
-labels should be twenty.</p>
-<a class="reference external image-reference" href="images/gauge_labels.svg"><img alt="images/gauge_labels.svg" src="images/gauge_labels.svg" /></a>
+is a string whose value is a catenation of all of the reading labels. All
+labels should be the same size long. There are two readings per input channel,
+plus the horizontal division reading and tigger reading.</p>
+<p>In the <a class="reference internal" href="#gauge-labels-figure"><span class="std std-ref">gauge_labels example</span></a> there are nine input channels, therefore the
+total number of labels is twenty.</p>
+<div class="figure" id="id33">
+<span id="gauge-labels-figure"></span><a class="reference external image-reference" href="images/gauge_labels.svg"><img alt="images/gauge_labels.svg" src="images/gauge_labels.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#gauge-labels"><span class="std std-ref">gauge_labels</span></a> example</span></p>
+</div>
 </div>
 <div class="section" id="unit-symbols">
 <span id="id9"></span><h3>unit_symbols<a class="headerlink" href="#unit-symbols" title="Permalink to this headline">¶</a></h3>
-<p>Each reading has its own unit symbol that readings are about. As the
-guage_labels, It is a catenation of the readings units and each one should be
-the same size long. As mention, in <a class="reference internal" href="#gauge-labels"><span class="std std-ref">gauge_labels</span></a>, there are two readings
-per input channel plus the horizontal division reading and the trigger reading.
-Also, all the ref:<cite>unit_sybols</cite> should be the same size long. In the example of
-the total number of <a class="reference internal" href="#unit-symbols"><span class="std std-ref">unit_symbols</span></a> is twenty and all of them are one
-character length.</p>
+<p>Each reading has its own unit symbol. As <a class="reference internal" href="#gauge-labels"><span class="std std-ref">gauge_labels</span></a>, it is a a string
+whose value is catenation of the reading units and each one should be the same
+size long. As mention, in <a class="reference internal" href="#gauge-labels"><span class="std std-ref">gauge_labels</span></a>, there are two readings per input
+channel plus the horizontal division reading and the trigger reading.  Also,
+all the ref:<cite>unit_symbols</cite> should be the same size long. In the
+<a class="reference internal" href="#gauge-labels-figure"><span class="std std-ref">gauge_labels example</span></a> the total number of <a class="reference internal" href="#unit-symbols"><span class="std std-ref">unit_symbols</span></a> is twenty
+and all of them are one character length.</p>
 </div>
 <div class="section" id="channels-fg">
 <span id="id10"></span><h3>channels_fg<a class="headerlink" href="#channels-fg" title="Permalink to this headline">¶</a></h3>
-<p>The colors which input channels are going to be plot</p>
-<a class="reference external image-reference" href="images/channel_fg.svg"><img alt="images/channel_fg.svg" src="images/channel_fg.svg" /></a>
+<p>It is the colors which each input channels will be plotted and its
+corresponding reading will be printed. The parameter is a std_logic_vector
+whose value is the catenation of all of the input color words. There shoud be
+as many color words as there are <a class="reference internal" href="#inputs"><span class="std std-ref">inputs</span></a>. See the
+<a class="reference internal" href="#channel-fg-description"><span class="std std-ref">channels_fg description figure</span></a></p>
+<div class="figure" id="id34">
+<span id="channel-fg-description"></span><a class="reference external image-reference" href="images/channel_fg.svg"><img alt="images/channel_fg.svg" src="images/channel_fg.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#channels-fg"><span class="std std-ref">channels_fg</span></a> description figure</span></p>
+</div>
 </div>
 <div class="section" id="channels-bg">
 <span id="id11"></span><h3>channels_bg<a class="headerlink" href="#channels-bg" title="Permalink to this headline">¶</a></h3>
-<p>The background colors to which readings are associated</p>
-<a class="reference external image-reference" href="images/channel_bg.svg"><img alt="images/channel_bg.svg" src="images/channel_bg.svg" /></a>
+<p>It is the background colors which each reading is going to be print. The
+parameter is a std_logic_vector whose value is the catenation of all of the
+background color word.  There shoud be as many color words as there are
+<a class="reference internal" href="#inputs"><span class="std std-ref">inputs</span></a>. See the <a class="reference internal" href="#channel-bg-description"><span class="std std-ref">channels_bg description figure</span></a></p>
+<div class="figure" id="id35">
+<span id="channel-bg-description"></span><a class="reference external image-reference" href="images/channel_bg.svg"><img alt="images/channel_bg.svg" src="images/channel_bg.svg" /></a>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="#channels-bg"><span class="std std-ref">channels_bg</span></a> description figure</span></p>
+</div>
 </div>
 <div class="section" id="hzaxis-fg">
 <span id="id12"></span><h3>hzaxis_fg<a class="headerlink" href="#hzaxis-fg" title="Permalink to this headline">¶</a></h3>
-<p>The foreground color which the horizontal axis is going to be plot</p>
+<p>It is the foreground color which the horizontal axis and its corresponding
+reading will be printed.</p>
 </div>
 <div class="section" id="hzaxis-bg">
 <span id="id13"></span><h3>hzaxis_bg<a class="headerlink" href="#hzaxis-bg" title="Permalink to this headline">¶</a></h3>
-<p>The background color with which the horizontal axis is going to be plot</p>
+<p>It is the background color which the horizontal axis and its corresponding
+reading will be printed</p>
 </div>
 <div class="section" id="grid-fg">
 <span id="id14"></span><h3>grid_fg<a class="headerlink" href="#grid-fg" title="Permalink to this headline">¶</a></h3>
-<p>The foreground color which the grid is going to be displayed</p>
+<p>It is the foreground color which the grid will be displayed.</p>
 </div>
 <div class="section" id="grid-bg">
 <span id="id15"></span><h3>grid_bg<a class="headerlink" href="#grid-bg" title="Permalink to this headline">¶</a></h3>
-<p>The background color which the grid is going to be displayed</p>
+<p>It is the background color which the grid will be displayed.</p>
 </div>
 </div>
 <div class="section" id="port">
@@ -659,7 +704,9 @@ character length.</p>
 <div class="section" id="input-data">
 <span id="id23"></span><h3>input_data<a class="headerlink" href="#input-data" title="Permalink to this headline">¶</a></h3>
 <p>Input sample data</p>
+<div class="figure">
 <a class="reference external image-reference" href="images/input_data.svg"><img alt="images/input_data.svg" src="images/input_data.svg" /></a>
+</div>
 </div>
 <div class="section" id="video-clk">
 <span id="id24"></span><h3>video_clk<a class="headerlink" href="#video-clk" title="Permalink to this headline">¶</a></h3>

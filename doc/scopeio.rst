@@ -1,8 +1,10 @@
 entity scopeio
 ==============
 
-.. image:: scopeio.svg
+.. figure:: scopeio.svg
    :target: images/scopeio.svg
+
+   scopeio entity block diagram
 
 generic
 -------
@@ -32,14 +34,14 @@ Parameter           Type                Default        Description
 inputs
 ~~~~~~
 
-The number of channel inputs which scopeio is going to plot.
+The number of channel inputs which scopeio is going to plotted.
 
 .. _input_preamp:
 
 input_preamp
 ~~~~~~~~~~~~
 
-This parameter is required to set the analog inputs when to have different
+This parameter is required to be set when the analog inputs have different
 volatge resolution. If all the inputs have the same resolution respect to the
 analog input, set it to (0 to inputs-1 => 1.0)
 
@@ -48,8 +50,8 @@ analog input, set it to (0 to inputs-1 => 1.0)
 layout_id
 ~~~~~~~~~
 
-layout_id selects one of the two display layouts. The table below shows the
-parameter values to be set, according to the video resolution required.
+:ref:`layout_id` selects one of the two display layouts. The table below shows
+the parameter values to be set, according to the video resolution required.
 
 ===== ========== ===============
 Value Resolution Video frequency
@@ -66,18 +68,30 @@ easily. So far, there are only two.
 vt_div
 ~~~~~~
 
-It represents the vertical base division. The least five significant bits
-represent the binary point. The default value b"0_001_00000" means 1.00000.
-See :ref:`vt_scales` for more explanation.
+It is a std_logic_vector that represents the vertical base division. 
+It is composed of:
+
+    - one sign bit,
+    - three integer bits and
+    - five fraction bits.
+      
+The default value is b"0_001_00000" and means 1.000 in decimal.  See
+:ref:`vt_scales` for more explanation.
 
 .. _hz_div:
 
 hz_div
 ~~~~~~
 
-It represents the horizontal base division. The least five significant bits
-represent the binary point. The default value b"0_001_00000" means 1.00000.
-See :ref:`hz_scales` for more explanation.
+It is a std_logic_vector that represents the horizontal base division. 
+It is composed of:
+
+    - one sign bit,
+    - three integer bits and
+    - five fraction bits.
+      
+The default value is b"0_001_00000" and means 1.000 in decimal.  See
+:ref:`hz_scales` for more explanation.
 
 .. _vt_scales:
 
@@ -87,10 +101,15 @@ vt_scales
 :ref:`vt_scales` is a sixteen-element vector whose elements are :ref:`scale_t`
 records. Each one describes one of the sixteen vertical scales using
 :ref:`vt_div` as a base to display the corresponding values on the screen. The
-steps to set up each element of the :ref:`vt_scales` are the following:
+steps to set up each element of the :ref:`vt_scales` are the following - see
+:ref:`vt_scales-figure` -.
 
-.. image:: vtscale_vector.svg
+.. _vt_scales-figure:
+
+.. figure:: vtscale_vector.svg
    :target: images/vtscale_vector.svg
+
+   :ref:`vt_scales` setup example
   
 - A
     Get the resolution and input range of the ADC into which the signal is
@@ -162,11 +181,16 @@ hz_scales
 :ref:`hz_scales` is a sixteen-element vector whose elements are :ref:`scale_t`
 records. Each one describes one of the the sixteen horizontal scales using
 :ref:`hz_div` as a base to display the corresponding values on the screen. The
-steps to set up each element of :ref:`hz_scales` are the followings:
+steps to set up each element of :ref:`hz_scales` are the followings: - see
+:ref:`hz_scales-figure` -.
 
-.. image:: hzscale_vector.svg
+.. _hz_scales-figure:
+
+.. figure:: hzscale_vector.svg
    :target: images/hzscale_vector.svg
   
+   :ref:`hz_scales` setup example
+
 - A
     Choose the sample rate: in the exmaple it is 800 KS/s
 
@@ -224,76 +248,97 @@ gauge_labels
 ~~~~~~~~~~~~
 
 The labels that are going to be displayed describing the reading. The parameter
-is a catenation of all of the reading labels. All labels should be the same
-size long. There are two readings per input channel, plus the horizontal
-division reading and tigger reading.
+is a string whose value is a catenation of all of the reading labels. All
+labels should be the same size long. There are two readings per input channel,
+plus the horizontal division reading and tigger reading.
 
-In the example there are nine input channels, therefore the total number of
-labels should be twenty. 
+In the :ref:`gauge_labels-figure` there are nine input channels, therefore the
+total number of labels is twenty. 
 
-.. image:: gauge_labels.svg
+.. _gauge_labels-figure:
+
+.. figure:: gauge_labels.svg
    :target: images/gauge_labels.svg
   
+   :ref:`gauge_labels` example
+
 .. _unit_symbols:
 
 unit_symbols
 ~~~~~~~~~~~~
 
-Each reading has its own unit symbol that readings are about. As the
-guage_labels, It is a catenation of the readings units and each one should be
-the same size long. As mention, in :ref:`gauge_labels`, there are two readings
-per input channel plus the horizontal division reading and the trigger reading.
-Also, all the ref:`unit_sybols` should be the same size long. In the example of
-the total number of :ref:`unit_symbols` is twenty and all of them are one
-character length.
+Each reading has its own unit symbol. As :ref:`gauge_labels`, it is a a string
+whose value is catenation of the reading units and each one should be the same
+size long. As mention, in :ref:`gauge_labels`, there are two readings per input
+channel plus the horizontal division reading and the trigger reading.  Also,
+all the ref:`unit_symbols` should be the same size long. In the
+:ref:`gauge_labels-figure` the total number of :ref:`unit_symbols` is twenty
+and all of them are one character length.
 
 .. _channels_fg:
 
 channels_fg
 ~~~~~~~~~~~
 
-The colors which input channels are going to be plot
+It is the colors which each input channels will be plotted and its
+corresponding reading will be printed. The parameter is a std_logic_vector
+whose value is the catenation of all of the input color words. There shoud be
+as many color words as there are :ref:`inputs`. See the
+:ref:`channel_fg-description`
 
-.. image:: channel_fg.svg
+.. _channel_fg-description:
+
+.. figure:: channel_fg.svg
    :target: images/channel_fg.svg
+
+   :ref:`channels_fg` description figure
 
 .. _channels_bg:
 
 channels_bg
 ~~~~~~~~~~~
 
-The background colors to which readings are associated
+It is the background colors which each reading is going to be print. The
+parameter is a std_logic_vector whose value is the catenation of all of the
+background color word.  There shoud be as many color words as there are
+:ref:`inputs`. See the :ref:`channel_bg-description`
 
-.. image:: channel_bg.svg
+.. _channel_bg-description:
+
+.. figure:: channel_bg.svg
    :target: images/channel_bg.svg
+
+   :ref:`channels_bg` description figure
 
 .. _hzaxis_fg:
 
 hzaxis_fg
 ~~~~~~~~~
 
-The foreground color which the horizontal axis is going to be plot
+It is the foreground color which the horizontal axis and its corresponding
+reading will be printed.
 
 .. _hzaxis_bg:
 
 hzaxis_bg
 ~~~~~~~~~
 
-The background color with which the horizontal axis is going to be plot
+It is the background color which the horizontal axis and its corresponding
+reading will be printed
 
 .. _grid_fg:
 
 grid_fg
 ~~~~~~~
 
-The foreground color which the grid is going to be displayed
+It is the foreground color which the grid will be displayed.
 
 .. _grid_bg:
 
 grid_bg
 ~~~~~~~
 
-The background color which the grid is going to be displayed
+It is the background color which the grid will be displayed.
 
 port
 ----
@@ -377,7 +422,7 @@ input_data
 
 Input sample data
 
-.. image:: input_data.svg
+.. figure:: input_data.svg
    :target: images/input_data.svg
 
 .. _video_clk:
