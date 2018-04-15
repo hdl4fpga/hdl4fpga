@@ -381,7 +381,7 @@ It is the input data valid to connect directly to the ethernet phy.
 mii_rxd
 ~~~~~~~
 
-It is an unconstraint std_logic_vector input data of the Ethernet phy. The
+It is an unconstraint std_logic_vector input data of the ethernet phy. The
 first element of the vector is at the left. They are connected directly to the
 ethernet phy.
 
