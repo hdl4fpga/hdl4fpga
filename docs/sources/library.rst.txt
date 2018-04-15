@@ -1,5 +1,5 @@
-hdl4fpga library composition
-============================
+Library composition
+===================
 
 ================================== ==============================
 File                               Description
