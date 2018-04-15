@@ -367,102 +367,114 @@ port                Mode Type             Default         Description
 mii_rxc
 ~~~~~~~
 
-Ethernet phy receive clock
+It is the receiving input clock to connect directly to the ethernet phy.
 
 .. _mii_rxdv:
 
 mii_rxdv
 ~~~~~~~~
 
-Ethernet phy received data valid clock. Connect it to mii phy
-
+It is the input data valid to connect directly to the ethernet phy.
 
 .. _mii_rxd:
 
 mii_rxd
 ~~~~~~~
 
-Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy
+It is an unconstraint std_logic_vector input data of the Ethernet phy. The
+first element of the vector is at the left. They are connected directly to the
+ethernet phy.
+
 
 .. _tdiv:
 
 tdiv
 ~~~~
 
-Ethernet phy received data clock. Connect it direct to FPGA corresponding mii phy
-
+It is the user selected horizontal scale. It can be used to do the downsampling
+externally by multiplexing analog ADC inputs.
 
 .. _channel_ena:
 
 channel_ena
 ~~~~~~~~~~~
 
-
-Enable the corresponing channel to be plotted
-
+It is a std_logic_vector. Each element enables the plotting of the corresponing
+channel. Its default value is (0 to :ref:`inputs`-1 => '1').
 
 .. _input_clk:
 
 input_clk
 ~~~~~~~~~
 
-Input sample data clock
+It is the input sampling data clock.
 
 .. _input_ena:
 
 input_ena
 ~~~~~~~~~
 
-Enable input sample data
+It enables the acquisition of input-sample data. It can be used with serial
+analog digital converters.
 
 .. _input_data:
 
 input_data
 ~~~~~~~~~~
 
-Input sample data
+It is a std_logic_vector whose value is the catenation of all of the
+input sample data word. There shoud be as many words as there are
+:ref:`inputs`. See the :ref:`input_data-figure`.
+
+.. _input_data-figure:
 
 .. figure:: input_data.svg
    :target: images/input_data.svg
+
+   :ref:`input_data` description
 
 .. _video_clk:
 
 video_clk
 ~~~~~~~~~
 
-Video dot clock
+It is the video dot clock. It should be configure as the desired video :ref:`layout_id`.
 
 .. _video_rgb:
 
 video_rgb
 ~~~~~~~~~
 
-Video output pixel
+It is the video output pixel word. Its size should be the same as the words used
+to describe all the other colors and depends on the hardware video output.
 
 .. _video_vsync:
 
 video_vsync
 ~~~~~~~~~~~
 
-Vertical sync output
+It is the vertical synchronization output.
 
 .. _video_hsync:
 
 video_hsync
 ~~~~~~~~~~~
 
-Horizontal sync output
+It is the horizontal synchronization output.
 
 .. _video_blank:
 
 video_blank
 ~~~~~~~~~~~
 
-Video blank
+It is an active low signal that indicates the video blank output. It is used by
+some video DACs. It can be left open.
 
 .. _video_sync:
 
 video_sync
 ~~~~~~~~~~
 
-Video sync signal
+It is the video synchronization output. It is used by some video DACs. It can
+be left open.
+
