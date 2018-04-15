@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Welcome to ScopeIO’s documentation! &mdash; ScopeIO  documentation</title>
+  <title>hdl4fpga library composition &mdash; ScopeIO  documentation</title>
   
 
   
@@ -33,8 +33,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="ScopeIO  documentation" href="#"/>
-        <link rel="next" title="hdl4fpga library composition" href="library.html"/> 
+    <link rel="top" title="ScopeIO  documentation" href="index.html"/>
+        <link rel="next" title="package std" href="std.html"/>
+        <link rel="prev" title="Welcome to ScopeIO’s documentation!" href="index.html"/> 
 
   
   <script src="static/js/modernizr.min.js"></script>
@@ -52,7 +53,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> ScopeIO
+            <a href="index.html" class="icon icon-home"> ScopeIO
           
 
           
@@ -80,8 +81,8 @@
             
             
                 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="library.html">hdl4fpga library composition</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">hdl4fpga library composition</a></li>
 <li class="toctree-l1"><a class="reference internal" href="std.html">package std</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scopeio.html">entity scopeio</a></li>
 </ul>
@@ -97,7 +98,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="#">ScopeIO</a>
+        <a href="index.html">ScopeIO</a>
       </nav>
 
 
@@ -112,9 +113,9 @@
 
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="#">Docs</a> &raquo;</li>
+    <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Welcome to ScopeIO’s documentation!</li>
+    <li>hdl4fpga library composition</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -126,24 +127,78 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="welcome-to-scopeio-s-documentation">
-<h1>Welcome to ScopeIO’s documentation!<a class="headerlink" href="#welcome-to-scopeio-s-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="library.html">hdl4fpga library composition</a></li>
-<li class="toctree-l1"><a class="reference internal" href="std.html">package std</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="std.html#scale-t">scale_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="std.html#scale-vector">scale_vector</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="scopeio.html">entity scopeio</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="scopeio.html#generic">generic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scopeio.html#port">port</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <div class="section" id="hdl4fpga-library-composition">
+<h1>hdl4fpga library composition<a class="headerlink" href="#hdl4fpga-library-composition" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="53%" />
+<col width="47%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>library/common/align.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/common/dpram.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/common/pipe_le.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/common/rom.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/common/std.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/scope/scopeio.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/scope/scopeio_gpannel.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/scope/scopeio_axis.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/scope/scopeio_gauge.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/scope/scopeio_channel.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/scope/scopeio_miirx.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/video/cga/cgafonts.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/video/video.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/video/video_win.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/mii/miirx_pre.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/mii/mii_iob.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>library/mii/mii_mem.vhd</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>library/xilinx/ff.vhd</td>
+<td>Specific manufacure components</td>
+</tr>
+<tr class="row-even"><td>library/xilinx/spartan3/ddro.vhd</td>
+<td>Specific manufacure components</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
@@ -153,8 +208,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="library.html" class="btn btn-neutral float-right" title="hdl4fpga library composition" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="std.html" class="btn btn-neutral float-right" title="package std" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to ScopeIO’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
