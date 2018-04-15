@@ -10,6 +10,7 @@ Welcome to ScopeIO's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   library
    std
    scopeio
 
