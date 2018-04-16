@@ -24,10 +24,8 @@
 create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
 
 create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
-create_clock -name eth_tx_clk -period 40 -waveform { 0 20 } [ get_ports eth_tx_clk ]
  
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk     }
-set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk  }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { vga_clk     }
 set_clock_groups -asynchronous -group { eth_rx_clk  } -group { input_clk   }
 set_clock_groups -asynchronous -group { vga_clk     } -group { sys_clk     }
@@ -78,10 +76,6 @@ set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports 
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [ get_ports eth_rx_clk]
 set_property -dict { PACKAGE_PIN C17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxerr]
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rx_dv]
-set_property -dict { PACKAGE_PIN H14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[0]]
-set_property -dict { PACKAGE_PIN J14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[1]]
-set_property -dict { PACKAGE_PIN J13 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[2]]
-set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[3]]
                       
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
 

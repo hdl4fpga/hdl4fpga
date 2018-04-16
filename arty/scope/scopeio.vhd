@@ -90,11 +90,6 @@ architecture beh of arty is
 
 
 	signal eth_rxclk_bufg : std_logic;
-	signal eth_txclk_bufg : std_logic;
-	signal mii_rxdv       : std_logic;
-	signal mii_rxd        : std_logic_vector(eth_rxd'range);
-	signal mii_txen       : std_logic;
-	signal mii_txd        : std_logic_vector(eth_txd'range);
 	signal tdiv           : std_logic_vector(0 to 4-1);
 
 begin
@@ -340,8 +335,8 @@ begin
 		grid_bg      => b"000")
 	port map (
 		mii_rxc     => eth_rxclk_bufg,
-		mii_rxdv    => mii_rxdv,
-		mii_rxd     => mii_rxd,
+		mii_rxdv    => eth_rx_dv,
+		mii_rxd     => eth_rxd,
 		channel_ena => channel_ena(0 to inputs-1),
 		input_clk   => input_clk,
 		input_ena   => input_ena,
@@ -377,27 +372,6 @@ begin
 	port map (
 		I => eth_rx_clk,
 		O => eth_rxclk_bufg);
-
-	eth_tx_clk_ibufg : ibufg
-	port map (
-		I => eth_tx_clk,
-		O => eth_txclk_bufg);
-
-	mii_iob_e : entity hdl4fpga.mii_iob
-	generic map (
-		xd_len => 4)
-	port map (
-		mii_rxc  => eth_rxclk_bufg,
-		iob_rxdv => eth_rx_dv,
-		iob_rxd  => eth_rxd,
-		mii_rxdv => mii_rxdv,
-		mii_rxd  => mii_rxd,
-
-		mii_txc  => eth_txclk_bufg,
-		mii_txen => mii_txen,
-		mii_txd  => mii_txd,
-		iob_txen => eth_tx_en,
-		iob_txd  => eth_txd);
 
 	eth_rstn <= '1';
 	eth_mdc  <= '0';
