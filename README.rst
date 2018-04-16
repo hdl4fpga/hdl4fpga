@@ -1,15 +1,21 @@
-scopeio
+scopeio : an Embedded Measurement System
+========================================
+
+What is it ?
+------------
 
 Simulation tools can't help you and you cannot guess what is happening inside
-anymore. You need to see it now. You need an Embedded Measurement System in the
-FPGA that lets you see as much data as you need using as few resources as
-possible.
+of the FPGA anymore. You need to see it now. You need an Embedded Measurement
+System in the FPGA that lets you see as much data as you need using as few
+resources as possible.
+
+How it was born
+---------------
 
 I found myself in a situation in which I had to debug a high-performance open
 source portable DDR Core. I needed to capture a lot of data to see as many
 events as possible. There weren¿t just a few signals, but more than sixteen to
 understand what was happening. That is how ScopeIO was born.
-
 
 Its goals were:
 
