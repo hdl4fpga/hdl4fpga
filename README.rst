@@ -26,6 +26,7 @@ Its goals were:
 - UDP to communicate with the computer.
 
 Small footprint to embed it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ADSL, DVB-T,  ISDB-T, LTE, WiFi and others are OFDM signals. In those cases, a
 self-correlation function should be calculated to know when packets start or
@@ -45,6 +46,7 @@ Spartan 3E Starter       2                 960           800x600     710(2%)    
 ================== ======== =================== ================ =========== ========== =================================================================================================================================================
 
 VGA to display data
+~~~~~~~~~~~~~~~~~~~
 
 VGA is a well known video standard that is easy to implement, and it is pretty
 much available on every monitor. Many monitors that have a DVI port are easy to
@@ -55,12 +57,14 @@ video dacs in the development kit, ScopeIO can display as many colors as there
 are available.
 
 Block RAM requirement only
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 FPGAs have embedded memory blocks that are fast and easy to use but they are
 small compared to dynamic ram. As much as possible, the memory is used to
 capture the signal data to display. The memory is not used for video.
 
 UDP to send data to the computer.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Commands to control ScopeIO are sent by UDP/IP. The commands are detected every
 time a packet with the corresponding MAC address : ¿00:00:00:01:02:03¿ - not
@@ -69,6 +73,7 @@ described in the video. A simple JavaScript Application controls everything
 else. Node,js and Nw.js are required to run it.
 
 Portability
+~~~~~~~~~~~
 
 Portability is also one of the main goals. While videos on the channels are for
 Xilinx's FPGA kits: Artix-7 35T Arty FPGA Evaluation Kit and Spartan 3E Starter
