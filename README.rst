@@ -1,5 +1,5 @@
-scopeio : an Embedded Measurement System
-========================================
+`scopeio : an Embedded Measurement System <https://hdl4fpga.github.io/hdl4fpga/>`_
+==================================================================================
 
 What is it ?
 ------------
