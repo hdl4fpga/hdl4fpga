@@ -31,12 +31,12 @@ possible to embed it in the design to be debugged.
 The table below shows the resources used by both implementations that are on
 the youtube channel.
 
-================== ======== =================== ================ =========== ==========
-Kit                Channels Samples per Channel Video Resolution FPGA Slices Block Rams
-================== ======== =================== ================ =========== ==========
-Artix-7 35T Arty         9                6400         1920x1080  1791(8.5%)  23.5(47%)
+================== ======== =================== ================ =========== ========== ======================================
+Kit                Channels Samples per Channel Video Resolution FPGA Slices Block Rams video channel
+================== ======== =================== ================ =========== ========== ======================================
+Artix-7 35T Arty         9                6400         1920x1080  1791(8.5%)  23.5(47%) _Website: https://youtu.be/rSdEprgKkq4
 Spartan 3E Starter       2                 960           800x600     710(2%)    17(20%)
-================== ======== =================== ================ =========== ==========
+================== ======== =================== ================ =========== ========== ======================================
 
 VGA to display data
 
@@ -65,7 +65,7 @@ else. Node,js and Nw.js are required to run it.
 Portability
 
 Portability is also one of the main goals. While videos on the channels are for
-Xilinx¿s FPGA kits: Artix-7 35T Arty FPGA Evaluation Kit and Spartan 3E Starter
+Xilinx's FPGA kits: Artix-7 35T Arty FPGA Evaluation Kit and Spartan 3E Starter
 kit board, ScopeIO is easy to port to other manufactures' devices and kit
 boards. You can find a porting to Latticesemi ECP3Versa, kit to which I have
 access.
