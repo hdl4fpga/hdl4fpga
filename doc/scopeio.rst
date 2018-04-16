@@ -42,8 +42,8 @@ input_preamp
 ~~~~~~~~~~~~
 
 This parameter is required to be set when the analog inputs have different
-volatge resolution. If all the inputs have the same resolution respect to the
-analog input, set it to (0 to inputs-1 => 1.0)
+volatge resolution. If all the inputs have the same resolution respect to 
+each other, set it to (0 to inputs-1 => 1.0)
 
 .. _layout_id:
 
