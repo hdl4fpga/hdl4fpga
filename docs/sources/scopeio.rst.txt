@@ -226,7 +226,7 @@ steps to set up each element of :ref:`hz_scales` are the followings: - see
 
 F
     Once the correct value is selected for :ref:`hz_div`, the record member
-    :ref:`scale` should be set, according to the scale table, to display the
+    :ref:`scale` should be set, according to the scale table to display the
     correct horizontal division value on the screen. The :ref:`scale` member is
     a four bit vector whose two left bits shift the decimal point while the
     right two bits select a number from: 1.0, 2.5, 5.0 or 2.0; which multiplies
