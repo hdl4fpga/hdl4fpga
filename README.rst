@@ -78,6 +78,6 @@ Portability
 Portability is also one of the main goals. While videos on the channels are for
 Xilinx's FPGA kits: Artix-7 35T Arty FPGA Evaluation Kit and Spartan 3E Starter
 kit board, ScopeIO is easy to port to other manufactures' devices and kit
-boards. You can find a porting to Latticesemi ECP3Versa, kit to which I have
-access.
+boards. You can find a porting to Latticesemi ECP3Versa at
+ecp3versa/diamond/ecp3versa.ldf, kit to which I have access.
 
