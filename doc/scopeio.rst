@@ -120,13 +120,13 @@ steps to set up each element of the :ref:`vt_scales` are the following - see
 - B
     Calculate the value of the :ref:`mult` member by multiplying:
 
-    - the input range of the ADC. In the example this 1 V
-    - 32, because there are 32 pixels per division.
+    - the input range of the ADC. In the example this 1 V by
+    - 32, because there are 32 pixels per division by
     - 2 to the power of 18, in which 18 is the width of the FPGA multiplier.
 
     and devide it by:
 
-    - the Vertical Voltage division. In the example 10 mV.
+    - the Vertical Voltage division. In the example 10 mV, and by
     - 2 to the power of the resolution of the ADC.  In the example is 16.
         
     Following the example, :ref:`mult` is the result of (1 V x 32 x 2**18)/(10 mV x 2**16).

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="video">
+<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="scopeio">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -189,7 +189,7 @@
             <Options/>
         </Source>
     </Implementation>
-    <Implementation title="video" dir="video" description="video" synthesis="synplify" default_strategy="Timing">
+    <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Timing">
         <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
