@@ -64,23 +64,34 @@ architecture def of mii_iph is
 begin
 
 	process ()
+		variable addr   : unsigned(0 to 4);
+		variable we     : std_logic;
+		variable data   : word;
 		variable chksum : unsigned(word'range);
 	begin
 		if rising_edge() then
+			mem(addr) <= data;
+			case addr is 
 			when "0001" =>
-				mem()  <= ip_len;
+				we     := '1';
+				data   := ip_len;
 				chksum := chksum + ip_len;
 			when "0101" =>
-				mem()  <= std_logic_vector(chksum);
+				we     := '1';
+				data   := std_logic_vector(chksum);
 				chksum := (others => '0');
 			when "0110" | "0111" => 
-				mem()  <= word2byte(ip_src, , word'length);
+				we     := '1';
+				data   := word2byte(ip_src, , word'length);
 				chksum := chksum + unsigned(word2byte(ip_src, , word'length));
 			when "1000" | "1001" => 
-				mem()  <= word2byte(ip_dst, , word'length);
+				we     := '1';
+				data   := word2byte(ip_dst, , word'length);
 				chksum := chksum + unsigned(word2byte(ip_dst, , word'length));
 			when others =>
-				chksum := chksum + mem();
+				we     := '0';
+				data   := (others => '-');
+				chksum := chksum + mem(to_unsigned(addr));
 			end case;
 		end if;
 	end process;
