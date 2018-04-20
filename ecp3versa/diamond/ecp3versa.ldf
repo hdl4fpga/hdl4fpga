@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="scopeio">
+<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="mii_tx">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="mii_tx" dir="mii_tx" description="mii_tx" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.aff" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -18,9 +18,6 @@
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/scope/scopeio_miitx.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/mii/miitx_mem.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../scope/tb.vhd" type="VHDL" type_short="VHDL">
