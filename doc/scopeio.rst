@@ -202,7 +202,7 @@ steps to set up each element of :ref:`hz_scales` are the followings: - see
 - C
     Set the record member :ref:`step` to the base division value gotten before.
     :ref:`step` only controls the increment of the horizontal axis marks.
-    In the example 
+    In the example is 40.00.
 
 - D
     Get the corresponding ascii code of the factor character and set it to

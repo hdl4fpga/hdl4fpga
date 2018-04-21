@@ -33,7 +33,7 @@ end;
 
 architecture def of main is
 	constant p : std_logic_vector := b"111001"; --x"04c11db7";
-	signal crc : std_logic_vector(p'range) := (others => '0');
+	signal crc : unsigned(0 to p'length-1) := (others => '0');
 
 	signal mii_txd  : std_logic;
     signal mii_txc  : std_logic := '0';
@@ -46,10 +46,7 @@ begin
 		variable r : unsigned(crc'range);
 	begin
 		if rising_edge(mii_txc) then
-			r    := unsigned(crc);
-			r(0) := mii_txi(0);
-			r    := (r rol 1) xor ((r'range => crc(0)) and unsigned(p));
-			crc     <= std_logic_vector(r);
+			crc <= (crc sll 1) xor ((crc'range => crc(0) xor mii_txi(0)) and unsigned(p));
 			mii_txi <= mii_txi sll 1;
 
 		end if;
