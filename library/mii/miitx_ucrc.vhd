@@ -32,9 +32,10 @@ entity main is
 end;
 
 architecture def of main is
-	constant p : std_logic_vector := b"111001"; -- x"04c11db7";
-	constant d : std_logic_vector := b"1111000"; --b"10110010011011";
-	signal crc : unsigned(p'range) := (others => '0');
+	constant p : std_logic_vector := x"04c11db7";
+	constant d : std_logic_vector := x"0f"; --b"10110010011011";
+	signal crc : unsigned(p'range) := (others => '1');
+	signal crc1 : unsigned(p'range) := (others => '0');
 
 	signal mii_txd  : std_logic;
     signal mii_txc  : std_logic := '0';
@@ -42,6 +43,7 @@ architecture def of main is
 begin
 
 	mii_txc <= not mii_txc after 1 ns;
+	crc1 <= not crc;
 
 	process (mii_txc)
 	begin
