@@ -32,23 +32,22 @@ entity main is
 end;
 
 architecture def of main is
-	constant p : std_logic_vector := b"111001"; --x"04c11db7";
-	signal crc : unsigned(0 to p'length-1) := (others => '0');
+	constant p : std_logic_vector := b"111001"; -- x"04c11db7";
+	constant d : std_logic_vector := b"1111000"; --b"10110010011011";
+	signal crc : unsigned(p'range) := (others => '0');
 
 	signal mii_txd  : std_logic;
     signal mii_txc  : std_logic := '0';
-	signal mii_txi  : unsigned(0 to 13) := b"10110010011011";
+	signal mii_txi  : unsigned(d'range) := unsigned(d);
 begin
 
 	mii_txc <= not mii_txc after 1 ns;
 
 	process (mii_txc)
-		variable r : unsigned(crc'range);
 	begin
 		if rising_edge(mii_txc) then
-			crc <= (crc sll 1) xor ((crc'range => crc(0) xor mii_txi(0)) and unsigned(p));
+			crc <= (crc sll 1) xor ((crc'range => (crc(0) xor mii_txi(0))) and unsigned(p));
 			mii_txi <= mii_txi sll 1;
-
 		end if;
 	end process;
 
