@@ -304,6 +304,13 @@ package std is
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
+
+	function galois_crc (
+		constant m : std_logic_vector;
+		constant r : std_logic_vector;
+		constant g : std_logic_vector)
+		return std_logic_vector;
+
 end;
 
 use std.textio.all;
@@ -1170,6 +1177,21 @@ package body std is
 			aux := aux sll 4;
 		end loop;
 		return std_logic_vector(val);
+	end;
+
+	function galois_crc(
+		constant m : std_logic_vector;
+		constant r : std_logic_vector;
+		constant g : std_logic_vector)
+		return std_logic_vector is
+		variable aux_m : unsigned(0 to m'length-1) := unsigned(m);
+		variable aux_r : unsigned(0 to r'length-1) := unsigned(r);
+	begin
+		for i in aux_m'range loop
+			aux_r := (aux_r sll 1) xor ((aux_r'range => aux_r(0) xor aux_m(0)) and unsigned(g));
+			aux_m := aux_m sll 1;
+		end loop;
+		return std_logic_vector(aux_r);
 	end;
 
 end;

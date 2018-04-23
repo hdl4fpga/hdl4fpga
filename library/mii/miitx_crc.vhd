@@ -27,17 +27,17 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity miitx is
+entity miitx_crc is
     port (
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
-		mii_ted  : in  std_logic;
+		mii_tcrc : in  std_logic;
 		mii_txi  : in  std_logic_vector;
 		mii_txen : out std_logic;
 		mii_txd  : out std_logic_vector);
 end;
 
-architecture def of main is
+architecture def of miitx_crc is
 	constant p  : std_logic_vector := x"04c11db7";
 
 	signal crc  : std_logic_vector(p'range);
@@ -50,7 +50,7 @@ begin
 			if mii_treq='0' then
 				crc  <= (others => '0');
 				cntr <= (others => '0');
-			elsif mii_ted='1' then
+			elsif mii_tcrc='0' then
 				crc  <= not galois_crc(mii_txi, not crc, p);
 				cntr <= (others => '0');
 			elsif cntr(0)='1' then
@@ -59,6 +59,6 @@ begin
 			end if;
 		end if;
 	end process;
-
+	mii_txen <= mii_treq and mii_crc and not cntr(0);
 end;
 
