@@ -25,31 +25,45 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 
-entity main is
+entity miitx is
 end;
 
 architecture def of main is
 	constant p : std_logic_vector := x"04c11db7";
-	constant d : std_logic_vector := x"0f"; --b"10110010011011";
+	constant d : std_logic_vector := x"0101"; --b"10110010011011";
 	signal crc : unsigned(p'range) := (others => '1');
-	signal crc1 : unsigned(p'range) := (others => '0');
+	signal crc1: std_logic_vector(p'range) := (others => '1');
 
 	signal mii_txd  : std_logic;
     signal mii_txc  : std_logic := '0';
 	signal mii_txi  : unsigned(d'range) := unsigned(d);
+
+	function galois_crc(
+		constant m : std_logic_vector;
+		constant r : std_logic_vector;
+		constant g : std_logic_vector)
+		return std_logic_vector is
+		variable aux_m : unsigned(0 to m'length-1) := unsigned(m);
+		variable aux_r : unsigned(0 to r'length-1) := unsigned(r);
+	begin
+		for i in aux_m'range loop
+			aux_r := (aux_r sll 1) xor ((aux_r'range => aux_r(0) xor aux_m(0)) and unsigned(g));
+			aux_m := aux_m sll 1;
+		end loop;
+		return std_logic_vector(aux_r);
+	end;
+
 begin
 
-	mii_txc <= not mii_txc after 1 ns;
-	crc1 <= not crc;
 
 	process (mii_txc)
+		variable pp : std_logic_vector(d'range) := d;
 	begin
 		if rising_edge(mii_txc) then
-			crc <= (crc sll 1) xor ((crc'range => (crc(0) xor mii_txi(0))) and unsigned(p));
-			mii_txi <= mii_txi sll 1;
+			crc1 <= galois_crc(pp(0 to 8-1), crc1, p);
+			pp   := std_logic_vector(unsigned(pp) sll 8);
 		end if;
 	end process;
 
