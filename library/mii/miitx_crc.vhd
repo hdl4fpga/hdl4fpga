@@ -21,11 +21,12 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity miitx_crc is
     port (
@@ -41,7 +42,7 @@ architecture def of miitx_crc is
 	constant p  : std_logic_vector := x"04c11db7";
 
 	signal crc  : std_logic_vector(p'range);
-	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length));
+	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length-1)-1);
 begin
 
 	process (mii_txc)
@@ -53,12 +54,12 @@ begin
 			elsif mii_tcrc='0' then
 				crc  <= not galois_crc(mii_txi, not crc, p);
 				cntr <= (others => '0');
-			elsif cntr(0)='1' then
-				word2byte(crc, cntr, mii_txd'length);
+			elsif cntr/=(cntr'range => '1') then
 				cntr <= cntr + 1;
 			end if;
 		end if;
 	end process;
-	mii_txen <= mii_treq and mii_crc and not cntr(0);
+	mii_txd  <= word2byte(crc, std_logic_vector(cntr));
+	mii_txen <= mii_treq and mii_tcrc;
 end;
 

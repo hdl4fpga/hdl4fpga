@@ -28,12 +28,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
+library hdl4fpga;
+
 architecture crc of testbench is
 	constant n : natural := 8;
 	signal clk : std_logic := '0';
-	signal txi  : std_logic_vector(0 to 8-1) := b"01010111";
+	signal txi  : std_logic_vector(0 to 8-1) := x"01";
 	signal txd  : std_logic_vector(txi'range);
 	signal rst  : std_logic;
+	signal tcrc  : std_logic;
+	signal treq  : std_logic;
 begin
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 20 ns;
@@ -58,6 +62,6 @@ begin
 		mii_treq => treq,
 		mii_tcrc => tcrc,
 		mii_txi  => txi,
-		mii_txen => open
+		mii_txen => open,
 		mii_txd  => txd);
 end;
