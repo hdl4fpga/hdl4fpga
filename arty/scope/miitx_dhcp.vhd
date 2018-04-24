@@ -26,60 +26,36 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-entity mii_mem is
-	generic (
-		mem_data : std_logic_vector);
-    port (
-        mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_trdy : out std_logic;
-        mii_txen : out std_logic;
-        mii_txd  : out std_logic_vector);
-end;
+library unisim;
+use unisim.vcomponents.all;
 
-architecture def of mii_mem is
-	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
-
-	type byte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
-
-	function mem_init (
-		constant arg : std_logic_vector)
-		return byte_vector is
-
-		variable val : byte_vector(0 to 2**addr_size-1) := (others => (others => '-'));
-		variable aux : std_logic_vector(2**addr_size*val(0)'length-1 downto 0) := (others => '-');
-
-	begin
-		aux(arg'length-1 downto 0) := arg;
-		for i in 0 to mem_size-1 loop
-			val(i) := aux(val(0)'length-1 downto 0);
-			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
-		end loop;
-
-		return val;
-	end;
-
-	constant mem : byte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
-	signal cntr  : unsigned(0 to addr_size);
-
+architecture miitx_dhcp of arty is
+	signal mii_treq       : std_logic;
+	signal eth_txclk_bufg : std_logic;
+	signal eth_txclk      : std_logic;
 begin
 
-	process (mii_txc)
+	eth_tx_clk_ibufg : ibufg
+	port map (
+		I => eth_tx_clk,
+		O => eth_txclk_bufg);
+	eth_txclk <= not eth_txclk_bufg;
+
+	process (btn(0), eth_txclk)
 	begin
-		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				cntr <= to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				cntr <= cntr - 1;
-			end if;
+		if btn(0)='1' then
+			mii_treq <= '0';
+		elsif rising_edge(eth_txclk) then
+			mii_treq <= '1';
 		end if;
 	end process;
 
-	mii_trdy <= mii_treq and cntr(0);
-	mii_txen <= mii_treq and not cntr(0);
-	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
+	du : entity hdl4fpga.miitx_dhcp
+	port map (
+        mii_txc  => eth_txclk,
+		mii_treq => mii_treq,
+		mii_txdv => eth_tx_en,
+		mii_txd  => eth_txd);
 
 end;
