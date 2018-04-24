@@ -42,7 +42,7 @@ architecture def of miitx_crc is
 	constant p  : std_logic_vector := x"04c11db7";
 
 	signal crc  : std_logic_vector(p'range);
-	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length-1)-1);
+	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length-1));
 begin
 
 	process (mii_txc)
@@ -50,16 +50,17 @@ begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
 				crc  <= (others => '0');
-				cntr <= (others => '0');
+				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
 			elsif mii_tcrc='0' then
 				crc  <= not galois_crc(mii_txi, not crc, p);
-				cntr <= (others => '0');
-			elsif cntr/=(cntr'range => '1') then
-				cntr <= cntr + 1;
+				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
+			elsif cntr(0)='0' then
+				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
+				cntr <= cntr - 1;
 			end if;
 		end if;
 	end process;
-	mii_txd  <= word2byte(crc, std_logic_vector(cntr));
-	mii_txen <= mii_treq and mii_tcrc;
+	mii_txd  <= crc(mii_txd'range);
+	mii_txen <= mii_treq and mii_tcrc and not cntr(0);
 end;
 
