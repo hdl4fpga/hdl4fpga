@@ -53,8 +53,9 @@ begin
 
 	du : entity hdl4fpga.miitx_dhcp
 	port map (
-        mii_txc  => eth_txclk,
+        mii_txc  => eth_txclk_bufg,
 		mii_treq => mii_treq,
+		mii_trdy => led(0),
 		mii_txdv => eth_tx_en,
 		mii_txd  => eth_txd);
 
