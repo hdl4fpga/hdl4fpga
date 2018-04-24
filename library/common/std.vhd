@@ -62,6 +62,11 @@ package std is
 		constant arg : std_logic_vector)
 		return std_logic_vector;
 	
+	function reverse (
+		constant arg  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
+	
 	function bin2bcd (
 		constant arg1 : std_logic_vector;
 		constant arg2 : natural)
@@ -310,6 +315,7 @@ package std is
 		constant r : std_logic_vector;
 		constant g : std_logic_vector)
 		return std_logic_vector;
+	
 
 end;
 
@@ -447,6 +453,20 @@ package body std is
 		end loop;
 		val := aux;
 		return val;
+	end;
+
+	function reverse (
+		constant arg  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
+	begin
+		aux := arg;
+		for i in 0 to aux'length/size-1 loop
+			aux(0 to size-1) := reverse(aux(0 to size-1));
+			aux:= std_logic_vector(unsigned(aux) rol size);
+		end loop;
+		return aux;
 	end;
 
 	function bin2bcd(
