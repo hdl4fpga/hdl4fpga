@@ -58,7 +58,7 @@ architecture mix of miitx_dhcp is
 			x"ffffffff")       &    -- IP  Destination address
 		x"00440043"            &    -- UDP Source port, Destination port
 		std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-		x"0000"                &
+		x"0000"                &	-- UDP CHECKSUM
 		x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
 		x"3903f326"            &    -- XID
 		x"00000100"            &    -- SECS, FLAGS
