@@ -51,4 +51,8 @@ begin
 		mii_txd  => phy1_tx_d);
 
 	phy1_gtxclk <= not phy1_125clk;
+
+	phy1_rst  <= '1'; --fpga_gsrn;
+	phy1_mdc  <= '0';
+	phy1_mdio <= '0';
 end;

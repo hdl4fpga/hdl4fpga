@@ -40,7 +40,7 @@ entity miitx_dhcp is
 end;
 
 architecture mix of miitx_dhcp is
-	constant payload_size : natural := 512;
+	constant payload_size : natural := 44;
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 	constant mii_data : std_logic_vector := reverse(
@@ -56,7 +56,7 @@ architecture mix of miitx_dhcp is
 			x"0000"            &    -- IP  Checksum
 			x"00000000"        &    -- IP  Source address
 			x"ffffffff")       &    -- IP  Destination address
-		x"00680067"            &    -- UDP Source port, Destination port
+		x"00440043"            &    -- UDP Source port, Destination port
 		std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
 		x"0000"                &
 		x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
