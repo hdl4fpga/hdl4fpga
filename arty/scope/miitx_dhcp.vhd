@@ -31,22 +31,35 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture miitx_dhcp of arty is
+	signal sys_clk        : std_logic;
 	signal mii_treq       : std_logic;
 	signal eth_txclk_bufg : std_logic;
-	signal eth_txclk      : std_logic;
 begin
+
+	clkin_ibufg : ibufg
+	port map (
+		I => gclk100,
+		O => sys_clk);
+
+	process (sys_clk)
+		variable div : unsigned(0 to 1) := (others => '0');
+	begin
+		if rising_edge(sys_clk) then
+			div := div + 1;
+			eth_ref_clk <= div(0);
+		end if;
+	end process;
 
 	eth_tx_clk_ibufg : ibufg
 	port map (
 		I => eth_tx_clk,
 		O => eth_txclk_bufg);
-	eth_txclk <= not eth_txclk_bufg;
 
-	process (btn(0), eth_txclk)
+	process (btn(0), eth_txclk_bufg)
 	begin
 		if btn(0)='1' then
 			mii_treq <= '0';
-		elsif rising_edge(eth_txclk) then
+		elsif rising_edge(eth_txclk_bufg) then
 			mii_treq <= '1';
 		end if;
 	end process;
@@ -59,4 +72,7 @@ begin
 		mii_txdv => eth_tx_en,
 		mii_txd  => eth_txd);
 
+	eth_rstn <= '1';
+	eth_mdc  <= '0';
+	eth_mdio <= '0';
 end;

@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity miitx_dhcp is
 	generic (
-		mac_src   : std_logic_vector(0 to 48-1) := x"000000010203");
+		mac_src   : std_logic_vector(0 to 48-1) := x"004000010203");
 	port (
 		mii_treq  : in  std_logic;
 		mii_trdy  : out std_logic;
@@ -40,7 +40,7 @@ entity miitx_dhcp is
 end;
 
 architecture mix of miitx_dhcp is
-	constant payload_size : natural := 44;
+	constant payload_size : natural := 244;
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 	constant mii_data : std_logic_vector := reverse(
@@ -66,10 +66,14 @@ architecture mix of miitx_dhcp is
 		x"00000000"            &    -- YIADDR
 		x"00000000"            &    -- SIADDR
 		x"00000000"            &    -- GIADDR
-		x"00000001"            &    -- CHADDR
-		x"02030000"            &    -- CHADDR
+		mac_src & x"0000"      &    -- CHADDR
 		x"00000000"            &    -- CHADDR
-		x"00000000", 8);            -- CHADDR
+		x"00000000"            &    -- CHADDR
+		(1 to 8* 64 => '0')    &    -- SNAME
+		(1 to 8*128 => '0')    &    -- SNAME
+		x"63825363"            &    -- MAGIC COOKIE
+		x"350101"              &    -- DHCPDISCOVER
+		x"FF",8);                   -- END
 
 	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
 	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;
