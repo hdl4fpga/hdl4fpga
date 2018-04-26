@@ -33,21 +33,21 @@ library hdl4fpga;
 architecture crc of testbench is
 	constant n : natural := 8;
 	signal clk : std_logic := '0';
-	signal txiv : std_logic;
+	signal txiv : std_logic := '0';
 	signal txi  : std_logic_vector(0 to 8-1) := x"01";
 	signal txd  : std_logic_vector(txi'range);
-	signal rst  : std_logic;
+	signal rst  : std_logic := '1';
 begin
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 20 ns;
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				txiv <= '0';
-			else
 				txiv <= '1';
+				rst <= '0';
+			elsif txiv = '1' then
+				txiv <= '0';
 			end if;
 		end if;
 	end process;
