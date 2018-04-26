@@ -91,7 +91,7 @@ begin
 		di(0) => miibuf_txiv,
 		do(0) => miibuf_txdv);
 
-	mii_txd  <= word2byte(miipre_txd  & miibuf_txd,  not miipre_trdy);
-	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv, not miipre_trdy)(0);
+	mii_txd  <= word2byte(miipre_txd  & miibuf_txd , miipre_trdy);
+	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv, miipre_trdy)(0);
 end;
 
