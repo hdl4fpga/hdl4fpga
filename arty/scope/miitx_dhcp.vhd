@@ -34,12 +34,66 @@ architecture miitx_dhcp of arty is
 	signal sys_clk        : std_logic;
 	signal mii_treq       : std_logic;
 	signal eth_txclk_bufg : std_logic;
+
+	signal video_clk      : std_logic;
+	signal video_hs         : std_logic;
+	signal video_vs         : std_logic;
+	signal video_frm        : std_logic;
+	signal video_hon        : std_logic;
+	signal video_nhl        : std_logic;
+	signal video_vld        : std_logic;
+	signal video_vcntr      : std_logic_vector(11-1 downto 0);
+	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
 	port map (
 		I => gclk100,
 		O => sys_clk);
+
+	video_dcm_e : entity hdl4fpga.dfs
+	generic map (
+		dcm_per => 10.0;
+		dfs_div => 2;
+		dfs_mul => 3)
+	port map (
+		dcm_rst => '0',
+		dcm_clk => sys_clk,
+		dfs_clk => video_clk,
+		dcm_lck => open);
+
+	video_e : entity hdl4fpga.video_vga
+	generic map (
+		mode => 7,
+		n    => 11)
+	port map (
+		clk   => video_clk,
+		hsync => video_hs,
+		vsync => video_vs,
+		hcntr => video_hcntr,
+		vcntr => video_vcntr,
+		don   => video_hon,
+		frm   => video_frm,
+		nhl   => video_nhl);
+
+	vram : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => eth_rxclk_bufg,
+		wr_ena  => eth_rx_en,
+		wr_addr => 
+		wr_data => eth_rxd,
+		rd_addr =>
+		rd_data =>
+			 );
+	font_addr <= cga_code & gpannel_y(gpannel_row'right-1 downto 0);
+	cgarom : entity hdl4fpga.rom
+	generic map (
+		synchronous => 2,
+		bitrom => psf1cp850x8x16)
+	port map (
+		clk  => video_clk,
+		addr => font_addr,
+		data => font_line);
 
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
