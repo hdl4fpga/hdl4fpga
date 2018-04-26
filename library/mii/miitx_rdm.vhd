@@ -28,39 +28,64 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_crc is
+entity miitx_rnd is
     port (
         mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tcrc : in  std_logic;
 		mii_txi  : in  std_logic_vector;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector);
+		mii_txiv : in  std_logic;
+		mii_txd  : out std_logic_vector;
+		mii_txdv : out std_logic);
 end;
 
-architecture def of miitx_crc is
-	constant p  : std_logic_vector := x"04c11db7";
+architecture def of miitx_rnd is
+	constant mii_pre : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 
-	signal crc  : std_logic_vector(p'range);
-	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length-1));
+	signal miipre_trdy : std_logic;
+	signal miicrc_treq : std_logic;
+	signal miicrc_txiv : std_logic;
 begin
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				crc  <= (others => '0');
-				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
-			elsif mii_tcrc='0' then
-				crc  <= not galois_crc(mii_txi, not crc, p);
-				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
-			elsif cntr(0)='0' then
-				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
-				cntr <= cntr - 1;
-			end if;
-		end if;
-	end process;
-	mii_txd  <= crc(mii_txd'range);
-	mii_txen <= mii_treq and mii_tcrc and not cntr(0);
+	mii_fcs_e : mii_crc32
+    port map (
+        mii_txc   => mii_txc,
+		mii_txiv  => mii_txiv,
+		mii_txi   => mii_txi,
+		mii_txen  => miicrc_txen,
+		mii_txd   => miicrc_txd);
+
+	miibuf_txiv <= mii_txiv or mii_txen;
+	miibuf_txd  <= word2byte(mii_txi & miicrc_txd, mii_txiv);
+
+	miitx_pre_e  : entity hdl4fpga.mii_mem
+	generic map (
+		mem_data => mii_pre)
+	port map (
+		mii_txc  => mii_txc,
+		mii_treq => mii_txiv,
+		mii_trdy => miipre_trdy,
+		mii_txen => miipre_txdv,
+		mii_txd  => miipre_txd);
+
+	miibuf_txd_e : hdl4fpga.align
+	generic map (
+		n => mii_txd'length,
+		d => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
+	port map (
+		clk => mii_txc,
+		ena => miibuf_txiv,
+		di  => miibuf_txi,
+		do  => miibuf_txd);
+
+	mii_txdv_e : hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (1 to 1 => mii_pre'length/mii_txd'length))
+	port map (
+		clk => mii_txc,
+		di  => miibuf_txiv,
+		do  => miibuf_txdv);
+
+	mii_txd  <= word2byte(miipre_txd  & miibuf_txd);
+	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv)(0);
 end;
 

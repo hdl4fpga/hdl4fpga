@@ -28,39 +28,36 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_crc is
+entity miitx_crc32 is
     port (
         mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tcrc : in  std_logic;
 		mii_txi  : in  std_logic_vector;
+		mii_txiv : in  std_logic;
 		mii_txen : out std_logic;
 		mii_txd  : out std_logic_vector);
 end;
 
-architecture def of miitx_crc is
-	constant p  : std_logic_vector := x"04c11db7";
-
-	signal crc  : std_logic_vector(p'range);
-	signal cntr : unsigned(0 to unsigned_num_bits(p'length/mii_txd'length-1));
+architecture def of miitx_crc32 is
+	signal crc  : std_logic_vector(0 to 32-1);
+	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1));
+	signal edge : std_logic;
 begin
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				crc  <= (others => '0');
-				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
-			elsif mii_tcrc='0' then
-				crc  <= not galois_crc(mii_txi, not crc, p);
-				cntr <= to_unsigned(p'length/mii_txd'length-1, cntr'length);
+			if mii_txiv='1' then
+				crc  <= not galois_crc(mii_txi, word2byte((crc'range => '1' & not crc, edge), x"04c11db7");
+				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
 			elsif cntr(0)='0' then
 				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
 				cntr <= cntr - 1;
 			end if;
+			edge <= mii_txiv;
 		end if;
 	end process;
+
 	mii_txd  <= crc(mii_txd'range);
-	mii_txen <= mii_treq and mii_tcrc and not cntr(0);
+	mii_txen <= not mii_txiv and not cntr(0);
 end;
 
