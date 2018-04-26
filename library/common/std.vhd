@@ -154,6 +154,11 @@ package std is
 		return std_logic_vector;
 
 	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic)
+		return std_logic_vector;
+
+	function word2byte (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
@@ -820,6 +825,14 @@ package body std is
 			byte(i) := aux(byte'length*to_integer(unsigned(addr))+i);
 		end loop;
 		return byte;
+	end;
+
+	function word2byte (
+		constant word : std_logic_vector;
+		constant addr : std_logic)
+		return std_logic_vector is
+	begin
+		return word2byte(word, (0 to 0 => addr));
 	end;
 
 	function word2byte (

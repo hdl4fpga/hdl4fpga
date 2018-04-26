@@ -47,7 +47,7 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_txiv='1' then
-				crc  <= not galois_crc(mii_txi, word2byte((crc'range => '1') & not crc, (0 to 0 => edge)), x"04c11db7");
+				crc  <= not galois_crc(mii_txi, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
 				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
 			elsif cntr(0)='0' then
 				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);

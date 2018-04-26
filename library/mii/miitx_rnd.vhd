@@ -41,11 +41,17 @@ architecture def of miitx_rnd is
 	constant mii_pre : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 
 	signal miipre_trdy : std_logic;
-	signal miicrc_treq : std_logic;
-	signal miicrc_txiv : std_logic;
+	signal miipre_txdv : std_logic;
+	signal miipre_txd  : std_logic_vector(mii_txd'range);
+	signal miicrc_txen : std_logic;
+	signal miicrc_txd  : std_logic_vector(mii_txd'range);
+	signal miibuf_txiv : std_logic;
+	signal miibuf_txi  : std_logic_vector(mii_txd'range);
+	signal miibuf_txd  : std_logic_vector(mii_txd'range);
+	signal miibuf_txdv : std_logic;
 begin
 
-	mii_fcs_e : mii_crc32
+	mii_fcs_e : entity hdl4fpga.miitx_crc32
     port map (
         mii_txc   => mii_txc,
 		mii_txiv  => mii_txiv,
@@ -53,8 +59,8 @@ begin
 		mii_txen  => miicrc_txen,
 		mii_txd   => miicrc_txd);
 
-	miibuf_txiv <= mii_txiv or mii_txen;
-	miibuf_txd  <= word2byte(mii_txi & miicrc_txd, mii_txiv);
+	miibuf_txiv <= mii_txiv or miicrc_txen;
+	miibuf_txi  <= word2byte(mii_txi & miicrc_txd, mii_txiv);
 
 	miitx_pre_e  : entity hdl4fpga.mii_mem
 	generic map (
@@ -66,7 +72,7 @@ begin
 		mii_txen => miipre_txdv,
 		mii_txd  => miipre_txd);
 
-	miibuf_txd_e : hdl4fpga.align
+	miibuf_txd_e : entity hdl4fpga.align
 	generic map (
 		n => mii_txd'length,
 		d => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
@@ -76,16 +82,16 @@ begin
 		di  => miibuf_txi,
 		do  => miibuf_txd);
 
-	mii_txdv_e : hdl4fpga.align
+	mii_txdv_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
 		d => (1 to 1 => mii_pre'length/mii_txd'length))
 	port map (
-		clk => mii_txc,
-		di  => miibuf_txiv,
-		do  => miibuf_txdv);
+		clk   => mii_txc,
+		di(0) => miibuf_txiv,
+		do(0) => miibuf_txdv);
 
-	mii_txd  <= word2byte(miipre_txd  & miibuf_txd);
-	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv)(0);
+	mii_txd  <= word2byte(miipre_txd  & miibuf_txd,  not miipre_trdy);
+	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv, not miipre_trdy)(0);
 end;
 
