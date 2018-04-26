@@ -33,11 +33,10 @@ library hdl4fpga;
 architecture crc of testbench is
 	constant n : natural := 8;
 	signal clk : std_logic := '0';
+	signal txiv : std_logic;
 	signal txi  : std_logic_vector(0 to 8-1) := x"01";
 	signal txd  : std_logic_vector(txi'range);
 	signal rst  : std_logic;
-	signal tcrc  : std_logic;
-	signal treq  : std_logic;
 begin
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 20 ns;
@@ -46,21 +45,18 @@ begin
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				treq <= '0';
-				tcrc <= '0';
+				txiv <= '0';
 			else
-				treq <= '1';
-				tcrc <= treq;
+				txiv <= '1';
 			end if;
 		end if;
 	end process;
 
 
-	du : entity hdl4fpga.miitx_crc
+	du : entity hdl4fpga.miitx_crc32
 	port map (
         mii_txc  => clk,
-		mii_treq => treq,
-		mii_tcrc => tcrc,
+		mii_txiv => txiv,
 		mii_txi  => txi,
 		mii_txen => open,
 		mii_txd  => txd);
