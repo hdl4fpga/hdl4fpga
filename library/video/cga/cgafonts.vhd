@@ -8145,7 +8145,7 @@ package cgafont is
 		"----------------" &
 		"----------------");
 
-	constant psf1hexx8x16 : std_logic_vector(0 to 16*8*16-1) := (
+	constant psf1hex8x16 : std_logic_vector(0 to 16*8*16-1) := (
 		-- x"30" --
 		"00000000" &
 		"00000000" &

@@ -85,6 +85,15 @@ begin
 		rd_addr =>
 		rd_data =>
 			 );
+	cgarom : entity hdl4fpga.rom
+	generic map (
+		synchronous => 2,
+		bitrom => psf1hex8x16)
+	port map (
+		clk  => video_clk,
+		addr => font_addr,
+		data => font_line);
+
 	font_addr <= cga_code & gpannel_y(gpannel_row'right-1 downto 0);
 	cgarom : entity hdl4fpga.rom
 	generic map (
