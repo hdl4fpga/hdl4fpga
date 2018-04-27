@@ -83,8 +83,9 @@ begin
 		wr_addr => 
 		wr_data => eth_rxd,
 		rd_addr =>
-		rd_data =>
-			 );
+		rd_data => cga_code);
+
+	font_addr <= cga_code & video_vcntr();
 	cgarom : entity hdl4fpga.rom
 	generic map (
 		synchronous => 2,
@@ -93,16 +94,8 @@ begin
 		clk  => video_clk,
 		addr => font_addr,
 		data => font_line);
+	video_dot <= word2byte (font_line, video_hcntr());
 
-	font_addr <= cga_code & gpannel_y(gpannel_row'right-1 downto 0);
-	cgarom : entity hdl4fpga.rom
-	generic map (
-		synchronous => 2,
-		bitrom => psf1cp850x8x16)
-	port map (
-		clk  => video_clk,
-		addr => font_addr,
-		data => font_line);
 
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
