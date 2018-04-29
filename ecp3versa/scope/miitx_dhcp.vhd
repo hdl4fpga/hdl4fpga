@@ -28,7 +28,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-library hdl4fpga.cgafont.all;
+use hdl4fpga.std.all;
+use hdl4fpga.cgafont.all;
 
 library ecp3;
 use ecp3.components.all;
@@ -91,7 +92,8 @@ begin
 		signal font_row  : std_logic_vector(4-1 downto 0);
 		signal font_addr : std_logic_vector(4+4-1 downto 0);
 		signal font_line : std_logic_vector(8-1 downto 0);
-		signal cga_code  : std_logic_vector(4-1 downto 0);
+		signal cga_code  : std_logic_vector(phy1_rx_d'range);
+		signal code_sel  : std_logic_vector(3 to 3);
 	begin
 	
 		video_e : entity hdl4fpga.video_vga
@@ -112,11 +114,11 @@ begin
 			signal cga_clk    : std_logic;
 			signal cga_ena    : std_logic;
 			signal cga_addr   : std_logic_vector(14-1 downto 0);
-			signal cga_data   : std_logic_vector(cga_code'range);
+			signal cga_data   : std_logic_vector(phy1_rx_d'range);
 
 			signal video_addr : std_logic_vector(cga_addr'range);
-			signal rd_addr    : std_logic_vector(cga_code'range);
-			signal rd_data    : std_logic_vector(cga_code'range);
+			signal rd_addr    : std_logic_vector(cga_addr'range);
+			signal rd_data    : std_logic_vector(cga_data'range);
 		begin
 
 			process (phy1_rxc)
@@ -132,7 +134,7 @@ begin
 
 			cga_clk  <= phy1_rxc;
 			cga_ena  <= phy1_rx_dv;
-			cga_data <= phy1_rx_d;
+			cga_data <= reverse(phy1_rx_d);
 
 			process (video_vcntr, video_hcntr)
 				variable aux : unsigned(video_addr'range);
@@ -146,8 +148,8 @@ begin
 
 			rdaddr_e : entity hdl4fpga.align
 			generic map (
-				n => font_col'length,
-				d => (font_col'range => 1))
+				n => video_addr'length,
+				d => (video_addr'range => 1))
 			port map (
 				clk => video_clk,
 				di  => video_addr,
@@ -191,7 +193,16 @@ begin
 			di  => video_hcntr(font_col'range),
 			do  => font_col);
 
-		font_addr <= cga_code & font_row;
+		codesel_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (1 to 1 => 2))
+		port map (
+			clk => video_clk,
+			di  => video_hcntr(3 downto 3),
+			do  => code_sel);
+
+		font_addr <= word2byte(cga_code, code_sel) & font_row;
 
 		cgarom_e : entity hdl4fpga.rom
 		generic map (
@@ -239,8 +250,8 @@ begin
 		di(0) => video_dot,
 		di(1) => video_dot,
 		di(2) => video_dot,
-		di(3) => video_hsync,
-		di(4) => video_vsync,
+		di(3) => video_hs,
+		di(4) => video_vs,
 		do    => expansionx4);
 
 end;
