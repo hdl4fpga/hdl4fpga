@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="mii_tx" dir="mii_tx" description="mii_tx" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.miitx_dhcp" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -18,6 +18,24 @@
             <Options/>
         </Source>
         <Source name="../../library/mii/miitx_dhcp.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/align.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/pipe_le.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/rom.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/common/dpram.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/cga/cgafonts.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

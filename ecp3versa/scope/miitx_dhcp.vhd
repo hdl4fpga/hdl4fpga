@@ -28,6 +28,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+library hdl4fpga.cgafont.all;
 
 library ecp3;
 use ecp3.components.all;
