@@ -44,8 +44,7 @@ architecture mix of miitx_dhcp is
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 	constant mii_data : std_logic_vector := reverse(
---		x"ffffffffffff"	       &    
-		x"00270e0a90e9"        &
+		x"ffffffffffff"	       &    
 		mac_src                &    -- MAC Source Address
 		x"0800"                &    -- MAC Protocol ID
 		ipheader_checksumed(
@@ -60,6 +59,7 @@ architecture mix of miitx_dhcp is
 		udp_checksumed (
 			x"00000000",
 			x"ffffffff",
+
 			x"00440043"            &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
 			x"0000"                &	-- UDP CHECKSUM
@@ -77,7 +77,7 @@ architecture mix of miitx_dhcp is
 			(1 to 8*128 => '0')    &    -- SNAME
 			x"63825363"            &    -- MAGIC COOKIE
 			x"350101"              &    -- DHCPDISCOVER
-			x"FF"),8);                   -- END
+			x"FF"),8);                  -- END
 
 	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
 	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;

@@ -420,18 +420,19 @@ package body std is
 		constant data : std_logic_vector;
 		constant size : natural)
 		return std_logic_vector is
-		constant n : natural := (data'length+size-1)/size;
-		variable aux : unsigned(0 to data'length-1);
+		constant n        : natural := (data'length+size-1)/size;
+		variable aux      : unsigned(0 to data'length-1);
 		variable checksum : unsigned(0 to size);
 	begin
-		aux := unsigned(data);
+		aux      := unsigned(data);
 		checksum := (others => '0');
 		for i in 0 to n-1 loop
-			checksum := checksum + resize(unsigned(aux(0 to checksum'right-1)), checksum'length);
+			checksum := checksum + resize(unsigned(aux(0 to size-1)), checksum'length);
 			if checksum(0)='1' then
 				checksum := checksum + 1;
+				checksum(0) := '0';
 			end if;
-			aux := aux sll checksum'right;
+			aux := aux sll size;
 		end loop;
 		return std_logic_vector(checksum(1 to size));	
 	end;
@@ -452,19 +453,21 @@ package body std is
 		constant dst : std_logic_vector(0 to 32-1);
 		constant udp : std_logic_vector)
 		return std_logic_vector is
-		variable aux : unsigned(0 to 3*32+udp'length-1);
+		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '1');
 	begin
 		aux(src'range) := unsigned(src);
 		aux := aux rol src'length;
 		aux(dst'range) := unsigned(dst);
 		aux := aux rol dst'length;
-		aux(0 to 32-1) := x"0011" & to_unsigned(aux'length/8, 16);
+		aux(0 to 32-1) := x"0011" & to_unsigned(udp'length/8, 16);
 		aux := aux rol 32;
+
 		aux(0 to udp'length-1) := udp;
 		aux(48 to 64-1) := (others => '0');
-		aux := aux ror (32*3);
 		aux(48 to 64-1) := unsigned(not oneschecksum(std_logic_vector(aux), 16));
-		aux := aux rol (32*3);
+		if aux(48 to 64-1)=(1 to 16 => '0') then
+			aux(48 to 64-1) := (others => '1');
+		end if;
 		return std_logic_vector(aux(0 to udp'length-1));
 	end;
 

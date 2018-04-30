@@ -235,14 +235,34 @@ begin
 		end if;
 	end process;
 
-	du : entity hdl4fpga.miitx_dhcp
-	port map (
-        mii_txc  => phy1_125clk,
-		mii_treq => mii_treq,
-		mii_txdv => phy1_tx_en,
-		mii_txd  => phy1_tx_d);
+	xxx : block
+		attribute oddrapps : string;
+		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
+		signal en : std_logic;
+		signal d  : std_logic_vector(phy1_tx_d'range);
+	begin
+		du : entity hdl4fpga.miitx_dhcp
+		port map (
+			mii_txc  => phy1_125clk,
+			mii_treq => mii_treq,
+			mii_txdv => en,
+			mii_txd  => d);
 
-	phy1_gtxclk <= not phy1_125clk;
+		process (phy1_125clk)
+		begin
+			if rising_edge(phy1_125clk) then
+				phy1_tx_en <= en;
+				phy1_tx_d  <= d;
+			end if;
+		end process;
+
+		oddr_i : oddrxd1
+		port map (
+			sclk => phy1_125clk,
+			da   => '1',
+			db   => '0',
+			q    => phy1_gtxclk);
+	end block;
 
 	phy1_rst  <= '1';
 	phy1_mdc  <= '0';
