@@ -57,9 +57,7 @@ begin
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
-		signal rst   : std_logic;
 	begin
-		rst <= not fpga_gsrn;
 		pll_i : ehxpllf
         generic map (
 			FEEDBK_PATH  => "INTERNAL", CLKOK_BYPASS=> "DISABLED", 
@@ -71,7 +69,7 @@ begin
 			CLKOK_DIV=>  2, CLKOP_DIV=>  4, CLKFB_DIV=>  3, CLKI_DIV=>  2, 
 			FIN=> "100.000000")
 		port map (
-			rst         => rst, 
+			rst         => '0' , 
 			rstk        => '0',
 			clki        => clk,
 			wrdel       => '0',
@@ -113,7 +111,7 @@ begin
 		cgabram_b : block
 			signal cga_clk    : std_logic;
 			signal cga_ena    : std_logic;
-			signal cga_addr   : std_logic_vector(14-1 downto 0);
+			signal cga_addr   : std_logic_vector(13-1 downto 0);
 			signal cga_data   : std_logic_vector(phy1_rx_d'range);
 
 			signal video_addr : std_logic_vector(cga_addr'range);
@@ -121,28 +119,28 @@ begin
 			signal rd_data    : std_logic_vector(cga_data'range);
 		begin
 
-			process (phy1_rxc)
+			process (cga_clk)
 			begin
-				if rising_edge(phy1_rxc) then
-					if cga_ena='1' then
+				if rising_edge(cga_clk) then
+					if cga_ena='0' then
 						cga_addr <= (others => '0');
+						cga_data <= (others => '0');
 					else
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
+						cga_data <= std_logic_vector(unsigned(cga_data) + 1);
 					end if;
 				end if;
 			end process;
 
 			cga_clk  <= phy1_rxc;
 			cga_ena  <= phy1_rx_dv;
-			cga_data <= reverse(phy1_rx_d);
+--			cga_data <= reverse(phy1_rx_d);
 
 			process (video_vcntr, video_hcntr)
 				variable aux : unsigned(video_addr'range);
 			begin
-				aux := resize(unsigned(video_vcntr), video_addr'length) srl 4;
-				aux := (aux sll 4) - aux;
-				aux := aux sll 4;
-				aux := aux + unsigned(video_hcntr) srl 3;
+				aux := resize(unsigned(video_vcntr) srl 4, video_addr'length);
+				aux := resize(aux * (1920/16), aux'length) + (unsigned(video_hcntr) srl 4);
 				video_addr <= std_logic_vector(aux);
 			end process;
 
