@@ -47,6 +47,7 @@ architecture miitx_dhcp of ecp3versa is
 	signal video_vcntr    : std_logic_vector(11-1 downto 0);
 	signal video_hcntr    : std_logic_vector(11-1 downto 0);
 	signal video_dot      : std_logic;
+	signal mac_vld        : std_logic;
 begin
 
 	videodcm_b : block
@@ -86,9 +87,23 @@ begin
 	end block;
 
 	xxx : block
+		signal mii_rxc  : std_logic;
+		signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
+		signal mii_rxdv : std_logic;
+		signal pre_rdy : std_logic;
+		signal mac_rdy : std_logic;
+		signal mac_rxdv : std_logic;
+		signal mac_rxd : std_logic_vector(phy1_rx_d'range);
+
 		constant mii_mymac : std_logic_vector := reverse(x"00_40_00_01_02_03", 8);
 	begin
-		mii_pre_e : entity hdl4fpga.mii_pre 
+
+		mii_rxc  <= phy1_rxc;
+		mii_rxd  <= phy1_rx_d;
+		mii_rxdv <= phy1_rx_dv;
+
+
+		mii_pre_e : entity hdl4fpga.miirx_pre 
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxd  => mii_rxd,
@@ -120,7 +135,7 @@ begin
 				end if;
 			end process;
 			mac_vld <= vld and mac_rdy;
-
+		end block;
 	end block;
 		
 	cgaadapter_b : block
@@ -170,7 +185,7 @@ begin
 			end process;
 
 			cga_clk  <= phy1_rxc;
-			cga_ena  <= phy1_rx_dv;
+			cga_ena  <= mac_vld and phy1_rx_dv;
 			cga_data <= reverse(phy1_rx_d);
 
 			process (video_vcntr, video_hcntr)
