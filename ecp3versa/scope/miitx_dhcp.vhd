@@ -85,6 +85,44 @@ begin
 			lock        => lock);
 	end block;
 
+	xxx : block
+		constant mii_mymac : std_logic_vector := reverse(x"00_40_00_01_02_03", 8);
+	begin
+		mii_pre_e : entity hdl4fpga.mii_pre 
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxd  => mii_rxd,
+			mii_rxdv => mii_rxdv,
+			mii_rdy  => pre_rdy);
+
+
+		miimymac_e  : entity hdl4fpga.mii_mem
+		generic map (
+			mem_data => mii_mymac)
+		port map (
+			mii_txc  => mii_rxc,
+			mii_treq => pre_rdy,
+			mii_trdy => mac_rdy,
+			mii_txen => mac_rxdv,
+			mii_txd  => mac_rxd);
+
+		macvld_b : block
+			signal vld : std_logic;
+		begin
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					if pre_rdy='0' then
+						vld <= '1';
+					elsif mac_rdy='0' then
+						vld <= vld and setif(mac_rxd=mii_rxd);
+					end if;
+				end if;
+			end process;
+			mac_vld <= vld and mac_rdy;
+
+	end block;
+		
 	cgaadapter_b : block
 		signal font_col  : std_logic_vector(3-1 downto 0);
 		signal font_row  : std_logic_vector(4-1 downto 0);
@@ -125,10 +163,8 @@ begin
 				if rising_edge(cga_clk) then
 					if cga_ena='0' then
 						cga_addr <= (others => '0');
---						cga_data <= (others => '0');
 					else
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
---						cga_data <= std_logic_vector(unsigned(cga_data) + 1);
 					end if;
 				end if;
 			end process;
@@ -235,7 +271,7 @@ begin
 		end if;
 	end process;
 
-	xxx : block
+	ecp3_iob : block
 		attribute oddrapps : string;
 		attribute oddrapps of oddr_i : label is "SCLK_ALIGNED";
 		signal en : std_logic;

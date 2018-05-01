@@ -64,7 +64,7 @@ begin
 
 	miirxmac_e  : entity hdl4fpga.mii_mem
 	generic map (
-		mem_data => x"00_00_00_01_02_03")
+		mem_data => reverse(x"00_00_00_01_02_03")
 	port map (
 		mii_txc  => mii_rxc,
 		mii_treq => pre_rdy,

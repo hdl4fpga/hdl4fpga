@@ -20,7 +20,7 @@
 				<BScanVal>0</BScanVal>
 			</Bypass>
 			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/mii_tx/ecp3versa_mii_tx.bit</File>
-			<FileTime>04/30/18 13:56:42</FileTime>
+			<FileTime>04/30/18 16:59:25</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
