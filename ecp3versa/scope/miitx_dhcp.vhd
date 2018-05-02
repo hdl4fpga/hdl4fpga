@@ -138,10 +138,27 @@ begin
 		end block;
 
 		myip_b: block
+			: std_logic_vector := (
+				(  0, "0"),
+				(128, "1"),
+				(160, "0"),
+				(188, "1"));
+
 		begin
+			miimymac_e  : entity hdl4fpga.mii_mem
+			generic map (
+				mem_data => mii_mymac)
+			port map (
+				mii_txc  => mii_rxc,
+				mii_treq => pre_rdy,
+				mii_trdy => mac_rdy,
+				mii_txen => mac_rxdv,
+				mii_txd  => mac_rxd);
+
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
+					if ptr=
 				end if;
 			end process;
 		end block;
