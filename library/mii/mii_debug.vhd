@@ -21,8 +21,6 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -31,20 +29,17 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-library ecp3;
-use ecp3.components.all;
-
 entity mii_debug is
 	port (
-		video_clk : in  std_logic;
 		mii_req   : in  std_logic;
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 		mii_txc   : in  std_logic;
-		mii_txd   : in  std_logic_vector;
-		mii_txdv  : in  std_logic;
+		mii_txd   : out std_logic_vector;
+		mii_txdv  : out std_logic;
 
+		video_clk : in  std_logic;
 		video_dot : out std_logic;
 		video_hs  : out std_logic;
 		video_vs  : out std_logic);
@@ -52,34 +47,23 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal video_hs       : std_logic;
-	signal video_vs       : std_logic;
 	signal video_frm      : std_logic;
 	signal video_hon      : std_logic;
 	signal video_nhl      : std_logic;
 	signal video_vld      : std_logic;
 	signal video_vcntr    : std_logic_vector(11-1 downto 0);
 	signal video_hcntr    : std_logic_vector(11-1 downto 0);
-	signal video_dot      : std_logic;
 	signal mac_vld        : std_logic;
 begin
 
 	xxx : block
-		signal mii_rxc  : std_logic;
-		signal mii_rxd  : std_logic_vector(phy1_rx_d'range);
-		signal mii_rxdv : std_logic;
 		signal pre_rdy : std_logic;
 		signal mac_rdy : std_logic;
 		signal mac_rxdv : std_logic;
-		signal mac_rxd : std_logic_vector(phy1_rx_d'range);
+		signal mac_rxd : std_logic_vector(mii_rxd'range);
 
 		constant mii_mymac : std_logic_vector := reverse(x"00_40_00_01_02_03", 8);
 	begin
-
-		mii_rxc  <= phy1_rxc;
-		mii_rxd  <= phy1_rx_d;
-		mii_rxdv <= phy1_rx_dv;
-
 
 		mii_pre_e : entity hdl4fpga.miirx_pre 
 		port map (
@@ -115,31 +99,31 @@ begin
 			mac_vld <= vld and mac_rdy;
 		end block;
 
-		myip_b: block
-			: std_logic_vector := (
-				(  0, "0"),
-				(128, "1"),
-				(160, "0"),
-				(188, "1"));
-
-		begin
-			miimymac_e  : entity hdl4fpga.mii_mem
-			generic map (
-				mem_data => mii_mymac)
-			port map (
-				mii_txc  => mii_rxc,
-				mii_treq => pre_rdy,
-				mii_trdy => mac_rdy,
-				mii_txen => mac_rxdv,
-				mii_txd  => mac_rxd);
-
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					if ptr=
-				end if;
-			end process;
-		end block;
+--		myip_b: block
+--			: std_logic_vector := (
+--				(  0, "0"),
+--				(128, "1"),
+--				(160, "0"),
+--				(188, "1"));
+--
+--		begin
+--			miimymac_e  : entity hdl4fpga.mii_mem
+--			generic map (
+--				mem_data => mii_mymac)
+--			port map (
+--				mii_txc  => mii_rxc,
+--				mii_treq => pre_rdy,
+--				mii_trdy => mac_rdy,
+--				mii_txen => mac_rxdv,
+--				mii_txd  => mac_rxd);
+--
+--			process (mii_rxc)
+--			begin
+--				if rising_edge(mii_rxc) then
+--					if ptr=
+--				end if;
+--			end process;
+--		end block;
 
 	end block;
 		
@@ -148,7 +132,7 @@ begin
 		signal font_row  : std_logic_vector(4-1 downto 0);
 		signal font_addr : std_logic_vector(4+4-1 downto 0);
 		signal font_line : std_logic_vector(8-1 downto 0);
-		signal cga_code  : std_logic_vector(phy1_rx_d'range);
+		signal cga_code  : std_logic_vector(mii_rxd'range);
 		signal code_sel  : std_logic_vector(3 to 3);
 		signal dot_on     : std_logic;
 	begin
@@ -171,7 +155,7 @@ begin
 			signal cga_clk    : std_logic;
 			signal cga_ena    : std_logic;
 			signal cga_addr   : std_logic_vector(13-1 downto 0);
-			signal cga_data   : std_logic_vector(phy1_rx_d'range);
+			signal cga_data   : std_logic_vector(mii_rxd'range);
 
 			signal video_addr : std_logic_vector(cga_addr'range);
 			signal rd_addr    : std_logic_vector(cga_addr'range);
@@ -189,9 +173,9 @@ begin
 				end if;
 			end process;
 
-			cga_clk  <= phy1_rxc;
-			cga_ena  <= mac_vld and phy1_rx_dv;
-			cga_data <= reverse(phy1_rx_d);
+			cga_clk  <= mii_rxc;
+			cga_ena  <= mac_vld and mii_rxdv;
+			cga_data <= reverse(mii_rxd);
 
 			process (video_vcntr, video_hcntr)
 				variable aux : unsigned(video_addr'range);

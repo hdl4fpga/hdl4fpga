@@ -272,6 +272,8 @@ package std is
 		return std_logic_vector;
 
 	function udp_checksumed (
+		constant src : std_logic_vector(0 to 32-1);
+		constant dst : std_logic_vector(0 to 32-1);
 		constant udp : std_logic_vector)
 		return std_logic_vector;
 
@@ -430,8 +432,8 @@ package body std is
 			checksum := checksum + resize(unsigned(aux(0 to size-1)), checksum'length);
 			if checksum(0)='1' then
 				checksum := checksum + 1;
-				checksum(0) := '0';
 			end if;
+			checksum(0) := '0';
 			aux := aux sll size;
 		end loop;
 		return std_logic_vector(checksum(1 to size));	
@@ -462,7 +464,7 @@ package body std is
 		aux(0 to 32-1) := x"0011" & to_unsigned(udp'length/8, 16);
 		aux := aux rol 32;
 
-		aux(0 to udp'length-1) := udp;
+		aux(0 to udp'length-1) := unsigned(udp);
 		aux(48 to 64-1) := (others => '0');
 		aux(48 to 64-1) := unsigned(not oneschecksum(std_logic_vector(aux), 16));
 		if aux(48 to 64-1)=(1 to 16 => '0') then

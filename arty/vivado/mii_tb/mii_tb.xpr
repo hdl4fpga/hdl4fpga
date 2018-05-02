@@ -56,6 +56,20 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
+      <File Path="$PPRDIR/../../../library/common/std.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/common/align.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../../common/arty.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
@@ -63,7 +77,28 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/common/std.vhd">
+      <File Path="$PPRDIR/../../../library/video/cga/cgafonts.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/xilinx/dfs.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/common/dpram.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/mii/miirx_pre.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -77,7 +112,28 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../../library/video/video.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/common/rom.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../../../library/mii/miitx_dhcp.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/mii/mii_debug.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
