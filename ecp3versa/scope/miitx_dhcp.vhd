@@ -136,6 +136,16 @@ begin
 			end process;
 			mac_vld <= vld and mac_rdy;
 		end block;
+
+		myip_b: block
+		begin
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+				end if;
+			end process;
+		end block;
+
 	end block;
 		
 	cgaadapter_b : block
