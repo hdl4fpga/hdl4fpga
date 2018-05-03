@@ -132,8 +132,8 @@ begin
 		signal font_row  : std_logic_vector(4-1 downto 0);
 		signal font_addr : std_logic_vector(4+4-1 downto 0);
 		signal font_line : std_logic_vector(8-1 downto 0);
-		signal cga_code  : std_logic_vector(mii_rxd'range);
-		signal dot_on     : std_logic;
+		signal cga_code  : std_logic_vector(4-1 downto 0);
+		signal dot_on    : std_logic;
 	begin
 	
 		video_e : entity hdl4fpga.video_vga
@@ -151,13 +151,14 @@ begin
 			nhl   => video_nhl);
 
 		cgabram_b : block
+			signal video_addr : std_logic_vector(14-1 downto 0);
+
 			signal cga_clk    : std_logic;
 			signal cga_ena    : std_logic;
-			signal cga_addr   : std_logic_vector(13-1 downto 0);
 			signal cga_data   : std_logic_vector(mii_rxd'range);
+			signal cga_addr   : std_logic_vector(14-unsigned_num_bits(mii_rxd'length/cga_code'length-1)-1 downto 0);
 
-			signal video_addr : std_logic_vector(cga_addr'range);
-			signal rd_addr    : std_logic_vector(cga_addr'range);
+			signal rd_addr    : std_logic_vector(video_addr'range);
 			signal rd_data    : std_logic_vector(cga_data'range);
 		begin
 
