@@ -133,7 +133,6 @@ begin
 		signal font_addr : std_logic_vector(4+4-1 downto 0);
 		signal font_line : std_logic_vector(8-1 downto 0);
 		signal cga_code  : std_logic_vector(mii_rxd'range);
-		signal code_sel  : std_logic_vector(3 to 3);
 		signal dot_on     : std_logic;
 	begin
 	
@@ -181,7 +180,7 @@ begin
 				variable aux : unsigned(video_addr'range);
 			begin
 				aux := resize(unsigned(video_vcntr) srl 4, video_addr'length);
-				aux := resize(aux * (1920/16), aux'length) + (unsigned(video_hcntr) srl 4);
+				aux := resize(aux * (1920/16), aux'length) + (unsigned(video_hcntr) srl 3);
 				video_addr <= std_logic_vector(aux);
 			end process;
 
@@ -232,25 +231,7 @@ begin
 			di  => video_hcntr(font_col'range),
 			do  => font_col);
 
-		don_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (1 to 1 => 4))
-		port map (
-			clk => video_clk,
-			di(0)  => video_hon,
-			do(0)  => dot_on);
-
-		codesel_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (1 to 1 => 2))
-		port map (
-			clk => video_clk,
-			di  => video_hcntr(3 downto 3),
-			do  => code_sel);
-
-		font_addr <= word2byte(cga_code, code_sel) & font_row;
+		font_addr <= cga_code & font_row;
 
 		cgarom_e : entity hdl4fpga.rom
 		generic map (
@@ -260,6 +241,15 @@ begin
 			clk  => video_clk,
 			addr => font_addr,
 			data => font_line);
+
+		don_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (1 to 1 => 4))
+		port map (
+			clk => video_clk,
+			di(0)  => video_hon,
+			do(0)  => dot_on);
 
 		video_dot <= word2byte(font_line, font_col)(0) and dot_on;
 
