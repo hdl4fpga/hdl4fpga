@@ -137,7 +137,7 @@ begin
 		signal cga_ena   : std_logic;
 		signal cga_rdata : std_logic_vector(ascii'range);
 		signal cga_wdata : std_logic_vector(ascii'length*mii_rxd'length/4-1 downto 0);
-		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((mii_rxd'length/4)-1)-1 downto 0);
+		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((2*mii_rxd'length/4)-1) downto 0);
 
 		signal video_on  : std_logic;
 	begin
@@ -160,7 +160,7 @@ begin
 			signal video_addr : std_logic_vector(14-1 downto 0);
 
 			signal rd_addr    : std_logic_vector(video_addr'range);
-			signal rd_data    : std_logic_vector(cga_wdata'range);
+			signal rd_data    : std_logic_vector(cga_rdata'range);
 		begin
 
 			process (cga_clk)
@@ -194,7 +194,8 @@ begin
 				variable aux : unsigned(video_addr'range);
 			begin
 				aux := resize(unsigned(video_vcntr) srl 4, video_addr'length);
-				aux := resize(aux * (1920/16), aux'length) + (unsigned(video_hcntr) srl 3);
+				aux := ((aux sll 4) - aux) sll 3;  -- * (1920/16)
+				aux := aux + (unsigned(video_hcntr) srl 3);
 				video_addr <= std_logic_vector(aux);
 			end process;
 

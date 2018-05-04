@@ -42,7 +42,7 @@ end;
 architecture def of dpram is
 	type word_vector is array (natural range <>) of std_logic_vector(wr_data'range);
 
-	signal RAM : word_vector(0 to 2**rd_addr'length-1);
+	signal RAM : word_vector(0 to 2**wr_addr'length-1);
 begin
 	process (rd_addr)
 		variable addr : std_logic_vector(0 to rd_addr'length-1);
@@ -51,7 +51,7 @@ begin
 		if rd_data'length=wr_data'length then
 			rd_data <= ram(to_integer(unsigned(rd_addr)));
 		else
-			rd_data <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to 0));
+			rd_data <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
 		end if;
 	end process;
 		
