@@ -130,10 +130,16 @@ begin
 	cgaadapter_b : block
 		signal font_col  : std_logic_vector(3-1 downto 0);
 		signal font_row  : std_logic_vector(4-1 downto 0);
-		signal font_addr : std_logic_vector(4+4-1 downto 0);
+		signal font_addr : std_logic_vector(8+4-1 downto 0);
 		signal font_line : std_logic_vector(8-1 downto 0);
-		signal cga_code  : std_logic_vector(4-1 downto 0);
-		signal dot_on    : std_logic;
+
+		signal cga_clk   : std_logic;
+		signal cga_ena   : std_logic;
+		signal cga_rdata : std_logic_vector(ascii'range);
+		signal cga_wdata : std_logic_vector(ascii'length*mii_rxd'length/4-1 downto 0);
+		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((mii_rxd'length/4)-1)-1 downto 0);
+
+		signal video_on  : std_logic;
 	begin
 	
 		video_e : entity hdl4fpga.video_vga
@@ -153,13 +159,8 @@ begin
 		cgabram_b : block
 			signal video_addr : std_logic_vector(14-1 downto 0);
 
-			signal cga_clk    : std_logic;
-			signal cga_ena    : std_logic;
-			signal cga_data   : std_logic_vector(mii_rxd'range);
-			signal cga_addr   : std_logic_vector(14-unsigned_num_bits(mii_rxd'length/cga_code'length-1)-1 downto 0);
-
 			signal rd_addr    : std_logic_vector(video_addr'range);
-			signal rd_data    : std_logic_vector(cga_data'range);
+			signal rd_data    : std_logic_vector(cga_wdata'range);
 		begin
 
 			process (cga_clk)
@@ -175,7 +176,19 @@ begin
 
 			cga_clk  <= mii_rxc;
 			cga_ena  <= mac_vld and mii_rxdv;
-			cga_data <= reverse(mii_rxd);
+			process (mii_rxd)
+				constant tab  : ascii_vector := to_ascii("0123456789ABCDEF");
+				variable rxd  : unsigned(0 to mii_rxd'length-1);
+				variable data : unsigned(ascii'length*mii_rxd'length/4-1 downto 0);
+			begin
+				rxd := unsigned(reverse(mii_rxd));
+				for i in 0 to mii_rxd'length/4-1 loop
+					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
+					data := data ror ascii'length;
+				end loop;
+
+				cga_wdata <= std_logic_vector(data);
+			end process;
 
 			process (video_vcntr, video_hcntr)
 				variable aux : unsigned(video_addr'range);
@@ -199,18 +212,18 @@ begin
 				wr_clk  => cga_clk,
 				wr_ena  => cga_ena,
 				wr_addr => cga_addr,
-				wr_data => cga_data,
+				wr_data => cga_wdata,
 				rd_addr => rd_addr,
 				rd_data => rd_data);
 
 			rddata_e : entity hdl4fpga.align
 			generic map (
-				n => cga_code'length,
-				d => (cga_code'range => 1))
+				n => cga_rdata'length,
+				d => (cga_rdata'range => 1))
 			port map (
 				clk => video_clk,
 				di  => rd_data,
-				do  => cga_code);
+				do  => cga_rdata);
 
 		end block;
 
@@ -232,12 +245,12 @@ begin
 			di  => video_hcntr(font_col'range),
 			do  => font_col);
 
-		font_addr <= cga_code & font_row;
+		font_addr <= cga_rdata & font_row;
 
 		cgarom_e : entity hdl4fpga.rom
 		generic map (
 			synchronous => 2,
-			bitrom => psf1hex8x16)
+			bitrom => psf1cp850x8x16)
 		port map (
 			clk  => video_clk,
 			addr => font_addr,
@@ -250,9 +263,9 @@ begin
 		port map (
 			clk => video_clk,
 			di(0)  => video_hon,
-			do(0)  => dot_on);
+			do(0)  => video_on);
 
-		video_dot <= word2byte(font_line, font_col)(0) and dot_on;
+		video_dot <= word2byte(font_line, font_col)(0) and video_on;
 
 	end block;
 

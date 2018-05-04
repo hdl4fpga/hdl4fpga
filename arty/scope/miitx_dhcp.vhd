@@ -49,10 +49,24 @@ begin
 		I => gclk100,
 		O => sys_clk);
 
+	process (sys_clk)
+		variable div : unsigned(0 to 1) := (others => '0');
+	begin
+		if rising_edge(sys_clk) then
+			div := div + 1;
+			eth_ref_clk <= div(0);
+		end if;
+	end process;
+
 	eth_rx_clk_ibufg : ibufg
 	port map (
 		I => eth_rx_clk,
 		O => eth_rxclk_bufg);
+
+	eth_tx_clk_ibufg : ibufg
+	port map (
+		I => eth_tx_clk,
+		O => eth_txclk_bufg);
 
 	video_dcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -84,8 +98,21 @@ begin
 	begin
 		if btn(0)='1' then
 			mii_req <= '0';
+			led(0)  <= '1';
 		elsif rising_edge(eth_txclk_bufg) then
+			led(1)  <= '0';
 			mii_req <= '1';
+		end if;
+	end process;
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			ja(1)  <= video_dot;
+			ja(2)  <= video_dot;
+			ja(3)  <= video_dot;
+			ja(4)  <= video_hs;
+			ja(10) <= video_vs;
 		end if;
 	end process;
 

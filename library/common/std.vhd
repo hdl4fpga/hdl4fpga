@@ -39,6 +39,7 @@ package std is
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 	subtype ascii is byte;
+	subtype ascii_vector is byte_vector;
 
 	subtype nibble is std_logic_vector(4-1 downto 0);
 	type nibble_vector is array (natural range <>) of nibble;
@@ -218,7 +219,7 @@ package std is
 
 	function to_ascii (
 		constant arg : string)
-		return byte_vector;
+		return ascii_vector;
 
 	function to_ascii (
 		constant arg : nibble)
@@ -982,8 +983,8 @@ package body std is
 
 	function to_ascii(
 		constant arg : string)
-		return byte_vector is
-		variable retval : byte_vector(arg'range);
+		return ascii_vector is
+		variable retval : ascii_vector(arg'range);
 	begin
 		for i in retval'range loop
 			retval(i) := to_stdlogicvector(arg(i));
