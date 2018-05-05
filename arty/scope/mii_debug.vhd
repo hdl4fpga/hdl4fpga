@@ -32,7 +32,7 @@ use hdl4fpga.cgafont.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture miitx_dhcp of arty is
+architecture mii_debug of arty is
 	signal sys_clk        : std_logic;
 	signal mii_req        : std_logic;
 	signal eth_txclk_bufg : std_logic;
@@ -100,7 +100,7 @@ begin
 			mii_req <= '0';
 			led(0)  <= '1';
 		elsif rising_edge(eth_txclk_bufg) then
-			led(1)  <= '0';
+			led(0)  <= '0';
 			mii_req <= '1';
 		end if;
 	end process;

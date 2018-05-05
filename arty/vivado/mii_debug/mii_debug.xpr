@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="35" Path="/home/msagre/work/hdl4fpga/arty/vivado/mii_tb/mii_tb.xpr">
+<Project Version="7" Minor="35" Path="/home/msagre/work/hdl4fpga/arty/vivado/mii_debug/mii_debug.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="d384dd4edb5d4b09833cae55808d8ec7"/>
@@ -19,6 +19,7 @@
     <Option Name="CompiledLibDirActivehdl" Val="$PCACHEDIR/compile_simlib/activehdl"/>
     <Option Name="TargetLanguage" Val="VHDL"/>
     <Option Name="BoardPart" Val=""/>
+    <Option Name="SourceMgmtMode" Val="DisplayOnly"/>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
@@ -70,21 +71,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../common/arty.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../library/video/cga/cgafonts.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../library/xilinx/dfs.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -140,7 +127,21 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../scope/miitx_dhcp.vhd">
+      <File Path="$PPRDIR/../../common/arty.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../library/xilinx/dfs.vhd">
+        <FileInfo>
+          <Attr Name="Library" Val="hdl4fpga"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../scope/mii_debug.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -150,12 +151,11 @@
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="arty"/>
-        <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>
     <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
       <Filter Type="Constrs"/>
-      <File Path="$PPRDIR/../../scope/scopeio.xdc">
+      <File Path="$PPRDIR/../../scope/mii_debug.xdc">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
@@ -169,7 +169,7 @@
       <Filter Type="Srcs"/>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
-        <Option Name="TopModule" Val="arty"/>
+        <Option Name="TopModule" Val="mii_debug"/>
         <Option Name="TopLib" Val="hdl4fpga"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
         <Option Name="TransportPathDelay" Val="0"/>
