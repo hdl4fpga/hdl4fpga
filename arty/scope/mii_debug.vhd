@@ -68,16 +68,23 @@ begin
 		I => eth_tx_clk,
 		O => eth_txclk_bufg);
 
-	video_dcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 10.0,
-		dfs_div => 2,
-		dfs_mul => 3)
-	port map (
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk,
-		dcm_lck => open);
+	dcm_e : block
+		signal video_clkfb : std_logic;
+	begin
+		video_dcm_i : mmcme2_base
+		generic map (
+			clkin1_period    => 10.0,
+			clkfbout_mult_f  => 12.0,		-- 200 MHz
+			clkout0_divide_f => 8.0,
+			bandwidth        => "LOW")
+		port map (
+			pwrdwn   => '0',
+			rst      => '0',
+			clkin1   => sys_clk,
+			clkfbin  => video_clkfb,
+			clkfbout => video_clkfb,
+			clkout0  => video_clk);
+	end block;
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
