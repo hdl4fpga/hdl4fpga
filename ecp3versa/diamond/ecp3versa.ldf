@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="mii_tx">
+<BaliProject version="3.2" title="ecp3versa" device="LFE3-35EA-8FN484C" default_implementation="mii_debug">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
-    <Implementation title="mii_tx" dir="mii_tx" description="mii_tx" synthesis="synplify" default_strategy="Area">
+    <Implementation title="mii_debug" dir="mii_debug" description="mii_debug" synthesis="synplify" default_strategy="Area">
         <Options def_top="hdl4fpga.draw_vline" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
@@ -52,7 +52,7 @@
         </Source>
     </Implementation>
     <Implementation title="scope" dir="scope" description="scope" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.ddr3iob" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="ecp3versa" top_module="ecp3versa"/>
         </Source>

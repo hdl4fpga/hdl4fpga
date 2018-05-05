@@ -19,8 +19,8 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/mii_tx/ecp3versa_mii_tx.bit</File>
-			<FileTime>04/30/18 16:59:25</FileTime>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/mii_debug/ecp3versa_mii_debug.bit</File>
+			<FileTime>05/05/18 16:09:00</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>

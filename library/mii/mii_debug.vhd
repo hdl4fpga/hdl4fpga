@@ -177,14 +177,15 @@ begin
 			cga_clk  <= mii_rxc;
 			cga_ena  <= mac_vld and mii_rxdv;
 			process (mii_rxd)
-				constant tab  : ascii_vector := to_ascii("0123456789ABCDEF");
+				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
 				variable rxd  : unsigned(0 to mii_rxd'length-1);
 				variable data : unsigned(ascii'length*mii_rxd'length/4-1 downto 0);
 			begin
 				rxd := unsigned(reverse(mii_rxd));
 				for i in 0 to mii_rxd'length/4-1 loop
-					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
 					data := data ror ascii'length;
+					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
+					rxd  := rxd sll 4;
 				end loop;
 
 				cga_wdata <= std_logic_vector(data);
@@ -194,7 +195,7 @@ begin
 				variable aux : unsigned(video_addr'range);
 			begin
 				aux := resize(unsigned(video_vcntr) srl 4, video_addr'length);
-				aux := ((aux sll 4) - aux) sll 3;  -- * (1920/16)
+				aux := ((aux sll 4) - aux) sll 4;  -- * (1920/8)
 				aux := aux + (unsigned(video_hcntr) srl 3);
 				video_addr <= std_logic_vector(aux);
 			end process;
