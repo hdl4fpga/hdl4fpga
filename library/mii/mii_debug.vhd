@@ -56,7 +56,7 @@ architecture struct of mii_debug is
 	signal mac_vld        : std_logic;
 begin
 
-	xxx : block
+	eth_b : block
 		signal pre_rdy : std_logic;
 		signal mac_rdy : std_logic;
 		signal mac_rxdv : std_logic;
@@ -99,31 +99,42 @@ begin
 			mac_vld <= vld and mac_rdy;
 		end block;
 
---		myip_b: block
---			: std_logic_vector := (
---				(  0, "0"),
---				(128, "1"),
---				(160, "0"),
---				(188, "1"));
---
---		begin
---			miimymac_e  : entity hdl4fpga.mii_mem
---			generic map (
---				mem_data => mii_mymac)
---			port map (
---				mii_txc  => mii_rxc,
---				mii_treq => pre_rdy,
---				mii_trdy => mac_rdy,
---				mii_txen => mac_rxdv,
---				mii_txd  => mac_rxd);
---
---			process (mii_rxc)
---			begin
---				if rising_edge(mii_rxc) then
---					if ptr=
---				end if;
---			end process;
---		end block;
+		ip_b: block
+		begin
+			process (mii_rxc)
+				constant xxx : natural_vector := ();
+				constant yyy : std_logic_vector := "0" & "1" & "0";
+				variable zzz : std_logic_vector(0 to yyy'length/xxx'length-1);
+			begin
+				if rising_edge(mii_rxc) then
+					set :
+					for i in xxx'range loop
+						:= sll yyy'length/xxx'length;
+						:= zzz xor ;
+						for j in zzz'range loop
+							if zzz(j)='1' then
+								if ddd(j)='1' then 
+									set(j) 
+								else
+									reset(j);
+								end if;
+							end if;	
+						end loop;
+					end loop;
+				end if;
+			end process;
+
+			miimymac_e : entity hdl4fpga.mii_mem
+			generic map (
+				mem_data => mii_mymac)
+			port map (
+				mii_txc  => mii_rxc,
+				mii_treq => pre_rdy,
+				mii_trdy => mac_rdy,
+				mii_txen => mac_rxdv,
+				mii_txd  => mac_rxd);
+
+		end block;
 
 	end block;
 		
