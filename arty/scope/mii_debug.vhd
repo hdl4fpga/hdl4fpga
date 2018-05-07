@@ -35,6 +35,7 @@ use unisim.vcomponents.all;
 architecture mii_debug of arty is
 	signal sys_clk        : std_logic;
 	signal mii_req        : std_logic;
+	signal mii_rxd        : std_logic_vector
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
 	signal video_dot      : std_logic;
@@ -90,8 +91,8 @@ begin
 	port map (
 		mii_req   => mii_req,
 		mii_rxc   => eth_rxclk_bufg,
-		mii_rxd   => eth_rxd,
-		mii_rxdv  => eth_rx_dv,
+		mii_rxd   => mii_rxd, -- eth_rxd,
+		mii_rxdv  => mii_rxdv, --eth_rx_dv,
 		mii_txc   => eth_txclk_bufg,
 		mii_txd   => eth_txd,
 		mii_txdv  => eth_tx_en,
@@ -101,6 +102,12 @@ begin
 		video_hs  => video_hs,
 		video_vs  => video_vs);
 		
+	process(eth_txclk_bufg)
+	begin
+		if rising_edge(eth_txclk_bufg) then
+		end if;
+	end process;
+
 	process (btn(0), eth_txclk_bufg)
 	begin
 		if btn(0)='1' then

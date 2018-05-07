@@ -40,7 +40,7 @@ entity miitx_dhcp is
 end;
 
 architecture mix of miitx_dhcp is
-	constant payload_size : natural := 244;
+	constant payload_size : natural := 244+6;
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 	constant mii_data : std_logic_vector := reverse(
@@ -77,6 +77,7 @@ architecture mix of miitx_dhcp is
 			(1 to 8*128 => '0')    &    -- SNAME
 			x"63825363"            &    -- MAGIC COOKIE
 			x"350101"              &    -- DHCPDISCOVER
+			x"370401030f06"        &    -- 
 			x"FF"),8);                  -- END
 
 	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
