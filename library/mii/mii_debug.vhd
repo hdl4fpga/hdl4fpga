@@ -97,8 +97,8 @@ begin
 					end if;
 				end if;
 			end process;
---			mac_vld <= vld and mac_rdy;
-			mac_vld <= pre_rdy;
+			mac_vld <= vld and mac_rdy;
+--			mac_vld <= pre_rdy;
 		end block;
 
 		ip_b: block
@@ -209,10 +209,10 @@ begin
 				variable edge : std_logic := '0';
 			begin
 				if rising_edge(cga_clk) then
-					if cga_ena='0' and edge='1' then
-						--cga_addr <= (others => '0');
+					if cga_ena='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
-					else
+					elsif edge='1' then
+						--cga_addr <= (others => '0');
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					end if;
 					edge := cga_ena;
