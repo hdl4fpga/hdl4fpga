@@ -43,26 +43,26 @@ begin
 
 	process(mii_rxc)
 		variable data : unsigned(0 to mii_rxd'length);
-		variable carr : std_logic;
+		variable cy   : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
 				rdy  <= '0';
-				carr := '0';
+				cy   := '0';
 				data := (others => '0');
 			elsif mii_rxdv='1' then
 				if rdy='0' then
 					data := data(0) & unsigned(mii_rxd);
 					for i in mii_rxd'range loop
 						if (data(0) xnor data(1))='1' then
-							if carr='1' then
+							if cy='1' then
 								if data(0)='1' then
 									rdy <= '1';
 								end if;
 							end if;
-							carr := '0';
+							cy := '0';
 						else
-							carr := '1';
+							cy := '1';
 						end if;
 						data := data sll 1;
 					end loop;

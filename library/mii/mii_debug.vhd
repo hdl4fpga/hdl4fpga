@@ -54,13 +54,14 @@ architecture struct of mii_debug is
 	signal video_vcntr    : std_logic_vector(11-1 downto 0);
 	signal video_hcntr    : std_logic_vector(11-1 downto 0);
 	signal mac_vld        : std_logic;
+	signal pkt_vld        : std_logic;
 begin
 
 	eth_b : block
-		signal pre_rdy : std_logic;
-		signal mac_rdy : std_logic;
+		signal pre_rdy  : std_logic;
+		signal mac_rdy  : std_logic;
 		signal mac_rxdv : std_logic;
-		signal mac_rxd : std_logic_vector(mii_rxd'range);
+		signal mac_rxd  : std_logic_vector(mii_rxd'range);
 
 		constant mii_mymac : std_logic_vector := reverse(x"00_40_00_01_02_03", 8);
 	begin
@@ -96,52 +97,73 @@ begin
 					end if;
 				end if;
 			end process;
-			mac_vld <= vld and mac_rdy;
+--			mac_vld <= vld and mac_rdy;
+			mac_vld <= pre_rdy;
 		end block;
 
 		ip_b: block
-			function (
-				constant input  : natural_vector;
-				constant output : std_logic_vector := "0" & "1" & "0";
-				constant select : std_logic_vector) 
+			constant tabindex : natural_vector   := (0, 2);
+			constant tabdata  : std_logic_vector := "1" & "0";
+			function lookup (
+				constant tabindex : natural_vector;
+				constant tabdata  : std_logic_vector;
+				constant lookup   : std_logic_vector) 
 				return std_logic_vector is
-				variable aux    : unsigned(output'range);
-				variable retval : std_logic_vector;
+				variable aux      : unsigned(0 to tabdata'length-1);
+				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
 			begin
 				retval := (others => '-');
-				for i in slice'range loop
-					exit when slice(i) < inp;
-					retval := yyy(0 to yyy'length/xxx'length-1);
-					yyy := yyy rol yyy'length/xxx'length;
+				aux    := unsigned(tabdata);
+				for i in tabindex'range loop
+					exit when tabindex(i) < to_integer(unsigned(lookup));
+					retval := std_logic_vector(aux(retval'range));
+					aux    := aux rol retval'length;
 				end loop;
+				return retval;
 			end;
-
+			signal miiip_ena : std_logic;
+			signal miiip_rdy  : std_logic;
+			signal miiip_rxdv : std_logic;
+			signal miiip_rxd  : std_logic_vector(mii_rxd'range);
+			signal cntr      : unsigned(0 to 5);
 		begin
 			process (mii_rxc)
-				constant xxx : natural_vector := ();
-				constant yyy : std_logic_vector := "0" & "1" & "0";
-				variable zzz : std_logic_vector(0 to yyy'length/xxx'length-1);
-				variable ooo : std_logic_vector;
 			begin
 				if rising_edge(mii_rxc) then
-					ooo <= (others => '-');
-					for i in xxx'range loop
-						exit when xxx(i) < inp;
-						ooo := yyy(0 to yyy'length/xxx'length-1);
-						yyy := yyy rol yyy'length/xxx'length;
-					end loop;
+					if mac_vld='0' then
+						cntr <= (others => '0');
+					elsif cntr(0)='0' then
+						cntr <= cntr + 1;
+					end if;
 				end if;
 			end process;
+			miiip_ena <= lookup(tabindex, tabdata, std_logic_vector(cntr))(0) and not cntr(0) and mac_vld;
 
-			miimymac_e : entity hdl4fpga.mii_mem
+			miiip_e : entity hdl4fpga.mii_mem
 			generic map (
-				mem_data => mii_mymac)
+				mem_data => reverse(x"0800"))
 			port map (
 				mii_txc  => mii_rxc,
-				mii_treq => pre_rdy,
-				mii_trdy => mac_rdy,
-				mii_txen => mac_rxdv,
-				mii_txd  => mac_rxd);
+				mii_treq => mac_vld,
+				mii_trdy => miiip_rdy,
+				mii_txen => miiip_rxdv,
+				mii_txd  => miiip_rxd);
+
+			process (mii_txc)
+				variable cy : std_logic;
+			begin
+				if rising_edge(mii_txc) then
+					if miiip_ena='0' then
+						cy := '1';
+					elsif miiip_rxdv='1' then
+						if cy='1' then
+							if miiip_rxd/=mii_rxd then
+								cy := '0';
+							end if;
+						end if;
+					end if;
+				end if;
+			end process;
 
 		end block;
 
@@ -157,7 +179,7 @@ begin
 		signal cga_ena   : std_logic;
 		signal cga_rdata : std_logic_vector(ascii'range);
 		signal cga_wdata : std_logic_vector(ascii'length*mii_rxd'length/4-1 downto 0);
-		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((2*mii_rxd'length/4)-1) downto 0);
+		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((2*mii_rxd'length/4)-1) downto 0) := (others => '0');
 
 		signal video_on  : std_logic;
 	begin
@@ -184,13 +206,16 @@ begin
 		begin
 
 			process (cga_clk)
+				variable edge : std_logic := '0';
 			begin
 				if rising_edge(cga_clk) then
-					if cga_ena='0' then
-						cga_addr <= (others => '0');
+					if cga_ena='0' and edge='1' then
+						--cga_addr <= (others => '0');
+						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					else
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					end if;
+					edge := cga_ena;
 				end if;
 			end process;
 

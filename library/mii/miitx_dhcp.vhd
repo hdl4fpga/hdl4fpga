@@ -30,7 +30,7 @@ use hdl4fpga.std.all;
 
 entity miitx_dhcp is
 	generic (
-		mac_src   : std_logic_vector(0 to 48-1) := x"004000010203");
+		mac   : std_logic_vector(0 to 48-1) := x"004000010203");
 	port (
 		mii_treq  : in  std_logic;
 		mii_trdy  : out std_logic;
@@ -45,7 +45,7 @@ architecture mix of miitx_dhcp is
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 	constant mii_data : std_logic_vector := reverse(
 		x"ffffffffffff"	       &    
-		mac_src                &    -- MAC Source Address
+		mac                &    -- MAC Source Address
 		x"0800"                &    -- MAC Protocol ID
 		ipheader_checksumed(
 			x"4500"            &    -- IP  Version, header length, TOS
@@ -70,7 +70,7 @@ architecture mix of miitx_dhcp is
 			x"00000000"            &    -- YIADDR
 			x"00000000"            &    -- SIADDR
 			x"00000000"            &    -- GIADDR
-			mac_src & x"0000"      &    -- CHADDR
+			mac & x"0000"      &    -- CHADDR
 			x"00000000"            &    -- CHADDR
 			x"00000000"            &    -- CHADDR
 			(1 to 8* 64 => '0')    &    -- SNAME

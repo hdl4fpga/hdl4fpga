@@ -134,13 +134,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/xilinx/dfs.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../scope/mii_debug.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
