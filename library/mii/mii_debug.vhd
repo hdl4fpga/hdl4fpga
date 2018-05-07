@@ -100,26 +100,35 @@ begin
 		end block;
 
 		ip_b: block
+			function (
+				constant input  : natural_vector;
+				constant output : std_logic_vector := "0" & "1" & "0";
+				constant select : std_logic_vector) 
+				return std_logic_vector is
+				variable aux    : unsigned(output'range);
+				variable retval : std_logic_vector;
+			begin
+				retval := (others => '-');
+				for i in slice'range loop
+					exit when slice(i) < inp;
+					retval := yyy(0 to yyy'length/xxx'length-1);
+					yyy := yyy rol yyy'length/xxx'length;
+				end loop;
+			end;
+
 		begin
 			process (mii_rxc)
 				constant xxx : natural_vector := ();
 				constant yyy : std_logic_vector := "0" & "1" & "0";
 				variable zzz : std_logic_vector(0 to yyy'length/xxx'length-1);
+				variable ooo : std_logic_vector;
 			begin
 				if rising_edge(mii_rxc) then
-					set :
+					ooo <= (others => '-');
 					for i in xxx'range loop
-						:= sll yyy'length/xxx'length;
-						:= zzz xor ;
-						for j in zzz'range loop
-							if zzz(j)='1' then
-								if ddd(j)='1' then 
-									set(j) 
-								else
-									reset(j);
-								end if;
-							end if;	
-						end loop;
+						exit when xxx(i) < inp;
+						ooo := yyy(0 to yyy'length/xxx'length-1);
+						yyy := yyy rol yyy'length/xxx'length;
 					end loop;
 				end if;
 			end process;
