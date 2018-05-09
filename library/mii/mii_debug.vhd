@@ -178,8 +178,8 @@ begin
 		signal cga_clk   : std_logic;
 		signal cga_ena   : std_logic;
 		signal cga_rdata : std_logic_vector(ascii'range);
-		signal cga_wdata : std_logic_vector(ascii'length*mii_rxd'length/4-1 downto 0);
-		signal cga_addr  : std_logic_vector(14-unsigned_num_bits((2*mii_rxd'length/4)-1) downto 0) := (others => '0');
+		signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
+		signal cga_addr  : std_logic_vector(13-1 downto 0) := (others => '0');
 
 		signal video_on  : std_logic;
 	begin
@@ -203,6 +203,7 @@ begin
 
 			signal rd_addr    : std_logic_vector(video_addr'range);
 			signal rd_data    : std_logic_vector(cga_rdata'range);
+			signal rxd8       : std_logic_vector(0 to 8-1);
 		begin
 
 			process (cga_clk)
@@ -221,19 +222,42 @@ begin
 
 			cga_clk  <= mii_rxc;
 			cga_ena  <= mac_vld and mii_rxdv;
-			process (mii_rxd)
-				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
-				variable rxd  : unsigned(0 to mii_rxd'length-1);
-				variable data : unsigned(ascii'length*mii_rxd'length/4-1 downto 0);
-			begin
-				rxd := unsigned(reverse(mii_rxd));
-				for i in 0 to mii_rxd'length/4-1 loop
-					data := data ror ascii'length;
-					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
-					rxd  := rxd sll 4;
-				end loop;
 
-				cga_wdata <= std_logic_vector(data);
+			process (mii_rxc, mii_rxd)
+				variable cntr : unsigned(0 to 3);
+			begin
+				if rising_edge(mii_rxc) then
+					if mac_vld='0' then
+						cntr := (others => '0');
+					else
+						for i in mii_rxd'range loop
+							rxd8    := rxd8 sll 1;
+							rxd8(0) := mii_rxd(0);
+							cntr    := cntr + 1;
+						end loop;
+					end if;
+					if cntr(0)='1' then
+						cntr := (others => '0');
+					end if;
+				end if;
+			end process;
+
+			process (mii_rxc)
+				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
+				variable rxd  : unsigned(rxd8'range);
+				variable data : unsigned(2*ascii'length-1 downto 0);
+			begin
+				if rising_edge(mii_rxc) then
+					if then
+						rxd := unsigned(reverse(rxd8));
+						for i in 0 to 2-1 loop
+							data := data ror ascii'length;
+							data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
+							rxd  := rxd sll 4;
+						end loop;
+						cga_wdata <= std_logic_vector(data);
+					end if;
+				end if;
 			end process;
 
 			process (video_vcntr, video_hcntr)
