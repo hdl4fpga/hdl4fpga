@@ -55,6 +55,7 @@ architecture struct of mii_debug is
 	signal video_hcntr    : std_logic_vector(11-1 downto 0);
 	signal mac_vld        : std_logic;
 	signal pkt_vld        : std_logic;
+	signal ip_vld         : std_logic;
 begin
 
 	eth_b : block
@@ -149,12 +150,12 @@ begin
 				mii_txen => miiip_rxdv,
 				mii_txd  => miiip_rxd);
 
-			process (mii_txc)
-				variable cy : std_logic;
+			process (mii_txc, miiip_rdy)
+				variable cy  : std_logic;
 			begin
 				if rising_edge(mii_txc) then
 					if miiip_ena='0' then
-						cy := '1';
+						cy  := '1';
 					elsif miiip_rxdv='1' then
 						if cy='1' then
 							if miiip_rxd/=mii_rxd then
@@ -163,6 +164,7 @@ begin
 						end if;
 					end if;
 				end if;
+				ip_vld <= miiip_rdy and cy;
 			end process;
 
 		end block;
@@ -212,50 +214,50 @@ begin
 				if rising_edge(cga_clk) then
 					if cga_ena='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
-					elsif edge='1' then
-						--cga_addr <= (others => '0');
+					elsif (mac_vld='0' or mii_rxdv='0') and edge='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					end if;
-					edge := cga_ena;
+					edge := mac_vld and mii_rxdv;
 				end if;
 			end process;
 
 			cga_clk  <= mii_rxc;
-			cga_ena  <= mac_vld and mii_rxdv;
+			pkt_vld <= ip_vld and mii_rxdv;
 
-			process (mii_rxc, mii_rxd)
+			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
 				variable cntr : unsigned(0 to 8/mii_rxd'length-1);
 			begin
-				if rising_edge(mii_rxc) then
-					if mac_vld='0' then
-						cntr := (others => '0');
-					else
-						aux := aux rol mii_rxd'length; 
-						aux(mii_rxd'range) := mii_rxd;
-						cntr := cntr rol 1;
+				if mii_rxd'length < rxd8'length then
+					if rising_edge(mii_rxc) then
+						if pkt_vld='0' then
+							cntr := (1 to cntr'length-1 => '0') & "1";
+						else
+							aux := aux rol mii_rxd'length; 
+							aux(mii_rxd'range) := mii_rxd;
+							cntr := cntr rol 1;
+						end if;
+						cga_ena <= cntr(0);
 					end if;
-					cga_ena <= cntr(0);
+					rxd8 <= aux & mii_rxd;
+				else
+					rxd8 <= mii_rxd;
+					cga_ena <= pkt_vld;
 				end if;
-				rxd8 <= aux & mii_rxd;
 			end process;
 
-			process (mii_rxc)
+			process (mii_rxd)
 				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
 				variable rxd  : unsigned(rxd8'range);
 				variable data : unsigned(2*ascii'length-1 downto 0);
 			begin
-				if rising_edge(mii_rxc) then
-					if then
-						rxd := unsigned(reverse(rxd8));
-						for i in 0 to 2-1 loop
-							data := data ror ascii'length;
-							data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
-							rxd  := rxd sll 4;
-						end loop;
-						cga_wdata <= std_logic_vector(data);
-					end if;
-				end if;
+				rxd := unsigned(reverse(rxd8));
+				for i in 0 to rxd'length/4-1 loop
+					data := data ror ascii'length;
+					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
+					rxd  := rxd sll 4;
+				end loop;
+				cga_wdata <= std_logic_vector(data);
 			end process;
 
 			process (video_vcntr, video_hcntr)
