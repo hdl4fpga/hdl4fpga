@@ -224,22 +224,20 @@ begin
 			cga_ena  <= mac_vld and mii_rxdv;
 
 			process (mii_rxc, mii_rxd)
-				variable cntr : unsigned(0 to 3);
+				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
+				variable cntr : unsigned(0 to 8/mii_rxd'length-1);
 			begin
 				if rising_edge(mii_rxc) then
 					if mac_vld='0' then
 						cntr := (others => '0');
 					else
-						for i in mii_rxd'range loop
-							rxd8    := rxd8 sll 1;
-							rxd8(0) := mii_rxd(0);
-							cntr    := cntr + 1;
-						end loop;
+						aux := aux rol mii_rxd'length; 
+						aux(mii_rxd'range) := mii_rxd;
+						cntr := cntr rol 1;
 					end if;
-					if cntr(0)='1' then
-						cntr := (others => '0');
-					end if;
+					cga_ena <= cntr(0);
 				end if;
+				rxd8 <= aux & mii_rxd;
 			end process;
 
 			process (mii_rxc)
