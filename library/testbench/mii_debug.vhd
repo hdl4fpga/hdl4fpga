@@ -31,14 +31,15 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture miitx_dhcp of testbench is
+architecture mii_debug of testbench is
 	signal rst  : std_logic := '1';
 	signal clk  : std_logic := '1';
-	signal txd  : std_logic_vector(0 to 4-1);
-	signal txrd : std_logic_vector(0 to 4-1);
-	signal txdv : std_logic;
+	signal rxd  : std_logic_vector(0 to 4-1);
+	signal rxdv : std_logic;
 	signal treq : std_logic;
+
 begin
+
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 20 ns;
 
@@ -52,12 +53,25 @@ begin
 		end if;
 	end process;
 
-
-	du : entity hdl4fpga.miitx_dhcp
+	
+	miipkt_e : entity hdl4fpga.mii_mem
+	generic map (
+		mem_data => mii_mymac)
 	port map (
-        mii_txc  => clk,
+		mii_txc  => clk,
 		mii_treq => treq,
-		mii_txdv => txdv,
-		mii_txd  => txd);
-	txrd <= reverse(txd);
+		mii_trdy => open,
+		mii_txen => rxdv,
+		mii_txd  => rxd);
+
+	du : entity hdl4fpga.mii_debug
+	port map (
+        mii_rxc  => clk,
+		mii_rxdv => rxdv,
+		mii_rxd  => rxd,
+
+        mii_txc  => clk,
+		mii_req  => '0',
+	
+		video_clk => '0');
 end;

@@ -31,10 +31,11 @@ use hdl4fpga.cgafont.all;
 
 entity mii_debug is
 	port (
-		mii_req   : in  std_logic;
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
+
+		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
@@ -103,8 +104,9 @@ begin
 		end block;
 
 		ip_b: block
-			constant tabindex : natural_vector   := (0, 2);
+			constant tabindex : natural_vector   := (0, 2*8/mii_txd'length);
 			constant tabdata  : std_logic_vector := "1" & "0";
+
 			function lookup (
 				constant tabindex : natural_vector;
 				constant tabdata  : std_logic_vector;
@@ -122,12 +124,15 @@ begin
 				end loop;
 				return retval;
 			end;
-			signal miiip_ena : std_logic;
+
+			signal miiip_ena  : std_logic;
 			signal miiip_rdy  : std_logic;
 			signal miiip_rxdv : std_logic;
 			signal miiip_rxd  : std_logic_vector(mii_rxd'range);
-			signal cntr      : unsigned(0 to 5);
+			signal cntr       : unsigned(0 to 5);
+
 		begin
+
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
@@ -142,7 +147,8 @@ begin
 
 			miiip_e : entity hdl4fpga.mii_mem
 			generic map (
-				mem_data => reverse(x"0800"))
+--				mem_data => reverse(x"0800"))
+				mem_data => reverse(x"0025"))
 			port map (
 				mii_txc  => mii_rxc,
 				mii_treq => mac_vld,
@@ -167,7 +173,7 @@ begin
 						vld := cy;
 					end if;
 				end if;
-				ip_vld <= miiip_rdy and vld;
+				ip_vld <= miiip_rdy and cy;
 			end process;
 
 		end block;

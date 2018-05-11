@@ -65,7 +65,7 @@ architecture mix of miitx_dhcp is
 			x"0000"                &	-- UDP CHECKSUM
 			x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"            &    -- XID
-			x"00000100"            &    -- SECS, FLAGS
+			x"00000000"            &    -- SECS, FLAGS
 			x"00000000"            &    -- CIADDR
 			x"00000000"            &    -- YIADDR
 			x"00000000"            &    -- SIADDR
