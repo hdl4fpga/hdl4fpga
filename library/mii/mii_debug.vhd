@@ -237,12 +237,12 @@ begin
 							cntr := (1 to cntr'length-1 => '0') & "1";
 						else
 							aux := aux rol mii_rxd'length; 
-							aux(mii_rxd'range) := mii_rxd;
+							aux(mii_rxd'range) := unsigned(mii_rxd);
 							cntr := cntr rol 1;
 						end if;
 						cga_ena <= cntr(0);
 					end if;
-					rxd8 <= aux & mii_rxd;
+					rxd8 <= std_logic_vector(aux) & mii_rxd;
 				else
 					rxd8 <= mii_rxd;
 					cga_ena <= pkt_vld;
