@@ -152,19 +152,22 @@ begin
 
 			process (mii_txc, miiip_rdy)
 				variable cy  : std_logic;
+				variable vld : std_logic;
 			begin
 				if rising_edge(mii_txc) then
-					if miiip_ena='0' then
+					if mac_vld='0' then
 						cy  := '1';
+						vld := '0';
 					elsif miiip_rxdv='1' then
 						if cy='1' then
 							if miiip_rxd/=mii_rxd then
 								cy := '0';
 							end if;
 						end if;
+						vld := cy;
 					end if;
 				end if;
-				ip_vld <= miiip_rdy and cy;
+				ip_vld <= miiip_rdy and vld;
 			end process;
 
 		end block;
