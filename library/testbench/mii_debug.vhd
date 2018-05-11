@@ -56,7 +56,10 @@ begin
 	
 	miipkt_e : entity hdl4fpga.mii_mem
 	generic map (
-		mem_data => mii_mymac)
+		mem_data => reverse(
+			x"55555555555555db" &
+			x"004000010203",
+			8)
 	port map (
 		mii_txc  => clk,
 		mii_treq => treq,
