@@ -104,7 +104,7 @@ begin
 		end block;
 
 		ip_b: block
-			constant tabindex : natural_vector   := (0, 2*8/mii_txd'length);
+			constant tabindex : natural_vector(0 to 1)   := (0, 2*8/mii_txd'length);
 			constant tabdata  : std_logic_vector := "1" & "0";
 
 			function lookup (
@@ -118,10 +118,11 @@ begin
 				retval := (others => '-');
 				aux    := unsigned(tabdata);
 				for i in tabindex'range loop
-					exit when tabindex(i) < to_integer(unsigned(lookup));
+					next when tabindex(i) < to_integer(unsigned(lookup));
 					retval := std_logic_vector(aux(retval'range));
 					aux    := aux rol retval'length;
 				end loop;
+
 				return retval;
 			end;
 

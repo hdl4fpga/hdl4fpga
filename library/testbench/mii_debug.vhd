@@ -58,8 +58,8 @@ begin
 	miipkt_e : entity hdl4fpga.mii_mem
 	generic map (
 		mem_data => reverse(
-			x"55555555555555db" &
-			x"004000010203",
+			x"5555_5555_5555_55d5" &
+			x"0040000102030800",
 			8))
 	port map (
 		mii_txc  => clk,
