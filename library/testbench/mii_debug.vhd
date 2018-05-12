@@ -37,6 +37,7 @@ architecture mii_debug of testbench is
 	signal rxd  : std_logic_vector(0 to 4-1);
 	signal rxdv : std_logic;
 	signal treq : std_logic;
+	signal txd  : std_logic_vector(0 to 4-1);
 
 begin
 
@@ -59,7 +60,7 @@ begin
 		mem_data => reverse(
 			x"55555555555555db" &
 			x"004000010203",
-			8)
+			8))
 	port map (
 		mii_txc  => clk,
 		mii_treq => treq,
@@ -74,6 +75,7 @@ begin
 		mii_rxd  => rxd,
 
         mii_txc  => clk,
+		mii_txd  => txd,
 		mii_req  => '0',
 	
 		video_clk => '0');
