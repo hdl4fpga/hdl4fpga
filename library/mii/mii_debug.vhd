@@ -115,7 +115,7 @@ begin
 				variable aux      : unsigned(0 to tabdata'length-1);
 				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
 			begin
-				retval := (others => '-');
+				retval := (others => '0');
 				aux    := unsigned(tabdata);
 				for i in tabindex'range loop
 					next when tabindex(i) < to_integer(unsigned(lookup));
@@ -149,7 +149,7 @@ begin
 			miiip_e : entity hdl4fpga.mii_mem
 			generic map (
 --				mem_data => reverse(x"0800"))
-				mem_data => reverse(x"0025"))
+				mem_data => reverse(x"0025",8))
 			port map (
 				mii_txc  => mii_rxc,
 				mii_treq => mac_vld,

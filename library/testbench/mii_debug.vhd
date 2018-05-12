@@ -59,7 +59,8 @@ begin
 	generic map (
 		mem_data => reverse(
 			x"5555_5555_5555_55d5" &
-			x"0040000102030800",
+			x"00_40_00_01_02_03" & 
+			x"0025",
 			8))
 	port map (
 		mii_txc  => clk,
