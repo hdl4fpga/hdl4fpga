@@ -21,9 +21,12 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -105,24 +108,32 @@ begin
 
 		ip_b: block
 			constant tabindex : natural_vector(0 to 1)   := (0, 2*8/mii_txd'length);
-			constant tabdata  : std_logic_vector := "1" & "0";
+			constant tabdata  : std_logic_vector(0 to 1) := "1" & "0";
 
-			function lookup (
+			impure function lookup (
 				constant tabindex : natural_vector;
 				constant tabdata  : std_logic_vector;
 				constant lookup   : std_logic_vector) 
 				return std_logic_vector is
 				variable aux      : unsigned(0 to tabdata'length-1);
 				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
+				variable msg : line;
 			begin
-				retval := (others => '0');
+				retval := (others => '-');
 				aux    := unsigned(tabdata);
 				for i in tabindex'range loop
+					write (msg, tabindex(i));
+					write (msg, string'(" : "));
+					write (msg, to_integer(unsigned(lookup)));
+					writeline (output, msg);
 					next when tabindex(i) < to_integer(unsigned(lookup));
 					retval := std_logic_vector(aux(retval'range));
 					aux    := aux rol retval'length;
 				end loop;
 
+				write (msg, string'("--> "));
+				write (msg, retval(0));
+				writeline (output, msg);
 				return retval;
 			end;
 

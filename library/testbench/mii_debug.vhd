@@ -32,12 +32,13 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_debug of testbench is
+	constant n : natural := 8;
 	signal rst  : std_logic := '1';
 	signal clk  : std_logic := '1';
-	signal rxd  : std_logic_vector(0 to 4-1);
+	signal rxd  : std_logic_vector(0 to n-1);
 	signal rxdv : std_logic;
 	signal treq : std_logic;
-	signal txd  : std_logic_vector(0 to 4-1);
+	signal txd  : std_logic_vector(0 to n-1);
 
 begin
 
