@@ -34,8 +34,9 @@ entity mii_mem is
     port (
         mii_txc  : in  std_logic;
 		mii_treq : in  std_logic;
+		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
-        mii_txen : out std_logic;
+        mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
@@ -73,13 +74,15 @@ begin
 			if mii_treq='0' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
-				cntr <= cntr - 1;
+				if mii_tena='1' then
+					cntr <= cntr - 1;
+				end if;
 			end if;
 		end if;
 	end process;
 
 	mii_trdy <= mii_treq and cntr(0);
-	mii_txen <= mii_treq and not cntr(0);
+	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
 	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 
 end;

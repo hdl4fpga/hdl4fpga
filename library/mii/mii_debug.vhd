@@ -110,7 +110,7 @@ begin
 			constant tabindex : natural_vector(0 to 1)   := ((0+6)*(8/mii_txd'length), (2+6)*8/mii_txd'length);
 			constant tabdata  : std_logic_vector(0 to 1) := "1" & "1";
 
-			impure function lookup (
+			function lookup (
 				constant tabindex : natural_vector;
 				constant tabdata  : std_logic_vector;
 				constant lookup   : std_logic_vector) 
@@ -142,11 +142,11 @@ begin
 				return retval;
 			end;
 
-			signal miiip_ena  : std_logic;
+			signal miiip_req  : std_logic;
 			signal miiip_rdy  : std_logic;
 			signal miiip_rxdv : std_logic;
 			signal miiip_rxd  : std_logic_vector(mii_rxd'range);
-			signal cntr       : unsigned(0 to 5);
+			signal mii_ptr    : unsigned(0 to 5);
 
 		begin
 
@@ -154,39 +154,36 @@ begin
 			begin
 				if rising_edge(mii_rxc) then
 					if mac_vld='0' then
-						cntr <= (others => '0');
-					elsif cntr(0)='0' then
-						cntr <= cntr + 1;
+						mii_ptr <= (others => '0');
+					elsif mii_ptr(0)='0' then
+						mii_ptr <= mii_ptr + 1;
 					end if;
 				end if;
 			end process;
-			miiip_ena <= lookup(tabindex, tabdata, std_logic_vector(cntr))(0) and not cntr(0) and mac_vld;
+			miiip_req <= lookup(tabindex, tabdata, std_logic_vector(mii_ptr))(0) and not mii_ptr(0) and mac_vld;
 
 			miiip_e : entity hdl4fpga.mii_mem
 			generic map (
 				mem_data => reverse(x"0800",8))
 			port map (
 				mii_txc  => mii_rxc,
-				mii_treq => miiip_ena,
+				mii_treq => miiip_req,
 				mii_trdy => miiip_rdy,
-				mii_txen => miiip_rxdv,
+				mii_txdv => miiip_rxdv,
 				mii_txd  => miiip_rxd);
 
 			process (mii_txc, miiip_rdy)
-				variable cy  : std_logic;
-				variable vld : std_logic;
+				variable cy : std_logic;
 			begin
 				if rising_edge(mii_txc) then
 					if mac_vld='0' then
 						cy  := '1';
-						vld := '0';
 					elsif miiip_rxdv='1' then
 						if cy='1' then
 							if miiip_rxd/=mii_rxd then
 								cy := '0';
 							end if;
 						end if;
-						vld := cy;
 					end if;
 				end if;
 				ip_vld <= miiip_rdy and cy;
