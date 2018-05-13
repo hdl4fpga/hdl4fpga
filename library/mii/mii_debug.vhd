@@ -107,8 +107,8 @@ begin
 		end block;
 
 		ip_b: block
-			constant tabindex : natural_vector(0 to 1)   := (0, 2*8/mii_txd'length);
-			constant tabdata  : std_logic_vector(0 to 1) := "1" & "0";
+			constant tabindex : natural_vector(0 to 1)   := ((0+6)*(8/mii_txd'length), (2+6)*8/mii_txd'length);
+			constant tabdata  : std_logic_vector(0 to 1) := "1" & "1";
 
 			impure function lookup (
 				constant tabindex : natural_vector;
@@ -117,23 +117,28 @@ begin
 				return std_logic_vector is
 				variable aux      : unsigned(0 to tabdata'length-1);
 				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
-				variable msg : line;
+--				variable msg : line;
 			begin
-				retval := (others => '-');
+				retval := (others => '0');
 				aux    := unsigned(tabdata);
 				for i in tabindex'range loop
-					write (msg, tabindex(i));
-					write (msg, string'(" : "));
-					write (msg, to_integer(unsigned(lookup)));
-					writeline (output, msg);
-					next when tabindex(i) < to_integer(unsigned(lookup));
+--					write (msg, tabindex(i));
+--					write (msg, string'(" : "));
+--					write (msg, to_integer(unsigned(lookup)));
+--					write (msg, string'(" : "));
+--					write (msg, std_logic_vector(aux(retval'range)));
+--					writeline (output, msg);
+					exit when to_integer(unsigned(lookup)) < tabindex(i);
 					retval := std_logic_vector(aux(retval'range));
+--					write (msg, string'("retval : "));
+--					write (msg, retval);
+--					writeline (output, msg);
 					aux    := aux rol retval'length;
 				end loop;
 
-				write (msg, string'("--> "));
-				write (msg, retval(0));
-				writeline (output, msg);
+--				write (msg, string'("--> "));
+--				write (msg, retval(0));
+--				writeline (output, msg);
 				return retval;
 			end;
 
@@ -159,11 +164,10 @@ begin
 
 			miiip_e : entity hdl4fpga.mii_mem
 			generic map (
---				mem_data => reverse(x"0800"))
-				mem_data => reverse(x"0025",8))
+				mem_data => reverse(x"0800",8))
 			port map (
 				mii_txc  => mii_rxc,
-				mii_treq => mac_vld,
+				mii_treq => miiip_ena,
 				mii_trdy => miiip_rdy,
 				mii_txen => miiip_rxdv,
 				mii_txd  => miiip_rxd);
