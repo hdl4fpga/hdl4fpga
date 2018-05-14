@@ -30,63 +30,62 @@ use hdl4fpga.std.all;
 
 entity mii_ram is
 	generic (
-		mem_size : natural);
+		size     : natural);
     port (
-        mii_rxc  : in  std_logic;
-		mii_rd   : in  std_logic;
-		mii_rdv  : in  std_logic;
-        mii_txc  : in  std_logic;
+		mii_rxc  : in  std_logic;
+        mii_rxdv : in  std_logic;
+        mii_rxd  : in  std_logic;
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
-        mii_txen : out std_logic;
+        mii_txc  : in  std_logic;
+		mii_tena : in  std_logic := '1';
+        mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
 
-architecture def of mii_mem is
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
+architecture def of mii_ram is
+	constant addr_size : natural := unsigned_num_bits(size-1);
 
-	signal wr_addr  : unsigned(1 to addr_size);
-	signal rd_addr  : unsigned(0 to addr_size);
+	signal raddr  : unsigned(0 to addr_size-1);
+	signal waddr  : unsigned(0 to addr_size-1);
 
 begin
+
+	process (mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if mii_rxdv='0' then
+				waddr <= (others => '0');
+			else
+				waddr <= waddr + 1;
+			end if;
+		end if;
+	end process;
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => mii_rxc,
-		wr_addr => wr_addr,
-		wr_ena  => mii_rdv,
-		wr_data => mii_rd,
-
-		rd_addr => rd_addr(1 to addr_size),
+		wr_addr => std_logic_vector(waddr),
+		wr_data => mii_rxd,
+		wr_ena  => mii_rxdv,
+		rd_addr => std_logic_vector(raddr),
 		rd_data => mii_txd);
 
-	process (mii_rxc)
-		variable cntr : unsigned(0 to addr_size);
-	begin
-		if rising_edge(mii_rxc) then
-			if mii_rdv='0' then
-				cntr := to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				cntr := cntr - 1;
-			end if;
-			wr_addr <= std_logic_vector(cntr(wr_addr'range));
-		end if;
-	end process;
-
 	process (mii_txc)
-		variable cntr : unsigned(0 to addr_size);
 	begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
-				cntr := to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				cntr := cntr - 1;
+				raddr <= (others => '0');
+			elsif raddr < waddr then
+				if mii_tena='1' then
+					raddr <= raddr + 1;
+				end if;
 			end if;
-			rd_addr  <= std_logic_vector(cntr(rd_addr'range));
 		end if;
 	end process;
 
-	mii_txen <= mii_treq and not rd_addr(0);
-	mii_trdy <= mii_treq and     rd_addr(0);
+	mii_trdy <= mii_treq and setif(waddr=raddr);
+	mii_txdv <= mii_treq and not setif(waddr=raddr) and mii_tena;
+	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 
 end;
