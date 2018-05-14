@@ -21,65 +21,68 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture mii_debug of testbench is
-	constant n : natural := 8;
-	signal rst  : std_logic := '1';
-	signal clk  : std_logic := '1';
-	signal rxd  : std_logic_vector(0 to n-1);
-	signal rxdv : std_logic;
-	signal treq : std_logic;
-	signal txd  : std_logic_vector(0 to n-1);
+entity mii_rom is
+	generic (
+		mem_data : std_logic_vector);
+    port (
+        mii_txc  : in  std_logic;
+		mii_treq : in  std_logic;
+		mii_tena : in  std_logic := '1';
+		mii_trdy : out std_logic;
+        mii_txdv : out std_logic;
+        mii_txd  : out std_logic_vector);
+end;
+
+architecture def of mii_rom is
+	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
+	constant addr_size : natural := unsigned_num_bits(mem_size-1);
+
+	type byte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
+
+	function mem_init (
+		constant arg : std_logic_vector)
+		return byte_vector is
+
+		variable val : byte_vector(0 to 2**addr_size-1) := (others => (others => '-'));
+		variable aux : std_logic_vector(2**addr_size*val(0)'length-1 downto 0) := (others => '-');
+
+	begin
+		aux(arg'length-1 downto 0) := arg;
+		for i in 0 to mem_size-1 loop
+			val(i) := aux(val(0)'length-1 downto 0);
+			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
+		end loop;
+
+		return val;
+	end;
+
+	constant mem : byte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
+	signal cntr  : unsigned(0 to addr_size);
 
 begin
 
-	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 20 ns;
-
-	process (clk)
+	process (mii_txc)
 	begin
-		if rising_edge(clk) then
-			treq <= '1';
-			if rst='1' then
-				treq <= '0';
+		if rising_edge(mii_txc) then
+			if mii_treq='0' then
+				cntr <= to_unsigned(mem_size-1, cntr'length);
+			elsif cntr(0)='0' then
+				if mii_tena='1' then
+					cntr <= cntr - 1;
+				end if;
 			end if;
 		end if;
 	end process;
 
-	
-	miipkt_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5" &
-			x"00_40_00_01_02_03" & 
-			x"00_25_00_00_00_ff" &
-			x"08_00_00_00_00_ff",
-			8))
-	port map (
-		mii_txc  => clk,
-		mii_treq => treq,
-		mii_trdy => open,
-		mii_txen => rxdv,
-		mii_txd  => rxd);
+	mii_trdy <= mii_treq and cntr(0);
+	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
+	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 
-	du : entity hdl4fpga.mii_debug
-	port map (
-        mii_rxc  => clk,
-		mii_rxdv => rxdv,
-		mii_rxd  => rxd,
-
-        mii_txc  => clk,
-		mii_txd  => txd,
-		mii_req  => '0',
-	
-		video_clk => '0');
 end;

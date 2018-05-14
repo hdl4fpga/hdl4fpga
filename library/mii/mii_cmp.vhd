@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_mem is
+entity mii_cmp is
 	generic (
 		mem_data : std_logic_vector);
     port (
@@ -36,53 +36,41 @@ entity mii_mem is
 		mii_treq : in  std_logic;
 		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
-        mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+        mii_rxdv : in  std_logic;
+        mii_rxd  : in  std_logic_vector);
 end;
 
-architecture def of mii_mem is
-	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
-
-	type byte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
-
-	function mem_init (
-		constant arg : std_logic_vector)
-		return byte_vector is
-
-		variable val : byte_vector(0 to 2**addr_size-1) := (others => (others => '-'));
-		variable aux : std_logic_vector(2**addr_size*val(0)'length-1 downto 0) := (others => '-');
-
-	begin
-		aux(arg'length-1 downto 0) := arg;
-		for i in 0 to mem_size-1 loop
-			val(i) := aux(val(0)'length-1 downto 0);
-			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
-		end loop;
-
-		return val;
-	end;
-
-	constant mem : byte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
-	signal cntr  : unsigned(0 to addr_size);
-
+architecture def of mii_rom is
+	signal txd  : std_logic_vector(txd'range);
+	signal txdv : std_logic;
 begin
 
-	process (mii_txc)
+	mii_dhcp_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => mem_data)
+	port map (
+		mii_txc  => mii_rxc,
+		mii_treq => mii_req,
+		mii_tena => mii_tena;
+		mii_trdy => mii_rdy,
+		mii_txdv => txdv,
+		mii_txd  => txd);
+
+	process (mii_txc, miiip_rdy)
+		variable cy : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq='0' then
-				cntr <= to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				if mii_tena='1' then
-					cntr <= cntr - 1;
+			if mac_vld='0' then
+				cy  := '1';
+			elsif mii_rxdv='1' then
+				if cy='1' then
+					if miiip_rxd/=mii_rxd then
+						cy := '0';
+					end if;
 				end if;
 			end if;
 		end if;
+		ip_vld <= miiip_rdy and cy;
 	end process;
-
-	mii_trdy <= mii_treq and cntr(0);
-	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 
 end;

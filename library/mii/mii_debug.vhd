@@ -79,14 +79,14 @@ begin
 			mii_rdy  => pre_rdy);
 
 
-		miimymac_e  : entity hdl4fpga.mii_mem
+		miimymac_e  : entity hdl4fpga.mii_rom
 		generic map (
 			mem_data => mii_mymac)
 		port map (
 			mii_txc  => mii_rxc,
 			mii_treq => pre_rdy,
 			mii_trdy => mac_rdy,
-			mii_txen => mac_rxdv,
+			mii_txdv => mac_rxdv,
 			mii_txd  => mac_rxd);
 
 		macvld_b : block
@@ -107,8 +107,35 @@ begin
 		end block;
 
 		ip_b: block
-			constant tabindex : natural_vector(0 to 1)   := ((0+6)*(8/mii_txd'length), (2+6)*8/mii_txd'length);
-			constant tabdata  : std_logic_vector(0 to 1) := "1" & "1";
+
+			type field is record
+				offset : natural;
+				size   : natural;
+			end record;
+
+			type field_vector is array (natural range <>) of field;
+
+			constant ethertype : field := (6, 2);
+			constant ip_proto  : field := (ethertype.offser+9,  1);
+			constant ip_saddr  : field := (ethertype.offset+12, 4);
+			constant ip_daddr  : field := (ethertype.offset+16, 4);
+			constant udp_sport : field := (ethertype.offset+20, 2);
+			constant udp_dport : field := (ethertype.offset+22, 2);
+
+			constant tabindex : natural_vector(0 to 1)   := (0+6,   2+6);
+			constant tabdata  : std_logic_vector(0 to 1) :=   "1" &  "1";
+
+			function to_miisize (
+				constant tabindex : natural_vector;
+				constant mii_size : natural)
+				return   natural_vector is
+				variable retval   : natural_vector(tabindex'range);
+			begin
+				for i in tabindex'range loop
+					retval(i) := tabindex(i)*8/mii_size;
+				end loop;
+				return retval;
+			end;
 
 			function lookup (
 				constant tabindex : natural_vector;
@@ -117,28 +144,14 @@ begin
 				return std_logic_vector is
 				variable aux      : unsigned(0 to tabdata'length-1);
 				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
---				variable msg : line;
 			begin
 				retval := (others => '0');
 				aux    := unsigned(tabdata);
 				for i in tabindex'range loop
---					write (msg, tabindex(i));
---					write (msg, string'(" : "));
---					write (msg, to_integer(unsigned(lookup)));
---					write (msg, string'(" : "));
---					write (msg, std_logic_vector(aux(retval'range)));
---					writeline (output, msg);
 					exit when to_integer(unsigned(lookup)) < tabindex(i);
 					retval := std_logic_vector(aux(retval'range));
---					write (msg, string'("retval : "));
---					write (msg, retval);
---					writeline (output, msg);
 					aux    := aux rol retval'length;
 				end loop;
-
---				write (msg, string'("--> "));
---				write (msg, retval(0));
---				writeline (output, msg);
 				return retval;
 			end;
 
@@ -146,7 +159,7 @@ begin
 			signal miiip_rdy  : std_logic;
 			signal miiip_rxdv : std_logic;
 			signal miiip_rxd  : std_logic_vector(mii_rxd'range);
-			signal mii_ptr    : unsigned(0 to 5);
+			signal mii_ptr    : unsigned(0 to 6);
 
 		begin
 
@@ -160,9 +173,9 @@ begin
 					end if;
 				end if;
 			end process;
-			miiip_req <= lookup(tabindex, tabdata, std_logic_vector(mii_ptr))(0) and not mii_ptr(0) and mac_vld;
+			miiip_req <= lookup(to_miisize(tabindex, mii_txd'length), tabdata, std_logic_vector(mii_ptr))(0) and mac_vld;
 
-			miiip_e : entity hdl4fpga.mii_mem
+			miiip_e : entity hdl4fpga.mii_rom
 			generic map (
 				mem_data => reverse(x"0800",8))
 			port map (
@@ -189,6 +202,16 @@ begin
 				ip_vld <= miiip_rdy and cy;
 			end process;
 
+			mii_dhcp_e : entity hdl4fpga.mii_rom
+			generic map (
+				mem_data => reverse(x"1100430044",8))
+			port map (
+				mii_txc  => mii_rxc,
+				mii_treq => mii_req,
+				mii_tena => 
+				mii_trdy => mii_rdy,
+				mii_txdv => mii_rxdv,
+				mii_txd  => mii_rxd);
 		end block;
 
 	end block;

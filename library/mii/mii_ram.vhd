@@ -51,13 +51,23 @@ architecture def of mii_ram is
 
 begin
 
-	process (mii_rxc)
+	process (mii_rxc, mii_rxdv)
+		variable edge : std_logic;
+		variable cntr : unsigned(waddr'range);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='0' then
-				waddr <= (others => '0');
+				cntr := (others => '0');
 			else
-				waddr <= waddr + 1;
+				cntr := cntr + 1;
+			end if;
+			edge := mii_rxdv;
+		end if;
+
+		waddr <= cntr;
+		if mii_rxdv='0' then
+			if mii_rxdv='1' then
+				waddr <= (others => '0');
 			end if;
 		end if;
 	end process;

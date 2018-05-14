@@ -85,14 +85,14 @@ architecture mix of miitx_dhcp is
 	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;
 
 begin
-	miitx_mem_e  : entity hdl4fpga.mii_mem
+	miitx_mem_e  : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => mii_pkt)
 	port map (
 		mii_txc  => mii_txc,
 		mii_treq => mii_treq,
 		mii_trdy => mii_trdy,
-		mii_txen => mii_txdv,
+		mii_txdv => mii_txdv,
 		mii_txd  => mii_txd);
 
 end;
