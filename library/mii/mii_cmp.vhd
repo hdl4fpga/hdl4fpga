@@ -32,45 +32,42 @@ entity mii_cmp is
 	generic (
 		mem_data : std_logic_vector);
     port (
-        mii_txc  : in  std_logic;
+        mii_rxc  : in  std_logic;
+        mii_rxd  : in  std_logic_vector;
+		mii_ena  : in  std_logic := '1';
 		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
-		mii_trdy : out std_logic;
-        mii_rxdv : in  std_logic;
-        mii_rxd  : in  std_logic_vector);
+		mii_pktv : out std_logic);
 end;
 
-architecture def of mii_rom is
-	signal txd  : std_logic_vector(txd'range);
-	signal txdv : std_logic;
+architecture def of mii_cmp is
+	signal mii_txd  : std_logic_vector(mii_rxd'range);
+	signal mii_trdy : std_logic;
 begin
 
-	mii_dhcp_e : entity hdl4fpga.mii_rom
+	mii_data_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => mem_data)
 	port map (
 		mii_txc  => mii_rxc,
-		mii_treq => mii_req,
-		mii_tena => mii_tena;
-		mii_trdy => mii_rdy,
-		mii_txdv => txdv,
-		mii_txd  => txd);
+		mii_tena => mii_ena,
+		mii_treq => mii_treq,
+		mii_trdy => mii_trdy,
+		mii_txdv => open,
+		mii_txd  => mii_txd);
 
-	process (mii_txc, miiip_rdy)
+	process (mii_txc, mii_trdy)
 		variable cy : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if mac_vld='0' then
+			if mii_treq='0' then
 				cy  := '1';
-			elsif mii_rxdv='1' then
-				if cy='1' then
-					if miiip_rxd/=mii_rxd then
-						cy := '0';
-					end if;
+			elsif mii_trdy='0' then
+				if mii_ena='1' then
+					cy := cy and setif(mii_txd=mii_rxd);
 				end if;
 			end if;
 		end if;
-		ip_vld <= miiip_rdy and cy;
+		mii_pktv <= mii_trdy and cy;
 	end process;
 
 end;

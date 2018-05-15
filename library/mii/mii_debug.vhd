@@ -51,24 +51,22 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal video_frm      : std_logic;
-	signal video_hon      : std_logic;
-	signal video_nhl      : std_logic;
-	signal video_vld      : std_logic;
-	signal video_vcntr    : std_logic_vector(11-1 downto 0);
-	signal video_hcntr    : std_logic_vector(11-1 downto 0);
-	signal mac_vld        : std_logic;
-	signal pkt_vld        : std_logic;
-	signal ip_vld         : std_logic;
+	signal video_frm   : std_logic;
+	signal video_hon   : std_logic;
+	signal video_nhl   : std_logic;
+	signal video_vld   : std_logic;
+	signal video_vcntr : std_logic_vector(11-1 downto 0);
+	signal video_hcntr : std_logic_vector(11-1 downto 0);
+	signal mac_vld     : std_logic;
+	signal brst_vld    : std_logic;
+	signal pkt_vld     : std_logic;
+	signal ip_vld      : std_logic;
+	signal arp_vld     : std_logic;
 begin
 
 	eth_b : block
 		signal pre_rdy  : std_logic;
 		signal mac_rdy  : std_logic;
-		signal mac_rxdv : std_logic;
-		signal mac_rxd  : std_logic_vector(mii_rxd'range);
-
-		constant mii_mymac : std_logic_vector := reverse(x"00_40_00_01_02_03", 8);
 	begin
 
 		mii_pre_e : entity hdl4fpga.miirx_pre 
@@ -79,32 +77,24 @@ begin
 			mii_rdy  => pre_rdy);
 
 
-		miimymac_e  : entity hdl4fpga.mii_rom
+		mii_mac_e : entity hdl4fpga.mii_cmp
 		generic map (
-			mem_data => mii_mymac)
+			mem_data => reverse(x"00_40_00_01_02_03", 8))
 		port map (
-			mii_txc  => mii_rxc,
+			mii_rxc  => mii_rxc,
+			mii_rxd  => mii_rxd,
 			mii_treq => pre_rdy,
-			mii_trdy => mac_rdy,
-			mii_txdv => mac_rxdv,
-			mii_txd  => mac_rxd);
+			mii_pktv => mac_pktv);
 
-		macvld_b : block
-			signal vld : std_logic;
-		begin
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					if pre_rdy='0' then
-						vld <= '1';
-					elsif mac_rdy='0' then
-						vld <= vld and setif(mac_rxd=mii_rxd);
-					end if;
-				end if;
-			end process;
-			mac_vld <= vld and mac_rdy;
---			mac_vld <= pre_rdy;
-		end block;
+		mii_bcst_e : entity hdl4fpga.mii_cmp
+		generic map (
+			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+		port map (
+			mii_rxc  => mii_rxc,
+			mii_rxd  => mii_rxd,
+			mii_treq => pre_rdy,
+			mii_pktv => bcst_vld);
+
 
 		ip_b: block
 
@@ -124,6 +114,16 @@ begin
 
 			constant tabindex : natural_vector(0 to 1)   := (0+6,   2+6);
 			constant tabdata  : std_logic_vector(0 to 1) :=   "1" &  "1";
+
+			function (
+				constant arg : field_vector)
+				return natural_vector is
+				variable retval : natural_vector(0 to 2*field_vector'length-1);
+			begin
+				for i in field_vector'range loop
+					retval(i) 
+				end loop;
+			end;
 
 			function to_miisize (
 				constant tabindex : natural_vector;
@@ -155,11 +155,9 @@ begin
 				return retval;
 			end;
 
-			signal miiip_req  : std_logic;
-			signal miiip_rdy  : std_logic;
-			signal miiip_rxdv : std_logic;
-			signal miiip_rxd  : std_logic_vector(mii_rxd'range);
-			signal mii_ptr    : unsigned(0 to 6);
+			signal ethty_req : std_logic;
+			signal ethty_req : std_logic;
+			signal mii_ptr   : unsigned(0 to 6);
 
 		begin
 
@@ -173,43 +171,34 @@ begin
 					end if;
 				end if;
 			end process;
-			miiip_req <= lookup(to_miisize(tabindex, mii_txd'length), tabdata, std_logic_vector(mii_ptr))(0) and mac_vld;
+			ethty_req <= lookup(to_miisize(tabindex, mii_txd'length), tabdata, std_logic_vector(mii_ptr))(0) and mac_vld;
 
-			miiip_e : entity hdl4fpga.mii_rom
+			mii_ip_e : entity hdl4fpga.mii_cmp
 			generic map (
 				mem_data => reverse(x"0800",8))
 			port map (
-				mii_txc  => mii_rxc,
-				mii_treq => miiip_req,
-				mii_trdy => miiip_rdy,
-				mii_txdv => miiip_rxdv,
-				mii_txd  => miiip_rxd);
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => ethty_req,
+				mii_pktv => ip_vld);
 
-			process (mii_txc, miiip_rdy)
-				variable cy : std_logic;
-			begin
-				if rising_edge(mii_txc) then
-					if mac_vld='0' then
-						cy  := '1';
-					elsif miiip_rxdv='1' then
-						if cy='1' then
-							if miiip_rxd/=mii_rxd then
-								cy := '0';
-							end if;
-						end if;
-					end if;
-				end if;
-				ip_vld <= miiip_rdy and cy;
-			end process;
+			mii_arp_e : entity hdl4fpga.mii_cmp
+			generic map (
+				mem_data => reverse(x"0806",8))
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => ethty_req,
+				mii_pktv => arp_vld);
 
-			mii_dhcp_e : entity hdl4fpga.mii_rom
+			mii_dhcp_e : entity hdl4fpga.mii_cmp
 			generic map (
 				mem_data => reverse(x"1100430044",8))
 			port map (
-				mii_txc  => mii_rxc,
-				mii_treq => mii_req,
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => mii_rdy,
 				mii_tena => 
-				mii_trdy => mii_rdy,
 				mii_txdv => mii_rxdv,
 				mii_txd  => mii_rxd);
 		end block;
