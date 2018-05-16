@@ -121,7 +121,7 @@ begin
 			begin
 				for i in table'range loop
 					retval(i).offset := table(i).offset*8/mii_size;
-					retval(i).offset := table(i).size*8/mii_size;
+					retval(i).size   := table(i).size*8/mii_size;
 				end loop;
 				return retval;
 			end;
