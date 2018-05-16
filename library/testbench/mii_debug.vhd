@@ -68,7 +68,7 @@ begin
 		mii_txc  => clk,
 		mii_treq => treq,
 		mii_trdy => open,
-		mii_txen => rxdv,
+		mii_txdv => rxdv,
 		mii_txd  => rxd);
 
 	du : entity hdl4fpga.mii_debug

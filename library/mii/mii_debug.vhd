@@ -58,10 +58,11 @@ architecture struct of mii_debug is
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 	signal mac_vld     : std_logic;
-	signal brst_vld    : std_logic;
+	signal bcst_vld    : std_logic;
 	signal pkt_vld     : std_logic;
 	signal ip_vld      : std_logic;
 	signal arp_vld     : std_logic;
+	signal dhcp_vld    : std_logic;
 begin
 
 	eth_b : block
@@ -84,7 +85,7 @@ begin
 			mii_rxc  => mii_rxc,
 			mii_rxd  => mii_rxd,
 			mii_treq => pre_rdy,
-			mii_pktv => mac_pktv);
+			mii_pktv => mac_vld);
 
 		mii_bcst_e : entity hdl4fpga.mii_cmp
 		generic map (
@@ -106,57 +107,44 @@ begin
 			type field_vector is array (natural range <>) of field;
 
 			constant ethertype : field := (6, 2);
-			constant ip_proto  : field := (ethertype.offser+9,  1);
+			constant ip_proto  : field := (ethertype.offset+9,  1);
 			constant ip_saddr  : field := (ethertype.offset+12, 4);
 			constant ip_daddr  : field := (ethertype.offset+16, 4);
 			constant udp_sport : field := (ethertype.offset+20, 2);
 			constant udp_dport : field := (ethertype.offset+22, 2);
 
-			constant tabindex : natural_vector(0 to 1)   := (0+6,   2+6);
-			constant tabdata  : std_logic_vector(0 to 1) :=   "1" &  "1";
-
-			function (
-				constant arg : field_vector)
-				return natural_vector is
-				variable retval : natural_vector(0 to 2*field_vector'length-1);
-			begin
-				for i in field_vector'range loop
-					retval(i) 
-				end loop;
-			end;
-
 			function to_miisize (
-				constant tabindex : natural_vector;
+				constant table    : field_vector;
 				constant mii_size : natural)
-				return   natural_vector is
-				variable retval   : natural_vector(tabindex'range);
+				return   field_vector is
+				variable retval : field_vector(table'range);
 			begin
-				for i in tabindex'range loop
-					retval(i) := tabindex(i)*8/mii_size;
+				for i in table'range loop
+					retval(i).offset := table(i).offset*8/mii_size;
+					retval(i).offset := table(i).size*8/mii_size;
 				end loop;
 				return retval;
 			end;
 
 			function lookup (
-				constant tabindex : natural_vector;
-				constant tabdata  : std_logic_vector;
-				constant lookup   : std_logic_vector) 
-				return std_logic_vector is
-				variable aux      : unsigned(0 to tabdata'length-1);
-				variable retval   : std_logic_vector(0 to tabdata'length/tabindex'length-1);
+				constant table : field_vector;
+				constant data  : std_logic_vector) 
+				return std_logic is
 			begin
-				retval := (others => '0');
-				aux    := unsigned(tabdata);
-				for i in tabindex'range loop
-					exit when to_integer(unsigned(lookup)) < tabindex(i);
-					retval := std_logic_vector(aux(retval'range));
-					aux    := aux rol retval'length;
+				for i in table'range loop
+					if table(i).offset <= to_integer(unsigned(data)) then
+						if to_integer(unsigned(data)) < table(i).offset+table(i).size then
+							return '1';
+--						elsif i=table'right then
+--							return '1';
+						end if;
+					end if;
 				end loop;
-				return retval;
+				return '0';
 			end;
 
-			signal ethty_req : std_logic;
-			signal ethty_req : std_logic;
+			signal ethty_ena : std_logic;
+			signal dhcp_ena  : std_logic;
 			signal mii_ptr   : unsigned(0 to 6);
 
 		begin
@@ -171,7 +159,8 @@ begin
 					end if;
 				end if;
 			end process;
-			ethty_req <= lookup(to_miisize(tabindex, mii_txd'length), tabdata, std_logic_vector(mii_ptr))(0) and mac_vld;
+			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+			dhcp_ena  <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
 			mii_ip_e : entity hdl4fpga.mii_cmp
 			generic map (
@@ -179,7 +168,8 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => ethty_req,
+				mii_treq => mac_vld,
+				mii_ena  => ethty_ena,
 				mii_pktv => ip_vld);
 
 			mii_arp_e : entity hdl4fpga.mii_cmp
@@ -188,7 +178,8 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => ethty_req,
+				mii_treq => mac_vld,
+				mii_ena  => ethty_ena,
 				mii_pktv => arp_vld);
 
 			mii_dhcp_e : entity hdl4fpga.mii_cmp
@@ -197,10 +188,9 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => mii_rdy,
-				mii_tena => 
-				mii_txdv => mii_rxdv,
-				mii_txd  => mii_rxd);
+				mii_treq => ip_vld,
+				mii_ena  => dhcp_ena,
+				mii_pktv => dhcp_vld);
 		end block;
 
 	end block;
