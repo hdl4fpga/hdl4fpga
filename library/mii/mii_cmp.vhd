@@ -55,10 +55,10 @@ begin
 		mii_txdv => open,
 		mii_txd  => mii_txd);
 
-	process (mii_txc, mii_trdy)
+	process (mii_rxc, mii_trdy)
 		variable cy : std_logic;
 	begin
-		if rising_edge(mii_txc) then
+		if rising_edge(mii_rxc) then
 			if mii_treq='0' then
 				cy  := '1';
 			elsif mii_trdy='0' then

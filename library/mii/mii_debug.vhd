@@ -160,7 +160,7 @@ begin
 				end if;
 			end process;
 			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
-			dhcp_ena  <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
 
 			mii_ip_e : entity hdl4fpga.mii_cmp
 			generic map (
