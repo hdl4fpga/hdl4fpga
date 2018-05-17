@@ -34,7 +34,7 @@ entity mii_ram is
     port (
 		mii_rxc  : in  std_logic;
         mii_rxdv : in  std_logic;
-        mii_rxd  : in  std_logic;
+        mii_rxd  : in  std_logic_vector;
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
         mii_txc  : in  std_logic;
@@ -56,17 +56,19 @@ begin
 		variable cntr : unsigned(waddr'range);
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_rxdv='0' then
-				cntr := (others => '0');
-			else
-				cntr := cntr + 1;
+			if mii_rxdv='1' then
+				if edge='0' then
+					cntr := to_unsigned(1, cntr'length);
+				else
+					cntr := cntr + 1;
+				end if;
 			end if;
 			edge := mii_rxdv;
 		end if;
 
 		waddr <= cntr;
-		if mii_rxdv='0' then
-			if mii_rxdv='1' then
+		if mii_rxdv='1' then
+			if edge='0' then
 				waddr <= (others => '0');
 			end if;
 		end if;
@@ -96,6 +98,5 @@ begin
 
 	mii_trdy <= mii_treq and setif(waddr=raddr);
 	mii_txdv <= mii_treq and not setif(waddr=raddr) and mii_tena;
-	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
 
 end;

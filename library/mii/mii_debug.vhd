@@ -51,6 +51,48 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
+	type field is record
+		offset : natural;
+		size   : natural;
+	end record;
+
+	type field_vector is array (natural range <>) of field;
+
+	function to_miisize (
+		constant arg : natural)
+		return natural is
+	begin
+		return arg*8/mii_txd'length;
+	end;
+
+	function to_miisize (
+		constant table    : field_vector;
+		constant mii_size : natural)
+		return   field_vector is
+		variable retval : field_vector(table'range);
+	begin
+		for i in table'range loop
+			retval(i).offset := table(i).offset*8/mii_size;
+			retval(i).size   := table(i).size*8/mii_size;
+		end loop;
+		return retval;
+	end;
+
+	function lookup (
+		constant table : field_vector;
+		constant data  : std_logic_vector) 
+		return std_logic is
+	begin
+		for i in table'range loop
+			if table(i).offset <= to_integer(unsigned(data)) then
+				if to_integer(unsigned(data)) < table(i).offset+table(i).size then
+					return '1';
+				end if;
+			end if;
+		end loop;
+		return '0';
+	end;
+
 	signal video_frm   : std_logic;
 	signal video_hon   : std_logic;
 	signal video_nhl   : std_logic;
@@ -59,16 +101,27 @@ architecture struct of mii_debug is
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 	signal mac_vld     : std_logic;
 	signal bcst_vld    : std_logic;
+	signal smac_vld    : std_logic;
 	signal pkt_vld     : std_logic;
-	signal ip_vld      : std_logic;
+	signal ipproto_vld : std_logic;
 	signal arp_vld     : std_logic;
 	signal dhcp_vld    : std_logic;
-	signal cia_ena  : std_logic;
+	signal saddr_vld   : std_logic;
+	signal cia_ena     : std_logic;
+	signal smac_txd    : std_logic_vector(mii_txd'range);
+	signal saddr_txd   : std_logic_vector(mii_txd'range);
 begin
 
 	eth_b : block
+		constant ethersmac : field := (0, 6);
+		constant ethertype : field := (ethersmac.offset+ethersmac.size, 2);
+
 		signal pre_rdy  : std_logic;
 		signal mac_rdy  : std_logic;
+		signal mii_ptr  : unsigned(0 to to_miisize(6));
+
+		signal ethsmac_ena : std_logic;
+		signal smac_ena    : std_logic;
 	begin
 
 		mii_pre_e : entity hdl4fpga.miirx_pre 
@@ -97,17 +150,32 @@ begin
 			mii_treq => pre_rdy,
 			mii_pktv => bcst_vld);
 
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				if mac_vld='0' then
+					mii_ptr <= (others => '0');
+				elsif mii_ptr(0)='0' then
+					mii_ptr <= mii_ptr + 1;
+				end if;
+			end if;
+		end process;
+
+		ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
+		smac_vld    <= mac_vld and ethsmac_ena;
+		mii_smac_e : entity hdl4fpga.mii_ram
+		generic map (
+			size => to_miisize(6))
+		port map(
+			mii_rxc  => mii_rxc,
+			mii_rxd  => mii_rxd,
+			mii_rxdv => smac_vld,
+			mii_txc  => mii_txc,
+			mii_txd  => smac_txd,
+			mii_treq => '0');
 
 		ip_b: block
 
-			type field is record
-				offset : natural;
-				size   : natural;
-			end record;
-
-			type field_vector is array (natural range <>) of field;
-
-			constant ethertype : field := (6, 2);
 			constant ip_proto  : field := (ethertype.offset+ethertype.size+9,  1);
 			constant ip_saddr  : field := (ethertype.offset+ethertype.size+12, 4);
 			constant ip_daddr  : field := (ethertype.offset+ethertype.size+16, 4);
@@ -115,55 +183,14 @@ begin
 			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
 			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
 
-			function to_miisize (
-				constant table    : field_vector;
-				constant mii_size : natural)
-				return   field_vector is
-				variable retval : field_vector(table'range);
-			begin
-				for i in table'range loop
-					retval(i).offset := table(i).offset*8/mii_size;
-					retval(i).size   := table(i).size*8/mii_size;
-				end loop;
-				return retval;
-			end;
-
-			function lookup (
-				constant table : field_vector;
-				constant data  : std_logic_vector) 
-				return std_logic is
-			begin
-				for i in table'range loop
-					if table(i).offset <= to_integer(unsigned(data)) then
-						if to_integer(unsigned(data)) < table(i).offset+table(i).size then
-							return '1';
---						elsif i=table'right then
---							return '1';
-						end if;
-					end if;
-				end loop;
-				return '0';
-			end;
-
 			signal ethty_ena : std_logic;
 			signal dhcp_ena  : std_logic;
-			signal mii_ptr   : unsigned(0 to 6);
 
 		begin
 
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					if mac_vld='0' then
-						mii_ptr <= (others => '0');
-					elsif mii_ptr(0)='0' then
-						mii_ptr <= mii_ptr + 1;
-					end if;
-				end if;
-			end process;
 			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
-			cia_ena  <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
+			cia_ena   <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
 
 			mii_ip_e : entity hdl4fpga.mii_cmp
 			generic map (
@@ -173,7 +200,7 @@ begin
 				mii_rxd  => mii_rxd,
 				mii_treq => mac_vld,
 				mii_ena  => ethty_ena,
-				mii_pktv => ip_vld);
+				mii_pktv => ipproto_vld);
 
 			mii_arp_e : entity hdl4fpga.mii_cmp
 			generic map (
@@ -191,9 +218,22 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => ip_vld,
+				mii_treq => ipproto_vld,
 				mii_ena  => dhcp_ena,
 				mii_pktv => dhcp_vld);
+
+			saddr_vld <= ipproto_vld and cia_ena;
+			mii_saddr_e : entity hdl4fpga.mii_ram
+			generic map (
+				size => to_miisize(4))
+			port map(
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_rxdv => saddr_vld,
+				mii_txc  => mii_txc,
+				mii_txd  => saddr_txd,
+				mii_treq => '0');
+
 		end block;
 
 	end block;
@@ -249,7 +289,7 @@ begin
 			end process;
 
 			cga_clk  <= mii_rxc;
-			pkt_vld <= ip_vld and cia_ena and mii_rxdv;
+			pkt_vld <= ipproto_vld and cia_ena and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
