@@ -63,6 +63,7 @@ architecture struct of mii_debug is
 	signal ip_vld      : std_logic;
 	signal arp_vld     : std_logic;
 	signal dhcp_vld    : std_logic;
+	signal cia_ena  : std_logic;
 begin
 
 	eth_b : block
@@ -107,11 +108,12 @@ begin
 			type field_vector is array (natural range <>) of field;
 
 			constant ethertype : field := (6, 2);
-			constant ip_proto  : field := (ethertype.offset+9,  1);
-			constant ip_saddr  : field := (ethertype.offset+12, 4);
-			constant ip_daddr  : field := (ethertype.offset+16, 4);
-			constant udp_sport : field := (ethertype.offset+20, 2);
-			constant udp_dport : field := (ethertype.offset+22, 2);
+			constant ip_proto  : field := (ethertype.offset+ethertype.size+9,  1);
+			constant ip_saddr  : field := (ethertype.offset+ethertype.size+12, 4);
+			constant ip_daddr  : field := (ethertype.offset+ethertype.size+16, 4);
+			constant udp_sport : field := (ethertype.offset+ethertype.size+20, 2);
+			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
+			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
 
 			function to_miisize (
 				constant table    : field_vector;
@@ -161,6 +163,7 @@ begin
 			end process;
 			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
+			cia_ena  <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
 
 			mii_ip_e : entity hdl4fpga.mii_cmp
 			generic map (
@@ -246,7 +249,7 @@ begin
 			end process;
 
 			cga_clk  <= mii_rxc;
-			pkt_vld <= ip_vld and mii_rxdv;
+			pkt_vld <= ip_vld and cia_ena and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
