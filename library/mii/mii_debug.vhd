@@ -121,7 +121,11 @@ begin
 		signal mii_ptr  : unsigned(0 to to_miisize(6));
 
 		signal ethsmac_ena : std_logic;
+		signal ethty_ena   : std_logic;
+		signal arpsmac_ena : std_logic;
+
 		signal smac_ena    : std_logic;
+
 	begin
 
 		mii_pre_e : entity hdl4fpga.miirx_pre 
@@ -132,7 +136,7 @@ begin
 			mii_rdy  => pre_rdy);
 
 
-		mii_mac_e : entity hdl4fpga.mii_cmp
+		mii_mac_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(x"00_40_00_01_02_03", 8))
 		port map (
@@ -141,7 +145,7 @@ begin
 			mii_treq => pre_rdy,
 			mii_pktv => mac_vld);
 
-		mii_bcst_e : entity hdl4fpga.mii_cmp
+		mii_bcst_e : entity hdl4fpga.mii_romcmp
 		generic map (
 			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
 		port map (
@@ -162,7 +166,8 @@ begin
 		end process;
 
 		ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
-		smac_vld    <= mac_vld and ethsmac_ena;
+
+		smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arpsmac_ena);
 		mii_smac_e : entity hdl4fpga.mii_ram
 		generic map (
 			size => to_miisize(6))
@@ -174,35 +179,13 @@ begin
 			mii_txd  => smac_txd,
 			mii_treq => '0');
 
-		ip_b: block
+		ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
-			constant ip_proto  : field := (ethertype.offset+ethertype.size+9,  1);
-			constant ip_saddr  : field := (ethertype.offset+ethertype.size+12, 4);
-			constant ip_daddr  : field := (ethertype.offset+ethertype.size+16, 4);
-			constant udp_sport : field := (ethertype.offset+ethertype.size+20, 2);
-			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
-			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
-
-			signal ethty_ena : std_logic;
-			signal dhcp_ena  : std_logic;
-
+		arp_b : block
+			constant arp_smac : field := (ethertype.offset+ethertype.size+8,  6);
 		begin
-
-			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
-			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
-			cia_ena   <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
-
-			mii_ip_e : entity hdl4fpga.mii_cmp
-			generic map (
-				mem_data => reverse(x"0800",8))
-			port map (
-				mii_rxc  => mii_rxc,
-				mii_rxd  => mii_rxd,
-				mii_treq => mac_vld,
-				mii_ena  => ethty_ena,
-				mii_pktv => ipproto_vld);
-
-			mii_arp_e : entity hdl4fpga.mii_cmp
+			arpsmac_ena <= lookup(to_miisize((0 => arp_smac), mii_txd'length), std_logic_vector(mii_ptr));
+			mii_arp_e : entity hdl4fpga.mii_romcmp
 			generic map (
 				mem_data => reverse(x"0806",8))
 			port map (
@@ -212,7 +195,35 @@ begin
 				mii_ena  => ethty_ena,
 				mii_pktv => arp_vld);
 
-			mii_dhcp_e : entity hdl4fpga.mii_cmp
+		end block;
+
+		ip_b: block
+
+			constant ip_proto  : field := (ethertype.offset+ethertype.size+9,  1);
+			constant ip_saddr  : field := (ethertype.offset+ethertype.size+12, 4);
+			constant ip_daddr  : field := (ethertype.offset+ethertype.size+16, 4);
+			constant udp_sport : field := (ethertype.offset+ethertype.size+20, 2);
+			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
+			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
+
+			signal dhcp_ena  : std_logic;
+
+		begin
+
+			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
+			cia_ena   <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
+
+			mii_ip_e : entity hdl4fpga.mii_romcmp
+			generic map (
+				mem_data => reverse(x"0800",8))
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => mac_vld,
+				mii_ena  => ethty_ena,
+				mii_pktv => ipproto_vld);
+
+			mii_dhcp_e : entity hdl4fpga.mii_romcmp
 			generic map (
 				mem_data => reverse(x"1100430044",8))
 			port map (
