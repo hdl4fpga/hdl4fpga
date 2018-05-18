@@ -109,22 +109,24 @@ architecture struct of mii_debug is
 	signal saddr_vld   : std_logic;
 	signal cia_ena     : std_logic;
 	signal smac_txd    : std_logic_vector(mii_txd'range);
-	signal saddr_txd   : std_logic_vector(mii_txd'range);
+	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
 begin
 
 	eth_b : block
 		constant ethersmac : field := (0, 6);
 		constant ethertype : field := (ethersmac.offset+ethersmac.size, 2);
 
-		signal pre_rdy  : std_logic;
-		signal mac_rdy  : std_logic;
-		signal mii_ptr  : unsigned(0 to to_miisize(6));
+		signal pre_rdy      : std_logic;
+		signal mac_rdy      : std_logic;
+		signal ipsaddr_rdy  : std_logic;
+		signal ipsaddr_req  : std_logic;
+		signal mii_ptr      : unsigned(0 to to_miisize(6));
 
-		signal ethsmac_ena : std_logic;
-		signal ethty_ena   : std_logic;
-		signal arpsmac_ena : std_logic;
+		signal ethsmac_ena  : std_logic;
+		signal ethty_ena    : std_logic;
+		signal arphaddr_ena : std_logic;
 
-		signal smac_ena    : std_logic;
+		signal smac_ena     : std_logic;
 
 	begin
 
@@ -167,7 +169,7 @@ begin
 
 		ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
 
-		smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arpsmac_ena);
+		smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
 		mii_smac_e : entity hdl4fpga.mii_ram
 		generic map (
 			size => to_miisize(6))
@@ -182,9 +184,15 @@ begin
 		ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
 		arp_b : block
-			constant arp_smac : field := (ethertype.offset+ethertype.size+8,  6);
+			constant arp_haddr  : field := (ethertype.offset+ethertype.size+ 8, 6);
+			constant arp_paddr  : field := (ethertype.offset+ethertype.size+24, 4);
+
+			signal arppaddr_ena : std_logic;
+
 		begin
-			arpsmac_ena <= lookup(to_miisize((0 => arp_smac), mii_txd'length), std_logic_vector(mii_ptr));
+			arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
+			arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr));
+
 			mii_arp_e : entity hdl4fpga.mii_romcmp
 			generic map (
 				mem_data => reverse(x"0806",8))
@@ -194,6 +202,17 @@ begin
 				mii_treq => mac_vld,
 				mii_ena  => ethty_ena,
 				mii_pktv => arp_vld);
+
+
+			ipsaddr_req <= arppaddr_ena and arp_vld;
+			mii_saddrcmp : entity hdl4fpga.mii_cmp
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_req  => ipsaddr_req,
+				mii_rdy  => ipsaddr_rdy,
+				mii_rxd1 => mii_rxd,
+				mii_rxd2 => ipsaddr_txd,
+				mii_equ  => open);
 
 		end block;
 
@@ -242,8 +261,9 @@ begin
 				mii_rxd  => mii_rxd,
 				mii_rxdv => saddr_vld,
 				mii_txc  => mii_txc,
-				mii_txd  => saddr_txd,
-				mii_treq => '0');
+				mii_txd  => ipsaddr_txd,
+				mii_treq => ipsaddr_req,
+				mii_trdy => ipsaddr_rdy);
 
 		end block;
 

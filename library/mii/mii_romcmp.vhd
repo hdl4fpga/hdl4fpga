@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_cmp is
+entity mii_romcmp is
 	generic (
 		mem_data : std_logic_vector);
     port (
@@ -39,7 +39,7 @@ entity mii_cmp is
 		mii_pktv : out std_logic);
 end;
 
-architecture def of mii_cmp is
+architecture def of mii_romcmp is
 	signal mii_txd  : std_logic_vector(mii_rxd'range);
 	signal mii_trdy : std_logic;
 begin
