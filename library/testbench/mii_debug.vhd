@@ -83,7 +83,7 @@ begin
 		mii_trdy => open,
 		mii_txdv => rxdv,
 		mii_txd  => rxd);
-
+-- 00400001020316987d31a4c60806000108000604000116987d31a4c6c0a80001000000000000c0a80049000000000000000000000000000000000000
 	du : entity hdl4fpga.mii_debug
 	port map (
         mii_rxc  => clk,
