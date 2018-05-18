@@ -29,45 +29,32 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity mii_cmp is
-	generic (
-		mem_data : std_logic_vector);
     port (
         mii_rxc  : in  std_logic;
-        mii_rxd  : in  std_logic_vector;
+		mii_req  : in  std_logic;
+		mii_rdy  : in  std_logic;
 		mii_ena  : in  std_logic := '1';
-		mii_treq : in  std_logic;
-		mii_pktv : out std_logic);
+        mii_rxd1 : in  std_logic_vector;
+        mii_rxd2 : in  std_logic_vector;
+		mii_equ  : out std_logic);
 end;
 
 architecture def of mii_cmp is
-	signal mii_txd  : std_logic_vector(mii_rxd'range);
-	signal mii_trdy : std_logic;
 begin
 
-	mii_data_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => mem_data)
-	port map (
-		mii_txc  => mii_rxc,
-		mii_tena => mii_ena,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txdv => open,
-		mii_txd  => mii_txd);
-
-	process (mii_rxc, mii_trdy)
+	process (mii_rxc, mii_rdy)
 		variable cy : std_logic;
 	begin
 		if rising_edge(mii_rxc) then
-			if mii_treq='0' then
+			if mii_req='0' then
 				cy  := '1';
-			elsif mii_trdy='0' then
+			elsif mii_rdy='0' then
 				if mii_ena='1' then
-					cy := cy and setif(mii_txd=mii_rxd);
+					cy := cy and setif(mii_rxd1=mii_rxd2);
 				end if;
 			end if;
 		end if;
-		mii_pktv <= mii_trdy and cy;
+		mii_equ <= mii_rdy and cy;
 	end process;
 
 end;
