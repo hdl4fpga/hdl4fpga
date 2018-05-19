@@ -33,6 +33,8 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
 entity mii_debug is
+	generic (
+		mac       : in std_logic_vector(0 to 6*8-1));
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
@@ -50,6 +52,9 @@ entity mii_debug is
 	end;
 
 architecture struct of mii_debug is
+
+	constant ipproto  : std_logic_vector := x"0800";
+	constant arpproto : std_logic_vector := x"0806";
 
 	type field is record
 		offset : natural;
@@ -141,7 +146,7 @@ begin
 
 		mii_mac_e : entity hdl4fpga.mii_romcmp
 		generic map (
-			mem_data => reverse(x"00_40_00_01_02_03", 8))
+			mem_data => reverse(mac))
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxd  => mii_rxd,
@@ -185,35 +190,68 @@ begin
 		ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
 		arp_b : block
-			constant arp_haddr  : field := (ethertype.offset+ethertype.size+ 8, 6);
-			constant arp_paddr  : field := (ethertype.offset+ethertype.size+24, 4);
-
-
 		begin
-			arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
-			arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr));
 
-			mii_arp_e : entity hdl4fpga.mii_romcmp
-			generic map (
-				mem_data => reverse(x"0806",8))
-			port map (
-				mii_rxc  => mii_rxc,
-				mii_rxd  => mii_rxd,
-				mii_treq => mac_vld,
-				mii_ena  => ethty_ena,
-				mii_pktv => arp_vld);
+			req_b : block
+				constant arp_haddr  : field := (ethertype.offset+ethertype.size+ 8, 6);
+				constant arp_paddr  : field := (ethertype.offset+ethertype.size+24, 4);
+			begin
+				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
+				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr));
+
+				mii_arp_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(arpproto,8))
+				port map (
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_treq => mac_vld,
+					mii_ena  => ethty_ena,
+					mii_pktv => arp_vld);
 
 
-			ipsaddr_req <= arp_vld;
-			mii_saddrcmp : entity hdl4fpga.mii_cmp
-			port map (
-				mii_rxc  => mii_rxc,
-				mii_req  => ipsaddr_req,
-				mii_ena  => arppaddr_ena,
-				mii_rdy  => ipsaddr_rdy,
-				mii_rxd1 => mii_rxd,
-				mii_rxd2 => ipsaddr_txd,
-				mii_equ  => open);
+				ipsaddr_req <= arp_vld;
+				mii_saddrcmp : entity hdl4fpga.mii_cmp
+				port map (
+					mii_rxc  => mii_rxc,
+					mii_req  => ipsaddr_req,
+					mii_ena  => arppaddr_ena,
+					mii_rdy  => ipsaddr_rdy,
+					mii_rxd1 => mii_rxd,
+					mii_rxd2 => ipsaddr_txd,
+					mii_equ  => open);
+			end block;
+
+			reply_b : block
+				signal 
+			begin
+				
+				mii_ethhdr_e : entity hdl4fpga.mii_rom
+				generic map (
+					mem_data => reverse(
+				   		x"ff_ff_ff_ff_ff_ff" & mac & arpproto
+						x"00010800"          &
+						x"06040002"          &
+						mac , 8))
+				port map (
+					mii_txc  => mii_txc,
+					mii_treq => arp_req,
+					mii_trdy => mii_trdy,
+					mii_txdv => mii_txdv,
+					mii_txd  => mii_txd);
+
+				mii_haddr_e : entity hdl4fpga.mii_rom
+				generic map (
+					mem_data => reverse( x"ff_ff_ff_ff_ff_ff" & mac , 8))
+				port map (
+					mii_txc  => mii_txc,
+					mii_treq => arp_req,
+					mii_trdy => mii_trdy,
+					mii_txdv => mii_txdv,
+					mii_txd  => mii_txd)
+
+
+			end block;
 
 		end block;
 
@@ -235,7 +273,7 @@ begin
 
 			mii_ip_e : entity hdl4fpga.mii_romcmp
 			generic map (
-				mem_data => reverse(x"0800",8))
+				mem_data => reverse(ipproto,8))
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
