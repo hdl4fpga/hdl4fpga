@@ -46,8 +46,8 @@ end;
 architecture def of mii_ram is
 	constant addr_size : natural := unsigned_num_bits(size-1);
 
-	signal raddr  : unsigned(0 to addr_size-1);
-	signal waddr  : unsigned(0 to addr_size-1);
+	signal raddr  : unsigned(unsigned_num_bits(size)-1 downto 0);
+	signal waddr  : unsigned(raddr'range);
 
 begin
 
@@ -77,10 +77,10 @@ begin
 	ram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(waddr),
+		wr_addr => std_logic_vector(waddr(addr_size-1 downto 0)),
 		wr_data => mii_rxd,
 		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr),
+		rd_addr => std_logic_vector(raddr(addr_size-1 downto 0)),
 		rd_data => mii_txd);
 
 	process (mii_txc)

@@ -44,7 +44,7 @@ architecture def of dpram is
 
 	signal RAM : word_vector(0 to 2**wr_addr'length-1);
 begin
-	process (rd_addr)
+	process (rd_addr, RAM)
 		variable addr : std_logic_vector(0 to rd_addr'length-1);
 	begin
 		addr := rd_addr;

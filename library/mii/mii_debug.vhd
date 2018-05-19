@@ -125,6 +125,7 @@ begin
 		signal ethsmac_ena  : std_logic;
 		signal ethty_ena    : std_logic;
 		signal arphaddr_ena : std_logic;
+		signal arppaddr_ena : std_logic;
 
 		signal smac_ena     : std_logic;
 
@@ -187,7 +188,6 @@ begin
 			constant arp_haddr  : field := (ethertype.offset+ethertype.size+ 8, 6);
 			constant arp_paddr  : field := (ethertype.offset+ethertype.size+24, 4);
 
-			signal arppaddr_ena : std_logic;
 
 		begin
 			arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
@@ -204,11 +204,12 @@ begin
 				mii_pktv => arp_vld);
 
 
-			ipsaddr_req <= arppaddr_ena and arp_vld;
+			ipsaddr_req <= arp_vld;
 			mii_saddrcmp : entity hdl4fpga.mii_cmp
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_req  => ipsaddr_req,
+				mii_ena  => arppaddr_ena,
 				mii_rdy  => ipsaddr_rdy,
 				mii_rxd1 => mii_rxd,
 				mii_rxd2 => ipsaddr_txd,
@@ -262,6 +263,7 @@ begin
 				mii_rxdv => saddr_vld,
 				mii_txc  => mii_txc,
 				mii_txd  => ipsaddr_txd,
+				mii_tena => arppaddr_ena,
 				mii_treq => ipsaddr_req,
 				mii_trdy => ipsaddr_rdy);
 
