@@ -28,40 +28,42 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_bus is
+entity mii_cat is
     port (
-		mii_txc  : in  std_logic;
-		mii_treq : out std_logic_vector;
+        mii_rxd  : in  std_logic_vector;
+        mii_rxdv : in  std_logic_vector;
 		mii_trdy : in  std_logic_vector;
-		mii_tena : in  std_logic := '1';
+		mii_treq : out std_logic_vector;
         mii_txdv : out std_logic_vector;
-        mii_rxd  : in  std_logic_vector);
         mii_txd  : out std_logic_vector);
 end;
 
-architecture def of mii_bus is
-	function priencoder (
-		constant arg : std_logic_vector)
-		return std_logic_vector is
-		variable retval : std_logic_vector(0 to unsigned_num_bits(max(arg'right, arg'left))-1);
-	begin
-		retval := (others => '0');
-		for i in arg'range loop
-			if arg(i)='1' then
-				retval := std_logic_vector(to_unsigned(i, retval'length));
-				exit;
-			end if;
-		end loop;
-		return retval;
-	end;
+architecture def of mii_cat is
 begin
 
-	process (mii_req, mii_trdy)
+	process (
+		mii_rxd, 
+		mii_rxdv, 
+		mii_trdy)
+		variable ardy  : unsigned(0 to mii_trdy'length-1);
+		variable ardy  : unsigned(0 to mii_trdy'length-1);
+		variable arxdv : unsigned(0 to mii_rxdv'length-1);
+		variable arxd  : unsigned(0 to mii_rxd'length-1);
 	begin
-		mii_treq <= (mii_trdy srl 1);
-		mii_treq(mii_treq'left) = mii_req;
-		mii_rdy  <= mii_trdy(mii_trdy'right);
+		ardy := unsigned(mii_trdy);
+		arxd := unsigned(mii_rxd);
+		mii_txdv <= '0';
+		mii_txd  <= (others => '-'');
+		for i in ardy'range loop
+			if ardy(0)='0' then
+				mii_txdv <= mii_rxdv(0);
+				mii_txd  <= arxd(mii_txd'range);
+				exit;
+			end if;
+			ardy  := ardy  rol 1;
+			arxdv := arxdv rol 1;
+			arxd  := arxd  rol mii_txd'length;
+		end loop;
 	end process;
 
-	mii_txd <= word2byte(mii_rxd, priencoder(not mii_trdy), mii_txd'length);
 end;
