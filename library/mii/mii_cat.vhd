@@ -46,18 +46,17 @@ begin
 		mii_rxdv, 
 		mii_trdy)
 		variable ardy  : unsigned(0 to mii_trdy'length-1);
-		variable ardy  : unsigned(0 to mii_trdy'length-1);
 		variable arxdv : unsigned(0 to mii_rxdv'length-1);
 		variable arxd  : unsigned(0 to mii_rxd'length-1);
 	begin
 		ardy := unsigned(mii_trdy);
 		arxd := unsigned(mii_rxd);
 		mii_txdv <= '0';
-		mii_txd  <= (others => '-'');
+		mii_txd  <= (mii_txd'range => '-');
 		for i in ardy'range loop
 			if ardy(0)='0' then
 				mii_txdv <= mii_rxdv(0);
-				mii_txd  <= arxd(mii_txd'range);
+				mii_txd  <= std_logic_vector(arxd(mii_txd'range));
 				exit;
 			end if;
 			ardy  := ardy  rol 1;
