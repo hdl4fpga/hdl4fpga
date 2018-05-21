@@ -34,7 +34,7 @@ use hdl4fpga.cgafont.all;
 
 entity mii_debug is
 	generic (
-		mac       : in std_logic_vector(0 to 6*8-1));
+		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
@@ -121,20 +121,20 @@ begin
 		constant ethersmac : field := (0, 6);
 		constant ethertype : field := (ethersmac.offset+ethersmac.size, 2);
 
-		signal pre_rdy         : std_logic;
-		signal mac_rdy         : std_logic;
-		signal ipsaddr_rdy     : std_logic;
-		signal ipsaddr_req     : std_logic;
-		signal arpipsaddr_req  : std_logic;
-		signal mii_ptr         : unsigned(0 to to_miisize(6));
+		signal pre_rdy        : std_logic;
+		signal mac_rdy        : std_logic;
+		signal ipsaddr_rdy    : std_logic;
+		signal ipsaddr_req    : std_logic;
+		signal arpipsaddr_req : std_logic;
+		signal mii_ptr        : unsigned(0 to to_miisize(6));
 
-		signal ethsmac_ena     : std_logic;
-		signal ethty_ena       : std_logic;
-		signal arphaddr_ena    : std_logic;
-		signal arppaddr_ena    : std_logic;
+		signal ethsmac_ena    : std_logic;
+		signal ethty_ena      : std_logic;
+		signal arphaddr_ena   : std_logic;
+		signal arppaddr_ena   : std_logic;
 
-		signal smac_ena        : std_logic;
-		signal ipsaddr_txdv    : std_logic;
+		signal smac_ena       : std_logic;
+		signal ipsaddr_txdv   : std_logic;
 
 	begin
 
@@ -145,10 +145,9 @@ begin
 			mii_rxdv => mii_rxdv,
 			mii_rdy  => pre_rdy);
 
-
 		mii_mac_e : entity hdl4fpga.mii_romcmp
 		generic map (
-			mem_data => reverse(mac))
+			mem_data => reverse(mac,8))
 		port map (
 			mii_rxc  => mii_rxc,
 			mii_rxd  => mii_rxd,
@@ -192,12 +191,13 @@ begin
 		ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
 		arp_b : block
-			signal arp_req : std_logic;
+			signal arp_rply : std_logic;
+			signal arp_req  : std_logic;
 		begin
 
 			req_b : block
-				constant arp_haddr  : field := (ethertype.offset+ethertype.size+ 8, 6);
-				constant arp_paddr  : field := (ethertype.offset+ethertype.size+24, 4);
+				constant arp_haddr : field := (ethertype.offset+ethertype.size+ 8, 6);
+				constant arp_paddr : field := (ethertype.offset+ethertype.size+24, 4);
 			begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr));
@@ -222,7 +222,8 @@ begin
 					mii_rdy  => ipsaddr_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_txd,
-					mii_equ  => open);
+					mii_equ  => arp_req);
+
 			end block;
 
 			reply_b : block
@@ -253,6 +254,16 @@ begin
 				signal miicat_rxd    : std_logic_vector(0 to 4*mii_txd'length-1);
 			begin
 				
+				process (mii_txc)
+					variable rply : std_logic;
+				begin
+					if rising_edge(mii_txc) then
+						if mii_rxdv='1' then
+							arp_rply <= arp_req;
+						end if;
+					end if;
+				end process;
+
 				miicat_trdy <= (0 => etherhdr_rdy,  1 => arpsaddr_rdy,  2 => bcst_rdy,  3 => arptaddr_rdy);
 				miicat_treq <= (0 => etherhdr_req,  1 => arpsaddr_req,  2 => bcst_req,  3 => arptaddr_req);
 				miicat_rxdv <= (0 => etherhdr_rxdv, 1 => arpsaddr_rxdv, 2 => bcst_rxdv, 3 => arptaddr_rxdv);
@@ -267,7 +278,7 @@ begin
 					mii_txdv => open,
 					mii_txd  => mii_txd);
 
-				etherhdr_req <= arp_req;
+				etherhdr_req <= arp_rply;
 				mii_ethhdr_e : entity hdl4fpga.mii_rom
 				generic map (
 					mem_data => reverse(
@@ -293,17 +304,17 @@ begin
 					mii_txd  => bcst_rxd);
 
 
-				process (mii_txc, arp_req, ipsaddr_rdy)
+				process (mii_txc, arp_rply, ipsaddr_rdy)
 					variable sdr_rdy : std_logic;
 				begin
 					if rising_edge(mii_txc) then
-						if arp_req='0' then
+						if arp_rply='0' then
 							sdr_rdy := '0';
 						elsif ipsaddr_rdy='1' then
 							sdr_rdy := '1';
 						end if;
 					end if;
-					arpsaddr_rdy <= arp_req and (sdr_rdy or ipsaddr_rdy);
+					arpsaddr_rdy <= arp_rply and (sdr_rdy or ipsaddr_rdy);
 				end process;
 				arpipsaddr_req <= (arpsaddr_req and not arpsaddr_rdy) or arptaddr_req;
 			end block;
