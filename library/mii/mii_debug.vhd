@@ -193,6 +193,11 @@ begin
 		arp_b : block
 			signal arp_rply : std_logic;
 			signal arp_req  : std_logic;
+				signal arpsaddr_rdy  : std_logic;
+				signal arpsaddr_req  : std_logic;
+				signal arpsaddr_rxdv : std_logic;
+				signal arpsaddr_rxd  : std_logic_vector(mii_txd'range);
+
 		begin
 
 			req_b : block
@@ -200,7 +205,7 @@ begin
 				constant arp_paddr : field := (ethertype.offset+ethertype.size+24, 4);
 			begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
-				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr));
+				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
@@ -213,7 +218,7 @@ begin
 					mii_pktv => arp_vld);
 
 
-				ipsaddr_req <= arp_vld;
+				ipsaddr_req <= arp_vld or arpipsaddr_req;
 				mii_saddrcmp : entity hdl4fpga.mii_cmp
 				port map (
 					mii_rxc  => mii_rxc,
@@ -238,11 +243,6 @@ begin
 				signal bcst_rxdv     : std_logic;
 				signal bcst_rxd      : std_logic_vector(mii_txd'range);
 
-				signal arpsaddr_rdy  : std_logic;
-				signal arpsaddr_req  : std_logic;
-				signal arpsaddr_rxdv : std_logic;
-				signal arpsaddr_rxd  : std_logic_vector(mii_txd'range);
-
 				signal arptaddr_rdy  : std_logic;
 				signal arptaddr_req  : std_logic;
 				signal arptaddr_rxdv : std_logic;
@@ -252,6 +252,7 @@ begin
 				signal miicat_treq   : std_logic_vector(0 to 4-1);
 				signal miicat_rxdv   : std_logic_vector(0 to 4-1);
 				signal miicat_rxd    : std_logic_vector(0 to 4*mii_txd'length-1);
+				signal pp : std_logic_vector(mii_txd'range);
 			begin
 				
 				process (mii_txc)
@@ -259,26 +260,30 @@ begin
 				begin
 					if rising_edge(mii_txc) then
 						if mii_rxdv='1' then
-							arp_rply <= arp_req;
+							arp_rply <= '0';
+							rply     := arp_req;
+						elsif rply='1' then
+							arp_rply <= '1';
 						end if;
 					end if;
 				end process;
 
 				miicat_trdy <= (0 => etherhdr_rdy,  1 => arpsaddr_rdy,  2 => bcst_rdy,  3 => arptaddr_rdy);
-				miicat_treq <= (0 => etherhdr_req,  1 => arpsaddr_req,  2 => bcst_req,  3 => arptaddr_req);
+				(0 => etherhdr_req,  1 => arpsaddr_req,  2 => bcst_req,  3 => arptaddr_req) <= miicat_treq;
 				miicat_rxdv <= (0 => etherhdr_rxdv, 1 => arpsaddr_rxdv, 2 => bcst_rxdv, 3 => arptaddr_rxdv);
-				miicat_rxd  <=       etherhdr_rxd &      arpsaddr_rxd &      bcst_rxd &      arptaddr_rxd;
+				miicat_rxd  <=       etherhdr_rxd &      ipsaddr_txd  &      bcst_rxd &      arptaddr_rxd;
 
 				mii_arpcat_e : entity hdl4fpga.mii_cat
 				port map (
+					mii_req  => arp_rply,
+					mii_rply => open,
 					mii_trdy => miicat_trdy,
 					mii_rxdv => miicat_rxdv,
 					mii_rxd  => miicat_rxd,
 					mii_treq => miicat_treq,
 					mii_txdv => open,
-					mii_txd  => mii_txd);
+					mii_txd  => pp);
 
-				etherhdr_req <= arp_rply;
 				mii_ethhdr_e : entity hdl4fpga.mii_rom
 				generic map (
 					mem_data => reverse(
@@ -314,9 +319,9 @@ begin
 							sdr_rdy := '1';
 						end if;
 					end if;
-					arpsaddr_rdy <= arp_rply and (sdr_rdy or ipsaddr_rdy);
+					arpsaddr_rdy <= arp_rply and sdr_rdy;
 				end process;
-				arpipsaddr_req <= (arpsaddr_req and not arpsaddr_rdy) or arptaddr_req;
+				arpipsaddr_req <= (arpsaddr_req and not arpsaddr_rdy); -- or arptaddr_req;
 			end block;
 
 		end block;

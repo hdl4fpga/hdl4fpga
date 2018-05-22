@@ -30,6 +30,9 @@ use hdl4fpga.std.all;
 
 entity mii_cat is
     port (
+		mii_req  : in  std_logic;
+		mii_rdy  : out std_logic;
+		mii_rply : out std_logic;
 		mii_trdy : in  std_logic_vector;
         mii_rxd  : in  std_logic_vector;
         mii_rxdv : in  std_logic_vector;
@@ -56,7 +59,7 @@ begin
 		for i in ardy'range loop
 			if ardy(0)='0' then
 				mii_txdv <= mii_rxdv(0);
-				mii_txd  <= std_logic_vector(arxd(mii_txd'range));
+				mii_txd  <= std_logic_vector(arxd(0 to mii_txd'length-1));
 				exit;
 			end if;
 			ardy  := ardy  rol 1;
@@ -65,4 +68,12 @@ begin
 		end loop;
 	end process;
 
+	process (mii_req, mii_trdy)
+		variable aux : unsigned(0 to mii_trdy'length-1);
+	begin
+		aux      := unsigned(mii_trdy) ror 1;
+		mii_rdy  <= aux(0);
+		aux(0)   := mii_req;
+		mii_treq <= std_logic_vector(aux);
+	end process;
 end;
