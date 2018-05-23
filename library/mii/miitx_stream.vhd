@@ -28,21 +28,16 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_rnd is
+entity miitx_stream is
     port (
         mii_txc  : in  std_logic;
-		mii_txi  : in  std_logic_vector;
-		mii_txiv : in  std_logic;
+		mii_rxd  : in  std_logic_vector;
+		mii_rxdv : in  std_logic;
 		mii_txd  : out std_logic_vector;
 		mii_txdv : out std_logic);
 end;
 
-architecture def of miitx_rnd is
-	constant mii_pre : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
-
-	signal miipre_trdy : std_logic;
-	signal miipre_txdv : std_logic;
-	signal miipre_txd  : std_logic_vector(mii_txd'range);
+architecture def of miitx_stream is
 	signal miicrc_txen : std_logic;
 	signal miicrc_txd  : std_logic_vector(mii_txd'range);
 	signal miibuf_txiv : std_logic;
@@ -54,44 +49,13 @@ begin
 	mii_fcs_e : entity hdl4fpga.miitx_crc32
     port map (
         mii_txc   => mii_txc,
-		mii_txiv  => mii_txiv,
-		mii_txi   => mii_txi,
+		mii_rxdv  => mii_rxdv,
+		mii_rxc   => mii_rxd,
 		mii_txen  => miicrc_txen,
 		mii_txd   => miicrc_txd);
 
-	miibuf_txiv <= mii_txiv or miicrc_txen;
-	miibuf_txi  <= word2byte(mii_txi & miicrc_txd, mii_txiv);
+	mii_txdv <= mii_rxdv or miicrc_txen;
+	mii_txd  <= word2byte(mii_rxd & miicrc_txd, not mii_rxdv);
 
-	miitx_pre_e  : entity hdl4fpga.mii_mem
-	generic map (
-		mem_data => mii_pre)
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => mii_txiv,
-		mii_trdy => miipre_trdy,
-		mii_txen => miipre_txdv,
-		mii_txd  => miipre_txd);
-
-	miibuf_txd_e : entity hdl4fpga.align
-	generic map (
-		n => mii_txd'length,
-		d => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
-	port map (
-		clk => mii_txc,
-		ena => miibuf_txiv,
-		di  => miibuf_txi,
-		do  => miibuf_txd);
-
-	mii_txdv_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (1 to 1 => mii_pre'length/mii_txd'length))
-	port map (
-		clk   => mii_txc,
-		di(0) => miibuf_txiv,
-		do(0) => miibuf_txdv);
-
-	mii_txd  <= word2byte(miipre_txd  & miibuf_txd , miipre_trdy);
-	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv, miipre_trdy)(0);
 end;
 
