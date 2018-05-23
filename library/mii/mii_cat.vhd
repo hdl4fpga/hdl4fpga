@@ -32,7 +32,6 @@ entity mii_cat is
     port (
 		mii_req  : in  std_logic;
 		mii_rdy  : out std_logic;
-		mii_rply : out std_logic;
 		mii_trdy : in  std_logic_vector;
         mii_rxd  : in  std_logic_vector;
         mii_rxdv : in  std_logic_vector;
@@ -52,13 +51,14 @@ begin
 		variable arxdv : unsigned(0 to mii_rxdv'length-1);
 		variable arxd  : unsigned(0 to mii_rxd'length-1);
 	begin
-		ardy := unsigned(mii_trdy);
-		arxd := unsigned(mii_rxd);
+		ardy  := unsigned(mii_trdy);
+		arxd  := unsigned(mii_rxd);
+		arxdv := unsigned(mii_rxdv);
 		mii_txdv <= '0';
 		mii_txd  <= (mii_txd'range => '-');
 		for i in ardy'range loop
 			if ardy(0)='0' then
-				mii_txdv <= mii_rxdv(0);
+				mii_txdv <= arxdv(0);
 				mii_txd  <= std_logic_vector(arxd(0 to mii_txd'length-1));
 				exit;
 			end if;
