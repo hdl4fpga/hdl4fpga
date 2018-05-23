@@ -28,70 +28,59 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_dhcp is
-	generic (
-		mac   : std_logic_vector(0 to 48-1) := x"004000010203");
+entity miitx_pre is
 	port (
-		mii_treq  : in  std_logic;
-		mii_trdy  : out std_logic;
 		mii_txc   : in  std_logic;
+		mii_rxdv  : in  std_logic_vector;
+		mii_rxd   : in  std_logic_vector;
 		mii_txdv  : out std_logic;
 		mii_txd   : out std_logic_vector);
 end;
 
-architecture mix of miitx_dhcp is
-	constant payload_size : natural := 244+6;
+architecture mix of miitx_pre is
+	constant mii_pre : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
 
-	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
-	constant mii_data : std_logic_vector := reverse(
-		x"ffffffffffff"	       &    
-		mac                &    -- MAC Source Address
-		x"0800"                &    -- MAC Protocol ID
-		ipheader_checksumed(
-			x"4500"            &    -- IP  Version, header length, TOS
-			std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
-			x"0000"            &    -- IP  Identification
-			x"0000"            &    -- IP  Fragmentation
-			x"0511"            &    -- IP  TTL, protocol
-			x"0000"            &    -- IP  Checksum
-			x"00000000"        &    -- IP  Source address
-			x"ffffffff")       &    -- IP  Destination address
-		udp_checksumed (
-			x"00000000",
-			x"ffffffff",
+	signal rxdv : std_logic;
+	signal rxd  : std_logic_vector(mii_txd'range);
 
-			x"00440043"            &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"0000"                &	-- UDP CHECKSUM
-			x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
-			x"3903f326"            &    -- XID
-			x"00000000"            &    -- SECS, FLAGS
-			x"00000000"            &    -- CIADDR
-			x"00000000"            &    -- YIADDR
-			x"00000000"            &    -- SIADDR
-			x"00000000"            &    -- GIADDR
-			mac & x"0000"          &    -- CHADDR
-			x"00000000"            &    -- CHADDR
-			x"00000000"            &    -- CHADDR
-			(1 to 8* 64 => '0')    &    -- SNAME
-			(1 to 8*128 => '0')    &    -- SNAME
-			x"63825363"            &    -- MAGIC COOKIE
-			x"350101"              &    -- DHCPDISCOVER
-			x"3204c0a00164"        &    -- IP REQUEST
-			x"FF"),8);                  -- END
+	signal miipre_txd  : std_logic_vector(mii_txd'range);
+	signal miipre_txdv : std_logic;
+	signal miipre_trdy : std_logic;
 
-	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
-	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;
-
+	signal miibuf_txdv : std_logic;
+	signal miibuf_txd  : std_logic_vector(mii_txd'range);
 begin
-	miitx_mem_e  : entity hdl4fpga.mii_rom
+	miitx_pre_e  : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => mii_pkt)
+		mem_data => mii_pre)
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => mii_treq,
-		mii_trdy => mii_trdy,
-		mii_txdv => mii_txdv,
-		mii_txd  => mii_txd);
+		mii_treq => rxdv,
+		mii_trdy => miipre_trdy,
+		mii_txdv => miipre_txdv,
+		mii_txd  => miipre_txd);
 
+	rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_rxd'length);
+	rxdv <= not setif(mii_rxdv /= (mii_rxdv'range => '0'));
+	miishr_txd_e : entity hdl4fpga.align
+	generic map (
+		n => mii_txd'length,
+		d => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
+	port map (
+		clk => mii_txc,
+		ena => rxdv,
+		di  => rxd,
+		do  => miibuf_txd);
+
+	mii_txdv_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (1 to 1 => mii_pre'length/mii_txd'length))
+	port map (
+		clk   => mii_txc,
+		di(0) => rxdv,
+		do(0) => miibuf_txdv);
+
+	mii_txd  <= word2byte(miipre_txd  & miibuf_txd , miipre_trdy);
+	mii_txdv <= word2byte(miipre_txdv & miibuf_txdv, miipre_trdy)(0);
 end;
