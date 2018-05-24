@@ -81,7 +81,8 @@ architecture mix of miitx_dhcp is
 			x"FF"),8);                  -- END
 
 	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
-	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;
+--	constant mii_pkt : std_logic_vector := mii_pre & mii_data & mii_fcs;
+	constant mii_pkt : std_logic_vector := mii_data;
 
 begin
 	miitx_mem_e  : entity hdl4fpga.mii_rom
