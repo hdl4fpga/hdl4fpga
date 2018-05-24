@@ -144,7 +144,7 @@ begin
 
 		tx_b : block
 			signal txdv : std_logic_vector(0 to 2-1);
-			signal txd  : std_logic_vector(0 to txdv'length*mii_txd'length);
+			signal txd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
 		begin
 			txdv <= miidhcp_txdv & miiarp_txdv;
 			txd  <= miidhcp_txd  & miiarp_txd;
