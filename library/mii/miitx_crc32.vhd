@@ -31,9 +31,9 @@ use hdl4fpga.std.all;
 entity miitx_crc32 is
     port (
         mii_txc  : in  std_logic;
-		mii_rxc  : in  std_logic_vector;
+		mii_rxd  : in  std_logic_vector;
 		mii_rxdv : in  std_logic;
-		mii_txen : out std_logic;
+		mii_txdv : out std_logic;
 		mii_txd  : out std_logic_vector);
 end;
 
@@ -47,7 +47,7 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_rxdv='1' then
-				crc  <= not galois_crc(mii_rxc, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
+				crc  <= not galois_crc(mii_rxd, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
 				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
 			elsif cntr(0)='0' then
 				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
@@ -58,6 +58,6 @@ begin
 	end process;
 
 	mii_txd  <= crc(mii_txd'range);
-	mii_txen <= not mii_rxdv and not cntr(0);
+	mii_txdv <= not mii_rxdv and not cntr(0);
 end;
 

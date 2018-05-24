@@ -136,59 +136,83 @@ begin
 		signal smac_ena       : std_logic;
 		signal ipsaddr_txdv   : std_logic;
 
+		signal miidhcp_txd    : std_logic_vector(mii_txd'range);
+		signal miidhcp_txdv   : std_logic;
+		signal miiarp_txd     : std_logic_vector(mii_txd'range);
+		signal miiarp_txdv    : std_logic;
 	begin
 
-		mii_pre_e : entity hdl4fpga.miirx_pre 
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxd  => mii_rxd,
-			mii_rxdv => mii_rxdv,
-			mii_rdy  => pre_rdy);
-
-		mii_mac_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(mac,8))
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxd  => mii_rxd,
-			mii_treq => pre_rdy,
-			mii_pktv => mac_vld);
-
-		mii_bcst_e : entity hdl4fpga.mii_romcmp
-		generic map (
-			mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-		port map (
-			mii_rxc  => mii_rxc,
-			mii_rxd  => mii_rxd,
-			mii_treq => pre_rdy,
-			mii_pktv => bcst_vld);
-
-		process (mii_rxc)
+		tx_b : block
+			signal txdv : std_logic_vector(0 to 2-1);
+			signal txd  : std_logic_vector(0 to txdv'length*mii_txd'length);
 		begin
-			if rising_edge(mii_rxc) then
-				if mac_vld='0' then
-					mii_ptr <= (others => '0');
-				elsif mii_ptr(0)='0' then
-					mii_ptr <= mii_ptr + 1;
+			txdv <= miidhcp_txdv & miiarp_txdv;
+			txd  <= miidhcp_txd  & miiarp_txd;
+
+			mii_dll_e : entity hdl4fpga.miitx_dll
+			port map (
+				mii_txc  => mii_txc,
+				mii_rxdv => txdv,
+				mii_rxd  => txd,
+				mii_txdv => mii_txdv,
+				mii_txd  => mii_txd);
+
+		end block;
+
+		rx_b : block
+		begin
+			mii_pre_e : entity hdl4fpga.miirx_pre 
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_rxdv => mii_rxdv,
+				mii_rdy  => pre_rdy);
+
+			mii_mac_e : entity hdl4fpga.mii_romcmp
+			generic map (
+				mem_data => reverse(mac,8))
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => pre_rdy,
+				mii_pktv => mac_vld);
+
+			mii_bcst_e : entity hdl4fpga.mii_romcmp
+			generic map (
+				mem_data => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+			port map (
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_treq => pre_rdy,
+				mii_pktv => bcst_vld);
+
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					if mac_vld='0' then
+						mii_ptr <= (others => '0');
+					elsif mii_ptr(0)='0' then
+						mii_ptr <= mii_ptr + 1;
+					end if;
 				end if;
-			end if;
-		end process;
+			end process;
 
-		ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
+			ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
 
-		smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
-		mii_smac_e : entity hdl4fpga.mii_ram
-		generic map (
-			size => to_miisize(6))
-		port map(
-			mii_rxc  => mii_rxc,
-			mii_rxd  => mii_rxd,
-			mii_rxdv => smac_vld,
-			mii_txc  => mii_txc,
-			mii_txd  => smac_txd,
-			mii_treq => '0');
+			smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
+			mii_smac_e : entity hdl4fpga.mii_ram
+			generic map (
+				size => to_miisize(6))
+			port map(
+				mii_rxc  => mii_rxc,
+				mii_rxd  => mii_rxd,
+				mii_rxdv => smac_vld,
+				mii_txc  => mii_txc,
+				mii_txd  => smac_txd,
+				mii_treq => '0');
 
-		ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+		end block;
 
 		arp_b : block
 			signal arp_rply : std_logic;
@@ -258,7 +282,6 @@ begin
 				signal miicat_treq   : std_logic_vector(0 to 5-1);
 				signal miicat_rxdv   : std_logic_vector(0 to 5-1);
 				signal miicat_rxd    : std_logic_vector(0 to 5*mii_txd'length-1);
-				signal miiarp_txd    : std_logic_vector(mii_txd'range);
 			begin
 				
 				process (mii_txc)
@@ -291,7 +314,7 @@ begin
 					mii_rxdv => miicat_rxdv,
 					mii_rxd  => miicat_rxd,
 					mii_treq => miicat_treq,
-					mii_txdv => open,
+					mii_txdv => miiarp_txdv,
 					mii_txd  => miiarp_txd);
 
 				mii_ethhdr_e : entity hdl4fpga.mii_rom
@@ -411,6 +434,13 @@ begin
 				mii_trdy => ipsaddr_rdy);
 
 		end block;
+
+		du : entity hdl4fpga.miitx_dhcp
+		port map (
+			mii_txc  => mii_txc,
+			mii_treq => mii_req,
+			mii_txdv => miidhcp_txdv,
+			mii_txd  => miidhcp_txd);
 
 	end block;
 		
@@ -582,12 +612,5 @@ begin
 		video_dot <= word2byte(font_line, font_col)(0) and video_on;
 
 	end block;
-
-	du : entity hdl4fpga.miitx_dhcp
-	port map (
-		mii_txc  => mii_txc,
-		mii_treq => mii_req,
-		mii_txdv => mii_txdv,
-		mii_txd  => mii_txd);
 
 end;
