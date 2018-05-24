@@ -42,32 +42,32 @@ architecture mix of miitx_dll is
 
 	signal miipre1_txd  : std_logic_vector(mii_txd'range);
 	signal miipre1_txdv : std_logic;
-	signal miipre1_trdy : std_logic;
-
-	signal rxdv         : std_logic;
-	signal rxd          : std_logic_vector(mii_txd'range);
 
 	signal miibuf1_rxdv : std_logic;
 	signal miibuf1_rxd  : std_logic_vector(mii_txd'range);
+
+	signal rxdv2        : std_logic;
+	signal rxd2         : std_logic_vector(mii_txd'range);
 
 begin
 	crc32_b : block
 		constant mii_pre2   : std_logic_vector := reverse(x"5555_55d5", 8);
 
+		signal rxdv         : std_logic;
+		signal rxd          : std_logic_vector(mii_txd'range);
+
 		signal miipre2_txd  : std_logic_vector(mii_txd'range);
 		signal miipre2_txdv : std_logic;
-		signal miipre2_trdy : std_logic;
 
 		signal miibuf2_rxdv : std_logic;
 		signal miibuf2_rxd  : std_logic_vector(mii_txd'range);
 
 		signal crc32_txd    : std_logic_vector(mii_txd'range);
 		signal crc32_txdv   : std_logic;
-		signal crc32_trdy   : std_logic;
 
 	begin
 		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
-		rxdv <= not setif(mii_rxdv /= (mii_rxdv'range => '0'));
+		rxdv <= setif(mii_rxdv /= (mii_rxdv'range => '0'));
 
 		miitx_pre2_e  : entity hdl4fpga.mii_rom
 		generic map (
@@ -75,7 +75,6 @@ begin
 		port map (
 			mii_txc  => mii_txc,
 			mii_treq => rxdv,
-			mii_trdy => miipre2_trdy,
 			mii_txdv => miipre2_txdv,
 			mii_txd  => miipre2_txd);
 
@@ -85,7 +84,6 @@ begin
 			d   => (1 to mii_txd'length => mii_pre2'length/mii_txd'length))
 		port map (
 			clk => mii_txc,
-			ena => rxdv,
 			di  => rxd,
 			do  => miibuf2_rxd);
 
@@ -106,8 +104,8 @@ begin
 			mii_txdv => crc32_txdv,
 			mii_txd  => crc32_txd);
 
-		miibuf1_rxdv <= miibuf2_rxdv or crc32_txdv;
-		miibuf1_rxd  <= word2byte(miibuf2_rxd & crc32_txd, not miibuf2_rxdv);
+		rxdv2 <= word2byte(miipre2_txdv & (miibuf2_rxdv or crc32_txdv), not miipre2_txdv)(0);
+		rxd2  <= word2byte(miipre2_txd  & word2byte(miibuf2_rxd  & crc32_txd , not miibuf2_rxdv), not miipre2_txdv);
 	end block;
 
 	miitx_pre1_e  : entity hdl4fpga.mii_rom
@@ -115,8 +113,7 @@ begin
 		mem_data => mii_pre1)
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => rxdv,
-		mii_trdy => miipre1_trdy,
+		mii_treq => rxdv2,
 		mii_txdv => miipre1_txdv,
 		mii_txd  => miipre1_txd);
 
@@ -126,8 +123,7 @@ begin
 		d => (1 to mii_txd'length => mii_pre1'length/mii_txd'length))
 	port map (
 		clk => mii_txc,
-		ena => rxdv,
-		di  => rxd,
+		di  => rxd2,
 		do  => miibuf1_rxd);
 
 	mii_txdv_e : entity hdl4fpga.align
@@ -136,10 +132,10 @@ begin
 		d => (1 to 1 => mii_pre1'length/mii_txd'length))
 	port map (
 		clk   => mii_txc,
-		di(0) => rxdv,
+		di(0) => rxdv2,
 		do(0) => miibuf1_rxdv);
 
-	mii_txd  <= word2byte(miipre1_txd & miibuf1_rxd , miipre1_trdy);
-	mii_txdv <= miipre1_txdv or miibuf1_rxdv;
+	mii_txd  <= word2byte(miipre1_txd  & miibuf1_rxd,   not miipre1_txdv);
+	mii_txdv <= word2byte(miipre1_txdv & miibuf1_rxdv,  not miipre1_txdv)(0);
 
 end;
