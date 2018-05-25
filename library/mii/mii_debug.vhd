@@ -127,6 +127,7 @@ begin
 		signal ipsaddr_req    : std_logic;
 		signal arpipsaddr_req : std_logic;
 		signal mii_ptr        : unsigned(0 to to_miisize(6));
+		signal to_me          : std_logic;
 
 		signal ethsmac_ena    : std_logic;
 		signal ethty_ena      : std_logic;
@@ -186,10 +187,11 @@ begin
 				mii_treq => pre_rdy,
 				mii_pktv => bcst_vld);
 
+			to_me <= mac_vld and bcst_vld;
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
-					if mac_vld='0' then
+					if to_me='0' then
 						mii_ptr <= (others => '0');
 					elsif mii_ptr(0)='0' then
 						mii_ptr <= mii_ptr + 1;
@@ -199,7 +201,7 @@ begin
 
 			ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
 
-			smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
+			smac_vld    <= (to_me and ethsmac_ena) or (arp_vld and arphaddr_ena);
 			mii_smac_e : entity hdl4fpga.mii_ram
 			generic map (
 				size => to_miisize(6))
@@ -227,17 +229,19 @@ begin
 			req_b : block
 				constant arp_haddr : field := (ethertype.offset+ethertype.size+ 8, 6);
 				constant arp_paddr : field := (ethertype.offset+ethertype.size+24, 4);
+				signal   arpproto_req : std_logic;
 			begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
+				arpproto_req <= to_me;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))
 				port map (
 					mii_rxc  => mii_rxc,
 					mii_rxd  => mii_rxd,
-					mii_treq => mac_vld,
+					mii_treq => arpproto_req,
 					mii_ena  => ethty_ena,
 					mii_pktv => arp_vld);
 
@@ -479,7 +483,9 @@ begin
 			signal rd_addr    : std_logic_vector(video_addr'range);
 			signal rd_data    : std_logic_vector(cga_rdata'range);
 			signal rxd8       : std_logic_vector(0 to 8-1);
+			signal capture_ena : std_logic;
 		begin
+			capture_ena <= mac_vld or bcst_vld;
 
 			process (cga_clk)
 				variable edge : std_logic := '0';
@@ -487,10 +493,10 @@ begin
 				if rising_edge(cga_clk) then
 					if cga_ena='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
-					elsif (mac_vld='0' or mii_rxdv='0') and edge='1' then
+					elsif (capture_ena='0' or mii_rxdv='0') and edge='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					end if;
-					edge := mac_vld and mii_rxdv;
+					edge := capture_ena and mii_rxdv;
 				end if;
 			end process;
 

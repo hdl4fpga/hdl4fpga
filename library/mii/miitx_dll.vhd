@@ -67,7 +67,17 @@ begin
 
 	begin
 		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
-		rxdv <= setif(mii_rxdv /= (mii_rxdv'range => '0'));
+		process (mii_rxdv)
+		begin
+			rxdv <= '0';
+			for i in mii_rxdv'range loop
+				if mii_rxdv(i)='1'  then
+					rxdv <= '1';
+					exit;
+				end if;
+			end loop;
+		end process;
+--		rxdv <= setif(mii_rxdv /= (mii_rxdv'range => '0'));
 
 		miitx_pre2_e  : entity hdl4fpga.mii_rom
 		generic map (

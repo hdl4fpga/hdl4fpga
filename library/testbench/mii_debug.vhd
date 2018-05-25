@@ -43,6 +43,7 @@ architecture mii_debug of testbench is
 	signal rxdv1 : std_logic;
 	signal rxdv2 : std_logic;
 
+	signal txdv  : std_logic;
 	signal treq1 : std_logic;
 	signal treq2 : std_logic;
 	signal txd   : std_logic_vector(0 to n-1);
@@ -54,12 +55,18 @@ begin
 	rst <= '1', '0' after 20 ns;
 
 	process (clk)
+		variable edge  : std_logic;
 	begin
 		if rising_edge(clk) then
 			treq1 <= '1';
 			if rst='1' then
 				treq1 <= '0';
+			elsif txdv='0'  then
+				if edge='1' then
+					treq1 <= '0';
+				end if;
 			end if;
+			edge := txdv;
 			treq2 <=  trdy1;
 		end if;
 	end process;
@@ -88,7 +95,7 @@ begin
 			8))
 	port map (
 		mii_txc  => clk,
-		mii_treq => treq1,
+		mii_treq => '0', --treq1,
 		mii_trdy => trdy1,
 		mii_txdv => rxdv1,
 		mii_txd  => rxd1);
@@ -126,7 +133,8 @@ begin
 
         mii_txc  => clk,
 		mii_txd  => txd,
-		mii_req  => '0',
+		mii_txdv => txdv,
+		mii_req  => treq1, --'0',
 	
 		video_clk => '0');
 end;
