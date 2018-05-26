@@ -115,13 +115,14 @@ architecture struct of mii_debug is
 	signal cia_ena     : std_logic;
 	signal smac_txd    : std_logic_vector(mii_txd'range);
 	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
+			signal arp_req  : std_logic;
+		signal pre_rdy        : std_logic;
 begin
 
 	eth_b : block
 		constant ethersmac : field := (0, 6);
 		constant ethertype : field := (ethersmac.offset+ethersmac.size, 2);
 
-		signal pre_rdy        : std_logic;
 		signal mac_rdy        : std_logic;
 		signal ipsaddr_rdy    : std_logic;
 		signal ipsaddr_req    : std_logic;
@@ -218,7 +219,6 @@ begin
 
 		arp_b : block
 			signal arp_rply : std_logic;
-			signal arp_req  : std_logic;
 				signal arpsaddr_rdy  : std_logic;
 				signal arpsaddr_req  : std_logic;
 				signal arpsaddr_rxdv : std_logic;
@@ -234,7 +234,7 @@ begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
-				arpproto_req <= to_me;
+				arpproto_req <= '0'; --to_me;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))
@@ -255,8 +255,9 @@ begin
 					mii_rdy  => ipsaddr_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_txd,
-					mii_equ  => arp_req);
+					mii_equ  => open); --arp_req);
 
+				arp_req <= '0';
 			end block;
 
 			reply_b : block
@@ -485,8 +486,8 @@ begin
 			signal rxd8       : std_logic_vector(0 to 8-1);
 			signal capture_ena : std_logic;
 		begin
-			capture_ena <= mac_vld or bcst_vld;
 
+			capture_ena <= pre_rdy; --mac_vld; -- or bcst_vld;
 			process (cga_clk)
 				variable edge : std_logic := '0';
 			begin
@@ -500,8 +501,8 @@ begin
 				end if;
 			end process;
 
-			cga_clk  <= mii_rxc;
-			pkt_vld <= ipproto_vld and cia_ena and mii_rxdv;
+			cga_clk <= mii_rxc;
+			pkt_vld <= pre_rdy; --mac_vld; --ipproto_vld; -- and cia_ena and mii_rxdv); -- or arp_req;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);

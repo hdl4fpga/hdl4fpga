@@ -209,7 +209,6 @@ architecture arch of video_vga is
 	signal heot : std_logic;
 	signal veot : std_logic;
 	signal veof : std_logic;
-	signal hpos : std_logic_vector(n-1 downto 0);
 begin
 	sync_rom : entity hdl4fpga.video_timing_rom
 	generic map (

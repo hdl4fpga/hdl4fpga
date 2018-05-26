@@ -49,6 +49,9 @@ architecture miitx_dhcp of ecp3versa is
 	signal en : std_logic;
 	signal d  : std_logic_vector(phy1_tx_d'range);
 
+	signal rxc  : std_logic;
+	signal rxdv : std_logic;
+	signal rxd  : std_logic_vector(phy1_tx_d'range);
 begin
 
 	videodcm_b : block
@@ -96,12 +99,21 @@ begin
 		end if;
 	end process;
 
+	rxc <= not phy1_rxc;
+	process (rxc)
+	begin
+		if rising_edge(phy1_rxc) then
+			rxdv <= phy1_tx_en;
+			rxd  <= phy1_tx_d;
+		end if;
+	end process;
+
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
 		mii_req   => mii_req,
-		mii_rxc   => phy1_rxc,
-		mii_rxd   => phy1_rx_d,
-		mii_rxdv  => phy1_rx_dv,
+		mii_rxc   => rxc,
+		mii_rxd   => rxd,
+		mii_rxdv  => rxdv,
 		mii_txc   => phy1_125clk,
 		mii_txd   => d,
 		mii_txdv  => en,
