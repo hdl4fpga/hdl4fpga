@@ -107,8 +107,8 @@ begin
 	process (rxc)
 	begin
 		if rising_edge(phy1_rxc) then
-			rxdv <= '0'; --phy1_rx_dv;
-			rxd  <= (others => '0'); --phy1_rx_d;
+			rxdv <= phy1_rx_dv;
+			rxd  <= phy1_rx_d;
 		end if;
 	end process;
 

@@ -188,7 +188,7 @@ begin
 				mii_treq => pre_rdy,
 				mii_pktv => bcst_vld);
 
-			to_me <= mac_vld and bcst_vld;
+			to_me <= mac_vld;
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
@@ -487,22 +487,23 @@ begin
 			signal capture_ena : std_logic;
 		begin
 
-			capture_ena <= mac_vld; -- or bcst_vld;
+--			capture_ena <= mac_vld and ipproto_vld;
+			capture_ena <= pkt_vld;
 			process (cga_clk)
 				variable edge : std_logic := '0';
 			begin
 				if rising_edge(cga_clk) then
 					if cga_ena='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
-					elsif (capture_ena='0' or mii_rxdv='0') and edge='1' then
+					elsif capture_ena='0' and edge='1' then
 						cga_addr <= std_logic_vector(unsigned(cga_addr) + 1);
 					end if;
-					edge := capture_ena and mii_rxdv;
+					edge := capture_ena;
 				end if;
 			end process;
 
 			cga_clk <= mii_rxc;
-			pkt_vld <= ipproto_vld and mii_rxdv; --mac_vld; --ipproto_vld; -- and cia_ena and mii_rxdv); -- or arp_req;
+			pkt_vld <= mii_rxdv and mac_vld and ipproto_vld; -- and cia_ena and mii_rxdv); -- or arp_req;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
