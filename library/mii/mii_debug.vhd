@@ -116,6 +116,7 @@ architecture struct of mii_debug is
 	signal smac_txd    : std_logic_vector(mii_txd'range);
 	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
 			signal arp_req  : std_logic;
+			signal dhcp_ena  : std_logic;
 begin
 
 	eth_b : block
@@ -396,7 +397,6 @@ begin
 			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
 			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
 
-			signal dhcp_ena  : std_logic;
 
 		begin
 
@@ -488,7 +488,8 @@ begin
 		begin
 
 --			capture_ena <= mac_vld and ipproto_vld;
-			capture_ena <= pkt_vld;
+			capture_ena <= mac_vld and ipproto_vld;
+			--capture_ena <= pkt_vld;
 			process (cga_clk)
 				variable edge : std_logic := '0';
 			begin
@@ -503,7 +504,7 @@ begin
 			end process;
 
 			cga_clk <= mii_rxc;
-			pkt_vld <= mii_rxdv and mac_vld and ipproto_vld; -- and cia_ena and mii_rxdv); -- or arp_req;
+			pkt_vld <= mii_rxdv and mac_vld and ipproto_vld and dhcp_ena; -- or arp_req;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);
