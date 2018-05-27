@@ -52,6 +52,10 @@ architecture miitx_dhcp of ecp3versa is
 	signal rxc  : std_logic;
 	signal rxdv : std_logic;
 	signal rxd  : std_logic_vector(phy1_tx_d'range);
+
+	signal txc  : std_logic;
+	signal txdv : std_logic;
+	signal txd  : std_logic_vector(phy1_tx_d'range);
 begin
 
 	videodcm_b : block
@@ -103,8 +107,8 @@ begin
 	process (rxc)
 	begin
 		if rising_edge(phy1_rxc) then
-			rxdv <= phy1_tx_en;
-			rxd  <= phy1_tx_d;
+			rxdv <= '0'; --phy1_rx_dv;
+			rxd  <= (others => '0'); --phy1_rx_d;
 		end if;
 	end process;
 
@@ -115,8 +119,8 @@ begin
 		mii_rxd   => rxd,
 		mii_rxdv  => rxdv,
 		mii_txc   => phy1_125clk,
-		mii_txd   => d,
-		mii_txdv  => en,
+		mii_txd   => txd,
+		mii_txdv  => txdv,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
@@ -126,16 +130,16 @@ begin
 	process (phy1_125clk)
 	begin
 		if rising_edge(phy1_125clk) then
-			phy1_tx_en <= en;
-			phy1_tx_d  <= d;
+			phy1_tx_en <= txdv;
+			phy1_tx_d  <= txd;
 		end if;
 	end process;
 
 	oddr_i : oddrxd1
 	port map (
 		sclk => phy1_125clk,
-		da   => '1',
-		db   => '0',
+		da   => '0',
+		db   => '1',
 		q    => phy1_gtxclk);
 
 	phy1_rst  <= '1';
