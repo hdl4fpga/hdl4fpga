@@ -65,19 +65,38 @@ begin
 		signal crc32_txd    : std_logic_vector(mii_txd'range);
 		signal crc32_txdv   : std_logic;
 
+	function encoder (
+		constant arg : std_logic_vector)
+		return         std_logic_vector is
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable aux : std_logic_vector(0 to 2**val'length-1) := (others => '0');
 	begin
-		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
-		process (mii_rxdv)
-		begin
-			rxdv <= '0';
-			for i in mii_rxdv'range loop
-				if mii_rxdv(i)='1'  then
-					rxdv <= '1';
-					exit;
-				end if;
-			end loop;
-		end process;
---		rxdv <= setif(mii_rxdv /= (mii_rxdv'range => '0'));
+		aux(0 to arg'length-1) := arg;
+		aux := reverse(aux);
+		for i in 0 to aux'length-1 loop
+			if aux=std_logic_vector(to_unsigned(2**i,aux'length)) then
+				val := std_logic_vector(to_unsigned(i, val'length));
+			end if;
+		end loop;
+		return val;
+	end;
+
+	signal pp :std_logic_vector(0 to unsigned_num_bits(mii_rxdv'length-1)-1);
+	begin
+		pp <= encoder(mii_rxdv);
+--		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
+		rxd  <= word2byte(mii_rxd, pp, mii_txd'length);
+--		process (mii_rxdv)
+--		begin
+--			rxdv <= '0';
+--			for i in mii_rxdv'range loop
+--				if mii_rxdv(i)='1'  then
+--					rxdv <= '1';
+--					exit;
+--				end if;
+--			end loop;
+--		end process;
+		rxdv <= setif(mii_rxdv /= (mii_rxdv'range => '0'));
 
 		miitx_pre2_e  : entity hdl4fpga.mii_rom
 		generic map (

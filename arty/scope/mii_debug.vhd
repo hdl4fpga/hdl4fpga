@@ -42,6 +42,13 @@ architecture mii_debug of arty is
 	signal video_hs       : std_logic;
 	signal video_clk      : std_logic;
 
+	signal rxc  : std_logic;
+	signal rxd  : std_logic_vector(eth_rxd'range);
+	signal rxdv : std_logic;
+
+	signal txc  : std_logic;
+	signal txd  : std_logic_vector(eth_txd'range);
+	signal txdv : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -86,21 +93,39 @@ begin
 			clkout0  => video_clk);
 	end block;
 
+	rxc <= eth_rxclk_bufg;
+	process (rxc)
+	begin
+		if rising_edge(rxc) then
+			rxd  <= eth_rxd;
+			rxdv <= eth_rx_dv;
+		end if;
+	end process;
+
+	txc <= not eth_txclk_bufg;
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
 		mii_req   => mii_req,
-		mii_rxc   => eth_rxclk_bufg,
-		mii_rxd   => eth_rxd,
-		mii_rxdv  => eth_rx_dv,
-		mii_txc   => eth_txclk_bufg,
-		mii_txd   => eth_txd,
-		mii_txdv  => eth_tx_en,
+		mii_rxc   => rxc,
+		mii_rxd   => rxd,
+		mii_rxdv  => rxdv,
+		mii_txc   => txc,
+		mii_txd   => txd,
+		mii_txdv  => txdv,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
 		video_hs  => video_hs,
 		video_vs  => video_vs);
 		
+	process (txc)
+	begin
+		if rising_edge(txc) then
+			eth_txd   <= txd;
+			eth_tx_en <= txdv;
+		end if;
+	end process;
+
 	process (btn(0), eth_txclk_bufg)
 	begin
 		if btn(0)='1' then

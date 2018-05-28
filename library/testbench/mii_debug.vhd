@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_debug of testbench is
-	constant n : natural := 8;
+	constant n : natural := 4;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal rrxd  : std_logic_vector(0 to n-1);
@@ -48,6 +48,7 @@ architecture mii_debug of testbench is
 	signal treq2 : std_logic;
 	signal txd   : std_logic_vector(0 to n-1);
 	signal trdy1 : std_logic;
+	signal rtxd  : std_logic_vector(txd'range);
 
 begin
 
@@ -95,7 +96,7 @@ begin
 			8))
 	port map (
 		mii_txc  => clk,
-		mii_treq => treq1,
+		mii_treq => '0', --treq1,
 		mii_trdy => trdy1,
 		mii_txdv => rxdv1,
 		mii_txd  => rxd1);
@@ -134,7 +135,8 @@ begin
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,
-		mii_req  => '0',
+		mii_req  => treq1,
 	
 		video_clk => '0');
+	rtxd <= reverse(txd);
 end;
