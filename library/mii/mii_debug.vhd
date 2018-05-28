@@ -63,7 +63,7 @@ architecture struct of mii_debug is
 
 	type field_vector is array (natural range <>) of field;
 
-	function to_miisize (
+	impure function to_miisize (
 		constant arg : natural)
 		return natural is
 	begin
@@ -213,7 +213,7 @@ begin
 				mii_rxdv => smac_vld,
 				mii_txc  => mii_txc,
 				mii_txd  => smac_txd,
-				mii_treq => '0');
+				mii_treq => std_logic'('0'));
 
 			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 		end block;
@@ -490,6 +490,7 @@ begin
 --			capture_ena <= mac_vld and ipproto_vld;
 			capture_ena <= mac_vld and ipproto_vld;
 			--capture_ena <= pkt_vld;
+			cga_clk <= mii_rxc;
 			process (cga_clk)
 				variable edge : std_logic := '0';
 			begin
@@ -503,7 +504,6 @@ begin
 				end if;
 			end process;
 
-			cga_clk <= mii_rxc;
 			pkt_vld <= mii_rxdv and mac_vld and ipproto_vld and dhcp_ena; -- or arp_req;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
@@ -523,12 +523,14 @@ begin
 					end if;
 					rxd8 <= std_logic_vector(aux) & mii_rxd;
 				else
-					rxd8 <= mii_rxd;
+					rxd8    <= mii_rxd;
 					cga_ena <= pkt_vld;
 				end if;
 			end process;
 
-			process (mii_rxd)
+--			rxd8    <= mii_rxd;
+--			cga_ena <= pkt_vld;
+			process (rxd8)
 				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
 				variable rxd  : unsigned(rxd8'range);
 				variable data : unsigned(2*ascii'length-1 downto 0);
