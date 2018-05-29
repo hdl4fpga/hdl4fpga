@@ -126,7 +126,6 @@ begin
 		signal pre_rdy        : std_logic;
 		signal mac_rdy        : std_logic;
 		signal ipsaddr_rdy    : std_logic;
-		signal ipsaddr_req    : std_logic;
 		signal arpipsaddr_req : std_logic;
 		signal mii_ptr        : unsigned(0 to to_miisize(6));
 		signal to_me          : std_logic;
@@ -151,7 +150,6 @@ begin
 		begin
 			txdv <= miiarp_txdv & miidhcp_txdv;
 			txd  <= miiarp_txd  & miidhcp_txd;
---			txd  <=  miiarp_txd & miidhcp_txd;
 
 			mii_dll_e : entity hdl4fpga.miitx_dll
 			port map (
@@ -190,7 +188,7 @@ begin
 				mii_treq => pre_rdy,
 				mii_pktv => bcst_vld);
 
-			to_me <= mac_vld;
+			to_me <= mac_vld or bcst_vld;
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
@@ -204,7 +202,7 @@ begin
 
 			ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
 
-			smac_vld    <= (to_me and ethsmac_ena) or (arp_vld and arphaddr_ena);
+			smac_vld    <= (mac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
 			mii_smac_e : entity hdl4fpga.mii_ram
 			generic map (
 				size => to_miisize(6))
@@ -228,15 +226,17 @@ begin
 
 		begin
 
-			req_b : block
-				constant arp_haddr : field := (ethertype.offset+ethertype.size+ 8, 6);
-				constant arp_paddr : field := (ethertype.offset+ethertype.size+24, 4);
+			rx_b : block
+				constant arp_haddr   : field := (ethertype.offset+ethertype.size+ 8, 6);
+				constant arp_paddr   : field := (ethertype.offset+ethertype.size+24, 4);
+				signal   ipsaddr_txd : std_logic_vector(mii_txd'range);
+
 				signal   arpproto_req : std_logic;
 			begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
-				arpproto_req <= '0'; --to_me;
+				arpproto_req <= to_me;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))
@@ -247,22 +247,32 @@ begin
 					mii_ena  => ethty_ena,
 					mii_pktv => arp_vld);
 
-
-				ipsaddr_req <= arp_vld or arpipsaddr_req;
 				mii_saddrcmp : entity hdl4fpga.mii_cmp
 				port map (
 					mii_rxc  => mii_rxc,
-					mii_req  => ipsaddr_req,
+					mii_req  => arp_vld,
 					mii_ena  => arppaddr_ena,
 					mii_rdy  => ipsaddr_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_txd,
-					mii_equ  => open); --arp_req);
+					mii_equ  => arp_req);
 
-				arp_req <= '0';
+				saddr_vld <= ipproto_vld and cia_ena;
+				mii_saddr_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(4))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => saddr_vld,
+					mii_treq => arp_vld,
+					mii_txc  => mii_rxc,
+					mii_tena => arppaddr_ena,
+					mii_txd  => ipsaddr_txd);
+
 			end block;
 
-			reply_b : block
+			tx_b : block
 				signal arp_rdy       : std_logic;
 
 				signal etherhdr_rdy  : std_logic;
@@ -365,9 +375,9 @@ begin
 						elsif ipsaddr_rdy='1' then
 							sdr_rdy := '1';
 						end if;
+					arpipsaddr_req <= (arpsaddr_req and not sdr_rdy) or arptaddr_req;
 					end if;
 					arpsaddr_rdy   <= arp_rply and (ipsaddr_rdy or sdr_rdy);
-					arpipsaddr_req <= (arpsaddr_req and not sdr_rdy) or arptaddr_req;
 				end process;
 
 				arptaddr_rdy  <= ipsaddr_rdy and arptaddr_req;
@@ -400,6 +410,7 @@ begin
 			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
 
 
+			signal ipsaddr_req    : std_logic;
 		begin
 
 			dhcp_ena  <= lookup(to_miisize((0 => ip_proto, 1 => udp_sport, 2 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
@@ -490,7 +501,7 @@ begin
 		begin
 
 --			capture_ena <= mac_vld and ipproto_vld;
-			capture_ena <= mac_vld and ipproto_vld;
+			capture_ena <= arp_req and mii_rxdv; --to_me and ipproto_vld;
 			--capture_ena <= pkt_vld;
 			cga_clk <= mii_rxc;
 			process (cga_clk)
@@ -506,7 +517,8 @@ begin
 				end if;
 			end process;
 
-			pkt_vld <= mii_rxdv and mac_vld and ipproto_vld and dhcp_ena; -- or arp_req;
+--			pkt_vld <= (mac_vld and ipproto_vld and cia_ena) or arp_req;
+			pkt_vld <= arp_req and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);

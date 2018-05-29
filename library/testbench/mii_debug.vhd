@@ -64,7 +64,7 @@ begin
 				treq1 <= '0';
 			elsif txdv='0'  then
 				if edge='1' then
-					treq1 <= '0';
+				--	treq1 <= '0';
 				end if;
 			end if;
 			edge := txdv;
@@ -96,7 +96,7 @@ begin
 			8))
 	port map (
 		mii_txc  => clk,
-		mii_treq => '0', --treq1,
+		mii_treq => treq1,
 		mii_trdy => trdy1,
 		mii_txdv => rxdv1,
 		mii_txd  => rxd1);
@@ -135,7 +135,7 @@ begin
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,
-		mii_req  => treq1,
+		mii_req  => '0', --treq1,
 	
 		video_clk => '0');
 	rtxd <= reverse(txd);

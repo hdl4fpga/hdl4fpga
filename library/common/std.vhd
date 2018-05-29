@@ -405,16 +405,15 @@ package body std is
 
 	function encoder (
 		constant arg : std_logic_vector)
-		return         std_logic_vector is
+		return   std_logic_vector is
 		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
-		variable aux : std_logic_vector(0 to 2**val'length-1) := (others => '0');
+		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
 	begin
-		aux(0 to arg'length-1) := arg;
-		aux := reverse(aux);
-		for i in 0 to aux'length-1 loop
-			if aux=std_logic_vector(to_unsigned(2**i,aux'length)) then
+		for i in aux'range loop
+			if arg=std_logic_vector(aux) then
 				val := std_logic_vector(to_unsigned(i, val'length));
 			end if;
+			aux := aux ror 1;
 		end loop;
 		return val;
 	end;
