@@ -149,9 +149,9 @@ begin
 			signal txdv : std_logic_vector(0 to 2-1);
 			signal txd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
 		begin
-			txdv <= (0 => miidhcp_txdv, 1 => '0'); --miiarp_txdv;
---			txd  <= miidhcp_txd & miiarp_txd;
-			txd  <=  miiarp_txd & miidhcp_txd;
+			txdv <= miiarp_txdv & miidhcp_txdv;
+			txd  <= miiarp_txd  & miidhcp_txd;
+--			txd  <=  miiarp_txd & miidhcp_txd;
 
 			mii_dll_e : entity hdl4fpga.miitx_dll
 			port map (
