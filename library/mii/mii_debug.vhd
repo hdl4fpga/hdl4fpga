@@ -115,8 +115,10 @@ architecture struct of mii_debug is
 	signal cia_ena     : std_logic;
 	signal smac_txd    : std_logic_vector(mii_txd'range);
 	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
+	signal pp : std_logic_vector(mii_txd'range);
 			signal arp_req  : std_logic;
 			signal dhcp_ena  : std_logic;
+		signal arppaddr_ena   : std_logic;
 begin
 
 	eth_b : block
@@ -133,7 +135,6 @@ begin
 		signal ethsmac_ena    : std_logic;
 		signal ethty_ena      : std_logic;
 		signal arphaddr_ena   : std_logic;
-		signal arppaddr_ena   : std_logic;
 
 		signal smac_ena       : std_logic;
 		signal ipsaddr_txdv   : std_logic;
@@ -188,7 +189,7 @@ begin
 				mii_treq => pre_rdy,
 				mii_pktv => bcst_vld);
 
-			to_me <= mac_vld or bcst_vld;
+			to_me <= mac_vld; -- or bcst_vld;
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
@@ -230,13 +231,14 @@ begin
 				constant arp_haddr   : field := (ethertype.offset+ethertype.size+ 8, 6);
 				constant arp_paddr   : field := (ethertype.offset+ethertype.size+24, 4);
 				signal   ipsaddr_txd : std_logic_vector(mii_txd'range);
+				signal   ipsaddr_rdy : std_logic;
 
 				signal   arpproto_req : std_logic;
 			begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
-				arpproto_req <= to_me;
+				arpproto_req <= mac_vld;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))
@@ -247,17 +249,6 @@ begin
 					mii_ena  => ethty_ena,
 					mii_pktv => arp_vld);
 
-				mii_saddrcmp : entity hdl4fpga.mii_cmp
-				port map (
-					mii_rxc  => mii_rxc,
-					mii_req  => arp_vld,
-					mii_ena  => arppaddr_ena,
-					mii_rdy  => ipsaddr_rdy,
-					mii_rxd1 => mii_rxd,
-					mii_rxd2 => ipsaddr_txd,
-					mii_equ  => arp_req);
-
-				saddr_vld <= ipproto_vld and cia_ena;
 				mii_saddr_e : entity hdl4fpga.mii_ram
 				generic map (
 					size => to_miisize(4))
@@ -266,9 +257,21 @@ begin
 					mii_rxd  => mii_rxd,
 					mii_rxdv => saddr_vld,
 					mii_treq => arp_vld,
+					mii_trdy => ipsaddr_rdy,
 					mii_txc  => mii_rxc,
 					mii_tena => arppaddr_ena,
 					mii_txd  => ipsaddr_txd);
+
+				pp <= ipsaddr_txd;
+				mii_saddrcmp : entity hdl4fpga.mii_cmp
+				port map (
+					mii_req  => arp_vld,
+					mii_rxc  => mii_rxc,
+					mii_ena  => arppaddr_ena,
+					mii_rdy  => ipsaddr_rdy,
+					mii_rxd1 => mii_rxd,
+					mii_rxd2 => ipsaddr_txd,
+					mii_equ  => arp_req);
 
 			end block;
 
@@ -436,7 +439,7 @@ begin
 				mii_ena  => dhcp_ena,
 				mii_pktv => dhcp_vld);
 
-			saddr_vld <= ipproto_vld and cia_ena;
+			saddr_vld <= dhcp_vld and cia_ena;
 			mii_saddr_e : entity hdl4fpga.mii_ram
 			generic map (
 				size => to_miisize(4))
@@ -501,8 +504,8 @@ begin
 		begin
 
 --			capture_ena <= mac_vld and ipproto_vld;
-			capture_ena <= arp_req and mii_rxdv; --to_me and ipproto_vld;
-			--capture_ena <= pkt_vld;
+--			capture_ena <= arp_req and mii_rxdv; --to_me and ipproto_vld;
+			capture_ena <= pkt_vld;
 			cga_clk <= mii_rxc;
 			process (cga_clk)
 				variable edge : std_logic := '0';
@@ -518,6 +521,8 @@ begin
 			end process;
 
 --			pkt_vld <= (mac_vld and ipproto_vld and cia_ena) or arp_req;
+--			pkt_vld <= (mac_vld and dhcp_vld and cia_ena);
+--			pkt_vld <= arp_vld and arppaddr_ena and mii_rxdv;
 			pkt_vld <= arp_req and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
@@ -537,6 +542,7 @@ begin
 					end if;
 					rxd8 <= std_logic_vector(aux) & mii_rxd;
 				else
+					rxd8    <= pp;
 					rxd8    <= mii_rxd;
 					cga_ena <= pkt_vld;
 				end if;

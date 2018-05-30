@@ -106,7 +106,7 @@ begin
 	rxc <= not phy1_rxc;
 	process (rxc)
 	begin
-		if rising_edge(phy1_rxc) then
+		if rising_edge(rxc) then
 			rxdv <= phy1_rx_dv;
 			rxd  <= phy1_rx_d;
 		end if;
