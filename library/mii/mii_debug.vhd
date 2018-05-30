@@ -189,7 +189,7 @@ begin
 				mii_treq => pre_rdy,
 				mii_pktv => bcst_vld);
 
-			to_me <= mac_vld; -- or bcst_vld;
+			to_me <= mac_vld or bcst_vld;
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
@@ -238,7 +238,7 @@ begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
-				arpproto_req <= mac_vld;
+				arpproto_req <= bcst_vld;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))

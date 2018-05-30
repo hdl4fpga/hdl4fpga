@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_debug of testbench is
-	constant n : natural := 4;
+	constant n : natural := 8;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal rrxd  : std_logic_vector(0 to n-1);
@@ -105,7 +105,8 @@ begin
 	generic map (
 		mem_data => reverse(
 			x"5555_5555_5555_55d5" &
-            x"004000010203"        &
+--            x"004000010203"        &
+            x"ffffffffffff"        &
 			x"16987d31a4c6"        &
 			x"0806"                &
 			x"00010800"            &
