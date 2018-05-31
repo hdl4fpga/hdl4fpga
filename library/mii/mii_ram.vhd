@@ -46,41 +46,33 @@ end;
 architecture def of mii_ram is
 	constant addr_size : natural := unsigned_num_bits(size-1);
 
-	signal raddr  : unsigned(unsigned_num_bits(size)-1 downto 0);
-	signal waddr  : unsigned(raddr'range);
+	signal raddr : unsigned(addr_size-1 downto 0);
+	signal waddr : unsigned(raddr'range);
+	signal rdy   : std_logic;
 
 begin
 
 	process (mii_rxc, mii_rxdv)
-		variable edge : std_logic;
 		variable cntr : unsigned(waddr'range);
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_rxdv='1' then
-				if edge='0' then
-					cntr := to_unsigned(1, cntr'length);
-				else
-					cntr := cntr + 1;
-				end if;
+				waddr <= cntr;
+				cntr  := cntr + 1;
+			else
+				cntr  := (others => '0');
 			end if;
-			edge := mii_rxdv;
 		end if;
 
-		waddr <= cntr;
-		if mii_rxdv='1' then
-			if edge='0' then
-				waddr <= (others => '0');
-			end if;
-		end if;
 	end process;
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => mii_rxc,
-		wr_addr => std_logic_vector(waddr(addr_size-1 downto 0)),
+		wr_addr => std_logic_vector(waddr),
 		wr_data => mii_rxd,
 		wr_ena  => mii_rxdv,
-		rd_addr => std_logic_vector(raddr(addr_size-1 downto 0)),
+		rd_addr => std_logic_vector(raddr),
 		rd_data => mii_txd);
 
 	process (mii_txc)
@@ -88,15 +80,19 @@ begin
 		if rising_edge(mii_txc) then
 			if mii_treq='0' then
 				raddr <= (others => '0');
+				rdy   <= '0';
 			elsif raddr < waddr then
 				if mii_tena='1' then
 					raddr <= raddr + 1;
 				end if;
+				rdy   <= '0';
+			else
+				rdy   <= '1';
 			end if;
 		end if;
 	end process;
 
-	mii_trdy <= mii_treq and setif(waddr=raddr);
-	mii_txdv <= mii_treq and not setif(waddr=raddr) and mii_tena;
+	mii_trdy <= mii_treq and rdy;
+	mii_txdv <= mii_treq and not rdy and mii_tena;
 
 end;
