@@ -96,7 +96,7 @@ begin
 			8))
 	port map (
 		mii_txc  => clk,
-		mii_treq => '0', --treq1,
+		mii_treq => treq1,
 		mii_trdy => trdy1,
 		mii_txdv => rxdv1,
 		mii_txd  => rxd1);
@@ -119,13 +119,13 @@ begin
 			x"00000000000000000000", 8))
 	port map (
 		mii_txc  => clk,
-		mii_treq => treq1,
+		mii_treq => treq2,
 		mii_trdy => open,
 		mii_txdv => rxdv2,
 		mii_txd  => rxd2);
 
-	rxd  <= rxd2  ; --when trdy1='1' else rxd1;
-	rxdv <= rxdv2 ; --when trdy1='1' else rxdv1;
+	rxd  <= rxd2  when trdy1='1' else rxd1;
+	rxdv <= rxdv2 when trdy1='1' else rxdv1;
 
 	rrxd <= reverse(rxd);
 	du : entity hdl4fpga.mii_debug

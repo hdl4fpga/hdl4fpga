@@ -115,7 +115,6 @@ architecture struct of mii_debug is
 	signal cia_ena     : std_logic;
 	signal smac_txd    : std_logic_vector(mii_txd'range);
 	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
-	signal pp : std_logic_vector(mii_txd'range);
 			signal arp_req  : std_logic;
 			signal dhcp_ena  : std_logic;
 		signal arppaddr_ena   : std_logic;
@@ -195,7 +194,6 @@ begin
 				if rising_edge(mii_rxc) then
 					if to_me='0' then
 						mii_ptr <= (others => '0');
---					elsif mii_ptr(0)='0' then
 					else
 						mii_ptr <= mii_ptr + 1;
 					end if;
@@ -263,8 +261,6 @@ begin
 					mii_tena => arppaddr_ena,
 					mii_txd  => ipsaddr_txd);
 
---				arp_req <= ipsaddr_rdy;
-				pp <= ipsaddr_txd;
 				mii_saddrcmp : entity hdl4fpga.mii_cmp
 				port map (
 					mii_req  => arp_vld,
@@ -320,7 +316,7 @@ begin
 							arp_rply <= '1';
 							rply     := '0';
 						end if;
-						arp_rply <= '0';
+--						arp_rply <= '0';
 					end if;
 				end process;
 
@@ -380,8 +376,8 @@ begin
 						elsif ipsaddr_rdy='1' then
 							sdr_rdy := '1';
 						end if;
-					arpipsaddr_req <= (arpsaddr_req and not sdr_rdy) or arptaddr_req;
 					end if;
+					arpipsaddr_req <= (arpsaddr_req and not sdr_rdy) or (arptaddr_req and sdr_rdy);
 					arpsaddr_rdy   <= arp_rply and (ipsaddr_rdy or sdr_rdy);
 				end process;
 
@@ -440,7 +436,7 @@ begin
 				mii_treq => ipproto_vld,
 				mii_ena  => dhcp_ena,
 				mii_pktv => dhcp_vld);
-
+			ipsaddr_req <= arpipsaddr_req;
 			saddr_vld <= dhcp_vld and cia_ena;
 			mii_saddr_e : entity hdl4fpga.mii_ram
 			generic map (
@@ -544,14 +540,11 @@ begin
 					end if;
 					rxd8 <= std_logic_vector(aux) & mii_rxd;
 				else
-					rxd8    <= pp;
 					rxd8    <= mii_rxd;
 					cga_ena <= pkt_vld;
 				end if;
 			end process;
 
---			rxd8    <= mii_rxd;
---			cga_ena <= pkt_vld;
 			process (rxd8)
 				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
 				variable rxd  : unsigned(rxd8'range);
