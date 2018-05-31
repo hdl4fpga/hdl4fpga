@@ -129,7 +129,7 @@ begin
 		signal mac_rdy        : std_logic;
 		signal ipsaddr_rdy    : std_logic;
 		signal arpipsaddr_req : std_logic;
-		signal mii_ptr        : unsigned(0 to to_miisize(6));
+		signal mii_ptr        : unsigned(0 to to_miisize(8));
 		signal to_me          : std_logic;
 
 		signal ethsmac_ena    : std_logic;
@@ -267,7 +267,7 @@ begin
 				port map (
 					mii_req  => arp_vld,
 					mii_rxc  => mii_rxc,
-					mii_ena  => arppaddr_ena,
+					mii_ena  => '0', --arppaddr_ena,
 					mii_rdy  => ipsaddr_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_txd,

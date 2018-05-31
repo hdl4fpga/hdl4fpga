@@ -40,21 +40,21 @@ entity mii_cmp is
 end;
 
 architecture def of mii_cmp is
+		signal cy : std_logic;
 begin
 
-	process (mii_rxc, mii_rdy)
-		variable cy : std_logic;
+	process (mii_rxc)
 	begin
 		if rising_edge(mii_rxc) then
 			if mii_req='0' then
-				cy  := '1';
+				cy  <= '1';
 			elsif mii_rdy='0' then
 				if mii_ena='1' then
-					cy := cy and setif(mii_rxd1=mii_rxd2);
+					cy <= cy and setif(mii_rxd1=mii_rxd2);
 				end if;
 			end if;
 		end if;
-		mii_equ <= mii_rdy and cy;
 	end process;
+		mii_equ <= mii_rdy and cy;
 
 end;
