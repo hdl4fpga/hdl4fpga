@@ -195,7 +195,8 @@ begin
 				if rising_edge(mii_rxc) then
 					if to_me='0' then
 						mii_ptr <= (others => '0');
-					elsif mii_ptr(0)='0' then
+--					elsif mii_ptr(0)='0' then
+					else
 						mii_ptr <= mii_ptr + 1;
 					end if;
 				end if;
@@ -262,12 +263,13 @@ begin
 					mii_tena => arppaddr_ena,
 					mii_txd  => ipsaddr_txd);
 
+--				arp_req <= ipsaddr_rdy;
 				pp <= ipsaddr_txd;
 				mii_saddrcmp : entity hdl4fpga.mii_cmp
 				port map (
 					mii_req  => arp_vld,
 					mii_rxc  => mii_rxc,
-					mii_ena  => '0', --arppaddr_ena,
+					mii_ena  => arppaddr_ena,
 					mii_rdy  => ipsaddr_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_txd,
