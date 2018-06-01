@@ -36,6 +36,7 @@ entity mii_debug is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
+		btn       : in  std_logic:= '0';
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
@@ -237,7 +238,7 @@ begin
 				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
 				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or arpsaddr_req;
 
-				arpproto_req <= bcst_vld;
+				arpproto_req <= to_me;
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(arpproto,8))
@@ -316,7 +317,7 @@ begin
 							arp_rply <= '1';
 							rply     := '0';
 						end if;
---						arp_rply <= '0';
+						arp_rply <= btn;
 					end if;
 				end process;
 
@@ -501,8 +502,6 @@ begin
 			signal capture_ena : std_logic;
 		begin
 
---			capture_ena <= mac_vld and ipproto_vld;
---			capture_ena <= arp_req and mii_rxdv; --to_me and ipproto_vld;
 			capture_ena <= pkt_vld;
 			cga_clk <= mii_rxc;
 			process (cga_clk)
@@ -518,10 +517,8 @@ begin
 				end if;
 			end process;
 
---			pkt_vld <= (mac_vld and ipproto_vld and cia_ena) or arp_req;
---			pkt_vld <= (mac_vld and dhcp_vld and cia_ena);
---			pkt_vld <= arp_vld and arppaddr_ena and mii_rxdv;
-			pkt_vld <= arp_req and mii_rxdv;
+			pkt_vld <= mii_rxdv;
+--			pkt_vld <= arp_req and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);

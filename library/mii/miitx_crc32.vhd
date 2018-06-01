@@ -49,7 +49,7 @@ begin
 			if mii_rxdv/='0' then
 				crc  <= not galois_crc(mii_rxd, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
 				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
-			elsif cntr(0)='1' then
+			elsif cntr(0)/='1' then
 				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
 				cntr <= cntr - 1;
 			end if;
@@ -58,6 +58,6 @@ begin
 	end process;
 
 	mii_txd  <= crc(mii_txd'range);
-	mii_txdv <= not mii_rxdv and not cntr(0);
+	mii_txdv <= not mii_rxdv and setif(cntr(0)='0');
 end;
 

@@ -49,6 +49,22 @@ architecture mix of miitx_dll is
 	signal rxdv2        : std_logic;
 	signal rxd2         : std_logic_vector(mii_txd'range);
 
+	function encoder (
+		constant arg : std_logic_vector)
+		return   std_logic_vector is
+--		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '0');
+		variable val : std_logic_vector(0 to 2-1) := (others => '0');
+		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
+	begin
+		for i in aux'range loop
+			if arg=std_logic_vector(aux) then
+				val := std_logic_vector(to_unsigned(i, val'length));
+			end if;
+			aux := aux ror 1;
+		end loop;
+		return val;
+	end;
+
 begin
 	crc32_b : block
 		constant mii_pre2   : std_logic_vector := reverse(x"5555_55d5", 8);
@@ -66,7 +82,26 @@ begin
 		signal crc32_txdv   : std_logic;
 
 	begin
-		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
+--		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
+--		process (mii_rxd, mii_rxdv)
+--			variable arxdv : unsigned(0 to mii_rxdv'length-1);
+--			variable arxd  : unsigned(0 to mii_rxd'length-1);
+--			variable atxd  : unsigned(0 to mii_txd'length-1);
+--		begin
+--			arxd  := unsigned(mii_rxd);
+--			arxdv := unsigned(mii_rxdv);
+--			atxd  := (others => '0');
+--			for i in arxdv'range loop
+--				if arxdv(0)='1' then
+--					atxd := atxd or arxd(atxd'range);
+--				end if;
+--				arxd  := arxd  rol atxd'length;
+--				arxdv := arxdv rol 1;
+--			end loop;
+--			rxd <= std_logic_vector(atxd);
+--		end process;
+		rxd  <= word2byte(x"69", encoder(mii_rxdv), mii_txd'length);
+
 		process (mii_rxdv)
 		begin
 			rxdv <= '0';
