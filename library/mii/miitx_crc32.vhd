@@ -39,17 +39,17 @@ end;
 
 architecture def of miitx_crc32 is
 	signal crc  : std_logic_vector(0 to 32-1);
-	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1)) := (others => '0');
+	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1));
 	signal edge : std_logic;
 begin
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_rxdv='1' then
+			if mii_rxdv/='0' then
 				crc  <= not galois_crc(mii_rxd, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
 				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
-			elsif cntr(0)='0' then
+			elsif cntr(0)='1' then
 				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
 				cntr <= cntr - 1;
 			end if;
