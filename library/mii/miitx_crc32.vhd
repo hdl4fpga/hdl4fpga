@@ -39,7 +39,7 @@ end;
 
 architecture def of miitx_crc32 is
 	signal crc  : std_logic_vector(0 to 32-1);
-	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1)):= (others => '0');
+	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1));
 	signal edge : std_logic;
 begin
 
