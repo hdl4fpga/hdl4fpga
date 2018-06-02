@@ -56,6 +56,7 @@ architecture miitx_dhcp of ecp3versa is
 	signal txc  : std_logic;
 	signal txdv : std_logic;
 	signal txd  : std_logic_vector(phy1_tx_d'range);
+	signal btn : std_logic;
 begin
 
 	videodcm_b : block
@@ -94,12 +95,19 @@ begin
 			lock        => lock);
 	end block;
 
-	process (fpga_gsrn, phy1_125clk)
+	txc <= phy1_125clk;
+	process (fpga_gsrn, txc)
+		variable pp : std_logic;
 	begin
 		if fpga_gsrn='0' then
-			mii_req <= '0';
-		elsif rising_edge(phy1_125clk) then
+			mii_req <= pp;
+			btn     <= not pp;
+		elsif rising_edge(txc) then
 			mii_req <= '1';
+			btn <= '1';
+		end if;
+		if rising_edge(fpga_gsrn) then
+			pp := '0'; --not pp;
 		end if;
 	end process;
 
@@ -114,11 +122,15 @@ begin
 
 	mii_debug_e : entity hdl4fpga.mii_debug
 	port map (
+		btn       => btn,
 		mii_req   => mii_req,
 		mii_rxc   => rxc,
 		mii_rxd   => rxd,
 		mii_rxdv  => rxdv,
-		mii_txc   => phy1_125clk,
+--		mii_rxc   => txc,  --rxc,
+--		mii_rxd   => txd,  --rxd,
+--		mii_rxdv  => txdv, --rxdv,
+		mii_txc   => txc,
 		mii_txd   => txd,
 		mii_txdv  => txdv,
 
@@ -127,9 +139,9 @@ begin
 		video_hs  => video_hs,
 		video_vs  => video_vs);
 	
-	process (phy1_125clk)
+	process (txc)
 	begin
-		if rising_edge(phy1_125clk) then
+		if rising_edge(txc) then
 			phy1_tx_en <= txdv;
 			phy1_tx_d  <= txd;
 		end if;

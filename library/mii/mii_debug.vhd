@@ -317,7 +317,7 @@ begin
 							arp_rply <= '1';
 							rply     := '0';
 						end if;
-						arp_rply <= btn;
+--						arp_rply <= btn;
 					end if;
 				end process;
 
@@ -517,8 +517,8 @@ begin
 				end if;
 			end process;
 
-			pkt_vld <= mii_rxdv;
---			pkt_vld <= arp_req and mii_rxdv;
+--			pkt_vld <= mii_rxdv;
+			pkt_vld <= arp_req and mii_rxdv;
 
 			process (mii_rxc, mii_rxd, pkt_vld)
 				variable aux  : unsigned(0 to 8-mii_rxd'length-1);

@@ -82,7 +82,7 @@ begin
 		signal crc32_txdv   : std_logic;
 
 	begin
---		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
+		rxd  <= word2byte(mii_rxd, encoder(mii_rxdv), mii_txd'length);
 --		process (mii_rxd, mii_rxdv)
 --			variable arxdv : unsigned(0 to mii_rxdv'length-1);
 --			variable arxd  : unsigned(0 to mii_rxd'length-1);
@@ -100,7 +100,7 @@ begin
 --			end loop;
 --			rxd <= std_logic_vector(atxd);
 --		end process;
-		rxd  <= word2byte(x"69", encoder(mii_rxdv), mii_txd'length);
+--		rxd  <= word2byte(x"6699", encoder(mii_rxdv), mii_txd'length);
 
 		process (mii_rxdv)
 		begin
