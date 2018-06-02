@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-entity mii_ipcfg is
+entity mii_debug is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
@@ -52,7 +52,7 @@ entity mii_ipcfg is
 		video_vs  : out std_logic);
 	end;
 
-architecture struct of mii_ipcfg is
+architecture struct of mii_debug is
 
 	constant ipproto  : std_logic_vector := x"0800";
 	constant arpproto : std_logic_vector := x"0806";
@@ -116,10 +116,9 @@ architecture struct of mii_ipcfg is
 	signal cia_ena     : std_logic;
 	signal smac_txd    : std_logic_vector(mii_txd'range);
 	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
-
-	signal arp_req      : std_logic;
-	signal dhcp_ena     : std_logic;
-	signal arppaddr_ena : std_logic;
+			signal arp_req  : std_logic;
+			signal dhcp_ena  : std_logic;
+		signal arppaddr_ena   : std_logic;
 begin
 
 	eth_b : block
