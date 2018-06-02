@@ -141,7 +141,7 @@ begin
 			di(0) => rxdv,
 			do(0) => miibuf2_rxdv);
 
-		crc32_e : entity hdl4fpga.miitx_crc32
+		crc32_e : entity hdl4fpga.mii_crc32
 		port map (
 			mii_txc  => mii_txc,
 			mii_rxd  => miibuf2_rxd,

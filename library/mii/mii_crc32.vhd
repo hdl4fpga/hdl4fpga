@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_crc32 is
+entity mii_crc32 is
     port (
         mii_txc  : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
@@ -37,7 +37,7 @@ entity miitx_crc32 is
 		mii_txd  : out std_logic_vector);
 end;
 
-architecture def of miitx_crc32 is
+architecture def of mii_crc32 is
 	signal crc  : std_logic_vector(0 to 32-1);
 	signal cntr : unsigned(0 to unsigned_num_bits(32/mii_txd'length-1));
 	signal edge : std_logic;
@@ -50,7 +50,7 @@ begin
 				crc  <= not galois_crc(mii_rxd, word2byte((crc'range => '1') & not crc, edge), x"04c11db7");
 				cntr <= to_unsigned(32/mii_txd'length-1, cntr'length);
 			elsif cntr(0)/='1' then
-				crc <= std_logic_vector(unsigned(crc) sll mii_txd'length);
+				crc <= std_logic_vector(unsigned(crc) rol mii_txd'length);
 				cntr <= cntr - 1;
 			end if;
 			edge <= mii_rxdv;
