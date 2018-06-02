@@ -205,18 +205,23 @@ begin
 		end block;
 
 		arp_b : block
+			signal arp_req  : std_logic;
 			signal arp_rply : std_logic;
 
-			signal arp_req  : std_logic;
+			signal spa_rdy  : std_logic;
+			signal spa_req  : std_logic;
+			signal spa_rxdv : std_logic;
+			signal spa_rxd  : std_logic_vector(mii_txd'range);
+
 		begin
 
 			request_b : block
 				constant arp_sha   : field := (ethertype.offset+ethertype.size+ 8, 6);
 				constant arp_tpa   : field := (ethertype.offset+ethertype.size+24, 4);
 
-				signal   tpa_ena   : std_logic;
-				signal   mytpa_txd : std_logic_vector(mii_txd'range);
-				signal   mytpa_rdy : std_logic;
+				signal tpa_ena   : std_logic;
+				signal mytpa_txd : std_logic_vector(mii_txd'range);
+				signal mytpa_rdy : std_logic;
 
 			begin
 				sha_ena <= lookup(to_miisize((0 => arp_sha), mii_txd'length), std_logic_vector(mii_ptr));
@@ -270,11 +275,6 @@ begin
 				signal tha_req       : std_logic;
 				signal tha_rxdv      : std_logic;
 				signal tha_rxd       : std_logic_vector(mii_txd'range);
-
-				signal spa_rdy  : std_logic;
-				signal spa_req  : std_logic;
-				signal spa_rxdv : std_logic;
-				signal spa_rxd  : std_logic_vector(mii_txd'range);
 
 				signal tpa_rdy       : std_logic;
 				signal tpa_req       : std_logic;
