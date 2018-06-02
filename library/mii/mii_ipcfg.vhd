@@ -94,19 +94,6 @@ architecture struct of mii_ipcfg is
 		return '0';
 	end;
 
-	signal ethdmac_vld  : std_logic;
-	signal ethdbcst_vld : std_logic;
-	signal ethsmac_vld  : std_logic;
-	signal ipproto_vld  : std_logic;
-	signal arp_vld      : std_logic;
-	signal dhcp_vld     : std_logic;
-	signal myipcfg_vld  : std_logic;
-
-	signal myipcfg_txd  : std_logic_vector(mii_txd'range);
-
-	signal arp_req      : std_logic;
-
-	signal arppaddr_ena : std_logic;
 begin
 
 	eth_b : block
@@ -114,15 +101,25 @@ begin
 		constant ethersmac : field := (etherdmac.offset+etherdmac.size, 6);
 		constant ethertype : field := (ethersmac.offset+ethersmac.size, 2);
 
-		signal pre_rdy      : std_logic;
-		signal mac_rdy      : std_logic;
-		signal ipsaddr_rdy  : std_logic;
 		signal mii_ptr      : unsigned(0 to to_miisize(8));
+
+		signal pre_vld      : std_logic;
+		signal ethdmac_vld  : std_logic;
+		signal ethsmac_vld  : std_logic;
+		signal ethdbcst_vld : std_logic;
 		signal bucst_vld    : std_logic;
+		signal arp_vld      : std_logic;
+
+		signal dhcp_vld     : std_logic;
+		signal myipcfg_vld  : std_logic;
+		signal myipcfg_txd  : std_logic_vector(mii_txd'range);
+
+		signal ipsaddr_rdy  : std_logic;
+		signal ipsaddr_ena  : std_logic;
 
 		signal ethsmac_ena  : std_logic;
 		signal ethty_ena    : std_logic;
-		signal arphaddr_ena : std_logic;
+		signal sha_ena : std_logic;
 
 		signal arppa_req    : std_logic;
 
@@ -158,12 +155,12 @@ begin
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
 				mii_rxdv => mii_rxdv,
-				mii_rdy  => pre_rdy);
+				mii_rdy  => pre_vld);
 
 			process (mii_rxc)
 			begin
 				if rising_edge(mii_rxc) then
-					if pre_rdy='0' then
+					if pre_vld='0' then
 						mii_ptr <= (others => '0');
 					else
 						mii_ptr <= mii_ptr + 1;
@@ -177,7 +174,7 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => pre_rdy,
+				mii_treq => pre_vld,
 				mii_pktv => ethdmac_vld);
 
 			mii_bcst_e : entity hdl4fpga.mii_romcmp
@@ -186,12 +183,12 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => pre_rdy,
+				mii_treq => pre_vld,
 				mii_pktv => ethdbcst_vld);
 
 			bucst_vld   <= ethdmac_vld or ethdbcst_vld;
 			ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
-			ethsmac_vld <= (ethdmac_vld and ethsmac_ena) or (arp_vld and arphaddr_ena);
+			ethsmac_vld <= (ethdmac_vld and ethsmac_ena) or (arp_vld and sha_ena);
 			miitx_ethsmac_e : entity hdl4fpga.mii_ram
 			generic map (
 				size => to_miisize(6))
@@ -204,27 +201,26 @@ begin
 				mii_treq => std_logic'('0'));
 
 			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+
 		end block;
 
 		arp_b : block
 			signal arp_rply : std_logic;
-				signal spa_rdy  : std_logic;
-				signal spa_req  : std_logic;
-				signal spa_rxdv : std_logic;
-				signal spa_rxd  : std_logic_vector(mii_txd'range);
 
+			signal arp_req  : std_logic;
 		begin
 
-			rx_b : block
-				constant arp_haddr : field := (ethertype.offset+ethertype.size+ 8, 6);
-				constant arp_paddr : field := (ethertype.offset+ethertype.size+24, 4);
+			request_b : block
+				constant arp_sha   : field := (ethertype.offset+ethertype.size+ 8, 6);
+				constant arp_tpa   : field := (ethertype.offset+ethertype.size+24, 4);
 
+				signal   tpa_ena   : std_logic;
 				signal   mytpa_txd : std_logic_vector(mii_txd'range);
 				signal   mytpa_rdy : std_logic;
 
 			begin
-				arphaddr_ena <= lookup(to_miisize((0 => arp_haddr), mii_txd'length), std_logic_vector(mii_ptr));
-				arppaddr_ena <= lookup(to_miisize((0 => arp_paddr), mii_txd'length), std_logic_vector(mii_ptr)) or spa_req;
+				sha_ena <= lookup(to_miisize((0 => arp_sha), mii_txd'length), std_logic_vector(mii_ptr));
+				tpa_ena <= lookup(to_miisize((0 => arp_tpa), mii_txd'length), std_logic_vector(mii_ptr)) or spa_req;
 
 				mii_arp_e : entity hdl4fpga.mii_romcmp
 				generic map (
@@ -246,22 +242,23 @@ begin
 					mii_treq => arp_vld,
 					mii_trdy => mytpa_rdy,
 					mii_txc  => mii_rxc,
-					mii_tena => arppaddr_ena,
+					mii_tena => tpa_ena,
 					mii_txd  => mytpa_txd);
 
 				mii_tpacmp : entity hdl4fpga.mii_cmp
 				port map (
 					mii_req  => arp_vld,
 					mii_rxc  => mii_rxc,
-					mii_ena  => arppaddr_ena,
+					mii_ena  => tpa_ena,
 					mii_rdy  => mytpa_rdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => mytpa_txd,
 					mii_equ  => arp_req);
 
+				ipsaddr_ena <= tpa_ena;
 			end block;
 
-			tx_b : block
+			reply_b : block
 				signal arp_rdy       : std_logic;
 
 				signal etherhdr_rdy  : std_logic;
@@ -273,6 +270,11 @@ begin
 				signal tha_req       : std_logic;
 				signal tha_rxdv      : std_logic;
 				signal tha_rxd       : std_logic_vector(mii_txd'range);
+
+				signal spa_rdy  : std_logic;
+				signal spa_req  : std_logic;
+				signal spa_rxdv : std_logic;
+				signal spa_rxd  : std_logic_vector(mii_txd'range);
 
 				signal tpa_rdy       : std_logic;
 				signal tpa_req       : std_logic;
@@ -379,7 +381,6 @@ begin
 					mii_trdy => trailer_rdy,
 					mii_txdv => trailer_rxdv,
 					mii_txd  => trailer_rxd);
-
 			end block;
 
 		end block;
@@ -394,8 +395,9 @@ begin
 			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
 
 
-			signal ipsaddr_req    : std_logic;
-			signal dhcp_ena     : std_logic;
+			signal ipproto_vld : std_logic;
+			signal ipsaddr_req : std_logic;
+			signal dhcp_ena    : std_logic;
 			signal cia_ena     : std_logic;
 		begin
 
@@ -434,7 +436,7 @@ begin
 				mii_txc  => mii_txc,
 				mii_txd  => myipcfg_txd,
 				mii_txdv => ipsaddr_txdv,
-				mii_tena => arppaddr_ena,
+				mii_tena => ipsaddr_ena,
 				mii_treq => ipsaddr_req,
 				mii_trdy => ipsaddr_rdy);
 
