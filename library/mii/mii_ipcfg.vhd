@@ -65,22 +65,23 @@ architecture struct of mii_ipcfg is
 
 	type field_vector is array (natural range <>) of field;
 
-	impure function to_miisize (
-		constant arg : natural)
+	function to_miisize (
+		constant arg  : natural;
+		constant size : natural := mii_txd'length)
 		return natural is
 	begin
-		return arg*8/mii_txd'length;
+		return arg*8/size;
 	end;
 
 	function to_miisize (
-		constant table    : field_vector;
-		constant mii_size : natural)
+		constant table : field_vector;
+		constant size  : natural := mii_txd'length)
 		return   field_vector is
 		variable retval : field_vector(table'range);
 	begin
 		for i in table'range loop
-			retval(i).offset := table(i).offset*8/mii_size;
-			retval(i).size   := table(i).size*8/mii_size;
+			retval(i).offset := table(i).offset*8/size;
+			retval(i).size   := table(i).size*8/size;
 		end loop;
 		return retval;
 	end;
@@ -97,6 +98,17 @@ architecture struct of mii_ipcfg is
 				end if;
 			end if;
 		end loop;
+		return '0';
+	end;
+
+	function lookup (
+		constant offset : natural;
+		constant data  : std_logic_vector) 
+		return std_logic is
+	begin
+		if offset <= to_integer(unsigned(data)) then
+			return '1';
+		end if;
 		return '0';
 	end;
 
@@ -276,11 +288,9 @@ begin
 		begin
 
 			request_b : block
-				constant arp_sha   : field := (ethertype.offset+ethertype.size+ 8, 6);
-				constant arp_tpa   : field := (ethertype.offset+ethertype.size+24, 4);
-
-				signal tpa_ena   : std_logic;
-				signal mytpa_rdy : std_logic;
+				constant arp_sha : field := (ethertype.offset+ethertype.size+ 8, 6);
+				constant arp_tpa : field := (ethertype.offset+ethertype.size+24, 4);
+				signal   tpa_ena : std_logic;
 
 			begin
 				sha_ena <= lookup(to_miisize((0 => arp_sha), mii_txd'length), std_logic_vector(mii_ptr));
@@ -301,14 +311,13 @@ begin
 					mii_req  => arp_vld,
 					mii_rxc  => mii_rxc,
 					mii_ena  => tpa_ena,
-					mii_rdy  => mytpa_rdy,
+					mii_rdy  => ipsaddr_rrdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_rtxd,
 					mii_equ  => arp_req);
 
 				ipsaddr_rreq <= arp_req;
 				ipsaddr_rena <= tpa_ena;
-				ipsaddr_rrdy <= mytpa_rdy;
 			end block;
 
 			reply_b : block
@@ -436,22 +445,24 @@ begin
 
 		ip_b: block
 
-			constant ip_proto  : field := (ethertype.offset+ethertype.size+9,  1);
-			constant ip_saddr  : field := (ethertype.offset+ethertype.size+12, 4);
-			constant ip_daddr  : field := (ethertype.offset+ethertype.size+16, 4);
-			constant udp_sport : field := (ethertype.offset+ethertype.size+20, 2);
-			constant udp_dport : field := (ethertype.offset+ethertype.size+22, 2);
-			constant dhcp_cia  : field := (ethertype.offset+ethertype.size+44, 4);
+			constant ip_proto  : field   := (ethertype.offset+ethertype.size+9,  1);
+			constant ip_saddr  : field   := (ethertype.offset+ethertype.size+12, 4);
+			constant ip_daddr  : field   := (ethertype.offset+ethertype.size+16, 4);
+			constant udp_sport : field   := (ethertype.offset+ethertype.size+20, 2);
+			constant udp_dport : field   := (ethertype.offset+ethertype.size+22, 2);
+			constant dhcp_cia  : field   := (ethertype.offset+ethertype.size+44, 4);
+			constant udp_frame : natural := ethertype.offset+ethertype.size+20;
 
 
-			signal udp_ena     : std_logic;
-			signal dhcp_ena    : std_logic;
-			signal cia_ena     : std_logic;
+			signal udpproto_vld : std_logic;
+			signal udpproto_ena : std_logic;
+			signal dhcp_ena     : std_logic;
+			signal cia_ena      : std_logic;
 		begin
 
-			udp_ena  <= lookup(to_miisize((0 => ip_proto), mii_txd'length), std_logic_vector(mii_ptr));
-			dhcp_ena <= lookup(to_miisize((0 => udp_sport, 1 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
-			cia_ena  <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
+			udpproto_ena <= lookup(to_miisize((0 => ip_proto), mii_txd'length), std_logic_vector(mii_ptr));
+			dhcp_ena     <= lookup(to_miisize((0 => udp_sport, 1 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
+			cia_ena      <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
 
 			mii_ip_e : entity hdl4fpga.mii_romcmp
 			generic map (
@@ -470,8 +481,8 @@ begin
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
 				mii_treq => ipproto_vld,
-				mii_ena  => udp_ena,
-				mii_pktv => udp_vld);
+				mii_ena  => udpproto_ena,
+				mii_pktv => udpproto_vld);
 
 			mii_dhcp_e : entity hdl4fpga.mii_romcmp
 			generic map (
@@ -479,12 +490,13 @@ begin
 			port map (
 				mii_rxc  => mii_rxc,
 				mii_rxd  => mii_rxd,
-				mii_treq => udp_vld,
+				mii_treq => udpproto_vld,
 				mii_ena  => dhcp_ena,
 				mii_pktv => dhcp_vld);
 
+			udp_vld      <= lookup(to_miisize(udp_frame, mii_txd'length), std_logic_vector(mii_ptr)) and udpproto_vld;
 			ipsaddr_treq <= arppa_req;
-			myipcfg_vld <= dhcp_vld and cia_ena;
+			myipcfg_vld  <= dhcp_vld and cia_ena;
 		end block;
 
 		du : entity hdl4fpga.miitx_dhcp
