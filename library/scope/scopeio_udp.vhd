@@ -71,12 +71,6 @@ begin
 		variable cntr : unsigned(0 to unsigned_num_bits(pll_data'length/mii_rxd'length-1));
 	begin
 		if rising_edge(mii_rxc) then
-			if mac_rdy='0' then
-				cntr := to_unsigned(pll_data'length/mii_rxd'length-1,cntr'length);
-			elsif cntr(0)='0' then
-				data := data srl mii_rxd'length;
-				data(mii_rxd'range) := unsigned(reverse(mii_rxd));
-				cntr := cntr - 1;
 			end if;
 			pll_data <= reverse(std_logic_vector(data));
 			prdy     <= cntr(0) and mac_vld and mii_rxdv;
