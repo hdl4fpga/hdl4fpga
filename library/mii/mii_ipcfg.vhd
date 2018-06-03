@@ -189,6 +189,7 @@ begin
 
 			rx_b : block
 			begin
+
 				miitx_ethsmac_e : entity hdl4fpga.mii_ram
 				generic map (
 					size => to_miisize(6))
@@ -255,6 +256,9 @@ begin
 				end if;
 			end process;
 
+			ethsmac_ena <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
+			ethty_ena   <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+
 			mii_mac_e : entity hdl4fpga.mii_romcmp
 			generic map (
 				mem_data => reverse(mac,8))
@@ -274,9 +278,7 @@ begin
 				mii_pktv => ethdbcst_vld);
 
 			ethdbucst_vld <= ethdmac_vld or ethdbcst_vld;
-			ethsmac_ena   <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
-			ethsmac_vld   <= (ethdmac_vld and ethsmac_ena);
-			ethty_ena     <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+			ethsmac_vld   <= ethdmac_vld and ethsmac_ena;
 
 		end block;
 
@@ -516,7 +518,7 @@ begin
 		mii_ipv   <= ipproto_vld;
 		mii_udpv  <= udp_vld;
 		mii_myipv <= myipcfg_vld;
+
 	end block;
-		
 
 end;
