@@ -135,7 +135,7 @@ begin
 
 		signal pre_vld       : std_logic;
 		signal ethdmac_vld   : std_logic;
-		signal ethsmac_vld   : std_logic;
+		signal ethsmac_vld   : wor std_ulogic;
 		signal ethdbcst_vld  : std_logic;
 		signal ipproto_vld   : std_logic;
 		signal ethdbucst_vld : std_logic;
@@ -148,9 +148,6 @@ begin
 
 		signal ethsmac_ena   : std_logic;
 		signal ethty_ena     : std_logic;
-		signal sha_ena       : std_logic;
-
-		signal arppa_req     : std_logic;
 
 		signal ipsaddr_treq  : std_logic;
 		signal ipsaddr_trdy  : std_logic;
@@ -173,33 +170,51 @@ begin
 
 		register_file_b : block
 		begin
-			miitx_ipsaddr_e : entity hdl4fpga.mii_ram
-			generic map (
-				size => to_miisize(4))
-			port map(
-				mii_rxc  => mii_rxc,
-				mii_rxd  => mii_rxd,
-				mii_rxdv => myipcfg_vld,
-				mii_txc  => mii_txc,
-				mii_txdv => ipsaddr_txdv,
-				mii_txd  => ipsaddr_ttxd,
-				mii_tena => ipsaddr_tena,
-				mii_treq => ipsaddr_treq,
-				mii_trdy => ipsaddr_trdy);
+			tx_b : block
+			begin
+				miitx_ipsaddr_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(4))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => myipcfg_vld,
+					mii_txc  => mii_txc,
+					mii_txdv => ipsaddr_txdv,
+					mii_txd  => ipsaddr_ttxd,
+					mii_tena => ipsaddr_tena,
+					mii_treq => ipsaddr_treq,
+					mii_trdy => ipsaddr_trdy);
+			end block;
 
-			miirx_tpa_e : entity hdl4fpga.mii_ram
-			generic map (
-				size => to_miisize(4))
-			port map(
-				mii_rxc  => mii_rxc,
-				mii_rxd  => mii_rxd,
-				mii_rxdv => myipcfg_vld,
-				mii_txc  => mii_rxc,
-				mii_txd  => ipsaddr_rtxd,
-				mii_txdv => ipsaddr_rtxdv,
-				mii_tena => ipsaddr_rena,
-				mii_treq => ipsaddr_rreq,
-				mii_trdy => ipsaddr_rrdy);
+			rx_b : block
+			begin
+				miitx_ethsmac_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(6))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => ethsmac_vld,
+					mii_txc  => mii_txc,
+					mii_txd  => ethdmac_txd,
+					mii_treq => std_logic'('0'));
+
+				miirx_tpa_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(4))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => myipcfg_vld,
+					mii_txc  => mii_rxc,
+					mii_txd  => ipsaddr_rtxd,
+					mii_txdv => ipsaddr_rtxdv,
+					mii_tena => ipsaddr_rena,
+					mii_treq => ipsaddr_rreq,
+					mii_trdy => ipsaddr_rrdy);
+
+			end block;
 
 		end block;
 
@@ -260,19 +275,8 @@ begin
 
 			ethdbucst_vld <= ethdmac_vld or ethdbcst_vld;
 			ethsmac_ena   <= lookup(to_miisize((0 => ethersmac), mii_txd'length), std_logic_vector(mii_ptr));
-			ethsmac_vld   <= (ethdmac_vld and ethsmac_ena) or (arp_vld and sha_ena);
-			miitx_ethsmac_e : entity hdl4fpga.mii_ram
-			generic map (
-				size => to_miisize(6))
-			port map(
-				mii_rxc  => mii_rxc,
-				mii_rxd  => mii_rxd,
-				mii_rxdv => ethsmac_vld,
-				mii_txc  => mii_txc,
-				mii_txd  => ethdmac_txd,
-				mii_treq => std_logic'('0'));
-
-			ethty_ena <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
+			ethsmac_vld   <= (ethdmac_vld and ethsmac_ena);
+			ethty_ena     <= lookup(to_miisize((0 => ethertype), mii_txd'length), std_logic_vector(mii_ptr));
 
 		end block;
 
@@ -290,6 +294,7 @@ begin
 			request_b : block
 				constant arp_sha : field := (ethertype.offset+ethertype.size+ 8, 6);
 				constant arp_tpa : field := (ethertype.offset+ethertype.size+24, 4);
+				signal sha_ena  : std_logic;
 				signal   tpa_ena : std_logic;
 
 			begin
@@ -316,6 +321,7 @@ begin
 					mii_rxd2 => ipsaddr_rtxd,
 					mii_equ  => arp_req);
 
+				ethsmac_vld  <= arp_vld and sha_ena;
 				ipsaddr_rreq <= arp_req;
 				ipsaddr_rena <= tpa_ena;
 			end block;
@@ -421,7 +427,7 @@ begin
 					end if;
 				end process;
 				spa_rdy      <= arp_rply and (ipsaddr_trdy or spacpy_rdy);
-				arppa_req    <= spa_req  when spacpy_rdy='0' else tpa_req;
+				ipsaddr_treq <= spa_req  when spacpy_rdy='0' else tpa_req;
 				ipsaddr_tena <= spa_req;
 
 				tpa_rdy  <= tpa_req and ipsaddr_trdy;
@@ -495,7 +501,6 @@ begin
 				mii_pktv => dhcp_vld);
 
 			udp_vld      <= lookup(to_miisize(udp_frame, mii_txd'length), std_logic_vector(mii_ptr)) and udpproto_vld;
-			ipsaddr_treq <= arppa_req;
 			myipcfg_vld  <= dhcp_vld and cia_ena;
 		end block;
 
