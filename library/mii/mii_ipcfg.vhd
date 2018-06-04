@@ -51,7 +51,7 @@ entity mii_ipcfg is
 		mii_udpv  : out std_logic;
 		mii_myipv : out std_logic
 );
-	end;
+end;
 
 architecture struct of mii_ipcfg is
 
