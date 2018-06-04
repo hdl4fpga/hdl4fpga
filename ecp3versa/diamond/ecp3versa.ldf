@@ -35,9 +35,6 @@
         <Source name="../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/mii/mii_debug.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/mii/mii_rom.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -60,6 +57,15 @@
             <Options/>
         </Source>
         <Source name="../../library/mii/mii_crc32.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_display.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_ipcfg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/mii/mii_debug.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
