@@ -62,7 +62,16 @@ architecture struct of mii_debug is
 	signal udp_vld  : std_logic;
 
 	signal pkt_vld  : std_logic;
+
+
+	signal txc  : std_logic;
+	signal txdv : std_logic;
+	signal txd  : std_logic_vector(mii_txd'range);
 begin
+
+	txc <= mii_txc;
+	mii_txdv <= txdv;
+	mii_txd  <= txd;
 
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
@@ -74,9 +83,9 @@ begin
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
 
-		mii_txc   => mii_txc,
-		mii_txdv  => mii_txdv,
-		mii_txd   => mii_txd,
+		mii_txc   => txc,
+		mii_txdv  => txdv,
+		mii_txd   => txd,
 
 		mii_prev  => pre_vld,
 		mii_bcstv => bcst_vld,
@@ -87,9 +96,12 @@ begin
 	pkt_vld <= mii_rxdv;
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
-		mii_rxc   => mii_rxc,
-		mii_rxdv  => pkt_vld,
-		mii_rxd   => mii_rxd,
+		mii_rxc   => txc,
+		mii_rxdv  => txdv,
+		mii_rxd   => txd,
+--		mii_rxc   => mii_rxc,
+--		mii_rxdv  => pkt_vld,
+--		mii_rxd   => mii_rxd,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
