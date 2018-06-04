@@ -45,6 +45,7 @@ entity mii_ipcfg is
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
 
+		mii_prev  : out std_logic;
 		mii_bcstv : out std_logic;
 		mii_macv  : out std_logic;
 		mii_ipv   : out std_logic;
@@ -143,8 +144,6 @@ begin
 		signal udp_vld       : std_logic;
 		signal dhcp_vld      : std_logic;
 		signal myipcfg_vld   : std_logic;
-
-
 
 		signal ethsmac_ena   : std_logic;
 		signal ethty_ena     : std_logic;
@@ -324,7 +323,7 @@ begin
 					mii_equ  => arp_req);
 
 				ethsmac_vld  <= arp_vld and sha_ena;
-				ipsaddr_rreq <= arp_req;
+				ipsaddr_rreq <= arp_vld;
 				ipsaddr_rena <= tpa_ena;
 			end block;
 
@@ -453,13 +452,14 @@ begin
 
 		ip_b: block
 
-			constant ip_proto  : field   := (ethertype.offset+ethertype.size+9,  1);
-			constant ip_saddr  : field   := (ethertype.offset+ethertype.size+12, 4);
-			constant ip_daddr  : field   := (ethertype.offset+ethertype.size+16, 4);
-			constant udp_sport : field   := (ethertype.offset+ethertype.size+20, 2);
-			constant udp_dport : field   := (ethertype.offset+ethertype.size+22, 2);
-			constant dhcp_cia  : field   := (ethertype.offset+ethertype.size+44, 4);
-			constant udp_frame : natural := ethertype.offset+ethertype.size+20;
+			constant ip_frame  : natural := ethertype.offset+ethertype.size;
+			constant ip_proto  : field   := (ip_frame+9,  1);
+			constant ip_saddr  : field   := (ip_frame+12, 4);
+			constant ip_daddr  : field   := (ip_frame+16, 4);
+			constant udp_frame : natural :=  ip_frame+20;
+			constant udp_sport : field   := (udp_frame+0, 2);
+			constant udp_dport : field   := (udp_frame+2, 2);
+			constant dhcp_cia  : field   := (udp_frame+24, 4);
 
 
 			signal udpproto_vld : std_logic;
@@ -513,6 +513,7 @@ begin
 			mii_txdv => miidhcp_txdv,
 			mii_txd  => miidhcp_txd);
 
+		mii_prev  <= pre_vld;
 		mii_bcstv <= ethdbcst_vld;
 		mii_macv  <= ethdmac_vld;
 		mii_ipv   <= ipproto_vld;

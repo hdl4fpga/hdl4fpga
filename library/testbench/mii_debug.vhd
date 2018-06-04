@@ -128,6 +128,7 @@ begin
 	rxdv <= rxdv2 when trdy1='1' else rxdv1;
 
 	rrxd <= reverse(rxd);
+--	du : entity hdl4fpga.mii_debug
 	du : entity hdl4fpga.mii_debug
 	port map (
         mii_rxc  => clk,

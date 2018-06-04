@@ -54,34 +54,21 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-	signal video_frm   : std_logic;
-	signal video_hon   : std_logic;
-	signal video_nhl   : std_logic;
-	signal video_vld   : std_logic;
-	signal video_vcntr : std_logic_vector(11-1 downto 0);
-	signal video_hcntr : std_logic_vector(11-1 downto 0);
-	signal mac_vld     : std_logic;
-	signal bcst_vld    : std_logic;
-	signal smac_vld    : std_logic;
-	signal pkt_vld     : std_logic;
-	signal ipproto_vld : std_logic;
-	signal arp_vld     : std_logic;
-	signal dhcp_vld    : std_logic;
-	signal saddr_vld   : std_logic;
-	signal cia_ena     : std_logic;
-	signal smac_txd    : std_logic_vector(mii_txd'range);
-	signal ipsaddr_txd : std_logic_vector(mii_txd'range);
-			signal arp_req  : std_logic;
-			signal dhcp_ena  : std_logic;
-		signal arppaddr_ena   : std_logic;
-begin
+	signal pre_vld  : std_logic;
+	signal bcst_vld : std_logic;
+	signal mac_vld  : std_logic;
+	signal ip_vld   : std_logic;
+	signal arp_vld  : std_logic;
+	signal udp_vld  : std_logic;
 
+	signal pkt_vld  : std_logic;
+begin
 
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
-		mac       => std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03")
+		mac       => x"00_40_00_01_02_03")
 	port map (
-		mii_req   : in  std_logic;
+		mii_req   => mii_req,
 
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
@@ -91,22 +78,22 @@ begin
 		mii_txdv  => mii_txdv,
 		mii_txd   => mii_txd,
 
+		mii_prev  => pre_vld,
 		mii_bcstv => bcst_vld,
-		mii_macv  => mac_vld
+		mii_macv  => mac_vld,
 		mii_ipv   => ip_vld,
-		mii_udpv  => upd_vld,
-		mii_myipv : out std_logic);
+		mii_udpv  => udp_vld);
 
+	pkt_vld <= ip_vld;
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
 		mii_rxc   => mii_rxc,
+		mii_rxdv  => pkt_vld,
 		mii_rxd   => mii_rxd,
-		mii_rxdv  =>
 
 		video_clk => video_clk,
 		video_dot => video_dot,
 		video_hs  => video_hs,
 		video_vs  => video_vs);
-	end;
 
 end;
