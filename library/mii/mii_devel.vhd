@@ -76,6 +76,7 @@ architecture struct of mii_debug is
 		signal arppaddr_ena   : std_logic;
 begin
 
+
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
 		mac       => std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03")
@@ -90,10 +91,10 @@ begin
 		mii_txdv  => mii_txdv,
 		mii_txd   => mii_txd,
 
-		mii_bcstv : out std_logic;
-		mii_macv  : out std_logic;
-		mii_ipv   : out std_logic;
-		mii_udpv  : out std_logic;
+		mii_bcstv => bcst_vld,
+		mii_macv  => mac_vld
+		mii_ipv   => ip_vld,
+		mii_udpv  => upd_vld,
 		mii_myipv : out std_logic);
 
 	mii_display_e : entity hdl4fpga.mii_display
