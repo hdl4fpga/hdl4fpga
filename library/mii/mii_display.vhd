@@ -35,8 +35,8 @@ use hdl4fpga.cgafont.all;
 entity mii_display is
 	port (
 		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
+		mii_rxd   : in  std_logic_vector;
 
 		video_clk : in  std_logic;
 		video_dot : out std_logic;

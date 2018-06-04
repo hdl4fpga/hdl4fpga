@@ -84,7 +84,7 @@ begin
 		mii_ipv   => ip_vld,
 		mii_udpv  => udp_vld);
 
-	pkt_vld <= ip_vld;
+	pkt_vld <= mii_rxdv;
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
 		mii_rxc   => mii_rxc,
