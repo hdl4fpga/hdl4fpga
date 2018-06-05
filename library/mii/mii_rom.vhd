@@ -36,6 +36,7 @@ entity mii_rom is
 		mii_treq : in  std_logic;
 		mii_tena : in  std_logic := '1';
 		mii_trdy : out std_logic;
+		mii_teoc : out std_logic;
         mii_txdv : out std_logic;
         mii_txd  : out std_logic_vector);
 end;
@@ -81,6 +82,7 @@ begin
 		end if;
 	end process;
 
+	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
 	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));

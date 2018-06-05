@@ -37,6 +37,7 @@ entity mii_ram is
         mii_rxd  : in  std_logic_vector;
 		mii_treq : in  std_logic;
 		mii_trdy : out std_logic;
+		mii_teoc : out std_logic;
         mii_txc  : in  std_logic;
 		mii_tena : in  std_logic := '1';
         mii_txdv : out std_logic;
@@ -92,6 +93,7 @@ begin
 		end if;
 	end process;
 
+	mii_teoc <= rdy;
 	mii_trdy <= mii_treq and rdy;
 	mii_txdv <= mii_treq and not rdy and mii_tena;
 

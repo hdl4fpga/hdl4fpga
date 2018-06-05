@@ -150,6 +150,7 @@ begin
 
 		signal ipsaddr_treq  : std_logic;
 		signal ipsaddr_trdy  : std_logic;
+		signal ipsaddr_teoc  : std_logic;
 		signal ipsaddr_tena  : std_logic;
 		signal ipsaddr_ttxd  : std_logic_vector(mii_txd'range);
 		signal ipsaddr_txdv  : std_logic;
@@ -183,6 +184,7 @@ begin
 					mii_txd  => ipsaddr_ttxd,
 					mii_tena => ipsaddr_tena,
 					mii_treq => ipsaddr_treq,
+					mii_teoc => ipsaddr_teoc,
 					mii_trdy => ipsaddr_trdy);
 			end block;
 
@@ -422,14 +424,14 @@ begin
 					if rising_edge(mii_txc) then
 						if arp_rply='0' then
 							spacpy_rdy <= '0';
-						elsif ipsaddr_trdy='1' then
+						elsif ipsaddr_teoc='1' then
 							spacpy_rdy <= '1';
 						end if;
 					end if;
 				end process;
-				spa_rdy      <= arp_rply and (ipsaddr_trdy or spacpy_rdy);
+				spa_rdy      <= arp_rply and (ipsaddr_teoc or spacpy_rdy);
 				ipsaddr_treq <= spa_req  when spacpy_rdy='0' else tpa_req;
-				ipsaddr_tena <= spa_req;
+				ipsaddr_tena <= spa_req  when spacpy_rdy='0' else tpa_req;
 
 				tpa_rdy  <= tpa_req and ipsaddr_trdy;
 				tpa_rxdv <= ipsaddr_txdv;

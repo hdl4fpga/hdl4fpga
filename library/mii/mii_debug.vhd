@@ -60,16 +60,15 @@ architecture struct of mii_debug is
 	signal ip_vld   : std_logic;
 	signal arp_vld  : std_logic;
 	signal udp_vld  : std_logic;
-
-	signal pkt_vld  : std_logic;
-
+	signal myip_vld : std_logic;
 
 	signal txc  : std_logic;
 	signal txdv : std_logic;
 	signal txd  : std_logic_vector(mii_txd'range);
 
-	signal d_txdv : std_logic;
-	signal d_txd  : std_logic_vector(mii_txd'range);
+	signal d_rxc  : std_logic;
+	signal d_rxdv : std_logic;
+	signal d_rxd  : std_logic_vector(mii_txd'range);
 begin
 
 	txc <= mii_txc;
@@ -94,26 +93,32 @@ begin
 		mii_bcstv => bcst_vld,
 		mii_macv  => mac_vld,
 		mii_ipv   => ip_vld,
-		mii_udpv  => udp_vld);
+		mii_udpv  => udp_vld,
+		mii_myipv => myip_vld);
 
-	pkt_vld <= mii_rxdv;
+--	d_rxc <= txc;
+--	process (rxc)
+--	begin
+--		if rising_edge(d_rxc) then
+--			d_rxdv <= txdv;
+--			d_rxd  <= txd;
+--		end if;
+--	end process;
 
-	process (txc)
+	d_rxc <= mii_rxc;
+	process (d_rxc)
 	begin
-		if rising_edge(txc) then
-			d_txdv <= mii_rxdv;
-			d_txd  <= mii_rxd;
+		if rising_edge(d_rxc) then
+			d_rxdv <= mii_rxdv and myip_vld;
+			d_rxd  <= mii_rxd;
 		end if;
 	end process;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
-		mii_rxc   => txc,
-		mii_rxdv  => d_txdv,
-		mii_rxd   => d_txd,
---		mii_rxc   => mii_rxc,
---		mii_rxdv  => pkt_vld,
---		mii_rxd   => mii_rxd,
+		mii_rxc   => d_rxc,
+		mii_rxdv  => d_rxdv,
+		mii_rxd   => d_rxd,
 
 		video_clk => video_clk,
 		video_dot => video_dot,
