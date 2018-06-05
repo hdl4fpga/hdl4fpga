@@ -56,7 +56,7 @@ architecture behavioral of dfs2dfs is
 constant n2 : natural := 16;
 begin
    
-	dcm1_u : dcm_sp
+	dcm1_u : dcm
 	generic map(
 		clk_feedback => "1X",
 		clkdv_divide => 2.0,
@@ -96,7 +96,7 @@ begin
 		end if;
 	end process;
 
-	dcm_sp_inst2 : dcm_sp
+	dcm_sp_inst2 : dcm
 	generic map(
 		clk_feedback   => "1X",
 		clkdv_divide   => 2.0,
