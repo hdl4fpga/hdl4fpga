@@ -67,6 +67,9 @@ architecture struct of mii_debug is
 	signal txc  : std_logic;
 	signal txdv : std_logic;
 	signal txd  : std_logic_vector(mii_txd'range);
+
+	signal d_txdv : std_logic;
+	signal d_txd  : std_logic_vector(mii_txd'range);
 begin
 
 	txc <= mii_txc;
@@ -94,11 +97,20 @@ begin
 		mii_udpv  => udp_vld);
 
 	pkt_vld <= mii_rxdv;
+
+	process (txc)
+	begin
+		if rising_edge(txc) then
+			d_txdv <= mii_rxdv;
+			d_txd  <= mii_rxd;
+		end if;
+	end process;
+
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (
 		mii_rxc   => txc,
-		mii_rxdv  => txdv,
-		mii_rxd   => txd,
+		mii_rxdv  => d_txdv,
+		mii_rxd   => d_txd,
 --		mii_rxc   => mii_rxc,
 --		mii_rxdv  => pkt_vld,
 --		mii_rxd   => mii_rxd,
