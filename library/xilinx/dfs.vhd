@@ -52,7 +52,7 @@ begin
 		I => dcm_clk0,
 		O => dcm_clkfb);
    
-	dfs_i : dcm_sp
+	dfs_i : dcm
 	generic map(
 		clk_feedback => "1x",
 		clkdv_divide => 2.0,
