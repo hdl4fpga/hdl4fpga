@@ -94,5 +94,4 @@ begin
 		mii_trdy => mii_trdy,
 		mii_txdv => mii_txdv,
 		mii_txd  => mii_txd);
-
 end;
