@@ -523,7 +523,7 @@ begin
 						signal txd  : std_logic_vector(mii_txd'range);
 
 					begin
-						du : entity hdl4fpga.miitx_dhcp
+						du : entity hdl4fpga.miitx_dhcpdis
 						port map (
 							mii_txc  => mii_txc,
 							mii_treq => mii_req,

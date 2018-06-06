@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity miitx_dhcp is
+entity miitx_dhcpdis is
 	generic (
 		mac   : std_logic_vector(0 to 48-1) := x"004000010203");
 	port (
@@ -39,7 +39,7 @@ entity miitx_dhcp is
 		mii_txd   : out std_logic_vector);
 end;
 
-architecture mix of miitx_dhcp is
+architecture mix of miitx_dhcpdis is
 	constant payload_size : natural := 244+6;
 
 	constant mii_pre  : std_logic_vector := reverse(x"5555_5555_5555_55d5", 8);
