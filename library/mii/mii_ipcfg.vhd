@@ -507,7 +507,7 @@ begin
 					mii_ena  => udpproto_ena,
 					mii_pktv => udpproto_vld);
 
-				dhcp_b : block
+				dhcpc_b : block
 
 					signal dhcp_ena : std_logic;
 					signal cia_ena  : std_logic;
@@ -553,6 +553,58 @@ begin
 							mii_pktv => dhcp_vld);
 
 						myipcfg_vld  <= dhcp_vld and cia_ena;
+					end block;
+
+					request_b : block
+--						constant mii_data : std_logic_vector := reverse(
+--							x"ffffffffffff"	       &    
+--							mac                    &    -- MAC Source Address
+--							x"0800"                &    -- MAC Protocol ID
+--							ipheader_checksumed(
+--								x"4500"            &    -- IP  Version, header length, TOS
+--								std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
+--								x"0000"            &    -- IP  Identification
+--								x"0000"            &    -- IP  Fragmentation
+--								x"0511"            &    -- IP  TTL, protocol
+--								x"0000"            &    -- IP  Checksum
+--								x"00000000"        &    -- IP  Source address
+--								x"ffffffff")       &    -- IP  Destination address
+--							udp_checksumed (
+--								x"00000000",
+--								x"ffffffff",
+--
+--								x"00440043"            &    -- UDP Source port, Destination port
+--								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+--								x"0000"                &	-- UDP CHECKSUM
+--								x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
+--								x"3903f326"            &    -- XID
+--								x"00000000"            &    -- SECS, FLAGS
+--								x"00000000"            &    -- CIADDR
+--								x"00000000"            &    -- YIADDR
+--								x"00000000"            &    -- SIADDR
+--								x"00000000"            &    -- GIADDR
+--								mac & x"0000"          &    -- CHADDR
+--								x"00000000"            &    -- CHADDR
+--								x"00000000"            &    -- CHADDR
+--								(1 to 8* 64 => '0')    &    -- SNAME
+--								(1 to 8*128 => '0')    &    -- SNAME
+--								x"63825363"            &    -- MAGIC COOKIE
+--								x"350101"              &    -- DHCPDISCOVER
+--								x"3204c00000fc"        &    -- IP REQUEST
+--								x"FF"),8);                  -- END
+
+					begin
+--						mii_dhcp_e : entity hdl4fpga.mii_romcmp
+--						generic map (
+--							mem_data => reverse(x"00430044",8))
+--						port map (
+--							mii_rxc  => mii_rxc,
+--							mii_rxd  => mii_rxd,
+--							mii_treq => udpproto_vld,
+--							mii_ena  => dhcp_ena,
+--							mii_pktv => dhcp_vld);
+--
+--						myipcfg_vld  <= dhcp_vld and cia_ena;
 					end block;
 
 				end block;
