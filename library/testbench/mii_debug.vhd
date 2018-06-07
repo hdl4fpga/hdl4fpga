@@ -92,7 +92,7 @@ begin
 			x"00_00_00_00"         &
 			x"00_00_00_00"         &
 			x"c0_a8_00_49"         &
-			x"0b_00_00_00_00_ff",
+			x"c0_a8_00_01_00_ff",
 			8))
 	port map (
 		mii_txc  => clk,
@@ -127,7 +127,7 @@ begin
 --	rxd  <= rxd2  when trdy1='1' else rxd1;
 --	rxd  <= rxd2  when trdy1='1' else rxd1;
 	rxdv <= rxdv1;
-	rxdv <= rxdv1;
+	rxd  <= rxd1;
 
 	rrxd <= reverse(rxd);
 

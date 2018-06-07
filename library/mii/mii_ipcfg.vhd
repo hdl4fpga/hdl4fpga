@@ -212,7 +212,7 @@ begin
 					mii_txc  => mii_txc,
 					mii_txdv => ipdaddr_ttxdv,
 					mii_txd  => ipdaddr_ttxd,
-					mii_tena => ipdaddr_tena,
+--					mii_tena => ipdaddr_tena,
 					mii_treq => ipdaddr_treq,
 					mii_teoc => ipdaddr_teoc,
 					mii_trdy => ipdaddr_trdy);
@@ -610,6 +610,7 @@ begin
 
 						myipcfg_vld  <= dhcp_vld and yia_ena;
 						ipdaddr_vld  <= dhcp_vld and sia_ena;
+						offer_rcv    <= dhcp_vld;
 
 						process (mii_txc)
 							variable rply : std_logic;
@@ -666,11 +667,8 @@ begin
 								(1 to 8* 64 => '0') &    -- SNAME
 								(1 to 8*128 => '0') &    -- SNAME
 								x"63825363"         &    -- MAGIC COOKIE
-								x"350101"           &    -- DHCPDISCOVER
-								x"3204c00000fc"     &    -- IP REQUEST
-								x"FF"                    -- END
-						--	)
-							;
+								x"350103"           &    -- DHCPDISCOVER
+								x"3204";                 -- IP REQUEST
 
 						signal miicat_trdy   : std_logic_vector(0 to 3-1);
 						signal miicat_treq   : std_logic_vector(0 to 3-1);
