@@ -254,7 +254,7 @@ begin
 					mii_rxd  => mii_rxd,
 					mii_rxdv => ipdaddr_vld,
 					mii_txc  => mii_txc,
-					mii_txdv => ipdaddr_rrxdv,
+					mii_txdv => ipdaddr_rtxdv,
 					mii_txd  => ipdaddr_rtxd,
 					mii_tena => ipdaddr_rena,
 					mii_treq => ipdaddr_rreq,
@@ -348,8 +348,8 @@ begin
 		end block;
 
 		arp_b : block
-			signal arp_req  : std_logic;
-			signal arp_rply : std_logic;
+			signal requ_rcv : std_logic;
+			signal rply_req : std_logic;
 
 			signal spa_rdy  : std_logic;
 			signal spa_req  : std_logic;
@@ -376,7 +376,7 @@ begin
 					mii_rdy  => ipsaddr_rrdy,
 					mii_rxd1 => mii_rxd,
 					mii_rxd2 => ipsaddr_rtxd,
-					mii_equ  => arp_req);
+					mii_equ  => requ_rcv);
 
 				ethsmac_vld  <= arpproto_vld and sha_ena;
 				ipsaddr_rreq <= arpproto_vld;
@@ -384,7 +384,7 @@ begin
 			end block;
 
 			reply_b : block
-				signal arp_rdy       : std_logic;
+				signal rply_rdy       : std_logic;
 
 				signal etherhdr_rdy  : std_logic;
 				signal etherhdr_req  : std_logic;
@@ -421,17 +421,17 @@ begin
 					variable rply : std_logic;
 				begin
 					if rising_edge(mii_txc) then
-						if arp_rdy='1' then
-							arp_rply <= '0';
+						if rply_rdy='1' then
+							rply_req <= '0';
 							rply     := '0';
 						elsif mii_rxdv='1' then
-							arp_rply <= '0';
-							rply     := arp_req;
+							rply_req <= '0';
+							rply     := requ_rcv;
 						elsif rply='1' then
-							arp_rply <= '1';
+							rply_req <= '1';
 							rply     := '0';
 						end if;
---						arp_rply <= btn;
+--						rply_req <= btn;
 					end if;
 				end process;
 
@@ -442,8 +442,8 @@ begin
 
 				mii_arpcat_e : entity hdl4fpga.mii_cat
 				port map (
-					mii_req  => arp_rply,
-					mii_rdy  => arp_rdy,
+					mii_req  => rply_req,
+					mii_rdy  => rply_rdy,
 					mii_trdy => miicat_trdy,
 					mii_rxdv => miicat_rxdv,
 					mii_rxd  => miicat_rxd,
@@ -487,14 +487,14 @@ begin
 				process (mii_txc)
 				begin
 					if rising_edge(mii_txc) then
-						if arp_rply='0' then
+						if rply_req='0' then
 							spacpy_rdy <= '0';
 						elsif ipsaddr_teoc='1' then
 							spacpy_rdy <= '1';
 						end if;
 					end if;
 				end process;
-				spa_rdy      <= arp_rply and (ipsaddr_teoc or spacpy_rdy);
+				spa_rdy      <= rply_req and (ipsaddr_teoc or spacpy_rdy);
 				ipsaddr_treq <= spa_req  when spacpy_rdy='0' else tpa_req;
 				ipsaddr_tena <= spa_req  when spacpy_rdy='0' else tpa_req;
 
@@ -555,14 +555,18 @@ begin
 					constant dhcp_yia   : field   := (dhcp_frame+16, 4);
 					constant dhcp_sia   : field   := (dhcp_frame+20, 4);
 
-					signal dhcp_ena : std_logic;
-					signal yia_ena  : std_logic;
-					signal sia_ena  : std_logic;
+					signal dhcp_ena     : std_logic;
+					signal yia_ena      : std_logic;
+					signal sia_ena      : std_logic;
 
-					signal miidis_txd  : std_logic_vector(mii_txd'range);
-					signal miidis_txdv : std_logic;
+					signal miidis_txd   : std_logic_vector(mii_txd'range);
+					signal miidis_txdv  : std_logic;
 					signal miirequ_txd  : std_logic_vector(mii_txd'range);
 					signal miirequ_txdv : std_logic;
+
+					signal offer_rcv : std_logic;
+					signal requ_req  : std_logic;
+					signal requ_rdy  : std_logic;
 				begin
 					
 					dhcp_ena <= lookup(to_miisize((0 => udp_sport, 1 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
@@ -606,6 +610,24 @@ begin
 
 						myipcfg_vld  <= dhcp_vld and yia_ena;
 						ipdaddr_vld  <= dhcp_vld and sia_ena;
+
+						process (mii_txc)
+							variable rply : std_logic;
+						begin
+							if rising_edge(mii_txc) then
+								if requ_rdy='1' then
+									requ_req <= '0';
+									rply     := '0';
+								elsif mii_rxdv='1' then
+									requ_req <= '0';
+									rply     := offer_rcv;
+								elsif rply='1' then
+									requ_req <= '1';
+									rply     := '0';
+								end if;
+							end if;
+						end process;
+
 					end block;
 
 					request_b : block
@@ -676,8 +698,8 @@ begin
 
 						mii_dhcpreq_e : entity hdl4fpga.mii_cat
 						port map (
-							mii_req  => dhcprequest_req,
-							mii_rdy  => dhcprequest_rdy,
+							mii_req  => requ_req,
+							mii_rdy  => requ_rdy,
 							mii_trdy => miicat_trdy,
 							mii_rxdv => miicat_rxdv,
 							mii_rxd  => miicat_rxd,
