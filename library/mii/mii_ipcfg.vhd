@@ -144,6 +144,7 @@ begin
 		signal udp_vld       : std_logic;
 		signal dhcp_vld      : std_logic;
 		signal myipcfg_vld   : std_logic;
+		signal ipdaddr_vld   : std_logic;
 
 		signal ethsmac_ena   : std_logic;
 		signal ethty_ena     : std_logic;
@@ -153,13 +154,27 @@ begin
 		signal ipsaddr_teoc  : std_logic;
 		signal ipsaddr_tena  : std_logic;
 		signal ipsaddr_ttxd  : std_logic_vector(mii_txd'range);
-		signal ipsaddr_txdv  : std_logic;
+		signal ipsaddr_ttxdv : std_logic;
+
+		signal ipdaddr_treq  : std_logic;
+		signal ipdaddr_trdy  : std_logic;
+		signal ipdaddr_teoc  : std_logic;
+		signal ipdaddr_tena  : std_logic;
+		signal ipdaddr_ttxd  : std_logic_vector(mii_txd'range);
+		signal ipdaddr_ttxdv : std_logic;
 
 		signal ipsaddr_rreq  : std_logic;
 		signal ipsaddr_rrdy  : std_logic;
 		signal ipsaddr_rena  : std_logic;
 		signal ipsaddr_rtxd  : std_logic_vector(mii_rxd'range);
 		signal ipsaddr_rtxdv : std_logic;
+
+		signal ipdaddr_rreq  : std_logic;
+		signal ipdaddr_rrdy  : std_logic;
+		signal ipdaddr_reoc  : std_logic;
+		signal ipdaddr_rena  : std_logic;
+		signal ipdaddr_rtxd  : std_logic_vector(mii_rxd'range);
+		signal ipdaddr_rtxdv : std_logic;
 
 		signal miidhcp_txd   : std_logic_vector(mii_txd'range);
 		signal miidhcp_txdv  : std_logic;
@@ -180,12 +195,27 @@ begin
 					mii_rxd  => mii_rxd,
 					mii_rxdv => myipcfg_vld,
 					mii_txc  => mii_txc,
-					mii_txdv => ipsaddr_txdv,
+					mii_txdv => ipsaddr_ttxdv,
 					mii_txd  => ipsaddr_ttxd,
 					mii_tena => ipsaddr_tena,
 					mii_treq => ipsaddr_treq,
 					mii_teoc => ipsaddr_teoc,
 					mii_trdy => ipsaddr_trdy);
+
+				miitx_ipdaddr_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(4))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => ipdaddr_vld,
+					mii_txc  => mii_txc,
+					mii_txdv => ipdaddr_ttxdv,
+					mii_txd  => ipdaddr_ttxd,
+					mii_tena => ipdaddr_tena,
+					mii_treq => ipdaddr_treq,
+					mii_teoc => ipdaddr_teoc,
+					mii_trdy => ipdaddr_trdy);
 			end block;
 
 			rx_b : block
@@ -202,7 +232,7 @@ begin
 					mii_txd  => ethdmac_txd,
 					mii_treq => std_logic'('0'));
 
-				miirx_tpa_e : entity hdl4fpga.mii_ram
+				miirx_ipsaddr_e : entity hdl4fpga.mii_ram
 				generic map (
 					size => to_miisize(4))
 				port map(
@@ -216,6 +246,20 @@ begin
 					mii_treq => ipsaddr_rreq,
 					mii_trdy => ipsaddr_rrdy);
 
+				miirx_ipdaddr_e : entity hdl4fpga.mii_ram
+				generic map (
+					size => to_miisize(4))
+				port map(
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_rxdv => ipdaddr_vld,
+					mii_txc  => mii_txc,
+					mii_txdv => ipdaddr_rrxdv,
+					mii_txd  => ipdaddr_rtxd,
+					mii_tena => ipdaddr_rena,
+					mii_treq => ipdaddr_rreq,
+					mii_teoc => ipdaddr_reoc,
+					mii_trdy => ipdaddr_rrdy);
 			end block;
 
 		end block;
@@ -251,7 +295,7 @@ begin
 				if rising_edge(mii_rxc) then
 					if pre_vld='0' then
 						mii_ptr <= (others => '0');
-					else
+					elsif mii_ptr(0)='0' then
 						mii_ptr <= mii_ptr + 1;
 					end if;
 				end if;
@@ -438,7 +482,7 @@ begin
 					mii_txdv => tha_rxdv,
 					mii_txd  => tha_rxd);
 
-				spa_rxdv <= ipsaddr_txdv;
+				spa_rxdv <= ipsaddr_ttxdv;
 				spa_rxd  <= ipsaddr_ttxd;
 				process (mii_txc)
 				begin
@@ -455,7 +499,7 @@ begin
 				ipsaddr_tena <= spa_req  when spacpy_rdy='0' else tpa_req;
 
 				tpa_rdy  <= tpa_req and ipsaddr_trdy;
-				tpa_rxdv <= ipsaddr_txdv;
+				tpa_rxdv <= ipsaddr_ttxdv;
 				tpa_rxd  <= ipsaddr_ttxd;
 
 				mii_trailer_e : entity hdl4fpga.mii_rom
@@ -488,7 +532,6 @@ begin
 				constant udp_frame  : natural :=  ip_frame+20;
 				constant udp_sport  : field   := (udp_frame+0, 2);
 				constant udp_dport  : field   := (udp_frame+2, 2);
-				constant dhcp_cia   : field   := (udp_frame+24, 4);
 
 				signal udpproto_vld : std_logic;
 				signal udpproto_ena : std_logic;
@@ -508,14 +551,23 @@ begin
 					mii_pktv => udpproto_vld);
 
 				dhcpc_b : block
+					constant dhcp_frame : natural :=  udp_frame+8;
+					constant dhcp_yia   : field   := (dhcp_frame+16, 4);
+					constant dhcp_sia   : field   := (dhcp_frame+20, 4);
 
 					signal dhcp_ena : std_logic;
-					signal cia_ena  : std_logic;
+					signal yia_ena  : std_logic;
+					signal sia_ena  : std_logic;
 
+					signal miidis_txd  : std_logic_vector(mii_txd'range);
+					signal miidis_txdv : std_logic;
+					signal miirequ_txd  : std_logic_vector(mii_txd'range);
+					signal miirequ_txdv : std_logic;
 				begin
 					
-					dhcp_ena     <= lookup(to_miisize((0 => udp_sport, 1 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
-					cia_ena      <= lookup(to_miisize((0 => dhcp_cia), mii_txd'length), std_logic_vector(mii_ptr));
+					dhcp_ena <= lookup(to_miisize((0 => udp_sport, 1 => udp_dport), mii_txd'length), std_logic_vector(mii_ptr));
+					yia_ena  <= lookup(to_miisize((0 => dhcp_yia), mii_txd'length), std_logic_vector(mii_ptr));
+					sia_ena  <= lookup(to_miisize((0 => dhcp_sia), mii_txd'length), std_logic_vector(mii_ptr));
 
 					discover_b : block
 
@@ -533,8 +585,8 @@ begin
 						process (mii_txc)
 						begin
 							if rising_edge(mii_txc) then
-								miidhcp_txdv <= txdv;
-								miidhcp_txd  <= txd;
+								miidis_txdv <= txdv;
+								miidis_txd  <= txd;
 							end if;
 						end process;
 
@@ -552,70 +604,128 @@ begin
 							mii_ena  => dhcp_ena,
 							mii_pktv => dhcp_vld);
 
-						myipcfg_vld  <= dhcp_vld and cia_ena;
+						myipcfg_vld  <= dhcp_vld and yia_ena;
+						ipdaddr_vld  <= dhcp_vld and sia_ena;
 					end block;
 
 					request_b : block
---						constant mii_data : std_logic_vector := reverse(
---							x"ffffffffffff"	       &    
---							mac                    &    -- MAC Source Address
---							x"0800"                &    -- MAC Protocol ID
---							ipheader_checksumed(
---								x"4500"            &    -- IP  Version, header length, TOS
---								std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
---								x"0000"            &    -- IP  Identification
---								x"0000"            &    -- IP  Fragmentation
---								x"0511"            &    -- IP  TTL, protocol
---								x"0000"            &    -- IP  Checksum
---								x"00000000"        &    -- IP  Source address
---								x"ffffffff")       &    -- IP  Destination address
+						constant payload_size : natural := 244+6;
+
+						constant requhdr_data : std_logic_vector :=
+							x"ffffffffffff"	        &    
+							x"000000000000"         &    -- MAC Source Address
+							x"0800"                 &    -- MAC Protocol ID
+							ipheader_checksumed(
+								x"4500"             &    -- IP  Version, header length, TOS
+								std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
+								x"0000"             &    -- IP  Identification
+								x"0000"             &    -- IP  Fragmentation
+								x"0511"             &    -- IP  TTL, protocol
+								x"0000"             &    -- IP  Checksum
+								x"00000000"         &    -- IP  Source address
+								x"ffffffff")        &    -- IP  Destination address
 --							udp_checksumed (
 --								x"00000000",
 --								x"ffffffff",
---
---								x"00440043"            &    -- UDP Source port, Destination port
---								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
---								x"0000"                &	-- UDP CHECKSUM
---								x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
---								x"3903f326"            &    -- XID
---								x"00000000"            &    -- SECS, FLAGS
---								x"00000000"            &    -- CIADDR
---								x"00000000"            &    -- YIADDR
---								x"00000000"            &    -- SIADDR
---								x"00000000"            &    -- GIADDR
---								mac & x"0000"          &    -- CHADDR
---								x"00000000"            &    -- CHADDR
---								x"00000000"            &    -- CHADDR
---								(1 to 8* 64 => '0')    &    -- SNAME
---								(1 to 8*128 => '0')    &    -- SNAME
---								x"63825363"            &    -- MAGIC COOKIE
---								x"350101"              &    -- DHCPDISCOVER
---								x"3204c00000fc"        &    -- IP REQUEST
---								x"FF"),8);                  -- END
 
+								x"00440043"         &    -- UDP Source port, Destination port
+								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+								x"0000"             &	 -- UDP CHECKSUM
+								x"01010600"         &    -- OP, HTYPE, HLEN,  HOPS
+								x"3903f326"         &    -- XID
+								x"00000000"         &    -- SECS, FLAGS
+								x"00000000"         &    -- CIADDR
+								x"00000000"         &    -- YIADDR
+								x"00000000"         &    -- SIADDR
+								x"00000000"         &    -- GIADDR
+								mac & x"0000"       &    -- CHADDR
+								x"00000000"         &    -- CHADDR
+								x"00000000"         &    -- CHADDR
+								(1 to 8* 64 => '0') &    -- SNAME
+								(1 to 8*128 => '0') &    -- SNAME
+								x"63825363"         &    -- MAGIC COOKIE
+								x"350101"           &    -- DHCPDISCOVER
+								x"3204c00000fc"     &    -- IP REQUEST
+								x"FF"                    -- END
+						--	)
+							;
+
+						signal miicat_trdy   : std_logic_vector(0 to 3-1);
+						signal miicat_treq   : std_logic_vector(0 to 3-1);
+						signal miicat_rxdv   : std_logic_vector(0 to 3-1);
+						signal miicat_rxd    : std_logic_vector(0 to 3*mii_txd'length-1);
+
+						signal requhdr_trdy : std_logic;
+						signal requhdr_treq : std_logic;
+						signal requhdr_txdv : std_logic;
+						signal requhdr_txd  : std_logic_vector(mii_txd'range);
+
+						signal requtail_trdy : std_logic;
+						signal requtail_treq : std_logic;
+						signal requtail_txdv : std_logic;
+						signal requtail_txd  : std_logic_vector(mii_txd'range);
+
+						signal txdv          : std_logic;
+						signal txd           : std_logic_vector(mii_txd'range);
 					begin
---						mii_dhcp_e : entity hdl4fpga.mii_romcmp
---						generic map (
---							mem_data => reverse(x"00430044",8))
---						port map (
---							mii_rxc  => mii_rxc,
---							mii_rxd  => mii_rxd,
---							mii_treq => udpproto_vld,
---							mii_ena  => dhcp_ena,
---							mii_pktv => dhcp_vld);
---
---						myipcfg_vld  <= dhcp_vld and cia_ena;
+
+						(0 => requhdr_treq, 1 => ipdaddr_treq, 2 => requtail_treq) <= miicat_treq;
+						miicat_trdy <= (0 => requhdr_trdy,  1 => ipdaddr_trdy,  2 => requtail_trdy);
+						miicat_rxdv <= (0 => requhdr_txdv, 1 => ipdaddr_ttxdv, 2 => requtail_txdv);
+						miicat_rxd  <=       requhdr_txd   &    ipdaddr_ttxd  &    requtail_txd;
+
+						mii_dhcpreq_e : entity hdl4fpga.mii_cat
+						port map (
+							mii_req  => dhcprequest_req,
+							mii_rdy  => dhcprequest_rdy,
+							mii_trdy => miicat_trdy,
+							mii_rxdv => miicat_rxdv,
+							mii_rxd  => miicat_rxd,
+							mii_treq => miicat_treq,
+							mii_txdv => txdv,
+							mii_txd  => txd);
+
+						miitx_hdr_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => reverse(requhdr_data, 8))
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => requhdr_treq,
+							mii_trdy => requhdr_trdy,
+							mii_txdv => requhdr_txdv,
+							mii_txd  => requhdr_txd);
+
+						miitx_tail_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => reverse(x"ff",8))
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => requtail_treq,
+							mii_trdy => requtail_trdy,
+							mii_txdv => requtail_txdv,
+							mii_txd  => requtail_txd);
+
+						process (mii_txc)
+						begin
+							if rising_edge(mii_txc) then
+								miirequ_txdv <= txdv;
+								miirequ_txd  <= txd;
+							end if;
+						end process;
+
 					end block;
 
+					miidhcp_txd  <= word2byte(miidis_txd  & miirequ_txd,   not miidis_txdv);
+					miidhcp_txdv <= word2byte(miidis_txdv & miirequ_txdv,  not miidis_txdv)(0);
 				end block;
 			end block;
 
-		mii_prev  <= pre_vld;
-		mii_bcstv <= ethdbcst_vld;
-		mii_macv  <= ethdmac_vld;
-		mii_ipv   <= ipproto_vld;
-		mii_udpv  <= udp_vld;
-		mii_myipv <= myipcfg_vld;
+			mii_prev  <= pre_vld;
+			mii_bcstv <= ethdbcst_vld;
+			mii_macv  <= ethdmac_vld;
+			mii_ipv   <= ipproto_vld;
+			mii_udpv  <= udp_vld;
+			mii_myipv <= myipcfg_vld;
 
 		end block;
 

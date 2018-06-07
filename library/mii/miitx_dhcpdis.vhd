@@ -77,7 +77,7 @@ architecture mix of miitx_dhcpdis is
 			(1 to 8*128 => '0')    &    -- SNAME
 			x"63825363"            &    -- MAGIC COOKIE
 			x"350101"              &    -- DHCPDISCOVER
-			x"3204c00000fc"        &    -- IP REQUEST
+			x"320400000000"        &    -- IP REQUEST
 			x"FF"),8);                  -- END
 
 	constant mii_fcs : std_logic_vector := not galois_crc (mii_data, (1 to 32 => '1'), x"04c11db7");
