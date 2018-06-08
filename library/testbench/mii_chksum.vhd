@@ -21,47 +21,71 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_chksum is
-	port (
-		chksumi  : in  std_logic_vector;
-		mii_rxc  : in  std_logic;
-		mii_rxdv : in  std_logic;
-		mii_rxd  : in  std_logic_vector;
-		mii_txdv : out  std_logic;
-		mii_txd  : out std_logic_vector);
-end;
+architecture mii_chksum of testbench is
+	constant n : natural := 8;
+	signal rst   : std_logic := '1';
+	signal clk   : std_logic := '1';
+	signal rrxd  : std_logic_vector(0 to n-1);
+	signal rxd   : std_logic_vector(0 to n-1);
+	signal rxdv  : std_logic;
 
-architecture beh of mii_chksum is
-	signal chksum : unsigned(0 to chksumi'length-1);
+	signal txdv  : std_logic;
+	signal treq  : std_logic;
+	signal trdy  : std_logic;
+	signal txd   : std_logic_vector(0 to n-1);
+	signal rtxd  : std_logic_vector(0 to n-1);
+
 begin
-	process (mii_rxc)
-		variable aux : unsigned(0 to mii_txd'length+1);
-		variable sum : unsigned(chksum'range);
+
+	clk <= not clk after 5 ns;
+	rst <= '1', '0' after 20 ns;
+
+	process (clk)
+		variable edge  : std_logic;
 	begin
-		if rising_edge(mii_rxc) then
-			if mii_rxdv='0' then
-				aux := (others => '0');
-				sum := unsigned(chksumi);
-				chksum <= chksum rol mii_txd'length;
-			else
-				sum := sum ror mii_txd'length;
-				aux := aux rol 1;
-				aux(mii_txd'range) := sum(mii_txd'range);
-				aux := aux srl 1;
-				aux := aux + ("0" & unsigned(reverse(mii_rxd)) & "1");
-				aux := aux rol 1;
-				sum(mii_txd'range) := aux(mii_txd'range);
-				chksum <= unsigned(reverse(std_logic_vector(sum + aux(aux'right to aux'right))));
+		if rising_edge(clk) then
+			treq <= '1';
+			if rst='1' then
+				treq <= '0';
+			elsif txdv='0'  then
+				if edge='1' then
+				--	treq1 <= '0';
+				end if;
 			end if;
+			edge := txdv;
 		end if;
 	end process;
-	mii_txd <= std_logic_vector(chksum(mii_txd'range));
-	mii_txdv <= '1';
+
+	
+	miidhcp_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(
+			x"ff_ff_fe_ff",
+			8))
+	port map (
+		mii_txc  => clk,
+		mii_treq => treq,
+		mii_trdy => trdy,
+		mii_txdv => rxdv,
+		mii_txd  => rxd);
+
+
+	du : entity hdl4fpga.mii_chksum
+	port map (
+		chksumi  => (1 to 16 => '0'),
+        mii_rxc  => clk,
+		mii_rxdv => rxdv,
+		mii_rxd  => rxd,
+		mii_txd  => txd);
+	rtxd <= reverse(txd);
 end;
