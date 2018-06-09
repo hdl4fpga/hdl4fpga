@@ -31,7 +31,7 @@ use hdl4fpga.std.all;
 entity mii_chksum is
 	port (
 		chksumi  : in  std_logic_vector;
-		mii_rxc  : in  std_logic;
+		mii_txc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
 		mii_txdv : out  std_logic;
@@ -41,14 +41,16 @@ end;
 architecture beh of mii_chksum is
 	signal chksum : unsigned(0 to chksumi'length-1);
 begin
-	process (mii_rxc)
-		variable aux : unsigned(0 to mii_txd'length+1);
-		variable sum : unsigned(chksum'range);
+	process (mii_txc)
+		variable aux  : unsigned(0 to mii_txd'length+1);
+		variable sum  : unsigned(chksum'range);
+		variable cntr : unsigned(0 to chksumi'length/mii_txd'length-1);
 	begin
-		if rising_edge(mii_rxc) then
+		if rising_edge(mii_txc) then
 			if mii_rxdv='0' then
-				aux := (others => '0');
-				sum := unsigned(chksumi);
+				aux    := (others => '0');
+				sum    := unsigned(chksumi);
+				cntr   := cntr sll 1;
 				chksum <= chksum rol mii_txd'length;
 			else
 				sum := sum ror mii_txd'length;
@@ -59,9 +61,11 @@ begin
 				aux := aux rol 1;
 				sum(mii_txd'range) := aux(mii_txd'range);
 				chksum <= unsigned(reverse(std_logic_vector(sum + aux(aux'right to aux'right))));
+				cntr := cntr sll 1;
+				cntr(cntr'right) := '1';
 			end if;
+			mii_txdv <= cntr(0);
 		end if;
 	end process;
 	mii_txd <= std_logic_vector(chksum(mii_txd'range));
-	mii_txdv <= '1';
 end;
