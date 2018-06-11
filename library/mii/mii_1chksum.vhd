@@ -28,17 +28,18 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_chksum is
+entity mii_1chksum is
 	port (
 		chksumi  : in  std_logic_vector;
 		mii_txc  : in  std_logic;
+		mii_rena : in  std_logic := '1';
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector;
 		mii_txdv : out  std_logic;
 		mii_txd  : out std_logic_vector);
 end;
 
-architecture beh of mii_chksum is
+architecture beh of mii_1chksum is
 	signal chksum : unsigned(0 to chksumi'length-1);
 begin
 	process (mii_txc)
@@ -52,7 +53,7 @@ begin
 				sum    := unsigned(chksumi);
 				cntr   := cntr sll 1;
 				chksum <= chksum rol mii_txd'length;
-			else
+			elsif mii_rena='1' then
 				sum := sum ror mii_txd'length;
 				aux := aux rol 1;
 				aux(mii_txd'range) := sum(mii_txd'range);
