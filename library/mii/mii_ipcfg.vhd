@@ -45,6 +45,7 @@ entity mii_ipcfg is
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
 
+		miiudp_len  : in std_logic_vector(16-1 downto 0);
 		miiudp_txdv : in std_logic;
 		miiudp_txd  : in std_logic_vector;
 
@@ -538,26 +539,30 @@ begin
 			constant ip_saddr   : field   := (ip_frame+12, 4);
 			constant ip_daddr   : field   := (ip_frame+16, 4);
 
-			constant iphdr_size : natural := ip_frame+20;
+			constant iphdr_size : natural := 20;
 		begin
 
 			ip_b : block
-				signal chksum_req  : std_logic;
-
-				signal miiip4shdr_txd : std_logic_vector(mii_txd'range);
-				signal miiip4shdr_ena : std_logic;
-				signal miiip4len_ena  : std_logic;
-				signal miiip4cksm_ena : std_logic;
-
 				constant ip4_shdr : std_logic_vector := (
 					x"4500" &    -- IP Version, TOS
 					x"0000" &    -- IP Identification
 					x"0000" &    -- IP Fragmentation
 					x"0511");    -- IP TTL, protocol
 
+				signal chksum_req  : std_logic;
+
+				signal miiip4shdr_txd : std_logic_vector(mii_txd'range);
+				signal miiip4shdr_ena : std_logic;
+				signal miiip4cksm_ena : std_logic;
+
 				signal mii_ipptr  : std_logic_vector(0 to 6);
+
+				signal miiip4len_ena  : std_logic;
+				signal miiip4len_txd  : std_logic_vector(mii_txd'range);
+
 				signal miiipy_txdv : std_logic;
 				signal miiipy_txd  : std_logic_vector(mii_txd'range);
+				signal ip_len      : std_logic_vector(miiudp_len'range);
 			begin
 
 				process(mii_txc)
@@ -571,7 +576,28 @@ begin
 					end if;
 				end process;
 
-				miiiptxdv_dly_e : entity hdl4fpga.align
+				miiip4shdr_ena <= lookup(to_miisize((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto)), mii_ipptr, ip_frame);
+				miiip4len_ena  <= lookup(to_miisize((0 => ip_length)), mii_ipptr, ip_frame);
+				miiip4cksm_ena <= lookup(to_miisize((0 => ip_chksum)), mii_ipptr, ip_frame);
+
+				process (mii_txc)
+					variable len : unsigned(miiudp_len'range);
+				begin
+					if rising_edge(mii_txc) then
+						if miiudp_txdv='0' then
+							len := unsigned(miiudp_len) + iphdr_size;
+						else
+						end if;
+					end if;
+				end process;
+
+				miiipsize_e : entity hdl4fpga.mii_pll2ser
+				port map (
+					mii_data => ip_len,
+					mii_txc  => mii_txc,
+					mii_txd  => miiip4len_txd);
+
+				miiippay_txdv_e : entity hdl4fpga.align
 				generic map (
 					n => 1,
 					d => (0 => to_miisize(iphdr_size+2*ip4a_size)))
@@ -580,7 +606,7 @@ begin
 					di(0) => miiudp_txdv,
 					do(0) => miiipy_txdv);
 
-				miiiptxd_dly_e : entity hdl4fpga.align
+				miiippay_txd_e : entity hdl4fpga.align
 				generic map (
 					n => mii_txd'length,
 					d => (0 to mii_txd'length-1 => to_miisize(iphdr_size+2*ip4a_size)))
@@ -588,10 +614,6 @@ begin
 					clk => mii_txc,
 					di  => miiudp_txd,
 					do  => miiipy_txd);
-
-				miiip4shdr_ena <= lookup(to_miisize((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto)), mii_ipptr, ip_frame);
-				miiip4len_ena  <= lookup(to_miisize((0 => ip_length)), mii_ipptr, ip_frame);
-				miiip4cksm_ena <= lookup(to_miisize((0 => ip_chksum)), mii_ipptr, ip_frame);
 
 				chksum_b : block
 
@@ -623,7 +645,7 @@ begin
 						  (cssaddr_txd and cssaddr_ena) or 
 						  (csdaddr_txd and csdaddr_ena);
 
-					miiiptxdv_dly_e : entity hdl4fpga.align
+					miiipaddr_ena_e : entity hdl4fpga.align
 					generic map (
 						n => 1,
 						d => (0 => to_miisize(ip_chksum.size)))
@@ -661,7 +683,7 @@ begin
 						mii_txdv => miiip4cksm_txdv,
 						mii_txd  => miiip4cksm_txd);
 
-					miiiptxdv_dly_e : entity hdl4fpga.align
+					miiiphdr_ena_e : entity hdl4fpga.align
 					generic map (
 						n => 1,
 						d => (0 => to_miisize(2*ip4a_size)))
@@ -670,7 +692,7 @@ begin
 						di(0) => miiip4pfx_ena,
 						do(0) => miiip4hdr0_ena);
 
-					miiiptxd_dly_e : entity hdl4fpga.align
+					miiiphdr_txd_e : entity hdl4fpga.align
 					generic map (
 						n => mii_txd'length,
 						d => (0 to mii_txd'length-1 => to_miisize(2*ip4a_size)))

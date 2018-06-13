@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_mux is
+entity mii_pll2ser is
     port (
 		mii_data : in  std_logic_vector;
         mii_txc  : in  std_logic;
@@ -40,8 +40,8 @@ entity mii_mux is
         mii_txd  : out std_logic_vector);
 end;
 
-architecture def of mii_mux is
-	constant data_size  : natural := (mii_data'length+mii_txd'length-1)/mii_txd'length;
+architecture def of mii_pll2ser is
+	constant data_size : natural := (mii_data'length+mii_txd'length-1)/mii_txd'length;
 	constant cntr_size : natural := unsigned_num_bits(mii_data'length/mii_txd'length-1);
 
 	signal cntr  : unsigned(0 to cntr_size);
@@ -64,6 +64,6 @@ begin
 	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= reverse(word2byte(mii_data, cntr(1 to cntr'right), mii_txd'length));
+	mii_txd  <= reverse(word2byte(mii_data, std_logic_vector(cntr(1 to cntr'right)), mii_txd'length));
 
 end;
