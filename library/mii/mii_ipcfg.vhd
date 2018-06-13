@@ -557,6 +557,7 @@ begin
 
 				signal mii_ipptr  : std_logic_vector(0 to 6);
 
+				signal miiip4len_treq : std_logic;
 				signal miiip4len_ena  : std_logic;
 				signal miiip4len_txd  : std_logic_vector(mii_txd'range);
 
@@ -591,12 +592,6 @@ begin
 					end if;
 				end process;
 
-				miiipsize_e : entity hdl4fpga.mii_pll2ser
-				port map (
-					mii_data => ip_len,
-					mii_txc  => mii_txc,
-					mii_txd  => miiip4len_txd);
-
 				miiippay_txdv_e : entity hdl4fpga.align
 				generic map (
 					n => 1,
@@ -614,6 +609,14 @@ begin
 					clk => mii_txc,
 					di  => miiudp_txd,
 					do  => miiipy_txd);
+
+				miiip4len_treq <= miiipy_txdv or miiudp_txdv;
+				miiipsize_e : entity hdl4fpga.mii_pll2ser
+				port map (
+					mii_data => ip_len,
+					mii_txc  => mii_txc,
+					mii_treq => miiip4len_treq,
+					mii_txd  => miiip4len_txd);
 
 				chksum_b : block
 
