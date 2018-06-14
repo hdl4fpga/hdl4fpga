@@ -684,7 +684,7 @@ begin
 						di  => ipaddrs_txd,
 						do  => miiip4addr_txd);
 
-					ip4pfx_ena <= miiip4shdr_ena or miiip4len_ena;
+					ip4pfx_ena <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
 					ip4pfx_txd <= 
 						(miiip4shdr_txd and miiip4shdr_ena) or
 						(miiip4len_txd  and miiip4len_ena);
