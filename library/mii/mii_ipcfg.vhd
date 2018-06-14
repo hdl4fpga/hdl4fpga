@@ -640,7 +640,7 @@ begin
 
 					signal cssaddr_ena    : std_logic;
                     signal csdaddr_ena    : std_logic;
-                    signal ipaddrs_ena    : std_logic;
+                    signal ipaddrs_txdv    : std_logic;
 					signal ipaddrs_txd    : std_logic_vector(mii_txd'range);
                     signal ip4pfx_ena     : std_logic;
 					signal ip4pfx_txd     : std_logic_vector(mii_txd'range);
@@ -661,7 +661,7 @@ begin
 					cssaddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
 					csdaddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
 
-					ipaddrs_ena <= cssaddr_ena or csdaddr_ena;
+					ipaddrs_txdv <= (cssaddr_ena or csdaddr_ena) and miiudp_txdv;
 					ipaddrs_txd <= 
 						  (cssaddr_txd and cssaddr_ena) or 
 						  (csdaddr_txd and csdaddr_ena);
@@ -672,7 +672,7 @@ begin
 						d => (0 => to_miisize(ip_chksum.size)))
 					port map (
 						clk   => mii_txc,
-						di(0) => ipaddrs_ena,
+						di(0) => ipaddrs_txdv,
 						do(0) => miiip4addr_ena);
 
 					miiiptxd_dly_e : entity hdl4fpga.align
@@ -694,9 +694,9 @@ begin
 						(ip4pfx_txd     and ip4pfx_ena)  or
 						(miiip4addr_txd and miiip4addr_ena);
 
-					miiip4cksm_rxdv <= (ipaddrs_ena or ip4pfx_ena) and miiudp_txdv;
+					miiip4cksm_rxdv <= (ipaddrs_txdv or ip4pfx_ena) and miiudp_txdv;
 					miiip4cksm_rxd  <= 
-						(ipaddrs_txd and ipaddrs_ena) or
+						(ipaddrs_txd and ipaddrs_txdv) or
 						(ip4pfx_txd  and ip4pfx_ena);
 
 					mii_1chksum_e : entity hdl4fpga.mii_1chksum
