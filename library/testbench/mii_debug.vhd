@@ -137,6 +137,8 @@ begin
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
 
+		miiudp_txdv => rxdv,
+		miiudp_txd  => (0 to n-1 => '0'),
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,

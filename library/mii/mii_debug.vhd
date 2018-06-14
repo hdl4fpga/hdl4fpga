@@ -41,6 +41,10 @@ entity mii_debug is
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 
+		miiudp_len  : in std_logic_vector(16-1 downto 0) := x"6789";
+		miiudp_txdv : in std_logic;
+		miiudp_txd  : in std_logic_vector;
+
 		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
@@ -84,6 +88,10 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
+
+		miiudp_len  => miiudp_len,
+		miiudp_txdv => miiudp_txdv,
+		miiudp_txd  => miiudp_txd,
 
 		mii_txc   => txc,
 		mii_txdv  => txdv,

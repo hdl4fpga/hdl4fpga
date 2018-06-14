@@ -41,6 +41,7 @@ end;
 
 architecture beh of mii_1chksum is
 	signal chksum : unsigned(0 to chksumi'length-1);
+	signal txdv   : std_logic;
 begin
 	process (mii_txc)
 		variable aux  : unsigned(0 to mii_txd'length+1);
@@ -65,8 +66,9 @@ begin
 				cntr := cntr sll 1;
 				cntr(cntr'right) := '1';
 			end if;
-			mii_txdv <= cntr(0);
+			txdv <= cntr(0);
 		end if;
 	end process;
-	mii_txd <= std_logic_vector(chksum(mii_txd'range));
+	mii_txdv <= txdv and not mii_rxdv;
+	mii_txd  <= std_logic_vector(chksum(mii_txd'range));
 end;
