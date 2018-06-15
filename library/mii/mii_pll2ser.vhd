@@ -64,6 +64,6 @@ begin
 	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= reverse(word2byte(mii_data, std_logic_vector(cntr(1 to cntr'right)), mii_txd'length));
+	mii_txd  <= word2byte(reverse(mii_data), std_logic_vector(cntr(1 to cntr'right)), mii_txd'length);
 
 end;

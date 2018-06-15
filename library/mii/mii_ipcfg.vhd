@@ -559,7 +559,7 @@ begin
 				signal miiip4shdr_ena : std_logic;
 				signal miiip4cksm_ena : std_logic;
 
-				signal mii_ipptr  : std_logic_vector(0 to 6);
+				signal mii_ipptr  : std_logic_vector(0 to to_miisize(5));
 
 				signal miiip4len_ena  : std_logic;
 				signal miiip4len_txd  : std_logic_vector(mii_txd'range);
@@ -574,7 +574,7 @@ begin
 					if rising_edge(mii_txc) then
 						if miiudp_txdv='0' then
 							mii_ipptr <= (others => '0');
-						else
+						elsif mii_ipptr(0)/='1' then
 							mii_ipptr <= std_logic_vector(unsigned(mii_ipptr) + 1);
 						end if;
 					end if;
@@ -638,22 +638,23 @@ begin
 					signal miiip4cksm_txdv : std_logic;
 					signal miiip4cksm_txd  : std_logic_vector(mii_txd'range);
 
-					signal cssaddr_ena    : std_logic;
-                    signal csdaddr_ena    : std_logic;
+					signal cssaddr_ena     : std_logic;
+                    signal csdaddr_ena     : std_logic;
                     signal ipaddrs_txdv    : std_logic;
-					signal ipaddrs_txd    : std_logic_vector(mii_txd'range);
-                    signal ip4pfx_ena     : std_logic;
-					signal ip4pfx_txd     : std_logic_vector(mii_txd'range);
-					signal miiip4addr_ena : std_logic;
-					signal miiip4addr_txd : std_logic_vector(mii_txd'range);
-					signal miiip4pfx_ena  : std_logic;
-					signal miiip4pfx_txd  : std_logic_vector(mii_txd'range);
-					signal miiip4hdr0_ena : std_logic;
-					signal miiip4hdr0_txd : std_logic_vector(mii_txd'range);
-					signal miiip4hdr_txdv : std_logic;
-					signal miiip4hdr_txd  : std_logic_vector(mii_txd'range);
-					signal cssaddr_txd  : std_logic_vector(mii_txd'range);
-					signal csdaddr_txd  : std_logic_vector(mii_txd'range);
+					signal ipaddrs_txd     : std_logic_vector(mii_txd'range);
+                    signal ip4pfx_txdv     : std_logic;
+					signal ip4pfx_txd      : std_logic_vector(mii_txd'range);
+					signal miiip4addr_txdv : std_logic;
+					signal miiip4addr_txd  : std_logic_vector(mii_txd'range);
+					signal miiip4pfx_txdv  : std_logic;
+					signal miiip4pfx_txd   : std_logic_vector(mii_txd'range);
+					signal miiip4hdr0_txdv  : std_logic;
+					signal miiip4hdr0_txd  : std_logic_vector(mii_txd'range);
+					signal miiip4hdr_txdv  : std_logic;
+					signal miiip4hdr_txd   : std_logic_vector(mii_txd'range);
+					signal cssaddr_txd     : std_logic_vector(mii_txd'range);
+					signal csdaddr_txd     : std_logic_vector(mii_txd'range);
+
 				begin
 
 					cssaddr_txd <= x"aa";
@@ -673,7 +674,7 @@ begin
 					port map (
 						clk   => mii_txc,
 						di(0) => ipaddrs_txdv,
-						do(0) => miiip4addr_ena);
+						do(0) => miiip4addr_txdv);
 
 					miiiptxd_dly_e : entity hdl4fpga.align
 					generic map (
@@ -684,20 +685,20 @@ begin
 						di  => ipaddrs_txd,
 						do  => miiip4addr_txd);
 
-					ip4pfx_ena <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
+					ip4pfx_txdv <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
 					ip4pfx_txd <= 
 						(miiip4shdr_txd and miiip4shdr_ena) or
 						(miiip4len_txd  and miiip4len_ena);
 
-					miiip4pfx_ena <= ip4pfx_ena or miiip4addr_ena;
-					miiip4pfx_txd <= 
-						(ip4pfx_txd     and ip4pfx_ena)  or
-						(miiip4addr_txd and miiip4addr_ena);
+					miiip4pfx_txdv <= ip4pfx_txdv or miiip4addr_txdv;
+					miiip4pfx_txd  <= 
+						(ip4pfx_txd     and ip4pfx_txdv)  or
+						(miiip4addr_txd and miiip4addr_txdv);
 
-					miiip4cksm_rxdv <= (ipaddrs_txdv or ip4pfx_ena) and miiudp_txdv;
+					miiip4cksm_rxdv <= (ipaddrs_txdv or ip4pfx_txdv) and miiudp_txdv;
 					miiip4cksm_rxd  <= 
 						(ipaddrs_txd and ipaddrs_txdv) or
-						(ip4pfx_txd  and ip4pfx_ena);
+						(ip4pfx_txd  and ip4pfx_txdv);
 
 					mii_1chksum_e : entity hdl4fpga.mii_1chksum
 					port map (
@@ -714,8 +715,8 @@ begin
 						d => (0 => to_miisize(2*ip4a_size)))
 					port map (
 						clk   => mii_txc,
-						di(0) => miiip4pfx_ena,
-						do(0) => miiip4hdr0_ena);
+						di(0) => miiip4pfx_txdv,
+						do(0) => miiip4hdr0_txdv);
 
 					miiiphdr_txd_e : entity hdl4fpga.align
 					generic map (
@@ -727,11 +728,11 @@ begin
 						do  => miiip4hdr0_txd);
 
 					miiip4hdr_txd <= 
-						(miiip4hdr0_txd and miiip4hdr0_ena) or
+						(miiip4hdr0_txd and miiip4hdr0_txdv) or
 						(miiip4cksm_txd and miiip4cksm_txdv);
 
 					miiip4hdr_txdv <=
-						miiip4hdr0_ena or
+						miiip4hdr0_txdv or
 						miiip4cksm_txdv;
 
 				end block;
