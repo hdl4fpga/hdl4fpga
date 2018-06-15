@@ -607,7 +607,7 @@ begin
 				miiippay_txdv_e : entity hdl4fpga.align
 				generic map (
 					n => 1,
-					d => (0 => to_miisize(iphdr_size+2*ip4a_size)))
+					d => (0 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
 				port map (
 					clk   => mii_txc,
 					di(0) => miiudp_txdv,
@@ -616,7 +616,7 @@ begin
 				miiippay_txd_e : entity hdl4fpga.align
 				generic map (
 					n => mii_txd'length,
-					d => (0 to mii_txd'length-1 => to_miisize(iphdr_size+2*ip4a_size)))
+					d => (0 to mii_txd'length-1 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
 				port map (
 					clk => mii_txc,
 					di  => miiudp_txd,
@@ -655,6 +655,8 @@ begin
 					signal cssaddr_txd     : std_logic_vector(mii_txd'range);
 					signal csdaddr_txd     : std_logic_vector(mii_txd'range);
 
+					signal cksm_txdv : std_logic;
+					signal cksm_txd  : std_logic_vector(mii_txd'range);
 				begin
 
 					cssaddr_txd <= x"aa";
@@ -701,13 +703,43 @@ begin
 						(ip4pfx_txd  and ip4pfx_txdv);
 
 					mii_1chksum_e : entity hdl4fpga.mii_1chksum
+					generic map (
+						n => 16)
 					port map (
-						chksumi  => (0 to 16-1 => '0'),
 						mii_txc  => mii_txc,
 						mii_rxdv => miiip4cksm_rxdv,
 						mii_rxd  => miiip4cksm_rxd,
-						mii_txdv => miiip4cksm_txdv,
-						mii_txd  => miiip4cksm_txd);
+						mii_txdv => cksm_txdv,
+						mii_txd  => cksm_txd);
+
+
+					chksumlifo_b : block
+						signal lifo : std_logic_vector(0 to n-1);
+					begin
+						process (mii_txc)
+							variable aux : unsigned(lifo'range);
+						begin
+							if rising_edge(mii_txc) then
+								aux := unsigned(lifo);
+								if chsm_txdv='1' then
+									aux := aux ror mii_txd'length;
+									aux(mii_txd'range) := unsigned(cksm_txd);
+								else
+									aux := aux rol mii_txd'length;
+								end if;
+								lifo <= std_logic_vector(aux);
+							end if;
+						end process;
+						dly_e : entity hdl4fgpa.align
+						generic map (
+							n => 1,
+							d => (0 to 1-1 => to_miisize(ip_chksum.size))
+						port map (
+							clk => mii_txc,
+							di(0) => cksm_txdv,
+							do(0) => miiip4cksm_txdv);
+						miiip4cksm_txd <= lifo(mii_txd'range);
+					end block;
 
 					miiiphdr_ena_e : entity hdl4fpga.align
 					generic map (

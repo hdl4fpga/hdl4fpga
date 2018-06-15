@@ -29,8 +29,9 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity mii_1chksum is
+	generic (
+		n : natural);
 	port (
-		chksumi  : in  std_logic_vector;
 		mii_txc  : in  std_logic;
 		mii_rena : in  std_logic := '1';
 		mii_rxdv : in  std_logic;
@@ -40,35 +41,43 @@ entity mii_1chksum is
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : unsigned(0 to chksumi'length-1);
+	signal chksum : std_logic_vector(n-1 downto 0);
 	signal txdv   : std_logic;
 begin
 	process (mii_txc)
-		variable aux  : unsigned(0 to mii_txd'length+1);
-		variable sum  : unsigned(chksum'range);
-		variable cntr : unsigned(0 to chksumi'length/mii_txd'length-1);
+		variable cntr : unsigned(0 to n/mii_txd'length-1);
+
+		variable ci   : std_logic;
+		variable arg1 : unsigned(mii_txd'length+1 downto 0);
+		variable arg2 : unsigned(mii_txd'length+1 downto 0);
+		variable sum  : unsigned(mii_txd'length+1 downto 0);
+		variable aux  : unsigned(chksum'range) := (others => '0');
 	begin
 		if rising_edge(mii_txc) then
-			if mii_rxdv='0' then
-				aux    := (others => '0');
-				sum    := unsigned(chksumi);
-				cntr   := cntr sll 1;
-				chksum <= chksum rol mii_txd'length;
-			elsif mii_rena='1' then
-				sum := sum ror mii_txd'length;
-				aux := aux rol 1;
-				aux(mii_txd'range) := sum(mii_txd'range);
-				aux := aux srl 1;
-				aux := aux + ("0" & unsigned(reverse(mii_rxd)) & "1");
-				aux := aux rol 1;
-				sum(mii_txd'range) := aux(mii_txd'range);
-				chksum <= unsigned(reverse(std_logic_vector(sum + aux(aux'right to aux'right))));
+			if mii_rena='1' then
+				aux  := unsigned(chksum);
+				aux  := aux rol mii_txd'length;
+				arg1 := '0' & aux(mii_rxd'length-1 downto 0) & ci;
+				arg2 := (0 => '1', others => '0');
 				cntr := cntr sll 1;
-				cntr(cntr'right) := '1';
+				if mii_rxdv='1' then
+					arg2(mii_txd'length downto 1) := unsigned(reverse(mii_rxd));
+					cntr(cntr'right) := '1';
+				end if;
+				sum  := arg1 + arg2;
+				ci   := sum(sum'left);
+				aux(mii_rxd'length-1 downto 0) := sum(mii_txd'length downto 1);
+				if mii_rxdv='0' then
+					if cntr(0)='0' then
+						ci  := '0';
+						aux := (others => '0');
+					end if;
+				end if;
+				chksum <= std_logic_vector(aux);
 			end if;
 			txdv <= cntr(0);
 		end if;
 	end process;
 	mii_txdv <= txdv and not mii_rxdv;
-	mii_txd  <= std_logic_vector(chksum(mii_txd'range));
+	mii_txd  <= chksum(mii_txd'reverse_range);
 end;

@@ -48,7 +48,7 @@ architecture mii_chksum of testbench is
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 20 ns;
+	rst <= '1', '0' after 100 ns;
 
 	process (clk)
 		variable edge  : std_logic;
@@ -70,7 +70,7 @@ begin
 	miidhcp_e : entity hdl4fpga.mii_rom
 	generic map (
 		mem_data => reverse(
-			x"ff_ff_fe_ff",
+			x"ff_ff_fe_ff_ff_01",
 			8))
 	port map (
 		mii_txc  => clk,
@@ -80,10 +80,11 @@ begin
 		mii_txd  => rxd);
 
 
-	du : entity hdl4fpga.mii_chksum
+	du : entity hdl4fpga.mii_1chksum
+	generic map (
+		n => 16)
 	port map (
-		chksumi  => (1 to 16 => '0'),
-        mii_rxc  => clk,
+        mii_txc  => clk,
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
 		mii_txd  => txd);
