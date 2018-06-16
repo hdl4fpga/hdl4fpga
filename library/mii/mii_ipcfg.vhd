@@ -590,6 +590,7 @@ begin
 					if rising_edge(mii_txc) then
 						if miiudp_txdv='0' then
 							ip_len <= std_logic_vector(unsigned(miiudp_len) + iphdr_size);
+							ip_len <= std_logic_vector(unsigned'(x"0000") + iphdr_size);
 						else
 						end if;
 					end if;
@@ -659,8 +660,8 @@ begin
 					signal cksm_txd  : std_logic_vector(mii_txd'range);
 				begin
 
-					cssaddr_txd <= x"aa";
-					csdaddr_txd <= x"55";
+					cssaddr_txd <= x"00";
+					csdaddr_txd <= x"ff";
 					cssaddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
 					csdaddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
 
@@ -714,26 +715,26 @@ begin
 
 
 					chksumlifo_b : block
-						signal lifo : std_logic_vector(0 to n-1);
+						signal lifo : std_logic_vector(0 to 16-1);
 					begin
 						process (mii_txc)
 							variable aux : unsigned(lifo'range);
 						begin
 							if rising_edge(mii_txc) then
 								aux := unsigned(lifo);
-								if chsm_txdv='1' then
+								if cksm_txdv='1' then
 									aux := aux ror mii_txd'length;
-									aux(mii_txd'range) := unsigned(cksm_txd);
+									aux(mii_txd'range) := unsigned(not cksm_txd);
 								else
 									aux := aux rol mii_txd'length;
 								end if;
 								lifo <= std_logic_vector(aux);
 							end if;
 						end process;
-						dly_e : entity hdl4fgpa.align
+						dly_e : entity hdl4fpga.align
 						generic map (
 							n => 1,
-							d => (0 to 1-1 => to_miisize(ip_chksum.size))
+							d => (0 to 1-1 => to_miisize(ip_chksum.size)))
 						port map (
 							clk => mii_txc,
 							di(0) => cksm_txdv,
@@ -744,7 +745,7 @@ begin
 					miiiphdr_ena_e : entity hdl4fpga.align
 					generic map (
 						n => 1,
-						d => (0 => to_miisize(2*ip4a_size)))
+						d => (0 => to_miisize(2*ip4a_size+ip_chksum.size)))
 					port map (
 						clk   => mii_txc,
 						di(0) => miiip4pfx_txdv,
@@ -753,7 +754,7 @@ begin
 					miiiphdr_txd_e : entity hdl4fpga.align
 					generic map (
 						n => mii_txd'length,
-						d => (0 to mii_txd'length-1 => to_miisize(2*ip4a_size)))
+						d => (0 to mii_txd'length-1 => to_miisize(2*ip4a_size+ip_chksum.size)))
 					port map (
 						clk => mii_txc,
 						di  => miiip4pfx_txd,

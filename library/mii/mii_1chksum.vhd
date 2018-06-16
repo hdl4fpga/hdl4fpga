@@ -79,5 +79,5 @@ begin
 		end if;
 	end process;
 	mii_txdv <= txdv and not mii_rxdv;
-	mii_txd  <= chksum(mii_txd'reverse_range);
+	mii_txd  <= reverse(chksum(mii_txd'reverse_range));
 end;
