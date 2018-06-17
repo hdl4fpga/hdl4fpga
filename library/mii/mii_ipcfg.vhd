@@ -567,6 +567,13 @@ begin
 				signal miiipy_txdv : std_logic;
 				signal miiipy_txd  : std_logic_vector(mii_txd'range);
 				signal ip_len      : std_logic_vector(miiudp_len'range);
+
+				signal ip4saddr_ena     : std_logic;
+                signal ip4daddr_ena     : std_logic;
+				signal ip4saddr_txd     : std_logic_vector(mii_txd'range);
+				signal ip4daddr_txd     : std_logic_vector(mii_txd'range);
+				signal ip4dbcst_sel     : wor std_ulogic;
+				signal ip4snull_sel     : wor std_ulogic;
 			begin
 
 				process(mii_txc)
@@ -631,6 +638,18 @@ begin
 					mii_tena => miiip4len_ena,
 					mii_txd  => miiip4len_txd);
 
+				ip4saddr_txd <= x"00";
+				ip4daddr_txd <= x"ff";
+
+				ip4saddr_txd <= wirebus(
+					(mii_txd'range => '0'), 
+					ip4snull_sel);
+				ip4daddr_txd <= wirebus(
+					(mii_txd'range => '1'), 
+					ip4dbcst_sel);
+				ip4saddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
+				ip4daddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
+
 				chksum_b : block
 
 					signal miiip4cksm_rena : std_logic;
@@ -639,8 +658,6 @@ begin
 					signal miiip4cksm_txdv : std_logic;
 					signal miiip4cksm_txd  : std_logic_vector(mii_txd'range);
 
-					signal cssaddr_ena     : std_logic;
-                    signal csdaddr_ena     : std_logic;
                     signal ipaddrs_txdv    : std_logic;
 					signal ipaddrs_txd     : std_logic_vector(mii_txd'range);
                     signal ip4pfx_txdv     : std_logic;
@@ -653,22 +670,15 @@ begin
 					signal miiip4hdr0_txd  : std_logic_vector(mii_txd'range);
 					signal miiip4hdr_txdv  : std_logic;
 					signal miiip4hdr_txd   : std_logic_vector(mii_txd'range);
-					signal cssaddr_txd     : std_logic_vector(mii_txd'range);
-					signal csdaddr_txd     : std_logic_vector(mii_txd'range);
 
 					signal cksm_txdv : std_logic;
 					signal cksm_txd  : std_logic_vector(mii_txd'range);
 				begin
 
-					cssaddr_txd <= x"00";
-					csdaddr_txd <= x"ff";
-					cssaddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
-					csdaddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
-
-					ipaddrs_txdv <= (cssaddr_ena or csdaddr_ena) and miiudp_txdv;
+					ipaddrs_txdv <= (ip4saddr_ena or ip4daddr_ena) and miiudp_txdv;
 					ipaddrs_txd <= 
-						  (cssaddr_txd and cssaddr_ena) or 
-						  (csdaddr_txd and csdaddr_ena);
+						  (ip4saddr_txd and ip4saddr_ena) or 
+						  (ip4daddr_txd and ip4daddr_ena);
 
 					miiipaddr_ena_e : entity hdl4fpga.align
 					generic map (

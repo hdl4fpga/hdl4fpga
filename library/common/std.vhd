@@ -136,6 +136,11 @@ package std is
 		constant arg2 : std_logic_vector)
 		return std_logic_vector;
 
+	function wirebus (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic_vector)
+		return std_logic_vector;
+
 	function setif (
 		arg : boolean)
 		return std_logic;
@@ -650,6 +655,24 @@ package body std is
 	--------------------
 	-- Logical functions
 	--------------------
+
+	function wirebus (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic_vector)
+		return std_logic_vector is
+		variable aux    : unsigned(0 to arg1'length-1);
+		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg1'length-1);
+	begin
+		aux(0 to arg1'length-1) := unsigned(arg1);
+		retval := (others => '0');
+		for i in arg2'range loop
+			if arg2(i)='1' then
+				retval := retval or aux(retval'range);
+			end if;
+			aux := aux sll retval'length;
+		end loop;
+		return retval;
+	end;
 
 	function "and" (
 		constant arg1 : std_logic_vector;
