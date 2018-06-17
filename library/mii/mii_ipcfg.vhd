@@ -647,8 +647,14 @@ begin
 				ip4daddr_txd <= wirebus(
 					(mii_txd'range => '1'), 
 					ip4dbcst_sel);
+
 				ip4saddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
 				ip4daddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
+
+				ip4pfx_txdv <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
+				ip4pfx_txd <= 
+					(miiip4shdr_txd and miiip4shdr_ena) or
+					(miiip4len_txd  and miiip4len_ena);
 
 				chksum_b : block
 
@@ -698,11 +704,6 @@ begin
 						di  => ipaddrs_txd,
 						do  => miiip4addr_txd);
 
-					ip4pfx_txdv <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
-					ip4pfx_txd <= 
-						(miiip4shdr_txd and miiip4shdr_ena) or
-						(miiip4len_txd  and miiip4len_ena);
-
 					miiip4pfx_txdv <= ip4pfx_txdv or miiip4addr_txdv;
 					miiip4pfx_txd  <= 
 						(ip4pfx_txd     and ip4pfx_txdv)  or
@@ -723,8 +724,7 @@ begin
 						mii_txdv => cksm_txdv,
 						mii_txd  => cksm_txd);
 
-
-					chksumlifo_b : block
+					lifo_b : block
 						signal lifo : std_logic_vector(0 to 16-1);
 					begin
 						process (mii_txc)
