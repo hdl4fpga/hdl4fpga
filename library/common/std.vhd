@@ -667,7 +667,7 @@ package body std is
 		retval := (others => '0');
 		for i in arg2'range loop
 			if arg2(i)='1' then
-				retval := retval or aux(retval'range);
+				retval := retval or std_logic_vector(aux(retval'range));
 			end if;
 			aux := aux sll retval'length;
 		end loop;
