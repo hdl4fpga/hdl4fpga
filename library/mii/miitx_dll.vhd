@@ -31,134 +31,86 @@ use hdl4fpga.std.all;
 entity miitx_dll is
 	port (
 		mii_txc   : in  std_logic;
-		mii_rxdv  : in  std_logic_vector;
+		dmac_ena  : out  std_logic;
+		dmac_rxd  : in  std_logic_vector;
+		smac_ena  : out std_logic;
+		smac_rxd  : in  std_logic_vector;
+		mii_rxdv  : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_txdv  : out std_logic;
 		mii_txd   : out std_logic_vector);
 end;
 
 architecture mix of miitx_dll is
-	constant mii_pre1   : std_logic_vector := reverse(x"5555_5555", 8);
+	constant crc32_size   : natural := 32;
 
-	signal miipre1_txd  : std_logic_vector(mii_txd'range);
-	signal miipre1_txdv : std_logic;
+	signal miipre_txd  : std_logic_vector(mii_txd'range);
+	signal miipre_txdv : std_logic;
 
-	signal miibuf1_rxdv : std_logic;
-	signal miibuf1_rxd  : std_logic_vector(mii_txd'range);
+	signal minpkt_txdv : std_logic;
+	signal minpkt_txd  : std_logic;
 
-	signal rxdv2        : std_logic;
-	signal rxd2         : std_logic_vector(mii_txd'range);
+	signal miibuf_txdv : std_logic;
+	signal miibuf_txd  : std_logic_vector(mii_txd'range);
 
+	signal crc32_txd   : std_logic_vector(mii_txd'range);
+	signal crc32_txdv  : std_logic;
+	signal mii_ptr     : unsigned(0 to 6*8/mii_txd'length);
 begin
-	crc32_b : block
-		constant mii_pre2   : std_logic_vector := reverse(x"5555_55d5", 8);
 
-		signal txdv         : std_logic;
-		signal txd          : std_logic_vector(mii_txd'range);
-
-		signal miipre2_txd  : std_logic_vector(mii_txd'range);
-		signal miipre2_txdv : std_logic;
-
-		signal miibuf2_rxdv : std_logic;
-		signal miibuf2_rxd  : std_logic_vector(mii_txd'range);
-
-		signal crc32_txd    : std_logic_vector(mii_txd'range);
-		signal crc32_txdv   : std_logic;
-
-		signal rxdv         : std_logic_vector(0 to mii_rxdv'length-1);
-		signal rxd          : std_logic_vector(0 to mii_rxd'length-1);
-
+	process (mii_txc)
 	begin
-
-		rxdv <= mii_rxdv;
-		rxd  <= mii_rxd;
-		process (rxd, rxdv)
-			variable arxdv : unsigned(0 to mii_rxdv'length-1);
-			variable arxd  : unsigned(0 to mii_rxd'length-1);
-			variable atxd  : unsigned(0 to mii_txd'length-1);
-		begin
-			arxd  := unsigned(mii_rxd);
-			arxdv := unsigned(mii_rxdv);
-			atxd  := (others => '0');
-			for i in arxdv'range loop
-				if arxdv(0)='1' then
-					atxd := atxd or arxd(atxd'range);
+		if rising_edge(mii_txc) then
+			if mii_ptr(0)/='0' then
+				if mii_rxdv='0' then
+					mii_ptr <= to_unsigned(crc32_size/mii_txd'length, mii_ptr'length);
 				end if;
-				arxd  := arxd  rol atxd'length;
-				arxdv := arxdv rol 1;
-			end loop;
-			txd <= std_logic_vector(atxd);
-		end process;
+			else
+				mii_ptr <= mii_ptr + 1;
+			end if;
+		end if;
+	end process;
 
-		txdv <= setif(rxdv /= (rxdv'range => '0'));
-
-		miitx_pre2_e  : entity hdl4fpga.mii_rom
-		generic map (
-			mem_data => mii_pre2)
-		port map (
-			mii_txc  => mii_txc,
-			mii_treq => txdv,
-			mii_txdv => miipre2_txdv,
-			mii_txd  => miipre2_txd);
-
-		miishr_txd_e : entity hdl4fpga.align
-		generic map (
-			n   => mii_txd'length,
-			d   => (1 to mii_txd'length => mii_pre2'length/mii_txd'length))
-		port map (
-			clk => mii_txc,
-			di  => txd,
-			do  => miibuf2_rxd);
-
-		mii_txdv_e : entity hdl4fpga.align
-		generic map (
-			n     => 1,
-			d     => (1 to 1 => mii_pre2'length/mii_txd'length))
-		port map (
-			clk   => mii_txc,
-			di(0) => txdv,
-			do(0) => miibuf2_rxdv);
-
-		crc32_e : entity hdl4fpga.mii_crc32
-		port map (
-			mii_txc  => mii_txc,
-			mii_rxd  => miibuf2_rxd,
-			mii_rxdv => miibuf2_rxdv,
-			mii_txdv => crc32_txdv,
-			mii_txd  => crc32_txd);
-
-		rxdv2 <= word2byte(miipre2_txdv & (miibuf2_rxdv or crc32_txdv), not miipre2_txdv)(0);
-		rxd2  <= word2byte(miipre2_txd  & word2byte(miibuf2_rxd  & crc32_txd , not miibuf2_rxdv), not miipre2_txdv);
-	end block;
-
-	miitx_pre1_e  : entity hdl4fpga.mii_rom
+	miitx_pre_e  : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => mii_pre1)
+		mem_data => reverse(x"5555_5555_5555_55d5", 8))
 	port map (
 		mii_txc  => mii_txc,
-		mii_treq => rxdv2,
-		mii_txdv => miipre1_txdv,
-		mii_txd  => miipre1_txd);
+		mii_treq => mii_rxdv,
+		mii_txdv => miipre_txdv,
+		mii_txd  => miipre_txd);
 
+	minpkt_txd <= mii_rxd when mii_rxdv='1' else '0';
 	miishr_txd_e : entity hdl4fpga.align
 	generic map (
-		n => mii_txd'length,
-		d => (1 to mii_txd'length => mii_pre1'length/mii_txd'length))
+		n  => mii_txd'length,
+		d  => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
 	port map (
 		clk => mii_txc,
-		di  => rxd2,
-		do  => miibuf1_rxd);
+		di  => mii_rxd,
+		do  => miibuf_rxd);
 
-	mii_txdv_e : entity hdl4fpga.align
+	minpkt_txdv <= mii_rxdv or not mii_ptr(0);
+	miishr_txdv_e : entity hdl4fpga.align
 	generic map (
-		n => 1,
-		d => (1 to 1 => mii_pre1'length/mii_txd'length))
+		n  => 1,
+		d  => (1 to 1 => mii_pre'length/mii_txd'length))
 	port map (
 		clk   => mii_txc,
-		di(0) => rxdv2,
-		do(0) => miibuf1_rxdv);
+		di(0) => mii_rxdv,
+		do(0) => miibuf_rxdv);
 
-	mii_txd  <= word2byte(miipre1_txd  & miibuf1_rxd,   not miipre1_txdv);
-	mii_txdv <= word2byte(miipre1_txdv & miibuf1_rxdv,  not miipre1_txdv)(0);
+	crc32_e : entity hdl4fpga.mii_crc32
+	port map (
+		mii_txc  => mii_txc,
+		mii_rxd  => miibuf_txd,
+		mii_rxdv => miibuf_txdv,
+		mii_txdv => crc32_txdv,
+		mii_txd  => crc32_txd);
+
+	mii_txd  <= miipre_txdv or crc32_txdv or miipre_txdv;
+	mii_txdv <= wirebus (
+		miipre_txd  & miibuf_txd & crc32_txd,
+		miipre_txdv & miibuf_txdv & crc32_txdv);
 
 end;
