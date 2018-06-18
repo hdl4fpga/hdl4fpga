@@ -63,14 +63,14 @@ begin
 	begin
 		if rising_edge(mii_txc) then
 			if mii_rxdv='0' then
-				if mii_txdv='0' then
-					if mii_ptr(0)='1' then
-						mii_ptr <= to_unsigned(crc32_size/mii_txd'length, mii_ptr'length);
-					end if;
+					mii_ptr <= to_unsigned(crc32_size/mii_txd'length, mii_ptr'length);
+			else
+				if mii_ptr(0)='0' then
+					mii_ptr <= mii_ptr + 1;
 				end if;
-			elsif mii_ptr(0)='0' then
-				mii_ptr <= mii_ptr + 1;
 			end if;
+			if crc32_txdv='0' then
+				if edge := '0' then
 		end if;
 	end process;
 
