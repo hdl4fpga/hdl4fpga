@@ -59,13 +59,16 @@ architecture mix of miitx_dll is
 begin
 
 	process (mii_txc)
+		variable edge : std_logic;
 	begin
 		if rising_edge(mii_txc) then
-			if mii_ptr(0)/='0' then
-				if mii_rxdv='0' then
-					mii_ptr <= to_unsigned(crc32_size/mii_txd'length, mii_ptr'length);
+			if mii_rxdv='0' then
+				if mii_txdv='0' then
+					if mii_ptr(0)='1' then
+						mii_ptr <= to_unsigned(crc32_size/mii_txd'length, mii_ptr'length);
+					end if;
 				end if;
-			else
+			elsif mii_ptr(0)='0' then
 				mii_ptr <= mii_ptr + 1;
 			end if;
 		end if;

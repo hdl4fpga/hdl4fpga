@@ -285,18 +285,18 @@ begin
 			signal rxdv : std_logic;
 			signal rxd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
 
-			signal dll_txdv : std_logic;
-			signal dll_txd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
+			signal dll_txdv     : std_logic;
+			signal dll_txd      : std_logic_vector(0 to txdv'length*mii_txd'length-1);
 
 			signal arptype_rdy  : std_logic;
 			signal arptype_req  : std_logic;
 			signal arptype_rxdv : std_logic;
 			signal arptype_rxd  : std_logic_vector(mii_txd'range);
 
-			signal iptype_rdy  : std_logic;
-			signal iptype_req  : std_logic;
-			signal iptype_rxdv : std_logic;
-			signal iptype_rxd  : std_logic_vector(mii_txd'range);
+			signal iptype_rdy   : std_logic;
+			signal iptype_req   : std_logic;
+			signal iptype_rxdv  : std_logic;
+			signal iptype_rxd   : std_logic_vector(mii_txd'range);
 
 			signal mii_ptr : unsigned(0 to to_miisize(4));
 		begin
@@ -342,7 +342,7 @@ begin
 				n => mii_txd'length,
 				d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
 			port map (
-				clk => mii_txc,
+				clk   => mii_txc,
 				di(0) => rxdv,
 				do(0) => txdv));
 
