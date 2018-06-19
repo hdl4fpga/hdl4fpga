@@ -36,25 +36,25 @@ entity mii_ipcfg is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
+		mii_rxc    : in  std_logic;
+		mii_rxd    : in  std_logic_vector;
+		mii_rxdv   : in  std_logic;
 
-		mii_req   : in  std_logic;
-		mii_txc   : in  std_logic;
-		mii_txd   : out std_logic_vector;
-		mii_txdv  : out std_logic;
+		mii_req    : in  std_logic;
+		mii_txc    : in  std_logic;
+		mii_txd    : out std_logic_vector;
+		mii_txdv   : out std_logic;
 
-		udp_len  : in std_logic_vector(16-1 downto 0) := x"6789";
-		udp_txdv : in std_logic;
-		udp_txd  : in std_logic_vector;
+		udp_length : in std_logic_vector(16-1 downto 0) := x"6789";
+		udp_txdv   : in std_logic;
+		udp_txd    : in std_logic_vector;
 
-		mii_prev  : out std_logic;
-		mii_bcstv : out std_logic;
-		mii_macv  : out std_logic;
-		mii_ipv   : out std_logic;
-		mii_udpv  : out std_logic;
-		mii_myipv : out std_logic
+		mii_prev   : out std_logic;
+		mii_bcstv  : out std_logic;
+		mii_macv   : out std_logic;
+		mii_ipv    : out std_logic;
+		mii_udpv   : out std_logic;
+		mii_myipv  : out std_logic
 );
 end;
 
@@ -190,8 +190,12 @@ begin
 
 		signal miidhcp_txd   : std_logic_vector(mii_txd'range);
 		signal miidhcp_txdv  : std_logic;
-		signal arp_txd    : std_logic_vector(mii_txd'range);
-		signal arp_txdv   : std_logic;
+		signal arp_txd       : std_logic_vector(mii_txd'range);
+		signal arp_txdv      : std_logic;
+		signal ip_txd        : std_logic_vector(mii_txd'range);
+		signal ip_txdv       : std_logic;
+		signal ipdata_txd    : std_logic_vector(mii_txd'range);
+		signal ipdata_txdv   : std_logic;
 		signal ethdmac_txd   : std_logic_vector(mii_txd'range);
 	begin
 
@@ -276,17 +280,23 @@ begin
 		end block;
 
 		tx_b : block
-			signal dmac_ena   : std_logic;
-			signal smac_ena   : std_logic;
-			signal type_ena  : std_logic;
+			signal dmac_ena     : std_logic;
+			signal smac_ena     : std_logic;
+			signal type_ena     : std_logic;
 
-			signal txdv : std_logic;
-			signal txd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
-			signal rxdv : std_logic;
-			signal rxd  : std_logic_vector(0 to txdv'length*mii_txd'length-1);
+			signal dmac_txd   : std_logic_vector(mii_txd'range);
+			signal smac_txd   : std_logic_vector(mii_txd'range);
+
+			signal txdv         : std_logic;
+			signal txd          : std_logic_vector(0 to mii_txd'length-1);
+			signal rxdv         : std_logic;
+			signal rxd          : std_logic_vector(0 to mii_txd'length-1);
 
 			signal dll_txdv     : std_logic;
-			signal dll_txd      : std_logic_vector(0 to txdv'length*mii_txd'length-1);
+			signal dll_txd      : std_logic_vector(0 to mii_txd'length-1);
+
+			signal type_txdv     : std_logic;
+			signal type_txd      : std_logic_vector(0 to mii_txd'length-1);
 
 			signal arptype_rdy  : std_logic;
 			signal arptype_req  : std_logic;
@@ -298,27 +308,27 @@ begin
 			signal iptype_rxdv  : std_logic;
 			signal iptype_rxd   : std_logic_vector(mii_txd'range);
 
-			signal mii_ptr : unsigned(0 to to_miisize(4));
+			signal miitx_ptr    : unsigned(0 to to_miisize(4));
 		begin
+			rxd <= wirebus(
+				arp_txd  & ip_txd,
+				arp_txdv & ip_txdv);
+			rxdv <= arp_txdv or ip_txdv;
+
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					if then
-						mii_ptr <= (others => '0');
-					elsif mii_ptr(0)='1' then
+					if rxdv='1' then
+						miitx_ptr <= (others => '0');
+					elsif miitx_ptr(0)='1' then
 						mii_ptr <= mii_ptr + 1;
 					end if;
 				end if;
 			end process;
 
-			dmac_ena <= lookup((0 => etherdmac), std_logic_vector(mii_ptr));
-			smac_ena <= lookup((0 => ethersmac), std_logic_vector(mii_ptr));
-			type_ena <= lookup((0 => ethertype), std_logic_vector(mii_ptr));
-
-			rxd <= wirebus(
-				arp_txd  & ip_txd,
-				arp_txdv & ip_txdv);
-			rxdv <= arp_txdv or ip_txdv;
+			dmac_ena <= lookup((0 => etherdmac), std_logic_vector(miitx_ptr));
+			smac_ena <= lookup((0 => ethersmac), std_logic_vector(miitx_ptr));
+			type_ena <= lookup((0 => ethertype), std_logic_vector(miitx_ptr));
 
 			mii_mac_e : entity hdl4fpga.miitx_dll
 			port map (
@@ -339,12 +349,12 @@ begin
 
 			dll_rxdv_e : entity hdl4fpga.align
 			generic map (
-				n => mii_txd'length,
+				n => 1,
 				d => (0 to mii_txd'length-1 => to_miisize(etherdmac.size+ethersmac.size+ethertype.size)))
 			port map (
 				clk   => mii_txc,
 				di(0) => rxdv,
-				do(0) => txdv));
+				do(0) => txdv);
 
 			arpproto_e : entity hdl4fpga.mii_rom
 			generic map (
@@ -367,10 +377,10 @@ begin
 				mii_txd  => iptype_rxd);
 
 			type_txd <= wirebus(
-				ipproto_rxd  & arpproto_rxd,
-				ipproto_rxdv & arpproto_rxdv);
+				iptype_rxd  & arptype_rxd,
+				iptype_rxdv & arptype_rxdv);
 			type_txdv <=
-				ipproto_rxdv or arpproto_rxdv;
+				iptype_rxdv or arptype_rxdv;
 
 			dll_txd <= wirebus (
 				dmac_txd & smac_txd & type_txd,
@@ -602,7 +612,7 @@ begin
 			constant ip_frame   : natural := ethertype.offset+ethertype.size;
 			constant ip_verihl  : field   := (ip_frame+0,  1);
 			constant ip_tos     : field   := (ip_frame+1,  1);
-			constant ip_length  : field   := (ip_frame+2,  2);
+			constant ip_len     : field   := (ip_frame+2,  2);
 			constant ip_ident   : field   := (ip_frame+4,  2);
 			constant ip_flgsfrg : field   := (ip_frame+6,  2);
 			constant ip_ttl     : field   := (ip_frame+8,  1);
@@ -612,327 +622,340 @@ begin
 			constant ip_daddr   : field   := (ip_frame+16, 4);
 
 			constant iphdr_size : natural := 20;
+
+			constant ip4_shdr : std_logic_vector := (
+				x"4500" &    -- IP Version, TOS
+				x"0000" &    -- IP Identification
+				x"0000" &    -- IP Fragmentation
+				x"0511");    -- IP TTL, protocol
+
+			signal chksum_req    : std_logic;
+
+			signal ip4shdr_txd   : std_logic_vector(mii_txd'range);
+			signal ip4shdr_ena   : std_logic;
+
+			signal ip_ptr        : std_logic_vector(0 to to_miisize(5));
+
+			signal ip4len_ena    : std_logic;
+			signal ip4len_txd    : std_logic_vector(mii_txd'range);
+
+			signal ippyld_txdv   : std_logic;
+			signal ippyld_txd    : std_logic_vector(mii_txd'range);
+			signal ip_length     : std_logic_vector(16-1 downto 0);
+
+			signal ip4pfx0_txdv  : std_logic;
+			signal ip4pfx0_txd   : std_logic_vector(mii_txd'range);
+			signal ip4pfx_txdv   : std_logic;
+			signal ip4pfx_txd    : std_logic_vector(mii_txd'range);
+			signal ip4hdr0_txdv  : std_logic;
+			signal ip4hdr0_txd   : std_logic_vector(mii_txd'range);
+			signal ip4hdr_txdv   : std_logic;
+			signal ip4hdr_txd    : std_logic_vector(mii_txd'range);
+			signal ip4cksm_txdv  : std_logic;
+			signal ip4cksm_txd   : std_logic_vector(mii_txd'range);
+
+			signal ip4saddr_ena  : std_logic;
+            signal ip4daddr_ena  : std_logic;
+			signal ip4saddr_txd  : std_logic_vector(mii_txd'range);
+			signal ip4daddr_txd  : std_logic_vector(mii_txd'range);
+			signal ip4addr_txdv : std_logic;
+			signal ip4addr_txd  : std_logic_vector(mii_txd'range);
+			signal ip4addr_rxdv : std_logic;
+			signal ip4addr_rxd  : std_logic_vector(mii_txd'range);
+
+			signal ip4dbcst_sel  : wor std_ulogic;
+			signal ip4sinvd_sel  : wor std_ulogic;
 		begin
 
-			ip_b : block
-				constant ip4_shdr : std_logic_vector := (
-					x"4500" &    -- IP Version, TOS
-					x"0000" &    -- IP Identification
-					x"0000" &    -- IP Fragmentation
-					x"0511");    -- IP TTL, protocol
+			process(mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					if ipdata_txdv='0' then
+						ip_ptr <= (others => '0');
+					elsif ip_ptr(0)/='1' then
+						ip_ptr <= std_logic_vector(unsigned(ip_ptr) + 1);
+					end if;
+				end if;
+			end process;
 
-				signal chksum_req  : std_logic;
+			ip4shdr_ena <= lookup((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto), ip_ptr, ip_frame);
+			ip4len_ena  <= lookup((0 => ip_len   ), ip_ptr, ip_frame);
 
-				signal miiip4shdr_txd : std_logic_vector(mii_txd'range);
-				signal miiip4shdr_ena : std_logic;
-				signal miiip4cksm_ena : std_logic;
+			mii_shdr_e : entity hdl4fpga.mii_rom
+			generic map (
+				mem_data => reverse(ip4_shdr, 8))
+			port map (
+				mii_txc  => mii_txc,
+				mii_treq => ipdata_txdv,
+				mii_tena => ip4shdr_ena,
+				mii_txd  => ip4shdr_txd);
 
-				signal mii_ipptr  : std_logic_vector(0 to to_miisize(5));
+			payload_txdv_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
+			port map (
+				clk   => mii_txc,
+				di(0) => udp_txdv,
+				do(0) => ippyld_txdv);
 
-				signal miiip4len_ena  : std_logic;
-				signal miiip4len_txd  : std_logic_vector(mii_txd'range);
+			payload_txd_e : entity hdl4fpga.align
+			generic map (
+				n => mii_txd'length,
+				d => (0 to mii_txd'length-1 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
+			port map (
+				clk => mii_txc,
+				di  => ipdata_txd,
+				do  => ippyld_txd);
 
-				signal miiipy_txdv : std_logic;
-				signal miiipy_txd  : std_logic_vector(mii_txd'range);
-				signal ip_len      : std_logic_vector(miiudp_len'range);
+--			ip_length <= wirebus ();
+			miiipsize_e : entity hdl4fpga.mii_pll2ser
+			port map (
+				mii_data => ip_length,
+				mii_txc  => mii_txc,
+				mii_treq => ipdata_txdv,
+				mii_tena => ip4len_ena,
+				mii_txd  => ip4len_txd);
 
-				signal ip4pfx0_txdv     : std_logic;
-				signal ip4pfx0_txd      : std_logic_vector(mii_txd'range);
-				signal ip4pfx_txdv  : std_logic;
-				signal ip4pfx_txd   : std_logic_vector(mii_txd'range);
-				signal ip4hdr0_txdv  : std_logic;
-				signal ip4hdr0_txd  : std_logic_vector(mii_txd'range);
-				signal ip4hdr_txdv  : std_logic;
-				signal ip4hdr_txd   : std_logic_vector(mii_txd'range);
-				signal ip4cksm_txdv : std_logic;
-				signal ip4cksm_txd  : std_logic_vector(mii_txd'range);
+			ip4saddr_txd <= wirebus(
+				(mii_txd'range => '0'), 
+				(0 => ip4sinvd_sel));
+			ip4daddr_txd <= wirebus(
+				(mii_txd'range => '1'), 
+				(0 => ip4dbcst_sel));
 
-				signal ip4saddr_ena     : std_logic;
-                signal ip4daddr_ena     : std_logic;
-				signal ip4saddr_txd     : std_logic_vector(mii_txd'range);
-				signal ip4daddr_txd     : std_logic_vector(mii_txd'range);
-				signal ip4dbcst_sel     : wor std_ulogic;
-				signal ip4sinvd_sel     : wor std_ulogic;
+			ip4saddr_ena <= lookup((0 => ip_saddr), ip_ptr, ip_frame+ip_chksum.size);
+			ip4daddr_ena <= lookup((0 => ip_daddr), ip_ptr, ip_frame+ip_chksum.size);
+
+			ip4pfx0_txdv <= (ip4shdr_ena or ip4len_ena) and ipdata_txdv;
+			ip4pfx0_txd  <= 
+				(ip4shdr_txd and ip4shdr_ena) or
+				(ip4len_txd  and ip4len_ena);
+
+			ip4addr_txdv <= (ip4saddr_ena or ip4daddr_ena) and ipdata_txdv;
+			ip4addr_txd  <= 
+				  (ip4saddr_txd and ip4saddr_ena) or 
+				  (ip4daddr_txd and ip4daddr_ena);
+
+			ip4addr_ena_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 => to_miisize(ip_chksum.size)))
+			port map (
+				clk   => mii_txc,
+				di(0) => ip4addr_txdv,
+				do(0) => ip4addr_rxdv);
+
+			ip4addr_rxd_e : entity hdl4fpga.align
+			generic map (
+				n => mii_txd'length,
+				d => (0 to mii_txd'length-1 => to_miisize(ip_chksum.size)))
+			port map (
+				clk => mii_txc,
+				di  => ip4addr_txd,
+				do  => ip4addr_rxd);
+
+			ip4pfx_txdv <= ip4pfx0_txdv or ip4addr_rxdv;
+			ip4pfx_txd  <= 
+				(ip4pfx0_txd and ip4pfx0_txdv)  or
+				(ip4addr_rxd and ip4addr_rxdv);
+
+			chksum_b : block
+				signal cksm_txdv    : std_logic;
+				signal cksm_txd     : std_logic_vector(mii_txd'range);
+
+				signal ip4cksm_rxdv : std_logic;
+				signal ip4cksm_rxd  : std_logic_vector(mii_txd'range);
 			begin
 
-				process(mii_txc)
-				begin
-					if rising_edge(mii_txc) then
-						if miiudp_txdv='0' then
-							mii_ipptr <= (others => '0');
-						elsif mii_ipptr(0)/='1' then
-							mii_ipptr <= std_logic_vector(unsigned(mii_ipptr) + 1);
-						end if;
-					end if;
-				end process;
+				ip4cksm_rxdv <= (ip4addr_txdv or ip4pfx0_txdv) and ipdata_txdv;
+				ip4cksm_rxd  <= 
+					(ip4addr_txd and ip4addr_txdv) or
+					(ip4pfx0_txd and ip4pfx0_txdv);
 
-				miiip4shdr_ena <= lookup((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto), mii_ipptr, ip_frame);
-				miiip4len_ena  <= lookup((0 => ip_length), mii_ipptr, ip_frame);
-				miiip4cksm_ena <= lookup((0 => ip_chksum), mii_ipptr, ip_frame);
-
-				process (mii_txc)
-					variable len : unsigned(miiudp_len'range);
-				begin
-					if rising_edge(mii_txc) then
-						if miiudp_txdv='0' then
-							ip_len <= std_logic_vector(unsigned(miiudp_len) + iphdr_size);
-							ip_len <= std_logic_vector(unsigned'(x"0000") + iphdr_size);
-						else
-						end if;
-					end if;
-				end process;
-
-				mii_shdr_e : entity hdl4fpga.mii_rom
+				mii_1chksum_e : entity hdl4fpga.mii_1chksum
 				generic map (
-					mem_data => reverse(ip4_shdr, 8))
+					n => 16)
 				port map (
 					mii_txc  => mii_txc,
-					mii_treq => miiudp_txdv,
-					mii_tena => miiip4shdr_ena,
-					mii_txd  => miiip4shdr_txd);
+					mii_rxdv => ip4cksm_rxdv,
+					mii_rxd  => ip4cksm_rxd,
+					mii_txdv => cksm_txdv,
+					mii_txd  => cksm_txd);
 
-				miiippay_txdv_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
-				port map (
-					clk   => mii_txc,
-					di(0) => miiudp_txdv,
-					do(0) => miiipy_txdv);
-
-				miiippay_txd_e : entity hdl4fpga.align
-				generic map (
-					n => mii_txd'length,
-					d => (0 to mii_txd'length-1 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
-				port map (
-					clk => mii_txc,
-					di  => miiudp_txd,
-					do  => miiipy_txd);
-
-				miiipsize_e : entity hdl4fpga.mii_pll2ser
-				port map (
-					mii_data => ip_len,
-					mii_txc  => mii_txc,
-					mii_treq => miiudp_txdv,
-					mii_tena => miiip4len_ena,
-					mii_txd  => miiip4len_txd);
-
-				ip4saddr_txd <= wirebus(
-					(mii_txd'range => '0'), 
-					(0 => ip4sinvd_sel));
-				ip4daddr_txd <= wirebus(
-					(mii_txd'range => '1'), 
-					(0 => ip4dbcst_sel));
-
-				ip4saddr_ena <= lookup((0 => ip_saddr), mii_ipptr, ip_frame+ip_chksum.size);
-				ip4daddr_ena <= lookup((0 => ip_daddr), mii_ipptr, ip_frame+ip_chksum.size);
-
-				ip4pfx0_txdv <= (miiip4shdr_ena or miiip4len_ena) and miiudp_txdv;
-				ip4pfx0_txd <= 
-					(miiip4shdr_txd and miiip4shdr_ena) or
-					(miiip4len_txd  and miiip4len_ena);
-
-				chksum_b : block
-					signal cksm_txdv    : std_logic;
-					signal cksm_txd     : std_logic_vector(mii_txd'range);
-
-					signal ip4cksm_rxdv : std_logic;
-					signal ip4cksm_rxd  : std_logic_vector(mii_txd'range);
-                    signal ipaddrs_txdv : std_logic;
-					signal ipaddrs_txd  : std_logic_vector(mii_txd'range);
-					signal ip4addr_txdv : std_logic;
-					signal ip4addr_txd  : std_logic_vector(mii_txd'range);
+				lifo_b : block
+					signal lifo : std_logic_vector(0 to 16-1);
 				begin
+					process (mii_txc)
+						variable aux : unsigned(lifo'range);
+					begin
+						if rising_edge(mii_txc) then
+							aux := unsigned(lifo);
+							if cksm_txdv='1' then
+								aux := aux ror mii_txd'length;
+								aux(mii_txd'range) := unsigned(not cksm_txd);
+							else
+								aux := aux rol mii_txd'length;
+							end if;
+							lifo <= std_logic_vector(aux);
+						end if;
+					end process;
 
-					ipaddrs_txdv <= (ip4saddr_ena or ip4daddr_ena) and miiudp_txdv;
-					ipaddrs_txd <= 
-						  (ip4saddr_txd and ip4saddr_ena) or 
-						  (ip4daddr_txd and ip4daddr_ena);
-
-					miiipaddr_ena_e : entity hdl4fpga.align
+					delay_e : entity hdl4fpga.align
 					generic map (
 						n => 1,
-						d => (0 => to_miisize(ip_chksum.size)))
-					port map (
-						clk   => mii_txc,
-						di(0) => ipaddrs_txdv,
-						do(0) => ip4addr_txdv);
-
-					miiiptxd_dly_e : entity hdl4fpga.align
-					generic map (
-						n => mii_txd'length,
-						d => (0 to mii_txd'length-1 => to_miisize(ip_chksum.size)))
+						d => (0 to 1-1 => to_miisize(ip_chksum.size)))
 					port map (
 						clk => mii_txc,
-						di  => ipaddrs_txd,
-						do  => ip4addr_txd);
+						di(0) => cksm_txdv,
+						do(0) => ip4cksm_txdv);
 
-					ip4pfx_txdv <= ip4pfx0_txdv or ip4addr_txdv;
-					ip4pfx_txd  <= 
-						(ip4pfx0_txd and ip4pfx0_txdv)  or
-						(ip4addr_txd and ip4addr_txdv);
+					ip4cksm_txd <= lifo(mii_txd'range);
+				end block;
+			end block;
 
-					ip4cksm_rxdv <= (ipaddrs_txdv or ip4pfx0_txdv) and miiudp_txdv;
-					ip4cksm_rxd  <= 
-						(ipaddrs_txd and ipaddrs_txdv) or
-						(ip4pfx0_txd and ip4pfx0_txdv);
+			ip4hdr_ena_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 => to_miisize(2*ip4a_size+ip_chksum.size)))
+			port map (
+				clk   => mii_txc,
+				di(0) => ip4pfx_txdv,
+				do(0) => ip4hdr0_txdv);
 
-					mii_1chksum_e : entity hdl4fpga.mii_1chksum
-					generic map (
-						n => 16)
-					port map (
-						mii_txc  => mii_txc,
-						mii_rxdv => ip4cksm_rxdv,
-						mii_rxd  => ip4cksm_rxd,
-						mii_txdv => cksm_txdv,
-						mii_txd  => cksm_txd);
+			ip4hdr_txd_e : entity hdl4fpga.align
+			generic map (
+				n => mii_txd'length,
+				d => (0 to mii_txd'length-1 => to_miisize(2*ip4a_size+ip_chksum.size)))
+			port map (
+				clk => mii_txc,
+				di  => ip4pfx_txd,
+				do  => ip4hdr0_txd);
 
-					lifo_b : block
-						signal lifo : std_logic_vector(0 to 16-1);
+			ip4hdr_txd <= 
+				(ip4hdr0_txd and ip4hdr0_txdv) or
+				(ip4cksm_txd and ip4cksm_txdv);
+
+			ip4hdr_txdv <=
+				ip4hdr0_txdv or
+				ip4cksm_txdv;
+
+			udp_b : block
+				constant udp_frame  : natural :=  ip_frame+20;
+				constant udp_sport  : field   := (udp_frame+0, 2);
+				constant udp_dport  : field   := (udp_frame+2, 2);
+
+				signal udpproto_vld : std_logic;
+				signal udpproto_ena : std_logic;
+			begin
+
+				udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr));
+				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
+
+				dhcpc_b : block
+					constant dhcp_frame : natural :=  udp_frame+8;
+					constant dhcp_yia   : field   := (dhcp_frame+16, 4);
+					constant dhcp_sia   : field   := (dhcp_frame+20, 4);
+
+					signal dhcp_ena     : std_logic;
+					signal yia_ena      : std_logic;
+					signal sia_ena      : std_logic;
+
+					signal miidis_txd   : std_logic_vector(mii_txd'range);
+					signal miidis_txdv  : std_logic;
+					signal miirequ_txd  : std_logic_vector(mii_txd'range);
+					signal miirequ_txdv : std_logic;
+
+					signal offer_rcv : std_logic;
+				begin
+					
+					dhcp_ena <= lookup((0 => udp_sport, 1 => udp_dport), std_logic_vector(mii_ptr));
+					yia_ena  <= lookup((0 => dhcp_yia), std_logic_vector(mii_ptr));
+					sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
+
+					discover_b : block
+
+					signal txdv : std_logic;
+						signal txd  : std_logic_vector(mii_txd'range);
+
+						constant payload_size : natural := 244+6;
+
+						constant mii_data : std_logic_vector := reverse(
+							udp_checksumed (
+								x"00000000",
+								x"ffffffff",
+								x"00440043"            &    -- UDP Source port, Destination port
+								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+								x"0000"                &	-- UDP CHECKSUM
+								x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
+								x"3903f326"            &    -- XID
+								x"00000000"            &    -- SECS, FLAGS
+								x"00000000"            &    -- CIADDR
+								x"00000000"            &    -- YIADDR
+								x"00000000"            &    -- SIADDR
+								x"00000000"            &    -- GIADDR
+								mac & x"0000"          &    -- CHADDR
+								x"00000000"            &    -- CHADDR
+								x"00000000"            &    -- CHADDR
+								(1 to 8* 64 => '0')    &    -- SNAME
+								(1 to 8*128 => '0')    &    -- SNAME
+								x"63825363"            &    -- MAGIC COOKIE
+								x"350101"              &    -- DHCPDISCOVER
+								x"320400000000"        &    -- IP REQUEST
+								x"FF"),8);                  -- END
+
 					begin
+
+						miitx_mem_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => mii_data)
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => mii_req,
+							mii_txdv => txdv,
+							mii_txd  => txd);
+
 						process (mii_txc)
-							variable aux : unsigned(lifo'range);
 						begin
 							if rising_edge(mii_txc) then
-								aux := unsigned(lifo);
-								if cksm_txdv='1' then
-									aux := aux ror mii_txd'length;
-									aux(mii_txd'range) := unsigned(not cksm_txd);
-								else
-									aux := aux rol mii_txd'length;
-								end if;
-								lifo <= std_logic_vector(aux);
+								miidis_txdv <= txdv;
+								miidis_txd  <= txd;
 							end if;
 						end process;
 
-						delay_e : entity hdl4fpga.align
-						generic map (
-							n => 1,
-							d => (0 to 1-1 => to_miisize(ip_chksum.size)))
-						port map (
-							clk => mii_txc,
-							di(0) => cksm_txdv,
-							do(0) => ip4cksm_txdv);
-
-						ip4cksm_txd <= lifo(mii_txd'range);
 					end block;
 
-				end block;
-
-				ip4hdr_ena_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => to_miisize(2*ip4a_size+ip_chksum.size)))
-				port map (
-					clk   => mii_txc,
-					di(0) => ip4pfx_txdv,
-					do(0) => ip4hdr0_txdv);
-
-				ip4hdr_txd_e : entity hdl4fpga.align
-				generic map (
-					n => mii_txd'length,
-					d => (0 to mii_txd'length-1 => to_miisize(2*ip4a_size+ip_chksum.size)))
-				port map (
-					clk => mii_txc,
-					di  => ip4pfx_txd,
-					do  => ip4hdr0_txd);
-
-				ip4hdr_txd <= 
-					(ip4hdr0_txd and ip4hdr0_txdv) or
-					(ip4cksm_txd and ip4cksm_txdv);
-
-				ip4hdr_txdv <=
-					ip4hdr0_txdv or
-					ip4cksm_txdv;
-
-				udp_b : block
-					constant udp_frame  : natural :=  ip_frame+20;
-					constant udp_sport  : field   := (udp_frame+0, 2);
-					constant udp_dport  : field   := (udp_frame+2, 2);
-
-					signal udpproto_vld : std_logic;
-					signal udpproto_ena : std_logic;
-				begin
-
-					udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr));
-					udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
-
-					mii_udp_e : entity hdl4fpga.mii_romcmp
-					generic map (
-						mem_data => reverse(x"11",8))
-					port map (
-						mii_rxc  => mii_rxc,
-						mii_rxd  => mii_rxd,
-						mii_treq => ipproto_vld,
-						mii_ena  => udpproto_ena,
-						mii_pktv => udpproto_vld);
-
-					dhcpc_b : block
-						constant dhcp_frame : natural :=  udp_frame+8;
-						constant dhcp_yia   : field   := (dhcp_frame+16, 4);
-						constant dhcp_sia   : field   := (dhcp_frame+20, 4);
-
-						signal dhcp_ena     : std_logic;
-						signal yia_ena      : std_logic;
-						signal sia_ena      : std_logic;
-
-						signal miidis_txd   : std_logic_vector(mii_txd'range);
-						signal miidis_txdv  : std_logic;
-						signal miirequ_txd  : std_logic_vector(mii_txd'range);
-						signal miirequ_txdv : std_logic;
-
-						signal offer_rcv : std_logic;
+					offer_b : block
 					begin
-						
-						dhcp_ena <= lookup((0 => udp_sport, 1 => udp_dport), std_logic_vector(mii_ptr));
-						yia_ena  <= lookup((0 => dhcp_yia), std_logic_vector(mii_ptr));
-						sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
+				mii_udp_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(x"11",8))
+				port map (
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_treq => ipproto_vld,
+					mii_ena  => udpproto_ena,
+					mii_pktv => udpproto_vld);
 
-						discover_b : block
+						mii_dhcp_e : entity hdl4fpga.mii_romcmp
+						generic map (
+							mem_data => reverse(x"00430044",8))
+						port map (
+							mii_rxc  => mii_rxc,
+							mii_rxd  => mii_rxd,
+							mii_treq => udpproto_vld,
+							mii_ena  => dhcp_ena,
+							mii_pktv => dhcp_vld);
 
-							signal txdv : std_logic;
-							signal txd  : std_logic_vector(mii_txd'range);
+						myipcfg_vld  <= dhcp_vld and yia_ena;
+						ipdaddr_vld  <= dhcp_vld and sia_ena;
+						offer_rcv    <= dhcp_vld;
 
-						begin
-							du : entity hdl4fpga.miitx_dhcpdis
-							port map (
-								mii_txc  => mii_txc,
-								mii_treq => mii_req,
-								mii_txdv => txdv,
-								mii_txd  => txd);
-
-							process (mii_txc)
-							begin
-								if rising_edge(mii_txc) then
-									miidis_txdv <= txdv;
-									miidis_txd  <= txd;
-								end if;
-							end process;
-
-						end block;
-
-						offer_b : block
-						begin
-							mii_dhcp_e : entity hdl4fpga.mii_romcmp
-							generic map (
-								mem_data => reverse(x"00430044",8))
-							port map (
-								mii_rxc  => mii_rxc,
-								mii_rxd  => mii_rxd,
-								mii_treq => udpproto_vld,
-								mii_ena  => dhcp_ena,
-								mii_pktv => dhcp_vld);
-
-							myipcfg_vld  <= dhcp_vld and yia_ena;
-							ipdaddr_vld  <= dhcp_vld and sia_ena;
-							offer_rcv    <= dhcp_vld;
-
-						end block;
-
-
-						miidhcp_txd  <= word2byte(miidis_txd  & miirequ_txd,   not miidis_txdv);
-						miidhcp_txdv <= word2byte(miidis_txdv & miirequ_txdv,  not miidis_txdv)(0);
 					end block;
+
+
+					miidhcp_txd  <= word2byte(miidis_txd  & miirequ_txd,   not miidis_txdv);
+					miidhcp_txdv <= word2byte(miidis_txdv & miirequ_txdv,  not miidis_txdv)(0);
 				end block;
 			end block;
 

@@ -44,7 +44,7 @@ architecture mii_debug of testbench is
 	signal rxdv2 : std_logic;
 
 	signal txdv  : std_logic;
-	signal treq1 : std_logic;
+	signal treq1 : std_logic := '0';
 	signal treq2 : std_logic;
 	signal txd   : std_logic_vector(0 to n-1);
 	signal trdy1 : std_logic;
@@ -59,9 +59,9 @@ begin
 		variable edge  : std_logic;
 	begin
 		if rising_edge(clk) then
-			treq1 <= '1';
+			treq1 <= '1' after 10 ps;
 			if rst='1' then
-				treq1 <= '0';
+				treq1 <= '0' after 10 ps;
 			elsif txdv='0'  then
 				if edge='1' then
 				--	treq1 <= '0';
@@ -126,8 +126,8 @@ begin
 
 --	rxd  <= rxd2  when trdy1='1' else rxd1;
 --	rxd  <= rxd2  when trdy1='1' else rxd1;
-	rxdv <= rxdv1;
-	rxd  <= rxd1;
+--	rxdv <= rxdv1;
+--	rxd  <= rxd1;
 
 	rrxd <= reverse(rxd);
 
@@ -137,12 +137,10 @@ begin
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
 
-		miiudp_txdv => rxdv,
-		miiudp_txd  => (0 to n-1 => '0'),
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,
-		mii_req  => '0', --treq1,
+		mii_req  => treq1,
 	
 		video_clk => '0');
 	rtxd <= reverse(txd);

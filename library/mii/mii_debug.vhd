@@ -41,10 +41,6 @@ entity mii_debug is
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 
-		miiudp_len  : in std_logic_vector(16-1 downto 0) := x"0789";
-		miiudp_txdv : in std_logic;
-		miiudp_txd  : in std_logic_vector;
-
 		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
@@ -57,6 +53,10 @@ entity mii_debug is
 	end;
 
 architecture struct of mii_debug is
+
+		signal miiudp_len  : std_logic_vector(16-1 downto 0) := x"0789";
+		signal miiudp_txdv : std_logic;
+		signal miiudp_txd  : std_logic_vector(mii_txd'range);
 
 	signal pre_vld  : std_logic;
 	signal bcst_vld : std_logic;
@@ -89,9 +89,9 @@ begin
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
 
-		miiudp_len  => miiudp_len,
-		miiudp_txdv => miiudp_txdv,
-		miiudp_txd  => miiudp_txd,
+		udp_length  => miiudp_len,
+		udp_txdv => miiudp_txdv,
+		udp_txd  => miiudp_txd,
 
 		mii_txc   => txc,
 		mii_txdv  => txdv,

@@ -660,8 +660,8 @@ package body std is
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
 		return std_logic_vector is
-		variable aux    : unsigned(0 to arg1'length-1);
-		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg1'length-1);
+		variable aux    : unsigned(0 to arg1'length-1) := (others => '0');
+		variable retval : std_logic_vector(0 to (arg1'length+arg2'length-1)/arg2'length-1);
 	begin
 		aux(0 to arg1'length-1) := unsigned(arg1);
 		retval := (others => '0');
