@@ -147,7 +147,7 @@ begin
 
 		signal mii_ptr       : unsigned(0 to to_miisize(8));
 
-		signal smacmymac_sel : wor std_ulogic;
+		signal smacmymac_sel : wor std_ulogic := '1';
 		signal dmacbcst_sel  : wor std_ulogic;
 
 		signal pre_vld       : std_logic;
@@ -996,7 +996,6 @@ begin
 						begin
 							if rising_edge(mii_txc) then
 								dmacbcst_sel <= txdv;
-								smacmymac_sel<= txdv;
 								ip4dbcst_sel <= txdv;
 								ip4sinvd_sel <= txdv;
 								dis_txdv <= txdv;
