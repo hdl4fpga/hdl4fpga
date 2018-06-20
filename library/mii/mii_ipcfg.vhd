@@ -188,8 +188,8 @@ begin
 		signal ipdaddr_rtxd  : std_logic_vector(mii_rxd'range);
 		signal ipdaddr_rtxdv : std_logic;
 
-		signal miidhcp_txd   : std_logic_vector(mii_txd'range);
-		signal miidhcp_txdv  : std_logic;
+		signal dhcp_txd   : std_logic_vector(mii_txd'range);
+		signal dhcp_txdv  : std_logic;
 		signal arp_txd       : std_logic_vector(mii_txd'range);
 		signal arp_txdv      : std_logic;
 		signal ip_txd        : std_logic_vector(mii_txd'range);
@@ -667,6 +667,11 @@ begin
 			signal ip4sinvd_sel  : wor std_ulogic;
 		begin
 
+			ipdata_txd <= wirebus (
+				dhcp_txd,
+				(0 => dhcp_txdv));
+			ipdata_txdv <= dhcp_txdv;
+
 			process(mii_txc)
 			begin
 				if rising_edge(mii_txc) then
@@ -696,7 +701,7 @@ begin
 				d => (0 => to_miisize(iphdr_size+ip_chksum.size+2*ip4a_size)))
 			port map (
 				clk   => mii_txc,
-				di(0) => udp_txdv,
+				di(0) => ipdata_txdv,
 				do(0) => ippyld_txdv);
 
 			payload_txd_e : entity hdl4fpga.align
@@ -709,6 +714,7 @@ begin
 				do  => ippyld_txd);
 
 --			ip_length <= wirebus ();
+			ip_length <= x"aa55";
 			miiipsize_e : entity hdl4fpga.mii_pll2ser
 			port map (
 				mii_data => ip_length,
@@ -840,6 +846,12 @@ begin
 				ip4hdr0_txdv or
 				ip4cksm_txdv;
 
+			ip_txd <= wirebus(
+				ip4hdr_txd  & ippyld_txd,
+				ip4hdr_txdv & ippyld_txdv);
+
+			ip_txdv <= ip4hdr_txdv or ippyld_txdv;
+
 			udp_b : block
 				constant udp_frame  : natural :=  ip_frame+20;
 				constant udp_sport  : field   := (udp_frame+0, 2);
@@ -861,10 +873,10 @@ begin
 					signal yia_ena      : std_logic;
 					signal sia_ena      : std_logic;
 
-					signal miidis_txd   : std_logic_vector(mii_txd'range);
-					signal miidis_txdv  : std_logic;
-					signal miirequ_txd  : std_logic_vector(mii_txd'range);
-					signal miirequ_txdv : std_logic;
+					signal dis_txd   : std_logic_vector(mii_txd'range);
+					signal dis_txdv  : std_logic;
+					signal requ_txd  : std_logic_vector(mii_txd'range);
+					signal requ_txdv : std_logic;
 
 					signal offer_rcv : std_logic;
 				begin
@@ -918,8 +930,11 @@ begin
 						process (mii_txc)
 						begin
 							if rising_edge(mii_txc) then
-								miidis_txdv <= txdv;
-								miidis_txd  <= txd;
+
+								ip4dbcst_sel <= txdv;
+								ip4sinvd_sel <= txdv;
+								dis_txdv <= txdv;
+								dis_txd  <= txd;
 							end if;
 						end process;
 
@@ -954,8 +969,10 @@ begin
 					end block;
 
 
-					miidhcp_txd  <= word2byte(miidis_txd  & miirequ_txd,   not miidis_txdv);
-					miidhcp_txdv <= word2byte(miidis_txdv & miirequ_txdv,  not miidis_txdv)(0);
+--					dhcp_txd  <= word2byte(dis_txd  & requ_txd,   not dis_txdv);
+--					dhcp_txdv <= word2byte(dis_txdv & requ_txdv,  not dis_txdv)(0);
+					dhcp_txd  <= word2byte(dis_txd  & (dhcp_txd'range => '0'),   not dis_txdv);
+					dhcp_txdv <= word2byte(dis_txdv & "0",  not dis_txdv)(0);
 				end block;
 			end block;
 
