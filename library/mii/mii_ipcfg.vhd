@@ -919,44 +919,6 @@ begin
 
 						constant payload_size : natural := 244+6;
 
-	constant mii_data1 : std_logic_vector := reverse(
-		x"ffffffffffff"	       &    
-		mac                &    -- MAC Source Address
-		x"0800"                &    -- MAC Protocol ID
-		ipheader_checksumed(
-			x"4500"            &    -- IP  Version, header length, TOS
-			std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
-			x"0000"            &    -- IP  Identification
-			x"0000"            &    -- IP  Fragmentation
-			x"0511"            &    -- IP  TTL, protocol
-			x"0000"            &    -- IP  Checksum
-			x"00000000"        &    -- IP  Source address
-			x"ffffffff")       &    -- IP  Destination address
-		udp_checksumed (
-			x"00000000",
-			x"ffffffff",
-
-			x"00440043"            &    -- UDP Source port, Destination port
-			std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-			x"0000"                &	-- UDP CHECKSUM
-			x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
-			x"3903f326"            &    -- XID
-			x"00000000"            &    -- SECS, FLAGS
-			x"00000000"            &    -- CIADDR
-			x"00000000"            &    -- YIADDR
-			x"00000000"            &    -- SIADDR
-			x"00000000"            &    -- GIADDR
-			mac & x"0000"          &    -- CHADDR
-			x"00000000"            &    -- CHADDR
-			x"00000000"            &    -- CHADDR
-			(1 to 8* 64 => '0')    &    -- SNAME
-			(1 to 8*128 => '0')    &    -- SNAME
-			x"63825363"            &    -- MAGIC COOKIE
-			x"350101"              &    -- DHCPDISCOVER
-			x"320400000000"        &    -- IP REQUEST
-			x"FF"),8);                  -- END
-
-			signal pp : std_logic_vector(mii_data1'range) := mii_data1;
 						constant mii_data : std_logic_vector := reverse(
 							udp_checksumed (
 								x"00000000",
