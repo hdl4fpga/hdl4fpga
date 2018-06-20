@@ -147,6 +147,9 @@ begin
 
 		signal mii_ptr       : unsigned(0 to to_miisize(8));
 
+		signal smacinvd_sel  : wor std_ulogic;
+		signal dmacbcst_sel  : wor std_ulogic;
+
 		signal pre_vld       : std_logic;
 		signal ethdmac_vld   : std_logic;
 		signal ethsmac_vld   : wor std_ulogic;
@@ -298,45 +301,55 @@ begin
 			signal type_txdv     : std_logic;
 			signal type_txd      : std_logic_vector(0 to mii_txd'length-1);
 
-			signal arptype_rdy  : std_logic;
 			signal arptype_req  : std_logic;
 			signal arptype_rxdv : std_logic;
 			signal arptype_rxd  : std_logic_vector(mii_txd'range);
 
-			signal iptype_rdy   : std_logic;
 			signal iptype_req   : std_logic;
 			signal iptype_rxdv  : std_logic;
 			signal iptype_rxd   : std_logic_vector(mii_txd'range);
 
 			signal miitx_ptr    : unsigned(0 to to_miisize(4));
+			signal txdv1        : std_logic;
 		begin
 			rxd <= wirebus(
 				arp_txd  & ip_txd,
 				arp_txdv & ip_txdv);
 			rxdv <= arp_txdv or ip_txdv;
 
+			arptype_req <= arp_txdv;
+			iptype_req  <= ip_txdv;
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					if rxdv='1' then
+					if rxdv/='1' then
 						miitx_ptr <= (others => '0');
-					elsif miitx_ptr(0)='1' then
-						mii_ptr <= mii_ptr + 1;
+					elsif miitx_ptr(0)='0' then
+						miitx_ptr <= miitx_ptr + 1;
 					end if;
 				end if;
 			end process;
 
-			dmac_ena <= lookup((0 => etherdmac), std_logic_vector(miitx_ptr));
-			smac_ena <= lookup((0 => ethersmac), std_logic_vector(miitx_ptr));
-			type_ena <= lookup((0 => ethertype), std_logic_vector(miitx_ptr));
+			dmac_ena <= lookup((0 => etherdmac), std_logic_vector(miitx_ptr)) and rxdv;
+			smac_ena <= lookup((0 => ethersmac), std_logic_vector(miitx_ptr)) and rxdv;
+			type_ena <= lookup((0 => ethertype), std_logic_vector(miitx_ptr)) and rxdv;
+
+			smac_txd <= wirebus(
+				(mii_txd'range => '0'), 
+				(0 => smacinvd_sel));
+
+			dmac_txd <= wirebus(
+				(mii_txd'range => '1'), 
+				(0 => dmacbcst_sel));
 
 			mii_mac_e : entity hdl4fpga.miitx_dll
 			port map (
 				mii_txc  => mii_txc,
 				mii_rxdv => dll_txdv,
 				mii_rxd  => dll_txd,
-				mii_txdv => mii_txdv,
+				mii_txdv => txdv1,
 				mii_txd  => mii_txd);
+			mii_txdv <= txdv1;
 
 			dll_rxd_e : entity hdl4fpga.align
 			generic map (
@@ -362,7 +375,7 @@ begin
 			port map (
 				mii_txc  => mii_txc,
 				mii_treq => arptype_req,
-				mii_trdy => arptype_rdy,
+				mii_tena => type_ena,
 				mii_txdv => arptype_rxdv,
 				mii_txd  => arptype_rxd);
 
@@ -372,21 +385,20 @@ begin
 			port map (
 				mii_txc  => mii_txc,
 				mii_treq => iptype_req,
-				mii_trdy => iptype_rdy,
+				mii_tena => type_ena,
 				mii_txdv => iptype_rxdv,
 				mii_txd  => iptype_rxd);
 
 			type_txd <= wirebus(
 				iptype_rxd  & arptype_rxd,
 				iptype_rxdv & arptype_rxdv);
-			type_txdv <=
-				iptype_rxdv or arptype_rxdv;
+			type_txdv <= type_ena;
 
 			dll_txd <= wirebus (
-				dmac_txd & smac_txd & type_txd,
-				dmac_ena & smac_ena & type_ena);
+				dmac_txd & smac_txd & type_txd & txd,
+				dmac_ena & smac_ena & type_ena & txdv);
 			dll_txdv <=
-				dmac_ena or smac_ena or type_ena;
+				dmac_ena or smac_ena or type_ena or txdv;
 
 		end block;
 
@@ -600,6 +612,8 @@ begin
 					if rising_edge(mii_txc) then
 						arp_txdv <= txdv;
 						arp_txd  <= txd;
+				arp_txd <= (others => '0');
+				arp_txdv <= '0';
 					end if;
 				end process;
 
@@ -930,7 +944,8 @@ begin
 						process (mii_txc)
 						begin
 							if rising_edge(mii_txc) then
-
+								dmacbcst_sel <= txdv;
+								smacinvd_sel <= txdv;
 								ip4dbcst_sel <= txdv;
 								ip4sinvd_sel <= txdv;
 								dis_txdv <= txdv;

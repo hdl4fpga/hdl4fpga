@@ -105,7 +105,7 @@ begin
 		mii_txdv => crc32_txdv,
 		mii_txd  => crc32_txd);
 
-	mii_txdv <= miipre_txdv or crc32_txdv or miipre_txdv;
+	mii_txdv <= miipre_txdv or miibuf_txdv or crc32_txdv;
 	mii_txd  <= wirebus (
 		miipre_txd  & miibuf_txd & crc32_txd,
 		miipre_txdv & miibuf_txdv & crc32_txdv);

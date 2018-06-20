@@ -72,7 +72,7 @@ begin
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			if mii_treq='0' then
+			if mii_treq/='1' then
 				cntr <= to_unsigned(mem_size-1, cntr'length);
 			elsif cntr(0)='0' then
 				if mii_tena='1' then
