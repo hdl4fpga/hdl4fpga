@@ -147,7 +147,7 @@ begin
 
 		signal mii_ptr       : unsigned(0 to to_miisize(8));
 
-		signal smacinvd_sel  : wor std_ulogic;
+		signal smacmymac_sel : wor std_ulogic;
 		signal dmacbcst_sel  : wor std_ulogic;
 
 		signal pre_vld       : std_logic;
@@ -290,6 +290,9 @@ begin
 			signal dmac_txd   : std_logic_vector(mii_txd'range);
 			signal smac_txd   : std_logic_vector(mii_txd'range);
 
+			signal mymac_treq     : std_logic;
+			signal mymac_txd      : std_logic_vector(0 to mii_txd'length-1);
+
 			signal txdv         : std_logic;
 			signal txd          : std_logic_vector(0 to mii_txd'length-1);
 			signal rxdv         : std_logic;
@@ -335,12 +338,22 @@ begin
 			type_ena <= lookup((0 => ethertype), std_logic_vector(miitx_ptr)) and rxdv;
 
 			smac_txd <= wirebus(
-				(mii_txd'range => '0'), 
-				(0 => smacinvd_sel));
+				mymac_txd, 
+				(0 => smacmymac_sel));
 
 			dmac_txd <= wirebus(
 				(mii_txd'range => '1'), 
 				(0 => dmacbcst_sel));
+
+			mymac_treq <= rxdv;
+			mii_ethhdr_e : entity hdl4fpga.mii_rom
+			generic map (
+				mem_data => reverse(mac, 8))
+			port map (
+				mii_txc  => mii_txc,
+				mii_treq => mymac_treq,
+				mii_tena => smac_ena,
+				mii_txd  => mymac_txd);
 
 			mii_mac_e : entity hdl4fpga.miitx_dll
 			port map (
@@ -983,7 +996,7 @@ begin
 						begin
 							if rising_edge(mii_txc) then
 								dmacbcst_sel <= txdv;
-								smacinvd_sel <= txdv;
+								smacmymac_sel<= txdv;
 								ip4dbcst_sel <= txdv;
 								ip4sinvd_sel <= txdv;
 								dis_txdv <= txdv;
