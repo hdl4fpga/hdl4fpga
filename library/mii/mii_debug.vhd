@@ -93,7 +93,7 @@ begin
 		udp_txdv => miiudp_txdv,
 		udp_txd  => miiudp_txd,
 
-		mii_txc   => txc,
+		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
 		mii_txd   => txd,
 
