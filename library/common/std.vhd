@@ -273,11 +273,17 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 
-	function ipheader_checksumed (
+	function ipheader_checksummed (
 		constant ipheader : std_logic_vector)
 		return std_logic_vector;
 
-	function udp_checksumed (
+	function udp_checksum (
+		constant src : std_logic_vector(0 to 32-1);
+		constant dst : std_logic_vector(0 to 32-1);
+		constant udp : std_logic_vector)
+		return std_logic_vector;
+
+	function udp_checksummed (
 		constant src : std_logic_vector(0 to 32-1);
 		constant dst : std_logic_vector(0 to 32-1);
 		constant udp : std_logic_vector)
@@ -444,7 +450,7 @@ package body std is
 		return std_logic_vector(checksum(1 to size));	
 	end;
 
-	function ipheader_checksumed(
+	function ipheader_checksummed(
 		constant ipheader : std_logic_vector)
 		return std_logic_vector is
 		variable aux : std_logic_vector(0 to ipheader'length-1);
@@ -455,12 +461,13 @@ package body std is
 		return aux;
 	end;
 
-	function udp_checksumed(
+	function udp_checksum(
 		constant src : std_logic_vector(0 to 32-1);
 		constant dst : std_logic_vector(0 to 32-1);
 		constant udp : std_logic_vector)
 		return std_logic_vector is
-		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '1');
+		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
+		variable retval : std_logic_vector(16-1 downto 0);
 	begin
 		aux(src'range) := unsigned(src);
 		aux := aux rol src'length;
@@ -470,7 +477,28 @@ package body std is
 		aux := aux rol 32;
 
 		aux(0 to udp'length-1) := unsigned(udp);
-		aux(48 to 64-1) := (others => '0');
+		retval := not oneschecksum(std_logic_vector(aux), 16);
+		if retval=(retval'range => '0') then
+			retval := (others => '1');
+		end if;
+		return retval;
+	end;
+
+	function udp_checksummed(
+		constant src : std_logic_vector(0 to 32-1);
+		constant dst : std_logic_vector(0 to 32-1);
+		constant udp : std_logic_vector)
+		return std_logic_vector is
+		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
+	begin
+		aux(src'range) := unsigned(src);
+		aux := aux rol src'length;
+		aux(dst'range) := unsigned(dst);
+		aux := aux rol dst'length;
+		aux(0 to 32-1) := x"0011" & to_unsigned(udp'length/8, 16);
+		aux := aux rol 32;
+
+		aux(0 to udp'length-1) := unsigned(udp);
 		aux(48 to 64-1) := unsigned(not oneschecksum(std_logic_vector(aux), 16));
 		if aux(48 to 64-1)=(1 to 16 => '0') then
 			aux(48 to 64-1) := (others => '1');

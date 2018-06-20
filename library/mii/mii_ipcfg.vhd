@@ -913,14 +913,34 @@ begin
 					sia_ena  <= lookup((0 => dhcp_sia), std_logic_vector(mii_ptr));
 
 					discover_b : block
-
-					signal txdv : std_logic;
-						signal txd  : std_logic_vector(mii_txd'range);
-
 						constant payload_size : natural := 244+6;
 
+						constant tail_data : std_logic_vector := reverse(
+								x"63825363"            &    -- MAGIC COOKIE
+								x"350101"              &    -- DHCPDISCOVER
+								x"320400000000"        &    -- IP REQUEST
+								x"FF",8);                  -- END
+
+						constant header_data : std_logic_vector := reverse(
+							udp_checksummed (
+								x"00000000",
+								x"ffffffff",
+								x"00440043"            &    -- UDP Source port, Destination port
+								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
+								oneschecksum(tail_data,16) &	-- UDP CHECKSUM
+								x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
+								x"3903f326"            &    -- XID
+								x"00000000"            &    -- SECS, FLAGS
+								x"00000000"            &    -- CIADDR
+								x"00000000"            &    -- YIADDR
+								x"00000000"            &    -- SIADDR
+								x"00000000"            &    -- GIADDR
+								mac & x"0000"          &    -- CHADDR
+								x"00000000"            &    -- CHADDR
+								x"00000000"),8);             -- CHADDR
+
 						constant mii_data : std_logic_vector := reverse(
-							udp_checksumed (
+							udp_checksummed (
 								x"00000000",
 								x"ffffffff",
 								x"00440043"            &    -- UDP Source port, Destination port
@@ -943,16 +963,42 @@ begin
 								x"320400000000"        &    -- IP REQUEST
 								x"FF"),8);                  -- END
 
+						signal txdv : std_logic;
+						signal txd  : std_logic_vector(mii_txd'range);
+
+						signal sname_txdv : std_logic;
+						signal sname_txd  : std_logic_vector(mii_txd'range);
+
 					begin
 
-						miitx_mem_e  : entity hdl4fpga.mii_rom
+						header_e  : entity hdl4fpga.mii_rom
 						generic map (
-							mem_data => mii_data)
+							mem_data => header_data)
 						port map (
 							mii_txc  => mii_txc,
 							mii_treq => mii_req,
-							mii_txdv => txdv,
-							mii_txd  => txd);
+							mii_trdy => header_trdy,
+							mii_txdv => header_txdv,
+							mii_txd  => header_txd);
+
+						sname_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => (1 to 8*(64+128) => '0'))
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => header_trdy,
+							mii_treq => header_treq,
+							mii_txdv => sname_txdv,
+							mii_txd  => sname_txd);
+
+						tail_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => tail_data)
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => mii_req,
+							mii_txdv => tail_txdv,
+							mii_txd  => tail_txd);
 
 						process (mii_txc)
 						begin

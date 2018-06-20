@@ -47,7 +47,7 @@ architecture mix of miitx_dhcpdis is
 		x"ffffffffffff"	       &    
 		mac                &    -- MAC Source Address
 		x"0800"                &    -- MAC Protocol ID
-		ipheader_checksumed(
+		ipheader_checksummed(
 			x"4500"            &    -- IP  Version, header length, TOS
 			std_logic_vector(to_unsigned(payload_size+28,16)) &	-- IP  Length
 			x"0000"            &    -- IP  Identification
@@ -56,7 +56,7 @@ architecture mix of miitx_dhcpdis is
 			x"0000"            &    -- IP  Checksum
 			x"00000000"        &    -- IP  Source address
 			x"ffffffff")       &    -- IP  Destination address
-		udp_checksumed (
+		udp_checksummed (
 			x"00000000",
 			x"ffffffff",
 
