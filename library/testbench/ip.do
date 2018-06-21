@@ -1,9 +1,5 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /testbench/du/mii_ipcfg_e/eth_b/ip_b/udp_b/dhcpc_b/discover_b/miitx_mem_e/mii_txc
-add wave -noupdate /testbench/du/mii_ipcfg_e/eth_b/ip_b/udp_b/dhcpc_b/discover_b/miitx_mem_e/mii_treq
-add wave -noupdate /testbench/du/mii_ipcfg_e/eth_b/ip_b/udp_b/dhcpc_b/discover_b/miitx_mem_e/mii_txdv
-add wave -noupdate -radix hexadecimal /testbench/du/mii_ipcfg_e/eth_b/ip_b/udp_b/dhcpc_b/discover_b/miitx_mem_e/mii_txd
 add wave -noupdate /testbench/du/mii_ipcfg_e/eth_b/dhcp_txdv
 add wave -noupdate -radix hexadecimal /testbench/du/mii_ipcfg_e/eth_b/dhcp_txd
 add wave -noupdate -radix hexadecimal /testbench/du/mii_ipcfg_e/eth_b/ipdata_txd

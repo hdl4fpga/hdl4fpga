@@ -485,17 +485,19 @@ package body std is
 	end;
 
 	function udp_checksummed(
-		constant src : std_logic_vector(0 to 32-1);
-		constant dst : std_logic_vector(0 to 32-1);
-		constant udp : std_logic_vector)
+		constant src  : std_logic_vector(0 to 32-1);
+		constant dst  : std_logic_vector(0 to 32-1);
+		constant udp  : std_logic_vector)
 		return std_logic_vector is
-		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
+		variable aux1 : unsigned(0 to udp'length-1) := (others => '0');
+		variable aux  : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
 	begin
+		aux1 := unsigned(udp);
 		aux(src'range) := unsigned(src);
 		aux := aux rol src'length;
 		aux(dst'range) := unsigned(dst);
 		aux := aux rol dst'length;
-		aux(0 to 32-1) := x"0011" & to_unsigned(udp'length/8, 16);
+		aux(0 to 32-1) := x"0011" & aux1(32 to 32+16-1);
 		aux := aux rol 32;
 
 		aux(0 to udp'length-1) := unsigned(udp);
