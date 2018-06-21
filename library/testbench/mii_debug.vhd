@@ -53,7 +53,7 @@ architecture mii_debug of testbench is
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 20 ns;
+	rst <= '1', '0' after 50 ns;
 
 	process (clk)
 		variable edge  : std_logic;
