@@ -939,30 +939,6 @@ begin
 								x"00000000"            &    -- CHADDR
 								x"00000000"),8);            -- CHADDR
 
-						constant mii_data : std_logic_vector := reverse(
-							udp_checksummed (
-								x"00000000",
-								x"ffffffff",
-								x"00440043"            &    -- UDP Source port, Destination port
-								std_logic_vector(to_unsigned(payload_size+8,16)) & -- UDP Length,
-								x"0000"                &	-- UDP CHECKSUM
-								x"01010600"            &    -- OP, HTYPE, HLEN,  HOPS
-								x"3903f326"            &    -- XID
-								x"00000000"            &    -- SECS, FLAGS
-								x"00000000"            &    -- CIADDR
-								x"00000000"            &    -- YIADDR
-								x"00000000"            &    -- SIADDR
-								x"00000000"            &    -- GIADDR
-								mac & x"0000"          &    -- CHADDR
-								x"00000000"            &    -- CHADDR
-								x"00000000"            &    -- CHADDR
-								(1 to 8* 64 => '0')    &    -- SNAME
-								(1 to 8*128 => '0')    &    -- SNAME
-								x"63825363"            &    -- MAGIC COOKIE
-								x"350101"              &    -- DHCPDISCOVER
-								x"320400000000"        &    -- IP REQUEST
-								x"FF"),8);                  -- END
-
 						signal txdv : std_logic;
 						signal txd  : std_logic_vector(mii_txd'range);
 
@@ -988,60 +964,51 @@ begin
 
 					begin
 
-						mii_dhcpcd_e  : entity hdl4fpga.mii_rom
+						header_e  : entity hdl4fpga.mii_rom
 						generic map (
-							mem_data => mii_data)
+							mem_data => header_data)
 						port map (
 							mii_txc  => mii_txc,
-							mii_treq => mii_req,
+							mii_treq => header_treq,
+							mii_trdy => header_trdy,
+							mii_txdv => header_txdv,
+							mii_txd  => header_txd);
+
+						sbname_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => (1 to 8*(64+128) => '0'))
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => sbname_treq,
+							mii_trdy => sbname_trdy,
+							mii_txdv => sbname_txdv,
+							mii_txd  => sbname_txd);
+
+						vendor_e  : entity hdl4fpga.mii_rom
+						generic map (
+							mem_data => vendor_data)
+						port map (
+							mii_txc  => mii_txc,
+							mii_treq => vendor_treq,
+							mii_trdy => vendor_trdy,
+							mii_txdv => vendor_txdv,
+							mii_txd  => vendor_txd);
+
+						(0 => header_treq, 1 => sbname_treq, 2 => vendor_treq) <= dhcpcd_treq;
+						dhcpcd_trdy <= (0 => header_trdy, 1 => sbname_trdy, 2 => vendor_trdy);
+						dhcpcd_rxdv <= (0 => header_txdv, 1 => sbname_txdv, 2 => vendor_txdv);
+						dhcpcd_rxd  <=       header_txd & (mii_txd'range => '0') & vendor_txd;
+
+						mii_dhcpcd_e : entity hdl4fpga.mii_cat
+						port map (
+							mii_req  => mii_req,
+							mii_trdy => dhcpcd_trdy,
+							mii_treq => dhcpcd_treq,
+							mii_rxdv => dhcpcd_rxdv,
+							mii_rxd  => dhcpcd_rxd,
 							mii_txdv => txdv,
 							mii_txd  => txd);
 
---						header_e  : entity hdl4fpga.mii_rom
---						generic map (
---							mem_data => header_data)
---						port map (
---							mii_txc  => mii_txc,
---							mii_treq => header_treq,
---							mii_trdy => header_trdy,
---							mii_txdv => header_txdv,
---							mii_txd  => header_txd);
---
---						sbname_e  : entity hdl4fpga.mii_rom
---						generic map (
---							mem_data => (1 to 8*(64+128) => '0'))
---						port map (
---							mii_txc  => mii_txc,
---							mii_treq => sbname_treq,
---							mii_trdy => sbname_trdy,
---							mii_txdv => sbname_txdv,
---							mii_txd  => sbname_txd);
---
---						tail_e  : entity hdl4fpga.mii_rom
---						generic map (
---							mem_data => vendor_data)
---						port map (
---							mii_txc  => mii_txc,
---							mii_treq => vendor_treq,
---							mii_trdy => vendor_trdy,
---							mii_txdv => vendor_txdv,
---							mii_txd  => vendor_txd);
---
---						(0 => header_treq, 1 => sbname_treq, 2 => vendor_treq) <= dhcpcd_treq;
---						dhcpcd_trdy <= (0 => header_trdy, 1 => sbname_trdy, 2 => vendor_trdy);
---						dhcpcd_rxdv <= (0 => header_txdv, 1 => sbname_txdv, 2 => vendor_txdv);
---						dhcpcd_rxd  <=       header_txd & (mii_txd'range => '0') & vendor_txd;
---
---						mii_dhcpcd_e : entity hdl4fpga.mii_cat
---						port map (
---							mii_req  => mii_req,
---							mii_trdy => dhcpcd_trdy,
---							mii_treq => dhcpcd_treq,
---							mii_rxdv => dhcpcd_rxdv,
---							mii_rxd  => dhcpcd_rxd,
---							mii_txdv => txdv,
---							mii_txd  => txd);
---
 						process (mii_txc)
 						begin
 							if rising_edge(mii_txc) then
