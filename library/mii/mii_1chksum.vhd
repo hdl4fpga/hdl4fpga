@@ -60,15 +60,15 @@ begin
 				arg1 := '0' & aux(mii_rxd'length-1 downto 0) & ci;
 				arg2 := (0 => '1', others => '0');
 				cntr := cntr sll 1;
-				if mii_rxdv='1' then
+				if mii_rxdv/='0' then
 					arg2(mii_txd'length downto 1) := unsigned(reverse(mii_rxd));
 					cntr(cntr'right) := '1';
 				end if;
 				sum  := arg1 + arg2;
 				ci   := sum(sum'left);
 				aux(mii_rxd'length-1 downto 0) := sum(mii_txd'length downto 1);
-				if mii_rxdv='0' then
-					if cntr(0)='0' then
+				if mii_rxdv/='1' then
+					if cntr(0)/='1' then
 						ci  := '0';
 						aux := (others => '0');
 					end if;

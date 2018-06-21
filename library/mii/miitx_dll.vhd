@@ -52,7 +52,7 @@ architecture mix of miitx_dll is
 
 	signal crc32_txd   : std_logic_vector(mii_txd'range);
 	signal crc32_txdv  : std_logic;
-	signal mii_ptr     : unsigned(0 to 6*8/mii_txd'length);
+	signal mii_ptr     : unsigned(0 to 6*8/mii_txd'length); -- := (others => '0');
 begin
 
 	process (mii_txc)
@@ -61,7 +61,7 @@ begin
 		if rising_edge(mii_txc) then
 			if mii_rxdv='1' and last_value='0' then
 				mii_ptr <= to_unsigned(crc32_size/mii_txd'length+1, mii_ptr'length);
-			elsif mii_ptr(1)='0' then
+			elsif mii_ptr(1)/='1' then
 				mii_ptr <= mii_ptr + 1;
 			end if;
 			last_value := mii_rxdv;
