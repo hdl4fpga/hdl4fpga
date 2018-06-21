@@ -122,15 +122,15 @@ begin
 --		end if;
 --	end process;
 --
-	mii_display_e : entity hdl4fpga.mii_display
-	port map (
-		mii_rxc   => d_rxc,
-		mii_rxdv  => d_rxdv,
-		mii_rxd   => d_rxd,
-
-		video_clk => video_clk,
-		video_dot => video_dot,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
+--	mii_display_e : entity hdl4fpga.mii_display
+--	port map (
+--		mii_rxc   => d_rxc,
+--		mii_rxdv  => d_rxdv,
+--		mii_rxd   => d_rxd,
+--
+--		video_clk => video_clk,
+--		video_dot => video_dot,
+--		video_hs  => video_hs,
+--		video_vs  => video_vs);
 
 end;
