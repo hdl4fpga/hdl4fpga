@@ -101,31 +101,31 @@ begin
 		mii_txdv => rxdv1,
 		mii_txd  => rxd1);
 
---	miipkt_e : entity hdl4fpga.mii_rom
---	generic map (
---		mem_data => reverse(
---			x"5555_5555_5555_55d5" &
-----            x"004000010203"        &
---            x"ffffffffffff"        &
---			x"16987d31a4c6"        &
---			x"0806"                &
---			x"00010800"            &
---			x"06040001"            &
---			x"16987d31a4c6"        &
---			x"c0a80001"            &
---			x"000000000000"        &
---			x"c0a80049"            &
---			x"000000000000000000000000000000000000" &
---			x"00000000000000000000", 8))
---	port map (
---		mii_txc  => clk,
---		mii_treq => treq2,
---		mii_trdy => open,
---		mii_txdv => rxdv2,
---		mii_txd  => rxd2);
+	miipkt_e : entity hdl4fpga.mii_rom
+	generic map (
+		mem_data => reverse(
+			x"5555_5555_5555_55d5" &
+--            x"004000010203"        &
+            x"ffffffffffff"        &
+			x"16987d31a4c6"        &
+			x"0806"                &
+			x"00010800"            &
+			x"06040001"            &
+			x"16987d31a4c6"        &
+			x"c0a80001"            &
+			x"000000000000"        &
+			x"c0a80049"            &
+			x"000000000000000000000000000000000000" &
+			x"00000000000000000000", 8))
+	port map (
+		mii_txc  => clk,
+		mii_treq => treq2,
+		mii_trdy => open,
+		mii_txdv => rxdv2,
+		mii_txd  => rxd2);
 
---	rxd  <= rxd2  when trdy1='1' else rxd1;
---	rxd  <= rxd2  when trdy1='1' else rxd1;
+	rxd  <= rxd2  when trdy1='1' else rxd1;
+	rxd  <= rxd2  when trdy1='1' else rxd1;
 --	rxdv <= rxdv1;
 --	rxd  <= rxd1;
 
@@ -140,7 +140,7 @@ begin
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,
-		mii_req  => treq1,
+		mii_req  => '0', --treq1,
 	
 		video_clk => '0');
 	rtxd <= reverse(txd);

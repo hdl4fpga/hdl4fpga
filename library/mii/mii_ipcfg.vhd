@@ -148,7 +148,7 @@ begin
 		signal mii_ptr       : unsigned(0 to to_miisize(8));
 
 		signal smacmymac_sel : wor std_ulogic := '1';
-		signal dmacbcst_sel  : wor std_ulogic;
+		signal dmacbcst_sel  : wor std_ulogic := '1';
 
 		signal pre_vld       : std_logic;
 		signal ethdmac_vld   : std_logic;
@@ -623,10 +623,11 @@ begin
 				process (mii_txc)
 				begin
 					if rising_edge(mii_txc) then
+						-- dmacbcst_sel <= txdv;
 						arp_txdv <= txdv;
 						arp_txd  <= txd;
-				arp_txd <= (others => '0');
-				arp_txdv <= '0';
+--				arp_txd <= (others => '0');
+--				arp_txdv <= '0';
 					end if;
 				end process;
 
@@ -1012,7 +1013,7 @@ begin
 						process (mii_txc)
 						begin
 							if rising_edge(mii_txc) then
-								dmacbcst_sel <= txdv;
+--								dmacbcst_sel <= txdv;
 								ip4dbcst_sel <= txdv;
 								ip4sinvd_sel <= txdv;
 								dis_txdv <= txdv;
