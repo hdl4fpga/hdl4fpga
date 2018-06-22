@@ -662,7 +662,7 @@ begin
 			signal ip4shdr_txd   : std_logic_vector(mii_txd'range);
 			signal ip4shdr_ena   : std_logic;
 
-			signal ip_ptr        : std_logic_vector(0 to to_miisize(5));
+			signal ip_ptr        : std_logic_vector(0 to unsigned_num_bits(to_miisize(32))-1);
 
 			signal ip4len_ena    : std_logic;
 			signal ip4len_txd    : std_logic_vector(mii_txd'range);

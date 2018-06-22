@@ -41,43 +41,54 @@ entity mii_1chksum is
 end;
 
 architecture beh of mii_1chksum is
-	signal chksum : std_logic_vector(n-1 downto 0);
-	signal txdv   : std_logic;
+	signal cksm : std_logic_vector(n-1 downto 0);
+	signal slr  : std_logic_vector(0 to n/mii_txd'length-1);
+	signal ci   : std_logic;
+	signal op1  : std_logic_vector(mii_txd'range);
+	signal op2  : std_logic_vector(mii_txd'range);
+	signal sum  : std_logic_vector(mii_txd'range);
+	signal co   : std_logic;
 begin
-	process (mii_txc)
-		variable cntr : unsigned(0 to n/mii_txd'length-1);
 
-		variable ci   : std_logic;
-		variable arg1 : unsigned(mii_txd'length+1 downto 0);
-		variable arg2 : unsigned(mii_txd'length+1 downto 0);
-		variable sum  : unsigned(mii_txd'length+1 downto 0);
-		variable aux  : unsigned(chksum'range) := (others => '0');
+	op1 <= cksm(mii_rxd'reverse_range);
+	op2 <= reverse(mii_rxd) when mii_rxdv='1' else (others => '0');
+
+	adder_p: process(op1, op2, ci)
+		variable arg1 : unsigned(0 to mii_txd'length+1);
+		variable arg2 : unsigned(0 to mii_txd'length+1);
+		variable val  : unsigned(0 to mii_txd'length+1);
+	begin
+		arg1 := "0" & unsigned(op1) & ci;
+		arg2 := "0" & unsigned(op2) & "1";
+		val  := arg1 + arg2;
+		sum  <= std_logic_vector(val(1 to mii_txd'length));
+		co   <= val(val'left);
+	end process;
+
+	process (mii_txc)
+		variable aux1 : unsigned(cksm'range);
+		variable aux2 : unsigned(slr'range);
 	begin
 		if rising_edge(mii_txc) then
+			aux1 := unsigned(cksm);
+			aux2 := unsigned(slr);
 			if mii_rena='1' then
-				aux  := unsigned(chksum);
-				aux  := aux rol mii_txd'length;
-				arg1 := '0' & aux(mii_rxd'length-1 downto 0) & ci;
-				arg2 := (0 => '1', others => '0');
-				cntr := cntr sll 1;
+				aux1(mii_rxd'reverse_range) := unsigned(sum);
+				aux1 := aux1 rol mii_txd'length;
+				aux2 := aux2 sll 1;
+				ci   <= co;
 				if mii_rxdv='1' then
-					arg2(mii_txd'length downto 1) := unsigned(reverse(mii_rxd));
-					cntr(cntr'right) := '1';
+					aux2(aux2'right) := '1';
+				elsif aux2(0)='0' then
+					ci   <= '0';
+					aux1 := (others => '0');
 				end if;
-				sum  := arg1 + arg2;
-				ci   := sum(sum'left);
-				aux(mii_rxd'length-1 downto 0) := sum(mii_txd'length downto 1);
-				if mii_rxdv='0' then
-					if cntr(0)='0' then
-						ci  := '0';
-						aux := (others => '0');
-					end if;
-				end if;
-				chksum <= std_logic_vector(aux);
 			end if;
-			txdv <= cntr(0);
+			cksm <= std_logic_vector(aux1);
+			slr  <= std_logic_vector(aux2);
 		end if;
 	end process;
-	mii_txdv <= txdv and not mii_rxdv;
-	mii_txd  <= reverse(chksum(mii_txd'reverse_range));
+
+	mii_txdv <= slr(0) and not mii_rxdv;
+	mii_txd  <= cksm(mii_txd'reverse_range);
 end;

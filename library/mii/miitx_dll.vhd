@@ -52,7 +52,7 @@ architecture mix of miitx_dll is
 
 	signal crc32_txd   : std_logic_vector(mii_txd'range);
 	signal crc32_txdv  : std_logic;
-	signal mii_ptr     : unsigned(0 to 6*8/mii_txd'length); -- := (others => '0');
+	signal mii_ptr     : unsigned(0 to unsigned_num_bits(64*8/mii_txd'length)-1); -- := (others => '0');
 begin
 
 	process (mii_txc)

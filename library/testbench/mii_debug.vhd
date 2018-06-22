@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_debug of testbench is
-	constant n : natural := 8;
+	constant n : natural := 4;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal rrxd  : std_logic_vector(0 to n-1);
@@ -64,7 +64,7 @@ begin
 				treq1 <= '0'; -- after 0 ns;
 			elsif txdv='0'  then
 				if edge='1' then
-					treq1 <= '0';
+--					treq1 <= '0';
 				end if;
 			end if;
 			edge := txdv;
@@ -73,61 +73,61 @@ begin
 	end process;
 
 	
-	miidhcp_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5" &
-			x"00_40_00_01_02_03"   & 
-			x"00_25_00_00_00_ff"   &
-			x"08_00"               & 
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_11_00_00"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_43_00_44"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"c0_a8_00_49"         &
-			x"c0_a8_00_01_00_ff",
-			8))
-	port map (
-		mii_txc  => clk,
-		mii_treq => treq1,
-		mii_trdy => trdy1,
-		mii_txdv => rxdv1,
-		mii_txd  => rxd1);
-
-	miipkt_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5" &
---            x"004000010203"        &
-            x"ffffffffffff"        &
-			x"16987d31a4c6"        &
-			x"0806"                &
-			x"00010800"            &
-			x"06040001"            &
-			x"16987d31a4c6"        &
-			x"c0a80001"            &
-			x"000000000000"        &
-			x"c0a80049"            &
-			x"000000000000000000000000000000000000" &
-			x"00000000000000000000", 8))
-	port map (
-		mii_txc  => clk,
-		mii_treq => treq2,
-		mii_trdy => open,
-		mii_txdv => rxdv2,
-		mii_txd  => rxd2);
-
-	rxdv <= rxdv2 when trdy1='1' else rxdv1;
-	rxd  <= rxd2  when trdy1='1' else rxd1;
---	rxdv <= rxdv1;
---	rxd  <= rxd1;
+--	miidhcp_e : entity hdl4fpga.mii_rom
+--	generic map (
+--		mem_data => reverse(
+--			x"5555_5555_5555_55d5" &
+--			x"00_40_00_01_02_03"   & 
+--			x"00_25_00_00_00_ff"   &
+--			x"08_00"               & 
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_11_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_43_00_44"         &
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"00_00_00_00"         &
+--			x"c0_a8_00_49"         &
+--			x"c0_a8_00_01_00_ff",
+--			8))
+--	port map (
+--		mii_txc  => clk,
+--		mii_treq => treq1,
+--		mii_trdy => trdy1,
+--		mii_txdv => rxdv1,
+--		mii_txd  => rxd1);
+--
+--	miipkt_e : entity hdl4fpga.mii_rom
+--	generic map (
+--		mem_data => reverse(
+--			x"5555_5555_5555_55d5" &
+----            x"004000010203"        &
+--            x"ffffffffffff"        &
+--			x"16987d31a4c6"        &
+--			x"0806"                &
+--			x"00010800"            &
+--			x"06040001"            &
+--			x"16987d31a4c6"        &
+--			x"c0a80001"            &
+--			x"000000000000"        &
+--			x"c0a80049"            &
+--			x"000000000000000000000000000000000000" &
+--			x"00000000000000000000", 8))
+--	port map (
+--		mii_txc  => clk,
+--		mii_treq => treq2,
+--		mii_trdy => open,
+--		mii_txdv => rxdv2,
+--		mii_txd  => rxd2);
+--
+--	rxdv <= rxdv2 when trdy1='1' else rxdv1;
+--	rxd  <= rxd2  when trdy1='1' else rxd1;
+----	rxdv <= rxdv1;
+----	rxd  <= rxd1;
 
 	rrxd <= reverse(rxd);
 
@@ -140,7 +140,7 @@ begin
         mii_txc  => clk,
 		mii_txd  => txd,
 		mii_txdv => txdv,
-		mii_req  => '0', --treq1,
+		mii_req  => treq1,
 	
 		video_clk => '0');
 	rtxd <= reverse(txd);

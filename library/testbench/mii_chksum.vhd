@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_chksum of testbench is
-	constant n : natural := 8;
+	constant n : natural := 4;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal rrxd  : std_logic_vector(0 to n-1);
@@ -44,7 +44,8 @@ architecture mii_chksum of testbench is
 	signal trdy  : std_logic;
 	signal txd   : std_logic_vector(0 to n-1);
 	signal rtxd  : std_logic_vector(0 to n-1);
-
+	signal mii_txc : std_logic;
+	signal 
 begin
 
 	clk <= not clk after 5 ns;
@@ -88,5 +89,26 @@ begin
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
 		mii_txd  => txd);
+
+	lifo_b : block
+		signal lifo : std_logic_vector(0 to 16-1);
+	begin
+		process (mii_txc)
+			variable aux : unsigned(lifo'range);
+		begin
+			if rising_edge(mii_txc) then
+				aux := unsigned(lifo);
+				if cksm_txdv='1' then
+					aux := aux ror mii_txd'length;
+					aux(mii_txd'range) := unsigned(not cksm_txd);
+				else
+					aux := aux rol mii_txd'length;
+				end if;
+				lifo <= std_logic_vector(aux);
+			end if;
+		end process;
+	end block;
+
 	rtxd <= reverse(txd);
+	rrxd <= reverse(rxd);
 end;
