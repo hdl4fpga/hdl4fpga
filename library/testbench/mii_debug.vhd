@@ -32,7 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mii_debug of testbench is
-	constant n : natural := 4;
+	constant n : natural := 8;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal rrxd  : std_logic_vector(0 to n-1);
@@ -64,7 +64,7 @@ begin
 				treq1 <= '0'; -- after 0 ns;
 			elsif txdv='0'  then
 				if edge='1' then
-				--	treq1 <= '0';
+					treq1 <= '0';
 				end if;
 			end if;
 			edge := txdv;
@@ -124,7 +124,7 @@ begin
 		mii_txdv => rxdv2,
 		mii_txd  => rxd2);
 
-	rxd  <= rxd2  when trdy1='1' else rxd1;
+	rxdv <= rxdv2 when trdy1='1' else rxdv1;
 	rxd  <= rxd2  when trdy1='1' else rxd1;
 --	rxdv <= rxdv1;
 --	rxd  <= rxd1;

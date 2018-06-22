@@ -61,7 +61,7 @@ begin
 		if rising_edge(mii_txc) then
 			if mii_rxdv='1' and last_value='0' then
 				mii_ptr <= to_unsigned(crc32_size/mii_txd'length+1, mii_ptr'length);
-			elsif mii_ptr(1)/='1' then
+			elsif mii_ptr(0)/='1' then
 				mii_ptr <= mii_ptr + 1;
 			end if;
 			last_value := mii_rxdv;
@@ -84,7 +84,7 @@ begin
 		d  => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
 	port map (
 		clk => mii_txc,
-		di  => mii_rxd,
+		di  => minpkt_txd, --mii_rxd,
 		do  => miibuf_txd);
 
 	minpkt_txdv <= mii_rxdv or not mii_ptr(0);
@@ -94,7 +94,7 @@ begin
 		d  => (1 to 1 => mii_pre'length/mii_txd'length))
 	port map (
 		clk   => mii_txc,
-		di(0) => mii_rxdv,
+		di(0) => minpkt_txdv, --mii_rxdv,
 		do(0) => miibuf_txdv);
 
 	crc32_e : entity hdl4fpga.mii_crc32
