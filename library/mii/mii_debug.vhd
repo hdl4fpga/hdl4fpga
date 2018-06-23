@@ -104,23 +104,23 @@ begin
 		mii_udpv  => udp_vld,
 		mii_myipv => myip_vld);
 
---	d_rxc <= txc;
---	process (d_rxc)
---	begin
---		if rising_edge(d_rxc) then
---			d_rxdv <= txdv;
---			d_rxd  <= txd;
---		end if;
---	end process;
-
-	d_rxc <= mii_rxc;
+	d_rxc <= txc;
 	process (d_rxc)
 	begin
 		if rising_edge(d_rxc) then
-			d_rxdv <= mii_rxdv and myip_vld;
-			d_rxd  <= mii_rxd;
+			d_rxdv <= txdv;
+			d_rxd  <= txd;
 		end if;
 	end process;
+
+--	d_rxc <= mii_rxc;
+--	process (d_rxc)
+--	begin
+--		if rising_edge(d_rxc) then
+--			d_rxdv <= mii_rxdv and myip_vld;
+--			d_rxd  <= mii_rxd;
+--		end if;
+--	end process;
 
 	mii_display_e : entity hdl4fpga.mii_display
 	port map (

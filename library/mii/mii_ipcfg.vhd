@@ -826,10 +826,10 @@ begin
 						if rising_edge(mii_txc) then
 							aux := unsigned(lifo);
 							if cksm_txdv='1' then
-								aux := aux ror mii_txd'length;
 								aux(mii_txd'range) := unsigned(not cksm_txd);
-							else
 								aux := aux ror mii_txd'length;
+							else
+								aux := aux rol mii_txd'length;
 							end if;
 							lifo <= std_logic_vector(aux);
 						end if;
