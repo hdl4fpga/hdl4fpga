@@ -817,21 +817,15 @@ begin
 					mii_txdv => cksm_txdv,
 					mii_txd  => cksm_txd);
 
-				lifo_b : block
-					signal lifo : std_logic_vector(0 to 16-1);
+				fifo_b : block
 				begin
 					process (mii_txc)
-						variable aux : unsigned(lifo'range);
+						variable fifo : unsigned(0 to 16-mii_txd'length-1);
 					begin
 						if rising_edge(mii_txc) then
-							aux := unsigned(lifo);
-							if cksm_txdv='1' then
-								aux(mii_txd'range) := unsigned(not cksm_txd);
-								aux := aux ror mii_txd'length;
-							else
-								aux := aux rol mii_txd'length;
-							end if;
-							lifo <= std_logic_vector(aux);
+							ip4cksm_txd <= std_logic_vector(fifo(mii_txd'range));
+							fifo(mii_txd'range) := unsigned(cksm_txd);
+							fifo := fifo ror mii_txd'length;
 						end if;
 					end process;
 
@@ -844,7 +838,6 @@ begin
 						di(0) => cksm_txdv,
 						do(0) => ip4cksm_txdv);
 
-					ip4cksm_txd <= lifo(mii_txd'range);
 				end block;
 			end block;
 
