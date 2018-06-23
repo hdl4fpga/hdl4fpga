@@ -145,7 +145,7 @@ begin
 		constant arpproto  : std_logic_vector := x"0806";
 
 
-		signal mii_ptr       : unsigned(0 to to_miisize(8));
+		signal mii_ptr       : unsigned(0 to unsigned_num_bits(to_miisize(64))-1); -- := (others => '0');
 
 		signal smacmymac_sel : wor std_ulogic := '1';
 		signal dmacbcst_sel  : wor std_ulogic := '1';
@@ -325,7 +325,7 @@ begin
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
-					if rxdv/='1' then
+					if rxdv='0' then
 						miitx_ptr <= (others => '0');
 					elsif miitx_ptr(0)='0' then
 						miitx_ptr <= miitx_ptr + 1;
@@ -482,6 +482,8 @@ begin
 		end block;
 
 		arp_b : block
+			signal arp_rxptr : unsigned(0 to unsigned_num_bits(to_miisize(32))-1);
+
 			signal requ_rcv : std_logic;
 			signal rply_req : std_logic;
 
@@ -492,6 +494,17 @@ begin
 
 		begin
 
+			process (mii_rxc)
+			begin
+				if rising_edge(mii_rxc) then
+					if arpproto_vld='0' then
+						arp_rxptr <= (others => '0');
+					elsif arp_rxptr(0)='0' then
+						arp_rxptr <= arp_rxptr + 1;
+					end if;
+				end if;
+			end process;
+
 			request_b : block
 				constant arp_sha : field := (ethertype.offset+ethertype.size+ 8, 6);
 				constant arp_tpa : field := (ethertype.offset+ethertype.size+24, 4);
@@ -499,6 +512,7 @@ begin
 				signal   tpa_ena : std_logic;
 
 			begin
+
 				sha_ena <= lookup((0 => arp_sha), std_logic_vector(mii_ptr));
 				tpa_ena <= lookup((0 => arp_tpa), std_logic_vector(mii_ptr));
 
@@ -882,6 +896,16 @@ begin
 				signal udpproto_ena : std_logic;
 			begin
 
+				mii_udp_e : entity hdl4fpga.mii_romcmp
+				generic map (
+					mem_data => reverse(x"11",8))
+				port map (
+					mii_rxc  => mii_rxc,
+					mii_rxd  => mii_rxd,
+					mii_treq => ipproto_vld,
+					mii_ena  => udpproto_ena,
+					mii_pktv => udpproto_vld);
+
 				udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr));
 				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
 
@@ -1018,16 +1042,6 @@ begin
 
 					offer_b : block
 					begin
-				mii_udp_e : entity hdl4fpga.mii_romcmp
-				generic map (
-					mem_data => reverse(x"11",8))
-				port map (
-					mii_rxc  => mii_rxc,
-					mii_rxd  => mii_rxd,
-					mii_treq => ipproto_vld,
-					mii_ena  => udpproto_ena,
-					mii_pktv => udpproto_vld);
-
 						mii_dhcp_e : entity hdl4fpga.mii_romcmp
 						generic map (
 							mem_data => reverse(x"00430044",8))
