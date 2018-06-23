@@ -45,7 +45,6 @@ architecture mii_chksum of testbench is
 	signal txd   : std_logic_vector(0 to n-1);
 	signal rtxd  : std_logic_vector(0 to n-1);
 	signal mii_txc : std_logic;
-	signal 
 begin
 
 	clk <= not clk after 5 ns;
@@ -70,9 +69,9 @@ begin
 	
 	miidhcp_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(
-			x"ff_ff_fe_ff_ff_01",
-			8))
+		mem_data => 
+			x"70_00_f0_00_00_00"
+			)
 	port map (
 		mii_txc  => clk,
 		mii_treq => treq,
@@ -88,27 +87,28 @@ begin
         mii_txc  => clk,
 		mii_rxdv => rxdv,
 		mii_rxd  => rxd,
+		mii_txdv => txdv,
 		mii_txd  => txd);
 
 	lifo_b : block
 		signal lifo : std_logic_vector(0 to 16-1);
 	begin
-		process (mii_txc)
+		process (clk)
 			variable aux : unsigned(lifo'range);
 		begin
-			if rising_edge(mii_txc) then
+			if rising_edge(clk) then
 				aux := unsigned(lifo);
-				if cksm_txdv='1' then
-					aux := aux ror mii_txd'length;
-					aux(mii_txd'range) := unsigned(not cksm_txd);
+				if txdv='1' then
+					aux := aux ror txd'length;
+					aux(txd'range) := unsigned(not txd);
 				else
-					aux := aux rol mii_txd'length;
+					aux := aux ror txd'length;
 				end if;
 				lifo <= std_logic_vector(aux);
 			end if;
 		end process;
+		rtxd <= (lifo(txd'range));
 	end block;
 
-	rtxd <= reverse(txd);
 	rrxd <= reverse(rxd);
 end;

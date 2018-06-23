@@ -829,7 +829,7 @@ begin
 								aux := aux ror mii_txd'length;
 								aux(mii_txd'range) := unsigned(not cksm_txd);
 							else
-								aux := aux rol mii_txd'length;
+								aux := aux ror mii_txd'length;
 							end if;
 							lifo <= std_logic_vector(aux);
 						end if;
