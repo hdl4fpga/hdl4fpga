@@ -45,10 +45,6 @@ entity mii_ipcfg is
 		mii_txd    : out std_logic_vector;
 		mii_txdv   : out std_logic;
 
-		udp_length : in std_logic_vector(16-1 downto 0) := x"6789";
-		udp_txdv   : in std_logic;
-		udp_txd    : in std_logic_vector;
-
 		mii_prev   : out std_logic;
 		mii_bcstv  : out std_logic;
 		mii_macv   : out std_logic;
@@ -772,7 +768,7 @@ begin
 				(mii_txd'range => '1'), 
 				(0 => ip4dbcst_sel));
 
-			ip4saddr_ena <= lookup((0 => ip_saddr), ip_ptr, ip_frame+ip_chksum.size) and ipdata_txdv
+			ip4saddr_ena <= lookup((0 => ip_saddr), ip_ptr, ip_frame+ip_chksum.size) and ipdata_txdv;
 			ip4daddr_ena <= lookup((0 => ip_daddr), ip_ptr, ip_frame+ip_chksum.size) and ipdata_txdv;
 
 			ip4pfx0_txdv <= ip4shdr_ena or ip4len_ena;
@@ -835,11 +831,19 @@ begin
 				begin
 					process (mii_txc)
 						variable fifo : unsigned(0 to 16-mii_txd'length-1);
+						variable neg  : std_logic;
 					begin
 						if rising_edge(mii_txc) then
-							ip4cksm_txd <= std_logic_vector(fifo(mii_txd'range));
+							ip4cksm_txd <= std_logic_vector(fifo(mii_txd'range)) xor (mii_txd'range => neg);
 							fifo(mii_txd'range) := unsigned(not cksm_txd);
 							fifo := fifo ror mii_txd'length;
+							if cksm_txdv='1' then
+								if cksm_txd/=(cksm_txd'range => '1') then
+									neg := '0';
+								end if;
+							elsif ip4cksm_txdv='0' then
+								neg := '1';
+							end if;
 						end if;
 					end process;
 
@@ -896,6 +900,8 @@ begin
 				signal udpproto_ena : std_logic;
 			begin
 
+				udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr)) and ipproto_vld;
+
 				mii_udp_e : entity hdl4fpga.mii_romcmp
 				generic map (
 					mem_data => reverse(x"11",8))
@@ -906,8 +912,7 @@ begin
 					mii_ena  => udpproto_ena,
 					mii_pktv => udpproto_vld);
 
-				udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr));
-				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
+				udp_vld  <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
 
 				dhcpc_b : block
 					constant dhcp_frame : natural :=  udp_frame+8;
