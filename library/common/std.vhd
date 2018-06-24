@@ -126,15 +126,15 @@ package std is
 	-- Logic Functions
 	------------------
 
-	function "and" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic)
-		return std_logic_vector;
-
-	function "and" (
-		constant arg1 : std_logic;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector;
+--	function "and" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : std_logic)
+--		return std_logic_vector;
+--
+--	function "and" (
+--		constant arg1 : std_logic;
+--		constant arg2 : std_logic_vector)
+--		return std_logic_vector;
 
 	function wirebus (
 		constant arg1 : std_logic_vector;
@@ -704,25 +704,25 @@ package body std is
 		return retval;
 	end;
 
-	function "and" (
-		constant arg1 : std_logic_vector;
-		constant arg2 : std_logic)
-		return std_logic_vector is
-		variable retval : std_logic_vector(arg1'range);
-	begin
-		for i in arg1'range loop
-			retval(i) := arg1(i) and arg2;
-		end loop;
-		return retval;
-	end;
+--	function "and" (
+--		constant arg1 : std_logic_vector;
+--		constant arg2 : std_logic)
+--		return std_logic_vector is
+--		variable retval : std_logic_vector(arg1'range);
+--	begin
+--		for i in arg1'range loop
+--			retval(i) := arg1(i) and arg2;
+--		end loop;
+--		return retval;
+--	end;
 
-	function "and" (
-		constant arg1 : std_logic;
-		constant arg2 : std_logic_vector)
-		return std_logic_vector is
-	begin
-		return arg2 and arg1;
-	end;
+--	function "and" (
+--		constant arg1 : std_logic;
+--		constant arg2 : std_logic_vector)
+--		return std_logic_vector is
+--	begin
+--		return arg2 and arg1;
+--	end;
 
 	function setif (
 		arg : boolean)

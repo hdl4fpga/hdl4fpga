@@ -721,8 +721,8 @@ begin
 				end if;
 			end process;
 
-			ip4shdr_ena <= lookup((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto), ip_ptr, ip_frame);
-			ip4len_ena  <= lookup((0 => ip_len   ), ip_ptr, ip_frame);
+			ip4shdr_ena <= lookup((ip_verihl, ip_tos, ip_ident, ip_flgsfrg, ip_ttl, ip_proto), ip_ptr, ip_frame) and ipdata_txdv;
+			ip4len_ena  <= lookup((0 => ip_len), ip_ptr, ip_frame) and ipdata_txdv;
 
 			mii_shdr_e : entity hdl4fpga.mii_rom
 			generic map (
