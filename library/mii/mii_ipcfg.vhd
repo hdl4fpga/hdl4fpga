@@ -772,18 +772,18 @@ begin
 				(mii_txd'range => '1'), 
 				(0 => ip4dbcst_sel));
 
-			ip4saddr_ena <= lookup((0 => ip_saddr), ip_ptr, ip_frame+ip_chksum.size);
-			ip4daddr_ena <= lookup((0 => ip_daddr), ip_ptr, ip_frame+ip_chksum.size);
+			ip4saddr_ena <= lookup((0 => ip_saddr), ip_ptr, ip_frame+ip_chksum.size) and ipdata_txdv
+			ip4daddr_ena <= lookup((0 => ip_daddr), ip_ptr, ip_frame+ip_chksum.size) and ipdata_txdv;
 
-			ip4pfx0_txdv <= (ip4shdr_ena or ip4len_ena) and ipdata_txdv;
-			ip4pfx0_txd  <= 
-				(ip4shdr_txd and ip4shdr_ena) or
-				(ip4len_txd  and ip4len_ena);
+			ip4pfx0_txdv <= ip4shdr_ena or ip4len_ena;
+			ip4pfx0_txd  <= wirebus (
+				ip4shdr_txd & ip4len_txd,
+				ip4shdr_ena & ip4len_ena);
 
-			ip4addr_txdv <= (ip4saddr_ena or ip4daddr_ena) and ipdata_txdv;
-			ip4addr_txd  <= 
-				  (ip4saddr_txd and ip4saddr_ena) or 
-				  (ip4daddr_txd and ip4daddr_ena);
+			ip4addr_txdv <= ip4saddr_ena or ip4daddr_ena;
+			ip4addr_txd  <= wirebus (
+				  ip4saddr_txd & ip4daddr_txd,
+				  ip4saddr_ena & ip4daddr_ena);
 
 			ip4addr_ena_e : entity hdl4fpga.align
 			generic map (
@@ -804,9 +804,9 @@ begin
 				do  => ip4addr_rxd);
 
 			ip4pfx_txdv <= ip4pfx0_txdv or ip4addr_rxdv;
-			ip4pfx_txd  <= 
-				(ip4pfx0_txd and ip4pfx0_txdv)  or
-				(ip4addr_rxd and ip4addr_rxdv);
+			ip4pfx_txd  <= wirebus (
+				ip4pfx0_txd  & ip4addr_rxd,
+				ip4pfx0_txdv & ip4addr_rxdv);
 
 			chksum_b : block
 				signal cksm_txdv    : std_logic;
@@ -817,9 +817,9 @@ begin
 			begin
 
 				ip4cksm_rxdv <= (ip4addr_txdv or ip4pfx0_txdv) and ipdata_txdv;
-				ip4cksm_rxd  <= 
-					(ip4addr_txd and ip4addr_txdv) or
-					(ip4pfx0_txd and ip4pfx0_txdv);
+				ip4cksm_rxd  <= wirebus(
+					ip4addr_txd  & ip4pfx0_txd,
+					ip4addr_txdv & ip4pfx0_txdv);
 
 				mii_1chksum_e : entity hdl4fpga.mii_1chksum
 				generic map (
@@ -873,9 +873,9 @@ begin
 				di  => ip4pfx_txd,
 				do  => ip4hdr0_txd);
 
-			ip4hdr_txd <= 
-				(ip4hdr0_txd and ip4hdr0_txdv) or
-				(ip4cksm_txd and ip4cksm_txdv);
+			ip4hdr_txd <= wirebus (
+				ip4hdr0_txd  & ip4cksm_txd,
+				ip4hdr0_txdv & ip4cksm_txdv);
 
 			ip4hdr_txdv <=
 				ip4hdr0_txdv or
