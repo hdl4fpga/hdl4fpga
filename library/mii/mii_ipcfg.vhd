@@ -26,28 +26,29 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 entity mii_ipcfg is
 	generic (
-		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc    : in  std_logic;
-		mii_rxd    : in  std_logic_vector;
-		mii_rxdv   : in  std_logic;
+		mii_rxc      : in  std_logic;
+		mii_rxd      : in  std_logic_vector;
+		mii_rxdv     : in  std_logic;
 
-		mii_req    : in  std_logic;
-		mii_txc    : in  std_logic;
-		mii_txd    : out std_logic_vector;
-		mii_txdv   : out std_logic;
+		mii_req      : in  std_logic;
+		mii_txc      : in  std_logic;
+		mii_txd      : out std_logic_vector;
+		mii_txdv     : out std_logic;
 
-		mii_prev   : out std_logic;
-		ip_rxdv    : out std_logic;
-		udp_rxdv   : out std_logic);
+		mii_prev     : out std_logic;
+		
+		ipfrm_rxdv   : out std_logic;
+		udpfrm_rxdv  : out std_logic;
+		udpdport_dat : in  std_logic_vector;
+		udpdport_vld : out std_logic_vector);
 end;
 
 architecture struct of mii_ipcfg is
@@ -632,8 +633,6 @@ begin
 						-- dmacbcst_sel <= txdv;
 						arp_txdv <= txdv;
 						arp_txd  <= txd;
---				arp_txd <= (others => '0');
---				arp_txdv <= '0';
 					end if;
 				end process;
 
@@ -654,7 +653,6 @@ begin
 			constant ip_chksum  : field   := (ip_frame+10, 2);
 			constant ip_saddr   : field   := (ip_frame+12, 4);
 			constant ip_daddr   : field   := (ip_frame+16, 4);
-
 			constant iphdr_size : natural := 20;
 
 			constant ip4_shdr : std_logic_vector := (
@@ -662,6 +660,9 @@ begin
 				x"0000" &    -- IP Identification
 				x"0000" &    -- IP Fragmentation
 				x"0511");    -- IP TTL, protocol
+
+			signal udpproto_vld : std_logic;
+			signal udpproto_ena : std_logic;
 
 			signal chksum_req    : std_logic;
 
@@ -887,15 +888,8 @@ begin
 
 			ip_txdv <= ip4hdr_txdv or ippyld_txdv;
 
-			udp_b : block
-				constant udp_frame  : natural :=  ip_frame+20;
-				constant udp_sport  : field   := (udp_frame+0, 2);
-				constant udp_dport  : field   := (udp_frame+2, 2);
-
-				signal udpproto_vld : std_logic;
-				signal udpproto_ena : std_logic;
+			rx_b : block
 			begin
-
 				udpproto_ena <= lookup((0 => ip_proto), std_logic_vector(mii_ptr)) and ipproto_vld;
 
 				mii_udp_e : entity hdl4fpga.mii_romcmp
@@ -908,7 +902,47 @@ begin
 					mii_ena  => udpproto_ena,
 					mii_pktv => udpproto_vld);
 
-				udp_vld  <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
+			end block;
+
+			udp_b : block
+				constant udp_frame  : natural :=  ip_frame+20;
+				constant udp_sport  : field   := (udp_frame+0, 2);
+				constant udp_dport  : field   := (udp_frame+2, 2);
+				constant udp_data   : natural := udp_dport.offset+udp_dport.size;
+
+				signal udpdport_ena : std_logic;
+				signal udpdata_ena  : std_logic;
+			begin
+
+				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
+				udpdport_ena <= lookup(udp_dport, std_logic_vector(mii_ptr)) and udpproto_vld;
+				udpdata_ena  <= lookup(udp_data,  std_logic_vector(mii_ptr)) and udpproto_vld;
+
+				rx_b : block
+					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0)
+				begin
+
+					dport_b : for i in udpdport_vld'range generate
+
+						process (udpdport_dat)
+							variable aux : unsigned(0 to udpdport_dat'length-1);
+						begin
+							aux   := unsigned(udpdport_dat);
+							aux   := aux rol (i*dport'length);
+							dport := aux(dport'reverse_range);
+						end process;
+
+						udp_e : entity hdl4fpga.mii_pllcmp
+						port map (
+							mem_data => dport,
+							mii_rxc  => mii_rxc,
+							mii_rxd  => mii_rxd,
+							mii_treq => ipproto_vld,
+							mii_ena  => udpdport_ena,
+							mii_pktv => udpdport_vld(i));
+					end generate;
+
+				end block;
 
 				dhcpc_b : block
 					constant dhcp_frame : natural :=  udp_frame+8;
@@ -1067,8 +1101,8 @@ begin
 				end block;
 			end block;
 
-			ip_rxdv   <= ipproto_vld;
-			udp_rxdv  <= udp_vld;
+			ipfrm_rxdv   <= ipproto_vld;
+			udpfrm_rxdv  <= udp_vld;
 
 		end block;
 
