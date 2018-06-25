@@ -46,12 +46,8 @@ entity mii_ipcfg is
 		mii_txdv   : out std_logic;
 
 		mii_prev   : out std_logic;
-		mii_bcstv  : out std_logic;
-		mii_macv   : out std_logic;
-		mii_ipv    : out std_logic;
-		mii_udpv   : out std_logic;
-		mii_myipv  : out std_logic
-);
+		ip_rxdv    : out std_logic;
+		udp_rxdv   : out std_logic);
 end;
 
 architecture struct of mii_ipcfg is
@@ -1066,17 +1062,13 @@ begin
 
 --					dhcp_txd  <= word2byte(dis_txd  & requ_txd,   not dis_txdv);
 --					dhcp_txdv <= word2byte(dis_txdv & requ_txdv,  not dis_txdv)(0);
-					dhcp_txd  <= word2byte(dis_txd  & (dhcp_txd'range => '0'),   not dis_txdv);
-					dhcp_txdv <= word2byte(dis_txdv & "0",  not dis_txdv)(0);
+					dhcp_txd  <= word2byte(dis_txd  & (dhcp_txd'range => '0'), not dis_txdv);
+					dhcp_txdv <= word2byte(dis_txdv & "0",                     not dis_txdv)(0);
 				end block;
 			end block;
 
-			mii_prev  <= pre_vld;
-			mii_bcstv <= ethdbcst_vld;
-			mii_macv  <= ethdmac_vld;
-			mii_ipv   <= ipproto_vld;
-			mii_udpv  <= udp_vld;
-			mii_myipv <= myipcfg_vld;
+			ip_rxdv   <= ipproto_vld;
+			udp_rxdv  <= udp_vld;
 
 		end block;
 

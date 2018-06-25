@@ -54,18 +54,6 @@ entity mii_debug is
 
 architecture struct of mii_debug is
 
-		signal miiudp_len  : std_logic_vector(16-1 downto 0) := x"0789";
-		signal miiudp_txdv : std_logic;
-		signal miiudp_txd  : std_logic_vector(mii_txd'range);
-
-	signal pre_vld  : std_logic;
-	signal bcst_vld : std_logic;
-	signal mac_vld  : std_logic;
-	signal ip_vld   : std_logic;
-	signal arp_vld  : std_logic;
-	signal udp_vld  : std_logic;
-	signal myip_vld : std_logic;
-
 	signal txc  : std_logic;
 	signal txdv : std_logic;
 	signal txd  : std_logic_vector(mii_txd'range);
@@ -91,14 +79,7 @@ begin
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
-		mii_txd   => txd,
-
-		mii_prev  => pre_vld,
-		mii_bcstv => bcst_vld,
-		mii_macv  => mac_vld,
-		mii_ipv   => ip_vld,
-		mii_udpv  => udp_vld,
-		mii_myipv => myip_vld);
+		mii_txd   => txd);
 
 	d_rxc <= txc;
 	process (d_rxc)
