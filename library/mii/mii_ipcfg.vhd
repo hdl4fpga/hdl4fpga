@@ -834,8 +834,8 @@ begin
 						variable neg  : std_logic;
 					begin
 						if rising_edge(mii_txc) then
-							ip4cksm_txd <= std_logic_vector(fifo(mii_txd'range)) xor (mii_txd'range => neg);
-							fifo(mii_txd'range) := unsigned(not cksm_txd);
+							ip4cksm_txd <= std_logic_vector(fifo(mii_txd'range)) xor (mii_txd'range => not neg);
+							fifo(mii_txd'range) := unsigned(cksm_txd);
 							fifo := fifo ror mii_txd'length;
 							if cksm_txdv='1' then
 								if cksm_txd/=(cksm_txd'range => '1') then
