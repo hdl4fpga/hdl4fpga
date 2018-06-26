@@ -915,11 +915,11 @@ begin
 			begin
 
 				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
-				udpdport_ena <= lookup(udp_dport, std_logic_vector(mii_ptr)) and udpproto_vld;
+				udpdport_ena <= lookup((0 => udp_dport), std_logic_vector(mii_ptr)) and udpproto_vld;
 				udpdata_ena  <= lookup(udp_data,  std_logic_vector(mii_ptr)) and udpproto_vld;
 
 				rx_b : block
-					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0)
+					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0);
 				begin
 
 					dport_b : for i in udpdport_vld'range generate
@@ -929,12 +929,12 @@ begin
 						begin
 							aux   := unsigned(udpdport_dat);
 							aux   := aux rol (i*dport'length);
-							dport := aux(dport'reverse_range);
+							dport <= std_logic_vector(aux(dport'reverse_range));
 						end process;
 
 						udp_e : entity hdl4fpga.mii_pllcmp
 						port map (
-							mem_data => dport,
+							mii_data => dport,
 							mii_rxc  => mii_rxc,
 							mii_rxd  => mii_rxd,
 							mii_treq => ipproto_vld,

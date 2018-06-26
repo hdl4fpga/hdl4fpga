@@ -61,6 +61,7 @@ architecture struct of mii_debug is
 	signal d_rxc  : std_logic;
 	signal d_rxdv : std_logic;
 	signal d_rxd  : std_logic_vector(mii_txd'range);
+	signal udpdport_vld : std_logic_vector(0 to 0);
 begin
 
 	txc <= mii_txc;
@@ -76,6 +77,8 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
+		udpdport_dat => x"0000",
+		udpdport_vld => udpdport_vld,
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,

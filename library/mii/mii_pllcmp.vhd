@@ -45,7 +45,7 @@ begin
 
 	mii_data_e : entity hdl4fpga.mii_pll2ser
 	port map (
-		mem_data => mem_data,
+		mii_data => mii_data,
 		mii_txc  => mii_rxc,
 		mii_tena => mii_ena,
 		mii_treq => mii_treq,
