@@ -586,10 +586,10 @@ begin
 		video_fg   => video_fg);
 
 	xxx: process(video_clk)
-		variable pcolor_sel   : std_logic_vector(0 to inputs-1);
-		variable vcolorfg_sel : std_logic_vector(0 to video_fg'length-1);
-		variable vcolorbg_sel : std_logic_vector(0 to video_bg'length-1);
-		variable gauge_sel    : std_logic_vector(0 to inputs+2-1);
+		variable pcolor_sel   : std_logic_vector(0 to unsigned_num_bits(inputs-1)-1);
+		variable vcolorfg_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
+		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
+		variable gauge_sel    : std_logic_vector(0 to unsigned_num_bits(2+inputs-1)-1);
 
 		variable plot_on      : std_logic;
 		variable video_fgon   : std_logic;
@@ -606,30 +606,32 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			if plot_on='1' then
-				pixel <= wirebus(channels_fg, pcolor_sel);
+				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
 			elsif video_fgon='1' then
-				pixel <= wirebus(hzaxis_fg & vtaxis_fg & grid_fg & trigger_fg);
+				pixel <= word2byte(hzaxis_fg   & vtaxis_fg  & grid_fg &  trigger_fg, vcolorfg_sel, pixel'length);
 			elsif video_bgon='1' then
-				pixel <= wirebus(hzaxis_bg & vtaxis_bg & grid_bg, vcolorbg_sel);
+				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
 			elsif gauges_fgon='1' then
-				pixel <= wirebus(channels_fg & hzaxis_fg & trigger_fg, gauge_sel);
+				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
 			else
+--				pixel <= b"00000000_00000000_11111111"; --(others => '1');
+				pixel <= (others => '1');
 				pixel <= (others => '0');
 			end if;
 
-			vtaxisfg_e   := word2byte(channel_ena, channel_select, 1);
-			vtaxis_fg    := word2byte(channels_fg, channel_select, vtaxis_fg'length);
-			vtaxis_fg    := vtaxis_fg and (vtaxis_fg'range => vtaxisfg_e(0));
-			vtaxis_bg    := word2byte(channels_bg, channel_select, vtaxis_bg'length);
-			triggerfg_e  := word2byte(channel_ena, trigger_select, 1);
-			trigger_fg   := word2byte(channels_fg, trigger_select, trigger_fg'length);
-			trigger_fg   := trigger_fg and (trigger_fg'range => triggerfg_e(0));
-			trigger_bg   := word2byte(channels_bg, trigger_select, trigger_bg'length);
+			vtaxisfg_e  := word2byte(channel_ena, channel_select, 1);
+			vtaxis_fg   := word2byte(channels_fg, channel_select, vtaxis_fg'length);
+			vtaxis_fg   := vtaxis_fg and (vtaxis_fg'range => vtaxisfg_e(0));
+			vtaxis_bg   := word2byte(channels_bg, channel_select, vtaxis_bg'length);
+			triggerfg_e := word2byte(channel_ena, trigger_select, 1);
+			trigger_fg  := word2byte(channels_fg, trigger_select, trigger_fg'length);
+			trigger_fg  := trigger_fg and (trigger_fg'range => triggerfg_e(0));
+			trigger_bg  := word2byte(channels_bg, trigger_select, trigger_bg'length);
 
-			vcolorfg_sel := video_fg;
-			vcolorbg_sel := video_bg;
-			gauge_sel    := gauge_on and (channel_ena & "11");
-			pcolor_sel   := plot_fg and channel_ena;
+			vcolorfg_sel := encoder(video_fg);
+			vcolorbg_sel := encoder(video_bg);
+			gauge_sel    := encoder(gauge_on and (channel_ena & "11"));
+			pcolor_sel   := encoder(plot_fg and channel_ena);
 			plot_on      := setif((plot_fg and channel_ena)  /= (plot_fg'range  => '0'));
 			video_fgon   := setif(video_fg/= (video_fg'range => '0'));
 			video_bgon   := setif(video_bg /= (video_bg'range => '0'));

@@ -144,6 +144,12 @@ package std is
 		constant e : std_logic := '1')
 		return std_logic_vector;
 
+	function primux (
+		constant inp : std_logic_vector;
+		constant ena : std_logic_vector;
+		constant def : std_logic_vector := (0 to 0 => '-'))
+		return std_logic_vector;
+
 	function word2byte (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
@@ -858,6 +864,24 @@ package body std is
 		o := (others => '0');
 		o(to_integer(unsigned(s))) := e;
 		return o;
+	end;
+
+	function primux (
+		constant inp : std_logic_vector;
+		constant ena : std_logic_vector;
+		constant def : std_logic_vector := (0 to 0 => '-'))
+		return std_logic_vector is
+		constant size : natural := (inp'length+ena'length-1)/ena'length-1;
+		variable aux  : unsigned(0 to size*ena'length-1);
+	begin
+		aux(0 to inp'length-1) := unsigned(inp);
+		for i in ena'range loop
+			if ena(i)='1' then
+				return std_logic_vector(aux(0 to size-1));
+			end if;
+			aux := aux rol size;
+		end loop;
+		return fill(def, size);
 	end;
 
 	function word2byte (
