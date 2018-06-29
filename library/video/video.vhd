@@ -271,13 +271,13 @@ use ieee.numeric_std.all;
 
 entity grid is
 	generic (
-		row_div  : std_logic_vector;
-		row_line : std_logic_vector;
-		col_div  : std_logic_vector;
-		col_line : std_logic_vector);
+		row_dot  : std_logic_vector := "000";
+		row_line : std_logic_vector := "00";
+		col_dot  : std_logic_vector := "000";
+		col_line : std_logic_vector := "00");
 	port(
 		clk : in  std_logic;
-		don : in  std_logic := '1';
+		ena : in  std_logic := '1';
 		row : in  std_logic_vector;
 		col : in  std_logic_vector;
 		dot : out std_logic);
@@ -298,15 +298,15 @@ begin
 		variable row_eq   : std_logic;
 		variable draw_row : std_logic;
 		variable draw_col : std_logic;
-		variable don1     : std_logic;
+		variable ena1     : std_logic;
 	begin
 		if rising_edge(clk) then
-			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1')) and don1;
-			row_eq   := setif(row1(row_div'length-1 downto 0)=row_div);
-			col_eq   := setif(col1(col_div'length-1 downto 0)=col_div);
-			draw_row := setif(row1(row_line'length+row_div'length-1 downto 0)=row_line&row_div);
-			draw_col := setif(col1(col_line'length+col_div'length-1 downto 0)=col_line&col_div);
-			don1     := don;
+			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1')) and ena1;
+			row_eq   := setif(row1(row_dot'length-1 downto 0)=row_dot);
+			col_eq   := setif(col1(col_dot'length-1 downto 0)=col_dot);
+			draw_row := setif(row1(row_line'length+row_dot'length-1 downto 0)=row_line&row_dot);
+			draw_col := setif(col1(col_line'length+col_dot'length-1 downto 0)=col_line&col_dot);
+			ena1     := ena;
 		end if;
 	end process;
 end;

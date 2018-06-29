@@ -34,9 +34,8 @@ entity scopeio_channel is
 		gpannel_on   : out std_logic_vector;
 		gpannel_y    : out std_logic_vector;
 		gpannel_x    : out std_logic_vector;
-		plot_fg      : out std_logic_vector;
-		video_fg     : out std_logic_vector;
-		video_bg     : out std_logic_vector);
+		tracers_on   : out std_logic_vector;
+		widgets      : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -46,29 +45,29 @@ architecture def of scopeio_channel is
 
 	signal samples : vmword_vector(inputs-1 downto 0);
 
-	signal pwin_y    : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
-	signal pwin_x    : std_logic_vector(unsigned_num_bits(scr_width-1)-1 downto 0);
-	signal win_x     : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
-	signal win_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
-	signal plot_on   : std_logic;
-	signal grid_on   : std_logic;
-	signal plot_dot  : std_logic_vector(0 to inputs-1) := (others => '0');
-	signal grid_dot  : std_logic_vector(2-1 downto 0);
-	signal meter_dot : std_logic;
-	signal axisx_on  : std_logic;
-	signal axisy_on  : std_logic;
-	signal axis_on   : std_logic;
-	signal axisx_don : std_logic := '0';
-	signal axisy_don : std_logic;
-	signal axisx_ena : std_logic := '0';
-	signal axisy_ena : std_logic;
-	signal axis_don  : std_logic;
-	signal axis_fg   : std_logic_vector(0 to 2-1);
-	signal axis_bg   : std_logic_vector(0 to 2-1);
-	signal axisy_off : std_logic_vector(win_y'range);
-	signal vt_offset : std_logic_vector(win_y'range);
-	signal axis_sgmt : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
-	signal axis_hztl : std_logic;
+	signal pwin_y     : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal pwin_x     : std_logic_vector(unsigned_num_bits(scr_width-1)-1 downto 0);
+	signal win_x      : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
+	signal win_y      : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
+	signal tracer_on  : std_logic;
+	signal grid_on    : std_logic;
+	signal tracer_dot : std_logic_vector(0 to inputs-1) := (others => '0');
+	signal grid_dot   : std_logic_vector(2-1 downto 0);
+	signal meter_dot  : std_logic;
+	signal axisx_on   : std_logic;
+	signal axisy_on   : std_logic;
+	signal axis_on    : std_logic;
+	signal axisx_don  : std_logic := '0';
+	signal axisy_don  : std_logic;
+	signal axisx_ena  : std_logic := '0';
+	signal axisy_ena  : std_logic;
+	signal axis_don   : std_logic;
+	signal axis_fg    : std_logic_vector(0 to 2-1);
+	signal axis_bg    : std_logic_vector(0 to 2-1);
+	signal axisy_off  : std_logic_vector(win_y'range);
+	signal vt_offset  : std_logic_vector(win_y'range);
+	signal axis_sgmt  : std_logic_vector(unsigned_num_bits(num_of_seg-1)-1 downto 0);
+	signal axis_hztl  : std_logic;
 
 	signal trigger_dot : std_logic;
 
@@ -137,7 +136,7 @@ begin
 			di(2) => cdon(1),
 			di(3) => cdon(2),
 			do(0) => grid_on,
-			do(1) => plot_on,
+			do(1) => tracer_on,
 			do(2) => axisx_on,
 			do(3) => axisy_on);
 
@@ -257,7 +256,17 @@ begin
 		end if;
 	end process;
 
-	plot_g : for i in 0 to inputs-1 generate
+	grid_e : entity scopeio_grid is
+	generic (
+		lat => total_delay)
+	port (
+		clk => video_clk,
+		ena => grid_on,
+		x   => win_x,
+		y   => win_y,
+		pxl => grid_pxl);
+
+	trace_g : for i in 0 to inputs-1 generate
 		signal row1 : vmword;
 	begin
 		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
@@ -266,40 +275,11 @@ begin
 			n => vmword'length)
 		port map (
 			video_clk  => video_clk,
-			video_ena  => plot_on,
+			video_ena  => tracer_on,
 			video_row1 => row1,
 			video_row2 => samples(i),
-			video_dot  => plot_dot(i));
+			video_dot  => tracer_dot(i));
 	end generate;
-
-	grid_b : block
-		signal dot : std_logic;
-	begin
-		grid_e : entity hdl4fpga.grid
-		generic map (
-			row_div  => "000",
-			row_line => "00",
-			col_div  => "000",
-			col_line => "00")
-		port map (
-			clk => video_clk,
-			don => grid_on,
-			row => win_y,
-			col => win_x,
-			dot => dot);
-
-		grid_align_e : entity hdl4fpga.align
-		generic map (
-			n => 2,
-			d => (
-				0 => total_delay-2,
-				1 => total_delay))
-		port map (
-			clk   => video_clk,
-			di(0) => dot,
-			di(1) => grid_on,
-			do    => grid_dot);
-	end block;
 
 	trigger_b : block
 		signal dot : std_logic;
@@ -315,7 +295,7 @@ begin
 			do(0) => trigger_dot);
 	end block;
 
-	plot_fg  <= plot_dot;
-	video_fg <= axis_fg & grid_dot(1) & trigger_dot;
+	traces   <= not tracer_dot & tracer_dot;
+	widgets  <= axis_bg & axis_fg & grid_dot(1) & trigger_dot;
 	video_bg <= axis_bg & grid_dot(0);
 end;

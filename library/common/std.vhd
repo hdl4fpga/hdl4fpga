@@ -920,10 +920,11 @@ package body std is
 		constant addr  : natural;
 		constant size  : natural)
 		return std_logic_vector is
-		variable aux : std_logic_vector(0 to unsigned_num_bits((word'length+size-1)/size-1)-1);
+		variable aux : unsigned(0 to size*((word'length+size-1)/size)-1);
 	begin
-		aux := std_logic_vector(to_unsigned(addr, aux'length));
-		return word2byte(fill(word, size*(2**aux'length)), aux);
+		aux(0 to word'length-1) := unsigned(word);
+		aux := aux rol ((addr*size) mod word'length);
+		return std_logic_vector(aux(0 to size-1));
 	end;
 
 	function byte2word (

@@ -14,7 +14,7 @@ entity scopeio_palette is
 		grid_fg      : in  std_logic_vector;
 		grid_bg      : in  std_logic_vector;
 		
-		channels_on  : in  std_logic_vector;
+		tracers_on   : in  std_logic_vector;
 		objectsfg_on : in  std_logic_vector;
 		objectsbg_on : in  std_logic_vector;
 		gauges_on    : in  std_logic_vector;
@@ -22,7 +22,7 @@ entity scopeio_palette is
 		trigger_on   : in  std_logic_vector;
 
 		video_clk    : in  std_logic;
-		video_pixel  : out std_logic_vector);
+		video_rgb    : out std_logic_vector);
 end;
 
 architecture beh of scopeio_palette is
@@ -30,18 +30,18 @@ architecture beh of scopeio_palette is
 	signal objectfg_on : std_logic;
 	signal objectbg_on : std_logic;
 	signal gauge_on    : std_logic;
-	signal vtaxis_fg   : std_logic_vector(video_pixel'range);
-	signal vtaxis_bg   : std_logic_vector(video_pixel'range);
-	signal trigger_fg  : std_logic_vector(video_pixel'range);
+	signal vtaxis_fg   : std_logic_vector(video_rgb'range);
+	signal vtaxis_bg   : std_logic_vector(video_rgb'range);
+	signal trigger_fg  : std_logic_vector(video_rgb'range);
 begin
 
-	video_pixel <= primux(
+	video_rgb <= primux(
 		primux(channels_fg, channels_on) &
 		primux(hzaxis_fg & vtaxis_fg & grid_fg & trigger_fg, objectsfg_on) &
 		primux(hzaxis_bg & vtaxis_bg & grid_bg, objectsbg_on) &
 		primux(channels_fg & hzaxis_fg & trigger_fg, gauges_on),
 		channel_on & objectfg_on & objectbg_on & gauge_on,
-		(video_pixel'range => '0'));
+		(video_rgb'range => '0'));
 
 	vtaxis_fg   <= primux(channels_fg, channels_on);
 	vtaxis_bg   <= primux(channels_bg, channels_on);

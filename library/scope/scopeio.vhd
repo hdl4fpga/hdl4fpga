@@ -99,9 +99,9 @@ architecture beh of scopeio is
 	signal video_vcntr      : std_logic_vector(11-1 downto 0);
 	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
-	signal plot_fg          : std_logic_vector(0 to inputs-1);
-	signal video_fg         : std_logic_vector(0 to 4-1);
-	signal video_bg         : std_logic_vector(0 to 3-1);
+	signal tracers_on       : std_logic_vector(0 to inputs-1);
+	signal objects_bg       : std_logic_vector(0 to 4-1);
+	signal objects_fg       : std_logic_vector(0 to 3-1);
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	signal abscisa          : std_logic_vector(0 to unsigned_num_bits(ly_dptr(layout_id).chan_width-1)-1);
@@ -145,7 +145,7 @@ architecture beh of scopeio is
 	type    mdword_vector is array (natural range <>) of mdword;
 
 	signal scales           : std_logic_vector(0 to inputs*mword'length-1);
-	signal pixel       : std_logic_vector(video_rgb'range);
+	signal video_pixel       : std_logic_vector(video_rgb'range);
 
 	signal gpannel_on  : std_logic_vector(0 to ly_dptr(layout_id).num_of_seg-1);
 	signal gpannel_x   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).scr_width-1)-1 downto 0);
@@ -581,66 +581,30 @@ begin
 		gpannel_on => gpannel_on,
 		gpannel_x  => gpannel_x,
 		gpannel_y  => gpannel_y,
-		plot_fg    => plot_fg,
-		video_bg   => video_bg,
-		video_fg   => video_fg);
+		tracers_on => tracers_on,
+		objects_fg => objects_fg,
+		objects_bg => objects_bg);
 
-	xxx: process(video_clk)
-		variable pcolor_sel   : std_logic_vector(0 to unsigned_num_bits(inputs-1)-1);
-		variable vcolorfg_sel : std_logic_vector(0 to unsigned_num_bits(video_fg'length-1)-1);
-		variable vcolorbg_sel : std_logic_vector(0 to unsigned_num_bits(video_bg'length-1)-1);
-		variable gauge_sel    : std_logic_vector(0 to unsigned_num_bits(2+inputs-1)-1);
+	scopeio_palette_e : entity hdl4fpga.palette
+	port map (
+		channels_fg  =>,  
+		channels_bg  =>, 
+		hzaxis_fg    =>, 
+		hzaxis_bg    =>, 
+		grid_fg      =>, 
+		grid_bg      =>, 
+		
+		tracers_on   =>, 
+		objectsfg_on => objects_, 
+		objectsbg_on =>, 
+		gauges_on    =>, 
 
-		variable plot_on      : std_logic;
-		variable video_fgon   : std_logic;
-		variable video_bgon   : std_logic;
-		variable gauges_fgon  : std_logic;
+		trigger_on   =>, 
 
-		variable vtaxis_fg   : std_logic_vector(video_rgb'range);
-		variable vtaxisfg_e  : std_logic_vector(0 to 0);
-		variable vtaxis_bg   : std_logic_vector(video_rgb'range);
-		variable trigger_fg  : std_logic_vector(video_rgb'range);
-		variable triggerfg_e : std_logic_vector(0 to 0);
-		variable trigger_bg  : std_logic_vector(video_rgb'range);
+		video_clk    => video_clk, 
+		video_pixel  => video_pixel);
 
-	begin
-		if rising_edge(video_clk) then
-			if plot_on='1' then
-				pixel <= word2byte(channels_fg, pcolor_sel, pixel'length);
-			elsif video_fgon='1' then
-				pixel <= word2byte(hzaxis_fg   & vtaxis_fg  & grid_fg &  trigger_fg, vcolorfg_sel, pixel'length);
-			elsif video_bgon='1' then
-				pixel <= word2byte(hzaxis_bg   & vtaxis_bg  & grid_bg, vcolorbg_sel, pixel'length);
-			elsif gauges_fgon='1' then
-				pixel <= word2byte(channels_fg & hzaxis_fg  & trigger_fg, gauge_sel, pixel'length);
-			else
---				pixel <= b"00000000_00000000_11111111"; --(others => '1');
-				pixel <= (others => '1');
-				pixel <= (others => '0');
-			end if;
-
-			vtaxisfg_e  := word2byte(channel_ena, channel_select, 1);
-			vtaxis_fg   := word2byte(channels_fg, channel_select, vtaxis_fg'length);
-			vtaxis_fg   := vtaxis_fg and (vtaxis_fg'range => vtaxisfg_e(0));
-			vtaxis_bg   := word2byte(channels_bg, channel_select, vtaxis_bg'length);
-			triggerfg_e := word2byte(channel_ena, trigger_select, 1);
-			trigger_fg  := word2byte(channels_fg, trigger_select, trigger_fg'length);
-			trigger_fg  := trigger_fg and (trigger_fg'range => triggerfg_e(0));
-			trigger_bg  := word2byte(channels_bg, trigger_select, trigger_bg'length);
-
-			vcolorfg_sel := encoder(video_fg);
-			vcolorbg_sel := encoder(video_bg);
-			gauge_sel    := encoder(gauge_on and (channel_ena & "11"));
-			pcolor_sel   := encoder(plot_fg and channel_ena);
-			plot_on      := setif((plot_fg and channel_ena)  /= (plot_fg'range  => '0'));
-			video_fgon   := setif(video_fg/= (video_fg'range => '0'));
-			video_bgon   := setif(video_bg /= (video_bg'range => '0'));
-			gauges_fgon  := setif((gauge_on and (channel_ena & "11"))/= (gauge_on'range => '0')) and cga_dot;
-
-		end if;
-	end process;
-
-	video_rgb   <= (video_rgb'range => video_io(2)) and pixel;
+	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
