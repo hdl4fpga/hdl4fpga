@@ -256,30 +256,26 @@ begin
 		end if;
 	end process;
 
-	grid_e : entity scopeio_grid is
-	generic (
+	grid_e : entity hdl4fpga.scopeio_grid
+	generic map (
 		lat => total_delay)
-	port (
+	port map (
 		clk => video_clk,
 		ena => grid_on,
 		x   => win_x,
 		y   => win_y,
 		pxl => grid_pxl);
 
-	trace_g : for i in 0 to inputs-1 generate
-		signal row1 : vmword;
-	begin
-		row1 <= std_logic_vector(unsigned(to_unsigned(2**(win_y'length-1), row1'length)+resize(unsigned(win_y),row1'length)));
-		draw_vline : entity hdl4fpga.draw_vline
-		generic map (
-			n => vmword'length)
-		port map (
-			video_clk  => video_clk,
-			video_ena  => tracer_on,
-			video_row1 => row1,
-			video_row2 => samples(i),
-			video_dot  => tracer_dot(i));
-	end generate;
+	tracer_e : entity hdl4fpga.scopeio_tracer
+	generic map (
+		inputs  => inputs)
+	port map (
+		clk     => video_clk,
+		ena     => video_ena,
+		y       => win_y,
+		samples => samples,
+		pxl     => trace_pxl);
+
 
 	trigger_b : block
 		signal dot : std_logic;
