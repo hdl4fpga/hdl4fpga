@@ -40,14 +40,15 @@ begin
 	end generate;
 
 	process(dot)
-		variable aux : unsigned(0 to pixels'length-1) := (others => '0');
+		variable aux : unsigned(0 to pixels'length-1);
 	begin
-		aux := unsigned(pixels);
+		aux := (others => '0');
 		for i in 0 to inputs-1 loop
-			aux(0) := ena;
+			aux(0) := dot(i);
 			aux(1) := dot(i);
 			aux := aux rol (pixels'length/inputs);
 		end loop;
 		pixels <= std_logic_vector(aux);
 	end process;
+
 end;
