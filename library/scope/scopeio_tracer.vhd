@@ -11,8 +11,9 @@ entity scopeio_tracer is
 	port (
 		clk     : in  std_logic;
 		ena     : in  std_logic;
-		samples : in  std_logic_vector;
 		y       : in  std_logic_vector;
+		vt_pos  : in  std_logic_vector;
+		samples : in  std_logic_vector;
 		pixels  : out std_logic_vector);
 end;
 
@@ -22,20 +23,40 @@ architecture def of scopeio_tracer is
 	signal dot : std_logic_vector(0 to pixels'length/size-1);
 
 begin
-	trace_g : for i in 0 to inputs-1 generate
-		signal sample : std_logic_vector(0 to samples'length/inputs-1);
-		signal row1   : unsigned(sample'range);
+
+	vertical_position_p : process (video_clk)
 	begin
-		sample <= word2byte(smp, i, smp'length/inputs);
-		row1   <= resize(unsigned(y),sample'length) + bias;
+		if rising_edge(video_clk) then
+			for i in 0 to inputs-1 loop
+			end loop;
+		end if;
+	end process;
+
+	trace_g : for i in 0 to inputs-1 generate
+
+		signal sample : std_logic_vector(0 to samples'length/inputs-1);
+		signal row1   : std_logic_vector(sample'range);
+
+	begin
+
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				sample <= std_logic_vector(
+					unsigned(word2byte(samples, i, samples'length/inputs)) +
+					unsigned(word2byte(vt_pos,  i, vt_pos'length/inputs)));
+				row1 <= std_logic_vector(resize(unsigned(y),sample'length) + bias);
+			end if;
+		end process;
+
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (
 			n => sample'length)
 		port map (
 			video_clk  => clk,
 			video_ena  => ena,
-			video_row1 => std_logic_vector(row1),
-			video_row2 => sample(i),
+			video_row1 => row1,
+			video_row2 => sample,
 			video_dot  => dot(i));
 	end generate;
 

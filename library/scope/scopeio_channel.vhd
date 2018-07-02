@@ -21,21 +21,21 @@ entity scopeio_channel is
 		scr_width    : natural;
 		height       : natural);
 	port (
-		video_clk    : in  std_logic;
-		video_nhl    : in  std_logic;
-		abscisa      : out std_logic_vector;
-		ordinates    : in  std_logic_vector;
-		offset       : in  std_logic_vector;
-		trigger      : in  std_logic_vector;
-		hz_scale     : in  std_logic_vector(4-1 downto 0);
-		vt_scale     : in  std_logic_vector(4-1 downto 0);
-		win_frm      : in  std_logic_vector;
-		win_on       : in  std_logic_vector;
-		gpannel_on   : out std_logic_vector;
-		gpannel_y    : out std_logic_vector;
-		gpannel_x    : out std_logic_vector;
-		tracers_on   : out std_logic_vector;
-		widgets      : out std_logic_vector);
+		video_clk     : in  std_logic;
+		video_nhl     : in  std_logic;
+		vt_off : in  std_logic_vector;
+		vt_pos : in  std_logic_vector;
+		trigger_level : in  std_logic_vector;
+		abscisa       : out std_logic_vector;
+		hz_scale      : in  std_logic_vector(4-1 downto 0);
+		vt_scale      : in  std_logic_vector(4-1 downto 0);
+		win_frm       : in  std_logic_vector;
+		win_on        : in  std_logic_vector;
+		gpannel_on    : out std_logic_vector;
+		gpannel_y     : out std_logic_vector;
+		gpannel_x     : out std_logic_vector;
+		tracers_on    : out std_logic_vector;
+		widgets       : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -183,7 +183,8 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			vt_offset <= std_logic_vector(resize(unsigned(offset),win_y'length)+(96+4)+unsigned(win_y));
+			vt_offset <= std_logic_vector(
+				resize(unsigned(vt_off),win_y'length)+(96+4)+unsigned(win_y));
 		end if;
 	end process;
 
@@ -210,6 +211,7 @@ begin
 		axis_hzscale => hz_scale,
 		axis_vtscale => vt_scale,
 		axis_dot     => axis_don);
+
 	axisx_don <= axis_don and axisx_ena;
 	axisy_don <= axis_don and axisy_ena;
 
@@ -244,18 +246,6 @@ begin
 		do(4) => axis_bg(0),
 		do(5) => axis_bg(1));
 
-	process (video_clk)
-		variable aux : signed(0 to ordinates'length-1);
-	begin
-		if rising_edge(video_clk) then
-			aux := signed(ordinates);
-			for i in 0 to inputs-1 loop
-				samples(i) <= std_logic_vector(3*chan_height/2-resize(aux(0 to ordinates'length/inputs-1),vmword'length));
-				aux        := aux sll (ordinates'length/inputs);
-			end loop;
-		end if;
-	end process;
-
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
 		lat => total_delay)
@@ -273,23 +263,21 @@ begin
 		clk     => video_clk,
 		ena     => video_ena,
 		y       => win_y,
+		vt_pos  => vt_pos,
 		samples => samples,
 		pxl     => trace_pxl);
 
 
-	trigger_b : block
-		signal dot : std_logic;
-	begin
-		dot <= win_x(1) and setif(resize(unsigned(win_y), trigger'length)=unsigned(trigger)) and grid_on;
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => total_delay))
-		port map (
-			clk   => video_clk,
-			di(0) => dot,
-			do(0) => trigger_dot);
-	end block;
+	trigger_e : entity hdl4fpga.scopeio_hline
+	generic map (
+		lat   => lat)
+	port map (
+		row   => trigger_level,
+		clk   => video_clk,
+		ena   => video_ena,
+		x     => win_x,
+		y     => win_y,
+		pixel => trigger_pxl);
 
 	traces   <= not tracer_dot & tracer_dot;
 	widgets  <= axis_bg & axis_fg & grid_dot(1) & trigger_dot;
