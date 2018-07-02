@@ -313,6 +313,24 @@ end;
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+entity draw_hline is
+	port (
+		ena  : in  std_logic := '1';
+		mask : in  std_logic_vector;
+		x    : in  std_logic_vector; 
+		y    : in  std_logic_vector;
+		row  : in  std_logic_vector;
+		dot  : out std_logic);
+end;
+
+architecture def of draw_hline is
+begin
+	dot <= ena when y=row and (x and mask)=(x'range => '0') else '0';
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity draw_vline is
