@@ -1,3 +1,6 @@
+The code that is on the reposiroty is not working now. You can find a stable release following the next link https://github.com/hdl4fpga/hdl4fpga/releases/tag/arty
+
+
 `scopeio : an Embedded Measurement System <https://hdl4fpga.github.io/hdl4fpga/>`_
 ==================================================================================
 
@@ -14,7 +17,7 @@ How it was born
 
 I found myself in a situation in which I had to debug a high-performance open
 source portable DDR Core. I needed to capture a lot of data to see as many
-events as possible. There weren¿t just a few signals, but more than sixteen to
+events as possible. There werenÂ¿t just a few signals, but more than sixteen to
 understand what was happening. That is how ScopeIO was born.
 
 Its goals were:
@@ -52,7 +55,7 @@ VGA is a well known video standard that is easy to implement, and it is pretty
 much available on every monitor. Many monitors that have a DVI port are easy to
 connect to a VGA port too through a mechanical adapter. A VGA port needs a
 minimum of GND, VSYNC, HSYNC and RGB pins. Four wires are more than enough if
-you don¿t mind a monochrome image, or six to have eight colors. But if you have
+you donÂ¿t mind a monochrome image, or six to have eight colors. But if you have
 video dacs in the development kit, ScopeIO can display as many colors as there
 are available.
 
@@ -67,7 +70,7 @@ UDP to send data to the computer.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Commands to control ScopeIO are sent by UDP/IP. The commands are detected every
-time a packet with the corresponding MAC address : ¿00:00:00:01:02:03¿ - not
+time a packet with the corresponding MAC address : Â¿00:00:00:01:02:03Â¿ - not
 much imagination there -  is received. A configuration in the PC is required as
 described in the video. A simple JavaScript Application controls everything
 else. Node,js and Nw.js are required to run it.
