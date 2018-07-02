@@ -313,6 +313,7 @@ end;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity draw_hline is
 	port (
@@ -326,7 +327,7 @@ end;
 
 architecture def of draw_hline is
 begin
-	dot <= ena when y=row and (x and mask)=(x'range => '0') else '0';
+	dot <= ena when (y=row) and (x and std_logic_vector(resize(unsigned(mask), x'length)))=(x'range => '0') else '0';
 end;
 
 library ieee;
@@ -337,11 +338,11 @@ entity draw_vline is
 	generic (
 		n : natural := 12);
 	port(
-		video_clk  : in  std_logic;
-		video_ena  : in  std_logic := '1';
-		video_row1 : in  std_logic_vector(n-1 downto 0);
-		video_row2 : in  std_logic_vector(n-1 downto 0);
-		video_dot  : out std_logic);
+		clk  : in  std_logic;
+		ena  : in  std_logic := '1';
+		row1 : in  std_logic_vector(n-1 downto 0);
+		row2 : in  std_logic_vector(n-1 downto 0);
+		dot  : out std_logic);
 end;
 
 library hdl4fpga;
@@ -349,7 +350,7 @@ library hdl4fpga;
 architecture arc of draw_vline is
 	signal le1, le2 : std_logic;
 	signal eq1, eq2 : std_logic;
-	signal ena : std_logic;
+	signal enad : std_logic;
 begin
 	ena_e : entity hdl4fpga.align
 	generic map (
@@ -357,24 +358,24 @@ begin
 		d => (0 to 0 => n),
 		i => (0 to 0 => '-'))
 	port map (
-		clk => video_clk,
-		di(0) => video_ena,
-		do(0) => ena);
+		clk => clk,
+		di(0) => ena,
+		do(0) => enad);
 
 	leq_e : entity hdl4fpga.pipe_le
 	generic map (
 		n => n)
 	port map (
-		clk => video_clk,
-		a   => video_row1,
-		b   => video_row2,
+		clk => clk,
+		a   => row1,
+		b   => row2,
 		le  => le2,
 		eq  => eq2);
 
-	process (video_clk)
+	process (clk)
 	begin
-		if rising_edge(video_clk) then
-			video_dot <= ((le1 xor le2) or eq2 or eq1) and ena;
+		if rising_edge(clk) then
+			dot <= ((le1 xor le2) or eq2 or eq1) and enad;
 			le1 <= le2;
 			eq1 <= eq2;
 		end if;

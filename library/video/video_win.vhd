@@ -173,7 +173,7 @@ use ieee.numeric_std.all;
 entity win is
 	port (
 		video_clk : in  std_logic;
-		video_nhl : in  std_logic;
+		video_hzl : in  std_logic;
 		win_frm   : in  std_logic;
 		win_ena   : in  std_logic;
 		win_x     : out std_logic_vector;
@@ -194,7 +194,7 @@ begin
 			end if;
 			if win_frm='0' then
 				y := (others => '0');
-			elsif video_nhl='1' then
+			elsif video_hzl='1' then
 				y := y + 1;
 			end if;
 			win_x <= std_logic_vector(x);

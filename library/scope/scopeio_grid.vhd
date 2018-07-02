@@ -9,11 +9,11 @@ entity scopeio_grid is
 	generic (
 		lat : natural);
 	port (
-		clk : in  std_logic;
-		ena : in  std_logic;
-		x   : in  std_logic_vector;
-		y   : in  std_logic_vector;
-		pxl : out std_logic_vector(0 to 2-1));
+		clk   : in  std_logic;
+		ena   : in  std_logic;
+		x     : in  std_logic_vector;
+		y     : in  std_logic_vector;
+		pixel : out std_logic_vector(0 to 2-1));
 end;
 
 architecture def of scopeio_grid is
@@ -23,7 +23,7 @@ begin
 	grid_e : entity hdl4fpga.grid
 	port map (
 		clk => clk,
-		don => ena,
+		ena => ena,
 		row => y,
 		col => x,
 		dot => dot);
@@ -36,6 +36,6 @@ begin
 		clk   => clk,
 		di(0) => ena,
 		di(1) => dot,
-		do    => pxl);
+		do    => pixel);
 
 end;

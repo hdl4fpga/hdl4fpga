@@ -20,13 +20,13 @@ end;
 architecture def of scopeio_tracer is
 	constant bias : natural := 2**(y'length-1);
 
-	signal dot : std_logic_vector(0 to pixels'length/size-1);
+	signal dot : std_logic_vector(0 to pixels'length/inputs-1);
 
 begin
 
-	vertical_position_p : process (video_clk)
+	vertical_position_p : process (clk)
 	begin
-		if rising_edge(video_clk) then
+		if rising_edge(clk) then
 			for i in 0 to inputs-1 loop
 			end loop;
 		end if;
@@ -39,9 +39,9 @@ begin
 
 	begin
 
-		process (video_clk)
+		process (clk)
 		begin
-			if rising_edge(video_clk) then
+			if rising_edge(clk) then
 				sample <= std_logic_vector(
 					unsigned(word2byte(samples, i, samples'length/inputs)) +
 					unsigned(word2byte(vt_pos,  i, vt_pos'length/inputs)));
@@ -53,11 +53,11 @@ begin
 		generic map (
 			n => sample'length)
 		port map (
-			video_clk  => clk,
-			video_ena  => ena,
-			video_row1 => row1,
-			video_row2 => sample,
-			video_dot  => dot(i));
+			clk  => clk,
+			ena  => ena,
+			row1 => row1,
+			row2 => sample,
+			dot  => dot(i));
 	end generate;
 
 	process(dot)
