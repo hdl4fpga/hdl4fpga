@@ -22,13 +22,12 @@ entity scopeio_channel is
 		video_hzl   : in  std_logic;
 		win_frm     : in  std_logic_vector;
 		win_on      : in  std_logic_vector;
-		vt_off      : in  std_logic_vector;
 		vt_pos      : in  std_logic_vector;
 		trg_lvl     : in  std_logic_vector;
 		samples     : in  std_logic_vector;
-		grid_pxl    : out std_logic_vector;
-		trigger_pxl : out std_logic_vector;
-		trace_pxls  : out std_logic_vector);
+		grid_dot    : out std_logic_vector;
+		trigger_dot : out std_logic_vector;
+		traces_pxls : out std_logic_vector);
 end;
 
 architecture def of scopeio_channel is
@@ -119,22 +118,22 @@ begin
 	generic map (
 		lat => lat)
 	port map (
-		clk   => video_clk,
-		ena   => grid_on,
-		x     => win_x,
-		y     => win_y,
-		pixel => grid_pxl);
+		clk  => video_clk,
+		ena  => grid_on,
+		x    => win_x,
+		y    => win_y,
+		dot  => grid_dot);
 
 	trigger_e : entity hdl4fpga.scopeio_hline
 	generic map (
 		lat   => lat)
 	port map (
-		row   => trg_lvl,
-		clk   => video_clk,
-		ena   => grid_on,
-		x     => win_x,
-		y     => win_y,
-		pixel => trigger_pxl);
+		row => trg_lvl,
+		clk => video_clk,
+		ena => grid_on,
+		x   => win_x,
+		y   => win_y,
+		dot => trigger_dot);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (
@@ -145,6 +144,6 @@ begin
 		y       => win_y,
 		vt_pos  => vt_pos,
 		samples => samples,
-		pixels  => trace_pxls);
+		dots    => traces_dots);
 
 end;

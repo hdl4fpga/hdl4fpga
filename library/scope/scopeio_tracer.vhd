@@ -14,14 +14,11 @@ entity scopeio_tracer is
 		y       : in  std_logic_vector;
 		vt_pos  : in  std_logic_vector;
 		samples : in  std_logic_vector;
-		pixels  : out std_logic_vector);
+		dots    : out std_logic_vector);
 end;
 
 architecture def of scopeio_tracer is
 	constant bias : natural := 2**(y'length-1);
-
-	signal dot : std_logic_vector(0 to pixels'length/inputs-1);
-
 begin
 
 	vertical_position_p : process (clk)
@@ -57,19 +54,7 @@ begin
 			ena  => ena,
 			row1 => row1,
 			row2 => sample,
-			dot  => dot(i));
+			dot  => dots(i));
 	end generate;
-
-	process(dot)
-		variable aux : unsigned(0 to pixels'length-1);
-	begin
-		aux := (others => '0');
-		for i in 0 to inputs-1 loop
-			aux(0) := dot(i);
-			aux(1) := dot(i);
-			aux := aux rol (pixels'length/inputs);
-		end loop;
-		pixels <= std_logic_vector(aux);
-	end process;
 
 end;

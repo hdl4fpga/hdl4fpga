@@ -7,18 +7,17 @@ entity scopeio_hline is
 	generic (
 		lat   : natural);
 	port (
-		clk   : in  std_logic;
-		ena   : in  std_logic;
-		x     : in  std_logic_vector;
-		y     : in  std_logic_vector;
-		row   : in  std_logic_vector;
-		pixel : out std_logic_vector);
+		clk : in  std_logic;
+		ena : in  std_logic;
+		x   : in  std_logic_vector;
+		y   : in  std_logic_vector;
+		row : in  std_logic_vector;
+		dot : out std_logic);
 end;
 
 architecture def of scopeio_hline is
 
-	signal dot : std_logic;
-	signal pxl : std_logic_vector(0 to pixel'length-1);
+	signal hdot : std_logic;
 
 begin
 
@@ -28,7 +27,7 @@ begin
 		x    => x,
 		y    => y,
 		row  => row,
-		dot  => dot);
+		dot  => hdot);
 
 	align_e : entity hdl4fpga.align
 	generic map (
@@ -36,11 +35,7 @@ begin
 		d => (0 => lat))
 	port map (
 		clk   => clk,
-		di(0) => dot,
-		do(0) => pxl(0));
-
-	pxl(1 to pxl'length-1) <= (others => pxl(0));
-
-	pixel <= pxl;
+		di(0) => hdot,
+		do(0) => dot);
 
 end;
