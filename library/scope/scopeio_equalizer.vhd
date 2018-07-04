@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_trigger is
+entity scopeio_equalizer is
 	port (
 		input_clk       : in  std_logic;
 		input_ena       : in  std_logic;
@@ -19,7 +19,7 @@ entity scopeio_trigger is
 		output_data     : out std_logic_vector);
 end;
 
-architecture beh of scopeio_trigger is
+architecture beh of scopeio_equalizer is
 	signal trigger_on : std_logic;
 	signal sample     : std_logic_vector(trigger_level'range);
 begin

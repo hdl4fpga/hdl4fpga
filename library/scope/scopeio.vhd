@@ -310,6 +310,7 @@ begin
 		end if;
 	end process;
 
+	scope_amplifier_e 
 	process (input_clk)
 		variable scales : integer_vector(vt_scales'range);
 		variable aux    : std_logic_vector(vm_inputs'range);
@@ -336,111 +337,73 @@ begin
 		end if;
 	end process;
 
-	trigger_b : block
-		signal input_level : std_logic_vector(0 to vt_size-1);
+	scope_trigger_e : entity hdl4fpga.trigger
+	port map (
+		input_clk       => input_clk,
+		input_ena       => input_ena,
+		input_data      => input_data,
+		trigger_req     => trigger_req,
+		trigger_edge    => trigger_edge,
+		trigger_channel => trigger_channel,
+		trigger_level   => trigger_level,
+		capture_rdy     => ,
+		capture_req     => ,
+		output_data     => );
+
+	graphics_b : block
 	begin
-		process (input_clk)
-			variable input_aux  : std_logic_vector(input_level'range);
-			variable input_ge   : std_logic;
-			variable input_trgr : std_logic;
-		begin
-			if rising_edge(input_clk) then
-				if caputre_ena='1' then
-					if input_addr(0)='1' then
-						if video_frm='0' then
-							caputre_ena <= '0';
-						end if;
-					end if;
-					input_trgr := '0';
-				elsif input_trgr='0' then
-					if input_ge='0' then
-						input_trgr := '1';
-					end if;
-				elsif input_ge='1' then
-					caputre_ena <= '1';
-				end if;
-				if input_we='1' then
-					input_ge  := trigger_edge xnor setif(signed(input_aux) >= signed(trigger_level));
-					input_aux := word2byte(vm_inputs, trigger_channel, vt_size);
-				end if;
-			end if;
-		end process;
-
-		inpwedly_e : entity hdl4fpga.align 
+		scope_cga_e : entity hdl4fpga.scopeio_cga
 		generic map (
-			n => 1,
-			d => (0 => 2))
+			font_bitrom => psf1cp850x8x16,
+			font_height => 16,
+			font_width  => 8)
 		port map (
-			clk   => input_clk,
-			di(0) => input_we,
-			do(0) => input_inc);
+			clk => video_clk,
+			x   =>
+			y   =>
+			dot => cga_dot);
 
-		process (input_clk) 
-		begin
-			if rising_edge(input_clk) then
-				if caputre_ena='0' then
-					input_addr <= (others => '0');
-				elsif input_addr(0)='0' then
-					if input_inc='1' then
-						input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-					end if;
-				end if;
-			end if;
-		end process;
+		scopeio_channel_e : entity hdl4fpga.scopeio_channel
+		generic map (
+			lat         => lat,
+			inputs      => inputs,
+			num_of_seg  => ly_dptr(layout_id).num_of_seg,
+			chan_x      => ly_dptr(layout_id).chan_x,
+			chan_width  => ly_dptr(layout_id).chan_width,
+			chan_height => ly_dptr(layout_id).chan_height,
+			scr_width   => ly_dptr(layout_id).scr_width,
+			height      => ly_dptr(layout_id).chan_y,
+		port map (
+			video_clk   => video_clk,
+			video_hzl   => video_hzl,
+			win_frm     => win_frm,
+			win_on      => win_don,
+			samples     => samples,
+			vt_pos      => vt_pos,
+			trg_lvl     => trg_lvl,
+			grid_pxl    => grid_pxl,
+			trigger_pxl => trigger_pxl,
+			traces_pxls => trace_pxls);
 
+		scopeio_palette_e : entity hdl4fpga.palette
+		port map (
+			channels_fg  =>,  
+			channels_bg  =>, 
+			hzaxis_fg    =>, 
+			hzaxis_bg    =>, 
+			grid_fg      =>, 
+			grid_bg      =>, 
+			
+			tracers_on   =>, 
+			objectsfg_on => objects_, 
+			objectsbg_on =>, 
+			gauges_on    =>, 
+
+			trigger_on   =>, 
+
+			video_clk    => video_clk, 
+			video_pixel  => video_pixel);
 	end block;
-
-	scope_cga_e : entity hdl4fpga.scopeio_cga
-	generic map (
-		font_bitrom => psf1cp850x8x16,
-		font_height => 16,
-		font_width  => 8)
-	port map (
-		clk => video_clk,
-		x   =>
-		y   =>
-		dot => cga_dot);
-
-	scopeio_channel_e : entity hdl4fpga.scopeio_channel
-	generic map (
-		lat         => lat,
-		inputs      => inputs,
-		num_of_seg  => ly_dptr(layout_id).num_of_seg,
-		chan_x      => ly_dptr(layout_id).chan_x,
-		chan_width  => ly_dptr(layout_id).chan_width,
-		chan_height => ly_dptr(layout_id).chan_height,
-		scr_width   => ly_dptr(layout_id).scr_width,
-		height      => ly_dptr(layout_id).chan_y,
-	port map (
-		video_clk   => video_clk,
-		video_hzl   => video_hzl,
-		win_frm     => win_frm,
-		win_on      => win_don,
-		samples     => samples,
-		vt_pos      => vt_pos,
-		trg_lvl     => trg_lvl,
-		grid_pxl    => grid_pxl,
-		trigger_pxl => trigger_pxl,
-		traces_pxls => trace_pxls);
-
-	scopeio_palette_e : entity hdl4fpga.palette
-	port map (
-		channels_fg  =>,  
-		channels_bg  =>, 
-		hzaxis_fg    =>, 
-		hzaxis_bg    =>, 
-		grid_fg      =>, 
-		grid_bg      =>, 
-		
-		tracers_on   =>, 
-		objectsfg_on => objects_, 
-		objectsbg_on =>, 
-		gauges_on    =>, 
-
-		trigger_on   =>, 
-
-		video_clk    => video_clk, 
-		video_pixel  => video_pixel);
 
 	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
 	video_blank <= video_io(2);
