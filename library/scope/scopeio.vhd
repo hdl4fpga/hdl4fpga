@@ -282,60 +282,19 @@ begin
 		win_don    => win_don,
 		win_frm    => win_frm);
 
-	prescaler_p : process (input_clk)
-
-		function adjtab (
-			constant arg : scale_vector)
-			return integer_vector is
-			variable retval : integer_vector(arg'range);
-		begin
-			for i in retval'range loop
-				retval(i) := arg(i).mult-2;
-			end loop;
-			return retval;
-		end;
-
-		constant table  : integer_vector(hz_scales'range) := adjtab(hz_scales);
-		variable scaler : signed(0 to signed_num_bits(max(table)-1)-1);
+	equalizer_g : for in 0 to inputs-1 generate
+		subtype sample_range is natural i*input_size to (i+1)*input_size-1;
 	begin
-		if rising_edge(input_clk) then
-			input_we <= scaler(0) and input_ena;
-			if input_ena='1' then
-				if scaler(0)='1' then
-					scaler := to_signed(table(to_integer((unsigned(hz_scale)))), scaler'length);
-				else
-					scaler := scaler - 1;
-				end if;
-			end if;
-		end if;
-	end process;
-
-	scope_amplifier_e 
-	process (input_clk)
-		variable scales : integer_vector(vt_scales'range);
-		variable aux    : std_logic_vector(vm_inputs'range);
-		variable m      : mdword_vector(0 to inputs-1);
-		variable a      : mword_vector(0 to inputs-1);
-		variable s      : mword_vector(0 to inputs-1);
-	begin
-		if rising_edge(input_clk) then
-			for i in 0 to inputs-1 loop
-
-				for j in scales'range loop
-					scales(j) := integer(input_preamp(i)*real(vt_scales(j).mult));
-				end loop;
-
-				aux := byte2word(
-					aux, 
-					std_logic_vector(resize(m(i)(0 to a(0)'length-1), vt_size)),
-					reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-				m(i) := a(i)*s(i);
-				s(i) := to_signed(scales(to_integer(unsigned(word2byte(channel_scale, i, channel_scale'length/inputs)))), mword'length);
-				a(i) := resize(signed(std_logic_vector'(word2byte(input_data, i, input_data'length/inputs))), mword'length);
-			end loop;
-			vm_inputs <= aux;
-		end if;
-	end process;
+		equalizer_e : entity hdl4fpga.equalizer
+		port map (
+			input_clk      => input_clk,
+			input_ena      => input_ena,
+			input_sample   => input_data(sample_range),
+			equalizer_addr => equalizer_addr,
+			equalizer_data => equalizer_data,
+			output_ena     => output_ena,
+			output_sample  => output_data(sample_range));
+	end generate;
 
 	scope_trigger_e : entity hdl4fpga.trigger
 	port map (
