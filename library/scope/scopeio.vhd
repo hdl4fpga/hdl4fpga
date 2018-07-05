@@ -191,96 +191,18 @@ begin
 		scope_channel  <= std_logic_vector(data(scope_channel'range));
 	end process;
 
-	process (mii_rxc)
-	begin
-		if rising_edge(mii_rxc) then
-			trigger_offset <= std_logic_vector(-(
-				signed(trigger_level) +
-				signed(word2byte(
-					channel_offset, 
-					trigger_channel,
-					vt_size)) -
-				signed'(b"0_1000_0000")));
-
-			if pll_rdy='1' then
-				for i in 0 to inputs-1 loop
-					if i=to_integer(unsigned(scope_channel(channel_select'range))) then
-						case scope_cmd(3 downto 0) is
-						when "0000" =>
-							channel_scale  <= byte2word(channel_scale, 
-											  scope_data(vt_scale'range),
-											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-							channel_decas  <= byte2word(channel_decas, 
-											  vt_scales(to_integer(unsigned(scope_data(vt_scale'range)))).deca,
-											  reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-							channel_select <= std_logic_vector(to_unsigned(i, channel_select'length));
-
-							vt_scale       <= scope_data(vt_scale'range);
-						when "0001" =>
-							channel_offset <= byte2word(channel_offset, std_logic_vector(resize(signed(scope_data), vt_size)), reverse(std_logic_vector(to_unsigned(2**i, inputs))));
-							vt_pos   <= std_logic_vector(resize(signed(scope_data), vt_pos'length));
-						when others =>
-						end case;
-					end if;
-				end loop;
-
-				case scope_cmd(3 downto 0) is
-				when "0010" =>
-					trigger_level   <= std_logic_vector(resize(signed(scope_data), vt_size));
-					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
-					trigger_edge    <= scope_channel(scope_channel'left);
-					trigger_select  <= scope_channel(trigger_select'range);
-				when "0011" =>
-					hz_scale        <= scope_data(hz_scale'range);
-					time_deca       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca;
-					g_hzscale       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).scale;
-				when others =>
-				end case;
-			end if;
-		end if;
-	end process;
 	trigger_scale <= vt_scales(to_integer(unsigned(word2byte(channel_scale, trigger_channel, channel_scale'length/inputs)))).scale;
 	trigger_deca  <= word2byte(channel_decas, trigger_channel, ascii'length);
 	tdiv <= hz_scale;
 
-	video_e : entity hdl4fpga.video_vga
-	generic map (
-		mode => ly_dptr(layout_id).mode,
-		n    => 11)
+	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
-		clk   => video_clk,
-		hsync => video_hs,
-		vsync => video_vs,
-		hcntr => video_hcntr,
-		vcntr => video_vcntr,
-		don   => video_hon,
-		frm   => video_frm,
-		nhl   => video_hzl);
-
-	video_vld <= video_hon and video_frm;
-
-	vgaio_e : entity hdl4fpga.align
-	generic map (
-		n => video_io'length,
-		d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2+delay))
-	port map (
-		clk   => video_clk,
-		di(0) => video_hs,
-		di(1) => video_vs,
-		di(2) => video_vld,
-		do    => video_io);
-
-	win_mngr_e : entity hdl4fpga.win_mngr
-	generic map (
-		tab => to_naturalvector(ly_dptr(layout_id)))
-	port map (
-		video_clk  => video_clk,
-		video_x    => video_hcntr,
-		video_y    => video_vcntr,
-		video_don  => video_hon,
-		video_frm  => video_frm,
-		win_don    => win_don,
-		win_frm    => win_frm);
+		input_clk   => input_clk,
+		input_ena   => input_ena,
+		input_data  =>
+		factor_data =>
+		output_ena  =>
+		output_data => );
 
 	equalizer_g : for in 0 to inputs-1 generate
 		subtype sample_range is natural i*input_size to (i+1)*input_size-1;
@@ -311,6 +233,45 @@ begin
 
 	graphics_b : block
 	begin
+		video_e : entity hdl4fpga.video_vga
+		generic map (
+			mode => ly_dptr(layout_id).mode,
+			n    => 11)
+		port map (
+			clk   => video_clk,
+			hsync => video_hs,
+			vsync => video_vs,
+			hcntr => video_hcntr,
+			vcntr => video_vcntr,
+			don   => video_hon,
+			frm   => video_frm,
+			nhl   => video_hzl);
+
+		video_vld <= video_hon and video_frm;
+
+		vgaio_e : entity hdl4fpga.align
+		generic map (
+			n => video_io'length,
+			d => (video_io'range => unsigned_num_bits(ly_dptr(layout_id).chan_height-1)+2+delay))
+		port map (
+			clk   => video_clk,
+			di(0) => video_hs,
+			di(1) => video_vs,
+			di(2) => video_vld,
+			do    => video_io);
+
+		win_mngr_e : entity hdl4fpga.win_mngr
+		generic map (
+			tab => to_naturalvector(ly_dptr(layout_id)))
+		port map (
+			video_clk  => video_clk,
+			video_x    => video_hcntr,
+			video_y    => video_vcntr,
+			video_don  => video_hon,
+			video_frm  => video_frm,
+			win_don    => win_don,
+			win_frm    => win_frm);
+
 		scope_cga_e : entity hdl4fpga.scopeio_cga
 		generic map (
 			font_bitrom => psf1cp850x8x16,
