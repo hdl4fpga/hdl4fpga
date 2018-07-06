@@ -43,29 +43,61 @@ begin
 	dev_ena <= demux(dev_id, ptr(0));
 	reg_ena <= demux(reg_id, ptr(0)); 
 
-	trigger_p : process (in_clk)
-		variable value : unsigned;
+	regfile_b : block 
+		constant max_rid : natural := rid_channel+1;
+
+		type rgtr_param record
+			devid  : natural;
+			regid  : natural;
+			offset : natural;
+			size   : natural;
+		end record;
+
+		type regdev_vector array (natural range <>) of rgtr_param;
+
+		constant rgtr_tgrlevel   : natural := 0;
+		constant rgtr_tgrchannel : natural := 1;
+
+		constant rgtr_map : regmap_vector := (		-- Map Descritpion
+			(devid_tgr, rgtr_tgrlevel,   10),
+			(devid_tgr, rgtr_tgrchannel,  5));
+
 	begin
-		if rising_edge(in_clk) then
-			if in_ena='1' then
-				if dev_ena(trigger_dev)='1' then
-					if reg_ena(tgrreg_offset)='1' then
+		rgtr_g : for rid in rgtr_map'range generate
+			constant dev_base    : natural := dev_map(rgtr_map(i).devid).base;
+			constant rgrt_offset : natural := rgtr_map(i).offset;
+			constant rgrt_size   : natural := rgtr_map(i).offset;
 
+			subtype rgtr_slice is natural dev_base+rgtr_offset to dev_base+rgtr_offset+rgtr_size;
+
+			signal  rgtr : std_logic_vector(0 to rgtr_map(i).size-1);
+		begin
+
+			cp_p : process (in_clk)
+				variable value : unsigned(0 to rgtr_map(i).size-1);
+			begin
+				if rising_edge(in_clk) then
+					if in_ena='1' then
+						if dev_ena(rgtr_map(i).devid)='1' then
+							if reg_ena(rgtr_map(i).regid)='1' then
+								if value'length >= in_data'length then
+									value(in_data'range) := unsigned(in_data);
+								else
+									value := unsigned(in_data(value'range));
+								end if;
+								value := value ror in_data'length;
+							end if;
+						end if;
+					else
+						rgtr <= std_logic_vector(value);
+					end if;
 				end if;
-			value := value rol in_data'length;
-			end if;
-		end if;
-	end process;
+			end process;
 
+			(rgtr_slice'range) <= rgtr;
 
-
-			trigger_offset <= std_logic_vector(-(
-				signed(trigger_level) +
-				signed(word2byte(
-					channel_offset, 
-					trigger_channel,
-					vt_size)) -
-				signed'(b"0_1000_0000")));
+		end generate;
+	end block;
 
 			if pll_rdy='1' then
 				for i in 0 to inputs-1 loop
