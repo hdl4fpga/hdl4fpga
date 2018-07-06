@@ -10,25 +10,54 @@ entity scopeio_mmap is
 		in_ena       : in  std_logic;
 		in_data      : in  std_logic_vector;
 
-		trigger_data : out std_logic_vector;
+		trigger_edge    : out std_logic;
+		trigger_level   : out std_logic_vector;
+		trigger_channel : out std_logic_vector;
+
 		hzaxis_data  : out std_logic_vector;
 		vtaxis_data  : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
-	signal addr : std_logic_vector(0 to 7);
+	signal dev_ena :
 begin
 
 	process (in_clk)
 	begin
 		if rising_edge(in_clk) then
 			if in_ena='1' then
-				data(in_data'range) := in_data;
-				data := data ror in_data'length;
+				if ptr(0) /= '1' then
+					data(in_data'range) := in_data;
+					data := data rol in_data'length;
+					ptr := ptr + 1;
+				else
+					dev_id <= data(devid'range);
+					data   := data ror devid'length;
+					reg_id <= data(regid'range);
+				end if;
 			else
+				ptr := (others => '0');
 			end if;
 		end if;
 	end process;
+	dev_ena <= demux(dev_id, ptr(0));
+	reg_ena <= demux(reg_id, ptr(0)); 
+
+	trigger_p : process (in_clk)
+		variable value : unsigned;
+	begin
+		if rising_edge(in_clk) then
+			if in_ena='1' then
+				if dev_ena(trigger_dev)='1' then
+					if reg_ena(tgrreg_offset)='1' then
+
+				end if;
+			value := value rol in_data'length;
+			end if;
+		end if;
+	end process;
+
+
 
 			trigger_offset <= std_logic_vector(-(
 				signed(trigger_level) +
@@ -65,7 +94,6 @@ begin
 					trigger_level   <= std_logic_vector(resize(signed(scope_data), vt_size));
 					trigger_channel <= std_logic_vector(resize(unsigned(scope_channel and x"7f"),trigger_channel'length));
 					trigger_edge    <= scope_channel(scope_channel'left);
-					trigger_select  <= scope_channel(trigger_select'range);
 				when "0011" =>
 					hz_scale        <= scope_data(hz_scale'range);
 					time_deca       <= hz_scales(to_integer(unsigned(scope_data(hz_scale'range)))).deca;
