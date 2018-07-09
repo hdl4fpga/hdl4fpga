@@ -47,52 +47,98 @@ begin
 		constant max_rid : natural := rid_channel+1;
 
 		type rgtr_param record
-			devid  : natural;
 			regid  : natural;
 			offset : natural;
 			size   : natural;
 		end record;
 
-		type regdev_vector array (natural range <>) of rgtr_param;
+		type rparam_vector array (natural range <>) of rgtr_param;
 
 		constant rgtr_tgrlevel   : natural := 0;
 		constant rgtr_tgrchannel : natural := 1;
 
 		constant rgtr_map : regmap_vector := (		-- Map Descritpion
-			(devid_tgr, rgtr_tgrlevel,   10),
-			(devid_tgr, rgtr_tgrchannel,  5));
+			(rgtr_tgrlevel,   10),
+			(rgtr_tgrchannel,  5));
 
+		signal value : std_logic_vector(0 to 64-1);
 	begin
-		rgtr_g : for rid in rgtr_map'range generate
-			constant dev_base    : natural := dev_map(rgtr_map(i).devid).base;
-			constant rgrt_offset : natural := rgtr_map(i).offset;
-			constant rgrt_size   : natural := rgtr_map(i).offset;
 
-			subtype rgtr_slice is natural dev_base+rgtr_offset to dev_base+rgtr_offset+rgtr_size;
+		cp_p : process (in_clk)
+			variable aux : unsigned(value'range);
+		begin
+			if rising_edge(in_clk) then
+				aux := unsigned(value);
+				if in_ena='1' then
+					aux(in_data'range) := unsigned(in_data);
+					aux := aux sll in_data'length;
+				end if;
+				value <= std_logic_vector(aux);
+			end if;
+		end process;
+
+		process (in_clk)
+		begin
+			if rising_edge(in_clk) then
+				if in_ena='0' then
+					ptr := (others => '0');
+				else
+					ptr := ptr + in_data'length;
+				end if;
+			end if;
+		end process;
+
+		process (in_clk)
+			variable len : unsigned;
+		begin
+			if rising_edge(in_clk) then
+				if in_ena='0' then
+					reg_state := regS_id;
+				elsif ptr(0)='1' then
+					case reg_state is
+					when regS_id =>
+						len := (others => '0');
+						reg_id <= value(reg_id'range);
+						reg_state := regS_size;
+					when regS_size =>
+						len := unsigned(value(cntr'range));
+						reg_state := regS_data;
+					when regS_data =>
+						if len=(len'range => '0') then
+							len := (others => '0');
+							reg_state := regS_id;
+							reg_val <= value(reg'range);
+						else
+							len := len - 1;
+							reg_state := regS_data;
+						end if;
+					end case;
+				end if;
+			end if;
+		end process;
+ 
+		process (in_clk)
+			variable aux : unsigned(rgtr'range);
+		begin
+			if rising_edge(in_clk) then
+				aux := unsigned(rgtr);
+				if then
+					for i in rgtr_map'range loop
+						if i=to_integer(unsigned(reg_id)) then
+							aux(0 to rgtr_map(i).len-1) := unsigned(value(0 to rgtr_map(i).len-1));
+						end if;
+						aux := aux rol rgtr_map(i).size;
+					end loop;
+				end if;
+				rtgr <= std_logic_vector(aux);
+			end if;
+		end process;
+
+		rgtr_g : for rid in rgtr_map'range generate
+
 
 			signal  rgtr : std_logic_vector(0 to rgtr_map(i).size-1);
 		begin
-
-			cp_p : process (in_clk)
-				variable value : unsigned(0 to rgtr_map(i).size-1);
-			begin
-				if rising_edge(in_clk) then
-					if in_ena='1' then
-						if dev_ena(rgtr_map(i).devid)='1' then
-							if reg_ena(rgtr_map(i).regid)='1' then
-								if value'length >= in_data'length then
-									value(in_data'range) := unsigned(in_data);
-								else
-									value := unsigned(in_data(value'range));
-								end if;
-								value := value ror in_data'length;
-							end if;
-						end if;
-					else
-						rgtr <= std_logic_vector(value);
-					end if;
-				end if;
-			end process;
 
 			(rgtr_slice'range) <= rgtr;
 
