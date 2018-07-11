@@ -64,7 +64,7 @@ begin
 	
 	miidhcp_e : entity hdl4fpga.mii_rom
 	generic map (
-		mem_data => reverse(x"a501ff",8))
+		mem_data => reverse(x"00ff0201000005ff",8))
 	port map (
 		mii_txc  => clk,
 		mii_treq => treq,
