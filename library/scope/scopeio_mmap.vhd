@@ -69,18 +69,28 @@ begin
 		if rising_edge(in_clk) then
 			if ena='0' then
 				stt <= regS_id;
+				mem_ena <= '0';
 			elsif ptr(0)='1' then
 				case stt is
 				when regS_id =>
-					len <= (others => '-');
+					len <= (others => '0');
 					rid <= val(rid'range);
-					stt <= regS_size;
+					if mem_ena='1' then
+						stt <= regS_id;
+						mem_ena <= '1';
+					elsif val(rid'range)=(rid'range => '1') then
+						mem_ena <= '1';
+						stt <= regS_id;
+					else
+						mem_ena <= '0';
+						stt <= regS_size;
+					end if;
 				when regS_size =>
 					len <= unsigned(val(len'reverse_range))-1;
 					stt <= regS_data;
 				when regS_data =>
 					if len(0)='1' then
-						len <= (others => '-');
+						len <= (others => '0');
 						stt <= regS_id;
 					else
 						len <= len - 1;
@@ -107,4 +117,10 @@ begin
 			rgtr <= std_logic_vector(aux);
 		end if;
 	end process;
+	: entity hdl4fpga.dpram 
+	port map (
+		wr_addr <=
+	   	wr_data <=
+		rd_addr <=
+
 end;
