@@ -38,6 +38,7 @@ architecture beh of scopeio_sin is
 
 	signal dv  : std_logic;
 	signal ena : std_logic;
+	signal data_ena : std_logic;
 
 	type reg_states is (regS_id, regS_size, regS_data);
 	signal stt : reg_states;
@@ -95,7 +96,7 @@ begin
 							stt <= regS_id;
 						elsif val(rid'range)=(rid'range => '1') then
 							data_ena <= '1';
-							len <= to_unsigned(mem_data'length/8-2);
+							len <= to_unsigned(mem_data'length/8-2, len'length);
 							stt <= regS_data;
 						else
 							data_ena <= '0';
@@ -110,7 +111,7 @@ begin
 						if len(0)='1' then
 							if data_ena='1' then
 								data_ena <= '1';
-								len <= to_unsigned(mem_data'length/8-2);
+								len <= to_unsigned(mem_data'length/8-2, len'length);
 								stt <= regS_data;
 							else
 								data_ena <= '0';
@@ -132,7 +133,7 @@ begin
 	begin
 		if rising_edge(sin_clk) then
 			if ena='1' then
-				if len(0)='1'
+				if len(0)='1' then
 					if ptr(0)='1' then
 						for i in rgtr_size'range loop
 							if i=to_integer(unsigned(rid)) then
@@ -166,9 +167,9 @@ begin
 					if ena='1' then
 						aux := aux + 1;
 					end if;
-					data_len <= aux;
+					data_len <= std_logic_vector(aux);
 				end if;
-				wr_addr <= aux;
+				wr_addr <= std_logic_vector(aux);
 			end if;
 		end process;
 		wr_data <= val(mem_data'length-1 downto 0);
@@ -178,9 +179,9 @@ begin
 			n => 1,
 			d => (0 => 2))
 		port map (
-			clk => mem_clk,
-			di  => mem_req,
-			do  => mem_rdy);
+			clk   => mem_clk,
+			di(0) => mem_req,
+			do(0) => mem_rdy);
 
 		rd_addr_e : entity hdl4fpga.align
 		generic map (
