@@ -6,30 +6,24 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_sin is
+	generic(
+		regtr_map : natural_vector);
 	port (
 		sin_clk   : in  std_logic;
-		sin_ena   : in  std_logic;
+		sin_ena   : in  std_logic := '1';
 		sin_dv    : in  std_logic;
 		sin_data  : in  std_logic_vector;
 
-		ctrl_rgtr : out std_logic_vector;
-
-		mem_clk   : in  std_logic;
+		regtr     : out std_logic_vector;
+		mem_clk   : in  std_logic := '-';
 		mem_req   : in  std_logic := '-';
-		mem_addr  : in  std_logic_vector;
+		mem_addr  : in  std_logic_vector := (0 to 0 => '-');
 		mem_rdy   : out std_logic;
-		mem_data  : out std_logic_vector;
-		data_len  : out std_logic_vector);
+		data_len  : out std_logic_vector := (0 to 0 => '-');
+		mem_data  : out std_logic_vector := (0 to 0 => '-'));
 end;
 
 architecture beh of scopeio_sin is
-	constant rid_tgrlevel   : natural := 0;
-	constant rid_tgrchannel : natural := 1;
-
-	constant rgtr_size : natural_vector := (
-		rid_tgrlevel   => 8,
-		rid_tgrchannel => 5);
-
 	signal len : unsigned(0 to 8-1);
 	signal rid : std_logic_vector(8-1 downto 0);
 	signal val : std_logic_vector(3*8-1 downto 0);
@@ -129,21 +123,21 @@ begin
 	end process;
  
 	process (sin_clk)
-		variable aux : unsigned(ctrl_rgtr'length-1 downto 0);
+		variable aux : unsigned(regtr'length-1 downto 0);
 	begin
 		if rising_edge(sin_clk) then
 			if ena='1' then
 				if len(0)='1' then
 					if ptr(0)='1' then
-						for i in rgtr_size'range loop
+						for i in rgtr_map'range loop
 							if i=to_integer(unsigned(rid)) then
-								aux(rgtr_size(i)-1 downto 0) := unsigned(val(rgtr_size(i)-1 downto 0));
+								aux(rgtr_map(i)-1 downto 0) := unsigned(val(rgtr_map(i)-1 downto 0));
 							end if;
-							aux := aux ror rgtr_size(i);
+							aux := aux ror rgtr_map(i);
 						end loop;
 					end if;
 				end if;
-				ctrl_rgtr <= std_logic_vector(aux);
+				regtr <= std_logic_vector(aux);
 			end if;
 		end if;
 	end process;

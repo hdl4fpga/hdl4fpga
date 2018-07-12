@@ -21,133 +21,152 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
-entity cga is
-
-	generic (
-		bitrom     : std_logic_vector;	-- Font Bit Rom
-		cga_width  : natural := 240;
-		cga_height : natural := 68;
-		char_width : natural);
-
-	port (
-		sys_clk  : in  std_logic;
-		sys_row  : in  std_logic_vector;
-		sys_col  : in  std_logic_vector;
-		sys_we   : in  std_logic;
-		sys_code : in  std_logic_vector;
-
-		vga_clk  : in  std_logic;
-		vga_row  : in  std_logic_vector;
-		vga_col  : in  std_logic_vector;
-		vga_dot  : out std_logic);
-
-end;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.cgafont.all;
 
-architecture def of cga is
+entity cga_display is
+	port (
+		cga_clk   : in  std_logic;
+		cga_we    : in  std_logic;
+		cga_addr  : in  std_logic_vector;
+		cga_data  : in  std_logic_vector;
 
-	signal cga_row      : std_logic_vector(vga_row'length-1 downto 0);
-	signal cga_col      : std_logic_vector(vga_col'length-1 downto 0);
-	signal cga_sel      : std_logic_vector(unsigned_num_bits(char_width-1)-1 downto 0);
-	signal font_code    : std_logic_vector(sys_code'length-1 downto 0);
-	signal font_row     : std_logic_vector(vga_row'length-sys_row'length-1 downto 0);
-	signal font_line    : std_logic_vector(0 to char_width-1);
-	signal dot          : std_logic_vector(1-1 downto 0);
-	signal cgaram_we    : std_logic;
-	signal cgaram_code  : std_logic_vector(sys_code'length-1 downto 0);
-	signal cgaram_ddo   : std_logic_vector(sys_code'length-1 downto 0);
-	signal cgaram_ddi   : std_logic_vector(sys_code'length-1 downto 0);
-	signal cgaram_addri : std_logic_vector(unsigned_num_bits(cga_width*cga_height-1)-1 downto 0);
-	signal cgaram_addro : std_logic_vector(cgaram_addri'range);
-
-	function cgaram_addr (
-		constant row : std_logic_vector;
-		constant col : std_logic_vector)
-		return std_logic_vector is
-		variable aux : unsigned(cgaram_addri'range) := (others => '0');
-	begin
-		aux(row'length-1 downto 0) := unsigned(row);
-		aux := aux sll 4;
-		aux := aux - unsigned(row);
-		aux := aux sll 4;
-		aux := aux + unsigned(col);
-		return std_logic_vector(aux);
+		video_clk : in  std_logic;
+		video_dot : out std_logic;
+		video_hs  : out std_logic;
+		video_vs  : out std_logic);
 	end;
+
+architecture struct of cga_display is
+
+	signal video_frm   : std_logic;
+	signal video_hon   : std_logic;
+	signal video_nhl   : std_logic;
+	signal video_vld   : std_logic;
+	signal video_vcntr : std_logic_vector(11-1 downto 0);
+	signal video_hcntr : std_logic_vector(11-1 downto 0);
 
 begin
 
-	cga_row <= vga_row;
-	cga_col <= vga_col;
-
-	fontrow_e : entity hdl4fpga.align
+	video_e : entity hdl4fpga.video_vga
 	generic map (
-		n => font_row'length,
-		i => (font_row'range => '-'),
-		d => (font_row'range => 2))
+		mode => 7,
+		n    => 11)
 	port map (
-		clk => vga_clk,
-		di  => cga_row(font_row'range),
-		do  => font_row);
+		clk   => video_clk,
+		hsync => video_hs,
+		vsync => video_vs,
+		hcntr => video_hcntr,
+		vcntr => video_vcntr,
+		don   => video_hon,
+		frm   => video_frm,
+		nhl   => video_nhl);
 
-	process (sys_clk)
+	cgaadapter_b : block
+		signal font_col  : std_logic_vector(3-1 downto 0);
+		signal font_row  : std_logic_vector(4-1 downto 0);
+		signal font_addr : std_logic_vector(8+4-1 downto 0);
+		signal font_line : std_logic_vector(8-1 downto 0);
+
+		signal cga_ena   : std_logic;
+		signal cga_rdata : std_logic_vector(ascii'range);
+		signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
+
+		signal video_on  : std_logic;
 	begin
-		if rising_edge(vga_clk) then
-			cgaram_we    <= sys_we;
-			cgaram_code  <= sys_code;
-			cgaram_addri <= cgaram_addr(
-				row => sys_row,
-				col => sys_col);
-		end if;
-	end process;
+	
+		cgabram_b : block
+			signal video_addr : std_logic_vector(14-1 downto 0);
+			signal rd_addr    : std_logic_vector(video_addr'range);
+			signal rd_data    : std_logic_vector(cga_rdata'range);
+		begin
 
-	process (vga_clk)
-	begin
-		if rising_edge(vga_clk) then
-			cgaram_addro <= cgaram_addr(
-				row => cga_row(vga_row'length-1 downto vga_row'length-sys_row'length),
-				col => cga_col(vga_col'length-1 downto vga_col'length-sys_col'length));
-		end if;
-	end process;
+			process (video_vcntr, video_hcntr)
+				variable aux : unsigned(video_addr'range);
+			begin
+				aux := resize(unsigned(video_vcntr) srl 4, video_addr'length);
+				aux := ((aux sll 4) - aux) sll 4;  -- * (1920/8)
+				aux := aux + (unsigned(video_hcntr) srl 3);
+				video_addr <= std_logic_vector(aux);
+			end process;
 
-	dpram_e : entity hdl4fpga.bram
-	port map (
-		clka  => sys_clk,
-		wea   => cgaram_we,
-		addra => cgaram_addri,
-		dia   => cgaram_code,
-		doa   => cgaram_ddo,
+			rdaddr_e : entity hdl4fpga.align
+			generic map (
+				n   => video_addr'length,
+				d   => (video_addr'range => 1))
+			port map (
+				clk => video_clk,
+				di  => video_addr,
+				do  => rd_addr);
 
-		clkb  => vga_clk,
-		web   => '0',
-		addrb => cgaram_addro,
-		dib   => cgaram_ddi,
-		dob   => font_code);
+			cgaram_e : entity hdl4fpga.dpram
+			port map (
+				wr_clk  => cga_clk,
+				wr_ena  => cga_ena,
+				wr_addr => cga_addr,
+				wr_data => cga_data,
+				rd_addr => rd_addr,
+				rd_data => rd_data);
 
-	fontrom_e : entity hdl4fpga.fontrom
-	generic map (
-		bitrom => bitrom)
-	port map (
-		clk  => vga_clk,
-		code => font_code,
-		row  => font_row,
-		data => font_line);
+			rddata_e : entity hdl4fpga.align
+			generic map (
+				n => cga_rdata'length,
+				d => (cga_rdata'range => 1))
+			port map (
+				clk => video_clk,
+				di  => rd_data,
+				do  => cga_rdata);
 
-	cgasel_e : entity hdl4fpga.align
-	generic map (
-		n => cga_sel'length,
-		i => (cga_sel'range => '-'),
-		d => (cga_sel'range => 4))
-	port map (
-		clk => vga_clk,
-		di  => cga_col(cga_sel'range),
-		do  => cga_sel);
+		end block;
 
-	dot <= word2byte(font_line, cga_sel);
-	vga_dot <= dot(0);
+		vsync_e : entity hdl4fpga.align
+		generic map (
+			n   => font_row'length,
+			d   => (font_row'range => 2))
+		port map (
+			clk => video_clk,
+			di  => video_vcntr(4-1 downto 0),
+			do  => font_row);
+
+		hsync_e : entity hdl4fpga.align
+		generic map (
+			n   => font_col'length,
+			d   => (font_col'range => 4))
+		port map (
+			clk => video_clk,
+			di  => video_hcntr(font_col'range),
+			do  => font_col);
+
+		font_addr <= cga_rdata & font_row;
+
+		cgarom_e : entity hdl4fpga.rom
+		generic map (
+			synchronous => 2,
+			bitrom => psf1cp850x8x16)
+		port map (
+			clk  => video_clk,
+			addr => font_addr,
+			data => font_line);
+
+		don_e : entity hdl4fpga.align
+		generic map (
+			n    => 1,
+			d    => (1 to 1 => 4))
+		port map (
+			clk   => video_clk,
+			di(0) => video_hon,
+			do(0) => video_on);
+
+		video_dot <= word2byte(font_line, font_col)(0) and video_on;
+
+	end block;
+
 end;
