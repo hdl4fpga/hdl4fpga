@@ -45,6 +45,7 @@ entity cga_adapter is
 		video_hon   : in std_logic;
 
 		video_dot : out std_logic);
+end;
 
 architecture struct of cga_adapter is
 	signal font_col  : std_logic_vector(3-1 downto 0);
