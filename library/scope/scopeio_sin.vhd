@@ -24,7 +24,7 @@ entity scopeio_sin is
 end;
 
 architecture beh of scopeio_sin is
-	signal len : unsigned(0 to 8-1);
+	signal len : signed(0 to 8-1);
 	signal rid : std_logic_vector(8-1 downto 0);
 	signal val : std_logic_vector(3*8-1 downto 0);
 	signal ld  : std_logic;
@@ -90,7 +90,7 @@ begin
 							stt <= regS_id;
 						elsif val(rid'range)=(rid'range => '1') then
 							data_ena <= '1';
-							len <= to_unsigned(mem_data'length/8-2, len'length);
+							len <= to_signed(mem_data'length/8-2, len'length);
 							stt <= regS_data;
 						else
 							data_ena <= '0';
@@ -99,13 +99,13 @@ begin
 						end if;
 					when regS_size =>
 						data_ena <= '0';
-						len <= unsigned(val(len'reverse_range))-1;
+						len <= signed(val(len'reverse_range))-1;
 						stt <= regS_data;
 					when regS_data =>
 						if len(0)='1' then
 							if data_ena='1' then
 								data_ena <= '1';
-								len <= to_unsigned(mem_data'length/8-2, len'length);
+								len <= to_signed(mem_data'length/8-2, len'length);
 								stt <= regS_data;
 							else
 								data_ena <= '0';
