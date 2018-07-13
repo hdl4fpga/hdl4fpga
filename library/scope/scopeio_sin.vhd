@@ -7,14 +7,14 @@ use hdl4fpga.std.all;
 
 entity scopeio_sin is
 	generic(
-		regtr_map : natural_vector);
+		rgtr_map : natural_vector);
 	port (
 		sin_clk   : in  std_logic;
 		sin_ena   : in  std_logic := '1';
 		sin_dv    : in  std_logic;
 		sin_data  : in  std_logic_vector;
 
-		regtr     : out std_logic_vector;
+		rgtr      : out std_logic_vector;
 		mem_clk   : in  std_logic := '-';
 		mem_req   : in  std_logic := '-';
 		mem_addr  : in  std_logic_vector := (0 to 0 => '-');
@@ -123,7 +123,7 @@ begin
 	end process;
  
 	process (sin_clk)
-		variable aux : unsigned(regtr'length-1 downto 0);
+		variable aux : unsigned(rgtr'length-1 downto 0);
 	begin
 		if rising_edge(sin_clk) then
 			if ena='1' then
@@ -137,7 +137,7 @@ begin
 						end loop;
 					end if;
 				end if;
-				regtr <= std_logic_vector(aux);
+				rgtr <= std_logic_vector(aux);
 			end if;
 		end if;
 	end process;
