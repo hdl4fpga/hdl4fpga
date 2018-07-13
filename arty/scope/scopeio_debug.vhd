@@ -32,7 +32,7 @@ use hdl4fpga.cgafont.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture mii_debug of arty is
+architecture scopeio_debug of arty is
 	signal sys_clk        : std_logic;
 	signal mii_req        : std_logic;
 	signal eth_txclk_bufg : std_logic;
@@ -104,7 +104,7 @@ begin
 	end process;
 
 	txc <= not eth_txclk_bufg;
-	mii_debug_e : entity hdl4fpga.mii_debug
+	scopeio_debug_e : entity hdl4fpga.scopeio_debug
 	port map (
 		btn       => pp,
 		mii_req   => mii_req,

@@ -73,8 +73,8 @@ architecture struct of scopeio_debug is
 	subtype rgtr_cgadata is natural range 22-1 downto 14;
 	signal scopeio_rgtr : std_logic_vector(14+8-1 downto 0);
 
-	signal mem_data : std_logic_vector(0 to 16-1);
-	signal data_len : std_logic_vector(0 to 16-1);
+	signal mem_data : std_logic_vector(0 to 1-1);
+	signal data_len : std_logic_vector(0 to 1-1);
 begin
 
 	txc <= mii_txc;
