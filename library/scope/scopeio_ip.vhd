@@ -32,11 +32,10 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-entity scopeio_debug is
+entity scopeio_ip is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		btn       : in  std_logic:= '0';
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
@@ -52,7 +51,7 @@ entity scopeio_debug is
 		video_vs  : out std_logic);
 	end;
 
-architecture struct of scopeio_debug is
+architecture struct of scopeio_ip is
 
 	signal txc  : std_logic;
 	signal txdv : std_logic;
@@ -107,16 +106,5 @@ begin
 		rgtr     => scopeio_rgtr,
 		mem_data => mem_data,
 		data_len => data_len);
-
-	cga_display_e : entity hdl4fpga.cga_display
-	port map (
-		cga_clk  => mii_rxc,
-		cga_addr => scopeio_rgtr(rgtr_cgaaddr),
-		cga_data => scopeio_rgtr(rgtr_cgadata),
-
-		video_clk => video_clk,
-		video_dot => video_dot,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
 
 end;
