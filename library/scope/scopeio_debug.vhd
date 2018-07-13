@@ -66,7 +66,7 @@ architecture struct of scopeio_debug is
 	constant cga_addr : natural := 0;
 	constant cga_data : natural := 1;
 
-	signal scopeio_regtr : std_logic_vector(14+8-1 downto 0);
+	signal scopeio_rgtr : std_logic_vector(14+8-1 downto 0);
 begin
 
 	txc <= mii_txc;
@@ -91,14 +91,14 @@ begin
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	generic map (
-		regtr_map => (
+		rgtr_map => (
 			cga_addr => 14,
 			cga_data => 8))
 	port map (
 		sin_clk  => mii_rxc,
-		sin_dv   => udpdport_vld,
+		sin_dv   => udpdport_vld(0),
 		sin_data => mii_rxd,
-		regtr    => scopeio_regtr);
+		rgtr     => scopeio_rgtr);
 
 	cga_display_e : entity hdl4fpga.cga_display
 	port map (
