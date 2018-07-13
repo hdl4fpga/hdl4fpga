@@ -163,7 +163,7 @@ architecture beh of scopeio is
 	signal g_hzscale : std_logic_vector(hz_scale'range);
 begin
 
-	miirx_e : entity hdl4fpga.scopeio_miirx
+	miirx_e : entity hdl4fpga.scopeio_ip
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
@@ -171,29 +171,6 @@ begin
 		pll_data => pll_data,
 		pll_rdy  => pll_rdy,
 		ser_data => ser_data);
-
-	process (ser_data, pll_data)
-		variable data : unsigned(pll_data'range);
-	begin
-		data     := unsigned(pll_data);
-		data     := data sll hdr_data'length;
-		pld_data <= reverse(std_logic_vector(data(pld_data'reverse_range)));
-	end process;
-
-	process (pld_data)
-		variable data : unsigned(pld_data'range);
-	begin
-		data        := unsigned(pld_data);
-		scope_cmd   <= std_logic_vector(data(scope_cmd'range));
-		data        := data srl scope_cmd'length;
-		scope_data  <= std_logic_vector(data(scope_data'range));
-		data        := data srl scope_data'length;
-		scope_channel  <= std_logic_vector(data(scope_channel'range));
-	end process;
-
-	trigger_scale <= vt_scales(to_integer(unsigned(word2byte(channel_scale, trigger_channel, channel_scale'length/inputs)))).scale;
-	trigger_deca  <= word2byte(channel_decas, trigger_channel, ascii'length);
-	tdiv <= hz_scale;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
