@@ -17,14 +17,14 @@ entity scopeio_sin is
 		rgtr      : out std_logic_vector;
 		mem_clk   : in  std_logic := '-';
 		mem_req   : in  std_logic := '-';
-		mem_addr  : in  std_logic_vector := (0 to 0 => '-');
+		mem_addr  : in  std_logic_vector;
 		mem_rdy   : out std_logic;
-		data_len  : out std_logic_vector := (0 to 0 => '-');
-		mem_data  : out std_logic_vector := (0 to 0 => '-'));
+		data_len  : out std_logic_vector;
+		mem_data  : out std_logic_vector);
 end;
 
 architecture beh of scopeio_sin is
-	signal len : signed(0 to 8-1);
+	signal len : signed(0 to 8);
 	signal rid : std_logic_vector(8-1 downto 0);
 	signal val : std_logic_vector(3*8-1 downto 0);
 	signal ld  : std_logic;
@@ -99,7 +99,7 @@ begin
 						end if;
 					when regS_size =>
 						data_ena <= '0';
-						len <= signed(val(len'reverse_range))-1;
+						len <= signed(resize(unsigned(val(len'reverse_range)), len'length))-1;
 						stt <= regS_data;
 					when regS_data =>
 						if len(0)='1' then

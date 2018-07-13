@@ -29,7 +29,7 @@ library hdl4fpga;
 entity cga_display is
 	port (
 		cga_clk   : in  std_logic;
-		cga_we    : in  std_logic;
+		cga_we    : in  std_logic := '1';
 		cga_addr  : in  std_logic_vector;
 		cga_data  : in  std_logic_vector;
 
