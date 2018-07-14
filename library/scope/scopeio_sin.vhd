@@ -17,7 +17,7 @@ entity scopeio_sin is
 		rgtr      : out std_logic_vector;
 		mem_clk   : in  std_logic := '-';
 		mem_req   : in  std_logic := '-';
-		mem_addr  : in  std_logic_vector := (0 to 0 => '-');
+		mem_addr  : in  std_logic_vector := std_logic_vector'(0 to 0 => '-');
 		mem_rdy   : out std_logic;
 		data_len  : out std_logic_vector;
 		mem_data  : out std_logic_vector);
