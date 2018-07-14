@@ -298,7 +298,7 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio_debug" dir="scopeio_debug" description="scopeio_debug" synthesis="synplify" default_strategy="Area">
-        <Options def_top="hdl4fpga.scopeio_debug" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.mii_debug" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -375,6 +375,9 @@
             <Options/>
         </Source>
         <Source name="../../library/mii/mii_pllcmp.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../scope/scopeio_debug.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
