@@ -45,10 +45,8 @@ entity mii_ipcfg is
 
 		mii_prev     : out std_logic;
 		
-		ipfrm_rxdv   : out std_logic;
-		udpfrm_rxdv  : out std_logic;
-		udpdport_dat : in  std_logic_vector;
-		udpdport_vld : out std_logic_vector);
+		udpports     : in  std_logic_vector;
+		udpports_vld : out std_logic_vector);
 end;
 
 architecture struct of mii_ipcfg is
@@ -910,24 +908,26 @@ begin
 				constant udp_dport  : field   := (udp_frame+2, 2);
 				constant udp_data   : natural := udp_dport.offset+udp_dport.size;
 
-				signal udpdport_ena : std_logic;
-				signal udpdata_ena  : std_logic;
+				signal udpport_ena : std_logic;
+				signal udpdata_ena : std_logic;
 			begin
 
-				udp_vld      <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
-				udpdport_ena <= lookup((0 => udp_dport), std_logic_vector(mii_ptr)) and udpproto_vld;
-				udpdata_ena  <= lookup(udp_data,  std_logic_vector(mii_ptr)) and udpproto_vld;
+				udp_vld     <= lookup(udp_frame, std_logic_vector(mii_ptr)) and udpproto_vld;
+				udpport_ena <= lookup((0 => udp_dport), std_logic_vector(mii_ptr)) and udpproto_vld;
+				udpdata_ena <= lookup(udp_data,  std_logic_vector(mii_ptr)) and udpproto_vld;
 
 				rx_b : block
 					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0);
 				begin
 
-					dport_b : for i in udpdport_vld'range generate
+					dport_b : for i in udpports_vld'range generate
+						signal vld : std_logic;
+					begin
 
-						process (udpdport_dat)
-							variable aux : unsigned(0 to udpdport_dat'length-1);
+						process (udpports)
+							variable aux : unsigned(0 to udpports'length-1);
 						begin
-							aux   := unsigned(udpdport_dat);
+							aux   := unsigned(udpports);
 							aux   := aux rol (i*dport'length);
 							dport <= std_logic_vector(aux(dport'reverse_range));
 						end process;
@@ -938,8 +938,9 @@ begin
 							mii_rxc  => mii_rxc,
 							mii_rxd  => mii_rxd,
 							mii_treq => ipproto_vld,
-							mii_ena  => udpdport_ena,
-							mii_pktv => udpdport_vld(i));
+							mii_ena  => udpport_ena,
+							mii_pktv => udpports_vld(i));
+
 					end generate;
 
 				end block;
@@ -1100,9 +1101,6 @@ begin
 					dhcp_txdv <= word2byte(dis_txdv & "0",                     not dis_txdv)(0);
 				end block;
 			end block;
-
-			ipfrm_rxdv   <= ipproto_vld;
-			udpfrm_rxdv  <= udp_vld;
 
 		end block;
 

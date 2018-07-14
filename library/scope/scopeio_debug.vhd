@@ -90,12 +90,24 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		udpdport_dat => x"0000",
-		udpdport_vld => udpdport_vld,
+		udpports  => x"0000",
+		udpport_vld => udpdport_vld,
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
 		mii_txd   => txd);
+
+	trailblock
+	begin
+	: entity hdl4fpga.align
+	generic map (
+		n => mii_rxd'length,
+		d => mii_rxd'range => 32/mii_rxd'length)
+	port map (
+		clk => mii_rxc,
+		di  => mii_rxd,
+		do  => 
+	end block;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	generic map (
