@@ -46,7 +46,8 @@ entity mii_ipcfg is
 		mii_prev     : out std_logic;
 		
 		udpports     : in  std_logic_vector;
-		udpports_vld : out std_logic_vector);
+		udpports_vld : out std_logic_vector;
+		udpdata_vld  : out std_logic);
 end;
 
 architecture struct of mii_ipcfg is
@@ -943,6 +944,7 @@ begin
 
 					end generate;
 
+					udpdata_vld <= udpdata_ena;
 				end block;
 
 				dhcpc_b : block

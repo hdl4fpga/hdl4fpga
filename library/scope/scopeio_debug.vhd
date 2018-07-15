@@ -61,7 +61,10 @@ architecture struct of scopeio_debug is
 	signal d_rxc  : std_logic;
 	signal d_rxdv : std_logic;
 	signal d_rxd  : std_logic_vector(mii_txd'range);
-	signal udpdport_vld : std_logic_vector(0 to 0);
+	signal udpports_vld : std_logic_vector(0 to 0);
+	signal udpdata_vld : std_logic_vector(0 to 0);
+	signal udp_rxd  : std_logic_vector(mii_rxd'range);
+	signal udp_rxdv : std_logic_vector(udpports_vld'range);
 
 	constant cga_addr : natural := 0;
 	constant cga_data : natural := 1;
@@ -91,22 +94,45 @@ begin
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
 		udpports  => x"0000",
-		udpport_vld => udpdport_vld,
+		udpports_vld => udpports_vld,
+		udpdata_vld => udpdata_vld,
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
 		mii_txd   => txd);
 
-	trailblock
+	clip_crc_b : block
+		constant lat : natural := 32/mii_rxd'length;
+
+		signal dv : std_logic_vector(udpports_vld'range);
 	begin
-	: entity hdl4fpga.align
-	generic map (
-		n => mii_rxd'length,
-		d => mii_rxd'range => 32/mii_rxd'length)
-	port map (
-		clk => mii_rxc,
-		di  => mii_rxd,
-		do  => 
+
+		lat_vld_e : entity hdl4fpga.align
+		generic map (
+			n => 1.
+			d => (0 => lat))
+		port map (
+			clk   => mii_rxc,
+			di(0) => udpdata_vld,
+			do(0) => dv);
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				for i in vlds'range loop
+					udp_rxdv(i) <= dv and udpports_vld(i);
+				end loop;
+			end if;
+		end loop;
+
+		lat_rxd_e : entity hdl4fpga.align
+		generic map (
+			n => mii_rxd'length,
+			d => (mii_rxd'range => lat+1))
+		port map (
+			clk => mii_rxc,
+			di  => mii_rxd,
+			do  => udp_rxd);
 	end block;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
@@ -114,8 +140,8 @@ begin
 		rgtr_map => scopeio_rgtrmap)
 	port map (
 		sin_clk  => mii_rxc,
-		sin_dv   => udpdport_vld(0),
-		sin_data => mii_rxd,
+		sin_dv   => udp_rxdv(0),
+		sin_data => udp_rxd,
 		rgtr     => scopeio_rgtr,
 		mem_data => mem_data,
 		data_len => data_len);
