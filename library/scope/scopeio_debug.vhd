@@ -62,7 +62,7 @@ architecture struct of scopeio_debug is
 	signal d_rxdv : std_logic;
 	signal d_rxd  : std_logic_vector(mii_txd'range);
 	signal udpports_vld : std_logic_vector(0 to 0);
-	signal udpdata_vld : std_logic_vector(0 to 0);
+	signal udpdata_vld : std_logic;
 	signal udp_rxd  : std_logic_vector(mii_rxd'range);
 	signal udp_rxdv : std_logic_vector(udpports_vld'range);
 
@@ -104,12 +104,12 @@ begin
 	clip_crc_b : block
 		constant lat : natural := 32/mii_rxd'length;
 
-		signal dv : std_logic_vector(udpports_vld'range);
+		signal dv : std_logic;
 	begin
 
 		lat_vld_e : entity hdl4fpga.align
 		generic map (
-			n => 1.
+			n => 1,
 			d => (0 => lat))
 		port map (
 			clk   => mii_rxc,
@@ -119,11 +119,11 @@ begin
 		process (mii_rxc)
 		begin
 			if rising_edge(mii_rxc) then
-				for i in vlds'range loop
+				for i in udpports_vld'range loop
 					udp_rxdv(i) <= dv and udpports_vld(i);
 				end loop;
 			end if;
-		end loop;
+		end process;
 
 		lat_rxd_e : entity hdl4fpga.align
 		generic map (
