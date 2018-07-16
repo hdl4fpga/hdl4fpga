@@ -93,7 +93,7 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		udpports  => x"0000",
+		udpports  => std_logic_vector(to_unsigned(57001,16)),
 		udpports_vld => udpports_vld,
 		udpdata_vld => udpdata_vld,
 
