@@ -149,8 +149,8 @@ begin
 	cga_display_e : entity hdl4fpga.cga_display
 	port map (
 		cga_clk  => mii_rxc,
-		cga_addr => b"00_0000_0000_0000", --scopeio_rgtr(rgtr_cgaaddr),
-		cga_data => b"0100_0001", --scopeio_rgtr(rgtr_cgadata),
+		cga_addr => scopeio_rgtr(rgtr_cgaaddr),
+		cga_data => scopeio_rgtr(rgtr_cgadata),
 
 		video_clk => video_clk,
 		video_dot => video_dot,

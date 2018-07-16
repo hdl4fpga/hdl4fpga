@@ -87,7 +87,7 @@ begin
 		cgaram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => cga_clk,
-			wr_ena  => cga_ena,
+			wr_ena  => '1', --cga_ena,
 			wr_addr => cga_addr,
 			wr_data => cga_data,
 			rd_addr => rd_addr,
