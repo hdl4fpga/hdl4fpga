@@ -6,14 +6,15 @@ var host = "kit";
 var port = 57001;
 
 i=0;
-buffer[i++] = 0;
-buffer[i++] = 1;
-buffer[i++] = 0;
-buffer[i++] = 0;
 
 buffer[i++] = 1;
 buffer[i++] = 0
-buffer[i++] = 0x41;
+buffer[i++] = 0x46;
+
+buffer[i++] = 0;
+buffer[i++] = 1;
+buffer[i++] = 0;
+buffer[i++] = 1;
 
 client.send(buffer, port, host , function(err, bytes) {
 	if (err) throw err;

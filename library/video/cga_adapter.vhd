@@ -35,7 +35,7 @@ use hdl4fpga.cgafont.all;
 entity cga_adapter is
 	port (
 		cga_clk     : in  std_logic;
-		cga_we      : in  std_logic;
+		cga_we      : in  std_logic := '1';
 		cga_addr    : in  std_logic_vector;
 		cga_data    : in  std_logic_vector;
 
@@ -53,7 +53,6 @@ architecture struct of cga_adapter is
 	signal font_addr : std_logic_vector(8+4-1 downto 0);
 	signal font_line : std_logic_vector(8-1 downto 0);
 
-	signal cga_ena   : std_logic;
 	signal cga_rdata : std_logic_vector(ascii'range);
 	signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
 
@@ -87,7 +86,7 @@ begin
 		cgaram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => cga_clk,
-			wr_ena  => '1', --cga_ena,
+			wr_ena  => cga_we,
 			wr_addr => cga_addr,
 			wr_data => cga_data,
 			rd_addr => rd_addr,
