@@ -99,7 +99,7 @@ begin
 						end if;
 					when regS_size =>
 						data_ena <= '0';
-						len <= signed(resize(unsigned(val(len'reverse_range)), len'length))-1;
+						len <= signed(resize(unsigned(val(len'length-2 downto 0)), len'length))-1;
 						stt <= regS_data;
 					when regS_data =>
 						if len(0)='1' then

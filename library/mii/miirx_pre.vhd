@@ -70,6 +70,6 @@ begin
 			end if;
 		end if;
 	end process;
-	mii_rdy <= rdy;
+	mii_rdy <= rdy and mii_rxdv;
 
 end;

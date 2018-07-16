@@ -907,7 +907,9 @@ begin
 				constant udp_frame  : natural :=  ip_frame+20;
 				constant udp_sport  : field   := (udp_frame+0, 2);
 				constant udp_dport  : field   := (udp_frame+2, 2);
-				constant udp_data   : natural := udp_dport.offset+udp_dport.size;
+				constant udp_length : field   := (udp_frame+4, 2);
+				constant udp_chksum : field   := (udp_frame+6, 2);
+				constant udp_data   : natural := udp_chksum.offset+udp_chksum.size;
 
 				signal udpport_ena : std_logic;
 				signal udpdata_ena : std_logic;
