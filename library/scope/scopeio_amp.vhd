@@ -4,22 +4,21 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity scopeio_equalizer is
+entity scopeio_amp is
 	port (
-		input_clk       : in  std_logic;
-		input_ena       : in  std_logic;
-		input_sample    : in  std_logic_vector;
-		equalizer_addr  : in  std_logic_vector := (0 to 0 => '-');
-		equalizer_data  : in  std_logic_vector;
-		output_ena      : out std_logic
-		output_sample   : out std_logic_vector);
+		input_clk     : in  std_logic;
+		input_ena     : in  std_logic;
+		input_sample  : in  std_logic_vector;
+		gain_value    : in  std_logic_vector;
+		output_ena    : out std_logic
+		output_sample : out std_logic_vector);
 end;
 
-architecture beh of scopeio_equalizer is
+architecture beh of scopeio_amp is
 
 	signal p : signed(0 to 2*input_sample'length-1);
 	signal a : signed(input_sample'range);
-	signal b : signed(equalizer_data'range);
+	signal b : signed(gain_value'range);
 
 begin
 
@@ -27,7 +26,7 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			p <= a*s;
-			a <= signed(equalizer_data);
+			a <= signed(gain_value);
 			b <= signed(input_sample);
 		end if;
 	end process;

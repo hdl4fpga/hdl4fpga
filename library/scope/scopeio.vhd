@@ -147,20 +147,27 @@ architecture beh of scopeio is
 	signal scales           : std_logic_vector(0 to inputs*mword'length-1);
 	signal video_pixel       : std_logic_vector(video_rgb'range);
 
-	signal gpannel_on  : std_logic_vector(0 to ly_dptr(layout_id).num_of_seg-1);
-	signal gpannel_x   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).scr_width-1)-1 downto 0);
-	signal gpannel_y   : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y-1)-1 downto 0);
 
-	constant font_width  : natural := 8;
-	constant font_height : natural := 16;
-	signal   cga_code    : std_logic_vector(ascii'range);
-	signal   cga_dot     : std_logic;
-	signal   gpannel_row : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_y)-2 downto unsigned_num_bits(font_height-1));
-	signal   gpannel_col : std_logic_vector(unsigned_num_bits(ly_dptr(layout_id).chan_x-1)-1 downto unsigned_num_bits(font_width-1));
-	signal   gauge_on    : std_logic_vector(0 to 2+inputs-1);
 	signal capture_ena : std_logic;
 	constant lat       : natural := 4;
-	signal g_hzscale : std_logic_vector(hz_scale'range);
+
+	constant amp_rid     : natural := 1;
+	constant trigger_rid : natural := 2;
+	constant hzscale_rid : natural := 3;
+
+	subtype amp_rgtr     is natural range 18-1 downto  0;
+	subtype trigger_rgtr is natural range 32-1 downto 18;
+	subtype hzscale_rgtr is natural range 40-1 downto 32;
+
+	constant rgtr_map : natural_vector := (
+		amp_rid     => amp_rtgr'length,
+		trigger_rid => trigger_rtgr'length,
+		hzscale_rid => hzscale_rtgr'length);
+
+	signal rgtr_file : std_logic_vector(hzscale_rgtr'high downto 0);
+
+	subtype amp_chnl is natural range 10-1 downto  0;
+	subtype amp_sel  is natural range 18-1 downto 10;
 begin
 
 	miirx_e : entity hdl4fpga.scopeio_ip
@@ -168,9 +175,21 @@ begin
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
 		mii_rxd  => mii_rxd,
-		pll_data => pll_data,
-		pll_rdy  => pll_rdy,
-		ser_data => ser_data);
+
+		so_clk   => so_clk,
+		so_dv    => so_dv,
+		so_data  => so_data);
+
+	scopeio_sin_e : entity hdl4fpga.scopeio_sin
+	generic map (
+		rgtr_map => scopeio_rgtrmap)
+	port map (
+		sin_clk  => so_clk,
+		sin_dv   => so_dv,
+		sin_data => so_data,
+		rgtr     => scopeio_rgtr,
+		mem_data => mem_data,
+		data_len => data_len);
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
@@ -181,32 +200,42 @@ begin
 		output_ena  =>
 		output_data => );
 
-	equalizer_g : for in 0 to inputs-1 generate
+	amp_g : for in 0 to inputs-1 generate
 		subtype sample_range is natural i*input_size to (i+1)*input_size-1;
+
+		signal gain_value : std_logic_vector;
 	begin
-		equalizer_e : entity hdl4fpga.equalizer
+
+		process (so_clk)
+		begin
+			if rising_edge(so_clk) then
+				if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
+					gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
+				end if;
+			end if;
+		end process;
+
+		amp_e : entity hdl4fpga.scopeio_amp
 		port map (
-			input_clk      => input_clk,
-			input_ena      => input_ena,
-			input_sample   => input_data(sample_range),
-			equalizer_addr => equalizer_addr,
-			equalizer_data => equalizer_data,
-			output_ena     => output_ena,
-			output_sample  => output_data(sample_range));
+			input_clk     => input_clk,
+			input_ena     => input_ena,
+			input_sample  => input_data(sample_range),
+			gain_value    => gain_value,
+			output_ena    => output_ena,
+			output_sample => output_data(sample_range));
+
 	end generate;
 
 	scope_trigger_e : entity hdl4fpga.trigger
 	port map (
-		input_clk       => input_clk,
-		input_ena       => input_ena,
-		input_data      => input_data,
-		trigger_req     => trigger_req,
-		trigger_edge    => trigger_edge,
-		trigger_channel => trigger_channel,
-		trigger_level   => trigger_level,
-		capture_rdy     => ,
-		capture_req     => ,
-		output_data     => );
+		input_clk    => input_clk,
+		input_ena    => input_ena,
+		input_data   => input_data,
+		trigger_req  => trigger_req,
+		trigger_data => rgtr_file(trigger_rgtr'range),
+		capture_rdy  => ,
+		capture_req  => ,
+		output_data  => );
 
 	graphics_b : block
 	begin
