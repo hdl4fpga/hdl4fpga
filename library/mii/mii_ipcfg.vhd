@@ -34,20 +34,18 @@ entity mii_ipcfg is
 	generic (
 		mac          : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc      : in  std_logic;
-		mii_rxd      : in  std_logic_vector;
-		mii_rxdv     : in  std_logic;
+		mii_rxc       : in  std_logic;
+		mii_rxd       : in  std_logic_vector;
+		mii_rxdv      : in  std_logic;
 
-		mii_req      : in  std_logic;
-		mii_txc      : in  std_logic;
-		mii_txd      : out std_logic_vector;
-		mii_txdv     : out std_logic;
+		mii_req       : in  std_logic;
+		mii_txc       : in  std_logic;
+		mii_txd       : out std_logic_vector;
+		mii_txdv      : out std_logic;
 
-		mii_prev     : out std_logic;
-		
-		udpports     : in  std_logic_vector;
-		udpports_vld : out std_logic_vector;
-		udpdata_vld  : out std_logic);
+		udpdports_val : in  std_logic_vector;
+		udpdports_vld : out std_logic_vector;
+		udpddata_vld  : out std_logic);
 end;
 
 architecture struct of mii_ipcfg is
@@ -923,14 +921,14 @@ begin
 					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0);
 				begin
 
-					dport_b : for i in udpports_vld'range generate
+					dport_b : for i in udpdports_vld'range generate
 						signal vld : std_logic;
 					begin
 
-						process (udpports)
-							variable aux : unsigned(0 to udpports'length-1);
+						process (udpdports_val)
+							variable aux : unsigned(0 to udpdports_val'length-1);
 						begin
-							aux   := unsigned(udpports);
+							aux   := unsigned(udpdports_val);
 							aux   := aux rol (i*dport'length);
 							dport <= std_logic_vector(aux(dport'reverse_range));
 						end process;
@@ -942,11 +940,11 @@ begin
 							mii_rxd  => mii_rxd,
 							mii_treq => ipproto_vld,
 							mii_ena  => udpport_ena,
-							mii_pktv => udpports_vld(i));
+							mii_pktv => udpdports_vld(i));
 
 					end generate;
 
-					udpdata_vld <= udpdata_ena;
+					udpddata_vld <= udpdata_ena;
 				end block;
 
 				dhcpc_b : block

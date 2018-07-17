@@ -21,64 +21,36 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 entity scopeio_ip is
 	generic (
-		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
+		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		mii_rxc   : in  std_logic;
-		mii_rxd   : in  std_logic_vector;
-		mii_rxdv  : in  std_logic;
+		mii_rxc  : in  std_logic;
+		mii_rxd  : in  std_logic_vector;
+		mii_rxdv : in  std_logic;
 
 		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
 
-		video_clk : in  std_logic;
-		video_dot : out std_logic;
-		video_hs  : out std_logic;
-		video_vs  : out std_logic);
+		so_clk   : out std_logic;
+		so_dv    : out std_logic;
+		so_data  : out std_logic_vector);
 	end;
 
 architecture struct of scopeio_ip is
-
-	signal txc  : std_logic;
-	signal txdv : std_logic;
-	signal txd  : std_logic_vector(mii_txd'range);
-
-	signal d_rxc  : std_logic;
-	signal d_rxdv : std_logic;
-	signal d_rxd  : std_logic_vector(mii_txd'range);
-	signal udpdport_vld : std_logic_vector(0 to 0);
-
-	constant cga_addr : natural := 0;
-	constant cga_data : natural := 1;
-
-	constant scopeio_rgtrmap : natural_vector(0 to 2-1) := (
-		cga_addr => 14,
-		cga_data => 8);
-	subtype rgtr_cgaaddr is natural range 14-1 downto  0;
-	subtype rgtr_cgadata is natural range 22-1 downto 14;
-	signal scopeio_rgtr : std_logic_vector(14+8-1 downto 0);
-
-	signal mem_data : std_logic_vector(0 to 1-1);
-	signal data_len : std_logic_vector(0 to 1-1);
+	signal udpdports_vld : std_logic_vector(0 to 0);
+	signal udpddata_vld  : std_logic;
 begin
 
-	txc <= mii_txc;
-	mii_txdv <= txdv;
-	mii_txd  <= txd;
 
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
@@ -89,22 +61,46 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		udpdport_dat => x"0000",
-		udpdport_vld => udpdport_vld,
+		udpdports_val => std_logic_vector(to_unsigned(57001,16)),
+		udpdports_vld => udpdports_vld,
+		udpddata_vld  => udpddata_vld,
 
 		mii_txc   => mii_txc,
-		mii_txdv  => txdv,
-		mii_txd   => txd);
+		mii_txdv  => mii_txdv,
+		mii_txd   => mii_txd);
 
-	scopeio_sin_e : entity hdl4fpga.scopeio_sin
-	generic map (
-		rgtr_map => scopeio_rgtrmap)
-	port map (
-		sin_clk  => mii_rxc,
-		sin_dv   => udpdport_vld(0),
-		sin_data => mii_rxd,
-		rgtr     => scopeio_rgtr,
-		mem_data => mem_data,
-		data_len => data_len);
+	clip_crc_b : block
+		constant lat : natural := 32/mii_rxd'length;
+
+		signal dv : std_logic;
+	begin
+
+		lat_vld_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => lat))
+		port map (
+			clk   => mii_rxc,
+			di(0) => udpddata_vld,
+			do(0) => dv);
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				so_dv <= dv and udpdports_vld(0);
+			end if;
+		end process;
+
+		lat_rxd_e : entity hdl4fpga.align
+		generic map (
+			n => mii_rxd'length,
+			d => (mii_rxd'range => lat+1))
+		port map (
+			clk => mii_rxc,
+			di  => mii_rxd,
+			do  => so_data);
+	end block;
+
+	so_clk  <= mii_rxc;
 
 end;
