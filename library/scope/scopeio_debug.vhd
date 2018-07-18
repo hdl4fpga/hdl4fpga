@@ -92,9 +92,9 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		udpports  => std_logic_vector(to_unsigned(57001,16)),
-		udpports_vld => udpports_vld,
-		udpdata_vld => udpdata_vld,
+		udpdports_val  => std_logic_vector(to_unsigned(57001,16)),
+		udpdports_vld => udpports_vld,
+		udpddata_vld => udpdata_vld,
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,
@@ -141,7 +141,7 @@ begin
 		sin_clk   => mii_rxc,
 		sin_dv    => udp_rxdv(0),
 		sin_data  => udp_rxd,
-		rgtr_id   => rgtr_id;
+		rgtr_id   => rgtr_id,
 		rgtr_file => rgtr_file);
 
 	cga_display_e : entity hdl4fpga.cga_display

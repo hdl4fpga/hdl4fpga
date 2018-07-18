@@ -14,6 +14,9 @@ entity scopeio is
 		si_clk     : in  std_logic := '-';
 		si_dv      : in  std_logic := '0';
 		si_data    : in  std_logic_vector;
+		so_clk     : in  std_logic := '-';
+		so_dv      : out  std_logic := '0';
+		so_data    : out  std_logic_vector;
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -72,9 +75,9 @@ architecture beh of scopeio is
 	signal win_frm          : std_logic_vector(0 to 18-1);
 
 
-	signal so_clk  : std_logic;
-	signal so_dv   : std_logic;
-	signal so_data : std_logic_vector(;
+	signal udpso_clk  : std_logic;
+	signal udpso_dv   : std_logic;
+	signal udpso_data : std_logic_vector(si_data'range);
 	constant lat       : natural := 4;
 
 	constant amp_rid     : natural := 1;
@@ -90,9 +93,9 @@ architecture beh of scopeio is
 		hzscale_rid => 8);
 
 	signal rgtr_file : std_logic_vector(hzscale_rgtr'high downto 0);
+	signal rgtr_wttn : std_logic;
+	signal rgtr_id   : std_logic_vector(8-1 downto 0);
 
-	subtype amp_chnl is natural range 10-1 downto  0;
-	subtype amp_sel  is natural range 18-1 downto 10;
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -100,6 +103,11 @@ begin
 		mii_rxc  => si_clk,
 		mii_rxdv => si_dv,
 		mii_rxd  => si_data,
+
+		mii_req  => '-',
+		mii_txc  => so_clk,
+		mii_txdv => so_dv,
+		mii_txd  => so_data,
 
 		so_clk   => udpso_clk,
 		so_dv    => udpso_dv,
@@ -109,9 +117,9 @@ begin
 	generic map (
 		rgtr_map => rgtr_map)
 	port map (
-		sin_clk   => so_clk,
-		sin_dv    => so_dv,
-		sin_data  => so_data,
+		sin_clk   => udpso_clk,
+		sin_dv    => udpso_dv,
+		sin_data  => udpso_data,
 		rgtr_wttn => rgtr_wttn,
 		rgtr_id   => rgtr_id,
 		rgtr_file => rgtr_file);
@@ -126,6 +134,8 @@ begin
 		output_data => downsample_data);
 
 	amp_b : block
+		subtype amp_chnl is natural range 10-1 downto  0;
+		subtype amp_sel  is natural range 18-1 downto 10;
 	begin
 		amp_g : for in 0 to inputs-1 generate
 			subtype sample_range is natural i*input_size to (i+1)*input_size-1;

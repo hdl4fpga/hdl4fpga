@@ -77,8 +77,8 @@ begin
 		mii_rxc   => mii_rxc,
 		mii_rxdv  => mii_rxdv,
 		mii_rxd   => mii_rxd,
-		udpdport_dat => x"0000",
-		udpdport_vld => udpdport_vld,
+		udpdports_val => x"0000",
+		udpdports_vld => udpdport_vld,
 
 		mii_txc   => mii_txc,
 		mii_txdv  => txdv,

@@ -11,11 +11,11 @@ entity cga_rom is
 		font_height : natural;
 		font_width  : natural);
 	port (
-		clk  : in  std_logic;
-		col  : in  std_logic_vector;
-		row  : in  std_logic_vector;
-		code : in  std_logic_vector;
-		dot  : out std_logic);
+		clk       : in  std_logic;
+		char_col  : in  std_logic_vector;
+		char_row  : in  std_logic_vector;
+		char_code : in  std_logic_vector;
+		char_dot  : out std_logic);
 end;
 
 architecture beh of cga_rom is
@@ -30,7 +30,7 @@ architecture beh of cga_rom is
 
 begin
 
-	font_addr <= code & row;
+	font_addr <= char_code & char_row;
 
 	cgarom_e : entity hdl4fpga.rom
 	generic map (
@@ -47,9 +47,9 @@ begin
 		d => (font_col'range => 2))
 	port map (
 		clk => clk,
-		di  => col,
+		di  => char_col,
 		do  => font_col);
 
 	font_dot <= word2byte(font_line, font_col);
-	dot <= font_dot(0);
+	char_dot <= font_dot(0);
 end;

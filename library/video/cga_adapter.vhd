@@ -21,12 +21,9 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -57,6 +54,7 @@ architecture struct of cga_adapter is
 	signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
 
 	signal video_on  : std_logic;
+	signal char_dot  : std_logic;
 begin
 
 	cgabram_b : block
@@ -124,16 +122,16 @@ begin
 	font_addr <= cga_rdata & font_row;
 
 	rom_e : entity hdl4fpga.cga_rom
-	generic (
+	generic map (
 		font_bitrom => psf1cp850x8x16,
 		font_height => 2**font_row'length,
-		font_width  => 2**font_col'length);
-	port (
+		font_width  => 2**font_col'length)
+	port map (
 		clk  => video_clk,
-		font_col => font_col,
-		font_height => font_row,
-		code => cga_rdata,
-		dot  => char_dot);
+		char_col => font_col,
+		char_row => font_row,
+		char_code => cga_rdata,
+		char_dot => char_dot);
 
 	don_e : entity hdl4fpga.align
 	generic map (
