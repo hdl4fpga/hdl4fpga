@@ -78,7 +78,7 @@ architecture beh of scopeio is
 	signal udpso_clk  : std_logic;
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
-	constant lat       : natural := 4;
+	constant lat      : natural := 4;
 
 	constant amp_rid     : natural := 1;
 	constant trigger_rid : natural := 2;
