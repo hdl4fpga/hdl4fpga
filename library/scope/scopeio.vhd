@@ -96,6 +96,8 @@ architecture beh of scopeio is
 	signal rgtr_wttn : std_logic;
 	signal rgtr_id   : std_logic_vector(8-1 downto 0);
 
+	signal downsample_ena : std_logic;
+	signal downsample_data : std_logic_vector(input_data'range);
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -129,25 +131,27 @@ begin
 		input_clk   => input_clk,
 		input_ena   => input_ena,
 		input_data  => input_data,
-		factor_data => rgtr_file(hzscale_rgtr'range);
+		factor_data => rgtr_file(hzscale_rgtr),
 		output_ena  => downsample_ena,
 		output_data => downsample_data);
 
 	amp_b : block
 		subtype amp_chnl is natural range 10-1 downto  0;
 		subtype amp_sel  is natural range 18-1 downto 10;
-	begin
-		amp_g : for in 0 to inputs-1 generate
-			subtype sample_range is natural i*input_size to (i+1)*input_size-1;
 
-			signal gain_value : std_logic_vector;
+		constant sample_length : natural := input_data'length/inputs;
+	begin
+		amp_g : for i in 0 to inputs-1 generate
+			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
+
+			signal gain_value : std_logic_vector(0 to 18-1);
 		begin
 
 			process (so_clk)
 			begin
 				if rising_edge(so_clk) then
 					if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
-						gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
+--						gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
 					end if;
 				end if;
 			end process;
