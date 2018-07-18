@@ -10,7 +10,7 @@ entity scopeio_amp is
 		input_ena     : in  std_logic;
 		input_sample  : in  std_logic_vector;
 		gain_value    : in  std_logic_vector;
-		output_ena    : out std_logic
+		output_ena    : out std_logic;
 		output_sample : out std_logic_vector);
 end;
 
@@ -25,12 +25,12 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			p <= a*s;
+			p <= a*b;
 			a <= signed(gain_value);
 			b <= signed(input_sample);
 		end if;
 	end process;
-	output_sample <= p;
+	output_sample <= std_logic_vector(p);
 
 	lat_e : entity hdl4fpga.align
 	generic map (

@@ -9,29 +9,11 @@ use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
-		inputs         : natural := 1;
-		input_preamp   : real_vector;
-		layout_id      : natural := 0;
-		vt_div         : std_logic_vector := b"0_0010_0000";
-		hz_div         : std_logic_vector := b"0_0010_0000";
-		hz_scales      : scale_vector;
-		vt_scales      : scale_vector;
-		gauge_labels   : std_logic_vector;
-		unit_symbols   : std_logic_vector;
-		channels_fg    : std_logic_vector;
-		channels_bg    : std_logic_vector;
-		hzaxis_fg      : std_logic_vector;
-		hzaxis_bg      : std_logic_vector;
-		grid_fg        : std_logic_vector;
-		grid_bg        : std_logic_vector);
-
+		inputs         : natural := 1);
 	port (
 		si_clk     : in  std_logic := '-';
 		si_dv      : in  std_logic := '0';
 		si_data    : in  std_logic_vector;
-		tdiv        : out std_logic_vector(4-1 downto 0);
-		cmd_rdy     : in  std_logic := '0';
-		channel_ena : in  std_logic_vector(0 to inputs-1) := (others => '1');
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -84,30 +66,28 @@ architecture beh of scopeio is
 	signal video_vcntr      : std_logic_vector(11-1 downto 0);
 	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
-	signal tracers_on       : std_logic_vector(0 to inputs-1);
-	signal objects_bg       : std_logic_vector(0 to 4-1);
-	signal objects_fg       : std_logic_vector(0 to 3-1);
-
 	signal video_io         : std_logic_vector(0 to 3-1);
 	
 	signal win_don          : std_logic_vector(0 to 18-1);
 	signal win_frm          : std_logic_vector(0 to 18-1);
 
 
+	signal so_clk  : std_logic;
+	signal so_dv   : std_logic;
+	signal so_data : std_logic_vector(;
 	constant lat       : natural := 4;
 
 	constant amp_rid     : natural := 1;
 	constant trigger_rid : natural := 2;
 	constant hzscale_rid : natural := 3;
 
-	subtype amp_rgtr     is natural range 18-1 downto  0;
 	subtype trigger_rgtr is natural range 32-1 downto 18;
 	subtype hzscale_rgtr is natural range 40-1 downto 32;
 
 	constant rgtr_map : natural_vector := (
-		amp_rid     => amp_rtgr'length,
-		trigger_rid => trigger_rtgr'length,
-		hzscale_rid => hzscale_rtgr'length);
+		amp_rid     => 18,
+		trigger_rid => 14,
+		hzscale_rid => 8);
 
 	signal rgtr_file : std_logic_vector(hzscale_rgtr'high downto 0);
 
@@ -115,15 +95,15 @@ architecture beh of scopeio is
 	subtype amp_sel  is natural range 18-1 downto 10;
 begin
 
-	miiip_e : entity hdl4fpga.scopeio_miiip
+	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
 		mii_rxc  => si_clk,
 		mii_rxdv => si_dv,
 		mii_rxd  => si_data,
 
-		so_clk   => so_clk,
-		so_dv    => so_dv,
-		so_data  => so_data);
+		so_clk   => udpso_clk,
+		so_dv    => udpso_dv,
+		so_data  => udpso_data);
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	generic map (
