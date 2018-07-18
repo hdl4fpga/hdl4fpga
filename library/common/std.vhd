@@ -335,7 +335,11 @@ package std is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 	
-
+	function slice_select (
+		constant slice_data : std_logic_vector;
+		constant slice_map  : natural_vector;
+		constant slice_id   : natural)
+		return std_logic_vector;
 end;
 
 use std.textio.all;
@@ -1297,6 +1301,28 @@ package body std is
 			aux_m := aux_m sll 1;
 		end loop;
 		return std_logic_vector(aux_r);
+	end;
+
+	function slice_select (
+		constant slice_data : std_logic_vector;
+		constant slice_map  : natural_vector;
+		constant slice_id   : natural)
+		return std_logic_vector is
+		variable aux : unsigned(0 to slice_data'length-1);
+	begin
+		aux := unsigned(slice_data);
+		for i in slice_map'range loop
+			if i=slice_id then
+				return std_logic_vector(aux(0 to slice_map(i)-1));
+			end if;
+			aux := aux rol slice_map(i);
+		end loop;
+
+		assert false
+			report "slice_id is not in range"
+			severity FAILURE;
+
+		return (1 to 0 => '-');
 	end;
 
 end;

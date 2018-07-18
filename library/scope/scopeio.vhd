@@ -200,42 +200,108 @@ begin
 		output_ena  => downsample_ena,
 		output_data => downsample_data);
 
-	amp_g : for in 0 to inputs-1 generate
-		subtype sample_range is natural i*input_size to (i+1)*input_size-1;
-
-		signal gain_value : std_logic_vector;
+	amp_b : block
 	begin
+		amp_g : for in 0 to inputs-1 generate
+			subtype sample_range is natural i*input_size to (i+1)*input_size-1;
 
-		process (so_clk)
+			signal gain_value : std_logic_vector;
 		begin
-			if rising_edge(so_clk) then
-				if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
-					gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
+
+			process (so_clk)
+			begin
+				if rising_edge(so_clk) then
+					if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
+						gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
+					end if;
 				end if;
-			end if;
-		end process;
+			end process;
 
-		amp_e : entity hdl4fpga.scopeio_amp
-		port map (
-			input_clk     => input_clk,
-			input_ena     => downsample_ena,
-			input_sample  => downsample_data(sample_range),
-			gain_value    => gain_value,
-			output_ena    => ampsample_ena,
-			output_sample => ampsample_data(sample_range));
+			amp_e : entity hdl4fpga.scopeio_amp
+			port map (
+				input_clk     => input_clk,
+				input_ena     => downsample_ena,
+				input_sample  => downsample_data(sample_range),
+				gain_value    => gain_value,
+				output_ena    => ampsample_ena,
+				output_sample => ampsample_data(sample_range));
 
-	end generate;
+		end generate;
+	end block;
 
-	scope_trigger_e : entity hdl4fpga.trigger
+	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	port map (
 		input_clk    => input_clk,
-		input_ena    => input_ena,
-		input_data   => input_data,
+		input_ena    => ampsample_ena,
+		input_data   => ampsampe_data,
 		trigger_req  => trigger_req,
-		trigger_data => rgtr_file(trigger_rgtr'range),
-		capture_rdy  => ,
-		capture_req  => ,
-		output_data  => );
+		trigger_rgtr => rgtr_file(trigger_rgtr'range),
+		capture_rdy  => capture_rdy,
+		capture_req  => capture_req,
+		output_data  => triggersample_data);
+
+	storage_b : block
+		signal mem_full : std_logic;
+		signal wr_addr  : std_logic_vector(mem_addr'range);
+		signal wr_data  : std_logic_vector(triggersample_data'range);
+		signal wr_ena   : std_logic;
+		signal rd_addr  : std_logic_vector(wr_addr'range);
+		signal rd_data  : std_logic_vector(wr_data'range);
+	begin
+
+		wr_ena  <= caputure_req;
+		wr_data <= triggersample_data;
+		process (sin_clk)
+			variable aux : unsigned(0 to wr_addr'length);
+		begin
+			if rising_edge(sin_clk) then
+				if wr_ena='0' then
+					aux := (others => '0');
+				else
+					aux := aux + 1;
+				end if;
+				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
+				mem_full <= aux(0);
+			end if;
+		end process;
+		caputure_rdy <= mem_full;
+
+		ready_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => 2))
+		port map (
+			clk   => mem_clk,
+			di(0) => mem_req,
+			do(0) => mem_rdy);
+
+		rd_addr_e : entity hdl4fpga.align
+		generic map (
+			n => rd_addr'length,
+			d => (rd_addr'range => 1))
+		port map (
+			clk => mem_clk,
+			di  => mem_addr,
+			do  => rd_addr);
+
+		mem_e : entity hdl4fpga.dpram 
+		port map (
+			wr_clk  => sin_clk,
+			wr_ena  => wr_ena,
+			wr_addr => wr_addr,
+			wr_data => wr_data,
+			rd_addr => rd_addr,
+			rd_data => rd_data);
+
+		rd_data_e : entity hdl4fpga.align
+		generic map (
+			n => mem_data'length,
+			d => (mem_data'range => 1))
+		port map (
+			clk => mem_clk,
+			di  => rd_data,
+			do  => storage_data);
+	end block;
 
 	graphics_b : block
 	begin
@@ -304,7 +370,7 @@ begin
 			video_hzl   => video_hzl,
 			win_frm     => win_frm,
 			win_on      => win_don,
-			samples     => samples,
+			samples     => storage_data,
 			vt_pos      => vt_pos,
 			trg_lvl     => trg_lvl,
 			grid_pxl    => grid_pxl,

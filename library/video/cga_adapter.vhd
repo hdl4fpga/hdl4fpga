@@ -115,7 +115,7 @@ begin
 	hsync_e : entity hdl4fpga.align
 	generic map (
 		n   => font_col'length,
-		d   => (font_col'range => 4))
+		d   => (font_col'range => 2))
 	port map (
 		clk => video_clk,
 		di  => video_hcntr(font_col'range),
@@ -123,14 +123,17 @@ begin
 
 	font_addr <= cga_rdata & font_row;
 
-	cgarom_e : entity hdl4fpga.rom
-	generic map (
-		synchronous => 2,
-		bitrom => psf1cp850x8x16)
-	port map (
+	rom_e : entity hdl4fpga.cga_rom
+	generic (
+		font_bitrom => psf1cp850x8x16,
+		font_height => 2**font_row'length,
+		font_width  => 2**font_col'length);
+	port (
 		clk  => video_clk,
-		addr => font_addr,
-		data => font_line);
+		font_col => font_col,
+		font_height => font_row,
+		code => cga_rdata,
+		dot  => char_dot);
 
 	don_e : entity hdl4fpga.align
 	generic map (
@@ -141,6 +144,6 @@ begin
 		di(0) => video_hon,
 		do(0) => video_on);
 
-	video_dot <= word2byte(font_line, font_col)(0) and video_on;
+	video_dot <= char_dot and video_on;
 
 end;

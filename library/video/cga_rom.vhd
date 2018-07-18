@@ -5,20 +5,20 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-entity scopeio_cga is
+entity cga_rom is
 	generic (
 		font_bitrom : std_logic_vector;
 		font_height : natural;
 		font_width  : natural);
 	port (
 		clk  : in  std_logic;
-		x    : in  std_logic_vector;
-		y    : in  std_logic_vector;
+		col  : in  std_logic_vector;
+		row  : in  std_logic_vector;
 		code : in  std_logic_vector;
 		dot  : out std_logic);
 end;
 
-architecture beh of scopeio is
+architecture beh of cga_rom is
 
 	signal font_code : std_logic_vector(ascii'range);
 	signal font_row  : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
@@ -30,7 +30,7 @@ architecture beh of scopeio is
 
 begin
 
-	font_addr <= code & y;
+	font_addr <= code & row;
 
 	cgarom_e : entity hdl4fpga.rom
 	generic map (
@@ -46,11 +46,10 @@ begin
 		n => font_col'length,
 		d => (font_col'range => 2))
 	port map (
-		clk => video_clk,
-		di  => x,
+		clk => clk,
+		di  => col,
 		do  => font_col);
 
 	font_dot <= word2byte(font_line, font_col);
 	dot <= font_dot(0);
-
 end;
