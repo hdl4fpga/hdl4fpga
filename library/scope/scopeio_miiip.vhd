@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_ip is
+entity scopeio_miiip is
 	generic (
 		mac      : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
@@ -46,7 +46,7 @@ entity scopeio_ip is
 		so_data  : out std_logic_vector);
 	end;
 
-architecture struct of scopeio_ip is
+architecture struct of scopeio_miiip is
 	signal udpdports_vld : std_logic_vector(0 to 0);
 	signal udpddata_vld  : std_logic;
 begin

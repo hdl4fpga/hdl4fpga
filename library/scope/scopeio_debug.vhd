@@ -69,15 +69,14 @@ architecture struct of scopeio_debug is
 	constant cga_addr : natural := 0;
 	constant cga_data : natural := 1;
 
-	constant scopeio_rgtrmap : natural_vector(0 to 2-1) := (
+	constant rgtr_map : natural_vector(0 to 2-1) := (
 		cga_addr => 14,
 		cga_data => 8);
 	subtype rgtr_cgaaddr is natural range 14-1 downto  0;
 	subtype rgtr_cgadata is natural range 22-1 downto 14;
-	signal scopeio_rgtr : std_logic_vector(14+8-1 downto 0);
+	signal rgtr_file : std_logic_vector(14+8-1 downto 0);
+	signal rgtr_id   : std_logic_vector(8-1 downto 0);
 
-	signal mem_data : std_logic_vector(0 to 1-1);
-	signal data_len : std_logic_vector(0 to 1-1);
 begin
 
 	txc <= mii_txc;
@@ -137,20 +136,19 @@ begin
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	generic map (
-		rgtr_map => scopeio_rgtrmap)
+		rgtr_map => rgtr_map)
 	port map (
-		sin_clk  => mii_rxc,
-		sin_dv   => udp_rxdv(0),
-		sin_data => udp_rxd,
-		rgtr     => scopeio_rgtr,
-		mem_data => mem_data,
-		data_len => data_len);
+		sin_clk   => mii_rxc,
+		sin_dv    => udp_rxdv(0),
+		sin_data  => udp_rxd,
+		rgtr_id   => rgtr_id;
+		rgtr_file => rgtr_file);
 
 	cga_display_e : entity hdl4fpga.cga_display
 	port map (
 		cga_clk  => mii_rxc,
-		cga_addr => scopeio_rgtr(rgtr_cgaaddr),
-		cga_data => scopeio_rgtr(rgtr_cgadata),
+		cga_addr => rgtr_file(rgtr_cgaaddr),
+		cga_data => rgtr_file(rgtr_cgadata),
 
 		video_clk => video_clk,
 		video_dot => video_dot,

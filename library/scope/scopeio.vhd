@@ -170,7 +170,7 @@ architecture beh of scopeio is
 	subtype amp_sel  is natural range 18-1 downto 10;
 begin
 
-	miirx_e : entity hdl4fpga.scopeio_ip
+	miiip_e : entity hdl4fpga.scopeio_miiip
 	port map (
 		mii_rxc  => mii_rxc,
 		mii_rxdv => mii_rxdv,
@@ -182,23 +182,23 @@ begin
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	generic map (
-		rgtr_map => scopeio_rgtrmap)
+		rgtr_map => rgtr_map)
 	port map (
-		sin_clk  => so_clk,
-		sin_dv   => so_dv,
-		sin_data => so_data,
-		rgtr     => scopeio_rgtr,
-		mem_data => mem_data,
-		data_len => data_len);
+		sin_clk   => so_clk,
+		sin_dv    => so_dv,
+		sin_data  => so_data,
+		rgtr_wttn => rgtr_wttn,
+		rgtr_id   => rgtr_id,
+		rgtr_file => rgtr_file);
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
 		input_clk   => input_clk,
 		input_ena   => input_ena,
-		input_data  =>
-		factor_data =>
-		output_ena  =>
-		output_data => );
+		input_data  => input_data,
+		factor_data => rgtr_file(hzscale_rgtr'range);
+		output_ena  => downsample_ena,
+		output_data => downsample_data);
 
 	amp_g : for in 0 to inputs-1 generate
 		subtype sample_range is natural i*input_size to (i+1)*input_size-1;
@@ -218,11 +218,11 @@ begin
 		amp_e : entity hdl4fpga.scopeio_amp
 		port map (
 			input_clk     => input_clk,
-			input_ena     => input_ena,
-			input_sample  => input_data(sample_range),
+			input_ena     => downsample_ena,
+			input_sample  => downsample_data(sample_range),
 			gain_value    => gain_value,
-			output_ena    => output_ena,
-			output_sample => output_data(sample_range));
+			output_ena    => ampsample_ena,
+			output_sample => ampsample_data(sample_range));
 
 	end generate;
 
