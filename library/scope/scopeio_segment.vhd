@@ -8,7 +8,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
-entity scopeio_channel is
+entity scopeio_segment is
 	generic(
 		lat         : natural := 4;
 		inputs      : natural;
@@ -30,7 +30,7 @@ entity scopeio_channel is
 		traces_pxls : out std_logic_vector);
 end;
 
-architecture def of scopeio_channel is
+architecture def of scopeio_segment is
 
 	signal win_x      : std_logic_vector(unsigned_num_bits(scr_width-1)-1  downto 0);
 	signal win_y      : std_logic_vector(unsigned_num_bits(height-1)-1 downto 0);
