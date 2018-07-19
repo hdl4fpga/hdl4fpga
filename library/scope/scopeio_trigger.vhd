@@ -13,6 +13,7 @@ entity scopeio_trigger is
 		input_ena     : in  std_logic;
 		input_data    : in  std_logic_vector;
 		trigger_rgtr  : in  std_logic_vector;
+		trigger_level : out std_logic_vector;
 		trigger_req   : in  std_logic;
 		capture_rdy   : in  std_logic;
 		capture_req   : out std_logic;
@@ -33,18 +34,18 @@ architecture beh of scopeio_trigger is
 		edge_rid    => 1,
 		channel_rid => unsigned_num_bits(inputs-1));
 
-	signal trigger_edge    : std_logic;
-	signal trigger_level   : std_logic_vector(sample'range);
-	signal trigger_channel : std_logic_vector(rgtr_map(channel_rid)-1 downto 0);
+	signal level   : std_logic_vector(sample'range);
+	signal edge    : std_logic;
+	signal channel : std_logic_vector(rgtr_map(channel_rid)-1 downto 0);
 
 begin
 
 
-	trigger_level   <= slice_select(trigger_rgtr, rgtr_map, level_rid);
-	trigger_edge    <= slice_select(trigger_rgtr, rgtr_map, edge_rid)(0);
-	trigger_channel <= slice_select(trigger_rgtr, rgtr_map, channel_rid);
+	level   <= slice_select(trigger_rgtr, rgtr_map, level_rid);
+	edge    <= slice_select(trigger_rgtr, rgtr_map, edge_rid)(0);
+	channel <= slice_select(trigger_rgtr, rgtr_map, channel_rid);
 
-	sample <= word2byte(input_data, trigger_channel, trigger_level'length);
+	sample <= word2byte(input_data, channel, level'length);
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
@@ -52,7 +53,7 @@ begin
 				if capture_rdy='1' then
 					trigger_on <= '0';
 				elsif trigger_on='0' then
-					trigger_on <= trigger_edge xnor setif(signed(sample) >= signed(trigger_level));
+					trigger_on <= edge xnor setif(signed(sample) >= signed(level));
 				end if;
 			elsif capture_rdy='1' then
 				trigger_on <= '0';
@@ -70,4 +71,5 @@ begin
 		di  => input_data,
 		do  => output_data);
 
+	trigger_level <= level;
 end;

@@ -31,7 +31,8 @@ use hdl4fpga.std.all;
 entity win_side is
 	generic (
 		synchronous : natural := 1;
-		tab         : natural_vector);
+		x           : natural_vector;
+		width       : natural_vector);
 	port (
 		video_clk   : in  std_logic;
 		video_on    : in  std_logic;
@@ -41,30 +42,14 @@ end;
 
 architecture def of win_side is
 
-	impure function init_data (
-		constant tab  : natural_vector;
-		constant size : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(0 to 2**size*win_on'length-1) := (others => '0');
-		constant t : natural_vector(0 to tab'length-1) := tab;
-	begin
-		for i in 0 to t'length/2-1 loop
-			for j in t(2*i) to t(2*i)+t(2*i+1)-1 loop
-				retval(win_on'length*j+i) := '1';
-			end loop;
-		end loop;
-		return retval;
-	end;
-
-	constant tab_bit : std_logic_vector := init_data(tab, video_x'length);
 	signal   won     : std_logic_vector(win_on'range);
 
 begin
 
 	g1 : for i in won'range generate
-		g2 : if i < tab'length/2 generate
-			constant low  : natural := tab(2*i);
-			constant high : natural := tab(2*i)+tab(2*i+1);
+		g2 : if i < x'length generate
+			constant low  : natural := x(i);
+			constant high : natural := width(i)+x(i);
 		begin
 			process(video_clk)
 			begin
@@ -94,7 +79,10 @@ use hdl4fpga.std.all;
 entity win_mngr is
 	generic (
 		synchronous : natural := 1;
-		tab         : natural_vector);
+		x      : natural_vector;
+		y      : natural_vector;
+		width  : natural_vector;
+		height : natural_vector);
 	port (
 		video_clk   : in  std_logic;
 		video_x     : in  std_logic_vector;
@@ -104,27 +92,9 @@ entity win_mngr is
 		win_don     : out std_logic_vector;
 		win_frm     : out std_logic_vector);
 
-	constant x : natural := 0;
-	constant y : natural := 1;
 end;
 
 architecture def of win_mngr is
-
-	impure function init_data (
-		constant tab  : natural_vector;
-		constant side : natural)
-		return natural_vector is
-		variable retval : natural_vector(0 to tab'length/2-1) := (others => 0);
-		constant t : natural_vector(0 to tab'length-1) := tab;
-	begin
-		for i in 0 to t'length/2-1 loop
-			retval(i) := t(2*i+side);
-		end loop;
-		return retval;
-	end;
-
-	constant tabx : natural_vector := init_data(tab, x);
-	constant taby : natural_vector := init_data(tab, y);
 
 	signal mask_y : std_logic_vector(win_don'range);
 	signal mask_x : std_logic_vector(win_don'range);
@@ -145,7 +115,8 @@ begin
 	x_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		tab         => tabx)
+		x           => x,
+		width       => width)
 	port map (
 		video_clk   => video_clk,
 		video_on    => don,
@@ -155,7 +126,8 @@ begin
 	y_e : entity hdl4fpga.win_side
 	generic map (
 		synchronous => synchronous,
-		tab         => taby)
+		x           => y,
+		width       => height)
 	port map (
 		video_clk   => video_clk,
 		video_on    => frm,

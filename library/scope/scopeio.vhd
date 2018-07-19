@@ -45,36 +45,25 @@ end;
 
 architecture beh of scopeio is
 
+	type square is record
+		x      : natural;
+		y      : natural;
+		width  : natural;
+		height : natural;
+	end record;
+
 	type video_layout is record 
 		mode        : natural;
 		scr_width   : natural;
 		num_of_seg  : natural;
-		chan_x      : natural;
-		chan_y      : natural;
-		chan_width  : natural;
-		chan_height : natural;
+		sgmnt       : square;
 	end record;
 
 	type vlayout_vector is array (natural range <>) of video_layout;
 
---		      mode, scr_width | num_of_seg | chan_x | chan_y | chan_width | chan_height
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (   7,      1920,           4,     320,     270,       50*32,          256),
-		1 => (   1,       800,           2,     320,     300,       15*32,          256));
-
-	function to_naturalvector (
-		constant arg  : video_layout)
-		return natural_vector is
-		variable rval : natural_vector(0 to 4*arg.num_of_seg-1);
-	begin
-		for i in 0 to arg.num_of_seg-1 loop
-			rval(i*4+0) := 0;
-			rval(i*4+1) := i*arg.chan_y;
-			rval(i*4+2) := arg.scr_width;
-			rval(i*4+3) := arg.chan_y-1;
-		end loop;
-		return rval;
-	end;
+		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320, y => 270, width => 50*32, height => 256)),
+		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320, y => 300, width => 15*32, height => 256)));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
@@ -117,12 +106,13 @@ architecture beh of scopeio is
 	signal ampsample_data     : std_logic_vector(input_data'range);
 	signal triggersample_ena  : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
+	signal trigger_level      : std_logic_vector(0 to 0);
 	signal trigger_req        : std_logic;
 	signal capture_rdy        : std_logic;
 	signal capture_req        : std_logic;
 
 	constant storage_size : natural := unsigned_num_bits(
-		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).chan_width-1);
+		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
 	signal storage_data : std_logic_vector(input_data'range);
 
@@ -201,14 +191,15 @@ begin
 	generic map (
 		inputs => inputs)
 	port map (
-		input_clk    => input_clk,
-		input_ena    => ampsample_ena,
-		input_data   => ampsample_data,
-		trigger_req  => trigger_req,
-		trigger_rgtr => rgtr_file(trigger_rgtr),
-		capture_rdy  => capture_rdy,
-		capture_req  => capture_req,
-		output_data  => triggersample_data);
+		input_clk     => input_clk,
+		input_ena     => ampsample_ena,
+		input_data    => ampsample_data,
+		trigger_req   => trigger_req,
+		trigger_rgtr  => rgtr_file(trigger_rgtr),
+		trigger_level => trigger_level,
+		capture_rdy   => capture_rdy,
+		capture_req   => capture_req,
+		output_data   => triggersample_data);
 
 	storage_b : block
 
@@ -274,69 +265,163 @@ begin
 	end block;
 
 	graphics_b : block
+
 		constant lat       : natural := 4;
-		constant vgaio_lat : natural := unsigned_num_bits(vlayout_tab(vlayout_id).chan_height-1)+2+lat;
+		constant vgaio_lat : natural := unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)+2+lat;
+
+		signal grid_dot    : std_logic;
+		signal trigger_dot : std_logic;
+		signal traces_dots : std_logic_vector(0 to inputs-1);
 	begin
-		video_e : entity hdl4fpga.video_vga
-		generic map (
-			mode => vlayout_tab(vlayout_id).mode,
-			n    => 11)
-		port map (
-			clk   => video_clk,
-			hsync => video_hs,
-			vsync => video_vs,
-			hcntr => video_hcntr,
-			vcntr => video_vcntr,
-			don   => video_hon,
-			frm   => video_frm,
-			nhl   => video_hzl);
+		video_b : block
 
-		video_vld <= video_hon and video_frm;
+			function to_naturalvector (
+				constant vlayout : video_layout;
+				constant param   : natural range 0 to 3)
+				return natural_vector is
+				variable rval : natural_vector(0 to vlayout.num_of_seg-1);
+			begin
+				for i in 0 to vlayout.num_of_seg-1 loop
+					case param is
+					when 0 =>
+						rval(i) := vlayout.sgmnt.x;
+					when 1 => 
+						rval(i) := vlayout.sgmnt.y*i;
+					when 2 => 
+						rval(i) := vlayout.scr_width+1;
+					when 3 => 
+						rval(i) := vlayout.sgmnt.height+11;
+					end case;
+				end loop;
+				return rval;
+			end;
 
-		vgaio_e : entity hdl4fpga.align
-		generic map (
-			n => video_io'length,
-			d => (video_io'range => vgaio_lat))
-		port map (
-			clk   => video_clk,
-			di(0) => video_hs,
-			di(1) => video_vs,
-			di(2) => video_vld,
-			do    => video_io);
+		begin
 
-		win_mngr_e : entity hdl4fpga.win_mngr
-		generic map (
-			tab => to_naturalvector(vlayout_tab(vlayout_id)))
-		port map (
-			video_clk  => video_clk,
-			video_x    => video_hcntr,
-			video_y    => video_vcntr,
-			video_don  => video_hon,
-			video_frm  => video_frm,
-			win_don    => win_don,
-			win_frm    => win_frm);
+			video_e : entity hdl4fpga.video_vga
+			generic map (
+				mode => vlayout_tab(vlayout_id).mode,
+				n    => 11)
+			port map (
+				clk   => video_clk,
+				hsync => video_hs,
+				vsync => video_vs,
+				hcntr => video_hcntr,
+				vcntr => video_vcntr,
+				don   => video_hon,
+				frm   => video_frm,
+				nhl   => video_hzl);
 
-		scopeio_channel_e : entity hdl4fpga.scopeio_channel
-		generic map (
-			lat         => lat,
-			inputs      => inputs,
-			num_of_seg  => ly_dptr(layout_id).num_of_seg,
-			chan_x      => ly_dptr(layout_id).chan_x,
-			chan_width  => ly_dptr(layout_id).chan_width,
-			chan_height => ly_dptr(layout_id).chan_height,
-			scr_width   => ly_dptr(layout_id).scr_width,
-			height      => ly_dptr(layout_id).chan_y,
-		port map (
-			video_clk   => video_clk,
-			video_hzl   => video_hzl,
-			win_frm     => win_frm,
-			win_on      => win_don,
-			samples     => storage_data,
-			vt_pos      => vt_pos,
-			trg_lvl     => trg_lvl,
-			grid_pxl    => grid_pxl,
-			trigger_pxl => trigger_pxl,
-			traces_pxls => trace_pxls);
+			video_vld <= video_hon and video_frm;
+
+			vgaio_e : entity hdl4fpga.align
+			generic map (
+				n => video_io'length,
+				d => (video_io'range => vgaio_lat))
+			port map (
+				clk   => video_clk,
+				di(0) => video_hs,
+				di(1) => video_vs,
+				di(2) => video_vld,
+				do    => video_io);
+
+			win_mngr_e : entity hdl4fpga.win_mngr
+			generic map (
+				x     => to_naturalvector(vlayout_tab(vlayout_id), 0),
+				y     => to_naturalvector(vlayout_tab(vlayout_id), 1),
+				width => to_naturalvector(vlayout_tab(vlayout_id), 2),
+				height=> to_naturalvector(vlayout_tab(vlayout_id), 3))
+			port map (
+				video_clk  => video_clk,
+				video_x    => video_hcntr,
+				video_y    => video_vcntr,
+				video_don  => video_hon,
+				video_frm  => video_frm,
+				win_don    => win_don,
+				win_frm    => win_frm);
+
+			sgmnt_b : block
+				constant sgmnt   : square := vlayout_tab(vlayout_id).sgmnt;
+				signal pwin_y : std_logic_vector(unsigned_num_bits(sgmnt.height-1)-1 downto 0);
+				signal pwin_x : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
+
+				signal x      : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
+				signal win_x  : std_logic_vector(x'range);
+				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.y-1)-1  downto 0);
+				signal phon   : std_logic;
+				signal pfrm   : std_logic;
+				signal cfrm   : std_logic_vector(0 to 4-1);
+				signal cdon   : std_logic_vector(0 to 4-1);
+				signal wena   : std_logic;
+				signal wfrm   : std_logic;
+			begin
+				phon <= not setif(win_don=(win_don'range => '0'));
+				pfrm <= not setif(win_frm=(win_frm'range => '0'));
+
+				parent_e : entity hdl4fpga.win
+				port map (
+					video_clk => video_clk,
+					video_hzl => video_hzl,
+					win_frm   => pfrm,
+					win_ena   => phon,
+					win_x     => pwin_x,
+					win_y     => pwin_y);
+
+				mngr_e : entity hdl4fpga.win_mngr
+				generic map (
+					x      => (0=> sgmnt.x),
+					y      => (0=> sgmnt.y),
+					width  => (0=> sgmnt.width),
+					height => (0=> sgmnt.height))
+				port map (
+					video_clk  => video_clk,
+					video_x    => pwin_x,
+					video_y    => pwin_y,
+					video_don  => phon,
+					video_frm  => pfrm,
+					win_don    => cdon,
+					win_frm    => cfrm);
+
+				wena <= not setif(cdon=(cdon'range => '0'));
+				wfrm <= not setif(cfrm=(cfrm'range => '0'));
+
+				win_e : entity hdl4fpga.win
+				port map (
+					video_clk => video_clk,
+					video_hzl => video_hzl,
+					win_frm   => wfrm,
+					win_ena   => wena,
+					win_x     => x,
+					win_y     => win_y);
+
+				xdly_e : entity hdl4fpga.align
+				generic map (
+					n => x'length,
+					d => (x'range => 0))
+				port map (
+					clk => video_clk,
+					di  => x,
+					do  => win_x);
+
+				scopeio_segment_e : entity hdl4fpga.scopeio_segment
+				generic map (
+					lat           => lat,
+					inputs        => inputs)
+				port map (
+					video_clk     => video_clk,
+					video_hzl     => video_hzl,
+					win_frm       => win_frm,
+					win_on        => win_don,
+					win_x         => win_x,
+					win_y         => win_y,
+					samples       => storage_data,
+					trigger_level => trigger_level,
+					grid_dot      => grid_dot,
+					trigger_dot   => trigger_dot,
+					traces_dots   => traces_dots);
+			end block;
+
+		end block;
 --
 --		scopeio_palette_e : entity hdl4fpga.palette
 --		port map (

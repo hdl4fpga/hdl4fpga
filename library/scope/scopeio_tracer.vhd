@@ -12,22 +12,12 @@ entity scopeio_tracer is
 		clk     : in  std_logic;
 		ena     : in  std_logic;
 		y       : in  std_logic_vector;
-		vt_pos  : in  std_logic_vector;
 		samples : in  std_logic_vector;
 		dots    : out std_logic_vector);
 end;
 
 architecture def of scopeio_tracer is
-	constant bias : natural := 2**(y'length-1);
 begin
-
-	vertical_position_p : process (clk)
-	begin
-		if rising_edge(clk) then
-			for i in 0 to inputs-1 loop
-			end loop;
-		end if;
-	end process;
 
 	trace_g : for i in 0 to inputs-1 generate
 
@@ -36,15 +26,8 @@ begin
 
 	begin
 
-		process (clk)
-		begin
-			if rising_edge(clk) then
-				sample <= std_logic_vector(
-					unsigned(word2byte(samples, i, samples'length/inputs)) +
-					unsigned(word2byte(vt_pos,  i, vt_pos'length/inputs)));
-				row1 <= std_logic_vector(resize(unsigned(y),sample'length) + bias);
-			end if;
-		end process;
+		sample <= word2byte(samples, i, samples'length/inputs);
+		row1   <= std_logic_vector(resize(unsigned(y),sample'length));
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (
