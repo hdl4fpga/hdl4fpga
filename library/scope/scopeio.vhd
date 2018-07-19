@@ -96,8 +96,15 @@ architecture beh of scopeio is
 	signal rgtr_wttn : std_logic;
 	signal rgtr_id   : std_logic_vector(8-1 downto 0);
 
-	signal downsample_ena : std_logic;
+	signal downsample_ena  : std_logic;
 	signal downsample_data : std_logic_vector(input_data'range);
+	signal ampsample_ena  : std_logic;
+	signal ampsample_data : std_logic_vector(input_data'range);
+	signal triggersample_ena  : std_logic;
+	signal triggersample_data : std_logic_vector(input_data'range);
+	signal trigger_req : std_logic;
+	signal capture_rdy : std_logic;
+	signal capture_req : std_logic;
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -169,12 +176,14 @@ begin
 	end block;
 
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
+	generic map (
+		inputs => inputs)
 	port map (
 		input_clk    => input_clk,
 		input_ena    => ampsample_ena,
-		input_data   => ampsampe_data,
+		input_data   => ampsample_data,
 		trigger_req  => trigger_req,
-		trigger_rgtr => rgtr_file(trigger_rgtr'range),
+		trigger_rgtr => rgtr_file(trigger_rgtr),
 		capture_rdy  => capture_rdy,
 		capture_req  => capture_req,
 		output_data  => triggersample_data);
@@ -188,12 +197,12 @@ begin
 		signal rd_data  : std_logic_vector(wr_data'range);
 	begin
 
-		wr_ena  <= caputure_req;
+		wr_ena  <= capture_req;
 		wr_data <= triggersample_data;
-		process (sin_clk)
+		process (si_clk)
 			variable aux : unsigned(0 to wr_addr'length);
 		begin
-			if rising_edge(sin_clk) then
+			if rising_edge(si_clk) then
 				if wr_ena='0' then
 					aux := (others => '0');
 				else
@@ -203,7 +212,7 @@ begin
 				mem_full <= aux(0);
 			end if;
 		end process;
-		caputure_rdy <= mem_full;
+		capture_rdy <= mem_full;
 
 		ready_e : entity hdl4fpga.align
 		generic map (
@@ -225,7 +234,7 @@ begin
 
 		mem_e : entity hdl4fpga.dpram 
 		port map (
-			wr_clk  => sin_clk,
+			wr_clk  => si_clk,
 			wr_ena  => wr_ena,
 			wr_addr => wr_addr,
 			wr_data => wr_data,
@@ -234,8 +243,8 @@ begin
 
 		rd_data_e : entity hdl4fpga.align
 		generic map (
-			n => mem_data'length,
-			d => (mem_data'range => 1))
+			n => rd_data'length,
+			d => (rd_data'range => 1))
 		port map (
 			clk => mem_clk,
 			di  => rd_data,
