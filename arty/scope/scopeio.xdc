@@ -76,6 +76,10 @@ set_property -dict { PACKAGE_PIN G17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports 
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 } [ get_ports eth_rx_clk]
 set_property -dict { PACKAGE_PIN C17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rxerr]
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_rx_dv]
+set_property -dict { PACKAGE_PIN H14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[0]]
+set_property -dict { PACKAGE_PIN J14 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[1]]
+set_property -dict { PACKAGE_PIN J13 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[2]]
+set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 IOB TRUE } [ get_ports eth_txd[3]]
                       
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
 

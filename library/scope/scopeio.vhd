@@ -5,7 +5,6 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 entity scopeio is
 	generic (
@@ -76,9 +75,6 @@ architecture beh of scopeio is
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	
-	signal win_don          : std_logic_vector(0 to 18-1);
-	signal win_frm          : std_logic_vector(0 to 18-1);
-
 	signal udpso_clk  : std_logic;
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
@@ -116,6 +112,7 @@ architecture beh of scopeio is
 	signal storage_data : std_logic_vector(input_data'range);
 
 	signal video_pixel : std_logic_vector(video_rgb'range);
+		signal grid_dot    : std_logic;
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -174,31 +171,31 @@ begin
 				end if;
 			end process;
 
-			amp_e : entity hdl4fpga.scopeio_amp
-			port map (
-				input_clk     => input_clk,
-				input_ena     => downsample_ena,
-				input_sample  => downsample_data(sample_range),
-				gain_value    => gain_value,
-				output_ena    => ampsample_ena,
-				output_sample => ampsample_data(sample_range));
+--			amp_e : entity hdl4fpga.scopeio_amp
+--			port map (
+--				input_clk     => input_clk,
+--				input_ena     => downsample_ena,
+--				input_sample  => downsample_data(sample_range),
+--				gain_value    => gain_value,
+--				output_ena    => ampsample_ena,
+--				output_sample => ampsample_data(sample_range));
 
 		end generate;
 	end block;
 
-	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
-	generic map (
-		inputs => inputs)
-	port map (
-		input_clk     => input_clk,
-		input_ena     => ampsample_ena,
-		input_data    => ampsample_data,
-		trigger_req   => trigger_req,
-		trigger_rgtr  => rgtr_file(trigger_rgtr),
-		trigger_level => trigger_level,
-		capture_rdy   => capture_rdy,
-		capture_req   => capture_req,
-		output_data   => triggersample_data);
+--	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
+--	generic map (
+--		inputs => inputs)
+--	port map (
+--		input_clk     => input_clk,
+--		input_ena     => ampsample_ena,
+--		input_data    => ampsample_data,
+--		trigger_req   => trigger_req,
+--		trigger_rgtr  => rgtr_file(trigger_rgtr),
+--		trigger_level => trigger_level,
+--		capture_rdy   => capture_rdy,
+--		capture_req   => capture_req,
+--		output_data   => triggersample_data);
 
 	storage_b : block
 
@@ -268,7 +265,6 @@ begin
 		constant lat       : natural := 4;
 		constant vgaio_lat : natural := unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)+2+lat;
 
-		signal grid_dot    : std_logic;
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
 	begin
@@ -322,6 +318,9 @@ begin
 				return rval;
 			end;
 
+			signal win_don : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
+			signal win_frm : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
+
 		begin
 
 			win_mngr_e : entity hdl4fpga.win_mngr
@@ -349,8 +348,8 @@ begin
 				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.y-1)-1  downto 0);
 				signal phon   : std_logic;
 				signal pfrm   : std_logic;
-				signal cfrm   : std_logic_vector(0 to 4-1);
-				signal cdon   : std_logic_vector(0 to 4-1);
+				signal cfrm   : std_logic_vector(0 to 1-1);
+				signal cdon   : std_logic_vector(0 to 1-1);
 				signal wena   : std_logic;
 				signal wfrm   : std_logic;
 			begin
@@ -421,28 +420,20 @@ begin
 			end block;
 
 		end block;
---
---		scopeio_palette_e : entity hdl4fpga.palette
---		port map (
---			channels_fg  =>,  
---			channels_bg  =>, 
---			hzaxis_fg    =>, 
---			hzaxis_bg    =>, 
---			grid_fg      =>, 
---			grid_bg      =>, 
---			
---			tracers_on   =>, 
---			objectsfg_on => objects_, 
---			objectsbg_on =>, 
---			gauges_on    =>, 
---
---			trigger_on   =>, 
---
---			video_clk    => video_clk, 
---			video_pixel  => video_pixel);
+
+		scopeio_palette_e : entity hdl4fpga.scopeio_palette
+		port map (
+			traces_fg   => "110",
+			grid_fg     => "100", 
+			grid_bg     => "000", 
+			grid_dot    => grid_dot,
+			traces_dots => traces_dots, 
+			video_rgb   => video_pixel);
 	end block;
 
-	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
+	so_data <= (so_data'range => 'Z');
+	so_dv   <= '0';
+	video_rgb   <= (video_rgb'range => video_io(2)) and (0 to 2 => grid_dot);
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);

@@ -5,13 +5,13 @@ entity arty is
 	port (
 		gclk100   : in std_logic;
 
-		ja  : inout std_logic_vector(1 to 10);
-		jc  : inout std_logic_vector(1 to 10);
-		jd  : inout std_logic_vector(1 to 10);
-		vaux_p : in std_logic_vector(16-1 downto 0);
-		vaux_n : in std_logic_vector(16-1 downto 0);
-		v_p : in std_logic_vector(0 to 1-1); 
-		v_n : in std_logic_vector(0 to 1-1); 
+		ja  : inout std_logic_vector(1 to 10) := (others => 'Z');
+		jc  : inout std_logic_vector(1 to 10) := (others => 'Z');
+		jd  : inout std_logic_vector(1 to 10) := (others => 'Z');
+		vaux_p : in std_logic_vector(16-1 downto 0) := (others => '-');
+		vaux_n : in std_logic_vector(16-1 downto 0) := (others => '-');
+		v_p : in std_logic_vector(0 to 1-1) := (others => '-'); 
+		v_n : in std_logic_vector(0 to 1-1) := (others => '-'); 
 		btn : in std_logic_vector(4-1 downto 0) := (others => '-');
 		sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
 		led : out std_logic_vector(4-1 downto 0);
@@ -19,17 +19,17 @@ entity arty is
 
 		eth_rstn  : out std_logic;
 		eth_ref_clk : out std_logic;
-		eth_mdio  : inout std_logic;
+		eth_mdio  : inout std_logic := '-';
 		eth_mdc   : out std_logic;
-		eth_crs   : in std_logic;
-		eth_col   : in std_logic;
-		eth_tx_clk  : in std_logic;
+		eth_crs   : in std_logic := '-';
+		eth_col   : in std_logic := '-';
+		eth_tx_clk  : in std_logic := '-';
 		eth_tx_en : out std_logic;
 		eth_txd   : out std_logic_vector(0 to 4-1);
-		eth_rx_clk  : in std_logic;
-		eth_rxerr : in std_logic;
-		eth_rx_dv : in std_logic;
-		eth_rxd   : in std_logic_vector(0 to 4-1);
+		eth_rx_clk  : in std_logic := '-';
+		eth_rxerr : in std_logic := '-';
+		eth_rx_dv : in std_logic := '-';
+		eth_rxd   : in std_logic_vector(0 to 4-1) := (others => '-');
 		
 		ddr3_reset : out std_logic := '0';
 		ddr3_clk_p : out std_logic := '0';

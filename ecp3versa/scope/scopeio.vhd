@@ -153,32 +153,13 @@ begin
 	phy1_rst <= not rst;
 
 	scopeio_e : entity hdl4fpga.scopeio
-	generic map (
-		layout_id    => 0,
-		hz_scales    => hz_scales,
-		vt_scales    => vt_scales,
-		inputs       => 1,
-		gauge_labels => to_ascii(string'(
-			"Escala     : " &
-			"Posicion   : " &
-			"Horizontal : " &
-			"Disparo    : ")),
-		unit_symbols => to_ascii(string'(
-			"V" &
-			"V" &
-			"s" &
-			"V")),
-		input_preamp => (0 to 1 => 1.0),
-		channels_fg  => b"110",
-		channels_bg  => b"000",
-		hzaxis_fg    => b"010",
-		hzaxis_bg    => b"000",
-		grid_fg      => b"100",
-		grid_bg      => b"000")
 	port map (
-		mii_rxc     => phy1_rxc,
-		mii_rxdv    => phy1_rx_dv,
-		mii_rxd     => phy1_rx_d,
+		si_clk      => phy1_rxc,
+		si_dv       => phy1_rx_dv,
+		si_data     => phy1_rx_d,
+		so_clk      => phy1_125clk,
+		so_dv       => phy1_tx_en,
+		so_data     => phy1_tx_d,
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
@@ -201,4 +182,10 @@ begin
 		di(4) => vga_vsync,
 		do    => expansionx4);
 
+	gtx_clk_i : entity hdl4fpga.ddro
+	port map (
+		clk => phy1_125clk,
+		dr  => '0',
+		df  => '1',
+		q   => phy1_gtxclk);
 end;

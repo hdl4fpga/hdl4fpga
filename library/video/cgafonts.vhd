@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-package cgafont is
+package cgafonts is
 
 	constant psf1cp850x8x16 : std_logic_vector(0 to 256*8*16-1) := (
 		-- x"00" --
@@ -8441,7 +8441,7 @@ package cgafont is
 		return std_logic_vector;
 end;
 
-package body cgafont is
+package body cgafonts is
 
 	function shuffle_code (
 		constant font   : std_logic_vector;

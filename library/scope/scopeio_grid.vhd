@@ -35,6 +35,6 @@ begin
 	port map (
 		clk   => clk,
 		di(0) => gdot,
-		do(1) => dot);
+		do(0) => dot);
 
 end;

@@ -30,7 +30,7 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
+use hdl4fpga.cgafonts.all;
 
 entity mii_display is
 	port (

@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
+use hdl4fpga.cgafonts.all;
 
 entity cga_rom is
 	generic (

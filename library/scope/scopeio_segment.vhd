@@ -6,7 +6,6 @@ use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 entity scopeio_segment is
 	generic(
