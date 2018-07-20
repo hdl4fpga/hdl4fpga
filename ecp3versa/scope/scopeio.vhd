@@ -11,6 +11,8 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafont.all;
 
 architecture beh of ecp3versa is
+	attribute oddrapps : string;
+	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 
 	constant hz_scales : scale_vector(0 to 16-1) := (
 		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**0, scale => "0001", deca => to_ascii('m')),
@@ -182,10 +184,11 @@ begin
 		di(4) => vga_vsync,
 		do    => expansionx4);
 
-	gtx_clk_i : entity hdl4fpga.ddro
+	gtx_clk_i : oddrxd1
 	port map (
-		clk => phy1_125clk,
-		dr  => '0',
-		df  => '1',
-		q   => phy1_gtxclk);
+		sclk => phy1_125clk,
+		da   => '0',
+		db   => '1',
+		q    => phy1_gtxclk);
+
 end;

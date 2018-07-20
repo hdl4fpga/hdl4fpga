@@ -141,14 +141,14 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_file => rgtr_file);
 
-	downsampler_e : entity hdl4fpga.scopeio_downsampler
-	port map (
-		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => input_data,
-		factor_data => rgtr_file(hzscale_rgtr),
-		output_ena  => downsample_ena,
-		output_data => downsample_data);
+--	downsampler_e : entity hdl4fpga.scopeio_downsampler
+--	port map (
+--		input_clk   => input_clk,
+--		input_ena   => input_ena,
+--		input_data  => input_data,
+--		factor_data => rgtr_file(hzscale_rgtr),
+--		output_ena  => downsample_ena,
+--		output_data => downsample_data);
 
 	amp_b : block
 		subtype amp_chnl is natural range 10-1 downto  0;
@@ -340,12 +340,12 @@ begin
 
 			sgmnt_b : block
 				constant sgmnt   : square := vlayout_tab(vlayout_id).sgmnt;
-				signal pwin_y : std_logic_vector(unsigned_num_bits(sgmnt.height-1)-1 downto 0);
+				signal pwin_y : std_logic_vector(unsigned_num_bits(sgmnt.y-1)-1 downto 0);
 				signal pwin_x : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
 
 				signal x      : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
 				signal win_x  : std_logic_vector(x'range);
-				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.y-1)-1  downto 0);
+				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
 				signal phon   : std_logic;
 				signal pfrm   : std_logic;
 				signal cfrm   : std_logic_vector(0 to 1-1);
@@ -368,9 +368,9 @@ begin
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
 					x      => (0=> sgmnt.x),
-					y      => (0=> sgmnt.y),
-					width  => (0=> sgmnt.width),
-					height => (0=> sgmnt.height))
+					y      => (0=> 0),
+					width  => (0=> sgmnt.width+1),
+					height => (0=> sgmnt.height+1))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,
@@ -383,6 +383,7 @@ begin
 				wena <= not setif(cdon=(cdon'range => '0'));
 				wfrm <= not setif(cfrm=(cfrm'range => '0'));
 
+				video_pixel <= (others => grid_dot);
 				win_e : entity hdl4fpga.win
 				port map (
 					video_clk => video_clk,
@@ -408,8 +409,8 @@ begin
 				port map (
 					video_clk     => video_clk,
 					video_hzl     => video_hzl,
-					win_frm       => win_frm,
-					win_on        => win_don,
+					win_frm       => cfrm,
+					win_on        => cdon,
 					win_x         => win_x,
 					win_y         => win_y,
 					samples       => storage_data,
@@ -421,19 +422,18 @@ begin
 
 		end block;
 
-		scopeio_palette_e : entity hdl4fpga.scopeio_palette
-		port map (
-			traces_fg   => "110",
-			grid_fg     => "100", 
-			grid_bg     => "000", 
-			grid_dot    => grid_dot,
-			traces_dots => traces_dots, 
-			video_rgb   => video_pixel);
+--		scopeio_palette_e : entity hdl4fpga.scopeio_palette
+--		port map (
+--			traces_fg   => "110",
+--			grid_fg     => "100", 
+--			grid_bg     => "000", 
+--			grid_dot    => grid_dot,
+--			traces_dots => traces_dots, 
+--			video_rgb   => video_pixel);
 	end block;
 
 	so_data <= (so_data'range => 'Z');
-	so_dv   <= '0';
-	video_rgb   <= (video_rgb'range => video_io(2)) and (0 to 2 => grid_dot);
+	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
