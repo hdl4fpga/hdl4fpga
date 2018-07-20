@@ -30,8 +30,8 @@ entity scopeio is
 		si_dv       : in  std_logic := '0';
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
-		so_dv       : out  std_logic := '0';
-		so_data     : out  std_logic_vector;
+		so_dv       : out std_logic := '0';
+		so_data     : out std_logic_vector;
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -264,7 +264,7 @@ begin
 
 	end block;
 
-	graphics_b : block
+	 video_b : block
 
 		constant lat       : natural := 4;
 		constant vgaio_lat : natural := unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)+2+lat;
@@ -273,7 +273,34 @@ begin
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
 	begin
-		video_b : block
+		video_e : entity hdl4fpga.video_vga
+		generic map (
+			mode => vlayout_tab(vlayout_id).mode,
+			n    => 11)
+		port map (
+			clk   => video_clk,
+			hsync => video_hs,
+			vsync => video_vs,
+			hcntr => video_hcntr,
+			vcntr => video_vcntr,
+			don   => video_hon,
+			frm   => video_frm,
+			nhl   => video_hzl);
+
+		video_vld <= video_hon and video_frm;
+
+		vgaio_e : entity hdl4fpga.align
+		generic map (
+			n => video_io'length,
+			d => (video_io'range => vgaio_lat))
+		port map (
+			clk   => video_clk,
+			di(0) => video_hs,
+			di(1) => video_vs,
+			di(2) => video_vld,
+			do    => video_io);
+
+		graphics_b : block
 
 			function to_naturalvector (
 				constant vlayout : video_layout;
@@ -297,33 +324,6 @@ begin
 			end;
 
 		begin
-
-			video_e : entity hdl4fpga.video_vga
-			generic map (
-				mode => vlayout_tab(vlayout_id).mode,
-				n    => 11)
-			port map (
-				clk   => video_clk,
-				hsync => video_hs,
-				vsync => video_vs,
-				hcntr => video_hcntr,
-				vcntr => video_vcntr,
-				don   => video_hon,
-				frm   => video_frm,
-				nhl   => video_hzl);
-
-			video_vld <= video_hon and video_frm;
-
-			vgaio_e : entity hdl4fpga.align
-			generic map (
-				n => video_io'length,
-				d => (video_io'range => vgaio_lat))
-			port map (
-				clk   => video_clk,
-				di(0) => video_hs,
-				di(1) => video_vs,
-				di(2) => video_vld,
-				do    => video_io);
 
 			win_mngr_e : entity hdl4fpga.win_mngr
 			generic map (
