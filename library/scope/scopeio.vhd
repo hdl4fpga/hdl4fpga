@@ -79,7 +79,6 @@ architecture beh of scopeio is
 	signal win_don          : std_logic_vector(0 to 18-1);
 	signal win_frm          : std_logic_vector(0 to 18-1);
 
-
 	signal udpso_clk  : std_logic;
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
