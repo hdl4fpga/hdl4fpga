@@ -12,19 +12,19 @@ entity scopeio is
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_from     : real_vector;
-		vt_step     : real_vector;
-		vt_scale    : std_logic_vector;
-		vt_gain     : natural_vector;
-		vt_factsyms : std_logic_vector;
-		vt_untsyms  : std_logic_vector;
+		vt_from     : real_vector := (0 to 0 => 0.0);
+		vt_step     : real_vector := (0 to 0 => 0.0);
+		vt_scale    : std_logic_vector := (0 to 0 => '0');
+		vt_gain     : natural_vector := (0 to 0 => 0);
+		vt_factsyms : std_logic_vector := (0 to 0 => '0');
+		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		hz_from     : real_vector;
-		hz_step     : real_vector;
-		hz_scale    : std_logic_vector;
-		hz_gain     : natural_vector;
-		hz_factsyms : std_logic_vector;
-		hz_untsyms  : std_logic_vector);
+		hz_from     : real_vector := (0 to 0 => 0.0);
+		hz_step     : real_vector := (0 to 0 => 0.0);
+		hz_scale    : std_logic_vector := (0 to 0 => '0');
+		hz_gain     : natural_vector := (0 to 0 => 0);
+		hz_factsyms : std_logic_vector := (0 to 0 => '0');
+		hz_untsyms  : std_logic_vector := (0 to 0 => '0'));
 	port (
 		si_clk      : in  std_logic := '-';
 		si_dv       : in  std_logic := '0';
