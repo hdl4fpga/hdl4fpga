@@ -31,7 +31,7 @@ package std is
 
 	type natural_vector is array (natural range <>) of natural;
 	type integer_vector is array (natural range <>) of integer;
---	type real_vector    is array (natural range <>) of real;
+	type real_vector    is array (natural range <>) of real;
 
 	function signed_num_bits (arg: integer) return natural;
 	function unsigned_num_bits (arg: natural) return natural;
