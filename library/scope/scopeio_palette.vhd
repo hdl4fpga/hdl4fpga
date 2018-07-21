@@ -18,8 +18,7 @@ end;
 architecture beh of scopeio_palette is
 	signal traces_on  : std_logic;
 begin
---	video_rgb <= primux (traces_fg & grid_fg, traces_dots & grid_dot, (video_rgb'range => '0'));
-	video_rgb <= grid_fg when grid_dot='1' else (video_rgb'range => '0');
+	video_rgb <= primux (traces_fg & grid_fg, traces_dots & grid_dot, (video_rgb'range => '0'));
 
 	traces_on <= setif(traces_dots /= (traces_dots'range => '0'));
 end;
