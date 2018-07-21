@@ -5,6 +5,8 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 
 entity scopeio_amp is
+	generic (
+		lat : natural := 0);
 	port (
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic;
@@ -16,9 +18,9 @@ end;
 
 architecture beh of scopeio_amp is
 
-	signal p : signed(0 to 2*input_sample'length-1);
-	signal a : signed(input_sample'range);
-	signal b : signed(gain_value'range);
+	signal p : signed(0 to gain_value'length+input_sample'length-1);
+	signal a : signed(gain_value'range);
+	signal b : signed(input_sample'range);
 
 begin
 
@@ -30,12 +32,12 @@ begin
 			b <= signed(input_sample);
 		end if;
 	end process;
-	output_sample <= std_logic_vector(p);
+	output_sample <= std_logic_vector(p(0 to output_sample'length-1));
 
 	lat_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 => 2))
+		d => (0 => lat+2))
 	port map (
 		clk   => input_clk,
 		di(0) => input_ena,

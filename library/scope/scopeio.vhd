@@ -14,14 +14,14 @@ entity scopeio is
 		vt_from     : real_vector := (0 to 0 => 0.0);
 		vt_step     : real_vector := (0 to 0 => 0.0);
 		vt_scale    : std_logic_vector := (0 to 0 => '0');
-		vt_gain     : natural_vector := (0 to 0 => 0);
+		vt_gain     : natural_vector := (0 to 0 => 2**18);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
 		hz_from     : real_vector := (0 to 0 => 0.0);
 		hz_step     : real_vector := (0 to 0 => 0.0);
 		hz_scale    : std_logic_vector := (0 to 0 => '0');
-		hz_gain     : natural_vector := (0 to 0 => 0);
+		hz_gain     : natural_vector := (0 to 0 => 2**18);
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0'));
 	port (
@@ -112,7 +112,6 @@ architecture beh of scopeio is
 	signal storage_data : std_logic_vector(input_data'range);
 
 	signal video_pixel : std_logic_vector(video_rgb'range);
-		signal grid_dot    : std_logic;
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -159,26 +158,48 @@ begin
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
 
-			signal gain_value : std_logic_vector(0 to 18-1);
+			function to_bitrom (
+				value : natural_vector;
+				size  : natural)
+				return std_logic_vector is
+				variable retval : unsigned(0 to value'length*size-1);
+			begin
+				for i in value'range loop
+					retval(0 to size-1) := to_unsigned(value(i), size);
+					retval := retval rol size;
+				end loop;
+				return std_logic_vector(retval);
+			end;
+
+			signal gain_addr  : std_logic_vector(unsigned_num_bits(vt_gain'length-1)-1 downto 0);
+			signal gain_value : std_logic_vector(18-1 downto 0);
 		begin
+
+			mult_e : entity hdl4fpga.rom 
+			generic map (
+				bitrom => to_bitrom(vt_gain,18))
+			port map (
+				clk  => input_clk,
+				addr => gain_addr,
+				data => gain_value);
 
 			process (so_clk)
 			begin
 				if rising_edge(so_clk) then
 					if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
---						gain_value <= mmm(to_integer(unsigned(rgtr_file(amp_sel))));
+						gain_addr <= rgtr_file(amp_chnl)(gain_addr'range);
 					end if;
 				end if;
 			end process;
 
---			amp_e : entity hdl4fpga.scopeio_amp
---			port map (
---				input_clk     => input_clk,
---				input_ena     => downsample_ena,
---				input_sample  => downsample_data(sample_range),
---				gain_value    => gain_value,
---				output_ena    => ampsample_ena,
---				output_sample => ampsample_data(sample_range));
+			amp_e : entity hdl4fpga.scopeio_amp
+			port map (
+				input_clk     => input_clk,
+				input_ena     => downsample_ena,
+				input_sample  => downsample_data(sample_range),
+				gain_value    => gain_value,
+				output_ena    => ampsample_ena,
+				output_sample => ampsample_data(sample_range));
 
 		end generate;
 	end block;
@@ -267,6 +288,7 @@ begin
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
+		signal grid_dot    : std_logic;
 	begin
 		video_e : entity hdl4fpga.video_vga
 		generic map (
@@ -306,13 +328,13 @@ begin
 				for i in 0 to vlayout.num_of_seg-1 loop
 					case param is
 					when 0 =>
-						rval(i) := vlayout.sgmnt.x;
+						rval(i) := 0;
 					when 1 => 
 						rval(i) := vlayout.sgmnt.y*i;
 					when 2 => 
-						rval(i) := vlayout.scr_width+1;
+						rval(i) := vlayout.scr_width;
 					when 3 => 
-						rval(i) := vlayout.sgmnt.height+11;
+						rval(i) := vlayout.sgmnt.y-1;
 					end case;
 				end loop;
 				return rval;
@@ -367,7 +389,7 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => (0=> sgmnt.x),
+					x      => (0=> sgmnt.x-1),
 					y      => (0=> 0),
 					width  => (0=> sgmnt.width+1),
 					height => (0=> sgmnt.height+1))
@@ -383,7 +405,6 @@ begin
 				wena <= not setif(cdon=(cdon'range => '0'));
 				wfrm <= not setif(cfrm=(cfrm'range => '0'));
 
-				video_pixel <= (others => grid_dot);
 				win_e : entity hdl4fpga.win
 				port map (
 					video_clk => video_clk,
@@ -404,7 +425,7 @@ begin
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					lat           => lat,
+					lat           => 2,
 					inputs        => inputs)
 				port map (
 					video_clk     => video_clk,
@@ -422,14 +443,14 @@ begin
 
 		end block;
 
---		scopeio_palette_e : entity hdl4fpga.scopeio_palette
---		port map (
---			traces_fg   => "110",
---			grid_fg     => "100", 
---			grid_bg     => "000", 
---			grid_dot    => grid_dot,
---			traces_dots => traces_dots, 
---			video_rgb   => video_pixel);
+		scopeio_palette_e : entity hdl4fpga.scopeio_palette
+		port map (
+			traces_fg   => "110",
+			grid_fg     => "100", 
+			grid_bg     => "000", 
+			grid_dot    => grid_dot,
+			traces_dots => traces_dots, 
+			video_rgb   => video_pixel);
 	end block;
 
 	so_data <= (so_data'range => 'Z');

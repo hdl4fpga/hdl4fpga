@@ -93,9 +93,7 @@ architecture beh of ecp3versa is
 		return aux;
 	end;
 
-	signal samples_doa : std_logic_vector(sample_size-1 downto 0);
-	signal samples_dib : std_logic_vector(sample_size-1 downto 0);
-	signal sample      : std_logic_vector(sample_size-1 downto 0);
+	signal sample      : std_logic_vector(0 to sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 begin
