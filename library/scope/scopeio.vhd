@@ -109,7 +109,9 @@ architecture beh of scopeio is
 	constant storage_size : natural := unsigned_num_bits(
 		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
-	signal storage_data : std_logic_vector(input_data'range);
+
+		subtype storage_word is std_logic_vector(0 to 9-1);
+	signal storage_data : std_logic_vector(0 to inputs*storage_word'length-1);
 
 	signal video_pixel : std_logic_vector(video_rgb'range);
 begin
@@ -148,12 +150,15 @@ begin
 --		factor_data => rgtr_file(hzscale_rgtr),
 --		output_ena  => downsample_ena,
 --		output_data => downsample_data);
+	downsample_data <= input_data;
+	downsample_ena  <= input_ena;
 
 	amp_b : block
 		subtype amp_chnl is natural range 10-1 downto  0;
 		subtype amp_sel  is natural range 18-1 downto 10;
 
 		constant sample_length : natural := input_data'length/inputs;
+		signal output_ena : std_logic_vector(0 to inputs-1);
 	begin
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
@@ -198,11 +203,12 @@ begin
 				input_ena     => downsample_ena,
 				input_sample  => downsample_data(sample_range),
 				gain_value    => gain_value,
---				output_ena    => ampsample_ena,
+				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
 
 		end generate;
-		ampsample_ena <= '1';
+
+		ampsample_ena <= output_ena(0);
 	end block;
 
 --	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -224,7 +230,6 @@ begin
 
 	storage_b : block
 
-		subtype storage_word is std_logic_vector(0 to 9-1);
 
 		signal mem_full : std_logic;
 		signal mem_clk  : std_logic;
@@ -250,14 +255,15 @@ begin
 				aux1 := aux1 rol storage_word'length;
 				aux2 := aux2 rol triggersample_data'length/inputs;
 			end loop;
-			wr_data <= std_logic_vector(aux2);
+			wr_data <= std_logic_vector(aux1);
 		end process;
 
 		capture_rdy <= mem_full;
 		wr_clk      <= input_clk;
 		wr_ena      <= '1'; --capture_req;
-		wr_data     <= b"0_1000_0000"; --triggersample_data;
+		wr_data     <= triggersample_data;
 
+		rd_clk <= video_clk;
 		gen_addr_p : process (wr_clk)
 			variable aux : unsigned(0 to wr_addr'length);
 		begin
