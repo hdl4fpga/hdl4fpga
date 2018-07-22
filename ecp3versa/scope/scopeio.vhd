@@ -8,7 +8,6 @@ use ecp3.components.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 architecture beh of ecp3versa is
 	attribute oddrapps : string;
@@ -77,13 +76,13 @@ architecture beh of ecp3versa is
 		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
 	begin
 		for i in x0 to x1 loop
---			y := (2**(n-1)-1)*sin(2.0*MATH_PI*real((i))/real(x1-x0+1));
---			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trun(y)),n));
-			if i < (x0+x1)/2 then
-				aux(i*n to (i+1)*n-1) := ('0', others => '1');
-			else
-				aux(i*n to (i+1)*n-1) := ('1',others => '0');
-			end if;
+			y := (2**(n-2)-1)*sin(2.0*MATH_PI*real((i)*8.0)/real(x1-x0+1));
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
+--			if i < (x0+x1)/2 then
+--				aux(i*n to (i+1)*n-1) := ('0', others => '1');
+--			else
+--				aux(i*n to (i+1)*n-1) := ('1',others => '0');
+--			end if;
 		end loop;
 		return aux;
 	end;
