@@ -91,9 +91,9 @@ begin
 
 	rrxd <= reverse(rxd);
 
-	du : entity work.arty
+	du : entity work.ecp3versa
 	port map (
-		gclk100 => clk
+		clk => clk
 			 );
 	rtxd <= reverse(txd);
 end;
