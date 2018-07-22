@@ -71,24 +71,19 @@ architecture beh of ecp3versa is
 	function sinctab (
 		constant x0 : integer;
 		constant x1 : integer;
-		constant n  : integer)
+		constant n  : natural)
 		return std_logic_vector is
 		variable y   : real;
 		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
 	begin
 		for i in x0 to x1 loop
-			if i /= 0 then
-				y := sin(2.0*MATH_PI*real((i))/128.0)/(2.0*MATH_PI*real((i))/128.0);
+--			y := (2**(n-1)-1)*sin(2.0*MATH_PI*real((i))/real(x1-x0+1));
+--			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trun(y)),n));
+			if i < (x0+x1)/2 then
+				aux(i*n to (i+1)*n-1) := ('0', others => '1');
 			else
-				y := 1.0;
+				aux(i*n to (i+1)*n-1) := ('1',others => '0');
 			end if;
-			y := sin(2.0*MATH_PI*real((i))/real(x1-x0+1));
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
---			if i < (x0+x1)/2 then
---				aux(i*n to (i+1)*n-1) := (others => '0');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
 		end loop;
 		return aux;
 	end;

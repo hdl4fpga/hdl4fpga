@@ -26,8 +26,15 @@ begin
 
 	begin
 
-		sample <= word2byte(samples, i, samples'length/inputs);
-		row1   <= std_logic_vector(resize(unsigned(y),sample'length)-to_unsigned(2**(y'length-1), sample'length));
+		process (samples)
+			variable aux : unsigned(sample'range);
+		begin
+			aux    := unsigned(word2byte(samples, i, samples'length/inputs));
+			aux    := aux + to_unsigned(2**(aux'length-1), aux'length);
+			sample <= std_logic_vector(aux);
+		end process;
+
+		row1 <= std_logic_vector(resize(unsigned(y),sample'length)+to_unsigned(2**(y'length-1), sample'length));
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (
