@@ -286,6 +286,7 @@ begin
 --				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
 --					wr_data <= ('0', '0', '1', others => '0');
 --				end if;
+--				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
 				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
 				mem_full <= aux(0);
 			end if;
@@ -412,11 +413,14 @@ begin
 
 				signal win_x  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
 				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
+				signal x  : std_logic_vector(win_x'range);
+				signal y  : std_logic_vector(win_y'range);
 				signal cfrm   : std_logic_vector(0 to 1-1);
 				signal cdon   : std_logic_vector(0 to 1-1);
 				signal wena   : std_logic;
 				signal wfrm   : std_logic;
 				signal w_hzl  : std_logic;
+				signal grid_on : std_logic;
 			begin
 
 				latency_phzl_e : entity hdl4fpga.align
@@ -495,15 +499,46 @@ begin
 				end process;
 				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base));
 
+				latency_b : block
+				begin
+					latency_on_e : entity hdl4fpga.align
+					generic map (
+						n => 1,
+						d => (0 => 2))
+					port map (
+						clk   => video_clk,
+						di(0) => cdon(0),
+						do(0) => grid_on);
+
+					latency_x_e : entity hdl4fpga.align
+					generic map (
+						n => win_x'length,
+						d => (win_x'range => 2))
+					port map (
+						clk => video_clk,
+						di  => win_x,
+						do  => x);
+
+					latency_y_e : entity hdl4fpga.align
+					generic map (
+						n => win_y'length,
+						d => (win_y'range => 1))
+					port map (
+						clk => video_clk,
+						di  => win_y,
+						do  => y);
+
+				end block;
+
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
 					latency       => storage_data'length+4,
 					inputs        => inputs)
 				port map (
 					video_clk     => video_clk,
-					win_on        => cdon,
-					win_x         => win_x,
-					win_y         => win_y,
+					grid_on       => grid_on,
+					x             => x,
+					y             => y,
 					samples       => storage_data,
 					trigger_level => trigger_level,
 					grid_dot      => grid_dot,

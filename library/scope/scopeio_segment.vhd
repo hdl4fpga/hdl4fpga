@@ -9,13 +9,13 @@ use hdl4fpga.std.all;
 
 entity scopeio_segment is
 	generic(
-		latency       : natural := 4;
+		latency       : natural;
 		inputs        : natural);
 	port (
 		video_clk     : in  std_logic;
-		win_on        : in  std_logic_vector;
-		win_x         : in  std_logic_vector;
-		win_y         : in  std_logic_vector;
+		grid_on       : in  std_logic;
+		x             : in  std_logic_vector;
+		y             : in  std_logic_vector;
 		trigger_level : in  std_logic_vector;
 		samples       : in  std_logic_vector;
 		grid_dot      : out std_logic;
@@ -24,30 +24,16 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	constant sample_size : natural := samples'length/inputs;
-
-	signal grid_on    : std_logic;
-
 begin
-
-	latency_on_e : entity hdl4fpga.align
-	generic map (
-		n => 1,
-		d => (
-			0 => latency-(sample_size+4)))
-	port map (
-		clk   => video_clk,
-		di(0) => win_on(0),
-		do(0) => grid_on);
 
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
-		latency => latency)
+		latency => latency-2)
 	port map (
 		clk  => video_clk,
 		ena  => grid_on,
-		x    => win_x,
-		y    => win_y,
+		x    => x,
+		y    => y,
 		dot  => grid_dot);
 
 --	trigger_e : entity hdl4fpga.scopeio_hline
@@ -61,38 +47,15 @@ begin
 --		y   => win_y,
 --		dot => trigger_dot);
 
-	tracer_b : block
-		signal y : std_logic_vector(win_y'range);
-		signal tracer_on : std_logic;
-	begin
-		latency_on_e : entity hdl4fpga.align
-		generic map (
-			n => 1,
-			d => (0 => latency-(sample_size+2)))
-		port map (
-			clk   => video_clk,
-			di(0) => win_on(0),
-			do(0) => tracer_on);
-
-		latency_y_e : entity hdl4fpga.align
-		generic map (
-			n => win_y'length,
-			d => (win_y'range => 1))
-		port map (
-			clk => video_clk,
-			di  => win_y,
-			do  => y);
-
-		tracer_e : entity hdl4fpga.scopeio_tracer
-		generic map (
-			latency => latency-2,
-			inputs  => inputs)
-		port map (
-			clk     => video_clk,
-			ena     => tracer_on,
-			y       => y,
-			samples => samples,
+	tracer_e : entity hdl4fpga.scopeio_tracer
+	generic map (
+		latency => latency-2,
+		inputs  => inputs)
+	port map (
+		clk     => video_clk,
+		ena     => grid_on,
+		y       => y,
+		samples => samples,
 		dots    => traces_dots);
-	end block;
 
 end;
