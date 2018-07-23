@@ -198,20 +198,20 @@ begin
 				end if;
 			end process;
 
---			amp_e : entity hdl4fpga.scopeio_amp
---			port map (
---				input_clk     => input_clk,
---				input_ena     => downsample_ena,
---				input_sample  => downsample_data(sample_range),
---				gain_value    => gain_value,
---				output_ena    => output_ena(i),
---				output_sample => ampsample_data(sample_range));
+			amp_e : entity hdl4fpga.scopeio_amp
+			port map (
+				input_clk     => input_clk,
+				input_ena     => downsample_ena,
+				input_sample  => downsample_data(sample_range),
+				gain_value    => gain_value,
+				output_ena    => output_ena(i),
+				output_sample => ampsample_data(sample_range));
 
 		end generate;
 
---		ampsample_ena <= output_ena(0);
-				ampsample_ena <= downsample_ena;
-				ampsample_data <= downsample_data;
+		ampsample_ena <= output_ena(0);
+--				ampsample_ena <= downsample_ena;
+--				ampsample_data <= downsample_data;
 	end block;
 
 --	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -264,7 +264,7 @@ begin
 		capture_rdy <= mem_full;
 		wr_clk      <= input_clk;
 		wr_ena      <= '1'; --capture_req;
---		wr_data     <= triggersample_data;
+		wr_data     <= triggersample_data;
 
 		rd_clk <= video_clk;
 		gen_addr_p : process (wr_clk)
@@ -276,17 +276,16 @@ begin
 				else
 					aux := aux + 1;
 				end if;
-				wr_data <= ('0','0', '0', '0', others => '1');
-				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
-					wr_data <= ('0', '0', '1', others => '0');
-				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
-					wr_data <= ('0', '0', '1', others => '0');
-				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
-					wr_data <= ('0', '0', '1', others => '0');
-				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
-					wr_data <= ('0', '0', '1', others => '0');
-				end if;
---				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
+--				wr_data <= ('0','0', '0', '0', others => '1');
+--				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				end if;
 				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
 				mem_full <= aux(0);
 			end if;
@@ -502,7 +501,6 @@ begin
 					inputs        => inputs)
 				port map (
 					video_clk     => video_clk,
-					win_frm       => cfrm,
 					win_on        => cdon,
 					win_x         => win_x,
 					win_y         => win_y,

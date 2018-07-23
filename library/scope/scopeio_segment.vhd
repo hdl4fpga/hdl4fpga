@@ -13,7 +13,6 @@ entity scopeio_segment is
 		inputs        : natural);
 	port (
 		video_clk     : in  std_logic;
-		win_frm       : in  std_logic_vector;
 		win_on        : in  std_logic_vector;
 		win_x         : in  std_logic_vector;
 		win_y         : in  std_logic_vector;
@@ -27,23 +26,19 @@ end;
 architecture def of scopeio_segment is
 	constant sample_size : natural := samples'length/inputs;
 
-	signal tracer_on  : std_logic;
 	signal grid_on    : std_logic;
 
 begin
 
 	latency_on_e : entity hdl4fpga.align
 	generic map (
-		n => 2,
+		n => 1,
 		d => (
-			0 => latency-(sample_size+4),
-			1 => latency-(sample_size+2)))
+			0 => latency-(sample_size+4)))
 	port map (
 		clk   => video_clk,
 		di(0) => win_on(0),
-		di(1) => win_on(0),
-		do(0) => grid_on,
-		do(1) => tracer_on);
+		do(0) => grid_on);
 
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
@@ -68,7 +63,17 @@ begin
 
 	tracer_b : block
 		signal y : std_logic_vector(win_y'range);
+		signal tracer_on : std_logic;
 	begin
+		latency_on_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => latency-(sample_size+2)))
+		port map (
+			clk   => video_clk,
+			di(0) => win_on(0),
+			do(0) => tracer_on);
+
 		latency_y_e : entity hdl4fpga.align
 		generic map (
 			n => win_y'length,
