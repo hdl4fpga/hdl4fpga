@@ -109,10 +109,11 @@ architecture beh of scopeio is
 	constant storage_size : natural := unsigned_num_bits(
 		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
+	signal storage_base : std_logic_vector(storage_addr'range);
 
-		subtype storage_word is std_logic_vector(0 to 9-1);
+	subtype storage_word is std_logic_vector(0 to 9-1);
 	signal storage_data : std_logic_vector(0 to inputs*storage_word'length-1);
-
+	signal storage_bsel : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_pixel : std_logic_vector(video_rgb'range);
 begin
 
@@ -197,18 +198,20 @@ begin
 				end if;
 			end process;
 
-			amp_e : entity hdl4fpga.scopeio_amp
-			port map (
-				input_clk     => input_clk,
-				input_ena     => downsample_ena,
-				input_sample  => downsample_data(sample_range),
-				gain_value    => gain_value,
-				output_ena    => output_ena(i),
-				output_sample => ampsample_data(sample_range));
+--			amp_e : entity hdl4fpga.scopeio_amp
+--			port map (
+--				input_clk     => input_clk,
+--				input_ena     => downsample_ena,
+--				input_sample  => downsample_data(sample_range),
+--				gain_value    => gain_value,
+--				output_ena    => output_ena(i),
+--				output_sample => ampsample_data(sample_range));
 
 		end generate;
 
-		ampsample_ena <= output_ena(0);
+--		ampsample_ena <= output_ena(0);
+				ampsample_ena <= downsample_ena;
+				ampsample_data <= downsample_data;
 	end block;
 
 --	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -265,7 +268,7 @@ begin
 
 		rd_clk <= video_clk;
 		gen_addr_p : process (wr_clk)
-			variable aux : unsigned(0 to wr_addr'length);
+			variable aux : unsigned(0 to wr_addr'length) := (others => '0');
 		begin
 			if rising_edge(wr_clk) then
 				if wr_ena='0' then
@@ -273,12 +276,17 @@ begin
 				else
 					aux := aux + 1;
 				end if;
-				wr_data <= ('0','0', others => '1');
-				if wr_addr=(wr_addr'range => '0') then
-					wr_data <= ('1', '1', others => '0');
+				wr_data <= ('0','0', '0', '0', others => '1');
+				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
+					wr_data <= ('0', '0', '1', others => '0');
 				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
-					wr_data <= ('1', '1', others => '0');
+					wr_data <= ('0', '0', '1', others => '0');
+				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
+					wr_data <= ('0', '0', '1', others => '0');
+				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
+					wr_data <= ('0', '0', '1', others => '0');
 				end if;
+--				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
 				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
 				mem_full <= aux(0);
 			end if;
@@ -315,8 +323,7 @@ begin
 
 	 video_b : block
 
-		constant lat       : natural := 4;
-		constant vgaio_lat : natural := unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)+2+lat;
+		constant vgaio_latency : natural := storage_data'length+4+4;
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
@@ -341,7 +348,7 @@ begin
 		vgaio_e : entity hdl4fpga.align
 		generic map (
 			n => video_io'length,
-			d => (video_io'range => vgaio_lat))
+			d => (video_io'range => vgaio_latency))
 		port map (
 			clk   => video_clk,
 			di(0) => video_hs,
@@ -399,22 +406,33 @@ begin
 
 			sgmnt_b : block
 				constant sgmnt   : square := vlayout_tab(vlayout_id).sgmnt;
+
 				signal pwin_y : std_logic_vector(unsigned_num_bits(sgmnt.y-1)-1 downto 0);
 				signal pwin_x : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
+				signal p_hzl  : std_logic;
 
-				signal x      : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
-				signal win_x  : std_logic_vector(x'range);
+				signal win_x  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
 				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
 				signal cfrm   : std_logic_vector(0 to 1-1);
 				signal cdon   : std_logic_vector(0 to 1-1);
 				signal wena   : std_logic;
 				signal wfrm   : std_logic;
+				signal w_hzl  : std_logic;
 			begin
+
+				latency_phzl_e : entity hdl4fpga.align
+				generic map (
+					n => 1,
+					d => (0 => 2))
+				port map (
+					clk   => video_clk,
+					di(0) => video_hzl,
+					do(0) => p_hzl);
 
 				parent_e : entity hdl4fpga.win
 				port map (
 					video_clk => video_clk,
-					video_hzl => video_hzl,
+					video_hzl => p_hzl,
 					win_frm   => pfrm,
 					win_ena   => phon,
 					win_x     => pwin_x,
@@ -438,45 +456,52 @@ begin
 				wena <= not setif(cdon=(cdon'range => '0'));
 				wfrm <= not setif(cfrm=(cfrm'range => '0'));
 
+				latency_whzl_e : entity hdl4fpga.align
+				generic map (
+					n => 1,
+					d => (0 => 2))
+				port map (
+					clk   => video_clk,
+					di(0) => p_hzl,
+					do(0) => w_hzl);
+
 				win_e : entity hdl4fpga.win
 				port map (
 					video_clk => video_clk,
-					video_hzl => video_hzl,
+					video_hzl => w_hzl,
 					win_frm   => wfrm,
 					win_ena   => wena,
-					win_x     => x,
+					win_x     => win_x,
 					win_y     => win_y);
 
-				storage_addr_p : process (video_clk)
-					variable base : std_logic_vector(storage_addr'range);
-					variable addr : std_logic_vector(storage_addr'range);
-				begin
-					if rising_edge(video_clk) then
-						addr := (addr'range => '0');
-						for i in win_frm'range loop
-							base := std_logic_vector(to_unsigned(vlayout_tab(vlayout_id).sgmnt.width*i, storage_addr'length));
-							addr := addr or wirebus(base, (0 => win_frm(i)));
-						end loop;
-						storage_addr <= std_logic_vector(unsigned(x) +unsigned(addr));
-					end if;
-				end process;
-
-				xdly_e : entity hdl4fpga.align
+				winfrm_lat_e : entity hdl4fpga.align
 				generic map (
-					n => x'length,
-					d => (x'range => 0))
+					n => win_frm'length,
+					d => (win_frm'range => 2))
 				port map (
 					clk => video_clk,
-					di  => x,
-					do  => win_x);
+					di  => win_frm,
+					do  => storage_bsel);
+
+				storage_addr_p : process (storage_bsel)
+					variable base : std_logic_vector(storage_base'range);
+				begin
+					base := (base'range => '0');
+					for i in storage_bsel'range loop
+						base := base or wirebus(
+							std_logic_vector(to_unsigned(vlayout_tab(vlayout_id).sgmnt.width*i, storage_addr'length)),
+							(0 => storage_bsel(i)));
+					end loop;
+					storage_base <= std_logic_vector(base);
+				end process;
+				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base));
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					lat           => storage_data'length+4,
+					latency       => storage_data'length+4,
 					inputs        => inputs)
 				port map (
 					video_clk     => video_clk,
-					video_hzl     => video_hzl,
 					win_frm       => cfrm,
 					win_on        => cdon,
 					win_x         => win_x,

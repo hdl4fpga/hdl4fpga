@@ -355,8 +355,7 @@ begin
 	ena_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 to 0 => n),
-		i => (0 to 0 => '-'))
+		d => (0 to 0 => n+1))
 	port map (
 		clk => clk,
 		di(0) => ena,

@@ -7,13 +7,13 @@ use hdl4fpga.std.all;
 
 entity scopeio_grid is
 	generic (
-		lat : natural);
+		latency : natural);
 	port (
-		clk : in  std_logic;
-		ena : in  std_logic;
-		x   : in  std_logic_vector;
-		y   : in  std_logic_vector;
-		dot : out std_logic);
+		clk     : in  std_logic;
+		ena     : in  std_logic;
+		x       : in  std_logic_vector;
+		y       : in  std_logic_vector;
+		dot     : out std_logic);
 end;
 
 architecture def of scopeio_grid is
@@ -31,7 +31,7 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 => lat-2))
+		d => (0 => latency-2))
 	port map (
 		clk   => clk,
 		di(0) => gdot,

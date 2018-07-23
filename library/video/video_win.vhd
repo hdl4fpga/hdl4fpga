@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 
 entity win_side is
 	generic (
-		synchronous : natural := 1;
 		x           : natural_vector;
 		width       : natural_vector);
 	port (
@@ -78,7 +77,6 @@ use hdl4fpga.std.all;
 
 entity win_mngr is
 	generic (
-		synchronous : natural := 1;
 		x      : natural_vector;
 		y      : natural_vector;
 		width  : natural_vector;
@@ -114,7 +112,6 @@ begin
 
 	x_e : entity hdl4fpga.win_side
 	generic map (
-		synchronous => synchronous,
 		x           => x,
 		width       => width)
 	port map (
@@ -125,7 +122,6 @@ begin
 
 	y_e : entity hdl4fpga.win_side
 	generic map (
-		synchronous => synchronous,
 		x           => y,
 		width       => height)
 	port map (
