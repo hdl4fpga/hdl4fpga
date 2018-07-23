@@ -255,7 +255,7 @@ begin
 				aux1 := aux1 rol storage_word'length;
 				aux2 := aux2 rol triggersample_data'length/inputs;
 			end loop;
-			wr_data <= std_logic_vector(aux1);
+--			wr_data <= std_logic_vector(aux1);
 		end process;
 
 		capture_rdy <= mem_full;
@@ -273,9 +273,11 @@ begin
 				else
 					aux := aux + 1;
 				end if;
-				wr_data <= ('0', others => '1');
+				wr_data <= ('0','0', others => '1');
 				if wr_addr=(wr_addr'range => '0') then
-					wr_data <= ('1', others => '0');
+					wr_data <= ('1', '1', others => '0');
+				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
+					wr_data <= ('1', '1', others => '0');
 				end if;
 				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
 				mem_full <= aux(0);
@@ -470,7 +472,7 @@ begin
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					lat           => 2,
+					lat           => storage_data'length+4,
 					inputs        => inputs)
 				port map (
 					video_clk     => video_clk,
@@ -490,7 +492,7 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		port map (
-			traces_fg   => "110",
+			traces_fg   => "010",
 			grid_fg     => "100", 
 			grid_bg     => "000", 
 			grid_dot    => grid_dot,
