@@ -261,7 +261,7 @@ begin
 		capture_rdy <= mem_full;
 		wr_clk      <= input_clk;
 		wr_ena      <= '1'; --capture_req;
-		wr_data     <= triggersample_data;
+--		wr_data     <= triggersample_data;
 
 		rd_clk <= video_clk;
 		gen_addr_p : process (wr_clk)
@@ -272,6 +272,10 @@ begin
 					aux := (others => '0');
 				else
 					aux := aux + 1;
+				end if;
+				wr_data <= ('0', others => '1');
+				if wr_addr=(wr_addr'range => '0') then
+					wr_data <= ('1', others => '0');
 				end if;
 				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
 				mem_full <= aux(0);

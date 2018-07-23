@@ -36,7 +36,7 @@ begin
 	dondly_e : entity hdl4fpga.align
 	generic map (
 		n => 2,
-		d => (0 => 0, 1 => 2+lat, 2 to 3 => 0))
+		d => (0 => 0, 1 => 0, 2 to 3 => 0))
 	port map (
 		clk   => video_clk,
 		di(0) => win_on(0),
@@ -54,23 +54,23 @@ begin
 		y    => win_y,
 		dot  => grid_dot);
 
-	trigger_e : entity hdl4fpga.scopeio_hline
-	generic map (
-		lat   => lat)
-	port map (
-		row => trigger_level,
-		clk => video_clk,
-		ena => grid_on,
-		x   => win_x,
-		y   => win_y,
-		dot => trigger_dot);
+--	trigger_e : entity hdl4fpga.scopeio_hline
+--	generic map (
+--		lat   => lat)
+--	port map (
+--		row => trigger_level,
+--		clk => video_clk,
+--		ena => grid_on,
+--		x   => win_x,
+--		y   => win_y,
+--		dot => trigger_dot);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (
 		inputs  => inputs)
 	port map (
 		clk     => video_clk,
-		ena     => tracer_on,
+		ena     => '1', --tracer_on,
 		y       => win_y,
 		samples => samples,
 		dots    => traces_dots);

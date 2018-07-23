@@ -335,7 +335,7 @@
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
-        <Source name="video.xcf" type="Programming Project File" type_short="Programming">
+        <Source name="ecp3versa.xcf" type="Programming Project File" type_short="Programming">
             <Options/>
         </Source>
     </Implementation>
