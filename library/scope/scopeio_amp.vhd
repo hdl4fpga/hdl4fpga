@@ -33,7 +33,7 @@ begin
 
 		end if;
 	end process;
-	output_sample <= std_logic_vector(p(0 to output_sample'length-1));
+	output_sample <= std_logic_vector(resize(p(0 to output_sample'length), input_sample'length));
 
 	lat_e : entity hdl4fpga.align
 	generic map (

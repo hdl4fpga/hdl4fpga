@@ -197,20 +197,18 @@ begin
 				end if;
 			end process;
 
---			amp_e : entity hdl4fpga.scopeio_amp
---			port map (
---				input_clk     => input_clk,
---				input_ena     => downsample_ena,
---				input_sample  => downsample_data(sample_range),
---				gain_value    => gain_value,
---				output_ena    => output_ena(i),
---				output_sample => ampsample_data(sample_range));
+			amp_e : entity hdl4fpga.scopeio_amp
+			port map (
+				input_clk     => input_clk,
+				input_ena     => downsample_ena,
+				input_sample  => downsample_data(sample_range),
+				gain_value    => gain_value,
+				output_ena    => output_ena(i),
+				output_sample => ampsample_data(sample_range));
 
 		end generate;
 
---		ampsample_ena <= output_ena(0);
-		ampsample_ena <= downsample_ena;
-		ampsample_data <= downsample_data;
+		ampsample_ena <= output_ena(0);
 	end block;
 
 --	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
