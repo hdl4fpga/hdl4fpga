@@ -24,10 +24,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.cgafont.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -37,7 +37,7 @@ architecture scopeio_debug of arty is
 	signal mii_req        : std_logic;
 	signal eth_txclk_bufg : std_logic;
 	signal eth_rxclk_bufg : std_logic;
-	signal video_dot      : std_logic;
+	signal video_rgb      : std_logic_vector(0 to 3-1);
 	signal video_vs       : std_logic;
 	signal video_hs       : std_logic;
 	signal video_clk      : std_logic;
@@ -50,6 +50,26 @@ architecture scopeio_debug of arty is
 	signal txc  : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
 	signal txdv : std_logic;
+
+	function sintab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : natural)
+		return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
+	begin
+		for i in x0 to x1 loop
+			y := real(2**(n-2)-1)*sin((2.0*MATH_PI*real(i)*8.0)/real(x1-x0+1));
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
+		end loop;
+		return aux;
+	end;
+
+	constant sample_size : natural := 9;
+	signal sample     : std_logic_vector(0 to sample_size-1);
+	signal input_addr : std_logic_vector(11-1 downto 0);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -103,29 +123,58 @@ begin
 		end if;
 	end process;
 
-	txc <= not eth_txclk_bufg;
-	scopeio_debug_e : entity hdl4fpga.scopeio_debug
-	port map (
-		btn       => pp,
-		mii_req   => mii_req,
-		mii_rxc   => rxc,
-		mii_rxd   => rxd,
-		mii_rxdv  => rxdv,
---		mii_rxc   => txc,  --rxc,
---		mii_rxd   => txd,  --rxd,
---		mii_rxdv  => txdv, --rxdv,
-		mii_txc   => txc,
-		mii_txd   => txd,
-		mii_txdv  => txdv,
-
-		video_clk => video_clk,
-		video_dot => video_dot,
-		video_hs  => video_hs,
-		video_vs  => video_vs);
+--	scopeio_debug_e : entity hdl4fpga.scopeio_debug
+--	port map (
+--		btn       => pp,
+--		mii_req   => mii_req,
+--		mii_rxc   => rxc,
+--		mii_rxd   => rxd,
+--		mii_rxdv  => rxdv,
+--		mii_txc   => txc,
+--		mii_txd   => txd,
+--		mii_txdv  => txdv,
+--
+--		video_clk => video_clk,
+--		video_dot => video_rgb,
+--		video_hs  => video_hs,
+--		video_vs  => video_vs);
 		
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
+
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sintab(0, 2047, sample_size))
+	port map (
+		clk  => sys_clk,
+		addr => input_addr,
+		data => sample);
+
+	scopeio_e : entity hdl4fpga.scopeio
+	port map (
+		si_clk      => rxc,
+		si_dv       => rxdv,
+		si_data     => rxd,
+
+		so_clk      => txc,
+		so_data     => txd,
+		so_dv       => txdv,
+
+		input_clk   => sys_clk,
+		input_data  => sample,
+		video_clk   => video_clk,
+		video_rgb   => video_rgb,
+		video_hsync => video_hs,
+		video_vsync => video_vs);
+
+	txc <= eth_txclk_bufg;
 	process (txc)
 	begin
-		if rising_edge(txc) then
+		if falling_edge(txc) then
 			eth_txd   <= txd;
 			eth_tx_en <= txdv;
 		end if;
@@ -156,9 +205,9 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			ja(1)  <= video_dot;
-			ja(2)  <= video_dot;
-			ja(3)  <= video_dot;
+			ja(1)  <= video_rgb(0);
+			ja(2)  <= video_rgb(1);
+			ja(3)  <= video_rgb(2);
 			ja(4)  <= video_hs;
 			ja(10) <= video_vs;
 		end if;
