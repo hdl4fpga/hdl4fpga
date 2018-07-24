@@ -65,42 +65,43 @@ use ieee.numeric_std.all;
 
 entity btod is
 	port (
-		clk     : in  std_logic;
-		bin_din : in  std_logic;
-		bin_ena : out std_logic;
+		clk    : in  std_logic;
 
-		bcd_dv  : in  std_logic;
-		bcd_di  : in  std_logic_vector(4-1 downto 0),
-		bcd_en  : out std_logic;
-		bcd_do  : out std_logic_vector(4-1 downto 0));
+		bin_di : in  std_logic;
+		bin_dv : in  std_logic;
+
+		bcd_dv : in  std_logic;
+		bcd_di : in  std_logic_vector(4-1 downto 0);
+		bcd_en : out std_logic;
+		bcd_do : out std_logic_vector(4-1 downto 0));
 end;
 
 architecture def of btod is
 	signal cy  : std_logic;
-	signal rdy : std_logic;
 begin
 	process(clk)
 		variable aux : unsigned(bcd_di'range);
 	begin
 		if rising_edge(clk) then
 			if bcd_dv='1' then
-				aux := bcd_di;
+				aux := unsigned(bcd_di);
 				aux := aux rol 1;
 				cy  <= aux(0);
-				if bin_ena='1' then
-					aux(0) <= bin_din;
+				if bin_dv='1' then
+					aux(0) := bin_di;
 				else
-					aux(0) <= cy;
+					aux(0) := cy;
 				end if;
-				bcd_en <= '1'
 				if aux >= "0101" then
 					bcd_do <= std_logic_vector(aux + "0011");
 				else
 					bcd_do <= std_logic_vector(aux);
 				end if;
+				bcd_en <= '1';
 			else
 				bcd_en <= '0';
 			end if;
-		end loop;
+		end if;
 	end process;
+
 end;
