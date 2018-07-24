@@ -77,8 +77,11 @@ entity btod is
 end;
 
 architecture def of btod is
+
 	signal cy  : std_logic;
+
 begin
+
 	process(clk)
 		variable aux : unsigned(bcd_di'range);
 	begin
