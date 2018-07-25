@@ -57,7 +57,7 @@ begin
 			bin_dv <= '0';
 			bcd_dv <= '0';
 			cntr   := 0;
-			int    <= x"fff";
+			int    <= x"f0f";
 			conv   <= (others => '0');
 			ena    <= '0';
 		elsif rising_edge(clk) then
