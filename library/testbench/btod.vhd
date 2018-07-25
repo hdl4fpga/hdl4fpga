@@ -32,25 +32,43 @@ architecture bin2def of testbench is
 	constant m : natural := 16;
 
 	signal clk : std_logic := '0';
-	signal ld  : std_logic := '1';
-	signal bcd : std_logic_vector(15 downto 0);
+	signal bin_dv : std_logic;
+	signal bin_di : std_logic_vector(8-1 downto 0); 
+
+	signal bcd_dv : std_logic;
+	signal bcd_di : std_logic_vector(15 downto 0);
+	signal bcd_en : std_logic;
+	signal bcd_do : std_logic_vector(bin_di'range);
+
 begin
 	clk <= not clk after 10 ns;
 
-	process (clk)
+	process (rst, clk)
+		variable ena : std_logic;
 	begin
-		if rising_edge(clk) then
-			ld <= '0';
+		if rst='1' then
+			bin_dv <= '0';
+			ena    := '0';
+		elsif rising_edge(clk) then
+			if bin_dv='1' then
+				bin_dv <= '0';
+			elsif ena='0' then
+				bin_dv <= '1';
+				ena    := '0';
+			end if;
 		end if;
 	end process;
 
-	du : entity hdl4fpga.bin2bcd
- 	generic map (
-		n => n,
-		m => m)
-	port map (
-		clk => clk,
-		ld  => ld,
-		bin => X"579",
-		bcd => bcd);
+	du : entity hdl4fpga.btod
+	port (
+		clk    => clk,
+
+		bin_dv => bin_dv,
+		bin_di => bin_di,
+
+		bcd_dv => bcd_dv
+		bcd_di => bcd_di,
+		bcd_en => bcd_en,
+		bcd_do => bcd_do);
+
 end;
