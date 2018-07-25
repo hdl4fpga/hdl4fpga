@@ -36,7 +36,7 @@ architecture btod of testbench is
 	signal bin_di : std_logic_vector(8-1 downto 0); 
 
 	signal bcd_dv : std_logic;
-	signal bcd_di : std_logic_vector(24-1 downto 0);
+	signal bcd_di : std_logic_vector(8*4-1 downto 0);
 	signal bcd_en : std_logic;
 	signal bcd_do : std_logic_vector(bcd_di'range);
 
@@ -53,14 +53,13 @@ begin
 			bin_dv <= '1';
 			bcd_dv <= '1';
 			if bin_dv='1' then
-				bcd_dv <= '1'
+				bcd_dv <= '0';
 			end if;
 		end if;
 	end process;
 
-	bcd_dv <= bin_dv;
 	bin_di <= x"ff";
-	bcd_di <= x"000_000";
+	bcd_di <= (others => '0');
 	
 	du : entity hdl4fpga.btod
 	port map (
