@@ -70,7 +70,6 @@ begin
 
 		bcd_dv => bcd_dv,
 		bcd_di => bcd_di,
-		bcd_en => bcd_en,
 		bcd_do => bcd_do);
 
 end;

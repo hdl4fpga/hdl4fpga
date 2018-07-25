@@ -26,12 +26,10 @@ begin
 end;
 
 
---use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
---use ieee.std_logic_textio.all;
 
 entity btod is
 	port (
@@ -42,7 +40,6 @@ entity btod is
 
 		bcd_dv : in  std_logic;
 		bcd_di : in  std_logic_vector;
-		bcd_en : out std_logic;
 		bcd_do : out std_logic_vector);
 end;
 
@@ -67,25 +64,23 @@ begin
 	process(clk)
 		variable value : unsigned(bcd_di'length-1 downto 0);
 		variable shtio : unsigned(bin_di'length-1 downto 0);
---		variable msg  : line;
 	begin
 		if rising_edge(clk) then
-			bcd_en <= '0';
 			if bcd_dv='1' then
 				value := unsigned(bcd_di);
 			end if;
 			if bin_dv='1' then
 				shtio := unsigned(bin_di);
 			end if;
+
 			for k in shtio'range loop
 				shtio := shtio rol 1;
 				for i in 0 to value'length/4-1 loop
 					dbdbb(shtio(0), value(4-1 downto 0));
 					value := value ror 4;
---					hwrite (msg, std_logic_vector(value));
---					writeline (output, msg);
 				end loop;
 			end loop;
+
 			bcd_do <= std_logic_vector(value);
 		end if;
 	end process;
