@@ -105,10 +105,9 @@ begin
 			if bcd_dv='1' then
 				bcd_en <= '1';
 				if bin_dv='1' then
-					val := dbdbb(bcd_di, bin_di);
-				else
-					val := dbdbb(bcd_di, val(0));
+					val(0) := bin_di);
 				end if;
+				val := dbdbb(bcd_di, val(0));
 			end if;
 			bcd_do <= val(1 to 4);
 		end if;
