@@ -58,7 +58,7 @@ begin
 		end if;
 	end process;
 
-	bin_di <= x"ff";
+	bin_di <= x"ff" when bcd_dv='1' else x"00";
 	bcd_di <= (others => '0');
 	
 	du : entity hdl4fpga.btod
