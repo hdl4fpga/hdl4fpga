@@ -85,7 +85,7 @@ architecture def of btod is
 		variable bcd_do : unsigned(4-1 downto 0);
 		variable shtout : std_logic;
 	begin
-		bcd_do    := unsigned(bcd_digit);
+		bcd_do    := unsigned(bcd_di);
 		bcd_do    := bcd_do rol 1;
 		shtout    <= bcd_do(0);
 		bcd_do(0) := bin_di;
@@ -105,11 +105,31 @@ begin
 			if bcd_dv='1' then
 				bcd_en <= '1';
 				if bin_dv='1' then
-					val(0) := bin_di);
+					val(0) := bin_di;
 				end if;
 				val := dbdbb(bcd_di, val(0));
 			end if;
 			bcd_do <= val(1 to 4);
+		end if;
+	end process;
+
+	process(clk)
+		variable val : std_logic_vector(0 to bcd_di'length);
+	begin
+		if rising_edge(clk) then
+			bcd_en <= '0';
+			if bcd_dv='1' then
+				bcd_en <= '1';
+				if bin_dv='1' then
+					val(4) := bin_di;
+				end if;
+				for i in 0 t loop
+					val(4-1 downto 0) := bcd_di(4-1 downto 0);
+					val := dbdbb(bcd_di(4-1 downto 0), val(0));
+					bcd_di(4-1 downto 0) := val (4-1 downto 0));
+					val :=  
+			end if;
+			bcd_do <= val(1 to bcd_di'length);
 		end if;
 	end process;
 
