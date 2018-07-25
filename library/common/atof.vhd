@@ -78,32 +78,39 @@ end;
 
 architecture def of btod is
 
-	signal cy  : std_logic;
+	function dbdbb(
+		constant bcd_di : std_logic_vector;
+		constant bin_di : std_logic)
+		return std_logic_vector is
+		variable bcd_do : unsigned(4-1 downto 0);
+		variable shtout : std_logic;
+	begin
+		bcd_do    := unsigned(bcd_digit);
+		bcd_do    := bcd_do rol 1;
+		shtout    <= bcd_do(0);
+		bcd_do(0) := bin_di;
+		if bcd_do >= "0101" then
+			bcd_do <= bcd_do + "0011";
+		end if;
+		return shtout & std_logic_vector(bcd_do);
+	end;
 
 begin
 
 	process(clk)
-		variable aux : unsigned(bcd_di'range);
+		variable val : std_logic_vector(0 to bcd_di'length);
 	begin
 		if rising_edge(clk) then
+			bcd_en <= '0';
 			if bcd_dv='1' then
-				aux := unsigned(bcd_di);
-				aux := aux rol 1;
-				cy  <= aux(0);
-				if bin_dv='1' then
-					aux(0) := bin_di;
-				else
-					aux(0) := cy;
-				end if;
-				if aux >= "0101" then
-					bcd_do <= std_logic_vector(aux + "0011");
-				else
-					bcd_do <= std_logic_vector(aux);
-				end if;
 				bcd_en <= '1';
-			else
-				bcd_en <= '0';
+				if bin_dv='1' then
+					val := dbdbb(bcd_di, bin_di);
+				else
+					val := dbdbb(bcd_di, val(0));
+				end if;
 			end if;
+			bcd_do <= val(1 to 4);
 		end if;
 	end process;
 
