@@ -26,9 +26,12 @@ begin
 end;
 
 
+--use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+--use ieee.std_logic_textio.all;
 
 entity btod is
 	port (
@@ -38,26 +41,25 @@ entity btod is
 		bin_di : in  std_logic_vector;
 
 		bcd_dv : in  std_logic;
-		bcd_di : in  std_logic_vector(4-1 downto 0);
+		bcd_di : in  std_logic_vector;
 		bcd_en : out std_logic;
-		bcd_do : out std_logic_vector(4-1 downto 0));
+		bcd_do : out std_logic_vector);
 end;
 
 architecture def of btod is
 
 	procedure dbdbb(
 		variable shtio : inout std_logic;
-		variable digit : inout unsigned);
-		return std_logic_vector is
+		variable digit : inout unsigned) is
 		variable save  : std_logic;
 	begin
+		if digit >= "0101" then
+			digit := digit + "0011";
+		end if;
 		digit    := digit rol 1;
 		save     := digit(0);
 		digit(0) := shtio;
 		shtio    := save;
-		if digit >= "0101" then
-			digit <= digit + "0011";
-		end if;
 	end;
 
 begin
@@ -65,6 +67,7 @@ begin
 	process(clk)
 		variable value : unsigned(bcd_di'length-1 downto 0);
 		variable shtio : unsigned(bin_di'length-1 downto 0);
+--		variable msg  : line;
 	begin
 		if rising_edge(clk) then
 			bcd_en <= '0';
@@ -72,17 +75,19 @@ begin
 				if bin_dv='1' then
 					shtio := unsigned(bin_di);
 				end if;
-				value  := unsigned(bcd_di);
+				value := unsigned(bcd_di);
 				for k in shtio'range loop
-					for i in 0 to val'length/4-1 loop
-						dbdbb(shtio(0), val(4-1 downto 0));
-						val := val rol 4;
+					shtio := shtio rol 1;
+					for i in 0 to value'length/4-1 loop
+						dbdbb(shtio(0), value(4-1 downto 0));
+						value := value ror 4;
+--						hwrite (msg, std_logic_vector(value));
+--						writeline (output, msg);
 					end loop;
-					shtio := shtio ror 1;
 				end loop;
 				bcd_en <= '1';
 			end if;
-			bcd_do <= val;
+			bcd_do <= std_logic_vector(value);
 		end if;
 	end process;
 

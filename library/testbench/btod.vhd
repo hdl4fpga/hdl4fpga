@@ -24,23 +24,24 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity testbench is
-end;
+library hdl4fpga;
 
-architecture bin2def of testbench is
+architecture btod of testbench is
 	constant n : natural := 12;
 	constant m : natural := 16;
 
+	signal rst : std_logic := '0';
 	signal clk : std_logic := '0';
 	signal bin_dv : std_logic;
 	signal bin_di : std_logic_vector(8-1 downto 0); 
 
 	signal bcd_dv : std_logic;
-	signal bcd_di : std_logic_vector(15 downto 0);
+	signal bcd_di : std_logic_vector(24-1 downto 0);
 	signal bcd_en : std_logic;
-	signal bcd_do : std_logic_vector(bin_di'range);
+	signal bcd_do : std_logic_vector(bcd_di'range);
 
 begin
+	rst <= '1', '0' after 5 ns;
 	clk <= not clk after 10 ns;
 
 	process (rst, clk)
@@ -54,19 +55,23 @@ begin
 				bin_dv <= '0';
 			elsif ena='0' then
 				bin_dv <= '1';
-				ena    := '0';
+				ena    := '1';
 			end if;
 		end if;
 	end process;
 
+	bcd_dv <= bin_dv;
+	bin_di <= x"ff";
+	bcd_di <= x"000_000";
+	
 	du : entity hdl4fpga.btod
-	port (
+	port map (
 		clk    => clk,
 
 		bin_dv => bin_dv,
 		bin_di => bin_di,
 
-		bcd_dv => bcd_dv
+		bcd_dv => bcd_dv,
 		bcd_di => bcd_di,
 		bcd_en => bcd_en,
 		bcd_do => bcd_do);
