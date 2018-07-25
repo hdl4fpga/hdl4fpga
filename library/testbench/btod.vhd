@@ -45,17 +45,15 @@ begin
 	clk <= not clk after 10 ns;
 
 	process (rst, clk)
-		variable ena : std_logic;
 	begin
 		if rst='1' then
 			bin_dv <= '0';
-			ena    := '0';
+			bcd_dv <= '0';
 		elsif rising_edge(clk) then
+			bin_dv <= '1';
+			bcd_dv <= '1';
 			if bin_dv='1' then
-				bin_dv <= '0';
-			elsif ena='0' then
-				bin_dv <= '1';
-				ena    := '1';
+				bcd_dv <= '1'
 			end if;
 		end if;
 	end process;
