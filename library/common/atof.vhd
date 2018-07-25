@@ -61,7 +61,7 @@ architecture def of btod is
 
 begin
 
-	process(clk)
+	p : process(clk)
 		variable value : unsigned(bcd_di'length-1 downto 0);
 		variable shtio : unsigned(bin_di'length-1 downto 0);
 	begin
