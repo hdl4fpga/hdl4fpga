@@ -93,35 +93,49 @@ begin
 
 	
 	ftod_b : block
-		signal bcd_dv : std_logic;
-		signal bcd_en : std_logic;
-		signal bcd_do : std_logic_vector(0 to 5*4-1);
-		signal bcd_di : std_logic_vector(0 to 8*4-1) := (others => '0');
-		signal fix_do : std_logic_vector(bcd_di'range);
-		signal pp : std_logic_vector(0 to 2);
+		signal num : std_logic_vector(0 to 10-1) := b"00_011_11111";
+		signal int_do : std_logic_vector(0 to 3*4-1);
+		signal fix_do : std_logic_vector(0 to 8*4-1);
 	begin
-		btod_e : entity hdl4fpga.btod
+
+		intgr_e : entity hdl4fpga.btod
 		port map (
 			clk    => clk,
 
 			bin_dv => '1',
-			bin_di => x"009",
+			bin_di => num(0 to 5-1),
 
 			bcd_dv => '1',
-			bcd_di => (bcd_do'range => '0'),
-			bcd_do => bcd_do);
+			bcd_di => (int_do'range => '0'),
+			bcd_do => int_do);
 
-		bcd_di(bcd_do'range) <= bcd_do;
-		dtof_e : entity hdl4fpga.dtof
-		generic map (
-			fix_point => 6)
-		port map (
-			clk    => clk,
+		frac_b: block
+			signal bcd_do : std_logic_vector(0 to 2*4-1);
+			signal bcd_di : std_logic_vector(0 to 8*4-1) := (others => '0');
+		begin
+			btod_e : entity hdl4fpga.btod
+			port map (
+				clk    => clk,
 
-			bcd_di => bcd_di,
-			bcd_dv => '1',
---			dot_pos => pp,
-			fix_do => fix_do);
+				bin_dv => '1',
+				bin_di => num(5 to 10-1),
+
+				bcd_dv => '1',
+				bcd_di => (bcd_do'range => '0'),
+				bcd_do => bcd_do);
+
+			bcd_di(bcd_do'range) <= bcd_do;
+			dtof_e : entity hdl4fpga.dtof
+			generic map (
+				fix_point => 5)
+			port map (
+				clk    => clk,
+
+				bcd_di => bcd_di,
+				bcd_dv => '1',
+				fix_do => fix_do);
+		end block;
+
 	end block;
 
 end;
