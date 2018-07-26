@@ -40,23 +40,24 @@ architecture btod of testbench is
 	signal bcd_di : std_logic_vector(2*4-1 downto 0);
 	signal bcd_en : std_logic;
 	signal bcd_do : std_logic_vector(bcd_di'range);
+	signal fix_do : std_logic_vector(bcd_di'range);
 	signal int    : std_logic_vector(3*4-1 downto 0);
 	signal conv   : std_logic_vector(4*4-1 downto 0);
 
 		signal ena : std_logic;
+		signal cntr : natural;
 begin
 	rst <= '1', '0' after 5 ns;
 	clk <= not clk after 10 ns;
 
 	process (rst, clk)
-		variable cntr : natural;
 		variable aux  : unsigned(conv'range);
 		variable aux1 : unsigned(int'range);
 	begin
 		if rst='1' then
 			bin_dv <= '0';
 			bcd_dv <= '0';
-			cntr   := 0;
+			cntr   <= 0;
 			int    <= x"f0f";
 			conv   <= (others => '0');
 			ena    <= '0';
@@ -84,21 +85,43 @@ begin
 				conv <= std_logic_vector(aux);
 			end if;
 
-			cntr := cntr + 1;
+			cntr <= cntr + 1;
 		end if;
 	end process;
-	bcd_di <= conv(16-1 downto 8);
+--	bcd_di <= conv(16-1 downto 8);
+	bcd_di <= x"01" when cntr =1 else x"40";
 
 	
-	du : entity hdl4fpga.btod
-	port map (
-		clk    => clk,
+	ftod_b : block
+		signal bcd_dv : std_logic;
+		signal bcd_en : std_logic;
+		signal bcd_do : std_logic_vector(0 to 5*4-1);
+		signal bcd_di : std_logic_vector(0 to 8*4-1) := (others => '0');
+		signal fix_do : std_logic_vector(bcd_di'range);
+		signal pp : std_logic_vector(0 to 2);
+	begin
+		btod_e : entity hdl4fpga.btod
+		port map (
+			clk    => clk,
 
-		bin_dv => bin_dv,
-		bin_di => bin_di,
+			bin_dv => '1',
+			bin_di => x"009",
 
-		bcd_dv => bcd_dv,
-		bcd_di => bcd_di,
-		bcd_do => bcd_do);
+			bcd_dv => '1',
+			bcd_di => (bcd_do'range => '0'),
+			bcd_do => bcd_do);
+
+		bcd_di(bcd_do'range) <= bcd_do;
+		dtof_e : entity hdl4fpga.dtof
+		generic map (
+			fix_point => 6)
+		port map (
+			clk    => clk,
+
+			bcd_di => bcd_di,
+			bcd_dv => '1',
+--			dot_pos => pp,
+			fix_do => fix_do);
+	end block;
 
 end;

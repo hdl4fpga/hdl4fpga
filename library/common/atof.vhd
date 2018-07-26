@@ -2,30 +2,86 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity frac2bcd is
+entity dtof is
+	generic (
+		fix_point : natural;
+		align_dot : boolean := FALSE);
 	port (
-		frac : in  std_logic_vector;
-		bcd  : out std_logic_vector);
+		clk     : in  std_logic;
+		bcd_di  : in  std_logic_vector;
+		bcd_dv  : in  std_logic;
+--		dot_pos : out std_logic_vector;
+		fix_do  : out std_logic_vector);
 end;
 
-architecture def of frac2bcd is
-begin
-	process (frac)
-		variable aux1 : unsigned(0 to 4+frac'length-1);
-		variable aux2 : unsigned(4*((bcd'length+4-1)/4)-1 downto 0);
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+architecture def of dtof is
+
+	procedure dbdbb(
+		variable shtio : inout std_logic;
+		variable digit : inout unsigned) is
+		variable save  : std_logic;
 	begin
-		aux1(4 to aux1'right) := unsigned(frac);
-		for i in 0 to aux2'length/4-1 loop
-			aux2 := aux2 sll 4;
-			aux1(0 to 4-1) := (others => '0');
-			aux1 := (aux1 sll 3) + (aux1 sll 1);
-			aux2(4-1 downto 0) := aux1(0 to 4-1);
-			bcd  <= std_logic_vector(aux2(bcd'length-1 downto 0));
-		end loop;
+		save     := digit(0);
+		digit(0) := shtio;
+		shtio    := save;
+		digit    := digit ror 1;
+		if digit >= "0101" then
+			digit := digit - "0011";
+		end if;
+	end;
+
+begin
+	process (clk)
+		variable value : unsigned(bcd_di'length-1 downto 0);
+		variable shtio : unsigned(fix_point-1 downto 0);
+		variable point : unsigned(0 to unsigned_num_bits(fix_do'length/4-1)-1);
+	begin
+		if rising_edge(clk) then
+			value := unsigned(bcd_di);
+			if bcd_dv='1' then
+				shtio := (others => '0');
+				point := (others => '0');
+			end if;
+			for k in 0 to fix_point-1 loop
+
+				if bcd_dv='1' then
+					if align_dot then
+						value := value rol 4;
+						while value(4-1 downto 0) = (4-1 downto 0 => '0') loop
+							value := value rol 4;
+							point := point + 1;
+						end loop;
+						value := value ror 4;
+					end if;
+				end if;
+
+				for i in 0 to value'length/4-1 loop
+					value := value rol 4;
+					dbdbb (shtio(0), value(4-1 downto 0));
+				end loop;
+
+				if align_dot then
+					if bcd_dv='1' then
+						value := value rol 4;
+						if value(4-1 downto 0) = (4-1 downto 0 => '0') then
+							dbdbb (shtio(0), value(4-1 downto 0));
+							point := point + 1;
+						else
+							value := value ror 4;
+						end if;
+					end if;
+				end if;
+
+				shtio := shtio rol 1;
+			end loop;
+	--		dot_pos <= std_logic_vector(point);
+			fix_do  <= std_logic_vector(value);
+		end if;
 	end process;
 end;
-
-
 
 library ieee;
 use ieee.std_logic_1164.all;
