@@ -143,34 +143,59 @@ begin
 
 end;
 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity ftod is
 	generic (
-		frac : natural);
+		fracbin_size : natural;
+		fracbcd_size : natural);
 	port (
 		clk  : in  std_logic;
-		num  : in  std_logic_vector;
+		bin  : in  std_logic_vector;
 		bcd  : out std_logic_vector);
 end;
 
+library hdl4fpga;
+
 architecture struct of ftod is
-	signal int_do : std_logic_vector(0 to 3*4-1);
-	signal fix_do : std_logic_vector(0 to 8*4-1);
+	constant intbcd_size : natural := unsigned_num_bits(
+		integer(10.0**ceil(log(10.0, 2.0**(bin'length-fracbin_size)))));
+
+	signal int_do : std_logic_vector(0 to 4*intbcd_size-1);
+	signal fix_do : std_logic_vector(0 to 4*-1);
 begin
 
-	integer_e : entity hdl4fpga.btod
-	port map (
-		clk    => clk,
+	integer_e : block
+		signal bcd_do : std_logic_vector(int_do'range);
+	begin
+		entity hdl4fpga.btod
+		port map (
+			clk    => clk,
 
-		bin_dv => '1',
-		bin_di => num(0 to 5-1),
+			bin_dv => '1',
+			bin_di => num(0 to 5-1),
 
-		bcd_dv => '1',
-		bcd_di => (int_do'range => '0'),
-		bcd_do => int_do);
+			bcd_dv => '1',
+			bcd_di => (bcd_do'range => '0'),
+			bcd_do => bcd_do);
+
+		latency_e : entity hdl4fpga.align
+		generic map (
+			n => bcd_do,
+			d => (bcd_do'range => 1))
+		port map (
+			clk => clk,
+			di  => bcd_do,
+			do  => int_do);
+	end block;
 
 	fraction_b: block
-		signal bcd_do : std_logic_vector(0 to 2*4-1);
-		signal bcd_di : std_logic_vector(0 to 8*4-1) := (others => '0');
+		constant bcd_size : natural := unsigned_num_bits(
+			integer(10.0**ceil(log(10.0, 2.0**fracbin_size))));
+		signal bcd_do : std_logic_vector(0 to 4*bcd_size-1);
+		signal bcd_di : std_logic_vector(0 to 4*(bcd_size+fracbcd_size)-1);
 	begin
 		btod_e : entity hdl4fpga.btod
 		port map (
@@ -183,7 +208,7 @@ begin
 			bcd_di => (bcd_do'range => '0'),
 			bcd_do => bcd_do);
 
-		bcd_di(bcd_do'range) <= bcd_do;
+		bcd_di(bcd_do'range) <= bcd_do & (0 to 4*fracbcd_size-1 => '0');
 		dtof_e : entity hdl4fpga.dtof
 		generic map (
 			fix_point => 5)
