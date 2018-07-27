@@ -146,6 +146,7 @@ end;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 entity ftod is
 	generic (
@@ -158,24 +159,23 @@ entity ftod is
 end;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture struct of ftod is
-	constant intbcd_size : natural := unsigned_num_bits(
-		integer(10.0**ceil(log(10.0, 2.0**(bin'length-fracbin_size)))));
+	constant intbcd_size : natural := integer(ceil(log(2.0**(bin'length-fracbin_size), 10.0)));
 
 	signal int_do : std_logic_vector(0 to 4*intbcd_size-1);
-	signal fix_do : std_logic_vector(0 to 4*-1);
 begin
 
 	integer_e : block
 		signal bcd_do : std_logic_vector(int_do'range);
 	begin
-		entity hdl4fpga.btod
+		btod_e : entity hdl4fpga.btod
 		port map (
 			clk    => clk,
 
 			bin_dv => '1',
-			bin_di => num(0 to 5-1),
+			bin_di => bin(bin'left to bin'right-fracbin_size),
 
 			bcd_dv => '1',
 			bcd_di => (bcd_do'range => '0'),
@@ -183,7 +183,7 @@ begin
 
 		latency_e : entity hdl4fpga.align
 		generic map (
-			n => bcd_do,
+			n => bcd_do'length,
 			d => (bcd_do'range => 1))
 		port map (
 			clk => clk,
@@ -192,32 +192,35 @@ begin
 	end block;
 
 	fraction_b: block
-		constant bcd_size : natural := unsigned_num_bits(
-			integer(10.0**ceil(log(10.0, 2.0**fracbin_size))));
+		constant bcd_size : natural := integer(ceil(log(2.0**fracbin_size, 10.0)));
+
 		signal bcd_do : std_logic_vector(0 to 4*bcd_size-1);
 		signal bcd_di : std_logic_vector(0 to 4*(bcd_size+fracbcd_size)-1);
+		signal fix_do : std_logic_vector(bcd_di'range);
 	begin
 		btod_e : entity hdl4fpga.btod
 		port map (
 			clk    => clk,
 
 			bin_dv => '1',
-			bin_di => num(5 to 10-1),
+			bin_di => bin(bin'length-fracbin_size to bin'right),
 
 			bcd_dv => '1',
 			bcd_di => (bcd_do'range => '0'),
 			bcd_do => bcd_do);
 
-		bcd_di(bcd_do'range) <= bcd_do & (0 to 4*fracbcd_size-1 => '0');
+		bcd_di <= bcd_do & (0 to 4*fracbcd_size-1 => '0');
 		dtof_e : entity hdl4fpga.dtof
 		generic map (
-			fix_point => 5)
+			fix_point => fracbin_size)
 		port map (
 			clk    => clk,
 
 			bcd_di => bcd_di,
 			bcd_dv => '1',
 			fix_do => fix_do);
+
+		bcd <= int_do & fix_do(bcd_do'length to fix_do'right);
 	end block;
 
 end;
