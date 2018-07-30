@@ -121,8 +121,7 @@ begin
 
 	scopeio_debug_e : entity hdl4fpga.scopeio_debug
 	port map (
-		btn       => btn,
-		mii_req   => mii_req,
+		mii_req   => '0', --mii_req,
 		mii_rxc   => rxc,
 		mii_rxd   => rxd,
 		mii_rxdv  => rxdv,

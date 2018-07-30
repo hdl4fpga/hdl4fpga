@@ -154,7 +154,7 @@ entity ftod is
 		fracbcd_size : natural);
 	port (
 		clk  : in  std_logic;
-		bin  : in  std_logic_vector;
+		fix  : in  std_logic_vector;
 		bcd  : out std_logic_vector);
 end;
 
@@ -162,7 +162,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture struct of ftod is
-	constant intbcd_size : natural := integer(ceil(log(2.0**(bin'length-fracbin_size), 10.0)));
+	constant intbcd_size : natural := integer(ceil(log(2.0**(fix'length-fracbin_size), 10.0)));
 
 	signal int_do : std_logic_vector(0 to 4*intbcd_size-1);
 begin
@@ -175,7 +175,7 @@ begin
 			clk    => clk,
 
 			bin_dv => '1',
-			bin_di => bin(bin'left to bin'right-fracbin_size),
+			bin_di => fix(fix'left to fix'right-fracbin_size),
 
 			bcd_dv => '1',
 			bcd_di => (bcd_do'range => '0'),
@@ -203,7 +203,7 @@ begin
 			clk    => clk,
 
 			bin_dv => '1',
-			bin_di => bin(bin'length-fracbin_size to bin'right),
+			bin_di => fix(fix'length-fracbin_size to fix'right),
 
 			bcd_dv => '1',
 			bcd_di => (bcd_do'range => '0'),

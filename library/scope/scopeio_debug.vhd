@@ -35,7 +35,6 @@ entity scopeio_debug is
 	generic (
 		mac       : in std_logic_vector(0 to 6*8-1) := x"00_40_00_01_02_03");
 	port (
-		btn       : in  std_logic:= '0';
 		mii_rxc   : in  std_logic;
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
@@ -65,16 +64,19 @@ architecture struct of scopeio_debug is
 	signal udp_rxd  : std_logic_vector(mii_rxd'range);
 	signal udp_rxdv : std_logic_vector(udpports_vld'range);
 
-	constant cga_addr : natural := 0;
-	constant cga_data : natural := 1;
+	constant id_cgaaddr : natural := 0;
+	constant id_cgadata : natural := 1;
 
 	constant rgtr_map : natural_vector(0 to 2-1) := (
-		cga_addr => 14,
-		cga_data => 8);
+		id_cgaaddr => 14,
+		id_cgadata => 8);
 	subtype rgtr_cgaaddr is natural range 14-1 downto  0;
 	subtype rgtr_cgadata is natural range 22-1 downto 14;
 	signal rgtr_file : std_logic_vector(14+8-1 downto 0);
 	signal rgtr_id   : std_logic_vector(8-1 downto 0);
+	signal cga_addr : std_logic_vector(14-1 downto 0);
+	signal cga_data : std_logic_vector(8-1 downto 0);
+	signal bcd_str : std_logic_vector(28-1 downto 0);
 
 begin
 
@@ -143,11 +145,67 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_file => rgtr_file);
 
+	scopeio_tobcd_e : entity hdl4fpga.scopeio_tobcd
+	generic map (
+		fracbin_size => 4,
+		fracbcd_size => 4)
+	port map (
+		clk     => mii_rxc,
+		fix     => rgtr_file(rgtr_cgadata),
+		mgntd   => "00",
+		mult    => "00",
+		bcd_str => bcd_str);
+
+	process(mii_rxc)
+
+		function bcdtoascii (
+			constant bcd_code : std_logic_vector(0 to 4-1))
+			return ascii is
+			variable retval : ascii;
+		begin
+			if to_integer(unsigned(bcd_code)) < 10 then
+				retval := x"3" & bcd_code;
+			elsif bcd_code=b"1010" then
+				retval := x"20";    -- blank
+			elsif bcd_code=b"1011" then
+				retval := x"2e";    -- ".";
+			elsif bcd_code=b"1100" then
+				retval := x"2b";    -- "+";
+			elsif bcd_code=b"1101" then
+				retval := x"2d";    -- "-";
+			else
+				retval := (others => '-');
+			end if;
+			return retval;
+		end;
+
+		variable addr : unsigned(cga_addr'range);
+		variable data : unsigned(0 to bcd_str'length-1);
+		variable cntr : signed(0 to 4-1);
+
+	begin
+
+		if rising_edge(mii_rxc) then
+			if rgtr_id=std_logic_vector(to_unsigned(0,rgtr_id'length)) then
+				addr := unsigned(rgtr_file(rgtr_cgaaddr));
+				data := x"0123456"; --unsigned(bcd_str);
+				cntr := not to_signed(-7, cntr'length);
+			elsif cntr(0)='0' then
+				addr := addr + 1;
+				data := data rol 4;
+				cntr := cntr - 1;
+			end if;
+			cga_data <= bcdtoascii(std_logic_vector(data(0 to 4-1)));
+			cga_addr <= std_logic_vector(addr);
+		end if;
+
+	end process;
+
 	cga_display_e : entity hdl4fpga.cga_display
 	port map (
-		cga_clk  => mii_rxc,
-		cga_addr => rgtr_file(rgtr_cgaaddr),
-		cga_data => rgtr_file(rgtr_cgadata),
+		cga_clk   => mii_rxc,
+		cga_addr  => cga_addr,
+		cga_data  => cga_data,
 
 		video_clk => video_clk,
 		video_dot => video_dot,

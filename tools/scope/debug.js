@@ -6,9 +6,11 @@ var port = 57001;
 
 var msg = Buffer.from("Fabian no hagas marinadas", 'utf-8');
 var pos = 240;
+var i = 0;
+var j = 0;
 
-for (j=0 ; j < msg.length; j++) {
-	var buffer = Buffer.alloc(8);
+//for (j=0 ; j < msg.length; j++) {
+	var buffer = Buffer.alloc(9);
 
 	i=0;
 	buffer[i++] = 0;
@@ -20,6 +22,7 @@ for (j=0 ; j < msg.length; j++) {
 	buffer[i++] = 0
 	buffer[i++] = msg[j];
 	buffer[i++] = 0xff;
+	buffer[i++] = 0xff;
 
 	client.send(buffer, port, host , function(err, bytes) {
 		if (err) throw err;
@@ -27,5 +30,5 @@ for (j=0 ; j < msg.length; j++) {
 	});
 
 	pos++;
-}
+//}
 
