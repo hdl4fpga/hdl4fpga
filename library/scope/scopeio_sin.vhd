@@ -6,8 +6,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_sin is
-	generic(
-		data_size : natural);
 	port (
 		sin_clk   : in  std_logic;
 		sin_ena   : in  std_logic := '1';
@@ -22,7 +20,7 @@ end;
 architecture beh of scopeio_sin is
 	signal len : signed(0 to 8);
 	signal rid : std_logic_vector(8-1 downto 0);
-	signal val : std_logic_vector(data_size-1 downto 0);
+	signal val : std_logic_vector(rgtr_data'length-1 downto 0);
 	signal ld  : std_logic;
 	signal ptr : signed(0 to unsigned_num_bits(8-1));
 
@@ -97,23 +95,10 @@ begin
 		end if;
 	end process;
  
-	process (sin_clk)
-		variable aux : unsigned(rgtr_file'length-1 downto 0);
-	begin
-		if rising_edge(sin_clk) then
-			rgtr_dv <= '0';
-			if ena='1' then
-				if len(0)='1' then
-					if ptr(0)='1' then
-						rgtr_dv   <= '1';
-						rgtr_data <= val;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
+	rgtr_id   <= rid(rgtr_id'length-1 downto 0);
+	rgtr_dv   <= ena and len(0) and ptr(0);
+	rgtr_data <= val;
 
-	rgtr_id <= rid(rgtr_id'length-1 downto 0);
 --	mem_b : block
 --		signal rd_addr : std_logic_vector(mem_addr'range);
 --		signal rd_data : std_logic_vector(mem_data'range);

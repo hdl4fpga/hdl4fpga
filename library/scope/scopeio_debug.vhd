@@ -39,7 +39,7 @@ entity scopeio_debug is
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 
-		mii_req   : in  std_logic;
+		mii_req   : in  std_logic := '0';
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
@@ -70,13 +70,13 @@ architecture struct of scopeio_debug is
 	constant rgtr_map : natural_vector(0 to 2-1) := (
 		id_cgaaddr => 14,
 		id_cgadata => 8);
-	subtype rgtr_cgaaddr is natural range 14-1 downto  0;
-	subtype rgtr_cgadata is natural range 22-1 downto 14;
-	signal rgtr_file : std_logic_vector(14+8-1 downto 0);
+	signal rgtr_data : std_logic_vector(16-1 downto 0);
+	signal rgtr_dv   : std_logic;
 	signal rgtr_id   : std_logic_vector(8-1 downto 0);
-	signal cga_addr : std_logic_vector(14-1 downto 0);
-	signal cga_data : std_logic_vector(8-1 downto 0);
-	signal bcd_str : std_logic_vector(28-1 downto 0);
+	signal cga_addr  : std_logic_vector(14-1 downto 0);
+	signal cga_data  : std_logic_vector(8-1 downto 0);
+	signal bcd_str   : std_logic_vector(28-1 downto 0);
+	signal fix       : std_logic_vector(8-1 downto 0);
 
 begin
 
@@ -136,14 +136,24 @@ begin
 	end block;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
-	generic map (
-		rgtr_map => rgtr_map)
 	port map (
 		sin_clk   => mii_rxc,
 		sin_dv    => udp_rxdv(0),
 		sin_data  => udp_rxd,
 		rgtr_id   => rgtr_id,
-		rgtr_file => rgtr_file);
+		rgtr_dv   => rgtr_dv,
+		rgtr_data => rgtr_data);
+
+	process(mii_rxc)
+	begin
+		if rising_edge(mii_rxc) then
+			if rgtr_dv='1' then
+				if rgtr_id=std_logic_vector(to_unsigned(0,rgtr_id'length)) then
+					fix <= rgtr_data(fix'range);
+				end if;
+			end if;
+		end if;
+	end process;
 
 	scopeio_tobcd_e : entity hdl4fpga.scopeio_tobcd
 	generic map (
@@ -151,7 +161,7 @@ begin
 		fracbcd_size => 4)
 	port map (
 		clk     => mii_rxc,
-		fix     => rgtr_file(rgtr_cgadata),
+		fix     => x"12", --fix, 
 		mgntd   => "00",
 		mult    => "00",
 		bcd_str => bcd_str);
@@ -180,22 +190,23 @@ begin
 		end;
 
 		variable addr : unsigned(cga_addr'range);
-		variable data : unsigned(0 to bcd_str'length-1);
+		variable data : unsigned(bcd_str'length-1 downto 0);
 		variable cntr : signed(0 to 4-1);
 
 	begin
 
 		if rising_edge(mii_rxc) then
-			if rgtr_id=std_logic_vector(to_unsigned(0,rgtr_id'length)) then
-				addr := unsigned(rgtr_file(rgtr_cgaaddr));
-				data := x"0123456"; --unsigned(bcd_str);
+			if cntr(0)='1' then
+				addr := (others => '0');
+				data := x"0123456";
+				data := unsigned(bcd_str);
 				cntr := not to_signed(-7, cntr'length);
-			elsif cntr(0)='0' then
+			else
 				addr := addr + 1;
 				data := data rol 4;
 				cntr := cntr - 1;
 			end if;
-			cga_data <= bcdtoascii(std_logic_vector(data(0 to 4-1)));
+			cga_data <= bcdtoascii(std_logic_vector(data(4-1 downto 0)));
 			cga_addr <= std_logic_vector(addr);
 		end if;
 

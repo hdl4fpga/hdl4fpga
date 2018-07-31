@@ -10,10 +10,10 @@ entity scopeio_tobcd is
 	generic (
 		fracbin_size : natural;
 		fracbcd_size : natural;
-		blank_code   : std_logic_vector := b"1000";
-		dot_code     : std_logic_vector := b"1001";
-		plus_code    : std_logic_vector := b"1010";
-		minus_code   : std_logic_vector := b"1011");
+		blank_code   : std_logic_vector := b"1010";
+		dot_code     : std_logic_vector := b"1011";
+		plus_code    : std_logic_vector := b"1100";
+		minus_code   : std_logic_vector := b"1101");
 	port (
 		clk          : in  std_logic;
 		fix          : in  std_logic_vector;
@@ -102,14 +102,17 @@ begin
 			-- Add dot or comma --
 			----------------------
 
-			temp(4*intbcd_size to temp'right) := temp(4*intbcd_size to temp'right) srl 4;
-			temp(4*intbcd_size to 4*intbcd_size+4-1) := unsigned(dot_code);
+			temp(4*(intbcd_size+1) to temp'right) := temp(4*(intbcd_size+1) to temp'right) srl 4;
+			temp(4*(intbcd_size+1) to 4*(intbcd_size+1)+4-1) := unsigned(dot_code);
 
 			-- Replace left zeros by blanks --
 			----------------------------------
 
-			for i in 0 to intbcd_size-1 loop
-				if temp(0 to 4-1)/="0000" then
+			for i in 0 to intbcd_size loop
+				if i=intbcd_size then
+					temp := temp ror (4*i);
+					exit;
+				elsif temp(0 to 4-1)/="0000" then
 					temp := temp ror (4*i);
 					exit;
 				end if;

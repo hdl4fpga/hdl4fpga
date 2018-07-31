@@ -92,8 +92,8 @@ architecture beh of scopeio is
 		trigger_rid => 14,
 		hzscale_rid => 8);
 
-	signal rgtr_file          : std_logic_vector(hzscale_rgtr'high downto 0);
-	signal rgtr_wttn          : std_logic;
+	signal rgtr_data          : std_logic_vector(hzscale_rgtr'high downto 0);
+	signal rgtr_dv            : std_logic;
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal downsample_ena     : std_logic;
 	signal downsample_data    : std_logic_vector(input_data'range);
@@ -133,22 +133,20 @@ begin
 		so_data  => udpso_data);
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
-	generic map (
-		rgtr_map => rgtr_map)
 	port map (
 		sin_clk   => udpso_clk,
 		sin_dv    => udpso_dv,
 		sin_data  => udpso_data,
-		rgtr_wttn => rgtr_wttn,
+		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
-		rgtr_file => rgtr_file);
+		rgtr_data => rgtr_data);
 
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
 --		input_clk   => input_clk,
 --		input_ena   => input_ena,
 --		input_data  => input_data,
---		factor_data => rgtr_file(hzscale_rgtr),
+--		factor_data => rgtr_data(hzscale_rgtr),
 --		output_ena  => downsample_ena,
 --		output_data => downsample_data);
 	downsample_data <= input_data;
@@ -192,8 +190,8 @@ begin
 			process (so_clk)
 			begin
 				if rising_edge(so_clk) then
-					if to_integer(unsigned(rgtr_file(amp_chnl)))=i then
-						gain_addr <= rgtr_file(amp_chnl)(gain_addr'range);
+					if to_integer(unsigned(rgtr_data(amp_chnl)))=i then
+						gain_addr <= rgtr_data(amp_chnl)(gain_addr'range);
 					end if;
 				end if;
 			end process;
@@ -222,7 +220,7 @@ begin
 --		input_ena     => ampsample_ena,
 --		input_data    => ampsample_data,
 --		trigger_req   => trigger_req,
---		trigger_rgtr  => rgtr_file(trigger_rgtr),
+--		trigger_rgtr  => rgtr_data(trigger_rgtr),
 --		trigger_level => trigger_level,
 --		capture_rdy   => capture_rdy,
 --		capture_req   => capture_req,
