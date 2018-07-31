@@ -7,7 +7,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_sin is
 	generic(
-		rgtr_map : natural_vector);
+		data_size : natural);
 	port (
 		sin_clk   : in  std_logic;
 		sin_ena   : in  std_logic := '1';
@@ -15,14 +15,14 @@ entity scopeio_sin is
 		sin_data  : in  std_logic_vector;
 		
 		rgtr_id   : out std_logic_vector;
-		rgtr_wttn : out std_logic;
-		rgtr_file : out std_logic_vector);
+		rgtr_dv   : out std_logic;
+		rgtr_data : out std_logic_vector);
 end;
 
 architecture beh of scopeio_sin is
 	signal len : signed(0 to 8);
 	signal rid : std_logic_vector(8-1 downto 0);
-	signal val : std_logic_vector(3*8-1 downto 0);
+	signal val : std_logic_vector(data_size-1 downto 0);
 	signal ld  : std_logic;
 	signal ptr : signed(0 to unsigned_num_bits(8-1));
 
@@ -101,20 +101,14 @@ begin
 		variable aux : unsigned(rgtr_file'length-1 downto 0);
 	begin
 		if rising_edge(sin_clk) then
-			rgtr_wttn <= '0';
+			rgtr_dv <= '0';
 			if ena='1' then
 				if len(0)='1' then
 					if ptr(0)='1' then
-						for i in rgtr_map'range loop
-							if i=to_integer(unsigned(rid)) then
-								aux(rgtr_map(i)-1 downto 0) := unsigned(val(rgtr_map(i)-1 downto 0));
-								rgtr_wttn <= '1';
-							end if;
-							aux := aux ror rgtr_map(i);
-						end loop;
+						rgtr_dv   <= '1';
+						rgtr_data <= val;
 					end if;
 				end if;
-				rgtr_file <= std_logic_vector(aux);
 			end if;
 		end if;
 	end process;
