@@ -77,6 +77,8 @@ architecture struct of scopeio_debug is
 	signal cga_data  : std_logic_vector(8-1 downto 0);
 	signal bcd_str   : std_logic_vector(28-1 downto 0);
 	signal fix       : std_logic_vector(8-1 downto 0);
+	signal mgntd     : std_logic_vector(4-1 downto 2);
+	signal mult      : std_logic_vector(2-1 downto 0);
 
 begin
 
@@ -148,9 +150,14 @@ begin
 	begin
 		if rising_edge(mii_rxc) then
 			if rgtr_dv='1' then
-				if rgtr_id=std_logic_vector(to_unsigned(0,rgtr_id'length)) then
+				case rgtr_id is
+				when x"00" =>
 					fix <= rgtr_data(fix'range);
-				end if;
+				when x"01" =>
+					mgntd <= rgtr_data(mgntd'range);
+					mult  <= rgtr_data(mult'range);
+				when others =>
+				end case;
 			end if;
 		end if;
 	end process;
@@ -162,8 +169,8 @@ begin
 	port map (
 		clk     => mii_rxc,
 		fix     => fix, 
-		mgntd   => "00",
-		mult    => "11",
+		mgntd   => mgntd,
+		mult    => mult,
 		bcd_str => bcd_str);
 
 	process(mii_rxc)

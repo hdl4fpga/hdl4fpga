@@ -14,13 +14,18 @@ var j = 0;
 
 	i=0;
 	buffer[i++] = 1;
-	buffer[i++] = 1;
-	buffer[i++] = pos >> 8;
-	buffer[i++] = pos &  0xff;
+	buffer[i++] = 0;
+	buffer[i++] = 0x07;
+
+//	buffer[i++] = 1;
+//	buffer[i++] = 1;
+//	buffer[i++] = pos >> 8;
+//	buffer[i++] = pos &  0xff;
 
 	buffer[i++] = 0;
 	buffer[i++] = 0
-	buffer[i++] = 0xac;
+	buffer[i++] = 0xff;
+
 	buffer[i++] = 0xff;
 	buffer[i++] = 0xff;
 
