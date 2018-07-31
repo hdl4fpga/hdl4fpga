@@ -20,7 +20,7 @@ var j = 0;
 
 	buffer[i++] = 0;
 	buffer[i++] = 0
-	buffer[i++] = 0;
+	buffer[i++] = 0xf1;
 	buffer[i++] = 0xff;
 	buffer[i++] = 0xff;
 

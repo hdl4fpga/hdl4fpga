@@ -161,7 +161,7 @@ begin
 		fracbcd_size => 4)
 	port map (
 		clk     => mii_rxc,
-		fix     => x"12", --fix, 
+		fix     => fix, 
 		mgntd   => "00",
 		mult    => "00",
 		bcd_str => bcd_str);
