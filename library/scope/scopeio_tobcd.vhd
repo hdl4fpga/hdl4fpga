@@ -29,12 +29,12 @@ architecture def of scopeio_tobcd is
 	constant x2h : std_logic_vector := "10";    -- x 2.5 
 	constant x5  : std_logic_vector := "11";    -- x 5.0
 
+	constant m2  : std_logic_vector := "10";    -- x 10**(-2);
 	constant m1  : std_logic_vector := "11";    -- x 10**(-1);
 	constant p0  : std_logic_vector := "00";    -- x 10**0;
 	constant p1  : std_logic_vector := "01";    -- x 10**1;
-	constant p2  : std_logic_vector := "10";    -- x 10**2;
 
-	constant intbcd_size : natural := integer(ceil(log(5.0*2.0**(fix'length-fracbin_size), 10.0)));
+	constant intbcd_size : natural := integer(ceil(log(8.0*2.0**(fix'length-fracbin_size), 10.0)));
 
 	signal bcd_do : std_logic_vector(0 to bcd_str'length-1);
 
@@ -46,7 +46,7 @@ begin
 		variable temp : unsigned(value'range);
 	begin
 		if rising_edge(clk) then
-			case mgntd is
+			case mult is
 			when "00" =>
 				temp := resize(unsigned(fix), temp'length);
 			when "01" =>
@@ -87,14 +87,14 @@ begin
 	begin
 		if rising_edge(clk) then
 			case order is
+			when m2 =>
+				temp := unsigned(bcd_do) srl 8;
 			when m1 =>
 				temp := unsigned(bcd_do) srl 4;
 			when p0 =>
 				temp := unsigned(bcd_do);
 			when p1 =>
 				temp := unsigned(bcd_do) sll 4;
-			when p2 =>
-				temp := unsigned(bcd_do) sll 8;
 			when others =>
 				temp := (others => '-');
 			end case;
@@ -102,14 +102,14 @@ begin
 			-- Add dot or comma --
 			----------------------
 
-			temp(4*(intbcd_size+1) to temp'right) := temp(4*(intbcd_size+1) to temp'right) srl 4;
-			temp(4*(intbcd_size+1) to 4*(intbcd_size+1)+4-1) := unsigned(dot_code);
+			temp(4*intbcd_size to temp'right) := temp(4*intbcd_size to temp'right) srl 4;
+			temp(4*intbcd_size to 4*intbcd_size+4-1) := unsigned(dot_code);
 
 			-- Replace left zeros by blanks --
 			----------------------------------
 
-			for i in 0 to intbcd_size loop
-				if i=intbcd_size then
+			for i in 0 to intbcd_size-1 loop
+				if i=intbcd_size-1 then
 					temp := temp ror (4*i);
 					exit;
 				elsif temp(0 to 4-1)/="0000" then

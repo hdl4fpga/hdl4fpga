@@ -163,7 +163,7 @@ begin
 		clk     => mii_rxc,
 		fix     => fix, 
 		mgntd   => "00",
-		mult    => "00",
+		mult    => "11",
 		bcd_str => bcd_str);
 
 	process(mii_rxc)
