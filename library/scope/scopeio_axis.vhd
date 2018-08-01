@@ -6,87 +6,29 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_axis is
-	generic (
-		fonts           : std_logic_vector;
-		vt_scales       : scale_vector;
-		vt_num_of_seg   : natural := 1;
-		vt_div_per_seg  : natural := 1;
-		vt_mark_per_seg : natural := 1;
-		hz_scales       : scale_vector;
-		hz_num_of_seg   : natural := 1;
-		hz_div_per_seg  : natural := 1;
-		hz_mark_per_seg : natural := 5);
 	port (
-		video_clk    : in  std_logic;
-		win_x        : in  std_logic_vector;
-		win_y        : in  std_logic_vector;
-
-		axis_hztl    : in  std_logic;
-		axis_sgmt    : in  std_logic_vector;
-		axis_on      : in  std_logic;
-		axis_hzscale : in  std_logic_vector(4-1 downto 0);
-		axis_vtscale : in  std_logic_vector(4-1 downto 0);
-		axis_dot     : out std_logic);
+		clk    : in  std_logic;
+		origin : in  std_logic_vector;
+		step   : in  std_logic_vector;
 end;
 
 architecture def of scopeio_axis is
-
-	constant font_width   : natural := 8;
-	constant font_height  : natural := 8;
-	constant code_size    : natural := 4;
-
-	function marker (
-		constant scales       : scale_vector;
-		constant num_of_seg   : natural;
-		constant div_per_seg  : natural;
-		constant num_of_digit : natural;
-		constant sign         : boolean := false)
-		return   std_logic_vector is
-		constant num         : natural := num_of_seg*div_per_seg+1;
-		constant word_size   : natural := 8; --2**unsigned_num_bits(num_of_digit-1);
-		variable retval      : unsigned(num*scales'length*word_size*code_size-1 downto 0) := (others => '1');
-		variable aux         : real_vector(0 to scales'length-1);
-		variable aux1        : unsigned(0 to word_size*code_size-1);
-	begin
-		for j in 0 to scales'length-1 loop
-			aux(j) := scales(j).from;
-		end loop;
-		for i in 0 to num-1 loop
-			for j in 0 to scales'length-1 loop
-				retval := retval sll (word_size*code_size);
-				aux1 := (others => '0');
-				aux1(0 to num_of_digit*code_size-1) := unsigned(to_bcd(aux(j), num_of_digit*code_size, sign));
-				retval(word_size*code_size-1 downto 0) := aux1;
-			end loop;
-			for j in 0 to scales'length-1 loop
-				aux(j) := aux(j) + scales(j).step;
-			end loop;
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
-	signal mark       : std_logic_vector(unsigned_num_bits(vt_num_of_seg*vt_div_per_seg+1+hz_num_of_seg*hz_div_per_seg+1-1)-1 downto 0);
-	signal win_x4     : std_logic;
-	signal win_x5     : std_logic;
-
-	signal char_scale : std_logic_vector(0 to max(axis_hzscale'length,axis_vtscale'length)-1);
-	signal char_addr  : std_logic_vector(0 to char_scale'length+mark'length+2-1);
-	signal char_code  : std_logic_vector(2*code_size-1 downto 0);
-	signal char_line  : std_logic_vector(0 to font_width-1);
-	signal char_dot   : std_logic_vector(0 to 1-1);
-	signal mark_on    : std_logic;
-	signal dot_on     : std_logic;
-
-	signal sel_code   : std_logic_vector(0 to 0);
-	signal sel_line   : std_logic_vector(0 to char_code'length/2+unsigned_num_bits(font_width-1)-1);
-	signal sel_dot    : std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-	signal sel_winy   : std_logic_vector(3-1 downto 0);
-
-	signal mark_y     : std_logic;
-	signal aon_y      : std_logic;
-	signal my : std_logic_vector(mark'range);
-
+	signal mark : signed;
 begin
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			mark <= mark + signed(step);
+		end if;
+	end if;
+
+	: entity hdl4fpga.btod
+	generic map (
+	)
+	port map (
+		clk => 
+			 );
+
 	mark_y <= setif(win_y(5-1 downto 3)=(5-1 downto 3 => '0'));
 	alignrow_e : entity hdl4fpga.align
 	generic map (
