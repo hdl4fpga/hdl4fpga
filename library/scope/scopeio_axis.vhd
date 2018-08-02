@@ -23,25 +23,28 @@ begin
 	end if;
 
 	tobcd_b : block
-		signal bcd_addr : std_logic_vector;
-		signal bin_addr : std_logic_vector;
+		signal bcd_str : std_logic_vector;
 	begin
 
-		process (clk)
-		begin
-			if rising_edge(clk) then
-			end if;
-		end process;
-
 		btod_e : entity hdl4fpga.btod
+		generic map (
+			registered => false)
 		port map (
 			clk    => clk,
 			bin_dv => bin_dv,
 			bin_di => bin_di,
 
 			bcd_dv =>
-			bcd_di =>
-			bcd_do => );
+			bcd_di => bcd_di,
+			bcd_do => bcd_do);
+
+		ram_e : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => clk,
+			wr_addr => wr_addr,
+			wr_data => bcd_do,
+			rd_addr => rd_addr,
+			rd_data => bcd_d1);
 
 	end block;
 

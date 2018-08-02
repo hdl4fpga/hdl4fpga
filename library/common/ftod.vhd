@@ -89,7 +89,7 @@ use ieee.numeric_std.all;
 
 entity btod is
 	generic (
-		REGISTERED : boolean := true);
+		registered : boolean := true);
 	port (
 		clk    : in  std_logic;
 
@@ -159,7 +159,7 @@ begin
 		value_d <= tmp_value;
 		shtio_d <= tmp_shtio;
 	end process;
-	bcd_do <= std_logic_vector(value_q) when REGISTERED else std_logic_vector(value_d);
+	bcd_do <= std_logic_vector(value_q) when registered else std_logic_vector(value_d);
 
 --	p : process(clk)
 --		variable value : unsigned(bcd_di'length-1 downto 0);
