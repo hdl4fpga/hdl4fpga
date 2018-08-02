@@ -88,6 +88,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity btod is
+	generic (
+		REGISTERED : boolean := true);
 	port (
 		clk    : in  std_logic;
 
@@ -115,31 +117,73 @@ architecture def of btod is
 		shtio    := save;
 	end;
 
+	signal value_d : unsigned(bcd_di'length-1 downto 0);
+	signal value_q : unsigned(bcd_di'length-1 downto 0);
+
+	signal shtio_d : unsigned(bin_di'length-1 downto 0);
+	signal shtio_q : unsigned(bin_di'length-1 downto 0);
+
 begin
 
-	p : process(clk)
-		variable value : unsigned(bcd_di'length-1 downto 0);
-		variable shtio : unsigned(bin_di'length-1 downto 0);
+	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			if bcd_dv='1' then
-				value := unsigned(bcd_di);
-			end if;
-			if bin_dv='1' then
-				shtio := unsigned(bin_di);
-			end if;
-
-			for k in shtio'range loop
-				shtio := shtio rol 1;
-				for i in 0 to value'length/4-1 loop
-					dbdbb(shtio(0), value(4-1 downto 0));
-					value := value ror 4;
-				end loop;
-			end loop;
-
-			bcd_do <= std_logic_vector(value);
+			value_q <= value_d;
+			shtio_q <= shtio_d;
 		end if;
 	end process;
+
+	comb_p : process (bin_dv, bin_di, bcd_dv, bcd_di, value_q, shtio_q)
+		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
+		variable tmp_shtio : unsigned(bin_di'length-1 downto 0);
+	begin
+		if bcd_dv='1' then
+			tmp_value := unsigned(bcd_di);
+		else
+			tmp_value := value_q;
+		end if;
+		if bin_dv='1' then
+			tmp_shtio := unsigned(bin_di);
+		else
+			tmp_shtio := shtio_q;
+		end if;
+
+		for k in tmp_shtio'range loop
+			tmp_shtio := tmp_shtio rol 1;
+			for i in 0 to tmp_value'length/4-1 loop
+				dbdbb(tmp_shtio(0), tmp_value(4-1 downto 0));
+				tmp_value := tmp_value ror 4;
+			end loop;
+		end loop;
+
+		value_d <= tmp_value;
+		shtio_d <= tmp_shtio;
+	end process;
+	bcd_do <= std_logic_vector(value_q) when REGISTERED else std_logic_vector(value_d);
+
+--	p : process(clk)
+--		variable value : unsigned(bcd_di'length-1 downto 0);
+--		variable shtio : unsigned(bin_di'length-1 downto 0);
+--	begin
+--		if rising_edge(clk) then
+--			if bcd_dv='1' then
+--				value := unsigned(bcd_di);
+--			end if;
+--			if bin_dv='1' then
+--				shtio := unsigned(bin_di);
+--			end if;
+--
+--			for k in shtio'range loop
+--				shtio := shtio rol 1;
+--				for i in 0 to value'length/4-1 loop
+--					dbdbb(shtio(0), value(4-1 downto 0));
+--					value := value ror 4;
+--				end loop;
+--			end loop;
+--
+--			bcd_do <= std_logic_vector(value);
+--		end if;
+--	end process;
 
 end;
 
