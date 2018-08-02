@@ -23,9 +23,21 @@ begin
 	end if;
 
 	tobcd_b : block
-		signal bcd_str : std_logic_vector;
+		signal bcd_dv  : std_logic;
 	begin
 
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				if then
+					wr_addr <= not (-signed(size));
+				else
+					wr_addr <= wr_addr - 1;
+				end if;
+			end if;
+		end process;
+
+		rd_addr <= 
 		btod_e : entity hdl4fpga.btod
 		generic map (
 			registered => false)
@@ -34,14 +46,14 @@ begin
 			bin_dv => bin_dv,
 			bin_di => bin_di,
 
-			bcd_dv =>
+			bcd_dv => bcd_dv,
 			bcd_di => bcd_di,
 			bcd_do => bcd_do);
 
 		ram_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => clk,
-			wr_addr => wr_addr,
+			wr_addr => wr_addr(1 to wr_addr'right),
 			wr_data => bcd_do,
 			rd_addr => rd_addr,
 			rd_data => bcd_d1);
