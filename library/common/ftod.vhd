@@ -159,7 +159,7 @@ begin
 		value_d <= tmp_value;
 		shtio_d <= tmp_shtio;
 	end process;
-	bcd_do <= std_logic_vector(value_q) when registered else std_logic_vector(value_d);
+	bcd_do <= std_logic_vector(value_q) when registered_output else std_logic_vector(value_d);
 
 --	p : process(clk)
 --		variable value : unsigned(bcd_di'length-1 downto 0);

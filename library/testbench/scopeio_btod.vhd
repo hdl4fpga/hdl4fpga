@@ -31,80 +31,44 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scopeio_debug of testbench is
-	constant n : natural := 4;
-	signal rst   : std_logic := '1';
-	signal clk   : std_logic := '1';
-	signal rrxd  : std_logic_vector(0 to n-1);
-	signal rxd   : std_logic_vector(0 to n-1);
-	signal rxdv  : std_logic;
+architecture scopeio_btod of testbench is
+	signal rst     : std_logic;
+	signal clk     : std_logic := '0';
+	signal bin_ena : std_logic;
+    signal bin_dv  : std_logic;
+    signal bin_di  : std_logic_vector(0 to 16-1);
 
-	signal txdv  : std_logic;
-	signal treq : std_logic;
-	signal txd   : std_logic_vector(0 to n-1);
-	signal trdy : std_logic;
-	signal rtxd  : std_logic_vector(txd'range);
+    signal bcd_sz1 : std_logic_vector(0 to 4-1);
+    signal bcd_ena : std_logic;
+    signal bcd_lst : std_logic;
+    signal bcd_do  : std_logic_vector(0 to 4-1);
 
 begin
 
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 1000 ns;
+	rst <= '1', '0' after 12 ns;
 
 	process (clk)
-		variable edge  : std_logic;
 	begin
-		if rising_edge(clk) then
-			treq <= '1' ; --after 0 ns;
-			if rst='1' then
-				treq <= '0'; -- after 0 ns;
-			elsif txdv='0'  then
-				if edge='1' then
---					treq <= '0';
-				end if;
-			end if;
-			edge := txdv;
+		if rst='1' then
+			bin_ena <= '0';
+			bcd_ena <= '0';
+		elsif rising_edge(clk) then
+			bin_ena <= '1';
+			bcd_ena <= '1';
 		end if;
 	end process;
 
-	
-	miidhcp_e : entity hdl4fpga.mii_rom
-	generic map (
-		mem_data => reverse(
-			x"5555_5555_5555_55d5" &
-			x"00_40_00_01_02_03"   & 
-			x"00_25_00_00_00_ff"   &
-			x"08_00"               & 
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_11_00_00"         &
-			x"00_00_00_00"         &
-			x"00_00_00_00"         &
-			x"00_43_de_a9"         &
-			x"00_00_00_00"         &
-			x"00_01_00_00"         &
-			x"01_00_81"            &
-			x"00_00_00_00",
-			8))
+	du: entity hdl4fpga.scopeio_btod
 	port map (
-		mii_txc  => clk,
-		mii_treq => treq,
-		mii_trdy => trdy,
-		mii_txdv => rxdv,
-		mii_txd  => rxd);
+		clk     => clk,
+		bin_ena => bin_ena,
+		bin_dv  => open,
+		bin_di  => x"ffff", --bin_di,
+                           
+		bcd_sz1 => x"4", --bcd_sz1,
+		bcd_ena => bcd_ena,
+		bcd_lst => bcd_lst,
+		bcd_do  => bcd_do);
 
-	rrxd <= reverse(rxd);
-
-	du : entity hdl4fpga.scopeio_debug
-	port map (
-        mii_rxc  => clk,
-		mii_rxdv => rxdv,
-		mii_rxd  => rxd,
-
-        mii_txc  => clk,
-		mii_txd  => txd,
-		mii_txdv => txdv,
-		mii_req  => treq,
-	
-		video_clk => '0');
-	rtxd <= reverse(txd);
 end;
