@@ -89,9 +89,9 @@ use ieee.numeric_std.all;
 
 entity btod is
 	generic (
-		registered : boolean := true);
+		registered_output : boolean := false);
 	port (
-		clk    : in  std_logic;
+		clk    : in  std_logic := '0';
 
 		bin_dv : in  std_logic;
 		bin_di : in  std_logic_vector;
