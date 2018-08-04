@@ -64,7 +64,7 @@ begin
 		clk     => clk,
 		bin_ena => bin_ena,
 		bin_dv  => open,
-		bin_di  => x"ff", --bin_di,
+		bin_di  => x"ffff", --bin_di,
                            
 		bcd_sz1 => x"4", --bcd_sz1,
 		bcd_ena => bcd_ena,

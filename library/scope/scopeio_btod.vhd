@@ -23,6 +23,7 @@ architecture def of scopeio_btod is
 	signal bcd_di  : std_logic_vector(bcd_do'range);
 	signal bcd_do1 : std_logic_vector(bcd_do'range);
 	signal bcd_ptr : signed(0 to 4);
+	signal bin_dv1 : std_logic;
 	signal rd_data : std_logic_vector(bcd_do'range);
 begin
 
@@ -55,7 +56,7 @@ begin
 		bin_dv => bin_dv1,
 		bin_di => bin_di,
 
-		bcd_dv => bcd_dv,
+		bcd_dv => '1',
 		bcd_di => bcd_di,
 		bcd_do => bcd_do1);
 
