@@ -19,11 +19,11 @@ end;
 
 architecture def of scopeio_btod is
 
-	signal bin_dv1 : std_logic;
 	signal bcd_dv  : std_logic;
 	signal bcd_di  : std_logic_vector(bcd_do'range);
 	signal bcd_do1 : std_logic_vector(bcd_do'range);
 	signal bcd_ptr : signed(0 to 4);
+	signal rd_data : std_logic_vector(bcd_do'range);
 begin
 
 	process (clk)
@@ -32,18 +32,20 @@ begin
 			if bin_ena='0' and bcd_ena='0' then
 				bcd_ptr <= not resize(-signed(bcd_sz1), bcd_ptr'length);
 				bcd_dv  <= '1';
+				bin_dv1 <= '1';
 			elsif bcd_ptr(0)='1' then
 				bcd_ptr <= not resize(-signed(bcd_sz1), bcd_ptr'length);
-				bcd_dv  <= '0';
+				bin_dv1 <= '1';
 			else
 				bcd_ptr <= bcd_ptr - 1;
+				bin_dv1 <= '0';
 			end if;
 		end if;
 	end process;
 
 	bin_dv  <= bin_dv1;
-	bin_dv1 <= bcd_ptr(0) or bin_ena;
 	bcd_lst <= bcd_ena and bcd_ptr(0);
+	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
 
 	btod_e : entity hdl4fpga.btod
 	generic map (
@@ -55,7 +57,7 @@ begin
 
 		bcd_dv => bcd_dv,
 		bcd_di => bcd_di,
-		bcd_do => bcd_do);
+		bcd_do => bcd_do1);
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
@@ -64,7 +66,7 @@ begin
 		wr_addr => std_logic_vector(bcd_ptr(1 to 4)),
 		wr_data => bcd_do1,
 		rd_addr => std_logic_vector(bcd_ptr(1 to 4)),
-		rd_data => bcd_di);
+		rd_data => rd_data);
 	bcd_do <= bcd_do1;
 
 end;
