@@ -96,7 +96,7 @@ entity btod is
 		bin_dv : in  std_logic;
 		bin_di : in  std_logic_vector;
 
-		bcd_dv : in  std_logic;
+		bcd_dv : in  std_logic := '1';
 		bcd_di : in  std_logic_vector;
 		bcd_do : out std_logic_vector);
 end;
