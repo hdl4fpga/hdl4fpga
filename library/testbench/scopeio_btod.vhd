@@ -66,7 +66,7 @@ begin
 		bin_dv  => open,
 		bin_di  => x"ffff", --bin_di,
                            
-		bcd_sz1 => x"4", --bcd_sz1,
+		bcd_sz1 => x"f", --bcd_sz1,
 		bcd_ena => bcd_ena,
 		bcd_lst => bcd_lst,
 		bcd_do  => bcd_do);

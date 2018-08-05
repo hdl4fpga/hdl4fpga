@@ -31,12 +31,13 @@ begin
 	begin
 		if rising_edge(clk) then
 			if bin_ena='0' and bcd_ena='0' then
-				bcd_ptr <= not resize(-signed(bcd_sz1), bcd_ptr'length);
+				bcd_ptr <= not (-signed(resize(unsigned(bcd_sz1), bcd_ptr'length)));
 				bcd_dv  <= '1';
 				bin_dv1 <= '1';
 			elsif bcd_ptr(0)='1' then
-				bcd_ptr <= not resize(-signed(bcd_sz1), bcd_ptr'length);
+				bcd_ptr <= not (-signed(resize(unsigned(bcd_sz1), bcd_ptr'length)));
 				bin_dv1 <= '1';
+				bcd_dv  <= '0';
 			else
 				bcd_ptr <= bcd_ptr - 1;
 				bin_dv1 <= '0';
@@ -50,7 +51,7 @@ begin
 
 	btod_e : entity hdl4fpga.btod
 	generic map (
-		registered_output => true)
+		registered_output => false)
 	port map (
 		clk    => clk,
 		bin_dv => bin_dv1,
