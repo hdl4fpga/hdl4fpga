@@ -3,15 +3,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity dtof is
-	generic (
-		fix_point : natural;
-		align_dot : boolean := FALSE);
 	port (
-		clk     : in  std_logic;
-		bcd_di  : in  std_logic_vector;
-		bcd_dv  : in  std_logic;
---		dot_pos : out std_logic_vector;
-		fix_do  : out std_logic_vector);
+		clk    : in  std_logic;
+		bcd_dv : in  std_logic := '1';
+		bcd_di : in  std_logic_vector;
+		bcd_do : out std_logic_vector);
 end;
 
 library hdl4fpga;
@@ -40,52 +36,62 @@ architecture def of dtof is
 	signal shtio_q : unsigned(bin_di'length-1 downto 0);
 
 begin
-	process (clk)
-		variable value : unsigned(bcd_di'length-1 downto 0);
-		variable shtio : unsigned(fix_point-1 downto 0);
-		variable point : unsigned(0 to unsigned_num_bits(fix_do'length/4-1)-1);
+
+	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			value := unsigned(bcd_di);
-			if bcd_dv='1' then
-				shtio := (others => '0');
-				point := (others => '0');
-			end if;
-			for k in 0 to fix_point-1 loop
-
-				if bcd_dv='1' then
-					if align_dot then
-						value := value rol 4;
-						while value(4-1 downto 0) = (4-1 downto 0 => '0') loop
-							value := value rol 4;
-							point := point + 1;
-						end loop;
-						value := value ror 4;
-					end if;
-				end if;
-
-				for i in 0 to value'length/4-1 loop
-					value := value rol 4;
-					dbdbb (shtio(0), value(4-1 downto 0));
-				end loop;
-
-				if align_dot then
-					if bcd_dv='1' then
-						value := value rol 4;
-						if value(4-1 downto 0) = (4-1 downto 0 => '0') then
-							dbdbb (shtio(0), value(4-1 downto 0));
-							point := point + 1;
-						else
-							value := value ror 4;
-						end if;
-					end if;
-				end if;
-
-				shtio := shtio rol 1;
-			end loop;
-			fix_do  <= std_logic_vector(value);
+			shtio_q <= shtio_d;
 		end if;
 	end process;
+
+	process (bcd_di, bcd_dv, shtio_q)
+		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
+		variable tmp_shtio : unsigned(fix_point-1 downto 0);
+	begin
+			tmp_value := unsigned(bcd_di);
+			if bcd_dv='1' then
+				tmp_shtio := (others => '0');
+			else
+				tmp_shtio := shtio_q;
+			end if;
+	
+			for k in 0 to fix_point-1 loop
+
+				for i in 0 to value'length/4-1 loop
+					tmp_value := tmp_value rol 4;
+					dbdbb (tmp_shtio(0), tmp_value(4-1 downto 0));
+				end loop;
+
+				tmp_shtio := tmp_shtio rol 1;
+			end loop;
+			shtio_d <= tmp_shtio;
+			bcd_do  <= std_logic_vector(value);
+		end if;
+	end process;
+
+--	process (clk)
+--		variable value : unsigned(bcd_di'length-1 downto 0);
+--		variable shtio : unsigned(fix_point-1 downto 0);
+--		variable point : unsigned(0 to unsigned_num_bits(fix_do'length/4-1)-1);
+--	begin
+--		if rising_edge(clk) then
+--			value := unsigned(bcd_di);
+--			if bcd_dv='1' then
+--				shtio := (others => '0');
+--				point := (others => '0');
+--			end if;
+--			for k in 0 to fix_point-1 loop
+--
+--				for i in 0 to value'length/4-1 loop
+--					value := value rol 4;
+--					dbdbb (shtio(0), value(4-1 downto 0));
+--				end loop;
+--
+--				shtio := shtio rol 1;
+--			end loop;
+--			fix_do  <= std_logic_vector(value);
+--		end if;
+--	end process;
 end;
 
 library ieee;
