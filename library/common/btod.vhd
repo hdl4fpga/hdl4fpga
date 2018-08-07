@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity fix_point is
+entity dtof is
 	port (
 		clk     : in  std_logic := '0';
 		point   : in  std_logic_vector;
@@ -14,7 +14,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of fix_point is
+architecture def of dtof is
 
 	procedure dbdbb(
 		variable shtio : inout std_logic;
