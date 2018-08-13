@@ -13,6 +13,7 @@ HDL4FPGA's documentation
    library
    std
    scopeio
+   slides
 
 .. Indices and tables
 .. ==================
