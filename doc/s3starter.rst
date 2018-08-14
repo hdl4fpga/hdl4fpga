@@ -2,7 +2,7 @@ DIGILENT Spartan-3 Board
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. |s3board| image:: slides/images/s3board.png 
-   :target: images/s3board.png
+   :target: _images/s3board.png
 
 .. list-table::
    :widths: auto

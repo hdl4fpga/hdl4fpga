@@ -2,7 +2,7 @@ Arty
 ~~~~
 
 .. |image| image:: slides/images/arty.jpg 
-   :target: images/arty.png
+   :target: _images/arty.jpg
 
 .. list-table::
    :widths: auto

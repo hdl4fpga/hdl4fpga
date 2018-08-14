@@ -2,7 +2,7 @@ DIGILENT Nexys2
 ~~~~~~~~~~~~~~~
 
 .. |nexys2| image:: slides/images/nexys2.png 
-   :target: images/nexys2.png
+   :target: _images/nexys2.png
 
 .. list-table::
    :widths: auto

@@ -2,7 +2,7 @@ NU HORIZONS Spartan 3A DSP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. |nuhs3adsp| image:: slides/images/nuhs3adsp.png 
-   :target: images/nuhs3adsp.png
+   :target: _images/nuhs3adsp.png
 
 .. list-table::
    :widths: auto

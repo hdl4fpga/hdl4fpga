@@ -2,7 +2,7 @@ ECP3 Versa Dev Kit - Lattice Semiconductor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. |ecp3versa| image:: slides/images/ecp3versa.png 
-   :target: images/ecp3versa.png
+   :target: _images/ecp3versa.png
 
 .. list-table::
    :widths: auto
