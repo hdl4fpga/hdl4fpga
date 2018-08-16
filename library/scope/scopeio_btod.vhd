@@ -28,6 +28,7 @@ architecture def of scopeio_btod is
 	signal rd_data  : std_logic_vector(bcd_do'range);
 	signal wr_data  : std_logic_vector(bcd_do'range);
 	signal mem_ptr  : std_logic_vector(1 to bcd_sz1'length);
+	signal bcd_ena  : std_logic;
 begin
 
 	process (clk)
@@ -62,13 +63,22 @@ begin
 		bcd_di => bcd_di,
 		bcd_do => btod_do);
 
+	process (clk, bin_fix)
+		variable ena : std_logic;
+	begin
+		if rising_edge(clk) then
+			ena := bcd_cntr(0);
+		end if;
+		bcd_ena <= bin_fix and ena;
+	end process;
+
 	dtof_e : entity hdl4fpga.dtof
 	port map (
-		clk    => clk,
-		bcd_ena => '1',
-		point => x"000",
-		bcd_di => rd_data,
-		bcd_do => dtof_do);
+		clk     => clk,
+		bcd_ena => bcd_ena,
+		point   => b"0",
+		bcd_di  => rd_data,
+		bcd_do  => dtof_do);
 
 	wr_data <= btod_do when bin_fix='0' else dtof_do;
    		

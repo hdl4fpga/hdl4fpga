@@ -43,19 +43,30 @@ architecture scopeio_btod of testbench is
     signal bcd_lst : std_logic;
     signal bcd_do  : std_logic_vector(0 to 4-1);
 
+	signal bin_fix : std_logic;
 begin
 
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 12 ns;
 
 	process (clk)
+		variable xx : natural;
 	begin
 		if rst='1' then
 			bin_ena <= '0';
 			bcd_ena <= '0';
+			xx := 0;
+			bin_fix <= '0';
 		elsif rising_edge(clk) then
 			bin_ena <= '1';
 			bcd_ena <= '1';
+			if bcd_lst='1' then
+				if xx < 1 then
+					xx := xx + 1;
+				else
+					bin_fix <= '1';
+				end if;
+			end if;
 		end if;
 	end process;
 
@@ -65,9 +76,10 @@ begin
 		bin_ena => bin_ena,
 		bin_dv  => open,
 		bin_di  => x"ffff", --bin_di,
+		bin_fix => bin_fix,
                            
 		bcd_sz1 => x"f", --bcd_sz1,
-		bcd_ena => bcd_ena,
+		
 		bcd_lst => bcd_lst,
 		bcd_do  => bcd_do);
 

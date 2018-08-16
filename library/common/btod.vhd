@@ -30,8 +30,8 @@ architecture def of dtof is
 		end if;
 	end;
 
-	signal shtio_d : unsigned(bcd_di'length-1 downto 0);
-	signal shtio_q : unsigned(bcd_di'length-1 downto 0);
+	signal shtio_d : unsigned(2**point'length-1 downto 0);
+	signal shtio_q : unsigned(2**point'length-1 downto 0);
 
 begin
 
@@ -59,8 +59,8 @@ begin
 					tmp_value := tmp_value rol 4;
 					dbdbb (tmp_shtio(0), tmp_value(4-1 downto 0));
 				end loop;
-				tmp_shtio := tmp_shtio rol 1;
 			end if;
+			tmp_shtio := tmp_shtio rol 1;
 		end loop;
 
 		shtio_d <= tmp_shtio;
