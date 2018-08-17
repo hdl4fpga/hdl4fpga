@@ -29,21 +29,35 @@ architecture def of scopeio_btod is
 	signal wr_data  : std_logic_vector(bcd_do'range);
 	signal mem_ptr  : std_logic_vector(1 to bcd_sz1'length);
 	signal bcd_ena  : std_logic;
+	signal base  : signed(1 to bcd_sz1'length);
 begin
 
 	process (clk)
+		variable xxx : std_logic;
 	begin
 		if rising_edge(clk) then
 			if bin_ena='0' then
 				bcd_cntr <= not (-signed(resize(unsigned(bcd_sz1), bcd_cntr'length)));
 				bcd_dv   <= '1';
 				bin_dv1  <= '1';
+				base     <= signed(bcd_sz1);
+				xxx := '0';
 			elsif bcd_cntr(0)='1' then
 				bcd_cntr <= not (-signed(resize(unsigned(bcd_sz1), bcd_cntr'length)));
 				bin_dv1  <= '1';
 				bcd_dv   <= '0';
+				xxx := '0';
 			else
-				bcd_cntr <= bcd_cntr - 1;
+				if bin_fix='0' then
+					bcd_cntr <= bcd_cntr - 1;
+				elsif wr_data/=(wr_data'range => '0') then
+					xxx := '1';
+					bcd_cntr <= bcd_cntr - 1;
+				elsif xxx = '1' then
+					bcd_cntr <= bcd_cntr - 1;
+				else
+					base <= base + 1;
+				end if;
 				bin_dv1  <= '0';
 			end if;
 		end if;
@@ -52,6 +66,20 @@ begin
 	bin_dv  <= bin_dv1;
 	bcd_lst <= bcd_cntr(0);
 	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
+
+--	process (clk)
+--		variable xxx : unsigned(btod_do'length-1 downto 0);
+--	begin
+--		if rising_edge(clk) then
+--			xxx := unsigned(btod_do);
+--			for i in 0 to xxx'length/4-1 loop
+--				if xxx(4-1 downto 0)/=(4-1 downto 0 => '0') then
+--					ptr1 <= mem_ptr;
+--				end if;
+--				xxx := xxx ror 4;
+--			end loop;
+--		end if;
+--	end process;
 
 	btod_e : entity hdl4fpga.btod
 	port map (
@@ -84,7 +112,7 @@ begin
    		
 	mem_ptr <= 
 		std_logic_vector(bcd_cntr(mem_ptr'range) + 1) when bin_fix='0' else
-		std_logic_vector((signed(bcd_sz1) + not bcd_cntr(mem_ptr'range)));
+		std_logic_vector(not bcd_cntr(mem_ptr'range) + base);
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
