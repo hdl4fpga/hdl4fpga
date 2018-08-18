@@ -82,7 +82,8 @@ entity btod is
 
 		bcd_dv : in  std_logic := '1';
 		bcd_di : in  std_logic_vector;
-		bcd_do : out std_logic_vector);
+		bcd_do : out std_logic_vector;
+		bcd_cy : out std_logic);
 end;
 
 architecture def of btod is
@@ -136,5 +137,6 @@ begin
 		bcd_do  <= std_logic_vector(tmp_value);
 		shtio_d <= tmp_shtio;
 	end process;
+	bcd_cy <= '1' when shtio_d /= (shtio_d'range => '0') else '0';
 
 end;
