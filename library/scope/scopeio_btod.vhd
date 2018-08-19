@@ -23,14 +23,16 @@ architecture def of scopeio_btod is
 	signal bcd_di   : std_logic_vector(bcd_do'range);
 	signal btod_do  : std_logic_vector(bcd_do'range);
 	signal dtof_do  : std_logic_vector(bcd_do'range);
-	signal bcd_cntr : signed(0 to 4);
+	signal bcd_cntr : unsigned(0 to 4);
 	signal btod_dv  : std_logic;
 	signal rd_data  : std_logic_vector(bcd_do'range);
 	signal wr_data  : std_logic_vector(bcd_do'range);
 	signal mem_ptr  : std_logic_vector(1 to bcd_sz1'length);
 	signal bcd_ena  : std_logic;
-	signal right    : signed(1 to bcd_sz1'length);
+	signal right    : unsigned(1 to bcd_sz1'length);
+	signal left     : unsigned(1 to bcd_sz1'length);
 	signal btod_cy  : std_logic;
+	signal dtof_cy  : std_logic;
 begin
 
 	process (clk)
@@ -40,8 +42,9 @@ begin
 			if bin_ena='0' then
 				bcd_dv    <= '1';
 				btod_dv   <= '1';
-				bcd_cntr  <= to_signed(-1, bcd_cntr'length);
-				right      <= to_signed( 0, right'length);
+				bcd_cntr  <= (others => '1');
+				right     <= (others => '1');
+				left      <= (others => '1');
 				left_zero := '0';
 			elsif bin_fix='0' then
 				if bcd_cntr(0)='1' then
@@ -53,17 +56,19 @@ begin
 					else
 						btod_dv  <= '1';
 						bcd_dv   <= '0';
-						bcd_cntr <= resize(right, bcd_cntr'length)-1;
+						bcd_cntr <= resize(right, bcd_cntr'length);
 					end if;
 				else
 					bcd_cntr <= bcd_cntr - 1;
 					btod_dv  <= '0';
 				end if;
 			else
+				btod_dv  <= '0';
 				if bcd_cntr(0)='1' then
+					if left_zero
 					left_zero := '0';
 					bcd_dv    <= '0';
-					bcd_cntr  <= resize(right, bcd_cntr'length)-1;
+					bcd_cntr  <= resize(right-left, bcd_cntr'length);
 				elsif wr_data/=(wr_data'range => '0') then
 					left_zero := '1';
 					bcd_cntr  <= bcd_cntr - 1;
@@ -71,14 +76,14 @@ begin
 					bcd_cntr <= bcd_cntr - 1;
 				else
 					right <= right - 1;
+					left  <= left  - 1 ;
 				end if;
-				btod_dv  <= '0';
 			end if;
 		end if;
 	end process;
 
 	bin_dv  <= btod_dv;
-	bcd_lst <= bcd_cntr(0) and not btod_cy;
+	bcd_lst <= bcd_cntr(0) and not btod_cy when bin_fix='0' else bcd_cntr(0); -- and not dtof_cy ;
 	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
 
 	btod_e : entity hdl4fpga.btod
@@ -107,11 +112,14 @@ begin
 		bcd_ena => bcd_ena,
 		point   => b"0",
 		bcd_di  => rd_data,
-		bcd_do  => dtof_do);
+		bcd_do  => dtof_do,
+		bcd_cy  => dtof_cy);
 
 	wr_data <= btod_do when bin_fix='0' else dtof_do;
    		
-	mem_ptr <= std_logic_vector(right + not bcd_cntr(mem_ptr'range));
+	mem_ptr <=
+		std_logic_vector(right-bcd_cntr(mem_ptr'range)) when bin_fix='0' else
+		std_logic_vector(bcd_cntr(mem_ptr'range)+left+2);
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
