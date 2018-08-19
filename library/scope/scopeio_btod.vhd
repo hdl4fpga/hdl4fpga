@@ -24,7 +24,7 @@ architecture def of scopeio_btod is
 	signal btod_do  : std_logic_vector(bcd_do'range);
 	signal dtof_do  : std_logic_vector(bcd_do'range);
 	signal bcd_cntr : signed(0 to 4);
-	signal bin_dv1  : std_logic;
+	signal btod_dv  : std_logic;
 	signal rd_data  : std_logic_vector(bcd_do'range);
 	signal wr_data  : std_logic_vector(bcd_do'range);
 	signal mem_ptr  : std_logic_vector(1 to bcd_sz1'length);
@@ -39,45 +39,52 @@ begin
 		if rising_edge(clk) then
 			if bin_ena='0' then
 				bcd_dv    <= '1';
-				bin_dv1   <= '1';
+				btod_dv   <= '1';
 				bcd_cntr  <= to_signed(-1, bcd_cntr'length);
 				right      <= to_signed( 0, right'length);
 				left_zero := '0';
-			elsif bcd_cntr(0)='1' then
-				left_zero := '0';
-				if btod_cy='1' then
-					right     <= right + 1;
-					bin_dv1  <= '0';
-					bcd_dv   <= '1';
+			elsif bin_fix='0' then
+				if bcd_cntr(0)='1' then
+					left_zero := '0';
+					if btod_cy='1' then
+						right    <= right + 1;
+						btod_dv  <= '0';
+						bcd_dv   <= '1';
+					else
+						btod_dv  <= '1';
+						bcd_dv   <= '0';
+						bcd_cntr <= resize(right, bcd_cntr'length)-1;
+					end if;
 				else
-					bin_dv1  <= '1';
-					bcd_dv   <= '0';
-					bcd_cntr <= resize(right, bcd_cntr'length)-1;
+					bcd_cntr <= bcd_cntr - 1;
+					btod_dv  <= '0';
 				end if;
 			else
-				if bin_fix='0' then
-					bcd_cntr <= bcd_cntr - 1;
+				if bcd_cntr(0)='1' then
+					left_zero := '0';
+					bcd_dv    <= '0';
+					bcd_cntr  <= resize(right, bcd_cntr'length)-1;
 				elsif wr_data/=(wr_data'range => '0') then
 					left_zero := '1';
 					bcd_cntr  <= bcd_cntr - 1;
 				elsif left_zero='1' then
 					bcd_cntr <= bcd_cntr - 1;
 				else
-					right <= right + 1;
+					right <= right - 1;
 				end if;
-				bin_dv1  <= '0';
+				btod_dv  <= '0';
 			end if;
 		end if;
 	end process;
 
-	bin_dv  <= bin_dv1;
+	bin_dv  <= btod_dv;
 	bcd_lst <= bcd_cntr(0) and not btod_cy;
 	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
 
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk    => clk,
-		bin_dv => bin_dv1,
+		bin_dv => btod_dv,
 		bin_di => bin_di,
 
 		bcd_dv => '1',

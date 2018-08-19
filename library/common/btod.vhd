@@ -8,7 +8,8 @@ entity dtof is
 		point   : in  std_logic_vector;
 		bcd_ena : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;
-		bcd_do  : out std_logic_vector);
+		bcd_do  : out std_logic_vector;
+		bcd_cy  : out std_logic);
 end;
 
 library hdl4fpga;
@@ -66,6 +67,7 @@ begin
 		shtio_d <= tmp_shtio;
 		bcd_do  <= std_logic_vector(tmp_value);
 	end process;
+	bcd_cy <= '1' when shtio_d /= (shtio_d'range => '0') else '0';
 
 end;
 
