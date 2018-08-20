@@ -46,6 +46,7 @@ begin
 	process (bcd_di, bcd_ena, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
 		variable tmp_shtio : unsigned(2**point'length-1 downto 0);
+		variable xxx : std_logic;
 	begin
 		tmp_value := unsigned(bcd_di);
 		if bcd_ena='1' then
@@ -54,20 +55,22 @@ begin
 			tmp_shtio := shtio_q;
 		end if;
 
+		xxx := '0';
 		for k in 0 to 2**point'length-1 loop
 			if k <= to_integer(unsigned(point)) then
 				for i in 0 to tmp_value'length/4-1 loop
 					tmp_value := tmp_value rol 4;
 					dbdbb (tmp_shtio(0), tmp_value(4-1 downto 0));
 				end loop;
+				xxx := xxx or tmp_shtio(0);
 			end if;
 			tmp_shtio := tmp_shtio rol 1;
 		end loop;
 
 		shtio_d <= tmp_shtio;
 		bcd_do  <= std_logic_vector(tmp_value);
+		bcd_cy <= xxx;
 	end process;
-	bcd_cy <= '1' when shtio_d /= (shtio_d'range => '0') else '0';
 
 end;
 
