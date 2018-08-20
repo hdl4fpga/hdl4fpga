@@ -33,6 +33,7 @@ architecture def of scopeio_btod is
 	signal left     : unsigned(1 to bcd_sz1'length);
 	signal btod_cy  : std_logic;
 	signal dtof_cy  : std_logic;
+	signal fix : std_logic;
 begin
 
 	process (clk)
@@ -71,7 +72,7 @@ begin
 						left   <= left  + 1 ;
 					else
 						bcd_dv    <= '0';
-						bcd_cntr  <= resize(right-left, bcd_cntr'length);
+						bcd_cntr  <= resize(right+left+1, bcd_cntr'length);
 					end if;
 				elsif wr_data/=(wr_data'range => '0') then
 					left_zero := '1';
@@ -82,11 +83,12 @@ begin
 					right <= right - 1;
 				end if;
 			end if;
+			fix <= bin_fix;
 		end if;
 	end process;
 
 	bin_dv  <= btod_dv;
-	bcd_lst <= bcd_cntr(0) and not btod_cy when bin_fix='0' else bcd_cntr(0); -- and not dtof_cy ;
+	bcd_lst <= bcd_cntr(0) and not btod_cy when fix='0' else bcd_cntr(0); -- and not dtof_cy ;
 	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
 
 	btod_e : entity hdl4fpga.btod
@@ -100,13 +102,13 @@ begin
 		bcd_do => btod_do,
 		bcd_cy => btod_cy);
 
-	process (clk, bin_fix)
+	process (clk, fix)
 		variable ena : std_logic;
 	begin
 		if rising_edge(clk) then
 			ena := bcd_cntr(0) and not dtof_cy;
 		end if;
-		bcd_ena <= bin_fix and ena;
+		bcd_ena <=fix and ena;
 	end process;
 
 	dtof_e : entity hdl4fpga.dtof
@@ -118,10 +120,10 @@ begin
 		bcd_do  => dtof_do,
 		bcd_cy  => dtof_cy);
 
-	wr_data <= btod_do when bin_fix='0' else dtof_do;
+	wr_data <= btod_do when fix='0' else dtof_do;
    		
 	mem_ptr <=
-		std_logic_vector(right-bcd_cntr(mem_ptr'range)) when bin_fix='0' else
+		std_logic_vector(right-bcd_cntr(mem_ptr'range)) when fix='0' else
 		std_logic_vector(bcd_cntr(mem_ptr'range)-left);
 
 	ram_e : entity hdl4fpga.dpram

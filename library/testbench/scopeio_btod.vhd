@@ -49,9 +49,12 @@ begin
 	clk <= not clk after 5 ns;
 	rst <= '1', '0' after 12 ns;
 
-	process (clk)
+	process (rst, clk, bcd_lst)
 		variable xx : natural;
 	begin
+		if bcd_lst='1' and xx>=1 then
+			bin_fix <= '1';
+		end if;
 		if rst='1' then
 			bin_ena <= '0';
 			bcd_ena <= '0';
@@ -61,10 +64,8 @@ begin
 			bin_ena <= '1';
 			bcd_ena <= '1';
 			if bcd_lst='1' then
-				if xx < 1 then
+				if xx <= 1 then
 					xx := xx + 1;
-				else
-					bin_fix <= '1';
 				end if;
 			end if;
 		end if;
