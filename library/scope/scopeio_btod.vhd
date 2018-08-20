@@ -68,8 +68,13 @@ begin
 				if bcd_cntr(0)='1' then
 					left_zero := '0';
 					if dtof_cy='1' then
-						bcd_dv <= '1';
-						left   <= left  + 1 ;
+						if right+left/=to_unsigned(13, right'length) then
+							bcd_dv <= '1';
+							left   <= left  + 1 ;
+						else
+							bcd_dv    <= '0';
+							bcd_cntr  <= resize(right+left+1, bcd_cntr'length);
+						end if;
 					else
 						bcd_dv    <= '0';
 						bcd_cntr  <= resize(right+left+1, bcd_cntr'length);
@@ -81,6 +86,7 @@ begin
 					bcd_cntr <= bcd_cntr - 1;
 				else
 					right <= right - 1;
+					bcd_cntr <= bcd_cntr - 1;
 				end if;
 			end if;
 			fix <= bin_fix;
@@ -106,7 +112,11 @@ begin
 		variable ena : std_logic;
 	begin
 		if rising_edge(clk) then
-			ena := bcd_cntr(0) and not dtof_cy;
+			if right+left/=to_unsigned(13, right'length) then
+				ena := bcd_cntr(0) and not dtof_cy;
+			else
+				ena := bcd_cntr(0);
+			end if;
 		end if;
 		bcd_ena <=fix and ena;
 	end process;
