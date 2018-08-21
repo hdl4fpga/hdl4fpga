@@ -44,8 +44,8 @@ begin
 				bcd_dv    <= '1';
 				btod_dv   <= '1';
 				bcd_cntr  <= (others => '1');
-				right     <= (others => '1');
-				left      <= (others => '1');
+				right     <= (others => '0');
+				left      <= (others => '0');
 				left_zero := '0';
 			elsif bin_fix='0' then
 				if bcd_cntr(0)='1' then
@@ -57,7 +57,7 @@ begin
 					else
 						btod_dv  <= '1';
 						bcd_dv   <= '0';
-						bcd_cntr <= resize(right, bcd_cntr'length);
+						bcd_cntr <= resize(right+left-1, bcd_cntr'length);
 					end if;
 				else
 					bcd_cntr <= bcd_cntr - 1;
@@ -68,16 +68,16 @@ begin
 				if bcd_cntr(0)='1' then
 					left_zero := '0';
 					if dtof_cy='1' then
-						if right+left/=to_unsigned(13, right'length) then
+						if right+left/=to_unsigned(15, right'length) then
 							bcd_dv <= '1';
 							left   <= left  + 1 ;
 						else
 							bcd_dv    <= '0';
-							bcd_cntr  <= resize(right+left+1, bcd_cntr'length);
+							bcd_cntr  <= resize(right+ left-1, bcd_cntr'length);
 						end if;
 					else
 						bcd_dv    <= '0';
-						bcd_cntr  <= resize(right+left+1, bcd_cntr'length);
+						bcd_cntr  <= resize(right+left-1, bcd_cntr'length);
 					end if;
 				elsif wr_data/=(wr_data'range => '0') then
 					left_zero := '1';
@@ -112,7 +112,7 @@ begin
 		variable ena : std_logic;
 	begin
 		if rising_edge(clk) then
-			if right+left/=to_unsigned(13, right'length) then
+			if right+left/=to_unsigned(15, right'length) then
 				ena := bcd_cntr(0) and not dtof_cy;
 			else
 				ena := bcd_cntr(0);
@@ -133,8 +133,8 @@ begin
 	wr_data <= btod_do when fix='0' else dtof_do;
    		
 	mem_ptr <=
-		std_logic_vector(right-bcd_cntr(mem_ptr'range)) when fix='0' else
-		std_logic_vector(bcd_cntr(mem_ptr'range)-left);
+		std_logic_vector(right + not bcd_cntr(mem_ptr'range)) when fix='0' else
+		std_logic_vector(0-not bcd_cntr(mem_ptr'range)-left);
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
