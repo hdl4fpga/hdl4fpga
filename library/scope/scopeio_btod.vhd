@@ -51,8 +51,6 @@ begin
 	cntr_rst <= bin_ena;
 	cntr_ple <= '1' when mem_full='1' else not carry;
 		
-		not dtof_cy;
-
 	cntr_p : process (clk)
 	begin
 		if rising_edge(clk) then
@@ -64,7 +62,7 @@ begin
 				end if;
 			else
 				cntr <= cntr - 1;
-			end if
+			end if;
 		end if;
 	end process;
 
@@ -102,7 +100,7 @@ begin
 			elsif bin_fix='1' then
 				if cntr(0)='1' then
 					if dtof_cy='1' then
-						if not mem_full then
+						if mem_full='0' then
 							left <= left  + 1 ;
 						end if;
 					end if;
@@ -118,7 +116,7 @@ begin
 				bcd_dv    <= '1';
 				btod_dv   <= '1';
 			elsif cntr(0)='1' then
-				if not mem_full and carry='1' then
+				if mem_full='0' and carry='1' then
 					btod_dv <= '0';
 					bcd_dv  <= '1';
 				else
@@ -149,7 +147,7 @@ begin
 		variable ena : std_logic;
 	begin
 		if rising_edge(clk) then
-			if not mem_full then
+			if mem_full='0' then
 				ena := cntr(0) and not dtof_cy;
 			else
 				ena := cntr(0);
