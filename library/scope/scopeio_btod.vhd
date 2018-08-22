@@ -99,8 +99,8 @@ begin
 		if rising_edge(clk) then
 			if bin_ena='0' then
 				left  <= (others => '0');
-			elsif cntr(0)='1' then
-				if bin_fix='1' then
+			elsif bin_fix='1' then
+				if cntr(0)='1' then
 					if dtof_cy='1' then
 						if not mem_full then
 							left <= left  + 1 ;
@@ -118,31 +118,12 @@ begin
 				bcd_dv    <= '1';
 				btod_dv   <= '1';
 			elsif cntr(0)='1' then
-				if bin_fix='0' then
-					if carry='1' then
-						btod_dv <= '0';
-						bcd_dv  <= '1';
-					else
-						btod_dv  <= '1';
-						bcd_dv   <= '0';
-					end if;
-			elsif bin_fix='0' then
-				if cntr(0)='1' then
+				if not mem_full and carry='1' then
+					btod_dv <= '0';
+					bcd_dv  <= '1';
 				else
-					btod_dv  <= '0';
-				end if;
-			else
-				btod_dv  <= '-';
-				if cntr(0)='1' then
-					if dtof_cy='1' then
-						if not mem_full then
-							bcd_dv <= '1';
-						else
-							bcd_dv    <= '0';
-						end if;
-					else
-						bcd_dv    <= '0';
-					end if;
+					btod_dv  <= '1';
+					bcd_dv   <= '0';
 				end if;
 			end if;
 			fix <= bin_fix;
