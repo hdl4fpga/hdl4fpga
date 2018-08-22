@@ -48,7 +48,7 @@ begin
 
 	mem_full <= setif(right+left=(right'range =>'1'));
 	carry    <= btod_cy when bin_fix='0' else dtof_cy;
-	cntr_rst <= bin_ena;
+	cntr_rst <= not bin_ena;
 	cntr_ple <= '1' when mem_full='1' else not carry;
 		
 	cntr_p : process (clk)
