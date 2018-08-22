@@ -64,7 +64,7 @@ begin
 			bin_ena <= '1';
 			bcd_ena <= '1';
 			if bcd_lst='1' then
-				if xx <= 1 then
+				if xx <= 0 then
 					xx := xx + 1;
 				end if;
 			end if;
@@ -76,7 +76,7 @@ begin
 		clk     => clk,
 		bin_ena => bin_ena,
 		bin_dv  => open,
-		bin_di  => x"ffff", --bin_di,
+		bin_di  => x"0001", --bin_di,
 		bin_fix => bin_fix,
                            
 		bcd_sz1 => x"f", --bcd_sz1,
