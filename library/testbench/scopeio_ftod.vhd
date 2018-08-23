@@ -21,67 +21,62 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture scopeio_btod of testbench is
-	signal rst     : std_logic;
+	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
+
 	signal bin_ena : std_logic;
     signal bin_dv  : std_logic;
-    signal bin_di  : std_logic_vector(0 to 16-1);
+    signal bin_di  : std_logic_vector(0 to 3*4-1) := x"f0f";
 
-    signal bcd_sz1 : std_logic_vector(0 to 4-1);
-    signal bcd_ena : std_logic;
-    signal bcd_lst : std_logic;
+    signal bcd_rdy : std_logic;
+    signal bin_fix : std_logic;
     signal bcd_do  : std_logic_vector(0 to 4-1);
 
-	signal bin_fix : std_logic;
+	signal bcd_lft : std_logic_vector(1 to 4);
+	signal bcd_rgt : std_logic_vector(1 to 4);
+
 begin
 
-	clk <= not clk after 5 ns;
+	clk <= not clk  after  5 ns;
 	rst <= '1', '0' after 12 ns;
 
-	process (rst, clk, bcd_lst)
-		variable xx : natural;
+	process (rst, clk, bcd_rdy)
+		variable cntr : natural;
 	begin
-		if bcd_lst='1' and xx>=1 then
-			bin_fix <= '1';
-		end if;
 		if rst='1' then
-			bin_ena <= '0';
-			bcd_ena <= '0';
-			xx := 0;
+			cntr    := 0;
 			bin_fix <= '0';
+			bin_ena <= '0';
 		elsif rising_edge(clk) then
 			bin_ena <= '1';
-			bcd_ena <= '1';
-			if bcd_lst='1' then
-				if xx <= 0 then
-					xx := xx + 1;
+			bin_di  <= std_logic_vector(unsigned(bin_di) ror 4);
+			if bcd_rdy='1' then
+				if cntr=0 then
+					cntr := cntr + 1;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	du: entity hdl4fpga.scopeio_btod
+	du: entity hdl4fpga.scopeio_ftod
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,
-		bin_dv  => open,
-		bin_di  => x"0001", --bin_di,
-		bin_fix => bin_fix,
+		bin_dv  => bin_dv,
+		bin_di  => bin_di(0 to 4-1),
+		bin_pnt => x"0",
                            
-		bcd_sz1 => x"f", --bcd_sz1,
-		
-		bcd_lst => bcd_lst,
+		bcd_lft => bcd_lft,
+		bcd_rgt => bcd_rgt,
+		bcd_rdy => bcd_rdy,
 		bcd_do  => bcd_do);
 
 end;

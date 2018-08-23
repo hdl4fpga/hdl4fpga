@@ -162,7 +162,7 @@ entity ftod is
 		bin_di  : in  std_logic_vector;
 
 		bcd_lst : out std_logic;
-		bcd_lft : out std_logic_vector
+		bcd_lft : out std_logic_vector;
 		bcd_rgt : out std_logic_vector;
 		bcd_do  : out std_logic_vector);
 end;
@@ -240,7 +240,7 @@ begin
 			end if;
 		end if;
 	end process;
-	bcd_lft <= left;
+	bcd_lft <= std_logic_vector(left);
 
 	right_p : process(clk)
 	begin
@@ -258,7 +258,7 @@ begin
 			end if;
 		end if;
 	end process;
-	bcd_rgt <= right;
+	bcd_rgt <= std_logic_vector(right);
 
 	process (clk)
 	begin
