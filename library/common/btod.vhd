@@ -162,6 +162,8 @@ entity ftod is
 		bin_di  : in  std_logic_vector;
 
 		bcd_lst : out std_logic;
+		bcd_lft : out std_logic_vector
+		bcd_rgt : out std_logic_vector;
 		bcd_do  : out std_logic_vector);
 end;
 
@@ -170,8 +172,8 @@ architecture def of ftod is
 	signal cntr_ple : std_logic;
 	signal cntr_rst : std_logic;
 	signal cntr     : unsigned(0 to 4);
-	signal right    : unsigned(1 to cntr'right);
 	signal left     : unsigned(1 to cntr'right);
+	signal right    : unsigned(1 to cntr'right);
 
 	signal mem_ptr  : unsigned(1 to cntr'right);
 	signal mem_full : std_logic;
@@ -193,7 +195,7 @@ architecture def of ftod is
 	signal fix      : std_logic;
 begin
 
-	mem_full <= setif(right+left=(right'range =>'1'));
+	mem_full <= setif(left+right=(left'range =>'1'));
 	carry    <= btod_cy when bin_fix='0' else dtof_cy;
 	cntr_rst <= not bin_ena;
 	cntr_ple <= '1' when mem_full='1' else not carry;
@@ -205,7 +207,7 @@ begin
 				cntr <= (others => '1');
 			elsif cntr(0)='1'then
 				if cntr_ple='1' then
-					cntr <= resize(right+left, cntr'length)-1;
+					cntr <= resize(left+right, cntr'length)-1;
 				end if;
 			else
 				cntr <= cntr - 1;
@@ -213,18 +215,18 @@ begin
 		end if;
 	end process;
 
-	right_p : process(clk)
+	left_p : process(clk)
 		variable zero : boolean;
 	begin
 		if rising_edge(clk) then
 			if bin_ena='0' then
-				zero  := TRUE;
-				right <= (others => '0');
+				zero := TRUE;
+				left <= (others => '0');
 			elsif bin_fix='0' then
-				zero  := TRUE;
+				zero := TRUE;
 				if cntr(0)='1' then
 					if btod_cy='1' then
-						right <= right + 1;
+						left <= left + 1;
 					end if;
 				end if;
 			else
@@ -233,28 +235,30 @@ begin
 				elsif wr_data/=(wr_data'range => '0') then
 					zero  := FALSE;
 				elsif zero then
-					right <= right - 1;
+					left <= left - 1;
 				end if;
 			end if;
 		end if;
 	end process;
+	bcd_lft <= left;
 
-	left_p : process(clk)
+	right_p : process(clk)
 	begin
 		if rising_edge(clk) then
 			if bin_ena='0' then
-				left  <= (others => '0');
+				right  <= (others => '0');
 			elsif bin_fix='1' then
 				if cntr(0)='1' then
 					if dtof_cy='1' then
 						if mem_full='0' then
-							left <= left  + 1 ;
+							right <= right  + 1 ;
 						end if;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
+	bcd_rgt <= right;
 
 	process (clk)
 	begin
@@ -318,13 +322,13 @@ begin
 	wr_data <= btod_do when fix='0' else dtof_do;
    		
 	mem_ptr <=
-		right + not cntr(mem_ptr'range) when fix='0' else
-		0-not cntr(mem_ptr'range)-left;
+		left + not cntr(mem_ptr'range) when fix='0' else
+		0-not cntr(mem_ptr'range)-right;
 
 	ram_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_ena  => bin_ena,
+		wr_ena  => '1',
 		wr_addr => std_logic_vector(mem_ptr),
 		wr_data => wr_data,
 		rd_addr => std_logic_vector(mem_ptr),
