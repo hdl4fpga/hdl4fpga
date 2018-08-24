@@ -45,9 +45,11 @@ architecture scopeio_btod of testbench is
 
 	signal cntr    : unsigned(0 to 2);
 
+	signal wr_ena  : std_logic;
 	signal wr_addr : std_logic_vector(0 to 3-1);
 	signal rd_addr : std_logic_vector(wr_addr'range);
-	signal data    : std_logic_vector(0 to 5*4-1);
+	signal wr_data : std_logic_vector(0 to 5*4-1);
+	signal rd_data : std_logic_vector(wr_data'range);
 begin
 
 	clk <= not clk  after  5 ns;
@@ -58,12 +60,10 @@ begin
 		if rst='1' then
 			cntr    <= (others => '1');
 			bin_fix <= '0';
-			aux := (others => '1');
 		elsif rising_edge(clk) then
 			if bcd_rdy='1' then
 				if cntr(0)='1' then
 					cntr <= to_unsigned(2, cntr'length);
-					aux := (others => '1');
 				elsif cntr(0)='0' then
 					cntr <= cntr - 1;
 				end if;
@@ -71,20 +71,25 @@ begin
 		end if;
 	end process;
 
-	process (clk)
-		variable ena : std_logic;
-		variable aux : std_logic_vector(0 to 5*4-1);
-	begin
-		if rising_edge(clk) then
-			if bcd_rdy='1' then
-				aux := (others => '1'); 
-			end if;
-			ena := bcd_rdy;
-		end if;
-	end process;
-
 	bin_ena <= not (cntr(0) and bcd_rdy) and not rst;
 	bin_di <= word2byte(std_logic_vector(unsigned'(x"0123") ror 4), not std_logic_vector(cntr(1 to 2)));
+
+	process (clk)
+		variable ena : std_logic;
+		variable aux : unsigned(0 to wr_data'length-1);
+	begin
+		if rising_edge(clk) then
+			if ena='1' then
+				aux := (others => '1'); 
+			else
+				aux := aux ror bcd_do'length;
+			end if;
+			ena := bcd_rdy;
+			aux(bcd_do'range) := unsigned(bcd_do);
+			wr_data <= std_logic_vector(aux);
+			wr_ena <= bcd_rdy and cntr(0);
+		end if;
+	end process;
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
@@ -99,20 +104,16 @@ begin
 		bcd_rdy => bcd_rdy,
 		bcd_do  => bcd_do);
 
---	bank_g : for i in 0 to 5-1 generate
---		signal rd_data : std_logic_vector(bcd_do'range);
---		signal wr_data : std_logic_vector(bcd_do'range);
---	begin
---		wr_data <= bcd_do;
---		mem_e : entity hdl4fpga.dpram
---		port map (
---			wr_clk  => clk,
---			wr_ena  => wr_ena(i),
---			wr_addr => wr_addr,
---			wr_data => wr_data,
---
---			rd_addr => rd_addr,
---			rd_data => rd_data);
---
---	end generate;
+	wr_addr <= (others => '0');
+	mem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_ena  => wr_ena,
+		wr_addr => wr_addr,
+		wr_data => wr_data,
+
+		rd_addr => rd_addr,
+		rd_data => rd_data);
+
+
 end;
