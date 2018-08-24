@@ -34,7 +34,7 @@ architecture scopeio_btod of testbench is
 
 	signal bin_ena : std_logic;
     signal bin_dv  : std_logic;
-    signal bin_di  : std_logic_vector(0 to 3*4-1) := x"f0f";
+    signal bin_di  : std_logic_vector(0 to 4-1);
 
     signal bcd_rdy : std_logic;
     signal bin_fix : std_logic;
@@ -43,35 +43,35 @@ architecture scopeio_btod of testbench is
 	signal bcd_lft : std_logic_vector(1 to 4);
 	signal bcd_rgt : std_logic_vector(1 to 4);
 
+	signal cntr    : unsigned(0 to 2);
 begin
 
 	clk <= not clk  after  5 ns;
 	rst <= '1', '0' after 12 ns;
 
 	process (rst, clk, bcd_rdy)
-		variable cntr : natural;
 	begin
 		if rst='1' then
-			cntr    := 0;
+			cntr    <= (others => '0');
 			bin_fix <= '0';
 			bin_ena <= '0';
 		elsif rising_edge(clk) then
 			bin_ena <= '1';
-			bin_di  <= std_logic_vector(unsigned(bin_di) ror 4);
 			if bcd_rdy='1' then
-				if cntr=0 then
-					cntr := cntr + 1;
+				if cntr(0)='0' then
+					cntr <= cntr + 1;
 				end if;
 			end if;
 		end if;
 	end process;
+	bin_di <= word2byte(x"0f0f", std_logic_vector(cntr(1 to 2)));
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,
 		bin_dv  => bin_dv,
-		bin_di  => bin_di(0 to 4-1),
+		bin_di  => bin_di,
 		bin_pnt => x"0",
                            
 		bcd_lft => bcd_lft,
