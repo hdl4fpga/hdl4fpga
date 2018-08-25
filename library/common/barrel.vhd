@@ -27,17 +27,17 @@ use ieee.numeric_std.all;
 
 entity barrel is
 	generic (
-		shift : boolean := false;
-		left  : boolean := true);
+		shift : boolean := FALSE;
+		left  : boolean := TRUE);
 	port (
-		pos  : in  std_logic_vector;
-		din  : in  std_logic_vector;
-		dout : out std_logic_vector);
+		disp  : in  std_logic_vector;
+		di    : in  std_logic_vector;
+		do    : out std_logic_vector);
 end;
 
 architecture beh of barrel is
 begin
-	process (din, rot)
+	process (di, disp)
 
 --		function rotate (val: std_logic_vector; disp : natural, dir : string) 
 --			return std_logic_vector is
@@ -50,13 +50,13 @@ begin
 --			end if;
 --		end;
 
-		variable aux :  unsigned(din'length-1 downto 0);
+		variable aux :  unsigned(di'length-1 downto 0);
 		
 	begin
-		aux := unsigned(din);
+		aux := unsigned(di);
 
-		for i in rot'range loop
-			if rot(i)= '1' then
+		for i in disp'range loop
+			if disp(i)= '1' then
 				if left then
 					aux := aux rol 2**i;
 					aux := aux sll 2**i;
@@ -67,6 +67,6 @@ begin
 			end if;
 		end loop;
 
-		dout <= std_logic_vector(aux);
+		do <= std_logic_vector(aux);
 	end process;
 end;

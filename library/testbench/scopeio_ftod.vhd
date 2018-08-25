@@ -75,21 +75,42 @@ begin
 	bin_di <= word2byte(std_logic_vector(unsigned'(x"0123") ror 4), not std_logic_vector(cntr(1 to 2)));
 
 	process (clk)
-		variable ena : std_logic;
-		variable aux : unsigned(0 to wr_data'length-1);
+		variable ena  : std_logic;
+		variable num  : unsigned(0 to wr_data'length-1);
+		variable mask : unsigned(0 to wr_data'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				aux := (others => '1'); 
+				num  := (others => '1'); 
 			else
-				aux := aux ror bcd_do'length;
+				num  := num  ror bcd_do'length;
 			end if;
 			ena := bcd_rdy;
-			aux(bcd_do'range) := unsigned(bcd_do);
-			wr_data <= std_logic_vector(aux);
-			wr_ena <= bcd_rdy and cntr(0);
+			mask := (others '1');
+			num (bcd_do'range) := unsigned(bcd_do);
+			wr_data <= std_logic_vector(num);
+			wr_ena  <= bcd_rdy and cntr(0);
 		end if;
 	end process;
+
+	_b : block
+	begin
+		align_e : entity hdl4fpga.barrel
+		generic map (
+			shift => TRUE)
+		port map (
+			disp => 
+			di   => num,
+			do   => mask);
+
+		mask_e : entity hdl4fpga.barrel
+		generic map (
+			shift => TRUE)
+		port map (
+			disp => 
+			di   => (mask'range => '1'),
+			do   => mask);
+	end block;
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
