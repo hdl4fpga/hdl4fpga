@@ -94,6 +94,7 @@ begin
 	end process;
 
 	_b : block
+		signal xxx : std_logic_vector(num'range);
 	begin
 		align_e : entity hdl4fpga.barrel
 		generic map (
@@ -101,7 +102,7 @@ begin
 		port map (
 			disp => 
 			di   => num,
-			do   => mask);
+			do   => xxx);
 
 		mask_e : entity hdl4fpga.barrel
 		generic map (
