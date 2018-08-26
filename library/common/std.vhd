@@ -252,6 +252,10 @@ package std is
 		constant right: integer)
 		return integer;
 
+	procedure swap (
+		variable arg1 : inout std_logic_vector;
+		variable arg2 : inout std_logic_vector);
+
 	function selecton (
 		constant condition : boolean;
 		constant value_if_true  : integer;
@@ -1114,6 +1118,17 @@ package body std is
 		else
 			return right;
 		end if;
+	end;
+
+	procedure swap (
+		variable arg1 : inout std_logic_vector;
+		variable arg2 : inout std_logic_vector)
+		return std_logic_vector is
+		variable aux : std_logic_vector(arg1'range);
+	begin
+		aux  := arg1;
+		arg1 := arg2;
+		arg2 := arg1;
 	end;
 
 	function selecton (

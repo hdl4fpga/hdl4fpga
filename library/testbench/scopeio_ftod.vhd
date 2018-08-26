@@ -93,25 +93,28 @@ begin
 		end if;
 	end process;
 
-	_b : block
-		signal xxx : std_logic_vector(num'range);
+	align_b : process 
+		variable temp  : std_logic_vector(num'range);
+		variable digit : std_logic_vector(0 to 4-1);
 	begin
-		process 
-		begin
-			for i in 0 to loop
-				if   i <  then
-					rol 
-					digit := ();
-					srl
-					:= '.';
-					rol
-					:= digit;
-					ror;
-					exit;
-				end if;
-			end loop;;
-		end process;
-	end block;
+		temp  :=
+		digit := (others => '-');
+		for i in 0 to loop
+			if  i <  then
+				digit := temp(0 to 4-1);
+				temp  := std_logic_vector(unsigned(temp) ror 4);
+			end if;
+		end loop;
+		temp := temp rol 4;
+		temp(0 to 4-1) := '.';
+		for i in 0 to loop
+			if  i <  then
+				temp := std_logic_vector(unsigned(temp) rol 4);
+				swap(digit, temp(0 to 4-1));
+			end if;
+		end loop;
+		wr_data <= temp;
+	end process;
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
