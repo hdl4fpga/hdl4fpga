@@ -96,21 +96,21 @@ begin
 	_b : block
 		signal xxx : std_logic_vector(num'range);
 	begin
-		align_e : entity hdl4fpga.barrel
-		generic map (
-			shift => TRUE)
-		port map (
-			disp => 
-			di   => num,
-			do   => xxx);
-
-		mask_e : entity hdl4fpga.barrel
-		generic map (
-			shift => TRUE)
-		port map (
-			disp => 
-			di   => (mask'range => '1'),
-			do   => mask);
+		process 
+		begin
+			for i in 0 to loop
+				if   i <  then
+					rol 
+					digit := ();
+					srl
+					:= '.';
+					rol
+					:= digit;
+					ror;
+					exit;
+				end if;
+			end loop;;
+		end process;
 	end block;
 
 	du: entity hdl4fpga.scopeio_ftod
