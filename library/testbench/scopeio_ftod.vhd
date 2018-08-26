@@ -74,47 +74,50 @@ begin
 	bin_ena <= not (cntr(0) and bcd_rdy) and not rst;
 	bin_di <= word2byte(std_logic_vector(unsigned'(x"0123") ror 4), not std_logic_vector(cntr(1 to 2)));
 
-	process (clk)
-		variable ena  : std_logic;
-		variable num  : unsigned(0 to wr_data'length-1);
-		variable mask : unsigned(0 to wr_data'length-1);
+	_b : block
+		signal num : unsigned(0 to wr_data'length-1);
+		signal num : unsigned(0 to wr_data'length-1);
 	begin
-		if rising_edge(clk) then
-			if ena='1' then
-				num  := (others => '1'); 
-			else
-				num  := num  ror bcd_do'length;
+		process (clk)
+			variable num  : unsigned(0 to wr_data'length-1);
+			variable ena : std_logic;
+		begin
+			if rising_edge(clk) then
+				if ena='1' then
+					num  := (others => '1'); 
+				else
+					num  := num  ror bcd_do'length;
+				end if;
+				ena := bcd_rdy;
+				num (bcd_do'range) := unsigned(bcd_do);
+				wr_data <= std_logic_vector(num);
+				wr_ena  <= bcd_rdy and cntr(0);
 			end if;
-			ena := bcd_rdy;
-			mask := (others '1');
-			num (bcd_do'range) := unsigned(bcd_do);
-			wr_data <= std_logic_vector(num);
-			wr_ena  <= bcd_rdy and cntr(0);
-		end if;
-	end process;
+		end process;
 
-	align_b : process 
-		variable temp  : std_logic_vector(num'range);
-		variable digit : std_logic_vector(0 to 4-1);
-	begin
-		temp  :=
-		digit := (others => '-');
-		for i in 0 to loop
-			if  i <  then
-				digit := temp(0 to 4-1);
-				temp  := std_logic_vector(unsigned(temp) ror 4);
-			end if;
-		end loop;
-		temp := temp rol 4;
-		temp(0 to 4-1) := '.';
-		for i in 0 to loop
-			if  i <  then
-				temp := std_logic_vector(unsigned(temp) rol 4);
-				swap(digit, temp(0 to 4-1));
-			end if;
-		end loop;
-		wr_data <= temp;
-	end process;
+		align_b : process 
+			variable temp  : std_logic_vector(num'range);
+			variable digit : std_logic_vector(0 to 4-1);
+		begin
+			temp  :=
+			digit := (others => '-');
+			for i in 0 to loop
+				if  i <  then
+					digit := temp(0 to 4-1);
+					temp  := std_logic_vector(unsigned(temp) ror 4);
+				end if;
+			end loop;
+			temp := temp rol 4;
+			temp(0 to 4-1) := '.';
+			for i in 0 to loop
+				if  i <  then
+					temp := std_logic_vector(unsigned(temp) rol 4);
+					swap(digit, temp(0 to 4-1));
+				end if;
+			end loop;
+			wr_data <= temp;
+		end process;
+	end block;
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
