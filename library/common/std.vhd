@@ -1123,7 +1123,7 @@ package body std is
 	procedure swap (
 		variable arg1 : inout std_logic_vector;
 		variable arg2 : inout std_logic_vector)
-		return std_logic_vector is
+	is
 		variable aux : std_logic_vector(arg1'range);
 	begin
 		aux  := arg1;
