@@ -105,9 +105,12 @@ begin
 			return std_logic_vector is
 			variable temp  : std_logic_vector(value'length-1 downto 0);
 			variable digit : std_logic_vector(4-1 downto 0);
+
 			constant dot   := std_logic_vector(digit'range) := x"b";
 			constant space := std_logic_vector(digit'range) := x"f";
+
 		begin
+
 			temp  := value;
 			digit := dot;
 
