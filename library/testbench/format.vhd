@@ -96,7 +96,7 @@ begin
 		signal num_rgt : std_logic_vector(bcd_rgt'range);
 	begin
 
-		function format (
+		function bcd_format (
 			constant value : std_logic_vector;
 			constant right : std_logic_vector;
 			constant left  : std_logic_vector;
@@ -114,7 +114,7 @@ begin
 			temp  := value;
 			digit := dot;
 
-			if left/=right or temp(4-1 downto 0)/=x"0" then
+			if left/=right or temp(digit'range)/=x"0" then
 
 				for i in 0 to value'length/4-1 loop
 					if signed(point) > i then
@@ -122,7 +122,7 @@ begin
 							temp := std_logic_vector(unsigned(temp) ror 4);
 						else 
 							temp := std_logic_vector(unsigned(temp) ror 4);
-							temp(4-1 downto 0) := x"0";
+							temp(digit'range) := x"0";
 						end if;
 					end if;
 				end loop;
