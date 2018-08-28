@@ -1128,7 +1128,7 @@ package body std is
 	begin
 		aux  := arg1;
 		arg1 := arg2;
-		arg2 := arg1;
+		arg2 := aux;
 	end;
 
 	function selecton (

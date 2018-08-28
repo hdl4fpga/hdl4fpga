@@ -48,7 +48,7 @@ architecture scopeio_btod of testbench is
 	signal wr_ena  : std_logic;
 	signal wr_addr : std_logic_vector(0 to 3-1);
 	signal rd_addr : std_logic_vector(wr_addr'range);
-	signal wr_data : std_logic_vector(0 to 5*4-1);
+	signal wr_data : std_logic_vector(0 to 6*4-1);
 	signal rd_data : std_logic_vector(wr_data'range);
 	
 begin
@@ -73,7 +73,7 @@ begin
 	end process;
 
 	bin_ena <= not (cntr(0) and bcd_rdy) and not rst;
-	bin_di <= word2byte(std_logic_vector(unsigned'(x"0123") ror 4), not std_logic_vector(cntr(1 to 2)));
+	bin_di <= word2byte(std_logic_vector(unsigned'(x"ffff") ror 4), not std_logic_vector(cntr(1 to 2)));
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (
@@ -89,7 +89,7 @@ begin
 		bcd_do  => bcd_do);
 
 	format_b : block
-		constant order : std_logic_vector(0 to 1) := "10";
+		constant order : std_logic_vector(0 to 2) := "011";
 		signal num_dv  : std_logic;
 		signal num_val : std_logic_vector(0 to wr_data'length-1);
 		signal num_lft : std_logic_vector(bcd_lft'range);
@@ -108,6 +108,15 @@ begin
 				end if;
 				ena := bcd_rdy;
 				val(bcd_do'range) := unsigned(bcd_do);
+
+				if bcd_rdy='1' then
+					for i in 1 to val'length/4-1 loop
+						if to_integer(unsigned(bcd_lft))+i < val'length/4 then
+							val := val ror bcd_do'length;
+						end if;
+					end loop;
+				end if;
+
 				num_lft <= bcd_lft;
 				num_rgt <= bcd_rgt;
 				num_dv  <= bcd_rdy and cntr(0);
@@ -115,35 +124,44 @@ begin
 			end if;
 		end process;
 
-		format_p : process(order, num_val, num_rgt, num_lft) 
-			variable temp  : std_logic_vector(num_val'range);
+		format_p : process(num_val, num_rgt, num_lft) 
+			variable temp  : std_logic_vector(num_val'reverse_range);
 			variable digit : std_logic_vector(0 to 4-1);
 		begin
 			temp  := num_val;
-			digit := (others => '-');
-			if num_lft/=num_rgt or temp(0 to 4-1)/=x"0" then
+			digit := x"b";
+			if num_lft/=num_rgt or temp(4-1 downto 0)/=x"0" then
 				for i in 0 to num_val'length/4-1 loop
 					if signed(order) > i then
 						if signed(num_lft) > signed(num_rgt)+i then
-							digit := temp(0 to 4-1);
 							temp  := std_logic_vector(unsigned(temp) ror 4);
 						else 
-							temp(0 to 4-1) := x"0";
 							temp  := std_logic_vector(unsigned(temp) ror 4);
+							temp(4-1 downto 0) := x"0";
 						end if;
 					end if;
 				end loop;
-				temp := std_logic_vector(unsigned(temp) rol 4);
-				temp(0 to 4-1) := x"b";
+				if to_integer(signed(order))/=0 then
+					temp := std_logic_vector(unsigned(temp) rol 4);
+					swap(digit, temp(bcd_do'reverse_range));
+				end if;
 				for i in 0 to num_val'length/4-1 loop
 					if signed(order) > i then
 						temp := std_logic_vector(unsigned(temp) rol 4);
-						swap(digit, temp(0 to 4-1));
+						swap(digit, temp(bcd_do'reverse_range));
 					end if;
 				end loop;
 			end if;
+			for i in 0 to num_val'length/4-1 loop
+				temp := std_logic_vector(unsigned(temp) rol 4);
+				if temp(bcd_do'reverse_range)/=x"f" then
+					temp := std_logic_vector(unsigned(temp) ror 4);
+					exit;
+				end if;
+			end loop;
 			wr_data <= temp;
 		end process;
+	wr_ena  <= num_dv;
 	end block;
 
 	wr_addr <= (others => '0');
