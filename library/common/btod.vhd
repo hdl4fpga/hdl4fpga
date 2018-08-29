@@ -342,38 +342,83 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+entity align_bcd is
+	generic (
+		space : std_logic_vector(4-1 downto 0) := x"f");
+	port (
+		left   : in  std_logic := '0';
+		value  : in  std_logic_vector;
+		align  : out std_logic_vector);
+end;
+		
+architecture def of align_bcd is
+
+	function align_bcd (
+		constant value : std_logic_vector;
+		constant left  : std_logic)
+		return std_logic_vector is
+		variable retval : unsigned(value'length-1 downto 0);
+	begin
+		for i in 0 to value'length/4-1 loop
+			if std_logic_vector(retval(4-1 downto 0))=space then
+				if left='1' then
+					retval := retval rol 4;
+				else
+					retval := retval ror 4;
+				end if;
+			elsif left='1' then
+				retval := retval ror 4;
+				exit;
+			else
+				exit;
+			end if;
+		end loop;
+
+		return std_logic_vector(retval);
+	end;
+
+begin
+	align <= align_bcd(value, left);
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity format_bcd is
+	generic (
+		dot   : std_logic_vector(4-1 downto 0) := x"b";
+		space : std_logic_vector(4-1 downto 0) := x"f");
+		
 	port (
 		value  : in  std_logic_vector;
-		right  : in  std_logic_vector;
+		point  : in  std_logic_vector;
 		align  : in  std_logic := '1';
 		format : out std_logic_vector);
 end;
 		
 architecture def of format_bcd is
-	function format_bcd (
+
+	impure function format_bcd (
 		constant value : std_logic_vector;
-		constant right : std_logic_vector;
+		constant point : std_logic_vector;
 		constant align : std_logic := '0') 
 		return std_logic_vector is
 		variable temp  : std_logic_vector(value'length-1 downto 0);
 		variable digit : std_logic_vector(4-1 downto 0);
-
-		constant dot   : std_logic_vector(digit'range) := x"b";
-		constant space : std_logic_vector(digit'range) := x"f";
 
 	begin
 
 		temp  := value;
 		digit := dot;
 
-		if signed(right) < 0 then
+		if signed(point) < 0 then
 
 			for i in 0 to value'length/4-1 loop
-				if signed(right)+i < 0 then
+				if signed(point)+i < 0 then
 					temp := std_logic_vector(unsigned(temp) ror 4);
 					if temp(4-1 downto 0)=x"f" then
 						temp(digit'range) := x"0";
@@ -385,7 +430,7 @@ architecture def of format_bcd is
 			swap(digit, temp(digit'range));
 
 			for i in 0 to value'length/4-1 loop
-				if signed(right)+i < 0 then
+				if signed(point)+i < 0 then
 					temp := std_logic_vector(unsigned(temp) rol 4);
 					swap(digit, temp(digit'range));
 				end if;
@@ -409,7 +454,7 @@ architecture def of format_bcd is
 begin
 	format <= format_bcd(
 		value => value,
-		right => right,
+		point => point,
 		align => align);
 		
 end;

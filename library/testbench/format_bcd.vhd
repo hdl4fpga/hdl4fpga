@@ -34,7 +34,7 @@ begin
 	du : entity hdl4fpga.format_bcd
 	port map (
 		value => x"fffffff0",
-		right => x"0",
+		point => x"0",
 		format => format);
 
 end;

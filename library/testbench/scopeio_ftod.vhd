@@ -122,10 +122,11 @@ begin
 			end if;
 		end process;
 
+		alignbcd_e  : entity hdl4fpga.align_bcd
 		formatbcd_e : entity hdl4fpga.format_bcd
 		port map (
 			value  => value,
-			right  => right,
+			point  => point,
 			format => wr_data);
 
 
