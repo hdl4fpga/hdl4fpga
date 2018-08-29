@@ -31,7 +31,6 @@ use hdl4fpga.std.all;
 entity format_bcd is
 	port (
 		value  : in  std_logic_vector;
-		left   : in  std_logic_vector;
 		right  : in  std_logic_vector;
 		align  : in  std_logic := '1';
 		format : out std_logic_vector);
@@ -41,7 +40,6 @@ architecture def of format_bcd is
 	function bcd_format (
 		constant value : std_logic_vector;
 		constant right : std_logic_vector;
-		constant left  : std_logic_vector;
 		constant align : std_logic := '0') 
 		return std_logic_vector is
 		variable temp  : std_logic_vector(value'length-1 downto 0);
@@ -55,23 +53,19 @@ architecture def of format_bcd is
 		temp  := value;
 		digit := dot;
 
-		if left/=right or temp(digit'range)/=x"0" then
+		if signed(right) < 0 then
 
 			for i in 0 to value'length/4-1 loop
 				if signed(right)+i < 0 then
-					if signed(left) > signed(right)+i then
-						temp := std_logic_vector(unsigned(temp) ror 4);
-					else 
-						temp := std_logic_vector(unsigned(temp) ror 4);
+					temp := std_logic_vector(unsigned(temp) ror 4);
+					if temp(4-1 downto 0)=x"f" then
 						temp(digit'range) := x"0";
 					end if;
 				end if;
 			end loop;
 
-			if signed(right) < 0 then
-				temp := std_logic_vector(unsigned(temp) rol 4);
-				swap(digit, temp(digit'range));
-			end if;
+			temp := std_logic_vector(unsigned(temp) rol 4);
+			swap(digit, temp(digit'range));
 
 			for i in 0 to value'length/4-1 loop
 				if signed(right)+i < 0 then
@@ -98,7 +92,6 @@ architecture def of format_bcd is
 begin
 	format <= bcd_format(
 		value => value,
-		left  => left,
 		right => right,
 		align => align);
 		
