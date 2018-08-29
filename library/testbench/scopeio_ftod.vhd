@@ -90,10 +90,9 @@ begin
 
 	format_b : block
 		constant order : std_logic_vector(0 to 2) := "011";
-		signal num_dv  : std_logic;
-		signal num_val : std_logic_vector(0 to wr_data'length-1);
-		signal num_lft : std_logic_vector(bcd_lft'range);
-		signal num_rgt : std_logic_vector(bcd_rgt'range);
+		signal dv    : std_logic;
+		signal value : std_logic_vector(0 to wr_data'length-1);
+		signal right : std_logic_vector(bcd_rgt'range);
 	begin
 
 		process (clk)
@@ -117,51 +116,19 @@ begin
 					end loop;
 				end if;
 
-				num_lft <= bcd_lft;
-				num_rgt <= bcd_rgt;
-				num_dv  <= bcd_rdy and cntr(0);
-				num_val <= std_logic_vector(val);
+				right <= std_logic_vector(signed(bcd_rgt) - signed(order));
+				dv    <= bcd_rdy and cntr(0);
+				value <= std_logic_vector(val);
 			end if;
 		end process;
 
-		format_p : process(num_val, num_rgt, num_lft) 
-			variable temp  : std_logic_vector(num_val'reverse_range);
-			variable digit : std_logic_vector(0 to 4-1);
-		begin
-			temp  := num_val;
-			digit := x"b";
-			if num_lft/=num_rgt or temp(4-1 downto 0)/=x"0" then
-				for i in 0 to num_val'length/4-1 loop
-					if signed(order) > i then
-						if signed(num_lft) > signed(num_rgt)+i then
-							temp  := std_logic_vector(unsigned(temp) ror 4);
-						else 
-							temp  := std_logic_vector(unsigned(temp) ror 4);
-							temp(4-1 downto 0) := x"0";
-						end if;
-					end if;
-				end loop;
-				if to_integer(signed(order))/=0 then
-					temp := std_logic_vector(unsigned(temp) rol 4);
-					swap(digit, temp(bcd_do'reverse_range));
-				end if;
-				for i in 0 to num_val'length/4-1 loop
-					if signed(order) > i then
-						temp := std_logic_vector(unsigned(temp) rol 4);
-						swap(digit, temp(bcd_do'reverse_range));
-					end if;
-				end loop;
-			end if;
-			for i in 0 to num_val'length/4-1 loop
-				temp := std_logic_vector(unsigned(temp) rol 4);
-				if temp(bcd_do'reverse_range)/=x"f" then
-					temp := std_logic_vector(unsigned(temp) ror 4);
-					exit;
-				end if;
-			end loop;
-			wr_data <= temp;
-		end process;
-	wr_ena  <= num_dv;
+		formatbcd_e : entity hdl4fpga.format_bcd
+		port map (
+			value  => value,
+			right  => right,
+			format => wr_data);
+
+
 	end block;
 
 	wr_addr <= (others => '0');
