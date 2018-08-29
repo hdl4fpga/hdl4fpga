@@ -37,7 +37,7 @@ entity format_bcd is
 end;
 		
 architecture def of format_bcd is
-	function bcd_format (
+	function format_bcd (
 		constant value : std_logic_vector;
 		constant right : std_logic_vector;
 		constant align : std_logic := '0') 
@@ -90,7 +90,7 @@ architecture def of format_bcd is
 	end;
 
 begin
-	format <= bcd_format(
+	format <= format_bcd(
 		value => value,
 		right => right,
 		align => align);
