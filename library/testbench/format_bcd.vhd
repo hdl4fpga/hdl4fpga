@@ -30,11 +30,18 @@ library hdl4fpga;
 
 architecture format of testbench is
 	signal format : std_logic_vector(0 to 4*8-1);
+	signal sign   : std_logic_vector(format'range);
 begin
-	du : entity hdl4fpga.format_bcd
+	du0 : entity hdl4fpga.format_bcd
 	port map (
 		value => x"fffffff0",
 		point => x"0",
 		format => format);
+
+	du1 : entity hdl4fpga.sign_bcd
+	port map (
+		value  => x"0fffffff",
+		sign   => '1',
+		format => sign);
 
 end;

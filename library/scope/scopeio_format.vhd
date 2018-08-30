@@ -28,7 +28,13 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scopeio_btod of testbench is
+entity scopeio_format is
+	port (
+		clk    : in  std_logic;
+		binary : in  std_logic_vector;
+end;
+
+architecture def of scopeio_format is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
 
@@ -43,7 +49,6 @@ architecture scopeio_btod of testbench is
 	signal bcd_lft : std_logic_vector(1 to 4);
 	signal bcd_rgt : std_logic_vector(1 to 4);
 
-	signal cntr    : unsigned(0 to 2);
 
 	signal wr_ena  : std_logic;
 	signal wr_addr : std_logic_vector(0 to 3-1);
@@ -51,29 +56,28 @@ architecture scopeio_btod of testbench is
 	signal wr_data : std_logic_vector(0 to 6*4-1);
 	signal rd_data : std_logic_vector(wr_data'range);
 	
+
 begin
 
-	clk <= not clk  after  5 ns;
-	rst <= '1', '0' after 12 ns;
-
 	process (rst, clk, bcd_rdy)
+		variable cntr  : unsigned(0 to unsigned_num_bits(binary'length/bin_di'length-1));
+		variable value : unsigned(0 to bin_di'length*2**(cntr'length-1)-1);
 	begin
-		if rst='1' then
-			cntr    <= (others => '1');
-			bin_fix <= '0';
-		elsif rising_edge(clk) then
+		if rising_edge(clk) then
 			if bcd_rdy='1' then
 				if cntr(0)='1' then
-					cntr <= to_unsigned(2, cntr'length);
+					cntr   := to_unsigned(binary'length/bin_di'length-2, cntr'length);
 				elsif cntr(0)='0' then
-					cntr <= cntr - 1;
+					cntr   := cntr - 1;
+					value  := resize(unsigned(binary), value'length);
+					value  := value ror bin_di'length;
+					bin_di <= word2byte(value, not cntr(1 to cntr'right));
 				end if;
 			end if;
 		end if;
 	end process;
 
 	bin_ena <= not (cntr(0) and bcd_rdy) and not rst;
-	bin_di  <= word2byte(std_logic_vector(unsigned'(x"ffff") ror 4), not std_logic_vector(cntr(1 to 2)));
 
 	du: entity hdl4fpga.scopeio_ftod
 	port map (

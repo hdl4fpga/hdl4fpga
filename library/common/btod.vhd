@@ -359,6 +359,7 @@ architecture def of align_bcd is
 		return std_logic_vector is
 		variable retval : unsigned(value'length-1 downto 0);
 	begin
+		retval := unsigned(value);
 		for i in 0 to value'length/4-1 loop
 			if std_logic_vector(retval(4-1 downto 0))=space then
 				if left='1' then
@@ -465,16 +466,17 @@ use ieee.numeric_std.all;
 
 entity sign_bcd is
 	generic (
-		plus  : std_logic_vector(4-1 downto 0) := x"f");
-		minus : std_logic_vector(4-1 downto 0) := x"c");
-		space : std_logic_vector(4-1 downto 0) := x"d");
+		plus  : std_logic_vector(4-1 downto 0) := x"c";
+		minus : std_logic_vector(4-1 downto 0) := x"d";
+		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
-		left   : in  std_logic := '0';
 		value  : in  std_logic_vector;
-		sign   : out std_logic_vector);
+		pplus  : in  std_logic := '0';
+		sign   : in  std_logic;
+		format : out std_logic_vector);
 end;
 		
-architecture def of align_bcd is
+architecture def of sign_bcd is
 
 	function sign_bcd (
 		constant value : std_logic_vector;
@@ -482,16 +484,16 @@ architecture def of align_bcd is
 		return std_logic_vector is
 		variable retval : unsigned(value'length-1 downto 0);
 	begin
+		retval := unsigned(value);
 		for i in 0 to value'length/4-1 loop
-			if std_logic_vector(retval(4-1 downto 0))=space then
-				retval := retval rol 4;
-			else
+			retval := retval rol 4;
+			if std_logic_vector(retval(4-1 downto 0))/=space then
 				retval := retval ror 4;
 				retval(4-1 downto 0) := unsigned(code);
 				if i=0 then
-					retval := retcal ror 4;
+					retval := retval ror 4;
 				else
-					retval := retcal ror (4*i);
+					retval := retval ror (4*i);
 				end if;
 				exit;
 			end if;
@@ -501,6 +503,11 @@ architecture def of align_bcd is
 	end;
 
 begin
-	align <= sign_bcd(value, left);
+
+	format <= 
+		sign_bcd(value, minus) when sign='1'  else 
+		sign_bcd(value, plus)  when pplus='1' else
+		value;
+
 end;
 
