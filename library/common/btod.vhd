@@ -458,3 +458,49 @@ begin
 		align => align);
 		
 end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity sign_bcd is
+	generic (
+		plus  : std_logic_vector(4-1 downto 0) := x"f");
+		minus : std_logic_vector(4-1 downto 0) := x"c");
+		space : std_logic_vector(4-1 downto 0) := x"d");
+	port (
+		left   : in  std_logic := '0';
+		value  : in  std_logic_vector;
+		sign   : out std_logic_vector);
+end;
+		
+architecture def of align_bcd is
+
+	function sign_bcd (
+		constant value : std_logic_vector;
+		constant code  : std_logic_vector)
+		return std_logic_vector is
+		variable retval : unsigned(value'length-1 downto 0);
+	begin
+		for i in 0 to value'length/4-1 loop
+			if std_logic_vector(retval(4-1 downto 0))=space then
+				retval := retval rol 4;
+			else
+				retval := retval ror 4;
+				retval(4-1 downto 0) := unsigned(code);
+				if i=0 then
+					retval := retcal ror 4;
+				else
+					retval := retcal ror (4*i);
+				end if;
+				exit;
+			end if;
+		end loop;
+
+		return std_logic_vector(retval);
+	end;
+
+begin
+	align <= sign_bcd(value, left);
+end;
+
