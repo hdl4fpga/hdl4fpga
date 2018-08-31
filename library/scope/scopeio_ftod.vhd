@@ -38,11 +38,12 @@ begin
 					cntr := cntr - 1;
 				end if;
 			end if;
-	--		bcd_rdy <= cntr(0);
 		end if;
 	end process;
 
 	du: entity hdl4fpga.ftod
+	generic map (
+		n       => 4)
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,

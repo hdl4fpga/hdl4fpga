@@ -31,7 +31,6 @@ use hdl4fpga.std.all;
 entity scopeio_format is
 	port (
 		clk    : in  std_logic;
-		load : in  std_logic;
 		binary : in  std_logic_vector);
 end;
 
@@ -58,40 +57,46 @@ architecture def of scopeio_format is
 begin
 
 	xxx_b : block
-		signal sel : std_logic_vector(0 to unsigned_num_bits(binary'length/bin_di'length-1));
+		signal load : std_logic := '1';
+		constant num_of_hexdgt : natural := binary'length/bin_di'length;
+
+		signal sel : std_logic_vector(0 to unsigned_num_bits(num_of_hexdgt-1)-1);
 	begin
-		process (clk, bcd_rdy)
-			variable cntr  : unsigned(0 to unsigned_num_bits(binary'length/bin_di'length-1)) := (others => '1');
+		process (clk)
+			variable cntr : unsigned(0 to sel'length);
 		begin
 			if rising_edge(clk) then
 				if load='1' then
-					bin
+					bin_ena <= '0';
+					cntr := to_unsigned(num_of_hexdgt-2, cntr'length);
 				elsif bcd_rdy='1' then
 					if cntr(0)='1' then
-						cntr   := to_unsigned(binary'length/bin_di'length-2, cntr'length);
+						cntr := to_unsigned(num_of_hexdgt-2, cntr'length);
 						bin_ena <= '0';
 					elsif cntr(0)='0' then
-						cntr    := cntr - 1;
+						cntr  := cntr - 1;
 					end if;
+				else
+					bin_ena <= '1';
 				end if;
-				cntr1 <= cntr;
-			bin_ena <= '0';
+				load <= '0';
+				sel <= std_logic_vector(cntr(1 to cntr'right));
 			end if;
 		end process;
-		bin_ena <= load or 
-	end block;
 
 
-	process (binary, cntr1)
-		variable value : std_logic_vector(bin_di'length*2**(cntr1'length-1)-1 downto 0);
+	process (binary, sel)
+		variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
 	begin
 		value  := (others => '-');
 		value(binary'length-1 downto 0) := binary;
 		value  := std_logic_vector(unsigned(value) ror bin_di'length);
-		bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(cntr1(1 to cntr1'right)));
+		bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(sel));
 	end process;
 
-	du: entity hdl4fpga.scopeio_ftod
+	end block;
+
+	scopeioftod_e : entity hdl4fpga.scopeio_ftod
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,
@@ -138,7 +143,7 @@ begin
 			format => wr_data);
 	end block;
 
-	wr_ena  <= bin_ena;
+	wr_ena  <= not bin_ena;
 	wr_addr <= (others => '0');
 	mem_e : entity hdl4fpga.dpram
 	port map (

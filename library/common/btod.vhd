@@ -154,6 +154,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity ftod is
+	generic (
+		n       : natural := 4);
 	port (
 		clk     : in  std_logic;
 		bin_ena : in  std_logic;
@@ -162,8 +164,8 @@ entity ftod is
 		bin_di  : in  std_logic_vector;
 
 		bcd_lst : out std_logic;
-		bcd_lft : out std_logic_vector;
-		bcd_rgt : out std_logic_vector;
+		bcd_lft : out std_logic_vector(n-1 downto 0);
+		bcd_rgt : out std_logic_vector(n-1 downto 0);
 		bcd_do  : out std_logic_vector);
 end;
 
@@ -171,7 +173,7 @@ architecture def of ftod is
 
 	signal cntr_ple : std_logic;
 	signal cntr_rst : std_logic;
-	signal cntr     : unsigned(0 to 4);
+	signal cntr     : unsigned(0 to n);
 	signal left     : unsigned(1 to cntr'right);
 	signal right    : unsigned(1 to cntr'right);
 
