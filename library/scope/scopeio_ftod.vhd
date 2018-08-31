@@ -13,8 +13,8 @@ entity scopeio_ftod is
 		bin_di  : in  std_logic_vector;
 
 		bcd_rdy : out std_logic;
-		bcd_lft : out std_logic_vector;
-		bcd_rgt : out std_logic_vector;
+		bcd_lft : out std_logic_vector(4-1 downto 0);
+		bcd_rgt : out std_logic_vector(4-1 downto 0);
 
 		bcd_do  : out std_logic_vector);
 end;

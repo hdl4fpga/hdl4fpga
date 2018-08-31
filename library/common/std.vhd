@@ -59,6 +59,11 @@ package std is
 		arg : std_logic_vector) 
 		return byte_vector;
 
+	function push_left (
+		constant queue   : std_logic_vector;
+		constant element : std_logic_vector)
+		return std_logic_vector;
+
 	function reverse (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -68,20 +73,8 @@ package std is
 		constant size : natural)
 		return std_logic_vector;
 	
-	function bin2bcd (
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
-		return std_logic_vector;
-
 	function to_bcd (
-		constant arg1 : string;
-		constant arg2 : natural)
-		return std_logic_vector;
-
-	function to_bcd (
-		constant arg1   : real;
-		constant arg2   : natural;
-		constant sign   : boolean := false)
+		constant arg : string)
 		return std_logic_vector;
 
 	--------------------
@@ -289,18 +282,6 @@ package std is
 		constant udp : std_logic_vector)
 		return std_logic_vector;
 
-	function bcd_add (
-		constant a      : std_logic_vector;
-		constant b      : std_logic_vector;
-		constant cin    : std_logic := '0')
-		return std_logic_vector;
-
-	function bcd_sub (
-		constant a      : std_logic_vector;
-		constant b      : std_logic_vector;
-		constant cin    : std_logic := '0')
-		return std_logic_vector;
-
 	function encoder (
 		constant arg : std_logic_vector)
 		return         std_logic_vector;
@@ -352,71 +333,6 @@ library ieee;
 use ieee.std_logic_textio.all;
 
 package body std is
-
-	function bcd_add (
-		constant a      : std_logic_vector;
-		constant b      : std_logic_vector;
-		constant cin    : std_logic := '0')
-		return std_logic_vector is
-		variable op1    : unsigned(a'length-1 downto 0);
-		variable op2    : unsigned(b'length-1 downto 0);
-		variable bcd    : unsigned(4 downto 0);
-		variable cy     : std_logic;
-		variable retval : unsigned(4*((max(b'length,a'length)+4-1)/4)-1 downto 0) := (others => '0');
-
-	begin
-		cy  := cin;
-		op1 := unsigned(a);
-		op2 := unsigned(b);
-		for i in 0 to retval'length/4-1 loop
-			bcd := resize(op1(4-1 downto 0), bcd'length) + resize(op2(4-1 downto 0), bcd'length);
-			if cy='1' then
-				bcd := bcd + 1;
-			end if;
-			retval(4-1 downto 0) := bcd(4-1 downto 0);
-			bcd := bcd + unsigned'("00110");
-			if bcd(4)='1' then
-				retval(4-1 downto 0) := bcd(4-1 downto 0);
-			end if;
-			cy     := bcd(4);
-			op1    := op1 srl 4;
-			op2    := op2 srl 4;
-			retval := retval ror 4;
-		end loop;
-		return std_logic_vector(retval);
-	end function;
-
-	function bcd_sub (
-		constant a      : std_logic_vector;
-		constant b      : std_logic_vector;
-		constant cin    : std_logic := '0')
-		return std_logic_vector is
-		variable op1    : unsigned(a'length-1 downto 0);
-		variable op2    : unsigned(b'length-1 downto 0);
-		variable bcd    : unsigned(4 downto 0);
-		variable cy     : std_logic;
-		variable retval : unsigned(4*((max(b'length,a'length)+4-1)/4)-1 downto 0) := (others => '0');
-
-	begin
-		cy  := cin;
-		op1 := unsigned(a);
-		op2 := unsigned(b);
-		for i in 0 to retval'length/4-1 loop
-			bcd := resize(op1(4-1 downto 0), bcd'length) - resize(op2(4-1 downto 0), bcd'length);
-			if cy='1' then
-				bcd := bcd - 1;
-			end if;
-			retval(4-1 downto 0) := bcd(4-1 downto 0);
-			if bcd(4)='1' then
-				retval(4-1 downto 0) := bcd(4-1 downto 0) + unsigned'("1001");
-			end if;
-			cy     := bcd(4);
-			op1    := op1 srl 4;
-			op2    := op2 srl 4;
-			retval := retval ror 4;
-		end loop;
-		return std_logic_vector(retval);
-	end function;
 
 	function encoder (
 		constant arg : std_logic_vector)
@@ -543,95 +459,32 @@ package body std is
 		return aux;
 	end;
 
-	function bin2bcd(
-		constant arg1 : std_logic_vector;
-		constant arg2 : natural)
+	function push_left (
+		constant queue   : std_logic_vector;
+		constant element : std_logic_vector)
 		return std_logic_vector is
-		variable aux : unsigned(arg2+arg1'length-1 downto 0);
+		variable retval  : unsigned(0 to queue'length-1);
 	begin
-		aux(arg1'length-1 downto 0) := unsigned(arg1);
-		for i in 0 to arg1'length-1 loop
-			for j in 0 to arg2/4-1 loop
-				if aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) >= unsigned'("0101")  then
-					aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) := aux(4*(j+1)+arg1'length-1 downto 4*j+arg1'length) + 3;
-				end if;
-			end loop;
-			aux := aux sll 1;
-		end loop;
-		return std_logic_vector(aux(aux'left downto arg1'length));
-	end;
-
-	function to_bcd (
-		constant arg1   : real;
-		constant arg2   : natural;
-		constant sign   : boolean := false)
-		return std_logic_vector is
-		variable i      : natural;
-		variable int    : real;
-		variable frac   : real;
-		variable retval : unsigned(0 to arg2-1) := (others => '-');
-	begin
-		int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1);
-		frac := ieee.math_real.sign(arg1)*arg1-int;
-		i    := 0;
-		while i < arg2 loop
-			if int >= 1.0 or i=0 then
-				retval           := retval srl 4;
-				retval(0 to 4-1) := to_unsigned(natural(ieee.math_real.floor(int)) mod 10, 4);
-				int              := int / 10.0;
-			else
-				exit;
-			end if;
-			i := i + 4;
-		end loop;
-		if i < arg2 then
-			if i+8 < arg2 then
-				retval := retval srl arg2-i;
-				retval := retval(4 to arg2-1) & to_unsigned(10, 4);
-			elsif not sign and i+4 < arg2 then
-				retval := retval srl arg2-i;
-				retval := retval(4 to arg2-1) & to_unsigned(10, 4);
-			else
-				retval := retval srl arg2-i;
-				retval := retval(4 to arg2-1) & "1111";
-			end if;
-			i := i + 4;
-		end if;
-		while i < arg2 loop
-			frac := frac * 10.0;
-			retval := retval(4 to arg2-1) & to_unsigned(natural(ieee.math_real.floor(frac)) mod 10, 4);
-			i := i + 4;
-		end loop;
-		int  := ieee.math_real.floor(ieee.math_real.sign(arg1)*arg1*10.0**(arg2/4-3));
-		int  := ieee.math_real.sign(arg1)*int;
-		int  := ieee.math_real.sign(int);
-		if sign then
-			retval           := retval srl 4;
-			retval(0 to 4-1) := "1111";
-			if int < 0.0 then
-				retval(0 to 4-1) := to_unsigned(12, 4);
-			elsif int > 0.0 then
-				retval(0 to 4-1) := to_unsigned(11, 4);
-			end if;
-		end if;
+		retval := unsigned(queue);
+		retval := retval srl element'length;
+		retval(0 to element'length-1) := unsigned(element);
 		return std_logic_vector(retval);
 	end;
 
 	function to_bcd(
-		constant arg1 : string;
-		constant arg2 : natural)
+		constant arg    : string)
 		return std_logic_vector is
 		constant tab    : natural_vector(0 to 12) := (
 			character'pos('0'), character'pos('1'), character'pos('2'), character'pos('3'),
 			character'pos('4'), character'pos('5'), character'pos('6'), character'pos('7'),
 			character'pos('8'), character'pos('9'), character'pos('.'), character'pos('+'),
 		   	character'pos('-'));
-		variable retval : unsigned(arg2-1 downto 0) := (others => '0');
+		variable retval : unsigned(4*arg'length-1 downto 0) := (others => '0');
 	begin
-		for i in arg1'range loop
+		for i in arg'range loop
 			retval := retval sll 4;
 			for j in tab'range loop
-				if character'pos(arg1(i))=tab(j) then
+				if character'pos(arg(i))=tab(j) then
 					retval(4-1 downto 0) := to_unsigned(j, 4);
 					exit;
 				end if;
