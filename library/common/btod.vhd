@@ -421,7 +421,7 @@ architecture def of format_bcd is
 		if signed(point) < 0 then
 
 			for i in 0 to value'length/4-1 loop
-				if signed(point)+i < 0 then
+				if to_integer(signed(point))+i < 0 then
 					temp := std_logic_vector(unsigned(temp) ror 4);
 					if temp(4-1 downto 0)=x"f" then
 						temp(digit'range) := x"0";
@@ -433,7 +433,7 @@ architecture def of format_bcd is
 			swap(digit, temp(digit'range));
 
 			for i in 0 to value'length/4-1 loop
-				if signed(point)+i < 0 then
+				if to_integer(signed(point))+i < 0 then
 					temp := std_logic_vector(unsigned(temp) rol 4);
 					swap(digit, temp(digit'range));
 				end if;

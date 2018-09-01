@@ -31,6 +31,9 @@ use hdl4fpga.std.all;
 architecture scopeio_format of testbench is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
+	signal mark    : std_logic_vector(16-1 downto 0);
+	signal bcd_dv  : std_logic;
+	signal bcd_dat : std_logic_vector(0 to 4*8-1);
 
 begin
 
@@ -38,7 +41,21 @@ begin
 
 	du: entity hdl4fpga.scopeio_format
 	port map (
-		clk    => clk,
-		binary => x"0123");
+		clk     => clk,
+		binary  => mark,
+		point   => b"111",
+		bcd_dv  => bcd_dv,
+		bcd_dat => bcd_dat);
+
+	process (clk)
+		variable cntr : unsigned(mark'range) := (others => '0');
+	begin
+		if rising_edge(clk) then
+			if bcd_dv='1' then
+				cntr := cntr + 40;
+			end if;
+			mark <= std_logic_vector(cntr);
+		end if;
+	end process;
 
 end;

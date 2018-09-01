@@ -32,6 +32,7 @@ entity scopeio_format is
 	port (
 		clk     : in  std_logic;
 		binary  : in  std_logic_vector;
+		point   : in  std_logic_vector;
 		bcd_dv  : out std_logic;
 		bcd_dat : out std_logic_vector);
 end;
@@ -127,7 +128,7 @@ begin
 		formatbcd_e : entity hdl4fpga.format_bcd
 		port map (
 			value  => aligned,
-			point  => "110",
+			point  => point,
 			format => bcd_dat);
 
 	end block;
