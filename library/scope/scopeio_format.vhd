@@ -52,9 +52,7 @@ begin
 
 	xxx_b : block
 		constant num_of_steps : natural := binary'length/bin_di'length;
-
-		signal sel  : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
-
+		signal sel : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
 	begin
 
 		process (clk)

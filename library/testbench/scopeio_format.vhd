@@ -31,35 +31,57 @@ use hdl4fpga.std.all;
 architecture scopeio_format of testbench is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
-	signal load    : std_logic := '1';
-	signal mark    : std_logic_vector(16-1 downto 0);
-	signal bcd_dv  : std_logic;
-	signal bcd_dat : std_logic_vector(0 to 4*8-1);
+
+	signal fill_ena : std_logic := '1';
+	signal point    : std_logic_vector := "111";
+
+	signal value    : std_logic_vector(16-1 downto 0);
+	signal bcd_dv   : std_logic;
+	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
 
 begin
 
 	clk <= not clk  after  5 ns;
 
+	linear_b : block
+		signal wr_addr : std_logic_vector(0 to 6) := (others => '0');
+		signal rd_addr : std_logic_vector(1 to 6) := (others => '0');
+		signal rd_data : std_logic_vector(bcd_dat'range);
+	begin
+		process(clk)
+			variable cntr : unsigned(value'range);
+		begin
+			if rising_edge(clk) then
+				if fill_ena='0' then
+					cntr := (others => '0');
+				elsif bcd_dv='1' then
+					if wr_addr(0)='0' then
+						cntr    := cntr + unsigned(step);
+						wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+					end if;
+				end if;
+				value <= std_logic_vector(cntr);
+			end if;
+		end process;
+		binary_ena <= not wr_addr(0);
+
+		ram_e : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => clk,
+			wr_ena  => bcd_dv,
+			wr_addr => wr_addr(1 to 6),
+			wr_data => bcd_dat,
+			rd_addr => rd_addr,
+			rd_data => rd_data);
+	end block;
+
 	du: entity hdl4fpga.scopeio_format
 	port map (
-		clk     => clk,
-		binary_ena => load,
-		binary  => mark,
-		point   => b"111",
-		bcd_dv  => bcd_dv,
-		bcd_dat => bcd_dat);
-
-	load <= not rst;
-	process (clk, bcd_dv)
-		variable cntr : unsigned(mark'range) := (others => '0');
-	begin
-		if rising_edge(clk) then
-			rst <= '0';
-			if bcd_dv='1' then
-				cntr := cntr + 40;
-			end if;
-			mark <= std_logic_vector(cntr);
-		end if;
-	end process;
+		clk        => clk,
+		binary_ena => binary_ena,
+		binary     => value,
+		point      => point,
+		bcd_dv     => bcd_dv,
+		bcd_dat    => bcd_dat);
 
 end;
