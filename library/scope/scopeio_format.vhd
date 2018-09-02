@@ -32,7 +32,7 @@ entity scopeio_format is
 	port (
 		clk     : in  std_logic;
 		binary  : in  std_logic_vector;
-		binary_ld : in std_logic;
+		binary_ena : in std_logic;
 		point   : in  std_logic_vector;
 		bcd_dv  : out std_logic;
 		bcd_dat : out std_logic_vector);
@@ -57,11 +57,11 @@ begin
 
 	begin
 
-		process (clk, binary_ld)
+		process (clk)
 			variable cntr : unsigned(0 to sel'length);
 		begin
 			if rising_edge(clk) then
-				if binary_ld='1' then
+				if binary_ena='0' then
 					bin_ena <= '0';
 					bcd_dv  <= '0';
 					cntr    := to_unsigned(num_of_steps-2, cntr'length);
@@ -69,6 +69,7 @@ begin
 					if cntr(0)='1' then
 						bin_ena <= '0';
 						bcd_dv  <= '1';
+						cntr    := to_unsigned(num_of_steps-2, cntr'length);
 					elsif cntr(0)='0' then
 						bin_ena <= '1';
 						bcd_dv  <= '0';

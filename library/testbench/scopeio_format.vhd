@@ -43,13 +43,13 @@ begin
 	du: entity hdl4fpga.scopeio_format
 	port map (
 		clk     => clk,
-		binary_ld => load,
+		binary_ena => load,
 		binary  => mark,
 		point   => b"111",
 		bcd_dv  => bcd_dv,
 		bcd_dat => bcd_dat);
 
-	load <= bcd_dv or rst;
+	load <= not rst;
 	process (clk, bcd_dv)
 		variable cntr : unsigned(mark'range) := (others => '0');
 	begin
