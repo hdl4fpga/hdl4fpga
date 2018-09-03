@@ -32,56 +32,57 @@ architecture scopeio_fill of testbench is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
 
-	signal fill_ena : std_logic := '1';
-	signal point    : std_logic_vector := "111";
+	signal fill_req : std_logic;
+	signal fill_rdy : std_logic;
+	signal point    : std_logic_vector(0 to 3-1) := "111";
 
-	signal value    : std_logic_vector(16-1 downto 0);
+	signal bin_dv   : std_logic;
+	signal bin_val  : std_logic_vector(4*4-1 downto 0);
 	signal bcd_dv   : std_logic;
-	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
+	signal bcd_val  : std_logic_vector(0 to 4*8-1);
+
+	signal wr_addr : std_logic_vector(0 to 6-1);
+	signal rd_addr : std_logic_vector(wr_addr'range);
+	signal rd_data : std_logic_vector(bcd_val'range);
 
 begin
 
 	clk <= not clk  after  5 ns;
 
-	linear_b : block
-		signal wr_addr : std_logic_vector(0 to 6) := (others => '0');
-		signal rd_addr : std_logic_vector(1 to 6) := (others => '0');
-		signal rd_data : std_logic_vector(bcd_dat'range);
+	process(clk)
+		variable cntr : unsigned(bin_val'range);
 	begin
-		process(clk)
-			variable cntr : unsigned(value'range);
-		begin
-			if rising_edge(clk) then
-				if fill_ena='0' then
-					cntr := (others => '0');
-				elsif bcd_dv='1' then
-					if wr_addr(0)='0' then
-						cntr    := cntr + unsigned(step);
-						wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-					end if;
+		if rising_edge(clk) then
+			if fill_req='0' then
+				cntr := (others => '0');
+			elsif fill_rdy='0' then
+				if bin_dv='1' then
+					cntr := cntr + 40;
 				end if;
-				value <= std_logic_vector(cntr);
 			end if;
-		end process;
-		binary_ena <= not wr_addr(0);
+			bin_val <= std_logic_vector(cntr);
+		end if;
+	end process;
 
-		ram_e : entity hdl4fpga.dpram
-		port map (
-			wr_clk  => clk,
-			wr_ena  => bcd_dv,
-			wr_addr => wr_addr(1 to 6),
-			wr_data => bcd_dat,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
-	end block;
-
-	du: entity hdl4fpga.scopeio_format
+	du: entity hdl4fpga.scopeio_fill
 	port map (
 		clk        => clk,
-		binary_ena => binary_ena,
-		binary     => value,
+		fill_req   => fill_req,
+		fill_rdy   => fill_req,
 		point      => point,
+		length     => b"1000",
+		element    => wr_addr,
+		bin_dv     => bin_dv,
+		bin_val    => bin_val,
 		bcd_dv     => bcd_dv,
-		bcd_dat    => bcd_dat);
+		bcd_val    => bcd_val);
 
+	ram_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_ena  => bcd_dv,
+		wr_addr => wr_addr,
+		wr_data => bcd_val,
+		rd_addr => rd_addr,
+		rd_data => rd_data);
 end;

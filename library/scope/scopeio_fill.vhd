@@ -28,60 +28,51 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scopeio_fill of testbench is
-	signal rst     : std_logic := '1';
-	signal clk     : std_logic := '0';
+entity scopeio_fill is
+	port (
+		clk      : in  std_logic;
+		fill_req : in  std_logic;
+		fill_rdy : out std_logic;
+		length   : in  std_logic_vector;
+		point    : in  std_logic_vector;
+		element  : out std_logic_vector;
+		bin_val  : in  std_logic_vector;
+		bin_dv   : out std_logic;
+		bcd_dv   : out std_logic;
+		bcd_val  : out std_logic_vector);
+end;
 
-	signal fill_ena : std_logic := '1';
-	signal point    : std_logic_vector := "111";
-
-	signal value    : std_logic_vector(16-1 downto 0);
-	signal bcd_dv   : std_logic;
-	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
-
+architecture def of scopeio_fill is
+	signal dv  : std_logic;
+	signal ena : std_logic;
 begin
 
-	clk <= not clk  after  5 ns;
-
-	linear_b : block
-		signal wr_addr : std_logic_vector(0 to 6) := (others => '0');
-		signal rd_addr : std_logic_vector(1 to 6) := (others => '0');
-		signal rd_data : std_logic_vector(bcd_dat'range);
+	process(clk)
+		variable cntr : unsigned(element'range);
 	begin
-		process(clk)
-			variable cntr : unsigned(value'range);
-		begin
-			if rising_edge(clk) then
-				if fill_ena='0' then
-					cntr := (others => '0');
-				elsif bcd_dv='1' then
-					if wr_addr(0)='0' then
-						cntr    := cntr + unsigned(step);
-						wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-					end if;
+		if rising_edge(clk) then
+			if fill_req='0' then
+				cntr := (others => '0');
+			elsif dv='1' then
+				if cntr(to_integer(unsigned(length)))='0' then
+					cntr := cntr + 1;
 				end if;
-				value <= std_logic_vector(cntr);
 			end if;
-		end process;
-		binary_ena <= not wr_addr(0);
-
-		ram_e : entity hdl4fpga.dpram
-		port map (
-			wr_clk  => clk,
-			wr_ena  => bcd_dv,
-			wr_addr => wr_addr(1 to 6),
-			wr_data => bcd_dat,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
-	end block;
+			element  <= std_logic_vector(cntr(1 to element'length));
+			fill_rdy <= cntr(to_integer(unsigned(length)));
+			ena      <= cntr(to_integer(unsigned(length)));
+		end if;
+	end process;
 
 	du: entity hdl4fpga.scopeio_format
 	port map (
 		clk        => clk,
-		binary_ena => binary_ena,
-		binary     => value,
+		binary_ena => ena,
+		binary     => bin_val,
 		point      => point,
-		bcd_dv     => bcd_dv,
-		bcd_dat    => bcd_dat);
+		bcd_dv     => dv,
+		bcd_dat    => bcd_val);
 
+	bin_dv <= dv;
+	bcd_dv <= dv;
 end;
