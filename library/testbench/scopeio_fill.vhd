@@ -49,6 +49,47 @@ begin
 
 	clk <= not clk  after  5 ns;
 
+	grnt_p : block
+		port (
+			clk : in  std_logic;
+			req : in  std_logic_vector;
+			rdy : out std_logic_vector);
+
+		port map (
+			clk => clk,
+			dev_req => (0 => ),
+			dev_rdy => (0 => ));
+
+		signal gnt : std_logic_vector(0 to 1);
+		signal req : std_logic;
+
+	begin
+
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				for i in req'range loop
+					if gnt="0" then
+						if req(i)='1' then
+							gnt <= i;
+						end if;
+					elsif rdy='1' then
+						gnt <= 0;
+					end if;
+				end loop
+			end if;
+		end process;
+
+		process (fill_rdy, gnt)
+			variable rdy : std_logic_vector(0 to dev'rdy'range);
+		begin
+			for i in 1 to dev_rdy'
+		end process;
+
+		fill_req <= word2byte("0" & dev_req, gnt);
+		dev_rdy  <= demux(gnt, fill_rdy)(1 to dev_rdy'length);
+	end block;
+
 	process(clk)
 		variable cntr : unsigned(bin_val'range);
 	begin
@@ -68,7 +109,7 @@ begin
 	port map (
 		clk        => clk,
 		fill_req   => fill_req,
-		fill_rdy   => fill_req,
+		fill_rdy   => fill_rdy,
 		point      => point,
 		length     => b"1000",
 		element    => wr_addr,
