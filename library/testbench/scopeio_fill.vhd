@@ -45,48 +45,60 @@ architecture scopeio_fill of testbench is
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(bcd_val'range);
 
+	signal p_req : std_logic := '0';
+	signal p_rdy : std_logic;
+	signal p_gnt : std_logic;
 begin
 
 	clk <= not clk  after  5 ns;
 
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if p_req='0' then
+				p_req <= '1';
+			end if;
+		end if;
+	end process;
+
 	grnt_p : block
 		port (
-			clk : in  std_logic;
-			req : in  std_logic_vector;
-			rdy : out std_logic_vector);
+			clk      : in  std_logic;
+			fill_rdy : in std_logic;
+			fill_req : out std_logic;
+			dev_req  : in  std_logic_vector(0 to 0);
+			dev_gnt  : out std_logic_vector(0 to 0);
+			dev_rdy  : out std_logic_vector(0 to 0));
 
 		port map (
-			clk => clk,
-			dev_req => (0 => ),
-			dev_rdy => (0 => ));
+			clk        => clk,
+			fill_rdy   => fill_rdy,
+			fill_req   => fill_req,
+			dev_req(0) => p_req,
+			dev_gnt(0) => p_gnt,
+			dev_rdy(0) => p_rdy);
 
-		signal gnt : std_logic_vector(0 to 1);
-		signal req : std_logic;
+		signal gnt : std_logic_vector(0 to unsigned_num_bits(dev_req'length)-1);
 
 	begin
 
 		process(clk)
 		begin
 			if rising_edge(clk) then
-				for i in req'range loop
-					if gnt="0" then
-						if req(i)='1' then
-							gnt <= i;
+				for i in dev_req'range loop
+					if gnt=(gnt'range => '0') then
+						if dev_req(i)='1' then
+							gnt <= std_logic_vector(to_unsigned(i, gnt'length));
 						end if;
-					elsif rdy='1' then
-						gnt <= 0;
+					elsif fill_rdy='1' then
+						gnt <= (others => '0');
 					end if;
-				end loop
+				end loop;
 			end if;
 		end process;
 
-		process (fill_rdy, gnt)
-			variable rdy : std_logic_vector(0 to dev'rdy'range);
-		begin
-			for i in 1 to dev_rdy'
-		end process;
-
-		fill_req <= word2byte("0" & dev_req, gnt);
+		fill_req <= word2byte("0" & dev_req, gnt)(0);
+		dev_gnt  <= demux(gnt)(1 to dev_rdy'length);
 		dev_rdy  <= demux(gnt, fill_rdy)(1 to dev_rdy'length);
 	end block;
 
