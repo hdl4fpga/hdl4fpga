@@ -45,9 +45,15 @@ architecture scopeio_fill of testbench is
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(bcd_val'range);
 
-	signal p_req : std_logic := '0';
-	signal p_rdy : std_logic;
-	signal p_gnt : std_logic;
+	signal vt_we : std_logic;
+	signal vt_req : std_logic;
+	signal vt_rdy : std_logic;
+	signal vt_gnt : std_logic;
+
+	signal hz_we : std_logic;
+	signal hz_req : std_logic;
+	signal hz_rdy : std_logic;
+	signal hz_gnt : std_logic;
 begin
 
 	clk <= not clk  after  5 ns;
@@ -55,9 +61,27 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if p_req='0' then
-				p_req <= '1';
+			if hz_req='0' then
+				hz_req <= '1';
 			end if;
+			if vt_req='0' then
+				vt_req <= '1';
+			end if;
+		end if;
+	end process;
+
+	process(clk)
+		variable cntr : unsigned(bin_val'range);
+	begin
+		if rising_edge(clk) then
+			if fill_req='0' then
+				cntr := (others => '0');
+			elsif fill_rdy='0' then
+				if bin_dv='1' then
+					cntr := cntr + 40;
+				end if;
+			end if;
+			bin_val <= std_logic_vector(cntr);
 		end if;
 	end process;
 
@@ -66,17 +90,20 @@ begin
 			clk      : in  std_logic;
 			fill_rdy : in std_logic;
 			fill_req : out std_logic;
-			dev_req  : in  std_logic_vector(1 to 1);
-			dev_gnt  : out std_logic_vector(1 to 1);
-			dev_rdy  : out std_logic_vector(1 to 1));
+			dev_req  : in  std_logic_vector(1 to 2);
+			dev_gnt  : out std_logic_vector(1 to 2);
+			dev_rdy  : out std_logic_vector(1 to 2));
 
 		port map (
 			clk        => clk,
 			fill_rdy   => fill_rdy,
 			fill_req   => fill_req,
-			dev_req(1) => p_req,
-			dev_gnt(1) => p_gnt,
-			dev_rdy(1) => p_rdy);
+			dev_req(1) => hz_req,
+			dev_req(2) => vt_req,
+			dev_gnt(1) => hz_gnt,
+			dev_gnt(2) => vt_gnt,
+			dev_rdy(1) => hz_rdy,
+			dev_rdy(2) => vt_rdy);
 
 		signal gnt : std_logic_vector(0 to unsigned_num_bits(dev_req'length)-1);
 
@@ -97,25 +124,10 @@ begin
 			end if;
 		end process;
 
-		fill_req <= word2byte("0" & dev_req, gnt)(0);
+		fill_req <= word2byte("0" & dev_req, gnt, 1)(0) and not fill_rdy;
 		dev_gnt  <= demux(gnt)(1 to dev_rdy'length);
 		dev_rdy  <= demux(gnt, fill_rdy)(1 to dev_rdy'length);
 	end block;
-
-	process(clk)
-		variable cntr : unsigned(bin_val'range);
-	begin
-		if rising_edge(clk) then
-			if fill_req='0' then
-				cntr := (others => '0');
-			elsif fill_rdy='0' then
-				if bin_dv='1' then
-					cntr := cntr + 40;
-				end if;
-			end if;
-			bin_val <= std_logic_vector(cntr);
-		end if;
-	end process;
 
 	du: entity hdl4fpga.scopeio_fill
 	port map (
@@ -130,10 +142,21 @@ begin
 		bcd_dv     => bcd_dv,
 		bcd_val    => bcd_val);
 
-	ram_e : entity hdl4fpga.dpram
+	hz_we <= bcd_dv and hz_gnt;
+	hz_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_ena  => bcd_dv,
+		wr_ena  => hz_we,
+		wr_addr => wr_addr,
+		wr_data => bcd_val,
+		rd_addr => rd_addr,
+		rd_data => rd_data);
+
+	vt_we <= bcd_dv and vt_gnt;
+	vt_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_ena  => vt_we,
 		wr_addr => wr_addr,
 		wr_data => bcd_val,
 		rd_addr => rd_addr,
