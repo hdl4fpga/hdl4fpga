@@ -66,17 +66,17 @@ begin
 			clk      : in  std_logic;
 			fill_rdy : in std_logic;
 			fill_req : out std_logic;
-			dev_req  : in  std_logic_vector(0 to 0);
-			dev_gnt  : out std_logic_vector(0 to 0);
-			dev_rdy  : out std_logic_vector(0 to 0));
+			dev_req  : in  std_logic_vector(1 to 1);
+			dev_gnt  : out std_logic_vector(1 to 1);
+			dev_rdy  : out std_logic_vector(1 to 1));
 
 		port map (
 			clk        => clk,
 			fill_rdy   => fill_rdy,
 			fill_req   => fill_req,
-			dev_req(0) => p_req,
-			dev_gnt(0) => p_gnt,
-			dev_rdy(0) => p_rdy);
+			dev_req(1) => p_req,
+			dev_gnt(1) => p_gnt,
+			dev_rdy(1) => p_rdy);
 
 		signal gnt : std_logic_vector(0 to unsigned_num_bits(dev_req'length)-1);
 
@@ -86,7 +86,7 @@ begin
 		begin
 			if rising_edge(clk) then
 				for i in dev_req'range loop
-					if gnt=(gnt'range => '0') then
+					if not gnt/=(gnt'range => '0') then
 						if dev_req(i)='1' then
 							gnt <= std_logic_vector(to_unsigned(i, gnt'length));
 						end if;
@@ -123,7 +123,7 @@ begin
 		fill_req   => fill_req,
 		fill_rdy   => fill_rdy,
 		point      => point,
-		length     => b"1000",
+		length     => b"0010",
 		element    => wr_addr,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,

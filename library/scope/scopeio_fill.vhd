@@ -48,19 +48,22 @@ architecture def of scopeio_fill is
 begin
 
 	process(clk)
-		variable cntr : unsigned(element'range);
+		variable cntr : unsigned(0 to element'length);
 	begin
 		if rising_edge(clk) then
 			if fill_req='0' then
 				cntr := (others => '0');
+				ena  <= '0';
 			elsif dv='1' then
 				if cntr(to_integer(unsigned(length)))='0' then
 					cntr := cntr + 1;
 				end if;
+				ena <= '1';
+			else
+				ena <= '1';
 			end if;
 			element  <= std_logic_vector(cntr(1 to element'length));
 			fill_rdy <= cntr(to_integer(unsigned(length)));
-			ena      <= cntr(to_integer(unsigned(length)));
 		end if;
 	end process;
 
