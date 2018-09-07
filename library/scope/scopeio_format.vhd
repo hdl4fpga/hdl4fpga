@@ -55,30 +55,32 @@ begin
 		signal sel : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
 	begin
 
-		process (clk)
+		process (clk, binary_ena)
 			variable cntr : unsigned(0 to sel'length);
+			variable ena  : std_logic;
 		begin
 			if rising_edge(clk) then
 				if binary_ena='0' then
-					bin_ena <= '0';
-					bcd_dv  <= '0';
-					cntr    := to_unsigned(num_of_steps-2, cntr'length);
+					ena    := '0';
+					bcd_dv <= '0';
+					cntr   := to_unsigned(num_of_steps-2, cntr'length);
 				elsif bcd_rdy='1' then
 					if cntr(0)='1' then
-						bin_ena <= '0';
-						bcd_dv  <= '1';
-						cntr    := to_unsigned(num_of_steps-2, cntr'length);
+						ena    := '0';
+						bcd_dv <= '1';
+						cntr   := to_unsigned(num_of_steps-2, cntr'length);
 					elsif cntr(0)='0' then
-						bin_ena <= '1';
-						bcd_dv  <= '0';
-						cntr    := cntr - 1;
+						ena    := '1';
+						bcd_dv <= '0';
+						cntr   := cntr - 1;
 					end if;
 				else
-					bcd_dv  <= '0';
-					bin_ena <= '1';
+					ena    := '1';
+					bcd_dv <= '0';
 				end if;
 				sel  <= std_logic_vector(cntr(1 to cntr'right));
 			end if;
+			bin_ena <= ena and binary_ena;
 		end process;
 
 		process (binary, sel)

@@ -46,28 +46,43 @@ architecture scopeio_fill of testbench is
 	signal rd_data : std_logic_vector(bcd_val'range);
 
 	signal vt_we : std_logic;
-	signal vt_req : std_logic;
+	signal vt_req : std_logic := '0';
 	signal vt_rdy : std_logic;
 	signal vt_gnt : std_logic;
 
 	signal hz_we : std_logic;
-	signal hz_req : std_logic;
+	signal hz_req : std_logic := '0';
 	signal hz_rdy : std_logic;
 	signal hz_gnt : std_logic;
 begin
 
 	clk <= not clk  after  5 ns;
+	rst <= '0', '1' after 20 ns, '0' after 30 ns ;
 
-	process (clk)
+	process (clk, hz_rdy)
+		variable req : std_logic := '0';
 	begin
 		if rising_edge(clk) then
-			if hz_req='0' then
-				hz_req <= '1';
-			end if;
-			if vt_req='0' then
-				vt_req <= '1';
+			if rst='1' then
+				req := '1';
+			elsif hz_rdy='1' then
+				req := '0';
 			end if;
 		end if;
+		hz_req <= req and not hz_rdy;
+	end process;
+
+	process (clk, vt_rdy)
+		variable req : std_logic := '0';
+	begin
+		if rising_edge(clk) then
+			if rst='1' then
+				req := '1';
+			elsif vt_rdy='1' then
+				req := '0';
+			end if;
+		end if;
+		vt_req <= req and not vt_rdy;
 	end process;
 
 	process(clk)
@@ -78,7 +93,11 @@ begin
 				cntr := (others => '0');
 			elsif fill_rdy='0' then
 				if bin_dv='1' then
-					cntr := cntr + 40;
+					if hz_req='1' then
+						cntr := cntr + 40;
+					else
+						cntr := cntr + 50;
+					end if;
 				end if;
 			end if;
 			bin_val <= std_logic_vector(cntr);
@@ -113,12 +132,13 @@ begin
 		begin
 			if rising_edge(clk) then
 				for i in dev_req'range loop
-					if not gnt/=(gnt'range => '0') then
+					if fill_rdy='1' then
+						gnt <= (others => '0');
+					elsif not gnt/=(gnt'range => '0') then
 						if dev_req(i)='1' then
 							gnt <= std_logic_vector(to_unsigned(i, gnt'length));
+							exit;
 						end if;
-					elsif fill_rdy='1' then
-						gnt <= (others => '0');
 					end if;
 				end loop;
 			end if;
