@@ -30,16 +30,16 @@ use hdl4fpga.std.all;
 
 entity scopeio_write is
 	port (
-		clk      : in  std_logic;
-		fill_req : in  std_logic;
-		fill_rdy : out std_logic;
-		length   : in  std_logic_vector;
-		point    : in  std_logic_vector;
-		element  : out std_logic_vector;
-		bin_val  : in  std_logic_vector;
-		bin_dv   : out std_logic;
-		bcd_dv   : out std_logic;
-		bcd_val  : out std_logic_vector);
+		clk       : in  std_logic;
+		write_req : in  std_logic;
+		write_rdy : out std_logic;
+		length    : in  std_logic_vector;
+		point     : in  std_logic_vector;
+		element   : out std_logic_vector;
+		bin_val   : in  std_logic_vector;
+		bin_dv    : out std_logic;
+		bcd_dv    : out std_logic;
+		bcd_val   : out std_logic_vector);
 end;
 
 architecture def of scopeio_write is
@@ -51,7 +51,7 @@ begin
 		variable cntr : unsigned(0 to element'length);
 	begin
 		if rising_edge(clk) then
-			if fill_req='0' then
+			if write_req='0' then
 				cntr := (others => '0');
 				ena  <= '0';
 			elsif dv='1' then
@@ -63,7 +63,7 @@ begin
 				ena <= '1';
 			end if;
 			element  <= std_logic_vector(cntr(1 to element'length));
-			fill_rdy <= cntr(to_integer(unsigned(length)));
+			write_rdy <= cntr(to_integer(unsigned(length)));
 		end if;
 	end process;
 

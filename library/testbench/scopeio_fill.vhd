@@ -32,8 +32,8 @@ architecture scopeio_fill of testbench is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
 
-	signal fill_req : std_logic;
-	signal fill_rdy : std_logic;
+	signal write_req : std_logic;
+	signal write_rdy : std_logic;
 	signal point    : std_logic_vector(0 to 3-1) := "111";
 
 	signal bin_dv   : std_logic;
@@ -92,9 +92,9 @@ begin
 		variable cntr : unsigned(bin_val'range);
 	begin
 		if rising_edge(clk) then
-			if fill_req='0' then
+			if write_req='0' then
 				cntr := (others => '0');
-			elsif fill_rdy='0' then
+			elsif write_rdy='0' then
 				if bin_dv='1' then
 					if hz_req='1' then
 						cntr := cntr + 40;
@@ -117,14 +117,14 @@ begin
 		dev_req  => dev_req,
 		dev_gnt  => dev_gnt,
 		dev_rdy  => dev_rdy,
-		unit_req => fill_req,
-		unit_rdy => fill_rdy);
+		unit_req => write_req,
+		unit_rdy => write_rdy);
 
-	du: entity hdl4fpga.scopeio_fill
+	du: entity hdl4fpga.scopeio_write
 	port map (
 		clk        => clk,
-		fill_req   => fill_req,
-		fill_rdy   => fill_rdy,
+		write_req  => write_req,
+		write_rdy  => write_rdy,
 		point      => point,
 		length     => b"0010",
 		element    => wr_addr,
