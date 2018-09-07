@@ -54,6 +54,9 @@ architecture scopeio_fill of testbench is
 	signal hz_req : std_logic := '0';
 	signal hz_rdy : std_logic;
 	signal hz_gnt : std_logic;
+	signal dev_req : std_logic_vector(0 to 1);
+	signal dev_rdy : std_logic_vector(0 to 1);
+	signal dev_gnt : std_logic_vector(0 to 1);
 begin
 
 	clk <= not clk  after  5 ns;
@@ -104,50 +107,18 @@ begin
 		end if;
 	end process;
 
-	grnt_p : block
-		port (
-			clk      : in  std_logic;
-			fill_rdy : in std_logic;
-			fill_req : out std_logic;
-			dev_req  : in  std_logic_vector(1 to 2);
-			dev_gnt  : out std_logic_vector(1 to 2);
-			dev_rdy  : out std_logic_vector(1 to 2));
+	dev_req <= (1 => hz_req, 2 => vt_req);
+	(1 => hz_rdy, 2 => vt_rdy) <= dev_rdy;
+	(1 => hz_gnt, 2 => vt_gnt) <= dev_gnt;
 
-		port map (
-			clk        => clk,
-			fill_rdy   => fill_rdy,
-			fill_req   => fill_req,
-			dev_req(1) => hz_req,
-			dev_req(2) => vt_req,
-			dev_gnt(1) => hz_gnt,
-			dev_gnt(2) => vt_gnt,
-			dev_rdy(1) => hz_rdy,
-			dev_rdy(2) => vt_rdy);
-
-		signal gnt : std_logic_vector(0 to unsigned_num_bits(dev_req'length)-1);
-
-	begin
-
-		process(clk)
-		begin
-			if rising_edge(clk) then
-				for i in dev_req'range loop
-					if fill_rdy='1' then
-						gnt <= (others => '0');
-					elsif not gnt/=(gnt'range => '0') then
-						if dev_req(i)='1' then
-							gnt <= std_logic_vector(to_unsigned(i, gnt'length));
-							exit;
-						end if;
-					end if;
-				end loop;
-			end if;
-		end process;
-
-		fill_req <= word2byte("0" & dev_req, gnt, 1)(0) and not fill_rdy;
-		dev_gnt  <= demux(gnt)(1 to dev_rdy'length);
-		dev_rdy  <= demux(gnt, fill_rdy)(1 to dev_rdy'length);
-	end block;
+	scopeio_grant_e : entity hdl4fpga.scopeio_grant
+	port map (
+		clk      => clk,
+		dev_req  => dev_req,
+		dev_gnt  => dev_gnt,
+		dev_rdy  => dev_rdy,
+		unit_req => fill_req,
+		unit_rdy => fill_rdy);
 
 	du: entity hdl4fpga.scopeio_fill
 	port map (
