@@ -67,7 +67,7 @@ begin
 		end if;
 	end process;
 
-	du: entity hdl4fpga.scopeio_format
+	scopeio_format_e : entity hdl4fpga.scopeio_format
 	port map (
 		clk        => clk,
 		binary_ena => ena,

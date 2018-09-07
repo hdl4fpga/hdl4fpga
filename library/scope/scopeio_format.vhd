@@ -94,7 +94,7 @@ begin
 
 	end block;
 
-	scopeioftod_e : entity hdl4fpga.scopeio_ftod
+	scopeio_ftod_e : entity hdl4fpga.scopeio_ftod
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,

@@ -32,23 +32,23 @@ architecture scopeio_fill of testbench is
 	signal rst     : std_logic := '1';
 	signal clk     : std_logic := '0';
 
-	signal write_req : std_logic;
-	signal write_rdy : std_logic;
-	signal point    : std_logic_vector(0 to 3-1) := "111";
+	signal wrt_req : std_logic;
+	signal wrt_rdy : std_logic;
+	signal point   : std_logic_vector(0 to 3-1) := "111";
 
-	signal bin_dv   : std_logic;
-	signal bin_val  : std_logic_vector(4*4-1 downto 0);
-	signal bcd_dv   : std_logic;
-	signal bcd_val  : std_logic_vector(0 to 4*8-1);
+	signal bin_dv  : std_logic;
+	signal bin_val : std_logic_vector(4*4-1 downto 0);
+	signal bcd_dv  : std_logic;
+	signal bcd_val : std_logic_vector(0 to 4*8-1);
 
 	signal wr_addr : std_logic_vector(0 to 6-1);
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(bcd_val'range);
 
-	signal vt_we : std_logic;
-	signal vt_req : std_logic := '0';
-	signal vt_rdy : std_logic;
-	signal vt_gnt : std_logic;
+	signal vt_we   : std_logic;
+	signal vt_req  : std_logic := '0';
+	signal vt_rdy  : std_logic;
+	signal vt_gnt  : std_logic;
 
 	signal hz_we : std_logic;
 	signal hz_req : std_logic := '0';
@@ -92,9 +92,9 @@ begin
 		variable cntr : unsigned(bin_val'range);
 	begin
 		if rising_edge(clk) then
-			if write_req='0' then
+			if wrt_req='0' then
 				cntr := (others => '0');
-			elsif write_rdy='0' then
+			elsif wrt_rdy='0' then
 				if bin_dv='1' then
 					if hz_req='1' then
 						cntr := cntr + 40;
@@ -117,16 +117,18 @@ begin
 		dev_req  => dev_req,
 		dev_gnt  => dev_gnt,
 		dev_rdy  => dev_rdy,
-		unit_req => write_req,
-		unit_rdy => write_rdy);
+		unit_req => wrt_req,
+		unit_rdy => wrt_rdy);
 
-	du: entity hdl4fpga.scopeio_write
+	wrt_len <= word2byte((wrt_lenh'range => '-') & hz_len & vt_len, dev_gnt, wrt_len'length); 
+	wrt_pnt <= word2byte((wrt_pnt'range => '-')  & hz_pnt & vt_pnt, dev_gnt, wrt_pnt'length); 
+	scopeio_write_e : entity hdl4fpga.scopeio_write
 	port map (
 		clk        => clk,
-		write_req  => write_req,
-		write_rdy  => write_rdy,
-		point      => point,
-		length     => b"0010",
+		write_req  => wrt_req,
+		write_rdy  => wrt_rdy,
+		point      => wrt_point,
+		length     => wrt_length,
 		element    => wr_addr,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,
