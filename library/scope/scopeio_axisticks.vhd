@@ -34,25 +34,24 @@ entity scopeio_axisticks is
 
 		hz_req : in  std_logic;
 		hz_rdy : out std_logic;
-		hz_len : out std_logic_vector;
 		hz_pnt : out std_logic_vector;
 		hz_we  : out std_logic;
 
 		vt_req : in  std_logic;
 		vt_rdy : out std_logic;
-		vt_len : out std_logic_vector;
 		vt_pnt : out std_logic_vector;
 		vt_we  : out std_logic;
 
-		elment : out std_logic_vector;
-		tick   : out std_logic_vector);
+		tick   : out std_logic_vector;
+		value  : out std_logic_vector);
 end
 
 architecture def of scopeio_axisticks is
 
 	signal wrt_req : std_logic;
 	signal wrt_rdy : std_logic;
-	signal point   : std_logic_vector(0 to 3-1) := "111";
+	signal wrt_len : std_logic_vector(0 to 6);
+	signal wrt_pnt : std_logic_vector(0 to 3-1);
 
 	signal bin_dv  : std_logic;
 	signal bin_val : std_logic_vector(4*4-1 downto 0);
@@ -63,15 +62,15 @@ architecture def of scopeio_axisticks is
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(bcd_val'range);
 
+	constant vt_len : std_logic_vector := b"001_0000";
 	signal vt_we   : std_logic;
-	signal vt_req  : std_logic := '0';
 	signal vt_rdy  : std_logic;
 	signal vt_gnt  : std_logic;
 
-	signal hz_we : std_logic;
-	signal hz_req : std_logic := '0';
-	signal hz_rdy : std_logic;
-	signal hz_gnt : std_logic;
+	constant hz_len : std_logic_vector := b"100_0000";
+	signal hz_we   : std_logic;
+	signal hz_rdy  : std_logic;
+	signal hz_gnt  : std_logic;
 	signal dev_req : std_logic_vector(0 to 1);
 	signal dev_rdy : std_logic_vector(0 to 1);
 	signal dev_gnt : std_logic_vector(0 to 1);
@@ -142,8 +141,8 @@ begin
 		clk        => clk,
 		write_req  => wrt_req,
 		write_rdy  => wrt_rdy,
-		point      => wrt_point,
-		length     => wrt_length,
+		point      => wrt_pnt,
+		length     => wrt_len,
 		element    => wr_addr,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,
@@ -151,22 +150,9 @@ begin
 		bcd_val    => bcd_val);
 
 	hz_we <= bcd_dv and hz_gnt;
-	hz_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_ena  => hz_we,
-		wr_addr => wr_addr,
-		wr_data => bcd_val,
-		rd_addr => rd_addr,
-		rd_data => rd_data);
-
 	vt_we <= bcd_dv and vt_gnt;
-	vt_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_ena  => vt_we,
-		wr_addr => wr_addr,
-		wr_data => bcd_val,
-		rd_addr => rd_addr,
-		rd_data => rd_data);
+
+	value <= bcd_val;
+	tick  <= wr_addr;
+
 end;
