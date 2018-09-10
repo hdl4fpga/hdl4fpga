@@ -28,9 +28,27 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scopeio_fill of testbench is
-	signal rst     : std_logic := '1';
-	signal clk     : std_logic := '0';
+entity scopeio_axisticks is
+	port (
+		clk    : in  std_logic;
+
+		hz_req : in  std_logic;
+		hz_rdy : out std_logic;
+		hz_len : out std_logic_vector;
+		hz_pnt : out std_logic_vector;
+		hz_we  : out std_logic;
+
+		vt_req : in  std_logic;
+		vt_rdy : out std_logic;
+		vt_len : out std_logic_vector;
+		vt_pnt : out std_logic_vector;
+		vt_we  : out std_logic;
+
+		elment : out std_logic_vector;
+		tick   : out std_logic_vector);
+end
+
+architecture def of scopeio_axisticks is
 
 	signal wrt_req : std_logic;
 	signal wrt_rdy : std_logic;
@@ -58,9 +76,6 @@ architecture scopeio_fill of testbench is
 	signal dev_rdy : std_logic_vector(0 to 1);
 	signal dev_gnt : std_logic_vector(0 to 1);
 begin
-
-	clk <= not clk  after  5 ns;
-	rst <= '0', '1' after 20 ns, '0' after 30 ns ;
 
 	process (clk, hz_rdy)
 		variable req : std_logic := '0';

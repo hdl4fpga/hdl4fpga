@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_write is
+entity scopeio_writeticks is
 	port (
 		clk       : in  std_logic;
 		write_req : in  std_logic;
@@ -42,7 +42,7 @@ entity scopeio_write is
 		bcd_val   : out std_logic_vector);
 end;
 
-architecture def of scopeio_write is
+architecture def of scopeio_writeticks is
 	signal dv  : std_logic;
 	signal ena : std_logic;
 begin
