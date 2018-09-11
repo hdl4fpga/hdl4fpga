@@ -80,16 +80,18 @@ begin
 		rd_data => vt_val);
 
 	video_b : block
-	rom_e : entity hdl4fpga.cga_rom
-	generic map (
-		font_bitrom => psf1cp850x8x16,
-		font_height => 2**3,
-		font_width  => 2**3)
-	port map (
-		clk       => video_clk,
-		char_col  => font_col,
-		char_row  => font_row,
-		char_code => cga_rdata,
-		char_dot  => char_dot);
+	begin
+		rom_e : entity hdl4fpga.cga_rom
+		generic map (
+			font_bitrom => psf1cp850x8x16,
+			font_height => 2**3,
+			font_width  => 2**3)
+		port map (
+			clk       => video_clk,
+			char_col  => font_col,
+			char_row  => font_row,
+			char_code => cga_rdata,
+			char_dot  => char_dot);
+	end block;
 
 end;
