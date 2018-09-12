@@ -123,12 +123,12 @@ begin
 		end if;
 	end process;
 
-	axis_b :
+	axis_b : block
 		signal video_vcntr : std_logic_vector(11-1 downto 0);
 		signal video_hcntr : std_logic_vector(11-1 downto 0);
 		signal req : std_logic;
 		signal rdy : std_logic;
-	block
+	begin
 
 		video_e : entity hdl4fpga.video_vga
 		generic map (
