@@ -123,37 +123,86 @@ begin
 		end if;
 	end process;
 
-	scopeio_debug_e : entity hdl4fpga.scopeio_debug
-	port map (
-		mii_req   => mii_req,
-		mii_rxc   => rxc,
-		mii_rxd   => rxd,
-		mii_rxdv  => rxdv,
-		mii_txc   => txc,
-		mii_txd   => txd,
-		mii_txdv  => txdv,
+	axis_b :
+		signal video_vcntr : std_logic_vector(11-1 downto 0);
+		signal video_hcntr : std_logic_vector(11-1 downto 0);
+		signal req : std_logic;
+		signal rdy : std_logic;
+	block
 
-		video_clk => video_clk,
-		video_dot => video_rgb(0),
-		video_hs  => video_hs,
-		video_vs  => video_vs);
+		video_e : entity hdl4fpga.video_vga
+		generic map (
+			mode => 7,
+			n    => 11)
+		port map (
+			clk   => video_clk,
+			hsync => video_hs,
+			vsync => video_vs,
+			hcntr => video_hcntr,
+			vcntr => video_vcntr,
+			don   => video_hon);
+
+		process (rxc)
+		begin
+			if rising_edge(rxc) then
+				if btn(0)='1' then
+					req <= '1';
+				elsif rdy='1' then
+					req <= '0';
+				end if;
+			end if;
+		end process;
+
+		axis_e : entity hdl4fpga.scopeio_axis
+		port (
+			in_clk  => rxc,
+
+			hz_req  => req,
+			hz_rdy  => rdy,
+			hz_pnt  => "111",
+
+			vt_req  => '0',
+			vt_rdy  => '0',
+			vt_pnt  => "111",
+
+			video_clk   => video_clk,
+			video_hcntr => video_hcntr,
+			video_vcntr => video_vcntr,
+			video_dot   => video_rgb);
+	end block;
+
+--	scopeio_debug_e : entity hdl4fpga.scopeio_debug
+--	port map (
+--		mii_req   => mii_req,
+--		mii_rxc   => rxc,
+--		mii_rxd   => rxd,
+--		mii_rxdv  => rxdv,
+--		mii_txc   => txc,
+--		mii_txd   => txd,
+--		mii_txdv  => txdv,
+--
+--		video_clk => video_clk,
+--		video_dot => video_rgb(0),
+--		video_hs  => video_hs,
+--		video_vs  => video_vs);
+
 	video_rgb(1) <= video_rgb(0);
 	video_rgb(2) <= video_rgb(0);
 		
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
-
-	samples_e : entity hdl4fpga.rom
-	generic map (
-		bitrom => sintab(0, 2047, sample_size))
-	port map (
-		clk  => sys_clk,
-		addr => input_addr,
-		data => sample);
+--	process (sys_clk)
+--	begin
+--		if rising_edge(sys_clk) then
+--			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+--		end if;
+--	end process;
+--
+--	samples_e : entity hdl4fpga.rom
+--	generic map (
+--		bitrom => sintab(0, 2047, sample_size))
+--	port map (
+--		clk  => sys_clk,
+--		addr => input_addr,
+--		data => sample);
 
 --	scopeio_e : entity hdl4fpga.scopeio
 --	port map (
