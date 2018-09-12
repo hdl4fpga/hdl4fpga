@@ -355,7 +355,7 @@ end;
 		
 architecture def of align_bcd is
 
-	function align_bcd (
+	function align_bcd_f (
 		constant value : std_logic_vector;
 		constant left  : std_logic)
 		return std_logic_vector is
@@ -381,7 +381,7 @@ architecture def of align_bcd is
 	end;
 
 begin
-	align <= align_bcd(value, left);
+	align <= align_bcd_f(value, left);
 end;
 
 library ieee;
@@ -405,7 +405,7 @@ end;
 		
 architecture def of format_bcd is
 
-	impure function format_bcd (
+	impure function format_bcd_f (
 		constant value : std_logic_vector;
 		constant point : std_logic_vector;
 		constant align : std_logic := '0') 
@@ -455,7 +455,7 @@ architecture def of format_bcd is
 	end;
 
 begin
-	format <= format_bcd(
+	format <= format_bcd_f(
 		value => value,
 		point => point,
 		align => align);
@@ -480,7 +480,7 @@ end;
 		
 architecture def of sign_bcd is
 
-	function sign_bcd (
+	function sign_bcd_f (
 		constant value : std_logic_vector;
 		constant code  : std_logic_vector)
 		return std_logic_vector is
@@ -507,8 +507,8 @@ architecture def of sign_bcd is
 begin
 
 	format <= 
-		sign_bcd(value, minus) when sign='1'  else 
-		sign_bcd(value, plus)  when pplus='1' else
+		sign_bcd_f(value, minus) when sign='1'  else 
+		sign_bcd_f(value, plus)  when pplus='1' else
 		value;
 
 end;

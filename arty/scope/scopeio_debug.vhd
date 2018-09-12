@@ -140,7 +140,7 @@ begin
 			vsync => video_vs,
 			hcntr => video_hcntr,
 			vcntr => video_vcntr,
-			don   => video_hon);
+			don   => open);
 
 		process (rxc)
 		begin
@@ -154,21 +154,21 @@ begin
 		end process;
 
 		axis_e : entity hdl4fpga.scopeio_axis
-		port (
+		port map (
 			in_clk  => rxc,
 
 			hz_req  => req,
 			hz_rdy  => rdy,
-			hz_pnt  => "111",
+			hz_pnt  => b"111",
 
 			vt_req  => '0',
 			vt_rdy  => '0',
-			vt_pnt  => "111",
+			vt_pnt  => b"111",
 
 			video_clk   => video_clk,
 			video_hcntr => video_hcntr,
 			video_vcntr => video_vcntr,
-			video_dot   => video_rgb);
+			video_dot   => video_rgb(0));
 	end block;
 
 --	scopeio_debug_e : entity hdl4fpga.scopeio_debug
