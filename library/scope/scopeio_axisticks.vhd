@@ -66,9 +66,9 @@ architecture def of scopeio_axisticks is
 	signal vt_gnt  : std_logic;
 	signal hz_gnt  : std_logic;
 
-	signal dev_req : std_logic_vector(0 to 1);
-	signal dev_rdy : std_logic_vector(0 to 1);
-	signal dev_gnt : std_logic_vector(0 to 1);
+	signal dev_req : std_logic_vector(1 to 2);
+	signal dev_rdy : std_logic_vector(1 to 2);
+	signal dev_gnt : std_logic_vector(1 to 2);
 begin
 
 	process(clk)

@@ -7,7 +7,7 @@ library hdl4fpga;
 entity scopeio_ftod is
 	port (
 		clk     : in  std_logic;
-		bin_pnt : in  std_logic_vector := "0";
+		bin_pnt : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bin_ena : in  std_logic;
 		bin_dv  : out std_logic;
 		bin_di  : in  std_logic_vector;

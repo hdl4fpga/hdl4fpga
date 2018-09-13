@@ -69,7 +69,6 @@ architecture scopeio_debug of arty is
 	constant sample_size : natural := 9;
 	signal sample     : std_logic_vector(0 to sample_size-1);
 	signal input_addr : std_logic_vector(11-1 downto 0);
-	signal video_on   : std_logic;
 
 begin
 
@@ -130,6 +129,7 @@ begin
 		signal req : std_logic;
 		signal rdy : std_logic;
 		signal dot : std_logic;
+		signal video_on   : std_logic;
 	begin
 
 		video_e : entity hdl4fpga.video_vga
