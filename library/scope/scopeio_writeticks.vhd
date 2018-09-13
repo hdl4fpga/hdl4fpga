@@ -48,7 +48,7 @@ architecture def of scopeio_writeticks is
 begin
 
 	process(clk)
-		variable cntr : unsigned(0 to element'length);
+		variable cntr : unsigned(element'length downto 0);
 	begin
 		if rising_edge(clk) then
 			if write_req='0' then
@@ -62,7 +62,7 @@ begin
 			else
 				ena <= '1';
 			end if;
-			element  <= std_logic_vector(cntr(1 to element'length));
+			element  <= std_logic_vector(cntr(element'length-1 downto 0));
 			write_rdy <= cntr(to_integer(unsigned(length)));
 		end if;
 	end process;
