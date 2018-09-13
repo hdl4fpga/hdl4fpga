@@ -20,7 +20,7 @@ end;
 
 architecture beh of cga_rom is
 
-	signal font_code : std_logic_vector(ascii'range);
+	signal font_code : std_logic_vector(char_code'range);
 	signal font_row  : std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
 	signal font_col  : std_logic_vector(unsigned_num_bits(font_width-1)-1  downto 0);
 

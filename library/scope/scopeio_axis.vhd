@@ -26,6 +26,7 @@ entity scopeio_axis is
 end;
 
 architecture def of scopeio_axis is
+
 	constant vt_len : unsigned(0 to 3-1) := to_unsigned(6, 3);
 	constant hz_len : unsigned(0 to 3-1) := to_unsigned(4, 3);
 
@@ -36,21 +37,21 @@ architecture def of scopeio_axis is
 	signal hz_step : std_logic_vector(0 to 5);
 	signal hz_from : std_logic_vector(0 to 5);
 	signal hz_tick : std_logic_vector(6-1 downto 0);
-	signal hz_val  : std_logic_vector(8*4-1 downto 0);
+	signal hz_val  : std_logic_vector(value'range);
 	signal vt_step : std_logic_vector(0 to 5);
 	signal vt_from : std_logic_vector(0 to 5);
 	signal vt_tick : std_logic_vector(4-1 downto 0);
-	signal vt_val  : std_logic_vector(8*4-1 downto 0);
-begin
+	signal vt_val  : std_logic_vector(value'range);
 
+begin
 
 	scopeio_axisticks_e : entity work.scopeio_axisticks
 	port map (
 		clk     => in_clk,
 
 		hz_len  => std_logic_vector(hz_len),
-		hz_step => hz_step,
-		hz_from => hz_from,
+		hz_step => b"10_0000", --hz_step,
+		hz_from => b"00_0000", --hz_from,
 		hz_req  => hz_req,
 		hz_rdy  => hz_rdy,
 		hz_pnt  => hz_pnt,
@@ -59,7 +60,7 @@ begin
 		vt_len  => std_logic_vector(vt_len),
 		vt_step => vt_step,
 		vt_from => vt_from,
-		vt_req  => vt_req,
+		vt_req  => '0', --vt_req,
 		vt_rdy  => vt_rdy,
 		vt_pnt  => vt_pnt,
 		vt_dv   => vt_dv,
@@ -70,11 +71,11 @@ begin
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
-		wr_ena  => hz_dv,
+		wr_ena  => '1', --hz_dv,
 		wr_addr => tick(6-1 downto 0),
 		wr_data => value,
 
-		rd_addr => vt_tick,
+		rd_addr => hz_tick,
 		rd_data => hz_val);
 
 	vt_mem_e : entity hdl4fpga.dpram
@@ -93,8 +94,10 @@ begin
 		signal vt_bcd : std_logic_vector(code'range);
 	begin
 
-		hz_bcd <= word2byte(hz_val, video_hcntr(6-1 downto 0));
-		vt_bcd <= word2byte(vt_val, video_hcntr(6-1 downto 0));
+		hz_tick <='0' & video_hcntr(11-1 downto 6);
+		hz_bcd <= word2byte(hz_val, video_hcntr(6-1 downto 3));
+--		hz_bcd <= word2byte(x"12345678", video_hcntr(6-1 downto 3));
+		vt_bcd <= word2byte(vt_val, video_hcntr(6-1 downto 3));
 		code   <= word2byte(hz_bcd & vt_bcd, "0");
 
 		rom_e : entity hdl4fpga.cga_rom

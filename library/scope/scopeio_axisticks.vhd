@@ -77,9 +77,9 @@ begin
 		if rising_edge(clk) then
 			if wrt_req='0' then
 				if hz_gnt='1' then
-					cntr := unsigned(hz_from);
+					cntr := resize(unsigned(hz_from), cntr'length);
 				else
-					cntr := unsigned(vt_from);
+					cntr := resize(unsigned(vt_from), cntr'length);
 				end if;
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then

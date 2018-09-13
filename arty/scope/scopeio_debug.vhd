@@ -69,6 +69,7 @@ architecture scopeio_debug of arty is
 	constant sample_size : natural := 9;
 	signal sample     : std_logic_vector(0 to sample_size-1);
 	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal video_on   : std_logic;
 
 begin
 
@@ -128,6 +129,7 @@ begin
 		signal video_hcntr : std_logic_vector(11-1 downto 0);
 		signal req : std_logic;
 		signal rdy : std_logic;
+		signal dot : std_logic;
 	begin
 
 		video_e : entity hdl4fpga.video_vga
@@ -140,7 +142,7 @@ begin
 			vsync => video_vs,
 			hcntr => video_hcntr,
 			vcntr => video_vcntr,
-			don   => open);
+			don   => video_on);
 
 		process (rxc)
 		begin
@@ -153,6 +155,7 @@ begin
 			end if;
 		end process;
 
+		led(0) <= rdy;
 		axis_e : entity hdl4fpga.scopeio_axis
 		port map (
 			in_clk  => rxc,
@@ -162,13 +165,14 @@ begin
 			hz_pnt  => b"111",
 
 			vt_req  => '0',
-			vt_rdy  => '0',
+			vt_rdy  => open,
 			vt_pnt  => b"111",
 
 			video_clk   => video_clk,
 			video_hcntr => video_hcntr,
 			video_vcntr => video_vcntr,
-			video_dot   => video_rgb(0));
+			video_dot   => dot);
+		video_rgb(0) <= video_on and dot;
 	end block;
 
 --	scopeio_debug_e : entity hdl4fpga.scopeio_debug
@@ -230,27 +234,27 @@ begin
 		end if;
 	end process;
 
-	process (btn(0), txc)
-	begin
-		if btn(0)='1' then
-			mii_req <= '0';
-			led(0)  <= '1';
-		elsif rising_edge(txc) then
-			led(0)  <= '0';
-			mii_req <= '1';
-		end if;
-	end process;
+--	process (btn(0), txc)
+--	begin
+--		if btn(0)='1' then
+--			mii_req <= '0';
+--			led(0)  <= '1';
+--		elsif rising_edge(txc) then
+--			led(0)  <= '0';
+--			mii_req <= '1';
+--		end if;
+--	end process;
 
-	process (btn(1), txc)
-	begin
-		if btn(1)='1' then
-			pp <= '0';
-			led(1)  <= '1';
-		elsif rising_edge(txc) then
-			led(1)  <= '0';
-			pp <= '1';
-		end if;
-	end process;
+--	process (btn(1), txc)
+--	begin
+--		if btn(1)='1' then
+--			pp <= '0';
+--			led(1)  <= '1';
+--		elsif rising_edge(txc) then
+--			led(1)  <= '0';
+--			pp <= '1';
+--		end if;
+--	end process;
 
 	process (video_clk)
 	begin
