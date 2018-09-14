@@ -126,8 +126,10 @@ begin
 	axis_b : block
 		signal video_vcntr : std_logic_vector(11-1 downto 0);
 		signal video_hcntr : std_logic_vector(11-1 downto 0);
-		signal req : std_logic;
-		signal rdy : std_logic;
+		signal hz_req : std_logic;
+		signal hz_rdy : std_logic;
+		signal vt_req : std_logic;
+		signal vt_rdy : std_logic;
 		signal dot : std_logic;
 		signal video_on   : std_logic;
 	begin
@@ -148,25 +150,31 @@ begin
 		begin
 			if rising_edge(rxc) then
 				if btn(0)='1' then
-					req <= '1';
-				elsif rdy='1' then
-					req <= '0';
+					hz_req <= sw(0);
+					vt_req <= not sw(0);
+				else
+					if hz_rdy='1' then
+						hz_req <= '0';
+					end if;
+					if vt_rdy='1' then
+						vt_req <= '0';
+					end if;
 				end if;
 			end if;
 		end process;
 
-		led(0) <= rdy;
 		axis_e : entity hdl4fpga.scopeio_axis
 		port map (
 			in_clk  => rxc,
+			axis_sel => btn(1),
 
-			hz_req  => req,
-			hz_rdy  => rdy,
+			hz_req  => hz_req,
+			hz_rdy  => hz_rdy,
 			hz_pnt  => b"111",
 
-			vt_req  => '0',
-			vt_rdy  => open,
-			vt_pnt  => b"111",
+			vt_req  => vt_req,
+			vt_rdy  => vt_rdy,
+			vt_pnt  => b"110",
 
 			video_clk   => video_clk,
 			video_hcntr => video_hcntr,

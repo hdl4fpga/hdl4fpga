@@ -107,8 +107,9 @@ begin
 		unit_req => wrt_req,
 		unit_rdy => wrt_rdy);
 
-	wrt_len <= word2byte((wrt_len'range => '-') & hz_len & vt_len, dev_gnt, wrt_len'length); 
-	wrt_pnt <= word2byte((wrt_pnt'range => '-') & hz_pnt & vt_pnt, dev_gnt, wrt_pnt'length); 
+	wrt_len <= wirebus(hz_len & vt_len, dev_gnt);
+	wrt_pnt <= wirebus(hz_pnt & vt_pnt, dev_gnt);
+
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
 		clk        => clk,

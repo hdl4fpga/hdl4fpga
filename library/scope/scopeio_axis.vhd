@@ -10,13 +10,15 @@ entity scopeio_axis is
 	port (
 		in_clk     : in  std_logic;
 
-		hz_req  : in  std_logic;
-		hz_rdy  : out std_logic;
-		hz_pnt  : in  std_logic_vector;
+		axis_sel    : in std_logic;
 
-		vt_req  : in  std_logic;
-		vt_rdy  : out std_logic;
-		vt_pnt  : in  std_logic_vector;
+		hz_req      : in  std_logic;
+		hz_rdy      : out std_logic;
+		hz_pnt      : in  std_logic_vector;
+
+		vt_req      : in  std_logic;
+		vt_rdy      : out std_logic;
+		vt_pnt      : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
@@ -27,8 +29,8 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant vt_len : unsigned(0 to 3-1) := to_unsigned(6, 3);
-	constant hz_len : unsigned(0 to 3-1) := to_unsigned(4, 3);
+	constant hz_len : unsigned(0 to 3-1) := to_unsigned(6, 3);
+	constant vt_len : unsigned(0 to 3-1) := to_unsigned(4, 3);
 
 	signal tick    : std_logic_vector(6-1 downto 0);
 	signal value   : std_logic_vector(8*4-1 downto 0);
@@ -58,9 +60,9 @@ begin
 		hz_dv   => hz_dv,
 
 		vt_len  => std_logic_vector(vt_len),
-		vt_step => vt_step,
-		vt_from => vt_from,
-		vt_req  => '0', --vt_req,
+		vt_step => b"11_0000", --vt_step,
+		vt_from => b"00_0000", --vt_from,
+		vt_req  => vt_req,
 		vt_rdy  => vt_rdy,
 		vt_pnt  => vt_pnt,
 		vt_dv   => vt_dv,
@@ -71,7 +73,7 @@ begin
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
-		wr_ena  => '1', --hz_dv,
+		wr_ena  => hz_dv,
 		wr_addr => tick(6-1 downto 0),
 		wr_data => value,
 
@@ -95,10 +97,10 @@ begin
 	begin
 
 		hz_tick <='0' & video_hcntr(11-1 downto 6);
-		hz_bcd <= word2byte(hz_val, video_hcntr(6-1 downto 3));
---		hz_bcd <= word2byte(x"12345678", video_hcntr(6-1 downto 3));
-		vt_bcd <= word2byte(vt_val, video_hcntr(6-1 downto 3));
-		code   <= word2byte(hz_bcd & vt_bcd, "0");
+		vt_tick <= video_hcntr(10-1 downto 6);
+		hz_bcd <= word2byte(hz_val, video_hcntr(6-1 downto 3), hz_bcd'length);
+		vt_bcd <= word2byte(vt_val, video_hcntr(6-1 downto 3), vt_bcd'length);
+		code   <= word2byte(hz_bcd & vt_bcd, axis_sel);
 
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
