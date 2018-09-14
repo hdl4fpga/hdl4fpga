@@ -166,7 +166,7 @@ begin
 		axis_e : entity hdl4fpga.scopeio_axis
 		port map (
 			in_clk  => rxc,
-			axis_sel => btn(1),
+			axis_sel => sw(1),
 
 			hz_req  => hz_req,
 			hz_rdy  => hz_rdy,
