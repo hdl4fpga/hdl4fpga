@@ -95,20 +95,20 @@ begin
 	end block;
 
 	txc <= phy1_125clk;
---	process (fpga_gsrn, txc)
---		variable pp : std_logic;
---	begin
---		if fpga_gsrn='0' then
---			mii_req <= pp;
---			btn     <= not pp;
---		elsif rising_edge(txc) then
---			mii_req <= '1';
---			btn <= '1';
---		end if;
---		if rising_edge(fpga_gsrn) then
---			pp := '0'; --not pp;
---		end if;
---	end process;
+	process (fpga_gsrn, txc)
+		variable pp : std_logic;
+	begin
+		if fpga_gsrn='0' then
+			mii_req <= pp;
+			btn     <= not pp;
+		elsif rising_edge(txc) then
+			mii_req <= '1';
+			btn <= '1';
+		end if;
+		if rising_edge(fpga_gsrn) then
+			pp := '0'; --not pp;
+		end if;
+	end process;
 
 	rxc <= not phy1_rxc;
 	process (rxc)
@@ -119,74 +119,75 @@ begin
 		end if;
 	end process;
 
-	axis_b : block
-		signal video_vcntr : std_logic_vector(11-1 downto 0);
-		signal video_hcntr : std_logic_vector(11-1 downto 0);
-		signal req : std_logic;
-		signal rdy : std_logic;
-		signal dot : std_logic;
-		signal video_on   : std_logic;
-	begin
-
-		video_e : entity hdl4fpga.video_vga
-		generic map (
-			mode => 7,
-			n    => 11)
-		port map (
-			clk   => video_clk,
-			hsync => video_hs,
-			vsync => video_vs,
-			hcntr => video_hcntr,
-			vcntr => video_vcntr,
-			don   => video_on);
-
-		process (rxc)
-		begin
-			if rising_edge(rxc) then
-				if fpga_gsrn='0' then
-					req <= '1';
-				elsif rdy='1' then
-					req <= '0';
-				end if;
-			end if;
-		end process;
-
-		axis_e : entity hdl4fpga.scopeio_axis
-		port map (
-			in_clk  => rxc,
-
-			hz_req  => req,
-			hz_rdy  => rdy,
-			hz_pnt  => b"111",
-
-			vt_req  => '0',
-			vt_rdy  => open,
-			vt_pnt  => b"111",
-
-			video_clk   => video_clk,
-			video_hcntr => video_hcntr,
-			video_vcntr => video_vcntr,
-			video_dot   => dot);
-		video_dot <= video_on and dot;
-	end block;
-
---	scopeio_debug_e : entity hdl4fpga.scopeio_debug
---	port map (
---		mii_req   => '0', --mii_req,
---		mii_rxc   => rxc,
---		mii_rxd   => rxd,
---		mii_rxdv  => rxdv,
-----		mii_rxc   => txc,  --rxc,
-----		mii_rxd   => txd,  --rxd,
-----		mii_rxdv  => txdv, --rxdv,
---		mii_txc   => txc,
---		mii_txd   => txd,
---		mii_txdv  => txdv,
+--	axis_b : block
+--		signal video_vcntr : std_logic_vector(11-1 downto 0);
+--		signal video_hcntr : std_logic_vector(11-1 downto 0);
+--		signal req : std_logic;
+--		signal rdy : std_logic;
+--		signal dot : std_logic;
+--		signal video_on   : std_logic;
+--	begin
 --
---		video_clk => video_clk,
---		video_dot => video_dot,
---		video_hs  => video_hs,
---		video_vs  => video_vs);
+--		video_e : entity hdl4fpga.video_vga
+--		generic map (
+--			mode => 7,
+--			n    => 11)
+--		port map (
+--			clk   => video_clk,
+--			hsync => video_hs,
+--			vsync => video_vs,
+--			hcntr => video_hcntr,
+--			vcntr => video_vcntr,
+--			don   => video_on);
+--
+--		process (rxc)
+--		begin
+--			if rising_edge(rxc) then
+--				if fpga_gsrn='0' then
+--					req <= '1';
+--				elsif rdy='1' then
+--					req <= '0';
+--				end if;
+--			end if;
+--		end process;
+--
+--		axis_e : entity hdl4fpga.scopeio_axis
+--		port map (
+--			in_clk  => rxc,
+--
+--			axis_sel => '0',
+--			hz_req  => req,
+--			hz_rdy  => rdy,
+--			hz_pnt  => b"111",
+--
+--			vt_req  => '0',
+--			vt_rdy  => open,
+--			vt_pnt  => b"111",
+--
+--			video_clk   => video_clk,
+--			video_hcntr => video_hcntr,
+--			video_vcntr => video_vcntr,
+--			video_dot   => dot);
+--		video_dot <= video_on and dot;
+--	end block;
+
+	scopeio_debug_e : entity hdl4fpga.scopeio_debug
+	port map (
+		mii_req   => '0', --mii_req,
+		mii_rxc   => rxc,
+		mii_rxd   => rxd,
+		mii_rxdv  => rxdv,
+--		mii_rxc   => txc,  --rxc,
+--		mii_rxd   => txd,  --rxd,
+--		mii_rxdv  => txdv, --rxdv,
+		mii_txc   => txc,
+		mii_txd   => txd,
+		mii_txdv  => txdv,
+
+		video_clk => video_clk,
+		video_dot => video_dot,
+		video_hs  => video_hs,
+		video_vs  => video_vs);
 	
 	process (txc)
 	begin

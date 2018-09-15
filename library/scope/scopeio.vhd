@@ -544,6 +544,34 @@ begin
 					traces_dots   => traces_dots);
 			end block;
 
+			axis_b : block
+				signal hz_req  : std_logic;
+				signal hz_rdy  : std_logic;
+				signal vt_req  : std_logic;
+				signal vt_rdy  : std_logic;
+				signal dot     : std_logic;
+			begin
+
+				axis_e : entity hdl4fpga.scopeio_axis
+				port map (
+					in_clk  => si_clk,
+
+					axis_sel => '0',
+					hz_req  => hz_req,
+					hz_rdy  => hz_rdy,
+					hz_pnt  => b"111",
+
+					vt_req  => vt_req,
+					vt_rdy  => vt_rdy,
+					vt_pnt  => b"111",
+
+					video_clk   => video_clk,
+					video_hcntr => video_hcntr,
+					video_vcntr => video_vcntr,
+					video_dot   => dot);
+				axis_dot <=  video_on and dot;
+			end block;
+
 		end block;
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
