@@ -60,7 +60,7 @@ architecture beh of ecp3versa is
 		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => (125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('m')));
 
 
-	signal rst        : std_logic;
+	signal rst        : std_logic := '0';
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
@@ -90,9 +90,10 @@ architecture beh of ecp3versa is
 	signal sample      : std_logic_vector(0 to sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal ipcfg_req  : std_logic;
 begin
 
-	rst <= not fpga_gsrn;
+--	rst <= not fpga_gsrn;
 	video_b : block
 		attribute FREQUENCY_PIN_CLKI  : string; 
 		attribute FREQUENCY_PIN_CLKOP : string; 
@@ -146,6 +147,7 @@ begin
 
 	phy1_rst <= not rst;
 
+	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
 		si_clk      => phy1_rxc,
@@ -154,6 +156,7 @@ begin
 		so_clk      => phy1_125clk,
 		so_dv       => phy1_tx_en,
 		so_data     => phy1_tx_d,
+		ipcfg_req   => ipcfg_req,
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,

@@ -19,8 +19,9 @@
 				<BScanLen>1</BScanLen>
 				<BScanVal>0</BScanVal>
 			</Bypass>
-			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scopeio_debug/ecp3versa_scopeio_debug.bit</File>
-			<FileTime>09/13/18 20:43:00</FileTime>
+			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scopeio/ecp3versa_scopeio.bit</File>
+			<FileTime>09/15/18 16:28:44</FileTime>
+			<JedecChecksum>N/A</JedecChecksum>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>

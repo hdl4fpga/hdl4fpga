@@ -31,6 +31,7 @@ entity scopeio is
 		so_clk      : in  std_logic := '-';
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
+		ipcfg_req   : in  std_logic;
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -123,7 +124,7 @@ begin
 		mii_rxdv => si_dv,
 		mii_rxd  => si_data,
 
-		mii_req  => '-',
+		mii_req  => ipcfg_req, --'-',
 		mii_txc  => so_clk,
 		mii_txdv => so_dv,
 		mii_txd  => so_data,
@@ -326,6 +327,7 @@ begin
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
 		signal grid_dot    : std_logic;
+		signal axis_dot : std_logic;
 	begin
 		video_e : entity hdl4fpga.video_vga
 		generic map (
@@ -552,6 +554,7 @@ begin
 				signal dot     : std_logic;
 			begin
 
+
 				axis_e : entity hdl4fpga.scopeio_axis
 				port map (
 					in_clk  => si_clk,
@@ -569,7 +572,7 @@ begin
 					video_hcntr => video_hcntr,
 					video_vcntr => video_vcntr,
 					video_dot   => dot);
-				axis_dot <=  video_on and dot;
+				axis_dot <=  video_hon and dot;
 			end block;
 
 		end block;
@@ -579,7 +582,7 @@ begin
 			traces_fg   => "010",
 			grid_fg     => "100", 
 			grid_bg     => "000", 
-			grid_dot    => grid_dot,
+			grid_dot    => axis_dot, --grid_dot,
 			traces_dots => traces_dots, 
 			video_rgb   => video_pixel);
 	end block;
