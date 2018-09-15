@@ -13,7 +13,7 @@ var j = 0;
 	var buffer = Buffer.alloc(9);
 
 	i=0;
-	buffer[i++] = 1;
+	buffer[i++] = 15;
 	buffer[i++] = 0;
 	buffer[i++] = 0x07;
 

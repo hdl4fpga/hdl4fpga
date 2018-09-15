@@ -124,7 +124,7 @@ begin
 		mii_rxdv => si_dv,
 		mii_rxd  => si_data,
 
-		mii_req  => ipcfg_req, --'-',
+		mii_req  => ipcfg_req,
 		mii_txc  => so_clk,
 		mii_txdv => so_dv,
 		mii_txd  => so_data,
@@ -530,39 +530,63 @@ begin
 
 				end block;
 
-				scopeio_segment_e : entity hdl4fpga.scopeio_segment
-				generic map (
-					latency       => storage_data'length+4,
-					inputs        => inputs)
-				port map (
-					video_clk     => video_clk,
-					grid_on       => grid_on,
-					x             => x,
-					y             => y,
-					samples       => storage_data,
-					trigger_level => trigger_level,
-					grid_dot      => grid_dot,
-					trigger_dot   => trigger_dot,
-					traces_dots   => traces_dots);
+--				scopeio_segment_e : entity hdl4fpga.scopeio_segment
+--				generic map (
+--					latency       => storage_data'length+4,
+--					inputs        => inputs)
+--				port map (
+--					video_clk     => video_clk,
+--					grid_on       => grid_on,
+--					x             => x,
+--					y             => y,
+--					samples       => storage_data,
+--					trigger_level => trigger_level,
+--					grid_dot      => grid_dot,
+--					trigger_dot   => trigger_dot,
+--					traces_dots   => traces_dots);
 			end block;
 
 			axis_b : block
-				signal hz_req  : std_logic;
+				signal hz_req  : std_logic := '0';
 				signal hz_rdy  : std_logic;
-				signal vt_req  : std_logic;
-				signal vt_rdy  : std_logic;
+				signal vt_req  : std_logic := '0';
+				signal vt_rdy  : std_logic := '0';
+				signal axis_sel : std_logic;
 				signal dot     : std_logic;
 			begin
 
+				process(si_clk)
+				begin
+					if rising_edge(si_clk) then
+						if rgtr_dv='1' then
+							case rgtr_id is
+							when x"0f" =>
+								hz_req <= '1';
+							when x"10" =>
+								vt_req <= '1';
+							when x"11" =>
+								axis_sel <= not axis_sel;
+							when others =>
+							end case;
+						else
+							if hz_rdy='1' then
+								hz_req <= '0';
+							end if;
+							if vt_rdy='1' then
+								vt_req <= '0';
+							end if;
+						end if;
+					end if;
+				end process;
 
 				axis_e : entity hdl4fpga.scopeio_axis
 				port map (
 					in_clk  => si_clk,
 
-					axis_sel => '0',
+					axis_sel => axis_sel,
 					hz_req  => hz_req,
 					hz_rdy  => hz_rdy,
-					hz_pnt  => b"111",
+					hz_pnt  => b"110",
 
 					vt_req  => vt_req,
 					vt_rdy  => vt_rdy,
