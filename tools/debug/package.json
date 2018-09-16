@@ -1,0 +1,7 @@
+{
+  "name": "helloworld",
+  "main": "main.html",
+  "window" : {
+	  	"width" : 1500,
+  		"height": 520 }
+}
