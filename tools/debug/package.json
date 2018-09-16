@@ -1,6 +1,6 @@
 {
-  "name": "helloworld",
-  "main": "main.html",
+  "name": "Debug ScopeIO",
+  "main": "debug.html",
   "window" : {
 	  	"width" : 1500,
   		"height": 520 }
