@@ -298,7 +298,6 @@ begin
 		video_vsync => vga_vsync,
 		video_blank => open);
 
-	led(0) <= btn(0);
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
