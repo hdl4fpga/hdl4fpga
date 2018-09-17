@@ -267,7 +267,7 @@ begin
 	end block;
 
 			
-	led(1) <= btn(1);
+	led(1) <= btn(0);
 	process (btn(0), eth_txclk_bufg)
 	begin
 		if btn(0)='1' then
