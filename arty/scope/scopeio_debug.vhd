@@ -123,80 +123,80 @@ begin
 		end if;
 	end process;
 
-	axis_b : block
-		signal video_vcntr : std_logic_vector(11-1 downto 0);
-		signal video_hcntr : std_logic_vector(11-1 downto 0);
-		signal hz_req : std_logic;
-		signal hz_rdy : std_logic;
-		signal vt_req : std_logic;
-		signal vt_rdy : std_logic;
-		signal dot : std_logic;
-		signal video_on   : std_logic;
-	begin
-
-		video_e : entity hdl4fpga.video_vga
-		generic map (
-			mode => 7,
-			n    => 11)
-		port map (
-			clk   => video_clk,
-			hsync => video_hs,
-			vsync => video_vs,
-			hcntr => video_hcntr,
-			vcntr => video_vcntr,
-			don   => video_on);
-
-		process (rxc)
-		begin
-			if rising_edge(rxc) then
-				if btn(0)='1' then
-					hz_req <= sw(0);
-					vt_req <= not sw(0);
-				else
-					if hz_rdy='1' then
-						hz_req <= '0';
-					end if;
-					if vt_rdy='1' then
-						vt_req <= '0';
-					end if;
-				end if;
-			end if;
-		end process;
-
-		axis_e : entity hdl4fpga.scopeio_axis
-		port map (
-			in_clk  => rxc,
-			axis_sel => sw(1),
-
-			hz_req  => hz_req,
-			hz_rdy  => hz_rdy,
-			hz_pnt  => b"111",
-
-			vt_req  => vt_req,
-			vt_rdy  => vt_rdy,
-			vt_pnt  => b"110",
-
-			video_clk   => video_clk,
-			video_hcntr => video_hcntr,
-			video_vcntr => video_vcntr,
-			video_dot   => dot);
-		video_rgb(0) <= video_on and dot;
-	end block;
-
---	scopeio_debug_e : entity hdl4fpga.scopeio_debug
---	port map (
---		mii_req   => mii_req,
---		mii_rxc   => rxc,
---		mii_rxd   => rxd,
---		mii_rxdv  => rxdv,
---		mii_txc   => txc,
---		mii_txd   => txd,
---		mii_txdv  => txdv,
+--	axis_b : block
+--		signal video_vcntr : std_logic_vector(11-1 downto 0);
+--		signal video_hcntr : std_logic_vector(11-1 downto 0);
+--		signal hz_req : std_logic;
+--		signal hz_rdy : std_logic;
+--		signal vt_req : std_logic;
+--		signal vt_rdy : std_logic;
+--		signal dot : std_logic;
+--		signal video_on   : std_logic;
+--	begin
 --
---		video_clk => video_clk,
---		video_dot => video_rgb(0),
---		video_hs  => video_hs,
---		video_vs  => video_vs);
+--		video_e : entity hdl4fpga.video_vga
+--		generic map (
+--			mode => 7,
+--			n    => 11)
+--		port map (
+--			clk   => video_clk,
+--			hsync => video_hs,
+--			vsync => video_vs,
+--			hcntr => video_hcntr,
+--			vcntr => video_vcntr,
+--			don   => video_on);
+--
+--		process (rxc)
+--		begin
+--			if rising_edge(rxc) then
+--				if btn(0)='1' then
+--					hz_req <= sw(0);
+--					vt_req <= not sw(0);
+--				else
+--					if hz_rdy='1' then
+--						hz_req <= '0';
+--					end if;
+--					if vt_rdy='1' then
+--						vt_req <= '0';
+--					end if;
+--				end if;
+--			end if;
+--		end process;
+--
+--		axis_e : entity hdl4fpga.scopeio_axis
+--		port map (
+--			in_clk  => rxc,
+--			axis_sel => sw(1),
+--
+--			hz_req  => hz_req,
+--			hz_rdy  => hz_rdy,
+--			hz_pnt  => b"111",
+--
+--			vt_req  => vt_req,
+--			vt_rdy  => vt_rdy,
+--			vt_pnt  => b"110",
+--
+--			video_clk   => video_clk,
+--			video_hcntr => video_hcntr,
+--			video_vcntr => video_vcntr,
+--			video_dot   => dot);
+--		video_rgb(0) <= video_on and dot;
+--	end block;
+
+	scopeio_debug_e : entity hdl4fpga.scopeio_debug
+	port map (
+		mii_req   => mii_req,
+		mii_rxc   => rxc,
+		mii_rxd   => rxd,
+		mii_rxdv  => rxdv,
+		mii_txc   => txc,
+		mii_txd   => txd,
+		mii_txdv  => txdv,
+
+		video_clk => video_clk,
+		video_dot => video_rgb(0),
+		video_hs  => video_hs,
+		video_vs  => video_vs);
 
 	video_rgb(1) <= video_rgb(0);
 	video_rgb(2) <= video_rgb(0);
@@ -242,27 +242,27 @@ begin
 		end if;
 	end process;
 
---	process (btn(0), txc)
---	begin
---		if btn(0)='1' then
---			mii_req <= '0';
---			led(0)  <= '1';
---		elsif rising_edge(txc) then
---			led(0)  <= '0';
---			mii_req <= '1';
---		end if;
---	end process;
+	process (btn(0), txc)
+	begin
+		if btn(0)='1' then
+			mii_req <= '0';
+			led(0)  <= '1';
+		elsif rising_edge(txc) then
+			led(0)  <= '0';
+			mii_req <= '1';
+		end if;
+	end process;
 
---	process (btn(1), txc)
---	begin
---		if btn(1)='1' then
---			pp <= '0';
---			led(1)  <= '1';
---		elsif rising_edge(txc) then
---			led(1)  <= '0';
---			pp <= '1';
---		end if;
---	end process;
+	process (btn(1), txc)
+	begin
+		if btn(1)='1' then
+			pp <= '0';
+			led(1)  <= '1';
+		elsif rising_edge(txc) then
+			led(1)  <= '0';
+			pp <= '1';
+		end if;
+	end process;
 
 	process (video_clk)
 	begin

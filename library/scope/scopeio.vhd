@@ -230,95 +230,95 @@ begin
 	triggersample_ena  <= ampsample_ena;
 	triggersample_data <= ampsample_data;
 
-	storage_b : block
-
-
-		signal mem_full : std_logic;
-		signal mem_clk  : std_logic;
-
-		signal wr_clk   : std_logic;
-		signal wr_ena   : std_logic;
-		signal wr_addr  : std_logic_vector(storage_addr'range);
-		signal wr_data  : std_logic_vector(0 to storage_word'length*inputs-1);
-		signal rd_clk   : std_logic;
-		signal rd_addr  : std_logic_vector(wr_addr'range);
-		signal rd_data  : std_logic_vector(wr_data'range);
-
-	begin
-
-		resize_p : process (triggersample_data)
-			variable aux1 : unsigned(0 to wr_data'length-1);
-			variable aux2 : unsigned(0 to triggersample_data'length-1);
-		begin
-			aux1 := (others => '-');
-			aux2 := unsigned(triggersample_data);
-			for i in 0 to inputs-1 loop
-				aux1(storage_word'range) := aux2(storage_word'range);
-				aux1 := aux1 rol storage_word'length;
-				aux2 := aux2 rol triggersample_data'length/inputs;
-			end loop;
---			wr_data <= std_logic_vector(aux1);
-		end process;
-
-		capture_rdy <= mem_full;
-		wr_clk      <= input_clk;
-		wr_ena      <= '1'; --capture_req;
-		wr_data     <= triggersample_data;
-
-		rd_clk <= video_clk;
-		gen_addr_p : process (wr_clk)
-			variable aux : unsigned(0 to wr_addr'length) := (others => '0');
-		begin
-			if rising_edge(wr_clk) then
-				if wr_ena='0' then
-					aux := (others => '0');
-				else
-					aux := aux + 1;
-				end if;
---				wr_data <= ('0','0', '0', '0', others => '1');
---				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
+--	storage_b : block
+--
+--
+--		signal mem_full : std_logic;
+--		signal mem_clk  : std_logic;
+--
+--		signal wr_clk   : std_logic;
+--		signal wr_ena   : std_logic;
+--		signal wr_addr  : std_logic_vector(storage_addr'range);
+--		signal wr_data  : std_logic_vector(0 to storage_word'length*inputs-1);
+--		signal rd_clk   : std_logic;
+--		signal rd_addr  : std_logic_vector(wr_addr'range);
+--		signal rd_data  : std_logic_vector(wr_data'range);
+--
+--	begin
+--
+--		resize_p : process (triggersample_data)
+--			variable aux1 : unsigned(0 to wr_data'length-1);
+--			variable aux2 : unsigned(0 to triggersample_data'length-1);
+--		begin
+--			aux1 := (others => '-');
+--			aux2 := unsigned(triggersample_data);
+--			for i in 0 to inputs-1 loop
+--				aux1(storage_word'range) := aux2(storage_word'range);
+--				aux1 := aux1 rol storage_word'length;
+--				aux2 := aux2 rol triggersample_data'length/inputs;
+--			end loop;
+----			wr_data <= std_logic_vector(aux1);
+--		end process;
+--
+--		capture_rdy <= mem_full;
+--		wr_clk      <= input_clk;
+--		wr_ena      <= '1'; --capture_req;
+--		wr_data     <= triggersample_data;
+--
+--		rd_clk <= video_clk;
+--		gen_addr_p : process (wr_clk)
+--			variable aux : unsigned(0 to wr_addr'length) := (others => '0');
+--		begin
+--			if rising_edge(wr_clk) then
+--				if wr_ena='0' then
+--					aux := (others => '0');
+--				else
+--					aux := aux + 1;
 --				end if;
---				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
-				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
-				mem_full <= aux(0);
-			end if;
-		end process;
-
-		rd_addr_e : entity hdl4fpga.align
-		generic map (
-			n => rd_addr'length,
-			d => (rd_addr'range => 1))
-		port map (
-			clk => rd_clk,
-			di  => storage_addr,
-			do  => rd_addr);
-
-		mem_e : entity hdl4fpga.dpram 
-		port map (
-			wr_clk  => wr_clk,
-			wr_ena  => wr_ena,
-			wr_addr => wr_addr,
-			wr_data => wr_data,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
-
-		rd_data_e : entity hdl4fpga.align
-		generic map (
-			n => rd_data'length,
-			d => (rd_data'range => 1))
-		port map (
-			clk => rd_clk,
-			di  => rd_data,
-			do  => storage_data);
-
-	end block;
+----				wr_data <= ('0','0', '0', '0', others => '1');
+----				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
+----					wr_data <= ('0', '0', '1', others => '0');
+----				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
+----					wr_data <= ('0', '0', '1', others => '0');
+----				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
+----					wr_data <= ('0', '0', '1', others => '0');
+----				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
+----					wr_data <= ('0', '0', '1', others => '0');
+----				end if;
+----				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
+--				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
+--				mem_full <= aux(0);
+--			end if;
+--		end process;
+--
+--		rd_addr_e : entity hdl4fpga.align
+--		generic map (
+--			n => rd_addr'length,
+--			d => (rd_addr'range => 1))
+--		port map (
+--			clk => rd_clk,
+--			di  => storage_addr,
+--			do  => rd_addr);
+--
+--		mem_e : entity hdl4fpga.dpram 
+--		port map (
+--			wr_clk  => wr_clk,
+--			wr_ena  => wr_ena,
+--			wr_addr => wr_addr,
+--			wr_data => wr_data,
+--			rd_addr => rd_addr,
+--			rd_data => rd_data);
+--
+--		rd_data_e : entity hdl4fpga.align
+--		generic map (
+--			n => rd_data'length,
+--			d => (rd_data'range => 1))
+--		port map (
+--			clk => rd_clk,
+--			di  => rd_data,
+--			do  => storage_data);
+--
+--	end block;
 
 	 video_b : block
 
@@ -586,11 +586,11 @@ begin
 					axis_sel => axis_sel,
 					hz_req  => hz_req,
 					hz_rdy  => hz_rdy,
-					hz_pnt  => b"110",
+					hz_pnt  => std_logic_vector'(b"110"),
 
 					vt_req  => vt_req,
 					vt_rdy  => vt_rdy,
-					vt_pnt  => b"111",
+					vt_pnt  => std_logic_vector'(b"111"),
 
 					video_clk   => video_clk,
 					video_hcntr => video_hcntr,

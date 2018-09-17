@@ -162,17 +162,6 @@ begin
 		end if;
 	end process;
 
-	scopeio_tobcd_e : entity hdl4fpga.scopeio_tobcd
-	generic map (
-		fracbin_size => 4,
-		fracbcd_size => 4)
-	port map (
-		clk     => mii_rxc,
-		fix     => fix, 
-		mgntd   => mgntd,
-		mult    => mult,
-		bcd_str => bcd_str);
-
 	process(mii_rxc)
 
 		function bcdtoascii (
