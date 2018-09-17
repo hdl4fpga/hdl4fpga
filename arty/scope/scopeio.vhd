@@ -267,12 +267,13 @@ begin
 	end block;
 
 			
-	process (btn(0), txc)
+	led(1) <= btn(1);
+	process (btn(0), eth_txclk_bufg)
 	begin
 		if btn(0)='1' then
 			ipcfg_req <= '0';
 			led(0)  <= '1';
-		elsif rising_edge(txc) then
+		elsif rising_edge(eth_txclk_bufg) then
 			led(0)  <= '0';
 			ipcfg_req <= '1';
 		end if;
