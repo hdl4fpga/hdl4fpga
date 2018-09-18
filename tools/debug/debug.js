@@ -43,6 +43,18 @@ window.addEventListener("load", function() {
 	var rgtrID = e;
 
 	e = document.createElement("INPUT");
+
+	e.setAttribute("type","number");
+	e.setAttribute("value","0");
+	e.style.textAlign = "right";
+
+	e.addEventListener("wheel", mouseWheelCb, false);
+
+	document.body.appendChild(e);
+
+	var rgtrData = e;
+
+	e = document.createElement("INPUT");
 	e.setAttribute("type","button");
 	e.setAttribute("value","Send");
 	document.body.appendChild(e);
@@ -51,7 +63,7 @@ window.addEventListener("load", function() {
 		var data = [];
 		data.push(rgtrID.value);
 		data.push(0);
-		data.push(0);
+		data.push(rgtrData.value);
 		console.log("pase por aca");
 		send(data);
 	}

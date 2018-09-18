@@ -1,7 +1,4 @@
 {
   "name": "Debug ScopeIO",
-  "main": "debug.html",
-  "window" : {
-	  	"width" : 1500,
-  		"height": 520 }
+  "main": "debug.html"
 }
