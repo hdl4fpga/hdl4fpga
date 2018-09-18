@@ -183,55 +183,56 @@ begin
 --		video_rgb(0) <= video_on and dot;
 --	end block;
 
-	scopeio_debug_e : entity hdl4fpga.scopeio_debug
-	port map (
-		mii_req   => mii_req,
-		mii_rxc   => rxc,
-		mii_rxd   => rxd,
-		mii_rxdv  => rxdv,
-		mii_txc   => txc,
-		mii_txd   => txd,
-		mii_txdv  => txdv,
-
-		video_clk => video_clk,
-		video_dot => video_rgb(0),
-		video_hs  => video_hs,
-		video_vs  => video_vs);
-
-	video_rgb(1) <= video_rgb(0);
-	video_rgb(2) <= video_rgb(0);
+--	scopeio_debug_e : entity hdl4fpga.scopeio_debug
+--	port map (
+--		mii_req   => mii_req,
+--		mii_rxc   => rxc,
+--		mii_rxd   => rxd,
+--		mii_rxdv  => rxdv,
+--		mii_txc   => txc,
+--		mii_txd   => txd,
+--		mii_txdv  => txdv,
+--
+--		video_clk => video_clk,
+--		video_dot => video_rgb(0),
+--		video_hs  => video_hs,
+--		video_vs  => video_vs);
+--
+--	video_rgb(1) <= video_rgb(0);
+--	video_rgb(2) <= video_rgb(0);
 		
---	process (sys_clk)
---	begin
---		if rising_edge(sys_clk) then
---			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
---		end if;
---	end process;
---
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sintab(0, 2047, sample_size))
---	port map (
---		clk  => sys_clk,
---		addr => input_addr,
---		data => sample);
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
 
---	scopeio_e : entity hdl4fpga.scopeio
---	port map (
---		si_clk      => rxc,
---		si_dv       => rxdv,
---		si_data     => rxd,
---
---		so_clk      => txc,
---		so_data     => txd,
---		so_dv       => txdv,
---
---		input_clk   => sys_clk,
---		input_data  => sample,
---		video_clk   => video_clk,
---		video_rgb   => video_rgb,
---		video_hsync => video_hs,
---		video_vsync => video_vs);
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sintab(0, 2047, sample_size))
+	port map (
+		clk  => sys_clk,
+		addr => input_addr,
+		data => sample);
+
+	scopeio_e : entity hdl4fpga.scopeio
+	port map (
+		si_clk      => rxc,
+		si_dv       => rxdv,
+		si_data     => rxd,
+
+		so_clk      => txc,
+		so_data     => txd,
+		so_dv       => txdv,
+		ipcfg_req   => mii_req,
+
+		input_clk   => sys_clk,
+		input_data  => sample,
+		video_clk   => video_clk,
+		video_rgb   => video_rgb,
+		video_hsync => video_hs,
+		video_vsync => video_vs);
 
 	txc <= eth_txclk_bufg;
 	process (txc)

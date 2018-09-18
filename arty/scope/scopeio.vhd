@@ -46,6 +46,10 @@ architecture beh of arty is
 	signal tdiv           : std_logic_vector(0 to 4-1);
 
 	signal ipcfg_req : std_logic;
+	signal txc  : std_logic;
+	signal txd  : std_logic_vector(eth_txd'range);
+	signal txdv : std_logic;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -276,6 +280,15 @@ begin
 		elsif rising_edge(eth_txclk_bufg) then
 			led(0)  <= '0';
 			ipcfg_req <= '1';
+		end if;
+	end process;
+
+	txc <= eth_txclk_bufg;
+	process (txc)
+	begin
+		if falling_edge(txc) then
+			eth_txd   <= txd;
+			eth_tx_en <= txdv;
 		end if;
 	end process;
 

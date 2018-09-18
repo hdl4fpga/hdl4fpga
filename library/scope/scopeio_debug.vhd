@@ -39,7 +39,7 @@ entity scopeio_debug is
 		mii_rxd   : in  std_logic_vector;
 		mii_rxdv  : in  std_logic;
 
-		mii_req   : in  std_logic := '0';
+		mii_req   : in  std_logic;
 		mii_txc   : in  std_logic;
 		mii_txd   : out std_logic_vector;
 		mii_txdv  : out std_logic;
@@ -51,10 +51,6 @@ entity scopeio_debug is
 	end;
 
 architecture struct of scopeio_debug is
-
-	signal txc  : std_logic;
-	signal txdv : std_logic;
-	signal txd  : std_logic_vector(mii_txd'range);
 
 	signal d_rxc  : std_logic;
 	signal d_rxdv : std_logic;
@@ -82,10 +78,6 @@ architecture struct of scopeio_debug is
 
 begin
 
-	txc <= mii_txc;
-	mii_txdv <= txdv;
-	mii_txd  <= txd;
-
 	mii_ipcfg_e : entity hdl4fpga.mii_ipcfg
 	generic map (
 		mac       => x"00_40_00_01_02_03")
@@ -100,8 +92,8 @@ begin
 		udpddata_vld => udpdata_vld,
 
 		mii_txc   => mii_txc,
-		mii_txdv  => txdv,
-		mii_txd   => txd);
+		mii_txdv  => mii_txdv,
+		mii_txd   => mii_txd);
 
 	clip_crc_b : block
 		constant lat : natural := 32/mii_rxd'length;

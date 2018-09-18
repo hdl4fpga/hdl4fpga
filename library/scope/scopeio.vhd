@@ -443,10 +443,10 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => (0=> sgmnt.x-1),
-					y      => (0=> 0),
-					width  => (0=> sgmnt.width+1),
-					height => (0=> sgmnt.height+1))
+					x      =>  natural_vector'(0=> sgmnt.x-1),
+					y      => natural_vector'(0=> 0),
+					width  => natural_vector'(0=> sgmnt.width+1),
+					height => natural_vector'(0=> sgmnt.height+1))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,
@@ -603,15 +603,14 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		port map (
-			traces_fg   => "010",
-			grid_fg     => "100", 
-			grid_bg     => "000", 
+			traces_fg   => std_logic_vector'("010"),
+			grid_fg     => std_logic_vector'("100"), 
+			grid_bg     => std_logic_vector'("000"), 
 			grid_dot    => axis_dot, --grid_dot,
 			traces_dots => traces_dots, 
 			video_rgb   => video_pixel);
 	end block;
 
-	so_data <= (so_data'range => 'Z');
 	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
 	video_blank <= video_io(2);
 	video_hsync <= video_io(0);
