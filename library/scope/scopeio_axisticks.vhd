@@ -73,14 +73,11 @@ begin
 
 	process(clk)
 		variable cntr : unsigned(bin_val'range);
+		variable base : unsigned(bin_val'range);
 	begin
 		if rising_edge(clk) then
 			if wrt_req='0' then
-				if hz_gnt='1' then
-					cntr := resize(unsigned(hz_from), cntr'length);
-				else
-					cntr := resize(unsigned(vt_from), cntr'length);
-				end if;
+				cntr := (others => '0');
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
 					if hz_gnt='1' then
@@ -90,7 +87,12 @@ begin
 					end if;
 				end if;
 			end if;
-			bin_val <= std_logic_vector(cntr);
+			if hz_gnt='1' then
+				base := resize(unsigned(hz_from), base'length);
+			else
+				base := resize(unsigned(vt_from), base'length);
+			end if;
+			bin_val <= std_logic_vector(cntr + base);
 		end if;
 	end process;
 

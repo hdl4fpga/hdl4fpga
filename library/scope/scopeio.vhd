@@ -550,6 +550,8 @@ begin
 				signal hz_req  : std_logic := '0';
 				signal hz_rdy  : std_logic;
 				signal hz_pnt  : std_logic_vector(3-1 downto 0);
+				signal hz_from : std_logic_vector(6-1 downto 0);
+				signal hz_step : std_logic_vector(6-1 downto 0);
 				signal vt_req  : std_logic := '0';
 				signal vt_rdy  : std_logic := '0';
 				signal axis_sel : std_logic;
@@ -562,7 +564,9 @@ begin
 						if rgtr_dv='1' then
 							case rgtr_id is
 							when x"0f" =>
-								hz_pnt <= rgtr_data(3-1 downto 0);
+								hz_from <= rgtr_data(6-1  downto  0);
+								hz_step <= rgtr_data(12-1 downto  6);
+								hz_pnt  <= rgtr_data(15-1 downto 12);
 								hz_req <= '1';
 							when x"10" =>
 								vt_req <= '1';
@@ -588,6 +592,8 @@ begin
 					axis_sel => axis_sel,
 					hz_req  => hz_req,
 					hz_rdy  => hz_rdy,
+					hz_step => hz_step,
+					hz_from => hz_from,
 --					hz_pnt  => std_logic_vector'(b"110"),
 					hz_pnt  => hz_pnt,
 

@@ -62,8 +62,9 @@ window.addEventListener("load", function() {
 	e.onclick = function(ev) {
 		var data = [];
 		data.push(rgtrID.value);
-		data.push(0);
-		data.push(rgtrData.value);
+		data.push(1);
+		data.push(rgtrData.value >> 8);
+		data.push(rgtrData.value % 256);
 		console.log("pase por aca");
 		send(data);
 	}

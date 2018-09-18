@@ -14,6 +14,8 @@ entity scopeio_axis is
 
 		hz_req      : in  std_logic;
 		hz_rdy      : out std_logic;
+		hz_from     : in  std_logic_vector;
+		hz_step     : in  std_logic_vector;
 		hz_pnt      : in  std_logic_vector;
 
 		vt_req      : in  std_logic;
@@ -36,8 +38,6 @@ architecture def of scopeio_axis is
 	signal value   : std_logic_vector(8*4-1 downto 0);
 	signal vt_dv   : std_logic;
 	signal hz_dv   : std_logic;
-	signal hz_step : std_logic_vector(0 to 5);
-	signal hz_from : std_logic_vector(0 to 5);
 	signal hz_tick : std_logic_vector(6-1 downto 0);
 	signal hz_val  : std_logic_vector(value'range);
 	signal vt_step : std_logic_vector(0 to 5);
@@ -52,8 +52,8 @@ begin
 		clk     => in_clk,
 
 		hz_len  => std_logic_vector(hz_len),
-		hz_step => b"10_0000", --hz_step,
-		hz_from => b"00_0000", --hz_from,
+		hz_step => hz_step,
+		hz_from => hz_from,
 		hz_req  => hz_req,
 		hz_rdy  => hz_rdy,
 		hz_pnt  => hz_pnt,
