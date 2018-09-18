@@ -25,6 +25,7 @@ window.addEventListener("load", function() {
 
 	function mouseWheelCb (e) {
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+		console.log("mouseWheel");
 	}
 
 	var e;
@@ -43,7 +44,7 @@ window.addEventListener("load", function() {
 
 	e = document.createElement("INPUT");
 	e.setAttribute("type","button");
-	e.setAttribute("value","hola");
+	e.setAttribute("value","Send");
 	document.body.appendChild(e);
 
 	e.onclick = function(ev) {
