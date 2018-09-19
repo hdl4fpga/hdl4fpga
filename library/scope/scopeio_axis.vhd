@@ -20,6 +20,8 @@ entity scopeio_axis is
 
 		vt_req      : in  std_logic;
 		vt_rdy      : out std_logic;
+		vt_from     : in  std_logic_vector;
+		vt_step     : in  std_logic_vector;
 		vt_pnt      : in  std_logic_vector;
 
 		video_clk   : in  std_logic;
@@ -40,8 +42,6 @@ architecture def of scopeio_axis is
 	signal hz_dv   : std_logic;
 	signal hz_tick : std_logic_vector(6-1 downto 0);
 	signal hz_val  : std_logic_vector(value'range);
-	signal vt_step : std_logic_vector(0 to 5);
-	signal vt_from : std_logic_vector(0 to 5);
 	signal vt_tick : std_logic_vector(4-1 downto 0);
 	signal vt_val  : std_logic_vector(value'range);
 
@@ -60,8 +60,8 @@ begin
 		hz_dv   => hz_dv,
 
 		vt_len  => std_logic_vector(vt_len),
-		vt_step => b"11_0000", --vt_step,
-		vt_from => b"00_0000", --vt_from,
+		vt_step => vt_step,
+		vt_from => vt_from,
 		vt_req  => vt_req,
 		vt_rdy  => vt_rdy,
 		vt_pnt  => vt_pnt,

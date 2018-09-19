@@ -370,7 +370,7 @@ architecture def of align_bcd is
 					retval := retval ror 4;
 				end if;
 			elsif left='1' then
-				retval := retval ror 4;
+--				retval := retval ror 4;
 				exit;
 			else
 				exit;
@@ -399,7 +399,6 @@ entity format_bcd is
 	port (
 		value  : in  std_logic_vector;
 		point  : in  std_logic_vector;
-		align  : in  std_logic := '1';
 		format : out std_logic_vector);
 end;
 		
@@ -412,53 +411,42 @@ architecture def of format_bcd is
 		return std_logic_vector is
 		variable temp  : std_logic_vector(value'length-1 downto 0);
 		variable digit : std_logic_vector(4-1 downto 0);
+		variable aux : std_logic_vector(4-1 downto 0);
 
 	begin
 
 		temp  := value;
 		digit := dot;
 
-		if signed(point) < 0 then
+		if point(point'left)='1' then
 
-			for i in 0 to value'length/4-1 loop
+			for i in 0 to value'length/digit'length-1 loop
 				if to_integer(signed(point))+i < 0 then
-					temp := std_logic_vector(unsigned(temp) ror 4);
-					if temp(4-1 downto 0)=x"f" then
+					temp := std_logic_vector(unsigned(temp) ror digit'length);
+					if temp(digit'range)=x"f" then
 						temp(digit'range) := x"0";
 					end if;
 				end if;
 			end loop;
 
-			temp := std_logic_vector(unsigned(temp) rol 4);
+			temp := std_logic_vector(unsigned(temp) rol digit'length);
 			swap(digit, temp(digit'range));
 
-			for i in 0 to value'length/4-1 loop
+			for i in 0 to value'length/digit'length-1 loop
 				if to_integer(signed(point))+i < 0 then
-					temp := std_logic_vector(unsigned(temp) rol 4);
+					temp := std_logic_vector(unsigned(temp) rol digit'length);
 					swap(digit, temp(digit'range));
 				end if;
 			end loop;
 
 		end if;
 
-		if align='1' then
-			for i in 0 to value'length/4-1 loop
-				temp := std_logic_vector(unsigned(temp) rol 4);
-				if temp(digit'range) /= space then
-					temp := std_logic_vector(unsigned(temp) ror 4);
-					exit;
-				end if;
-			end loop;
-		end if;
-
 		return temp;
 	end;
 
 begin
-	format <= format_bcd_f(
-		value => value,
-		point => point,
-		align => align);
+
+	format <= format_bcd_f(value, point);
 		
 end;
 

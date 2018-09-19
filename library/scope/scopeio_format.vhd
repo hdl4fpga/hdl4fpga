@@ -105,8 +105,9 @@ begin
 		bcd_do  => bcd_do);
 
 	format_b : block
-		signal value   : std_logic_vector(0 to bcd_dat'length-1);
-		signal aligned : std_logic_vector(0 to bcd_dat'length-1);
+		signal value : std_logic_vector(0 to bcd_dat'length-1);
+		signal right : std_logic_vector(0 to bcd_dat'length-1);
+		signal float : std_logic_vector(0 to bcd_dat'length-1);
 
 	begin
 
@@ -126,14 +127,20 @@ begin
 		alignbcd_e  : entity hdl4fpga.align_bcd
 		port map (
 			value  => value,
-			align  => aligned);
+			align  => right);
 		
 		formatbcd_e : entity hdl4fpga.format_bcd
 		port map (
-			value  => aligned,
+			value  => right,
 			point  => point,
-			format => bcd_dat);
+			format => float);
 
+		alignbcd_e  : entity hdl4fpga.align_bcd
+		port map (
+			left  => '1',
+			value => float,
+			align => bcd_dat);
+		
 	end block;
 
 
