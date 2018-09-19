@@ -99,6 +99,7 @@ begin
 		hz_tick <='0' & video_hcntr(11-1 downto 6);
 		vt_tick <= video_hcntr(10-1 downto 6);
 		hz_bcd <= word2byte(hz_val, video_hcntr(6-1 downto 3), hz_bcd'length);
+--		hz_bcd <= word2byte(hz_val, "000", hz_bcd'length);
 		vt_bcd <= word2byte(vt_val, video_hcntr(6-1 downto 3), vt_bcd'length);
 		code   <= word2byte(hz_bcd & vt_bcd, axis_sel);
 

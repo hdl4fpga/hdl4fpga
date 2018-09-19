@@ -362,6 +362,9 @@ architecture def of align_bcd is
 		variable retval : unsigned(value'length-1 downto 0);
 	begin
 		retval := unsigned(value);
+		if left='1' then
+			retval := retval rol 4;
+		end if;
 		for i in 0 to value'length/4-1 loop
 			if std_logic_vector(retval(4-1 downto 0))=space then
 				if left='1' then
@@ -370,7 +373,7 @@ architecture def of align_bcd is
 					retval := retval ror 4;
 				end if;
 			elsif left='1' then
---				retval := retval ror 4;
+				retval := retval ror 4;
 				exit;
 			else
 				exit;
