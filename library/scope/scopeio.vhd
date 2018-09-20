@@ -553,8 +553,9 @@ begin
 				signal vt_rdy  : std_logic := '0';
 				signal pnt  : std_logic_vector(3-1 downto 0);
 				signal from : std_logic_vector(6-1 downto 0);
+				signal f    : std_logic_vector(6-1 downto 0);
 				signal step : std_logic_vector(6-1 downto 0);
-				signal axis_sel : std_logic;
+				signal axis_sel : std_logic := '1';
 				signal dot     : std_logic;
 			begin
 
@@ -567,6 +568,8 @@ begin
 							pnt  <= rgtr_data(15-1 downto 12);
 
 							case rgtr_id is
+							when x"0e" =>
+								 f <= rgtr_data(6-1  downto  0);
 							when x"0f" =>
 								hz_req <= '1';
 							when x"10" =>

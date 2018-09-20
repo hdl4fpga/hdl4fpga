@@ -58,25 +58,27 @@ begin
 		process (clk, binary_ena)
 			variable cntr : unsigned(0 to sel'length);
 			variable ena  : std_logic;
+			variable dv  : std_logic;
 		begin
 			if rising_edge(clk) then
+				bcd_dv <= dv;
 				if binary_ena='0' then
 					ena    := '0';
-					bcd_dv <= '0';
+					dv := '0';
 					cntr   := to_unsigned(num_of_steps-2, cntr'length);
 				elsif bcd_rdy='1' then
 					if cntr(0)='1' then
 						ena    := '0';
-						bcd_dv <= '1';
+						dv := '1';
 						cntr   := to_unsigned(num_of_steps-2, cntr'length);
 					elsif cntr(0)='0' then
 						ena    := '1';
-						bcd_dv <= '0';
+						dv := '0';
 						cntr   := cntr - 1;
 					end if;
 				else
 					ena    := '1';
-					bcd_dv <= '0';
+					dv := '0';
 				end if;
 				sel  <= std_logic_vector(cntr(1 to cntr'right));
 			end if;
@@ -108,6 +110,7 @@ begin
 		signal value : std_logic_vector(0 to bcd_dat'length-1);
 		signal right : std_logic_vector(0 to bcd_dat'length-1);
 		signal float : std_logic_vector(0 to bcd_dat'length-1);
+		signal f : std_logic_vector(0 to bcd_dat'length-1);
 
 	begin
 
@@ -121,6 +124,7 @@ begin
 					value <= push_left(value, bcd_do);
 				end if;
 				ena := bcd_rdy;
+				float <= f;
 			end if;
 		end process;
 
@@ -133,7 +137,7 @@ begin
 		port map (
 			value  => right,
 			point  => point,
-			format => float);
+			format => f);
 
 		alignbcd_e  : entity hdl4fpga.align_bcd
 		port map (
