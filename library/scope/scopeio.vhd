@@ -96,6 +96,7 @@ architecture beh of scopeio is
 	signal rgtr_data          : std_logic_vector(hzscale_rgtr'high downto 0);
 	signal rgtr_dv            : std_logic;
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
+
 	signal downsample_ena     : std_logic;
 	signal downsample_data    : std_logic_vector(input_data'range);
 	signal ampsample_ena      : std_logic;
@@ -115,7 +116,7 @@ architecture beh of scopeio is
 	subtype storage_word is std_logic_vector(0 to 9-1);
 	signal storage_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
-	signal video_pixel : std_logic_vector(video_rgb'range);
+	signal video_pixel  : std_logic_vector(video_rgb'range);
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
@@ -141,6 +142,38 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
+
+	rgtr_b : block
+	begin
+		process(si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if rgtr_dv='1' then
+					axis_step <= rgtr_data( 6-1 downto  0);
+					axis_from <= rgtr_data(12-1 downto  6);
+					axis_pnt  <= rgtr_data(15-1 downto 12);
+
+					case rgtr_id is
+					when x"0f" =>
+						hz_req <= '1';
+					when x"10" =>
+						vt_req <= '1';
+					when x"11" =>
+						axis_sel <= not axis_sel;
+					when others =>
+					end case;
+				else
+					if hz_rdy='1' then
+						hz_req <= '0';
+					end if;
+					if vt_rdy='1' then
+						vt_req <= '0';
+					end if;
+				end if;
+			end if;
+		end process;
+
+	end block;
 
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
@@ -327,7 +360,7 @@ begin
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
 		signal grid_dot    : std_logic;
-		signal axis_dot : std_logic;
+		signal axis_dot    : std_logic;
 	begin
 		video_e : entity hdl4fpga.video_vga
 		generic map (
@@ -443,7 +476,7 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      =>  natural_vector'(0=> sgmnt.x-1),
+					x      => natural_vector'(0=> sgmnt.x-1),
 					y      => natural_vector'(0=> 0),
 					width  => natural_vector'(0=> sgmnt.width+1),
 					height => natural_vector'(0=> sgmnt.height+1))
@@ -546,72 +579,69 @@ begin
 --					traces_dots   => traces_dots);
 			end block;
 
-			axis_b : block
-				signal hz_req  : std_logic := '0';
-				signal hz_rdy  : std_logic;
-				signal vt_req  : std_logic := '0';
-				signal vt_rdy  : std_logic := '0';
-				signal pnt  : std_logic_vector(3-1 downto 0);
-				signal from : std_logic_vector(6-1 downto 0);
-				signal f    : std_logic_vector(6-1 downto 0);
-				signal step : std_logic_vector(6-1 downto 0);
-				signal axis_sel : std_logic := '1';
-				signal dot     : std_logic;
-			begin
-
-				process(si_clk)
-				begin
-					if rising_edge(si_clk) then
-						if rgtr_dv='1' then
-							step <= rgtr_data(6-1  downto  0);
-							from <= rgtr_data(12-1 downto  6);
-							pnt  <= rgtr_data(15-1 downto 12);
-
-							case rgtr_id is
-							when x"0e" =>
-								 f <= rgtr_data(6-1  downto  0);
-							when x"0f" =>
-								hz_req <= '1';
-							when x"10" =>
-								vt_req <= '1';
-							when x"11" =>
-								axis_sel <= not axis_sel;
-							when others =>
-							end case;
-						else
-							if hz_rdy='1' then
-								hz_req <= '0';
-							end if;
-							if vt_rdy='1' then
-								vt_req <= '0';
-							end if;
-						end if;
-					end if;
-				end process;
-
-				axis_e : entity hdl4fpga.scopeio_axis
-				port map (
-					in_clk  => si_clk,
-
-					axis_sel => axis_sel,
-					hz_req  => hz_req,
-					hz_rdy  => hz_rdy,
-					hz_step => step,
-					hz_from => from,
-					hz_pnt  => pnt,
-
-					vt_req  => vt_req,
-					vt_rdy  => vt_rdy,
-					vt_step => step,
-					vt_from => from,
-					vt_pnt  => pnt,
-
-					video_clk   => video_clk,
-					video_hcntr => video_hcntr,
-					video_vcntr => video_vcntr,
-					video_dot   => dot);
-				axis_dot <=  video_hon and dot;
-			end block;
+--			axis_b : block
+--				signal hz_req  : std_logic := '0';
+--				signal hz_rdy  : std_logic;
+--				signal vt_req  : std_logic := '0';
+--				signal vt_rdy  : std_logic := '0';
+--				signal pnt  : std_logic_vector(3-1 downto 0);
+--				signal from : std_logic_vector(6-1 downto 0);
+--				signal step : std_logic_vector(6-1 downto 0);
+--				signal axis_sel : std_logic := '1';
+--				signal dot     : std_logic;
+--			begin
+--
+--				process(si_clk)
+--				begin
+--					if rising_edge(si_clk) then
+--						if rgtr_dv='1' then
+--							step <= rgtr_data( 6-1 downto  0);
+--							from <= rgtr_data(12-1 downto  6);
+--							pnt  <= rgtr_data(15-1 downto 12);
+--
+--							case rgtr_id is
+--							when x"0f" =>
+--								hz_req <= '1';
+--							when x"10" =>
+--								vt_req <= '1';
+--							when x"11" =>
+--								axis_sel <= not axis_sel;
+--							when others =>
+--							end case;
+--						else
+--							if hz_rdy='1' then
+--								hz_req <= '0';
+--							end if;
+--							if vt_rdy='1' then
+--								vt_req <= '0';
+--							end if;
+--						end if;
+--					end if;
+--				end process;
+--
+--				axis_e : entity hdl4fpga.scopeio_axis
+--				port map (
+--					in_clk      => si_clk,
+--
+--					axis_sel    => axis_sel,
+--					hz_req      => hz_req,
+--					hz_rdy      => hz_rdy,
+--					hz_step     => step,
+--					hz_from     => from,
+--					hz_pnt      => pnt,
+--
+--					vt_req      => vt_req,
+--					vt_rdy      => vt_rdy,
+--					vt_step     => step,
+--					vt_from     => from,
+--					vt_pnt      => pnt,
+--
+--					video_clk   => video_clk,
+--					video_hcntr => video_hcntr,
+--					video_vcntr => video_vcntr,
+--					video_dot   => dot);
+--				axis_dot <=  video_hon and dot;
+--			end block;
 
 		end block;
 

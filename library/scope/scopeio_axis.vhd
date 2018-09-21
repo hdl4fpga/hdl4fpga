@@ -10,16 +10,16 @@ entity scopeio_axis is
 	port (
 		in_clk     : in  std_logic;
 
-		axis_sel    : in std_logic;
-
 		hz_req      : in  std_logic;
 		hz_rdy      : out std_logic;
+		hz_on       : in  std_logic;
 		hz_from     : in  std_logic_vector;
 		hz_step     : in  std_logic_vector;
 		hz_pnt      : in  std_logic_vector;
 
 		vt_req      : in  std_logic;
 		vt_rdy      : out std_logic;
+		vt_on       : in  std_logic;
 		vt_from     : in  std_logic_vector;
 		vt_step     : in  std_logic_vector;
 		vt_pnt      : in  std_logic_vector;
@@ -100,7 +100,7 @@ begin
 		vt_tick <= video_hcntr(10-1 downto 6);
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length); --);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length); --);
-		code    <= word2byte(hz_bcd & vt_bcd, axis_sel);
+		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
 --		code    <= word2byte(word2byte(hz_val & vt_val, axis_sel), video_hcntr(6-1 downto 3), code'length);
 
 		rom_e : entity hdl4fpga.cga_rom

@@ -128,7 +128,7 @@ begin
 			end if;
 		end process;
 
-		alignbcd_e  : entity hdl4fpga.align_bcd
+		alignright_e  : entity hdl4fpga.align_bcd
 		port map (
 			value  => value,
 			align  => right);

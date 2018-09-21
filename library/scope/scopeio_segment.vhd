@@ -12,12 +12,29 @@ entity scopeio_segment is
 		latency       : natural;
 		inputs        : natural);
 	port (
+		in_clk        : in  std_logic;
+
+		hz_req        : in  std_logic;
+		hz_rdy        : out std_logic;
+		hz_from       : in  std_logic_vector;
+		hz_step       : in  std_logic_vector;
+		hz_pnt        : in  std_logic_vector;
+		hz_on         : in  std_logic;
+
+		vt_req        : in  std_logic;
+		vt_rdy        : out std_logic;
+		vt_from       : in  std_logic_vector;
+		vt_step       : in  std_logic_vector;
+		vt_pnt        : in  std_logic_vector;
+		vt_on         : in  std_logic;
+
 		video_clk     : in  std_logic;
 		grid_on       : in  std_logic;
 		x             : in  std_logic_vector;
 		y             : in  std_logic_vector;
 		trigger_level : in  std_logic_vector;
 		samples       : in  std_logic_vector;
+		axis_dot      : out std_logic;
 		grid_dot      : out std_logic;
 		trigger_dot   : out std_logic;
 		traces_dots   : out std_logic_vector);
@@ -46,6 +63,29 @@ begin
 --		x   => win_x,
 --		y   => win_y,
 --		dot => trigger_dot);
+
+	axis_e : entity hdl4fpga.scopeio_axis
+	port map (
+		in_clk      => in_clk,
+
+		hz_on       => hz_on,
+		hz_req      => hz_req,
+		hz_rdy      => hz_rdy,
+		hz_step     => hz_step,
+		hz_from     => hz_from,
+		hz_pnt      => hz_pnt,
+
+		vt_on       => vt_on,
+		vt_req      => vt_req,
+		vt_rdy      => vt_rdy,
+		vt_step     => vt_step,
+		vt_from     => vt_from,
+		vt_pnt      => vt_pnt,
+
+		video_clk   => video_clk,
+		video_hcntr => x,
+		video_vcntr => y,
+		video_dot   => axis_dot);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (
