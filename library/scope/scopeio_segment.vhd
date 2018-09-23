@@ -16,17 +16,13 @@ entity scopeio_segment is
 
 		hz_req        : in  std_logic;
 		hz_rdy        : out std_logic;
-		hz_from       : in  std_logic_vector;
-		hz_step       : in  std_logic_vector;
-		hz_pnt        : in  std_logic_vector;
 		hz_on         : in  std_logic;
+		hz_sel        : in  std_logic_vector;
 
 		vt_req        : in  std_logic;
 		vt_rdy        : out std_logic;
-		vt_from       : in  std_logic_vector;
-		vt_step       : in  std_logic_vector;
-		vt_pnt        : in  std_logic_vector;
 		vt_on         : in  std_logic;
+		vt_sel        : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		grid_on       : in  std_logic;
@@ -41,6 +37,12 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
+	signal hz_from : std_logic_vector(6-1 downto 0);
+	signal hz_step : std_logic_vector(6-1 downto 0);
+	signal hz_pnt  : std_logic_vector(3-1 downto 0);
+	signal vt_from : std_logic_vector(6-1 downto 0);
+	signal vt_step : std_logic_vector(6-1 downto 0);
+	signal vt_pnt  : std_logic_vector(3-1 downto 0);
 begin
 
 	grid_e : entity hdl4fpga.scopeio_grid
