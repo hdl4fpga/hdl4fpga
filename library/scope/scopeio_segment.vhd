@@ -30,7 +30,8 @@ entity scopeio_segment is
 		y             : in  std_logic_vector;
 		trigger_level : in  std_logic_vector;
 		samples       : in  std_logic_vector;
-		axis_dot      : out std_logic;
+		hz_dot        : out std_logic;
+		vt_dot        : out std_logic;
 		grid_dot      : out std_logic;
 		trigger_dot   : out std_logic;
 		traces_dots   : out std_logic_vector);
@@ -76,6 +77,7 @@ begin
 		hz_step     => hz_step,
 		hz_from     => hz_from,
 		hz_pnt      => hz_pnt,
+		hz_dot      => hz_dot,
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
@@ -83,11 +85,11 @@ begin
 		vt_step     => vt_step,
 		vt_from     => vt_from,
 		vt_pnt      => vt_pnt,
+		vt_dot      => vt_dot,
 
 		video_clk   => video_clk,
 		video_hcntr => x,
-		video_vcntr => y,
-		video_dot   => axis_dot);
+		video_vcntr => y);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (

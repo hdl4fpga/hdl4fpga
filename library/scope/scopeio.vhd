@@ -367,7 +367,8 @@ begin
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
 		signal grid_dot    : std_logic;
-		signal axis_dot    : std_logic;
+		signal hz_dot    : std_logic;
+		signal vt_dot    : std_logic;
 	begin
 		video_e : entity hdl4fpga.video_vga
 		generic map (
@@ -455,8 +456,8 @@ begin
 				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
 				signal x      : std_logic_vector(win_x'range);
 				signal y      : std_logic_vector(win_y'range);
-				signal cfrm   : std_logic_vector(0 to 1-1);
-				signal cdon   : std_logic_vector(0 to 1-1);
+				signal cfrm   : std_logic_vector(0 to 3-1);
+				signal cdon   : std_logic_vector(cfrm'range);
 				signal wena   : std_logic;
 				signal wfrm   : std_logic;
 				signal w_hzl  : std_logic;
@@ -485,10 +486,10 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => natural_vector'(0=> sgmnt.x-1),
-					y      => natural_vector'(0=> 0),
-					width  => natural_vector'(0=> sgmnt.width+1),
-					height => natural_vector'(0=> sgmnt.height+1))
+					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*5-2,  2 => sgmnt.x-1),
+					y      => natural_vector'(0 => 0,              1 => 0,              2 => sgmnt.height+2),
+					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*5,            2 => sgmnt.width+1),
+					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height+1, 2 => 8))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,
@@ -545,12 +546,14 @@ begin
 				begin
 					latency_on_e : entity hdl4fpga.align
 					generic map (
-						n => 1,
-						d => (0 => 2))
+						n => cdon'length,
+						d => (cdon'range => 2))
 					port map (
 						clk   => video_clk,
-						di(0) => cdon(0),
-						do(0) => grid_on);
+						di    => cdon,
+						do(0) => grid_on,
+						do(1) => hz_on,
+						do(2) => vt_on);
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (
@@ -595,6 +598,8 @@ begin
 					samples       => storage_data,
 					trigger_level => trigger_level,
 					grid_dot      => grid_dot,
+					hz_dot        => hz_dot,
+					vt_dot        => vt_dot,
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 			end block;
@@ -604,10 +609,14 @@ begin
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		port map (
 			traces_fg   => std_logic_vector'("010"),
+			traces_dots => traces_dots, 
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
 			grid_dot    => grid_dot,
-			traces_dots => traces_dots, 
+			hz_fg       => std_logic_vector'("100"),
+			hz_dot      => hz_dot,
+			vt_fg       => std_logic_vector'("100"),
+			vt_dot      => vt_dot,
 			video_rgb   => video_pixel);
 	end block;
 

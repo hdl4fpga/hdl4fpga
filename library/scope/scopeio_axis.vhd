@@ -8,7 +8,11 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
 	port (
-		in_clk     : in  std_logic;
+		video_clk   : in  std_logic;
+		video_hcntr : in  std_logic_vector;
+		video_vcntr : in  std_logic_vector;
+
+		in_clk      : in  std_logic;
 
 		hz_req      : in  std_logic;
 		hz_rdy      : out std_logic;
@@ -24,10 +28,8 @@ entity scopeio_axis is
 		vt_step     : in  std_logic_vector;
 		vt_pnt      : in  std_logic_vector;
 
-		video_clk   : in  std_logic;
-		video_hcntr : in  std_logic_vector;
-		video_vcntr : in  std_logic_vector;
-		video_dot   : out std_logic);
+		vt_dot      : out std_logic;
+		hz_dot      : out std_logic);
 
 end;
 
@@ -91,17 +93,17 @@ begin
 		rd_data => vt_val);
 
 	video_b : block
-		signal code   : std_logic_vector(4-1 downto 0);
-		signal hz_bcd : std_logic_vector(code'range);
-		signal vt_bcd : std_logic_vector(code'range);
+		signal code     : std_logic_vector(4-1 downto 0);
+		signal hz_bcd   : std_logic_vector(code'range);
+		signal vt_bcd   : std_logic_vector(code'range);
+		signal char_dot : std_logic;
 	begin
 
 		hz_tick <='0' & video_hcntr(11-1 downto 6);
 		vt_tick <= video_hcntr(10-1 downto 6);
-		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length); --);
-		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length); --);
+		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
+		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
---		code    <= word2byte(word2byte(hz_val & vt_val, axis_sel), video_hcntr(6-1 downto 3), code'length);
 
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
@@ -113,7 +115,10 @@ begin
 			char_col  => video_hcntr(3-1 downto 0),
 			char_row  => video_vcntr(3-1 downto 0),
 			char_code => code,
-			char_dot  => video_dot);
+			char_dot  => char_dot);
+
+		hz_dot <= char_dot and hz_on;
+		vt_dot <= char_dot and vt_on;
 
 	end block;
 
