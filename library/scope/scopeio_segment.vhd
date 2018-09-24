@@ -38,13 +38,14 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal hz_from : std_logic_vector(6-1 downto 0);
-	signal hz_step : std_logic_vector(6-1 downto 0);
-	signal hz_pnt  : std_logic_vector(3-1 downto 0);
-	signal vt_from : std_logic_vector(6-1 downto 0);
-	signal vt_step : std_logic_vector(6-1 downto 0);
-	signal vt_pnt  : std_logic_vector(3-1 downto 0);
+	signal hz_from : std_logic_vector(6-1 downto 0) := b"00_0000";
+	signal hz_step : std_logic_vector(6-1 downto 0) := b"00_1000";
+	signal hz_pnt  : std_logic_vector(3-1 downto 0) := b"111";
+	signal vt_from : std_logic_vector(6-1 downto 0) := b"00_0000";
+	signal vt_step : std_logic_vector(6-1 downto 0) := b"00_1000";
+	signal vt_pnt  : std_logic_vector(3-1 downto 0) := b"111";
 begin
+
 
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (

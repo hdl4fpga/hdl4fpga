@@ -99,8 +99,8 @@ begin
 		signal char_dot : std_logic;
 	begin
 
-		hz_tick <='0' & video_hcntr(11-1 downto 6);
-		vt_tick <= video_hcntr(10-1 downto 6);
+		hz_tick <= "00" & video_hcntr(11-1 downto 7);
+		vt_tick <= video_vcntr(10-1 downto 6);
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
@@ -117,7 +117,7 @@ begin
 			char_code => code,
 			char_dot  => char_dot);
 
-		hz_dot <= char_dot and hz_on;
+		hz_dot <= char_dot and hz_on and not video_hcntr(6);
 		vt_dot <= char_dot and vt_on;
 
 	end block;
