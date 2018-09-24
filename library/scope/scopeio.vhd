@@ -552,8 +552,8 @@ begin
 						clk   => video_clk,
 						di    => cdon,
 						do(0) => grid_on,
-						do(1) => hz_on,
-						do(2) => vt_on);
+						do(1) => vt_on,
+						do(2) => hz_on);
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (

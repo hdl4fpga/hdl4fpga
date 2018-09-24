@@ -117,7 +117,7 @@ begin
 			char_code => code,
 			char_dot  => char_dot);
 
-		hz_dot <= char_dot and hz_on and not video_hcntr(7);
+		hz_dot <= char_dot and hz_on and not video_hcntr(6);
 		vt_dot <= char_dot and vt_on and not video_vcntr(4) and not video_vcntr(3);
 
 	end block;
