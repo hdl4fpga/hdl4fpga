@@ -69,6 +69,8 @@ begin
 --		dot => trigger_dot);
 
 	axis_e : entity hdl4fpga.scopeio_axis
+	generic map (
+		latency => latency-2)
 	port map (
 		in_clk      => in_clk,
 

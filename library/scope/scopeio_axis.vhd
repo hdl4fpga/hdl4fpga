@@ -7,6 +7,8 @@ use hdl4fpga.std.all;
 use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
+	generic (
+		latency     : natural);
 	port (
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
@@ -96,6 +98,8 @@ begin
 		signal code     : std_logic_vector(4-1 downto 0);
 		signal hz_bcd   : std_logic_vector(code'range);
 		signal vt_bcd   : std_logic_vector(code'range);
+		signal hz_don   : std_logic;
+		signal vt_don   : std_logic;
 		signal char_dot : std_logic;
 	begin
 
@@ -117,9 +121,30 @@ begin
 			char_code => code,
 			char_dot  => char_dot);
 
-		hz_dot <= char_dot and hz_on and not video_hcntr(6);
-		vt_dot <= char_dot and vt_on and not video_vcntr(4) and not video_vcntr(3);
+		romlat_p : process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				hz_don <= hz_on and not video_hcntr(6);
+				vt_don <= vt_on and not video_vcntr(4) and not video_vcntr(3);
+			end if;
+		end process;
 
+		lat_b : block
+			signal dots : std_logic_vector(0 to 2-1);
+		begin
+			dots(0) <= char_dot and hz_don;
+			dots(1) <= char_dot and vt_don;
+
+			lat_e : entity hdl4fpga.align
+			generic map (
+				n => dots'length,
+				d => (dots'range => latency))
+			port map (
+				clk   => video_clk,
+				di    => dots,
+				do(0) => hz_dot,
+				do(1) => vt_dot);
+		end block;
 	end block;
 
 end;
