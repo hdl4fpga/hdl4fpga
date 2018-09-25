@@ -448,22 +448,22 @@ begin
 			sgmnt_b : block
 				constant sgmnt : square := vlayout_tab(vlayout_id).sgmnt;
 
-				signal pwin_y : std_logic_vector(unsigned_num_bits(sgmnt.y-1)-1 downto 0);
-				signal pwin_x : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
-				signal p_hzl  : std_logic;
+				signal pwin_y  : std_logic_vector(unsigned_num_bits(sgmnt.y-1)-1 downto 0);
+				signal pwin_x  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
+				signal p_hzl   : std_logic;
 
-				signal win_x  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
-				signal win_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
-				signal x      : std_logic_vector(win_x'range);
-				signal y      : std_logic_vector(win_y'range);
-				signal cfrm   : std_logic_vector(0 to 3-1);
-				signal cdon   : std_logic_vector(cfrm'range);
-				signal wena   : std_logic;
-				signal wfrm   : std_logic;
-				signal w_hzl  : std_logic;
+				signal win_x   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
+				signal win_y   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
+				signal x       : std_logic_vector(win_x'range);
+				signal y       : std_logic_vector(win_y'range);
+				signal cfrm    : std_logic_vector(0 to 3-1);
+				signal cdon    : std_logic_vector(cfrm'range);
+				signal wena    : std_logic;
+				signal wfrm    : std_logic;
+				signal w_hzl   : std_logic;
 				signal grid_on : std_logic;
-				signal hz_on  : std_logic;
-				signal vt_on  : std_logic;
+				signal hz_on   : std_logic;
+				signal vt_on   : std_logic;
 			begin
 
 				latency_phzl_e : entity hdl4fpga.align
@@ -584,17 +584,19 @@ begin
 					hz_req        => hz_req,
 					hz_rdy        => hz_rdy,
 					hz_sel        => hz_sel,
-					hz_on         => hz_on,
 
 					vt_req        => vt_req,
 					vt_rdy        => vt_rdy,
 					vt_sel        => hz_sel,
-					vt_on         => vt_on,
 
 					video_clk     => video_clk,
-					grid_on       => grid_on,
 					x             => x,
 					y             => y,
+
+					grid_on       => grid_on,
+					hz_on         => hz_on,
+					vt_on         => vt_on,
+
 					samples       => storage_data,
 					trigger_level => trigger_level,
 					grid_dot      => grid_dot,

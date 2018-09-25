@@ -16,20 +16,25 @@ entity scopeio_segment is
 
 		hz_req        : in  std_logic;
 		hz_rdy        : out std_logic;
-		hz_on         : in  std_logic;
 		hz_sel        : in  std_logic_vector;
 
 		vt_req        : in  std_logic;
 		vt_rdy        : out std_logic;
-		vt_on         : in  std_logic;
 		vt_sel        : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
-		grid_on       : in  std_logic;
 		x             : in  std_logic_vector;
 		y             : in  std_logic_vector;
+
+		hz_base       : in  std_logic_vector := std_logic_vector'(b"10_0000");
+		vt_base       : in  std_logic_vector := std_logic_vector'(b"1000");
+		hz_on         : in  std_logic;
+		vt_on         : in  std_logic;
+		grid_on       : in  std_logic;
+
 		trigger_level : in  std_logic_vector;
 		samples       : in  std_logic_vector;
+
 		hz_dot        : out std_logic;
 		vt_dot        : out std_logic;
 		grid_dot      : out std_logic;
@@ -81,6 +86,7 @@ begin
 		hz_from     => hz_from,
 		hz_pnt      => hz_pnt,
 		hz_dot      => hz_dot,
+		hz_base     => hz_base,
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
@@ -89,6 +95,7 @@ begin
 		vt_from     => vt_from,
 		vt_pnt      => vt_pnt,
 		vt_dot      => vt_dot,
+		vt_base     => vt_base,
 
 		video_clk   => video_clk,
 		video_hcntr => x,

@@ -13,6 +13,8 @@ entity scopeio_axis is
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
+		hz_base     : in  std_logic_vector;
+		vt_base     : in  std_logic_vector;
 
 		in_clk      : in  std_logic;
 
@@ -103,8 +105,8 @@ begin
 		signal char_dot : std_logic;
 	begin
 
-		hz_tick <= "00" & video_hcntr(11-1 downto 7);
-		vt_tick <=  "0" & video_vcntr( 8-1 downto 5);
+		hz_tick <= std_logic_vector(unsigned(hz_base) + unsigned(video_hcntr(11-1 downto 7)));
+		vt_tick <= std_logic_vector(unsigned(vt_base) + unsigned(video_vcntr( 8-1 downto 5)));
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
@@ -125,7 +127,7 @@ begin
 			signal ons : std_logic_vector(0 to 2-1);
 		begin
 			ons(0) <= hz_on and not video_hcntr(6);
-			ons(1) <= vt_on and not video_vcntr(4) and not video_vcntr(3);
+			ons(1) <= vt_on and video_vcntr(4) and video_vcntr(3);
 
 			lat_e : entity hdl4fpga.align
 			generic map (
