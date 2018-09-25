@@ -147,7 +147,7 @@ begin
 			lat_e : entity hdl4fpga.align
 			generic map (
 				n => dots'length,
-				d => (dots'range => latency))
+				d => (dots'range => latency-2))
 			port map (
 				clk   => video_clk,
 				di    => dots,
