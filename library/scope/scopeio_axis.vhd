@@ -121,13 +121,22 @@ begin
 			char_code => code,
 			char_dot  => char_dot);
 
-		romlat_p : process (video_clk)
+		romlat_b : block
+			signal ons : std_logic_vector(0 to 2-1);
 		begin
-			if rising_edge(video_clk) then
-				hz_don <= hz_on and not video_hcntr(6);
-				vt_don <= vt_on and not video_vcntr(4) and not video_vcntr(3);
-			end if;
-		end process;
+			ons(0) <= hz_on and not video_hcntr(6);
+			ons(1) <= vt_on and not video_vcntr(4) and not video_vcntr(3);
+
+			lat_e : entity hdl4fpga.align
+			generic map (
+				n => ons'length,
+				d => (ons'range => 2))
+			port map (
+				clk   => video_clk,
+				di    => ons,
+				do(0) => hz_don,
+				do(1) => vt_don);
+		end block;
 
 		lat_b : block
 			signal dots : std_logic_vector(0 to 2-1);
