@@ -26,7 +26,7 @@ entity scopeio_segment is
 		x             : in  std_logic_vector;
 		y             : in  std_logic_vector;
 
-		hz_base       : in  std_logic_vector := std_logic_vector'(b"10_0000");
+		hz_base       : in  std_logic_vector;
 		vt_base       : in  std_logic_vector := std_logic_vector'(b"1000");
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
@@ -44,7 +44,7 @@ end;
 
 architecture def of scopeio_segment is
 	signal hz_from : std_logic_vector(6-1 downto 0) := b"00_0000";
-	signal hz_step : std_logic_vector(6-1 downto 0) := b"00_1000";
+	signal hz_step : std_logic_vector(6-1 downto 0) := b"11_1111";
 	signal hz_pnt  : std_logic_vector(3-1 downto 0) := b"111";
 	signal vt_from : std_logic_vector(6-1 downto 0) := b"00_0000";
 	signal vt_step : std_logic_vector(6-1 downto 0) := b"00_1000";

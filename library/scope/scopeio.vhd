@@ -464,6 +464,7 @@ begin
 				signal grid_on : std_logic;
 				signal hz_on   : std_logic;
 				signal vt_on   : std_logic;
+				signal hz_base : std_logic_vector(7-1 downto 0);
 			begin
 
 				latency_phzl_e : entity hdl4fpga.align
@@ -575,6 +576,8 @@ begin
 
 				end block;
 
+				hz_base <= wirebus (b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm);
+
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
 					latency       => storage_data'length+4,
@@ -596,6 +599,7 @@ begin
 					grid_on       => grid_on,
 					hz_on         => hz_on,
 					vt_on         => vt_on,
+					hz_base       => hz_base,
 
 					samples       => storage_data,
 					trigger_level => trigger_level,

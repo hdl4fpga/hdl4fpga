@@ -46,7 +46,7 @@ architecture def of scopeio_axis is
 	signal value   : std_logic_vector(8*4-1 downto 0);
 	signal vt_dv   : std_logic;
 	signal hz_dv   : std_logic;
-	signal hz_tick : std_logic_vector(6-1 downto 0);
+	signal hz_tick : std_logic_vector(13-1 downto 6);
 	signal hz_val  : std_logic_vector(value'range);
 	signal vt_tick : std_logic_vector(4-1 downto 0);
 	signal vt_val  : std_logic_vector(value'range);
@@ -83,7 +83,7 @@ begin
 		wr_addr => tick(6-1 downto 0),
 		wr_data => value,
 
-		rd_addr => hz_tick,
+		rd_addr => hz_tick(12-1 downto 6),
 		rd_data => hz_val);
 
 	vt_mem_e : entity hdl4fpga.dpram
@@ -105,7 +105,7 @@ begin
 		signal char_dot : std_logic;
 	begin
 
-		hz_tick <= std_logic_vector(unsigned(hz_base) + unsigned(video_hcntr(11-1 downto 7)));
+		hz_tick <= std_logic_vector(unsigned(hz_base) + unsigned(video_hcntr(11-1 downto 6)));
 		vt_tick <= std_logic_vector(unsigned(vt_base) + unsigned(video_vcntr( 8-1 downto 5)));
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
@@ -126,7 +126,7 @@ begin
 		romlat_b : block
 			signal ons : std_logic_vector(0 to 2-1);
 		begin
-			ons(0) <= hz_on and not video_hcntr(6);
+			ons(0) <= hz_on; -- and not hz_tick(6);
 			ons(1) <= vt_on and video_vcntr(4) and video_vcntr(3);
 
 			lat_e : entity hdl4fpga.align

@@ -20,7 +20,7 @@
 				<BScanVal>0</BScanVal>
 			</Bypass>
 			<File>/home/msagre/work/hdl4fpga/ecp3versa/diamond/scopeio/ecp3versa_scopeio.bit</File>
-			<FileTime>09/24/18 18:57:42</FileTime>
+			<FileTime>09/25/18 20:20:22</FileTime>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>
