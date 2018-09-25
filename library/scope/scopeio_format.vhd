@@ -30,12 +30,13 @@ use hdl4fpga.std.all;
 
 entity scopeio_format is
 	port (
-		clk     : in  std_logic;
-		binary  : in  std_logic_vector;
+		clk        : in  std_logic;
+		binary     : in  std_logic_vector;
 		binary_ena : in std_logic;
-		point   : in  std_logic_vector;
-		bcd_dv  : out std_logic;
-		bcd_dat : out std_logic_vector);
+		point      : in  std_logic_vector;
+		bcd_left   : in std_logic;
+		bcd_dv     : out std_logic;
+		bcd_dat    : out std_logic_vector);
 end;
 
 architecture def of scopeio_format is
@@ -141,11 +142,10 @@ begin
 
 		alignbcd_e  : entity hdl4fpga.align_bcd
 		port map (
-			left  => '1',
+			left  => bcd_left,
 			value => float,
 			align => bcd_dat);
 		
 	end block;
-
 
 end;

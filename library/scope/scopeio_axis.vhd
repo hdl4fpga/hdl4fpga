@@ -104,7 +104,7 @@ begin
 	begin
 
 		hz_tick <= "00" & video_hcntr(11-1 downto 7);
-		vt_tick <= "0" & video_vcntr(8-1 downto 5);
+		vt_tick <=  "0" & video_vcntr( 8-1 downto 5);
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);

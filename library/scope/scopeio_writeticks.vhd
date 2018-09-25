@@ -38,6 +38,7 @@ entity scopeio_writeticks is
 		element   : out std_logic_vector;
 		bin_val   : in  std_logic_vector;
 		bin_dv    : out std_logic;
+		bcd_left  : in  std_logic;
 		bcd_dv    : out std_logic;
 		bcd_val   : out std_logic_vector);
 end;
@@ -73,6 +74,7 @@ begin
 		binary_ena => ena,
 		binary     => bin_val,
 		point      => point,
+		bcd_left   => bcd_left,
 		bcd_dv     => dv,
 		bcd_dat    => bcd_val);
 

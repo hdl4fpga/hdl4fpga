@@ -486,10 +486,10 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*5-2,  2 => sgmnt.x-1),
-					y      => natural_vector'(0 => 0,              1 => 0,              2 => sgmnt.height+2),
-					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*5,            2 => sgmnt.width+1),
-					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height+1, 2 => 8))
+					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*8-2, 2 => sgmnt.x-1),
+					y      => natural_vector'(0 => 0,              1 => 0,             2 => sgmnt.height+2),
+					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width),
+					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height,  2 => 8))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,

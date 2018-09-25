@@ -96,7 +96,6 @@ begin
 		end if;
 	end process;
 
---	bin_val <= std_logic_vector(resize(unsigned(hz_step),bin_val'length));
 	dev_req <= (1 => hz_req, 2 => vt_req);
 	(1 => hz_rdy, 2 => vt_rdy) <= dev_rdy;
 	(1 => hz_gnt, 2 => vt_gnt) <= dev_gnt;
@@ -123,6 +122,7 @@ begin
 		element    => tick,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,
+		bcd_left   => hz_gnt,
 		bcd_dv     => bcd_dv,
 		bcd_val    => value);
 
