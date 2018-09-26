@@ -111,6 +111,7 @@ begin
 		signal value : std_logic_vector(0 to bcd_dat'length-1);
 		signal right : std_logic_vector(0 to bcd_dat'length-1);
 		signal float : std_logic_vector(0 to bcd_dat'length-1);
+		signal sign  : std_logic_vector(0 to bcd_dat'length-1);
 		signal f : std_logic_vector(0 to bcd_dat'length-1);
 
 	begin
@@ -134,9 +135,16 @@ begin
 			value  => value,
 			align  => right);
 		
+		sign_e : entity hdl4fpga.sign_bcd
+		port map (
+			value    => right,
+			negative => '1',
+			sign     => '1',
+			format   => sign);
+		
 		formatbcd_e : entity hdl4fpga.format_bcd
 		port map (
-			value  => right,
+			value  => sign,
 			point  => point,
 			format => f);
 

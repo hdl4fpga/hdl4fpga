@@ -619,9 +619,9 @@ begin
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
 			grid_dot    => grid_dot,
-			hz_fg       => std_logic_vector'("100"),
+			hz_fg       => std_logic_vector'("111"),
 			hz_dot      => hz_dot,
-			vt_fg       => std_logic_vector'("100"),
+			vt_fg       => std_logic_vector'("111"),
 			vt_dot      => vt_dot,
 			video_rgb   => video_pixel);
 	end block;

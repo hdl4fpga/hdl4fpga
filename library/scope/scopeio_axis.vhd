@@ -39,10 +39,10 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant hz_len : unsigned(0 to 3-1) := to_unsigned(6, 3);
+	constant hz_len : unsigned(0 to 3-1) := to_unsigned(7, 3);
 	constant vt_len : unsigned(0 to 3-1) := to_unsigned(4, 3);
 
-	signal tick    : std_logic_vector(6-1 downto 0);
+	signal tick    : std_logic_vector(7-1 downto 0);
 	signal value   : std_logic_vector(8*4-1 downto 0);
 	signal vt_dv   : std_logic;
 	signal hz_dv   : std_logic;
@@ -80,10 +80,10 @@ begin
 	port map (
 		wr_clk  => in_clk,
 		wr_ena  => hz_dv,
-		wr_addr => tick(6-1 downto 0),
+		wr_addr => tick(7-1 downto 0),
 		wr_data => value,
 
-		rd_addr => hz_tick(12-1 downto 6),
+		rd_addr => hz_tick(13-1 downto 6),
 		rd_data => hz_val);
 
 	vt_mem_e : entity hdl4fpga.dpram

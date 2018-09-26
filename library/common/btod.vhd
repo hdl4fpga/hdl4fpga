@@ -397,12 +397,14 @@ use hdl4fpga.std.all;
 entity format_bcd is
 	generic (
 		dot   : std_logic_vector(4-1 downto 0) := x"b";
+		plus  : std_logic_vector(4-1 downto 0) := x"c";
+		minus : std_logic_vector(4-1 downto 0) := x"d";
 		space : std_logic_vector(4-1 downto 0) := x"f");
 		
 	port (
-		value  : in  std_logic_vector;
-		point  : in  std_logic_vector;
-		format : out std_logic_vector);
+		value    : in  std_logic_vector;
+		point    : in  std_logic_vector;
+		format   : out std_logic_vector);
 end;
 		
 architecture def of format_bcd is
@@ -410,11 +412,11 @@ architecture def of format_bcd is
 	impure function format_bcd_f (
 		constant value : std_logic_vector;
 		constant point : std_logic_vector;
-		constant align : std_logic := '0') 
+		constant sign  : std_logic := '0')
 		return std_logic_vector is
 		variable temp  : std_logic_vector(value'length-1 downto 0);
 		variable digit : std_logic_vector(4-1 downto 0);
-		variable aux : std_logic_vector(4-1 downto 0);
+		variable aux   : std_logic_vector(4-1 downto 0);
 
 	begin
 
@@ -444,6 +446,17 @@ architecture def of format_bcd is
 
 		end if;
 
+--		if sign='1' then
+--			for i in 0 to value'length/digit'length-1 loop
+--				if temp(digit'range)=x"f" then
+--					temp(digit'range) := plus;
+--					temp := std_logic_vector(unsigned(temp) rol (i*digit'length));
+--					exit;
+--				end if;
+--				temp := std_logic_vector(unsigned(temp) ror digit'length);
+--			end loop;
+--		end if;
+
 		return temp;
 	end;
 
@@ -463,10 +476,10 @@ entity sign_bcd is
 		minus : std_logic_vector(4-1 downto 0) := x"d";
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
-		value  : in  std_logic_vector;
-		pplus  : in  std_logic := '0';
-		sign   : in  std_logic;
-		format : out std_logic_vector);
+		value    : in  std_logic_vector;
+		negative : in  std_logic := '0';
+		sign     : in  std_logic;
+		format   : out std_logic_vector);
 end;
 		
 architecture def of sign_bcd is
@@ -498,8 +511,8 @@ architecture def of sign_bcd is
 begin
 
 	format <= 
-		sign_bcd_f(value, minus) when sign='1'  else 
-		sign_bcd_f(value, plus)  when pplus='1' else
+		sign_bcd_f(value, minus) when negative='1' else 
+		sign_bcd_f(value, plus)  when sign='1'     else
 		value;
 
 end;
