@@ -90,7 +90,7 @@ begin
 --			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
 --		begin
 --			value  := (others => '-');
---			value(binary'length-1 downto 0) := b"0001_0000_0101_1111"; -- binary;
+--			value(binary'length-1 downto 0) := binary;
 --			value  := std_logic_vector(unsigned(value) ror bin_di'length);
 --			bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(sel));
 --		end process;
