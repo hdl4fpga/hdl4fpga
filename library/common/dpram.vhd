@@ -44,18 +44,18 @@ architecture def of dpram is
 
 	signal RAM : word_vector(0 to 2**wr_addr'length-1);
 begin
---	process (rd_addr, RAM)
---		variable addr : std_logic_vector(0 to rd_addr'length-1);
---	begin
---		addr := rd_addr;
---		if rd_data'length=wr_data'length then
---			rd_data <= ram(to_integer(unsigned(rd_addr)));
---		else
---			rd_data <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
---		end if;
---	end process;
+	process (rd_addr, RAM)
+		variable addr : std_logic_vector(0 to rd_addr'length-1);
+	begin
+		addr := rd_addr;
+		if rd_data'length=wr_data'length then
+			rd_data <= ram(to_integer(unsigned(rd_addr)));
+		else
+			rd_data <= word2byte(ram(to_integer(unsigned(addr(0 to wr_addr'length-1)))), addr(wr_addr'length to addr'right));
+		end if;
+	end process;
 		
-	rd_data <= ram(to_integer(unsigned(rd_addr)));
+--	rd_data <= ram(to_integer(unsigned(rd_addr)));
 	process (wr_clk)
 	begin
 		if rising_edge(wr_clk) then

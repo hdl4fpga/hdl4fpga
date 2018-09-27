@@ -86,15 +86,16 @@ begin
 			bin_ena <= ena and binary_ena;
 		end process;
 
-		process (binary, sel)
-			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
-		begin
-			value  := (others => '-');
-			value(binary'length-1 downto 0) := binary;
-			value  := std_logic_vector(unsigned(value) ror bin_di'length);
-			bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(sel));
-		end process;
+--		process (binary, sel)
+--			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
+--		begin
+--			value  := (others => '-');
+--			value(binary'length-1 downto 0) := b"0001_0000_0101_1111"; -- binary;
+--			value  := std_logic_vector(unsigned(value) ror bin_di'length);
+--			bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(sel));
+--		end process;
 
+			bin_di <= word2byte(std_logic_vector'(b"1111_0001_0000_0101"), not std_logic_vector(sel));
 	end block;
 
 	scopeio_ftod_e : entity hdl4fpga.scopeio_ftod
@@ -135,19 +136,19 @@ begin
 			value  => value,
 			align  => right);
 		
-		sign_e : entity hdl4fpga.sign_bcd
-		port map (
-			value    => right,
-			negative => '1',
-			sign     => '1',
-			format   => sign);
-		
 		formatbcd_e : entity hdl4fpga.format_bcd
 		port map (
-			value  => sign,
+			value  => right,
 			point  => point,
-			format => f);
+			format => sign);
 
+		sign_e : entity hdl4fpga.sign_bcd
+		port map (
+			value    => sign,
+			negative => '1',
+			sign     => '0',
+			format   => f);
+		
 		alignbcd_e  : entity hdl4fpga.align_bcd
 		port map (
 			left  => bcd_left,
