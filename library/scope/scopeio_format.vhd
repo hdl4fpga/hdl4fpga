@@ -53,49 +53,70 @@ begin
 
 	xxx_b : block
 		constant num_of_steps : natural := binary'length/bin_di'length;
-		signal sel : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
+
+		signal sel  : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
+		signal cntr : unsigned(0 to sel'length);
+		signal ena  : std_logic;
+		signal dv   : std_logic;
 	begin
 
-		process (clk, binary_ena)
-			variable cntr : unsigned(0 to sel'length);
-			variable ena  : std_logic;
-			variable dv  : std_logic;
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				if binary_ena='0' then
+					cntr <= to_unsigned(num_of_steps-2, cntr'length);
+				elsif bcd_rdy='1' then
+					if cntr(0)='1' then
+						cntr <= to_unsigned(num_of_steps-2, cntr'length);
+					else
+						cntr <= cntr - 1;
+					end if;
+				end if;
+			end if;
+		end process;
+		sel <= std_logic_vector(cntr(1 to cntr'right));
+
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				if binary_ena='0' then
+					ena <= '1';
+					dv  <= '0';
+				elsif bcd_rdy='1' then
+					if cntr(0)='1' then
+						ena <= '0';
+						dv  <= '1';
+					else
+						ena <= '1';
+						dv  <= '0';
+					end if;
+				else
+					ena <= '1';
+					dv  <= '0';
+				end if;
+			end if;
+		end process;
+		bin_ena <= ena and binary_ena;
+
+
+		process (binary, sel)
+			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
+		begin
+			value  := (others => '-');
+			value(binary'length-1 downto 0) := binary;
+--			value(binary'length-1 downto 0) := b"0001_0000_0101_1111";
+			value  := std_logic_vector(unsigned(value) ror bin_di'length);
+			bin_di <= word2byte(std_logic_vector(value), not sel);
+		end process;
+		bin_ena <= ena and binary_ena;
+
+		process(clk)
 		begin
 			if rising_edge(clk) then
 				bcd_dv <= dv;
-				if binary_ena='0' then
-					ena    := '0';
-					dv := '0';
-					cntr   := to_unsigned(num_of_steps-2, cntr'length);
-				elsif bcd_rdy='1' then
-					if cntr(0)='1' then
-						ena    := '0';
-						dv := '1';
-						cntr   := to_unsigned(num_of_steps-2, cntr'length);
-					elsif cntr(0)='0' then
-						ena    := '1';
-						dv := '0';
-						cntr   := cntr - 1;
-					end if;
-				else
-					ena    := '1';
-					dv := '0';
-				end if;
-				sel  <= std_logic_vector(cntr(1 to cntr'right));
 			end if;
-			bin_ena <= ena and binary_ena;
 		end process;
 
---		process (binary, sel)
---			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
---		begin
---			value  := (others => '-');
---			value(binary'length-1 downto 0) := binary;
---			value  := std_logic_vector(unsigned(value) ror bin_di'length);
---			bin_di <= word2byte(std_logic_vector(value), not std_logic_vector(sel));
---		end process;
-
-			bin_di <= word2byte(std_logic_vector'(b"1111_0001_0000_0101"), not std_logic_vector(sel));
 	end block;
 
 	scopeio_ftod_e : entity hdl4fpga.scopeio_ftod
@@ -109,11 +130,11 @@ begin
 		bcd_do  => bcd_do);
 
 	format_b : block
-		signal value : std_logic_vector(0 to bcd_dat'length-1);
-		signal right : std_logic_vector(0 to bcd_dat'length-1);
-		signal float : std_logic_vector(0 to bcd_dat'length-1);
-		signal sign  : std_logic_vector(0 to bcd_dat'length-1);
-		signal f : std_logic_vector(0 to bcd_dat'length-1);
+		signal value  : std_logic_vector(0 to bcd_dat'length-1);
+		signal right  : std_logic_vector(0 to bcd_dat'length-1);
+		signal module : std_logic_vector(0 to bcd_dat'length-1);
+		signal sign   : std_logic_vector(0 to bcd_dat'length-1);
+		signal float  : std_logic_vector(0 to bcd_dat'length-1);
 
 	begin
 
@@ -127,7 +148,6 @@ begin
 					value <= push_left(value, bcd_do);
 				end if;
 				ena := bcd_rdy;
-				float <= f;
 			end if;
 		end process;
 
@@ -140,15 +160,23 @@ begin
 		port map (
 			value  => right,
 			point  => point,
-			format => sign);
+			format => module);
 
 		sign_e : entity hdl4fpga.sign_bcd
 		port map (
-			value    => sign,
+			value    => module,
 			negative => '1',
 			sign     => '0',
-			format   => f);
+			format   => sign);
 		
+		process (clk)
+			variable ena : std_logic;
+		begin
+			if rising_edge(clk) then
+				float <= sign;
+			end if;
+		end process;
+
 		alignbcd_e  : entity hdl4fpga.align_bcd
 		port map (
 			left  => bcd_left,

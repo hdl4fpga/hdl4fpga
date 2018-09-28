@@ -39,23 +39,29 @@ architecture scopeio_format of testbench is
 	signal bcd_dv   : std_logic;
 	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
 	signal binary_ena : std_logic;
+	signal t        : std_logic;
 
 begin
 
 	clk <= not clk  after  5 ns;
-	rst <= '1', '0' after 16 ns;
+	rst <= '1', '0' after 26 ns;
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			if rst='0' then
 				binary_ena <= '1';
+				if bcd_dv='1' then
+					t <= not t;
+				end if;
 			else
+				t <= '0';
 				binary_ena <= '0';
 			end if;
 		end if;
 	end process;
 
+	value <= b"0000_1111_1111_1111" when t='0' else b"0001_0000_0101_1111";
 	du: entity hdl4fpga.scopeio_format
 	port map (
 		clk        => clk,
