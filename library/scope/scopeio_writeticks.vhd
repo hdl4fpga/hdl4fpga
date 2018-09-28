@@ -72,12 +72,12 @@ begin
 	port map (
 		clk        => clk,
 		binary_ena => ena,
+		binary_dv  => dv,
 		binary     => bin_val,
 		point      => point,
 		bcd_left   => bcd_left,
-		bcd_dv     => dv,
+		bcd_dv     => bcd_dv,
 		bcd_dat    => bcd_val);
 
 	bin_dv <= dv;
-	bcd_dv <= dv;
 end;

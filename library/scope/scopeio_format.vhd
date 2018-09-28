@@ -32,9 +32,10 @@ entity scopeio_format is
 	port (
 		clk        : in  std_logic;
 		binary     : in  std_logic_vector;
-		binary_ena : in std_logic;
+		binary_ena : in  std_logic;
+		binary_dv  : out std_logic;
 		point      : in  std_logic_vector;
-		bcd_left   : in std_logic;
+		bcd_left   : in  std_logic;
 		bcd_dv     : out std_logic;
 		bcd_dat    : out std_logic_vector);
 end;
@@ -96,6 +97,7 @@ begin
 				end if;
 			end if;
 		end process;
+		binary_dv <= dv;
 		bin_ena <= ena and binary_ena;
 
 

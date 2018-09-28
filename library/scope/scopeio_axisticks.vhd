@@ -74,7 +74,6 @@ begin
 	process(clk)
 		variable cntr : unsigned(bin_val'range);
 		variable base : unsigned(bin_val'range);
-		variable t : std_logic;
 	begin
 		if rising_edge(clk) then
 			if wrt_req='0' then
@@ -86,7 +85,6 @@ begin
 					else
 						cntr := cntr + unsigned(vt_step);
 					end if;
-					t := not t;
 				end if;
 			end if;
 			if hz_gnt='1' then
@@ -95,11 +93,6 @@ begin
 				base := resize(unsigned(vt_from), base'length);
 			end if;
 			bin_val <= std_logic_vector(cntr + base);
-			if t='0' then
-				bin_val <= b"0000_1111_1111_1111";
-			else 
-				bin_val <= b"0001_0000_0101_1111";
-			end if;
 		end if;
 	end process;
 

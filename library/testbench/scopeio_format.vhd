@@ -39,6 +39,7 @@ architecture scopeio_format of testbench is
 	signal bcd_dv   : std_logic;
 	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
 	signal binary_ena : std_logic;
+	signal binary_dv : std_logic;
 	signal t        : std_logic;
 
 begin
@@ -51,7 +52,7 @@ begin
 		if rising_edge(clk) then
 			if rst='0' then
 				binary_ena <= '1';
-				if bcd_dv='1' then
+				if binary_dv='1' then
 					t <= not t;
 				end if;
 			else
@@ -66,6 +67,7 @@ begin
 	port map (
 		clk        => clk,
 		binary_ena => binary_ena,
+		binary_dv => binary_dv,
 		binary     => value,
 		point      => point,
 		bcd_left   => '0',
