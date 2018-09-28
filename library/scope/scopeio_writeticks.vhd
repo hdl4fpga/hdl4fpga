@@ -45,7 +45,6 @@ end;
 
 architecture def of scopeio_writeticks is
 	signal dv  : std_logic;
-	signal ena : std_logic;
 begin
 
 	process(clk)
@@ -54,16 +53,12 @@ begin
 		if rising_edge(clk) then
 			if write_req='0' then
 				cntr := (others => '0');
-				ena  <= '0';
 			elsif dv='1' then
 				if cntr(to_integer(unsigned(length)))='0' then
 					cntr := cntr + 1;
 				end if;
-				ena <= '1';
-			else
-				ena <= '1';
 			end if;
-			element  <= std_logic_vector(cntr(element'length-1 downto 0));
+			element   <= std_logic_vector(cntr(element'length-1 downto 0));
 			write_rdy <= cntr(to_integer(unsigned(length)));
 		end if;
 	end process;
@@ -71,13 +66,13 @@ begin
 	scopeio_format_e : entity hdl4fpga.scopeio_format
 	port map (
 		clk        => clk,
-		binary_ena => ena,
-		binary_dv  => dv,
+		binary_ena => write_req,
+		binary_dv  => bin_dv,
 		binary     => bin_val,
 		point      => point,
 		bcd_left   => bcd_left,
-		bcd_dv     => bcd_dv,
+		bcd_dv     => dv,
 		bcd_dat    => bcd_val);
 
-	bin_dv <= dv;
+	bcd_dv <= dv;
 end;
