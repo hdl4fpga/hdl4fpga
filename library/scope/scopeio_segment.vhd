@@ -27,7 +27,7 @@ entity scopeio_segment is
 		y             : in  std_logic_vector;
 
 		hz_base       : in  std_logic_vector;
-		vt_base       : in  std_logic_vector := std_logic_vector'(b"1000");
+		vt_base       : in  std_logic_vector := std_logic_vector'(b"0000");
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
 		grid_on       : in  std_logic;
@@ -43,30 +43,30 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal hz_from : std_logic_vector(8-1 downto 0) := b"0000_0000";
-	signal hz_step : std_logic_vector(8-1 downto 0) := b"0111_1111";
+	signal hz_from : std_logic_vector(8-1 downto 0) := b"1111_0000";
+	signal hz_step : std_logic_vector(8-1 downto 0) := b"0000_1000";
 	signal hz_pnt  : std_logic_vector(3-1 downto 0) := b"111";
-	signal vt_from : std_logic_vector(8-1 downto 0) := b"0000_0000";
-	signal vt_step : std_logic_vector(8-1 downto 0) := b"0000_1000";
+	signal vt_from : std_logic_vector(8-1 downto 0) := b"0001_1000";
+	signal vt_step : std_logic_vector(8-1 downto 0) := b"1111_1000";
 	signal vt_pnt  : std_logic_vector(3-1 downto 0) := b"111";
 begin
 
 
-	process (hz_sel)
-	begin
-		case hz_sel is
-		when "00" =>
-			hz_from <= b"0000_0000";
-			hz_step <= b"0000_0010";
-		when "01" =>
-			hz_from <= b"0000_0000";
-			hz_step <= b"0000_0110";
-		when "11" =>
-			hz_from <= b"0000_0000";
-			hz_step <= b"0000_1010";
-		when others =>
-		end case;
-	end process;
+--	process (hz_sel)
+--	begin
+--		case hz_sel is
+--		when "00" =>
+--			hz_from <= b"0000_0000";
+--			hz_step <= b"0000_0010";
+--		when "01" =>
+--			hz_from <= b"0000_0000";
+--			hz_step <= b"0000_0110";
+--		when "11" =>
+--			hz_from <= b"0000_0000";
+--			hz_step <= b"0000_1010";
+--		when others =>
+--		end case;
+--	end process;
 
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (

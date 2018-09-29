@@ -72,8 +72,8 @@ architecture def of scopeio_axisticks is
 begin
 
 	process(clk)
-		variable cntr : unsigned(bin_val'range);
-		variable base : unsigned(bin_val'range);
+		variable cntr : signed(bin_val'range);
+		variable base : signed(bin_val'range);
 	begin
 		if rising_edge(clk) then
 			if wrt_req='0' then
@@ -81,16 +81,16 @@ begin
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
 					if hz_gnt='1' then
-						cntr := cntr + unsigned(hz_step);
+						cntr := cntr + signed(hz_step);
 					else
-						cntr := cntr + unsigned(vt_step);
+						cntr := cntr + signed(vt_step);
 					end if;
 				end if;
 			end if;
 			if hz_gnt='1' then
-				base := resize(unsigned(hz_from), base'length);
+				base := resize(signed(hz_from), base'length);
 			else
-				base := resize(unsigned(vt_from), base'length);
+				base := resize(signed(vt_from), base'length);
 			end if;
 			bin_val <= std_logic_vector(cntr + base);
 		end if;
@@ -122,6 +122,7 @@ begin
 		element    => tick,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,
+		bcd_sign   => vt_gnt,
 		bcd_left   => hz_gnt,
 		bcd_dv     => bcd_dv,
 		bcd_val    => value);
