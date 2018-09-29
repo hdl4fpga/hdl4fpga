@@ -35,6 +35,7 @@ entity scopeio_format is
 		binary_ena : in  std_logic;
 		binary_dv  : out std_logic;
 		point      : in  std_logic_vector;
+		bcd_sign   : in  std_logic := '1';
 		bcd_left   : in  std_logic;
 		bcd_dv     : out std_logic;
 		bcd_dat    : out std_logic_vector);
@@ -50,9 +51,10 @@ architecture def of scopeio_format is
     signal bin_fix : std_logic;
     signal bcd_do  : std_logic_vector(0 to 4-1);
 
+	signal negative : std_logic;
 begin
 
-	xxx_b : block
+	cntlr_b : block
 		constant num_of_steps : natural := binary'length/bin_di'length;
 
 		signal sel  : std_logic_vector(0 to unsigned_num_bits(num_of_steps-1)-1);
@@ -105,8 +107,13 @@ begin
 			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
 		begin
 			value  := (others => '-');
-			value(binary'length-1 downto 0) := binary;
---			value(binary'length-1 downto 0) := b"0001_0000_0101_1111";
+			if signed(binary) < 0 then
+				value(binary'length-1 downto 0) := std_logic_vector(-signed(binary));
+				negative <= '1';
+			else
+				value(binary'length-1 downto 0) := binary;
+				negative <= '0';
+			end if;
 			value  := std_logic_vector(unsigned(value) ror bin_di'length);
 			bin_di <= word2byte(std_logic_vector(value), not sel);
 		end process;
@@ -132,24 +139,29 @@ begin
 		bcd_do  => bcd_do);
 
 	format_b : block
-		signal value  : std_logic_vector(0 to bcd_dat'length-1);
-		signal right  : std_logic_vector(0 to bcd_dat'length-1);
-		signal module : std_logic_vector(0 to bcd_dat'length-1);
-		signal sign   : std_logic_vector(0 to bcd_dat'length-1);
-		signal float  : std_logic_vector(0 to bcd_dat'length-1);
+		signal sign_ena : std_logic;
+		signal value    : std_logic_vector(0 to bcd_dat'length-1);
+		signal right    : std_logic_vector(0 to bcd_dat'length-1);
+		signal module   : std_logic_vector(0 to bcd_dat'length-1);
+		signal sign     : std_logic_vector(0 to bcd_dat'length-1);
+		signal float    : std_logic_vector(0 to bcd_dat'length-1);
 
 	begin
 
 		process (clk)
-			variable ena : std_logic;
+			variable ena  : std_logic;
+			variable zero : std_logic;
 		begin
 			if rising_edge(clk) then
 				if ena='1' then
 					value <= push_left((value'range => '1'), bcd_do);
+					zero  := setif(bcd_do=(bcd_do'range => '0'));
 				else
 					value <= push_left(value, bcd_do);
+					zero  := setif(bcd_do=(bcd_do'range => '0')) and zero;
 				end if;
-				ena := bcd_rdy;
+				sign_ena <= not zero and bcd_sign;
+				ena      := bcd_rdy;
 			end if;
 		end process;
 
@@ -167,8 +179,8 @@ begin
 		sign_e : entity hdl4fpga.sign_bcd
 		port map (
 			value    => module,
-			negative => '1',
-			sign     => '0',
+			negative => negative,
+			sign     => sign_ena,
 			format   => sign);
 		
 		process (clk)
