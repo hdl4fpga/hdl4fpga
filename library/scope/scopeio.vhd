@@ -62,8 +62,8 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320, y => 270, width => 50*32, height => 256)),
-		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320, y => 300, width => 15*32, height => 256)));
+		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320-8*8, y => 270, width => 50*32, height => 256)),
+		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320-8*8, y => 300, width => 15*32, height => 256)));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
@@ -120,7 +120,7 @@ architecture beh of scopeio is
 
 	signal hz_req : std_logic;
 	signal hz_rdy : std_logic;
-	signal hz_sel : std_logic_vector(6-1 downto 0);
+	signal hz_sel : std_logic_vector(2-1 downto 0);
 
 	signal vt_req : std_logic;
 	signal vt_rdy : std_logic;
@@ -163,7 +163,7 @@ begin
 					case rgtr_id is
 					when rgtrid_selhz =>
 						hz_req <= '1';
-						hz_sel <= rgtr_data(6-1 downto  0);
+						hz_sel <= rgtr_data(2-1 downto  0);
 					when rgtrid_selvt =>
 						vt_req <= '1';
 						vt_sel <= rgtr_data(6-1 downto  0);
@@ -489,7 +489,7 @@ begin
 				generic map (
 					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*8-2, 2 => sgmnt.x-1),
 					y      => natural_vector'(0 => 0,              1 => 0,             2 => sgmnt.height+2),
-					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width),
+					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width+8*8),
 					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height,  2 => 8))
 				port map (
 					video_clk  => video_clk,
