@@ -39,21 +39,45 @@ end;
 architecture def of mult is
 
 	function mult_f (
-		constant multand : std_logic_vector;
-		constant product : std_logic_vector;
-		constant width   : natural := 1)
+		constant multand : signed;
+		constant multier : unsigned);
 		return std_logic_vector is
-		variable retval : signed(0 to product'length-1) := (others => '0');
+		variable retval : signed(0 to multand'length+multier'length-1) := (others => '0');
 	begin
-		retval := product;
-		for i in 0 to width-1 loop
-			if retval(retval'right)='1' then
-				retval(multand'range) := retval(multand'range) + signed(multand);
+		retval(0 to multier'length-1) := signed(multier);
+		retval := retval rol multier'length;
+		for i in multier'range loop
+			lsb    := retval(retval'right);
+			retval := shift_right(retval, 1);
+			if lsb='1' then
+				retval(0 to multand'length) := retval(0 to multand'length) + resize(multand, multand'length+1);
 			end if;
 			retval := shift_right(retval, 1);
 		end loop;
 		return retval;
 	end;
+
+	function macc_f 
+		constant product : signed;
+		constant multand : signed;
+		constant multier : unsigned)
+		return std_logic_vector is
+		variable lsb    : std_logic;
+		variable retval : signed(0 to product'length+multier'length-1);
+	begin
+		retval(0 to multier'length-1) := signed(multier);
+		retval := retval rol multier'length;
+		retval(0 to product'length-1) := product;
+		for i in multier'range loop
+			lsb    := retval(retval'right);
+			retval := shift_right(retval, 1);
+			if lsb='1' then
+				retval(0 to multand'length) := retval(0 to multand'length) + resize(multand, multand'length+1);
+			end if;
+		end loop;
+		return retval;
+	end;
+
 
 begin
 	process (clk)
@@ -61,8 +85,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ld='1' then
-				p(multier'range) := multier;
-				p := p srl multand'length;
+				p := mult_f((p'range => '0'), multand, (0 to 0 => multier(multier'right)));
 			else
 				p := mult_f(multand, p);
 			end if;
