@@ -70,9 +70,9 @@ architecture def of scopeio_axisticks is
 	signal dev_rdy : std_logic_vector(1 to 2);
 	signal dev_gnt : std_logic_vector(1 to 2);
 
-	signal from    : signed(bin_val'range);
-	signal base    : std_logic_vector(bin_val'range);
-	signal unit    : unsigned(bin_val'range);
+	signal base    : std_logic_vector(8-1 downto 0);
+	signal from    : signed(base'range);
+	signal unit    : unsigned(base'range);
 
 begin
 
@@ -92,8 +92,8 @@ begin
 		port map (
 			clk     => clk,
 			ini     => ini,
-			multand => std_logic_vector(from),
-			multier => std_logic_vector(unit),
+			multand => std_logic_vector(from(4-1 downto 0)),
+			multier => std_logic_vector(unit(4-1 downto 0)),
 			product => base);
 	end block;
 

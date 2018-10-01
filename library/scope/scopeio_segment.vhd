@@ -43,7 +43,7 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal hz_from  : std_logic_vector(8-1 downto 0) := b"1111_0000";
+	signal hz_from  : std_logic_vector(8-1 downto 0) := b"1111_1000";
 	signal hz_step  : std_logic_vector(8-1 downto 0) := b"0000_1000";
 	signal hz_point : std_logic_vector(3-1 downto 0) := b"111";
 	signal vt_from  : std_logic_vector(8-1 downto 0) := b"0001_1000";
@@ -52,21 +52,23 @@ architecture def of scopeio_segment is
 begin
 
 
---	process (hz_sel)
---	begin
---		case hz_sel is
---		when "00" =>
---			hz_from <= b"0000_0000";
---			hz_step <= b"0000_0010";
---		when "01" =>
---			hz_from <= b"0000_0000";
---			hz_step <= b"0000_0110";
---		when "11" =>
---			hz_from <= b"0000_0000";
---			hz_step <= b"0000_1010";
---		when others =>
---		end case;
---	end process;
+	process (hz_sel)
+	begin
+		hz_from <= (others => '-');
+		hz_step <= (others => '-');
+		case hz_sel is
+		when "00" =>
+			hz_from <= b"0000_1000";
+			hz_step <= b"0000_1000";
+		when "01" =>
+			hz_from <= b"0000_0000";
+			hz_step <= b"0000_1000";
+		when "10" =>
+			hz_from <= b"0000_0100";
+			hz_step <= b"0000_1010";
+		when others =>
+		end case;
+	end process;
 
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
