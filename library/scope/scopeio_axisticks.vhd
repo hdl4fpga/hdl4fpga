@@ -30,34 +30,34 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisticks is
 	port (
-		clk     : in  std_logic;
+		clk       : in  std_logic;
 
-		hz_len  : in  std_logic_vector := b"110";
-		hz_step : in  std_logic_vector;
-		hz_from : in  std_logic_vector;
-		hz_req  : in  std_logic;
-		hz_rdy  : out std_logic;
-		hz_pnt  : in  std_logic_vector;
-		hz_dv   : out std_logic;
+		hz_length : in  std_logic_vector := b"110";
+		hz_unit   : in  std_logic_vector;
+		hz_from   : in  std_logic_vector;
+		hz_req    : in  std_logic;
+		hz_rdy    : out std_logic;
+		hz_point  : in  std_logic_vector;
+		hz_dv     : out std_logic;
 
-		vt_len  : in  std_logic_vector := b"100";
-		vt_step : in  std_logic_vector;
-		vt_from : in  std_logic_vector;
-		vt_req  : in  std_logic;
-		vt_rdy  : out std_logic;
-		vt_pnt  : in  std_logic_vector;
-		vt_dv   : out std_logic;
+		vt_length : in  std_logic_vector := b"100";
+		vt_unit   : in  std_logic_vector;
+		vt_from   : in  std_logic_vector;
+		vt_req    : in  std_logic;
+		vt_rdy    : out std_logic;
+		vt_point  : in  std_logic_vector;
+		vt_dv     : out std_logic;
 
-		tick    : out std_logic_vector;
-		value   : out std_logic_vector);
+		tick      : out std_logic_vector;
+		value     : out std_logic_vector);
 end;
 
 architecture def of scopeio_axisticks is
 
 	signal wrt_req : std_logic;
 	signal wrt_rdy : std_logic;
-	signal wrt_len : std_logic_vector(0 to 3-1);
-	signal wrt_pnt : std_logic_vector(0 to 3-1);
+	signal wrt_length : std_logic_vector(0 to 3-1);
+	signal wrt_point : std_logic_vector(0 to 3-1);
 
 	signal bin_dv  : std_logic;
 	signal bin_val : std_logic_vector(4*4-1 downto 0);
@@ -81,9 +81,9 @@ begin
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
 					if hz_gnt='1' then
-						cntr := cntr + signed(hz_step);
+						cntr := cntr + signed(hz_unit);
 					else
-						cntr := cntr + signed(vt_step);
+						cntr := cntr + signed(vt_unit);
 					end if;
 				end if;
 			end if;
@@ -109,16 +109,29 @@ begin
 		unit_req => wrt_req,
 		unit_rdy => wrt_rdy);
 
-	wrt_len <= wirebus(hz_len & vt_len, dev_gnt);
-	wrt_pnt <= wirebus(hz_pnt & vt_pnt, dev_gnt);
+	wrt_length <= wirebus(hz_length & vt_length, dev_gnt);
+	wrt_point <= wirebus(hz_point & vt_point, dev_gnt);
+
+	mult_b : block
+		signal ini : std_logic; 
+	begin
+		ini <= not hz_req;
+		mult_e : entity hdl4fpga.mult
+		port map (
+			clk     => in_clk,
+			ini     => ini,
+			multand => ,
+			multier => unit,
+			product => from);
+	end block;
 
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
 		clk        => clk,
 		write_req  => wrt_req,
 		write_rdy  => wrt_rdy,
-		point      => wrt_pnt,
-		length     => wrt_len,
+		point      => wrt_point,
+		length     => wrt_length,
 		element    => tick,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,

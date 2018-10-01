@@ -13,8 +13,8 @@ entity scopeio_axis is
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
-		hz_base     : in  std_logic_vector;
-		vt_base     : in  std_logic_vector;
+		hz_offset   : in  std_logic_vector;
+		vt_offset   : in  std_logic_vector;
 
 		in_clk      : in  std_logic;
 
@@ -22,15 +22,15 @@ entity scopeio_axis is
 		hz_rdy      : out std_logic;
 		hz_on       : in  std_logic;
 		hz_from     : in  std_logic_vector;
-		hz_step     : in  std_logic_vector;
-		hz_pnt      : in  std_logic_vector;
+		hz_unit     : in  std_logic_vector;
+		hz_point    : in  std_logic_vector;
 
 		vt_req      : in  std_logic;
 		vt_rdy      : out std_logic;
 		vt_on       : in  std_logic;
 		vt_from     : in  std_logic_vector;
-		vt_step     : in  std_logic_vector;
-		vt_pnt      : in  std_logic_vector;
+		vt_unit     : in  std_logic_vector;
+		vt_point    : in  std_logic_vector;
 
 		vt_dot      : out std_logic;
 		hz_dot      : out std_logic);
@@ -39,8 +39,8 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant hz_len : unsigned(0 to 3-1) := to_unsigned(7, 3);
-	constant vt_len : unsigned(0 to 3-1) := to_unsigned(4, 3);
+	constant hz_length : unsigned(0 to 3-1) := to_unsigned(7, 3);
+	constant vt_length : unsigned(0 to 3-1) := to_unsigned(4, 3);
 
 	signal tick    : std_logic_vector(7-1 downto 0);
 	signal value   : std_logic_vector(8*4-1 downto 0);
@@ -55,26 +55,26 @@ begin
 
 	scopeio_axisticks_e : entity work.scopeio_axisticks
 	port map (
-		clk     => in_clk,
+		clk      => in_clk,
 
-		hz_len  => std_logic_vector(hz_len),
-		hz_step => hz_step,
-		hz_from => hz_from,
-		hz_req  => hz_req,
-		hz_rdy  => hz_rdy,
-		hz_pnt  => hz_pnt,
-		hz_dv   => hz_dv,
+		hz_length => std_logic_vector(hz_length),
+		hz_unit   => hz_unit,
+		hz_from   => hz_from,
+		hz_req    => hz_req,
+		hz_rdy    => hz_rdy,
+		hz_point  => hz_point,
+		hz_dv     => hz_dv,
 
-		vt_len  => std_logic_vector(vt_len),
-		vt_step => vt_step,
-		vt_from => vt_from,
-		vt_req  => vt_req,
-		vt_rdy  => vt_rdy,
-		vt_pnt  => vt_pnt,
-		vt_dv   => vt_dv,
+		vt_length  => std_logic_vector(vt_length),
+		vt_unit   => vt_unit,
+		vt_from   => vt_from,
+		vt_req    => vt_req,
+		vt_rdy    => vt_rdy,
+		vt_point  => vt_point,
+		vt_dv     => vt_dv,
 
-		tick    => tick,
-		value   => value);
+		tick     => tick,
+		value    => value);
 
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
@@ -105,8 +105,8 @@ begin
 		signal char_dot : std_logic;
 	begin
 
-		hz_tick <= std_logic_vector(unsigned(hz_base) + unsigned(video_hcntr(11-1 downto 6)));
-		vt_tick <= std_logic_vector(unsigned(vt_base) + unsigned(video_vcntr( 8-1 downto 5)));
+		hz_tick <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr(11-1 downto 6)));
+		vt_tick <= std_logic_vector(unsigned(vt_offset) + unsigned(video_vcntr( 8-1 downto 5)));
 		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);

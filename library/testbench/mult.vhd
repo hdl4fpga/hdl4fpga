@@ -21,42 +21,39 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
-entity adder is
-	port (
-		clk : in  std_logic := '-';
-		ini : in  std_logic := '0';
-		ci  : in  std_logic := '0' ;
-		a   : in  std_logic_vector;
-		b   : in  std_logic_vector;
-		co  : out std_logic;
-		s   : out std_logic_vector;
-end;
+library hdl4fpga;
 
-architecture def of adder is
-	signal cy : std_logic;
+architecture mult of testbench is
+
+	signal clk : std_logic := '0';
+	signal rst : std_logic;
+	signal ini : std_logic;
+
+	signal product : std_logic_vector(0 to 8-1);
 begin
+	clk <= not clk after 5 ns;
+	rst <= '1', '0' after 26 ns;
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			cy <= co_d;
 		end if;
 	end process;
 
-	cin <= ci when ini='1' cy;
 
-	process (a, b, cin)
-		variable add : std_logic_vector(0 to s'length+1);
-	begin
-		add  := unsigned('0' & a & '0') + unsigned('0' & b & '1');
-		co_d <= add(0);
-		s    <= add(1 to s'length);
-	end process;
-
-	co <= co_d;
-
+	ini <= rst;
+	du : entity hdl4fpga.mult
+	port map (
+        clk     => clk,
+		ini     => ini ,
+		multand => x"5",
+		multier => x"4",
+		product => product);
 end;

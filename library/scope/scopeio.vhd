@@ -599,7 +599,7 @@ begin
 					grid_on       => grid_on,
 					hz_on         => hz_on,
 					vt_on         => vt_on,
-					hz_base       => hz_base,
+					hz_offset     => hz_base,
 
 					samples       => storage_data,
 					trigger_level => trigger_level,

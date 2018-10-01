@@ -31,6 +31,7 @@ use hdl4fpga.std.all;
 entity mult is
 	port (
 		clk     : in  std_logic := '-';
+		ini     : in  std_logic := '1';
 		multand : in  std_logic_vector;
 		multier : in  std_logic_vector;
 		product : out std_logic_vector);
@@ -39,35 +40,16 @@ end;
 architecture def of mult is
 
 	function mult_f (
-		constant multand : signed;
-		constant multier : unsigned);
-		return std_logic_vector is
-		variable retval : signed(0 to multand'length+multier'length-1) := (others => '0');
-	begin
-		retval(0 to multier'length-1) := signed(multier);
-		retval := retval rol multier'length;
-		for i in multier'range loop
-			lsb    := retval(retval'right);
-			retval := shift_right(retval, 1);
-			if lsb='1' then
-				retval(0 to multand'length) := retval(0 to multand'length) + resize(multand, multand'length+1);
-			end if;
-			retval := shift_right(retval, 1);
-		end loop;
-		return retval;
-	end;
-
-	function macc_f 
-		constant product : signed;
+		constant accmltr : signed;
 		constant multand : signed;
 		constant multier : unsigned)
-		return std_logic_vector is
+		return signed is
 		variable lsb    : std_logic;
-		variable retval : signed(0 to product'length+multier'length-1);
+		variable retval : signed(0 to multand'length+multier'length-1);
 	begin
 		retval(0 to multier'length-1) := signed(multier);
 		retval := retval rol multier'length;
-		retval(0 to product'length-1) := product;
+		retval(0 to accmltr'length-1) := accmltr;
 		for i in multier'range loop
 			lsb    := retval(retval'right);
 			retval := shift_right(retval, 1);
@@ -78,18 +60,20 @@ architecture def of mult is
 		return retval;
 	end;
 
+	signal product_d : signed(0 to product'length-1);
+	signal accmltr_d : signed(0 to multand'length-1);
+	signal accmltr_q : signed(accmltr_d'range);
 
 begin
-	process (clk)
-		variable p : std_logic_vector(0 to multand'length+multier'length-1);
+
+	accmltr_d <= signed'(accmltr_d'range => '0') when ini='1' else accmltr_q;
+	product_d <= mult_f(accmltr_d, signed(multand), unsigned(multier));
+	process(clk)
 	begin
 		if rising_edge(clk) then
-			if ld='1' then
-				p := mult_f((p'range => '0'), multand, (0 to 0 => multier(multier'right)));
-			else
-				p := mult_f(multand, p);
-			end if;
-			
+			accmltr_q <= product_d(accmltr_d'range);
 		end if;
 	end process;
+	product <= std_logic_vector(product_d);
+
 end;

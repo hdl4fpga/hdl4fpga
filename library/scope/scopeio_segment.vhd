@@ -26,8 +26,8 @@ entity scopeio_segment is
 		x             : in  std_logic_vector;
 		y             : in  std_logic_vector;
 
-		hz_base       : in  std_logic_vector;
-		vt_base       : in  std_logic_vector := std_logic_vector'(b"0000");
+		hz_offset     : in  std_logic_vector;
+		vt_offset     : in  std_logic_vector := std_logic_vector'(b"0000");
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
 		grid_on       : in  std_logic;
@@ -43,12 +43,12 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal hz_from : std_logic_vector(8-1 downto 0) := b"1111_0000";
-	signal hz_step : std_logic_vector(8-1 downto 0) := b"0000_1000";
-	signal hz_pnt  : std_logic_vector(3-1 downto 0) := b"111";
-	signal vt_from : std_logic_vector(8-1 downto 0) := b"0001_1000";
-	signal vt_step : std_logic_vector(8-1 downto 0) := b"1111_1000";
-	signal vt_pnt  : std_logic_vector(3-1 downto 0) := b"111";
+	signal hz_from  : std_logic_vector(8-1 downto 0) := b"1111_0000";
+	signal hz_step  : std_logic_vector(8-1 downto 0) := b"0000_1000";
+	signal hz_point : std_logic_vector(3-1 downto 0) := b"111";
+	signal vt_from  : std_logic_vector(8-1 downto 0) := b"0001_1000";
+	signal vt_step  : std_logic_vector(8-1 downto 0) := b"1111_1000";
+	signal vt_point : std_logic_vector(3-1 downto 0) := b"111";
 begin
 
 
@@ -98,20 +98,20 @@ begin
 		hz_on       => hz_on,
 		hz_req      => hz_req,
 		hz_rdy      => hz_rdy,
-		hz_step     => hz_step,
+		hz_unit     => hz_step,
 		hz_from     => hz_from,
-		hz_pnt      => hz_pnt,
+		hz_point    => hz_point,
 		hz_dot      => hz_dot,
-		hz_base     => hz_base,
+		hz_offset   => hz_offset,
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
 		vt_rdy      => vt_rdy,
-		vt_step     => vt_step,
+		vt_unit     => vt_step,
 		vt_from     => vt_from,
-		vt_pnt      => vt_pnt,
+		vt_point    => vt_point,
 		vt_dot      => vt_dot,
-		vt_base     => vt_base,
+		vt_offset   => vt_offset,
 
 		video_clk   => video_clk,
 		video_hcntr => x,
