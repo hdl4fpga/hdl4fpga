@@ -69,11 +69,36 @@ architecture def of scopeio_axisticks is
 	signal dev_req : std_logic_vector(1 to 2);
 	signal dev_rdy : std_logic_vector(1 to 2);
 	signal dev_gnt : std_logic_vector(1 to 2);
+
+	signal from    : signed(bin_val'range);
+	signal base    : std_logic_vector(bin_val'range);
+	signal unit    : unsigned(bin_val'range);
+
 begin
+
+	from <=
+		resize(signed(hz_from), base'length) when hz_gnt='1' else
+		resize(signed(vt_from), base'length);
+
+	unit <=
+		resize(unsigned(hz_unit), base'length) when hz_gnt='1' else
+		resize(unsigned(vt_unit), base'length);
+
+	mult_b : block
+		signal ini : std_logic; 
+	begin
+		ini <= '1';
+		mult_e : entity hdl4fpga.mult
+		port map (
+			clk     => clk,
+			ini     => ini,
+			multand => std_logic_vector(from),
+			multier => std_logic_vector(unit),
+			product => base);
+	end block;
 
 	process(clk)
 		variable cntr : signed(bin_val'range);
-		variable base : signed(bin_val'range);
 	begin
 		if rising_edge(clk) then
 			if wrt_req='0' then
@@ -87,12 +112,7 @@ begin
 					end if;
 				end if;
 			end if;
-			if hz_gnt='1' then
-				base := resize(signed(hz_from), base'length);
-			else
-				base := resize(signed(vt_from), base'length);
-			end if;
-			bin_val <= std_logic_vector(cntr + base);
+			bin_val <= std_logic_vector(cntr + signed(base));
 		end if;
 	end process;
 
@@ -110,20 +130,7 @@ begin
 		unit_rdy => wrt_rdy);
 
 	wrt_length <= wirebus(hz_length & vt_length, dev_gnt);
-	wrt_point <= wirebus(hz_point & vt_point, dev_gnt);
-
-	mult_b : block
-		signal ini : std_logic; 
-	begin
-		ini <= not hz_req;
-		mult_e : entity hdl4fpga.mult
-		port map (
-			clk     => in_clk,
-			ini     => ini,
-			multand => ,
-			multier => unit,
-			product => from);
-	end block;
+	wrt_point  <= wirebus(hz_point  & vt_point,  dev_gnt);
 
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
