@@ -11,16 +11,10 @@ entity scopeio is
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_from     : real_vector := (0 to 0 => 0.0);
-		vt_step     : real_vector := (0 to 0 => 0.0);
-		vt_scale    : std_logic_vector := (0 to 0 => '0');
 		vt_gain     : natural_vector := (0 to 0 => 2**17);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		hz_from     : real_vector := (0 to 0 => 0.0);
-		hz_step     : real_vector := (0 to 0 => 0.0);
-		hz_scale    : std_logic_vector := (0 to 0 => '0');
 		hz_gain     : natural_vector := (0 to 0 => 2**18);
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0'));
@@ -120,7 +114,8 @@ architecture beh of scopeio is
 
 	signal hz_req : std_logic;
 	signal hz_rdy : std_logic;
-	signal hz_sel : std_logic_vector(2-1 downto 0);
+	signal axis_from : std_logic_vector(8-1 downto 0);
+	signal axis_sel  : std_logic_vector(2-1 downto 0);
 
 	signal vt_req : std_logic;
 	signal vt_rdy : std_logic;
@@ -153,20 +148,22 @@ begin
 		rgtr_data => rgtr_data);
 
 	rgtrmap_b : block
-		constant rgtrid_selhz : std_logic_vector := x"10";
-		constant rgtrid_selvt : std_logic_vector := x"11";
+		constant rgtrid_from : std_logic_vector := x"10";
+		constant rgtrid_sel  : std_logic_vector := x"11";
+		constant rgtrid_axis : std_logic_vector := x"12";
 	begin
 		process(si_clk)
 		begin
 			if rising_edge(si_clk) then
 				if rgtr_dv='1' then
 					case rgtr_id is
-					when rgtrid_selhz =>
-						hz_req <= '1';
-						hz_sel <= rgtr_data(2-1 downto  0);
-					when rgtrid_selvt =>
-						vt_req <= '1';
-						vt_sel <= rgtr_data(6-1 downto  0);
+					when rgtrid_from =>
+						axis_from <= rgtr_data(8-1 downto  0);
+					when rgtrid_sel  =>
+						axis_sel  <= rgtr_data(2-1 downto  0);
+					when rgtrid_axis =>
+						hz_req    <= rgtr_data(0);
+						vt_req    <= rgtr_data(1);
 					when others =>
 					end case;
 				else
@@ -586,11 +583,11 @@ begin
 					in_clk        => si_clk,
 					hz_req        => hz_req,
 					hz_rdy        => hz_rdy,
-					hz_sel        => hz_sel,
-
 					vt_req        => vt_req,
 					vt_rdy        => vt_rdy,
-					vt_sel        => hz_sel,
+
+					axis_sel      => axis_sel,
+					axis_from     => axis_from,
 
 					video_clk     => video_clk,
 					x             => x,

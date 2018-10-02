@@ -18,19 +18,17 @@ entity scopeio_axis is
 
 		in_clk      : in  std_logic;
 
+		axis_from     : in  std_logic_vector;
+		axis_unit     : in  std_logic_vector;
+		axis_point    : in  std_logic_vector;
+
 		hz_req      : in  std_logic;
 		hz_rdy      : out std_logic;
 		hz_on       : in  std_logic;
-		hz_from     : in  std_logic_vector;
-		hz_unit     : in  std_logic_vector;
-		hz_point    : in  std_logic_vector;
 
 		vt_req      : in  std_logic;
 		vt_rdy      : out std_logic;
 		vt_on       : in  std_logic;
-		vt_from     : in  std_logic_vector;
-		vt_unit     : in  std_logic_vector;
-		vt_point    : in  std_logic_vector;
 
 		vt_dot      : out std_logic;
 		hz_dot      : out std_logic);
@@ -58,19 +56,16 @@ begin
 		clk      => in_clk,
 
 		hz_length => std_logic_vector(hz_length),
-		hz_unit   => hz_unit,
-		hz_from   => hz_from,
+		axis_unit   => axis_unit,
+		axis_from   => axis_from,
+		axis_point  => axis_point,
 		hz_req    => hz_req,
 		hz_rdy    => hz_rdy,
-		hz_point  => hz_point,
 		hz_dv     => hz_dv,
 
 		vt_length  => std_logic_vector(vt_length),
-		vt_unit   => vt_unit,
-		vt_from   => vt_from,
 		vt_req    => vt_req,
 		vt_rdy    => vt_rdy,
-		vt_point  => vt_point,
 		vt_dv     => vt_dv,
 
 		tick     => tick,

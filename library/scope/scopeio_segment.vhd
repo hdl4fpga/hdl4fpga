@@ -16,11 +16,12 @@ entity scopeio_segment is
 
 		hz_req        : in  std_logic;
 		hz_rdy        : out std_logic;
-		hz_sel        : in  std_logic_vector(0 to 2-1);
 
 		vt_req        : in  std_logic;
 		vt_rdy        : out std_logic;
-		vt_sel        : in  std_logic_vector;
+
+		axis_sel      : in  std_logic_vector(2-1 downto 0);
+		axis_from     : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -43,29 +44,21 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal hz_from  : std_logic_vector(8-1 downto 0) := b"1111_1000";
-	signal hz_step  : std_logic_vector(8-1 downto 0) := b"0000_1000";
-	signal hz_point : std_logic_vector(3-1 downto 0) := b"111";
-	signal vt_from  : std_logic_vector(8-1 downto 0) := b"0001_1000";
-	signal vt_step  : std_logic_vector(8-1 downto 0) := b"1111_1000";
-	signal vt_point : std_logic_vector(3-1 downto 0) := b"111";
+	signal axis_step  : std_logic_vector(8-1 downto 0) := b"1111_1000";
+	signal axis_point : std_logic_vector(3-1 downto 0) := b"111";
 begin
 
 
-	process (hz_sel)
+	process (axis_sel)
 	begin
-		hz_from <= (others => '-');
-		hz_step <= (others => '-');
-		case hz_sel is
+		axis_step <= (others => '-');
+		case axis_sel is
 		when "00" =>
-			hz_from <= b"0000_1000";
-			hz_step <= b"0000_1000";
+			axis_step <= b"0000_1000";
 		when "01" =>
-			hz_from <= b"0000_0000";
-			hz_step <= b"0000_1000";
+			axis_step <= b"0000_1000";
 		when "10" =>
-			hz_from <= b"0000_0100";
-			hz_step <= b"0000_1010";
+			axis_step <= b"0000_1010";
 		when others =>
 		end case;
 	end process;
@@ -97,21 +90,19 @@ begin
 	port map (
 		in_clk      => in_clk,
 
+		axis_unit     => axis_step,
+		axis_from     => axis_from,
+		axis_point    => axis_point,
+
 		hz_on       => hz_on,
 		hz_req      => hz_req,
 		hz_rdy      => hz_rdy,
-		hz_unit     => hz_step,
-		hz_from     => hz_from,
-		hz_point    => hz_point,
 		hz_dot      => hz_dot,
 		hz_offset   => hz_offset,
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
 		vt_rdy      => vt_rdy,
-		vt_unit     => vt_step,
-		vt_from     => vt_from,
-		vt_point    => vt_point,
 		vt_dot      => vt_dot,
 		vt_offset   => vt_offset,
 

@@ -32,20 +32,18 @@ entity scopeio_axisticks is
 	port (
 		clk       : in  std_logic;
 
+		axis_unit   : in  std_logic_vector;
+		axis_from   : in  std_logic_vector;
+		axis_point  : in  std_logic_vector;
+
 		hz_length : in  std_logic_vector := b"110";
-		hz_unit   : in  std_logic_vector;
-		hz_from   : in  std_logic_vector;
 		hz_req    : in  std_logic;
 		hz_rdy    : out std_logic;
-		hz_point  : in  std_logic_vector;
 		hz_dv     : out std_logic;
 
 		vt_length : in  std_logic_vector := b"100";
-		vt_unit   : in  std_logic_vector;
-		vt_from   : in  std_logic_vector;
 		vt_req    : in  std_logic;
 		vt_rdy    : out std_logic;
-		vt_point  : in  std_logic_vector;
 		vt_dv     : out std_logic;
 
 		tick      : out std_logic_vector;
@@ -57,7 +55,6 @@ architecture def of scopeio_axisticks is
 	signal wrt_req : std_logic;
 	signal wrt_rdy : std_logic;
 	signal wrt_length : std_logic_vector(0 to 3-1);
-	signal wrt_point : std_logic_vector(0 to 3-1);
 
 	signal bin_dv  : std_logic;
 	signal bin_val : std_logic_vector(4*4-1 downto 0);
@@ -76,13 +73,8 @@ architecture def of scopeio_axisticks is
 
 begin
 
-	from <=
-		resize(signed(hz_from), base'length) when hz_gnt='1' else
-		resize(signed(vt_from), base'length);
-
-	unit <=
-		resize(unsigned(hz_unit), base'length) when hz_gnt='1' else
-		resize(unsigned(vt_unit), base'length);
+	from <= resize(signed(axis_from),   base'length);
+	unit <= resize(unsigned(axis_unit), base'length);
 
 	mult_b : block
 		signal ini : std_logic; 
@@ -105,11 +97,7 @@ begin
 				cntr := (others => '0');
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
-					if hz_gnt='1' then
-						cntr := cntr + signed(hz_unit);
-					else
-						cntr := cntr + signed(vt_unit);
-					end if;
+					cntr := cntr + signed(axis_unit);
 				end if;
 			end if;
 			bin_val <= std_logic_vector(cntr + signed(base));
@@ -130,14 +118,13 @@ begin
 		unit_rdy => wrt_rdy);
 
 	wrt_length <= wirebus(hz_length & vt_length, dev_gnt);
-	wrt_point  <= wirebus(hz_point  & vt_point,  dev_gnt);
 
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
 		clk        => clk,
 		write_req  => wrt_req,
 		write_rdy  => wrt_rdy,
-		point      => wrt_point,
+		point      => axis_point,
 		length     => wrt_length,
 		element    => tick,
 		bin_dv     => bin_dv,
