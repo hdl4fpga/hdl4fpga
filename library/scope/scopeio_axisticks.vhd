@@ -73,7 +73,7 @@ architecture def of scopeio_axisticks is
 
 begin
 
-	from <= resize(signed(axis_from),   base'length);
+	from <= resize(  signed(axis_from), base'length);
 	unit <= resize(unsigned(axis_unit), base'length);
 
 	mult_b : block

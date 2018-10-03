@@ -159,11 +159,9 @@ begin
 					case rgtr_id is
 					when rgtrid_from =>
 						axis_from <= rgtr_data(8-1 downto  0);
-					when rgtrid_sel  =>
-						axis_sel  <= rgtr_data(2-1 downto  0);
-					when rgtrid_axis =>
-						hz_req    <= rgtr_data(0);
-						vt_req    <= rgtr_data(1);
+						axis_sel  <= (others => '0');
+						hz_req    <= '1';
+						vt_req    <= '0';
 					when others =>
 					end case;
 				else

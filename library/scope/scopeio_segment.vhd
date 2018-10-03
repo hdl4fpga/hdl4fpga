@@ -90,9 +90,9 @@ begin
 	port map (
 		in_clk      => in_clk,
 
-		axis_unit     => axis_step,
-		axis_from     => axis_from,
-		axis_point    => axis_point,
+		axis_unit   => axis_step,
+		axis_from   => axis_from,
+		axis_point  => axis_point,
 
 		hz_on       => hz_on,
 		hz_req      => hz_req,
