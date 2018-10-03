@@ -24,48 +24,29 @@ window.addEventListener("load", function() {
 	}
 
 	function mouseWheelCb (e) {
-		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+
+		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
 		console.log("mouseWheel");
+
+		var data = [];
+		var	e;
+
+		e = document.getElementById("delay");
+		data.push(16);
+		data.push(1);
+		data.push(parseInt(e.value));
+		send(data);
 	}
 
 	var e;
 	
-	e = document.createElement("INPUT");
-
-	e.setAttribute("type","number");
-	e.setAttribute("value","0");
-	e.style.textAlign = "right";
-
+	e = document.getElementById("delay");
 	e.addEventListener("wheel", mouseWheelCb, false);
 
-	document.body.appendChild(e);
-
-	var rgtrID = e;
-
-	e = document.createElement("INPUT");
-
-	e.setAttribute("type","number");
-	e.setAttribute("value","0");
-	e.style.textAlign = "right";
-
+	e = document.getElementById("position");
 	e.addEventListener("wheel", mouseWheelCb, false);
 
-	document.body.appendChild(e);
+	e = document.getElementById("offset");
+	e.addEventListener("wheel", mouseWheelCb, false);
 
-	var rgtrData = e;
-
-	e = document.createElement("INPUT");
-	e.setAttribute("type","button");
-	e.setAttribute("value","Send");
-	document.body.appendChild(e);
-
-	e.onclick = function(ev) {
-		var data = [];
-		data.push(rgtrID.value);
-		data.push(1);
-		data.push(rgtrData.value >> 8);
-		data.push(rgtrData.value % 256);
-		console.log("pase por aca");
-		send(data);
-	}
 });
