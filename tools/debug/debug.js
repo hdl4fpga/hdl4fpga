@@ -33,9 +33,8 @@ window.addEventListener("load", function() {
 
 		e = document.getElementById("delay");
 		data.push(16);
-		data.push(1);
-//		data.push(parseInt(e.value));
-		data.push(0xff);
+		data.push(0);
+		data.push(parseInt(e.value));
 		send(data);
 	}
 
