@@ -31,10 +31,15 @@ window.addEventListener("load", function() {
 		var data = [];
 		var	e;
 
-		e = document.getElementById("delay");
 		data.push(16);
-		data.push(0);
+		data.push(1);
+
+		e = document.getElementById("scale");
+		data.push((0x3 & parseInt(e.value)));
+
+		e = document.getElementById("delay");
 		data.push(parseInt(e.value));
+
 		send(data);
 	}
 
@@ -43,7 +48,7 @@ window.addEventListener("load", function() {
 	e = document.getElementById("delay");
 	e.addEventListener("wheel", mouseWheelCb, false);
 
-	e = document.getElementById("position");
+	e = document.getElementById("scale");
 	e.addEventListener("wheel", mouseWheelCb, false);
 
 	e = document.getElementById("offset");

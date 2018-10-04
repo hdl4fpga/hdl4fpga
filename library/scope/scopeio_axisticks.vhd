@@ -100,7 +100,11 @@ begin
 					cntr := cntr + signed(axis_unit);
 				end if;
 			end if;
-			bin_val <= std_logic_vector(cntr + signed(base));
+			if hz_gnt='1' then
+				bin_val <= std_logic_vector((cntr + signed(base)) sll 1);
+			else
+				bin_val <= std_logic_vector(cntr + signed(base));
+			end if;
 		end if;
 	end process;
 

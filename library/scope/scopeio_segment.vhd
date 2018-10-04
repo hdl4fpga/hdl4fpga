@@ -44,21 +44,21 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal axis_step  : std_logic_vector(8-1 downto 0) := b"1111_1000";
-	signal axis_point : std_logic_vector(3-1 downto 0) := b"111";
+	signal axis_unit  : std_logic_vector(4-1 downto 0);
+	signal axis_point : std_logic_vector(2-1 downto 0) := b"01";
 begin
 
 
 	process (axis_sel)
 	begin
-		axis_step <= (others => '-');
+		axis_unit <= (others => '-');
 		case axis_sel is
 		when "00" =>
-			axis_step <= b"0000_1000";
+			axis_unit <= b"0001";
 		when "01" =>
-			axis_step <= b"0000_1000";
+			axis_unit <= b"0010";
 		when "10" =>
-			axis_step <= b"0000_1010";
+			axis_unit <= b"0101";
 		when others =>
 		end case;
 	end process;
@@ -90,7 +90,7 @@ begin
 	port map (
 		in_clk      => in_clk,
 
-		axis_unit   => axis_step,
+		axis_unit   => axis_unit,
 		axis_from   => axis_from,
 		axis_point  => axis_point,
 

@@ -140,6 +140,7 @@ begin
 
 	format_b : block
 		signal sign_ena : std_logic;
+		signal zero     : std_logic;
 		signal value    : std_logic_vector(0 to bcd_dat'length-1);
 		signal right    : std_logic_vector(0 to bcd_dat'length-1);
 		signal module   : std_logic_vector(0 to bcd_dat'length-1);
@@ -150,17 +151,18 @@ begin
 
 		process (clk)
 			variable ena  : std_logic;
-			variable zero : std_logic;
+			variable aux : std_logic;
 		begin
 			if rising_edge(clk) then
 				if ena='1' then
 					value <= push_left((value'range => '1'), bcd_do);
-					zero  := setif(bcd_do=(bcd_do'range => '0'));
+					aux  := setif(bcd_do=(bcd_do'range => '0'));
 				else
 					value <= push_left(value, bcd_do);
-					zero  := setif(bcd_do=(bcd_do'range => '0')) and zero;
+					aux  := setif(bcd_do=(bcd_do'range => '0')) and aux;
 				end if;
-				sign_ena <= not zero and bcd_sign;
+				zero     <= aux;
+				sign_ena <= not aux and bcd_sign;
 				ena      := bcd_rdy;
 			end if;
 		end process;
@@ -171,9 +173,12 @@ begin
 			align  => right);
 		
 		formatbcd_e : entity hdl4fpga.format_bcd
+		generic map (
+			check => false)
 		port map (
 			value  => right,
 			point  => point,
+			zero   => zero,
 			format => module);
 
 		sign_e : entity hdl4fpga.sign_bcd

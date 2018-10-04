@@ -399,10 +399,12 @@ entity format_bcd is
 		dot   : std_logic_vector(4-1 downto 0) := x"b";
 		plus  : std_logic_vector(4-1 downto 0) := x"c";
 		minus : std_logic_vector(4-1 downto 0) := x"d";
-		space : std_logic_vector(4-1 downto 0) := x"f");
+		space : std_logic_vector(4-1 downto 0) := x"f";
+		check : boolean := true);
 		
 	port (
 		value    : in  std_logic_vector;
+		zero     : in  std_logic := '0';
 		point    : in  std_logic_vector;
 		format   : out std_logic_vector);
 end;
@@ -412,7 +414,7 @@ architecture def of format_bcd is
 	impure function format_bcd_f (
 		constant value : std_logic_vector;
 		constant point : std_logic_vector;
-		constant sign  : std_logic := '0')
+		constant zero  : std_logic)
 		return std_logic_vector is
 		variable temp  : std_logic_vector(value'length-1 downto 0);
 		variable digit : std_logic_vector(4-1 downto 0);
@@ -428,7 +430,7 @@ architecture def of format_bcd is
 			for i in 0 to value'length/digit'length-1 loop
 				if to_integer(signed(point))+i < 0 then
 					temp := std_logic_vector(unsigned(temp) ror digit'length);
-					if temp(digit'range)=x"f" then
+					if temp(digit'range)=space then
 						temp(digit'range) := x"0";
 					end if;
 				end if;
@@ -444,25 +446,37 @@ architecture def of format_bcd is
 				end if;
 			end loop;
 
-		end if;
+		else
+			if check then
+				if temp(digit'range)=x"0" then
+					temp  := std_logic_vector(unsigned(temp) ror digit'length);
+					digit := temp(digit'range);
+					temp  := std_logic_vector(unsigned(temp) rol digit'length);
+					if digit=space then
+						return temp;
+					end if;
+				end if;
+			end if;
 
---		if sign='1' then
---			for i in 0 to value'length/digit'length-1 loop
---				if temp(digit'range)=x"f" then
---					temp(digit'range) := plus;
---					temp := std_logic_vector(unsigned(temp) rol (i*digit'length));
---					exit;
---				end if;
---				temp := std_logic_vector(unsigned(temp) ror digit'length);
---			end loop;
---		end if;
+			if zero /= '1' then
+				for i in 0 to value'length/digit'length-1 loop
+					if i < to_integer(signed(point)) then
+						temp := std_logic_vector(unsigned(temp) rol digit'length);
+						if temp(digit'range)=space then
+							temp(digit'range) := x"0";
+						end if;
+					end if;
+				end loop;
+			end if;
+
+		end if;
 
 		return temp;
 	end;
 
 begin
 
-	format <= format_bcd_f(value, point);
+	format <= format_bcd_f(value, point, zero);
 		
 end;
 
