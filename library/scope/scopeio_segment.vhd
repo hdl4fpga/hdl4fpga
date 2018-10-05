@@ -46,6 +46,7 @@ end;
 architecture def of scopeio_segment is
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
 	signal axis_point : std_logic_vector(2-1 downto 0) := b"01";
+	signal x_offset   : std_logic_vector(x'range);
 begin
 
 
@@ -63,26 +64,16 @@ begin
 		end case;
 	end process;
 
+	x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
 		latency => latency-2)
 	port map (
 		clk  => video_clk,
 		ena  => grid_on,
-		x    => x,
+		x    => x_offset,
 		y    => y,
 		dot  => grid_dot);
-
---	trigger_e : entity hdl4fpga.scopeio_hline
---	generic map (
---		latency   => latency)
---	port map (
---		row => trigger_level,
---		clk => video_clk,
---		ena => grid_on,
---		x   => win_x,
---		y   => win_y,
---		dot => trigger_dot);
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
@@ -98,7 +89,7 @@ begin
 		hz_req      => hz_req,
 		hz_rdy      => hz_rdy,
 		hz_dot      => hz_dot,
-		hz_offset   => hz_offset,
+		hz_offset   => hz_offset(13-1 downto 5),
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
@@ -107,8 +98,19 @@ begin
 		vt_offset   => vt_offset,
 
 		video_clk   => video_clk,
-		video_hcntr => x,
+		video_hcntr => x_offset,
 		video_vcntr => y);
+
+--	trigger_e : entity hdl4fpga.scopeio_hline
+--	generic map (
+--		latency   => latency)
+--	port map (
+--		row => trigger_level,
+--		clk => video_clk,
+--		ena => grid_on,
+--		x   => win_x,
+--		y   => win_y,
+--		dot => trigger_dot);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (

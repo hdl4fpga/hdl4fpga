@@ -158,7 +158,7 @@ begin
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
-						axis_from <= rgtr_data( 8-1 downto  0);
+						axis_from <= rgtr_data(13-1 downto  5);
 						axis_sel  <= rgtr_data(10-1 downto  8);
 						hz_req    <= '1';
 						vt_req    <= '0';
