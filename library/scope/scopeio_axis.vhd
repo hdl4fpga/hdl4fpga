@@ -98,11 +98,24 @@ begin
 		signal hz_don   : std_logic;
 		signal vt_don   : std_logic;
 		signal char_dot : std_logic;
+		signal x        : std_logic_vector(video_hcntr'length+2-1 downto 0);
 	begin
 
-		hz_tick <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr(11-1 downto 6)));
+		process (video_hcntr, hz_offset, vt_on)
+			variable aux : unsigned(video_hcntr'length+2-1 downto 0);
+		begin
+			aux := resize(unsigned(video_hcntr), aux'length);
+			if vt_on='0' then
+				aux := aux + unsigned(hz_offset);
+			end if;
+			x <= std_logic_vector(aux);
+		end process;
+
+--		hz_tick <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr(11-1 downto 6)));
+		hz_tick <= x(13-1 downto 6);
 		vt_tick <= std_logic_vector(unsigned(vt_offset) + unsigned(video_vcntr( 8-1 downto 5)));
-		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
+--		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
+		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
 
@@ -113,7 +126,7 @@ begin
 			font_width  => 2**3)
 		port map (
 			clk       => video_clk,
-			char_col  => video_hcntr(3-1 downto 0),
+			char_col  => x(3-1 downto 0), --video_hcntr(3-1 downto 0),
 			char_row  => video_vcntr(3-1 downto 0),
 			char_code => code,
 			char_dot  => char_dot);

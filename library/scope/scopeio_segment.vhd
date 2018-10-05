@@ -64,7 +64,7 @@ begin
 		end case;
 	end process;
 
-	x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
+	x_offset <= std_logic_vector(unsigned(x));
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
 		latency => latency-2)
@@ -89,7 +89,7 @@ begin
 		hz_req      => hz_req,
 		hz_rdy      => hz_rdy,
 		hz_dot      => hz_dot,
-		hz_offset   => hz_offset(13-1 downto 5),
+		hz_offset   => hz_offset,
 
 		vt_on       => vt_on,
 		vt_req      => vt_req,
