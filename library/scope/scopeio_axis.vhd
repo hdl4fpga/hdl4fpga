@@ -101,6 +101,17 @@ begin
 		signal x        : std_logic_vector(video_hcntr'length+2-1 downto 0);
 	begin
 
+		process (in_clk)
+			variable hz_from : unsigned(axis_from'range);
+		begin
+			if rising_edge(in_clk) then
+
+				if hz_req='1' then
+					hz_from <= axis_from;
+				end if;	
+			end if;
+		end process;
+
 		process (video_hcntr, hz_offset, vt_on)
 			variable aux : unsigned(video_hcntr'length+2-1 downto 0);
 		begin
