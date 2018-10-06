@@ -112,10 +112,10 @@ architecture beh of scopeio is
 	signal storage_bsel : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_pixel  : std_logic_vector(video_rgb'range);
 
-	signal hz_req : std_logic;
-	signal hz_rdy : std_logic;
-	signal axis_from : std_logic_vector(8-1 downto 0);
-	signal axis_sel  : std_logic_vector(2-1 downto 0);
+	signal axis_req    : std_logic;
+	signal axis_rdy    : std_logic;
+	signal axis_offset : std_logic_vector(8-1 downto 0);
+	signal axis_escale : std_logic_vector(2-1 downto 0);
 
 	signal vt_req : std_logic;
 	signal vt_rdy : std_logic;
@@ -158,18 +158,15 @@ begin
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
-						axis_from <= rgtr_data(13-1 downto  5);
-						axis_sel  <= rgtr_data(10-1 downto  8);
-						hz_req    <= '1';
-						vt_req    <= '0';
+						axis_offset <= rgtr_data(13-1 downto  5);
+						axis_escale <= rgtr_data(10-1 downto  8);
+						axis_sel    <= rgtr_data(12-1 downto 10);
+						axis_req    <= '1';
 					when others =>
 					end case;
 				else
-					if hz_rdy='1' then
-						hz_req <= '0';
-					end if;
-					if vt_rdy='1' then
-						vt_req <= '0';
+					if axis_rdy='1' then
+						axis_req <= '0';
 					end if;
 				end if;
 			end if;
@@ -459,7 +456,6 @@ begin
 				signal grid_on : std_logic;
 				signal hz_on   : std_logic;
 				signal vt_on   : std_logic;
-				signal hz_base : std_logic_vector(7-1 downto 0);
 			begin
 
 				latency_phzl_e : entity hdl4fpga.align
@@ -571,7 +567,14 @@ begin
 
 				end block;
 
-				hz_base <= wirebus (b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm);
+				process (video_clk)
+					variable offset : ;
+				begin
+					if rising_edge(video_clk) then
+						hz_offset <= wirebus (b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm);
+						if 
+					end if;
+				end process;
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
@@ -579,13 +582,11 @@ begin
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
-					hz_req        => hz_req,
-					hz_rdy        => hz_rdy,
-					vt_req        => vt_req,
-					vt_rdy        => vt_rdy,
 
+					axis_req      => axis_req,
+					axis_rdy      => axis_rdy,
 					axis_sel      => axis_sel,
-					axis_from     => axis_from,
+					axis_escale   => axis_escale,
 
 					video_clk     => video_clk,
 					x             => x,
@@ -593,8 +594,10 @@ begin
 
 					grid_on       => grid_on,
 					hz_on         => hz_on,
+					hz_offset     => hz_offset,
+
 					vt_on         => vt_on,
-					hz_offset     => hz_base,
+					vt_offset     => vt_offset,
 
 					samples       => storage_data,
 					trigger_level => trigger_level,

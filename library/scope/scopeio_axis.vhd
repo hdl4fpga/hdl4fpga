@@ -13,7 +13,6 @@ entity scopeio_axis is
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
-		hz_base   : in  std_logic_vector;
 		vt_offset   : in  std_logic_vector;
 
 		in_clk      : in  std_logic;
@@ -53,23 +52,23 @@ begin
 
 	scopeio_axisticks_e : entity work.scopeio_axisticks
 	port map (
-		clk        => in_clk,
+		clk         => in_clk,
 
-		hz_length  => std_logic_vector(hz_length),
-		axis_unit  => axis_unit,
-		axis_offset  => axis_offset,
-		axis_point => axis_point,
-		hz_req     => hz_req,
-		hz_rdy     => hz_rdy,
-		hz_dv      => hz_dv,
+		hz_length   => std_logic_vector(hz_length),
+		axis_unit   => axis_unit,
+		axis_offset => axis_offset,
+		axis_point  => axis_point,
+		hz_req      => hz_req,
+		hz_rdy      => hz_rdy,
+		hz_dv       => hz_dv,
 
-		vt_length  => std_logic_vector(vt_length),
-		vt_req     => vt_req,
-		vt_rdy     => vt_rdy,
-		vt_dv      => vt_dv,
+		vt_length   => std_logic_vector(vt_length),
+		vt_req      => vt_req,
+		vt_rdy      => vt_rdy,
+		vt_dv       => vt_dv,
 
-		tick       => tick,
-		value      => value);
+		tick        => tick,
+		value       => value);
 
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (

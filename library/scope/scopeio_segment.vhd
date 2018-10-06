@@ -82,8 +82,7 @@ begin
 		in_clk      => in_clk,
 
 		axis_unit   => axis_unit,
-		axis_from   => axis_from,
-		axis_point  => axis_point,
+		axis_scale  => axis_scale,
 
 		hz_on       => hz_on,
 		hz_req      => hz_req,
