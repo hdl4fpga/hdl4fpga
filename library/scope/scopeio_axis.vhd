@@ -13,7 +13,7 @@ entity scopeio_axis is
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
-		hz_offset   : in  std_logic_vector;
+		hz_base   : in  std_logic_vector;
 		vt_offset   : in  std_logic_vector;
 
 		in_clk      : in  std_logic;
@@ -57,7 +57,7 @@ begin
 
 		hz_length  => std_logic_vector(hz_length),
 		axis_unit  => axis_unit,
-		axis_from  => axis_from,
+		axis_offset  => axis_offset,
 		axis_point => axis_point,
 		hz_req     => hz_req,
 		hz_rdy     => hz_rdy,
@@ -92,42 +92,70 @@ begin
 		rd_data => vt_val);
 
 	video_b : block
-		signal code     : std_logic_vector(4-1 downto 0);
-		signal hz_bcd   : std_logic_vector(code'range);
-		signal vt_bcd   : std_logic_vector(code'range);
-		signal hz_don   : std_logic;
-		signal vt_don   : std_logic;
-		signal char_dot : std_logic;
-		signal x        : std_logic_vector(video_hcntr'length+2-1 downto 0);
+		signal code      : std_logic_vector(4-1 downto 0);
+		signal hz_bcd    : std_logic_vector(code'range);
+		signal vt_bcd    : std_logic_vector(code'range);
+		signal hz_don    : std_logic;
+		signal vt_don    : std_logic;
+		signal char_dot  : std_logic;
+		signal hz_offset : signed(axis_offset'range);
+		signal x         : 
+
+		signal hon : std_logic;
+		signal von : std_logic;
 	begin
 
 		process (in_clk)
-			variable hz_from : unsigned(axis_from'range);
 		begin
 			if rising_edge(in_clk) then
-
 				if hz_req='1' then
-					hz_from <= axis_from;
+					hz_offset <= signed(axis_offset);
+				end if;	
+				if vt_req='1' then
+					vt_offset <= signed(axis_offset);
 				end if;	
 			end if;
 		end process;
 
-		process (video_hcntr, hz_offset, vt_on)
-			variable aux : unsigned(video_hcntr'length+2-1 downto 0);
+		x_p : process (video_clk)
+			variable address : signed(hz_base'range);
 		begin
-			aux := resize(unsigned(video_hcntr), aux'length);
-			if vt_on='0' then
-				aux := aux + unsigned(hz_offset);
+			if rising_edge(video_clk) then
+				x <= video_hcntr;
+				if vt_on='0' then
+					x <= postion + video_hcntr;
+				end if;
+				address := signed(hz_base) + hz_offset;
 			end if;
-			x <= std_logic_vector(aux);
 		end process;
 
---		hz_tick <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr(11-1 downto 6)));
-		hz_tick <= x(13-1 downto 6);
-		vt_tick <= std_logic_vector(unsigned(vt_offset) + unsigned(video_vcntr( 8-1 downto 5)));
---		hz_bcd  <= word2byte(hz_val, video_hcntr(6-1 downto 3), code'length);
+		y_p : process (video_clk)
+			variable address : signed(hz_base'range);
+		begin
+			if rising_edge(video_clk) then
+				v <= video_vcntr;
+				if vt_on='0' then
+					x <= postion + video_vcntr;
+				end if;
+				address := signed(vt_base) + vt_offset;
+			end if;
+		end process;
+
+		align_e : entity hdl4fpga.align
+		generic map (
+			n => ons_q'length,
+			d => (ons_q'range => 1))
+		port map (
+			clk   => video_clk,
+			di(0) => hz_on,
+			di(0) => vt_on,
+			do(0) => hon,
+			do(1) => von);
+
+		hz_tick <= x(hz_tick'length+6-1 downto 6);
+		vt_tick <= y(vt_tick'length+5-1 downto 5)));
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
-		vt_bcd  <= word2byte(vt_val, video_hcntr(6-1 downto 3), code'length);
+		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
 
 		rom_e : entity hdl4fpga.cga_rom
@@ -137,7 +165,7 @@ begin
 			font_width  => 2**3)
 		port map (
 			clk       => video_clk,
-			char_col  => x(3-1 downto 0), --video_hcntr(3-1 downto 0),
+			char_col  => x(3-1 downto 0),
 			char_row  => video_vcntr(3-1 downto 0),
 			char_code => code,
 			char_dot  => char_dot);
@@ -145,9 +173,9 @@ begin
 		romlat_b : block
 			signal ons : std_logic_vector(0 to 2-1);
 		begin
-			ons(0) <= hz_on; -- and not hz_tick(6);
-			ons(1) <= vt_on and video_vcntr(4) and video_vcntr(3);
 
+			ons(0) <= hon;
+			ons(1) <= von and y(4) and y(3);
 			lat_e : entity hdl4fpga.align
 			generic map (
 				n => ons'length,
@@ -168,7 +196,7 @@ begin
 			lat_e : entity hdl4fpga.align
 			generic map (
 				n => dots'length,
-				d => (dots'range => latency-2))
+				d => (dots'range => latency-3))
 			port map (
 				clk   => video_clk,
 				di    => dots,
