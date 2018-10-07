@@ -14,14 +14,11 @@ entity scopeio_segment is
 	port (
 		in_clk        : in  std_logic;
 
-		hz_req        : in  std_logic;
-		hz_rdy        : out std_logic;
-
-		vt_req        : in  std_logic;
-		vt_rdy        : out std_logic;
-
+		axis_req        : in  std_logic;
+		axis_rdy        : out std_logic;
 		axis_sel      : in  std_logic_vector(2-1 downto 0);
-		axis_from     : in  std_logic_vector;
+		axis_escale   : in  std_logic_vector;
+
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -50,7 +47,7 @@ architecture def of scopeio_segment is
 begin
 
 
-	process (axis_sel)
+	process (axis_escale)
 	begin
 		axis_unit <= (others => '-');
 		case axis_sel is
@@ -81,18 +78,16 @@ begin
 	port map (
 		in_clk      => in_clk,
 
+		axis_req    => axis_req,
+		axis_rdy    => axis_rdy,
 		axis_unit   => axis_unit,
 		axis_scale  => axis_scale,
 
 		hz_on       => hz_on,
-		hz_req      => hz_req,
-		hz_rdy      => hz_rdy,
 		hz_dot      => hz_dot,
 		hz_offset   => hz_offset,
 
 		vt_on       => vt_on,
-		vt_req      => vt_req,
-		vt_rdy      => vt_rdy,
 		vt_dot      => vt_dot,
 		vt_offset   => vt_offset,
 

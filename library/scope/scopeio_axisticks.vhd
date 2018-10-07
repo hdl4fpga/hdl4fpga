@@ -30,24 +30,23 @@ use hdl4fpga.std.all;
 
 entity scopeio_axisticks is
 	port (
-		clk       : in  std_logic;
+		clk         : in  std_logic;
 
+		axis_req    : in  std_logic;
+		axis_rdy    : out std_logic;
 		axis_unit   : in  std_logic_vector;
-		axis_from   : in  std_logic_vector;
-		axis_point  : in  std_logic_vector;
+		axis_escale : in  std_logic_vector;
 
-		hz_length : in  std_logic_vector := b"110";
-		hz_req    : in  std_logic;
-		hz_rdy    : out std_logic;
-		hz_dv     : out std_logic;
+		hz_length   : in  std_logic_vector := b"110";
+		hz_offset   : in  std_logic_vector;
+		hz_dv       : out std_logic;
 
-		vt_length : in  std_logic_vector := b"100";
-		vt_req    : in  std_logic;
-		vt_rdy    : out std_logic;
-		vt_dv     : out std_logic;
+		vt_length   : in  std_logic_vector := b"100";
+		vt_offset   : in  std_logic_vector := std_logic_vector'(b"0000");
+		vt_dv       : out std_logic;
 
-		tick      : out std_logic_vector;
-		value     : out std_logic_vector);
+		tick        : out std_logic_vector;
+		value       : out std_logic_vector);
 end;
 
 architecture def of scopeio_axisticks is
@@ -108,26 +107,13 @@ begin
 		end if;
 	end process;
 
-	dev_req <= (1 => hz_req, 2 => vt_req);
-	(1 => hz_rdy, 2 => vt_rdy) <= dev_rdy;
-	(1 => hz_gnt, 2 => vt_gnt) <= dev_gnt;
-
-	scopeio_grant_e : entity hdl4fpga.scopeio_grant
-	port map (
-		clk      => clk,
-		dev_req  => dev_req,
-		dev_gnt  => dev_gnt,
-		dev_rdy  => dev_rdy,
-		unit_req => wrt_req,
-		unit_rdy => wrt_rdy);
-
 	wrt_length <= wirebus(hz_length & vt_length, dev_gnt);
 
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
 		clk        => clk,
-		write_req  => wrt_req,
-		write_rdy  => wrt_rdy,
+		write_req  => axis_req,
+		write_rdy  => axis_rdy,
 		point      => axis_point,
 		length     => wrt_length,
 		element    => tick,
