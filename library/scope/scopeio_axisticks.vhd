@@ -35,7 +35,8 @@ entity scopeio_axisticks is
 		axis_req    : in  std_logic;
 		axis_rdy    : out std_logic;
 		axis_unit   : in  std_logic_vector;
-		axis_escale : in  std_logic_vector;
+		axis_point  : in  std_logic_vector;
+		axis_base   : in  std_logic_vector;
 		axis_length : in  std_logic_vector := b"100";
 
 		tick        : out std_logic_vector;
@@ -60,14 +61,14 @@ architecture def of scopeio_axisticks is
 	signal dev_rdy : std_logic_vector(1 to 2);
 	signal dev_gnt : std_logic_vector(1 to 2);
 
-	signal base    : std_logic_vector(8-1 downto 0);
-	signal from    : signed(base'range);
-	signal unit    : unsigned(base'range);
+	signal step    : std_logic_vector(8-1 downto 0);
+	signal base    : signed(step'range);
+	signal unit    : unsigned(step'range);
 
 begin
 
-	from <= resize(  signed(axis_from), base'length);
-	unit <= resize(unsigned(axis_unit), base'length);
+	base <= resize(  signed(axis_base), step'length);
+	unit <= resize(unsigned(axis_unit), step'length);
 
 	mult_b : block
 		signal ini : std_logic; 
@@ -77,9 +78,9 @@ begin
 		port map (
 			clk     => clk,
 			ini     => ini,
-			multand => std_logic_vector(from(4-1 downto 0)),
+			multand => std_logic_vector(base(4-1 downto 0)),
 			multier => std_logic_vector(unit(4-1 downto 0)),
-			product => base);
+			product => step);
 	end block;
 
 	process(clk)
@@ -93,11 +94,9 @@ begin
 					cntr := cntr + signed(axis_unit);
 				end if;
 			end if;
-			bin_val <= std_logic_vector(cntr + signed(base));
+			bin_val <= std_logic_vector(cntr + signed(step));
 		end if;
 	end process;
-
-	wrt_length <= wirebus(hz_length & vt_length, dev_gnt);
 
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
@@ -105,7 +104,7 @@ begin
 		write_req  => axis_req,
 		write_rdy  => axis_rdy,
 		point      => axis_point,
-		length     => wrt_length,
+		length     => axis_length,
 		element    => tick,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,

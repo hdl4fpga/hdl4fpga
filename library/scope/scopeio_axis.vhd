@@ -20,9 +20,11 @@ entity scopeio_axis is
 		axis_rdy    : out std_logic;
 		axis_unit   : in  std_logic_vector;
 		axis_point  : in  std_logic_vector;
+		axis_base   : in  std_logic_vector;
+		axis_sel    : in  std_logic_vector;
+		axis_length : in  std_logic_vector;
 
 		hz_on       : in  std_logic;
-		hz_base     : in  std_logic_vector;
 		hz_offset   : in  std_logic_vector;
 
 		vt_on       : in  std_logic;
@@ -58,15 +60,15 @@ begin
 		axis_req    => axis_req,
 		axis_rdy    => axis_rdy,
 		axis_unit   => axis_unit,
-		axis_offset => axis_offset,
+		axis_base   => axis_base,
 		axis_point  => axis_point,
-		axis_length => axis_length),
+		axis_length => axis_length,
 
 		dv          => dv,
 		tick        => tick,
 		value       => value);
 
-	hz_dv <= dv and axis_sel;
+	hz_dv <= dv and axis_sel(0);
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -77,7 +79,7 @@ begin
 		rd_addr => hz_tick(13-1 downto 6),
 		rd_data => hz_val);
 
-	vt_dv <= dv and axis_sel;
+	vt_dv <= dv and axis_sel(0);
 	vt_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -95,53 +97,40 @@ begin
 		signal hz_don    : std_logic;
 		signal vt_don    : std_logic;
 		signal char_dot  : std_logic;
-		signal hz_offset : signed(axis_offset'range);
-		signal x         : 
+		signal x         : std_logic_vector(hz_tick'length+6-1 downto 0);
+		signal y         : std_logic_vector(vt_tick'length+6-1 downto 0);
 
-		signal hon : std_logic;
-		signal von : std_logic;
+		signal hs_on     : std_logic;
+		signal vs_on     : std_logic;
 	begin
 
 		x_p : process (video_clk)
-			variable address : signed(hz_base'range);
 		begin
 			if rising_edge(video_clk) then
 				x <= video_hcntr;
-				if vt_on='0' then
-					x <= postion + video_hcntr;
+				if hz_on='0' then
+					x <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr));
 				end if;
-				address := signed(hz_base) + hz_offset;
+				hs_on <= hz_on;
 			end if;
 		end process;
 
 		y_p : process (video_clk)
-			variable address : signed(hz_base'range);
 		begin
 			if rising_edge(video_clk) then
-				v <= video_vcntr;
-				if vt_on='0' then
-					x <= postion + video_vcntr;
+				y <= video_vcntr;
+				if vt_on='1' then
+					y <= std_logic_vector(unsigned(vt_offset) + unsigned(video_vcntr));
 				end if;
-				address := signed(vt_base) + vt_offset;
+				vs_on <= vt_on;
 			end if;
 		end process;
 
-		align_e : entity hdl4fpga.align
-		generic map (
-			n => ons_q'length,
-			d => (ons_q'range => 1))
-		port map (
-			clk   => video_clk,
-			di(0) => hz_on,
-			di(0) => vt_on,
-			do(0) => hon,
-			do(1) => von);
-
 		hz_tick <= x(hz_tick'length+6-1 downto 6);
-		vt_tick <= y(vt_tick'length+5-1 downto 5)));
+		vt_tick <= y(vt_tick'length+5-1 downto 5);
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
-		code    <= word2byte(hz_bcd & vt_bcd, vt_on);
+		code    <= word2byte(hz_bcd & vt_bcd, vs_on);
 
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
@@ -149,18 +138,18 @@ begin
 			font_height => 2**3,
 			font_width  => 2**3)
 		port map (
-			clk       => video_clk,
-			char_col  => x(3-1 downto 0),
-			char_row  => video_vcntr(3-1 downto 0),
-			char_code => code,
-			char_dot  => char_dot);
+			clk         => video_clk,
+			char_col    => x(3-1 downto 0),
+			char_row    => y(3-1 downto 0),
+			char_code   => code,
+			char_dot    => char_dot);
 
 		romlat_b : block
 			signal ons : std_logic_vector(0 to 2-1);
 		begin
 
-			ons(0) <= hon;
-			ons(1) <= von and y(4) and y(3);
+			ons(0) <= hs_on;
+			ons(1) <= vs_on and y(4) and y(3);
 			lat_e : entity hdl4fpga.align
 			generic map (
 				n => ons'length,
