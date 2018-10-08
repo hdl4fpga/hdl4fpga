@@ -36,16 +36,10 @@ entity scopeio_axisticks is
 		axis_rdy    : out std_logic;
 		axis_unit   : in  std_logic_vector;
 		axis_escale : in  std_logic_vector;
-
-		hz_length   : in  std_logic_vector := b"110";
-		hz_offset   : in  std_logic_vector;
-		hz_dv       : out std_logic;
-
-		vt_length   : in  std_logic_vector := b"100";
-		vt_offset   : in  std_logic_vector := std_logic_vector'(b"0000");
-		vt_dv       : out std_logic;
+		axis_length : in  std_logic_vector := b"100";
 
 		tick        : out std_logic_vector;
+		dv          : out std_logic;
 		value       : out std_logic_vector);
 end;
 
@@ -99,11 +93,7 @@ begin
 					cntr := cntr + signed(axis_unit);
 				end if;
 			end if;
-			if hz_gnt='1' then
-				bin_val <= std_logic_vector((cntr + signed(base)) sll 1);
-			else
-				bin_val <= std_logic_vector(cntr + signed(base));
-			end if;
+			bin_val <= std_logic_vector(cntr + signed(base));
 		end if;
 	end process;
 
@@ -121,10 +111,8 @@ begin
 		bin_val    => bin_val,
 		bcd_sign   => vt_gnt,
 		bcd_left   => hz_gnt,
-		bcd_dv     => bcd_dv,
+		bcd_dv     => dv,
 		bcd_val    => value);
 
-	hz_dv <= bcd_dv and hz_gnt;
-	vt_dv <= bcd_dv and vt_gnt;
 
 end;

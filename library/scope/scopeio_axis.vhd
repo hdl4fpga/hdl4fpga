@@ -13,21 +13,20 @@ entity scopeio_axis is
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
-		vt_offset   : in  std_logic_vector;
 
 		in_clk      : in  std_logic;
 
-		axis_from     : in  std_logic_vector;
-		axis_unit     : in  std_logic_vector;
-		axis_point    : in  std_logic_vector;
+		axis_req    : in  std_logic;
+		axis_rdy    : out std_logic;
+		axis_unit   : in  std_logic_vector;
+		axis_point  : in  std_logic_vector;
 
-		hz_req      : in  std_logic;
-		hz_rdy      : out std_logic;
 		hz_on       : in  std_logic;
+		hz_base     : in  std_logic_vector;
+		hz_offset   : in  std_logic_vector;
 
-		vt_req      : in  std_logic;
-		vt_rdy      : out std_logic;
 		vt_on       : in  std_logic;
+		vt_offset   : in  std_logic_vector;
 
 		vt_dot      : out std_logic;
 		hz_dot      : out std_logic);
@@ -39,8 +38,10 @@ architecture def of scopeio_axis is
 	constant hz_length : unsigned(0 to 3-1) := to_unsigned(7, 3);
 	constant vt_length : unsigned(0 to 3-1) := to_unsigned(4, 3);
 
+	signal dv      : std_logic;
 	signal tick    : std_logic_vector(7-1 downto 0);
 	signal value   : std_logic_vector(8*4-1 downto 0);
+
 	signal vt_dv   : std_logic;
 	signal hz_dv   : std_logic;
 	signal hz_tick : std_logic_vector(13-1 downto 6);
@@ -54,22 +55,18 @@ begin
 	port map (
 		clk         => in_clk,
 
-		hz_length   => std_logic_vector(hz_length),
+		axis_req    => axis_req,
+		axis_rdy    => axis_rdy,
 		axis_unit   => axis_unit,
 		axis_offset => axis_offset,
 		axis_point  => axis_point,
-		hz_req      => hz_req,
-		hz_rdy      => hz_rdy,
-		hz_dv       => hz_dv,
+		axis_length => axis_length),
 
-		vt_length   => std_logic_vector(vt_length),
-		vt_req      => vt_req,
-		vt_rdy      => vt_rdy,
-		vt_dv       => vt_dv,
-
+		dv          => dv,
 		tick        => tick,
 		value       => value);
 
+	hz_dv <= dv and axis_sel;
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -80,6 +77,7 @@ begin
 		rd_addr => hz_tick(13-1 downto 6),
 		rd_data => hz_val);
 
+	vt_dv <= dv and axis_sel;
 	vt_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -103,18 +101,6 @@ begin
 		signal hon : std_logic;
 		signal von : std_logic;
 	begin
-
-		process (in_clk)
-		begin
-			if rising_edge(in_clk) then
-				if hz_req='1' then
-					hz_offset <= signed(axis_offset);
-				end if;	
-				if vt_req='1' then
-					vt_offset <= signed(axis_offset);
-				end if;	
-			end if;
-		end process;
 
 		x_p : process (video_clk)
 			variable address : signed(hz_base'range);

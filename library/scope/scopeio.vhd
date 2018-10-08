@@ -592,12 +592,14 @@ begin
 					x             => x,
 					y             => y,
 
-					grid_on       => grid_on,
 					hz_on         => hz_on,
+					hz_base       => hz_base,
 					hz_offset     => hz_offset,
 
 					vt_on         => vt_on,
 					vt_offset     => vt_offset,
+
+					grid_on       => grid_on,
 
 					samples       => storage_data,
 					trigger_level => trigger_level,
