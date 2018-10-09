@@ -108,7 +108,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				x <= std_logic_vector(resize(unsigned(video_hcntr), x'length));
-				if hz_on='0' then
+				if hz_on='1' then
 					x <= std_logic_vector(resize(signed(video_hcntr), x'length) + signed(hz_offset));
 				end if;
 				hs_on <= hz_on;
