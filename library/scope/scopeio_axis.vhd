@@ -68,7 +68,7 @@ begin
 		tick        => tick,
 		value       => value);
 
-	hz_dv <= dv and axis_sel(0);
+	hz_dv <= dv and not axis_sel(0);
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -107,9 +107,9 @@ begin
 		x_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				x <= video_hcntr;
+				x <= std_logic_vector(resize(unsigned(video_hcntr), x'length));
 				if hz_on='0' then
-					x <= std_logic_vector(unsigned(hz_offset) + unsigned(video_hcntr));
+					x <= std_logic_vector(resize(signed(video_hcntr), x'length) + signed(hz_offset));
 				end if;
 				hs_on <= hz_on;
 			end if;
@@ -118,9 +118,9 @@ begin
 		y_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				y <= video_vcntr;
+				y <= std_logic_vector(resize(unsigned(video_vcntr), y'length));
 				if vt_on='1' then
-					y <= std_logic_vector(unsigned(vt_offset) + unsigned(video_vcntr));
+					y <= std_logic_vector(resize(signed(video_vcntr), y'length) + signed(vt_offset));
 				end if;
 				vs_on <= vt_on;
 			end if;

@@ -16,7 +16,7 @@ entity scopeio_segment is
 
 		axis_req      : in  std_logic;
 		axis_rdy      : out std_logic;
-		axis_sel      : in  std_logic_vector(2-1 downto 0);
+		axis_sel      : in  std_logic_vector(1-1 downto 0);
 		axis_base     : in  std_logic_vector;
 		axis_scale    : in  std_logic_vector;
 
@@ -26,7 +26,7 @@ entity scopeio_segment is
 		y             : in  std_logic_vector;
 
 		hz_offset     : in  std_logic_vector;
-		vt_offset     : in  std_logic_vector := std_logic_vector'(b"0000");
+		vt_offset     : in  std_logic_vector;
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
 		grid_on       : in  std_logic;
@@ -44,14 +44,13 @@ end;
 architecture def of scopeio_segment is
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
 	signal axis_point : std_logic_vector(2-1 downto 0) := b"01";
-	signal x_offset   : std_logic_vector(x'range);
 begin
 
 
 	process (axis_scale)
 	begin
 		axis_unit <= (others => '-');
-		case axis_sel is
+		case axis_scale(2-1 downto 0) is
 		when "00" =>
 			axis_unit <= b"0001";
 		when "01" =>
@@ -62,14 +61,13 @@ begin
 		end case;
 	end process;
 
-	x_offset <= std_logic_vector(unsigned(x));
 	grid_e : entity hdl4fpga.scopeio_grid
 	generic map (
 		latency => latency-2)
 	port map (
 		clk  => video_clk,
 		ena  => grid_on,
-		x    => x_offset,
+		x    => x,
 		y    => y,
 		dot  => grid_dot);
 
@@ -84,7 +82,7 @@ begin
 		axis_point  => axis_point,
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
-		axis_length => b"10_0000",
+		axis_length => b"100",
 		axis_sel    => axis_sel,
 
 		hz_on       => hz_on,
@@ -96,7 +94,7 @@ begin
 		vt_offset   => vt_offset,
 
 		video_clk   => video_clk,
-		video_hcntr => x_offset,
+		video_hcntr => x,
 		video_vcntr => y);
 
 --	trigger_e : entity hdl4fpga.scopeio_hline

@@ -37,7 +37,7 @@ entity scopeio_axisticks is
 		axis_unit   : in  std_logic_vector;
 		axis_point  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
-		axis_length : in  std_logic_vector := b"100";
+		axis_length : in  std_logic_vector;
 
 		tick        : out std_logic_vector;
 		dv          : out std_logic;
