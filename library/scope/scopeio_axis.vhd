@@ -59,6 +59,7 @@ begin
 
 		axis_req    => axis_req,
 		axis_rdy    => axis_rdy,
+		axis_sel    => axis_sel(0),
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
 		axis_point  => axis_point,

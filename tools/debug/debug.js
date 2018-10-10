@@ -34,10 +34,13 @@ window.addEventListener("load", function() {
 		data.push(16);
 		data.push(1);
 
-		e = document.getElementById("scale");
-		data.push((0x3 & parseInt(e.value)));
+		var value;
 
-		e = document.getElementById("delay");
+		e = document.getElementById("scale");
+		value = (parseInt(e.value) & 0x3) << 5;
+		data.push(value);
+
+		e = document.getElementById("offset");
 		data.push(parseInt(e.value));
 
 		send(data);

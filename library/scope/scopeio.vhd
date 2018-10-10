@@ -115,9 +115,9 @@ architecture beh of scopeio is
 	signal axis_req    : std_logic;
 	signal axis_rdy    : std_logic;
 	signal axis_scale  : std_logic_vector(2-1 downto 0);
-	signal axis_base   : std_logic_vector(8-1 downto 0);
+	signal axis_base   : std_logic_vector(7-1 downto 0);
 	signal axis_sel    : std_logic_vector(1-1 downto 0);
-	signal hz_segment  : std_logic_vector(7-1 downto 0);
+	signal hz_segment  : std_logic_vector(13-1 downto 0);
 	signal hz_offset   : std_logic_vector(6-1 downto 0);
 	signal vt_offset   : std_logic_vector(5-1 downto 0);
 
@@ -164,14 +164,14 @@ begin
 					when rgtrid_from =>
 						case rgtr_data(10 downto 10) is
 						when "0" =>
-							hz_offset <= rgtr_data(6-1 downto 0);
 						when "1" =>
 							vt_offset <= rgtr_data(5-1 downto 0);
 						when others =>
 						end case;
-						axis_base   <= rgtr_data(13-1 downto  5);
-						axis_scale  <= rgtr_data(10-1 downto  8);
-						axis_sel    <= rgtr_data(11-1 downto 10);
+						hz_offset   <= rgtr_data(6-1 downto 0);
+						axis_base   <= rgtr_data(13-1 downto  6);
+						axis_scale  <= rgtr_data(15-1 downto  13);
+						axis_sel    <= "0"; --rgtr_data(11-1 downto 10);
 						axis_req    <= '1';
 					when others =>
 					end case;
@@ -582,7 +582,8 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						hz_segment <= std_logic_vector(
-							unsigned(wirebus (b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm)) +
+							unsigned(
+								std_logic_vector'(wirebus(b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm) & b"000000")) +
 							unsigned(hz_offset));
 					end if;
 				end process;

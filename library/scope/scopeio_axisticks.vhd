@@ -38,6 +38,7 @@ entity scopeio_axisticks is
 		axis_point  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
 		axis_length : in  std_logic_vector;
+		axis_sel    : in  std_logic;
 
 		tick        : out std_logic_vector;
 		dv          : out std_logic;
@@ -46,7 +47,6 @@ end;
 
 architecture def of scopeio_axisticks is
 
-	signal wrt_req : std_logic;
 	signal wrt_rdy : std_logic;
 	signal wrt_length : std_logic_vector(0 to 3-1);
 
@@ -54,20 +54,21 @@ architecture def of scopeio_axisticks is
 	signal bin_val : std_logic_vector(4*4-1 downto 0);
 	signal bcd_dv  : std_logic;
 
-	signal vt_gnt  : std_logic;
-	signal hz_gnt  : std_logic;
 
 	signal dev_req : std_logic_vector(1 to 2);
 	signal dev_rdy : std_logic_vector(1 to 2);
 	signal dev_gnt : std_logic_vector(1 to 2);
 
 	signal step    : std_logic_vector(8-1 downto 0);
-	signal base    : signed(step'range);
+--	signal base    : signed(step'range);
+	signal base    : signed(4-1 downto 0);
 	signal unit    : unsigned(step'range);
 
+	signal bcd_left : std_logic;
+	signal bcd_sign : std_logic;
 begin
 
-	base <= resize(  signed(axis_base), step'length);
+	base <= resize(  signed(axis_base), base'length);
 	unit <= resize(unsigned(axis_unit), step'length);
 
 	mult_b : block
@@ -87,7 +88,7 @@ begin
 		variable cntr : signed(bin_val'range);
 	begin
 		if rising_edge(clk) then
-			if wrt_req='0' then
+			if axis_req='0' then
 				cntr := (others => '0');
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
@@ -98,20 +99,23 @@ begin
 		end if;
 	end process;
 
+	bcd_left <= not axis_sel;
+	bcd_sign <= axis_sel;
 	scopeio_write_e : entity hdl4fpga.scopeio_writeticks
 	port map (
 		clk        => clk,
 		write_req  => axis_req,
-		write_rdy  => axis_rdy,
+		write_rdy  => wrt_rdy,
 		point      => axis_point,
 		length     => axis_length,
 		element    => tick,
 		bin_dv     => bin_dv,
 		bin_val    => bin_val,
-		bcd_sign   => vt_gnt,
-		bcd_left   => hz_gnt,
+		bcd_sign   => bcd_sign,
+		bcd_left   => bcd_left,
 		bcd_dv     => dv,
 		bcd_val    => value);
+	axis_rdy <= wrt_rdy;
 
 
 end;

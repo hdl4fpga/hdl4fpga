@@ -61,15 +61,20 @@ begin
 		end case;
 	end process;
 
-	grid_e : entity hdl4fpga.scopeio_grid
-	generic map (
-		latency => latency-2)
-	port map (
-		clk  => video_clk,
-		ena  => grid_on,
-		x    => x,
-		y    => y,
-		dot  => grid_dot);
+	grid_b : block
+		signal x_offset : std_logic_vector(x'range);
+	begin
+		x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
+		grid_e : entity hdl4fpga.scopeio_grid
+		generic map (
+			latency => latency-2)
+		port map (
+			clk  => video_clk,
+			ena  => grid_on,
+			x    => x_offset,
+			y    => y,
+			dot  => grid_dot);
+	end block;
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
@@ -82,7 +87,7 @@ begin
 		axis_point  => axis_point,
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
-		axis_length => b"100",
+		axis_length => b"110",
 		axis_sel    => axis_sel,
 
 		hz_on       => hz_on,
