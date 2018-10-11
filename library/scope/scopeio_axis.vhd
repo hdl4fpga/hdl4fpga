@@ -22,7 +22,6 @@ entity scopeio_axis is
 		axis_point  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
 		axis_sel    : in  std_logic_vector;
-		axis_length : in  std_logic_vector;
 
 		hz_on       : in  std_logic;
 		hz_offset   : in  std_logic_vector;
@@ -37,9 +36,10 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant hz_length : unsigned(0 to 3-1) := to_unsigned(7, 3);
-	constant vt_length : unsigned(0 to 3-1) := to_unsigned(4, 3);
+	constant hz_length : std_logic_vector(0 to 3-1) := std_logic_vector(to_unsigned(7, 3));
+	constant vt_length : std_logic_vector(0 to 3-1) := std_logic_vector(to_unsigned(4, 3));
 
+	signal axis_length : std_logic_vector(3-1 downto 0);
 	signal dv      : std_logic;
 	signal tick    : std_logic_vector(7-1 downto 0);
 	signal value   : std_logic_vector(8*4-1 downto 0);
@@ -53,6 +53,7 @@ architecture def of scopeio_axis is
 
 begin
 
+	axis_length <= hz_length when axis_sel(0)='0' else vt_length;
 	scopeio_axisticks_e : entity work.scopeio_axisticks
 	port map (
 		clk         => in_clk,

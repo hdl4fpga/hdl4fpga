@@ -56,8 +56,8 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320-8*8, y => 270, width => 50*32, height => 256)),
-		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320-8*8, y => 300, width => 15*32, height => 256)));
+		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320, y => 270, width => 50*32, height => 256)),
+		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320, y => 300, width => 15*32, height => 256)));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
@@ -162,17 +162,18 @@ begin
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
+						axis_sel  <= rgtr_data(16-1 downto 15);
 						case rgtr_data(15 downto 15) is
 						when "0" =>
+							axis_base <= rgtr_data(axis_base'length+6-1 downto 6);
+							hz_offset <= rgtr_data(6-1  downto 0);
 						when "1" =>
+							axis_base <= rgtr_data(axis_base'length+5-1 downto 5);
 							vt_offset <= rgtr_data(5-1 downto 0);
 						when others =>
 						end case;
-						hz_offset   <= rgtr_data(6-1 downto 0);
-						axis_base   <= rgtr_data(13-1 downto  6);
-						axis_scale  <= rgtr_data(15-1 downto  13);
-						axis_sel    <= "0"; --rgtr_data(11-1 downto 10);
-						axis_req    <= '1';
+						axis_scale <= rgtr_data(15-1 downto 13);
+						axis_req   <= '1';
 					when others =>
 					end case;
 				else

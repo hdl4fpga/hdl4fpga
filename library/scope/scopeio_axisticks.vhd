@@ -92,7 +92,11 @@ begin
 				cntr := (others => '0');
 			elsif wrt_rdy='0' then
 				if bin_dv='1' then
-					cntr := cntr + signed(axis_unit);
+					if axis_sel='0' then
+						cntr := cntr + signed(axis_unit);
+					else
+						cntr := cntr - signed(axis_unit);
+					end if;
 				end if;
 			end if;
 			bin_val <= std_logic_vector(cntr + signed(step));

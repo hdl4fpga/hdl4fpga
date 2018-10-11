@@ -87,7 +87,6 @@ begin
 		axis_point  => axis_point,
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
-		axis_length => b"111",
 		axis_sel    => axis_sel,
 
 		hz_on       => hz_on,

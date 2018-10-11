@@ -34,10 +34,12 @@ window.addEventListener("load", function() {
 		data.push(16);
 		data.push(1);
 
-		var value;
+		var value = 0;
 
+		e = document.getElementById("axis");
+		value |= (parseInt(e.value) & 0x1) << 7;
 		e = document.getElementById("scale");
-		value = (parseInt(e.value) & 0x3) << 5;
+		value |= (parseInt(e.value) & 0x3) << 5;
 		e = document.getElementById("offset");
 		value |= (parseInt(e.value) >> 8) & ((1 << 5)-1);
 		data.push(value);
@@ -50,7 +52,7 @@ window.addEventListener("load", function() {
 
 	var e;
 	
-	e = document.getElementById("delay");
+	e = document.getElementById("axis");
 	e.addEventListener("wheel", mouseWheelCb, false);
 
 	e = document.getElementById("scale");
