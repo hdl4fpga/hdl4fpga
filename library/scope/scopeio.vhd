@@ -162,7 +162,7 @@ begin
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
-						case rgtr_data(10 downto 10) is
+						case rgtr_data(15 downto 15) is
 						when "0" =>
 						when "1" =>
 							vt_offset <= rgtr_data(5-1 downto 0);
@@ -491,7 +491,7 @@ begin
 				generic map (
 					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*8-2, 2 => sgmnt.x-1),
 					y      => natural_vector'(0 => 0,              1 => 0,             2 => sgmnt.height+2),
-					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width+8*8),
+					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width),
 					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height,  2 => 8))
 				port map (
 					video_clk  => video_clk,

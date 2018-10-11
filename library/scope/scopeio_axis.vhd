@@ -121,7 +121,7 @@ begin
 			if rising_edge(video_clk) then
 				y <= std_logic_vector(resize(unsigned(video_vcntr), y'length));
 				if vt_on='1' then
-					y <= std_logic_vector(resize(signed(video_vcntr), y'length) + signed(vt_offset));
+					y <= std_logic_vector(resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset));
 				end if;
 				vs_on <= vt_on;
 			end if;

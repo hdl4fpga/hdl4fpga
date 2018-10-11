@@ -38,10 +38,12 @@ window.addEventListener("load", function() {
 
 		e = document.getElementById("scale");
 		value = (parseInt(e.value) & 0x3) << 5;
+		e = document.getElementById("offset");
+		value |= (parseInt(e.value) >> 8) & ((1 << 5)-1);
 		data.push(value);
 
 		e = document.getElementById("offset");
-		data.push(parseInt(e.value));
+		data.push(parseInt(e.value) & 0xff);
 
 		send(data);
 	}
