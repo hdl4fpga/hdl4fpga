@@ -48,7 +48,7 @@ architecture def of scopeio_axis is
 	signal hz_dv   : std_logic;
 	signal hz_tick : std_logic_vector(13-1 downto 6);
 	signal hz_val  : std_logic_vector(value'range);
-	signal vt_tick : std_logic_vector(4-1 downto 0);
+	signal vt_tick : std_logic_vector(9-1 downto 5);
 	signal vt_val  : std_logic_vector(value'range);
 
 begin
@@ -98,8 +98,8 @@ begin
 		signal hz_don    : std_logic;
 		signal vt_don    : std_logic;
 		signal char_dot  : std_logic;
-		signal x         : std_logic_vector(hz_tick'length+6-1 downto 0);
-		signal y         : std_logic_vector(vt_tick'length+6-1 downto 0);
+		signal x         : std_logic_vector(hz_tick'left downto 0);
+		signal y         : std_logic_vector(vt_tick'left downto 0);
 
 		signal hs_on     : std_logic;
 		signal vs_on     : std_logic;
@@ -110,7 +110,7 @@ begin
 			if rising_edge(video_clk) then
 				x <= std_logic_vector(resize(unsigned(video_hcntr), x'length));
 				if hz_on='1' then
-					x <= std_logic_vector(resize(signed(video_hcntr), x'length) + signed(hz_offset));
+					x <= std_logic_vector(resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset));
 				end if;
 				hs_on <= hz_on;
 			end if;
@@ -127,8 +127,8 @@ begin
 			end if;
 		end process;
 
-		hz_tick <= x(hz_tick'length+6-1 downto 6);
-		vt_tick <= y(vt_tick'length+5-1 downto 5);
+		hz_tick <= x(hz_tick'range);
+		vt_tick <= y(vt_tick'range);
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vs_on);
