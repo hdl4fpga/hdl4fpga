@@ -99,7 +99,11 @@ begin
 					end if;
 				end if;
 			end if;
-			bin_val <= std_logic_vector(cntr + signed(step));
+			if axis_sel='0' then
+				bin_val <= std_logic_vector(cntr + signed(step));
+			else
+				bin_val <= std_logic_vector(cntr - signed(step));
+			end if;
 		end if;
 	end process;
 
