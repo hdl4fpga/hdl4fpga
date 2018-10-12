@@ -95,7 +95,7 @@ begin
 				end if;
 			end if;
 			if axis_sel='0' then
-				bin_val <= std_logic_vector(cntr + signed(base));
+				bin_val <= std_logic_vector(shift_left(cntr + signed(base),1));
 			else
 				bin_val <= std_logic_vector(cntr - signed(base));
 			end if;

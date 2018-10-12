@@ -157,8 +157,10 @@ begin
 		constant rgtrid_axis : std_logic_vector := x"12";
 	begin
 		process(si_clk)
+			variable aux : unsigned(16-1 downto 0);
 		begin
 			if rising_edge(si_clk) then
+				aux := (others => '-') ;
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
@@ -168,8 +170,10 @@ begin
 							axis_base <= rgtr_data(axis_base'length+9-1 downto 9);
 							hz_offset <= rgtr_data(9-1  downto 0);
 						when "1" =>
-							axis_base <= rgtr_data(axis_base'length+8-1 downto 8);
-							vt_offset <= rgtr_data(8-1 downto 0);
+							aux := unsigned(rgtr_data(aux'range));
+							aux := aux - (3*32);
+							axis_base <= std_logic_vector(aux(axis_base'length+8-1 downto 8));
+							vt_offset <= std_logic_vector(aux(8-1 downto 0));
 						when others =>
 						end case;
 						axis_scale <= rgtr_data(18-1 downto 16);
