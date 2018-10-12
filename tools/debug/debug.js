@@ -32,20 +32,26 @@ window.addEventListener("load", function() {
 		var	e;
 
 		data.push(16);
-		data.push(1);
+		data.push(3-1);
 
-		var value = 0;
+		var value;
 
+		value = 0;
 		e = document.getElementById("axis");
-		value |= (parseInt(e.value) & 0x1) << 7;
+		value |= ((parseInt(e.value) & 0x1) << 2);
 		e = document.getElementById("scale");
-		value |= (parseInt(e.value) & 0x3) << 5;
-		e = document.getElementById("offset");
-		value |= (parseInt(e.value) >> 8) & ((1 << 5)-1);
-		data.push(value);
+		value |= (parseInt(e.value) & 0x3);
+		data.push(value & 0xff);
 
+		value = 0;
 		e = document.getElementById("offset");
-		data.push(parseInt(e.value) & 0xff);
+		value |= (parseInt(e.value) >> 8);
+		data.push(value & 0xff);
+
+		value = 0;
+		e = document.getElementById("offset");
+		value |= parseInt(e.value);
+		data.push(value & 0xff);
 
 		send(data);
 	}

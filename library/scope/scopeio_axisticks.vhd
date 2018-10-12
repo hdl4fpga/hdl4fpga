@@ -59,17 +59,11 @@ architecture def of scopeio_axisticks is
 	signal dev_rdy : std_logic_vector(1 to 2);
 	signal dev_gnt : std_logic_vector(1 to 2);
 
-	signal step    : std_logic_vector(8-1 downto 0);
---	signal base    : signed(step'range);
-	signal base    : signed(4-1 downto 0);
-	signal unit    : unsigned(step'range);
+	signal base    : std_logic_vector(axis_base'length+axis_unit'length+3-1 downto 0);
 
 	signal bcd_left : std_logic;
 	signal bcd_sign : std_logic;
 begin
-
-	base <= resize(  signed(axis_base), base'length);
-	unit <= resize(unsigned(axis_unit), step'length);
 
 	mult_b : block
 		signal ini : std_logic; 
@@ -79,9 +73,10 @@ begin
 		port map (
 			clk     => clk,
 			ini     => ini,
-			multand => std_logic_vector(base(4-1 downto 0)),
-			multier => std_logic_vector(unit(4-1 downto 0)),
-			product => step);
+			multand => axis_base,
+			multier => axis_unit,
+			product => base(base'left downto 3));
+		base(3-1 downto 0) <= b"000";
 	end block;
 
 	process(clk)
@@ -100,9 +95,9 @@ begin
 				end if;
 			end if;
 			if axis_sel='0' then
-				bin_val <= std_logic_vector(cntr + signed(step));
+				bin_val <= std_logic_vector(cntr + signed(base));
 			else
-				bin_val <= std_logic_vector(cntr - signed(step));
+				bin_val <= std_logic_vector(cntr - signed(base));
 			end if;
 		end if;
 	end process;
