@@ -162,7 +162,7 @@ begin
 				if rgtr_dv='1' then
 					case rgtr_id is
 					when rgtrid_from =>
-						axis_sel  <= rgtr_data(17-1 downto 16);
+						axis_sel  <= rgtr_data(19-1 downto 18);
 						case rgtr_data(19-1 downto 18) is
 						when "0" =>
 							axis_base <= rgtr_data(axis_base'length+9-1 downto 9);
