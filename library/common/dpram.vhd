@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity dpram is
+	generic (
+		bitrom : std_logic_vector := (0 to 0 => '-'));
 	port (
 		rd_addr : in std_logic_vector;
 		rd_data : out std_logic_vector;
@@ -42,7 +44,22 @@ end;
 architecture def of dpram is
 	type word_vector is array (natural range <>) of std_logic_vector(wr_data'range);
 
-	signal RAM : word_vector(0 to 2**wr_addr'length-1);
+	function init_ram (
+		constant bitrom : std_logic_vector;
+		constant size   : natural)
+		return   word_vector is
+		variable aux    : std_logic_vector(0 to bitrom'length-1) := bitrom;
+		variable retval : word_vector(0 to size-1) := (others => (others => '-'));
+	begin
+		for i in 0 to bitrom'length/retval(0)'length-1 loop
+			exit when i > retval'high;
+			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
+		end loop;
+		return retval;
+	end;
+
+	signal RAM : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
+
 begin
 	process (rd_addr, RAM)
 		variable addr : std_logic_vector(0 to rd_addr'length-1);

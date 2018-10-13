@@ -630,17 +630,23 @@ begin
 		end block;
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
-		port map (
+		generic map (
 			traces_fg   => std_logic_vector'("010"),
-			traces_dots => traces_dots, 
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
-			grid_dot    => grid_dot,
 			hz_fg       => std_logic_vector'("111"),
+			vt_fg       => std_logic_vector'("111"))
+		port map (
+			in_clk      => si_clk,
+			in_req      => '0',
+			in_palette  => "000",
+			in_color    => "000",
+			video_clk   => video_clk,
+			traces_dots => traces_dots, 
+			grid_dot    => grid_dot,
 			hz_dot      => hz_dot,
-			vt_fg       => std_logic_vector'("111"),
 			vt_dot      => vt_dot,
-			video_rgb   => video_pixel);
+			video_color => video_pixel);
 	end block;
 
 	video_rgb   <= (video_rgb'range => video_io(2)) and video_pixel;
