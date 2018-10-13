@@ -635,7 +635,8 @@ begin
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
 			hz_fg       => std_logic_vector'("111"),
-			vt_fg       => std_logic_vector'("111"))
+			vt_fg       => std_logic_vector'("111"),
+			bk_gd       => std_logic_vector'("000"))
 		port map (
 			in_clk      => si_clk,
 			in_req      => '0',

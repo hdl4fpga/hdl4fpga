@@ -11,7 +11,8 @@ entity scopeio_palette is
 		grid_fg     : in  std_logic_vector;
 		grid_bg     : in  std_logic_vector;
 		hz_fg       : in  std_logic_vector;
-		vt_fg       : in  std_logic_vector);
+		vt_fg       : in  std_logic_vector;
+		bk_gd       : in  std_logic_vector);
 	port (
 		in_clk      : in  std_logic;
 		in_req      : in  std_logic;
@@ -32,11 +33,9 @@ architecture beh of scopeio_palette is
 	function priencoder (
 		constant arg : std_logic_vector)
 		return   std_logic_vector is
-		variable aux    : std_logic_vector(0 to arg'length-1);
-		variable retval : unsigned(0 to unsigned_num_bits(arg'length-1)-1);
+		variable aux    : std_logic_vector(0 to arg'length-1) := arg;
+		variable retval : unsigned(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
 	begin
-		retval := (others => '-');
-		aux    := arg;
 		for i in aux'range loop
 			if aux(i)='1' then
 				retval := to_unsigned(i, retval'length);
@@ -51,7 +50,7 @@ architecture beh of scopeio_palette is
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => traces_fg & grid_fg & hz_fg & vt_fg & "000")
+		bitrom => traces_fg & grid_fg & hz_fg & vt_fg & bk_gd)
 	port map (
 		wr_clk  => in_clk,
 		wr_ena  => in_req,
