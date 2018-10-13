@@ -370,7 +370,7 @@ begin
 
 	 video_b : block
 
-		constant vgaio_latency : natural := storage_data'length+4+4;
+		constant vgaio_latency : natural := storage_data'length+4+4+2;
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
