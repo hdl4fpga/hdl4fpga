@@ -14,10 +14,10 @@ entity scopeio_palette is
 		vt_fg       : in  std_logic_vector;
 		bk_gd       : in  std_logic_vector);
 	port (
-		in_clk      : in  std_logic;
-		in_req      : in  std_logic;
-		in_palette  : in  std_logic_vector;
-		in_color    : in  std_logic_vector;
+		wr_clk      : in  std_logic;
+		wr_req      : in  std_logic;
+		wr_palette  : in  std_logic_vector;
+		wr_color    : in  std_logic_vector;
 		
 		video_clk   : in  std_logic;
 		grid_dot    : in  std_logic;
@@ -45,17 +45,17 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
-	signal rd_addr : std_logic_vector(in_palette'range);
-	signal rd_data : std_logic_vector(in_color'range);
+	signal rd_addr : std_logic_vector(wr_palette'range);
+	signal rd_data : std_logic_vector(wr_color'range);
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => traces_fg & grid_fg & hz_fg & vt_fg & bk_gd)
 	port map (
-		wr_clk  => in_clk,
-		wr_ena  => in_req,
-		wr_addr => in_palette,
-		wr_data => in_color,
+		wr_clk  => wr_clk,
+		wr_ena  => wr_req,
+		wr_addr => wr_palette,
+		wr_data => wr_color,
 
 		rd_addr => rd_addr,
 		rd_data => rd_data);
