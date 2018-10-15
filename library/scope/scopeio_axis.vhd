@@ -16,8 +16,7 @@ entity scopeio_axis is
 
 		in_clk      : in  std_logic;
 
-		axis_req    : in  std_logic;
-		axis_rdy    : out std_logic;
+		axis_we     : in  std_logic;
 		axis_unit   : in  std_logic_vector;
 		axis_point  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
@@ -39,6 +38,7 @@ architecture def of scopeio_axis is
 	constant hz_length : std_logic_vector(0 to 3-1) := std_logic_vector(to_unsigned(7, 3));
 	constant vt_length : std_logic_vector(0 to 3-1) := std_logic_vector(to_unsigned(4, 3));
 
+	signal axis_rdy    : std_logic;
 	signal axis_length : std_logic_vector(3-1 downto 0);
 	signal dv      : std_logic;
 	signal tick    : std_logic_vector(7-1 downto 0);
@@ -52,6 +52,17 @@ architecture def of scopeio_axis is
 	signal vt_val  : std_logic_vector(value'range);
 
 begin
+
+	process (in_clk)
+	begin
+		if rising_edge(in_clk) then
+			if axis_we='1' then
+				axis_req <= '1';
+			elsif axis_rdy='1' then
+				axis_req <= '0';
+			end if;
+		end if;
+	end process;
 
 	axis_length <= hz_length when axis_sel(0)='0' else vt_length;
 	scopeio_axisticks_e : entity work.scopeio_axisticks

@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -113,7 +112,6 @@ architecture beh of scopeio is
 	signal video_color  : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal axis_req    : std_logic;
-	signal axis_rdy    : std_logic;
 	signal axis_scale  : std_logic_vector(2-1 downto 0);
 	signal axis_base   : std_logic_vector(5-1 downto 0);
 	signal axis_sel    : std_logic_vector(1-1 downto 0);
@@ -121,9 +119,6 @@ architecture beh of scopeio is
 	signal hz_offset   : std_logic_vector(9-1 downto 0);
 	signal vt_offset   : std_logic_vector(8-1 downto 0);
 
-	signal vt_req : std_logic;
-	signal vt_rdy : std_logic;
-	signal vt_sel : std_logic_vector(6-1 downto 0);
 
 	signal palette_req : std_logic;
 	signal palette_id  : std_logic_vector(0 to 3-1);
@@ -154,88 +149,26 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
 
-	rgtrmap_b : block
-		function bf (
-			constant bf_data   : std_logic_vector;
-			constant bf_id     : natural;
-			constant bf_dscptr : natural_vector)
-			return   std_logic_vector is
-			variable acc    : unsigned(0 to bf_data'length-1);
-			variable dscptr : natural_vector(0 to bf_dscptr'length);
-		begin
-			dscptr := bf_dscptr & bf_data'length;
-			acc := unsigned(bf_data);
-			for i in bf_dscptr'range loop
-				if i=bf_id then
-					return std_logic_vector(acc(bf_dscptr(i)-1 downto 0));
-				end if;
-				acc := acc rol bf_dscptr(i);
-			end loop;
-			return (1 to 0 => '-');
-		end;
 
-		constant axis_bf     : natural_vector := (18, 1);
-		constant vtaxis_bf   : natural_vector := (0, 9);
-		constant palette_bf  : natural_vector := (0, 4);
-		constant rid_axis    : std_logic_vector := x"10";
-		constant rid_palette : std_logic_vector  := x"11";
+	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
+	port map (
+		clk        => si_clk,
+		rgtr_dv    => rgtr_dv,
+		rgtr_id    => rgtr_id,
+		rgtr_data  => rgtr_data,
 
-	begin
-		process (si_clk)
-		begin
-			if rising_edge(si_clk)
-				rgtr_ena <= demux(rgtr_id(5-1 downto 0));
-			end if;
-		end process;
+		axis_req   => axis_req,
+		axis_scale => axis_scale,
+		axis_base  => axis_base,
+		axis_sel   => axis_sel,
+		hz_offset  => hz_offset,
+		vt_offset  => vt_offset,
 
-		process(si_clk)
-			variable acc : unsigned(rgtr_data'range);
-		begin
-			if rising_edge(si_clk) then
-				if reverse(bf(reverse(rgtr_data), 1, axis_bf)) then
-					axis_sel <= '1';
-					acc := unsigned(rgtr_data(acc'range));
-					acc := acc - (3*32);
-					vt_offset <= std_logic_vector(acc(vt_offset'range));
-					acc := acc rol vt_offset'length;
-					axis_base <= std_logic_vector(acc(axis_base'range));
-				else
-					axis_sel  <= '0';
-					axis_base <= reverse(bf(reverse(rgtr_data), 1, axis_bf));
-					hz_offset <= rgtr_data(9-1  downto 0);
-				end if;
-					when "1" =>
-					when others =>
-					end case;
+		palette_req : std_logic;
+		palette_id  : std_logic_vector(0 to 3-1);
+		palette_color : std_logic_vector(video_pixel'range);
 
-					acc := acc rol 16;
-					axis_scale <= std_logic_vector(acc(axis_scale'range));
-				if rgtr_sel() then
-					axis_req   <= '1';
-				when rid_palette =>
-					when others =>
-					end case;
-				if rgtr_dv='1' then
-					decode(rgtr_id);
-				else
-					if axis_rdy='1' then
-						axis_req <= '0';
-					end if;
-				end if;
-
-				case rgtr_id is
-				when rid_palette =>
-					palette_ena <= '1'; rgtr_dv;
-				end case;
-
-			end if;
-
-			palette_color <= std_logic_vector(acc(video_color'range));
-			acc := acc rol video_color'
-			palette_id    <= rtgr_data(video_pixel'length-1 downto video_pixel'length);
-		end process;
-
-	end block;
+		);
 
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
