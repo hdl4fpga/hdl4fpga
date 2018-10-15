@@ -7,92 +7,101 @@ use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
 	port (
-		clk       : in  std_logic := '-';
-		rgtr_dv   : in  std_logic_vector;
-		rgtr_id   : in  std_logic_vector;
-		rgtr_data : in  std_logic_vector;
+		clk        : in  std_logic;
+		rgtr_dv    : in  std_logic;
+		rgtr_id    : in  std_logic_vector(8-1 downto 0);
+		rgtr_data  : in  std_logic_vector;
+
+		axis_dv    : out std_logic;
+		axis_sel   : out std_logic;
+		axis_scale : out std_logic_vector;
+		axis_base  : out std_logic_vector;
+		hz_offset  : out std_logic_vector;
+		vt_offset  : out std_logic_vector);
+
 
 end;
 
 architecture def of scopeio_rgtr is
+
 	function bf (
 		constant bf_data   : std_logic_vector;
 		constant bf_id     : natural;
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector is
-		variable acc    : unsigned(0 to bf_data'length-1);
+		variable retval : unsigned(bf_data'length-1 downto 0);
 		variable dscptr : natural_vector(0 to bf_dscptr'length);
 	begin
 		dscptr := bf_dscptr & bf_data'length;
-		acc := unsigned(bf_data);
-		for i in bf_dscptr'range loop
-			if i=bf_id then
-				return std_logic_vector(acc(bf_dscptr(i)-1 downto 0));
-			end if;
-			acc := acc rol bf_dscptr(i);
-		end loop;
-		return (1 to 0 => '-');
+		retval := unsigned(bf_data);
+		if bf_data'left > bf_data'right then
+			for i in bf_dscptr'range loop
+				if i=bf_id then
+					return std_logic_vector(retval(bf_dscptr(i)-1 downto 0));
+				end if;
+				retval := retval ror bf_dscptr(i);
+			end loop;
+		else
+			for i in bf_dscptr'range loop
+				retval := retval rol bf_dscptr(i);
+				if i=bf_id then
+					return std_logic_vector(retval(bf_dscptr(i)-1 downto 0));
+				end if;
+			end loop;
+		end if;
+		return (0 to 0 => '-');
 	end;
 
-	constant axis_bf     : natural_vector := (18, 1);
-	constant vtaxis_bf   : natural_vector := (0, 9);
 	constant palette_bf  : natural_vector := (0, 4);
 	constant rid_axis    : std_logic_vector := x"10";
-	constant rid_palette : std_logic_vector  := x"11";
+	constant rid_palette : std_logic_vector := x"11";
 
+	signal axis_ena : std_logic;
 begin
-	process (si_clk)
+
+	decode_p : process (clk, rgtr_dv)
+		variable axis_dec : std_logic;
 	begin
-		if rising_edge(si_clk)
-			rgtr_ena <= demux(rgtr_id(5-1 downto 0));
+		if rising_edge(clk) then
+			axis_dec := '0';
+			case rgtr_id is
+			when rid_axis =>
+				axis_dec := '1';
+			when others =>
+			end case;
+
 		end if;
+		axis_ena <= rgtr_dv and axis_dec; 
 	end process;
 
-	process(si_clk)
-		variable acc : unsigned(rgtr_data'range);
+	axis_p : process(clk)
+		constant offset_id   : natural := 0;
+		constant select_id   : natural := 1;
+		constant axis_bf     : natural_vector := (offset_id  => 16, select_id => 1);
+
+		constant base_id     : natural := 1;
+		constant vtoffset_bf : natural_vector := (offset_id => 8, base_id => 5);
+		constant hzoffset_bf : natural_vector := (offset_id => 9, base_id => 5);
+
+		variable origin : std_logic_vector(16-1 downto 0);
 	begin
-		if rising_edge(si_clk) then
-			if reverse(bf(reverse(rgtr_data), 1, axis_bf)) then
-				axis_sel <= '1';
-				acc := unsigned(rgtr_data(acc'range));
-				acc := acc - (3*32);
-					vt_offset <= std_logic_vector(acc(vt_offset'range));
-					acc := acc rol vt_offset'length;
-					axis_base <= std_logic_vector(acc(axis_base'range));
+		if rising_edge(clk) then
+			axis_dv <= '0';
+			if axis_ena='1' then
+				origin := std_logic_vector(bf(rgtr_data, offset_id, axis_bf));
+				if bf(rgtr_data, select_id, axis_bf)="1" then
+					axis_sel  <= '1';
+					origin    := std_logic_vector(unsigned(origin)-(3*32));
+					axis_base <= bf(origin, base_id, vtoffset_bf);
+					vt_offset <= bf(origin, offset_id, vtoffset_bf);
 				else
 					axis_sel  <= '0';
-					axis_base <= reverse(bf(reverse(rgtr_data), 1, axis_bf));
-					hz_offset <= rgtr_data(9-1  downto 0);
+					axis_base <= bf(origin, base_id, hzoffset_bf);
+					hz_offset <= bf(origin, offset_id, hzoffset_bf);
 				end if;
-					when "1" =>
-					when others =>
-					end case;
-
-					acc := acc rol 16;
-					axis_scale <= std_logic_vector(acc(axis_scale'range));
-				if rgtr_sel() then
-					axis_req   <= '1';
-				when rid_palette =>
-					when others =>
-					end case;
-				if rgtr_dv='1' then
-					decode(rgtr_id);
-				else
-					if axis_rdy='1' then
-						axis_req <= '0';
-					end if;
-				end if;
-
-				case rgtr_id is
-				when rid_palette =>
-					palette_ena <= '1'; rgtr_dv;
-				end case;
-
+				axis_dv <= axis_ena;
 			end if;
-
-			palette_color <= std_logic_vector(acc(video_color'range));
-			acc := acc rol video_color'
-			palette_id    <= rtgr_data(video_pixel'length-1 downto video_pixel'length);
-		end process;
+		end if;
+	end process;
 
 end;
