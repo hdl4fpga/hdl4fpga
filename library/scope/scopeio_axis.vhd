@@ -16,11 +16,11 @@ entity scopeio_axis is
 
 		in_clk      : in  std_logic;
 
-		axis_we     : in  std_logic;
+		axis_dv     : in  std_logic;
 		axis_unit   : in  std_logic_vector;
 		axis_point  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
-		axis_sel    : in  std_logic_vector;
+		axis_sel    : in  std_logic;
 
 		hz_on       : in  std_logic;
 		hz_offset   : in  std_logic_vector;
@@ -39,24 +39,26 @@ architecture def of scopeio_axis is
 	constant vt_length : std_logic_vector(0 to 3-1) := std_logic_vector(to_unsigned(4, 3));
 
 	signal axis_rdy    : std_logic;
+	signal axis_req    : std_logic;
 	signal axis_length : std_logic_vector(3-1 downto 0);
-	signal dv      : std_logic;
-	signal tick    : std_logic_vector(7-1 downto 0);
-	signal value   : std_logic_vector(8*4-1 downto 0);
+	signal dv          : std_logic;
+	signal tick        : std_logic_vector(7-1 downto 0);
+	signal value       : std_logic_vector(8*4-1 downto 0);
 
-	signal vt_dv   : std_logic;
-	signal hz_dv   : std_logic;
-	signal hz_tick : std_logic_vector(13-1 downto 6);
-	signal hz_val  : std_logic_vector(value'range);
-	signal vt_tick : std_logic_vector(9-1 downto 5);
-	signal vt_val  : std_logic_vector(value'range);
+	signal vt_dv       : std_logic;
+	signal hz_dv       : std_logic;
+	signal hz_tick     : std_logic_vector(13-1 downto 6);
+	signal hz_val      : std_logic_vector(value'range);
+	signal vt_tick     : std_logic_vector(9-1 downto 5);
+	signal vt_val      : std_logic_vector(value'range);
 
 begin
 
 	process (in_clk)
+		variable req : std_logic;
 	begin
 		if rising_edge(in_clk) then
-			if axis_we='1' then
+			if axis_dv='1' then
 				axis_req <= '1';
 			elsif axis_rdy='1' then
 				axis_req <= '0';
@@ -64,14 +66,14 @@ begin
 		end if;
 	end process;
 
-	axis_length <= hz_length when axis_sel(0)='0' else vt_length;
+	axis_length <= hz_length when axis_sel='0' else vt_length;
 	scopeio_axisticks_e : entity work.scopeio_axisticks
 	port map (
 		clk         => in_clk,
 
 		axis_req    => axis_req,
 		axis_rdy    => axis_rdy,
-		axis_sel    => axis_sel(0),
+		axis_sel    => axis_sel,
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
 		axis_point  => axis_point,
@@ -81,7 +83,7 @@ begin
 		tick        => tick,
 		value       => value);
 
-	hz_dv <= dv and not axis_sel(0);
+	hz_dv <= dv and not axis_sel;
 	hz_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,
@@ -92,7 +94,7 @@ begin
 		rd_addr => hz_tick(13-1 downto 6),
 		rd_data => hz_val);
 
-	vt_dv <= dv and axis_sel(0);
+	vt_dv <= dv and axis_sel;
 	vt_mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => in_clk,

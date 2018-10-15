@@ -30,9 +30,9 @@ architecture def of scopeio_rgtr is
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector is
 		variable retval : unsigned(bf_data'length-1 downto 0);
-		variable dscptr : natural_vector(0 to bf_dscptr'length);
+		variable dscptr : natural_vector(0 to bf_dscptr'length-1);
 	begin
-		dscptr := bf_dscptr & bf_data'length;
+		dscptr := bf_dscptr;
 		retval := unsigned(bf_data);
 		if bf_data'left > bf_data'right then
 			for i in bf_dscptr'range loop
@@ -75,10 +75,11 @@ begin
 	end process;
 
 	axis_p : process(clk)
-		constant offset_id   : natural := 0;
+		constant origin_id   : natural := 0;
 		constant select_id   : natural := 1;
-		constant axis_bf     : natural_vector := (offset_id  => 16, select_id => 1);
+		constant axis_bf     : natural_vector := (origin_id  => 16, select_id => 1);
 
+		constant offset_id   : natural := 0;
 		constant base_id     : natural := 1;
 		constant vtoffset_bf : natural_vector := (offset_id => 8, base_id => 5);
 		constant hzoffset_bf : natural_vector := (offset_id => 9, base_id => 5);
@@ -88,15 +89,15 @@ begin
 		if rising_edge(clk) then
 			axis_dv <= '0';
 			if axis_ena='1' then
-				origin := std_logic_vector(bf(rgtr_data, offset_id, axis_bf));
+				origin := std_logic_vector(bf(rgtr_data, origin_id, axis_bf));
 				if bf(rgtr_data, select_id, axis_bf)="1" then
 					axis_sel  <= '1';
 					origin    := std_logic_vector(unsigned(origin)-(3*32));
-					axis_base <= bf(origin, base_id, vtoffset_bf);
+					axis_base <= bf(origin, base_id,   vtoffset_bf);
 					vt_offset <= bf(origin, offset_id, vtoffset_bf);
 				else
 					axis_sel  <= '0';
-					axis_base <= bf(origin, base_id, hzoffset_bf);
+					axis_base <= bf(origin, base_id,   hzoffset_bf);
 					hz_offset <= bf(origin, offset_id, hzoffset_bf);
 				end if;
 				axis_dv <= axis_ena;

@@ -14,9 +14,8 @@ entity scopeio_segment is
 	port (
 		in_clk        : in  std_logic;
 
-		axis_req      : in  std_logic;
-		axis_rdy      : out std_logic;
-		axis_sel      : in  std_logic_vector(1-1 downto 0);
+		axis_dv       : in  std_logic;
+		axis_sel      : in  std_logic;
 		axis_base     : in  std_logic_vector;
 		axis_scale    : in  std_logic_vector;
 
@@ -82,8 +81,7 @@ begin
 	port map (
 		in_clk      => in_clk,
 
-		axis_req    => axis_req,
-		axis_rdy    => axis_rdy,
+		axis_dv     => axis_dv,
 		axis_point  => axis_point,
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,

@@ -111,10 +111,10 @@ architecture beh of scopeio is
 	signal storage_bsel : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color  : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal axis_req    : std_logic;
+	signal axis_dv    : std_logic;
 	signal axis_scale  : std_logic_vector(2-1 downto 0);
 	signal axis_base   : std_logic_vector(5-1 downto 0);
-	signal axis_sel    : std_logic_vector(1-1 downto 0);
+	signal axis_sel    : std_logic;
 	signal hz_segment  : std_logic_vector(13-1 downto 0);
 	signal hz_offset   : std_logic_vector(9-1 downto 0);
 	signal vt_offset   : std_logic_vector(8-1 downto 0);
@@ -157,18 +157,12 @@ begin
 		rgtr_id    => rgtr_id,
 		rgtr_data  => rgtr_data,
 
-		axis_req   => axis_req,
+		axis_dv    => axis_dv,
 		axis_scale => axis_scale,
 		axis_base  => axis_base,
 		axis_sel   => axis_sel,
 		hz_offset  => hz_offset,
-		vt_offset  => vt_offset,
-
-		palette_req : std_logic;
-		palette_id  : std_logic_vector(0 to 3-1);
-		palette_color : std_logic_vector(video_pixel'range);
-
-		);
+		vt_offset  => vt_offset);
 
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
@@ -580,8 +574,7 @@ begin
 				port map (
 					in_clk        => si_clk,
 
-					axis_req      => axis_req,
-					axis_rdy      => axis_rdy,
+					axis_dv      => axis_dv,
 					axis_sel      => axis_sel,
 					axis_base     => axis_base,
 					axis_scale    => axis_scale,

@@ -160,7 +160,7 @@ begin
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
-		video_color => vga_rgb,
+		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_blank => open);
