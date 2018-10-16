@@ -43,9 +43,9 @@ window.addEventListener("load", function() {
 
 		value = 0;
 		e = document.getElementById("axis");
-		value |= ((parseInt(e.value) & 0x1) << 2);
+		value |= ((parseInt(e.value) & 0x1) << 4);
 		e = document.getElementById("scale");
-		value |= (parseInt(e.value) & 0x3);
+		value |= (parseInt(e.value) & 0xf);
 		data.push(value & 0xff);
 
 		value = 0;

@@ -82,7 +82,7 @@ begin
 		in_clk      => in_clk,
 
 		axis_dv     => axis_dv,
-		axis_point  => axis_point,
+		axis_point  => axis_scale(4-1 downto 2),
 		axis_unit   => axis_unit,
 		axis_base   => axis_base,
 		axis_sel    => axis_sel,

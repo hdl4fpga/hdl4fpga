@@ -112,7 +112,7 @@ architecture beh of scopeio is
 	signal video_color  : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal axis_dv    : std_logic;
-	signal axis_scale  : std_logic_vector(2-1 downto 0);
+	signal axis_scale  : std_logic_vector(4-1 downto 0);
 	signal axis_base   : std_logic_vector(5-1 downto 0);
 	signal axis_sel    : std_logic;
 	signal hz_segment  : std_logic_vector(13-1 downto 0);
