@@ -230,7 +230,7 @@ begin
 		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => video_clk,
-		video_rgb   => video_rgb,
+		video_pixel => video_rgb,
 		video_hsync => video_hs,
 		video_vsync => video_vs);
 
