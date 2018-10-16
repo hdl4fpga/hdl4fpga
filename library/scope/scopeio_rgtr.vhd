@@ -7,17 +7,21 @@ use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
 	port (
-		clk        : in  std_logic;
-		rgtr_dv    : in  std_logic;
-		rgtr_id    : in  std_logic_vector(8-1 downto 0);
-		rgtr_data  : in  std_logic_vector;
+		clk           : in  std_logic;
+		rgtr_dv       : in  std_logic;
+		rgtr_id       : in  std_logic_vector(8-1 downto 0);
+		rgtr_data     : in  std_logic_vector;
 
-		axis_dv    : out std_logic;
-		axis_sel   : out std_logic;
-		axis_scale : out std_logic_vector;
-		axis_base  : out std_logic_vector;
-		hz_offset  : out std_logic_vector;
-		vt_offset  : out std_logic_vector);
+		axis_dv       : out std_logic;
+		axis_sel      : out std_logic;
+		axis_scale    : out std_logic_vector;
+		axis_base     : out std_logic_vector;
+		hz_offset     : out std_logic_vector;
+		vt_offset     : out std_logic_vector;
+
+		palette_dv    : out std_logic;
+		palette_id    : out std_logic_vector;
+		palette_color : out std_logic_vector);
 
 
 end;
@@ -56,22 +60,28 @@ architecture def of scopeio_rgtr is
 	constant rid_axis    : std_logic_vector := x"10";
 	constant rid_palette : std_logic_vector := x"11";
 
-	signal axis_ena : std_logic;
+	signal axis_ena    : std_logic;
+	signal palette_ena : std_logic;
 begin
 
 	decode_p : process (clk, rgtr_dv)
-		variable axis_dec : std_logic;
+		variable axis_dec    : std_logic;
+		variable palette_dec : std_logic;
 	begin
 		if rising_edge(clk) then
-			axis_dec := '0';
+			axis_dec    := '0';
+			palette_dec := '0';
 			case rgtr_id is
 			when rid_axis =>
-				axis_dec := '1';
+				axis_dec    := '1';
+			when rid_palette =>
+				palette_dec := '1';
 			when others =>
 			end case;
 
 		end if;
-		axis_ena <= rgtr_dv and axis_dec; 
+		axis_ena    <= rgtr_dv and axis_dec; 
+		palette_ena <= rgtr_dv and palette_dec; 
 	end process;
 
 	axis_p : process(clk)
@@ -90,7 +100,8 @@ begin
 		if rising_edge(clk) then
 			axis_dv <= '0';
 			if axis_ena='1' then
-				origin := std_logic_vector(bf(rgtr_data, origin_id, axis_bf));
+				axis_scale <= bf(rgtr_data, scale_id,  axis_bf);
+				origin     := bf(rgtr_data, origin_id, axis_bf);
 				if bf(rgtr_data, select_id, axis_bf)="1" then
 					axis_sel  <= '1';
 					origin    := std_logic_vector(unsigned(origin)-(3*32));
@@ -105,5 +116,16 @@ begin
 			end if;
 		end if;
 	end process;
+
+	palette_p : block
+		constant id_id    : natural := 0;
+		constant color_id : natural := 1;
+
+		constant palette_bf : natural_vector := (id_id => palette_id'length, color_id => palette_id'length);
+	begin
+		palette_dv    <= palette_ena;
+		palette_id    <= bf(rgtr_data, id_id,    palette_bf);
+		palette_color <= bf(rgtr_data, color_id, palette_bf);
+	end block;
 
 end;

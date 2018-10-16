@@ -11,7 +11,9 @@ entity scopeio_palette is
 		grid_fg     : in  std_logic_vector;
 		grid_bg     : in  std_logic_vector;
 		hz_fg       : in  std_logic_vector;
+		hz_bg       : in  std_logic_vector;
 		vt_fg       : in  std_logic_vector;
+		vt_bg       : in  std_logic_vector;
 		bk_gd       : in  std_logic_vector);
 	port (
 		wr_clk      : in  std_logic;
@@ -21,8 +23,11 @@ entity scopeio_palette is
 		
 		video_clk   : in  std_logic;
 		grid_dot    : in  std_logic;
+		grid_bgon   : in  std_logic;
 		hz_dot      : in  std_logic;
+		hz_bgon     : in  std_logic;
 		vt_dot      : in  std_logic;
+		vt_bgon     : in  std_logic;
 		traces_dots : in  std_logic_vector;
 		video_color : out std_logic_vector);
 end;
@@ -50,7 +55,7 @@ architecture beh of scopeio_palette is
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => traces_fg & grid_fg & hz_fg & vt_fg & bk_gd)
+		bitrom => traces_fg & grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & bk_gd)
 	port map (
 		wr_clk  => wr_clk,
 		wr_ena  => wr_req,
@@ -63,7 +68,7 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			rd_addr     <= priencoder(traces_dots & grid_dot & hz_dot & vt_dot & '1');
+			rd_addr     <= priencoder(traces_dots & grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & '1');
 			video_color <= rd_data;
 		end if;
 	end process;

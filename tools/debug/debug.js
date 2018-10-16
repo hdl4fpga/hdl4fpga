@@ -25,8 +25,13 @@ window.addEventListener("load", function() {
 
 	function mouseWheelCb (e) {
 
-		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
 		console.log("mouseWheel");
+		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
+		console.log (this.value);
+		this.onchange(e);
+	}
+
+	function axisOnChange (e) {
 
 		var data = [];
 		var	e;
@@ -56,15 +61,44 @@ window.addEventListener("load", function() {
 		send(data);
 	}
 
+	function paletteOnChange (e) {
+
+		var data = [];
+		var	e;
+
+		data.push(17);
+		data.push(1-1);
+
+		var value;
+
+		value = 0;
+		e = document.getElementById("palette_id");
+		value |= (parseInt(e.value) & 0x7);
+		e = document.getElementById("palette_color");
+		value |= ((parseInt(e.value) & 0x7) << 3);
+		data.push(value & 0xff);
+
+		send(data);
+	}
+
 	var e;
 	
 	e = document.getElementById("axis");
+	e.onchange = axisOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
 
 	e = document.getElementById("scale");
+	e.onchange = axisOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
 
 	e = document.getElementById("offset");
+	e.onchange = axisOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
 
+	e = document.getElementById("palette_id");
+	e.onchange = paletteOnChange;
+
+	e = document.getElementById("palette_color");
+	e.onchange = paletteOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
 });
