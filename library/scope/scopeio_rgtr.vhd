@@ -76,8 +76,9 @@ begin
 
 	axis_p : process(clk)
 		constant origin_id   : natural := 0;
-		constant select_id   : natural := 1;
-		constant axis_bf     : natural_vector := (origin_id  => 16, select_id => 1);
+		constant scale_id    : natural := 1;
+		constant select_id   : natural := 2;
+		constant axis_bf     : natural_vector := (origin_id  => 16, scale_id => 2, select_id => 1);
 
 		constant offset_id   : natural := 0;
 		constant base_id     : natural := 1;
