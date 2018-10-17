@@ -168,17 +168,6 @@ begin
 		palette_id    => palette_id,
 		palette_color => palette_color);
 
---	downsampler_e : entity hdl4fpga.scopeio_downsampler
---	port map (
---		input_clk   => input_clk,
---		input_ena   => input_ena,
---		input_data  => input_data,
---		factor_data => rgtr_data(hzscale_rgtr),
---		output_ena  => downsample_ena,
---		output_data => downsample_data);
-	downsample_data <= input_data;
-	downsample_ena  <= input_ena;
-
 	amp_b : block
 		subtype amp_chnl is natural range 10-1 downto  0;
 		subtype amp_sel  is natural range 18-1 downto 10;
@@ -226,8 +215,8 @@ begin
 			amp_e : entity hdl4fpga.scopeio_amp
 			port map (
 				input_clk     => input_clk,
-				input_ena     => downsample_ena,
-				input_sample  => downsample_data(sample_range),
+				input_ena     => input_ena,
+				input_sample  => input_data,
 				gain_value    => gain_value,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
@@ -235,8 +224,8 @@ begin
 		end generate;
 
 		ampsample_ena <= output_ena(0);
---				ampsample_ena <= downsample_ena;
---				ampsample_data <= downsample_data;
+--				ampsample_data <= input_ena; 
+--				ampsample_ena  <= input_data;
 	end block;
 
 --	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
@@ -255,6 +244,18 @@ begin
 
 	triggersample_ena  <= ampsample_ena;
 	triggersample_data <= ampsample_data;
+
+--	downsampler_e : entity hdl4fpga.scopeio_downsampler
+--	port map (
+--		input_clk   => input_clk,
+--		input_ena   => downsample_ena,
+--		input_data  => downsample_data(sample_range),
+--		factor_data => rgtr_data(hzscale_rgtr),
+--		output_ena  => downsample_ena,
+--		output_data => downsample_data);
+
+	downsample_data <= ampsample_data;
+	downsample_ena  <= ampsample_ena;
 
 --	storage_b : block
 --
