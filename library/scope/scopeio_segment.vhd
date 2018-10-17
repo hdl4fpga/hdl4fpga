@@ -55,6 +55,8 @@ begin
 		when "01" =>
 			axis_unit <= b"0010";
 		when "10" =>
+			axis_unit <= b"0010";
+		when "11" =>
 			axis_unit <= b"0101";
 		when others =>
 		end case;
