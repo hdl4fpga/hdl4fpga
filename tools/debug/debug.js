@@ -81,8 +81,30 @@ window.addEventListener("load", function() {
 		send(data);
 	}
 
+	function gainOnChange (e) {
+
+		var data = [];
+		var	e;
+
+		data.push(18);
+		data.push(1-1);
+
+		var value;
+
+		value = 0;
+		e = document.getElementById("axis");
+		value |= (parseInt(e.value) & 0xf) << 4;
+		data.push(value & 0xff);
+
+		send(data);
+	}
+
 	var e;
 	
+	e = document.getElementById("gain");
+	e.onchange = gainOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
+
 	e = document.getElementById("axis");
 	e.onchange = axisOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);

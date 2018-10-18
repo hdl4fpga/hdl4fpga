@@ -21,8 +21,11 @@ entity scopeio_rgtr is
 
 		palette_dv    : out std_logic;
 		palette_id    : out std_logic_vector;
-		palette_color : out std_logic_vector);
-
+		palette_color : out std_logic_vector;
+	
+		gain_dv       : out std_logic;
+		gain_id       : out std_logic_vector;
+		gain_chanid   : out std_logic_vector);
 
 end;
 
@@ -59,6 +62,7 @@ architecture def of scopeio_rgtr is
 	constant palette_bf  : natural_vector := (0, 4);
 	constant rid_axis    : std_logic_vector := x"10";
 	constant rid_palette : std_logic_vector := x"11";
+	constant rid_gain    : std_logic_vector := x"13";
 
 	signal axis_ena    : std_logic;
 	signal palette_ena : std_logic;
@@ -121,11 +125,22 @@ begin
 		constant id_id    : natural := 0;
 		constant color_id : natural := 1;
 
-		constant palette_bf : natural_vector := (id_id => palette_id'length, color_id => palette_id'length);
+		constant palette_bf : natural_vector := (id_id => palette_id'length, color_id => palette_color'length);
 	begin
 		palette_dv    <= palette_ena;
 		palette_id    <= bf(rgtr_data, id_id,    palette_bf);
 		palette_color <= bf(rgtr_data, color_id, palette_bf);
+	end block;
+
+	gain_p : block
+		constant chanid_id : natural := 0;
+		constant gainid_id : natural := 1;
+
+		constant gain_bf : natural_vector := (chanid_id => gain_chanid'length, gainid_id => gain_id'length);
+	begin
+		gain_dv     <= palette_ena;
+		gain_id     <= bf(rgtr_data, gainid_id,   palette_bf);
+		gain_chanid <= bf(rgtr_data, chanid_id, palette_bf);
 	end block;
 
 end;
