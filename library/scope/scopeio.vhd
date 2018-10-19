@@ -203,11 +203,11 @@ begin
 			process (si_clk)
 			begin
 				if rising_edge(si_clk) then
---					if to_integer(unsigned(gain_id(gain_addr'range)))=i then
 					if gain_dv='1' then
-						gain_addr <= gain_id(gain_addr'range);
+						if to_integer(unsigned(gain_id(gain_addr'range)))=i then
+							gain_addr <= gain_id(gain_addr'range);
+						end if;
 					end if;
---					end if;
 				end if;
 			end process;
 
