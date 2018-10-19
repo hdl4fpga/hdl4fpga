@@ -16,10 +16,7 @@ entity scopeio_trigger is
 		trigger_chanid : in  std_logic_vector;
 		trigger_edge   : in  std_logic;
 		trigger_level  : in  std_logic_vector;
-		caputure_req   : out std_logic;
-		caputure_rdy   : in  std_logic;
-		output_ena     : out std_logic;
-		output_data    : out std_logic_vector);
+		trigger_shot   : out std_logic);
 end;
 
 architecture beh of scopeio_trigger is
@@ -32,25 +29,11 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
+			trigger_shot <= '0';
 			if trigger_ena='1' then
-				if caputure_req='0' then
-					caputere_req <= trigger_edge xnor setif(signed(sample) >= signed(trigger_level));
-				elsif caputure_rdy='1' then
-					caputere_req <= '0';
-				end if;
-			else
-				caputere_req <= '1';
+				trigger_shot <= trigger_edge xnor setif(signed(sample) >= signed(trigger_level));
 			end if;
 		end if;
 	end process;
-
-	input_lat_e : entity hdl4fpga.align 
-	generic map (
-		n => input_data'length,
-		d => (input_data'range => 1))
-	port map (
-		clk => input_clk,
-		di  => input_data,
-		do  => output_data);
 
 end;

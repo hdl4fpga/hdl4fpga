@@ -38,6 +38,8 @@ end;
 
 architecture beh of scopeio is
 
+	subtype sample_word is std_logic_vector(input_data'length/inputs-1 downto 0);
+
 	type square is record
 		x      : natural;
 		y      : natural;
@@ -73,22 +75,9 @@ architecture beh of scopeio is
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
 
-	constant amp_rid     : natural := 1;
-	constant trigger_rid : natural := 2;
-	constant hzscale_rid : natural := 3;
-
-	subtype amp_rgtr     is natural range 18-1 downto  1;
-	subtype trigger_rgtr is natural range 32-1 downto 18;
-	subtype hzscale_rgtr is natural range 40-1 downto 32;
-
-	constant rgtr_map : natural_vector := (
-		amp_rid     => 18,
-		trigger_rid => 14,
-		hzscale_rid => 8);
-
-	signal rgtr_data          : std_logic_vector(hzscale_rgtr'high downto 0);
-	signal rgtr_dv            : std_logic;
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv            : std_logic;
+	signal rgtr_data          : std_logic_vector(32-1 downto 0);
 
 	signal downsample_ena     : std_logic;
 	signal downsample_data    : std_logic_vector(input_data'range);
@@ -107,25 +96,34 @@ architecture beh of scopeio is
 	signal storage_base : std_logic_vector(storage_addr'range);
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
-	signal storage_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal storage_bsel : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
-	signal video_color  : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal axis_dv    : std_logic;
-	signal axis_scale  : std_logic_vector(4-1 downto 0);
-	signal axis_base   : std_logic_vector(5-1 downto 0);
-	signal axis_sel    : std_logic;
-	signal hz_segment  : std_logic_vector(13-1 downto 0);
-	signal hz_offset   : std_logic_vector(9-1 downto 0);
-	signal vt_offset   : std_logic_vector(8-1 downto 0);
+	signal trigger_addr   : std_logic_vector(storage_addr'range);
+	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
+	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal palette_dv    : std_logic;
-	signal palette_id    : std_logic_vector(0 to 3-1);
-	signal palette_color : std_logic_vector(video_pixel'range);
+	signal axis_dv        : std_logic;
+	signal axis_scale     : std_logic_vector(4-1 downto 0);
+	signal axis_base      : std_logic_vector(5-1 downto 0);
+	signal axis_sel       : std_logic;
+	signal hz_segment     : std_logic_vector(13-1 downto 0);
+	signal hz_offset      : std_logic_vector(9-1 downto 0);
+	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
-	signal gain_dv     : std_logic;
-	signal gain_id     : std_logic_vector(4-1 downto 0);
-	signal gain_chanid : std_logic_vector(4-1 downto 0);
+	signal palette_dv     : std_logic;
+	signal palette_id     : std_logic_vector(0 to 3-1);
+	signal palette_color  : std_logic_vector(video_pixel'range);
+
+	signal gain_dv        : std_logic;
+	signal gain_id        : std_logic_vector(4-1 downto 0);
+	signal gain_chanid    : std_logic_vector(4-1 downto 0);
+
+	signal trigger_ena    : std_logic;
+	signal trigger_chanid : std_logic_vector(gain_chanid'range);
+	signal trigger_edge   : std_logic;
+	signal trigger_level  : std_logic_vector(sample_word'range);
+	signal trigger_shot   : std_logic;
+
 
 begin
 
@@ -174,7 +172,12 @@ begin
 
 		gain_dv      =>  gain_dv,
 		gain_id      =>  gain_id,
-		gain_chanid  =>  gain_chanid);
+		gain_chanid  =>  gain_chanid,
+
+		trigger_ena    => trigger_ena,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+		trigger_edge   => trigger_edge);
 
 	amp_b : block
 		constant sample_length : natural := input_data'length/inputs;
@@ -231,23 +234,20 @@ begin
 		end generate;
 
 		ampsample_ena <= output_ena(0);
---				ampsample_data <= input_data; 
---				ampsample_ena  <= input_ena;
 	end block;
 
---	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
---	generic map (
---		inputs => inputs)
---	port map (
---		input_clk     => input_clk,
---		input_ena     => ampsample_ena,
---		input_data    => ampsample_data,
---		trigger_req   => trigger_req,
---		trigger_rgtr  => rgtr_data(trigger_rgtr),
---		trigger_level => trigger_level,
---		capture_rdy   => capture_rdy,
---		capture_req   => capture_req,
---		output_data   => triggersample_data);
+	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
+	generic map (
+		inputs => inputs)
+	port map (
+		input_clk      => input_clk,
+		input_ena      => ampsample_ena,
+		input_data     => ampsample_data,
+		trigger_ena    => trigger_ena,
+		trigger_chanid => trigger_chanid,
+		trigger_level  => trigger_level,
+		trigger_edge   => trigger_edge,
+		trigger_shot   => trigger_shot);
 
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
@@ -263,13 +263,13 @@ begin
 
 	storage_b : block
 
-
 		signal mem_full : std_logic;
 		signal mem_clk  : std_logic;
 
 		signal wr_clk   : std_logic;
 		signal wr_ena   : std_logic;
 		signal wr_addr  : std_logic_vector(storage_addr'range);
+		signal wr_cntr  : std_logic_vector(0 to wr_addr'length);
 		signal wr_data  : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk   : std_logic;
 		signal rd_addr  : std_logic_vector(wr_addr'range);
@@ -293,12 +293,12 @@ begin
 
 		capture_rdy <= mem_full;
 		wr_clk      <= input_clk;
-		wr_ena      <= '1'; --capture_req;
+		wr_ena      <= trigger_cntr(trigg);
 		wr_data     <= downsample_data;
 
 		rd_clk <= video_clk;
 		gen_addr_p : process (wr_clk)
-			variable aux : unsigned(0 to wr_addr'length) := (others => '0');
+			variable aux : unsigned(wr_addr'range) := (others => '0');
 		begin
 			if rising_edge(wr_clk) then
 				if wr_ena='0' then
@@ -317,8 +317,13 @@ begin
 --					wr_data <= ('0', '0', '1', others => '0');
 --				end if;
 --				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
-				wr_addr  <= std_logic_vector(aux(1 to wr_addr'length));
-				mem_full <= aux(0);
+				wr_addr  <= std_logic_vector(unsigned(wr_addr) + 1);
+				if trigger_shot='1' then
+					trigger_length <= std_logic_vector(hz_offset)-1;
+					trigger_addr   <= wr_addr + hz_offset;
+				else
+					trigger_length <= trigger_length - 1;
+				end if;
 			end if;
 		end process;
 
@@ -524,17 +529,17 @@ begin
 					do  => storage_bsel);
 
 				storage_addr_p : process (storage_bsel)
-					variable base : std_logic_vector(storage_base'range);
+					variable base : unsigned(storage_base'range);
 				begin
 					base := (base'range => '0');
 					for i in storage_bsel'range loop
-						base := base or wirebus(
-							std_logic_vector(to_unsigned(vlayout_tab(vlayout_id).sgmnt.width*i, storage_addr'length)),
-							(0 => storage_bsel(i)));
+						if storage_bsel(i)='1' then
+							base := to_unsigned(vlayout_tab(vlayout_id).sgmnt.width*i, base'length);
+						end if;
 					end loop;
 					storage_base <= std_logic_vector(base);
 				end process;
-				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base));
+				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(trigger_addr));
 
 				latency_b : block
 				begin
