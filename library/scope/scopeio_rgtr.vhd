@@ -59,33 +59,38 @@ architecture def of scopeio_rgtr is
 		return (0 to 0 => '-');
 	end;
 
-	constant palette_bf  : natural_vector := (0, 4);
 	constant rid_axis    : std_logic_vector := x"10";
 	constant rid_palette : std_logic_vector := x"11";
 	constant rid_gain    : std_logic_vector := x"13";
 
 	signal axis_ena    : std_logic;
 	signal palette_ena : std_logic;
+	signal gain_ena    : std_logic;
 begin
 
 	decode_p : process (clk, rgtr_dv)
 		variable axis_dec    : std_logic;
 		variable palette_dec : std_logic;
+		variable gain_dec    : std_logic;
 	begin
 		if rising_edge(clk) then
 			axis_dec    := '0';
 			palette_dec := '0';
+			gain_dec    := '0';
 			case rgtr_id is
 			when rid_axis =>
 				axis_dec    := '1';
 			when rid_palette =>
 				palette_dec := '1';
+			when rid_gain =>
+				gain_dec := '1';
 			when others =>
 			end case;
 
 		end if;
 		axis_ena    <= rgtr_dv and axis_dec; 
 		palette_ena <= rgtr_dv and palette_dec; 
+		gain_ena    <= rgtr_dv and gain_dec; 
 	end process;
 
 	axis_p : process(clk)
@@ -138,9 +143,9 @@ begin
 
 		constant gain_bf : natural_vector := (chanid_id => gain_chanid'length, gainid_id => gain_id'length);
 	begin
-		gain_dv     <= palette_ena;
-		gain_id     <= bf(rgtr_data, gainid_id,   palette_bf);
-		gain_chanid <= bf(rgtr_data, chanid_id, palette_bf);
+		gain_dv     <= gain_ena;
+		gain_id     <= bf(rgtr_data, gainid_id, gain_bf);
+		gain_chanid <= bf(rgtr_data, chanid_id, gain_bf);
 	end block;
 
 end;

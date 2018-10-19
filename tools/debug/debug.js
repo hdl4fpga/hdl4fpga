@@ -86,14 +86,14 @@ window.addEventListener("load", function() {
 		var data = [];
 		var	e;
 
-		data.push(18);
+		data.push(19);
 		data.push(1-1);
 
 		var value;
 
 		value = 0;
-		e = document.getElementById("axis");
-		value |= (parseInt(e.value) & 0xf) << 4;
+		e = document.getElementById("gain");
+		value |= (parseInt(e.value) & 0xff);
 		data.push(value & 0xff);
 
 		send(data);

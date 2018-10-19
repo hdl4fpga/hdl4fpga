@@ -10,7 +10,7 @@ entity scopeio is
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_gain     : natural_vector := (0 to 0 => 2**17);
+		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
@@ -177,9 +177,6 @@ begin
 		gain_chanid  =>  gain_chanid);
 
 	amp_b : block
-		subtype amp_chnl is natural range 10-1 downto  0;
-		subtype amp_sel  is natural range 18-1 downto 10;
-
 		constant sample_length : natural := input_data'length/inputs;
 		signal output_ena : std_logic_vector(0 to inputs-1);
 	begin
@@ -206,9 +203,11 @@ begin
 			process (si_clk)
 			begin
 				if rising_edge(si_clk) then
-					if i=to_integer(unsigned(gain_id(gain_addr'range))) then
+--					if to_integer(unsigned(gain_id(gain_addr'range)))=i then
+					if gain_dv='1' then
 						gain_addr <= gain_id(gain_addr'range);
 					end if;
+--					end if;
 				end if;
 			end process;
 
@@ -219,15 +218,6 @@ begin
 				clk  => input_clk,
 				addr => gain_addr,
 				data => gain_value);
-
-			process (so_clk)
-			begin
-				if rising_edge(so_clk) then
-					if to_integer(unsigned(rgtr_data(amp_chnl)))=i then
-						gain_addr <= rgtr_data(amp_chnl)(gain_addr'range);
-					end if;
-				end if;
-			end process;
 
 			amp_e : entity hdl4fpga.scopeio_amp
 			port map (
