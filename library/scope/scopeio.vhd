@@ -93,12 +93,8 @@ architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
-	signal trigger_chanid : std_logic_vector(chanid_range);
-	signal trigger_edge   : std_logic;
-	signal trigger_ena    : std_logic;
-	signal trigger_shot   : std_logic;
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_level  : std_logic_vector(sample_range);
+	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
@@ -120,7 +116,11 @@ architecture beh of scopeio is
 	signal gain_id        : std_logic_vector(4-1 downto 0);
 	signal gain_chanid    : std_logic_vector(chanid_range);
 
-
+	signal trigger_dv     : std_logic;
+	signal trigger_chanid : std_logic_vector(chanid_range);
+	signal trigger_edge   : std_logic;
+	signal trigger_ena    : std_logic;
+	signal trigger_level  : std_logic_vector(sample_range);
 
 begin
 
@@ -151,26 +151,27 @@ begin
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	port map (
-		clk           => si_clk,
-		rgtr_dv       => rgtr_dv,
-		rgtr_id       => rgtr_id,
-		rgtr_data     => rgtr_data,
+		clk            => si_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
-		axis_dv       => axis_dv,
-		axis_scale    => axis_scale,
-		axis_base     => axis_base,
-		axis_sel      => axis_sel,
-		hz_offset     => hz_offset,
-		vt_offset     => vt_offset,
+		axis_dv        => axis_dv,
+		axis_scale     => axis_scale,
+		axis_base      => axis_base,
+		axis_sel       => axis_sel,
+		hz_offset      => hz_offset,
+		vt_offset      => vt_offset,
 	
-		palette_dv    => palette_dv,
-		palette_id    => palette_id,
-		palette_color => palette_color,
+		palette_dv     => palette_dv,
+		palette_id     => palette_id,
+		palette_color  => palette_color,
 
-		gain_dv      =>  gain_dv,
-		gain_id      =>  gain_id,
-		gain_chanid  =>  gain_chanid,
+		gain_dv        =>  gain_dv,
+		gain_id        =>  gain_id,
+		gain_chanid    =>  gain_chanid,
 
+		trigger_dv     => trigger_dv,
 		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
