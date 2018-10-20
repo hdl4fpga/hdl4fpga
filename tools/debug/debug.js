@@ -105,12 +105,15 @@ window.addEventListener("load", function() {
 		var	e;
 
 		data.push(18);
-		data.push(1-1);
+		data.push(2-1);
 
 		var value;
 
 		value = 0;
 		e = document.getElementById("trigger");
+		value |= ((parseInt(e.value) >> 8) & 0xff);
+		data.push(value & 0xff);
+
 		value |= (parseInt(e.value) & 0xff);
 		data.push(value & 0xff);
 
@@ -118,6 +121,10 @@ window.addEventListener("load", function() {
 	}
 
 	var e;
+
+	e = document.getElementById("trigger");
+	e.onchange = triggerOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
 	
 	e = document.getElementById("gain");
 	e.onchange = gainOnChange;

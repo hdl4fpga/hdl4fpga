@@ -158,15 +158,15 @@ begin
 	end block;
 
 	trigger_p : block
-		constant level_id  : natural := 0;
+		constant ena_id    : natural := 0;
 		constant edge_id   : natural := 1;
-		constant ena_id    : natural := 2;
+		constant level_id  : natural := 2;
 		constant chanid_id : natural := 3;
 
 		constant trigger_bf : natural_vector := (
-			level_id  => trigger_level'length,
-			edge_id   => 1,
 			ena_id    => 1,
+			edge_id   => 1,
+			level_id  => trigger_level'length,
 			chanid_id => trigger_chanid'length);
 	begin
 		process(clk)
