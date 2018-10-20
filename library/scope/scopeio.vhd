@@ -312,13 +312,10 @@ begin
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
 				if trigger_shot='1' then
-					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
-				end if;
-
-				if trigger_shot='1' then
 					if wr_cntr(0)='1' then
 						if video_frm='1' then
-							wr_cntr <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
+							trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
+							wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 						end if;
 					end if;
 				elsif wr_cntr(0)='0' then
