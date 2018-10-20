@@ -169,11 +169,18 @@ begin
 			ena_id    => 1,
 			chanid_id => trigger_chanid'length);
 	begin
-		trigger_dv     <= ena(trigger_enid);
-		trigger_ena    <= bf(rgtr_data, ena_id,    trigger_bf)(0);
-		trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
-		trigger_level  <= bf(rgtr_data, level_id,  trigger_bf);
-		trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				trigger_dv <= ena(trigger_enid);
+				if ena(trigger_enid)='1' then
+					trigger_ena    <= bf(rgtr_data, ena_id,    trigger_bf)(0);
+					trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
+					trigger_level  <= bf(rgtr_data, level_id,  trigger_bf);
+					trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
+				end if;
+			end if;
+		end process;
 	end block;
 
 end;
