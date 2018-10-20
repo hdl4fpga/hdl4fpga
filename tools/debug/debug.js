@@ -99,6 +99,24 @@ window.addEventListener("load", function() {
 		send(data);
 	}
 
+	function triggerOnChange (e) {
+
+		var data = [];
+		var	e;
+
+		data.push(18);
+		data.push(1-1);
+
+		var value;
+
+		value = 0;
+		e = document.getElementById("trigger");
+		value |= (parseInt(e.value) & 0xff);
+		data.push(value & 0xff);
+
+		send(data);
+	}
+
 	var e;
 	
 	e = document.getElementById("gain");

@@ -95,8 +95,8 @@ begin
 				dec(trigger_enid) := '1';
 			when others =>
 			end case;
-
 		end if;
+
 		for id in 0 to last_id-1 loop
 			ena(id) <= rgtr_dv and dec(id); 
 		end loop;

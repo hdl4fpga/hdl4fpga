@@ -287,7 +287,7 @@ begin
 		end process;
 
 		wr_clk  <= input_clk;
-		wr_ena  <= not wr_cntr(0);
+		wr_ena  <= not wr_cntr(0) or not trigger_ena;
 		wr_data <= downsample_data;
 
 		rd_clk  <= video_clk;
@@ -320,7 +320,7 @@ begin
 				elsif wr_cntr(0)='0' then
 					wr_cntr <= wr_cntr - 1;
 				end if;
-				wr_addr  <= std_logic_vector(unsigned(wr_addr) + 1);
+				wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 			end if;
 		end process;
 
