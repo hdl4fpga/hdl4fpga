@@ -316,7 +316,11 @@ begin
 				end if;
 
 				if trigger_shot='1' then
-					wr_cntr <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
+					if wr_cntr(0)='1' then
+						if video_frm='1' then
+							wr_cntr <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
+						end if;
+					end if;
 				elsif wr_cntr(0)='0' then
 					wr_cntr <= wr_cntr - 1;
 				end if;
