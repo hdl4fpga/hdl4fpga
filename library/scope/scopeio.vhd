@@ -313,7 +313,7 @@ begin
 
 				if trigger_shot='1' then
 					if wr_cntr(0)='1' then
-						if video_frm='1' then
+						if video_frm='0' then
 							trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
 							wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 						end if;
