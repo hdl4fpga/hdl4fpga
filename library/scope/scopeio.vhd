@@ -314,7 +314,7 @@ begin
 				end if;
 
 				if trigger_shot='1' then
-					wr_cntr <= unsigned(hz_offset)+(2**wr_addr'length-1);
+					wr_cntr <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 				else
 					wr_cntr <= wr_cntr - 1;
 				end if;
@@ -586,7 +586,7 @@ begin
 				port map (
 					in_clk        => si_clk,
 
-					axis_dv      => axis_dv,
+					axis_dv       => axis_dv,
 					axis_sel      => axis_sel,
 					axis_base     => axis_base,
 					axis_scale    => axis_scale,
