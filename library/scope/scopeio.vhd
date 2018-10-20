@@ -38,8 +38,9 @@ end;
 
 architecture beh of scopeio is
 
-	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
+	subtype sample_range is natural range input_data'length/inputs-1 downto 0;
 	subtype chanid_range is natural range unsigned_num_bits(inputs-1)-1 downto 0;
+	subtype gainid_range is natural range unsigned_num_bits(vt_gain'length-1)-1 downto 0;
 
 	type square is record
 		x      : natural;
@@ -97,7 +98,7 @@ architecture beh of scopeio is
 	signal trigger_ena    : std_logic;
 	signal trigger_shot   : std_logic;
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_level  : std_logic_vector(sample_word'range);
+	signal trigger_level  : std_logic_vector(sample_range);
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
@@ -203,7 +204,7 @@ begin
 			begin
 				if rising_edge(si_clk) then
 					if gain_dv='1' then
-						if to_integer(unsigned(gain_id(gain_addr'range)))=i then
+						if unsigned(gain_chanid)=i then
 							gain_addr <= gain_id(gain_addr'range);
 						end if;
 					end if;
@@ -315,7 +316,7 @@ begin
 
 				if trigger_shot='1' then
 					wr_cntr <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
-				else
+				elsif wr_cntr(0)='0' then
 					wr_cntr <= wr_cntr - 1;
 				end if;
 				wr_addr  <= std_logic_vector(unsigned(wr_addr) + 1);

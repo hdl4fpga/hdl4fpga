@@ -27,6 +27,7 @@ entity scopeio_rgtr is
 		gain_id       : out std_logic_vector;
 		gain_chanid   : out std_logic_vector;
 
+		trigger_dv      : out std_logic;
 		trigger_ena     : out std_logic;
 		trigger_chanid  : out std_logic_vector;
 		trigger_level   : out std_logic_vector;
@@ -65,36 +66,40 @@ architecture def of scopeio_rgtr is
 
 	constant rid_axis    : std_logic_vector := x"10";
 	constant rid_palette : std_logic_vector := x"11";
+	constant rid_trigger : std_logic_vector := x"12";
 	constant rid_gain    : std_logic_vector := x"13";
 
-	signal axis_ena    : std_logic;
-	signal palette_ena : std_logic;
-	signal gain_ena    : std_logic;
+	constant axis_enid    : natural := 0;
+	constant palette_enid : natural := 1;
+	constant gain_enid    : natural := 2;
+	constant trigger_enid : natural := 3;
+
+	constant last_id    : natural := trigger_enid+1;
+
+	signal ena : std_logic_vector(0 to last_id-1);
 begin
 
 	decode_p : process (clk, rgtr_dv)
-		variable axis_dec    : std_logic;
-		variable palette_dec : std_logic;
-		variable gain_dec    : std_logic;
+		variable dec : std_logic_vector(0 to last_id-1);
 	begin
 		if rising_edge(clk) then
-			axis_dec    := '0';
-			palette_dec := '0';
-			gain_dec    := '0';
+			dec := (others => '0');
 			case rgtr_id is
 			when rid_axis =>
-				axis_dec    := '1';
+				dec(axis_enid)    := '1';
 			when rid_palette =>
-				palette_dec := '1';
+				dec(palette_enid) := '1';
 			when rid_gain =>
-				gain_dec := '1';
+				dec(gain_enid)    := '1';
+			when rid_trigger =>
+				dec(trigger_enid) := '1';
 			when others =>
 			end case;
 
 		end if;
-		axis_ena    <= rgtr_dv and axis_dec; 
-		palette_ena <= rgtr_dv and palette_dec; 
-		gain_ena    <= rgtr_dv and gain_dec; 
+		for id in 0 to last_id-1 loop
+			ena(id) <= rgtr_dv and dec(id); 
+		end loop;
 	end process;
 
 	axis_p : process(clk)
@@ -112,7 +117,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			axis_dv <= '0';
-			if axis_ena='1' then
+			if ena(axis_enid)='1' then
 				axis_scale <= bf(rgtr_data, scale_id,  axis_bf);
 				origin     := bf(rgtr_data, origin_id, axis_bf);
 				if bf(rgtr_data, select_id, axis_bf)="1" then
@@ -125,7 +130,7 @@ begin
 					axis_base <= bf(origin, base_id,   hzoffset_bf);
 					hz_offset <= bf(origin, offset_id, hzoffset_bf);
 				end if;
-				axis_dv <= axis_ena;
+				axis_dv <= ena(axis_enid);
 			end if;
 		end if;
 	end process;
@@ -136,7 +141,7 @@ begin
 
 		constant palette_bf : natural_vector := (id_id => palette_id'length, color_id => palette_color'length);
 	begin
-		palette_dv    <= palette_ena;
+		palette_dv    <= ena(palette_enid);
 		palette_id    <= bf(rgtr_data, id_id,    palette_bf);
 		palette_color <= bf(rgtr_data, color_id, palette_bf);
 	end block;
@@ -147,9 +152,28 @@ begin
 
 		constant gain_bf : natural_vector := (chanid_id => gain_chanid'length, gainid_id => gain_id'length);
 	begin
-		gain_dv     <= gain_ena;
+		gain_dv     <= ena(gain_enid);
 		gain_id     <= bf(rgtr_data, gainid_id, gain_bf);
 		gain_chanid <= bf(rgtr_data, chanid_id, gain_bf);
+	end block;
+
+	trigger_p : block
+		constant level_id  : natural := 0;
+		constant edge_id   : natural := 1;
+		constant ena_id    : natural := 2;
+		constant chanid_id : natural := 3;
+
+		constant trigger_bf : natural_vector := (
+			level_id  => trigger_level'length,
+			edge_id   => 1,
+			ena_id    => 1,
+			chanid_id => trigger_chanid'length);
+	begin
+		trigger_dv     <= ena(trigger_enid);
+		trigger_ena    <= bf(rgtr_data, ena_id,    trigger_bf)(0);
+		trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
+		trigger_level  <= bf(rgtr_data, level_id,  trigger_bf);
+		trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
 	end block;
 
 end;
