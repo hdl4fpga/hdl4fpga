@@ -25,7 +25,7 @@ architecture beh of scopeio_trigger is
 
 begin
 
-	sample = word2byte(input_data, trigger_chanid, sample'length);
+	sample <= word2byte(input_data, trigger_chanid, sample'length);
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then

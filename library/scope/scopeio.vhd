@@ -38,7 +38,8 @@ end;
 
 architecture beh of scopeio is
 
-	subtype sample_word is std_logic_vector(input_data'length/inputs-1 downto 0);
+	subtype sample_word  is std_logic_vector(input_data'length/inputs-1 downto 0);
+	subtype chanid_range is natural range unsigned_num_bits(inputs-1)-1 downto 0;
 
 	type square is record
 		x      : natural;
@@ -83,12 +84,6 @@ architecture beh of scopeio is
 	signal downsample_data    : std_logic_vector(input_data'range);
 	signal ampsample_ena      : std_logic;
 	signal ampsample_data     : std_logic_vector(input_data'range);
-	signal triggersample_ena  : std_logic;
-	signal triggersample_data : std_logic_vector(input_data'range);
-	signal trigger_level      : std_logic_vector(0 to 0);
-	signal trigger_req        : std_logic;
-	signal capture_rdy        : std_logic;
-	signal capture_req        : std_logic;
 
 	constant storage_size : natural := unsigned_num_bits(
 		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
@@ -97,7 +92,13 @@ architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
+	signal trigger_chanid : std_logic_vector(chanid_range);
+	signal trigger_edge   : std_logic;
+	signal trigger_ena    : std_logic;
+	signal trigger_shot   : std_logic;
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
+	signal trigger_level  : std_logic_vector(sample_word'range);
+
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
@@ -116,13 +117,8 @@ architecture beh of scopeio is
 
 	signal gain_dv        : std_logic;
 	signal gain_id        : std_logic_vector(4-1 downto 0);
-	signal gain_chanid    : std_logic_vector(4-1 downto 0);
+	signal gain_chanid    : std_logic_vector(chanid_range);
 
-	signal trigger_ena    : std_logic;
-	signal trigger_chanid : std_logic_vector(gain_chanid'range);
-	signal trigger_edge   : std_logic;
-	signal trigger_level  : std_logic_vector(sample_word'range);
-	signal trigger_shot   : std_logic;
 
 
 begin
@@ -263,13 +259,10 @@ begin
 
 	storage_b : block
 
-		signal mem_full : std_logic;
-		signal mem_clk  : std_logic;
-
 		signal wr_clk   : std_logic;
 		signal wr_ena   : std_logic;
 		signal wr_addr  : std_logic_vector(storage_addr'range);
-		signal wr_cntr  : std_logic_vector(0 to wr_addr'length);
+		signal wr_cntr  : unsigned(0 to wr_addr'length+1);
 		signal wr_data  : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk   : std_logic;
 		signal rd_addr  : std_logic_vector(wr_addr'range);
@@ -291,21 +284,19 @@ begin
 --			wr_data <= std_logic_vector(aux1);
 		end process;
 
-		capture_rdy <= mem_full;
-		wr_clk      <= input_clk;
-		wr_ena      <= trigger_cntr(trigg);
-		wr_data     <= downsample_data;
+		wr_clk  <= input_clk;
+		wr_ena  <= not wr_cntr(0);
+		wr_data <= downsample_data;
 
-		rd_clk <= video_clk;
+		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
-			variable aux : unsigned(wr_addr'range) := (others => '0');
 		begin
 			if rising_edge(wr_clk) then
-				if wr_ena='0' then
-					aux := (others => '0');
-				else
-					aux := aux + 1;
-				end if;
+
+--              ----------------
+--				-- CALIBRATON --
+--              ----------------
+--
 --				wr_data <= ('0','0', '0', '0', others => '1');
 --				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
 --					wr_data <= ('0', '0', '1', others => '0');
@@ -316,14 +307,18 @@ begin
 --				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
 --					wr_data <= ('0', '0', '1', others => '0');
 --				end if;
---				wr_data  <= std_logic_vector(resize(aux,wr_data'length));
-				wr_addr  <= std_logic_vector(unsigned(wr_addr) + 1);
+--				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
+
 				if trigger_shot='1' then
-					trigger_length <= std_logic_vector(hz_offset)-1;
-					trigger_addr   <= wr_addr + hz_offset;
-				else
-					trigger_length <= trigger_length - 1;
+					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
 				end if;
+
+				if trigger_shot='1' then
+					wr_cntr <= unsigned(hz_offset)+(2**wr_addr'length-1);
+				else
+					wr_cntr <= wr_cntr - 1;
+				end if;
+				wr_addr  <= std_logic_vector(unsigned(wr_addr) + 1);
 			end if;
 		end process;
 

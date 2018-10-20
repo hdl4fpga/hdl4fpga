@@ -25,8 +25,12 @@ entity scopeio_rgtr is
 	
 		gain_dv       : out std_logic;
 		gain_id       : out std_logic_vector;
-		gain_chanid   : out std_logic_vector);
+		gain_chanid   : out std_logic_vector;
 
+		trigger_ena     : out std_logic;
+		trigger_chanid  : out std_logic_vector;
+		trigger_level   : out std_logic_vector;
+		trigger_edge    : out std_logic);
 end;
 
 architecture def of scopeio_rgtr is
