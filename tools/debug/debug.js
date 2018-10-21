@@ -7,7 +7,7 @@ var port = 57001;
 window.addEventListener("load", function() {
 
 	function send (data) {
-		var buffer = Buffer.alloc(data.length+2);
+		var buffer = Buffer.alloc(data.length);
 		console.log(buffer.length);
 
 		console.log(data);
@@ -26,8 +26,14 @@ window.addEventListener("load", function() {
 	function mouseWheelCb (e) {
 
 		console.log("mouseWheel");
-		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
-		console.log (this.value);
+		if (this.length === undefined) {
+			this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
+		} else {
+			var value = parseInt(this.value);
+			value += parseInt(((e.deltaY > 0) ? 1 : (this.length-1)));
+			value %= this.length;
+			this.value = value;
+		}
 		this.onchange(e);
 	}
 
@@ -110,12 +116,17 @@ window.addEventListener("load", function() {
 		var value;
 
 		value = 0;
-		e = document.getElementById("trigger");
-		value |= ((parseInt(e.value) >> 8) & 0xff);
-		data.push(value & 0xff);
+		e = document.getElementById("trigger_enable");
+		value |= ((parseInt(e.value) << 0) & 0x1);
 
-		value |= (parseInt(e.value) & 0xff);
-		data.push(value & 0xff);
+		e = document.getElementById("trigger_slope");
+		value |= ((parseInt(e.value) << 1) & 0x2);
+
+		e = document.getElementById("trigger");
+		value |= ((parseInt(e.value) << 2) & 0xfffc);
+
+		data.push((value >> 8) & 0xff);
+		data.push((value >> 0) & 0xff);
 
 		send(data);
 	}
@@ -123,6 +134,14 @@ window.addEventListener("load", function() {
 	var e;
 
 	e = document.getElementById("trigger");
+	e.onchange = triggerOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
+	
+	e = document.getElementById("trigger_slope");
+	e.onchange = triggerOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
+	
+	e = document.getElementById("trigger_enable");
 	e.onchange = triggerOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
 	
