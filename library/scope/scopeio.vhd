@@ -10,7 +10,7 @@ entity scopeio is
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16);
+		vt_gain     : natural_vector := (0 => 2**17, 1 => 3*2**16);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
@@ -42,6 +42,7 @@ architecture beh of scopeio is
 	subtype chanid_range is natural range unsigned_num_bits(inputs-1)-1 downto 0;
 	subtype gainid_range is natural range unsigned_num_bits(vt_gain'length-1)-1 downto 0;
 
+	subtype storage_word is std_logic_vector(0 to 9-1);
 	type square is record
 		x      : natural;
 		y      : natural;
@@ -77,21 +78,22 @@ architecture beh of scopeio is
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
 
-	signal rgtr_id            : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv            : std_logic;
-	signal rgtr_data          : std_logic_vector(32-1 downto 0);
+	signal rgtr_id           : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv           : std_logic;
+	signal rgtr_data         : std_logic_vector(32-1 downto 0);
 
-	signal downsample_ena     : std_logic;
-	signal downsample_data    : std_logic_vector(input_data'range);
-	signal ampsample_ena      : std_logic;
-	signal ampsample_data     : std_logic_vector(input_data'range);
+	signal downsample_ena    : std_logic;
+	signal downsample_data   : std_logic_vector(input_data'range);
+	signal ampsample_ena     : std_logic;
+	signal ampsample_data    : std_logic_vector(input_data'range);
+	signal resizesample_ena  : std_logic;
+	signal resizesample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 
 	constant storage_size : natural := unsigned_num_bits(
 		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
 	signal storage_base : std_logic_vector(storage_addr'range);
 
-	subtype storage_word is std_logic_vector(0 to 9-1);
 
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
@@ -120,7 +122,7 @@ architecture beh of scopeio is
 	signal trigger_chanid : std_logic_vector(chanid_range);
 	signal trigger_edge   : std_logic;
 	signal trigger_ena    : std_logic;
-	signal trigger_level  : std_logic_vector(sample_range);
+	signal trigger_level  : std_logic_vector(storage_word'range);
 
 begin
 
@@ -233,14 +235,29 @@ begin
 
 		ampsample_ena <= output_ena(0);
 	end block;
+ 
+	resizesample_ena <= ampsample_ena;
+	resize_p : process (ampsample_data)
+		variable aux1 : unsigned(0 to storage_word'length*inputs-1);
+		variable aux2 : unsigned(0 to ampsample_data'length-1);
+	begin
+		aux1 := (others => '-');
+		aux2 := unsigned(ampsample_data);
+		for i in 0 to inputs-1 loop
+			aux1(storage_word'range) := aux2(storage_word'range);
+			aux1 := aux1 rol storage_word'length;
+			aux2 := aux2 rol ampsample_data'length/inputs;
+		end loop;
+		resizesample_data <= std_logic_vector(aux1);
+	end process;
 
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)
 	port map (
 		input_clk      => input_clk,
-		input_ena      => ampsample_ena,
-		input_data     => ampsample_data,
+		input_ena      => resizesample_ena,
+		input_data     => resizesample_data,
 		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
@@ -250,14 +267,14 @@ begin
 --	downsampler_e : entity hdl4fpga.scopeio_downsampler
 --	port map (
 --		input_clk   => input_clk,
---		input_ena   => downsample_ena,
---		input_data  => downsample_data(sample_range),
+--		input_ena   => resizesample_ena,
+--		input_data  => resizesample_data(sample_range),
 --		factor_data => rgtr_data(hzscale_rgtr),
 --		output_ena  => downsample_ena,
 --		output_data => downsample_data);
 
-	downsample_data <= ampsample_data;
-	downsample_ena  <= ampsample_ena;
+	downsample_data <= resizesample_data;
+	downsample_ena  <= resizesample_ena;
 
 	storage_b : block
 
@@ -271,20 +288,6 @@ begin
 		signal rd_data  : std_logic_vector(wr_data'range);
 
 	begin
-
-		resize_p : process (downsample_data)
-			variable aux1 : unsigned(0 to wr_data'length-1);
-			variable aux2 : unsigned(0 to downsample_data'length-1);
-		begin
-			aux1 := (others => '-');
-			aux2 := unsigned(downsample_data);
-			for i in 0 to inputs-1 loop
-				aux1(storage_word'range) := aux2(storage_word'range);
-				aux1 := aux1 rol storage_word'length;
-				aux2 := aux2 rol downsample_data'length/inputs;
-			end loop;
---			wr_data <= std_logic_vector(aux1);
-		end process;
 
 		wr_clk  <= input_clk;
 		wr_ena  <= not wr_cntr(0) or not trigger_ena;
