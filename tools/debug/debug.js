@@ -163,6 +163,7 @@ window.addEventListener("load", function() {
 
 	e = document.getElementById("palette_id");
 	e.onchange = paletteOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
 
 	e = document.getElementById("palette_color");
 	e.onchange = paletteOnChange;
