@@ -16,6 +16,7 @@ entity scopeio_rgtr is
 		axis_sel      : out std_logic;
 		axis_scale    : out std_logic_vector;
 		axis_base     : out std_logic_vector;
+		hz_scale      : out std_logic_vector;
 		hz_offset     : out std_logic_vector;
 		vt_offset     : out std_logic_vector;
 
@@ -127,8 +128,9 @@ begin
 					vt_offset <= bf(origin, offset_id, vtoffset_bf);
 				else
 					axis_sel  <= '0';
-					axis_base <= bf(origin, base_id,   hzoffset_bf);
-					hz_offset <= bf(origin, offset_id, hzoffset_bf);
+					axis_base <= bf(origin,    base_id,   hzoffset_bf);
+					hz_offset <= bf(origin,    offset_id, hzoffset_bf);
+					hz_scale  <= bf(rgtr_data, scale_id,  axis_bf);
 				end if;
 				axis_dv <= ena(axis_enid);
 			end if;

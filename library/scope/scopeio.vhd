@@ -107,6 +107,7 @@ architecture beh of scopeio is
 	signal axis_base      : std_logic_vector(5-1 downto 0);
 	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
+	signal hz_scale       : std_logic_vector(4-1 downto 0);
 	signal hz_offset      : std_logic_vector(9-1 downto 0);
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
@@ -162,6 +163,7 @@ begin
 		axis_scale     => axis_scale,
 		axis_base      => axis_base,
 		axis_sel       => axis_sel,
+		hz_scale       => hz_scale,
 		hz_offset      => hz_offset,
 		vt_offset      => vt_offset,
 	
@@ -264,17 +266,14 @@ begin
 		trigger_edge   => trigger_edge,
 		trigger_shot   => trigger_shot);
 
---	downsampler_e : entity hdl4fpga.scopeio_downsampler
---	port map (
---		input_clk   => input_clk,
---		input_ena   => resizesample_ena,
---		input_data  => resizesample_data(sample_range),
---		factor_data => rgtr_data(hzscale_rgtr),
---		output_ena  => downsample_ena,
---		output_data => downsample_data);
-
-	downsample_data <= resizesample_data;
-	downsample_ena  <= resizesample_ena;
+	downsampler_e : entity hdl4fpga.scopeio_downsampler
+	port map (
+		factor      => hz_scale,
+		input_clk   => input_clk,
+		input_ena   => resizesample_ena,
+		input_data  => resizesample_data,
+		output_ena  => downsample_ena,
+		output_data => downsample_data);
 
 	storage_b : block
 

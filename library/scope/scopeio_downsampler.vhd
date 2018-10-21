@@ -6,17 +6,16 @@ library hdl4fpga;
 
 entity scopeio_downsampler is
 	port (
+		factor      : in  std_logic_vector;
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic;
 		input_data  : in  std_logic_vector;
-		factor_addr : in  std_logic_vector := (0 to 0 => '-');
-		factor_data : in  std_logic_vector;
 		output_ena  : out std_logic;
 		output_data : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
-	signal cntr : signed(factor_data'range);
+	signal cntr : signed(factor'range);
 begin
 
 	process (input_clk)
@@ -25,7 +24,7 @@ begin
 			output_ena <= cntr(cntr'left) and input_ena;
 			if input_ena='1' then
 				if cntr(cntr'left)='1' then
-					cntr <= signed(factor_data);
+					cntr <= signed(factor);
 				else
 					cntr <= cntr - 1;
 				end if;
