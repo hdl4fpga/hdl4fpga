@@ -105,7 +105,7 @@ begin
 	generic map (
 		latency   => latency)
 	port map (
-		row => b"1000_0000",
+		row => trigger_level,
 		clk => video_clk,
 		ena => grid_on,
 		x   => x,

@@ -331,19 +331,19 @@ use hdl4fpga.std.all;
 architecture def of draw_hline is
 begin
 	process (ena, mask, x, y, row)
-		variable auxx : unsigned(x'length-1 downto 0);
-		variable auxm : unsigned(mask'length-1 downto 0);
+		variable auxx : unsigned(max(x'length,mask'length)-1 downto 0);
 		variable auxy : unsigned(max(y'length,row'length)-1 downto 0);
 	begin
-		auxx := unsigned(x);
-		auxm := unsigned(mask) xor auxx(auxm'range);
-		auxy(row'length-1 downto 0) := unsigned(row);
-		auxy(y'length-1 downto 0)   := unsigned(y) xor auxy(y'length-1 downto 0);
+		auxx(mask'length-1 downto 0) := unsigned(mask);
+		auxx(x'length-1 downto 0)    := unsigned(x) and auxx(x'length-1 downto 0);
+
+		auxy(row'length-1 downto 0)  := unsigned(row);
+		auxy(y'length-1 downto 0)    := unsigned(y) xor auxy(y'length-1 downto 0);
 		
 		dot <= '0';
 		if ena='1' then
 			if auxy(hdl4fpga.std.min(y'length,row'length)-1 downto 0)=(hdl4fpga.std.min(y'length,row'length)-1 downto 0 => '0') then
-				if auxm=(auxm'range => '0') then
+				if auxx(hdl4fpga.std.min(x'length,mask'length)-1 downto 0)=(hdl4fpga.std.min(x'length,mask'length)-1 downto 0 => '0') then
 					dot <= '1';
 				end if;
 			end if;

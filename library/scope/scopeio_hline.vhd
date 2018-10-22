@@ -24,7 +24,7 @@ begin
 	hline_e : entity hdl4fpga.draw_hline
 	port map (
 		ena  => ena,
-		mask => "0001",
+		mask => "10",
 		x    => x,
 		y    => y,
 		row  => row,
