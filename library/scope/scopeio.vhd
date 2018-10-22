@@ -268,12 +268,14 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
-		factor      => b"0111",
-		input_clk   => input_clk,
-		input_ena   => resizesample_ena,
-		input_data  => resizesample_data,
-		output_ena  => downsample_ena,
-		output_data => downsample_data);
+		factor       => hz_scale,
+		input_clk    => input_clk,
+		input_ena    => resizesample_ena,
+		input_data   => resizesample_data,
+		trigger_shot => trigger_shot,
+		display_ena  => video_frm,
+		output_ena   => downsample_ena,
+		output_data  => downsample_data);
 
 	storage_b : block
 
@@ -289,7 +291,7 @@ begin
 	begin
 
 		wr_clk  <= input_clk;
-		wr_ena  <= (not wr_cntr(0) or not trigger_ena) and downsample_ena;
+		wr_ena  <= not wr_cntr(0) or not trigger_ena;
 		wr_data <= downsample_data;
 
 		rd_clk  <= video_clk;
@@ -313,17 +315,17 @@ begin
 --				end if;
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
-				if trigger_shot='1' then
-					if wr_cntr(0)='1' then
-						if video_frm='0' then
-							trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
-							wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
-						end if;
-					end if;
+				if video_frm='0' and trigger_shot='1' then
+					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
+					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 				elsif wr_cntr(0)='0' then
-					wr_cntr <= wr_cntr - 1;
+					if downsample_ena='1' then
+						wr_cntr <= wr_cntr - 1;
+					end if;
 				end if;
-				wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+				if downsample_ena='1' then
+					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+				end if;
 			end if;
 		end process;
 
