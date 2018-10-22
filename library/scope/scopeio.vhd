@@ -268,7 +268,7 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
-		factor      => hz_scale,
+		factor      => b"0111",
 		input_clk   => input_clk,
 		input_ena   => resizesample_ena,
 		input_data  => resizesample_data,
@@ -289,7 +289,7 @@ begin
 	begin
 
 		wr_clk  <= input_clk;
-		wr_ena  <= not wr_cntr(0) or not trigger_ena;
+		wr_ena  <= (not wr_cntr(0) or not trigger_ena) and downsample_ena;
 		wr_data <= downsample_data;
 
 		rd_clk  <= video_clk;
