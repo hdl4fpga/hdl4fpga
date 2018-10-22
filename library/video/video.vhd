@@ -325,9 +325,30 @@ entity draw_hline is
 		dot  : out std_logic);
 end;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 architecture def of draw_hline is
 begin
-	dot <= ena when (y=row) and (x and std_logic_vector(resize(unsigned(mask), x'length)))=(x'range => '0') else '0';
+	process (ena, mask, x, y, row)
+		variable auxx : unsigned(x'length-1 downto 0);
+		variable auxm : unsigned(mask'length-1 downto 0);
+		variable auxy : unsigned(max(y'length,row'length)-1 downto 0);
+	begin
+		auxx := unsigned(x);
+		auxm := unsigned(mask) xor auxx(auxm'range);
+		auxy(row'length-1 downto 0) := unsigned(row);
+		auxy(y'length-1 downto 0)   := unsigned(y) xor auxy(y'length-1 downto 0);
+		
+		dot <= '0';
+		if ena='1' then
+			if auxy(hdl4fpga.std.min(y'length,row'length)-1 downto 0)=(hdl4fpga.std.min(y'length,row'length)-1 downto 0 => '0') then
+				if auxm=(auxm'range => '0') then
+					dot <= '1';
+				end if;
+			end if;
+		end if;
+	end process;
 end;
 
 library ieee;

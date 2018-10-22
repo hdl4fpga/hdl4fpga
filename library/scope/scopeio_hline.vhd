@@ -5,7 +5,7 @@ library hdl4fpga;
 
 entity scopeio_hline is
 	generic (
-		lat   : natural);
+		latency   : natural);
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic;
@@ -23,6 +23,7 @@ begin
 
 	hline_e : entity hdl4fpga.draw_hline
 	port map (
+		ena  => ena,
 		mask => "0001",
 		x    => x,
 		y    => y,
@@ -32,7 +33,7 @@ begin
 	align_e : entity hdl4fpga.align
 	generic map (
 		n => 1,
-		d => (0 => lat))
+		d => (0 => latency))
 	port map (
 		clk   => clk,
 		di(0) => hdot,

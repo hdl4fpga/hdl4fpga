@@ -112,7 +112,7 @@ architecture beh of scopeio is
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to 3-1);
+	signal palette_id     : std_logic_vector(0 to 4-1);
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
@@ -638,6 +638,7 @@ begin
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		generic map (
 			traces_fg   => std_logic_vector'("010"),
+			trigger_fg  => std_logic_vector'("111"), 
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
 			hz_fg       => std_logic_vector'("111"),
@@ -652,6 +653,7 @@ begin
 			wr_color    => palette_color,
 			video_clk   => video_clk,
 			traces_dots => traces_dots, 
+			trigger_dot => trigger_dot,
 			grid_dot    => grid_dot,
 			grid_bgon   => grid_bgon,
 			hz_dot      => hz_dot,

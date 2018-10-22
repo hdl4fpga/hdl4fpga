@@ -101,16 +101,16 @@ begin
 		video_hcntr => x,
 		video_vcntr => y);
 
---	trigger_e : entity hdl4fpga.scopeio_hline
---	generic map (
---		latency   => latency)
---	port map (
---		row => trigger_level,
---		clk => video_clk,
---		ena => grid_on,
---		x   => win_x,
---		y   => win_y,
---		dot => trigger_dot);
+	trigger_e : entity hdl4fpga.scopeio_hline
+	generic map (
+		latency   => latency)
+	port map (
+		row => b"1000_0000",
+		clk => video_clk,
+		ena => grid_on,
+		x   => x,
+		y   => y,
+		dot => trigger_dot);
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (

@@ -78,10 +78,12 @@ window.addEventListener("load", function() {
 		var value;
 
 		value = 0;
-		e = document.getElementById("palette_id");
-		value |= (parseInt(e.value) & 0x7);
 		e = document.getElementById("palette_color");
-		value |= ((parseInt(e.value) & 0x7) << 3);
+		value |= ((parseInt(e.value) & ((1<<3)-1)) << 4);
+
+		e = document.getElementById("palette_id");
+		value |= ((parseInt(e.value) & ((1<<4)-1)) << 0);
+
 		data.push(value & 0xff);
 
 		send(data);
@@ -116,14 +118,15 @@ window.addEventListener("load", function() {
 		var value;
 
 		value = 0;
+		e = document.getElementById("trigger");
+		value |= ((parseInt(e.value) & ((1 << 9)-1)) << 2);
+		console.log(value);
+
 		e = document.getElementById("trigger_enable");
-		value |= ((parseInt(e.value) << 0) & 0x1);
+		value |= ((parseInt(e.value) & ((1 << 1)-1)) << 0);
 
 		e = document.getElementById("trigger_slope");
-		value |= ((parseInt(e.value) << 1) & 0x2);
-
-		e = document.getElementById("trigger");
-		value |= ((parseInt(e.value) << 2) & 0xfffc);
+		value |= ((parseInt(e.value) & ((1 << 1)-1)) << 1);
 
 		data.push((value >> 8) & 0xff);
 		data.push((value >> 0) & 0xff);
