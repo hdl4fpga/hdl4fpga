@@ -7,16 +7,18 @@ use hdl4fpga.std.all;
 
 entity scopeio_trigger is
 	generic (
-		inputs         : natural);
+		inputs           : natural);
 	port (
-		input_clk      : in  std_logic;
-		input_ena      : in  std_logic;
-		input_data     : in  std_logic_vector;
-		trigger_ena    : in  std_logic;
-		trigger_chanid : in  std_logic_vector;
-		trigger_edge   : in  std_logic;
-		trigger_level  : in  std_logic_vector;
-		trigger_shot   : out std_logic);
+		input_clk        : in  std_logic;
+		input_ena        : in  std_logic;
+		input_data       : in  std_logic_vector;
+		trigger_ena      : in  std_logic;
+		trigger_chanid   : in  std_logic_vector;
+		trigger_edge     : in  std_logic;
+		trigger_level    : in  std_logic_vector;
+		trigger_shot     : out std_logic;
+		output_ena       : out std_logic;
+		output_data      : out std_logic_vector);
 
 end;
 
@@ -39,8 +41,25 @@ begin
 				lt := not ge;
 				ge := setif(signed(sample) >= signed(trigger_level));
 			end if;
-			sy := trigger_edge;
+			sy := not trigger_edge;
 		end if;
 	end process;
 
+	datalat_e : entity hdl4fpga.align
+	generic map (
+		n => input_data'length,
+		d => (input_data'range => 2))
+	port map (
+		clk => input_clk,
+		di  => input_data,
+		do  => output_data);
+
+	enalat_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => input_clk,
+		di(0) => input_ena,
+		do(0) => output_ena);
 end;

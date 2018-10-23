@@ -25,15 +25,17 @@ begin
 		if rising_edge(input_clk) then
 			if display_ena='0' and trigger_shot='1' then
 				output_ena <= '1';
-				cntr <= signed(factor);
+				cntr       <= signed(factor);
 			else
-				output_ena <= cntr(cntr'left) and input_ena;
 				if input_ena='1' then
 					if cntr(cntr'left)='1' then
 						cntr <= signed(factor);
 					else
 						cntr <= cntr - 1;
 					end if;
+					output_ena <= cntr(cntr'left);
+				else
+					output_ena <= '0';
 				end if;
 			end if;
 		end if;

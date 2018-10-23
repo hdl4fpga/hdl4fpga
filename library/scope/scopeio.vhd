@@ -86,6 +86,8 @@ architecture beh of scopeio is
 	signal downsample_data   : std_logic_vector(input_data'range);
 	signal ampsample_ena     : std_logic;
 	signal ampsample_data    : std_logic_vector(input_data'range);
+	signal triggersample_ena  : std_logic;
+	signal triggersample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal resizesample_ena  : std_logic;
 	signal resizesample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 
@@ -238,47 +240,46 @@ begin
 		ampsample_ena <= output_ena(0);
 	end block;
  
-	resizesample_ena <= ampsample_ena;
-	resize_p : process (ampsample_data)
-		variable aux1 : unsigned(0 to storage_word'length*inputs-1);
-		variable aux2 : unsigned(0 to ampsample_data'length-1);
-	begin
-		aux1 := (others => '-');
-		aux2 := unsigned(ampsample_data);
-		for i in 0 to inputs-1 loop
-			aux1(storage_word'range) := aux2(storage_word'range);
-			aux1 := aux1 rol storage_word'length;
-			aux2 := aux2 rol ampsample_data'length/inputs;
-		end loop;
-		resizesample_data <= std_logic_vector(aux1);
-	end process;
-
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)
 	port map (
 		input_clk      => input_clk,
-		input_ena      => resizesample_ena,
-		input_data     => resizesample_data,
+		input_ena      => ampsample_ena,
+		input_data     => ampsample_data,
 		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
-		trigger_shot   => trigger_shot);
+		trigger_shot   => trigger_shot,
+		output_ena     => triggersample_ena,
+		output_data    => triggersample_data);
 
---	downsampler_e : entity hdl4fpga.scopeio_downsampler
---	port map (
---		factor       => hz_scale,
---		input_clk    => input_clk,
---		input_ena    => resizesample_ena,
---		input_data   => resizesample_data,
---		trigger_shot => trigger_shot,
---		display_ena  => video_frm,
---		output_ena   => downsample_ena,
---		output_data  => downsample_data);
+	resize_p : process (triggersample_data)
+		variable aux1 : unsigned(0 to storage_word'length*inputs-1);
+		variable aux2 : unsigned(0 to triggersample_data'length-1);
+	begin
+		aux1 := (others => '-');
+		aux2 := unsigned(triggersample_data);
+		for i in 0 to inputs-1 loop
+			aux1(storage_word'range) := aux2(storage_word'range);
+			aux1 := aux1 rol storage_word'length;
+			aux2 := aux2 rol triggersample_data'length/inputs;
+		end loop;
+		resizesample_data <= std_logic_vector(aux1);
+	end process;
+	resizesample_ena <= triggersample_ena;
 
-	downsample_ena  <= resizesample_ena;
-	downsample_data <= resizesample_data;
+	downsampler_e : entity hdl4fpga.scopeio_downsampler
+	port map (
+		factor       => hz_scale,
+		input_clk    => input_clk,
+		input_ena    => resizesample_ena,
+		input_data   => resizesample_data,
+		trigger_shot => trigger_shot,
+		display_ena  => video_frm,
+		output_ena   => downsample_ena,
+		output_data  => downsample_data);
 
 	storage_b : block
 
@@ -290,12 +291,22 @@ begin
 		signal rd_clk   : std_logic;
 		signal rd_addr  : std_logic_vector(wr_addr'range);
 		signal rd_data  : std_logic_vector(wr_data'range);
-
+		signal trigger_base : std_logic_vector(wr_addr'range);
 	begin
 
 		wr_clk  <= input_clk;
 		wr_ena  <= not wr_cntr(0) or not trigger_ena;
 		wr_data <= downsample_data;
+
+		trigger_base_e : entity hdl4fpga.align
+		generic map (
+			n => rd_addr'length,
+			d => (rd_addr'range => 1))
+		port map (
+			clk => wr_clk,
+			ena => downsample_ena,
+			di  => wr_addr,
+			do  => trigger_base);
 
 		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
@@ -319,7 +330,7 @@ begin
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
 				if video_frm='0' and trigger_shot='1' then
-					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
+					trigger_addr <= std_logic_vector(unsigned(trigger_base) + unsigned(hz_offset));
 					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 				elsif wr_cntr(0)='0' then
 					if downsample_ena='1' then
@@ -330,6 +341,7 @@ begin
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
 			end if;
+
 		end process;
 
 		rd_addr_e : entity hdl4fpga.align
