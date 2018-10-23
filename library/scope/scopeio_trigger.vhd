@@ -17,6 +17,7 @@ entity scopeio_trigger is
 		trigger_edge   : in  std_logic;
 		trigger_level  : in  std_logic_vector;
 		trigger_shot   : out std_logic);
+
 end;
 
 architecture beh of scopeio_trigger is
@@ -27,12 +28,18 @@ begin
 
 	sample <= word2byte(input_data, trigger_chanid, sample'length);
 	process (input_clk)
+		variable ge : std_logic;
+		variable lt : std_logic;
+		variable sy : std_logic;
 	begin
 		if rising_edge(input_clk) then
 			trigger_shot <= '0';
 			if trigger_ena='1' then
-				trigger_shot <= trigger_edge xnor setif(signed(sample) >= signed(trigger_level));
+				trigger_shot <= (lt and ge and not sy) or (not lt and not ge and sy);
+				lt := not ge;
+				ge := setif(signed(sample) >= signed(trigger_level));
 			end if;
+			sy := trigger_edge;
 		end if;
 	end process;
 

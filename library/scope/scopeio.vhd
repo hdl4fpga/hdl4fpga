@@ -266,16 +266,19 @@ begin
 		trigger_edge   => trigger_edge,
 		trigger_shot   => trigger_shot);
 
-	downsampler_e : entity hdl4fpga.scopeio_downsampler
-	port map (
-		factor       => hz_scale,
-		input_clk    => input_clk,
-		input_ena    => resizesample_ena,
-		input_data   => resizesample_data,
-		trigger_shot => trigger_shot,
-		display_ena  => video_frm,
-		output_ena   => downsample_ena,
-		output_data  => downsample_data);
+--	downsampler_e : entity hdl4fpga.scopeio_downsampler
+--	port map (
+--		factor       => hz_scale,
+--		input_clk    => input_clk,
+--		input_ena    => resizesample_ena,
+--		input_data   => resizesample_data,
+--		trigger_shot => trigger_shot,
+--		display_ena  => video_frm,
+--		output_ena   => downsample_ena,
+--		output_data  => downsample_data);
+
+	downsample_ena  <= resizesample_ena;
+	downsample_data <= resizesample_data;
 
 	storage_b : block
 

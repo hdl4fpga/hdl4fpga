@@ -170,7 +170,10 @@ begin
 			edge_id   => 1,
 			level_id  => trigger_level'length,
 			chanid_id => trigger_chanid'length);
+
+		signal level : signed(trigger_level'range);
 	begin
+		level <= -signed(bf(rgtr_data, level_id, trigger_bf));
 		process(clk)
 		begin
 			if rising_edge(clk) then
@@ -178,7 +181,7 @@ begin
 				if ena(trigger_enid)='1' then
 					trigger_ena    <= bf(rgtr_data, ena_id,    trigger_bf)(0);
 					trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
-					trigger_level  <= bf(rgtr_data, level_id,  trigger_bf);
+					trigger_level  <= std_logic_vector(level);
 					trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
 				end if;
 			end if;
