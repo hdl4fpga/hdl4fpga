@@ -60,8 +60,8 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 320, y => 270, width => 50*32, height => 256)),
-		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 320, y => 300, width => 15*32, height => 256)));
+		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 254, y => 270, width => 50*32, height => 256)),
+		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 254, y => 300, width => 15*32, height => 256)));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
@@ -516,10 +516,10 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => natural_vector'(0 => sgmnt.x-1,      1 => sgmnt.x-8*8-2, 2 => sgmnt.x-1),
-					y      => natural_vector'(0 => 0,              1 => 0,             2 => sgmnt.height+2),
-					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,           2 => sgmnt.width),
-					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height,  2 => 8))
+					x      => natural_vector'(0 => sgmnt.x,        1 => sgmnt.x+sgmnt.width+2, 2 => sgmnt.x),
+					y      => natural_vector'(0 => 0,              1 => 0,                     2 => sgmnt.height+2),
+					width  => natural_vector'(0 => sgmnt.width+1,  1 => 8*8,                   2 => sgmnt.width),
+					height => natural_vector'(0 => sgmnt.height+1, 1 => sgmnt.height,          2 => 8))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,

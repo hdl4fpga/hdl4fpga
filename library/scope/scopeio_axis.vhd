@@ -109,6 +109,7 @@ begin
 		signal code      : std_logic_vector(4-1 downto 0);
 		signal hz_bcd    : std_logic_vector(code'range);
 		signal vt_bcd    : std_logic_vector(code'range);
+		signal vt_code   : std_logic_vector(code'range);
 		signal hz_don    : std_logic;
 		signal vt_don    : std_logic;
 		signal char_dot  : std_logic;
@@ -145,7 +146,8 @@ begin
 		vt_tick <= y(vt_tick'range);
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
 		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
-		code    <= word2byte(hz_bcd & vt_bcd, vs_on);
+		vt_code <= vt_bcd when vt_bcd/=(vt_bcd'range => '1') or x(6-1 downto 5)/=b"0" else b"1110";
+		code    <= word2byte(hz_bcd & vt_code, vs_on);
 
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
