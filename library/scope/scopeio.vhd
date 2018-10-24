@@ -291,22 +291,12 @@ begin
 		signal rd_clk   : std_logic;
 		signal rd_addr  : std_logic_vector(wr_addr'range);
 		signal rd_data  : std_logic_vector(wr_data'range);
-		signal trigger_base : std_logic_vector(wr_addr'range);
+
 	begin
 
 		wr_clk  <= input_clk;
 		wr_ena  <= not wr_cntr(0) or not trigger_ena;
 		wr_data <= downsample_data;
-
-		trigger_base_e : entity hdl4fpga.align
-		generic map (
-			n => rd_addr'length,
-			d => (rd_addr'range => 1))
-		port map (
-			clk => wr_clk,
-			ena => downsample_ena,
-			di  => wr_addr,
-			do  => trigger_base);
 
 		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
@@ -330,7 +320,7 @@ begin
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
 				if video_frm='0' and trigger_shot='1' then
-					trigger_addr <= std_logic_vector(unsigned(trigger_base) + unsigned(hz_offset));
+					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
 					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 				elsif wr_cntr(0)='0' then
 					if downsample_ena='1' then
