@@ -12,7 +12,6 @@ entity scopeio_trigger is
 		input_clk        : in  std_logic;
 		input_ena        : in  std_logic;
 		input_data       : in  std_logic_vector;
-		trigger_ena      : in  std_logic;
 		trigger_chanid   : in  std_logic_vector;
 		trigger_edge     : in  std_logic;
 		trigger_level    : in  std_logic_vector;
@@ -35,12 +34,9 @@ begin
 		variable sy : std_logic;
 	begin
 		if rising_edge(input_clk) then
-			trigger_shot <= '0';
-			if trigger_ena='1' then
-				trigger_shot <= (lt and ge and not sy) or (not lt and not ge and sy);
-				lt := not ge;
-				ge := setif(signed(sample) >= signed(trigger_level));
-			end if;
+			trigger_shot <= (lt and ge and not sy) or (not lt and not ge and sy);
+			lt := not ge;
+			ge := setif(signed(sample) >= signed(trigger_level));
 			sy := not trigger_edge;
 		end if;
 	end process;

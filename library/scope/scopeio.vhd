@@ -97,6 +97,7 @@ architecture beh of scopeio is
 	signal storage_base : std_logic_vector(storage_addr'range);
 
 
+	signal capture_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
 
@@ -124,7 +125,7 @@ architecture beh of scopeio is
 	signal trigger_dv     : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_range);
 	signal trigger_edge   : std_logic;
-	signal trigger_ena    : std_logic;
+	signal trigger_freeze    : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
 begin
@@ -178,7 +179,7 @@ begin
 		gain_chanid    =>  gain_chanid,
 
 		trigger_dv     => trigger_dv,
-		trigger_ena    => trigger_ena,
+		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge);
@@ -247,7 +248,6 @@ begin
 		input_clk      => input_clk,
 		input_ena      => ampsample_ena,
 		input_data     => ampsample_data,
-		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
@@ -283,21 +283,29 @@ begin
 
 	storage_b : block
 
-		signal wr_clk   : std_logic;
-		signal wr_ena   : std_logic;
-		signal wr_addr  : std_logic_vector(storage_addr'range);
-		signal wr_cntr  : unsigned(0 to wr_addr'length+1);
-		signal wr_data  : std_logic_vector(0 to storage_word'length*inputs-1);
-		signal rd_clk   : std_logic;
-		signal rd_addr  : std_logic_vector(wr_addr'range);
-		signal rd_data  : std_logic_vector(wr_data'range);
+		signal wr_clk    : std_logic;
+		signal wr_ena    : std_logic;
+		signal wr_addr   : std_logic_vector(storage_addr'range);
+		signal wr_cntr   : unsigned(0 to wr_addr'length+1);
+		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
+		signal rd_clk    : std_logic;
+		signal rd_addr   : std_logic_vector(wr_addr'range);
+		signal rd_data   : std_logic_vector(wr_data'range);
 		signal free_shot : std_logic;
+		signal sync_tf   : std_logic;
 
 	begin
 
 		wr_clk  <= input_clk;
-		wr_ena  <= not wr_cntr(0) or not trigger_ena or free_shot;
+		wr_ena  <= (not wr_cntr(0) or free_shot) and not sync_tf;
 		wr_data <= downsample_data;
+
+		process(wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				sync_tf <= trigger_freeze;
+			end if;
+		end process;
 
 		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
@@ -321,15 +329,17 @@ begin
 --				end if;
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
+				free_shot <= '0';
 				if sync_videofrm='0' and trigger_shot='0' then
 					free_shot <= '1';
-				else
-					free_shot <= '0';
 				end if;
 
-				if sync_videofrm='0' and trigger_shot='1' then
-					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
+				if sync_tf='1' then
+					capture_addr <= std_logic_vector(unsigned(trigger_addr) + unsigned(hz_offset));
+				elsif sync_videofrm='0' and trigger_shot='1' then
+					capture_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
 					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
+					trigger_addr <= wr_addr;
 				elsif wr_cntr(0)='0' then
 					if downsample_ena='1' then
 						wr_cntr <= wr_cntr - 1;
@@ -338,6 +348,7 @@ begin
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
+
 				sync_videofrm := video_frm;
 			end if;
 
@@ -555,7 +566,7 @@ begin
 					end loop;
 					storage_base <= std_logic_vector(base);
 				end process;
-				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(trigger_addr));
+				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(capture_addr));
 
 				latency_b : block
 				begin

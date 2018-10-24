@@ -29,7 +29,7 @@ entity scopeio_rgtr is
 		gain_chanid   : out std_logic_vector;
 
 		trigger_dv      : out std_logic;
-		trigger_ena     : out std_logic;
+		trigger_freeze  : out std_logic;
 		trigger_chanid  : out std_logic_vector;
 		trigger_level   : out std_logic_vector;
 		trigger_edge    : out std_logic);
@@ -179,7 +179,7 @@ begin
 			if rising_edge(clk) then
 				trigger_dv <= ena(trigger_enid);
 				if ena(trigger_enid)='1' then
-					trigger_ena    <= bf(rgtr_data, ena_id,    trigger_bf)(0);
+					trigger_freeze <= bf(rgtr_data, ena_id,    trigger_bf)(0);
 					trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
 					trigger_level  <= std_logic_vector(level);
 					trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
