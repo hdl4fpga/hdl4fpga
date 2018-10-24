@@ -111,6 +111,7 @@ architecture beh of scopeio is
 	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
+	signal hz_base        : std_logic_vector(axis_base'range);
 	signal hz_offset      : std_logic_vector(9-1 downto 0);
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
@@ -167,6 +168,7 @@ begin
 		axis_base      => axis_base,
 		axis_sel       => axis_sel,
 		hz_scale       => hz_scale,
+		hz_base        => hz_base,
 		hz_offset      => hz_offset,
 		vt_offset      => vt_offset,
 	
@@ -286,13 +288,14 @@ begin
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
 		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : unsigned(0 to wr_addr'length+1);
+		signal wr_cntr   : signed(0 to wr_addr'length+1);
 		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk    : std_logic;
 		signal rd_addr   : std_logic_vector(wr_addr'range);
 		signal rd_data   : std_logic_vector(wr_data'range);
 		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
+		signal hz_delay  : signed(hz_base'length+hz_offset'length-1 downto 0);
 
 	begin
 
@@ -307,6 +310,7 @@ begin
 			end if;
 		end process;
 
+		hz_delay <= signed(std_logic_vector'(hz_base & hz_offset));
 		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
 			variable sync_videofrm : std_logic;
@@ -335,10 +339,10 @@ begin
 				end if;
 
 				if sync_tf='1' then
-					capture_addr <= std_logic_vector(unsigned(trigger_addr) + unsigned(hz_offset));
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
 				elsif sync_videofrm='0' and trigger_shot='1' then
-					capture_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
-					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
+					wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
 					trigger_addr <= wr_addr;
 				elsif wr_cntr(0)='0' then
 					if downsample_ena='1' then
