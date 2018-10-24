@@ -291,15 +291,17 @@ begin
 		signal rd_clk   : std_logic;
 		signal rd_addr  : std_logic_vector(wr_addr'range);
 		signal rd_data  : std_logic_vector(wr_data'range);
+		signal free_shot : std_logic;
 
 	begin
 
 		wr_clk  <= input_clk;
-		wr_ena  <= not wr_cntr(0) or not trigger_ena;
+		wr_ena  <= not wr_cntr(0) or not trigger_ena or free_shot;
 		wr_data <= downsample_data;
 
 		rd_clk  <= video_clk;
 		gen_addr_p : process (wr_clk)
+			variable sync_videofrm : std_logic;
 		begin
 			if rising_edge(wr_clk) then
 
@@ -319,7 +321,13 @@ begin
 --				end if;
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
-				if video_frm='0' and trigger_shot='1' then
+				if sync_videofrm='0' and trigger_shot='0' then
+					free_shot <= '1';
+				else
+					free_shot <= '0';
+				end if;
+
+				if sync_videofrm='0' and trigger_shot='1' then
 					trigger_addr <= std_logic_vector(unsigned(wr_addr) + unsigned(hz_offset));
 					wr_cntr      <= resize(unsigned(hz_offset), wr_cntr'length)+(2**wr_addr'length-1);
 				elsif wr_cntr(0)='0' then
@@ -330,6 +338,7 @@ begin
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
+				sync_videofrm := video_frm;
 			end if;
 
 		end process;
