@@ -43,25 +43,32 @@ architecture beh of scopeio is
 	subtype gainid_range is natural range unsigned_num_bits(vt_gain'length-1)-1 downto 0;
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
-	type square is record
-		x      : natural;
-		y      : natural;
-		width  : natural;
-		height : natural;
-	end record;
 
+	constant grid_unit : natural := 32;
 	type video_layout is record 
 		mode        : natural;
 		scr_width   : natural;
 		num_of_seg  : natural;
-		sgmnt       : square;
+		grid_width  : natural;
+		grid_height : natural;
+		hz_height   : natural;
+		vt_width    : natural;
 	end record;
+
+	function sgmnt_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return ((vl.grid_height*gu+1)+1+vl.hz_height)+1;
+	end;
 
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 254, y => 270, width => 50*32, height => 257)),
-		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 254, y => 300, width => 15*32, height => 257)));
+		--   mode | scr_width | num_of_seg | grid_width | grid_height
+		(0 =>    7,       1920,           4,         50,            8),
+		(1 =>    1,        800,           2,         15,            8));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
@@ -92,7 +99,7 @@ architecture beh of scopeio is
 	signal resizesample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 
 	constant storage_size : natural := unsigned_num_bits(
-		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).sgmnt.width-1);
+		vlayout_tab(vlayout_id).num_of_seg*vlayout_tab(vlayout_id).grid_width*grid_unit-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
 	signal storage_base : std_logic_vector(storage_addr'range);
 
@@ -429,7 +436,7 @@ begin
 
 		graphics_b : block
 
-			function to_naturalvector (
+			impure function to_naturalvector (
 				constant vlayout : video_layout;
 				constant param   : natural range 0 to 3)
 				return natural_vector is
@@ -440,11 +447,11 @@ begin
 					when 0 =>
 						rval(i) := 0;
 					when 1 => 
-						rval(i) := vlayout.sgmnt.y*i;
+						rval(i) := (((vlayout.grid_height*grid_unit+1)+1+vlayout.hz_height)+1)*i;
 					when 2 => 
 						rval(i) := vlayout.scr_width;
 					when 3 => 
-						rval(i) := vlayout.sgmnt.y-1;
+						rval(i) := (vlayout.grid_height*grid_unit+1)+1+(vlayout.hz_height+1);
 					end case;
 				end loop;
 				return rval;
@@ -476,14 +483,13 @@ begin
 			pfrm <= not setif(win_frm=(win_frm'range => '0'));
 
 			sgmnt_b : block
-				constant sgmnt : square := vlayout_tab(vlayout_id).sgmnt;
 
-				signal pwin_y  : std_logic_vector(unsigned_num_bits(sgmnt.y-1)-1 downto 0);
+				signal pwin_y  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).y-1)-1 downto 0);
 				signal pwin_x  : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).scr_width-1)-1 downto 0);
 				signal p_hzl   : std_logic;
 
-				signal win_x   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width-1)-1  downto 0);
-				signal win_y   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height-1)-1  downto 0);
+				signal win_x   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.width+1-1)-1  downto 0);
+				signal win_y   : std_logic_vector(unsigned_num_bits(vlayout_tab(vlayout_id).sgmnt.height+1-1)-1  downto 0);
 				signal x       : std_logic_vector(win_x'range);
 				signal y       : std_logic_vector(win_y'range);
 				signal cfrm    : std_logic_vector(0 to 3-1);
