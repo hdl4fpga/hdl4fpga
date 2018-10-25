@@ -104,7 +104,7 @@ begin
 	trigger_b : block 
 		signal row : signed(trigger_level'range);
 	begin
-		row <= signed(trigger_level)+2**(y'length-1);
+		row <= signed(trigger_level)+2**(y'length-2);
 		trigger_e : entity hdl4fpga.scopeio_hline
 		generic map (
 			latency   => latency)

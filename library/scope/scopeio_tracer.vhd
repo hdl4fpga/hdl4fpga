@@ -36,7 +36,7 @@ begin
 			sample <= std_logic_vector(aux);
 		end process;
 
-		row1 <= std_logic_vector(resize(unsigned(y),sample'length)+to_unsigned(2**(y'length-1), sample'length));
+		row1 <= std_logic_vector(resize(unsigned(y),sample'length)+to_unsigned(2**(y'length-2), sample'length));
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		generic map (

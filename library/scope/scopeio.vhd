@@ -60,8 +60,8 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 254, y => 270, width => 50*32, height => 256)),
-		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 254, y => 300, width => 15*32, height => 256)));
+		0 => (mode => 7, scr_width => 1920, num_of_seg => 4, sgmnt => (x => 254, y => 270, width => 50*32, height => 257)),
+		1 => (mode => 1, scr_width =>  800, num_of_seg => 2, sgmnt => (x => 254, y => 300, width => 15*32, height => 257)));
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;

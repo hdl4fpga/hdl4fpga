@@ -125,7 +125,7 @@ begin
 			if rising_edge(video_clk) then
 				x <= std_logic_vector(resize(unsigned(video_hcntr), x'length));
 				if hz_on='1' then
-					x <= std_logic_vector(resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset));
+					x <= std_logic_vector(resize(signed(video_hcntr), x'length) + signed(hz_offset));
 				end if;
 				hs_on <= hz_on;
 			end if;
@@ -134,9 +134,9 @@ begin
 		y_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				y <= std_logic_vector(resize(unsigned(video_vcntr), y'length));
+				y <= std_logic_vector(resize(signed(video_vcntr), y'length));
 				if vt_on='1' then
-					y <= std_logic_vector(resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset));
+					y <= std_logic_vector(resize(signed(video_vcntr), y'length) + signed(vt_offset));
 				end if;
 				vs_on <= vt_on;
 			end if;
@@ -145,8 +145,8 @@ begin
 		hz_tick <= x(hz_tick'range);
 		vt_tick <= y(vt_tick'range);
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
-		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
-		vt_code <= vt_bcd when vt_bcd/=(vt_bcd'range => '1') or x(6-1 downto 5)/=b"0" else b"1110";
+		vt_bcd  <= word2byte(std_logic_vector(unsigned(vt_val) rol 2*code'length), x(6-1 downto 3), code'length);
+		vt_code <= vt_bcd when vt_bcd/=(vt_bcd'range => '1') or x(6-1 downto 4)/=b"00" else b"1110";
 		code    <= word2byte(hz_bcd & vt_code, vs_on);
 
 		rom_e : entity hdl4fpga.cga_rom
