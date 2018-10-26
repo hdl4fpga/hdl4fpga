@@ -58,6 +58,11 @@ architecture beh of scopeio is
 		margin     : natural;
 	end record;
 
+	function vt_y      (constant vl : video_layout) return natural;
+	function vt_x      (constant vl : video_layout) return natural;
+	function vt_width  (constant vl : video_layout) return natural;
+	function vt_height (constant vl : video_layout) return natural;
+
 	function sgmnt_margin (
 		constant vl : video_layout)
 		return natural is
@@ -77,7 +82,7 @@ architecture beh of scopeio is
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height);
+		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height)+2*sgmnt_margin(vl);
 	end;
 
 	function sgmnt_width (
@@ -85,7 +90,7 @@ architecture beh of scopeio is
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return ((vl.gu_width*gu+1)+1+vl.vt_width)+1;
+		return vl.vt_width+1+sgmnt_padding(vl)+(vl.gu_width*gu+1)+2*sgmnt_margin(vl);
 	end;
 
 	function grid_x (
@@ -93,14 +98,14 @@ architecture beh of scopeio is
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return vl.vt_width+1+sgmnt_padding(vl)+sgmnt_padding(vl);
+		return vt_x(vl)+vt_width(vl)+1+sgmnt_padding(vl);
 	end;
 
 	function grid_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return 0+sgmnt_padding(vl);
+		return vt_y(vl);
 	end;
 
 	function grid_width (
@@ -123,14 +128,14 @@ architecture beh of scopeio is
 		constant vl : video_layout)
 		return natural is
 	begin
-		return 0+sgmnt_padding(vl);
+		return sgmnt_margin(vl)+0;
 	end;
 
 	function vt_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return 0+sgmnt_padding(vl);
+		return sgmnt_margin(vl)+0;
 	end;
 
 	function vt_width (
@@ -151,14 +156,14 @@ architecture beh of scopeio is
 		constant vl : video_layout)
 		return natural is
 	begin
-		return grid_x(vl)+sgmnt_padding(vl);
+		return grid_x(vl);
 	end;
 
 	function hz_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return grid_height(vl)+1+sgmnt_padding(vl);
+		return grid_y(vl)+grid_height(vl)+1+sgmnt_padding(vl);
 	end;
 
 	function hz_width (
@@ -179,8 +184,8 @@ architecture beh of scopeio is
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
 		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | padding | margin
-		0 => (    7,       1920,           4,          50,            8,          8,       8*8,        1,       1),
-		1 => (    1,        800,           2,          15,            8,          8,       8*8,        1,       1));
+		0 => (    7,       1920,           4,          50,            8,          8,       8*8,        0,       1),
+		1 => (    1,        800,           2,          15,            8,          8,       8*8,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	signal video_hs         : std_logic;
@@ -235,7 +240,7 @@ architecture beh of scopeio is
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to 4-1);
+	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+7-1)-1);
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
@@ -430,7 +435,7 @@ begin
 		end process;
 
 		hz_delay <= signed(std_logic_vector'(hz_base & hz_offset));
-		rd_clk  <= video_clk;
+		rd_clk   <= video_clk;
 		gen_addr_p : process (wr_clk)
 			variable sync_videofrm : std_logic;
 		begin
@@ -508,7 +513,7 @@ begin
 
 	 video_b : block
 
-		constant vgaio_latency : natural := storage_data'length+4+4+2;
+		constant vgaio_latency : natural := storage_data'length+4+4+(2+1);
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
@@ -559,7 +564,7 @@ begin
 					when 0 =>
 						rval(i) := 0;
 					when 1 => 
-						rval(i) := i*(sgmnt_height(vl)+sgmnt_margin(vl)+1);
+						rval(i) := i*(sgmnt_height(vl)+1);
 					when 2 => 
 						rval(i) := vl.scr_width;
 					when 3 => 
@@ -786,30 +791,31 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		generic map (
-			traces_fg   => std_logic_vector'("010"),
-			trigger_fg  => std_logic_vector'("111"), 
-			grid_fg     => std_logic_vector'("100"), 
+			traces_fg   => std_logic_vector'("000"),
+			trigger_fg  => std_logic_vector'("000"), 
+			grid_fg     => std_logic_vector'("000"), 
 			grid_bg     => std_logic_vector'("000"), 
-			hz_fg       => std_logic_vector'("111"),
+			hz_fg       => std_logic_vector'("000"),
 			hz_bg       => std_logic_vector'("000"), 
-			vt_fg       => std_logic_vector'("111"),
+			vt_fg       => std_logic_vector'("000"),
 			vt_bg       => std_logic_vector'("000"), 
-			bk_gd       => std_logic_vector'("000"))
+			bk_gd       => std_logic_vector'("111"))
 		port map (
-			wr_clk      => si_clk,
-			wr_req      => palette_dv,
-			wr_palette  => palette_id,
-			wr_color    => palette_color,
-			video_clk   => video_clk,
-			traces_dots => traces_dots, 
-			trigger_dot => trigger_dot,
-			grid_dot    => grid_dot,
-			grid_bgon   => grid_bgon,
-			hz_dot      => hz_dot,
-			hz_bgon     => hz_bgon,
-			vt_dot      => vt_dot,
-			vt_bgon     => vt_bgon,
-			video_color => video_color);
+			wr_clk         => si_clk,
+			wr_dv          => palette_dv,
+			wr_palette     => palette_id,
+			wr_color       => palette_color,
+			video_clk      => video_clk,
+			traces_dots    => traces_dots, 
+			trigger_dot    => trigger_dot,
+			trigger_chanid => trigger_chanid,
+			grid_dot       => grid_dot,
+			grid_bgon      => grid_bgon,
+			hz_dot         => hz_dot,
+			hz_bgon        => hz_bgon,
+			vt_dot         => vt_dot,
+			vt_bgon        => vt_bgon,
+			video_color    => video_color);
 	end block;
 
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;

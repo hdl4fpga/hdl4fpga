@@ -107,7 +107,7 @@ begin
 		row <= signed(trigger_level)+2**(y'length-2);
 		trigger_e : entity hdl4fpga.scopeio_hline
 		generic map (
-			latency   => latency)
+			latency   => latency-2)
 		port map (
 			row => std_logic_vector(row),
 			clk => video_clk,

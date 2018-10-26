@@ -138,9 +138,9 @@ package std is
 		return std_logic_vector;
 
 	function primux (
-		constant inp : std_logic_vector;
-		constant ena : std_logic_vector;
-		constant def : std_logic_vector := (0 to 0 => '-'))
+		constant inp  : std_logic_vector;
+		constant ena  : std_logic_vector;
+		constant def  : std_logic_vector := (0 to 0 => '-'))
 		return std_logic_vector;
 
 	function word2byte (
@@ -728,11 +728,11 @@ package body std is
 	end;
 
 	function primux (
-		constant inp : std_logic_vector;
-		constant ena : std_logic_vector;
-		constant def : std_logic_vector := (0 to 0 => '-'))
+		constant inp  : std_logic_vector;
+		constant ena  : std_logic_vector;
+		constant def  : std_logic_vector := (0 to 0 => '-'))
 		return std_logic_vector is
-		constant size : natural := (inp'length+ena'length-1)/ena'length;
+		variable size : natural := (inp'length+ena'length-1)/ena'length;
 		variable aux  : unsigned(0 to size*ena'length-1);
 	begin
 		aux(0 to inp'length-1) := unsigned(inp);
@@ -1105,10 +1105,8 @@ package body std is
 		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
 		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
 	begin
-		if data'length > 0 then
-			retval_right(0 to data'length-1)    := data;
-			retval_left(data'length-1 downto 0) := data;
-		end if;
+		retval_right(0 to data'length-1)    := data;
+		retval_left(data'length-1 downto 0) := data;
 		if right then
 			return retval_right;
 		end if;
@@ -1124,10 +1122,8 @@ package body std is
 		variable retval_right : string(1 to size)     := (others => value);
 		variable retval_left  : string(size downto 1) := (others => value);
 	begin
-		if data'length > 0 then
-			retval_right(1 to data'length)    := data;
-			retval_left(data'length downto 1) := data;
-		end if;
+		retval_right(1 to data'length)    := data;
+		retval_left(data'length downto 1) := data;
 		if right then
 			return retval_right;
 		end if;
