@@ -54,33 +54,9 @@ architecture beh of scopeio is
 		gu_height  : natural;
 		hz_height  : natural;
 		vt_width   : natural;
-		space      : natural;
 		padding    : natural;
 		margin     : natural;
 	end record;
-
-	function sgmnt_height (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return ((vl.gu_height*gu+1)+1+vl.hz_height);
-	end;
-
-	function sgmnt_width (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return ((vl.gu_width*gu+1)+1+vl.vt_width)+1;
-	end;
-
-	function sgmnt_space (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.space;
-	end;
 
 	function sgmnt_margin (
 		constant vl : video_layout)
@@ -96,12 +72,35 @@ architecture beh of scopeio is
 		return vl.padding;
 	end;
 
+	function sgmnt_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height);
+	end;
+
+	function sgmnt_width (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return ((vl.gu_width*gu+1)+1+vl.vt_width)+1;
+	end;
+
 	function grid_x (
 		constant vl : video_layout;
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return vl.vt_width+1+sgmnt_space(vl);
+		return vl.vt_width+1+sgmnt_padding(vl)+sgmnt_padding(vl);
+	end;
+
+	function grid_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return 0+sgmnt_padding(vl);
 	end;
 
 	function grid_width (
@@ -124,14 +123,14 @@ architecture beh of scopeio is
 		constant vl : video_layout)
 		return natural is
 	begin
-		return 0;
+		return 0+sgmnt_padding(vl);
 	end;
 
 	function vt_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return 0;
+		return 0+sgmnt_padding(vl);
 	end;
 
 	function vt_width (
@@ -152,14 +151,14 @@ architecture beh of scopeio is
 		constant vl : video_layout)
 		return natural is
 	begin
-		return grid_x(vl)+sgmnt_space(vl);
+		return grid_x(vl)+sgmnt_padding(vl);
 	end;
 
 	function hz_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return grid_height(vl)+1+sgmnt_space(vl);
+		return grid_height(vl)+1+sgmnt_padding(vl);
 	end;
 
 	function hz_width (
@@ -179,9 +178,9 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | space | padding | margin
-		0 => (    7,       1920,           4,          50,            8,          8,       8*8,      0,        0,       1),
-		1 => (    1,        800,           2,          15,            8,          8,       8*8,      0,        0,       1));
+		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | padding | margin
+		0 => (    7,       1920,           4,          50,            8,          8,       8*8,        1,       1),
+		1 => (    1,        800,           2,          15,            8,          8,       8*8,        1,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	signal video_hs         : std_logic;
@@ -638,7 +637,7 @@ begin
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
 					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),        2 => hz_x(vlayout)),
-					y      => natural_vector'(0 => 0,                    1 => vt_y(vlayout),        2 => hz_y(vlayout)),
+					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),        2 => hz_y(vlayout)),
 					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),    2 => hz_width(vlayout)),
 					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout),   2 => hz_height(vlayout)))
 				port map (

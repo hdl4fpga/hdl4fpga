@@ -304,7 +304,7 @@ begin
 			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1')) and ena1;
 			row_eq   := setif(row1(row_dot'length-1 downto 0)=row_dot);
 			col_eq   := setif(col1(col_dot'length-1 downto 0)=col_dot);
-			draw_row := setif(row1(row_line'length+row_dot'length-1 downto 0)=row_line&row_dot);
+			draw_row := setif(row1(row_line'length+row_dot'length-1 downto 0)=row_line&row_dot) and col(col'right);
 			draw_col := setif(col1(col_line'length+col_dot'length-1 downto 0)=col_line&col_dot);
 			ena1     := ena;
 		end if;
