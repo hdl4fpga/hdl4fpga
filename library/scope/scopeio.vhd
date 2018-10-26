@@ -791,15 +791,15 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		generic map (
-			traces_fg   => std_logic_vector'("000"),
-			trigger_fg  => std_logic_vector'("000"), 
-			grid_fg     => std_logic_vector'("000"), 
+			traces_fg   => std_logic_vector'("010"),
+			trigger_fg  => std_logic_vector'("111"), 
+			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
-			hz_fg       => std_logic_vector'("000"),
+			hz_fg       => std_logic_vector'("111"),
 			hz_bg       => std_logic_vector'("000"), 
-			vt_fg       => std_logic_vector'("000"),
+			vt_fg       => std_logic_vector'("111"),
 			vt_bg       => std_logic_vector'("000"), 
-			bk_gd       => std_logic_vector'("111"))
+			bk_gd       => std_logic_vector'("000"))
 		port map (
 			wr_clk         => si_clk,
 			wr_dv          => palette_dv,
