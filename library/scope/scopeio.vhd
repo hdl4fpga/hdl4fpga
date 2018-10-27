@@ -162,8 +162,7 @@ architecture beh of scopeio is
 	end;
 
 	function text_x (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
+		constant vl : video_layout)
 		return natural is
 	begin
 		return grid_x(vl)+grid_width(vl)+1+sgmnt_padding(vl);
@@ -177,16 +176,14 @@ architecture beh of scopeio is
 	end;
 
 	function text_width (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
+		constant vl : video_layout)
 		return natural is
 	begin
 		return vl.text_width;
 	end;
 
 	function text_height (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
+		constant vl : video_layout)
 		return natural is
 	begin
 		return vl.gu_height*gu;
@@ -849,7 +846,7 @@ begin
 			hz_bg       => std_logic_vector'("000"), 
 			vt_fg       => std_logic_vector'("000"),
 			vt_bg       => std_logic_vector'("000"), 
-			text_bg    => std_logic_vector'("000"), 
+			text_bg     => std_logic_vector'("000"), 
 			sgmnt_bg    => std_logic_vector'("111"), 
 			bk_gd       => std_logic_vector'("010"))
 		port map (
