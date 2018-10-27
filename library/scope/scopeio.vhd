@@ -847,8 +847,8 @@ begin
 			vt_fg       => std_logic_vector'("111"),
 			vt_bg       => std_logic_vector'("001"), 
 			text_bg     => std_logic_vector'("100"), 
-			sgmnt_bg    => std_logic_vector'("001"), 
-			bk_gd       => std_logic_vector'("011"))
+			sgmnt_bg    => std_logic_vector'("011"), 
+			bk_gd       => std_logic_vector'("000"))
 		port map (
 			wr_clk         => si_clk,
 			wr_dv          => palette_dv,
