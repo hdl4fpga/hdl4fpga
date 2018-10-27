@@ -85,6 +85,8 @@ begin
 
 	hz_dv <= dv and not axis_sel;
 	hz_mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => (0 to 2**7*value'length-1 => '1'))
 	port map (
 		wr_clk  => in_clk,
 		wr_ena  => hz_dv,
@@ -96,6 +98,8 @@ begin
 
 	vt_dv <= dv and axis_sel;
 	vt_mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => (0 to 2**4*value'length-1 => '1'))
 	port map (
 		wr_clk  => in_clk,
 		wr_ena  => vt_dv,

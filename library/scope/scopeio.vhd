@@ -54,6 +54,8 @@ architecture beh of scopeio is
 		gu_height  : natural;
 		hz_height  : natural;
 		vt_width   : natural;
+		text_width : natural;
+		border     : natural;
 		padding    : natural;
 		margin     : natural;
 	end record;
@@ -70,6 +72,13 @@ architecture beh of scopeio is
 		return vl.margin;
 	end;
 
+	function sgmnt_border (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.border;
+	end;
+
 	function sgmnt_padding (
 		constant vl : video_layout)
 		return natural is
@@ -82,7 +91,7 @@ architecture beh of scopeio is
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height)+2*sgmnt_margin(vl);
+		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height)+2*sgmnt_border(vl);
 	end;
 
 	function sgmnt_width (
@@ -90,7 +99,7 @@ architecture beh of scopeio is
 		constant gu : natural := grid_unit)
 		return natural is
 	begin
-		return vl.vt_width+1+sgmnt_padding(vl)+(vl.gu_width*gu+1)+2*sgmnt_margin(vl);
+		return vl.vt_width+1+sgmnt_padding(vl)+(vl.gu_width*gu+1)+2*sgmnt_border(vl);
 	end;
 
 	function grid_x (
@@ -128,14 +137,14 @@ architecture beh of scopeio is
 		constant vl : video_layout)
 		return natural is
 	begin
-		return sgmnt_margin(vl)+0;
+		return sgmnt_border(vl)+0;
 	end;
 
 	function vt_y (
 		constant vl : video_layout)
 		return natural is
 	begin
-		return sgmnt_margin(vl)+0;
+		return sgmnt_border(vl)+0;
 	end;
 
 	function vt_width (
@@ -150,6 +159,37 @@ architecture beh of scopeio is
 		return natural is
 	begin
 		return grid_height(vl);
+	end;
+
+	function text_x (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return grid_x(vl)+grid_width(vl)+1+sgmnt_padding(vl);
+	end;
+
+	function text_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vt_y(vl);
+	end;
+
+	function text_width (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.text_width;
+	end;
+
+	function text_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.gu_height*gu;
 	end;
 
 	function hz_x (
@@ -183,9 +223,9 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | padding | margin
-		0 => (    7,       1920,           4,          50,            8,          8,       8*8,        0,       1),
-		1 => (    1,        800,           2,          15,            8,          8,       8*8,        0,       1));
+		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | text_width | border | padding | margin
+		0 => (    7,       1920,           4,          50,            8,          8,       8*8,         8*8,       1,        0,       1),
+		1 => (    1,        800,           2,          15,            8,          8,       8*8,         8*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	signal video_hs         : std_logic;
@@ -240,7 +280,7 @@ architecture beh of scopeio is
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+8-1)-1);
+	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+9-1)-1);
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
@@ -523,6 +563,7 @@ begin
 		signal hz_bgon     : std_logic;
 		signal vt_dot      : std_logic;
 		signal vt_bgon     : std_logic;
+		signal text_bgon   : std_logic;
 		signal sgmnt_on    : std_logic;
 		signal sgmnt_bgon  : std_logic;
 	begin
@@ -564,11 +605,11 @@ begin
 				for i in 0 to vl.num_of_seg-1 loop
 					case param is
 					when 0 =>
-						rval(i) := 1+0;
+						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := 1+i*(sgmnt_height(vl)+2);
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
 					when 2 => 
-						rval(i) := vl.scr_width;
+						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 
 						rval(i) := sgmnt_height(vl)+1;
 					end case;
@@ -612,7 +653,7 @@ begin
 
 				signal x       : std_logic_vector(win_x'range);
 				signal y       : std_logic_vector(win_y'range);
-				signal cfrm    : std_logic_vector(0 to 3-1);
+				signal cfrm    : std_logic_vector(0 to 4-1);
 				signal cdon    : std_logic_vector(cfrm'range);
 				signal wena    : std_logic;
 				signal wfrm    : std_logic;
@@ -620,6 +661,7 @@ begin
 				signal grid_on : std_logic;
 				signal hz_on   : std_logic;
 				signal vt_on   : std_logic;
+				signal text_on : std_logic;
 
 			begin
 
@@ -643,10 +685,10 @@ begin
 
 				mngr_e : entity hdl4fpga.win_mngr
 				generic map (
-					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),        2 => hz_x(vlayout)),
-					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),        2 => hz_y(vlayout)),
-					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),    2 => hz_width(vlayout)),
-					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout),   2 => hz_height(vlayout)))
+					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout)),
+					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout)),
+					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout)),
+					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout)))
 				port map (
 					video_clk  => video_clk,
 					video_x    => pwin_x,
@@ -710,7 +752,8 @@ begin
 						di    => cdon,
 						do(0) => grid_on,
 						do(1) => vt_on,
-						do(2) => hz_on);
+						do(2) => hz_on,
+						do(3) => text_on);
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (
@@ -777,18 +820,20 @@ begin
 				sgmnt_on <= win_don(0) or win_don(1);
 				bg_e : entity hdl4fpga.align
 				generic map (
-					n => 4,
-					d => (0 to 3-1 => storage_data'length+2, 3 => storage_data'length+6))
+					n => 5,
+					d => (0 to 4-1 => storage_data'length+2, 4 => storage_data'length+6))
 				port map (
 					clk => video_clk,
 					di(0) => grid_on,
 					di(1) => hz_on,
 					di(2) => vt_on,
-					di(3) => sgmnt_on,
+					di(3) => text_on,
+					di(4) => sgmnt_on,
 					do(0) => grid_bgon,
 					do(1) => hz_bgon,
 					do(2) => vt_bgon,
-					do(3) => sgmnt_bgon);
+					do(3) => text_bgon,
+					do(4) => sgmnt_bgon);
 
 			end block;
 
@@ -821,6 +866,7 @@ begin
 			hz_bgon        => hz_bgon,
 			vt_dot         => vt_dot,
 			vt_bgon        => vt_bgon,
+			text_bgon      => text_bgon,
 			sgmnt_bgon     => sgmnt_bgon,
 			video_color    => video_color);
 	end block;
