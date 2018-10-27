@@ -79,10 +79,10 @@ window.addEventListener("load", function() {
 
 		value = 0;
 		e = document.getElementById("palette_color");
-		value |= ((parseInt(e.value) & ((1<<3)-1)) << 3);
+		value |= ((parseInt(e.value) & ((1<<3)-1)) << 4);
 
 		e = document.getElementById("palette_id");
-		value |= ((parseInt(e.value) & ((1<<3)-1)) << 0);
+		value |= ((parseInt(e.value) & ((1<<4)-1)) << 0);
 
 		data.push(value & 0xff);
 

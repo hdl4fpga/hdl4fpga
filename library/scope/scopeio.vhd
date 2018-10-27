@@ -240,7 +240,7 @@ architecture beh of scopeio is
 	signal vt_offset      : std_logic_vector(8-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+7-1)-1);
+	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+8-1)-1);
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
@@ -523,6 +523,8 @@ begin
 		signal hz_bgon     : std_logic;
 		signal vt_dot      : std_logic;
 		signal vt_bgon     : std_logic;
+		signal sgmnt_on    : std_logic;
+		signal sgmnt_bgon  : std_logic;
 	begin
 		video_e : entity hdl4fpga.video_vga
 		generic map (
@@ -562,13 +564,13 @@ begin
 				for i in 0 to vl.num_of_seg-1 loop
 					case param is
 					when 0 =>
-						rval(i) := 0;
+						rval(i) := 1+0;
 					when 1 => 
-						rval(i) := i*(sgmnt_height(vl)+1);
+						rval(i) := 1+i*(sgmnt_height(vl)+2);
 					when 2 => 
 						rval(i) := vl.scr_width;
 					when 3 => 
-						rval(i) := sgmnt_height(vl);
+						rval(i) := sgmnt_height(vl)+1;
 					end case;
 				end loop;
 				return rval;
@@ -772,18 +774,21 @@ begin
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 
+				sgmnt_on <= win_don(0) or win_don(1);
 				bg_e : entity hdl4fpga.align
 				generic map (
-					n => 3,
-					d => (0 to 3-1 => storage_data'length+2))
+					n => 4,
+					d => (0 to 3-1 => storage_data'length+2, 3 => storage_data'length+6))
 				port map (
 					clk => video_clk,
 					di(0) => grid_on,
 					di(1) => hz_on,
 					di(2) => vt_on,
+					di(3) => sgmnt_on,
 					do(0) => grid_bgon,
 					do(1) => hz_bgon,
-					do(2) => vt_bgon);
+					do(2) => vt_bgon,
+					do(3) => sgmnt_bgon);
 
 			end block;
 
@@ -791,15 +796,16 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		generic map (
-			traces_fg   => std_logic_vector'("010"),
-			trigger_fg  => std_logic_vector'("111"), 
-			grid_fg     => std_logic_vector'("100"), 
+			traces_fg   => std_logic_vector'("000"),
+			trigger_fg  => std_logic_vector'("000"), 
+			grid_fg     => std_logic_vector'("000"), 
 			grid_bg     => std_logic_vector'("000"), 
-			hz_fg       => std_logic_vector'("111"),
+			hz_fg       => std_logic_vector'("000"),
 			hz_bg       => std_logic_vector'("000"), 
-			vt_fg       => std_logic_vector'("111"),
+			vt_fg       => std_logic_vector'("000"),
 			vt_bg       => std_logic_vector'("000"), 
-			bk_gd       => std_logic_vector'("000"))
+			sgmnt_bg    => std_logic_vector'("111"), 
+			bk_gd       => std_logic_vector'("010"))
 		port map (
 			wr_clk         => si_clk,
 			wr_dv          => palette_dv,
@@ -815,6 +821,7 @@ begin
 			hz_bgon        => hz_bgon,
 			vt_dot         => vt_dot,
 			vt_bgon        => vt_bgon,
+			sgmnt_bgon     => sgmnt_bgon,
 			video_color    => video_color);
 	end block;
 

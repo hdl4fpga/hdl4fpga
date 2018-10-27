@@ -15,6 +15,7 @@ entity scopeio_palette is
 		hz_bg       : in  std_logic_vector;
 		vt_fg       : in  std_logic_vector;
 		vt_bg       : in  std_logic_vector;
+		sgmnt_bg    : in  std_logic_vector;
 		bk_gd       : in  std_logic_vector);
 	port (
 		wr_clk      : in  std_logic;
@@ -31,6 +32,7 @@ entity scopeio_palette is
 		hz_bgon     : in  std_logic;
 		vt_dot      : in  std_logic;
 		vt_bgon     : in  std_logic;
+		sgmnt_bgon   : in  std_logic;
 		traces_dots : in  std_logic_vector;
 		video_color : out std_logic_vector);
 end;
@@ -50,8 +52,8 @@ architecture beh of scopeio_palette is
 		return std_logic_vector(retval);
 	end;
 
-	constant paletteid_size : natural := unsigned_num_bits(traces_dots'length + 7 - 1); 
-	constant palette_ids    : std_logic_vector := id_codes(traces_dots'length + 7); 
+	constant paletteid_size : natural := unsigned_num_bits(traces_dots'length + 8 - 1); 
+	constant palette_ids    : std_logic_vector := std_logic_vector(unsigned(id_codes(traces_dots'length + 8)) ror paletteid_size*traces_dots'length); 
 
 	signal trace_on   : std_logic;
 	signal trigger_on : std_logic;
@@ -66,7 +68,7 @@ architecture beh of scopeio_palette is
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => traces_fg & grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & bk_gd)
+		bitrom => grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & sgmnt_bg & bk_gd & traces_fg)
 	port map (
 		wr_clk  => wr_clk,
 		wr_ena  => wr_dv,
@@ -97,7 +99,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			aux     := std_logic_vector(unsigned(palette_ids) rol paletteid_size*traces_dots'length);
-			fgbg_id <= primux(aux(0 to 7*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & '1');
+			fgbg_id <= primux(aux(0 to 8*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & sgmnt_bgon & '1');
 		end if;
 	end process;
 
