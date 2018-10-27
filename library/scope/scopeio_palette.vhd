@@ -8,7 +8,6 @@ use hdl4fpga.std.all;
 entity scopeio_palette is
 	generic (
 		traces_fg   : in  std_logic_vector;
-		trigger_fg  : in  std_logic_vector;
 		grid_fg     : in  std_logic_vector;
 		grid_bg     : in  std_logic_vector;
 		hz_fg       : in  std_logic_vector;
@@ -59,7 +58,7 @@ architecture beh of scopeio_palette is
 
 	signal trace_on   : std_logic;
 	signal trigger_on : std_logic;
-	signal fgbg_on    : std_logic := '1';
+	signal fgbg_on    : std_logic;
 	signal trace_id   : std_logic_vector(0 to paletteid_size-1);
 	signal trigger_id : std_logic_vector(trace_id'range);
 	signal fgbg_id    : std_logic_vector(trace_id'range);
@@ -108,6 +107,7 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
+			fgbg_on     <= '1';
 			rd_addr     <= primux(trace_id & trigger_id & fgbg_id, trace_on & trigger_on & fgbg_on);
 			video_color <= rd_data;
 		end if;
