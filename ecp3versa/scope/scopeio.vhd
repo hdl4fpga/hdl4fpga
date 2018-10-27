@@ -139,7 +139,7 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-1024, 1023, sample_size))
+		bitrom => sinctab(-1024+256, 1023+256, sample_size))
 	port map (
 		clk  => clk,
 		addr => input_addr,

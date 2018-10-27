@@ -148,7 +148,7 @@ begin
 		hz_tick <= x(hz_tick'range);
 		vt_tick <= y(vt_tick'range);
 		hz_bcd  <= word2byte(hz_val, x(6-1 downto 3), code'length);
-		vt_bcd  <= word2byte(vt_val, x(6-1 downto 3), code'length);
+		vt_bcd  <= word2byte(std_logic_vector(unsigned(vt_val) rol 2*code'length), x(6-1 downto 3), code'length);
 		code    <= word2byte(hz_bcd & vt_bcd, vs_on);
 
 		rom_e : entity hdl4fpga.cga_rom
