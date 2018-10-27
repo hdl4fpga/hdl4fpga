@@ -843,11 +843,11 @@ begin
 			grid_fg     => std_logic_vector'("100"), 
 			grid_bg     => std_logic_vector'("000"), 
 			hz_fg       => std_logic_vector'("111"),
-			hz_bg       => std_logic_vector'("000"), 
+			hz_bg       => std_logic_vector'("001"), 
 			vt_fg       => std_logic_vector'("111"),
-			vt_bg       => std_logic_vector'("000"), 
-			text_bg     => std_logic_vector'("000"), 
-			sgmnt_bg    => std_logic_vector'("001"), 
+			vt_bg       => std_logic_vector'("010"), 
+			text_bg     => std_logic_vector'("001"), 
+			sgmnt_bg    => std_logic_vector'("011"), 
 			bk_gd       => std_logic_vector'("111"))
 		port map (
 			wr_clk         => si_clk,
