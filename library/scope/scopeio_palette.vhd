@@ -15,6 +15,7 @@ entity scopeio_palette is
 		hz_bg       : in  std_logic_vector;
 		vt_fg       : in  std_logic_vector;
 		vt_bg       : in  std_logic_vector;
+		text_bg    : in  std_logic_vector;
 		sgmnt_bg    : in  std_logic_vector;
 		bk_gd       : in  std_logic_vector);
 	port (
@@ -69,7 +70,7 @@ architecture beh of scopeio_palette is
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & sgmnt_bg & bk_gd & traces_fg)
+		bitrom => grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & text_bg & sgmnt_bg & bk_gd & traces_fg)
 	port map (
 		wr_clk  => wr_clk,
 		wr_ena  => wr_dv,

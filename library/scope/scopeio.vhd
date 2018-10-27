@@ -849,6 +849,7 @@ begin
 			hz_bg       => std_logic_vector'("000"), 
 			vt_fg       => std_logic_vector'("000"),
 			vt_bg       => std_logic_vector'("000"), 
+			text_bg    => std_logic_vector'("000"), 
 			sgmnt_bg    => std_logic_vector'("111"), 
 			bk_gd       => std_logic_vector'("010"))
 		port map (
