@@ -275,9 +275,6 @@
         <Source name="../../library/scope/scopeio_grid.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../library/scope/scopeio_hline.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/scope/scopeio_miiudp.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
