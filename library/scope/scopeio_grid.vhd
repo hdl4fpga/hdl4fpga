@@ -26,8 +26,8 @@ architecture def of scopeio_grid is
 	signal hvdot : std_logic;
 begin
 
-	hena <= ena     when y(5-1 downto 0)=(5-1 downto 0 => '0') else '0';
-	hmask <= b"0001" when y(5-1 downto 3)=(5-1 downto 3 => '0') else b"1111";
+	hena <= ena     when y(4-1 downto 0)=(4-1 downto 0 => '0') else '0';
+	hmask <= b"0001" when y(5-1 downto 4)=(4-1 downto 3 => '0') else b"1111";
 	hzline_e : entity hdl4fpga.draw_line
 	port map (
 		ena  => hena,
@@ -35,8 +35,8 @@ begin
 		x    => x(5-1 downto 0),
 		dot  => hdot);
 
-	vena  <= ena    when x(3-1 downto 0)=(3-1 downto 0 => '0') else '0';
-	vmask <= b"0001" when x(5-1 downto 3)=(5-1 downto 3 => '0') else b"1111";
+	vena  <= ena    when x(4-1 downto 0)=(4-1 downto 0 => '0') else '0';
+	vmask <= b"0001" when x(5-1 downto 4)=(5-1 downto 4 => '0') else b"1111";
 	vtline_e : entity hdl4fpga.draw_line
 	port map (
 		ena  => vena,
