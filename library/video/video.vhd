@@ -52,7 +52,6 @@ architecture mix of video_timing_rom is
 		5 => (1680,  48,  32,  80),	 -- 1680x1050R@60Hz pclk 119.00MHz
 		6 => (1920,  48,  32,  80),	 -- 1920x1080R@60Hz pclk 138.50MHz
 		7 => (1920,  96,  56, 128),  -- 1920x1080R@60Hz pclk 148.50MHz
---		7 => (1920,  76,  128, 76),  -- 1920x1080R@60Hz pclk 148.50MHz
 		8 => (1920, 128, 200, 328)); -- 1920x1080R@60Hz pclk 173.00MHz
 
 	constant v_tab : natural_matrix (0 to 8, 3 downto 0) := (
@@ -269,86 +268,21 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity grid is
-	generic (
-		row_dot  : std_logic_vector := "000";
-		row_line : std_logic_vector := "00";
-		col_dot  : std_logic_vector := "000";
-		col_line : std_logic_vector := "00");
-	port(
-		clk : in  std_logic;
-		ena : in  std_logic := '1';
-		row : in  std_logic_vector;
-		col : in  std_logic_vector;
-		dot : out std_logic);
-end;
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-
-architecture def of grid is
-	signal row1 : std_logic_vector(row'length-1 downto 0);
-	signal col1 : std_logic_vector(col'length-1 downto 0);
-begin
-	row1 <= row;
-	col1 <= col;
-
-	process(clk) 
-		variable col_eq   : std_logic;
-		variable row_eq   : std_logic;
-		variable draw_row : std_logic;
-		variable draw_col : std_logic;
-		variable ena1     : std_logic;
-	begin
-		if rising_edge(clk) then
-			dot      <= setif(draw_row='1' or draw_col='1' or (row_eq='1' and col_eq='1')) and ena1;
-			row_eq   := setif(row1(row_dot'length-1 downto 0)=row_dot);
-			col_eq   := setif(col1(col_dot'length-1 downto 0)=col_dot);
-			draw_row := setif(row1(row_line'length+row_dot'length-1 downto 0)=row_line&row_dot) and col(col'right);
-			draw_col := setif(col1(col_line'length+col_dot'length-1 downto 0)=col_line&col_dot);
-			ena1     := ena;
-		end if;
-	end process;
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity draw_hline is
+entity draw_line is
 	port (
-		ena  : in  std_logic := '1';
-		mask : in  std_logic_vector;
-		x    : in  std_logic_vector; 
-		y    : in  std_logic_vector;
-		row  : in  std_logic_vector;
-		dot  : out std_logic);
+		ena   : in  std_logic := '1';
+		mask  : in  std_logic_vector; 
+		x     : in  std_logic_vector;
+		dot   : out std_logic);
 end;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of draw_hline is
+architecture def of draw_line is
+	constant min_len : natural := hdl4fpga.std.min(x'length, mask'length);
 begin
-	process (ena, mask, x, y, row)
-		variable auxx : unsigned(max(x'length,mask'length)-1 downto 0);
-		variable auxy : unsigned(max(y'length,row'length)-1 downto 0);
-	begin
-		auxx(mask'length-1 downto 0) := unsigned(mask);
-		auxx(x'length-1 downto 0)    := unsigned(x) and auxx(x'length-1 downto 0);
-
-		auxy(row'length-1 downto 0)  := unsigned(row);
-		auxy(y'length-1 downto 0)    := unsigned(y) xor auxy(y'length-1 downto 0);
-		
-		dot <= '0';
-		if ena='1' then
-			if auxy(hdl4fpga.std.min(y'length,row'length)-1 downto 0)=(hdl4fpga.std.min(y'length,row'length)-1 downto 0 => '0') then
-				if auxx(hdl4fpga.std.min(x'length,mask'length)-1 downto 0)=(hdl4fpga.std.min(x'length,mask'length)-1 downto 0 => '0') then
-					dot <= '1';
-				end if;
-			end if;
-		end if;
-	end process;
+	dot <= ena when (resize(unsigned(x), min_len) and resize(unsigned(mask),min_len))=(0 to min_len-1 => '0') else '0';
 end;
 
 library ieee;

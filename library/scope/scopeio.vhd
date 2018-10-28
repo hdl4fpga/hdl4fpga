@@ -785,7 +785,7 @@ begin
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					latency       => storage_data'length+4,
+					latency       => storage_data'length+2,
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
@@ -848,7 +848,7 @@ begin
 			vt_bg       => std_logic_vector'("001"), 
 			text_bg     => std_logic_vector'("000"), 
 			sgmnt_bg    => std_logic_vector'("011"), 
-			bk_gd       => std_logic_vector'("000"))
+			bk_gd       => std_logic_vector'("111"))
 		port map (
 			wr_clk         => si_clk,
 			wr_dv          => palette_dv,

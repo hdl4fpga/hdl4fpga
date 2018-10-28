@@ -68,7 +68,7 @@ begin
 		x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
-			latency => latency-2)
+			latency => latency)
 		port map (
 			clk  => video_clk,
 			ena  => grid_on,
@@ -79,7 +79,7 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency => latency-2)
+		latency => latency)
 	port map (
 		in_clk      => in_clk,
 
@@ -102,24 +102,34 @@ begin
 		video_vcntr => y);
 
 	trigger_b : block 
-		signal row : signed(trigger_level'range);
+		signal row : unsigned(trigger_level'range);
+		signal ena : std_logic;
+		signal hdot : std_logic;
 	begin
-		row <= signed(trigger_level)+2**(y'length-2);
-		trigger_e : entity hdl4fpga.scopeio_hline
-		generic map (
-			latency   => latency-2)
+		row <= unsigned(trigger_level)+2**(y'length-2);
+		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
+
+		hline_e : entity hdl4fpga.draw_line
 		port map (
-			row => std_logic_vector(row),
-			clk => video_clk,
-			ena => grid_on,
-			x   => x,
-			y   => y,
-			dot => trigger_dot);
+			ena   => ena,
+			mask  => b"1",
+			x     => x,
+			dot   => hdot);
+
+		align_e :entity hdl4fpga.align
+		generic map (
+			n => 1,
+			d => (0 => latency))
+		port map (
+			clk   => video_clk,
+			di(0) => hdot,
+			do(0) => trigger_dot);
+
 	end block;
 
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (
-		latency => latency-2,
+		latency => latency,
 		inputs  => inputs)
 	port map (
 		clk     => video_clk,
