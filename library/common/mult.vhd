@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity multp is
+entity mult is
 	port (
 		clk     : in  std_logic := '-';
 		ini     : in  std_logic := '1';
@@ -38,7 +38,7 @@ entity multp is
 		product : out std_logic_vector);
 end;
 
-architecture def of multp is
+architecture def of mult is
 
 	function mult_f (
 		constant accmltr : signed;
@@ -79,63 +79,63 @@ begin
 
 end;
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-
-entity mult is
-	port (
-		clk     : in  std_logic := '-';
-		ini     : in  std_logic := '1';
-		multand : in  std_logic_vector;
-		multier : in  std_logic_vector;
-		product : out std_logic_vector);
-end;
-
-architecture def of mult is
-
-	signal product_d : signed(0 to product'length-1);
-	signal accmltr_dg : signed(0 to multand'length-1);
-	signal accmltr_q : signed(accmltr_d'range);
-
-	procedure accy (
-		variable co  : out   std_logic;
-		variable op1 : inout unsigned;
-		constant op2 : in    unsigned;
-		constant ci  : in    std_logic) is
-		variable acc : signed(0 to accmltr'length+1);
-	begin
-			paccmltr := paccmltr + signed('0' & product_d(accmltr_d'range) & ci);
-	end;
-
-begin
-
-	multp_e : entity hdl4fpga.multp
-	port map (
-		clk     => clk,
-		ini     => 
-		accmltr => accmltr_dg,
-		multand => multand_dg,
-		multier => multier_dg,
-		product => product_dg);
-
-	process
-	process(clk)
-		variable ci : std_logic;
-		variable co : std_logic;
-		variable paccmultr : signed(0 to accmltr'length+1);
-	begin
-		if rising_edge(clk) then
-			paccmltr := (others => '0')
-			paccmltr(multa'range
-			paccmltr := paccmltr + signed('0' & product_d(accmltr_d'range) & ci);
-			:= paccmltr(1 to l
-		end if;
-	end process;
-	product <= std_logic_vector(product_d);
-
-end;
-
+--library ieee;
+--use ieee.std_logic_1164.all;
+--use ieee.numeric_std.all;
+--
+--library hdl4fpga;
+--use hdl4fpga.std.all;
+--
+--entity mult is
+--	port (
+--		clk     : in  std_logic := '-';
+--		ini     : in  std_logic := '1';
+--		multand : in  std_logic_vector;
+--		multier : in  std_logic_vector;
+--		product : out std_logic_vector);
+--end;
+--
+--architecture def of mult is
+--
+--	signal product_d : signed(0 to product'length-1);
+--	signal accmltr_dg : signed(0 to multand'length-1);
+--	signal accmltr_q : signed(accmltr_d'range);
+--
+--	procedure accy (
+--		variable co  : out   std_logic;
+--		variable op1 : inout unsigned;
+--		constant op2 : in    unsigned;
+--		constant ci  : in    std_logic) is
+--		variable acc : signed(0 to accmltr'length+1);
+--	begin
+--			paccmltr := paccmltr + signed('0' & product_d(accmltr_d'range) & ci);
+--	end;
+--
+--begin
+--
+--	multp_e : entity hdl4fpga.multp
+--	port map (
+--		clk     => clk,
+--		ini     => 
+--		accmltr => accmltr_dg,
+--		multand => multand_dg,
+--		multier => multier_dg,
+--		product => product_dg);
+--
+--	process
+--	process(clk)
+--		variable ci : std_logic;
+--		variable co : std_logic;
+--		variable paccmultr : signed(0 to accmltr'length+1);
+--	begin
+--		if rising_edge(clk) then
+--			paccmltr := (others => '0')
+--			paccmltr(multa'range
+--			paccmltr := paccmltr + signed('0' & product_d(accmltr_d'range) & ci);
+--			:= paccmltr(1 to l
+--		end if;
+--	end process;
+--	product <= std_logic_vector(product_d);
+--
+--end;
+--
