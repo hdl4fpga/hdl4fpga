@@ -67,7 +67,7 @@ architecture def of mult is
 
 begin
 
-	accmltr_d <= resize(signed(accmltr), accumltr_d'length) when ini='1' else accmltr_q;
+	accmltr_d <= resize(signed(accmltr), accmltr_d'length) when ini='1' else accmltr_q;
 	product_d <= mult_f(accmltr_d, signed(multand), unsigned(multier));
 	process(clk)
 	begin
