@@ -38,11 +38,6 @@ package std is
 
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
-	subtype ascii is byte;
-	subtype ascii_vector is byte_vector;
-
-	subtype nibble is std_logic_vector(4-1 downto 0);
-	type nibble_vector is array (natural range <>) of nibble;
 
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
@@ -56,7 +51,7 @@ package std is
 		return byte_vector;
 
 	function to_bytevector (
-		arg : std_logic_vector) 
+		constant arg : std_logic_vector) 
 		return byte_vector;
 
 	function push_left (
@@ -203,30 +198,6 @@ package std is
 		constant arg : character)
 		return string;
 
-	function to_ascii (
-		constant arg : character)
-		return std_logic_vector;
-
-	function to_ascii (
-		constant arg : string)
-		return std_logic_vector;
-
-	function to_ascii (
-		constant arg : string)
-		return ascii_vector;
-
-	function to_ascii (
-		constant arg : nibble)
-		return ascii;
-
-	function to_nibble (
-		constant arg : std_logic_vector)
-		return nibble_vector;
-
-	function to_stdlogicvector (
-		constant arg : nibble_vector) 
-		return std_logic_vector;
-
 	function to_stdlogicvector (
 		constant arg : byte_vector) 
 		return std_logic_vector;
@@ -285,16 +256,6 @@ package std is
 	function encoder (
 		constant arg : std_logic_vector)
 		return         std_logic_vector;
-
-	type scale_t is record
-		from  : real;
-		step  : real;
-		deca  : std_logic_vector(ascii'range);
-		scale : std_logic_vector(0 to 4-1);
-		mult  : integer;
-	end record;
-
-	type scale_vector is array (natural range <>) of scale_t;
 
 	function fill (
 		constant data  : std_logic_vector;
@@ -494,7 +455,7 @@ package body std is
 	end;
 
 	function to_bytevector (
-		arg : std_logic_vector) 
+		constant arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
@@ -856,74 +817,8 @@ package body std is
 		return msg.all;
 	end function;
 		
-	function to_ascii(
-		constant arg : nibble)
-		return ascii is
-		constant rom : byte_vector(0 to 15) := (
-			x"30", x"31", x"32", x"33",
-			x"34", x"35", x"36", x"37",
-			x"38", x"39", x"41", x"42",
-			x"43", x"44", x"45", x"46");
-		variable val : ascii;
-	begin
-		return ascii(rom(to_integer(unsigned(arg))));
-	end function;
-
-	function to_ascii(
-		constant arg : character)
-		return std_logic_vector is
-	begin
-		return to_stdlogicvector(string'(1 to 1 => arg));
-	end;
-
-	function to_ascii(
-		constant arg : string)
-		return std_logic_vector is
-	begin
-		return to_stdlogicvector(arg);
-	end;
-
-	function to_ascii(
-		constant arg : string)
-		return ascii_vector is
-		variable retval : ascii_vector(arg'range);
-	begin
-		for i in retval'range loop
-			retval(i) := to_stdlogicvector(arg(i));
-		end loop;
-		return retval;
-	end;
-
-	function to_nibble (
-		constant arg : std_logic_vector)
-		return nibble_vector is
-		variable val : nibble_vector((arg'length+nibble'length-1)/nibble'length-1 downto 0);
-		variable aux : unsigned(val'length*nibble'length-1 downto 0);
-	begin
-		aux := resize(unsigned(arg), aux'length);
-		val := (others => (others => '-'));
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(aux(nibble'range));
-			aux := aux srl nibble'length;
-		end loop;
-		return val;
-	end;
-
 	function to_stdlogicvector (
-		constant arg : nibble_vector) 
-		return std_logic_vector is
-		variable val : unsigned(arg'length*nibble'length-1 downto 0);
-	begin
-		val := (others => '-');
-		for i in arg'range loop
-			val := val sll nibble'length;
-			val(nibble'range) := unsigned(arg(i));
-		end loop;
-		return std_logic_vector(val);
-	end;
-
-	function to_stdlogicvector (
-		arg : byte_vector)
+		constant arg : byte_vector)
 		return std_logic_vector is
 		variable dat : byte_vector(arg'length-1 downto 0);
 		variable val : unsigned(byte'length*arg'length-1 downto 0);

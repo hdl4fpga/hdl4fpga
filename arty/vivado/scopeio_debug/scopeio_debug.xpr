@@ -190,20 +190,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../library/scope/scopeio_debug.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../library/video/cga_adapter.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../library/scope/scopeio_sin.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
@@ -212,13 +198,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../library/video/cgafonts.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../library/video/cga_display.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -261,13 +240,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../library/scope/scopeio_axisticks.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../library/scope/scopeio_grant.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -366,13 +338,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../library/scope/scopeio_downsampler.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../library/scope/scopeio_hline.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>

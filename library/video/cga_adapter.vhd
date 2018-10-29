@@ -50,8 +50,8 @@ architecture struct of cga_adapter is
 	signal font_addr : std_logic_vector(8+4-1 downto 0);
 	signal font_line : std_logic_vector(8-1 downto 0);
 
-	signal cga_rdata : std_logic_vector(ascii'range);
-	signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
+	signal cga_rdata : std_logic_vector(byte'range);
+	signal cga_wdata : std_logic_vector(byte'length*2-1 downto 0);
 
 	signal video_on  : std_logic;
 	signal char_dot  : std_logic;

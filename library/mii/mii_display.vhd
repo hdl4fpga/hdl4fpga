@@ -77,8 +77,8 @@ begin
 
 		signal cga_clk   : std_logic;
 		signal cga_ena   : std_logic;
-		signal cga_rdata : std_logic_vector(ascii'range);
-		signal cga_wdata : std_logic_vector(ascii'length*2-1 downto 0);
+		signal cga_rdata : std_logic_vector(byte'range);
+		signal cga_wdata : std_logic_vector(byte'length*2-1 downto 0);
 		signal cga_addr  : std_logic_vector(13-1 downto 0) := (others => '0');
 
 		signal video_on  : std_logic;
@@ -131,14 +131,14 @@ begin
 			end process;
 
 			process (rxd8)
-				constant tab  : ascii_vector(0 to 16-1) := to_ascii("0123456789ABCDEF");
+				constant tab  : byte_vector(0 to 16-1) := to_bytevector(to_stdlogicvector(string'("0123456789ABCDEF")));
 				variable rxd  : unsigned(rxd8'range);
-				variable data : unsigned(2*ascii'length-1 downto 0);
+				variable data : unsigned(2*byte'length-1 downto 0);
 			begin
 				rxd := unsigned(reverse(rxd8));
 				for i in 0 to rxd'length/4-1 loop
-					data := data ror ascii'length;
-					data(ascii'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
+					data := data ror byte'length;
+					data(byte'range) := unsigned(tab(to_integer(rxd(0 to 4-1))));
 					rxd  := rxd sll 4;
 				end loop;
 				cga_wdata <= std_logic_vector(data);
