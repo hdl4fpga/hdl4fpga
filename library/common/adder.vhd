@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 entity adder is
 	port (
 		clk : in  std_logic := '-';
-		ini : in  std_logic := '0';
+		ini : in  std_logic := '1';
 		ci  : in  std_logic := '0' ;
 		a   : in  std_logic_vector;
 		b   : in  std_logic_vector;

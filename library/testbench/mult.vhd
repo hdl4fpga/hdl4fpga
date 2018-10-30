@@ -49,11 +49,38 @@ begin
 
 
 	ini <= rst;
-	du : entity hdl4fpga.mult
-	port map (
-        clk     => clk,
-		ini     => ini ,
-		multand => x"5",
-		multier => x"4",
-		product => product);
+	mulp_b : block
+		variable prod : std_logic_vector(0 to mand'length+mier'length-1);
+	begin
+		multp_e : entity hdl4fpga.mult
+		port map (
+			clk     => clk,
+			ini     => ini ,
+			multand => mand,
+			multier => mier,
+			product => prod);
+
+		acc_e : entity hdl4fpga.adder
+		port map (
+			ci => ci,
+			a  => 
+			b  =>
+			s  => prod(0 to),
+			co => );
+
+		fifo_e : entity hdl4fpga.align
+		port map (
+			clk => clk,
+			di  => prod(0 to),
+			do  => );
+
+		process (clk)
+			variable cntr : unsigned;
+		begin
+			if rising_edge(clk) then 
+				cntr := cntr + 1;
+			end if;
+		end process;
+	end block;
+
 end;
