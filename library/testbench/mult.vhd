@@ -68,7 +68,7 @@ begin
 		signal co : std_logic;
 	begin
 		mand <= word2byte(x"1234", sela);
-		mier <= word2byte(x"5678",  selb);
+		mier <= word2byte(x"5678", selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
@@ -92,7 +92,7 @@ begin
 		fifo_i <= s & ci;
 		fifo_e : entity hdl4fpga.align
 		generic map (
-			n => 4,
+			n => 5,
 			d => (0 to fifo_i'length => 4))
 		port map (
 			clk => clk,
