@@ -29,6 +29,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture mult of testbench is
 
@@ -52,8 +53,8 @@ begin
 	mulp_b : block
 		constant n    : natural := 4;
 		constant m    : natural := 4;
-		constant mand : std_logic_vector(0 to n-1);
-		constant mier : std_logic_vector(0 to m-1);
+		signal mand : std_logic_vector(0 to n-1);
+		signal mier : std_logic_vector(0 to m-1);
 
 		signal prod   : std_logic_vector(0 to m+n-1);
 		signal sela   : std_logic_vector(0 to 2-1);
@@ -63,8 +64,10 @@ begin
 		signal s      : std_logic_vector(0 to m-1);
 		signal fifo_i : std_logic_vector(0 to m);
 		signal fifo_o : std_logic_vector(0 to m);
+		signal ci : std_logic;
+		signal co : std_logic;
 	begin
-		mand <= word2byte(x"1234"), sela);
+		mand <= word2byte(x"1234", sela);
 		mier <= word2byte(x"5678",  selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
@@ -89,8 +92,8 @@ begin
 		fifo_i <= s & ci;
 		fifo_e : entity hdl4fpga.align
 		generic map (
-			n => ,
-			d => 0 to fifo_i'length => )
+			n => 4,
+			d => (0 to fifo_i'length => 4))
 		port map (
 			clk => clk,
 			di  => fifo_i,

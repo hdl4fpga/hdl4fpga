@@ -33,30 +33,38 @@ entity adder is
 		a   : in  std_logic_vector;
 		b   : in  std_logic_vector;
 		co  : out std_logic;
-		s   : out std_logic_vector;
+		s   : out std_logic_vector);
 end;
 
 architecture def of adder is
-	signal cy : std_logic;
+	signal cy_q : std_logic;
+	signal cy_d : std_logic;
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			cy <= co_d;
+			cy_q <= cy_d;
 		end if;
 	end process;
 
-	cin <= ci when ini='1' cy;
-
-	process (a, b, cin)
-		variable add : std_logic_vector(0 to s'length+1);
+	process (a, b, ci)
+		variable add : unsigned(0 to s'length+1);
 	begin
-		add  := unsigned('0' & a & '0') + unsigned('0' & b & '1');
-		co_d <= add(0);
-		s    <= add(1 to s'length);
+		add(0) := '0';
+		add := add rol 1;
+
+		add(0 to a'length-1) := unsigned(a);
+		add := add rol a'length;
+
+		add(0) := (cy_q and ini) or (cy_q and not ini);
+
+		add  := add + unsigned('0' & b & '1');
+		cy_d <= add(0);
+		add  := add rol 1;
+		s    <= std_logic_vector(add(0 to s'length-1));
 	end process;
 
-	co <= co_d;
+	co <= cy_d;
 
 end;
