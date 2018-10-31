@@ -41,34 +41,39 @@ end;
 architecture def of mult is
 
 	function mult_f (
-		constant accmltr : signed;
-		constant multand : signed;
-		constant multier : unsigned)
-		return signed is
+		constant accmltr : std_logic_vector;
+		constant multand : std_logic_vector;
+		constant multier : std_logic_vector;
+		constant sign    : std_logic := '1')
+		return std_logic_vector is
 		variable lsb    : std_logic;
-		variable retval : signed(0 to multand'length+multier'length-1);
+		variable retval : unsigned(0 to multand'length+multier'length-1);
 	begin
-		retval(0 to multier'length-1) := signed(multier);
+		retval(0 to multier'length-1) := unsigned(multier);
 		retval := retval rol multier'length;
-		retval(0 to accmltr'length-1) := accmltr;
+		retval(0 to accmltr'length-1) := unsigned(accmltr);
 		for i in multier'range loop
 			lsb    := retval(retval'right);
 			retval := shift_right(retval, 1);
 			if lsb='1' then
-				retval(0 to multand'length) := retval(0 to multand'length) + resize(multand, multand'length+1);
+				retval(0 to multand'length) := retval(0 to multand'length) + 
+					unsigned(word2byte(
+						std_logic_vector(resize(unsigned(multand), multand'length+1)) &
+						std_logic_vector(resize(  signed(multand), multand'length+1)),
+						sign));
 			end if;
 		end loop;
-		return retval;
+		return std_logic_vector(retval);
 	end;
 
-	signal product_d : signed(0 to product'length-1);
-	signal accmltr_d : signed(0 to multand'length-1);
-	signal accmltr_q : signed(accmltr_d'range);
+	signal product_d : std_logic_vector(0 to product'length-1);
+	signal accmltr_d : std_logic_vector(0 to multand'length-1);
+	signal accmltr_q : std_logic_vector(accmltr_d'range);
 
 begin
 
-	accmltr_d <= resize(signed(accmltr), accmltr_d'length) when ini='1' else accmltr_q;
-	product_d <= mult_f(accmltr_d, signed(multand), unsigned(multier));
+	accmltr_d <= std_logic_vector(resize(unsigned(accmltr), accmltr_d'length)) when ini='1' else accmltr_q;
+	product_d <= mult_f(accmltr_d, multand, multier);
 	process(clk)
 	begin
 		if rising_edge(clk) then

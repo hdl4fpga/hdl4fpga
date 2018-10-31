@@ -48,7 +48,7 @@ begin
 		end if;
 	end process;
 
-	process (a, b, ci)
+	process (ini, ci, a, b, cy_q)
 		variable add : unsigned(0 to s'length+1);
 	begin
 		add(0) := '0';
@@ -57,7 +57,8 @@ begin
 		add(0 to a'length-1) := unsigned(a);
 		add := add rol a'length;
 
-		add(0) := (cy_q and ini) or (cy_q and not ini);
+		add(0) := (cy_q and not ini) or (ci and ini);
+		add := add rol 1;
 
 		add  := add + unsigned('0' & b & '1');
 		cy_d <= add(0);
