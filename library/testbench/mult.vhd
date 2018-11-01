@@ -68,8 +68,8 @@ begin
 
 	begin
 
-		mand <= word2byte(x"1234", not sela);
-		mier <= word2byte(x"5678", not selb);
+		mand <= word2byte(x"0EDC", not sela);
+		mier <= word2byte(x"00EF", not selb);
 		accm <= (accm'range => '0'); --  when inim='0' else fifo_o(b'range) when ini='0' else (b'range => '0');
 		multp_e : entity hdl4fpga.mult
 		port map (
@@ -102,7 +102,7 @@ begin
 			s   => s,
 			co  => co);
 
-		fifo_i <= s;
+		fifo_i <= s when inim='0' else (others => '0');
 		fifo_ena <= not inim;
 		fifo_e : entity hdl4fpga.align
 		generic map (
@@ -110,11 +110,8 @@ begin
 			d => (0 to fifo_i'length => 3))
 		port map (
 			clk => clk,
-			ena => fifo_ena,
 			di  => fifo_i,
 			do  => fifo_o);
-
-		end process;
 
 		state_p : process (clk, rst)
 			variable cntra : unsigned(sela'length downto 0);
