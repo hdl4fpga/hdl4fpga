@@ -58,6 +58,7 @@ begin
 		signal s      : std_logic_vector(m-1 downto 0);
 		signal fifo_i : std_logic_vector(m-1 downto 0);
 		signal fifo_o : std_logic_vector(m-1 downto 0);
+		signal fifo_ena : std_logic;
 		signal ci     : std_logic;
 		signal co     : std_logic;
 		signal ini    : std_logic;
@@ -102,14 +103,18 @@ begin
 			co  => co);
 
 		fifo_i <= s;
+		fifo_ena <= not inim;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
 			d => (0 to fifo_i'length => 3))
 		port map (
 			clk => clk,
+			ena => fifo_ena,
 			di  => fifo_i,
 			do  => fifo_o);
+
+		end process;
 
 		state_p : process (clk, rst)
 			variable cntra : unsigned(sela'length downto 0);
