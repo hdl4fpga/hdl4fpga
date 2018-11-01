@@ -44,7 +44,7 @@ architecture def of mult is
 		constant accmltr : std_logic_vector;
 		constant multand : std_logic_vector;
 		constant multier : std_logic_vector;
-		constant sign    : std_logic := '1')
+		constant sign    : std_logic := '0')
 		return std_logic_vector is
 		variable lsb    : std_logic;
 		variable retval : unsigned(0 to multand'length+multier'length-1);
