@@ -43,67 +43,48 @@ begin
 
 	mulp_b : block
 
-		constant n    : natural := 4;
-		constant m    : natural := 4;
-
-		signal mand   : std_logic_vector(n-1 downto 0);
-		signal mier   : std_logic_vector(m-1 downto 0);
-		signal accm   : std_logic_vector(n-1 downto 0);
-
-		signal prod   : std_logic_vector(n+m-1 downto 0);
 		signal sela   : std_logic_vector(0 to 2-1);
 		signal selb   : std_logic_vector(0 to 2-1);
-		signal a      : std_logic_vector(m-1 downto 0);
-		signal b      : std_logic_vector(m-1 downto 0);
-		signal s      : std_logic_vector(m-1 downto 0);
-		signal fifo_i : std_logic_vector(m-1 downto 0);
-		signal fifo_o : std_logic_vector(m-1 downto 0);
-		signal fifo_ena : std_logic;
+
+		signal mand   : std_logic_vector(4-1 downto 0);
+		signal mier   : std_logic_vector(4-1 downto 0);
+		signal prod   : std_logic_vector(mand'length+mier'length-1 downto 0);
+
 		signal ci     : std_logic;
+		signal b      : std_logic_vector(mier'length-1 downto 0);
+		signal s      : std_logic_vector(mier'length-1 downto 0);
 		signal co     : std_logic;
+
+		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
+		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
 		signal ini    : std_logic;
 		signal inim   : std_logic;
-		signal dv     : std_logic;
-		signal dg     : unsigned(mier'range);
 
 	begin
 
 		mand <= word2byte(x"0EDC", not sela);
-		mier <= word2byte(x"00EF", not selb);
-		accm <= (accm'range => '0'); --  when inim='0' else fifo_o(b'range) when ini='0' else (b'range => '0');
+		mier <= word2byte(x"0DEF", not selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
 			ini     => inim ,
-			accmltr => accm,
 			multand => mand,
 			multier => mier,
 			product => prod);
 
 		b  <= fifo_o(b'range) when ini='0' else (b'range => '0');
-		a  <= prod(a'range);
 
-		process(inim, clk)
-		begin
-			if inim='1' then
-				ci <= '0';
-			elsif rising_edge(clk) then
-				ci <= co;
-			end if;
-		end process;
-
-		acc_e : entity hdl4fpga.adder
+		adder_e : entity hdl4fpga.adder
 		port map (
 			clk => clk,
 			ini => inim,
 			ci  => ci,
-			a   => a,
+			a   => prod(mier'range),
 			b   => b,
 			s   => s,
 			co  => co);
 
 		fifo_i <= s when inim='0' else (others => '0');
-		fifo_ena <= not inim;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => 4,
@@ -117,32 +98,43 @@ begin
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
 		begin
-			if rst='1' then
-				cntra := (others => '0');
-				cntrb := (others => '0');
-				ini   <= '1';
-				inim  <= '1';
-				dv    <= '1';
-			elsif rising_edge(clk) then 
-				dv   <= '0';
-				inim <= '0';
-				if cntrb(cntrb'left)='0' then
-					cntra := cntra + 1;
-				end if;
-				if cntra(cntra'left)='1' then
-					if cntrb(cntrb'left)='0' then
-						cntrb := cntrb + 1;
-						ini   <= '0';
-						dv    <= '1';
-					end if;
+			if rising_edge(clk) then 
+				if rst='1' then
 					cntra := (others => '0');
-					inim <= '1';
+					cntrb := (others => '0');
+					ini   <= '1';
+					inim  <= '1';
+					ci    <= '0';
+				else
+					ci <= co;
+					if inim='1' then
+						ci <= '0';
+					end if;
+
+					sela <= std_logic_vector(cntra(sela'reverse_range));
+					selb <= std_logic_vector(cntrb(selb'reverse_range));
+
+					inim <= '0';
+					if cntra(cntra'left)='1' then
+						if cntrb(cntrb'left)='0' then
+						end if;
+					end if;
+
+					if cntrb(cntrb'left)='0' then
+						cntra := cntra + 1;
+					end if;
+					if cntra(cntra'left)='1' then
+						cntra := (others => '0');
+						if cntrb(cntrb'left)='0' then
+							cntrb := cntrb + 1;
+							ini   <= '0';
+						end if;
+						inim <= '1';
+					end if;
+
 				end if;
 			end if;
-			sela <= std_logic_vector(cntra(sela'reverse_range));
-			selb <= std_logic_vector(cntrb(selb'reverse_range));
 		end process;
-		dg <= rotate_left(unsigned(prod), mier'length)(a'range);
 
 	end block;
 
