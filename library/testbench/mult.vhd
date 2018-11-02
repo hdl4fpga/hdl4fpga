@@ -59,6 +59,7 @@ begin
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
 		signal inia   : std_logic;
 		signal inim   : std_logic;
+		signal dv     : std_logic;
 
 	begin
 
@@ -106,12 +107,14 @@ begin
 				inia <= vinia;
 				inim <= vinim;
 				if rst='1' then
+					ci    <= '0';
+					dv    <= '0';
 					cntra := (others => '0');
 					cntrb := (others => '0');
 					vinia := '1';
 					vinim := '1';
-					ci    <= '0';
 				else
+					dv <= vinim or setif(cntrb(2-1 downto 0)="11");
 					ci <= co;
 					if vinim='1' then
 						ci <= '0';
@@ -131,8 +134,8 @@ begin
 						if cntrb(cntrb'left)='0' then
 							cntrb := cntrb + 1;
 							vinia := '0';
+							vinim := '1';
 						end if;
-						vinim := '1';
 					end if;
 				end if;
 			end if;

@@ -2,10 +2,8 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/rst
-add wave -noupdate /testbench/mulp_b/ini
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/mulp_b/multp_e/accmltr_q(0) -radix hexadecimal} {/testbench/mulp_b/multp_e/accmltr_q(1) -radix hexadecimal} {/testbench/mulp_b/multp_e/accmltr_q(2) -radix hexadecimal} {/testbench/mulp_b/multp_e/accmltr_q(3) -radix hexadecimal}} -subitemconfig {/testbench/mulp_b/multp_e/accmltr_q(0) {-height 16 -radix hexadecimal} /testbench/mulp_b/multp_e/accmltr_q(1) {-height 16 -radix hexadecimal} /testbench/mulp_b/multp_e/accmltr_q(2) {-height 16 -radix hexadecimal} /testbench/mulp_b/multp_e/accmltr_q(3) {-height 16 -radix hexadecimal}} /testbench/mulp_b/multp_e/accmltr_q
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/multp_e/product_d
-add wave -noupdate -radix hexadecimal /testbench/mulp_b/accm
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/mand
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/mier
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/prod
@@ -13,13 +11,10 @@ add wave -noupdate -radix hexadecimal -childformat {{/testbench/mulp_b/fifo_i(3)
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/mulp_b/fifo_o(3) -radix hexadecimal} {/testbench/mulp_b/fifo_o(2) -radix hexadecimal} {/testbench/mulp_b/fifo_o(1) -radix hexadecimal} {/testbench/mulp_b/fifo_o(0) -radix hexadecimal}} -subitemconfig {/testbench/mulp_b/fifo_o(3) {-height 16 -radix hexadecimal} /testbench/mulp_b/fifo_o(2) {-height 16 -radix hexadecimal} /testbench/mulp_b/fifo_o(1) {-height 16 -radix hexadecimal} /testbench/mulp_b/fifo_o(0) {-height 16 -radix hexadecimal}} /testbench/mulp_b/fifo_o
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/state_p/cntra
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/state_p/cntrb
-add wave -noupdate /testbench/mulp_b/dv
-add wave -noupdate -radix hexadecimal /testbench/mulp_b/dg
 add wave -noupdate /testbench/mulp_b/sela
 add wave -noupdate /testbench/mulp_b/selb
 add wave -noupdate /testbench/mulp_b/inim
 add wave -noupdate /testbench/mulp_b/ci
-add wave -noupdate -radix hexadecimal /testbench/mulp_b/a
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/b
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/s
 add wave -noupdate /testbench/mulp_b/co
