@@ -63,8 +63,8 @@ begin
 
 	begin
 
-		mand <= word2byte(std_logic_vector(unsigned'(x"0EDC") rol 4), sela);
-		mier <= word2byte(std_logic_vector(unsigned'(x"FDEF") rol 4), selb);
+		mand <= word2byte(std_logic_vector(unsigned'(x"0EDC") rol mand'length), sela);
+		mier <= word2byte(std_logic_vector(unsigned'(x"FDEF") rol mier'length), selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
