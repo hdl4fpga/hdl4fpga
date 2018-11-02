@@ -43,11 +43,18 @@ begin
 
 	mulp_b : block
 
-		signal sela   : std_logic_vector(0 to 2-1);
-		signal selb   : std_logic_vector(0 to 2-1);
+		constant ma : std_logic_vector := x"0EDC";
+		constant mr : std_logic_vector := x"FDEF";
 
-		signal mand   : std_logic_vector(4-1 downto 0);
 		signal mier   : std_logic_vector(4-1 downto 0);
+		signal mand   : std_logic_vector(mier'range);
+
+		constant sizma : natural := ma'length/mier'length;
+		constant sizmb : natural := mr'length/mier'length;
+
+		signal sela   : std_logic_vector(0 to unsigned_num_bits(sizma-1)-1);
+		signal selb   : std_logic_vector(0 to unsigned_num_bits(sizmb-1)-1);
+
 		signal prod   : std_logic_vector(mand'length+mier'length-1 downto 0);
 
 		signal ci     : std_logic;
@@ -63,8 +70,9 @@ begin
 
 	begin
 
-		mand <= word2byte(std_logic_vector(unsigned'(x"0EDC") rol mand'length), sela);
-		mier <= word2byte(std_logic_vector(unsigned'(x"FDEF") rol mier'length), selb);
+		mand <= word2byte(std_logic_vector(unsigned(ma) rol mand'length), sela);
+		mier <= word2byte(std_logic_vector(unsigned(mr) rol mier'length), selb);
+
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
@@ -88,8 +96,8 @@ begin
 		fifo_i <= s when inim='0' else (others => '0');
 		fifo_e : entity hdl4fpga.align
 		generic map (
-			n => 4,
-			d => (0 to fifo_i'length => 3))
+			n => mier'length,
+			d => (0 to fifo_i'length => sizma-1))
 		port map (
 			clk => clk,
 			di  => fifo_i,
@@ -110,8 +118,9 @@ begin
 				if rst='1' then
 					dv    <= '0';
 					ci    <= '0';
-					cntra := to_unsigned(4-2, cntra'length);
-					cntrb := to_unsigned(4-2, cntrb'length);
+					last  <= '0';
+					cntra := to_unsigned(sizma-2, cntra'length);
+					cntrb := to_unsigned(sizmb-2, cntrb'length);
 					vinia := '1';
 					vinim := '1';
 				else
@@ -125,7 +134,7 @@ begin
 					vinim := '0';
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
-							cntra := to_unsigned(4-2, cntra'length);
+							cntra := to_unsigned(sizma-2, cntra'length);
 							cntrb := cntrb - 1;
 							vinia := '0';
 							vinim := '1';
