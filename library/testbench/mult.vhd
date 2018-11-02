@@ -63,8 +63,8 @@ begin
 
 	begin
 
-		mand <= word2byte(x"0EDC", not sela);
-		mier <= word2byte(x"FDEF", not selb);
+		mand <= word2byte(std_logic_vector(unsigned'(x"0EDC") rol 4), sela);
+		mier <= word2byte(std_logic_vector(unsigned'(x"FDEF") rol 4), selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
@@ -100,6 +100,7 @@ begin
 			variable cntrb : unsigned(selb'length downto 0);
 			variable vinia : std_logic;
 			variable vinim : std_logic;
+			variable last  : std_logic;
 		begin
 			if rising_edge(clk) then 
 				sela <= std_logic_vector(cntra(sela'reverse_range));
@@ -107,35 +108,30 @@ begin
 				inia <= vinia;
 				inim <= vinim;
 				if rst='1' then
-					ci    <= '0';
 					dv    <= '0';
-					cntra := (others => '0');
-					cntrb := (others => '0');
+					ci    <= '0';
+					cntra := to_unsigned(4-2, cntra'length);
+					cntrb := to_unsigned(4-2, cntrb'length);
 					vinia := '1';
 					vinim := '1';
 				else
-					dv <= vinim or setif(cntrb(2-1 downto 0)="11");
+					dv <= vinim or last;
 					ci <= co;
 					if vinim='1' then
 						ci <= '0';
 					end if;
 
+					last  := cntrb(cntrb'left) and not cntra(cntra'left);
 					vinim := '0';
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
-						end if;
-					end if;
-
-					if cntrb(cntrb'left)='0' then
-						cntra := cntra + 1;
-					end if;
-					if cntra(cntra'left)='1' then
-						cntra := (others => '0');
-						if cntrb(cntrb'left)='0' then
-							cntrb := cntrb + 1;
+							cntra := to_unsigned(4-2, cntra'length);
+							cntrb := cntrb - 1;
 							vinia := '0';
 							vinim := '1';
 						end if;
+					else
+						cntra := cntra - 1;
 					end if;
 				end if;
 			end if;
