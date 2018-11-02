@@ -57,13 +57,13 @@ begin
 
 		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
-		signal ini    : std_logic;
+		signal inia   : std_logic;
 		signal inim   : std_logic;
 
 	begin
 
 		mand <= word2byte(x"0EDC", not sela);
-		mier <= word2byte(x"0DEF", not selb);
+		mier <= word2byte(x"FDEF", not selb);
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
@@ -72,7 +72,7 @@ begin
 			multier => mier,
 			product => prod);
 
-		b  <= fifo_o(b'range) when ini='0' else (b'range => '0');
+		b  <= fifo_o(b'range) when inia='0' else (b'range => '0');
 
 		adder_e : entity hdl4fpga.adder
 		port map (
@@ -97,24 +97,27 @@ begin
 		state_p : process (clk, rst)
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
+			variable vinia : std_logic;
+			variable vinim : std_logic;
 		begin
 			if rising_edge(clk) then 
+				sela <= std_logic_vector(cntra(sela'reverse_range));
+				selb <= std_logic_vector(cntrb(selb'reverse_range));
+				inia <= vinia;
+				inim <= vinim;
 				if rst='1' then
 					cntra := (others => '0');
 					cntrb := (others => '0');
-					ini   <= '1';
-					inim  <= '1';
+					vinia := '1';
+					vinim := '1';
 					ci    <= '0';
 				else
 					ci <= co;
-					if inim='1' then
+					if vinim='1' then
 						ci <= '0';
 					end if;
 
-					sela <= std_logic_vector(cntra(sela'reverse_range));
-					selb <= std_logic_vector(cntrb(selb'reverse_range));
-
-					inim <= '0';
+					vinim := '0';
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
 						end if;
@@ -127,11 +130,10 @@ begin
 						cntra := (others => '0');
 						if cntrb(cntrb'left)='0' then
 							cntrb := cntrb + 1;
-							ini   <= '0';
+							vinia := '0';
 						end if;
-						inim <= '1';
+						vinim := '1';
 					end if;
-
 				end if;
 			end if;
 		end process;
