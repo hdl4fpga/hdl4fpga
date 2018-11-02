@@ -68,7 +68,7 @@ begin
 		multp_e : entity hdl4fpga.mult
 		port map (
 			clk     => clk,
-			ini     => inim ,
+			ini     => inim,
 			multand => mand,
 			multier => mier,
 			product => prod);
