@@ -34,12 +34,12 @@ use hdl4fpga.std.all;
 architecture mult of testbench is
 
 	signal clk : std_logic := '0';
-	signal rst : std_logic;
+	signal ini : std_logic;
 
 	signal product : std_logic_vector(0 to 8-1);
 begin
 	clk <= not clk after 5 ns;
-	rst <= '1', '0' after 26 ns;
+	ini <= '1', '0' after 26 ns;
 
 	mulp_b : block
 
@@ -103,7 +103,7 @@ begin
 			di  => fifo_i,
 			do  => fifo_o);
 
-		state_p : process (clk, rst)
+		state_p : process (clk, ini)
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
 			variable vinia : std_logic;
@@ -115,7 +115,7 @@ begin
 				selb <= std_logic_vector(cntrb(selb'reverse_range));
 				inia <= vinia;
 				inim <= vinim;
-				if rst='1' then
+				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
 					last  <= '0';
