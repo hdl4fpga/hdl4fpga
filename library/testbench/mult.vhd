@@ -118,7 +118,7 @@ begin
 				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
-					last  <= '0';
+					last  := '0';
 					cntra := to_unsigned(sizma-2, cntra'length);
 					cntrb := to_unsigned(sizmb-2, cntrb'length);
 					vinia := '1';
