@@ -66,6 +66,10 @@ begin
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
 		signal inia   : std_logic;
 		signal inim   : std_logic;
+		signal vinia  : std_logic;
+		signal vinim  : std_logic;
+		signal sign   : std_logic;
+		signal xend   : std_logic;
 		signal dv     : std_logic;
 
 	begin
@@ -81,7 +85,10 @@ begin
 			multier => mier,
 			product => prod);
 
-		b  <= fifo_o(b'range) when inia='0' else (b'range => '0');
+		b  <=
+	  		fifo_o(b'range)   when inia='0' and xend='0' else 
+			(b'range => sign) when inia='0' and xend='1' else 
+			(b'range => '0');
 
 		adder_e : entity hdl4fpga.adder
 		port map (
@@ -93,7 +100,7 @@ begin
 			s   => s,
 			co  => co);
 
-		fifo_i <= s when inim='0' else (others => '0');
+		fifo_i <= s;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -106,23 +113,23 @@ begin
 		state_p : process (clk, ini)
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
-			variable vinia : std_logic;
-			variable vinim : std_logic;
 			variable last  : std_logic;
+			variable s     : std_logic;
 		begin
 			if rising_edge(clk) then 
 				sela <= std_logic_vector(cntra(sela'reverse_range));
 				selb <= std_logic_vector(cntrb(selb'reverse_range));
 				inia <= vinia;
 				inim <= vinim;
+				sign <= mand(mand'left) ;
 				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
 					last  := '0';
 					cntra := to_unsigned(sizma-2, cntra'length);
 					cntrb := to_unsigned(sizmb-2, cntrb'length);
-					vinia := '1';
-					vinim := '1';
+					vinia <= '1';
+					vinim <= '1';
 				else
 					dv <= vinim or last;
 					ci <= co;
@@ -131,13 +138,14 @@ begin
 					end if;
 
 					last  := cntrb(cntrb'left) and not cntra(cntra'left);
-					vinim := '0';
+					vinim <= '0';
+					xend <= cntra(cntra'left);
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
 							cntra := to_unsigned(sizma-2, cntra'length);
 							cntrb := cntrb - 1;
-							vinia := '0';
-							vinim := '1';
+							vinia <= '0';
+							vinim <= '1';
 						end if;
 					else
 						cntra := cntra - 1;
