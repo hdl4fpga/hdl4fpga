@@ -43,8 +43,7 @@ architecture def of mult is
 	function mult_f (
 		constant accmltr : std_logic_vector;
 		constant multand : std_logic_vector;
-		constant multier : std_logic_vector;
-		constant sign    : std_logic := '0')
+		constant multier : std_logic_vector)
 		return std_logic_vector is
 		variable lsb    : std_logic;
 		variable retval : unsigned(0 to multand'length+multier'length-1);
@@ -56,11 +55,7 @@ architecture def of mult is
 			lsb    := retval(retval'right);
 			retval := shift_right(retval, 1);
 			if lsb='1' then
-				retval(0 to multand'length) := retval(0 to multand'length) + 
-					unsigned(word2byte(
-						std_logic_vector(resize(unsigned(multand), multand'length+1)) &
-						std_logic_vector(resize(  signed(multand), multand'length+1)),
-						sign));
+				retval(0 to multand'length) := retval(0 to multand'length) + unsigned(multand);
 			end if;
 		end loop;
 		return std_logic_vector(retval);

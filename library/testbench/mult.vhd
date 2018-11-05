@@ -69,8 +69,23 @@ begin
 		signal vinia  : std_logic;
 		signal vinim  : std_logic;
 		signal sign   : std_logic;
-		signal xend   : std_logic;
+		signal pp   : std_logic;
 		signal dv     : std_logic;
+
+		function xx (
+			constant a : std_logic_vector(4-1 downto 0);
+			constant pp : std_logic)
+			return std_logic_vector is
+			variable retval : unsigned(4-1 downto 0);
+		begin
+			retval := (others => pp);
+			for i in a'range loop
+				if a(i) = '1' then
+					retval := retval + (x"f" sll i);
+				end if;
+			end loop;
+			return std_logic_vector(retval);
+		end;
 
 	begin
 
@@ -85,10 +100,7 @@ begin
 			multier => mier,
 			product => prod);
 
-		b  <=
-	  		fifo_o(b'range)   when inia='0' and xend='0' else 
-			(b'range => sign) when inia='0' and xend='1' else 
-			(b'range => '0');
+		b  <= fifo_o(b'range) when inia='0' else (b'range => '0');
 
 		adder_e : entity hdl4fpga.adder
 		port map (
@@ -100,7 +112,7 @@ begin
 			s   => s,
 			co  => co);
 
-		fifo_i <= s;
+		fifo_i <= s when inim='0' else xx(mier, pp);
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -121,7 +133,8 @@ begin
 				selb <= std_logic_vector(cntrb(selb'reverse_range));
 				inia <= vinia;
 				inim <= vinim;
-				sign <= mand(mand'left) ;
+				sign <= mand(mand'left);
+				pp <= inim and not inia;
 				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
@@ -130,6 +143,7 @@ begin
 					cntrb := to_unsigned(sizmb-2, cntrb'length);
 					vinia <= '1';
 					vinim <= '1';
+					pp <= '0';
 				else
 					dv <= vinim or last;
 					ci <= co;
@@ -139,7 +153,6 @@ begin
 
 					last  := cntrb(cntrb'left) and not cntra(cntra'left);
 					vinim <= '0';
-					xend <= cntra(cntra'left);
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
 							cntra := to_unsigned(sizma-2, cntra'length);
@@ -150,6 +163,7 @@ begin
 					else
 						cntra := cntra - 1;
 					end if;
+					sign <= cntra(cntra'left);
 				end if;
 			end if;
 		end process;
