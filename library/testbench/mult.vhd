@@ -68,11 +68,8 @@ begin
 		signal inim   : std_logic;
 		signal vinia  : std_logic;
 		signal vinim  : std_logic;
-		signal sign   : std_logic;
 		signal pp   : std_logic_vector(mier'range);
 		signal dg   : std_logic_vector(mier'range);
-		signal cc   : unsigned(mier'range);
-		signal kk   : unsigned(mier'range);
 		signal dv     : std_logic;
 
 		function xx (
@@ -119,23 +116,17 @@ begin
 
 		xxp  : process (clk)
 			variable temp : unsigned(prod'range);
-			variable xxxx : unsigned(mier'range);
+			variable f    : std_logic;
 		begin
 			if rising_edge(clk) then
 				temp := unsigned(prod);
 				temp := temp srl mier'length;
-				kk   <= temp(mier'range);
 				temp := temp + xx(mier);
-				cc <=  xx(mier);
-				if co='1' then
-					pp <= std_logic_vector(temp(mier'range) + (xxxx + 1));
-				else
-					pp <= std_logic_vector(temp(mier'range) + (xxxx + 0));
-				end if;
+				pp <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f xor co));
 				if inia='1' then
-					xxxx :=(others => '0');
+					f := '0';
 				elsif inim='1' then
-					xxxx :=(others => '1');
+					f := '1';
 				end if;
 				
 			end if;
@@ -162,7 +153,6 @@ begin
 				selb <= std_logic_vector(cntrb(selb'reverse_range)+1);
 				inia <= vinia;
 				inim <= vinim;
-				sign <= mand(mand'left);
 				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
@@ -190,7 +180,6 @@ begin
 					else
 						cntra := cntra - 1;
 					end if;
-					sign <= cntra(cntra'left);
 				end if;
 			end if;
 		end process;
