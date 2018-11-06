@@ -69,7 +69,8 @@ begin
 		signal vinia  : std_logic;
 		signal vinim  : std_logic;
 		signal sign   : std_logic;
-		signal pp   : std_logic;
+		signal pp   : std_logic_vector(mier'range);
+		signal dg   : std_logic_vector(mier'range);
 		signal dv     : std_logic;
 
 		function xx (
@@ -99,8 +100,11 @@ begin
 			multier => mier,
 			product => prod);
 
-		b  <= fifo_o(b'range) when inia='0' else (b'range => '0');
+		b  <=
+		(b'range => '0') when inia='1' else
+		fifo_o(b'range);
 
+		dg  <= s;
 		adder_e : entity hdl4fpga.adder
 		port map (
 			clk => clk,
@@ -118,10 +122,12 @@ begin
 				temp := unsigned(prod);
 				temp := temp srl mand'length;
 				temp := temp + xx(mier);
+				pp   <= std_logic_vector(temp(mier'range));
+				
 			end if;
 		end process;
 
-		fifo_i <= s;
+		fifo_i <= s when inim='0' ;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -151,7 +157,6 @@ begin
 					cntrb := to_unsigned(sizmb-2, cntrb'length);
 					vinia <= '1';
 					vinim <= '1';
-					pp <= '0';
 				else
 					dv <= vinim or last;
 					ci <= co;
