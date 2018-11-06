@@ -54,13 +54,12 @@ begin
 
 		signal inia   : std_logic;
 		signal inim   : std_logic;
-		signal vinia  : std_logic;
-		signal vinim  : std_logic;
 		signal sela   : std_logic_vector(0 to unsigned_num_bits(sizma-1)-1);
 		signal selb   : std_logic_vector(0 to unsigned_num_bits(sizmb-1)-1);
 
 		signal pprod   : std_logic_vector(mand'length+mier'length-1 downto 0);
 
+		signal cy     : std_logic;
 		signal ci     : std_logic;
 		signal b      : std_logic_vector(mier'length-1 downto 0);
 		signal s      : std_logic_vector(mier'length-1 downto 0);
@@ -68,10 +67,8 @@ begin
 
 		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
-		signal msppd   : std_logic_vector(mier'range);
-		signal msppd_ci     : unsigned(0 to 0);
+		signal msppd  : std_logic_vector(mier'range);
 		signal dg   : std_logic_vector(mier'range);
-		signal dv     : std_logic;
 
 	begin
 
@@ -86,6 +83,14 @@ begin
 			multier => mier,
 			product => pprod);
 
+		cy_p : process (clk)
+		begin
+			if rising_edge(clk) then 
+				cy <= co;
+			end if;
+		end process;
+
+		ci <= cy when inim='0' else '0';
 		b  <= (b'range => '0') when inia='1' else fifo_o(b'range);
 		adder_e : entity hdl4fpga.adder
 		port map (
@@ -121,7 +126,6 @@ begin
 				temp  := temp srl mier'length;
 				temp  := temp + sign_extension(mier);
 				msppd <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f));
-				msppd_ci(0) <= co;
 				if inia='1' then
 					f := '0';
 				elsif inim='1' then
@@ -130,7 +134,7 @@ begin
 			end if;
 		end process;
 
-		fifo_i <= s when inim='0' else std_logic_vector(unsigned(msppd) + msppd_ci);
+		fifo_i <= s when inim='0' else std_logic_vector(unsigned(msppd) + unsigned'(0 to 0 => cy));
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -143,42 +147,28 @@ begin
 		state_p : process (clk, ini)
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
-			variable last  : std_logic;
-			variable s     : std_logic;
 		begin
 			if rising_edge(clk) then 
-				sela <= std_logic_vector(cntra(sela'reverse_range)+1);
-				selb <= std_logic_vector(cntrb(selb'reverse_range)+1);
-				inia <= vinia;
-				inim <= vinim;
 				if ini='1' then
-					dv    <= '0';
-					ci    <= '0';
-					last  := '0';
 					cntra := to_unsigned(sizma-2, cntra'length);
 					cntrb := to_unsigned(sizmb-2, cntrb'length);
-					vinia <= '1';
-					vinim <= '1';
+					inia <= '1';
+					inim <= '1';
 				else
-					dv <= vinim or last;
-					ci <= co;
-					if vinim='1' then
-						ci <= '0';
-					end if;
-
-					last  := cntrb(cntrb'left) and not cntra(cntra'left);
-					vinim <= '0';
+					inim <= '0';
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
 							cntra := to_unsigned(sizma-2, cntra'length);
 							cntrb := cntrb - 1;
-							vinia <= '0';
-							vinim <= '1';
+							inia <= '0';
+							inim <= '1';
 						end if;
 					else
 						cntra := cntra - 1;
 					end if;
 				end if;
+				sela <= std_logic_vector(cntra(sela'reverse_range)+1);
+				selb <= std_logic_vector(cntrb(selb'reverse_range)+1);
 			end if;
 		end process;
 
