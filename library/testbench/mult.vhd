@@ -52,10 +52,14 @@ begin
 		constant sizma : natural := ma'length/mier'length;
 		constant sizmb : natural := mr'length/mier'length;
 
+		signal inia   : std_logic;
+		signal inim   : std_logic;
+		signal vinia  : std_logic;
+		signal vinim  : std_logic;
 		signal sela   : std_logic_vector(0 to unsigned_num_bits(sizma-1)-1);
 		signal selb   : std_logic_vector(0 to unsigned_num_bits(sizmb-1)-1);
 
-		signal prod   : std_logic_vector(mand'length+mier'length-1 downto 0);
+		signal pprod   : std_logic_vector(mand'length+mier'length-1 downto 0);
 
 		signal ci     : std_logic;
 		signal b      : std_logic_vector(mier'length-1 downto 0);
@@ -64,27 +68,9 @@ begin
 
 		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
-		signal inia   : std_logic;
-		signal inim   : std_logic;
-		signal vinia  : std_logic;
-		signal vinim  : std_logic;
-		signal pp   : std_logic_vector(mier'range);
+		signal msppd   : std_logic_vector(mier'range);
 		signal dg   : std_logic_vector(mier'range);
 		signal dv     : std_logic;
-
-		function xx (
-			constant a : std_logic_vector(4-1 downto 0))
-			return unsigned is
-			variable retval : unsigned(4-1 downto 0);
-		begin
-			retval := (others => '0');
-			for i in a'range loop
-				if a(i) = '1' then
-					retval := retval + (x"f" sll i);
-				end if;
-			end loop;
-			return retval;
-		end;
 
 	begin
 
@@ -97,42 +83,52 @@ begin
 			ini     => inim,
 			multand => mand,
 			multier => mier,
-			product => prod);
+			product => pprod);
 
-		b  <=
-		(b'range => '0') when inia='1' else
-		fifo_o(b'range);
-
-		dg  <= s;
+		b  <= (b'range => '0') when inia='1' else fifo_o(b'range);
 		adder_e : entity hdl4fpga.adder
 		port map (
 			clk => clk,
 			ini => inim,
 			ci  => ci,
-			a   => prod(mier'range),
+			a   => pprod(mier'range),
 			b   => b,
 			s   => s,
 			co  => co);
 
-		xxp  : process (clk)
-			variable temp : unsigned(prod'range);
+		sign_extension_p : process (clk)
+			function sign_extension (
+				constant mier : std_logic_vector)
+				return unsigned is
+				variable retval : unsigned(mier'range);
+			begin
+				retval := (others => '0');
+				for i in mier'range loop
+					if mier(i) = '1' then
+						retval := retval + ((mier'range => '1') sll i);
+					end if;
+				end loop;
+				return retval;
+			end;
+
+			variable temp : unsigned(pprod'range);
 			variable f    : std_logic;
+
 		begin
 			if rising_edge(clk) then
-				temp := unsigned(prod);
-				temp := temp srl mier'length;
-				temp := temp + xx(mier);
-				pp <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f xor co));
+				temp  := unsigned(pprod);
+				temp  := temp srl mier'length;
+				temp  := temp + sign_extension(mier);
+				msppd <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f xor co));
 				if inia='1' then
 					f := '0';
 				elsif inim='1' then
 					f := '1';
 				end if;
-				
 			end if;
 		end process;
 
-		fifo_i <= s when inim='0' else pp;
+		fifo_i <= s when inim='0' else msppd;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -183,6 +179,8 @@ begin
 				end if;
 			end if;
 		end process;
+
+		dg <= s;
 
 	end block;
 
