@@ -14,12 +14,11 @@ add wave -noupdate /testbench/mulp_b/sela
 add wave -noupdate /testbench/mulp_b/selb
 add wave -noupdate /testbench/mulp_b/inim
 add wave -noupdate /testbench/mulp_b/ci
-add wave -noupdate -radix unsigned /testbench/mulp_b/b
+add wave -noupdate -radix hexadecimal /testbench/mulp_b/b
 add wave -noupdate -radix hexadecimal /testbench/mulp_b/s
 add wave -noupdate /testbench/mulp_b/co
-add wave -noupdate /testbench/mulp_b/state_p/vinim
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {109 ns} 0}
+WaveRestoreCursors {{Cursor 1} {85 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -35,4 +34,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {162 ns}
+WaveRestoreZoom {0 ns} {252 ns}

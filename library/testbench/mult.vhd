@@ -43,7 +43,7 @@ begin
 
 	mulp_b : block
 
-		constant ma : std_logic_vector := x"0EDC";
+		constant ma : std_logic_vector := x"EDC";
 		constant mr : std_logic_vector := x"FDEF";
 
 		signal mier   : std_logic_vector(4-1 downto 0);
@@ -73,24 +73,23 @@ begin
 		signal dv     : std_logic;
 
 		function xx (
-			constant a : std_logic_vector(4-1 downto 0);
-			constant pp : std_logic)
-			return std_logic_vector is
+			constant a : std_logic_vector(4-1 downto 0))
+			return unsigned is
 			variable retval : unsigned(4-1 downto 0);
 		begin
-			retval := (others => pp);
+			retval := (others => '0');
 			for i in a'range loop
 				if a(i) = '1' then
 					retval := retval + (x"f" sll i);
 				end if;
 			end loop;
-			return std_logic_vector(retval);
+			return retval;
 		end;
 
 	begin
 
-		mand <= word2byte(std_logic_vector(unsigned(ma) rol mand'length), sela);
-		mier <= word2byte(std_logic_vector(unsigned(mr) rol mier'length), selb);
+		mand <= word2byte(ma, sela, mand'length);
+		mier <= word2byte(mr, selb, mand'length);
 
 		multp_e : entity hdl4fpga.mult
 		port map (
@@ -112,7 +111,17 @@ begin
 			s   => s,
 			co  => co);
 
-		fifo_i <= s when inim='0' else xx(mier, pp);
+		process (clk)
+			variable temp : unsigned(prod'range);
+		begin
+			if rising_edge(clk) then
+				temp := unsigned(prod);
+				temp := temp srl mand'length;
+				temp := temp + xx(mier);
+			end if;
+		end process;
+
+		fifo_i <= s;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -129,12 +138,11 @@ begin
 			variable s     : std_logic;
 		begin
 			if rising_edge(clk) then 
-				sela <= std_logic_vector(cntra(sela'reverse_range));
-				selb <= std_logic_vector(cntrb(selb'reverse_range));
+				sela <= std_logic_vector(cntra(sela'reverse_range)+1);
+				selb <= std_logic_vector(cntrb(selb'reverse_range)+1);
 				inia <= vinia;
 				inim <= vinim;
 				sign <= mand(mand'left);
-				pp <= inim and not inia;
 				if ini='1' then
 					dv    <= '0';
 					ci    <= '0';
