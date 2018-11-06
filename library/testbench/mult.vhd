@@ -69,6 +69,7 @@ begin
 		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
 		signal msppd   : std_logic_vector(mier'range);
+		signal msppd_ci     : unsigned(0 to 0);
 		signal dg   : std_logic_vector(mier'range);
 		signal dv     : std_logic;
 
@@ -119,7 +120,8 @@ begin
 				temp  := unsigned(pprod);
 				temp  := temp srl mier'length;
 				temp  := temp + sign_extension(mier);
-				msppd <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f xor co));
+				msppd <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f));
+				msppd_ci(0) <= co;
 				if inia='1' then
 					f := '0';
 				elsif inim='1' then
@@ -128,7 +130,7 @@ begin
 			end if;
 		end process;
 
-		fifo_i <= s when inim='0' else msppd;
+		fifo_i <= s when inim='0' else std_logic_vector(unsigned(msppd) + msppd_ci);
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
