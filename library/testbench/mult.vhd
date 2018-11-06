@@ -71,6 +71,8 @@ begin
 		signal sign   : std_logic;
 		signal pp   : std_logic_vector(mier'range);
 		signal dg   : std_logic_vector(mier'range);
+		signal cc   : unsigned(mier'range);
+		signal kk   : unsigned(mier'range);
 		signal dv     : std_logic;
 
 		function xx (
@@ -115,19 +117,31 @@ begin
 			s   => s,
 			co  => co);
 
-		process (clk)
+		xxp  : process (clk)
 			variable temp : unsigned(prod'range);
+			variable xxxx : unsigned(mier'range);
 		begin
 			if rising_edge(clk) then
 				temp := unsigned(prod);
-				temp := temp srl mand'length;
+				temp := temp srl mier'length;
+				kk   <= temp(mier'range);
 				temp := temp + xx(mier);
-				pp   <= std_logic_vector(temp(mier'range));
+				cc <=  xx(mier);
+				if co='1' then
+					pp <= std_logic_vector(temp(mier'range) + (xxxx + 1));
+				else
+					pp <= std_logic_vector(temp(mier'range) + (xxxx + 0));
+				end if;
+				if inia='1' then
+					xxxx :=(others => '0');
+				elsif inim='1' then
+					xxxx :=(others => '1');
+				end if;
 				
 			end if;
 		end process;
 
-		fifo_i <= s when inim='0' ;
+		fifo_i <= s when inim='0' else pp;
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
