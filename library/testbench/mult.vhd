@@ -67,7 +67,8 @@ begin
 
 		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
-		signal msppd  : std_logic_vector(mier'range);
+		signal msppd  : unsigned(mier'range);
+		signal mspdg  : unsigned(mier'range);
 		signal dg   : std_logic_vector(mier'range);
 
 	begin
@@ -103,6 +104,7 @@ begin
 			co  => co);
 
 		sign_extension_p : process (clk)
+
 			function sign_extension (
 				constant mier : std_logic_vector)
 				return unsigned is
@@ -118,23 +120,28 @@ begin
 			end;
 
 			variable temp : unsigned(pprod'range);
-			variable f    : std_logic;
+			variable sign : std_logic;
+			variable extn : std_logic;
 
 		begin
+
 			if rising_edge(clk) then
 				temp  := unsigned(pprod);
 				temp  := temp srl mier'length;
 				temp  := temp + sign_extension(mier);
-				msppd <= std_logic_vector(temp(mier'range) + unsigned'(mier'range => f));
+				msppd <= temp(mier'range) + unsigned'(mier'range => extn);
 				if inia='1' then
-					f := '0';
+					extn := '0';
 				elsif inim='1' then
-					f := '1';
+					extn := sign;
 				end if;
+				sign := mand(mand'left);
 			end if;
-		end process;
 
-		fifo_i <= s when inim='0' else std_logic_vector(unsigned(msppd) + unsigned'(0 to 0 => cy));
+		end process;
+		mspdg <= msppd + unsigned'(0 to 0 => cy);
+
+		fifo_i <= s when inim='0' else std_logic_vector(mspdg);
 		fifo_e : entity hdl4fpga.align
 		generic map (
 			n => mier'length,
@@ -150,25 +157,24 @@ begin
 		begin
 			if rising_edge(clk) then 
 				if ini='1' then
-					cntra := to_unsigned(sizma-2, cntra'length);
-					cntrb := to_unsigned(sizmb-2, cntrb'length);
-					inia <= '1';
-					inim <= '1';
+					cntra := to_unsigned(sizma-1, cntra'length);
+					cntrb := to_unsigned(sizmb-1, cntrb'length);
+					inia  <= '1';
+					inim  <= '1';
 				else
-					inim <= '0';
+					inim  <= '0';
+					cntra := cntra - 1;
 					if cntra(cntra'left)='1' then
 						if cntrb(cntrb'left)='0' then
-							cntra := to_unsigned(sizma-2, cntra'length);
+							cntra := to_unsigned(sizma-1, cntra'length);
 							cntrb := cntrb - 1;
-							inia <= '0';
-							inim <= '1';
+							inia  <= '0';
+							inim  <= '1';
 						end if;
-					else
-						cntra := cntra - 1;
 					end if;
 				end if;
-				sela <= std_logic_vector(cntra(sela'reverse_range)+1);
-				selb <= std_logic_vector(cntrb(selb'reverse_range)+1);
+				sela <= std_logic_vector(cntra(sela'reverse_range));
+				selb <= std_logic_vector(cntrb(selb'reverse_range));
 			end if;
 		end process;
 
