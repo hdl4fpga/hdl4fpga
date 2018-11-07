@@ -127,8 +127,8 @@ begin
 			temp  := unsigned(pprod);
 			temp  := temp srl mier'length;
 			if true then
-				temp  := temp + sign_extension(mier);
-				msppd <= temp(mier'range) + unsigned'(mier'range => extn);
+				temp(mier'range)  := temp(mier'range) + sign_extension(mier);
+				msppd <= temp(mier'range) + (0 to mier'length-1 => extn);
 			else
 				msppd <= temp(mier'range);
 			end if;
@@ -191,6 +191,7 @@ begin
 				temp(mier'reverse_range) := unsigned(dg);
 				temp := temp srl dg'length;
 			end if;
+			product <= std_logic_vector(temp);
 			valid <= last and inim;
 		end if;
 	end process;

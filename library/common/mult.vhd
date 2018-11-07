@@ -32,7 +32,6 @@ entity mult is
 	port (
 		clk     : in  std_logic := '-';
 		ini     : in  std_logic := '1';
-		accmltr : in  std_logic_vector := (0 to 0 => '0');
 		multand : in  std_logic_vector;
 		multier : in  std_logic_vector;
 		product : out std_logic_vector);
@@ -64,6 +63,7 @@ architecture def of mult is
 	signal product_d : std_logic_vector(0 to product'length-1);
 	signal accmltr_d : std_logic_vector(0 to multand'length-1);
 	signal accmltr_q : std_logic_vector(accmltr_d'range);
+	constant accmltr : std_logic_vector(accmltr_d'range):= (others => '0');
 
 begin
 
