@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 
@@ -33,19 +34,17 @@ entity test is
 		multand : in  std_logic_vector(16-1 downto 0);
 		multier : in  std_logic_vector( 8-1 downto 0);
 		valid   : out std_logic;
-		product : out std_logic_vector(24-1 downto 0));
+		product : out signed(24-1 downto 0));
 end;
 
 architecture smult of test is
 begin
-	smult_e : entity hdl4fpga.smult
-	generic map (
-		size => 4)
+	smult_e : entity hdl4fpga.boothmult
 	port map (
 		clk     => clk,
 		ini     => ini,
-		multand => multand,
-		multier => multier,
+		multand => signed(multand),
+		multier => signed(multier),
 		valid   => valid,
 		product => product);
 end;
