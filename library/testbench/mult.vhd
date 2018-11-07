@@ -69,7 +69,9 @@ begin
 		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
 		signal msppd  : unsigned(mier'range);
 		signal mspdg  : unsigned(mier'range);
-		signal dg   : std_logic_vector(mier'range);
+		signal last   : std_logic;
+		signal dg     : std_logic_vector(mier'range);
+		signal dv     : std_logic;
 
 	begin
 
@@ -128,8 +130,12 @@ begin
 			if rising_edge(clk) then
 				temp  := unsigned(pprod);
 				temp  := temp srl mier'length;
-				temp  := temp + sign_extension(mier);
-				msppd <= temp(mier'range) + unsigned'(mier'range => extn);
+				if true then
+					temp  := temp + sign_extension(mier);
+					msppd <= temp(mier'range) + unsigned'(mier'range => extn);
+				else
+					msppd <= temp(mier'range);
+				end if;
 				if inia='1' then
 					extn := '0';
 				elsif inim='1' then
@@ -139,8 +145,8 @@ begin
 			end if;
 
 		end process;
-		mspdg <= msppd + unsigned'(0 to 0 => cy);
 
+		mspdg  <= msppd + unsigned'(0 to 0 => cy);
 		fifo_i <= s when inim='0' else std_logic_vector(mspdg);
 		fifo_e : entity hdl4fpga.align
 		generic map (
@@ -151,7 +157,7 @@ begin
 			di  => fifo_i,
 			do  => fifo_o);
 
-		state_p : process (clk, ini)
+		state_p : process (clk)
 			variable cntra : unsigned(sela'length downto 0);
 			variable cntrb : unsigned(selb'length downto 0);
 		begin
@@ -173,12 +179,14 @@ begin
 						end if;
 					end if;
 				end if;
+				last <= setif(selb=(selb'range => '0'));
 				sela <= std_logic_vector(cntra(sela'reverse_range));
 				selb <= std_logic_vector(cntrb(selb'reverse_range));
 			end if;
 		end process;
 
-		dg <= s;
+		dg <= std_logic_vector(mspdg) when last='1' and inim='1' else s;
+		dv <= not ini and (inim or last);
 
 	end block;
 
