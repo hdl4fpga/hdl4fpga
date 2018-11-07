@@ -29,171 +29,170 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity smult is
+	generic (
+		size    : natural := 4);
 	port (
-		clk : in std_logic;
-		ini : in std_logic;
-		multand : in std_logic_vector;
-		multier : in std_logic_vector;
-		
+		clk     : in  std_logic;
+		ini     : in  std_logic;
+		multand : in  std_logic_vector;
+		multier : in  std_logic_vector;
+		valid   : out std_logic;
+		product : out std_logic_vector);
 end;
 
-architecture mult of testbench is
+architecture def of smult is
 
-	signal clk : std_logic := '0';
-	signal ini : std_logic;
+	constant sizma : natural := (multand'length+size-1)/size;
+	constant sizmb : natural := (multier'length+size-1)/size;
 
-	signal product : std_logic_vector(0 to 8-1);
+	signal mier    : std_logic_vector(size-1 downto 0);
+	signal mand    : std_logic_vector(mier'range);
+
+	signal inia    : std_logic;
+	signal inim    : std_logic;
+	signal sela    : std_logic_vector(0 to unsigned_num_bits(sizma-1)-1);
+	signal selb    : std_logic_vector(0 to unsigned_num_bits(sizmb-1)-1);
+
+	signal pprod   : std_logic_vector(mand'length+mier'length-1 downto 0);
+
+	signal cy      : std_logic;
+	signal ci      : std_logic;
+	signal b       : std_logic_vector(mier'length-1 downto 0);
+	signal s       : std_logic_vector(mier'length-1 downto 0);
+	signal co      : std_logic;
+
+	signal fifo_i  : std_logic_vector(mier'length-1 downto 0);
+	signal fifo_o  : std_logic_vector(mier'length-1 downto 0);
+	signal msppd   : unsigned(mier'range);
+	signal mspdg   : unsigned(mier'range);
+	signal last    : std_logic;
+	signal dg      : std_logic_vector(mier'range);
+	signal dv      : std_logic;
+
 begin
-	clk <= not clk after 5 ns;
-	ini <= '1', '0' after 26 ns;
 
-	mulp_b : block
+	mand <= word2byte(multand, sela, mand'length);
+	mier <= word2byte(multier, selb, mand'length);
 
-		constant ma : std_logic_vector := x"EDC";
-		constant mr : std_logic_vector := x"FDEF";
+	multp_e : entity hdl4fpga.mult
+	port map (
+		clk     => clk,
+		ini     => inim,
+		multand => mand,
+		multier => mier,
+		product => pprod);
 
-		signal mier   : std_logic_vector(4-1 downto 0);
-		signal mand   : std_logic_vector(mier'range);
+	cy_p : process (clk)
+	begin
+		if rising_edge(clk) then 
+			cy <= co;
+		end if;
+	end process;
 
-		constant sizma : natural := ma'length/mier'length;
-		constant sizmb : natural := mr'length/mier'length;
+	ci <= cy when inim='0' else '0';
+	b  <= (b'range => '0') when inia='1' else fifo_o(b'range);
+	adder_e : entity hdl4fpga.adder
+	port map (
+		clk => clk,
+		ini => inim,
+		ci  => ci,
+		a   => pprod(mier'range),
+		b   => b,
+		s   => s,
+		co  => co);
 
-		signal inia   : std_logic;
-		signal inim   : std_logic;
-		signal sela   : std_logic_vector(0 to unsigned_num_bits(sizma-1)-1);
-		signal selb   : std_logic_vector(0 to unsigned_num_bits(sizmb-1)-1);
+	sign_extension_p : process (clk)
 
-		signal pprod   : std_logic_vector(mand'length+mier'length-1 downto 0);
+		function sign_extension (
+			constant mier : std_logic_vector)
+			return unsigned is
+			variable retval : unsigned(mier'range);
+		begin
+			retval := (others => '0');
+			for i in mier'range loop
+				if mier(i) = '1' then
+					retval := retval + ((mier'range => '1') sll i);
+				end if;
+			end loop;
+			return retval;
+		end;
 
-		signal cy     : std_logic;
-		signal ci     : std_logic;
-		signal b      : std_logic_vector(mier'length-1 downto 0);
-		signal s      : std_logic_vector(mier'length-1 downto 0);
-		signal co     : std_logic;
-
-		signal fifo_i : std_logic_vector(mier'length-1 downto 0);
-		signal fifo_o : std_logic_vector(mier'length-1 downto 0);
-		signal msppd  : unsigned(mier'range);
-		signal mspdg  : unsigned(mier'range);
-		signal last   : std_logic;
-		signal dg     : std_logic_vector(mier'range);
-		signal dv     : std_logic;
+		variable temp : unsigned(pprod'range);
+		variable sign : std_logic;
+		variable extn : std_logic;
 
 	begin
 
-		mand <= word2byte(ma, sela, mand'length);
-		mier <= word2byte(mr, selb, mand'length);
-
-		multp_e : entity hdl4fpga.mult
-		port map (
-			clk     => clk,
-			ini     => inim,
-			multand => mand,
-			multier => mier,
-			product => pprod);
-
-		cy_p : process (clk)
-		begin
-			if rising_edge(clk) then 
-				cy <= co;
+		if rising_edge(clk) then
+			temp  := unsigned(pprod);
+			temp  := temp srl mier'length;
+			if true then
+				temp  := temp + sign_extension(mier);
+				msppd <= temp(mier'range) + unsigned'(mier'range => extn);
+			else
+				msppd <= temp(mier'range);
 			end if;
-		end process;
-
-		ci <= cy when inim='0' else '0';
-		b  <= (b'range => '0') when inia='1' else fifo_o(b'range);
-		adder_e : entity hdl4fpga.adder
-		port map (
-			clk => clk,
-			ini => inim,
-			ci  => ci,
-			a   => pprod(mier'range),
-			b   => b,
-			s   => s,
-			co  => co);
-
-		sign_extension_p : process (clk)
-
-			function sign_extension (
-				constant mier : std_logic_vector)
-				return unsigned is
-				variable retval : unsigned(mier'range);
-			begin
-				retval := (others => '0');
-				for i in mier'range loop
-					if mier(i) = '1' then
-						retval := retval + ((mier'range => '1') sll i);
-					end if;
-				end loop;
-				return retval;
-			end;
-
-			variable temp : unsigned(pprod'range);
-			variable sign : std_logic;
-			variable extn : std_logic;
-
-		begin
-
-			if rising_edge(clk) then
-				temp  := unsigned(pprod);
-				temp  := temp srl mier'length;
-				if true then
-					temp  := temp + sign_extension(mier);
-					msppd <= temp(mier'range) + unsigned'(mier'range => extn);
-				else
-					msppd <= temp(mier'range);
-				end if;
-				if inia='1' then
-					extn := '0';
-				elsif inim='1' then
-					extn := sign;
-				end if;
-				sign := mand(mand'left);
+			if inia='1' then
+				extn := '0';
+			elsif inim='1' then
+				extn := sign;
 			end if;
+			sign := mand(mand'left);
+		end if;
 
-		end process;
+	end process;
 
-		mspdg  <= msppd + unsigned'(0 to 0 => cy);
-		fifo_i <= s when inim='0' else std_logic_vector(mspdg);
-		fifo_e : entity hdl4fpga.align
-		generic map (
-			n => mier'length,
-			d => (0 to fifo_i'length => sizma-1))
-		port map (
-			clk => clk,
-			di  => fifo_i,
-			do  => fifo_o);
+	mspdg  <= msppd + unsigned'(0 to 0 => cy);
+	fifo_i <= s when inim='0' else std_logic_vector(mspdg);
+	fifo_e : entity hdl4fpga.align
+	generic map (
+		n => mier'length,
+		d => (0 to fifo_i'length => sizma-1))
+	port map (
+		clk => clk,
+		di  => fifo_i,
+		do  => fifo_o);
 
-		state_p : process (clk)
-			variable cntra : unsigned(sela'length downto 0);
-			variable cntrb : unsigned(selb'length downto 0);
-		begin
-			if rising_edge(clk) then 
-				if ini='1' then
-					cntra := to_unsigned(sizma-1, cntra'length);
-					cntrb := to_unsigned(sizmb-1, cntrb'length);
-					inia  <= '1';
-					inim  <= '1';
-				else
-					inim  <= '0';
-					cntra := cntra - 1;
-					if cntra(cntra'left)='1' then
-						if cntrb(cntrb'left)='0' then
-							cntra := to_unsigned(sizma-1, cntra'length);
-							cntrb := cntrb - 1;
-							inia  <= '0';
-							inim  <= '1';
-						end if;
+	state_p : process (clk)
+		variable cntra : unsigned(sela'length downto 0);
+		variable cntrb : unsigned(selb'length downto 0);
+	begin
+		if rising_edge(clk) then 
+			if ini='1' then
+				cntra := to_unsigned(sizma-1, cntra'length);
+				cntrb := to_unsigned(sizmb-1, cntrb'length);
+				inia  <= '1';
+				inim  <= '1';
+			else
+				inim  <= '0';
+				cntra := cntra - 1;
+				if cntra(cntra'left)='1' then
+					if cntrb(cntrb'left)='0' then
+						cntra := to_unsigned(sizma-1, cntra'length);
+						cntrb := cntrb - 1;
+						inia  <= '0';
+						inim  <= '1';
 					end if;
 				end if;
-				last <= setif(selb=(selb'range => '0'));
-				sela <= std_logic_vector(cntra(sela'reverse_range));
-				selb <= std_logic_vector(cntrb(selb'reverse_range));
 			end if;
-		end process;
+			last <= setif(selb=(selb'range => '0'));
+			sela <= std_logic_vector(cntra(sela'reverse_range));
+			selb <= std_logic_vector(cntrb(selb'reverse_range));
+		end if;
+	end process;
 
-		dg <= std_logic_vector(mspdg) when last='1' and inim='1' else s;
-		dv <= not ini and (inim or last);
-
-	end block;
+	dg <= std_logic_vector(mspdg) when last='1' and inim='1' else s;
+	dv <= not ini and (inim or last);
+	process (clk)
+		variable temp : unsigned(0 to multand'length+multier'length-1);
+	begin
+		if rising_edge(clk) then
+			if dv='1' then
+				temp(mier'reverse_range) := unsigned(dg);
+				temp := temp srl dg'length;
+			end if;
+			valid <= last and inim;
+		end if;
+	end process;
 
 end;
