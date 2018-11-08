@@ -21,63 +21,35 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity boothmult is
-	port (
-		clk     : in  std_logic;
-		ini     : in  std_logic;
-		multand : in  signed;
-		multier : in  signed;
-		valid   : out std_logic;
-		product : out signed);
-end;
+architecture boothmult of testbench is
 
-architecture def of boothmult is
+	signal clk : std_logic := '0';
+	signal ini : std_logic;
 
-		signal cntr : unsigned(0 to unsigned_num_bits(multier'length-1));
+	signal product : signed(0 to 3*4-1);
 begin
+	clk <= not clk after 5 ns;
+	ini <= '1', '0' after 26 ns;
 
-	process(clk)
-		variable acc : signed(0 to multier'length+multand'length-1);
-		variable acc1 : signed(0 to multier'length+multand'length-1);
-		variable lsb : unsigned(0 to 2-1);
-	begin
-		if rising_edge(clk) then
-			if ini='1' then
-				lsb := (others => '0');
-				acc := (multand'range => '0') & multier;
-			else
-				lsb    := lsb srl 1;
-				lsb(0) := acc(acc'right);
-				acc    := shift_right(acc, 1);
-				acc1   := acc;
-				case lsb is 
-				when "10" =>
-					acc(0 to multand'length-1) := acc(0 to multand'length-1) - multand;
-				when "01" =>
-					acc(0 to multand'length-1) := acc(0 to multand'length-1) + multand;
-				when others =>
-				end case;
-			end if;
-			product <= acc;
-		end if;
-	end process;
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			if ini='1' then
-				cntr <= to_unsigned(multier'length-1, cntr'length);
-			elsif cntr(0)='0' then
-				cntr <= cntr - 1;
-			end if;
-			valid <= cntr(0);
-		end if;
-	end process;
+	mult_e : entity hdl4fpga.boothmult
+	port map (
+		clk     => clk,
+		ini     => ini,
+		multand => x"55",
+		multier => x"1",
+		product => product);
+
+
+
 end;
