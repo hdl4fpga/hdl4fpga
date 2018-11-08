@@ -45,7 +45,6 @@ begin
 
 	process(clk)
 		variable acc : signed(0 to multier'length+multand'length-1);
-		variable acc1 : signed(0 to multier'length+multand'length-1);
 		variable lsb : unsigned(0 to 2-1);
 	begin
 		if rising_edge(clk) then
@@ -56,7 +55,6 @@ begin
 				lsb    := lsb srl 1;
 				lsb(0) := acc(acc'right);
 				acc    := shift_right(acc, 1);
-				acc1   := acc;
 				case lsb is 
 				when "10" =>
 					acc(0 to multand'length-1) := acc(0 to multand'length-1) - multand;
