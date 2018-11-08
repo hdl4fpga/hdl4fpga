@@ -54,7 +54,6 @@ begin
 			else
 				lsb    := lsb srl 1;
 				lsb(0) := acc(acc'right);
-				acc    := shift_right(acc, 1);
 				case lsb is 
 				when "10" =>
 					acc(0 to multand'length-1) := acc(0 to multand'length-1) - multand;
@@ -62,6 +61,7 @@ begin
 					acc(0 to multand'length-1) := acc(0 to multand'length-1) + multand;
 				when others =>
 				end case;
+				acc := shift_right(acc, 1);
 			end if;
 			product <= acc;
 		end if;
@@ -71,7 +71,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ini='1' then
-				cntr <= to_unsigned(multier'length-1, cntr'length);
+				cntr <= to_unsigned(multier'length-2, cntr'length);
 			elsif cntr(0)='0' then
 				cntr <= cntr - 1;
 			end if;

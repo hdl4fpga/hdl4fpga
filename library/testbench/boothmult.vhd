@@ -46,10 +46,8 @@ begin
 	port map (
 		clk     => clk,
 		ini     => ini,
-		multand => x"55",
-		multier => x"1",
+		multand => x"ab",
+		multier => x"9",
 		product => product);
-
-
 
 end;
