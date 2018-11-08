@@ -40,7 +40,6 @@ end;
 
 architecture def of boothmult is
 
-		signal cntr : unsigned(0 to unsigned_num_bits(multier'length-1));
 begin
 
 	process(clk)
@@ -57,23 +56,26 @@ begin
 				case lsb is 
 				when "10" =>
 					acc(0 to multand'length-1) := acc(0 to multand'length-1) - multand;
+					acc := shift_right(acc, 1);
 				when "01" =>
 					acc(0 to multand'length-1) := acc(0 to multand'length-1) + multand;
+					acc := shift_right(acc, 1);
 				when others =>
+					acc := shift_right(acc, 1);
 				end case;
-				acc := shift_right(acc, 1);
 			end if;
 			product <= acc;
 		end if;
 	end process;
 
 	process (clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(multier'length-1));
 	begin
 		if rising_edge(clk) then
 			if ini='1' then
-				cntr <= to_unsigned(multier'length-2, cntr'length);
+				cntr := to_unsigned(multier'length-2, cntr'length);
 			elsif cntr(0)='0' then
-				cntr <= cntr - 1;
+				cntr := cntr - 1;
 			end if;
 			valid <= cntr(0);
 		end if;
