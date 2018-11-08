@@ -26,52 +26,44 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-architecture scopeio_format of testbench is
-	signal rst     : std_logic := '1';
-	signal clk     : std_logic := '0';
+architecture btod of testbench is
 
-	signal fill_ena : std_logic := '1';
-	signal point    : std_logic_vector(0 to 2) := "111";
+	signal rst : std_logic := '0';
+	signal clk : std_logic := '0';
 
-	signal value    : std_logic_vector(16-1 downto 0);
-	signal bcd_dv   : std_logic;
-	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
-	signal binary_ena : std_logic;
-	signal binary_dv : std_logic;
-	signal t        : std_logic;
+	signal bcd_dv  : std_logic;
+	signal bcd_di  : std_logic_vector(0 to 4-1);
+	signal bcd_ena : std_logic;
+	signal bcd_do  : std_logic_vector(bcd_di'range);
+	signal bcd_cy  : std_logic;
 
 begin
-
-	clk <= not clk  after  5 ns;
-	rst <= '1', '0' after 26 ns;
+	rst    <= '1', '0' after 15 ns;
+	clk    <= not clk after 10 ns;
 
 	process (clk)
+		variable binary : unsigned(0 to 2*4-1);
 	begin
 		if rising_edge(clk) then
-			if rst='0' then
-				binary_ena <= '1';
-				if binary_dv='1' then
-					t <= not t;
-				end if;
+			if rst='1' then
+				bcd_ena <= '1';
+				binary  := x"26";
 			else
-				t <= '0';
-				binary_ena <= '0';
+				bcd_ena <= '0';
+				binary  := binary sll 4;
 			end if;
+			bcd_di <= std_logic_vector(binary(bcd_di'range));
 		end if;
 	end process;
 
-	value <= b"0000_1111_1111_1111" when t='0' else b"0001_0000_0101_1111";
-	du: entity hdl4fpga.scopeio_format
+	du : entity hdl4fpga.dtof
 	port map (
-		clk        => clk,
-		binary_ena => binary_ena,
-		binary_dv  => binary_dv,
-		binary     => value,
-		point      => point,
-		bcd_left   => '0',
-		bcd_dv     => bcd_dv,
-		bcd_dat    => bcd_dat);
+		clk     => clk,
+		point   => b"00",
+		bcd_ena => bcd_ena,
+		bcd_di  => bcd_di,
+		bcd_do  => bcd_do,
+		bcd_cy  => bcd_cy);
 
 end;
