@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity smult is
+entity multp is
 	generic (
 		size    : natural := 4);
 	port (
@@ -40,7 +40,7 @@ entity smult is
 		product : out std_logic_vector);
 end;
 
-architecture def of smult is
+architecture def of multp is
 
 	constant sizma : natural := (multand'length+size-1)/size;
 	constant sizmb : natural := (multier'length+size-1)/size;
