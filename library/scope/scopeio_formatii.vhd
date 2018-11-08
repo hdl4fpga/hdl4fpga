@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_format is
+entity scopeio_formatii is
 	port (
 		clk        : in  std_logic;
 		binary     : in  std_logic_vector;
@@ -41,7 +41,7 @@ entity scopeio_format is
 		bcd_dat    : out std_logic_vector);
 end;
 
-architecture def of scopeio_format is
+architecture def of scopeio_formatii is
 
 	signal bin_ena : std_logic;
     signal bin_dv  : std_logic;
@@ -102,11 +102,10 @@ begin
 		binary_dv <= dv;
 		bin_ena <= ena and binary_ena;
 
-
 		process (binary, sel)
 			variable value : std_logic_vector(bin_di'length*2**sel'length-1 downto 0);
 		begin
-			value  := (others => '-');
+			value := (others => '-');
 			if signed(binary) < 0 then
 				value(binary'length-1 downto 0) := std_logic_vector(-signed(binary));
 				negative <= '1';

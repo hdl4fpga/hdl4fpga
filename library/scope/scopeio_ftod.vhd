@@ -11,6 +11,7 @@ entity scopeio_ftod is
 		bin_ena : in  std_logic;
 		bin_dv  : out std_logic;
 		bin_di  : in  std_logic_vector;
+		bin_fix : in  std_logic := '0';
 
 		bcd_rdy : out std_logic;
 		bcd_lft : out std_logic_vector(4-1 downto 0);
@@ -22,8 +23,6 @@ end;
 architecture def of scopeio_ftod is
 
     signal bcd_lst : std_logic;
-
-	signal bin_fix : std_logic := '0';
 
 begin
 

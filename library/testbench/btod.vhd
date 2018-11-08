@@ -37,6 +37,21 @@ begin
 	rst <= '1', '0' after 5 ns;
 	clk <= not clk after 10 ns;
 
+	process (clk)
+		variable binary : unsigned(0 to 2*4-1);
+	begin
+		if rising_edge(clk) then
+			if rst='1' then
+				bcd_ena <= '1';
+				binary  := x"26";
+			else
+				bcd_ena <= '0';
+				binary  := binary sll 4;
+			end if;
+			bin_di <= std_logic_vector(binary(bin_di'range));
+		end if;
+	end process;
+
 	du : entity hdl4fpga.btod
 	port map (
 		clk    => clk,

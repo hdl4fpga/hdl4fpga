@@ -132,6 +132,7 @@ begin
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,
+		bin_fix => bin_fix,
 		bin_dv  => bin_dv,
 		bin_di  => bin_di,
                            
