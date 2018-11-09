@@ -32,6 +32,11 @@ architecture btod of testbench is
 	signal rst : std_logic := '0';
 	signal clk : std_logic := '0';
 
+	signal bin_dv : std_logic;
+	signal bin_di : std_logic_vector(0 to 4-1);
+	signal bcd_do : std_logic_vector(0 to 4-1);
+	signal bcd_di : std_logic_vector(0 to 4-1);
+	signal bcd_cy : std_logic;
 begin
 
 	rst <= '1', '0' after 5 ns;
@@ -42,11 +47,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				bcd_ena <= '1';
-				binary  := x"26";
+				bin_dv <= '1';
+				binary := x"ff";
 			else
-				bcd_ena <= '0';
-				binary  := binary sll 4;
+				bin_dv <= '0';
+				binary := binary sll 4;
 			end if;
 			bin_di <= std_logic_vector(binary(bin_di'range));
 		end if;
@@ -56,7 +61,8 @@ begin
 	port map (
 		clk    => clk,
 		bin_dv => bin_dv,
-		bin_di => x"0f1",
+		bin_di => bin_di,
+		bcd_di => bcd_di,
 		bcd_do => bcd_do,
 		bcd_cy => bcd_cy);
 

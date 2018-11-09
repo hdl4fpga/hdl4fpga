@@ -44,7 +44,6 @@ end;
 architecture def of scopeio_format is
 
 	signal bin_ena : std_logic;
-    signal bin_dv  : std_logic;
     signal bin_di  : std_logic_vector(0 to 4-1);
 
     signal bcd_rdy : std_logic;
@@ -133,7 +132,6 @@ begin
 		clk     => clk,
 		bin_ena => bin_ena,
 		bin_fix => bin_fix,
-		bin_dv  => bin_dv,
 		bin_di  => bin_di,
                            
 		bcd_rdy => bcd_rdy,

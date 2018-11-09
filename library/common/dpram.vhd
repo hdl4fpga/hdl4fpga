@@ -49,7 +49,7 @@ architecture def of dpram is
 		constant size   : natural)
 		return   word_vector is
 		variable aux    : std_logic_vector(0 to bitrom'length-1) := bitrom;
-		variable retval : word_vector(0 to size-1) := (others => (others => '-'));
+		variable retval : word_vector(0 to size-1);
 	begin
 		for i in 0 to bitrom'length/retval(0)'length-1 loop
 			exit when i > retval'high;

@@ -27,43 +27,26 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btod of testbench is
+entity test is
+	port (
+		clk     : in  std_logic;
+		point   : in  std_logic_vector(1-1 downto 0);
+		bcd_ena : in  std_logic;
+		bcd_dv  : in  std_logic;
+		bcd_cy  : out std_logic;
+		bcd_di  : in  std_logic_vector(4-1 downto 0);
+		bcd_do  : out std_logic_vector(4-1 downto 0));
+end;
 
-	signal rst : std_logic := '0';
-	signal clk : std_logic := '0';
-
-	signal bcd_dv  : std_logic;
-	signal bcd_ena : std_logic;
-	signal bcd_di  : std_logic_vector(0 to 4-1);
-	signal bcd_do  : std_logic_vector(bcd_di'range);
-	signal bcd_cy  : std_logic;
-
+architecture dtof of test is
 begin
-	rst    <= '1', '0' after 15 ns;
-	clk    <= not clk after 10 ns;
-
-	process (clk)
-		variable bcd : unsigned(0 to 2*4-1);
-	begin
-		if rising_edge(clk) then
-			if rst='1' then
-				bcd_ena <= '1';
-				bcd := x"26";
-			else
-				bcd_ena <= '0';
-				bcd := bcd sll 4;
-			end if;
-			bcd_di <= std_logic_vector(bcd(bcd_di'range));
-		end if;
-	end process;
-
-	du : entity hdl4fpga.dtof
+	dtof_e : entity hdl4fpga.dtof
 	port map (
 		clk     => clk,
-		point   => b"00",
+		point   => b"1",
 		bcd_ena => bcd_ena,
+		bcd_dv  => bcd_dv,
+		bcd_cy  => bcd_cy,
 		bcd_di  => bcd_di,
-		bcd_do  => bcd_do,
-		bcd_cy  => bcd_cy);
-
+		bcd_do  => bcd_do);
 end;

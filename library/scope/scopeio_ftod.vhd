@@ -9,7 +9,6 @@ entity scopeio_ftod is
 		clk     : in  std_logic;
 		bin_pnt : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bin_ena : in  std_logic;
-		bin_dv  : out std_logic;
 		bin_di  : in  std_logic_vector;
 		bin_fix : in  std_logic := '0';
 
@@ -46,7 +45,6 @@ begin
 	port map (
 		clk     => clk,
 		bin_ena => bin_ena,
-		bin_dv  => bin_dv,
 		bin_di  => bin_di,
 		bin_fix => bin_fix,
 

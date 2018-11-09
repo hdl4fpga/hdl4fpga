@@ -3,10 +3,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity dtof is
+	generic (
+		n  : natural := 0);
 	port (
 		clk     : in  std_logic := '0';
 		point   : in  std_logic_vector;
 		bcd_ena : in  std_logic := '1';
+		bcd_dv  : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;
 		bcd_do  : out std_logic_vector;
 		bcd_cy  : out std_logic);
@@ -31,32 +34,35 @@ architecture def of dtof is
 		end if;
 	end;
 
-	signal shtio_d : unsigned(2**point'length-1 downto 0);
-	signal shtio_q : unsigned(2**point'length-1 downto 0);
+	constant size  : natural := setif(n=0, 2**point'length, n);
+	signal shtio_d : unsigned(size-1 downto 0);
+	signal shtio_q : unsigned(size-1 downto 0);
 
 begin
 
 	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			shtio_q <= shtio_d;
+			if bcd_ena='1' then
+				shtio_q <= shtio_d;
+			end if;
 		end if;
 	end process;
 
-	process (bcd_di, bcd_ena, shtio_q)
+	process (bcd_di, bcd_dv, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
-		variable tmp_shtio : unsigned(2**point'length-1 downto 0);
+		variable tmp_shtio : unsigned(size-1 downto 0);
 		variable carry     : std_logic;
 	begin
 		tmp_value := unsigned(bcd_di);
-		if bcd_ena='1' then
+		if bcd_dv='1' then
 			tmp_shtio := (others => '0');
 		else
 			tmp_shtio := shtio_q;
 		end if;
 
 		carry := '0';
-		for k in 0 to 2**point'length-1 loop
+		for k in 0 to size-1 loop
 			if k <= to_integer(unsigned(not point)) then
 				for i in 0 to tmp_value'length/4-1 loop
 					tmp_value := tmp_value rol 4;
@@ -78,6 +84,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity btod is
 	port (
 		clk    : in  std_logic := '0';
@@ -85,10 +94,10 @@ entity btod is
 		bin_dv : in  std_logic;
 		bin_di : in  std_logic_vector;
 
-		bcd_dv : in  std_logic := '1';
-		bcd_di : in  std_logic_vector;
-		bcd_do : out std_logic_vector;
-		bcd_cy : out std_logic);
+		bcd_ena : in  std_logic := '1';
+		bcd_di  : in  std_logic_vector;
+		bcd_do  : out std_logic_vector;
+		bcd_cy  : out std_logic);
 end;
 
 architecture def of btod is
@@ -115,11 +124,13 @@ begin
 	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			shtio_q <= shtio_d;
+			if bcd_ena='1' then
+				shtio_q <= shtio_d;
+			end if;
 		end if;
 	end process;
 
-	comb_p : process (bin_dv, bin_di, bcd_dv, bcd_di, shtio_q)
+	comb_p : process (bin_dv, bin_di, bcd_di, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
 		variable tmp_shtio : unsigned(bin_di'length-1 downto 0);
 	begin
@@ -142,7 +153,7 @@ begin
 		bcd_do  <= std_logic_vector(tmp_value);
 		shtio_d <= tmp_shtio;
 	end process;
-	bcd_cy <= '1' when shtio_d /= (shtio_d'range => '0') else '0';
+	bcd_cy <= setif(shtio_d /= (shtio_d'range => '0'));
 
 end;
 
@@ -159,7 +170,6 @@ entity ftod is
 	port (
 		clk     : in  std_logic;
 		bin_ena : in  std_logic;
-		bin_dv  : out std_logic;
 		bin_fix : in  std_logic := '0';
 		bin_di  : in  std_logic_vector;
 
@@ -284,7 +294,6 @@ begin
 		end if;
 	end process;
 
-	bin_dv  <= btod_dv;
 	bcd_lst <= cntr(0) and not (carry and not mem_full);
 	bcd_di  <= (bcd_di'range => '0') when bcd_dv='1' else rd_data;
 
@@ -294,7 +303,6 @@ begin
 		bin_dv => btod_dv,
 		bin_di => bin_di,
 
-		bcd_dv => '1',
 		bcd_di => bcd_di,
 		bcd_do => btod_do,
 		bcd_cy => btod_cy);

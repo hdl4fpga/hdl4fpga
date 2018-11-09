@@ -120,11 +120,15 @@ package std is
 		return std_logic_vector;
 
 	function setif (
-		arg : boolean)
+		constant arg   : boolean;
+		constant true  : std_logic := '1';
+		constant false : std_logic := '0')
 		return std_logic;
 
 	function setif (
-		arg : boolean)
+		constant arg   : boolean;
+		constant true  : natural := 1;
+		constant false : natural := 0)
 		return natural;
 
 	function demux (
@@ -523,29 +527,33 @@ package body std is
 	end;
 
 	function setif (
-		arg : boolean)
+		constant arg   : boolean;
+		constant true  : std_logic := '1';
+		constant false : std_logic := '0')
 		return std_logic is
 		variable val : std_logic;
 	begin
 		if arg then
-			val := '1';
+			val := true;
 		else
-			val := '0';
+			val := false;
 		end if;
 		return val;
 	end function;
 
 	function setif (
-		arg : boolean)
+		constant arg   : boolean;
+		constant true  : natural := 1;
+		constant false : natural := 0)
 		return natural is
-		variable val : std_logic;
+		variable val : natural;
 	begin
-		case arg is
-		when true =>
-			return 1;
-		when false =>
-			return 0;
-		end case;
+		if arg then
+			val := true;
+		else
+			val := false;
+		end if;
+		return val;
 	end function;
 
 	function slll (
