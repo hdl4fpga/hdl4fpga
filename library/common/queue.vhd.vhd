@@ -23,11 +23,14 @@ entity queue is
 end;
 
 architecture def of queue is
-	signal mem_ptr  : unsigned(queue_addr'range);
+	signal mem_ptr : unsigned(queue_addr'length-1 downto 0);
+	signal head    : unsigned(queue_head'length-1 downto 0);
+	signal tail    : unsigned(queue_tail'length-1 downto 0);
+	signal fulll   : std_logic;
 begin
 
 	head_p : process(clk)
-		variable ptr : unsigned(queue_addr'range);
+		variable ptr : unsigned(queue_head'range);
 	begin
 		if rising_edge(clk) then
 			if queue_rst='0' then
@@ -39,9 +42,17 @@ begin
 					else
 						ptr := ptr - 1;
 					end if;
+				elsif full='1' then
+					if tail_ena='1'  then
+						if tail_updn='0' then
+							ptr := ptr + 1;
+						else
+							ptr := ptr - 1;
+						end if;
+					end if;
 				end if;
 			end if;
-			head := std_logic_vector(ptr);
+			head <= ptr;
 		end if;
 	end process;
 
@@ -58,21 +69,33 @@ begin
 					else
 						ptr := ptr - 1;
 					end if;
+				elsif full='1' then
+					if head_ena='1' then
+						if head_updn='0' then
+							ptr := ptr + 1;
+						else
+							ptr := ptr - 1;
+						end if;
+					end if;
 				end if;
 			end if;
-			tail := std_logic_vector(ptr);
+			tail <= ptr;
 		end if;
 	end process;
 
-	queue_full <= setif((unsigned(head)+unsigned(tail)=(head'range => '1'));
+	full <= setif((head(mem_ptr'range)+tail(mem_ptr'range)=(queue_addr'range => '1'));
 
 	mem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
 		wr_ena  => queue_ena,
 		wr_addr => std_logic_vector(mem_ptr),
-		wr_data => wr_data,
+		wr_data => queue_di,
 		rd_addr => std_logic_vector(mem_ptr),
-		rd_data => rd_data);
+		rd_data => queue_do);
+
+	queue_full <= full;
+	queue_head <= std_logic_vector(head);
+	queue_tail <= std_logic_vector(full);
 
 end;
