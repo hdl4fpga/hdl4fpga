@@ -11,12 +11,10 @@ entity ftod is
 	port (
 		clk     : in  std_logic;
 		bin_cnv : in  std_logic;
-		bin_ena : in  std_logic;
+		bin_ena : in  std_logic := '1';
 		bin_dv  : out std_logic;
 		bin_di  : in  std_logic_vector;
-		bin_fix : in  std_logic := '0';
 
-		bcd_lst : out std_logic;
 		bcd_do  : out std_logic_vector);
 end;
 
@@ -40,7 +38,6 @@ architecture def of ftod is
 	signal btod_ini   : std_logic;
 	signal btod_dcy   : std_logic;
 	signal btod_bdv   : std_logic;
-	signal btod_bdi   : std_logic_vector(bin_di'range);
 	signal btod_ddi   : std_logic_vector(bcd_do'range);
 	signal btod_ddo   : std_logic_vector(bcd_do'range);
 	
@@ -61,19 +58,31 @@ begin
 		end if;
 	end process;
 
-	btod_bdv <= bin_cnv;
 	btod_ddi <= (others => '0') when btod_ini='1' else queue_do;
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk     => clk,
 		bin_dv  => btod_bdv,
 		bin_ena => bin_ena,
-		bin_di  => btod_bdi,
+		bin_di  => bin_di,
 
 		bcd_di  => btod_ddi,
 		bcd_do  => btod_ddo,
 		bcd_cy  => btod_dcy);
    		
+
+	binbdv_p : process(clk)
+	begin
+		if rising_edge(clk) then
+			if bin_cnv='0' then
+				btod_bdv  <= '1';
+			else
+				btod_bdv  <= not btod_dcy;
+			end if;
+		end if;
+	end process;
+	bin_dv <= btod_bdv and bin_cnv;
+
 	addr_p : process(clk)
 	begin
 		if rising_edge(clk) then

@@ -27,43 +27,43 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btod of testbench is
+architecture ftod of testbench is
 
 	signal rst : std_logic := '0';
 	signal clk : std_logic := '0';
 
-	signal bcd_dv  : std_logic;
-	signal bcd_ena : std_logic;
-	signal bcd_di  : std_logic_vector(0 to 4-1);
-	signal bcd_do  : std_logic_vector(bcd_di'range);
-	signal bcd_cy  : std_logic;
+	signal bin_cnv : std_logic;
+	signal bin_dv  : std_logic;
+	signal bin_di  : std_logic_vector(0 to 4-1);
+	signal bcd_do  : std_logic_vector(0 to 4-1);
 
 begin
-	rst    <= '1', '0' after 15 ns;
-	clk    <= not clk after 10 ns;
+	rst <= '1', '0' after 15 ns;
+	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable bcd : unsigned(0 to 2*4-1);
+		variable bin : unsigned(0 to 2*4-1);
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				bcd_ena <= '1';
-				bcd := x"26";
+				bin_cnv <= '0';
+				bin     := x"ff";
 			else
-				bcd_ena <= '0';
-				bcd := bcd sll 4;
+				bin_cnv <= '1';
+				if bin_dv='1' then
+					bin     := bin rol 4;
+				end if;
 			end if;
-			bcd_di <= std_logic_vector(bcd(bcd_di'range));
+			bin_di <= std_logic_vector(bin(bin_di'range));
 		end if;
 	end process;
 
-	du : entity hdl4fpga.dtof
+	du : entity hdl4fpga.ftod
 	port map (
 		clk     => clk,
-		point   => b"00",
-		bcd_ena => bcd_ena,
-		bcd_di  => bcd_di,
-		bcd_do  => bcd_do,
-		bcd_cy  => bcd_cy);
+		bin_cnv => bin_cnv,
+		bin_dv  => bin_dv,
+		bin_di  => bin_di,
+		bcd_do  => bcd_do);
 
 end;

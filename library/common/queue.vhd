@@ -29,11 +29,12 @@ architecture def of queue is
 	signal full    : std_logic;
 begin
 
+	mem_ptr <= unsigned(queue_addr);
 	head_p : process(queue_clk)
 		variable ptr : unsigned(queue_head'range);
 	begin
 		if rising_edge(queue_clk) then
-			if queue_rst='0' then
+			if queue_rst='1' then
 				ptr := (others => '0');
 			elsif queue_ena='1' then
 				if head_ena='1' then
@@ -60,7 +61,7 @@ begin
 		variable ptr : unsigned(queue_addr'range);
 	begin
 		if rising_edge(queue_clk) then
-			if queue_rst='0' then
+			if queue_rst='1' then
 				ptr := (others => '0');
 			elsif queue_ena='1' then
 				if tail_ena='1' then

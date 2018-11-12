@@ -552,7 +552,7 @@ package body std is
 		constant true  : std_logic_vector;
 		constant false : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic;
+		variable val : std_logic_vector(true'range);
 	begin
 		if arg then
 			val := true;
