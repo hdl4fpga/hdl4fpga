@@ -89,12 +89,12 @@ use hdl4fpga.std.all;
 
 entity btod is
 	port (
-		clk    : in  std_logic := '0';
+		clk     : in  std_logic := '0';
 
-		bin_dv : in  std_logic;
-		bin_di : in  std_logic_vector;
+		bin_dv  : in  std_logic;
+		bin_di  : in  std_logic_vector;
+		bin_ena : in  std_logic := '1';
 
-		bcd_ena : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;
 		bcd_do  : out std_logic_vector;
 		bcd_cy  : out std_logic);
@@ -124,7 +124,7 @@ begin
 	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			if bcd_ena='1' then
+			if bin_ena='1' then
 				shtio_q <= shtio_d;
 			end if;
 		end if;

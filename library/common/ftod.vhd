@@ -7,7 +7,7 @@ use hdl4fpga.std.all;
 
 entity ftod is
 	generic (
-		n       : natural := 4);
+		size    : natural := 4);
 	port (
 		clk     : in  std_logic;
 		bin_cnv : in  std_logic;
@@ -17,8 +17,6 @@ entity ftod is
 		bin_fix : in  std_logic := '0';
 
 		bcd_lst : out std_logic;
-		bcd_lft : out std_logic_vector(n-1 downto 0);
-		bcd_rgt : out std_logic_vector(n-1 downto 0);
 		bcd_do  : out std_logic_vector);
 end;
 
@@ -27,17 +25,32 @@ architecture def of ftod is
 	constant up : std_logic := '0';
 	constant dn : std_logic := '1';
 
-	signal queue_head : unsigned(1 to cntr'right);
-	signal queue_addr : unsigned(1 to cntr'right);
+	signal queue_rst  : std_logic;
+	signal queue_full : std_logic;
+	signal queue_head : std_logic_vector(size-1 downto 0);
+	signal queue_tail : std_logic_vector(size-1 downto 0);
+	signal queue_addr : std_logic_vector(size-1 downto 0);
+	signal queue_do   : std_logic_vector(bcd_do'range);
+	signal queue_di   : std_logic_vector(queue_do'range);
+	signal head_updn  : std_logic;
+	signal head_ena   : std_logic;
+	signal tail_updn  : std_logic;
+	signal tail_ena   : std_logic;
 
 	signal btod_ini   : std_logic;
+	signal btod_dcy   : std_logic;
+	signal btod_bdv   : std_logic;
+	signal btod_bdi   : std_logic_vector(bin_di'range);
+	signal btod_ddi   : std_logic_vector(bcd_do'range);
+	signal btod_ddo   : std_logic_vector(bcd_do'range);
+	
 begin
 
 	btod_ddi_p : process(clk)
 	begin
 		if rising_edge(clk) then
 			if bin_cnv='0' then
-				btod_ini='1';
+				btod_ini <= '1';
 			elsif queue_addr=queue_head(queue_addr'range) then
 				if btod_dcy='1' then
 					btod_ini <= '1';
@@ -68,12 +81,12 @@ begin
 				queue_addr <= (others => '0');
 			elsif queue_addr = queue_head(queue_addr'range) then
 				if btod_dcy='1' then
-					queue_addr <= queue_addr + 1;
+					queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
 				else
 					queue_addr <= queue_tail(queue_addr'range);
 				end if;
 			else
-				queue_addr <= queue_addr + 1;
+				queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
 			end if;
 		end if;
 	end process;
@@ -91,19 +104,19 @@ begin
 	end process;
 
 	queue_rst <= not bin_cnv;
-	queue_di  <= btod_do when fix='0' else dtof_do;
+	queue_di  <= btod_ddo; -- when bin_fix='0' else dtof_do;
 	queue_e : entity hdl4fpga.queue
 	port map (
-		queue_clk  => queue_clk,
+		queue_clk  => clk,
 		queue_rst  => queue_rst,
-		queue_ena  => bin_ena,,
-		queue_addr => queue_addr,
+		queue_ena  => bin_ena,
+		queue_addr => std_logic_vector(queue_addr),
 		queue_full => queue_full,
 		queue_di   => queue_di,
 		queue_do   => queue_do,
-		head_ena   => left_ena,
-		head_updn  => left_updn,
-		queue_head => queue_left,
+		head_ena   => head_ena,
+		head_updn  => head_updn,
+		queue_head => queue_head,
 		tail_ena   => tail_ena,
 		tail_updn  => tail_updn,
 		queue_tail => queue_tail);
