@@ -42,16 +42,16 @@ begin
 	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable bin : unsigned(0 to 2*4-1);
+		variable bin : unsigned(0 to 3*4-1);
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
 				bin_cnv <= '0';
-				bin     := x"ff";
+				bin     := x"10f";
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
-					bin     := bin rol 4;
+					bin     := bin sll 4;
 				end if;
 			end if;
 			bin_di <= std_logic_vector(bin(bin_di'range));

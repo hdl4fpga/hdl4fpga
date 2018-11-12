@@ -58,6 +58,18 @@ begin
 		end if;
 	end process;
 
+	binbdv_p : process(clk)
+	begin
+		if rising_edge(clk) then
+			if bin_cnv='0' then
+				btod_bdv  <= '1';
+			else
+				btod_bdv  <= not btod_dcy;
+			end if;
+		end if;
+	end process;
+	bin_dv <= btod_bdv and bin_cnv;
+
 	btod_ddi <= (others => '0') when btod_ini='1' else queue_do;
 	btod_e : entity hdl4fpga.btod
 	port map (
@@ -70,18 +82,6 @@ begin
 		bcd_do  => btod_ddo,
 		bcd_cy  => btod_dcy);
    		
-
-	binbdv_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if bin_cnv='0' then
-				btod_bdv  <= '1';
-			else
-				btod_bdv  <= not btod_dcy;
-			end if;
-		end if;
-	end process;
-	bin_dv <= btod_bdv and bin_cnv;
 
 	addr_p : process(clk)
 	begin
