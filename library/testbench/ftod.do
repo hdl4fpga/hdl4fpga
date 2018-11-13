@@ -2,21 +2,22 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -radix hexadecimal /testbench/rst
 add wave -noupdate -radix hexadecimal /testbench/clk
-add wave -noupdate -radix hexadecimal /testbench/du/btod_e/bin_di
+add wave -noupdate /testbench/du/bin_frm
+add wave -noupdate /testbench/du/bin_irdy
+add wave -noupdate /testbench/du/bin_trdy
+add wave -noupdate -radix hexadecimal /testbench/du/bin_di
 add wave -noupdate -radix hexadecimal /testbench/du/btod_e/bcd_di
-add wave -noupdate -radix hexadecimal /testbench/du/btod_e/bcd_do
-add wave -noupdate /testbench/du/btod_e/bcd_cy
-add wave -noupdate /testbench/bin_dv
-add wave -noupdate /testbench/du/btod_dcy
+add wave -noupdate -radix hexadecimal /testbench/du/bcd_do
+add wave -noupdate /testbench/bin_cnv
+add wave -noupdate -radix decimal /testbench/du/queue_addr
 add wave -noupdate /testbench/du/btod_bdv
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/queue_addr
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/queue_di
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/queue_do
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/mem_ptr
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/queue_head
-add wave -noupdate -radix hexadecimal /testbench/du/queue_e/queue_tail
+add wave -noupdate /testbench/du/btod_ini
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du/btod_dcy
+add wave -noupdate /testbench/du/bincnv_p/cnv
+add wave -noupdate /testbench/du/btod_cnv
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {78 ns} 0}
+WaveRestoreCursors {{Cursor 1} {35 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

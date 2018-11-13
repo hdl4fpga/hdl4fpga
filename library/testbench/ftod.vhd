@@ -49,25 +49,26 @@ begin
 			if rst='1' then
 				bin_cnv <= '0';
 				bin     := x"10f5";
+				bin_irdy <= '1';
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
 					bin     := bin sll 4;
 				end if;
+				bin_irdy <= not bin_cnv or bin_dv;
 			end if;
 			bin_di <= std_logic_vector(bin(bin_di'range));
-				bin_irdy <= bin_dv;
 		end if;
 	end process;
 
 	du : entity hdl4fpga.ftod
 	port map (
-		clk     => clk,
-		bin_frm => bin_cnv,
-		bin_trdy  => bin_dv,
-		bin_irdy  => bin_irdy,
-		bin_di  => bin_di,
-		bin_exp => b"1",
-		bcd_do  => bcd_do);
+		clk      => clk,
+		bin_frm  => bin_cnv,
+		bin_trdy => bin_dv,
+		bin_irdy => bin_irdy,
+		bin_di   => bin_di,
+		bin_exp  => b"1",
+		bcd_do   => bcd_do);
 
 end;

@@ -62,7 +62,7 @@ begin
 		end if;
 	end process;
 
-	bincnv_p : process(clk, bin_irdy, btod_dcy)
+	bincnv_p : process(bin_irdy, clk)
 		variable cnv : std_logic;
 	begin
 		if rising_edge(clk) then
@@ -78,7 +78,7 @@ begin
 		btod_bdv <= bin_irdy and not cnv;
 	end process;
 
-	bin_trdy <= not btod_dcy and bin_frm;
+	bin_trdy <= ((not btod_dcy and bin_irdy) or (btod_cnv and not btod_dcy)) and bin_frm;
 
 	btod_ddi <= (others => '0') when btod_ini='1' else queue_do;
 	btod_e : entity hdl4fpga.btod
