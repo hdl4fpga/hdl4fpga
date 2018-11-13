@@ -98,14 +98,16 @@ begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
 				queue_addr <= (others => '0');
-			elsif queue_addr = queue_head(queue_addr'range) then
-				if btod_dcy='1' then
-					queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
+			elsif btod_cnv='1' then
+				if queue_addr = queue_head(queue_addr'range) then
+					if btod_dcy='1' then
+						queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
+					else
+						queue_addr <= queue_tail(queue_addr'range);
+					end if;
 				else
-					queue_addr <= queue_tail(queue_addr'range);
+					queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
 				end if;
-			else
-				queue_addr <= std_logic_vector(unsigned(queue_addr) + 1);
 			end if;
 		end if;
 	end process;
