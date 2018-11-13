@@ -34,6 +34,7 @@ architecture ftod of testbench is
 
 	signal bin_cnv : std_logic;
 	signal bin_dv  : std_logic;
+	signal bin_irdy  : std_logic;
 	signal bin_di  : std_logic_vector(0 to 4-1);
 	signal bcd_do  : std_logic_vector(0 to 4-1);
 
@@ -42,12 +43,12 @@ begin
 	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable bin : unsigned(0 to 3*4-1);
+		variable bin : unsigned(0 to 4*4-1);
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
 				bin_cnv <= '0';
-				bin     := x"10f";
+				bin     := x"10f5";
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
@@ -55,15 +56,18 @@ begin
 				end if;
 			end if;
 			bin_di <= std_logic_vector(bin(bin_di'range));
+				bin_irdy <= bin_dv;
 		end if;
 	end process;
 
 	du : entity hdl4fpga.ftod
 	port map (
 		clk     => clk,
-		bin_cnv => bin_cnv,
-		bin_dv  => bin_dv,
+		bin_frm => bin_cnv,
+		bin_trdy  => bin_dv,
+		bin_irdy  => bin_irdy,
 		bin_di  => bin_di,
+		bin_exp => b"1",
 		bcd_do  => bcd_do);
 
 end;
