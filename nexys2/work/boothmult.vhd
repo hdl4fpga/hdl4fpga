@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity test is
+entity boothmult is
 	port (
 		clk     : in  std_logic;
 		ini     : in  std_logic;
@@ -37,9 +37,9 @@ entity test is
 		product : out signed(24-1 downto 0));
 end;
 
-architecture smult of test is
+architecture smult of boothmult is
 begin
-	smult_e : entity hdl4fpga.boothmult
+	du : entity hdl4fpga.boothmult
 	port map (
 		clk     => clk,
 		ini     => ini,

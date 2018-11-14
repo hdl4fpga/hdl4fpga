@@ -27,26 +27,29 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity test is
+entity dtof is
 	port (
-		clk     : in  std_logic;
-		point   : in  std_logic_vector(1-1 downto 0);
-		bcd_ena : in  std_logic;
-		bcd_dv  : in  std_logic;
-		bcd_cy  : out std_logic;
-		bcd_di  : in  std_logic_vector(4-1 downto 0);
-		bcd_do  : out std_logic_vector(4-1 downto 0));
+		clk      : in  std_logic;
+		bin_frm  : in  std_logic;
+		bin_irdy : in  std_logic;
+		bin_trdy : out std_logic;
+		bin_fix  : in  std_logic;
+		bin_exp  : in  std_logic_vector(0 to 2-1);
+		bin_di   : in  std_logic_vector(0 to 4-1);
+
+		bcd_do   : out std_logic_vector(0 to 4-1));
 end;
 
-architecture dtof of test is
+architecture test of dtof is
 begin
-	dtof_e : entity hdl4fpga.dtof
+	du : entity hdl4fpga.dtof
 	port map (
-		clk     => clk,
-		point   => b"1",
-		bcd_ena => bcd_ena,
-		bcd_dv  => bcd_dv,
-		bcd_cy  => bcd_cy,
-		bcd_di  => bcd_di,
-		bcd_do  => bcd_do);
+		clk      => clk,
+		bin_frm  => bin_frm,
+		bin_irdy => bin_irdy,
+		bin_trdy => bin_trdy,
+		bin_fix  => bin_fix,
+		bin_exp  => bin_exp,
+        bin_di   => bin_di,
+        bcd_do   => bcd_do);
 end;

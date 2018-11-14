@@ -13,7 +13,7 @@ entity ftod is
 		bin_frm  : in  std_logic;
 		bin_irdy : in  std_logic := '1';
 		bin_trdy : out std_logic;
-		bin_fix  : out std_logic := '0';
+		bin_fix  : in  std_logic := '0';
 		bin_exp  : in  std_logic_vector;
 		bin_di   : in  std_logic_vector;
 
@@ -70,12 +70,14 @@ begin
 			if bin_frm='0' then
 				cnv := '0';
 			elsif cnv='0' then
-				cnv := bin_irdy and btod_dcy;
+				if btod_dcy='1' then
+					cnv := bin_irdy;
+				end if;
 			else
 				cnv := btod_dcy;
 			end if;
 		end if;
-		btod_cnv <= bin_irdy or cnv;
+		btod_cnv <= bin_irdy or      cnv;
 		btod_bdv <= bin_irdy and not cnv;
 	end process;
 
