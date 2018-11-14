@@ -29,31 +29,31 @@ library hdl4fpga;
 
 architecture ftod of testbench is
 
-	signal rst : std_logic := '0';
-	signal clk : std_logic := '0';
+	signal rst      : std_logic := '0';
+	signal clk      : std_logic := '0';
 
-	signal bin_cnv : std_logic;
-	signal bin_dv  : std_logic;
-	signal bin_irdy  : std_logic;
-	signal bin_di  : std_logic_vector(0 to 4-1);
-	signal bcd_do  : std_logic_vector(0 to 4-1);
+	signal bin_cnv  : std_logic;
+	signal bin_dv   : std_logic;
+	signal bin_irdy : std_logic;
+	signal bin_di   : std_logic_vector(0 to 4-1);
+	signal bcd_do   : std_logic_vector(0 to 4-1);
 
 begin
+
 	rst <= '1', '0' after 15 ns;
 	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable bin : unsigned(0 to 4*4-1);
+		variable bin : unsigned(0 to 4*4-1) := x"10f5";
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				bin_cnv <= '0';
-				bin     := x"10f5";
+				bin_cnv  <= '0';
 				bin_irdy <= '1';
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
-					bin     := bin sll 4;
+					bin := bin sll 4;
 				end if;
 				bin_irdy <= not bin_cnv or bin_dv;
 			end if;
