@@ -83,7 +83,7 @@ begin
 
 	bin_trdy <= (not btod_dcy and btod_cnv) and bin_frm;
 
-	btod_ddi <= (others => '0') when btod_ini='1' else vector_do;
+	btod_ddi <= (btod_ddi'range => '0') when btod_ini='1' else vector_do;
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk     => clk,
