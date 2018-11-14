@@ -16,7 +16,7 @@ add wave -noupdate /testbench/du/btod_dcy
 add wave -noupdate /testbench/du/bincnv_p/cnv
 add wave -noupdate /testbench/du/btod_cnv
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {35 ns} 0}
+WaveRestoreCursors {{Cursor 1} {217 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
