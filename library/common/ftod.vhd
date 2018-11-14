@@ -26,15 +26,15 @@ architecture def of ftod is
 
 	signal vector_rst  : std_logic;
 	signal vector_full : std_logic;
-	signal vector_head : std_logic_vector(size-1 downto 0);
-	signal vector_tail : std_logic_vector(size-1 downto 0);
+	signal vector_left : std_logic_vector(size-1 downto 0);
+	signal vector_right : std_logic_vector(size-1 downto 0);
 	signal vector_addr : std_logic_vector(size-1 downto 0);
 	signal vector_do   : std_logic_vector(bcd_do'range);
 	signal vector_di   : std_logic_vector(vector_do'range);
-	signal head_updn  : std_logic;
-	signal head_ena   : std_logic;
-	signal tail_updn  : std_logic;
-	signal tail_ena   : std_logic;
+	signal left_updn  : std_logic;
+	signal left_ena   : std_logic;
+	signal right_updn  : std_logic;
+	signal right_ena   : std_logic;
 
 	signal btod_cnv   : std_logic;
 	signal btod_ini   : std_logic;
@@ -51,7 +51,7 @@ begin
 			if bin_frm='0' then
 				btod_ini <= '1';
 			elsif btod_cnv='1' then
-				if vector_addr=vector_head(vector_addr'range) then
+				if vector_addr=vector_left(vector_addr'range) then
 					if btod_dcy='1' then
 						btod_ini <= '1';
 					else
@@ -99,11 +99,11 @@ begin
 			if bin_frm='0' then
 				vector_addr <= (others => '0');
 			elsif btod_cnv='1' then
-				if vector_addr = vector_head(vector_addr'range) then
+				if vector_addr = vector_left(vector_addr'range) then
 					if btod_dcy='1' then
 						vector_addr <= std_logic_vector(unsigned(vector_addr) + 1);
 					else
-						vector_addr <= vector_tail(vector_addr'range);
+						vector_addr <= vector_right(vector_addr'range);
 					end if;
 				else
 					vector_addr <= std_logic_vector(unsigned(vector_addr) + 1);
@@ -112,14 +112,14 @@ begin
 		end if;
 	end process;
 
-	head_p : process(vector_addr, vector_head, btod_dcy)
+	left_p : process(vector_addr, vector_left, btod_dcy)
 	begin
-		head_updn <= '-';
-		head_ena  <= '0';
-		if vector_addr=vector_head(vector_addr'range) then
+		left_updn <= '-';
+		left_ena  <= '0';
+		if vector_addr=vector_left(vector_addr'range) then
 			if btod_dcy='1' then
-				head_updn <= up;
-				head_ena  <= '1';
+				left_updn <= up;
+				left_ena  <= '1';
 			end if;
 		end if;
 	end process;
@@ -135,11 +135,11 @@ begin
 		vector_full => vector_full,
 		vector_di   => vector_di,
 		vector_do   => vector_do,
-		head_ena    => head_ena,
-		head_updn   => head_updn,
-		vector_head => vector_head,
-		tail_ena    => tail_ena,
-		tail_updn   => tail_updn,
-		vector_tail => vector_tail);
+		left_ena    => left_ena,
+		left_updn   => left_updn,
+		vector_left => vector_left,
+		right_ena    => right_ena,
+		right_updn   => right_updn,
+		vector_right => vector_right);
 	bcd_do <= btod_ddo;
 end;

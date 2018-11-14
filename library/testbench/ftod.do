@@ -9,7 +9,6 @@ add wave -noupdate -radix hexadecimal /testbench/du/bin_di
 add wave -noupdate -radix hexadecimal /testbench/du/btod_e/bcd_di
 add wave -noupdate -radix hexadecimal /testbench/du/bcd_do
 add wave -noupdate /testbench/bin_cnv
-add wave -noupdate -radix decimal /testbench/du/queue_addr
 add wave -noupdate /testbench/du/btod_bdv
 add wave -noupdate /testbench/du/btod_ini
 add wave -noupdate -divider {New Divider}
