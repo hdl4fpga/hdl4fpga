@@ -149,58 +149,43 @@ begin
 		end if;
 	end process;
 
-	left_p : process(
-		vector_addr, 
-		vector_left,
-		vector_di,
-	   	unit_sel, 
-		btod_dcy,
-		dtof_dcy)
+	left_p : process(unit_sel, btod_dcy, vector_addr, vector_left, vector_di)
 	begin
 		left_updn <= '-';
 		left_ena  <= '0';
-		if unit_sel='0' then
+		case unit_sel is
+		when '0' =>
 			if vector_addr=vector_left(vector_addr'range) then
 				if btod_dcy='1' then
 					left_updn <= up;
 					left_ena  <= '1';
 				end if;
 			end if;
-		else
+		when '1' =>
 			if vector_addr=vector_left(vector_addr'range) then
 				if vector_di=(vector_di'range => '0') then
 					left_updn <= dn;
 					left_ena  <= '1';
 				end if;
 			end if;
-		end if;
+		when others =>
+		end case;
 	end process;
 
-	right_p : process(
-		vector_addr, 
-		vector_left,
-		vector_right,
-	   	unit_sel, 
-		btod_dcy,
-		dtof_dcy)
+	right_p : process(unit_sel, dtof_dcy)
 	begin
 		right_updn <= '-';
 		right_ena  <= '0';
-		if unit_sel='0' then
-			if vector_full='1' then
-				if btod_dcy='1' then
-					right_updn <= up;
-					right_ena  <= '1';
-				end if;
-			end if;
-		else
+		case unit_sel is
+		when '1' =>
 			if vector_full='0' then
 				if dtof_dcy='1' then
 					right_updn <= dn;
 					right_ena  <= '1';
 				end if;
 			end if;
-		end if;
+		when others =>
+		end case;
 	end process;
 
 	vector_rst <= not bin_frm;
