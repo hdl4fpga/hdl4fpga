@@ -13,7 +13,7 @@ entity ftod is
 		bin_frm  : in  std_logic;
 		bin_irdy : in  std_logic := '1';
 		bin_trdy : out std_logic;
-		bin_flt  : in  std_logic := '0';
+		bin_flt  : in  std_logic;
 		bin_exp  : in  std_logic_vector;
 		bin_di   : in  std_logic_vector;
 

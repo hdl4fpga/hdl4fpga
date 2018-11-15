@@ -34,6 +34,7 @@ architecture ftod of testbench is
 
 	signal bin_cnv  : std_logic;
 	signal bin_dv   : std_logic;
+	signal bin_flt  : std_logic;
 	signal bin_irdy : std_logic;
 	signal bin_di   : std_logic_vector(0 to 4-1);
 	signal bcd_do   : std_logic_vector(0 to 4-1);
@@ -44,16 +45,23 @@ begin
 	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable bin : unsigned(0 to 4*4-1) := x"10f5";
+		variable cntr : natural := 0;
+		variable bin  : unsigned(0 to 4*4-1) := x"10f5";
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
 				bin_cnv  <= '0';
 				bin_irdy <= '1';
+				bin_flt  <= '0';
+				cntr     := 0;
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
-					bin := bin sll 4;
+					if cntr >= 3 then
+						bin_flt <= '1';
+					end if;
+					bin  := bin sll 4;
+					cntr := cntr + 1;
 				end if;
 				bin_irdy <= not bin_cnv or bin_dv;
 			end if;
@@ -68,6 +76,7 @@ begin
 		bin_trdy => bin_dv,
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
+		bin_flt  => bin_flt,
 		bin_exp  => b"1",
 		bcd_do   => bcd_do);
 
