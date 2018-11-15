@@ -52,20 +52,43 @@ architecture def of ftod is
 	signal dtof_do      : std_logic_vector(bcd_do'range);
 	signal dtof_di      : std_logic_vector(bcd_do'range);
 
+	signal dev_trdy     : std_logic_vector(1 to 2);
+	signal dev_treq     : std_logic_vector(1 to 2);
 	signal unit_sel     : std_logic;
 begin
 
-	unitsel_p : process (clk)
+
+
+	process (clk, trdy, irdy)
+		variable id : std_logic_vector(0 to 1);
 	begin
 		if rising_edge(clk) then
-			if bin_irdy='1' then
-				if btod_cnv='0' then
-					unit_sel <= bin_flt;
-				elsif btod_dcy='0' then
-					unit_sel <= bin_flt;
+			if id=(id'range => '0') then
+				for i in 'range loop
+					if irdy(i)/='0' then
+						id := std_logic_vector(to_unsigned(i, id'length));
+						exit;
+					end if;
+				end loop;
+			else
+				if trdy(to_integer(id))='0' then
+					id := (others => '0');
 				end if;
 			end if;
 		end if;
+	end process;
+
+	unitsel_p : process (clk, bin_flt, btod_trdy)
+		variable sel : std_logic;
+	begin
+		if rising_edge(clk) then
+			if btod_cnv='0' then
+				if bin_irdy='1' then
+					sel := bin_flt;
+				end if;
+			end if;
+		end if;
+		unit_sel <= (btod_trdy and bin_flt) or (not btod_trdy and sel);
 	end process;
 
 	btod_ddi_p : process(clk)

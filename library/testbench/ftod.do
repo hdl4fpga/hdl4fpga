@@ -13,10 +13,18 @@ add wave -noupdate /testbench/du/btod_bdv
 add wave -noupdate /testbench/du/btod_ini
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du/btod_dcy
-add wave -noupdate /testbench/du/bincnv_p/cnv
 add wave -noupdate /testbench/du/btod_cnv
+add wave -noupdate /testbench/du/bin_exp
+add wave -noupdate /testbench/du/bin_flt
+add wave -noupdate -radix hexadecimal /testbench/du/btod_ddi
+add wave -noupdate -radix hexadecimal /testbench/du/vector_addr
+add wave -noupdate /testbench/du/btod_ena
+add wave -noupdate -radix hexadecimal /testbench/du/vector_di
+add wave -noupdate -radix hexadecimal /testbench/du/btod_ddo
+add wave -noupdate /testbench/du/unit_sel
+add wave -noupdate /testbench/line__47/cntr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {217 ns} 0}
+WaveRestoreCursors {{Cursor 1} {40 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

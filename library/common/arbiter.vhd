@@ -28,39 +28,39 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_grant is
+entity arbiter is
 	port (
-		clk      : in  std_logic;
-		unit_rdy : in  std_logic;
-		unit_req : out std_logic;
-		dev_req  : in  std_logic_vector;
-		dev_gnt  : out std_logic_vector;
-		dev_rdy  : out std_logic_vector);
+		clk : in  std_logic;
+		req : in  std_logic_vector;
+		rdy : out std_logic_vector;
+		did : out std_logic_vector);
 end;
 
-
-architecture beh of scopeio_grant is
-	signal gnt : std_logic_vector(0 to unsigned_num_bits(dev_req'length)-1);
+architecture beh of arbiter is
 begin
 
-	process(clk)
+	process(clk, rdy, req)
+		variable id : unsigned(did'range);
 	begin
 		if rising_edge(clk) then
-			for i in dev_req'range loop
-				if unit_rdy='1' then
-					gnt <= (others => '0');
-				elsif not gnt/=(gnt'range => '0') then
-					if dev_req(i)='1' then
-						gnt <= std_logic_vector(to_unsigned(i, gnt'length));
+			if id=(id'range => '0') then
+				for i in req'range loop
+					if rdy(i)/='0' then
+						id := std_logic_vector(to_unsigned(i, id'length));
 						exit;
 					end if;
+				end loop;
+			else
+				if req(to_integer(id))='0' then
+					id := (others => '0');
 				end if;
-			end loop;
+			end if;
+		end if;
+		if rdy=(rdy'range => '1') then
+			did := (others => '0');
+		else
+			did <= std_logic_vector(id);
 		end if;
 	end process;
-
-	unit_req <= word2byte("0" & dev_req, gnt, 1)(0) and not unit_rdy;
-	dev_gnt  <= demux(gnt)(1 to dev_rdy'length);
-	dev_rdy  <= demux(gnt, unit_rdy)(1 to dev_rdy'length);
 
 end;

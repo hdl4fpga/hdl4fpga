@@ -8,7 +8,6 @@ entity dtof is
 	port (
 		clk     : in  std_logic := '0';
 		bcd_exp : in  std_logic_vector;
-		bin_flt : in  std_logic;
 		bcd_ena : in  std_logic := '1';
 		bcd_dv  : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;

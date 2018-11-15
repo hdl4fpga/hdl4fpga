@@ -57,7 +57,7 @@ begin
 			else
 				bin_cnv <= '1';
 				if bin_dv='1' then
-					if cntr >= 3 then
+					if cntr >= 2 then
 						bin_flt <= '1';
 					end if;
 					bin  := bin sll 4;
