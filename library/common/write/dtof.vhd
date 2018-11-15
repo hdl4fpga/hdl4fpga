@@ -7,7 +7,7 @@ entity dtof is
 		n  : natural := 0);
 	port (
 		clk     : in  std_logic := '0';
-		point   : in  std_logic_vector;
+		bcd_exp : in  std_logic_vector;
 		bcd_ena : in  std_logic := '1';
 		bcd_dv  : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;
@@ -34,7 +34,7 @@ architecture def of dtof is
 		end if;
 	end;
 
-	constant size  : natural := setif(n=0, 2**point'length, n);
+	constant size  : natural := setif(n=0, 2**bcd_exp'length, n);
 	signal shtio_d : unsigned(size-1 downto 0);
 	signal shtio_q : unsigned(size-1 downto 0);
 
@@ -63,7 +63,7 @@ begin
 
 		carry := '0';
 		for k in 0 to size-1 loop
-			if k <= to_integer(unsigned(not point)) then
+			if k <= to_integer(unsigned(not bcd_exp)) then
 				for i in 0 to tmp_value'length/4-1 loop
 					tmp_value := tmp_value rol 4;
 					dbdbb (tmp_shtio(0), tmp_value(4-1 downto 0));

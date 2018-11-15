@@ -48,7 +48,10 @@ architecture def of ftod is
 
 	signal dtof_ena     : std_logic;
 	signal dtof_dcy     : std_logic;
+	signal dtof_dv      : std_logic;
 	signal dtof_do      : std_logic_vector(bcd_do'range);
+	signal dtof_di      : std_logic_vector(bcd_do'range);
+
 	signal unit_sel     : std_logic;
 begin
 
@@ -112,6 +115,16 @@ begin
 		bcd_di  => btod_ddi,
 		bcd_do  => btod_ddo,
 		bcd_cy  => btod_dcy);
+
+	dtof_e : entity hdl4fpga.dtof
+	port map (
+		clk     => clk,
+		bcd_exp => bin_di,
+		bcd_ena => dtof_ena,
+		bcd_dv  => dtof_dv,
+		bcd_di  => dtof_di,
+		bcd_do  => dtof_do,
+		bcd_cy  => dtof_dcy);
 
 	addr_p : process(clk)
 	begin
