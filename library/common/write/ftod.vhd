@@ -54,7 +54,7 @@ architecture def of ftod is
 
 	signal dev_trdy     : std_logic_vector(1 to 2);
 	signal dev_irdy     : std_logic_vector(1 to 2);
-	signal unit_sel     : std_logic;
+	signal dev_gnt      : std_logic_vector(0 to dev_trdy'length);
 begin
 
 	process (clk, dev_trdy, dev_irdy)
@@ -76,7 +76,7 @@ begin
 		end if;
 	end process;
 
-	unitsel_p : process (clk, bin_flt, btod_trdy)
+	gnt_p : process (clk, bin_flt, btod_trdy)
 		variable sel : std_logic;
 	begin
 		if rising_edge(clk) then
@@ -86,7 +86,9 @@ begin
 				end if;
 			end if;
 		end if;
-		unit_sel <= (btod_trdy and bin_flt) or (not btod_trdy and sel);
+		dev_
+		dev_gnt(1) <= not (btod_trdy and bin_flt) or (not btod_trdy and sel);
+		dev_gnt(2) <=     (btod_trdy and bin_flt) or (not btod_trdy and sel);
 	end process;
 
 	btod_ddi_p : process(clk)
@@ -153,7 +155,7 @@ begin
 			if bin_frm='0' then
 				vector_addr <= (others => '0');
 			else
-				if unit_sel='0' then
+				if dev_gnt(1)='1' then
 					if btod_ena='1' then
 						if vector_addr = vector_left(vector_addr'range) then
 							if btod_dcy='1' then
@@ -165,7 +167,7 @@ begin
 							vector_addr <= std_logic_vector(unsigned(vector_addr) + 1);
 						end if;
 					end if;
-				else
+				elsif dev_gnt(2)='1' then
 					if dtof_ena='1' then
 						if vector_addr = vector_right(vector_addr'range) then
 							if dtof_dcy='1' then
@@ -183,47 +185,43 @@ begin
 		end if;
 	end process;
 
-	left_p : process(unit_sel, btod_dcy, vector_addr, vector_left, vector_di)
+	left_p : process(dev_gnt, btod_dcy, vector_addr, vector_left, vector_di)
 	begin
 		left_updn <= '-';
 		left_ena  <= '0';
-		case unit_sel is
-		when '0' =>
+		if dev_gnt(1)='1' then
 			if vector_addr=vector_left(vector_addr'range) then
 				if btod_dcy='1' then
 					left_updn <= up;
 					left_ena  <= '1';
 				end if;
 			end if;
-		when '1' =>
+		elsif dev_gnt(2)='1' then
 			if vector_addr=vector_left(vector_addr'range) then
 				if vector_di=(vector_di'range => '0') then
 					left_updn <= dn;
 					left_ena  <= '1';
 				end if;
 			end if;
-		when others =>
-		end case;
+		end if;
 	end process;
 
-	right_p : process(unit_sel, dtof_dcy)
+	right_p : process(dev_gnt, dtof_dcy)
 	begin
 		right_updn <= '-';
 		right_ena  <= '0';
-		case unit_sel is
-		when '1' =>
+		if dev_gnt(2)='1' then
 			if vector_full='0' then
 				if dtof_dcy='1' then
 					right_updn <= dn;
 					right_ena  <= '1';
 				end if;
 			end if;
-		when others =>
-		end case;
+		end if;
 	end process;
 
 	vector_rst <= not bin_frm;
-	vector_di  <= btod_ddo when unit_sel='0' else dtof_do;
+	vector_di  <= btod_ddo when dev_gnt(1)='1' else dtof_do;
 	vector_e : entity hdl4fpga.vector
 	port map (
 		vector_clk   => clk,
