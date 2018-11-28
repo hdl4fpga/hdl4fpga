@@ -53,25 +53,23 @@ architecture def of ftod is
 	signal dtof_di      : std_logic_vector(bcd_do'range);
 
 	signal dev_trdy     : std_logic_vector(1 to 2);
-	signal dev_treq     : std_logic_vector(1 to 2);
+	signal dev_irdy     : std_logic_vector(1 to 2);
 	signal unit_sel     : std_logic;
 begin
 
-
-
-	process (clk, trdy, irdy)
-		variable id : std_logic_vector(0 to 1);
+	process (clk, dev_trdy, dev_irdy)
+		variable id : unsigned(0 to 1);
 	begin
 		if rising_edge(clk) then
 			if id=(id'range => '0') then
-				for i in 'range loop
-					if irdy(i)/='0' then
-						id := std_logic_vector(to_unsigned(i, id'length));
+				for i in dev_irdy'range loop
+					if dev_irdy(i)/='0' then
+						id := to_unsigned(i, id'length);
 						exit;
 					end if;
 				end loop;
 			else
-				if trdy(to_integer(id))='0' then
+				if dev_trdy(to_integer(id))='0' then
 					id := (others => '0');
 				end if;
 			end if;
