@@ -37,15 +37,6 @@ architecture def of ftod is
 	signal right_updn   : std_logic;
 	signal right_ena    : std_logic;
 
-	signal btod_ena     : std_logic;
-	signal btod_cnv     : std_logic;
-	signal btod_ini     : std_logic;
-	signal btod_dcy     : std_logic;
-	signal btod_bdv     : std_logic;
-	signal btod_ddi     : std_logic_vector(bcd_do'range);
-	signal btod_ddo     : std_logic_vector(bcd_do'range);
-	signal btod_trdy    : std_logic;
-
 	signal dtof_ena     : std_logic;
 	signal dtof_dcy     : std_logic;
 	signal dtof_dv      : std_logic;
@@ -91,46 +82,54 @@ begin
 		dev_gnt(2) <=     (btod_trdy and bin_flt) or (not btod_trdy and sel);
 	end process;
 
-	btod_ddi_p : process(clk)
+	btod_b : block
+		signal btod_ena  : std_logic;
+		signal btod_cnv  : std_logic;
+		signal btod_ini  : std_logic;
+		signal btod_dcy  : std_logic;
+		signal btod_bdv  : std_logic;
+		signal btod_ddi  : std_logic_vector(bcd_do'range);
+		signal btod_ddo  : std_logic_vector(bcd_do'range);
+		signal btod_trdy : std_logic;
+
 	begin
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				btod_ini <= '1';
-			elsif btod_ena='1' then
-				if vector_addr=vector_left(vector_addr'range) then
-					if btod_dcy='1' then
-						btod_ini <= '1';
-					else
-						btod_ini <= '0';
+
+		btod_ddi_p : process(clk)
+		begin
+			if rising_edge(clk) then
+				if bin_frm='0' then
+					btod_ini <= '1';
+				elsif btod_ena='1' then
+					if vector_addr=vector_left(vector_addr'range) then
+						if btod_dcy='1' then
+							btod_ini <= '1';
+						else
+							btod_ini <= '0';
+						end if;
 					end if;
 				end if;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	btodcnv_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				btod_cnv <= '0';
-			elsif btod_cnv='0' then
-				if btod_dcy='1' then
-					btod_cnv <= bin_irdy;
+		btodcnv_p : process(clk)
+		begin
+			if rising_edge(clk) then
+				if bin_frm='0' then
+					btod_cnv <= '0';
+				elsif btod_cnv='0' then
+					if btod_dcy='1' then
+						btod_cnv <= bin_irdy;
+					end if;
+				else
+					btod_cnv <= btod_dcy;
 				end if;
-			else
-				btod_cnv <= btod_dcy;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	btod_ena  <= bin_irdy or      btod_cnv;
-	btod_bdv  <= bin_irdy and not btod_cnv;
-	btod_trdy <= (not btod_dcy and btod_ena) and bin_frm;
-	btod_ddi  <= (btod_ddi'range => '0') when btod_ini='1' else vector_do;
-
-	btod_b : block
-
-	begin
+		btod_ena  <= bin_irdy or      btod_cnv;
+		btod_bdv  <= bin_irdy and not btod_cnv;
+		btod_trdy <= (not btod_dcy and btod_ena) and bin_frm;
+		btod_ddi  <= (btod_ddi'range => '0') when btod_ini='1' else vector_do;
 
 		btod_e : entity hdl4fpga.btod
 		port map (
