@@ -128,97 +128,139 @@ begin
 	btod_trdy <= (not btod_dcy and btod_ena) and bin_frm;
 	btod_ddi  <= (btod_ddi'range => '0') when btod_ini='1' else vector_do;
 
-	btod_e : entity hdl4fpga.btod
-	port map (
-		clk     => clk,
-		bin_dv  => btod_bdv,
-		bin_ena => btod_ena,
-		bin_di  => bin_di,
+	btod_b : block
 
-		bcd_di  => btod_ddi,
-		bcd_do  => btod_ddo,
-		bcd_cy  => btod_dcy);
+	begin
 
-	dtof_e : entity hdl4fpga.dtof
-	port map (
-		clk     => clk,
-		bcd_exp => bin_di,
-		bcd_ena => dtof_ena,
-		bcd_dv  => dtof_dv,
-		bcd_di  => dtof_di,
-		bcd_do  => dtof_do,
-		bcd_cy  => dtof_dcy);
+		btod_e : entity hdl4fpga.btod
+		port map (
+			clk     => clk,
+			bin_dv  => btod_bdv,
+			bin_ena => btod_ena,
+			bin_di  => bin_di,
 
-	addr_p : process(clk)
+			bcd_di  => btod_ddi,
+			bcd_do  => btod_ddo,
+			bcd_cy  => btod_dcy);
+
+		addr_p : process(vector_addr, vector_right, btod_ena, btod_dcy)
+			variable addr : unsigned(vector_addr'range);
+		begin
+			addr := unsigned(vector_addr);
+			if btod_ena='1' then
+				if vector_addr = vector_left(vector_addr'range) then
+					if btod_dcy='1' then
+						addr := addr + 1;
+					else
+						addr := unsigned(vector_right(vector_addr'range));
+					end if;
+				else
+					addr := addr + 1;
+				end if;
+			end if;
+			btod_addr <= std_logic_vector(addr);
+		end process;
+
+		left_p : process(btod_dcy, vector_addr, vector_left)
+			variable updn : std_logic;
+			variable ena  : std_logic;
+		begin
+			updn := '-';
+			ena  := '0';
+			if vector_addr=vector_left(vector_addr'range) then
+				if btod_dcy='1' then
+					updn := up;
+					ena  := '1';
+				end if;
+			end if;
+			btod_left_updn <= updn;
+			btod_left_ena  <= ena;
+		end process;
+
+	end block;
+
+	dtof_b : block
+	begin
+					
+		dtof_e : entity hdl4fpga.dtof
+		port map (
+			clk     => clk,
+			bcd_exp => bin_di,
+			bcd_ena => dtof_ena,
+			bcd_dv  => dtof_dv,
+			bcd_di  => dtof_di,
+			bcd_do  => dtof_do,
+			bcd_cy  => dtof_dcy);
+
+		addr_p : process (vector_addr, vector_right, dtof_ena, dtof_dcy)
+			variable addr : unsigned(vector_addr'range);
+		begin
+			addr := unsigned(vector_addr);
+			if dtof_ena='1' then
+				if vector_addr = vector_right(vector_addr'range) then
+					if dtof_dcy='1' then
+						-- addr := addr - 1);
+						addr := unsigned(vector_left(vector_addr'range));
+					else
+						addr := unsigned(vector_left(vector_addr'range));
+					end if;
+				else
+					addr := addr - 1;
+				end if;
+			end if;
+			dtof_addr <= std_logic_vector(addr);
+		end process;
+
+		left_p : process(vector_addr, vector_left, vector_di)
+			variable updn : std_logic;
+			variable ena  : std_logic;
+		begin
+			updn <= '-';
+			ena  <= '0';
+			if vector_addr=vector_left(vector_addr'range) then
+				if vector_di=(vector_di'range => '0') then
+					updn <= dn;
+					ena  <= '1';
+				end if;
+			end if;
+			dtof_left_updn <= updn;
+			dtof_left_ena  <= ena;
+		end process;
+
+		right_p : process(vector_full, dtof_dcy)
+			variable updn : std_logic;
+			variable ena  : std_logic;
+		begin
+			updn <= '-';
+			ena  <= '0';
+			if vector_full='0' then
+				if dtof_dcy='1' then
+					updn <= dn;
+					ena  <= '1';
+				end if;
+			end if;
+			dtof_right_updn <= updn;
+			dtof_right_ena  <= ena;
+		end process;
+
+	end block;
+
+	vector_addr_p : process(clk)
 	begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
 				vector_addr <= (others => '0');
 			else
-				if dev_gnt(1)='1' then
-					if btod_ena='1' then
-						if vector_addr = vector_left(vector_addr'range) then
-							if btod_dcy='1' then
-								vector_addr <= std_logic_vector(unsigned(vector_addr) + 1);
-							else
-								vector_addr <= vector_right(vector_addr'range);
-							end if;
-						else
-							vector_addr <= std_logic_vector(unsigned(vector_addr) + 1);
-						end if;
-					end if;
-				elsif dev_gnt(2)='1' then
-					if dtof_ena='1' then
-						if vector_addr = vector_right(vector_addr'range) then
-							if dtof_dcy='1' then
-	--							vector_addr <= std_logic_vector(unsigned(vector_addr) - 1);
-								vector_addr <= vector_left(vector_addr'range);
-							else
-								vector_addr <= vector_left(vector_addr'range);
-							end if;
-						else
-							vector_addr <= std_logic_vector(unsigned(vector_addr) - 1);
-						end if;
-					end if;
-				end if;
+				vector_addr <= wirebus((vector_addr'range => '-') & btod_addr & dtof_addr, dev_gnt);
 			end if;
 		end if;
 	end process;
 
-	left_p : process(dev_gnt, btod_dcy, vector_addr, vector_left, vector_di)
-	begin
-		left_updn <= '-';
-		left_ena  <= '0';
-		if dev_gnt(1)='1' then
-			if vector_addr=vector_left(vector_addr'range) then
-				if btod_dcy='1' then
-					left_updn <= up;
-					left_ena  <= '1';
-				end if;
-			end if;
-		elsif dev_gnt(2)='1' then
-			if vector_addr=vector_left(vector_addr'range) then
-				if vector_di=(vector_di'range => '0') then
-					left_updn <= dn;
-					left_ena  <= '1';
-				end if;
-			end if;
-		end if;
-	end process;
+	left_updn  <= wirebus('-' & btod_left_updn & dtof_left_updn, dev_gnt);
+	left_ena   <= wirebus('-' & btod_left_ena  & dtof_left_ena,  dev_gnt);
 
-	right_p : process(dev_gnt, dtof_dcy)
-	begin
-		right_updn <= '-';
-		right_ena  <= '0';
-		if dev_gnt(2)='1' then
-			if vector_full='0' then
-				if dtof_dcy='1' then
-					right_updn <= dn;
-					right_ena  <= '1';
-				end if;
-			end if;
-		end if;
-	end process;
+	right_updn <= wirebus('-' & '0' & dtof_right_updn, dev_gnt);
+	right_ena  <= wirebus('-' & '0' & dtof_right_ena,  dev_gnt);
 
 	vector_rst <= not bin_frm;
 	vector_di  <= btod_ddo when dev_gnt(1)='1' else dtof_do;
