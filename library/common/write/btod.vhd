@@ -7,24 +7,25 @@ use hdl4fpga.std.all;
 
 entity btod is
 	generic (
-		size      : in  natural := 4);
+		size         : in  natural := 4);
 	port (
-		clk       : in  std_logic;
-		bin_frm   : in  std_logic;
-		bin_irdy  : in  std_logic := '1';
-		bin_trdy  : out std_logic;
-		bin_di    : in  std_logic_vector;
+		clk          : in  std_logic;
+		bin_frm      : in  std_logic;
+		bin_irdy     : in  std_logic := '1';
+		bin_trdy     : out std_logic;
+		bin_di       : in  std_logic_vector;
 
-		mem_left_updn : out std_logic;
-		mem_left_ena  : out std_logic;
-		mem_right_updn: out std_logic;
-		mem_right_ena : out std_logic;
-		mem_full  : in  std_logic;
-		mem_addr  : inout std_logic_vector;
-		mem_left  : inout std_logic_vector;
-		mem_right : inout std_logic_vector;
-		mem_di    : out std_logic_vector;
-		mem_do    : in std_logic_vector);
+		mem_full     : in  std_logic;
+
+		mem_left     : inout std_logic_vector;
+		mem_left_up  : out std_logic;
+		mem_left_ena : out std_logic;
+
+		mem_right    : in std_logic_vector;
+
+		mem_addr     : out std_logic_vector;
+		mem_di       : out std_logic_vector;
+		mem_do       : in  std_logic_vector);
 end;
 
 architecture def of btod is
@@ -40,6 +41,7 @@ architecture def of btod is
 	signal btod_ddi  : std_logic_vector(mem_do'range);
 	signal btod_trdy : std_logic;
 
+	signal addr      : unsigned(mem_addr'range);
 begin
 
 	btod_ddi_p : process(clk)
@@ -48,7 +50,7 @@ begin
 			if bin_frm='0' then
 				btod_ini <= '1';
 			elsif btod_ena='1' then
-				if mem_addr=mem_left(mem_addr'range) then
+				if addr=unsigned(mem_left(mem_addr'range)) then
 					if btod_dcy='1' then
 						btod_ini <= '1';
 					else
@@ -90,38 +92,36 @@ begin
 		bcd_do  => mem_di,
 		bcd_cy  => btod_dcy);
 
-	addr_p : process(mem_addr, mem_right, btod_ena, btod_dcy)
-		variable addr : unsigned(mem_addr'range);
+	addr_p : process(addr, mem_right, btod_ena, btod_dcy)
 	begin
-		addr := unsigned(mem_addr);
 		if btod_ena='1' then
-			if mem_addr = mem_left(mem_addr'range) then
+			if addr=unsigned(mem_left(mem_addr'range)) then
 				if btod_dcy='1' then
-					addr := addr + 1;
+					addr <= addr + 1;
 				else
-					addr := unsigned(mem_right(mem_addr'range));
+					addr <= unsigned(mem_right(mem_addr'range));
 				end if;
 			else
-				addr := addr + 1;
+				addr <= addr + 1;
 			end if;
 		end if;
-		mem_addr <= std_logic_vector(addr);
 	end process;
+	mem_addr <= std_logic_vector(addr);
 
-	left_p : process(btod_dcy, mem_addr, mem_left)
+	left_p : process(btod_dcy, addr, mem_left)
 		variable updn : std_logic;
 		variable ena  : std_logic;
 	begin
 		updn := '-';
 		ena  := '0';
-		if mem_addr=mem_left(mem_addr'range) then
+		if addr=unsigned(mem_left(mem_addr'range)) then
 			if btod_dcy='1' then
 				updn := up;
 				ena  := '1';
 			end if;
 		end if;
-		mem_left_updn <= updn;
-		mem_left_ena  <= ena;
+		mem_left_up  <= updn;
+		mem_left_ena <= ena;
 	end process;
 
 end;

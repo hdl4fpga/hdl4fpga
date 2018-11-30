@@ -2,9 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity dtof is
+entity bcddiv2e is
 	generic (
-		n  : natural := 0);
+		max     : in  natural := 0);
 	port (
 		clk     : in  std_logic := '0';
 		bcd_exp : in  std_logic_vector;
@@ -18,9 +18,9 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of dtof is
+architecture def of bcddiv2e is
 
-	procedure dbdbb(
+	procedure dbdbbl_p(
 		variable shtio : inout std_logic;
 		variable digit : inout unsigned) is
 		variable save  : std_logic;
@@ -34,7 +34,7 @@ architecture def of dtof is
 		end if;
 	end;
 
-	constant size  : natural := setif(n=0, 2**bcd_exp'length, n);
+	constant size  : natural := setif(max=0, 2**bcd_exp'length, max);
 	signal shtio_d : unsigned(size-1 downto 0);
 	signal shtio_q : unsigned(size-1 downto 0);
 
@@ -66,7 +66,7 @@ begin
 			if k <= to_integer(unsigned(not bcd_exp)) then
 				for i in 0 to tmp_value'length/4-1 loop
 					tmp_value := tmp_value rol 4;
-					dbdbb (tmp_shtio(0), tmp_value(4-1 downto 0));
+					dbdbbl_p (tmp_shtio(0), tmp_value(4-1 downto 0));
 				end loop;
 				carry := carry or tmp_shtio(0);
 			end if;
