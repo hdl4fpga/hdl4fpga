@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ftod is
+entity dtof is
 	generic (
 		size    : natural := 4);
 	port (
@@ -20,7 +20,7 @@ entity ftod is
 		bcd_do   : out std_logic_vector);
 end;
 
-architecture def of ftod is
+architecture def of dtof is
 
 	constant up : std_logic := '0';
 	constant dn : std_logic := '1';
