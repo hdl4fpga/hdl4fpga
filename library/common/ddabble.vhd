@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity btod is
+entity dbdbbl is
 	port (
 		clk     : in  std_logic := '0';
 
@@ -18,9 +18,9 @@ entity btod is
 		bcd_cy  : out std_logic);
 end;
 
-architecture def of btod is
+architecture def of dbdbbl is
 
-	procedure dbdbb(
+	procedure dbdbbl_p(
 		variable shtio : inout std_logic;
 		variable digit : inout unsigned) is
 		variable save  : std_logic;
@@ -63,7 +63,7 @@ begin
 		for k in tmp_shtio'range loop
 			tmp_shtio := tmp_shtio rol 1;
 			for i in 0 to tmp_value'length/4-1 loop
-				dbdbb(tmp_shtio(0), tmp_value(4-1 downto 0));
+				dbdbbl_p(tmp_shtio(0), tmp_value(4-1 downto 0));
 				tmp_value := tmp_value ror 4;
 			end loop;
 		end loop;
