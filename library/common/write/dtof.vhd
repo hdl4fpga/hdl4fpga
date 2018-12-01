@@ -8,23 +8,23 @@ use hdl4fpga.std.all;
 entity dtof is
 	port (
 		clk      : in  std_logic;
-		bin_frm  : in  std_logic;
-		bin_irdy : in  std_logic := '1';
-		bin_trdy : out std_logic;
-		bin_exp  : in  std_logic_vector;
-		bin_di   : in  std_logic_vector;
+		bcd_frm  : in  std_logic;
+		bcd_irdy : in  std_logic := '1';
+		bcd_trdy : out std_logic;
+		bcd_exp  : in  std_logic_vector;
+		bcd_di   : in  std_logic_vector;
 
 		mem_full  : in  std_logic;
-		mem_left  : inout std_logic_vector(size-1 downto 0);
+		mem_left  : inout std_logic_vector;
 		mem_left_up  : out std_logic;
 		mem_left_ena : out std_logic;
-		mem_right : inout std_logic_vector(size-1 downto 0);
+		mem_right : inout std_logic_vector;
 		mem_right_up  : out std_logic;
 		mem_right_ena : out std_logic;
 
-		mem_addr  : out std_logic_vector(size-1 downto 0);
-		mem_do    : in  std_logic_vector(bcd_do'range);
-		mem_di    : out std_logic_vector(vector_do'range));
+		mem_addr  : out std_logic_vector;
+		mem_do    : in  std_logic_vector;
+		mem_di    : out std_logic_vector);
 end;
 
 architecture def of dtof is
@@ -36,13 +36,13 @@ architecture def of dtof is
 	signal dtof_dcy : std_logic;
 	signal dtof_dv  : std_logic;
 
-	signal addr : unsigned(vector_addr'range);
+	signal addr : unsigned(mem_addr'range);
 begin
 
-	dtof_e : entity hdl4fpga.dtof
+	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	port map (
 		clk     => clk,
-		bcd_exp => bin_di,
+		bcd_exp => bcd_di,
 		bcd_ena => dtof_ena,
 		bcd_dv  => dtof_dv,
 		bcd_di  => mem_do,
@@ -65,16 +65,16 @@ begin
 	end process;
 	mem_addr <= std_logic_vector(addr);
 
-	left_p : process(addr, mem_left, mem_di)
+	left_p : process(addr, mem_left, mem_do)
 		variable up  : std_logic;
 		variable ena : std_logic;
 	begin
-		updn <= '-';
-		ena  <= '0';
+		up  := '-';
+		ena := '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
-			if mem_di=(mem_di'range => '0') then
-				up  <= dn;
-				ena <= '1';
+			if mem_do=(mem_do'range => '0') then
+				up  := dn;
+				ena := '1';
 			end if;
 		end if;
 		mem_left_up  <= up;
@@ -82,18 +82,18 @@ begin
 	end process;
 
 	right_p : process(mem_full, dtof_dcy)
-		variable up : std_logic;
-		variable en : std_logic;
+		variable up  : std_logic;
+		variable ena : std_logic;
 	begin
-		up  <= '-';
-		ena <= '0';
+		up  := '-';
+		ena := '0';
 		if mem_full='0' then
 			if dtof_dcy='1' then
-				up  <= dn;
-				ena <= '1';
+				up  := dn;
+				ena := '1';
 			end if;
 		end if;
-		mem_right_up  <= updn;
+		mem_right_up  <= up;
 		mem_right_ena <= ena;
 	end process;
 
