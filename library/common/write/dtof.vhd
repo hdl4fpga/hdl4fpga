@@ -7,30 +7,30 @@ use hdl4fpga.std.all;
 
 entity dtof is
 	port (
-		clk      : in  std_logic;
-		bcd_frm  : in  std_logic;
-		bcd_irdy : in  std_logic := '1';
-		bcd_trdy : out std_logic;
-		bcd_exp  : in  std_logic_vector;
-		bcd_di   : in  std_logic_vector;
+		clk           : in  std_logic;
 
-		mem_full  : in  std_logic;
-		mem_left  : inout std_logic_vector;
-		mem_left_up  : out std_logic;
-		mem_left_ena : out std_logic;
-		mem_right : inout std_logic_vector;
+		bcd_frm       : in  std_logic;
+		bcd_irdy      : in  std_logic := '1';
+		bcd_trdy      : out std_logic;
+		bcd_exp       : in  std_logic_vector;
+		bcd_di        : in  std_logic_vector;
+
+		mem_full      : in  std_logic;
+
+		mem_left      : in std_logic_vector;
+		mem_left_up   : out std_logic;
+		mem_left_ena  : out std_logic;
+
+		mem_right     : in std_logic_vector;
 		mem_right_up  : out std_logic;
 		mem_right_ena : out std_logic;
 
-		mem_addr  : out std_logic_vector;
-		mem_do    : in  std_logic_vector;
-		mem_di    : out std_logic_vector);
+		mem_addr      : out std_logic_vector;
+		mem_do        : in  std_logic_vector;
+		mem_di        : out std_logic_vector);
 end;
 
 architecture def of dtof is
-
-	constant up : std_logic := '1';
-	constant dn : std_logic := '0';
 
 	signal dtof_ena : std_logic;
 	signal dtof_dcy : std_logic;
@@ -73,7 +73,7 @@ begin
 		ena := '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
 			if mem_do=(mem_do'range => '0') then
-				up  := dn;
+				up  := '0';
 				ena := '1';
 			end if;
 		end if;
@@ -89,7 +89,7 @@ begin
 		ena := '0';
 		if mem_full='0' then
 			if dtof_dcy='1' then
-				up  := dn;
+				up  := '0';
 				ena := '1';
 			end if;
 		end if;

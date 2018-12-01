@@ -6,32 +6,33 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity btod is
-	generic (
-		size         : in  natural := 4);
 	port (
-		clk          : in  std_logic;
-		bin_frm      : in  std_logic;
-		bin_irdy     : in  std_logic := '1';
-		bin_trdy     : out std_logic;
-		bin_di       : in  std_logic_vector;
+		clk           : in  std_logic;
 
-		mem_full     : in  std_logic;
+		bin_frm       : in  std_logic;
+		bin_irdy      : in  std_logic := '1';
+		bin_trdy      : out std_logic;
+		bin_di        : in  std_logic_vector;
 
-		mem_left     : inout std_logic_vector;
-		mem_left_up  : out std_logic;
-		mem_left_ena : out std_logic;
+		mem_full      : in  std_logic;
 
-		mem_right    : in std_logic_vector;
+		mem_left      : in  std_logic_vector;
+		mem_left_up   : out std_logic;
+		mem_left_ena  : out std_logic;
 
-		mem_addr     : out std_logic_vector;
-		mem_di       : out std_logic_vector;
-		mem_do       : in  std_logic_vector);
+		mem_right     : in  std_logic_vector;
+		mem_right_up  : out std_logic := '-';
+		mem_right_ena : out std_logic := '0';
+
+		mem_addr      : out std_logic_vector;
+		mem_di        : out std_logic_vector;
+		mem_do        : in  std_logic_vector);
 end;
 
 architecture def of btod is
 
-	constant up : std_logic := '0';
-	constant dn : std_logic := '1';
+	constant up : std_logic := '1';
+	constant dn : std_logic := '0';
 
 	signal btod_ena  : std_logic;
 	signal btod_cnv  : std_logic;
@@ -109,15 +110,15 @@ begin
 	mem_addr <= std_logic_vector(addr);
 
 	left_p : process(btod_dcy, addr, mem_left)
-		variable updn : std_logic;
-		variable ena  : std_logic;
+		variable up  : std_logic;
+		variable ena : std_logic;
 	begin
-		updn := '-';
-		ena  := '0';
+		up  := '-';
+		ena := '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
 			if btod_dcy='1' then
-				updn := up;
-				ena  := '1';
+				up  := '1';
+				ena := '1';
 			end if;
 		end if;
 		mem_left_up  <= updn;

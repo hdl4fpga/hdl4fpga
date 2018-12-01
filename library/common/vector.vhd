@@ -17,9 +17,9 @@ entity vector is
 		vector_left  : out std_logic_vector;
 		vector_right : out std_logic_vector;
 		left_ena     : in  std_logic;
-		left_updn    : in  std_logic;
+		left_up      : in  std_logic;
 		right_ena    : in  std_logic;
-		right_updn   : in  std_logic);
+		right_up     : in  std_logic);
 end;
 
 architecture def of vector is
@@ -38,14 +38,14 @@ begin
 				ptr := (others => '0');
 			elsif vector_ena='1' then
 				if left_ena='1' then
-					if left_updn='0' then
+					if left_up='1' then
 						ptr := ptr + 1;
 					else
 						ptr := ptr - 1;
 					end if;
 				elsif full='1' then
 					if right_ena='1'  then
-						if right_updn='0' then
+						if right_up='1' then
 							ptr := ptr + 1;
 						else
 							ptr := ptr - 1;
@@ -65,14 +65,14 @@ begin
 				ptr := (others => '0');
 			elsif vector_ena='1' then
 				if right_ena='1' then
-					if right_updn='0' then
+					if right_up='1' then
 						ptr := ptr + 1;
 					else
 						ptr := ptr - 1;
 					end if;
 				elsif full='1' then
 					if left_ena='1' then
-						if left_updn='0' then
+						if left_up='1' then
 							ptr := ptr + 1;
 						else
 							ptr := ptr - 1;
