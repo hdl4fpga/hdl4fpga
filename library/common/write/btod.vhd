@@ -121,7 +121,7 @@ begin
 				ena := '1';
 			end if;
 		end if;
-		mem_left_up  <= updn;
+		mem_left_up  <= up;
 		mem_left_ena <= ena;
 	end process;
 

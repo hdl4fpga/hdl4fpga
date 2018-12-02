@@ -12,7 +12,6 @@ entity dtof is
 		bcd_frm       : in  std_logic;
 		bcd_irdy      : in  std_logic := '1';
 		bcd_trdy      : out std_logic;
-		bcd_exp       : in  std_logic_vector;
 		bcd_di        : in  std_logic_vector;
 
 		mem_full      : in  std_logic;
