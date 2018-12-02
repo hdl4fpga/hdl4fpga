@@ -41,16 +41,15 @@ begin
 
 	du: entity hdl4fpga.ftod
 	generic map (
-		n       => 4)
+		size       => 4)
 	port map (
 		clk     => clk,
-		bin_ena => bin_ena,
+		bin_frm => bin_ena,
 		bin_di  => bin_di,
-		bin_fix => bin_fix,
+		bin_flt => bin_fix,
 
-		bcd_lst => bcd_lst,
-		bcd_lft => bcd_lft,
-		bcd_rgt => bcd_rgt,
+		bcd_left => bcd_lft,
+		bcd_right => bcd_rgt,
 		bcd_do  => bcd_do);
 
 	bcd_rdy <= bcd_lst;

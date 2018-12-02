@@ -14,9 +14,10 @@ entity ftod is
 		bin_irdy : in  std_logic := '1';
 		bin_trdy : out std_logic;
 		bin_flt  : in  std_logic;
-		bin_exp  : in  std_logic_vector;
 		bin_di   : in  std_logic_vector;
 
+		bcd_left : out std_logic_vector;
+		bcd_right : out std_logic_vector;
 		bcd_do   : out std_logic_vector);
 end;
 
@@ -170,4 +171,6 @@ begin
 
 	bcd_do   <= btod_do;
 	bin_trdy <= btod_trdy;
+	bcd_left <= vector_left;
+	bcd_right <= vector_right;
 end;
