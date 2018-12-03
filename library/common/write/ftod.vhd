@@ -80,39 +80,59 @@ begin
 		end if;
 	end process;
 
-	gnt_p : process (clk, bin_flt, btod_trdy)
-		variable sel : std_logic;
+	gnt_p : process (clk, bin_frm)
+		variable gnt  : std_logic_vector(dev_gnt'range);
+		variable req  : std_logic_vector(dev_gnt'range);
+		variable trdy : std_logic;
 	begin
+
+		case bin_flt is
+		when '0' =>
+			req := "10";
+		when '1' =>
+			req := "01";
+		when others =>
+			req := (others => '0');
+		end case;
+
 		if rising_edge(clk) then
-				if bin_irdy='1' then
-					sel := bin_flt;
-				end if;
+			if bin_frm='0' then
+				gnt := (others => '0');
+			elsif gnt=(gnt'range => '0') then
+				gnt := req;
+			end if;
 		end if;
-		dev_gnt(1) <= not (btod_trdy and bin_flt) or (not btod_trdy and sel);
-		dev_gnt(2) <=     (btod_trdy and bin_flt) or (not btod_trdy and sel);
+
+		if bin_frm='1' then
+			if gnt=(gnt'range => '0') then
+			end if;
+		end if;
+		for i in dev_gnt'range loop
+			dev_gnt(i) <= trdy and gnt(i);
+		end loop;
 	end process;
 
 	btod_e : entity hdl4fpga.btod
 	port map (
-		clk          => clk,
-		bin_frm      => btod_frm,
-		bin_irdy     => btod_irdy,
-		bin_trdy     => btod_trdy,
-		bin_di       => bin_di,
+		clk           => clk,
+		bin_frm       => btod_frm,
+		bin_irdy      => btod_irdy,
+		bin_trdy      => btod_trdy,
+		bin_di        => bin_di,
 
-		mem_full     => vector_full,
+		mem_full      => vector_full,
 
-		mem_left     => vector_left,
-		mem_left_up  => btod_left_up,
-		mem_left_ena => btod_left_ena,
+		mem_left      => vector_left,
+		mem_left_up   => btod_left_up,
+		mem_left_ena  => btod_left_ena,
 
-		mem_right    => vector_right,
+		mem_right     => vector_right,
 		mem_right_up  => btod_right_up,
 		mem_right_ena => btod_right_ena,
 
-		mem_addr     => btod_addr,
-		mem_di       => btod_do,
-		mem_do       => vector_do);
+		mem_addr      => btod_addr,
+		mem_di        => btod_do,
+		mem_do        => vector_do);
 
 	dtof_e : entity hdl4fpga.dtof
 	port map (
@@ -146,7 +166,7 @@ begin
 	left_up    <= wirebus('-' & btod_left_up  & dtof_left_up,  dev_gnt)(0);
 	left_ena   <= wirebus('-' & btod_left_ena & dtof_left_ena, dev_gnt)(0);
 
-	right_up <= wirebus('-' & btod_left_up  & dtof_right_up,  dev_gnt)(0);
+	right_up   <= wirebus('-' & btod_left_up  & dtof_right_up,  dev_gnt)(0);
 	right_ena  <= wirebus('-' & btod_left_ena & dtof_right_ena, dev_gnt)(0);
 
 	vector_di  <= wirebus((vector_di'range => '-') & btod_do & dtof_do, dev_gnt);
@@ -163,14 +183,14 @@ begin
 		vector_di    => vector_di,
 		vector_do    => vector_do,
 		left_ena     => left_ena,
-		left_up    => left_up,
+		left_up      => left_up,
 		vector_left  => vector_left,
 		right_ena    => right_ena,
-		right_up   => right_up,
+		right_up     => right_up,
 		vector_right => vector_right);
 
-	bcd_do   <= btod_do;
-	bin_trdy <= btod_trdy;
-	bcd_left <= vector_left;
+	bcd_do    <= btod_do;
+	bin_trdy  <= btod_trdy;
+	bcd_left  <= vector_left;
 	bcd_right <= vector_right;
 end;

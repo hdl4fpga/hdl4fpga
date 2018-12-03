@@ -49,34 +49,31 @@ begin
 	end process;
 
 	process (ini, ci, a, b, cy_q)
-		variable add : unsigned(0 to s'length+1);
+		variable op1 : unsigned(a'length-1 downto 0);
+		variable op2 : unsigned(b'length-1 downto 0);
+		variable add : unsigned(s'length-1 downto 0);
 		variable bcd : unsigned(0 to 4+1);
 	begin
-		add(0) := '0';
-		add := add rol 1;
 
-		add(0 to a'length-1) := unsigned(a);
-		add := add rol a'length;
+		bcd := (1 to 5 => '0') & ((cy_q and not ini) or (ci and ini));
+		op1 := unsigned(a);
+		op2 := unsigned(b);
+		add := (others => '0');
 
-		add(0) := (cy_q and not ini) or (ci and ini);
-		add := add rol 1;
-
-		add := add + unsigned('0' & b & '1');
-		add := add ror (4+2);
-
-		bcd := (others => '0');
 		for i in 0 to s'length/4-1 loop
-			bcd := '0' & add(1 to 4) & bcd(0);
+			bcd := ('0' & op1(4-1 downto 0) & bcd(0));
+			bcd := ('0' & op2(4-1 downto 0) & '1') + bcd;
 			if bcd(1 to 4) > 9 then
 				bcd := bcd + (2*6+1);
 			end if;
-			add(1 to 4) := bcd(1 to 4);
+			add(4-1 downto 0) := bcd(1 to 4);
+			op1 := op1 ror 4;
+			op2 := op2 ror 4;
 			add := add ror 4;
 		end loop;
 
-		cy_d <= add(0);
-		add  := add rol 1;
-		s    <= std_logic_vector(add(0 to s'length-1));
+		cy_d <= bcd(0);
+		s    <= std_logic_vector(add);
 	end process;
 
 	co <= cy_d;
