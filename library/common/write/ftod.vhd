@@ -42,7 +42,6 @@ architecture def of ftod is
 	signal btod_right_ena : std_logic;
 	signal btod_frm      : std_logic;
 	signal btod_trdy      : std_logic;
-	signal btod_irdy      : std_logic;
 	signal btod_addr      : std_logic_vector(vector_addr'range);
 	signal btod_do      : std_logic_vector(bcd_do'range);
 
@@ -52,13 +51,12 @@ architecture def of ftod is
 	signal dtof_right_ena : std_logic;
 	signal dtof_frm      : std_logic;
 	signal dtof_trdy      : std_logic;
-	signal dtof_irdy      : std_logic;
 	signal dtof_addr      : std_logic_vector(vector_addr'range);
 	signal dtof_do      : std_logic_vector(bcd_do'range);
 
-	signal dev_trdy       : std_logic_vector(1 to 2);
-	signal dev_irdy       : std_logic_vector(1 to 2);
-	signal dev_gnt        : std_logic_vector(0 to dev_trdy'length);
+	signal dev_trdy       : std_logic_vector(0 to 3-1);
+	signal dev_irdy       : std_logic_vector(0 to 3-1);
+	signal dev_frm        : std_logic_vector(dev_trdy'range);
 begin
 
 	process (clk, dev_trdy, dev_irdy)
@@ -80,43 +78,48 @@ begin
 		end if;
 	end process;
 
-	gnt_p : process (clk, bin_frm)
-		variable gnt  : std_logic_vector(dev_gnt'range);
-		variable req  : std_logic_vector(dev_gnt'range);
-		variable trdy : std_logic;
+	gnt_p : process (clk, bin_frm, trdy, bin_flt)
+		variable gnt : std_logic_vector(dev_frm'range);
+		variable req : std_logic_vector(dev_frm'range);
 	begin
 
-		case bin_flt is
-		when '0' =>
-			req := "10";
-		when '1' =>
-			req := "01";
-		when others =>
+		if bin_frm='0' then
 			req := (others => '0');
-		end case;
+		else
+			if bin_flt='0' then
+				req := "100";
+			else
+				req := "010";
+			end if;
+		end if;
 
 		if rising_edge(clk) then
 			if bin_frm='0' then
-				gnt := (others => '0');
+				gnt := req;
 			elsif gnt=(gnt'range => '0') then
+				gnt := req;
+			elsif (trdy and gnt)/=(gnt'range => '0') then
 				gnt := req;
 			end if;
 		end if;
 
-		if bin_frm='1' then
-			if gnt=(gnt'range => '0') then
-			end if;
+		if bin_frm='0' then
+			dev_frm <= (others => '0');
+		elsif gnt=(gnt'range => '0') then
+			dev_frm <= req;
+		elsif (trdy and gnt)/=(gnt'range => '0') then
+			dev_frm <= req;
+		else
+			dev_frm <= gnt;
 		end if;
-		for i in dev_gnt'range loop
-			dev_gnt(i) <= trdy and gnt(i);
-		end loop;
+
 	end process;
 
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk           => clk,
 		bin_frm       => btod_frm,
-		bin_irdy      => btod_irdy,
+		bin_irdy      => bin_irdy,
 		bin_trdy      => btod_trdy,
 		bin_di        => bin_di,
 
@@ -138,7 +141,7 @@ begin
 	port map (
 		clk          => clk,
 		bcd_frm      => dtof_frm,
-		bcd_irdy     => dtof_irdy,
+		bcd_irdy     => bin_irdy,
 		bcd_trdy     => dtof_trdy,
 		bcd_di       => bin_di,
 
@@ -159,17 +162,17 @@ begin
 	vector_addr_p : process(clk)
 	begin
 		if rising_edge(clk) then
-			vector_addr <= wirebus((vector_addr'range => '-') & btod_addr & dtof_addr, dev_gnt);
+			vector_addr <= wirebus((vector_addr'range => '-') & btod_addr & dtof_addr, dev_frm);
 		end if;
 	end process;
 
-	left_up    <= wirebus('-' & btod_left_up  & dtof_left_up,  dev_gnt)(0);
-	left_ena   <= wirebus('-' & btod_left_ena & dtof_left_ena, dev_gnt)(0);
+	left_up    <= wirebus('-' & btod_left_up  & dtof_left_up,  dev_frm)(0);
+	left_ena   <= wirebus('-' & btod_left_ena & dtof_left_ena, dev_frm)(0);
 
-	right_up   <= wirebus('-' & btod_left_up  & dtof_right_up,  dev_gnt)(0);
-	right_ena  <= wirebus('-' & btod_left_ena & dtof_right_ena, dev_gnt)(0);
+	right_up   <= wirebus('-' & btod_left_up  & dtof_right_up,  dev_frm)(0);
+	right_ena  <= wirebus('-' & btod_left_ena & dtof_right_ena, dev_frm)(0);
 
-	vector_di  <= wirebus((vector_di'range => '-') & btod_do & dtof_do, dev_gnt);
+	vector_di  <= wirebus((vector_di'range => '-') & btod_do & dtof_do, dev_frm);
 
 	vector_rst <= not bin_frm;
 
