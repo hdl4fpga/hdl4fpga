@@ -13,6 +13,7 @@ entity dtof is
 		bcd_irdy      : in  std_logic := '1';
 		bcd_trdy      : out std_logic;
 		bcd_di        : in  std_logic_vector;
+		bcd_cy        : out std_logic;
 
 		mem_full      : in  std_logic;
 
@@ -139,5 +140,6 @@ begin
 		end if;
 	end process;
 
+	bcd_cy   <= dtof_cy;
 	bcd_trdy <= (not dtof_cy and dtof_ena) and bcd_frm;
 end;

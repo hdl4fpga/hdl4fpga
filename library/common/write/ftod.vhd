@@ -7,18 +7,18 @@ use hdl4fpga.std.all;
 
 entity ftod is
 	generic (
-		size    : natural := 4);
+		size      : natural := 4);
 	port (
-		clk      : in  std_logic;
-		bin_frm  : in  std_logic;
-		bin_irdy : in  std_logic := '1';
-		bin_trdy : out std_logic;
-		bin_flt  : in  std_logic;
-		bin_di   : in  std_logic_vector;
+		clk       : in  std_logic;
+		bin_frm   : in  std_logic;
+		bin_irdy  : in  std_logic := '1';
+		bin_trdy  : out std_logic;
+		bin_flt   : in  std_logic;
+		bin_di    : in  std_logic_vector;
 
-		bcd_left : out std_logic_vector;
+		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
-		bcd_do   : out std_logic_vector);
+		bcd_do    : out std_logic_vector);
 end;
 
 architecture def of ftod is
@@ -29,9 +29,9 @@ architecture def of ftod is
 	signal vector_left    : std_logic_vector(size-1 downto 0);
 	signal vector_right   : std_logic_vector(size-1 downto 0);
 	signal vector_addr    : std_logic_vector(size-1 downto 0);
-	signal vector_do      : std_logic_vector(bcd_do'range);
+	signal vector_do      : std_logic_vector(bcd_do'length-1 downto 0);
 	signal vector_di      : std_logic_vector(vector_do'range);
-	signal left_up      : std_logic;
+	signal left_up        : std_logic;
 	signal left_ena       : std_logic;
 	signal right_up     : std_logic;
 	signal right_ena      : std_logic;
@@ -53,6 +53,7 @@ architecture def of ftod is
 	signal dtof_trdy      : std_logic;
 	signal dtof_addr      : std_logic_vector(vector_addr'range);
 	signal dtof_do      : std_logic_vector(bcd_do'range);
+	signal dtof_cy      : std_logic;
 
 	signal dev_trdy       : std_logic_vector(0 to 3-1);
 	signal dev_irdy       : std_logic_vector(0 to 3-1);
@@ -89,13 +90,7 @@ begin
 			if bin_flt='0' then
 				req := "100";
 			else
-				if mem_full='1' then
-					if dtof_right_ena='1' then
-						if vector_do
-					end if;
-				else
-					req := "010";
-				end if;
+				req := "010";
 			end if;
 		end if;
 
@@ -104,6 +99,18 @@ begin
 				gnt := req;
 			elsif gnt=(gnt'range => '0') then
 				gnt := req;
+			elsif mem_full='1' then
+				case gnt is
+				when "100" =>
+				when "010" =>
+					if bcd_cy='1' then
+						if unsigned(vector_do(4-1 downto 0)) >= b"0101" then
+							gnt := "001";
+						end if;
+					end if;
+				when others =>
+				end case;
+				
 			elsif (trdy and gnt)/=(gnt'range => '0') then
 				gnt := req;
 			end if;
