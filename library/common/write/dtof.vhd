@@ -47,9 +47,13 @@ begin
 			if bcd_frm='0' then
 				dtof_ini <= '0';
 			elsif dtof_ena='1' then
-				if addr=unsigned(mem_left(mem_addr'range)) then
+				if addr=unsigned(mem_right(mem_addr'range)) then
 					if dtof_cy='1' then
-						dtof_ini <= '1';
+						if mem_full='0' then
+							dtof_ini <= '1';
+						else
+							dtof_ini <= '0';
+						end if;
 					else
 						dtof_ini <= '0';
 					end if;
@@ -92,11 +96,14 @@ begin
 		if rising_edge(clk) then
 			if bcd_frm='0' then
 				addr <= unsigned(mem_left(mem_addr'range));
-				
 			elsif bcd_irdy='1' then
 				if addr = unsigned(mem_right(mem_addr'range)) then
 					if dtof_cy='1' then
-						addr <= addr - 1;
+						if mem_full='0' then
+							addr <= addr - 1;
+						else
+							addr <= unsigned(mem_left(mem_addr'range));
+						end if;
 					else
 						addr <= unsigned(mem_left(mem_addr'range));
 					end if;
@@ -109,35 +116,27 @@ begin
 	mem_addr <= std_logic_vector(addr);
 
 	left_p : process(addr, mem_left, mem_do)
-		variable up  : std_logic;
-		variable ena : std_logic;
 	begin
-		up  := '-';
-		ena := '0';
+		mem_left_up  <= '-';
+		mem_left_ena <= '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
 			if mem_do=(mem_do'range => '0') then
-				up  := '0';
-				ena := '1';
+				mem_left_up  <= '0';
+				mem_left_ena <= '1';
 			end if;
 		end if;
-		mem_left_up  <= up;
-		mem_left_ena <= ena;
 	end process;
 
 	right_p : process(mem_full, dtof_cy)
-		variable up  : std_logic;
-		variable ena : std_logic;
 	begin
-		up  := '-';
-		ena := '0';
+		mem_right_up  <= '-';
+		mem_right_ena <= '0';
 		if mem_full='0' then
 			if dtof_cy='1' then
-				up  := '0';
-				ena := '1';
+				mem_right_up  <= '0';
+				mem_right_ena <= '1';
 			end if;
 		end if;
-		mem_right_up  <= up;
-		mem_right_ena <= ena;
 	end process;
 
 	bcd_trdy <= (not dtof_cy and dtof_ena) and bcd_frm;
