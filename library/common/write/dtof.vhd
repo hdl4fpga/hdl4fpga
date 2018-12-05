@@ -31,12 +31,51 @@ end;
 
 architecture def of dtof is
 
+	signal dtof_ini : std_logic;
+	signal dtof_cnv : std_logic;
 	signal dtof_ena : std_logic;
-	signal dtof_dcy : std_logic;
+	signal dtof_cy  : std_logic;
 	signal dtof_dv  : std_logic;
+	signal dtof_di  : std_logic_vector(mem_do'range);
 
 	signal addr : unsigned(mem_addr'range);
 begin
+
+	dtof_di_p : process(clk)
+	begin
+		if rising_edge(clk) then
+			if bcd_frm='0' then
+				dtof_ini <= '0';
+			elsif dtof_ena='1' then
+				if addr=unsigned(mem_left(mem_addr'range)) then
+					if dtof_cy='1' then
+						dtof_ini <= '1';
+					else
+						dtof_ini <= '0';
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	dtofcnv_p : process(clk)
+	begin
+		if rising_edge(clk) then
+			if bcd_frm='0' then
+				dtof_cnv <= '0';
+			elsif dtof_cnv='0' then
+				if dtof_cy='1' then
+					dtof_cnv <= bcd_irdy;
+				end if;
+			else
+				dtof_cnv <= dtof_cy;
+			end if;
+		end if;
+	end process;
+
+	dtof_ena <= bcd_irdy or      dtof_cnv;
+	dtof_dv  <= bcd_irdy and not dtof_cnv;
+	dtof_di  <= (dtof_di'range => '0') when dtof_ini='1' else mem_do;
 
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	port map (
@@ -44,21 +83,26 @@ begin
 		bcd_exp => bcd_di,
 		bcd_ena => dtof_ena,
 		bcd_dv  => dtof_dv,
-		bcd_di  => mem_do,
+		bcd_di  => dtof_di,
 		bcd_do  => mem_di,
-		bcd_cy  => dtof_dcy);
+		bcd_cy  => dtof_cy);
 
-	addr_p : process (addr, mem_right, dtof_ena, dtof_dcy)
+	addr_p : process (clk)
 	begin
-		if dtof_ena='1' then
-			if addr = unsigned(mem_right(mem_addr'range)) then
-				if dtof_dcy='1' then
-					addr <= unsigned(mem_left(mem_addr'range));
+		if rising_edge(clk) then
+			if bcd_frm='0' then
+				addr <= unsigned(mem_left(mem_addr'range));
+				
+			elsif bcd_irdy='1' then
+				if addr = unsigned(mem_right(mem_addr'range)) then
+					if dtof_cy='1' then
+						addr <= addr - 1;
+					else
+						addr <= unsigned(mem_left(mem_addr'range));
+					end if;
 				else
-					addr <= unsigned(mem_left(mem_addr'range));
+					addr <= addr - 1;
 				end if;
-			else
-				addr <= addr - 1;
 			end if;
 		end if;
 	end process;
@@ -80,14 +124,14 @@ begin
 		mem_left_ena <= ena;
 	end process;
 
-	right_p : process(mem_full, dtof_dcy)
+	right_p : process(mem_full, dtof_cy)
 		variable up  : std_logic;
 		variable ena : std_logic;
 	begin
 		up  := '-';
 		ena := '0';
 		if mem_full='0' then
-			if dtof_dcy='1' then
+			if dtof_cy='1' then
 				up  := '0';
 				ena := '1';
 			end if;
@@ -96,4 +140,5 @@ begin
 		mem_right_ena <= ena;
 	end process;
 
+	bcd_trdy <= (not dtof_cy and dtof_ena) and bcd_frm;
 end;

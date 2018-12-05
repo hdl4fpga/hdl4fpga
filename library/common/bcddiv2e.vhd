@@ -75,7 +75,7 @@ begin
 
 		shtio_d <= tmp_shtio;
 		bcd_do  <= std_logic_vector(tmp_value);
-		bcd_cy <= carry;
+		bcd_cy  <= carry;
 	end process;
 
 end;

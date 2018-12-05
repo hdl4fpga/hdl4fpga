@@ -89,7 +89,13 @@ begin
 			if bin_flt='0' then
 				req := "100";
 			else
-				req := "010";
+				if mem_full='1' then
+					if dtof_right_ena='1' then
+						if vector_do
+					end if;
+				else
+					req := "010";
+				end if;
 			end if;
 		end if;
 
