@@ -38,10 +38,12 @@ architecture ftod of testbench is
 	signal bin_irdy : std_logic;
 	signal bin_di   : std_logic_vector(0 to 4-1);
 	signal bcd_do   : std_logic_vector(0 to 4-1);
+	signal bcd_left   : std_logic_vector(0 to 4-1);
+	signal bcd_right   : std_logic_vector(0 to 4-1);
 
 begin
 
-	rst <= '1', '0' after 15 ns;
+	rst <= '1', '0' after 35 ns;
 	clk <= not clk after 10 ns;
 
 	process (clk)
@@ -77,7 +79,8 @@ begin
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
-		bin_exp  => b"1",
+		bcd_left => bcd_left,
+		bcd_right => bcd_right,
 		bcd_do   => bcd_do);
 
 end;

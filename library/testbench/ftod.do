@@ -1,28 +1,18 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -radix hexadecimal /testbench/rst
-add wave -noupdate -radix hexadecimal /testbench/clk
+add wave -noupdate /testbench/rst
+add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/du/bin_frm
 add wave -noupdate /testbench/du/bin_irdy
 add wave -noupdate /testbench/du/bin_trdy
-add wave -noupdate -radix hexadecimal /testbench/du/bin_di
-add wave -noupdate -radix hexadecimal /testbench/du/btod_e/bcd_di
-add wave -noupdate -radix hexadecimal /testbench/du/bcd_do
-add wave -noupdate /testbench/bin_cnv
-add wave -noupdate /testbench/du/btod_bdv
-add wave -noupdate /testbench/du/btod_ini
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du/btod_dcy
-add wave -noupdate /testbench/du/btod_cnv
-add wave -noupdate /testbench/du/bin_exp
 add wave -noupdate /testbench/du/bin_flt
-add wave -noupdate -radix hexadecimal /testbench/du/btod_ddi
-add wave -noupdate -radix hexadecimal /testbench/du/vector_addr
-add wave -noupdate /testbench/du/btod_ena
-add wave -noupdate -radix hexadecimal /testbench/du/vector_di
-add wave -noupdate -radix hexadecimal /testbench/du/btod_ddo
-add wave -noupdate /testbench/du/unit_sel
-add wave -noupdate /testbench/line__47/cntr
+add wave -noupdate /testbench/du/gnt_p/gnt
+add wave -noupdate /testbench/du/gnt_p/req
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du/btod_e/bin_frm
+add wave -noupdate /testbench/du/btod_e/bin_trdy
+add wave -noupdate /testbench/du/btod_e/bin_irdy
+add wave -noupdate /testbench/du/btod_e/bin_di
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {40 ns} 0}
 quietly wave cursor active 1
@@ -40,4 +30,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {500 ns}
+WaveRestoreZoom {0 ns} {1 us}
