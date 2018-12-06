@@ -39,8 +39,16 @@ architecture def of dtof is
 	signal dtof_dv  : std_logic;
 	signal dtof_di  : std_logic_vector(mem_do'range);
 
+	signal frm  : std_logic;
 	signal addr : unsigned(mem_addr'range);
 begin
+
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			frm <= bcd_frm;
+		end if;
+	end process;
 
 	dtof_di_p : process(clk)
 	begin
@@ -141,5 +149,5 @@ begin
 	end process;
 
 	bcd_cy   <= dtof_cy;
-	bcd_trdy <= (not dtof_cy and dtof_ena) and bcd_frm;
+	bcd_trdy <= (not dtof_cy and dtof_ena) and (frm or bcd_frm);
 end;

@@ -31,9 +31,6 @@ end;
 
 architecture def of btod is
 
-	constant up : std_logic := '1';
-	constant dn : std_logic := '0';
-
 	signal btod_ena : std_logic;
 	signal btod_cnv : std_logic;
 	signal btod_ini : std_logic;
@@ -41,9 +38,17 @@ architecture def of btod is
 	signal btod_dv  : std_logic;
 	signal btod_di  : std_logic_vector(mem_do'range);
 
+	signal frm      : std_logic;
 	signal addr     : unsigned(mem_addr'range);
 
 begin
+
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			frm <= bin_frm;
+		end if;
+	end process;
 
 	btod_di_p : process(clk)
 	begin
@@ -113,21 +118,17 @@ begin
 	mem_addr <= std_logic_vector(addr);
 
 	left_p : process(btod_cy, addr, mem_left)
-		variable up  : std_logic;
-		variable ena : std_logic;
 	begin
-		up  := '-';
-		ena := '0';
+		mem_left_up  <= '-';
+		mem_left_ena <= '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
 			if btod_cy='1' then
-				up  := '1';
-				ena := '1';
+				mem_left_up  <= '1';
+				mem_left_ena <= '1';
 			end if;
 		end if;
-		mem_left_up  <= up;
-		mem_left_ena <= ena;
 	end process;
 
-	bin_trdy <= (not btod_cy and btod_ena) and bin_frm;
+	bin_trdy <= (not btod_cy and btod_ena) and (bin_frm or frm);
 
 end;
