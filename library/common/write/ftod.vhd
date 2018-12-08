@@ -41,6 +41,7 @@ architecture def of ftod is
 	signal btod_right_up  : std_logic;
 	signal btod_right_ena : std_logic;
 	signal btod_trdy      : std_logic;
+	signal btod_mena      : std_logic;
 	signal btod_addr      : std_logic_vector(vector_addr'range);
 	signal btod_do        : std_logic_vector(bcd_do'range);
 
@@ -53,6 +54,7 @@ architecture def of ftod is
 	signal dtof_addr      : std_logic_vector(vector_addr'range);
 	signal dtof_do        : std_logic_vector(bcd_do'range);
 	signal dtof_cy        : std_logic;
+	signal dtof_mena      : std_logic;
 
 	constant btod_id      : natural := 0;
 	constant dtof_id      : natural := 1;
@@ -95,7 +97,7 @@ begin
 		elsif gnt=(gnt'range => '0') then
 			dev_frm <= req;
 		elsif (dev_trdy and gnt)/=(gnt'range => '0') then
-			dev_frm <= req;
+			dev_frm <= gnt;
 		else
 			dev_frm <= gnt;
 		end if;
@@ -112,6 +114,7 @@ begin
 		bin_di        => bin_di,
 
 		mem_full      => vector_full,
+		mem_ena       => btod_mena,
 
 		mem_left      => vector_left,
 		mem_left_up   => btod_left_up,
@@ -134,6 +137,7 @@ begin
 		bcd_di        => bin_di,
 
 		mem_full      => vector_full,
+		mem_ena       => dtof_mena,
 
 		mem_left      => vector_left,
 		mem_left_up   => dtof_left_up,
@@ -147,12 +151,6 @@ begin
 		mem_di        => dtof_do,
 		mem_do        => vector_do);
 
-	vector_addr_p : process(clk)
-	begin
-		if rising_edge(clk) then
-		end if;
-	end process;
-	vector_addr <= wirebus(btod_addr & dtof_addr, dev_frm);
 
 	left_up    <= wirebus(btod_left_up  & dtof_left_up,  dev_frm)(0);
 	left_ena   <= wirebus(btod_left_ena & dtof_left_ena, dev_frm)(0);
@@ -160,14 +158,17 @@ begin
 	right_up   <= wirebus(btod_right_up  & dtof_right_up,  dev_frm)(0);
 	right_ena  <= wirebus(btod_right_ena & dtof_right_ena, dev_frm)(0);
 
-	vector_di  <= wirebus(btod_do & dtof_do, dev_frm);
 
-	vector_rst <= not bin_frm;
+	vector_rst  <= not bin_frm;
+	vector_addr <= wirebus(btod_addr & dtof_addr, dev_frm);
+	vector_di   <= wirebus(btod_do   & dtof_do,   dev_frm);
+	vector_ena  <= wirebus(btod_mena & dtof_mena, dev_frm)(0);
 
 	vector_e : entity hdl4fpga.vector
 	port map (
 		vector_clk   => clk,
 		vector_rst   => vector_rst,
+		vector_ena   => vector_ena,
 		vector_addr  => std_logic_vector(vector_addr),
 		vector_full  => vector_full,
 		vector_di    => vector_di,

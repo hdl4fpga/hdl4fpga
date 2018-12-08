@@ -65,7 +65,7 @@ begin
 					bin  := bin sll 4;
 					cntr := cntr + 1;
 				end if;
-				bin_irdy <= not bin_cnv or bin_dv;
+				bin_irdy <= not bin_cnv or not bin_dv;
 			end if;
 			bin_di <= std_logic_vector(bin(bin_di'range));
 		end if;

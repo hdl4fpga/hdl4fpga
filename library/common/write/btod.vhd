@@ -14,6 +14,7 @@ entity btod is
 		bin_trdy      : out std_logic;
 		bin_di        : in  std_logic_vector;
 
+		mem_ena       : out std_logic;
 		mem_full      : in  std_logic;
 
 		mem_left      : in  std_logic_vector;
@@ -117,18 +118,21 @@ begin
 	end process;
 	mem_addr <= std_logic_vector(addr);
 
-	left_p : process(btod_cy, addr, mem_left)
+	left_p : process(btod_cy, btod_ena, addr, mem_left)
 	begin
 		mem_left_up  <= '-';
 		mem_left_ena <= '0';
 		if addr=unsigned(mem_left(mem_addr'range)) then
-			if btod_cy='1' then
-				mem_left_up  <= '1';
-				mem_left_ena <= '1';
+			if btod_ena='1' then
+				if btod_cy='1' then
+					mem_left_up  <= '1';
+					mem_left_ena <= '1';
+				end if;
 			end if;
 		end if;
 	end process;
 
-	bin_trdy <= (not btod_cy and btod_ena) and (bin_frm or frm);
+	bin_trdy <= (not btod_cy and btod_ena) and (bin_frm);
+	mem_ena  <= btod_ena;
 
 end;

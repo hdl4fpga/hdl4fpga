@@ -16,6 +16,7 @@ entity dtof is
 		bcd_cy        : out std_logic;
 
 		mem_full      : in  std_logic;
+		mem_ena       : out std_logic;
 
 		mem_left      : in std_logic_vector;
 		mem_left_up   : out std_logic;
@@ -149,5 +150,6 @@ begin
 	end process;
 
 	bcd_cy   <= dtof_cy;
-	bcd_trdy <= (not dtof_cy and dtof_ena) and (frm or bcd_frm);
+	bcd_trdy <= (not dtof_cy and dtof_ena) and (bcd_frm);
+	mem_ena  <= dtof_ena;
 end;
