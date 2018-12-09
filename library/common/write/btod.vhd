@@ -132,7 +132,7 @@ begin
 		end if;
 	end process;
 
-	bin_trdy <= (not btod_cy and btod_ena) and (bin_frm);
+	bin_trdy <= (not btod_cy and btod_ena) and (bin_frm or frm);
 	mem_ena  <= btod_ena;
 
 end;

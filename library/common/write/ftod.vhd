@@ -65,7 +65,7 @@ architecture def of ftod is
 begin
 
 	dev_trdy(btod_id) <= btod_trdy;
-	dev_trdy(dtof_id) <= '0'; --dtof_trdy;
+	dev_trdy(dtof_id) <= dtof_trdy;
 
 	gnt_p : process (clk, bin_frm, dev_trdy, bin_flt)
 		variable gnt : std_logic_vector(dev_frm'range);
@@ -88,7 +88,7 @@ begin
 			elsif gnt=(gnt'range => '0') then
 				gnt := req;
 			elsif (dev_trdy and gnt)/=(gnt'range => '0') then
-				gnt := req;
+				gnt := (others => '0');
 			end if;
 		end if;
 
@@ -97,7 +97,7 @@ begin
 		elsif gnt=(gnt'range => '0') then
 			dev_frm <= req;
 		elsif (dev_trdy and gnt)/=(gnt'range => '0') then
-			dev_frm <= gnt;
+			dev_frm <= req;
 		else
 			dev_frm <= gnt;
 		end if;

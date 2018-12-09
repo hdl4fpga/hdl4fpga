@@ -150,6 +150,6 @@ begin
 	end process;
 
 	bcd_cy   <= dtof_cy;
-	bcd_trdy <= (not dtof_cy and dtof_ena) and (bcd_frm);
+	bcd_trdy <= (not dtof_cy and dtof_ena) and (bcd_frm or frm);
 	mem_ena  <= dtof_ena;
 end;
