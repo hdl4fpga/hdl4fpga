@@ -23,8 +23,21 @@ add wave -noupdate -radix hexadecimal /testbench/du/btod_e/mem_addr
 add wave -noupdate -radix hexadecimal /testbench/du/btod_e/mem_left
 add wave -noupdate /testbench/du/btod_e/mem_left_up
 add wave -noupdate /testbench/du/btod_e/mem_left_ena
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/bcd_frm
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/bcd_irdy
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/bcd_trdy
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/bcd_di
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/mem_right
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/mem_do
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/mem_di
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/mem_left
+add wave -noupdate /testbench/du/dtof_e/mem_full
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/mem_addr
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/dtof_do
+add wave -noupdate -radix hexadecimal /testbench/du/dtof_e/bcd_cy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {279 ns} 0}
+WaveRestoreCursors {{Cursor 1} {901 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -40,4 +53,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {628 ns}
+WaveRestoreZoom {304 ns} {932 ns}
