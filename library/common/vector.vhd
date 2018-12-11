@@ -84,7 +84,7 @@ begin
 		end if;
 	end process;
 
-	full <= setif((left(mem_ptr'range)+right(mem_ptr'range)=(vector_addr'range => '1')));
+	full <= setif((left(mem_ptr'range)-right(mem_ptr'range)=(vector_addr'range => '1')));
 
 	mem_e : entity hdl4fpga.dpram
 	port map (

@@ -48,7 +48,7 @@ begin
 
 	process (clk)
 		variable cntr : natural := 0;
-		variable bin  : unsigned(0 to 4*4-1) := x"10f5";
+		variable bin  : unsigned(0 to 4*4-1) := x"10ff";
 	begin
 		if rising_edge(clk) then
 			if rst='1' then

@@ -39,8 +39,10 @@ architecture def of dtof is
 	signal dtof_cy  : std_logic;
 	signal dtof_dv  : std_logic;
 	signal dtof_di  : std_logic_vector(mem_do'range);
+	signal dtof_do  : std_logic_vector(mem_di'range);
 
 	signal frm  : std_logic;
+	signal trdy : std_logic;
 	signal addr : unsigned(mem_addr'range);
 begin
 
@@ -98,7 +100,7 @@ begin
 		bcd_ena => dtof_ena,
 		bcd_dv  => dtof_dv,
 		bcd_di  => dtof_di,
-		bcd_do  => mem_di,
+		bcd_do  => dtof_do,
 		bcd_cy  => dtof_cy);
 
 	addr_p : process (clk)
@@ -125,31 +127,54 @@ begin
 	end process;
 	mem_addr <= std_logic_vector(addr);
 
-	left_p : process(addr, mem_left, mem_do)
+	left_p : process(addr, mem_left, mem_right, dtof_ena, dtof_do)
 	begin
 		mem_left_up  <= '-';
 		mem_left_ena <= '0';
-		if addr=unsigned(mem_left(mem_addr'range)) then
-			if mem_do=(mem_do'range => '0') then
-				mem_left_up  <= '0';
-				mem_left_ena <= '1';
+		if dtof_ena='1' then
+			if addr=unsigned(mem_left(mem_addr'range)) then
+				if addr/=unsigned(mem_right(mem_addr'range)) then
+					if dtof_do=(dtof_do'range => '0') then
+						mem_left_up  <= '0';
+						mem_left_ena <= '1';
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
 
-	right_p : process(mem_full, dtof_cy)
+	right_p : process(addr, mem_right, dtof_ena, mem_full, dtof_cy)
 	begin
 		mem_right_up  <= '-';
 		mem_right_ena <= '0';
-		if mem_full='0' then
-			if dtof_cy='1' then
-				mem_right_up  <= '0';
-				mem_right_ena <= '1';
+		if dtof_ena='1' then
+			if addr=unsigned(mem_right(mem_addr'range)) then
+				if mem_full='0' then
+					if dtof_cy='1' then
+						mem_right_up  <= '0';
+						mem_right_ena <= '1';
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	trdy_p : process (addr, mem_right, dtof_cy, bcd_frm, frm)
+	begin
+		trdy <= '0';
+		if bcd_frm='1' or frm='1' then
+			if dtof_ena='1' then
+				if addr=unsigned(mem_right(mem_addr'range)) then
+					if dtof_cy='0' then
+						trdy <= '1';
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
 
 	bcd_cy   <= dtof_cy;
-	bcd_trdy <= (not dtof_cy and dtof_ena) and (bcd_frm or frm);
+	bcd_trdy <= trdy;
 	mem_ena  <= dtof_ena;
+	mem_di   <= dtof_do;
 end;
