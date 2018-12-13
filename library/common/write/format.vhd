@@ -2,53 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity align_bcd is
-	generic (
-		space : std_logic_vector(4-1 downto 0) := x"f");
-	port (
-		left   : in  std_logic := '0';
-		value  : in  std_logic_vector;
-		align  : out std_logic_vector);
-end;
-		
-architecture def of align_bcd is
-
-	function align_bcd_f (
-		constant value : std_logic_vector;
-		constant left  : std_logic)
-		return std_logic_vector is
-		variable retval : unsigned(value'length-1 downto 0);
-	begin
-		retval := unsigned(value);
-		if left='1' then
-			retval := retval rol 4;
-		end if;
-		for i in 0 to value'length/4-1 loop
-			if std_logic_vector(retval(4-1 downto 0))=space then
-				if left='1' then
-					retval := retval rol 4;
-				else
-					retval := retval ror 4;
-				end if;
-			elsif left='1' then
-				retval := retval ror 4;
-				exit;
-			else
-				exit;
-			end if;
-		end loop;
-
-		return std_logic_vector(retval);
-	end;
-
-begin
-	align <= align_bcd_f(value, left);
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 

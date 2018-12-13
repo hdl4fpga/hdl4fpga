@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity ftod is
+entity btom is
 	generic (
 		size      : natural := 4);
 	port (
@@ -16,12 +16,13 @@ entity ftod is
 		bin_flt   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 
+		bcd_addr  : in  std_logic_vector;
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
 		bcd_do    : out std_logic_vector);
 end;
 
-architecture def of ftod is
+architecture def of btom is
 
 	signal vector_rst     : std_logic;
 	signal vector_ena     : std_logic;
@@ -45,19 +46,19 @@ architecture def of ftod is
 	signal btod_addr      : std_logic_vector(vector_addr'range);
 	signal btod_do        : std_logic_vector(bcd_do'range);
 
-	signal dtof_left_up   : std_logic;
-	signal dtof_left_ena  : std_logic;
-	signal dtof_right_up  : std_logic;
-	signal dtof_right_ena : std_logic;
-	signal dtof_frm       : std_logic;
-	signal dtof_trdy      : std_logic;
-	signal dtof_addr      : std_logic_vector(vector_addr'range);
-	signal dtof_do        : std_logic_vector(bcd_do'range);
-	signal dtof_cy        : std_logic;
-	signal dtof_mena      : std_logic;
+	signal dtom_left_up   : std_logic;
+	signal dtom_left_ena  : std_logic;
+	signal dtom_right_up  : std_logic;
+	signal dtom_right_ena : std_logic;
+	signal dtom_frm       : std_logic;
+	signal dtom_trdy      : std_logic;
+	signal dtom_addr      : std_logic_vector(vector_addr'range);
+	signal dtom_do        : std_logic_vector(bcd_do'range);
+	signal dtom_cy        : std_logic;
+	signal dtom_mena      : std_logic;
 
 	constant btod_id      : natural := 0;
-	constant dtof_id      : natural := 1;
+	constant dtom_id      : natural := 1;
 
 	signal dev_trdy       : std_logic_vector(0 to 2-1);
 	signal dev_frm        : std_logic_vector(dev_trdy'range);
@@ -65,7 +66,7 @@ architecture def of ftod is
 begin
 
 	dev_trdy(btod_id) <= btod_trdy;
-	dev_trdy(dtof_id) <= dtof_trdy;
+	dev_trdy(dtom_id) <= dtom_trdy;
 
 	gnt_p : process (clk, bin_frm, dev_trdy, bin_flt)
 		variable gnt : std_logic_vector(dev_frm'range);
@@ -103,7 +104,6 @@ begin
 		end if;
 
 	end process;
-
 	
 	btod_e : entity hdl4fpga.btod
 	port map (
@@ -128,41 +128,41 @@ begin
 		mem_di        => btod_do,
 		mem_do        => vector_do);
 
-	dtof_e : entity hdl4fpga.dtof
+	dtom_e : entity hdl4fpga.dtom
 	port map (
 		clk           => clk,
-		bcd_frm       => dev_frm(dtof_id),
+		bcd_frm       => dev_frm(dtom_id),
 		bcd_irdy      => bin_irdy,
-		bcd_trdy      => dtof_trdy,
+		bcd_trdy      => dtom_trdy,
 		bcd_di        => bin_di,
 
 		mem_full      => vector_full,
-		mem_ena       => dtof_mena,
+		mem_ena       => dtom_mena,
 
 		mem_left      => vector_left,
-		mem_left_up   => dtof_left_up,
-		mem_left_ena  => dtof_left_ena,
+		mem_left_up   => dtom_left_up,
+		mem_left_ena  => dtom_left_ena,
 
 		mem_right     => vector_right,
-		mem_right_up  => dtof_right_up,
-		mem_right_ena => dtof_right_ena,
+		mem_right_up  => dtom_right_up,
+		mem_right_ena => dtom_right_ena,
 
-		mem_addr      => dtof_addr,
-		mem_di        => dtof_do,
+		mem_addr      => dtom_addr,
+		mem_di        => dtom_do,
 		mem_do        => vector_do);
 
 
-	left_up    <= wirebus(btod_left_up  & dtof_left_up,  dev_frm)(0);
-	left_ena   <= wirebus(btod_left_ena & dtof_left_ena, dev_frm)(0);
+	left_up    <= wirebus(btod_left_up  & dtom_left_up,  dev_frm)(0);
+	left_ena   <= wirebus(btod_left_ena & dtom_left_ena, dev_frm)(0);
 
-	right_up   <= wirebus(btod_right_up  & dtof_right_up,  dev_frm)(0);
-	right_ena  <= wirebus(btod_right_ena & dtof_right_ena, dev_frm)(0);
+	right_up   <= wirebus(btod_right_up  & dtom_right_up,  dev_frm)(0);
+	right_ena  <= wirebus(btod_right_ena & dtom_right_ena, dev_frm)(0);
 
 
 	vector_rst  <= not bin_frm;
-	vector_addr <= wirebus(btod_addr & dtof_addr, dev_frm);
-	vector_di   <= wirebus(btod_do   & dtof_do,   dev_frm);
-	vector_ena  <= wirebus(btod_mena & dtof_mena, dev_frm)(0);
+	vector_addr <= wirebus(btod_addr & dtom_addr & bcd_addr, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
+	vector_di   <= wirebus(btod_do   & dtom_do,   dev_frm);
+	vector_ena  <= wirebus(btod_mena & dtom_mena, dev_frm)(0);
 
 	vector_e : entity hdl4fpga.vector
 	port map (

@@ -6,67 +6,81 @@ entity align is
 	generic (
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
-		clk    : in  std_logic := '-';
-		rst    : in  std_logic := '0';
-		value  : in  std_logic_vector;
-		align  : out std_logic_vector);
+		clk   : in  std_logic := '-';
+		rst   : in  std_logic := '1';
+		msb   : in  std_logic;
+		left  : in  std_logic := '1';
+		code  : in  std_logic_vector;
+		field : out std_logic_vector);
 end;
 		
-architecture def of align_bcd is
+architecture def of align is
 
-	function align (
-		constant value : std_logic_vector;
-		constant left  : std_logic)
-		return std_logic_vector is
-		variable retval : unsigned(value'length-1 downto 0);
-	begin
-		retval := unsigned(value);
-		if left='1' then
-			retval := retval rol 4;
-		end if;
-		for i in 0 to value'length/4-1 loop
-			if std_logic_vector(retval(4-1 downto 0))=space then
-				if left='1' then
-					retval := retval rol 4;
-				else
-					retval := retval ror 4;
-				end if;
-			elsif left='1' then
-				retval := retval ror 4;
-				exit;
-			else
-				exit;
-			end if;
-		end loop;
+	signal aligned : std_logic_vector(field'length-1 downto 0);
 
-		return std_logic_vector(retval);
-	end;
-
-	signal left  : std_logic_vector;
-	signal right : std_logic_vector;
 begin
 
-	process
+	process (rst, msb, left, code, clk)
+		variable cod : unsigned(code'length-1 downto 0);
+		variable fld : unsigned(align'length-1 downto 0);
 	begin
-		for i in 0 to left'length/space'length-1 loop
-			left(space'range) := value;
-			left := left rol 4;
-		end loop;
-		right := left;
 
-		-- lsb first;
-		if value/=space then
-			left := left ror value'length;
-			left(value'range) := value;
+		cod := unsigned(code);
+		if rst='1' then
+			fld := (others => '-');
+			for i in 0 to fld'length/space'length-1 loop
+				fld(space'range) := cod;
+				fld := fld rol 4;
+			end loop;
 		else
-			exit;
+			fld := unsigned(aligned);
 		end if;
 
-		--  msb first
-		if value/=space then
-			right := right rol value'length;
-			right(value'range) := value;
+		if msb='0' then
+			-- left sided
+			for i in 0 to cod'length/space'length-1 loop
+				if cod(space'range)/=space then
+					fld(cod'length-1 downto 0) := cod(space'range);
+					fld := fld ror space'length;
+				end if;
+				cod := cod ror space'length;
+			end loop;
 		else
-			exit;
+			-- right sided
+			for i in 0 to cod'length/space'length-1 loop
+				cod := cod ror space'length;
+				if cod(space'range)/=space then
+					fld := fld rol space'length;
+					fld(cod'length-1 downto 0) := cod(space'range);
+				end if;
+			end loop;
 		end if;
+
+		if rising_edge(clk) then
+			aligned <= std_logic_vector(fld);
+		end if;
+
+		if left='1' then
+			if msb='1' then
+				for i in 0 to field'length/space'length-1 loop
+					fld := fld rol space'length;
+					if unsigned(fld(space'range))=space then
+						fld := fld ror space'length;
+						exit;
+					end if;
+				end loop;
+			end if;
+		elsif msb='0' then
+			for i in 0 to field'length/space'length-1 loop
+				fld := fld ror space'length;
+				if unsigned(fld(space'range))=space then
+					exit;
+				end if;
+			end loop;
+		end if;
+
+		field <= std_logic_vector(fld);
+
+	end process;
+
 end;
