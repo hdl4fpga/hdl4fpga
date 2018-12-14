@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mtof is
+entity stof is
 	generic (
 		minus : std_logic_vector(4-1 downto 0) := x"d";
 		plus  : std_logic_vector(4-1 downto 0) := x"c";
@@ -21,7 +21,7 @@ entity mtof is
 		fixfmt  : out std_logic_vector);
 end;
 		
-architecture def of mtof is
+architecture def of stof is
 
 begin
 
