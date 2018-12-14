@@ -275,6 +275,11 @@ package std is
 		return std_logic_vector;
 
 	function fill (
+		constant value : std_logic_vector;
+		constant size  : natural)
+		return std_logic_vector;
+
+	function fill (
 		constant data  : string;
 		constant size  : natural;
 		constant right : boolean := true;
@@ -1035,6 +1040,19 @@ package body std is
 			return retval_right;
 		end if;
 		return retval_left;
+	end;
+
+	function fill (
+		constant value : std_logic_vector;
+		constant size  : natural)
+		return std_logic_vector is
+		variable retval : unsigned(0 to size-1);
+	begin
+		for i in 0 to size/value'length-1 loop
+			retval(0 to value'length-1) := unsigned(value);
+			retval := retval srl value'length;
+		end loop;
+		return std_logic_vector(retval);
 	end;
 
 	function fill (

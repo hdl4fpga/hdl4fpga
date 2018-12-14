@@ -15,6 +15,8 @@ entity stof is
 		check : boolean := true);
 		
 	port (
+		clk     : in  std_logic := '-';
+		ini     : in  std_logic := '1';
 		left    : in  std_logic_vector;
 		right   : in  std_logic_vector;
 		sgnfcnd : in  std_logic_vector;
@@ -25,50 +27,65 @@ architecture def of stof is
 
 begin
 
-	process (left, sgnfcnd)
-		variable fmt  : unsigned(fixfmt'length-1 downto 0);
+	process (left, sgnfcnd, ini, clk)
+		variable fmt   : unsigned(fixfmt'length-1 downto 0);
 		variable codes : unsigned(0 to sgnfcnd'length-1);
 	begin
-		codes := unsigned(sgnfcnd);
-		for i in 0 to fixfmt'length/space'length-1 loop
-			if signed(left)+i < 0 then
-				fmt(space'range) := unsigned(zero);
-				if i=0 then
-					fmt := fmt rol space'left;
-					fmt(space'range) := unsigned(dot);
+
+		if ini='1' then
+			fmt := unsigned(fill(fmt'length, space));
+			for i in 0 to fmt'length/space'length-1 loop
+				if signed(left)+i < 0 then
+					fmt(space'range) := unsigned(zero);
+					if i=0 then
+						fmt := fmt rol space'left;
+						fmt(space'range) := unsigned(dot);
+					end if;
+				else
+					exit;
 				end if;
-			elsif signed(left)+i >= 0 then
-				fmt(space'range) := unsigned(codes(space'reverse_range));
-				codes := codes sll space'length;
-			elsif signed(left)-i = -1 then 
+			end loop;
+		end if;
+
+		codes := unsigned(sgnfcnd);
+		for i in 0 to codes'length/space'length-1 loop
+			if signed(left)-i = -1 then 
 				fmt(space'range) := unsigned(dot);
-			else
-				fmt(space'range) := unsigned(codes(space'reverse_range));
-				codes := codes sll space'length;
+				fmt := fmt sll space'left;
 			end if;
-			fmt := fmt rol space'left;
+			fmt(space'range) := unsigned(codes(space'reverse_range));
+			codes := codes sll space'length;
+			fmt   := fmt   rol space'length;
 		end loop;
+
 	end process;
 	
 	process (right, sgnfcnd)
 		variable fmt   : unsigned(fixfmt'length-1 downto 0);
 		variable codes : unsigned(sgnfcnd'length-1 downto 0);
 	begin
-		for i in 0 to fixfmt'length/space'length-1 loop
-			codes := unsigned(sgnfcnd);
-			if signed(right) > i then
-				fmt(space'range) := unsigned(zero);
-			elsif signed(right)+i = -1 then 
+		if ini='1' then
+			fmt := unsigned(fill(fmt'length, space));
+			for i in 0 to fmt'length/space'length-1 loop
+				if signed(right) > i then
+					fmt(space'range) := unsigned(zero);
+				else
+					exit;
+				end if;
+				fmt := fmt srl space'left;
+			end loop;
+		end if;
+
+		codes := unsigned(sgnfcnd);
+		for i in 0 to codes'length/space'length-1 loop
+			fmt(space'range)   := unsigned(codes(space'range));
+			codes(space'range) := unsigned(space);
+			codes := codes ror space'length;
+			if signed(right)+i = -1 then
+				fmt := fmt ror space'left;
 				fmt(space'range) := unsigned(dot);
-			elsif signed(right) <= i then 
-				fmt(space'range)   := unsigned(codes(space'range));
-				codes(space'range) := unsigned(zero);
-				codes := codes ror space'length;
-			else
-				fmt(space'range) := unsigned(codes(space'range));
-				codes := codes ror space'length;
 			end if;
-			fmt := fmt ror space'left;
+			fmt := fmt srl space'left;
 		end loop;
 	end process;
 	
