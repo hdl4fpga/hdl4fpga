@@ -25,50 +25,50 @@ architecture def of stof is
 
 begin
 
-
 	process (left, sgnfcnd)
 		variable fmt  : unsigned(fixfmt'length-1 downto 0);
-		variable scnd : unsigned(0 to sgnfcnd'length-1);
+		variable codes : unsigned(0 to sgnfcnd'length-1);
 	begin
+		codes := unsigned(sgnfcnd);
 		for i in 0 to fixfmt'length/space'length-1 loop
-			scnd := unsigned(sgnfcnd);
 			if signed(left)+i < 0 then
 				fmt(space'range) := unsigned(zero);
-			elsif signed(left)+i=0 then 
-				fmt(space'range) := unsigned(dot);
-			elsif signed(left)-i > 0 then
-				fmt(space'range) := unsigned(scnd(space'reverse_range));
-				scnd := scnd rol space'length;
-			elsif signed(left)-i=0 then 
+				if i=0 then
+					fmt := fmt rol space'left;
+					fmt(space'range) := unsigned(dot);
+				end if;
+			elsif signed(left)+i >= 0 then
+				fmt(space'range) := unsigned(codes(space'reverse_range));
+				codes := codes sll space'length;
+			elsif signed(left)-i = -1 then 
 				fmt(space'range) := unsigned(dot);
 			else
-				fmt(space'range) := unsigned(scnd(space'reverse_range));
-				scnd := scnd rol space'length;
+				fmt(space'range) := unsigned(codes(space'reverse_range));
+				codes := codes sll space'length;
 			end if;
-			fmt  := fmt rol space'left;
+			fmt := fmt rol space'left;
 		end loop;
 	end process;
 	
 	process (right, sgnfcnd)
-		variable fmt  : unsigned(fixfmt'length-1 downto 0);
-		variable scnd : unsigned(0 to sgnfcnd'length-1);
+		variable fmt   : unsigned(fixfmt'length-1 downto 0);
+		variable codes : unsigned(sgnfcnd'length-1 downto 0);
 	begin
 		for i in 0 to fixfmt'length/space'length-1 loop
-			scnd := unsigned(sgnfcnd);
-			if signed(right)-i >= 0 then
+			codes := unsigned(sgnfcnd);
+			if signed(right) > i then
 				fmt(space'range) := unsigned(zero);
-			elsif signed(right)-i=0 then 
+			elsif signed(right)+i = -1 then 
 				fmt(space'range) := unsigned(dot);
-			elsif signed(right)+i > 0 then
-				fmt(space'range) := unsigned(scnd(space'reverse_range));
-				scnd := scnd ror space'length;
-			elsif signed(right)+i=0 then 
-				fmt(space'range) := unsigned(dot);
+			elsif signed(right) <= i then 
+				fmt(space'range)   := unsigned(codes(space'range));
+				codes(space'range) := unsigned(zero);
+				codes := codes ror space'length;
 			else
-				fmt(space'range) := unsigned(scnd(space'reverse_range));
-				scnd := scnd ror space'length;
+				fmt(space'range) := unsigned(codes(space'range));
+				codes := codes ror space'length;
 			end if;
-			fmt  := fmt rol space'left;
+			fmt := fmt ror space'left;
 		end loop;
 	end process;
 	
