@@ -6,8 +6,6 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity btos is
-	generic (
-		size      : natural := 4);
 	port (
 		clk       : in  std_logic;
 		bin_frm   : in  std_logic;
@@ -27,9 +25,9 @@ architecture def of btos is
 	signal vector_rst     : std_logic;
 	signal vector_ena     : std_logic;
 	signal vector_full    : std_logic;
-	signal vector_left    : std_logic_vector(size-1 downto 0);
-	signal vector_right   : std_logic_vector(size-1 downto 0);
-	signal vector_addr    : std_logic_vector(size-1 downto 0);
+	signal vector_left    : std_logic_vector(bcd_addr'length-1 downto 0);
+	signal vector_right   : std_logic_vector(bcd_addr'length-1 downto 0);
+	signal vector_addr    : std_logic_vector(bcd_addr'length-1 downto 0);
 	signal vector_do      : std_logic_vector(bcd_do'length-1 downto 0);
 	signal vector_di      : std_logic_vector(vector_do'range);
 	signal left_up        : std_logic;

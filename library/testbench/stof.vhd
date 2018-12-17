@@ -72,10 +72,23 @@ begin
 		end if;
 	end process;
 
-	du : entity hdl4fpga.btos
+	btod_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
 		bin_frm   => bin_cnv,
+		bin_trdy  => bin_dv,
+		bin_irdy  => bin_irdy,
+		bin_di    => bin_di,
+		bin_flt   => bin_flt,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_addr  => bcd_addr,
+		bcd_do    => bcd_do);
+
+	du : entity hdl4fpga.stof
+	port map (
+		clk       => clk,
+		frm   => bin_cnv,
 		bin_trdy  => bin_dv,
 		bin_irdy  => bin_irdy,
 		bin_di    => bin_di,

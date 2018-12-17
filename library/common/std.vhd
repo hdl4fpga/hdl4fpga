@@ -737,7 +737,7 @@ package body std is
 			end if;
 			aux := aux rol size;
 		end loop;
-		return fill(def, size);
+		return fill(data => def, size => size);
 	end;
 
 	function word2byte (
@@ -768,7 +768,7 @@ package body std is
 		constant size  : natural)
 		return std_logic_vector is
 	begin
-		return word2byte(fill(word, size*(2**addr'length)), addr);
+		return word2byte(fill(data => word, size => size*(2**addr'length)), addr);
 	end;
 
 	function word2byte (
