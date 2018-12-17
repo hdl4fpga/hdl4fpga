@@ -41,7 +41,9 @@ architecture btos of testbench is
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
 	signal bcd_addr  : std_logic_vector(0 to 4-1);
+	signal fix_do    : std_logic_vector(0 to 4-1);
 
+	signal stof_frm  : std_logic;
 begin
 
 	rst <= '1', '0' after 35 ns;
@@ -88,14 +90,10 @@ begin
 	du : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
-		frm   => bin_cnv,
-		bin_trdy  => bin_dv,
-		bin_irdy  => bin_irdy,
-		bin_di    => bin_di,
-		bin_flt   => bin_flt,
+		bcd_frm   => stof_frm,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
-		bcd_addr  => bcd_addr,
-		bcd_do    => bcd_do);
+		bcd_di    => bcd_do,
+		fix_do    => fix_do);
 
 end;

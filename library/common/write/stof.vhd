@@ -14,6 +14,7 @@ entity stof is
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
 		clk       : in  std_logic := '-';
+		bcd_eddn  : in  std_logic;
 		bcd_frm   : in  std_logic := '1';
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
@@ -23,7 +24,18 @@ end;
 		
 architecture def of stof is
 
+	signal eddn : std_logic;
+
+	signal align_left  : std_logic_vector(fix_do'range);
+	signal align_right : std_logic_vector(fix_do'range);
 begin
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			eddn <= bcd_eddn;
+		end if;
+	end process;
 
 	process (bcd_left, bcd_di, bcd_frm, clk)
 		variable fmt   : unsigned(fix_do'length-1 downto 0);
@@ -56,6 +68,7 @@ begin
 			fmt   := fmt   rol space'length;
 		end loop;
 
+		align_left <= std_logic_vector(fmt);
 	end process;
 	
 	process (bcd_right, bcd_di)
@@ -70,7 +83,7 @@ begin
 				else
 					exit;
 				end if;
-				fmt := fmt srl space'bcd_left;
+				fmt := fmt srl space'length;
 			end loop;
 		end if;
 
@@ -85,6 +98,10 @@ begin
 			end if;
 			fmt := fmt srl space'length;
 		end loop;
+
+		align_right <= std_logic_vector(fmt);
 	end process;
 	
+	fix_do <= align_right when eddn='1' else align_left;
+
 end;

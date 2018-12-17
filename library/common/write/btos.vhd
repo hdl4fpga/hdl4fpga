@@ -15,6 +15,7 @@ entity btos is
 		bin_di    : in  std_logic_vector;
 
 		bcd_addr  : in  std_logic_vector;
+		bcd_eddn  : out std_logic;
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
 		bcd_do    : out std_logic_vector);
@@ -182,4 +183,5 @@ begin
 	bin_trdy  <= btod_trdy;
 	bcd_left  <= vector_left;
 	bcd_right <= vector_right;
+	bcd_eddn  <= bin_flt;
 end;
