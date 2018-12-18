@@ -61,15 +61,15 @@ begin
 				bin_irdy <= '0';
 				bin_flt  <= '0';
 			else
-				bin_frm  <= frm(0);
-				bin_irdy <= frm(0);
-				bin_di   <= std_logic_vector(bin(bin_di'range));
-				bin_flt  <= std_logic(flt(0));
 				if bin_trdy='1' then
 					frm := frm sll 1;
 					flt := flt sll 1;
 					bin := bin sll 4;
 				end if;
+				bin_frm  <= frm(0);
+				bin_irdy <= frm(0);
+				bin_flt  <= std_logic(flt(0));
+				bin_di   <= std_logic_vector(bin(bin_di'range));
 			end if;
 		end if;
 	end process;
