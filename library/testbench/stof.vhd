@@ -29,11 +29,11 @@ library hdl4fpga;
 
 architecture btos of testbench is
 
-	signal rst      : std_logic := '0';
-	signal clk      : std_logic := '0';
+	signal rst       : std_logic := '0';
+	signal clk       : std_logic := '0';
 
-	signal bin_cnv   : std_logic;
-	signal bin_dv    : std_logic;
+	signal bin_frm   : std_logic;
+	signal bin_trdy  : std_logic;
 	signal bin_flt   : std_logic;
 	signal bin_irdy  : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
@@ -44,41 +44,41 @@ architecture btos of testbench is
 	signal fix_do    : std_logic_vector(0 to 4-1);
 
 	signal stof_frm  : std_logic;
+
 begin
 
 	rst <= '1', '0' after 35 ns;
-	clk <= not clk after 10 ns;
+	clk <= not clk  after 10 ns;
 
 	process (clk)
-		variable cntr : natural := 0;
-		variable bin  : unsigned(0 to 4*4-1) := x"10ff";
+		variable bin : unsigned(0 to 4*4-1) := x"10ff";
+		variable flt : unsigned(0 to 4*1-1) := b"0001";
+		variable frm : unsigned(0 to 4*1-1) := b"1111";
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				bin_cnv  <= '0';
-				bin_irdy <= '1';
+				bin_frm  <= '0';
+				bin_irdy <= '0';
 				bin_flt  <= '0';
-				cntr     := 0;
 			else
-				bin_cnv <= '1';
-				if bin_dv='1' then
-					if cntr >= 2 then
-						bin_flt <= '1';
-					end if;
-					bin  := bin sll 4;
-					cntr := cntr + 1;
+				bin_frm  <= frm(0);
+				bin_irdy <= frm(0);
+				bin_di   <= std_logic_vector(bin(bin_di'range));
+				bin_flt  <= std_logic(flt(0));
+				if bin_trdy='1' then
+					frm := frm sll 1;
+					flt := flt sll 1;
+					bin := bin sll 4;
 				end if;
-				bin_irdy <= not bin_cnv or not bin_dv;
 			end if;
-			bin_di <= std_logic_vector(bin(bin_di'range));
 		end if;
 	end process;
 
 	btod_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
-		bin_frm   => bin_cnv,
-		bin_trdy  => bin_dv,
+		bin_frm   => bin_frm,
+		bin_trdy  => bin_trdy,
 		bin_irdy  => bin_irdy,
 		bin_di    => bin_di,
 		bin_flt   => bin_flt,
@@ -87,13 +87,13 @@ begin
 		bcd_addr  => bcd_addr,
 		bcd_do    => bcd_do);
 
-	du : entity hdl4fpga.stof
-	port map (
-		clk       => clk,
-		bcd_frm   => stof_frm,
-		bcd_left  => bcd_left,
-		bcd_right => bcd_right,
-		bcd_di    => bcd_do,
-		fix_do    => fix_do);
+--	du : entity hdl4fpga.stof
+--	port map (
+--		clk       => clk,
+--		bcd_frm   => stof_frm,
+--		bcd_left  => bcd_left,
+--		bcd_right => bcd_right,
+--		bcd_di    => bcd_do,
+--		fix_do    => fix_do);
 
 end;
