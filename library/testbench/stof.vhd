@@ -44,6 +44,7 @@ architecture btos of testbench is
 	signal fix_do    : std_logic_vector(0 to 4-1);
 
 	signal stof_frm  : std_logic;
+	signal stof_eddn : std_logic;
 
 begin
 
@@ -74,6 +75,16 @@ begin
 		end if;
 	end process;
 
+	process (clk, bin_frm)
+		variable btod_frm : std_logic;
+	begin
+		if rising_edge(clk) then
+
+			btod_frm := bin_frm;
+		end if;
+		stof_frm <= not btod_frm
+	end process;
+
 	btod_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
@@ -87,13 +98,15 @@ begin
 		bcd_addr  => bcd_addr,
 		bcd_do    => bcd_do);
 
---	du : entity hdl4fpga.stof
---	port map (
---		clk       => clk,
---		bcd_frm   => stof_frm,
---		bcd_left  => bcd_left,
---		bcd_right => bcd_right,
---		bcd_di    => bcd_do,
---		fix_do    => fix_do);
+	stof_eddn <= bin_flt;
+	stof_e : entity hdl4fpga.stof
+	port map (
+		clk       => clk,
+		bcd_eddn  => stof_eddn,
+		bcd_frm   => stof_frm,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_di    => bcd_do,
+		fix_do    => fix_do);
 
 end;
