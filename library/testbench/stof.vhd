@@ -40,7 +40,7 @@ architecture btos of testbench is
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
-	signal bcd_addr  : std_logic_vector(0 to 4-1);
+	signal bcd_addr  : std_logic_vector(0 to 4-1) := (others => '0');
 	signal fix_do    : std_logic_vector(0 to 4-1);
 
 	signal stof_frm  : std_logic;
@@ -51,7 +51,7 @@ begin
 	clk <= not clk  after 10 ns;
 
 	process (clk)
-		variable bin : unsigned(0 to 4*4-1) := x"10ff";
+		variable bin : unsigned(0 to 4*4-1) := x"10f8";
 		variable flt : unsigned(0 to 4*1-1) := b"0001";
 		variable frm : unsigned(0 to 4*1-1) := b"1111";
 	begin

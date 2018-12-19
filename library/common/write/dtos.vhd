@@ -96,7 +96,7 @@ begin
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	port map (
 		clk     => clk,
-		bcd_exp => "01",
+		bcd_exp => bcd_di,
 		bcd_ena => dtos_ena,
 		bcd_dv  => dtos_dv,
 		bcd_di  => dtos_di,

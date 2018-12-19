@@ -179,9 +179,10 @@ begin
 		right_up     => right_up,
 		vector_right => vector_right);
 
-	bcd_do    <= btod_do;
-	bin_trdy  <= btod_trdy;
+	bcd_do    <= wirebus(btod_do   & dtos_do & vector_do, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
+	bin_trdy  <= wirebus(btod_trdy & dtos_trdy, dev_frm)(0);
 	bcd_left  <= vector_left;
 	bcd_right <= vector_right;
 	bcd_eddn  <= bin_flt;
+
 end;
