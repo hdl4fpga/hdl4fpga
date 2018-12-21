@@ -28,68 +28,103 @@ end;
 		
 architecture def of stof is
 
-	constant xxx : natural := hdl4fpga.std.min(bcd_di'length,fix_do'length)/space'length;
-	signal eddn : std_logic;
-
 	signal align_left  : std_logic_vector(fix_do'range);
-	signal align_right : std_logic_vector(fix_do'range);
-	signal ptr : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0) := (others => '0');
+
+	signal fix_ptr : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
+	signal bcd_ptr : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
+	signal fix_inc : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
+	signal bcd_inc : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
+
 begin
 
-	process (clk)
-		variable cntr : unsigned(ptr'range);
+	fixptr_p : process (clk)
+		variable ptr : unsigned(fix_ptr'range);
 	begin
 		if rising_edge(clk) then
-			if ptr >= fix_do'length/space'length-xxx then
-				ptr      <= (others => '0');
-				fix_irdy <= '1';
-			else
-				ptr      <= ptr + xxx;
+			ptr := fix_ptr+fix_inc;
+			if ptr < fix_do'length/space'length then
+				fix_ptr  <= ptr;
 				fix_irdy <= '0';
+			else
+				fix_ptr  <= (others => '0');
+				fix_irdy <= '1';
 			end if;
 		end if;
 	end process;
 
-	process (clk)
+	bcdptr_p : process (clk)
+		variable ptr : unsigned(fix_ptr'range);
 	begin
 		if rising_edge(clk) then
+			ptr := fix_ptr+fix_inc;
+			if ptr < bcd_di'length/space'length then
+				bcd_ptr  <= ptr;
+				bcd_trdy <= '0';
+			else
+				bcd_ptr  <= (others => '0');
+				bcd_trdy <= '1';
+			end if;
 		end if;
 	end process;
 
 	process (bcd_left, bcd_di, bcd_frm)
-		variable fmt   : unsigned(fix_do'length-1 downto 0);
-		variable codes : unsigned(0 to bcd_di'length-1);
-		variable yyy   : unsigned(ptr'range);
+		variable fmt     : unsigned(fix_do'length-1 downto 0);
+		variable codes   : unsigned(0 to bcd_di'length-1);
+		variable fix_cnt : unsigned(fix_ptr'range);
+		variable bcd_cnt : unsigned(bcd_ptr'range);
+		variable fix_pos : unsigned(fix_ptr'range);
+		variable bcd_pos : unsigned(bcd_ptr'range);
 	begin
 
+		fix_cnt := (others => '0');
+		bcd_cnt := (others => '0');
+
 		if bcd_frm='0' then
-			fmt := unsigned(fill(value => space, size => fmt'length));
-			for i in 0 to fmt'length/space'length-1 loop
-				if i > yyy then
-					if signed(bcd_left)+i < 0 then
-						fmt(space'range) := unsigned(zero);
-						if i=0 then
-							fmt := fmt rol space'length;
-							fmt(space'range) := unsigned(dot);
-						end if;
-						zzz := zzz + 1;
-					else
-						if signed(bcd_left)-i = -1 then 
-							fmt(space'range) := unsigned(dot);
-							fmt := fmt sll space'length;
-						end if;
-						fmt(space'range) := unsigned(codes(space'reverse_range));
-						codes := codes sll space'length;
-						fmt   := fmt   rol space'length;
+			fix_pos := (others => '0');
+			bcd_pos := (others => '0');
+			fmt     := unsigned(fill(value => space, size => fmt'length));
+			codes   := unsigned(bcd_di);
+		else
+			fix_pos := fix_ptr;
+			bcd_pos := bcd_ptr;
+			fmt     := unsigned(fill(value => space, size => fmt'length));
+			codes   := unsigned(bcd_di);
+		end if;
+
+		fmt := unsigned(fill(value => space, size => fmt'length));
+		for i in 0 to fmt'length/space'length-1 loop
+			if signed(bcd_left)+i < 0 then
+				if i > fix_ptr then
+					fmt(space'range) := unsigned(zero);
+					if i=0 then
+						fmt := fmt rol space'length;
+						fmt(space'range) := unsigned(dot);
 					end if;
+					fix_cnt := fix_cnt + 1;
+				end if;
+			else
+				if i > fix_ptr then
+					if signed(bcd_left)-i = -1 then 
+						fmt(space'range) := unsigned(dot);
+						fmt := fmt sll space'length;
+						fix_cnt := fix_cnt + 1;
+					end if;
+					fmt(space'range) := unsigned(codes(space'reverse_range));
+					fmt := fmt rol space'length;
+					fix_cnt := fix_cnt + 1;
+				end if;
+				if i+bcd_ptr < bcd_di'length/space'length then
+					codes   := codes sll space'length;
+					bcd_cnt := bcd_cnt + 1;
 				else
 					exit;
 				end if;
-			end loop;
-		end if;
+			end if;
+		end loop;
 
-		codes := unsigned(bcd_di);
-		align_left <= std_logic_vector(fmt);
+		fix_inc <= fix_cnt;
+		bcd_inc <= bcd_cnt;
+		fix_do  <= std_logic_vector(fmt);
 	end process;
 	
 --	process (bcd_right, bcd_di)
@@ -123,6 +158,5 @@ begin
 --		align_right <= std_logic_vector(fmt);
 --	end process;
 	
-	fix_do <= align_right when eddn='1' else align_left;
 
 end;
