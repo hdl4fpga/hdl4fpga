@@ -33,16 +33,17 @@ architecture btos of testbench is
 	signal clk       : std_logic := '0';
 
 	signal bin_frm   : std_logic;
-	signal bin_trdy  : std_logic;
 	signal bin_flt   : std_logic;
-	signal bin_irdy  : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
 	signal bcd_addr  : std_logic_vector(0 to 4-1) := (others => '0');
-	signal fix_do    : std_logic_vector(0 to 4-1);
+	signal fix_do    : std_logic_vector(0 to 2*4-1);
 
+	signal btod_frm  : std_logic;
+	signal btod_irdy : std_logic;
+	signal btod_trdy : std_logic;
 	signal stof_frm  : std_logic;
 	signal stof_eddn : std_logic;
 
@@ -51,46 +52,45 @@ begin
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk  after 10 ns;
 
-	process (clk)
+	bin_frm <= not rst;
+	process (clk, bin_frm)
 		variable bin : unsigned(0 to 4*4-1) := x"10f8";
 		variable flt : unsigned(0 to 4*1-1) := b"0001";
 		variable frm : unsigned(0 to 4*1-1) := b"1111";
 	begin
 		if rising_edge(clk) then
-			if rst='1' then
-				bin_frm  <= '0';
-				bin_irdy <= '0';
-				bin_flt  <= '0';
+			if bin_frm='0' then
+				btod_irdy <= '0';
+				bin_flt    <= '0';
 			else
-				if bin_trdy='1' then
+				if btod_trdy='1' then
 					frm := frm sll 1;
 					flt := flt sll 1;
 					bin := bin sll 4;
 				end if;
-				bin_frm  <= frm(0);
-				bin_irdy <= frm(0);
-				bin_flt  <= std_logic(flt(0));
-				bin_di   <= std_logic_vector(bin(bin_di'range));
+				btod_irdy <= frm(0);
+				bin_flt   <= std_logic(flt(0));
+				bin_di    <= std_logic_vector(bin(bin_di'range));
 			end if;
 		end if;
+		btod_frm <= bin_frm and frm(0);
 	end process;
 
-	process (clk, bin_frm)
-		variable btod_frm : std_logic;
+	stof_frm <= bin_frm and not btod_frm;
+	process (bin_frm, btod_frm, clk)
+		variable frm : std_logic;
 	begin
 		if rising_edge(clk) then
-
-			btod_frm := bin_frm;
+			frm := btod_frm;
 		end if;
-		stof_frm <= not btod_frm
 	end process;
 
 	btod_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
-		bin_frm   => bin_frm,
-		bin_trdy  => bin_trdy,
-		bin_irdy  => bin_irdy,
+		bin_frm   => btod_frm,
+		bin_trdy  => btod_trdy,
+		bin_irdy  => btod_irdy,
 		bin_di    => bin_di,
 		bin_flt   => bin_flt,
 		bcd_left  => bcd_left,
