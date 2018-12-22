@@ -100,15 +100,16 @@ begin
 					writeline (output, msg);
 			if signed(bcd_left)+i < 0 then
 				if i >= fix_pos then
+					fmt := fmt rol space'length;
 					fmt(space'range) := unsigned(zero);
 					if i=0 then
 						fmt := fmt rol space'length;
 						fmt(space'range) := unsigned(dot);
 						fix_cnt := fix_cnt + 1;
-					end if;
-					fix_cnt := fix_cnt + 1;
 					write (msg, string'("pase por aca"));
 					writeline (output, msg);
+					end if;
+					fix_cnt := fix_cnt + 1;
 				end if;
 			else
 				if i > fix_pos then
