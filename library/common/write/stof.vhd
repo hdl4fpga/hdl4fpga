@@ -1,3 +1,5 @@
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -74,6 +76,7 @@ begin
 		variable bcd_cnt : unsigned(bcd_ptr'range);
 		variable fix_pos : unsigned(fix_ptr'range);
 		variable bcd_pos : unsigned(bcd_ptr'range);
+		variable msg     : line;
 	begin
 
 		fix_cnt := (others => '0');
@@ -93,29 +96,34 @@ begin
 
 		fmt := unsigned(fill(value => space, size => fmt'length));
 		for i in 0 to fmt'length/space'length-1 loop
+					write (msg, i);
+					writeline (output, msg);
 			if signed(bcd_left)+i < 0 then
-				if i > fix_ptr then
+				if i >= fix_pos then
 					fmt(space'range) := unsigned(zero);
 					if i=0 then
 						fmt := fmt rol space'length;
 						fmt(space'range) := unsigned(dot);
-					end if;
-					fix_cnt := fix_cnt + 1;
-				end if;
-			else
-				if i > fix_ptr then
-					if signed(bcd_left)-i = -1 then 
-						fmt(space'range) := unsigned(dot);
-						fmt := fmt sll space'length;
 						fix_cnt := fix_cnt + 1;
 					end if;
-					fmt(space'range) := unsigned(codes(space'reverse_range));
+					fix_cnt := fix_cnt + 1;
+					write (msg, string'("pase por aca"));
+					writeline (output, msg);
+				end if;
+			else
+				if i > fix_pos then
+					if signed(bcd_left)-i = -1 then 
+						fmt := fmt rol space'length;
+						fmt(space'range) := unsigned(dot);
+						fix_cnt := fix_cnt + 1;
+					end if;
 					fmt := fmt rol space'length;
+					fmt(space'range) := unsigned(codes(space'reverse_range));
+					bcd_cnt := bcd_cnt + 1;
 					fix_cnt := fix_cnt + 1;
 				end if;
-				if i+bcd_ptr < bcd_di'length/space'length then
+				if i+bcd_pos < bcd_di'length/space'length then
 					codes   := codes sll space'length;
-					bcd_cnt := bcd_cnt + 1;
 				else
 					exit;
 				end if;

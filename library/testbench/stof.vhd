@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btos of testbench is
+architecture stof of testbench is
 
 	signal rst       : std_logic := '0';
 	signal clk       : std_logic := '0';
@@ -39,7 +39,7 @@ architecture btos of testbench is
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
 	signal bcd_addr  : std_logic_vector(0 to 4-1) := (others => '0');
-	signal fix_do    : std_logic_vector(0 to 2*4-1);
+	signal fix_do    : std_logic_vector(0 to 6*4-1);
 
 	signal btod_frm  : std_logic;
 	signal btod_irdy : std_logic;
@@ -52,61 +52,14 @@ begin
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk  after 10 ns;
 
-	bin_frm <= not rst;
-	process (clk, bin_frm)
-		variable bin : unsigned(0 to 4*4-1) := x"10f8";
-		variable flt : unsigned(0 to 4*1-1) := b"0001";
-		variable frm : unsigned(0 to 4*1-1) := b"1111";
-	begin
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				btod_irdy <= '0';
-				bin_flt    <= '0';
-			else
-				if btod_trdy='1' then
-					frm := frm sll 1;
-					flt := flt sll 1;
-					bin := bin sll 4;
-				end if;
-				btod_irdy <= frm(0);
-				bin_flt   <= std_logic(flt(0));
-				bin_di    <= std_logic_vector(bin(bin_di'range));
-			end if;
-		end if;
-		btod_frm <= bin_frm and frm(0);
-	end process;
-
-	stof_frm <= bin_frm and not btod_frm;
-	process (bin_frm, btod_frm, clk)
-		variable frm : std_logic;
-	begin
-		if rising_edge(clk) then
-			frm := btod_frm;
-		end if;
-	end process;
-
-	btod_e : entity hdl4fpga.btos
-	port map (
-		clk       => clk,
-		bin_frm   => btod_frm,
-		bin_trdy  => btod_trdy,
-		bin_irdy  => btod_irdy,
-		bin_di    => bin_di,
-		bin_flt   => bin_flt,
-		bcd_left  => bcd_left,
-		bcd_right => bcd_right,
-		bcd_addr  => bcd_addr,
-		bcd_do    => bcd_do);
-
-	stof_eddn <= bin_flt;
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
-		bcd_frm   => stof_frm,
-		bcd_left  => bcd_left,
-		bcd_right => bcd_right,
-		bcd_di    => bcd_do,
+		bcd_frm   => '0',
+		bcd_left  => b"1111",
+		bcd_right => b"1100",
+		bcd_di    => x"1234",
 		fix_do    => fix_do);
 
 end;
