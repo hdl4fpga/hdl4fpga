@@ -123,7 +123,7 @@ begin
 					fix_cnt := fix_cnt + 1;
 				end if;
 				if i+bcd_pos < bcd_di'length/space'length then
-					codes   := codes sll space'length;
+					codes := codes sll space'length;
 				else
 					exit;
 				end if;
