@@ -8,7 +8,7 @@ add wave -noupdate /testbench/stof_e/bcd_frm
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fix_ptr
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fix_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {25 ns} 0}
+WaveRestoreCursors {{Cursor 1} {13 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

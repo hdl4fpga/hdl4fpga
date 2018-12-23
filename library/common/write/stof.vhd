@@ -71,7 +71,7 @@ begin
 
 	process (bcd_left, bcd_di, bcd_frm)
 		variable fmt     : unsigned(fix_do'length-1 downto 0);
-		variable codes   : unsigned(0 to bcd_di'length-1);
+		variable codes   : unsigned(bcd_di'length-1 downto 0);
 		variable fix_cnt : unsigned(fix_ptr'range);
 		variable bcd_cnt : unsigned(bcd_ptr'range);
 		variable fix_pos : unsigned(fix_ptr'range);
@@ -99,6 +99,8 @@ begin
 					write (msg, i);
 					writeline (output, msg);
 			if signed(bcd_left)+i < 0 then
+					write (msg, string'("pase por aca"));
+					writeline (output, msg);
 				if i >= fix_pos then
 					fmt := fmt rol space'length;
 					fmt(space'range) := unsigned(zero);
@@ -106,25 +108,25 @@ begin
 						fmt := fmt rol space'length;
 						fmt(space'range) := unsigned(dot);
 						fix_cnt := fix_cnt + 1;
-					write (msg, string'("pase por aca"));
-					writeline (output, msg);
 					end if;
 					fix_cnt := fix_cnt + 1;
 				end if;
 			else
-				if i > fix_pos then
+				if bcd_cnt+bcd_pos < bcd_di'length/space'length then
+					codes := codes rol space'length;
+				else
+					exit;
+				end if;
+				if fix_cnt+fix_pos < fix_do'length/space'length then
 					if signed(bcd_left)-i = -1 then 
 						fmt := fmt rol space'length;
 						fmt(space'range) := unsigned(dot);
 						fix_cnt := fix_cnt + 1;
 					end if;
 					fmt := fmt rol space'length;
-					fmt(space'range) := unsigned(codes(space'reverse_range));
-					bcd_cnt := bcd_cnt + 1;
+					fmt(space'range) := unsigned(codes(space'range));
 					fix_cnt := fix_cnt + 1;
-				end if;
-				if i+bcd_pos < bcd_di'length/space'length then
-					codes := codes sll space'length;
+					bcd_cnt := bcd_cnt + 1;
 				else
 					exit;
 				end if;
