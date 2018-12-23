@@ -69,7 +69,7 @@ begin
 		end if;
 	end process;
 
-	process (bcd_left, bcd_di, bcd_frm)
+	process (bcd_left, bcd_di, bcd_frm, fix_ptr, bcd_ptr)
 		variable fmt     : unsigned(fix_do'length-1 downto 0);
 		variable codes   : unsigned(bcd_di'length-1 downto 0);
 		variable fix_cnt : unsigned(fix_ptr'range);
@@ -94,14 +94,14 @@ begin
 			codes   := unsigned(bcd_di);
 		end if;
 
+--					write (msg, i);
+--					writeline (output, msg);
+--					write (msg, string'("pase por aca"));
+--					writeline (output, msg);
 		fmt := unsigned(fill(value => space, size => fmt'length));
 		for i in 0 to fmt'length/space'length-1 loop
-					write (msg, i);
-					writeline (output, msg);
 			if signed(bcd_left)+i < 0 then
-					write (msg, string'("pase por aca"));
-					writeline (output, msg);
-				if i >= fix_pos then
+				if fix_cnt >= fix_pos then
 					fmt := fmt rol space'length;
 					fmt(space'range) := unsigned(zero);
 					if i=0 then
