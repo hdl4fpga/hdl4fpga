@@ -57,9 +57,9 @@ begin
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
 		bcd_frm   => '0',
-		bcd_left  => b"1111",
-		bcd_right => b"1100",
-		bcd_di    => x"123",
+		bcd_left  => b"0001",
+		bcd_right => b"1110",
+		bcd_di    => x"1234",
 		fix_do    => fix_do);
 
 end;
