@@ -16,7 +16,7 @@ entity stof is
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
 		clk       : in  std_logic := '-';
-		bcd_eddn  : in  std_logic;
+		bcd_eddn  : in  std_logic := '0';
 		bcd_frm   : in  std_logic := '1';
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic;
