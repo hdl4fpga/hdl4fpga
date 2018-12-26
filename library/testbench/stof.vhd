@@ -38,7 +38,7 @@ architecture stof of testbench is
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
-	signal bcd_addr  : std_logic_vector(0 to 4-1) := (others => '0');
+	signal bcd_addr  : std_logic_vector(0 to 5-1) := (others => '0');
 	signal fix_do    : std_logic_vector(0 to 6*4-1);
 
 	signal btod_frm  : std_logic;
@@ -57,9 +57,10 @@ begin
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
 		bcd_frm   => '0',
-		bcd_left  => b"11101",
+		bcd_left  => b"11111",
 		bcd_right => b"11110",
-		bcd_di    => x"1234",
+		bcd_addr  => bcd_addr,
+		bcd_di    => x"1234567",
 		fix_do    => fix_do);
 
 end;

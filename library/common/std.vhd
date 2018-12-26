@@ -1049,8 +1049,8 @@ package body std is
 		variable retval : unsigned(0 to size-1);
 	begin
 		for i in 0 to size/value'length-1 loop
-			retval(0 to value'length-1) := unsigned(value);
 			retval := retval srl value'length;
+			retval(0 to value'length-1) := unsigned(value);
 		end loop;
 		return std_logic_vector(retval);
 	end;

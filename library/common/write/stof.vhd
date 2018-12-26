@@ -36,12 +36,14 @@ architecture def of stof is
 	signal frm      : std_logic;
 	signal fix_cntr : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
 	signal bcd_cntr : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
-	signal bcd_ptr  : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
+	signal bcd_ptr  : unsigned(bcd_left'range);
 	signal fix_inc  : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
 	signal bcd_inc  : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
+	signal codes_d  : unsigned(bcd_di'length-1 downto 0);
+	signal codes_q  : unsigned(bcd_di'length-1 downto 0);
 	signal fmt_d    : unsigned(fix_do'length-1 downto 0);
 	signal fmt_q    : unsigned(fix_do'length-1 downto 0);
-	signal fix_ptr  : unsigned(bcd_addr'range);
+	signal fix_ptr  : unsigned(bcd_left'range);
 
 begin
 
@@ -53,143 +55,147 @@ begin
 	end process;
 
 	fixptr_p : process (clk)
-		variable cntr : unsigned(fix_cntr'range);
+		variable cntr : unsigned(fix_ptr'range);
 	begin
 		if rising_edge(clk) then
 			if bcd_frm='0' then
-				cntr := bcd_left;
+				cntr := unsigned(bcd_left);
 			else
 				cntr := cntr + 1;
 			end if;
 		end if;
-		fix_ptr := cntr;
+		fix_ptr <= cntr;
 	end process;
 
 	bcdptr_p : process (clk)
-		variable cntr : unsigned(fix_cntr'range);
+		variable cntr : unsigned(bcd_ptr'range);
 	begin
 		if rising_edge(clk) then
 			if bcd_frm='0' then
-				cntr := bcd_left;
+				cntr := unsigned(bcd_left);
 			else
 				cntr := cntr - 1;
 			end if;
-			bcd_ptr  <= cntr;
+			bcd_ptr <= cntr;
 		end if;
 	end process;
 
-	fixcntr_p : process (clk)
+	fixcntr_p : process (bcd_frm, clk)
 		variable cntr : unsigned(fix_cntr'range);
 	begin
-		if rising_edge(clk) then
+		if bcd_frm='0' then
+			fmt_q    <= unsigned(fill(value => space, size => fmt_q'length));
+			fix_cntr <= (others => '0');
+		elsif rising_edge(clk) then
 			cntr := fix_cntr+fix_inc;
 			if cntr < fix_do'length/space'length then
+				fmt_q    <= fmt_d;
 				fix_cntr <= cntr;
-				fix_irdy <= '0';
 			else
+				fmt_q    <= unsigned(fill(value => space, size => fmt_d'length));
 				fix_cntr <= (others => '0');
-				fix_irdy <= '1';
 			end if;
-			fmt_q <= fmt_d;
 		end if;
 	end process;
 
-	bcdcntr_p : process (clk)
-		variable cntr : unsigned(fix_cntr'range);
+	bcdcntr_p : process (bcd_frm, clk)
+		variable cntr : unsigned(bcd_cntr'range);
 	begin
-		if rising_edge(clk) then
-			cntr := fix_cntr+fix_inc;
+		if bcd_frm='0' then
+			codes_q  <= unsigned(bcd_di);
+			bcd_cntr <= (others => '0');
+		elsif rising_edge(clk) then
+			cntr := bcd_cntr+bcd_inc;
 			if cntr < bcd_di'length/space'length then
+				codes_q  <= codes_d;
 				bcd_cntr <= cntr;
-				bcd_trdy <= '0';
 			else
+				codes_q  <= unsigned(bcd_di);
 				bcd_cntr <= (others => '0');
-				bcd_trdy <= '1';
 			end if;
 		end if;
 	end process;
 
-	process (bcd_left, bcd_di, bcd_frm, fix_cntr, bcd_cntr)
+	fixfmt_p : process (bcd_left, bcd_di, bcd_frm, fix_cntr, bcd_cntr, codes_q, fmt_q)
 		variable fmt     : unsigned(fix_do'length-1 downto 0);
 		variable codes   : unsigned(bcd_di'length-1 downto 0);
 		variable fix_cnt : unsigned(fix_cntr'range);
 		variable bcd_cnt : unsigned(bcd_cntr'range);
 		variable fix_pos : unsigned(fix_cntr'range);
 		variable bcd_pos : unsigned(bcd_cntr'range);
+		variable bcd_idx : unsigned(bcd_left'range);
+		variable fix_idx : unsigned(bcd_left'range);
 		variable msg     : line;
 	begin
-
-		fix_cnt := (others => '0');
-		bcd_cnt := (others => '0');
 
 		if bcd_frm='0' then
 			codes   := unsigned(bcd_di);
 			fmt     := unsigned(fill(value => space, size => fmt'length));
-			bcd_idx := bcd_left;
-			fix_idx := bcd_left;
+			bcd_idx := unsigned(bcd_left);
+			fix_idx := unsigned(bcd_left);
 			bcd_pos := (others => '0');
 			fix_pos := (others => '0');
 		elsif frm='0' then
 			codes   := unsigned(bcd_di);
 			fmt     := unsigned(fill(value => space, size => fmt'length));
-			bcd_idx := bcd_left;
-			fix_idx := bcd_left;
+			bcd_idx := unsigned(bcd_left);
+			fix_idx := unsigned(bcd_left);
 			bcd_pos := (others => '0');
 			fix_pos := (others => '0');
 		else
-			codes   := codes_d; --unsigned(bcd_di);
-			fmt     := fix_d; --unsigned(fill(value => space, size => fmt'length));
+			codes   := codes_q;
+			fmt     := fmt_q;
 			bcd_idx := bcd_ptr;
 			fix_idx := fix_ptr;
 			bcd_pos := bcd_cntr;
 			fix_pos := fix_cntr;
 		end if;
 
+		bcd_cnt := (others => '0');
+		fix_cnt := (others => '0');
 		fmt := unsigned(fill(value => space, size => fmt'length));
 		for i in 0 to fmt'length/space'length-1 loop
-			if signed(fix_idx) < 0 then
-				if fix_cnt >= fix_pos then
-					fmt := fmt rol space'length;
-					fmt(space'range) := unsigned(zero);
-					if i=0 then
-						fmt := fmt rol space'length;
-						fmt(space'range) := unsigned(dot);
-						fix_cnt := fix_cnt + 1;
+			if signed(fix_idx)+i > 0 or fix_idx=(fix_idx'range => '0') then
+				if fix_pos+i < fix_do'length/space'length then
+					if bcd_cnt+bcd_pos >= bcd_di'length/space'length then
+						exit;
 					end if;
-					fix_cnt := fix_cnt + 1;
+
+					fmt := fmt rol space'length;
+					if signed(bcd_idx)-i = -1 then 
+						fmt(space'range) := unsigned(dot);
+					else
+						codes := codes rol space'length;
+						fmt(space'range) := unsigned(codes(space'range));
+						bcd_cnt := bcd_cnt + 1;
+					end if;
+				else
+					exit;
 				end if;
 			else
-				if bcd_cnt+bcd_pos < bcd_di'length/space'length then
-					codes := codes rol space'length;
-				else
-					exit;
-				end if;
-				if fix_cnt+fix_pos < fix_do'length/space'length then
-					if signed(bcd_idx) = -1 then 
-						fmt := fmt rol space'length;
-						fmt(space'range) := unsigned(dot);
-						fix_cnt := fix_cnt + 1;
-					end if;
-					fmt := fmt rol space'length;
-					fmt(space'range) := unsigned(codes(space'range));
-					fix_cnt := fix_cnt + 1;
-					bcd_cnt := bcd_cnt + 1;
-				else
-					exit;
+				fmt := fmt rol space'length;
+				if i=1 then
+					fmt(space'range) := unsigned(dot);
+				elsif i >= fix_pos then
+					fmt(space'range) := unsigned(zero);
 				end if;
 			end if;
+			fix_cnt := fix_cnt + 1;
 		end loop;
 
+		codes_d <= codes;
 		fix_inc <= fix_cnt;
 		bcd_inc <= bcd_cnt;
-		fmt_d   <= std_logic_vector(fmt);
+		fmt_d   <= fmt;
 	end process;
 
-	fix_do <= fmt_d;
+	fix_do <= std_logic_vector(fmt_d);
+	fix_irdy <= setif(fix_cntr+fix_inc >= fix_do'length/space'length);
+	bcd_trdy <= setif(bcd_cntr+bcd_inc >= bcd_di'length/space'length);
 	bcd_addr <=
 		bcd_left when bcd_frm='0' else
 		bcd_left when frm='0'     else
-	   	bcd_ptr;
+	   	std_logic_vector(bcd_ptr);
 
 --	process (bcd_right, bcd_di)
 --		variable fmt   : unsigned(fix_do'length-1 downto 0);
