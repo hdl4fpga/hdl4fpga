@@ -46,39 +46,90 @@ entity stof is
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
-		bcd_addr  : out std_logic_vector;
+		bcd_addr  : buffer std_logic_vector;
 		fix_irdy  : out std_logic;
 		fix_trdy  : in  std_logic := '1';
 		fix_do    : out std_logic_vector);
 end;
 		
 architecture def of stof is
-
+	signal fixidx_q : signed(bcd_left'range) := (others => '0');
+	signal fixidx_d : signed(bcd_left'range) := (others => '0');
+	signal bcdidx_q : signed(bcd_left'range) := (others => '0');
+	signal bcdidx_d : signed(bcd_left'range) := (others => '0');
 begin
 
-	fixfmt_p : process (bcd_left, bcd_di)
-		variable fmt     : unsigned(fix_do'length-1 downto 0);
-		variable codes   : unsigned(bcd_di'length-1 downto 0);
-		variable msg     : line;
+	fixidx_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			fixidx_q <= fixidx_d;
+		end if;
+	end process;
+
+	bcdidx_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			bcdidx_q <= bcdidx_d;
+		end if;
+	end process;
+
+	fixfmt_p : process (bcd_left, bcd_di, fixidx_q, bcdidx_q)
+		variable fmt    : unsigned(fix_do'length-1 downto 0);
+		variable codes  : unsigned(bcd_di'length-1 downto 0);
+		variable left   : signed(bcd_left'range);
+		variable fixidx : signed(bcd_left'range);
+		variable bcdidx : signed(bcd_left'range);
 	begin
 
-		codes := unsigned(bcd_di);
-		fmt   := unsigned(fill(value => space, size => fmt'length));
+		codes  := unsigned(bcd_di);
+		fmt    := unsigned(fill(value => space, size => fmt'length));
 
+		fixidx := fixidx_q;
+		bcdidx := bcdidx_q;
 		if signed(bcd_left) < 0 then
+			left := signed(bcd_left)+fixidx_q;
 			for i in 0 to fmt'length/space'length-1 loop
-				if signed(bcd_left) < -i then
+				if left <= -i then
 					fmt := fmt rol space'length;
-					if i=1 then
+					if fixidx=1 then
 						fmt(space'range) := unsigned(dot);
 					else
 						fmt(space'range) := unsigned(zero);
 					end if;
 				else
+					if bcdidx >= codes'length/space'length then
+						exit;
+					end if;
+
+					fmt   := fmt   rol space'length;
+					codes := codes rol space'length;
+					fmt(space'range) := codes(space'range);
+
+					bcdidx := bcdidx + 1;
+				end if;
+				fixidx := fixidx + 1;
+			end loop;
+		else
+			left := signed(bcd_left)-fixidx_q;
+			for i in 0 to fmt'length/space'length-1 loop
+				if bcdidx >= codes'length/space'length then
 					exit;
 				end if;
+
+				fmt := fmt rol space'length;
+				if left-fixidx=-1 then
+					fmt(space'range) := unsigned(dot);
+				else
+					codes := codes rol space'length;
+					fmt(space'range) := codes(space'range);
+					bcdidx := bcdidx + 1;
+				end if;
+				fixidx := fixidx + 1;
 			end loop;
 		end if;
+		bcdidx_d <= bcdidx;
+		fixidx_d <= fixidx;
+
 		fix_do <= std_logic_vector(fmt);
 	end process;
 

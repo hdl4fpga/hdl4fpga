@@ -48,7 +48,7 @@ begin
 		bcd_frm  => bcd_frm,
 		bcd_irdy => bcd_irdy,
 		bcd_trdy => bcd_trdy,
-		bcd_left  => bcd_right,
+		bcd_left  => bcd_left,
 		bcd_right  => bcd_right,
 		bcd_addr  => bcd_addr,
         bcd_di   => bcd_di,

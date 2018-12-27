@@ -57,7 +57,7 @@ begin
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
 		bcd_frm   => '0',
-		bcd_left  => b"11100",
+		bcd_left  => b"00000",
 		bcd_right => b"11110",
 		bcd_addr  => bcd_addr,
 		bcd_di    => x"1234567",
