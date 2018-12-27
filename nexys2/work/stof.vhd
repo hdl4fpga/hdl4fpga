@@ -37,10 +37,10 @@ entity test_stof is
 		bcd_right : in  std_logic_vector(4-1 downto 0);
 		bcd_addr  : out std_logic_vector(4-1 downto 0);
 		bcd_di    : in  std_logic_vector(0 to 4-1);
-		fix_do   : out std_logic_vector(0 to 8*4-1));
+		fix_do   : out std_logic_vector(0 to 4-1));
 end;
 
-architecture test of test_ftod is
+architecture test of test_stof is
 begin
 	du : entity hdl4fpga.stof
 	port map (
@@ -50,7 +50,7 @@ begin
 		bcd_trdy => bcd_trdy,
 		bcd_left  => bcd_right,
 		bcd_right  => bcd_right,
-		bcd_right  => bcd_addr,
+		bcd_addr  => bcd_addr,
         bcd_di   => bcd_di,
-        fix_do   => bcd_do);
+        fix_do   => fix_do);
 end;
