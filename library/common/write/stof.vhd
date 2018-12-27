@@ -133,36 +133,6 @@ begin
 		fix_do <= std_logic_vector(fmt);
 	end process;
 
---	process (bcd_right, bcd_di)
---		variable fmt   : unsigned(fix_do'length-1 downto 0);
---		variable codes : unsigned(bcd_di'length-1 downto 0);
---	begin
---		if bcd_frm='0' then
---			fmt := unsigned(fill(value => space, size => fmt'length));
---			for i in 0 to fmt'length/space'length-1 loop
---				if signed(bcd_right) > i then
---					fmt(space'range) := unsigned(zero);
---				else
---					exit;
---				end if;
---				fmt := fmt srl space'length;
---			end loop;
---		end if;
---
---		codes := unsigned(bcd_di);
---		for i in 0 to codes'length/space'length-1 loop
---			fmt(space'range)   := unsigned(codes(space'range));
---			codes(space'range) := unsigned(space);
---			codes := codes ror space'length;
---			if signed(bcd_right)+i = -1 then
---				fmt := fmt ror space'length;
---				fmt(space'range) := unsigned(dot);
---			end if;
---			fmt := fmt srl space'length;
---		end loop;
---
---		align_right <= std_logic_vector(fmt);
---	end process;
 	
 
 end;
