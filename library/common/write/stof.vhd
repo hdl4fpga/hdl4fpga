@@ -42,12 +42,12 @@ entity stof is
 		bcd_eddn  : in  std_logic := '0';
 		bcd_frm   : in  std_logic := '1';
 		bcd_irdy  : in  std_logic := '1';
-		bcd_trdy  : out std_logic;
+		bcd_trdy  : buffer std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
 		bcd_addr  : buffer std_logic_vector;
-		fix_irdy  : out std_logic;
+		fix_irdy  : buffer std_logic;
 		fix_trdy  : in  std_logic := '1';
 		fix_do    : out std_logic_vector);
 end;
@@ -55,21 +55,45 @@ end;
 architecture def of stof is
 	signal fixidx_q : signed(bcd_left'range) := (others => '0');
 	signal fixidx_d : signed(bcd_left'range) := (others => '0');
-	signal bcdidx_q : signed(bcd_left'range) := (others => '0');
-	signal bcdidx_d : signed(bcd_left'range) := (others => '0');
+	signal bcdidx_q : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
+	signal bcdidx_d : unsigned(bcdidx_q'range);
 begin
 
 	fixidx_p : process (clk)
 	begin
-		if rising_edge(clk) then
-			fixidx_q <= fixidx_d;
+		if bcd_frm='0' then
+			fixidx_q <= (others => '0');
+		elsif rising_edge(clk) then
+			if fix_irdy='1' then
+				if fix_trdy='1' then
+					if bcd_trdy='1' then
+						if bcd_irdy='1' then
+							fixidx_q <= fixidx_d;
+						end if;
+					else
+						fixidx_q <= fixidx_d;
+					end if;
+				end if;
+			end if;
 		end if;
 	end process;
 
-	bcdidx_p : process (clk)
+	bcdidx_p : process (bcd_frm, clk)
 	begin
-		if rising_edge(clk) then
-			bcdidx_q <= bcdidx_d;
+		if bcd_frm='0' then
+			bcdidx_q <= (others => '0');
+		elsif rising_edge(clk) then
+			if bcd_irdy='1' then
+				if bcd_trdy='1' then
+					if fix_irdy='1' then
+						if fix_trdy='1' then
+							bcdidx_q <= bcdidx_d;
+						end if;
+					else
+						bcdidx_q <= bcdidx_d;
+					end if;
+				end if;
+			end if;
 		end if;
 	end process;
 
@@ -78,11 +102,13 @@ begin
 		variable codes  : unsigned(bcd_di'length-1 downto 0);
 		variable left   : signed(bcd_left'range);
 		variable fixidx : signed(bcd_left'range);
-		variable bcdidx : signed(bcd_left'range);
+		variable bcdidx : unsigned(bcdidx_d'range);
 	begin
 
 		codes  := unsigned(bcd_di);
 		fmt    := unsigned(fill(value => space, size => fmt'length));
+		bcd_trdy <= '0';
+		fix_irdy <= '1';
 
 		fixidx := fixidx_q;
 		bcdidx := bcdidx_q;
@@ -98,6 +124,7 @@ begin
 					end if;
 				else
 					if bcdidx >= codes'length/space'length then
+						fix_irdy <= '0';
 						exit;
 					end if;
 
@@ -113,6 +140,7 @@ begin
 			left := signed(bcd_left)-fixidx_q;
 			for i in 0 to fmt'length/space'length-1 loop
 				if bcdidx >= codes'length/space'length then
+					fix_irdy <= '0';
 					exit;
 				end if;
 
@@ -127,6 +155,12 @@ begin
 				fixidx := fixidx + 1;
 			end loop;
 		end if;
+
+		if bcdidx >= codes'length/space'length then
+			bcdidx   := (others => '0');
+			bcd_trdy <= '1';
+		end if;
+
 		bcdidx_d <= bcdidx;
 		fixidx_d <= fixidx;
 

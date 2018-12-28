@@ -32,7 +32,7 @@ architecture stof of testbench is
 	signal rst       : std_logic := '0';
 	signal clk       : std_logic := '0';
 
-	signal bin_frm   : std_logic;
+	signal bcd_frm   : std_logic;
 	signal bin_flt   : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
@@ -42,8 +42,8 @@ architecture stof of testbench is
 	signal fix_do    : std_logic_vector(0 to 6*4-1);
 
 	signal btod_frm  : std_logic;
-	signal btod_irdy : std_logic;
-	signal btod_trdy : std_logic;
+	signal fix_irdy : std_logic;
+	signal fix_trdy : std_logic;
 	signal stof_frm  : std_logic;
 	signal stof_eddn : std_logic;
 
@@ -52,15 +52,18 @@ begin
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk  after 10 ns;
 
+	bcd_frm <= not rst;
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
-		bcd_frm   => '0',
+		bcd_frm   => bcd_frm,
 		bcd_left  => b"00000",
 		bcd_right => b"11110",
 		bcd_addr  => bcd_addr,
-		bcd_di    => x"1234567",
+		bcd_di    => x"1",
+		fix_trdy => fix_trdy,
+		fix_irdy => fix_trdy,
 		fix_do    => fix_do);
 
 end;
