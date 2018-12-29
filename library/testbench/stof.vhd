@@ -62,7 +62,7 @@ begin
 		bcd_right => b"11110",
 		bcd_addr  => bcd_addr,
 		bcd_di    => x"1",
-		fix_trdy => fix_trdy,
+		fix_trdy => '1',
 		fix_irdy => fix_trdy,
 		fix_do    => fix_do);
 

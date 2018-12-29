@@ -53,24 +53,28 @@ entity stof is
 end;
 		
 architecture def of stof is
-	signal fixidx_q : signed(bcd_left'range) := (others => '0');
-	signal fixidx_d : signed(bcd_left'range) := (others => '0');
+	signal fixoff_q : signed(bcd_left'range) := (others => '0');
+	signal fixoff_d : signed(bcd_left'range) := (others => '0');
+	signal fixidx_q : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
+	signal fixidx_d : unsigned(fixidx_q'range);
 	signal bcdidx_q : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
 	signal bcdidx_d : unsigned(bcdidx_q'range);
 begin
 
-	fixidx_p : process (clk)
+	fixoff_p : process (clk)
 	begin
 		if bcd_frm='0' then
-			fixidx_q <= (others => '0');
+			fixoff_q <= (others => '0');
 		elsif rising_edge(clk) then
-			if fix_irdy='1' then
-				if fix_trdy='1' then
-					if bcd_trdy='1' then
-						if bcd_irdy='1' then
+			if bcd_trdy='1' then
+				if bcd_irdy='1' then
+					if fix_irdy='1' then
+						if fix_trdy='1' then
+							fixoff_q <= fixoff_d;
 							fixidx_q <= fixidx_d;
 						end if;
 					else
+						fixoff_q <= fixoff_d;
 						fixidx_q <= fixidx_d;
 					end if;
 				end if;
@@ -97,27 +101,29 @@ begin
 		end if;
 	end process;
 
-	fixfmt_p : process (bcd_left, bcd_di, fixidx_q, bcdidx_q)
+	fixfmt_p : process (bcd_left, bcd_di, bcd_irdy, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
 		variable fmt    : unsigned(fix_do'length-1 downto 0);
 		variable codes  : unsigned(bcd_di'length-1 downto 0);
 		variable left   : signed(bcd_left'range);
-		variable fixidx : signed(bcd_left'range);
+		variable fixoff : signed(bcd_left'range);
+		variable fixidx : unsigned(fixidx_d'range);
 		variable bcdidx : unsigned(bcdidx_d'range);
 	begin
 
 		codes  := unsigned(bcd_di);
 		fmt    := unsigned(fill(value => space, size => fmt'length));
 		bcd_trdy <= '0';
-		fix_irdy <= '1';
+		fix_irdy <= bcd_irdy;
 
-		fixidx := fixidx_q;
+		fixoff := fixoff_q;
 		bcdidx := bcdidx_q;
+		fixidx := fixidx_q;
 		if signed(bcd_left) < 0 then
-			left := signed(bcd_left)+fixidx_q;
+			left := signed(bcd_left)+fixoff_q;
 			for i in 0 to fmt'length/space'length-1 loop
 				if left <= -i then
 					fmt := fmt rol space'length;
-					if fixidx=1 then
+					if fixoff=1 then
 						fmt(space'range) := unsigned(dot);
 					else
 						fmt(space'range) := unsigned(zero);
@@ -134,10 +140,11 @@ begin
 
 					bcdidx := bcdidx + 1;
 				end if;
+				fixoff := fixoff + 1;
 				fixidx := fixidx + 1;
 			end loop;
 		else
-			left := signed(bcd_left)-fixidx_q;
+			left := signed(bcd_left)-fixoff_q;
 			for i in 0 to fmt'length/space'length-1 loop
 				if bcdidx >= codes'length/space'length then
 					fix_irdy <= '0';
@@ -145,24 +152,31 @@ begin
 				end if;
 
 				fmt := fmt rol space'length;
-				if left-fixidx=-1 then
+				if left-fixoff=-1 then
 					fmt(space'range) := unsigned(dot);
 				else
 					codes := codes rol space'length;
 					fmt(space'range) := codes(space'range);
 					bcdidx := bcdidx + 1;
 				end if;
+				fixoff := fixoff + 1;
 				fixidx := fixidx + 1;
 			end loop;
 		end if;
 
 		if bcdidx >= codes'length/space'length then
 			bcdidx   := (others => '0');
-			bcd_trdy <= '1';
+			bcd_trdy <= fix_trdy;
+		end if;
+
+		if fixidx >= fix_do'length/space'length then
+			fixidx   := (others => '0');
+			fix_irdy <= bcd_irdy;
 		end if;
 
 		bcdidx_d <= bcdidx;
 		fixidx_d <= fixidx;
+		fixoff_d <= fixoff;
 
 		fix_do <= std_logic_vector(fmt);
 	end process;
