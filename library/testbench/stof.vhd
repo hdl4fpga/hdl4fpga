@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 architecture stof of testbench is
 
@@ -34,23 +35,38 @@ architecture stof of testbench is
 
 	signal bcd_frm   : std_logic;
 	signal bin_flt   : std_logic;
-	signal bin_di    : std_logic_vector(0 to 4-1);
+	signal bcd_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
 	signal bcd_addr  : std_logic_vector(0 to 5-1) := (others => '0');
-	signal fix_do    : std_logic_vector(0 to 6*4-1);
+	signal fix_do    : std_logic_vector(4-1 downto 0);
 
 	signal btod_frm  : std_logic;
+	signal bcd_irdy : std_logic;
+	signal bcd_trdy : std_logic;
 	signal fix_irdy : std_logic;
 	signal fix_trdy : std_logic;
 	signal stof_frm  : std_logic;
 	signal stof_eddn : std_logic;
 
+	signal fmt : unsigned(6*4-1 downto 0);
 begin
 
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk  after 10 ns;
+
+	process (rst, clk)
+	begin
+		if rst='1' then
+			bcd_addr <= bcd_left;
+		elsif rising_edge(clk) then
+			if bcd_trdy='1' then
+				bcd_addr <= bcd_addr - 1;
+			end if;
+		end if;
+	end process;
+	bcd_di  <= bcd_do;
 
 	bcd_frm <= not rst;
 	stof_e : entity hdl4fpga.stof
@@ -58,12 +74,25 @@ begin
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
 		bcd_frm   => bcd_frm,
-		bcd_left  => b"00000",
+		bcd_left  => b"00010",
 		bcd_right => b"11110",
-		bcd_addr  => bcd_addr,
-		bcd_di    => x"1",
+		bcd_di    => bcd_di,
+		bcd_irdy => '1',
+		bcd_trdy => bcd_trdy,
 		fix_trdy => '1',
 		fix_irdy => fix_trdy,
-		fix_do    => fix_do);
+		fix_do   => fix_do);
 
+	process (bcd_frm, clk)
+		constant space : std_logic_vector(4-1 downto 0) := x"f";
+	begin
+		if bcd_frm='0' then
+			fmt <= unsigned(fill(value => space, size => fmt'length));
+		elsif rising_edge(clk) then
+			if fix_trdy='1' then
+				fmt <= fmt rol fix_do'length;
+				fmt (fix_do'range) <= unsigned(fix_do);
+			end if;
+		end if;
+	end process;
 end;

@@ -26,6 +26,7 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
@@ -67,22 +68,24 @@ begin
 		if bcd_frm='0' then
 			fixoff_q <= (others => '0');
 			fixidx_q <= (others => '0');
-			fixbuf_q    <= unsigned(fill(value => space, size => fix_do'length));
+			fixbuf_q <= unsigned(fill(value => space, size => fix_do'length));
 		elsif rising_edge(clk) then
 			if bcd_trdy='1' then
 				if bcd_irdy='1' then
 					if fix_irdy='1' then
 						if fix_trdy='1' then
 							fixoff_q <= fixoff_d;
-							fixidx_q <= fixidx_d;
-							fixbuf_q    <= fixbuf_d;
+							fixbuf_q <= fixbuf_d;
 						end if;
-					else
-						fixoff_q <= fixoff_d;
 						fixidx_q <= fixidx_d;
-						fixbuf_q    <= fixbuf_d;
+					else
+						fixidx_q <= fixidx_d;
+						fixbuf_q <= fixbuf_d;
 					end if;
 				end if;
+			end if;
+			if fix_trdy='1' then
+				fixoff_q <= fixoff_d;
 			end if;
 		end if;
 	end process;
@@ -108,11 +111,12 @@ begin
 
 	fixfmt_p : process (bcd_left, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
 		variable fixbuf : unsigned(fix_do'length-1 downto 0);
-		variable bcdbuf  : unsigned(bcd_di'length-1 downto 0);
+		variable bcdbuf : unsigned(bcd_di'length-1 downto 0);
 		variable left   : signed(bcd_left'range);
 		variable fixoff : signed(bcd_left'range);
 		variable fixidx : unsigned(fixidx_d'range);
 		variable bcdidx : unsigned(bcdidx_d'range);
+		variable msg : line;
 	begin
 
 		bcd_trdy <= '0';
@@ -149,7 +153,7 @@ begin
 				fixidx := fixidx + 1;
 			end loop;
 		else
-			left := signed(bcd_left)-fixoff_q;
+			left := signed(bcd_left);
 			for i in 0 to fixbuf'length/space'length-1 loop
 				if bcdidx >= bcdbuf'length/space'length then
 					fix_irdy <= '0';
