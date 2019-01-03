@@ -33,13 +33,17 @@ architecture stof of testbench is
 	signal rst       : std_logic := '0';
 	signal clk       : std_logic := '0';
 
-	signal bcd_frm   : std_logic;
+	signal bin_frm  : std_logic;
+	signal bin_irdy : std_logic;
+	signal bin_trdy : std_logic;
+	signal bin_di    : std_logic_vector(0 to 4-1);
 	signal bin_flt   : std_logic;
+	signal bcd_frm   : std_logic;
 	signal bcd_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
 	signal bcd_right : std_logic_vector(0 to 4-1);
-	signal bcd_addr  : std_logic_vector(0 to 5-1) := (others => '0');
+	signal bcd_addr  : std_logic_vector(0 to 4-1) := (others => '0');
 	signal fix_do    : std_logic_vector(4-1 downto 0);
 
 	signal btod_frm  : std_logic;
@@ -56,13 +60,27 @@ begin
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk  after 10 ns;
 
+	btos_e : entity hdl4fpga.btos
+	port map (
+		clk       => clk,
+		bin_frm   => bin_frm,
+		bin_irdy  => bin_irdy,
+		bin_trdy  => bin_trdy,
+		bin_flt   => bin_flt,
+		bin_di    => bin_di,
+
+		bcd_addr  => bcd_addr,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_do    => bcd_do);
+
 	process (rst, clk)
 	begin
 		if rst='1' then
 			bcd_addr <= bcd_left;
 		elsif rising_edge(clk) then
 			if bcd_trdy='1' then
-				bcd_addr <= bcd_addr - 1;
+				bcd_addr <= std_logic_vector(signed(bcd_addr) - 1);
 			end if;
 		end if;
 	end process;
@@ -74,14 +92,14 @@ begin
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
 		bcd_frm   => bcd_frm,
-		bcd_left  => b"00010",
-		bcd_right => b"11110",
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
 		bcd_di    => bcd_di,
-		bcd_irdy => '1',
-		bcd_trdy => bcd_trdy,
-		fix_trdy => '1',
-		fix_irdy => fix_trdy,
-		fix_do   => fix_do);
+		bcd_irdy  => bcd_irdy,
+		bcd_trdy  => bcd_trdy,
+		fix_trdy  => fix_trdy,
+		fix_irdy  => fix_trdy,
+		fix_do    => fix_do);
 
 	process (bcd_frm, clk)
 		constant space : std_logic_vector(4-1 downto 0) := x"f";
