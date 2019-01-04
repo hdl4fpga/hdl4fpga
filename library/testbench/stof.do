@@ -1,6 +1,17 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/stof_e/clk
+add wave -noupdate /testbench/btos_e/bin_frm
+add wave -noupdate /testbench/btos_e/bin_irdy
+add wave -noupdate /testbench/btos_e/bin_trdy
+add wave -noupdate /testbench/btos_e/bin_flt
+add wave -noupdate -radix hexadecimal /testbench/btos_e/bin_di
+add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_addr
+add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_di
+add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_do
+add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_left
+add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_right
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/stof_e/bcd_frm
 add wave -noupdate /testbench/stof_e/bcd_irdy
 add wave -noupdate /testbench/stof_e/bcd_trdy
@@ -23,7 +34,7 @@ add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/fixidx
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/bcdidx
 add wave -noupdate -radix hexadecimal /testbench/fmt
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {168 ns} 0}
+WaveRestoreCursors {{Cursor 1} {221 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -39,4 +50,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {420 ns}
+WaveRestoreZoom {0 ns} {1052 ns}

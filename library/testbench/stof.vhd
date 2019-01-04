@@ -61,32 +61,31 @@ begin
 	clk <= not clk  after 10 ns;
 
 	process (rst, clk)
-		variable num : unsigned(0 to 4*4-1) := x"1234";
-		variable flt : unsigned(0 to 4-1)   := b"1110";
+		variable num : unsigned(0 to 4*4-1) := x"1231";
+		variable flt : unsigned(0 to 4-1)   := b"0001";
 		variable frm : unsigned(0 to 4-1)   := b"1111";
 	begin
 		if rst='1' then
 			bin_di  <= std_logic_vector(num(bin_di'range));
-			bin_flt <= flt(0);
-			bin_frm <= frm(0);
+			bin_flt <= '0';
+			bin_frm <= '0';
 		elsif rising_edge(clk) then
 			if bin_trdy='1' then
 				num     := num rol bin_di'length;
 				bin_di  <= std_logic_vector(num(bin_di'range));
 				flt     := flt sll 1;
-				bin_flt <= flt(0);
 				frm     := frm sll 1;
-				bin_frm <= frm(0);
 			end if;
+			bin_frm <= frm(0);
+			bin_flt <= flt(0);
 		end if;
 	end process;
 
-	bin_frm <= not rst;
 	btos_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
 		bin_frm   => bin_frm,
-		bin_irdy  => bin_irdy,
+		bin_irdy  => '1', --bin_irdy,
 		bin_trdy  => bin_trdy,
 		bin_flt   => bin_flt,
 		bin_di    => bin_di,
