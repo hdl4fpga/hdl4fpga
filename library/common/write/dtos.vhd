@@ -133,12 +133,12 @@ begin
 		mem_left_ena <= '0';
 		if dtos_ena='1' then
 			if addr=unsigned(mem_left(mem_addr'range)) then
-				if addr/=unsigned(mem_right(mem_addr'range)) then
+--				if addr/=unsigned(mem_right(mem_addr'range)) then
 					if dtos_do=(dtos_do'range => '0') then
 						mem_left_up  <= '0';
 						mem_left_ena <= '1';
 					end if;
-				end if;
+--				end if;
 			end if;
 		end if;
 	end process;

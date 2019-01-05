@@ -10,7 +10,12 @@ add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_addr
 add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_di
 add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_do
 add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_left
+add wave -noupdate -radix hexadecimal /testbench/btos_e/dtos_e/addr
 add wave -noupdate -radix hexadecimal /testbench/btos_e/vector_e/vector_right
+add wave -noupdate /testbench/btos_e/left_up
+add wave -noupdate /testbench/btos_e/left_ena
+add wave -noupdate /testbench/btos_e/right_up
+add wave -noupdate /testbench/btos_e/right_ena
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/stof_e/bcd_frm
 add wave -noupdate /testbench/stof_e/bcd_irdy
@@ -34,7 +39,7 @@ add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/fixidx
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/bcdidx
 add wave -noupdate -radix hexadecimal /testbench/fmt
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {221 ns} 0}
+WaveRestoreCursors {{Cursor 1} {275 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -50,4 +55,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {1052 ns}
+WaveRestoreZoom {179 ns} {705 ns}
