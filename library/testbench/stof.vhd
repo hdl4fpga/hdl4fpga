@@ -61,7 +61,7 @@ begin
 	clk <= not clk  after 10 ns;
 
 	process (rst, clk)
-		variable num : unsigned(0 to 4*4-1) := x"1231";
+		variable num : unsigned(0 to 4*4-1) := x"123b";
 		variable flt : unsigned(0 to 4-1)   := b"0001";
 		variable frm : unsigned(0 to 4-1)   := b"1111";
 	begin
@@ -95,7 +95,7 @@ begin
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
 
-	bcd_frm <= not rst;
+	bcd_frm <= not rst and not bin_frm;
 	process (bcd_frm, clk)
 	begin
 		if bcd_frm='0' then
@@ -116,7 +116,7 @@ begin
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
 		bcd_di    => bcd_di,
-		bcd_irdy  => bcd_irdy,
+		bcd_irdy  => '1', --bcd_irdy,
 		bcd_trdy  => bcd_trdy,
 		fix_trdy  => fix_trdy,
 		fix_irdy  => fix_trdy,
