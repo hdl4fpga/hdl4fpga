@@ -112,6 +112,7 @@ begin
 	port map (
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
+		stof_frm  => bcd_frm,
 		bcd_frm   => bcd_frm,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,

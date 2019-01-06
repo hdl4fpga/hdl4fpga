@@ -40,7 +40,11 @@ entity stof is
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
 		clk       : in  std_logic := '-';
-		bcd_frm   : in  std_logic := '1';
+		stof_frm  : in  std_logic;
+		stof_irdy : in  std_logic := '1';
+		stof_trdy : out std_logic;
+
+		bcd_frm   : out std_logic;
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : buffer std_logic;
 		bcd_left  : in  std_logic_vector;
@@ -59,13 +63,13 @@ architecture def of stof is
 	signal fixidx_d : unsigned(fixidx_q'range);
 	signal bcdidx_q : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
 	signal bcdidx_d : unsigned(bcdidx_q'range);
-	signal fixbuf_d    : unsigned(fix_do'length-1 downto 0);
-	signal fixbuf_q    : unsigned(fix_do'length-1 downto 0);
+	signal fixbuf_d : unsigned(fix_do'length-1 downto 0);
+	signal fixbuf_q : unsigned(fix_do'length-1 downto 0);
 begin
 
 	fix_p : process (clk)
 	begin
-		if bcd_frm='0' then
+		if stof_frm='0' then
 			fixoff_q <= (others => '0');
 			fixidx_q <= (others => '0');
 			fixbuf_q <= unsigned(fill(value => space, size => fix_do'length));
@@ -90,9 +94,9 @@ begin
 		end if;
 	end process;
 
-	bcdidx_p : process (bcd_frm, clk)
+	bcdidx_p : process (stof_frm, clk)
 	begin
-		if bcd_frm='0' then
+		if stof_frm='0' then
 			bcdidx_q <= (others => '0');
 		elsif rising_edge(clk) then
 			if bcd_irdy='1' then
