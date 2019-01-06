@@ -40,9 +40,6 @@ entity stof is
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
 		clk       : in  std_logic := '-';
-		stof_frm  : in  std_logic;
-		stof_irdy : in  std_logic := '1';
-		stof_trdy : out std_logic;
 
 		bcd_frm   : out std_logic;
 		bcd_irdy  : in  std_logic := '1';
@@ -51,6 +48,8 @@ entity stof is
 		bcd_right : in  std_logic_vector;
 		bcd_eddn  : in  std_logic := '0';
 		bcd_di    : in  std_logic_vector;
+
+		fix_frm   : in  std_logic;
 		fix_trdy  : in  std_logic := '1';
 		fix_irdy  : buffer std_logic;
 		fix_do    : out std_logic_vector);
@@ -69,7 +68,7 @@ begin
 
 	fix_p : process (clk)
 	begin
-		if stof_frm='0' then
+		if fix_frm='0' then
 			fixoff_q <= (others => '0');
 			fixidx_q <= (others => '0');
 			fixbuf_q <= unsigned(fill(value => space, size => fix_do'length));
@@ -94,9 +93,9 @@ begin
 		end if;
 	end process;
 
-	bcdidx_p : process (stof_frm, clk)
+	bcdidx_p : process (fix_frm, clk)
 	begin
-		if stof_frm='0' then
+		if fix_frm='0' then
 			bcdidx_q <= (others => '0');
 		elsif rising_edge(clk) then
 			if bcd_irdy='1' then

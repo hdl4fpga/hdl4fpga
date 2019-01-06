@@ -119,6 +119,8 @@ begin
 		bcd_di    => bcd_di,
 		bcd_irdy  => '1', --bcd_irdy,
 		bcd_trdy  => bcd_trdy,
+
+		fix_frm   => fix_frm,
 		fix_trdy  => fix_trdy,
 		fix_irdy  => fix_trdy,
 		fix_do    => fix_do);
