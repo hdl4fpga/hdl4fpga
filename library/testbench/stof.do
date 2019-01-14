@@ -18,15 +18,15 @@ add wave -noupdate /testbench/btos_e/left_ena
 add wave -noupdate /testbench/btos_e/right_up
 add wave -noupdate /testbench/btos_e/right_ena
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/stof_e/bcd_frm
 add wave -noupdate /testbench/stof_e/bcd_irdy
 add wave -noupdate /testbench/stof_e/bcd_trdy
 add wave -noupdate -radix hexadecimal /testbench/stof_e/bcd_di
 add wave -noupdate -radix decimal /testbench/stof_e/bcd_left
 add wave -noupdate -radix decimal /testbench/stof_e/bcd_right
+add wave -noupdate /testbench/fix_frm
 add wave -noupdate /testbench/stof_e/fix_irdy
 add wave -noupdate /testbench/stof_e/fix_trdy
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/stof_e/fix_do(3) -radix hexadecimal} {/testbench/stof_e/fix_do(2) -radix hexadecimal} {/testbench/stof_e/fix_do(1) -radix hexadecimal} {/testbench/stof_e/fix_do(0) -radix hexadecimal}} -subitemconfig {/testbench/stof_e/fix_do(3) {-height 18 -radix hexadecimal} /testbench/stof_e/fix_do(2) {-height 18 -radix hexadecimal} /testbench/stof_e/fix_do(1) {-height 18 -radix hexadecimal} /testbench/stof_e/fix_do(0) {-height 18 -radix hexadecimal}} /testbench/stof_e/fix_do
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/stof_e/fix_do(3) -radix hexadecimal} {/testbench/stof_e/fix_do(2) -radix hexadecimal} {/testbench/stof_e/fix_do(1) -radix hexadecimal} {/testbench/stof_e/fix_do(0) -radix hexadecimal}} -subitemconfig {/testbench/stof_e/fix_do(3) {-height 23 -radix hexadecimal} /testbench/stof_e/fix_do(2) {-height 23 -radix hexadecimal} /testbench/stof_e/fix_do(1) {-height 23 -radix hexadecimal} /testbench/stof_e/fix_do(0) {-height 23 -radix hexadecimal}} /testbench/stof_e/fix_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fixidx_d
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fixidx_q
@@ -40,7 +40,7 @@ add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/fixidx
 add wave -noupdate -radix hexadecimal /testbench/stof_e/fixfmt_p/bcdidx
 add wave -noupdate -radix hexadecimal /testbench/fmt
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {454 ns} 0}
+WaveRestoreCursors {{Cursor 1} {457 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -56,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {348 ns} {612 ns}
+WaveRestoreZoom {0 ns} {1050 ns}

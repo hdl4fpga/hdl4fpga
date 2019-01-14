@@ -38,7 +38,6 @@ architecture stof of testbench is
 	signal bin_trdy : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
 	signal bin_flt   : std_logic;
-	signal bcd_frm   : std_logic;
 	signal bcd_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
@@ -47,10 +46,11 @@ architecture stof of testbench is
 	signal fix_do    : std_logic_vector(4-1 downto 0);
 
 	signal btod_frm  : std_logic;
-	signal bcd_irdy : std_logic;
-	signal bcd_trdy : std_logic;
-	signal fix_irdy : std_logic;
-	signal fix_trdy : std_logic;
+	signal bcd_irdy  : std_logic;
+	signal bcd_trdy  : std_logic;
+	signal fix_frm   : std_logic;
+	signal fix_irdy  : std_logic;
+	signal fix_trdy  : std_logic;
 	signal stof_frm  : std_logic;
 	signal stof_eddn : std_logic;
 
@@ -95,10 +95,10 @@ begin
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
 
-	bcd_frm <= not rst and not bin_frm;
-	process (bcd_frm, clk)
+	fix_frm <= not rst and not bin_frm;
+	process (fix_frm, clk)
 	begin
-		if bcd_frm='0' then
+		if fix_frm='0' then
 			bcd_addr <= bcd_left;
 		elsif rising_edge(clk) then
 			if bcd_trdy='1' then
@@ -112,8 +112,6 @@ begin
 	port map (
 		clk       => clk,
 		bcd_eddn  => stof_eddn,
-		stof_frm  => bcd_frm,
-		bcd_frm   => bcd_frm,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
 		bcd_di    => bcd_di,
@@ -125,10 +123,10 @@ begin
 		fix_irdy  => fix_trdy,
 		fix_do    => fix_do);
 
-	process (bcd_frm, clk)
+	process (fix_frm, clk)
 		constant space : std_logic_vector(4-1 downto 0) := x"f";
 	begin
-		if bcd_frm='0' then
+		if fix_frm='0' then
 			fmt <= unsigned(fill(value => space, size => fmt'length));
 		elsif rising_edge(clk) then
 			if fix_trdy='1' then

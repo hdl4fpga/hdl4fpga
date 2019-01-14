@@ -41,7 +41,6 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 
-		bcd_frm   : out std_logic;
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : buffer std_logic;
 		bcd_left  : in  std_logic_vector;
@@ -164,7 +163,7 @@ begin
 				end if;
 
 				fixbuf := fixbuf rol space'length;
-				if left-fixoff=-1 then
+				if left-fixoff = -1 then
 					fixbuf(space'range) := unsigned(dot);
 				else
 					bcdbuf := bcdbuf rol space'length;
