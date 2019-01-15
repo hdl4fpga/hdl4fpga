@@ -61,11 +61,14 @@ begin
 	clk <= not clk  after 10 ns;
 
 	process (rst, clk)
+		variable frm : unsigned(0 to 4-1);
+		variable flt : unsigned(0 to 4-1);
+
 		variable num : unsigned(0 to 4*4-1) := x"123b";
-		variable flt : unsigned(0 to 4-1)   := b"0001";
-		variable frm : unsigned(0 to 4-1)   := b"1111";
 	begin
 		if rst='1' then
+			frm     := (others => '1');
+			flt     := b"0001";
 			bin_di  <= std_logic_vector(num(bin_di'range));
 			bin_flt <= '0';
 			bin_frm <= '0';
@@ -95,7 +98,6 @@ begin
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
 
-	fix_frm <= not rst and not bin_frm;
 	process (fix_frm, clk)
 	begin
 		if fix_frm='0' then
@@ -123,16 +125,20 @@ begin
 		fix_irdy  => fix_trdy,
 		fix_do    => fix_do);
 
-	process (fix_frm, clk)
+	process (rst, bin_frm, clk)
 		constant space : std_logic_vector(4-1 downto 0) := x"f";
+		variable frm   : unsigned(0 to fmt'length/space'length-1);
 	begin
-		if fix_frm='0' then
+		if rst='1' or bin_frm='1' then
+			frm := (others => '1');
 			fmt <= unsigned(fill(value => space, size => fmt'length));
 		elsif rising_edge(clk) then
 			if fix_trdy='1' then
 				fmt <= fmt rol fix_do'length;
 				fmt (fix_do'range) <= unsigned(fix_do);
+				frm := frm sll 1;
 			end if;
 		end if;
+		fix_frm <= (not rst and not bin_frm) and frm(0);
 	end process;
 end;
