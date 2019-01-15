@@ -45,7 +45,6 @@ entity stof is
 		bcd_trdy  : buffer std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
-		bcd_eddn  : in  std_logic := '0';
 		bcd_di    : in  std_logic_vector;
 
 		fix_frm   : in  std_logic;
