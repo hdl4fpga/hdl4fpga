@@ -28,37 +28,68 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity fbuf is
+entity btof is
 	generic (
-		space    : std_logic_vector := x"f";
+		n : natural := 4);
 	port (
 		clk      : in  std_logic;
-		fix_frm  : in  std_logic;
-		fix_irdy : in  std_logic;
-		fix_trdy : out std_logic;
-		fix_di   : out std_logic_vector;
-		buf_irdy : in  std_logic := '1';
-		buf_trdy : out std_logic;
-		buf_do   : out std_logic_vector);
+		bin_frm  : in  std_logic;
+		bin_irdy : in  std_logic := '1';
+		bin_trdy : out std_logic;
+		bin_flt  : in  std_logic;
+		bin_di   : in  std_logic_vector;
+		fix_frm  : out std_logic;
+		fix_trdy : in  std_logic := '1';
+		fix_irdy : out std_logic;
+		fix_do   : out std_logic_vector);
 end;
 
-architecture fbuf of testbench is
-	signal buf : unsigned(0 to buf_do'length/space'length-1);
+architecture def of btof is
+
+	signal bcd_left  : std_logic_vector(0 to n-1);
+	signal bcd_right : std_logic_vector(0 to n-1);
+	signal bcd_addr  : std_logic_vector(0 to n-1);
+	signal bcd_do    : std_logic_vector(fix_do'range);
+	signal bcd_trdy  : std_logic;
+
 begin
+
+	btos_e : entity hdl4fpga.btos
+	port map (
+		clk       => clk,
+		bin_frm   => bin_frm,
+		bin_irdy  => bin_irdy,
+		bin_trdy  => bin_trdy,
+		bin_flt   => bin_flt,
+		bin_di    => bin_di,
+
+		bcd_addr  => bcd_addr,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_do    => bcd_do);
 
 	process (fix_frm, clk)
 	begin
 		if fix_frm='0' then
-			frm := (others => '1');
-			buf <= unsigned(fill(value => space, size => buf'length));
+			bcd_addr <= bcd_left;
 		elsif rising_edge(clk) then
-			if fix_irdy='1' then
-				buf <= buf rol fix_di'length;
-				buf(0 to fix_di'length-1) <= unsigned(fix_di);
-				frm := frm sll 1;
+			if bcd_trdy='1' then
+				bcd_addr <= std_logic_vector(signed(bcd_addr) - 1);
 			end if;
 		end if;
-		fix_frm <= fmt_frm and frm(0);
 	end process;
-	buf_do <= buf;
+
+	stof_e : entity hdl4fpga.stof
+	port map (
+		clk       => clk,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_di    => bcd_do,
+		bcd_trdy  => bcd_trdy,
+
+		fix_frm   => fix_frm,
+		fix_trdy  => fix_trdy,
+		fix_irdy  => fix_trdy,
+		fix_do    => fix_do);
+
 end;
