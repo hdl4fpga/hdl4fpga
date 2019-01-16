@@ -26,44 +26,39 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
-architecture btod of testbench is
+entity fbuf is
+	generic (
+		space    : std_logic_vector := x"f";
+	port (
+		clk      : in  std_logic;
+		fix_frm  : in  std_logic;
+		fix_irdy : in  std_logic;
+		fix_trdy : out std_logic;
+		fix_di   : out std_logic_vector;
+		buf_irdy : in  std_logic := '1';
+		buf_trdy : out std_logic;
+		buf_do   : out std_logic_vector);
+end;
 
-	signal rst : std_logic := '0';
-	signal clk : std_logic := '0';
-
-	signal bin_dv : std_logic;
-	signal bin_di : std_logic_vector(0 to 4-1);
-	signal bcd_do : std_logic_vector(0 to 4-1);
-	signal bcd_di : std_logic_vector(0 to 4-1);
-	signal bcd_cy : std_logic;
+architecture fbuf of testbench is
+	signal buf : unsigned(0 to buf_do'length/space'length-1);
 begin
 
-	rst <= '1', '0' after 5 ns;
-	clk <= not clk after 10 ns;
-
-	process (clk)
-		variable binary : unsigned(0 to 2*4-1);
+	process (fix_frm, clk)
 	begin
-		if rising_edge(clk) then
-			if rst='1' then
-				bin_dv <= '1';
-				binary := x"ff";
-			else
-				bin_dv <= '0';
-				binary := binary sll 4;
+		if fix_frm='0' then
+			frm := (others => '1');
+			buf <= unsigned(fill(value => space, size => buf'length));
+		elsif rising_edge(clk) then
+			if fix_irdy='1' then
+				buf <= buf rol fix_di'length;
+				buf(0 to fix_di'length-1) <= unsigned(fix_di);
+				frm := frm sll 1;
 			end if;
-			bin_di <= std_logic_vector(binary(bin_di'range));
 		end if;
+		fix_frm <= fmt_frm and frm(0);
 	end process;
-
-	du : entity hdl4fpga.btod
-	port map (
-		clk    => clk,
-		bin_dv => bin_dv,
-		bin_di => bin_di,
-		bcd_di => bcd_di,
-		bcd_do => bcd_do,
-		bcd_cy => bcd_cy);
-
+	buf_do <= buf;
 end;

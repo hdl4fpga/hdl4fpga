@@ -33,9 +33,9 @@ architecture btos of testbench is
 	signal clk      : std_logic := '0';
 
 	signal bin_cnv   : std_logic;
-	signal bin_dv    : std_logic;
-	signal bin_flt   : std_logic;
+	signal bin_trdy  : std_logic;
 	signal bin_irdy  : std_logic;
+	signal bin_flt   : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
 	signal bcd_do    : std_logic_vector(0 to 4-1);
 	signal bcd_left  : std_logic_vector(0 to 4-1);
@@ -48,41 +48,40 @@ begin
 	clk <= not clk after 10 ns;
 
 	process (clk)
-		variable cntr : natural := 0;
-		variable bin  : unsigned(0 to 4*4-1) := x"10ff";
+		variable bin : unsigned(0 to 4*4-1);
+		variable frm : unsigned(0 to 4*1-1);
+		variable flt : unsigned(0 to 4*1-1);
 	begin
 		if rising_edge(clk) then
 			if rst='1' then
-				bin_cnv  <= '0';
-				bin_irdy <= '1';
+				bin := x"10ff";
+				frm := b"1111";
+				flt := b"0001";
 				bin_flt  <= '0';
-				cntr     := 0;
 			else
-				bin_cnv <= '1';
-				if bin_dv='1' then
-					if cntr >= 2 then
-						bin_flt <= '1';
-					end if;
-					bin  := bin sll 4;
-					cntr := cntr + 1;
+				if bin_trdy='1' then
+					bin := bin sll 4;
+					frm := frm sll 1;
+					flt := flt sll 1;
 				end if;
-				bin_irdy <= not bin_cnv or not bin_dv;
 			end if;
-			bin_di <= std_logic_vector(bin(bin_di'range));
+			bin_di  <= std_logic_vector(bin(bin_di'range));
+			bin_frm <= frm(0);
+			bin_flt <= flt(0);
 		end if;
 	end process;
 
-	du : entity hdl4fpga.btos
+	btof_e : entity hdl4fpga.btof
 	port map (
 		clk       => clk,
-		bin_frm   => bin_cnv,
-		bin_trdy  => bin_dv,
-		bin_irdy  => bin_irdy,
-		bin_di    => bin_di,
+		bin_frm   => bin_frm,
+		bin_trdy  => bin_trdy,
+		bin_irdy  => '1',
 		bin_flt   => bin_flt,
-		bcd_left  => bcd_left,
-		bcd_right => bcd_right,
-		bcd_addr  => bcd_addr,
-		bcd_do    => bcd_do);
+		bin_di    => bin_di,
+		fix_frm   => fix_frm,
+		fix_trdy  => fix_trdy,
+		fix_irdy  => fix_irdy,
+		fix_do    => fix_do);
 
 end;
