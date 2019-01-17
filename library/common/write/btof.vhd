@@ -26,7 +26,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
 entity btof is
 	generic (
@@ -46,6 +45,7 @@ end;
 
 architecture def of btof is
 
+	signal btos_frm  : std_logic;
 	signal bcd_left  : std_logic_vector(0 to n-1);
 	signal bcd_right : std_logic_vector(0 to n-1);
 	signal bcd_addr  : std_logic_vector(0 to n-1);
@@ -54,12 +54,13 @@ architecture def of btof is
 
 begin
 
+	btos_frm <= bin_frm when fix_frm='0' else '0';
 	btos_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
-		bin_frm   => bin_frm,
+		bin_frm   => btos_frm,
 		bin_irdy  => bin_irdy,
-		bin_trdy  => bin_trdy,
+		bin_trdy  => btos_trdy,
 		bin_flt   => bin_flt,
 		bin_di    => bin_di,
 
@@ -67,6 +68,19 @@ begin
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
+
+	process(bin_frm, clk)
+	begin
+		if bin_frm='0' then
+			fix_frm='0' ;
+		elsif rising_edge(clk) then
+			if bin_trdy='1' then
+				if bin_flt='1' then
+					fix_frm='1' ;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	process (fix_frm, clk)
 	begin
@@ -92,4 +106,5 @@ begin
 		fix_irdy  => fix_trdy,
 		fix_do    => fix_do);
 
+	bin_trdy <= btos_trdy when bin_flt='1' fix_trdy;
 end;
