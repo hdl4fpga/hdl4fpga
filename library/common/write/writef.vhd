@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btos of testbench is
+architecture def of writef is
 
 	signal rst      : std_logic := '0';
 	signal clk      : std_logic := '0';
@@ -72,7 +72,7 @@ begin
 		end if;
 	end process;
 
-	du : entity hdl4fpga.btof
+	btof_e : entity hdl4fpga.btof
 	port map (
 		clk      => clk,
 		bin_frm  => bin_cnv,
@@ -81,8 +81,20 @@ begin
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
 		fix_frm  => fix_frm.
-		fix_trdy => fix_trdy,
 		fix_irdy => fix_irdy,
+		fix_trdy => fix_trdy,
 		fix_do   => fix_do);
+
+	fbuf_e : entity hdl4fpga.fbuf
+	port map (
+		clk      => clk,
+		fix_frm  => fix_frm,
+		fix_irdy => fix_irdy,
+		fix_trdy => fix_trdy,
+		fix_di   => fix_do,
+		buf_irdy => buf_irdy,
+		buf_trdy => buf_trdy,
+		buf_do   => buf_do);
+end;
 
 end;
