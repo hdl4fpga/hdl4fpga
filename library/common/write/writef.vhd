@@ -95,6 +95,5 @@ begin
 		buf_irdy => buf_irdy,
 		buf_trdy => buf_trdy,
 		buf_do   => buf_do);
-end;
 
 end;
