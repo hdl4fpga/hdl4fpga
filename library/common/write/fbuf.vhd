@@ -30,24 +30,24 @@ use hdl4fpga.std.all;
 
 entity fbuf is
 	generic (
-		space    : std_logic_vector := x"f";
+		space    : std_logic_vector := x"f");
 	port (
 		clk      : in  std_logic;
 		fix_frm  : in  std_logic;
 		fix_irdy : in  std_logic;
 		fix_trdy : out std_logic;
-		fix_di   : out std_logic_vector;
+		fix_di   : in  std_logic_vector;
 		buf_frm  : out std_logic;
 		buf_irdy : out std_logic := '1';
 		buf_trdy : in  std_logic := '1';
 		buf_do   : out std_logic_vector);
 end;
 
-architecture fbuf of testbench is
+architecture def of fbuf is
 
 begin
 
-	process (fix_frm, buf_rdy, clk)
+	process (fix_frm, buf_trdy, clk)
 		variable buf : unsigned(0 to buf_do'length-1);
 		variable rdy : unsigned(0 to buf_do'length/space'length-1);
 	begin
@@ -64,9 +64,9 @@ begin
 				end if;
 			end if;
 		end if;
-		buf_idry <= fix_frm and rdy(0);
-		fix_trdy <= fix_frm and (not rdy(0) or (rdy(0) and buf_rdy));
-		buf_do   <= buf;
+		buf_irdy <= fix_frm and rdy(0);
+		fix_trdy <= fix_frm and (not rdy(0) or (rdy(0) and buf_trdy));
+		buf_do   <= std_logic_vector(buf);
 	end process;
 
 end;

@@ -34,10 +34,10 @@ entity btof is
 		clk      : in  std_logic;
 		bin_frm  : in  std_logic;
 		bin_irdy : in  std_logic := '1';
-		bin_trdy : out std_logic;
+		bin_trdy : buffer std_logic;
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector;
-		fix_frm  : out std_logic;
+		fix_frm  : buffer std_logic;
 		fix_trdy : in  std_logic := '1';
 		fix_irdy : out std_logic;
 		fix_do   : out std_logic_vector);
@@ -46,6 +46,7 @@ end;
 architecture def of btof is
 
 	signal btos_frm  : std_logic;
+	signal btos_trdy  : std_logic;
 	signal bcd_left  : std_logic_vector(0 to n-1);
 	signal bcd_right : std_logic_vector(0 to n-1);
 	signal bcd_addr  : std_logic_vector(0 to n-1);
@@ -72,11 +73,11 @@ begin
 	process(bin_frm, clk)
 	begin
 		if bin_frm='0' then
-			fix_frm='0' ;
+			fix_frm <='0' ;
 		elsif rising_edge(clk) then
 			if bin_trdy='1' then
 				if bin_flt='1' then
-					fix_frm='1' ;
+					fix_frm <= '1' ;
 				end if;
 			end if;
 		end if;
@@ -103,8 +104,8 @@ begin
 
 		fix_frm   => fix_frm,
 		fix_trdy  => fix_trdy,
-		fix_irdy  => fix_trdy,
+		fix_irdy  => fix_irdy,
 		fix_do    => fix_do);
 
-	bin_trdy <= btos_trdy when bin_flt='1' fix_trdy;
+	bin_trdy <= btos_trdy when bin_flt='1' else fix_trdy;
 end;

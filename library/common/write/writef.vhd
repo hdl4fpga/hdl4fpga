@@ -27,16 +27,16 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity writef
+entity writef is
 	port (
 		clk      : in  std_logic;
 		bin_frm  : in  std_logic;
-		bin_trdy : in  std_logic := '1';
-		bin_irdy : out std_logic;
+		bin_trdy : out  std_logic := '1';
+		bin_irdy : in  std_logic;
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector;
-		buf_irdy : in  std_logic := '1';
-		buf_trdy : out std_logic;
+		buf_irdy : out  std_logic := '1';
+		buf_trdy : in  std_logic;
 		buf_do   : out std_logic_vector);
 end;
 
@@ -57,7 +57,7 @@ begin
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
-		fix_frm  => fix_frm.
+		fix_frm  => fix_frm,
 		fix_irdy => fix_irdy,
 		fix_trdy => fix_trdy,
 		fix_do   => fix_do);
