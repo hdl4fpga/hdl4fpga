@@ -27,14 +27,17 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
+entity writef is
+	port (
+		clk      : in  std_logic;
+		wr_frm   : in  std_logic;
+		wr_irdy  : in  std_logic;
+		wr_bin   : in  std_logic_vector;
+		buf_trdy : out std_logic;
+		buf_do   : out std_logic_vector);
+end;
+
 architecture def of testbench is
-
-	signal rst      : std_logic := '0';
-
-	signal clk      : std_logic := '0';
-	signal wr_frm   : std_logic;
-	signal wr_irdy  : std_logic;
-	signal wr_bin   : std_logic_vector := x"104b";
 
 	signal bin_flt   : std_logic;
 	signal bin_irdy  : std_logic;
@@ -42,9 +45,6 @@ architecture def of testbench is
 	signal bin_di    : std_logic_vector(0 to 4-1);
 
 begin
-
-	rst <= '1', '0' after 35 ns;
-	clk <= not clk after 10 ns;
 
 	process (wr_frm, wr_bin, clk)
 		variable frm  : unsigned(0 to bin'length/4-1);
