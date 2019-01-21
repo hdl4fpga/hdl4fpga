@@ -29,53 +29,27 @@ library hdl4fpga;
 
 architecture def of testbench is
 
-	signal rst      : std_logic := '0';
+	signal rst      : std_logic;
 
 	signal clk      : std_logic := '0';
 	signal wr_frm   : std_logic;
 	signal wr_irdy  : std_logic;
-	signal wr_bin   : std_logic_vector := x"104b";
 
-	signal bin_flt   : std_logic;
-	signal bin_irdy  : std_logic;
-	signal bin_irdy  : std_logic;
-	signal bin_di    : std_logic_vector(0 to 4-1);
+	signal buf_trdy  : std_logic;
+	signal buf_do    : std_logic_vector(0 to 4-1);
 
 begin
 
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk after 10 ns;
 
-	process (wr_frm, wr_bin, clk)
-		variable frm  : unsigned(0 to bin'length/4-1);
-		variable flt  : unsigned(0 to bin'length/4-1);
-	begin
-		if wr_frm='0' then
-			frm := (others => '1');
-			flt(0) := '1';
-			flt := flt rol 1;
-		elsif rising_edge(clk) then
-			if bin_trdy='1' then
-				if frm(frm'right)='1' then
-					bin := wr_bin;
-				end if;
-				frm := frm sll 1;
-				bin := bin sll 4;
-			end if;
-		end if;
-		bin_di  <= wr_bin(0 to 4-1) when frm(frm'right)='1' else bin;
-		bin_frm <= frm(0);
-		bin_flt <= flt(0);
-	end process;
-
 	writef_e : entity hdl4fpga.writef
 	port map (
 		clk      => clk,
-		bin_frm  => bin_frm,
-		bin_irdy => '1',
-		bin_trdy => bin_trdy,
-		bin_flt  => bin_flt,
-		bin_di   => bin_di,
+		wr_frm   => bin_frm,
+		wr_irdy  => '1',
+		wr_trdy  => wr_trdy,
+		wr_bin   => x"104b",
 		buf_trdy => buf_trdy,
 		buf_do   => buf_do);
 
