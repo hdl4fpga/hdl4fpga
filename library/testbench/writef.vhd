@@ -30,69 +30,52 @@ library hdl4fpga;
 architecture def of testbench is
 
 	signal rst      : std_logic := '0';
-	signal clk      : std_logic := '0';
 
-	signal bin_cnv   : std_logic;
-	signal bin_dv    : std_logic;
+	signal clk      : std_logic := '0';
+	signal wr_frm   : std_logic;
+	signal wr_irdy  : std_logic;
+	signal wr_bin   : std_logic_vector := x"104b";
+
 	signal bin_flt   : std_logic;
 	signal bin_irdy  : std_logic;
+	signal bin_irdy  : std_logic;
 	signal bin_di    : std_logic_vector(0 to 4-1);
-	signal bcd_do    : std_logic_vector(0 to 4-1);
-	signal bcd_left  : std_logic_vector(0 to 4-1);
-	signal bcd_right : std_logic_vector(0 to 4-1);
-	signal bcd_addr  : std_logic_vector(0 to 4-1);
 
 begin
 
 	rst <= '1', '0' after 35 ns;
 	clk <= not clk after 10 ns;
 
-	process (clk)
-		variable cntr : natural := 0;
-		variable bin  : unsigned(0 to 4*4-1) := x"10ff";
+	process (wr_frm, wr_bin, clk)
+		variable frm  : unsigned(0 to bin'length/4-1);
+		variable flt  : unsigned(0 to bin'length/4-1);
 	begin
-		if rising_edge(clk) then
-			if rst='1' then
-				bin_cnv  <= '0';
-				bin_irdy <= '1';
-				bin_flt  <= '0';
-				cntr     := 0;
-			else
-				bin_cnv <= '1';
-				if bin_dv='1' then
-					if cntr >= 2 then
-						bin_flt <= '1';
-					end if;
-					bin  := bin sll 4;
-					cntr := cntr + 1;
+		if wr_frm='0' then
+			frm := (others => '1');
+			flt(0) := '1';
+			flt := flt rol 1;
+		elsif rising_edge(clk) then
+			if bin_trdy='1' then
+				if frm(frm'right)='1' then
+					bin := wr_bin;
 				end if;
-				bin_irdy <= not bin_cnv or not bin_dv;
+				frm := frm sll 1;
+				bin := bin sll 4;
 			end if;
-			bin_di <= std_logic_vector(bin(bin_di'range));
 		end if;
+		bin_di  <= wr_bin(0 to 4-1) when frm(frm'right)='1' else bin;
+		bin_frm <= frm(0);
+		bin_flt <= flt(0);
 	end process;
 
-	btof_e : entity hdl4fpga.btof
+	writef_e : entity hdl4fpga.writef
 	port map (
 		clk      => clk,
-		bin_frm  => bin_cnv,
-		bin_trdy => bin_dv,
-		bin_irdy => bin_irdy,
-		bin_di   => bin_di,
+		bin_frm  => bin_frm,
+		bin_irdy => '1',
+		bin_trdy => bin_trdy,
 		bin_flt  => bin_flt,
-		fix_frm  => fix_frm.
-		fix_irdy => fix_irdy,
-		fix_trdy => fix_trdy,
-		fix_do   => fix_do);
-
-	fbuf_e : entity hdl4fpga.fbuf
-	port map (
-		clk      => clk,
-		fix_frm  => fix_frm,
-		fix_irdy => fix_irdy,
-		fix_trdy => fix_trdy,
-		fix_di   => fix_do,
-		buf_irdy => buf_irdy,
+		bin_di   => bin_di,
 		buf_trdy => buf_trdy,
 		buf_do   => buf_do);
 
