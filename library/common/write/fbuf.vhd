@@ -35,7 +35,7 @@ entity fbuf is
 		clk      : in  std_logic;
 		fix_frm  : in  std_logic;
 		fix_irdy : in  std_logic;
-		fix_trdy : out std_logic := '1';
+		fix_trdy : out std_logic;
 		fix_di   : out std_logic_vector;
 		buf_frm  : out std_logic;
 		buf_irdy : out std_logic := '1';
@@ -45,10 +45,9 @@ end;
 
 architecture fbuf of testbench is
 
-
 begin
 
-	process (fix_frm, clk)
+	process (fix_frm, buf_rdy, clk)
 		variable buf : unsigned(0 to buf_do'length-1);
 		variable rdy : unsigned(0 to buf_do'length/space'length-1);
 	begin
@@ -58,12 +57,15 @@ begin
 			buf := unsigned(fill(value => space, size => buf'length));
 		elsif rising_edge(clk) then
 			if fix_irdy='1' then
-				buf := buf rol fix_di'length;
-				buf(0 to fix_di'length-1) := unsigned(fix_di);
-				rdy := rdy sll 1;
+				if rdy(0)='0' then
+					buf := buf rol fix_di'length;
+					buf(0 to fix_di'length-1) := unsigned(fix_di);
+					rdy := rdy sll 1;
+				end if;
 			end if;
 		end if;
-		buf_tdry <= fix_frm and rdy(0);
+		buf_idry <= fix_frm and rdy(0);
+		fix_trdy <= fix_frm and (not rdy(0) or (rdy(0) and buf_rdy));
 		buf_do   <= buf;
 	end process;
 

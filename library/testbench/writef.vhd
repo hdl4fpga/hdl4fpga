@@ -27,33 +27,56 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity writef
-	port (
-		clk      : in  std_logic;
-		bin_frm  : in  std_logic;
-		bin_trdy : in  std_logic := '1';
-		bin_irdy : out std_logic;
-		bin_flt  : in  std_logic;
-		bin_di   : in  std_logic_vector;
-		buf_irdy : in  std_logic := '1';
-		buf_trdy : out std_logic;
-		buf_do   : out std_logic_vector);
-end;
+architecture def of testbench is
 
-architecture def of writef is
+	signal rst      : std_logic := '0';
+	signal clk      : std_logic := '0';
 
-	signal fix_frm  : std_logic;
-	signal fix_trdy : std_logic := '1';
-	signal fix_irdy : std_logic;
-	signal fix_do   : std_logic_vector(0 to 4-1);
+	signal bin_cnv   : std_logic;
+	signal bin_dv    : std_logic;
+	signal bin_flt   : std_logic;
+	signal bin_irdy  : std_logic;
+	signal bin_di    : std_logic_vector(0 to 4-1);
+	signal bcd_do    : std_logic_vector(0 to 4-1);
+	signal bcd_left  : std_logic_vector(0 to 4-1);
+	signal bcd_right : std_logic_vector(0 to 4-1);
+	signal bcd_addr  : std_logic_vector(0 to 4-1);
 
 begin
+
+	rst <= '1', '0' after 35 ns;
+	clk <= not clk after 10 ns;
+
+	process (clk)
+		variable cntr : natural := 0;
+		variable bin  : unsigned(0 to 4*4-1) := x"10ff";
+	begin
+		if rising_edge(clk) then
+			if rst='1' then
+				bin_cnv  <= '0';
+				bin_irdy <= '1';
+				bin_flt  <= '0';
+				cntr     := 0;
+			else
+				bin_cnv <= '1';
+				if bin_dv='1' then
+					if cntr >= 2 then
+						bin_flt <= '1';
+					end if;
+					bin  := bin sll 4;
+					cntr := cntr + 1;
+				end if;
+				bin_irdy <= not bin_cnv or not bin_dv;
+			end if;
+			bin_di <= std_logic_vector(bin(bin_di'range));
+		end if;
+	end process;
 
 	btof_e : entity hdl4fpga.btof
 	port map (
 		clk      => clk,
-		bin_frm  => bin_frm,
-		bin_trdy => bin_trdy,
+		bin_frm  => bin_cnv,
+		bin_trdy => bin_dv,
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
