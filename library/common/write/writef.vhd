@@ -69,7 +69,7 @@ begin
 		if frm(frm'right)='1' then
 			bin_di <= wr_bin(0 to 4-1);
 	  	else
-			bin_di <= std_logic_vector(bin);
+			bin_di <= std_logic_vector(bin(0 to 4-1));
 		end if;
 
 		bin_frm <= frm(0);
