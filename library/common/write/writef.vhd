@@ -33,22 +33,24 @@ entity writef is
 		wr_frm   : in  std_logic;
 		wr_irdy  : in  std_logic;
 		wr_bin   : in  std_logic_vector;
-		buf_trdy : out std_logic;
+		buf_trdy : buffer std_logic;
 		buf_do   : out std_logic_vector);
 end;
 
-architecture def of testbench is
+architecture def of writef is
 
-	signal bin_flt   : std_logic;
-	signal bin_irdy  : std_logic;
-	signal bin_irdy  : std_logic;
-	signal bin_di    : std_logic_vector(0 to 4-1);
+	signal bin_frm  : std_logic;
+	signal bin_flt  : std_logic;
+	signal bin_irdy : std_logic;
+	signal bin_trdy : std_logic;
+	signal bin_di   : std_logic_vector(0 to 4-1);
 
 begin
 
 	process (wr_frm, wr_bin, clk)
-		variable frm  : unsigned(0 to bin'length/4-1);
-		variable flt  : unsigned(0 to bin'length/4-1);
+		variable frm  : unsigned(0 to wr_bin'length/4-1);
+		variable flt  : unsigned(0 to wr_bin'length/4-1);
+		variable bin  : unsigned(0 to wr_bin'length-1);
 	begin
 		if wr_frm='0' then
 			frm := (others => '1');
@@ -57,18 +59,24 @@ begin
 		elsif rising_edge(clk) then
 			if bin_trdy='1' then
 				if frm(frm'right)='1' then
-					bin := wr_bin;
+					bin := unsigned(wr_bin);
 				end if;
 				frm := frm sll 1;
 				bin := bin sll 4;
 			end if;
 		end if;
-		bin_di  <= wr_bin(0 to 4-1) when frm(frm'right)='1' else bin;
+
+		if frm(frm'right)='1' then
+			bin_di <= wr_bin(0 to 4-1);
+	  	else
+			bin_di <= std_logic_vector(bin);
+		end if;
+
 		bin_frm <= frm(0);
 		bin_flt <= flt(0);
 	end process;
 
-	writef_e : entity hdl4fpga.writef
+	wrfbuf_e : entity hdl4fpga.wrfbuf
 	port map (
 		clk      => clk,
 		bin_frm  => bin_frm,
