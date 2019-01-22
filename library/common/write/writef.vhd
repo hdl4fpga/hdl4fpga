@@ -33,8 +33,8 @@ entity writef is
 		wr_frm   : in  std_logic;
 		wr_irdy  : in  std_logic;
 		wr_bin   : in  std_logic_vector;
-		buf_trdy : buffer std_logic;
-		buf_do   : out std_logic_vector);
+		wr_trdy : buffer std_logic;
+		wr_do   : out std_logic_vector);
 end;
 
 architecture def of writef is
@@ -84,7 +84,7 @@ begin
 		bin_trdy => bin_trdy,
 		bin_flt  => bin_flt,
 		bin_di   => bin_di,
-		buf_trdy => buf_trdy,
-		buf_do   => buf_do);
+		buf_trdy => wr_trdy,
+		buf_do   => wr_do);
 
 end;

@@ -33,10 +33,9 @@ architecture def of testbench is
 
 	signal clk      : std_logic := '0';
 	signal wr_frm   : std_logic;
-	signal wr_irdy  : std_logic;
+	signal wr_trdy  : std_logic;
 
-	signal buf_trdy  : std_logic;
-	signal buf_do    : std_logic_vector(0 to 4-1);
+	signal wr_do    : std_logic_vector(0 to 4-1);
 
 begin
 
@@ -46,11 +45,10 @@ begin
 	writef_e : entity hdl4fpga.writef
 	port map (
 		clk      => clk,
-		wr_frm   => bin_frm,
+		wr_frm   => wr_frm,
 		wr_irdy  => '1',
-		wr_trdy  => wr_trdy,
+		wr_trdy => wr_trdy,
 		wr_bin   => x"104b",
-		buf_trdy => buf_trdy,
-		buf_do   => buf_do);
+		wr_do   => wr_do);
 
 end;
