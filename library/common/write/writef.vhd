@@ -63,6 +63,7 @@ begin
 					bin := unsigned(wr_bin);
 				end if;
 				frm := frm sll 1;
+				flt := flt sll 1;
 				bin := bin sll 4;
 			end if;
 		end if;
