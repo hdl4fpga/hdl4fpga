@@ -70,6 +70,7 @@ begin
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
 
+	process(fix_frm 
 	process(bin_frm, clk)
 	begin
 		if bin_frm='0' then
@@ -107,5 +108,5 @@ begin
 		fix_irdy  => fix_irdy,
 		fix_do    => fix_do);
 
-	bin_trdy <= btos_trdy when bin_flt='0' else fix_trdy;
+	bin_trdy <= btos_trdy when bin_flt='1' else fix_trdy;
 end;

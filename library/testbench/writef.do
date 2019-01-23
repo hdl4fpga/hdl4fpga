@@ -12,6 +12,7 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_flt
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/bin_di
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_frm
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_trdy
 add wave -noupdate -divider btos
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_irdy
@@ -23,12 +24,17 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_di
+add wave -noupdate -divider dtos
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_frm
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_irdy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_trdy
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_di
 add wave -noupdate -divider vector
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_addr
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_di
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_do
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_addr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_di
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {155 ns} 0}
+WaveRestoreCursors {{Cursor 1} {40 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
