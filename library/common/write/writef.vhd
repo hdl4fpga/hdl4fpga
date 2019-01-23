@@ -54,6 +54,7 @@ begin
 	begin
 		if wr_frm='0' then
 			frm := (others => '1');
+			flt := (others => '0');
 			flt(0) := '1';
 			flt := flt rol 1;
 		elsif rising_edge(clk) then
@@ -72,8 +73,8 @@ begin
 			bin_di <= std_logic_vector(bin(0 to 4-1));
 		end if;
 
-		bin_frm <= frm(0);
-		bin_flt <= flt(0);
+		bin_frm <= frm(0) and wr_frm;
+		bin_flt <= flt(0) and wr_frm;
 	end process;
 
 	wrfbuf_e : entity hdl4fpga.wrfbuf

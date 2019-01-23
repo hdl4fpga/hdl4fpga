@@ -107,5 +107,5 @@ begin
 		fix_irdy  => fix_irdy,
 		fix_do    => fix_do);
 
-	bin_trdy <= btos_trdy when bin_flt='1' else fix_trdy;
+	bin_trdy <= btos_trdy when bin_flt='0' else fix_trdy;
 end;
