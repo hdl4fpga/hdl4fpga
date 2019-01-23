@@ -35,7 +35,7 @@ entity wrfbuf is
 		bin_irdy : in  std_logic;
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector;
-		buf_irdy : out  std_logic := '1';
+		buf_irdy : buffer  std_logic := '1';
 		buf_trdy : in  std_logic;
 		buf_do   : out std_logic_vector);
 end;
@@ -47,13 +47,14 @@ architecture def of wrfbuf is
 	signal fix_irdy : std_logic;
 	signal fix_do   : std_logic_vector(0 to 4-1);
 
+	signal btof_trdy : std_logic;
 begin
 
 	btof_e : entity hdl4fpga.btof
 	port map (
 		clk      => clk,
 		bin_frm  => bin_frm,
-		bin_trdy => bin_trdy,
+		bin_trdy => btof_trdy,
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
 		bin_flt  => bin_flt,
@@ -73,4 +74,5 @@ begin
 		buf_trdy => buf_trdy,
 		buf_do   => buf_do);
 
+	bin_trdy <= btof_trdy when bin_flt='0' else buf_irdy;
 end;
