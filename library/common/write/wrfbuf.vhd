@@ -43,7 +43,7 @@ end;
 architecture def of wrfbuf is
 
 	signal fix_frm  : std_logic;
-	signal fix_trdy : std_logic := '1';
+	signal fix_trdy : std_logic;
 	signal fix_irdy : std_logic;
 	signal fix_do   : std_logic_vector(0 to 4-1);
 

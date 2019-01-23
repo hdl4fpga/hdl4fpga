@@ -39,7 +39,7 @@ entity btof is
 		bin_di   : in  std_logic_vector;
 		fix_frm  : buffer std_logic;
 		fix_trdy : in  std_logic := '1';
-		fix_irdy : out std_logic;
+		fix_irdy : buffer std_logic;
 		fix_do   : out std_logic_vector);
 end;
 
@@ -70,13 +70,12 @@ begin
 		bcd_right => bcd_right,
 		bcd_do    => bcd_do);
 
-	process(fix_frm 
 	process(bin_frm, clk)
 	begin
 		if bin_frm='0' then
 			fix_frm <='0' ;
 		elsif rising_edge(clk) then
-			if bin_trdy='1' then
+			if btos_trdy='1' then
 				if bin_flt='1' then
 					fix_frm <= '1' ;
 				end if;
@@ -108,5 +107,5 @@ begin
 		fix_irdy  => fix_irdy,
 		fix_do    => fix_do);
 
-	bin_trdy <= btos_trdy when bin_flt='1' else fix_trdy;
+	bin_trdy <= btos_trdy when bin_flt='0' else fix_irdy and fix_trdy;
 end;

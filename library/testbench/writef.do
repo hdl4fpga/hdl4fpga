@@ -5,14 +5,18 @@ add wave -noupdate /testbench/wr_frm
 add wave -noupdate /testbench/wr_trdy
 add wave -noupdate -radix hexadecimal /testbench/wr_do
 add wave -noupdate /testbench/writef_e/bin_trdy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/fix_trdy
 add wave -noupdate -divider btof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_flt
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/bin_di
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_frm
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bcd_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_trdy
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/fix_do
 add wave -noupdate -divider btos
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_irdy
@@ -34,7 +38,7 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_di
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {40 ns} 0}
+WaveRestoreCursors {{Cursor 1} {226 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
