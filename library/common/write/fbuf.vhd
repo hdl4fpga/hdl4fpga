@@ -52,8 +52,9 @@ begin
 		variable rdy : unsigned(0 to buf_do'length/space'length-1);
 	begin
 		if fix_frm='0' then
+			rdy := (others => '0');
 			rdy(0) := '1';
-			rdy := rdy srl 1;
+			rdy := rdy rol 1;
 			buf := unsigned(fill(value => space, size => buf'length));
 		elsif rising_edge(clk) then
 			if fix_irdy='1' then
