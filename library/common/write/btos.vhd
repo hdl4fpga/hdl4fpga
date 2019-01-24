@@ -87,7 +87,7 @@ begin
 				gnt := req;
 			elsif gnt=(gnt'range => '0') then
 				gnt := req;
-			elsif (dev_trdy and gnt)/=(gnt'range => '0') then
+			elsif (dev_trdy and gnt)=(gnt'range => '0') then
 				gnt := (others => '0');
 			end if;
 		end if;
@@ -96,7 +96,7 @@ begin
 			dev_frm <= (others => '0');
 		elsif gnt=(gnt'range => '0') then
 			dev_frm <= req;
-		elsif (dev_trdy and gnt)/=(gnt'range => '0') then
+		elsif (dev_trdy and gnt)=(gnt'range => '0') then
 			dev_frm <= req;
 		else
 			dev_frm <= gnt;
