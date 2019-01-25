@@ -46,6 +46,9 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/left_up
 add wave -noupdate -divider stof
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fixoff_q
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_left
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_tail
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fix_end
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fixfmt_p/left
 add wave -noupdate -divider fbuf
 add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/fix_frm
@@ -57,7 +60,7 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/fbuf_e/buf_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {155 ns} 0}
+WaveRestoreCursors {{Cursor 1} {281 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

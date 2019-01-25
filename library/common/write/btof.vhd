@@ -49,6 +49,7 @@ architecture def of btof is
 
 	signal btos_frm  : std_logic;
 	signal btos_trdy : std_logic;
+	signal bcd_rst   : std_logic;
 	signal bcd_left  : std_logic_vector(0 to n-1);
 	signal bcd_right : std_logic_vector(0 to n-1);
 	signal bcd_addr  : std_logic_vector(0 to n-1);
@@ -59,6 +60,7 @@ architecture def of btof is
 begin
 
 	btos_frm <= bin_frm when fix_frm='0' else '0';
+	bcd_rst  <= not bin_frm;
 	btos_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
@@ -68,6 +70,7 @@ begin
 		bin_flt   => bin_flt,
 		bin_di    => bin_di,
 
+		bcd_rst   => bcd_rst,
 		bcd_addr  => bcd_addr,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,

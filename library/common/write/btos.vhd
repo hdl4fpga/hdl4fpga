@@ -14,6 +14,7 @@ entity btos is
 		bin_flt   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 
+		bcd_rst   : in  std_logic;
 		bcd_addr  : in  std_logic_vector;
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
@@ -157,7 +158,7 @@ begin
 	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, dev_frm)(0);
 
 
-	vector_rst  <= not bin_frm;
+	vector_rst  <= bcd_rst;
 	vector_addr <= wirebus(btod_addr & dtos_addr & bcd_addr, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
 	vector_di   <= wirebus(btod_do   & dtos_do,   dev_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena, dev_frm)(0);

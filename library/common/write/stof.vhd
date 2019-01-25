@@ -177,11 +177,11 @@ begin
 				end if;
 
 				fixbuf := fixbuf rol space'length;
-				if left-fixoff = -1 then
+				if bcd_end='1' then
+					fixbuf(space'range) := unsigned(space);
+				elsif left-fixoff = -1 then
 					fixbuf(space'range) := unsigned(dot);
 					fix_end <= '0';
-				elsif bcd_end='1' then
-					fixbuf(space'range) := unsigned(space);
 				else
 					bcdbuf := bcdbuf rol space'length;
 					fixbuf(space'range) := bcdbuf(space'range);
