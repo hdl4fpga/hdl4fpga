@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity btof is
 	generic (
@@ -38,6 +39,7 @@ entity btof is
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector;
 		fix_frm  : buffer std_logic;
+		fix_end  : out std_logic;
 		fix_trdy : in  std_logic := '1';
 		fix_irdy : buffer std_logic;
 		fix_do   : out std_logic_vector);
@@ -46,12 +48,13 @@ end;
 architecture def of btof is
 
 	signal btos_frm  : std_logic;
-	signal btos_trdy  : std_logic;
+	signal btos_trdy : std_logic;
 	signal bcd_left  : std_logic_vector(0 to n-1);
 	signal bcd_right : std_logic_vector(0 to n-1);
 	signal bcd_addr  : std_logic_vector(0 to n-1);
 	signal bcd_do    : std_logic_vector(fix_do'range);
 	signal bcd_trdy  : std_logic;
+	signal bcd_tail  : std_logic;
 
 begin
 
@@ -94,17 +97,20 @@ begin
 		end if;
 	end process;
 
+	bcd_tail <= setif(bcd_addr=bcd_right);
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
 		bcd_di    => bcd_do,
+		bcd_tail  => bcd_tail,
 		bcd_trdy  => bcd_trdy,
 
 		fix_frm   => fix_frm,
 		fix_trdy  => fix_trdy,
 		fix_irdy  => fix_irdy,
+		fix_end   => fix_end,
 		fix_do    => fix_do);
 
 	bin_trdy <= btos_trdy when bin_flt='0' else fix_trdy;

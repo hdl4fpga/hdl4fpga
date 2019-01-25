@@ -33,7 +33,7 @@ architecture writef of testbench is
 
 	signal clk      : std_logic := '0';
 	signal wr_frm   : std_logic;
-	signal wr_trdy  : std_logic;
+	signal wr_trdy  : std_logic := '1';
 
 	signal wr_do    : std_logic_vector(0 to 8*4-1);
 
@@ -49,7 +49,7 @@ begin
 		wr_frm  => wr_frm,
 		wr_irdy => '1',
 		wr_trdy => wr_trdy,
-		wr_bin  => x"001f",
+		wr_bin  => x"014f",
 		wr_do   => wr_do);
 
 end;

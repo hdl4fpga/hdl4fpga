@@ -33,7 +33,7 @@ entity writef is
 		wr_frm   : in  std_logic;
 		wr_irdy  : in  std_logic;
 		wr_bin   : in  std_logic_vector;
-		wr_trdy : buffer std_logic;
+		wr_trdy : in  std_logic := '1';
 		wr_do   : out std_logic_vector);
 end;
 

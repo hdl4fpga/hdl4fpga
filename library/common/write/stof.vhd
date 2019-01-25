@@ -45,11 +45,13 @@ entity stof is
 		bcd_trdy  : buffer std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
+		bcd_tail  : in  std_logic;
 		bcd_di    : in  std_logic_vector;
 
 		fix_frm   : in  std_logic;
 		fix_trdy  : in  std_logic := '1';
 		fix_irdy  : buffer std_logic;
+		fix_end   : buffer std_logic;
 		fix_do    : out std_logic_vector);
 end;
 		
@@ -62,6 +64,7 @@ architecture def of stof is
 	signal bcdidx_d : unsigned(bcdidx_q'range);
 	signal fixbuf_d : unsigned(fix_do'length-1 downto 0);
 	signal fixbuf_q : unsigned(fix_do'length-1 downto 0);
+	signal bcd_end  : std_logic;
 begin
 
 	fix_p : process (clk)
@@ -110,6 +113,17 @@ begin
 		end if;
 	end process;
 
+	process(fix_frm, clk)
+	begin
+		if fix_frm='0' then
+			bcd_end <= '0';
+		elsif rising_edge(clk) then
+			if bcd_end='0' then
+				bcd_end <= fix_end;
+			end if;
+		end if;
+	end process;
+
 	fixfmt_p : process (bcd_left, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
 		variable fixbuf : unsigned(fix_do'length-1 downto 0);
 		variable bcdbuf : unsigned(bcd_di'length-1 downto 0);
@@ -128,6 +142,7 @@ begin
 		fixoff := fixoff_q;
 		bcdidx := bcdidx_q;
 		fixidx := fixidx_q;
+		fix_end <= bcd_tail;
 		if signed(bcd_left) < 0 then
 			left := signed(bcd_left)+fixoff_q;
 			for i in 0 to fixbuf'length/space'length-1 loop
@@ -164,6 +179,9 @@ begin
 				fixbuf := fixbuf rol space'length;
 				if left-fixoff = -1 then
 					fixbuf(space'range) := unsigned(dot);
+					fix_end <= '0';
+				elsif bcd_end='1' then
+					fixbuf(space'range) := unsigned(space);
 				else
 					bcdbuf := bcdbuf rol space'length;
 					fixbuf(space'range) := bcdbuf(space'range);
