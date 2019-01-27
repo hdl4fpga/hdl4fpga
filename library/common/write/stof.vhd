@@ -124,7 +124,7 @@ begin
 		end if;
 	end process;
 
-	fixfmt_p : process (bcd_left, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
+	fixfmt_p : process (bcd_left, bcd_tail, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
 		variable fixbuf : unsigned(fix_do'length-1 downto 0);
 		variable bcdbuf : unsigned(bcd_di'length-1 downto 0);
 		variable left   : signed(bcd_left'range);
@@ -148,7 +148,9 @@ begin
 			for i in 0 to fixbuf'length/space'length-1 loop
 				if left <= -i then
 					fixbuf := fixbuf rol space'length;
-					if fixoff=1 then
+					if bcd_end='1' then
+						fixbuf(space'range) := unsigned(space);
+					elsif fixoff=1 then
 						fixbuf(space'range) := unsigned(dot);
 					else
 						fixbuf(space'range) := unsigned(zero);
@@ -161,7 +163,11 @@ begin
 
 					fixbuf := fixbuf rol space'length;
 					bcdbuf := bcdbuf rol space'length;
-					fixbuf(space'range) := bcdbuf(space'range);
+					if bcd_end='1' then
+						fixbuf(space'range) := unsigned(space);
+					else
+						fixbuf(space'range) := bcdbuf(space'range);
+					end if;
 
 					bcdidx := bcdidx + 1;
 				end if;

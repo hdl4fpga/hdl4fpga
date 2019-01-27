@@ -60,7 +60,7 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/fbuf_e/buf_do
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {281 ns} 0}
+WaveRestoreCursors {{Cursor 1} {365 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
