@@ -89,7 +89,7 @@ begin
 		end if;
 	end process;
 
-	process (fix_frm, clk)
+	process (fix_frm, bcd_left, clk)
 	begin
 		if fix_frm='0' then
 			bcd_addr <= bcd_left;

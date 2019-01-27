@@ -32,12 +32,12 @@ entity test_writef is
 		clk     : in  std_logic;
 		wr_frm  : in  std_logic;
 		wr_irdy : in  std_logic;
-		wr_trdy : out std_logic;
+		wr_trdy : in  std_logic;
 		wr_bin  : in  std_logic_vector(4*4-1 downto 0);
 		wr_do   : out std_logic_vector(0 to 8*4-1));
 end;
 
-architecture test of test_stof is
+architecture test of test_writef is
 begin
 	du : entity hdl4fpga.writef
 	port map (
@@ -45,6 +45,6 @@ begin
 		wr_frm  => wr_frm,
 		wr_irdy => wr_irdy,
 		wr_trdy => wr_trdy,
-        wr_bin   => wr_di,
+        wr_bin   => wr_bin,
         wr_do   => wr_do);
 end;
