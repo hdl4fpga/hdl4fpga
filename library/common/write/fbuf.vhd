@@ -52,10 +52,6 @@ begin
 		variable rdy : unsigned(0 to buf_do'length/space'length-1);
 	begin
 
-		buf := buf ror fix_di'length;
-		buf(0 to fix_di'length-1) := unsigned(fix_di);
-		buf := buf rol fix_di'length;
-
 		if fix_frm='0' then
 			rdy := (others => '0');
 			rdy(0) := '1';
@@ -68,7 +64,11 @@ begin
 					rdy := rdy sll 1;
 				end if;
 			end if;
+		buf := buf ror fix_di'length;
+		buf(0 to fix_di'length-1) := unsigned(fix_di);
+		buf := buf rol fix_di'length;
 		end if;
+
 
 		buf_irdy <= fix_frm and rdy(0);
 		fix_trdy <= fix_frm and (not rdy(0) or (rdy(0) and buf_trdy));

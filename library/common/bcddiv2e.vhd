@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity bcddiv2e is
 	generic (
-		max     : in  natural := 0);
+		max     : in  natural := 5);
 	port (
 		clk     : in  std_logic := '0';
 		bcd_exp : in  std_logic_vector;

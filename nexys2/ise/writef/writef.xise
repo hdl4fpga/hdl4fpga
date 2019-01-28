@@ -160,8 +160,8 @@
     <property xil_pn:name="Generate Clock Region Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Constraints Interaction Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Datasheet Section" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Datasheet Section Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Datasheet Section" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Generate Datasheet Section Post Trace" xil_pn:value="false" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Detailed MAP Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Generate Multiple Hierarchical Netlist Files" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Post-Place &amp; Route Power Report" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -245,7 +245,7 @@
     <property xil_pn:name="Pack I/O Registers/Latches into IOBs" xil_pn:value="Off" xil_pn:valueState="default"/>
     <property xil_pn:name="Package" xil_pn:value="fg320" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Perform Advanced Analysis" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Timing-Driven Packing and Placement" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Place &amp; Route Effort Level (Overall)" xil_pn:value="High" xil_pn:valueState="default"/>
     <property xil_pn:name="Place And Route Mode" xil_pn:value="Normal Place and Route" xil_pn:valueState="default"/>
@@ -276,8 +276,8 @@
     <property xil_pn:name="Rename Top Level Architecture To" xil_pn:value="Structure" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Top Level Entity to" xil_pn:value="test_writef" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Top Level Module To" xil_pn:value="" xil_pn:valueState="default"/>
-    <property xil_pn:name="Report Fastest Path(s) in Each Constraint" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Report Fastest Path(s) in Each Constraint Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Report Fastest Path(s) in Each Constraint" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Report Fastest Path(s) in Each Constraint Post Trace" xil_pn:value="false" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Report Paths by Endpoint" xil_pn:value="3" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Paths by Endpoint Post Trace" xil_pn:value="1000" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Report Type" xil_pn:value="Verbose Report" xil_pn:valueState="default"/>
