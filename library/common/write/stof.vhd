@@ -67,7 +67,7 @@ architecture def of stof is
 	signal bcd_end  : std_logic;
 begin
 
-	fix_p : process (clk)
+	fix_p : process (fix_frm, clk)
 	begin
 		if fix_frm='0' then
 			fixoff_q <= (others => '0');
@@ -124,7 +124,7 @@ begin
 		end if;
 	end process;
 
-	fixfmt_p : process (bcd_left, bcd_tail, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
+	fixfmt_p : process (bcd_left, bcd_tail, bcd_end, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
 		variable fixbuf : unsigned(fix_do'length-1 downto 0);
 		variable bcdbuf : unsigned(bcd_di'length-1 downto 0);
 		variable left   : signed(bcd_left'range);

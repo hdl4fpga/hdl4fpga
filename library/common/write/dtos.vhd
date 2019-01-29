@@ -159,7 +159,7 @@ begin
 		end if;
 	end process;
 
-	trdy_p : process (addr, mem_right, dtos_cy, bcd_frm, frm)
+	trdy_p : process (addr, mem_right, dtos_ena, dtos_cy, bcd_frm, frm)
 	begin
 		trdy <= '0';
 		if bcd_frm='1' or frm='1' then
