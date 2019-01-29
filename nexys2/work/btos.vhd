@@ -29,24 +29,34 @@ library hdl4fpga;
 
 entity test is
 	port (
-		clk     : in  std_logic;
-		bin_di  : in  std_logic_vector( 4-1 downto 0);
-		bin_dv  : in  std_logic;
-		bcd_ena : in  std_logic;
-		bcd_cy  : out std_logic;
-		bcd_di  : in  std_logic_vector( 4-1 downto 0);
-		bcd_do  : out std_logic_vector(4-1 downto 0));
+		clk       : in  std_logic;
+		bin_frm   : in  std_logic;
+		bin_irdy  : in  std_logic;
+		bin_trdy  : out std_logic;
+		bin_flt   : in  std_logic;
+		bin_di    : in  std_logic_vector(0 to 4-1);
+
+		bcd_rst   : in  std_logic;
+		bcd_addr  : in  std_logic_vector(0 to 4-1);
+		bcd_left  : out std_logic_vector(0 to 4-1);
+		bcd_right : out std_logic_vector(0 to 4-1);
+		bcd_do    : out std_logic_vector(0 to 4-1));
 end;
 
 architecture btos of test is
 begin
-	smult_e : entity hdl4fpga.btos
+	btos_e : entity hdl4fpga.btos
 	port map (
-		clk     => clk,
-		bin_di  => bin_di,
-		bin_dv  => bin_dv,
-		bcd_ena => bcd_ena,
-		bcd_cy  => bcd_cy,
-		bcd_di  => bcd_di,
-		bcd_do  => bcd_do);
+		clk       => clk,
+		bin_frm   => bin_frm,
+		bin_irdy  => bin_irdy,
+		bin_trdy  => bin_trdy,
+		bin_flt   => bin_flt,
+		bin_di    => bin_di,
+                  
+		bcd_rst   => bcd_rst,
+		bcd_addr  => bcd_addr,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_do    => bcd_do);
 end;
