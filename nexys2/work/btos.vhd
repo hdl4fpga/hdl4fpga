@@ -38,9 +38,9 @@ entity test is
 		bcd_do  : out std_logic_vector(4-1 downto 0));
 end;
 
-architecture btod of test is
+architecture btos of test is
 begin
-	smult_e : entity hdl4fpga.btod
+	smult_e : entity hdl4fpga.btos
 	port map (
 		clk     => clk,
 		bin_di  => bin_di,
