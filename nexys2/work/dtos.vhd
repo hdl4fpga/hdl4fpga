@@ -29,18 +29,54 @@ library hdl4fpga;
 
 entity test_dtos is
 	port (
+		clk           : in  std_logic;
+
+		bcd_frm       : in  std_logic;
+		bcd_irdy      : in  std_logic;
+		bcd_trdy      : out std_logic;
+		bcd_di        : in  std_logic_vector(4-1 downto 0);
+		bcd_cy        : out std_logic;
+
+		mem_full      : in  std_logic;
+		mem_ena       : out std_logic;
+
+		mem_left      : in std_logic_vector(4-1 downto 0);
+		mem_left_up   : out std_logic;
+		mem_left_ena  : out std_logic;
+
+		mem_right     : in std_logic_vector(4-1 downto 0);
+		mem_right_up  : out std_logic;
+		mem_right_ena : out std_logic;
+
+		mem_addr      : out std_logic_vector(4-1 downto 0);
+		mem_do        : in  std_logic_vector(4-1 downto 0);
+		mem_di        : out std_logic_vector(4-1 downto 0));
 end;
 
 architecture test of test_dtos is
 begin
 	du : entity hdl4fpga.dtos
 	port map (
-		clk      => clk,
-		bin_frm  => bin_frm,
-		bin_irdy => bin_irdy,
-		bin_trdy => bin_trdy,
-		bin_fix  => bin_fix,
-		bin_exp  => bin_exp,
-        bin_di   => bin_di,
-        bcd_do   => bcd_do);
+		clk           => clk,
+                                      
+		bcd_frm       => bcd_frm,
+		bcd_irdy      => bcd_irdy,
+		bcd_trdy      => bcd_trdy,
+		bcd_di        => bcd_di,
+		bcd_cy        => bcd_cy,
+                                      
+		mem_full      => mem_full,
+		mem_ena       => mem_ena,
+                                      
+		mem_left      => mem_left,
+		mem_left_up   => mem_left_up,
+		mem_left_ena  => mem_left_ena,
+                                      
+		mem_right     => mem_right,
+		mem_right_up  => mem_right_up,
+		mem_right_ena => mem_right_ena,
+                                      
+		mem_addr      => mem_addr,
+		mem_do        => mem_do ,
+		mem_di        => mem_di);
 end;
