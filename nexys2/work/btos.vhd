@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity test_dtos is
+entity test_btos is
 	port (
 		clk       : in  std_logic;
 		bin_frm   : in  std_logic;
@@ -43,9 +43,9 @@ entity test_dtos is
 		bcd_do    : out std_logic_vector(0 to 4-1));
 end;
 
-architecture dtos of test_dtos is
+architecture btos of test_btos is
 begin
-	du_e : entity hdl4fpga.dtos
+	du_e : entity hdl4fpga.btos
 	port map (
 		clk       => clk,
 		bin_frm   => bin_frm,
