@@ -8,10 +8,10 @@ use hdl4fpga.std.all;
 entity dbdbbl is
 	port (
 		clk     : in  std_logic := '0';
+		ena     : in  std_logic := '1';
 
 		bin_dv  : in  std_logic;
 		bin_di  : in  std_logic_vector;
-		bin_ena : in  std_logic := '1';
 
 		bcd_di  : in  std_logic_vector;
 		bcd_do  : out std_logic_vector;
