@@ -10,9 +10,9 @@ entity dbdbbl is
 		clk     : in  std_logic := '0';
 		ena     : in  std_logic := '1';
 
-		bin_dv  : in  std_logic;
 		bin_di  : in  std_logic_vector;
 
+		bcd_ini : in  std_logic;
 		bcd_di  : in  std_logic_vector;
 		bcd_do  : out std_logic_vector;
 		bcd_cy  : out std_logic);
@@ -48,13 +48,13 @@ begin
 		end if;
 	end process;
 
-	comb_p : process (bin_dv, bin_di, bcd_di, shtio_q)
+	comb_p : process (bcd_ini, bin_di, bcd_di, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
 		variable tmp_shtio : unsigned(bin_di'length-1 downto 0);
 	begin
 		tmp_value := unsigned(bcd_di);
 
-		if bin_dv='1' then
+		if bcd_ini='1' then
 			tmp_shtio := unsigned(bin_di);
 		else
 			tmp_shtio := shtio_q;
