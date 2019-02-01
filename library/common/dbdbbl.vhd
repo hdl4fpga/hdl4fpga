@@ -42,7 +42,7 @@ begin
 	reg_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			if bin_ena='1' then
+			if ena='1' then
 				shtio_q <= shtio_d;
 			end if;
 		end if;
