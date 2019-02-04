@@ -66,7 +66,6 @@ begin
 	btod_ena <= '1'                   when bcd_ini='1' else mem_trdy;
 	bcd_di   <= (bcd_di'range => '0') when bcd_ini='1' else mem_do;
 	mem_irdy <= '1';
-	bin_trdy <= '1';
 
 	process (bin_frm, clk)
 	begin
@@ -95,16 +94,21 @@ begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
 				addr <= unsigned(mem_right(mem_addr'range));
+				bin_trdy <= '0';
 			elsif mem_trdy='1' then
+				bin_trdy <= '0';
 				if addr=unsigned(mem_left(mem_addr'range)) then
 					if bcd_cy='1' then
 						addr <= addr + 1;
 					else
+						bin_trdy <= '1';
 						addr <= unsigned(mem_right(mem_addr'range));
 					end if;
 				else
 					addr <= addr + 1;
 				end if;
+			else
+				bin_trdy <= '0';
 			end if;
 			mem_addr <= std_logic_vector(addr);
 		end if;
