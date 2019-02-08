@@ -71,34 +71,48 @@ begin
 	process (bin_frm, clk)
 	begin
 		if bin_frm='0' then
-			bin_trdy <= '0';
 			bcd_ini  <= '1';
-			mem_irdy <= '0';
 		elsif rising_edge(clk) then
-			bin_trdy <= '0';
-			mem_irdy <= bin_irdy;
-			if bin_trdy='1' then
-				mem_irdy <= '0';
-			end if;
 			if mem_trdy='1' then
-				bcd_ini <= bcd_trdy;
-				if bin_trdy='0' then
-					bin_trdy <= bcd_trdy;
+				if bcd_trdy='1' then
+					bcd_ini  <= '1';
+				else
+					bcd_ini  <= '0';
 				end if;
 			end if;
 		end if;
 	end process;
 
-	rdy_p : process(clk)
+	process (bin_frm, clk)
 	begin
-		if rising_edge(clk) then
+		if bin_frm='0' then
+			bin_trdy <= '0';
+			mem_irdy <= '0';
 			mem_ena  <= '0';
-			mem_trdy <= mem_ena;
-			if bin_trdy='1' then
-			elsif mem_irdy='1' then
-				if mem_ena='0' then
-					mem_ena <= '1';
+			mem_trdy <= '0';
+		elsif rising_edge(clk) then
+			if mem_trdy='1' then
+				if bin_trdy='0' then
+					bin_trdy <= bcd_trdy;
+					mem_irdy <= not bcd_trdy;
+					if bcd_trdy='1' then
+						mem_ena  <= '0';
+						mem_trdy <= '0';
+					else
+						mem_ena  <= not mem_ena;
+						mem_trdy <= mem_ena;
+					end if;
+				else
+					bin_trdy <= '0';
+					mem_irdy <= '1';
+					mem_ena  <= '1';
+					mem_trdy <= mem_ena;
 				end if;
+			else
+				bin_trdy <= '0';
+				mem_irdy <= '1';
+				mem_ena  <= not mem_ena;
+				mem_trdy <= mem_ena;
 			end if;
 		end if;
 	end process;
@@ -109,13 +123,17 @@ begin
 			if bin_frm='0' then
 				bcd_trdy <= '0';
 				bcd_zero <= '1';
-			elsif mem_trdy='1' then
+			else
 				if addr=unsigned(mem_left(mem_addr'range)) then
 					if bcd_cy='1' then
-						bcd_zero <= '1';
+						if mem_trdy='1' then
+							bcd_zero <= '1';
+						end if;
 						bcd_trdy <= '0';
 					else
-						bcd_zero <= '0';
+						if mem_trdy='1' then
+							bcd_zero <= '0';
+						end if;
 						bcd_trdy <= '1';
 					end if;
 				else
