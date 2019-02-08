@@ -25,7 +25,7 @@ entity btod is
 		mem_right_up  : out std_logic := '-';
 		mem_right_ena : out std_logic := '0';
 
-		mem_addr      : out std_logic_vector;
+		mem_addr      : buffer std_logic_vector;
 		mem_di        : out std_logic_vector;
 		mem_do        : in  std_logic_vector);
 end;
@@ -103,29 +103,25 @@ begin
 		end if;
 	end process;
 
-	addr_p : process(clk)
+	process(clk)
 	begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
-				addr <= unsigned(mem_right(mem_addr'range));
 				bcd_trdy <= '0';
 				bcd_zero <= '1';
 			elsif mem_trdy='1' then
-				bcd_trdy <= '0';
 				if addr=unsigned(mem_left(mem_addr'range)) then
 					if bcd_cy='1' then
-						addr <= addr + 1;
 						bcd_zero <= '1';
+						bcd_trdy <= '0';
 					else
-						addr <= unsigned(mem_right(mem_addr'range));
-						bin_trdy <= '1';
 						bcd_zero <= '0';
+						bcd_trdy <= '1';
 					end if;
-				elsif bcd_trdy='0' then
-					addr <= addr + 1;
+				else
+					bcd_trdy <= '0';
 				end if;
 			end if;
-			mem_addr <= std_logic_vector(addr);
 		end if;
 	end process;
 
@@ -134,26 +130,20 @@ begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
 				addr <= unsigned(mem_right(mem_addr'range));
-				bcd_trdy <= '0';
-				bcd_zero <= '1';
 			elsif mem_trdy='1' then
-				bcd_trdy <= '0';
 				if addr=unsigned(mem_left(mem_addr'range)) then
 					if bcd_cy='1' then
 						addr <= addr + 1;
-						bcd_zero <= '1';
 					else
 						addr <= unsigned(mem_right(mem_addr'range));
-						bin_trdy <= '1';
-						bcd_zero <= '0';
 					end if;
-				elsif bcd_trdy='0' then
+				else
 					addr <= addr + 1;
 				end if;
 			end if;
-			mem_addr <= std_logic_vector(addr);
 		end if;
 	end process;
+	mem_addr <= std_logic_vector(addr);
 
 	di_p : process(clk)
 	begin
