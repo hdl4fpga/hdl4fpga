@@ -65,8 +65,15 @@ begin
 		bcd_do  => bcd_do,
 		bcd_cy  => bcd_cy);
 
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
+			mem_di <= bcd_do;
+		end if;
+	end process;
+
 	btod_ena <= mem_trdy;
-	bcd_di   <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
 
 	process (bin_frm, clk)
 	begin
@@ -166,7 +173,6 @@ begin
 	di_p : process(clk)
 	begin
 		if rising_edge(clk) then
-			mem_di <= bcd_do;
 		end if;
 	end process;
 
