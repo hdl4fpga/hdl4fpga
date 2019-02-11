@@ -68,9 +68,10 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
-			mem_di <= bcd_do;
-
+			bcd_di  <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
+			addr_eq <= setif(addr=mem_left);
+			mem_di  <= bcd_do;
+			cy      <= bcd_cy;
 		end if;
 	end process;
 
@@ -133,7 +134,7 @@ begin
 				bcd_zero <= '1';
 			else
 				if addr=unsigned(mem_left(mem_addr'range)) then
-					if bcd_cy='1' then
+					if cy='1' then
 						if mem_trdy='1' then
 							bcd_zero <= '1';
 						end if;
@@ -158,7 +159,7 @@ begin
 				addr <= unsigned(mem_right(mem_addr'range));
 			elsif mem_trdy='1' then
 				if addr=unsigned(mem_left(mem_addr'range)) then
-					if bcd_cy='1' then
+					if cy='1' then
 						addr <= addr + 1;
 					else
 						addr <= unsigned(mem_right(mem_addr'range));
