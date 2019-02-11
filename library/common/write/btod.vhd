@@ -70,6 +70,7 @@ begin
 		if rising_edge(clk) then
 			bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
 			mem_di <= bcd_do;
+
 		end if;
 	end process;
 
