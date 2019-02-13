@@ -40,6 +40,9 @@ architecture def of btod is
 	signal bcd_di   : std_logic_vector(mem_do'range);
 	signal bcd_do   : std_logic_vector(mem_di'range);
 
+	signal cy : std_logic;
+	signal up : std_logic;
+
 	signal frm      : std_logic;
 	signal addr     : unsigned(mem_addr'range);
 
@@ -69,128 +72,51 @@ begin
 	begin
 		if rising_edge(clk) then
 			bcd_di  <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
-			addr_eq <= setif(addr=mem_left);
+			addr_eq <= setif(mem_addr=mem_left);
 			mem_di  <= bcd_do;
-			cy      <= bcd_cy;
 		end if;
 	end process;
 
 	btod_ena <= mem_trdy;
 
-	process (bin_frm, clk)
+	process (clk) 
 	begin
-		if bin_frm='0' then
-			bcd_ini  <= '1';
-		elsif rising_edge(clk) then
-			if mem_trdy='1' then
-				if bcd_trdy='1' then
-					bcd_ini  <= '1';
-				else
-					bcd_ini  <= '0';
-				end if;
-			end if;
+		if rising_edge(clk) then
+			eq <= setif(mem_addr=mem_left);
+			cy <= bcd_cy;
 		end if;
 	end process;
 
-	process (bin_frm, clk)
-	begin
-		if bin_frm='0' then
-			bin_trdy <= '0';
-			mem_irdy <= '0';
-			mem_ena  <= '0';
-			mem_trdy <= '0';
-		elsif rising_edge(clk) then
-			if mem_trdy='1' then
-				if bin_trdy='0' then
-					bin_trdy <= bcd_trdy;
-					mem_irdy <= not bcd_trdy;
-					if bcd_trdy='1' then
-						mem_ena  <= '0';
-						mem_trdy <= '0';
-					else
-						mem_ena  <= not mem_ena;
-						mem_trdy <= mem_ena;
-					end if;
-				else
-					bin_trdy <= '0';
-					mem_irdy <= '1';
-					mem_ena  <= '1';
-					mem_trdy <= mem_ena;
-				end if;
-			else
-				bin_trdy <= '0';
-				mem_irdy <= '1';
-				mem_ena  <= not mem_ena;
-				mem_trdy <= mem_ena;
-			end if;
-		end if;
-	end process;
-
-	process(clk)
+	mem_p : process(clk)
 	begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
-				bcd_trdy <= '0';
-				bcd_zero <= '1';
+				mem_addr     <= mem_right(mem_addr'range);
+				mem_left_up  <= '-';
+				mem_left_ena <= '0';
+			elsif bcd_trdy='1' then
+				if eq='1' then
+					if cy='1' then
+						mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
+						mem_left_up  <= '1';
+						mem_left_ena <= '1';
+					else
+						mem_addr     <= mem_right(mem_addr'range);
+						mem_left_up  <= '-';
+						mem_left_ena <= '0';
+					end if;
+				else
+					mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
+					mem_left_up  <= '-';
+					mem_left_ena <= '0';
+				end if;
+				mem_ena <= '1';
 			else
-				if addr=unsigned(mem_left(mem_addr'range)) then
-					if cy='1' then
-						if mem_trdy='1' then
-							bcd_zero <= '1';
-						end if;
-						bcd_trdy <= '0';
-					else
-						if mem_trdy='1' then
-							bcd_zero <= '0';
-						end if;
-						bcd_trdy <= '1';
-					end if;
-				else
-					bcd_trdy <= '0';
-				end if;
+				mem_left_up  <= '-';
+				mem_left_ena <= '0';
+				mem_ena <= '0';
 			end if;
 		end if;
 	end process;
-
-	addr_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				addr <= unsigned(mem_right(mem_addr'range));
-			elsif mem_trdy='1' then
-				if addr=unsigned(mem_left(mem_addr'range)) then
-					if cy='1' then
-						addr <= addr + 1;
-					else
-						addr <= unsigned(mem_right(mem_addr'range));
-					end if;
-				else
-					addr <= addr + 1;
-				end if;
-			end if;
-		end if;
-	end process;
-	mem_addr <= std_logic_vector(addr);
-
-	di_p : process(clk)
-	begin
-		if rising_edge(clk) then
-		end if;
-	end process;
-
-	left_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			mem_left_up  <= '-';
-			mem_left_ena <= '0';
-			if addr=unsigned(mem_left(mem_addr'range)) then
-				if bcd_cy='1' then
-					mem_left_up  <= '1';
-					mem_left_ena <= '1';
-				end if;
-			end if;
-		end if;
-	end process;
-
 
 end;
