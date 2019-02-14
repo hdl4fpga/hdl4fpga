@@ -57,6 +57,44 @@ begin
 		end if;
 	end process;
 
+	process(bin_frm, clk)
+		type states is (s1, s2, s3);
+		subtype state : states;
+	begin
+		if bin_frm='0' then
+			btod_ena <= '0';
+			bcd_trdy <= '0';
+			state    := s1;
+		elsif rising_edge(clk) then
+			case state is
+			when s1 =>
+				if bcd_irdy='1' then
+					btod_ena <= '1';
+					bcd_trdy <= '0';
+					state    := s2;
+				else
+					btod_ena <= '0';
+					bcd_trdy <= '0';
+					state    := s1;
+				end if;
+			when s2 =>
+				btod_ena <= '0';
+				bcd_trdy <= '1';
+				state    := s3;
+			when s3 =>
+				if bcd_irdy='1' then
+					btod_ena <= '0';
+					bcd_trdy <= '0';
+					state    := s1;
+				else
+					btod_ena <= '0';
+					bcd_trdy <= '1';
+					state    := s1;
+				end if;
+			end case;
+		end if;
+	end process;
+
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
 		clk     => clk,
@@ -114,7 +152,7 @@ begin
 			else
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
-				mem_ena <= '0';
+				mem_ena      <= '0';
 			end if;
 		end if;
 	end process;
