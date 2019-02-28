@@ -66,6 +66,7 @@ begin
 			btod_ena <= '0';
 			bcd_irdy <= '1';
 			bcd_trdy <= '0';
+			bin_trdy <= '0';
 			state    := s1;
 		elsif rising_edge(clk) then
 			case state is
@@ -82,6 +83,15 @@ begin
 			when s2 =>
 				btod_ena <= '0';
 				bcd_trdy <= '1';
+				if addr_eq='1' then
+					if cy='0' then
+						bin_trdy <= '1';
+					else
+						bin_trdy <= '0';
+					end if;
+				else
+					bin_trdy <= '0';
+				end if;
 				state    := s3;
 			when s3 =>
 				if bcd_irdy='1' then
