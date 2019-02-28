@@ -33,9 +33,9 @@ end;
 architecture def of btod is
 
 	signal btod_ena : std_logic;
-	signal bcd_ini  : std_logic;
-	signal bcd_zero  : std_logic;
-	signal bcd_trdy  : std_logic;
+	signal bcd_ini  : std_logic := '1';
+	signal bcd_zero : std_logic := '1';
+	signal bcd_trdy : std_logic;
 	signal bcd_cy   : std_logic;
 	signal bcd_di   : std_logic_vector(mem_do'range);
 	signal bcd_do   : std_logic_vector(mem_di'range);
@@ -45,9 +45,10 @@ architecture def of btod is
 
 	signal frm      : std_logic;
 	signal addr     : unsigned(mem_addr'range);
-
+	signal bcd_irdy : std_logic;
 	signal mem_trdy : std_logic;
 	signal mem_irdy : std_logic;
+	signal addr_eq  : std_logic;
 begin
 
 	process(clk)
@@ -59,10 +60,11 @@ begin
 
 	process(bin_frm, clk)
 		type states is (s1, s2, s3);
-		subtype state : states;
+		variable state : states;
 	begin
 		if bin_frm='0' then
 			btod_ena <= '0';
+			bcd_irdy <= '1';
 			bcd_trdy <= '0';
 			state    := s1;
 		elsif rising_edge(clk) then
@@ -109,21 +111,18 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			bcd_di  <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
+			if bcd_zero='1' then
+				bcd_di <= (bcd_di'range => '0');
+			else
+				bcd_di <= mem_do;
+			end if;
 			addr_eq <= setif(mem_addr=mem_left);
 			mem_di  <= bcd_do;
+			cy      <= bcd_cy;
 		end if;
 	end process;
 
 	btod_ena <= mem_trdy;
-
-	process (clk) 
-	begin
-		if rising_edge(clk) then
-			eq <= setif(mem_addr=mem_left);
-			cy <= bcd_cy;
-		end if;
-	end process;
 
 	mem_p : process(clk)
 	begin
@@ -133,7 +132,7 @@ begin
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
 			elsif bcd_trdy='1' then
-				if eq='1' then
+				if addr_eq='1' then
 					if cy='1' then
 						mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
 						mem_left_up  <= '1';
