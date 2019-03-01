@@ -33,7 +33,7 @@ end;
 architecture def of btod is
 
 	signal btod_ena : std_logic;
-	signal bcd_ini  : std_logic := '1';
+	signal bcd_ini  : std_logic;
 	signal bcd_zero : std_logic := '1';
 	signal bcd_trdy : std_logic;
 	signal bcd_cy   : std_logic;
@@ -67,6 +67,7 @@ begin
 			bcd_irdy <= '1';
 			bcd_trdy <= '0';
 			bin_trdy <= '0';
+			bcd_ini  <= '1';
 			state    := s1;
 		elsif rising_edge(clk) then
 			case state is
@@ -74,15 +75,14 @@ begin
 				if bcd_irdy='1' then
 					btod_ena <= '1';
 					bcd_trdy <= '0';
-					state    := s2;
 				else
 					btod_ena <= '0';
 					bcd_trdy <= '0';
-					state    := s1;
 				end if;
 			when s2 =>
 				btod_ena <= '0';
 				bcd_trdy <= '1';
+				bcd_ini  <= '0';
 				if addr_eq='1' then
 					if cy='0' then
 						bin_trdy <= '1';
@@ -92,18 +92,21 @@ begin
 				else
 					bin_trdy <= '0';
 				end if;
-				state    := s3;
 			when s3 =>
+				btod_ena <= '0';
+				bcd_trdy <= '0';
+			end case;	
+
+			case state is
+			when s1 =>
 				if bcd_irdy='1' then
-					btod_ena <= '0';
-					bcd_trdy <= '0';
-					state    := s1;
-				else
-					btod_ena <= '0';
-					bcd_trdy <= '1';
-					state    := s1;
+					state := s2;
 				end if;
-			end case;
+			when s2 =>
+				state := s3;
+			when s3 =>
+				state := s1;
+			end case;	
 		end if;
 	end process;
 
@@ -132,8 +135,8 @@ begin
 		end if;
 	end process;
 
-	btod_ena <= mem_trdy;
 
+	mem_ena  <= bcd_trdy;
 	mem_p : process(clk)
 	begin
 		if rising_edge(clk) then
@@ -157,11 +160,9 @@ begin
 					mem_left_up  <= '-';
 					mem_left_ena <= '0';
 				end if;
-				mem_ena <= '1';
 			else
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
-				mem_ena      <= '0';
 			end if;
 		end if;
 	end process;
