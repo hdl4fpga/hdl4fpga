@@ -72,17 +72,18 @@ begin
 		elsif rising_edge(clk) then
 			case state is
 			when s1 =>
+				mem_ena  <= '0';
+				bcd_trdy <= '0';
 				if bcd_irdy='1' then
 					btod_ena <= '1';
-					bcd_trdy <= '0';
 				else
 					btod_ena <= '0';
-					bcd_trdy <= '0';
 				end if;
 			when s2 =>
 				btod_ena <= '0';
 				bcd_trdy <= '1';
 				bcd_ini  <= '0';
+				mem_ena  <= '1';
 				if addr_eq='1' then
 					if cy='0' then
 						bin_trdy <= '1';
@@ -93,6 +94,7 @@ begin
 					bin_trdy <= '0';
 				end if;
 			when s3 =>
+				mem_ena  <= '0';
 				btod_ena <= '0';
 				bcd_trdy <= '0';
 			end case;	
@@ -105,7 +107,9 @@ begin
 			when s2 =>
 				state := s3;
 			when s3 =>
-				state := s1;
+				if bin_irdy='1' then
+					state := s1;
+				end if;
 			end case;	
 		end if;
 	end process;
@@ -135,8 +139,6 @@ begin
 		end if;
 	end process;
 
-
-	mem_ena  <= bcd_trdy;
 	mem_p : process(clk)
 	begin
 		if rising_edge(clk) then
@@ -144,7 +146,7 @@ begin
 				mem_addr     <= mem_right(mem_addr'range);
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
-			elsif bcd_trdy='1' then
+			elsif btod_ena='1' then
 				if addr_eq='1' then
 					if cy='1' then
 						mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
