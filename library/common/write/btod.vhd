@@ -68,6 +68,7 @@ begin
 			bcd_trdy <= '0';
 			bin_trdy <= '0';
 			bcd_ini  <= '1';
+			bcd_zero <= '1';
 			state    := s1;
 		elsif rising_edge(clk) then
 			case state is
@@ -82,21 +83,28 @@ begin
 			when s2 =>
 				btod_ena <= '0';
 				bcd_trdy <= '1';
-				bcd_ini  <= '0';
 				mem_ena  <= '1';
 				if addr_eq='1' then
 					if cy='0' then
 						bin_trdy <= '1';
+						bcd_zero <= '0';
 					else
 						bin_trdy <= '0';
+						bcd_zero <= '1';
 					end if;
 				else
+					bcd_zero <= '0';
 					bin_trdy <= '0';
 				end if;
 			when s3 =>
+				bcd_ini  <= '0';
 				mem_ena  <= '0';
 				btod_ena <= '0';
 				bcd_trdy <= '0';
+				if bin_irdy='1' then
+					bin_trdy <= '0';
+				end if;
+
 			end case;	
 
 			case state is
@@ -125,17 +133,29 @@ begin
 		bcd_do  => bcd_do,
 		bcd_cy  => bcd_cy);
 
+	bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if bcd_zero='1' then
-				bcd_di <= (bcd_di'range => '0');
-			else
-				bcd_di <= mem_do;
+			addr_eq <= setif(addr=unsigned(mem_left));
+			if btod_ena='1' then
+				mem_di <= bcd_do;
 			end if;
-			addr_eq <= setif(mem_addr=mem_left);
-			mem_di  <= bcd_do;
 			cy      <= bcd_cy;
+			if bin_frm='0' then
+				addr <= unsigned(mem_right(mem_addr'range));
+			elsif btod_ena='1' then
+				if addr_eq='1' then
+					if cy='1' then
+						addr <= addr + 1;
+					else
+						addr <= unsigned(mem_right(mem_addr'range));
+					end if;
+				else
+					addr <= addr + 1;
+				end if;
+			end if;
+
 		end if;
 	end process;
 
@@ -149,16 +169,13 @@ begin
 			elsif btod_ena='1' then
 				if addr_eq='1' then
 					if cy='1' then
-						mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
 						mem_left_up  <= '1';
 						mem_left_ena <= '1';
 					else
-						mem_addr     <= mem_right(mem_addr'range);
 						mem_left_up  <= '-';
 						mem_left_ena <= '0';
 					end if;
 				else
-					mem_addr     <= std_logic_vector(unsigned(mem_addr) + 1);
 					mem_left_up  <= '-';
 					mem_left_ena <= '0';
 				end if;
@@ -166,6 +183,7 @@ begin
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
 			end if;
+			mem_addr <= std_logic_vector(addr);
 		end if;
 	end process;
 
