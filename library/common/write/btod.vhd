@@ -87,17 +87,19 @@ begin
 				if addr_eq='1' then
 					if cy='0' then
 						bin_trdy <= '1';
+						bcd_ini  <= '1';
 						bcd_zero <= '0';
 					else
 						bin_trdy <= '0';
+						bcd_ini  <= '0';
 						bcd_zero <= '1';
 					end if;
 				else
 					bcd_zero <= '0';
+					bcd_ini  <= '0';
 					bin_trdy <= '0';
 				end if;
 			when s3 =>
-				bcd_ini  <= '0';
 				mem_ena  <= '0';
 				btod_ena <= '0';
 				bcd_trdy <= '0';
