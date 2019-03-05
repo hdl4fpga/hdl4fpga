@@ -87,32 +87,35 @@ begin
 				if addr_eq='1' then
 					if cy='0' then
 						bin_trdy <= '1';
-						bcd_ini  <= '1';
 						bcd_zero <= '0';
 					else
 						bin_trdy <= '0';
-						bcd_ini  <= '0';
 						bcd_zero <= '1';
 					end if;
 				else
 					bcd_zero <= '0';
-					bcd_ini  <= '0';
 					bin_trdy <= '0';
 				end if;
 			when s3 =>
-				mem_ena  <= '0';
 				btod_ena <= '0';
 				bcd_trdy <= '0';
+				mem_ena  <= '0';
+				if bin_trdy='1' then
+					bcd_ini  <= '1';
+				else
+					bcd_ini  <= '0';
+				end if;
 				if bin_irdy='1' then
 					bin_trdy <= '0';
 				end if;
-
 			end case;	
 
 			case state is
 			when s1 =>
-				if bcd_irdy='1' then
-					state := s2;
+				if bin_irdy='1' then
+					if bcd_irdy='1' then
+						state := s2;
+					end if;
 				end if;
 			when s2 =>
 				state := s3;
@@ -143,7 +146,7 @@ begin
 			if btod_ena='1' then
 				mem_di <= bcd_do;
 			end if;
-			cy      <= bcd_cy;
+			cy <= bcd_cy;
 			if bin_frm='0' then
 				addr <= unsigned(mem_right(mem_addr'range));
 			elsif btod_ena='1' then
@@ -157,7 +160,6 @@ begin
 					addr <= addr + 1;
 				end if;
 			end if;
-
 		end if;
 	end process;
 
