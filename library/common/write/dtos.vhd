@@ -13,7 +13,6 @@ entity dtos is
 		bcd_irdy      : in  std_logic := '1';
 		bcd_trdy      : out std_logic;
 		bcd_di        : in  std_logic_vector;
-		bcd_cy        : out std_logic;
 
 		mem_full      : in  std_logic;
 		mem_ena       : out std_logic;
@@ -34,12 +33,12 @@ end;
 architecture def of dtos is
 
 	signal dtos_ena : std_logic;
-	signal bcd_ini  : std_logic;
-	signal bcd_zero : std_logic := '1';
-	signal bcd_trdy : std_logic;
-	signal bcd_cy   : std_logic;
-	signal bcd_di   : std_logic_vector(mem_do'range);
-	signal bcd_do   : std_logic_vector(mem_di'range);
+	signal dtos_ini  : std_logic;
+	signal dtos_zero : std_logic := '1';
+	signal dtos_trdy : std_logic;
+	signal dtos_cy   : std_logic;
+	signal dtos_di   : std_logic_vector(mem_do'range);
+	signal dtos_do   : std_logic_vector(mem_di'range);
 
 	signal cy : std_logic;
 	signal up : std_logic;
@@ -132,12 +131,12 @@ begin
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	port map (
 		clk     => clk,
-		bcd_exp => bcd_di,
-		bcd_ena => bcd_ena,
-		bcd_ini => bcd_ini,
-		bcd_di  => bcd_di,
-		bcd_do  => bcd_do,
-		bcd_cy  => bcd_cy);
+		bcd_exp => dtos_di,
+		bcd_ena => dtos_ena,
+		bcd_ini => dtos_ini,
+		bcd_di  => dtos_di,
+		bcd_do  => dtos_do,
+		bcd_cy  => dtos_cy);
 
 	bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
 	process (clk)
