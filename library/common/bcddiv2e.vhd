@@ -9,7 +9,7 @@ entity bcddiv2e is
 		clk     : in  std_logic := '0';
 		bcd_exp : in  std_logic_vector;
 		bcd_ena : in  std_logic := '1';
-		bcd_dv  : in  std_logic := '1';
+		bcd_ini : in  std_logic := '1';
 		bcd_di  : in  std_logic_vector;
 		bcd_do  : out std_logic_vector;
 		bcd_cy  : out std_logic);
@@ -49,13 +49,13 @@ begin
 		end if;
 	end process;
 
-	process (bcd_di, bcd_dv, shtio_q)
+	process (bcd_di, bcd_ini, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
 		variable tmp_shtio : unsigned(size-1 downto 0);
 		variable carry     : std_logic;
 	begin
 		tmp_value := unsigned(bcd_di);
-		if bcd_dv='1' then
+		if bcd_ini='1' then
 			tmp_shtio := (others => '0');
 		else
 			tmp_shtio := shtio_q;
