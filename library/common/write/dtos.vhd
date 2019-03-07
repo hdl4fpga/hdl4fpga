@@ -11,7 +11,7 @@ entity dtos is
 
 		bcd_frm       : in  std_logic;
 		bcd_irdy      : in  std_logic := '1';
-		bcd_trdy      : out std_logic;
+		bcd_trdy      : buffer std_logic;
 		bcd_di        : in  std_logic_vector;
 
 		mem_full      : in  std_logic;
@@ -32,7 +32,7 @@ end;
 
 architecture def of dtos is
 
-	signal dtos_ena : std_logic;
+	signal dtos_ena  : std_logic;
 	signal dtos_ini  : std_logic;
 	signal dtos_zero : std_logic := '1';
 	signal dtos_trdy : std_logic;
@@ -43,12 +43,12 @@ architecture def of dtos is
 	signal cy : std_logic;
 	signal up : std_logic;
 
-	signal frm      : std_logic;
-	signal addr     : unsigned(mem_addr'range);
-	signal bcd_irdy : std_logic;
-	signal mem_trdy : std_logic;
-	signal mem_irdy : std_logic;
-	signal addr_eq  : std_logic;
+	signal frm       : std_logic;
+	signal addr      : unsigned(mem_addr'range);
+	signal dtos_irdy : std_logic;
+	signal mem_trdy  : std_logic;
+	signal mem_irdy  : std_logic;
+	signal addr_eq   : std_logic;
 
 begin
 
@@ -59,69 +59,69 @@ begin
 		end if;
 	end process;
 
-	process(bin_frm, clk)
+	process(bcd_frm, clk)
 		type states is (s1, s2, s3);
 		variable state : states;
 	begin
-		if bin_frm='0' then
+		if bcd_frm='0' then
 			dtos_ena <= '0';
-			bcd_irdy <= '1';
+			dtos_irdy <= '1';
+			dtos_trdy <= '0';
 			bcd_trdy <= '0';
-			bin_trdy <= '0';
-			bcd_ini  <= '1';
-			bcd_zero <= '1';
+			dtos_ini  <= '1';
+			dtos_zero <= '1';
 			state    := s1;
 		elsif rising_edge(clk) then
 			case state is
 			when s1 =>
 				mem_ena  <= '0';
-				bcd_trdy <= '0';
-				if bcd_irdy='1' then
+				dtos_trdy <= '0';
+				if dtos_irdy='1' then
 					dtos_ena <= '1';
 				else
 					dtos_ena <= '0';
 				end if;
 			when s2 =>
 				dtos_ena <= '0';
-				bcd_trdy <= '1';
+				dtos_trdy <= '1';
 				mem_ena  <= '1';
 				if addr_eq='1' then
 					if cy='0' then
-						bin_trdy <= '1';
-						bcd_zero <= '0';
+						bcd_trdy <= '1';
+						dtos_zero <= '0';
 					else
-						bin_trdy <= '0';
-						bcd_zero <= '1';
+						bcd_trdy <= '0';
+						dtos_zero <= '1';
 					end if;
 				else
-					bcd_zero <= '0';
-					bin_trdy <= '0';
+					dtos_zero <= '0';
+					bcd_trdy <= '0';
 				end if;
 			when s3 =>
 				dtos_ena <= '0';
-				bcd_trdy <= '0';
+				dtos_trdy <= '0';
 				mem_ena  <= '0';
-				if bin_trdy='1' then
-					bcd_ini  <= '1';
+				if bcd_trdy='1' then
+					dtos_ini  <= '1';
 				else
-					bcd_ini  <= '0';
+					dtos_ini  <= '0';
 				end if;
-				if bin_irdy='1' then
-					bin_trdy <= '0';
+				if bcd_irdy='1' then
+					bcd_trdy <= '0';
 				end if;
 			end case;	
 
 			case state is
 			when s1 =>
-				if bin_irdy='1' then
-					if bcd_irdy='1' then
+				if bcd_irdy='1' then
+					if dtos_irdy='1' then
 						state := s2;
 					end if;
 				end if;
 			when s2 =>
 				state := s3;
 			when s3 =>
-				if bin_irdy='1' then
+				if bcd_irdy='1' then
 					state := s1;
 				end if;
 			end case;	
@@ -138,18 +138,18 @@ begin
 		bcd_do  => dtos_do,
 		bcd_cy  => dtos_cy);
 
-	bcd_di <= (bcd_di'range => '0') when bcd_zero='1' else mem_do;
+	dtos_di <= (dtos_di'range => '0') when dtos_zero='1' else mem_do;
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			addr_eq <= setif(addr=unsigned(mem_right));
-			if btod_ena='1' then
-				mem_di <= bcd_do;
+			if dtos_ena='1' then
+				mem_di <= dtos_do;
 			end if;
-			cy <= bcd_cy;
-			if bin_frm='0' then
+			cy <= dtos_cy;
+			if bcd_frm='0' then
 				addr <= unsigned(mem_left(mem_addr'range));
-			elsif btod_ena='1' then
+			elsif dtos_ena='1' then
 				if addr_eq='1' then
 					if cy='1' then
 						addr <= addr + 1;
@@ -166,7 +166,7 @@ begin
 	mem_p : process(clk)
 	begin
 		if rising_edge(clk) then
-			if bin_frm='0' then
+			if bcd_frm='0' then
 				mem_addr     <= mem_left(mem_addr'range);
 				mem_right_up  <= '-';
 				mem_right_ena <= '0';
