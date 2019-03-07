@@ -64,17 +64,17 @@ begin
 		variable state : states;
 	begin
 		if bcd_frm='0' then
-			dtos_ena <= '0';
+			dtos_ena  <= '0';
 			dtos_irdy <= '1';
 			dtos_trdy <= '0';
-			bcd_trdy <= '0';
+			bcd_trdy  <= '0';
 			dtos_ini  <= '1';
 			dtos_zero <= '1';
-			state    := s1;
+			state     := s1;
 		elsif rising_edge(clk) then
 			case state is
 			when s1 =>
-				mem_ena  <= '0';
+				mem_ena   <= '0';
 				dtos_trdy <= '0';
 				if dtos_irdy='1' then
 					dtos_ena <= '1';
@@ -82,29 +82,29 @@ begin
 					dtos_ena <= '0';
 				end if;
 			when s2 =>
-				dtos_ena <= '0';
+				dtos_ena  <= '0';
 				dtos_trdy <= '1';
-				mem_ena  <= '1';
+				mem_ena   <= '1';
 				if addr_eq='1' then
 					if cy='0' then
-						bcd_trdy <= '1';
+						bcd_trdy  <= '1';
 						dtos_zero <= '0';
 					else
-						bcd_trdy <= '0';
+						bcd_trdy  <= '0';
 						dtos_zero <= '1';
 					end if;
 				else
 					dtos_zero <= '0';
-					bcd_trdy <= '0';
+					bcd_trdy  <= '0';
 				end if;
 			when s3 =>
-				dtos_ena <= '0';
+				dtos_ena  <= '0';
 				dtos_trdy <= '0';
-				mem_ena  <= '0';
+				mem_ena   <= '0';
 				if bcd_trdy='1' then
-					dtos_ini  <= '1';
+					dtos_ini <= '1';
 				else
-					dtos_ini  <= '0';
+					dtos_ini <= '0';
 				end if;
 				if bcd_irdy='1' then
 					bcd_trdy <= '0';
