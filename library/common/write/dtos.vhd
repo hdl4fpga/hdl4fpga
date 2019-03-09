@@ -34,7 +34,7 @@ architecture def of dtos is
 
 	signal dtos_ena  : std_logic;
 	signal dtos_ini  : std_logic;
-	signal dtos_zero : std_logic := '1';
+	signal dtos_zero : std_logic;
 	signal dtos_trdy : std_logic;
 	signal dtos_cy   : std_logic;
 	signal dtos_di   : std_logic_vector(mem_do'range);
@@ -69,7 +69,7 @@ begin
 			dtos_trdy <= '0';
 			bcd_trdy  <= '0';
 			dtos_ini  <= '1';
-			dtos_zero <= '1';
+			dtos_zero <= '0';
 			state     := s1;
 		elsif rising_edge(clk) then
 			case state is
@@ -131,7 +131,7 @@ begin
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	port map (
 		clk     => clk,
-		bcd_exp => dtos_di,
+		bcd_exp => bcd_di,
 		bcd_ena => dtos_ena,
 		bcd_ini => dtos_ini,
 		bcd_di  => dtos_di,
@@ -152,7 +152,7 @@ begin
 			elsif dtos_ena='1' then
 				if addr_eq='1' then
 					if cy='1' then
-						addr <= addr + 1;
+						addr <= addr - 1;
 					else
 						addr <= unsigned(mem_left(mem_addr'range));
 					end if;
@@ -173,7 +173,7 @@ begin
 			elsif dtos_ena='1' then
 				if addr_eq='1' then
 					if cy='1' then
-						mem_right_up  <= '1';
+						mem_right_up  <= '0';
 						mem_right_ena <= '1';
 					else
 						mem_right_up  <= '-';
