@@ -63,7 +63,7 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/mem_right_u
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/mem_right_ena
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/mem_full
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {540 ns} 0}
+WaveRestoreCursors {{Cursor 1} {590 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 169
 configure wave -valuecolwidth 100
