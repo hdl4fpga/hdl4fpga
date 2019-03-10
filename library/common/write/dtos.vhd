@@ -187,8 +187,8 @@ begin
 				mem_right_up  <= '-';
 				mem_right_ena <= '0';
 			end if;
-			mem_addr <= std_logic_vector(addr);
 		end if;
 	end process;
+	mem_addr <= std_logic_vector(addr);
 
 end;

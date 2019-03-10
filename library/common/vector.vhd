@@ -29,7 +29,13 @@ architecture def of vector is
 	signal full    : std_logic;
 begin
 
-	mem_ptr <= unsigned(vector_addr);
+	process(vector_clk)
+	begin
+		if rising_edge(vector_clk) then
+			mem_ptr <= unsigned(vector_addr);
+		end if;
+	end process;
+
 	left_p : process(vector_clk)
 		variable ptr : unsigned(vector_left'range);
 	begin
