@@ -56,162 +56,40 @@ entity stof is
 end;
 		
 architecture def of stof is
-	signal fixoff_q : signed(bcd_left'range) := (others => '0');
-	signal fixoff_d : signed(bcd_left'range) := (others => '0');
-	signal fixidx_q : unsigned(unsigned_num_bits(fix_do'length/space'length)-1 downto 0);
-	signal fixidx_d : unsigned(fixidx_q'range);
-	signal bcdidx_q : unsigned(unsigned_num_bits(bcd_di'length/space'length)-1 downto 0);
-	signal bcdidx_d : unsigned(bcdidx_q'range);
-	signal fixbuf_d : unsigned(fix_do'length-1 downto 0);
-	signal fixbuf_q : unsigned(fix_do'length-1 downto 0);
-	signal bcd_end  : std_logic;
 begin
 
-	fix_p : process (fix_frm, clk)
+	process (clk)
+		variable bcd_ptr : signed(bcd_left'range)
+		variable
 	begin
-		if fix_frm='0' then
-			fixoff_q <= (others => '0');
-			fixidx_q <= (others => '0');
-			fixbuf_q <= unsigned(fill(value => space, size => fix_do'length));
-		elsif rising_edge(clk) then
-			if bcd_trdy='1' then
-				if bcd_irdy='1' then
-					if fix_irdy='1' then
-						if fix_trdy='1' then
-							fixoff_q <= fixoff_d;
-							fixbuf_q <= fixbuf_d;
-						end if;
-						fixidx_q <= fixidx_d;
-					else
-						fixidx_q <= fixidx_d;
-						fixbuf_q <= fixbuf_d;
-					end if;
-				end if;
-			end if;
-			if fix_trdy='1' then
-				fixoff_q <= fixoff_d;
-			end if;
-		end if;
-	end process;
-
-	bcdidx_p : process (fix_frm, clk)
-	begin
-		if fix_frm='0' then
-			bcdidx_q <= (others => '0');
-		elsif rising_edge(clk) then
-			if bcd_irdy='1' then
-				if bcd_trdy='1' then
-					if fix_irdy='1' then
-						if fix_trdy='1' then
-							bcdidx_q <= bcdidx_d;
-						end if;
-					else
-						bcdidx_q <= bcdidx_d;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
-
-	process(fix_frm, clk)
-	begin
-		if fix_frm='0' then
-			bcd_end <= '0';
-		elsif rising_edge(clk) then
-			if bcd_end='0' then
-				bcd_end <= fix_end;
-			end if;
-		end if;
-	end process;
-
-	fixfmt_p : process (bcd_left, bcd_tail, bcd_end, bcd_di, bcd_irdy, fixbuf_q, fix_trdy, fixidx_q, fixoff_q, bcdidx_q)
-		variable fixbuf : unsigned(fix_do'length-1 downto 0);
-		variable bcdbuf : unsigned(bcd_di'length-1 downto 0);
-		variable left   : signed(bcd_left'range);
-		variable fixoff : signed(bcd_left'range);
-		variable fixidx : unsigned(fixidx_d'range);
-		variable bcdidx : unsigned(bcdidx_d'range);
-	begin
-
-		bcd_trdy <= '0';
-		fix_irdy <= bcd_irdy;
-
-		bcdbuf := unsigned(bcd_di);
-		fixbuf := fixbuf_q;
-		fixoff := fixoff_q;
-		bcdidx := bcdidx_q;
-		fixidx := fixidx_q;
-		fix_end <= bcd_tail;
-		if signed(bcd_left) < 0 then
-			left := signed(bcd_left)+fixoff_q;
-				if left <= -i then
-					fixbuf := fixbuf rol space'length;
-					if bcd_end='1' then
-						fixbuf(space'range) := unsigned(space);
-					elsif fixoff=1 then
-						fixbuf(space'range) := unsigned(dot);
-					else
-						fixbuf(space'range) := unsigned(zero);
-					end if;
+		if rising_edge(clk) then
+			if bcd_ptr > 0 then
+				if bcd_ptr > bcd_left then
+					fix_do  <= zero;
+					spchar  <= '0';
+					bcd_ptr <= bcd_ptr - 1;
 				else
-					if bcdidx >= bcdbuf'length/space'length then
-						fix_irdy <= '0';
-						exit;
-					end if;
-
-					fixbuf := fixbuf rol space'length;
-					bcdbuf := bcdbuf rol space'length;
-					if bcd_end='1' then
-						fixbuf(space'range) := unsigned(space);
-					else
-						fixbuf(space'range) := bcdbuf(space'range);
-					end if;
-
-					bcdidx := bcdidx + 1;
+					fix_do  <= bcd_di;
+					spchar  <= '0';
+					bcd_ptr <= bcd_ptr - 1;
 				end if;
-				fixoff := fixoff + 1;
-				fixidx := fixidx + 1;
-			end loop;
-		else
-			left := signed(bcd_left);
-			for i in 0 to fixbuf'length/space'length-1 loop
-				if bcdidx >= bcdbuf'length/space'length then
-					fix_irdy <= '0';
-					exit;
-				end if;
-
-				fixbuf := fixbuf rol space'length;
-				if bcd_end='1' then
-					fixbuf(space'range) := unsigned(space);
-				elsif left-fixoff = -1 then
-					fixbuf(space'range) := unsigned(dot);
-					fix_end <= '0';
+			elsif bcd_ptr <= bcd_right then
+				if bcd_ptr > 0 then
+					fix_do  <= bcd_di;
+					spchar  <= '0';
+			elsif bcd_ptr=-1 then
+				if spchar='0' then
+					fix_do <= dot;
+					spchar <= '1';
 				else
-					bcdbuf := bcdbuf rol space'length;
-					fixbuf(space'range) := bcdbuf(space'range);
-					bcdidx := bcdidx + 1;
-				end if;
-				fixoff := fixoff + 1;
-				fixidx := fixidx + 1;
-			end loop;
+					fix_do  <= bcd_di;
+					spchar  <= '0';
+					bcd_ptr <= bcd_ptr - 1;
+				end if'
+
+
+
 		end if;
-
-		if bcdidx >= bcdbuf'length/space'length then
-			bcdidx   := (others => '0');
-			bcd_trdy <= fix_trdy;
-		end if;
-
-		if fixidx >= fix_do'length/space'length then
-			fixidx   := (others => '0');
-			fix_irdy <= bcd_irdy;
-		end if;
-
-		bcdidx_d <= bcdidx;
-		fixidx_d <= fixidx;
-		fixoff_d <= fixoff;
-		fixbuf_d <= fixbuf;
-
-		fix_do <= std_logic_vector(fixbuf);
 	end process;
 
 end;
