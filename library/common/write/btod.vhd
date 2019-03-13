@@ -167,7 +167,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if bin_frm='0' then
-				mem_addr     <= mem_right(mem_addr'range);
+--				mem_addr     <= mem_right(mem_addr'range);
 				mem_left_up  <= '-';
 				mem_left_ena <= '0';
 			elsif btod_ena='1' then

@@ -131,7 +131,6 @@ begin
 		variable fixoff : signed(bcd_left'range);
 		variable fixidx : unsigned(fixidx_d'range);
 		variable bcdidx : unsigned(bcdidx_d'range);
-		variable msg : line;
 	begin
 
 		bcd_trdy <= '0';
@@ -145,7 +144,6 @@ begin
 		fix_end <= bcd_tail;
 		if signed(bcd_left) < 0 then
 			left := signed(bcd_left)+fixoff_q;
-			for i in 0 to fixbuf'length/space'length-1 loop
 				if left <= -i then
 					fixbuf := fixbuf rol space'length;
 					if bcd_end='1' then
