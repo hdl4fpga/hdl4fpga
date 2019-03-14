@@ -40,18 +40,17 @@ entity stof is
 		space : std_logic_vector(4-1 downto 0) := x"f");
 	port (
 		clk       : in  std_logic := '-';
+		frm       : in  std_logic;
 
 		bcd_irdy  : in  std_logic := '1';
-		bcd_trdy  : buffer std_logic;
+		bcd_trdy  : out std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
-		bcd_tail  : in  std_logic;
+		bcd_prec  : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
 
-		fix_frm   : in  std_logic;
 		fix_trdy  : in  std_logic := '1';
-		fix_irdy  : buffer std_logic;
-		fix_end   : buffer std_logic;
+		fix_irdy  : out std_logic;
 		fix_do    : out std_logic_vector);
 end;
 		
@@ -59,31 +58,38 @@ architecture def of stof is
 begin
 
 	process (clk)
-		variable bcd_ptr : signed(bcd_left'range)
-		variable spchar  : std_logic;
+		variable ptr   : signed(bcd_left'range);
+		variable left  : signed(bcd_left'range);
+		variable right : signed(bcd_right'range);
+		variable point : std_logic;
 	begin
 		if rising_edge(clk) then
-			if bcd_ptr = -1 then
+			if ptr = -1 then
 				if spchar='0' then
 					fix_do <= dot;
-					spchar <= '1';
+					point  <= '1';
 				else
-					if bcd_ptr > bcd_left then
+					if ptr > left then
 						fix_do <= zero;
 					else
 						fix_do <= bcd_di;
 					end if;
-					spchar  <= '0';
-					bcd_ptr <= bcd_ptr - 1;
+					point <= '0';
+					ptr   <= ptr - 1;
 				end if'
-			elsif bcd_ptr > bcd_left then
-				fix_do  <= zero;
-				spchar  <= '0';
-				bcd_ptr <= bcd_ptr - 1;
-			elsif bcd_ptr >= bcd_right then
-				fix_do  <= bcd_di;
-				spchar  <= '0';
-				bcd_ptr <= bcd_ptr - 1;
+			elsif ptr > left then
+				fix_do <= zero;
+				spchar <= '0';
+				ptr    <= ptr - 1;
+			elsif ptr >= prec then
+				if ptr >= right then
+					fix_do <= bcd_di;
+				else ptr > prec then
+					fix_do <= zero;
+				end if;
+				point <= '0';
+				ptr   <= ptr - 1;
+			else
 			end if; 
 		end if;
 	end process;
