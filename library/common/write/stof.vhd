@@ -60,35 +60,31 @@ begin
 
 	process (clk)
 		variable bcd_ptr : signed(bcd_left'range)
-		variable
+		variable spchar  : std_logic;
 	begin
 		if rising_edge(clk) then
-			if bcd_ptr > 0 then
-				if bcd_ptr > bcd_left then
-					fix_do  <= zero;
-					spchar  <= '0';
-					bcd_ptr <= bcd_ptr - 1;
-				else
-					fix_do  <= bcd_di;
-					spchar  <= '0';
-					bcd_ptr <= bcd_ptr - 1;
-				end if;
-			elsif bcd_ptr <= bcd_right then
-				if bcd_ptr > 0 then
-					fix_do  <= bcd_di;
-					spchar  <= '0';
-			elsif bcd_ptr=-1 then
+			if bcd_ptr = -1 then
 				if spchar='0' then
 					fix_do <= dot;
 					spchar <= '1';
 				else
-					fix_do  <= bcd_di;
+					if bcd_ptr > bcd_left then
+						fix_do <= zero;
+					else
+						fix_do <= bcd_di;
+					end if;
 					spchar  <= '0';
 					bcd_ptr <= bcd_ptr - 1;
 				end if'
-
-
-
+			elsif bcd_ptr > bcd_left then
+				fix_do  <= zero;
+				spchar  <= '0';
+				bcd_ptr <= bcd_ptr - 1;
+			elsif bcd_ptr >= bcd_right then
+				fix_do  <= bcd_di;
+				spchar  <= '0';
+				bcd_ptr <= bcd_ptr - 1;
+			end if; 
 		end if;
 	end process;
 
