@@ -65,7 +65,13 @@ begin
 		variable point : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ptr = -1 then
+			if frm
+				rigth := signed(bcd_right);
+				left  := signed(bcd_right);
+				if left < 0 then
+					left <= (others => '0');
+				end
+			elsif ptr = -1 then
 				if point='0' then
 					fix_do <= dot;
 					point  := '1';
