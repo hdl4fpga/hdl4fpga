@@ -61,34 +61,35 @@ begin
 		variable ptr   : signed(bcd_left'range);
 		variable left  : signed(bcd_left'range);
 		variable right : signed(bcd_right'range);
+		variable prec  : signed(bcd_right'range);
 		variable point : std_logic;
 	begin
 		if rising_edge(clk) then
 			if ptr = -1 then
-				if spchar='0' then
+				if point='0' then
 					fix_do <= dot;
-					point  <= '1';
+					point  := '1';
 				else
 					if ptr > left then
 						fix_do <= zero;
 					else
 						fix_do <= bcd_di;
 					end if;
-					point <= '0';
-					ptr   <= ptr - 1;
-				end if'
+					point := '0';
+					ptr   := ptr - 1;
+				end if;
 			elsif ptr > left then
 				fix_do <= zero;
-				spchar <= '0';
-				ptr    <= ptr - 1;
+				point  := '0';
+				ptr    := ptr - 1;
 			elsif ptr >= prec then
 				if ptr >= right then
 					fix_do <= bcd_di;
-				else ptr > prec then
+				elsif ptr > prec then
 					fix_do <= zero;
 				end if;
-				point <= '0';
-				ptr   <= ptr - 1;
+				point := '0';
+				ptr   := ptr - 1;
 			else
 			end if; 
 		end if;
