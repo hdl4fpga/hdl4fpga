@@ -15,7 +15,6 @@ entity btos is
 		bin_di    : in  std_logic_vector;
 
 		bcd_rst   : in  std_logic;
-		bcd_addr  : in  std_logic_vector;
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
 		bcd_do    : out std_logic_vector);
@@ -151,6 +150,17 @@ begin
 		mem_di        => dtos_do,
 		mem_do        => vector_do);
 
+	stof_e : entity hdl4fpga.stof
+	port map (
+		clk       => clk,
+		bcd_left  => bcd_left,
+		bcd_right => bcd_right,
+		bcd_di    => bcd_do,
+		bcd_tail  => bcd_tail,
+		bcd_trdy  => bcd_trdy,
+
+		mem_addr  => fix_end,
+		mem_do    => fix_do);
 
 	left_up    <= wirebus(btod_left_up  & dtos_left_up,  dev_frm);
 	left_ena   <= wirebus(btod_left_ena & dtos_left_ena, dev_frm);

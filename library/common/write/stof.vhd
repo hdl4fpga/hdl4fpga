@@ -49,9 +49,8 @@ entity stof is
 		bcd_prec  : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
 
-		fix_trdy  : in  std_logic := '1';
-		fix_irdy  : out std_logic;
-		fix_do    : out std_logic_vector);
+		mem_addr  : out std_logic_vector;
+		mem_do    : out std_logic_vector);
 end;
 		
 architecture def of stof is
@@ -73,31 +72,32 @@ begin
 				end
 			elsif ptr = -1 then
 				if point='0' then
-					fix_do <= dot;
+					mem_do <= dot;
 					point  := '1';
 				else
 					if ptr > left then
-						fix_do <= zero;
+						mem_do <= zero;
 					else
-						fix_do <= bcd_di;
+						mem_do <= bcd_di;
 					end if;
 					point := '0';
 					ptr   := ptr - 1;
 				end if;
 			elsif ptr > left then
-				fix_do <= zero;
+				mem_do <= zero;
 				point  := '0';
 				ptr    := ptr - 1;
 			elsif ptr >= prec then
 				if ptr >= right then
-					fix_do <= bcd_di;
+					mem_do <= bcd_di;
 				elsif ptr > prec then
-					fix_do <= zero;
+					mem_do <= zero;
 				end if;
 				point := '0';
 				ptr   := ptr - 1;
 			else
 			end if; 
+			mem_addr <= std_logic_vector(ptr);
 		end if;
 	end process;
 

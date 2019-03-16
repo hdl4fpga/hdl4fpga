@@ -101,20 +101,5 @@ begin
 	end process;
 
 	bcd_tail <= setif(bcd_addr=bcd_right);
-	stof_e : entity hdl4fpga.stof
-	port map (
-		clk       => clk,
-		bcd_left  => bcd_left,
-		bcd_right => bcd_right,
-		bcd_di    => bcd_do,
-		bcd_tail  => bcd_tail,
-		bcd_trdy  => bcd_trdy,
-
-		fix_frm   => fix_frm,
-		fix_trdy  => fix_trdy,
-		fix_irdy  => fix_irdy,
-		fix_end   => fix_end,
-		fix_do    => fix_do);
-
 	bin_trdy <= btos_trdy when bin_flt='0' else fix_trdy;
 end;
