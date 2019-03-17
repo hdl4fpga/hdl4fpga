@@ -14,7 +14,6 @@ entity btos is
 		bin_flt   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 
-		bcd_rst   : in  std_logic;
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
 		bcd_do    : out std_logic_vector);
@@ -56,58 +55,38 @@ architecture def of btos is
 	signal dtos_cy        : std_logic;
 	signal dtos_mena      : std_logic;
 
-	constant btod_id      : natural := 0;
-	constant dtos_id      : natural := 1;
-
-	signal dev_trdy       : std_logic_vector(0 to 2-1);
-	signal dev_frm        : std_logic_vector(dev_trdy'range);
-
 begin
 
-	dev_trdy(btod_id) <= btod_trdy;
-	dev_trdy(dtos_id) <= dtos_trdy;
-
-	gnt_p : process (clk, bin_frm, dev_trdy, bin_flt)
-		variable gnt : std_logic_vector(dev_frm'range);
-		variable req : std_logic_vector(dev_frm'range);
+	process (clk, bin_frm)
+		type states is (btod, bcd);
+		variable state : states;
 	begin
-
 		if bin_frm='0' then
-			req := (others => '0');
-		else
-			if bin_flt='0' then
-				req := "10";
-			else
-				req := "01";
-			end if;
+			state := btod;
+		elsif rising_edge(clk) then
+			case state is
+			when btod =>
+				if btod_trdy = '1' then
+					state := bcd;
+				end if;
+			when btod =>
+			end case;
 		end if;
 
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				gnt := req;
-			elsif gnt=(gnt'range => '0') then
-				gnt := req;
-			elsif (dev_trdy and gnt)=(gnt'range => '0') then
-				gnt := (others => '0');
-			end if;
-		end if;
-
-		if bin_frm='0' then
-			dev_frm <= (others => '0');
-		elsif gnt=(gnt'range => '0') then
-			dev_frm <= req;
-		elsif (dev_trdy and gnt)=(gnt'range => '0') then
-			dev_frm <= req;
-		else
-			dev_frm <= gnt;
-		end if;
-
+		case state is
+		when btod =>
+			btod_frm <= bin_frm
+			bcd_frm  <= '0';
+		when bcd  =>
+			btod_frm <= '0';
+			bcd_frm  <= bin_frm;
+		end case;
 	end process;
 	
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk           => clk,
-		bin_frm       => dev_frm(btod_id),
+		bin_frm       => btod_frm,
 		bin_irdy      => bin_irdy,
 		bin_trdy      => btod_trdy,
 		bin_di        => bin_di,
@@ -130,7 +109,7 @@ begin
 	dtos_e : entity hdl4fpga.dtos
 	port map (
 		clk           => clk,
-		bcd_frm       => dev_frm(dtos_id),
+		bcd_frm       => bcd_frm,
 		bcd_irdy      => bin_irdy,
 		bcd_trdy      => dtos_trdy,
 		bcd_di        => bin_di,
@@ -168,8 +147,7 @@ begin
 	right_up   <= wirebus(btod_right_up  & dtos_right_up,  dev_frm);
 	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, dev_frm);
 
-
-	vector_rst  <= bcd_rst;
+	vector_rst  <= not bin_frm;
 	vector_addr <= wirebus(btod_addr & dtos_addr & bcd_addr, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
 	vector_di   <= wirebus(btod_do   & dtos_do,   dev_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena, dev_frm);
