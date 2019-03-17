@@ -16,7 +16,7 @@ entity btos is
 
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
-		bcd_do    : out std_logic_vector);
+		fix_do    : out std_logic_vector);
 end;
 
 architecture def of btos is
@@ -134,23 +134,23 @@ begin
 		clk       => clk,
 		bcd_left  => bcd_left,
 		bcd_right => bcd_right,
-		bcd_di    => bcd_do,
+		bcd_di    => vector_do,
 		bcd_tail  => bcd_tail,
 		bcd_trdy  => bcd_trdy,
 
 		mem_addr  => fix_end,
 		mem_do    => fix_do);
 
-	left_up    <= wirebus(btod_left_up  & dtos_left_up,  dev_frm);
-	left_ena   <= wirebus(btod_left_ena & dtos_left_ena, dev_frm);
+	left_up    <= wirebus(btod_left_up  & dtos_left_up,  btod_frm & bcd_frm);
+	left_ena   <= wirebus(btod_left_ena & dtos_left_ena, btod_frm & bcd_frm);
 
-	right_up   <= wirebus(btod_right_up  & dtos_right_up,  dev_frm);
-	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, dev_frm);
+	right_up   <= wirebus(btod_right_up  & dtos_right_up,  btod_frm & bcd_frm);
+	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & bcd_frm);
 
 	vector_rst  <= not bin_frm;
-	vector_addr <= wirebus(btod_addr & dtos_addr & bcd_addr, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
-	vector_di   <= wirebus(btod_do   & dtos_do,   dev_frm);
-	vector_ena  <= wirebus(btod_mena & dtos_mena, dev_frm);
+	vector_addr <= wirebus(btod_addr & dtos_addr & bcd_addr, btod_frm & bcd_frm & '1');
+	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & bcd_frm);
+	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & bcd_frm);
 
 	vector_e : entity hdl4fpga.vector
 	port map (
@@ -168,7 +168,6 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_do    <= wirebus(btod_do   & dtos_do & vector_do, dev_frm & setif(dev_frm=(dev_frm'range => '0')));
 	trdy      <= wirebus(btod_trdy & dtos_trdy, dev_frm);
 	bin_trdy  <= trdy(0);
 	bcd_left  <= vector_left;
