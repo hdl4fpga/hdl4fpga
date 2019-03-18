@@ -46,7 +46,7 @@ entity stof is
 		bcd_trdy  : out std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
-		bcd_prec  : in  std_logic_vector;
+		bcd_prec  : in  std_logic_vector := (0 to 0 => 'U');
 		bcd_di    : in  std_logic_vector;
 
 		mem_addr  : out std_logic_vector;
@@ -64,12 +64,12 @@ begin
 		variable point : std_logic;
 	begin
 		if rising_edge(clk) then
-			if frm
-				rigth := signed(bcd_right);
+			if frm='0' then
+				right := signed(bcd_right);
 				left  := signed(bcd_right);
 				if left < 0 then
-					left <= (others => '0');
-				end
+					left := (others => '0');
+				end if;
 			elsif ptr = -1 then
 				if point='0' then
 					mem_do <= dot;
