@@ -1,83 +1,38 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/clk
-add wave -noupdate /testbench/wr_frm
-add wave -noupdate /testbench/wr_trdy
-add wave -noupdate -radix hexadecimal /testbench/wr_do
-add wave -noupdate /testbench/writef_e/bin_trdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fix_trdy
-add wave -noupdate -divider btof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bin_flt
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/bin_di
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bcd_trdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/bcd_tail
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/fix_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/fix_do
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fix_end
-add wave -noupdate -divider btos
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_trdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_flt
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/bin_di
 add wave -noupdate -divider btod
-add wave -noupdate /testbench/clk
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bin_di
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/btod_ena
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bcd_ini
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bcd_cy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bcd_di
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/bcd_do
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_addr
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_di
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_do
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_trdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_ena
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_full
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_left
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_left_up
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_left_ena
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_right
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_right_up
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/btod_e/mem_right_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_irdy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_trdy
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_di
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_do
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_ini
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_cy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_zero
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/cy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/addr_eq
 add wave -noupdate -divider dtos
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/dtos_e/bcd_di
-add wave -noupdate -divider vector
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_left
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_right
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_addr
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_di
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/vector_do
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/left_ena
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btos_e/vector_e/left_up
 add wave -noupdate -divider stof
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fixoff_q
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_left
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_tail
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fix_end
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/fixfmt_p/left
-add wave -noupdate -divider fbuf
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/fix_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/fix_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/fix_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/fbuf_e/fix_di
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_frm
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/fbuf_e/buf_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/fbuf_e/buf_do
+add wave -noupdate -divider btof
+add wave -noupdate -divider vector
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_rst
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_ena
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_addr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_di
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_do
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_left
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_right
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/left_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/left_up
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_up
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_full
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {46 ns} 0}
 quietly wave cursor active 1

@@ -46,8 +46,6 @@ architecture def of btod is
 	signal frm      : std_logic;
 	signal addr     : unsigned(mem_addr'range);
 	signal bcd_irdy : std_logic;
-	signal mem_trdy : std_logic;
-	signal mem_irdy : std_logic;
 	signal addr_eq  : std_logic;
 begin
 

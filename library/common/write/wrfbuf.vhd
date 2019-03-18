@@ -42,34 +42,39 @@ end;
 
 architecture def of wrfbuf is
 
-	signal fix_frm  : std_logic;
-	signal fix_trdy : std_logic;
-	signal fix_irdy : std_logic;
-	signal fix_do   : std_logic_vector(0 to 4-1);
+	signal bcd_frm  : std_logic;
+	signal bcd_trdy : std_logic;
+	signal bcd_irdy : std_logic;
+	signal bcd_do   : std_logic_vector(0 to 4-1);
 
 	signal btof_trdy : std_logic;
+	signal bcd_left  : std_logic_vector(0 to 4-1);
+	signal bcd_right : std_logic_vector(0 to 4-1);
+
 begin
 
 	btof_e : entity hdl4fpga.btof
 	port map (
-		clk      => clk,
-		bin_frm  => bin_frm,
-		bin_trdy => btof_trdy,
-		bin_irdy => bin_irdy,
-		bin_di   => bin_di,
-		bin_flt  => bin_flt,
-		fix_frm  => fix_frm,
-		fix_irdy => fix_irdy,
-		fix_trdy => fix_trdy,
-		fix_do   => fix_do);
+		clk       => clk,
+		bin_frm   => bin_frm,
+		bin_trdy  => btof_trdy,
+		bin_irdy  => bin_irdy,
+		bin_di    => bin_di,
+		bin_flt   => bin_flt,
+		bcd_frm   => bcd_frm,
+		bcd_right => bcd_right,
+		bcd_left  => bcd_left,
+		bcd_irdy  => bcd_irdy,
+		bcd_trdy  => bcd_trdy,
+		bcd_do    => bcd_do);
 
 	fbuf_e : entity hdl4fpga.fbuf
 	port map (
 		clk      => clk,
-		fix_frm  => fix_frm,
-		fix_irdy => fix_irdy,
-		fix_trdy => fix_trdy,
-		fix_di   => fix_do,
+		fix_frm  => bcd_frm,
+		fix_irdy => bcd_irdy,
+		fix_trdy => bcd_trdy,
+		fix_di   => bcd_do,
 		buf_irdy => buf_irdy,
 		buf_trdy => buf_trdy,
 		buf_do   => buf_do);

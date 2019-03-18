@@ -14,6 +14,9 @@ entity btof is
 		bin_flt   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 
+		bcd_frm   : out std_logic;
+		bcd_irdy  : out std_logic;
+		bcd_trdy  : in  std_logic := '1';
 		bcd_left  : out std_logic_vector;
 		bcd_right : out std_logic_vector;
 		bcd_do    : out std_logic_vector);
@@ -62,7 +65,7 @@ architecture def of btof is
 begin
 
 	process (clk, bin_frm)
-		type states is (btod, dtos);
+		type states is (btod, dtos, stof);
 		variable state : states;
 	begin
 		if bin_frm='0' then
@@ -74,6 +77,10 @@ begin
 					state := dtos;
 				end if;
 			when dtos =>
+				if dtos_trdy = '1' then
+					state := dtos;
+				end if;
+			when stof =>
 			end case;
 		end if;
 
@@ -81,9 +88,15 @@ begin
 		when btod =>
 			btod_frm <= bin_frm;
 			dtos_frm <= '0';
+			stof_frm <= '0';
 		when dtos  =>
 			btod_frm <= '0';
 			dtos_frm <= bin_frm;
+			stof_frm <= '0';
+		when stof  =>
+			btod_frm <= '0';
+			dtos_frm <= '0';
+			stof_frm <= bin_frm;
 		end case;
 	end process;
 	
