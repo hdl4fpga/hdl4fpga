@@ -66,10 +66,13 @@ begin
 		if rising_edge(clk) then
 			if frm='0' then
 				right := signed(bcd_right);
-				left  := signed(bcd_right);
+				left  := signed(bcd_left);
 				if left < 0 then
 					left := (others => '0');
 				end if;
+				ptr   := left;
+				point := '0';
+				prec  := right;
 			elsif ptr = -1 then
 				if point='0' then
 					mem_do <= dot;
@@ -96,6 +99,7 @@ begin
 				point := '0';
 				ptr   := ptr - 1;
 			else
+				mem_do <= zero;
 			end if; 
 			mem_addr <= std_logic_vector(ptr);
 		end if;

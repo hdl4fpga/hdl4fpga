@@ -62,43 +62,46 @@ architecture def of btof is
 	signal stof_trdy      : std_logic;
 	signal stof_addr      : std_logic_vector(vector_addr'range);
 	signal stof_do        : std_logic_vector(bcd_do'range);
+	type   states is (btod, dtos, stof);
+	signal state : states;
 begin
 
 	process (clk, bin_frm)
-		type states is (btod, dtos, stof);
-		variable state : states;
 	begin
 		if bin_frm='0' then
-			state := btod;
+			state <= btod;
 		elsif rising_edge(clk) then
 			case state is
 			when btod =>
-				if btod_trdy = '1' then
-					state := dtos;
+				if bin_irdy = '1' then
+					if bin_flt = '1' then
+						state <= dtos;
+					end if;
 				end if;
 			when dtos =>
 				if dtos_trdy = '1' then
-					state := dtos;
+					state <= stof;
 				end if;
 			when stof =>
 			end case;
 		end if;
-
-		case state is
-		when btod =>
-			btod_frm <= bin_frm;
-			dtos_frm <= '0';
-			stof_frm <= '0';
-		when dtos  =>
-			btod_frm <= '0';
-			dtos_frm <= bin_frm;
-			stof_frm <= '0';
-		when stof  =>
-			btod_frm <= '0';
-			dtos_frm <= '0';
-			stof_frm <= bin_frm;
-		end case;
 	end process;
+
+	btod_frm <= 
+		bin_frm when state=btod and bin_flt='0' else
+		'0';
+	dtos_frm <= 
+		bin_frm when state=dtos else
+		bin_frm when state=btod and bin_flt='1' else
+		'0';
+	stof_frm <= 
+		bin_frm when state=stof else
+		'0';
+
+	bin_trdy <= 
+	   btod_trdy when state=btod and bin_flt='0' else
+	   stof_trdy when state=stof else
+	   '0';
 	
 	btod_e : entity hdl4fpga.btod
 	port map (
@@ -165,7 +168,7 @@ begin
 	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & dtos_frm);
 
 	vector_rst  <= not bin_frm;
-	vector_addr <= wirebus(btod_addr & dtos_addr & stof_addr, btod_frm & dtos_frm & '1');
+	vector_addr <= wirebus(btod_addr & dtos_addr & stof_addr, btod_frm & dtos_frm & stof_frm);
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);
 
@@ -185,7 +188,7 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bin_trdy  <= stof_trdy;
+	bcd_irdy  <= stof_trdy;
 	bcd_left  <= vector_left;
 	bcd_right <= vector_right;
 
