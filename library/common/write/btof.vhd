@@ -157,6 +157,7 @@ begin
 		frm       => stof_frm,
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
+		bcd_prec => vector_right,
 		bcd_di    => vector_do,
 		bcd_trdy  => stof_trdy,
 		bcd_end   => stof_end,

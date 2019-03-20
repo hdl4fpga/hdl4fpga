@@ -96,7 +96,7 @@ begin
 	port map (
 		wr_clk  => vector_clk,
 		wr_ena  => vector_ena,
-		wr_addr => std_logic_vector(mem_ptr),
+		wr_addr => vector_addr,
 		wr_data => vector_di,
 		rd_addr => std_logic_vector(mem_ptr),
 		rd_data => vector_do);
