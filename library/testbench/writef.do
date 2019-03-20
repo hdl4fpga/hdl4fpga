@@ -36,15 +36,19 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e
 add wave -noupdate -divider stof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_irdy
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_left
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_right
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_di
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_addr
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_do
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__59/ptr
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__59/left
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__59/right
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__59/prec
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__59/point
+add wave -noupdate -color Magenta -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_do
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/ptr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/left
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/right
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/prec
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/point
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/state
 add wave -noupdate -divider btof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/state
@@ -69,10 +73,10 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/mem_e/wr_addr
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/mem_e/wr_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {580 ns} 0}
+WaveRestoreCursors {{Cursor 1} {562 ns} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 150
-configure wave -valuecolwidth 100
+configure wave -namecolwidth 231
+configure wave -valuecolwidth 186
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -85,4 +89,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {423 ns} {737 ns}
+WaveRestoreZoom {128 ns} {769 ns}

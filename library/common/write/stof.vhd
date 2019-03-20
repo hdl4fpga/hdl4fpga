@@ -48,6 +48,7 @@ entity stof is
 		bcd_right : in  std_logic_vector;
 		bcd_prec  : in  std_logic_vector := (0 to 0 => 'U');
 		bcd_di    : in  std_logic_vector;
+		bcd_end   : out std_logic;
 
 		mem_addr  : out std_logic_vector;
 		mem_do    : out std_logic_vector);
@@ -62,6 +63,8 @@ begin
 		variable right : signed(bcd_right'range);
 		variable prec  : signed(bcd_right'range);
 		variable point : std_logic;
+		type states is (s1, s2);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
@@ -73,34 +76,55 @@ begin
 				ptr   := left;
 				point := '0';
 				prec  := right;
-			elsif ptr = -1 then
-				if point='0' then
-					mem_do <= dot;
-					point  := '1';
-				else
-					if ptr > left then
-						mem_do <= zero;
-					else
-						mem_do <= bcd_di;
-					end if;
-					point := '0';
-					ptr   := ptr - 1;
-				end if;
-			elsif ptr > left then
-				mem_do <= zero;
-				point  := '0';
-				ptr    := ptr - 1;
-			elsif ptr >= prec then
-				if ptr >= right then
-					mem_do <= bcd_di;
-				elsif ptr > prec then
-					mem_do <= zero;
-				end if;
-				point := '0';
-				ptr   := ptr - 1;
+				state := s1;
+				bcd_trdy <= '0';
+				bcd_end  <= '0';
 			else
-				mem_do <= zero;
-			end if; 
+				case state is
+				when s1 =>
+					bcd_trdy <= '0';
+					if bcd_irdy='1' then
+						if ptr = -1 then
+							if point='0' then
+								mem_do <= dot;
+								point  := '1';
+							else
+								if ptr > left then
+									mem_do <= zero;
+								else
+									mem_do <= bcd_di;
+								end if;
+								if ptr = prec then
+									bcd_end <= '1';
+								end if;
+								point := '0';
+								ptr   := ptr - 1;
+							end if;
+						elsif ptr > left then
+							mem_do <= zero;
+							point  := '0';
+							ptr    := ptr - 1;
+						elsif ptr >= prec then
+							if ptr >= right then
+								mem_do <= bcd_di;
+							elsif ptr > prec then
+								mem_do <= zero;
+							end if;
+							if ptr = prec then
+								bcd_end <= '1';
+							end if;
+							point := '0';
+							ptr   := ptr - 1;
+						else
+							mem_do <= zero;
+						end if; 
+						state := s2;
+					end if;
+				when s2 =>
+					bcd_trdy <= '1';
+					state    := s1;
+				end case;
+			end if;
 			mem_addr <= std_logic_vector(ptr);
 		end if;
 	end process;

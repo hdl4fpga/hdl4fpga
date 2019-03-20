@@ -59,7 +59,9 @@ architecture def of btof is
 	signal dtos_mena      : std_logic;
 
 	signal stof_frm       : std_logic;
+	signal stof_irdy      : std_logic;
 	signal stof_trdy      : std_logic;
+	signal stof_end      : std_logic;
 	signal stof_addr      : std_logic_vector(vector_addr'range);
 	signal stof_do        : std_logic_vector(bcd_do'range);
 	type   states is (btod, dtos, stof);
@@ -157,6 +159,7 @@ begin
 		bcd_right => vector_right,
 		bcd_di    => vector_do,
 		bcd_trdy  => stof_trdy,
+		bcd_end   => stof_end,
 
 		mem_addr  => stof_addr,
 		mem_do    => stof_do);
@@ -188,7 +191,6 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_irdy  <= stof_trdy;
 	bcd_left  <= vector_left;
 	bcd_right <= vector_right;
 
