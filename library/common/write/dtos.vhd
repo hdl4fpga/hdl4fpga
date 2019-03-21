@@ -42,7 +42,7 @@ architecture def of dtos is
 	signal frm       : std_logic;
 	signal addr      : signed(mem_addr'range);
 
-	type states is (addr_s, write_s);
+	type states is (addr_s, data_s);
 	signal state : states;
 
 begin
@@ -62,9 +62,9 @@ begin
 			case state is
 			when addr_s =>
 				if bcd_irdy='1' then
-					state <= write_s;
+					state <= data_s;
 				end if;
-			when write_s =>
+			when data_s =>
 				if bcd_irdy='1' then
 					state  <= addr_s;
 				end if;
@@ -96,7 +96,7 @@ begin
 			mem_ena   <= '0';
 			addr      <= signed(mem_left(mem_addr'range));
 		elsif rising_edge(clk) then
-			if state=write_s then
+			if state=data_s then
 				if bcd_irdy='1' then
 					if addr=signed(mem_right) then
 						if dtos_cy='1' then
@@ -128,10 +128,10 @@ begin
 		end if;
 	end process;
 
-	mem_left_ena  <= '1' when bcd_frm='1' and state=write_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0') else '0';
-	mem_left_up   <= '0' when bcd_frm='1' and state=write_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0') else '-';
-	mem_right_ena <= '1' when bcd_frm='1' and state=write_s and addr=signed(mem_right) and dtos_cy='1' else '0';
-	mem_right_up  <= '0' when bcd_frm='1' and state=write_s and addr=signed(mem_right) and dtos_cy='1' else '-';
+	mem_left_ena  <= setif(bcd_frm='1' and state=data_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0'));
+	mem_left_up   <= '0';
+	mem_right_ena <= setif(bcd_frm='1' and state=data_s and addr=signed(mem_right) and dtos_cy='1');
+	mem_right_up  <= '0';
 	mem_addr      <= std_logic_vector(addr);
 	mem_di        <= dtos_do;
 
