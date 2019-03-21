@@ -11,16 +11,18 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bin_frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bin_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bin_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bin_di
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_irdy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_trdy
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_di
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_do
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_ini
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_cy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/bcd_zero
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_ena
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/cy
-add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/addr_eq
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_ini
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_zero
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_cy
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_di
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/btod_do
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/addr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/btod_e/mem_left
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/mem_left_up
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/mem_left_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/mem_ena
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_e/state
 add wave -noupdate -divider dtos
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/bcd_frm
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/bcd_irdy
@@ -29,10 +31,10 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_ena
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_ini
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_zero
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_cy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_di
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_do
+add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/state
 add wave -noupdate -divider stof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_irdy
@@ -73,7 +75,7 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/mem_e/wr_addr
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/mem_e/wr_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {562 ns} 0}
+WaveRestoreCursors {{Cursor 1} {279 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 231
 configure wave -valuecolwidth 186
@@ -89,4 +91,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {128 ns} {769 ns}
+WaveRestoreZoom {0 ns} {632 ns}

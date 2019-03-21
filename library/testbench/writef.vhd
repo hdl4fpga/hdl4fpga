@@ -49,7 +49,7 @@ begin
 		wr_frm  => wr_frm,
 		wr_irdy => '1',
 		wr_trdy => wr_trdy,
-		wr_bin  => x"ffe",
+		wr_bin  => x"fff",
 		wr_do   => wr_do);
 
 end;
