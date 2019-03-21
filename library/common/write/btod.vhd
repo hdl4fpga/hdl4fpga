@@ -84,15 +84,15 @@ begin
 		bcd_do  => btod_do,
 		bcd_cy  => btod_cy);
 
-	process (clk)
+	process (bin_frm, clk)
 	begin
 		if bin_frm='0' then
-				btod_ena  <= '0';
-				bin_trdy  <= '0';
-				btod_ini  <= '1';
-				btod_zero <= '1';
-				mem_ena   <= '0';
-				addr      <= signed(mem_right(mem_addr'range));
+			btod_ena  <= '0';
+			bin_trdy  <= '0';
+			btod_ini  <= '1';
+			btod_zero <= '1';
+			mem_ena   <= '0';
+			addr      <= signed(mem_right(mem_addr'range));
 		elsif rising_edge(clk) then
 			if state=write_s then
 				if bin_irdy='1' then
@@ -126,32 +126,9 @@ begin
 		end if;
 	end process;
 
-	mem_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if bin_frm='0' then
-				mem_left_up  <= '-';
-				mem_left_ena <= '0';
-			elsif state=addr_s then
-				if addr=signed(mem_left) then
-					if btod_cy='1' then
-						mem_left_up  <= '1';
-						mem_left_ena <= '1';
-					else
-						mem_left_up  <= '-';
-						mem_left_ena <= '0';
-					end if;
-				else
-					mem_left_up  <= '-';
-					mem_left_ena <= '0';
-				end if;
-			else
-				mem_left_up  <= '-';
-				mem_left_ena <= '0';
-			end if;
-		end if;
-	end process;
-	mem_addr <= std_logic_vector(addr);
-	mem_di   <= btod_do;
+	mem_left_ena <= '1' when bin_frm='1' and state=write_s and addr=signed(mem_left) and btod_cy='1' else '0';
+	mem_left_up  <= '1' when bin_frm='1' and state=write_s and addr=signed(mem_left) and btod_cy='1' else '-';
+	mem_addr     <= std_logic_vector(addr);
+	mem_di       <= btod_do;
 
 end;

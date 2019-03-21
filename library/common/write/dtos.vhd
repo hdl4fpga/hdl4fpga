@@ -74,6 +74,8 @@ begin
 
 	dtos_di <= (dtos_di'range => '0') when dtos_zero='1' else mem_do;
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
+	generic map (
+		max => 5)
 	port map (
 		clk     => clk,
 		bcd_ena => dtos_ena,
@@ -84,17 +86,17 @@ begin
 		bcd_do  => dtos_do,
 		bcd_cy  => dtos_cy);
 
-	process (clk)
+	process (bcd_frm, clk)
 	begin
-		if rising_edge(clk) then
-			if bcd_frm='0' then
-				dtos_ena  <= '0';
-				bcd_trdy  <= '0';
-				dtos_ini  <= '1';
-				dtos_zero <= '0';
-				mem_ena   <= '0';
-				addr      <= signed(mem_left(mem_addr'range));
-			elsif state=write_s then
+		if bcd_frm='0' then
+			dtos_ena  <= '0';
+			bcd_trdy  <= '0';
+			dtos_ini  <= '1';
+			dtos_zero <= '0';
+			mem_ena   <= '0';
+			addr      <= signed(mem_left(mem_addr'range));
+		elsif rising_edge(clk) then
+			if state=write_s then
 				if bcd_irdy='1' then
 					if addr=signed(mem_right) then
 						if dtos_cy='1' then
@@ -109,7 +111,7 @@ begin
 							addr     <= signed(mem_left(mem_addr'range));
 						end if;
 					else
-						dtos_ini  <= '0';
+						dtos_ini <= '0';
 						bcd_trdy <= '0';
 						addr     <= addr - 1;
 					end if;
@@ -126,32 +128,11 @@ begin
 		end if;
 	end process;
 
-	mem_p : process(clk)
-	begin
-		if rising_edge(clk) then
-			if bcd_frm='0' then
-				mem_right_up  <= '-';
-				mem_right_ena <= '0';
-			elsif state=addr_s then
-				if addr=signed(mem_right) then
-					if dtos_cy='1' then
-						mem_right_up  <= '0';
-						mem_right_ena <= '1';
-					else
-						mem_right_up  <= '-';
-						mem_right_ena <= '0';
-					end if;
-				else
-					mem_right_up  <= '-';
-					mem_right_ena <= '0';
-				end if;
-			else
-				mem_right_up  <= '-';
-				mem_right_ena <= '0';
-			end if;
-		end if;
-	end process;
-	mem_addr <= std_logic_vector(addr);
-	mem_di   <= dtos_do;
+	mem_left_ena  <= '1' when bcd_frm='1' and state=write_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0') else '0';
+	mem_left_up   <= '0' when bcd_frm='1' and state=write_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0') else '-';
+	mem_right_ena <= '1' when bcd_frm='1' and state=write_s and addr=signed(mem_right) and dtos_cy='1' else '0';
+	mem_right_up  <= '0' when bcd_frm='1' and state=write_s and addr=signed(mem_right) and dtos_cy='1' else '-';
+	mem_addr      <= std_logic_vector(addr);
+	mem_di        <= dtos_do;
 
 end;
