@@ -42,7 +42,7 @@ architecture def of btod is
 	signal frm       : std_logic;
 	signal addr      : signed(mem_addr'range);
 
-	type states is (addr_s, data_s);
+	type states is (addr_s, data_s, write_s);
 	signal state     : states;
 
 begin
@@ -66,13 +66,28 @@ begin
 				end if;
 			when data_s =>
 				if bin_irdy='1' then
+					state <= write_s;
+				end if;
+			when write_s =>
+				if bin_irdy='1' then
 					state  <= addr_s;
 				end if;
 			end case;	
 		end if;
 	end process;
 
-	btod_di <= (btod_di'range => '0') when btod_zero='1' else mem_do;
+--	btod_di <= (btod_di'range => '0') when btod_zero='1' else mem_do;
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if btod_zero='1' then
+				btod_di <= (btod_di'range => '0');
+			else
+				btod_di <= mem_do;
+			end if;
+		end if;
+	end process;
+
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
 		clk     => clk,
@@ -94,7 +109,17 @@ begin
 			mem_ena   <= '0';
 			addr      <= signed(mem_right(mem_addr'range));
 		elsif rising_edge(clk) then
-			if state=data_s then
+			case state is
+			when addr_s =>
+				bin_trdy <= '0';
+				btod_ena <= '0';
+				mem_ena  <= '0';
+			when data_s =>
+				if bin_irdy = '1' then
+					btod_ena <= '1';
+					mem_ena  <= '1';
+				end if;
+			when write_s =>
 				if bin_irdy='1' then
 					if addr=signed(mem_left) then
 						if btod_cy='1' then
@@ -116,18 +141,18 @@ begin
 				end if;
 				btod_ena <= '0';
 				mem_ena  <= '0';
-			else
-				bin_trdy <= '0';
-				btod_ena <= '1';
-				if bin_irdy = '1' then
-					mem_ena <= '1';
-				end if;
-			end if;
+			end case;
 		end if;
 	end process;
 
-	mem_left_ena <= setif(bin_frm='1' and state=data_s and addr=signed(mem_left) and btod_cy='1');
-	mem_left_up  <= '1';
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			mem_left_ena <= setif(bin_frm='1' and state=data_s and addr=signed(mem_left) and btod_cy='1');
+			mem_left_up  <= '1';
+		end if;
+	end process;
+
 	mem_addr     <= std_logic_vector(addr);
 	mem_di       <= btod_do;
 

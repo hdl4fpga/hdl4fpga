@@ -55,78 +55,76 @@ entity stof is
 end;
 		
 architecture def of stof is
+	signal ptr   : signed(bcd_left'range);
+	signal left  : signed(bcd_left'range);
+	signal right : signed(bcd_right'range);
+	signal prec  : signed(bcd_right'range);
+	signal point : std_logic;
+
+	type states is (data_s, addr_s);
+	signal state : states;
 begin
 
+	process (frm, clk)
+	begin
+		if frm='0' then
+			state <= addr_s;
+		elsif rising_edge(clk) then
+			case state is
+			when addr_s =>
+				if bcd_irdy='1' then
+					state <= data_s;
+				end if;
+			when data_s =>
+				if bcd_irdy='1' then
+					state <= addr_s;
+				end if;
+			end case;	
+		end if;
+	end process;
+
+	right <= signed(bcd_right);
+	left  <= signed(bcd_left);
 	process (clk)
-		variable ptr   : signed(bcd_left'range);
-		variable left  : signed(bcd_left'range);
-		variable right : signed(bcd_right'range);
-		variable prec  : signed(bcd_right'range);
-		variable point : std_logic;
-		type states is (s1, s2);
-		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				right := signed(bcd_right);
-				left  := signed(bcd_left);
-				if left < 0 then
-					left := (others => '0');
+				if left <  0 then
+					ptr <= (others => '0');
+				else
+					ptr <= left;
 				end if;
-				ptr   := left;
-				point := '0';
-				prec  := right;
-				state := s1;
-				bcd_trdy <= '0';
+				point <= '0';
+				prec  <= right;
 				bcd_end  <= '0';
 			else
 				case state is
-				when s1 =>
-					bcd_trdy <= '0';
+				when addr_s =>
+				when data_s =>
 					if bcd_irdy='1' then
 						if ptr = -1 then
 							if point='0' then
-								mem_do <= dot;
-								point  := '1';
+								point <= '1';
 							else
-								if ptr > left then
-									mem_do <= zero;
-								else
-									mem_do <= bcd_di;
-								end if;
-								if ptr = prec then
-									bcd_end <= '1';
-								end if;
-								point := '0';
-								ptr   := ptr - 1;
+								point <= '0';
+								ptr   <= ptr - 1;
 							end if;
-						elsif ptr > left then
-							mem_do <= zero;
-							point  := '0';
-							ptr    := ptr - 1;
-						elsif ptr >= prec then
-							if ptr >= right then
-								mem_do <= bcd_di;
-							elsif ptr > prec then
-								mem_do <= zero;
-							end if;
-							if ptr = prec then
-								bcd_end <= '1';
-							end if;
-							point := '0';
-							ptr   := ptr - 1;
 						else
-							mem_do <= zero;
+							ptr <= ptr - 1;
 						end if; 
-						state := s2;
 					end if;
-				when s2 =>
-					bcd_trdy <= '1';
-					state    := s1;
 				end case;
 			end if;
-			mem_addr <= std_logic_vector(ptr);
 		end if;
 	end process;
+	mem_addr <= std_logic_vector(ptr);
+
+	mem_do <=
+		dot  when ptr = -1    and point = '0' else
+		zero when ptr > left  and left  <  0  else
+		zero when ptr < right and right <  0  else
+		bcd_di;
+
+	bcd_trdy <= setif(state=data_s and bcd_irdy='1');
 
 end;

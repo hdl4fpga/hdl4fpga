@@ -34,6 +34,8 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/state
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/addr
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/dtos_do
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/dtos_e/mem_ena
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_left
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector_e/vector_right
 add wave -noupdate -divider stof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/frm
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_irdy
@@ -42,12 +44,6 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_right
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_di
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/ptr
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/left
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/right
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/prec
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/point
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__60/state
 add wave -noupdate -divider btof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/state
@@ -65,7 +61,7 @@ add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/vector
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_ena
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_up
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {378 ns} 0}
+WaveRestoreCursors {{Cursor 1} {841 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 231
 configure wave -valuecolwidth 186
@@ -81,4 +77,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {756 ns}
+WaveRestoreZoom {382 ns} {1138 ns}
