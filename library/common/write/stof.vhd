@@ -41,6 +41,8 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
+		width     : in  std_logic_vector;
+		unit      : in  std_logic_vector;
 
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic;
@@ -48,7 +50,6 @@ entity stof is
 		bcd_right : in  std_logic_vector;
 		bcd_prec  : in  std_logic_vector := (0 to 0 => 'U');
 		bcd_di    : in  std_logic_vector;
-		bcd_end   : out std_logic;
 
 		mem_addr  : out std_logic_vector;
 		mem_do    : out std_logic_vector);
@@ -83,8 +84,13 @@ begin
 		end if;
 	end process;
 
-	right <= signed(bcd_right);
-	left  <= signed(bcd_left);
+	right <= signed(unit) + signed(bcd_right);
+	left  <= signed(unit) + signed(bcd_left);
+
+	total <= 
+		left-right+1 when left >= 0 and right < 0 else
+		   0-right+1 when left <  0 and right < 0 else
+		left+0+1     when right >=0;
 	process (clk)
 	begin
 		if rising_edge(clk) then
@@ -120,8 +126,9 @@ begin
 	mem_addr <= std_logic_vector(ptr);
 
 	mem_do <=
+		plus when pls = '1'   else
 		dot  when ptr = -1    and point = '0' else
-		zero when ptr > left  and left  <  0  else
+		zero when ptr =  0    and left  <  0  else
 		zero when ptr < right and right <  0  else
 		bcd_di;
 
