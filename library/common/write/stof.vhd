@@ -43,6 +43,8 @@ entity stof is
 		frm       : in  std_logic;
 		width     : in  std_logic_vector;
 		unit      : in  std_logic_vector;
+		neg       : in  std_logic;
+		sign      : in  std_logic;
 
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic;
@@ -64,6 +66,43 @@ architecture def of stof is
 
 	type states is (data_s, addr_s);
 	signal state : states;
+
+	function length is (
+		constant sign  : std_logic;
+		constant neg   : std_logic;
+		constant left  : signed;
+		constant right : signed)
+		return signed is
+		constant dot_length  : natural := 1;
+		constant sign_length : natural := 1;
+		variable retval : signed(left'range);
+	begin
+		if right >= then
+			retval := left+0+1;
+		elsif left < 0 and right < 0 else
+			retval := 0-right+1+dot_size;
+		else
+			retval :=  left-right+1+dot_size;
+		end if;
+		if sign='1' then
+			retval := retval + 1;
+		elsif neg='1' then
+			retval := retval + 1;
+		end if;
+		return retval;
+	end;
+
+	function init_ptr (
+		constant left : signed)
+		return signed is
+		variable retval : signed;
+	begin
+		retval := (others => '0');
+		if left > 0 then
+			retval := left;
+		end if;
+		return retval;
+	end;
 begin
 
 	process (frm, clk)
@@ -87,28 +126,21 @@ begin
 	right <= signed(unit) + signed(bcd_right);
 	left  <= signed(unit) + signed(bcd_left);
 
-	total <= 
-		left-right+1 when left >= 0 and right < 0 else
-		   0-right+1 when left <  0 and right < 0 else
-		left+0+1     when right >=0;
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				if left <  0 then
-					ptr <= (others => '0');
-				else
-					ptr <= left;
-				end if;
 				point <= '0';
 				prec  <= right;
-				bcd_end  <= '0';
+				sign1 <= sign;
 			else
 				case state is
 				when addr_s =>
 				when data_s =>
 					if bcd_irdy='1' then
-						if ptr = -1 then
+						if sign='1' then
+							sign = '0';
+						elsif ptr = -1 then
 							if point='0' then
 								point <= '1';
 							else
@@ -126,10 +158,11 @@ begin
 	mem_addr <= std_logic_vector(ptr);
 
 	mem_do <=
-		plus when pls = '1'   else
-		dot  when ptr = -1    and point = '0' else
-		zero when ptr =  0    and left  <  0  else
-		zero when ptr < right and right <  0  else
+		minus when sign1 = '1'   and neg   = '1' else
+		plus  when sign1 = '1'   and neg   = '0' else
+		dot   when ptr   = -1    and point = '0' else
+		zero  when ptr   =  0    and left  <  0  else
+		zero  when ptr   < right and right <  0  else
 		bcd_di;
 
 	bcd_trdy <= setif(state=data_s and bcd_irdy='1');
