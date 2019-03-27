@@ -76,17 +76,17 @@ begin
 		end if;
 	end process;
 
---	btod_di <= (btod_di'range => '0') when btod_zero='1' else mem_do;
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if btod_zero='1' then
-				btod_di <= (btod_di'range => '0');
-			else
-				btod_di <= mem_do;
-			end if;
-		end if;
-	end process;
+	btod_di <= (btod_di'range => '0') when btod_zero='1' else mem_do;
+--	process(clk)
+--	begin
+--		if rising_edge(clk) then
+--			if btod_zero='1' then
+--				btod_di <= (btod_di'range => '0');
+--			else
+--				btod_di <= mem_do;
+--			end if;
+--		end if;
+--	end process;
 
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (

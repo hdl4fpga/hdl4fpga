@@ -76,17 +76,17 @@ begin
 		end if;
 	end process;
 
-	--dtos_di <= (dtos_di'range => '0') when dtos_zero='1' else mem_do;
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if dtos_zero='1' then
-				dtos_di <= (dtos_di'range => '0');
-			else
-				dtos_di <= mem_do;
-			end if;
-		end if;
-	end process;
+	dtos_di <= (dtos_di'range => '0') when dtos_zero='1' else mem_do;
+--	process(clk)
+--	begin
+--		if rising_edge(clk) then
+--			if dtos_zero='1' then
+--				dtos_di <= (dtos_di'range => '0');
+--			else
+--				dtos_di <= mem_do;
+--			end if;
+--		end if;
+--	end process;
 
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	generic map (
