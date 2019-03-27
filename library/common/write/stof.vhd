@@ -41,6 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
+		align     : in  std_logic;
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
 		neg       : in  std_logic := '0';
@@ -131,10 +132,18 @@ begin
 		if frm='0' then
 			point := '0';
 			sign1 := sign;
-			if signed(bcd_left)+signed(unit) < 0 then
-				ptr := -signed(unit);
+			if align='0' then
+				if signed(bcd_left)+signed(unit) < 0 then
+					ptr := -signed(unit);
+				else
+					ptr := signed(bcd_left);
+				end if;
 			else
-				ptr := signed(bcd_left);
+				if signed(bcd_right)>signed(unit) then
+					ptr := signed(unit);
+				else
+					ptr := signed(bcd_right);
+				end if;
 			end if;
 		elsif rising_edge(clk) then
 			case state is
@@ -143,7 +152,7 @@ begin
 					sel_mux <= minus_in;
 				elsif sign1='1' and neg='0' then
 					sel_mux <= plus_in;
-				elsif ptr+signed(unit)= -1 and point='0' then
+				elsif ptr+signed(unit)= -1 and point=align then
 					sel_mux <= dot_in;
 				elsif ptr>signed(bcd_left) and signed(bcd_left)+signed(unit) < 0 then
 					sel_mux <= zero_in;
@@ -167,15 +176,21 @@ begin
 				if bcd_irdy='1' then
 					if sign1='1' then
 						sign1 := '0';
-					elsif ptr+signed(unit) = -1 then
+					elsif ptr+signed(unit)=(-1) then
 						if point='0' then
 							point := '1';
 						else
 							point := '0';
-							ptr   := ptr - 1;
+							if align='0' then
+								ptr := ptr - 1;
+							else
+								ptr := ptr + 1;
+							end if;
 						end if;
-					else
+					elsif align='0' then
 						ptr := ptr - 1;
+					else
+						ptr := ptr + 1;
 					end if; 
 				end if;
 			end case;
