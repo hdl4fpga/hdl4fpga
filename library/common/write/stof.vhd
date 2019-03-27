@@ -45,6 +45,7 @@ entity stof is
 		unit      : in  std_logic_vector := (0 to 0 => '-');
 		neg       : in  std_logic := '0';
 		sign      : in  std_logic := '1';
+		prec      : in  std_logic_vector := (0 to 0 => '-');
 
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic;
@@ -130,7 +131,11 @@ begin
 		if frm='0' then
 			point := '0';
 			sign1 := sign;
-			ptr   := signed(bcd_left);
+			if signed(bcd_left)+signed(unit) < 0 then
+				ptr := -signed(unit);
+			else
+				ptr := signed(bcd_left);
+			end if;
 		elsif rising_edge(clk) then
 			case state is
 			when addr_s =>
@@ -140,18 +145,29 @@ begin
 					sel_mux <= plus_in;
 				elsif ptr+signed(unit)= -1 and point='0' then
 					sel_mux <= dot_in;
-				elsif ptr+signed(unit)=0 and signed(bcd_left)+signed(unit) < 0 then
+				elsif ptr>signed(bcd_left) and signed(bcd_left)+signed(unit) < 0 then
 					sel_mux <= zero_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
 				else
 					sel_mux <= dout_in;
 				end if;
+				if signed(prec)= -1 then
+					if point='1' then
+						bcd_end <= '1';
+					else
+						bcd_end <= '0';
+					end if;
+				elsif ptr+signed(unit)=signed(prec) then
+					bcd_end <= '1';
+				else
+					bcd_end <= '0';
+				end if;
 			when data_s =>
 				if bcd_irdy='1' then
 					if sign1='1' then
 						sign1 := '0';
-					elsif ptr = -1 then
+					elsif ptr+signed(unit) = -1 then
 						if point='0' then
 							point := '1';
 						else
