@@ -41,7 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
-		align     : in  std_logic;
+		align     : in  std_logic := '1';
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
 		neg       : in  std_logic := '0';
@@ -64,7 +64,7 @@ architecture def of stof is
 	type states is (data_s, addr_s);
 	signal state : states;
 
-	type inputs is (plus_in, minus_in, zero_in, dot_in, dout_in);
+	type inputs is (plus_in, minus_in, zero_in, dot_in, blank_in, dout_in);
 	signal sel_mux : inputs;
 
 	function length (
@@ -139,7 +139,9 @@ begin
 					ptr := signed(bcd_left);
 				end if;
 			else
-				if signed(bcd_right)>signed(unit) then
+				if signed(unit)>signed(prec) then
+					ptr := signed(prec);
+				elsif signed(bcd_right)>signed(unit) then
 					ptr := signed(unit);
 				else
 					ptr := signed(bcd_right);
@@ -148,9 +150,9 @@ begin
 		elsif rising_edge(clk) then
 			case state is
 			when addr_s =>
-				if sign1='1' and neg='1' then
+				if   sign1='1' and neg='1' and align='0' then
 					sel_mux <= minus_in;
-				elsif sign1='1' and neg='0' then
+				elsif sign1='1' and neg='0' and align='0' then
 					sel_mux <= plus_in;
 				elsif ptr+signed(unit)= -1 and point=align then
 					sel_mux <= dot_in;
@@ -158,23 +160,42 @@ begin
 					sel_mux <= zero_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
+				elsif ptr>signed(bcd_left) then
+					if ptr=signed(bcd_left)+1 and sign1='1' then
+						if neg='1' then
+							sel_mux <= minus_in;
+						else
+							sel_mux <= plus_in;
+						end if;
+					else
+						sel_mux <= blank_in;
+					end if;
 				else
 					sel_mux <= dout_in;
 				end if;
+
 				if signed(prec)= -1 then
 					if point='1' then
 						bcd_end <= '1';
 					else
 						bcd_end <= '0';
 					end if;
-				elsif ptr+signed(unit)=signed(prec) then
+				elsif align='0' then
+					if ptr+signed(unit)=signed(prec) then
+						bcd_end <= '1';
+					else
+						bcd_end <= '0';
+					end if;
+				elsif sign1='0' and ptr=signed(bcd_left) then
+					bcd_end <= '1';
+				elsif sign1='1' and ptr=signed(bcd_left)+1 then
 					bcd_end <= '1';
 				else
 					bcd_end <= '0';
 				end if;
 			when data_s =>
 				if bcd_irdy='1' then
-					if sign1='1' then
+					if sign1='1' and align='0' then
 						sign1 := '0';
 					elsif ptr+signed(unit)=(-1) then
 						if point='0' then
@@ -204,6 +225,7 @@ begin
 		plus   when plus_in,
 		dot    when dot_in,
 		zero   when zero_in,
+		space  when blank_in,
 		bcd_di when dout_in;
 
 	bcd_trdy <= setif(state=data_s and bcd_irdy='1');
