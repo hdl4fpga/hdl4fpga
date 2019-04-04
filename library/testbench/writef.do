@@ -44,15 +44,16 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/sign
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_do
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/prec
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/unit
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_left
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_right
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_di
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_addr
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/sel_mux
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/line__127/ptr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/unit
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/ptr
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/prec
+add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/width
 add wave -noupdate -divider btof
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/btod_trdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/state
@@ -70,7 +71,7 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/left_up
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_ena
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_up
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {885 ns} 0}
+WaveRestoreCursors {{Cursor 1} {887 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 161
 configure wave -valuecolwidth 186

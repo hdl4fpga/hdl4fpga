@@ -155,9 +155,9 @@ begin
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => b"0000",
-		unit      => b"0000",
-		prec      => b"1110",
+		width     => b"0111",
+		unit      => b"1100",
+		prec      => b"1101",
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
 		bcd_prec => vector_right,

@@ -41,7 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
-		align     : in  std_logic := '1';
+		align     : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
 		neg       : in  std_logic := '0';
@@ -67,30 +67,8 @@ architecture def of stof is
 	type inputs is (plus_in, minus_in, zero_in, dot_in, blank_in, dout_in);
 	signal sel_mux : inputs;
 
-	function length (
-		constant sign  : std_logic;
-		constant neg   : std_logic;
-		constant left  : signed;
-		constant right : signed)
-		return signed is
-		constant dot_length  : natural := 1;
-		constant sign_length : natural := 1;
-		variable retval : signed(left'range);
-	begin
-		if right >= 0 then
-			retval := left+0+1;
-		elsif left < 0 and right < 0 then
-			retval := 0-right+1+dot_length;
-		else
-			retval :=  left-right+1+dot_length;
-		end if;
-		if sign='1' then
-			retval := retval + 1;
-		elsif neg='1' then
-			retval := retval + 1;
-		end if;
-		return retval;
-	end;
+	constant dot_length  : natural := 1;
+	constant sign_length : natural := 1;
 
 	function init_ptr (
 		constant left : signed)
@@ -124,7 +102,7 @@ begin
 	end process;
 
 
-	process (frm, clk)
+	pp_p : process (frm, clk)
 		variable ptr   : signed(bcd_left'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
@@ -135,6 +113,9 @@ begin
 			if align='0' then
 				if signed(bcd_left)+signed(unit) < 0 then
 					ptr := -signed(unit);
+					if width/=(width'range => '0') then
+						ptr := ptr+signed(width)-(signed(bcd_left)-signed(bcd_right)+1+dot_length);
+					end if;
 				else
 					ptr := signed(bcd_left);
 				end if;
@@ -156,7 +137,9 @@ begin
 					sel_mux <= plus_in;
 				elsif ptr+signed(unit)= -1 and point=align then
 					sel_mux <= dot_in;
-				elsif ptr>signed(bcd_left) and signed(bcd_left)+signed(unit) < 0 then
+				elsif signed(bcd_left)+signed(unit) < 0 and ptr>-signed(unit)    then
+					sel_mux <= blank_in;
+				elsif signed(bcd_left)+signed(unit) < 0 and ptr>signed(bcd_left) then
 					sel_mux <= zero_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
