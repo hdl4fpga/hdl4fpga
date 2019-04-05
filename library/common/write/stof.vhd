@@ -104,17 +104,20 @@ begin
 
 	pp_p : process (frm, clk)
 		variable ptr   : signed(bcd_left'range);
+		variable last  : signed(bcd_left'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
 	begin
 		if frm='0' then
 			point := '0';
-			sign1 := sign;
 			if align='0' then
 				if signed(bcd_left)+signed(unit) < 0 then
 					ptr := -signed(unit);
 					if width/=(width'range => '0') then
 						ptr := ptr+signed(width)-(signed(bcd_left)-signed(bcd_right)+1+dot_length);
+					end if;
+					if sign='1' then
+						ptr := ptr + 1;
 					end if;
 				else
 					ptr := signed(bcd_left);
@@ -131,25 +134,28 @@ begin
 		elsif rising_edge(clk) then
 			case state is
 			when addr_s =>
-				if ptr=-1 and point='1' then
+
+				sel_mul_l : if point='1' then
 					sel_mux <= dot_in;
-				elsif ptr < signed(prec)-signed(unit) then
+				elsif ptr+signed(unit) < signed(prec) then
 					sel_mux <= blank_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
-				elsif signed(bcd_left) >= ptr then
+				elsif ptr <= signed(bcd_left) then
 					sel_mux <= dout_in;
 				elsif signed(bcd_left)+signed(unit) < 0 then
-					if sign1='1' and ptr='1' and neg='1' then
-						sel_mux <= minus_in;
-					elsif sign1='1' and ptr='1' and neg='0' then
-						sel_mux <= plus_in;
+					if sign='1' and ptr+signed(unit)=1 then
+						if neg='1' then
+							sel_mux <= minus_in;
+						else
+							sel_mux <= plus_in;
+						end if;
 					elsif ptr <= 0 then
 						sel_mux <= zero_in;
 					else
 						sel_mux <= blank_in;
 					end if;
-				elsif sign1='1' and signed(bcd_left)=ptr+1 then
+				elsif sign='1' and signed(bcd_left)=ptr+1 then
 					if neg='1' then
 						sel_mux <= minus_in;
 					else 
@@ -159,30 +165,15 @@ begin
 					sel_mux <= blank_in;
 				end if;
 
-				if signed(prec)= -1 then
-					if point='1' then
-						bcd_end <= '1';
-					else
-						bcd_end <= '0';
-					end if;
-				elsif align='0' then
-					if ptr+signed(unit)=signed(prec) then
-						bcd_end <= '1';
-					else
-						bcd_end <= '0';
-					end if;
-				elsif sign1='0' and ptr=signed(bcd_left) then
-					bcd_end <= '1';
-				elsif sign1='1' and ptr=signed(bcd_left)+1 then
+				if ptr=last then
 					bcd_end <= '1';
 				else
 					bcd_end <= '0';
 				end if;
+
 			when data_s =>
 				if bcd_irdy='1' then
-					if sign1='1' and align='0' then
-						sign1 := '0';
-					elsif ptr+signed(unit)=(-1) then
+					if ptr+signed(unit)=(-1) then
 						if point='0' then
 							point := '1';
 						else
