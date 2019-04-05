@@ -131,30 +131,26 @@ begin
 		elsif rising_edge(clk) then
 			case state is
 			when addr_s =>
-				if   sign1='1' and neg='1' and align='0' then
-					sel_mux <= minus_in;
-				elsif sign1='1' and neg='0' and align='0' then
-					sel_mux <= plus_in;
-				elsif ptr+signed(unit)= -1 and point=align then
+				if ptr=-1 and point='1' then
 					sel_mux <= dot_in;
-				elsif signed(bcd_left)+signed(unit) < 0 and ptr>-signed(unit)    then
+				elsif ptr < signed(prec)-signed(unit) then
 					sel_mux <= blank_in;
-				elsif signed(bcd_left)+signed(unit) < 0 and ptr>signed(bcd_left) then
-					sel_mux <= zero_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
-				elsif ptr>signed(bcd_left) then
-					if ptr=signed(bcd_left)+1 and sign1='1' then
-						if neg='1' then
-							sel_mux <= minus_in;
-						else
-							sel_mux <= plus_in;
-						end if;
-					else
+				elsif signed(bcd_left) >= ptr and ptr <= signed(bcd_right) then
+					sel_mux <= dout_in;
+				elsif signed(bcd_left)+signed(unit) < 0 then
+					if sign1='1' and ptr='1' and neg='1' then
+						sel_mux <= minus_in;
+					elsif sign1='1' and ptr='1' and neg='0' then
+						sel_mux <= plus_in;
+					elsif ptr > 0 then
 						sel_mux <= blank_in;
+					else
+						sel_mux <= zero_in;
 					end if;
 				else
-					sel_mux <= dout_in;
+					sel_mux <= blank_in;
 				end if;
 
 				if signed(prec)= -1 then
