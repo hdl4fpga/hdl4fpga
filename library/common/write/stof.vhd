@@ -137,17 +137,23 @@ begin
 					sel_mux <= blank_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
-				elsif signed(bcd_left) >= ptr and ptr <= signed(bcd_right) then
+				elsif signed(bcd_left) >= ptr then
 					sel_mux <= dout_in;
 				elsif signed(bcd_left)+signed(unit) < 0 then
 					if sign1='1' and ptr='1' and neg='1' then
 						sel_mux <= minus_in;
 					elsif sign1='1' and ptr='1' and neg='0' then
 						sel_mux <= plus_in;
-					elsif ptr > 0 then
-						sel_mux <= blank_in;
-					else
+					elsif ptr <= 0 then
 						sel_mux <= zero_in;
+					else
+						sel_mux <= blank_in;
+					end if;
+				elsif sign1='1' and signed(bcd_left)=ptr+1 then
+					if neg='1' then
+						sel_mux <= minus_in;
+					else 
+						sel_mux <= plus_in;
 					end if;
 				else
 					sel_mux <= blank_in;
