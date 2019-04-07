@@ -112,9 +112,13 @@ begin
 			point := '0';
 			if align='0' then
 				if signed(bcd_left)+signed(unit) < 0 then
-					ptr := -signed(unit);
 					if width/=(width'range => '0') then
-						ptr := ptr+signed(width)-(signed(bcd_left)-signed(bcd_right)+1+dot_length);
+						if signed(bcd_right)+signed(unit) > signed(prec) then
+							ptr := signed(width)+signed(bcd_right)-signed(unit);
+						else
+							ptr := signed(width)+signed(prec);
+						end if;
+						ptr := ptr-1;
 					end if;
 					if sign='1' then
 						ptr := ptr + 1;
@@ -135,9 +139,9 @@ begin
 			case state is
 			when addr_s =>
 
-				sel_mul_l : if point='1' then
+				sel_mul_l : if ptr+signed(unit)=-1 then
 					sel_mux <= dot_in;
-				elsif ptr+signed(unit) < signed(prec) then
+				elsif ptr+signed(unit)+1 < signed(prec) then
 					sel_mux <= blank_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
@@ -150,7 +154,7 @@ begin
 						else
 							sel_mux <= plus_in;
 						end if;
-					elsif ptr <= 0 then
+					elsif ptr+signed(unit) <= 0 then
 						sel_mux <= zero_in;
 					else
 						sel_mux <= blank_in;
@@ -173,18 +177,8 @@ begin
 
 			when data_s =>
 				if bcd_irdy='1' then
-					if ptr+signed(unit)=(-1) then
-						if point='0' then
-							point := '1';
-						else
-							point := '0';
-							if align='0' then
-								ptr := ptr - 1;
-							else
-								ptr := ptr + 1;
-							end if;
-						end if;
-					elsif align='0' then
+					if ptr+signed(unit)
+					if align='0' then
 						ptr := ptr - 1;
 					else
 						ptr := ptr + 1;
