@@ -41,6 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
+		endian    : in  std_logic := '0';
 		align     : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
@@ -110,38 +111,36 @@ begin
 	begin
 		if frm='0' then
 			point := '0';
-			if align='0' then
-				if signed(bcd_left)+signed(unit) < 0 then
-					if width/=(width'range => '0') then
-						if signed(bcd_right)+signed(unit) > signed(prec) then
-							ptr := signed(width)+signed(bcd_right)-signed(unit);
-						else
-							ptr := signed(width)+signed(prec);
-						end if;
-						ptr := ptr-1;
-					end if;
-					if sign='1' then
-						ptr := ptr + 1;
-					end if;
-				else
-					ptr := signed(bcd_left);
-				end if;
-			else
-				if signed(unit)>signed(prec) then
-					ptr := signed(prec);
-				elsif signed(bcd_right)>signed(unit) then
-					ptr := signed(unit);
-				else
-					ptr := signed(bcd_right);
+			ptr := -signed(unit);
+			if endian='0' then
+				if width/=(width'range => '0') then
+					ptr := ptr+signed(width);
 				end if;
 			end if;
+			if signed(bcd_left)+signed(unit) < 0 then
+				if signed(bcd_right)+signed(unit) > signed(prec) then
+					ptr := ptr+signed(bcd_right);
+				else
+					ptr := ptr+signed(prec);
+				end if;
+				if sign='1' then
+					ptr := ptr-1;
+				end if;
+			else
+				if signed(bcd_right)+signed(unit) > signed(prec) then
+					ptr := ptr+signed(bcd_right);
+				else
+					ptr := ptr-(signed(bcd_left)-signed(bcd_right));
+				end if;
+			end if;
+			ptr := ptr-1;
 		elsif rising_edge(clk) then
 			case state is
 			when addr_s =>
 
-				sel_mul_l : if ptr+signed(unit)=-1 then
+				sel_mul_l : if point='1' then
 					sel_mux <= dot_in;
-				elsif ptr+signed(unit)+1 < signed(prec) then
+				elsif ptr+signed(unit) < signed(prec) then
 					sel_mux <= blank_in;
 				elsif ptr < signed(bcd_right) then
 					sel_mux <= zero_in;
@@ -159,7 +158,7 @@ begin
 					else
 						sel_mux <= blank_in;
 					end if;
-				elsif sign='1' and signed(bcd_left)=ptr+1 then
+				elsif sign='1' and ptr=signed(bcd_left)+1 then
 					if neg='1' then
 						sel_mux <= minus_in;
 					else 
@@ -177,12 +176,28 @@ begin
 
 			when data_s =>
 				if bcd_irdy='1' then
-					if ptr+signed(unit)
-					if align='0' then
-						ptr := ptr - 1;
-					else
-						ptr := ptr + 1;
-					end if; 
+					if endian='0' then
+						if ptr+signed(unit)=0 then
+							if point='0' then
+								point := '1';
+							else
+								point := '0';
+							end if;
+						end if;
+					elsif ptr+signed(unit)=-1 then
+						if point='0' then
+							point := '1';
+						else
+							point := '0';
+						end if;
+					end if;
+					if point='0' then
+						if endian='0' then
+							ptr := ptr - 1;
+						else
+							ptr := ptr + 1;
+						end if; 
+					end if;
 				end if;
 			end case;
 		end if;
