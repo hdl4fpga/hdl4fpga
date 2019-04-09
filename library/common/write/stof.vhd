@@ -41,7 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
-		endian    : in  std_logic := '0';
+		endian    : in  std_logic := '1';
 		align     : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
@@ -103,105 +103,110 @@ begin
 	end process;
 
 
-	pp_p : process (frm, clk)
+	pp_p : process (clk)
 		variable ptr   : signed(bcd_left'range);
 		variable last  : signed(bcd_left'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
 	begin
-		if frm='0' then
-			point := '0';
-			ptr := -signed(unit);
-			if endian='0' then
-				if width/=(width'range => '0') then
-					ptr := ptr+signed(width);
-				end if;
-			end if;
-			if signed(bcd_left)+signed(unit) < 0 then
-				if signed(bcd_right)+signed(unit) > signed(prec) then
-					ptr := ptr+signed(bcd_right);
+		if rising_edge(clk) then
+			if frm='0' then
+				point := '0';
+				ptr   := not signed(unit) + 1;
+				if signed(bcd_left)+signed(unit) < 0 then
+					if signed(bcd_right)+signed(unit) > signed(prec) then
+						ptr := ptr+signed(bcd_right);
+					else
+						ptr := ptr+signed(prec);
+					end if;
+					if sign='1' then
+						ptr := ptr-1;
+					end if;
 				else
-					ptr := ptr+signed(prec);
+					if signed(bcd_right)+signed(unit) > signed(prec) then
+						ptr := ptr+signed(bcd_right);
+					else
+						ptr := ptr-(signed(bcd_left)-signed(bcd_right));
+					end if;
 				end if;
-				if sign='1' then
-					ptr := ptr-1;
+				ptr  := ptr-1;
+				last := ptr;
+				if width/=(width'range => '0') then
+					if endian='0' then
+						ptr  := ptr+signed(width);
+					else
+						last := last+signed(width);
+					end if;
 				end if;
 			else
-				if signed(bcd_right)+signed(unit) > signed(prec) then
-					ptr := ptr+signed(bcd_right);
-				else
-					ptr := ptr-(signed(bcd_left)-signed(bcd_right));
-				end if;
-			end if;
-			ptr := ptr-1;
-		elsif rising_edge(clk) then
-			case state is
-			when addr_s =>
+				case state is
+				when addr_s =>
 
-				sel_mul_l : if point='1' then
-					sel_mux <= dot_in;
-				elsif ptr+signed(unit) < signed(prec) then
-					sel_mux <= blank_in;
-				elsif ptr < signed(bcd_right) then
-					sel_mux <= zero_in;
-				elsif ptr <= signed(bcd_left) then
-					sel_mux <= dout_in;
-				elsif signed(bcd_left)+signed(unit) < 0 then
-					if sign='1' and ptr+signed(unit)=1 then
+					sel_mul_l : if point='1' then
+						sel_mux <= dot_in;
+					elsif ptr+signed(unit) < signed(prec) then
+						sel_mux <= blank_in;
+					elsif ptr < signed(bcd_right) then
+						sel_mux <= zero_in;
+					elsif ptr <= signed(bcd_left) then
+						sel_mux <= dout_in;
+					elsif signed(bcd_left)+signed(unit) < 0 then
+						if sign='1' and ptr+signed(unit)=1 then
+							if neg='1' then
+								sel_mux <= minus_in;
+							else
+								sel_mux <= plus_in;
+							end if;
+						elsif ptr+signed(unit) <= 0 then
+							sel_mux <= zero_in;
+						else
+							sel_mux <= blank_in;
+						end if;
+					elsif sign='1' and ptr=signed(bcd_left)+1 then
 						if neg='1' then
 							sel_mux <= minus_in;
-						else
+						else 
 							sel_mux <= plus_in;
 						end if;
-					elsif ptr+signed(unit) <= 0 then
-						sel_mux <= zero_in;
 					else
 						sel_mux <= blank_in;
 					end if;
-				elsif sign='1' and ptr=signed(bcd_left)+1 then
-					if neg='1' then
-						sel_mux <= minus_in;
-					else 
-						sel_mux <= plus_in;
+
+					if ptr=last then
+						bcd_end <= '1';
+					else
+						bcd_end <= '0';
 					end if;
-				else
-					sel_mux <= blank_in;
-				end if;
 
-				if ptr=last then
-					bcd_end <= '1';
-				else
-					bcd_end <= '0';
-				end if;
-
-			when data_s =>
-				if bcd_irdy='1' then
-					if endian='0' then
-						if ptr+signed(unit)=0 then
+				when data_s =>
+					if bcd_irdy='1' then
+						if endian='0' then
+							if ptr+signed(unit)=0 then
+								if point='0' then
+									point := '1';
+								else
+									point := '0';
+								end if;
+							end if;
+						elsif ptr+signed(unit)=-1 then
 							if point='0' then
 								point := '1';
 							else
 								point := '0';
 							end if;
 						end if;
-					elsif ptr+signed(unit)=-1 then
 						if point='0' then
-							point := '1';
-						else
-							point := '0';
+							if endian='0' then
+								ptr := ptr - 1;
+							else
+								ptr := ptr + 1;
+							end if; 
 						end if;
 					end if;
-					if point='0' then
-						if endian='0' then
-							ptr := ptr - 1;
-						else
-							ptr := ptr + 1;
-						end if; 
-					end if;
-				end if;
-			end case;
+				end case;
+			end if;
+			mem_addr <= std_logic_vector(ptr);
 		end if;
-		mem_addr <= std_logic_vector(ptr);
 	end process;
 
 	with sel_mux select
