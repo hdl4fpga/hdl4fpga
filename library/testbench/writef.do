@@ -31,15 +31,15 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_irdy
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_trdy
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_do
 add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_left
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_right
+add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_right
 add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_di
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/bcd_end
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_addr
+add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/mem_addr
 add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/unit
 add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/ptr
 add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/prec
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/width
-add wave -noupdate -radix hexadecimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last
+add wave -noupdate -radix decimal /testbench/writef_e/wrfbuf_e/btof_e/stof_e/width
+add wave -noupdate -radix decimal -childformat {{/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(4) -radix decimal} {/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(3) -radix hexadecimal} {/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(2) -radix hexadecimal} {/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(1) -radix hexadecimal} {/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(0) -radix hexadecimal}} -subitemconfig {/testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(4) {-height 21 -radix decimal} /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(3) {-height 21 -radix hexadecimal} /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(2) {-height 21 -radix hexadecimal} /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(1) {-height 21 -radix hexadecimal} /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last(0) {-height 21 -radix hexadecimal}} /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/last
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/point
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/pp_p/sign1
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/stof_e/sel_mux
@@ -60,10 +60,10 @@ add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/left_up
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_ena
 add wave -noupdate /testbench/writef_e/wrfbuf_e/btof_e/vector_e/right_up
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {887 ns} 0}
+WaveRestoreCursors {{Cursor 1} {630 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 161
-configure wave -valuecolwidth 186
+configure wave -valuecolwidth 101
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -76,4 +76,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {177 ns} {2337 ns}
+WaveRestoreZoom {3 ns} {1053 ns}

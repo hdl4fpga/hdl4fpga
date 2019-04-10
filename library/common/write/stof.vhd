@@ -41,7 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
-		endian    : in  std_logic := '1';
+		endian    : in  std_logic := '0';
 		align     : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '-');
 		unit      : in  std_logic_vector := (0 to 0 => '-');
@@ -105,6 +105,7 @@ begin
 
 	pp_p : process (clk)
 		variable ptr   : signed(bcd_left'range);
+		variable aux   : signed(bcd_left'range);
 		variable last  : signed(bcd_left'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
@@ -113,30 +114,25 @@ begin
 			if frm='0' then
 				point := '0';
 				ptr   := not signed(unit) + 1;
-				if signed(bcd_left)+signed(unit) < 0 then
-					if signed(bcd_right)+signed(unit) > signed(prec) then
-						ptr := ptr+signed(bcd_right);
-					else
-						ptr := ptr+signed(prec);
-					end if;
-					if sign='1' then
-						ptr := ptr-1;
-					end if;
-				else
-					if signed(bcd_right)+signed(unit) > signed(prec) then
-						ptr := ptr+signed(bcd_right);
-					else
-						ptr := ptr-(signed(bcd_left)-signed(bcd_right));
-					end if;
+				last  := ptr;
+				if signed(bcd_left)+signed(unit) >= 0 then
+					ptr  := signed(bcd_left);
+					last := signed(bcd_right);
+				elsif signed(bcd_right)+signed(unit) < signed(prec) then
+					last := signed(prec)-signed(unit);
 				end if;
-				ptr  := ptr-1;
-				last := ptr;
+				if sign='1' then
+					ptr  := ptr+1;
+				end if;
 				if width/=(width'range => '0') then
-					if endian='0' then
-						ptr  := ptr+signed(width);
-					else
-						last := last+signed(width);
-					end if;
+					aux  := ptr;
+					ptr  := signed(width)-last;
+--					last := aux-signed(width);
+				end if;
+				if endian='0' then
+					ptr  := ptr;
+				else
+					ptr := last;
 				end if;
 			else
 				case state is
