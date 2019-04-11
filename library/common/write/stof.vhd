@@ -107,6 +107,7 @@ begin
 		variable ptr   : signed(bcd_left'range);
 		variable aux   : signed(bcd_left'range);
 		variable last  : signed(bcd_left'range);
+		variable w     : signed(bcd_left'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
 	begin
@@ -114,25 +115,30 @@ begin
 			if frm='0' then
 				point := '0';
 				ptr   := not signed(unit) + 1;
-				last  := ptr;
+				last  := signed(prec)-signed(unit);
+				w     := signed(width);
 				if signed(bcd_left)+signed(unit) >= 0 then
 					ptr  := signed(bcd_left);
-					last := signed(bcd_right);
-				elsif signed(bcd_right)+signed(unit) < signed(prec) then
-					last := signed(prec)-signed(unit);
+--	  				elsif signed(bcd_right)+signed(unit) < signed(prec) then
+				end if;
+				if signed(prec) < 0 then
+					w := w - 1;
 				end if;
 				if sign='1' then
-					ptr  := ptr+1;
+					ptr := ptr + 1;
+					w   := w   - 1;
 				end if;
 				if width/=(width'range => '0') then
-					aux  := ptr;
-					ptr  := signed(width)-last;
---					last := aux-signed(width);
+					if align='0' then
+						ptr  := w+last;
+					else
+						last := ptr - w;
+					end if;
 				end if;
-				if endian='0' then
-					ptr  := ptr;
-				else
-					ptr := last;
+				if endian='1' then
+					aux  := ptr;
+					ptr  := last;
+					last := ptr;
 				end if;
 			else
 				case state is
