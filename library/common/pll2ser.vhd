@@ -25,19 +25,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ser2pll is
+entity pll2ser is
     port (
 		clk      : in  std_logic;
 		frm      : in  std_logic;
-		ser_irdy : in  std_logic;
-		ser_trdy : out std_logic := '1';
-		ser_data : in  std_logic_vector;
 		pll_irdy : in  std_logic;
 		pll_trdy : out std_logic;
-		pll_data : out std_logic_vector);
+		pll_data : in  std_logic_vector;
+		ser_trdy : in  std_logic := '1';
+		ser_irdy : out std_logic;
+		ser_data : out std_logic_vector);
 end;
 
-architecture def of ser2pll is
+architecture def of pll2ser is
 begin
 
 	process (clk)
@@ -46,13 +46,15 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				sr := to_unsigned(1, sr'length);
-			elsif ser_irdy='1' then
-				data(0 to ser_data'length-1) := unsigned(ser_data);
-				data := data rol ser_data'length;
+				sr   := to_unsigned(1, sr'length);
+				data := unsigned(pll_data);
+			elsif pll_irdy='1' then
+				if ser_trdy='1' then
+					ser_data <= std_logic_vector(data(0 to ser_data'length-1));
+					data := data rol ser_data'length;
+				end if;
 			end if;
-			pll_data <= std_logic_vector(data);
-			pll_trdy <= sr(0);
+			pll_trdy <= sr(0) and ser_trdy;
 		end if;
 	end process;
 
