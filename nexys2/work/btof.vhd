@@ -35,12 +35,11 @@ entity test_btof is
 		bin_trdy : buffer std_logic;
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector(4-1 downto 0);
-		fix_left : out  std_logic_vector(4-1 downto 0);
-		fix_right : out std_logic_vector(4-1 downto 0);
+
 		fix_frm  : buffer std_logic;
 		fix_end  : out std_logic;
-		fix_trdy : in  std_logic;
-		fix_irdy : buffer std_logic;
+		fix_trdy : out  std_logic;
+		fix_irdy : in std_logic;
 		fix_do   : out std_logic_vector(4-1 downto 0));
 end;
 
@@ -54,9 +53,7 @@ begin
 		bin_trdy => bin_trdy,
 		bin_flt  => bin_flt ,
 		bin_di   => bin_di  ,
-		bcd_frm  => fix_frm ,
-		bcd_left => fix_left,
-		bcd_right=> fix_right,
+		
 		bcd_trdy => fix_trdy,
 		bcd_irdy => fix_irdy,
 		

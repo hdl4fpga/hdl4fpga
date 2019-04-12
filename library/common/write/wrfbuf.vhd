@@ -48,8 +48,6 @@ architecture def of wrfbuf is
 	signal bcd_do   : std_logic_vector(0 to 4-1);
 
 	signal btof_trdy : std_logic;
-	signal bcd_left  : std_logic_vector(0 to 4-1);
-	signal bcd_right : std_logic_vector(0 to 4-1);
 
 begin
 
@@ -61,17 +59,15 @@ begin
 		bin_irdy  => bin_irdy,
 		bin_di    => bin_di,
 		bin_flt   => bin_flt,
-		bcd_frm   => bcd_frm,
-		bcd_right => bcd_right,
-		bcd_left  => bcd_left,
-		bcd_irdy  => bcd_irdy,
-		bcd_trdy  => bcd_trdy,
+		
+		bcd_irdy  => bcd_trdy,
+		bcd_trdy  => bcd_irdy,
 		bcd_do    => bcd_do);
 
 	fbuf_e : entity hdl4fpga.fbuf
 	port map (
 		clk      => clk,
-		fix_frm  => bcd_frm,
+		fix_frm  => bin_frm,
 		fix_irdy => bcd_irdy,
 		fix_trdy => bcd_trdy,
 		fix_di   => bcd_do,

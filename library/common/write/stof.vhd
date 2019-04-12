@@ -49,7 +49,7 @@ entity stof is
 		sign      : in  std_logic := '1';
 		prec      : in  std_logic_vector := (0 to 0 => '-');
 
-		bcd_irdy  : in  std_logic := '1';
+		bcd_irdy  : in  std_logic;
 		bcd_trdy  : out std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;

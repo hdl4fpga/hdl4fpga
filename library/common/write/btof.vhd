@@ -14,11 +14,9 @@ entity btof is
 		bin_flt   : in  std_logic;
 		bin_di    : in  std_logic_vector;
 
-		bcd_frm   : out std_logic;
-		bcd_irdy  : out std_logic;
-		bcd_trdy  : in  std_logic := '1';
-		bcd_left  : out std_logic_vector;
-		bcd_right : out std_logic_vector;
+		bcd_trdy  : out std_logic := '1';
+		bcd_irdy  : in  std_logic;
+		bcd_end   : out std_logic;
 		bcd_do    : out std_logic_vector);
 end;
 
@@ -26,7 +24,7 @@ architecture def of btof is
 
 	signal vector_rst     : std_logic;
 	signal vector_full    : std_logic;
-	signal vector_addr    : std_logic_vector(5-1 downto 0);
+	signal vector_addr    : std_logic_vector(4-1 downto 0);
 	signal vector_left    : std_logic_vector(vector_addr'length-1 downto 0);
 	signal vector_right   : std_logic_vector(vector_addr'length-1 downto 0);
 	signal vector_do      : std_logic_vector(bcd_do'length-1 downto 0);
@@ -61,7 +59,7 @@ architecture def of btof is
 	signal stof_frm       : std_logic;
 	signal stof_irdy      : std_logic;
 	signal stof_trdy      : std_logic;
-	signal stof_end      : std_logic;
+	signal stof_end       : std_logic;
 	signal stof_addr      : std_logic_vector(vector_addr'range);
 	signal stof_do        : std_logic_vector(bcd_do'range);
 	type   states is (btod, dtos, stof);
@@ -155,15 +153,16 @@ begin
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => b"01000",
-		unit      => b"11110",
-		prec      => b"00000",
+		width     => b"1000",
+		unit      => b"1110",
+		prec      => b"0000",
 		align     => '0',
 		endian    => '0',
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
-		bcd_prec => vector_right,
+		bcd_prec  => vector_right,
 		bcd_di    => vector_do,
+		bcd_irdy  => stof_irdy,
 		bcd_trdy  => stof_trdy,
 		bcd_end   => stof_end,
 
@@ -181,6 +180,8 @@ begin
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);
 
+	stof_irdy <= bcd_irdy;
+
 	vector_e : entity hdl4fpga.vector
 	port map (
 		vector_clk   => clk,
@@ -197,7 +198,8 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_left  <= vector_left(bcd_left'length-1 downto 0);
-	bcd_right <= vector_right(bcd_right'length-1 downto 0);
+	bcd_end  <= stof_end;
+	bcd_trdy <= stof_trdy;
+	bcd_do   <= stof_do;
 
 end;
