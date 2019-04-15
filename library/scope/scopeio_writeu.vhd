@@ -56,10 +56,11 @@ begin
 		clk      => clk,
 		frm      => frm,
 		pll_irdy => irdy,
-		pll_trdy => trdy,
+		pll_trdy => open,
 		pll_data => float,
 		ser_trdy => ser_trdy,
 		ser_irdy => ser_irdy,
+		ser_last => flt,
 		ser_data => ser_data);
 
 	btof_e : entity hdl4fpga.btof
@@ -70,8 +71,8 @@ begin
 		bin_trdy => ser_trdy,
 		bin_di   => ser_data,
 		bin_flt  => flt,
-		bcd_trdy => bcd_trdy,
 		bcd_irdy => bcd_irdy,
+		bcd_trdy => '1', --bcd_trdy,
 		bcd_end  => bcd_end,
 		bcd_do   => bcd_do);
 

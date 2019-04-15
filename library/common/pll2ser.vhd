@@ -56,6 +56,7 @@ begin
 				end if;
 			end if;
 			pll_trdy <= sr(0) and ser_trdy;
+			ser_last <= sr(0);
 			ser_data <= std_logic_vector(data(0 to ser_data'length-1));
 		end if;
 	end process;

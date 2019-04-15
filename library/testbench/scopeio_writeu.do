@@ -9,8 +9,20 @@ add wave -noupdate -radix hexadecimal /testbench/du/pll2ser_e/ser_data
 add wave -noupdate -radix hexadecimal /testbench/du/pll2ser_e/ser_irdy
 add wave -noupdate -radix hexadecimal /testbench/du/pll2ser_e/ser_last
 add wave -noupdate -radix hexadecimal /testbench/du/pll2ser_e/ser_trdy
+add wave -noupdate /testbench/du/flt
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du/btof_e/bin_di
+add wave -noupdate /testbench/du/btof_e/bin_flt
+add wave -noupdate /testbench/du/btof_e/bin_irdy
+add wave -noupdate /testbench/du/btof_e/bin_trdy
+add wave -noupdate -radix hexadecimal /testbench/du/btof_e/bcd_do
+add wave -noupdate /testbench/du/btof_e/bcd_end
+add wave -noupdate /testbench/du/btof_e/bcd_irdy
+add wave -noupdate /testbench/du/btof_e/bcd_trdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du/format
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {122 ns} 0}
+WaveRestoreCursors {{Cursor 1} {1010 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -26,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {1050 ns}
+WaveRestoreZoom {0 ns} {1530 ns}

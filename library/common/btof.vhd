@@ -14,8 +14,8 @@ entity btof is
 		bin_flt  : in  std_logic;
 		bin_di   : in  std_logic_vector;
 
-		bcd_trdy : out std_logic := '1';
-		bcd_irdy : in  std_logic;
+		bcd_trdy : in   std_logic := '1';
+		bcd_irdy : out  std_logic;
 		bcd_end  : out std_logic;
 		bcd_do   : out std_logic_vector);
 end;
@@ -180,7 +180,7 @@ begin
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);
 
-	stof_irdy <= bcd_irdy;
+	stof_irdy <= bcd_trdy;
 
 	vector_e : entity hdl4fpga.vector
 	port map (
@@ -199,7 +199,7 @@ begin
 		vector_right => vector_right);
 
 	bcd_end  <= stof_end;
-	bcd_trdy <= stof_trdy;
+	bcd_irdy <= stof_trdy;
 	bcd_do   <= stof_do;
 
 end;
