@@ -7,17 +7,17 @@ use hdl4fpga.std.all;
 
 entity btof is
 	port (
-		clk       : in  std_logic;
-		bin_frm   : in  std_logic;
-		bin_irdy  : in  std_logic := '1';
-		bin_trdy  : out std_logic;
-		bin_flt   : in  std_logic;
-		bin_di    : in  std_logic_vector;
+		clk : in  std_logic;
+		frm : in  std_logic;
+		bin_irdy : in  std_logic := '1';
+		bin_trdy : out std_logic;
+		bin_flt  : in  std_logic;
+		bin_di   : in  std_logic_vector;
 
-		bcd_trdy  : out std_logic := '1';
-		bcd_irdy  : in  std_logic;
-		bcd_end   : out std_logic;
-		bcd_do    : out std_logic_vector);
+		bcd_trdy : out std_logic := '1';
+		bcd_irdy : in  std_logic;
+		bcd_end  : out std_logic;
+		bcd_do   : out std_logic_vector);
 end;
 
 architecture def of btof is
@@ -66,9 +66,9 @@ architecture def of btof is
 	signal state : states;
 begin
 
-	process (clk, bin_frm)
+	process (clk, frm)
 	begin
-		if bin_frm='0' then
+		if frm='0' then
 			state <= btod;
 		elsif rising_edge(clk) then
 			case state is
@@ -88,14 +88,14 @@ begin
 	end process;
 
 	btod_frm <= 
-		bin_frm when state=btod and bin_flt='0' else
+		frm when state=btod and bin_flt='0' else
 		'0';
 	dtos_frm <= 
-		bin_frm when state=dtos else
-		bin_frm when state=btod and bin_flt='1' else
+		frm when state=dtos else
+		frm when state=btod and bin_flt='1' else
 		'0';
 	stof_frm <= 
-		bin_frm when state=stof else
+		frm when state=stof else
 		'0';
 
 	bin_trdy <= 
@@ -106,7 +106,7 @@ begin
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk           => clk,
-		bin_frm       => btod_frm,
+		frm       => btod_frm,
 		bin_irdy      => bin_irdy,
 		bin_trdy      => btod_trdy,
 		bin_di        => bin_di,
@@ -129,7 +129,7 @@ begin
 	dtos_e : entity hdl4fpga.dtos
 	port map (
 		clk           => clk,
-		bcd_frm       => dtos_frm,
+		frm       => dtos_frm,
 		bcd_irdy      => bin_irdy,
 		bcd_trdy      => dtos_trdy,
 		bcd_di        => bin_di,
@@ -175,7 +175,7 @@ begin
 	right_up   <= wirebus(btod_right_up  & dtos_right_up,  btod_frm & dtos_frm);
 	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & dtos_frm);
 
-	vector_rst  <= not bin_frm;
+	vector_rst  <= not frm;
 	vector_addr <= wirebus(btod_addr & dtos_addr & stof_addr, btod_frm & dtos_frm & stof_frm);
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);

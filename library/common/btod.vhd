@@ -9,7 +9,7 @@ entity btod is
 	port (
 		clk           : in  std_logic;
 
-		bin_frm       : in  std_logic;
+		frm       : in  std_logic;
 		bin_irdy      : in  std_logic := '1';
 		bin_trdy      : out std_logic;
 		bin_di        : in  std_logic_vector;
@@ -39,7 +39,6 @@ architecture def of btod is
 	signal btod_di   : std_logic_vector(mem_do'range);
 	signal btod_do   : std_logic_vector(mem_di'range);
 
-	signal frm       : std_logic;
 	signal addr      : signed(mem_addr'range);
 
 	type states is (addr_s, data_s, write_s);
@@ -47,16 +46,9 @@ architecture def of btod is
 
 begin
 
-	process(clk)
+	process(frm, clk)
 	begin
-		if rising_edge(clk) then
-			frm <= bin_frm;
-		end if;
-	end process;
-
-	process(bin_frm, clk)
-	begin
-		if bin_frm='0' then
+		if frm='0' then
 			state <= addr_s;
 		elsif rising_edge(clk) then
 			case state is
@@ -99,9 +91,9 @@ begin
 		bcd_do  => btod_do,
 		bcd_cy  => btod_cy);
 
-	process (bin_frm, clk)
+	process (frm, clk)
 	begin
-		if bin_frm='0' then
+		if frm='0' then
 			btod_ena  <= '0';
 			bin_trdy  <= '0';
 			btod_ini  <= '1';
@@ -148,7 +140,7 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			mem_left_ena <= setif(bin_frm='1' and state=data_s and addr=signed(mem_left) and btod_cy='1');
+			mem_left_ena <= setif(frm='1' and state=data_s and addr=signed(mem_left) and btod_cy='1');
 			mem_left_up  <= '1';
 		end if;
 	end process;

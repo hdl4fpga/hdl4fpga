@@ -9,7 +9,7 @@ entity dtos is
 	port (
 		clk           : in  std_logic;
 
-		bcd_frm       : in  std_logic;
+		frm       : in  std_logic;
 		bcd_irdy      : in  std_logic := '1';
 		bcd_trdy      : out std_logic;
 		bcd_di        : in  std_logic_vector;
@@ -39,7 +39,6 @@ architecture def of dtos is
 	signal dtos_di   : std_logic_vector(mem_do'range);
 	signal dtos_do   : std_logic_vector(mem_di'range);
 
-	signal frm       : std_logic;
 	signal addr      : signed(mem_addr'range);
 
 	type states is (addr_s, data_s, write_s);
@@ -47,16 +46,9 @@ architecture def of dtos is
 
 begin
 
-	process(clk)
+	process(frm, clk)
 	begin
-		if rising_edge(clk) then
-			frm <= bcd_frm;
-		end if;
-	end process;
-
-	process(bcd_frm, clk)
-	begin
-		if bcd_frm='0' then
+		if frm='0' then
 			state <= addr_s;
 		elsif rising_edge(clk) then
 			case state is
@@ -101,9 +93,9 @@ begin
 		bcd_do  => dtos_do,
 		bcd_cy  => dtos_cy);
 
-	process (bcd_frm, clk)
+	process (frm, clk)
 	begin
-		if bcd_frm='0' then
+		if frm='0' then
 			dtos_ena  <= '0';
 			bcd_trdy  <= '0';
 			dtos_ini  <= '1';
@@ -151,9 +143,9 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			mem_left_ena  <= setif(bcd_frm='1' and state=data_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0'));
+			mem_left_ena  <= setif(frm='1' and state=data_s and addr=signed(mem_left)  and dtos_do=(dtos_do'range => '0'));
 			mem_left_up   <= '0';
-			mem_right_ena <= setif(bcd_frm='1' and state=data_s and addr=signed(mem_right) and dtos_cy='1');
+			mem_right_ena <= setif(frm='1' and state=data_s and addr=signed(mem_right) and dtos_cy='1');
 			mem_right_up  <= '0';
 		end if;
 	end process;

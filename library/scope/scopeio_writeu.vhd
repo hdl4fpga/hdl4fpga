@@ -30,24 +30,59 @@ use hdl4fpga.std.all;
 
 entity scopeio_writeu is
 	port (
-		clk  : in  std_logic;
-		frm  : in  std_logic;
-		irdy : in  std_logic := '1';
-		trdy : out std_logic;
-		num  : in  std_logic_vector;
-		unit : in  std_logic_vector;
-		prec : in  std_logic_vector);
+		clk    : in  std_logic;
+		frm    : in  std_logic;
+		irdy   : in  std_logic := '1';
+		trdy   : out std_logic;
+		float  : in  std_logic_vector;
+--		unit   : in  std_logic_vector;
+--		prec   : in  std_logic_vector;
+		format : out std_logic_vector);
 end;
 
-achitecture def of scopeio_writeu is
+architecture def of scopeio_writeu is
+	signal ser_irdy : std_logic;
+	signal ser_trdy : std_logic;
+	signal ser_data : std_logic_vector(4-1 downto 0);
+	signal flt      : std_logic := '0';
+	signal bcd_trdy : std_logic;
+	signal bcd_irdy : std_logic;
+	signal bcd_end  : std_logic;
+	signal bcd_do   : std_logic_vector(4-1 downto 0);
 begin
+
 	pll2ser_e : entity hdl4fpga.pll2ser
 	port map (
-		clk =>
-		frm =>
-	)
+		clk      => clk,
+		frm      => frm,
+		pll_irdy => irdy,
+		pll_trdy => trdy,
+		pll_data => float,
+		ser_trdy => ser_trdy,
+		ser_irdy => ser_irdy,
+		ser_data => ser_data);
+
+	btof_e : entity hdl4fpga.btof
+	port map (
+		clk      => clk,
+		frm      => frm,
+		bin_irdy => ser_irdy,
+		bin_trdy => ser_trdy,
+		bin_di   => ser_data,
+		bin_flt  => flt,
+		bcd_trdy => bcd_trdy,
+		bcd_irdy => bcd_irdy,
+		bcd_end  => bcd_end,
+		bcd_do   => bcd_do);
 
 	ser2pll_e : entity hdl4fpga.ser2pll
 	port map(
-	);
+		clk      => clk,
+		frm      => frm,
+		ser_trdy => bcd_trdy,
+		ser_irdy => bcd_irdy,
+		ser_data => bcd_do,
+		pll_irdy => irdy,
+		pll_trdy => trdy,
+		pll_data => format);
 end;

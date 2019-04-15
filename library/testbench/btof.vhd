@@ -75,7 +75,7 @@ begin
 	du : entity hdl4fpga.btof
 	port map (
 		clk      => clk,
-		bin_frm  => bin_cnv,
+		frm      => bin_cnv,
 		bin_trdy => bin_dv,
 		bin_irdy => bin_irdy,
 		bin_di   => bin_di,
