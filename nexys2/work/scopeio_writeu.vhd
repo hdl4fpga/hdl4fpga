@@ -27,24 +27,26 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity test_writef is
+entity scopeiowriteu is
 	port (
-		clk     : in  std_logic;
-		wr_frm  : in  std_logic;
-		wr_irdy : in  std_logic;
-		wr_trdy : in  std_logic;
-		wr_bin  : in  std_logic_vector(4*4-1 downto 0);
-		wr_do   : out std_logic_vector(0 to 8*4-1));
+		clk    : in  std_logic;
+		frm    : in  std_logic;
+		irdy   : in  std_logic;
+		trdy   : out std_logic;
+		float  : in  std_logic_vector(0 to 4*4-1);
+--		unit   : in  std_logic_vector;
+--		prec   : in  std_logic_vector;
+		format : out std_logic_vector(0 to 8*4-1));
 end;
 
-architecture test of test_writef is
+architecture test of scopeiowriteu is
 begin
-	du : entity hdl4fpga.writef
+	du : entity hdl4fpga.scopeio_writeu
 	port map (
-		clk     => clk,
-		wr_frm  => wr_frm,
-		wr_irdy => wr_irdy,
-		wr_trdy => wr_trdy,
-        wr_bin   => wr_bin,
-        wr_do   => wr_do);
+		clk  => clk,
+		frm  => frm,
+		irdy => irdy,
+		trdy => trdy,
+        float  => float,
+		format => format);
 end;
