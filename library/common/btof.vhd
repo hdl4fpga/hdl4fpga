@@ -24,7 +24,7 @@ architecture def of btof is
 
 	signal vector_rst     : std_logic;
 	signal vector_full    : std_logic;
-	signal vector_addr    : std_logic_vector(4-1 downto 0);
+	signal vector_addr    : std_logic_vector(5-1 downto 0);
 	signal vector_left    : std_logic_vector(vector_addr'length-1 downto 0);
 	signal vector_right   : std_logic_vector(vector_addr'length-1 downto 0);
 	signal vector_do      : std_logic_vector(bcd_do'length-1 downto 0);
@@ -153,9 +153,9 @@ begin
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => b"1000",
-		unit      => b"1110",
-		prec      => b"0000",
+		width     => b"01000",
+		unit      => b"11110",
+		prec      => b"00000",
 		align     => '0',
 		endian    => '0',
 		bcd_left  => vector_left,
