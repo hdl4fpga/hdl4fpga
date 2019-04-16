@@ -104,21 +104,21 @@ begin
 
 
 	pp_p : process (clk)
-		variable ptr   : signed(bcd_left'range);
-		variable aux   : signed(bcd_left'range);
-		variable last  : signed(bcd_left'range);
-		variable w     : signed(bcd_left'range);
+		variable ptr   : signed(bcd_left'length downto 0);
+		variable aux   : signed(ptr'range);
+		variable last  : signed(ptr'range);
+		variable w     : signed(ptr'range);
 		variable point : std_logic;
 		variable sign1 : std_logic;
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
 				point := '0';
-				ptr   := not signed(unit) + 1;
-				last  := signed(prec)-signed(unit);
-				w     := signed(width);
-				if signed(bcd_left)+signed(unit) >= 0 then
-					ptr  := signed(bcd_left);
+				ptr   := not resize(signed(unit), ptr'length) + 1;
+				last  := resize(signed(prec), ptr'length)-resize(signed(unit), ptr'length);
+				w     := signed(unsigned'(resize(unsigned(width), ptr'length)));
+				if resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) >= 0 then
+					ptr  := resize(signed(bcd_left), ptr'length);
 --	  				elsif signed(bcd_right)+signed(unit) < signed(prec) then
 				end if;
 				if signed(prec) < 0 then
@@ -152,7 +152,7 @@ begin
 						sel_mux <= zero_in;
 					elsif ptr <= signed(bcd_left) then
 						sel_mux <= dout_in;
-					elsif signed(bcd_left)+signed(unit) < 0 then
+					elsif resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) < 0 then
 						if sign='1' and ptr+signed(unit)=1 then
 							if neg='1' then
 								sel_mux <= minus_in;
@@ -164,7 +164,7 @@ begin
 						else
 							sel_mux <= blank_in;
 						end if;
-					elsif sign='1' and ptr=signed(bcd_left)+1 then
+					elsif sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
 						if neg='1' then
 							sel_mux <= minus_in;
 						else 
@@ -207,7 +207,7 @@ begin
 					end if;
 				end case;
 			end if;
-			mem_addr <= std_logic_vector(ptr);
+			mem_addr <= std_logic_vector(ptr(mem_addr'length-1 downto 0));
 		end if;
 	end process;
 
