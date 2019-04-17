@@ -46,10 +46,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				sr := to_unsigned(1, sr'length);
+				sr   := to_unsigned(1, sr'length);
 			elsif ser_irdy='1' then
 				data(0 to ser_data'length-1) := unsigned(ser_data);
 				data := data rol ser_data'length;
+				sr   := sr rol 1;
 			end if;
 			pll_data <= std_logic_vector(data);
 			pll_trdy <= sr(0);
