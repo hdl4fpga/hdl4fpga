@@ -41,6 +41,7 @@ entity stof is
 	port (
 		clk       : in  std_logic := '-';
 		frm       : in  std_logic;
+
 		endian    : in  std_logic := '0';
 		align     : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '-');
@@ -62,7 +63,7 @@ entity stof is
 end;
 		
 architecture def of stof is
-	type states is (data_s, addr_s);
+	type states is (init_s, data_s, addr_s);
 	signal state : states;
 
 	type inputs is (plus_in, minus_in, zero_in, dot_in, blank_in, dout_in);
@@ -87,9 +88,11 @@ begin
 	process (frm, clk)
 	begin
 		if frm='0' then
-			state <= addr_s;
+			state <= init_s;
 		elsif rising_edge(clk) then
 			case state is
+			when init_s =>
+				state <= addr_s;
 			when addr_s =>
 				if bcd_irdy='1' then
 					state <= data_s;
@@ -103,7 +106,7 @@ begin
 	end process;
 
 
-	pp_p : process (clk)
+	process (clk)
 		variable ptr   : signed(bcd_left'length downto 0);
 		variable aux   : signed(ptr'range);
 		variable last  : signed(ptr'range);
@@ -112,7 +115,8 @@ begin
 		variable sign1 : std_logic;
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			case state is
+			when init_s =>
 				point := '0';
 				ptr   := not resize(signed(unit), ptr'length) + 1;
 				last  := resize(signed(prec), ptr'length)-resize(signed(unit), ptr'length);
@@ -140,73 +144,64 @@ begin
 					ptr  := last;
 					last := ptr;
 				end if;
-			else
-				case state is
-				when addr_s =>
+			when addr_s =>
 
-					sel_mul_l : if point='1' then
-						sel_mux <= dot_in;
-					elsif ptr+signed(unit) < signed(prec) then
-						sel_mux <= blank_in;
-					elsif ptr < signed(bcd_right) then
-						sel_mux <= zero_in;
-					elsif ptr <= signed(bcd_left) then
-						sel_mux <= dout_in;
-					elsif resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) < 0 then
-						if sign='1' and ptr+signed(unit)=1 then
-							if neg='1' then
-								sel_mux <= minus_in;
-							else
-								sel_mux <= plus_in;
-							end if;
-						elsif ptr+signed(unit) <= 0 then
-							sel_mux <= zero_in;
-						else
-							sel_mux <= blank_in;
-						end if;
-					elsif sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
+				sel_mul_l : if endian='0' and point='0' and ptr+signed(unit)=-1 then
+					sel_mux <= dot_in;
+				elsif endian='1' and point='1' and ptr+signed(unit)=-1 then
+					sel_mux <= dot_in;
+				elsif ptr+signed(unit) < signed(prec) then
+					sel_mux <= blank_in;
+				elsif ptr < signed(bcd_right) then
+					sel_mux <= zero_in;
+				elsif ptr <= signed(bcd_left) then
+					sel_mux <= dout_in;
+				elsif resize(signed(bcd_left), ptr'length)+resize(signed(unit),ptr'length) < 0 then
+					if sign='1' and ptr+signed(unit)=1 then
 						if neg='1' then
 							sel_mux <= minus_in;
-						else 
+						else
 							sel_mux <= plus_in;
 						end if;
+					elsif ptr+signed(unit) <= 0 then
+						sel_mux <= zero_in;
 					else
 						sel_mux <= blank_in;
 					end if;
-
-					if ptr=last then
-						bcd_end <= '1';
-					else
-						bcd_end <= '0';
+				elsif sign='1' and ptr=resize(signed(bcd_left), ptr'length)+1 then
+					if neg='1' then
+						sel_mux <= minus_in;
+					else 
+						sel_mux <= plus_in;
 					end if;
+				else
+					sel_mux <= blank_in;
+				end if;
 
-				when data_s =>
-					if bcd_irdy='1' then
-						if endian='0' then
-							if ptr+signed(unit)=0 then
-								if point='0' then
-									point := '1';
-								else
-									point := '0';
-								end if;
-							end if;
-						elsif ptr+signed(unit)=-1 then
-							if point='0' then
-								point := '1';
-							else
-								point := '0';
-							end if;
-						end if;
+				if ptr=last then
+					bcd_end <= '1';
+				else
+					bcd_end <= '0';
+				end if;
+
+			when data_s =>
+				if bcd_irdy='1' then
+					if ptr+signed(unit)=-1 then
 						if point='0' then
-							if endian='0' then
-								ptr := ptr - 1;
-							else
-								ptr := ptr + 1;
-							end if; 
+							point := '1';
+						else
+							point := '0';
 						end if;
 					end if;
-				end case;
-			end if;
+					if point='0' then
+						if endian='0' then
+							ptr := ptr - 1;
+						else
+							ptr := ptr + 1;
+						end if; 
+					end if;
+				end if;
+			end case;
 			mem_addr <= std_logic_vector(ptr(mem_addr'length-1 downto 0));
 		end if;
 	end process;

@@ -28,12 +28,12 @@ use ieee.numeric_std.all;
 entity ser2pll is
     port (
 		clk      : in  std_logic;
-		frm      : in  std_logic;
-		ser_irdy : in  std_logic;
+		frm      : in  std_logic := '1';
+		ser_irdy : in  std_logic := '1';
 		ser_trdy : out std_logic := '1';
 		ser_data : in  std_logic_vector;
-		pll_irdy : in  std_logic;
-		pll_trdy : out std_logic;
+		pll_irdy : out std_logic;
+		pll_trdy : in  std_logic := '1';
 		pll_data : out std_logic_vector);
 end;
 
@@ -46,14 +46,16 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				sr   := to_unsigned(1, sr'length);
+				sr := to_unsigned(1, sr'length);
 			elsif ser_irdy='1' then
-				data(0 to ser_data'length-1) := unsigned(ser_data);
-				data := data rol ser_data'length;
-				sr   := sr rol 1;
+				if sr(0)='0' or (sr(0)='1' and pll_trdy='1') then
+					data(0 to ser_data'length-1) := unsigned(ser_data);
+					data := data rol ser_data'length;
+					sr   := sr rol 1;
+				end if;
 			end if;
 			pll_data <= std_logic_vector(data);
-			pll_trdy <= sr(0);
+			pll_irdy <= sr(0);
 		end if;
 	end process;
 

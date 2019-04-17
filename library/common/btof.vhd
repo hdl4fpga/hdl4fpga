@@ -7,17 +7,25 @@ use hdl4fpga.std.all;
 
 entity btof is
 	port (
-		clk : in  std_logic;
-		frm : in  std_logic;
-		bin_irdy : in  std_logic := '1';
-		bin_trdy : out std_logic;
-		bin_flt  : in  std_logic;
-		bin_di   : in  std_logic_vector;
+		clk        : in  std_logic;
+		frm        : in  std_logic;
+		bin_irdy   : in  std_logic := '1';
+		bin_trdy   : out std_logic;
+		bin_flt    : in  std_logic;
+		bin_di     : in  std_logic_vector;
 
-		bcd_trdy : in   std_logic := '1';
-		bcd_irdy : out  std_logic;
-		bcd_end  : out std_logic;
-		bcd_do   : out std_logic_vector);
+		bcd_trdy   : in  std_logic := '1';
+		bcd_irdy   : out std_logic;
+
+		bcd_width  : in  std_logic_vector;
+		bcd_unit   : in  std_logic_vector;
+		bcd_prec   : in  std_logic_vector;
+		bcd_endian : in  std_logic := '0';
+		bcd_align  : in  std_logic := '0';
+		bcd_sign   : in  std_logic := '1';
+
+		bcd_end    : out std_logic;
+		bcd_do     : out std_logic_vector);
 end;
 
 architecture def of btof is
@@ -129,7 +137,7 @@ begin
 	dtos_e : entity hdl4fpga.dtos
 	port map (
 		clk           => clk,
-		frm       => dtos_frm,
+		frm           => dtos_frm,
 		bcd_irdy      => bin_irdy,
 		bcd_trdy      => dtos_trdy,
 		bcd_di        => bin_di,
@@ -149,15 +157,16 @@ begin
 		mem_di        => dtos_do,
 		mem_do        => vector_do);
 
+	stof_irdy <= bcd_trdy;
 	stof_e : entity hdl4fpga.stof
 	port map (
 		clk       => clk,
 		frm       => stof_frm,
-		width     => b"1000",
-		unit      => b"1111",
-		prec      => b"1110",
-		align     => '0',
-		endian    => '0',
+		width     => bcd_width, 
+		unit      => bcd_unit,  
+		prec      => bcd_prec,  
+		align     => bcd_align, 
+		endian    => bcd_endian,
 		bcd_left  => vector_left,
 		bcd_right => vector_right,
 		bcd_prec  => vector_right,
@@ -169,8 +178,8 @@ begin
 		mem_addr  => stof_addr,
 		mem_do    => stof_do);
 
-	left_up    <= wirebus(btod_left_up  & dtos_left_up,  btod_frm & dtos_frm);
-	left_ena   <= wirebus(btod_left_ena & dtos_left_ena, btod_frm & dtos_frm);
+	left_up    <= wirebus(btod_left_up   & dtos_left_up,   btod_frm & dtos_frm);
+	left_ena   <= wirebus(btod_left_ena  & dtos_left_ena,  btod_frm & dtos_frm);
 
 	right_up   <= wirebus(btod_right_up  & dtos_right_up,  btod_frm & dtos_frm);
 	right_ena  <= wirebus(btod_right_ena & dtos_right_ena, btod_frm & dtos_frm);
@@ -180,7 +189,6 @@ begin
 	vector_di   <= wirebus(btod_do   & dtos_do,    btod_frm & dtos_frm);
 	vector_ena  <= wirebus(btod_mena & dtos_mena,  btod_frm & dtos_frm);
 
-	stof_irdy <= bcd_trdy;
 
 	vector_e : entity hdl4fpga.vector
 	port map (

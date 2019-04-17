@@ -35,8 +35,9 @@ entity scopeio_writeu is
 		irdy   : in  std_logic := '1';
 		trdy   : out std_logic;
 		float  : in  std_logic_vector;
---		unit   : in  std_logic_vector;
---		prec   : in  std_logic_vector;
+		width  : in  std_logic_vector := b"1000";
+		unit   : in  std_logic_vector := b"1111";
+		prec   : in  std_logic_vector := b"1110";
 		format : out std_logic_vector);
 end;
 
@@ -50,6 +51,7 @@ architecture def of scopeio_writeu is
 	signal bcd_end  : std_logic;
 	signal bcd_do   : std_logic_vector(4-1 downto 0);
 begin
+
 
 	pll2ser_e : entity hdl4fpga.pll2ser
 	port map (
@@ -65,16 +67,19 @@ begin
 
 	btof_e : entity hdl4fpga.btof
 	port map (
-		clk      => clk,
-		frm      => frm,
-		bin_irdy => ser_irdy,
-		bin_trdy => ser_trdy,
-		bin_di   => ser_data,
-		bin_flt  => flt,
-		bcd_irdy => bcd_irdy,
-		bcd_trdy => '1', --bcd_trdy,
-		bcd_end  => bcd_end,
-		bcd_do   => bcd_do);
+		clk       => clk,
+		frm       => frm,
+		bin_irdy  => ser_irdy,
+		bin_trdy  => ser_trdy,
+		bin_di    => ser_data,
+		bin_flt   => flt,
+		bcd_width => width,
+		bcd_unit  => unit,
+		bcd_prec  => prec,
+		bcd_irdy  => bcd_irdy,
+		bcd_trdy  => '1', --bcd_trdy,
+		bcd_end   => bcd_end,
+		bcd_do    => bcd_do);
 
 	ser2pll_e : entity hdl4fpga.ser2pll
 	port map(
@@ -83,7 +88,7 @@ begin
 		ser_trdy => bcd_trdy,
 		ser_irdy => bcd_irdy,
 		ser_data => bcd_do,
-		pll_irdy => irdy,
-		pll_trdy => trdy,
+		pll_irdy => trdy,
+		pll_trdy => irdy,
 		pll_data => format);
 end;

@@ -28,11 +28,11 @@ use ieee.numeric_std.all;
 entity pll2ser is
     port (
 		clk      : in  std_logic;
-		frm      : in  std_logic;
-		pll_irdy : in  std_logic;
+		frm      : in  std_logic := '1';
+		pll_irdy : in  std_logic := '1';
 		pll_trdy : out std_logic;
 		pll_data : in  std_logic_vector;
-		ser_trdy : in  std_logic;
+		ser_trdy : in  std_logic := '1';
 		ser_irdy : out std_logic;
 		ser_last : out std_logic;
 		ser_data : out std_logic_vector);
@@ -44,20 +44,24 @@ begin
 	process (clk)
 		variable sr   : unsigned(0 to pll_data'length/ser_data'length-1);
 		variable data : unsigned(0 to pll_data'length-1);
+		variable frm1 : std_logic;
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
-				sr   := to_unsigned(1, sr'length);
-				data := unsigned(pll_data);
-			elsif pll_irdy='1' then
-				if ser_trdy='1' then
-					sr   := sr   rol 1;
-					data := data rol ser_data'length;
+			if frm='1' then
+				if frm1='0' then
+					sr   := to_unsigned(1, sr'length);
+					data := unsigned(pll_data);
+				elsif pll_irdy='1' then
+					if ser_trdy='1' then
+						sr   := sr   rol 1;
+						data := data rol ser_data'length;
+					end if;
 				end if;
 			end if;
 			pll_trdy <= sr(0) and ser_trdy;
 			ser_last <= sr(0);
 			ser_data <= std_logic_vector(data(0 to ser_data'length-1));
+			frm1     := frm;
 		end if;
 	end process;
 	ser_irdy <= pll_irdy;

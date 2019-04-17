@@ -41,7 +41,7 @@ architecture def of btod is
 
 	signal addr      : signed(mem_addr'range);
 
-	type states is (addr_s, data_s, write_s);
+	type states is (init_s, addr_s, data_s, write_s);
 	signal state     : states;
 
 begin
@@ -50,9 +50,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				state <= addr_s;
+				state <= init_s;
 			else
 				case state is
+				when init_s =>
+					state <= addr_s;
 				when addr_s =>
 					if bin_irdy='1' then
 						state <= data_s;
@@ -96,48 +98,46 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			case state is
+			when init_s =>
 				btod_ena  <= '0';
 				bin_trdy  <= '0';
 				btod_ini  <= '1';
 				btod_zero <= '1';
 				mem_ena   <= '0';
 				addr      <= signed(mem_right(mem_addr'range));
-			else
-				case state is
-				when addr_s =>
-					bin_trdy <= '0';
-					btod_ena <= '0';
-					mem_ena  <= '0';
-				when data_s =>
-					if bin_irdy = '1' then
-						btod_ena <= '1';
-						mem_ena  <= '1';
-					end if;
-				when write_s =>
-					if bin_irdy='1' then
-						if addr=signed(mem_left) then
-							if btod_cy='1' then
-								bin_trdy  <= '0';
-								btod_ini  <= '0';
-								btod_zero <= '1';
-								addr      <= addr + 1;
-							else
-								bin_trdy  <= '1';
-								btod_ini  <= '1';
-								btod_zero <= '0';
-								addr      <= signed(mem_right(mem_addr'range));
-							end if;
+			when addr_s =>
+				bin_trdy <= '0';
+				btod_ena <= '0';
+				mem_ena  <= '0';
+			when data_s =>
+				if bin_irdy = '1' then
+					btod_ena <= '1';
+					mem_ena  <= '1';
+				end if;
+			when write_s =>
+				if bin_irdy='1' then
+					if addr=signed(mem_left) then
+						if btod_cy='1' then
+							bin_trdy  <= '0';
+							btod_ini  <= '0';
+							btod_zero <= '1';
+							addr      <= addr + 1;
 						else
-							btod_ini <= '0';
-							bin_trdy <= '0';
-							addr     <= addr + 1;
+							bin_trdy  <= '1';
+							btod_ini  <= '1';
+							btod_zero <= '0';
+							addr      <= signed(mem_right(mem_addr'range));
 						end if;
+					else
+						btod_ini <= '0';
+						bin_trdy <= '0';
+						addr     <= addr + 1;
 					end if;
-					btod_ena <= '0';
-					mem_ena  <= '0';
-				end case;
-			end if;
+				end if;
+				btod_ena <= '0';
+				mem_ena  <= '0';
+			end case;
 		end if;
 	end process;
 

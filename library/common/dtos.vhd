@@ -9,7 +9,7 @@ entity dtos is
 	port (
 		clk           : in  std_logic;
 
-		frm       : in  std_logic;
+		frm           : in  std_logic;
 		bcd_irdy      : in  std_logic := '1';
 		bcd_trdy      : out std_logic;
 		bcd_di        : in  std_logic_vector;
@@ -41,7 +41,7 @@ architecture def of dtos is
 
 	signal addr      : signed(mem_addr'range);
 
-	type states is (addr_s, data_s, write_s);
+	type states is (init_s, addr_s, data_s, write_s);
 	signal state : states;
 
 begin
@@ -50,9 +50,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				state <= addr_s;
+				state <= init_s;
 			else
 				case state is
+				when init_s =>
+					state <= addr_s;
 				when addr_s =>
 					if bcd_irdy='1' then
 						state <= data_s;
@@ -71,16 +73,6 @@ begin
 	end process;
 
 	dtos_di <= (dtos_di'range => '0') when dtos_zero='1' else mem_do;
---	process(clk)
---	begin
---		if rising_edge(clk) then
---			if dtos_zero='1' then
---				dtos_di <= (dtos_di'range => '0');
---			else
---				dtos_di <= mem_do;
---			end if;
---		end if;
---	end process;
 
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	generic map (
@@ -98,49 +90,47 @@ begin
 	process (frm, clk)
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			case state is
+			when init_s =>
 				dtos_ena  <= '0';
 				bcd_trdy  <= '0';
 				dtos_ini  <= '1';
 				dtos_zero <= '0';
 				mem_ena   <= '0';
 				addr      <= signed(mem_left(mem_addr'range));
-			else
-				case state is
-				when addr_s =>
-					bcd_trdy <= '0';
-					dtos_ena <= '0';
-					mem_ena  <= '0';
-				when data_s =>
-					bcd_trdy <= '0';
-					if bcd_irdy = '1' then
-						dtos_ena <= '1';
-						mem_ena  <= '1';
-					end if;
-				when write_s =>
-					if bcd_irdy='1' then
-						if addr=signed(mem_right) then
-							if dtos_cy='1' then
-								bcd_trdy  <= '0';
-								dtos_ini  <= '0';
-								dtos_zero <= '1';
-								addr     <= addr - 1;
-							else
-								bcd_trdy  <= '1';
-								dtos_ini  <= '1';
-								dtos_zero <= '0';
-								addr     <= signed(mem_left(mem_addr'range));
-							end if;
-						else
-							dtos_ini <= '0';
-							bcd_trdy <= '0';
+			when addr_s =>
+				bcd_trdy <= '0';
+				dtos_ena <= '0';
+				mem_ena  <= '0';
+			when data_s =>
+				bcd_trdy <= '0';
+				if bcd_irdy = '1' then
+					dtos_ena <= '1';
+					mem_ena  <= '1';
+				end if;
+			when write_s =>
+				if bcd_irdy='1' then
+					if addr=signed(mem_right) then
+						if dtos_cy='1' then
+							bcd_trdy  <= '0';
+							dtos_ini  <= '0';
+							dtos_zero <= '1';
 							addr     <= addr - 1;
+						else
+							bcd_trdy  <= '1';
+							dtos_ini  <= '1';
+							dtos_zero <= '0';
+							addr     <= signed(mem_left(mem_addr'range));
 						end if;
+					else
+						dtos_ini <= '0';
+						bcd_trdy <= '0';
+						addr     <= addr - 1;
 					end if;
-					dtos_ena <= '0';
-					mem_ena  <= '0';
+				end if;
+				dtos_ena <= '0';
+				mem_ena  <= '0';
 				end case;
-			end if;
 		end if;
 	end process;
 
@@ -154,7 +144,7 @@ begin
 		end if;
 	end process;
 
-	mem_addr      <= std_logic_vector(addr);
-	mem_di        <= dtos_do;
+	mem_addr <= std_logic_vector(addr);
+	mem_di   <= dtos_do;
 
 end;
