@@ -20,9 +20,12 @@ add wave -noupdate /testbench/du/btof_e/bcd_end
 add wave -noupdate /testbench/du/btof_e/bcd_irdy
 add wave -noupdate /testbench/du/btof_e/bcd_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du/frm
+add wave -noupdate /testbench/du/irdy
+add wave -noupdate /testbench/du/trdy
 add wave -noupdate -radix hexadecimal /testbench/du/format
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1030 ns} 0}
+WaveRestoreCursors {{Cursor 1} {1114 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100

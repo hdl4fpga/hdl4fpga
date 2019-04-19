@@ -87,21 +87,23 @@ begin
 
 	process (frm, clk)
 	begin
-		if frm='0' then
-			state <= init_s;
-		elsif rising_edge(clk) then
-			case state is
-			when init_s =>
-				state <= addr_s;
-			when addr_s =>
-				if bcd_irdy='1' then
-					state <= data_s;
-				end if;
-			when data_s =>
-				if bcd_irdy='1' then
+		if rising_edge(clk) then
+			if frm='0' then
+				state <= init_s;
+			else
+				case state is
+				when init_s =>
 					state <= addr_s;
-				end if;
-			end case;	
+				when addr_s =>
+					if bcd_irdy='1' then
+						state <= data_s;
+					end if;
+				when data_s =>
+					if bcd_irdy='1' then
+						state <= addr_s;
+					end if;
+				end case;	
+			end if;
 		end if;
 	end process;
 

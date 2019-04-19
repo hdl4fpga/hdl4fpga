@@ -34,8 +34,9 @@ entity scopeiowriteu is
 		irdy   : in  std_logic;
 		trdy   : out std_logic;
 		float  : in  std_logic_vector(0 to 4*4-1);
---		unit   : in  std_logic_vector;
---		prec   : in  std_logic_vector;
+		width  : in  std_logic_vector(4-1 downto 0);
+		unit   : in  std_logic_vector(4-1 downto 0);
+		prec   : in  std_logic_vector(4-1 downto 0);
 		format : out std_logic_vector(0 to 8*4-1));
 end;
 
@@ -47,6 +48,9 @@ begin
 		frm  => frm,
 		irdy => irdy,
 		trdy => trdy,
+		width => width,
+		unit  => unit,
+		prec  => prec,
         float  => float,
 		format => format);
 end;

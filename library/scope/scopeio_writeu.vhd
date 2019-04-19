@@ -36,8 +36,8 @@ entity scopeio_writeu is
 		trdy   : out std_logic;
 		float  : in  std_logic_vector;
 		width  : in  std_logic_vector := b"1000";
-		unit   : in  std_logic_vector := b"1111";
-		prec   : in  std_logic_vector := b"1110";
+		unit   : in  std_logic_vector := b"0001";
+		prec   : in  std_logic_vector := b"0000";
 		format : out std_logic_vector);
 end;
 
@@ -46,7 +46,6 @@ architecture def of scopeio_writeu is
 	signal ser_trdy : std_logic;
 	signal ser_data : std_logic_vector(4-1 downto 0);
 	signal flt      : std_logic := '0';
-	signal bcd_trdy : std_logic;
 	signal bcd_irdy : std_logic;
 	signal bcd_end  : std_logic;
 	signal bcd_do   : std_logic_vector(4-1 downto 0);
@@ -77,18 +76,24 @@ begin
 		bcd_unit  => unit,
 		bcd_prec  => prec,
 		bcd_irdy  => bcd_irdy,
-		bcd_trdy  => '1', --bcd_trdy,
 		bcd_end   => bcd_end,
 		bcd_do    => bcd_do);
 
 	ser2pll_e : entity hdl4fpga.ser2pll
 	port map(
 		clk      => clk,
-		frm      => frm,
-		ser_trdy => bcd_trdy,
 		ser_irdy => bcd_irdy,
 		ser_data => bcd_do,
-		pll_irdy => trdy,
-		pll_trdy => irdy,
 		pll_data => format);
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if frm='0' then
+				trdy <= '0';
+			else
+				trdy <= bcd_end and bcd_irdy;
+			end if;
+		end if;
+	end process;
 end;
