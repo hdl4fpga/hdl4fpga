@@ -30,13 +30,13 @@ use hdl4fpga.std.all;
 
 entity scopeio_writeticks is
 	port (
-		clk    : in  std_logic;
-		frm    : in  std_logic;
-		irdy   : in  std_logic := '1';
-		trdy   : out std_logic;
-		base   : in  std_logic_vector;
-		length : in  std_logic_vector;
-		step   : in  std_logic_vector;
+		clk   : in  std_logic;
+		frm   : in  std_logic;
+		irdy  : in  std_logic := '1';
+		trdy  : out std_logic := '1';
+		first : in  std_logic_vector;
+		last  : in  std_logic_vector;
+		step  : in  std_logic_vector;
 
 		wu_frm      : buffer std_logic;
 		wu_irdy     : out std_logic := '1';
@@ -52,23 +52,23 @@ begin
 
 	process(clk)
 		variable frm1 : std_logic;
-		variable cntr : unsigned(length'length downto 0);
+		variable cntr : unsigned(first'length-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if frm1='0' then
-				cntr   := unsigned(base);
+				cntr   := unsigned(first);
 				wu_frm <= frm;
 			elsif irdy='1' then
-				if cntr(to_integer(unsigned(length)))='0' then
+				if cntr/=unsigned(last) then
 					if wu_frm='0' then 
 						cntr := cntr + unsigned(step);
-					end if;
-					if wu_trdy='1' then
+						wu_frm <= '1';
+					elsif wu_trdy='1' then
 						wu_frm <= '0';
 					end if;
 				end if;
 			end if;
-			wu_float <= std_logic_vector(cntr(length'length-1 downto 0));
+			wu_float <= std_logic_vector(cntr(first'length-1 downto 0));
 			frm1 := frm;
 		end if;
 	end process;

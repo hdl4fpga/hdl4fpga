@@ -34,6 +34,9 @@ architecture scopeio_writeticks of testbench is
 	signal frm   : std_logic;
 	signal float : std_logic_vector(0 to 4*4-1);
 
+	signal wu_frm  : std_logic;
+	signal wu_trdy : std_logic;
+
 begin
 
 	rst <= '1', '0' after 35 ns;
@@ -56,10 +59,19 @@ begin
 		frm      => frm,
 		irdy     => '1',
 		trdy     => open,
-		base     => x"0000",
-		length   => x"1000",
-		step     => x"0020",
+		first    => x"0000",
+		last     => x"0200",
+		step     => x"0010",
+		wu_frm   => wu_frm,
 		wu_float => float,
-		wu_trdy  => '1');
+		wu_irdy  => open,
+		wu_trdy  => wu_frm);
+
+--	process (clk)
+--	begin
+--		if rising_edge(clk) then
+--			wu_trdy <= 
+--		end if;
+--	end process;
 
 end;
