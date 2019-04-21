@@ -30,51 +30,46 @@ use hdl4fpga.std.all;
 
 entity scopeio_writeticks is
 	port (
-		clk       : in  std_logic;
-		write_req : in  std_logic;
-		write_rdy : out std_logic;
-		length    : in  std_logic_vector;
-		point     : in  std_logic_vector;
-		element   : out std_logic_vector;
-		bin_val   : in  std_logic_vector;
-		bin_dv    : out std_logic;
-		bcd_sign  : in  std_logic;
-		bcd_left  : in  std_logic;
-		bcd_dv    : out std_logic;
-		bcd_val   : out std_logic_vector);
+		clk    : in  std_logic;
+		frm    : in  std_logic;
+		irdy   : in  std_logic := '1';
+		trdy   : out std_logic;
+		length : out std_logic_vector;
+		base   : in  std_logic_vector;
+
+		wu_frm      : out std_logic;
+		wu_irdy     : out std_logic := '1';
+		wu_trdy     : in  std_logic;
+		wu_float    : out std_logic_vector;
+		wu_bcdwidth : out std_logic_vector(4-1 downto 0) := b"1000";
+		wu_bcdunit  : out std_logic_vector;
+		wu_bcdprec  : out std_logic_vector);
 end;
 
 architecture def of scopeio_writeticks is
-	signal dv  : std_logic;
 begin
 
 	process(clk)
-		variable cntr : unsigned(element'length downto 0);
+		variable frm1 : std_logic;
+		variable cntr : unsigned(length'length downto 0);
 	begin
 		if rising_edge(clk) then
-			if write_req='0' then
-				cntr := (others => '0');
-			elsif dv='1' then
+			if frm1='0' then
+				cntr   := unsigned(base);
+				wr_frm <= frm;
+			elsif irdy='1' then
 				if cntr(to_integer(unsigned(length)))='0' then
-					cntr := cntr + 1;
+					if wr_frm='0' then 
+						cntr := cntr + 64;
+					end if;
+					if wu_trdy='1' then
+						wr_frm <= '0';
+					end if;
 				end if;
 			end if;
-			element   <= std_logic_vector(cntr(element'length-1 downto 0));
-			write_rdy <= cntr(to_integer(unsigned(length)));
+			wu_float <= std_logic_vector(cntr(length'length-1 downto 0));
+			frm1 := frm;
 		end if;
 	end process;
-
-	scopeio_format_e : entity hdl4fpga.scopeio_format
-	port map (
-		clk        => clk,
-		binary_ena => write_req,
-		binary_dv  => bin_dv,
-		binary     => bin_val,
-		point      => point,
-		bcd_sign   => bcd_sign,
-		bcd_left   => bcd_left,
-		bcd_dv     => dv,
-		bcd_dat    => bcd_val);
-
-	bcd_dv <= dv;
+	
 end;
