@@ -59,13 +59,15 @@ begin
 				cntr   := unsigned(first);
 				wu_frm <= frm;
 			elsif irdy='1' then
-				if cntr/=unsigned(last) then
+				if unsigned(last)>cntr then
 					if wu_frm='0' then 
 						cntr := cntr + unsigned(step);
 						wu_frm <= '1';
 					elsif wu_trdy='1' then
 						wu_frm <= '0';
 					end if;
+				else
+					wu_frm <= '0';
 				end if;
 			end if;
 			wu_float <= std_logic_vector(cntr(first'length-1 downto 0));

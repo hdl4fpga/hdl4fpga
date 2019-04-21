@@ -13,8 +13,9 @@ add wave -noupdate -radix unsigned /testbench/du/wu_bcdwidth
 add wave -noupdate -radix decimal /testbench/du/wu_bcdprec
 add wave -noupdate -radix decimal /testbench/du/wu_bcdunit
 add wave -noupdate -radix hexadecimal /testbench/du/wu_float
+add wave -noupdate -radix hexadecimal /testbench/du/last
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {70 ns} 0}
+WaveRestoreCursors {{Cursor 1} {1369 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 157
 configure wave -valuecolwidth 100
@@ -30,4 +31,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {40 ns} {840 ns}
+WaveRestoreZoom {1106 ns} {1632 ns}
