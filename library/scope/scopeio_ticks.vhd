@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity scopeio_writeticks is
+entity scopeio_ticks is
 	port (
 		clk   : in  std_logic;
 		frm   : in  std_logic;
@@ -47,7 +47,7 @@ entity scopeio_writeticks is
 		wu_bcdprec  : out std_logic_vector(4-1 downto 0) := b"1110");
 end;
 
-architecture def of scopeio_writeticks is
+architecture def of scopeio_ticks is
 begin
 
 	process(clk)

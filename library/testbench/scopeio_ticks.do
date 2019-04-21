@@ -2,18 +2,11 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/rst
 add wave -noupdate /testbench/clk
-add wave -noupdate -radix hexadecimal /testbench/float
 add wave -noupdate /testbench/frm
-add wave -noupdate /testbench/du/irdy
-add wave -noupdate /testbench/du/trdy
+add wave -noupdate -radix hexadecimal /testbench/float
 add wave -noupdate /testbench/wu_frm
-add wave -noupdate /testbench/du/wu_irdy
-add wave -noupdate /testbench/du/wu_trdy
-add wave -noupdate -radix unsigned /testbench/du/wu_bcdwidth
-add wave -noupdate -radix decimal /testbench/du/wu_bcdprec
-add wave -noupdate -radix decimal /testbench/du/wu_bcdunit
-add wave -noupdate -radix hexadecimal /testbench/du/wu_float
-add wave -noupdate -radix hexadecimal /testbench/du/last
+add wave -noupdate /testbench/ticks_e/wu_irdy
+add wave -noupdate /testbench/ticks_e/wu_trdy
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {1369 ns} 0}
 quietly wave cursor active 1

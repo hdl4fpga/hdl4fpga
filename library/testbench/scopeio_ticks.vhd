@@ -27,14 +27,16 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture scopeio_writeticks of testbench is
+architecture scopeio_ticks of testbench is
 
-	signal rst   : std_logic := '0';
-	signal clk   : std_logic := '0';
-	signal frm   : std_logic;
-	signal float : std_logic_vector(0 to 4*4-1);
+	signal rst    : std_logic := '0';
+	signal clk    : std_logic := '0';
+	signal frm    : std_logic;
+	signal float  : std_logic_vector(0 to 4*4-1);
+	signal format : std_logic_vector(0 to 8*4-1);
 
 	signal wu_frm  : std_logic;
+	signal wu_irdy : std_logic;
 	signal wu_trdy : std_logic;
 
 begin
@@ -53,25 +55,30 @@ begin
 		end if;
 	end process;
 
-	du : entity hdl4fpga.scopeio_writeticks
+	ticks_e : entity hdl4fpga.scopeio_ticks
 	port map (
 		clk      => clk,
 		frm      => frm,
 		irdy     => '1',
 		trdy     => open,
-		first    => x"0000",
+		first    => x"000f",
 		last     => x"0200",
 		step     => x"0010",
 		wu_frm   => wu_frm,
 		wu_float => float,
-		wu_irdy  => open,
-		wu_trdy  => wu_frm);
+		wu_irdy  => wu_irdy,
+		wu_trdy  => wu_trdy);
 
---	process (clk)
---	begin
---		if rising_edge(clk) then
---			wu_trdy <= 
---		end if;
---	end process;
+	writeu_e : entity hdl4fpga.scopeio_writeu
+	port map (
+		clk    => clk,
+		frm    => wu_frm,
+		irdy   => wu_irdy,
+		trdy   => wu_trdy,
+		float  => float,
+		width  => b"1000",
+		unit   => b"0000",
+		prec   => b"1101",
+		format => format);
 
 end;
