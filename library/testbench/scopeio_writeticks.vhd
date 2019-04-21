@@ -26,51 +26,40 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-entity scopeio_writeticks is
-	port (
-		clk    : in  std_logic;
-		frm    : in  std_logic;
-		irdy   : in  std_logic := '1';
-		trdy   : out std_logic;
-		base   : in  std_logic_vector;
-		length : in  std_logic_vector;
-		step   : in  std_logic_vector;
+architecture scopeio_writeticks of testbench is
 
-		wu_frm      : buffer std_logic;
-		wu_irdy     : out std_logic := '1';
-		wu_trdy     : in  std_logic;
-		wu_float    : out std_logic_vector;
-		wu_bcdwidth : out std_logic_vector(4-1 downto 0) := b"1000";
-		wu_bcdunit  : out std_logic_vector(4-1 downto 0) := b"1101";
-		wu_bcdprec  : out std_logic_vector(4-1 downto 0) := b"1110");
-end;
+	signal rst   : std_logic := '0';
+	signal clk   : std_logic := '0';
+	signal frm   : std_logic;
+	signal float : std_logic_vector(0 to 4*4-1);
 
-architecture def of scopeio_writeticks is
 begin
 
-	process(clk)
-		variable frm1 : std_logic;
-		variable cntr : unsigned(length'length downto 0);
+	rst <= '1', '0' after 35 ns;
+	clk <= not clk after 10 ns;
+
+	process (clk)
 	begin
 		if rising_edge(clk) then
-			if frm1='0' then
-				cntr   := unsigned(base);
-				wu_frm <= frm;
-			elsif irdy='1' then
-				if cntr(to_integer(unsigned(length)))='0' then
-					if wu_frm='0' then 
-						cntr := cntr + unsigned(step);
-					end if;
-					if wu_trdy='1' then
-						wu_frm <= '0';
-					end if;
-				end if;
+			if rst='1' then
+				frm  <= '0';
+			else
+				frm <= '1';
 			end if;
-			wu_float <= std_logic_vector(cntr(length'length-1 downto 0));
-			frm1 := frm;
 		end if;
 	end process;
-	
+
+	du : entity hdl4fpga.scopeio_writeticks
+	port map (
+		clk      => clk,
+		frm      => frm,
+		irdy     => '1',
+		trdy     => open,
+		base     => x"0000",
+		length   => x"1000",
+		step     => x"0020",
+		wu_float => float,
+		wu_trdy  => '1');
+
 end;
