@@ -79,28 +79,6 @@ begin
 		base(3-1 downto 0) <= b"000";
 	end block;
 
-	process(clk)
-		variable cntr : signed(bin_val'range);
-	begin
-		if rising_edge(clk) then
-			if axis_req='0' then
-				cntr := (others => '0');
-			elsif wrt_rdy='0' then
-				if bin_dv='1' then
-					if axis_sel='0' then
-						cntr := cntr + signed(axis_unit);
-					else
-						cntr := cntr - signed(axis_unit);
-					end if;
-				end if;
-			end if;
-			if axis_sel='0' then
-				bin_val <= std_logic_vector(shift_left(cntr + signed(base),1));
-			else
-				bin_val <= std_logic_vector(cntr - signed(base));
-			end if;
-		end if;
-	end process;
 
 	bcd_left <= not axis_sel;
 	bcd_sign <= axis_sel;

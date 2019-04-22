@@ -76,7 +76,7 @@ begin
 
 	bcdddiv2e_e : entity hdl4fpga.bcddiv2e
 	generic map (
-		max => 8)
+		max => 5)
 	port map (
 		clk     => clk,
 		bcd_ena => dtos_ena,

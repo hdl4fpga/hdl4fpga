@@ -37,6 +37,7 @@ entity scopeio_ticks is
 		first : in  std_logic_vector;
 		last  : in  std_logic_vector;
 		step  : in  std_logic_vector;
+		updn  : in  std_logic := '0';
 
 		wu_frm      : buffer std_logic;
 		wu_irdy     : out std_logic := '1';
@@ -61,7 +62,11 @@ begin
 			elsif irdy='1' then
 				if unsigned(last)>cntr then
 					if wu_frm='0' then 
-						cntr := cntr + unsigned(step);
+						if updn='0' then
+							cntr := cntr + unsigned(step);
+						else
+							cntr := cntr - unsigned(step);
+						end if;
 						wu_frm <= '1';
 					elsif wu_trdy='1' then
 						wu_frm <= '0';
