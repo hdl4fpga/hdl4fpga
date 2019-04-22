@@ -36,8 +36,8 @@ entity scopeio_writeu is
 		trdy   : out std_logic;
 		float  : in  std_logic_vector;
 		width  : in  std_logic_vector := b"1000";
-		unit   : in  std_logic_vector := b"0001";
-		prec   : in  std_logic_vector := b"0000";
+		unit   : in  std_logic_vector := b"0000";
+		prec   : in  std_logic_vector := b"1101";
 		format : out std_logic_vector);
 end;
 

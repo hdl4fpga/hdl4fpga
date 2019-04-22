@@ -27,43 +27,28 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture btod of testbench is
+architecture bcddiv2e of testbench is
 
 	signal rst : std_logic := '0';
 	signal clk : std_logic := '0';
 
-	signal bcd_dv  : std_logic;
-	signal bcd_ena : std_logic;
-	signal bcd_di  : std_logic_vector(0 to 4-1);
-	signal bcd_do  : std_logic_vector(bcd_di'range);
+	signal bcd_do  : std_logic_vector(4-1 downto 0);
 	signal bcd_cy  : std_logic;
 
 begin
 	rst    <= '1', '0' after 15 ns;
 	clk    <= not clk after 10 ns;
 
-	process (clk)
-		variable bcd : unsigned(0 to 2*4-1);
-	begin
-		if rising_edge(clk) then
-			if rst='1' then
-				bcd_ena <= '1';
-				bcd := x"26";
-			else
-				bcd_ena <= '0';
-				bcd := bcd sll 4;
-			end if;
-			bcd_di <= std_logic_vector(bcd(bcd_di'range));
-		end if;
-	end process;
-
-	du : entity hdl4fpga.dtof
+	du : entity hdl4fpga.bcddiv2e
+	generic map (
+		max => 16)
 	port map (
 		clk     => clk,
-		point   => b"00",
-		bcd_ena => bcd_ena,
-		bcd_di  => bcd_di,
-		bcd_do  => bcd_do,
-		bcd_cy  => bcd_cy);
+		bcd_ena => '0',
+		bcd_exp => x"e",
+
+		bcd_ini => '1',
+		bcd_di  => x"4",
+		bcd_do  => bcd_do);
 
 end;

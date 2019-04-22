@@ -56,7 +56,7 @@ begin
 		frm    => frm,
 		irdy   => '1',
 		trdy   => open,
-		float  => x"107f",
+		float  => x"003f",
 		format => format);
 
 end;

@@ -49,7 +49,7 @@ begin
 		end if;
 	end process;
 
-	process (bcd_di, bcd_ini, shtio_q)
+	process (bcd_exp, bcd_di, bcd_ini, shtio_q)
 		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
 		variable tmp_shtio : unsigned(size-1 downto 0);
 		variable carry     : std_logic;
