@@ -108,7 +108,7 @@ begin
 
 	bin_trdy <= 
 	   btod_trdy when state=btod and bin_flt='0' else
-	   stof_trdy when state=stof else
+	   stof_trdy when state=stof and stof_end='1' else
 	   '0';
 	
 	btod_e : entity hdl4fpga.btod
