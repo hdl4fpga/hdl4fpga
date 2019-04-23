@@ -39,7 +39,8 @@ architecture def of scopeio_axis is
 
 	signal vt_ena      : std_logic;
 	signal vt_addr     : std_logic_vector(13-1 downto 6);
-	signal vt_vaddr    : std_logic_vector(13-1 downto 6);
+	signal vt_vaddr    : std_logic_vector(13-1 downto 0);
+	signal vt_taddr    : std_logic_vector(13-1 downto 6);
 	signal vt_tick     : std_logic_vector(wu_format'range);
 
 	signal hz_ena      : std_logic;
@@ -103,65 +104,76 @@ begin
 		wr_addr => vt_addr,
 		wr_data => wu_format,
 
-		rd_addr => vt_vaddr,
+		rd_addr => vt_taddr,
 		rd_data => vt_tick);
 
 	video_b : block
-		signal code     : std_logic_vector(4-1 downto 0);
 
+		signal hz_x     : signed(hz_vaddr'range);
+		signal hz_y     : std_logic_vector(video_vcntr'length-1 downto 0);
 		signal hz_bcd   : std_logic_vector(code'range);
-		signal vt_bcd   : std_logic_vector(code'range);
+		signal hz_crow  : std_logic_vector(6-1 downto 0);
+		signal hz_ccol  : std_logic_vector(6-1 downto 0);
 		signal hz_don   : std_logic;
-		signal vt_don   : std_logic;
-		signal char_dot : std_logic;
-		signal x        : std_logic_vector(hz_vaddr'left downto 0);
-		signal y        : std_logic_vector(vt_vaddr'left downto 0);
-
 		signal hs_on    : std_logic;
+
+		signal vt_x     : std_logic_vector(video_hcntr'length-1 downto 0);
+		signal vt_y     : signed(hz_vaddr'range);
+		signal vt_bcd   : std_logic_vector(code'range);
+		signal vt_crow  : std_logic_vector(6-1 downto 0);
+		signal vt_ccol  : std_logic_vector(6-1 downto 0);
+		signal vt_don   : std_logic;
 		signal vs_on    : std_logic;
+
+		signal char_code : std_logic_vector(4-1 downto 0);
+		signal char_row  : std_logic_vector(3-1 downto 0);
+		signal char_col  : std_logic_vector(3-1 downto 0);
+		signal char_dot  : std_logic;
+
 	begin
 
-		x_p : process (video_clk)
-			variable x : signed(hz_vaddr'left downto 0);
+		hz_x <= resize(signed(video_hcntr), x'length) + signed(hz_offset);
+		hz_y <= video_vcntr;
+		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				x := resize(signed(video_hcntr), x'length);
-				x := x + signed(hz_offset);
-				hz_vaddr <= std_logic_vector(x);
-				if video_hzon='1' then
-					x := resize(signed(video_hcntr), x'length) + signed(hz_offset);
-				end if;
-				hs_on <= video_hzon;
+				hz_vaddr <= std_logic_vector(hz_x);
+				hs_on    <= video_hzon;
+				hz_ccol  <= std_logic_vector(hz_x(hz_ccol'range));
+				hz_crow  <= hz_y(hz_crow'range);
 			end if;
 		end process;
-		hz_bcd <= word2byte(hz_tick, hz_vaddr(6-1 downto 3), code'length);
+		hz_taddr <= hz_vaddr(hz_taddr'range);
+		hz_bcd   <= word2byte(hz_tick, hz_vaddr(6-1 downto 3), char_code'length);
 
-		y_p : process (video_clk)
+		vt_x <= video_hcntr;
+		vt_y <= resize(signed(video_vcntr), y'length) + signed(vt_offset);
+		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				y <= std_logic_vector(resize(signed(video_vcntr), y'length));
-				if video_vton='1' then
-					y <= std_logic_vector(resize(signed(video_vcntr), y'length) + signed(vt_offset));
-				end if;
-				vs_on <= video_vton;
+				vt_vaddr <= std_logic_vector(y);
+				vs_on    <= video_vton;
+				vt_ccol  <= vt_x(vt_ccol'range));
+				vt_crow  <= std_logic_vector(vt_y(vt_crow'range));
 			end if;
 		end process;
+		vt_taddr <= vt_vaddr(vt_taddr'range);
+		vt_bcd   <= word2byte(std_logic_vector(unsigned(vt_tick) rol 2*char_code'length), video_hcntr(6-1 downto 3), char_code'length);
 
-		vt_vaddr <= y(vt_vaddr'range);
-		vt_bcd  <= word2byte(std_logic_vector(unsigned(vt_tick) rol 2*code'length), x(6-1 downto 3), code'length);
-		code    <= word2byte(hz_bcd & vt_bcd, vs_on);
-
+		char_row  <= word2byte(hz_crow & vt_crow, vs_on); 
+		char_col  <= word2byte(hz_ccol & vt_ccol, vs_on); 
+		char_code <= word2byte(hz_bcd  & vt_bcd,  vs_on);
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
 			font_bitrom => psf1digit8x8,
 			font_height => 2**3,
 			font_width  => 2**3)
 		port map (
-			clk         => video_clk,
-			char_col    => x(3-1 downto 0),
-			char_row    => y(3-1 downto 0),
-			char_code   => code,
-			char_dot    => char_dot);
+			clk       => video_clk,
+			char_col  => char_col,
+			char_row  => char_row,
+			char_code => code,
+			char_dot  => char_dot);
 
 		romlat_b : block
 			signal ons : std_logic_vector(0 to 2-1);
