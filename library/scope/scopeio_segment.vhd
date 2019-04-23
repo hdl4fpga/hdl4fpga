@@ -19,6 +19,11 @@ entity scopeio_segment is
 		axis_base     : in  std_logic_vector;
 		axis_scale    : in  std_logic_vector;
 
+		wu_frm      : out std_logic;
+		wu_irdy     : out std_logic;
+		wu_trdy     : in  std_logic;
+		wu_value    : out std_logic_vector;
+		wu_format   : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -81,25 +86,33 @@ begin
 	generic map (
 		latency => latency)
 	port map (
-		in_clk      => in_clk,
+		clk         => in_clk,
 
-		axis_dv     => axis_dv,
-		axis_point  => axis_scale(4-1 downto 2),
-		axis_unit   => axis_unit,
-		axis_base   => axis_base,
-		axis_sel    => axis_sel,
+		frm         => axis_dv,
+		irdy        => '1',
+		trdy        => open,
 
-		hz_on       => hz_on,
-		hz_dot      => hz_dot,
-		hz_offset   => hz_offset,
+		wu_irdy     => wu_irdy,
+		wu_trdy     => wu_trdy,
+		wu_value    => wu_value,
+		wu_format   => wu_format,
 
-		vt_on       => vt_on,
-		vt_dot      => vt_dot,
-		vt_offset   => vt_offset,
+--		axis_point  => axis_scale(4-1 downto 2),
+		unit   => axis_unit,
+--		axis_base   => axis_base,
+--		axis_sel    => axis_sel,
 
 		video_clk   => video_clk,
 		video_hcntr => x,
-		video_vcntr => y);
+		video_vcntr => y,
+
+		hz_offset   => hz_offset,
+		video_hzon  => hz_on,
+		video_hzdot => hz_dot,
+
+		vt_offset   => vt_offset,
+		video_vton  => vt_on,
+		video_vtdot => vt_dot);
 
 	trigger_b : block 
 		signal row : unsigned(trigger_level'range);

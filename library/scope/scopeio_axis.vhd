@@ -23,18 +23,17 @@ entity scopeio_axis is
 		wu_value    : out std_logic_vector;
 		wu_format   : in  std_logic_vector;
 
-		hz_offset   : in  std_logic_vector;
-		vt_offset   : in  std_logic_vector;
-
 		video_clk   : in  std_logic;
 		video_hcntr : in  std_logic_vector;
 		video_vcntr : in  std_logic_vector;
 
+		hz_offset   : in  std_logic_vector;
 		video_hzon  : in  std_logic;
-		video_vton  : in  std_logic;
+		video_hzdot : out std_logic;
 
-		video_vtdot : out std_logic;
-		video_hzdot : out std_logic);
+		vt_offset   : in  std_logic_vector;
+		video_vton  : in  std_logic;
+		video_vtdot : out std_logic);
 
 end;
 
