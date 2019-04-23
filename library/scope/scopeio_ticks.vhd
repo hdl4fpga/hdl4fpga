@@ -50,7 +50,7 @@ begin
 	process(clk)
 		variable frm1 : std_logic;
 		variable wfrm : std_logic;
-		variable accm : unsigned((base'range);
+		variable accm : unsigned(base'range);
 	begin
 		if rising_edge(clk) then
 			if frm1='0' then
