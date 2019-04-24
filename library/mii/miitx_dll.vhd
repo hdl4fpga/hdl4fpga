@@ -53,6 +53,8 @@ architecture mix of miitx_dll is
 	signal crc32_txd   : std_logic_vector(mii_txd'range);
 	signal crc32_txdv  : std_logic;
 	signal mii_ptr     : unsigned(0 to unsigned_num_bits(64*8/mii_txd'length)-1); -- := (others => '0');
+
+	constant pre_bysiz : natural :=  mii_pre'length/mii_txd'length;
 begin
 
 	process (mii_txc)
@@ -77,11 +79,11 @@ begin
 		mii_txdv => miipre_txdv,
 		mii_txd  => miipre_txd);
 
-	minpkt_txd <= mii_rxd when mii_rxdv='1' else (others => '0');
+	minpkt_txd <= mii_rxd when mii_rxdv='1' else (minpkt_txd'range => '0');
 	miishr_txd_e : entity hdl4fpga.align
 	generic map (
 		n  => mii_txd'length,
-		d  => (1 to mii_txd'length => mii_pre'length/mii_txd'length))
+		d  => (1 to mii_txd'length => pre_bysiz))
 	port map (
 		clk => mii_txc,
 		di  => minpkt_txd, --mii_rxd,
@@ -91,7 +93,7 @@ begin
 	miishr_txdv_e : entity hdl4fpga.align
 	generic map (
 		n  => 1,
-		d  => (1 to 1 => mii_pre'length/mii_txd'length))
+		d  => (1 to 1 => pre_bysiz))
 	port map (
 		clk   => mii_txc,
 		di(0) => minpkt_txdv, --mii_rxdv,

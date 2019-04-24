@@ -11,52 +11,6 @@ use hdl4fpga.std.all;
 
 architecture beh of s3estarter is
 
-	constant hz_scales : scale_vector(0 to 16-1) := (
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1001", deca => x"E6" ),
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**0*2**0*5**0, scale => "1010", deca => x"E6" ),
-                                                                                                 
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**0*2**1*5**0, scale => "0000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**0*2**0*5**1, scale => "0001", deca => to_ascii('m')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**1*2**0*5**0, scale => "0010", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**1*2**1*5**0, scale => "0100", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**1*2**0*5**1, scale => "0101", deca => to_ascii('m')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(+0), mult => 10**2*2**0*5**0, scale => "0110", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+1), mult => 10**2*2**1*5**0, scale => "1000", deca => to_ascii('m')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+1), mult => 10**2*2**0*5**1, scale => "1001", deca => to_ascii('m')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(+1), mult => 10**3*2**0*5**0, scale => "1010", deca => to_ascii('m')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(-1), mult => 10**3*2**1*5**0, scale => "0000", deca => to_ascii(' ')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(-1), mult => 10**3*2**0*5**1, scale => "0001", deca => to_ascii(' ')),
-
-		(from => 0.0, step => 5.00001*5.0*10.0**(-1), mult => 10**4*2**0*5**0, scale => "0010", deca => to_ascii(' ')),
-		(from => 0.0, step => 1.00001*5.0*10.0**(+0), mult => 10**4*2**1*5**0, scale => "0100", deca => to_ascii(' ')),
-		(from => 0.0, step => 2.50001*5.0*10.0**(+0), mult => 10**4*2**0*5**1, scale => "0101", deca => to_ascii(' ')));
-
-	constant vt_scales : scale_vector(0 to 16-1) := (
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => -(125*2**18)/(128*10**0*2**1*5**0), scale => "1000", deca => to_ascii('m')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => -(125*2**18)/(128*10**0*2**0*5**1), scale => "1001", deca => to_ascii('m')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => -(125*2**18)/(128*10**0*2**1*5**1), scale => "1010", deca => to_ascii('m')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => -(125*2**18)/(128*10**1*2**1*5**0), scale => "0000", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => -(125*2**18)/(128*10**1*2**0*5**1), scale => "0001", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => -(125*2**18)/(128*10**1*2**1*5**1), scale => "0010", deca => to_ascii(' ')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => -(125*2**18)/(128*10**2*2**1*5**0), scale => "0100", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(+0), step => -2.50001*10.0**(+0), mult => -(125*2**18)/(128*10**2*2**0*5**1), scale => "0101", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(+0), step => -5.00001*10.0**(+0), mult => -(125*2**18)/(128*10**2*2**1*5**1), scale => "0110", deca => to_ascii(' ')),
-                                                                                                      
-		(from => 7*1.00001*10.0**(+1), step => -1.00001*10.0**(+1), mult => -(125*2**18)/(128*10**3*2**1*5**0), scale => "1000", deca => to_ascii(' ')),
-		(from => 7*2.50001*10.0**(+1), step => -2.50001*10.0**(+1), mult => -(125*2**18)/(128*10**3*2**0*5**1), scale => "1001", deca => to_ascii(' ')),
-		(from => 7*5.00001*10.0**(+1), step => -5.00001*10.0**(+1), mult => -(125*2**18)/(128*10**3*2**1*5**1), scale => "1010", deca => to_ascii(' ')),
-                                                                                     
-		(from => 7*1.00001*10.0**(-1), step => -1.00001*10.0**(-1), mult => -(125*2**18)/(128*10**4*2**1*5**0), scale => "0000", deca => to_ascii('k')),
-		(from => 7*2.50001*10.0**(-1), step => -2.50001*10.0**(-1), mult => -(125*2**18)/(128*10**4*2**0*5**1), scale => "0001", deca => to_ascii('k')),
-		(from => 7*5.00001*10.0**(-1), step => -5.00001*10.0**(-1), mult => -(125*2**18)/(128*10**4*2**1*5**1), scale => "0010", deca => to_ascii('k')),
-                                                                                     
-		(from => 7*1.00001*10.0**(+0), step => -1.00001*10.0**(+0), mult => -(125*2**18)/(128*10**5*2**0*5**0), scale => "0100", deca => to_ascii('k')));
-
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
@@ -96,6 +50,7 @@ architecture beh of s3estarter is
 	signal input_ena : std_logic;
 	signal tdiv      : std_logic_vector(4-1 downto 0);
 	signal vga_rgb   : std_logic_vector(3-1 downto 0);
+	signal ipcfg_req : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -284,45 +239,36 @@ begin
 		end if;
 	end process;
 
+	process (sw0, e_tx_clk)
+	begin
+		if sw0='1' then
+			ipcfg_req <= '0';
+			led0  <= '1';
+		elsif rising_edge(e_tx_clk) then
+			led0  <= '0';
+			ipcfg_req <= '1';
+		end if;
+	end process;
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		layout_id    => 1,
-		hz_scales    => hz_scales,
-		vt_scales    => vt_scales,
-		inputs       => 2,
-		gauge_labels => to_ascii(string'(
-			"Escala     : " &
-			"Posicion   : " &
-			"Escala     : " &
-			"Posicion   : " &
-			"Horizontal : " &
-			"Disparo    : ")),
-		unit_symbols => to_ascii(string'(
-			"V" &
-			"V" &
-			"V" &
-			"V" &
-			"s" &
-			"V")),
-		input_preamp => (0 to 1 => 1.0),
-		channels_fg  => b"110" & "011",
-		channels_bg  => b"000" & "000",
-		hzaxis_fg    => b"010",
-		hzaxis_bg    => b"000",
-		grid_fg      => b"100",
-		grid_bg      => b"000")
+		inputs      => 2)
 	port map (
-		mii_rxc     => e_rx_clk,
-		mii_rxdv    => e_rx_dv,
-		mii_rxd     => e_rxd,
-		tdiv        => tdiv,
+		si_clk      => e_rx_clk,
+		si_dv       => e_rx_dv,
+		si_data     => e_rxd,
+		so_clk      => e_tx_clk,
+		so_dv       => e_txen,
+		so_data     => e_txd,
+		ipcfg_req   => ipcfg_req,
 		input_clk   => spi_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
 		video_clk   => vga_clk,
-		video_rgb   => vga_rgb,
+		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
-		video_vsync => vga_vsync);
+		video_vsync => vga_vsync,
+		video_blank => open);
 
 	vga_red   <= vga_rgb(2);
 	vga_green <= vga_rgb(1);
@@ -331,7 +277,6 @@ begin
 	--------------------------
 
 	e_txen <= 'Z';
-	e_txd  <= (others => 'Z');
 	e_mdc  <= '0';
 	e_mdio <= 'Z';
 	e_txd_4 <= '0';

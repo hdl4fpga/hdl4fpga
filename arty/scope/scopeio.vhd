@@ -306,7 +306,7 @@ begin
 		input_ena   => input_ena,
 		input_data  => samples(0 to sample_size*inputs-1),
 		video_clk   => vga_clk,
-		video_rgb   => vga_rgb,
+		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_blank => open);

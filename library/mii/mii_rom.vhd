@@ -51,10 +51,11 @@ architecture def of mii_rom is
 		constant arg : std_logic_vector)
 		return byte_vector is
 
-		variable val : byte_vector(0 to 2**addr_size-1) := (others => (others => '-'));
-		variable aux : std_logic_vector(2**addr_size*val(0)'length-1 downto 0) := (others => '-');
+		variable val : byte_vector(0 to 2**addr_size-1) := (others => (byte'range => '-'));
+		variable aux : std_logic_vector(2**addr_size*byte'length-1 downto 0) := (others => '-');
 
 	begin
+
 		aux(arg'length-1 downto 0) := arg;
 		for i in 0 to mem_size-1 loop
 			val(i) := aux(val(0)'length-1 downto 0);

@@ -58,7 +58,6 @@ entity s3estarter is
 		e_txd  	 : out std_logic_vector(0 to 3) := (others => 'Z');
 		e_txen   : out std_logic := 'Z';
 		e_txd_4  : out std_logic;
-
 		e_tx_clk : in  std_logic := 'Z';
 
 		e_rxd    : in std_logic_vector(0 to 4-1) := (others => 'Z');

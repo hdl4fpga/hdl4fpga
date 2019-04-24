@@ -135,7 +135,9 @@ begin
 		constant arpproto  : std_logic_vector := x"0806";
 
 
-		signal mii_ptr       : unsigned(0 to unsigned_num_bits(to_miisize(64))-1); -- := (others => '0');
+		constant miiptr_size : natural := unsigned_num_bits(to_miisize(64))-1;
+--		signal mii_ptr       : unsigned(0 to unsigned_num_bits(to_miisize(64))-1); -- := (others => '0');
+		signal mii_ptr       : unsigned(0 to miiptr_size-1); -- := (others => '0');
 
 		signal smacmymac_sel : wor std_ulogic := '1';
 		signal dmacbcst_sel  : wor std_ulogic := '1';
@@ -273,37 +275,38 @@ begin
 		end block;
 
 		tx_b : block
-			signal dmac_ena     : std_logic;
-			signal smac_ena     : std_logic;
-			signal type_ena     : std_logic;
+			signal dmac_ena      : std_logic;
+			signal smac_ena      : std_logic;
+			signal type_ena      : std_logic;
 
-			signal dmac_txd   : std_logic_vector(mii_txd'range);
-			signal smac_txd   : std_logic_vector(mii_txd'range);
+			signal dmac_txd      : std_logic_vector(mii_txd'range);
+			signal smac_txd      : std_logic_vector(mii_txd'range);
 
-			signal mymac_treq     : std_logic;
-			signal mymac_txd      : std_logic_vector(0 to mii_txd'length-1);
+			signal mymac_treq    : std_logic;
+			signal mymac_txd     : std_logic_vector(0 to mii_txd'length-1);
 
-			signal txdv         : std_logic;
-			signal txd          : std_logic_vector(0 to mii_txd'length-1);
-			signal rxdv         : std_logic;
-			signal rxd          : std_logic_vector(0 to mii_txd'length-1);
+			signal txdv          : std_logic;
+			signal txd           : std_logic_vector(0 to mii_txd'length-1);
+			signal rxdv          : std_logic;
+			signal rxd           : std_logic_vector(0 to mii_txd'length-1);
 
-			signal dll_txdv     : std_logic;
-			signal dll_txd      : std_logic_vector(0 to mii_txd'length-1);
+			signal dll_txdv      : std_logic;
+			signal dll_txd       : std_logic_vector(0 to mii_txd'length-1);
 
 			signal type_txdv     : std_logic;
 			signal type_txd      : std_logic_vector(0 to mii_txd'length-1);
 
-			signal arptype_req  : std_logic;
-			signal arptype_rxdv : std_logic;
-			signal arptype_rxd  : std_logic_vector(mii_txd'range);
+			signal arptype_req   : std_logic;
+			signal arptype_rxdv  : std_logic;
+			signal arptype_rxd   : std_logic_vector(mii_txd'range);
 
-			signal iptype_req   : std_logic;
-			signal iptype_rxdv  : std_logic;
-			signal iptype_rxd   : std_logic_vector(mii_txd'range);
+			signal iptype_req    : std_logic;
+			signal iptype_rxdv   : std_logic;
+			signal iptype_rxd    : std_logic_vector(mii_txd'range);
 
-			signal miitx_ptr    : unsigned(0 to to_miisize(4));
-			signal txdv1        : std_logic;
+			signal miitxptr_size : natural := to_miisize(4);
+			signal miitx_ptr     : unsigned(0 to miitxptr_size-1);
+			signal txdv1         : std_logic;
 		begin
 			rxd <= wirebus(
 				arp_txd  & ip_txd,
@@ -472,7 +475,8 @@ begin
 		end block;
 
 		arp_b : block
-			signal arp_rxptr : unsigned(0 to unsigned_num_bits(to_miisize(32))-1);
+			constant arprxptr_size : natural := unsigned_num_bits(to_miisize(32));
+			signal arp_rxptr : unsigned(0 to arprxptr_size -1);
 
 			signal requ_rcv : std_logic;
 			signal rply_req : std_logic;
@@ -666,7 +670,8 @@ begin
 			signal ip4shdr_txd   : std_logic_vector(mii_txd'range);
 			signal ip4shdr_ena   : std_logic;
 
-			signal ip_ptr        : std_logic_vector(0 to unsigned_num_bits(to_miisize(32))-1);
+			signal ipptr_size    : natural := unsigned_num_bits(to_miisize(32));
+			signal ip_ptr        : std_logic_vector(0 to ipptr_size-1);
 
 			signal ip4len_ena    : std_logic;
 			signal ip4len_txd    : std_logic_vector(mii_txd'range);
@@ -918,7 +923,8 @@ begin
 				udpdata_ena <= lookup(udp_data,  std_logic_vector(mii_ptr)) and udpproto_vld;
 
 				rx_b : block
-					signal dport : std_logic_vector(mii_rxd'length*to_miisize(udp_dport.size)-1 downto 0);
+					constant dport_size : natural := mii_rxd'length*to_miisize(udp_dport.size)-1;
+					signal dport : std_logic_vector(dport_size-1 downto 0);
 				begin
 
 					dport_b : for i in udpdports_vld'range generate

@@ -47,6 +47,7 @@ entity scopeio_miiudp is
 	end;
 
 architecture struct of scopeio_miiudp is
+
 	signal udpdports_vld : std_logic_vector(0 to 0);
 	signal udpddata_vld  : std_logic;
 begin
@@ -70,7 +71,8 @@ begin
 		mii_txd   => mii_txd);
 
 	clip_crc_b : block
-		constant lat : natural := 32/mii_rxd'length;
+		constant lat    : natural := 32/mii_rxd'length;
+		constant latrxd : natural := lat+1;
 
 		signal dv : std_logic;
 	begin
@@ -94,7 +96,7 @@ begin
 		lat_rxd_e : entity hdl4fpga.align
 		generic map (
 			n => mii_rxd'length,
-			d => (mii_rxd'range => lat+1))
+			d => (1 to mii_rxd'length => latrxd))
 		port map (
 			clk => mii_rxc,
 			di  => mii_rxd,

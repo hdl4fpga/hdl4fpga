@@ -578,6 +578,9 @@ begin
 			irdy   => wu_irdy,
 			trdy   => wu_trdy,
 			float  => x"003f",
+			width  => b"1000",
+			unit   => b"0000",
+			prec   => b"1101",
 			format => wu_format);
 
 		video_e : entity hdl4fpga.video_vga
@@ -635,14 +638,18 @@ begin
 			signal phon    : std_logic;
 			signal pfrm    : std_logic;
 
+			constant mwin_x      : natural_vector := to_naturalvector(vlayout, 0);
+			constant mwin_y      : natural_vector := to_naturalvector(vlayout, 1);
+			constant mwin_width  : natural_vector := to_naturalvector(vlayout, 2);
+			constant mwin_height : natural_vector := to_naturalvector(vlayout, 3);
 		begin
 
 			win_mngr_e : entity hdl4fpga.win_mngr
 			generic map (
-				x     => to_naturalvector(vlayout, 0),
-				y     => to_naturalvector(vlayout, 1),
-				width => to_naturalvector(vlayout, 2),
-				height=> to_naturalvector(vlayout, 3))
+				x     => mwin_x,
+				y     => mwin_y,
+				width => mwin_width,
+				height=> mwin_height)
 			port map (
 				video_clk  => video_clk,
 				video_x    => video_hcntr,
@@ -657,8 +664,11 @@ begin
 
 			sgmnt_b : block
 
-				signal pwin_x  : std_logic_vector(unsigned_num_bits(sgmnt_width(vlayout)-1)-1 downto 0);
-				signal pwin_y  : std_logic_vector(unsigned_num_bits(sgmnt_height(vlayout)-1)-1 downto 0);
+				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(vlayout)-1);
+				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(vlayout)-1);
+
+				signal pwin_x  : std_logic_vector(pwinx_size-1 downto 0);
+				signal pwin_y  : std_logic_vector(pwiny_size-1 downto 0);
 				signal p_hzl   : std_logic;
 
 				signal win_y   : std_logic_vector(pwin_y'range);

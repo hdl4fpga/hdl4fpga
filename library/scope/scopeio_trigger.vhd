@@ -23,8 +23,10 @@ end;
 
 architecture beh of scopeio_trigger is
 
+	constant outdata_samplesize : natural := output_data'length/inputs;
 	signal sample : std_logic_vector(input_data'length/inputs-1 downto 0);
 
+	signal resized_inputdata : std_logic_vector(output_data'length-1 downto 0);
 begin
 
 	sample <= word2byte(input_data, trigger_chanid, sample'length);
@@ -41,13 +43,26 @@ begin
 		end if;
 	end process;
 
+	process(input_data)
+		variable out_data : unsigned(output_data'length-1 downto 0);
+		variable in_data  : unsigned(input_data'length-1 downto 0);
+	begin 
+		in_data := unsigned(input_data);
+		for i in 0 to inputs-1 loop
+			out_data(outdata_samplesize-1 downto 0) := in_data(sample'length-1 downto sample'length-outdata_samplesize);
+			out_data := out_data rol outdata_samplesize;
+			in_data  := in_data  rol sample'length;
+		end loop;
+		resized_inputdata <= std_logic_vector(out_data);
+	end process;
+
 	datalat_e : entity hdl4fpga.align
 	generic map (
-		n => input_data'length,
-		d => (input_data'range => 2))
+		n => resized_inputdata'length,
+		d => (1 to resized_inputdata'length => 2))
 	port map (
 		clk => input_clk,
-		di  => input_data,
+		di  => resized_inputdata,
 		do  => output_data);
 
 	enalat_e : entity hdl4fpga.align

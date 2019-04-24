@@ -44,7 +44,7 @@ begin
 	lat_e : entity hdl4fpga.align
 	generic map (
 		n => input_data'length,
-		d => (input_data'range => 1))
+		d => (1 to input_data'length => 1))
 	port map (
 		clk => input_clk,
 		di  => input_data,
