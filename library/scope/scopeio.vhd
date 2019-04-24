@@ -245,14 +245,15 @@ architecture beh of scopeio is
 	signal rgtr_dv           : std_logic;
 	signal rgtr_data         : std_logic_vector(32-1 downto 0);
 
-	signal downsample_ena    : std_logic;
-	signal downsample_data   : std_logic_vector(input_data'range);
 	signal ampsample_ena     : std_logic;
 	signal ampsample_data    : std_logic_vector(input_data'range);
 	signal triggersample_ena  : std_logic;
-	signal triggersample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal resizesample_ena  : std_logic;
-	signal resizesample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+--	signal triggersample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal triggersample_data : std_logic_vector(input_data'range);
+	signal resizedsample_ena  : std_logic;
+	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal downsample_ena    : std_logic;
+	signal downsample_data   : std_logic_vector(resizedsample_data'range);
 
 	constant storage_size : natural := unsigned_num_bits(vlayout.num_of_seg*grid_width(vlayout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
@@ -436,16 +437,16 @@ begin
 			aux1 := aux1 rol storage_word'length;
 			aux2 := aux2 rol triggersample_data'length/inputs;
 		end loop;
-		resizesample_data <= std_logic_vector(aux1);
+		resizedsample_data <= std_logic_vector(aux1);
 	end process;
-	resizesample_ena <= triggersample_ena;
+	resizedsample_ena <= triggersample_ena;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
 		factor       => hz_scale,
 		input_clk    => input_clk,
-		input_ena    => resizesample_ena,
-		input_data   => resizesample_data,
+		input_ena    => resizedsample_ena,
+		input_data   => resizedsample_data,
 		trigger_shot => trigger_shot,
 		display_ena  => video_frm,
 		output_ena   => downsample_ena,

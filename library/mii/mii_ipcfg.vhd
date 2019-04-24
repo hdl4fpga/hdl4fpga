@@ -85,17 +85,18 @@ architecture struct of mii_ipcfg is
 		return std_logic is
 		variable aux    : field_vector(table'range);
 		variable offset : natural;
+		variable retval : std_logic := '0';
 	begin
 		aux := to_miisize(table);
 		for i in aux'range loop
 			offset := aux(i).offset-to_miisize(base);
 			if offset <= to_integer(unsigned(data)) then
 				if to_integer(unsigned(data)) < offset+aux(i).size then
-					return '1';
+					retval := '1';
 				end if;
 			end if;
 		end loop;
-		return '0';
+		return retval;
 	end;
 
 	impure function lookup (
@@ -136,8 +137,7 @@ begin
 
 
 		constant miiptr_size : natural := unsigned_num_bits(to_miisize(64))-1;
---		signal mii_ptr       : unsigned(0 to unsigned_num_bits(to_miisize(64))-1); -- := (others => '0');
-		signal mii_ptr       : unsigned(0 to miiptr_size-1); -- := (others => '0');
+		signal mii_ptr       : unsigned(0 to miiptr_size-1) -- := (others => '0');
 
 		signal smacmymac_sel : wor std_ulogic := '1';
 		signal dmacbcst_sel  : wor std_ulogic := '1';
@@ -304,7 +304,7 @@ begin
 			signal iptype_rxdv   : std_logic;
 			signal iptype_rxd    : std_logic_vector(mii_txd'range);
 
-			signal miitxptr_size : natural := to_miisize(4);
+			constant miitxptr_size : natural := to_miisize(4);
 			signal miitx_ptr     : unsigned(0 to miitxptr_size-1);
 			signal txdv1         : std_logic;
 		begin
@@ -670,7 +670,7 @@ begin
 			signal ip4shdr_txd   : std_logic_vector(mii_txd'range);
 			signal ip4shdr_ena   : std_logic;
 
-			signal ipptr_size    : natural := unsigned_num_bits(to_miisize(32));
+			constant ipptr_size  : natural := unsigned_num_bits(to_miisize(32));
 			signal ip_ptr        : std_logic_vector(0 to ipptr_size-1);
 
 			signal ip4len_ena    : std_logic;
