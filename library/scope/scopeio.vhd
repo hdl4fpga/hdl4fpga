@@ -555,7 +555,7 @@ begin
 
 	end block;
 
-	 video_b : block
+	video_b : block
 
 		constant vgaio_latency : natural := storage_data'length+4+4+(2+1);
 
@@ -571,6 +571,15 @@ begin
 		signal sgmnt_on    : std_logic;
 		signal sgmnt_bgon  : std_logic;
 	begin
+		formatu_e : entity hdl4fpga.scopeio_formatu
+		port map (
+			clk    => si_clk,
+			frm    => wu_frm,
+			irdy   => wu_irdy,
+			trdy   => wu_trdy,
+			float  => x"003f",
+			format => wu_format);
+
 		video_e : entity hdl4fpga.video_vga
 		generic map (
 			mode => vlayout.mode,

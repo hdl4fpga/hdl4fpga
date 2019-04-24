@@ -50,7 +50,7 @@ begin
 		end if;
 	end process;
 
-	du : entity hdl4fpga.scopeio_writeu
+	du : entity hdl4fpga.scopeio_formatu
 	port map (
 		clk    => clk,
 		frm    => frm,
