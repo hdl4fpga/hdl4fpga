@@ -288,8 +288,14 @@ architecture beh of scopeio is
 	signal trigger_dv     : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_range);
 	signal trigger_edge   : std_logic;
-	signal trigger_freeze    : std_logic;
+	signal trigger_freeze : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
+
+	signal wu_frm         : std_logic;
+	signal wu_irdy        : std_logic;
+	signal wu_trdy        : std_logic;
+	signal wu_value       : std_logic_vector(4*4-1 downto 0);
+	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
 begin
 
@@ -794,6 +800,11 @@ begin
 					axis_sel      => axis_sel,
 					axis_base     => axis_base,
 					axis_scale    => axis_scale,
+
+					wu_irdy       => wu_irdy,
+					wu_trdy       => wu_trdy,
+					wu_value      => wu_value,
+					wu_format     => wu_format,
 
 					video_clk     => video_clk,
 					x             => x,

@@ -19,11 +19,11 @@ entity scopeio_segment is
 		axis_base     : in  std_logic_vector;
 		axis_scale    : in  std_logic_vector;
 
-		wu_frm      : out std_logic;
-		wu_irdy     : out std_logic;
-		wu_trdy     : in  std_logic;
-		wu_value    : out std_logic_vector;
-		wu_format   : in  std_logic_vector;
+		wu_frm        : out std_logic;
+		wu_irdy       : out std_logic;
+		wu_trdy       : in  std_logic;
+		wu_value      : out std_logic_vector;
+		wu_format     : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;

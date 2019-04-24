@@ -26,74 +26,37 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-entity scopeio_writeu is
-	port (
-		clk    : in  std_logic;
-		frm    : in  std_logic;
-		irdy   : in  std_logic := '1';
-		trdy   : out std_logic;
-		float  : in  std_logic_vector;
-		width  : in  std_logic_vector := b"1000";
-		unit   : in  std_logic_vector := b"0000";
-		prec   : in  std_logic_vector := b"1101";
-		format : out std_logic_vector);
-end;
+architecture scopeio_formatu of testbench is
 
-architecture def of scopeio_writeu is
-	signal ser_irdy : std_logic;
-	signal ser_trdy : std_logic;
-	signal ser_data : std_logic_vector(4-1 downto 0);
-	signal flt      : std_logic := '0';
-	signal bcd_irdy : std_logic;
-	signal bcd_end  : std_logic;
-	signal bcd_do   : std_logic_vector(4-1 downto 0);
+	signal rst    : std_logic := '0';
+	signal clk    : std_logic := '0';
+	signal frm    : std_logic;
+	signal format : std_logic_vector(0 to 8*4-1);
+
 begin
 
-
-	pll2ser_e : entity hdl4fpga.pll2ser
-	port map (
-		clk      => clk,
-		frm      => frm,
-		pll_irdy => irdy,
-		pll_trdy => open,
-		pll_data => float,
-		ser_trdy => ser_trdy,
-		ser_irdy => ser_irdy,
-		ser_last => flt,
-		ser_data => ser_data);
-
-	btof_e : entity hdl4fpga.btof
-	port map (
-		clk       => clk,
-		frm       => frm,
-		bin_irdy  => ser_irdy,
-		bin_trdy  => ser_trdy,
-		bin_di    => ser_data,
-		bin_flt   => flt,
-		bcd_width => width,
-		bcd_unit  => unit,
-		bcd_prec  => prec,
-		bcd_irdy  => bcd_irdy,
-		bcd_end   => bcd_end,
-		bcd_do    => bcd_do);
-
-	ser2pll_e : entity hdl4fpga.ser2pll
-	port map(
-		clk      => clk,
-		ser_irdy => bcd_irdy,
-		ser_data => bcd_do,
-		pll_data => format);
+	rst <= '1', '0' after 35 ns;
+	clk <= not clk after 10 ns;
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
-				trdy <= '0';
+			if rst='1' then
+				frm  <= '0';
 			else
-				trdy <= bcd_end and bcd_irdy;
+				frm <= '1';
 			end if;
 		end if;
 	end process;
+
+	du : entity hdl4fpga.scopeio_writeu
+	port map (
+		clk    => clk,
+		frm    => frm,
+		irdy   => '1',
+		trdy   => open,
+		float  => x"003f",
+		format => format);
+
 end;

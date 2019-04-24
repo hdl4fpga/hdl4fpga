@@ -28,50 +28,72 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture scopeio_format of testbench is
-	signal rst     : std_logic := '1';
-	signal clk     : std_logic := '0';
+entity scopeio_formatu is
+	port (
+		clk    : in  std_logic;
+		frm    : in  std_logic;
+		irdy   : in  std_logic := '1';
+		trdy   : out std_logic;
+		float  : in  std_logic_vector;
+		width  : in  std_logic_vector := b"1000";
+		unit   : in  std_logic_vector := b"0000";
+		prec   : in  std_logic_vector := b"1101";
+		format : out std_logic_vector);
+end;
 
-	signal fill_ena : std_logic := '1';
-	signal point    : std_logic_vector(0 to 2) := "111";
-
-	signal value    : std_logic_vector(16-1 downto 0);
-	signal bcd_dv   : std_logic;
-	signal bcd_dat  : std_logic_vector(0 to 4*8-1);
-	signal binary_ena : std_logic;
-	signal binary_dv : std_logic;
-	signal t        : std_logic;
-
+architecture def of scopeio_formatu is
+	signal ser_irdy : std_logic;
+	signal ser_trdy : std_logic;
+	signal ser_data : std_logic_vector(4-1 downto 0);
+	signal flt      : std_logic := '0';
+	signal bcd_irdy : std_logic;
+	signal bcd_end  : std_logic;
+	signal bcd_do   : std_logic_vector(4-1 downto 0);
 begin
 
-	clk <= not clk  after  5 ns;
-	rst <= '1', '0' after 26 ns;
+
+	pll2ser_e : entity hdl4fpga.pll2ser
+	port map (
+		clk      => clk,
+		frm      => frm,
+		pll_irdy => irdy,
+		pll_trdy => open,
+		pll_data => float,
+		ser_trdy => ser_trdy,
+		ser_irdy => ser_irdy,
+		ser_last => flt,
+		ser_data => ser_data);
+
+	btof_e : entity hdl4fpga.btof
+	port map (
+		clk       => clk,
+		frm       => frm,
+		bin_irdy  => ser_irdy,
+		bin_trdy  => ser_trdy,
+		bin_di    => ser_data,
+		bin_flt   => flt,
+		bcd_width => width,
+		bcd_unit  => unit,
+		bcd_prec  => prec,
+		bcd_irdy  => bcd_irdy,
+		bcd_end   => bcd_end,
+		bcd_do    => bcd_do);
+
+	ser2pll_e : entity hdl4fpga.ser2pll
+	port map(
+		clk      => clk,
+		ser_irdy => bcd_irdy,
+		ser_data => bcd_do,
+		pll_data => format);
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if rst='0' then
-				binary_ena <= '1';
-				if binary_dv='1' then
-					t <= not t;
-				end if;
+			if frm='0' then
+				trdy <= '0';
 			else
-				t <= '0';
-				binary_ena <= '0';
+				trdy <= bcd_end and bcd_irdy;
 			end if;
 		end if;
 	end process;
-
-	value <= b"0000_1111_1111_1111" when t='0' else b"0001_0000_0101_1111";
-	du: entity hdl4fpga.scopeio_format
-	port map (
-		clk        => clk,
-		binary_ena => binary_ena,
-		binary_dv  => binary_dv,
-		binary     => value,
-		point      => point,
-		bcd_left   => '0',
-		bcd_dv     => bcd_dv,
-		bcd_dat    => bcd_dat);
-
 end;
