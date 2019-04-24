@@ -727,7 +727,7 @@ package body std is
 		constant ena  : std_logic_vector;
 		constant def  : std_logic_vector := (0 to 0 => '-'))
 		return std_logic_vector is
-		variable size : natural := (inp'length+ena'length-1)/ena'length;
+		constant size : natural := (inp'length+ena'length-1)/ena'length;
 		variable aux  : unsigned(0 to size*ena'length-1);
 	begin
 		aux(0 to inp'length-1) := unsigned(inp);

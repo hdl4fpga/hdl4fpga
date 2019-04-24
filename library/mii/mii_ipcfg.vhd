@@ -137,7 +137,7 @@ begin
 
 
 		constant miiptr_size : natural := unsigned_num_bits(to_miisize(64))-1;
-		signal mii_ptr       : unsigned(0 to miiptr_size-1) -- := (others => '0');
+		signal mii_ptr       : unsigned(0 to miiptr_size-1); -- := (others => '0');
 
 		signal smacmymac_sel : wor std_ulogic := '1';
 		signal dmacbcst_sel  : wor std_ulogic := '1';
@@ -184,7 +184,7 @@ begin
 		signal ipdaddr_rtxdv : std_logic;
 
 		signal dhcp_txd   : std_logic_vector(mii_txd'range);
-		signal dhcp_txdv  : std_logic;
+		signal dhcp_txdv  : std_logic_vector(0 to 0); -- ISE and Vivado workaround 
 		signal arp_txd       : std_logic_vector(mii_txd'range);
 		signal arp_txdv      : std_logic;
 		signal ip_txd        : std_logic_vector(mii_txd'range);
@@ -706,8 +706,8 @@ begin
 
 			ipdata_txd <= wirebus (
 				dhcp_txd,
-				(0 => dhcp_txdv));
-			ipdata_txdv <= dhcp_txdv;
+				(0 => dhcp_txdv(0)));
+			ipdata_txdv <= dhcp_txdv(0);
 
 			process(mii_txc)
 			begin
@@ -1104,9 +1104,9 @@ begin
 
 
 --					dhcp_txd  <= word2byte(dis_txd  & requ_txd,   not dis_txdv);
---					dhcp_txdv <= word2byte(dis_txdv & requ_txdv,  not dis_txdv)(0);
+--					dhcp_txdv <= word2byte(dis_txdv & requ_txdv,  not dis_txdv);
 					dhcp_txd  <= word2byte(dis_txd  & (dhcp_txd'range => '0'), not dis_txdv);
-					dhcp_txdv <= word2byte(dis_txdv & "0",                     not dis_txdv)(0);
+					dhcp_txdv <= word2byte(dis_txdv & "0",                     not dis_txdv);
 				end block;
 			end block;
 
