@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="35" Path="/home/msagre/work/hdl4fpga/arty/vivado/scopeio/scopeio.xpr">
+<Project Version="7" Minor="35" Path="C:/Users/msagre/hdl4fpga/arty/vivado/scopeio/scopeio.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="df387da547134d9dbd8743c7d41975b6"/>
@@ -388,14 +388,11 @@
     <Simulator Name="Questa">
       <Option Name="Description" Val="Questa Advanced Simulator"/>
     </Simulator>
-    <Simulator Name="IES">
-      <Option Name="Description" Val="Incisive Enterprise Simulator (IES)"/>
-    </Simulator>
-    <Simulator Name="VCS">
-      <Option Name="Description" Val="Verilog Compiler Simulator (VCS)"/>
-    </Simulator>
     <Simulator Name="Riviera">
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
+    </Simulator>
+    <Simulator Name="ActiveHDL">
+      <Option Name="Description" Val="Active-HDL Simulator"/>
     </Simulator>
   </Simulators>
   <Runs Version="1" Minor="10">
@@ -404,18 +401,18 @@
         <StratHandle Name="Flow_PerfOptimized_high" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design">
           <Option Id="RepFanoutThreshold">400</Option>
-          <Option Id="NoCombineLuts">1</Option>
           <Option Id="KeepEquivalentRegisters">1</Option>
-          <Option Id="ShregMinSize">5</Option>
+          <Option Id="NoCombineLuts">1</Option>
           <Option Id="FsmExtraction">1</Option>
           <Option Id="ResourceSharing">2</Option>
+          <Option Id="ShregMinSize">5</Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2017" CtrlBit="true">
         <ReportConfig Name="synth_1_synth_report_utilization_0" Spec="report_utilization" RunStep="synth_design" ReportFile="arty_utilization_synth.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_utilization_synth.pb"/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
         </ReportConfig>
         <ReportConfig Name="synth_1_synth_synthesis_report_0" Spec="" RunStep="synth_design" ReportFile="arty.vds">
           <ReportConfigOption Name="dummy_option" Type="string"/>
@@ -423,7 +420,7 @@
       </ReportStrategy>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Uses multiple algorithms for optimization, placement, and routing to get potentially better results." WriteIncrSynthDcp="false" State="current" SynthRun="synth_1" IncludeInArchive="true">
+    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Uses multiple algorithms for optimization, placement, and routing to get potentially better results." WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Performance_Explore" Flow="Vivado Implementation 2016"/>
         <Step Id="init_design"/>
@@ -444,6 +441,7 @@
         <Step Id="post_route_phys_opt_design"/>
         <Step Id="write_bitstream"/>
       </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2017" CtrlBit="true">
         <ReportConfig Name="impl_1_init_report_timing_summary_0" Spec="report_timing_summary" RunStep="init_design" Version="1" Minor="0" IsDisabled="true">
           <ReportConfigOption Name="dummy_option" Type="string"/>
@@ -529,7 +527,7 @@
         <ReportConfig Name="impl_1_bitstream_report_webtalk_0" Spec="" RunStep="write_bitstream" ReportFile="usage_statistics_webtalk.html">
           <ReportConfigOption Name="dummy_option" Type="string"/>
         </ReportConfig>
-        <ReportConfig Name="impl_1_bitstream_implementation_log_0" Spec="" RunStep="write_bitstream" ReportFile="arty.vdi">
+        <ReportConfig Name="impl_1_bitstream_implementation_log_0" Spec="" RunStep="write_bitstream">
           <ReportConfigOption Name="dummy_option" Type="string"/>
         </ReportConfig>
       </ReportStrategy>

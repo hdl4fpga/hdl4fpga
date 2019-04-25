@@ -248,7 +248,6 @@ architecture beh of scopeio is
 	signal ampsample_ena     : std_logic;
 	signal ampsample_data    : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_ena  : std_logic;
---	signal triggersample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal triggersample_data : std_logic_vector(input_data'range);
 	signal resizedsample_ena  : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
@@ -667,6 +666,11 @@ begin
 
 			sgmnt_b : block
 
+				constant sgmnt_x : natural_vector := (0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout));
+				constant sgmnt_y : natural_vector := (0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout));
+				constant sgmnt_w : natural_vector := (0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout));
+				constant sgmnt_h : natural_vector := (0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout));
+
 				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(vlayout)-1);
 				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(vlayout)-1);
 
@@ -709,21 +713,21 @@ begin
 					win_x     => pwin_x,
 					win_y     => pwin_y);
 
---				mngr_e : entity hdl4fpga.win_mngr
---				generic map (
---					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout)),
---					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout)),
---					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout)),
---					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout)))
---				port map (
---					video_clk  => video_clk,
---					video_x    => pwin_x,
---					video_y    => pwin_y,
---					video_don  => phon,
---					video_frm  => pfrm,
---					win_don    => cdon,
---					win_frm    => cfrm);
---
+				mngr_e : entity hdl4fpga.win_mngr
+				generic map (
+					x      => sgmnt_x,
+					y      => sgmnt_y,
+					width  => sgmnt_w,
+					height => sgmnt_h)
+				port map (
+					video_clk  => video_clk,
+					video_x    => pwin_x,
+					video_y    => pwin_y,
+					video_don  => phon,
+					video_frm  => pfrm,
+					win_don    => cdon,
+					win_frm    => cfrm);
+
 				wena <= not setif(cdon=(cdon'range => '0'));
 				wfrm <= not setif(cfrm=(cfrm'range => '0'));
 

@@ -46,7 +46,6 @@ architecture beh of arty is
 	signal tdiv           : std_logic_vector(0 to 4-1);
 
 	signal ipcfg_req : std_logic;
-	signal txc  : std_logic;
 	signal txd  : std_logic_vector(eth_txd'range);
 	signal txdv : std_logic;
 
@@ -283,15 +282,6 @@ begin
 		end if;
 	end process;
 
-	txc <= eth_txclk_bufg;
-	process (txc)
-	begin
-		if falling_edge(txc) then
-			eth_txd   <= txd;
-			eth_tx_en <= txdv;
-		end if;
-	end process;
-
 --	sample <= x"00ff";
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
@@ -299,8 +289,8 @@ begin
 		si_dv       => eth_rx_dv,
 		si_data     => eth_rxd,
 		so_clk      => eth_txclk_bufg,
-		so_dv       => eth_tx_en,
-		so_data     => eth_txd,
+		so_dv       => txdv,
+		so_data     => txd,
 		ipcfg_req   => ipcfg_req,
 		input_clk   => input_clk,
 		input_ena   => input_ena,
@@ -310,6 +300,14 @@ begin
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_blank => open);
+
+	process (eth_txclk_bufg)
+	begin
+		if falling_edge(eth_txclk_bufg) then
+			eth_txd   <= txd;
+			eth_tx_en <= txdv;
+		end if;
+	end process;
 
 	process (vga_clk)
 	begin
