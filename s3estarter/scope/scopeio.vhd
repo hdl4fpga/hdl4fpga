@@ -309,7 +309,6 @@ begin
 	fpga_init_b <= '0';
 	spi_ss_b <= '0';
 
-	led0 <= '1';
 	led1 <= '1';
 	led2 <= '1';
 	led3 <= '1';

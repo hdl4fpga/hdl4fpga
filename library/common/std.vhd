@@ -336,7 +336,7 @@ package body std is
 		aux      := unsigned(data);
 		checksum := (others => '0');
 		for i in 0 to n-1 loop
-			checksum := checksum + resize(unsigned(aux(0 to size-1)), checksum'length);
+			checksum := checksum + resize(aux(0 to size-1), checksum'length);
 			if checksum(0)='1' then
 				checksum := checksum + 1;
 			end if;
@@ -729,15 +729,16 @@ package body std is
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
 		variable aux  : unsigned(0 to size*ena'length-1);
+		variable retval : std_logic_vector(aux'range) := fill(data => def, size => size);
 	begin
 		aux(0 to inp'length-1) := unsigned(inp);
 		for i in ena'range loop
 			if ena(i)='1' then
-				return std_logic_vector(aux(0 to size-1));
+				retval := std_logic_vector(aux(0 to size-1));
 			end if;
 			aux := aux rol size;
 		end loop;
-		return fill(data => def, size => size);
+		return retval;
 	end;
 
 	function word2byte (

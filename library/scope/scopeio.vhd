@@ -246,7 +246,7 @@ architecture beh of scopeio is
 	signal rgtr_data         : std_logic_vector(32-1 downto 0);
 
 	signal ampsample_ena     : std_logic;
-	signal ampsample_data    : std_logic_vector(input_data'range);
+	signal ampsample_data    : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_ena  : std_logic;
 --	signal triggersample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal triggersample_data : std_logic_vector(input_data'range);

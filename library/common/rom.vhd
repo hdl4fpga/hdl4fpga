@@ -59,7 +59,7 @@ architecture def of rom is
 		return val;
 	end;
 
-	shared variable rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom);
+	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom);
 
 begin
 

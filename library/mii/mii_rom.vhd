@@ -45,13 +45,13 @@ architecture def of mii_rom is
 	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
 	constant addr_size : natural := unsigned_num_bits(mem_size-1);
 
-	type byte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
+	type miibyte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
 
 	function mem_init (
 		constant arg : std_logic_vector)
-		return byte_vector is
+		return miibyte_vector is
 
-		variable val : byte_vector(0 to 2**addr_size-1) := (others => (byte'range => '-'));
+		variable val : miibyte_vector(0 to 2**addr_size-1) := (others => (byte'range => '-'));
 		variable aux : std_logic_vector(2**addr_size*byte'length-1 downto 0) := (others => '-');
 
 	begin
@@ -65,8 +65,8 @@ architecture def of mii_rom is
 		return val;
 	end;
 
-	constant mem : byte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
-	signal cntr  : unsigned(0 to addr_size);
+	signal mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
+	signal cntr : unsigned(0 to addr_size);
 
 begin
 
@@ -86,6 +86,6 @@ begin
 	mii_teoc <= cntr(0);
 	mii_trdy <= mii_treq and cntr(0);
 	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= mem(to_integer(unsigned(cntr(1 to addr_size))));
+	mii_txd  <= mem(to_integer((cntr(1 to addr_size))));
 
 end;

@@ -52,7 +52,7 @@ architecture beh of mii_1chksum is
 begin
 
 	op1 <= cksm(mii_rxd'reverse_range);
-	op2 <= unsigned(reverse(mii_rxd)) when mii_rxdv='1' else (others => '0');
+	op2 <= unsigned(reverse(mii_rxd)) when mii_rxdv='1' else (op2'range => '0');
 
 	adder_p: process(op1, op2, ci)
 		variable arg1 : unsigned(0 to mii_rxd'length+1);
