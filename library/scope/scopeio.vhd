@@ -357,8 +357,10 @@ begin
 
 	amp_b : block
 		constant sample_length : natural := input_data'length/inputs;
-		signal output_ena : std_logic_vector(0 to inputs-1);
+		signal output_ena    : std_logic_vector(0 to inputs-1);
+		signal input_samples : std_logic_vector(0 to input_data'length-1);
 	begin
+		input_samples <= input_data;
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
 
@@ -402,7 +404,7 @@ begin
 			port map (
 				input_clk     => input_clk,
 				input_ena     => input_ena,
-				input_sample  => input_data,
+				input_sample  => input_samples(sample_range),
 				gain_value    => gain_value,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
@@ -411,7 +413,7 @@ begin
 
 		ampsample_ena <= output_ena(0);
 	end block;
- 
+
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
 		inputs => inputs)
@@ -707,21 +709,21 @@ begin
 					win_x     => pwin_x,
 					win_y     => pwin_y);
 
-				mngr_e : entity hdl4fpga.win_mngr
-				generic map (
-					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout)),
-					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout)),
-					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout)),
-					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout)))
-				port map (
-					video_clk  => video_clk,
-					video_x    => pwin_x,
-					video_y    => pwin_y,
-					video_don  => phon,
-					video_frm  => pfrm,
-					win_don    => cdon,
-					win_frm    => cfrm);
-
+--				mngr_e : entity hdl4fpga.win_mngr
+--				generic map (
+--					x      => natural_vector'(0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout)),
+--					y      => natural_vector'(0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout)),
+--					width  => natural_vector'(0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout)),
+--					height => natural_vector'(0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout)))
+--				port map (
+--					video_clk  => video_clk,
+--					video_x    => pwin_x,
+--					video_y    => pwin_y,
+--					video_don  => phon,
+--					video_frm  => pfrm,
+--					win_don    => cdon,
+--					win_frm    => cfrm);
+--
 				wena <= not setif(cdon=(cdon'range => '0'));
 				wfrm <= not setif(cfrm=(cfrm'range => '0'));
 

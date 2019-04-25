@@ -54,7 +54,8 @@ architecture beh of scopeio_palette is
 	end;
 
 	constant paletteid_size : natural := unsigned_num_bits(traces_dots'length + 9 - 1); 
-	constant palette_ids    : std_logic_vector := std_logic_vector(unsigned(id_codes(traces_dots'length + 9)) ror paletteid_size*traces_dots'length); 
+	constant paletteid_data : std_logic_vector := std_logic_vector(unsigned(id_codes(traces_dots'length + 9)) ror paletteid_size*traces_dots'length); 
+	constant palette_ids    : std_logic_vector(0 to paletteid_data'length-1) := paletteid_data;
 
 	signal trace_on   : std_logic;
 	signal trigger_on : std_logic;

@@ -44,17 +44,17 @@ entity stof is
 
 		endian    : in  std_logic := '0';
 		align     : in  std_logic := '0';
-		width     : in  std_logic_vector := (0 to 0 => '-');
-		unit      : in  std_logic_vector := (0 to 0 => '-');
+		width     : in  std_logic_vector;
+		unit      : in  std_logic_vector;
 		neg       : in  std_logic := '0';
 		sign      : in  std_logic := '1';
-		prec      : in  std_logic_vector := (0 to 0 => '-');
+		prec      : in  std_logic_vector;
 
 		bcd_irdy  : in  std_logic;
 		bcd_trdy  : out std_logic;
 		bcd_left  : in  std_logic_vector;
 		bcd_right : in  std_logic_vector;
-		bcd_prec  : in  std_logic_vector := (0 to 0 => 'U');
+		bcd_prec  : in  std_logic_vector;
 		bcd_di    : in  std_logic_vector;
 		bcd_end   : out std_logic;
 

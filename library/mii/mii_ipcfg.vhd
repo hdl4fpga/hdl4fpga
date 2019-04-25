@@ -114,13 +114,15 @@ architecture struct of mii_ipcfg is
 	function wor (
 		constant arg : std_logic_vector)
 		return std_logic is
+		variable rval : std_logic;
 	begin
+		rval := '0';
 		for i in arg'range loop
 			if arg(i)='1' then
-				return '1';
+				rval := '1';
 			end if;
 		end loop;
-		return '0';
+		return rval;
 	end;
 
 begin
