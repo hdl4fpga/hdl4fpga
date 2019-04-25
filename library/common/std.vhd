@@ -729,16 +729,16 @@ package body std is
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
 		variable aux  : unsigned(0 to size*ena'length-1);
-		variable retval : std_logic_vector(aux'range) := fill(data => def, size => size);
+		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
 	begin
 		aux(0 to inp'length-1) := unsigned(inp);
 		for i in ena'range loop
 			if ena(i)='1' then
-				retval := std_logic_vector(aux(0 to size-1));
+				rval := std_logic_vector(aux(0 to size-1));
 			end if;
 			aux := aux rol size;
 		end loop;
-		return retval;
+		return rval;
 	end;
 
 	function word2byte (

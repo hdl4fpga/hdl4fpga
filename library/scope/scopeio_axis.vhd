@@ -57,7 +57,7 @@ begin
 	begin
 
 		process (clk)
-			variable cntr : unsigned(max(hz_addr'length, vt_addr'length)-1 downto 0);
+			variable cntr : unsigned(max(hz_addr'left, vt_addr'left) downto 6);
 		begin
 			if rising_edge(clk) then
 				if frm='0' then
@@ -119,16 +119,16 @@ begin
 		signal hz_x     : signed(hz_vaddr'range);
 		signal hz_y     : std_logic_vector(video_vcntr'length-1 downto 0);
 		signal hz_bcd   : std_logic_vector(char_code'range);
-		signal hz_crow  : std_logic_vector(6-1 downto 0);
-		signal hz_ccol  : std_logic_vector(6-1 downto 0);
+		signal hz_crow  : std_logic_vector(3-1 downto 0);
+		signal hz_ccol  : std_logic_vector(3-1 downto 0);
 		signal hz_don   : std_logic;
 		signal hs_on    : std_logic;
 
 		signal vt_x     : std_logic_vector(video_hcntr'length-1 downto 0);
 		signal vt_y     : signed(hz_vaddr'range);
 		signal vt_bcd   : std_logic_vector(char_code'range);
-		signal vt_crow  : std_logic_vector(6-1 downto 0);
-		signal vt_ccol  : std_logic_vector(6-1 downto 0);
+		signal vt_crow  : std_logic_vector(3-1 downto 0);
+		signal vt_ccol  : std_logic_vector(3-1 downto 0);
 		signal vt_don   : std_logic;
 		signal vs_on    : std_logic;
 
