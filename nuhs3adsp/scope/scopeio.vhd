@@ -87,16 +87,16 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs => inputs,
-		default_tracesfg => std_logic_vector'(b"11111111_11111111_11111111"),
-		default_gridfg   => std_logic_vector'(b"11111111_00000000_00000000"),
-		default_gridbg   => std_logic_vector'(b"00000000_00000000_00000000"),
-		default_hzfg     => std_logic_vector'(b"11111111_11111111_11111111"),
-		default_hzbg     => std_logic_vector'(b"00000000_00000000_11111111"),
-		default_vtfg     => std_logic_vector'(b"11111111_11111111_11111111"),
-		default_vtbg     => std_logic_vector'(b"00000000_00000000_11111111"),
-		default_textbg   => std_logic_vector'(b"00000000_00000000_00000000"),
-		default_sgmntbg  => std_logic_vector'(b"00000000_11111111_11111111"),
-		default_bg       => std_logic_vector'(b"11111111_11111111_11111111"))
+		default_tracesfg => b"11111111_11111111_11111111",
+		default_gridfg   => b"11111111_00000000_00000000",
+		default_gridbg   => b"00000000_00000000_00000000",
+		default_hzfg     => b"11111111_11111111_11111111",
+		default_hzbg     => b"00000000_00000000_11111111",
+		default_vtfg     => b"11111111_11111111_11111111",
+		default_vtbg     => b"00000000_00000000_11111111",
+		default_textbg   => b"00000000_00000000_00000000",
+		default_sgmntbg  => b"00000000_11111111_11111111",
+		default_bg       => b"11111111_11111111_11111111")
 	port map (
 		si_clk      => mii_rxc,
 		si_dv       => mii_rxdv,

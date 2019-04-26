@@ -252,7 +252,17 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		inputs      => 2)
+		inputs           => inputs,
+		default_tracesfg => b"1_1_1",
+		default_gridfg   => b"1_0_0",
+		default_gridbg   => b"0_0_0",
+		default_hzfg     => b"1_1_1",
+		default_hzbg     => b"0_0_1",
+		default_vtfg     => b"1_1_1",
+		default_vtbg     => b"0_0_1",
+		default_textbg   => b"0_0_0",
+		default_sgmntbg  => b"0_1_1",
+		default_bg       => b"1_1_1")
 	port map (
 		si_clk      => e_rx_clk,
 		si_dv       => e_rx_dv,

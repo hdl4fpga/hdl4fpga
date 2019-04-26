@@ -18,16 +18,16 @@ entity scopeio is
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		default_tracesfg : in  std_logic_vector := std_logic_vector'("111");
-		default_gridfg   : in  std_logic_vector := std_logic_vector'("100");
-		default_gridbg   : in  std_logic_vector := std_logic_vector'("000");
-		default_hzfg     : in  std_logic_vector := std_logic_vector'("111");
-		default_hzbg     : in  std_logic_vector := std_logic_vector'("001");
-		default_vtfg     : in  std_logic_vector := std_logic_vector'("111");
-		default_vtbg     : in  std_logic_vector := std_logic_vector'("001");
-		default_textbg   : in  std_logic_vector := std_logic_vector'("000");
-		default_sgmntbg  : in  std_logic_vector := std_logic_vector'("011");
-		default_bg       : in  std_logic_vector := std_logic_vector'("111"));
+		default_tracesfg : in  std_logic_vector := b"1_1_1";
+		default_gridfg   : in  std_logic_vector := b"1_0_0";
+		default_gridbg   : in  std_logic_vector := b"0_0_0";
+		default_hzfg     : in  std_logic_vector := b"1_1_1";
+		default_hzbg     : in  std_logic_vector := b"0_0_1";
+		default_vtfg     : in  std_logic_vector := b"1_1_1";
+		default_vtbg     : in  std_logic_vector := b"0_0_1";
+		default_textbg   : in  std_logic_vector := b"0_0_0";
+		default_sgmntbg  : in  std_logic_vector := b"0_1_1";
+		default_bg       : in  std_logic_vector := b"1_1_1");
 	port (
 		si_clk      : in  std_logic := '-';
 		si_dv       : in  std_logic := '0';
@@ -539,14 +539,12 @@ begin
 
 		end process;
 
-		rd_addr_e : entity hdl4fpga.align
-		generic map (
-			n => rd_addr'length,
-			d => (rd_addr'range => 1))
-		port map (
-			clk => rd_clk,
-			di  => storage_addr,
-			do  => rd_addr);
+		process (rd_clk)
+		begin 
+			if rising_edge(rd_clk) then
+				rd_addr <= storage_addr;
+			end if;
+		end process;
 
 		mem_e : entity hdl4fpga.dpram 
 		port map (
@@ -557,14 +555,25 @@ begin
 			rd_addr => rd_addr,
 			rd_data => rd_data);
 
-		rd_data_e : entity hdl4fpga.align
-		generic map (
-			n => rd_data'length,
-			d => (rd_data'range => 1))
-		port map (
-			clk => rd_clk,
-			di  => rd_data,
-			do  => storage_data);
+		process (rd_clk)
+		begin 
+			if rising_edge(rd_clk) then
+				storage_data <= rd_data;
+			end if;
+		end process;
+
+--		mem_e : entity hdl4fpga.bram 
+--		port map (
+--			clka  => wr_clk,
+--			addra => wr_addr,
+--			wea   => wr_ena,
+--			dia   => wr_data,
+--			doa   => rd_data,
+--
+--			clkb  => rd_clk,
+--			addrb => storage_addr,
+--			dib   => rd_data,
+--			dob   => storage_data);
 
 	end block;
 
