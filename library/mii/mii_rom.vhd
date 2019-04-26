@@ -42,11 +42,12 @@ entity mii_rom is
 end;
 
 architecture def of mii_rom is
+
 	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
 	constant addr_size : natural := unsigned_num_bits(mem_size-1);
 
 	subtype miibyte is std_logic_vector(mii_txd'range);
-	type miibyte_vector is array (natural range <>) of std_logic_vector(mii_txd'range);
+	type miibyte_vector is array (natural range <>) of miibyte;
 
 	function mem_init (
 		constant arg : std_logic_vector)
