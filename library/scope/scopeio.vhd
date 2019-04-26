@@ -16,7 +16,18 @@ entity scopeio is
 
 		hz_gain     : natural_vector := (0 to 0 => 2**18);
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
-		hz_untsyms  : std_logic_vector := (0 to 0 => '0'));
+		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
+
+		default_tracesfg : in  std_logic_vector := std_logic_vector'("111");
+		default_gridfg   : in  std_logic_vector := std_logic_vector'("100");
+		default_gridbg   : in  std_logic_vector := std_logic_vector'("000");
+		default_hzfg     : in  std_logic_vector := std_logic_vector'("111");
+		default_hzbg     : in  std_logic_vector := std_logic_vector'("001");
+		default_vtfg     : in  std_logic_vector := std_logic_vector'("111");
+		default_vtbg     : in  std_logic_vector := std_logic_vector'("001");
+		default_textbg   : in  std_logic_vector := std_logic_vector'("000");
+		default_sgmntbg  : in  std_logic_vector := std_logic_vector'("011");
+		default_bg       : in  std_logic_vector := std_logic_vector'("111"));
 	port (
 		si_clk      : in  std_logic := '-';
 		si_dv       : in  std_logic := '0';
@@ -827,6 +838,7 @@ begin
 					axis_base     => axis_base,
 					axis_scale    => axis_scale,
 
+					wu_frm        => wu_frm ,
 					wu_irdy       => wu_irdy,
 					wu_trdy       => wu_trdy,
 					wu_value      => wu_value,
@@ -876,16 +888,16 @@ begin
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
 		generic map (
-			traces_fg   => std_logic_vector'("111"),
-			grid_fg     => std_logic_vector'("100"), 
-			grid_bg     => std_logic_vector'("000"), 
-			hz_fg       => std_logic_vector'("111"),
-			hz_bg       => std_logic_vector'("001"), 
-			vt_fg       => std_logic_vector'("111"),
-			vt_bg       => std_logic_vector'("001"), 
-			text_bg     => std_logic_vector'("000"), 
-			sgmnt_bg    => std_logic_vector'("011"), 
-			bk_gd       => std_logic_vector'("111"))
+			default_tracesfg => default_tracesfg,
+			default_gridfg   => default_gridfg, 
+			default_gridbg   => default_gridbg, 
+			default_hzfg     => default_hzfg,
+			default_hzbg     => default_hzbg, 
+			default_vtfg     => default_vtfg,
+			default_vtbg     => default_vtbg, 
+			default_textbg   => default_textbg, 
+			default_sgmntbg  => default_sgmntbg, 
+			default_bg       => default_bg)
 		port map (
 			wr_clk         => si_clk,
 			wr_dv          => palette_dv,

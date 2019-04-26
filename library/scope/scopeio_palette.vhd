@@ -7,16 +7,16 @@ use hdl4fpga.std.all;
 
 entity scopeio_palette is
 	generic (
-		traces_fg   : in  std_logic_vector;
-		grid_fg     : in  std_logic_vector;
-		grid_bg     : in  std_logic_vector;
-		hz_fg       : in  std_logic_vector;
-		hz_bg       : in  std_logic_vector;
-		vt_fg       : in  std_logic_vector;
-		vt_bg       : in  std_logic_vector;
-		text_bg    : in  std_logic_vector;
-		sgmnt_bg    : in  std_logic_vector;
-		bk_gd       : in  std_logic_vector);
+		default_tracesfg : in  std_logic_vector;
+		default_gridfg   : in  std_logic_vector;
+		default_gridbg   : in  std_logic_vector;
+		default_hzfg     : in  std_logic_vector;
+		default_hzbg     : in  std_logic_vector;
+		default_vtfg     : in  std_logic_vector;
+		default_vtbg     : in  std_logic_vector;
+		default_textbg   : in  std_logic_vector;
+		default_sgmntbg  : in  std_logic_vector;
+		default_bg       : in  std_logic_vector);
 	port (
 		wr_clk      : in  std_logic;
 		wr_dv       : in  std_logic;
@@ -70,7 +70,7 @@ architecture beh of scopeio_palette is
 begin
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => grid_fg & grid_bg & hz_fg & hz_bg & vt_fg & vt_bg & text_bg & sgmnt_bg & bk_gd & traces_fg)
+		bitrom => default_gridfg & default_gridbg & default_hzfg & default_hzbg & default_vtfg & default_vtbg & default_textbg & default_sgmntbg & default_bg & default_tracesfg)
 	port map (
 		wr_clk  => wr_clk,
 		wr_ena  => wr_dv,

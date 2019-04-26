@@ -55,7 +55,7 @@ begin
 		n => 1,
 		d => (0 to 0 => 2))
 	port map (
-		clk => input_clk,
+		clk   => input_clk,
 		di(0) => input_ena,
 		do(0) => output_ena);
 end;

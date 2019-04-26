@@ -735,6 +735,7 @@ package body std is
 		for i in ena'range loop
 			if ena(i)='1' then
 				rval := std_logic_vector(aux(0 to size-1));
+				exit;
 			end if;
 			aux := aux rol size;
 		end loop;
