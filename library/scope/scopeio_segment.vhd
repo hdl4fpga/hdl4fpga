@@ -46,6 +46,9 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
+	signal axis_frm  : std_logic;
+	signal axis_irdy : std_logic;
+	signal axis_trdy : std_logic;
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
 	signal axis_point : std_logic_vector(2-1 downto 0) := b"01";
 begin
@@ -82,15 +85,29 @@ begin
 			dot  => grid_dot);
 	end block;
 
+	process(in_clk)
+	begin
+		if rising_edge(in_clk) then
+			if axis_frm='0' then
+				if axis_dv='1' then
+					axis_frm <= '1';
+				end if;
+			elsif axis_trdy='1' then
+				axis_frm  <= '0';
+			end if;
+		end if;
+	end process;
+	axis_irdy <= axis_frm;
+
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency => latency)
 	port map (
 		clk         => in_clk,
 
-		frm         => axis_dv,
-		irdy        => '1',
-		trdy        => open,
+		frm         => axis_frm,
+		irdy        => axis_irdy,
+		trdy        => axis_trdy,
 
 		wu_irdy     => wu_irdy,
 		wu_trdy     => wu_trdy,

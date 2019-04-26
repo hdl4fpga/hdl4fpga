@@ -134,8 +134,8 @@ begin
 					hz_offset <= bf(origin,    offset_id, hzoffset_bf);
 					hz_scale  <= bf(rgtr_data, scale_id,  axis_bf);
 				end if;
-				axis_dv <= ena(axis_enid);
 			end if;
+			axis_dv <= ena(axis_enid);
 		end if;
 	end process;
 
