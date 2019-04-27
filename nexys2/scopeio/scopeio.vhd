@@ -9,7 +9,7 @@ use unisim.vcomponents.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture beh of s3estarter is
+architecture beh of nexys2 is
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
