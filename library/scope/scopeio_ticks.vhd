@@ -36,6 +36,7 @@ entity scopeio_ticks is
 		trdy     : out std_logic := '0';
 		base     : in  std_logic_vector;
 		step     : in  std_logic_vector;
+		last     : in  std_logic_vector;
 		updn     : in  std_logic := '0';
 
 		wu_frm   : out std_logic;
@@ -50,32 +51,44 @@ begin
 	process(clk)
 		variable frm1 : std_logic;
 		variable wfrm : std_logic;
-		variable accm : unsigned(base'range);
+		variable accm : signed(base'range);
 	begin
 		if rising_edge(clk) then
-			if frm1='0' then
-				accm := unsigned(base);
-				wfrm := frm;
-			elsif irdy='1' then
-				if wfrm='0' then 
-					if updn='0' then
-						accm := accm + unsigned(step);
-					else
-						accm := accm - unsigned(step);
-					end if;
-					wfrm := frm;
-				elsif wu_trdy='1' then
-					wfrm := '0';
-				else
-					wfrm := frm;
-				end if;
+			if frm='0' then
+				frm1 := '0';
+				wfrm := '0';
+				trdy <= '0';
+				accm := (others =>'-');
+			elsif frm1='0' then
+				frm1 := '1';
+				wfrm := '1';
+				trdy <= '0';
+				accm := signed(base);
 			else
-				wfrm := frm;
+				frm1 := '1';
+				if irdy='1' then
+					if wfrm='0' then 
+						if accm < signed(last) then
+							if updn='0' then
+								accm := accm + signed(step);
+							else
+								accm := accm - signed(step);
+							end if;
+							wfrm := '1';
+							trdy <= '0';
+						else
+							wfrm := '0';
+							trdy <= '1';
+						end if;
+					elsif wu_trdy='1' then
+						wfrm := '0';
+						trdy <= '0';
+					end if;
+				end if;
 			end if;
 			wu_frm   <= wfrm;
 			wu_irdy  <= wfrm;
 			wu_value <= std_logic_vector(accm);
-			frm1     := frm;
 		end if;
 	end process;
 	

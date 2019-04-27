@@ -599,7 +599,7 @@ begin
 			frm    => wu_frm,
 			irdy   => wu_irdy,
 			trdy   => wu_trdy,
-			float  => x"ffff",
+			float  => wu_value,
 			width  => b"1000",
 			unit   => b"0000",
 			prec   => b"1111",
