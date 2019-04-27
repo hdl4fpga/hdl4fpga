@@ -85,16 +85,17 @@ begin
 
 	end block;
 
+	hz_ena <= wu_trdy;
 	hz_mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**7*wu_format'length-1 => '1'))
 	port map (
 		wr_clk  => clk,
 		wr_ena  => hz_ena,
-		wr_addr => hz_addr,
+		wr_addr => (hz_addr'range => '0'), --hz_addr,
 		wr_data => wu_format,
 
-		rd_addr => hz_taddr,
+		rd_addr => (hz_addr'range => '0'), --hz_taddr,
 		rd_data => hz_tick);
 
 	vt_mem_e : entity hdl4fpga.dpram
@@ -103,10 +104,10 @@ begin
 	port map (
 		wr_clk  => clk,
 		wr_ena  => vt_ena,
-		wr_addr => vt_addr,
-		wr_data => wu_format,
+		wr_addr => (vt_addr'range => '0'), --vt_addr,
+		wr_data => x"12345678", --wu_format,
 
-		rd_addr => vt_taddr,
+		rd_addr => (vt_addr'range => '0'), --vt_taddr,
 		rd_data => vt_tick);
 
 	video_b : block

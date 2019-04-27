@@ -46,7 +46,7 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal axis_frm  : std_logic;
+	signal axis_frm  : std_logic := '0';
 	signal axis_irdy : std_logic;
 	signal axis_trdy : std_logic;
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
@@ -109,6 +109,7 @@ begin
 		irdy        => axis_irdy,
 		trdy        => axis_trdy,
 
+		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
 		wu_trdy     => wu_trdy,
 		wu_value    => wu_value,

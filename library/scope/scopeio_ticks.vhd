@@ -33,13 +33,13 @@ entity scopeio_ticks is
 		clk      : in  std_logic;
 		frm      : in  std_logic;
 		irdy     : in  std_logic := '1';
-		trdy     : out std_logic := '1';
+		trdy     : out std_logic := '0';
 		base     : in  std_logic_vector;
 		step     : in  std_logic_vector;
 		updn     : in  std_logic := '0';
 
 		wu_frm   : out std_logic;
-		wu_irdy  : out std_logic := '1';
+		wu_irdy  : out std_logic;
 		wu_trdy  : in  std_logic;
 		wu_value : out std_logic_vector);
 end;
@@ -73,6 +73,7 @@ begin
 				wfrm := frm;
 			end if;
 			wu_frm   <= wfrm;
+			wu_irdy  <= wfrm;
 			wu_value <= std_logic_vector(accm);
 			frm1     := frm;
 		end if;

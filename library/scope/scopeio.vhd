@@ -602,7 +602,7 @@ begin
 			float  => x"ffff",
 			width  => b"1000",
 			unit   => b"0000",
-			prec   => b"1101",
+			prec   => b"1111",
 			format => wu_format);
 
 		video_e : entity hdl4fpga.video_vga
