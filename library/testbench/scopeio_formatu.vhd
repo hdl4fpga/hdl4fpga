@@ -29,10 +29,17 @@ library hdl4fpga;
 
 architecture scopeio_formatu of testbench is
 
-	signal rst    : std_logic := '0';
-	signal clk    : std_logic := '0';
-	signal frm    : std_logic;
-	signal format : std_logic_vector(0 to 8*4-1);
+	signal rst      : std_logic := '0';
+	signal clk      : std_logic := '0';
+	signal frm      : std_logic;
+	signal irdy     : std_logic;
+	signal trdy     : std_logic;
+	signal wu_frm   : std_logic;
+	signal wu_irdy  : std_logic;
+	signal wu_trdy  : std_logic;
+	signal wu_value : std_logic_vector(4*4-1 downto 0);
+	signal value    : std_logic_vector(3*4-1 downto 0);
+	signal format   : std_logic_vector(0 to 8*4-1);
 
 begin
 
@@ -50,13 +57,33 @@ begin
 		end if;
 	end process;
 
+	irdy <= frm;
+	ticks_e : entity hdl4fpga.scopeio_ticks
+	port map (
+		clk      => clk,
+		frm      => frm,
+		irdy     => irdy,
+		trdy     => trdy,
+		base     => x"000",
+		step     => x"001",
+		last     => x"005",
+		wu_frm   => wu_frm,
+		wu_irdy  => wu_irdy,
+		wu_trdy  => wu_trdy,
+		wu_value => value);
+	
+	wu_value <= value & x"f";
+
 	du : entity hdl4fpga.scopeio_formatu
 	port map (
 		clk    => clk,
-		frm    => frm,
-		irdy   => '1',
-		trdy   => open,
-		float  => x"003f",
+		frm    => wu_frm,
+		irdy   => wu_irdy,
+		trdy   => wu_trdy,
+		width  => b"1000",
+		unit   => b"0000",
+		prec   => b"1111",
+		float  => wu_value,
 		format => format);
 
 end;

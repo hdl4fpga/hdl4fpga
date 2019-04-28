@@ -355,9 +355,9 @@ begin
 		palette_id     => palette_id,
 		palette_color  => palette_color,
 
-		gain_dv        =>  gain_dv,
-		gain_id        =>  gain_id,
-		gain_chanid    =>  gain_chanid,
+		gain_dv        => gain_dv,
+		gain_id        => gain_id,
+		gain_chanid    => gain_chanid,
 
 		trigger_dv     => trigger_dv,
 		trigger_freeze => trigger_freeze,
