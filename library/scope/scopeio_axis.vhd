@@ -40,7 +40,7 @@ end;
 architecture def of scopeio_axis is
 
 	signal vt_ena      : std_logic;
-	signal vt_taddr    : std_logic_vector(13-1 downto 6);
+	signal vt_taddr    : std_logic_vector(13-1 downto 5);
 	signal vt_vaddr    : std_logic_vector(13-1 downto 0);
 	signal vt_tick     : std_logic_vector(wu_format'range);
 
@@ -52,10 +52,11 @@ architecture def of scopeio_axis is
 begin
 
 	ticks_b : block
+		signal value : std_logic_vector(0 to 3*4-1);
 	begin
 
 		process (clk)
-			variable cntr : unsigned(max(hz_taddr'left, vt_taddr'left) downto 6);
+			variable cntr : unsigned(max(hz_taddr'length, vt_taddr'length) downto 0);
 		begin
 			if rising_edge(clk) then
 				if frm='0' then
@@ -63,8 +64,8 @@ begin
 				elsif wu_trdy='1' then
 					cntr := cntr + 1;
 				end if;
-				hz_taddr <= std_logic_vector(cntr(hz_taddr'range));
-				vt_taddr <= std_logic_vector(cntr(vt_taddr'range));
+				hz_taddr <= std_logic_vector(cntr(hz_taddr'length-1 downto 0));
+				vt_taddr <= std_logic_vector(cntr(vt_taddr'length-1 downto 0));
 			end if;
 		end process;
 
@@ -74,20 +75,23 @@ begin
 			frm      => frm,
 			irdy     => irdy,
 			trdy     => trdy,
-			base     => x"000f",
-			step     => x"0020",
-			last     => x"0400",
+			base     => x"000",
+			step     => x"001",
+			last     => x"005",
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,
 			wu_trdy  => wu_trdy,
-			wu_value => wu_value);
+			wu_value => value);
+
+		wu_value <= value & x"f";
 
 	end block;
 
 	hz_ena <= wu_trdy;
 	hz_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**7*wu_format'length-1 => '1'))
+		bitrom => x"c1234567bb54321d")
+--		bitrom => (0 to 2**7*wu_format'length-1 => '1'))
 	port map (
 		wr_clk  => clk,
 		wr_ena  => hz_ena,
@@ -100,7 +104,8 @@ begin
 	vt_ena <= wu_trdy;
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**4*wu_format'length-1 => '1'))
+		bitrom => x"c1234567bb54321d")
+--		bitrom => (0 to 2**4*wu_format'length-1 => '1'))
 	port map (
 		wr_clk  => clk,
 		wr_ena  => vt_ena,
@@ -146,7 +151,7 @@ begin
 				hz_crow  <= hz_y(hz_crow'range);
 			end if;
 		end process;
-		hz_bcd   <= word2byte(hz_tick, hz_vaddr(6-1 downto 3), char_code'length);
+		hz_bcd <= word2byte(std_logic_vector(unsigned(hz_tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
 
 		vt_x <= video_hcntr;
 		vt_y <= resize(signed(video_vcntr), vt_y'length) + signed(vt_offset);
@@ -159,7 +164,7 @@ begin
 				vt_crow  <= std_logic_vector(vt_y(vt_crow'range));
 			end if;
 		end process;
-		vt_bcd   <= word2byte(std_logic_vector(unsigned(vt_tick) rol 2*char_code'length), video_hcntr(6-1 downto 3), char_code'length);
+		vt_bcd <= word2byte(std_logic_vector(unsigned(vt_tick) rol 2*char_code'length), vt_x(6-1 downto 3), char_code'length);
 
 		char_row  <= word2byte(hz_crow & vt_crow, vs_on); 
 		char_col  <= word2byte(hz_ccol & vt_ccol, vs_on); 
