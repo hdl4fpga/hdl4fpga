@@ -206,7 +206,17 @@ begin
 		right_up     => right_up(0),
 		vector_right => vector_right);
 
-	bcd_end  <= stof_end;
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if frm='0' then
+				bcd_end  <= '0';
+			else
+				bcd_end  <= stof_end;
+			end if;
+		end if;
+	end process;
+
 	bcd_irdy <= stof_trdy;
 	bcd_do   <= stof_do;
 
