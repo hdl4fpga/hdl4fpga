@@ -108,6 +108,7 @@ begin
 		frm         => axis_frm,
 		irdy        => axis_irdy,
 		trdy        => axis_trdy,
+		axis_sel    => axis_sel,
 
 		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
@@ -118,7 +119,6 @@ begin
 --		axis_point  => axis_scale(4-1 downto 2),
 		unit   => axis_unit,
 --		axis_base   => axis_base,
---		axis_sel    => axis_sel,
 
 		video_clk   => video_clk,
 		video_hcntr => x,

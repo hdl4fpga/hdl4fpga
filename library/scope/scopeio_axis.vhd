@@ -15,6 +15,7 @@ entity scopeio_axis is
 		frm         : in  std_logic;
 		irdy        : in  std_logic;
 		trdy        : out std_logic;
+		axis_sel    : in  std_logic;
 		unit        : in  std_logic_vector;
 
 		wu_frm      : out std_logic;
@@ -87,7 +88,7 @@ begin
 
 	end block;
 
-	hz_ena <= wu_trdy;
+	hz_ena <= wu_trdy and not axis_sel;
 	hz_mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**7*wu_format'length-1 => '1'))
@@ -100,7 +101,7 @@ begin
 		rd_addr => hz_vaddr(hz_taddr'range),
 		rd_data => hz_tick);
 
-	vt_ena <= wu_trdy;
+	vt_ena <= wu_trdy and axis_sel;
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**4*wu_format'length-1 => '1'))
