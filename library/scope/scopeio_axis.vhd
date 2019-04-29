@@ -16,11 +16,12 @@ entity scopeio_axis is
 		irdy        : in  std_logic;
 		trdy        : out std_logic;
 		axis_sel    : in  std_logic;
-		unit        : in  std_logic_vector;
+		axis_unit   : in  std_logic_vector;
 
 		wu_frm      : out std_logic;
 		wu_irdy     : out std_logic;
 		wu_trdy     : in  std_logic;
+		wu_unit     : out std_logic_vector;
 		wu_value    : out std_logic_vector;
 		wu_format   : in  std_logic_vector;
 

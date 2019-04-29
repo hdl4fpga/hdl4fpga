@@ -22,6 +22,7 @@ entity scopeio_segment is
 		wu_frm        : out std_logic;
 		wu_irdy       : out std_logic;
 		wu_trdy       : in  std_logic;
+		wu_unit       : out std_logic_vector;
 		wu_value      : out std_logic_vector;
 		wu_format     : in  std_logic_vector;
 
@@ -113,6 +114,7 @@ begin
 		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
 		wu_trdy     => wu_trdy,
+		wu_unit     => wu_unit,
 		wu_value    => wu_value,
 		wu_format   => wu_format,
 

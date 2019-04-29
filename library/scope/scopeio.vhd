@@ -305,6 +305,7 @@ architecture beh of scopeio is
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
 	signal wu_trdy        : std_logic;
+	signal wu_unit        : std_logic_vector(4-1 downto 0);
 	signal wu_value       : std_logic_vector(4*4-1 downto 0);
 	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
@@ -601,7 +602,7 @@ begin
 			trdy   => wu_trdy,
 			float  => wu_value,
 			width  => b"1000",
-			unit   => b"0000",
+			unit   => wu_unit,
 			prec   => b"1111",
 			format => wu_format);
 
@@ -850,6 +851,7 @@ begin
 					wu_frm        => wu_frm ,
 					wu_irdy       => wu_irdy,
 					wu_trdy       => wu_trdy,
+					wu_unit       => wu_unit,
 					wu_value      => wu_value,
 					wu_format     => wu_format,
 
