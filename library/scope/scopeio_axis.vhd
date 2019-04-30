@@ -128,7 +128,7 @@ begin
 			irdy     => irdy,
 			trdy     => trdy,
 			last     => x"7f",
-			base     => base,
+			base     => x"000",
 			step     => step,
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,
@@ -181,7 +181,7 @@ begin
 		signal hs_on    : std_logic;
 
 		signal vt_x     : std_logic_vector(video_hcntr'length-1 downto 0);
-		signal vt_y     : signed(hz_vaddr'range);
+		signal vt_y     : unsigned(hz_vaddr'range);
 		signal vt_bcd   : std_logic_vector(char_code'range);
 		signal vt_crow  : std_logic_vector(3-1 downto 0);
 		signal vt_ccol  : std_logic_vector(3-1 downto 0);
@@ -204,7 +204,7 @@ begin
 		hz_bcd <= word2byte(std_logic_vector(unsigned(hz_tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
 
 		vt_x <= video_hcntr;
-		vt_y <= resize(signed(video_vcntr), vt_y'length) + signed(vt_offset);
+		vt_y <= resize(unsigned(video_vcntr), vt_y'length) + unsigned(vt_offset);
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
