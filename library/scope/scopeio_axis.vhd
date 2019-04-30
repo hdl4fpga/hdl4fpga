@@ -16,7 +16,8 @@ entity scopeio_axis is
 		irdy        : in  std_logic;
 		trdy        : out std_logic;
 		axis_sel    : in  std_logic;
-		axis_unit   : in  std_logic_vector;
+		axis_scale  : in  std_logic_vector;
+		axis_base   : in  std_logic_vector;
 
 		wu_frm      : out std_logic;
 		wu_irdy     : out std_logic;
@@ -50,6 +51,51 @@ architecture def of scopeio_axis is
 	signal hz_taddr    : std_logic_vector(13-1 downto 6);
 	signal hz_vaddr    : std_logic_vector(13-1 downto 0);
 	signal hz_tick     : std_logic_vector(wu_format'range);
+
+	function scale_1245 (
+		constant val   : std_logic_vector;
+		constant scale : std_logic_vector)
+		return std_logic_vector is
+		variable sel  : std_logic_vector(scale'length-1 downto 0);
+		variable by1  : signed(val'range);
+		variable by2  : signed(val'range);
+		variable by4  : signed(val'range);
+		variable rval : signed(val'range);
+	begin
+		by1 := shift_left(signed(val), 0);
+		by2 := shift_left(signed(val), 1);
+		by4 := shift_left(signed(val), 2);
+		sel := scale;
+		case sel(2-1 downto 0) is
+		when "00" =>
+			rval := by1;
+		when "01" =>
+			rval := by2;
+		when "10" =>
+			rval := by4;
+		when "11" =>
+			rval := by4 + by1;
+		when others =>
+			rval := (others => '-');
+		end case;
+		return std_logic_vector(rval);
+	end;
+		
+	function mul (
+		constant multd : signed;
+		constant multr : unsigned)
+		return std_logic_vector is
+		variable rval : signed(multd'length+multr'length-1 downto 0);
+	begin
+		rval := (others => '0');
+		for i in multr'reverse_range loop
+			if multr(i)='1' then
+				rval := rval + multd;
+			end if;
+			rval := shift_right(rval, 1);
+		end loop;
+		return std_logic_vector(rval);
+	end;
 
 begin
 
@@ -85,7 +131,7 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
-		wu_value <= value & x"f";
+		wu_value <= scale_1245(value, axis_scale) & x"f";
 
 	end block;
 

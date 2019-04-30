@@ -52,35 +52,7 @@ architecture def of scopeio_segment is
 	signal axis_irdy  : std_logic;
 	signal axis_trdy  : std_logic;
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
-	signal axis_step  : std_logic_vector(12-1 downto 0);
-	signal axs_offset : std_logic_vector(axis_base'range);
 
-	function scale_1245(
-		variable val   : std_logic_vector;
-		variable scale : std_logic_vector(2-1 downto 0))
-		return std_logic_vector is
-		variable by1  : signed(axis_base'range);
-		variable by2  : signed(axis_base'range);
-		variable by4  : signed(axix_base'range);
-		variable rval : signed(axix_base'range);
-	begin
-		by1 := signed(xx);
-		by2 := signed(xx);
-		by4 := signed(xx);
-		case axis_scale(2-1 downto 0) is
-		when "00" =>
-			rval <= by1;
-		when "01" =>
-			rval <= by2;
-		when "10" =>
-			rval <= by4;
-		when "11" =>
-			rval <= by4 + by1;
-		when others =>
-			rval <= (others => '-');
-		end case;
-		return std_logic_vector(rval);
-		
 begin
 
 
@@ -123,8 +95,8 @@ begin
 		irdy        => axis_irdy,
 		trdy        => axis_trdy,
 		axis_sel    => axis_sel,
-		axis_base   => base,
-		axis_step   => step,
+		axis_scale  => axis_scale,
+		axis_base   => axis_base,
 
 		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
@@ -132,8 +104,6 @@ begin
 		wu_unit     => wu_unit,
 		wu_value    => wu_value,
 		wu_format   => wu_format,
-
---		axis_base   => axis_base,
 
 		video_clk   => video_clk,
 		video_hcntr => x,
@@ -146,7 +116,6 @@ begin
 		vt_offset   => vt_offset,
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
-	wu_value <= scale_1245(value, axis_scale);
 
 	trigger_b : block 
 		signal row : unsigned(trigger_level'range);
