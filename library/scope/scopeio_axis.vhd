@@ -100,7 +100,9 @@ architecture def of scopeio_axis is
 begin
 
 	ticks_b : block
-		signal value : std_logic_vector(0 to 3*4-1);
+		signal value : std_logic_vector(3*4-1 downto 0);
+		signal base : std_logic_vector(value'range);
+		signal step : std_logic_vector(value'range);
 	begin
 
 		process (clk)
@@ -117,6 +119,8 @@ begin
 			end if;
 		end process;
 
+		base <= std_logic_vector(resize(unsigned(axis_base), base'length));
+		step <= std_logic_vector(resize(unsigned'(b"01"), base'length));
 		ticks_e : entity hdl4fpga.scopeio_ticks
 		port map (
 			clk      => clk,
@@ -124,8 +128,8 @@ begin
 			irdy     => irdy,
 			trdy     => trdy,
 			last     => x"7f",
-			base     => x"000",
-			step     => x"002",
+			base     => base,
+			step     => step,
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,
 			wu_trdy  => wu_trdy,
@@ -168,7 +172,7 @@ begin
 		signal char_col  : std_logic_vector(3-1 downto 0);
 		signal char_dot  : std_logic;
 
-		signal hz_x     : signed(hz_vaddr'range);
+		signal hz_x     : unsigned(hz_vaddr'range);
 		signal hz_y     : std_logic_vector(video_vcntr'length-1 downto 0);
 		signal hz_bcd   : std_logic_vector(char_code'range);
 		signal hz_crow  : std_logic_vector(3-1 downto 0);
@@ -186,7 +190,7 @@ begin
 
 	begin
 
-		hz_x <= resize(signed(video_hcntr), hz_x'length) + signed(hz_offset);
+		hz_x <= resize(unsigned(video_hcntr), hz_x'length) + unsigned(hz_offset);
 		hz_y <= video_vcntr;
 		process (video_clk)
 		begin
