@@ -47,29 +47,42 @@ entity scopeio_segment is
 end;
 
 architecture def of scopeio_segment is
-	signal axis_frm  : std_logic := '0';
-	signal axis_irdy : std_logic;
-	signal axis_trdy : std_logic;
+
+	signal axis_frm   : std_logic := '0';
+	signal axis_irdy  : std_logic;
+	signal axis_trdy  : std_logic;
 	signal axis_unit  : std_logic_vector(4-1 downto 0);
-	signal axis_point : std_logic_vector(2-1 downto 0) := b"01";
-begin
+	signal axis_step  : std_logic_vector(12-1 downto 0);
+	signal axs_offset : std_logic_vector(axis_base'range);
 
-
-	process (axis_scale)
+	function scale_1245(
+		variable val   : std_logic_vector;
+		variable scale : std_logic_vector(2-1 downto 0))
+		return std_logic_vector is
+		variable by1  : signed(axis_base'range);
+		variable by2  : signed(axis_base'range);
+		variable by4  : signed(axix_base'range);
+		variable rval : signed(axix_base'range);
 	begin
-		axis_unit <= (others => '-');
+		by1 := signed(xx);
+		by2 := signed(xx);
+		by4 := signed(xx);
 		case axis_scale(2-1 downto 0) is
 		when "00" =>
-			axis_unit <= b"0001";
+			rval <= by1;
 		when "01" =>
-			axis_unit <= b"0010";
+			rval <= by2;
 		when "10" =>
-			axis_unit <= b"0100";
+			rval <= by4;
 		when "11" =>
-			axis_unit <= b"0101";
+			rval <= by4 + by1;
 		when others =>
+			rval <= (others => '-');
 		end case;
-	end process;
+		return std_logic_vector(rval);
+		
+begin
+
 
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);
@@ -110,6 +123,8 @@ begin
 		irdy        => axis_irdy,
 		trdy        => axis_trdy,
 		axis_sel    => axis_sel,
+		axis_base   => base,
+		axis_step   => step,
 
 		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
@@ -118,8 +133,6 @@ begin
 		wu_value    => wu_value,
 		wu_format   => wu_format,
 
---		axis_point  => axis_scale(4-1 downto 2),
-		unit   => axis_unit,
 --		axis_base   => axis_base,
 
 		video_clk   => video_clk,
@@ -133,6 +146,7 @@ begin
 		vt_offset   => vt_offset,
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
+	wu_value <= scale_1245(value, axis_scale);
 
 	trigger_b : block 
 		signal row : unsigned(trigger_level'range);
