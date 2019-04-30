@@ -138,7 +138,7 @@ begin
 	hz_ena <= wu_trdy and not axis_sel;
 	hz_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**7*wu_format'length-1 => '1'))
+		bitrom => (0 to 2**hz_taddr'length*wu_format'length-1 => '1'))
 	port map (
 		wr_clk  => clk,
 		wr_ena  => hz_ena,
@@ -151,7 +151,7 @@ begin
 	vt_ena <= wu_trdy and axis_sel;
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**4*wu_format'length-1 => '1'))
+		bitrom => (0 to 2**vt_taddr'length*wu_format'length-1 => '1'))
 	port map (
 		wr_clk  => clk,
 		wr_ena  => vt_ena,
