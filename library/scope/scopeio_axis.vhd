@@ -23,6 +23,8 @@ entity scopeio_axis is
 		wu_irdy     : out std_logic;
 		wu_trdy     : in  std_logic;
 		wu_unit     : out std_logic_vector;
+		wu_neg      : out std_logic;
+		wu_sign     : out std_logic;
 		wu_value    : out std_logic_vector;
 		wu_format   : in  std_logic_vector;
 
@@ -144,7 +146,9 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
-		wu_value <= scale_1245(value, axis_scale) & x"f";
+		wu_neg   <= value(value'left);
+		wu_sign  <= value(value'left);
+		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
 
 	end block;
 
