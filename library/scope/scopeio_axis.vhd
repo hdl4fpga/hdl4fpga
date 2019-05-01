@@ -128,7 +128,7 @@ begin
 			irdy     => irdy,
 			trdy     => trdy,
 			last     => x"7f",
-			base     => x"000",
+			base     => x"ffc",
 			step     => step,
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,

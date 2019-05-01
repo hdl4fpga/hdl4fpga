@@ -11,6 +11,8 @@ entity btof is
 		frm        : in  std_logic;
 		bin_irdy   : in  std_logic := '1';
 		bin_trdy   : out std_logic;
+		bin_sign   : in  std_logic;
+		bin_neg    : in  std_logic;
 		bin_flt    : in  std_logic;
 		bin_di     : in  std_logic_vector;
 
@@ -67,54 +69,60 @@ architecture def of btof is
 	signal stof_frm       : std_logic;
 	signal stof_irdy      : std_logic;
 	signal stof_trdy      : std_logic;
+	signal stof_neg       : std_logic;
+	signal stof_sign      : std_logic;
 	signal stof_end       : std_logic;
 	signal stof_addr      : std_logic_vector(vector_addr'range);
 	signal stof_do        : std_logic_vector(bcd_do'range);
-	type   states is (btod, dtos, stof);
+	type   states is (init_s, btod_s, dtos_s, stof_s);
 	signal state : states;
 begin
 
 	process (clk, frm)
 	begin
 		if frm='0' then
-			state <= btod;
+			state <= init_s;
 		elsif rising_edge(clk) then
 			case state is
-			when btod =>
+			when init_s =>
+				state <= btod_s;
+				stof_sign <= bin_sign;
+				stof_neg  <= bin_neg;
+			when btod_s =>
 				if bin_irdy = '1' then
 					if bin_flt = '1' then
-						state <= dtos;
+						state <= dtos_s;
 					end if;
 				end if;
-			when dtos =>
+			when dtos_s =>
 				if dtos_trdy = '1' then
-					state <= stof;
+					state <= stof_s;
 				end if;
-			when stof =>
+			when stof_s =>
 			end case;
 		end if;
 	end process;
 
 	btod_frm <= 
-		frm when state=btod and bin_flt='0' else
+		frm when state=btod_s and bin_flt='0' else
 		'0';
 	dtos_frm <= 
-		frm when state=dtos else
-		frm when state=btod and bin_flt='1' else
+		frm when state=dtos_s else
+		frm when state=btod_s and bin_flt='1' else
 		'0';
 	stof_frm <= 
-		frm when state=stof else
+		frm when state=stof_s else
 		'0';
 
 	bin_trdy <= 
-	   btod_trdy when state=btod and bin_flt='0' else
-	   stof_trdy when state=stof and stof_end='1' else
+	   btod_trdy when state=btod_s and bin_flt='0' else
+	   stof_trdy when state=stof_s and stof_end='1' else
 	   '0';
 	
 	btod_e : entity hdl4fpga.btod
 	port map (
 		clk           => clk,
-		frm       => btod_frm,
+		frm           => btod_frm,
 		bin_irdy      => bin_irdy,
 		bin_trdy      => btod_trdy,
 		bin_di        => bin_di,
@@ -163,6 +171,8 @@ begin
 		clk       => clk,
 		frm       => stof_frm,
 		width     => bcd_width, 
+		sign      => stof_sign,
+		neg       => stof_neg,
 		unit      => bcd_unit,  
 		prec      => bcd_prec,  
 		align     => bcd_align, 

@@ -72,6 +72,10 @@ package std is
 		constant arg : string)
 		return std_logic_vector;
 
+	function neg (
+		constant arg : std_logic_vector;
+		constant ena : std_logic := '1')
+		return std_logic_vector;
 	--------------------
 	-- Counter functions
 	--------------------
@@ -591,6 +595,14 @@ package body std is
 		aux := std_logic_vector(shift_left(unsigned(arg1),1));
 		aux(aux'right) := arg2;
 		return aux;
+	end;
+
+	function neg (
+		constant arg : std_logic_vector;
+		constant ena : std_logic := '1')
+		return std_logic_vector is
+	begin
+		return std_logic_vector(unsigned(arg xor (arg'range => ena)) + unsigned'((0 to 0 => ena)));
 	end;
 
 	--------------------

@@ -42,6 +42,7 @@ entity scopeio_formatu is
 end;
 
 architecture def of scopeio_formatu is
+	signal pll_data : std_logic_vector(float'range);
 	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
 	signal ser_data : std_logic_vector(4-1 downto 0);
@@ -52,13 +53,21 @@ architecture def of scopeio_formatu is
 begin
 
 
+	process(float)
+		variable aux : std_logic_vector(0 to float'length-1);
+	begin
+		aux := float;
+		aux(0 to aux'length-ser_data'length-1) := neg(aux(0 to aux'length-ser_data'length-1), aux(0));
+		pll_data <= aux;
+	end process;
+
 	pll2ser_e : entity hdl4fpga.pll2ser
 	port map (
 		clk      => clk,
 		frm      => frm,
 		pll_irdy => irdy,
 		pll_trdy => open,
-		pll_data => float,
+		pll_data => pll_data,
 		ser_trdy => ser_trdy,
 		ser_irdy => ser_irdy,
 		ser_last => flt,
@@ -72,6 +81,8 @@ begin
 		bin_trdy  => ser_trdy,
 		bin_di    => ser_data,
 		bin_flt   => flt,
+		bin_sign  => float(float'left),
+		bin_neg   => float(float'left),
 		bcd_width => width,
 		bcd_unit  => unit,
 		bcd_prec  => prec,
