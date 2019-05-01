@@ -101,8 +101,8 @@ begin
 
 	ticks_b : block
 		signal value : std_logic_vector(3*4-1 downto 0);
-		signal base : std_logic_vector(value'range);
-		signal step : std_logic_vector(value'range);
+		signal base  : std_logic_vector(value'range);
+		signal step  : std_logic_vector(value'range);
 	begin
 
 		process (clk)
@@ -119,7 +119,16 @@ begin
 			end if;
 		end process;
 
-		base <= std_logic_vector(resize(unsigned(axis_base), base'length));
+		process (axis_base)
+			variable aux : signed(base'range);
+		begin
+			aux  := (others => '0');
+			aux(axis_base'length-1 downto 0) := signed(axis_base);
+			aux  := rotate_right(aux, axis_base'length);
+			aux  := shift_right(aux, (value'length-axis_base'length)-(9-6));
+			base <= std_logic_vector(aux);
+		end process;
+
 		step <= std_logic_vector(resize(unsigned'(b"01"), base'length));
 		ticks_e : entity hdl4fpga.scopeio_ticks
 		port map (
@@ -128,7 +137,7 @@ begin
 			irdy     => irdy,
 			trdy     => trdy,
 			last     => x"7f",
-			base     => x"ffc",
+			base     => base,
 			step     => step,
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,
