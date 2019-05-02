@@ -8,7 +8,8 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
 	generic (
-		latency     : natural);
+		latency     : natural;
+		axis_unit   : std_logic_vector);
 	port (
 		clk         : in  std_logic;
 
@@ -84,24 +85,29 @@ architecture def of scopeio_axis is
 	end;
 		
 	function mul (
-		constant multd : signed;
-		constant multr : unsigned)
-		return std_logic_vector is
-		variable rval : signed(multd'length+multr'length-1 downto 0);
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed is
+		variable muld : signed(op1'length-1 downto 0);
+		variable mulr : unsigned(op2'length-1 downto 0);
+		variable rval : signed(0 to muld'length+mulr'length-1);
 	begin
+		muld := op1;
+		mulr := op2;
 		rval := (others => '0');
-		for i in multr'reverse_range loop
-			if multr(i)='1' then
-				rval := rval + multd;
-			end if;
+		for i in mulr'reverse_range loop
 			rval := shift_right(rval, 1);
+			if mulr(i)='1' then
+				rval(0 to muld'length) := rval(0 to muld'length) + muld;
+			end if;
 		end loop;
-		return std_logic_vector(rval);
+		return rval;
 	end;
 
 begin
 
 	ticks_b : block
+		signal dummy : std_logic_vector(3*4-1 downto 0);
 		signal value : std_logic_vector(3*4-1 downto 0);
 		signal base  : std_logic_vector(value'range);
 		signal step  : std_logic_vector(value'range);
@@ -125,13 +131,12 @@ begin
 			variable aux : signed(base'range);
 		begin
 			aux  := (others => '0');
-			aux(axis_base'length-1 downto 0) := signed(axis_base);
-			aux  := rotate_right(aux, axis_base'length);
-			aux  := shift_right(aux, (value'length-axis_base'length)-(9-6));
+			aux  := resize(mul(signed(axis_base), unsigned(axis_unit)), aux'length);
+			aux  := shift_left(aux, 9-6);
 			base <= std_logic_vector(aux);
 		end process;
 
-		step <= std_logic_vector(resize(unsigned'(b"01"), base'length));
+		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
 		ticks_e : entity hdl4fpga.scopeio_ticks
 		port map (
 			clk      => clk,
@@ -146,6 +151,7 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
+--		value    <= base;
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left);
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";

@@ -89,7 +89,8 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency => latency)
+		latency => latency,
+		axis_unit => std_logic_vector(to_unsigned(25,5)))
 	port map (
 		clk         => in_clk,
 
