@@ -25,6 +25,7 @@ entity scopeio_segment is
 		wu_unit       : out std_logic_vector;
 		wu_neg        : out std_logic;
 		wu_sign       : out std_logic;
+		wu_align      : out std_logic;
 		wu_value      : out std_logic_vector;
 		wu_format     : in  std_logic_vector;
 
@@ -73,20 +74,6 @@ begin
 			dot  => grid_dot);
 	end block;
 
-	process(in_clk)
-	begin
-		if rising_edge(in_clk) then
-			if axis_frm='0' then
-				if axis_dv='1' then
-					axis_frm <= '1';
-				end if;
-			elsif axis_trdy='1' then
-				axis_frm  <= '0';
-			end if;
-		end if;
-	end process;
-	axis_irdy <= axis_frm;
-
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency => latency,
@@ -94,9 +81,7 @@ begin
 	port map (
 		clk         => in_clk,
 
-		frm         => axis_frm,
-		irdy        => axis_irdy,
-		trdy        => axis_trdy,
+		axis_dv     => axis_dv,
 		axis_sel    => axis_sel,
 		axis_scale  => axis_scale,
 		axis_base   => axis_base,
@@ -108,6 +93,7 @@ begin
 		wu_neg      => wu_neg,
 		wu_sign     => wu_sign,
 		wu_value    => wu_value,
+		wu_align    => wu_align,
 		wu_format   => wu_format,
 
 		video_clk   => video_clk,

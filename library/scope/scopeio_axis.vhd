@@ -13,9 +13,7 @@ entity scopeio_axis is
 	port (
 		clk         : in  std_logic;
 
-		frm         : in  std_logic;
-		irdy        : in  std_logic;
-		trdy        : out std_logic;
+		axis_dv     : in  std_logic;
 		axis_sel    : in  std_logic;
 		axis_scale  : in  std_logic_vector;
 		axis_base   : in  std_logic_vector;
@@ -26,6 +24,7 @@ entity scopeio_axis is
 		wu_unit     : out std_logic_vector;
 		wu_neg      : out std_logic;
 		wu_sign     : out std_logic;
+		wu_align    : out std_logic;
 		wu_value    : out std_logic_vector;
 		wu_format   : in  std_logic_vector;
 
@@ -46,8 +45,8 @@ end;
 architecture def of scopeio_axis is
 
 	signal vt_ena      : std_logic;
-	signal vt_taddr    : std_logic_vector(13-1 downto 5);
-	signal vt_vaddr    : std_logic_vector(13-1 downto 0);
+	signal vt_vaddr    : std_logic_vector(9-1 downto 0);
+	signal vt_taddr    : std_logic_vector(vt_vaddr'left downto 5);
 	signal vt_tick     : std_logic_vector(wu_format'range);
 
 	signal hz_ena      : std_logic;
@@ -107,11 +106,32 @@ architecture def of scopeio_axis is
 begin
 
 	ticks_b : block
-		signal dummy : std_logic_vector(3*4-1 downto 0);
+		signal frm   : std_logic := '0';
+		signal irdy  : std_logic;
+		signal trdy  : std_logic;
+
 		signal value : std_logic_vector(3*4-1 downto 0);
 		signal base  : std_logic_vector(value'range);
 		signal step  : std_logic_vector(value'range);
+		signal dummy : std_logic_vector(value'range);
+
+		signal last  : std_logic_vector(8-1 downto 0);
+		signal updn  : std_logic;
 	begin
+
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				if frm='0' then
+					if axis_dv='1' then
+						frm <= '1';
+					end if;
+				elsif trdy='1' then
+					frm  <= '0';
+				end if;
+			end if;
+		end process;
+		irdy <= frm;
 
 		process (clk)
 			variable cntr : unsigned(max(hz_taddr'length, vt_taddr'length) downto 0);
@@ -127,15 +147,20 @@ begin
 			end if;
 		end process;
 
-		process (axis_base)
+		process (axis_base, axis_sel)
 			variable aux : signed(base'range);
 		begin
 			aux  := (others => '0');
-			aux  := resize(mul(signed(axis_base), unsigned(axis_unit)), aux'length);
+			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			aux  := shift_left(aux, 9-6);
+			if axis_sel='1' then
+				aux := aux + mul(to_signed(3,3), unsigned(axis_unit));
+			end if;
 			base <= std_logic_vector(aux);
 		end process;
 
+		last <= word2byte(x"7f" & x"0f", axis_sel);
+		updn <= axis_sel;
 		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
 		ticks_e : entity hdl4fpga.scopeio_ticks
 		port map (
@@ -143,15 +168,16 @@ begin
 			frm      => frm,
 			irdy     => irdy,
 			trdy     => trdy,
-			last     => x"7f",
+			last     => last,
 			base     => base,
 			step     => step,
+			updn     => updn,
 			wu_frm   => wu_frm,
 			wu_irdy  => wu_irdy,
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
---		value    <= base;
+		wu_align <= not axis_sel;
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left);
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
@@ -200,7 +226,7 @@ begin
 		signal hs_on    : std_logic;
 
 		signal vt_x     : std_logic_vector(video_hcntr'length-1 downto 0);
-		signal vt_y     : unsigned(hz_vaddr'range);
+		signal vt_y     : unsigned(vt_vaddr'range);
 		signal vt_bcd   : std_logic_vector(char_code'range);
 		signal vt_crow  : std_logic_vector(3-1 downto 0);
 		signal vt_ccol  : std_logic_vector(3-1 downto 0);

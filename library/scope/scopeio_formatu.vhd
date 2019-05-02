@@ -38,6 +38,7 @@ entity scopeio_formatu is
 		width  : in  std_logic_vector := b"1000";
 		neg    : in  std_logic;
 		sign   : in  std_logic;
+		align  : in  std_logic;
 		unit   : in  std_logic_vector := b"0000";
 		prec   : in  std_logic_vector := b"1101";
 		format : out std_logic_vector);
@@ -76,6 +77,7 @@ begin
 		bin_flt   => flt,
 		bin_sign  => sign,
 		bin_neg   => neg,
+		bcd_align => align,
 		bcd_width => width,
 		bcd_unit  => unit,
 		bcd_prec  => prec,

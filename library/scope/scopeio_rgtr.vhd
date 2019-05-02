@@ -124,7 +124,6 @@ begin
 				origin     := bf(rgtr_data, origin_id, axis_bf);
 				if bf(rgtr_data, select_id, axis_bf)="1" then
 					axis_sel  <= '1';
-					origin    := std_logic_vector(unsigned(origin)-(3*32));
 					axis_base <= bf(origin, base_id,   vtoffset_bf);
 					vt_offset <= bf(origin, offset_id, vtoffset_bf);
 				else
