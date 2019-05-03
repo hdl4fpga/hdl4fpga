@@ -65,7 +65,7 @@ begin
 		irdy     => irdy,
 		trdy     => trdy,
 		base     => x"000",
-		step     => x"001",
+		step     => x"019",
 		last     => x"005",
 		wu_frm   => wu_frm,
 		wu_irdy  => wu_irdy,
@@ -82,6 +82,9 @@ begin
 		trdy   => wu_trdy,
 		width  => b"1000",
 		unit   => b"0000",
+		sign   => '0',
+		neg    => '0',
+		align  => '1',
 		prec   => b"1111",
 		float  => wu_value,
 		format => format);
