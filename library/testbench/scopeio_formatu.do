@@ -44,6 +44,12 @@ add wave -noupdate -radix hexadecimal /testbench/du/btof_e/dtos_e/dtos_di
 add wave -noupdate -radix hexadecimal /testbench/du/btof_e/dtos_e/dtos_cy
 add wave -noupdate -radix hexadecimal /testbench/du/btof_e/dtos_e/dtos_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du/btof_e/stof_e/state
+add wave -noupdate -radix decimal /testbench/du/btof_e/stof_e/line__111/ptr
+add wave -noupdate -radix decimal /testbench/du/btof_e/stof_e/line__111/last
+add wave -noupdate /testbench/du/btof_e/stof_e/bcd_end
+add wave -noupdate /testbench/du/btof_e/stof_e/bcd_trdy
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du/btof_e/dtos_e/bcdddiv2e_e/bcd_cy
 add wave -noupdate -radix hexadecimal /testbench/du/btof_e/dtos_e/bcdddiv2e_e/bcd_di
 add wave -noupdate -radix hexadecimal /testbench/du/btof_e/dtos_e/bcdddiv2e_e/bcd_do
@@ -56,10 +62,10 @@ add wave -noupdate /testbench/du/btof_e/dtos_e/bcdddiv2e_e/shtio_d
 add wave -noupdate /testbench/du/btof_e/dtos_e/bcdddiv2e_e/shtio_q
 add wave -noupdate -radix unsigned /testbench/du/btof_e/dtos_e/bcdddiv2e_e/size
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {762 ns} 0}
+WaveRestoreCursors {{Cursor 1} {1737 ns} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 215
-configure wave -valuecolwidth 228
+configure wave -namecolwidth 121
+configure wave -valuecolwidth 118
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -72,4 +78,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {342 ns} {1215 ns}
+WaveRestoreZoom {1445 ns} {2075 ns}
