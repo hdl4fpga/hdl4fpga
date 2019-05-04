@@ -132,7 +132,9 @@ begin
 				end if;
 				if sign='1' then
 					ptr := ptr + 1;
-					w   := w   - 1;
+					if align='0' then
+						w   := w   - 1;
+					end if;
 				end if;
 				if width/=(width'range => '0') then
 					if align='0' then

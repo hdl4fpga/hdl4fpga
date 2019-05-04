@@ -65,7 +65,7 @@ add wave -noupdate /testbench/du/btof_e/dtos_e/bcdddiv2e_e/shtio_d
 add wave -noupdate /testbench/du/btof_e/dtos_e/bcdddiv2e_e/shtio_q
 add wave -noupdate -radix unsigned /testbench/du/btof_e/dtos_e/bcdddiv2e_e/size
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2503 ns} 0}
+WaveRestoreCursors {{Cursor 1} {739 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 197
 configure wave -valuecolwidth 156
@@ -81,4 +81,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1422 ns} {2662 ns}
+WaveRestoreZoom {119 ns} {1359 ns}

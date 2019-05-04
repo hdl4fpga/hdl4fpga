@@ -82,9 +82,9 @@ begin
 		trdy   => wu_trdy,
 		width  => b"1000",
 		unit   => b"0000",
-		sign   => '0',
-		neg    => '0',
-		align  => '1',
+		sign   => '1',
+		neg    => '1',
+		align  => '0',
 		prec   => b"1111",
 		float  => wu_value,
 		format => format);
