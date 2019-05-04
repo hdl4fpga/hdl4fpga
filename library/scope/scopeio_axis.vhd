@@ -179,7 +179,7 @@ begin
 
 		wu_align <= not axis_sel;
 		wu_neg   <= value(value'left);
-		wu_sign  <= value(value'left);
+		wu_sign  <= value(value'left) or axis_sel;
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
 
 	end block;
