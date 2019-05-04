@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
+		istream     : boolean := false;
 		tcpip       : boolean := true;
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
@@ -42,16 +43,20 @@ entity scopeio is
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		default_tracesfg : in  std_logic_vector := b"1_1_1";
-		default_gridfg   : in  std_logic_vector := b"1_0_0";
-		default_gridbg   : in  std_logic_vector := b"0_0_0";
-		default_hzfg     : in  std_logic_vector := b"1_1_1";
-		default_hzbg     : in  std_logic_vector := b"0_0_1";
-		default_vtfg     : in  std_logic_vector := b"1_1_1";
-		default_vtbg     : in  std_logic_vector := b"0_0_1";
-		default_textbg   : in  std_logic_vector := b"0_0_0";
-		default_sgmntbg  : in  std_logic_vector := b"0_1_1";
-		default_bg       : in  std_logic_vector := b"1_1_1");
+		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
+		istream_nl  : std_logic_vector := std_logic_vector(to_unsigned(character'pos(lf), 8));
+		istream_cr  : std_logic_vector := std_logic_vector(to_unsigned(character'pos(CR), 8));
+	 
+		default_tracesfg : std_logic_vector := b"1_1_1";
+		default_gridfg   : std_logic_vector := b"1_0_0";
+		default_gridbg   : std_logic_vector := b"0_0_0";
+		default_hzfg     : std_logic_vector := b"1_1_1";
+		default_hzbg     : std_logic_vector := b"0_0_1";
+		default_vtfg     : std_logic_vector := b"1_1_1";
+		default_vtbg     : std_logic_vector := b"0_0_1";
+		default_textbg   : std_logic_vector := b"0_0_0";
+		default_sgmntbg  : std_logic_vector := b"0_1_1";
+		default_bg       : std_logic_vector := b"1_1_1");
 	port (
 		si_clk      : in  std_logic := '-';
 		si_frm      : in  std_logic := '0';
@@ -273,7 +278,6 @@ architecture beh of scopeio is
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	
-	signal udpso_clk  : std_logic;
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
 
@@ -359,15 +363,14 @@ begin
 		mii_txdv => so_dv,
 		mii_txd  => so_data,
 
-		so_clk   => udpso_clk,
 		so_dv    => udpso_dv,
 		so_data  => udpso_data);
 
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (
-		esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		nl  => std_logic_vector(to_unsigned(character'pos(lf), 8)),
-		cr  => std_logic_vector(to_unsigned(character'pos(CR), 8)))
+		esc => istream_esc,
+		nl  => istream_nl,
+		cr  => istream_cr)
 	port map (
 		clk     => si_clk,
 
@@ -378,10 +381,10 @@ begin
 		so_irdy => strm_irdy,
 		so_data => strm_data);
 
-	sin_clk  <= udpso_clk  when tcpip else si_clk;
-	sin_frm  <= udpso_dv   when tcpip else strm_frm;
-	sin_irdy <= '1'        when tcpip else strm_irdy;
-	sin_data <= udpso_data when tcpip else strm_data;
+	sin_clk  <= si_clk;
+	sin_frm  <= strm_frm  when istream else udpso_dv   when tcpip else si_frm;
+	sin_irdy <= strm_irdy when istream else '1';
+	sin_data <= strm_data when istream else udpso_data when tcpip else si_data;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
