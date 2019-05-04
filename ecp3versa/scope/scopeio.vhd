@@ -135,7 +135,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
 		si_clk      => phy1_rxc,
-		si_dv       => phy1_rx_dv,
+		si_frm      => phy1_rx_dv,
 		si_data     => phy1_rx_d,
 		so_clk      => phy1_125clk,
 		so_dv       => phy1_tx_en,

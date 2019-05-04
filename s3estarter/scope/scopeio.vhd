@@ -288,7 +288,7 @@ begin
 		default_bg       => b"1_1_1")
 	port map (
 		si_clk      => e_rx_clk,
-		si_dv       => e_rx_dv,
+		si_frm      => e_rx_dv,
 		si_data     => e_rxd,
 		so_clk      => e_tx_clk,
 		so_dv       => e_txen,

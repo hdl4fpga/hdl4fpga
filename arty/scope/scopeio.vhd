@@ -286,7 +286,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
 		si_clk      => eth_rxclk_bufg,
-		si_dv       => eth_rx_dv,
+		si_frm      => eth_rx_dv,
 		si_data     => eth_rxd,
 		so_clk      => eth_txclk_bufg,
 		so_dv       => txdv,

@@ -99,7 +99,7 @@ begin
 		default_bg       => b"11111111_11111111_11111111")
 	port map (
 		si_clk      => mii_rxc,
-		si_dv       => mii_rxdv,
+		si_frm      => mii_rxdv,
 		si_data     => mii_rxd,
 		so_clk      => mii_txc, 
 		so_dv       => mii_txen,

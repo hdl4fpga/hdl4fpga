@@ -36,9 +36,9 @@ entity s3starter is
 		s3s_segment_g  : out std_ulogic := '1';
 		s3s_segment_dp : out std_ulogic := '1';
 
-		switches : in  std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
-		buttons  : in  std_ulogic_vector(3 downto 0) := (3 downto 0 => '1');
-		leds     : out std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
+		switch  : in  std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
+		button  : in  std_ulogic_vector(3 downto 0) := (3 downto 0 => '1');
+		led     : out std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
 
 		xtal  : in  std_logic := '1';
 
@@ -55,11 +55,11 @@ entity s3starter is
 	attribute loc of xtal : signal is "T9";
 --	attribute iostandard of xtal  : signal is "LVTTL";
 
-	attribute loc of leds : signal is "P11 P12 N12 P13 N14 L12 P14 K12";
---	attribute iostandard of leds : signal is "LVTTL";
+	attribute loc of led : signal is "P11 P12 N12 P13 N14 L12 P14 K12";
+--	attribute iostandard of led : signal is "LVTTL";
 
-	attribute loc of buttons : signal is "L14 L13 M14 M13";
-	attribute loc of switches : signal is "K13 K14 J13 J14 H13 H14 G12 F12";
+	attribute loc of button : signal is "L14 L13 M14 M13";
+	attribute loc of switch : signal is "K13 K14 J13 J14 H13 H14 G12 F12";
 
 	attribute loc of s3s_anodes     : signal is "E13 F14 G14 D14";
 	attribute loc of s3s_segment_a  : signal is "E14";
