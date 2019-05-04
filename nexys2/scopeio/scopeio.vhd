@@ -1,3 +1,26 @@
+--                                                                            --
+-- Author(s):                                                                 --
+--   Miguel Angel Sagreras                                                    --
+--                                                                            --
+-- Copyright (C) 2015                                                         --
+--    Miguel Angel Sagreras                                                   --
+--                                                                            --
+-- This source file may be used and distributed without restriction provided  --
+-- that this copyright statement is not removed from the file and that any    --
+-- derivative work contains  the original copyright notice and the associated --
+-- disclaimer.                                                                --
+--                                                                            --
+-- This source file is free software; you can redistribute it and/or modify   --
+-- it under the terms of the GNU General Public License as published by the   --
+-- Free Software Foundation, either version 3 of the License, or (at your     --
+-- option) any later version.                                                 --
+--                                                                            --
+-- This source is distributed in the hope that it will be useful, but WITHOUT --
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
+-- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
+-- more details at http://www.gnu.org/licenses/.                              --
+--                                                                            --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -31,26 +54,14 @@ architecture beh of nexys2 is
 		return aux;
 	end;
 
-	constant inputs : natural := 2;
-	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
-	signal spi_clk   : std_logic;
-	signal spiclk_rd : std_logic;
-	signal spiclk_fd : std_logic;
-	signal sckamp_rd : std_logic;
-	signal sckamp_fd : std_logic;
-	signal amp_spi   : std_logic;
-	signal amp_sdi   : std_logic;
-	signal amp_rdy   : std_logic;
-	signal adc_spi   : std_logic;
-	signal ampcs     : std_logic;
-	signal spi_rst   : std_logic;
-	signal dac_sdi   : std_logic;
-	signal rot_cwse  : std_logic;
-	signal rot_rdy   : std_logic;
-	signal input_ena : std_logic;
-	signal tdiv      : std_logic_vector(4-1 downto 0);
-	signal vga_rgb   : std_logic_vector(3-1 downto 0);
-	signal ipcfg_req : std_logic;
+	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal sample     : std_logic_vector(sample_size-1 downto 0);
+	signal uart_rxc   : std_logic;
+	signal uart_rxdv  : std_logic;
+	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
+
+	signal so_null    : std_logic_vector(8-1 downto 0);
 begin
 
 	clkin_ibufg : ibufg
@@ -64,266 +75,85 @@ begin
 		dfs_mul => 4,
 		dfs_div => 5)
 	port map(
-		dcm_rst => btn_north,
+		dcm_rst => button(0),
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
-	spi_b: block
-		signal dfs_rst : std_logic;
+	process (sys_clk)
 	begin
-		process (btn_north, sys_clk)
-			variable cntr : unsigned(0 to 8) := (others => '0');
-		begin 
-			if btn_north='1' then
-				cntr := (others => '0');
-			elsif rising_edge(sys_clk) then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
-			end if;
-			dfs_rst <= not cntr(0);
-		end process;
-
-		spidcm_e : entity hdl4fpga.dfs2dfs
-		generic map (
-			dcm_per  => 20.0,
-			dfs1_mul => 32,
-			dfs1_div => 25,
-			dfs2_mul => 17,
-			dfs2_div => 25)
-		port map(
-			dcm_rst  => dfs_rst,
-			dcm_clk  => sys_clk,
-			dfs_clk  => spi_clk,
-			dcm_lck  => spi_rst);
---		spi_clk <= sys_clk;
---		spi_rst <= not dfs_rst;
-
-
-		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
-		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
-		spi_mosi  <= amp_sdi   when amp_spi='1' else dac_sdi;
-
-		spi_sck_e : entity hdl4fpga.ddro
-		port map (
-			clk => spi_clk,
-			dr  => spiclk_rd,
-			df  => spiclk_fd,
-			q   => spi_sck);
-
-		ampclkr_p : process (spi_rst, spi_clk)
-			variable cntr : unsigned(0 to 4-1);
-		begin
-			if spi_rst='0' then
-				cntr := (others => '0');
-				sckamp_rd <= cntr(0);
-				adc_spi <= '1';
-			elsif rising_edge(spi_clk) then
-				cntr := cntr + 1;
-				sckamp_rd <= cntr(0);
-				amp_cs <= ampcs;
-			end if;
-		end process;
-
-		ampclkf_p : process (spi_rst, spi_clk)
-		begin
-			if spi_rst='0' then
-				sckamp_fd <= '0';
-			elsif falling_edge(spi_clk) then
-				sckamp_fd <= sckamp_rd;
-			end if;
-		end process;
-
-		ampp2sr_p : process (spi_rst, sckamp_fd)
-		begin
-			if spi_rst='0' then
-				ampcs <= '1';
-			elsif falling_edge(sckamp_fd) then
-				ampcs <= not amp_rdy or not amp_spi;
-			end if;
-		end process;
-
-		amp_p : process (spi_rst, sckamp_fd)
-			variable cntr : unsigned(0 to 4);
-			variable val  : unsigned(0 to 8-1);
-		begin
-			if spi_rst='0' then
-				amp_spi <= '1';
-				amp_rdy <= '0';
-				amp_sdi <= '0';
-				cntr    := to_unsigned(val'length-2,cntr'length);
-				val     := B"0001_0001";
-			elsif falling_edge(sckamp_fd) then
-				if ampcs='0' then
-					if cntr(0)='0' then
-						cntr := cntr - 1;
-						val  := val rol 1;
-					end if;
-				end if;
-				amp_sdi <= val(0);
-				amp_rdy <= not cntr(0);
-				amp_spi <= not cntr(0) or not ampcs;
-			end if;
-		end process;
-
-		adcdac_p : process (amp_spi, spi_clk)
-			constant p2p        : natural := 2*1550;
-			constant cycle      : natural := 34;
-			variable cntr       : unsigned(0 to 6) := (others => '0');
-			variable adin       : unsigned(32-1 downto 0);
-			variable aux        : unsigned(sample'range);
-			variable dac_shr    : unsigned(0 to 30-1);
-			variable adcdac_sel : std_logic;
-			variable dac_data   : unsigned(0 to 12-1);
-			variable dac_chan   : unsigned(0 to 2-1);
-		begin
-			if amp_spi='1' then
-				cntr       := to_unsigned(cycle-2, cntr'length);
-				adcdac_sel := '0';
-				dac_sdi    <= '0';
-				dac_cs     <= '1';
-			elsif rising_edge(spi_clk) then
-				if cntr(0)='1' then
-					if adcdac_sel ='0' then
-						sample <= std_logic_vector(
-							adin(1*16+sample_size-1 downto 1*16) &
-							adin(0*16+sample_size-1 downto 0*16));
-						input_ena <= not amp_spi;
-						ad_conv   <= '0';
-					else
-						if to_integer(dac_data)=(2048+p2p/2) then
-							dac_data := to_unsigned(2048-p2p/2, dac_data'length);
-						else
-							dac_data := dac_data + 1;
-						end if;
-						ad_conv <= not amp_spi;
-					end if;
-
-					if tdiv=(1 to 4 => '0') then
-						adcdac_sel := '0';
-						ad_conv    <= '1';
-					else 
-						adcdac_sel := not adcdac_sel;
-					end if;
-
-					dac_shr := (1 to 10 => '-') & "001100" & dac_chan & dac_data;
-					cntr    := to_unsigned(cycle-2, cntr'length);
-				else
-					input_ena <= '0';
-					ad_conv   <= '0';
-					dac_shr   := dac_shr sll 1;
-					cntr      := cntr - 1;
-				end if;
-				adin    := adin sll 1;
-				adin(0) := spi_miso;
-
-				dac_cs  <= not adcdac_sel or amp_spi;
-				dac_sdi <= dac_shr(0);
-			end if;
-		end process;
-	end block;
-
-	process (e_rx_clk, rot_a, rot_b)
-		variable cntr : unsigned(0 to 12);
-	begin
-		if (rot_a or rot_b)='1' then
-			if cntr(0)='1' then
-				cntr := (others => '0');
-			end if;
-			rot_cwse <= rot_a;
-		elsif rising_edge(xtal) then
-			if cntr(0)='0' then
-				cntr := cntr + 1;
-			end if;
-			rot_rdy <= cntr(0);
+		if rising_edge(sys_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 		end if;
 	end process;
 
-	process (sw0, e_tx_clk)
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+	port map (
+		clk  => sys_clk,
+		addr => input_addr,
+		data => sample);
+
+	process (sys_clk)
+		constant period : natural := 500000000/(16*115200);
+		variable cntr   : unsigned(0 to unsigned_num_bits(period)-1);
 	begin
-		if sw0='1' then
-			ipcfg_req <= '0';
-			led0  <= '1';
-		elsif rising_edge(e_tx_clk) then
-			led0  <= '0';
-			ipcfg_req <= '1';
+		if rising_edge(sys_clk) then
+			if cntr > (period/2) then
+				uart_rxc <= '0';
+			else
+				uart_rxc <= '1';
+			end if;
+
+			if cntr < period then
+				cntr := cntr + 1;
+			else
+				cntr := (others => '0');
+			end if;
 		end if;
 	end process;
+
+	uartrx_e : entity hdl4fpga.uart_rx
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => rs232_rxd,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		inputs           => inputs,
-		default_tracesfg => b"1_1_1",
-		default_gridfg   => b"1_0_0",
-		default_gridbg   => b"0_0_0",
-		default_hzfg     => b"1_1_1",
-		default_hzbg     => b"0_0_1",
-		default_vtfg     => b"1_1_1",
-		default_vtbg     => b"0_0_1",
-		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"0_1_1",
-		default_bg       => b"1_1_1")
+		tcpip            => false,
+		default_tracesfg => b"111_111_11",
+		default_gridfg   => b"111_000_00",
+		default_gridbg   => b"000_000_00",
+		default_hzfg     => b"111_111_11",
+		default_hzbg     => b"000_000_11",
+		default_vtfg     => b"111_111_11",
+		default_vtbg     => b"000_000_11",
+		default_textbg   => b"000_000_00",
+		default_sgmntbg  => b"000_111_11",
+		default_bg       => b"111_111_11")
 	port map (
-		si_clk      => e_rx_clk,
-		si_dv       => e_rx_dv,
-		si_data     => e_rxd,
-		so_clk      => e_tx_clk,
-		so_dv       => e_txen,
-		so_data     => e_txd,
-		ipcfg_req   => ipcfg_req,
-		input_clk   => spi_clk,
-		input_ena   => input_ena,
+		si_clk      => uart_rxc,
+		si_frm      => uart_rxdv,
+		si_data     => uart_rxd,
+		so_data     => so_null,
+		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
-		video_vsync => vga_vsync,
-		video_blank => open);
+		video_vsync => vga_vsync);
 
-	vga_red   <= vga_rgb(2);
-	vga_green <= vga_rgb(1);
-	vga_blue  <= vga_rgb(0);
-	-- Ethernet Transceiver --
-	--------------------------
+	process (vga_rgb)
+		variable aux : unsigned(vga_rgb'range);
+	begin
+		aux := unsigned(vga_rgb);
+		vga_blue  <= std_logic_vector(aux(vga_blue'range));
+		aux := aux srl vga_blue'length;
+		vga_green <= std_logic_vector(aux(vga_green'range));
+		aux := aux srl vga_green'length;
+		vga_red   <= std_logic_vector(aux(vga_red'range));
+	end process;
 
-	e_txen <= 'Z';
-	e_mdc  <= '0';
-	e_mdio <= 'Z';
-	e_txd_4 <= '0';
-
-	-- DDR --
-	---------
-
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => 'Z',
-		o  => sd_ck_p,
-		ob => sd_ck_n);
-
-	sd_cke    <= 'Z';
-	sd_cs     <= 'Z';
-	sd_ras    <= 'Z';
-	sd_cas    <= 'Z';
-	sd_we     <= 'Z';
-	sd_ba     <= (others => 'Z');
-	sd_a      <= (others => 'Z');
-	sd_dm     <= (others => 'Z');
-	sd_dqs    <= (others => 'Z');
-	sd_dq     <= (others => 'Z');
-
-	amp_shdn <= '0';
-	dac_clr <= '1';
-	sf_ce0 <= '1';
-	fpga_init_b <= '0';
-	spi_ss_b <= '0';
-
-	led1 <= '1';
-	led2 <= '1';
-	led3 <= '1';
-	led4 <= '1';
-	led5 <= '1';
-	led6 <= '1';
-	led7 <= '1';
 end;

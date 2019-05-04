@@ -1,3 +1,26 @@
+--                                                                            --
+-- Author(s):                                                                 --
+--   Miguel Angel Sagreras                                                    --
+--                                                                            --
+-- Copyright (C) 2015                                                         --
+--    Miguel Angel Sagreras                                                   --
+--                                                                            --
+-- This source file may be used and distributed without restriction provided  --
+-- that this copyright statement is not removed from the file and that any    --
+-- derivative work contains  the original copyright notice and the associated --
+-- disclaimer.                                                                --
+--                                                                            --
+-- This source file is free software; you can redistribute it and/or modify   --
+-- it under the terms of the GNU General Public License as published by the   --
+-- Free Software Foundation, either version 3 of the License, or (at your     --
+-- option) any later version.                                                 --
+--                                                                            --
+-- This source is distributed in the hope that it will be useful, but WITHOUT --
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
+-- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
+-- more details at http://www.gnu.org/licenses/.                              --
+--                                                                            --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -7,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
+		tcpip       : boolean := true;
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
@@ -30,12 +54,13 @@ entity scopeio is
 		default_bg       : in  std_logic_vector := b"1_1_1");
 	port (
 		si_clk      : in  std_logic := '-';
-		si_dv       : in  std_logic := '0';
+		si_frm      : in  std_logic := '0';
+		si_irdy     : in  std_logic := '0';
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
-		ipcfg_req   : in  std_logic;
+		ipcfg_req   : in  std_logic := '0';
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -312,12 +337,17 @@ architecture beh of scopeio is
 	signal wu_value       : std_logic_vector(4*4-1 downto 0);
 	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
+	signal sin_clk  : std_logic;
+	signal sin_frm  : std_logic;
+	signal sin_irdy : std_logic;
+	signal sin_data : std_logic_vector(si_data'range);
+
 begin
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
 		mii_rxc  => si_clk,
-		mii_rxdv => si_dv,
+		mii_rxdv => si_frm,
 		mii_rxd  => si_data,
 
 		mii_req  => ipcfg_req,
@@ -329,11 +359,17 @@ begin
 		so_dv    => udpso_dv,
 		so_data  => udpso_data);
 
+	sin_clk  <= udpso_clk  when tcpip else si_clk;
+	sin_frm  <= udpso_dv   when tcpip else si_frm;
+	sin_irdy <= '1'        when tcpip else si_irdy;
+	sin_data <= udpso_data when tcpip else si_data;
+
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
-		sin_clk   => udpso_clk,
-		sin_dv    => udpso_dv,
-		sin_data  => udpso_data,
+		sin_clk   => sin_clk,
+		sin_frm   => sin_frm,
+		sin_irdy  => sin_irdy,
+		sin_data  => sin_data,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);

@@ -8,8 +8,8 @@ use hdl4fpga.std.all;
 entity scopeio_sin is
 	port (
 		sin_clk   : in  std_logic;
-		sin_ena   : in  std_logic := '1';
-		sin_dv    : in  std_logic;
+		sin_irdy  : in  std_logic := '1';
+		sin_frm   : in  std_logic;
 		sin_data  : in  std_logic_vector;
 		
 		rgtr_id   : out std_logic_vector;
@@ -37,7 +37,7 @@ begin
 		if rising_edge(sin_clk) then
 			aux := unsigned(val);
 			aux := aux ror 8;
-			if sin_ena='1' then
+			if sin_irdy='1' then
 				if ptr(0)='1' then
 					aux := aux rol 2*8;
 				end if;
@@ -46,8 +46,8 @@ begin
 			end if;
 			aux := aux rol 8;
 			val <= std_logic_vector(aux);
-			dv  <= sin_dv;
-			ena <= sin_ena;
+			dv  <= sin_frm;
+			ena <= sin_irdy;
 		end if;
 	end process;
 

@@ -42,7 +42,7 @@ architecture xlx of nexys2 is
 begin
 	dcm : entity work.dcmcsc
 	port map (
-		rst => buttons(0),
+		rst => button(0),
 		clkin => xtal,
 		clk0 => clk,
 		locked => open);
@@ -51,12 +51,12 @@ begin
 	generic map (
 		m => 3)
 	port map (
-		r => buttons(1),
+		r => button(1),
 		a => clk,
 		q => open ); --q(1 to 23));
-	leds(7 downto 3) <= (others => '0');
+	led(7 downto 3) <= (others => '0');
 
-	leds(2 downto 0) <= q(1 to 3);
+	led(2 downto 0) <= q(1 to 3);
 	seg7_ctlt : entity iodev.seg7
 	generic map (
 		code_size => 5,
