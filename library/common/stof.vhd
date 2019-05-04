@@ -138,7 +138,7 @@ begin
 					if align='0' then
 						ptr  := w+last;
 					else
-						last := ptr - w;
+						last := ptr - w + 1;
 					end if;
 				end if;
 				if endian='1' then
@@ -181,7 +181,13 @@ begin
 				end if;
 
 				if ptr=last then
-					bcd_end <= '1';
+					if endian='0' and point='0' and ptr+signed(unit)=-1 then
+						bcd_end <= '0';
+					elsif endian='1' and point='1' and ptr+signed(unit)=-1 then
+						bcd_end <= '0';
+					else
+						bcd_end <= '1';
+					end if;
 				else
 					bcd_end <= '0';
 				end if;
