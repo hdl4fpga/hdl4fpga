@@ -33,7 +33,7 @@ use hdl4fpga.std.all;
 
 entity uart_rx is
 	generic (
-		sampling_rate : natural := 16);
+		tcntr_size : natural := 4);
 	port (
 		uart_rxc  : in  std_logic;
 		uart_sin  : in  std_logic;
@@ -58,9 +58,9 @@ begin
 		type uart_states is (idle_s, start_s, data_s, stop_s);
 		variable uart_state : uart_states;
 
-		variable tcntr      : unsigned(0 to unsigned_num_bits(sampling_rate)-1);
+		variable tcntr      : unsigned(0 to tcntr_size);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
-		variable dcntr      : unsigned(0 to 3-1);
+		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
 		variable data       : unsigned(8-1 downto 0);
 	begin
