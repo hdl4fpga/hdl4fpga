@@ -337,6 +337,10 @@ architecture beh of scopeio is
 	signal wu_value       : std_logic_vector(4*4-1 downto 0);
 	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
+	signal strm_frm  : std_logic;
+	signal strm_irdy : std_logic;
+	signal strm_data : std_logic_vector(si_data'range);
+
 	signal sin_clk  : std_logic;
 	signal sin_frm  : std_logic;
 	signal sin_irdy : std_logic;
@@ -359,10 +363,25 @@ begin
 		so_dv    => udpso_dv,
 		so_data  => udpso_data);
 
+	scopeio_istream_e : entity hdl4fpga.scopeio_istream
+	generic map (
+		esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		nl  => std_logic_vector(to_unsigned(character'pos(lf), 8)),
+		cr  => std_logic_vector(to_unsigned(character'pos(CR), 8)))
+	port map (
+		clk     => si_clk,
+
+		rxdv    => si_frm,
+		rxd     => si_data,
+
+		so_frm  => strm_frm,
+		so_irdy => strm_irdy,
+		so_data => strm_data);
+
 	sin_clk  <= udpso_clk  when tcpip else si_clk;
-	sin_frm  <= udpso_dv   when tcpip else si_frm;
-	sin_irdy <= '1'        when tcpip else si_irdy;
-	sin_data <= udpso_data when tcpip else si_data;
+	sin_frm  <= udpso_dv   when tcpip else strm_frm;
+	sin_irdy <= '1'        when tcpip else strm_irdy;
+	sin_data <= udpso_data when tcpip else strm_data;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
