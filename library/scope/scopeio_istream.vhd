@@ -27,8 +27,7 @@ use ieee.std_logic_1164.all;
 entity scopeio_istream is
 	generic (
 		esc      : std_logic_vector;
-		nl       : std_logic_vector;
-		cr       : std_logic_vector);
+		eos      : std_logic_vector);
 	port (
 		clk      : in  std_logic;
 
@@ -50,9 +49,7 @@ begin
 		if rising_edge(clk) then
 			if rxdv='1' then
 				if esci='0' then
-					if rxd=CR then
-						frm <= '0';
-					elsif rxd=NL  then
+					if rxd=eos then
 						frm <= '0';
 					end if;
 				else
@@ -70,16 +67,14 @@ begin
 
 	so_frm <=
 		'1' when esci='1' else
-		'0' when rxdv='1' and rxd=CR else
-		'0' when rxdv='1' and rxd=NL else
+		'0' when rxdv='1' and rxd=eos else
 		'1' when rxdv='1' else
 		frm;
 
 	so_irdy <= 
 		rxdv when esci='1' else
 		'0'  when rxd=esc else
-		'0'  when rxd=CR  else
-		'0'  when rxd=NL  else
+		'0'  when rxd=eos  else
 		rxdv;
 
 	so_data <= rxd;

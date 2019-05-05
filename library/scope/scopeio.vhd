@@ -44,8 +44,7 @@ entity scopeio is
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
 
 		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
-		istream_nl  : std_logic_vector := std_logic_vector(to_unsigned(character'pos(lf), 8));
-		istream_cr  : std_logic_vector := std_logic_vector(to_unsigned(character'pos(CR), 8));
+		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8));
 	 
 		default_tracesfg : std_logic_vector := b"1_1_1";
 		default_gridfg   : std_logic_vector := b"1_0_0";
@@ -369,8 +368,7 @@ begin
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (
 		esc => istream_esc,
-		nl  => istream_nl,
-		cr  => istream_cr)
+		eos => istream_eos)
 	port map (
 		clk     => si_clk,
 
