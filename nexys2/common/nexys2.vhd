@@ -28,22 +28,22 @@ entity nexys2 is
 	port (
 		xtal  : in  std_logic := '1';
 
-		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => '1');
-		s3s_segment_a  : out std_logic := '1';
-		s3s_segment_b  : out std_logic := '1';
-		s3s_segment_c  : out std_logic := '1';
-		s3s_segment_d  : out std_logic := '1';
-		s3s_segment_e  : out std_logic := '1';
-		s3s_segment_f  : out std_logic := '1';
-		s3s_segment_g  : out std_logic := '1';
-		s3s_segment_dp : out std_logic := '1';
+		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
+		s3s_segment_a  : out std_logic := 'Z';
+		s3s_segment_b  : out std_logic := 'Z';
+		s3s_segment_c  : out std_logic := 'Z';
+		s3s_segment_d  : out std_logic := 'Z';
+		s3s_segment_e  : out std_logic := 'Z';
+		s3s_segment_f  : out std_logic := 'Z';
+		s3s_segment_g  : out std_logic := 'Z';
+		s3s_segment_dp : out std_logic := 'Z';
 
-		switch         : in  std_logic_vector(7 downto 0) := (7 downto 0 => '1');
-		button         : in  std_logic_vector(3 downto 0) := (3 downto 0 => '1');
-		led            : out std_logic_vector(7 downto 0) := (7 downto 0 => '1');
+		switch         : in  std_logic_vector(7 downto 0) := (7 downto 0 => '0');
+		button         : in  std_logic_vector(3 downto 0) := (3 downto 0 => '0');
+		led            : out std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
 
-		rs232_rxd      : in  std_logic := '1';
-		rs232_txd      : out std_logic := '1';
+		rs232_rxd      : in  std_logic := '0';
+		rs232_txd      : out std_logic := 'Z';
 
 		vga_red        : out std_logic_vector(3-1 downto 0);
 		vga_green      : out std_logic_vector(3-1 downto 0);

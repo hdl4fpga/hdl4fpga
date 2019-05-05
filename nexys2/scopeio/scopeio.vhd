@@ -123,6 +123,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		tcpip            => false,
+		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",
@@ -156,4 +158,17 @@ begin
 		vga_red   <= std_logic_vector(aux(vga_red'range));
 	end process;
 
+	led <= (others => 'Z');
+
+	s3s_anodes     <= (others => 'Z');
+	s3s_segment_a  <= 'Z';
+	s3s_segment_b  <= 'Z';
+	s3s_segment_c  <= 'Z';
+	s3s_segment_d  <= 'Z';
+	s3s_segment_e  <= 'Z';
+	s3s_segment_f  <= 'Z';
+	s3s_segment_g  <= 'Z';
+	s3s_segment_dp <= 'Z';
+
+	rs232_txd <= 'Z';
 end;

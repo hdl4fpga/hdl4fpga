@@ -276,6 +276,8 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
+		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",
 		default_gridbg   => b"0_0_0",
