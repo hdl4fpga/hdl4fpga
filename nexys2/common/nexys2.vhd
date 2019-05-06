@@ -52,7 +52,6 @@ entity nexys2 is
 		vga_vsync      : out std_logic);
 
 	attribute loc                   : string;
-	attribute iostandard            : string;
 	
 	------------------------------------
 	-- Digilent/NEXYS2 SPARTAN-3E Kit --

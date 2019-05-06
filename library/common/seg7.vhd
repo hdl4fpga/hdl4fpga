@@ -56,8 +56,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library iodev;
-
 entity seg7 is
 	generic (
 		refresh : natural := 2**12;
@@ -80,7 +78,7 @@ entity seg7 is
 			"01100001" & -- E
 			"01110001"); -- F
 	port (
-		clock : in  std_logic;
+		clk : in  std_logic;
 		data : in  std_logic_vector;
 		segment_a : out std_logic;
 		segment_b : out std_logic;
@@ -98,11 +96,11 @@ architecture mixed of seg7 is
 	signal display_next : std_logic;
 	signal display_ena  : std_logic_vector(0 to display_turnon'length-1) := ('0', others => '1');
 begin
-	rfsh_ctlr : process (clock)
+	rfsh_ctlr : process (clk)
 		constant max_count : natural := refresh-1;
 		variable refresh_counter : natural range 0 to max_count;
 	begin
-		if rising_edge(clock) then
+		if rising_edge(clk) then
 			if refresh_counter < max_count then
 				display_next <= '0';
 				refresh_counter := refresh_counter +1;
@@ -113,9 +111,9 @@ begin
 		end if;
 	end process;
 
-	sweep : process (clock)
+	sweep : process (clk)
 	begin
-		if rising_edge(clock) then
+		if rising_edge(clk) then
 			if display_next='1' then
 				display_ena <= display_ena(1 to display_ena'right) & display_ena(0);
 			end if;
@@ -136,7 +134,7 @@ begin
 		end loop;
 	end process;
 
-	display : entity iodev.rom7seg 
+	display : entity hdl4fpga.rom7seg 
 	generic map (
 		char_map => char_map)
 	port map (

@@ -26,11 +26,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
+
+library unisim;
+use unisim.vcomponents.all;
 
 architecture beh of nexys2 is
 
@@ -57,11 +57,13 @@ architecture beh of nexys2 is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	signal uart_rxc   : std_logic;
+	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
 
 	signal so_null    : std_logic_vector(8-1 downto 0);
+	signal display    : std_logic_vector(0 to 16-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -113,10 +115,19 @@ begin
 		end if;
 	end process;
 
+--	process (uart_rxc)
+--		variable data : unsigned(0 to 10-1);
+--	begin
+--		if rising_edge(uart_rxc) then
+--			data := data rol 1;
+--		end if;
+--	end process;
+
+	uart_sin <= rs232_rxd;
 	uartrx_e : entity hdl4fpga.uart_rx
 	port map (
 		uart_rxc  => uart_rxc,
-		uart_sin  => rs232_rxd,
+		uart_sin  => uart_sin,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
@@ -158,17 +169,36 @@ begin
 		vga_red   <= std_logic_vector(aux(vga_red'range));
 	end process;
 
-	led <= (others => 'Z');
+	led(7 downto 2) <= (others => 'Z');
 
-	s3s_anodes     <= (others => 'Z');
-	s3s_segment_a  <= 'Z';
-	s3s_segment_b  <= 'Z';
-	s3s_segment_c  <= 'Z';
-	s3s_segment_d  <= 'Z';
-	s3s_segment_e  <= 'Z';
-	s3s_segment_f  <= 'Z';
-	s3s_segment_g  <= 'Z';
-	s3s_segment_dp <= 'Z';
+	led(1) <= uart_rxdv;
+	process(uart_rxc, button(0))
+	begin
+		if button(0)='1' then
+			led(0) <= '0';
+		elsif rising_edge(uart_rxc) then
+			if uart_rxdv='1' then
+				led(0) <= '1';
+				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
+			end if;
+		end if;
+	end process;
+
+	seg7_e : entity hdl4fpga.seg7
+	generic map (
+		refresh => 2*8)
+	port map (
+		clk  => uart_rxc,
+		data => display,
+		segment_a  => s3s_segment_a,
+		segment_b  => s3s_segment_b,
+		segment_c  => s3s_segment_c,
+		segment_d  => s3s_segment_d,
+		segment_e  => s3s_segment_e,
+		segment_f  => s3s_segment_f,
+		segment_g  => s3s_segment_g,
+		segment_dp => s3s_segment_dp,
+		display_turnon => s3s_anodes);
 
 	rs232_txd <= 'Z';
 end;
