@@ -23,3 +23,12 @@
 
 NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 20 ns HIGH 50%;
+NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+NET "e_rx_clk" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "e_tx_clk" CLOCK_DEDICATED_ROUTE = FALSE;
+
+TIMEGRP "vga_grp" = net "vga_clk1";
+TIMEGRP "spi_grp" = net "spi_b_spidcm_e_dcm_clkfx";
+TIMESPEC "TSpci_async1"=FROM "vga_grp" TO "spi_grp" TIG;
+TIMESPEC "TSpci_async2"=FROM "spi_grp" TO "vga_grp" TIG;
+
