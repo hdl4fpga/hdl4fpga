@@ -21,5 +21,5 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-NET "xtal" TNM_NET = xtal;
-TIMESPEC TS_xtal = PERIOD "xtal" 20 ns HIGH 50%;
+NET "sys_clk" TNM_NET = sys_clk;
+TIMESPEC TS_sys_clk = PERIOD "xtal" 20 ns HIGH 50%;
