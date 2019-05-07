@@ -32,6 +32,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture uart_rx of testbench is
+	constant n : natural := 2;
 	signal rst   : std_logic := '1';
 	signal clk   : std_logic := '1';
 	signal xclk  : std_logic := '1';
@@ -42,7 +43,7 @@ architecture uart_rx of testbench is
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 begin
 
-	xclk <= not xclk after 1000000000 ns/(2*115200);
+	xclk <= not xclk after 1000000000 ns/(2*2500*1000);
 	clk <= not clk after 10 ns;
 	rst <= '1', '0' after 100 ns;
 
@@ -58,7 +59,7 @@ begin
 	end process;
 
 	process (clk)
-		constant period : natural := 50000000/(16*115200);
+		constant period : natural := 50000000/(2**n*2500*1000);
 		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
 	begin
 		if rising_edge(clk) then
@@ -77,6 +78,8 @@ begin
 	end process;
 
 	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		bit_rate => n)
 	port map (
 		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,

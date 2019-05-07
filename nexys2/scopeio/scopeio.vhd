@@ -97,7 +97,9 @@ begin
 		data => sample);
 
 	process (sys_clk)
-		constant period : natural := 50000000/(16*115200);
+--		constant bpsX   : natural := 8*(5*115200);
+		constant bpsX   : natural := 2**2*2500*1000;
+		constant period : natural := (50*1000*1000+((bpsX+1)/2-1))/bpsX;
 		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1);
 	begin
 		if rising_edge(sys_clk) then
@@ -125,6 +127,8 @@ begin
 
 	uart_sin <= rs232_rxd;
 	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		bit_rate => 2)
 	port map (
 		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,

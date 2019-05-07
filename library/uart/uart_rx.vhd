@@ -60,11 +60,12 @@ begin
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
 		variable data       : unsigned(8-1 downto 0);
-		variable sin : std_logic;
+		variable sin : unsigned(0 to 1-1);
 	begin
 		if rising_edge(uart_rxc) then
-			din <= sin;
-			sin := uart_sin;
+			din <= sin(0);
+			sin(0) := uart_sin;
+			sin := sin rol 1;
 			case uart_state is
 			when idle_s =>
 				uart_rxdv <= '0';
