@@ -50,7 +50,7 @@ begin
 		variable data : unsigned(10-1 downto 0);
 	begin
 		if rst='1' then
-			data := b"0100_0011_01";
+			data := x"43" & b"01";
 		elsif rising_edge(xclk) then
 			data := data ror 1;
 		end if;
