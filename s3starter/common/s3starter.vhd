@@ -26,27 +26,33 @@ use ieee.std_logic_1164.all;
 
 entity s3starter is
 	port (
-		s3s_anodes     : out std_ulogic_vector(3 downto 0) := (3 downto 0 => '1');
-		s3s_segment_a  : out std_ulogic := '1';
-		s3s_segment_b  : out std_ulogic := '1';
-		s3s_segment_c  : out std_ulogic := '1';
-		s3s_segment_d  : out std_ulogic := '1';
-		s3s_segment_e  : out std_ulogic := '1';
-		s3s_segment_f  : out std_ulogic := '1';
-		s3s_segment_g  : out std_ulogic := '1';
-		s3s_segment_dp : out std_ulogic := '1';
-
-		switch  : in  std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
-		button  : in  std_ulogic_vector(3 downto 0) := (3 downto 0 => '1');
-		led     : out std_ulogic_vector(7 downto 0) := (7 downto 0 => '1');
-
 		xtal  : in  std_logic := '1';
+		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
+		s3s_segment_a  : out std_logic := 'Z';
+		s3s_segment_b  : out std_logic := 'Z';
+		s3s_segment_c  : out std_logic := 'Z';
+		s3s_segment_d  : out std_logic := 'Z';
+		s3s_segment_e  : out std_logic := 'Z';
+		s3s_segment_f  : out std_logic := 'Z';
+		s3s_segment_g  : out std_logic := 'Z';
+		s3s_segment_dp : out std_logic := 'Z';
 
-		rs232_rxd : in std_logic := '1';
-		rs232_txd : out std_logic := '1');
+		switch  : in  std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
+		button  : in  std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
+		led     : out std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
+
+		vga_red   : out std_logic;
+		vga_green : out std_logic;
+		vga_blue  : out std_logic;
+		vga_hsync : out std_logic;
+		vga_vsync : out std_logic;
+
+
+		rs232_rxd : in std_logic := 'Z';
+		rs232_txd : out std_logic := 'Z');
 
 	attribute loc : string;
-	attribute iostandard : string;
+--	attribute iostandard : string;
 	
 	-------------------------------------------
 	-- Xilinx/Digilent SPARTAN-3 Starter Kit --
@@ -80,6 +86,12 @@ entity s3starter is
 --	attribute iostandard of s3s_segment_f  : signal is "LVTTL";
 --	attribute iostandard of s3s_segment_g  : signal is "LVTTL";
 --	attribute iostandard of s3s_segment_dp : signal is "LVTTL";
+
+	attribute loc   of vga_red   : signal is "R12";
+	attribute loc   of vga_green : signal is "T12";
+	attribute loc   of vga_blue  : signal is "R11";
+	attribute loc   of vga_hsync : signal is "R9";
+	attribute loc   of vga_vsync : signal is "T10";
 
 	attribute loc of rs232_rxd : signal is "T13";
 	attribute loc of rs232_txd : signal is "R13";
