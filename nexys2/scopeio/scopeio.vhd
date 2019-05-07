@@ -97,17 +97,17 @@ begin
 		data => sample);
 
 	process (sys_clk)
-		constant period : natural := 500000000/(16*115200);
-		variable cntr   : unsigned(0 to unsigned_num_bits(period)-1);
+		constant period : natural := 50000000/(16*115200);
+		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1);
 	begin
 		if rising_edge(sys_clk) then
-			if cntr > (period/2) then
+			if cntr < (period/2) then
 				uart_rxc <= '0';
 			else
 				uart_rxc <= '1';
 			end if;
 
-			if cntr < period then
+			if cntr < period-1 then
 				cntr := cntr + 1;
 			else
 				cntr := (others => '0');

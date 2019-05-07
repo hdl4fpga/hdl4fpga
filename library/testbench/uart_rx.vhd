@@ -31,92 +31,56 @@ use ieee.std_logic_textio.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity uart_rx is
-	generic (
-		bit_rate  : natural := 4);
-	port (
-		uart_rxc  : in  std_logic;
-		uart_sin  : in  std_logic;
-		uart_rxdv : out std_logic;
-		uart_rxd  : out std_logic_vector(8-1 downto 0));
-end;
+architecture uart_rx of testbench is
+	signal rst   : std_logic := '1';
+	signal clk   : std_logic := '1';
+	signal xclk  : std_logic := '1';
 
-architecture def of uart_rx is
-	signal din : std_logic;
+	signal uart_rxc   : std_logic;
+	signal uart_sin   : std_logic;
+	signal uart_rxdv  : std_logic;
+	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 begin
 
-	process (uart_rxc)
+	xclk <= not xclk after 1000000000 ns/(2*115200);
+	clk <= not clk after 10 ns;
+	rst <= '1', '0' after 100 ns;
+
+	process (rst, xclk)
+		variable data : unsigned(10-1 downto 0);
 	begin
-		if rising_edge(uart_rxc) then
+		if rst='1' then
+			data := b"0100_0011_01";
+		elsif rising_edge(xclk) then
+			data := data ror 1;
+		end if;
+		uart_sin <= data(0);
+	end process;
+
+	process (clk)
+		constant period : natural := 50000000/(16*115200);
+		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
+	begin
+		if rising_edge(clk) then
+			if cntr < (period/2) then
+				uart_rxc <= '0';
+			else
+				uart_rxc <= '1';
+			end if;
+
+			if cntr < period-1 then
+				cntr := cntr + 1;
+			else
+				cntr := (others => '0');
+			end if;
 		end if;
 	end process;
 
-	process (uart_rxc)
-		type uart_states is (idle_s, start_s, data_s, stop_s);
-		variable uart_state : uart_states;
+	uartrx_e : entity hdl4fpga.uart_rx
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => uart_sin,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
 
-		variable tcntr      : unsigned(0 to bit_rate);
-		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
-		variable dcntr      : unsigned(0 to 4-1);
-		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
-		variable data       : unsigned(8-1 downto 0);
-		variable sin : std_logic;
-	begin
-		if rising_edge(uart_rxc) then
-			din <= sin;
-			sin := uart_sin;
-			case uart_state is
-			when idle_s =>
-				uart_rxdv <= '0';
-				dcntr := (others => '-');
-				if din='0' then
-					uart_state := start_s;
-				end if;
-				tcntr := tcntr_init;
-			when start_s =>
-				uart_rxdv <= '0';
-				dcntr := dcntr_init;
-				if tcntr(1)='1' then
-					if din='0' then
-						uart_state := data_s;
-						tcntr := tcntr_init;
-					else
-						uart_state := idle_s;
-					end if;
-				else
-					tcntr := tcntr + 1;
-				end if;
-			when data_s =>
-				uart_rxdv <= '0';
-				if tcntr(0)='1' then
-
-					data(0) := din;
-					data  := data ror 1;
-					if dcntr(0)='1' then
-						uart_rxdv <= '1';
-						uart_state := stop_s;
-						dcntr := (others => '-');
-					else
-						uart_rxdv <= '0';
-						dcntr := dcntr + 1;
-					end if;
-
-					tcntr := tcntr_init;
-				else
-					uart_rxdv <= '0';
-					tcntr := tcntr + 1;
-				end if;
-			when stop_s =>
-				uart_rxdv <= '0';
-				dcntr := (others => '-');
-				if tcntr(0)='1' then
-					uart_state := idle_s;
-				else
-					tcntr := tcntr + 1;
-				end if;
-			end case;
-
-			uart_rxd <= std_logic_vector(data);
-		end if;
-	end process;
 end;
