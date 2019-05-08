@@ -65,9 +65,9 @@ begin
 	begin
 		if rising_edge(uart_rxc) then
 
-			din <= sin(0);
+			din    <= sin(0);
 			sin(0) := uart_sin;
-			sin := sin rol 1;
+			sin    := sin rol 1;
 
 			case uart_state is
 			when idle_s =>

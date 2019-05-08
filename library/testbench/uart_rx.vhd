@@ -33,20 +33,23 @@ use hdl4fpga.std.all;
 
 architecture uart_rx of testbench is
 	constant n : natural := 2;
-	signal rst   : std_logic := '1';
-	signal clk   : std_logic := '1';
-	signal xclk  : std_logic := '1';
 
-	signal uart_rxc   : std_logic;
-	signal uart_sin   : std_logic;
-	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+	signal rst       : std_logic := '1';
+	signal clk       : std_logic := '1';
+	signal xclk      : std_logic := '1';
+
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+
 	constant mesg : string := "hello world hola mundo";
+
 begin
 
+	rst  <= '1', '0' after 100 ns;
+	clk  <= not clk after 10 ns;
 	xclk <= not xclk after 1000000000 ns/(2*2500*1000);
-	clk <= not clk after 10 ns;
-	rst <= '1', '0' after 100 ns;
 
 	process (rst, xclk)
 		variable data : unsigned(mesg'length*10-1 downto 0);
