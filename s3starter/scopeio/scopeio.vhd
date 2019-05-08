@@ -57,8 +57,8 @@ architecture beh of s3starter is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
-	constant bit_rate : natural := 1;
-	constant bps      : natural := 921600;
+	constant bit_rate : natural := 4;
+	constant bps      : natural := 115200;
 
 	signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
@@ -177,6 +177,7 @@ begin
 			if uart_rxdv='1' then
 				led(0) <= '1';
 				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
+				display <= uart_rxd & uart_rxd;
 			end if;
 		end if;
 	end process;

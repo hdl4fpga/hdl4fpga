@@ -51,7 +51,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF"/>
     <file xil_pn:name="../../../library/video/video_win.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="69"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="34"/>
@@ -267,6 +266,7 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../s3starter.ipf" xil_pn:type="FILE_USERDOC"/>
+    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF"/>
   </files>
 
   <properties>
@@ -575,9 +575,7 @@
     <property xil_pn:name="PROP_intWorkingDirUsed" xil_pn:value="No" xil_pn:valueState="non-default"/>
   </properties>
 
-  <bindings>
-    <binding xil_pn:location="/s3starter" xil_pn:name="../../scopeio/scopeio.ucf"/>
-  </bindings>
+  <bindings/>
 
   <libraries>
     <library xil_pn:name="hdl4fpga"/>

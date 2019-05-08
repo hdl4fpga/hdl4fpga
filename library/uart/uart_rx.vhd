@@ -68,6 +68,7 @@ begin
 			din    <= sin(0);
 			sin(0) := uart_sin;
 			sin    := sin rol 1;
+--			din    <= uart_sin;
 
 			case uart_state is
 			when idle_s =>
