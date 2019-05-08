@@ -60,17 +60,20 @@ begin
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
 		variable data       : unsigned(8-1 downto 0);
-		variable sin : unsigned(0 to 1-1);
+
+		variable sin        : unsigned(0 to 2-1);
 	begin
 		if rising_edge(uart_rxc) then
+
 			din <= sin(0);
 			sin(0) := uart_sin;
 			sin := sin rol 1;
+
 			case uart_state is
 			when idle_s =>
 				uart_rxdv <= '0';
 				dcntr := (others => '-');
-				if din='0' then
+				if sin(0)='0' then
 					uart_state := start_s;
 				end if;
 				tcntr := tcntr_init;
@@ -92,7 +95,7 @@ begin
 				if tcntr(0)='1' then
 
 					data(0) := din;
-					data  := data ror 1;
+					data    := data ror 1;
 					if dcntr(0)='1' then
 						uart_rxdv <= '1';
 						uart_state := stop_s;
@@ -109,7 +112,7 @@ begin
 				end if;
 			when stop_s =>
 				uart_rxdv <= '0';
-				dcntr := (others => '-');
+				dcntr     := (others => '-');
 				if tcntr(0)='1' then
 					uart_state := idle_s;
 				else

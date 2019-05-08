@@ -41,6 +41,7 @@ architecture uart_rx of testbench is
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+	constant mesg : string := "hello world hola mundo";
 begin
 
 	xclk <= not xclk after 1000000000 ns/(2*2500*1000);
@@ -48,10 +49,13 @@ begin
 	rst <= '1', '0' after 100 ns;
 
 	process (rst, xclk)
-		variable data : unsigned(10-1 downto 0);
+		variable data : unsigned(mesg'length*10-1 downto 0);
 	begin
 		if rst='1' then
-			data := x"43" & b"01";
+			for i in mesg'range loop
+				data(10-1 downto 0) := to_unsigned(character'pos(mesg(i)),8) & b"01";
+				data := data ror 10;
+			end loop;
 		elsif rising_edge(xclk) then
 			data := data ror 1;
 		end if;
@@ -85,5 +89,23 @@ begin
 		uart_sin  => uart_sin,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
+
+	process (rst, uart_rxc)
+		variable data : unsigned(mesg'length*8-1 downto 0);
+	begin
+		if rst='1' then
+			for i in mesg'range loop
+				data(8-1 downto 0) := to_unsigned(character'pos(mesg(i)),8);
+				data := data ror 8;
+			end loop;
+		elsif rising_edge(uart_rxc) then
+			if uart_rxdv='1' then
+				assert uart_rxd=std_logic_vector(data(8-1 downto 0))
+					report "DATA ERROR"
+					severity FAILURE;
+				data := data ror 8;
+			end if;
+		end if;
+	end process;
 
 end;
