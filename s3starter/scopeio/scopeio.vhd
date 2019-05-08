@@ -56,6 +56,10 @@ architecture beh of s3starter is
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
+	
+	constant bit_rate : natural := 1;
+	constant bps      : natural := 921600;
+
 	signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
@@ -97,23 +101,25 @@ begin
 		data => sample);
 
 	process (sys_clk)
-		constant period : natural := 500000000/(16*115200);
-		variable cntr   : unsigned(0 to unsigned_num_bits(period)-1);
+		constant bpsX   : natural := 2**bit_rate*bps;
+		constant period : natural := (50*1000*1000+((bpsX+1)/2-1))/bpsX;
+		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
 	begin
 		if rising_edge(sys_clk) then
-			if cntr > (period/2) then
+			if cntr < (period/2) then
 				uart_rxc <= '0';
 			else
 				uart_rxc <= '1';
 			end if;
 
-			if cntr < period then
+			if cntr < period-1 then
 				cntr := cntr + 1;
 			else
 				cntr := (others => '0');
 			end if;
 		end if;
 	end process;
+
 
 --	process (uart_rxc)
 --		variable data : unsigned(0 to 10-1);
@@ -125,6 +131,8 @@ begin
 
 	uart_sin <= rs232_rxd;
 	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		bit_rate => bit_rate)
 	port map (
 		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,
