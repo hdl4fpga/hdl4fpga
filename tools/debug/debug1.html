@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<title>Scope</title>
+		<link rel="stylesheet" href="debug.css">
+		<meta charset="utf-8">
+		<script src="debug.js"></script>
+	</head>
+	<body style="background-color:#444444;text-align:center;vertical-align:middle;font-family:verdana;font-size:10pt;font-weight:bold;">
+			<div style="text-align:center;padding:0pt;margin:1pt;background-color:#444444;display:inline-block;vertical-align:top;color:border:solid #404040 1pt;">
+				<div id="chan-scale" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:top;border:solid #888888 1pt;text-align:left">
+
+					<div style="display:inline-block;vertical-align:top;text-align:left">
+						<select id="trigger_enable">
+							  <option value="0">Off</option>
+							  <option value="1">On</option>
+						</select>
+						<select id="trigger_slope">
+							  <option value="0">+</option>
+							  <option value="1">-</option>
+						</select>
+					</div>
+					<div>
+					<div style="display:inline-block;vertical-align:top">
+							<input id="trigger" type="range" class="vertical" value="0" min="-128" max="128"/>
+							<label style="display:block;color:#ffffff;">trigger</label> 
+						</div> 
+					<div style="display:inline-block;vertical-align:top">
+						<input id="gain" type="range" class="vertical" value="0" min="0" max="255"/>
+						<label style="display:block;color:#ffffff;">gain</label> 
+					</div> 
+					<div style="display:inline-block;vertical-align:top">
+						<input id="offset" type="range" class="vertical" value="0" min="-8192" max="8191"/>
+						<label style="display:block;color:#ffffff;">Offset</label> 
+					</div> 
+					<div style="display:inline-block;vertical-align:top">
+						<input id="scale" type="range" class="vertical" value="0" min="0" max="15"/>
+						<label style="display:block;color:#ffffff;">Escale</label> 
+					</div> 
+					<div style="display:inline-block;vertical-align:top">
+						<input id="axis" type="range" class="vertical" value="0" min="0" max="1">
+						<label style="display:block;color:#ffffff;">Axis</label>
+					</div> 
+					</div> 
+				</div> 
+			</div>
+			<div>
+				<select id="palette_id">
+					  <option value="0">Grid FG</option>
+					  <option value="1">Grid BG</option>
+					  <option value="2">Horizontal FG</option>
+					  <option value="3">Horizontal BG</option>
+					  <option value="4">Vertical FG</option>
+					  <option value="5">Vertical BG</option>
+					  <option value="6">Text BG</option>
+					  <option value="7">Segment BG</option>
+					  <option value="8">Background</option>
+					  <option value="9">Channel 1</option>
+				</select>
+				<select id="palette_color" >
+					  <option value="0">Black</option>
+					  <option value="1">Blue</option>
+					  <option value="2">Green</option>
+					  <option value="3">Cyan</option>
+					  <option value="4">Red</option>
+					  <option value="5">Magenta</option>
+					  <option value="6">Yellow</option>
+					  <option value="7">White</option>
+				</select>
+			</div>
+	</body>
+</html>
