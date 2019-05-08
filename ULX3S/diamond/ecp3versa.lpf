@@ -1,0 +1,211 @@
+#                                                                            #
+# Author(s):                                                                 #
+#   Miguel Angel Sagreras                                                    #
+#                                                                            #
+# Copyright (C) 2015                                                         #
+#    Miguel Angel Sagreras                                                   #
+#                                                                            #
+# This source file may be used and distributed without restriction provided  #
+# that this copyright statement is not removed from the file and that any    #
+# derivative work contains  the original copyright notice and the associated #
+# disclaimer.                                                                #
+#                                                                            #
+# This source file is free software; you can redistribute it and/or modify   #
+# it under the terms of the GNU General Public License as published by the   #
+# Free Software Foundation, either version 3 of the License, or (at your     #
+# option) any later version.                                                 #
+#                                                                            #
+# This source is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
+# more details at http://www.gnu.org/licenses/.                              #
+#                                                                            #
+
+COMMERCIAL ;
+
+BANK 0 VCCIO 1.5 V;
+BANK 1 VCCIO 3.3 V;
+BANK 2 VCCIO 3.3 V;
+BANK 3 VCCIO 3.3 V;
+BANK 6 VCCIO 3.3 V;
+BANK 7 VCCIO 1.5 V;
+
+SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE=OFF WAKE_UP=21 WAKE_ON_LOCK=OFF COMPRESS_CONFIG=OFF ENABLE_NDR=OFF CONFIG_IOVOLTAGE=3.3 ;
+
+LOCATE COMP "clk"  SITE "L5";
+IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
+
+LOCATE COMP "fpga_gsrn"  SITE "A21";
+IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
+
+LOCATE COMP "dcms_e/ddr_b.pll_i"	SITE "PLL_R35C5" ;
+MAXDELAY NET "ddr_eclk" 1.1 ns;
+
+USE EDGE NET "ddrphy_e/eclksynca_eclk";
+
+MAXDELAY NET "ddrphy_e/eclksynca_eclk"	1.2 ns;
+MAXDELAY NET "ddrphy_e/dqclk1bar_ff_q"	0.650 ns;
+
+LOCATE PGROUP "dcms_e/ddr_b.adjdll_e/seclk_b.phase_ff_0_i/clk_phase0"	SITE "R24C5D";
+
+LOCATE COMP   "ddrphy_e/eclksynca_i"									SITE "LECLKSYNC2" ;
+LOCATE PGROUP "ddrphy_e/dqclk_b.dqclk1bar_ff_i/clk_phase1a"			SITE "R34C2D";
+LOCATE PGROUP "ddrphy_e/dqclk_b.phase_ff_1_i/clk_phase1b"				SITE "R34C2D";
+LOCATE PGROUP "ddrphy_e/clk_start_i/clk_stop"							SITE "R34C2D";
+
+BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "ddr_sclk";
+BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "vga_clk";
+BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "clk_c";
+BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddr_eclk";
+BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
+BLOCK PATH FROM CLKNET "ddr_sclk2x"	TO CLKNET "ddr_sclk";
+BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddr_sclk";
+BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
+
+LOCATE VREF "vref1_ddr3"  SITE "E1";
+LOCATE COMP "ddr3_dq[0]"  SITE "E5";
+LOCATE COMP "ddr3_dq[1]"  SITE "E4";
+LOCATE COMP "ddr3_dq[2]"  SITE "D2";
+LOCATE COMP "ddr3_dq[3]"  SITE "D1";
+LOCATE COMP "ddr3_dq[4]"  SITE "C2";
+LOCATE COMP "ddr3_dq[5]"  SITE "B2";
+LOCATE COMP "ddr3_dq[6]"  SITE "G5";
+LOCATE COMP "ddr3_dq[7]"  SITE "G4";
+LOCATE COMP "ddr3_dq[8]"  SITE "G2";
+LOCATE COMP "ddr3_dq[9]"  SITE "F1";
+LOCATE COMP "ddr3_dq[10]" SITE "H4";
+LOCATE COMP "ddr3_dq[11]" SITE "E2";
+LOCATE COMP "ddr3_dq[12]" SITE "J4";
+LOCATE COMP "ddr3_dq[13]" SITE "B1";
+LOCATE COMP "ddr3_dq[14]" SITE "C1";
+LOCATE COMP "ddr3_dq[15]" SITE "G3";
+LOCATE COMP "ddr3_dm[0]" SITE "E3" ;
+LOCATE COMP "ddr3_dm[1]"  SITE "F3" ;
+DEFINE PORT GROUP "ddr3_dq" "ddr3_dq[*]" "ddr3_dm[*]";
+IOBUF GROUP "ddr3_dq" IO_TYPE=SSTL15 vref=vref1_ddr3;
+
+LOCATE COMP "ddr3_dqs[0]"  SITE "F5" ;
+LOCATE COMP "ddr3_dqs[1]"  SITE "H5" ;
+DEFINE PORT GROUP "ddr3_dqs" "ddr3_dqs[*]";
+IOBUF GROUP "ddr3_dqs" IO_TYPE=SSTL15D EQ_CAL=0  vref=vref1_ddr3;
+
+LOCATE COMP "ddr3_a[0]"  SITE "C8";
+LOCATE COMP "ddr3_a[1]"  SITE "C7";
+LOCATE COMP "ddr3_a[2]"  SITE "B7";
+LOCATE COMP "ddr3_a[3]"  SITE "D8";
+LOCATE COMP "ddr3_a[4]"  SITE "F9";
+LOCATE COMP "ddr3_a[5]"  SITE "E9";
+LOCATE COMP "ddr3_a[6]"  SITE "A3";
+LOCATE COMP "ddr3_a[7]"  SITE "D7";
+LOCATE COMP "ddr3_a[8]"  SITE "A7";
+LOCATE COMP "ddr3_a[9]"  SITE "B8";
+LOCATE COMP "ddr3_a[10]" SITE "C9";
+LOCATE COMP "ddr3_a[11]" SITE "C10";
+LOCATE COMP "ddr3_a[12]" SITE "F7";
+LOCATE COMP "ddr3_b[0]"  SITE "B4";
+LOCATE COMP "ddr3_b[1]"  SITE "E6";
+LOCATE COMP "ddr3_b[2]"  SITE "D5";
+DEFINE PORT GROUP "ddr3_ba" "ddr3_a[*]" "ddr3_b[*]";
+IOBUF GROUP "ddr3_ba" IO_TYPE=SSTL15 vref=vref1_ddr3;
+
+LOCATE COMP "ddr3_clk"   SITE "K4";
+IOBUF PORT "ddr3_clk" IO_TYPE=SSTL15D vref=vref1_ddr3;
+
+LOCATE COMP "ddr3_cke"   SITE "G8";
+LOCATE COMP "ddr3_ras"   SITE "A6";
+LOCATE COMP "ddr3_cas"   SITE "A4";
+LOCATE COMP "ddr3_we"    SITE "D6";
+LOCATE COMP "ddr3_cs"   SITE "C6" ;
+LOCATE COMP "ddr3_odt"   SITE "E7";
+
+DEFINE PORT GROUP "ddr3_cmd" "ddr3_cke" "ddr3_cs" "ddr3_ras" "ddr3_cas" "ddr3_we" "ddr3_odt";
+IOBUF GROUP "ddr3_cmd" IO_TYPE=SSTL15 vref=vref1_ddr3;
+
+LOCATE COMP "ddr3_rst" SITE "D4" ;
+IOBUF PORT "ddr3_rst" IO_TYPE=LVCMOS15;
+
+FREQUENCY PORT  "phy1_125clk" 125.00 MHz ;  // 125 MHz
+LOCATE COMP "phy1_125clk" SITE "T3";
+LOCATE COMP "phy1_rst"    SITE "L3";
+LOCATE COMP "phy1_coma"   SITE "R4";
+LOCATE COMP "phy1_mdio"   SITE "L2";
+LOCATE COMP "phy1_mdc"    SITE "V4";
+LOCATE COMP "phy1_gtxclk" SITE "M2";
+LOCATE COMP "phy1_crs"    SITE "P4";
+LOCATE COMP "phy1_col"    SITE "R1";
+LOCATE COMP "phy1_txc"    SITE "C12";
+LOCATE COMP "phy1_tx_d[0]" SITE "V1";
+LOCATE COMP "phy1_tx_d[1]" SITE "U1";
+LOCATE COMP "phy1_tx_d[2]" SITE "R3";
+LOCATE COMP "phy1_tx_d[3]" SITE "P1";
+LOCATE COMP "phy1_tx_d[4]" SITE "N5";
+LOCATE COMP "phy1_tx_d[5]" SITE "N3";
+LOCATE COMP "phy1_tx_d[6]" SITE "N4";
+LOCATE COMP "phy1_tx_d[7]" SITE "N2";
+LOCATE COMP "phy1_tx_en"  SITE "V3";
+LOCATE COMP "phy1_rxc"    SITE "L4";
+LOCATE COMP "phy1_rx_er"  SITE "M4";
+LOCATE COMP "phy1_rx_dv"  SITE "M1";
+
+LOCATE COMP "phy1_rx_d[0]" SITE "M5";
+LOCATE COMP "phy1_rx_d[1]" SITE "N1";
+LOCATE COMP "phy1_rx_d[2]" SITE "N6";
+LOCATE COMP "phy1_rx_d[3]" SITE "P6";
+LOCATE COMP "phy1_rx_d[4]" SITE "T2";
+LOCATE COMP "phy1_rx_d[5]" SITE "R2";
+LOCATE COMP "phy1_rx_d[6]" SITE "P5";
+LOCATE COMP "phy1_rx_d[7]" SITE "P3";
+
+DEFINE PORT GROUP "phy1s" "phy1*";
+IOBUF  GROUP "phy1s" IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+
+LOCATE COMP "dip[0]" SITE "J7" ;
+LOCATE COMP "dip[1]" SITE "J6" ;
+LOCATE COMP "dip[2]" SITE "H2" ;
+LOCATE COMP "dip[3]" SITE "H3" ;
+LOCATE COMP "dip[4]" SITE "J3" ;
+LOCATE COMP "dip[5]" SITE "K3" ;
+LOCATE COMP "dip[6]" SITE "J2" ;
+LOCATE COMP "dip[7]" SITE "J1" ;
+DEFINE PORT GROUP "dips" "dip[*]";
+IOBUF GROUP "dips" IO_TYPE=LVCMOS15; 
+
+LOCATE COMP "led[0]" SITE "Y20";
+LOCATE COMP "led[1]" SITE "AA21";
+LOCATE COMP "led[2]" SITE "U18";
+LOCATE COMP "led[3]" SITE "U19";
+LOCATE COMP "led[4]" SITE "W19";
+LOCATE COMP "led[5]" SITE "V19";
+LOCATE COMP "led[6]" SITE "AB20";
+LOCATE COMP "led[7]" SITE "AA20";
+
+DEFINE PORT GROUP "leds" "led[*]";
+IOBUF GROUP "leds" IO_TYPE=LVCMOS33;
+
+
+LOCATE COMP "seg[0]"  SITE "V6" ; 
+LOCATE COMP "seg[1]"  SITE "U7" ; 
+LOCATE COMP "seg[2]"  SITE "Y6" ; 
+LOCATE COMP "seg[3]"  SITE "AA6" ;
+LOCATE COMP "seg[4]"  SITE "U8" ; 
+LOCATE COMP "seg[5]"  SITE "T8" ; 
+LOCATE COMP "seg[6]"  SITE "T9" ;  
+LOCATE COMP "seg[7]"  SITE "AB3" ; 
+LOCATE COMP "seg[8]"  SITE "AB4" ; 
+LOCATE COMP "seg[9]"  SITE "W4" ;  
+LOCATE COMP "seg[10]" SITE "Y5" ;  
+LOCATE COMP "seg[11]" SITE "AA4" ; 
+LOCATE COMP "seg[12]" SITE "AA5" ; 
+LOCATE COMP "seg[13]" SITE "R9" ;  
+LOCATE COMP "seg[14]" SITE "W5" ;
+
+DEFINE PORT GROUP "segs" "seg[*]";
+IOBUF GROUP "segs" IO_TYPE=LVCMOS33 ;
+
+DEFINE PORT GROUP "expansionx4" "expansionx4[*]";
+IOBUF GROUP "expansionx4" IO_TYPE=LVTTL33;
+LOCATE COMP "expansionx4[3]" SITE "B11";
+LOCATE COMP "expansionx4[4]" SITE "B12";
+LOCATE COMP "expansionx4[5]" SITE "A12";
+LOCATE COMP "expansionx4[6]" SITE "A13";
+LOCATE COMP "expansionx4[7]" SITE "E12";
