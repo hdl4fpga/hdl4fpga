@@ -101,13 +101,11 @@ begin
 						uart_state := stop_s;
 						dcntr := (others => '-');
 					else
-						uart_rxdv <= '0';
 						dcntr := dcntr + 1;
 					end if;
 
 					tcntr := tcntr_init;
 				else
-					uart_rxdv <= '0';
 					tcntr := tcntr + 1;
 				end if;
 			when stop_s =>

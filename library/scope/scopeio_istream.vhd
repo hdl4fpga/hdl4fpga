@@ -51,6 +51,8 @@ begin
 				if esci='0' then
 					if rxd=eos then
 						frm <= '0';
+					else
+						frm <= '1';
 					end if;
 				else
 					frm <= '1';
