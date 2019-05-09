@@ -68,13 +68,11 @@ begin
 			din    <= sin(0);
 			sin(0) := uart_sin;
 			sin    := sin rol 1;
---			din    <= uart_sin;
 
 			case uart_state is
 			when idle_s =>
 				uart_rxdv <= '0';
 				dcntr := (others => '-');
---				if sin(0)='0' then
 				if din='0' then
 					uart_state := start_s;
 				end if;
