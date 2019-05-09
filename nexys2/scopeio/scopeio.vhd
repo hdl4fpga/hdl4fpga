@@ -56,6 +56,10 @@ architecture beh of nexys2 is
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
+	
+	constant bit_rate : natural := 4;
+	constant bps      : natural := 115200;
+	
 	signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
@@ -97,8 +101,7 @@ begin
 		data => sample);
 
 	process (sys_clk)
---		constant bpsX   : natural := 8*(5*115200);
-		constant bpsX   : natural := 2**2*2500*1000;
+		constant bpsX   : natural := 2**bit_rate*bps;
 		constant period : natural := (50*1000*1000+((bpsX+1)/2-1))/bpsX;
 		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1);
 	begin
@@ -117,18 +120,10 @@ begin
 		end if;
 	end process;
 
---	process (uart_rxc)
---		variable data : unsigned(0 to 10-1);
---	begin
---		if rising_edge(uart_rxc) then
---			data := data rol 1;
---		end if;
---	end process;
-
 	uart_sin <= rs232_rxd;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		bit_rate => 2)
+		bit_rate => bit_rate)
 	port map (
 		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,
