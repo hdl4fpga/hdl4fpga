@@ -64,10 +64,16 @@ architecture beh of s3starter is
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+
+	signal strm_frm  : std_logic;
+	signal strm_irdy : std_logic;
+	signal strm_data : std_logic_vector(uart_rxd'range);
+
 	signal vga_rgb    : std_logic_vector(3-1 downto 0);
 
 	signal so_null    : std_logic_vector(8-1 downto 0);
 	signal display    : std_logic_vector(0 to 16-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -120,6 +126,15 @@ begin
 		end if;
 	end process;
 
+
+--	process (uart_rxc)
+--		variable data : unsigned(0 to 10-1);
+--	begin
+--		if rising_edge(uart_rxc) then
+--			data := data rol 1;
+--		end if;
+--	end process;
+
 	uart_sin <= rs232_rxd;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
@@ -157,17 +172,29 @@ begin
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync);
 
-	led(7 downto 2) <= (others => 'Z');
+	led(8-1 downto 1) <= (others => '0');
+	led(0) <= strm_frm;
 
-	led(1) <= uart_rxdv;
+	scopeio_istream_e : entity hdl4fpga.scopeio_istream
+	generic map (
+		esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+	port map (
+		clk     => uart_rxc,
+
+		rxdv    => uart_rxdv,
+		rxd     => uart_rxd,
+
+		so_frm  => strm_frm,
+		so_irdy => strm_irdy,
+		so_data => strm_data);
+
 	process(uart_rxc, button(0))
 	begin
 		if button(0)='1' then
-			led(0) <= '0';
 		elsif rising_edge(uart_rxc) then
-			if uart_rxdv='1' then
-				led(0) <= '1';
-				display <= std_logic_vector(resize(unsigned(uart_rxd), display'length));
+			if strm_irdy='1' then
+				display <= std_logic_vector(resize(unsigned(strm_data), display'length));
 			end if;
 		end if;
 	end process;
