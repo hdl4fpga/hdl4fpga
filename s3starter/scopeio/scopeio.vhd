@@ -132,6 +132,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		vlayout_id  => 1,
 		tcpip            => false,
 		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),

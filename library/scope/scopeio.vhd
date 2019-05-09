@@ -889,12 +889,21 @@ begin
 				end block;
 
 				process (video_clk)
+					variable aux : unsigned(hz_segment'range);
 				begin
 					if rising_edge(video_clk) then
-						hz_segment <= std_logic_vector(
-							unsigned(
-								std_logic_vector'(wirebus(b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm) & b"000000")) +
-							unsigned(hz_offset));
+						aux := (others => '0');
+						for i in win_frm'range loop
+							if win_frm='1' then
+								aux := aux or std_logic_vector'(to_unsigned((sgmnt_w/2)*i, aux'length));
+							end if;
+						end loop;
+						aux := aux sll 6;
+						hz_segment <= std_logic_vector(aux + unsigned(hz_offset));
+--						hz_segment <= std_logic_vector(
+--							unsigned(
+--								std_logic_vector'(wirebus(b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm) & b"000000")) +
+--							unsigned(hz_offset));
 					end if;
 				end process;
 

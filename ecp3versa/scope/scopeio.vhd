@@ -133,6 +133,8 @@ begin
 
 	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		vlayout_id  => 1)
 	port map (
 		si_clk      => phy1_rxc,
 		si_frm      => phy1_rx_dv,
