@@ -10,6 +10,8 @@
 <xsl:param name="TOP_MODULE_FILE"/>
 <xsl:param name="VERILOG_FILES"/>
 <xsl:param name="VHDL_FILES"/>
+<xsl:param name="VHDL_LIB_NAME"/>
+<xsl:param name="VHDL_LIB_FILES"/>
 <xsl:param name="SBX_FILES"/>
 <xsl:template match="node()|@*">
   <xsl:copy>
@@ -55,6 +57,12 @@
   <xsl:call-template name="tokenize">
     <xsl:with-param name="string" select="normalize-space($VHDL_FILES)"/>
     <xsl:with-param name="type" select="'VHDL'"/>
+    <xsl:with-param name="library" select="''"/>
+  </xsl:call-template>
+  <xsl:call-template name="tokenize">
+    <xsl:with-param name="string" select="normalize-space($VHDL_LIB_FILES)"/>
+    <xsl:with-param name="type" select="'VHDL'"/>
+    <xsl:with-param name="library" select="$VHDL_LIB_NAME"/>
   </xsl:call-template>
   <xsl:call-template name="tokenize">
     <xsl:with-param name="string" select="normalize-space($VERILOG_FILES)"/>
@@ -69,6 +77,7 @@
 <xsl:template name="tokenize">
   <xsl:param name="string"/>
   <xsl:param name="type"/>
+  <xsl:param name="library"/>
   <xsl:choose>
     <xsl:when test="contains($string,' ')">
       <xsl:element name="Source">
@@ -87,11 +96,17 @@
               <xsl:value-of select="$TOP_MODULE"/>
             </xsl:attribute>
           </xsl:if>
+          <xsl:if test="not($library = '')">
+            <xsl:attribute name="lib">
+              <xsl:value-of select="$library"/>
+            </xsl:attribute>
+          </xsl:if>
         </xsl:element>
       </xsl:element>
       <xsl:call-template name="tokenize">
         <xsl:with-param name="string" select="substring-after($string,' ')"/>
         <xsl:with-param name="type" select="$type"/>
+        <xsl:with-param name="library" select="$library"/>
       </xsl:call-template>
     </xsl:when>
     <xsl:otherwise>
@@ -110,6 +125,11 @@
           <xsl:if test="$string=$TOP_MODULE_FILE">
             <xsl:attribute name="top_module">
               <xsl:value-of select="$TOP_MODULE"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:if test="not($library = '')">
+            <xsl:attribute name="lib">
+              <xsl:value-of select="$library"/>
             </xsl:attribute>
           </xsl:if>
         </xsl:element>

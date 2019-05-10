@@ -16,6 +16,8 @@ TOP_MODULE ?= top
 TOP_MODULE_FILE ?= $(TOP_MODULE).v
 VERILOG_FILES ?= $(TOP_MODULE_FILE)
 VHDL_FILES ?=
+VHDL_LIB_NAME ?=
+VHDL_LIB_FILES ?=
 SBX_FILES ?=
 
 # ******* tools installation paths *******
@@ -150,6 +152,8 @@ $(BOARD)_$(FPGA_SIZE)f_$(PROJECT).ldf: $(SCRIPTS)/project.ldf $(SCRIPTS)/ldf.xsl
 	  --stringparam XCF_FILE $(SCRIPTS)/$(BOARD)_sram.xcf \
 	  --stringparam TOP_MODULE $(TOP_MODULE) \
 	  --stringparam TOP_MODULE_FILE $(TOP_MODULE_FILE) \
+	  --stringparam VHDL_LIB_NAME "$(VHDL_LIB_NAME)" \
+	  --stringparam VHDL_LIB_FILES "$(VHDL_LIB_FILES)" \
 	  --stringparam VHDL_FILES "$(VHDL_FILES)" \
 	  --stringparam VERILOG_FILES "$(VERILOG_FILES)" \
 	  --stringparam SBX_FILES "$(SBX_FILES)" \

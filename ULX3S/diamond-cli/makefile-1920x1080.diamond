@@ -2,7 +2,7 @@
 PROJECT = scope
 BOARD = ulx3s
 # 12 25 45 85
-FPGA_SIZE = 85
+FPGA_SIZE = 12
 FPGA_PACKAGE = 6bg381c
 # config flash: 1:SPI (standard), 4:QSPI (quad)
 FLASH_SPI = 4
@@ -22,10 +22,6 @@ OPENOCD_INTERFACE=$(SCRIPTS)/ft231x.ocd
 #OPENOCD_INTERFACE=$(SCRIPTS)/ft2232.ocd
 
 # ******* design files *******
-CONSTRAINTS = ./constraints/ulx3s_v20.lpf
-TOP_MODULE = ulx3s
-TOP_MODULE_FILE = ../common/ulx3s.vhd
-
 CLK0_NAME = clk_verilog_v
 CLK0_FILE_NAME = ../common/$(CLK0_NAME).v
 CLK0_OPTIONS_OLD = \
@@ -44,65 +40,9 @@ CLK0_OPTIONS = \
   --clkout2=125 \
   --clkout3=25
 
-VERILOG_FILES = \
-  ../common/mousem_v.v \
-  ../common/clk_25_375_75_125_25.v
+VERILOG_CLOCK_FILE = ../common/clk_25_375_75_125_25.v
 
-# $(CLK0_FILE_NAME)
-
-VHDL_FILES = \
-  $(TOP_MODULE_FILE) \
-  ../common/mousem.vhd \
-  ../common/clk_verilog.vhd \
-  ../common/hdl/vga.vhd \
-  ../common/hdl/vga2dvid.vhd \
-  ../common/hdl/tmds_encoder.vhd \
-  ../scopeio/scopeio.vhd \
-  ../../library/common/std.vhd \
-  ../../library/common/align.vhd \
-  ../../library/common/dpram.vhd \
-  ../../library/common/pipe_le.vhd \
-  ../../library/common/rom.vhd \
-  ../../library/common/bcddiv2e.vhd \
-  ../../library/common/vector.vhd \
-  ../../library/common/dbdbbl.vhd \
-  ../../library/common/ser2pll.vhd \
-  ../../library/common/stof.vhd \
-  ../../library/common/dtos.vhd \
-  ../../library/common/btod.vhd \
-  ../../library/common/btof.vhd \
-  ../../library/common/pll2ser.vhd \
-  ../../library/scope/scopeio.vhd \
-  ../../library/scope/scopeio_amp.vhd \
-  ../../library/scope/scopeio_downsampler.vhd \
-  ../../library/scope/scopeio_grid.vhd \
-  ../../library/scope/scopeio_miiudp.vhd \
-  ../../library/scope/scopeio_palette.vhd \
-  ../../library/scope/scopeio_segment.vhd \
-  ../../library/scope/scopeio_sin.vhd \
-  ../../library/scope/scopeio_tracer.vhd \
-  ../../library/scope/scopeio_trigger.vhd \
-  ../../library/scope/scopeio_axis.vhd \
-  ../../library/scope/scopeio_rgtr.vhd \
-  ../../library/scope/scopeio_ticks.vhd \
-  ../../library/scope/scopeio_formatu.vhd \
-  ../../library/scope/scopeio_istream.vhd \
-  ../../library/mii/miirx_pre.vhd \
-  ../../library/mii/mii_1chksum.vhd \
-  ../../library/mii/mii_cat.vhd \
-  ../../library/mii/mii_cmp.vhd \
-  ../../library/mii/mii_crc32.vhd \
-  ../../library/mii/mii_ipcfg.vhd \
-  ../../library/mii/mii_pll2ser.vhd \
-  ../../library/mii/mii_pllcmp.vhd \
-  ../../library/mii/mii_ram.vhd \
-  ../../library/mii/mii_rom.vhd \
-  ../../library/mii/mii_romcmp.vhd \
-  ../../library/mii/miitx_dll.vhd \
-  ../../library/video/video.vhd \
-  ../../library/video/video_win.vhd \
-  ../../library/video/cgafonts.vhd \
-  ../../library/video/cga_rom.vhd \
+include files.mk
 
 SCRIPTS = ./scripts
 include $(SCRIPTS)/trellis_path.mk

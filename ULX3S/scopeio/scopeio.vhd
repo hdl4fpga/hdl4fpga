@@ -29,9 +29,9 @@ use ieee.math_real.all;
 library ecp5u;
 use ecp5u.components.all;
 
---library hdl4fpga;
+library hdl4fpga;
+use hdl4fpga.std.all;
 --use work.std.all;
-use work.std.all;
 
 architecture beh of ulx3s is
 	signal rst        : std_logic := '0';
@@ -127,7 +127,7 @@ begin
 	end process;
 	rst <= reset_counter(reset_counter'high);
 
-	samples_e : entity work.rom
+	samples_e : entity hdl4fpga.rom
 	generic map (
 		bitrom => sinctab(-1024+256, 1023+256, sample_size))
 	port map (
@@ -147,7 +147,7 @@ begin
 	ipcfg_req <= not fpga_gsrn;
 	
 
-	scopeio_e : entity work.scopeio
+	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1 -- 0:1920x1080, 1:800x600
 	)
