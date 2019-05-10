@@ -40,7 +40,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="22"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../common/s3starter.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../../../library/xilinx/dfs.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="15"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
@@ -266,7 +265,9 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../s3starter.ipf" xil_pn:type="FILE_USERDOC"/>
-    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF"/>
+    <file xil_pn:name="../../scopeio/scopeio.ucf" xil_pn:type="FILE_UCF">
+      <association xil_pn:name="Implementation" xil_pn:seqID="106"/>
+    </file>
   </files>
 
   <properties>

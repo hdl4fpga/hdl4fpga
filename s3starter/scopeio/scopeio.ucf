@@ -21,5 +21,26 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-NET "sys_clk" TNM_NET = sys_clk;
-TIMESPEC TS_sys_clk = PERIOD "xtal" 20 ns HIGH 50%;
+NET "xtal" TNM_NET = xtal;
+TIMESPEC TS_xtal = PERIOD "xtal" 20 ns HIGH 50%;
+
+NET "xtal"             IOSTANDARD = LVTTL | FAST;
+NET "led[*]"           IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "button[*]"        IOSTANDARD = LVTTL;
+NET "switch[*]"        IOSTANDARD = LVTTL;
+NET "s3s_anodes[*]"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_a"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_b"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_c"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_d"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_e"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_f"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_g"    IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "s3s_segment_dp"   IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "vga_red"          IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "vga_green"        IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "vga_blue"         IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "vga_hsync"        IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "vga_vsync"        IOSTANDARD = LVTTL | FAST | IOB=TRUE;
+NET "rs232_rxd"        IOSTANDARD = LVTTL;
+NET "rs232_txd"        IOSTANDARD = LVTTL | FAST | IOB=TRUE;

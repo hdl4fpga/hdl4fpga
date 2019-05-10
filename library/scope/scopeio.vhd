@@ -261,9 +261,9 @@ architecture beh of scopeio is
 	type vlayout_vector is array (natural range <>) of video_layout;
 
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
-		--     mode | scr_width | num_of_seg | grid_width | grid_height | hz_height | vt_width | text_width | border | padding | margin
-		0 => (    7,       1920,           4,          50,            8,          8,       6*8,         33*8,       1,        0,       1),
-		1 => (    1,        800,           2,          15,            8,          8,       6*8,         33*8,       1,        0,       1));
+		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
+		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
+		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	signal video_hs         : std_logic;
@@ -894,16 +894,12 @@ begin
 					if rising_edge(video_clk) then
 						aux := (others => '0');
 						for i in win_frm'range loop
-							if win_frm='1' then
-								aux := aux or std_logic_vector'(to_unsigned((sgmnt_w/2)*i, aux'length));
+							if win_frm(i)='1' then
+								aux := aux or to_unsigned(vlayout.gu_width*i, aux'length);
 							end if;
 						end loop;
-						aux := aux sll 6;
+						aux := aux sll 5;
 						hz_segment <= std_logic_vector(aux + unsigned(hz_offset));
---						hz_segment <= std_logic_vector(
---							unsigned(
---								std_logic_vector'(wirebus(b"000_0000" & b"001_1001" & b"011_0010" & b"100_1011", win_frm) & b"000000")) +
---							unsigned(hz_offset));
 					end if;
 				end process;
 
@@ -1004,7 +1000,7 @@ begin
 	end block;
 
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
-	video_blank <= video_io(2);
+	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);

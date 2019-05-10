@@ -52,17 +52,15 @@ entity s3starter is
 		rs232_txd : out std_logic := 'Z');
 
 	attribute loc : string;
---	attribute iostandard : string;
+	attribute iostandard : string;
 	
 	-------------------------------------------
 	-- Xilinx/Digilent SPARTAN-3 Starter Kit --
 	-------------------------------------------
 
 	attribute loc of xtal : signal is "T9";
---	attribute iostandard of xtal  : signal is "LVTTL";
 
 	attribute loc of led : signal is "P11 P12 N12 P13 N14 L12 P14 K12";
---	attribute iostandard of led : signal is "LVTTL";
 
 	attribute loc of button : signal is "L14 L13 M14 M13";
 	attribute loc of switch : signal is "K13 K14 J13 J14 H13 H14 G12 F12";
@@ -77,6 +75,22 @@ entity s3starter is
 	attribute loc of s3s_segment_g  : signal is "N16";
 	attribute loc of s3s_segment_dp : signal is "P16";
 
+	attribute loc   of vga_red   : signal is "R12";
+	attribute loc   of vga_green : signal is "T12";
+	attribute loc   of vga_blue  : signal is "R11";
+	attribute loc   of vga_hsync : signal is "R9";
+	attribute loc   of vga_vsync : signal is "T10";
+
+	attribute loc of rs232_rxd : signal is "T13";
+	attribute loc of rs232_txd : signal is "R13";
+
+--	attribute iostandard of xtal  : signal is "LVTTL";
+
+--	attribute iostandard of xtal           : signal is "LVTTL";
+--	attribute iostandard of led            : signal is "LVTTL";
+--	attribute iostandard of button        : signal is "LVTTL";
+--	attribute iostandard of switch         : signal is "LVTTL";
+
 --	attribute iostandard of s3s_anodes     : signal is "LVTTL";
 --	attribute iostandard of s3s_segment_a  : signal is "LVTTL";
 --	attribute iostandard of s3s_segment_b  : signal is "LVTTL";
@@ -87,14 +101,11 @@ entity s3starter is
 --	attribute iostandard of s3s_segment_g  : signal is "LVTTL";
 --	attribute iostandard of s3s_segment_dp : signal is "LVTTL";
 
-	attribute loc   of vga_red   : signal is "R12";
-	attribute loc   of vga_green : signal is "T12";
-	attribute loc   of vga_blue  : signal is "R11";
-	attribute loc   of vga_hsync : signal is "R9";
-	attribute loc   of vga_vsync : signal is "T10";
-
-	attribute loc of rs232_rxd : signal is "T13";
-	attribute loc of rs232_txd : signal is "R13";
---	attribute iostandard of rs232_rxd : signal is "LVTTL";
---	attribute iostandard of rs232_txd : signal is "LVTTL";
+--	attribute iostandard of vga_red        : signal is "LVTTL";
+--	attribute iostandard of vga_green      : signal is "LVTTL";
+--	attribute iostandard of vga_blue       : signal is "LVTTL";
+--	attribute iostandard of vga_hsync      : signal is "LVTTL";
+--	attribute iostandard of vga_vsync      : signal is "LVTTL";
+--	attribute iostandard of rs232_rxd      : signal is "LVTTL";
+--	attribute iostandard of rs232_txd      : signal is "LVTTL";
 end;

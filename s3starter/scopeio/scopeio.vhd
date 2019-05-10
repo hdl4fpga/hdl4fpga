@@ -20,6 +20,68 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity s3starter is
+	port (
+		xtal  : in  std_logic := '1';
+		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
+		s3s_segment_a  : out std_logic := 'Z';
+		s3s_segment_b  : out std_logic := 'Z';
+		s3s_segment_c  : out std_logic := 'Z';
+		s3s_segment_d  : out std_logic := 'Z';
+		s3s_segment_e  : out std_logic := 'Z';
+		s3s_segment_f  : out std_logic := 'Z';
+		s3s_segment_g  : out std_logic := 'Z';
+		s3s_segment_dp : out std_logic := 'Z';
+
+		switch  : in  std_logic_vector(7 downto 0) := (7 downto 0 => '0');
+		button  : in  std_logic_vector(3 downto 0) := (3 downto 0 => '0');
+		led     : out std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
+
+		vga_red   : out std_logic;
+		vga_green : out std_logic;
+		vga_blue  : out std_logic;
+		vga_hsync : out std_logic;
+		vga_vsync : out std_logic;
+
+
+		rs232_rxd : in std_logic := 'Z';
+		rs232_txd : out std_logic := 'Z');
+		
+
+	attribute loc : string;
+	
+	-------------------------------------------
+	-- Xilinx/Digilent SPARTAN-3 Starter Kit --
+	-------------------------------------------
+
+	attribute loc of xtal : signal is "T9";
+	attribute loc of led : signal is "P11 P12 N12 P13 N14 L12 P14 K12";
+	attribute loc of button : signal is "L14 L13 M14 M13";
+	attribute loc of switch : signal is "K13 K14 J13 J14 H13 H14 G12 F12";
+
+	attribute loc of s3s_anodes     : signal is "E13 F14 G14 D14";
+	attribute loc of s3s_segment_a  : signal is "E14";
+	attribute loc of s3s_segment_b  : signal is "G13";
+	attribute loc of s3s_segment_c  : signal is "N15";
+	attribute loc of s3s_segment_d  : signal is "P15";
+	attribute loc of s3s_segment_e  : signal is "R16";
+	attribute loc of s3s_segment_f  : signal is "F13";
+	attribute loc of s3s_segment_g  : signal is "N16";
+	attribute loc of s3s_segment_dp : signal is "P16";
+
+	attribute loc   of vga_red   : signal is "R12";
+	attribute loc   of vga_green : signal is "T12";
+	attribute loc   of vga_blue  : signal is "R11";
+	attribute loc   of vga_hsync : signal is "R9";
+	attribute loc   of vga_vsync : signal is "T10";
+	attribute loc of rs232_rxd : signal is "T13";
+	attribute loc of rs232_txd : signal is "R13";
+
+
+end;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -78,8 +140,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 20.0,
-		dfs_mul => 4,
-		dfs_div => 5)
+		dfs_mul => 6, --4,
+		dfs_div => 2) --5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -132,7 +194,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 1,
+		vlayout_id  => 0,
 		tcpip            => false,
 		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
