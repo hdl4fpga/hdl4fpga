@@ -227,7 +227,7 @@ begin
       vga_blank => vga_blank_test
     );    
     
-    vga2dvid: entity work.vga2dvid
+    vga2dvid: entity hdl4fpga.vga2dvid
     generic map
     (
         C_ddr => '1',

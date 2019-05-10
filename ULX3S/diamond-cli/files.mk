@@ -8,8 +8,6 @@ VHDL_FILES = \
   ../scopeio/scopeio.vhd \
   ../common/clk_verilog.vhd \
   ../common/hdl/vga.vhd \
-  ../common/hdl/vga2dvid.vhd \
-  ../common/hdl/tmds_encoder.vhd \
 
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
@@ -59,6 +57,8 @@ VHDL_LIB_FILES = \
   ../../library/video/video_win.vhd \
   ../../library/video/cgafonts.vhd \
   ../../library/video/cga_rom.vhd \
+  ../../library/video/vga2dvid.vhd \
+  ../../library/video/tmds_encoder.vhd \
 
 VERILOG_FILES = \
   ../../library/ps2mouse/mousem_v.v \

@@ -45,6 +45,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity vga2dvid is
 	Generic (
 		C_shift_clock_synchronizer: std_logic := '1'; -- try to get out_clock in sync with clk_pixel
@@ -97,11 +100,13 @@ begin
 	blue_d(7 downto 8-C_depth)  <= in_blue(C_depth-1 downto 0);
 
 	-- fill vacant low bits with value repeated (so min/max value is always 0 or 255)
-	--G_bits: for i in 8-C_depth-1 downto 0 generate
-	--	red_d(i)   <= in_red(0);
-	--	green_d(i) <= in_green(0);
-	--	blue_d(i)  <= in_blue(0);
-	--end generate;
+	G_vacant_bits: if C_depth < 8 generate
+	    G_bits: for i in 0 to 8-C_depth-1 generate
+		red_d(i)   <= in_red(0);
+		green_d(i) <= in_green(0);
+		blue_d(i)  <= in_blue(0);
+	    end generate;
+	end generate;
 
 	G_shift_clock_synchronizer: if C_shift_clock_synchronizer = '1' generate
 	-- sampler verifies is shift_clock state synchronous with pixel_clock
@@ -134,9 +139,9 @@ begin
 	end process;
 	end generate; -- shift_clock_synchronizer
 
-	u21: entity work.tmds_encoder PORT MAP(clk => clk_pixel, data => red_d,   c => c_red,   blank => in_blank, encoded => encoded_red);
-	u22: entity work.tmds_encoder PORT MAP(clk => clk_pixel, data => green_d, c => c_green, blank => in_blank, encoded => encoded_green);
-	u23: entity work.tmds_encoder PORT MAP(clk => clk_pixel, data => blue_d,  c => c_blue,  blank => in_blank, encoded => encoded_blue);
+	u21: entity hdl4fpga.tmds_encoder PORT MAP(clk => clk_pixel, data => red_d,   c => c_red,   blank => in_blank, encoded => encoded_red);
+	u22: entity hdl4fpga.tmds_encoder PORT MAP(clk => clk_pixel, data => green_d, c => c_green, blank => in_blank, encoded => encoded_green);
+	u23: entity hdl4fpga.tmds_encoder PORT MAP(clk => clk_pixel, data => blue_d,  c => c_blue,  blank => in_blank, encoded => encoded_blue);
 
 	process(clk_pixel)
 	begin
