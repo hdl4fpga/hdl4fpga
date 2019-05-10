@@ -24,9 +24,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ecp5u;
-use ecp5u.components.all;
-
 entity ulx3s is
 	port (
 		clk_25mhz      : in    std_logic;
@@ -48,40 +45,40 @@ entity ulx3s is
 		oled_resn      : out   std_logic;
 		oled_csn       : out   std_logic;
 
-		--flash_csn      : out   std_logic;
-		--flash_clk      : out   std_logic;
-		--flash_mosi     : out   std_logic;
-		--flash_miso     : in    std_logic;
-		--flash_holdn    : out   std_logic;
-		--flash_wpn      : out   std_logic;
+		flash_csn      : out   std_logic;
+		flash_clk      : out   std_logic;
+		flash_mosi     : out   std_logic;
+		flash_miso     : in    std_logic;
+		flash_holdn    : std_logic;
+		flash_wpn      : std_logic;
 
-		sd_clk         : in    std_logic;
-		sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
-		sd_d           : inout std_logic_vector(4-1 downto 0); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
-		sd_wp          : in    std_logic;
-		sd_cdn         : in    std_logic; -- card detect not connected
+		sd_clk         : in  std_logic;
+		sd_cmd         : in  std_logic;
+		sd_d           : inout std_logic_vector(4-1 downto 0);
+		sd_wp          : std_logic;
+		sd_cdn         : std_logic;
 
-		adc_csn        : out   std_logic;
-		adc_mosi       : out   std_logic;
-		adc_miso       : in    std_logic;
-		adc_sclk       : out   std_logic;
+		adc_csn        : std_logic;
+		adc_mosi       : std_logic;
+		adc_miso       : std_logic;
+		adc_sclk       : std_logic;
 
 		audio_l        : out   std_logic_vector(4-1 downto 0);
 		audio_r        : out   std_logic_vector(4-1 downto 0);
 		audio_v        : out   std_logic_vector(4-1 downto 0);
 
-		wifi_en        : out   std_logic := '1'; -- '0' disables ESP32
+		wifi_en        : inout std_logic;
 		wifi_rxd       : out   std_logic;
 		wifi_txd       : in    std_logic;
-		wifi_gpio0     : out   std_logic := '1'; -- '0' requests ESP32 to upload "passthru" bitstream
+		wifi_gpio0     : inout std_logic;
 		wifi_gpio5     : inout std_logic;
 		wifi_gpio16    : inout std_logic;
 		wifi_gpio17    : inout std_logic;
 
-		ant_433mhz     : out   std_logic;
+		ant_433mhz     : std_logic;
 
-		usb_fpga_dp    : inout std_logic;  
-		usb_fpga_dn    : inout std_logic;
+		usb_fpga_dp    : in    std_logic;  
+		usb_fpga_dn    : in    std_logic;
 		usb_fpga_bd_dp : inout std_logic;
 		usb_fpga_bd_dn : inout std_logic;
 		usb_fpga_pu_dp : inout std_logic;
@@ -100,16 +97,15 @@ entity ulx3s is
 
 		gpdi_dp        : out   std_logic_vector(4-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(4-1 downto 0);
-		--gpdi_ethp      : out   std_logic;  
-		--gpdi_ethn      : out   std_logic;
-		gpdi_cec       : inout std_logic;
-		gpdi_sda       : inout std_logic;
-		gpdi_scl       : inout std_logic;
+		gpdi_ethp      : std_logic;  
+		gpdi_ethn      : std_logic;
+		gpdi_cec       : std_logic;
+		gpdi_sda       : std_logic;
+		gpdi_scl       : std_logic;
 
-		gp             : inout std_logic_vector(28-1 downto 0);
-		gn             : inout std_logic_vector(28-1 downto 0);
+		gp             : out   std_logic_vector(28-1 downto 0);
+		gn             : out   std_logic_vector(28-1 downto 0);
 
-		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
-		shutdown       : out   std_logic := '0' -- '1' power off the board, 10uA sleep
-	);
+		user_programn  : std_logic;
+		shutdown       : out std_logic := '0');
 end;
