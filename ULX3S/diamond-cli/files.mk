@@ -5,12 +5,11 @@ TOP_MODULE_FILE = ../common/ulx3s.vhd
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
-  ../common/mousem.vhd \
+  ../scopeio/scopeio.vhd \
   ../common/clk_verilog.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/vga2dvid.vhd \
   ../common/hdl/tmds_encoder.vhd \
-  ../scopeio/scopeio.vhd \
 
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
@@ -55,12 +54,13 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
+  ../../library/ps2mouse/mousem.vhd \
   ../../library/video/video.vhd \
   ../../library/video/video_win.vhd \
   ../../library/video/cgafonts.vhd \
   ../../library/video/cga_rom.vhd \
 
 VERILOG_FILES = \
-  ../common/mousem_v.v \
+  ../../library/ps2mouse/mousem_v.v \
   $(VERILOG_CLOCK_FILE)
 

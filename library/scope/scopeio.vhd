@@ -1009,7 +1009,7 @@ begin
 			sgmnt_bgon     => sgmnt_bgon,
 			video_color    => video_color);
 
-		mouse_e : entity work.mousem
+		mouse_e : entity hdl4fpga.mousem
 		port map (
 			clk            => mscoreclk, -- by default made for 25 MHz
 			reset          => mscorereset, -- after replugging mouse it needs reset
