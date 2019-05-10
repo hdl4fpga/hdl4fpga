@@ -65,10 +65,6 @@ entity scopeio is
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
 		ipcfg_req   : in  std_logic := '0';
-		mscoreclk   : in  std_logic := '0'; -- mouse core clock 25 MHz
-		mscorereset : in  std_logic := '0'; -- mouse core reset
-		msclk       : inout std_logic; -- PS/2 mouse clock
-		msdat       : inout std_logic; -- PS/2 mouse data
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -280,11 +276,6 @@ architecture beh of scopeio is
 	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
 	signal video_io         : std_logic_vector(0 to 3-1);
-
-	signal mouse_data       : std_logic_vector(28-1 downto 0);
-	signal mouse_x          : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_y          : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_btn        : std_logic_vector(3-1 downto 0); -- 2=left, 1=middle, 0=right
 	
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
@@ -314,8 +305,6 @@ architecture beh of scopeio is
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
-
-	signal video_color_mouse : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal axis_dv        : std_logic;
 	signal axis_scale     : std_logic_vector(4-1 downto 0);
@@ -1008,22 +997,9 @@ begin
 			text_bgon      => text_bgon,
 			sgmnt_bgon     => sgmnt_bgon,
 			video_color    => video_color);
-
-		mouse_e : entity hdl4fpga.mousem
-		port map (
-			clk            => mscoreclk, -- by default made for 25 MHz
-			reset          => mscorereset, -- after replugging mouse it needs reset
-			msclk          => msclk,
-			msdat          => msdat,
-			dataout        => mouse_data);
-		mouse_x <= mouse_data(10 downto 0);
-		mouse_y <= not mouse_data(22 downto 12); -- invert to match screen y orientation
-		mouse_btn <= mouse_data(26 downto 24);
 	end block;
 
-	video_color_mouse <= (video_pixel'range => '1') when video_hcntr = mouse_x or video_vcntr = mouse_y else video_color;
-
-	video_pixel <= (video_pixel'range => video_io(2)) and video_color_mouse;
+	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
