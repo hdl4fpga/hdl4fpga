@@ -42,17 +42,18 @@ entity dpram is
 end;
 
 architecture def of dpram is
-	type word_vector is array (natural range <>) of std_logic_vector(wr_data'range);
+	subtype word is std_logic_vector(0 to wr_data'length-1);
+	type word_vector is array (natural range <>) of word;
 
 	function init_ram (
 		constant bitrom : std_logic_vector;
 		constant size   : natural)
 		return   word_vector is
-		variable aux    : std_logic_vector(0 to bitrom'length-1) := bitrom;
+		variable aux    : std_logic_vector(0 to size*word'length-1);
 		variable retval : word_vector(0 to size-1);
 	begin
-		for i in 0 to bitrom'length/retval(0)'length-1 loop
-			exit when i > retval'high;
+		aux(0 to bitrom'length-1) := bitrom;
+		for i in retval'range loop
 			retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
 		end loop;
 		return retval;

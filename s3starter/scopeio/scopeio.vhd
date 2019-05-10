@@ -198,6 +198,7 @@ begin
 	generic map (
 		vlayout_id  => 1,
 		tcpip            => false,
+		istream => true,
 		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"1_1_1",

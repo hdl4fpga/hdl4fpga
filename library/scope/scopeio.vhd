@@ -263,7 +263,7 @@ architecture beh of scopeio is
 	constant vlayout_tab : vlayout_vector(0 to 1) := (
 		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
 		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
-		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
+		1 => (    7,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	signal video_hs         : std_logic;
