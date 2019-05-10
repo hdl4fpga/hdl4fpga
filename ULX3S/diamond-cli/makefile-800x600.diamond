@@ -45,6 +45,7 @@ CLK0_OPTIONS = \
   --clkout3=25
 
 VERILOG_FILES = \
+  ../common/mousem_v.v \
   ../common/clk_25_200_40_100_25.v
 
 # $(CLK0_FILE_NAME)
@@ -52,6 +53,7 @@ VERILOG_FILES = \
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
+  ../common/mousem.vhd \
   ../common/clk_verilog.vhd \
   ../common/hdl/vga.vhd \
   ../common/hdl/vga2dvid.vhd \

@@ -30,7 +30,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 --library hdl4fpga;
---use hdl4fpga.std.all;
+--use work.std.all;
 use work.std.all;
 
 architecture beh of ulx3s is
@@ -86,11 +86,15 @@ architecture beh of ulx3s is
 	signal phy1_rst, phy1_rxc, phy1_rx_dv, phy1_125clk, phy1_tx_en : std_logic;
 	signal phy1_rx_d, phy1_tx_d : std_logic_vector(0 to 8-1);
 	signal fpga_gsrn : std_logic;
+	signal reset_counter : unsigned(19 downto 0);
 begin
 
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
-	rst <= not fpga_gsrn;
+	
+	-- pullups 1.5k for the PS/2 mouse connected to US2 port
+	usb_fpga_pu_dp <= '1';
+	usb_fpga_pu_dn <= '1';
 
         clk_25M: entity work.clk_verilog
         port map
@@ -108,6 +112,20 @@ begin
         --vga_clk <= clk_pll(1); -- 75 MHz
         --clk <= clk_pll(1); -- 75 MHz
 	--phy1_rxc <= clk_pll(2); -- 125 MHz
+	
+	process(vga_clk)
+	begin
+          if rising_edge(vga_clk) then
+            if btn(0) = '0' then -- BTN0 = 0 when pressed
+              if(reset_counter(reset_counter'high) = '0') then
+                reset_counter <= reset_counter + 1;
+              end if;
+            else -- BTN0 = 1 when not pressed
+              reset_counter <= (others => '0');
+	    end if;
+          end if;
+	end process;
+	rst <= reset_counter(reset_counter'high);
 
 	samples_e : entity work.rom
 	generic map (
@@ -141,6 +159,10 @@ begin
 		so_dv       => phy1_tx_en,
 		so_data     => phy1_tx_d,
 		ipcfg_req   => ipcfg_req,
+		mscoreclk   => clk,
+		mscorereset => rst,
+		msclk       => usb_fpga_bd_dp,
+		msdat       => usb_fpga_bd_dn,
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,

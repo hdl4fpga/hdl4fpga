@@ -6,6 +6,9 @@
     <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
       <Options top_module="ulx3s"/>
     </Source>
+    <Source name="../common/mousem.vhd" type="VHDL" type_short="VHDL">
+      <Options/>
+    </Source>
     <Source name="../common/clk_verilog.vhd" type="VHDL" type_short="VHDL">
       <Options/>
     </Source>
@@ -154,6 +157,9 @@
       <Options/>
     </Source>
     <Source name="../../library/video/cga_rom.vhd" type="VHDL" type_short="VHDL">
+      <Options/>
+    </Source>
+    <Source name="../common/mousem_v.v" type="Verilog" type_short="Verilog">
       <Options/>
     </Source>
     <Source name="../common/clk_25_200_40_100_25.v" type="Verilog" type_short="Verilog">
