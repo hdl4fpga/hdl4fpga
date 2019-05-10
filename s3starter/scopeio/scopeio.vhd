@@ -139,9 +139,10 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
+		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 6, --4,
-		dfs_div => 2) --5)
+		dfs_mul => 4,
+		dfs_div => 5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -194,8 +195,8 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 0,
-		tcpip            => false,
+		vlayout_id  => 1,
+--		tcpip            => false,
 		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"1_1_1",
