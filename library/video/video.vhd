@@ -42,7 +42,7 @@ end;
 architecture mix of video_timing_rom is
 	type natural_matrix is array (natural range <>, natural range <>) of natural range 0 to 2**n-1;
 
-	constant h_tab : natural_matrix (0 to 8, 3 downto 0) := (
+	constant h_tab : natural_matrix (0 to 9, 3 downto 0) := (
 --		0 => ( 32,  3,  5,  6),
 		0 => ( 640,  24,  56,  80),	 --   640x480C@60Hz pclk  23.75MHz
 		1 => ( 800,  32,  80, 112),	 --   800x600C@60Hz pclk  38.25MHz
@@ -52,9 +52,11 @@ architecture mix of video_timing_rom is
 		5 => (1680,  48,  32,  80),	 -- 1680x1050R@60Hz pclk 119.00MHz
 		6 => (1920,  48,  32,  80),	 -- 1920x1080R@60Hz pclk 138.50MHz
 		7 => (1920,  96,  56, 128),  -- 1920x1080R@60Hz pclk 148.50MHz
-		8 => (1920, 128, 200, 328)); -- 1920x1080R@60Hz pclk 173.00MHz
+		8 => (1920, 128, 200, 328),  -- 1920x1080R@60Hz pclk 173.00MHz
+		9 => (1920,  88,  44, 133)   -- 1920x1080R@30Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit
+	);
 
-	constant v_tab : natural_matrix (0 to 8, 3 downto 0) := (
+	constant v_tab : natural_matrix (0 to 9, 3 downto 0) := (
 --		0 => ( 24, 3, 4, 5),
 		0 => ( 480, 3, 4, 13),	--   640x480C@60Hz pclk  23.75MHz
 		1 => ( 600, 3, 4, 17),	--   800x600C@60Hz pclk  38.25MHz
@@ -65,7 +67,9 @@ architecture mix of video_timing_rom is
 		6 => (1080, 3, 5, 23),	-- 1920x1080R@60Hz pclk 138.50MHz
 		7 => (1080, 2, 6, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 --		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
-		8 => (1080, 3, 5, 32));	-- 1920x1080C@60Hz pclk 173.00MHz
+		8 => (1080, 3, 5, 32),	-- 1920x1080C@60Hz pclk 173.00MHz
+		9 => (1080, 4, 5, 46) 	-- 1920x1080R@30Hz pclk  75.00MHz Added by emard@github.com for ULX3S kit
+	);
 
 	subtype word is std_logic_vector(n-1 downto 0);
 	type word_vector is array (natural range <>) of word;
