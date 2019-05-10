@@ -130,6 +130,7 @@ architecture beh of s3starter is
 
 	signal so_null    : std_logic_vector(8-1 downto 0);
 	signal display    : std_logic_vector(0 to 16-1);
+	signal vga_blank  : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -196,7 +197,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,
---		tcpip            => false,
+		tcpip            => false,
 		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
 		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"1_1_1",
@@ -219,7 +220,8 @@ begin
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
-		video_vsync => vga_vsync);
+		video_vsync => vga_vsync,
+		video_blank => vga_blank);
 
 	led(7 downto 2) <= (others => 'Z');
 
