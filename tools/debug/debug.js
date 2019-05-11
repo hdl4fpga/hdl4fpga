@@ -1,24 +1,45 @@
+// Asynchronous communication
+//
+
 const SerialPort = require('serialport')
 const Readline   = require('@serialport/parser-readline'); 
-const com = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
-const parser = new Readline();
+const uart       = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
+const parser     = new Readline();
 
-var buffer = Buffer.alloc(1);
-//for (i = 0; i < 256; i++) {
-	buffer[0] = 0x41;
-	com.write(buffer);
-//}
+// TCP/IP communication
+//
 
 const dgram = require('dgram');
-var udpsckt  = dgram.createSocket('udp4');
+var udpsckt = dgram.createSocket('udp4');
 
 var host = "kit";
 var port = 57001;
 
 window.addEventListener("load", function() {
 
+	function streamout (buffer) {
+
+		function logwrite (buffer) {
+			const buf = Buffer.alloc(1,buffer);
+			console.log(buf);
+			uart.write(buf);
+		}
+
+
+		const esc = Buffer.alloc(1,0x5c);	// ASCII code for "\"
+		const eos = Buffer.alloc(1,0x00);	// ASCII code for NUL
+
+		for (i = 0; i < buffer.length; i++) {
+			if (buffer[i] == esc[0] || buffer[i] == eos[0]) {
+				logwrite(esc);
+			}
+			logwrite(buffer[i]);
+		}
+		logwrite(eos);
+	}
+
 	function send (data) {
-		var buffer = Buffer.alloc(data.length);
+		var buffer = Buffer.alloc(data.length+2);
 		console.log(buffer.length);
 
 		console.log(data);
@@ -28,10 +49,11 @@ window.addEventListener("load", function() {
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 
-		udpsckt.send(buffer, port, host, function(err, bytes) {
-			if (err) throw err;
-			console.log('UDP message has been sent');
-		});
+//		udpsckt.send(buffer, port, host, function(err, bytes) {
+//			if (err) throw err;
+//			console.log('UDP message has been sent');
+//		});
+		streamo(buffer);
 	}
 
 	function mouseWheelCb (e) {
