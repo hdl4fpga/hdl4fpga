@@ -3,41 +3,46 @@
 
 const SerialPort = require('serialport')
 const Readline   = require('@serialport/parser-readline'); 
-const uart       = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
 const parser     = new Readline();
 
 const baudRates  = [ 9600, 38400, 115200 ];
+var baudrate = 2;
+var uartID   = 0
+
+var  uart       = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
+
+function streamout (buffer) {
+
+	function logwrite (buffer) {
+		const buf = Buffer.alloc(1,buffer);
+		console.log(buf);
+		uart.write(buf);
+	}
+
+
+	const esc = Buffer.alloc(1,0x5c);	// ASCII code for "\"
+	const eos = Buffer.alloc(1,0x00);	// ASCII code for NUL
+
+	for (i = 0; i < buffer.length; i++) {
+		if (buffer[i] == esc[0] || buffer[i] == eos[0]) {
+			logwrite(esc);
+		}
+		logwrite(buffer[i]);
+	}
+	logwrite(eos);
+}
+
 // TCP/IP communication
 //
 
 const dgram = require('dgram');
 var udpsckt = dgram.createSocket('udp4');
 
-var host = "kit";
-var port = 57001;
+var host   = "kit";
+var ipport = 57001;
 
+var linkSel = 0;
 window.addEventListener("load", function() {
-
-	function streamout (buffer) {
-
-		function logwrite (buffer) {
-			const buf = Buffer.alloc(1,buffer);
-			console.log(buf);
-			uart.write(buf);
-		}
-
-
-		const esc = Buffer.alloc(1,0x5c);	// ASCII code for "\"
-		const eos = Buffer.alloc(1,0x00);	// ASCII code for NUL
-
-		for (i = 0; i < buffer.length; i++) {
-			if (buffer[i] == esc[0] || buffer[i] == eos[0]) {
-				logwrite(esc);
-			}
-			logwrite(buffer[i]);
-		}
-		logwrite(eos);
-	}
 
 	function send (data) {
 		var buffer = Buffer.alloc(data.length+2);
@@ -50,24 +55,24 @@ window.addEventListener("load", function() {
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
 
-//		udpsckt.send(buffer, port, host, function(err, bytes) {
+//		udpsckt.send(buffer, ipport, host, function(err, bytes) {
 //			if (err) throw err;
 //			console.log('UDP message has been sent');
 //		});
 		streamo(buffer);
 	}
 
-	function linkOnChange(e) {
+	function createLinkDiv(link) {
 		var e = document.getElementById("link-param");
 		e.innerHTML = "";
-		switch (parseInt(this.value)) {
+		switch (linkSel = parseInt(link.value)) {
 		case 0: // UART
 			console.log("pase");
 
 			var u = document.createElement("select");
 			u.id = "uart";
 			e.appendChild(u);
-			SerialPort.list(function (err, ports) {
+			var promise = SerialPort.list(function (err, ports) {
 				var o;
 
 				for (i=0; i < ports.length; i++) {
@@ -79,31 +84,48 @@ window.addEventListener("load", function() {
 			});
 
 			var o;
-			s = document.createElement("select");
-			s.id = "baudRate";
-			e.appendChild(s);
+			b = document.createElement("select");
+			b.id = "baudRate";
+			e.appendChild(b);
 			for (i=0; i < baudRates.length; i++) {
 				o = document.createElement("option");
 				o.text = baudRates[i];
-				s.add(o, i);
+				b.add(o, i);
 			}
+			if (typeof uart !== undefined) {
+				uart.close();
+			}
+			promise.then(function(){
+				console.log(u.options[u.selectedIndex].text);
+				console.log(b.options[b.selectedIndex].text);
+				uart = new SerialPort(u.options[u.selectedIndex].text, { baudRate : b.options[b.selectedIndex].text }  )
+			});
 		break;
 		case 1: // TCPIP
+			if (typeof uart !== undefined) {
+				uart.close();
+			}
+
 			var o;
 
-			o = document.createTextNode("IP address");
+			o = document.createTextNode("Host");
 			e.appendChild(o);
 			o = document.createElement("input");
 			o.id = "ipaddress";
 			e.appendChild(o);
-		break; }
+			break; 
+		}
+	}
+
+	function linkOnChange(e) {
+		createLinkDiv(this);
 	}
 	
 
 	function mouseWheelCb (e) {
 
 		console.log("mouseWheel");
-		if (this.length === undefined) {
+		if (typeof this.length === undefined) {
 			this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
 		} else {
 			var value = parseInt(this.value);
@@ -213,7 +235,8 @@ window.addEventListener("load", function() {
 
 	var e;
 
-	e = document.getElementById("link");
+	e = document.getElementById("link-select");
+	createLinkDiv(e);
 	e.onchange = linkOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
 	
