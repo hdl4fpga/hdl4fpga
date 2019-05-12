@@ -6,6 +6,7 @@ const Readline   = require('@serialport/parser-readline');
 const uart       = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
 const parser     = new Readline();
 
+const baudRates  = [ 9600, 38400, 115200 ];
 // TCP/IP communication
 //
 
@@ -55,6 +56,49 @@ window.addEventListener("load", function() {
 //		});
 		streamo(buffer);
 	}
+
+	function linkOnChange(e) {
+		var e = document.getElementById("link-param");
+		e.innerHTML = "";
+		switch (parseInt(this.value)) {
+		case 0: // UART
+			console.log("pase");
+
+			var u = document.createElement("select");
+			u.id = "uart";
+			e.appendChild(u);
+			SerialPort.list(function (err, ports) {
+				var o;
+
+				for (i=0; i < ports.length; i++) {
+					o = document.createElement("option");
+					o.text = ports[i].comName;
+					u.add(o, i);
+			//		console.log(ports[i]);
+				}
+			});
+
+			var o;
+			s = document.createElement("select");
+			s.id = "baudRate";
+			e.appendChild(s);
+			for (i=0; i < baudRates.length; i++) {
+				o = document.createElement("option");
+				o.text = baudRates[i];
+				s.add(o, i);
+			}
+		break;
+		case 1: // TCPIP
+			var o;
+
+			o = document.createTextNode("IP address");
+			e.appendChild(o);
+			o = document.createElement("input");
+			o.id = "ipaddress";
+			e.appendChild(o);
+		break; }
+	}
+	
 
 	function mouseWheelCb (e) {
 
@@ -169,6 +213,10 @@ window.addEventListener("load", function() {
 
 	var e;
 
+	e = document.getElementById("link");
+	e.onchange = linkOnChange;
+	e.addEventListener("wheel", mouseWheelCb, false);
+	
 	e = document.getElementById("trigger");
 	e.onchange = triggerOnChange;
 	e.addEventListener("wheel", mouseWheelCb, false);
