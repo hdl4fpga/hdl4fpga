@@ -1,4 +1,7 @@
 {
   "name": "Debug-ScopeIO",
-  "main": "debug.html"
+  "main": "debug.html",
+  "scripts": {
+    "start": "nw"
+  }
 }

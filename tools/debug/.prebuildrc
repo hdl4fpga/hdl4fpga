@@ -1,0 +1,3 @@
+build_from_source=true
+runtime=node-webkit
+target=0.38.1
