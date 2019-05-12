@@ -6,10 +6,8 @@ const Readline   = require('@serialport/parser-readline');
 const parser     = new Readline();
 
 const baudRates  = [ 9600, 38400, 115200 ];
-var baudrate = 2;
-var uartID   = 0
 
-var  uart       = new SerialPort("/dev/ttyUSB0", { baudRate : 115200 } )
+var  uart;
 
 function streamout (buffer) {
 
@@ -59,7 +57,20 @@ window.addEventListener("load", function() {
 //			if (err) throw err;
 //			console.log('UDP message has been sent');
 //		});
-		streamo(buffer);
+		streamout(buffer);
+	}
+
+	function uartOnChange(e) {
+		if (typeof uart !== 'undefined') {
+			uart.close();
+		}
+		var u = document.getElementById("uart");
+		console.log(u.options[u.selectedIndex].text);
+		var b = document.getElementById("baudRate");
+		console.log(b.options[b.selectedIndex].text);
+		uart = new SerialPort(
+			u.options[u.selectedIndex].text,
+			{ baudRate : parseInt(b.options[b.selectedIndex].text) });
 	}
 
 	function createLinkDiv(link) {
@@ -70,6 +81,7 @@ window.addEventListener("load", function() {
 			console.log("pase");
 
 			var u = document.createElement("select");
+			u.onchange = uartOnChange;
 			u.id = "uart";
 			e.appendChild(u);
 			var promise = SerialPort.list(function (err, ports) {
@@ -85,6 +97,7 @@ window.addEventListener("load", function() {
 
 			var o;
 			b = document.createElement("select");
+			b.onchange = uartOnChange;
 			b.id = "baudRate";
 			e.appendChild(b);
 			for (i=0; i < baudRates.length; i++) {
@@ -92,17 +105,21 @@ window.addEventListener("load", function() {
 				o.text = baudRates[i];
 				b.add(o, i);
 			}
-			if (typeof uart !== undefined) {
+
+			if (typeof uart !== 'undefined') {
+				console.log(typeof uart);
 				uart.close();
 			}
 			promise.then(function(){
 				console.log(u.options[u.selectedIndex].text);
 				console.log(b.options[b.selectedIndex].text);
-				uart = new SerialPort(u.options[u.selectedIndex].text, { baudRate : b.options[b.selectedIndex].text }  )
+			uart = new SerialPort(
+				u.options[u.selectedIndex].text, 
+				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
 			});
 		break;
 		case 1: // TCPIP
-			if (typeof uart !== undefined) {
+			if (typeof uart !== 'undefined') {
 				uart.close();
 			}
 
@@ -125,7 +142,7 @@ window.addEventListener("load", function() {
 	function mouseWheelCb (e) {
 
 		console.log("mouseWheel");
-		if (typeof this.length === undefined) {
+		if (typeof this.length === 'undefined') {
 			this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
 		} else {
 			var value = parseInt(this.value);
