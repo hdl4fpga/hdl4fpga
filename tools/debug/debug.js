@@ -120,9 +120,10 @@ window.addEventListener("load", function() {
 			promise.then(function(){
 				console.log(u.options[u.selectedIndex].text);
 				console.log(b.options[b.selectedIndex].text);
-			uart = new SerialPort(
-				u.options[u.selectedIndex].text, 
-				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
+				console.log("************");
+				uart = new SerialPort(
+					u.options[u.selectedIndex].text, 
+					{ baudRate : parseInt(b.options[b.selectedIndex].text) });
 			});
 		break;
 		case 1: // TCPIP
