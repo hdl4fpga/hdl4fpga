@@ -36,8 +36,6 @@ function streamout (buffer) {
 const dgram = require('dgram');
 var udpsckt = dgram.createSocket('udp4');
 
-var host   = "kit";
-var ipport = 57001;
 
 window.addEventListener("load", function() {
 
@@ -51,13 +49,16 @@ window.addEventListener("load", function() {
 			streamout(buffer);
 			break;
 		case 1:
+			const ipport = 57001;
+			h = document.getElementById("host");
+			console.log(h.value);
 			var buffer = Buffer.alloc(data.length+2);
 			for (i=0; i < data.length; i++)
 				buffer[i] = data[i];
 
 			buffer[i++] = 0xff;
 			buffer[i++] = 0xff;
-			udpsckt.send(buffer, ipport, host, function(err, bytes) {
+			udpsckt.send(buffer, ipport, h.value, function(err, bytes) {
 				if (err) throw err;
 				console.log('UDP message has been sent');
 			});
@@ -80,6 +81,10 @@ window.addEventListener("load", function() {
 	}
 
 	function createLinkDiv(link) {
+		if (typeof uart !== 'undefined') {
+			uart.close();
+		}
+
 		var e = document.getElementById("link-param");
 		e.innerHTML = "";
 		switch (parseInt(link.value)) {
@@ -112,10 +117,6 @@ window.addEventListener("load", function() {
 				b.add(o, i);
 			}
 
-			if (typeof uart !== 'undefined') {
-				console.log(typeof uart);
-				uart.close();
-			}
 			promise.then(function(){
 				console.log(u.options[u.selectedIndex].text);
 				console.log(b.options[b.selectedIndex].text);
@@ -125,16 +126,14 @@ window.addEventListener("load", function() {
 			});
 		break;
 		case 1: // TCPIP
-			if (typeof uart !== 'undefined') {
-				uart.close();
-			}
-
 			var o;
 
-			o = document.createTextNode("Host");
+			o = document.createTextNode("HOST ");
 			e.appendChild(o);
 			o = document.createElement("input");
-			o.id = "ipaddress";
+			o.type = "text";
+			o.id = "host";
+			o.size = 16;
 			e.appendChild(o);
 			break; 
 		}
