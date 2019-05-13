@@ -39,25 +39,31 @@ var udpsckt = dgram.createSocket('udp4');
 var host   = "kit";
 var ipport = 57001;
 
-var linkSel = 0;
 window.addEventListener("load", function() {
 
 	function send (data) {
-		var buffer = Buffer.alloc(data.length+2);
-		console.log(buffer.length);
-
 		console.log(data);
-		for (i=0; i < data.length; i++)
-			buffer[i] = data[i];
 
-		buffer[i++] = 0xff;
-		buffer[i++] = 0xff;
+		var e = document.getElementById("link-select");
+		switch (parseInt(e.value)) {
+		case 0:
+			var buffer = Buffer.from(data);
+			streamout(buffer);
+			break;
+		case 1:
+			var buffer = Buffer.alloc(data.length+2);
+			for (i=0; i < data.length; i++)
+				buffer[i] = data[i];
 
-//		udpsckt.send(buffer, ipport, host, function(err, bytes) {
-//			if (err) throw err;
-//			console.log('UDP message has been sent');
-//		});
-		streamout(buffer);
+			buffer[i++] = 0xff;
+			buffer[i++] = 0xff;
+			udpsckt.send(buffer, ipport, host, function(err, bytes) {
+				if (err) throw err;
+				console.log('UDP message has been sent');
+			});
+			break;
+		}
+
 	}
 
 	function uartOnChange(e) {
@@ -76,7 +82,7 @@ window.addEventListener("load", function() {
 	function createLinkDiv(link) {
 		var e = document.getElementById("link-param");
 		e.innerHTML = "";
-		switch (linkSel = parseInt(link.value)) {
+		switch (parseInt(link.value)) {
 		case 0: // UART
 			console.log("pase");
 
