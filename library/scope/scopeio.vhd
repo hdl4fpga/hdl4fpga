@@ -396,6 +396,8 @@ begin
 
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
+	generic map (
+		inputs         => inputs,
 	port map (
 		clk            => si_clk,
 		rgtr_dv        => rgtr_dv,

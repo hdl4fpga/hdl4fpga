@@ -6,28 +6,29 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
+	generic (
+		inputs          : in  natural);
 	port (
-		clk           : in  std_logic;
-		rgtr_dv       : in  std_logic;
-		rgtr_id       : in  std_logic_vector(8-1 downto 0);
-		rgtr_data     : in  std_logic_vector;
+		clk             : in  std_logic;
+		rgtr_dv         : in  std_logic;
+		rgtr_id         : in  std_logic_vector(8-1 downto 0);
+		rgtr_data       : in  std_logic_vector;
 
-		axis_dv       : out std_logic;
-		axis_sel      : out std_logic;
-		axis_scale    : out std_logic_vector;
-		axis_base     : out std_logic_vector;
-		hz_scale      : out std_logic_vector;
-		hz_base       : out std_logic_vector;
-		hz_offset     : out std_logic_vector;
-		vt_offset     : out std_logic_vector;
+		axis_dv         : out std_logic;
+		axis_sel        : out std_logic;
+		axis_scale      : out std_logic_vector;
+		axis_base       : out std_logic_vector;
+		hz_scale        : out std_logic_vector;
+		hz_base         : out std_logic_vector;
+		hz_offset       : out std_logic_vector;
+		vt_offset       : out std_logic_vector;
 
-		palette_dv    : out std_logic;
-		palette_id    : out std_logic_vector;
-		palette_color : out std_logic_vector;
+		palette_dv      : out std_logic;
+		palette_id      : out std_logic_vector;
+		palette_color   : out std_logic_vector;
 	
-		gain_dv       : out std_logic;
-		gain_id       : out std_logic_vector;
-		gain_chanid   : out std_logic_vector;
+		gain_dv         : out std_logic;
+		gain_chanid     : out std_logic_vector;
 
 		trigger_dv      : out std_logic;
 		trigger_freeze  : out std_logic;
@@ -66,17 +67,17 @@ architecture def of scopeio_rgtr is
 		return (0 to 0 => '-');
 	end;
 
-	constant rid_axis    : std_logic_vector := x"10";
-	constant rid_palette : std_logic_vector := x"11";
-	constant rid_trigger : std_logic_vector := x"12";
-	constant rid_gain    : std_logic_vector := x"13";
+	constant rid_axis     : std_logic_vector := x"10";
+	constant rid_palette  : std_logic_vector := x"11";
+	constant rid_trigger  : std_logic_vector := x"12";
+	constant rid_gain     : std_logic_vector := x"13";
 
 	constant axis_enid    : natural := 0;
 	constant palette_enid : natural := 1;
 	constant gain_enid    : natural := 2;
 	constant trigger_enid : natural := 3;
 
-	constant last_id    : natural := trigger_enid+1;
+	constant last_id      : natural := trigger_enid+1;
 
 	signal ena : std_logic_vector(0 to last_id-1);
 begin
@@ -150,14 +151,28 @@ begin
 	end block;
 
 	gain_p : block
-		constant chanid_id : natural := 0;
-		constant gainid_id : natural := 1;
+		constant gainid_size : natural := unsigned_num_bits(inputs-1);
 
-		constant gain_bf : natural_vector := (chanid_id => gain_chanid'length, gainid_id => gain_id'length);
+		constant gainid_id : natural := 0;
+		constant chanid_id : natural := 1;
+
+		constant gain_bf : natural_vector := (gainid_id => gain_id'length, chanid_id => gainid_size);
 	begin
-		gain_dv     <= ena(gain_enid);
-		gain_id     <= bf(rgtr_data, gainid_id, gain_bf);
-		gain_chanid <= bf(rgtr_data, chanid_id, gain_bf);
+		process(clk) 
+			constant id_size : gain_ids'length/inputs;
+			variable ids     : unsigned(0 to gain_ids'length-1); 
+			variable chanid  : unsigned(0 to <= bf(rgtr_data, chanid_id, gain_bf);
+		begin
+			if rising_edge(clk) then
+				if ena(gain_enid)='1' then
+					for in 0 to inputs-1 loop
+						if to_unsigned(i, gainid_size)=
+					end loop;
+					gain_chanid <= bf(rgtr_data, chanid_id, gain_bf);
+				end if;
+				gain_dv <= ena(gain_enid);
+			end if;
+		end process;
 	end block;
 
 	trigger_p : block
@@ -178,13 +193,13 @@ begin
 		process(clk)
 		begin
 			if rising_edge(clk) then
-				trigger_dv <= ena(trigger_enid);
 				if ena(trigger_enid)='1' then
 					trigger_freeze <= bf(rgtr_data, ena_id,    trigger_bf)(0);
 					trigger_edge   <= bf(rgtr_data, edge_id,   trigger_bf)(0);
 					trigger_level  <= std_logic_vector(level);
 					trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
 				end if;
+				trigger_dv <= ena(trigger_enid);
 			end if;
 		end process;
 	end block;
