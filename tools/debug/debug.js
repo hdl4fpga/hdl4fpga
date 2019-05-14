@@ -87,47 +87,45 @@ window.addEventListener("load", function() {
 
 		var e = document.getElementById("link-param");
 		e.innerHTML = "";
+
 		switch (parseInt(link.value)) {
 		case 0: // UART
-			console.log("pase");
-
-			var u = document.createElement("select");
+			let u = document.createElement("select");
 			u.onchange = uartOnChange;
 			u.id = "uart";
 			e.appendChild(u);
-			var promise = SerialPort.list(function (err, ports) {
+
+			let b = document.createElement("select");
+			b.onchange = uartOnChange;
+			b.id = "baudRate";
+			e.appendChild(b);
+
+			for (i=0; i < baudRates.length; i++) {
+				let o;
+				o = document.createElement("option");
+				o.text = baudRates[i];
+				b.add(o, i);
+			}
+
+			SerialPort.list().then(function (ports) {
 				var o;
 
 				for (i=0; i < ports.length; i++) {
 					o = document.createElement("option");
 					o.text = ports[i].comName;
 					u.add(o, i);
-			//		console.log(ports[i]);
 				}
-			});
 
-			var o;
-			b = document.createElement("select");
-			b.onchange = uartOnChange;
-			b.id = "baudRate";
-			e.appendChild(b);
-			for (i=0; i < baudRates.length; i++) {
-				o = document.createElement("option");
-				o.text = baudRates[i];
-				b.add(o, i);
-			}
-
-			promise.then(function(){
 				console.log(u.options[u.selectedIndex].text);
 				console.log(b.options[b.selectedIndex].text);
-				console.log("************");
+
 				uart = new SerialPort(
 					u.options[u.selectedIndex].text, 
 					{ baudRate : parseInt(b.options[b.selectedIndex].text) });
 			});
 		break;
 		case 1: // TCPIP
-			var o;
+			let o;
 
 			o = document.createTextNode("HOST ");
 			e.appendChild(o);

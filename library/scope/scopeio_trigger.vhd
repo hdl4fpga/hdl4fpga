@@ -23,7 +23,7 @@ end;
 
 architecture beh of scopeio_trigger is
 
-	signal sample : std_logic_vector(input_data'length/inputs-1 downto 0);
+	signal sample : std_logic_vector(0 to input_data'length/inputs-1);
 
 begin
 
@@ -36,7 +36,7 @@ begin
 		if rising_edge(input_clk) then
 			trigger_shot <= (lt and ge and not sy) or (not lt and not ge and sy);
 			lt := not ge;
-			ge := setif(signed(sample) >= signed(trigger_level));
+			ge := setif(signed(sample(0 to trigger_level'length-1)) >= signed(trigger_level));
 			sy := not trigger_edge;
 		end if;
 	end process;
