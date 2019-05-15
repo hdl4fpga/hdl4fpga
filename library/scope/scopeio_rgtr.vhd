@@ -20,7 +20,7 @@ entity scopeio_rgtr is
 		hz_offset       : out std_logic_vector;
 		vt_dv           : out std_logic;
 		vt_chanid       : out std_logic_vector;
-		vt_offset       : out std_logic_vector;
+		vt_offsets      : out std_logic_vector;
 
 		palette_dv      : out std_logic;
 		palette_id      : out std_logic_vector;
@@ -101,7 +101,7 @@ begin
 			when rid_trigger =>
 				dec(trigger_enid) := '1';
 			when rid_vtaxis =>
-				dec(trigger_enid) := '1';
+				dec(vtaxis_enid) := '1';
 			when others =>
 			end case;
 		end if;
@@ -111,21 +111,33 @@ begin
 		end loop;
 	end process;
 
-	vtaxis_p : process(clk)
+	vtaxis_b : block 
 		constant offset_id   : natural := 0;
 		constant chanid_id   : natural := 1;
 
-		constant vtoffset_bf : natural_vector := (offset_id => 8, chanid_id => chanid_size);
-
+		constant vtoffset_bf : natural_vector := (offset_id => 13, chanid_id => 3);
 	begin
-		if rising_edge(clk) then
-			if ena(vtaxis_enid)='1' then
-				vt_chanid <= bf(rgtr_data, chanid_id, vtoffset_bf);
-				vt_offset <= bf(rgtr_data, offset_id, vtoffset_bf);
+		vtaxis_p : process(clk)
+			constant offset_size : natural := vt_offsets'length/inputs;
+			variable offsets     : unsigned(0 to vt_offsets'length-1); 
+			variable chanid      : std_logic_vector(0 to chanid_size-1);
+		begin
+			if rising_edge(clk) then
+				if ena(vtaxis_enid)='1' then
+					chanid := bf(rgtr_data, chanid_id, vtoffset_bf);
+					for i in 0 to inputs-1 loop
+						if to_unsigned(i, chanid_size)=unsigned(chanid) then
+							offsets(0 to offset_size-1) := unsigned(bf(rgtr_data, offset_id, vtoffset_bf));
+						end if;
+						offsets := offsets rol offset_size;
+					end loop;
+					vt_chanid  <= bf(rgtr_data, chanid_id, vtoffset_bf);
+					vt_offsets <= std_logic_vector(offsets);
+				end if;
+				vt_dv <= ena(vtaxis_enid);
 			end if;
-			vt_dv <= ena(vtaxis_enid);
-		end if;
-	end process;
+		end process;
+	end block;
 
 	hzaxis_p : process(clk)
 		constant offset_id   : natural := 0;
@@ -159,7 +171,7 @@ begin
 		constant gainid_id : natural := 0;
 		constant chanid_id : natural := 1;
 
-		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => chanid_size);
+		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => 3);
 	begin
 		process(clk) 
 			constant id_size : natural := gain_ids'length/inputs;

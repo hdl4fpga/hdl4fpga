@@ -80,10 +80,6 @@ end;
 
 architecture beh of scopeio is
 
-	subtype sample_range is natural range input_data'length/inputs-1 downto 0;
-	subtype chanid_range is natural range unsigned_num_bits(inputs-1)-1 downto 0;
-	subtype gainid_range is natural range unsigned_num_bits(vt_gain'length-1)-1 downto 0;
-
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
 	constant grid_unit : natural := 32;
@@ -316,7 +312,7 @@ architecture beh of scopeio is
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
 	signal hz_dv          : std_logic;
 	signal vt_dv          : std_logic;
-	signal hz_offset      : std_logic_vector(5+9-1 downto 0);
+	signal hz_offset      : std_logic_vector(6+9-1 downto 0);
 	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_chanid      : std_logic_vector(chanid_size-1 downto 0);
 
@@ -325,10 +321,10 @@ architecture beh of scopeio is
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
-	signal gain_ids       : std_logic_vector(4-1 downto 0);
+	signal gain_ids       : std_logic_vector(0 to inputs*gainid_size-1);
 
 	signal trigger_dv     : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_range);
+	signal trigger_chanid : std_logic_vector(chanid_size-1 downto 0);
 	signal trigger_edge   : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
@@ -412,7 +408,7 @@ begin
 		hz_scale       => hz_scale,
 		hz_offset      => hz_offset,
 		vt_dv          => vt_dv,
-		vt_offset      => vt_offsets,
+		vt_offsets     => vt_offsets,
 		vt_chanid      => vt_chanid,
 	
 		palette_dv     => palette_dv,
@@ -453,7 +449,7 @@ begin
 			signal gain_value   : std_logic_vector(18-1 downto 0);
 		begin
 
-			gain_id <= word2byte(gain_ids,i, gainid_size);
+			gain_id <= word2byte(gain_ids, i, gainid_size);
 			mult_e : entity hdl4fpga.rom 
 			generic map (
 				bitrom => to_bitrom(vt_gain,18))
@@ -701,7 +697,7 @@ begin
 					when 0 =>
 						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
 					when 2 => 
 						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 
@@ -915,6 +911,7 @@ begin
 
 					hz_dv         => hz_dv,
 					hz_scale      => hz_scale,
+					hz_base       => hz_offset(5+9-1 downto 9),
 					hz_offset     => hz_segment,
 
 					gain_ids      => gain_ids,

@@ -162,27 +162,49 @@ window.addEventListener("load", function() {
 		var data = [];
 		var	e;
 
-		data.push(16);
-		data.push(3-1);
-
 		var value;
 
-		value = 0;
 		e = document.getElementById("axis");
-		value |= ((parseInt(e.value) & 0x1) << 4);
-		e = document.getElementById("scale");
-		value |= (parseInt(e.value) & 0xf);
-		data.push(value & 0xff);
 
-		value = 0;
-		e = document.getElementById("offset");
-		value |= (parseInt(e.value) >> 8);
-		data.push(value & 0xff);
+		switch(parseInt(e.value)) {
+		case 0:
+			data.push(0x10);
+			data.push(3-1);
 
-		value = 0;
-		e = document.getElementById("offset");
-		value |= parseInt(e.value);
-		data.push(value & 0xff);
+			value = 0;
+			e = document.getElementById("scale");
+			value |= (parseInt(e.value) & 0xf);
+			data.push(value & 0xff);
+
+			value = 0;
+			e = document.getElementById("offset");
+			value |= (parseInt(e.value) >> 8);
+			data.push(value & 0xff);
+
+			value = 0;
+			e = document.getElementById("offset");
+			value |= parseInt(e.value);
+			data.push(value & 0xff);
+
+			break;
+		case 1:
+			data.push(0x14);
+			data.push(2-1);
+
+			value = 0;
+			e = document.getElementById("scale");
+			value |= ((parseInt(e.value) & 0xf) << 5);
+
+			e = document.getElementById("offset");
+			value |= (parseInt(e.value) >> 8 ) & ((1 << 5)-1);
+			data.push(value & 0xff);
+
+			value = 0;
+			value |= parseInt(e.value);
+			data.push(value & 0xff);
+
+			break;
+		}
 
 		send(data);
 	}

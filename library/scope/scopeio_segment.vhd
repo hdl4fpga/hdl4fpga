@@ -26,6 +26,7 @@ entity scopeio_segment is
 
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
+		hz_base       : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
 
 		gain_ids      : in  std_logic_vector;
@@ -54,10 +55,10 @@ end;
 
 architecture def of scopeio_segment is
 
-	signal vt_offset    : std_logic_vector(0 to vt_offsets'length/inputs-1);
-	signal vt_scale     : std_logic_vector(0 to gain_ids'length/inputs-1);
+	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
+	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
 
-	signal axis_dv      : std_logic;
+	signal axis_dv      : std_logic := '0';
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(0 to 5-1);
@@ -66,7 +67,7 @@ architecture def of scopeio_segment is
 begin
 
 	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
-	vt_scale  <= word2byte(gain_ids,    vt_chanid, vt_offset'length);
+	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_offset'length);
 
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);
@@ -83,15 +84,26 @@ begin
 			dot  => grid_dot);
 	end block;
 
-	axis_dv    <= vt_dv or vt_dv;
-	axis_sel   <= vt_dv;
-	axis_scale <= word2byte(hz_scale & vt_scale, vt_dv);
-
-	process (axis_sel, hz_offset, vt_offset)
-		alias ha : std_logic_vector(0 to hz_offset'length-1) is hz_offset;
-		alias va : std_logic_vector(0 to vt_offset'length-1) is vt_offset;
+	process (in_clk)
 	begin
-		axis_base <= word2byte(ha(axis_base'range) & va(axis_base'range), axis_sel);
+		if rising_edge(in_clk) then
+			if vt_dv='1' then
+				axis_sel <= '1';
+				axis_dv  <= '1';
+			elsif hz_dv='1' then
+				axis_sel <= '0';
+				axis_dv  <= '1';
+			else
+				axis_dv  <= '0';
+			end if;
+		end if;
+	end process;
+	axis_scale <= word2byte(hz_scale & vt_scale, axis_sel);
+
+	process (axis_sel, hz_base, vt_offset)
+		alias vt_base : std_logic_vector(0 to vt_offset'length-1) is vt_offset;
+	begin
+		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
 	end process;
 
 	axis_e : entity hdl4fpga.scopeio_axis
@@ -124,7 +136,7 @@ begin
 		video_hzon  => hz_on,
 		video_hzdot => hz_dot,
 
-		vt_offset   => vt_offset,
+		vt_offset   => vt_offset(8-1 downto 0),
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
 
