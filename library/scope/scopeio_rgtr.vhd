@@ -7,7 +7,8 @@ use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
 	generic (
-		inputs          : in  natural);
+		inputs          : in  natural;
+		gainid_size     : in  natural);
 	port (
 		clk             : in  std_logic;
 		rgtr_dv         : in  std_logic;
@@ -28,7 +29,7 @@ entity scopeio_rgtr is
 		palette_color   : out std_logic_vector;
 	
 		gain_dv         : out std_logic;
-		gain_chanid     : out std_logic_vector;
+		gain_ids        : out std_logic_vector;
 
 		trigger_dv      : out std_logic;
 		trigger_freeze  : out std_logic;
@@ -151,26 +152,30 @@ begin
 	end block;
 
 	gain_p : block
-		constant gainid_size : natural := unsigned_num_bits(inputs-1);
+		constant chanid_size : natural := unsigned_num_bits(inputs-1);
 
 		constant gainid_id : natural := 0;
 		constant chanid_id : natural := 1;
 
-		constant gain_bf : natural_vector := (gainid_id => gain_id'length, chanid_id => gainid_size);
+		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => chanid_size);
 	begin
 		process(clk) 
-			constant id_size : gain_ids'length/inputs;
+			constant id_size : natural := gain_ids'length/inputs;
 			variable ids     : unsigned(0 to gain_ids'length-1); 
-			variable chanid  : unsigned(0 to <= bf(rgtr_data, chanid_id, gain_bf);
+			variable chanid  : std_logic_vector(0 to chanid_size-1);
 		begin
 			if rising_edge(clk) then
 				if ena(gain_enid)='1' then
-					for in 0 to inputs-1 loop
-						if to_unsigned(i, gainid_size)=
+					chanid := bf(rgtr_data, chanid_id, gain_bf);
+					for i in 0 to inputs-1 loop
+						if to_unsigned(i, chanid_size)=unsigned(chanid) then
+							ids(0 to id_size-1) := unsigned(bf(rgtr_data, gainid_id, gain_bf));
+						end if;
+						ids := ids rol id_size;
 					end loop;
-					gain_chanid <= bf(rgtr_data, chanid_id, gain_bf);
 				end if;
-				gain_dv <= ena(gain_enid);
+				gain_dv  <= ena(gain_enid);
+				gain_ids <= std_logic_vector(ids);
 			end if;
 		end process;
 	end block;
