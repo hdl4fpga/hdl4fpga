@@ -28,9 +28,9 @@ entity scopeio_segment is
 		hz_scale      : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
 
+		gain_ids      : in  std_logic_vector;
 		vt_dv         : in  std_logic;
 		vt_chanid     : in  std_logic_vector;
-		vt_scales     : in  std_logic_vector;
 		vt_offsets    : in  std_logic_vector;
 
 		trigger_level : in  std_logic_vector;
@@ -55,7 +55,7 @@ end;
 architecture def of scopeio_segment is
 
 	signal vt_offset    : std_logic_vector(0 to vt_offsets'length/inputs-1);
-	signal vt_scale     : std_logic_vector(0 to vt_scales'length/inputs-1);
+	signal vt_scale     : std_logic_vector(0 to gain_ids'length/inputs-1);
 
 	signal axis_dv      : std_logic;
 	signal axis_sel     : std_logic;
@@ -66,7 +66,7 @@ architecture def of scopeio_segment is
 begin
 
 	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
-	vt_scale  <= word2byte(vt_scale,   vt_chanid, vt_offset'length);
+	vt_scale  <= word2byte(gain_ids,    vt_chanid, vt_offset'length);
 
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);

@@ -74,6 +74,8 @@ entity scopeio is
 		video_vsync : out std_logic;
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
+
+	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture beh of scopeio is
@@ -308,15 +310,15 @@ architecture beh of scopeio is
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal axis_dv        : std_logic;
 	signal axis_scale     : std_logic_vector(4-1 downto 0);
 	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
-	signal hz_base        : std_logic_vector(axis_base'range);
-	signal axis_base      : std_logic_vector(5-1 downto 0);
+	signal hz_dv          : std_logic;
+	signal vt_dv          : std_logic;
 	signal hz_offset      : std_logic_vector(5+9-1 downto 0);
 	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_chanid      : std_logic_vector(chanid_size-1 downto 0);
 
 	signal palette_dv     : std_logic;
 	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+9-1)-1);
@@ -406,13 +408,12 @@ begin
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
 
-		axis_dv        => axis_dv,
-		axis_scale     => axis_scale,
-		axis_base      => axis_base,
-		axis_sel       => axis_sel,
+		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
 		hz_offset      => hz_offset,
-		vt_offset      => vt_offset,
+		vt_dv          => vt_dv,
+		vt_offset      => vt_offsets,
+		vt_chanid      => vt_chanid,
 	
 		palette_dv     => palette_dv,
 		palette_id     => palette_id,
@@ -528,7 +529,7 @@ begin
 		signal rd_data   : std_logic_vector(wr_data'range);
 		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
-		signal hz_delay  : signed(hz_base'length+hz_offset'length-1 downto 0);
+		signal hz_delay  : signed(hz_offset'length-1 downto 0);
 
 	begin
 
@@ -543,7 +544,7 @@ begin
 			end if;
 		end process;
 
-		hz_delay <= signed(std_logic_vector'(hz_base & hz_offset));
+		hz_delay <= signed(hz_offset);
 		rd_clk   <= video_clk;
 		gen_addr_p : process (wr_clk)
 			variable sync_videofrm : std_logic;
@@ -891,7 +892,7 @@ begin
 							end if;
 						end loop;
 						aux := aux sll 5;
-						hz_segment <= std_logic_vector(aux + unsigned(hz_offset));
+						hz_segment <= std_logic_vector(aux + unsigned(hz_offset(9-1 downto 0)));
 					end if;
 				end process;
 
@@ -901,11 +902,6 @@ begin
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
-
-					axis_dv       => axis_dv,
-					axis_sel      => axis_sel,
-					axis_base     => axis_base,
-					axis_scale    => axis_scale,
 
 					wu_frm        => wu_frm ,
 					wu_irdy       => wu_irdy,
@@ -917,16 +913,21 @@ begin
 					wu_value      => wu_value,
 					wu_format     => wu_format,
 
+					hz_dv         => hz_dv,
+					hz_scale      => hz_scale,
+					hz_offset     => hz_segment,
+
+					gain_ids      => gain_ids,
+					vt_dv         => vt_dv,
+					vt_chanid     => vt_chanid,
+					vt_offsets    => vt_offsets,
+
 					video_clk     => video_clk,
 					x             => x,
 					y             => y,
 
 					hz_on         => hz_on,
-					hz_offset     => hz_segment,
-
 					vt_on         => vt_on,
-					vt_offsets    => vt_offsets,
-
 					grid_on       => grid_on,
 
 					samples       => storage_data,
