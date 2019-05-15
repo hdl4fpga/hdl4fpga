@@ -35,7 +35,7 @@ entity scopeio is
 		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_gain     : natural_vector := (0 => 2**17, 1 => 3*2**16);
+		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16, 2 => 2**15, 3 => 2**14);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
@@ -306,8 +306,6 @@ architecture beh of scopeio is
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal axis_scale     : std_logic_vector(4-1 downto 0);
-	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
 	signal hz_dv          : std_logic;
@@ -914,6 +912,7 @@ begin
 					hz_base       => hz_offset(5+9-1 downto 9),
 					hz_offset     => hz_segment,
 
+					gain_dv       => gain_dv,
 					gain_ids      => gain_ids,
 					vt_dv         => vt_dv,
 					vt_chanid     => vt_chanid,

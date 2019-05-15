@@ -29,6 +29,7 @@ entity scopeio_segment is
 		hz_base       : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
 
+		gain_dv       : in  std_logic;
 		gain_ids      : in  std_logic_vector;
 		vt_dv         : in  std_logic;
 		vt_chanid     : in  std_logic_vector;
@@ -67,7 +68,7 @@ architecture def of scopeio_segment is
 begin
 
 	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
-	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_offset'length);
+	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
 
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);
@@ -87,7 +88,7 @@ begin
 	process (in_clk)
 	begin
 		if rising_edge(in_clk) then
-			if vt_dv='1' then
+			if vt_dv='1' or gain_dv='1' then
 				axis_sel <= '1';
 				axis_dv  <= '1';
 			elsif hz_dv='1' then
@@ -98,7 +99,7 @@ begin
 			end if;
 		end if;
 	end process;
-	axis_scale <= word2byte(hz_scale & vt_scale, axis_sel);
+	axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
 	process (axis_sel, hz_base, vt_offset)
 		alias vt_base : std_logic_vector(0 to vt_offset'length-1) is vt_offset;
