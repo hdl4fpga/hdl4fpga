@@ -310,13 +310,13 @@ architecture beh of scopeio is
 
 	signal axis_dv        : std_logic;
 	signal axis_scale     : std_logic_vector(4-1 downto 0);
-	signal axis_base      : std_logic_vector(5-1 downto 0);
 	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
 	signal hz_base        : std_logic_vector(axis_base'range);
-	signal hz_offset      : std_logic_vector(9-1 downto 0);
-	signal vt_offset      : std_logic_vector(8-1 downto 0);
+	signal axis_base      : std_logic_vector(5-1 downto 0);
+	signal hz_offset      : std_logic_vector(5+9-1 downto 0);
+	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
 
 	signal palette_dv     : std_logic;
 	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+9-1)-1);
@@ -411,7 +411,6 @@ begin
 		axis_base      => axis_base,
 		axis_sel       => axis_sel,
 		hz_scale       => hz_scale,
-		hz_base        => hz_base,
 		hz_offset      => hz_offset,
 		vt_offset      => vt_offset,
 	
@@ -429,13 +428,11 @@ begin
 		trigger_edge   => trigger_edge);
 
 	amp_b : block
-		constant sample_length : natural := input_data'length/inputs;
+		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);
-		signal input_samples : std_logic_vector(0 to input_data'length-1);
 	begin
-		input_samples <= input_data;
 		amp_g : for i in 0 to inputs-1 generate
-			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
+			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
 			function to_bitrom (
 				value : natural_vector;
@@ -450,12 +447,12 @@ begin
 				return std_logic_vector(retval);
 			end;
 
-			signal gain_id    : std_logic_vector(gainid_size-1 downto 0);
-			signal gain_value : std_logic_vector(18-1 downto 0);
+			signal input_sample : std_logic_vector(0 to sample_size-1);
+			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
+			signal gain_value   : std_logic_vector(18-1 downto 0);
 		begin
 
 			gain_id <= word2byte(gain_ids,i, gainid_size);
-
 			mult_e : entity hdl4fpga.rom 
 			generic map (
 				bitrom => to_bitrom(vt_gain,18))
@@ -464,11 +461,12 @@ begin
 				addr => gain_id,
 				data => gain_value);
 
+			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			port map (
 				input_clk     => input_clk,
 				input_ena     => input_ena,
-				input_sample  => input_samples(sample_range),
+				input_sample  => input_sample,
 				gain_value    => gain_value,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
@@ -927,7 +925,7 @@ begin
 					hz_offset     => hz_segment,
 
 					vt_on         => vt_on,
-					vt_offset     => vt_offset,
+					vt_offsets    => vt_offsets,
 
 					grid_on       => grid_on,
 

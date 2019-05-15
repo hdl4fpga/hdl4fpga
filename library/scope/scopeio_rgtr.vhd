@@ -15,13 +15,11 @@ entity scopeio_rgtr is
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
 
-		axis_dv         : out std_logic;
-		axis_sel        : out std_logic;
-		axis_scale      : out std_logic_vector;
-		axis_base       : out std_logic_vector;
+		hz_dv           : out std_logic;
 		hz_scale        : out std_logic_vector;
-		hz_base         : out std_logic_vector;
 		hz_offset       : out std_logic_vector;
+		vt_dv           : out std_logic;
+		vt_chanid       : out std_logic_vector;
 		vt_offset       : out std_logic_vector;
 
 		palette_dv      : out std_logic;
@@ -36,6 +34,8 @@ entity scopeio_rgtr is
 		trigger_chanid  : out std_logic_vector;
 		trigger_level   : out std_logic_vector;
 		trigger_edge    : out std_logic);
+
+	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture def of scopeio_rgtr is
@@ -68,75 +68,78 @@ architecture def of scopeio_rgtr is
 		return (0 to 0 => '-');
 	end;
 
-	constant rid_axis     : std_logic_vector := x"10";
+	constant rid_hzaxis   : std_logic_vector := x"10";
 	constant rid_palette  : std_logic_vector := x"11";
 	constant rid_trigger  : std_logic_vector := x"12";
 	constant rid_gain     : std_logic_vector := x"13";
+	constant rid_vtaxis   : std_logic_vector := x"14";
 
-	constant axis_enid    : natural := 0;
+	constant hzaxis_enid  : natural := 0;
 	constant palette_enid : natural := 1;
 	constant gain_enid    : natural := 2;
 	constant trigger_enid : natural := 3;
+	constant vtaxis_enid  : natural := 4;
 
-	constant last_id      : natural := trigger_enid+1;
+	constant ena_size     : natural := vtaxis_enid+1;
 
-	signal ena : std_logic_vector(0 to last_id-1);
+
+	signal ena : std_logic_vector(0 to ena_size-1);
 begin
 
 	decode_p : process (clk, rgtr_dv)
-		variable dec : std_logic_vector(0 to last_id-1);
+		variable dec : std_logic_vector(ena'range);
 	begin
 		if rising_edge(clk) then
 			dec := (others => '0');
 			case rgtr_id is
-			when rid_axis =>
-				dec(axis_enid)    := '1';
+			when rid_hzaxis =>
+				dec(hzaxis_enid)    := '1';
 			when rid_palette =>
 				dec(palette_enid) := '1';
 			when rid_gain =>
 				dec(gain_enid)    := '1';
 			when rid_trigger =>
 				dec(trigger_enid) := '1';
+			when rid_vtaxis =>
+				dec(trigger_enid) := '1';
 			when others =>
 			end case;
 		end if;
 
-		for id in 0 to last_id-1 loop
+		for id in ena'range loop
 			ena(id) <= rgtr_dv and dec(id); 
 		end loop;
 	end process;
 
-	axis_p : process(clk)
-		constant origin_id   : natural := 0;
-		constant scale_id    : natural := 1;
-		constant select_id   : natural := 2;
-		constant axis_bf     : natural_vector := (origin_id  => 16, scale_id => 4, select_id => 1);
-
+	vtaxis_p : process(clk)
 		constant offset_id   : natural := 0;
-		constant base_id     : natural := 1;
-		constant vtoffset_bf : natural_vector := (offset_id => 8, base_id => 5);
-		constant hzoffset_bf : natural_vector := (offset_id => 9, base_id => 5);
+		constant chanid_id   : natural := 1;
 
-		variable origin : std_logic_vector(16-1 downto 0);
+		constant vtoffset_bf : natural_vector := (offset_id => 8, chanid_id => chanid_size);
+
 	begin
 		if rising_edge(clk) then
-			axis_dv <= '0';
-			if ena(axis_enid)='1' then
-				axis_scale <= bf(rgtr_data, scale_id,  axis_bf);
-				origin     := bf(rgtr_data, origin_id, axis_bf);
-				if bf(rgtr_data, select_id, axis_bf)="1" then
-					axis_sel  <= '1';
-					axis_base <= bf(origin, base_id,   vtoffset_bf);
-					vt_offset <= bf(origin, offset_id, vtoffset_bf);
-				else
-					axis_sel  <= '0';
-					axis_base <= bf(origin,    base_id,   hzoffset_bf);
-					hz_base   <= bf(origin,    base_id,   hzoffset_bf);
-					hz_offset <= bf(origin,    offset_id, hzoffset_bf);
-					hz_scale  <= bf(rgtr_data, scale_id,  axis_bf);
-				end if;
+			if ena(vtaxis_enid)='1' then
+				vt_chanid <= bf(rgtr_data, chanid_id, vtoffset_bf);
+				vt_offset <= bf(rgtr_data, offset_id, vtoffset_bf);
 			end if;
-			axis_dv <= ena(axis_enid);
+			vt_dv <= ena(vtaxis_enid);
+		end if;
+	end process;
+
+	hzaxis_p : process(clk)
+		constant offset_id   : natural := 0;
+		constant scale_id    : natural := 1;
+
+		constant hzoffset_bf : natural_vector := (offset_id => 16, scale_id => 4);
+
+	begin
+		if rising_edge(clk) then
+			if ena(hzaxis_enid)='1' then
+				hz_offset <= bf(rgtr_data, offset_id, hzoffset_bf);
+				hz_scale  <= bf(rgtr_data, scale_id,  hzoffset_bf);
+			end if;
+			hz_dv <= ena(hzaxis_enid);
 		end if;
 	end process;
 
@@ -152,7 +155,6 @@ begin
 	end block;
 
 	gain_p : block
-		constant chanid_size : natural := unsigned_num_bits(inputs-1);
 
 		constant gainid_id : natural := 0;
 		constant chanid_id : natural := 1;

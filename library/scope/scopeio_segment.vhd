@@ -14,11 +14,6 @@ entity scopeio_segment is
 	port (
 		in_clk        : in  std_logic;
 
-		axis_dv       : in  std_logic;
-		axis_sel      : in  std_logic;
-		axis_base     : in  std_logic_vector;
-		axis_scale    : in  std_logic_vector;
-
 		wu_frm        : out std_logic;
 		wu_irdy       : out std_logic;
 		wu_trdy       : in  std_logic;
@@ -29,17 +24,25 @@ entity scopeio_segment is
 		wu_value      : out std_logic_vector;
 		wu_format     : in  std_logic_vector;
 
+		hz_dv         : in  std_logic;
+		hz_scale      : in  std_logic_vector;
+		hz_offset     : in  std_logic_vector;
+
+		vt_dv         : in  std_logic;
+		vt_chanid     : in  std_logic_vector;
+		vt_scales     : in  std_logic_vector;
+		vt_offsets    : in  std_logic_vector;
+
+		trigger_level : in  std_logic_vector;
+
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
 		y             : in  std_logic_vector;
 
-		hz_offset     : in  std_logic_vector;
-		vt_offset     : in  std_logic_vector;
+		grid_on       : in  std_logic;
 		hz_on         : in  std_logic;
 		vt_on         : in  std_logic;
-		grid_on       : in  std_logic;
 
-		trigger_level : in  std_logic_vector;
 		samples       : in  std_logic_vector;
 
 		hz_dot        : out std_logic;
@@ -51,13 +54,19 @@ end;
 
 architecture def of scopeio_segment is
 
-	signal axis_frm   : std_logic := '0';
-	signal axis_irdy  : std_logic;
-	signal axis_trdy  : std_logic;
-	signal axis_unit  : std_logic_vector(4-1 downto 0);
+	signal vt_offset    : std_logic_vector(0 to vt_offsets'length/inputs-1);
+	signal vt_scale     : std_logic_vector(0 to vt_scales'length/inputs-1);
+
+	signal axis_dv      : std_logic;
+	signal axis_sel     : std_logic;
+	signal axis_scale   : std_logic_vector(4-1 downto 0);
+	signal axis_base    : std_logic_vector(0 to 5-1);
+	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
 begin
 
+	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
+	vt_scale  <= word2byte(vt_scale,   vt_chanid, vt_offset'length);
 
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);
@@ -74,6 +83,17 @@ begin
 			dot  => grid_dot);
 	end block;
 
+	axis_dv    <= vt_dv or vt_dv;
+	axis_sel   <= vt_dv;
+	axis_scale <= word2byte(hz_scale & vt_scale, vt_dv);
+
+	process (axis_sel, hz_offset, vt_offset)
+		alias ha : std_logic_vector(0 to hz_offset'length-1) is hz_offset;
+		alias va : std_logic_vector(0 to vt_offset'length-1) is vt_offset;
+	begin
+		axis_base <= word2byte(ha(axis_base'range) & va(axis_base'range), axis_sel);
+	end process;
+
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency => latency,
@@ -83,8 +103,8 @@ begin
 
 		axis_dv     => axis_dv,
 		axis_sel    => axis_sel,
-		axis_scale  => axis_scale,
 		axis_base   => axis_base,
+		axis_scale  => axis_scale,
 
 		wu_frm      => wu_frm,
 		wu_irdy     => wu_irdy,
@@ -109,8 +129,8 @@ begin
 		video_vtdot => vt_dot);
 
 	trigger_b : block 
-		signal row : unsigned(trigger_level'range);
-		signal ena : std_logic;
+		signal row  : unsigned(trigger_level'range);
+		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
 		row <= unsigned(trigger_level)+2**(y'length-2);
