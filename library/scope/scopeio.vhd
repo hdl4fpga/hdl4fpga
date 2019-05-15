@@ -266,6 +266,8 @@ architecture beh of scopeio is
 		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
+	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
+
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
 	signal video_frm        : std_logic;
@@ -321,8 +323,7 @@ architecture beh of scopeio is
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
-	signal gain_id        : std_logic_vector(4-1 downto 0);
-	signal gain_chanid    : std_logic_vector(chanid_range);
+	signal gain_ids       : std_logic_vector(4-1 downto 0);
 
 	signal trigger_dv     : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_range);
@@ -398,6 +399,7 @@ begin
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	generic map (
 		inputs         => inputs,
+		gainid_size    => gainid_size)
 	port map (
 		clk            => si_clk,
 		rgtr_dv        => rgtr_dv,
@@ -418,8 +420,7 @@ begin
 		palette_color  => palette_color,
 
 		gain_dv        => gain_dv,
-		gain_id        => gain_id,
-		gain_chanid    => gain_chanid,
+		gain_ids       => gain_ids,
 
 		trigger_dv     => trigger_dv,
 		trigger_freeze => trigger_freeze,
@@ -453,16 +454,7 @@ begin
 			signal gain_value : std_logic_vector(18-1 downto 0);
 		begin
 
-			process (si_clk)
-			begin
-				if rising_edge(si_clk) then
-					if gain_dv='1' then
-						if unsigned(gain_chanid)=i then
-							gain_addr <= gain_id(gain_addr'range);
-						end if;
-					end if;
-				end if;
-			end process;
+			gain_addr <= word2byte(gain_ids,i, gainid_size);
 
 			mult_e : entity hdl4fpga.rom 
 			generic map (
