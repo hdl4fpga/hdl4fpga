@@ -450,18 +450,18 @@ begin
 				return std_logic_vector(retval);
 			end;
 
-			signal gain_addr  : std_logic_vector(unsigned_num_bits(vt_gain'length-1)-1 downto 0);
+			signal gain_id    : std_logic_vector(gainid_size-1 downto 0);
 			signal gain_value : std_logic_vector(18-1 downto 0);
 		begin
 
-			gain_addr <= word2byte(gain_ids,i, gainid_size);
+			gain_id <= word2byte(gain_ids,i, gainid_size);
 
 			mult_e : entity hdl4fpga.rom 
 			generic map (
 				bitrom => to_bitrom(vt_gain,18))
 			port map (
 				clk  => input_clk,
-				addr => gain_addr,
+				addr => gain_id,
 				data => gain_value);
 
 			amp_e : entity hdl4fpga.scopeio_amp
