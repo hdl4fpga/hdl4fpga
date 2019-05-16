@@ -12,33 +12,163 @@ function hzControlHTML (color) {
 	return html;
 }
 
-function vtControl (number, color) {
-	this.HTML = 
-	'<div style="text-align:center;padding:0pt;margin:1pt;background-color:#444444;display:inline-block;vertical-align:top;color:'+ color + ';border:solid #404040 1pt;">' +
-		'<div id="chan' + number + '-scale" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:top;border:solid #888888 1pt;">' +
-			'<div style="display:inline-block;vertical-align:top">' +
-				'<input id="chan' + number + '-unit" type="range" class="vertical" value="0" min="0" max="15">' +
-				'<label style="display:block;">Escala</label>' +
-			'</div>' +
-			'<div style="display:inline-block;vertical-align:top">' +
-				'<input id="chan' + number + '-offset" type="range" class="vertical" value="0" min="-128" max="128"/>' +
-				'<label style="display:block;">Position</label>' + 
-			'</div>' + 
-			'<label style="display:block;">Vertical</label>' + 
-		'</div>' + 
-		'<div id="chan' + number + '-trigger" style="background-color:#080808;padding:2pt;margin:0pt;display:inline-block;vertical-align:top;border:solid #888888 1pt;">' +
-			'<div style="display:inline-block;vertical-align:top">' +
-				'<input id="chan' + number + '-level" type="range" class="vertical" value="0" min="-128" max="128"/>' +
-				'<label style="display:block">Nivel</label>' +
-			'</div>' +
-			'<div style="display:inline-block;vertical-align:top">' +
-				'<input id="chan' + number + '-slope" type="range" class="vertical" value="0" min="0" max="1"/>' +
-				'<label style="display:block">Pendiente</label>' +
-			'</div>' +
-			'<label style="display:block;">Disparo</label>' +
-		'</div>' +
-	'</div>';
-	this.number = number;
+function vtControl (parent, number, color) {
+	t = document.createElement("div");
+	t.style = {
+		"text-align"       : 'center',
+		"padding"          : '0pt',
+		"margin"           : '1pt',
+		"background-color" : '#444444',
+		"display"          : 'inline-block',
+		"vertical-align"   : 'top', 
+		"color"            :  color,
+		"border"           : 'solid #404040 1pt;' };
+	parent.appendChild(p);
+
+	// Scale
+	// -----
+	
+	p = document.createElement("div");
+	p = {
+		id : 'chan' + number + '-scale',
+		style : {
+			'background-color' : '#080808',
+			'padding'          : '2pt',
+			'margin'           : '0pt',
+			'display'          : 'inline-block',
+			'border'           : 'solid #888888 1pt',
+			'display'          : 'inline-block',
+			'vertical-align'   : 'top' } };
+	t.appendChild(p);
+	
+	c = document.createElement("div");
+	c.style = {
+		'display'        : 'inline-block',
+		'vertical-align' : 'top' };
+	p.appendChild(c);
+
+	chanUnit = document.createElement("input");
+	chanUnit = { 
+		'id'    : 'chan' + number + '-unit',
+		'type'  : 'range',
+		'class' : 'vertical',
+		'value' : 0,
+		'min'   : 0,
+		'max'   : 15 };
+	c.appendChild(chanUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Escala");
+	c.appendChild(labelUnit);
+
+	c = document.createElement("div");
+	c.style = {
+		'display'        : 'inline-block',
+		'vertical-align' : 'top' },
+	p.appendChild(c);
+
+	chanUnit = document.createElement("input");
+	chanUnit = { 
+		'id'    : 'chan' + number + '-offset',
+		'type'  : 'range',
+		'class' : 'vertical',
+		'value' : 0,
+		'min'   : -128,
+		'max'   :  128 };
+	c.appendChild(chanUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		'style' : { display : 'block' } }
+	labelUnit.createTextNode("Escala");
+	c.appendChild(labelUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Position");
+	c.appendChild(labelUnit);
+
+	labelScale = document.createElement("label");
+	labelScale = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Vertical");
+	p.appendChild(labelUnit);
+
+	// Trigger
+	// ------
+
+	p = document.createElement("div");
+	p = {
+		id : 'chan' + number + '-trigger',
+		style : {
+			'background-color' : '#080808',
+			'padding'          : '2pt',
+			'margin'           : '0pt',
+			'display'          : 'inline-block',
+			'border'           : 'solid #888888 1pt',
+			'display'          : 'inline-block',
+			'vertical-align'   : 'top' } };
+	t.appendChild(p);
+
+	c = document.createElement("div");
+	c.style = {
+		'display'        : 'inline-block',
+		'vertical-align' : 'top' };
+	p.appendChild(c);
+
+	chanUnit = document.createElement("input");
+	chanUnit = { 
+		'id'    : 'chan' + number + '-level',
+		'type'  : 'range',
+		'class' : 'vertical',
+		'value' : 0,
+		'min'   : 0,
+		'max'   : 15 };
+	c.appendChild(chanUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		style : { 'display' : 'block' } }
+	labelUnit.createTextNode("Escala");
+	c.appendChild(labelUnit);
+
+	c = document.createElement("div");
+	c.style = {
+		'display'        : 'inline-block',
+		'vertical-align' : 'top' };
+	p.appendChild(c);
+
+	chanUnit = document.createElement("input");
+	chanUnit = { 
+		'id'    : 'chan' + number + '-offset',
+		'type'  : 'range',
+		'class' : 'vertical',
+		'value' : 0,
+		'min'   : -128,
+		'max'   :  128 };
+	c.appendChild(chanUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Nivel");
+	c.appendChild(labelUnit);
+
+	labelUnit = document.createElement("label");
+	labelUnit = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Pendiente");
+	c.appendChild(labelUnit);
+
+	labelScale = document.createElement("label");
+	labelScale = {
+		style : { display : 'block' } }
+	labelUnit.createTextNode("Disparo");
+	p.appendChild(labelUnit);
+
 }
 
 vtControl.onclick = function (number, callback = function(ev) { this.parentElement.parentElement.onclick(ev); }) {
@@ -61,4 +191,4 @@ vtControl.mousewheel = function (number, callback) {
 }
 
 console.log(' <head> <title>Scope</title> <link rel="stylesheet" href="scope.css"> <meta charset="utf-8"> <script src="scope.js"></script> </head>');
-console.log(vtControlHTML(1, '#ffffff') + hzControlHTML('#ffff00'));
+console.log(vtControl(document, 1, '#ffffff') + hzControlHTML('#ffff00'));
