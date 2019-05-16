@@ -13,182 +13,163 @@ function hzControlHTML (color) {
 }
 
 function vtControl (parent, number, color) {
+	this.wrapper = {};
+	this.inputControl = {};
+
 	t = document.createElement("div");
-	t.style = {
-		"text-align"       : 'center',
-		"padding"          : '0pt',
-		"margin"           : '1pt',
-		"background-color" : '#444444',
-		"display"          : 'inline-block',
-		"vertical-align"   : 'top', 
-		"color"            :  color,
-		"border"           : 'solid #404040 1pt;' };
-	parent.appendChild(p);
+	t.style['text-align']       = 'center';
+	t.style['padding']          = '0pt';
+	t.style['margin']           = '1pt';
+	t.style['background-color'] = '#444444';
+	t.style['display']          = 'inline-block';
+	t.style['vertical-align']   = 'top'; 
+	t.style['color']            =  color;
+	t.style['border']           = 'solid #404040 1pt'
+	parent.appendChild(t);
 
 	// Scale
 	// -----
 	
 	p = document.createElement("div");
-	p = {
-		id : 'chan' + number + '-scale',
-		style : {
-			'background-color' : '#080808',
-			'padding'          : '2pt',
-			'margin'           : '0pt',
-			'display'          : 'inline-block',
-			'border'           : 'solid #888888 1pt',
-			'display'          : 'inline-block',
-			'vertical-align'   : 'top' } };
+	p.id = 'chan' + number + '-scale',
+	p.style['background-color'] = '#080808';
+	p.style['padding']          = '2pt';
+	p.style['margin']           = '0pt';
+	p.style['display']          = 'inline-block';
+	p.style['border']           = 'solid #888888 1pt';
+	p.style['display']          = 'inline-block';
+	p.style['vertical-align']   = 'top';
 	t.appendChild(p);
+	this.wrapper['scale'] = c;
 	
 	c = document.createElement("div");
-	c.style = {
-		'display'        : 'inline-block',
-		'vertical-align' : 'top' };
+	c.style['display']        = 'inline-block';
+	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
 	chanUnit = document.createElement("input");
-	chanUnit = { 
-		'id'    : 'chan' + number + '-unit',
-		'type'  : 'range',
-		'class' : 'vertical',
-		'value' : 0,
-		'min'   : 0,
-		'max'   : 15 };
+	chanUnit['id']        = 'chan' + number + '-unit';
+	chanUnit['type']      = 'range';
+	chanUnit['className'] = 'vertical';
+	chanUnit['value']     = 0;
+	chanUnit['min']       = 0;
+	chanUnit['max']       = 15;
 	c.appendChild(chanUnit);
-
+	this.inputControl['unit'] = c;
+	
 	labelUnit = document.createElement("label");
-	labelUnit = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Escala");
+	labelUnit.style['display'] = 'block';
+	labelUnit.appendChild(document.createTextNode("Escala"));
 	c.appendChild(labelUnit);
 
 	c = document.createElement("div");
-	c.style = {
-		'display'        : 'inline-block',
-		'vertical-align' : 'top' },
+	c.style['display']        = 'inline-block';
+	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
 	chanUnit = document.createElement("input");
-	chanUnit = { 
-		'id'    : 'chan' + number + '-offset',
-		'type'  : 'range',
-		'class' : 'vertical',
-		'value' : 0,
-		'min'   : -128,
-		'max'   :  128 };
+	chanUnit['id']        = 'chan' + number + '-offset';
+	chanUnit['type']      = 'range';
+	chanUnit['className'] = 'vertical';
+	chanUnit['value']     = 0;
+	chanUnit['min']       = -128;
+	chanUnit['max']       =  128;
 	c.appendChild(chanUnit);
+	this.inputControl['offset'] = c;
 
 	labelUnit = document.createElement("label");
-	labelUnit = {
-		'style' : { display : 'block' } }
-	labelUnit.createTextNode("Escala");
-	c.appendChild(labelUnit);
-
-	labelUnit = document.createElement("label");
-	labelUnit = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Position");
+	labelUnit.style['display'] = 'block';
+	labelUnit.appendChild(document.createTextNode("Posicion"));
 	c.appendChild(labelUnit);
 
 	labelScale = document.createElement("label");
-	labelScale = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Vertical");
-	p.appendChild(labelUnit);
+	labelScale.style['display']='block';
+	labelScale.appendChild(document.createTextNode("Vertical"));
+	p.appendChild(labelScale);
 
 	// Trigger
 	// ------
 
 	p = document.createElement("div");
-	p = {
-		id : 'chan' + number + '-trigger',
-		style : {
-			'background-color' : '#080808',
-			'padding'          : '2pt',
-			'margin'           : '0pt',
-			'display'          : 'inline-block',
-			'border'           : 'solid #888888 1pt',
-			'display'          : 'inline-block',
-			'vertical-align'   : 'top' } };
+	p.id = 'chan' + number + '-trigger',
+	p.style['background-color'] = '#080808';
+	p.style['padding']          = '2pt';
+	p.style['margin']           = '0pt';
+	p.style['display']          = 'inline-block';
+	p.style['border']           = 'solid #888888 1pt';
+	p.style['display']          = 'inline-block';
+	p.style['vertical-align']   = 'top';
 	t.appendChild(p);
-
+	this.wrapper['trigger'] = c;
+	
 	c = document.createElement("div");
-	c.style = {
-		'display'        : 'inline-block',
-		'vertical-align' : 'top' };
+	c.style['display']        = 'inline-block';
+	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
 	chanUnit = document.createElement("input");
-	chanUnit = { 
-		'id'    : 'chan' + number + '-level',
-		'type'  : 'range',
-		'class' : 'vertical',
-		'value' : 0,
-		'min'   : 0,
-		'max'   : 15 };
+	chanUnit['id']        = 'chan' + number + '-level';
+	chanUnit['type']      = 'range';
+	chanUnit['className'] = 'vertical';
+	chanUnit['value']     = 0;
+	chanUnit['min']       = 0;
+	chanUnit['max']       = 15;
 	c.appendChild(chanUnit);
-
+	this.inputControl['level'] = c;
+	
 	labelUnit = document.createElement("label");
-	labelUnit = {
-		style : { 'display' : 'block' } }
-	labelUnit.createTextNode("Escala");
+	labelUnit.style['display'] = 'block';
+	labelUnit.appendChild(document.createTextNode("Nivel"));
 	c.appendChild(labelUnit);
 
 	c = document.createElement("div");
-	c.style = {
-		'display'        : 'inline-block',
-		'vertical-align' : 'top' };
+	c.style['display']        = 'inline-block';
+	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
 	chanUnit = document.createElement("input");
-	chanUnit = { 
-		'id'    : 'chan' + number + '-offset',
-		'type'  : 'range',
-		'class' : 'vertical',
-		'value' : 0,
-		'min'   : -128,
-		'max'   :  128 };
+	chanUnit['id']        = 'chan' + number + '-slope';
+	chanUnit['type']      = 'range';
+	chanUnit['className'] = 'vertical';
+	chanUnit['value']     = 0;
+	chanUnit['min']       = -128;
+	chanUnit['max']       =  128;
 	c.appendChild(chanUnit);
+	this.inputControl['slope'] = c;
 
 	labelUnit = document.createElement("label");
-	labelUnit = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Nivel");
-	c.appendChild(labelUnit);
-
-	labelUnit = document.createElement("label");
-	labelUnit = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Pendiente");
+	labelUnit.style['display'] = 'block';
+	labelUnit.appendChild(document.createTextNode("Posticion"));
 	c.appendChild(labelUnit);
 
 	labelScale = document.createElement("label");
-	labelScale = {
-		style : { display : 'block' } }
-	labelUnit.createTextNode("Disparo");
-	p.appendChild(labelUnit);
+	labelScale.style['display']='block';
+	labelScale.appendChild(document.createTextNode("Disparo"));
+	p.appendChild(labelScale);
 
 }
 
-vtControl.onclick = function (number, callback = function(ev) { this.parentElement.parentElement.onclick(ev); }) {
-	document.getElementById("chan" + number + "-scale").onclick   = callback;
-	document.getElementById("chan" + number + "-trigger").onclick = callback;
+vtControl.onclick = function (callback = function(ev) { this.parentElement.parentElement.onclick(ev); }) {
+	this.wrapper['scale'].onclick   = callback;
+	this.wrapper['trigger'].onclick = callback;
 }
 
 vtControl.onfocus = function (number, callback) {
-	document.getElementById("chan" + number + "-unit").onfocus   = callback;
-	document.getElementById("chan" + number + "-offset").onfocus = callback;
-	document.getElementById("chan" + number + "-level").onfocus  = callback;
-	document.getElementById("chan" + number + "-slope").onfocus  = callback;
+	this.inputControl['unit'].onfocus   = callback;
+	this.inputControl['offset'].onfocus = callback;
+	this.inputControl['level'].onfocus  = callback;
+	this.inputControl['slope'].onfocus  = callback;
 }
 
 vtControl.mousewheel = function (number, callback) {
-	document.getElementById("chan" + number + "-unit").addEventListener("wheel", callback, false);
-	document.getElementById("chan" + number + "-offset").addEventListener("wheel", callback, false);
-	document.getElementById("chan" + number + "-level").addEventListener("wheel", callback, false);
-	document.getElementById("chan" + number + "-slope").addEventListener("wheel", callback, false);
+	this.inputControl['unit'].addEventListener("wheel", callback, false);
+	this.inputControl['offset'].addEventListener("wheel", callback, false);
+	this.inputControl['level'].addEventListener("wheel", callback, false);
+	this.inputControl['slope'].addEventListener("wheel", callback, false);
 }
 
-console.log(' <head> <title>Scope</title> <link rel="stylesheet" href="scope.css"> <meta charset="utf-8"> <script src="scope.js"></script> </head>');
-console.log(vtControl(document, 1, '#ffffff') + hzControlHTML('#ffff00'));
+window.addEventListener("load", function() {
+	body = document.getElementsByTagName("body");
+	vt = vtControl(body[0], 1, '#ffffff');
+	vt.
+});
