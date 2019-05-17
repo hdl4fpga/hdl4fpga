@@ -21,17 +21,24 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-commWidget.prototype.uartOnChange =  function (e) {
+commWidget.prototype.uartOnChange = function (e) {
 	let uart     = this.uart.options[this.uart.selectedIndex].text;
 	let baudrate = this.baudrate.options[this.baudrate.selectedIndex].text;
 
 	createUART( uart, { baudRate : parseInt(baudrate) });
 }
 
-function commWidget(comm) {
+commWidget.prototype.hostOnInput = function (e) {
+//	console.log("pase");
+//	console.log(this.value);
+	setHost(this.value);
+}
+
+
+function commWidget(commOption) {
 	this.main = document.createElement("div");
 
-	switch (comm) {
+	switch (commOption) {
 	case 'UART': // UART
 		let baudRates  = [ 9600, 38400, 115200 ];
 
@@ -81,12 +88,14 @@ function commWidget(comm) {
 
 		o = document.createTextNode("HOST ");
 		this.main.appendChild(o);
+
 		o = document.createElement("input");
-		o.type = "text";
-		o.id   = "host";
-		o.size = 16;
+		o.type    = "text";
+		o.id      = "host";
+		o.size    = 16;
+		o.oninput = this.hostOnInput;
 		this.main.appendChild(o);
-		this.host = o;
+
 		break; 
 	}
 }
@@ -95,5 +104,5 @@ commWidget.prototype.uartOnChange =  function (e) {
 	let uart     = this.uart.options[this.uart.selectedIndex].text;
 	let baudrate = this.baudrate.options[this.baudrate.selectedIndex].text;
 
-	createUART( uart, { baudRate : parseInt(baudrate) });
+	createUART(uart, { baudRate : parseInt(baudrate) });
 }

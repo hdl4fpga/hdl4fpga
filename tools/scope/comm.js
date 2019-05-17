@@ -31,6 +31,7 @@ const parser     = new Readline();
 const baudRates  = [ 9600, 38400, 115200 ];
 
 let uart;
+let hostName;
 
 function streamout (buffer) {
 
@@ -39,7 +40,6 @@ function streamout (buffer) {
 		console.log(buf);
 		uart.write(buf);
 	}
-
 
 	const esc = Buffer.alloc(1,0x5c);	// ASCII code for "\"
 	const eos = Buffer.alloc(1,0x00);	// ASCII code for NUL
@@ -62,23 +62,21 @@ var udpsckt = dgram.createSocket('udp4');
 function send(data) {
 	console.log(data);
 
-	var e = document.getElementById("link-select");
-	switch (parseInt(e.value)) {
-	case 0:
+	switch (commOption) {
+	case 'UART':
 		var buffer = Buffer.from(data);
 		streamout(buffer);
 		break;
-	case 1:
+	case 'TCPIP':
 		const ipport = 57001;
-		h = document.getElementById("host");
-		console.log(h.value);
+		console.log(commParam.getHost());
 		var buffer = Buffer.alloc(data.length+2);
 		for (i=0; i < data.length; i++)
 			buffer[i] = data[i];
 
 		buffer[i++] = 0xff;
 		buffer[i++] = 0xff;
-		udpsckt.send(buffer, ipport, h.value, function(err, bytes) {
+		udpsckt.send(buffer, ipport, hostName, function(err, bytes) {
 			if (err) throw err;
 			console.log('UDP message has been sent');
 		});
@@ -96,4 +94,8 @@ function createUART (uartName, options) {
 
 function listUART () {
 	return SerialPort.list();
+}
+
+function setHost(name) {
+	hostName = name;
 }

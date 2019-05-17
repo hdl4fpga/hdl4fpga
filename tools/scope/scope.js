@@ -23,6 +23,8 @@
 
 const inputs = 9;
 
+var commParam;
+
 function mouseWheelCb (e) {
 
 	console.log("mouseWheel");
@@ -49,10 +51,11 @@ window.addEventListener("load", function() {
 	}
 
 	function onchangeComm () {
-		w = new commWidget(this.options[this.selectedIndex].text);
+		commOption = (this.options[this.selectedIndex].text);
+		commParam  = new commWidget (commOption);
 		e = document.getElementById("comm-param");
 		e.innerHTML = "";
-		e.appendChild(w.main);
+		e.appendChild(commParam.main);
 	}
 
 	e = document.getElementById("comm-select");
