@@ -3,8 +3,23 @@
 		<title>Scope</title>
 		<link rel="stylesheet" href="scope.css">
 		<meta charset="utf-8">
+		<script src="comm.js"></script>
+		<script src="commwidget.js"></script>
 		<script src="channel.js"></script>
+		<script src="scope.js"></script>
 	</head>
 	<body style="background-color:#444444;text-align:center;vertical-align:middle;font-family:verdana;font-size:10pt;font-weight:bold;">
+		<!-- Communication set up -->
+		<div style="text-align:center;padding:0pt;margin:1pt;background-color:#444444;display:vertical-align:middle;color:border:solid #404040 1pt;">
+			<div id="comm" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 1pt;text-align:left">
+				<select id="comm-select" style="display:inline-block;">
+				<option value="0">UART</option>
+				<option value="1">TCPIP</option>
+				</select>
+				<div id="comm-param" style="text-align:center;color:#ffffff;display:inline-block;vertical-align:middle;">
+				</div>
+
+			</div>
+		</div>
 	</body>
 </html>

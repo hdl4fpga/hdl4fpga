@@ -40,22 +40,22 @@ function vtControl (parent, number, color) {
 	p.style['display']          = 'inline-block';
 	p.style['vertical-align']   = 'top';
 	t.appendChild(p);
-	this.wrapper['scale'] = c;
+	this.wrapper['scale'] = p;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanUnit = document.createElement("input");
-	chanUnit['id']        = 'chan' + number + '-unit';
-	chanUnit['type']      = 'range';
-	chanUnit['className'] = 'vertical';
-	chanUnit['value']     = 0;
-	chanUnit['min']       = 0;
-	chanUnit['max']       = 15;
-	c.appendChild(chanUnit);
-	this.inputControl['unit'] = c;
+	chanInput = document.createElement("input");
+	chanInput['id']        = 'chan' + number + '-unit';
+	chanInput['type']      = 'range';
+	chanInput['className'] = 'vertical';
+	chanInput['value']     = 0;
+	chanInput['min']       = 0;
+	chanInput['max']       = 15;
+	c.appendChild(chanInput);
+	this.inputControl['unit'] = chanInput;
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -67,15 +67,15 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanUnit = document.createElement("input");
-	chanUnit['id']        = 'chan' + number + '-offset';
-	chanUnit['type']      = 'range';
-	chanUnit['className'] = 'vertical';
-	chanUnit['value']     = 0;
-	chanUnit['min']       = -128;
-	chanUnit['max']       =  128;
-	c.appendChild(chanUnit);
-	this.inputControl['offset'] = c;
+	chanInput = document.createElement("input");
+	chanInput['id']        = 'chan' + number + '-offset';
+	chanInput['type']      = 'range';
+	chanInput['className'] = 'vertical';
+	chanInput['value']     = 0;
+	chanInput['min']       = -128;
+	chanInput['max']       =  128;
+	c.appendChild(chanInput);
+	this.inputControl['offset'] = chanInput;
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -100,22 +100,22 @@ function vtControl (parent, number, color) {
 	p.style['display']          = 'inline-block';
 	p.style['vertical-align']   = 'top';
 	t.appendChild(p);
-	this.wrapper['trigger'] = c;
+	this.wrapper['trigger'] = p;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanUnit = document.createElement("input");
-	chanUnit['id']        = 'chan' + number + '-level';
-	chanUnit['type']      = 'range';
-	chanUnit['className'] = 'vertical';
-	chanUnit['value']     = 0;
-	chanUnit['min']       = 0;
-	chanUnit['max']       = 15;
-	c.appendChild(chanUnit);
-	this.inputControl['level'] = c;
+	chanInput = document.createElement("input");
+	chanInput['id']        = 'chan' + number + '-level';
+	chanInput['type']      = 'range';
+	chanInput['className'] = 'vertical';
+	chanInput['value']     = 0;
+	chanInput['min']       = 0;
+	chanInput['max']       = 15;
+	c.appendChild(chanInput);
+	this.inputControl['level'] = chanInput;
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -127,15 +127,15 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanUnit = document.createElement("input");
-	chanUnit['id']        = 'chan' + number + '-slope';
-	chanUnit['type']      = 'range';
-	chanUnit['className'] = 'vertical';
-	chanUnit['value']     = 0;
-	chanUnit['min']       = -128;
-	chanUnit['max']       =  128;
-	c.appendChild(chanUnit);
-	this.inputControl['slope'] = c;
+	chanInput = document.createElement("input");
+	chanInput['id']        = 'chan' + number + '-slope';
+	chanInput['type']      = 'range';
+	chanInput['className'] = 'vertical';
+	chanInput['value']     = 0;
+	chanInput['min']       = 0;
+	chanInput['max']       =  1;
+	c.appendChild(chanInput);
+	this.inputControl['slope'] = chanInput;
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -149,27 +149,27 @@ function vtControl (parent, number, color) {
 
 }
 
-vtControl.onclick = function (callback = function(ev) { this.parentElement.parentElement.onclick(ev); }) {
+vtControl.prototype.onclick = function (callback = function(ev) { console.log(this.parentElement.parentElement); this.parentElement.parentElement.onclick(ev); }) {
 	this.wrapper['scale'].onclick   = callback;
 	this.wrapper['trigger'].onclick = callback;
+	this.wrapper['scale'].addEventListener("wheel", chanSelect, false);
+	this.wrapper['trigger'].addEventListener("wheel", chanSelect, false);
 }
 
-vtControl.onfocus = function (number, callback) {
+vtControl.prototype.onfocus = function (callback = function(ev) { console.log(this.parentElement.parentElement); this.parentElement.parentElement.onclick(ev); }) {
 	this.inputControl['unit'].onfocus   = callback;
 	this.inputControl['offset'].onfocus = callback;
 	this.inputControl['level'].onfocus  = callback;
 	this.inputControl['slope'].onfocus  = callback;
 }
 
-vtControl.mousewheel = function (number, callback) {
+vtControl.prototype.mousewheel = function (number, callback) {
 	this.inputControl['unit'].addEventListener("wheel", callback, false);
 	this.inputControl['offset'].addEventListener("wheel", callback, false);
 	this.inputControl['level'].addEventListener("wheel", callback, false);
 	this.inputControl['slope'].addEventListener("wheel", callback, false);
 }
 
-window.addEventListener("load", function() {
-	body = document.getElementsByTagName("body");
-	vt = vtControl(body[0], 1, '#ffffff');
-	vt.
-});
+function mouseWheel (e) {
+	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+}
