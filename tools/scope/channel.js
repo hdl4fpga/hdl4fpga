@@ -1,15 +1,110 @@
-function hzControlHTML (color) {
-	let html =
-	'<div style="text-align:center;margin:3pt;padding:0pt;background-color:#080808;display:inline-block;vertical-align:top;border:solid #888888 1pt;color:' + color + '">' +
-		'<div style="padding:1pt;display:inline-block;vertical-align:top;">' +
-			'<div style="display:inline-block;vertical-align:top;padding:1pt">' +
-				'<input id="time" type="range" class="vertical" value="0" min="0"    max="15"/>' +
-				'<label style="display:block;">Escala</label>' +
-			'</div>' +
-			'<label style="display:block;">Horizontal</label>' +
-		'</div>' +
-	'</div>';
-	return html;
+//                                                                            //
+// Author(s):                                                                 //
+//   Miguel Angel Sagreras                                                    //
+//                                                                            //
+// Copyright (C) 2015                                                         //
+//    Miguel Angel Sagreras                                                   //
+//                                                                            //
+// This source file may be used and distributed without restriction provided  //
+// that this copyright statement is not removed from the file and that any    //
+// derivative work contains  the original copyright notice and the associated //
+// disclaimer.                                                                //
+//                                                                            //
+// This source file is free software; you can redistribute it and/or modify   //
+// it under the terms of the GNU General Public License as published by the   //
+// Free Software Foundation, either version 3 of the License, or (at your     //
+// option) any later version.                                                 //
+//                                                                            //
+// This source is distributed in the hope that it will be useful, but WITHOUT //
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      //
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   //
+// more details at http://www.gnu.org/licenses/.                              //
+//                                                                            //
+
+const i18n = {
+	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
+	'level'      : { en : 'Level',      es : 'Nivel'      },
+	'offset'     : { en : 'Offset',     es : 'Posición'   },
+	'scale'      : { en : 'Scale',      es : 'Escala'     },
+	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },
+	'vertical'   : { en : 'Vertical',   es : 'Vertical'   } };
+
+const lang = 'en';
+
+function hzControl (parent, color) {
+
+	this.wrapper = {};
+	this.inputControl = {};
+
+	t = document.createElement("div");
+	t.style['text-align']       = 'center'
+	t.style['margin']           = '3pt';
+	t.style['padding']          = '0pt';
+	t.style['background-color'] = '#080808';
+	t.style['display']          = 'inline-block';
+	t.style['vertical-align']   = 'top';
+	t.style['border']           = 'solid #888888 1pt';
+	t.style['color']            = '#ffffff';
+	parent.appendChild(t);
+
+	p = document.createElement("div");
+	p.style['padding']          = '1pt';
+	p.style['display']          = 'inline-block';
+	p.style['vertical-align']   = 'top';
+	t.appendChild(p);
+	t = p;
+
+	p = document.createElement("div");
+	p.style['display']          = 'inline-block';
+	p.style['padding']          = '1pt';
+	p.style['vertical-align']   = 'top';
+	t.appendChild(p);
+
+	i           = document.createElement("input");
+	i.id        = "time";
+	i.type      = "range"
+	i.className = "vertical";
+	i.value     = 0;
+	i.min       = 0;
+	i.max       = 15;
+	p.appendChild(i);
+	this.inputControl['time'] = i;
+
+	i = document.createElement("label");
+	i.style['display'] = 'block';
+	i.appendChild(document.createTextNode(i18n.scale[lang]));
+	p.appendChild(i);
+
+	p = document.createElement("div");
+	p.style['display']          = 'inline-block';
+	p.style['padding']          = '1pt';
+	p.style['vertical-align']   = 'top';
+	t.appendChild(p);
+
+	i           = document.createElement("input");
+	i.id        = "time";
+	i.type      = "range"
+	i.className = "vertical";
+	i.value     = 0;
+	i.min       = 0;
+	i.max       = 15;
+	p.appendChild(i);
+	this.inputControl['offset'] = i;
+
+	i = document.createElement("label");
+	i.style['display'] = 'block';
+	i.appendChild(document.createTextNode(i18n.offset[lang]));
+	p.appendChild(i);
+
+	p = document.createElement("label");
+	p.style['display'] = 'block';
+	p.appendChild(document.createTextNode(i18n.horizontal[lang]));
+	t.appendChild(p);
+}
+
+hzControl.prototype.mousewheel = function (number, callback) {
+	this.inputControl['time'].addEventListener("wheel", callback, false);
+	this.inputControl['offset'].addEventListener("wheel", callback, false);
 }
 
 function vtControl (parent, number, color) {
@@ -59,7 +154,7 @@ function vtControl (parent, number, color) {
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode("Escala"));
+	labelUnit.appendChild(document.createTextNode(i18n.scale[lang]));
 	c.appendChild(labelUnit);
 
 	c = document.createElement("div");
@@ -79,12 +174,12 @@ function vtControl (parent, number, color) {
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode("Posicion"));
+	labelUnit.appendChild(document.createTextNode(i18n.offset[lang]));
 	c.appendChild(labelUnit);
 
 	labelScale = document.createElement("label");
 	labelScale.style['display']='block';
-	labelScale.appendChild(document.createTextNode("Vertical"));
+	labelScale.appendChild(document.createTextNode(i18n.vertical[lang]));
 	p.appendChild(labelScale);
 
 	// Trigger
@@ -119,7 +214,7 @@ function vtControl (parent, number, color) {
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode("Nivel"));
+	labelUnit.appendChild(document.createTextNode(i18n.level[lang]));
 	c.appendChild(labelUnit);
 
 	c = document.createElement("div");
@@ -139,12 +234,12 @@ function vtControl (parent, number, color) {
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode("Posticion"));
+	labelUnit.appendChild(document.createTextNode(i18n.offset[lang]));
 	c.appendChild(labelUnit);
 
 	labelScale = document.createElement("label");
 	labelScale.style['display']='block';
-	labelScale.appendChild(document.createTextNode("Disparo"));
+	labelScale.appendChild(document.createTextNode(i18n.trigger[lang]));
 	p.appendChild(labelScale);
 
 }
