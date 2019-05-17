@@ -30,6 +30,18 @@ const palette = { rid : 0x11, size : 2, pid    :  4, color  : 3 };
 const trigger = { rid : 0x12, size : 2, enable :  1, slope  : 1, value : 9 };
 const vtAxis  = { rid : 0x14, size : 2, offset : 13, chanid : 3 };
 
+function reverse (value, size) {
+	var reval;
+
+	revval = 0;
+	for (i = 0; i < size; i++) {
+		reval <<= 1;
+		if (value & 0x1)
+			reval += 1;
+		value >>= 1;
+	}
+	return reval;
+}
 
 function prepareBuffer (reg, data) {
 	const byteSize = 8;
