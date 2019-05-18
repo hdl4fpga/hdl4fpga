@@ -24,7 +24,6 @@
 const inputs = 9;
 
 var commParam;
-var commOption;
 
 function mouseWheelCb (e) {
 
@@ -60,21 +59,24 @@ function mouseWheel (e) {
 	case 'level':
 	case 'slope':
 		sendRegister(registers.trigger, { 
-			offset : this.level.value,
-			slope  : this.level.slope,
+			level  : this.level.value,
+			slope  : this.slope.value,
 			enable : 1,
 			chanid : param[1] });
 		break;
-	case 'time':
-		break;
-	case 'ttime':
+	case 'hscale':
+	case 'hoffset':
+		sendRegister(registers.hzaxis, { 
+			scale  : this.hscale.value,
+			offset : this.hoffset.value });
 		break;
 	}
 
 	console.log(param[0]);
 }
 function onchangeComm () {
-	commOption = (this.options[this.selectedIndex].text);
+	var commOption = (this.options[this.selectedIndex].text);
+	setCommOption(commOption);
 	commParam  = new commWidget (commOption);
 	e = document.getElementById("comm-param");
 	e.innerHTML = "";
@@ -95,9 +97,6 @@ window.addEventListener("load", function() {
 
 	e = document.getElementById("comm-select");
 	e.onchange = onchangeComm;
-	w = new commWidget(e.options[e.selectedIndex].text);
-	e = document.getElementById("comm-param");
-	e.innerHTML = "";
-	e.appendChild(w.main);
+	e.onchange();
 
 });

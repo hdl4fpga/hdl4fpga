@@ -45,7 +45,7 @@ function alignValues (reg, data) {
 			buffer[0] = reg.rid;
 			break;
 		case 'size':
-			buffer[1] = reg.size;
+			buffer[1] = reg.size-1;
 			break;
 		default:
 			var i;

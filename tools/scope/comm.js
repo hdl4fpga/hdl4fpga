@@ -33,11 +33,14 @@ const baudRates  = [ 9600, 38400, 115200 ];
 let uart;
 let hostName;
 
+
+let commOption;
+
 function streamout (buffer) {
 
 	function logwrite (buffer) {
 		const buf = Buffer.alloc(1,buffer);
-		console.log(buf);
+		console.log(buf.toString('hex'));
 		uart.write(buf);
 	}
 
@@ -60,8 +63,8 @@ const dgram = require('dgram');
 var udpsckt = dgram.createSocket('udp4');
 
 function send(data) {
-	console.log(data);
 
+	console.log(commOption);
 	switch (commOption) {
 	case 'UART':
 		var buffer = Buffer.from(data);
@@ -98,4 +101,12 @@ function listUART () {
 
 function setHost(name) {
 	hostName = name;
+}
+
+function setCommOption(option) {
+	commOption = option;
+}
+
+function getCommOption(option) {
+	return commOption;
 }

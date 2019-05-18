@@ -38,27 +38,27 @@ function hzControl (parent, color) {
 	parent.appendChild(t);
 
 	p = document.createElement("div");
-	p.style['padding']          = '1pt';
-	p.style['display']          = 'inline-block';
-	p.style['vertical-align']   = 'top';
+	p.style['padding']        = '1pt';
+	p.style['display']        = 'inline-block';
+	p.style['vertical-align'] = 'top';
 	t.appendChild(p);
 	t = p;
 
 	p = document.createElement("div");
-	p.style['display']          = 'inline-block';
-	p.style['padding']          = '1pt';
-	p.style['vertical-align']   = 'top';
+	p.style['display']        = 'inline-block';
+	p.style['padding']        = '1pt';
+	p.style['vertical-align'] = 'top';
 	t.appendChild(p);
 
-	i           = document.createElement("input");
-	i.id        = "time";
-	i.type      = "range"
-	i.className = "vertical";
-	i.value     = 0;
-	i.min       = 0;
-	i.max       = 15;
-	p.appendChild(i);
-	this.inputControl['time'] = i;
+	hscale           = document.createElement("input");
+	hscale.id        = "hscale";
+	hscale.type      = "range"
+	hscale.className = "vertical";
+	hscale.value     = 0;
+	hscale.min       = 0;
+	hscale.max       = 15;
+	p.appendChild(hscale);
+	this.inputControl['hscale'] = hscale;
 
 	i = document.createElement("label");
 	i.style['display'] = 'block';
@@ -66,20 +66,25 @@ function hzControl (parent, color) {
 	p.appendChild(i);
 
 	p = document.createElement("div");
-	p.style['display']          = 'inline-block';
-	p.style['padding']          = '1pt';
-	p.style['vertical-align']   = 'top';
+	p.style['display']        = 'inline-block';
+	p.style['padding']        = '1pt';
+	p.style['vertical-align'] = 'top';
 	t.appendChild(p);
 
-	i           = document.createElement("input");
-	i.id        = "toffset";
-	i.type      = "range"
-	i.className = "vertical";
-	i.value     = 0;
-	i.min       = 0;
-	i.max       = 15;
-	p.appendChild(i);
-	this.inputControl['offset'] = i;
+	hoffset           = document.createElement("input");
+	hoffset.id        = "hoffset";
+	hoffset.type      = "range"
+	hoffset.className = "vertical";
+	hoffset.value     = 0;
+	hoffset.min       = -(1 << 13);
+	hoffset.max       = (1 << 13)-1;
+	p.appendChild(hoffset);
+	this.inputControl['hoffset'] = hoffset;
+
+	hscale.hoffset  = hoffset;
+	hscale.hscale   = hscale;
+	hoffset.hoffset = hoffset;
+	hoffset.hscale  = hscale;
 
 	i = document.createElement("label");
 	i.style['display'] = 'block';
@@ -93,8 +98,8 @@ function hzControl (parent, color) {
 }
 
 hzControl.prototype.mousewheel = function (number, callback) {
-	this.inputControl['time'].addEventListener("wheel", callback, false);
-	this.inputControl['offset'].addEventListener("wheel", callback, false);
+	this.inputControl['hscale'].addEventListener("wheel", callback, false);
+	this.inputControl['hoffset'].addEventListener("wheel", callback, false);
 }
 
 function vtControl (parent, number, color) {
@@ -132,15 +137,15 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanInput = document.createElement("input");
-	chanInput['id']        = 'gain:'+number;
-	chanInput['type']      = 'range';
-	chanInput['className'] = 'vertical';
-	chanInput['value']     = 0;
-	chanInput['min']       = 0;
-	chanInput['max']       = 15;
-	c.appendChild(chanInput);
-	this.inputControl['gain'] = chanInput;
+	gain = document.createElement("input");
+	gain['id']        = 'gain:'+number;
+	gain['type']      = 'range';
+	gain['className'] = 'vertical';
+	gain['value']     = 0;
+	gain['min']       = 0;
+	gain['max']       = 15;
+	c.appendChild(gain);
+	this.inputControl['gain'] = gain;
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -152,15 +157,15 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanInput = document.createElement("input");
-	chanInput['id']        =  'offset:'+number;
-	chanInput['type']      = 'range';
-	chanInput['className'] = 'vertical';
-	chanInput['value']     = 0;
-	chanInput['min']       = -128;
-	chanInput['max']       =  128;
-	c.appendChild(chanInput);
-	this.inputControl['offset'] = chanInput;
+	offset = document.createElement("input");
+	offset['id']        =  'offset:'+number;
+	offset['type']      = 'range';
+	offset['className'] = 'vertical';
+	offset['value']     = 0;
+	offset['min']       = -128;
+	offset['max']       =  128;
+	c.appendChild(offset);
+	this.inputControl['offset'] = offset;
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -192,15 +197,15 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanInput = document.createElement("input");
-	chanInput['id']        = 'level:'+number;
-	chanInput['type']      = 'range';
-	chanInput['className'] = 'vertical';
-	chanInput['value']     = 0;
-	chanInput['min']       = 0;
-	chanInput['max']       = 15;
-	c.appendChild(chanInput);
-	this.inputControl['level'] = chanInput;
+	level = document.createElement("input");
+	level['id']        = 'level:'+number;
+	level['type']      = 'range';
+	level['className'] = 'vertical';
+	level['value']     = 0;
+	level['min']       = -128;
+	level['max']       = 128;
+	c.appendChild(level);
+	this.inputControl['level'] = level;
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -212,15 +217,20 @@ function vtControl (parent, number, color) {
 	c.style['vertical-align'] = 'top';
 	p.appendChild(c);
 
-	chanInput = document.createElement("input");
-	chanInput['id']        = 'slope:'+number;
-	chanInput['type']      = 'range';
-	chanInput['className'] = 'vertical';
-	chanInput['value']     = 0;
-	chanInput['min']       = 0;
-	chanInput['max']       =  1;
-	c.appendChild(chanInput);
-	this.inputControl['slope'] = chanInput;
+	slope = document.createElement("input");
+	slope['id']        = 'slope:'+number;
+	slope['type']      = 'range';
+	slope['className'] = 'vertical';
+	slope['value']     = 0;
+	slope['min']       = 0;
+	slope['max']       =  1;
+	c.appendChild(slope);
+	this.inputControl['slope'] = slope;
+
+	level.level = level;
+	level.slope = slope;
+	slope.level = level;
+	slope.slope = slope;
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
