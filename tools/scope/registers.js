@@ -21,57 +21,13 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-function reverse (value, size) {
-	var reval;
+// Asynchronous communication
+//
 
-	revval = 0;
-	for (i = 0; i < size; i++) {
-		reval <<= 1;
-		if (value & 0x1)
-			reval += 1;
-		value >>= 1;
-	}
-	return reval;
-}
+const registers = {
+	gain    : { rid : 0x13, size : 1, value  : 4, chanid :  2 },
+	hzaxis  : { rid : 0x10, size : 3, scale  : 4, offset : 16 },
+	palette : { rid : 0x11, size : 2, color  : 3, pid    :  4 },
+	trigger : { rid : 0x12, size : 2, value  : 9, enable :  1, slope  : 1 },
+	vtaxis  : { rid : 0x14, size : 2, chanid : 3, offset : 13 }};
 
-function alignBuffer (reg, data) {
-	const byteSize = 8;
-	var buffer = new Buffer.alloc(reg.size+2);
-
-	Object.keys(reg).forEach (function(key) {
-
-		switch(key) {
-		case 'rid':
-			buffer[0] = reg.rid;
-			break;
-		case 'size':
-			buffer[1] = reg.size;
-			break;
-		default:
-			var i;
-			var shtcnt = parseInt(reg[key] % byteSize);
-			var mask   = (1 << shtcnt) -1;
-			var offset = parseInt(reg[key]/byteSize);
-
-			data[key] = reverse(data[key], reg[key]);
-			if (shtcnt > 0) {
-				for(i = 0; i < reg.size-1; i++) {
-					buffer[i+2] <<=  shtcnt;
-					buffer[i+2]  |= (buffer[i+2+1] >> (byteSize - shtcnt)) & mask;
-				}
-				buffer[i+2] <<= shtcnt;
-				buffer[i+2]  |= reverse(data[key], shtcnt);
-				data[key]   >>= shtcnt;
-			}
-
-			if (offset) for(i = offset; i < reg.size; i++) 
-				buffer[i+2-offset] = buffer[i+2];
-
-			for(i = reg.size-offset; i < reg.size; i++) {
-				buffer[i+2] = reverse(data[key], byteSize);
-				data[key] >>= byteSize;
-			}
-		};
-	});
-	return buffer;
-}
