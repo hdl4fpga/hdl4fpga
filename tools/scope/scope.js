@@ -24,19 +24,9 @@
 const inputs = 9;
 
 var commParam;
+var commOption;
 
 function mouseWheelCb (e) {
-
-	switch() {
-	case 'gain':
-		break;
-	case 'offset':
-		break;
-	case 'level':
-		break;
-	case 'slope':
-		break;
-	}
 
 	console.log("mouseWheel");
 	if (typeof this.length === 'undefined') {
@@ -50,6 +40,39 @@ function mouseWheelCb (e) {
 	this.onchange(e);
 }
 
+function mouseWheel (e) {
+	var param = this.id.split(':');
+	var value = this.value;
+
+	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+
+	switch(param[0]) {
+	case 'gain':
+		sendRegister(registers.gain, {
+			gain   : this.value,
+			chanid : param[1] } );
+		break;
+	case 'offset':
+		sendRegister(registers.vtaxis, {
+			offset : this.value,
+			chanid : param[1] } );
+		break;
+	case 'level':
+	case 'slope':
+		sendRegister(registers.trigger, { 
+			offset : this.level.value,
+			slope  : this.level.slope,
+			enable : 1,
+			chanid : param[1] });
+		break;
+	case 'time':
+		break;
+	case 'ttime':
+		break;
+	}
+
+	console.log(param[0]);
+}
 function onchangeComm () {
 	commOption = (this.options[this.selectedIndex].text);
 	commParam  = new commWidget (commOption);
@@ -57,6 +80,7 @@ function onchangeComm () {
 	e.innerHTML = "";
 	e.appendChild(commParam.main);
 
+}
 
 window.addEventListener("load", function() {
 
@@ -70,7 +94,6 @@ window.addEventListener("load", function() {
 	}
 
 	e = document.getElementById("comm-select");
-//	e.addEventListener("wheel", mouseWheelCb, false);
 	e.onchange = onchangeComm;
 	w = new commWidget(e.options[e.selectedIndex].text);
 	e = document.getElementById("comm-param");

@@ -21,16 +21,6 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-const i18n = {
-	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
-	'level'      : { en : 'Level',      es : 'Nivel'      },
-	'offset'     : { en : 'Offset',     es : 'Posición'   },
-	'scale'      : { en : 'Scale',      es : 'Escala'     },
-	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },
-	'vertical'   : { en : 'Vertical',   es : 'Vertical'   } };
-
-const lang = 'en';
-
 function hzControl (parent, color) {
 
 	this.wrapper = {};
@@ -82,7 +72,7 @@ function hzControl (parent, color) {
 	t.appendChild(p);
 
 	i           = document.createElement("input");
-	i.id        = "time";
+	i.id        = "toffset";
 	i.type      = "range"
 	i.className = "vertical";
 	i.value     = 0;
@@ -143,7 +133,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = number+':gain';
+	chanInput['id']        = 'gain:'+number;
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -163,7 +153,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        =  number+':offset';
+	chanInput['id']        =  'offset:'+number;
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -186,7 +176,7 @@ function vtControl (parent, number, color) {
 	// ------
 
 	p = document.createElement("div");
-	p.id = number+':trigger',
+	p.id = 'trigger:'+number,
 	p.style['background-color'] = '#080808';
 	p.style['padding']          = '2pt';
 	p.style['margin']           = '0pt';
@@ -203,7 +193,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = number:'level';
+	chanInput['id']        = 'level:'+number;
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -223,7 +213,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = number:'slope';
+	chanInput['id']        = 'slope:'+number;
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -234,7 +224,7 @@ function vtControl (parent, number, color) {
 
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.offset[lang]));
+	labelUnit.appendChild(document.createTextNode(i18n.slope[lang]));
 	c.appendChild(labelUnit);
 
 	labelScale = document.createElement("label");
@@ -265,6 +255,3 @@ vtControl.prototype.mousewheel = function (number, callback) {
 	this.inputControl['slope'].addEventListener("wheel", callback, false);
 }
 
-function mouseWheel (e) {
-	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
-}

@@ -25,9 +25,9 @@
 //
 
 const registers = {
-	gain    : { rid : 0x13, size : 1, value  : 4, chanid :  2 },
+	gain    : { rid : 0x13, size : 1, gain   : 4, chanid :  2 },
 	hzaxis  : { rid : 0x10, size : 3, scale  : 4, offset : 16 },
 	palette : { rid : 0x11, size : 2, color  : 3, pid    :  4 },
-	trigger : { rid : 0x12, size : 2, value  : 9, enable :  1, slope  : 1 },
+	trigger : { rid : 0x12, size : 2, level  : 9, enable :  1, slope  : 1 },
 	vtaxis  : { rid : 0x14, size : 2, chanid : 3, offset : 13 }};
 
