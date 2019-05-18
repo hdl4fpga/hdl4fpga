@@ -126,7 +126,7 @@ function vtControl (parent, number, color) {
 	// -----
 	
 	p = document.createElement("div");
-	p.id = 'chan' + number + '-scale',
+	p.id = number+'scale',
 	p.style['background-color'] = '#080808';
 	p.style['padding']          = '2pt';
 	p.style['margin']           = '0pt';
@@ -143,14 +143,14 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = 'chan' + number + '-unit';
+	chanInput['id']        = number+':gain';
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
 	chanInput['min']       = 0;
 	chanInput['max']       = 15;
 	c.appendChild(chanInput);
-	this.inputControl['unit'] = chanInput;
+	this.inputControl['gain'] = chanInput;
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
@@ -163,7 +163,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = 'chan' + number + '-offset';
+	chanInput['id']        =  number+':offset';
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -186,7 +186,7 @@ function vtControl (parent, number, color) {
 	// ------
 
 	p = document.createElement("div");
-	p.id = 'chan' + number + '-trigger',
+	p.id = number+':trigger',
 	p.style['background-color'] = '#080808';
 	p.style['padding']          = '2pt';
 	p.style['margin']           = '0pt';
@@ -203,7 +203,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = 'chan' + number + '-level';
+	chanInput['id']        = number:'level';
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -223,7 +223,7 @@ function vtControl (parent, number, color) {
 	p.appendChild(c);
 
 	chanInput = document.createElement("input");
-	chanInput['id']        = 'chan' + number + '-slope';
+	chanInput['id']        = number:'slope';
 	chanInput['type']      = 'range';
 	chanInput['className'] = 'vertical';
 	chanInput['value']     = 0;
@@ -252,14 +252,14 @@ vtControl.prototype.onclick = function (callback = function(ev) { console.log(th
 }
 
 vtControl.prototype.onfocus = function (callback = function(ev) { console.log(this.parentElement.parentElement); this.parentElement.parentElement.onclick(ev); }) {
-	this.inputControl['unit'].onfocus   = callback;
+	this.inputControl['gain'].onfocus   = callback;
 	this.inputControl['offset'].onfocus = callback;
 	this.inputControl['level'].onfocus  = callback;
 	this.inputControl['slope'].onfocus  = callback;
 }
 
 vtControl.prototype.mousewheel = function (number, callback) {
-	this.inputControl['unit'].addEventListener("wheel", callback, false);
+	this.inputControl['gain'].addEventListener("wheel", callback, false);
 	this.inputControl['offset'].addEventListener("wheel", callback, false);
 	this.inputControl['level'].addEventListener("wheel", callback, false);
 	this.inputControl['slope'].addEventListener("wheel", callback, false);

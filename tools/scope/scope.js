@@ -27,6 +27,17 @@ var commParam;
 
 function mouseWheelCb (e) {
 
+	switch() {
+	case 'gain':
+		break;
+	case 'offset':
+		break;
+	case 'level':
+		break;
+	case 'slope':
+		break;
+	}
+
 	console.log("mouseWheel");
 	if (typeof this.length === 'undefined') {
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
@@ -39,6 +50,14 @@ function mouseWheelCb (e) {
 	this.onchange(e);
 }
 
+function onchangeComm () {
+	commOption = (this.options[this.selectedIndex].text);
+	commParam  = new commWidget (commOption);
+	e = document.getElementById("comm-param");
+	e.innerHTML = "";
+	e.appendChild(commParam.main);
+
+
 window.addEventListener("load", function() {
 
 	body = document.getElementsByTagName("body");
@@ -48,14 +67,6 @@ window.addEventListener("load", function() {
 		vt = new vtControl(body[0], 1, '#ffffff');
 		vt.mousewheel(1, mouseWheel);
 		vt.onfocus();
-	}
-
-	function onchangeComm () {
-		commOption = (this.options[this.selectedIndex].text);
-		commParam  = new commWidget (commOption);
-		e = document.getElementById("comm-param");
-		e.innerHTML = "";
-		e.appendChild(commParam.main);
 	}
 
 	e = document.getElementById("comm-select");
