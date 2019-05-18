@@ -71,14 +71,27 @@ function sendCommand(e) {
 			enable : 1,
 			chanid : param[1] });
 		break;
+	case 'vtaxis' :
+		sendRegister(registers.vtaxis, { 
+			offset : this.vtaxis.value,
+			chanid : param[1] });
+		break;
+	case 'trigger' :
+		sendRegister(registers.vtaxis, { 
+			offset : this.trigger.value,
+			chanid : param[1] });
+		break;
 	case 'hscale':
 	case 'hoffset':
+			console.log(this.hoffset.value);
 		sendRegister(registers.hzaxis, { 
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });
-	case 'vtaxis' :
 		break;
-	case 'vtaxis' :
+	case 'time' :
+		sendRegister(registers.vtaxis, { 
+			scale  : this.hscale.value,
+			offset : this.hoffset.value });
 		break;
 	}
 
@@ -100,10 +113,11 @@ window.addEventListener("load", function() {
 	body = document.getElementsByTagName("body");
 	hz = new hzControl(body[0], 1, '#ffffff');
 	hz.mousewheel(1, mouseWheel);
+	hz.mousewheel(mouseWheel);
+	hz.onclick(onClick);
 	for (i=0; i < 2; i++) {
 		vt = new vtControl(body[0], i, '#ffffff');
 		vt.mousewheel(mouseWheel);
-		vt.onfocus();
 		vt.onclick(onClick);
 	}
 

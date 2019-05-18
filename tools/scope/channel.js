@@ -23,8 +23,8 @@
 
 function hzControl (parent, color) {
 
-	this.wrapper = {};
 	this.inputControl = {};
+	this.wrapper      = {};
 
 	t = document.createElement("div");
 	t.style['text-align']       = 'center'
@@ -37,12 +37,14 @@ function hzControl (parent, color) {
 	t.style['color']            = '#ffffff';
 	parent.appendChild(t);
 
-	p = document.createElement("div");
-	p.style['padding']        = '1pt';
-	p.style['display']        = 'inline-block';
-	p.style['vertical-align'] = 'top';
-	t.appendChild(p);
-	t = p;
+	time = document.createElement("div");
+	time.id                      = 'time';
+	time.style['padding']        = '1pt';
+	time.style['display']        = 'inline-block';
+	time.style['vertical-align'] = 'top';
+	t.appendChild(time);
+	this.wrapper['time'] = time;
+	t = time;
 
 	p = document.createElement("div");
 	p.style['display']        = 'inline-block';
@@ -85,6 +87,8 @@ function hzControl (parent, color) {
 	hscale.hscale   = hscale;
 	hoffset.hoffset = hoffset;
 	hoffset.hscale  = hscale;
+	time.hoffset    = hoffset;
+	time.hscale     = hscale;
 
 	i = document.createElement("label");
 	i.style['display'] = 'block';
@@ -95,6 +99,15 @@ function hzControl (parent, color) {
 	p.style['display'] = 'block';
 	p.appendChild(document.createTextNode(i18n.horizontal[lang]));
 	t.appendChild(p);
+}
+
+hzControl.prototype.onclick = function (callback) {
+	this.wrapper['time'].onclick   = callback;
+}
+
+hzControl.prototype.onfocus = function (callback) {
+	this.inputControl['hscale'].onfocus   = callback;
+	this.inputControl['hoffset'].onfocus = callback;
 }
 
 hzControl.prototype.mousewheel = function (callback) {
@@ -177,6 +190,10 @@ function vtControl (parent, number, color) {
 	labelScale.appendChild(document.createTextNode(i18n.vertical[lang]));
 	vtaxis.appendChild(labelScale);
 
+	vtaxis.vtaxis = vtaxis;
+	vtaxis.offset = offset;
+	vtaxis.gain   = gain;
+
 	// Trigger
 	// ------
 
@@ -232,6 +249,10 @@ function vtControl (parent, number, color) {
 	slope.level = level;
 	slope.slope = slope;
 
+	trigger.trigger =  trigger;
+	trigger.level = level;
+	trigger.slope = slope;
+
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
 	labelUnit.appendChild(document.createTextNode(i18n.slope[lang]));
@@ -247,8 +268,6 @@ function vtControl (parent, number, color) {
 vtControl.prototype.onclick = function (callback) {
 	this.wrapper['vtaxis'].onclick   = callback;
 	this.wrapper['trigger'].onclick = callback;
-//	this.wrapper['vtaxis'].addEventListener("wheel", chanSelect, false);
-//	this.wrapper['trigger'].addEventListener("wheel", chanSelect, false);
 }
 
 vtControl.prototype.onfocus = function (callback) {
@@ -259,9 +278,9 @@ vtControl.prototype.onfocus = function (callback) {
 }
 
 vtControl.prototype.mousewheel = function (callback) {
-	this.inputControl['gain'].addEventListener("wheel", callback, false);
+	this.inputControl['gain'].addEventListener("wheel",   callback, false);
 	this.inputControl['offset'].addEventListener("wheel", callback, false);
-	this.inputControl['level'].addEventListener("wheel", callback, false);
-	this.inputControl['slope'].addEventListener("wheel", callback, false);
+	this.inputControl['level'].addEventListener("wheel",  callback, false);
+	this.inputControl['slope'].addEventListener("wheel",  callback, false);
 }
 
