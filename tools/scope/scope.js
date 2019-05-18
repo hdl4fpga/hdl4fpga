@@ -40,10 +40,17 @@ function mouseWheelCb (e) {
 }
 
 function mouseWheel (e) {
+	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+	sendCommand.call(this, e);
+}
+
+function onClick(e) {
+	sendCommand.call(this, e);
+}
+
+function sendCommand(e) {
 	var param = this.id.split(':');
 	var value = this.value;
-
-	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 
 	switch(param[0]) {
 	case 'gain':
@@ -69,11 +76,15 @@ function mouseWheel (e) {
 		sendRegister(registers.hzaxis, { 
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });
+	case 'vtaxis' :
+		break;
+	case 'vtaxis' :
 		break;
 	}
 
 	console.log(param[0]);
 }
+
 function onchangeComm () {
 	var commOption = (this.options[this.selectedIndex].text);
 	setCommOption(commOption);
@@ -90,9 +101,10 @@ window.addEventListener("load", function() {
 	hz = new hzControl(body[0], 1, '#ffffff');
 	hz.mousewheel(1, mouseWheel);
 	for (i=0; i < 2; i++) {
-		vt = new vtControl(body[0], 1, '#ffffff');
-		vt.mousewheel(1, mouseWheel);
+		vt = new vtControl(body[0], i, '#ffffff');
+		vt.mousewheel(mouseWheel);
 		vt.onfocus();
+		vt.onclick(onClick);
 	}
 
 	e = document.getElementById("comm-select");

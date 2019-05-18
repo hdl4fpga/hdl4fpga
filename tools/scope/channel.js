@@ -97,7 +97,7 @@ function hzControl (parent, color) {
 	t.appendChild(p);
 }
 
-hzControl.prototype.mousewheel = function (number, callback) {
+hzControl.prototype.mousewheel = function (callback) {
 	this.inputControl['hscale'].addEventListener("wheel", callback, false);
 	this.inputControl['hoffset'].addEventListener("wheel", callback, false);
 }
@@ -120,22 +120,22 @@ function vtControl (parent, number, color) {
 	// Scale
 	// -----
 	
-	p = document.createElement("div");
-	p.id = number+'scale',
-	p.style['background-color'] = '#080808';
-	p.style['padding']          = '2pt';
-	p.style['margin']           = '0pt';
-	p.style['display']          = 'inline-block';
-	p.style['border']           = 'solid #888888 1pt';
-	p.style['display']          = 'inline-block';
-	p.style['vertical-align']   = 'top';
-	t.appendChild(p);
-	this.wrapper['scale'] = p;
+	vtaxis = document.createElement("div");
+	vtaxis.id = 'vtaxis:'+number,
+	vtaxis.style['background-color'] = '#080808';
+	vtaxis.style['padding']          = '2pt';
+	vtaxis.style['margin']           = '0pt';
+	vtaxis.style['display']          = 'inline-block';
+	vtaxis.style['border']           = 'solid #888888 1pt';
+	vtaxis.style['display']          = 'inline-block';
+	vtaxis.style['vertical-align']   = 'top';
+	t.appendChild(vtaxis);
+	this.wrapper['vtaxis'] = vtaxis;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
-	p.appendChild(c);
+	vtaxis.appendChild(c);
 
 	gain = document.createElement("input");
 	gain['id']        = 'gain:'+number;
@@ -149,13 +149,13 @@ function vtControl (parent, number, color) {
 	
 	labelUnit = document.createElement("label");
 	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.scale[lang]));
+	labelUnit.appendChild(document.createTextNode(i18n.vtaxis[lang]));
 	c.appendChild(labelUnit);
 
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
-	p.appendChild(c);
+	vtaxis.appendChild(c);
 
 	offset = document.createElement("input");
 	offset['id']        =  'offset:'+number;
@@ -175,27 +175,27 @@ function vtControl (parent, number, color) {
 	labelScale = document.createElement("label");
 	labelScale.style['display']='block';
 	labelScale.appendChild(document.createTextNode(i18n.vertical[lang]));
-	p.appendChild(labelScale);
+	vtaxis.appendChild(labelScale);
 
 	// Trigger
 	// ------
 
-	p = document.createElement("div");
-	p.id = 'trigger:'+number,
-	p.style['background-color'] = '#080808';
-	p.style['padding']          = '2pt';
-	p.style['margin']           = '0pt';
-	p.style['display']          = 'inline-block';
-	p.style['border']           = 'solid #888888 1pt';
-	p.style['display']          = 'inline-block';
-	p.style['vertical-align']   = 'top';
-	t.appendChild(p);
-	this.wrapper['trigger'] = p;
+	trigger = document.createElement("div");
+	trigger.id = 'trigger:'+number,
+	trigger.style['background-color'] = '#080808';
+	trigger.style['padding']          = '2pt';
+	trigger.style['margin']           = '0pt';
+	trigger.style['display']          = 'inline-block';
+	trigger.style['border']           = 'solid #888888 1pt';
+	trigger.style['display']          = 'inline-block';
+	trigger.style['vertical-align']   = 'top';
+	t.appendChild(trigger);
+	this.wrapper['trigger'] = trigger;
 	
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
-	p.appendChild(c);
+	trigger.appendChild(c);
 
 	level = document.createElement("input");
 	level['id']        = 'level:'+number;
@@ -215,7 +215,7 @@ function vtControl (parent, number, color) {
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
 	c.style['vertical-align'] = 'top';
-	p.appendChild(c);
+	trigger.appendChild(c);
 
 	slope = document.createElement("input");
 	slope['id']        = 'slope:'+number;
@@ -240,25 +240,25 @@ function vtControl (parent, number, color) {
 	labelScale = document.createElement("label");
 	labelScale.style['display']='block';
 	labelScale.appendChild(document.createTextNode(i18n.trigger[lang]));
-	p.appendChild(labelScale);
+	trigger.appendChild(labelScale);
 
 }
 
-vtControl.prototype.onclick = function (callback = function(ev) { console.log(this.parentElement.parentElement); this.parentElement.parentElement.onclick(ev); }) {
-	this.wrapper['scale'].onclick   = callback;
+vtControl.prototype.onclick = function (callback) {
+	this.wrapper['vtaxis'].onclick   = callback;
 	this.wrapper['trigger'].onclick = callback;
-	this.wrapper['scale'].addEventListener("wheel", chanSelect, false);
-	this.wrapper['trigger'].addEventListener("wheel", chanSelect, false);
+//	this.wrapper['vtaxis'].addEventListener("wheel", chanSelect, false);
+//	this.wrapper['trigger'].addEventListener("wheel", chanSelect, false);
 }
 
-vtControl.prototype.onfocus = function (callback = function(ev) { console.log(this.parentElement.parentElement); this.parentElement.parentElement.onclick(ev); }) {
+vtControl.prototype.onfocus = function (callback) {
 	this.inputControl['gain'].onfocus   = callback;
 	this.inputControl['offset'].onfocus = callback;
 	this.inputControl['level'].onfocus  = callback;
 	this.inputControl['slope'].onfocus  = callback;
 }
 
-vtControl.prototype.mousewheel = function (number, callback) {
+vtControl.prototype.mousewheel = function (callback) {
 	this.inputControl['gain'].addEventListener("wheel", callback, false);
 	this.inputControl['offset'].addEventListener("wheel", callback, false);
 	this.inputControl['level'].addEventListener("wheel", callback, false);

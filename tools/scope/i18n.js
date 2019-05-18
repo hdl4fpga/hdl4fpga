@@ -28,6 +28,7 @@ const i18n = {
 	'scale'      : { en : 'Scale',      es : 'Escala'     },
 	'slope'      : { en : 'Slope',      es : 'Pendiente'  },
 	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },
-	'vertical'   : { en : 'Vertical',   es : 'Vertical'   } };
+	'vertical'   : { en : 'Vertical',   es : 'Vertical'   },
+	'vtaxis'     : { en : 'Scale',      es : 'Escala'     } };
 
 const lang = 'en';
