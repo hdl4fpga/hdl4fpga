@@ -1,1 +1,1 @@
-nw .
+npm start

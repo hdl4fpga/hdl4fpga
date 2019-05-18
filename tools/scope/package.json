@@ -1,10 +1,14 @@
 {
   "name": "ScopeIO",
   "main": "main.html",
-  "window" : {
-	  	"width" : 1500,
-  		"height": 520 },
+  "window": {
+    "width": 1500,
+    "height": 520
+  },
   "scripts": {
     "start": "nw"
+  },
+  "dependencies": {
+    "nw": "^0.25.0"
   }
 }
