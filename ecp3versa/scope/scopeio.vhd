@@ -37,6 +37,7 @@ architecture beh of ecp3versa is
 	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 
 	
+	constant inputs : natural := 4;
 	signal rst        : std_logic := '0';
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -72,6 +73,7 @@ architecture beh of ecp3versa is
 	end;
 
 	signal sample      : std_logic_vector(0 to sample_size-1);
+	signal samples      : std_logic_vector(0 to inputs*sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
@@ -134,7 +136,9 @@ begin
 	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 0)
+		inputs   => inputs,
+		default_tracesfg => b"1111_1111_1111",
+		vlayout_id  => 1)
 	port map (
 		si_clk      => phy1_rxc,
 		si_frm      => phy1_rx_dv,
@@ -144,7 +148,7 @@ begin
 		so_data     => phy1_tx_d,
 		ipcfg_req   => ipcfg_req,
 		input_clk   => clk,
-		input_data  => sample,
+		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,

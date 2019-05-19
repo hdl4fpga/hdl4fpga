@@ -32,9 +32,10 @@ entity scopeio is
 	generic (
 		istream     : boolean := false;
 		tcpip       : boolean := true;
-		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
+		max_inputs  : natural := 64;
+		inputs      : natural := 1;
 		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16, 2 => 2**15, 3 => 2**14);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
@@ -75,7 +76,7 @@ entity scopeio is
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
 
-	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
 end;
 
 architecture beh of scopeio is
@@ -315,7 +316,7 @@ architecture beh of scopeio is
 	signal vt_chanid      : std_logic_vector(chanid_size-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+9-1)-1);
+	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
 	signal palette_color  : std_logic_vector(video_pixel'range);
 
 	signal gain_dv        : std_logic;
@@ -394,6 +395,7 @@ begin
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	generic map (
+		max_inputs     => max_inputs,
 		inputs         => inputs,
 		gainid_size    => gainid_size)
 	port map (

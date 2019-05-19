@@ -7,6 +7,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
 	generic (
+		max_inputs      : in  natural;
 		inputs          : in  natural;
 		gainid_size     : in  natural);
 	port (
@@ -35,7 +36,7 @@ entity scopeio_rgtr is
 		trigger_level   : out std_logic_vector;
 		trigger_edge    : out std_logic);
 
-	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
 end;
 
 architecture def of scopeio_rgtr is
@@ -115,7 +116,7 @@ begin
 		constant offset_id   : natural := 0;
 		constant chanid_id   : natural := 1;
 
-		constant vtoffset_bf : natural_vector := (offset_id => 13, chanid_id => 3);
+		constant vtoffset_bf : natural_vector := (offset_id => 13, chanid_id => chanid_size);
 	begin
 		vtaxis_p : process(clk)
 			constant offset_size : natural := vt_offsets'length/inputs;
@@ -143,7 +144,7 @@ begin
 		constant offset_id   : natural := 0;
 		constant scale_id    : natural := 1;
 
-		constant hzoffset_bf : natural_vector := (offset_id => 16, scale_id => 4);
+		constant hzoffset_bf : natural_vector := (offset_id => 15, scale_id => 4);
 
 	begin
 		if rising_edge(clk) then
@@ -171,7 +172,7 @@ begin
 		constant gainid_id : natural := 0;
 		constant chanid_id : natural := 1;
 
-		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => 3);
+		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => chanid_size);
 	begin
 		process(clk) 
 			constant id_size : natural := gain_ids'length/inputs;
