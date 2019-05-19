@@ -51,7 +51,7 @@ function sendCommand(e) {
 		sendRegister(registers.trigger, { 
 			level  : this.level.value,
 			slope  : this.slope.value,
-			enable : 1,
+			enable : 0,
 			chanid : param[1] });
 		break;
 	case 'vtaxis' :
@@ -93,12 +93,16 @@ var vt = [];
 function onChangeInputs () {
 	let e;
 
-	e  = document.getElementById("control");
+	e  = document.getElementById("hzcontrol");
 	e.innerHTML = '';
 	hz = new hzControl(e);
 	hz.mousewheel(mouseWheel);
 	hz.onclick(onClick);
+	e  = document.getElementById("vtcontrol");
+	e.innerHTML = '';
 	for (i=0; i < parseInt(inputNum.value); i++) {
+		if (i == 4)
+			e.appendChild(document.createElement("BR"));
 		vt = new vtControl(e, i, '#ffffff');
 		vt.mousewheel(mouseWheel);
 		vt.onclick(onClick);
@@ -135,6 +139,7 @@ function generate ()
 	console.log(objects);
 	Object.keys(objects).forEach(function(key) {
 		palette = new paletteControl(e, key, objects[key]);
+//		e.appendChild(document.createElement("BR"));
 		palette.mousewheel(mouseWheel);
 		palette.onclick(onClick);
 	});

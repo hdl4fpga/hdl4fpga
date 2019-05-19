@@ -26,14 +26,29 @@ function paletteControl (parent, objectName, paletteID) {
 	this.inputControl = {};
 
 	p = document.createElement("div");
+	p.style['display']= "block";
+	p.style['text-align'] = 'left';
 	parent.appendChild(p);
+
+	color = document.createElement("div");
+	color.id                      = 'color:'+objectName;
+	color.style['width']          = '100pt';
+	color.style['height']         = '10pt';
+	color.style['padding']        = '1pt';
+	color.style['display']        = 'inline-grid';
+	color.style['background-color'] = paletteID;
+	color.style['vertical-align'] = 'middle';
+	color.style['text-align'] = 'left';
+	this.inputControl['color']    = color;
+	p.appendChild(color);
+
 	palette = document.createElement("div");
 	palette.id                      = 'palette:'+objectName;
 	palette.style['padding']        = '1pt';
-	palette.style['display']        = 'inline-grid';
+	palette.style['display']        = 'inline-block';
 	palette.style['vertical-align'] = 'middle';
 	palette.style['text-align'] = 'left';
-	palette.style['width']          = '100pt';
+//	palette.style['width']          = '140pt';
 	this.inputControl['palette']    = palette;
 	p.appendChild(palette);
 
@@ -44,17 +59,6 @@ function paletteControl (parent, objectName, paletteID) {
 	label.style['vertical-align'] = 'middle';
 	label.appendChild(document.createTextNode(i18n[objectName][lang]));
 	palette.appendChild(label);
-
-	color = document.createElement("div");
-	color.id                      = 'color:'+objectName;
-	color.style['width']          = '100pt';
-	color.style['height']         = '10pt';
-	color.style['padding']        = '1pt';
-	color.style['display']        = 'inline-grid';
-	color.style['background-color'] = paletteID;
-	color.style['vertical-align'] = 'middle';
-	this.inputControl['color']         = color;
-	p.appendChild(color);
 
 	palette.palette = palette;
 	palette.color   = color;
