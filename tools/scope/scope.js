@@ -110,19 +110,27 @@ function onchangeComm () {
 
 window.addEventListener("load", function() {
 
-	body = document.getElementsByTagName("body");
-	hz = new hzControl(body[0], 1, '#ffffff');
+	e = document.getElementById("comm-select");
+	e.onchange = onchangeComm;
+	e.onchange();
+
+	e  = document.getElementById("control");
+	hz = new hzControl(e, 1, '#ffffff');
 	hz.mousewheel(1, mouseWheel);
 	hz.mousewheel(mouseWheel);
 	hz.onclick(onClick);
 	for (i=0; i < 2; i++) {
-		vt = new vtControl(body[0], i, '#ffffff');
+		vt = new vtControl(e, i, '#ffffff');
 		vt.mousewheel(mouseWheel);
 		vt.onclick(onClick);
 	}
 
-	e = document.getElementById("comm-select");
-	e.onchange = onchangeComm;
-	e.onchange();
+	e  = document.getElementById("palette");
+	console.log(objects);
+	Object.keys(objects).forEach(function(key) {
+		palette = new paletteControl(e, i18n[key][lang], objects[key]);
+		palette.mousewheel(mouseWheel);
+		palette.onclick(onClick);
+	});
 
 });

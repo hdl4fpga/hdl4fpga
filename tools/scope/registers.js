@@ -31,3 +31,13 @@ const registers = {
 	trigger : { rid : 0x12, size : 2, level  : 9, enable :  1, slope  : 1 },
 	vtaxis  : { rid : 0x14, size : 2, chanid : 3, offset : 13 }};
 
+const objects = {
+	background   : '#000000',
+	segmentbg    : '#00ffff',
+	textbg       : '#000000',
+	verticalbg   : '#0000ff',
+	verticalfg   : '#ffffff',
+	horizontalbg : '#0000ff',
+	horizontalfg : '#ffffff',
+	gridbg       : '#ff0000',
+	gridfg       : '#000000' };
