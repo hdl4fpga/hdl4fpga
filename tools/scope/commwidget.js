@@ -60,6 +60,7 @@ function commWidget(commOption) {
 			o.text = baudRates[i];
 			b.add(o, i);
 		}
+		b.value = 115200;
 
 		u.uart     = u;
 		u.baudrate = b;
