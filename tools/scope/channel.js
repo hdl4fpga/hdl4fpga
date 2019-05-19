@@ -63,7 +63,7 @@ function hzControl (parent) {
 	this.inputControl['hscale'] = hscale;
 
 	slabel = document.createElement("label");
-	slabel.id               = "label:scale";
+	slabel.id               = "label:hzaxis";
 	slabel.style['display'] = 'block';
 	slabel.appendChild(document.createTextNode(i18n.scale[lang]));
 	this.inputControl['slabel'] = slabel;
@@ -93,30 +93,22 @@ function hzControl (parent) {
 	time.hscale     = hscale;
 
 	olabel = document.createElement("label");
-	olabel.id               = "label:offset";
+	olabel.id               = "label:hzaxis";
 	olabel.style['display'] = 'block';
 	olabel.appendChild(document.createTextNode(i18n.offset[lang]));
 	this.inputControl['olabel'] = olabel;
 	p.appendChild(olabel);
 
 	hlabel = document.createElement("label");
-	hlabel.id               = "label:hlabel";
+	hlabel.id               = "label:hzaxis";
 	hlabel.style['display'] = 'block';
 	hlabel.appendChild(document.createTextNode(i18n.horizontal[lang]));
 	this.inputControl['hlabel'] = hlabel;
 	t.appendChild(hlabel);
 
-	slabel.slabel = slabel;
-	slabel.olabel = olabel;
-	slabel.hlabel = hlabel;
-
-	olabel.slabel = slabel;
-	olabel.olabel = olabel;
-	olabel.hlabel = hlabel;
-
-	hlabel.slabel = slabel;
-	hlabel.olabel = olabel;
-	hlabel.hlabel = hlabel;
+	slabel.colors = { scale : slabel, offset : olabel, hzaxis : hlabel };
+	olabel.colors = slabel.colors;
+	hlabel.colors = slabel.colors;
 
 }
 
@@ -187,7 +179,7 @@ function vtControl (parent, number, color) {
 	this.inputControl['gain'] = gain;
 	
 	vglabel = document.createElement("label");
-	vglabel.id = "label:vtgain:"+number;
+	vglabel.id = "label:channel:"+number;
 	vglabel.style['display'] = 'block';
 	vglabel.appendChild(document.createTextNode(i18n.vtaxis[lang]));
 	c.appendChild(vglabel);
@@ -209,30 +201,18 @@ function vtControl (parent, number, color) {
 	this.inputControl['offset'] = offset;
 
 	volabel = document.createElement("label");
-	volabel.id = "label:vtoffset:"+number;
+	volabel.id = "label:channel:"+number;
 	volabel.style['display'] = 'block';
 	volabel.appendChild(document.createTextNode(i18n.offset[lang]));
 	this.inputControl['volabel'] = volabel;
 	c.appendChild(volabel);
 
 	vtlabel = document.createElement("label");
-	vtlabel.id              = "label:vtlabel:"+number;
+	vtlabel.id              = "label:channel:"+number;
 	vtlabel.style['display']='block';
 	vtlabel.appendChild(document.createTextNode(i18n.vertical[lang]));
 	this.inputControl['vtlabel'] = vtlabel;
 	vtaxis.appendChild(vtlabel);
-
-	vglabel.vglabel = vglabel;
-	vglabel.volabel = volabel;
-	vglabel.vtlabel = vtlabel;
-
-	volabel.vglabel = vglabel;
-	volabel.volabel = volabel;
-	volabel.vtlabel = vtlabel;
-
-	volabel.vglabel = vglabel;
-	volabel.volabel = volabel;
-	volabel.vtlabel = vtlabel;
 
 	vtaxis.vtaxis = vtaxis;
 	vtaxis.offset = offset;
@@ -269,7 +249,7 @@ function vtControl (parent, number, color) {
 	this.inputControl['level'] = level;
 	
 	llabel = document.createElement("label");
-	llabel.id = "label:level:"+number;
+	llabel.id = "label:channel:"+number;
 	llabel.style['display'] = 'block';
 	llabel.appendChild(document.createTextNode(i18n.level[lang]));
 	this.inputControl['llabel'] = llabel;
@@ -300,29 +280,25 @@ function vtControl (parent, number, color) {
 	trigger.slope = slope;
 
 	slabel = document.createElement("label");
-	slabel.id               = "label:slope:"+number;
+	slabel.id               = "label:channel:"+number;
 	slabel.style['display'] = 'block';
 	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
 	this.inputControl['slabel'] = slabel;
 	c.appendChild(slabel);
 
 	tlabel = document.createElement("label");
-	tlabel.id               = "label:trigger:"+number;
+	tlabel.id               = "label:channel:"+number;
 	tlabel.style['display']='block';
 	tlabel.appendChild(document.createTextNode(i18n.trigger[lang]));
 	this.inputControl['tlabel'] = tlabel;
 
-	llabel.llabel = llabel;
-	llabel.slabel = slabel;
-	llabel.tlabel = tlabel;
+	vglabel.colors = { gain : vglabel, offset : volabel, vtaxis : vtlabel, level : llabel, slope : slabel, trigger : tlabel };
+	volabel.colors = vglabel.colors;
+	vtlabel.colors = vglabel.colors;
 
-	slabel.llabel = llabel;
-	slabel.slabel = slabel;
-	slabel.tlabel = tlabel;
-
-	tlabel.llabel = llabel;
-	tlabel.slabel = slabel;
-	tlabel.tlabel = tlabel;
+	llabel.colors = vglabel.colors;
+	slabel.colors = vglabel.colors;
+	tlabel.colors = vglabel.colors;
 
 	trigger.appendChild(tlabel);
 

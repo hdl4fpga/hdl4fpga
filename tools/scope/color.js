@@ -48,7 +48,6 @@ function paletteControl (parent, objectName, paletteID) {
 	palette.style['display']        = 'inline-block';
 	palette.style['vertical-align'] = 'middle';
 	palette.style['text-align'] = 'left';
-//	palette.style['width']          = '140pt';
 	this.inputControl['palette']    = palette;
 	p.appendChild(palette);
 

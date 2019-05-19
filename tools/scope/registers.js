@@ -30,7 +30,7 @@ const max_pixelsize  = 24;
 const paletteid_size = 7;
 
 const registers = {
-	gain    : { rid : 0x13, size : 2, gain   : 4,             chanid : chanid_size },
+	gain    : { rid : 0x13, size : 2, chanid : chanid_size,   gain : 4 },
 	hzaxis  : { rid : 0x10, size : 3, scale  : 4,             offset : 16 },
 	palette : { rid : 0x11, size : 4, color  : max_pixelsize, pid    : paletteid_size },
 	trigger : { rid : 0x12, size : 2, level  : 9,             slope  : 1,             enable  : 1 },

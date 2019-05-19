@@ -77,6 +77,19 @@ function sendCommand(e) {
 			offset : this.hoffset.value });
 		break;
 	case 'label' :
+
+		switch(param[1]) {
+		case 'channel' :
+			this.colors.vtaxis.style['background-color']  = "#00FF00";
+			this.colors.trigger.style['background-color'] = "#00FF00";
+			break;
+		case 'hzaxis' :
+			this.colors.hzaxis.style['background-color']  = "#00FF00";
+			break;
+		}
+		sendRegister(registers.palette, { 
+			pid   : 0,
+			color : 2 });
 		console.log(param);
 		break;
 	}
@@ -139,7 +152,6 @@ function generate ()
 	console.log(objects);
 	Object.keys(objects).forEach(function(key) {
 		palette = new paletteControl(e, key, objects[key]);
-//		e.appendChild(document.createElement("BR"));
 		palette.mousewheel(mouseWheel);
 		palette.onclick(onClick);
 	});
