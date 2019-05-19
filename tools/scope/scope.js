@@ -23,7 +23,10 @@
 
 
 function mouseWheel (e) {
-	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+	if (typeof this.value !== 'undefined') {
+		console.log(typeof this.value);
+		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+	}
 	sendCommand.call(this, e);
 }
 
@@ -31,6 +34,16 @@ function onClick(e) {
 	sendCommand.call(this, e);
 }
 
+const table = [
+	'#00ff00',
+	'#FFff00',
+	'#00ffFF',
+	'#FFffFF',
+	'#FFR000',
+	'#00ff00',
+	'#00ff00',
+	'#00ff00'
+]
 function sendCommand(e) {
 	var param = this.id.split(':');
 	var value = this.value;
@@ -78,13 +91,14 @@ function sendCommand(e) {
 		break;
 	case 'label' :
 
+		this.colors.value = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+
 		switch(param[1]) {
 		case 'channel' :
-			this.colors.vtaxis.style['background-color']  = "#00FF00";
-			this.colors.trigger.style['background-color'] = "#00FF00";
+			this.colors.vtaxis.style['border']  = 'solid ' + '#00ff00';
 			break;
 		case 'hzaxis' :
-			this.colors.hzaxis.style['background-color']  = "#00FF00";
+			this.colors.hzaxis.style['border']  = 'solid ' + '#00ff00';
 			break;
 		}
 		sendRegister(registers.palette, { 

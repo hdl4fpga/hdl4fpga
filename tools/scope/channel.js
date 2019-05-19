@@ -26,14 +26,14 @@ function hzControl (parent) {
 	this.inputControl = {};
 	this.wrapper      = {};
 
-	t = document.createElement("div");
+	var t = document.createElement("div");
 	t.style['text-align']       = 'center'
-	t.style['margin']           = '3pt';
-	t.style['padding']          = '0pt';
+	t.style['margin']           = '1pt';
+	t.style['padding']          = '1pt';
 	t.style['background-color'] = '#080808';
 	t.style['display']          = 'inline-block';
 	t.style['vertical-align']   = 'top';
-	t.style['border']           = 'solid #888888 1pt';
+	t.style['border']           = 'solid #888888 2pt';
 	t.style['color']            = '#ffffff';
 	parent.appendChild(t);
 
@@ -44,13 +44,12 @@ function hzControl (parent) {
 	time.style['vertical-align'] = 'top';
 	t.appendChild(time);
 	this.wrapper['time'] = time;
-	t = time;
 
 	p = document.createElement("div");
 	p.style['display']        = 'inline-block';
 	p.style['padding']        = '1pt';
 	p.style['vertical-align'] = 'top';
-	t.appendChild(p);
+	time.appendChild(p);
 
 	hscale           = document.createElement("input");
 	hscale.id        = "hscale";
@@ -73,7 +72,7 @@ function hzControl (parent) {
 	p.style['display']        = 'inline-block';
 	p.style['padding']        = '1pt';
 	p.style['vertical-align'] = 'top';
-	t.appendChild(p);
+	time.appendChild(p);
 
 	hoffset           = document.createElement("input");
 	hoffset.id        = "hoffset";
@@ -104,9 +103,10 @@ function hzControl (parent) {
 	hlabel.style['display'] = 'block';
 	hlabel.appendChild(document.createTextNode(i18n.horizontal[lang]));
 	this.inputControl['hlabel'] = hlabel;
-	t.appendChild(hlabel);
+	time.appendChild(hlabel);
 
-	slabel.colors = { scale : slabel, offset : olabel, hzaxis : hlabel };
+//	slabel.colors = { scale : slabel, offset : olabel, hzaxis : hlabel };
+	slabel.colors = { hzaxis : t , value : 0 };
 	olabel.colors = slabel.colors;
 	hlabel.colors = slabel.colors;
 
@@ -137,7 +137,7 @@ function vtControl (parent, number, color) {
 	this.wrapper = {};
 	this.inputControl = {};
 
-	t = document.createElement("div");
+	var t = document.createElement("div");
 	t.style['text-align']       = 'center';
 	t.style['padding']          = '0pt';
 	t.style['margin']           = '1pt';
@@ -145,7 +145,7 @@ function vtControl (parent, number, color) {
 	t.style['display']          = 'inline-block';
 	t.style['vertical-align']   = 'top'; 
 	t.style['color']            =  color;
-	t.style['border']           = 'solid #404040 1pt'
+	t.style['border']           = 'solid #404040 2pt'
 	parent.appendChild(t);
 
 	// Scale
@@ -292,7 +292,9 @@ function vtControl (parent, number, color) {
 	tlabel.appendChild(document.createTextNode(i18n.trigger[lang]));
 	this.inputControl['tlabel'] = tlabel;
 
-	vglabel.colors = { gain : vglabel, offset : volabel, vtaxis : vtlabel, level : llabel, slope : slabel, trigger : tlabel };
+//	vglabel.colors = { gain : vglabel, offset : volabel, vtaxis : vtlabel, level : llabel, slope : slabel, trigger : tlabel };
+//	vglabel.colors = { vtaxis : vtlabel, trigger : tlabel };
+	vglabel.colors = { vtaxis : t, value : 0  };
 	volabel.colors = vglabel.colors;
 	vtlabel.colors = vglabel.colors;
 
