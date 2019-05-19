@@ -65,11 +65,13 @@ architecture beh of scopeio_palette is
 	signal fgbg_id    : std_logic_vector(trace_id'range);
 
 
-	signal wr_addr     : std_logic_vector(0 to unsigned_num_bits(traces_dots'length+9-1)-1);
+	signal wr_addr    : std_logic_vector(0 to unsigned_num_bits(traces_dots'length+9-1)-1);
+	signal wr_data    : std_logic_vector(video_color'range);
 	signal rd_addr    : std_logic_vector(wr_addr'range);
-	signal rd_data    : std_logic_vector(wr_color'range);
+	signal rd_data    : std_logic_vector(wr_data'range);
 
 begin
+	wr_data <= std_logic_vector(resize(unsigned(wr_color),   wr_data'length));
 	wr_addr <= std_logic_vector(resize(unsigned(wr_palette), wr_addr'length));
 	mem_e : entity hdl4fpga.dpram
 	generic map (
@@ -78,7 +80,7 @@ begin
 		wr_clk  => wr_clk,
 		wr_ena  => wr_dv,
 		wr_addr => wr_addr,
-		wr_data => wr_color,
+		wr_data => wr_data,
 
 		rd_addr => rd_addr,
 		rd_data => rd_data);

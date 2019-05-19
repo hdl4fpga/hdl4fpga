@@ -7,9 +7,8 @@ use hdl4fpga.std.all;
 
 entity scopeio_rgtr is
 	generic (
-		max_inputs      : in  natural;
-		inputs          : in  natural;
-		gainid_size     : in  natural);
+		max_inputs		: in  natural;
+		inputs          : in  natural);
 	port (
 		clk             : in  std_logic;
 		rgtr_dv         : in  std_logic;
@@ -132,7 +131,7 @@ begin
 						end if;
 						offsets := offsets rol offset_size;
 					end loop;
-					vt_chanid  <= bf(rgtr_data, chanid_id, vtoffset_bf);
+					vt_chanid  <= std_logic_vector(resize(unsigned(bf(rgtr_data, chanid_id, vtoffset_bf)), vt_chanid'length));
 					vt_offsets <= std_logic_vector(offsets);
 				end if;
 				vt_dv <= ena(vtaxis_enid);
@@ -168,6 +167,7 @@ begin
 	end block;
 
 	gain_p : block
+		constant gainid_size : natural := gain_ids'length/inputs;
 
 		constant gainid_id : natural := 0;
 		constant chanid_id : natural := 1;
@@ -175,7 +175,6 @@ begin
 		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => chanid_size);
 	begin
 		process(clk) 
-			constant id_size : natural := gain_ids'length/inputs;
 			variable ids     : unsigned(0 to gain_ids'length-1); 
 			variable chanid  : std_logic_vector(0 to chanid_size-1);
 		begin
@@ -184,9 +183,9 @@ begin
 					chanid := bf(rgtr_data, chanid_id, gain_bf);
 					for i in 0 to inputs-1 loop
 						if to_unsigned(i, chanid_size)=unsigned(chanid) then
-							ids(0 to id_size-1) := unsigned(bf(rgtr_data, gainid_id, gain_bf));
+							ids(0 to gainid_size-1) := unsigned(bf(rgtr_data, gainid_id, gain_bf));
 						end if;
-						ids := ids rol id_size;
+						ids := ids rol gainid_size;
 					end loop;
 				end if;
 				gain_dv  <= ena(gain_enid);

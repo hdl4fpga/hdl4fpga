@@ -47,6 +47,7 @@ entity scopeio is
 		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
 		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8));
 	 
+		max_pixelsize  : natural := 24;
 		default_tracesfg : std_logic_vector := b"1_1_1";
 		default_gridfg   : std_logic_vector := b"1_0_0";
 		default_gridbg   : std_logic_vector := b"0_0_0";
@@ -76,7 +77,7 @@ entity scopeio is
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
 
-	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
+	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
 end;
 
 architecture beh of scopeio is
@@ -317,7 +318,7 @@ architecture beh of scopeio is
 
 	signal palette_dv     : std_logic;
 	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
-	signal palette_color  : std_logic_vector(video_pixel'range);
+	signal palette_color  : std_logic_vector(max_pixelsize-1 downto 0);
 
 	signal gain_dv        : std_logic;
 	signal gain_ids       : std_logic_vector(0 to inputs*gainid_size-1);
@@ -392,12 +393,10 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
 
-
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	generic map (
 		max_inputs     => max_inputs,
-		inputs         => inputs,
-		gainid_size    => gainid_size)
+		inputs         => inputs)
 	port map (
 		clk            => si_clk,
 		rgtr_dv        => rgtr_dv,
