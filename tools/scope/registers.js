@@ -24,12 +24,17 @@
 // Asynchronous communication
 //
 
+const chanid_size    = 6;
+const max_inputs     = (1 << chanid_size);
+const max_pixelsize  = 24;
+const paletteid_size = 7;
+
 const registers = {
-	gain    : { rid : 0x13, size : 1, gain   : 4, chanid :  2 },
-	hzaxis  : { rid : 0x10, size : 3, scale  : 4, offset : 16 },
-	palette : { rid : 0x11, size : 2, color  : 3, pid    :  4 },
-	trigger : { rid : 0x12, size : 2, level  : 9, enable :  1, slope  : 1 },
-	vtaxis  : { rid : 0x14, size : 2, chanid : 3, offset : 13 }};
+	gain    : { rid : 0x13, size : 1, gain   : 4,              chanid : chanid_size },
+	hzaxis  : { rid : 0x10, size : 3, scale  : 4,              offset : 16 },
+	palette : { rid : 0x11, size : 2, color  : man_pixelwidth, pid    : paletteid_size },
+	trigger : { rid : 0x12, size : 2, level  : 9,              enable : 1,             slope  : 1 },
+	vtaxis  : { rid : 0x14, size : 2, chanid : 3,              offset : 13 }};
 
 const objects = {
 	background   : '#000000',

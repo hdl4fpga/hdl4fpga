@@ -143,12 +143,12 @@ begin
 		constant offset_id   : natural := 0;
 		constant scale_id    : natural := 1;
 
-		constant hzoffset_bf : natural_vector := (offset_id => 15, scale_id => 4);
+		constant hzoffset_bf : natural_vector := (offset_id => 16, scale_id => 4);
 
 	begin
 		if rising_edge(clk) then
 			if ena(hzaxis_enid)='1' then
-				hz_offset <= bf(rgtr_data, offset_id, hzoffset_bf);
+				hz_offset <= std_logic_vector(resize(signed(bf(rgtr_data, offset_id, hzoffset_bf)), hz_offset'length));
 				hz_scale  <= bf(rgtr_data, scale_id,  hzoffset_bf);
 			end if;
 			hz_dv <= ena(hzaxis_enid);
