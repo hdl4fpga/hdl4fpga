@@ -38,7 +38,7 @@ const i18n = {
 
 	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
 	'level'      : { en : 'Level',      es : 'Nivel'      },
-	'offset'     : { en : 'Offset',     es : 'Posición'   },
+	'offset'     : { en : 'Offset',     es : 'Posicion'   },
 	'scale'      : { en : 'Scale',      es : 'Escala'     },
 	'slope'      : { en : 'Slope',      es : 'Pendiente'  },
 	'trigger'    : { en : 'Trigger',    es : 'Disparo'    },

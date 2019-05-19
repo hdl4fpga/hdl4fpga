@@ -34,16 +34,6 @@ function onClick(e) {
 	sendCommand.call(this, e);
 }
 
-const table = [
-	'#00ff00',
-	'#FFff00',
-	'#00ffFF',
-	'#FFffFF',
-	'#FFR000',
-	'#00ff00',
-	'#00ff00',
-	'#00ff00'
-]
 function sendCommand(e) {
 	var param = this.id.split(':');
 	var value = this.value;
@@ -91,19 +81,39 @@ function sendCommand(e) {
 		break;
 	case 'label' :
 
-		this.colors.value = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+		this.colors.value += colorTab.length;
+		this.colors.value %= colorTab.length;
 
+		console.log(this.colors.value);
+		var pid = param[2];
 		switch(param[1]) {
 		case 'channel' :
-			this.colors.vtaxis.style['border']  = 'solid ' + '#00ff00';
+			pid += 9;
+			this.colors.vtaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		case 'hzaxis' :
-			this.colors.hzaxis.style['border']  = 'solid ' + '#00ff00';
+			pid = 2;
+			this.colors.hzaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		}
 		sendRegister(registers.palette, { 
-			pid   : 0,
-			color : 2 });
+			pid   : pid,
+			color : this.colors.value });
+		console.log(param);
+		break;
+	case 'color' :
+
+		var pid = objects[param[1]]['pid'];
+		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
+		this.colors.value += colorTab.length;
+		this.colors.value %= colorTab.length;
+
+		console.log(this.colors.value);
+		this.colors.color.style['background-color']  = colorTab[this.colors.value];
+		sendRegister(registers.palette, { 
+			pid   : pid,
+			color : this.colors.value });
 		console.log(param);
 		break;
 	}
@@ -165,7 +175,7 @@ function generate ()
 	e.innerHTML = '';
 	console.log(objects);
 	Object.keys(objects).forEach(function(key) {
-		palette = new paletteControl(e, key, objects[key]);
+		palette = new paletteControl(e, key, objects[key]['defcolor']);
 		palette.mousewheel(mouseWheel);
 		palette.onclick(onClick);
 	});

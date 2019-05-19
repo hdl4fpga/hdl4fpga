@@ -37,11 +37,22 @@ const registers = {
 	vtaxis  : { rid : 0x14, size : 3, chanid : chanid_size,   offset : 13 }};
 
 const objects = {
-	background   : '#000000',
-	segmentbg    : '#00ffff',
-	textbg       : '#000000',
-	verticalbg   : '#0000ff',
-	horizontalbg : '#0000ff',
-	horizontalfg : '#ffffff',
-	gridbg       : '#ff0000',
-	gridfg       : '#000000' };
+	background   : { defcolor : '#000000', pid : 8 },
+	segmentbg    : { defcolor : '#00ffff', pid : 7 },
+	textbg       : { defcolor : '#000000', pid : 6 },
+	verticalbg   : { defcolor : '#0000ff', pid : 5 },
+	horizontalbg : { defcolor : '#0000ff', pid : 3 },
+	horizontalfg : { defcolor : '#ffffff', pid : 2 },
+	gridbg       : { defcolor : '#ff0000', pid : 1 },
+	gridfg       : { defcolor : '#000000', pid : 0 } };
+
+const colorTab = [
+	'#000000',
+	'#0000ff',
+	'#00ff00',
+	'#00ffff',
+	'#ff0000',
+	'#ff00ff',
+	'#ffff00',
+	'#ffffff' ];
+

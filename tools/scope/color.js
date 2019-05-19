@@ -35,15 +35,16 @@ function paletteControl (parent, objectName, paletteID) {
 	color.style['width']          = '100pt';
 	color.style['height']         = '10pt';
 	color.style['padding']        = '1pt';
-	color.style['display']        = 'inline-grid';
+	color.style['display']        = 'inline-block';
 	color.style['background-color'] = paletteID;
 	color.style['vertical-align'] = 'middle';
 	color.style['text-align'] = 'left';
+	color.value = 0;
 	this.inputControl['color']    = color;
 	p.appendChild(color);
 
 	palette = document.createElement("div");
-	palette.id                      = 'palette:'+objectName;
+	palette.id                      = 'color:'+objectName;
 	palette.style['padding']        = '1pt';
 	palette.style['display']        = 'inline-block';
 	palette.style['vertical-align'] = 'middle';
@@ -59,10 +60,8 @@ function paletteControl (parent, objectName, paletteID) {
 	label.appendChild(document.createTextNode(i18n[objectName][lang]));
 	palette.appendChild(label);
 
-	palette.palette = palette;
-	palette.color   = color;
-	color.palette   = palette;
-	color.color     = color;
+	color.colors = { color : color,  value : 0  };
+	palette.colors = color.colors;
 }
 
 paletteControl.prototype.onclick = function (callback) {
