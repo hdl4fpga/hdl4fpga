@@ -34,6 +34,8 @@ const i18n = {
 	'verticalfg'   : { en : 'Vertical FG',   es : 'Frente del vertical'   },
 
 
+	'inputs'     : { en : 'Inputs ',    es : 'Entradas'   },
+
 	'horizontal' : { en : 'Horizontal', es : 'Horizontal' },
 	'level'      : { en : 'Level',      es : 'Nivel'      },
 	'offset'     : { en : 'Offset',     es : 'Posición'   },
@@ -43,4 +45,12 @@ const i18n = {
 	'vertical'   : { en : 'Vertical',   es : 'Vertical'   },
 	'vtaxis'     : { en : 'Scale',      es : 'Escala'     } };
 
-const lang = 'en';
+var lang = 'en';
+
+function setLang(l) {
+	lang = l;
+}
+
+function getLang(l) {
+	return lang;
+}

@@ -21,7 +21,7 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-function hzControl (parent, color) {
+function hzControl (parent) {
 
 	this.inputControl = {};
 	this.wrapper      = {};
@@ -62,10 +62,12 @@ function hzControl (parent, color) {
 	p.appendChild(hscale);
 	this.inputControl['hscale'] = hscale;
 
-	i = document.createElement("label");
-	i.style['display'] = 'block';
-	i.appendChild(document.createTextNode(i18n.scale[lang]));
-	p.appendChild(i);
+	slabel = document.createElement("label");
+	slabel.id               = "label:scale";
+	slabel.style['display'] = 'block';
+	slabel.appendChild(document.createTextNode(i18n.scale[lang]));
+	this.inputControl['slabel'] = slabel;
+	p.appendChild(slabel);
 
 	p = document.createElement("div");
 	p.style['display']        = 'inline-block';
@@ -80,8 +82,8 @@ function hzControl (parent, color) {
 	hoffset.value     = 0;
 	hoffset.min       = -(1 << 13);
 	hoffset.max       = (1 << 13)-1;
-	p.appendChild(hoffset);
 	this.inputControl['hoffset'] = hoffset;
+	p.appendChild(hoffset);
 
 	hscale.hoffset  = hoffset;
 	hscale.hscale   = hscale;
@@ -90,29 +92,53 @@ function hzControl (parent, color) {
 	time.hoffset    = hoffset;
 	time.hscale     = hscale;
 
-	i = document.createElement("label");
-	i.style['display'] = 'block';
-	i.appendChild(document.createTextNode(i18n.offset[lang]));
-	p.appendChild(i);
+	olabel = document.createElement("label");
+	olabel.id               = "label:offset";
+	olabel.style['display'] = 'block';
+	olabel.appendChild(document.createTextNode(i18n.offset[lang]));
+	this.inputControl['olabel'] = olabel;
+	p.appendChild(olabel);
 
-	p = document.createElement("label");
-	p.style['display'] = 'block';
-	p.appendChild(document.createTextNode(i18n.horizontal[lang]));
-	t.appendChild(p);
+	hlabel = document.createElement("label");
+	hlabel.id               = "label:hlabel";
+	hlabel.style['display'] = 'block';
+	hlabel.appendChild(document.createTextNode(i18n.horizontal[lang]));
+	this.inputControl['hlabel'] = hlabel;
+	t.appendChild(hlabel);
+
+	slabel.slabel = slabel;
+	slabel.olabel = olabel;
+	slabel.hlabel = hlabel;
+
+	olabel.slabel = slabel;
+	olabel.olabel = olabel;
+	olabel.hlabel = hlabel;
+
+	hlabel.slabel = slabel;
+	hlabel.olabel = olabel;
+	hlabel.hlabel = hlabel;
+
 }
 
 hzControl.prototype.onclick = function (callback) {
-	this.wrapper['time'].onclick   = callback;
+	var wrapper = this.wrapper;
+	Object.keys(wrapper).forEach (function(key) {
+		wrapper[key].onclick = callback;
+	});
 }
 
 hzControl.prototype.onfocus = function (callback) {
-	this.inputControl['hscale'].onfocus   = callback;
-	this.inputControl['hoffset'].onfocus = callback;
+	var inputControl = this.inputControl;
+	Object.keys(inputControl).forEach (function(key) {
+		inputControl[key].onfocus = callback;
+	});
 }
 
 hzControl.prototype.mousewheel = function (callback) {
-	this.inputControl['hscale'].addEventListener("wheel", callback, false);
-	this.inputControl['hoffset'].addEventListener("wheel", callback, false);
+	var inputControl = this.inputControl;
+	Object.keys(inputControl).forEach (function(key) {
+		inputControl[key].addEventListener("wheel", callback, false);
+	});
 }
 
 function vtControl (parent, number, color) {
@@ -160,10 +186,12 @@ function vtControl (parent, number, color) {
 	c.appendChild(gain);
 	this.inputControl['gain'] = gain;
 	
-	labelUnit = document.createElement("label");
-	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.vtaxis[lang]));
-	c.appendChild(labelUnit);
+	vglabel = document.createElement("label");
+	vglabel.id = "label:vtgain:"+number;
+	vglabel.style['display'] = 'block';
+	vglabel.appendChild(document.createTextNode(i18n.vtaxis[lang]));
+	c.appendChild(vglabel);
+	this.inputControl['vglabel'] = vglabel;
 
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
@@ -180,15 +208,31 @@ function vtControl (parent, number, color) {
 	c.appendChild(offset);
 	this.inputControl['offset'] = offset;
 
-	labelUnit = document.createElement("label");
-	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.offset[lang]));
-	c.appendChild(labelUnit);
+	volabel = document.createElement("label");
+	volabel.id = "label:vtoffset:"+number;
+	volabel.style['display'] = 'block';
+	volabel.appendChild(document.createTextNode(i18n.offset[lang]));
+	this.inputControl['volabel'] = volabel;
+	c.appendChild(volabel);
 
-	labelScale = document.createElement("label");
-	labelScale.style['display']='block';
-	labelScale.appendChild(document.createTextNode(i18n.vertical[lang]));
-	vtaxis.appendChild(labelScale);
+	vtlabel = document.createElement("label");
+	vtlabel.id              = "label:vtlabel:"+number;
+	vtlabel.style['display']='block';
+	vtlabel.appendChild(document.createTextNode(i18n.vertical[lang]));
+	this.inputControl['vtlabel'] = vtlabel;
+	vtaxis.appendChild(vtlabel);
+
+	vglabel.vglabel = vglabel;
+	vglabel.volabel = volabel;
+	vglabel.vtlabel = vtlabel;
+
+	volabel.vglabel = vglabel;
+	volabel.volabel = volabel;
+	volabel.vtlabel = vtlabel;
+
+	volabel.vglabel = vglabel;
+	volabel.volabel = volabel;
+	volabel.vtlabel = vtlabel;
 
 	vtaxis.vtaxis = vtaxis;
 	vtaxis.offset = offset;
@@ -224,10 +268,12 @@ function vtControl (parent, number, color) {
 	c.appendChild(level);
 	this.inputControl['level'] = level;
 	
-	labelUnit = document.createElement("label");
-	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.level[lang]));
-	c.appendChild(labelUnit);
+	llabel = document.createElement("label");
+	llabel.id = "label:level:"+number;
+	llabel.style['display'] = 'block';
+	llabel.appendChild(document.createTextNode(i18n.level[lang]));
+	this.inputControl['llabel'] = llabel;
+	c.appendChild(llabel);
 
 	c = document.createElement("div");
 	c.style['display']        = 'inline-block';
@@ -240,7 +286,7 @@ function vtControl (parent, number, color) {
 	slope['className'] = 'vertical';
 	slope['value']     = 0;
 	slope['min']       = 0;
-	slope['max']       =  1;
+	slope['max']       = 1;
 	c.appendChild(slope);
 	this.inputControl['slope'] = slope;
 
@@ -253,34 +299,53 @@ function vtControl (parent, number, color) {
 	trigger.level = level;
 	trigger.slope = slope;
 
-	labelUnit = document.createElement("label");
-	labelUnit.style['display'] = 'block';
-	labelUnit.appendChild(document.createTextNode(i18n.slope[lang]));
-	c.appendChild(labelUnit);
+	slabel = document.createElement("label");
+	slabel.id               = "label:slope:"+number;
+	slabel.style['display'] = 'block';
+	slabel.appendChild(document.createTextNode(i18n.slope[lang]));
+	this.inputControl['slabel'] = slabel;
+	c.appendChild(slabel);
 
-	labelScale = document.createElement("label");
-	labelScale.style['display']='block';
-	labelScale.appendChild(document.createTextNode(i18n.trigger[lang]));
-	trigger.appendChild(labelScale);
+	tlabel = document.createElement("label");
+	tlabel.id               = "label:trigger:"+number;
+	tlabel.style['display']='block';
+	tlabel.appendChild(document.createTextNode(i18n.trigger[lang]));
+	this.inputControl['tlabel'] = tlabel;
+
+	llabel.llabel = llabel;
+	llabel.slabel = slabel;
+	llabel.tlabel = tlabel;
+
+	slabel.llabel = llabel;
+	slabel.slabel = slabel;
+	slabel.tlabel = tlabel;
+
+	tlabel.llabel = llabel;
+	tlabel.slabel = slabel;
+	tlabel.tlabel = tlabel;
+
+	trigger.appendChild(tlabel);
 
 }
 
 vtControl.prototype.onclick = function (callback) {
-	this.wrapper['vtaxis'].onclick   = callback;
-	this.wrapper['trigger'].onclick = callback;
+	var wrapper = this.wrapper;
+	Object.keys(wrapper).forEach (function(key) {
+		wrapper[key].onclick = callback;
+	});
 }
 
 vtControl.prototype.onfocus = function (callback) {
-	this.inputControl['gain'].onfocus   = callback;
-	this.inputControl['offset'].onfocus = callback;
-	this.inputControl['level'].onfocus  = callback;
-	this.inputControl['slope'].onfocus  = callback;
+	var inputControl = this.inputControl;
+	Object.keys(inputControl).forEach (function(key) {
+		inputControl[key].onfocus = callback;
+	});
 }
 
 vtControl.prototype.mousewheel = function (callback) {
-	this.inputControl['gain'].addEventListener("wheel",   callback, false);
-	this.inputControl['offset'].addEventListener("wheel", callback, false);
-	this.inputControl['level'].addEventListener("wheel",  callback, false);
-	this.inputControl['slope'].addEventListener("wheel",  callback, false);
+	var inputControl = this.inputControl;
+	Object.keys(inputControl).forEach (function(key) {
+		inputControl[key].addEventListener("wheel", callback, false);
+	});
 }
 

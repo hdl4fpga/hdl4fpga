@@ -21,23 +21,6 @@
 // more details at http://www.gnu.org/licenses/.                              //
 //                                                                            //
 
-const inputs = 9;
-
-var commParam;
-
-function mouseWheelCb (e) {
-
-	console.log("mouseWheel");
-	if (typeof this.length === 'undefined') {
-		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? -1 : 1));
-	} else {
-		var value = parseInt(this.value);
-		value += parseInt(((e.deltaY > 0) ? 1 : (this.length-1)));
-		value %= this.length;
-		this.value = value;
-	}
-	this.onchange(e);
-}
 
 function mouseWheel (e) {
 	this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
@@ -93,9 +76,34 @@ function sendCommand(e) {
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });
 		break;
+	case 'label' :
+		console.log(param);
+		break;
 	}
 
 	console.log(param[0]);
+}
+
+var commParam;
+var langSel;
+var inputNum;
+var hz;
+var vt = [];
+
+function onChangeInputs () {
+	let e;
+
+	e  = document.getElementById("control");
+	e.innerHTML = '';
+	hz = new hzControl(e);
+	hz.mousewheel(mouseWheel);
+	hz.onclick(onClick);
+	for (i=0; i < parseInt(inputNum.value); i++) {
+		vt = new vtControl(e, i, '#ffffff');
+		vt.mousewheel(mouseWheel);
+		vt.onclick(onClick);
+	}
+
 }
 
 function onchangeComm () {
@@ -105,32 +113,47 @@ function onchangeComm () {
 	e = document.getElementById("comm-param");
 	e.innerHTML = "";
 	e.appendChild(commParam.main);
+}
+
+function onChangeLangSel () {
+	var lang = (this.options[this.selectedIndex].text);
+	setLang(lang);
+	generate();
+}
+
+function generate ()
+{
+	var lang = getLang();
+
+	inputNumLbl = document.getElementById("inputnumlbl");
+	inputNumLbl.innerHTML = i18n.inputs[lang]; 
+
+	onChangeInputs();
+
+	e  = document.getElementById("palette");
+	e.innerHTML = '';
+	console.log(objects);
+	Object.keys(objects).forEach(function(key) {
+		palette = new paletteControl(e, key, objects[key]);
+		palette.mousewheel(mouseWheel);
+		palette.onclick(onClick);
+	});
 
 }
 
 window.addEventListener("load", function() {
+	let e;
 
 	e = document.getElementById("comm-select");
 	e.onchange = onchangeComm;
 	e.onchange();
 
-	e  = document.getElementById("control");
-	hz = new hzControl(e, 1, '#ffffff');
-	hz.mousewheel(1, mouseWheel);
-	hz.mousewheel(mouseWheel);
-	hz.onclick(onClick);
-	for (i=0; i < 2; i++) {
-		vt = new vtControl(e, i, '#ffffff');
-		vt.mousewheel(mouseWheel);
-		vt.onclick(onClick);
-	}
+	inputNum = document.getElementById("inputnum");
+	inputNum.onchange  = onChangeInputs;
 
-	e  = document.getElementById("palette");
-	console.log(objects);
-	Object.keys(objects).forEach(function(key) {
-		palette = new paletteControl(e, i18n[key][lang], objects[key]);
-		palette.mousewheel(mouseWheel);
-		palette.onclick(onClick);
-	});
+	langSel = document.getElementById("lang-select");
+	langSel.onchange  = onChangeLangSel;
+
+	generate();
 
 });

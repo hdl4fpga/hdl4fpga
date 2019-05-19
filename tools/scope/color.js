@@ -42,7 +42,7 @@ function paletteControl (parent, objectName, paletteID) {
 	label.style['display'] = 'inline-block';
 	label.style['color'] = '#ffffff';
 	label.style['vertical-align'] = 'middle';
-	label.appendChild(document.createTextNode(objectName));
+	label.appendChild(document.createTextNode(i18n[objectName][lang]));
 	palette.appendChild(label);
 
 	color = document.createElement("div");

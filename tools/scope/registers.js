@@ -36,7 +36,6 @@ const objects = {
 	segmentbg    : '#00ffff',
 	textbg       : '#000000',
 	verticalbg   : '#0000ff',
-	verticalfg   : '#ffffff',
 	horizontalbg : '#0000ff',
 	horizontalfg : '#ffffff',
 	gridbg       : '#ff0000',
