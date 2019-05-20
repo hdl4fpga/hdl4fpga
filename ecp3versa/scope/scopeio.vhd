@@ -146,12 +146,12 @@ begin
 		end if;
 	end process;
 
-	process (clk)
+	process (phy1_rxc)
 		constant bpsX   : natural := 2**bit_rate*bps;
-		constant period : natural := (100*1000*1000+((bpsX+1)/2-1))/bpsX;
+		constant period : natural := (125*1000*1000+((bpsX+1)/2-1))/bpsX;
 		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
 	begin
-		if rising_edge(clk) then
+		if rising_edge(phy1_rxc) then
 			if cntr < (period/2) then
 				uart_rxc <= '0';
 			else
@@ -166,7 +166,6 @@ begin
 		end if;
 	end process;
 
---	expansionx3(5) <= '0' when fpga_gsrn='0' else 'Z';
 	expansionx3(5) <= 'Z';
 	uart_sin <= expansionx3(5);
 	led  <= (others => not expansionx3(5));
