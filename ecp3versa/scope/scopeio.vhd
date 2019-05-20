@@ -37,7 +37,7 @@ architecture beh of ecp3versa is
 	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
 
 	
-	constant inputs : natural := 4;
+	constant inputs : natural := 1;
 	signal rst        : std_logic := '0';
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -72,7 +72,7 @@ architecture beh of ecp3versa is
 		return aux;
 	end;
 
-	constant bit_rate : natural := 4;
+	constant bit_rate : natural := 1;
 	constant bps      : natural := 115200;
 
 	signal uart_rxc   : std_logic;
@@ -90,7 +90,7 @@ architecture beh of ecp3versa is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
 
-	constant istream : boolean := true;
+	constant istream : boolean := false;
 
 begin
 
@@ -176,9 +176,13 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
-	si_clk  <= uart_rxc  when istream else phy1_rxc;
-	si_frm  <= uart_rxdv when istream else phy1_rx_dv;
-	si_data <= uart_rxd  when istream else phy1_rx_d;
+--	si_clk  <= phy1_rxc   when not istream else uart_rxc;
+--	si_frm  <= phy1_rx_dv when not istream else uart_rxdv;
+--	si_data <= phy1_rx_d  when not istream else uart_rxd;
+
+	si_clk  <= uart_rxc;
+	si_frm  <= uart_rxdv;
+	si_data <= uart_rxd;
 
 	phy1_rst <= not rst;
 	ipcfg_req <= not fpga_gsrn;
