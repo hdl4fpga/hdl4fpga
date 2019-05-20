@@ -218,4 +218,4 @@ LOCATE COMP "expansionx3[6]" SITE "K22";
 LOCATE COMP "expansionx3[7]" SITE "L18";
 LOCATE COMP "expansionx3[8]" SITE "L19";
 
-FREQUENCY PORT  "uart_rxc" 125.00 MHz ;
+FREQUENCY PORT  "uart_rxc" 2.00 MHz ;
