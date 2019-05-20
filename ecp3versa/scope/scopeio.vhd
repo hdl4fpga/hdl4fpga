@@ -90,7 +90,7 @@ architecture beh of ecp3versa is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
 
-	constant istream : boolean := false;
+	constant istream : boolean := true;
 
 begin
 
@@ -201,7 +201,7 @@ begin
 		so_data     => phy1_tx_d,
 		ipcfg_req   => ipcfg_req,
 		input_clk   => clk,
-		input_data  => samples,
+		input_data  => sample,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
