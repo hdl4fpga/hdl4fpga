@@ -351,9 +351,9 @@ architecture beh of scopeio is
 
 begin
 
-	assert inputs < max_inputs
-		report "inputs greater than max_inputs"
-		severity failure;
+--	assert inputs < max_inputs
+--		report "inputs greater than max_inputs"
+--		severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
