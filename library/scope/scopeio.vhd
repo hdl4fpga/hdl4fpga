@@ -78,6 +78,10 @@ entity scopeio is
 		video_sync  : out std_logic);
 
 	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+	assert inputs < max_inputs
+		report "inputs greater than max_inputs"
+		severity failure;
+
 end;
 
 architecture beh of scopeio is
