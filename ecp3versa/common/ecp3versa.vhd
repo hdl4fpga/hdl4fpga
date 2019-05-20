@@ -80,5 +80,6 @@ entity ecp3versa is
 --		phy2_rx_d : in std_logic_vector(0 to 8-1);
 
 		expansionx4 : inout std_logic_vector(3 to 7);
+		expansionx3 : inout std_logic_vector(4 to 8);
 		fpga_gsrn : in std_logic := '-');
 end;

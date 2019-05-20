@@ -209,3 +209,11 @@ LOCATE COMP "expansionx4[4]" SITE "B12";
 LOCATE COMP "expansionx4[5]" SITE "A12";
 LOCATE COMP "expansionx4[6]" SITE "A13";
 LOCATE COMP "expansionx4[7]" SITE "E12";
+
+DEFINE PORT GROUP "expansionx3" "expansionx3[*]";
+IOBUF GROUP "expansionx3" IO_TYPE=LVTTL33;
+LOCATE COMP "expansionx3[4]" SITE "D17";
+LOCATE COMP "expansionx3[5]" SITE "J22";
+LOCATE COMP "expansionx3[6]" SITE "K22";
+LOCATE COMP "expansionx3[7]" SITE "L18";
+LOCATE COMP "expansionx3[8]" SITE "L19";

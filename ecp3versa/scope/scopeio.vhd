@@ -72,11 +72,26 @@ architecture beh of ecp3versa is
 		return aux;
 	end;
 
+	constant bit_rate : natural := 4;
+	constant bps      : natural := 115200;
+
+	signal uart_rxc   : std_logic;
+	signal uart_sin   : std_logic;
+	signal uart_rxdv  : std_logic;
+	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+
+	signal si_clk  : std_logic;
+	signal si_frm  : std_logic;
+	signal si_data : std_logic_vector(8-1 downto 0);
+
 	signal sample      : std_logic_vector(0 to sample_size-1);
 	signal samples      : std_logic_vector(0 to inputs*sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
+
+	constant istream : boolean := true;
+
 begin
 
 --	rst <= not fpga_gsrn;
@@ -131,18 +146,52 @@ begin
 		end if;
 	end process;
 
-	phy1_rst <= not rst;
+	process (clk)
+		constant bpsX   : natural := 2**bit_rate*bps;
+		constant period : natural := (100*1000*1000+((bpsX+1)/2-1))/bpsX;
+		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
+	begin
+		if rising_edge(clk) then
+			if cntr < (period/2) then
+				uart_rxc <= '0';
+			else
+				uart_rxc <= '1';
+			end if;
 
+			if cntr < period-1 then
+				cntr := cntr + 1;
+			else
+				cntr := (others => '0');
+			end if;
+		end if;
+	end process;
+
+	uart_sin <= expansionx3(4);
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		bit_rate => bit_rate)
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => uart_sin,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
+
+	si_clk  <= uart_rxc  when istream else phy1_rxc;
+	si_frm  <= uart_rxdv when istream else phy1_rx_dv;
+	si_data <= uart_rxd  when istream else phy1_rx_d;
+
+	phy1_rst <= not rst;
 	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
+		istream  => istream,
 		default_tracesfg => b"1111_1111_1111",
-		vlayout_id  => 1)
+		vlayout_id  => 0)
 	port map (
-		si_clk      => phy1_rxc,
-		si_frm      => phy1_rx_dv,
-		si_data     => phy1_rx_d,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_data     => si_data,
 		so_clk      => phy1_125clk,
 		so_dv       => phy1_tx_en,
 		so_data     => phy1_tx_d,
