@@ -78,9 +78,6 @@ entity scopeio is
 		video_sync  : out std_logic);
 
 	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
-	assert inputs < max_inputs
-		report "inputs greater than max_inputs"
-		severity failure;
 
 end;
 
@@ -353,6 +350,10 @@ architecture beh of scopeio is
 	signal sin_data : std_logic_vector(si_data'range);
 
 begin
+
+	assert inputs < max_inputs
+		report "inputs greater than max_inputs"
+		severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
