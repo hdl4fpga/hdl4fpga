@@ -386,7 +386,7 @@ begin
 	sin_clk  <= si_clk;
 	sin_frm  <= strm_frm  when istream else udpso_dv   when tcpip else si_frm;
 	sin_irdy <= strm_irdy when istream else '1';
-	sin_data <= strm_data when istream else udpso_data when tcpip else si_data;
+	sin_data <= strm_data when istream else reverse(udpso_data) when tcpip else si_data;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (

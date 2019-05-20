@@ -42,7 +42,7 @@ begin
 					aux := aux rol 2*8;
 				end if;
 				aux := aux ror sin_data'length;
-				aux(0 to sin_data'length-1) := unsigned(reverse(sin_data));
+				aux(0 to sin_data'length-1) := unsigned(sin_data);
 			end if;
 			aux := aux rol 8;
 			val <= std_logic_vector(aux);

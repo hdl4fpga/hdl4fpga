@@ -166,7 +166,10 @@ begin
 		end if;
 	end process;
 
-	uart_sin <= expansionx3(4);
+--	expansionx3(5) <= '0' when fpga_gsrn='0' else 'Z';
+	expansionx3(5) <= 'Z';
+	uart_sin <= expansionx3(5);
+	led  <= (others => not expansionx3(5));
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		bit_rate => bit_rate)
@@ -190,7 +193,6 @@ begin
 	generic map (
 		inputs   => inputs,
 		istream  => istream,
-		default_tracesfg => b"1111_1111_1111",
 		vlayout_id  => 0)
 	port map (
 		si_clk      => si_clk,

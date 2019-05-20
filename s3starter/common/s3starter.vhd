@@ -27,6 +27,9 @@ use ieee.std_logic_1164.all;
 entity s3starter is
 	port (
 		xtal  : in  std_logic := '1';
+
+		expansion_a2 : inout std_logic_vector(4 to 7) := (others => 'Z');
+
 		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
 		s3s_segment_a  : out std_logic := 'Z';
 		s3s_segment_b  : out std_logic := 'Z';
@@ -46,6 +49,7 @@ entity s3starter is
 		vga_blue  : out std_logic;
 		vga_hsync : out std_logic;
 		vga_vsync : out std_logic;
+
 
 
 		rs232_rxd : in std_logic := 'Z';
@@ -83,6 +87,8 @@ entity s3starter is
 
 	attribute loc of rs232_rxd : signal is "T13";
 	attribute loc of rs232_txd : signal is "R13";
+
+	attribute loc of expansion_a2 : signal is "E6 D5 C5 D6 C6";
 
 --	attribute iostandard of xtal  : signal is "LVTTL";
 
