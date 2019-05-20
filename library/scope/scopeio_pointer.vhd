@@ -70,6 +70,7 @@ entity scopeio is
 		ps2m_reset  : in  std_logic := '0'; -- mouse core reset
 		ps2m_clk    : inout std_logic; -- PS/2 mouse clock
 		ps2m_dat    : inout std_logic; -- PS/2 mouse data
+		box_id      : out std_logic_vector;
 		ipcfg_req   : in  std_logic := '0';
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
@@ -358,7 +359,6 @@ architecture beh of scopeio is
 	signal sin_data : std_logic_vector(si_data'range);
 
 begin
-
 	assert inputs < max_inputs
 		report "inputs greater than max_inputs"
 		severity failure;
@@ -418,6 +418,7 @@ begin
 		ps2m_dat    => ps2m_dat,
 		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,
+		box_id      => box_id,
 		rgtr_dv     => rgtr_dv,
 		rgtr_id     => rgtr_id,
 		rgtr_data   => rgtr_data
