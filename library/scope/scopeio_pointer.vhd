@@ -30,12 +30,14 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
+		imouse      : boolean := false;
 		istream     : boolean := false;
 		tcpip       : boolean := true;
-		inputs      : natural := 1;
 		vlayout_id  : natural := 0;
 
-		vt_gain     : natural_vector := (0 => 2**17, 1 => 3*2**16);
+		max_inputs  : natural := 64;
+		inputs      : natural := 1;
+		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16, 2 => 2**15, 3 => 2**14);
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
@@ -45,7 +47,8 @@ entity scopeio is
 
 		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
 		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8));
-
+	 
+		max_pixelsize  : natural := 24;
 		default_tracesfg : std_logic_vector := b"1_1_1";
 		default_gridfg   : std_logic_vector := b"1_0_0";
 		default_gridbg   : std_logic_vector := b"0_0_0";
@@ -64,14 +67,10 @@ entity scopeio is
 		so_clk      : in  std_logic := '-';
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
-		dbg_frm     : out std_logic;
-		dbg_irdy    : out std_logic;
-		dbg_data    : out std_logic_vector;
+		ps2m_reset  : in  std_logic := '0'; -- mouse core reset
+		ps2m_clk    : inout std_logic; -- PS/2 mouse clock
+		ps2m_dat    : inout std_logic; -- PS/2 mouse data
 		ipcfg_req   : in  std_logic := '0';
-		mscoreclk   : in  std_logic := '0'; -- mouse core clock 25 MHz
-		mscorereset : in  std_logic := '0'; -- mouse core reset
-		msclk       : inout std_logic; -- PS/2 mouse clock
-		msdat       : inout std_logic; -- PS/2 mouse data
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -81,13 +80,12 @@ entity scopeio is
 		video_vsync : out std_logic;
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
+
+	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+
 end;
 
 architecture beh of scopeio is
-
-	subtype sample_range is natural range input_data'length/inputs-1 downto 0;
-	subtype chanid_range is natural range unsigned_num_bits(inputs-1)-1 downto 0;
-	subtype gainid_range is natural range unsigned_num_bits(vt_gain'length-1)-1 downto 0;
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
@@ -273,6 +271,8 @@ architecture beh of scopeio is
 		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
+	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
+
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
 	signal video_frm        : std_logic;
@@ -283,12 +283,6 @@ architecture beh of scopeio is
 	signal video_hcntr      : std_logic_vector(11-1 downto 0);
 
 	signal video_io         : std_logic_vector(0 to 3-1);
-
-	signal mouse_data       : std_logic_vector(28-1 downto 0);
-	signal mouse_x          : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_y          : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_z          : std_logic_vector(8-1 downto 0) := x"64";
-	signal mouse_btn        : std_logic_vector(3-1 downto 0); -- 2=left, 1=middle, 0=right
 	
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(si_data'range);
@@ -319,28 +313,27 @@ architecture beh of scopeio is
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
+	signal mouse_x           : std_logic_vector(11-1 downto 0) := "000" & x"64";
+	signal mouse_y           : std_logic_vector(11-1 downto 0) := "000" & x"64";
 	signal video_color_mouse : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal axis_dv        : std_logic;
-	signal axis_scale     : std_logic_vector(4-1 downto 0);
-	signal axis_base      : std_logic_vector(5-1 downto 0);
-	signal axis_sel       : std_logic;
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
-	signal hz_base        : std_logic_vector(axis_base'range);
-	signal hz_offset      : std_logic_vector(9-1 downto 0);
-	signal vt_offset      : std_logic_vector(8-1 downto 0);
+	signal hz_dv          : std_logic;
+	signal vt_dv          : std_logic;
+	signal hz_offset      : std_logic_vector(6+9-1 downto 0);
+	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_chanid      : std_logic_vector(chanid_size-1 downto 0);
 
 	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(inputs+9-1)-1);
-	signal palette_color  : std_logic_vector(video_pixel'range);
+	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_color  : std_logic_vector(max_pixelsize-1 downto 0);
 
 	signal gain_dv        : std_logic;
-	signal gain_id        : std_logic_vector(4-1 downto 0);
-	signal gain_chanid    : std_logic_vector(chanid_range);
+	signal gain_ids       : std_logic_vector(0 to inputs*gainid_size-1);
 
 	signal trigger_dv     : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_range);
+	signal trigger_chanid : std_logic_vector(chanid_size-1 downto 0);
 	signal trigger_edge   : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
@@ -365,6 +358,10 @@ architecture beh of scopeio is
 	signal sin_data : std_logic_vector(si_data'range);
 
 begin
+
+	assert inputs < max_inputs
+		report "inputs greater than max_inputs"
+		severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
@@ -398,11 +395,8 @@ begin
 	sin_frm  <= strm_frm  when istream else udpso_dv   when tcpip else si_frm;
 	sin_irdy <= strm_irdy when istream else '1';
 	sin_data <= strm_data when istream else udpso_data when tcpip else si_data;
-	
-	dbg_frm  <= strm_frm;
-	dbg_irdy <= strm_irdy;
-	dbg_data <= strm_data;
 
+	G_not_imouse: if not imouse generate
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
 		sin_clk   => sin_clk,
@@ -412,31 +406,47 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
+	end generate;
 
+	G_yes_imouse: if imouse generate
+	scopeio_mouse2rgtr_e : entity hdl4fpga.scopeio_mouse2rgtr
+	port map
+	(
+		clk         => si_clk,
+		ps2m_reset  => ps2m_reset,
+		ps2m_clk    => ps2m_clk,
+		ps2m_dat    => ps2m_dat,
+		mouse_x     => mouse_x,
+		mouse_y     => mouse_y,
+		rgtr_dv     => rgtr_dv,
+		rgtr_id     => rgtr_id,
+		rgtr_data   => rgtr_data
+	);
+	end generate;
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
+	generic map (
+		max_inputs     => max_inputs,
+		inputs         => inputs)
 	port map (
 		clk            => si_clk,
 		rgtr_dv        => rgtr_dv,
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
 
-		axis_dv        => axis_dv,
-		axis_scale     => axis_scale,
-		axis_base      => axis_base,
-		axis_sel       => axis_sel,
+		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
-		hz_base        => hz_base,
 		hz_offset      => hz_offset,
-		vt_offset      => vt_offset,
+		vt_dv          => vt_dv,
+		vt_offsets     => vt_offsets,
+		vt_chanid      => vt_chanid,
 	
 		palette_dv     => palette_dv,
 		palette_id     => palette_id,
 		palette_color  => palette_color,
 
 		gain_dv        => gain_dv,
-		gain_id        => gain_id,
-		gain_chanid    => gain_chanid,
+		gain_ids       => gain_ids,
 
 		trigger_dv     => trigger_dv,
 		trigger_freeze => trigger_freeze,
@@ -445,13 +455,11 @@ begin
 		trigger_edge   => trigger_edge);
 
 	amp_b : block
-		constant sample_length : natural := input_data'length/inputs;
+		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);
-		signal input_samples : std_logic_vector(0 to input_data'length-1);
 	begin
-		input_samples <= input_data;
 		amp_g : for i in 0 to inputs-1 generate
-			subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
+			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
 			function to_bitrom (
 				value : natural_vector;
@@ -466,34 +474,26 @@ begin
 				return std_logic_vector(retval);
 			end;
 
-			signal gain_addr  : std_logic_vector(unsigned_num_bits(vt_gain'length-1)-1 downto 0);
-			signal gain_value : std_logic_vector(18-1 downto 0);
+			signal input_sample : std_logic_vector(0 to sample_size-1);
+			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
+			signal gain_value   : std_logic_vector(18-1 downto 0);
 		begin
 
-			process (si_clk)
-			begin
-				if rising_edge(si_clk) then
-					if gain_dv='1' then
-						if unsigned(gain_chanid)=i then
-							gain_addr <= gain_id(gain_addr'range);
-						end if;
-					end if;
-				end if;
-			end process;
-
+			gain_id <= word2byte(gain_ids, i, gainid_size);
 			mult_e : entity hdl4fpga.rom 
 			generic map (
 				bitrom => to_bitrom(vt_gain,18))
 			port map (
 				clk  => input_clk,
-				addr => gain_addr,
+				addr => gain_id,
 				data => gain_value);
 
+			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			port map (
 				input_clk     => input_clk,
 				input_ena     => input_ena,
-				input_sample  => input_samples(sample_range),
+				input_sample  => input_sample,
 				gain_value    => gain_value,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
@@ -555,7 +555,7 @@ begin
 		signal rd_data   : std_logic_vector(wr_data'range);
 		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
-		signal hz_delay  : signed(hz_base'length+hz_offset'length-1 downto 0);
+		signal hz_delay  : signed(hz_offset'length-1 downto 0);
 
 	begin
 
@@ -570,7 +570,7 @@ begin
 			end if;
 		end process;
 
-		hz_delay <= signed(std_logic_vector'(hz_base & hz_offset));
+		hz_delay <= signed(hz_offset);
 		rd_clk   <= video_clk;
 		gen_addr_p : process (wr_clk)
 			variable sync_videofrm : std_logic;
@@ -727,7 +727,7 @@ begin
 					when 0 =>
 						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
 					when 2 => 
 						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 
@@ -918,7 +918,7 @@ begin
 							end if;
 						end loop;
 						aux := aux sll 5;
-						hz_segment <= std_logic_vector(aux + unsigned(hz_offset));
+						hz_segment <= std_logic_vector(aux + unsigned(hz_offset(9-1 downto 0)));
 					end if;
 				end process;
 
@@ -928,11 +928,6 @@ begin
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
-
-					axis_dv       => axis_dv,
-					axis_sel      => axis_sel,
-					axis_base     => axis_base,
-					axis_scale    => axis_scale,
 
 					wu_frm        => wu_frm ,
 					wu_irdy       => wu_irdy,
@@ -944,16 +939,23 @@ begin
 					wu_value      => wu_value,
 					wu_format     => wu_format,
 
+					hz_dv         => hz_dv,
+					hz_scale      => hz_scale,
+					hz_base       => hz_offset(5+9-1 downto 9),
+					hz_offset     => hz_segment,
+
+					gain_dv       => gain_dv,
+					gain_ids      => gain_ids,
+					vt_dv         => vt_dv,
+					vt_chanid     => vt_chanid,
+					vt_offsets    => vt_offsets,
+
 					video_clk     => video_clk,
 					x             => x,
 					y             => y,
 
 					hz_on         => hz_on,
-					hz_offset     => hz_segment,
-
 					vt_on         => vt_on,
-					vt_offset     => vt_offset,
-
 					grid_on       => grid_on,
 
 					samples       => storage_data,
@@ -1016,29 +1018,9 @@ begin
 			text_bgon      => text_bgon,
 			sgmnt_bgon     => sgmnt_bgon,
 			video_color    => video_color);
-
-		mouse_e : entity hdl4fpga.mousem
-		generic map
-		(
-			c_x_bits       => mouse_x'length,
-			c_y_bits       => mouse_y'length,
-			c_z_bits       => mouse_z'length
-		)
-		port map
-		(
-			clk            => mscoreclk, -- by default made for 25 MHz
-			reset          => mscorereset, -- after replugging mouse it needs reset
-			msclk          => msclk,
-			msdat          => msdat,
-			x              => mouse_x,
-			y              => mouse_y,
-			z              => mouse_z,
-			btn            => mouse_btn
-		);
 	end block;
 
 	video_color_mouse <= (video_pixel'range => '1') when video_hcntr = mouse_x or video_vcntr = mouse_y else video_color;
-
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color_mouse;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
