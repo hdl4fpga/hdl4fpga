@@ -69,6 +69,7 @@ architecture beh of s3starter is
 	signal so_null    : std_logic_vector(8-1 downto 0);
 	signal display    : std_logic_vector(0 to 16-1);
 	signal vga_blank  : std_logic;
+	signal si_data    : std_logic_vector(0 to 8-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -132,6 +133,7 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
+	si_data <= uart_rxd;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,
@@ -152,7 +154,7 @@ begin
 	port map (
 		si_clk      => uart_rxc,
 		si_frm      => uart_rxdv,
-		si_data     => uart_rxd,
+		si_data     => si_data,
 		so_data     => so_null,
 		input_clk   => sys_clk,
 		input_data  => sample,

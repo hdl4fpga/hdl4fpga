@@ -67,7 +67,7 @@ architecture def of mii_rom is
 		return val;
 	end;
 
-	constant mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data);
+	signal mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data); -- Declaring it constant makes Xilinx ISE crash
 	signal cntr : unsigned(0 to addr_size);
 
 begin
