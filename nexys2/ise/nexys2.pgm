@@ -1,0 +1,2 @@
+#!/bin/sh
+djtgcfg -d DOnbUsb prog -i 0 -f nexys2.bit
