@@ -57,11 +57,11 @@ architecture beh of s3starter is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
-	constant bit_rate : natural := 4;
-	constant bps      : natural := 115200;
+	constant baudrate      : natural := 115200;
 
 	signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
+	signal uart_ena   : std_logic;
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(3-1 downto 0);
@@ -103,32 +103,30 @@ begin
 		data => sample);
 
 	process (sys_clk)
-		constant bpsX   : natural := 2**bit_rate*bps;
-		constant period : natural := (50*1000*1000+((bpsX+1)/2-1))/bpsX;
-		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
+		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
 		if rising_edge(sys_clk) then
-			if cntr < (period/2) then
-				uart_rxc <= '0';
-			else
-				uart_rxc <= '1';
-			end if;
-
-			if cntr < period-1 then
-				cntr := cntr + 1;
-			else
+			if cntr >= max_count-1 then
+				uart_ena <= '1';
 				cntr := (others => '0');
+			else
+				uart_ena <= '0';
+				cntr := cntr + 1;
 			end if;
 		end if;
 	end process;
 
 	uart_sin <= rs232_rxd;
+	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		bit_rate => bit_rate)
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
 	port map (
-		uart_rxc  => uart_rxc,
 		uart_sin  => uart_sin,
+		uart_rxc  => uart_rxc,
+		uart_ena  => uart_ena,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 

@@ -72,18 +72,20 @@ begin
 			if uart_ena='1' then
 				if init_cntr='1' then
 					tcntr := tcntr_init;
+					half_count <= '0';
+					full_count <= '0';
 				else
 					tcntr := tcntr + 1;
-				end if;
-				if ispower2(max_count) then
-					half_count <= tcntr(1);
-					full_count <= tcntr(0);
-				else
-					if tcntr >= max_count/2 then
-						half_count <= '1';
-					end if;
-					if tcntr >= max_count then
-						full_count <= '1';
+					if ispower2(max_count) then
+						half_count <= tcntr(1);
+						full_count <= tcntr(0);
+					else
+						if tcntr >= max_count/2 then
+							half_count <= '1';
+						end if;
+						if tcntr >= max_count then
+							full_count <= '1';
+						end if;
 					end if;
 				end if;
 			end if;
@@ -143,6 +145,8 @@ begin
 						uart_state <= idle_s;
 					end if;
 				end case;
+			else
+				uart_rxdv <= '0';
 			end if;
 
 			uart_rxd <= std_logic_vector(data);

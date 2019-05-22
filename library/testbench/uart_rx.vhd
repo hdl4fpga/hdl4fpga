@@ -40,16 +40,19 @@ architecture uart_rx of testbench is
 
 	signal uart_rxc  : std_logic;
 	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic := '1' ;
 	signal uart_rxdv : std_logic;
 	signal uart_rxd  : std_logic_vector(8-1 downto 0);
 
 	constant mesg : string := "hello world hola mundo";
 
+	constant baudrate   : natural := 115200;
+	constant clk_period : time := 1 sec / (50*10**6);
 begin
 
 	rst  <= '1', '0' after 100 ns;
-	clk  <= not clk after 10 ns;
-	xclk <= not xclk after 1000000000 ns/(2*2500*1000);
+	clk  <= not clk after clk_period/2;
+	xclk <= not xclk after (1 sec / baudrate / 2);
 
 	process (rst, xclk)
 		variable data : unsigned(mesg'length*10-1 downto 0);
@@ -65,30 +68,29 @@ begin
 		uart_sin <= data(0);
 	end process;
 
-	process (clk)
-		constant period : natural := 50000000/(2**n*2500*1000);
-		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
+	process(clk)
+		constant max_count : natural := (1 sec / clk_period+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
 		if rising_edge(clk) then
-			if cntr < (period/2) then
-				uart_rxc <= '0';
-			else
-				uart_rxc <= '1';
-			end if;
-
-			if cntr < period-1 then
-				cntr := cntr + 1;
-			else
+			if cntr >= max_count-1 then
+				uart_ena <= '1';
 				cntr := (others => '0');
+			else
+				uart_ena <= '0';
+				cntr := cntr + 1;
 			end if;
 		end if;
 	end process;
 
+	uart_rxc <= clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		bit_rate => n)
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
 	port map (
 		uart_rxc  => uart_rxc,
+		uart_ena  => uart_ena,
 		uart_sin  => uart_sin,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
