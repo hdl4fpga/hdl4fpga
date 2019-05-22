@@ -17,7 +17,8 @@ port
   rgtr_id       : out std_logic_vector(7 downto 0); -- register address
   rgtr_data     : out std_logic_vector(31 downto 0); -- register value
 
-  box_id        : out std_logic_vector(7 downto 0);
+  dbg_mouse     : out std_logic_vector(7 downto 0);
+
   mouse_x       : out std_logic_vector(10 downto 0);
   mouse_y       : out std_logic_vector(10 downto 0)
 );
@@ -33,6 +34,7 @@ architecture def of scopeio_mouse2rgtr is
   signal S_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
   signal R_mouse_x      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
   signal R_mouse_y      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
+  signal R_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
   
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
@@ -64,6 +66,8 @@ architecture def of scopeio_mouse2rgtr is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
   -- (ID of the termination record)
   signal R_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
+  signal R_drag_x, R_drag_y: signed(C_XY_coordinate_bits-1 downto 0);
+  signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
 begin
   mouse_e: entity hdl4fpga.mousem
   generic map
@@ -108,6 +112,7 @@ begin
       if S_mouse_update = '1' then
         R_mouse_x <= S_mouse_x;
         R_mouse_y <= S_mouse_y;
+        R_mouse_btn <= S_mouse_btn;
       end if;
     end if;
   end process;
@@ -166,6 +171,46 @@ begin
       end if;
     end process;
   end block;
-  box_id(7 downto C_box_id_bits) <= (others => '0');
-  box_id(C_box_id_bits-1 downto 0) <= R_box_id(C_box_id_bits-1 downto 0);
+  --dbg_mouse(7 downto C_box_id_bits) <= (others => '0');
+  --dbg_mouse(C_box_id_bits-1 downto 0) <= R_box_id(C_box_id_bits-1 downto 0);
+
+  mouse_drag: block
+    signal S_current_x, S_current_y: signed(C_XY_coordinate_bits-1 downto 0);
+    signal R_press_x, R_press_y: signed(C_XY_coordinate_bits-1 downto 0);
+    signal R_dx, R_dy: signed(C_XY_coordinate_bits-1 downto 0);
+  begin
+    -- just for conversion to signed
+    S_current_x <= R_mouse_x;
+    S_current_y <= R_mouse_y;
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        if R_mouse_btn(1 downto 0) /= "11" then -- btn0 or btn1 pressed
+          -- Simple filter to distinguish click from drag.
+          -- If dragged over more than 3 pixel treshold
+          -- then enter "dragging" state.
+          -- Less than 3 pixel may be XY noise, not a drag.
+          if R_dx(2 downto 0) = "011" -- +3
+          or R_dx(2 downto 1) = "10"  -- -3 or -4 or +4 or +5
+          or R_dy(2 downto 0) = "011" -- +3
+          or R_dy(2 downto 1) = "10"  -- -3 or -4 or +4 or +5
+          then
+            R_dragging <= '1';
+          end if;
+        end if;
+        if R_mouse_btn(1 downto 0) = "00" then -- btn0 and btn1 released
+          R_dragging <= '0';
+          R_press_x <= S_current_x; -- record mouse position for future drag
+          R_press_y <= S_current_y;
+        end if;
+        R_dx <= S_current_x - R_press_x;
+        R_dy <= S_current_y - R_press_y;
+        -- for output
+        R_drag_x <= R_dx;
+        R_drag_y <= R_dy;
+      end if;
+    end process;
+  end block;
+  dbg_mouse(4) <= R_dragging;
+  dbg_mouse(3 downto 0) <= R_drag_x(3 downto 0);
 end;

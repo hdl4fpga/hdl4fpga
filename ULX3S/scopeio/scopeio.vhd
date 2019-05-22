@@ -110,7 +110,7 @@ architecture beh of ulx3s is
 	--signal dbg_frm    : std_logic;
 	--signal dbg_irdy   : std_logic;
 	--signal dbg_data   : std_logic_vector(uart_rxd'range);
-	
+	signal dbg_mouse  : std_logic_vector(7 downto 0);
 	signal display    : std_logic_vector(7 downto 0);
 	
 	signal R_adc_slowdown: unsigned(1 downto 0);
@@ -307,8 +307,8 @@ begin
 	  --data(12) => dbg_frm,
 	  --data(8) => dbg_irdy,
 	  --data(7 downto 0) => dbg_data,
-	  data(15 downto 8) => display,
-	  data(7 downto 0) => uart_rxd,
+	  data(15 downto 8) => dbg_mouse,
+	  data(7 downto 0) => display,
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
@@ -331,9 +331,9 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                --imouse           => true,
+                imouse           => true,
                 tcpip            => false,
-                istream          => true,
+                istream          => false,
                 istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
                 istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8))
 	)
@@ -342,9 +342,10 @@ begin
 		si_frm      => uart_rxdv,
 		si_data     => uart_rxd,
 		so_data     => so_null,
-		--ps2m_reset  => rst, -- mouse core will use si_clk
-		--ps2m_clk    => ps2_clock,
-		--ps2m_dat    => ps2_data,
+		ps2m_reset  => rst, -- mouse core will use si_clk
+		ps2m_clk    => ps2_clock,
+		ps2m_dat    => ps2_data,
+		dbg_mouse   => dbg_mouse,
 		input_clk   => clk,
 		input_data  => samples,
 		video_clk   => vga_clk,

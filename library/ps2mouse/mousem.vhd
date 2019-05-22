@@ -40,17 +40,17 @@ entity mousem is
     clk, ps2m_reset: in std_logic;
     ps2m_clk, ps2m_dat: inout std_logic;
     update: out std_logic;
-    x: out std_logic_vector(c_x_bits-1 downto 0);
-    y: out std_logic_vector(c_y_bits-1 downto 0);
-    z: out std_logic_vector(c_z_bits-1 downto 0);
+    x, dx: out std_logic_vector(c_x_bits-1 downto 0);
+    y, dy: out std_logic_vector(c_y_bits-1 downto 0);
+    z, dz: out std_logic_vector(c_z_bits-1 downto 0);
     btn: out std_logic_vector(2 downto 0)
   );
 end;
 
 architecture syn of mousem is
-  signal r_x, x_next, dx: std_logic_vector(c_x_bits-1 downto 0);
-  signal r_y, y_next, dy: std_logic_vector(c_y_bits-1 downto 0);
-  signal r_z, z_next, dz: std_logic_vector(c_z_bits-1 downto 0);
+  signal r_x, x_next, s_dx, r_dx: std_logic_vector(c_x_bits-1 downto 0);
+  signal r_y, y_next, s_dy, r_dy: std_logic_vector(c_y_bits-1 downto 0);
+  signal r_z, z_next, s_dz, r_dz: std_logic_vector(c_z_bits-1 downto 0);
   signal pad_dx: std_logic_vector(c_x_bits-9 downto 0);
   signal pad_dy: std_logic_vector(c_y_bits-9 downto 0);
   signal pad_dz: std_logic_vector(c_z_bits-5 downto 0);
@@ -84,17 +84,13 @@ begin
   done <= endbit and endcount and not req;
   rx7 <= x"00" when rx(7) = '1' else rx(19 downto 12);
   pad_dx <= (others => rx(5));
-  dx <= pad_dx & rx7;
+  s_dx <= pad_dx & rx7;
   rx8 <= x"00" when rx(8) = '1' else rx(30 downto 23);
   pad_dy <= (others => rx(6));
-  dy <= pad_dy & rx8;
+  s_dy <= pad_dy & rx8;
   pad_dz <= (others => rx(37));
-  dz <= pad_dz & rx(37 downto 34);
+  s_dz <= pad_dz & rx(37 downto 34);
 
-  x <= r_x;
-  y <= r_y;
-  z <= r_z;
-  btn <= r_btn;
 
   ps2m_clk <= '0' when req = '1' else 'Z'; -- bidir clk/request
   ps2m_dat <= '0' when tx(0) = '0' else 'Z'; -- bidir data
@@ -111,13 +107,13 @@ begin
         else ps2m_dat & rx(rx'high downto 1) when (shift and not endbit) = '1'
         else rx;
   x_next <= (others => '0') when run = '0'
-        else x + dx when done = '1'
+        else x + s_dx when done = '1'
         else x;
   y_next <= (others => '0') when run = '0'
-        else y - dy when done = '1'
+        else y - s_dy when done = '1'
         else y;
   z_next <= (others => '0') when run = '0'
-        else z - dz when done = '1'
+        else z - s_dz when done = '1'
         else z;
   btn_next <= (others => '0') when run = '0'
         else rx(3 downto 1) when done = '1'
@@ -131,11 +127,21 @@ begin
       sent <= sent_next;
       tx <= tx_next;
       rx <= rx_next;
-      x <= x_next;
-      y <= y_next;
-      z <= z_next;
-      btn <= btn_next;
+      r_x <= x_next;
+      r_y <= y_next;
+      r_z <= z_next;
+      r_btn <= btn_next;
+      r_dx <= s_dx;
+      r_dy <= s_dy;
+      r_dz <= s_dz;
       update <= done;
     end if;
   end process;  
+  x <= r_x;
+  y <= r_y;
+  z <= r_z;
+  btn <= r_btn;
+  dx <= r_dx;
+  dy <= r_dy;
+  dz <= r_dz;
 end syn;
