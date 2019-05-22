@@ -34,7 +34,7 @@ use hdl4fpga.std.all;
 entity uart_rx is
 	generic (
 		baudrate : natural := 115200;
-		clk_rate : natural := 4);
+		clk_rate : natural);
 	port (
 		uart_rxc  : in  std_logic;
 		uart_ena  : in  std_logic := '1';
@@ -65,7 +65,7 @@ begin
 
 	cntr_p : process (uart_rxc)
 		constant max_count  : natural := (clk_rate+baudrate/2)/baudrate;
-		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)/baudrate-1);
+		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
 	begin
 		if rising_edge(uart_rxc) then
