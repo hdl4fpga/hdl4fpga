@@ -68,6 +68,7 @@ architecture def of scopeio_mouse2rgtr is
   signal R_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
   signal R_drag_x, R_drag_y: signed(C_XY_coordinate_bits-1 downto 0);
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
+  constant C_drag_treshold: integer := 1; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
 begin
   mouse_e: entity hdl4fpga.mousem
   generic map
@@ -187,13 +188,13 @@ begin
       if rising_edge(clk) then
         if R_mouse_btn(1 downto 0) /= "11" then -- btn0 or btn1 pressed
           -- Simple filter to distinguish click from drag.
-          -- If dragged over more than 3 pixel treshold
+          -- If mouse is moved for more than 2*2**treshold pixels
           -- then enter "dragging" state.
-          -- Less than 3 pixel may be XY noise, not a drag.
-          if R_dx(2 downto 0) = "011" -- +3
-          or R_dx(2 downto 1) = "10"  -- -3 or -4 or +4 or +5
-          or R_dy(2 downto 0) = "011" -- +3
-          or R_dy(2 downto 1) = "10"  -- -3 or -4 or +4 or +5
+          -- Less or equal 2*2**treshold pixels may be XY noise, not a drag.
+          if R_dx(C_drag_treshold+2 downto C_drag_treshold+1) & R_dx(0) = "011" -- +3
+          or R_dx(C_drag_treshold+2 downto C_drag_treshold+1)           = "10"  -- -3 or -4 or +4 or +5
+          or R_dy(C_drag_treshold+2 downto C_drag_treshold+1) & R_dx(0) = "011" -- +3
+          or R_dy(C_drag_treshold+2 downto C_drag_treshold+1)           = "10"  -- -3 or -4 or +4 or +5
           then
             R_dragging <= '1';
           end if;
