@@ -28,14 +28,19 @@ architecture def of scopeio_mouse2rgtr is
   constant C_XY_coordinate_bits: integer := 11;
   constant C_XY_max: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '1');
   signal S_mouse_update : std_logic;
-  signal S_mouse_x      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
-  signal S_mouse_y      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
-  signal S_mouse_z      : std_logic_vector(9-1 downto 0);
+  signal S_mouse_x, S_mouse_dx: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
+  signal S_mouse_y, S_mouse_dy: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
+  signal S_mouse_z, S_mouse_dz: std_logic_vector(9-1 downto 0);
   signal S_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
   signal R_mouse_x      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
   signal R_mouse_y      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
   signal R_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
-  
+
+  -- output registers that hold data for write cycle to rgtr module
+  signal R_rgtr_dv      : std_logic; -- clk synchronous write cycle
+  signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
+  signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
+
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -50,15 +55,16 @@ architecture def of scopeio_mouse2rgtr is
   -- box n
 
   -- at box n if Result is 1, then mouse pointer was found in previous box (n-1)
-  constant C_list_box_count: integer := 4; -- how many boxes, including termination record
+  constant C_list_box_count: integer := 5; -- how many boxes, including termination record
   type T_list_box is array (0 to C_list_box_count*4-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
   constant C_list_box: T_list_box :=
   (
   -- Xmin, Xmax, Ymin, Ymax,
-        0,  299,    0,  199, -- 0: upper left quarter of the screen
-      400,  799,    0,  199, -- 1: upper right quarter of the screen
-        0,  299,  300,  599, -- 2: lower left quarter of the screen
-    0, C_XY_max, 0, C_XY_max -- 3: termination record
+        0,   99,    0,  259, -- 0: top left window (vertical scale)
+      100,  599,    0,  259, -- 1: top center window (the grid)
+      600,  799,    0,  259, -- 2: top right window (text)
+      100,  599,  260,  269, -- 3: thin window below the grid (horizontal scale)
+    0, C_XY_max, 0, C_XY_max -- 4: termination record
   -- termination record has to match always for this algorithm to work
   );
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
@@ -66,6 +72,8 @@ architecture def of scopeio_mouse2rgtr is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
   -- (ID of the termination record)
   signal R_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
+
+  -- mouse dragging
   signal R_drag_x, R_drag_y: signed(C_XY_coordinate_bits-1 downto 0);
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
   constant C_drag_treshold: integer := 1; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
@@ -84,27 +92,14 @@ begin
     ps2m_clk   => ps2m_clk,
     ps2m_dat   => ps2m_dat,
     update     => S_mouse_update,
+    dx         => S_mouse_dx,
+    dy         => S_mouse_dy,
+    dz         => S_mouse_dz,
     x          => S_mouse_x,
     y          => S_mouse_y,
     z          => S_mouse_z,
     btn        => S_mouse_btn
   );
-
-  -- example to change trigger level (4-ch scope)
-  rgtr_dv <= S_mouse_update;
-  rgtr_id <= x"12"; -- trigger
-  rgtr_data(31 downto 13) <= (others => '0');
-  rgtr_data(12 downto 11) <= S_mouse_btn(1 downto 0); -- left/right btn select trigger channel
-  rgtr_data(10 downto 2) <= S_mouse_z(8 downto 0); -- rotating wheel changes trigger level
-  rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
-  rgtr_data(0) <= '0'; -- when '1' trigger freeze
-
-  -- example to change grid color with mouse wheel (4-ch scope)
-  --rgtr_dv <= mouse_update,
-  --rgtr_id <= x"11", -- palette (color)
-  --rgtr_data(31 downto 7) <= (others => '0'),
-  --rgtr_data(6 downto 4) <= mouse_z(2 downto 0), -- moving mouse wheel changes color
-  --rgtr_data(3 downto 0) <= x"0", -- of grid
 
   -- registered stage to offload timing
   process(clk)
@@ -214,4 +209,75 @@ begin
   end block;
   dbg_mouse(4) <= R_dragging;
   dbg_mouse(3 downto 0) <= R_drag_x(3 downto 0);
+  
+  dispatch_mouse_event: block
+    signal R_trace_selected: unsigned(1 downto 0);
+    type T_trace_color is array (0 to 3) of unsigned(2 downto 0);
+    constant C_trace_color: T_trace_color :=
+    (
+      "110", -- yellow
+      "011", -- cyan
+      "010", -- green
+      "100"  -- red
+    );
+  begin
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        case R_box_id is
+          when 0 => -- mouse is on the vertical scale window
+            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_id <= x"11"; -- palette (color)
+            R_rgtr_data(31 downto 10) <= (others => '0');
+            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(unsigned(S_mouse_z(1 downto 0)))); -- moving mouse changes color
+            R_rgtr_data(6 downto 4) <= (others => '0');
+            R_rgtr_data(3 downto 0) <= x"7"; -- 7 the frame
+          when 1 => -- mouse is on the grid
+            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_id <= x"12"; -- trigger
+            R_rgtr_data(31 downto 13) <= (others => '0');
+            R_rgtr_data(12 downto 11) <= S_mouse_btn(1 downto 0); -- left/right btn select trigger channel
+            R_rgtr_data(10 downto 2) <= S_mouse_z(8 downto 0); -- rotating wheel changes trigger level
+            R_rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
+            R_rgtr_data(0) <= '0'; -- when '1' trigger freeze
+          when 2 => -- mouse is on the text window
+            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_id <= x"11"; -- palette (color)
+            R_rgtr_data(31 downto 10) <= (others => '0');
+            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- moving mouse changes color
+            R_rgtr_data(6 downto 4) <= (others => '0');
+            R_rgtr_data(3 downto 0) <= x"6"; -- bg of text window
+          when 3 => -- mouse is on the thin window below grid
+            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_id <= x"11"; -- palette (color)
+            R_rgtr_data(31 downto 10) <= (others => '0');
+            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- moving mouse changes color
+            R_rgtr_data(6 downto 4) <= (others => '0');
+            R_rgtr_data(3 downto 0) <= x"3"; -- bg of thin window
+          when others =>
+            R_rgtr_dv <= '0';
+        end case;
+      end if; -- rising edge
+    end process;
+  end block;
+  -- output
+  rgtr_dv <= R_rgtr_dv;
+  rgtr_id <= R_rgtr_id;
+  rgtr_data <= R_rgtr_data;
+
+  -- example to change trigger level (4-ch scope)
+  --rgtr_dv <= S_mouse_update;
+  --rgtr_id <= x"12"; -- trigger
+  --rgtr_data(31 downto 13) <= (others => '0');
+  --rgtr_data(12 downto 11) <= S_mouse_btn(1 downto 0); -- left/right btn select trigger channel
+  --rgtr_data(10 downto 2) <= S_mouse_z(8 downto 0); -- rotating wheel changes trigger level
+  --rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
+  --rgtr_data(0) <= '0'; -- when '1' trigger freeze
+
+  -- example to change grid color with mouse wheel (4-ch scope)
+  --rgtr_dv <= mouse_update,
+  --rgtr_id <= x"11", -- palette (color)
+  --rgtr_data(31 downto 7) <= (others => '0'),
+  --rgtr_data(6 downto 4) <= mouse_z(2 downto 0), -- moving mouse wheel changes color
+  --rgtr_data(3 downto 0) <= x"0", -- of grid
 end;
