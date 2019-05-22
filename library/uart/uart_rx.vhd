@@ -33,90 +33,121 @@ use hdl4fpga.std.all;
 
 entity uart_rx is
 	generic (
-		bit_rate  : natural := 4);
+		baudrate : natural := 115200;
+		clk_rate : natural);
 	port (
 		uart_rxc  : in  std_logic;
+		uart_ena  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
 		uart_rxdv : out std_logic;
 		uart_rxd  : out std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of uart_rx is
-	signal din : std_logic;
+	type uart_states is (idle_s, start_s, data_s, stop_s);
+	signal uart_state : uart_states;
+
+	signal sample_rxd : std_logic;
+	signal init_cntr  : std_logic;
+	signal half_count : std_logic;
+	signal full_count : std_logic;
 begin
 
-	process (uart_rxc)
+	sample_p : process (uart_rxc)
+		variable sin  : unsigned(0 to 1-1);
 	begin
 		if rising_edge(uart_rxc) then
+			sample_rxd  <= sin(0);
+			sin(0)      := uart_sin;
+			sin         := sin rol 1;
 		end if;
 	end process;
 
-	process (uart_rxc)
-		type uart_states is (idle_s, start_s, data_s, stop_s);
-		variable uart_state : uart_states;
-
-		variable tcntr      : unsigned(0 to bit_rate);
+	cntr_p : process (uart_rxc)
+		constant max_count  : natural := (clk_rate+baudrate/2)/baudrate;
+		variable tcntr      : unsigned(0 to unsigned_num_bits(max_count)-1);
 		constant tcntr_init : unsigned := to_unsigned(1, tcntr'length);
+	begin
+		if rising_edge(uart_rxc) then
+			if uart_ena='1' then
+				if init_cntr='1' then
+					tcntr := tcntr_init;
+					half_count <= '0';
+					full_count <= '0';
+				else
+					tcntr := tcntr + 1;
+					if ispower2(max_count) then
+						half_count <= tcntr(1);
+						full_count <= tcntr(0);
+					else
+						if tcntr >= max_count/2 then
+							half_count <= '1';
+						end if;
+						if tcntr >= max_count then
+							full_count <= '1';
+						end if;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	init_cntr <= 
+		'1' when uart_state=idle_s  else
+		'1' when uart_state=start_s and half_count='1' and sample_rxd='0' else
+		'1' when uart_state=data_s  and full_count='1' else
+		'1' when uart_state=stop_s  and full_count='1' else
+		'0';
+
+	state_p : process (uart_rxc)
+
 		variable dcntr      : unsigned(0 to 4-1);
 		constant dcntr_init : unsigned := to_unsigned(1, dcntr'length);
 		variable data       : unsigned(8-1 downto 0);
 
-		variable sin        : unsigned(0 to 1-1);
 	begin
 		if rising_edge(uart_rxc) then
-
-			din    <= sin(0);
-			sin(0) := uart_sin;
-			sin    := sin rol 1;
-
-			case uart_state is
-			when idle_s =>
-				uart_rxdv <= '0';
-				dcntr := (others => '-');
-				if din='0' then
-					uart_state := start_s;
-				end if;
-				tcntr := tcntr_init;
-			when start_s =>
-				uart_rxdv <= '0';
-				dcntr := dcntr_init;
-				if tcntr(1)='1' then
-					if din='0' then
-						uart_state := data_s;
-						tcntr := tcntr_init;
-					else
-						uart_state := idle_s;
+			if uart_ena='1' then
+				case uart_state is
+				when idle_s =>
+					uart_rxdv <= '0';
+					dcntr := (others => '-');
+					if sample_rxd='0' then
+						uart_state <= start_s;
 					end if;
-				else
-					tcntr := tcntr + 1;
-				end if;
-			when data_s =>
-				uart_rxdv <= '0';
-				if tcntr(0)='1' then
-
-					data(0) := din;
-					data    := data ror 1;
-					if dcntr(0)='1' then
-						uart_rxdv <= '1';
-						uart_state := stop_s;
-						dcntr := (others => '-');
-					else
-						dcntr := dcntr + 1;
+				when start_s =>
+					uart_rxdv <= '0';
+					dcntr := dcntr_init;
+					if half_count='1' then
+						if sample_rxd='0' then
+							uart_state <= data_s;
+						else
+							uart_state <= idle_s;
+						end if;
 					end if;
-
-					tcntr := tcntr_init;
-				else
-					tcntr := tcntr + 1;
-				end if;
-			when stop_s =>
+				when data_s =>
+					uart_rxdv <= '0';
+					if full_count='1' then
+						data(0) := sample_rxd;
+						data    := data ror 1;
+						if dcntr(0)='1' then
+							uart_rxdv <= '1';
+							uart_state <= stop_s;
+							dcntr := (others => '-');
+						else
+							dcntr := dcntr + 1;
+						end if;
+					end if;
+				when stop_s =>
+					uart_rxdv <= '0';
+					dcntr     := (others => '-');
+					if full_count='1' then
+						uart_state <= idle_s;
+					end if;
+				end case;
+			else
 				uart_rxdv <= '0';
-				dcntr     := (others => '-');
-				if tcntr(0)='1' then
-					uart_state := idle_s;
-				else
-					tcntr := tcntr + 1;
-				end if;
-			end case;
+			end if;
 
 			uart_rxd <= std_logic_vector(data);
 		end if;

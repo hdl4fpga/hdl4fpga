@@ -47,6 +47,7 @@ VHDL_LIB_FILES = \
   ../../library/scope/scopeio_ticks.vhd \
   ../../library/scope/scopeio_formatu.vhd \
   ../../library/uart/uart_rx.vhd \
+  ../../library/uart/uart_rx_f32c.vhd \
   ../../library/mii/miirx_pre.vhd \
   ../../library/mii/mii_1chksum.vhd \
   ../../library/mii/mii_cat.vhd \

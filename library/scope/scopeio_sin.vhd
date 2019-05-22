@@ -32,7 +32,8 @@ architecture beh of scopeio_sin is
 begin
 
 	cp_p : process (sin_clk)
-		variable aux : unsigned(val'reverse_range);
+--		variable aux : unsigned(val'reverse_range);  -- Xilinx ISE can't deal with this reverse_range. It doesn't reverse the range;
+		variable aux : unsigned(0 to rgtr_data'length-1);
 	begin
 		if rising_edge(sin_clk) then
 			aux := unsigned(val);
@@ -42,7 +43,7 @@ begin
 					aux := aux rol 2*8;
 				end if;
 				aux := aux ror sin_data'length;
-				aux(0 to sin_data'length-1) := unsigned(reverse(sin_data));
+				aux(0 to sin_data'length-1) := unsigned(sin_data);
 			end if;
 			aux := aux rol 8;
 			val <= std_logic_vector(aux);

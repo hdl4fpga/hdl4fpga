@@ -95,23 +95,23 @@ architecture beh of ulx3s is
 	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_off : std_logic_vector(0 to sample_size-1);
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
-	constant bit_rate    : natural := 4;
-	constant bps         : natural := 115200;
+	constant C_uart_original: boolean := false;
+	constant baudrate    : natural := 115200;
 	constant uart_clk_hz : natural := 25000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
-	signal uart_clken : std_logic := '0';
+	signal uart_ena : std_logic := '0';
 
 	--signal uart_rxc   : std_logic;
 	signal uart_sin   : std_logic;
 	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(0 to 8-1);
-	signal so_null    : std_logic_vector(0 to 8-1);
+	signal uart_rxd   : std_logic_vector(0 to 7);
+	signal so_null    : std_logic_vector(0 to 7);
 	--signal dbg_frm    : std_logic;
 	--signal dbg_irdy   : std_logic;
 	--signal dbg_data   : std_logic_vector(uart_rxd'range);
 	
-	signal display    : std_logic_vector(0 to 7);
+	signal display    : std_logic_vector(7 downto 0);
 	
 	signal R_adc_slowdown: unsigned(1 downto 0);
 
@@ -239,37 +239,49 @@ begin
 		end if;
 	end process;
 
+	G_uart_miguel: if C_uart_original generate
 	process (clk_uart)
-		constant bpsX   : natural := 2**bit_rate*bps;
-		constant period : natural := (uart_clk_hz+((bpsX+1)/2-1))/bpsX - 1;
-		variable cntr   : unsigned(0 to unsigned_num_bits(period-1)-1) := (others => '0');
+		constant max_count : natural := (uart_clk_hz+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
 		if rising_edge(clk_uart) then
-			if cntr = period then
+			if cntr = max_count-1 then
+				uart_ena <= '1';
 				cntr := (others => '0');
-				uart_clken <= '1';
 			else
+				uart_ena <= '0';
 				cntr := cntr + 1;
-				uart_clken <= '0';
 			end if;
 		end if;
 	end process;
 
-	-- UART is currently not working on ULX3S
-	-- uart_rx itself works, unmodified or using
-	-- uart_clken signal, but scope registers don't
-	-- change with normal sequences. They change 
-	-- if random traffic is dumped to serial port.
-	-- ftdi_rxd <= '1';
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		bit_rate => bit_rate)
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
 	port map (
-		uart_rxc  => uart_clken, -- should be clk_uart
-	--	uart_rxcen => uart_clken, -- for modified uart_rx that supports clock enable
+		uart_rxc  => clk_uart,
 		uart_sin  => ftdi_txd,
+		uart_ena  => uart_ena,
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
+	end generate;
+
+	G_uart_emard: if not C_uart_original generate
+	uartrx_e : entity hdl4fpga.uart_rx_f32c
+	generic map
+	(
+		C_baudrate => baudrate,
+		C_clk_freq_hz => uart_clk_hz
+	)
+	port map
+	(
+		clk  => clk_uart,
+		rxd  => ftdi_txd,
+		dv   => uart_rxdv,
+		byte => uart_rxd
+	);
+	end generate;
 
         -- UART to LED
 	process(clk_uart)
@@ -295,7 +307,7 @@ begin
 	  --data(12) => dbg_frm,
 	  --data(8) => dbg_irdy,
 	  --data(7 downto 0) => dbg_data,
-	  data(15 downto 8) => (others => '0'),
+	  data(15 downto 8) => display,
 	  data(7 downto 0) => uart_rxd,
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
@@ -321,7 +333,7 @@ begin
                 default_bg       => b"000",
                 --imouse           => true,
                 tcpip            => false,
-                istream          => false,
+                istream          => true,
                 istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
                 istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8))
 	)

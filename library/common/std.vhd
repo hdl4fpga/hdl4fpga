@@ -246,6 +246,10 @@ package std is
 		constant value_if_false : real)
 		return real;
 
+	function ispower2(
+		constant value : natural)
+		return boolean;
+
 	function oneschecksum (
 		constant data : std_logic_vector;
 		constant size : natural)
@@ -925,6 +929,25 @@ package body std is
 		aux  := arg1;
 		arg1 := arg2;
 		arg2 := aux;
+	end;
+
+	function ispower2(
+		constant value : natural)
+		return boolean is
+		variable div  : natural;
+		variable rmdr : natural;
+	begin
+		rmdr := 0;
+		div  := value;
+		while div /= 0 loop
+			exit when rmdr /= 0;
+			rmdr := div mod 2;
+			div  := div  /  2;
+		end loop;
+		if div /= 0 then
+			return false;
+		end if;
+		return true;
 	end;
 
 	function selecton (

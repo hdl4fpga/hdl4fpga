@@ -26,68 +26,57 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
 
-entity mii_rom is
+entity scopeio_istreamdaisy is
 	generic (
-		mem_data : std_logic_vector);
-    port (
-        mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
-		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
-        mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
+		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8)));
+	port (
+		chaini_sel  : in  std_logic := '0';
+
+		stream_clk  : in  std_logic;
+		stream_dv   : in  std_logic := '1';
+		stream_data : in  std_logic_vector;
+
+		chaini_clk  : in  std_logic := '-';
+		chaini_frm  : in  std_logic := '1';
+		chaini_irdy : in  std_logic := '1';
+		chaini_data : in  std_logic_vector;
+
+		chaino_clk  : out std_logic;
+		chaino_frm  : out std_logic;
+		chaino_irdy : out std_logic;
+		chaino_data : out std_logic_vector);
+
 end;
 
-architecture def of mii_rom is
-
-	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
-
-	subtype miibyte is std_logic_vector(mii_txd'range);
-	type miibyte_vector is array (natural range <>) of miibyte;
-
-	function mem_init (
-		constant arg : std_logic_vector)
-		return miibyte_vector is
-
-		variable val : miibyte_vector(0 to 2**addr_size-1) := (others => (miibyte'range => '-'));
-		variable aux : std_logic_vector(2**addr_size*byte'length-1 downto 0) := (others => '-');
-
-	begin
-
-		aux(arg'length-1 downto 0) := arg;
-		for i in 0 to mem_size-1 loop
-			val(i) := aux(val(0)'length-1 downto 0);
-			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
-		end loop;
-
-		return val;
-	end;
-
-	signal mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data); -- Declaring it constant makes Xilinx ISE crash
-	signal cntr : unsigned(0 to addr_size);
+architecture beh of scopeio_istreamdaisy is
+	signal strm_frm  : std_logic;
+	signal strm_irdy : std_logic;
+	signal strm_data : std_logic_vector(stream_data'range);
 
 begin
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq/='1' then
-				cntr <= to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				if mii_tena='1' then
-					cntr <= cntr - 1;
-				end if;
-			end if;
-		end if;
-	end process;
+	assert chaino_data'length=chaini_data'length 
+		report "chaino_data'lengthi not equal stream_data'length"
+		severity failure;
 
-	mii_teoc <= cntr(0);
-	mii_trdy <= mii_treq and cntr(0);
-	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= mem(to_integer((cntr(1 to addr_size))));
+	scopeio_istream_e : entity hdl4fpga.scopeio_istream
+	generic map (
+		esc => istream_esc,
+		eos => istream_eos)
+	port map (
+		clk     => stream_clk,
+		rxdv    => stream_dv,
+		rxd     => stream_data,
+
+		so_frm  => strm_frm,
+		so_irdy => strm_irdy,
+		so_data => strm_data);
+
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else stream_clk;
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else strm_frm; 
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else strm_irdy;
+	chaino_data <= chaini_data when chaini_sel='1' else strm_data;
 
 end;

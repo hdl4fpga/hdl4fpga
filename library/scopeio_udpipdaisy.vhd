@@ -28,66 +28,61 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity mii_rom is
-	generic (
-		mem_data : std_logic_vector);
-    port (
-        mii_txc  : in  std_logic;
-		mii_treq : in  std_logic;
-		mii_tena : in  std_logic := '1';
-		mii_trdy : out std_logic;
-		mii_teoc : out std_logic;
-        mii_txdv : out std_logic;
-        mii_txd  : out std_logic_vector);
+entity scopeio_udpipdaisy is
+	port (
+		ipcfg_req   : in  std_logic := '-';
+
+		phy_rxc     : in  std_logic;
+		phy_rx_dv   : in  std_logic;
+		phy_rx_d    : in  std_logic_vector;
+
+		phy_txc     : in  std_logic;
+		phy_tx_en   : out std_logic;
+		phy_tx_d    : out std_logic_vector;
+	
+		chaini_sel  : in  std_logic;
+
+		chaini_clk  : in  std_logic;
+		chaini_frm  : in  std_logic;
+		chaini_irdy : in  std_logic;
+		chaini_data : in  std_logic_vector;
+
+		chaino_clk  : out std_logic;
+		chaino_frm  : out std_logic;
+		chaino_irdy : out std_logic;
+		chaino_data : out std_logic_vector);
+	
 end;
 
-architecture def of mii_rom is
+architecture beh of scopeio_udpipdaisy is
 
-	constant mem_size  : natural := (mem_data'length+mii_txd'length-1)/mii_txd'length;
-	constant addr_size : natural := unsigned_num_bits(mem_size-1);
+	signal udpso_dv   : std_logic;
+	signal udpso_data : std_logic_vector(phy_rx_d'range);
 
-	subtype miibyte is std_logic_vector(mii_txd'range);
-	type miibyte_vector is array (natural range <>) of miibyte;
-
-	function mem_init (
-		constant arg : std_logic_vector)
-		return miibyte_vector is
-
-		variable val : miibyte_vector(0 to 2**addr_size-1) := (others => (miibyte'range => '-'));
-		variable aux : std_logic_vector(2**addr_size*byte'length-1 downto 0) := (others => '-');
-
-	begin
-
-		aux(arg'length-1 downto 0) := arg;
-		for i in 0 to mem_size-1 loop
-			val(i) := aux(val(0)'length-1 downto 0);
-			aux := std_logic_vector(unsigned(aux) srl val(0)'length);
-		end loop;
-
-		return val;
-	end;
-
-	signal mem  : miibyte_vector(0 to 2**addr_size-1) := mem_init(mem_data); -- Declaring it constant makes Xilinx ISE crash
-	signal cntr : unsigned(0 to addr_size);
 
 begin
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			if mii_treq/='1' then
-				cntr <= to_unsigned(mem_size-1, cntr'length);
-			elsif cntr(0)='0' then
-				if mii_tena='1' then
-					cntr <= cntr - 1;
-				end if;
-			end if;
-		end if;
-	end process;
+	assert phy_rx_d'length=chaini_data'length 
+		report "phy_rx_d'lengthi not equal chaini_data'length"
+		severity failure;
 
-	mii_teoc <= cntr(0);
-	mii_trdy <= mii_treq and cntr(0);
-	mii_txdv <= mii_treq and not cntr(0) and mii_tena;
-	mii_txd  <= mem(to_integer((cntr(1 to addr_size))));
+	miiip_e : entity hdl4fpga.scopeio_miiudp
+	port map (
+		mii_rxc  => phy_rxc,
+		mii_rxdv => phy_rx_dv,
+		mii_rxd  => phy_rx_d,
+
+		mii_req  => ipcfg_req,
+		mii_txc  => phy_txc,
+		mii_txdv => phy_tx_en,
+		mii_txd  => phy_tx_d,
+
+		so_dv    => udpso_dv,
+		so_data  => udpso_data);
+
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else udpso_dv;
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else udpso_dv;
+	chaino_data <= chaini_data when chaini_sel='1' else reverse(udpso_data);
 
 end;
