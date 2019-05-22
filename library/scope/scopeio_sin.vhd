@@ -48,7 +48,6 @@ begin
 				else
 					aux(0 to sin_data'length-1) := unsigned(sin_data);
 				end if;
---				aux(0 to sin_data'length-1) := unsigned(sin_data);
 			end if;
 			aux := aux rol 8;
 			val <= std_logic_vector(aux);

@@ -701,7 +701,8 @@ begin
 					when 0 =>
 						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
+--						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
 					when 2 => 
 						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 
