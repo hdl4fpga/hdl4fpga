@@ -30,9 +30,8 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
-		imouse      : boolean := false;
 		istream     : boolean := false;
-		tcpip       : boolean := true;
+		irgtr       : boolean := false;
 		vlayout_id  : natural := 0;
 
 		max_inputs  : natural := 64;
@@ -63,15 +62,15 @@ entity scopeio is
 		si_clk      : in  std_logic := '-';
 		si_frm      : in  std_logic := '0';
 		si_irdy     : in  std_logic := '0';
+		si_id       : in  std_logic_vector;
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
-		ps2m_reset  : in  std_logic := '0'; -- mouse core reset
-		ps2m_clk    : inout std_logic; -- PS/2 mouse clock
-		ps2m_dat    : inout std_logic; -- PS/2 mouse data
-		dbg_mouse   : out std_logic_vector;
-		ipcfg_req   : in  std_logic := '0';
+
+		mouse_x     : in  std_logic_vector(11-1 downto 0) := (others => '1');
+		mouse_y     : in  std_logic_vector(11-1 downto 0) := (others => '1');
+
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -285,9 +284,6 @@ architecture beh of scopeio is
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	
-	signal udpso_dv   : std_logic;
-	signal udpso_data : std_logic_vector(si_data'range);
-
 	signal rgtr_id           : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv           : std_logic;
 	signal rgtr_data         : std_logic_vector(32-1 downto 0);
@@ -313,9 +309,6 @@ architecture beh of scopeio is
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
-
-	signal mouse_x           : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_y           : std_logic_vector(11-1 downto 0) := "000" & x"64";
 	signal video_color_mouse : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
@@ -359,23 +352,10 @@ architecture beh of scopeio is
 	signal sin_data : std_logic_vector(si_data'range);
 
 begin
+
 	assert inputs < max_inputs
 		report "inputs greater than max_inputs"
 		severity failure;
-
-	miiip_e : entity hdl4fpga.scopeio_miiudp
-	port map (
-		mii_rxc  => si_clk,
-		mii_rxdv => si_frm,
-		mii_rxd  => si_data,
-
-		mii_req  => ipcfg_req,
-		mii_txc  => so_clk,
-		mii_txdv => so_dv,
-		mii_txd  => so_data,
-
-		so_dv    => udpso_dv,
-		so_data  => udpso_data);
 
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (
@@ -392,11 +372,11 @@ begin
 		so_data => strm_data);
 
 	sin_clk  <= si_clk;
-	sin_frm  <= strm_frm  when istream else udpso_dv   when tcpip else si_frm;
-	sin_irdy <= strm_irdy when istream else '1';
-	sin_data <= strm_data when istream else reverse(udpso_data) when tcpip else si_data;
+	sin_frm  <= strm_frm  when istream else si_frm;
+	sin_irdy <= strm_irdy when istream else si_irdy;
+	sin_data <= strm_data when istream else si_data;
 
-	G_not_imouse: if not imouse generate
+	G_not_irgtr: if not irgtr generate
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
 		sin_clk   => sin_clk,
@@ -407,22 +387,10 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
 	end generate;
-
-	G_yes_imouse: if imouse generate
-	scopeio_mouse2rgtr_e : entity hdl4fpga.scopeio_mouse2rgtr
-	port map
-	(
-		clk         => si_clk,
-		ps2m_reset  => ps2m_reset,
-		ps2m_clk    => ps2m_clk,
-		ps2m_dat    => ps2m_dat,
-		mouse_x     => mouse_x,
-		mouse_y     => mouse_y,
-		dbg_mouse   => dbg_mouse,
-		rgtr_dv     => rgtr_dv,
-		rgtr_id     => rgtr_id,
-		rgtr_data   => rgtr_data
-	);
+	G_yes_irgtr: if irgtr generate
+	  rgtr_dv   <= si_frm;
+	  rgtr_id   <= si_id;
+	  rgtr_data <= si_data;
 	end generate;
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
@@ -728,7 +696,8 @@ begin
 					when 0 =>
 						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
+--						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
 					when 2 => 
 						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 

@@ -110,7 +110,14 @@ architecture beh of ulx3s is
 	--signal dbg_frm    : std_logic;
 	--signal dbg_irdy   : std_logic;
 	--signal dbg_data   : std_logic_vector(uart_rxd'range);
-	signal dbg_mouse  : std_logic_vector(7 downto 0);
+	signal clk_mouse       : std_logic := '0';
+	signal mouse_rgtr_dv   : std_logic;
+	signal mouse_rgtr_id   : std_logic_vector(8-1 downto 0);
+	signal mouse_rgtr_data : std_logic_vector(32-1 downto 0);
+	signal mouse_x           : std_logic_vector(11-1 downto 0) := "000" & x"64";
+	signal mouse_y           : std_logic_vector(11-1 downto 0) := "000" & x"64";
+	signal dbg_mouse       : std_logic_vector(7 downto 0);
+
 	signal display    : std_logic_vector(7 downto 0);
 	
 	signal R_adc_slowdown: unsigned(1 downto 0);
@@ -138,6 +145,7 @@ begin
         clk_oled <= clk_pll(3); -- 25 MHz
         clk_adc <= clk_pll(3); -- 25 MHz
         clk_uart <= clk_pll(3); -- 25 MHz
+        clk_mouse <= clk_pll(3); -- 25 MHz
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
@@ -315,6 +323,20 @@ begin
 	  spi_resn => oled_resn,
 	  spi_csn => oled_csn
 	);
+	
+	mouse2rgtr_e: entity hdl4fpga.scopeio_mouse2rgtr
+	port map (
+		clk         => clk_mouse,
+		ps2m_reset  => rst,
+		ps2m_clk    => ps2_clock,
+		ps2m_dat    => ps2_data,
+		mouse_x     => mouse_x, -- TODO move to rgtr
+		mouse_y     => mouse_y,
+		dbg_mouse   => dbg_mouse,
+		rgtr_dv     => mouse_rgtr_dv,
+		rgtr_id     => mouse_rgtr_id,
+		rgtr_data   => mouse_rgtr_data
+	);
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -331,21 +353,22 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                imouse           => true,
-                tcpip            => false,
-                istream          => false,
+                irgtr            => true, -- mouse
+                istream          => false, -- serial
                 istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
                 istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8))
 	)
 	port map (
-		si_clk      => clk_uart,
-		si_frm      => uart_rxdv,
-		si_data     => uart_rxd,
+		--si_clk      => clk_uart,
+		--si_frm      => uart_rxdv,
+		--si_data     => uart_rxd,
+		si_clk      => clk_mouse,
+		si_frm      => mouse_rgtr_dv,
+		si_id       => mouse_rgtr_id,
+		si_data     => mouse_rgtr_data,
 		so_data     => so_null,
-		ps2m_reset  => rst, -- mouse core will use si_clk
-		ps2m_clk    => ps2_clock,
-		ps2m_dat    => ps2_data,
-		dbg_mouse   => dbg_mouse,
+		mouse_x     => mouse_x,
+		mouse_y     => mouse_y,
 		input_clk   => clk,
 		input_data  => samples,
 		video_clk   => vga_clk,
