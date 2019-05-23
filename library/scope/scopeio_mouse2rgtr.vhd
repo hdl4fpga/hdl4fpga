@@ -71,10 +71,9 @@ architecture def of scopeio_mouse2rgtr is
   -- R_box_id will contain ID of the box where mouse pointer is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
   -- (ID of the termination record)
-  signal R_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
+  signal R_box_id, R_clicked_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
 
   -- mouse dragging
-  signal R_drag_x, R_drag_y: signed(C_XY_coordinate_bits-1 downto 0);
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
   constant C_drag_treshold: integer := 1; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
 begin
@@ -181,7 +180,12 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
-        if R_mouse_btn(2 downto 0) /= "000" then -- any btn pressed
+        if R_mouse_btn(2 downto 0) = "000" then -- all btn's released
+          R_dragging <= '0';
+          R_clicked_box_id <= R_box_id;
+          R_press_x <= S_current_x; -- record mouse position for future drag
+          R_press_y <= S_current_y;
+        else -- R_mouse_btn(2 downto 0) /= "000" -- any btn pressed
           -- Simple filter to distinguish click from drag.
           -- If mouse is moved for more than 2*2**treshold pixels
           -- then enter "dragging" state.
@@ -194,21 +198,13 @@ begin
             R_dragging <= '1';
           end if;
         end if;
-        if R_mouse_btn(2 downto 0) = "000" then -- all btn's released
-          R_dragging <= '0';
-          R_press_x <= S_current_x; -- record mouse position for future drag
-          R_press_y <= S_current_y;
-        end if;
         R_dx <= S_current_x - R_press_x;
         R_dy <= S_current_y - R_press_y;
-        -- for output
-        R_drag_x <= R_dx;
-        R_drag_y <= R_dy;
       end if;
     end process;
   end block;
-  dbg_mouse(4) <= R_dragging;
-  dbg_mouse(3 downto 0) <= R_drag_x(3 downto 0);
+  --dbg_mouse(4) <= R_dragging;
+  --dbg_mouse(3 downto 0) <= R_dx(3 downto 0);
   
   dispatch_mouse_event: block
     signal R_vertical_scale_offset, S_vertical_scale_offset_next, S_vertical_scale_offset_delta: unsigned(13 downto 0);
@@ -257,12 +253,12 @@ begin
                           + unsigned(S_mouse_dy(R_trigger_level'range))
                        when R_dragging = '1' -- and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
                        else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
-    S_trigger_source_next <= R_trace_selected when S_mouse_btn(2) = '1' else R_trigger_source;
+    S_trigger_source_next <= R_trace_selected when S_mouse_btn(2 downto 0) /= "000" else R_trigger_source;
     process(clk)
     begin
       if rising_edge(clk) then
-        case R_box_id is
-          when 0 => -- mouse is on the vertical scale window
+        case R_clicked_box_id is
+          when 0 => -- mouse has clicked on the vertical scale window
             R_rgtr_dv <= S_mouse_update;
             if R_dragging = '1' then
               R_rgtr_id <= x"14"; -- trace vertical settings
@@ -281,7 +277,7 @@ begin
               R_vertical_scale_offset <= S_vertical_scale_offset_next;
               R_vertical_scale_gain <= S_vertical_scale_gain_next;
             end if;
-          when 1 => -- mouse is on the grid
+          when 1 => -- mouse has clicked on the grid
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"12"; -- trigger
             R_rgtr_data(31 downto 13) <= (others => '0');
@@ -295,7 +291,7 @@ begin
               -- at wheel press apply trigger source
               R_trigger_source <= S_trigger_source_next;
             end if;
-          when 2 => -- mouse is on the text window (to the right of the grid)
+          when 2 => -- mouse has clicked on the text window (to the right of the grid)
             -- change color of the frame to indicate
             -- a trace which is "selected".
             R_rgtr_dv <= S_mouse_update;
@@ -310,7 +306,7 @@ begin
             if S_mouse_update = '1' then
               R_trace_selected <= S_trace_selected_next;
             end if;
-          when 3 => -- mouse is on the thin window below grid
+          when 3 => -- mouse has clicked on the thin window below grid
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"10"; -- horizontal scale settings
             R_rgtr_data(31 downto 20) <= (others => '0');
