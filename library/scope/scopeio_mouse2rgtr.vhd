@@ -213,6 +213,7 @@ begin
   dispatch_mouse_event: block
     signal R_vertical_scale_offset, S_vertical_scale_offset_next, S_vertical_scale_offset_delta: unsigned(13 downto 0);
     signal S_vertical_scale_offset_sign_expansion: unsigned(S_vertical_scale_offset_delta'length-S_mouse_dy'length-1 downto 0);
+    signal R_vertical_scale_gain, S_vertical_scale_gain_next: unsigned(1 downto 0);
     signal R_horizontal_scale_offset, S_horizontal_scale_offset_next, S_horizontal_scale_offset_delta: unsigned(15 downto 0);
     signal S_horizontal_scale_offset_sign_expansion: unsigned(S_horizontal_scale_offset_delta'length-S_mouse_dx'length-1 downto 0);
     signal R_horizontal_scale_timebase, S_horizontal_scale_timebase_next: unsigned(3 downto 0);
@@ -241,6 +242,8 @@ begin
                                   + S_vertical_scale_offset_delta
                                when R_dragging = '1' and S_mouse_btn(0) = '1'
                                else R_vertical_scale_offset;
+    S_vertical_scale_gain_next <= R_vertical_scale_gain
+                                + unsigned(S_mouse_dz(R_vertical_scale_gain'range));
     S_horizontal_scale_offset_sign_expansion <= (others => S_mouse_dx(S_mouse_dx'high));
     S_horizontal_scale_offset_delta <= S_horizontal_scale_offset_sign_expansion & unsigned(S_mouse_dx);
     S_horizontal_scale_offset_next <= R_horizontal_scale_offset
@@ -261,11 +264,22 @@ begin
         case R_box_id is
           when 0 => -- mouse is on the vertical scale window
             R_rgtr_dv <= S_mouse_update;
-            R_rgtr_id <= x"14"; -- trace vertical settings
-            R_rgtr_data(31 downto 14) <= (others => '0');
-            R_rgtr_data(13 downto 0) <= S_vertical_scale_offset_next;
+            if R_dragging = '1' then
+              R_rgtr_id <= x"14"; -- trace vertical settings
+              R_rgtr_data(31 downto 18) <= (others => '0');
+              R_rgtr_data(17 downto 16) <= (others => '0'); -- R_trace_selected; -- ??
+              R_rgtr_data(15 downto 14) <= (others => '0'); -- R_trace_selected; -- ??
+              R_rgtr_data(13 downto 0) <= S_vertical_scale_offset_next;
+            else
+              R_rgtr_id <= x"13"; -- vertical gain settings
+              R_rgtr_data(31 downto 8) <= (others => '0');
+              R_rgtr_data(7 downto 6) <= S_vertical_scale_gain_next;
+              R_rgtr_data(4 downto 2) <= (others => '0');
+              R_rgtr_data(1 downto 0) <= R_trace_selected;
+            end if;
             if S_mouse_update = '1' then
               R_vertical_scale_offset <= S_vertical_scale_offset_next;
+              R_vertical_scale_gain <= S_vertical_scale_gain_next;
             end if;
           when 1 => -- mouse is on the grid
             R_rgtr_dv <= S_mouse_update;
