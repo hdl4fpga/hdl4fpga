@@ -990,7 +990,22 @@ begin
 			video_color    => video_color);
 	end block;
 
-	video_color_mouse <= (video_pixel'range => '1') when video_hcntr = mouse_x or video_vcntr = mouse_y else video_color;
+	mouse_pointer_e: block
+		signal R_video_hcntr_aligned: signed(video_hcntr'range);
+	begin
+		process(video_clk)
+		begin
+			if rising_edge(video_clk) then
+				if video_io(2) = '0' then
+					R_video_hcntr_aligned <= to_signed(0, video_hcntr'length);
+				else
+					R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
+				end if;
+			end if;
+		end process;
+		video_color_mouse <= (video_pixel'range => '1') when R_video_hcntr_aligned = signed(mouse_x) or video_vcntr = mouse_y else video_color;
+	end block;
+
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color_mouse;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
