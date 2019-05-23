@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 
@@ -55,7 +56,7 @@ begin
 
 	assert chaino_data'length=chaini_data'length 
 		report "chaino_data'lengthi not equal chaini_data'length"
-		severity warning;
+		severity failure;
 
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (

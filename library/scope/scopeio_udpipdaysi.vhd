@@ -36,53 +36,41 @@ entity scopeio_udpipdaisy is
 		phy_rx_dv       : in  std_logic;
 		phy_rx_d        : in  std_logic_vector := (0 to 0 => '-');
 
-		ichaini_sel      : in  std_logic;
-
-		ichaini_clk      : in  std_logic;
-		ichaini_frm      : in  std_logic;
-		ichaini_irdy     : in  std_logic;
-		ichaini_data     : in  std_logic_vector;
-
-		ichaino_clk      : out std_logic;
-		ichaino_frm      : out std_logic;
-		ichaino_irdy     : out std_logic;
-		ichaino_data     : out std_logic_vector
-	
 		phy_txc         : in  std_logic;
 		phy_tx_en       : out std_logic;
-		phy_tx_d        : out std_logic_vector := (0 to 0 => '-')
+		phy_tx_d        : out std_logic_vector := (0 to 0 => '-');
 	
-		ochaini_sel      : in  std_logic;
+		chaini_sel      : in  std_logic;
 
-		ochaini_clk      : in  std_logic;
-		ochaini_frm      : in  std_logic;
-		ochaini_irdy     : in  std_logic;
-		ochaini_data     : in  std_logic_vector;
+		chaini_clk      : in  std_logic;
+		chaini_frm      : in  std_logic;
+		chaini_irdy     : in  std_logic;
+		chaini_data     : in  std_logic_vector;
 
-		ochaino_clk      : out std_logic;
-		ochaino_frm      : out std_logic;
-		ochaino_irdy     : out std_logic;
-		ochaino_data     : out std_logic_vector);
+		chaino_clk      : out std_logic;
+		chaino_frm      : out std_logic;
+		chaino_irdy     : out std_logic;
+		chaino_data     : out std_logic_vector);
+	
+
 	
 end;
 
 architecture beh of scopeio_udpipdaisy is
-	signal pkt_data   : std_logic_vector(bridgeo_data'range);
 
 	signal udpso_dv   : std_logic;
 	signal udpso_data : std_logic_vector(phy_rx_d'range);
 
-	signal strm_clk   : std_logic;
-	signal strm_frm   : std_logic;
-	signal strm_irdy  : std_logic;
-	signal strm_data  : std_logic_vector(bridgeo_data'range);
-
-	signal pktstrm_clk   : std_logic;
-	signal pktstrm_frm   : std_logic;
-	signal pktstrm_irdy  : std_logic;
-	signal pktstrm_data  : std_logic_vector(bridgeo_data'range);
 
 begin
+
+	assert chaino_data'length=chaini_data'length 
+		report "chaino_data'lengthi not equal chaini_data'length"
+		severity failure;
+
+	assert phy_rx_d'length=chaini_data'length 
+		report "phy_rx_d'lengthi not equal chaini_data'length"
+		severity failure;
 
 	miiip_e : entity hdl4fpga.scopeio_miiudp
 	port map (
@@ -98,32 +86,9 @@ begin
 		so_dv    => udpso_dv,
 		so_data  => udpso_data);
 
-	pkt_clk  <= phy_rxc             when bridgeio_udpip else '-';
-	pkt_frm  <= udpso_dv            when bridgeio_udpip else '-';
-	pkt_data <= reverse(udpso_data) when bridgeio_udpip else (others => '-');
-
-	chaino_clk  <= chaini_clk;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else strm_frm; 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else strm_irdy;
-	chaino_data <= chaini_data when chaini_sel='1' else strm_data;
-
-	pktdata_p : process (udpso_data, bridgeio_udpip, pkt_data)
-	begin
-		pkt_data <= (others => '-');
-		if bridgeo_data'length=pkt_data'length then
-			bridgeo_data <= pkt_data;
-		end if;
-
-		if bridgeo_stream='1' then
-			if bridgeo_data'length=pktstrm_data'length then
-				bridgeo_data <= pktstrm_data;
-			end if;
-
-			assert bridgeo_data'length=pktstrm_data'length 
-			report "bridgeo_data'lengthi not equal pktstrm_data'length"
-			severity warning;
-
-		end if;
-	end process;
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else udpso_dv;
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else udpso_dv;
+	chaino_data <= chaini_data when chaini_sel='1' else reverse(udpso_data);
 
 end;
