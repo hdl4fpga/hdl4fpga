@@ -355,19 +355,19 @@ begin
 		report "inputs greater than max_inputs"
 		severity failure;
 
-	miiip_e : entity hdl4fpga.scopeio_miiudp
-	port map (
-		mii_rxc  => si_clk,
-		mii_rxdv => si_frm,
-		mii_rxd  => si_data,
-
-		mii_req  => ipcfg_req,
-		mii_txc  => so_clk,
-		mii_txdv => so_dv,
-		mii_txd  => so_data,
-
-		so_dv    => udpso_dv,
-		so_data  => udpso_data);
+--	miiip_e : entity hdl4fpga.scopeio_miiudp
+--	port map (
+--		mii_rxc  => si_clk,
+--		mii_rxdv => si_frm,
+--		mii_rxd  => si_data,
+--
+--		mii_req  => ipcfg_req,
+--		mii_txc  => so_clk,
+--		mii_txdv => so_dv,
+--		mii_txd  => so_data,
+--
+--		so_dv    => udpso_dv,
+--		so_data  => udpso_data);
 
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (

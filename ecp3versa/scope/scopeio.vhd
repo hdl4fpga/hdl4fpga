@@ -91,7 +91,7 @@ architecture beh of ecp3versa is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
 
-	constant istream : boolean := true;
+	constant istream : boolean := false;
 
 	constant baudrate : natural := 115200;
 begin
@@ -179,13 +179,13 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
---	si_clk  <= phy1_rxc   when not istream else uart_rxc;
---	si_frm  <= phy1_rx_dv when not istream else uart_rxdv;
---	si_data <= phy1_rx_d  when not istream else uart_rxd;
+	si_clk  <= phy1_rxc   when not istream else uart_rxc;
+	si_frm  <= phy1_rx_dv when not istream else uart_rxdv;
+	si_data <= phy1_rx_d  when not istream else uart_rxd;
 
-	si_clk  <= uart_rxc;
-	si_frm  <= uart_rxdv;
-	si_data <= uart_rxd;
+--	si_clk  <= uart_rxc;
+--	si_frm  <= uart_rxdv;
+--	si_data <= uart_rxd;
 
 	phy1_rst <= not rst;
 	ipcfg_req <= not fpga_gsrn;
