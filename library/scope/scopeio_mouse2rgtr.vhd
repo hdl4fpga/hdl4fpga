@@ -75,7 +75,7 @@ architecture def of scopeio_mouse2rgtr is
 
   -- mouse dragging
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
-  constant C_drag_treshold: integer := 1; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
+  constant C_drag_treshold: integer := 0; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
 begin
   mouse_e: entity hdl4fpga.mousem
   generic map
@@ -261,12 +261,14 @@ begin
           when 0 => -- mouse has clicked on the vertical scale window
             R_rgtr_dv <= S_mouse_update;
             if R_dragging = '1' then
+              -- drag mouse to change vertical scale offset
               R_rgtr_id <= x"14"; -- trace vertical settings
               R_rgtr_data(31 downto 18) <= (others => '0');
               R_rgtr_data(17 downto 16) <= (others => '0'); -- R_trace_selected; -- ??
               R_rgtr_data(15 downto 14) <= (others => '0'); -- R_trace_selected; -- ??
               R_rgtr_data(13 downto 0) <= S_vertical_scale_offset_next;
             else
+              -- rotate wheel to change vertical scale gain
               R_rgtr_id <= x"13"; -- vertical gain settings
               R_rgtr_data(31 downto 8) <= (others => '0');
               R_rgtr_data(7 downto 6) <= S_vertical_scale_gain_next;
@@ -278,6 +280,8 @@ begin
               R_vertical_scale_gain <= S_vertical_scale_gain_next;
             end if;
           when 1 => -- mouse has clicked on the grid
+            -- click to apply trigger to selected input channel
+            -- drag mouse or rotate wheel to change trigger level
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"12"; -- trigger
             R_rgtr_data(31 downto 13) <= (others => '0');
@@ -292,8 +296,9 @@ begin
               R_trigger_source <= S_trigger_source_next;
             end if;
           when 2 => -- mouse has clicked on the text window (to the right of the grid)
-            -- change color of the frame to indicate
-            -- a trace which is "selected".
+            -- rotate wheel to select the input channel
+            -- frame will change color to indicate
+            -- a color of trace which is "selected".
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
@@ -307,6 +312,8 @@ begin
               R_trace_selected <= S_trace_selected_next;
             end if;
           when 3 => -- mouse has clicked on the thin window below grid
+            -- drag mouse left-right to move horizontal scale offset
+            -- rotate mouse wheel to change timebase scale
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"10"; -- horizontal scale settings
             R_rgtr_data(31 downto 20) <= (others => '0');
