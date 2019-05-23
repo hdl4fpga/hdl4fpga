@@ -63,7 +63,9 @@ entity scopeio is
 		si_irdy     : in  std_logic := '0';
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
-		so_dv       : out std_logic := '0';
+		so_frm      : out std_logic := '0';
+		so_irdy     : in  std_logic := '0';
+		so_trdy     : in  std_logic := '0';
 		so_data     : out std_logic_vector;
 
 		input_clk   : in  std_logic;

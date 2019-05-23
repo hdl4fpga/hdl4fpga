@@ -23,34 +23,66 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-entity scopeio_uartdaisy is
+library hdl4fpga;
+use hdl4fpga.std.all;
+
+entity scopeio_udpipdaisy is
 	port (
-		uart_rxc       : in  std_logic;
-		uart_rxdv      : in  std_logic;
-		uart_rxd       : in  std_logic_vector(8-1 downto 0);
+		ipcfg_req   : in  std_logic := '-';
 
-		chaini_sel     : in  std_logic;
+		phy_rxc     : in  std_logic;
+		phy_rx_dv   : in  std_logic;
+		phy_rx_d    : in  std_logic_vector;
 
-		chaini_clk     : in  std_logic;
-		chaini_frm     : in  std_logic;
-		chaini_irdy    : in  std_logic;
-		chaini_data    : in  std_logic_vector(8-1 downto 0);
+		phy_txc     : in  std_logic;
+		phy_tx_en   : out std_logic;
+		phy_tx_d    : out std_logic_vector := std_logic_vector'(0 to 0 => '-');
+	
+		chaini_sel  : in  std_logic;
 
-		chaino_clk     : out std_logic;
-		chaino_frm     : out std_logic;
-		chaino_irdy    : out std_logic;
-		chaino_data    : out std_logic_vector(8-1 downto 0));
+		chaini_clk  : in  std_logic;
+		chaini_frm  : in  std_logic;
+		chaini_irdy : in  std_logic;
+		chaini_data : in  std_logic_vector := std_logic_vector'(0 to 0 => '-');
 
-
+		chaino_clk  : out std_logic;
+		chaino_frm  : out std_logic;
+		chaino_irdy : out std_logic;
+		chaino_data : out std_logic_vector);
+	
 end;
 
-architecture beh of scopeio_uartdaisy is
+architecture beh of scopeio_udpipdaisy is
+
+	signal udpso_dv   : std_logic;
+	signal udpso_data : std_logic_vector(phy_rx_d'range);
+
+
 begin
 
-	chaino_clk  <= chaini_clk  when chaini_sel='1' else uart_rxc;
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else uart_rxdv; 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else uart_rxdv;
-	chaino_data <= chaini_data when chaini_sel='1' else uart_rxd;
+	assert phy_rx_d'length=chaini_data'length 
+		report "phy_rx_d'lengthi not equal chaini_data'length"
+		severity failure;
+
+	miiip_e : entity hdl4fpga.scopeio_miiudp
+	port map (
+		mii_rxc  => phy_rxc,
+		mii_rxdv => phy_rx_dv,
+		mii_rxd  => phy_rx_d,
+
+		mii_req  => ipcfg_req,
+		mii_txc  => phy_txc,
+		mii_txdv => phy_tx_en,
+		mii_txd  => phy_tx_d,
+
+		so_dv    => udpso_dv,
+		so_data  => udpso_data);
+
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else phy_rxc;
+	chaino_frm  <= chaini_frm  when chaini_sel='1' else udpso_dv;
+	chaino_irdy <= chaini_irdy when chaini_sel='1' else udpso_dv;
+	chaino_data <= chaini_data when chaini_sel='1' else reverse(udpso_data);
 
 end;

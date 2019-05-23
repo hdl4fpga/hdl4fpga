@@ -32,22 +32,25 @@ entity scopeio_istreamdaisy is
 		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
 		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8)));
 	port (
-		chaini_sel     : in  std_logic;
+		chaini_sel  : in  std_logic := '0';
 
-		chaini_clk     : in  std_logic;
-		chaini_frm     : in  std_logic;
-		chaini_irdy    : in  std_logic;
-		chaini_data    : in  std_logic_vector;
+		stream_clk  : in  std_logic;
+		stream_dv   : in  std_logic := '1';
+		stream_data : in  std_logic_vector;
 
-		chaino_clk     : out std_logic;
-		chaino_frm     : out std_logic;
-		chaino_irdy    : out std_logic;
-		chaino_data    : out std_logic_vector);
+		chaini_clk  : in  std_logic := '-';
+		chaini_frm  : in  std_logic := '1';
+		chaini_irdy : in  std_logic := '1';
+		chaini_data : in  std_logic_vector := std_logic_vector'(0 to 0 => '-');
+
+		chaino_clk  : out std_logic;
+		chaino_frm  : out std_logic;
+		chaino_irdy : out std_logic;
+		chaino_data : out std_logic_vector);
 
 end;
 
 architecture beh of scopeio_istreamdaisy is
-
 	signal strm_frm  : std_logic;
 	signal strm_irdy : std_logic;
 	signal strm_data : std_logic_vector(chaini_data'range);
@@ -55,7 +58,7 @@ architecture beh of scopeio_istreamdaisy is
 begin
 
 	assert chaino_data'length=chaini_data'length 
-		report "chaino_data'lengthi not equal chaini_data'length"
+		report "chaino_data'lengthi not equal stream_data'length"
 		severity failure;
 
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
@@ -63,15 +66,15 @@ begin
 		esc => istream_esc,
 		eos => istream_eos)
 	port map (
-		clk     => chaini_clk,
-		rxdv    => chaini_frm,
-		rxd     => chaini_data,
+		clk     => stream_clk,
+		rxdv    => stream_dv,
+		rxd     => stream_data,
 
 		so_frm  => strm_frm,
 		so_irdy => strm_irdy,
 		so_data => strm_data);
 
-	chaino_clk  <= chaini_clk;
+	chaino_clk  <= chaini_clk  when chaini_sel='1' else stream_clk;
 	chaino_frm  <= chaini_frm  when chaini_sel='1' else strm_frm; 
 	chaino_irdy <= chaini_irdy when chaini_sel='1' else strm_irdy;
 	chaino_data <= chaini_data when chaini_sel='1' else strm_data;

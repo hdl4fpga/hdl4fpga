@@ -35,7 +35,6 @@ use hdl4fpga.std.all;
 architecture beh of ecp3versa is
 	attribute oddrapps : string;
 	attribute oddrapps of gtx_clk_i : label is "SCLK_ALIGNED";
-
 	
 	constant inputs : natural := 1;
 	signal rst        : std_logic := '0';
@@ -72,28 +71,35 @@ architecture beh of ecp3versa is
 		return aux;
 	end;
 
-	constant bit_rate : natural := 1;
-	constant bps      : natural := 115200;
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
 
-	signal uart_rxc   : std_logic;
-	signal uart_sin   : std_logic;
-	signal uart_ena   : std_logic;
-	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(8-1 downto 0);
+	signal toudpdaisy_clk  : std_logic;
+	signal toudpdaisy_frm  : std_logic;
+	signal toudpdaisy_irdy : std_logic;
+	signal toudpdaisy_data : std_logic_vector(8-1 downto 0);
 
-	signal si_clk  : std_logic;
-	signal si_frm  : std_logic;
-	signal si_data : std_logic_vector(8-1 downto 0);
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
 
-	signal sample      : std_logic_vector(0 to sample_size-1);
-	signal samples      : std_logic_vector(0 to inputs*sample_size-1);
+	signal so_clk    : std_logic;
+	signal so_frm    : std_logic;
+	signal so_trdy   : std_logic;
+	signal so_irdy   : std_logic;
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
+	signal sample     : std_logic_vector(0 to sample_size-1);
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal ipcfg_req  : std_logic;
 
-	constant istream : boolean := false;
-
 	constant baudrate : natural := 115200;
+
 begin
 
 --	rst <= not fpga_gsrn;
@@ -179,29 +185,58 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
-	si_clk  <= phy1_rxc   when not istream else uart_rxc;
-	si_frm  <= phy1_rx_dv when not istream else uart_rxdv;
-	si_data <= phy1_rx_d  when not istream else uart_rxd;
+	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+	port map (
+		stream_clk  => uart_rxc,
+		stream_dv   => uart_rxdv,
+		stream_data => uart_rxd,
 
---	si_clk  <= uart_rxc;
---	si_frm  <= uart_rxdv;
---	si_data <= uart_rxd;
+		chaino_clk  => toudpdaisy_clk, 
+		chaino_frm  => toudpdaisy_frm, 
+		chaino_irdy => toudpdaisy_irdy,
+		chaino_data => toudpdaisy_data);
 
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => phy1_rxc,
+		phy_rx_dv   => phy1_rx_dv,
+		phy_rx_d    => phy1_rx_d,
+
+		phy_txc     => phy1_125clk,
+		phy_tx_en   => phy1_tx_en,
+		phy_tx_d    => phy1_tx_d,
+	
+		chaini_sel  => '1',
+
+		chaini_clk  => toudpdaisy_clk,
+		chaini_frm  => toudpdaisy_frm,
+		chaini_irdy => toudpdaisy_irdy,
+		chaini_data => toudpdaisy_data,
+
+		chaino_clk  => si_clk,
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
 	phy1_rst <= not rst;
 	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
-		istream  => istream,
+		istream  => false,
 		vlayout_id  => 0)
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
+		si_irdy     => si_irdy,
 		si_data     => si_data,
-		so_clk      => phy1_125clk,
-		so_dv       => phy1_tx_en,
-		so_data     => phy1_tx_d,
-		ipcfg_req   => ipcfg_req,
+		so_clk      => so_clk,
+		so_frm      => so_frm,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_data     => so_data,
 		input_clk   => clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
