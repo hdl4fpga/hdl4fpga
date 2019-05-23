@@ -211,6 +211,8 @@ begin
   dbg_mouse(3 downto 0) <= R_drag_x(3 downto 0);
   
   dispatch_mouse_event: block
+    signal R_vertical_scale_offset, S_vertical_scale_offset_next, S_vertical_scale_offset_delta: unsigned(13 downto 0);
+    signal S_vertical_scale_offset_sign_expansion: unsigned(S_vertical_scale_offset_delta'length-S_mouse_dy'length-1 downto 0);
     signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
     signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
     signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
@@ -226,8 +228,16 @@ begin
       "100"  -- red
     );
   begin
+    S_vertical_scale_offset_sign_expansion <= (others => S_mouse_dy(S_mouse_dy'high));
+    S_vertical_scale_offset_delta <= S_vertical_scale_offset_sign_expansion & unsigned(S_mouse_dy);
+    S_vertical_scale_offset_next <= R_vertical_scale_offset
+                                  + S_vertical_scale_offset_delta
+                               when R_dragging = '1' and S_mouse_btn(0) = '1'
+                               else R_vertical_scale_offset;
     S_trace_selected_next <= R_trace_selected - unsigned(S_mouse_dz(R_trace_selected'range));
-    S_trigger_level_next <= R_trigger_level + unsigned(S_mouse_dy(R_trigger_level'range)) when R_dragging = '1' and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
+    S_trigger_level_next <= R_trigger_level
+                          + unsigned(S_mouse_dy(R_trigger_level'range))
+                       when R_dragging = '1' and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
                        else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
     S_trigger_source_next <= R_trace_selected when S_mouse_btn(2) = '1' else R_trigger_source;
     process(clk)
@@ -235,18 +245,12 @@ begin
       if rising_edge(clk) then
         case R_box_id is
           when 0 => -- mouse is on the vertical scale window
-            -- change color of the frame to indicate
-            -- a trace which is "selected". color is currently
-            -- hardcoded and "selected" propery has currently
-            -- no real use, just a demo how GUI should behave.
             R_rgtr_dv <= S_mouse_update;
-            R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next)); -- moving mouse changes color
-            R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"7"; -- 7 the frame
+            R_rgtr_id <= x"14"; -- trace vertical offset
+            R_rgtr_data(31 downto 14) <= (others => '0');
+            R_rgtr_data(13 downto 0) <= S_vertical_scale_offset_next;
             if S_mouse_update = '1' then
-              R_trace_selected <= S_trace_selected_next;
+              R_vertical_scale_offset <= S_vertical_scale_offset_next;
             end if;
           when 1 => -- mouse is on the grid
             R_rgtr_dv <= S_mouse_update;
@@ -262,18 +266,26 @@ begin
               -- at wheel press apply trigger source
               R_trigger_source <= S_trigger_source_next;
             end if;
-          when 2 => -- mouse is on the text window
+          when 2 => -- mouse is on the text window (to the right of the grid)
+            -- change color of the frame to indicate
+            -- a trace which is "selected".
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- moving mouse changes color
+            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next)); -- moving mouse changes color
             R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"6"; -- bg of text window
+            R_rgtr_data(3 downto 0) <= x"7"; -- 7 frame color
+            -- x"7" frame color (used to indicate selected trace)
+            -- x"6" bg color of text window
+            -- x"3" bg color of thin window
+            if S_mouse_update = '1' then
+              R_trace_selected <= S_trace_selected_next;
+            end if;
           when 3 => -- mouse is on the thin window below grid
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- moving mouse changes color
+            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- rotating wheel changes color
             R_rgtr_data(6 downto 4) <= (others => '0');
             R_rgtr_data(3 downto 0) <= x"3"; -- bg of thin window
           when others =>
