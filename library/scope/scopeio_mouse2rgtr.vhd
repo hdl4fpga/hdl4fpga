@@ -231,6 +231,10 @@ begin
       "100"  -- red
     );
   begin
+    -- TODO reduce amount of arithmetic adders
+    -- by using registers like in "find_box" block above,
+    -- see "R_A" and "R_B".
+    -- Keep this code simple and readable.
     S_vertical_scale_offset_sign_expansion <= (others => S_mouse_dy(S_mouse_dy'high));
     S_vertical_scale_offset_delta <= S_vertical_scale_offset_sign_expansion & unsigned(S_mouse_dy);
     S_vertical_scale_offset_next <= R_vertical_scale_offset
