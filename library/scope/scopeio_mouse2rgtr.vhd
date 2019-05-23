@@ -213,6 +213,8 @@ begin
   dispatch_mouse_event: block
     signal R_vertical_scale_offset, S_vertical_scale_offset_next, S_vertical_scale_offset_delta: unsigned(13 downto 0);
     signal S_vertical_scale_offset_sign_expansion: unsigned(S_vertical_scale_offset_delta'length-S_mouse_dy'length-1 downto 0);
+    signal R_horizontal_scale_offset, S_horizontal_scale_offset_next, S_horizontal_scale_offset_delta: unsigned(15 downto 0);
+    signal S_horizontal_scale_offset_sign_expansion: unsigned(S_horizontal_scale_offset_delta'length-S_mouse_dx'length-1 downto 0);
     signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
     signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
     signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
@@ -234,10 +236,16 @@ begin
                                   + S_vertical_scale_offset_delta
                                when R_dragging = '1' and S_mouse_btn(0) = '1'
                                else R_vertical_scale_offset;
+    S_horizontal_scale_offset_sign_expansion <= (others => S_mouse_dx(S_mouse_dx'high));
+    S_horizontal_scale_offset_delta <= S_horizontal_scale_offset_sign_expansion & unsigned(S_mouse_dx);
+    S_horizontal_scale_offset_next <= R_horizontal_scale_offset
+                                    - S_horizontal_scale_offset_delta
+                                 when R_dragging = '1' and S_mouse_btn(0) = '1'
+                                 else R_horizontal_scale_offset;
     S_trace_selected_next <= R_trace_selected - unsigned(S_mouse_dz(R_trace_selected'range));
     S_trigger_level_next <= R_trigger_level
                           + unsigned(S_mouse_dy(R_trigger_level'range))
-                       when R_dragging = '1' and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
+                       when R_dragging = '1' -- and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
                        else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
     S_trigger_source_next <= R_trace_selected when S_mouse_btn(2) = '1' else R_trigger_source;
     process(clk)
@@ -246,7 +254,7 @@ begin
         case R_box_id is
           when 0 => -- mouse is on the vertical scale window
             R_rgtr_dv <= S_mouse_update;
-            R_rgtr_id <= x"14"; -- trace vertical offset
+            R_rgtr_id <= x"14"; -- trace vertical settings
             R_rgtr_data(31 downto 14) <= (others => '0');
             R_rgtr_data(13 downto 0) <= S_vertical_scale_offset_next;
             if S_mouse_update = '1' then
@@ -283,11 +291,12 @@ begin
             end if;
           when 3 => -- mouse is on the thin window below grid
             R_rgtr_dv <= S_mouse_update;
-            R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= S_mouse_z(2 downto 0); -- rotating wheel changes color
-            R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"3"; -- bg of thin window
+            R_rgtr_id <= x"10"; -- horizontal scale settings
+            R_rgtr_data(31 downto 16) <= (others => '0');
+            R_rgtr_data(15 downto 0) <= S_horizontal_scale_offset_next;
+            if S_mouse_update = '1' then
+              R_horizontal_scale_offset <= S_horizontal_scale_offset_next;
+            end if;
           when others =>
             R_rgtr_dv <= '0';
         end case;
