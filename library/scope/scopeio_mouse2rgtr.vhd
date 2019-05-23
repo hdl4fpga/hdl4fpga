@@ -181,7 +181,7 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
-        if R_mouse_btn(1 downto 0) /= "11" then -- btn0 or btn1 pressed
+        if R_mouse_btn(2 downto 0) /= "000" then -- any btn pressed
           -- Simple filter to distinguish click from drag.
           -- If mouse is moved for more than 2*2**treshold pixels
           -- then enter "dragging" state.
@@ -194,7 +194,7 @@ begin
             R_dragging <= '1';
           end if;
         end if;
-        if R_mouse_btn(1 downto 0) = "00" then -- btn0 and btn1 released
+        if R_mouse_btn(2 downto 0) = "000" then -- all btn's released
           R_dragging <= '0';
           R_press_x <= S_current_x; -- record mouse position for future drag
           R_press_y <= S_current_y;
@@ -211,7 +211,12 @@ begin
   dbg_mouse(3 downto 0) <= R_drag_x(3 downto 0);
   
   dispatch_mouse_event: block
-    signal R_trace_selected: unsigned(1 downto 0);
+    signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
+    signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
+    signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
+    -- FIXME trace color list should not be hardcoded
+    -- now, it is good only if it matches with the colors
+    -- given to the traces
     type T_trace_color is array (0 to 3) of unsigned(2 downto 0);
     constant C_trace_color: T_trace_color :=
     (
@@ -221,25 +226,42 @@ begin
       "100"  -- red
     );
   begin
+    S_trace_selected_next <= R_trace_selected - unsigned(S_mouse_dz(R_trace_selected'range));
+    S_trigger_level_next <= R_trigger_level + unsigned(S_mouse_dy(R_trigger_level'range)) when R_dragging = '1' and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
+                       else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
+    S_trigger_source_next <= R_trace_selected when S_mouse_btn(2) = '1' else R_trigger_source;
     process(clk)
     begin
       if rising_edge(clk) then
         case R_box_id is
           when 0 => -- mouse is on the vertical scale window
+            -- change color of the frame to indicate
+            -- a trace which is "selected". color is currently
+            -- hardcoded and "selected" propery has currently
+            -- no real use, just a demo how GUI should behave.
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(unsigned(S_mouse_z(1 downto 0)))); -- moving mouse changes color
+            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next)); -- moving mouse changes color
             R_rgtr_data(6 downto 4) <= (others => '0');
             R_rgtr_data(3 downto 0) <= x"7"; -- 7 the frame
+            if S_mouse_update = '1' then
+              R_trace_selected <= S_trace_selected_next;
+            end if;
           when 1 => -- mouse is on the grid
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"12"; -- trigger
             R_rgtr_data(31 downto 13) <= (others => '0');
-            R_rgtr_data(12 downto 11) <= S_mouse_btn(1 downto 0); -- left/right btn select trigger channel
-            R_rgtr_data(10 downto 2) <= S_mouse_z(8 downto 0); -- rotating wheel changes trigger level
-            R_rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
+            R_rgtr_data(12 downto 11) <= S_trigger_source_next;
+            R_rgtr_data(10 downto 2) <= S_trigger_level_next;
+            R_rgtr_data(1) <= S_mouse_btn(1); -- right btn press selects trigger edge
             R_rgtr_data(0) <= '0'; -- when '1' trigger freeze
+            if S_mouse_update = '1' then
+              -- from rotating wheel or y-dragging
+              R_trigger_level <= S_trigger_level_next;
+              -- at wheel press apply trigger source
+              R_trigger_source <= S_trigger_source_next;
+            end if;
           when 2 => -- mouse is on the text window
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
