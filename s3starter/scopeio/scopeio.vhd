@@ -92,20 +92,20 @@ begin
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
---	process (sys_clk)
---	begin
---		if rising_edge(sys_clk) then
---			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
---		end if;
---	end process;
---
---	samples_e : entity hdl4fpga.rom
---	generic map (
---		bitrom => sinctab(-1024+256, 1023+256, sample_size))
---	port map (
---		clk  => sys_clk,
---		addr => input_addr,
---		data => sample);
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
+
+	samples_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+	port map (
+		clk  => sys_clk,
+		addr => input_addr,
+		data => sample);
 
 	process (sys_clk)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
