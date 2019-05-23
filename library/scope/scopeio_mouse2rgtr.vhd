@@ -216,6 +216,8 @@ begin
     signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
     signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
     signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
+    signal R_trigger_edge, S_trigger_edge_next: std_logic;
+    signal R_trigger_freeze, S_trigger_freeze_next: std_logic;
     -- FIXME trace color list should not be hardcoded
     -- now, it is good only if it matches with the colors
     -- given to the traces
@@ -254,6 +256,8 @@ begin
                        when R_dragging = '1' -- and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
                        else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
     S_trigger_source_next <= R_trace_selected when S_mouse_btn(2 downto 0) /= "000" else R_trigger_source;
+    S_trigger_edge_next <= not R_trigger_edge when S_mouse_btn(2) = '1' and R_mouse_btn(2) = '0' else R_trigger_edge;
+    S_trigger_freeze_next <= not R_trigger_freeze when S_mouse_btn(1) = '1' and R_mouse_btn(1) = '0' else R_trigger_freeze;
     process(clk)
     begin
       if rising_edge(clk) then
@@ -282,14 +286,20 @@ begin
           when 1 => -- mouse has clicked on the grid
             -- click to apply trigger to selected input channel
             -- drag mouse or rotate wheel to change trigger level
+            -- press wheel to change trigger edge
+            -- click right to freeze
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"12"; -- trigger
             R_rgtr_data(31 downto 13) <= (others => '0');
             R_rgtr_data(12 downto 11) <= S_trigger_source_next;
             R_rgtr_data(10 downto 2) <= S_trigger_level_next;
-            R_rgtr_data(1) <= S_mouse_btn(1); -- right btn press selects trigger edge
-            R_rgtr_data(0) <= '0'; -- when '1' trigger freeze
+            R_rgtr_data(1) <= S_trigger_edge_next; -- when '1' falling edge
+            R_rgtr_data(0) <= S_trigger_freeze_next; -- when '1' trigger freeze
             if S_mouse_update = '1' then
+              -- press wheel
+              R_trigger_edge <= S_trigger_edge_next;
+              -- click right btn
+              R_trigger_freeze <= S_trigger_freeze_next;
               -- from rotating wheel or y-dragging
               R_trigger_level <= S_trigger_level_next;
               -- at wheel press apply trigger source
@@ -302,12 +312,9 @@ begin
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next)); -- moving mouse changes color
+            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next));
             R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"7"; -- 7 frame color
-            -- x"7" frame color (used to indicate selected trace)
-            -- x"6" bg color of text window
-            -- x"3" bg color of thin window
+            R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
             if S_mouse_update = '1' then
               R_trace_selected <= S_trace_selected_next;
             end if;
@@ -344,9 +351,12 @@ begin
   --rgtr_data(0) <= '0'; -- when '1' trigger freeze
 
   -- example to change grid color with mouse wheel (4-ch scope)
-  --rgtr_dv <= mouse_update,
-  --rgtr_id <= x"11", -- palette (color)
-  --rgtr_data(31 downto 7) <= (others => '0'),
-  --rgtr_data(6 downto 4) <= mouse_z(2 downto 0), -- moving mouse wheel changes color
-  --rgtr_data(3 downto 0) <= x"0", -- of grid
+  --rgtr_dv <= mouse_update;
+  --rgtr_id <= x"11"; -- palette (color)
+  --rgtr_data(31 downto 7) <= (others => '0');
+  --rgtr_data(6 downto 4) <= mouse_z(2 downto 0); -- moving mouse wheel changes color
+  --rgtr_data(3 downto 0) <= x"0"; -- of grid
+  -- x"7" frame color
+  -- x"6" bg color of text window
+  -- x"3" bg color of thin window
 end;
