@@ -29,8 +29,8 @@ library hdl4fpga;
 
 entity scopeio_istreamdaisy is
 	generic (
-		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
-		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8)));
+		istream_esc : std_logic_vector(8-1 downto 0) := std_logic_vector(to_unsigned(character'pos('\'), 8));
+		istream_eos : std_logic_vector(8-1 downto 0) := std_logic_vector(to_unsigned(character'pos(NUL), 8)));
 	port (
 		chaini_sel  : in  std_logic := '0';
 
@@ -41,7 +41,7 @@ entity scopeio_istreamdaisy is
 		chaini_clk  : in  std_logic := '-';
 		chaini_frm  : in  std_logic := '1';
 		chaini_irdy : in  std_logic := '1';
-		chaini_data : in  std_logic_vector := std_logic_vector'(0 to 0 => '-');
+		chaini_data : in  std_logic_vector;
 
 		chaino_clk  : out std_logic;
 		chaino_frm  : out std_logic;
@@ -53,7 +53,7 @@ end;
 architecture beh of scopeio_istreamdaisy is
 	signal strm_frm  : std_logic;
 	signal strm_irdy : std_logic;
-	signal strm_data : std_logic_vector(chaini_data'range);
+	signal strm_data : std_logic_vector(stream_data'range);
 
 begin
 

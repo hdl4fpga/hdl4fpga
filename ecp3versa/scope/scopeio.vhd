@@ -154,11 +154,12 @@ begin
 		end if;
 	end process;
 
-	process (clk)
-		constant max_count : natural := (100*10**6+16*baudrate/2)/(16*baudrate);
+	uart_rxc <= phy1_rxc;
+	process (uart_rxc)
+		constant max_count : natural := (125*10**6+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
-		if rising_edge(clk) then
+		if rising_edge(uart_rxc) then
 			if cntr >= max_count-1 then
 				uart_ena <= '1';
 				cntr := (others => '0');
@@ -169,9 +170,6 @@ begin
 		end if;
 	end process;
 
-	expansionx3(5) <= 'Z';
-
-	uart_rxc <= clk;
 	uart_sin <= expansionx3(5);
 	led  <= (others => not expansionx3(5));
 	uartrx_e : entity hdl4fpga.uart_rx
@@ -190,6 +188,8 @@ begin
 		stream_clk  => uart_rxc,
 		stream_dv   => uart_rxdv,
 		stream_data => uart_rxd,
+
+		chaini_data => (uart_rxd'range => '-'),
 
 		chaino_clk  => toudpdaisy_clk, 
 		chaino_frm  => toudpdaisy_frm, 
@@ -225,7 +225,6 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
-		istream  => false,
 		vlayout_id  => 0)
 	port map (
 		si_clk      => si_clk,

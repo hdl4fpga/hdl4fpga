@@ -38,14 +38,14 @@ entity scopeio_udpipdaisy is
 
 		phy_txc     : in  std_logic;
 		phy_tx_en   : out std_logic;
-		phy_tx_d    : out std_logic_vector := std_logic_vector'(0 to 0 => '-');
+		phy_tx_d    : out std_logic_vector;
 	
 		chaini_sel  : in  std_logic;
 
 		chaini_clk  : in  std_logic;
 		chaini_frm  : in  std_logic;
 		chaini_irdy : in  std_logic;
-		chaini_data : in  std_logic_vector := std_logic_vector'(0 to 0 => '-');
+		chaini_data : in  std_logic_vector;
 
 		chaino_clk  : out std_logic;
 		chaino_frm  : out std_logic;
