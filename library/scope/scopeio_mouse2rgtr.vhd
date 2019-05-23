@@ -215,6 +215,7 @@ begin
     signal S_vertical_scale_offset_sign_expansion: unsigned(S_vertical_scale_offset_delta'length-S_mouse_dy'length-1 downto 0);
     signal R_horizontal_scale_offset, S_horizontal_scale_offset_next, S_horizontal_scale_offset_delta: unsigned(15 downto 0);
     signal S_horizontal_scale_offset_sign_expansion: unsigned(S_horizontal_scale_offset_delta'length-S_mouse_dx'length-1 downto 0);
+    signal R_horizontal_scale_timebase, S_horizontal_scale_timebase_next: unsigned(3 downto 0);
     signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
     signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
     signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
@@ -242,6 +243,8 @@ begin
                                     - S_horizontal_scale_offset_delta
                                  when R_dragging = '1' and S_mouse_btn(0) = '1'
                                  else R_horizontal_scale_offset;
+    S_horizontal_scale_timebase_next <= R_horizontal_scale_timebase
+                                      + unsigned(S_mouse_dz(R_horizontal_scale_timebase'range));
     S_trace_selected_next <= R_trace_selected - unsigned(S_mouse_dz(R_trace_selected'range));
     S_trigger_level_next <= R_trigger_level
                           + unsigned(S_mouse_dy(R_trigger_level'range))
@@ -292,10 +295,12 @@ begin
           when 3 => -- mouse is on the thin window below grid
             R_rgtr_dv <= S_mouse_update;
             R_rgtr_id <= x"10"; -- horizontal scale settings
-            R_rgtr_data(31 downto 16) <= (others => '0');
+            R_rgtr_data(31 downto 20) <= (others => '0');
+            R_rgtr_data(19 downto 16) <= S_horizontal_scale_timebase_next;
             R_rgtr_data(15 downto 0) <= S_horizontal_scale_offset_next;
             if S_mouse_update = '1' then
               R_horizontal_scale_offset <= S_horizontal_scale_offset_next;
+              R_horizontal_scale_timebase <= S_horizontal_scale_timebase_next;
             end if;
           when others =>
             R_rgtr_dv <= '0';
