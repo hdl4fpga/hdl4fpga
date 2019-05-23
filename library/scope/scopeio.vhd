@@ -31,7 +31,6 @@ use hdl4fpga.std.all;
 entity scopeio is
 	generic (
 		istream     : boolean := false;
-		tcpip       : boolean := true;
 		vlayout_id  : natural := 0;
 
 		max_inputs  : natural := 64;
@@ -66,7 +65,7 @@ entity scopeio is
 		so_clk      : in  std_logic := '-';
 		so_dv       : out std_logic := '0';
 		so_data     : out std_logic_vector;
-		ipcfg_req   : in  std_logic := '0';
+
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
@@ -280,9 +279,6 @@ architecture beh of scopeio is
 
 	signal video_io         : std_logic_vector(0 to 3-1);
 	
-	signal udpso_dv   : std_logic;
-	signal udpso_data : std_logic_vector(si_data'range);
-
 	signal rgtr_id           : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv           : std_logic;
 	signal rgtr_data         : std_logic_vector(32-1 downto 0);
@@ -355,20 +351,6 @@ begin
 		report "inputs greater than max_inputs"
 		severity failure;
 
---	miiip_e : entity hdl4fpga.scopeio_miiudp
---	port map (
---		mii_rxc  => si_clk,
---		mii_rxdv => si_frm,
---		mii_rxd  => si_data,
---
---		mii_req  => ipcfg_req,
---		mii_txc  => so_clk,
---		mii_txdv => so_dv,
---		mii_txd  => so_data,
---
---		so_dv    => udpso_dv,
---		so_data  => udpso_data);
-
 	scopeio_istream_e : entity hdl4fpga.scopeio_istream
 	generic map (
 		esc => istream_esc,
@@ -384,9 +366,9 @@ begin
 		so_data => strm_data);
 
 	sin_clk  <= si_clk;
-	sin_frm  <= strm_frm  when istream else udpso_dv   when tcpip else si_frm;
-	sin_irdy <= strm_irdy when istream else '1';
-	sin_data <= strm_data when istream else reverse(udpso_data) when tcpip else si_data;
+	sin_frm  <= strm_frm  when istream else si_frm;
+	sin_irdy <= strm_irdy when istream else si_rdy;
+	sin_data <= strm_data when istream else si_data;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (

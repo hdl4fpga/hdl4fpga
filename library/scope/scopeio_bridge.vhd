@@ -121,7 +121,8 @@ begin
 	process (pktstrm_data, pkt_data)
 	begin
 		if istream then
-			if bridg
+			if bridg_istream='1' then
+				if bridgeo_data'length=pktstrm_data'length then
 		bridgeo_data <= pktstrm_data when istream else pkt_data;
 	end process;
 
