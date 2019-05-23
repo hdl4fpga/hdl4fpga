@@ -60,10 +60,10 @@ architecture def of scopeio_mouse2rgtr is
   constant C_list_box: T_list_box :=
   (
   -- Xmin, Xmax, Ymin, Ymax,
-        0,   99,    0,  259, -- 0: top left window (vertical scale)
-      100,  599,    0,  259, -- 1: top center window (the grid)
-      600,  799,    0,  259, -- 2: top right window (text)
-      100,  599,  260,  269, -- 3: thin window below the grid (horizontal scale)
+        2,   47,    2,  258, -- 0: top left window (vertical scale)
+       51,  531,    2,  258, -- 1: top center window (the grid)
+      533,  796,    2,  258, -- 2: top right window (text)
+       51,  531,  260,  267, -- 3: thin window below the grid (horizontal scale)
     0, C_XY_max, 0, C_XY_max -- 4: termination record
   -- termination record has to match always for this algorithm to work
   );
