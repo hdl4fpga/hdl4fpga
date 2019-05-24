@@ -320,7 +320,7 @@ begin
             end if;
           when 1 => -- mouse has clicked on the grid
             -- click to apply trigger to selected input channel
-            -- drag mouse or rotate wheel to change trigger level
+            -- drag mouse up-down or rotate wheel to change trigger level
             -- press wheel to change trigger edge
             -- click right to freeze
             R_rgtr_dv <= S_mouse_update;
@@ -372,11 +372,17 @@ begin
     end process;
   end block;
   -- output
-  rgtr_dv <= R_rgtr_dv;
-  rgtr_id <= R_rgtr_id;
-  rgtr_data <= R_rgtr_data;
+  --rgtr_dv <= R_rgtr_dv;
+  --rgtr_id <= R_rgtr_id;
+  --rgtr_data <= R_rgtr_data;
 
-  -- example to change trigger level (4-ch scope)
+  rgtr_dv <= S_mouse_update;
+  rgtr_id <= x"15"; -- mouse pointer
+  rgtr_data(31 downto 22) <= (others => '0');
+  rgtr_data(21 downto 11) <= S_mouse_y;
+  rgtr_data(10 downto 0)  <= S_mouse_x;
+
+  -- simple example to change trigger level (4-ch scope)
   --rgtr_dv <= S_mouse_update;
   --rgtr_id <= x"12"; -- trigger
   --rgtr_data(31 downto 13) <= (others => '0');
@@ -385,7 +391,7 @@ begin
   --rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
   --rgtr_data(0) <= '0'; -- when '1' trigger freeze
 
-  -- example to change grid color with mouse wheel (4-ch scope)
+  -- simple example to change grid color with mouse wheel (4-ch scope)
   --rgtr_dv <= mouse_update;
   --rgtr_id <= x"11"; -- palette (color)
   --rgtr_data(31 downto 7) <= (others => '0');
