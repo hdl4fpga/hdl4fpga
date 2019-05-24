@@ -268,7 +268,7 @@ architecture beh of scopeio is
 		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
 		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
 		2 => (    9,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
-		3 => (   10,       1280,           4,        32,          8,          8,       6*8,         33*8,       1,        0,       1));
+		3 => (   10,       1280,           4,        30,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);

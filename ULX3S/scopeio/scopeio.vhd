@@ -43,6 +43,14 @@ architecture beh of ulx3s is
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
+
+	-- vlayout_id
+	-- 0: 1920x1080 @ 60Hz 150MHz 
+	-- 1:  800x600  @ 60Hz  40MHz
+	-- 2: 1920x1080 @ 30Hz  75MHz
+	-- 3: 1280x768  @ 60Hz  75MHz
+        constant vlayout_id: integer := 3;
+
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
@@ -341,6 +349,9 @@ begin
 	);
 	
 	mouse2rgtr_e: entity hdl4fpga.scopeio_mouse2rgtr
+	generic map(
+		vlayout_id  => vlayout_id
+	)
 	port map (
 		clk         => clk_mouse,
 		ps2m_reset  => rst,
@@ -357,7 +368,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-		vlayout_id       => 3, -- 0:1920x1080, 1:800x600@60Hz 40MHz, 2:1920x1080@30Hz 75MHz, 3:1280x768@60Hz 75MHz
+		vlayout_id       => vlayout_id,
 		                 --  RGB0_RGB1_...
                 default_tracesfg => b"110_011_010_100",
                 default_gridfg   => b"100",
