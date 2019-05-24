@@ -116,10 +116,12 @@ architecture beh of ulx3s is
 	signal uart_rxd   : std_logic_vector(0 to 7);
 	signal so_null    : std_logic_vector(0 to 7);
 
-	signal fromistreamdaisy_clk  : std_logic;
 	signal fromistreamdaisy_frm  : std_logic;
 	signal fromistreamdaisy_irdy : std_logic;
 	signal fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
+	signal frommousedaisy_frm  : std_logic;
+	signal frommousedaisy_irdy : std_logic;
+	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
 	signal clk_mouse       : std_logic := '0';
 	signal mouse_rgtr_dv   : std_logic;
@@ -320,7 +322,7 @@ begin
 
 		chaini_data => (uart_rxd'range => '-'),
 
-		chaino_clk  => fromistreamdaisy_clk, 
+		--chaino_clk  => fromistreamdaisy_clk, 
 		chaino_frm  => fromistreamdaisy_frm, 
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
@@ -365,6 +367,22 @@ begin
 		rgtr_data   => mouse_rgtr_data
 	);
 
+	rgtr2daisy_e: entity hdl4fpga.scopeio_rgtr2daisy
+	port map
+	(
+		clk         => clk_mouse,
+		rgtr_dv     => mouse_rgtr_dv,
+		rgtr_id     => mouse_rgtr_id,
+		rgtr_data   => mouse_rgtr_data,
+		chaini_sel  => '0',
+		chaini_frm  => fromistreamdaisy_frm,
+		chaini_irdy => fromistreamdaisy_irdy,
+		chaini_data => fromistreamdaisy_data,
+		chaino_frm  => frommousedaisy_frm,
+		chaino_irdy => frommousedaisy_irdy,
+		chaino_data => frommousedaisy_data
+	);
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
@@ -380,18 +398,20 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                irgtr            => true  -- mouse
+                irgtr            => false  -- true:mouse2rgtr false:uartdaisy/mousedaisy
 	)
 	port map (
 		--si_clk      => clk_uart,
 		--si_frm      => fromistreamdaisy_frm,
 		--si_irdy     => fromistreamdaisy_irdy,
 		--si_data     => fromistreamdaisy_data,
-
 		si_clk      => clk_mouse,
-		si_frm      => mouse_rgtr_dv,
-		si_id       => mouse_rgtr_id,
-		si_data     => mouse_rgtr_data,
+		si_frm      => frommousedaisy_frm,
+		si_irdy     => frommousedaisy_irdy,
+		si_data     => frommousedaisy_data,
+		--si_frm      => mouse_rgtr_dv,
+		--si_id       => mouse_rgtr_id,
+		--si_data     => mouse_rgtr_data,
 		so_data     => so_null,
 		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,

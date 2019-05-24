@@ -34,6 +34,7 @@ VHDL_LIB_FILES = \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
+  ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
   ../../library/scope/scopeio_istream.vhd \
   ../../library/scope/scopeio_istreamdaisy.vhd \
