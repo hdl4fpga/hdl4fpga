@@ -107,9 +107,12 @@ architecture beh of ulx3s is
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(0 to 7);
 	signal so_null    : std_logic_vector(0 to 7);
-	--signal dbg_frm    : std_logic;
-	--signal dbg_irdy   : std_logic;
-	--signal dbg_data   : std_logic_vector(uart_rxd'range);
+
+	signal fromistreamdaisy_clk  : std_logic;
+	signal fromistreamdaisy_frm  : std_logic;
+	signal fromistreamdaisy_irdy : std_logic;
+	signal fromistreamdaisy_data : std_logic_vector(8-1 downto 0);
+
 	signal clk_mouse       : std_logic := '0';
 	signal mouse_rgtr_dv   : std_logic;
 	signal mouse_rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -301,6 +304,20 @@ begin
 		end if;
 	end process;
 	led <= display;
+
+	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+	port map (
+		stream_clk  => clk_uart,
+		stream_dv   => uart_rxdv,
+		stream_data => uart_rxd,
+
+		chaini_data => (uart_rxd'range => '-'),
+
+		chaino_clk  => fromistreamdaisy_clk, 
+		chaino_frm  => fromistreamdaisy_frm, 
+		chaino_irdy => fromistreamdaisy_irdy,
+		chaino_data => fromistreamdaisy_data
+	);
 	
 	-- OLED display for debugging
 	oled_e: entity work.oled_hex_decoder
@@ -353,16 +370,18 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                irgtr            => true  -- mouse
+                irgtr            => false  -- mouse
 	)
 	port map (
-		--si_clk      => clk_uart,
-		--si_frm      => uart_rxdv,
-		--si_data     => uart_rxd,
-		si_clk      => clk_mouse,
-		si_frm      => mouse_rgtr_dv,
-		si_id       => mouse_rgtr_id,
-		si_data     => mouse_rgtr_data,
+		si_clk      => clk_uart,
+		si_frm      => fromistreamdaisy_frm,
+		si_irdy     => fromistreamdaisy_irdy,
+		si_data     => fromistreamdaisy_data,
+
+		--si_clk      => clk_mouse,
+		--si_frm      => mouse_rgtr_dv,
+		--si_id       => mouse_rgtr_id,
+		--si_data     => mouse_rgtr_data,
 		so_data     => so_null,
 		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,
