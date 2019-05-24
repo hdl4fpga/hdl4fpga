@@ -383,7 +383,10 @@ begin
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge);
+		trigger_edge   => trigger_edge
+	
+		pointer_x      => pointer_x,
+		pointer_y      => pointer_y);
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
