@@ -353,10 +353,7 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                irgtr            => true, -- mouse
-                istream          => false, -- serial
-                istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-                istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8))
+                irgtr            => true  -- mouse
 	)
 	port map (
 		--si_clk      => clk_uart,

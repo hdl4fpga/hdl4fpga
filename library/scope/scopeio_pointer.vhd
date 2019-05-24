@@ -30,7 +30,6 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
-		istream     : boolean := false;
 		irgtr       : boolean := false;
 		vlayout_id  : natural := 0;
 
@@ -44,9 +43,6 @@ entity scopeio is
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		istream_esc : std_logic_vector := std_logic_vector(to_unsigned(character'pos('\'), 8));
-		istream_eos : std_logic_vector := std_logic_vector(to_unsigned(character'pos(NUL), 8));
-	 
 		max_pixelsize  : natural := 24;
 		default_tracesfg : std_logic_vector := b"1_1_1";
 		default_gridfg   : std_logic_vector := b"1_0_0";
@@ -65,7 +61,9 @@ entity scopeio is
 		si_id       : in  std_logic_vector;
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
-		so_dv       : out std_logic := '0';
+		so_frm      : out std_logic;
+		so_irdy     : out std_logic;
+		so_trdy     : in  std_logic := '0';
 		so_data     : out std_logic_vector;
 
 		mouse_x     : in  std_logic_vector(11-1 downto 0) := (others => '1');
@@ -342,47 +340,19 @@ architecture beh of scopeio is
 	signal wu_value       : std_logic_vector(4*4-1 downto 0);
 	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
-	signal strm_frm  : std_logic;
-	signal strm_irdy : std_logic;
-	signal strm_data : std_logic_vector(si_data'range);
-
-	signal sin_clk  : std_logic;
-	signal sin_frm  : std_logic;
-	signal sin_irdy : std_logic;
-	signal sin_data : std_logic_vector(si_data'range);
-
 begin
 
 	assert inputs < max_inputs
 		report "inputs greater than max_inputs"
 		severity failure;
 
-	scopeio_istream_e : entity hdl4fpga.scopeio_istream
-	generic map (
-		esc => istream_esc,
-		eos => istream_eos)
-	port map (
-		clk     => si_clk,
-
-		rxdv    => si_frm,
-		rxd     => si_data,
-
-		so_frm  => strm_frm,
-		so_irdy => strm_irdy,
-		so_data => strm_data);
-
-	sin_clk  <= si_clk;
-	sin_frm  <= strm_frm  when istream else si_frm;
-	sin_irdy <= strm_irdy when istream else si_irdy;
-	sin_data <= strm_data when istream else si_data;
-
 	G_not_irgtr: if not irgtr generate
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
-		sin_clk   => sin_clk,
-		sin_frm   => sin_frm,
-		sin_irdy  => sin_irdy,
-		sin_data  => sin_data,
+		sin_clk   => si_clk,
+		sin_frm   => si_frm,
+		sin_irdy  => si_irdy,
+		sin_data  => si_data,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
