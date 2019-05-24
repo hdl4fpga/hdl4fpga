@@ -365,6 +365,10 @@ begin
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
 
+		pointer_dv     => pointer_dv,
+		pointer_x      => pointer_x,
+		pointer_y      => pointer_y,
+
 		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
 		hz_offset      => hz_offset,
