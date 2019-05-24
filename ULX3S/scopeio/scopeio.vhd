@@ -49,7 +49,7 @@ architecture beh of ulx3s is
 	-- 1:  800x600  @ 60Hz  40MHz
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
-        constant vlayout_id: integer := 1;
+        constant vlayout_id: integer := 3;
 
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
