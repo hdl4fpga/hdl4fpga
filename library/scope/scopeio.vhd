@@ -562,14 +562,24 @@ begin
 			end if;
 		end process;
 
-		mem_e : entity hdl4fpga.dpram 
-		port map (
-			wr_clk  => wr_clk,
-			wr_ena  => wr_ena,
-			wr_addr => wr_addr,
-			wr_data => wr_data,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
+		mem_e: entity hdl4fpga.bram_true2p_2clk
+		generic map
+		(
+			data_width => wr_data'length,
+			addr_width => wr_addr'length
+		)
+		port map
+		(
+			clk_a => wr_clk,
+			we_a => wr_ena,
+			addr_a => wr_addr,
+			data_in_a => wr_data,
+
+			clk_b  => wr_clk,
+			we_b => '0',
+			addr_b => rd_addr,
+			data_out_b => rd_data
+		);
 
 		process (rd_clk)
 		begin 
