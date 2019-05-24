@@ -152,7 +152,6 @@ begin
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
-        --clk <= clk_pll(1); -- 75 MHz
 	
 	process(vga_clk)
 	begin
@@ -358,7 +357,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-		vlayout_id       => 1, -- 0:1920x1080, 1:800x600
+		vlayout_id       => 1, -- 0:1920x1080, 1:800x600@60Hz 40MHz, 2:1920x1080@30Hz 75MHz, 3:1280x768@60Hz 75MHz
 		                 --  RGB0_RGB1_...
                 default_tracesfg => b"110_011_010_100",
                 default_gridfg   => b"100",
@@ -370,18 +369,18 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000",
-                irgtr            => false  -- mouse
+                irgtr            => true  -- mouse
 	)
 	port map (
-		si_clk      => clk_uart,
-		si_frm      => fromistreamdaisy_frm,
-		si_irdy     => fromistreamdaisy_irdy,
-		si_data     => fromistreamdaisy_data,
+		--si_clk      => clk_uart,
+		--si_frm      => fromistreamdaisy_frm,
+		--si_irdy     => fromistreamdaisy_irdy,
+		--si_data     => fromistreamdaisy_data,
 
-		--si_clk      => clk_mouse,
-		--si_frm      => mouse_rgtr_dv,
-		--si_id       => mouse_rgtr_id,
-		--si_data     => mouse_rgtr_data,
+		si_clk      => clk_mouse,
+		si_frm      => mouse_rgtr_dv,
+		si_id       => mouse_rgtr_id,
+		si_data     => mouse_rgtr_data,
 		so_data     => so_null,
 		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,
