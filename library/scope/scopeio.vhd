@@ -553,6 +553,7 @@ begin
 		begin 
 			if rising_edge(rd_clk) then
 				rd_addr <= storage_addr;
+				storage_data <= rd_data;
 			end if;
 		end process;
 
@@ -564,13 +565,6 @@ begin
 			wr_data => wr_data,
 			rd_addr => rd_addr,
 			rd_data => rd_data);
-
-		process (rd_clk)
-		begin 
-			if rising_edge(rd_clk) then
-				storage_data <= rd_data;
-			end if;
-		end process;
 
 --		mem_e : entity hdl4fpga.bram 
 --		port map (
