@@ -357,7 +357,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-		vlayout_id       => 1, -- 0:1920x1080, 1:800x600@60Hz 40MHz, 2:1920x1080@30Hz 75MHz, 3:1280x768@60Hz 75MHz
+		vlayout_id       => 3, -- 0:1920x1080, 1:800x600@60Hz 40MHz, 2:1920x1080@30Hz 75MHz, 3:1280x768@60Hz 75MHz
 		                 --  RGB0_RGB1_...
                 default_tracesfg => b"110_011_010_100",
                 default_gridfg   => b"100",
