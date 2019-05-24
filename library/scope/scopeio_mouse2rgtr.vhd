@@ -45,6 +45,11 @@ architecture def of scopeio_mouse2rgtr is
   signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
   signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
 
+  -- output registers to insert the pointer update commands
+  signal R_rgtr_ptr_dv      : std_logic; -- clk synchronous write cycle
+  signal R_rgtr_ptr_id      : std_logic_vector(7 downto 0); -- register address
+  signal R_rgtr_ptr_data    : std_logic_vector(31 downto 0); -- register value
+
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -262,7 +267,7 @@ begin
       "110", -- yellow
       "011", -- cyan
       "010", -- green
-      "100"  -- red
+      "101"  -- magenta
     );
   begin
     -- TODO reduce amount of arithmetic adders
@@ -371,16 +376,59 @@ begin
       end if; -- rising edge
     end process;
   end block;
-  -- output
-  --rgtr_dv <= R_rgtr_dv;
-  --rgtr_id <= R_rgtr_id;
-  --rgtr_data <= R_rgtr_data;
 
-  rgtr_dv <= S_mouse_update;
-  rgtr_id <= x"15"; -- mouse pointer
-  rgtr_data(31 downto 22) <= (others => '0');
-  rgtr_data(21 downto 11) <= S_mouse_y;
-  rgtr_data(10 downto 0)  <= S_mouse_x;
+  -- insert pointer update commands several
+  -- cycles later after each mouse update because
+  -- it's expected that "dispatch_mouse_event" block
+  -- may request something immediately after mouse update event.
+  -- there must pass enough clk cycles after
+  -- previous register write request
+  -- which must be serialized with rgtr2daisy
+  insert_pointer: block
+    signal R_delay: unsigned(4 downto 0); -- 2**(R_delay'high) cycles delay
+    signal S_request: std_logic;
+  begin
+    -- generates single-cycle request pulse when R_delay = "10xxx"
+    S_request <= '1' when R_delay(R_delay'high downto R_delay'high-1) = "10" else '0';
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        if S_mouse_update = '1' then
+          R_delay <= (others => '0');
+        else
+          -- increment when MSB=0, from "00000" to "10000"
+          if R_delay(R_delay'high) = '0' then
+            R_delay <= R_delay + 1;
+          else
+            R_delay <= (others => '1'); -- from "10000" jump to "11111"
+          end if;
+        end if;
+        if S_request = '1' then
+          R_rgtr_ptr_dv <= '1';
+          R_rgtr_ptr_id <= x"15"; -- mouse pointer
+          R_rgtr_ptr_data(31 downto 22) <= (others => '0');
+          R_rgtr_ptr_data(21 downto 11) <= R_mouse_y;
+          R_rgtr_ptr_data(10 downto 0)  <= R_mouse_x;
+        else
+          R_rgtr_ptr_dv <= R_rgtr_dv;
+          R_rgtr_ptr_id <= R_rgtr_id;
+          R_rgtr_ptr_data <= R_rgtr_data;
+        end if;
+      end if;
+    end process;
+  end block;
+  
+  -- output
+  rgtr_dv <= R_rgtr_ptr_dv;
+  rgtr_id <= R_rgtr_ptr_id;
+  rgtr_data <= R_rgtr_ptr_data;
+
+  -- simple example for mouse pointer
+  --rgtr_dv <= S_mouse_update;
+  --rgtr_id <= x"15"; -- mouse pointer
+  --rgtr_data(31 downto 22) <= (others => '0');
+  --rgtr_data(21 downto 11) <= S_mouse_y;
+  --rgtr_data(10 downto 0)  <= S_mouse_x;
 
   -- simple example to change trigger level (4-ch scope)
   --rgtr_dv <= S_mouse_update;
