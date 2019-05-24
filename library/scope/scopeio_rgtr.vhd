@@ -33,7 +33,11 @@ entity scopeio_rgtr is
 		trigger_freeze  : out std_logic;
 		trigger_chanid  : out std_logic_vector;
 		trigger_level   : out std_logic_vector;
-		trigger_edge    : out std_logic);
+		trigger_edge    : out std_logic;
+
+		pointer_dv      : out std_logic;
+		pointer_x       : out std_logic_vector(11-1 downto 0) := (others => '1');
+		pointer_y       : out std_logic_vector(11-1 downto 0) := (others => '1'));
 
 	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
 end;
@@ -73,14 +77,16 @@ architecture def of scopeio_rgtr is
 	constant rid_trigger  : std_logic_vector := x"12";
 	constant rid_gain     : std_logic_vector := x"13";
 	constant rid_vtaxis   : std_logic_vector := x"14";
+	constant rid_pointer  : std_logic_vector := x"15";
 
 	constant hzaxis_enid  : natural := 0;
 	constant palette_enid : natural := 1;
 	constant gain_enid    : natural := 2;
 	constant trigger_enid : natural := 3;
 	constant vtaxis_enid  : natural := 4;
+	constant pointer_enid : natural := 5;
 
-	constant ena_size     : natural := vtaxis_enid+1;
+	constant ena_size     : natural := pointer_enid+1;
 
 
 	signal ena : std_logic_vector(0 to ena_size-1);
@@ -93,7 +99,7 @@ begin
 			dec := (others => '0');
 			case rgtr_id is
 			when rid_hzaxis =>
-				dec(hzaxis_enid)    := '1';
+				dec(hzaxis_enid)  := '1';
 			when rid_palette =>
 				dec(palette_enid) := '1';
 			when rid_gain =>
@@ -101,7 +107,9 @@ begin
 			when rid_trigger =>
 				dec(trigger_enid) := '1';
 			when rid_vtaxis =>
-				dec(vtaxis_enid) := '1';
+				dec(vtaxis_enid)  := '1';
+			when rid_pointer =>
+				dec(pointer_enid) := '1';
 			when others =>
 			end case;
 		end if;
@@ -219,6 +227,25 @@ begin
 					trigger_chanid <= bf(rgtr_data, chanid_id, trigger_bf);
 				end if;
 				trigger_dv <= ena(trigger_enid);
+			end if;
+		end process;
+	end block;
+
+	pointer_p : block
+		constant x_id : natural := 0;
+		constant y_id : natural := 1;
+
+		constant pointer_bf : natural_vector := (y_id => pointer_y'length, x_id => pointer_x'length);
+
+	begin
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				if ena(pointer_enid)='1' then
+					pointer_x <= bf(rgtr_data, x_id, pointer_bf);
+					pointer_y <= bf(rgtr_data, y_id, pointer_bf);
+				end if;
+				pointer_dv <= ena(pointer_enid);
 			end if;
 		end process;
 	end block;
