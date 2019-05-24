@@ -336,9 +336,9 @@ architecture beh of scopeio is
 
 begin
 
---	assert inputs < max_inputs
---		report "inputs greater than max_inputs"
---		severity failure;
+	assert inputs < max_inputs
+		report "inputs greater than max_inputs"
+		severity failure;
 
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
