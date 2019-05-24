@@ -301,6 +301,7 @@ architecture beh of scopeio is
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
+	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
@@ -323,6 +324,10 @@ architecture beh of scopeio is
 	signal trigger_edge   : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
+
+	signal pointer_dv     : std_logic;
+	signal pointer_x      : std_logic_vector(11-1 downto 0);
+	signal pointer_y      : std_logic_vector(11-1 downto 0);
 
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
@@ -597,6 +602,7 @@ begin
 		signal text_bgon   : std_logic;
 		signal sgmnt_on    : std_logic;
 		signal sgmnt_bgon  : std_logic;
+		signal pointer_dot : std_logic;
 	begin
 		formatu_e : entity hdl4fpga.scopeio_formatu
 		port map (
@@ -944,8 +950,21 @@ begin
 			vt_bgon        => vt_bgon,
 			text_bgon      => text_bgon,
 			sgmnt_bgon     => sgmnt_bgon,
-			video_color    => video_color);
+			video_color    => scope_color);
+
+		scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
+		port map (
+			video_clk   => video_clk,
+			video_on    => video_io(2),
+			pointer_x   => pointer_x,
+			pointer_y   => pointer_y,
+			video_hcntr => video_hcntr,
+			video_vcntr => video_vcntr,
+			video_dot   => pointer_dot);
+
+		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
 	end block;
+
 
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
