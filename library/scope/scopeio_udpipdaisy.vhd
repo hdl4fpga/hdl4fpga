@@ -42,7 +42,7 @@ entity scopeio_udpipdaisy is
 	
 		chaini_sel  : in  std_logic;
 
-		chaini_clk  : in  std_logic;
+		chaini_clk  : in  std_logic := '0';
 		chaini_frm  : in  std_logic;
 		chaini_irdy : in  std_logic;
 		chaini_data : in  std_logic_vector;

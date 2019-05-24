@@ -191,11 +191,11 @@ begin
 
 		chaini_data => (uart_rxd'range => '-'),
 
-		chaino_clk  => toudpdaisy_clk, 
 		chaino_frm  => toudpdaisy_frm, 
 		chaino_irdy => toudpdaisy_irdy,
 		chaino_data => toudpdaisy_data);
 
+	ipcfg_req <= not fpga_gsrn;
 	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
 	port map (
 		ipcfg_req   => ipcfg_req,
@@ -210,18 +210,16 @@ begin
 	
 		chaini_sel  => '1',
 
-		chaini_clk  => toudpdaisy_clk,
 		chaini_frm  => toudpdaisy_frm,
 		chaini_irdy => toudpdaisy_irdy,
 		chaini_data => toudpdaisy_data,
 
-		chaino_clk  => si_clk,
 		chaino_frm  => si_frm,
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 	
+	si_clk   <= phy1_rxc;
 	phy1_rst <= not rst;
-	ipcfg_req <= not fpga_gsrn;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
