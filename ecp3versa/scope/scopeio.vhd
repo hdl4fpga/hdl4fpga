@@ -208,7 +208,7 @@ begin
 		phy_tx_en   => phy1_tx_en,
 		phy_tx_d    => phy1_tx_d,
 	
-		chaini_sel  => '1',
+		chaini_sel  => '0',
 
 		chaini_frm  => toudpdaisy_frm,
 		chaini_irdy => toudpdaisy_irdy,

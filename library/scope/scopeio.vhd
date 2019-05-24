@@ -386,7 +386,8 @@ begin
 		trigger_edge   => trigger_edge,
 	
 		pointer_x      => pointer_x,
-		pointer_y      => pointer_y);
+		pointer_y      => pointer_y,
+		pointer_dv     => open);
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
