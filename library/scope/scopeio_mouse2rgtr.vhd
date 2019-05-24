@@ -267,7 +267,7 @@ begin
       "110", -- yellow
       "011", -- cyan
       "010", -- green
-      "101"  -- magenta
+      "100"  -- red
     );
   begin
     -- TODO reduce amount of arithmetic adders

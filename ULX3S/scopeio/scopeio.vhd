@@ -391,7 +391,7 @@ begin
 	        inputs           => inputs, -- number of input channels
 		vlayout_id       => vlayout_id,
 		                 --  RGB0_RGB1_...
-                default_tracesfg => b"110_011_010_101",
+                default_tracesfg => b"110_011_010_100",
                 default_gridfg   => b"100",
                 default_gridbg   => b"000",
                 default_hzfg     => b"111",
