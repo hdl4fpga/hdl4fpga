@@ -49,7 +49,7 @@ architecture beh of ulx3s is
 	-- 1:  800x600  @ 60Hz  40MHz
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
-        constant vlayout_id: integer := 3;
+        constant vlayout_id: integer := 1;
 
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -323,6 +323,7 @@ begin
 		chaini_data => (uart_rxd'range => '-'),
 
 		--chaino_clk  => fromistreamdaisy_clk, 
+		-- daisy output
 		chaino_frm  => fromistreamdaisy_frm, 
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
@@ -359,7 +360,7 @@ begin
 		ps2m_reset  => rst,
 		ps2m_clk    => ps2_clock,
 		ps2m_dat    => ps2_data,
-		mouse_x     => mouse_x, -- TODO move to rgtr
+		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,
 		dbg_mouse   => dbg_mouse,
 		rgtr_dv     => mouse_rgtr_dv,
@@ -374,10 +375,12 @@ begin
 		rgtr_dv     => mouse_rgtr_dv,
 		rgtr_id     => mouse_rgtr_id,
 		rgtr_data   => mouse_rgtr_data,
-		chaini_sel  => '0',
+		chaini_sel  => '0', -- 0: mouse, 1: serial
+		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,
 		chaini_irdy => fromistreamdaisy_irdy,
 		chaini_data => fromistreamdaisy_data,
+		-- daisy output
 		chaino_frm  => frommousedaisy_frm,
 		chaino_irdy => frommousedaisy_irdy,
 		chaino_data => frommousedaisy_data
@@ -388,7 +391,7 @@ begin
 	        inputs           => inputs, -- number of input channels
 		vlayout_id       => vlayout_id,
 		                 --  RGB0_RGB1_...
-                default_tracesfg => b"110_011_010_100",
+                default_tracesfg => b"110_011_010_101",
                 default_gridfg   => b"100",
                 default_gridbg   => b"000",
                 default_hzfg     => b"111",
@@ -397,8 +400,8 @@ begin
                 default_vtbg     => b"000",
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
-                default_bg       => b"000",
-                irgtr            => false  -- true:mouse2rgtr false:uartdaisy/mousedaisy
+                default_bg       => b"000"
+                --irgtr            => false  -- true:mouse2rgtr false:uartdaisy/mousedaisy
 	)
 	port map (
 		--si_clk      => clk_uart,
@@ -413,8 +416,8 @@ begin
 		--si_id       => mouse_rgtr_id,
 		--si_data     => mouse_rgtr_data,
 		so_data     => so_null,
-		mouse_x     => mouse_x,
-		mouse_y     => mouse_y,
+		--mouse_x     => mouse_x,
+		--mouse_y     => mouse_y,
 		input_clk   => clk,
 		input_data  => samples,
 		video_clk   => vga_clk,
