@@ -20,6 +20,7 @@ VHDL_LIB_FILES = \
   ../../library/common/align.vhd \
   ../../library/common/pipe_le.vhd \
   ../../library/common/std.vhd \
+  ../../library/common/bram.vhd \
   ../../library/common/dpram.vhd \
   ../../library/common/bram_true2p_2clk.vhd \
   ../../library/common/rom.vhd \

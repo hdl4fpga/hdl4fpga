@@ -367,10 +367,6 @@ begin
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
 
-		pointer_dv     => pointer_dv,
-		pointer_x      => pointer_x,
-		pointer_y      => pointer_y,
-
 		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
 		hz_offset      => hz_offset,
@@ -942,7 +938,7 @@ begin
 
 		scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
 		generic map (
-			latency => vgaio_latency)
+			latency => 0)
 		port map (
 			video_clk   => video_clk,
 			video_on    => video_io(2),
