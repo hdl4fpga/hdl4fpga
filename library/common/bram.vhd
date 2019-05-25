@@ -46,6 +46,43 @@ entity bram is
 end;
 
 library hdl4fpga;
+
+architecture bram_true2p_2clk of bram is
+	signal rd_addr   : std_logic_vector(addra'range);
+	signal rd_data   : std_logic_vector(dia'range);
+begin
+
+	process (clka)
+	begin 
+		if rising_edge(clka) then
+			rd_addr <= addrb;
+			dob <= rd_data;
+		end if;
+	end process;
+
+	mem_e: entity hdl4fpga.bram_true2p_2clk
+	generic map
+	(
+		data_width => dia'length,
+		addr_width => addra'length
+	)
+	port map
+	(
+		clk_a => clka,
+		we_a => wea,
+		addr_a => addra,
+		data_in_a => dia,
+
+		clk_b  => clka,
+		we_b => '0',
+		addr_b => rd_addr,
+		data_out_b => rd_data
+	);
+
+
+end;
+
+library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture def of bram is
