@@ -1,25 +1,5 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- AUTHOR = EMARD
+-- LICENSE = BSD
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -124,13 +104,6 @@ architecture beh of ulx3s is
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
 	signal clk_mouse       : std_logic := '0';
-	signal mouse_rgtr_dv   : std_logic;
-	signal mouse_rgtr_id   : std_logic_vector(8-1 downto 0);
-	signal mouse_rgtr_data : std_logic_vector(32-1 downto 0);
-	signal mouse_dv        : std_logic;
-	signal mouse_x         : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_y         : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal dbg_mouse       : std_logic_vector(7 downto 0);
 
 	signal display    : std_logic_vector(7 downto 0);
 	
@@ -341,8 +314,7 @@ begin
 	  clk => clk_oled, -- 25 MHz
 	  --data => adc_data,
 	  data(15 downto 8) => display, -- uart latch
-	  data(7 downto 4) => mouse_x(3 downto 0),
-	  data(3 downto 0) => mouse_y(3 downto 0),
+	  data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
@@ -384,23 +356,13 @@ begin
                 default_textbg   => b"000",
                 default_sgmntbg  => b"100",
                 default_bg       => b"000"
-                --irgtr            => false  -- true:mouse2rgtr false:uartdaisy/mousedaisy
 	)
 	port map (
-		--si_clk      => clk_uart,
-		--si_frm      => fromistreamdaisy_frm,
-		--si_irdy     => fromistreamdaisy_irdy,
-		--si_data     => fromistreamdaisy_data,
 		si_clk      => clk_mouse,
 		si_frm      => frommousedaisy_frm,
 		si_irdy     => frommousedaisy_irdy,
 		si_data     => frommousedaisy_data,
-		--si_frm      => mouse_rgtr_dv,
-		--si_id       => mouse_rgtr_id,
-		--si_data     => mouse_rgtr_data,
 		so_data     => so_null,
-		--mouse_x     => mouse_x,
-		--mouse_y     => mouse_y,
 		input_clk   => clk,
 		input_data  => samples,
 		video_clk   => vga_clk,
