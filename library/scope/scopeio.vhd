@@ -258,10 +258,12 @@ architecture beh of scopeio is
 
 	type vlayout_vector is array (natural range <>) of video_layout;
 
-	constant vlayout_tab : vlayout_vector(0 to 1) := (
+	constant vlayout_tab : vlayout_vector(0 to 4-1) := (
 		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
 		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
-		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1));
+		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
+		2 => (    9,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
+		3 => (   10,       1280,           4,        30,          8,          8,       6*8,         33*8,       1,        0,       1));
 	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
@@ -552,23 +554,6 @@ begin
 			end if;
 
 		end process;
-
---		process (rd_clk)
---		begin 
---			if rising_edge(rd_clk) then
---				rd_addr <= storage_addr;
---				storage_data <= rd_data;
---			end if;
---		end process;
---
---		mem_e : entity hdl4fpga.dpram 
---		port map (
---			wr_clk  => wr_clk,
---			wr_ena  => wr_ena,
---			wr_addr => wr_addr,
---			wr_data => wr_data,
---			rd_addr => rd_addr,
---			rd_data => rd_data);
 
 		mem_e : entity hdl4fpga.bram 
 		port map (
