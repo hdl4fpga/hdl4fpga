@@ -381,7 +381,7 @@ begin
 		rgtr_dv     => mouse_rgtr_dv,
 		rgtr_id     => mouse_rgtr_id,
 		rgtr_data   => mouse_rgtr_data,
-		chaini_sel  => '0', -- 0: mouse, 1: serial
+		-- chaini_sel  => '0', -- 0: mouse, 1: serial
 		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,
 		chaini_irdy => fromistreamdaisy_irdy,

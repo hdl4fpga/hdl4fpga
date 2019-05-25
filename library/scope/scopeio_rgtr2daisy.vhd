@@ -18,9 +18,7 @@ port
 		rgtr_id     : in  std_logic_vector; -- 8 bit
 		rgtr_data   : in  std_logic_vector; -- 32 bit
 
-		chaini_sel  : in  std_logic := '0';
-
-		chaini_frm  : in  std_logic := '1';
+		chaini_frm  : in  std_logic := '0';
 		chaini_irdy : in  std_logic := '1';
 		chaini_data : in  std_logic_vector; -- 8 bit
 
@@ -51,7 +49,7 @@ begin
 		if rising_edge(clk) then
 			-- if R_strm_frm is 1 the request will be dropped
 			-- to prevent overwriting currently active serializing
-			if (rgtr_dv = '1' or pointer_dv = '1') and R_strm_frm = '0' then
+			if (rgtr_dv = '1' or pointer_dv = '1') and R_strm_frm = '0' and chaini_frm = '0' then
 				R_shift <= x"15" & x"02" & "00" & pointer_y & pointer_x
 				         & rgtr_id & x"03" & rgtr_data;
 				if rgtr_dv = '1' and rgtr_id /= x"00" then
@@ -70,10 +68,10 @@ begin
 			end if;
 		end if;
 	end process;
-	S_strm_frm <= R_strm_frm;
+	S_strm_frm  <= R_strm_frm;
 	S_strm_irdy <= R_strm_frm;
 	S_strm_data <= R_shift(R_shift'high downto R_shift'length - chaino_data'length);
-	chaino_frm  <= chaini_frm  when chaini_sel='1' else S_strm_frm; 
-	chaino_irdy <= chaini_irdy when chaini_sel='1' else S_strm_irdy;
-	chaino_data <= chaini_data when chaini_sel='1' else S_strm_data;
+	chaino_frm  <= chaini_frm  when R_strm_frm='0' else S_strm_frm; 
+	chaino_irdy <= chaini_irdy when R_strm_frm='0' else S_strm_irdy;
+	chaino_data <= chaini_data when R_strm_frm='0' else S_strm_data;
 end;
