@@ -340,11 +340,9 @@ begin
 	(
 	  clk => clk_oled, -- 25 MHz
 	  --data => adc_data,
-	  --data(12) => dbg_frm,
-	  --data(8) => dbg_irdy,
-	  --data(7 downto 0) => dbg_data,
-	  data(15 downto 8) => mouse_x(7 downto 0),
-	  data(7 downto 0) => mouse_y(7 downto 0),
+	  data(15 downto 8) => display, -- uart latch
+	  data(7 downto 4) => mouse_x(3 downto 0),
+	  data(3 downto 0) => mouse_y(3 downto 0),
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
