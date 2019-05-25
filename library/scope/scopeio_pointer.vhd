@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity scopeio_pointer is
 	generic (
-		latency     : natural := 0);
+		latency     : integer := 0);
 	port (
 		video_clk   : in  std_logic;
 		pointer_x   : in  std_logic_vector;
@@ -25,7 +25,7 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			if video_on='0' then
-				R_video_hcntr_aligned <= to_signed(0, video_hcntr'length);
+				R_video_hcntr_aligned <= to_signed(latency, video_hcntr'length);
 			else
 				R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
 			end if;
