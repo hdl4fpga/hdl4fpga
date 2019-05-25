@@ -389,12 +389,8 @@ begin
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
+		trigger_edge   => trigger_edge);
 	
-		pointer_x      => pointer_x,
-		pointer_y      => pointer_y,
-		pointer_dv     => open);
-
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
 		signal output_ena    : std_logic_vector(0 to inputs-1);
@@ -560,7 +556,7 @@ begin
 		end process;
 
 
-		mem_e : entity hdl4fpga.bram 
+		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
