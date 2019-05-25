@@ -374,9 +374,9 @@ begin
 		vt_offsets     => vt_offsets,
 		vt_chanid      => vt_chanid,
 	
-		pointer_dv     => palette_dv,
-		pointer_y      => palette_y,
-		pointer_x      => palette_x,
+		pointer_dv     => pointer_dv,
+		pointer_y      => pointer_y,
+		pointer_x      => pointer_x,
 
 		palette_dv     => palette_dv,
 		palette_id     => palette_id,
