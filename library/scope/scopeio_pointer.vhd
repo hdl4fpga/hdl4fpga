@@ -2,11 +2,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+
 library hdl4fpga;
 
 entity scopeio_pointer is
 	generic (
 		latency     : natural);
+
 	port (
 		video_clk   : in  std_logic;
 		pointer_x   : in  std_logic_vector;
@@ -28,7 +30,6 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			if video_on='0' then
-				R_video_hcntr_aligned <= to_signed(0, video_hcntr'length);
 			else
 				R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
 			end if;
@@ -37,7 +38,7 @@ begin
 
 	video_dot <= '1' when R_video_hcntr_aligned = signed(pointer_x) or video_vcntr = pointer_y else '0';
 
---
+                                       --
 --	dot <= '1' when video_hcntr = pointer_x or video_vcntr = pointer_y else '0';
 --	latency_e : entity hdl4fpga.align
 --	generic map (

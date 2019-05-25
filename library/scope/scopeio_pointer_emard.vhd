@@ -30,6 +30,7 @@ use hdl4fpga.std.all;
 
 entity scopeio is
 	generic (
+		irgtr       : boolean := false;
 		vlayout_id  : natural := 0;
 
 		max_inputs  : natural := 64;
@@ -57,12 +58,16 @@ entity scopeio is
 		si_clk      : in  std_logic := '-';
 		si_frm      : in  std_logic := '0';
 		si_irdy     : in  std_logic := '0';
+		si_id       : in  std_logic_vector(7 downto 0) := (others => '-');
 		si_data     : in  std_logic_vector;
 		so_clk      : in  std_logic := '-';
 		so_frm      : out std_logic;
 		so_irdy     : out std_logic;
 		so_trdy     : in  std_logic := '0';
 		so_data     : out std_logic_vector;
+
+		mouse_x     : in  std_logic_vector(11-1 downto 0) := (others => '1');
+		mouse_y     : in  std_logic_vector(11-1 downto 0) := (others => '1');
 
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
@@ -258,7 +263,7 @@ architecture beh of scopeio is
 
 	type vlayout_vector is array (natural range <>) of video_layout;
 
-	constant vlayout_tab : vlayout_vector(0 to 4-1) := (
+	constant vlayout_tab : vlayout_vector(0 to 3) := (
 		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
 		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
 		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
@@ -303,8 +308,8 @@ architecture beh of scopeio is
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
-	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
+	signal video_color_mouse : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
@@ -327,10 +332,6 @@ architecture beh of scopeio is
 	signal trigger_freeze : std_logic;
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
-	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(video_hcntr'range);
-	signal pointer_y      : std_logic_vector(video_vcntr'range);
-
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
 	signal wu_trdy        : std_logic;
@@ -347,6 +348,7 @@ begin
 		report "inputs greater than max_inputs"
 		severity failure;
 
+	G_not_irgtr: if not irgtr generate
 	scopeio_sin_e : entity hdl4fpga.scopeio_sin
 	port map (
 		sin_clk   => si_clk,
@@ -356,6 +358,12 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data);
+	end generate;
+	G_yes_irgtr: if irgtr generate
+	  rgtr_dv   <= si_frm;
+	  rgtr_id   <= si_id;
+	  rgtr_data <= si_data;
+	end generate;
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	generic map (
@@ -366,10 +374,6 @@ begin
 		rgtr_dv        => rgtr_dv,
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,
-
-		pointer_dv     => pointer_dv,
-		pointer_x      => pointer_x,
-		pointer_y      => pointer_y,
 
 		hz_dv          => hz_dv,
 		hz_scale       => hz_scale,
@@ -389,11 +393,7 @@ begin
 		trigger_freeze => trigger_freeze,
 		trigger_chanid => trigger_chanid,
 		trigger_level  => trigger_level,
-		trigger_edge   => trigger_edge,
-	
-		pointer_x      => pointer_x,
-		pointer_y      => pointer_y,
-		pointer_dv     => open);
+		trigger_edge   => trigger_edge);
 
 	amp_b : block
 		constant sample_size : natural := input_data'length/inputs;
@@ -559,19 +559,64 @@ begin
 
 		end process;
 
+		process (rd_clk)
+		begin 
+			if rising_edge(rd_clk) then
+				rd_addr <= storage_addr;
+			end if;
+		end process;
 
-		mem_e : entity hdl4fpga.bram 
+		G_not_dpram: if false generate
+		mem_e : entity hdl4fpga.dpram 
 		port map (
-			clka  => wr_clk,
-			addra => wr_addr,
-			wea   => wr_ena,
-			dia   => wr_data,
-			doa   => rd_data,
+			wr_clk  => wr_clk,
+			wr_ena  => wr_ena,
+			wr_addr => wr_addr,
+			wr_data => wr_data,
+			rd_addr => rd_addr,
+			rd_data => rd_data);
+		end generate;
 
-			clkb  => rd_clk,
-			addrb => storage_addr,
-			dib   => rd_data,
-			dob   => storage_data);
+		G_yes_portable_dpram: if true generate
+		mem2_e: entity hdl4fpga.bram_true2p_2clk
+		generic map
+		(
+			data_width => wr_data'length,
+			addr_width => wr_addr'length
+		)
+		port map
+		(
+			clk_a => wr_clk,
+			we_a => wr_ena,
+			addr_a => wr_addr,
+			data_in_a => wr_data,
+
+			clk_b  => wr_clk,
+			we_b => '0',
+			addr_b => rd_addr,
+			data_out_b => rd_data
+		);
+		end generate;
+
+		process (rd_clk)
+		begin 
+			if rising_edge(rd_clk) then
+				storage_data <= rd_data;
+			end if;
+		end process;
+
+--		mem_e : entity hdl4fpga.bram 
+--		port map (
+--			clka  => wr_clk,
+--			addra => wr_addr,
+--			wea   => wr_ena,
+--			dia   => wr_data,
+--			doa   => rd_data,
+--
+--			clkb  => rd_clk,
+--			addrb => storage_addr,
+--			dib   => rd_data,
+--			dob   => storage_data);
 
 	end block;
 
@@ -590,7 +635,6 @@ begin
 		signal text_bgon   : std_logic;
 		signal sgmnt_on    : std_logic;
 		signal sgmnt_bgon  : std_logic;
-		signal pointer_dot : std_logic;
 	begin
 		formatu_e : entity hdl4fpga.scopeio_formatu
 		port map (
@@ -938,25 +982,26 @@ begin
 			vt_bgon        => vt_bgon,
 			text_bgon      => text_bgon,
 			sgmnt_bgon     => sgmnt_bgon,
-			video_color    => scope_color);
-
-		scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
-		generic map (
-			latency => vgaio_latency)
-		port map (
-			video_clk   => video_clk,
-			video_on    => video_io(2),
-			pointer_x   => pointer_x,
-			pointer_y   => pointer_y,
-			video_hcntr => video_hcntr,
-			video_vcntr => video_vcntr,
-			video_dot   => pointer_dot);
-
-		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
+			video_color    => video_color);
 	end block;
 
+	mouse_pointer_e: block
+		signal R_video_hcntr_aligned: signed(video_hcntr'range);
+	begin
+		process(video_clk)
+		begin
+			if rising_edge(video_clk) then
+				if video_io(2) = '0' then
+					R_video_hcntr_aligned <= to_signed(0, video_hcntr'length);
+				else
+					R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
+				end if;
+			end if;
+		end process;
+		video_color_mouse <= (video_pixel'range => '1') when R_video_hcntr_aligned = signed(mouse_x) or video_vcntr = mouse_y else video_color;
+	end block;
 
-	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
+	video_pixel <= (video_pixel'range => video_io(2)) and video_color_mouse;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
 	video_vsync <= video_io(1);
