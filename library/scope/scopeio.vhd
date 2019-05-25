@@ -326,8 +326,8 @@ architecture beh of scopeio is
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
 	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(11-1 downto 0);
-	signal pointer_y      : std_logic_vector(11-1 downto 0);
+	signal pointer_x      : std_logic_vector(video_hcntr'range);
+	signal pointer_y      : std_logic_vector(video_vcntr'range);
 
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
@@ -553,35 +553,35 @@ begin
 
 		end process;
 
-		process (rd_clk)
-		begin 
-			if rising_edge(rd_clk) then
-				rd_addr <= storage_addr;
-				storage_data <= rd_data;
-			end if;
-		end process;
-
-		mem_e : entity hdl4fpga.dpram 
-		port map (
-			wr_clk  => wr_clk,
-			wr_ena  => wr_ena,
-			wr_addr => wr_addr,
-			wr_data => wr_data,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
-
---		mem_e : entity hdl4fpga.bram 
---		port map (
---			clka  => wr_clk,
---			addra => wr_addr,
---			wea   => wr_ena,
---			dia   => wr_data,
---			doa   => rd_data,
+--		process (rd_clk)
+--		begin 
+--			if rising_edge(rd_clk) then
+--				rd_addr <= storage_addr;
+--				storage_data <= rd_data;
+--			end if;
+--		end process;
 --
---			clkb  => rd_clk,
---			addrb => storage_addr,
---			dib   => rd_data,
---			dob   => storage_data);
+--		mem_e : entity hdl4fpga.dpram 
+--		port map (
+--			wr_clk  => wr_clk,
+--			wr_ena  => wr_ena,
+--			wr_addr => wr_addr,
+--			wr_data => wr_data,
+--			rd_addr => rd_addr,
+--			rd_data => rd_data);
+
+		mem_e : entity hdl4fpga.bram 
+		port map (
+			clka  => wr_clk,
+			addra => wr_addr,
+			wea   => wr_ena,
+			dia   => wr_data,
+			doa   => rd_data,
+
+			clkb  => rd_clk,
+			addrb => storage_addr,
+			dib   => rd_data,
+			dob   => storage_data);
 
 	end block;
 
@@ -951,6 +951,8 @@ begin
 			video_color    => scope_color);
 
 		scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
+		generic map (
+			latency => vgaio_latency)
 		port map (
 			video_clk   => video_clk,
 			video_on    => video_io(2),
