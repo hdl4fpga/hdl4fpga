@@ -31,9 +31,9 @@ use ieee.std_logic_arith.all;
 entity mousem is
   generic
   (
-    c_x_bits: integer range 9 to 11 := 11;
-    c_y_bits: integer range 9 to 11 := 11;
-    c_z_bits: integer range 5 to 11 := 11
+    c_x_bits: integer range 8 to 11 := 8;
+    c_y_bits: integer range 8 to 11 := 8;
+    c_z_bits: integer range 4 to 11 := 4
   );
   port
   (
@@ -82,15 +82,32 @@ begin
   shift <= '1' when req = '0' and filter = "100000" else '0'; -- low for 200nS @25MHz
   endbit <= (not rx(0)) when run = '1' else (not rx(rx'high-20));
   done <= endbit and endcount and not req;
+
   rx7 <= x"00" when rx(7) = '1' else rx(19 downto 12);
+  G_yes_pad_x: if C_x_bits > 8 generate
   pad_dx <= (others => rx(5));
   s_dx <= pad_dx & rx7;
+  end generate;
+  G_not_pad_x: if C_x_bits <= 8 generate
+  s_dx <= rx7;
+  end generate;
+  
   rx8 <= x"00" when rx(8) = '1' else rx(30 downto 23);
+  G_yes_pad_y: if C_y_bits > 8 generate
   pad_dy <= (others => rx(6));
   s_dy <= pad_dy & rx8;
+  end generate;
+  G_not_pad_y: if C_y_bits <= 8 generate
+  s_dy <= rx8;
+  end generate;
+
+  G_yes_pad_z: if C_z_bits > 4 generate
   pad_dz <= (others => rx(37));
   s_dz <= pad_dz & rx(37 downto 34);
-
+  end generate;
+  G_not_pad_z: if C_z_bits <= 4 generate
+  s_dz <= rx(37 downto 34);
+  end generate;
 
   ps2m_clk <= '0' when req = '1' else 'Z'; -- bidir clk/request
   ps2m_dat <= '0' when tx(0) = '0' else 'Z'; -- bidir data

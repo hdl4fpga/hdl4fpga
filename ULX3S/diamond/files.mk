@@ -34,6 +34,8 @@ VHDL_LIB_FILES = \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeio_pointer.vhd \
+  ../../library/scope/scopeio_ps2mouse2daisy.vhd \
+  ../../library/ps2mouse/mousem.vhd \
   ../../library/scope/scopeio_mouse2rgtr.vhd \
   ../../library/scope/scopeio_rgtr2daisy.vhd \
   ../../library/scope/scopeio_miiudp.vhd \
@@ -65,7 +67,6 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_rom.vhd \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
-  ../../library/ps2mouse/mousem.vhd \
   ../../library/video/video.vhd \
   ../../library/video/video_win.vhd \
   ../../library/video/cgafonts.vhd \

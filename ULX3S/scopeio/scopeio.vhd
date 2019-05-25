@@ -349,8 +349,8 @@ begin
 	  spi_resn => oled_resn,
 	  spi_csn => oled_csn
 	);
-	
-	mouse2rgtr_e: entity hdl4fpga.scopeio_mouse2rgtr
+
+	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
 		vlayout_id  => vlayout_id
 	)
@@ -359,27 +359,6 @@ begin
 		ps2m_reset  => rst,
 		ps2m_clk    => ps2_clock,
 		ps2m_dat    => ps2_data,
-		mouse_dv    => mouse_dv,
-		mouse_x     => mouse_x,
-		mouse_y     => mouse_y,
-		dbg_mouse   => dbg_mouse,
-		rgtr_dv     => mouse_rgtr_dv,
-		rgtr_id     => mouse_rgtr_id,
-		rgtr_data   => mouse_rgtr_data
-	);
-
-	rgtr2daisy_e: entity hdl4fpga.scopeio_rgtr2daisy
-	port map
-	(
-		clk         => clk_mouse,
-		-- pointer_dv  => mouse_dv,
-		pointer_dv  => '0', -- sent together with mouse_rgtr_dv
-		pointer_x   => mouse_x,
-		pointer_y   => mouse_y,
-		rgtr_dv     => mouse_rgtr_dv,
-		rgtr_id     => mouse_rgtr_id,
-		rgtr_data   => mouse_rgtr_data,
-		-- chaini_sel  => '0', -- 0: mouse, 1: serial
 		-- daisy input
 		chaini_frm  => fromistreamdaisy_frm,
 		chaini_irdy => fromistreamdaisy_irdy,

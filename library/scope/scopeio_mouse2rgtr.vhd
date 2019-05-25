@@ -8,51 +8,57 @@ use hdl4fpga.std.all;
 entity scopeio_mouse2rgtr is
 generic
 (
-  C_rgtr_pointer : boolean := false; -- true: serialize pointer here, false: serialize pointer with rgtr2daisy
+  -- mouse drag sensitivity treshold:
+  -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2^(n+1) pixels
+  C_drag_treshold: integer := 0;
   vlayout_id     : integer := 0
 );
 port
 (
   clk           : in  std_logic;
+
   ps2m_reset    : in  std_logic := '0'; -- PS/2 mouse core reset
   ps2m_clk      : inout std_logic; -- PS/2 mouse clock
   ps2m_dat      : inout std_logic; -- PS/2 mouse data
+  
+  mouse_update  : in std_logic; -- mouse data valid
+  mouse_btn     : in std_logic_vector(2 downto 0); -- 2=middle, 1=right, 0=left
+  mouse_dx      : in signed; -- 8 bits
+  mouse_dy      : in signed; -- 8 bits
+  mouse_dz      : in signed; -- 4 bits
 
   rgtr_dv       : out std_logic; -- clk synchronous write cycle
   rgtr_id       : out std_logic_vector(7 downto 0); -- register address
   rgtr_data     : out std_logic_vector(31 downto 0); -- register value
 
-  dbg_mouse     : out std_logic_vector(7 downto 0);
-
-  -- TODO rename mouse_* -> pointer_*
-  mouse_dv      : out std_logic;
-  mouse_x       : out std_logic_vector(10 downto 0);
-  mouse_y       : out std_logic_vector(10 downto 0)
+  pointer_dv    : out std_logic;
+  pointer_x     : out std_logic_vector(10 downto 0);
+  pointer_y     : out std_logic_vector(10 downto 0)
 );
 end;
 
 architecture def of scopeio_mouse2rgtr is
   constant C_XY_coordinate_bits: integer := 11;
   constant C_XY_max: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '1');
-  signal S_mouse_update: std_logic;
-  signal R_mouse_dv: std_logic;
-  signal S_mouse_x, S_mouse_dx: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
-  signal S_mouse_y, S_mouse_dy: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
-  signal S_mouse_z, S_mouse_dz: std_logic_vector(9-1 downto 0);
-  signal S_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
-  signal R_mouse_x      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
-  signal R_mouse_y      : std_logic_vector(C_XY_coordinate_bits-1 downto 0);
+
+  signal R_mouse_update: std_logic; -- data valid signal
+
+  signal R_mouse_dx     : signed(mouse_dx'range);
+  signal R_mouse_dy     : signed(mouse_dy'range);
+  signal R_mouse_dz     : signed(mouse_dz'range);
+
+  signal R_mouse_x      : signed(C_XY_coordinate_bits-1 downto 0);
+  signal R_mouse_y      : signed(C_XY_coordinate_bits-1 downto 0);
+  signal R_mouse_z      : signed(9-1 downto 0);
   signal R_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
+  signal R_prev_mouse_btn    : std_logic_vector(3-1 downto 0); -- 2=middle, 1=right, 0=left
+
+  signal R_pointer_dv: std_logic; -- for output
 
   -- output registers that hold data for write cycle to rgtr module
   signal R_rgtr_dv      : std_logic; -- clk synchronous write cycle
   signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
   signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
-
-  -- output registers to insert the pointer update commands
-  signal R_rgtr_ptr_dv      : std_logic; -- clk synchronous write cycle
-  signal R_rgtr_ptr_id      : std_logic_vector(7 downto 0); -- register address
-  signal R_rgtr_ptr_data    : std_logic_vector(31 downto 0); -- register value
 
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
@@ -119,51 +125,33 @@ architecture def of scopeio_mouse2rgtr is
 
   -- mouse dragging
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
-  constant C_drag_treshold: integer := 0; -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2*2^n pixels
 begin
-  mouse_e: entity hdl4fpga.mousem
-  generic map
-  (
-    c_x_bits => S_mouse_x'length,
-    c_y_bits => S_mouse_y'length,
-    c_z_bits => S_mouse_z'length
-  )
-  port map
-  (
-    clk        => clk, -- by default made for 25 MHz
-    ps2m_reset => ps2m_reset, -- after replugging mouse, it needs reset
-    ps2m_clk   => ps2m_clk,
-    ps2m_dat   => ps2m_dat,
-    update     => S_mouse_update,
-    dx         => S_mouse_dx,
-    dy         => S_mouse_dy,
-    dz         => S_mouse_dz,
-    x          => S_mouse_x,
-    y          => S_mouse_y,
-    z          => S_mouse_z,
-    btn        => S_mouse_btn
-  );
-
-  -- registered stage to offload timing
+  -- register stage to sum mouse deltas and offload timing
   process(clk)
   begin
     if rising_edge(clk) then
-      if S_mouse_update = '1' then
-        R_mouse_x <= S_mouse_x;
-        R_mouse_y <= S_mouse_y;
-        R_mouse_btn <= S_mouse_btn;
-        if unsigned(S_mouse_dx) /= 0 or unsigned(S_mouse_dy) /= 0 then
-          R_mouse_dv <= '1';
+      R_mouse_update <= mouse_update;
+      if mouse_update = '1' then
+        R_mouse_dx <= mouse_dx;
+        R_mouse_dy <= mouse_dy;
+        R_mouse_dz <= mouse_dz;
+        R_mouse_x <= std_logic_vector(signed(R_mouse_x) + mouse_dx);
+        R_mouse_y <= std_logic_vector(signed(R_mouse_y) - mouse_dy);
+        R_mouse_z <= std_logic_vector(signed(R_mouse_z) + mouse_dz);
+        R_mouse_btn <= mouse_btn;
+        R_prev_mouse_btn <= R_mouse_btn;
+        if mouse_dx /= 0 or mouse_dy /= 0 then
+          R_pointer_dv <= '1';
         end if;
       else
-        R_mouse_dv <= '0';
+        R_pointer_dv <= '0';
       end if;
     end if;
   end process;
-  -- output for updating pointer position
-  mouse_dv <= R_mouse_dv;
-  mouse_x <= R_mouse_x;
-  mouse_y <= R_mouse_y;
+  -- output for updating pointer on display
+  pointer_dv <= R_pointer_dv;
+  pointer_x  <= std_logic_vector(R_mouse_x);
+  pointer_y  <= std_logic_vector(R_mouse_y);
 
   -- for mouse x/y pointer position, find the ID of the box where the pointer is.
   -- ID=-1 means pointer is outside of any of the listed boxes
@@ -207,8 +195,8 @@ begin
     begin
       if rising_edge(clk) then
         if R_list_addr = C_list_box_count*4-1 then
-          R_latch_x <= R_mouse_x;
-          R_latch_y <= R_mouse_y;
+          R_latch_x <= unsigned(R_mouse_x);
+          R_latch_y <= unsigned(R_mouse_y);
           R_box_id <= R_matching_id; -- stores final result
           R_list_addr <= (others => '0'); -- reset list addr counter
         else
@@ -221,21 +209,17 @@ begin
   --dbg_mouse(C_box_id_bits-1 downto 0) <= R_box_id(C_box_id_bits-1 downto 0);
 
   mouse_drag: block
-    signal S_current_x, S_current_y: signed(C_XY_coordinate_bits-1 downto 0);
     signal R_press_x, R_press_y: signed(C_XY_coordinate_bits-1 downto 0);
     signal R_dx, R_dy: signed(C_XY_coordinate_bits-1 downto 0);
   begin
-    -- just for conversion to signed
-    S_current_x <= R_mouse_x;
-    S_current_y <= R_mouse_y;
     process(clk)
     begin
       if rising_edge(clk) then
         if R_mouse_btn(2 downto 0) = "000" then -- all btn's released
           R_dragging <= '0';
           R_clicked_box_id <= R_box_id;
-          R_press_x <= S_current_x; -- record mouse position for future drag
-          R_press_y <= S_current_y;
+          R_press_x <= R_mouse_x; -- record mouse position for future drag
+          R_press_y <= R_mouse_y;
         else -- R_mouse_btn(2 downto 0) /= "000" -- any btn pressed
           -- Simple filter to distinguish click from drag.
           -- If mouse is moved for more than 2*2**treshold pixels
@@ -249,24 +233,20 @@ begin
             R_dragging <= '1';
           end if;
         end if;
-        R_dx <= S_current_x - R_press_x;
-        R_dy <= S_current_y - R_press_y;
+        R_dx <= R_mouse_x - R_press_x;
+        R_dy <= R_mouse_y - R_press_y;
       end if;
     end process;
   end block;
-  --dbg_mouse(4) <= R_dragging;
-  --dbg_mouse(3 downto 0) <= R_dx(3 downto 0);
   
   dispatch_mouse_event: block
-    signal R_vertical_scale_offset, S_vertical_scale_offset_next, S_vertical_scale_offset_delta: unsigned(13 downto 0);
-    signal S_vertical_scale_offset_sign_expansion: unsigned(S_vertical_scale_offset_delta'length-S_mouse_dy'length-1 downto 0);
-    signal R_vertical_scale_gain, S_vertical_scale_gain_next: unsigned(1 downto 0);
-    signal R_horizontal_scale_offset, S_horizontal_scale_offset_next, S_horizontal_scale_offset_delta: unsigned(15 downto 0);
-    signal S_horizontal_scale_offset_sign_expansion: unsigned(S_horizontal_scale_offset_delta'length-S_mouse_dx'length-1 downto 0);
-    signal R_horizontal_scale_timebase, S_horizontal_scale_timebase_next: unsigned(3 downto 0);
-    signal R_trace_selected, S_trace_selected_next: unsigned(1 downto 0);
-    signal R_trigger_level, S_trigger_level_next: unsigned(8 downto 0);
-    signal R_trigger_source, S_trigger_source_next: unsigned(1 downto 0);
+    signal R_vertical_scale_offset, S_vertical_scale_offset_next: signed(13 downto 0);
+    signal R_vertical_scale_gain, S_vertical_scale_gain_next: signed(1 downto 0);
+    signal R_horizontal_scale_offset, S_horizontal_scale_offset_next: signed(15 downto 0);
+    signal R_horizontal_scale_timebase, S_horizontal_scale_timebase_next: signed(3 downto 0);
+    signal R_trace_selected, S_trace_selected_next: signed(1 downto 0);
+    signal R_trigger_level, S_trigger_level_next: signed(8 downto 0);
+    signal R_trigger_source, S_trigger_source_next: signed(1 downto 0);
     signal R_trigger_edge, S_trigger_edge_next: std_logic;
     signal R_trigger_freeze, S_trigger_freeze_next: std_logic;
     -- FIXME trace color list should not be hardcoded
@@ -285,36 +265,27 @@ begin
     -- by using registers like in "find_box" block above,
     -- see "R_A" and "R_B".
     -- Keep this code simple and readable.
-    S_vertical_scale_offset_sign_expansion <= (others => S_mouse_dy(S_mouse_dy'high));
-    S_vertical_scale_offset_delta <= S_vertical_scale_offset_sign_expansion & unsigned(S_mouse_dy);
-    S_vertical_scale_offset_next <= R_vertical_scale_offset
-                                  + S_vertical_scale_offset_delta
-                               when R_dragging = '1' and S_mouse_btn(0) = '1'
+    S_vertical_scale_offset_next <= R_vertical_scale_offset + R_mouse_dy
+                               when R_dragging = '1' and R_mouse_btn(0) = '1'
                                else R_vertical_scale_offset;
-    S_vertical_scale_gain_next <= R_vertical_scale_gain
-                                + unsigned(S_mouse_dz(R_vertical_scale_gain'range));
-    S_horizontal_scale_offset_sign_expansion <= (others => S_mouse_dx(S_mouse_dx'high));
-    S_horizontal_scale_offset_delta <= S_horizontal_scale_offset_sign_expansion & unsigned(S_mouse_dx);
-    S_horizontal_scale_offset_next <= R_horizontal_scale_offset
-                                    - S_horizontal_scale_offset_delta
-                                 when R_dragging = '1' and S_mouse_btn(0) = '1'
+    S_vertical_scale_gain_next <= R_vertical_scale_gain + R_mouse_dz(R_vertical_scale_gain'range);
+    S_horizontal_scale_offset_next <= R_horizontal_scale_offset - R_mouse_dx
+                                 when R_dragging = '1' and R_mouse_btn(0) = '1'
                                  else R_horizontal_scale_offset;
-    S_horizontal_scale_timebase_next <= R_horizontal_scale_timebase
-                                      + unsigned(S_mouse_dz(R_horizontal_scale_timebase'range));
-    S_trace_selected_next <= R_trace_selected - unsigned(S_mouse_dz(R_trace_selected'range));
-    S_trigger_level_next <= R_trigger_level
-                          + unsigned(S_mouse_dy(R_trigger_level'range))
-                       when R_dragging = '1' -- and S_mouse_btn(2) = '1' -- wheel pressed Y-drag
-                       else R_trigger_level - unsigned(S_mouse_dz(R_trigger_level'range)); -- rotate wheel
-    S_trigger_source_next <= R_trace_selected when S_mouse_btn(2 downto 0) /= "000" else R_trigger_source;
-    S_trigger_edge_next <= not R_trigger_edge when S_mouse_btn(2) = '1' and R_mouse_btn(2) = '0' else R_trigger_edge;
-    S_trigger_freeze_next <= not R_trigger_freeze when S_mouse_btn(1) = '1' and R_mouse_btn(1) = '0' else R_trigger_freeze;
+    S_horizontal_scale_timebase_next <= R_horizontal_scale_timebase + R_mouse_dz;
+    S_trace_selected_next <= R_trace_selected - R_mouse_dz(R_trace_selected'range);
+    S_trigger_level_next <= R_trigger_level + R_mouse_dy
+                       when R_dragging = '1' -- and R_mouse_btn(2) = '1' -- wheel pressed Y-drag
+                       else R_trigger_level - R_mouse_dz; -- rotate wheel
+    S_trigger_source_next <= R_trace_selected when R_mouse_btn(2 downto 0) /= "000" else R_trigger_source;
+    S_trigger_edge_next <= not R_trigger_edge when R_mouse_btn(2) = '1' and R_prev_mouse_btn(2) = '0' else R_trigger_edge;
+    S_trigger_freeze_next <= not R_trigger_freeze when R_mouse_btn(1) = '1' and R_prev_mouse_btn(1) = '0' else R_trigger_freeze;
     process(clk)
     begin
       if rising_edge(clk) then
         case R_clicked_box_id is
           when 0 => -- mouse has clicked on the vertical scale window
-            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_dv <= R_mouse_update;
             if R_dragging = '1' then
               -- drag mouse to change vertical scale offset
               R_rgtr_id <= x"14"; -- trace vertical settings
@@ -330,7 +301,7 @@ begin
               R_rgtr_data(4 downto 2) <= (others => '0');
               R_rgtr_data(1 downto 0) <= R_trace_selected;
             end if;
-            if S_mouse_update = '1' then
+            if R_mouse_update = '1' then
               R_vertical_scale_offset <= S_vertical_scale_offset_next;
               R_vertical_scale_gain <= S_vertical_scale_gain_next;
             end if;
@@ -339,14 +310,14 @@ begin
             -- drag mouse up-down or rotate wheel to change trigger level
             -- press wheel to change trigger edge
             -- click right to freeze
-            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_dv <= R_mouse_update;
             R_rgtr_id <= x"12"; -- trigger
             R_rgtr_data(31 downto 13) <= (others => '0');
             R_rgtr_data(12 downto 11) <= S_trigger_source_next;
-            R_rgtr_data(10 downto 2) <= S_trigger_level_next;
+            R_rgtr_data(10 downto 2) <= std_logic_vector(S_trigger_level_next);
             R_rgtr_data(1) <= S_trigger_edge_next; -- when '1' falling edge
             R_rgtr_data(0) <= S_trigger_freeze_next; -- when '1' trigger freeze
-            if S_mouse_update = '1' then
+            if R_mouse_update = '1' then
               -- press wheel
               R_trigger_edge <= S_trigger_edge_next;
               -- click right btn
@@ -360,29 +331,29 @@ begin
             -- rotate wheel to select the input channel
             -- frame will change color to indicate
             -- a color of trace which is "selected".
-            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_dv <= R_mouse_update;
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto 10) <= (others => '0');
             R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_trace_selected_next));
             R_rgtr_data(6 downto 4) <= (others => '0');
             R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
-            if S_mouse_update = '1' then
+            if R_mouse_update = '1' then
               R_trace_selected <= S_trace_selected_next;
             end if;
           when 3 => -- mouse has clicked on the thin window below grid
             -- drag mouse left-right to move horizontal scale offset
             -- rotate mouse wheel to change timebase scale
-            R_rgtr_dv <= S_mouse_update;
+            R_rgtr_dv <= R_mouse_update;
             R_rgtr_id <= x"10"; -- horizontal scale settings
             R_rgtr_data(31 downto 20) <= (others => '0');
             R_rgtr_data(19 downto 16) <= S_horizontal_scale_timebase_next;
             R_rgtr_data(15 downto 0) <= S_horizontal_scale_offset_next;
-            if S_mouse_update = '1' then
+            if R_mouse_update = '1' then
               R_horizontal_scale_offset <= S_horizontal_scale_offset_next;
               R_horizontal_scale_timebase <= S_horizontal_scale_timebase_next;
             end if;
           when others =>
-            R_rgtr_dv <= S_mouse_update; -- help rgtr2daisy to update mouse alwyas
+            R_rgtr_dv <= R_mouse_update; -- help rgtr2daisy to update mouse alwyas
             R_rgtr_id <= (others => '0'); -- no register
             R_rgtr_data <= (others => '0'); -- no data
         end case;
@@ -390,83 +361,34 @@ begin
     end process;
   end block;
 
-  G_yes_rgtr_pointer: if C_rgtr_pointer generate
-  -- insert pointer update commands several
-  -- cycles later after each mouse update because
-  -- it's expected that "dispatch_mouse_event" block
-  -- may request something immediately after mouse update event.
-  -- there must pass enough clk cycles after
-  -- previous register write request
-  -- which must be serialized with rgtr2daisy
-  insert_pointer: block
-    signal R_delay: unsigned(4 downto 0); -- 2**(R_delay'high) cycles delay
-    signal S_request: std_logic;
-  begin
-    -- generates single-cycle request pulse when R_delay = "10xxx"
-    S_request <= '1' when R_delay(R_delay'high downto R_delay'high-1) = "10" else '0';
-    process(clk)
-    begin
-      if rising_edge(clk) then
-        if S_mouse_update = '1' then
-          R_delay <= (others => '0');
-        else
-          -- increment when MSB=0, from "00000" to "10000"
-          if R_delay(R_delay'high) = '0' then
-            R_delay <= R_delay + 1;
-          else
-            R_delay <= (others => '1'); -- from "10000" jump to "11111"
-          end if;
-        end if;
-        if S_request = '1' then
-          R_rgtr_ptr_dv <= '1';
-          R_rgtr_ptr_id <= x"15"; -- mouse pointer
-          R_rgtr_ptr_data(31 downto 22) <= (others => '0');
-          R_rgtr_ptr_data(21 downto 11) <= R_mouse_y;
-          R_rgtr_ptr_data(10 downto 0)  <= R_mouse_x;
-        else
-          R_rgtr_ptr_dv <= R_rgtr_dv;
-          R_rgtr_ptr_id <= R_rgtr_id;
-          R_rgtr_ptr_data <= R_rgtr_data;
-        end if;
-      end if;
-    end process;
-  end block;
-  
-  -- output with mouse serialized
-  rgtr_dv <= R_rgtr_ptr_dv;
-  rgtr_id <= R_rgtr_ptr_id;
-  rgtr_data <= R_rgtr_ptr_data;
-  end generate;
-
-  G_not_rgtr_pointer: if not C_rgtr_pointer generate
   -- pointer will not be rgtr'd
   -- rgtr2daisy should serialize pointer
   rgtr_dv <= R_rgtr_dv;
   rgtr_id <= R_rgtr_id;
   rgtr_data <= R_rgtr_data;
-  end generate;
 
   -- simple example for mouse pointer
-  --rgtr_dv <= S_mouse_update;
+  --rgtr_dv <= R_mouse_update;
   --rgtr_id <= x"15"; -- mouse pointer
   --rgtr_data(31 downto 22) <= (others => '0');
-  --rgtr_data(21 downto 11) <= S_mouse_y;
-  --rgtr_data(10 downto 0)  <= S_mouse_x;
+  --rgtr_data(21 downto 11) <= R_mouse_y;
+  --rgtr_data(10 downto 0)  <= R_mouse_x;
 
   -- simple example to change trigger level (4-ch scope)
-  --rgtr_dv <= S_mouse_update;
+  --rgtr_dv <= R_mouse_update;
   --rgtr_id <= x"12"; -- trigger
   --rgtr_data(31 downto 13) <= (others => '0');
-  --rgtr_data(12 downto 11) <= S_mouse_btn(1 downto 0); -- left/right btn select trigger channel
-  --rgtr_data(10 downto 2) <= S_mouse_z(8 downto 0); -- rotating wheel changes trigger level
-  --rgtr_data(1) <= S_mouse_btn(2); -- wheel press selects trigger edge
+  --rgtr_data(12 downto 11) <= R_mouse_btn(1 downto 0); -- left/right btn select trigger channel
+  --rgtr_data(10 downto 2) <= R_mouse_z(8 downto 0); -- rotating wheel changes trigger level
+  --rgtr_data(1) <= R_mouse_btn(2); -- wheel press selects trigger edge
   --rgtr_data(0) <= '0'; -- when '1' trigger freeze
 
   -- simple example to change grid color with mouse wheel (4-ch scope)
-  --rgtr_dv <= mouse_update;
+  --rgtr_dv <= R_mouse_update;
   --rgtr_id <= x"11"; -- palette (color)
-  --rgtr_data(31 downto 7) <= (others => '0');
-  --rgtr_data(6 downto 4) <= mouse_z(2 downto 0); -- moving mouse wheel changes color
+  --rgtr_data(31 downto 10) <= (others => '0');
+  --rgtr_data(9 downto 7) <= R_mouse_z(2 downto 0); -- moving mouse wheel changes color
+  --rgtr_data(6 downto 4) <= (others => '0');
   --rgtr_data(3 downto 0) <= x"0"; -- of grid
   -- x"7" frame color
   -- x"6" bg color of text window
