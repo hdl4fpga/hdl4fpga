@@ -8,7 +8,8 @@ use hdl4fpga.std.all;
 entity scopeio_mouse2rgtr is
 generic
 (
-  vlayout_id    : integer := 0
+  C_rgtr_pointer : boolean := false; -- true: serialize pointer here, false: serialize pointer with rgtr2daisy
+  vlayout_id     : integer := 0
 );
 port
 (
@@ -23,6 +24,8 @@ port
 
   dbg_mouse     : out std_logic_vector(7 downto 0);
 
+  -- TODO rename mouse_* -> pointer_*
+  mouse_dv      : out std_logic;
   mouse_x       : out std_logic_vector(10 downto 0);
   mouse_y       : out std_logic_vector(10 downto 0)
 );
@@ -31,7 +34,8 @@ end;
 architecture def of scopeio_mouse2rgtr is
   constant C_XY_coordinate_bits: integer := 11;
   constant C_XY_max: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '1');
-  signal S_mouse_update : std_logic;
+  signal S_mouse_update: std_logic;
+  signal R_mouse_dv: std_logic;
   signal S_mouse_x, S_mouse_dx: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
   signal S_mouse_y, S_mouse_dy: std_logic_vector(C_XY_coordinate_bits-1 downto 0);
   signal S_mouse_z, S_mouse_dz: std_logic_vector(9-1 downto 0);
@@ -148,9 +152,16 @@ begin
         R_mouse_x <= S_mouse_x;
         R_mouse_y <= S_mouse_y;
         R_mouse_btn <= S_mouse_btn;
+        if unsigned(S_mouse_dx) /= 0 or unsigned(S_mouse_dy) /= 0 then
+          R_mouse_dv <= '1';
+        end if;
+      else
+        R_mouse_dv <= '0';
       end if;
     end if;
   end process;
+  -- output for updating pointer position
+  mouse_dv <= R_mouse_dv;
   mouse_x <= R_mouse_x;
   mouse_y <= R_mouse_y;
 
@@ -371,12 +382,15 @@ begin
               R_horizontal_scale_timebase <= S_horizontal_scale_timebase_next;
             end if;
           when others =>
-            R_rgtr_dv <= '0';
+            R_rgtr_dv <= S_mouse_update; -- help rgtr2daisy to update mouse alwyas
+            R_rgtr_id <= (others => '0'); -- no register
+            R_rgtr_data <= (others => '0'); -- no data
         end case;
       end if; -- rising edge
     end process;
   end block;
 
+  G_yes_rgtr_pointer: if C_rgtr_pointer generate
   -- insert pointer update commands several
   -- cycles later after each mouse update because
   -- it's expected that "dispatch_mouse_event" block
@@ -418,10 +432,19 @@ begin
     end process;
   end block;
   
-  -- output
+  -- output with mouse serialized
   rgtr_dv <= R_rgtr_ptr_dv;
   rgtr_id <= R_rgtr_ptr_id;
   rgtr_data <= R_rgtr_ptr_data;
+  end generate;
+
+  G_not_rgtr_pointer: if not C_rgtr_pointer generate
+  -- pointer will not be rgtr'd
+  -- rgtr2daisy should serialize pointer
+  rgtr_dv <= R_rgtr_dv;
+  rgtr_id <= R_rgtr_id;
+  rgtr_data <= R_rgtr_data;
+  end generate;
 
   -- simple example for mouse pointer
   --rgtr_dv <= S_mouse_update;

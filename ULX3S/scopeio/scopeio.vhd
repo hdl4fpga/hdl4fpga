@@ -127,8 +127,9 @@ architecture beh of ulx3s is
 	signal mouse_rgtr_dv   : std_logic;
 	signal mouse_rgtr_id   : std_logic_vector(8-1 downto 0);
 	signal mouse_rgtr_data : std_logic_vector(32-1 downto 0);
-	signal mouse_x           : std_logic_vector(11-1 downto 0) := "000" & x"64";
-	signal mouse_y           : std_logic_vector(11-1 downto 0) := "000" & x"64";
+	signal mouse_dv        : std_logic;
+	signal mouse_x         : std_logic_vector(11-1 downto 0) := "000" & x"64";
+	signal mouse_y         : std_logic_vector(11-1 downto 0) := "000" & x"64";
 	signal dbg_mouse       : std_logic_vector(7 downto 0);
 
 	signal display    : std_logic_vector(7 downto 0);
@@ -342,8 +343,8 @@ begin
 	  --data(12) => dbg_frm,
 	  --data(8) => dbg_irdy,
 	  --data(7 downto 0) => dbg_data,
-	  data(15 downto 8) => dbg_mouse,
-	  data(7 downto 0) => display,
+	  data(15 downto 8) => mouse_x(7 downto 0),
+	  data(7 downto 0) => mouse_y(7 downto 0),
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
@@ -360,6 +361,7 @@ begin
 		ps2m_reset  => rst,
 		ps2m_clk    => ps2_clock,
 		ps2m_dat    => ps2_data,
+		mouse_dv    => mouse_dv,
 		mouse_x     => mouse_x,
 		mouse_y     => mouse_y,
 		dbg_mouse   => dbg_mouse,
@@ -372,6 +374,10 @@ begin
 	port map
 	(
 		clk         => clk_mouse,
+		-- pointer_dv  => mouse_dv,
+		pointer_dv  => '0', -- sent together with mouse_rgtr_dv
+		pointer_x   => mouse_x,
+		pointer_y   => mouse_y,
 		rgtr_dv     => mouse_rgtr_dv,
 		rgtr_id     => mouse_rgtr_id,
 		rgtr_data   => mouse_rgtr_data,

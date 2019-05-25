@@ -9,8 +9,12 @@ entity scopeio_rgtr2daisy is
 port
 (
 		clk         : in  std_logic;
+		
+		pointer_dv  : in  std_logic := '0';
+		pointer_x   : in  std_logic_vector(10 downto 0);
+		pointer_y   : in  std_logic_vector(10 downto 0);
 
-		rgtr_dv     : in  std_logic := '1';
+		rgtr_dv     : in  std_logic := '0';
 		rgtr_id     : in  std_logic_vector; -- 8 bit
 		rgtr_data   : in  std_logic_vector; -- 32 bit
 
@@ -31,10 +35,13 @@ architecture beh of scopeio_rgtr2daisy is
 	signal R_strm_frm  : std_logic;
 	signal S_strm_irdy : std_logic;
 	signal S_strm_data : std_logic_vector(chaino_data'range);
-	signal R_shift     : std_logic_vector(2*rgtr_id'length + rgtr_data'length - 1 downto 0);
+	constant C_rgtr_packet_length : integer := 2*rgtr_id'length + rgtr_data'length; -- 6 bytes
+	constant C_pointer_packet_length : integer := 5*rgtr_id'length; -- 5 bytes
+	signal R_shift     : std_logic_vector(C_pointer_packet_length + C_rgtr_packet_length - 1 downto 0);
 	signal R_pad0      : std_logic_vector(chaino_data'range) := (others => '0');
-	constant C_cycles  : integer := R_shift'length / chaino_data'length;
-	signal R_counter   : unsigned(unsigned_num_bits(C_cycles)-1 downto 0);
+	constant C_pointer_and_rgtr_cycles  : integer := R_shift'length / chaino_data'length;
+	constant C_pointer_only_cycles: integer := C_pointer_packet_length / chaino_data'length;
+	signal R_counter   : unsigned(unsigned_num_bits(C_pointer_and_rgtr_cycles)-1 downto 0);
 begin
 	assert chaino_data'length=chaini_data'length 
 		report "chaino_data'length not equal chaini_data'length"
@@ -42,14 +49,16 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if rgtr_dv = '1' then
-				R_shift <= rgtr_data( 7 downto  0) -- going out last
-				         & rgtr_data(15 downto  8)
-				         & rgtr_data(23 downto 16)
-				         & rgtr_data(31 downto 24) -- reverse bytes order
-				         & x"03"                   -- data length-1 in bytes
-				         & rgtr_id;                -- going out first
-				R_counter <= to_unsigned(C_cycles - 1, R_counter'length);
+			-- if R_strm_frm is 1 the request will be dropped
+			-- to prevent overwriting currently active serializing
+			if (rgtr_dv = '1' or pointer_dv = '1') and R_strm_frm = '0' then
+				R_shift <= x"15" & x"02" & "00" & pointer_y & pointer_x
+				         & rgtr_id & x"03" & rgtr_data;
+				if rgtr_dv = '1' and rgtr_id /= x"00" then
+					R_counter <= to_unsigned(C_pointer_and_rgtr_cycles - 1, R_counter'length);
+				else
+					R_counter <= to_unsigned(C_pointer_only_cycles - 1, R_counter'length);
+				end if;
 				R_strm_frm <= '1';
 			else
 				if R_counter = 0 then
@@ -57,13 +66,13 @@ begin
 				else
 					R_counter <= R_counter - 1;
 				end if;
-				R_shift <= R_pad0 & R_shift(R_shift'high downto R_pad0'length);
+				R_shift <= R_shift(R_shift'high - R_pad0'length downto 0) & R_pad0;
 			end if;
 		end if;
 	end process;
 	S_strm_frm <= R_strm_frm;
 	S_strm_irdy <= R_strm_frm;
-	S_strm_data <= R_shift(chaino_data'high downto 0);
+	S_strm_data <= R_shift(R_shift'high downto R_shift'length - chaino_data'length);
 	chaino_frm  <= chaini_frm  when chaini_sel='1' else S_strm_frm; 
 	chaino_irdy <= chaini_irdy when chaini_sel='1' else S_strm_irdy;
 	chaino_data <= chaini_data when chaini_sel='1' else S_strm_data;
