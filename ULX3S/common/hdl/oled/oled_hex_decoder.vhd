@@ -34,7 +34,7 @@ end;
 architecture rtl of oled_hex_decoder is
   signal R_data: std_logic_vector(data'range);
   -- constant init_seq: T_oled_init_seq := C_oled_init_seq;
-  signal R_reset_cnt: std_logic_vector(1 downto 0) := (others => '0'); -- 20 downto 0
+  signal R_reset_cnt: std_logic_vector(20 downto 0) := (others => '0'); -- 20 downto 0
   -- initialization sequence replay counter
   signal R_init_cnt: std_logic_vector(15 downto 0) := (others => '0'); -- 4 bits more to indicate stop
   signal R_spi_data: std_logic_vector(7 downto 0) := x"00"; -- one bit more
