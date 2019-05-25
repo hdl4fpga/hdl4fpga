@@ -36,8 +36,8 @@ entity scopeio_rgtr is
 		trigger_edge    : out std_logic;
 
 		pointer_dv      : out std_logic;
-		pointer_x       : out std_logic_vector(11-1 downto 0) := (others => '1');
-		pointer_y       : out std_logic_vector(11-1 downto 0) := (others => '1'));
+		pointer_x       : out std_logic_vector;
+		pointer_y       : out std_logic_vector);
 
 	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
 end;
