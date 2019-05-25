@@ -72,7 +72,7 @@ function send(data) {
 		break;
 	case 'TCPIP':
 		const ipport = 57001;
-		console.log(commParam.getHost());
+		console.log(getHost());
 		var buffer = Buffer.alloc(data.length+2);
 		for (i=0; i < data.length; i++)
 			buffer[i] = data[i];
@@ -97,6 +97,10 @@ function createUART (uartName, options) {
 
 function listUART () {
 	return SerialPort.list();
+}
+
+function getHost(name) {
+	return hostName;
 }
 
 function setHost(name) {

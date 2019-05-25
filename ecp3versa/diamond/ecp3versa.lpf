@@ -35,7 +35,7 @@ SYSCONFIG PERSISTENT=OFF CONFIG_MODE=SPI DONE_EX=OFF MCCLK_FREQ=20 CONFIG_SECURE
 LOCATE COMP "clk"  SITE "L5";
 IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
 
-FREQUENCY PORT  "uart_rxc" 2.00 MHz ;
+FREQUENCY NET "uart_rxc" 2.00 MHz ;
 
 LOCATE COMP "fpga_gsrn"  SITE "A21";
 IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
@@ -63,6 +63,8 @@ BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
 BLOCK PATH FROM CLKNET "ddr_sclk2x"	TO CLKNET "ddr_sclk";
 BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddr_sclk";
 BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
+BLOCK PATH FROM CLKNET "clk"	TO CLKNET "uart_rxc";
+
 
 LOCATE VREF "vref1_ddr3"  SITE "E1";
 LOCATE COMP "ddr3_dq[0]"  SITE "E5";
@@ -204,19 +206,18 @@ LOCATE COMP "seg[14]" SITE "W5" ;
 DEFINE PORT GROUP "segs" "seg[*]";
 IOBUF GROUP "segs" IO_TYPE=LVCMOS33 ;
 
-DEFINE PORT GROUP "expansionx4" "expansionx4[*]";
-IOBUF GROUP "expansionx4" IO_TYPE=LVTTL33;
+DEFINE PORT GROUP "expansionx4s" "expansionx4[*]";
+IOBUF GROUP "expansionx4s" IO_TYPE=LVTTL33;
 LOCATE COMP "expansionx4[3]" SITE "B11";
 LOCATE COMP "expansionx4[4]" SITE "B12";
 LOCATE COMP "expansionx4[5]" SITE "A12";
 LOCATE COMP "expansionx4[6]" SITE "A13";
 LOCATE COMP "expansionx4[7]" SITE "E12";
 
-DEFINE PORT GROUP "expansionx3" "expansionx3[*]";
-IOBUF GROUP "expansionx3" IO_TYPE=LVTTL33;
+DEFINE PORT GROUP "expansionx3s" "expansionx3[*]";
+IOBUF GROUP "expansionx3s" IO_TYPE=LVTTL33;
 LOCATE COMP "expansionx3[4]" SITE "D17";
 LOCATE COMP "expansionx3[5]" SITE "J22";
 LOCATE COMP "expansionx3[6]" SITE "K22";
 LOCATE COMP "expansionx3[7]" SITE "L18";
 LOCATE COMP "expansionx3[8]" SITE "L19";
-

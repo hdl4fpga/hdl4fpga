@@ -54,8 +54,7 @@ architecture mix of video_timing_rom is
 		7 => (1920,  96,  56, 128),  -- 1920x1080R@60Hz pclk 148.50MHz
 		8 => (1920, 128, 200, 328),  -- 1920x1080R@60Hz pclk 173.00MHz
 		9 => (1920,  88,  44, 133),  -- 1920x1080R@30Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit
-	       10 => (1280,  64, 192, 192)   -- 1280x768R@60Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit
-	);
+	  10 => (1280,  64, 192, 192)  -- 1280x768R@60Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit);
 
 	constant v_tab : natural_matrix (0 to 10, 3 downto 0) := (
 --		0 => ( 24, 3, 4, 5),
@@ -70,7 +69,8 @@ architecture mix of video_timing_rom is
 --		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
 		8 => (1080, 3, 5, 32),	-- 1920x1080C@60Hz pclk 173.00MHz
 		9 => (1080, 4, 5, 46), 	-- 1920x1080R@30Hz pclk  75.00MHz Added by emard@github.com for ULX3S kit
-	       10 => ( 768, 3, 5, 20) 	-- 1280x768R@60Hz  pclk  75.00MHz Added by emard@github.com for ULX3S kit
+    10 => ( 768, 3, 5, 20) 	-- 1280x768R@60Hz  pclk  75.00MHz Added by emard@github.com for ULX3S kit
+
 	);
 
 -- modeline calculator https://arachnoid.com/modelines/
