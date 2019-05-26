@@ -85,7 +85,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture def of bram is
+architecture hdl4fpga of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);
