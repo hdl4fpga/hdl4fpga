@@ -63,6 +63,8 @@ begin
 	mem_e: entity hdl4fpga.bram_true2p_2clk
 	generic map
 	(
+--	    pass_thru_a => true,			-- True or False doesn't change LUTs consumption on
+--	    pass_thru_b => true,			-- Diamond 3.10.2.115, neither does this
 		data_width => dia'length,
 		addr_width => addra'length
 	)
@@ -81,6 +83,9 @@ begin
 
 
 end;
+
+-- Less LUTs consuption on Lattisemi Diamond 3.10.2.115
+-- Less tested than bram_true2p_2clk for portability
 
 library hdl4fpga;
 use hdl4fpga.std.all;
