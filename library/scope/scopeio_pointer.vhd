@@ -7,7 +7,7 @@ library hdl4fpga;
 
 entity scopeio_pointer is
 	generic (
-		latency     : integer);
+		latency     : integer := 0);
 	port (
 		video_clk   : in  std_logic;
 		pointer_x   : in  std_logic_vector;
