@@ -20,22 +20,10 @@ architecture beh of arty is
 	signal input_ena  : std_logic;
 
 	constant sample_size : natural := 16;
-	constant gauge_labels : string(1 to 9*26) := 
-			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
-			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
-			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
-			"Escala     : Posicion   : " & "Escala     : Posicion   : " &
-			"Escala     : Posicion   : ";
-	constant unit_symbols : string(1 to 9*2) := (
-   			"VV" & "VV" & "VV" & "VV" &
-   			"VV" & "VV" & "VV" & "VV" & "VV");
-
 
 	constant inputs : natural := 9;
 	signal samples  : std_logic_vector(0 to 9*sample_size-1);
-	constant channels_bg : std_logic_vector(0 to 9*vga_rgb'length-1) := (others => '0');
-	constant channels_fg : std_logic_vector(0 to 9*vga_rgb'length-1) := b"110_011_101_111_001_110_011_101_111";
-	signal   channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
+	signal channel_ena : std_logic_vector(0 to 9-1) := b"1111_1111_1";
 
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
@@ -49,6 +37,11 @@ architecture beh of arty is
 	signal txd  : std_logic_vector(eth_txd'range);
 	signal txdv : std_logic;
 
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(eth_rxd'range);
+	signal so_data   : std_logic_vector(eth_txd'range);
 begin
 
 	clkin_ibufg : ibufg
@@ -283,15 +276,37 @@ begin
 	end process;
 
 --	sample <= x"00ff";
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => eth_rxclk_bufg,
+		phy_rx_dv   => eth_rx_dv,
+		phy_rx_d    => eth_rxd,
+
+		phy_txc     => eth_txclk_bufg,
+		phy_tx_en   => txdv,
+		phy_tx_d    => txd,
+	
+		chaini_sel  => std_logic'('0'),
+
+		chaini_frm  => std_logic'('0'),
+		chaini_irdy => std_logic'('0'),
+		chaini_data => eth_rxd,
+
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
+	si_clk <= eth_rxclk_bufg;
 	scopeio_e : entity hdl4fpga.scopeio
 	port map (
-		si_clk      => eth_rxclk_bufg,
-		si_frm      => eth_rx_dv,
-		si_data     => eth_rxd,
-		so_clk      => eth_txclk_bufg,
-		so_dv       => txdv,
-		so_data     => txd,
-		ipcfg_req   => ipcfg_req,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_ena,
 		input_data  => samples(0 to sample_size*inputs-1),
