@@ -20,7 +20,7 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
-        constant C_adc_analog_view: boolean := false; -- true: normal use, false: SPI digital debug
+        constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -135,8 +135,8 @@ begin
         vga_clk <= clk_pll(1); -- 40 MHz
         clk <= clk_pll(3); -- 25 MHz
         clk_oled <= clk_pll(3); -- 25 MHz
-        clk_adc <= clk_pll(2); -- 50 MHz (video clock domain crossing problem?)
-        --clk_adc <= clk_pll(3); -- 75 MHz (same as vga_clk but ADC overclock 18.75MHz > 16MHz)
+        --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
+        clk_adc <= clk_pll(3); -- 75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
         clk_uart <= clk_pll(3); -- 25 MHz
         clk_mouse <= clk_pll(3); -- 25 MHz
         -- 1920x1080
@@ -392,7 +392,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		input_ena   => S_input_ena,
+		--input_ena   => S_input_ena, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,

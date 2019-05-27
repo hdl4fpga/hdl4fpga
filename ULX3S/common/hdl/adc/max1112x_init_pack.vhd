@@ -13,8 +13,8 @@ package max1112x_init_pack is
   constant C_MAX1112x_CONFIG_SETUP: std_logic_vector(15 downto 0) := x"8404"; -- echo on
   constant C_MAX1112x_UNIPOLAR_A: std_logic_vector(15 downto 0) := x"9000"; -- all ch unipolar
   constant C_MAX1112x_UNIPOLAR_B: std_logic_vector(15 downto 0) := x"8804"; -- all ch unipolar, REF-
-  --constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"1B82"; -- 8-ch mode 0001 1011 1000 0010 standard_int clock
-  constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"2382"; -- 8-ch mode 0010 0011 1000 0010 standard_ext clock
+  --constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"1B82";   -- 8-ch mode 0001 1011 1000 0010 standard_int clock
+  constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"2386"; -- 8-ch mode 0010 0011 1000 0110 standard_ext clock
   constant C_MAX1112x_SAMPLE_SET: std_logic_vector(15 downto 0) := x"B020"; -- 8-ch mode
   constant C_MAX1112x_NULL: std_logic_vector(15 downto 0) := x"0000"; -- for reading after mode control
 

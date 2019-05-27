@@ -65,10 +65,10 @@ begin
           -- csn at 60-62 is exact by datasheet
           -- csn at 59-61 is not exact but works, good to simplify code
           -- having clk and mosi in phase and clk/2 instead of clk/4
-          if conv_integer(R_init_cnt(5 downto 0)) = 60 then
+          if conv_integer(R_init_cnt(5 downto 0)) = 59 then
             R_csn <= '1';
           end if;
-          if conv_integer(R_init_cnt(5 downto 0)) = 62 then
+          if conv_integer(R_init_cnt(5 downto 0)) = 61 then
             R_csn <= '0';
           end if;
         end if; -- reset
