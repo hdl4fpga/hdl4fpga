@@ -67,40 +67,31 @@ package scopeiopkg is
 		2 => ( mode_id =>  9, layout_id => hd1080),
 		3 => ( mode_id => 10, layout_id => hd720));
 
-	function vt_y (constant layout : display_layout) return natural;
-	function vt_x (constant layout : display_layout) return natural;
-	function vtaxis_width  (constant layout : display_layout) return natural;
-	function vt_height (constant layout : display_layout) return natural;
+	function vtaxis_y       (constant layout : display_layout) return natural;
+	function vtaxis_x       (constant layout : display_layout) return natural;
+	function vtaxis_width   (constant layout : display_layout) return natural;
+	function vtaxis_height  (constant layout : display_layout) return natural;
 
-	function sgmnt_margin (constant layout : display_layout) return natural; 
-	function sgmnt_border (constant layout : display_layout) return natural;
+	function sgmnt_margin   (constant layout : display_layout) return natural; 
+	function sgmnt_border   (constant layout : display_layout) return natural;
+	function sgmnt_padding  (constant layout : display_layout) return natural;
+	function sgmnt_height   (constant layout : display_layout) return natural;
+	function sgmnt_width    (constant layout : display_layout) return natural;
 
-	function sgmnt_padding (constant layout : display_layout) return natural;
-	function sgmnt_height  (constant layout : display_layout) return natural;
-	function sgmnt_width   (constant layout : display_layout) return natural;
+	function grid_x         (constant layout : display_layout) return natural;
+	function grid_y         (constant layout : display_layout) return natural;
+	function grid_width     (constant layout : display_layout) return natural;
+	function grid_height    (constant layout : display_layout) return natural;
 
-	function grid_x (constant layout : display_layout) return natural;
-	function grid_y (constant layout : display_layout) return natural;
+	function textbox_x      (constant layout : display_layout) return natural;
+	function textbox_y      (constant layout : display_layout) return natural;
+	function textbox_width  (constant layout : display_layout) return natural;
+	function textbox_height (constant layout : display_layout) return natural;
 
-	function grid_width (constant layout : display_layout) return natural;
-
-	function grid_height ( constant layout : display_layout) return natural;
-
-	function text_x ( constant layout : display_layout) return natural;
-
-	function text_y ( constant layout : display_layout) return natural;
-
-	function textbox_width ( constant layout : display_layout) return natural;
-
-	function text_height ( constant layout : display_layout) return natural;
-
-	function hz_x ( constant layout : display_layout) return natural;
-
-	function hz_y ( constant layout : display_layout) return natural;
-
-	function hz_width ( constant layout : display_layout) return natural;
-
-	function hzaxis_height ( constant layout : display_layout) return natural;
+	function hzaxis_x       (constant layout : display_layout) return natural;
+	function hzaxis_y       (constant layout : display_layout) return natural;
+	function hzaxis_width   (constant layout : display_layout) return natural;
+	function hzaxis_height  (constant layout : display_layout) return natural;
 
 end;
 
@@ -144,14 +135,14 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vt_x(layout)+vtaxis_width(layout)+1+sgmnt_padding(layout);
+		return vtaxis_x(layout)+vtaxis_width(layout)+1+sgmnt_padding(layout);
 	end;
 
 	function grid_y (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vt_y(layout);
+		return vtaxis_y(layout);
 	end;
 
 	function grid_width (
@@ -168,14 +159,14 @@ package body scopeiopkg is
 		return layout.grid_height*division_length+1;
 	end;
 
-	function vt_x (
+	function vtaxis_x (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return sgmnt_border(layout)+0;
 	end;
 
-	function vt_y (
+	function vtaxis_y (
 		constant layout : display_layout)
 		return natural is
 	begin
@@ -189,25 +180,25 @@ package body scopeiopkg is
 		return layout.vtaxis_width;
 	end;
 
-	function vt_height (
+	function vtaxis_height (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return grid_height(layout);
 	end;
 
-	function text_x (
+	function textbox_x (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return grid_x(layout)+grid_width(layout)+1+sgmnt_padding(layout);
 	end;
 
-	function text_y (
+	function textbox_y (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vt_y(layout);
+		return vtaxis_y(layout);
 	end;
 
 	function textbox_width (
@@ -217,28 +208,28 @@ package body scopeiopkg is
 		return layout.textbox_width;
 	end;
 
-	function text_height (
+	function textbox_height (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return layout.grid_height*division_length;
 	end;
 
-	function hz_x (
+	function hzaxis_x (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return grid_x(layout);
 	end;
 
-	function hz_y (
+	function hzaxis_y (
 		constant layout : display_layout)
 		return natural is
 	begin
 		return grid_y(layout)+grid_height(layout)+1+sgmnt_padding(layout);
 	end;
 
-	function hz_width (
+	function hzaxis_width (
 		constant layout : display_layout)
 		return natural is
 	begin
