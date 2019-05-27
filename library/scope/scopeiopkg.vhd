@@ -42,29 +42,69 @@ package scopeiopkg is
 		margin          : natural;            -- Margin
 	end record;
 
-	type layout_vector is array (natural range <>) of display_layout;
+	constant sd600  : natural := 0;
+	constant hd720  : natural := 1;
+	constant hd1080 : natural := 2;
 
-	constant vlayout_tab : vlayout_vector := (
+	type displaylayout_vector is array (natural range <>) of display_layout;
+
+	constant displaylayout_table : displaylayout_vector := (
 		--      display_width | num_of_seg | grid_width | grid_height | hzaxis_height | vtaxis_width | textbox_width | border | padding | margin
-		0 => (        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
-		1 => (       1280,           4,        30,          8,          8,       6*8,         33*8,       1,        0,       1),
-		2 => (       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1));
+		sd600  => (       800,           2,          15,            8,              8,           6*8,           33*8,       1,        0,       1),
+		hd720  => (      1280,           4,          30,            8,              8,           6*8,           33*8,       1,        0,       1),
+		hd1080 => (      1920,           4,          50,            8,              8,           6*8,           33*8,       1,        0,       1));
 
-	type mode_layout record is
+	type mode_layout is record
 		mode_id   : natural;
 		layout_id : natural;
 	end record;
 
-	type mode_layout is array(natural range <>) mode_layout;
-	constant video_layout
+	type modelayout_vector is array(natural range <>) of mode_layout;
 
-	constant vlayout : display_layout := vlayout_tab(vlayout_id);
+	constant video_description : modelayout_vector := (
+		0 => ( mode_id =>  7, layout_id => hd1080),
+		1 => ( mode_id =>  1, layout_id => sd600),
+		2 => ( mode_id =>  9, layout_id => hd1080),
+		3 => ( mode_id => 10, layout_id => hd720));
 
-	function vt_y      (constant layout : display_layout) return natural;
-	function vt_x      (constant layout : display_layout) return natural;
+	function vt_y (constant layout : display_layout) return natural;
+	function vt_x (constant layout : display_layout) return natural;
 	function vtaxis_width  (constant layout : display_layout) return natural;
 	function vt_height (constant layout : display_layout) return natural;
 
+	function sgmnt_margin (constant layout : display_layout) return natural; 
+	function sgmnt_border (constant layout : display_layout) return natural;
+
+	function sgmnt_padding (constant layout : display_layout) return natural;
+	function sgmnt_height  (constant layout : display_layout) return natural;
+	function sgmnt_width   (constant layout : display_layout) return natural;
+
+	function grid_x (constant layout : display_layout) return natural;
+	function grid_y (constant layout : display_layout) return natural;
+
+	function grid_width (constant layout : display_layout) return natural;
+
+	function grid_height ( constant layout : display_layout) return natural;
+
+	function text_x ( constant layout : display_layout) return natural;
+
+	function text_y ( constant layout : display_layout) return natural;
+
+	function textbox_width ( constant layout : display_layout) return natural;
+
+	function text_height ( constant layout : display_layout) return natural;
+
+	function hz_x ( constant layout : display_layout) return natural;
+
+	function hz_y ( constant layout : display_layout) return natural;
+
+	function hz_width ( constant layout : display_layout) return natural;
+
+	function hzaxis_height ( constant layout : display_layout) return natural;
+
+end;
+
+package body scopeiopkg is
 	function sgmnt_margin (
 		constant layout : display_layout)
 		return natural is
@@ -87,24 +127,21 @@ package scopeiopkg is
 	end;
 
 	function sgmnt_height (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
-		return ((layout.grid_height*gu+1)+1+sgmnt_padding(layout)+layout.hzaxis_height)+sgmnt_border(layout);
+		return ((layout.grid_height*division_length+1)+1+sgmnt_padding(layout)+layout.hzaxis_height)+sgmnt_border(layout);
 	end;
 
 	function sgmnt_width (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.vtaxis_width+1+sgmnt_padding(layout)+(layout.grid_width*gu+1)+1+sgmnt_padding(layout)+layout.textbox_width+2*sgmnt_border(layout);
+		return layout.vtaxis_width+1+sgmnt_padding(layout)+(layout.grid_width*division_length+1)+1+sgmnt_padding(layout)+layout.textbox_width+2*sgmnt_border(layout);
 	end;
 
 	function grid_x (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
 		return vt_x(layout)+vtaxis_width(layout)+1+sgmnt_padding(layout);
@@ -118,19 +155,17 @@ package scopeiopkg is
 	end;
 
 	function grid_width (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_width*gu+1;
+		return layout.grid_width*division_length+1;
 	end;
 
 	function grid_height (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*gu+1;
+		return layout.grid_height*division_length+1;
 	end;
 
 	function vt_x (
@@ -183,11 +218,10 @@ package scopeiopkg is
 	end;
 
 	function text_height (
-		constant layout : display_layout;
-		constant gu : natural := division_length)
+		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*gu;
+		return layout.grid_height*division_length;
 	end;
 
 	function hz_x (
