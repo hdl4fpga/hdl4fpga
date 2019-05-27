@@ -13,11 +13,12 @@ package max1112x_init_pack is
   constant C_MAX1112x_CONFIG_SETUP: std_logic_vector(15 downto 0) := x"8404"; -- echo on
   constant C_MAX1112x_UNIPOLAR_A: std_logic_vector(15 downto 0) := x"9000"; -- all ch unipolar
   constant C_MAX1112x_UNIPOLAR_B: std_logic_vector(15 downto 0) := x"8804"; -- all ch unipolar, REF-
-  constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"1B82"; -- 8-ch mode
+  --constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"1B82"; -- 8-ch mode 0001 1011 1000 0010 standard_int clock
+  constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"2382"; -- 8-ch mode 0010 0011 1000 0010 standard_ext clock
   constant C_MAX1112x_SAMPLE_SET: std_logic_vector(15 downto 0) := x"B020"; -- 8-ch mode
   constant C_MAX1112x_NULL: std_logic_vector(15 downto 0) := x"0000"; -- for reading after mode control
 
-  type T_max1112x_init_seq is array (0 to 14) of std_logic_vector(15 downto 0);
+  type T_max1112x_init_seq is array (0 to 12) of std_logic_vector(15 downto 0);
   constant C_max1112x_init_seq: T_max1112x_init_seq :=
   (
     C_MAX1112x_RESET, -- 0
@@ -27,15 +28,13 @@ package max1112x_init_pack is
     C_MAX1112x_UNIPOLAR_B, -- 4
     C_MAX1112x_MODE_CONTROL, -- 5
     C_MAX1112x_NULL, -- 6
-    C_MAX1112x_MODE_CONTROL, -- 7
+    C_MAX1112x_NULL, -- 7
     C_MAX1112x_NULL, -- 8
     C_MAX1112x_NULL, -- 9
     C_MAX1112x_NULL, -- 10
     C_MAX1112x_NULL, -- 11
-    C_MAX1112x_NULL, -- 12
-    C_MAX1112x_NULL, -- 13
-    C_MAX1112x_NULL  -- 14
+    C_MAX1112x_NULL  -- 12
   );
   
-  constant C_max1112x_seq_repeat: integer := 7; -- after last word of seqence, restart from this position (mode control)
+  constant C_max1112x_seq_repeat: integer := 5; -- after last word of seqence, restart from this position (mode control)
 end;
