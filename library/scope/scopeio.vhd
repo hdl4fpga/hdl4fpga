@@ -504,10 +504,15 @@ begin
 
 			sgmnt_b : block
 
-				constant sgmnt_x : natural_vector := (0 => grid_x(layout),      1 => vtaxis_x(layout),      2 => hzaxis_x(layout),      3 => textbox_x(layout));
-				constant sgmnt_y : natural_vector := (0 => grid_y(layout),      1 => vtaxis_y(layout),      2 => hzaxis_y(layout),      3 => textbox_y(layout));
-				constant sgmnt_w : natural_vector := (0 => grid_width(layout),  1 => vtaxis_width(layout),  2 => hzaxis_width(layout),  3 => textbox_width(layout));
-				constant sgmnt_h : natural_vector := (0 => grid_height(layout), 1 => vtaxis_height(layout), 2 => hzaxis_height(layout), 3 => textbox_height(layout));
+				constant grid_id    : natural := 0;
+				constant vtaxis_id  : natural := 1;
+				constant hzaxis_id  : natural := 2;
+				constant textbox_id : natural := 3;
+
+				constant sgmnt_x : natural_vector := (grid_id => grid_x(layout),      vtaxis_id => vtaxis_x(layout),      hzaxis_id => hzaxis_x(layout),      textbox_id => textbox_x(layout));
+				constant sgmnt_y : natural_vector := (grid_id => grid_y(layout),      vtaxis_id => vtaxis_y(layout),      hzaxis_id => hzaxis_y(layout),      textbox_id => textbox_y(layout));
+				constant sgmnt_w : natural_vector := (grid_id => grid_width(layout),  vtaxis_id => vtaxis_width(layout),  hzaxis_id => hzaxis_width(layout),  textbox_id => textbox_width(layout));
+				constant sgmnt_h : natural_vector := (grid_id => grid_height(layout), vtaxis_id => vtaxis_height(layout), hzaxis_id => hzaxis_height(layout), textbox_id => textbox_height(layout));
 
 				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
