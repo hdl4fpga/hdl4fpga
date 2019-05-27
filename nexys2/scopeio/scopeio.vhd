@@ -78,8 +78,14 @@ architecture beh of nexys2 is
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
 
-	signal so_null    : std_logic_vector(8-1 downto 0);
-	signal display    : std_logic_vector(0 to 16-1);
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
+	signal display   : std_logic_vector(0 to 16-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -112,11 +118,12 @@ begin
 		addr => input_addr,
 		data => sample);
 
-	process (sys_clk)
+	uart_rxc <= sys_clk;
+	process (uart_rxc)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(uart_rxc) then
 			if cntr >= max_count-1 then
 				uart_ena <= '1';
 				cntr := (others => '0');
@@ -128,7 +135,6 @@ begin
 	end process;
 
 	uart_sin <= rs232_rxd;
-	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -140,13 +146,25 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
+	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+	generic map (
+		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+	port map (
+		stream_clk  => uart_rxc,
+		stream_dv   => uart_rxdv,
+		stream_data => uart_rxd,
+
+		chaini_data => uart_rxd,
+
+		chaino_frm  => si_frm, 
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+
+	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,
-		tcpip            => false,
-		istream => true,
-		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",
@@ -158,10 +176,11 @@ begin
 		default_sgmntbg  => b"000_111_11",
 		default_bg       => b"111_111_11")
 	port map (
-		si_clk      => uart_rxc,
-		si_frm      => uart_rxdv,
-		si_data     => uart_rxd,
-		so_data     => so_null,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_data     => so_data,
 		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
