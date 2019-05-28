@@ -38,7 +38,7 @@ package scopeiopkg is
 		vtaxis_width    : natural;            -- Width of the vetical axis 
 		textbox_width   : natural;            -- Width of the text box
 		border          : natural;            -- Border width
-		gap         : natural;            -- Padding
+		gap             : natural;            -- Padding
 		margin          : natural;            -- Margin
 	end record;
 
