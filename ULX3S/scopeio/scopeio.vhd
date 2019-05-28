@@ -21,6 +21,7 @@ architecture beh of ulx3s is
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_view_low_bits: boolean := false; -- to see ADC noise
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -177,8 +178,8 @@ begin
 	port map
 	(
 	  clk => clk_adc,
-	  clken => '1',
-	  --clken => R_adc_slowdown(R_adc_slowdown'high),
+	  --clken => '1',
+	  clken => R_adc_slowdown(R_adc_slowdown'high),
 	  spi_csn => adc_csn,
 	  spi_clk => adc_sclk,
 	  spi_mosi => adc_mosi,
@@ -259,10 +260,18 @@ begin
 	G_yes_analog_view: if C_adc_analog_view generate
 	  S_input_ena  <= R_adc_dv;
 	  -- without sign bit
+	  G_not_view_low_bits: if not C_view_low_bits generate
 	  trace_yellow(2 to trace_yellow'high) <= R_adc_data(1*C_adc_bits - 1 downto 1*C_adc_bits - sample_size + 2);
 	  trace_cyan  (2 to trace_cyan'high)   <= R_adc_data(2*C_adc_bits - 1 downto 2*C_adc_bits - sample_size + 2);
 	  trace_green (2 to trace_green'high)  <= R_adc_data(3*C_adc_bits - 1 downto 3*C_adc_bits - sample_size + 2);
 	  trace_red   (2 to trace_red'high)    <= R_adc_data(4*C_adc_bits - 1 downto 4*C_adc_bits - sample_size + 2);
+	  end generate;
+	  G_yes_view_low_bits: if C_view_low_bits generate
+	  trace_yellow(2 to trace_yellow'high) <= R_adc_data(0*C_adc_bits - 1 + sample_size - 2 downto 1*C_adc_bits - C_adc_bits);
+	  trace_cyan  (2 to trace_cyan'high)   <= R_adc_data(1*C_adc_bits - 1 + sample_size - 2 downto 2*C_adc_bits - C_adc_bits);
+	  trace_green (2 to trace_green'high)  <= R_adc_data(2*C_adc_bits - 1 + sample_size - 2 downto 3*C_adc_bits - C_adc_bits);
+	  trace_red   (2 to trace_red'high)    <= R_adc_data(3*C_adc_bits - 1 + sample_size - 2 downto 4*C_adc_bits - C_adc_bits);
+	  end generate;
 	end generate;
 	
 	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- triggered
