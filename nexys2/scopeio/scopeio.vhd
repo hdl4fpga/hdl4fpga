@@ -39,29 +39,21 @@ architecture beh of nexys2 is
 
 	constant sample_size : natural := 14;
 
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : natural)
+	function squaretab (
+		constant period      : natural;
+		constant duty        : natural;
+		constant table_size  : integer;
+		constant sample_size : natural)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
-		constant freq : real := 4*8.0;
+		variable aux : std_logic_vector(0 to sample_size*table_size-1);
 	begin
-		for i in x0 to x1 loop
-			y := real(2**(n-2)-1)*64.0*(8.0/freq);
-			if i/=0 then
-				y := y*sin((2.0*MATH_PI*real(i)*freq)/real(x1-x0+1))/real(i);
+		for i in 0 to table_size-1 loop
+			if (i mod period) < (period*duty)/100 then
+				aux(i*sample_size to (i+1)*sample_size-1) := std_logic_vector(to_signed(2**11-1, sample_size));
 			else
-				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
+				aux(i*sample_size to (i+1)*sample_size-1) := std_logic_vector(to_signed(-2**11-1, sample_size));
 			end if;
-			y := y - (64.0+24.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
---			if i < (x0+x1)/2 then
---				aux(i*n to (i+1)*n-1) := ('0', others => '1');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
 		end loop;
 		return aux;
 	end;
@@ -112,7 +104,7 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
