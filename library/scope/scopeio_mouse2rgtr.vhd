@@ -138,9 +138,9 @@ begin
         R_mouse_dx <= mouse_dx;
         R_mouse_dy <= mouse_dy;
         R_mouse_dz <= mouse_dz;
-        R_mouse_x <= std_logic_vector(signed(R_mouse_x) + mouse_dx);
-        R_mouse_y <= std_logic_vector(signed(R_mouse_y) - mouse_dy);
-        R_mouse_z <= std_logic_vector(signed(R_mouse_z) + mouse_dz);
+        R_mouse_x <= std_logic_vector(R_mouse_x + mouse_dx);
+        R_mouse_y <= std_logic_vector(R_mouse_y - mouse_dy);
+        R_mouse_z <= std_logic_vector(R_mouse_z + mouse_dz);
         R_mouse_btn <= mouse_btn;
         R_prev_mouse_btn <= R_mouse_btn;
         if mouse_dx /= 0 or mouse_dy /= 0 then
@@ -157,8 +157,6 @@ begin
   pointer_y  <= std_logic_vector(R_mouse_y);
 
   -- for mouse x/y pointer position, find the ID of the box where the pointer is.
-  -- ID=-1 means pointer is outside of any of the listed boxes
-  -- purity: latch cursor position at each reset of search index
   find_box: block
     signal R_A, R_B, R_list_value, R_latch_x, R_latch_y: unsigned(C_XY_coordinate_bits-1 downto 0);
     signal R_C, S_C_next, S_compare, S_new_box: std_logic;

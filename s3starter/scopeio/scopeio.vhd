@@ -107,11 +107,12 @@ begin
 		addr => input_addr,
 		data => sample);
 
-	process (sys_clk)
+	uart_rxc <= sys_clk;
+	process (uart_rxc)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(uart_rxc) then
 			if cntr >= max_count-1 then
 				uart_ena <= '1';
 				cntr := (others => '0');
@@ -123,7 +124,6 @@ begin
 	end process;
 
 	uart_sin <= rs232_rxd;
-	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -146,11 +146,11 @@ begin
 
 		chaini_data => uart_rxd,
 
-		chaino_clk  => si_clk, 
 		chaino_frm  => si_frm, 
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 
+	si_clk <= uart_rxc
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,

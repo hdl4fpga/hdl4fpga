@@ -39,29 +39,21 @@ architecture beh of nexys2 is
 
 	constant sample_size : natural := 14;
 
-	function sinctab (
-		constant x0 : integer;
-		constant x1 : integer;
-		constant n  : natural)
+	function squaretab (
+		constant period      : natural;
+		constant duty        : natural;
+		constant table_size  : integer;
+		constant sample_size : natural)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
-		constant freq : real := 4*8.0;
+		variable aux : std_logic_vector(0 to sample_size*table_size-1);
 	begin
-		for i in x0 to x1 loop
-			y := real(2**(n-2)-1)*64.0*(8.0/freq);
-			if i/=0 then
-				y := y*sin((2.0*MATH_PI*real(i)*freq)/real(x1-x0+1))/real(i);
+		for i in 0 to table_size-1 loop
+			if (i mod period) < (period*duty)/100 then
+				aux(i*sample_size to (i+1)*sample_size-1) := std_logic_vector(to_signed(2**11-1, sample_size));
 			else
-				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
+				aux(i*sample_size to (i+1)*sample_size-1) := std_logic_vector(to_signed(-2**11-1, sample_size));
 			end if;
-			y := y - (64.0+24.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
---			if i < (x0+x1)/2 then
---				aux(i*n to (i+1)*n-1) := ('0', others => '1');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
 		end loop;
 		return aux;
 	end;
@@ -78,8 +70,14 @@ architecture beh of nexys2 is
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
 
-	signal so_null    : std_logic_vector(8-1 downto 0);
-	signal display    : std_logic_vector(0 to 16-1);
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
+	signal display   : std_logic_vector(0 to 16-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -106,17 +104,18 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => sinctab(-1024+256, 1023+256, sample_size))
+		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
 		data => sample);
 
-	process (sys_clk)
+	uart_rxc <= sys_clk;
+	process (uart_rxc)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(uart_rxc) then
 			if cntr >= max_count-1 then
 				uart_ena <= '1';
 				cntr := (others => '0');
@@ -128,7 +127,6 @@ begin
 	end process;
 
 	uart_sin <= rs232_rxd;
-	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -140,13 +138,25 @@ begin
 		uart_rxdv => uart_rxdv,
 		uart_rxd  => uart_rxd);
 
+	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+	generic map (
+		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+	port map (
+		stream_clk  => uart_rxc,
+		stream_dv   => uart_rxdv,
+		stream_data => uart_rxd,
+
+		chaini_data => uart_rxd,
+
+		chaino_frm  => si_frm, 
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+
+	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,
-		tcpip            => false,
-		istream => true,
-		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",
@@ -158,10 +168,11 @@ begin
 		default_sgmntbg  => b"000_111_11",
 		default_bg       => b"111_111_11")
 	port map (
-		si_clk      => uart_rxc,
-		si_frm      => uart_rxdv,
-		si_data     => uart_rxd,
-		so_data     => so_null,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_data     => so_data,
 		input_clk   => sys_clk,
 		input_data  => sample,
 		video_clk   => vga_clk,
