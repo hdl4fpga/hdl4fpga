@@ -20,8 +20,9 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
+        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
-        constant C_view_low_bits: boolean := false; -- to see ADC noise
+        constant C_view_low_bits: boolean := true; -- to see ADC noise
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -143,7 +144,7 @@ begin
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
-	
+
 	process(vga_clk)
 	begin
           if rising_edge(vga_clk) then
@@ -158,6 +159,30 @@ begin
 	end process;
 	rst <= reset_counter(reset_counter'high);
 
+        -- replacement for ADC that manifests the problem
+	G_not_adc: if not C_adc generate
+	  B_slow_pulse_generator: block
+	    signal R_pulse_counter: unsigned(27 downto 0);
+	    signal R_pulse_ena: std_logic;
+	  begin
+	    process(clk_adc)
+	    begin
+	      if rising_edge(clk_adc) then
+	        R_pulse_counter <= R_pulse_counter + 1;
+	        if R_pulse_counter(7 downto 0) = x"00" then -- every 256
+	          R_pulse_ena <= '1';
+	        else
+	          R_pulse_ena <= '0';
+	        end if;
+	      end if;
+	    end process;
+	    S_adc_data <= (others => R_pulse_counter(R_pulse_counter'high));
+	    S_adc_dv <= R_pulse_ena;
+	  end block;
+	end generate;
+
+
+	G_yes_adc: if C_adc generate
 	process (clk_adc)
 	begin
 		if rising_edge(clk_adc) then
@@ -187,6 +212,7 @@ begin
 	  dv => S_adc_dv,
 	  data => S_adc_data
 	);
+	end generate;
 	
 	-- S_adc_data is constantly shifted and valid only during 1 cycle
 	-- latch the data during valid cycle
@@ -258,7 +284,7 @@ begin
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
-	  S_input_ena  <= R_adc_dv;
+	  -- S_input_ena  <= R_adc_dv; -- not working
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_view_low_bits generate
 	  trace_yellow(2 to trace_yellow'high) <= R_adc_data(1*C_adc_bits - 1 downto 1*C_adc_bits - sample_size + 2);
@@ -401,7 +427,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		--input_ena   => S_input_ena, -- not working?
+		input_ena   => R_adc_dv, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
