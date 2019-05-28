@@ -38,7 +38,7 @@ package scopeiopkg is
 		vtaxis_width    : natural;            -- Width of the vetical axis 
 		textbox_width   : natural;            -- Width of the text box
 		border          : natural;            -- Border width
-		padding         : natural;            -- Padding
+		gap         : natural;            -- Padding
 		margin          : natural;            -- Margin
 	end record;
 
@@ -49,7 +49,7 @@ package scopeiopkg is
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
 	constant displaylayout_table : displaylayout_vector := (
-		--      display_width | num_of_seg | grid_width | grid_height | hzaxis_height | vtaxis_width | textbox_width | border | padding | margin
+		--      display_width | num_of_seg | grid_width | grid_height | hzaxis_height | vtaxis_width | textbox_width | border | gap | margin
 		sd600  => (       800,           2,          15,            8,              8,           6*8,           33*8,       1,        0,       1),
 		hd720  => (      1280,           4,          30,            8,              8,           6*8,           33*8,       1,        0,       1),
 		hd1080 => (      1920,           4,          50,            8,              8,           6*8,           33*8,       1,        0,       1));
@@ -74,7 +74,7 @@ package scopeiopkg is
 
 	function sgmnt_margin   (constant layout : display_layout) return natural; 
 	function sgmnt_border   (constant layout : display_layout) return natural;
-	function sgmnt_padding  (constant layout : display_layout) return natural;
+	function sgmnt_gap      (constant layout : display_layout) return natural;
 	function sgmnt_height   (constant layout : display_layout) return natural;
 	function sgmnt_width    (constant layout : display_layout) return natural;
 
@@ -110,32 +110,32 @@ package body scopeiopkg is
 		return layout.border;
 	end;
 
-	function sgmnt_padding (
+	function sgmnt_gap (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.padding;
+		return layout.gap;
 	end;
 
 	function sgmnt_height (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return ((layout.grid_height*division_length+1)+1+sgmnt_padding(layout)+layout.hzaxis_height)+sgmnt_border(layout);
+		return ((layout.grid_height*division_length+1)+1+sgmnt_gap(layout)+layout.hzaxis_height)+sgmnt_border(layout);
 	end;
 
 	function sgmnt_width (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.vtaxis_width+1+sgmnt_padding(layout)+(layout.grid_width*division_length+1)+1+sgmnt_padding(layout)+layout.textbox_width+2*sgmnt_border(layout);
+		return layout.vtaxis_width+1+sgmnt_gap(layout)+(layout.grid_width*division_length+1)+1+sgmnt_gap(layout)+layout.textbox_width+2*sgmnt_border(layout);
 	end;
 
 	function grid_x (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vtaxis_x(layout)+vtaxis_width(layout)+1+sgmnt_padding(layout);
+		return vtaxis_x(layout)+vtaxis_width(layout)+1+sgmnt_gap(layout);
 	end;
 
 	function grid_y (
@@ -191,7 +191,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return grid_x(layout)+grid_width(layout)+1+sgmnt_padding(layout);
+		return grid_x(layout)+grid_width(layout)+1+sgmnt_gap(layout);
 	end;
 
 	function textbox_y (
@@ -226,7 +226,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return grid_y(layout)+grid_height(layout)+1+sgmnt_padding(layout);
+		return grid_y(layout)+grid_height(layout)+1+sgmnt_gap(layout);
 	end;
 
 	function hzaxis_width (
