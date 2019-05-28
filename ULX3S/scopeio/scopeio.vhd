@@ -401,7 +401,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		input_ena   => S_input_ena, -- not working?
+		--input_ena   => S_input_ena, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
