@@ -207,14 +207,14 @@ begin
 	-- to FPGA pin shared with ADC channel which should
 	-- read something from 12'h000 to 12'hFFF with some
 	-- conversion noise
-	gn(14) <= btn(1);
-	gp(14) <= btn(2);
-	gn(15) <= btn(3);
-	gp(15) <= btn(4);
-	gn(16) <= btn(5);
-	gp(16) <= btn(6);
-	gn(17) <= btn(5);
-	gp(17) <= btn(6);
+	gn(14) <= btn(1) when btn(6) = '1' else 'Z';
+	gp(14) <= btn(2) when btn(6) = '1' else 'Z';
+	gn(15) <= btn(3) when btn(6) = '1' else 'Z';
+	gp(15) <= btn(4) when btn(6) = '1' else 'Z';
+	gn(16) <= btn(5) when btn(6) = '1' else 'Z';
+	gp(16) <= btn(5) when btn(6) = '1' else 'Z';
+	gn(17) <= btn(5) when btn(6) = '1' else 'Z';
+	gp(17) <= btn(5) when btn(6) = '1' else 'Z';
 	end generate;
 
 	process (clk)
@@ -401,7 +401,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		--input_ena   => S_input_ena, -- not working?
+		input_ena   => S_input_ena, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
