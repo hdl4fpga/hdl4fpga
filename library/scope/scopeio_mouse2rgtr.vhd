@@ -7,6 +7,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_mouse2rgtr is
 generic
@@ -63,6 +64,9 @@ architecture def of scopeio_mouse2rgtr is
   signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
   signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
 
+  -- screen geometry functions, imported from scopeiopkg
+  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -79,47 +83,15 @@ architecture def of scopeio_mouse2rgtr is
   -- at box n if Result is 1, then mouse pointer was found in previous box (n-1)
   constant C_list_box_count: integer := 5; -- how many boxes, including termination record
   type T_list_box is array (0 to C_list_box_count*4-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
-  type T_vlayout_list_boxes is array (0 to 3) of T_list_box;
-  constant C_vlayout_list_boxes: T_vlayout_list_boxes :=
-  (
-    ( -- 1920x1080
-  -- Xmin, Xmax, Ymin, Ymax,
-        2,   49,    2,  258, -- 0: top left window (vertical scale)
-       51, 1651,    2,  258, -- 1: top center window (the grid)
-     1653, 1916,    2,  258, -- 2: top right window (text)
-       51, 1651,  260,  267, -- 3: thin window below the grid (horizontal scale)
-    0, C_XY_max, 0, C_XY_max -- 4: termination record
-  -- termination record has to match always for this algorithm to work
-    ),
-    ( -- 800x600
-  -- Xmin, Xmax, Ymin, Ymax,
-        2,   49,    2,  258, -- 0: top left window (vertical scale)
-       51,  531,    2,  258, -- 1: top center window (the grid)
-      533,  796,    2,  258, -- 2: top right window (text)
-       51,  531,  260,  267, -- 3: thin window below the grid (horizontal scale)
-    0, C_XY_max, 0, C_XY_max -- 4: termination record
-  -- termination record has to match always for this algorithm to work
-    ),
-    ( -- 1920x1080
-  -- Xmin, Xmax, Ymin, Ymax,
-        2,   49,    2,  258, -- 0: top left window (vertical scale)
-       51, 1651,    2,  258, -- 1: top center window (the grid)
-     1653, 1916,    2,  258, -- 2: top right window (text)
-       51, 1651,  260,  267, -- 3: thin window below the grid (horizontal scale)
-    0, C_XY_max, 0, C_XY_max -- 4: termination record
-  -- termination record has to match always for this algorithm to work
-    ),
-    ( -- 1280x768
-  -- Xmin, Xmax, Ymin, Ymax,
-        2,   49,    2,  258, -- 0: top left window (vertical scale)
-       51, 1011,    2,  258, -- 1: top center window (the grid)
-     1013, 1276,    2,  258, -- 2: top right window (text)
-       51, 1011,  260,  267, -- 3: thin window below the grid (horizontal scale)
-    0, C_XY_max, 0, C_XY_max -- 4: termination record
-  -- termination record has to match always for this algorithm to work
-    )
+  constant C_list_box: T_list_box :=
+  (  -- Xmin,                                                Xmax,                                                                       Ymin,                                                 Ymax,
+     to_unsigned( vtaxis_x(layout),C_XY_coordinate_bits), to_unsigned( vtaxis_x(layout)+ vtaxis_width(layout),C_XY_coordinate_bits), to_unsigned( vtaxis_y(layout),C_XY_coordinate_bits), to_unsigned( vtaxis_y(layout)+ vtaxis_height(layout),C_XY_coordinate_bits), -- 0: top left window (vertical scale)
+     to_unsigned(   grid_x(layout),C_XY_coordinate_bits), to_unsigned(   grid_x(layout)+   grid_width(layout),C_XY_coordinate_bits), to_unsigned(   grid_y(layout),C_XY_coordinate_bits), to_unsigned(   grid_y(layout)+   grid_height(layout),C_XY_coordinate_bits), -- 1: top center window (the grid)
+     to_unsigned(textbox_x(layout),C_XY_coordinate_bits), to_unsigned(textbox_x(layout)+textbox_width(layout),C_XY_coordinate_bits), to_unsigned(textbox_y(layout),C_XY_coordinate_bits), to_unsigned(textbox_y(layout)+textbox_height(layout),C_XY_coordinate_bits), -- 2: top right window (text)
+     to_unsigned( hzaxis_x(layout),C_XY_coordinate_bits), to_unsigned( hzaxis_x(layout)+ hzaxis_width(layout),C_XY_coordinate_bits), to_unsigned( hzaxis_y(layout),C_XY_coordinate_bits), to_unsigned( hzaxis_y(layout)+ hzaxis_height(layout),C_XY_coordinate_bits), -- 3: thin window below the grid (horizontal scale)
+     0, C_XY_max, 0, C_XY_max -- 4: termination record
+     -- termination record has to match always (any pointer location) for this algorithm to work
   );
-  constant C_list_box: T_list_box := C_vlayout_list_boxes(vlayout_id);
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
   -- R_box_id will contain ID of the box where mouse pointer is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
