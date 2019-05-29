@@ -20,9 +20,10 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
-        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
+        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
-        constant C_view_low_bits: boolean := true; -- to see ADC noise
+        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use fore more detailed detailed SPI digital view
+        constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
@@ -109,8 +110,7 @@ architecture beh of ulx3s is
 
 	signal clk_mouse       : std_logic := '0';
 
-	
-	signal R_adc_slowdown: unsigned(1 downto 0);
+	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	constant C_adc_channels: integer := 8;
 	constant C_adc_bits: integer := 12;
 	signal S_adc_dv, R_adc_dv: std_logic;
@@ -183,6 +183,7 @@ begin
 
 
 	G_yes_adc: if C_adc generate
+	G_yes_adc_slowdown: if C_adc_slowdown generate
 	process (clk_adc)
 	begin
 		if rising_edge(clk_adc) then
@@ -193,6 +194,7 @@ begin
 			end if;
 		end if;
 	end process;
+	end generate;
 
 	adc_e: entity work.max1112x_reader
 	generic map
@@ -203,7 +205,6 @@ begin
 	port map
 	(
 	  clk => clk_adc,
-	  --clken => '1',
 	  clken => R_adc_slowdown(R_adc_slowdown'high),
 	  spi_csn => adc_csn,
 	  spi_clk => adc_sclk,
@@ -427,7 +428,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		input_ena   => R_adc_dv, -- not working?
+		--input_ena   => R_adc_dv, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
