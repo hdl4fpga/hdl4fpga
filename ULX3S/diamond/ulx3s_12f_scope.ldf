@@ -81,6 +81,9 @@
     <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
+    <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
     <Source name="../../library/scope/scopeio_pointer.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
