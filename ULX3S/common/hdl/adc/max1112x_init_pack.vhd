@@ -5,36 +5,41 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 -- MAX1112x initialization sequence
--- next byte after a NOP command encodes delay in ms
 
 package max1112x_init_pack is
-  -- all this are commands and should be send with DC line low
+  -- for bipolar mode every 2nd channel should be enabled
+  -- because 2 consecutive channels return the same value
+  constant C_MAX1112x_channels_enabled: std_logic_vector(7 downto 0) := "01010101"; -- enabled channels for output
+
   constant C_MAX1112x_RESET: std_logic_vector(15 downto 0) := x"0040"; -- reset all registers to defaults
   constant C_MAX1112x_CONFIG_SETUP: std_logic_vector(15 downto 0) := x"8404"; -- echo on
-  constant C_MAX1112x_UNIPOLAR_A: std_logic_vector(15 downto 0) := x"9000"; -- all ch unipolar
-  constant C_MAX1112x_UNIPOLAR_B: std_logic_vector(15 downto 0) := x"8804"; -- all ch unipolar, REF-
-  --constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"1B82";   -- 8-ch mode 0001 1011 1000 0010 standard_int clock
-  constant C_MAX1112x_MODE_CONTROL: std_logic_vector(15 downto 0) := x"2386"; -- 8-ch mode 0010 0011 1000 0110 standard_ext clock
-  constant C_MAX1112x_SAMPLE_SET: std_logic_vector(15 downto 0) := x"B020"; -- 8-ch mode
+  constant C_MAX1112x_UNIPOLAR_SINGLE_ENDED: std_logic_vector(15 downto 0) := x"8800"; -- all ch unipolar, REF-
+  constant C_MAX1112x_BIPOLAR_ALL_FALSE: std_logic_vector(15 downto 0) := x"9000"; -- all ch unipolar
+  constant C_MAX1112x_BIPOLAR_ALL_TRUE: std_logic_vector(15 downto 0) := x"97F8"; -- all ch bipolar
+  constant C_MAX1112x_CUSTOM_SCAN0_NONE: std_logic_vector(15 downto 0) := "10100" & x"00" & "000"; -- skip inputs 15..8 bin 1010 0eee eeee e000
+  constant C_MAX1112x_CUSTOM_SCAN1_ENABLED: std_logic_vector(15 downto 0) := "10101" & C_MAX1112x_channels_enabled & "000"; -- scan enabled inputs 7..0 bin 1010 1eee eeee e000
+  constant C_MAX1112x_MODE_CONTROL_STANDARD_INT: std_logic_vector(15 downto 0) := x"1B82"; -- 8-ch mode 0001 1011 1000 0010 standard_int clock
+  constant C_MAX1112x_MODE_CONTROL_STANDARD_EXT: std_logic_vector(15 downto 0) := x"2386"; -- 8-ch mode 0010 0011 1000 0110 standard_ext clock
+  constant C_MAX1112x_MODE_CONTROL_CUSTOM_EXT: std_logic_vector(15 downto 0) := x"4006"; -- mode 0100 0000 0000 0110 custom_ext clock
   constant C_MAX1112x_NULL: std_logic_vector(15 downto 0) := x"0000"; -- for reading after mode control
 
-  type T_max1112x_init_seq is array (0 to 12) of std_logic_vector(15 downto 0);
+  type T_max1112x_init_seq is array (natural range <>) of std_logic_vector(15 downto 0);
   constant C_max1112x_init_seq: T_max1112x_init_seq :=
   (
     C_MAX1112x_RESET, -- 0
     C_MAX1112x_RESET, -- 1
     C_MAX1112x_CONFIG_SETUP, -- 2
-    C_MAX1112x_UNIPOLAR_A, -- 3
-    C_MAX1112x_UNIPOLAR_B, -- 4
-    C_MAX1112x_MODE_CONTROL, -- 5
-    C_MAX1112x_NULL, -- 6
-    C_MAX1112x_NULL, -- 7
+    C_MAX1112x_UNIPOLAR_SINGLE_ENDED, -- 3
+    C_MAX1112x_BIPOLAR_ALL_TRUE, -- 4 bipolar mode
+    --C_MAX1112x_BIPOLAR_ALL_FALSE, -- 4 unipolar mode
+    C_MAX1112x_CUSTOM_SCAN0_NONE, -- 5
+    C_MAX1112x_CUSTOM_SCAN1_ENABLED, -- 6
+    C_MAX1112x_MODE_CONTROL_CUSTOM_EXT, -- 7
     C_MAX1112x_NULL, -- 8
     C_MAX1112x_NULL, -- 9
-    C_MAX1112x_NULL, -- 10
-    C_MAX1112x_NULL, -- 11
-    C_MAX1112x_NULL  -- 12
+    C_MAX1112x_NULL  -- 10
+    -- number_of_NULLs = number_of_channels_enabled-1
   );
-  
-  constant C_max1112x_seq_repeat: integer := 5; -- after last word of seqence, restart from this position (mode control)
+
+  constant C_max1112x_seq_repeat: integer := 7; -- after last NULL, restart from MODE_CONTROL command
 end;

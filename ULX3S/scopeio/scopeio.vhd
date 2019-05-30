@@ -111,7 +111,7 @@ architecture beh of ulx3s is
 	signal clk_mouse       : std_logic := '0';
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
-	constant C_adc_channels: integer := 8;
+	constant C_adc_channels: integer := 4;
 	constant C_adc_bits: integer := 12;
 	signal S_adc_dv, R_adc_dv: std_logic;
 	signal S_adc_data, R_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
@@ -376,7 +376,7 @@ begin
 	port map
 	(
 	  clk => clk_oled, -- 25 MHz
-	  data => R_adc_data(63 downto 0),
+	  data(47 downto 0) => R_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,

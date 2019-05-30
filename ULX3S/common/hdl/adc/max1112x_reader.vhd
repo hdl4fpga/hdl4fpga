@@ -14,8 +14,8 @@ use work.max1112x_init_pack.all;
 entity max1112x_reader is
 generic
 (
-  C_channels: integer := 8; -- unused, hardcoded in init sequence
-  C_bits: integer := 12 -- unused, output bits width
+  C_channels: integer := 4; -- should match with init sequence
+  C_bits: integer := 12 -- output bits width
 );
 port
 (
@@ -78,7 +78,7 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
-      if conv_integer(R_init_cnt(R_init_cnt'high downto 6)) = C_max1112x_init_seq'high - 6
+      if R_init_cnt(R_init_cnt'high downto 6) = conv_std_logic_vector(C_max1112x_seq_repeat+1, R_init_cnt'length-6)
       and R_init_cnt(5 downto 0) = "000000"
       and clken = '1' then
         R_dv <= '1';
