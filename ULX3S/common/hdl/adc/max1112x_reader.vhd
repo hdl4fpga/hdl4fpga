@@ -2,8 +2,6 @@
 -- AUTHOR=EMARD
 -- LICENSE=BSD
 
--- keep en=1 to show OLED screen
-
 library IEEE;
 use IEEE.std_logic_1164.ALL;
 use IEEE.std_logic_arith.ALL;

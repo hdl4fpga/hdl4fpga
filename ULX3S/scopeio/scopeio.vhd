@@ -22,7 +22,7 @@ architecture beh of ulx3s is
         constant vlayout_id: integer := 3;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
-        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use fore more detailed detailed SPI digital view
+        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
         constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
 
@@ -288,16 +288,16 @@ begin
 	  -- S_input_ena  <= R_adc_dv; -- not working
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_view_low_bits generate
-	  trace_yellow(2 to trace_yellow'high) <= R_adc_data(1*C_adc_bits - 1 downto 1*C_adc_bits - sample_size + 2);
-	  trace_cyan  (2 to trace_cyan'high)   <= R_adc_data(2*C_adc_bits - 1 downto 2*C_adc_bits - sample_size + 2);
-	  trace_green (2 to trace_green'high)  <= R_adc_data(3*C_adc_bits - 1 downto 3*C_adc_bits - sample_size + 2);
-	  trace_red   (2 to trace_red'high)    <= R_adc_data(4*C_adc_bits - 1 downto 4*C_adc_bits - sample_size + 2);
+	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(1*C_adc_bits-1) & R_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(2*C_adc_bits-1) & R_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (0 to trace_green'high)  <= R_adc_data(3*C_adc_bits-1) & R_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_red   (0 to trace_red'high)    <= R_adc_data(4*C_adc_bits-1) & R_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
 	  G_yes_view_low_bits: if C_view_low_bits generate
-	  trace_yellow(2 to trace_yellow'high) <= R_adc_data(0*C_adc_bits - 1 + sample_size - 2 downto 1*C_adc_bits - C_adc_bits);
-	  trace_cyan  (2 to trace_cyan'high)   <= R_adc_data(1*C_adc_bits - 1 + sample_size - 2 downto 2*C_adc_bits - C_adc_bits);
-	  trace_green (2 to trace_green'high)  <= R_adc_data(2*C_adc_bits - 1 + sample_size - 2 downto 3*C_adc_bits - C_adc_bits);
-	  trace_red   (2 to trace_red'high)    <= R_adc_data(3*C_adc_bits - 1 + sample_size - 2 downto 4*C_adc_bits - C_adc_bits);
+	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (0 to trace_green'high)  <= R_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_red   (0 to trace_red'high)    <= R_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
