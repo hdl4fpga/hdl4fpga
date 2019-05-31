@@ -23,10 +23,6 @@ port
 (
   clk           : in  std_logic;
 
-  ps2m_reset    : in  std_logic := '0'; -- PS/2 mouse core reset
-  ps2m_clk      : inout std_logic; -- PS/2 mouse clock
-  ps2m_dat      : inout std_logic; -- PS/2 mouse data
-  
   mouse_update  : in std_logic; -- mouse data valid
   mouse_btn     : in std_logic_vector(2 downto 0); -- 2=middle, 1=right, 0=left
   mouse_dx      : in signed; -- 8 bits
