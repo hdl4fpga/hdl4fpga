@@ -67,6 +67,7 @@ entity scopeio is
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
+		input_oneshot : in std_logic := '0';
 		video_clk   : in  std_logic;
 		video_pixel : out std_logic_vector;
 		video_hsync : out std_logic;
@@ -535,14 +536,13 @@ begin
 					free_shot <= '1';
 				end if;
 
-				if sync_tf='1' then
+				if sync_tf='1' or wr_cntr(0)='1' then
 					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
-				elsif wr_cntr(0)='1' then
-					if sync_videofrm='0' and trigger_shot='1' then
-						capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
-						wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
-						trigger_addr <= wr_addr;
-					end if;
+					wr_cntr(0) <= input_oneshot;
+				elsif sync_videofrm='0' and trigger_shot='1' then
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
+					wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
+					trigger_addr <= wr_addr;
 				elsif downsample_ena='1' then
 					wr_cntr <= wr_cntr - 1;
 				end if;
