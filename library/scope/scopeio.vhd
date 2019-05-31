@@ -537,11 +537,13 @@ begin
 
 				if sync_tf='1' then
 					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
-				elsif sync_videofrm='0' and trigger_shot='1' then
-					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
-					wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
-					trigger_addr <= wr_addr;
-				elsif wr_cntr(0)='0' then
+				elsif wr_cntr(0)='1' then
+					if sync_videofrm='0' and trigger_shot='1' then
+						capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
+						wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
+						trigger_addr <= wr_addr;
+					end if;
+				else
 					if downsample_ena='1' then
 						wr_cntr <= wr_cntr - 1;
 					end if;
