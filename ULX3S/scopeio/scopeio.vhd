@@ -176,7 +176,10 @@ begin
 	        end if;
 	      end if;
 	    end process;
-	    S_adc_data <= (others => R_pulse_counter(R_pulse_counter'high));
+	    S_adc_data(8+C_adc_bits*0) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*1) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*2) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*3) <= R_pulse_counter(R_pulse_counter'high);
 	    S_adc_dv <= R_pulse_ena;
 	  end block;
 	end generate;
