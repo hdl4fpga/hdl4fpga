@@ -28,44 +28,66 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity win_side is
+entity winlayout_edge is
 	generic (
-		x           : natural_vector;
-		width       : natural_vector);
+		edges      : natural_vector);
 	port (
-		video_clk   : in  std_logic;
-		video_on    : in  std_logic;
-		video_x     : in  std_logic_vector;
-		win_on      : out std_logic_vector);
+		video_clk  : in  std_logic;
+		video_ini  : in  std_logic;
+		next_edge  : in  std_logic;
+		video_pos  : in  std_logic_vector;
+		video_div  : out std_logic_vector;
+		video_edge : out std_logic_vector);
 end;
 
-architecture def of win_side is
+architecture def of winlayout_edge is
 
-	signal   won     : std_logic_vector(win_on'range);
+	signal rd_addr : std_logic_vector(video_div'range);
+	signal rd_data : std_logic_vector(video_pos'range);
+
+	function to_bitrom (
+		constant data : natural_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable retval : unsigned(0 to data'length*size)
+	begin
+		for i in divisions'range loop
+			retval(0 tosize-1) := to_unsigned(data(i), size);
+			retval := retval rol size;
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
+	signal on_edge : std_logic;
 
 begin
 
-	g1 : for i in won'range generate
-		g2 : if i < x'length generate
-			constant low  : natural := x(i);
-			constant high : natural := width(i)+x(i);
-		begin
-			process(video_clk)
-			begin
-				if rising_edge(video_clk) then
-					won(i) <= setif(low <= to_integer(unsigned(video_x)) and to_integer(unsigned(video_x)) < high);
-				end if;
-			end process;
-		end generate;
-	end generate;
-
-	process(video_clk)
+	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			win_on <= won and (win_on'range => video_on);
+			if video_ini='1' then
+				rd_addr <= (others => '0');
+			elsif next_edge='1' then
+				rd_addr <= std_logic_vector(unsigned(rd_addr) + 1));
+			end if;
 		end if;
 	end process;
 
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => to_bitrom(edges))
+	port map (
+		wr_clk  => '-',
+		wr_ena  => '0',
+		wr_addr => (rd_addr'range => '-'),
+		wr_data => (rd_data'range => '-'),
+
+		rd_addr => rd_addr,
+		rd_data => rd_data);
+
+	video_div  <= rd_addr;
+	video_edge <=  setif(video_pos=rd_data);
+	
 end;
 
 library ieee;
@@ -75,63 +97,72 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity win_mngr is
+entity win_layout is
 	generic (
-		x      : natural_vector;
-		y      : natural_vector;
-		width  : natural_vector;
-		height : natural_vector);
+		x_edges     : natural_vector;
+		y_edges     : natural_vector;
 	port (
 		video_clk   : in  std_logic;
-		video_x     : in  std_logic_vector;
-		video_y     : in  std_logic_vector;
-		video_frm   : in  std_logic;
-		video_don   : in  std_logic;
-		win_don     : out std_logic_vector;
-		win_frm     : out std_logic_vector);
+		video_posx  : in  std_logic_vector;
+		video_posy  : in  std_logic_vector;
+		video_vton  : in  std_logic;
+		video_hzon  : in  std_logic;
+		video_xdiv  : out std_logic_vector;
+		video_ydiv  : out std_logic_vector;
+		win_hzsync  : out std_logic;
+		win_vtsync  : out std_logic;
+		win_xdiv    : out std_logic;
+		win_ydiv    : out std_logic);
 
 end;
 
-architecture def of win_mngr is
+architecture def of win_layout is
 
-	signal mask_y : std_logic_vector(win_don'range);
-	signal mask_x : std_logic_vector(win_don'range);
-	signal edge_x : std_logic_vector(win_don'range);
-	signal frm    : std_logic;
-	signal don    : std_logic;
+	signal video_xini : std_logic;
+	signal video_yini : std_logic;
+	signal video_xdiv : std_logic_vector(win_xdiv);
+	signal video_ydiv : std_logic_vector(win_ydiv);
+
+	signal last_xedge : std_logic;
+	signal last_yedge : std_logic;
+	signal next_xedge : std_logic;
+	signal next_yedge : std_logic;
 
 begin
 
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			frm <= video_frm;
-			don <= video_don;
-		end if;
-	end process;
-
-	x_e : entity hdl4fpga.win_side
+	last_xedge <= setif(unsigned(video_xdiv) = to_unsigned(x_edges'length-1));
+	next_xedge <= video_xedge and not last_xedge;
+	video_xini <= not video_hzon;
+	xedge_e : entity hdl4fpga.winlayout_edge
 	generic map (
-		x           => x,
-		width       => width)
+		edges      => x_edges)
 	port map (
-		video_clk   => video_clk,
-		video_on    => don,
-		video_x     => video_x,
-		win_on      => mask_x);
+		video_clk  => video_clk,
+		video_ini  => video_xini,
+		next_edge  => next_xedge,
+		video_pos  => video_xpos,
+		video_div  => video_xdiv,
+		video_edge => video_xedge);
 
-	y_e : entity hdl4fpga.win_side
+	last_yedge <= setif(unsigned(video_ydiv) = to_unsigned(y_edges'length-1));
+	next_yedge <= video_xedge and last_xdge;
+	video_yini <= not video_vton;
+	yedge_e : entity hdl4fpga.winlayout_dge
 	generic map (
-		x           => y,
-		width       => height)
+		edges      => y_edges)
 	port map (
-		video_clk   => video_clk,
-		video_on    => frm,
-		video_x     => video_y,
-		win_on      => mask_y);
+		video_clk  => video_clk,
+		video_ena  => video_yena,
+		video_ini  => video_yini,
+		video_pos  => video_ypos,
+		video_div  => video_ydiv,
+		video_edge => video_yedge);
 
-	win_don <= mask_y and mask_x;
-	win_frm <= mask_y;
+	win_hzsync <= video_xedge;
+	win_vtsync <= video_yedge and video_xedge;
+	win_xdiv   <= video_xdiv;
+	win_ydiv   <= video_ydiv;
+
 end;
 
 library ieee;
@@ -140,12 +171,13 @@ use ieee.numeric_std.all;
 
 entity win is
 	port (
-		video_clk : in  std_logic;
-		video_hzl : in  std_logic;
-		win_frm   : in  std_logic;
-		win_ena   : in  std_logic;
-		win_x     : out std_logic_vector;
-		win_y     : out std_logic_vector);
+		video_clk    : in  std_logic;
+		video_hzon   : in std_logic;
+		video_vton   : in std_logic;
+		video_hzsync : in std_logic;
+		win_xedge    : in  std_logic;
+		win_posx     : out std_logic_vector;
+		win_poxy     : out std_logic_vector);
 end;
 
 architecture def of win is
@@ -155,18 +187,18 @@ begin
 		variable y : unsigned(win_y'range);
 	begin
 		if rising_edge(video_clk) then
-			if win_ena='0' then
+			if win_hzsync='1' then
 				x := (others => '0');
 			else
 				x := x + 1;
 			end if;
-			if win_frm='0' then
+			if win_vtsync='1' then
 				y := (others => '0');
-			elsif video_hzl='1' then
+			elsif video_hzsync='1' then
 				y := y + 1;
 			end if;
-			win_x <= std_logic_vector(x);
-			win_y <= std_logic_vector(y);
+			win_posx <= std_logic_vector(x);
+			win_posy <= std_logic_vector(y);
 		end if;
 	end process;
 end architecture;

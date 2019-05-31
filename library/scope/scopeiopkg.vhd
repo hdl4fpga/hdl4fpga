@@ -49,10 +49,39 @@ package scopeiopkg is
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
 	constant displaylayout_table : displaylayout_vector := (
-		--      display_width | num_of_seg | grid_width | grid_height | hzaxis_height | vtaxis_width | textbox_width | border | gap | margin
-		sd600  => (       800,           2,          15,            8,              8,           6*8,           33*8,       1,        0,       1),
-		hd720  => (      1280,           4,          30,            8,              8,           6*8,           33*8,       1,        0,       1),
-		hd1080 => (      1920,           4,          50,            8,              8,           6*8,           33*8,       1,        0,       1));
+		sd600 => (            
+			display_width   =>  800,
+			num_of_segments =>    2,
+			grid_width      =>   15,
+			grid_height     =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			textbox_width   => 33*8,
+			border          =>    0,
+			gap             =>    0,
+			margin          =>    0),
+		hd720 => (
+			display_width   => 1280,
+			num_of_segments =>    4,
+			grid_width      =>   30,
+			grid_height     =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			textbox_width   => 33*8,
+			border          =>    1,
+			gap             =>    0,
+			margin          =>    1),
+		hd1080 => (
+			display_width   => 1920,
+			num_of_segments =>    4,
+			grid_width      =>   50,
+			grid_height     =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			textbox_width   => 33*8,
+			border          =>    1,
+			gap             =>    1,
+			margin          =>    1));
 
 	type mode_layout is record
 		mode_id   : natural;
@@ -121,7 +150,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return ((layout.grid_height*division_length+1)+1+sgmnt_gap(layout)+layout.hzaxis_height)+sgmnt_border(layout);
+		return (layout.grid_height*division_length+1)+sgmnt_gap(layout)+layout.hzaxis_height;
 	end;
 
 	function sgmnt_width (
@@ -135,7 +164,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vtaxis_x(layout)+vtaxis_width(layout)+1+sgmnt_gap(layout);
+		return vtaxis_x(layout)+vtaxis_width(layout)+sgmnt_gap(layout);
 	end;
 
 	function grid_y (

@@ -89,8 +89,8 @@ architecture beh of scopeio is
 
 	signal video_hs         : std_logic;
 	signal video_vs         : std_logic;
-	signal video_frm        : std_logic;
-	signal video_hon        : std_logic;
+	signal video_vton        : std_logic;
+	signal video_hzon        : std_logic;
 	signal video_hzl        : std_logic;
 	signal video_vld        : std_logic;
 	signal video_vcntr      : std_logic_vector(11-1 downto 0);
@@ -113,8 +113,6 @@ architecture beh of scopeio is
 
 	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
-	signal storage_base : std_logic_vector(storage_addr'range);
-
 
 	signal capture_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
@@ -290,12 +288,12 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
-		factor       => hz_scale,
+		factor       => b"1111" , --hz_scale,
 		input_clk    => input_clk,
 		input_ena    => resizedsample_ena,
 		input_data   => resizedsample_data,
 		trigger_shot => trigger_shot,
-		display_ena  => video_frm,
+		display_ena  => video_vton,
 		output_ena   => downsample_ena,
 		output_data  => downsample_data);
 
@@ -369,7 +367,7 @@ begin
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
 
-				sync_videofrm := video_frm;
+				sync_videofrm := video_vton;
 			end if;
 
 		end process;
@@ -432,11 +430,11 @@ begin
 			vsync => video_vs,
 			hcntr => video_hcntr,
 			vcntr => video_vcntr,
-			don   => video_hon,
-			frm   => video_frm,
+			don   => video_hzon,
+			frm   => video_vton,
 			nhl   => video_hzl);
 
-		video_vld <= video_hon and video_frm;
+		video_vld <= video_hzon and video_vton;
 
 		vgaio_e : entity hdl4fpga.align
 		generic map (
@@ -473,10 +471,12 @@ begin
 				return rval;
 			end;
 
-			signal win_don : std_logic_vector(0 to layout.num_of_segments-1);
-			signal win_frm : std_logic_vector(0 to layout.num_of_segments-1);
-			signal phon    : std_logic;
-			signal pfrm    : std_logic;
+			signal pwin_hzon     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pwin_vton     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pwin_hzsync   : std_logic;
+			signal pwin_vtsync   : std_logic;
+			signal phzon         : std_logic;
+			signal pvton         : std_logic;
 
 			constant mwin_x      : natural_vector := to_naturalvector(layout, 0);
 			constant mwin_y      : natural_vector := to_naturalvector(layout, 1);
@@ -484,7 +484,7 @@ begin
 			constant mwin_height : natural_vector := to_naturalvector(layout, 3);
 		begin
 
-			win_mngr_e : entity hdl4fpga.win_mngr
+			win_layout_e : entity hdl4fpga.win_layout
 			generic map (
 				x     => mwin_x,
 				y     => mwin_y,
@@ -494,13 +494,15 @@ begin
 				video_clk  => video_clk,
 				video_x    => video_hcntr,
 				video_y    => video_vcntr,
-				video_don  => video_hon,
-				video_frm  => video_frm,
-				win_don    => win_don,
-				win_frm    => win_frm);
+				video_hzon => video_hzon,
+				video_vton => video_vton,
+				win_hzsync => pwin_hzsync,
+				win_vtsync => pwin_vtsync,
+				win_hzon   => pwin_hzon,
+				win_vton   => pwin_vton);
 
-			phon <= not setif(win_don=(win_don'range => '0'));
-			pfrm <= not setif(win_frm=(win_frm'range => '0'));
+			phzon <= not setif(pwin_hzon=(pwin_hzon'range => '0'));
+			pvton <= not setif(pwin_vton=(pwin_vton'range => '0'));
 
 			sgmnt_b : block
 
@@ -526,10 +528,12 @@ begin
 
 				signal x       : std_logic_vector(win_x'range);
 				signal y       : std_logic_vector(win_y'range);
-				signal cfrm    : std_logic_vector(0 to 4-1);
-				signal cdon    : std_logic_vector(cfrm'range);
-				signal wena    : std_logic;
-				signal wfrm    : std_logic;
+				signal cwin_hzsync   : std_logic;
+				signal cwin_vtsync   : std_logic;
+				signal cwin_vton   : std_logic_vector(0 to 4-1);
+				signal cwin_hzon   : std_logic_vector(cwin_vton'range);
+				signal chzon    : std_logic;
+				signal cvton    : std_logic;
 				signal w_hzl   : std_logic;
 				signal grid_on : std_logic;
 				signal hz_on   : std_logic;
@@ -551,28 +555,30 @@ begin
 				port map (
 					video_clk => video_clk,
 					video_hzl => p_hzl,
-					win_frm   => pfrm,
-					win_ena   => phon,
+					winx_ini  => pwin_hzsync,
+					winy_ini  => pwin_vtsync,
 					win_x     => pwin_x,
 					win_y     => pwin_y);
 
-				mngr_e : entity hdl4fpga.win_mngr
+				layout_e : entity hdl4fpga.win_layout
 				generic map (
-					x      => sgmnt_x,
-					y      => sgmnt_y,
-					width  => sgmnt_w,
-					height => sgmnt_h)
+					x           => sgmnt_x,
+					y           => sgmnt_y,
+					width       => sgmnt_w,
+					height      => sgmnt_h)
 				port map (
-					video_clk  => video_clk,
-					video_x    => pwin_x,
-					video_y    => pwin_y,
-					video_don  => phon,
-					video_frm  => pfrm,
-					win_don    => cdon,
-					win_frm    => cfrm);
+					video_clk   => video_clk,
+					video_x     => pwin_x,
+					video_y     => pwin_y,
+					video_hzon  => phzon,
+					video_vton  => pvton,
+					win_hzsync => cwin_hzsync,
+					win_vtsync => cwin_vtsync,
+					win_hzon    => cwin_hzon,
+					win_vton    => cwin_vton);
 
-				wena <= not setif(cdon=(cdon'range => '0'));
-				wfrm <= not setif(cfrm=(cfrm'range => '0'));
+				chzon <= not setif(cwin_hzon=(cwin_hzon'range => '0'));
+				cvton <= not setif(cwin_vton=(cwin_vton'range => '0'));
 
 				latency_whzl_e : entity hdl4fpga.align
 				generic map (
@@ -587,51 +593,52 @@ begin
 				port map (
 					video_clk => video_clk,
 					video_hzl => w_hzl,
-					win_frm   => wfrm,
-					win_ena   => wena,
+					winx_ini  => cwin_hzsync,
+					winy_ini  => cwin_vtsync,
 					win_x     => win_x,
 					win_y     => win_y);
 
 				winfrm_lat_e : entity hdl4fpga.align
 				generic map (
-					n => win_frm'length,
-					d => (win_frm'range => 2))
+					n => pwin_vton'length,
+					d => (pwin_vton'range => 2))
 				port map (
 					clk => video_clk,
-					di  => win_frm,
+					di  => pwin_vton,
 					do  => storage_bsel);
 
-				storage_addr_p : process (storage_bsel)
-					variable base : unsigned(storage_base'range);
+				storage_addr_p : process (video_clk)
+					variable base : unsigned(storage_addr'range);
 				begin
-					base := (base'range => '0');
-					for i in storage_bsel'range loop
-						if storage_bsel(i)='1' then
-							base := to_unsigned((grid_width(layout)-1)*i, base'length);
-						end if;
-					end loop;
-					storage_base <= std_logic_vector(base);
+					if rising_edge(video_clk) then
+						base := (base'range => '0');
+						for i in storage_bsel'range loop
+							if storage_bsel(i)='1' then
+								base := to_unsigned((grid_width(layout)-1)*i, base'length);
+							end if;
+						end loop;
+						storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(base) + unsigned(capture_addr));
+					end if;
 				end process;
-				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(capture_addr));
 
 				latency_b : block
 				begin
 					latency_on_e : entity hdl4fpga.align
 					generic map (
-						n => cdon'length,
-						d => (cdon'range => 2))
+						n => cwin_hzon'length,
+						d => (cwin_hzon'range => 2+1+1))
 					port map (
 						clk   => video_clk,
-						di    => cdon,
+						di    => cwin_hzon,
 						do(0) => grid_on,
 						do(1) => vt_on,
 						do(2) => hz_on,
 						do(3) => text_on);
 
 					latency_x_e : entity hdl4fpga.align
-					generic map (
-						n => win_x'length,
-						d => (win_x'range => 2))
+					generic map (          --  +--- storage_addr
+						n => win_x'length, --  | + --- windows
+						d => (win_x'range => 2+1+1))
 					port map (
 						clk => video_clk,
 						di  => win_x,
@@ -640,7 +647,7 @@ begin
 					latency_y_e : entity hdl4fpga.align
 					generic map (
 						n => win_y'length,
-						d => (win_y'range => 1))
+						d => (win_y'range => 1+1+1))
 					port map (
 						clk => video_clk,
 						di  => win_y,
@@ -653,8 +660,8 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						aux := (others => '0');
-						for i in win_frm'range loop
-							if win_frm(i)='1' then
+						for i in pwin_vton'range loop
+							if pwin_vton(i)='1' then
 								aux := aux or to_unsigned(layout.grid_width*i, aux'length);
 							end if;
 						end loop;
@@ -707,7 +714,7 @@ begin
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 
-				sgmnt_on <= phon;
+				sgmnt_on <= phzon;
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,

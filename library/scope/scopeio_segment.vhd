@@ -65,6 +65,7 @@ architecture def of scopeio_segment is
 	signal axis_base    : std_logic_vector(0 to 5-1);
 	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
+	signal ppp : std_logic_vector(samples'range);
 begin
 
 	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
@@ -167,6 +168,7 @@ begin
 
 	end block;
 
+	ppp <= std_logic_vector(to_signed(256, ppp'length));
 	tracer_e : entity hdl4fpga.scopeio_tracer
 	generic map (
 		latency => latency,
@@ -175,7 +177,7 @@ begin
 		clk     => video_clk,
 		ena     => grid_on,
 		y       => y,
-		samples => samples,
+		samples => ppp, --samples,
 		dots    => traces_dots);
 
 end;

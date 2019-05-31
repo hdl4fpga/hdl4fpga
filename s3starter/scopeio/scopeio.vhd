@@ -48,7 +48,7 @@ architecture beh of s3starter is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/64.0);
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0)/2.0+0.5;
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
 		end loop;
 		return aux;
@@ -85,8 +85,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 4,
-		dfs_div => 5)
+		dfs_mul => 3, --4,
+		dfs_div => 1) --5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -107,12 +107,11 @@ begin
 		addr => input_addr,
 		data => sample);
 
-	uart_rxc <= sys_clk;
-	process (uart_rxc)
+	process (sys_clk)
 		constant max_count : natural := (50*10**6+16*baudrate/2)/(16*baudrate);
 		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
 	begin
-		if rising_edge(uart_rxc) then
+		if rising_edge(sys_clk) then
 			if cntr >= max_count-1 then
 				uart_ena <= '1';
 				cntr := (others => '0');
@@ -124,6 +123,7 @@ begin
 	end process;
 
 	uart_sin <= rs232_rxd;
+	uart_rxc <= sys_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -146,11 +146,11 @@ begin
 
 		chaini_data => uart_rxd,
 
+		chaino_clk  => si_clk, 
 		chaino_frm  => si_frm, 
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 
-	si_clk <= uart_rxc
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id  => 1,
@@ -162,7 +162,7 @@ begin
 		default_vtfg     => b"1_1_1",
 		default_vtbg     => b"0_0_1",
 		default_textbg   => b"0_0_0",
-		default_sgmntbg  => b"0_1_1",
+		default_sgmntbg  => b"0_0_0",
 		default_bg       => b"1_1_1")
 	port map (
 		si_clk      => si_clk,
