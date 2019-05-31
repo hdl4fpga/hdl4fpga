@@ -28,19 +28,19 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity side_edge is
+entity videobox_sides is
 	generic (
-		edges      : natural_vector);
+		sides      : natural_vector);
 	port (
 		video_clk  : in  std_logic;
 		video_ini  : in  std_logic;
-		next_edge  : in  std_logic;
+		next_side  : in  std_logic;
 		video_pos  : in  std_logic_vector;
 		video_div  : out std_logic_vector;
-		video_edge : out std_logic);
+		video_side : out std_logic);
 end;
 
-architecture def of side_edge is
+architecture def of box_sides is
 
 	signal rd_addr : std_logic_vector(video_div'range);
 	signal rd_data : std_logic_vector(video_pos'range);
@@ -58,7 +58,7 @@ architecture def of side_edge is
 		return std_logic_vector(retval);
 	end;
 
-	signal on_edge : std_logic;
+	signal on_side : std_logic;
 
 begin
 
@@ -67,7 +67,7 @@ begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
 				rd_addr <= (others => '0');
-			elsif next_edge='1' then
+			elsif next_side='1' then
 				rd_addr <= std_logic_vector(unsigned(rd_addr) + 1);
 			end if;
 		end if;
@@ -75,7 +75,7 @@ begin
 
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => to_bitrom(edges, video_pos'length))
+		bitrom => to_bitrom(sides, video_pos'length))
 	port map (
 		wr_clk  => '-',
 		wr_ena  => '0',
@@ -86,7 +86,7 @@ begin
 		rd_data => rd_data);
 
 	video_div  <= rd_addr;
-	video_edge <= setif(video_pos=rd_data);
+	video_side <= setif(video_pos=rd_data);
 	
 end;
 
@@ -97,71 +97,70 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity visual_layout is
+entity videobox_layout is
 	generic (
-		x_edges     : natural_vector;
-		y_edges     : natural_vector);
+		x_sides     : natural_vector;
+		y_sides     : natural_vector);
 	port (
 		video_clk   : in  std_logic;
 		video_posx  : in  std_logic_vector;
 		video_posy  : in  std_logic_vector;
 		video_vton  : in  std_logic;
 		video_hzon  : in  std_logic;
-		win_hzsync  : out std_logic;
-		win_vtsync  : out std_logic;
-		win_divx    : out std_logic_vector;
-		win_divy    : out std_logic_vector);
-
+		box_sidex   : out std_logic;
+		box_sidey   : out std_logic;
+		box_divx    : out std_logic_vector;
+		box_divy    : out std_logic_vector);
 end;
 
-architecture def of visual_layout is
+architecture def of videobox_layout is
 
 	signal video_inix : std_logic;
 	signal video_iniy : std_logic;
-	signal video_divx : std_logic_vector(win_divx'range);
-	signal video_divy : std_logic_vector(win_divy'range);
+	signal video_divx : std_logic_vector(box_divx'range);
+	signal video_divy : std_logic_vector(box_divy'range);
 
-	signal last_edgex  : std_logic;
-	signal last_edgey  : std_logic;
-	signal video_edgex : std_logic;
-	signal video_edgey : std_logic;
-	signal next_edgex  : std_logic;
-	signal next_edgey  : std_logic;
+	signal last_sidex  : std_logic;
+	signal last_sidey  : std_logic;
+	signal video_sidex : std_logic;
+	signal video_sidey : std_logic;
+	signal next_sidex  : std_logic;
+	signal next_sidey  : std_logic;
 
 begin
 
-	last_edgex <= setif(unsigned(video_divx) = to_unsigned(x_edges'length-1, video_divx'length));
-	next_edgex <= video_edgex and not last_edgex;
+	last_sidex <= setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length));
+	next_sidex <= video_sidex and not last_sidex;
 	video_inix <= not video_hzon or not video_vton;
-	xedge_e : entity hdl4fpga.side_edge
+	xedge_e : entity hdl4fpga.box_sides
 	generic map (
-		edges      => x_edges)
+		sides      => x_sides)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => video_inix,
-		next_edge  => next_edgex,
+		next_side  => next_sidex,
 		video_pos  => video_posx,
 		video_div  => video_divx,
-		video_edge => video_edgex);
+		video_side => video_sidex);
 
-	last_edgey <= setif(unsigned(video_divy) = to_unsigned(y_edges'length-1, video_divy'length));
-	next_edgey <= video_edgey and last_edgex;
+	last_sidey <= setif(unsigned(video_divy) = to_unsigned(y_sides'length-1, video_divy'length));
+	next_sidey <= video_sidey and last_sidex;
 	video_iniy <= not video_vton;
-	edgey_e : entity hdl4fpga.side_edge
+	edgey_e : entity hdl4fpga.box_sides
 	generic map (
-		edges      => y_edges)
+		sides      => y_sides)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => video_iniy,
-		next_edge  => next_edgey,
+		next_side  => next_sidey,
 		video_pos  => video_posy,
 		video_div  => video_divy,
-		video_edge => video_edgey);
+		video_side => video_sidey);
 
-	win_hzsync <= video_edgex;
-	win_vtsync <= video_edgey and video_edgex;
-	win_divx   <= video_divx;
-	win_divy   <= video_divy;
+	box_sidex <= video_sidex;
+	box_sidey <= video_sidey and video_sidex;
+	box_divx   <= video_divx;
+	box_divy   <= video_divy;
 
 end;
 
@@ -169,25 +168,27 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity box is
+entity video_box is
 	port (
 		video_clk    : in  std_logic;
 		video_hzon   : in std_logic;
 		video_vton   : in std_logic;
 		video_hzsync : in std_logic;
-		side_edgex    : in  std_logic;
+		box_sidex    : in  std_logic;
 		box_posx     : out std_logic_vector;
 		box_posy     : out std_logic_vector);
 end;
 
-architecture def of box is
+architecture def of video_box is
 begin
 	process (video_clk)
 		variable posx : unsigned(box_posx'range);
-		variable posy : unsigned(win_posy'range);
+		variable posy : unsigned(box_posy'range);
 	begin
 		if rising_edge(video_clk) then
-			if side_edgex='1' then
+			if video_hzon='0' then
+				posx := (others => '0');
+			elsif box_sidex='1' then
 				posx := (others => '0');
 			else
 				posx := posx + 1;

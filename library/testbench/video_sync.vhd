@@ -29,22 +29,22 @@ use hdl4fpga.std.all;
 
 architecture video of testbench is
 
-	signal video_clk         : std_logic := '0';
-	signal video_hs         : std_logic;
-	signal video_vs         : std_logic;
-	signal video_vton       : std_logic;
-	signal video_hzon       : std_logic;
-	signal video_hzl        : std_logic;
-	signal video_vld        : std_logic;
-	signal video_vcntr      : std_logic_vector(11-1 downto 0);
-	signal video_hcntr      : std_logic_vector(11-1 downto 0);
+	signal video_clk    : std_logic := '0';
+	signal video_hs     : std_logic;
+	signal video_vs     : std_logic;
+	signal video_vton   : std_logic;
+	signal video_hzon   : std_logic;
+	signal video_hzl    : std_logic;
+	signal video_vld    : std_logic;
+	signal video_vcntr  : std_logic_vector(11-1 downto 0);
+	signal video_hcntr  : std_logic_vector(11-1 downto 0);
 
-	signal win_hzsync         : std_logic;
-	signal win_vtsync         : std_logic;
-	signal win_posx      : std_logic_vector(11-1 downto 0);
-	signal win_posy      : std_logic_vector(11-1 downto 0);
-	signal win_divx      : std_logic_vector(2-1 downto 0);
-	signal win_divy      : std_logic_vector(1-1 downto 0);
+	signal box_sidex    : std_logic;
+	signal box_sidey    : std_logic;
+	signal box_posx     : std_logic_vector(11-1 downto 0);
+	signal box_posy     : std_logic_vector(11-1 downto 0);
+	signal box_divx     : std_logic_vector(2-1 downto 0);
+	signal box_divy     : std_logic_vector(1-1 downto 0);
 
  begin
     video_clk <= not video_clk after 12.5 ns;
@@ -62,20 +62,30 @@ architecture video of testbench is
 		frm   => video_vton,
 		nhl   => video_hzl);
 
-	layout_e : entity hdl4fpga.win_layout
+	layout_e : entity hdl4fpga.videobox_layout
 	generic map (
-		x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
-		y_edges     => (257-1, (257)+8-1))
+		x_sides     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
+		y_sides     => (257-1, (257)+8-1))
 	port map (
-		video_clk   => video_clk,
-		video_posx  => video_hcntr,
-		video_posy  => video_vcntr,
-		video_hzon  => video_hzon,
-		video_vton  => video_vton,
-		win_hzsync  => win_hzsync,
-		win_vtsync  => win_vtsync,
-		win_divx    => win_divx,
-		win_divy    => win_divy);
+		video_clk  => video_clk,
+		video_hzon => video_hzon,
+		video_vton => video_vton,
+		video_posx => video_hcntr,
+		video_posy => video_vcntr,
+		box_sidex  => box_sidex,
+		box_sidey  => box_sidey,
+		box_divx   => box_divx,
+		box_divy   => box_divy);
+
+	videobox_e : entity hdl4fpga.video_box
+	port map (
+		video_clk    => video_clk,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton,
+		video_hzsync => video_hzl,
+		box_sidex    => box_sidex,
+		box_posx     => box_posx,
+		box_posy     => box_posy);
 
 end;
 
