@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
@@ -83,7 +82,189 @@ architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
-	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+	constant grid_unit : natural := 32;
+
+	type video_layout is record 
+		mode       : natural;
+		scr_width  : natural;
+		num_of_seg : natural;
+		gu_width   : natural;
+		gu_height  : natural;
+		hz_height  : natural;
+		vt_width   : natural;
+		text_width : natural;
+		border     : natural;
+		padding    : natural;
+		margin     : natural;
+	end record;
+
+	function vt_y      (constant vl : video_layout) return natural;
+	function vt_x      (constant vl : video_layout) return natural;
+	function vt_width  (constant vl : video_layout) return natural;
+	function vt_height (constant vl : video_layout) return natural;
+
+	function sgmnt_margin (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.margin;
+	end;
+
+	function sgmnt_border (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.border;
+	end;
+
+	function sgmnt_padding (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.padding;
+	end;
+
+	function sgmnt_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height)+sgmnt_border(vl);
+	end;
+
+	function sgmnt_width (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.vt_width+1+sgmnt_padding(vl)+(vl.gu_width*gu+1)+1+sgmnt_padding(vl)+vl.text_width+2*sgmnt_border(vl);
+	end;
+
+	function grid_x (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vt_x(vl)+vt_width(vl)+1+sgmnt_padding(vl);
+	end;
+
+	function grid_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vt_y(vl);
+	end;
+
+	function grid_width (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.gu_width*gu+1;
+	end;
+
+	function grid_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.gu_height*gu+1;
+	end;
+
+	function vt_x (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return sgmnt_border(vl)+0;
+	end;
+
+	function vt_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return sgmnt_border(vl)+0;
+	end;
+
+	function vt_width (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.vt_width;
+	end;
+
+	function vt_height (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return grid_height(vl);
+	end;
+
+	function text_x (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return grid_x(vl)+grid_width(vl)+1+sgmnt_padding(vl);
+	end;
+
+	function text_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vt_y(vl);
+	end;
+
+	function text_width (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return vl.text_width;
+	end;
+
+	function text_height (
+		constant vl : video_layout;
+		constant gu : natural := grid_unit)
+		return natural is
+	begin
+		return vl.gu_height*gu;
+	end;
+
+	function hz_x (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return grid_x(vl);
+	end;
+
+	function hz_y (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return grid_y(vl)+grid_height(vl)+1+sgmnt_padding(vl);
+	end;
+
+	function hz_width (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return grid_width(vl);
+	end;
+
+	function hz_height (
+		constant vl : video_layout)
+		return natural is
+	begin
+		return 8;
+	end;
+
+	type vlayout_vector is array (natural range <>) of video_layout;
+
+	constant vlayout_tab : vlayout_vector(0 to 4-1) := (
+		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
+		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
+		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
+		2 => (    9,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
+		3 => (   10,       1280,           4,        30,          8,          8,       6*8,         33*8,       1,        0,       1));
+	constant vlayout : video_layout := vlayout_tab(vlayout_id);
 
 	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
 
@@ -111,7 +292,7 @@ architecture beh of scopeio is
 	signal downsample_ena    : std_logic;
 	signal downsample_data   : std_logic_vector(resizedsample_data'range);
 
-	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+	constant storage_size : natural := unsigned_num_bits(vlayout.num_of_seg*grid_width(vlayout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
 	signal storage_base : std_logic_vector(storage_addr'range);
 
@@ -121,7 +302,7 @@ architecture beh of scopeio is
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
+	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
 	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
@@ -424,7 +605,7 @@ begin
 
 		video_e : entity hdl4fpga.video_vga
 		generic map (
-			mode => video_description(vlayout_id).mode_id,
+			mode => vlayout.mode,
 			n    => 11)
 		port map (
 			clk   => video_clk,
@@ -452,36 +633,36 @@ begin
 		graphics_b : block
 
 			impure function to_naturalvector (
-				constant layout : display_layout;
+				constant vl : video_layout;
 				constant param   : natural range 0 to 3)
 				return natural_vector is
-				variable rval : natural_vector(0 to layout.num_of_segments-1);
+				variable rval : natural_vector(0 to vl.num_of_seg-1);
 			begin
-				for i in 0 to layout.num_of_segments-1 loop
+				for i in 0 to vl.num_of_seg-1 loop
 					case param is
 					when 0 =>
-						rval(i) := sgmnt_margin(layout)+0;
+						rval(i) := sgmnt_margin(vl)+0;
 					when 1 => 
-						rval(i) := sgmnt_margin(layout)+i*(sgmnt_height(layout)+2*sgmnt_margin(layout));
---						rval(i) := sgmnt_margin(layout)+i*(sgmnt_height(layout)+2*sgmnt_margin(layout)+16);
+						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
+--						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
 					when 2 => 
-						rval(i) := sgmnt_width(layout); --layout.scr_width;
+						rval(i) := sgmnt_width(vl); --vl.scr_width;
 					when 3 => 
-						rval(i) := sgmnt_height(layout)+1;
+						rval(i) := sgmnt_height(vl)+1;
 					end case;
 				end loop;
 				return rval;
 			end;
 
-			signal win_don : std_logic_vector(0 to layout.num_of_segments-1);
-			signal win_frm : std_logic_vector(0 to layout.num_of_segments-1);
+			signal win_don : std_logic_vector(0 to vlayout.num_of_seg-1);
+			signal win_frm : std_logic_vector(0 to vlayout.num_of_seg-1);
 			signal phon    : std_logic;
 			signal pfrm    : std_logic;
 
-			constant mwin_x      : natural_vector := to_naturalvector(layout, 0);
-			constant mwin_y      : natural_vector := to_naturalvector(layout, 1);
-			constant mwin_width  : natural_vector := to_naturalvector(layout, 2);
-			constant mwin_height : natural_vector := to_naturalvector(layout, 3);
+			constant mwin_x      : natural_vector := to_naturalvector(vlayout, 0);
+			constant mwin_y      : natural_vector := to_naturalvector(vlayout, 1);
+			constant mwin_width  : natural_vector := to_naturalvector(vlayout, 2);
+			constant mwin_height : natural_vector := to_naturalvector(vlayout, 3);
 		begin
 
 			win_mngr_e : entity hdl4fpga.win_mngr
@@ -504,18 +685,13 @@ begin
 
 			sgmnt_b : block
 
-				constant grid_id    : natural := 0;
-				constant vtaxis_id  : natural := 1;
-				constant hzaxis_id  : natural := 2;
-				constant textbox_id : natural := 3;
+				constant sgmnt_x : natural_vector := (0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout));
+				constant sgmnt_y : natural_vector := (0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout));
+				constant sgmnt_w : natural_vector := (0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout));
+				constant sgmnt_h : natural_vector := (0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout));
 
-				constant sgmnt_x : natural_vector := (grid_id => grid_x(layout),      vtaxis_id => vtaxis_x(layout),      hzaxis_id => hzaxis_x(layout),      textbox_id => textbox_x(layout));
-				constant sgmnt_y : natural_vector := (grid_id => grid_y(layout),      vtaxis_id => vtaxis_y(layout),      hzaxis_id => hzaxis_y(layout),      textbox_id => textbox_y(layout));
-				constant sgmnt_w : natural_vector := (grid_id => grid_width(layout),  vtaxis_id => vtaxis_width(layout),  hzaxis_id => hzaxis_width(layout),  textbox_id => textbox_width(layout));
-				constant sgmnt_h : natural_vector := (grid_id => grid_height(layout), vtaxis_id => vtaxis_height(layout), hzaxis_id => hzaxis_height(layout), textbox_id => textbox_height(layout));
-
-				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(vlayout)-1);
+				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(vlayout)-1);
 
 				signal pwin_x  : std_logic_vector(pwinx_size-1 downto 0);
 				signal pwin_y  : std_logic_vector(pwiny_size-1 downto 0);
@@ -607,7 +783,7 @@ begin
 					base := (base'range => '0');
 					for i in storage_bsel'range loop
 						if storage_bsel(i)='1' then
-							base := to_unsigned((grid_width(layout)-1)*i, base'length);
+							base := to_unsigned((grid_width(vlayout)-1)*i, base'length);
 						end if;
 					end loop;
 					storage_base <= std_logic_vector(base);
@@ -655,7 +831,7 @@ begin
 						aux := (others => '0');
 						for i in win_frm'range loop
 							if win_frm(i)='1' then
-								aux := aux or to_unsigned(layout.grid_width*i, aux'length);
+								aux := aux or to_unsigned(vlayout.gu_width*i, aux'length);
 							end if;
 						end loop;
 						aux := aux sll 5;
