@@ -543,10 +543,8 @@ begin
 						wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
 						trigger_addr <= wr_addr;
 					end if;
-				else
-					if downsample_ena='1' then
-						wr_cntr <= wr_cntr - 1;
-					end if;
+				elsif downsample_ena='1' then
+					wr_cntr <= wr_cntr - 1;
 				end if;
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
