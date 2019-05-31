@@ -37,7 +37,7 @@ entity winlayout_edge is
 		next_edge  : in  std_logic;
 		video_pos  : in  std_logic_vector;
 		video_div  : out std_logic_vector;
-		video_edge : out std_logic_vector);
+		video_edge : out std_logic);
 end;
 
 architecture def of winlayout_edge is
@@ -49,10 +49,10 @@ architecture def of winlayout_edge is
 		constant data : natural_vector;
 		constant size : natural)
 		return std_logic_vector is
-		variable retval : unsigned(0 to data'length*size)
+		variable retval : unsigned(0 to data'length*size);
 	begin
-		for i in divisions'range loop
-			retval(0 tosize-1) := to_unsigned(data(i), size);
+		for i in edges'range loop
+			retval(0 to size-1) := to_unsigned(data(i), size);
 			retval := retval rol size;
 		end loop;
 		return std_logic_vector(retval);
@@ -68,14 +68,14 @@ begin
 			if video_ini='1' then
 				rd_addr <= (others => '0');
 			elsif next_edge='1' then
-				rd_addr <= std_logic_vector(unsigned(rd_addr) + 1));
+				rd_addr <= std_logic_vector(unsigned(rd_addr) + 1);
 			end if;
 		end if;
 	end process;
 
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => to_bitrom(edges))
+		bitrom => to_bitrom(edges, video_pos'length))
 	port map (
 		wr_clk  => '-',
 		wr_ena  => '0',
@@ -86,7 +86,7 @@ begin
 		rd_data => rd_data);
 
 	video_div  <= rd_addr;
-	video_edge <=  setif(video_pos=rd_data);
+	video_edge <= setif(video_pos=rd_data);
 	
 end;
 
@@ -100,68 +100,68 @@ use hdl4fpga.std.all;
 entity win_layout is
 	generic (
 		x_edges     : natural_vector;
-		y_edges     : natural_vector;
+		y_edges     : natural_vector);
 	port (
 		video_clk   : in  std_logic;
 		video_posx  : in  std_logic_vector;
 		video_posy  : in  std_logic_vector;
 		video_vton  : in  std_logic;
 		video_hzon  : in  std_logic;
-		video_xdiv  : out std_logic_vector;
-		video_ydiv  : out std_logic_vector;
 		win_hzsync  : out std_logic;
 		win_vtsync  : out std_logic;
-		win_xdiv    : out std_logic;
-		win_ydiv    : out std_logic);
+		win_divx    : out std_logic_vector;
+		win_divy    : out std_logic_vector);
 
 end;
 
 architecture def of win_layout is
 
-	signal video_xini : std_logic;
-	signal video_yini : std_logic;
-	signal video_xdiv : std_logic_vector(win_xdiv);
-	signal video_ydiv : std_logic_vector(win_ydiv);
+	signal video_inix : std_logic;
+	signal video_iniy : std_logic;
+	signal video_divx : std_logic_vector(win_divx'range);
+	signal video_divy : std_logic_vector(win_divy'range);
 
-	signal last_xedge : std_logic;
-	signal last_yedge : std_logic;
-	signal next_xedge : std_logic;
-	signal next_yedge : std_logic;
+	signal last_edgex  : std_logic;
+	signal last_edgey  : std_logic;
+	signal video_edgex : std_logic;
+	signal video_edgey : std_logic;
+	signal next_edgex  : std_logic;
+	signal next_edgey  : std_logic;
 
 begin
 
-	last_xedge <= setif(unsigned(video_xdiv) = to_unsigned(x_edges'length-1));
-	next_xedge <= video_xedge and not last_xedge;
-	video_xini <= not video_hzon;
+	last_edgex <= setif(unsigned(video_divx) = to_unsigned(x_edges'length-1, video_divx'length));
+	next_edgex <= video_edgex and not last_edgex;
+	video_inix <= not video_hzon;
 	xedge_e : entity hdl4fpga.winlayout_edge
 	generic map (
 		edges      => x_edges)
 	port map (
 		video_clk  => video_clk,
-		video_ini  => video_xini,
-		next_edge  => next_xedge,
-		video_pos  => video_xpos,
-		video_div  => video_xdiv,
-		video_edge => video_xedge);
+		video_ini  => video_inix,
+		next_edge  => next_edgex,
+		video_pos  => video_posx,
+		video_div  => video_divx,
+		video_edge => video_edgex);
 
-	last_yedge <= setif(unsigned(video_ydiv) = to_unsigned(y_edges'length-1));
-	next_yedge <= video_xedge and last_xdge;
-	video_yini <= not video_vton;
-	yedge_e : entity hdl4fpga.winlayout_dge
+	last_edgey <= setif(unsigned(video_divy) = to_unsigned(y_edges'length-1, video_divy'length));
+	next_edgey <= video_edgex and last_edgex;
+	video_iniy <= not video_vton;
+	edgey_e : entity hdl4fpga.winlayout_edge
 	generic map (
 		edges      => y_edges)
 	port map (
 		video_clk  => video_clk,
-		video_ena  => video_yena,
-		video_ini  => video_yini,
-		video_pos  => video_ypos,
-		video_div  => video_ydiv,
-		video_edge => video_yedge);
+		video_ini  => video_iniy,
+		next_edge  => next_edgey,
+		video_pos  => video_posy,
+		video_div  => video_divy,
+		video_edge => video_edgey);
 
-	win_hzsync <= video_xedge;
-	win_vtsync <= video_yedge and video_xedge;
-	win_xdiv   <= video_xdiv;
-	win_ydiv   <= video_ydiv;
+	win_hzsync <= video_edgex;
+	win_vtsync <= video_edgey and video_edgex;
+	win_divx   <= video_divx;
+	win_divy   <= video_divy;
 
 end;
 
@@ -175,30 +175,30 @@ entity win is
 		video_hzon   : in std_logic;
 		video_vton   : in std_logic;
 		video_hzsync : in std_logic;
-		win_xedge    : in  std_logic;
+		win_edgex    : in  std_logic;
 		win_posx     : out std_logic_vector;
-		win_poxy     : out std_logic_vector);
+		win_posy     : out std_logic_vector);
 end;
 
 architecture def of win is
 begin
 	process (video_clk)
-		variable x : unsigned(win_x'range);
-		variable y : unsigned(win_y'range);
+		variable posx : unsigned(win_posx'range);
+		variable posy : unsigned(win_posy'range);
 	begin
 		if rising_edge(video_clk) then
-			if win_hzsync='1' then
-				x := (others => '0');
+			if win_edgex='1' then
+				posx := (others => '0');
 			else
-				x := x + 1;
+				posx := posx + 1;
 			end if;
-			if win_vtsync='1' then
-				y := (others => '0');
+			if video_vton='0' then
+				posy := (others => '0');
 			elsif video_hzsync='1' then
-				y := y + 1;
+				posy := posy + 1;
 			end if;
-			win_posx <= std_logic_vector(x);
-			win_posy <= std_logic_vector(y);
+			win_posx <= std_logic_vector(posx);
+			win_posy <= std_logic_vector(posy);
 		end if;
 	end process;
 end architecture;
