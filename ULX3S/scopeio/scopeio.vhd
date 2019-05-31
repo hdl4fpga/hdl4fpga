@@ -14,6 +14,18 @@ use hdl4fpga.std.all;
 --use work.std.all;
 
 architecture beh of ulx3s is
+	-- vlayout_id
+	-- 0: 1920x1080 @ 60Hz 150MHz 
+	-- 1:  800x600  @ 60Hz  40MHz
+	-- 2: 1920x1080 @ 30Hz  75MHz
+	-- 3: 1280x768  @ 60Hz  75MHz
+        constant vlayout_id: integer := 3;
+        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
+        constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
+        constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
+        constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
+
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
 	alias ps2_clock_pullup : std_logic is usb_fpga_pu_dp;
@@ -23,13 +35,6 @@ architecture beh of ulx3s is
 	signal clk_pll    : std_logic_vector(3 downto 0); -- output from pll
 	signal clk        : std_logic;
 	signal clk_pixel_shift : std_logic; -- 5x vga clk, in phase
-
-	-- vlayout_id
-	-- 0: 1920x1080 @ 60Hz 150MHz 
-	-- 1:  800x600  @ 60Hz  40MHz
-	-- 2: 1920x1080 @ 30Hz  75MHz
-	-- 3: 1280x768  @ 60Hz  75MHz
-        constant vlayout_id: integer := 3;
 
 	signal vga_clk    : std_logic;
 	signal vga_hsync  : std_logic;
@@ -48,7 +53,6 @@ architecture beh of ulx3s is
 	signal clk_oled : std_logic := '0';
 
 	signal clk_adc : std_logic := '0';
-	signal adc_data : std_logic_vector(15 downto 0);
 
 	function sinctab (
 		constant x0 : integer;
@@ -81,6 +85,7 @@ architecture beh of ulx3s is
 	constant inputs    : natural := 4;
 
 	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_off : std_logic_vector(0 to sample_size-1);
+	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
 	constant C_uart_original: boolean := false;
@@ -105,9 +110,11 @@ architecture beh of ulx3s is
 
 	signal clk_mouse       : std_logic := '0';
 
-	signal display    : std_logic_vector(7 downto 0);
-	
-	signal R_adc_slowdown: unsigned(1 downto 0);
+	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
+	constant C_adc_channels: integer := 4;
+	constant C_adc_bits: integer := 12;
+	signal S_adc_dv, R_adc_dv: std_logic;
+	signal S_adc_data, R_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
 
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
@@ -126,17 +133,18 @@ begin
           clkout      =>  clk_pll
         );
         -- 800x600
-        clk_pixel_shift <= clk_pll(0); -- 200 MHz
+        clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk <= clk_pll(3); -- 25 MHz
         clk_oled <= clk_pll(3); -- 25 MHz
-        clk_adc <= clk_pll(3); -- 25 MHz
+        --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
+        clk_adc <= clk_pll(3); -- 75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
         clk_uart <= clk_pll(3); -- 25 MHz
         clk_mouse <= clk_pll(3); -- 25 MHz
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
-	
+
 	process(vga_clk)
 	begin
           if rising_edge(vga_clk) then
@@ -151,14 +159,34 @@ begin
 	end process;
 	rst <= reset_counter(reset_counter'high);
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
+        -- replacement for ADC that manifests the problem
+	G_not_adc: if not C_adc generate
+	  B_slow_pulse_generator: block
+	    signal R_pulse_counter: unsigned(27 downto 0);
+	    signal R_pulse_ena: std_logic;
+	  begin
+	    process(clk_adc)
+	    begin
+	      if rising_edge(clk_adc) then
+	        R_pulse_counter <= R_pulse_counter + 1;
+	        if R_pulse_counter(7 downto 0) = x"00" then -- every 256
+	          R_pulse_ena <= '1';
+	        else
+	          R_pulse_ena <= '0';
+	        end if;
+	      end if;
+	    end process;
+	    S_adc_data(8+C_adc_bits*0) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*1) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*2) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_data(8+C_adc_bits*3) <= R_pulse_counter(R_pulse_counter'high);
+	    S_adc_dv <= R_pulse_ena;
+	  end block;
+	end generate;
 
 
+	G_yes_adc: if C_adc generate
+	G_yes_adc_slowdown: if C_adc_slowdown generate
 	process (clk_adc)
 	begin
 		if rising_edge(clk_adc) then
@@ -169,26 +197,62 @@ begin
 			end if;
 		end if;
 	end process;
+	end generate;
 
 	adc_e: entity work.max1112x_reader
 	generic map
 	(
-	  C_channels => 8,
-	  C_bits => 12
+	  C_channels => C_adc_channels,
+	  C_bits => C_adc_bits
 	)
 	port map
 	(
-	  clk => clk_adc, -- 25 MHz
+	  clk => clk_adc,
 	  clken => R_adc_slowdown(R_adc_slowdown'high),
-	  bus_data => adc_data,
 	  spi_csn => adc_csn,
 	  spi_clk => adc_sclk,
 	  spi_mosi => adc_mosi,
-	  spi_miso => adc_miso
+	  spi_miso => adc_miso,
+	  dv => S_adc_dv,
+	  data => S_adc_data
 	);
+	end generate;
 	
-	gn(17 downto 14) <= (others => btn(1));
-	gp(17 downto 14) <= (others => btn(2));
+	-- S_adc_data is constantly shifted and valid only during 1 cycle
+	-- latch the data during valid cycle
+	process(clk_adc)
+	begin
+	  if rising_edge(clk_adc) then
+	    if S_adc_dv = '1' then
+	      R_adc_data <= S_adc_data;
+	    end if;
+	    R_adc_dv <= S_adc_dv;
+	  end if;
+	end process;
+
+	-- press buttons to test ADC
+	-- for normal use disable this
+	G_btn_test: if C_buttons_test generate
+	-- each pressed button will apply a logic level '1'
+	-- to FPGA pin shared with ADC channel which should
+	-- read something from 12'h000 to 12'hFFF with some
+	-- conversion noise
+	gn(14) <= btn(1) when btn(6) = '1' else 'Z';
+	gp(14) <= btn(2) when btn(6) = '1' else 'Z';
+	gn(15) <= btn(3) when btn(6) = '1' else 'Z';
+	gp(15) <= btn(4) when btn(6) = '1' else 'Z';
+	gn(16) <= btn(5) when btn(6) = '1' else 'Z';
+	gp(16) <= btn(5) when btn(6) = '1' else 'Z';
+	gn(17) <= btn(5) when btn(6) = '1' else 'Z';
+	gp(17) <= btn(5) when btn(6) = '1' else 'Z';
+	end generate;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
+		end if;
+	end process;
 
 	-- internal sine waveform generator
 	samples_e : entity hdl4fpga.rom
@@ -198,7 +262,8 @@ begin
 		clk  => clk,
 		addr => input_addr,
 		data => trace_off);
-
+	
+	G_not_analog_view: if not C_adc_analog_view generate
 	-- external input: PS/2 data
 	trace_yellow(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
 	trace_yellow(2) <= adc_mosi; -- MSB-2
@@ -220,18 +285,29 @@ begin
 	trace_red(0 to 2) <= (others => '0');  -- MSB (sign), MSB-1
 	trace_red(3) <= adc_sclk; -- MSB-2
 	trace_red(4 to trace_red'high) <= (others => '0'); -- rest LSB
+	end generate;
+
+	G_yes_analog_view: if C_adc_analog_view generate
+	  -- S_input_ena  <= R_adc_dv; -- not working
+	  -- without sign bit
+	  G_not_view_low_bits: if not C_view_low_bits generate
+	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(1*C_adc_bits-1) & R_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(2*C_adc_bits-1) & R_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (0 to trace_green'high)  <= R_adc_data(3*C_adc_bits-1) & R_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_red   (0 to trace_red'high)    <= R_adc_data(4*C_adc_bits-1) & R_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  end generate;
+	  G_yes_view_low_bits: if C_view_low_bits generate
+	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (0 to trace_green'high)  <= R_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_red   (0 to trace_red'high)    <= R_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  end generate;
+	end generate;
 	
 	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- triggered
 	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
 	samples(3*sample_size to (3+1)*sample_size-1) <= trace_red;
-
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
-	end process;
 
 	G_uart_miguel: if C_uart_original generate
 	process (clk_uart)
@@ -277,16 +353,7 @@ begin
 	);
 	end generate;
 
-        -- UART to LED
-	process(clk_uart)
-	begin
-		if rising_edge(clk_uart) then
-			if uart_rxdv='1' then
-				display <= uart_rxd;
-			end if;
-		end if;
-	end process;
-	led <= display;
+	led <= uart_rxd;
 
 	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
 	port map (
@@ -307,14 +374,14 @@ begin
 	oled_e: entity work.oled_hex_decoder
 	generic map
 	(
-	  C_data_len => 16 -- number of input bits
+	  C_data_len => 64 -- number of input bits
 	)
 	port map
 	(
 	  clk => clk_oled, -- 25 MHz
-	  --data => adc_data,
-	  data(15 downto 8) => display, -- uart latch
-	  data(7 downto 0) => (others => '0'),
+	  data(47 downto 0) => R_adc_data(47 downto 0),
+	  --data(15 downto 8) => uart_rxd, -- uart latch
+	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
 	  spi_mosi => oled_mosi,
 	  spi_dc => oled_dc,
@@ -363,7 +430,8 @@ begin
 		si_irdy     => frommousedaisy_irdy,
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
-		input_clk   => clk,
+		input_clk   => clk_adc,
+		--input_ena   => R_adc_dv, -- not working?
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
