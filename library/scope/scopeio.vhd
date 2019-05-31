@@ -375,7 +375,7 @@ begin
 		end process;
 
 
-		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)
+		mem_e : entity hdl4fpga.bram
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
@@ -601,9 +601,10 @@ begin
 					di  => win_frm,
 					do  => storage_bsel);
 
-				storage_addr_p : process (storage_bsel)
+				storage_addr_p : process (video_clk)
 					variable base : unsigned(storage_base'range);
 				begin
+					if rising_edge(video_clk) then
 					base := (base'range => '0');
 					for i in storage_bsel'range loop
 						if storage_bsel(i)='1' then
@@ -611,8 +612,9 @@ begin
 						end if;
 					end loop;
 					storage_base <= std_logic_vector(base);
+				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(base) + unsigned(capture_addr));
+			end if;
 				end process;
-				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(capture_addr));
 
 				latency_b : block
 				begin
