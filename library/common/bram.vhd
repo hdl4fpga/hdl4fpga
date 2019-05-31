@@ -52,9 +52,9 @@ architecture bram_true2p_2clk of bram is
 	signal rd_data   : std_logic_vector(dia'range);
 begin
 
-	process (clka)
+	process (clkb)
 	begin 
-		if rising_edge(clka) then
+		if rising_edge(clkb) then
 			rd_addr <= addrb;
 			dob <= rd_data;
 		end if;
@@ -70,14 +70,14 @@ begin
 	)
 	port map
 	(
-		clk_a => clka,
-		we_a => wea,
-		addr_a => addra,
-		data_in_a => dia,
+		clk_a      => clka,
+		we_a       => wea,
+		addr_a     => addra,
+		data_in_a  => dia,
 
-		clk_b  => clka,
-		we_b => '0',
-		addr_b => rd_addr,
+		clk_b      => clkb,
+		we_b       => '0',
+		addr_b     => rd_addr,
 		data_out_b => rd_data
 	);
 
