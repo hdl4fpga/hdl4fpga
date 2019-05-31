@@ -88,7 +88,7 @@ architecture beh of ulx3s is
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
-	constant C_uart_original: boolean := false;
+	constant C_uart_original: boolean := false; -- true: use Miguel's, false: use EMARD's uart core
 	constant baudrate    : natural := 115200;
 	constant uart_clk_hz : natural := 25000000; -- Hz
 
@@ -264,6 +264,7 @@ begin
 		data => trace_off);
 	
 	G_not_analog_view: if not C_adc_analog_view generate
+	S_input_ena <= '1';
 	-- external input: PS/2 data
 	trace_yellow(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
 	trace_yellow(2) <= adc_mosi; -- MSB-2
@@ -288,7 +289,7 @@ begin
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
-	  -- S_input_ena  <= R_adc_dv; -- not working
+	  S_input_ena  <= R_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_view_low_bits generate
 	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(1*C_adc_bits-1) & R_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
@@ -431,7 +432,7 @@ begin
 		si_data     => frommousedaisy_data,
 		so_data     => so_null,
 		input_clk   => clk_adc,
-		--input_ena   => R_adc_dv, -- not working?
+		input_ena   => S_input_ena,
 		input_data  => samples,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
