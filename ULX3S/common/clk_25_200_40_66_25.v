@@ -1,7 +1,7 @@
 module clk_verilog_v
 (
     input clkin, // 25 MHz, 0 deg
-    output [3:0] clkout, // 0: 200 MHz, 0 deg; 1: 40 MHz, 0 deg; 2: 100 MHz, 0 deg; 3: 25 MHz, 0 deg
+    output [3:0] clkout, // 0: 200 MHz, 0 deg; 1: 40 MHz, 0 deg; 2: 66.6667 MHz, 0 deg; 3: 25 MHz, 0 deg
     output locked
 );
 wire clkfb;
@@ -23,7 +23,7 @@ EHXPLLL #(
         .CLKOS_CPHASE(1),
         .CLKOS_FPHASE(0),
         .CLKOS2_ENABLE("ENABLED"),
-        .CLKOS2_DIV(6),
+        .CLKOS2_DIV(9),
         .CLKOS2_CPHASE(1),
         .CLKOS2_FPHASE(0),
         .CLKOS3_ENABLE("ENABLED"),
