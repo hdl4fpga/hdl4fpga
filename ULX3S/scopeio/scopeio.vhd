@@ -25,6 +25,7 @@ architecture beh of ulx3s is
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
         constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
+        constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -370,7 +371,8 @@ begin
 		chaino_irdy => fromistreamdaisy_irdy,
 		chaino_data => fromistreamdaisy_data
 	);
-	
+
+	G_oled: if C_oled generate
 	-- OLED display for debugging
 	oled_e: entity work.oled_hex_decoder
 	generic map
@@ -389,6 +391,7 @@ begin
 	  spi_resn => oled_resn,
 	  spi_csn => oled_csn
 	);
+	end generate;
 
 	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
