@@ -27,35 +27,23 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
 
-entity box_sides is
+entity box_edges is
 	generic (
-		sides      : natural_vector);
+		edges      : natural_vector);
 	port (
 		video_clk  : in  std_logic;
 		video_ini  : in  std_logic;
-		next_side  : in  std_logic;
+		next_edge  : in  std_logic;
 		video_pos  : in  std_logic_vector;
 		video_div  : out std_logic_vector;
-		video_side : out std_logic);
+		video_edge : out std_logic);
 end;
 
-architecture def of box_sides is
+architecture def of box_edges is
 
-	function to_bitrom (
-		constant data : natural_vector;
-		constant size : natural)
-		return std_logic_vector is
-		variable retval : unsigned(0 to data'length*size-1);
-	begin
-		for i in data'range loop
-			retval(0 to size-1) := to_unsigned(data(i), size);
-			retval := retval rol size;
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
-	signal rd_addr : std_logic_vector(unsigned_num_bits(sides'length-1)-1 downto 0); 
+	signal rd_addr : std_logic_vector(unsigned_num_bits(edges'length-1)-1 downto 0); 
 	signal rd_data : std_logic_vector(video_pos'range);
 	signal wr_addr : std_logic_vector(rd_addr'range);
 	signal wr_data : std_logic_vector(rd_data'range);
@@ -68,7 +56,7 @@ begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
 				div := (others => '0');
-			elsif next_side='1' then
+			elsif next_edge='1' then
 				div := div + 1;
 			end if;
 			rd_addr   <= std_logic_vector(div(rd_addr'range));
@@ -78,7 +66,7 @@ begin
 
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => to_bitrom(sides, video_pos'length))
+		bitrom => to_bitrom(edges, video_pos'length))
 	port map (
 		wr_clk  => '-',
 		wr_ena  => '0',
@@ -88,7 +76,7 @@ begin
 		rd_addr => rd_addr,
 		rd_data => rd_data);
 
-	video_side <= setif(video_pos=rd_data);
+	video_edge <= setif(video_pos=rd_data);
 	
 end;
 
@@ -133,29 +121,29 @@ begin
 
 	next_sidex <= video_sidex and setif(unsigned(video_divx) < to_unsigned(x_sides'length, video_divx'length));
 	video_inix <= not video_xon or not video_yon;
-	x_e : entity hdl4fpga.box_sides
+	x_e : entity hdl4fpga.box_edges
 	generic map (
-		sides      => x_sides)
+		edges      => x_sides)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => video_inix,
-		next_side  => next_sidex,
+		next_edge  => next_sidex,
 		video_pos  => video_posx,
 		video_div  => video_divx,
-		video_side => video_sidex);
+		video_edge => video_sidex);
 
 	next_sidey <= setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length)) and video_sidex and video_sidey;
 	video_iniy <= not video_yon;
-	y_e : entity hdl4fpga.box_sides
+	y_e : entity hdl4fpga.box_edges
 	generic map (
-		sides      => y_sides)
+		edges      => y_sides)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => video_iniy,
-		next_side  => next_sidey,
+		next_edge  => next_sidey,
 		video_pos  => video_posy,
 		video_div  => video_divy,
-		video_side => video_sidey);
+		video_edge => video_sidey);
 
 	box_xon <= setif(unsigned(video_divx) < to_unsigned(x_sides'length, video_divx'length))   and video_xon;
 	box_eol <= setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length)) and video_sidex and video_xon;

@@ -26,6 +26,7 @@ architecture beh of cga_rom is
 
 	signal font_addr : std_logic_vector(font_code'length+font_row'length-1 downto 0);
 	signal font_line : std_logic_vector(0 to font_width-1);
+	signal font_data : std_logic_vector(0 to font_width-1);
 	signal font_dot  : std_logic_vector(0 to 0);
 
 begin
@@ -39,7 +40,7 @@ begin
 	port map (
 		clk  => clk,
 		addr => font_addr,
-		data => font_line);
+		data => font_data);
 
 	align_x : entity hdl4fpga.align
 	generic map (

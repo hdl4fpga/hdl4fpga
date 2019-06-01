@@ -236,7 +236,8 @@ begin
 			gain_id <= word2byte(gain_ids, i, gainid_size);
 			mult_e : entity hdl4fpga.rom 
 			generic map (
-				bitrom => to_bitrom(vt_gain,18))
+				synchronous => 1,
+				bitrom      => to_bitrom(vt_gain,18))
 			port map (
 				clk  => input_clk,
 				addr => gain_id,
