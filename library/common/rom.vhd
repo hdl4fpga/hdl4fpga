@@ -44,7 +44,7 @@ architecture def of rom is
 	type word_vector is array (natural range <>) of word;
 
 	function init_rom (
-		constant bitdata : std_logic_vector,
+		constant bitdata : std_logic_vector;
 		constant memsize : natural)
 		return word_vector is
 
