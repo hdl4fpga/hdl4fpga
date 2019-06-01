@@ -27,8 +27,12 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture video of testbench is
+library unisim;
+use unisim.vcomponents.all;
 
+architecture video of s3starter is
+
+	signal sys_clk      : std_logic;
 	signal video_clk    : std_logic := '0';
 	signal video_hs     : std_logic;
 	signal video_vs     : std_logic;
@@ -48,10 +52,26 @@ architecture video of testbench is
 	signal box_divy     : std_logic_vector(2-1 downto 0);
 
  begin
-    video_clk <= not video_clk after 12.5 ns;
+
+	clkin_ibufg : ibufg
+	port map (
+		I => xtal,
+		O => sys_clk);
+
+	videodcm_e : entity hdl4fpga.dfs
+	generic map (
+		dfs_frequency_mode => "low",
+		dcm_per => 20.0,
+		dfs_mul => 3, --4,
+		dfs_div => 1) --5)
+	port map(
+		dcm_rst => button(0),
+		dcm_clk => sys_clk,
+		dfs_clk => video_clk);
+
 	video_e : entity hdl4fpga.video_vga
 	generic map (
-		mode => 1,
+		mode => 7,
 		n    => 11)
 	port map (
 		clk   => video_clk,
@@ -91,5 +111,25 @@ architecture video of testbench is
 		box_posx  => box_posx,
 		box_posy  => box_posy);
 
+	vga_hsync <= video_hs;
+	vga_vsync <= video_vs;
+	vga_red   <= setif(unsigned(box_divx)=0) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
+	vga_green <= setif(unsigned(box_divx)=1) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
+	vga_blue  <= setif(unsigned(box_divx)=2) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
+
+	led <= (others => 'Z');
+
+	s3s_anodes     <= (others => 'Z');
+	s3s_segment_a  <= 'Z';
+	s3s_segment_b  <= 'Z';
+	s3s_segment_c  <= 'Z';
+	s3s_segment_d  <= 'Z';
+	s3s_segment_e  <= 'Z';
+	s3s_segment_f  <= 'Z';
+	s3s_segment_g  <= 'Z';
+	s3s_segment_dp <= 'Z';
+
+	expansion_a2 <= (others => 'Z');
+	rs232_txd <= 'Z';
 end;
 

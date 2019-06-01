@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-entity videobox_sides is
+entity box_sides is
 	generic (
 		sides      : natural_vector);
 	port (
@@ -41,9 +41,6 @@ entity videobox_sides is
 end;
 
 architecture def of box_sides is
-
-	signal rd_addr : std_logic_vector(unsigned_num_bits(sides'length-1)-1 downto 0); 
-	signal rd_data : std_logic_vector(video_pos'range);
 
 	function to_bitrom (
 		constant data : natural_vector;
@@ -58,7 +55,10 @@ architecture def of box_sides is
 		return std_logic_vector(retval);
 	end;
 
-	signal on_side : std_logic;
+	signal rd_addr : std_logic_vector(unsigned_num_bits(sides'length-1)-1 downto 0); 
+	signal rd_data : std_logic_vector(video_pos'range);
+	signal wr_addr : std_logic_vector(rd_addr'range);
+	signal wr_data : std_logic_vector(rd_data'range);
 
 begin
 
@@ -82,8 +82,8 @@ begin
 	port map (
 		wr_clk  => '-',
 		wr_ena  => '0',
-		wr_addr => (rd_addr'range => '-'),
-		wr_data => (rd_data'range => '-'),
+		wr_addr => rd_addr,
+		wr_data => rd_data,
 
 		rd_addr => rd_addr,
 		rd_data => rd_data);
