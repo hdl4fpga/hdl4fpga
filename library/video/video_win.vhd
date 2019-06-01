@@ -105,14 +105,15 @@ entity videobox_layout is
 		y_sides     : natural_vector);
 	port (
 		video_clk   : in  std_logic;
-		video_yon  : in  std_logic;
-		video_xon  : in  std_logic;
+		video_yon   : in  std_logic;
+		video_xon   : in  std_logic;
 		video_posx  : in  std_logic_vector;
 		video_posy  : in  std_logic_vector;
 		box_sidex   : out std_logic;
 		box_sidey   : out std_logic;
-		box_xon   : out std_logic;
-		box_yon   : out std_logic;
+		box_xon     : out std_logic;
+		box_eol     : out std_logic;
+		box_yon     : out std_logic;
 		box_divx    : out std_logic_vector;
 		box_divy    : out std_logic_vector);
 end;
@@ -143,7 +144,7 @@ begin
 		video_div  => video_divx,
 		video_side => video_sidex);
 
-	next_sidey <= video_sidey and setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length));
+	next_sidey <= setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length)) and video_sidex and video_sidey;
 	video_iniy <= not video_yon;
 	y_e : entity hdl4fpga.box_sides
 	generic map (
@@ -156,11 +157,12 @@ begin
 		video_div  => video_divy,
 		video_side => video_sidey);
 
-	box_xon <= setif(unsigned(video_divx) < to_unsigned(x_sides'length, video_divx'length)) and video_xon;
-	box_yon <= setif(unsigned(video_divy) < to_unsigned(y_sides'length, video_divy'length)) and video_yon;
+	box_xon <= setif(unsigned(video_divx) < to_unsigned(x_sides'length, video_divx'length))   and video_xon;
+	box_eol <= setif(unsigned(video_divx) = to_unsigned(x_sides'length-1, video_divx'length)) and video_sidex and video_xon;
+	box_yon <= setif(unsigned(video_divy) < to_unsigned(y_sides'length, video_divy'length))   and video_yon;
 
 	box_sidex <= video_sidex;
-	box_sidey <= video_sidey and video_sidex;
+	box_sidey <= next_sidey;
 	box_divx  <= video_divx;
 	box_divy  <= video_divy;
 
@@ -173,10 +175,11 @@ use ieee.numeric_std.all;
 entity video_box is
 	port (
 		video_clk    : in  std_logic;
-		video_xon   : in std_logic;
-		video_yon   : in std_logic;
-		video_hzsync : in std_logic;
+		video_xon    : in std_logic;
+		video_yon    : in std_logic;
+		video_eol    : in std_logic;
 		box_sidex    : in  std_logic;
+		box_sidey    : in  std_logic;
 		box_posx     : out std_logic_vector;
 		box_posy     : out std_logic_vector);
 end;
@@ -200,7 +203,9 @@ begin
 
 			if video_yon='0' then
 				posy := (others => '0');
-			elsif video_hzsync='1' then
+			elsif box_sidey='1' then
+				posy := (others => '0');
+			elsif video_eol='1' then
 				posy := posy + 1;
 			end if;
 

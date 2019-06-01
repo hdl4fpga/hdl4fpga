@@ -16,11 +16,13 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix unsigned /testbench/video_vton
 add wave -noupdate /testbench/layout_e/next_sidey
 add wave -noupdate /testbench/layout_e/video_sidey
-add wave -noupdate /testbench/layout_e/video_divy
+add wave -noupdate -radix unsigned /testbench/layout_e/video_divy
 add wave -noupdate /testbench/box_yon
 add wave -noupdate -radix unsigned /testbench/box_posy
+add wave -noupdate /testbench/layout_e/box_sidey
+add wave -noupdate /testbench/layout_e/box_eol
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7505147 ns} 0}
+WaveRestoreCursors {{Cursor 1} {7318508 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 238
 configure wave -valuecolwidth 120
@@ -36,4 +38,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {21 ms}
+WaveRestoreZoom {7277444 ns} {7359492 ns}
