@@ -34,8 +34,8 @@ architecture video of s3starter is
 
 	signal sys_clk      : std_logic;
 	signal video_clk    : std_logic := '0';
-	signal video_hs     : std_logic;
-	signal video_vs     : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
 	signal video_vton   : std_logic;
 	signal video_hzon   : std_logic;
 	signal video_vcntr  : std_logic_vector(11-1 downto 0);
@@ -43,9 +43,9 @@ architecture video of s3starter is
 
 	signal box_sidex    : std_logic;
 	signal box_sidey    : std_logic;
-	signal box_xon    : std_logic;
-	signal box_eol    : std_logic;
-	signal box_yon    : std_logic;
+	signal box_xon      : std_logic;
+	signal box_eol      : std_logic;
+	signal box_yon      : std_logic;
 	signal box_posx     : std_logic_vector(11-1 downto 0);
 	signal box_posy     : std_logic_vector(11-1 downto 0);
 	signal box_divx     : std_logic_vector(2-1 downto 0);
@@ -69,18 +69,17 @@ architecture video of s3starter is
 		dcm_clk => sys_clk,
 		dfs_clk => video_clk);
 
-	video_e : entity hdl4fpga.video_vga
+	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 7,
-		n    => 11)
+		mode => 7)
 	port map (
-		clk   => video_clk,
-		hsync => video_hs,
-		vsync => video_vs,
-		hcntr => video_hcntr,
-		vcntr => video_vcntr,
-		don   => video_hzon,
-		frm   => video_vton);
+		video_clk   => video_clk,
+		video_hsync => video_hzsync,
+		video_vsync => video_vtsync,
+		video_hcntr => video_hcntr,
+		video_vcntr => video_vcntr,
+		video_hzon  => video_hzon,
+		video_vton  => video_vton);
 
 	boxlayout_e : entity hdl4fpga.videobox_layout
 	generic map (
@@ -111,8 +110,8 @@ architecture video of s3starter is
 		box_posx  => box_posx,
 		box_posy  => box_posy);
 
-	vga_hsync <= video_hs;
-	vga_vsync <= video_vs;
+	vga_hsync <= video_hzsync;
+	vga_vsync <= video_vtsync;
 	vga_red   <= setif(unsigned(box_divx)=0) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
 	vga_green <= setif(unsigned(box_divx)=1) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
 	vga_blue  <= setif(unsigned(box_divx)=2) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;

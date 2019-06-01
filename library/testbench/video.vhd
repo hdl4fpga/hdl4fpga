@@ -49,18 +49,17 @@ architecture video of testbench is
 
  begin
     video_clk <= not video_clk after 12.5 ns;
-	video_e : entity hdl4fpga.video_vga
+	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 1,
-		n    => 11)
+		mode => 1)
 	port map (
-		clk   => video_clk,
-		hsync => video_hs,
-		vsync => video_vs,
-		hcntr => video_hcntr,
-		vcntr => video_vcntr,
-		don   => video_hzon,
-		frm   => video_vton);
+		video_clk    => video_clk,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
+		video_hzcntr => video_hcntr,
+		video_vtcntr => video_vcntr,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton);
 
 	boxlayout_e : entity hdl4fpga.videobox_layout
 	generic map (

@@ -29,6 +29,65 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
+entity box_edges is
+	generic (
+		edges      : natural_vector);
+	port (
+		video_clk  : in  std_logic;
+		video_ini  : in  std_logic;
+		next_edge  : in  std_logic;
+		video_pos  : in  std_logic_vector;
+		video_div  : out std_logic_vector;
+		video_edge : out std_logic);
+end;
+
+architecture def of box_edges is
+
+	signal rd_addr : std_logic_vector(unsigned_num_bits(edges'length-1)-1 downto 0); 
+	signal rd_data : std_logic_vector(video_pos'range);
+	signal wr_addr : std_logic_vector(rd_addr'range);
+	signal wr_data : std_logic_vector(rd_data'range);
+
+begin
+
+	process (video_clk)
+		variable div : unsigned(video_div'length-1 downto 0);
+	begin
+		if rising_edge(video_clk) then
+			if video_ini='1' then
+				div := (others => '0');
+			elsif next_edge='1' then
+				div := div + 1;
+			end if;
+			rd_addr   <= std_logic_vector(div(rd_addr'range));
+			video_div <= std_logic_vector(div);
+		end if;
+	end process;
+
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => to_bitrom(edges, video_pos'length))
+	port map (
+		wr_clk  => '-',
+		wr_ena  => '0',
+		wr_addr => rd_addr,
+		wr_data => rd_data,
+
+		rd_addr => rd_addr,
+		rd_data => rd_data);
+
+	video_edge <= setif(video_pos=rd_data);
+	
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
+
 entity video_sync is
 	generic (
 		mode : natural := 1);
@@ -88,65 +147,6 @@ begin
 	video_vtsync <= setif(vt_div="10");
 	video_vton   <= setif(vt_div="00");
 
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.std.all;
-use hdl4fpga.videopkg.all;
-
-entity box_edges is
-	generic (
-		edges      : natural_vector);
-	port (
-		video_clk  : in  std_logic;
-		video_ini  : in  std_logic;
-		next_edge  : in  std_logic;
-		video_pos  : in  std_logic_vector;
-		video_div  : out std_logic_vector;
-		video_edge : out std_logic);
-end;
-
-architecture def of box_edges is
-
-	signal rd_addr : std_logic_vector(unsigned_num_bits(edges'length-1)-1 downto 0); 
-	signal rd_data : std_logic_vector(video_pos'range);
-	signal wr_addr : std_logic_vector(rd_addr'range);
-	signal wr_data : std_logic_vector(rd_data'range);
-
-begin
-
-	process (video_clk)
-		variable div : unsigned(video_div'length-1 downto 0);
-	begin
-		if rising_edge(video_clk) then
-			if video_ini='1' then
-				div := (others => '0');
-			elsif next_edge='1' then
-				div := div + 1;
-			end if;
-			rd_addr   <= std_logic_vector(div(rd_addr'range));
-			video_div <= std_logic_vector(div);
-		end if;
-	end process;
-
-	mem_e : entity hdl4fpga.dpram
-	generic map (
-		bitrom => to_bitrom(edges, video_pos'length))
-	port map (
-		wr_clk  => '-',
-		wr_ena  => '0',
-		wr_addr => rd_addr,
-		wr_data => rd_data,
-
-		rd_addr => rd_addr,
-		rd_data => rd_data);
-
-	video_edge <= setif(video_pos=rd_data);
-	
 end;
 
 library ieee;
