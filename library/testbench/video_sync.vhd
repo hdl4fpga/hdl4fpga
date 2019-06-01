@@ -35,16 +35,17 @@ architecture video of testbench is
 	signal video_vton   : std_logic;
 	signal video_hzon   : std_logic;
 	signal video_hzl    : std_logic;
-	signal video_vld    : std_logic;
 	signal video_vcntr  : std_logic_vector(11-1 downto 0);
 	signal video_hcntr  : std_logic_vector(11-1 downto 0);
 
 	signal box_sidex    : std_logic;
 	signal box_sidey    : std_logic;
+	signal box_xon    : std_logic;
+	signal box_yon    : std_logic;
 	signal box_posx     : std_logic_vector(11-1 downto 0);
 	signal box_posy     : std_logic_vector(11-1 downto 0);
 	signal box_divx     : std_logic_vector(2-1 downto 0);
-	signal box_divy     : std_logic_vector(1-1 downto 0);
+	signal box_divy     : std_logic_vector(2-1 downto 0);
 
  begin
     video_clk <= not video_clk after 12.5 ns;
@@ -68,10 +69,12 @@ architecture video of testbench is
 		y_sides     => (257-1, (257)+8-1))
 	port map (
 		video_clk  => video_clk,
-		video_hzon => video_hzon,
-		video_vton => video_vton,
+		video_xon => video_hzon,
+		video_yon => video_vton,
 		video_posx => video_hcntr,
 		video_posy => video_vcntr,
+		box_xon    => box_xon,
+		box_yon    => box_yon,
 		box_sidex  => box_sidex,
 		box_sidey  => box_sidey,
 		box_divx   => box_divx,
@@ -80,8 +83,8 @@ architecture video of testbench is
 	videobox_e : entity hdl4fpga.video_box
 	port map (
 		video_clk    => video_clk,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton,
+		video_xon   => box_xon,
+		video_yon   => box_yon,
 		video_hzsync => video_hzl,
 		box_sidex    => box_sidex,
 		box_posx     => box_posx,
