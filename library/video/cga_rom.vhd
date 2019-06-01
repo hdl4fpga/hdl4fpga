@@ -35,8 +35,8 @@ begin
 
 	cgarom_e : entity hdl4fpga.rom
 	generic map (
-		bitrom      => font_bitrom,
-		synchronous => 2)
+		bitrom  => font_bitrom,
+		latency => 2)
 	port map (
 		clk  => clk,
 		addr => font_addr,
