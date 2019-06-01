@@ -109,10 +109,10 @@ architecture mix of video_sync is
 	signal vt_edge : std_logic;
 	signal hz_next : std_logic;
 	signal vt_next : std_logic;
-	signal hz_div  : std_logic_vector(2-1 downto 0);
-	signal vt_div  : std_logic_vector(2-1 downto 0);
-	signal hz_cntr : std_logic_vector(video_hzcntr'range);
-	signal vt_cntr : std_logic_vector(video_vtcntr'range);
+	signal hz_div  : std_logic_vector(2-1 downto 0) := (others => '0');
+	signal vt_div  : std_logic_vector(2-1 downto 0) := (others => '0');
+	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
 
 begin
 
@@ -130,6 +130,7 @@ begin
 		video_div  => hz_div);
 	video_hzsync <= setif(hz_div="10");
 	video_hzon   <= setif(hz_div="00");
+	video_hzcntr <= hz_cntr;
 
 	vt_ini  <= vt_edge and hz_ini and setif(vt_div="11");
 	vt_next <= vt_edge and hz_ini;
@@ -146,6 +147,8 @@ begin
 
 	video_vtsync <= setif(vt_div="10");
 	video_vton   <= setif(vt_div="00");
+	video_vtcntr <= vt_cntr;
+
 
 end;
 

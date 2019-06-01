@@ -34,8 +34,8 @@ architecture video of testbench is
 	signal video_vs     : std_logic;
 	signal video_vton   : std_logic;
 	signal video_hzon   : std_logic;
-	signal video_vcntr  : std_logic_vector(11-1 downto 0);
-	signal video_hcntr  : std_logic_vector(11-1 downto 0);
+	signal video_vcntr  : std_logic_vector(11-1 downto 0) := (others => '0');
+	signal video_hcntr  : std_logic_vector(11-1 downto 0) := (others => '0');
 
 	signal box_sidex    : std_logic;
 	signal box_sidey    : std_logic;
