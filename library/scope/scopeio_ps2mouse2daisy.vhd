@@ -10,6 +10,9 @@ use hdl4fpga.std.all;
 entity scopeio_ps2mouse2daisy is
 generic
 (
+  -- to render things correctly, GUI system needs to know:
+  C_inputs       : integer; -- number of inputs
+  C_tracesfg     : std_logic_vector; -- colors of traces
   vlayout_id     : integer := 0 -- screen geometry
 );
 port
@@ -27,7 +30,7 @@ port
   -- daisy out
   chaino_frm    : out std_logic;
   chaino_irdy   : out std_logic;
-  chaino_data   : out std_logic_vector -- 8 bit
+  chaino_data   : out std_logic_vector  -- 8 bit
 );
 end;
 
@@ -68,6 +71,8 @@ begin
   mouse2rgtr_e: entity hdl4fpga.scopeio_mouse2rgtr
   generic map
   (
+    C_inputs    => C_inputs,
+    C_tracesfg  => C_tracesfg,
     vlayout_id  => vlayout_id
   )
   port map

@@ -25,7 +25,7 @@ architecture beh of ulx3s is
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
         constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
+        constant C_oled: boolean := false; -- true: use OLED, false: no oled - can save some LUTs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -41,12 +41,12 @@ architecture beh of ulx3s is
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_blank  : std_logic;
-	signal vga_rgb    : std_logic_vector(0 to 3-1);
+	signal vga_rgb    : std_logic_vector(0 to 6-1);
 
 	signal vga_hsync_test  : std_logic;
 	signal vga_vsync_test  : std_logic;
 	signal vga_blank_test  : std_logic;
-	signal vga_rgb_test: std_logic_vector(0 to 3-1);
+	signal vga_rgb_test: std_logic_vector(0 to 6-1);
         signal dvid_crgb  : std_logic_vector(7 downto 0);
         signal ddr_d      : std_logic_vector(3 downto 0);
 	constant sample_size : natural := 9;
@@ -83,9 +83,27 @@ architecture beh of ulx3s is
 	end;
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
-	constant inputs    : natural := 4;
+	constant inputs: natural := 4; -- number of input channels (traces)
+	-- assign default colors to the traces
+	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
+        --b"111100";
+          b"111100_001111_001100_110101";
+        --b"111100_001111_001100_110101_111111";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4
+        --  yellow cyan   green  red    white
 
-	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_off : std_logic_vector(0 to sample_size-1);
+        -- technically it can be the same as C_tracesfg but for visibility tuning
+        -- it is different for red color to make it less bright
+	constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
+        --b"111100";
+          b"111100_001111_001100_110000";
+        --b"111100_001111_001100_110000_111111";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4
+        --  yellow cyan   green  red    white
+
+	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_white, trace_sine: std_logic_vector(0 to sample_size-1);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -262,7 +280,7 @@ begin
 	port map (
 		clk  => clk,
 		addr => input_addr,
-		data => trace_off);
+		data => trace_sine);
 	
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
@@ -306,10 +324,22 @@ begin
 	  end generate;
 	end generate;
 	
-	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- triggered
+	G_inputs1: if inputs >= 1 generate
+	samples(0*sample_size to (0+1)*sample_size-1) <= trace_yellow; -- by default triggered
+	end generate;
+	G_inputs2: if inputs >= 2 generate
 	samples(1*sample_size to (1+1)*sample_size-1) <= trace_cyan;
+	end generate;
+	G_inputs3: if inputs >= 3 generate
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
+	end generate;
+	G_inputs4: if inputs >= 4 generate
 	samples(3*sample_size to (3+1)*sample_size-1) <= trace_red;
+	end generate;
+	G_inputs5: if inputs >= 5 generate
+	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_white;
+	samples(4*sample_size to (4+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
+	end generate;
 
 	G_uart_miguel: if C_uart_original generate
 	process (clk_uart)
@@ -395,6 +425,8 @@ begin
 
 	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
+		C_inputs    => inputs,
+		C_tracesfg  => C_tracesfg_gui,
 		vlayout_id  => vlayout_id
 	)
 	port map (
@@ -416,17 +448,16 @@ begin
 	generic map (
 	        inputs           => inputs, -- number of input channels
 		vlayout_id       => vlayout_id,
-		                 --  RGB0_RGB1_...
-                default_tracesfg => b"110_011_010_100",
-                default_gridfg   => b"100",
-                default_gridbg   => b"000",
-                default_hzfg     => b"111",
-                default_hzbg     => b"000",
-                default_vtfg     => b"111",
-                default_vtbg     => b"000",
-                default_textbg   => b"000",
-                default_sgmntbg  => b"100",
-                default_bg       => b"000"
+                default_tracesfg => C_tracesfg,
+                default_gridfg   => b"110000",
+                default_gridbg   => b"000000",
+                default_hzfg     => b"111111",
+                default_hzbg     => b"000000",
+                default_vtfg     => b"111111",
+                default_vtbg     => b"000000",
+                default_textbg   => b"000000",
+                default_sgmntbg  => b"110000",
+                default_bg       => b"000000"
 	)
 	port map (
 		si_clk      => clk_mouse,
@@ -491,9 +522,9 @@ begin
       red_byte => (others => '0'),
       green_byte => (others => '0'),
       blue_byte => (others => '0'),
-      vga_r(7) => vga_rgb_test(0),
-      vga_g(7) => vga_rgb_test(1),
-      vga_b(7) => vga_rgb_test(2),
+      vga_r(7 downto 6) => vga_rgb_test(0 to 1),
+      vga_g(7 downto 6) => vga_rgb_test(2 to 3),
+      vga_b(7 downto 6) => vga_rgb_test(4 to 5),
       vga_hsync => vga_hsync_test,
       vga_vsync => vga_vsync_test,
       vga_blank => vga_blank_test
@@ -503,15 +534,15 @@ begin
     generic map
     (
         C_ddr => '1',
-    	C_depth => 1
+        C_depth => 2
     )
     port map
     (
         clk_pixel => vga_clk,
         clk_shift => clk_pixel_shift,
-        in_red => vga_rgb(0 to 0),
-        in_green => vga_rgb(1 to 1),
-        in_blue => vga_rgb(2 to 2),
+        in_red => vga_rgb(0 to 1),
+        in_green => vga_rgb(2 to 3),
+        in_blue => vga_rgb(4 to 5),
         in_hsync => vga_hsync,
         in_vsync => vga_vsync,
         in_blank => vga_blank,
