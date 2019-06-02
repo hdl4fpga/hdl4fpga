@@ -186,8 +186,8 @@ entity videobox_layout is
 		y_edges   : natural_vector);
 	port (
 		video_clk : in  std_logic;
-		video_yon : in  std_logic;
 		video_xon : in  std_logic;
+		video_yon : in  std_logic;
 		video_x   : in  std_logic_vector;
 		video_y   : in  std_logic_vector;
 

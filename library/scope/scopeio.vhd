@@ -470,12 +470,13 @@ begin
 				return rval;
 			end;
 
-			signal pwin_hzon     : std_logic_vector(0 to layout.num_of_segments-1);
-			signal pwin_vton     : std_logic_vector(0 to layout.num_of_segments-1);
-			signal pwin_hzsync   : std_logic;
-			signal pwin_vtsync   : std_logic;
-			signal phzon         : std_logic;
-			signal pvton         : std_logic;
+			signal pbox_xdiv     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pbox_ydiv     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pbox_xedge    : std_logic;
+			signal pbox_yedge    : std_logic;
+			signal pbox_eox      : std_logic;
+			signal pbox_xon      : std_logic;
+			signal pbox_yon      : std_logic;
 
 			constant mwin_x      : natural_vector := to_naturalvector(layout, 0);
 			constant mwin_y      : natural_vector := to_naturalvector(layout, 1);
@@ -485,25 +486,24 @@ begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x     => mwin_x,
-				y     => mwin_y,
-				width => mwin_width,
-				height=> mwin_height)
+				x_edges => (0 => layout.display_width),
+				y_edges => (0 => layout.grid_height))
 			port map (
 				video_clk  => video_clk,
 				video_x    => video_hzcntr,
 				video_y    => video_vtcntr,
-				video_hzon => video_hzon,
-				video_vton => video_vton,
-				win_hzsync => pwin_hzsync,
-				win_vtsync => pwin_vtsync,
-				win_hzon   => pwin_hzon,
-				win_vton   => pwin_vton);
+				video_xon  => video_hzon,
+				video_yon  => video_vton,
+				box_xedge  => pbox_xedge,
+				box_yedge  => pbox_yedge,
+				box_xon    => pbox_xon,
+				box_yon    => pbox_yon,
+				box_eox    => pbox_eox,
+				box_xdiv   => pbox_xdiv,
+				box_ydiv   => pbox_ydiv);
 
-			phzon <= not setif(pwin_hzon=(pwin_hzon'range => '0'));
-			pvton <= not setif(pwin_vton=(pwin_vton'range => '0'));
+			sgmnt_b : block:q
 
-			sgmnt_b : block
 
 				constant grid_id    : natural := 0;
 				constant vtaxis_id  : natural := 1;
@@ -518,22 +518,21 @@ begin
 				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal pwin_x  : std_logic_vector(pwinx_size-1 downto 0);
-				signal pwin_y  : std_logic_vector(pwiny_size-1 downto 0);
-				signal p_hzl   : std_logic;
+				signal pbox_x  : std_logic_vector(pwinx_size-1 downto 0);
+				signal pbox_y  : std_logic_vector(pwiny_size-1 downto 0);
 
-				signal win_y   : std_logic_vector(pwin_y'range);
-				signal win_x   : std_logic_vector(pwin_x'range);
+				signal cbox_y   : std_logic_vector(pbox_y'range);
+				signal cbox_x   : std_logic_vector(pbox_x'range);
 
-				signal x       : std_logic_vector(win_x'range);
-				signal y       : std_logic_vector(win_y'range);
-				signal cwin_hzsync   : std_logic;
-				signal cwin_vtsync   : std_logic;
-				signal cwin_vton   : std_logic_vector(0 to 4-1);
-				signal cwin_hzon   : std_logic_vector(cwin_vton'range);
-				signal chzon    : std_logic;
-				signal cvton    : std_logic;
-				signal w_hzl   : std_logic;
+				signal x       : std_logic_vector(cbox_x'range);
+				signal y       : std_logic_vector(cbox_y'range);
+				signal cbox_xedge   : std_logic;
+				signal cbox_yedge   : std_logic;
+				signal cbox_xdiv   : std_logic_vector(0 to 4-1);
+				signal cbox_ydiv   : std_logic_vector(cbox_xdiv'range);
+				signal cbox_xon    : std_logic;
+				signal cbox_yon    : std_logic;
+				signal cbox_eox    : std_logic;
 				signal grid_on : std_logic;
 				signal hz_on   : std_logic;
 				signal vt_on   : std_logic;
@@ -541,71 +540,60 @@ begin
 
 			begin
 
-				latency_phzl_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => 2))
-				port map (
-					clk   => video_clk,
-					di(0) => video_hzl,
-					do(0) => p_hzl);
-
 				parent_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
-					video_xon => pwin_hzsync,
-					video_yon => pwin_vtsync,
-					video_eox => p_hzl,
-					box_xedge =>
-					box_yedge =>
-					box_x     => pwin_x,
-					box_y     => pwin_y);
+					video_xon => pbox_xon,
+					video_yon => pbox_yon,
+					video_eox => pbox_eox,
+					box_xedge => pbox_xedge,
+					box_yedge => pbox_yedge,
+					box_x     => pbox_x,
+					box_y     => pbox_y);
 
 				layout_e : entity hdl4fpga.videobox_layout
 				generic map (
-					x           => sgmnt_x,
-					y           => sgmnt_y,
-					width       => sgmnt_w,
-					height      => sgmnt_h)
+					x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
+					y_edges     => (257-1, (257)+8-1))
 				port map (
 					video_clk   => video_clk,
-					video_x     => pwin_x,
-					video_y     => pwin_y,
-					video_hzon  => phzon,
-					video_vton  => pvton,
-					win_hzsync => cwin_hzsync,
-					win_vtsync => cwin_vtsync,
-					win_hzon    => cwin_hzon,
-					win_vton    => cwin_vton);
+					video_xon   => pbox_xon,
+					video_yon   => pbox_yon,
+					video_x     => pbox_x,
+					video_y     => pbox_y,
+					box_xon     => cbox_xon,
+					box_yon     => cbox_yon,
+					box_xedge   => cbox_xedge,
+					box_yedge   => cbox_yedge,
+					box_eox     => cbox_eox,
+					box_xdiv    => cbox_xdiv,
+					box_ydiv    => cbox_ydiv);
 
-				chzon <= not setif(cwin_hzon=(cwin_hzon'range => '0'));
-				cvton <= not setif(cwin_vton=(cwin_vton'range => '0'));
 
-				latency_whzl_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => 2))
+				box_e : entity hdl4fpga.videobox
 				port map (
-					clk   => video_clk,
-					di(0) => p_hzl,
-					do(0) => w_hzl);
+					video_clk => video_clk,
+					video_xon => cbox_xon,
+					video_yon => cbox_yon,
+					video_eox => cbox_eox,
+					box_x     => box_x,
+					box_y     => box_y);
 
-				win_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
 					video_hzl => w_hzl,
-					winx_ini  => cwin_hzsync,
-					winy_ini  => cwin_vtsync,
-					win_x     => win_x,
-					win_y     => win_y);
+					winx_ini  => cbox_xedge,
+					winy_ini  => cbox_yedge,
+					box_x     => cbox_x,
+					box_y     => cbox_y);
 
 				winfrm_lat_e : entity hdl4fpga.align
 				generic map (
-					n => pwin_vton'length,
-					d => (pwin_vton'range => 2))
+					n => pbox_vton'length,
+					d => (pbox_vton'range => 2))
 				port map (
 					clk => video_clk,
-					di  => pwin_vton,
+					di  => pbox_vton,
 					do  => storage_bsel);
 
 				storage_addr_p : process (video_clk)
@@ -618,7 +606,7 @@ begin
 								base := to_unsigned((grid_width(layout)-1)*i, base'length);
 							end if;
 						end loop;
-						storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(base) + unsigned(capture_addr));
+						storage_addr <= std_logic_vector(unsigned(cbox_x) + unsigned(base) + unsigned(capture_addr));
 					end if;
 				end process;
 
@@ -626,11 +614,11 @@ begin
 				begin
 					latency_on_e : entity hdl4fpga.align
 					generic map (
-						n => cwin_hzon'length,
-						d => (cwin_hzon'range => 2+1+1))
+						n => cbox_xdiv'length,
+						d => (cbox_xdiv'range => 2+1+1))
 					port map (
 						clk   => video_clk,
-						di    => cwin_hzon,
+						di    => cbox_xdiv,
 						do(0) => grid_on,
 						do(1) => vt_on,
 						do(2) => hz_on,
@@ -638,20 +626,20 @@ begin
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (          --  +--- storage_addr
-						n => win_x'length, --  | + --- windows
-						d => (win_x'range => 2+1+1))
+						n => cbox_x'length, --  | + --- windows
+						d => (cbox_x'range => 2+1+1))
 					port map (
 						clk => video_clk,
-						di  => win_x,
+						di  => cbox_x,
 						do  => x);
 
 					latency_y_e : entity hdl4fpga.align
 					generic map (
-						n => win_y'length,
-						d => (win_y'range => 1+1+1))
+						n => cbox_y'length,
+						d => (cbox_y'range => 1+1+1))
 					port map (
 						clk => video_clk,
-						di  => win_y,
+						di  => cbox_y,
 						do  => y);
 
 				end block;
@@ -661,8 +649,8 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						aux := (others => '0');
-						for i in pwin_vton'range loop
-							if pwin_vton(i)='1' then
+						for i in pbox_vton'range loop
+							if pbox_vton(i)='1' then
 								aux := aux or to_unsigned(layout.grid_width*i, aux'length);
 							end if;
 						end loop;
