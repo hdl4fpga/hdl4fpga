@@ -34,16 +34,16 @@ architecture video of testbench is
 	signal video_vs     : std_logic;
 	signal video_vton   : std_logic;
 	signal video_hzon   : std_logic;
-	signal video_vcntr  : std_logic_vector(11-1 downto 0) := (others => '0');
-	signal video_hcntr  : std_logic_vector(11-1 downto 0) := (others => '0');
+	signal video_vtcntr : std_logic_vector(11-1 downto 0) := (others => '0');
+	signal video_hzcntr : std_logic_vector(11-1 downto 0) := (others => '0');
 
 	signal box_sidex    : std_logic;
 	signal box_sidey    : std_logic;
-	signal box_xon    : std_logic;
-	signal box_eol    : std_logic;
-	signal box_yon    : std_logic;
-	signal box_posx     : std_logic_vector(11-1 downto 0);
-	signal box_posy     : std_logic_vector(11-1 downto 0);
+	signal box_eox      : std_logic;
+	signal box_xon      : std_logic;
+	signal box_yon      : std_logic;
+	signal box_x        : std_logic_vector(11-1 downto 0);
+	signal box_y        : std_logic_vector(11-1 downto 0);
 	signal box_divx     : std_logic_vector(2-1 downto 0);
 	signal box_divy     : std_logic_vector(2-1 downto 0);
 
@@ -56,39 +56,39 @@ architecture video of testbench is
 		video_clk    => video_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
-		video_hzcntr => video_hcntr,
-		video_vtcntr => video_vcntr,
+		video_hzcntr => video_hzcntr,
+		video_vtcntr => video_vtcntr,
 		video_hzon   => video_hzon,
 		video_vton   => video_vton);
 
 	boxlayout_e : entity hdl4fpga.videobox_layout
 	generic map (
-		x_sides     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
-		y_sides     => (257-1, (257)+8-1))
+		x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
+		y_edges     => (257-1, (257)+8-1))
 	port map (
 		video_clk  => video_clk,
 		video_xon  => video_hzon,
 		video_yon  => video_vton,
-		video_posx => video_hcntr,
-		video_posy => video_vcntr,
+		video_x    => video_hzcntr,
+		video_y    => video_vtcntr,
 		box_xon    => box_xon,
-		box_eol    => box_eol,
 		box_yon    => box_yon,
-		box_sidex  => box_sidex,
-		box_sidey  => box_sidey,
-		box_divx   => box_divx,
-		box_divy   => box_divy);
+		box_eox    => box_eox,
+		box_xedge  => box_sidex,
+		box_yedge  => box_sidey,
+		box_xdiv   => box_divx,
+		box_ydiv   => box_divy);
 
 	box_e : entity hdl4fpga.video_box
 	port map (
 		video_clk => video_clk,
 		video_xon => box_xon,
 		video_yon => box_yon,
-		video_eol => box_eol,
-		box_sidex => box_sidex,
-		box_sidey => box_sidey,
-		box_posx  => box_posx,
-		box_posy  => box_posy);
+		video_eox => box_eox,
+		box_xedge => box_sidex,
+		box_yedge => box_sidey,
+		box_x     => box_x,
+		box_y     => box_y);
 
 end;
 

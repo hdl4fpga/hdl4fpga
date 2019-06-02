@@ -38,18 +38,19 @@ architecture video of s3starter is
 	signal video_vtsync : std_logic;
 	signal video_vton   : std_logic;
 	signal video_hzon   : std_logic;
-	signal video_vcntr  : std_logic_vector(11-1 downto 0);
-	signal video_hcntr  : std_logic_vector(11-1 downto 0);
+	signal video_vtcntr : std_logic_vector(11-1 downto 0);
+	signal video_hzcntr : std_logic_vector(11-1 downto 0);
 
-	signal box_sidex    : std_logic;
-	signal box_sidey    : std_logic;
+	signal box_xedge    : std_logic;
+	signal box_yedge    : std_logic;
+	signal box_eox      : std_logic;
 	signal box_xon      : std_logic;
-	signal box_eol      : std_logic;
 	signal box_yon      : std_logic;
-	signal box_posx     : std_logic_vector(11-1 downto 0);
-	signal box_posy     : std_logic_vector(11-1 downto 0);
-	signal box_divx     : std_logic_vector(2-1 downto 0);
-	signal box_divy     : std_logic_vector(2-1 downto 0);
+	signal box_on       : std_logic;
+	signal box_x        : std_logic_vector(11-1 downto 0);
+	signal box_y        : std_logic_vector(11-1 downto 0);
+	signal box_xdiv     : std_logic_vector(2-1 downto 0);
+	signal box_ydiv     : std_logic_vector(2-1 downto 0);
 
  begin
 
@@ -71,50 +72,53 @@ architecture video of s3starter is
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		mode => 7)
+--		mode => pclk38_25m800x600Cat60)
+		mode => pclk148_50m1920x1080Rat60)
 	port map (
-		video_clk   => video_clk,
-		video_hsync => video_hzsync,
-		video_vsync => video_vtsync,
-		video_hcntr => video_hcntr,
-		video_vcntr => video_vcntr,
-		video_hzon  => video_hzon,
-		video_vton  => video_vton);
+		video_clk    => video_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_hzcntr => video_hzcntr,
+		video_vtcntr => video_vtcntr,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton);
 
 	boxlayout_e : entity hdl4fpga.videobox_layout
 	generic map (
-		x_sides     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
-		y_sides     => (257-1, (257)+8-1))
+		x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
+		y_edges     => (257-1, (257)+8-1))
 	port map (
-		video_clk  => video_clk,
-		video_xon  => video_hzon,
-		video_yon  => video_vton,
-		video_posx => video_hcntr,
-		video_posy => video_vcntr,
-		box_xon    => box_xon,
-		box_eol    => box_eol,
-		box_yon    => box_yon,
-		box_sidex  => box_sidex,
-		box_sidey  => box_sidey,
-		box_divx   => box_divx,
-		box_divy   => box_divy);
+		video_clk => video_clk,
+		video_xon => video_hzon,
+		video_yon => video_vton,
+		video_x   => video_hzcntr,
+		video_y   => video_vtcntr,
+                 
+		box_xedge => box_xedge,
+		box_yedge => box_yedge,
+		box_xon   => box_xon,
+		box_yon   => box_yon,
+		box_eox   => box_eox,
+		box_xdiv  => box_xdiv,
+		box_ydiv  => box_ydiv);
+	box_on <= box_xon and box_yon;
 
 	box_e : entity hdl4fpga.video_box
 	port map (
 		video_clk => video_clk,
 		video_xon => box_xon,
 		video_yon => box_yon,
-		video_eol => box_eol,
-		box_sidex => box_sidex,
-		box_sidey => box_sidey,
-		box_posx  => box_posx,
-		box_posy  => box_posy);
+		video_eox => box_eox,
+		box_xedge => box_xedge,
+		box_yedge => box_yedge,
+		box_x     => box_x,
+		box_y     => box_y);
 
 	vga_hsync <= video_hzsync;
 	vga_vsync <= video_vtsync;
-	vga_red   <= setif(unsigned(box_divx)=0) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
-	vga_green <= setif(unsigned(box_divx)=1) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
-	vga_blue  <= setif(unsigned(box_divx)=2) and video_hzon and setif(unsigned(box_divy)=1) and video_vton;
+	vga_red   <= setif(unsigned(box_xdiv)=0) and setif(unsigned(box_ydiv)=1) and box_on;
+	vga_green <= setif(unsigned(box_xdiv)=1) and setif(unsigned(box_ydiv)=1) and box_on;
+	vga_blue  <= setif(unsigned(box_xdiv)=2) and setif(unsigned(box_ydiv)=1) and box_on;
 
 	led <= (others => 'Z');
 
