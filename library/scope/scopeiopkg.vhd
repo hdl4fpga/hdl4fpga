@@ -24,6 +24,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library hdl4fpga;
+use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
 
@@ -91,10 +93,10 @@ package scopeiopkg is
 	type modelayout_vector is array(natural range <>) of mode_layout;
 
 	constant video_description : modelayout_vector := (
-		0 => ( mode_id =>  7, layout_id => hd1080),
-		1 => ( mode_id =>  1, layout_id => sd600),
-		2 => ( mode_id =>  9, layout_id => hd1080),
-		3 => ( mode_id => 10, layout_id => hd720));
+		0 => (mode_id => pclk148_50m1920x1080Rat60, layout_id => hd1080),
+		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
+		2 => (mode_id => pclk75_00m1920x1080Rat30,  layout_id => hd1080),
+		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720));
 
 	function vtaxis_y       (constant layout : display_layout) return natural;
 	function vtaxis_x       (constant layout : display_layout) return natural;

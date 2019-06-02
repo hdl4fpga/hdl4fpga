@@ -87,29 +87,29 @@ architecture beh of scopeio is
 
 	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
 
-	signal video_hs         : std_logic;
-	signal video_vs         : std_logic;
-	signal video_vton        : std_logic;
-	signal video_hzon        : std_logic;
-	signal video_hzl        : std_logic;
-	signal video_vld        : std_logic;
-	signal video_vcntr      : std_logic_vector(11-1 downto 0);
-	signal video_hcntr      : std_logic_vector(11-1 downto 0);
+	signal video_hzsync       : std_logic;
+	signal video_vtsync       : std_logic;
+	signal video_vton         : std_logic;
+	signal video_hzon         : std_logic;
+	signal video_hzl          : std_logic;
+	signal video_vld          : std_logic;
+	signal video_vtcntr       : std_logic_vector(11-1 downto 0);
+	signal video_hzcntr       : std_logic_vector(11-1 downto 0);
 
-	signal video_io         : std_logic_vector(0 to 3-1);
+	signal video_io           : std_logic_vector(0 to 3-1);
 	
-	signal rgtr_id           : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv           : std_logic;
-	signal rgtr_data         : std_logic_vector(32-1 downto 0);
+	signal rgtr_id            : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv            : std_logic;
+	signal rgtr_data          : std_logic_vector(32-1 downto 0);
 
-	signal ampsample_ena     : std_logic;
-	signal ampsample_data    : std_logic_vector(0 to input_data'length-1);
+	signal ampsample_ena      : std_logic;
+	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_ena  : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
 	signal resizedsample_ena  : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_ena    : std_logic;
-	signal downsample_data   : std_logic_vector(resizedsample_data'range);
+	signal downsample_ena     : std_logic;
+	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
 	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
@@ -145,8 +145,8 @@ architecture beh of scopeio is
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
 	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(video_hcntr'range);
-	signal pointer_y      : std_logic_vector(video_vcntr'range);
+	signal pointer_x      : std_logic_vector(video_hzcntr'range);
+	signal pointer_y      : std_logic_vector(video_vtcntr'range);
 
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
@@ -236,8 +236,8 @@ begin
 			gain_id <= word2byte(gain_ids, i, gainid_size);
 			mult_e : entity hdl4fpga.rom 
 			generic map (
-				synchronous => 1,
-				bitrom      => to_bitrom(vt_gain,18))
+				latency => 1,
+				bitrom  => to_bitrom(vt_gain,18))
 			port map (
 				clk  => input_clk,
 				addr => gain_id,
@@ -421,19 +421,17 @@ begin
 			prec   => b"1111",
 			format => wu_format);
 
-		video_e : entity hdl4fpga.video_vga
+		video_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => video_description(vlayout_id).mode_id,
-			n    => 11)
+			mode => video_description(vlayout_id).mode_id)
 		port map (
-			clk   => video_clk,
-			hsync => video_hs,
-			vsync => video_vs,
-			hcntr => video_hcntr,
-			vcntr => video_vcntr,
-			don   => video_hzon,
-			frm   => video_vton,
-			nhl   => video_hzl);
+			video_clk    => video_clk,
+			video_hzsync => video_hzsync,
+			video_vtsync => video_vtsync,
+			video_hzcntr => video_hzcntr,
+			video_vtcntr => video_vtcntr,
+			video_hzon   => video_hzon,
+			video_vton   => video_vton);
 
 		video_vld <= video_hzon and video_vton;
 
@@ -443,8 +441,8 @@ begin
 			d => (video_io'range => vgaio_latency))
 		port map (
 			clk   => video_clk,
-			di(0) => video_hs,
-			di(1) => video_vs,
+			di(0) => video_hzsync,
+			di(1) => video_vtsync,
 			di(2) => video_vld,
 			do    => video_io);
 
@@ -485,7 +483,7 @@ begin
 			constant mwin_height : natural_vector := to_naturalvector(layout, 3);
 		begin
 
-			win_layout_e : entity hdl4fpga.win_layout
+			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
 				x     => mwin_x,
 				y     => mwin_y,
@@ -493,8 +491,8 @@ begin
 				height=> mwin_height)
 			port map (
 				video_clk  => video_clk,
-				video_x    => video_hcntr,
-				video_y    => video_vcntr,
+				video_x    => video_hzcntr,
+				video_y    => video_vtcntr,
 				video_hzon => video_hzon,
 				video_vton => video_vton,
 				win_hzsync => pwin_hzsync,
@@ -552,16 +550,18 @@ begin
 					di(0) => video_hzl,
 					do(0) => p_hzl);
 
-				parent_e : entity hdl4fpga.win
+				parent_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
-					video_hzl => p_hzl,
-					winx_ini  => pwin_hzsync,
-					winy_ini  => pwin_vtsync,
-					win_x     => pwin_x,
-					win_y     => pwin_y);
+					video_xon => pwin_hzsync,
+					video_yon => pwin_vtsync,
+					video_eox => p_hzl,
+					box_xedge =>
+					box_yedge =>
+					box_x     => pwin_x,
+					box_y     => pwin_y);
 
-				layout_e : entity hdl4fpga.win_layout
+				layout_e : entity hdl4fpga.videobox_layout
 				generic map (
 					x           => sgmnt_x,
 					y           => sgmnt_y,
@@ -590,7 +590,7 @@ begin
 					di(0) => p_hzl,
 					do(0) => w_hzl);
 
-				win_e : entity hdl4fpga.win
+				win_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
 					video_hzl => w_hzl,
@@ -776,8 +776,8 @@ begin
 			video_on    => video_io(2),
 			pointer_x   => pointer_x,
 			pointer_y   => pointer_y,
-			video_hcntr => video_hcntr,
-			video_vcntr => video_vcntr,
+			video_hzcntr => video_hzcntr,
+			video_vtcntr => video_vtcntr,
 			video_dot   => pointer_dot);
 
 		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 

@@ -103,7 +103,7 @@ architecture video of s3starter is
 		box_ydiv  => box_ydiv);
 	box_on <= box_xon and box_yon;
 
-	box_e : entity hdl4fpga.video_box
+	box_e : entity hdl4fpga.videobox
 	port map (
 		video_clk => video_clk,
 		video_xon => box_xon,

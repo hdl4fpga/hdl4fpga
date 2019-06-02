@@ -79,7 +79,7 @@ architecture video of testbench is
 		box_xdiv   => box_divx,
 		box_ydiv   => box_divy);
 
-	box_e : entity hdl4fpga.video_box
+	box_e : entity hdl4fpga.videobox
 	port map (
 		video_clk => video_clk,
 		video_xon => box_xon,

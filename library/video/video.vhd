@@ -254,19 +254,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity video_box is
+entity videobox is
 	port (
 		video_clk : in  std_logic;
-		video_xon : in std_logic;
-		video_yon : in std_logic;
-		video_eox : in std_logic;
+		video_xon : in  std_logic;
+		video_yon : in  std_logic;
+		video_eox : in  std_logic;
 		box_xedge : in  std_logic;
 		box_yedge : in  std_logic;
 		box_x     : out std_logic_vector;
 		box_y     : out std_logic_vector);
 end;
 
-architecture def of video_box is
+architecture def of videobox is
 begin
 	process (video_clk)
 		variable x : unsigned(box_x'range);
