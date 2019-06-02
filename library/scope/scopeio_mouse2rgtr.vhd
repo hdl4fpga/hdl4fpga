@@ -17,7 +17,11 @@ generic
   -- mouse drag sensitivity treshold:
   -- 0:>2 pixels, 1:>4 pixels, 2:>8 pixels, n:>2^(n+1) pixels
   C_drag_treshold: integer := 0;
-  vlayout_id     : integer := 0
+
+  -- to render things correctly, GUI system needs to know:
+  C_inputs       : integer range 1 to 63; -- number of input channels (traces)
+  C_tracesfg     : std_logic_vector; -- colors of traces
+  vlayout_id     : integer := 0 -- video geometry
 );
 port
 (
@@ -259,22 +263,40 @@ begin
     signal R_vertical_scale_gain: signed(1 downto 0);
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
-    signal R_trace_selected: signed(1 downto 0);
+    signal R_trace_selected: signed(unsigned_num_bits(C_inputs)-1 downto 0); -- FIXME for C_inputs = 64
     signal R_trigger_level: signed(8 downto 0);
     signal R_trigger_source: signed(1 downto 0);
     signal R_trigger_edge: std_logic;
     signal R_trigger_freeze: std_logic;
     -- FIXME trace color list should not be hardcoded
-    -- now, it is good only if it matches with the colors
-    -- given to the traces
-    type T_trace_color is array (0 to 3) of unsigned(2 downto 0);
-    constant C_trace_color: T_trace_color :=
+    -- It is used to set frame color to the same (or visually similar)
+    -- color of selected trace (input channel).
+    -- it is good only if it matches with the colors given to the traces.
+    constant C_color_bits: integer := C_tracesfg'length / C_inputs;
+    type T_trace_color is array (0 to C_inputs-1) of unsigned(C_color_bits-1 downto 0);
+    function F_convert_tracesfg_to_trace_color
     (
-      "110", -- yellow
-      "011", -- cyan
-      "010", -- green
-      "100"  -- red
-    );
+      constant C_inputs: integer;
+      constant C_tracesfg: std_logic_vector
+    )
+    return T_trace_color is
+      constant C_color_bits: integer := C_tracesfg'length / C_inputs;
+      variable V_trace_color: T_trace_color;
+    begin
+      for i in 0 to C_inputs-1 loop
+        V_trace_color(i) := C_tracesfg(C_color_bits*i to C_color_bits*(i+1)-1);
+      end loop;
+      return V_trace_color;
+    end; -- function
+    constant C_trace_color: T_trace_color :=
+      F_convert_tracesfg_to_trace_color(C_inputs, C_tracesfg);
+    -- example what it would return for 4 inputs and 6 color bits:
+    --(
+    --  C_tracesfg(6*0 to 6*1-1), -- yellow
+    --  C_tracesfg(6*1 to 6*2-1), -- cyan
+    --  C_tracesfg(6*2 to 6*3-1), -- green
+    --  C_tracesfg(6*3 to 6*4-1)  -- red
+    --);
   begin
     -- 1st pipeline stage: decode mouse event and fill arithmetic registers A, B
     process(clk)
@@ -363,14 +385,13 @@ begin
             R_rgtr_id <= x"13"; -- trace vertical settings
             R_rgtr_data(31 downto 8) <= (others => '0');
             R_rgtr_data(7 downto 6) <= S_APB(R_vertical_scale_gain'range);
-            R_rgtr_data(4 downto 2) <= (others => '0');
-            R_rgtr_data(1 downto 0) <= R_trace_selected;
+            R_rgtr_data(5 downto 0) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
             R_vertical_scale_gain <= S_APB(R_vertical_scale_gain'range);
           when C_action_trigger_level_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"12"; -- trigger level
-            R_rgtr_data(31 downto 13) <= (others => '0');
-            R_rgtr_data(12 downto 11) <= R_trace_selected;
+            R_rgtr_data(31 downto R_trace_selected'length+11) <= (others => '0');
+            R_rgtr_data(R_trace_selected'length+10 downto 11) <= R_trace_selected;
             R_rgtr_data(10 downto 2) <= S_APB(R_trigger_level'range);
             R_rgtr_data(1) <= S_APB(S_APB'high); -- when '1' falling edge
             R_rgtr_data(0) <= S_APB(S_APB'high-2); -- when '1' trigger freeze
@@ -394,11 +415,15 @@ begin
           when C_action_trace_select =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 7) <= C_trace_color(to_integer(S_APB(R_trace_selected'range)));
+            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
             R_rgtr_data(6 downto 4) <= (others => '0');
             R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
-            R_trace_selected <= S_APB(R_trace_selected'range);
+            if unsigned(S_APB(R_trace_selected'range)) < C_inputs then
+              R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(S_APB(R_trace_selected'range)));
+              R_trace_selected <= S_APB(R_trace_selected'range);
+            else -- reject change
+              R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
+            end if;
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register
