@@ -20,9 +20,9 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
-        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
+        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
-        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
+        constant C_adc_slowdown: boolean := true; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
         constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled: boolean := false; -- true: use OLED, false: no oled - can save some LUTs
@@ -181,25 +181,38 @@ begin
         -- replacement for ADC that manifests the problem
 	G_not_adc: if not C_adc generate
 	  B_slow_pulse_generator: block
-	    signal R_pulse_counter: unsigned(27 downto 0);
+	    signal R_pulse_counter: unsigned(10 downto 0);
 	    signal R_pulse_ena: std_logic;
 	  begin
 	    process(clk_adc)
 	    begin
 	      if rising_edge(clk_adc) then
-	        R_pulse_counter <= R_pulse_counter + 1;
-	        if R_pulse_counter(7 downto 0) = x"00" then -- every 256
+	        if R_pulse_counter <= 2040 then
+		  R_pulse_counter <= R_pulse_counter + 1;
+		else
+		  R_pulse_counter <= (others => '0');
+		end if;
+	        if R_pulse_counter(5 downto 0) = "00000" then -- every 64
 	          R_pulse_ena <= '1';
 	        else
 	          R_pulse_ena <= '0';
 	        end if;
 	      end if;
 	    end process;
-	    S_adc_data(8+C_adc_bits*0) <= R_pulse_counter(R_pulse_counter'high);
-	    S_adc_data(8+C_adc_bits*1) <= R_pulse_counter(R_pulse_counter'high);
-	    S_adc_data(8+C_adc_bits*2) <= R_pulse_counter(R_pulse_counter'high);
-	    S_adc_data(8+C_adc_bits*3) <= R_pulse_counter(R_pulse_counter'high);
-	    S_adc_dv <= R_pulse_ena;
+	    -- ch0
+	    S_adc_data(10+C_adc_bits*0) <= R_pulse_counter(R_pulse_counter'high); -- wave
+	    S_adc_data( 6+C_adc_bits*0 downto 5+C_adc_bits*0) <= "10"; -- small y offset
+	    -- ch1
+	    S_adc_data( 9+C_adc_bits*1) <= not R_pulse_counter(R_pulse_counter'high); -- wave
+	    S_adc_data( 6+C_adc_bits*1 downto 5+C_adc_bits*1) <= "01"; -- small y offset
+	    -- ch2
+	    S_adc_data( 8+C_adc_bits*2) <= R_pulse_counter(R_pulse_counter'high-1); -- wave
+	    S_adc_data( 6+C_adc_bits*2 downto 5+C_adc_bits*2) <= "11"; -- small y offset
+	    -- ch3
+	    S_adc_data( 7+C_adc_bits*3) <= not R_pulse_counter(R_pulse_counter'high-1); -- wave
+	    S_adc_data( 6+C_adc_bits*3 downto 5+C_adc_bits*3) <= "00"; -- small y offset
+	    --S_adc_dv <= R_pulse_ena;
+	    S_adc_dv <= '1';
 	  end block;
 	end generate;
 
