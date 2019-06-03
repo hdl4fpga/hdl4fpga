@@ -20,12 +20,15 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
         constant vlayout_id: integer := 3;
-        constant C_adc: boolean := false; -- true: normal ADC use, false: soft replacement
+        constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
-        constant C_adc_slowdown: boolean := true; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
-        constant C_view_low_bits: boolean := false; -- false: 3.3V, true 200mV (to see ADC noise)
+        constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
+        constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
+	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
+	constant C_adc_channels: integer := 4; -- don't touch
+	constant C_adc_bits: integer := 12; -- don't touch
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled: boolean := false; -- true: use OLED, false: no oled - can save some LUTs
+        constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -130,10 +133,8 @@ architecture beh of ulx3s is
 	signal clk_mouse       : std_logic := '0';
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
-	constant C_adc_channels: integer := 4;
-	constant C_adc_bits: integer := 12;
-	signal S_adc_dv, R_adc_dv: std_logic;
-	signal S_adc_data, R_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
+	signal S_adc_dv: std_logic;
+	signal S_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
 
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
@@ -216,7 +217,6 @@ begin
 	  end block;
 	end generate;
 
-
 	G_yes_adc: if C_adc generate
 	G_yes_adc_slowdown: if C_adc_slowdown generate
 	process (clk_adc)
@@ -234,6 +234,7 @@ begin
 	adc_e: entity work.max1112x_reader
 	generic map
 	(
+	  C_timing_exact => C_adc_timing_exact,
 	  C_channels => C_adc_channels,
 	  C_bits => C_adc_bits
 	)
@@ -241,6 +242,7 @@ begin
 	(
 	  clk => clk_adc,
 	  clken => R_adc_slowdown(R_adc_slowdown'high),
+	  reset => rst,
 	  spi_csn => adc_csn,
 	  spi_clk => adc_sclk,
 	  spi_mosi => adc_mosi,
@@ -250,18 +252,6 @@ begin
 	);
 	end generate;
 	
-	-- S_adc_data is constantly shifted and valid only during 1 cycle
-	-- latch the data during valid cycle
-	process(clk_adc)
-	begin
-	  if rising_edge(clk_adc) then
-	    if S_adc_dv = '1' then
-	      R_adc_data <= S_adc_data;
-	    end if;
-	    R_adc_dv <= S_adc_dv;
-	  end if;
-	end process;
-
 	-- press buttons to test ADC
 	-- for normal use disable this
 	G_btn_test: if C_buttons_test generate
@@ -321,19 +311,19 @@ begin
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
-	  S_input_ena  <= R_adc_dv;
+	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
-	  G_not_view_low_bits: if not C_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(1*C_adc_bits-1) & R_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
-	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(2*C_adc_bits-1) & R_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
-	  trace_green (0 to trace_green'high)  <= R_adc_data(3*C_adc_bits-1) & R_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
-	  trace_red   (0 to trace_red'high)    <= R_adc_data(4*C_adc_bits-1) & R_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  G_not_view_low_bits: if not C_adc_view_low_bits generate
+	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (0 to trace_green'high)  <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_red   (0 to trace_red'high)    <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
-	  G_yes_view_low_bits: if C_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= R_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
-	  trace_cyan  (0 to trace_cyan'high)   <= R_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
-	  trace_green (0 to trace_green'high)  <= R_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
-	  trace_red   (0 to trace_red'high)    <= R_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  G_yes_view_low_bits: if C_adc_view_low_bits generate
+	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (0 to trace_green'high)  <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_red   (0 to trace_red'high)    <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
@@ -425,7 +415,7 @@ begin
 	port map
 	(
 	  clk => clk_oled, -- 25 MHz
-	  data(47 downto 0) => R_adc_data(47 downto 0),
+	  data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
 	  spi_clk => oled_clk,
@@ -546,6 +536,7 @@ begin
     vga2dvid: entity hdl4fpga.vga2dvid
     generic map
     (
+        C_shift_clock_synchronizer => '0',
         C_ddr => '1',
         C_depth => 2
     )
