@@ -502,7 +502,7 @@ begin
 				box_xdiv   => pbox_xdiv,
 				box_ydiv   => pbox_ydiv);
 
-			sgmnt_b : block:q
+			sgmnt_b : block
 
 
 				constant grid_id    : natural := 0;
@@ -576,24 +576,18 @@ begin
 					video_xon => cbox_xon,
 					video_yon => cbox_yon,
 					video_eox => cbox_eox,
-					box_x     => box_x,
-					box_y     => box_y);
-
-				port map (
-					video_clk => video_clk,
-					video_hzl => w_hzl,
-					winx_ini  => cbox_xedge,
-					winy_ini  => cbox_yedge,
+					box_xedge => cbox_xedge,
+					box_yedge => cbox_yedge,
 					box_x     => cbox_x,
 					box_y     => cbox_y);
 
 				winfrm_lat_e : entity hdl4fpga.align
 				generic map (
-					n => pbox_vton'length,
-					d => (pbox_vton'range => 2))
+					n => pbox_ydiv'length,
+					d => (pbox_ydiv'range => 2))
 				port map (
 					clk => video_clk,
-					di  => pbox_vton,
+					di  => pbox_ydiv,
 					do  => storage_bsel);
 
 				storage_addr_p : process (video_clk)
@@ -649,8 +643,8 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						aux := (others => '0');
-						for i in pbox_vton'range loop
-							if pbox_vton(i)='1' then
+						for i in pbox_ydiv'range loop
+							if pbox_ydiv(i)='1' then
 								aux := aux or to_unsigned(layout.grid_width*i, aux'length);
 							end if;
 						end loop;
@@ -703,7 +697,7 @@ begin
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 
-				sgmnt_on <= phzon;
+				sgmnt_on <= pbox_xon;
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,
