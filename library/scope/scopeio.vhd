@@ -423,7 +423,7 @@ begin
 
 		video_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => video_description(vlayout_id).mode_id)
+			mode => 7) --video_description(vlayout_id).mode_id)
 		port map (
 			video_clk    => video_clk,
 			video_hzsync => video_hzsync,
@@ -478,16 +478,12 @@ begin
 			signal pbox_xon      : std_logic;
 			signal pbox_yon      : std_logic;
 
-			constant mwin_x      : natural_vector := to_naturalvector(layout, 0);
-			constant mwin_y      : natural_vector := to_naturalvector(layout, 1);
-			constant mwin_width  : natural_vector := to_naturalvector(layout, 2);
-			constant mwin_height : natural_vector := to_naturalvector(layout, 3);
 		begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
 				x_edges => (0 => layout.display_width),
-				y_edges => (0 => layout.grid_height))
+				y_edges => sgmnt_yedges(layout))
 			port map (
 				video_clk  => video_clk,
 				video_x    => video_hzcntr,
@@ -509,11 +505,6 @@ begin
 				constant vtaxis_id  : natural := 1;
 				constant hzaxis_id  : natural := 2;
 				constant textbox_id : natural := 3;
-
-				constant sgmnt_x : natural_vector := (grid_id => grid_x(layout),      vtaxis_id => vtaxis_x(layout),      hzaxis_id => hzaxis_x(layout),      textbox_id => textbox_x(layout));
-				constant sgmnt_y : natural_vector := (grid_id => grid_y(layout),      vtaxis_id => vtaxis_y(layout),      hzaxis_id => hzaxis_y(layout),      textbox_id => textbox_y(layout));
-				constant sgmnt_w : natural_vector := (grid_id => grid_width(layout),  vtaxis_id => vtaxis_width(layout),  hzaxis_id => hzaxis_width(layout),  textbox_id => textbox_width(layout));
-				constant sgmnt_h : natural_vector := (grid_id => grid_height(layout), vtaxis_id => vtaxis_height(layout), hzaxis_id => hzaxis_height(layout), textbox_id => textbox_height(layout));
 
 				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
@@ -762,7 +753,8 @@ begin
 			video_vtcntr => video_vtcntr,
 			video_dot   => pointer_dot);
 
-		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
+--		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
+		video_color <= (others => '1');
 	end block;
 
 

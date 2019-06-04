@@ -25,6 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
@@ -124,9 +125,11 @@ package scopeiopkg is
 	function hzaxis_width   (constant layout : display_layout) return natural;
 	function hzaxis_height  (constant layout : display_layout) return natural;
 
+	function sgmnt_yedges  ( constant layout : display_layout) return natural_vector;
 end;
 
 package body scopeiopkg is
+
 	function sgmnt_margin (
 		constant layout : display_layout)
 		return natural is
@@ -152,7 +155,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return (layout.grid_height*division_length+1)+sgmnt_gap(layout)+layout.hzaxis_height;
+		return (layout.grid_height*division_length+1)+grid_height(layout);
 	end;
 
 	function sgmnt_width (
@@ -274,4 +277,17 @@ package body scopeiopkg is
 		return 8;
 	end;
 
+	function sgmnt_yedges(
+		constant layout : display_layout)
+		return natural_vector is
+
+		variable retval : natural_vector(0 to layout.num_of_segments-1);
+	begin
+
+		retval(0) := sgmnt_height(layout);
+		for i in 1 to  layout.num_of_segments-1 loop
+			retval(i) := retval(i-1) + sgmnt_width(layout);
+		end loop;
+		return retval;
+	end;
 end;

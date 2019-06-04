@@ -189,8 +189,8 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="../../common/s3starter.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="108" xil_pn:seqIDinc="38"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="1" xil_pn:seqIDinc="38"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="108" xil_pn:seqIDinc="37"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="1" xil_pn:seqIDinc="37"/>
     </file>
     <file xil_pn:name="../../../library/scope/scopeio_istreamdaisy.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="109"/>
@@ -402,7 +402,7 @@
     <property xil_pn:name="Overwrite Compiled Libraries" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Pack I/O Registers into IOBs" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="Pack I/O Registers/Latches into IOBs" xil_pn:value="For Inputs and Outputs" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Package" xil_pn:value="ft256" xil_pn:valueState="default"/>
+    <property xil_pn:name="Package" xil_pn:value="ft256" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Perform Advanced Analysis" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Timing-Driven Packing and Placement" xil_pn:value="true" xil_pn:valueState="non-default"/>
