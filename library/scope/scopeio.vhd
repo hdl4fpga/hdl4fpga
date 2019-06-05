@@ -482,7 +482,7 @@ begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x_edges => (0 => 816-1),
+				x_edges => (0 => 800-1),
 				y_edges => sgmnt_yedges(layout))
 			port map (
 				video_clk  => video_clk,

@@ -155,7 +155,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return grid_height(layout)+vtaxis_height(layout);
+		return grid_height(layout)+hzaxis_height(layout);
 	end;
 
 	function sgmnt_width (
