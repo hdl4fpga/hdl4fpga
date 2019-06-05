@@ -155,7 +155,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return (layout.grid_height*division_length+1)+grid_height(layout);
+		return grid_height(layout)+vtaxis_height(layout);
 	end;
 
 	function sgmnt_width (
@@ -286,8 +286,8 @@ package body scopeiopkg is
 
 		retval(0) := sgmnt_height(layout);
 		for i in 1 to  layout.num_of_segments-1 loop
-			retval(i) := retval(i-1) + sgmnt_width(layout);
+			retval(i) := retval(i-1) + sgmnt_height(layout);
 		end loop;
-		return retval;
+		return to_edges(retval);
 	end;
 end;

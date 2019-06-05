@@ -423,7 +423,7 @@ begin
 
 		video_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => 7) --video_description(vlayout_id).mode_id)
+			mode => video_description(vlayout_id).mode_id)
 		port map (
 			video_clk    => video_clk,
 			video_hzsync => video_hzsync,
@@ -471,7 +471,7 @@ begin
 			end;
 
 			signal pbox_xdiv     : std_logic_vector(0 to layout.num_of_segments-1);
-			signal pbox_ydiv     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 			signal pbox_xedge    : std_logic;
 			signal pbox_yedge    : std_logic;
 			signal pbox_eox      : std_logic;
@@ -482,7 +482,7 @@ begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x_edges => (0 => layout.display_width),
+				x_edges => (0 => 816-1),
 				y_edges => sgmnt_yedges(layout))
 			port map (
 				video_clk  => video_clk,
@@ -708,6 +708,9 @@ begin
 
 			end block;
 
+		video_color(2) <= setif(unsigned(pbox_ydiv)=1);
+		video_color(1) <= setif(unsigned(pbox_ydiv)=0);
+		video_color(0) <= setif(unsigned(pbox_ydiv)=2);
 		end block;
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
@@ -754,7 +757,6 @@ begin
 			video_dot   => pointer_dot);
 
 --		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
-		video_color <= (others => '1');
 	end block;
 
 

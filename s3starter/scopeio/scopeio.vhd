@@ -85,8 +85,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 3, --4,
-		dfs_div => 1) --5)
+		dfs_mul => 4,
+		dfs_div => 5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
