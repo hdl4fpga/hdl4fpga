@@ -1,6 +1,0 @@
-#!/bin/bash
-dir=$(dirname $(readlink -e "$0"))
-if [ "$dir" = "" ]; then
-	dir=$(dirname $(which "$0"));
-fi
-exec $dir/../../tools/bin/memtest 131072 64 $1
