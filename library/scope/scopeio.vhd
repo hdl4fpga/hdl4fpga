@@ -119,7 +119,7 @@ architecture beh of scopeio is
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
+	signal storage_bsel   : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
@@ -470,7 +470,7 @@ begin
 				return rval;
 			end;
 
-			signal pbox_xdiv     : std_logic_vector(0 to layout.num_of_segments-1);
+			signal pbox_xdiv     : std_logic_vector(0 to 1-1);
 			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 			signal pbox_xedge    : std_logic;
 			signal pbox_yedge    : std_logic;
@@ -482,8 +482,8 @@ begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x_edges => (0 => 800-1),
-				y_edges => sgmnt_yedges(layout))
+				x_edges => (0 => main_width(layout)-1),
+				y_edges => main_yedges(layout))
 			port map (
 				video_clk  => video_clk,
 				video_x    => video_hzcntr,
@@ -509,25 +509,25 @@ begin
 				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal pbox_x  : std_logic_vector(pwinx_size-1 downto 0);
-				signal pbox_y  : std_logic_vector(pwiny_size-1 downto 0);
+				signal pbox_x       : std_logic_vector(pwinx_size-1 downto 0);
+				signal pbox_y       : std_logic_vector(pwiny_size-1 downto 0);
 
-				signal cbox_y   : std_logic_vector(pbox_y'range);
-				signal cbox_x   : std_logic_vector(pbox_x'range);
+				signal cbox_y       : std_logic_vector(pbox_y'range);
+				signal cbox_x       : std_logic_vector(pbox_x'range);
 
-				signal x       : std_logic_vector(cbox_x'range);
-				signal y       : std_logic_vector(cbox_y'range);
+				signal x            : std_logic_vector(cbox_x'range);
+				signal y            : std_logic_vector(cbox_y'range);
 				signal cbox_xedge   : std_logic;
 				signal cbox_yedge   : std_logic;
-				signal cbox_xdiv   : std_logic_vector(0 to 4-1);
-				signal cbox_ydiv   : std_logic_vector(cbox_xdiv'range);
-				signal cbox_xon    : std_logic;
-				signal cbox_yon    : std_logic;
-				signal cbox_eox    : std_logic;
-				signal grid_on : std_logic;
-				signal hz_on   : std_logic;
-				signal vt_on   : std_logic;
-				signal text_on : std_logic;
+				signal cbox_xdiv    : std_logic_vector(0 to 2-1);
+				signal cbox_ydiv    : std_logic_vector(0 to 2-1);
+				signal cbox_xon     : std_logic;
+				signal cbox_yon     : std_logic;
+				signal cbox_eox     : std_logic;
+				signal grid_on      : std_logic;
+				signal hz_on        : std_logic;
+				signal vt_on        : std_logic;
+				signal text_on      : std_logic;
 
 			begin
 
@@ -544,8 +544,8 @@ begin
 
 				layout_e : entity hdl4fpga.videobox_layout
 				generic map (
-					x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
-					y_edges     => (257-1, (257)+8-1))
+					x_edges     => sgmnt_xedges(layout),
+					y_edges     => sgmnt_yedges(layout))
 				port map (
 					video_clk   => video_clk,
 					video_xon   => pbox_xon,
@@ -582,16 +582,18 @@ begin
 					do  => storage_bsel);
 
 				storage_addr_p : process (video_clk)
-					variable base : unsigned(storage_addr'range);
+					variable base : unsigned(0 to layout.num_of_segments*storage_addr'length-1);
+					variable addr : unsigned(0 to storage_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
-						base := (base'range => '0');
-						for i in storage_bsel'range loop
-							if storage_bsel(i)='1' then
-								base := to_unsigned((grid_width(layout)-1)*i, base'length);
-							end if;
+						for i in 0 to layout.num_of_segments-1 loop
+							base(addr'range) := to_unsigned((grid_width(layout)-1)*i, base'length);
+							base := base rol addr'length;
 						end loop;
-						storage_addr <= std_logic_vector(unsigned(cbox_x) + unsigned(base) + unsigned(capture_addr));
+						addr := unsigned(word2byte(std_logic_vector(base), storage_bsel, addr'length-1));
+						addr := addr + unsigned(cbox_x);
+						addr := addr + unsigned(capture_addr);
+						storage_addr <= std_logic_vector(addr);
 					end if;
 				end process;
 
@@ -608,6 +610,7 @@ begin
 						do(1) => vt_on,
 						do(2) => hz_on,
 						do(3) => text_on);
+					(0 => grid_on, 1 => vt_on, 2 => text_on) <= demux(sel => cbox_xdiv, size => 3);
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (          --  +--- storage_addr

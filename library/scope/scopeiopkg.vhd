@@ -107,8 +107,10 @@ package scopeiopkg is
 	function sgmnt_margin   (constant layout : display_layout) return natural; 
 	function sgmnt_border   (constant layout : display_layout) return natural;
 	function sgmnt_gap      (constant layout : display_layout) return natural;
-	function sgmnt_height   (constant layout : display_layout) return natural;
 	function sgmnt_width    (constant layout : display_layout) return natural;
+	function sgmnt_height   (constant layout : display_layout) return natural;
+	function sgmnt_xedges   (constant layout : display_layout) return natural_vector;
+	function sgmnt_yedges   (constant layout : display_layout) return natural_vector;
 
 	function grid_x         (constant layout : display_layout) return natural;
 	function grid_y         (constant layout : display_layout) return natural;
@@ -125,7 +127,8 @@ package scopeiopkg is
 	function hzaxis_width   (constant layout : display_layout) return natural;
 	function hzaxis_height  (constant layout : display_layout) return natural;
 
-	function sgmnt_yedges  ( constant layout : display_layout) return natural_vector;
+	function main_width  (constant layout : display_layout) return natural;
+	function main_yedges (constant layout : display_layout) return natural_vector;
 end;
 
 package body scopeiopkg is
@@ -163,6 +166,31 @@ package body scopeiopkg is
 		return natural is
 	begin
 		return layout.vtaxis_width+1+sgmnt_gap(layout)+(layout.grid_width*division_length+1)+1+sgmnt_gap(layout)+layout.textbox_width+2*sgmnt_border(layout);
+	end;
+
+	function sgmnt_xedges(
+		constant layout : display_layout)
+		return natural_vector is
+
+		variable retval : natural_vector(0 to 3-1);
+	begin
+
+		retval(0) := vtaxis_width(layout);
+		retval(1) := retval(0) + grid_width(layout);
+		retval(2) := retval(0) + textbox_width(layout);
+		return to_edges(retval);
+	end;
+
+	function sgmnt_yedges(
+		constant layout : display_layout)
+		return natural_vector is
+
+		variable retval : natural_vector(0 to 2-1);
+	begin
+
+		retval(0) := grid_height(layout);
+		retval(1) := retval(0) + hzaxis_height(layout);
+		return to_edges(retval);
 	end;
 
 	function grid_x (
@@ -277,7 +305,14 @@ package body scopeiopkg is
 		return 8;
 	end;
 
-	function sgmnt_yedges(
+	function main_width (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.display_width;
+	end;
+
+	function main_yedges(
 		constant layout : display_layout)
 		return natural_vector is
 
@@ -290,4 +325,5 @@ package body scopeiopkg is
 		end loop;
 		return to_edges(retval);
 	end;
+
 end;

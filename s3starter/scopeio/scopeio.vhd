@@ -85,8 +85,8 @@ begin
 	generic map (
 		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 4,
-		dfs_div => 5)
+		dfs_mul => 3, --4,
+		dfs_div => 1) --5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -153,7 +153,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 1,
+		vlayout_id  => 0,
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",
 		default_gridbg   => b"0_0_0",
