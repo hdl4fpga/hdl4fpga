@@ -177,7 +177,7 @@ package body scopeiopkg is
 
 		retval(0) := vtaxis_width(layout);
 		retval(1) := retval(0) + grid_width(layout);
-		retval(2) := retval(0) + textbox_width(layout);
+		retval(2) := retval(1) + textbox_width(layout);
 		return to_edges(retval);
 	end;
 

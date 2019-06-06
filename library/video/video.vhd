@@ -196,6 +196,8 @@ entity videobox_layout is
 		box_xon   : out std_logic;
 		box_yon   : out std_logic;
 		box_eox   : out std_logic;
+		box_nextx : out std_logic;
+		box_nexty : out std_logic;
 		box_xdiv  : out std_logic_vector;
 		box_ydiv  : out std_logic_vector);
 end;
@@ -245,6 +247,8 @@ begin
 
 	box_xedge <= x_edge;
 	box_yedge <= y_edge;
+	box_nextx <= next_x;
+	box_nexty <= next_y;
 	box_xdiv  <= x_div;
 	box_ydiv  <= y_div;
 

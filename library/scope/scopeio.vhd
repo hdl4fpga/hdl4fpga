@@ -474,6 +474,7 @@ begin
 			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 			signal pbox_xedge    : std_logic;
 			signal pbox_yedge    : std_logic;
+			signal pbox_nexty    : std_logic;
 			signal pbox_eox      : std_logic;
 			signal pbox_xon      : std_logic;
 			signal pbox_yon      : std_logic;
@@ -496,6 +497,7 @@ begin
 				box_yon    => pbox_yon,
 				box_eox    => pbox_eox,
 				box_xdiv   => pbox_xdiv,
+				box_nexty  => pbox_nexty,
 				box_ydiv   => pbox_ydiv);
 
 			sgmnt_b : block
@@ -517,6 +519,10 @@ begin
 
 				signal x            : std_logic_vector(cbox_x'range);
 				signal y            : std_logic_vector(cbox_y'range);
+				signal cbox_vyon   : std_logic;
+				signal cbox_vxon   : std_logic;
+				signal cbox_vx       : std_logic_vector(pwinx_size-1 downto 0);
+				signal cbox_vy       : std_logic_vector(pwiny_size-1 downto 0);
 				signal cbox_xedge   : std_logic;
 				signal cbox_yedge   : std_logic;
 				signal cbox_xdiv    : std_logic_vector(0 to 2-1);
@@ -542,16 +548,26 @@ begin
 					box_x     => pbox_x,
 					box_y     => pbox_y);
 
+					process (video_clk)
+					begin
+						if rising_edge(video_clk) then
+							cbox_vxon <= pbox_xon;
+							cbox_vyon <= pbox_yon and not pbox_nexty;
+							cbox_vx   <= pbox_x;
+							cbox_vy   <= pbox_y;
+						end if;
+					end process;
+
 				layout_e : entity hdl4fpga.videobox_layout
 				generic map (
 					x_edges     => sgmnt_xedges(layout),
 					y_edges     => sgmnt_yedges(layout))
 				port map (
 					video_clk   => video_clk,
-					video_xon   => pbox_xon,
-					video_yon   => pbox_yon,
-					video_x     => pbox_x,
-					video_y     => pbox_y,
+					video_xon   => cbox_vxon, --pbox_xon,
+					video_yon   => cbox_vyon,
+					video_x     => cbox_vx, --pbox_x,
+					video_y     => cbox_vy, --pbox_y,
 					box_xon     => cbox_xon,
 					box_yon     => cbox_yon,
 					box_xedge   => cbox_xedge,
@@ -599,18 +615,25 @@ begin
 
 				latency_b : block
 				begin
-					latency_on_e : entity hdl4fpga.align
-					generic map (
-						n => cbox_xdiv'length,
-						d => (cbox_xdiv'range => 2+1+1))
-					port map (
-						clk   => video_clk,
-						di    => cbox_xdiv,
-						do(0) => grid_on,
-						do(1) => vt_on,
-						do(2) => hz_on,
-						do(3) => text_on);
-					(0 => grid_on, 1 => vt_on, 2 => text_on) <= demux(sel => cbox_xdiv, size => 3);
+					process (video_clk)
+					begin
+						if rising_edge(video_clk) then
+							vt_on    <= '0';
+							hz_on    <= '0';
+							grid_on  <= '0';
+							text_on <= '0';
+							case cbox_xdiv is
+							when "00" =>
+								vt_on   <= setif(unsigned(cbox_ydiv)=0);
+							when "01" =>
+								grid_on <= setif(unsigned(cbox_ydiv)=0);
+								hz_on   <= setif(unsigned(cbox_ydiv)=1);
+							when "10" =>
+								text_on <= setif(unsigned(cbox_ydiv)=0);
+							when others =>
+							end case;
+						end if;
+					end process;
 
 					latency_x_e : entity hdl4fpga.align
 					generic map (          --  +--- storage_addr
@@ -711,9 +734,6 @@ begin
 
 			end block;
 
-		video_color(2) <= setif(unsigned(pbox_ydiv)=1);
-		video_color(1) <= setif(unsigned(pbox_ydiv)=0);
-		video_color(0) <= setif(unsigned(pbox_ydiv)=2);
 		end block;
 
 		scopeio_palette_e : entity hdl4fpga.scopeio_palette
@@ -759,7 +779,7 @@ begin
 			video_vtcntr => video_vtcntr,
 			video_dot   => pointer_dot);
 
---		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
+		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
 	end block;
 
 
