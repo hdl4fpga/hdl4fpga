@@ -448,28 +448,6 @@ begin
 
 		graphics_b : block
 
-			impure function to_naturalvector (
-				constant layout : display_layout;
-				constant param   : natural range 0 to 3)
-				return natural_vector is
-				variable rval : natural_vector(0 to layout.num_of_segments-1);
-			begin
-				for i in 0 to layout.num_of_segments-1 loop
-					case param is
-					when 0 =>
-						rval(i) := sgmnt_margin(layout)+0;
-					when 1 => 
-						rval(i) := sgmnt_margin(layout)+i*(sgmnt_height(layout)+2*sgmnt_margin(layout));
---						rval(i) := sgmnt_margin(layout)+i*(sgmnt_height(layout)+2*sgmnt_margin(layout)+16);
-					when 2 => 
-						rval(i) := sgmnt_width(layout); --layout.scr_width;
-					when 3 => 
-						rval(i) := sgmnt_height(layout)+1;
-					end case;
-				end loop;
-				return rval;
-			end;
-
 			signal pbox_xdiv     : std_logic_vector(0 to 1-1);
 			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 			signal pbox_xedge    : std_logic;
@@ -548,15 +526,15 @@ begin
 					box_x     => pbox_x,
 					box_y     => pbox_y);
 
-					process (video_clk)
-					begin
-						if rising_edge(video_clk) then
-							cbox_vxon <= pbox_xon;
-							cbox_vyon <= pbox_yon and not pbox_nexty;
-							cbox_vx   <= pbox_x;
-							cbox_vy   <= pbox_y;
-						end if;
-					end process;
+				process (video_clk)
+				begin
+					if rising_edge(video_clk) then
+						cbox_vxon <= pbox_xon;
+						cbox_vyon <= pbox_yon and not pbox_nexty;
+						cbox_vx   <= pbox_x;
+						cbox_vy   <= pbox_y;
+					end if;
+				end process;
 
 				layout_e : entity hdl4fpga.videobox_layout
 				generic map (
@@ -564,10 +542,10 @@ begin
 					y_edges     => sgmnt_yedges(layout))
 				port map (
 					video_clk   => video_clk,
-					video_xon   => cbox_vxon, --pbox_xon,
+					video_xon   => cbox_vxon,
 					video_yon   => cbox_vyon,
-					video_x     => cbox_vx, --pbox_x,
-					video_y     => cbox_vy, --pbox_y,
+					video_x     => cbox_vx,
+					video_y     => cbox_vy,
 					box_xon     => cbox_xon,
 					box_yon     => cbox_yon,
 					box_xedge   => cbox_xedge,
@@ -588,70 +566,43 @@ begin
 					box_x     => cbox_x,
 					box_y     => cbox_y);
 
-				winfrm_lat_e : entity hdl4fpga.align
-				generic map (
-					n => pbox_ydiv'length,
-					d => (pbox_ydiv'range => 2))
-				port map (
-					clk => video_clk,
-					di  => pbox_ydiv,
-					do  => storage_bsel);
-
-				storage_addr_p : process (video_clk)
-					variable base : unsigned(0 to layout.num_of_segments*storage_addr'length-1);
-					variable addr : unsigned(0 to storage_addr'length-1);
+				process (video_clk)
 				begin
 					if rising_edge(video_clk) then
-						for i in 0 to layout.num_of_segments-1 loop
-							base(addr'range) := to_unsigned((grid_width(layout)-1)*i, base'length);
-							base := base rol addr'length;
-						end loop;
-						addr := unsigned(word2byte(std_logic_vector(base), storage_bsel, addr'length-1));
-						addr := addr + unsigned(cbox_x);
-						addr := addr + unsigned(capture_addr);
-						storage_addr <= std_logic_vector(addr);
+						vt_on   <= '0';
+						hz_on   <= '0';
+						grid_on <= '0';
+						text_on <= '0';
+						case cbox_xdiv is
+						when "00" =>
+							vt_on   <= setif(unsigned(cbox_ydiv)=0);
+						when "01" =>
+							grid_on <= setif(unsigned(cbox_ydiv)=0);
+							hz_on   <= setif(unsigned(cbox_ydiv)=1);
+						when "10" =>
+							text_on <= setif(unsigned(cbox_ydiv)=0);
+						when others =>
+						end case;
 					end if;
 				end process;
 
-				latency_b : block
-				begin
-					process (video_clk)
-					begin
-						if rising_edge(video_clk) then
-							vt_on    <= '0';
-							hz_on    <= '0';
-							grid_on  <= '0';
-							text_on <= '0';
-							case cbox_xdiv is
-							when "00" =>
-								vt_on   <= setif(unsigned(cbox_ydiv)=0);
-							when "01" =>
-								grid_on <= setif(unsigned(cbox_ydiv)=0);
-								hz_on   <= setif(unsigned(cbox_ydiv)=1);
-							when "10" =>
-								text_on <= setif(unsigned(cbox_ydiv)=0);
-							when others =>
-							end case;
-						end if;
-					end process;
+				x <= cbox_x;
+				y <= cbox_y;
 
-					x <= cbox_x;
-					y <= cbox_y;
-
-				end block;
-
-				process (video_clk)
-					variable aux : unsigned(hz_segment'range);
+				storage_bsel <= pbox_ydiv;
+				storage_addr_p : process (video_clk)
+					variable offset : unsigned(0 to layout.num_of_segments*storage_addr'length-1);
+					variable base   : unsigned(0 to storage_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
-						aux := (others => '0');
-						for i in pbox_ydiv'range loop
-							if pbox_ydiv(i)='1' then
-								aux := aux or to_unsigned(layout.grid_width*i, aux'length);
-							end if;
+						offset := (others => '-');
+						for i in 0 to layout.num_of_segments-1 loop
+							offset(base'range) := to_unsigned((grid_width(layout)-1)*i, base'length);
+							offset := offset rol base'length;
 						end loop;
-						aux := aux sll 5;
-						hz_segment <= std_logic_vector(aux + unsigned(hz_offset(9-1 downto 0)));
+						base         := unsigned(word2byte(std_logic_vector(offset), storage_bsel, base'length));
+						storage_addr <= std_logic_vector(base + unsigned(cbox_x) + unsigned(capture_addr));
+						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
 					end if;
 				end process;
 
