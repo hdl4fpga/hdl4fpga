@@ -101,6 +101,7 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
+		latency => 2,
 		bitrom => sintab(-1024+256, 1023+256, sample_size))
 	port map (
 		clk  => sys_clk,
