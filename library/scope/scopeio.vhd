@@ -519,10 +519,10 @@ begin
 
 				signal x            : std_logic_vector(cbox_x'range);
 				signal y            : std_logic_vector(cbox_y'range);
-				signal cbox_vyon   : std_logic;
-				signal cbox_vxon   : std_logic;
-				signal cbox_vx       : std_logic_vector(pwinx_size-1 downto 0);
-				signal cbox_vy       : std_logic_vector(pwiny_size-1 downto 0);
+				signal cbox_vyon    : std_logic;
+				signal cbox_vxon    : std_logic;
+				signal cbox_vx      : std_logic_vector(pwinx_size-1 downto 0);
+				signal cbox_vy      : std_logic_vector(pwiny_size-1 downto 0);
 				signal cbox_xedge   : std_logic;
 				signal cbox_yedge   : std_logic;
 				signal cbox_xdiv    : std_logic_vector(0 to 2-1);
@@ -635,23 +635,8 @@ begin
 						end if;
 					end process;
 
-					latency_x_e : entity hdl4fpga.align
-					generic map (          --  +--- storage_addr
-						n => cbox_x'length, --  | + --- windows
-						d => (cbox_x'range => 2+1+1))
-					port map (
-						clk => video_clk,
-						di  => cbox_x,
-						do  => x);
-
-					latency_y_e : entity hdl4fpga.align
-					generic map (
-						n => cbox_y'length,
-						d => (cbox_y'range => 1+1+1))
-					port map (
-						clk => video_clk,
-						di  => cbox_y,
-						do  => y);
+					x <= cbox_x;
+					y <= cbox_y;
 
 				end block;
 
