@@ -236,6 +236,13 @@ entity s3estarter is
 	attribute iostandard of e_crs    : signal is "LVCMOS33";
 	attribute iostandard of e_col    : signal is "LVCMOS33";
 
+	attribute slew of e_mdc    	: signal is "fast";
+	attribute slew of e_mdio   	: signal is "fast";
+	attribute slew of e_txen	: signal is "fast";
+	attribute slew of e_txd    	: signal is "fast";
+	attribute slew of e_txd_4	: signal is "fast";
+	attribute slew of e_rxd    	: signal is "fast";
+
 	-------------
 	-- DDR RAM --
 

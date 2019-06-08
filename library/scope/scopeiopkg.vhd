@@ -334,7 +334,7 @@ package body scopeiopkg is
 --		variable retval : std_logic_vector;
 --	begin
 --		
---		case xdiv is
+--		case xdiv & ydiv is
 --		when "00" =>
 --			vt_on   <= setif(unsigned(cbox_ydiv)=0);
 --		when "01" =>

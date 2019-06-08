@@ -277,13 +277,13 @@
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/bram_true2p_2clk.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="66" xil_pn:seqIDinc="66"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="2" xil_pn:seqIDinc="66"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="66" xil_pn:seqIDinc="54"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="2" xil_pn:seqIDinc="54"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/common/bram.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="68" xil_pn:seqIDinc="68"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="1" xil_pn:seqIDinc="68"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="68" xil_pn:seqIDinc="55"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="1" xil_pn:seqIDinc="55"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../library/uart/uart_rx.vhd" xil_pn:type="FILE_VHDL">
