@@ -24,10 +24,10 @@
 NET "xtal" TNM_NET = xtal;
 TIMESPEC ts_xtal = PERIOD "xtal" 20 ns HIGH 50%;
 
-NET "scopeio_e/storage_b.mem_e/clkb" TNM_NET = FFS  FFS_videoclk;
-NET "scopeio_e/storage_b.mem_e/clkb" TNM_NET = RAMS RAMS_videoclk;
-NET "sys_clk" TNM_NET = FFS  FFS_sysclk;
-NET "sys_clk" TNM_NET = RAMS RAMS_sysclk;
+NET "vga_clk" TNM_NET = FFS  FFS_videoclk;
+NET "vga_clk" TNM_NET = RAMS RAMS_videoclk;
+NET "samples_e/clk" TNM_NET = FFS  FFS_sysclk;
+NET "samples_e/clk" TNM_NET = RAMS RAMS_sysclk;
 
 TIMESPEC TS_video2sys1 = FROM FFS_videoclk TO FFS_sysclk TIG;
 TIMESPEC TS_sys2video1 = FROM FFS_sysclk TO FFS_videoclk TIG;

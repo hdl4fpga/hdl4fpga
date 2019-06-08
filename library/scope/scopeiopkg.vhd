@@ -326,4 +326,23 @@ package body scopeiopkg is
 		return to_edges(retval);
 	end;
 
+	function (
+		constant divx   : std_logic_vector;
+		constant divy   : std_logic_vector;
+		constant layout : display_layout)
+		return std_logic_vector is
+		variable retval : std_logic_vector;
+	begin
+		
+		case xdiv is
+		when "00" =>
+			vt_on   <= setif(unsigned(cbox_ydiv)=0);
+		when "01" =>
+			grid_on <= setif(unsigned(cbox_ydiv)=0);
+			hz_on   <= setif(unsigned(cbox_ydiv)=1);
+		when "10" =>
+			text_on <= setif(unsigned(cbox_ydiv)=0);
+		when others =>
+		end case;
+	end;
 end;
