@@ -126,8 +126,12 @@ entity s3estarter is
 		sd_cke        : out std_logic := '1';
 		sd_ck_n       : out std_logic := '0';
 		sd_ck_p       : out std_logic := '1';
-		sd_ck_fb      : in std_logic := '0');
+		sd_ck_fb      : in std_logic := '0';
 
+		rs232_dte_rxd : in  std_logic := 'Z';
+		rs232_dte_txd : out std_logic := 'Z';
+		rs232_dce_rxd : in  std_logic := 'Z';
+		rs232_dce_txd : out std_logic := 'Z');
 		
 	attribute loc : string;
 	attribute iostandard : string;
@@ -351,6 +355,20 @@ entity s3estarter is
 	attribute slew  of vga_blue  : signal is "fast";
 	attribute slew  of vga_hsync : signal is "fast";
 	attribute slew  of vga_vsync : signal is "fast";
-	
+
+	attribute loc   of rs232_dte_rxd : signal is "U8";
+	attribute loc   of rs232_dte_txd : signal is "M13";
+	attribute loc   of rs232_dce_rxd : signal is "R7";
+	attribute loc   of rs232_dce_txd : signal is "M14";
+
+	attribute iostandard of rs232_dte_rxd : signal is "lvttl";
+	attribute iostandard of rs232_dte_txd : signal is "lvttl";
+	attribute iostandard of rs232_dce_rxd : signal is "lvttl";
+	attribute iostandard of rs232_dce_txd : signal is "lvttl";
+
+	attribute slew of rs232_dte_rxd : signal is "slow";
+	attribute slew of rs232_dte_txd : signal is "slow";
+	attribute slew of rs232_dce_rxd : signal is "slow";
+	attribute slew of rs232_dce_txd : signal is "slow";
 
 end;
