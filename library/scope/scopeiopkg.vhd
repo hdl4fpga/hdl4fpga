@@ -68,8 +68,8 @@ package scopeiopkg is
 			margin_bottom   =>    0,
 			margin_left     =>    0,
 			margin_right    =>    0,
-			horizontal_gap  =>    1,
-			vertical_gap    =>    1),
+			horizontal_gap  =>    0,
+			vertical_gap    =>    0),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    4,

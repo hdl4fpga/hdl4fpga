@@ -480,6 +480,9 @@ begin
 
 			sgmnt_b : block
 
+				constant bram_latency : natural := 2;
+				constant storageaddr_latency : natural := 1;
+
 				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
@@ -588,7 +591,7 @@ begin
 							offset := offset rol base'length;
 						end loop;
 						base         := unsigned(word2byte(std_logic_vector(offset), storage_bsel, base'length));
-						storage_addr <= std_logic_vector(base + unsigned(cbox_x) + unsigned(capture_addr));
+						storage_addr <= std_logic_vector(base + unsigned(sgmnt_x) + unsigned(capture_addr));
 						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
 					end if;
 				end process;
@@ -641,7 +644,7 @@ begin
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,
-					d => (0 to 4-1 => storage_data'length+2, 4 => storage_data'length+6))
+					d => (0 to 4-1 => storage_data'length+2+4, 4 => storage_data'length+6))
 				port map (
 					clk => video_clk,
 					di(0) => grid_on,
