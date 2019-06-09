@@ -378,14 +378,10 @@ package body scopeiopkg is
 		y_gap    := pos(layout.gap);
 
 		case box_id is
-		when vtaxis_boxid => 
-			retval := setif(unsigned(y_div)=0*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
-		when grid_boxid   =>                 
-			retval := setif(unsigned(y_div)=0*(y_gap+1)+y_margin and unsigned(x_div)=1*(x_gap+1)+x_margin);
-		when text_boxid   =>                 
-			retval := setif(unsigned(y_div)=0*(y_gap+1)+y_margin and unsigned(x_div)=2*(x_gap+1)+x_margin);
+		when vtaxis_boxid | grid_boxid | text_boxid =>                 
+			retval := setif(unsigned(y_div)=0*(y_gap+1)+y_margin and unsigned(x_div)=box_id*(x_gap+1)+x_margin);
 		when hzaxis_boxid   =>               
-			retval := setif(unsigned(y_div)=1*(y_gap+1)+y_margin and unsigned(x_div)=1*(x_gap+1)+x_margin);
+			retval := setif(unsigned(y_div)=1*(y_gap+1)+y_margin and unsigned(x_div)=grid_boxid*(x_gap+1)+x_margin);
 		when others =>
 			retval := '0';
 		end case;
