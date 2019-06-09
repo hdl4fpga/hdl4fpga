@@ -567,27 +567,19 @@ begin
 					box_y     => cbox_y);
 
 				process (video_clk)
+					variable sgmnt_on : std_logic;
 				begin
 					if rising_edge(video_clk) then
-						vt_on   <= '0';
-						hz_on   <= '0';
-						grid_on <= '0';
-						text_on <= '0';
-						case cbox_xdiv is
-						when "00" =>
-							vt_on   <= setif(unsigned(cbox_ydiv)=0);
-						when "01" =>
-							grid_on <= setif(unsigned(cbox_ydiv)=0);
-							hz_on   <= setif(unsigned(cbox_ydiv)=1);
-						when "10" =>
-							text_on <= setif(unsigned(cbox_ydiv)=0);
-						when others =>
-						end case;
+						sgmnt_on := cbox_xon and cbox_yon;
+						vt_on    <= box_on(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						hz_on    <= box_on(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						grid_on  <= box_on(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						text_on  <= box_on(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						x <= cbox_x;
+						y <= cbox_y;
 					end if;
 				end process;
 
-				x <= cbox_x;
-				y <= cbox_y;
 
 				storage_bsel <= pbox_ydiv;
 				storage_addr_p : process (video_clk)
