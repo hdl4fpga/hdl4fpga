@@ -141,6 +141,40 @@ end;
 
 package body scopeiopkg is
 
+	function edges(
+		constant sizes  : natural_vector;
+		constant margin : natural := 0;
+		constant gap    : natural := 0)
+		return natural_vector is
+
+		function pos(
+			constant val : natural)
+			return natural is
+		begin
+			if val > 0 then
+				return 1;
+			end if;
+			return 0;
+		end;
+
+		variable n      : natural;
+		variable retval : natural_vector(0 to sizes'length+(sizes'length-1)*gap+2*pos(margin)-1);
+
+	begin
+
+		n := 0;
+		retval(n*(pos(gap)+1)) := margin;
+		while n < sizes'length-1 loop
+			retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+n*(pos(gap)+1)) + sizes(n);
+			retval(pos(margin)+n*(pos(gap)+1)+1) := retval(pos(margin)+n*(pos(gap)+1)) + gap;
+			n := n + 1;
+		end loop;
+		retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+n*(pos(gap)+1))   + sizes(n);
+		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(2*pos(margin)+n*(pos(gap)+1)) + margin;
+
+		return to_edges(retval(0 to n+n*pos(gap)+2*pos(margin)));
+	end;
+
 	function sgmnt_margin (
 		constant layout : display_layout)
 		return natural is
@@ -173,25 +207,23 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural_vector is
 
-		variable retval : natural_vector(0 to 3-1);
 	begin
 
-		retval(0) := vtaxis_width(layout);
-		retval(1) := retval(0) + grid_width(layout);
-		retval(2) := retval(1) + textbox_width(layout);
-		return to_edges(retval);
+		return to_edges(edges(
+			sizes  => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
+			margin => layout.margin,
+			gap    => layout.gap));
 	end;
 
 	function sgmnt_yedges(
 		constant layout : display_layout)
 		return natural_vector is
-
-		variable retval : natural_vector(0 to 2-1);
 	begin
 
-		retval(0) := grid_height(layout);
-		retval(1) := retval(0) + hzaxis_height(layout);
-		return to_edges(retval);
+		return to_edges(edges(
+			sizes  => (grid_height(layout), hzaxis_height(layout)),
+			margin => layout.margin,
+			gap    => layout.gap));
 	end;
 
 	function grid_x (
