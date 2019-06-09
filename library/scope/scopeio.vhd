@@ -495,8 +495,8 @@ begin
 				signal cbox_y       : std_logic_vector(pbox_y'range);
 				signal cbox_x       : std_logic_vector(pbox_x'range);
 
-				signal x            : std_logic_vector(cbox_x'range);
-				signal y            : std_logic_vector(cbox_y'range);
+				signal sgmnt_x      : std_logic_vector(cbox_x'range);
+				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 				signal cbox_vyon    : std_logic;
 				signal cbox_vxon    : std_logic;
 				signal cbox_vx      : std_logic_vector(pwinx_size-1 downto 0);
@@ -571,12 +571,12 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						sgmnt_on := cbox_xon and cbox_yon;
-						vt_on    <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						hz_on    <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						grid_on  <= sgmnt_boxon(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						text_on  <= sgmnt_boxon(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						x <= cbox_x;
-						y <= cbox_y;
+						vt_on   <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						hz_on   <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						sgmnt_x <= cbox_x;
+						sgmnt_y <= cbox_y;
 					end if;
 				end process;
 
@@ -627,8 +627,8 @@ begin
 					vt_offsets    => vt_offsets,
 
 					video_clk     => video_clk,
-					x             => x,
-					y             => y,
+					x             => sgmnt_x,
+					y             => sgmnt_y,
 
 					hz_on         => hz_on,
 					vt_on         => vt_on,
