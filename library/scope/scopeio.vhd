@@ -480,27 +480,19 @@ begin
 
 			sgmnt_b : block
 
+				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
+				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				constant grid_id    : natural := 0;
-				constant vtaxis_id  : natural := 1;
-				constant hzaxis_id  : natural := 2;
-				constant textbox_id : natural := 3;
-
-				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
-
-				signal pbox_x       : std_logic_vector(pwinx_size-1 downto 0);
-				signal pbox_y       : std_logic_vector(pwiny_size-1 downto 0);
+				signal pbox_x       : std_logic_vector(pboxx_size-1 downto 0);
+				signal pbox_y       : std_logic_vector(pboxy_size-1 downto 0);
 
 				signal cbox_y       : std_logic_vector(pbox_y'range);
 				signal cbox_x       : std_logic_vector(pbox_x'range);
 
-				signal sgmnt_x      : std_logic_vector(cbox_x'range);
-				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 				signal cbox_vyon    : std_logic;
 				signal cbox_vxon    : std_logic;
-				signal cbox_vx      : std_logic_vector(pwinx_size-1 downto 0);
-				signal cbox_vy      : std_logic_vector(pwiny_size-1 downto 0);
+				signal cbox_vx      : std_logic_vector(pboxx_size-1 downto 0);
+				signal cbox_vy      : std_logic_vector(pboxy_size-1 downto 0);
 				signal cbox_xedge   : std_logic;
 				signal cbox_yedge   : std_logic;
 				signal cbox_xdiv    : std_logic_vector(0 to 2-1);
@@ -508,10 +500,13 @@ begin
 				signal cbox_xon     : std_logic;
 				signal cbox_yon     : std_logic;
 				signal cbox_eox     : std_logic;
+
 				signal grid_on      : std_logic;
 				signal hz_on        : std_logic;
 				signal vt_on        : std_logic;
 				signal text_on      : std_logic;
+				signal sgmnt_x      : std_logic_vector(cbox_x'range);
+				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 
 			begin
 
