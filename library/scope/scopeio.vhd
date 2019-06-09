@@ -495,8 +495,8 @@ begin
 				signal cbox_vy      : std_logic_vector(pboxy_size-1 downto 0);
 				signal cbox_xedge   : std_logic;
 				signal cbox_yedge   : std_logic;
-				signal cbox_xdiv    : std_logic_vector(0 to 2-1);
-				signal cbox_ydiv    : std_logic_vector(0 to 2-1);
+				signal cbox_xdiv    : std_logic_vector(0 to 3-1);
+				signal cbox_ydiv    : std_logic_vector(0 to 3-1);
 				signal cbox_xon     : std_logic;
 				signal cbox_yon     : std_logic;
 				signal cbox_eox     : std_logic;

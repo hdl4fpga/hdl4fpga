@@ -60,7 +60,7 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			gap             =>    1,
+			gap             =>    2,
 			margin          =>    0),
 		hd720 => (
 			display_width   => 1280,
@@ -97,9 +97,9 @@ package scopeiopkg is
 		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720));
 
 	constant vtaxis_boxid : natural := 0;
-	constant hzaxis_boxid : natural := 1;
-	constant grid_boxid   : natural := 2;
-	constant text_boxid   : natural := 3;
+	constant grid_boxid   : natural := 1;
+	constant text_boxid   : natural := 2;
+	constant hzaxis_boxid : natural := 3;
 
 	function vtaxis_y       (constant layout : display_layout) return natural;
 	function vtaxis_x       (constant layout : display_layout) return natural;
@@ -162,15 +162,15 @@ package body scopeiopkg is
 
 	begin
 
-		n := 0;
 		retval(n*(pos(gap)+1)) := margin;
+		n := 0;
+		retval(pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + sizes(n);
 		while n < sizes'length-1 loop
-			retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+n*(pos(gap)+1)) + sizes(n);
 			retval(pos(margin)+n*(pos(gap)+1)+1) := retval(pos(margin)+n*(pos(gap)+1)) + gap;
 			n := n + 1;
+			retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+(n-1)*(pos(gap)+1)+1) + sizes(n);
 		end loop;
-		retval(pos(margin)+n*(pos(gap)+1))   := 2; --retval(pos(margin)+n*(pos(gap)+1)); -- + sizes(n);
---		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + margin;
+		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + margin;
 
 		return retval(0 to n+n*pos(gap)+2*pos(margin));
 	end;
