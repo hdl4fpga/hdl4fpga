@@ -60,7 +60,7 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			gap             =>    0,
+			gap             =>    1,
 			margin          =>    0),
 		hd720 => (
 			display_width   => 1280,
@@ -169,10 +169,10 @@ package body scopeiopkg is
 			retval(pos(margin)+n*(pos(gap)+1)+1) := retval(pos(margin)+n*(pos(gap)+1)) + gap;
 			n := n + 1;
 		end loop;
-		retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+n*(pos(gap)+1))   + sizes(n);
-		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(2*pos(margin)+n*(pos(gap)+1)) + margin;
+		retval(pos(margin)+n*(pos(gap)+1))   := 2; --retval(pos(margin)+n*(pos(gap)+1)); -- + sizes(n);
+--		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + margin;
 
-		return to_edges(retval(0 to n+n*pos(gap)+2*pos(margin)));
+		return retval(0 to n+n*pos(gap)+2*pos(margin));
 	end;
 
 	function sgmnt_margin (
