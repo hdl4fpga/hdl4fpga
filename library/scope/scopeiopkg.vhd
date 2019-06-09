@@ -131,7 +131,7 @@ package scopeiopkg is
 	function main_width  (constant layout : display_layout) return natural;
 	function main_yedges (constant layout : display_layout) return natural_vector;
 
-	function box_on (
+	function sgmnt_boxon (
 		constant box_id : natural;
 		constant x_div  : std_logic_vector;
 		constant y_div  : std_logic_vector;
@@ -359,7 +359,7 @@ package body scopeiopkg is
 		return to_edges(retval);
 	end;
 
-	function box_on (
+	function sgmnt_boxon (
 		constant box_id : natural;
 		constant x_div  : std_logic_vector;
 		constant y_div  : std_logic_vector;

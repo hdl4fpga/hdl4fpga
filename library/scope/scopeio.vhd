@@ -571,10 +571,10 @@ begin
 				begin
 					if rising_edge(video_clk) then
 						sgmnt_on := cbox_xon and cbox_yon;
-						vt_on    <= box_on(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						hz_on    <= box_on(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						grid_on  <= box_on(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
-						text_on  <= box_on(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						vt_on    <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						hz_on    <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						grid_on  <= sgmnt_boxon(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						text_on  <= sgmnt_boxon(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
 						x <= cbox_x;
 						y <= cbox_y;
 					end if;
