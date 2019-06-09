@@ -41,8 +41,12 @@ package scopeiopkg is
 		hzaxis_height   : natural;            -- Height of the horizontal axis 
 		vtaxis_width    : natural;            -- Width of the vetical axis 
 		textbox_width   : natural;            -- Width of the text box
-		gap             : natural;            -- Padding
-		margin          : natural;            -- Margin
+		margin_top      : natural;            -- Top Margin
+		margin_bottom   : natural;            -- Bottom Margin
+		margin_left     : natural;            -- Left Margin
+		margin_right    : natural;            -- Right Margin
+		horizontal_gap  : natural;            -- Horizontal Padding
+		vertical_gap    : natural;            -- Vertical Padding
 	end record;
 
 	constant sd600  : natural := 0;
@@ -60,8 +64,12 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			gap             =>    2,
-			margin          =>    0),
+			margin_top      =>    0,
+			margin_bottom   =>    0,
+			margin_left     =>    0,
+			margin_right    =>    0,
+			horizontal_gap  =>    1,
+			vertical_gap    =>    1),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    4,
@@ -70,8 +78,12 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			gap             =>    0,
-			margin          =>    1),
+			margin_top      =>    1,
+			margin_bottom   =>    0,
+			margin_left     =>    0,
+			margin_right    =>    0,
+			horizontal_gap  =>    0,
+			vertical_gap    =>    0),
 		hd1080 => (
 			display_width   => 1920,
 			num_of_segments =>    4,
@@ -80,8 +92,12 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			gap             =>    1,
-			margin          =>    1));
+			margin_top      =>    1,
+			margin_bottom   =>    0,
+			margin_left     =>    0,
+			margin_right    =>    0,
+			horizontal_gap  =>    1,
+			vertical_gap    =>    1));
 
 	type mode_layout is record
 		mode_id   : natural;
@@ -106,8 +122,11 @@ package scopeiopkg is
 	function vtaxis_width   (constant layout : display_layout) return natural;
 	function vtaxis_height  (constant layout : display_layout) return natural;
 
-	function sgmnt_margin   (constant layout : display_layout) return natural; 
-	function sgmnt_gap      (constant layout : display_layout) return natural;
+	function sgmnt_margintop    (constant layout : display_layout) return natural; 
+	function sgmnt_marginbottom (constant layout : display_layout) return natural; 
+	function sgmnt_marginleft   (constant layout : display_layout) return natural; 
+	function sgmnt_marginright  (constant layout : display_layout) return natural; 
+
 	function sgmnt_width    (constant layout : display_layout) return natural;
 	function sgmnt_height   (constant layout : display_layout) return natural;
 	function sgmnt_xedges   (constant layout : display_layout) return natural_vector;
@@ -151,56 +170,92 @@ package body scopeiopkg is
 		return 0;
 	end;
 
-	function edges(
-		constant sizes  : natural_vector;
-		constant margin : natural := 0;
-		constant gap    : natural := 0)
+	function boxes_sides(
+		constant sides        : natural_vector;
+		constant margin_start : natural := 0;
+		constant margin_end   : natural := 0;
+		constant gap          : natural := 0)
 		return natural_vector is
 
-		variable retval : natural_vector(0 to sizes'length+(sizes'length-1)*gap+2*pos(margin)-1);
+		variable retval : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_start)+pos(margin_end)-1);
 		variable n      : natural;
 
 	begin
 
-		retval(n*(pos(gap)+1)) := margin;
+		retval(n*(pos(gap)+1)) := margin_start;
 		n := 0;
-		retval(pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + sizes(n);
-		while n < sizes'length-1 loop
-			retval(pos(margin)+n*(pos(gap)+1)+1) := retval(pos(margin)+n*(pos(gap)+1)) + gap;
+		retval(pos(margin_start)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + sides(n);
+		while n < sides'length-1 loop
+			retval(pos(margin_start)+n*(pos(gap)+1)+1) := retval(pos(margin_start)+n*(pos(gap)+1)) + gap;
 			n := n + 1;
-			retval(pos(margin)+n*(pos(gap)+1))   := retval(pos(margin)+(n-1)*(pos(gap)+1)+1) + sizes(n);
+			retval(pos(margin_start)+n*(pos(gap)+1))   := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(n);
 		end loop;
-		retval(2*pos(margin)+n*(pos(gap)+1)) := retval(pos(margin)+n*(pos(gap)+1)) + margin;
+		retval(pos(margin_start)+pos(margin_end)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + margin_end;
 
-		return retval(0 to n+n*pos(gap)+2*pos(margin));
+		return retval(0 to n+n*pos(gap)+pos(margin_start)+pos(margin_end));
 	end;
 
-	function sgmnt_margin (
+	function sgmnt_margintop (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.margin;
+		return layout.margin_top;
 	end;
 
-	function sgmnt_gap (
+	function sgmnt_marginbottom (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.gap;
+		return layout.margin_bottom;
+	end;
+
+	function sgmnt_marginleft (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.margin_left;
+	end;
+
+	function sgmnt_marginright (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.margin_right;
+	end;
+
+	function sgmnt_horizontalgap (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.horizontal_gap;
 	end;
 
 	function sgmnt_height (
 		constant layout : display_layout)
 		return natural is
+		variable retval : natural := 0;
 	begin
-		return grid_height(layout)+hzaxis_height(layout);
+		retval := retval + layout.margin_top;
+		retval := retval + grid_height(layout);
+		retval := retval + layout.vertical_gap;
+		retval := retval + layout.hzaxis_height;
+		retval := retval + layout.margin_bottom;
+		return retval;
 	end;
 
 	function sgmnt_width (
 		constant layout : display_layout)
 		return natural is
+		variable retval : natural := 0;
 	begin
-		return layout.vtaxis_width+1+sgmnt_gap(layout)+(layout.grid_width*division_length+1)+1+sgmnt_gap(layout)+layout.textbox_width+2*sgmnt_margin(layout);
+		retval := retval + layout.margin_left;
+		retval := retval + layout.vtaxis_width;
+		retval := retval + layout.horizontal_gap;
+		retval := retval + grid_width(layout);
+		retval := retval + layout.horizontal_gap;
+		retval := retval + layout.textbox_width;
+		retval := retval + layout.margin_right;
+		return retval;
 	end;
 
 	function sgmnt_xedges(
@@ -209,10 +264,11 @@ package body scopeiopkg is
 
 	begin
 
-		return to_edges(edges(
-			sizes  => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
-			margin => layout.margin,
-			gap    => layout.gap));
+		return to_edges(boxes_sides(
+			sides        => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
+			margin_start => layout.margin_left,
+			margin_end   => layout.margin_right,
+			gap          => layout.horizontal_gap));
 	end;
 
 	function sgmnt_yedges(
@@ -220,24 +276,29 @@ package body scopeiopkg is
 		return natural_vector is
 	begin
 
-		return to_edges(edges(
-			sizes  => (grid_height(layout), hzaxis_height(layout)),
-			margin => layout.margin,
-			gap    => layout.gap));
+		return to_edges(boxes_sides(
+			sides        => (grid_height(layout), hzaxis_height(layout)),
+			margin_start => layout.margin_top,
+			margin_end   => layout.margin_bottom,
+			gap          => layout.vertical_gap));
 	end;
 
 	function grid_x (
 		constant layout : display_layout)
 		return natural is
+		variable retval : natural := 0;
 	begin
-		return vtaxis_x(layout)+vtaxis_width(layout)+sgmnt_gap(layout);
+		retval := retval + vtaxis_x(layout);
+		retval := retval + vtaxis_width(layout);
+		retval := retval + layout.horizontal_gap;
+		return retval;
 	end;
 
 	function grid_y (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vtaxis_y(layout);
+		return layout.margin_top;
 	end;
 
 	function grid_width (
@@ -258,14 +319,14 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return sgmnt_margin(layout)+0;
+		return layout.margin_left;
 	end;
 
 	function vtaxis_y (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return sgmnt_margin(layout)+0;
+		return layout.margin_top;
 	end;
 
 	function vtaxis_width (
@@ -285,15 +346,19 @@ package body scopeiopkg is
 	function textbox_x (
 		constant layout : display_layout)
 		return natural is
+		variable retval : natural := 0;
 	begin
-		return grid_x(layout)+grid_width(layout)+1+sgmnt_gap(layout);
+		retval := retval + grid_x(layout);
+		retval := retval + grid_width(layout);
+		retval := retval + layout.horizontal_gap;
+		return retval;
 	end;
 
 	function textbox_y (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return vtaxis_y(layout);
+		return layout.margin_top;
 	end;
 
 	function textbox_width (
@@ -320,8 +385,12 @@ package body scopeiopkg is
 	function hzaxis_y (
 		constant layout : display_layout)
 		return natural is
+		variable retval : natural := 0;
 	begin
-		return grid_y(layout)+grid_height(layout)+1+sgmnt_gap(layout);
+		retval := retval + grid_y(layout);
+		retval := retval + grid_height(layout);
+		retval := retval + layout.vertical_gap;
+		return retval;
 	end;
 
 	function hzaxis_width (
@@ -372,10 +441,10 @@ package body scopeiopkg is
 		variable y_gap   : natural;
 	begin
 
-		x_margin := pos(layout.margin);
-		y_margin := pos(layout.margin);
-		x_gap    := pos(layout.gap);
-		y_gap    := pos(layout.gap);
+		x_margin := pos(layout.margin_left);
+		y_margin := pos(layout.margin_top);
+		x_gap    := pos(layout.horizontal_gap);
+		y_gap    := pos(layout.vertical_gap);
 
 		case box_id is
 		when vtaxis_boxid | grid_boxid | text_boxid =>                 
