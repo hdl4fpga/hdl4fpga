@@ -141,24 +141,24 @@ end;
 
 package body scopeiopkg is
 
+	function pos(
+		constant val : natural)
+		return natural is
+	begin
+		if val > 0 then
+			return 1;
+		end if;
+		return 0;
+	end;
+
 	function edges(
 		constant sizes  : natural_vector;
 		constant margin : natural := 0;
 		constant gap    : natural := 0)
 		return natural_vector is
 
-		function pos(
-			constant val : natural)
-			return natural is
-		begin
-			if val > 0 then
-				return 1;
-			end if;
-			return 0;
-		end;
-
-		variable n      : natural;
 		variable retval : natural_vector(0 to sizes'length+(sizes'length-1)*gap+2*pos(margin)-1);
+		variable n      : natural;
 
 	begin
 
@@ -372,17 +372,10 @@ package body scopeiopkg is
 		variable y_gap   : natural;
 	begin
 
-		x_margin := 0;
-		x_gap    := 0;
-		if layout.margin /= 0 then
-			x_gap := 1;
-		end if;
-
-		y_margin := 0;
-		y_gap    := 0;
-		if layout.margin /= 0 then
-			y_gap := 1;
-		end if;
+		x_margin := pos(layout.margin);
+		y_margin := pos(layout.margin);
+		x_gap    := pos(layout.gap);
+		y_gap    := pos(layout.gap);
 
 		case box_id is
 		when vtaxis_boxid => 
