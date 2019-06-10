@@ -64,17 +64,24 @@ begin
 		end if;
 	end process;
 
-	mem_e : entity hdl4fpga.dpram
+--	mem_e : entity hdl4fpga.dpram
+--	generic map (
+--		bitrom => to_bitrom(edges, video_pos'length))
+--	port map (
+--		wr_clk  => '-',
+--		wr_ena  => '0',
+--		wr_addr => rd_addr,
+--		wr_data => rd_data,
+--
+--		rd_addr => rd_addr,
+--		rd_data => rd_data);
+
+	mem_e : entity hdl4fpga.rom
 	generic map (
 		bitrom => to_bitrom(edges, video_pos'length))
 	port map (
-		wr_clk  => '-',
-		wr_ena  => '0',
-		wr_addr => rd_addr,
-		wr_data => rd_data,
-
-		rd_addr => rd_addr,
-		rd_data => rd_data);
+		addr => rd_addr,
+		data => rd_data);
 
 	video_edge <= setif(video_pos=rd_data);
 	

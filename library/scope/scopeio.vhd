@@ -374,7 +374,8 @@ begin
 		end process;
 
 
-		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)
+--		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
+		mem_e : entity hdl4fpga.bram(inference)           -- Faster and smaller. Less tested for portabilty
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
@@ -391,7 +392,13 @@ begin
 
 	video_b : block
 
-		constant vgaio_latency : natural := storage_data'length+4+4+(2+1);
+		constant storageaddr_latency   : natural := 2;
+		constant storagebram_latency   : natural := 2;
+		constant segmment_latency      : natural := storage_data'length+2;
+		constant mainpipeline_latency  : natural := 1;
+		constant sgmntpipeline_latency : natural := 1;
+		constant palette_latency       : natural := 3;
+		constant vgaio_latency         : natural := storageaddr_latency+storagebram_latency+mainpipeline_latency+sgmntpipeline_latency+segmment_latency+palette_latency;
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
@@ -480,8 +487,6 @@ begin
 
 			sgmnt_b : block
 
-				constant bram_latency : natural := 2;
-				constant storageaddr_latency : natural := 1;
 
 				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
@@ -524,7 +529,7 @@ begin
 					box_x     => pbox_x,
 					box_y     => pbox_y);
 
-				process (video_clk)
+				mainpipeline_p : process (video_clk)
 				begin
 					if rising_edge(video_clk) then
 						cbox_vxon <= pbox_xon;
@@ -564,7 +569,7 @@ begin
 					box_x     => cbox_x,
 					box_y     => cbox_y);
 
-				process (video_clk)
+				sgmntpipeline_p: process (video_clk)
 					variable sgmnt_on : std_logic;
 				begin
 					if rising_edge(video_clk) then
@@ -577,7 +582,6 @@ begin
 						sgmnt_y <= cbox_y;
 					end if;
 				end process;
-
 
 				storage_bsel <= pbox_ydiv;
 				storage_addr_p : process (video_clk)
@@ -598,7 +602,7 @@ begin
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					latency       => storage_data'length+2,
+					latency       => segmment_latency,
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
@@ -644,7 +648,9 @@ begin
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,
-					d => (0 to 4-1 => storage_data'length+2+4, 4 => storage_data'length+6))
+					d => (
+						0 to 4-1 => storageaddr_latency+storagebram_latency+segmment_latency,
+						4        => storageaddr_latency+storagebram_latency+segmment_latency+mainpipeline_latency+sgmntpipeline_latency))
 				port map (
 					clk => video_clk,
 					di(0) => grid_on,
@@ -697,13 +703,13 @@ begin
 		generic map (
 			latency => 0)
 		port map (
-			video_clk   => video_clk,
-			video_on    => video_io(2),
-			pointer_x   => pointer_x,
-			pointer_y   => pointer_y,
+			video_clk    => video_clk,
+			video_on     => video_io(2),
+			pointer_x    => pointer_x,
+			pointer_y    => pointer_y,
 			video_hzcntr => video_hzcntr,
 			video_vtcntr => video_vtcntr,
-			video_dot   => pointer_dot);
+			video_dot    => pointer_dot);
 
 		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
 	end block;
