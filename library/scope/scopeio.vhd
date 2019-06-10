@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
@@ -67,7 +68,6 @@ entity scopeio is
 		input_clk   : in  std_logic;
 		input_ena   : in  std_logic := '1';
 		input_data  : in  std_logic_vector;
-		input_oneshot : in std_logic := '0';
 		video_clk   : in  std_logic;
 		video_pixel : out std_logic_vector;
 		video_hsync : out std_logic;
@@ -83,227 +83,43 @@ architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(0 to 9-1);
 
-	constant grid_unit : natural := 32;
-
-	type video_layout is record 
-		mode       : natural;
-		scr_width  : natural;
-		num_of_seg : natural;
-		gu_width   : natural;
-		gu_height  : natural;
-		hz_height  : natural;
-		vt_width   : natural;
-		text_width : natural;
-		border     : natural;
-		padding    : natural;
-		margin     : natural;
-	end record;
-
-	function vt_y      (constant vl : video_layout) return natural;
-	function vt_x      (constant vl : video_layout) return natural;
-	function vt_width  (constant vl : video_layout) return natural;
-	function vt_height (constant vl : video_layout) return natural;
-
-	function sgmnt_margin (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.margin;
-	end;
-
-	function sgmnt_border (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.border;
-	end;
-
-	function sgmnt_padding (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.padding;
-	end;
-
-	function sgmnt_height (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return ((vl.gu_height*gu+1)+1+sgmnt_padding(vl)+vl.hz_height)+sgmnt_border(vl);
-	end;
-
-	function sgmnt_width (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return vl.vt_width+1+sgmnt_padding(vl)+(vl.gu_width*gu+1)+1+sgmnt_padding(vl)+vl.text_width+2*sgmnt_border(vl);
-	end;
-
-	function grid_x (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return vt_x(vl)+vt_width(vl)+1+sgmnt_padding(vl);
-	end;
-
-	function grid_y (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vt_y(vl);
-	end;
-
-	function grid_width (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return vl.gu_width*gu+1;
-	end;
-
-	function grid_height (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return vl.gu_height*gu+1;
-	end;
-
-	function vt_x (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return sgmnt_border(vl)+0;
-	end;
-
-	function vt_y (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return sgmnt_border(vl)+0;
-	end;
-
-	function vt_width (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.vt_width;
-	end;
-
-	function vt_height (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return grid_height(vl);
-	end;
-
-	function text_x (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return grid_x(vl)+grid_width(vl)+1+sgmnt_padding(vl);
-	end;
-
-	function text_y (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vt_y(vl);
-	end;
-
-	function text_width (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return vl.text_width;
-	end;
-
-	function text_height (
-		constant vl : video_layout;
-		constant gu : natural := grid_unit)
-		return natural is
-	begin
-		return vl.gu_height*gu;
-	end;
-
-	function hz_x (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return grid_x(vl);
-	end;
-
-	function hz_y (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return grid_y(vl)+grid_height(vl)+1+sgmnt_padding(vl);
-	end;
-
-	function hz_width (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return grid_width(vl);
-	end;
-
-	function hz_height (
-		constant vl : video_layout)
-		return natural is
-	begin
-		return 8;
-	end;
-
-	type vlayout_vector is array (natural range <>) of video_layout;
-
-	constant vlayout_tab : vlayout_vector(0 to 4-1) := (
-		--     mode | scr_width | num_of_seg | gu_width | gu_height | hz_height | vt_width | text_width | border | padding | margin
-		0 => (    7,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
-		1 => (    1,        800,           2,        15,          8,          8,       6*8,         33*8,       1,        0,       1),
-		2 => (    9,       1920,           4,        50,          8,          8,       6*8,         33*8,       1,        0,       1),
-		3 => (   10,       1280,           4,        30,          8,          8,       6*8,         33*8,       1,        0,       1));
-	constant vlayout : video_layout := vlayout_tab(vlayout_id);
+	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
 
-	signal video_hs         : std_logic;
-	signal video_vs         : std_logic;
-	signal video_frm        : std_logic;
-	signal video_hon        : std_logic;
-	signal video_hzl        : std_logic;
-	signal video_vld        : std_logic;
-	signal video_vcntr      : std_logic_vector(11-1 downto 0);
-	signal video_hcntr      : std_logic_vector(11-1 downto 0);
+	signal video_hzsync       : std_logic;
+	signal video_vtsync       : std_logic;
+	signal video_vton         : std_logic;
+	signal video_hzon         : std_logic;
+	signal video_hzl          : std_logic;
+	signal video_vld          : std_logic;
+	signal video_vtcntr       : std_logic_vector(11-1 downto 0);
+	signal video_hzcntr       : std_logic_vector(11-1 downto 0);
 
-	signal video_io         : std_logic_vector(0 to 3-1);
+	signal video_io           : std_logic_vector(0 to 3-1);
 	
-	signal rgtr_id           : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv           : std_logic;
-	signal rgtr_data         : std_logic_vector(32-1 downto 0);
+	signal rgtr_id            : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv            : std_logic;
+	signal rgtr_data          : std_logic_vector(32-1 downto 0);
 
-	signal ampsample_ena     : std_logic;
-	signal ampsample_data    : std_logic_vector(0 to input_data'length-1);
+	signal ampsample_ena      : std_logic;
+	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_ena  : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
 	signal resizedsample_ena  : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_ena    : std_logic;
-	signal downsample_data   : std_logic_vector(resizedsample_data'range);
+	signal downsample_ena     : std_logic;
+	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
-	constant storage_size : natural := unsigned_num_bits(vlayout.num_of_seg*grid_width(vlayout)-1);
+	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
-	signal storage_base : std_logic_vector(storage_addr'range);
-
 
 	signal capture_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal storage_bsel   : std_logic_vector(0 to vlayout_tab(vlayout_id).num_of_seg-1);
+	signal storage_bsel   : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
@@ -329,8 +145,8 @@ architecture beh of scopeio is
 	signal trigger_level  : std_logic_vector(storage_word'range);
 
 	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(video_hcntr'range);
-	signal pointer_y      : std_logic_vector(video_vcntr'range);
+	signal pointer_x      : std_logic_vector(video_hzcntr'range);
+	signal pointer_y      : std_logic_vector(video_vtcntr'range);
 
 	signal wu_frm         : std_logic;
 	signal wu_irdy        : std_logic;
@@ -420,7 +236,8 @@ begin
 			gain_id <= word2byte(gain_ids, i, gainid_size);
 			mult_e : entity hdl4fpga.rom 
 			generic map (
-				bitrom => to_bitrom(vt_gain,18))
+				latency => 1,
+				bitrom  => to_bitrom(vt_gain,18))
 			port map (
 				clk  => input_clk,
 				addr => gain_id,
@@ -472,12 +289,12 @@ begin
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	port map (
-		factor       => hz_scale,
+		factor       => b"1111" , --hz_scale,
 		input_clk    => input_clk,
 		input_ena    => resizedsample_ena,
 		input_data   => resizedsample_data,
 		trigger_shot => trigger_shot,
-		display_ena  => video_frm,
+		display_ena  => video_vton,
 		output_ena   => downsample_ena,
 		output_data  => downsample_data);
 
@@ -536,27 +353,29 @@ begin
 					free_shot <= '1';
 				end if;
 
-				if sync_tf='1' or wr_cntr(0)='1' then
+				if sync_tf='1' then
 					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
-					wr_cntr(0) <= input_oneshot;
 				elsif sync_videofrm='0' and trigger_shot='1' then
 					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
 					wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
 					trigger_addr <= wr_addr;
-				elsif downsample_ena='1' then
-					wr_cntr <= wr_cntr - 1;
+				elsif wr_cntr(0)='0' then
+					if downsample_ena='1' then
+						wr_cntr <= wr_cntr - 1;
+					end if;
 				end if;
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
 
-				sync_videofrm := video_frm;
+				sync_videofrm := video_vton;
 			end if;
 
 		end process;
 
 
-		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)
+--		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
+		mem_e : entity hdl4fpga.bram(inference)           -- Faster and smaller. Less tested for portabilty
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
@@ -573,7 +392,13 @@ begin
 
 	video_b : block
 
-		constant vgaio_latency : natural := storage_data'length+4+4+(2+1);
+		constant storageaddr_latency   : natural := 2;
+		constant storagebram_latency   : natural := 2;
+		constant segmment_latency      : natural := storage_data'length+2;
+		constant mainpipeline_latency  : natural := 1;
+		constant sgmntpipeline_latency : natural := 1;
+		constant palette_latency       : natural := 3;
+		constant vgaio_latency         : natural := storageaddr_latency+storagebram_latency+mainpipeline_latency+sgmntpipeline_latency+segmment_latency+palette_latency;
 
 		signal trigger_dot : std_logic;
 		signal traces_dots : std_logic_vector(0 to inputs-1);
@@ -603,21 +428,19 @@ begin
 			prec   => b"1111",
 			format => wu_format);
 
-		video_e : entity hdl4fpga.video_vga
+		video_e : entity hdl4fpga.video_sync
 		generic map (
-			mode => vlayout.mode,
-			n    => 11)
+			mode => video_description(vlayout_id).mode_id)
 		port map (
-			clk   => video_clk,
-			hsync => video_hs,
-			vsync => video_vs,
-			hcntr => video_hcntr,
-			vcntr => video_vcntr,
-			don   => video_hon,
-			frm   => video_frm,
-			nhl   => video_hzl);
+			video_clk    => video_clk,
+			video_hzsync => video_hzsync,
+			video_vtsync => video_vtsync,
+			video_hzcntr => video_hzcntr,
+			video_vtcntr => video_vtcntr,
+			video_hzon   => video_hzon,
+			video_vton   => video_vton);
 
-		video_vld <= video_hon and video_frm;
+		video_vld <= video_hzon and video_vton;
 
 		vgaio_e : entity hdl4fpga.align
 		generic map (
@@ -625,223 +448,161 @@ begin
 			d => (video_io'range => vgaio_latency))
 		port map (
 			clk   => video_clk,
-			di(0) => video_hs,
-			di(1) => video_vs,
+			di(0) => video_hzsync,
+			di(1) => video_vtsync,
 			di(2) => video_vld,
 			do    => video_io);
 
 		graphics_b : block
 
-			impure function to_naturalvector (
-				constant vl : video_layout;
-				constant param   : natural range 0 to 3)
-				return natural_vector is
-				variable rval : natural_vector(0 to vl.num_of_seg-1);
-			begin
-				for i in 0 to vl.num_of_seg-1 loop
-					case param is
-					when 0 =>
-						rval(i) := sgmnt_margin(vl)+0;
-					when 1 => 
-						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl));
---						rval(i) := sgmnt_margin(vl)+i*(sgmnt_height(vl)+2*sgmnt_margin(vl)+16);
-					when 2 => 
-						rval(i) := sgmnt_width(vl); --vl.scr_width;
-					when 3 => 
-						rval(i) := sgmnt_height(vl)+1;
-					end case;
-				end loop;
-				return rval;
-			end;
+			signal pbox_xdiv     : std_logic_vector(0 to 1-1);
+			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
+			signal pbox_xedge    : std_logic;
+			signal pbox_yedge    : std_logic;
+			signal pbox_nexty    : std_logic;
+			signal pbox_eox      : std_logic;
+			signal pbox_xon      : std_logic;
+			signal pbox_yon      : std_logic;
 
-			signal win_don : std_logic_vector(0 to vlayout.num_of_seg-1);
-			signal win_frm : std_logic_vector(0 to vlayout.num_of_seg-1);
-			signal phon    : std_logic;
-			signal pfrm    : std_logic;
-
-			constant mwin_x      : natural_vector := to_naturalvector(vlayout, 0);
-			constant mwin_y      : natural_vector := to_naturalvector(vlayout, 1);
-			constant mwin_width  : natural_vector := to_naturalvector(vlayout, 2);
-			constant mwin_height : natural_vector := to_naturalvector(vlayout, 3);
 		begin
 
-			win_mngr_e : entity hdl4fpga.win_mngr
+			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x     => mwin_x,
-				y     => mwin_y,
-				width => mwin_width,
-				height=> mwin_height)
+				x_edges => (0 => main_width(layout)-1),
+				y_edges => main_yedges(layout))
 			port map (
 				video_clk  => video_clk,
-				video_x    => video_hcntr,
-				video_y    => video_vcntr,
-				video_don  => video_hon,
-				video_frm  => video_frm,
-				win_don    => win_don,
-				win_frm    => win_frm);
-
-			phon <= not setif(win_don=(win_don'range => '0'));
-			pfrm <= not setif(win_frm=(win_frm'range => '0'));
+				video_x    => video_hzcntr,
+				video_y    => video_vtcntr,
+				video_xon  => video_hzon,
+				video_yon  => video_vton,
+				box_xedge  => pbox_xedge,
+				box_yedge  => pbox_yedge,
+				box_xon    => pbox_xon,
+				box_yon    => pbox_yon,
+				box_eox    => pbox_eox,
+				box_xdiv   => pbox_xdiv,
+				box_nexty  => pbox_nexty,
+				box_ydiv   => pbox_ydiv);
 
 			sgmnt_b : block
 
-				constant sgmnt_x : natural_vector := (0 => grid_x(vlayout),      1 => vt_x(vlayout),      2 => hz_x(vlayout),      3 => text_x(vlayout));
-				constant sgmnt_y : natural_vector := (0 => grid_y(vlayout),      1 => vt_y(vlayout),      2 => hz_y(vlayout),      3 => text_y(vlayout));
-				constant sgmnt_w : natural_vector := (0 => grid_width(vlayout),  1 => vt_width(vlayout),  2 => hz_width(vlayout),  3 => text_width(vlayout));
-				constant sgmnt_h : natural_vector := (0 => grid_height(vlayout), 1 => vt_height(vlayout), 2 => hz_height(vlayout), 3 => text_height(vlayout));
 
-				constant pwinx_size : natural := unsigned_num_bits(sgmnt_width(vlayout)-1);
-				constant pwiny_size : natural := unsigned_num_bits(sgmnt_height(vlayout)-1);
+				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
+				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal pwin_x  : std_logic_vector(pwinx_size-1 downto 0);
-				signal pwin_y  : std_logic_vector(pwiny_size-1 downto 0);
-				signal p_hzl   : std_logic;
+				signal pbox_x       : std_logic_vector(pboxx_size-1 downto 0);
+				signal pbox_y       : std_logic_vector(pboxy_size-1 downto 0);
 
-				signal win_y   : std_logic_vector(pwin_y'range);
-				signal win_x   : std_logic_vector(pwin_x'range);
+				signal cbox_y       : std_logic_vector(pbox_y'range);
+				signal cbox_x       : std_logic_vector(pbox_x'range);
 
-				signal x       : std_logic_vector(win_x'range);
-				signal y       : std_logic_vector(win_y'range);
-				signal cfrm    : std_logic_vector(0 to 4-1);
-				signal cdon    : std_logic_vector(cfrm'range);
-				signal wena    : std_logic;
-				signal wfrm    : std_logic;
-				signal w_hzl   : std_logic;
-				signal grid_on : std_logic;
-				signal hz_on   : std_logic;
-				signal vt_on   : std_logic;
-				signal text_on : std_logic;
+				signal cbox_vyon    : std_logic;
+				signal cbox_vxon    : std_logic;
+				signal cbox_vx      : std_logic_vector(pboxx_size-1 downto 0);
+				signal cbox_vy      : std_logic_vector(pboxy_size-1 downto 0);
+				signal cbox_xedge   : std_logic;
+				signal cbox_yedge   : std_logic;
+				signal cbox_xdiv    : std_logic_vector(0 to 3-1);
+				signal cbox_ydiv    : std_logic_vector(0 to 3-1);
+				signal cbox_xon     : std_logic;
+				signal cbox_yon     : std_logic;
+				signal cbox_eox     : std_logic;
+
+				signal grid_on      : std_logic;
+				signal hz_on        : std_logic;
+				signal vt_on        : std_logic;
+				signal text_on      : std_logic;
+				signal sgmnt_x      : std_logic_vector(cbox_x'range);
+				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 
 			begin
 
-				latency_phzl_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => 2))
-				port map (
-					clk   => video_clk,
-					di(0) => video_hzl,
-					do(0) => p_hzl);
-
-				parent_e : entity hdl4fpga.win
+				parent_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
-					video_hzl => p_hzl,
-					win_frm   => pfrm,
-					win_ena   => phon,
-					win_x     => pwin_x,
-					win_y     => pwin_y);
+					video_xon => pbox_xon,
+					video_yon => pbox_yon,
+					video_eox => pbox_eox,
+					box_xedge => pbox_xedge,
+					box_yedge => pbox_yedge,
+					box_x     => pbox_x,
+					box_y     => pbox_y);
 
-				mngr_e : entity hdl4fpga.win_mngr
-				generic map (
-					x      => sgmnt_x,
-					y      => sgmnt_y,
-					width  => sgmnt_w,
-					height => sgmnt_h)
-				port map (
-					video_clk  => video_clk,
-					video_x    => pwin_x,
-					video_y    => pwin_y,
-					video_don  => phon,
-					video_frm  => pfrm,
-					win_don    => cdon,
-					win_frm    => cfrm);
-
-				wena <= not setif(cdon=(cdon'range => '0'));
-				wfrm <= not setif(cfrm=(cfrm'range => '0'));
-
-				latency_whzl_e : entity hdl4fpga.align
-				generic map (
-					n => 1,
-					d => (0 => 2))
-				port map (
-					clk   => video_clk,
-					di(0) => p_hzl,
-					do(0) => w_hzl);
-
-				win_e : entity hdl4fpga.win
-				port map (
-					video_clk => video_clk,
-					video_hzl => w_hzl,
-					win_frm   => wfrm,
-					win_ena   => wena,
-					win_x     => win_x,
-					win_y     => win_y);
-
-				winfrm_lat_e : entity hdl4fpga.align
-				generic map (
-					n => win_frm'length,
-					d => (win_frm'range => 2))
-				port map (
-					clk => video_clk,
-					di  => win_frm,
-					do  => storage_bsel);
-
-				storage_addr_p : process (storage_bsel)
-					variable base : unsigned(storage_base'range);
-				begin
-					base := (base'range => '0');
-					for i in storage_bsel'range loop
-						if storage_bsel(i)='1' then
-							base := to_unsigned((grid_width(vlayout)-1)*i, base'length);
-						end if;
-					end loop;
-					storage_base <= std_logic_vector(base);
-				end process;
-				storage_addr <= std_logic_vector(unsigned(win_x) + unsigned(storage_base) + unsigned(capture_addr));
-
-				latency_b : block
-				begin
-					latency_on_e : entity hdl4fpga.align
-					generic map (
-						n => cdon'length,
-						d => (cdon'range => 2))
-					port map (
-						clk   => video_clk,
-						di    => cdon,
-						do(0) => grid_on,
-						do(1) => vt_on,
-						do(2) => hz_on,
-						do(3) => text_on);
-
-					latency_x_e : entity hdl4fpga.align
-					generic map (
-						n => win_x'length,
-						d => (win_x'range => 2))
-					port map (
-						clk => video_clk,
-						di  => win_x,
-						do  => x);
-
-					latency_y_e : entity hdl4fpga.align
-					generic map (
-						n => win_y'length,
-						d => (win_y'range => 1))
-					port map (
-						clk => video_clk,
-						di  => win_y,
-						do  => y);
-
-				end block;
-
-				process (video_clk)
-					variable aux : unsigned(hz_segment'range);
+				mainpipeline_p : process (video_clk)
 				begin
 					if rising_edge(video_clk) then
-						aux := (others => '0');
-						for i in win_frm'range loop
-							if win_frm(i)='1' then
-								aux := aux or to_unsigned(vlayout.gu_width*i, aux'length);
-							end if;
+						cbox_vxon <= pbox_xon;
+						cbox_vyon <= pbox_yon and not pbox_nexty;
+						cbox_vx   <= pbox_x;
+						cbox_vy   <= pbox_y;
+					end if;
+				end process;
+
+				layout_e : entity hdl4fpga.videobox_layout
+				generic map (
+					x_edges     => sgmnt_xedges(layout),
+					y_edges     => sgmnt_yedges(layout))
+				port map (
+					video_clk   => video_clk,
+					video_xon   => cbox_vxon,
+					video_yon   => cbox_vyon,
+					video_x     => cbox_vx,
+					video_y     => cbox_vy,
+					box_xon     => cbox_xon,
+					box_yon     => cbox_yon,
+					box_xedge   => cbox_xedge,
+					box_yedge   => cbox_yedge,
+					box_eox     => cbox_eox,
+					box_xdiv    => cbox_xdiv,
+					box_ydiv    => cbox_ydiv);
+
+
+				box_e : entity hdl4fpga.videobox
+				port map (
+					video_clk => video_clk,
+					video_xon => cbox_xon,
+					video_yon => cbox_yon,
+					video_eox => cbox_eox,
+					box_xedge => cbox_xedge,
+					box_yedge => cbox_yedge,
+					box_x     => cbox_x,
+					box_y     => cbox_y);
+
+				sgmntpipeline_p: process (video_clk)
+					variable sgmnt_on : std_logic;
+				begin
+					if rising_edge(video_clk) then
+						sgmnt_on := cbox_xon and cbox_yon;
+						vt_on   <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						hz_on   <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => cbox_xdiv, y_div => cbox_ydiv, layout => layout) and sgmnt_on;
+						sgmnt_x <= cbox_x;
+						sgmnt_y <= cbox_y;
+					end if;
+				end process;
+
+				storage_bsel <= pbox_ydiv;
+				storage_addr_p : process (video_clk)
+					variable offset : unsigned(0 to layout.num_of_segments*storage_addr'length-1);
+					variable base   : unsigned(0 to storage_addr'length-1);
+				begin
+					if rising_edge(video_clk) then
+						offset := (others => '-');
+						for i in 0 to layout.num_of_segments-1 loop
+							offset(base'range) := to_unsigned((grid_width(layout)-1)*i, base'length);
+							offset := offset rol base'length;
 						end loop;
-						aux := aux sll 5;
-						hz_segment <= std_logic_vector(aux + unsigned(hz_offset(9-1 downto 0)));
+						base         := unsigned(word2byte(std_logic_vector(offset), storage_bsel, base'length));
+						storage_addr <= std_logic_vector(base + unsigned(sgmnt_x) + unsigned(capture_addr));
+						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
 					end if;
 				end process;
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					latency       => storage_data'length+2,
+					latency       => segmment_latency,
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
@@ -868,8 +629,8 @@ begin
 					vt_offsets    => vt_offsets,
 
 					video_clk     => video_clk,
-					x             => x,
-					y             => y,
+					x             => sgmnt_x,
+					y             => sgmnt_y,
 
 					hz_on         => hz_on,
 					vt_on         => vt_on,
@@ -883,11 +644,13 @@ begin
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 
-				sgmnt_on <= phon;
+				sgmnt_on <= pbox_xon;
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,
-					d => (0 to 4-1 => storage_data'length+2, 4 => storage_data'length+6))
+					d => (
+						0 to 4-1 => storageaddr_latency+storagebram_latency+segmment_latency,
+						4        => storageaddr_latency+storagebram_latency+segmment_latency+mainpipeline_latency+sgmntpipeline_latency))
 				port map (
 					clk => video_clk,
 					di(0) => grid_on,
@@ -940,13 +703,13 @@ begin
 		generic map (
 			latency => 0)
 		port map (
-			video_clk   => video_clk,
-			video_on    => video_io(2),
-			pointer_x   => pointer_x,
-			pointer_y   => pointer_y,
-			video_hcntr => video_hcntr,
-			video_vcntr => video_vcntr,
-			video_dot   => pointer_dot);
+			video_clk    => video_clk,
+			video_on     => video_io(2),
+			pointer_x    => pointer_x,
+			pointer_y    => pointer_y,
+			video_hzcntr => video_hzcntr,
+			video_vtcntr => video_vtcntr,
+			video_dot    => pointer_dot);
 
 		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
 	end block;
