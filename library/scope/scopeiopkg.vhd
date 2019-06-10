@@ -69,7 +69,7 @@ package scopeiopkg is
 			sgmnt_gap       =>   (others => 0)),
 		hd720 => (
 			display_width   => 1280,
-			num_of_segments =>    4,
+			num_of_segments =>    3,
 			grid_width      =>   30,
 			grid_height     =>    8,
 			hzaxis_height   =>    8,
