@@ -68,8 +68,8 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (left => 4, others => 0),
-			main_gap        => (vertical => 10, others => 0),
+			main_margin     => (left => 4, top => 23, others => 0),
+			main_gap        => (vertical => 24, others => 0),
 			sgmnt_margin    => (others => 0),
 			sgmnt_gap       => (others => 0)),
 		hd720 => (

@@ -397,7 +397,7 @@ begin
 		constant segmment_latency      : natural := storage_data'length+2;
 		constant mainpipeline_latency  : natural := 1;
 		constant sgmntpipeline_latency : natural := 1;
-		constant palette_latency       : natural := 4;
+		constant palette_latency       : natural := 3;
 		constant vgaio_latency         : natural := storageaddr_latency+storagebram_latency+mainpipeline_latency+sgmntpipeline_latency+segmment_latency+palette_latency;
 
 		signal trigger_dot : std_logic;
