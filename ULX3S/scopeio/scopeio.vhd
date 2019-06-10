@@ -15,10 +15,11 @@ use hdl4fpga.std.all;
 
 architecture beh of ulx3s is
 	-- vlayout_id
-	-- 0: 1920x1080 @ 60Hz 150MHz 
+	-- 0: 1920x1080 @ 60Hz 150MHz unreachable
 	-- 1:  800x600  @ 60Hz  40MHz
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
+	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
         constant vlayout_id: integer := 3;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug

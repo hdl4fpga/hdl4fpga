@@ -70,7 +70,7 @@ architecture def of scopeio_mouse2rgtr is
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
   -- screen y-coordinate of Y=0 on the grid
   constant C_grid_y0: signed(C_XY_coordinate_bits-1 downto 0) := 
-    to_signed(grid_y(layout) + grid_height(layout)/2 + sgmnt_margin(layout),C_XY_coordinate_bits);
+    to_signed(grid_y(layout) + grid_height(layout)/2 + sgmnt_margintop(layout),C_XY_coordinate_bits);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -91,28 +91,28 @@ architecture def of scopeio_mouse2rgtr is
   constant C_list_box: T_list_box :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
-     to_unsigned( vtaxis_x(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Xmin
-     to_unsigned( vtaxis_x(layout)+sgmnt_margin(layout)+ vtaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned( vtaxis_y(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Ymin
-     to_unsigned( vtaxis_y(layout)+sgmnt_margin(layout)+ vtaxis_height(layout),  C_XY_coordinate_bits), -- Ymax
+     to_unsigned( vtaxis_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned( vtaxis_x(layout)+sgmnt_marginright(layout)+  vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
+     to_unsigned( vtaxis_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned( vtaxis_y(layout)+sgmnt_marginbottom(layout)+ vtaxis_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 1: C_window_grid top center window (the grid) C_window_grid
-     to_unsigned(   grid_x(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+sgmnt_margin(layout)+   grid_width(layout) -1,C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+sgmnt_margin(layout)+   grid_height(layout)-1,C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   grid_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+sgmnt_marginright(layout)+grid_width(layout)-1,    C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+sgmnt_marginbottom(layout)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 2: top right window (text) C_window_textbox
-     to_unsigned(textbox_x(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Xmin
-     to_unsigned(textbox_x(layout)+sgmnt_margin(layout)+textbox_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned(textbox_y(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Ymin
-     to_unsigned(textbox_y(layout)+sgmnt_margin(layout)+textbox_height(layout),  C_XY_coordinate_bits), -- Ymax
+     to_unsigned(textbox_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned(textbox_x(layout)+sgmnt_marginright(layout)+textbox_width(layout),   C_XY_coordinate_bits), -- Xmax
+     to_unsigned(textbox_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned(textbox_y(layout)+sgmnt_marginbottom(layout)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 3: thin window below the grid (horizontal scale) C_window_hzaxis
-     to_unsigned( hzaxis_x(layout)+sgmnt_margin(layout),                         C_XY_coordinate_bits), -- Xmin
-     to_unsigned( hzaxis_x(layout)+sgmnt_margin(layout)+ hzaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned( hzaxis_y(layout)+sgmnt_margin(layout)- 1,                      C_XY_coordinate_bits), -- Ymin
-     to_unsigned( hzaxis_y(layout)+sgmnt_margin(layout)+ hzaxis_height(layout),  C_XY_coordinate_bits), -- Ymax
+     to_unsigned( hzaxis_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned( hzaxis_x(layout)+sgmnt_marginright(layout)+ hzaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
+     to_unsigned( hzaxis_y(layout)+sgmnt_margintop(layout)- 1,                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned( hzaxis_y(layout)+sgmnt_marginbottom(layout)+ hzaxis_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax

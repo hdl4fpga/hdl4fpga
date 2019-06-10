@@ -189,7 +189,7 @@
     <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../../library/video/video_win.vhd" type="VHDL" type_short="VHDL">
+    <Source name="../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
     <Source name="../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
