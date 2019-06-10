@@ -70,7 +70,7 @@ VHDL_LIB_FILES = \
   ../../library/mii/mii_romcmp.vhd \
   ../../library/mii/miitx_dll.vhd \
   ../../library/video/video.vhd \
-  ../../library/video/video_win.vhd \
+  ../../library/video/videopkg.vhd \
   ../../library/video/cgafonts.vhd \
   ../../library/video/cga_rom.vhd \
   ../../library/video/vga2dvid.vhd \
