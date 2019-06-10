@@ -88,8 +88,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 20.0,
-		dfs_mul => 4,
-		dfs_div => 5)
+		dfs_mul => 3, --4,
+		dfs_div => 1) --5)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -104,6 +104,7 @@ begin
 
 	samples_e : entity hdl4fpga.rom
 	generic map (
+		latency => 2,
 		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
 	port map (
 		clk  => sys_clk,
@@ -156,7 +157,7 @@ begin
 	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 1,
+		vlayout_id  => 0,
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",

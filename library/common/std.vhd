@@ -142,8 +142,9 @@ package std is
 		return natural;
 
 	function demux (
-		constant s : std_logic_vector;
-		constant e : std_logic := '1')
+		constant sel  : std_logic_vector;
+		constant inp  : std_logic := '1';
+		constant size : natural   := 0)
 		return std_logic_vector;
 
 	function primux (
@@ -728,14 +729,15 @@ package body std is
 	end procedure;
 
 	function demux (
-		constant s : std_logic_vector;
-		constant e : std_logic := '1')
+		constant sel  : std_logic_vector;
+		constant inp  : std_logic := '1';
+		constant size : natural   := 0)
 		return std_logic_vector is
-		variable o : std_logic_vector(0 to 2**s'length-1);
+		variable retval : std_logic_vector(0 to 2**sel'length-1);
 	begin
-		o := (others => '0');
-		o(to_integer(unsigned(s))) := e;
-		return o;
+		retval := (others => '0');
+		retval(to_integer(unsigned(sel))) := inp;
+		return retval(0 to size-1);
 	end;
 
 	function primux (

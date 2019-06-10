@@ -56,6 +56,12 @@ begin
 	begin 
 		if rising_edge(clkb) then
 			rd_addr <= addrb;
+		end if;
+	end process;
+
+	process (clkb)
+	begin 
+		if rising_edge(clkb) then
 			dob <= rd_data;
 		end if;
 	end process;
@@ -63,8 +69,8 @@ begin
 	mem_e: entity hdl4fpga.bram_true2p_2clk
 	generic map
 	(
---	    pass_thru_a => true,			-- True or False doesn't change LUTs consumption on
---	    pass_thru_b => true,			-- Diamond 3.10.2.115, neither does this
+	    pass_thru_a => true,			-- True or False doesn't change LUTs consumption on
+	    pass_thru_b => true,			-- Diamond 3.10.2.115, neither does this
 		data_width => dia'length,
 		addr_width => addra'length
 	)
@@ -90,7 +96,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture beh of bram is
+architecture inference of bram is
 	subtype word is std_logic_vector(max(dia'length,dib'length)-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 	constant addr_size : natural := hdl4fpga.std.min(addra'length,addrb'length);

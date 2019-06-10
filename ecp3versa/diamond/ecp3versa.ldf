@@ -113,9 +113,6 @@
         <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/video/video_win.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../library/scope/scopeio_amp.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -240,6 +237,12 @@
             <Options/>
         </Source>
         <Source name="../../library/common/bram_true2p_2clk.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

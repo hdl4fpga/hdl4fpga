@@ -258,11 +258,12 @@ begin
 
 	begin
 
-		hz_x <= resize(unsigned(video_hcntr), hz_x'length) + unsigned(hz_offset);
-		hz_y <= video_vcntr;
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
+				hz_x <= resize(unsigned(video_hcntr), hz_x'length) + unsigned(hz_offset);
+				hz_y <= video_vcntr;
+
 				hz_vaddr <= std_logic_vector(hz_x);
 				hs_on    <= video_hzon;
 				hz_ccol  <= std_logic_vector(hz_x(hz_ccol'range));
@@ -271,11 +272,12 @@ begin
 		end process;
 		hz_bcd <= word2byte(std_logic_vector(unsigned(hz_tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
 
-		vt_x <= video_hcntr;
-		vt_y <= resize(unsigned(video_vcntr), vt_y'length) + unsigned(vt_offset);
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
+				vt_x <= video_hcntr;
+				vt_y <= resize(unsigned(video_vcntr), vt_y'length) + unsigned(vt_offset);
+
 				vt_vaddr <= std_logic_vector(vt_y);
 				vs_on    <= video_vton;
 				vt_ccol  <= vt_x(vt_ccol'range);

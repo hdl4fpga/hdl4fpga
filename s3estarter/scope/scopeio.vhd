@@ -39,7 +39,7 @@ architecture beh of s3estarter is
 
 	constant sample_size : natural := 14;
 
-	function sinctab (
+	function sintab (
 		constant x0 : integer;
 		constant x1 : integer;
 		constant n  : integer)
@@ -48,13 +48,15 @@ architecture beh of s3estarter is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/64.0);
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0)/2.0;
 			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
 		end loop;
 		return aux;
 	end;
 
-	constant inputs : natural := 2;
+	constant inputs  : natural := 2;
+	constant baudrate : natural := 115200;
+
 	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
 	signal spi_clk   : std_logic;
 	signal spiclk_rd : std_logic;
@@ -68,12 +70,33 @@ architecture beh of s3estarter is
 	signal ampcs     : std_logic;
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
-	signal rot_cwse  : std_logic;
-	signal rot_rdy   : std_logic;
 	signal input_ena : std_logic;
-	signal tdiv      : std_logic_vector(4-1 downto 0);
+	signal tdiv      : std_logic_vector(4-1 downto 0) := b"1111";
 	signal vga_rgb   : std_logic_vector(3-1 downto 0);
 	signal ipcfg_req : std_logic;
+
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+
+	signal toudpdaisy_clk  : std_logic;
+	signal toudpdaisy_frm  : std_logic;
+	signal toudpdaisy_irdy : std_logic;
+	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
+
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
+
+	signal so_clk    : std_logic;
+	signal so_frm    : std_logic;
+	signal so_trdy   : std_logic;
+	signal so_irdy   : std_logic;
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -246,38 +269,86 @@ begin
 		end process;
 	end block;
 
-	process (e_rx_clk, rot_a, rot_b)
-		variable cntr : unsigned(0 to 12);
-	begin
-		if (rot_a or rot_b)='1' then
-			if cntr(0)='1' then
-				cntr := (others => '0');
-			end if;
-			rot_cwse <= rot_a;
-		elsif rising_edge(xtal) then
-			if cntr(0)='0' then
-				cntr := cntr + 1;
-			end if;
-			rot_rdy <= cntr(0);
-		end if;
-	end process;
-
-	process (sw0, e_tx_clk)
+	dhcpreq_p : process (sw0, e_tx_clk)
 	begin
 		if sw0='1' then
 			ipcfg_req <= '0';
-			led0  <= '1';
+			led0      <= '1';
 		elsif rising_edge(e_tx_clk) then
-			led0  <= '0';
+			led0      <= '0';
 			ipcfg_req <= '1';
 		end if;
 	end process;
 
+	process (e_rx_clk)
+		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
+	begin
+		if rising_edge(e_rx_clk) then
+			if cntr >= max_count-1 then
+				uart_ena <= '1';
+				cntr := (others => '0');
+			else
+				uart_ena <= '0';
+				cntr := cntr + 1;
+			end if;
+		end if;
+	end process;
+
+	uart_sin <= rs232_dte_rxd;
+	uart_rxc <= e_rx_clk;
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => uart_sin,
+		uart_ena  => uart_ena,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
+
+--	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+--	generic map (
+--		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+--		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+--	port map (
+--		stream_clk  => uart_rxc,
+--		stream_dv   => uart_rxdv,
+--		stream_data => uart_rxd,
+--
+--		chaini_data => uart_rxd,
+--
+--		chaino_frm  => toudpdaisy_frm, 
+--		chaino_irdy => toudpdaisy_irdy,
+--		chaino_data => toudpdaisy_data);
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => e_rx_clk,
+		phy_rx_dv   => e_rx_dv,
+		phy_rx_d    => e_rxd,
+
+		phy_txc     => e_tx_clk,
+		phy_tx_en   => e_txen,
+		phy_tx_d    => e_txd,
+	
+		chaini_sel  => '0',
+
+		chaini_frm  => toudpdaisy_frm,
+		chaini_irdy => toudpdaisy_irdy,
+		chaini_data => toudpdaisy_data,
+
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		vlayout_id  => 1,
 		inputs           => inputs,
-		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",
 		default_gridbg   => b"0_0_0",
@@ -289,13 +360,12 @@ begin
 		default_sgmntbg  => b"0_1_1",
 		default_bg       => b"1_1_1")
 	port map (
-		si_clk      => e_rx_clk,
-		si_frm      => e_rx_dv,
-		si_data     => e_rxd,
-		so_clk      => e_tx_clk,
-		so_dv       => e_txen,
-		so_data     => e_txd,
-		ipcfg_req   => ipcfg_req,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_irdy     => so_irdy,
+		so_data     => so_data,
 		input_clk   => spi_clk,
 		input_ena   => input_ena,
 		input_data  => sample,
@@ -308,6 +378,7 @@ begin
 	vga_red   <= vga_rgb(2);
 	vga_green <= vga_rgb(1);
 	vga_blue  <= vga_rgb(0);
+
 	-- Ethernet Transceiver --
 	--------------------------
 
@@ -351,4 +422,7 @@ begin
 	led5 <= '1';
 	led6 <= '1';
 	led7 <= '1';
+
+	rs232_dte_txd <= 'Z';
+	rs232_dce_txd <= 'Z';
 end;

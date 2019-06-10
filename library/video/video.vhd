@@ -25,252 +25,292 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity video_timing_rom is
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
+
+entity box_edges is
 	generic (
-		m : natural := 1;
-		n : natural := 11;
-		mode : in  natural);
+		edges      : natural_vector);
 	port (
-
-		hparm : in  std_logic_vector(0 to 1);
-		hdata : out std_logic_vector(n-1 downto 0);
-
-		vparm : in  std_logic_vector(0 to 1);
-		vdata : out std_logic_vector(n-1 downto 0));
+		video_clk  : in  std_logic;
+		video_ini  : in  std_logic;
+		next_edge  : in  std_logic;
+		video_pos  : in  std_logic_vector;
+		video_div  : out std_logic_vector;
+		video_edge : out std_logic);
 end;
 
-architecture mix of video_timing_rom is
-	type natural_matrix is array (natural range <>, natural range <>) of natural range 0 to 2**n-1;
+architecture def of box_edges is
 
-	constant h_tab : natural_matrix (0 to 10, 3 downto 0) := (
---		0 => ( 32,  3,  5,  6),
-		0 => ( 640,  24,  56,  80),	 --   640x480C@60Hz pclk  23.75MHz
-		1 => ( 800,  32,  80, 112),	 --   800x600C@60Hz pclk  38.25MHz
-		2 => (1024,  48, 104, 152),	 --  1024x768C@60Hz pclk  63.50MHz
-		3 => (1280,  48,  32,  80),	 -- 1280x1024R@60Hz pclk  90.75MHz
-		4 => (1280,  48, 112, 248),	 -- 1280x1024C@60Hz pclk 108.00MHz
-		5 => (1680,  48,  32,  80),	 -- 1680x1050R@60Hz pclk 119.00MHz
-		6 => (1920,  48,  32,  80),	 -- 1920x1080R@60Hz pclk 138.50MHz
-		7 => (1920,  96,  56, 128),  -- 1920x1080R@60Hz pclk 148.50MHz
-		8 => (1920, 128, 200, 328),  -- 1920x1080R@60Hz pclk 173.00MHz
-		9 => (1920,  88,  44, 133),  -- 1920x1080R@30Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit
-	  10 => (1280,  64, 192, 192));  -- 1280x768R@60Hz pclk  75.00MHz	Added by emard@github.com for ULX3S kit
-
-	constant v_tab : natural_matrix (0 to 10, 3 downto 0) := (
---		0 => ( 24, 3, 4, 5),
-		0 => ( 480, 3, 4, 13),	--   640x480C@60Hz pclk  23.75MHz
-		1 => ( 600, 3, 4, 17),	--   800x600C@60Hz pclk  38.25MHz
-		2 => ( 768, 3, 4, 23),	--  1024x768C@60Hz pclk  63.50MHz
-		3 => (1024, 3, 7, 20),	-- 1280x1024R@60Hz pclk  90.75MHz
-		4 => (1024, 1, 3, 38),	-- 1280x1024C@60Hz pclk 108.00MHz
-		5 => (1050, 3, 6, 21),	-- 1680x1050R@60Hz pclk 119.00MHz
-		6 => (1080, 3, 5, 23),	-- 1920x1080R@60Hz pclk 138.50MHz
-		7 => (1080, 2, 6, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
---		7 => (1080, 6, 1, 37),	-- 1920x1080C@60Hz pclk 148.50MHz
-		8 => (1080, 3, 5, 32),	-- 1920x1080C@60Hz pclk 173.00MHz
-		9 => (1080, 4, 5, 46), 	-- 1920x1080R@30Hz pclk  75.00MHz Added by emard@github.com for ULX3S kit
-    10 => ( 768, 3, 5, 20)); 	-- 1280x768R@60Hz  pclk  75.00MHz Added by emard@github.com for ULX3S kit
-
--- modeline calculator https://arachnoid.com/modelines/
---# 1280x1024 @ 30.00 Hz (GTF) hsync: 31.26 kHz; pclk: 50.52 MHz
---Modeline "1280x1024_30.00" 50.52 1280 1320 1448 1616 1024 1025 1028 1042 -HSync +Vsync
-
-	subtype word is std_logic_vector(n-1 downto 0);
-	type word_vector is array (natural range <>) of word;
-
-	function tab2rom (
-		mode : natural;
-		tab  : natural_matrix)
-		return word_vector is
-		variable val : word_vector(0 to 3);
-	begin
-		for i in tab'range(2) loop
-			val(i) := std_logic_vector(to_signed(tab(mode, i)-2,n));
-		end loop;
-		return val;
-	end;
-
-	constant h_rom : word_vector(0 to 3) := tab2rom(mode,h_tab);
-	constant v_rom : word_vector(0 to 3) := tab2rom(mode,v_tab);
+	signal rd_addr : std_logic_vector(unsigned_num_bits(edges'length-1)-1 downto 0); 
+	signal rd_data : std_logic_vector(video_pos'range);
+	signal wr_addr : std_logic_vector(rd_addr'range);
+	signal wr_data : std_logic_vector(rd_data'range);
 
 begin
-	hdata <= h_rom(to_integer(unsigned(hparm)));
-	vdata <= v_rom(to_integer(unsigned(vparm)));
-end;
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity video_timing_gen is
-	generic (
-		n : natural := 12);
-	port (
-		clk   : in  std_logic;
-
-		hdata : in  std_logic_vector(n downto 0);
-		htmg  : out std_logic_vector(0 to 1);
-		hpos  : out std_logic_vector(n-1 downto 0);
-		heot  : buffer std_logic;
-		heof  : out std_logic;
-
-		vdata : in  std_logic_vector(n downto 0);
-		vtmg  : out std_logic_vector(0 to 1);
-		vpos  : out std_logic_vector(n-1 downto 0);
-		veot  : out std_logic;
-		veof  : out std_logic);
-	end;
-
-architecture beh of video_timing_gen is
-	constant dp : std_logic_vector(0 to 1) := "11";
-	constant bp : std_logic_vector(0 to 1) := "10";
-	constant pw : std_logic_vector(0 to 1) := "01";
-	constant fp : std_logic_vector(0 to 1) := "00";
-begin
-	process (clk)
-		variable vparm  : unsigned(0 to 2)   := (others => '0');
-		variable hparm  : unsigned(0 to 2)   := (others => '0');
-		variable hcntr  : unsigned(0 to n)   := (others => '0');
-		variable vcntr  : unsigned(0 to n)   := (others => '0');
-		variable hcntrp : unsigned(0 to n-1) := (others => '0');
-		variable vcntrp : unsigned(0 to n-1) := (others => '0');
+	process (video_clk)
+		variable div : unsigned(video_div'length-1 downto 0) := (others => '0');
 	begin
-		if rising_edge(clk) then
-			if hcntr(0)='1' then
-				if hparm(0)='1' then
-					if vcntr(0)='1' then
-						if vparm(0)='1' then
-							vparm := resize(unsigned(bp), vparm'length);
-						else
-							vparm := vparm - 1;
-						end if;
-					end if;
-
-					if vcntr(0)='1' then
-						vcntr  := resize(unsigned(vdata), vcntr'length);
-						vcntrp := (others => '0');
-					else
-						vcntr  := vcntr  - 1;
-						vcntrp := vcntrp + 1;
-					end if;
-				end if;
+		if rising_edge(video_clk) then
+			if video_ini='1' then
+				div := (others => '0');
+			elsif next_edge='1' then
+				div := div + 1;
 			end if;
-
-			if hcntr(0)='1' then
-				if hparm(0)='1' then
-					hparm := resize(unsigned(bp), hparm'length);
-				else
-					hparm := hparm - 1;
-				end if;
-
-				hcntr  := resize(unsigned(hdata), hcntr'length);
-				hcntrp := (others => '0');
-			else
-				hcntr  := hcntr  - 1;
-				hcntrp := hcntrp + 1;
-			end if;
-
-			htmg <= std_logic_vector(hparm(1 to 2));
-			vtmg <= std_logic_vector(vparm(1 to 2));
-
-			hpos <= std_logic_vector(hcntrp);
-			vpos <= std_logic_vector(vcntrp);
-			heot <= hcntr(0);
-			veot <= vcntr(0);
-			heof <= hparm(0);
-			veof <= vparm(0);
+			rd_addr   <= std_logic_vector(div(rd_addr'range));
+			video_div <= std_logic_vector(div);
 		end if;
 	end process;
+
+--	mem_e : entity hdl4fpga.dpram
+--	generic map (
+--		bitrom => to_bitrom(edges, video_pos'length))
+--	port map (
+--		wr_clk  => '-',
+--		wr_ena  => '0',
+--		wr_addr => rd_addr,
+--		wr_data => rd_data,
+--
+--		rd_addr => rd_addr,
+--		rd_data => rd_data);
+
+	mem_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => to_bitrom(edges, video_pos'length))
+	port map (
+		addr => rd_addr,
+		data => rd_data);
+
+	video_edge <= setif(video_pos=rd_data);
+	
 end;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity video_vga is
+library hdl4fpga;
+use hdl4fpga.std.all;
+use hdl4fpga.videopkg.all;
+
+entity video_sync is
 	generic (
-		mode : natural := 7;
-		n : natural := 12);
+		mode : natural := 1);
 	port (
-		clk    : in std_logic;
-		hsync  : out std_logic;
-		hcntr  : out std_logic_vector(n-1 downto 0);
-		vsync  : out std_logic;
-		vcntr  : out std_logic_vector(n-1 downto 0);
-		frm    : buffer std_logic;
-		don    : buffer std_logic;
-		nhl    : out std_logic);
+		video_clk    : in std_logic;
+		video_hzsync : out std_logic;
+		video_vtsync : out std_logic;
+		video_hzcntr : out std_logic_vector;
+		video_vtcntr : out std_logic_vector;
+		video_hzon   : out std_logic;
+		video_vton   : out std_logic);
 end;
+
+architecture mix of video_sync is
+
+	signal hz_ini  : std_logic;
+	signal vt_ini  : std_logic;
+	signal hz_edge : std_logic;
+	signal vt_edge : std_logic;
+	signal hz_next : std_logic;
+	signal vt_next : std_logic;
+	signal hz_div  : std_logic_vector(2-1 downto 0) := (others => '0');
+	signal vt_div  : std_logic_vector(2-1 downto 0) := (others => '0');
+	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
+
+begin
+
+	hz_ini  <= hz_edge and setif(hz_div="11");
+	hz_next <= hz_edge;
+	hzedges_e : entity hdl4fpga.box_edges
+	generic map (
+		edges =>  to_edges(modeline_data(mode)(0 to 4-1)))
+	port map (
+		video_clk  => video_clk,
+		video_ini  => hz_ini,
+		next_edge  => hz_next,
+		video_pos  => hz_cntr,
+		video_edge => hz_edge,
+		video_div  => hz_div);
+	video_hzsync <= setif(hz_div="10");
+	video_hzon   <= setif(hz_div="00");
+	video_hzcntr <= hz_cntr;
+
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if hz_ini='1' then
+				hz_cntr <= (others => '0');
+			else
+				hz_cntr <= std_logic_vector(unsigned(hz_cntr) + 1);
+			end if;
+		end if;
+	end process;
+
+	vt_ini  <= hz_ini and vt_edge and setif(vt_div="11");
+	vt_next <= hz_ini and vt_edge;
+	vtedges_e : entity hdl4fpga.box_edges
+	generic map (
+		edges =>  to_edges(modeline_data(mode)(4 to 8-1)))
+	port map (
+		video_clk  => video_clk,
+		video_ini  => vt_ini,
+		next_edge  => vt_next,
+		video_pos  => vt_cntr,
+		video_edge => vt_edge,
+		video_div  => vt_div);
+
+	process(video_clk)
+	begin
+		if rising_edge(video_clk) then
+			if vt_ini='1' then
+				vt_cntr <= (others => '0');
+			elsif hz_ini='1' then
+				vt_cntr <= std_logic_vector(unsigned(vt_cntr) + 1);
+			end if;
+		end if;
+	end process;
+
+	video_vtsync <= setif(vt_div="10");
+	video_vton   <= setif(vt_div="00");
+	video_vtcntr <= vt_cntr;
+
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture arch of video_vga is
-	signal hparm : std_logic_vector(0 to 1);
-	signal rom_hdata : std_logic_vector(n downto 0);
-	signal hdata : std_logic_vector(n downto 0);
-	signal vparm : std_logic_vector(0 to 1);
-	signal rom_vdata : std_logic_vector(n downto 0);
-	signal vdata : std_logic_vector(n downto 0);
-	signal heof : std_logic;
-	signal heot : std_logic;
-	signal veot : std_logic;
-	signal veof : std_logic;
+entity videobox_layout is
+	generic (
+		x_edges   : natural_vector;
+		y_edges   : natural_vector);
+	port (
+		video_clk : in  std_logic;
+		video_xon : in  std_logic;
+		video_yon : in  std_logic;
+		video_x   : in  std_logic_vector;
+		video_y   : in  std_logic_vector;
+
+		box_xedge : out std_logic;
+		box_yedge : out std_logic;
+		box_xon   : out std_logic;
+		box_yon   : out std_logic;
+		box_eox   : out std_logic;
+		box_nextx : out std_logic;
+		box_nexty : out std_logic;
+		box_xdiv  : out std_logic_vector;
+		box_ydiv  : out std_logic_vector);
+end;
+
+architecture def of videobox_layout is
+
+	signal x_ini  : std_logic;
+	signal y_ini  : std_logic;
+	signal x_edge : std_logic;
+	signal y_edge : std_logic;
+	signal next_x : std_logic;
+	signal next_y : std_logic;
+	signal x_div  : std_logic_vector(box_xdiv'range);
+	signal y_div  : std_logic_vector(box_ydiv'range);
+
 begin
-	sync_rom : entity hdl4fpga.video_timing_rom
+
+	x_ini  <= not video_xon or not video_yon;
+	next_x <= x_edge and setif(unsigned(x_div) < x_edges'length);
+	xedges_e : entity hdl4fpga.box_edges
 	generic map (
-		n => n+1,
-		mode  => mode)
+		edges      => x_edges)
 	port map (
+		video_clk  => video_clk,
+		video_ini  => x_ini,
+		next_edge  => next_x,
+		video_pos  => video_x,
+		video_div  => x_div,
+		video_edge => x_edge);
 
-		hparm => hparm,
-		hdata => rom_hdata,
-
-		vparm => vparm,
-		vdata => rom_vdata);
-
-	sync_gen : entity hdl4fpga.video_timing_gen
+	y_ini  <= not video_yon;
+	next_y <= x_edge and y_edge and setif(unsigned(x_div) = x_edges'length-1);
+	y_e : entity hdl4fpga.box_edges
 	generic map (
-		n => n)
+		edges      => y_edges)
 	port map (
-		clk   => clk,
+		video_clk  => video_clk,
+		video_ini  => y_ini,
+		next_edge  => next_y,
+		video_pos  => video_y,
+		video_div  => y_div,
+		video_edge => y_edge);
 
-		htmg  => hparm,
-		hdata => hdata,
-		heot  => heot,
-		heof  => heof,
-		hpos  => hcntr,
+	box_xon <= setif(unsigned(x_div) < x_edges'length)   and video_xon;
+	box_yon <= setif(unsigned(y_div) < y_edges'length)   and video_yon;
+	box_eox <= setif(unsigned(x_div) = x_edges'length-1) and video_xon and x_edge;
 
-		vtmg  => vparm,
-		vdata => vdata,
-		veot  => veot,
-		veof  => veof, 
-		vpos  => vcntr);
+	box_xedge <= x_edge;
+	box_yedge <= y_edge;
+	box_nextx <= next_x;
+	box_nexty <= next_y;
+	box_xdiv  <= x_div;
+	box_ydiv  <= y_div;
 
-	process (clk)
-		variable edge_don : std_logic;
-		variable edge_frm : std_logic;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity videobox is
+	port (
+		video_clk : in  std_logic;
+		video_xon : in  std_logic;
+		video_yon : in  std_logic;
+		video_eox : in  std_logic;
+		box_xedge : in  std_logic;
+		box_yedge : in  std_logic;
+		box_x     : out std_logic_vector;
+		box_y     : out std_logic_vector);
+end;
+
+architecture def of videobox is
+begin
+	process (video_clk)
+		variable x : unsigned(box_x'range);
+		variable y : unsigned(box_y'range);
 	begin
-		if rising_edge(clk) then
-			hdata <= rom_hdata;
-			vdata <= rom_vdata;
+		if rising_edge(video_clk) then
+			if video_xon='0' then
+				x := (others => '0');
+			elsif video_yon='0' then
+				x := (others => '0');
+			elsif box_xedge='1' then
+				x := (others => '0');
+			else
+				x := x + 1;
+			end if;
 
-			nhl <= edge_don and not don;
-			if heot='1' then
-				don   <= setif(hparm="11");
-				hsync <= setif(hparm="01");
-				if heof='1' then
-					if veot='1' then
-						frm   <= setif(vparm="11");
-						vsync <= setif(vparm="01");
-					end if;
+			if video_yon='0' then
+				y := (others => '0');
+			elsif video_eox='1' then
+				if box_yedge='1' then
+					y := (others => '0');
+				else
+					y := y + 1;
 				end if;
 			end if;
-			edge_frm := frm;
-			edge_don := don;
+
+			box_x <= std_logic_vector(x);
+			box_y <= std_logic_vector(y);
 		end if;
 	end process;
-end;
+end architecture;
+
+
 
 library ieee;
 use ieee.std_logic_1164.all;

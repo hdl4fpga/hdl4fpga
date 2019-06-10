@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 entity rom is
 	generic (
-		synchronous : natural := 1;
+		latency : natural := 0;
 		bitrom : std_logic_vector);
 	port (
 		clk  : in  std_logic := '-';
@@ -43,32 +43,33 @@ architecture def of rom is
 	subtype word is std_logic_vector(data'length-1 downto 0);
 	type word_vector is array (natural range <>) of word;
 
-	impure function init_rom (
-		constant arg : std_logic_vector)
+	function init_rom (
+		constant bitdata : std_logic_vector;
+		constant memsize : natural)
 		return word_vector is
 
-		variable aux : std_logic_vector(0 to data'length*2**addr'length-1) := (others => '-');
-		variable val : word_vector(0 to 2**addr'length-1) := (others => (others => '-'));
+		variable retval : word_vector(0 to memsize-1) := (others => (others => '-'));
+		variable aux    : std_logic_vector(0 to memsize*word'length-1) := (others => '-');
 
 	begin
-		aux(0 to arg'length-1) := arg;
-		for i in val'range loop
-			val(i) := aux(word'length*i to word'length*(i+1)-1);
+		aux(0 to bitdata'length-1) := bitdata;
+		for i in retval'range loop
+			retval(i) := aux(word'length*i to word'length*(i+1)-1);
 		end loop;
 
-		return val;
+		return retval;
 	end;
 
-	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom);
+	signal rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom, 2**addr'length);
 
 begin
 
-	synchronous1_g : if synchronous>0 generate
+	synchronous1_g : if latency>0 generate
 		process (clk)
 			variable saddr : std_logic_vector(addr'range);
 		begin
 			if rising_edge(clk) then
-				if synchronous=1 then
+				if latency=1 then
 					data <= rom(to_integer(unsigned(addr)));
 				else
 					data <= rom(to_integer(unsigned(saddr)));
@@ -78,7 +79,7 @@ begin
 		end process;
 	end generate;
 
-	synchronous0_g : if synchronous=0 generate
+	synchronous0_g : if latency=0 generate
 		data <= rom(to_integer(unsigned(addr)));
 	end generate;
 

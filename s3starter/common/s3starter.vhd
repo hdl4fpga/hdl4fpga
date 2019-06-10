@@ -30,7 +30,7 @@ entity s3starter is
 
 		expansion_a2 : inout std_logic_vector(4 to 7) := (others => 'Z');
 
-		s3s_anodes     : out std_logic_vector(3 downto 0) := (3 downto 0 => 'Z');
+		s3s_anodes     : out std_logic_vector(3 downto 0) := (others => 'Z');
 		s3s_segment_a  : out std_logic := 'Z';
 		s3s_segment_b  : out std_logic := 'Z';
 		s3s_segment_c  : out std_logic := 'Z';

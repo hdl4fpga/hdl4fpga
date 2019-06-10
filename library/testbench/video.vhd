@@ -21,49 +21,74 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
-use ieee.std_logic_textio.all;
-
+use ieee.std_logic_1164.all;
+    
 library hdl4fpga;
+use hdl4fpga.std.all;
 
-architecture win_sytm of testbench is
-	constant n : natural := 11;
+architecture video of testbench is
 
-	signal video_clk  : std_logic := '0';
+	signal video_clk    : std_logic := '0';
+	signal video_hs     : std_logic;
+	signal video_vs     : std_logic;
+	signal video_vton   : std_logic;
+	signal video_hzon   : std_logic;
+	signal video_vtcntr : std_logic_vector(11-1 downto 0) := (others => '0');
+	signal video_hzcntr : std_logic_vector(11-1 downto 0) := (others => '0');
 
-	signal vga_don : std_logic;
-	signal vga_frm : std_logic;
+	signal box_sidex    : std_logic;
+	signal box_sidey    : std_logic;
+	signal box_eox      : std_logic;
+	signal box_xon      : std_logic;
+	signal box_yon      : std_logic;
+	signal box_x        : std_logic_vector(11-1 downto 0);
+	signal box_y        : std_logic_vector(11-1 downto 0);
+	signal box_divx     : std_logic_vector(2-1 downto 0);
+	signal box_divy     : std_logic_vector(2-1 downto 0);
 
-	signal win_rowid : std_logic_vector(2-1 downto 0);
-	signal win_rowpag : std_logic_vector(5-1 downto 0);
-    signal win_rowoff : std_logic_vector(6-1 downto 0);
-    signal win_colid : std_logic_vector(2-1 downto 0);
-    signal win_colpag : std_logic_vector(2-1 downto 0);
-    signal win_coloff : std_logic_vector(12-1 downto 0);
-begin
-
-	video_clk <= not video_clk after 500 ns/150 ;
-
-	video_vga_e : entity hdl4fpga.video_vga
+ begin
+    video_clk <= not video_clk after 12.5 ns;
+	video_e : entity hdl4fpga.video_sync
 	generic map (
-		n => 12)
+		mode => 1)
 	port map (
-		clk   => video_clk,
-		frm   => vga_frm,
-		don   => vga_don);
+		video_clk    => video_clk,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
+		video_hzcntr => video_hzcntr,
+		video_vtcntr => video_vtcntr,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton);
 
-	win_sytm_e : entity hdl4fpga.win_sytm
+	boxlayout_e : entity hdl4fpga.videobox_layout
+	generic map (
+		x_edges     => (6*8-1, (6*8)+15*32-1, ((6*8)+15*32)+33*8-1),
+		y_edges     => (257-1, (257)+8-1))
 	port map (
-		win_clk => video_clk,
-		win_don => vga_don,
-		win_frm => vga_frm,
-		win_rowid => win_rowid,
-		win_rowpag => win_rowpag,
-        win_rowoff => win_rowoff,
-        win_colid => win_colid,
-        win_colpag => win_colpag,
-        win_coloff => win_coloff);
+		video_clk  => video_clk,
+		video_xon  => video_hzon,
+		video_yon  => video_vton,
+		video_x    => video_hzcntr,
+		video_y    => video_vtcntr,
+		box_xon    => box_xon,
+		box_yon    => box_yon,
+		box_eox    => box_eox,
+		box_xedge  => box_sidex,
+		box_yedge  => box_sidey,
+		box_xdiv   => box_divx,
+		box_ydiv   => box_divy);
+
+	box_e : entity hdl4fpga.videobox
+	port map (
+		video_clk => video_clk,
+		video_xon => box_xon,
+		video_yon => box_yon,
+		video_eox => box_eox,
+		box_xedge => box_sidex,
+		box_yedge => box_sidey,
+		box_x     => box_x,
+		box_y     => box_y);
 
 end;
+
