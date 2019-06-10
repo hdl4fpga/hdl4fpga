@@ -455,8 +455,8 @@ begin
 
 		graphics_b : block
 
-			signal pbox_xdiv     : std_logic_vector(0 to 1-1);
-			signal pbox_ydiv     : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
+			signal pbox_xdiv     : std_logic_vector(0 to 2-1);
+			signal pbox_ydiv     : std_logic_vector(0 to 4-1);
 			signal pbox_xedge    : std_logic;
 			signal pbox_yedge    : std_logic;
 			signal pbox_nexty    : std_logic;
