@@ -1,1 +1,1 @@
-makefile-800x600.diamond
+makefile-1280x768.diamond

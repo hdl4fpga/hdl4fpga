@@ -110,25 +110,12 @@ begin
 		dfs_mul => 4,
 		dfs_div => 5)
 	port map(
-		dcm_rst => btn_north,
+		dcm_rst => '0',
 		dcm_clk => sys_clk,
 		dfs_clk => vga_clk);
 
 	spi_b: block
-		signal dfs_rst : std_logic;
 	begin
-		process (btn_north, sys_clk)
-			variable cntr : unsigned(0 to 8) := (others => '0');
-		begin 
-			if btn_north='1' then
-				cntr := (others => '0');
-			elsif rising_edge(sys_clk) then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				end if;
-			end if;
-			dfs_rst <= not cntr(0);
-		end process;
 
 		spidcm_e : entity hdl4fpga.dfs2dfs
 		generic map (
@@ -138,7 +125,7 @@ begin
 			dfs2_mul => 17,
 			dfs2_div => 25)
 		port map(
-			dcm_rst  => dfs_rst,
+			dcm_rst  => '0',
 			dcm_clk  => sys_clk,
 			dfs_clk  => spi_clk,
 			dcm_lck  => spi_rst);

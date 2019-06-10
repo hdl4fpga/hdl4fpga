@@ -81,6 +81,9 @@
     <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
+    <Source name="../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
+      <Options lib="hdl4fpga"/>
+    </Source>
     <Source name="../../library/scope/scopeio_pointer.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
@@ -201,7 +204,7 @@
     <Source name="../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
       <Options lib="hdl4fpga"/>
     </Source>
-    <Source name="../common/clk_25_375_75_125_25.v" type="Verilog" type_short="Verilog">
+    <Source name="../common/clk_25_375_75_62_25.v" type="Verilog" type_short="Verilog">
       <Options/>
     </Source>
     <Source name="./constraints/ulx3s_v20.lpf" type="Logic Preference" type_short="LPF">

@@ -34,6 +34,7 @@ VHDL_LIB_FILES = \
   ../../library/common/btof.vhd \
   ../../library/common/pll2ser.vhd \
   ../../library/scope/scopeio.vhd \
+  ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_pointer.vhd \
   ../../library/scope/scopeio_ps2mouse2daisy.vhd \
   ../../library/ps2mouse/mousem.vhd \

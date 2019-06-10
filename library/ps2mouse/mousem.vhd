@@ -33,7 +33,8 @@ entity mousem is
   (
     c_x_bits: integer range 8 to 11 := 8;
     c_y_bits: integer range 8 to 11 := 8;
-    c_z_bits: integer range 4 to 11 := 4
+    c_z_bits: integer range 4 to 11 := 4;
+    c_z_ena:  integer range 0 to  1 := 1  -- 1:yes wheel, 0:not wheel
   );
   port
   (
@@ -56,7 +57,8 @@ architecture syn of mousem is
   signal pad_dz: std_logic_vector(c_z_bits-5 downto 0);
   signal r_btn, btn_next : std_logic_vector(2 downto 0);
   signal sent, sent_next : std_logic_vector(2 downto 0);
-  signal rx, rx_next : std_logic_vector(41 downto 0);
+  constant c_rx_bits : integer := 31 + 11*c_z_ena;
+  signal rx, rx_next : std_logic_vector(c_rx_bits-1 downto 0);
   signal tx, tx_next : std_logic_vector(9 downto 0);
   signal rx7, rx8 : std_logic_vector(7 downto 0);
   signal count, count_next : std_logic_vector(14 downto 0);
@@ -86,28 +88,36 @@ begin
   rx7 <= x"00" when rx(7) = '1' else rx(19 downto 12);
   G_yes_pad_x: if C_x_bits > 8 generate
   pad_dx <= (others => rx(5));
-  s_dx <= pad_dx & rx7;
+  s_dx <= (others => '0') when run = '0'
+     else pad_dx & rx7;
   end generate;
   G_not_pad_x: if C_x_bits <= 8 generate
-  s_dx <= rx7;
+  s_dx <= (others => '0') when run = '0'
+     else rx7;
   end generate;
   
   rx8 <= x"00" when rx(8) = '1' else rx(30 downto 23);
   G_yes_pad_y: if C_y_bits > 8 generate
   pad_dy <= (others => rx(6));
-  s_dy <= pad_dy & rx8;
+  s_dy <= (others => '0') when run = '0'
+     else pad_dy & rx8;
   end generate;
   G_not_pad_y: if C_y_bits <= 8 generate
-  s_dy <= rx8;
+  s_dy <= (others => '0') when run = '0'
+     else rx8;
   end generate;
 
+  G_have_wheel: if c_z_ena > 0 generate
   G_yes_pad_z: if C_z_bits > 4 generate
   pad_dz <= (others => rx(37));
-  s_dz <= pad_dz & rx(37 downto 34);
+  s_dz <= (others => '0') when run = '0'
+     else pad_dz & rx(37 downto 34);
   end generate;
   G_not_pad_z: if C_z_bits <= 4 generate
-  s_dz <= rx(37 downto 34);
+  s_dz <= (others => '0') when run = '0'
+     else rx(37 downto 34);
   end generate;
+  end generate; -- have wheel
 
   ps2m_clk <= '0' when req = '1' else 'Z'; -- bidir clk/request
   ps2m_dat <= '0' when tx(0) = '0' else 'Z'; -- bidir data
