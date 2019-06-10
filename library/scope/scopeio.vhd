@@ -113,13 +113,13 @@ architecture beh of scopeio is
 
 	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
 	signal storage_addr : std_logic_vector(0 to storage_size-1);
+	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
 
 	signal capture_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal storage_bsel   : std_logic_vector(0 to unsigned_num_bits(layout.num_of_segments)-1);
 	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
@@ -468,7 +468,7 @@ begin
 
 			box_layout_e : entity hdl4fpga.videobox_layout
 			generic map (
-				x_edges => (0 => main_width(layout)-1),
+				x_edges => main_xedges(layout),
 				y_edges => main_yedges(layout))
 			port map (
 				video_clk  => video_clk,
@@ -485,8 +485,19 @@ begin
 				box_nexty  => pbox_nexty,
 				box_ydiv   => pbox_ydiv);
 
-			sgmnt_b : block
+			storagebsel_p : process (pbox_xdiv, pbox_ydiv)
+			begin
+				sgmnt_on     <= '0';
+				storage_bsel <= (others => '0');
+				for i in 0 to layout.num_of_segments-1 loop
+					if main_boxon(box_id => i, x_div => pbox_xdiv, y_div => pbox_ydiv, layout => layout)='1' then
+						sgmnt_on        <= '1';
+						storage_bsel(i) <= '1';
+					end if;
+				end loop;
+			end process;
 
+			sgmnt_b : block
 
 				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
@@ -516,13 +527,19 @@ begin
 				signal sgmnt_x      : std_logic_vector(cbox_x'range);
 				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 
+				signal pbox_vxon    : std_logic;
+				signal pbox_vyon    : std_logic;
+
 			begin
 
+				pbox_vxon <= sgmnt_on and pbox_xon;
+				pbox_vyon <= pbox_yon;
+				
 				parent_e : entity hdl4fpga.videobox
 				port map (
 					video_clk => video_clk,
-					video_xon => pbox_xon,
-					video_yon => pbox_yon,
+					video_xon => pbox_vxon,
+					video_yon => pbox_vyon,
 					video_eox => pbox_eox,
 					box_xedge => pbox_xedge,
 					box_yedge => pbox_yedge,
@@ -532,8 +549,8 @@ begin
 				mainpipeline_p : process (video_clk)
 				begin
 					if rising_edge(video_clk) then
-						cbox_vxon <= pbox_xon;
-						cbox_vyon <= pbox_yon and not pbox_nexty;
+						cbox_vxon <= pbox_vxon;
+						cbox_vyon <= pbox_vyon and not pbox_nexty;
 						cbox_vx   <= pbox_x;
 						cbox_vy   <= pbox_y;
 					end if;
@@ -583,18 +600,16 @@ begin
 					end if;
 				end process;
 
-				storage_bsel <= pbox_ydiv;
 				storage_addr_p : process (video_clk)
-					variable offset : unsigned(0 to layout.num_of_segments*storage_addr'length-1);
-					variable base   : unsigned(0 to storage_addr'length-1);
+					variable base     : unsigned(0 to storage_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
-						offset := (others => '-');
+						base     := (others => '0');
 						for i in 0 to layout.num_of_segments-1 loop
-							offset(base'range) := to_unsigned((grid_width(layout)-1)*i, base'length);
-							offset := offset rol base'length;
+							if storage_bsel(i)='1' then
+								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
+							end if;
 						end loop;
-						base         := unsigned(word2byte(std_logic_vector(offset), storage_bsel, base'length));
 						storage_addr <= std_logic_vector(base + unsigned(sgmnt_x) + unsigned(capture_addr));
 						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
 					end if;
@@ -644,7 +659,6 @@ begin
 					trigger_dot   => trigger_dot,
 					traces_dots   => traces_dots);
 
-				sgmnt_on <= pbox_xon;
 				bg_e : entity hdl4fpga.align
 				generic map (
 					n => 5,
