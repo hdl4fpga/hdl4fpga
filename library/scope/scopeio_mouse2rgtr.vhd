@@ -258,8 +258,9 @@ begin
     constant C_action_horizontal_scale_timebase_change: integer := 7;
     constant C_action_pointer_last: integer := C_action_horizontal_scale_timebase_change;
     signal R_action_id: integer range C_action_nop to C_action_pointer_last := 0; -- which action to take
-
-    signal R_vertical_scale_offset: signed(12 downto 0);
+    type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(12 downto 0);
+    signal R_vertical_scale_offset: T_vertical_scale_offset;
+    constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
     signal R_vertical_scale_gain: signed(1 downto 0);
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
@@ -306,8 +307,8 @@ begin
               case R_clicked_box_id is
                 when C_window_vtaxis => -- mouse clicked on the vertical scale window
                   if R_dragging = '1' then -- drag Y to change vertical scale offset
-                    R_A(R_vertical_scale_offset'range) <= R_vertical_scale_offset;
-                    R_B(R_vertical_scale_offset'range) <= resize(R_mouse_dy, R_vertical_scale_offset'length);
+                    R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
                   else -- rotate wheel to change vertical gain
                     R_A(R_vertical_scale_gain'range) <= R_vertical_scale_gain;
@@ -375,10 +376,10 @@ begin
           when C_action_vertical_scale_offset_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"14"; -- trace vertical settings
-            R_rgtr_data(31 downto R_trace_selected'length+13) <= (others => '0');
-            R_rgtr_data(R_trace_selected'high+13 downto 13) <= R_trace_selected; -- R_trace_selected; -- ??
-            R_rgtr_data(R_vertical_scale_offset'range) <= S_APB(R_vertical_scale_offset'range);
-            R_vertical_scale_offset <= S_APB(R_vertical_scale_offset'range);
+            R_rgtr_data(31 downto 19) <= (others => '0');
+            R_rgtr_data(18 downto 13) <= std_logic_vector(resize(R_trace_selected,6));
+            R_rgtr_data(C_vertical_scale_offset'range) <= S_APB(C_vertical_scale_offset'range);
+            R_vertical_scale_offset(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_offset'range);
           when C_action_vertical_scale_gain_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
