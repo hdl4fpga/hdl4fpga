@@ -84,6 +84,56 @@ begin
 		end if;
 	end process;
 
+	uart_sin <= rs232_dce_rxd;
+	uart_rxc <= e_rx_clk;
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => uart_sin,
+		uart_ena  => uart_ena,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
+
+--	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+--	generic map (
+--		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+--		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+--	port map (
+--		stream_clk  => uart_rxc,
+--		stream_dv   => uart_rxdv,
+--		stream_data => uart_rxd,
+--
+--		chaini_data => uart_rxd,
+--
+--		chaino_frm  => toudpdaisy_frm, 
+--		chaino_irdy => toudpdaisy_irdy,
+--		chaino_data => toudpdaisy_data);
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => mii_rxc,
+		phy_rx_dv   => mii_rxdv,
+		phy_rx_d    => mii_rxd,
+
+		phy_txc     => mii_txc, 
+		phy_tx_en   => mii_txen,
+		phy_tx_d    => mii_txd,
+	
+		chaini_sel  => '0',
+
+		chaini_frm  => toudpdaisy_frm,
+		chaini_irdy => toudpdaisy_irdy,
+		chaini_data => toudpdaisy_data,
+
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
@@ -100,13 +150,12 @@ begin
 		default_sgmntbg  => b"00000000_11111111_11111111",
 		default_bg       => b"11111111_11111111_11111111")
 	port map (
-		si_clk      => mii_rxc,
-		si_frm      => mii_rxdv,
-		si_data     => mii_rxd,
-		so_clk      => mii_txc, 
-		so_dv       => mii_txen,
-		so_data     => mii_txd,
-		ipcfg_req   => ipcfg_req,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_irdy     => so_irdy,
+		so_data     => so_data,
 		input_clk   => input_clk,
 		input_data  => samples,
 		video_clk   => vga_clk,
