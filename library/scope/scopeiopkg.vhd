@@ -36,6 +36,11 @@ package scopeiopkg is
 	type gap_vector    is array (direction) of natural;
 	type margin_vector is array (border) of natural;
 
+	type style is record 
+		gap    : gap_vector;
+		margin : margin_vector;
+	end record;
+
 	constant division_length : natural := 32; -- Length in pixels
 
 	type display_layout is record 
@@ -68,10 +73,10 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (left => 4, top => 23, others => 0),
-			main_gap        => (vertical => 24, others => 0),
-			sgmnt_margin    => (others => 0),
-			sgmnt_gap       => (others => 0)),
+			main_margin     => (left => 1, top => 23, others => 0),
+			main_gap        => (vertical => 16, others => 0),
+			sgmnt_margin    => (left => 1, top => 2, bottom => 2, right => 1),
+			sgmnt_gap       => (others => 2)),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    3,
@@ -104,10 +109,10 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (left => 3, top => 4, others => 0),
-			main_gap        => (vertical => 3, others => 0),
-			sgmnt_margin    => (others => 0),
-			sgmnt_gap       => (others => 1)));
+			main_margin     => (others => 3),
+			main_gap        => (others => 1),
+			sgmnt_margin    => (others => 1),
+			sgmnt_gap       => (others => 0)));
 
 	type mode_layout is record
 		mode_id   : natural;
