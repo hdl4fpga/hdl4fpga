@@ -76,7 +76,7 @@ package scopeiopkg is
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
 			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
-			sgmnt_gap       => (others => 0)),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    3,

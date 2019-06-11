@@ -184,7 +184,7 @@ begin
 		default_vtbg     => b"000_000_11",
 		default_textbg   => b"000_000_00",
 		default_sgmntbg  => b"000_111_11",
-		default_bg       => b"111_111_11")
+		default_bg       => b"000_000_00")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,
