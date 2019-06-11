@@ -92,7 +92,7 @@ architecture beh of nexys2 is
 		mode600p  => (layout => 1, mul => 4, div => 5),
 		mode1080p => (layout => 0, mul => 3, div => 1));
 
-	constant video_mode : natural := mode1080p;
+	constant video_mode : natural := mode600p;
 
 begin
 
