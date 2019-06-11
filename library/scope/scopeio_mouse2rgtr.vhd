@@ -261,7 +261,9 @@ begin
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(12 downto 0);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
     constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
-    signal R_vertical_scale_gain: signed(1 downto 0);
+    type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(1 downto 0);
+    signal R_vertical_scale_gain: T_vertical_scale_gain;
+    signal C_vertical_scale_gain: signed(1 downto 0) := (others => '0');
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
     signal R_trace_selected: signed(unsigned_num_bits(C_inputs)-1 downto 0); -- FIXME for C_inputs = 64
@@ -311,8 +313,8 @@ begin
                     R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
                   else -- rotate wheel to change vertical gain
-                    R_A(R_vertical_scale_gain'range) <= R_vertical_scale_gain;
-                    R_B(R_vertical_scale_gain'range) <= resize(R_mouse_dz, R_vertical_scale_gain'length);
+                    R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_gain'range) <= resize(R_mouse_dz, C_vertical_scale_gain'length);
                     R_action_id <= C_action_vertical_scale_gain_change;
                   end if;
                 when C_window_grid => -- mouse clicked on the grid window
@@ -384,9 +386,9 @@ begin
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
             R_rgtr_data(31 downto 8) <= (others => '0');
-            R_rgtr_data(7 downto 6) <= S_APB(R_vertical_scale_gain'range);
+            R_rgtr_data(7 downto 6) <= S_APB(C_vertical_scale_gain'range);
             R_rgtr_data(5 downto 0) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
-            R_vertical_scale_gain <= S_APB(R_vertical_scale_gain'range);
+            R_vertical_scale_gain(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_gain'range);
           when C_action_trigger_level_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"12"; -- trigger level
