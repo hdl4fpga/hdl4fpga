@@ -56,7 +56,6 @@ end;
 
 architecture def of scopeio_segment is
 
-	subtype sample is std_logic_vector(0 to samples'length/inputs-1);
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -148,7 +147,7 @@ begin
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
-		row <= unsigned(trigger_level)+2**(y'length-2)-unsigned(vt_offset);
+		row <= resize(unsigned(trigger_level)+2**(y'length-2)-unsigned(vt_offset), row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
@@ -170,6 +169,8 @@ begin
 	end block;
 
 	trace_b : block
+		subtype sample is std_logic_vector(samples'length/inputs-1 downto 0);
+
 		signal samples2 : std_logic_vector(samples'range);
 		signal trace_on : std_logic;
 		signal ena      : std_logic;
@@ -193,15 +194,15 @@ begin
 			do(0) => ena);
 
 		process(samples, vt_offsets)
-			variable samples1 : unsigned(0 to samples'length-1);
-			variable offsets  : unsigned(0 to vt_offsets'length-1);
+			variable samples1 : unsigned(samples'length-1 downto 0);
+			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
 		begin
 			samples1 := unsigned(samples);
 			offsets  := unsigned(vt_offsets);
 			for i in 0 to inputs-1 loop
-				samples1(sample'range) := samples1(sample'range) - offsets(0 to vt_offset'length-1);
-				samples1 := samples1 rol sample'length;
-				offsets  := offsets  rol vt_offset'length;
+				samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
+				samples1 := samples1 ror sample'length;
+				offsets  := offsets  ror vt_offset'length;
 			end loop;
 			samples2 <= std_logic_vector(samples1);
 		end process;
