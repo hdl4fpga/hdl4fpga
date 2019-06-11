@@ -70,7 +70,7 @@ architecture def of scopeio_mouse2rgtr is
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
   -- screen y-coordinate of Y=0 on the grid
   constant C_grid_y0: signed(C_XY_coordinate_bits-1 downto 0) := 
-    to_signed(grid_y(layout) + grid_height(layout)/2 + sgmnt_margintop(layout),C_XY_coordinate_bits);
+    to_signed(grid_y(layout) + grid_height(layout)/2,C_XY_coordinate_bits);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -91,28 +91,28 @@ architecture def of scopeio_mouse2rgtr is
   constant C_list_box: T_list_box :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
-     to_unsigned( vtaxis_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned( vtaxis_x(layout)+sgmnt_marginright(layout)+  vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
-     to_unsigned( vtaxis_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned( vtaxis_y(layout)+sgmnt_marginbottom(layout)+ vtaxis_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned( vtaxis_x(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned( vtaxis_x(layout)+  vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
+     to_unsigned( vtaxis_y(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned( vtaxis_y(layout)+ vtaxis_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 1: C_window_grid top center window (the grid) C_window_grid
-     to_unsigned(   grid_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+sgmnt_marginright(layout)+grid_width(layout)-1,    C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+sgmnt_marginbottom(layout)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   grid_x(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+grid_width(layout)-1,    C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 2: top right window (text) C_window_textbox
-     to_unsigned(textbox_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned(textbox_x(layout)+sgmnt_marginright(layout)+textbox_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned(textbox_y(layout)+sgmnt_margintop(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned(textbox_y(layout)+sgmnt_marginbottom(layout)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned(textbox_x(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned(textbox_x(layout)+textbox_width(layout),   C_XY_coordinate_bits), -- Xmax
+     to_unsigned(textbox_y(layout),                           C_XY_coordinate_bits), -- Ymin
+     to_unsigned(textbox_y(layout)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 3: thin window below the grid (horizontal scale) C_window_hzaxis
-     to_unsigned( hzaxis_x(layout)+sgmnt_marginleft(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned( hzaxis_x(layout)+sgmnt_marginright(layout)+ hzaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned( hzaxis_y(layout)+sgmnt_margintop(layout)- 1,                        C_XY_coordinate_bits), -- Ymin
-     to_unsigned( hzaxis_y(layout)+sgmnt_marginbottom(layout)+ hzaxis_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned( hzaxis_x(layout),                          C_XY_coordinate_bits), -- Xmin
+     to_unsigned( hzaxis_x(layout)+ hzaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
+     to_unsigned( hzaxis_y(layout)- 1,                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned( hzaxis_y(layout)+ hzaxis_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
@@ -258,8 +258,9 @@ begin
     constant C_action_horizontal_scale_timebase_change: integer := 7;
     constant C_action_pointer_last: integer := C_action_horizontal_scale_timebase_change;
     signal R_action_id: integer range C_action_nop to C_action_pointer_last := 0; -- which action to take
-
-    signal R_vertical_scale_offset: signed(13 downto 0);
+    type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(12 downto 0);
+    signal R_vertical_scale_offset: T_vertical_scale_offset;
+    constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
     signal R_vertical_scale_gain: signed(1 downto 0);
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
@@ -306,8 +307,8 @@ begin
               case R_clicked_box_id is
                 when C_window_vtaxis => -- mouse clicked on the vertical scale window
                   if R_dragging = '1' then -- drag Y to change vertical scale offset
-                    R_A(R_vertical_scale_offset'range) <= R_vertical_scale_offset;
-                    R_B(R_vertical_scale_offset'range) <= resize(R_mouse_dy, R_vertical_scale_offset'length);
+                    R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
                   else -- rotate wheel to change vertical gain
                     R_A(R_vertical_scale_gain'range) <= R_vertical_scale_gain;
@@ -375,11 +376,10 @@ begin
           when C_action_vertical_scale_offset_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"14"; -- trace vertical settings
-            R_rgtr_data(31 downto 18) <= (others => '0');
-            R_rgtr_data(17 downto 16) <= (others => '0'); -- R_trace_selected; -- ??
-            R_rgtr_data(15 downto 14) <= (others => '0'); -- R_trace_selected; -- ??
-            R_rgtr_data(R_vertical_scale_offset'range) <= S_APB(R_vertical_scale_offset'range);
-            R_vertical_scale_offset <= S_APB(R_vertical_scale_offset'range);
+            R_rgtr_data(31 downto 19) <= (others => '0');
+            R_rgtr_data(18 downto 13) <= std_logic_vector(resize(R_trace_selected,6));
+            R_rgtr_data(C_vertical_scale_offset'range) <= S_APB(C_vertical_scale_offset'range);
+            R_vertical_scale_offset(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_offset'range);
           when C_action_vertical_scale_gain_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
