@@ -97,6 +97,22 @@ architecture beh of s3estarter is
 	signal so_irdy   : std_logic;
 	signal so_data   : std_logic_vector(8-1 downto 0);
 
+	type display_param is record
+		layout : natural;
+		mul    : natural;
+		div    : natural;
+	end record;
+
+	constant mode600p  : natural := 0;
+	constant mode1080p : natural := 1;
+
+	type displayparam_vector is array (natural range <>) of display_param;
+	constant video_params : displayparam_vector(0 to 1) := (
+		mode600p  => (layout => 1, mul => 4, div => 5),
+		mode1080p => (layout => 0, mul => 3, div => 1));
+
+	constant video_mode : natural := mode1080p;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -106,9 +122,10 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
+		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 4,
-		dfs_div => 5)
+		dfs_mul => video_params(video_mode).mul,
+		dfs_div => video_params(video_mode).div)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -334,7 +351,7 @@ begin
 	
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 1,
+		vlayout_id       => video_params(video_mode).layout,
 		inputs           => inputs,
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",

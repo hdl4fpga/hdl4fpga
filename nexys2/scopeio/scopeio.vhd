@@ -78,6 +78,22 @@ architecture beh of nexys2 is
 
 	signal display   : std_logic_vector(0 to 16-1);
 
+	type display_param is record
+		layout : natural;
+		mul    : natural;
+		div    : natural;
+	end record;
+
+	constant mode600p  : natural := 0;
+	constant mode1080p : natural := 1;
+
+	type displayparam_vector is array (natural range <>) of display_param;
+	constant video_params : displayparam_vector(0 to 1) := (
+		mode600p  => (layout => 1, mul => 4, div => 5),
+		mode1080p => (layout => 0, mul => 3, div => 1));
+
+	constant video_mode : natural := mode1080p;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -87,9 +103,10 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
+		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 3, --4,
-		dfs_div => 1) --5)
+		dfs_mul => video_params(video_mode).mul,
+		dfs_div => video_params(video_mode).div)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -157,7 +174,7 @@ begin
 	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 0,
+		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",
