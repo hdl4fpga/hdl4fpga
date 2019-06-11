@@ -58,6 +58,21 @@ architecture beh of nexys2 is
 		return aux;
 	end;
 
+	function sintab (
+		constant x0 : integer;
+		constant x1 : integer;
+		constant n  : integer)
+		return std_logic_vector is
+		variable y   : real;
+		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+	begin
+		for i in 0 to x1-x0 loop
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0)/2.0;
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
+		end loop;
+		return aux;
+	end;
+
 	constant baudrate : natural := 115200;
 
 	signal input_addr : std_logic_vector(11-1 downto 0);
@@ -78,6 +93,22 @@ architecture beh of nexys2 is
 
 	signal display   : std_logic_vector(0 to 16-1);
 
+	type display_param is record
+		layout : natural;
+		mul    : natural;
+		div    : natural;
+	end record;
+
+	constant mode600p  : natural := 0;
+	constant mode1080p : natural := 1;
+
+	type displayparam_vector is array (natural range <>) of display_param;
+	constant video_params : displayparam_vector(0 to 1) := (
+		mode600p  => (layout => 1, mul => 4, div => 5),
+		mode1080p => (layout => 0, mul => 3, div => 1));
+
+	constant video_mode : natural := mode600p;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -87,9 +118,10 @@ begin
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
+		dfs_frequency_mode => "low",
 		dcm_per => 20.0,
-		dfs_mul => 3, --4,
-		dfs_div => 1) --5)
+		dfs_mul => video_params(video_mode).mul,
+		dfs_div => video_params(video_mode).div)
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
@@ -105,7 +137,8 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
+		bitrom => sintab(-1024+256, 1023+256, sample_size))
+--		bitrom => squaretab(period => 32, duty => 25, table_size => 2048, sample_size => sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
@@ -157,7 +190,7 @@ begin
 	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		vlayout_id  => 0,
+		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
 		default_gridbg   => b"000_000_00",
@@ -167,7 +200,7 @@ begin
 		default_vtbg     => b"000_000_11",
 		default_textbg   => b"000_000_00",
 		default_sgmntbg  => b"000_111_11",
-		default_bg       => b"111_111_11")
+		default_bg       => b"000_000_00")
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

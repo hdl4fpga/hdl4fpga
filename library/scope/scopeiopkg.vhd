@@ -73,10 +73,10 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (left => 1, top => 23, others => 0),
+			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (left => 1, top => 2, bottom => 2, right => 1),
-			sgmnt_gap       => (others => 2)),
+			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    3,
@@ -109,10 +109,10 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (top => 5, left => 2, others => 0),
+			main_margin     => (top => 5, left => 1, others => 0),
 			main_gap        => (others => 1),
 			sgmnt_margin    => (others => 1),
-			sgmnt_gap       => (others => 0)));
+			sgmnt_gap       => (horizontal => 1, others => 0)));
 
 	type mode_layout is record
 		mode_id   : natural;

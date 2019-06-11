@@ -209,7 +209,7 @@ begin
 
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
-			latency => latency,
+			latency => latency+1,
 			inputs  => inputs)
 		port map (
 			clk     => video_clk,
