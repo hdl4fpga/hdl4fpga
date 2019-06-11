@@ -375,7 +375,7 @@ begin
 
 
 --		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
-		mem_e : entity hdl4fpga.bram(inference)           -- Faster and smaller. Less tested for portabilty
+		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized faster and smaller but it lacks testing:w for portabilty
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
