@@ -299,7 +299,7 @@ begin
 		end if;
 	end process;
 
-	uart_sin <= rs232_dte_rxd;
+	uart_sin <= rs232_dce_rxd;
 	uart_rxc <= e_rx_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
