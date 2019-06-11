@@ -109,10 +109,10 @@ package scopeiopkg is
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
-			main_margin     => (top => 5, left => 2, others => 0),
+			main_margin     => (top => 5, left => 1, others => 0),
 			main_gap        => (others => 1),
 			sgmnt_margin    => (others => 1),
-			sgmnt_gap       => (others => 0)));
+			sgmnt_gap       => (horizontal => 1, others => 0)));
 
 	type mode_layout is record
 		mode_id   : natural;

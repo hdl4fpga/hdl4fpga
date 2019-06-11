@@ -187,7 +187,7 @@ begin
 		align_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => 3))
+			d => (0 => 2))
 		port map (
 			clk   => video_clk,
 			di(0) => trace_on,
@@ -209,7 +209,7 @@ begin
 
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
-			latency => latency,
+			latency => latency+1,
 			inputs  => inputs)
 		port map (
 			clk     => video_clk,
