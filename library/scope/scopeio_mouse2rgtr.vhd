@@ -52,6 +52,8 @@ architecture def of scopeio_mouse2rgtr is
   signal R_mouse_dx     : signed(mouse_dx'range);
   signal R_mouse_dy     : signed(mouse_dy'range);
   signal R_mouse_dz     : signed(mouse_dz'range);
+  
+  constant C_mouse_dz0   : signed(mouse_dz'range) := (others => '0');
 
   signal R_mouse_x      : signed(C_XY_coordinate_bits-1 downto 0);
   signal R_mouse_y      : signed(C_XY_coordinate_bits-1 downto 0);
@@ -255,13 +257,16 @@ begin
     constant C_action_vertical_scale_gain_change: integer := 4;
     constant C_action_trigger_level_change: integer := 5;
     constant C_action_horizontal_scale_offset_change: integer := 6;
-    constant C_action_horizontal_scale_timebase_change: integer := 7;
+    constant C_action_vertical_scale_color_change: integer := 7;
+    constant C_action_horizontal_scale_timebase_change: integer := 8;
     constant C_action_pointer_last: integer := C_action_horizontal_scale_timebase_change;
     signal R_action_id: integer range C_action_nop to C_action_pointer_last := 0; -- which action to take
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(12 downto 0);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
     constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
-    signal R_vertical_scale_gain: signed(1 downto 0);
+    type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(1 downto 0);
+    signal R_vertical_scale_gain: T_vertical_scale_gain;
+    signal C_vertical_scale_gain: signed(1 downto 0) := (others => '0');
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
     signal R_trace_selected: signed(unsigned_num_bits(C_inputs)-1 downto 0); -- FIXME for C_inputs = 64
@@ -311,8 +316,8 @@ begin
                     R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
                   else -- rotate wheel to change vertical gain
-                    R_A(R_vertical_scale_gain'range) <= R_vertical_scale_gain;
-                    R_B(R_vertical_scale_gain'range) <= resize(R_mouse_dz, R_vertical_scale_gain'length);
+                    R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_gain'range) <= resize(R_mouse_dz, C_vertical_scale_gain'length);
                     R_action_id <= C_action_vertical_scale_gain_change;
                   end if;
                 when C_window_grid => -- mouse clicked on the grid window
@@ -344,9 +349,15 @@ begin
                   end if;
                 when C_window_textbox => -- mouse clicked on the text window (to the right of the grid)
                   -- rotate wheel to change trigger source (indicated by frame color)
-                  R_A(R_trace_selected'range) <= R_trace_selected;
-                  R_B(R_trace_selected'range) <= resize(-R_mouse_dz, R_trace_selected'length);
-                  R_action_id <= C_action_trace_select;
+                  if R_mouse_dz /= C_mouse_dz0 then
+                    R_A(R_trace_selected'range) <= R_trace_selected;
+                    R_B(R_trace_selected'range) <= resize(-R_mouse_dz, R_trace_selected'length);
+                    R_action_id <= C_action_trace_select;
+                  else -- HACK: when mouse is moved, redraw scale with newly selected values
+                    R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_offset'range) <= (others => '0'); -- no change just redraw
+                    R_action_id <= C_action_vertical_scale_offset_change;
+                  end if;
                 when C_window_hzaxis => -- mouse clicked on the thin window below grid
                   if R_dragging = '1' then -- drag X to change level
                     R_A(R_horizontal_scale_offset'range) <= R_horizontal_scale_offset;
@@ -384,9 +395,16 @@ begin
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
             R_rgtr_data(31 downto 8) <= (others => '0');
-            R_rgtr_data(7 downto 6) <= S_APB(R_vertical_scale_gain'range);
+            R_rgtr_data(7 downto 6) <= S_APB(C_vertical_scale_gain'range);
             R_rgtr_data(5 downto 0) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
-            R_vertical_scale_gain <= S_APB(R_vertical_scale_gain'range);
+            R_vertical_scale_gain(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_gain'range);
+          when C_action_vertical_scale_color_change =>
+            R_rgtr_dv <= '1';
+            R_rgtr_id <= x"11"; -- palette (color)
+            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
+            R_rgtr_data(6 downto 4) <= (others => '0');
+            R_rgtr_data(3 downto 0) <= x"4"; -- 4: vertical scale text color indicates selected channel/trace
+            R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
           when C_action_trigger_level_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"12"; -- trigger level
@@ -473,6 +491,7 @@ begin
   rgtr_data(9 downto 7) <= R_mouse_z(2 downto 0); -- rotating wheel changes color
   rgtr_data(6 downto 4) <= (others => '0');
   rgtr_data(3 downto 0) <= x"0"; -- grid color
+  -- x"4" vertical scale text color
   -- x"7" frame color
   -- x"6" bg color of text window
   -- x"3" bg color of thin window
