@@ -26,6 +26,31 @@ architecture beh of nuhs3adsp is
 
 	signal ipcfg_req : std_logic;
 	signal input_clk : std_logic;
+
+	constant baudrate : natural := 115200;
+
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+
+	signal toudpdaisy_clk  : std_logic;
+	signal toudpdaisy_frm  : std_logic;
+	signal toudpdaisy_irdy : std_logic;
+	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
+
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
+
+	signal so_clk    : std_logic;
+	signal so_frm    : std_logic;
+	signal so_trdy   : std_logic;
+	signal so_irdy   : std_logic;
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -84,8 +109,23 @@ begin
 		end if;
 	end process;
 
-	uart_sin <= rs232_dce_rxd;
-	uart_rxc <= e_rx_clk;
+	process (mii_rxc)
+		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
+	begin
+		if rising_edge(mii_rxc) then
+			if cntr >= max_count-1 then
+				uart_ena <= '1';
+				cntr := (others => '0');
+			else
+				uart_ena <= '0';
+				cntr := cntr + 1;
+			end if;
+		end if;
+	end process;
+
+	uart_sin <= rs232_rd;
+	uart_rxc <= mii_rxc;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
@@ -134,11 +174,10 @@ begin
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 	
+	si_clk <= mii_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
-		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"11111111_11111111_11111111",
 		default_gridfg   => b"11111111_00000000_00000000",
 		default_gridbg   => b"00000000_00000000_00000000",

@@ -349,6 +349,7 @@ begin
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 	
+	si_clk <= e_rx_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id       => video_params(video_mode).layout,

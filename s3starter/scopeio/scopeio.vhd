@@ -164,11 +164,11 @@ begin
 
 		chaini_data => uart_rxd,
 
-		chaino_clk  => si_clk, 
 		chaino_frm  => si_frm, 
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 
+	si_clk <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id       => video_params(video_mode).layout,
