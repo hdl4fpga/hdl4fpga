@@ -773,7 +773,12 @@ begin
 			video_vtcntr => video_vtcntr,
 			video_dot    => pointer_dot);
 
-		video_color <= (video_color'range => '1') when pointer_dot='1' else scope_color; 
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				video_color <= scope_color or (video_color'range => pointer_dot);
+			end if;
+		end process;
 	end block;
 
 
