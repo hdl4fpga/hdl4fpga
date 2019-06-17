@@ -77,9 +77,10 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-		x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
+				x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
 			end if;
 		end process;
+
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
 			latency => latency+4)

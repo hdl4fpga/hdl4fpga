@@ -337,9 +337,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+use hdl4fpga.std.all;
+
 entity draw_vline is
 	generic (
-		n : natural := 12);
+		n : natural := 0);
 	port(
 		clk  : in  std_logic;
 		ena  : in  std_logic := '1';
@@ -348,9 +351,33 @@ entity draw_vline is
 		dot  : out std_logic);
 end;
 
-library hdl4fpga;
+architecture def of draw_vline is
+	signal enad : std_logic;
+begin
+	ena_e : entity hdl4fpga.align
+	generic map (
+		n => 1,
+		d => (0 to 0 => 2))
+	port map (
+		clk => clk,
+		di(0) => ena,
+		do(0) => enad);
 
-architecture arc of draw_vline is
+	process (clk)
+		variable le1, le2 : std_logic;
+		variable eq1, eq2 : std_logic;
+	begin
+		if rising_edge(clk) then
+			dot <= ((le1 xor le2) or eq2 or eq1) and enad;
+			le1 := le2;
+			eq1 := eq2;
+			le2 := setif(unsigned(row1) <= unsigned(row2));
+			eq2 := setif(unsigned(row1)  = unsigned(row2));
+		end if;
+	end process;
+end;
+
+architecture serial_arith of draw_vline is
 	signal le1, le2 : std_logic;
 	signal eq1, eq2 : std_logic;
 	signal enad : std_logic;
