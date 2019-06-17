@@ -72,7 +72,7 @@ architecture def of scopeio_mouse2rgtr is
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
   -- screen y-coordinate of Y=0 on the grid
   constant C_grid_y0: signed(C_XY_coordinate_bits-1 downto 0) := 
-    to_signed(grid_y(layout) + grid_height(layout)/2,C_XY_coordinate_bits);
+    to_signed(grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),C_XY_coordinate_bits);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -93,28 +93,28 @@ architecture def of scopeio_mouse2rgtr is
   constant C_list_box: T_list_box :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
-     to_unsigned( vtaxis_x(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned( vtaxis_x(layout)+  vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
-     to_unsigned( vtaxis_y(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned( vtaxis_y(layout)+ vtaxis_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned( vtaxis_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned( vtaxis_x(layout)+layout.main_margin(left)+vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
+     to_unsigned( vtaxis_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned( vtaxis_y(layout)+layout.main_margin(top)+vtaxis_height(layout),  C_XY_coordinate_bits), -- Ymax
 
      -- 1: C_window_grid top center window (the grid) C_window_grid
-     to_unsigned(   grid_x(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned(   grid_x(layout)+grid_width(layout)-1,    C_XY_coordinate_bits), -- Xmax
-     to_unsigned(   grid_y(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned(   grid_y(layout)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
+     to_unsigned(   grid_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(   grid_x(layout)+layout.main_margin(left)+grid_width(layout)-1,  C_XY_coordinate_bits), -- Xmax
+     to_unsigned(   grid_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 2: top right window (text) C_window_textbox
-     to_unsigned(textbox_x(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned(textbox_x(layout)+textbox_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned(textbox_y(layout),                           C_XY_coordinate_bits), -- Ymin
-     to_unsigned(textbox_y(layout)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned(textbox_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned(textbox_x(layout)+layout.main_margin(left)+textbox_width(layout), C_XY_coordinate_bits), -- Xmax
+     to_unsigned(textbox_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     to_unsigned(textbox_y(layout)+layout.main_margin(top)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
 
      -- 3: thin window below the grid (horizontal scale) C_window_hzaxis
-     to_unsigned( hzaxis_x(layout),                          C_XY_coordinate_bits), -- Xmin
-     to_unsigned( hzaxis_x(layout)+ hzaxis_width(layout),   C_XY_coordinate_bits), -- Xmax
-     to_unsigned( hzaxis_y(layout)- 1,                        C_XY_coordinate_bits), -- Ymin
-     to_unsigned( hzaxis_y(layout)+ hzaxis_height(layout), C_XY_coordinate_bits), -- Ymax
+     to_unsigned( hzaxis_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned( hzaxis_x(layout)+layout.main_margin(left)+hzaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
+     to_unsigned( hzaxis_y(layout)+layout.main_margin(top)-1,                      C_XY_coordinate_bits), -- Ymin
+     to_unsigned( hzaxis_y(layout)+layout.main_margin(top)+layout.sgmnt_margin(bottom)+hzaxis_height(layout),  C_XY_coordinate_bits), -- Ymax
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
@@ -252,26 +252,30 @@ begin
     signal R_A, R_B, S_APB: signed(15 downto 0); -- for register arithmetic function unit
     constant C_action_nop: integer := 0;
     constant C_action_trace_select: integer := 1;
-    constant C_action_pointer_update: integer := 2;
-    constant C_action_vertical_scale_offset_change: integer := 3;
-    constant C_action_vertical_scale_gain_change: integer := 4;
-    constant C_action_trigger_level_change: integer := 5;
-    constant C_action_horizontal_scale_offset_change: integer := 6;
-    constant C_action_vertical_scale_color_change: integer := 7;
-    constant C_action_horizontal_scale_timebase_change: integer := 8;
+    constant C_action_frame_color_as_trace_selected: integer := 2;
+    constant C_action_pointer_update: integer := 3;
+    constant C_action_vertical_scale_offset_change: integer := 4;
+    constant C_action_vertical_scale_gain_change: integer := 5;
+    constant C_action_trigger_level_change: integer := 6;
+    constant C_action_horizontal_scale_offset_change: integer := 7;
+    constant C_action_vertical_scale_color_change: integer := 8;
+    constant C_action_horizontal_scale_timebase_change: integer := 9;
     constant C_action_pointer_last: integer := C_action_horizontal_scale_timebase_change;
     signal R_action_id: integer range C_action_nop to C_action_pointer_last := 0; -- which action to take
-    type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(12 downto 0);
-    signal R_vertical_scale_offset: T_vertical_scale_offset;
     constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
-    type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(1 downto 0);
-    signal R_vertical_scale_gain: T_vertical_scale_gain;
+    type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(C_vertical_scale_offset'range);
+    signal R_vertical_scale_offset: T_vertical_scale_offset;
+    signal R_after_trace_select: unsigned(7 downto 0);
     signal C_vertical_scale_gain: signed(1 downto 0) := (others => '0');
+    type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
+    signal R_vertical_scale_gain: T_vertical_scale_gain;
     signal R_horizontal_scale_offset: signed(15 downto 0);
     signal R_horizontal_scale_timebase: signed(3 downto 0);
     signal R_trace_selected: signed(unsigned_num_bits(C_inputs)-1 downto 0); -- FIXME for C_inputs = 64
-    signal R_trigger_level: signed(8 downto 0);
-    signal R_trigger_source: signed(1 downto 0);
+    constant C_trigger_level: signed(8 downto 0) := (others => '0');
+    type T_trigger_level is array (0 to C_inputs-1) of signed(C_trigger_level'range);
+    signal R_trigger_level: T_trigger_level;
+    signal R_trigger_source: signed(1 downto 0); -- FIXME: for more than 4 channels
     signal R_trigger_edge: std_logic;
     signal R_trigger_freeze: std_logic;
     -- FIXME trace color list should not be hardcoded
@@ -322,18 +326,18 @@ begin
                   end if;
                 when C_window_grid => -- mouse clicked on the grid window
                   if R_dragging = '1' then -- drag Y to change trigger level
-                    R_A(R_trigger_level'range) <= R_trigger_level;
-                    R_B(R_trigger_level'range) <= resize(R_mouse_dy, R_trigger_level'length);
+                    R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
+                    R_B(C_trigger_level'range) <= resize(R_mouse_dy, C_trigger_level'length);
                     R_action_id <= C_action_trigger_level_change;
                   else  -- not dragging: clicking or wheel rotation
                     if R_mouse_btn(0) = '1' and R_prev_mouse_btn(0) = '0' then
                       -- left click to directy set the trigger level
-                      R_A(R_trigger_level'range) <= resize(C_grid_y0, R_trigger_level'length);
-                      R_B(R_trigger_level'range) <= resize(-R_mouse_y, R_trigger_level'length);
+                      R_A(C_trigger_level'range) <= resize(C_grid_y0 - R_vertical_scale_offset(to_integer(R_trace_selected)), C_trigger_level'length);
+                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
                     else
                       -- rotate wheel to change trigger level
-                      R_A(R_trigger_level'range) <= R_trigger_level;
-                      R_B(R_trigger_level'range) <= resize(-R_mouse_dz, R_trigger_level'length);
+                      R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
+                      R_B(C_trigger_level'range) <= resize(-R_mouse_dz, C_trigger_level'length);
                     end if;
                     -- click wheel to change edge, right click to freeze
                     -- HACK: using free bits in the adder to toggle 0/1
@@ -349,15 +353,10 @@ begin
                   end if;
                 when C_window_textbox => -- mouse clicked on the text window (to the right of the grid)
                   -- rotate wheel to change trigger source (indicated by frame color)
-                  if R_mouse_dz /= C_mouse_dz0 then
-                    R_A(R_trace_selected'range) <= R_trace_selected;
-                    R_B(R_trace_selected'range) <= resize(-R_mouse_dz, R_trace_selected'length);
-                    R_action_id <= C_action_trace_select;
-                  else -- HACK: when mouse is moved, redraw scale with newly selected values
-                    R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
-                    R_B(C_vertical_scale_offset'range) <= (others => '0'); -- no change just redraw
-                    R_action_id <= C_action_vertical_scale_offset_change;
-                  end if;
+                  R_A(R_trace_selected'range) <= R_trace_selected;
+                  R_B(R_trace_selected'range) <= resize(-R_mouse_dz, R_trace_selected'length);
+                  R_action_id <= C_action_trace_select;
+                  R_after_trace_select <= (others => '0'); -- HACK: to switch scale
                 when C_window_hzaxis => -- mouse clicked on the thin window below grid
                   if R_dragging = '1' then -- drag X to change level
                     R_A(R_horizontal_scale_offset'range) <= R_horizontal_scale_offset;
@@ -372,7 +371,29 @@ begin
                   R_action_id <= C_action_pointer_update;
               end case;
             else -- R_mouse_update = '0'
-              R_action_id <= C_action_nop;
+              if R_after_trace_select(R_after_trace_select'high) = '0' then
+                -- rgtr2daisy must serialize commands - schedule them slowly
+                case R_after_trace_select(R_after_trace_select'high-1 downto 0) is
+                  when to_unsigned(16, R_after_trace_select'high) =>
+                    -- switch to selected new vertical scale (no change)
+                    R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
+                    R_B(C_vertical_scale_offset'range) <= (others => '0'); -- no change just redraw
+                    R_action_id <= C_action_vertical_scale_offset_change;
+                  when to_unsigned(32, R_after_trace_select'high) =>
+                    -- switch to selected new trigger level (no change)
+                    R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
+                    R_B(C_trigger_level'range) <= (others => '0'); -- no change
+                    R_action_id <= C_action_trigger_level_change;
+                  when to_unsigned(48, R_after_trace_select'high) =>
+                    -- set frame color
+                    R_action_id <= C_action_frame_color_as_trace_selected;
+                  when others =>
+                    R_action_id <= C_action_nop;
+                end case;
+                R_after_trace_select <= R_after_trace_select + 1;
+              else
+                R_action_id <= C_action_nop;
+              end if;
             end if;
       end if; -- rising edge
     end process;
@@ -410,10 +431,10 @@ begin
             R_rgtr_id <= x"12"; -- trigger level
             R_rgtr_data(31 downto R_trace_selected'length+11) <= (others => '0');
             R_rgtr_data(R_trace_selected'length+10 downto 11) <= R_trace_selected;
-            R_rgtr_data(10 downto 2) <= S_APB(R_trigger_level'range);
+            R_rgtr_data(10 downto 2) <= S_APB(C_trigger_level'range);
             R_rgtr_data(1) <= S_APB(S_APB'high); -- when '1' falling edge
             R_rgtr_data(0) <= S_APB(S_APB'high-2); -- when '1' trigger freeze
-            R_trigger_level <= S_APB(R_trigger_level'range);
+            R_trigger_level(to_integer(R_trace_selected)) <= S_APB(C_trigger_level'range);
             R_trigger_edge <= S_APB(S_APB'high);
             R_trigger_freeze <= S_APB(S_APB'high-2);
           when C_action_horizontal_scale_offset_change =>
@@ -435,13 +456,20 @@ begin
             R_rgtr_id <= x"11"; -- palette (color)
             R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
             R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
+            R_rgtr_data(3 downto 0) <= x"4"; -- 4: vertical scale color indicates selected channel/trace
             if unsigned(S_APB(R_trace_selected'range)) < C_inputs then
               R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(S_APB(R_trace_selected'range)));
               R_trace_selected <= S_APB(R_trace_selected'range);
             else -- reject change
               R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
             end if;
+          when C_action_frame_color_as_trace_selected =>
+            R_rgtr_dv <= '1';
+            R_rgtr_id <= x"11"; -- palette (color)
+            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
+            R_rgtr_data(6 downto 4) <= (others => '0');
+            R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
+            R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register
