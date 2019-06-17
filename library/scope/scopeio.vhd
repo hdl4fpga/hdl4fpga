@@ -375,7 +375,7 @@ begin
 
 
 --		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
-		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized faster and smaller but it lacks testing:w for portabilty
+		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testing:w for portabilty
 		port map (
 			clka  => wr_clk,
 			addra => wr_addr,
@@ -478,15 +478,18 @@ begin
 				video_yon  => video_vton,
 				box_xedge  => pbox_xedge,
 				box_yedge  => pbox_yedge,
+				box_eox    => pbox_eox,
 				box_xon    => pbox_xon,
 				box_yon    => pbox_yon,
-				box_eox    => pbox_eox,
 				box_xdiv   => pbox_xdiv,
 				box_nexty  => pbox_nexty,
 				box_ydiv   => pbox_ydiv);
 
-			storagebsel_p : process (pbox_xdiv, pbox_ydiv)
+--			storagebsel_p : process (pbox_xdiv, pbox_ydiv)
+--			begin
+			process (video_clk)
 			begin
+				if rising_edge(video_clk) then
 				sgmnt_on     <= '0';
 				storage_bsel <= (others => '0');
 				for i in 0 to layout.num_of_segments-1 loop
@@ -495,6 +498,7 @@ begin
 						storage_bsel(i) <= '1';
 					end if;
 				end loop;
+					end if;
 			end process;
 
 			sgmnt_b : block
@@ -527,64 +531,106 @@ begin
 				signal sgmnt_x      : std_logic_vector(cbox_x'range);
 				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 
-				signal pbox_vxon    : std_logic;
-				signal pbox_vyon    : std_logic;
-
 			begin
 
-				pbox_vxon <= sgmnt_on and pbox_xon;
-				pbox_vyon <= pbox_yon;
+				mainbox_b : block
+					signal xon   : std_logic;
+					signal yon   : std_logic;
+					signal eox   : std_logic;
+					signal xedge : std_logic;
+					signal yedge : std_logic;
+					signal nexty : std_logic;
+					signal x      : std_logic_vector(pboxx_size-1 downto 0);
+					signal y      : std_logic_vector(pboxy_size-1 downto 0);
+				begin 
+
+					pipergtr_p : process (video_clk)
+					begin
+						if rising_edge(video_clk) then
+							xon   <= sgmnt_on and pbox_xon;
+							yon   <= pbox_yon;
+							eox   <= pbox_eox;
+							xedge <= pbox_xedge;
+							yedge <= pbox_yedge;
+							nexty <= pbox_nexty;
+						end if;
+					end process;
 				
-				parent_e : entity hdl4fpga.videobox
-				port map (
-					video_clk => video_clk,
-					video_xon => pbox_vxon,
-					video_yon => pbox_vyon,
-					video_eox => pbox_eox,
-					box_xedge => pbox_xedge,
-					box_yedge => pbox_yedge,
-					box_x     => pbox_x,
-					box_y     => pbox_y);
+					videobox_e : entity hdl4fpga.videobox
+					port map (
+						video_clk => video_clk,
+						video_xon => xon,
+						video_yon => yon,
+						video_eox => eox,
+						box_xedge => xedge,
+						box_yedge => yedge,
+						box_x     => x,
+						box_y     => y);
 
-				mainpipeline_p : process (video_clk)
+					pipergtr1_p : process (video_clk)
+					begin
+						if rising_edge(video_clk) then
+							cbox_vxon <= xon;
+							cbox_vyon <= yon and not nexty;
+							cbox_vx   <= x;
+							cbox_vy   <= y;
+						end if;
+					end process;
+
+				end block;
+
+				sgmntlayout_b : block
 				begin
-					if rising_edge(video_clk) then
-						cbox_vxon <= pbox_vxon;
-						cbox_vyon <= pbox_vyon and not pbox_nexty;
-						cbox_vx   <= pbox_x;
-						cbox_vy   <= pbox_y;
-					end if;
-				end process;
 
-				layout_e : entity hdl4fpga.videobox_layout
-				generic map (
-					x_edges     => sgmnt_xedges(layout),
-					y_edges     => sgmnt_yedges(layout))
-				port map (
-					video_clk   => video_clk,
-					video_xon   => cbox_vxon,
-					video_yon   => cbox_vyon,
-					video_x     => cbox_vx,
-					video_y     => cbox_vy,
-					box_xon     => cbox_xon,
-					box_yon     => cbox_yon,
-					box_xedge   => cbox_xedge,
-					box_yedge   => cbox_yedge,
-					box_eox     => cbox_eox,
-					box_xdiv    => cbox_xdiv,
-					box_ydiv    => cbox_ydiv);
+					layout_e : entity hdl4fpga.videobox_layout
+					generic map (
+						x_edges   => sgmnt_xedges(layout),
+						y_edges   => sgmnt_yedges(layout))
+					port map (
+						video_clk => video_clk,
+						video_xon => cbox_vxon,
+						video_yon => cbox_vyon,
+						video_x   => cbox_vx,
+						video_y   => cbox_vy,
+						box_xon   => cbox_xon,
+						box_yon   => cbox_yon,
+						box_eox   => cbox_eox,
+						box_xedge => cbox_xedge,
+						box_yedge => cbox_yedge,
+						box_xdiv  => cbox_xdiv,
+						box_ydiv  => cbox_ydiv);
+				end block;
 
 
-				box_e : entity hdl4fpga.videobox
-				port map (
-					video_clk => video_clk,
-					video_xon => cbox_xon,
-					video_yon => cbox_yon,
-					video_eox => cbox_eox,
-					box_xedge => cbox_xedge,
-					box_yedge => cbox_yedge,
-					box_x     => cbox_x,
-					box_y     => cbox_y);
+				sgmntbox_b : block
+					signal xon   : std_logic;
+					signal yon   : std_logic;
+					signal eox   : std_logic;
+					signal xedge : std_logic;
+					signal yedge : std_logic;
+				begin
+					pipergtr_p : process (video_clk)
+					begin
+						if rising_edge(video_clk) then
+							xon   <= cbox_xon;
+							yon   <= cbox_yon;
+							eox   <= cbox_eox;
+							xedge <= cbox_xedge;
+							yedge <= cbox_yedge;
+						end if;
+					end process;
+
+					box_e : entity hdl4fpga.videobox
+					port map (
+						video_clk => video_clk,
+						video_xon => xon,
+						video_yon => yon,
+						video_eox => eox,
+						box_xedge => xedge,
+						box_yedge => yedge,
+						box_x     => cbox_x,
+						box_y     => cbox_y);
+				end block;
 
 				sgmntpipeline_p: process (video_clk)
 					variable sgmnt_on : std_logic;

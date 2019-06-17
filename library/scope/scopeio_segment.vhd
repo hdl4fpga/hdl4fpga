@@ -74,7 +74,12 @@ begin
 	grid_b : block
 		signal x_offset : std_logic_vector(x'range);
 	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
 		x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
+			end if;
+		end process;
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
 			latency => latency+4)
@@ -193,10 +198,13 @@ begin
 			di(0) => trace_on,
 			do(0) => ena);
 
-		process(samples, vt_offsets)
+		process (video_clk)
 			variable samples1 : unsigned(samples'length-1 downto 0);
 			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
 		begin
+			if rising_edge(video_clk) then
+
+			samples2 <= std_logic_vector(samples1);
 			samples1 := unsigned(samples);
 			offsets  := unsigned(vt_offsets);
 			for i in 0 to inputs-1 loop
@@ -204,7 +212,7 @@ begin
 				samples1 := samples1 ror sample'length;
 				offsets  := offsets  ror vt_offset'length;
 			end loop;
-			samples2 <= std_logic_vector(samples1);
+			end if;
 		end process;
 
 		tracer_e : entity hdl4fpga.scopeio_tracer

@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity scopeio_pointer is
 	generic (
@@ -33,8 +34,8 @@ begin
 			else
 				R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
 			end if;
+	video_dot <= setif(R_video_hcntr_aligned = signed(pointer_x) or video_vtcntr = pointer_y);
 		end if;
 	end process;
 
-	video_dot <= '1' when R_video_hcntr_aligned = signed(pointer_x) or video_vtcntr = pointer_y else '0';
 end;
