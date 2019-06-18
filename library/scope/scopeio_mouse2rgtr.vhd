@@ -119,10 +119,13 @@ architecture def of scopeio_mouse2rgtr is
      0, (others => '1'), 0, (others => '1')
      -- termination record has to match always (any pointer location) for this algorithm to work
   );
-
-  constant C_num_segments: integer := layout.num_of_segments;
-  constant C_max_boxes: integer := 8; -- must be power of 2, actually it can be n-1 clicabke boxes, last is for termination
-  type T_list_box is array (0 to C_num_segments*C_max_boxes*4-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
+  -- C_list_box1 will be copied to C_list_box
+  -- with layout repeated to make all segments clickable.
+  -- To save LUTs, set C_num_segments=1, then only first
+  -- segment will be clickable.
+  constant C_num_segments: integer range 1 to layout.num_of_segments := layout.num_of_segments; -- 1 to save LUTs
+  constant C_max_boxes: integer := 8; -- must be power of 2. There can be 2^n-1 clickable boxes, last box is for termination
+  type T_list_box is array (0 to (C_num_segments-1)*C_max_boxes*4+C_list_box1'length-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
   function F_repeat_segment_boxes
   (
     constant C_list1: T_list_box1;
@@ -141,7 +144,7 @@ architecture def of scopeio_mouse2rgtr is
         V_list(C_max_boxes*4*k+4*i+2) := C_list1(4*i+2) + k*C_segment_step; -- Ymin
         V_list(C_max_boxes*4*k+4*i+3) := C_list1(4*i+3) + k*C_segment_step; -- Ymax
       end loop; -- one segment
-      if C_num_boxes < C_max_boxes then
+      if C_num_boxes < C_max_boxes and k < C_num_segments-1 then -- don't do this for the last segment
       for i in C_num_boxes to C_max_boxes-1 loop
         -- fill the rest records with never-matching boxes
         V_list(C_max_boxes*4*k+4*i+0) := (others => '1'); -- Xmin
@@ -151,15 +154,15 @@ architecture def of scopeio_mouse2rgtr is
       end loop; -- one segment
       end if;
     end loop; -- segments
-    -- termination record is always-matching box (overwrites last never-matching box)
-    V_list(C_max_boxes*4*C_num_segments-4) := 0; -- Xmin
-    V_list(C_max_boxes*4*C_num_segments-3) := (others => '1'); -- Xmax
-    V_list(C_max_boxes*4*C_num_segments-2) := 0; -- Ymin
-    V_list(C_max_boxes*4*C_num_segments-1) := (others => '1'); -- Ymax
+    -- termination record is an always-matching box
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+0) := 0; -- Xmin
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+1) := (others => '1'); -- Xmax
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+2) := 0; -- Ymin
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+3) := (others => '1'); -- Ymax
     return V_list;
   end; -- function
   constant C_list_box: T_list_box := F_repeat_segment_boxes(C_list_box1, 
-    textbox_height(layout)+layout.sgmnt_margin(bottom)+hzaxis_height(layout),
+    layout.sgmnt_margin(top)+grid_height(layout)+hzaxis_height(layout)+layout.sgmnt_margin(bottom)+layout.main_gap(vertical),
     C_max_boxes, C_num_segments);
   constant C_list_box_count: integer := C_list_box'length/4; -- how many boxes, including termination record
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
@@ -354,7 +357,7 @@ begin
     begin
       if rising_edge(clk) then
             if R_mouse_update = '1' then
-              case R_clicked_box_id and to_unsigned(C_max_boxes-1,R_clicked_box_id'length) is -- limit to C_max_boxes different windows to be clicked
+              case R_clicked_box_id and to_unsigned(C_max_boxes-1,R_clicked_box_id'length) is -- HACK: limit to C_max_boxes different windows to be clicked
                 when C_window_vtaxis => -- mouse clicked on the vertical scale window
                   if R_dragging = '1' then -- drag Y to change vertical scale offset
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
