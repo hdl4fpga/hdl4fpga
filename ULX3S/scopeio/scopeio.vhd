@@ -430,7 +430,7 @@ begin
 	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
 		C_inputs    => inputs,
-		C_tracesfg  => C_tracesfg_gui,
+		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
 	)
 	port map (
