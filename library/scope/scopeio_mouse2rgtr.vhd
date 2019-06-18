@@ -45,7 +45,6 @@ end;
 
 architecture def of scopeio_mouse2rgtr is
   constant C_XY_coordinate_bits: integer := 11;
-  constant C_XY_max: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '1');
 
   signal R_mouse_update: std_logic; -- data valid signal
 
@@ -88,9 +87,8 @@ architecture def of scopeio_mouse2rgtr is
   
 
   -- at box n if Result is 1, then mouse pointer was found in previous box (n-1)
-  constant C_list_box_count: integer := 5; -- how many boxes, including termination record
-  type T_list_box is array (0 to C_list_box_count*4-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
-  constant C_list_box: T_list_box :=
+  type T_list_box1 is array (natural range <>) of unsigned(C_XY_coordinate_bits-1 downto 0);
+  constant C_list_box1: T_list_box1 :=
   (
      -- 0: top left window (vertical scale) C_window_vtaxis
      to_unsigned( vtaxis_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
@@ -118,9 +116,52 @@ architecture def of scopeio_mouse2rgtr is
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
-     0, C_XY_max, 0, C_XY_max
+     0, (others => '1'), 0, (others => '1')
      -- termination record has to match always (any pointer location) for this algorithm to work
   );
+
+  constant C_num_segments: integer := layout.num_of_segments;
+  constant C_max_boxes: integer := 8; -- must be power of 2, actually it can be n-1 clicabke boxes, last is for termination
+  type T_list_box is array (0 to C_num_segments*C_max_boxes*4-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
+  function F_repeat_segment_boxes
+  (
+    constant C_list1: T_list_box1;
+    constant C_segment_step: integer;
+    constant C_max_boxes: integer;
+    constant C_num_segments: integer
+  )
+  return T_list_box is
+    constant C_num_boxes: integer := C_list1'length/4-1; -- -1 to not count in the termination record
+    variable V_list: T_list_box;
+  begin
+    for k in 0 to C_num_segments-1 loop
+      for i in 0 to C_num_boxes-1 loop
+        V_list(C_max_boxes*4*k+4*i+0) := C_list1(4*i+0); -- Xmin
+        V_list(C_max_boxes*4*k+4*i+1) := C_list1(4*i+1); -- Xmax
+        V_list(C_max_boxes*4*k+4*i+2) := C_list1(4*i+2) + k*C_segment_step; -- Ymin
+        V_list(C_max_boxes*4*k+4*i+3) := C_list1(4*i+3) + k*C_segment_step; -- Ymax
+      end loop; -- one segment
+      if C_num_boxes < C_max_boxes then
+      for i in C_num_boxes to C_max_boxes-1 loop
+        -- fill the rest records with never-matching boxes
+        V_list(C_max_boxes*4*k+4*i+0) := (others => '1'); -- Xmin
+        V_list(C_max_boxes*4*k+4*i+1) := 0; -- Xmax
+        V_list(C_max_boxes*4*k+4*i+2) := (others => '1'); -- Ymin
+        V_list(C_max_boxes*4*k+4*i+3) := 0; -- Ymax
+      end loop; -- one segment
+      end if;
+    end loop; -- segments
+    -- termination record is always-matching box (overwrites last never-matching box)
+    V_list(C_max_boxes*4*C_num_segments-4) := 0; -- Xmin
+    V_list(C_max_boxes*4*C_num_segments-3) := (others => '1'); -- Xmax
+    V_list(C_max_boxes*4*C_num_segments-2) := 0; -- Ymin
+    V_list(C_max_boxes*4*C_num_segments-1) := (others => '1'); -- Ymax
+    return V_list;
+  end; -- function
+  constant C_list_box: T_list_box := F_repeat_segment_boxes(C_list_box1, 
+    textbox_height(layout)+layout.sgmnt_margin(bottom)+hzaxis_height(layout),
+    C_max_boxes, C_num_segments);
+  constant C_list_box_count: integer := C_list_box'length/4; -- how many boxes, including termination record
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
   -- R_box_id will contain ID of the box where mouse pointer is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
@@ -225,7 +266,7 @@ begin
       if rising_edge(clk) then
         if R_mouse_btn(2 downto 0) = "000" then -- all btn's released
           R_dragging <= '0';
-          R_clicked_box_id <= R_box_id;
+          R_clicked_box_id <= R_box_id(R_clicked_box_id'range);
           R_press_x <= R_mouse_x; -- record mouse position for future drag
           R_press_y <= R_mouse_y;
         else -- R_mouse_btn(2 downto 0) /= "000" -- any btn pressed
@@ -313,7 +354,7 @@ begin
     begin
       if rising_edge(clk) then
             if R_mouse_update = '1' then
-              case R_clicked_box_id is
+              case R_clicked_box_id and to_unsigned(C_max_boxes-1,R_clicked_box_id'length) is -- limit to C_max_boxes different windows to be clicked
                 when C_window_vtaxis => -- mouse clicked on the vertical scale window
                   if R_dragging = '1' then -- drag Y to change vertical scale offset
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
