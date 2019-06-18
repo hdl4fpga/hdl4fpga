@@ -28,19 +28,19 @@ begin
 
 	begin
 
-		process (samples)
-			variable aux : unsigned(sample'range);
+		process (clk)
+			variable aux : unsigned(0 to samples'length-1);
 		begin
-			aux    := unsigned(word2byte(samples, i, samples'length/inputs));
-			aux    := aux + to_unsigned(2**(aux'length-1), aux'length);
-			sample <= std_logic_vector(aux);
+			if rising_edge(clk) then
+				aux    := unsigned(samples);
+				aux    := aux rol (i*sample'length);
+				sample <= std_logic_vector(aux(sample'range) + 2**(sample'length-1));
+			end if;
 		end process;
 
 		row1 <= std_logic_vector(resize(unsigned(y),sample'length)+to_unsigned(2**(y'length-2), sample'length));
 
 		draw_vline_e : entity hdl4fpga.draw_vline
-		generic map (
-			n => sample'length)
 		port map (
 			clk  => clk,
 			ena  => ena,
@@ -51,7 +51,7 @@ begin
 		latency_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => latency-(sample'length+2)))
+			d => (0 => latency-4))
 		port map (
 			clk   => clk,
 			di(0) => dot,

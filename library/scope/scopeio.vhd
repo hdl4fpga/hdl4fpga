@@ -394,7 +394,8 @@ begin
 
 		constant storageaddr_latency   : natural := 2;
 		constant storagebram_latency   : natural := 2;
-		constant segmment_latency      : natural := storage_data'length+2;
+		constant input_latency         : natural := storageaddr_latency+storagebram_latency;
+		constant segmment_latency      : natural := 4;
 		constant mainpipeline_latency  : natural := 1;
 		constant sgmntpipeline_latency : natural := 1;
 		constant palette_latency       : natural := 3;
@@ -466,7 +467,7 @@ begin
 
 		begin
 
-			box_layout_e : entity hdl4fpga.videobox_layout
+			mainlayout_e : entity hdl4fpga.videobox_layout
 			generic map (
 				x_edges => main_xedges(layout),
 				y_edges => main_yedges(layout))
@@ -488,7 +489,7 @@ begin
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					sgmnt_on     <= main_xon;
+					sgmnt_on     <= '0';
 					storage_bsel <= (others => '0');
 					for i in 0 to layout.num_of_segments-1 loop
 						if main_boxon(box_id => i, x_div => main_xdiv, y_div => main_ydiv, layout => layout)='1' then
@@ -507,27 +508,25 @@ begin
 				signal main_x       : std_logic_vector(pboxx_size-1 downto 0);
 				signal main_y       : std_logic_vector(pboxy_size-1 downto 0);
 
-				signal cbox_y       : std_logic_vector(main_y'range);
-				signal cbox_x       : std_logic_vector(main_x'range);
+				signal sgmnt_y       : std_logic_vector(main_y'range);
+				signal sgmnt_x       : std_logic_vector(main_x'range);
 
-				signal cbox_vyon    : std_logic;
-				signal cbox_vxon    : std_logic;
-				signal cbox_vx      : std_logic_vector(pboxx_size-1 downto 0);
-				signal cbox_vy      : std_logic_vector(pboxy_size-1 downto 0);
-				signal cbox_xedge   : std_logic;
-				signal cbox_yedge   : std_logic;
-				signal cbox_xdiv    : std_logic_vector(0 to 3-1);
-				signal cbox_ydiv    : std_logic_vector(0 to 3-1);
-				signal cbox_xon     : std_logic;
-				signal cbox_yon     : std_logic;
-				signal cbox_eox     : std_logic;
+				signal main_vyon    : std_logic;
+				signal main_vxon    : std_logic;
+				signal main_vx      : std_logic_vector(pboxx_size-1 downto 0);
+				signal main_vy      : std_logic_vector(pboxy_size-1 downto 0);
+				signal sgmnt_xedge   : std_logic;
+				signal sgmnt_yedge   : std_logic;
+				signal sgmnt_xdiv    : std_logic_vector(0 to 3-1);
+				signal sgmnt_ydiv    : std_logic_vector(0 to 3-1);
+				signal sgmnt_xon     : std_logic;
+				signal sgmnt_yon     : std_logic;
+				signal sgmnt_eox     : std_logic;
 
 				signal grid_on      : std_logic;
 				signal hz_on        : std_logic;
 				signal vt_on        : std_logic;
 				signal text_on      : std_logic;
-				signal sgmnt_x      : std_logic_vector(cbox_x'range);
-				signal sgmnt_y      : std_logic_vector(cbox_y'range);
 
 			begin
 
@@ -568,10 +567,10 @@ begin
 					pipergtr1_p : process (video_clk)
 					begin
 						if rising_edge(video_clk) then
-							cbox_vxon <= xon;
-							cbox_vyon <= yon and not nexty;
-							cbox_vx   <= x;
-							cbox_vy   <= y;
+							main_vxon <= xon;
+							main_vyon <= yon and not nexty;
+							main_vx   <= x;
+							main_vy   <= y;
 						end if;
 					end process;
 
@@ -586,19 +585,18 @@ begin
 						y_edges   => sgmnt_yedges(layout))
 					port map (
 						video_clk => video_clk,
-						video_xon => cbox_vxon,
-						video_yon => cbox_vyon,
-						video_x   => cbox_vx,
-						video_y   => cbox_vy,
-						box_xon   => cbox_xon,
-						box_yon   => cbox_yon,
-						box_eox   => cbox_eox,
-						box_xedge => cbox_xedge,
-						box_yedge => cbox_yedge,
-						box_xdiv  => cbox_xdiv,
-						box_ydiv  => cbox_ydiv);
+						video_xon => main_vxon,
+						video_yon => main_vyon,
+						video_x   => main_vx,
+						video_y   => main_vy,
+						box_xon   => sgmnt_xon,
+						box_yon   => sgmnt_yon,
+						box_eox   => sgmnt_eox,
+						box_xedge => sgmnt_xedge,
+						box_yedge => sgmnt_yedge,
+						box_xdiv  => sgmnt_xdiv,
+						box_ydiv  => sgmnt_ydiv);
 				end block;
-
 
 				sgmntbox_b : block
 					signal xon   : std_logic;
@@ -606,19 +604,22 @@ begin
 					signal eox   : std_logic;
 					signal xedge : std_logic;
 					signal yedge : std_logic;
-					signal xdiv  : std_logic_vector(cbox_xdiv'range);
-					signal ydiv  : std_logic_vector(cbox_ydiv'range);
+					signal xdiv  : std_logic_vector(sgmnt_xdiv'range);
+					signal ydiv  : std_logic_vector(sgmnt_ydiv'range);
+					signal x     : std_logic_vector(sgmnt_x'range);
+					signal y     : std_logic_vector(sgmnt_y'range);
 				begin
+
 					rgtrin_p : process (video_clk)
 					begin
 						if rising_edge(video_clk) then
-							xon   <= cbox_xon;
-							yon   <= cbox_yon;
-							eox   <= cbox_eox;
-							xedge <= cbox_xedge;
-							yedge <= cbox_yedge;
-							xdiv  <= cbox_xdiv;
-							ydiv  <= cbox_ydiv;
+							xon   <= sgmnt_xon;
+							yon   <= sgmnt_yon;
+							eox   <= sgmnt_eox;
+							xedge <= sgmnt_xedge;
+							yedge <= sgmnt_yedge;
+							xdiv  <= sgmnt_xdiv;
+							ydiv  <= sgmnt_ydiv;
 						end if;
 					end process;
 
@@ -630,29 +631,29 @@ begin
 						video_eox => eox,
 						box_xedge => xedge,
 						box_yedge => yedge,
-						box_x     => cbox_x,
-						box_y     => cbox_y);
+						box_x     => x,
+						box_y     => y);
 
 					rgtrout_p: process (video_clk)
-						variable sgmnt_on : std_logic;
+						variable box_on : std_logic;
 					begin
 						if rising_edge(video_clk) then
-							sgmnt_on := '1'; --xon and yon;
-							vt_on   <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and sgmnt_on;
-							hz_on   <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and sgmnt_on;
-							grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and sgmnt_on;
-							text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and sgmnt_on;
-							sgmnt_x <= cbox_x;
-							sgmnt_y <= cbox_y;
+							box_on  := '1'; --xon  and yon;
+							vt_on   <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							hz_on   <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							text_on <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							sgmnt_x <= x;
+							sgmnt_y <= y;
 						end if;
 					end process;
 				end block;
 
 				storage_addr_p : process (video_clk)
-					variable base     : unsigned(0 to storage_addr'length-1);
+					variable base : unsigned(0 to storage_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
-						base     := (others => '0');
+						base := (others => '0');
 						for i in 0 to layout.num_of_segments-1 loop
 							if storage_bsel(i)='1' then
 								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
@@ -665,7 +666,7 @@ begin
 
 				scopeio_segment_e : entity hdl4fpga.scopeio_segment
 				generic map (
-					latency       => segmment_latency,
+					latency       => segmment_latency+input_latency,
 					inputs        => inputs)
 				port map (
 					in_clk        => si_clk,
