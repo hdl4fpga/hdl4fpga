@@ -259,6 +259,7 @@ begin
 	begin
 
 		process (video_clk)
+			variable tick : std_logic_vector(hz_tick'range);
 		begin
 			if rising_edge(video_clk) then
 				hz_x <= resize(unsigned(video_hcntr), hz_x'length) + unsigned(hz_offset);
@@ -268,9 +269,11 @@ begin
 				hs_on    <= video_hzon;
 				hz_ccol  <= std_logic_vector(hz_x(hz_ccol'range));
 				hz_crow  <= hz_y(hz_crow'range);
+		hz_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
+		tick := hz_tick;
+		char_code <= word2byte(hz_bcd  & vt_bcd,  vs_on);
 			end if;
 		end process;
-		hz_bcd <= word2byte(std_logic_vector(unsigned(hz_tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
 
 		process (video_clk)
 		begin
@@ -288,7 +291,6 @@ begin
 
 		char_row  <= word2byte(hz_crow & vt_crow, vs_on); 
 		char_col  <= word2byte(hz_ccol & vt_ccol, vs_on); 
-		char_code <= word2byte(hz_bcd  & vt_bcd,  vs_on);
 		rom_e : entity hdl4fpga.cga_rom
 		generic map (
 			font_bitrom => psf1digit8x8,

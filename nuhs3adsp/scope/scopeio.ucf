@@ -25,12 +25,20 @@ NET "xtal" TNM_NET = xtal;
 TIMESPEC TS_xtal = PERIOD "xtal" 50 ns HIGH 50%;
 NET "xtal" CLOCK_DEDICATED_ROUTE = true;
 
+NET "mii_rxc" TNM_NET = mii_rxc;
+TIMESPEC TS_mii_rxc = PERIOD "mii_rxc" 40 ns HIGH 50%;
+
 TIMESPEC TS_adc_clkout = PERIOD "adc_clkout" 7.8125 ns HIGH 50%;
 NET "adc_clkout" TNM_NET = adc_clkout;
 OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
 OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
 
-TIMEGRP "vga_grp" = net "vga_clk1";
-TIMEGRP "adc_grp" = net "adc_clk1";
-TIMESPEC "TS_vgaadc"=FROM "vga_grp" TO "adc_grp" TIG;
-TIMESPEC "TS_adcvga"=FROM "adc_grp" TO "vga_grp" TIG;
+NET "vga_clk" TNM_NET = FFS  FFS_videoclk;
+NET "vga_clk" TNM_NET = RAMS RAMS_videoclk;
+NET "adc_clk" TNM_NET = FFS  FFS_adcclk;
+NET "adc_clk" TNM_NET = RAMS RAMS_adcclk;
+
+TIMESPEC TS_video2adc1 = FROM FFS_videoclk TO FFS_adcclk TIG;
+TIMESPEC TS_adc2video1 = FROM FFS_adcclk TO FFS_videoclk TIG;
+TIMESPEC TS_adc2video2 = FROM RAMS_adcclk TO FFS_videoclk TIG;
+

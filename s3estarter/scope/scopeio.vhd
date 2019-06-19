@@ -299,7 +299,7 @@ begin
 		end if;
 	end process;
 
-	uart_sin <= rs232_dte_rxd;
+	uart_sin <= rs232_dce_rxd;
 	uart_rxc <= e_rx_clk;
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
@@ -349,6 +349,7 @@ begin
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 	
+	si_clk <= e_rx_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		vlayout_id       => video_params(video_mode).layout,

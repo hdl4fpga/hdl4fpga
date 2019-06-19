@@ -26,6 +26,47 @@ architecture beh of nuhs3adsp is
 
 	signal ipcfg_req : std_logic;
 	signal input_clk : std_logic;
+
+	constant baudrate : natural := 115200;
+
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+
+	signal toudpdaisy_clk  : std_logic;
+	signal toudpdaisy_frm  : std_logic;
+	signal toudpdaisy_irdy : std_logic;
+	signal toudpdaisy_data : std_logic_vector(mii_rxd'range);
+
+	signal si_clk    : std_logic;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(8-1 downto 0);
+
+	signal so_clk    : std_logic;
+	signal so_frm    : std_logic;
+	signal so_trdy   : std_logic;
+	signal so_irdy   : std_logic;
+	signal so_data   : std_logic_vector(8-1 downto 0);
+
+	type display_param is record
+		layout : natural;
+		mul    : natural;
+		div    : natural;
+	end record;
+
+	constant mode600p  : natural := 0;
+	constant mode1080p : natural := 1;
+
+	type displayparam_vector is array (natural range <>) of display_param;
+	constant video_params : displayparam_vector(0 to 1) := (
+		mode600p  => (layout => 1, mul =>  2, div => 1),
+		mode1080p => (layout => 0, mul => 15, div => 2));
+
+	constant video_mode : natural := mode1080p;
+
 begin
 
 	clkin_ibufg : ibufg
@@ -47,8 +88,8 @@ begin
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dcm_per => 50.0,
-		dfs_mul => 15,
-		dfs_div => 2)
+		dfs_mul => video_params(video_mode).mul,
+		dfs_div => video_params(video_mode).div)
 	port map(
 		dcm_rst => '0',
 		dcm_clk => sys_clk,
@@ -84,11 +125,76 @@ begin
 		end if;
 	end process;
 
+	process (mii_rxc)
+		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
+		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
+	begin
+		if rising_edge(mii_rxc) then
+			if cntr >= max_count-1 then
+				uart_ena <= '1';
+				cntr := (others => '0');
+			else
+				uart_ena <= '0';
+				cntr := cntr + 1;
+			end if;
+		end if;
+	end process;
+
+	uart_sin <= rs232_rd;
+	uart_rxc <= mii_rxc;
+	uartrx_e : entity hdl4fpga.uart_rx
+	generic map (
+		baudrate => baudrate,
+		clk_rate => 16*baudrate)
+	port map (
+		uart_rxc  => uart_rxc,
+		uart_sin  => uart_sin,
+		uart_ena  => uart_ena,
+		uart_rxdv => uart_rxdv,
+		uart_rxd  => uart_rxd);
+
+--	istreamdaisy_e : entity hdl4fpga.scopeio_istreamdaisy
+--	generic map (
+--		istream_esc => std_logic_vector(to_unsigned(character'pos('\'), 8)),
+--		istream_eos => std_logic_vector(to_unsigned(character'pos(NUL), 8)))
+--	port map (
+--		stream_clk  => uart_rxc,
+--		stream_dv   => uart_rxdv,
+--		stream_data => uart_rxd,
+--
+--		chaini_data => uart_rxd,
+--
+--		chaino_frm  => toudpdaisy_frm, 
+--		chaino_irdy => toudpdaisy_irdy,
+--		chaino_data => toudpdaisy_data);
+
+	udpipdaisy_e : entity hdl4fpga.scopeio_udpipdaisy
+	port map (
+		ipcfg_req   => ipcfg_req,
+
+		phy_rxc     => mii_rxc,
+		phy_rx_dv   => mii_rxdv,
+		phy_rx_d    => mii_rxd,
+
+		phy_txc     => mii_txc, 
+		phy_tx_en   => mii_txen,
+		phy_tx_d    => mii_txd,
+	
+		chaini_sel  => '0',
+
+		chaini_frm  => toudpdaisy_frm,
+		chaini_irdy => toudpdaisy_irdy,
+		chaini_data => toudpdaisy_data,
+
+		chaino_frm  => si_frm,
+		chaino_irdy => si_irdy,
+		chaino_data => si_data);
+	
+	si_clk <= mii_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		vlayout_id       => video_params(video_mode).layout,
 		inputs           => inputs,
-		istream_esc      => std_logic_vector(to_unsigned(character'pos('\'), 8)),
-		istream_eos      => std_logic_vector(to_unsigned(character'pos(NUL), 8)),
 		default_tracesfg => b"11111111_11111111_11111111",
 		default_gridfg   => b"11111111_00000000_00000000",
 		default_gridbg   => b"00000000_00000000_00000000",
@@ -100,13 +206,12 @@ begin
 		default_sgmntbg  => b"00000000_11111111_11111111",
 		default_bg       => b"11111111_11111111_11111111")
 	port map (
-		si_clk      => mii_rxc,
-		si_frm      => mii_rxdv,
-		si_data     => mii_rxd,
-		so_clk      => mii_txc, 
-		so_dv       => mii_txen,
-		so_data     => mii_txd,
-		ipcfg_req   => ipcfg_req,
+		si_clk      => si_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_irdy     => so_irdy,
+		so_data     => so_data,
 		input_clk   => input_clk,
 		input_data  => samples,
 		video_clk   => vga_clk,
