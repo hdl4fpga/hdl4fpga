@@ -137,6 +137,9 @@ architecture beh of ulx3s is
 	signal S_adc_dv: std_logic;
 	signal S_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
 
+	signal R_test_counter: unsigned(15 downto 0); -- 64MHz -> 1kHz to ADC for buttons test
+	signal S_test_p, S_test_n: std_logic;
+
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
 begin
@@ -256,18 +259,26 @@ begin
 	-- press buttons to test ADC
 	-- for normal use disable this
 	G_btn_test: if C_buttons_test generate
-	-- each pressed button will apply a logic level '1'
-	-- to FPGA pin shared with ADC channel which should
-	-- read something from 12'h000 to 12'hFFF with some
-	-- conversion noise
-	gn(14) <= btn(1) when btn(6) = '1' else 'Z';
-	gp(14) <= btn(2) when btn(6) = '1' else 'Z';
-	gn(15) <= btn(3) when btn(6) = '1' else 'Z';
-	gp(15) <= btn(4) when btn(6) = '1' else 'Z';
-	gn(16) <= btn(5) when btn(6) = '1' else 'Z';
-	gp(16) <= btn(5) when btn(6) = '1' else 'Z';
-	gn(17) <= btn(5) when btn(6) = '1' else 'Z';
-	gp(17) <= btn(5) when btn(6) = '1' else 'Z';
+	  process(clk_adc)
+	  begin
+	    if rising_edge(clk_adc) then
+	      R_test_counter <= R_test_counter + 1;
+	    end if;
+	  end process;
+	  S_test_p <= R_test_counter(R_test_counter'high);
+	  S_test_n <= R_test_counter(R_test_counter'high) xor R_test_counter(R_test_counter'high-1);
+	  -- each pressed button will apply a logic level '1'
+	  -- to FPGA pin shared with ADC channel which should
+	  -- read something from 12'h000 to 12'hFFF with some
+	  -- conversion noise
+          gn(14) <= S_test_n when btn(3) = '1' else 'Z';
+          gp(14) <= S_test_p when btn(3) = '1' else 'Z';
+          gn(15) <= S_test_n when btn(4) = '1' else 'Z';
+          gp(15) <= S_test_p when btn(4) = '1' else 'Z';
+          gn(16) <= S_test_p when btn(5) = '1' else 'Z';
+          gp(16) <= S_test_n when btn(5) = '1' else 'Z';
+          gn(17) <= S_test_p when btn(6) = '1' else 'Z';
+          gp(17) <= S_test_n when btn(6) = '1' else 'Z';
 	end generate;
 
 	process (clk)
