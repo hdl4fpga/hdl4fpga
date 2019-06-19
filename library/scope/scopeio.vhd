@@ -495,7 +495,7 @@ begin
 					storage_bsel <= (others => '0');
 					for i in 0 to layout.num_of_segments-1 loop
 						if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
-							sgmntbox_on     <= '1';
+							sgmntbox_on     <= mainbox_xon;
 							storage_bsel(i) <= '1';
 						end if;
 					end loop;
@@ -637,12 +637,14 @@ begin
 						box_y     => y);
 
 					rgtrout_p: process (video_clk)
+						variable box_on : std_logic;
 					begin
 						if rising_edge(video_clk) then
-							vt_on      <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout);
-							hz_on      <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout);
-							grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout);
-							text_on    <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout);
+							box_on     := xon and yon;
+							vt_on      <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							hz_on      <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							text_on    <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							sgmntbox_x <= x;
 							sgmntbox_y <= y;
 						end if;

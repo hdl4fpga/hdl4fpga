@@ -40,5 +40,5 @@ NET "adc_clk" TNM_NET = RAMS RAMS_adcclk;
 
 TIMESPEC TS_video2adc1 = FROM FFS_videoclk TO FFS_adcclk TIG;
 TIMESPEC TS_adc2video1 = FROM FFS_adcclk TO FFS_videoclk TIG;
-TIMESPEC TS_adc2video2 = FROM RAMS_adcclk TO FFS_videoclk TIG;
-
+#TIMESPEC TS_adc2video2 = FROM RAMS_adcclk TO FFS_videoclk TIG;
+#
