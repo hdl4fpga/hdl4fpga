@@ -100,11 +100,13 @@ architecture beh of nexys2 is
 	end record;
 
 	constant mode600p  : natural := 0;
-	constant mode1080p : natural := 1;
+	constant mode768p  : natural := 1;
+	constant mode1080p : natural := 2;
 
 	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector(0 to 1) := (
+	constant video_params : displayparam_vector := (
 		mode600p  => (layout => 1, mul => 4, div => 5),
+		mode768p  => (layout => 3, mul => 3, div => 2),
 		mode1080p => (layout => 0, mul => 3, div => 1));
 
 	constant video_mode : natural := mode600p;

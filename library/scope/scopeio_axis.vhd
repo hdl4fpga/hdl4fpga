@@ -67,15 +67,9 @@ end;
 
 architecture def of scopeio_axis is
 
-	signal vt_ena      : std_logic;
-	signal vt_vaddr    : std_logic_vector(9-1 downto 0);
-	signal vt_taddr    : std_logic_vector(vt_vaddr'left downto 5);
-	signal vt_tick     : std_logic_vector(wu_format'range);
+	signal vt_taddr    : std_logic_vector(9-1 downto 5);
 
-	signal hz_ena      : std_logic;
 	signal hz_taddr    : std_logic_vector(13-1 downto 6);
-	signal hz_vaddr    : std_logic_vector(13-1 downto 0);
-	signal hz_tick     : std_logic_vector(wu_format'range);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
@@ -136,7 +130,6 @@ begin
 		signal value : std_logic_vector(3*4-1 downto 0);
 		signal base  : std_logic_vector(value'range);
 		signal step  : std_logic_vector(value'range);
-		signal dummy : std_logic_vector(value'range);
 
 		signal last  : std_logic_vector(8-1 downto 0);
 		signal updn  : std_logic;
@@ -207,91 +200,194 @@ begin
 
 	end block;
 
-	hz_ena <= wu_trdy and not axis_sel;
-	hz_mem_e : entity hdl4fpga.dpram
-	generic map (
-		bitrom => (0 to 2**hz_taddr'length*wu_format'length-1 => '1'))
-	port map (
-		wr_clk  => clk,
-		wr_ena  => hz_ena,
-		wr_addr => hz_taddr,
-		wr_data => wu_format,
-
-		rd_addr => hz_vaddr(hz_taddr'range),
-		rd_data => hz_tick);
-
-	vt_ena <= wu_trdy and axis_sel;
-	vt_mem_e : entity hdl4fpga.dpram
-	generic map (
-		bitrom => (0 to 2**vt_taddr'length*wu_format'length-1 => '1'))
-	port map (
-		wr_clk  => clk,
-		wr_ena  => vt_ena,
-		wr_addr => vt_taddr,
-		wr_data => wu_format,
-
-		rd_addr => vt_vaddr(vt_taddr'range),
-		rd_data => vt_tick);
-
 	video_b : block
+		attribute ram_style : string;
+		attribute ram_style of cgarom_e : label is "distributed";
 
 		signal char_code : std_logic_vector(4-1 downto 0);
 		signal char_row  : std_logic_vector(3-1 downto 0);
 		signal char_col  : std_logic_vector(3-1 downto 0);
 		signal char_dot  : std_logic;
 
-		signal hz_x     : unsigned(hz_vaddr'range);
-		signal hz_y     : std_logic_vector(video_vcntr'length-1 downto 0);
 		signal hz_bcd   : std_logic_vector(char_code'range);
 		signal hz_crow  : std_logic_vector(3-1 downto 0);
 		signal hz_ccol  : std_logic_vector(3-1 downto 0);
 		signal hz_don   : std_logic;
-		signal hs_on    : std_logic;
+		signal hz_on    : std_logic;
 
-		signal vt_x     : std_logic_vector(video_hcntr'length-1 downto 0);
-		signal vt_y     : unsigned(vt_vaddr'range);
 		signal vt_bcd   : std_logic_vector(char_code'range);
 		signal vt_crow  : std_logic_vector(3-1 downto 0);
 		signal vt_ccol  : std_logic_vector(3-1 downto 0);
+		signal vt_on    : std_logic;
 		signal vt_don   : std_logic;
-		signal vs_on    : std_logic;
 
 	begin
 
-		process (video_clk)
-			variable tick : std_logic_vector(hz_tick'range);
-		begin
-			if rising_edge(video_clk) then
-				hz_x <= resize(unsigned(video_hcntr), hz_x'length) + unsigned(hz_offset);
-				hz_y <= video_vcntr;
+		hz_b : block
+			attribute ram_style : string;
+			attribute ram_style of hzmem_e : label is "distributed";
 
-				hz_vaddr <= std_logic_vector(hz_x);
-				hs_on    <= video_hzon;
-				hz_ccol  <= std_logic_vector(hz_x(hz_ccol'range));
-				hz_crow  <= hz_y(hz_crow'range);
-		hz_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 0*char_code'length), hz_vaddr(6-1 downto 3), char_code'length);
-		tick := hz_tick;
-		char_code <= word2byte(hz_bcd  & vt_bcd,  vs_on);
-			end if;
-		end process;
+			signal x      : unsigned(hz_taddr'left downto 0);
+			signal tick   : std_logic_vector(wu_format'range);
 
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-				vt_x <= video_hcntr;
-				vt_y <= resize(unsigned(video_vcntr), vt_y'length) + unsigned(vt_offset);
+			signal wr_ena : std_logic;
+			signal vaddr  : std_logic_vector(x'range);
+			signal vdata  : std_logic_vector(tick'range);
+			signal vcol   : std_logic_vector(6-1 downto 3);
+		begin 
 
-				vt_vaddr <= std_logic_vector(vt_y);
-				vs_on    <= video_vton;
-				vt_ccol  <= vt_x(vt_ccol'range);
-				vt_crow  <= std_logic_vector(vt_y(vt_crow'range));
-			end if;
-		end process;
-		vt_bcd <= word2byte(std_logic_vector(unsigned(vt_tick) rol 2*char_code'length), vt_x(6-1 downto 3), char_code'length);
+			x <= resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset);
 
-		char_row  <= word2byte(hz_crow & vt_crow, vs_on); 
-		char_col  <= word2byte(hz_ccol & vt_ccol, vs_on); 
-		rom_e : entity hdl4fpga.cga_rom
+			hzvaddr_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					vaddr <= std_logic_vector(x);
+				end if;
+			end process;
+
+			wr_ena <= wu_trdy and not axis_sel;
+			hzmem_e : entity hdl4fpga.dpram
+			generic map (
+				bitrom => (0 to 2**hz_taddr'length*wu_format'length-1 => '1'))
+			port map (
+				wr_clk  => clk,
+				wr_ena  => wr_ena,
+				wr_addr => hz_taddr,
+				wr_data => wu_format,
+
+				rd_addr => vaddr(hz_taddr'range),
+				rd_data => vdata);
+
+			hztick_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					tick  <= vdata;
+				end if;
+			end process;
+
+			col_e : entity hdl4fpga.align
+			generic map (
+				n => hz_crow'length,
+				d => (hz_crow'range => 2))
+			port map (
+				clk => video_clk,
+				di  => std_logic_vector(x(vcol'range)),
+				do  => vcol);
+
+			crow_e : entity hdl4fpga.align
+			generic map (
+				n => hz_crow'length,
+				d => (hz_crow'range => 2))
+			port map (
+				clk => video_clk,
+				di  => video_vcntr(hz_crow'range),
+				do  => hz_crow);
+
+			ccol_e : entity hdl4fpga.align
+			generic map (
+				n => hz_ccol'length,
+				d => (hz_ccol'range => 2))
+			port map (
+				clk => video_clk,
+				di  => std_logic_vector(x(hz_ccol'range)),
+				do  => hz_ccol);
+
+			on_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 to 0 => 2))
+			port map (
+				clk   => video_clk,
+				di(0) => video_hzon,
+				do(0) => hz_on);
+
+			hz_bcd <= word2byte(tick, vcol, char_code'length);
+		end block;
+
+		vt_b : block
+			signal y      : unsigned(vt_taddr'left downto 0);
+			signal tick   : std_logic_vector(wu_format'range);
+
+			signal wr_ena : std_logic;
+			signal vaddr  : std_logic_vector(y'range);
+			signal vdata  : std_logic_vector(tick'range);
+			signal vcol  : std_logic_vector(6-1 downto 3);
+			signal vton   : std_logic;
+		begin 
+			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
+			vtvaddr_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					vaddr <= std_logic_vector(y);
+				end if;
+			end process;
+
+			wr_ena <= wu_trdy and axis_sel;
+			vt_mem_e : entity hdl4fpga.dpram
+			generic map (
+				bitrom => (0 to 2**vt_taddr'length*wu_format'length-1 => '1'))
+			port map (
+				wr_clk  => clk,
+				wr_ena  => wr_ena,
+				wr_addr => vt_taddr,
+				wr_data => wu_format,
+
+				rd_addr => vaddr(vt_taddr'range),
+				rd_data => vdata);
+
+			vttick_p : process (clk)
+			begin
+				if rising_edge(clk) then
+					tick  <= vdata;
+				end if;
+			end process;
+
+			col_e : entity hdl4fpga.align
+			generic map (
+				n => hz_crow'length,
+				d => (hz_crow'range => 2))
+			port map (
+				clk => video_clk,
+				di  => video_hcntr(vcol'range),
+				do  => vcol);
+
+			crow_e : entity hdl4fpga.align
+			generic map (
+				n => vt_crow'length,
+				d => (vt_crow'range => 2))
+			port map (
+				clk => video_clk,
+				di  => std_logic_vector(y(vt_crow'range)),
+				do  => vt_crow);
+
+			ccol_e : entity hdl4fpga.align
+			generic map (
+				n => hz_ccol'length,
+				d => (hz_ccol'range => 2))
+			port map (
+				clk => video_clk,
+				di  => video_hcntr(vt_ccol'range),
+				do  => vt_ccol);
+
+			vton <= video_vton and y(4) and y(3);
+			on_e : entity hdl4fpga.align
+			generic map (
+				n => 1,
+				d => (0 to 0 => 2))
+			port map (
+				clk   => video_clk,
+				di(0) => vton,
+				do(0) => vt_on);
+
+			vt_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length);
+
+		end block;
+
+		char_code <= word2byte(vt_bcd  & hz_bcd,  hz_on);
+		char_row  <= word2byte(vt_crow & hz_crow, hz_on); 
+		char_col  <= word2byte(vt_ccol & hz_ccol, hz_on); 
+
+		cgarom_e : entity hdl4fpga.cga_rom
 		generic map (
 			font_bitrom => psf1digit8x8,
 			font_height => 2**3,
@@ -303,24 +399,18 @@ begin
 			char_code => char_code,
 			char_dot  => char_dot);
 
-		romlat_b : block
-			signal ons : std_logic_vector(0 to 2-1);
-		begin
+		cgalat_e : entity hdl4fpga.align
+		generic map (
+			n => 2,
+			d => (0 to 1 => 2))
+		port map (
+			clk   => video_clk,
+			di(0) => hz_on,
+			di(1) => vt_on,
+			do(0) => hz_don,
+			do(1) => vt_don);
 
-			ons(0) <= hs_on;
-			ons(1) <= vs_on and vt_y(4) and vt_y(3);
-			lat_e : entity hdl4fpga.align
-			generic map (
-				n => ons'length,
-				d => (ons'range => 2))
-			port map (
-				clk   => video_clk,
-				di    => ons,
-				do(0) => hz_don,
-				do(1) => vt_don);
-		end block;
-
-		lat_b : block
+		latency_b : block
 			signal dots : std_logic_vector(0 to 2-1);
 		begin
 			dots(0) <= char_dot and hz_don;
@@ -329,7 +419,7 @@ begin
 			lat_e : entity hdl4fpga.align
 			generic map (
 				n => dots'length,
-				d => (dots'range => latency-3))
+				d => (dots'range => latency-4))
 			port map (
 				clk   => video_clk,
 				di    => dots,
