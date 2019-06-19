@@ -9,7 +9,7 @@ use hdl4fpga.std.all;
 
 entity scopeio_segment is
 	generic(
-		input_latency : natural := 4;
+		input_latency : natural;
 		latency       : natural;
 		inputs        : natural);
 	port (
@@ -57,6 +57,7 @@ end;
 
 architecture def of scopeio_segment is
 
+	constant discard_latency : natural := 1;
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -73,6 +74,7 @@ begin
 	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
 
 	grid_b : block
+		constant offset_latency : natural := 1;
 		signal x_offset : std_logic_vector(x'range);
 		signal grid_ena : std_logic;
 	begin
@@ -86,7 +88,7 @@ begin
 
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
-			latency => latency-1)
+			latency => (latency-discard_latency))
 		port map (
 			clk  => video_clk,
 			ena  => grid_ena,
@@ -119,7 +121,7 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency => latency,
+		latency => (latency-discard_latency),
 		axis_unit => std_logic_vector(to_unsigned(25,5)))
 	port map (
 		clk         => in_clk,
@@ -169,7 +171,7 @@ begin
 		align_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => latency))
+			d => (0 => (latency-discard_latency)))
 		port map (
 			clk   => video_clk,
 			di(0) => hdot,
@@ -179,7 +181,8 @@ begin
 
 	trace_b : block
 		constant offset_latency  : natural := 1;
-		constant traceon_latency : natural := 1;
+		constant tracena_latency : natural := 1;
+		constant tracer_latency  : natural := 4;
 
 		subtype sample is std_logic_vector(samples'length/inputs-1 downto 0);
 
@@ -200,7 +203,7 @@ begin
 		align_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => input_latency-(traceon_latency+offset_latency)))
+			d => (0 => input_latency-tracena_latency+offset_latency))
 		port map (
 			clk   => video_clk,
 			di(0) => trace_on,
@@ -211,7 +214,6 @@ begin
 			variable offsets  : unsigned(vt_offsets'length-1 downto 0);
 		begin
 			if rising_edge(video_clk) then
-				samples2 <= std_logic_vector(samples1);
 				samples1 := unsigned(samples);
 				offsets  := unsigned(vt_offsets);
 				for i in 0 to inputs-1 loop
@@ -219,12 +221,13 @@ begin
 					samples1 := samples1 ror sample'length;
 					offsets  := offsets  ror vt_offset'length;
 				end loop;
+				samples2 <= std_logic_vector(samples1);
 			end if;
 		end process;
 
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
-			latency => latency-input_latency,
+			latency => (latency-discard_latency)-input_latency,
 			inputs  => inputs)
 		port map (
 			clk     => video_clk,

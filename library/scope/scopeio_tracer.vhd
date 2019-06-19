@@ -24,6 +24,7 @@ begin
 
 		signal sample : std_logic_vector(0 to samples'length/inputs-1);
 		signal row1   : std_logic_vector(sample'range);
+		signal ena1   : std_logic;
 		signal dot    : std_logic;
 
 	begin
@@ -34,6 +35,7 @@ begin
 			if rising_edge(clk) then
 				aux    := unsigned(samples);
 				aux    := aux rol (i*sample'length);
+				ena1   <= ena;
 				sample <= std_logic_vector(aux(sample'range) + 2**(sample'length-1));
 			end if;
 		end process;
@@ -43,7 +45,7 @@ begin
 		draw_vline_e : entity hdl4fpga.draw_vline
 		port map (
 			clk  => clk,
-			ena  => ena,
+			ena  => ena1,
 			row1 => row1,
 			row2 => sample,
 			dot  => dot);

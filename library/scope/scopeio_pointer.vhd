@@ -34,8 +34,8 @@ begin
 			else
 				R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
 			end if;
-	video_dot <= setif(R_video_hcntr_aligned = signed(pointer_x) or video_vtcntr = pointer_y);
 		end if;
 	end process;
+	video_dot <= setif(R_video_hcntr_aligned = signed(pointer_x) or video_vtcntr = pointer_y);
 
 end;

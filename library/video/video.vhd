@@ -369,8 +369,8 @@ begin
 			dot <= ((le1 xor le2) or eq2 or eq1) and enad;
 			le1 := le2;
 			eq1 := eq2;
-			le2 := setif(unsigned(row1) <= unsigned(row2));
-			eq2 := setif(unsigned(row1)  = unsigned(row2));
+			le2 := setif(unsigned(row1) < unsigned(row2));
+			eq2 := setif(unsigned(row1) = unsigned(row2));
 		end if;
 	end process;
 end;
