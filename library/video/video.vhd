@@ -362,21 +362,26 @@ begin
 		do(0) => enad);
 
 	process (clk)
-		variable le1, le2 : std_logic;
+		variable lt1, lt2 : std_logic;
 		variable eq1, eq2 : std_logic;
 	begin
 		if rising_edge(clk) then
-			dot <= ((le1 xor le2) or eq2 or eq1) and enad;
-			le1 := le2;
+			dot <= ((lt1 xor lt2) or eq2 or eq1) and enad;
+			lt1 := lt2;
 			eq1 := eq2;
-			le2 := setif(unsigned(row1) < unsigned(row2));
-			eq2 := setif(unsigned(row1) = unsigned(row2));
+			if ena='0' then
+				lt2 := lt1;
+				eq2 := '0';
+			else
+				lt2 := setif(unsigned(row1) < unsigned(row2));
+				eq2 := setif(unsigned(row1) = unsigned(row2));
+			end if;
 		end if;
 	end process;
 end;
 
 --architecture serial_arith of draw_vline is
---	signal le1, le2 : std_logic;
+--	signal lt1, lt2 : std_logic;
 --	signal eq1, eq2 : std_logic;
 --	signal enad : std_logic;
 --begin
@@ -396,14 +401,14 @@ end;
 --		clk => clk,
 --		a   => row1,
 --		b   => row2,
---		le  => le2,
+--		le  => lt2,
 --		eq  => eq2);
 --
 --	process (clk)
 --	begin
 --		if rising_edge(clk) then
---			dot <= ((le1 xor le2) or eq2 or eq1) and enad;
---			le1 <= le2;
+--			dot <= ((lt1 xor lt2) or eq2 or eq1) and enad;
+--			lt1 <= lt2;
 --			eq1 <= eq2;
 --		end if;
 --	end process;

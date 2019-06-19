@@ -57,7 +57,7 @@ end;
 
 architecture def of scopeio_segment is
 
-	constant discard_latency : natural := 1;
+	constant discard_latency : natural := 0;
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -75,10 +75,12 @@ begin
 
 	grid_b : block
 		constant offset_latency : natural := 1;
+
 		signal x_offset : std_logic_vector(x'range);
 		signal grid_ena : std_logic;
 	begin
-		process (video_clk)
+
+		offset_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
 				x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
@@ -88,7 +90,7 @@ begin
 
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
-			latency => (latency-discard_latency))
+			latency => latency-offset_latency)
 		port map (
 			clk  => video_clk,
 			ena  => grid_ena,
@@ -121,7 +123,7 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency => (latency-discard_latency),
+		latency => latency,
 		axis_unit => std_logic_vector(to_unsigned(25,5)))
 	port map (
 		clk         => in_clk,
@@ -171,7 +173,7 @@ begin
 		align_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => (latency-discard_latency)))
+			d => (0 => latency))
 		port map (
 			clk   => video_clk,
 			di(0) => hdot,
@@ -181,32 +183,21 @@ begin
 
 	trace_b : block
 		constant offset_latency  : natural := 1;
-		constant tracena_latency : natural := 1;
 		constant tracer_latency  : natural := 4;
 
 		subtype sample is std_logic_vector(samples'length/inputs-1 downto 0);
 
 		signal samples2  : std_logic_vector(samples'range);
-		signal trace_on  : std_logic;
 		signal trace_ena : std_logic;
 	begin
-
-		process (grid_on, video_clk)
-			variable q : std_logic;
-		begin
-			trace_on <= grid_on and q;
-			if rising_edge(video_clk) then
-				q := grid_on;
-			end if;
-		end process;
 
 		align_e :entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => input_latency-tracena_latency+offset_latency))
+			d => (0 => input_latency+offset_latency))
 		port map (
 			clk   => video_clk,
-			di(0) => trace_on,
+			di(0) => grid_on,
 			do(0) => trace_ena);
 
 		offset_p : process (video_clk)
@@ -227,7 +218,7 @@ begin
 
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
-			latency => (latency-discard_latency)-input_latency,
+			latency => latency-(input_latency+offset_latency),
 			inputs  => inputs)
 		port map (
 			clk     => video_clk,

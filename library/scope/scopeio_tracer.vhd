@@ -18,18 +18,31 @@ entity scopeio_tracer is
 end;
 
 architecture def of scopeio_tracer is
+	constant bias_latency      : natural := 1;
+	constant drawvline_latency : natural := 3;
+
+	constant sample_size       : natural := samples'length/inputs;
+
+	signal row1 : std_logic_vector(0 to sample_size);
+	signal ena1 : std_logic;
+
 begin
+
+	bias_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			row1 <= std_logic_vector(resize(unsigned(y),sample_size)+to_unsigned(2**(y'length-2), row1'length));
+		end if;
+	end process;
 
 	trace_g : for i in 0 to inputs-1 generate
 
-		signal sample : std_logic_vector(0 to samples'length/inputs-1);
-		signal row1   : std_logic_vector(sample'range);
-		signal ena1   : std_logic;
+		signal sample : std_logic_vector(0 to sample_size-1);
 		signal dot    : std_logic;
 
 	begin
 
-		process (clk)
+		bias_p : process (clk)
 			variable aux : unsigned(0 to samples'length-1);
 		begin
 			if rising_edge(clk) then
@@ -39,8 +52,6 @@ begin
 				sample <= std_logic_vector(aux(sample'range) + 2**(sample'length-1));
 			end if;
 		end process;
-
-		row1 <= std_logic_vector(resize(unsigned(y),sample'length)+to_unsigned(2**(y'length-2), sample'length));
 
 		draw_vline_e : entity hdl4fpga.draw_vline
 		port map (
@@ -53,7 +64,7 @@ begin
 		latency_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			d => (0 => latency-4))
+			d => (0 => latency-(bias_latency+drawvline_latency)))
 		port map (
 			clk   => clk,
 			di(0) => dot,
