@@ -69,9 +69,6 @@ architecture def of scopeio_mouse2rgtr is
 
   -- screen geometry functions, imported from scopeiopkg
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
-  -- screen y-coordinate of Y=0 on the grid
-  constant C_grid_y0: signed(C_XY_coordinate_bits-1 downto 0) := 
-    to_signed(grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),C_XY_coordinate_bits);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -124,7 +121,8 @@ architecture def of scopeio_mouse2rgtr is
   -- To save LUTs, set C_num_segments=1, then only first
   -- segment will be clickable.
   constant C_num_segments: integer range 1 to layout.num_of_segments := layout.num_of_segments; -- 1 to save LUTs
-  constant C_max_boxes: integer := 8; -- must be power of 2. There can be 2^n-1 clickable boxes, last box is for termination
+  constant C_max_boxes_bits: integer := 3; -- There can be 2^n-1 clickable boxes, last box is for termination
+  constant C_max_boxes: integer := 2**C_max_boxes_bits; -- must be power of 2 for the code to work
   type T_list_box is array (0 to (C_num_segments-1)*C_max_boxes*4+C_list_box1'length-1) of unsigned(C_XY_coordinate_bits-1 downto 0);
   function F_repeat_segment_boxes
   (
@@ -161,21 +159,51 @@ architecture def of scopeio_mouse2rgtr is
     V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+3) := (others => '1'); -- Ymax
     return V_list;
   end; -- function
+  constant C_segment_step: integer := layout.sgmnt_margin(top)+grid_height(layout)+hzaxis_height(layout)+layout.sgmnt_margin(bottom)+layout.main_gap(vertical);
   constant C_list_box: T_list_box := F_repeat_segment_boxes(C_list_box1, 
-    layout.sgmnt_margin(top)+grid_height(layout)+hzaxis_height(layout)+layout.sgmnt_margin(bottom)+layout.main_gap(vertical),
-    C_max_boxes, C_num_segments);
+    C_segment_step, C_max_boxes, C_num_segments);
   constant C_list_box_count: integer := C_list_box'length/4; -- how many boxes, including termination record
   constant C_box_id_bits: integer := unsigned_num_bits(C_list_box_count);
   -- R_box_id will contain ID of the box where mouse pointer is
   -- when mouse is outside of any box, R_box_id will be equal to C_list_box_count,
   -- (ID of the termination record)
   signal R_box_id, R_clicked_box_id: unsigned(C_box_id_bits-1 downto 0); -- ID of the box where cursor is
+  
+  -- generate click to trigger ROM
+  -- one bit more to have always positive signed numbers
+  type T_click_to_trigger is array (0 to C_num_segments-1) of signed(C_XY_coordinate_bits-1 downto 0);
+  function F_click_to_trigger
+  (
+    constant C_base_y0: integer;
+    constant C_segment_step: integer;
+    constant C_num_segments: integer
+  )
+  return T_click_to_trigger is
+    variable V_click_to_trigger: T_click_to_trigger;
+  begin
+    for i in 0 to C_num_segments-1 loop
+      V_click_to_trigger(i) := to_signed(C_base_y0 + i*C_segment_step, C_XY_coordinate_bits);
+    end loop; -- segments
+    return V_click_to_trigger;
+  end; -- function
+  constant C_click_to_trigger: T_click_to_trigger := F_click_to_trigger
+  (
+    grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),
+    C_segment_step, C_num_segments
+  );
+-- example what would this function do for 3 segments:
+--  constant C_click_to_trigger: T_click_to_trigger :=
+--  (
+--    to_signed(grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top) + 0*C_segment_step, C_XY_coordinate_bits), 
+--    to_signed(grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top) + 1*C_segment_step, C_XY_coordinate_bits),
+--    to_signed(grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top) + 2*C_segment_step, C_XY_coordinate_bits)
+--  );
 
   -- named constants for box_id
-  constant C_window_vtaxis:  unsigned(C_box_id_bits-1 downto 0) := 0;
-  constant C_window_grid:    unsigned(C_box_id_bits-1 downto 0) := 1;
-  constant C_window_textbox: unsigned(C_box_id_bits-1 downto 0) := 2;
-  constant C_window_hzaxis:  unsigned(C_box_id_bits-1 downto 0) := 3;
+  constant C_window_vtaxis:  unsigned(C_max_boxes_bits-1 downto 0) := 0;
+  constant C_window_grid:    unsigned(C_max_boxes_bits-1 downto 0) := 1;
+  constant C_window_textbox: unsigned(C_max_boxes_bits-1 downto 0) := 2;
+  constant C_window_hzaxis:  unsigned(C_max_boxes_bits-1 downto 0) := 3;
 
   -- mouse dragging
   signal R_dragging: std_logic := '0'; -- becomes 1 when dragging
@@ -322,6 +350,7 @@ begin
     signal R_trigger_source: signed(1 downto 0); -- FIXME: for more than 4 channels
     signal R_trigger_edge: std_logic;
     signal R_trigger_freeze: std_logic;
+    signal R_trigger_on_screen: signed(C_XY_coordinate_bits-1 downto 0);
     -- FIXME trace color list should not be hardcoded
     -- It is used to set frame color to the same (or visually similar)
     -- color of selected trace (input channel).
@@ -352,12 +381,32 @@ begin
     --  C_tracesfg(6*3 to 6*4-1)  -- red
     --);
   begin
+    G_single_segment: if C_num_segments = 1 generate
+      R_trigger_on_screen <= resize(C_click_to_trigger(0) - R_vertical_scale_offset(to_integer(R_trace_selected)), C_XY_coordinate_bits);
+    end generate;
+    -- a screen arithmetic required to set trigger with the left click
+    -- depending on the segment where the cursor is we have different y offsets
+    G_multiple_segments: if C_num_segments > 1 generate
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        R_trigger_on_screen <= resize(
+          -- segment number converted to Y offset:
+          -- HACK: bitwise arithmetic to calculate segment number from box ID:
+          -- C_max_boxes_bits is for the step of repeating segments
+          C_click_to_trigger(to_integer(R_clicked_box_id(R_clicked_box_id'high downto C_max_boxes_bits)))
+          - R_vertical_scale_offset(to_integer(R_trace_selected)), -- current trigger setting
+          C_XY_coordinate_bits); -- resize to required number of bits
+      end if;
+    end process;
+    end generate;
+
     -- 1st pipeline stage: decode mouse event and fill arithmetic registers A, B
     process(clk)
     begin
       if rising_edge(clk) then
             if R_mouse_update = '1' then
-              case R_clicked_box_id and to_unsigned(C_max_boxes-1,R_clicked_box_id'length) is -- HACK: limit to C_max_boxes different windows to be clicked
+              case R_clicked_box_id(C_max_boxes_bits-1 downto 0) is -- HACK: limit to C_max_boxes different windows to be clicked
                 when C_window_vtaxis => -- mouse clicked on the vertical scale window
                   if R_dragging = '1' then -- drag Y to change vertical scale offset
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
@@ -376,8 +425,8 @@ begin
                   else  -- not dragging: clicking or wheel rotation
                     if R_mouse_btn(0) = '1' and R_prev_mouse_btn(0) = '0' then
                       -- left click to directy set the trigger level
-                      R_A(C_trigger_level'range) <= resize(C_grid_y0 - R_vertical_scale_offset(to_integer(R_trace_selected)), C_trigger_level'length);
-                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
+                      R_B(R_mouse_y'range) <= -R_mouse_y;
                     else
                       -- rotate wheel to change trigger level
                       R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
