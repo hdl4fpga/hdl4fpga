@@ -13,29 +13,36 @@ entity scopeio_pointer is
 		video_clk    : in  std_logic;
 		pointer_x    : in  std_logic_vector;
 		pointer_y    : in  std_logic_vector;
-		video_on     : in  std_logic;
 		video_hzcntr : in  std_logic_vector;
 		video_vtcntr : in  std_logic_vector;
 		video_dot    : out std_logic);
 end;
 
 architecture beh of scopeio_pointer is
+	constant xbar_latency : natural := 2;
 
-	signal R_video_hcntr_aligned: signed(video_hzcntr'range);
+	signal x_bar : std_logic;
 
-	signal dot : std_logic;
 begin
 
-	process(video_clk)
+	xbar_p : process(video_clk)
+		variable hz_bar : std_logic;
+		variable vt_bar : std_logic;
 	begin
 		if rising_edge(video_clk) then
-			if video_on='0' then
-				R_video_hcntr_aligned <= to_signed(latency, video_hzcntr'length);
-			else
-				R_video_hcntr_aligned <= R_video_hcntr_aligned+1;
-			end if;
+			x_bar  <= hz_bar or vt_bar;
+			hz_bar := setif(video_hzcntr=pointer_x);
+			vt_bar := setif(video_vtcntr=pointer_y);
 		end if;
 	end process;
-	video_dot <= setif(R_video_hcntr_aligned = signed(pointer_x) or video_vtcntr = pointer_y);
+
+	latency_e : entity hdl4fpga.align
+	generic map (
+		n     => 1,
+		d     => (0 to 0 => latency-xbar_latency))
+	port map (
+		clk   => video_clk,
+		di(0) => x_bar,
+		do(0) => video_dot);
 
 end;

@@ -201,8 +201,8 @@ begin
 	end block;
 
 	video_b : block
-		attribute ram_style : string;
-		attribute ram_style of cgarom_e : label is "distributed";
+--		attribute ram_style : string;
+--		attribute ram_style of cgarom_e : label is "distributed";
 
 		signal char_code : std_logic_vector(4-1 downto 0);
 		signal char_row  : std_logic_vector(3-1 downto 0);
@@ -224,8 +224,8 @@ begin
 	begin
 
 		hz_b : block
-			attribute ram_style : string;
-			attribute ram_style of hzmem_e : label is "distributed";
+--			attribute ram_style : string;
+--			attribute ram_style of hzmem_e : label is "distributed";
 
 			signal x      : unsigned(hz_taddr'left downto 0);
 			signal tick   : std_logic_vector(wu_format'range);
