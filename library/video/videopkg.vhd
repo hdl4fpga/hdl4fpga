@@ -63,30 +63,12 @@ package videopkg is
 		pclk75_00m1280x768Rat60   => (1280, 1344, 1536, 1728,  768,  771,  776,  796)  -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit;
 	);
 
-	function to_bitrom (
-		constant data : natural_vector;
-		constant size : natural)
-		return std_logic_vector;
-
 	function to_edges (
 		constant data : natural_vector)
 		return natural_vector;
 end;
 
 package body videopkg is
-
-	function to_bitrom (
-		constant data : natural_vector;
-		constant size : natural)
-		return std_logic_vector is
-		variable retval : unsigned(0 to data'length*size-1);
-	begin
-		for i in data'range loop
-			retval(0 to size-1) := to_unsigned(data(i), size);
-			retval := retval rol size;
-		end loop;
-		return std_logic_vector(retval);
-	end;
 
 	function to_edges (
 		constant data : natural_vector)

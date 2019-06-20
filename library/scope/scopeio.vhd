@@ -35,11 +35,20 @@ entity scopeio is
 
 		max_inputs  : natural := 64;
 		inputs      : natural := 1;
-		vt_gain     : natural_vector := (0 => 2**17, 1 => 2**16, 2 => 2**15, 3 => 2**14);
+		vt_gain     : integer_vector := (
+			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
+			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
+			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
+			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
 		vt_factsyms : std_logic_vector := (0 to 0 => '0');
 		vt_untsyms  : std_logic_vector := (0 to 0 => '0');
 
-		hz_gain     : natural_vector := (0 to 0 => 2**18);
+		hz_factors  : natural_vector := (
+			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
+			 4 => 2**(0+1)*5**(0+1),  5 => 2**(1+1)*5**(0+1),  6 => 2**(2+1)*5**(0+1),  7 => 2**(0+1)*5**(1+1),
+			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
+			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
+		
 		hz_factsyms : std_logic_vector := (0 to 0 => '0');
 		hz_untsyms  : std_logic_vector := (0 to 0 => '0');
 
@@ -85,7 +94,7 @@ architecture beh of scopeio is
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
-	constant gainid_size : natural := unsigned_num_bits(vt_gain'length-1);
+	constant gainid_size : natural := 4; --unsigned_num_bits(vt_gain'length-1);
 
 	signal video_hzsync       : std_logic;
 	signal video_vtsync       : std_logic;
@@ -215,19 +224,6 @@ begin
 		amp_g : for i in 0 to inputs-1 generate
 			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
 
-			function to_bitrom (
-				value : natural_vector;
-				size  : natural)
-				return std_logic_vector is
-				variable retval : unsigned(0 to value'length*size-1);
-			begin
-				for i in value'range loop
-					retval(0 to size-1) := to_unsigned(value(i), size);
-					retval := retval rol size;
-				end loop;
-				return std_logic_vector(retval);
-			end;
-
 			signal input_sample : std_logic_vector(0 to sample_size-1);
 			signal gain_id      : std_logic_vector(gainid_size-1 downto 0);
 			signal gain_value   : std_logic_vector(18-1 downto 0);
@@ -288,8 +284,10 @@ begin
 	resizedsample_ena <= triggersample_ena;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
+	generic map (
+		factors => hz_factors)
 	port map (
-		factor       => b"1111" , --hz_scale,
+		factor       => hz_scale,
 		input_clk    => input_clk,
 		input_ena    => resizedsample_ena,
 		input_data   => resizedsample_data,

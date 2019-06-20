@@ -3,8 +3,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity scopeio_downsampler is
+	generic (
+		factors : natural_vector);
 	port (
 		factor        : in  std_logic_vector;
 		input_clk     : in  std_logic;
@@ -17,7 +20,21 @@ entity scopeio_downsampler is
 end;
 
 architecture beh of scopeio_downsampler is
-	signal cntr : signed(factor'range);
+	signal scaler : signed(0 to signed_num_bits(max(factors)-2)-1);
+
+	function adjust (
+		constant arg : natural_vector)
+		return integer_vector is
+		variable retval : integer_vector(arg'range);
+	begin
+		for i in arg'range loop
+			retval(i) := arg(i)-2;
+		end loop;
+		return retval;
+	end;
+
+	constant adjusted_factors : integer_vector := adjust(factors);
+
 begin
 
 	process (input_clk)
@@ -25,15 +42,15 @@ begin
 		if rising_edge(input_clk) then
 			if display_ena='0' and trigger_shot='1' then
 				output_ena <= '1';
-				cntr       <= signed(factor);
+				scaler     <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scaler'length);
 			else
 				if input_ena='1' then
-					if cntr(cntr'left)='1' then
-						cntr <= signed(factor);
+					if scaler(scaler'left)='1' then
+						scaler <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scaler'length);
 					else
-						cntr <= cntr - 1;
+						scaler <= scaler - 1;
 					end if;
-					output_ena <= cntr(cntr'left);
+					output_ena <= scaler(scaler'left);
 				else
 					output_ena <= '0';
 				end if;

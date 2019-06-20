@@ -54,6 +54,16 @@ package std is
 		constant arg : std_logic_vector) 
 		return byte_vector;
 
+	function to_bitrom (
+		constant data : natural_vector;
+		constant size : natural)
+		return std_logic_vector;
+
+	function to_bitrom (
+		constant data : integer_vector;
+		constant size : natural)
+		return std_logic_vector;
+
 	function push_left (
 		constant queue   : std_logic_vector;
 		constant element : std_logic_vector)
@@ -218,8 +228,12 @@ package std is
 		return std_logic_vector;
 
 	function max (
-		constant data : integer_vector)
+		constant data : natural_vector)
 		return natural;
+
+	function max (
+		constant data : integer_vector)
+		return integer;
 
 	function max (
 		constant left : integer; 
@@ -523,6 +537,32 @@ package body std is
 		end loop;
 		return val;
 	end function;
+
+	function to_bitrom (
+		constant data : natural_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable retval : unsigned(0 to data'length*size-1);
+	begin
+		for i in data'range loop
+			retval(0 to size-1) := to_unsigned(data(i), size);
+			retval := retval rol size;
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
+	function to_bitrom (
+		constant data : integer_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable retval : signed(0 to data'length*size-1);
+	begin
+		for i in data'range loop
+			retval(0 to size-1) := to_signed(data(i), size);
+			retval := retval rol size;
+		end loop;
+		return std_logic_vector(retval);
+	end;
 
 	--------------------
 	-- Logical functions
@@ -886,8 +926,21 @@ package body std is
 	end;
 
 	function max (
-		constant data : integer_vector) 
+		constant data : natural_vector) 
 		return natural is
+		variable val : natural:= data(data'left);
+	begin
+		for i in data'range loop
+			if val < data(i) then
+				val := data(i);
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function max (
+		constant data : integer_vector) 
+		return integer is
 		variable val : integer:= data(data'left);
 	begin
 		for i in data'range loop
