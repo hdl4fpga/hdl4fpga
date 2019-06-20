@@ -53,7 +53,7 @@ architecture beh of ulx3s is
 	signal vga_rgb_test: std_logic_vector(0 to 6-1);
         signal dvid_crgb  : std_logic_vector(7 downto 0);
         signal ddr_d      : std_logic_vector(3 downto 0);
-	constant sample_size : natural := 9;
+	constant sample_size : natural := 12;
 
 	signal clk_oled : std_logic := '0';
 
@@ -107,7 +107,7 @@ architecture beh of ulx3s is
         --  trace0 trace1 trace2 trace3 trace4
         --  yellow cyan   green  red    white
 
-	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_white, trace_sine: std_logic_vector(0 to sample_size-1);
+	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_white, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -299,43 +299,38 @@ begin
 	
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
-	-- external input: PS/2 data
-	trace_yellow(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_yellow(2) <= adc_mosi; -- MSB-2
-	trace_yellow(3 to trace_yellow'high) <= (others => '0'); -- rest LSB
 
-	-- external input: PS/2 data
-	trace_cyan(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_cyan(2) <= adc_miso; -- MSB-2
-	--trace_cyan(3 to trace_cyan'high) <= (others => '0'); -- rest LSB
-	trace_cyan(6) <= '1';
+	trace_yellow(trace_yellow'high downto 5) <= (others => '0');
+	trace_yellow(4) <= adc_mosi;
+	trace_yellow(1 downto 0) <= "00";  -- y offset
 
-	-- external input: PS/2 clock
-	trace_green(0 to 2) <= (others => '0'); -- MSB (sign), MSB-1, MSB-2
-	trace_green(3) <= adc_csn; -- MSB-3
-	trace_green(5) <= '1';
-	--trace_green(4 to trace_green'high) <= (others => '0'); -- rest LSB
+	trace_cyan(trace_cyan'high downto 5) <= (others => '0');
+	trace_cyan(4) <= adc_miso;
+	trace_cyan(1 downto 0) <= "01"; -- y offset
 
-	-- internal sine waveform, inverted
-	trace_red(0 to 2) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_red(3) <= adc_sclk; -- MSB-2
-	trace_red(4 to trace_red'high) <= (others => '0'); -- rest LSB
+	trace_green(trace_green'high downto 4) <= (others => '0');
+	trace_green(3) <= adc_csn;
+	trace_green(1 downto 0) <= "10"; -- y offset
+
+	trace_red(trace_red'high downto 4) <= (others => '0');
+	trace_red(3) <= adc_sclk;
+	trace_red(1 downto 0) <= "11"; -- y offset
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
 	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_adc_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
-	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
-	  trace_green (0 to trace_green'high)  <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
-	  trace_red   (0 to trace_red'high)    <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_red   (trace_red'high    downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
 	  G_yes_view_low_bits: if C_adc_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
-	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
-	  trace_green (0 to trace_green'high)  <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
-	  trace_red   (0 to trace_red'high)    <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_red   (trace_red'high    downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
