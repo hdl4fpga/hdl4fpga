@@ -227,6 +227,11 @@ begin
 		variable vga_blank1 : std_logic;
 	begin
 		if rising_edge(vga_clk) then
+			vga_rgb1   := vga_rgb;
+            vga_hsync1 := vga_hsync;
+            vga_vsync1 := vga_vsync;
+            vga_blank1 := vga_blank;
+
 			red   <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
 			green <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
 			blue  <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
@@ -235,10 +240,6 @@ begin
 			vsync <= vga_vsync1;
 			sync  <= not vga_hsync1 and not vga_vsync1;
 
-			vga_rgb1   := vga_rgb;
-            vga_hsync1 := vga_hsync;
-            vga_vsync1 := vga_vsync;
-            vga_blank1 := vga_blank;
 		end if;
 	end process;
 	psave <= '1';

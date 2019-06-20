@@ -766,22 +766,16 @@ begin
 
 		scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
 		generic map (
-			latency => 0)
+			latency => vgaio_latency)
 		port map (
 			video_clk    => video_clk,
-			video_on     => video_io(2),
 			pointer_x    => pointer_x,
 			pointer_y    => pointer_y,
 			video_hzcntr => video_hzcntr,
 			video_vtcntr => video_vtcntr,
 			video_dot    => pointer_dot);
 
-				video_color <= scope_color or (video_color'range => pointer_dot);
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-			end if;
-		end process;
+		video_color <= scope_color or (video_color'range => pointer_dot);
 	end block;
 
 
