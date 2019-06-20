@@ -40,6 +40,8 @@ function sendCommand(e) {
 
 	switch(param[0]) {
 	case 'gain':
+		console.log(this.id);
+		console.log(this.value);
 		sendRegister(registers.gain, {
 			gain   : this.value,
 			chanid : param[1] } );
@@ -69,7 +71,7 @@ function sendCommand(e) {
 		break;
 	case 'hscale':
 	case 'hoffset':
-			console.log(this.hoffset.value);
+		console.log(this.hoffset.value);
 		sendRegister(registers.hzaxis, { 
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });

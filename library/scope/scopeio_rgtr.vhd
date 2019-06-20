@@ -177,8 +177,8 @@ begin
 	gain_p : block
 		constant gainid_size : natural := gain_ids'length/inputs;
 
-		constant chanid_id : natural := 0;
-		constant gainid_id : natural := 1;
+		constant gainid_id : natural := 0;
+		constant chanid_id : natural := 1;
 
 		constant gain_bf : natural_vector := (gainid_id => gainid_size, chanid_id => chanid_size);
 	begin

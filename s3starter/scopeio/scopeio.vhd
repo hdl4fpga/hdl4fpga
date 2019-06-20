@@ -48,8 +48,8 @@ architecture beh of s3starter is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/256.0)/2.0;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-2))*y),n));
+			y := sin(2.0*MATH_PI*real((i+x0))/64.0)/2.0;
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-1))*y),n));
 		end loop;
 		return aux;
 	end;
@@ -89,7 +89,7 @@ architecture beh of s3starter is
 		mode600p  => (layout => 1, mul => 4, div => 5),
 		mode1080p => (layout => 0, mul => 3, div => 1));
 
-	constant video_mode : natural := mode1080p;
+	constant video_mode : natural := mode600p;
 
 begin
 
@@ -112,9 +112,9 @@ begin
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
+				input_addr <= std_logic_vector(unsigned(input_addr) + 1);
 			if uart_ena='1' then
-			input_addr <= std_logic_vector(unsigned(input_addr) + 1);
-		end if;
+			end if;
 		end if;
 	end process;
 
