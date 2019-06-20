@@ -34,19 +34,21 @@ architecture beh of scopeio_downsampler is
 	end;
 
 	constant adjusted_factors : integer_vector := adjust(factors);
+	signal scale_factor : signed(scaler'range);
 
 begin
 
+	scale_factor <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scale_factor'length);
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 			if display_ena='0' and trigger_shot='1' then
 				output_ena <= '1';
-				scaler     <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scaler'length);
+				scaler     <= scale_factor;
 			else
 				if input_ena='1' then
 					if scaler(scaler'left)='1' then
-						scaler <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scaler'length);
+						scaler <= scale_factor;
 					else
 						scaler <= scaler - 1;
 					end if;
