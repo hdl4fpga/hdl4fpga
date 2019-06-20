@@ -221,15 +221,24 @@ begin
 		video_blank => vga_blank);
 
 	process (vga_clk)
+		variable vga_rgb1   : std_logic_vector(vga_rgb'range);
+		variable vga_hsync1 : std_logic;
+		variable vga_vsync1 : std_logic;
+		variable vga_blank1 : std_logic;
 	begin
 		if rising_edge(vga_clk) then
-			red   <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 8);
-			green <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 8);
-			blue  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 8);
-			blank <= vga_blank;
-			hsync <= vga_hsync;
-			vsync <= vga_vsync;
-			sync  <= not vga_hsync and not vga_vsync;
+			red   <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
+			green <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
+			blue  <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
+			blank <= not vga_blank1;
+			hsync <= vga_hsync1;
+			vsync <= vga_vsync1;
+			sync  <= not vga_hsync1 and not vga_vsync1;
+
+			vga_rgb1   := vga_rgb;
+            vga_hsync1 := vga_hsync;
+            vga_vsync1 := vga_vsync;
+            vga_blank1 := vga_blank;
 		end if;
 	end process;
 	psave <= '1';

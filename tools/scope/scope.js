@@ -75,7 +75,7 @@ function sendCommand(e) {
 			offset : this.hoffset.value });
 		break;
 	case 'time' :
-		sendRegister(registers.vtaxis, { 
+		sendRegister(registers.hzaxis, { 
 			scale  : this.hscale.value,
 			offset : this.hoffset.value });
 		break;
@@ -135,6 +135,7 @@ function onChangeInputs () {
 	hz = new hzControl(e);
 	hz.mousewheel(mouseWheel);
 	hz.onclick(onClick);
+	hz.onchange(onClick);
 	e  = document.getElementById("vtcontrol");
 	e.innerHTML = '';
 	for (i=0; i < parseInt(inputNum.value); i++) {
@@ -143,6 +144,7 @@ function onChangeInputs () {
 		vt = new vtControl(e, i, '#ffffff');
 		vt.mousewheel(mouseWheel);
 		vt.onclick(onClick);
+		vt.onchange(onClick);
 	}
 
 }
