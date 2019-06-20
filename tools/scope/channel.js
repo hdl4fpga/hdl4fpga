@@ -112,6 +112,14 @@ function hzControl (parent) {
 
 }
 
+hzControl.prototype.onchange = function (callback) {
+	var wrapper = this.wrapper;
+	Object.keys(wrapper).forEach (function(key) {
+		wrapper[key].onchange = callback;
+	});
+	console.log("pase por aca");
+}
+
 hzControl.prototype.onclick = function (callback) {
 	var wrapper = this.wrapper;
 	Object.keys(wrapper).forEach (function(key) {
@@ -304,6 +312,14 @@ function vtControl (parent, number, color) {
 
 	trigger.appendChild(tlabel);
 
+}
+
+vtControl.prototype.onchange = function (callback) {
+	var wrapper = this.wrapper;
+	Object.keys(wrapper).forEach (function(key) {
+		wrapper[key].onchange = callback;
+	});
+	console.log("pase por aca");
 }
 
 vtControl.prototype.onclick = function (callback) {
