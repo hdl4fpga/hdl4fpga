@@ -35,7 +35,7 @@ entity scopeio is
 
 		max_inputs  : natural := 64;
 		inputs      : natural := 1;
-		vt_gain     : integer_vector := (
+		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
 			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
@@ -230,22 +230,15 @@ begin
 		begin
 
 			gain_id <= word2byte(gain_ids, i, gainid_size);
-			mult_e : entity hdl4fpga.rom 
-			generic map (
-				latency => 1,
-				bitrom  => to_bitrom(vt_gain,18))
-			port map (
-				clk  => input_clk,
-				addr => gain_id,
-				data => gain_value);
-
 			input_sample <= word2byte(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
+			generic map (
+				gains => vt_gains)
 			port map (
 				input_clk     => input_clk,
 				input_ena     => input_ena,
 				input_sample  => input_sample,
-				gain_value    => gain_value,
+				gain_id       => gain_value,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
 
@@ -501,19 +494,19 @@ begin
 
 			sgmntbox_b : block
 
-				constant pboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-				constant pboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+				constant mainboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
+				constant mainboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal mainbox_x      : std_logic_vector(pboxx_size-1 downto 0);
-				signal mainbox_y      : std_logic_vector(pboxy_size-1 downto 0);
+				signal mainbox_x      : std_logic_vector(mainboxx_size-1 downto 0);
+				signal mainbox_y      : std_logic_vector(mainboxy_size-1 downto 0);
 
 				signal sgmntbox_y     : std_logic_vector(mainbox_y'range);
 				signal sgmntbox_x     : std_logic_vector(mainbox_x'range);
 
 				signal mainbox_vyon   : std_logic;
 				signal mainbox_vxon   : std_logic;
-				signal mainbox_vx     : std_logic_vector(pboxx_size-1 downto 0);
-				signal mainbox_vy     : std_logic_vector(pboxy_size-1 downto 0);
+				signal mainbox_vx     : std_logic_vector(mainboxx_size-1 downto 0);
+				signal mainbox_vy     : std_logic_vector(mainboxy_size-1 downto 0);
 				signal sgmntbox_xedge : std_logic;
 				signal sgmntbox_yedge : std_logic;
 				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);
@@ -536,8 +529,8 @@ begin
 					signal xedge : std_logic;
 					signal yedge : std_logic;
 					signal nexty : std_logic;
-					signal x      : std_logic_vector(pboxx_size-1 downto 0);
-					signal y      : std_logic_vector(pboxy_size-1 downto 0);
+					signal x      : std_logic_vector(mainboxx_size-1 downto 0);
+					signal y      : std_logic_vector(mainboxy_size-1 downto 0);
 				begin 
 
 					rgtrin_p : process (video_clk)
