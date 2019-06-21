@@ -33,7 +33,6 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural := 0;
 
-		max_inputs  : natural := 64;
 		inputs      : natural := 1;
 		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
@@ -185,7 +184,6 @@ begin
 
 	scopeio_rtgr_e : entity hdl4fpga.scopeio_rgtr
 	generic map (
-		max_inputs     => max_inputs,
 		inputs         => inputs)
 	port map (
 		clk            => si_clk,
