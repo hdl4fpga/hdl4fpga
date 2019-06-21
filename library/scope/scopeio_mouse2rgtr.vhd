@@ -338,7 +338,7 @@ begin
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(C_vertical_scale_offset'range);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
     signal R_after_trace_select: unsigned(7 downto 0);
-    signal C_vertical_scale_gain: signed(1 downto 0) := (others => '0');
+    signal C_vertical_scale_gain: signed(3 downto 0) := (others => '0');
     type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
     signal R_vertical_scale_gain: T_vertical_scale_gain;
     signal R_horizontal_scale_offset: signed(15 downto 0);
@@ -508,9 +508,9 @@ begin
           when C_action_vertical_scale_gain_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
-            R_rgtr_data(31 downto 8) <= (others => '0');
-            R_rgtr_data(7 downto 6) <= S_APB(C_vertical_scale_gain'range);
-            R_rgtr_data(5 downto 0) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
+            R_rgtr_data(31 downto 10) <= (others => '0');
+            R_rgtr_data(9 downto 4) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
+            R_rgtr_data(3 downto 0) <= S_APB(C_vertical_scale_gain'range);
             R_vertical_scale_gain(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_gain'range);
           when C_action_vertical_scale_color_change =>
             R_rgtr_dv <= '1';
