@@ -431,10 +431,18 @@ begin
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
                     R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
-                  else -- rotate wheel to change vertical gain
-                    R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
-                    R_B(C_vertical_scale_gain'range) <= resize(R_mouse_dz, C_vertical_scale_gain'length);
-                    R_action_id <= C_action_vertical_scale_gain_change;
+                  else
+                    if R_mouse_btn(0) = '0' and R_prev_mouse_btn(0) = '1' then
+                      -- after left click, directy set the trigger level
+                      R_A(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
+                      R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
+                      R_B(R_mouse_y'range) <= -R_mouse_y;
+                      R_action_id <= C_action_trigger_level_change;
+                    else -- rotate wheel to change vertical gain
+                      R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
+                      R_B(C_vertical_scale_gain'range) <= resize(R_mouse_dz, C_vertical_scale_gain'length);
+                      R_action_id <= C_action_vertical_scale_gain_change;
+                    end if;
                   end if;
                 when C_window_grid => -- mouse clicked on the grid window
                   if R_dragging = '1' then -- drag Y to change trigger level
