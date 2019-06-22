@@ -93,7 +93,7 @@ architecture beh of scopeio is
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
-	constant gainid_size : natural := 4; --unsigned_num_bits(vt_gain'length-1);
+	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal video_hzsync       : std_logic;
 	signal video_vtsync       : std_logic;
@@ -137,7 +137,7 @@ architecture beh of scopeio is
 	signal vt_dv          : std_logic;
 	signal hz_offset      : std_logic_vector(6+9-1 downto 0);
 	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
-	signal vt_chanid      : std_logic_vector(chanid_size-1 downto 0);
+	signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 
 	signal palette_dv     : std_logic;
 	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
@@ -236,7 +236,7 @@ begin
 				input_clk     => input_clk,
 				input_ena     => input_ena,
 				input_sample  => input_sample,
-				gain_id       => gain_value,
+				gain_id       => gain_id,
 				output_ena    => output_ena(i),
 				output_sample => ampsample_data(sample_range));
 

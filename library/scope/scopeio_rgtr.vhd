@@ -43,6 +43,8 @@ end;
 
 architecture def of scopeio_rgtr is
 
+	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+
 	signal hzaxis_ena  : std_logic;
 	signal palette_ena : std_logic;
 	signal gain_ena    : std_logic;
@@ -56,13 +58,13 @@ begin
 	vtaxis_p : process(clk)
 		constant offset_size : natural := vt_offsets'length/inputs;
 		variable offsets     : unsigned(0 to vt_offsets'length-1); 
-		variable chanid      : std_logic_vector(0 to chanid_size-1);
+		variable chanid      : std_logic_vector(0 to chanid_maxsize-1);
 	begin
 		if rising_edge(clk) then
 			if vtaxis_ena='1' then
 				chanid := bitfield(rgtr_data, vtchanid_id, vtoffset_bf);
 				for i in 0 to inputs-1 loop
-					if to_unsigned(i, chanid_size)=unsigned(chanid) then
+					if to_unsigned(i, chanid_maxsize)=unsigned(chanid) then
 						offsets(0 to offset_size-1) := unsigned(bitfield(rgtr_data, vtoffset_id, vtoffset_bf));
 					end if;
 					offsets := offsets rol offset_size;
@@ -90,21 +92,22 @@ begin
 	palette_p : block
 	begin
 		palette_dv    <= palette_ena;
-		palette_id    <= bitfield(rgtr_data, paletteid_id,    palette_bf);
-		palette_color <= bitfield(rgtr_data, palettecolor_id, palette_bf);
+		palette_id    <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, paletteid_id,    palette_bf)), palette_id'length));
+		palette_color <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, palettecolor_id, palette_bf)), palette_color'length));
 	end block;
 
-	gain_ena    <= rgtr_dv when rgtr_id=rid_gain    else '0';
+	gain_ena <= rgtr_dv when rgtr_id=rid_gain else '0';
 	gain_p : process(clk) 
-		variable ids     : unsigned(0 to gain_ids'length-1); 
-		variable chanid  : std_logic_vector(0 to chanid_size-1);
+		constant gainid_size : natural := gain_ids'length/inputs;
+		variable ids         : unsigned(0 to gain_ids'length-1); 
+		variable chanid      : std_logic_vector(0 to chanid_maxsize-1);
 	begin
 		if rising_edge(clk) then
 			if gain_ena='1' then
 				chanid := bitfield(rgtr_data, gainchanid_id, gain_bf);
 				for i in 0 to inputs-1 loop
-					if to_unsigned(i, chanid_size)=unsigned(chanid) then
-						ids(0 to gainid_size-1) := unsigned(bitfield(rgtr_data, gainid_id, gain_bf));
+					if to_unsigned(i, chanid_maxsize)=unsigned(chanid) then
+						ids(0 to gainid_size-1) := resize(unsigned(bitfield(rgtr_data, gainid_id, gain_bf)), gainid_size);
 					end if;
 					ids := ids rol gainid_size;
 				end loop;
@@ -119,12 +122,12 @@ begin
 		variable level : signed(trigger_level'range);
 	begin
 		if rising_edge(clk) then
-			level := -signed(bitfield(rgtr_data, trigger_level_id, trigger_bf));
+			level := resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length);
 			if trigger_ena='1' then
 				trigger_freeze <= bitfield(rgtr_data, trigger_ena_id,    trigger_bf)(0);
 				trigger_edge   <= bitfield(rgtr_data, trigger_edge_id,   trigger_bf)(0);
 				trigger_level  <= std_logic_vector(level);
-				trigger_chanid <= bitfield(rgtr_data, trigger_chanid_id, trigger_bf);
+				trigger_chanid <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), trigger_chanid'length));
 			end if;
 			trigger_dv <= trigger_ena;
 		end if;
@@ -135,8 +138,8 @@ begin
 	begin
 		if rising_edge(clk) then
 			if pointer_ena='1' then
-				pointer_x <= bitfield(rgtr_data, pointerx_id, pointer_bf);
-				pointer_y <= bitfield(rgtr_data, pointery_id, pointer_bf);
+				pointer_x <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointerx_id, pointer_bf)), pointer_x'length));
+				pointer_y <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointery_id, pointer_bf)), pointer_y'length));
 			end if;
 			pointer_dv <= pointer_ena;
 		end if;

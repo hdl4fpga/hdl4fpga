@@ -32,6 +32,7 @@ use hdl4fpga.videopkg.all;
 package scopeiopkg is
 
 	constant max_inputs : natural := 64;
+
 	type border        is (left, right, top, bottom);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
@@ -184,7 +185,7 @@ package scopeiopkg is
 	constant rid_vtaxis   : std_logic_vector := x"14";
 	constant rid_pointer  : std_logic_vector := x"15";
 
-	constant chanid_size  : natural := unsigned_num_bits(max_inputs-1);
+	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
 		constant bf_data   : std_logic_vector;
@@ -196,7 +197,7 @@ package scopeiopkg is
 	constant vtchanid_id : natural := 1;
 	constant vtoffset_bf : natural_vector := (
 		vtoffset_id => 13, 
-		vtchanid_id => chanid_size);
+		vtchanid_id => chanid_maxsize);
 
 	constant hzoffset_id : natural := 0;
 	constant hzscale_id  : natural := 1;
@@ -204,43 +205,43 @@ package scopeiopkg is
 		hzoffset_id => 16, 
 		hzscale_id  =>  4);
 
-	constant paletteid_size    : natural := unsigned_num_bits(max_inputs+9-1);
-	constant palettecolor_size : natural := unsigned_num_bits(max_inputs+9-1);
-	constant paletteid_id      : natural := 0;
-	constant palettecolor_id   : natural := 1;
+	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
+	constant palettecolor_maxsize : natural := unsigned_num_bits(max_inputs+9-1);
+	constant paletteid_id         : natural := 0;
+	constant palettecolor_id      : natural := 1;
+
 	constant palette_bf : natural_vector := (
-		paletteid_id    => paletteid_size, 
-		palettecolor_id => palettecolor_size);
+		paletteid_id    => paletteid_maxsize, 
+		palettecolor_id => palettecolor_maxsize);
 
 	constant trigger_ena_id    : natural := 0;
 	constant trigger_edge_id   : natural := 1;
 	constant trigger_level_id  : natural := 2;
 	constant trigger_chanid_id : natural := 3;
 
-	constant triggerlevel_size : natural := 9;
+	constant triggerlevel_maxsize : natural := 9;
 	constant trigger_bf : natural_vector := (
 		trigger_ena_id    => 1,
 		trigger_edge_id   => 1,
-		trigger_level_id  => triggerlevel_size,
-		trigger_chanid_id => chanid_size);
+		trigger_level_id  => triggerlevel_maxsize,
+		trigger_chanid_id => chanid_maxsize);
 
-	constant gainid_size : natural := 4;
+	constant gainid_maxsize : natural := 4;
 
-	constant gainid_id : natural := 0;
-	constant gainchanid_id : natural := 1;
+	constant gainid_id      : natural := 0;
+	constant gainchanid_id  : natural := 1;
 	constant gain_bf : natural_vector := (
-		gainid_id => gainid_size,
-		gainchanid_id => chanid_size);
+		gainid_id     => gainid_maxsize,
+		gainchanid_id => chanid_maxsize);
 
-	constant pointerx_size : natural := 11;
-	constant pointery_size : natural := 11;
-
-	constant pointerx_id   : natural := 0;
-	constant pointery_id   : natural := 1;
+	constant pointerx_maxsize : natural := 11;
+	constant pointery_maxsize : natural := 11;
+	constant pointerx_id      : natural := 0;
+	constant pointery_id      : natural := 1;
 
 	constant pointer_bf : natural_vector := (
-		pointery_id => pointery_size, 
-		pointerx_id => pointerx_size);
+		pointery_id => pointery_maxsize, 
+		pointerx_id => pointerx_maxsize);
 
 end;
 
