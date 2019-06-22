@@ -188,25 +188,29 @@ package scopeiopkg is
 	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
-		constant bf_data   : std_logic_vector;
+		constant bf_rgtr   : std_logic_vector;
 		constant bf_id     : natural;
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector;
 
+	constant vtoffset_maxsize : natural := 13;
 	constant vtoffset_id : natural := 0;
 	constant vtchanid_id : natural := 1;
 	constant vtoffset_bf : natural_vector := (
-		vtoffset_id => 13, 
+		vtoffset_id => vtoffset_maxsize, 
 		vtchanid_id => chanid_maxsize);
+
+	constant hzoffset_maxsize : natural := 16;
+	constant hzscale_maxsize  : natural :=  4;
 
 	constant hzoffset_id : natural := 0;
 	constant hzscale_id  : natural := 1;
 	constant hzoffset_bf : natural_vector := (
-		hzoffset_id => 16, 
-		hzscale_id  =>  4);
+		hzoffset_id => hzoffset_maxsize, 
+		hzscale_id  => hzscale_maxsize);
 
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
-	constant palettecolor_maxsize : natural := unsigned_num_bits(max_inputs+9-1);
+	constant palettecolor_maxsize : natural := 24;
 	constant paletteid_id         : natural := 0;
 	constant palettecolor_id      : natural := 1;
 
@@ -539,16 +543,16 @@ package body scopeiopkg is
 	end;
 
 	function bitfield (
-		constant bf_data   : std_logic_vector;
+		constant bf_rgtr   : std_logic_vector;
 		constant bf_id     : natural;
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector is
-		variable retval : unsigned(bf_data'length-1 downto 0);
+		variable retval : unsigned(bf_rgtr'length-1 downto 0);
 		variable dscptr : natural_vector(0 to bf_dscptr'length-1);
 	begin
 		dscptr := bf_dscptr;
-		retval := unsigned(bf_data);
-		if bf_data'left > bf_data'right then
+		retval := unsigned(bf_rgtr);
+		if bf_rgtr'left > bf_rgtr'right then
 			for i in bf_dscptr'range loop
 				if i=bf_id then
 					return std_logic_vector(retval(bf_dscptr(i)-1 downto 0));
