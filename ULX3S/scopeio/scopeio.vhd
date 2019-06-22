@@ -20,14 +20,15 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
-        constant vlayout_id: integer := 3;
+        constant vlayout_id: integer := 1;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
-	constant C_adc_channels: integer := 4; -- don't touch
 	constant C_adc_bits: integer := 12; -- don't touch
+	constant C_adc_channels: integer := 4; -- don't touch
+	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
 
@@ -87,27 +88,16 @@ architecture beh of ulx3s is
 	end;
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
-	constant inputs: natural := 4; -- number of input channels (traces)
 	-- assign default colors to the traces
 	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
         --b"111100";
-          b"111100_001111_001100_110101";
-        --b"111100_001111_001100_110101_111111";
+          b"111100_001111_001100_110111";
+        --b"111100_001111_001100_110111_110100";
         --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
         --  trace0 trace1 trace2 trace3 trace4
-        --  yellow cyan   green  red    white
+        --  yellow cyan   green  violet orange
 
-        -- technically it can be the same as C_tracesfg but for visibility tuning
-        -- it is different for red color to make it less bright
-	constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-        --b"111100";
-          b"111100_001111_001100_110000";
-        --b"111100_001111_001100_110000_111111";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4
-        --  yellow cyan   green  red    white
-
-	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_white, trace_sine: std_logic_vector(sample_size-1 downto 0);
+	signal trace_yellow, trace_cyan, trace_green, trace_violett, trace_orange, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -312,25 +302,25 @@ begin
 	trace_green(3) <= adc_csn;
 	trace_green(1 downto 0) <= "10"; -- y offset
 
-	trace_red(trace_red'high downto 4) <= (others => '0');
-	trace_red(3) <= adc_sclk;
-	trace_red(1 downto 0) <= "11"; -- y offset
+	trace_violett(trace_violett'high downto 4) <= (others => '0');
+	trace_violett(3) <= adc_sclk;
+	trace_violett(1 downto 0) <= "11"; -- y offset
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
 	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_adc_view_low_bits generate
-	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
-	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
-	  trace_green (trace_green'high  downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
-	  trace_red   (trace_red'high    downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  trace_yellow (trace_yellow'high  downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan   (trace_cyan'high    downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green  (trace_green'high   downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_violett(trace_violett'high downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
 	  G_yes_view_low_bits: if C_adc_view_low_bits generate
-	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
-	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
-	  trace_green (trace_green'high  downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
-	  trace_red   (trace_red'high    downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  trace_yellow (trace_yellow'high  downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan   (trace_cyan'high    downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green  (trace_green'high   downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_violett(trace_violett'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
@@ -344,10 +334,10 @@ begin
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
 	end generate;
 	G_inputs4: if inputs >= 4 generate
-	samples(3*sample_size to (3+1)*sample_size-1) <= trace_red;
+	samples(3*sample_size to (3+1)*sample_size-1) <= trace_violett;
 	end generate;
 	G_inputs5: if inputs >= 5 generate
-	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_white;
+	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_orange;
 	samples(4*sample_size to (4+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
 	end generate;
 
