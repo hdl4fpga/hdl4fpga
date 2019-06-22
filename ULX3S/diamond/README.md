@@ -1,10 +1,12 @@
 # Diamond project for ULX3S
 
-Default video resolution is 1280x768 @60Hz.
-If it doesn't work, try to compile for 800x600 @60Hz.
-On some monitors/TVs 1920@1080 @30Hz would be displayed.
-With some luck and overclock, it might be possible to 
-get 1280x1024 @60Hz.
+Default video resolution is 800x600 @60Hz.
+Tested video resolutions are:
+
+     800x600  @ 60Hz all boards
+    1280x768  @ 60Hz most 12F and some 85F
+    1920@1080 @ 30Hz some 12F and some TV's
+    1280x1024 @ 60Hz some 12F
 
 Control over serial port works at US1 port.
 Default port setting is 115200,8N1.
