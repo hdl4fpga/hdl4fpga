@@ -31,9 +31,9 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		vlayout_id  : natural := 0;
+		vlayout_id  : natural;
 
-		inputs      : natural := 1;
+		inputs      : natural;
 		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),

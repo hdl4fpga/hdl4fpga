@@ -34,6 +34,8 @@ use unisim.vcomponents.all;
 
 architecture beh of s3starter is
 
+	constant inputs : natural := 1;
+
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
@@ -65,6 +67,14 @@ architecture beh of s3starter is
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(3-1 downto 0);
+
+	signal istreamdaisy_frm  : std_logic;
+	signal istreamdaisy_irdy : std_logic;
+	signal istreamdaisy_data : std_logic_vector(8-1 downto 0);
+
+	signal mousedaisy_frm    : std_logic;
+	signal mousedaisy_irdy   : std_logic;
+	signal mousedaisy_data   : std_logic_vector(8-1 downto 0);
 
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
@@ -170,9 +180,10 @@ begin
 		chaino_irdy => si_irdy,
 		chaino_data => si_data);
 
-	si_clk <= sys_clk;
+	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"1_1_1",
 		default_gridfg   => b"1_0_0",
