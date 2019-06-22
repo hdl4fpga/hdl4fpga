@@ -31,6 +31,8 @@ use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
 
+	constant max_inputs : natural := 64;
+
 	type border        is (left, right, top, bottom);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
@@ -175,6 +177,71 @@ package scopeiopkg is
 		constant y_div  : std_logic_vector;
 		constant layout : display_layout)
 		return std_logic;
+
+	constant rid_hzaxis   : std_logic_vector := x"10";
+	constant rid_palette  : std_logic_vector := x"11";
+	constant rid_trigger  : std_logic_vector := x"12";
+	constant rid_gain     : std_logic_vector := x"13";
+	constant rid_vtaxis   : std_logic_vector := x"14";
+	constant rid_pointer  : std_logic_vector := x"15";
+
+	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
+
+	function bitfield (
+		constant bf_data   : std_logic_vector;
+		constant bf_id     : natural;
+		constant bf_dscptr : natural_vector)
+		return   std_logic_vector;
+
+	constant vtoffset_id : natural := 0;
+	constant vtchanid_id : natural := 1;
+	constant vtoffset_bf : natural_vector := (
+		vtoffset_id => 13, 
+		vtchanid_id => chanid_maxsize);
+
+	constant hzoffset_id : natural := 0;
+	constant hzscale_id  : natural := 1;
+	constant hzoffset_bf : natural_vector := (
+		hzoffset_id => 16, 
+		hzscale_id  =>  4);
+
+	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
+	constant palettecolor_maxsize : natural := unsigned_num_bits(max_inputs+9-1);
+	constant paletteid_id         : natural := 0;
+	constant palettecolor_id      : natural := 1;
+
+	constant palette_bf : natural_vector := (
+		paletteid_id    => paletteid_maxsize, 
+		palettecolor_id => palettecolor_maxsize);
+
+	constant trigger_ena_id    : natural := 0;
+	constant trigger_edge_id   : natural := 1;
+	constant trigger_level_id  : natural := 2;
+	constant trigger_chanid_id : natural := 3;
+
+	constant triggerlevel_maxsize : natural := 9;
+	constant trigger_bf : natural_vector := (
+		trigger_ena_id    => 1,
+		trigger_edge_id   => 1,
+		trigger_level_id  => triggerlevel_maxsize,
+		trigger_chanid_id => chanid_maxsize);
+
+	constant gainid_maxsize : natural := 4;
+
+	constant gainid_id      : natural := 0;
+	constant gainchanid_id  : natural := 1;
+	constant gain_bf : natural_vector := (
+		gainid_id     => gainid_maxsize,
+		gainchanid_id => chanid_maxsize);
+
+	constant pointerx_maxsize : natural := 11;
+	constant pointery_maxsize : natural := 11;
+	constant pointerx_id      : natural := 0;
+	constant pointery_id      : natural := 1;
+
+	constant pointer_bf : natural_vector := (
+		pointery_id => pointery_maxsize, 
+		pointerx_id => pointerx_maxsize);
 
 end;
 
@@ -469,6 +536,34 @@ package body scopeiopkg is
 		y_gap    := pos(layout.main_gap(vertical));
 
 		return setif(unsigned(y_div)=box_id*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
+	end;
+
+	function bitfield (
+		constant bf_data   : std_logic_vector;
+		constant bf_id     : natural;
+		constant bf_dscptr : natural_vector)
+		return   std_logic_vector is
+		variable retval : unsigned(bf_data'length-1 downto 0);
+		variable dscptr : natural_vector(0 to bf_dscptr'length-1);
+	begin
+		dscptr := bf_dscptr;
+		retval := unsigned(bf_data);
+		if bf_data'left > bf_data'right then
+			for i in bf_dscptr'range loop
+				if i=bf_id then
+					return std_logic_vector(retval(bf_dscptr(i)-1 downto 0));
+				end if;
+				retval := retval ror bf_dscptr(i);
+			end loop;
+		else
+			for i in bf_dscptr'range loop
+				retval := retval rol bf_dscptr(i);
+				if i=bf_id then
+					return std_logic_vector(retval(bf_dscptr(i)-1 downto 0));
+				end if;
+			end loop;
+		end if;
+		return (0 to 0 => '-');
 	end;
 
 end;

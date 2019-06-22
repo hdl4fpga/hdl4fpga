@@ -26,23 +26,25 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.std.all;
 
 entity scopeio_amp is
 	generic (
+		gains : natural_vector;
 		lat : natural := 0);
 	port (
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic;
 		input_sample  : in  std_logic_vector;
-		gain_value    : in  std_logic_vector;
+		gain_id       : in  std_logic_vector;
 		output_ena    : out std_logic;
 		output_sample : out std_logic_vector);
 end;
 
 architecture beh of scopeio_amp is
 
-	signal p : signed(0 to gain_value'length+input_sample'length-1);
-	signal a : signed(gain_value'range);
+	signal g : signed(0 to 18-1);
+	signal p : signed(0 to g'length+input_sample'length-1);
 	signal b : signed(input_sample'range);
 
 begin
@@ -50,13 +52,12 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			p <= a*b;
-			a <= signed(gain_value);
+			p <= g*b;
+			g <= to_signed(-gains(to_integer(unsigned(gain_id))),g'length);
 			b <= signed(input_sample);
-
 		end if;
 	end process;
-	output_sample <= std_logic_vector(resize(p(0 to gain_value'length-1), input_sample'length));
+	output_sample <= std_logic_vector(resize(p(0 to g'length-1), input_sample'length));
 
 	lat_e : entity hdl4fpga.align
 	generic map (
