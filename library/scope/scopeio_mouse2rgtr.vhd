@@ -320,6 +320,8 @@ begin
   end block;
   
   dispatch_mouse_event: block
+    constant C_max_inputs_bits: integer := chanid_maxsize;
+
     -- pipelined stage for rgtr update arithmetic
     signal R_A, R_B, S_APB: signed(15 downto 0); -- for register arithmetic function unit
     constant C_action_nop: integer := 0;
@@ -334,20 +336,19 @@ begin
     constant C_action_horizontal_scale_timebase_change: integer := 9;
     constant C_action_pointer_last: integer := C_action_horizontal_scale_timebase_change;
     signal R_action_id: integer range C_action_nop to C_action_pointer_last := 0; -- which action to take
-    constant C_vertical_scale_offset: signed(12 downto 0) := (others => '0');
+    constant C_vertical_scale_offset: signed(vtoffset_bf(vtoffset_id)-1 downto 0) := (others => '0');
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(C_vertical_scale_offset'range);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
     signal R_after_trace_select: unsigned(7 downto 0);
-    signal C_vertical_scale_gain: signed(3 downto 0) := (others => '0');
+    signal C_vertical_scale_gain: signed(gainid_maxsize-1 downto 0) := (others => '0');
     type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
     signal R_vertical_scale_gain: T_vertical_scale_gain;
-    signal R_horizontal_scale_offset: signed(15 downto 0);
-    signal R_horizontal_scale_timebase: signed(3 downto 0);
+    signal R_horizontal_scale_offset: signed(hzoffset_bf(hzoffset_id)-1 downto 0);
+    signal R_horizontal_scale_timebase: signed(hzoffset_bf(hzscale_id)-1 downto 0);
     signal R_trace_selected: signed(unsigned_num_bits(C_inputs)-1 downto 0); -- FIXME for C_inputs = 64
-    constant C_trigger_level: signed(8 downto 0) := (others => '0');
+    constant C_trigger_level: signed(triggerlevel_maxsize-1 downto 0) := (others => '0');
     type T_trigger_level is array (0 to C_inputs-1) of signed(C_trigger_level'range);
     signal R_trigger_level: T_trigger_level;
-    signal R_trigger_source: signed(1 downto 0); -- FIXME: for more than 4 channels
     signal R_trigger_edge: std_logic;
     signal R_trigger_freeze: std_logic;
     signal R_trigger_on_screen: signed(C_XY_coordinate_bits-1 downto 0);
@@ -501,68 +502,75 @@ begin
           when C_action_vertical_scale_offset_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"14"; -- trace vertical settings
-            R_rgtr_data(31 downto 19) <= (others => '0');
-            R_rgtr_data(18 downto 13) <= std_logic_vector(resize(R_trace_selected,6));
-            R_rgtr_data(C_vertical_scale_offset'range) <= S_APB(C_vertical_scale_offset'range);
+            R_rgtr_data(31 downto vtoffset_bf(vtchanid_id)+vtoffset_bf(vtoffset_id)) <= (others => '0');
+            R_rgtr_data(vtoffset_bf(vtchanid_id)+vtoffset_bf(vtoffset_id)-1 downto 0) <=
+                std_logic_vector(resize(R_trace_selected,C_max_inputs_bits))
+              & std_logic_vector(S_APB(C_vertical_scale_offset'range));
             R_vertical_scale_offset(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_offset'range);
           when C_action_vertical_scale_gain_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"13"; -- trace vertical settings
-            R_rgtr_data(31 downto 10) <= (others => '0');
-            R_rgtr_data(9 downto 4) <= std_logic_vector(resize(R_trace_selected,6)); -- MAX 64 inputs hardcoded
-            R_rgtr_data(3 downto 0) <= S_APB(C_vertical_scale_gain'range);
+            R_rgtr_data(31 downto gain_bf(gainchanid_id)+gain_bf(gainid_id)) <= (others => '0');
+            R_rgtr_data(gain_bf(gainchanid_id)+gain_bf(gainid_id)-1 downto 0) <=
+                std_logic_vector(resize(R_trace_selected,gain_bf(gainchanid_id)))
+              & std_logic_vector(S_APB(C_vertical_scale_gain'range));
             R_vertical_scale_gain(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_gain'range);
           when C_action_vertical_scale_color_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
-            R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"4"; -- 4: vertical scale text color indicates selected channel/trace
-            R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
+            R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
+            R_rgtr_data(palette_bf(palettecolor_id)+palette_bf(paletteid_id)-1 downto 0) <=
+                std_logic_vector(resize(C_trace_color(to_integer(R_trace_selected)),palette_bf(palettecolor_id)))
+              & std_logic_vector(to_unsigned(4,palette_bf(paletteid_id))); -- 4: vertical scale color indicates selected channel/trace
           when C_action_trigger_level_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"12"; -- trigger level
-            R_rgtr_data(31 downto R_trace_selected'length+11) <= (others => '0');
-            R_rgtr_data(R_trace_selected'length+10 downto 11) <= R_trace_selected;
-            R_rgtr_data(10 downto 2) <= S_APB(C_trigger_level'range);
-            R_rgtr_data(1) <= S_APB(S_APB'high); -- when '1' falling edge
-            R_rgtr_data(0) <= S_APB(S_APB'high-2); -- when '1' trigger freeze
+            R_rgtr_data(31 downto trigger_bf(trigger_chanid_id)+trigger_bf(trigger_level_id)+trigger_bf(trigger_edge_id)+trigger_bf(trigger_ena_id)) <= (others => '0');
+            R_rgtr_data(trigger_bf(trigger_chanid_id)+trigger_bf(trigger_level_id)+trigger_bf(trigger_edge_id)+trigger_bf(trigger_ena_id)-1 downto 0) <=
+                std_logic_vector(resize(R_trace_selected,trigger_bf(trigger_chanid_id)))
+              & std_logic_vector(S_APB(trigger_bf(trigger_level_id)-1 downto 0))
+              & std_logic(S_APB(S_APB'high)) -- when '1' falling edge
+              & std_logic(S_APB(S_APB'high-2)); -- when '1' trigger freeze
             R_trigger_level(to_integer(R_trace_selected)) <= S_APB(C_trigger_level'range);
             R_trigger_edge <= S_APB(S_APB'high);
             R_trigger_freeze <= S_APB(S_APB'high-2);
           when C_action_horizontal_scale_offset_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"10"; -- horizontal scale settings
-            R_rgtr_data(31 downto 20) <= (others => '0');
-            R_rgtr_data(19 downto 16) <= R_horizontal_scale_timebase;
-            R_rgtr_data(15 downto 0) <= S_APB(R_horizontal_scale_offset'range);
+            R_rgtr_data(31 downto hzoffset_bf(hzscale_id)+hzoffset_bf(hzoffset_id)) <= (others => '0');
+            R_rgtr_data(hzoffset_bf(hzscale_id)+hzoffset_bf(hzoffset_id)-1 downto 0) <=
+                std_logic_vector(R_horizontal_scale_timebase) 
+              & std_logic_vector(S_APB(R_horizontal_scale_offset'range));
             R_horizontal_scale_offset <= S_APB(R_horizontal_scale_offset'range);
           when C_action_horizontal_scale_timebase_change =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"10"; -- horizontal scale settings
-            R_rgtr_data(31 downto 20) <= (others => '0');
-            R_rgtr_data(19 downto 16) <= S_APB(R_horizontal_scale_timebase'range);
-            R_rgtr_data(15 downto 0) <= R_horizontal_scale_offset;
+            R_rgtr_data(31 downto hzoffset_bf(hzscale_id)+hzoffset_bf(hzoffset_id)) <= (others => '0');
+            R_rgtr_data(hzoffset_bf(hzscale_id)+hzoffset_bf(hzoffset_id)-1 downto 0) <=
+                std_logic_vector(S_APB(R_horizontal_scale_timebase'range)) 
+              & std_logic_vector(R_horizontal_scale_offset);
             R_horizontal_scale_timebase <= S_APB(R_horizontal_scale_timebase'range);
           when C_action_trace_select =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
-            R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"4"; -- 4: vertical scale color indicates selected channel/trace
+            R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
+            R_rgtr_data(palette_bf(paletteid_id)-1 downto 0) <=
+              std_logic_vector(to_unsigned(4,palette_bf(paletteid_id))); -- 4: vertical scale color indicates selected channel/trace
             if unsigned(S_APB(R_trace_selected'range)) < C_inputs then
-              R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(S_APB(R_trace_selected'range)));
+              R_rgtr_data(palette_bf(palettecolor_id)+palette_bf(paletteid_id)-1 downto palette_bf(paletteid_id)) <=
+                std_logic_vector(resize(C_trace_color(to_integer(S_APB(R_trace_selected'range))),palette_bf(palettecolor_id)));
               R_trace_selected <= S_APB(R_trace_selected'range);
             else -- reject change
-              R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
+              R_rgtr_data(palette_bf(palettecolor_id)+palette_bf(paletteid_id)-1 downto palette_bf(paletteid_id)) <=
+                std_logic_vector(resize(C_trace_color(to_integer(R_trace_selected)),palette_bf(palettecolor_id)));
             end if;
           when C_action_frame_color_as_trace_selected =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"11"; -- palette (color)
-            R_rgtr_data(31 downto C_color_bits+7) <= (others => '0');
-            R_rgtr_data(6 downto 4) <= (others => '0');
-            R_rgtr_data(3 downto 0) <= x"7"; -- 7: frame color indicates selected channel/trace
-            R_rgtr_data(C_color_bits+7-1 downto 7) <= C_trace_color(to_integer(R_trace_selected));
+            R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
+            R_rgtr_data(palette_bf(palettecolor_id)+palette_bf(paletteid_id)-1 downto 0) <=
+                std_logic_vector(resize(C_trace_color(to_integer(R_trace_selected)),palette_bf(palettecolor_id)))
+              & std_logic_vector(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register
