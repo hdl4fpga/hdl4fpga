@@ -44,7 +44,7 @@ end;
 architecture beh of scopeio_amp is
 
 	signal g : signed(0 to 18-1);
-	signal p : signed(0 to g'length+input_sample'length-1);
+	signal p : signed(0 to input_sample'length+g'length-1);
 	signal b : signed(input_sample'range);
 
 begin
@@ -52,12 +52,12 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			p <= g*b;
+			p <= b*g;
 			g <= to_signed(-gains(to_integer(unsigned(gain_id))),g'length);
 			b <= signed(input_sample);
 		end if;
 	end process;
-	output_sample <= std_logic_vector(resize(p(0 to g'length-1), input_sample'length));
+	output_sample <= std_logic_vector(resize(p(0 to input_sample'length), input_sample'length));
 
 	lat_e : entity hdl4fpga.align
 	generic map (
