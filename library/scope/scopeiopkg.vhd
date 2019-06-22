@@ -210,7 +210,7 @@ package scopeiopkg is
 		hzscale_id  => hzscale_maxsize);
 
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
-	constant palettecolor_maxsize : natural := unsigned_num_bits(max_inputs+9-1);
+	constant palettecolor_maxsize : natural := 24;
 	constant paletteid_id         : natural := 0;
 	constant palettecolor_id      : natural := 1;
 
