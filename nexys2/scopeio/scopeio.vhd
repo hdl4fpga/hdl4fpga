@@ -37,6 +37,7 @@ architecture beh of nexys2 is
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
 
+	constant inputs      : natural := 1;
 	constant sample_size : natural := 14;
 
 	function squaretab (
@@ -84,6 +85,14 @@ architecture beh of nexys2 is
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
+
+	signal istreamdaisy_frm  : std_logic;
+	signal istreamdaisy_irdy : std_logic;
+	signal istreamdaisy_data : std_logic_vector(8-1 downto 0);
+
+	signal mousedaisy_frm    : std_logic;
+	signal mousedaisy_irdy   : std_logic;
+	signal mousedaisy_data   : std_logic_vector(8-1 downto 0);
 
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
@@ -185,13 +194,51 @@ begin
 
 		chaini_data => uart_rxd,
 
-		chaino_frm  => si_frm, 
-		chaino_irdy => si_irdy,
-		chaino_data => si_data);
+		chaino_frm  => istreamdaisy_frm,  
+		chaino_irdy => istreamdaisy_irdy,
+		chaino_data => istreamdaisy_data);
+
+	ps2mouse_b : block
+		-- From EMARD's ULX3S code
+		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
+			--b"111100";
+			  b"111";
+			--b"111100_001111_001100_110000_111111";
+			--  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+			--  trace0 trace1 trace2 trace3 trace4
+			--  yellow cyan   green  red    white
+
+	begin
+		ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
+		generic map(
+			C_inputs    => inputs,
+			C_tracesfg  => C_tracesfg_gui,
+			vlayout_id  => video_params(video_mode).layout
+		)
+		port map (
+			clk         => clk_mouse,
+			ps2m_reset  => '0', --rst,
+			ps2m_clk    => ps2_clk,
+			ps2m_dat    => ps2_data,
+			-- daisy input
+			chaini_frm  => istreamdaisy_frm,
+			chaini_irdy => istreamdaisy_irdy,
+			chaini_data => istreamdaisy_data,
+			-- daisy output
+			chaino_frm  => mousedaisy_frm,
+			chaino_irdy => mousedaisy_irdy,
+			chaino_data => mousedaisy_data
+		);
+
+		si_frm  <= mousedaisy_frm;
+		si_irdy <= mousedaisy_irdy;
+		si_data <= mousedaisy_data;
+	end block;
 
 	si_clk <= uart_rxc;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		inputs           => inputs,
 		vlayout_id       => video_params(video_mode).layout,
 		default_tracesfg => b"111_111_11",
 		default_gridfg   => b"111_000_00",
