@@ -193,17 +193,21 @@ package scopeiopkg is
 		constant bf_dscptr : natural_vector)
 		return   std_logic_vector;
 
+	constant vtoffset_maxsize : natural := 13;
 	constant vtoffset_id : natural := 0;
 	constant vtchanid_id : natural := 1;
 	constant vtoffset_bf : natural_vector := (
-		vtoffset_id => 13, 
+		vtoffset_id => vtoffset_maxsize, 
 		vtchanid_id => chanid_maxsize);
+
+	constant hzoffset_maxsize : natural := 16;
+	constant hzscale_maxsize  : natural :=  4;
 
 	constant hzoffset_id : natural := 0;
 	constant hzscale_id  : natural := 1;
 	constant hzoffset_bf : natural_vector := (
-		hzoffset_id => 16, 
-		hzscale_id  =>  4);
+		hzoffset_id => hzoffset_maxsize, 
+		hzscale_id  => hzscale_maxsize);
 
 	constant paletteid_maxsize    : natural := unsigned_num_bits(max_inputs+9-1);
 	constant palettecolor_maxsize : natural := unsigned_num_bits(max_inputs+9-1);
