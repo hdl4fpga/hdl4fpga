@@ -23,6 +23,7 @@ architecture beh of ulx3s is
         constant vlayout_id: integer := 1;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_adc_binary_gain: integer := 5; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
@@ -88,11 +89,12 @@ architecture beh of ulx3s is
         --b"111100";
           b"111100_001111_001100_110111";
         --b"111100_001111_001100_110111_110100";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4
-        --  yellow cyan   green  violet orange
+        --b"111100_001111_001100_110111_110100_000111_011011_111000 111010 001011";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9
+        --  yellow cyan   green  violet orange blue   lila   brown  red    turqui
 
-	signal trace_yellow, trace_cyan, trace_green, trace_violett, trace_orange, trace_sine: std_logic_vector(sample_size-1 downto 0);
+	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -285,33 +287,33 @@ begin
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
 
-	trace_yellow(9) <= adc_mosi;
-	trace_yellow(6 downto 5) <= "00";  -- y offset
+	trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
 
-	trace_cyan(9) <= adc_miso;
-	trace_cyan(6 downto 5) <= "01"; -- y offset
+	trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
-	trace_green(8) <= adc_csn;
-	trace_green(6 downto 5) <= "10"; -- y offset
+	trace_green(C_adc_binary_gain+3) <= adc_csn;
+	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
 
-	trace_violett(8) <= adc_sclk;
-	trace_violett(6 downto 5) <= "11"; -- y offset
+	trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
 	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_adc_view_low_bits generate
-	  trace_yellow (trace_yellow'high  downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
-	  trace_cyan   (trace_cyan'high    downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
-	  trace_green  (trace_green'high   downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
-	  trace_violett(trace_violett'high downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_violet(trace_violet'high downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
 	  G_yes_view_low_bits: if C_adc_view_low_bits generate
-	  trace_yellow (trace_yellow'high  downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
-	  trace_cyan   (trace_cyan'high    downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
-	  trace_green  (trace_green'high   downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
-	  trace_violett(trace_violett'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_violet(trace_violet'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
@@ -325,7 +327,7 @@ begin
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
 	end generate;
 	G_inputs4: if inputs >= 4 generate
-	samples(3*sample_size to (3+1)*sample_size-1) <= trace_violett;
+	samples(3*sample_size to (3+1)*sample_size-1) <= trace_violet;
 	end generate;
 	G_inputs5: if inputs >= 5 generate
 	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_orange;
