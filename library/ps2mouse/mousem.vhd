@@ -134,17 +134,17 @@ begin
         else ps2m_dat & rx(rx'high downto 1) when (shift and not endbit) = '1'
         else rx;
   x_next <= (others => '0') when run = '0'
-        else x + s_dx when done = '1'
-        else x;
+        else r_x + s_dx when done = '1'
+        else r_x;
   y_next <= (others => '0') when run = '0'
-        else y - s_dy when done = '1'
-        else y;
+        else r_y - s_dy when done = '1'
+        else r_y;
   z_next <= (others => '0') when run = '0'
-        else z - s_dz when done = '1'
-        else z;
+        else r_z - s_dz when done = '1'
+        else r_z;
   btn_next <= (others => '0') when run = '0'
         else rx(3 downto 1) when done = '1'
-        else btn;
+        else r_btn;
   process(clk)
   begin
     if rising_edge(clk) then

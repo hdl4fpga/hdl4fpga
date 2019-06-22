@@ -66,7 +66,7 @@ architecture beh of ulx3s is
 		constant n  : natural)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
+		variable aux : std_logic_vector(n*(x1+1)-1 downto n*x0);
 		constant freq : real := 4*8.0;
 	begin
 		for i in x0 to x1 loop
@@ -77,12 +77,7 @@ architecture beh of ulx3s is
 				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
 			end if;
 			y := y - (64.0+24.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
---			if i < (x0+x1)/2 then
---				aux(i*n to (i+1)*n-1) := ('0', others => '1');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
+			aux((i+1)*n-1 downto i*n) := std_logic_vector(to_signed(integer(trunc(y)),n));
 		end loop;
 		return aux;
 	end;
@@ -290,21 +285,17 @@ begin
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
 
-	trace_yellow(trace_yellow'high downto 5) <= (others => '0');
-	trace_yellow(4) <= adc_mosi;
-	trace_yellow(1 downto 0) <= "00";  -- y offset
+	trace_yellow(9) <= adc_mosi;
+	trace_yellow(6 downto 5) <= "00";  -- y offset
 
-	trace_cyan(trace_cyan'high downto 5) <= (others => '0');
-	trace_cyan(4) <= adc_miso;
-	trace_cyan(1 downto 0) <= "01"; -- y offset
+	trace_cyan(9) <= adc_miso;
+	trace_cyan(6 downto 5) <= "01"; -- y offset
 
-	trace_green(trace_green'high downto 4) <= (others => '0');
-	trace_green(3) <= adc_csn;
-	trace_green(1 downto 0) <= "10"; -- y offset
+	trace_green(8) <= adc_csn;
+	trace_green(6 downto 5) <= "10"; -- y offset
 
-	trace_violett(trace_violett'high downto 4) <= (others => '0');
-	trace_violett(3) <= adc_sclk;
-	trace_violett(1 downto 0) <= "11"; -- y offset
+	trace_violett(8) <= adc_sclk;
+	trace_violett(6 downto 5) <= "11"; -- y offset
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
