@@ -42,6 +42,9 @@ entity nexys2 is
 		button         : in  std_logic_vector(3 downto 0) := (3 downto 0 => '0');
 		led            : out std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
 
+		ps2_clk   : inout std_logic := 'Z';
+		ps2_data  : inout std_logic := 'Z';
+
 		rs232_rxd      : in  std_logic := '0';
 		rs232_txd      : out std_logic := 'Z';
 
@@ -70,7 +73,10 @@ entity nexys2 is
 	attribute loc of s3s_segment_f  : signal is "J17";
 	attribute loc of s3s_segment_g  : signal is "H14";
 	attribute loc of s3s_segment_dp : signal is "C17";
-
+	
+	attribute loc of ps2_clk        : signal is "R12";
+	attribute loc of ps2_data       : signal is "P11";
+	
 	attribute loc of rs232_rxd      : signal is "U6";
 	attribute loc of rs232_txd      : signal is "P9";
 

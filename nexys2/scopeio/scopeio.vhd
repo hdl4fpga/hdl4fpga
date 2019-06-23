@@ -86,6 +86,7 @@ architecture beh of nexys2 is
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
 
+	signal clk_mouse  : std_logic;
 	signal istreamdaisy_frm  : std_logic;
 	signal istreamdaisy_irdy : std_logic;
 	signal istreamdaisy_data : std_logic_vector(8-1 downto 0);
@@ -127,6 +128,13 @@ begin
 		I => xtal,
 		O => sys_clk);
 
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			clk_mouse <= not clk_mouse;  -- I know ... It's not a good practice but it saves a DCM
+		end if;
+	end process;
+	
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dfs_frequency_mode => "low",
@@ -202,7 +210,7 @@ begin
 		-- From EMARD's ULX3S code
 		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
 			--b"111100";
-			  b"111";
+			  b"111_111_11";
 			--b"111100_001111_001100_110000_111111";
 			--  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
 			--  trace0 trace1 trace2 trace3 trace4
