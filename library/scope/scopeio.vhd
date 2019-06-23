@@ -93,7 +93,6 @@ architecture beh of scopeio is
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
---	subtype storage_word is std_logic_vector(9-1 downto 0);
 	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal video_hzsync       : std_logic;
