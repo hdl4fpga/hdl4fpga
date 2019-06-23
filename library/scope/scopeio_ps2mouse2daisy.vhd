@@ -18,6 +18,7 @@ generic
 port
 (
   clk           : in  std_logic;
+  clk_ena       : in  std_logic := '1'; -- to reduce clk to 20-30 MHz
   -- mouse needs reset after replugging (no hotplug detectin yet)
   ps2m_reset    : in  std_logic := '0'; -- PS/2 mouse core reset
   -- PS/2 interface
@@ -58,6 +59,7 @@ begin
   port map
   (
     clk         => clk, -- by default made for 25 MHz
+    clk_ena     => clk_ena, -- used to reduce clk to 20-30 MHz
     ps2m_reset  => ps2m_reset, -- after replugging mouse, it needs reset
     ps2m_clk    => ps2m_clk,
     ps2m_dat    => ps2m_dat,
