@@ -43,11 +43,11 @@ package scopeiopkg is
 		margin : margin_vector;
 	end record;
 
-	constant division_length : natural := 32; -- Length in pixels
 
 	type display_layout is record 
 		display_width   : natural;            -- Maximun display width
 		num_of_segments : natural;	          -- Number of segments to display
+		division_size   : natural;            -- Length in pixels
 		grid_width      : natural;            -- Width of the grid in divisions
 		grid_height     : natural;            -- Width of the grid in divisions
 		hzaxis_height   : natural;            -- Height of the horizontal axis 
@@ -70,6 +70,7 @@ package scopeiopkg is
 		sd600 => (            
 			display_width   =>  800,
 			num_of_segments =>    2,
+			division_size   =>   16,
 			grid_width      =>   15,
 			grid_height     =>    8,
 			hzaxis_height   =>    8,
@@ -82,6 +83,7 @@ package scopeiopkg is
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    3,
+			division_size   =>   32,
 			grid_width      =>   30,
 			grid_height     =>    8,
 			hzaxis_height   =>    8,
@@ -94,6 +96,7 @@ package scopeiopkg is
 		vesa1280x1024 => (
 			display_width   => 1280,
 			num_of_segments =>    4,
+			division_size   =>   32,
 			grid_width      =>   30,
 			grid_height     =>    8,
 			hzaxis_height   =>    8,
@@ -106,6 +109,7 @@ package scopeiopkg is
 		hd1080 => (
 			display_width   => 1920,
 			num_of_segments =>    4,
+			division_size   =>   32,
 			grid_width      =>   50,
 			grid_height     =>    8,
 			hzaxis_height   =>    8,
@@ -135,30 +139,31 @@ package scopeiopkg is
 	constant text_boxid   : natural := 2;
 	constant hzaxis_boxid : natural := 3;
 
-	function vtaxis_y       (constant layout : display_layout) return natural;
-	function vtaxis_x       (constant layout : display_layout) return natural;
-	function vtaxis_width   (constant layout : display_layout) return natural;
-	function vtaxis_height  (constant layout : display_layout) return natural;
+	function vtaxis_y          (constant layout : display_layout) return natural;
+	function vtaxis_x          (constant layout : display_layout) return natural;
+	function vtaxis_width      (constant layout : display_layout) return natural;
+	function vtaxis_height     (constant layout : display_layout) return natural;
 
-	function grid_x         (constant layout : display_layout) return natural;
-	function grid_y         (constant layout : display_layout) return natural;
-	function grid_width     (constant layout : display_layout) return natural;
-	function grid_height    (constant layout : display_layout) return natural;
+	function grid_x            (constant layout : display_layout) return natural;
+	function grid_y            (constant layout : display_layout) return natural;
+	function grid_width        (constant layout : display_layout) return natural;
+	function grid_height       (constant layout : display_layout) return natural;
+	function grid_divisionsize (constant layout : display_layout) return natural;
 
-	function textbox_x      (constant layout : display_layout) return natural;
-	function textbox_y      (constant layout : display_layout) return natural;
-	function textbox_width  (constant layout : display_layout) return natural;
-	function textbox_height (constant layout : display_layout) return natural;
+	function textbox_x         (constant layout : display_layout) return natural;
+	function textbox_y         (constant layout : display_layout) return natural;
+	function textbox_width     (constant layout : display_layout) return natural;
+	function textbox_height    (constant layout : display_layout) return natural;
 
-	function hzaxis_x       (constant layout : display_layout) return natural;
-	function hzaxis_y       (constant layout : display_layout) return natural;
-	function hzaxis_width   (constant layout : display_layout) return natural;
-	function hzaxis_height  (constant layout : display_layout) return natural;
+	function hzaxis_x          (constant layout : display_layout) return natural;
+	function hzaxis_y          (constant layout : display_layout) return natural;
+	function hzaxis_width      (constant layout : display_layout) return natural;
+	function hzaxis_height     (constant layout : display_layout) return natural;
 
-	function sgmnt_width    (constant layout : display_layout) return natural;
-	function sgmnt_height   (constant layout : display_layout) return natural;
-	function sgmnt_xedges   (constant layout : display_layout) return natural_vector;
-	function sgmnt_yedges   (constant layout : display_layout) return natural_vector;
+	function sgmnt_width       (constant layout : display_layout) return natural;
+	function sgmnt_height      (constant layout : display_layout) return natural;
+	function sgmnt_xedges      (constant layout : display_layout) return natural_vector;
+	function sgmnt_yedges      (constant layout : display_layout) return natural_vector;
 
 	function sgmnt_boxon (
 		constant box_id : natural;
@@ -308,14 +313,21 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_width*division_length+1;
+		return layout.grid_width*layout.division_size+1;
 	end;
 
 	function grid_height (
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*division_length+1;
+		return layout.grid_height*layout.division_size+1;
+	end;
+
+	function grid_divisionsize (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.division_size;
 	end;
 
 	function vtaxis_x (
@@ -375,7 +387,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return layout.grid_height*division_length;
+		return layout.grid_height*layout.division_size;
 	end;
 
 	function hzaxis_x (

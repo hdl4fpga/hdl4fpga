@@ -12,7 +12,8 @@ entity scopeio_segment is
 		input_latency : natural;
 		latency       : natural;
 		inputs        : natural;
-		vt_height     : natural);
+		vt_height     : natural;
+		division_size : natural);
 	port (
 		in_clk        : in  std_logic;
 
@@ -91,7 +92,8 @@ begin
 
 		grid_e : entity hdl4fpga.scopeio_grid
 		generic map (
-			latency => latency-offset_latency)
+			latency => latency-offset_latency,
+			division_size => division_size)
 		port map (
 			clk  => video_clk,
 			ena  => grid_ena,
@@ -124,9 +126,10 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency => latency,
+		latency   => latency,
 		axis_unit => std_logic_vector(to_unsigned(25,5)),
-		vt_height => vt_height)
+		vt_height => vt_height,
+		division_size => division_size)
 	port map (
 		clk         => in_clk,
 
@@ -210,7 +213,7 @@ begin
 				samples1 := unsigned(samples);
 				offsets  := unsigned(vt_offsets);
 				for i in 0 to inputs-1 loop
-					samples1(sample'range) := samples1(sample'range); -- - offsets(sample'range);
+					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
 					samples1 := samples1 ror sample'length;
 					offsets  := offsets  ror vt_offset'length;
 				end loop;
