@@ -8,7 +8,8 @@ use hdl4fpga.std.all;
 entity scopeio_tracer is
 	generic (
 		latency : natural;
-		inputs  : natural);
+		inputs  : natural;
+		vt_height    : natural);
 	port (
 		clk     : in  std_logic;
 		ena     : in  std_logic;
@@ -31,25 +32,27 @@ begin
 	bias_p : process (clk)
 	begin
 		if rising_edge(clk) then
-			row1 <= std_logic_vector(resize(unsigned(y),sample_size)+to_unsigned(2**(y'length-2), row1'length));
+			row1 <= std_logic_vector(resize(unsigned(y),sample_size)+to_unsigned(2**(sample_size-1)-vt_height/2, row1'length));
 		end if;
 	end process;
 
 	trace_g : for i in 0 to inputs-1 generate
 
-		signal sample : std_logic_vector(0 to sample_size-1);
 		signal dot    : std_logic;
+		signal row2   : std_logic_vector(row1'range);
 
 	begin
 
 		bias_p : process (clk)
-			variable aux : unsigned(0 to samples'length-1);
+			variable sample  : unsigned(0 to sample_size-1);
+			variable shtrgtr : unsigned(0 to samples'length-1);
 		begin
 			if rising_edge(clk) then
-				aux    := unsigned(samples);
-				aux    := aux rol (i*sample'length);
-				ena1   <= ena;
-				sample <= std_logic_vector(aux(sample'range) + 2**(sample'length-1));
+				ena1    <= ena;
+				shtrgtr := unsigned(samples);
+				shtrgtr := shtrgtr rol (i*sample'length);
+				sample  := shtrgtr(sample'range) + 2**(sample'length-1);
+				row2    <= std_logic_vector(resize(sample, row2'length));
 			end if;
 		end process;
 
@@ -58,7 +61,7 @@ begin
 			clk  => clk,
 			ena  => ena1,
 			row1 => row1,
-			row2 => sample,
+			row2 => row2,
 			dot  => dot);
 
 		latency_e : entity hdl4fpga.align

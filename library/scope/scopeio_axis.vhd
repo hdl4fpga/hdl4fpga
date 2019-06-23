@@ -32,7 +32,8 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_axis is
 	generic (
 		latency     : natural;
-		axis_unit   : std_logic_vector);
+		axis_unit   : std_logic_vector;
+		vt_height   : natural);
 	port (
 		clk         : in  std_logic;
 
@@ -170,7 +171,7 @@ begin
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			aux  := shift_left(aux, 9-6);
 			if axis_sel='1' then
-				aux := aux + mul(to_signed(3,3), unsigned(axis_unit));
+				aux := aux + mul(to_signed(((vt_height-1)/2)/32-1,3), unsigned(axis_unit));
 			end if;
 			base <= std_logic_vector(aux);
 		end process;

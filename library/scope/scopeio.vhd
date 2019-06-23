@@ -89,10 +89,11 @@ end;
 
 architecture beh of scopeio is
 
-	subtype storage_word is std_logic_vector(0 to 9-1);
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+--	subtype storage_word is std_logic_vector(9-1 downto 0);
 	constant gainid_size : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal video_hzsync       : std_logic;
@@ -114,6 +115,8 @@ architecture beh of scopeio is
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 	signal triggersample_ena  : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
+
+
 	signal resizedsample_ena  : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal downsample_ena     : std_logic;
@@ -260,8 +263,8 @@ begin
 		output_data    => triggersample_data);
 
 	resize_p : process (triggersample_data)
-		variable aux1 : unsigned(0 to storage_word'length*inputs-1);
-		variable aux2 : unsigned(0 to triggersample_data'length-1);
+		variable aux1 : unsigned(storage_word'length*inputs-1 downto 0);
+		variable aux2 : unsigned(triggersample_data'length-1  downto 0);
 	begin
 		aux1 := (others => '-');
 		aux2 := unsigned(triggersample_data);
@@ -658,7 +661,8 @@ begin
 				generic map (
 					input_latency => input_latency,
 					latency       => segmment_latency+input_latency,
-					inputs        => inputs)
+					inputs        => inputs,
+					vt_height     => grid_height(layout))
 				port map (
 					in_clk        => si_clk,
 

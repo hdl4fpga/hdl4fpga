@@ -50,8 +50,8 @@ architecture beh of s3starter is
 		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
 	begin
 		for i in 0 to x1-x0 loop
-			y := sin(2.0*MATH_PI*real((i+x0))/64.0)/2.0;
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(real(2**(n-1))*y),n));
+			y := 127.0*sin(2.0*MATH_PI*real((i+x0))/64.0);
+			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
 		end loop;
 		return aux;
 	end;

@@ -11,7 +11,8 @@ entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		inputs        : natural);
+		inputs        : natural;
+		vt_height     : natural);
 	port (
 		in_clk        : in  std_logic;
 
@@ -124,7 +125,8 @@ begin
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency => latency,
-		axis_unit => std_logic_vector(to_unsigned(25,5)))
+		axis_unit => std_logic_vector(to_unsigned(25,5)),
+		vt_height => vt_height)
 	port map (
 		clk         => in_clk,
 
@@ -160,7 +162,7 @@ begin
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
-		row <= resize(unsigned(trigger_level)+2**(y'length-2)-unsigned(vt_offset), row'length);
+		row <= resize(unsigned(trigger_level)+(vt_height-1)/2-unsigned(vt_offset), row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
@@ -208,7 +210,7 @@ begin
 				samples1 := unsigned(samples);
 				offsets  := unsigned(vt_offsets);
 				for i in 0 to inputs-1 loop
-					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
+					samples1(sample'range) := samples1(sample'range); -- - offsets(sample'range);
 					samples1 := samples1 ror sample'length;
 					offsets  := offsets  ror vt_offset'length;
 				end loop;
@@ -219,7 +221,8 @@ begin
 		tracer_e : entity hdl4fpga.scopeio_tracer
 		generic map (
 			latency => latency-(input_latency+offset_latency),
-			inputs  => inputs)
+			inputs  => inputs,
+			vt_height => vt_height)
 		port map (
 			clk     => video_clk,
 			ena     => trace_ena,
