@@ -20,14 +20,16 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
-        constant vlayout_id: integer := 3;
+        constant vlayout_id: integer := 1;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
+        constant C_adc_binary_gain: integer := 5; -- 2**n
         constant C_adc_view_low_bits: boolean := false; -- false: 3.3V, true: 200mV (to see ADC noise)
         constant C_adc_slowdown: boolean := false; -- true: ADC 2x slower, use for more detailed detailed SPI digital view
 	constant C_adc_timing_exact: integer range 0 to 1 := 1; -- 0 for adc_slowdown = true, 1 for adc_slowdown = false
-	constant C_adc_channels: integer := 4; -- don't touch
 	constant C_adc_bits: integer := 12; -- don't touch
+	constant C_adc_channels: integer := 4; -- don't touch
+	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
 
@@ -53,7 +55,7 @@ architecture beh of ulx3s is
 	signal vga_rgb_test: std_logic_vector(0 to 6-1);
         signal dvid_crgb  : std_logic_vector(7 downto 0);
         signal ddr_d      : std_logic_vector(3 downto 0);
-	constant sample_size : natural := 9;
+	constant sample_size : natural := 12;
 
 	signal clk_oled : std_logic := '0';
 
@@ -65,7 +67,7 @@ architecture beh of ulx3s is
 		constant n  : natural)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(n*x0 to n*(x1+1)-1);
+		variable aux : std_logic_vector(n*(x1+1)-1 downto n*x0);
 		constant freq : real := 4*8.0;
 	begin
 		for i in x0 to x1 loop
@@ -76,38 +78,23 @@ architecture beh of ulx3s is
 				y := freq*y*(2.0*MATH_PI)/real(x1-x0+1);
 			end if;
 			y := y - (64.0+24.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_signed(integer(trunc(y)),n));
---			if i < (x0+x1)/2 then
---				aux(i*n to (i+1)*n-1) := ('0', others => '1');
---			else
---				aux(i*n to (i+1)*n-1) := ('1',others => '0');
---			end if;
+			aux((i+1)*n-1 downto i*n) := std_logic_vector(to_signed(integer(trunc(y)),n));
 		end loop;
 		return aux;
 	end;
 	signal input_addr : std_logic_vector(11-1 downto 0); -- for BRAM as internal signal generator
 
-	constant inputs: natural := 4; -- number of input channels (traces)
 	-- assign default colors to the traces
 	constant C_tracesfg: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
         --b"111100";
-          b"111100_001111_001100_110101";
-        --b"111100_001111_001100_110101_111111";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4
-        --  yellow cyan   green  red    white
+          b"111100_001111_001100_110111";
+        --b"111100_001111_001100_110111_110100";
+        --b"111100_001111_001100_110111_110100_000111_011011_111000 111010 001011";
+        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+        --  trace0 trace1 trace2 trace3 trace4 trace5 trace6 trace7 trace8 trace9
+        --  yellow cyan   green  violet orange blue   lila   brown  red    turqui
 
-        -- technically it can be the same as C_tracesfg but for visibility tuning
-        -- it is different for red color to make it less bright
-	constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-        --b"111100";
-          b"111100_001111_001100_110000";
-        --b"111100_001111_001100_110000_111111";
-        --  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-        --  trace0 trace1 trace2 trace3 trace4
-        --  yellow cyan   green  red    white
-
-	signal trace_yellow, trace_cyan, trace_green, trace_red, trace_white, trace_sine: std_logic_vector(0 to sample_size-1);
+	signal trace_yellow, trace_cyan, trace_green, trace_violet, trace_orange, trace_blue, trace_lila, trace_sine: std_logic_vector(sample_size-1 downto 0);
 	signal S_input_ena : std_logic := '1';
 	signal samples     : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -136,6 +123,9 @@ architecture beh of ulx3s is
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	signal S_adc_dv: std_logic;
 	signal S_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
+
+	signal R_test_counter: unsigned(15 downto 0); -- 64MHz -> 1kHz to ADC for buttons test
+	signal S_test_p, S_test_n: std_logic;
 
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
@@ -256,18 +246,26 @@ begin
 	-- press buttons to test ADC
 	-- for normal use disable this
 	G_btn_test: if C_buttons_test generate
-	-- each pressed button will apply a logic level '1'
-	-- to FPGA pin shared with ADC channel which should
-	-- read something from 12'h000 to 12'hFFF with some
-	-- conversion noise
-	gn(14) <= btn(1) when btn(6) = '1' else 'Z';
-	gp(14) <= btn(2) when btn(6) = '1' else 'Z';
-	gn(15) <= btn(3) when btn(6) = '1' else 'Z';
-	gp(15) <= btn(4) when btn(6) = '1' else 'Z';
-	gn(16) <= btn(5) when btn(6) = '1' else 'Z';
-	gp(16) <= btn(5) when btn(6) = '1' else 'Z';
-	gn(17) <= btn(5) when btn(6) = '1' else 'Z';
-	gp(17) <= btn(5) when btn(6) = '1' else 'Z';
+	  process(clk_adc)
+	  begin
+	    if rising_edge(clk_adc) then
+	      R_test_counter <= R_test_counter + 1;
+	    end if;
+	  end process;
+	  S_test_p <= R_test_counter(R_test_counter'high);
+	  S_test_n <= R_test_counter(R_test_counter'high) xor R_test_counter(R_test_counter'high-1);
+	  -- each pressed button will apply a logic level '1'
+	  -- to FPGA pin shared with ADC channel which should
+	  -- read something from 12'h000 to 12'hFFF with some
+	  -- conversion noise
+          gn(14) <= S_test_n when btn(3) = '1' else 'Z';
+          gp(14) <= S_test_p when btn(3) = '1' else 'Z';
+          gn(15) <= S_test_n when btn(4) = '1' else 'Z';
+          gp(15) <= S_test_p when btn(4) = '1' else 'Z';
+          gn(16) <= S_test_p when btn(5) = '1' else 'Z';
+          gp(16) <= S_test_n when btn(5) = '1' else 'Z';
+          gn(17) <= S_test_p when btn(6) = '1' else 'Z';
+          gp(17) <= S_test_n when btn(6) = '1' else 'Z';
 	end generate;
 
 	process (clk)
@@ -288,43 +286,34 @@ begin
 	
 	G_not_analog_view: if not C_adc_analog_view generate
 	S_input_ena <= '1';
-	-- external input: PS/2 data
-	trace_yellow(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_yellow(2) <= adc_mosi; -- MSB-2
-	trace_yellow(3 to trace_yellow'high) <= (others => '0'); -- rest LSB
 
-	-- external input: PS/2 data
-	trace_cyan(0 to 1) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_cyan(2) <= adc_miso; -- MSB-2
-	--trace_cyan(3 to trace_cyan'high) <= (others => '0'); -- rest LSB
-	trace_cyan(6) <= '1';
+	trace_yellow(C_adc_binary_gain+4) <= adc_mosi;
+	trace_yellow(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "00";  -- y offset
 
-	-- external input: PS/2 clock
-	trace_green(0 to 2) <= (others => '0'); -- MSB (sign), MSB-1, MSB-2
-	trace_green(3) <= adc_csn; -- MSB-3
-	trace_green(5) <= '1';
-	--trace_green(4 to trace_green'high) <= (others => '0'); -- rest LSB
+	trace_cyan(C_adc_binary_gain+4) <= adc_miso;
+	trace_cyan(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "01"; -- y offset
 
-	-- internal sine waveform, inverted
-	trace_red(0 to 2) <= (others => '0');  -- MSB (sign), MSB-1
-	trace_red(3) <= adc_sclk; -- MSB-2
-	trace_red(4 to trace_red'high) <= (others => '0'); -- rest LSB
+	trace_green(C_adc_binary_gain+3) <= adc_csn;
+	trace_green(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "10"; -- y offset
+
+	trace_violet(C_adc_binary_gain+3) <= adc_sclk;
+	trace_violet(C_adc_binary_gain+1 downto C_adc_binary_gain) <= "11"; -- y offset
 	end generate;
 
 	G_yes_analog_view: if C_adc_analog_view generate
 	  S_input_ena  <= S_adc_dv;
 	  -- without sign bit
 	  G_not_view_low_bits: if not C_adc_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
-	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
-	  trace_green (0 to trace_green'high)  <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
-	  trace_red   (0 to trace_red'high)    <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(1*C_adc_bits-1) & S_adc_data(1*C_adc_bits-1 downto 1*C_adc_bits-sample_size+1);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(2*C_adc_bits-1) & S_adc_data(2*C_adc_bits-1 downto 2*C_adc_bits-sample_size+1);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(3*C_adc_bits-1) & S_adc_data(3*C_adc_bits-1 downto 3*C_adc_bits-sample_size+1);
+	  trace_violet(trace_violet'high downto 0) <= S_adc_data(4*C_adc_bits-1) & S_adc_data(4*C_adc_bits-1 downto 4*C_adc_bits-sample_size+1);
 	  end generate;
 	  G_yes_view_low_bits: if C_adc_view_low_bits generate
-	  trace_yellow(0 to trace_yellow'high) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
-	  trace_cyan  (0 to trace_cyan'high)   <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
-	  trace_green (0 to trace_green'high)  <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
-	  trace_red   (0 to trace_red'high)    <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
+	  trace_yellow(trace_yellow'high downto 0) <= S_adc_data(0*C_adc_bits-1+sample_size downto 1*C_adc_bits-C_adc_bits);
+	  trace_cyan  (trace_cyan'high   downto 0) <= S_adc_data(1*C_adc_bits-1+sample_size downto 2*C_adc_bits-C_adc_bits);
+	  trace_green (trace_green'high  downto 0) <= S_adc_data(2*C_adc_bits-1+sample_size downto 3*C_adc_bits-C_adc_bits);
+	  trace_violet(trace_violet'high downto 0) <= S_adc_data(3*C_adc_bits-1+sample_size downto 4*C_adc_bits-C_adc_bits);
 	  end generate;
 	end generate;
 	
@@ -338,10 +327,10 @@ begin
 	samples(2*sample_size to (2+1)*sample_size-1) <= trace_green;
 	end generate;
 	G_inputs4: if inputs >= 4 generate
-	samples(3*sample_size to (3+1)*sample_size-1) <= trace_red;
+	samples(3*sample_size to (3+1)*sample_size-1) <= trace_violet;
 	end generate;
 	G_inputs5: if inputs >= 5 generate
-	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_white;
+	--samples(4*sample_size to (4+1)*sample_size-1) <= trace_orange;
 	samples(4*sample_size to (4+1)*sample_size-1) <= trace_sine; -- internally generated demo waveform
 	end generate;
 
@@ -430,7 +419,7 @@ begin
 	ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 	generic map(
 		C_inputs    => inputs,
-		C_tracesfg  => C_tracesfg_gui,
+		C_tracesfg  => C_tracesfg,
 		vlayout_id  => vlayout_id
 	)
 	port map (
