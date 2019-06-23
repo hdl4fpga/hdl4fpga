@@ -42,8 +42,8 @@ entity nexys2 is
 		button         : in  std_logic_vector(3 downto 0) := (3 downto 0 => '0');
 		led            : out std_logic_vector(7 downto 0) := (7 downto 0 => 'Z');
 
-		ps2_clk   : inout std_logic := 'Z';
-		ps2_data  : inout std_logic := 'Z';
+		ps2_clk        : inout std_logic := 'Z';
+		ps2_data       : inout std_logic := 'Z';
 
 		rs232_rxd      : in  std_logic := '0';
 		rs232_txd      : out std_logic := 'Z';
