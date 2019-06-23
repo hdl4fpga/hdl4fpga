@@ -84,6 +84,8 @@ architecture def of scopeio_mouse2rgtr is
   
 
   -- at box n if Result is 1, then mouse pointer was found in previous box (n-1)
+  constant C_XY_min: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '0');
+  constant C_XY_max: unsigned(C_XY_coordinate_bits-1 downto 0) := (others => '1');
   type T_list_box1 is array (natural range <>) of unsigned(C_XY_coordinate_bits-1 downto 0);
   constant C_list_box1: T_list_box1 :=
   (
@@ -113,7 +115,7 @@ architecture def of scopeio_mouse2rgtr is
 
      -- 4: termination record
      -- Xmin, Xmax, Ymin, Ymax
-     0, (others => '1'), 0, (others => '1')
+     C_XY_min, C_XY_max, C_XY_min, C_XY_max
      -- termination record has to match always (any pointer location) for this algorithm to work
   );
   -- C_list_box1 will be copied to C_list_box
@@ -145,18 +147,18 @@ architecture def of scopeio_mouse2rgtr is
       if C_num_boxes < C_max_boxes and k < C_num_segments-1 then -- don't do this for the last segment
       for i in C_num_boxes to C_max_boxes-1 loop
         -- fill the rest records with never-matching boxes
-        V_list(C_max_boxes*4*k+4*i+0) := (others => '1'); -- Xmin
-        V_list(C_max_boxes*4*k+4*i+1) := 0; -- Xmax
-        V_list(C_max_boxes*4*k+4*i+2) := (others => '1'); -- Ymin
-        V_list(C_max_boxes*4*k+4*i+3) := 0; -- Ymax
+        V_list(C_max_boxes*4*k+4*i+0) := C_XY_max; -- Xmin
+        V_list(C_max_boxes*4*k+4*i+1) := C_XY_min; -- Xmax
+        V_list(C_max_boxes*4*k+4*i+2) := C_XY_max; -- Ymin
+        V_list(C_max_boxes*4*k+4*i+3) := C_XY_min; -- Ymax
       end loop; -- one segment
       end if;
     end loop; -- segments
     -- termination record is an always-matching box
-    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+0) := 0; -- Xmin
-    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+1) := (others => '1'); -- Xmax
-    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+2) := 0; -- Ymin
-    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+3) := (others => '1'); -- Ymax
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+0) := C_XY_min; -- Xmin
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+1) := C_XY_max; -- Xmax
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+2) := C_XY_min; -- Ymin
+    V_list(C_max_boxes*4*(C_num_segments-1)+4*C_num_boxes+3) := C_XY_max; -- Ymax
     return V_list;
   end; -- function
   constant C_segment_step: integer := layout.sgmnt_margin(top)+grid_height(layout)+hzaxis_height(layout)+layout.sgmnt_margin(bottom)+layout.main_gap(vertical);
