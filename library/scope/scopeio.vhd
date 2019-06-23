@@ -651,7 +651,7 @@ begin
 								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
 							end if;
 						end loop;
-						storage_addr <= std_logic_vector(base + unsigned(sgmntbox_x) + unsigned(capture_addr));
+						storage_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), storage_addr'length) + unsigned(capture_addr));
 						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
 					end if;
 				end process;
