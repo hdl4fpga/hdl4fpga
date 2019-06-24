@@ -221,7 +221,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs   => inputs,
-		vlayout_id  => 1)
+		vlayout_id  => 5)
 	port map (
 		si_clk      => si_clk,
 		si_frm      => si_frm,

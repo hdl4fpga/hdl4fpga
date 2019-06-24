@@ -69,10 +69,10 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant n : natural := unsigned_num_bits(division_size-1);
-	constant m : natural := unsigned_num_bits(division_size-1)-2;
+	constant division_bits : natural := unsigned_num_bits(division_size-1);
+	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-	signal vt_taddr    : std_logic_vector(9-1 downto n);
+	signal vt_taddr    : std_logic_vector(vtheight_bits downto division_bits);
 
 	signal hz_taddr    : std_logic_vector(13-1 downto 6);
 
@@ -174,7 +174,7 @@ begin
 			aux  := (others => '0');
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
-				aux  := shift_left(aux, 9-1-n);
+				aux := shift_left(aux, 0);
 				aux := aux + mul(to_signed(((vt_height-1)/2)/division_size-1,4), unsigned(axis_unit));
 			else
 				aux  := shift_left(aux, 9-6);
@@ -182,7 +182,10 @@ begin
 			base <= std_logic_vector(aux);
 		end process;
 
-		last <= word2byte(x"7f" & std_logic_vector(to_unsigned(2*(vt_height-1)/division_size-1, last'length)), axis_sel);
+		last <= 
+			x"7f" when axis_sel='0' else 
+			std_logic_vector(to_unsigned((2*(vt_height-1))/division_size-1,last'length)); 
+
 		updn <= axis_sel;
 		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
 		ticks_e : entity hdl4fpga.scopeio_ticks
@@ -376,7 +379,7 @@ begin
 				di  => video_hcntr(vt_ccol'range),
 				do  => vt_ccol);
 
-			vton <= video_vton and setif(y(n-1 downto 3)=(n-1 downto 3 => '1')); --y(n-1); -- and y(n-2);
+			vton <= video_vton and setif(y(division_bits-1 downto 3)=(division_bits-1 downto 3 => '1')); --y(n-1); -- and y(n-2);
 			on_e : entity hdl4fpga.align
 			generic map (
 				n => 1,
