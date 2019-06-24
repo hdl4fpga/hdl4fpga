@@ -58,6 +58,7 @@ architecture beh of ulx3s is
 	constant sample_size : natural := 12;
 
 	signal clk_oled : std_logic := '0';
+	signal clk_ena_oled : std_logic := '1';
 
 	signal clk_adc : std_logic := '0';
 
@@ -100,7 +101,7 @@ architecture beh of ulx3s is
 
 	constant C_uart_original: boolean := false; -- true: use Miguel's, false: use EMARD's uart core
 	constant baudrate    : natural := 115200;
-	constant uart_clk_hz : natural := 25000000; -- Hz
+	constant uart_clk_hz : natural := 40000000; -- Hz
 
 	signal clk_uart : std_logic := '0';
 	signal uart_ena : std_logic := '0';
@@ -119,6 +120,7 @@ architecture beh of ulx3s is
 	signal frommousedaisy_data : std_logic_vector(8-1 downto 0);
 
 	signal clk_mouse       : std_logic := '0';
+	signal clk_ena_mouse   : std_logic := '1';
 
 	signal R_adc_slowdown: unsigned(1 downto 0) := (others => '1');
 	signal S_adc_dv: std_logic;
@@ -147,14 +149,22 @@ begin
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk <= clk_pll(3); -- 25 MHz
-        clk_oled <= clk_pll(3); -- 25 MHz
+        clk_oled <= clk_pll(1); -- 40/75 MHz
         --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-        clk_adc <= clk_pll(3); -- 75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-        clk_uart <= clk_pll(3); -- 25 MHz
-        clk_mouse <= clk_pll(3); -- 25 MHz
+        clk_adc <= clk_pll(1); -- 40/75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+        clk_uart <= clk_pll(1); -- 40/75 MHz same as vga_clk
+        clk_mouse <= clk_pll(1); -- 40/75 MHz same as vga_clk
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
+
+        process(clk_mouse)
+        begin
+          if rising_edge(clk_mouse) then
+            clk_ena_mouse <= not clk_ena_mouse; -- reduce clk 2x
+          end if;
+        end process;
+        clk_ena_oled <= clk_ena_mouse; -- same clock, same ena
 
 	process(vga_clk)
 	begin
@@ -404,7 +414,8 @@ begin
 	)
 	port map
 	(
-	  clk => clk_oled, -- 25 MHz
+	  clk => clk_oled, -- 40/75 MHz
+	  clk_ena => clk_ena_oled, -- reduce to 1-25 MHz
 	  data(47 downto 0) => S_adc_data(47 downto 0),
 	  --data(15 downto 8) => uart_rxd, -- uart latch
 	  --data(7 downto 0) => (others => '0'),
@@ -424,6 +435,7 @@ begin
 	)
 	port map (
 		clk         => clk_mouse,
+		clk_ena     => clk_ena_mouse,
 		ps2m_reset  => rst,
 		ps2m_clk    => ps2_clock,
 		ps2m_dat    => ps2_data,

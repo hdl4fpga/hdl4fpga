@@ -39,6 +39,7 @@ entity mousem is
   port
   (
     clk, ps2m_reset: in std_logic;
+    clk_ena: in std_logic := '1';
     ps2m_clk, ps2m_dat: inout std_logic;
     update: out std_logic;
     x, dx: out std_logic_vector(c_x_bits-1 downto 0);
@@ -148,6 +149,7 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
+    if clk_ena = '1' then
       filter <= filter(filter'high-1 downto 0) & ps2m_clk;
       count <= count_next;
       req <= (not ps2m_reset) and (not run) and (req xor endcount);
@@ -162,7 +164,10 @@ begin
       r_dy <= s_dy;
       r_dz <= s_dz;
       update <= done;
-    end if;
+      else -- clk_ena = '0'
+      update <= '0';
+    end if; -- clk_ena
+    end if; -- rising_edge
   end process;  
   x <= r_x;
   y <= r_y;
