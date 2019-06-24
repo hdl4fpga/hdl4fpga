@@ -72,7 +72,7 @@ architecture def of scopeio_axis is
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-	signal vt_taddr    : std_logic_vector(vtheight_bits downto division_bits);
+	signal vt_taddr    : std_logic_vector((vtheight_bits+1)-1 downto vt_offset'length);
 
 	signal hz_taddr    : std_logic_vector(13-1 downto 6);
 
@@ -174,7 +174,7 @@ begin
 			aux  := (others => '0');
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
-				aux := shift_left(aux, 0);
+				aux := shift_left(aux, vt_offset'length-division_bits);
 				aux := aux + mul(to_signed(((vt_height-1)/2)/division_size-1,4), unsigned(axis_unit));
 			else
 				aux  := shift_left(aux, 9-6);
