@@ -680,6 +680,7 @@ begin
 					latency       => segmment_latency+input_latency,
 					inputs        => inputs,
 					vt_height     => grid_height(layout),
+					axis_fontsize => axis_fontsize(layout),
 					division_size => grid_divisionsize(layout))
 				port map (
 					in_clk        => si_clk,
