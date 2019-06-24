@@ -302,6 +302,9 @@ begin
 		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
 		signal hz_delay  : signed(hz_offset'length-1 downto 0);
+		signal sync_videofrm : std_logic;
+		signal prev_sync_videofrm : std_logic;
+		signal videofrm_without_trigger : std_logic;
 
 	begin
 
@@ -316,10 +319,32 @@ begin
 			end if;
 		end process;
 
+		-- auto trigger generator
+		-- if there was no trigger shot in previous frame
+		-- then it make a "free_shot" signal
+		process(wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				if prev_sync_videofrm = '1' and sync_videofrm = '0' then
+					-- falling edge of video frame resets trigger shot tracking
+					-- if no trigger happend during the prev video frame
+					-- then make a free shot now
+					free_shot <= videofrm_without_trigger;
+					videofrm_without_trigger <= '1';
+				else -- in the middle of a video frame
+					if trigger_shot = '1' then
+						videofrm_without_trigger <= '0';
+					end if; -- trigger shot
+				end if; -- falling edge of sync_videofrm
+				prev_sync_videofrm <= sync_videofrm;
+				-- clock domain crossing
+				sync_videofrm <= video_vton;
+			end if; -- rising_edge
+		end process;
+
 		hz_delay <= signed(hz_offset);
 		rd_clk   <= video_clk;
 		gen_addr_p : process (wr_clk)
-			variable sync_videofrm : std_logic;
 		begin
 			if rising_edge(wr_clk) then
 
@@ -339,11 +364,6 @@ begin
 --				end if;
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
-				free_shot <= '0';
-				if sync_videofrm='0' and trigger_shot='0' then
-					free_shot <= '1';
-				end if;
-
 				if sync_tf='1' or wr_cntr(0)='0' then
 					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
 					if downsample_ena='1' then
@@ -357,8 +377,6 @@ begin
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
-
-				sync_videofrm := video_vton;
 			end if;
 
 		end process;
