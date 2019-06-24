@@ -124,7 +124,7 @@ begin
 	process (axis_sel, hz_base, vt_offset)
 		variable vt_base : std_logic_vector(vt_offset'range);
 	begin
-		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits-axisy_backscale));
+		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits+axisy_backscale));
 		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
 	end process;
 
