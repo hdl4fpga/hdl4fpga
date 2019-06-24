@@ -102,10 +102,16 @@ architecture def of scopeio_mouse2rgtr is
      to_unsigned(   grid_y(layout)+layout.main_margin(top)+grid_height(layout)-1,  C_XY_coordinate_bits), -- Ymax
 
      -- 2: top right window (text) C_window_textbox
-     to_unsigned(textbox_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
-     to_unsigned(textbox_x(layout)+layout.main_margin(left)+textbox_width(layout), C_XY_coordinate_bits), -- Xmax
-     to_unsigned(textbox_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
-     to_unsigned(textbox_y(layout)+layout.main_margin(top)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
+     --to_unsigned(textbox_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     --to_unsigned(textbox_x(layout)+layout.main_margin(left)+textbox_width(layout), C_XY_coordinate_bits), -- Xmax
+     --to_unsigned(textbox_y(layout)+layout.main_margin(top),                        C_XY_coordinate_bits), -- Ymin
+     --to_unsigned(textbox_y(layout)+layout.main_margin(top)+textbox_height(layout), C_XY_coordinate_bits), -- Ymax
+
+     -- 2: tiny color box below vtscale and left of hzscale
+     to_unsigned( vtaxis_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
+     to_unsigned( vtaxis_x(layout)+layout.main_margin(left)+vtaxis_width(layout),  C_XY_coordinate_bits), -- Xmax
+     to_unsigned( hzaxis_y(layout)+layout.main_margin(top)-1,                      C_XY_coordinate_bits), -- Ymin
+     to_unsigned( hzaxis_y(layout)+layout.main_margin(top)+layout.sgmnt_margin(bottom)+hzaxis_height(layout),  C_XY_coordinate_bits), -- Ymax
 
      -- 3: thin window below the grid (horizontal scale) C_window_hzaxis
      to_unsigned( hzaxis_x(layout)+layout.main_margin(left),                       C_XY_coordinate_bits), -- Xmin
@@ -204,7 +210,8 @@ architecture def of scopeio_mouse2rgtr is
   -- named constants for box_id
   constant C_window_vtaxis:  natural := 0;
   constant C_window_grid:    natural := 1;
-  constant C_window_textbox: natural := 2;
+  --constant C_window_textbox: natural := 2;
+  constant C_window_below_vtaxis: natural := 2;
   constant C_window_hzaxis:  natural := 3;
 
   -- mouse dragging
@@ -473,7 +480,8 @@ begin
                     R_B(R_B'high-3) <= '0'; -- space bit to avoid carry going higher
                     R_action_id <= C_action_trigger_level_change;
                   end if;
-                when C_window_textbox => -- mouse clicked on the text window (to the right of the grid)
+                --when C_window_textbox => -- mouse clicked on the text window (to the right of the grid)
+                when C_window_below_vtaxis => -- tiny color box below vtscale and left of hzscale
                   -- rotate wheel to change trigger source (indicated by frame color)
                   R_A(R_trace_selected'range) <= R_trace_selected;
                   R_B(R_trace_selected'range) <= resize(-R_mouse_dz, R_trace_selected'length);
