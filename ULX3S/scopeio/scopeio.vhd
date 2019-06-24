@@ -20,7 +20,10 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
-        constant vlayout_id: integer := 1;
+	-- 5:  800x600  @ 60Hz  40MHz 16-pix grid 2 segments
+	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 4 segments FULL SCREEN
+	-- 7:  800x600  @ 60Hz  40MHz 16-pix grid 1 segments 96x64 OLED
+        constant vlayout_id: integer := 6;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
