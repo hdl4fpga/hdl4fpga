@@ -63,6 +63,7 @@ package scopeiopkg is
 	constant hd720  : natural := 1;
 	constant hd1080 : natural := 2;
 	constant vesa1280x1024: natural := 3;
+	constant sd600x16 : natural := 4;
 
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
@@ -70,9 +71,22 @@ package scopeiopkg is
 		sd600 => (            
 			display_width   =>  800,
 			num_of_segments =>    2,
-			division_size   =>   16,
+			division_size   =>   32,
 			grid_width      =>   15,
 			grid_height     =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			textbox_width   => 33*8,
+			main_margin     => (left => 3, top => 23, others => 0),
+			main_gap        => (vertical => 16, others => 0),
+			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
+		sd600x16 => (            
+			display_width   =>  800,
+			num_of_segments =>    2,
+			division_size   =>   16,
+			grid_width      =>   15,
+			grid_height     =>    6,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -131,8 +145,9 @@ package scopeiopkg is
 		0 => (mode_id => pclk148_50m1920x1080Rat60, layout_id => hd1080),
 		1 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600),
 		2 => (mode_id => pclk75_00m1920x1080Rat30,  layout_id => hd1080),
+		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720),
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
-		3 => (mode_id => pclk75_00m1280x768Rat60,   layout_id => hd720));
+		5 => (mode_id => pclk38_25m800x600Cat60,   layout_id => sd600x16));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;

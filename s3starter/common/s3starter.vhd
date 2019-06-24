@@ -50,8 +50,8 @@ entity s3starter is
 		vga_hsync : out std_logic;
 		vga_vsync : out std_logic;
 
-		ps2_clk   : in  std_logic := 'Z';
-		ps2_data  : in  std_logic := 'Z';
+		ps2_clk   : out std_logic := 'Z';
+		ps2_data  : out std_logic := 'Z';
 
 		rs232_rxd : in  std_logic := 'Z';
 		rs232_txd : out std_logic := 'Z');
