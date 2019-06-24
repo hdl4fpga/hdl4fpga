@@ -83,17 +83,17 @@ package scopeiopkg is
 			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
 			display_width   =>  800,
-			num_of_segments =>    2,
-			division_size   =>   16,
-			grid_width      =>   15,
-			grid_height     =>    6,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  6*8,
+			num_of_segments =>    1,
+			division_size   =>    8,
+			grid_width      =>    9,
+			grid_height     =>    7,
+			hzaxis_height   =>    4,
+			vtaxis_width    =>  6*4,
 			textbox_width   => 33*8,
-			main_margin     => (left => 3, top => 23, others => 0),
-			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
-			sgmnt_gap       => (horizontal => 1, others => 0)),
+			main_margin     => (others => 0),
+			main_gap        => (others => 0),
+			sgmnt_margin    => (others => 0),
+			sgmnt_gap       => (others => 0)),
 		hd720 => (
 			display_width   => 1280,
 			num_of_segments =>    3,
@@ -434,7 +434,7 @@ package body scopeiopkg is
 		constant layout : display_layout)
 		return natural is
 	begin
-		return 8;
+		return layout.hzaxis_height;
 	end;
 
 	function sgmnt_height (

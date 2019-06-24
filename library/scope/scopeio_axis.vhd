@@ -31,9 +31,10 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
 	generic (
-		latency     : natural;
-		axis_unit   : std_logic_vector;
-		vt_height   : natural;
+		latency       : natural;
+		axis_unit     : std_logic_vector;
+		vt_height     : natural;
+		font_size     : natural;
 		division_size : natural);
 	port (
 		clk         : in  std_logic;
@@ -71,6 +72,7 @@ architecture def of scopeio_axis is
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
+	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 
 	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto division_bits);
 
@@ -215,19 +217,19 @@ begin
 --		attribute ram_style of cgarom_e : label is "distributed";
 
 		signal char_code : std_logic_vector(4-1 downto 0);
-		signal char_row  : std_logic_vector(3-1 downto 0);
-		signal char_col  : std_logic_vector(3-1 downto 0);
+		signal char_row  : std_logic_vector(font_bits-1 downto 0);
+		signal char_col  : std_logic_vector(font_bits-1 downto 0);
 		signal char_dot  : std_logic;
 
 		signal hz_bcd   : std_logic_vector(char_code'range);
-		signal hz_crow  : std_logic_vector(3-1 downto 0);
-		signal hz_ccol  : std_logic_vector(3-1 downto 0);
+		signal hz_crow  : std_logic_vector(font_bits-1 downto 0);
+		signal hz_ccol  : std_logic_vector(font_bits-1 downto 0);
 		signal hz_don   : std_logic;
 		signal hz_on    : std_logic;
 
 		signal vt_bcd   : std_logic_vector(char_code'range);
-		signal vt_crow  : std_logic_vector(3-1 downto 0);
-		signal vt_ccol  : std_logic_vector(3-1 downto 0);
+		signal vt_crow  : std_logic_vector(font_bits-1 downto 0);
+		signal vt_ccol  : std_logic_vector(font_bits-1 downto 0);
 		signal vt_on    : std_logic;
 		signal vt_don   : std_logic;
 
@@ -243,7 +245,7 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(x'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(6-1 downto 3);
+			signal vcol   : std_logic_vector(3+font_bits-1 downto font_bits);
 		begin 
 
 			x <= resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset);
@@ -277,8 +279,8 @@ begin
 
 			col_e : entity hdl4fpga.align
 			generic map (
-				n => hz_crow'length,
-				d => (hz_crow'range => 2))
+				n => vcol'length,
+				d => (vcol'range => 2))
 			port map (
 				clk => video_clk,
 				di  => std_logic_vector(x(vcol'range)),
@@ -321,7 +323,7 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol  : std_logic_vector(6-1 downto 3);
+			signal vcol   : std_logic_vector(3+font_bits-1 downto font_bits);
 			signal vton   : std_logic;
 		begin 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
@@ -354,8 +356,8 @@ begin
 
 			col_e : entity hdl4fpga.align
 			generic map (
-				n => hz_crow'length,
-				d => (hz_crow'range => 2))
+				n => vcol'length,
+				d => (vcol'range => 2))
 			port map (
 				clk => video_clk,
 				di  => video_hcntr(vcol'range),
@@ -379,7 +381,7 @@ begin
 				di  => video_hcntr(vt_ccol'range),
 				do  => vt_ccol);
 
-			vton <= video_vton and setif(y(division_bits-1 downto 3)=(division_bits-1 downto 3 => '1')); --y(n-1); -- and y(n-2);
+			vton <= video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')); --y(n-1); -- and y(n-2);
 			on_e : entity hdl4fpga.align
 			generic map (
 				n => 1,
@@ -399,9 +401,9 @@ begin
 
 		cgarom_e : entity hdl4fpga.cga_rom
 		generic map (
-			font_bitrom => psf1digit8x8,
-			font_height => 2**3,
-			font_width  => 2**3)
+			font_bitrom => setif(font_size=8, psf1digit8x8, psf1bcd4x4),
+			font_height => 2**font_bits,
+			font_width  => 2**font_bits)
 		port map (
 			clk       => video_clk,
 			char_col  => char_col,
