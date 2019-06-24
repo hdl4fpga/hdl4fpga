@@ -19,7 +19,7 @@ end;
 
 architecture def of scopeio_grid is
 	constant n : natural := unsigned_num_bits(division_size-1);
-	constant m : natural := unsigned_num_bits(division_size-1)-2;
+	constant m : natural := max(unsigned_num_bits(division_size-1)-2, 2);
 
 	signal hena  : std_logic;
 	signal hdot  : std_logic;

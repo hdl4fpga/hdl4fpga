@@ -141,8 +141,8 @@ package std is
 
 	function setif (
 		constant arg   : boolean;
-		constant true  : std_logic_vector;
-		constant false : std_logic_vector)
+		constant argt  : std_logic_vector;
+		constant argf : std_logic_vector)
 		return std_logic_vector;
 
 	function setif (
@@ -602,18 +602,15 @@ package body std is
 	end function;
 
 	function setif (
-		constant arg   : boolean;
-		constant true  : std_logic_vector;
-		constant false : std_logic_vector)
+		constant arg  : boolean;
+		constant argt : std_logic_vector;
+		constant argf : std_logic_vector)
 		return std_logic_vector is
-		variable val : std_logic_vector(true'range);
 	begin
 		if arg then
-			val := true;
-		else
-			val := false;
+			return argt;
 		end if;
-		return val;
+		return argf;
 	end function;
 
 	function setif (

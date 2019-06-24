@@ -59,9 +59,10 @@ end;
 
 architecture def of scopeio_segment is
 
-	constant discard_latency : natural := 0;
+	constant discard_latency : natural := 1;
 	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
 	constant division_bits   : natural := unsigned_num_bits(division_size-1);
+	constant axisy_backscale : natural := 1;
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -69,7 +70,7 @@ architecture def of scopeio_segment is
 	signal axis_dv      : std_logic := '0';
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-division_bits)-1 downto 0);
+	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(division_bits+axisy_backscale))-1 downto 0);
 	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
 begin
@@ -87,7 +88,7 @@ begin
 		offset_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(5-1 downto 0)));
+				x_offset <= std_logic_vector(unsigned(x) + unsigned(hz_offset(division_bits-1 downto 0)));
 				grid_ena <= grid_on;
 			end if;
 		end process;
@@ -123,7 +124,7 @@ begin
 	process (axis_sel, hz_base, vt_offset)
 		variable vt_base : std_logic_vector(vt_offset'range);
 	begin
-		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits));
+		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits+axisy_backscale));
 		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
 	end process;
 
@@ -159,7 +160,7 @@ begin
 		video_hzon  => hz_on,
 		video_hzdot => hz_dot,
 
-		vt_offset   => vt_offset(division_bits-1 downto 0),
+		vt_offset   => vt_offset(division_bits+axisy_backscale -1 downto 0),
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
 
