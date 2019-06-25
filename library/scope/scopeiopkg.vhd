@@ -50,6 +50,7 @@ package scopeiopkg is
 		division_size   : natural;            -- Length in pixels
 		grid_width      : natural;            -- Width of the grid in divisions
 		grid_height     : natural;            -- Width of the grid in divisions
+		axis_fontsize   : natural;            -- Axis font size
 		hzaxis_height   : natural;            -- Height of the horizontal axis 
 		vtaxis_width    : natural;            -- Width of the vetical axis 
 		textbox_width   : natural;            -- Width of the text box
@@ -76,6 +77,7 @@ package scopeiopkg is
 			division_size   =>   32,
 			grid_width      =>   15,
 			grid_height     =>    8,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -89,6 +91,7 @@ package scopeiopkg is
 			division_size   =>    8,
 			grid_width      =>    9,
 			grid_height     =>    7,
+			axis_fontsize   =>    4,
 			hzaxis_height   =>    4,
 			vtaxis_width    =>  6*4,
 			textbox_width   => 33*8,
@@ -102,6 +105,7 @@ package scopeiopkg is
 			division_size   =>   16,
 			grid_width      =>   30,
 			grid_height     =>    8,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -115,6 +119,7 @@ package scopeiopkg is
 			division_size   =>   16,
 			grid_width      =>    5,
 			grid_height     =>    4,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  1*8,
 			textbox_width   =>    1,
@@ -128,6 +133,7 @@ package scopeiopkg is
 			division_size   =>   32,
 			grid_width      =>   30,
 			grid_height     =>    8,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -141,6 +147,7 @@ package scopeiopkg is
 			division_size   =>   32,
 			grid_width      =>   30,
 			grid_height     =>    8,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -154,6 +161,7 @@ package scopeiopkg is
 			division_size   =>   32,
 			grid_width      =>   50,
 			grid_height     =>    8,
+			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
 			textbox_width   => 33*8,
@@ -184,6 +192,13 @@ package scopeiopkg is
 	constant text_boxid   : natural := 2;
 	constant hzaxis_boxid : natural := 3;
 
+	function axis_fontsize     (constant layout : display_layout) return natural;
+
+	function hzaxis_x          (constant layout : display_layout) return natural;
+	function hzaxis_y          (constant layout : display_layout) return natural;
+	function hzaxis_width      (constant layout : display_layout) return natural;
+	function hzaxis_height     (constant layout : display_layout) return natural;
+
 	function vtaxis_y          (constant layout : display_layout) return natural;
 	function vtaxis_x          (constant layout : display_layout) return natural;
 	function vtaxis_width      (constant layout : display_layout) return natural;
@@ -199,11 +214,6 @@ package scopeiopkg is
 	function textbox_y         (constant layout : display_layout) return natural;
 	function textbox_width     (constant layout : display_layout) return natural;
 	function textbox_height    (constant layout : display_layout) return natural;
-
-	function hzaxis_x          (constant layout : display_layout) return natural;
-	function hzaxis_y          (constant layout : display_layout) return natural;
-	function hzaxis_width      (constant layout : display_layout) return natural;
-	function hzaxis_height     (constant layout : display_layout) return natural;
 
 	function sgmnt_width       (constant layout : display_layout) return natural;
 	function sgmnt_height      (constant layout : display_layout) return natural;
@@ -373,6 +383,13 @@ package body scopeiopkg is
 		return natural is
 	begin
 		return layout.division_size;
+	end;
+
+	function axis_fontsize (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.axis_fontsize;
 	end;
 
 	function vtaxis_x (
