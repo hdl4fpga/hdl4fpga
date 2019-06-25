@@ -134,10 +134,10 @@ architecture beh of scopeio is
 	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
 
 	signal hz_segment     : std_logic_vector(13-1 downto 0);
+	signal hz_offset      : std_logic_vector(hz_segment'range);
 	signal hz_scale       : std_logic_vector(4-1 downto 0);
 	signal hz_dv          : std_logic;
 	signal vt_dv          : std_logic;
-	signal hz_offset      : std_logic_vector(6+9-1 downto 0);
 	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 
@@ -411,6 +411,8 @@ begin
 		constant palette_latency     : natural := 3;
 		constant vgaio_latency       : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
 
+		constant hztick_bits         : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
+
 		signal trigger_dot   : std_logic;
 		signal traces_dots   : std_logic_vector(0 to inputs-1);
 		signal grid_dot      : std_logic;
@@ -670,7 +672,7 @@ begin
 							end if;
 						end loop;
 						storage_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), storage_addr'length) + unsigned(capture_addr));
-						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(9-1 downto 0)), hz_segment'length));
+						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
 					end if;
 				end process;
 
@@ -697,7 +699,7 @@ begin
 
 					hz_dv         => hz_dv,
 					hz_scale      => hz_scale,
-					hz_base       => hz_offset(5+9-1 downto 9),
+					hz_base       => hz_offset(hz_offset'left downto axisx_backscale+hztick_bits),
 					hz_offset     => hz_segment,
 
 					gain_dv       => gain_dv,

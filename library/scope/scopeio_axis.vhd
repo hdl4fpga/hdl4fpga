@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
@@ -179,7 +180,7 @@ begin
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
 				aux := aux + mul(to_signed((vt_height/2)/division_size,4), unsigned(axis_unit));
 			else
-				aux  := shift_left(aux, 9-hz_taddr'right);
+				aux  := shift_left(aux, axisx_backscale+division_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
 			end if;
 			base <= std_logic_vector(aux);

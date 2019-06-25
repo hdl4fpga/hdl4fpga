@@ -31,18 +31,19 @@ use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
 
-	constant max_inputs : natural := 64;
+	constant max_inputs      : natural := 64;
+	constant axisy_backscale : natural := 0;
+	constant axisx_backscale : natural := 0;
 
 	type border        is (left, right, top, bottom);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
-	type margin_vector is array (border) of natural;
+	type margin_vector is array (border)    of natural;
 
 	type style is record 
 		gap    : gap_vector;
 		margin : margin_vector;
 	end record;
-
 
 	type display_layout is record 
 		display_width   : natural;            -- Maximun display width

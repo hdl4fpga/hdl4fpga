@@ -1,11 +1,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use std.textio.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
 	generic(
@@ -60,10 +59,8 @@ end;
 
 architecture def of scopeio_segment is
 
-	constant discard_latency : natural := 1;
-	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
 	constant division_bits   : natural := unsigned_num_bits(division_size-1);
-	constant axisy_backscale : natural := 0;
+	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
 	constant vt_bias         : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
@@ -166,7 +163,7 @@ begin
 		video_hzon  => hz_on,
 		video_hzdot => hz_dot,
 
-		vt_offset   => vt_offset(division_bits+axisy_backscale -1 downto 0),
+		vt_offset   => vt_offset(division_bits+axisy_backscale-1 downto 0),
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
 
