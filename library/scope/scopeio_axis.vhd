@@ -161,7 +161,7 @@ begin
 		begin
 			if rising_edge(clk) then
 				if frm='0' then
-					cntr := (others => '0');
+					cntr := (others => '1');
 				elsif wu_trdy='1' then
 					cntr := cntr + 1;
 				end if;
@@ -177,15 +177,16 @@ begin
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
-				aux := aux + mul(to_signed((vt_height/2)/division_size-1,4), unsigned(axis_unit));
+				aux := aux + mul(to_signed((vt_height/2)/division_size,4), unsigned(axis_unit));
 			else
 				aux  := shift_left(aux, 9-hz_taddr'right);
+				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
 			end if;
 			base <= std_logic_vector(aux);
 		end process;
 
 		last <= 
-			x"7f" when axis_sel='0' else 
+			x"7e" when axis_sel='0' else 
 			std_logic_vector(to_unsigned(2**vtheight_bits/division_size-1,last'length)); 
 
 		updn <= axis_sel;
