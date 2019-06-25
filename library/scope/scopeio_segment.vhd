@@ -63,7 +63,7 @@ architecture def of scopeio_segment is
 	constant discard_latency : natural := 1;
 	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
 	constant division_bits   : natural := unsigned_num_bits(division_size-1);
-	constant axisy_backscale : natural := 1;
+	constant axisy_backscale : natural := 0;
 	constant vt_bias         : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);

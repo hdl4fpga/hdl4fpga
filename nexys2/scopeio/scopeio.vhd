@@ -79,12 +79,13 @@ architecture beh of nexys2 is
 	signal input_addr : std_logic_vector(11-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
-	signal uart_rxc   : std_logic;
-	signal uart_sin   : std_logic;
-	signal uart_ena   : std_logic;
-	signal uart_rxdv  : std_logic;
-	signal uart_rxd   : std_logic_vector(8-1 downto 0);
-	signal vga_rgb    : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
+	signal uart_rxc  : std_logic;
+	signal uart_sin  : std_logic;
+	signal uart_ena  : std_logic;
+	signal uart_rxdv : std_logic;
+	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+	signal vga_rgb   : std_logic_vector(vga_red'length+vga_green'length+vga_blue'length-1 downto 0);
+	signal vga_lck   : std_logic;
 
 	signal clk_mouse  : std_logic;
 	signal istreamdaisy_frm  : std_logic;
@@ -109,17 +110,17 @@ architecture beh of nexys2 is
 		div    : natural;
 	end record;
 
-	constant mode600p  : natural := 0;
-	constant mode768p  : natural := 1;
-	constant mode1080p : natural := 2;
+	constant mode600p    : natural := 0;
+	constant mode1080p   : natural := 1;
+	constant mode600px16 : natural := 2;
 
 	type displayparam_vector is array (natural range <>) of display_param;
-	constant video_params : displayparam_vector := (
-		mode600p  => (layout => 1, mul => 4, div => 5),
-		mode768p  => (layout => 3, mul => 3, div => 2),
-		mode1080p => (layout => 0, mul => 3, div => 1));
+	constant video_params : displayparam_vector(0 to 2) := (
+		mode600p    => (layout => 1, mul => 4, div => 5),
+		mode1080p   => (layout => 0, mul => 3, div => 1),
+		mode600px16 => (layout => 5, mul => 4, div => 5));
 
-	constant video_mode : natural := mode600p;
+	constant video_mode : natural := mode600px16;
 
 begin
 
@@ -128,13 +129,6 @@ begin
 		I => xtal,
 		O => sys_clk);
 
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			clk_mouse <= not clk_mouse;  -- I know ... It's not a good practice but it saves a DCM
-		end if;
-	end process;
-	
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
 		dfs_frequency_mode => "low",
@@ -144,7 +138,8 @@ begin
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
-		dfs_clk => vga_clk);
+		dfs_clk => vga_clk,
+		dcm_lck => vga_lck);
 
 	process (sys_clk)
 	begin
@@ -216,7 +211,20 @@ begin
 			--  trace0 trace1 trace2 trace3 trace4
 			--  yellow cyan   green  red    white
 
+		signal rst          : std_logic;
+		signal clk_mouse    : std_logic;
+		signal clkmouse_ena : std_logic;
 	begin
+
+		rst <= not vga_lck;
+		clk_mouse <= sys_clk;
+		process (sys_clk)
+		begin
+			if rising_edge(sys_clk) then
+				clkmouse_ena <= not clkmouse_ena;
+			end if;
+		end process;
+	
 		ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
 		generic map(
 			C_inputs    => inputs,
@@ -225,7 +233,8 @@ begin
 		)
 		port map (
 			clk         => clk_mouse,
-			ps2m_reset  => '0', --rst,
+			clk_ena     => clkmouse_ena,
+			ps2m_reset  => rst,
 			ps2m_clk    => ps2_clk,
 			ps2m_dat    => ps2_data,
 			-- daisy input
@@ -243,7 +252,7 @@ begin
 		si_data <= mousedaisy_data;
 	end block;
 
-	si_clk <= uart_rxc;
+	si_clk <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		inputs           => inputs,
