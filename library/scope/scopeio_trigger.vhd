@@ -35,7 +35,7 @@ begin
 		if rising_edge(input_clk) then
 			trigger_shot <= (lt and ge and not edge) or (not lt and not ge and edge);
 			lt     := not ge;
-			ge     := setif(signed(sample(0 to trigger_level'length-1)) >= signed(trigger_level));
+			ge     := setif(signed(sample(sample'length - trigger_level'length to sample'high)) >= signed(trigger_level));
 			edge   := not trigger_edge;
 			sample <= word2byte(input_data, trigger_chanid, sample'length);
 		end if;
