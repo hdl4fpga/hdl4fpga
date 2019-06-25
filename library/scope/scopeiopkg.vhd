@@ -336,10 +336,13 @@ package body scopeiopkg is
 		n := 0;
 		retval(n*(pos(gap)+1)) := margin_start;
 		retval(pos(margin_start)+n*(pos(gap)+1)) := retval(n*(pos(gap+1))) + sides(n);
+--		for i in 0 to sides'length-2 loop
 		while n < sides'length-1 loop
-			retval(pos(margin_start)+n*(pos(gap)+1)+1) := retval(pos(margin_start)+n*(pos(gap)+1)) + gap;
-			n := n + 1;
-			retval(pos(margin_start)+n*(pos(gap)+1))   := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(n);
+--			if sides(n+1)/=0 then
+				retval(pos(margin_start)+n*(pos(gap)+1)+1) := retval(pos(margin_start)+n*(pos(gap)+1)) + gap;
+				n := n + 1;
+				retval(pos(margin_start)+n*(pos(gap)+1))   := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(n);
+--			end if;
 		end loop;
 		retval(pos(margin_start)+pos(margin_end)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + margin_end;
 
