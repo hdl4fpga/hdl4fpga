@@ -20,9 +20,9 @@ architecture beh of ulx3s is
 	-- 2: 1920x1080 @ 30Hz  75MHz
 	-- 3: 1280x768  @ 60Hz  75MHz
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
-	-- 5:  800x600  @ 60Hz  40MHz 16-pix grid 2 segments
+	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 4 segments FULL SCREEN
-	-- 7:  800x600  @ 60Hz  40MHz 16-pix grid 1 segments 96x64 OLED
+	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 1 segment 96x64 OLED
         constant vlayout_id: integer := 6;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
@@ -262,7 +262,13 @@ begin
 	  process(clk_adc)
 	  begin
 	    if rising_edge(clk_adc) then
-	      R_test_counter <= R_test_counter + 1;
+	      -- reset counter a bit earlier so the period of
+	      -- test signal will not match with buffering period
+	      if R_test_counter(R_test_counter'high downto 4) = x"FFF" then
+	        R_test_counter <= (others => '0');
+	      else
+	        R_test_counter <= R_test_counter + 1;
+	      end if;
 	    end if;
 	  end process;
 	  S_test_p <= R_test_counter(R_test_counter'high);
