@@ -126,7 +126,6 @@ architecture beh of scopeio is
 	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
 
 	signal capture_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
@@ -294,7 +293,8 @@ begin
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
 		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : signed(0 to wr_addr'length+1);
+		signal wr_cntr   : signed(0 to wr_addr'length);
+		signal prev_wr_cntr_0: std_logic;
 		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk    : std_logic;
 		signal rd_addr   : std_logic_vector(wr_addr'range);
@@ -304,7 +304,9 @@ begin
 		signal hz_delay  : signed(hz_offset'length-1 downto 0);
 		signal sync_videofrm : std_logic;
 		signal prev_sync_videofrm : std_logic;
-		signal videofrm_without_trigger : std_logic;
+		constant C_auto_trigger_wait: natural := 0; -- wait 2**n video frames until free shot triggering
+		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
+		signal trigger_addr   : std_logic_vector(storage_addr'range);
 
 	begin
 
@@ -321,7 +323,7 @@ begin
 
 		-- auto trigger generator
 		-- if there was no trigger shot in previous frame
-		-- then it make a "free_shot" signal
+		-- then make a "free_shot" signal
 		process(wr_clk)
 		begin
 			if rising_edge(wr_clk) then
@@ -329,11 +331,13 @@ begin
 					-- falling edge of video frame resets trigger shot tracking
 					-- if no trigger happend during the prev video frame
 					-- then make a free shot now
-					free_shot <= videofrm_without_trigger;
-					videofrm_without_trigger <= '1';
+					if videofrm_without_trigger(0) = '0' then
+						videofrm_without_trigger <= videofrm_without_trigger + 1;
+					end if;
+					free_shot <= videofrm_without_trigger(0);
 				else -- in the middle of a video frame
 					if trigger_shot = '1' then
-						videofrm_without_trigger <= '0';
+						videofrm_without_trigger <= (others => '0');
 					end if; -- trigger shot
 				end if; -- falling edge of sync_videofrm
 				prev_sync_videofrm <= sync_videofrm;
@@ -365,18 +369,23 @@ begin
 --				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
 
 				if sync_tf='1' or wr_cntr(0)='0' then
-					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
 					if downsample_ena='1' then
 						wr_cntr <= wr_cntr - 1;
 					end if;
-				elsif sync_videofrm='0' and trigger_shot='1' then
-					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
-					wr_cntr      <= resize(hz_delay, wr_cntr'length) +(2**wr_addr'length-1);
+				elsif free_shot='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
+					wr_cntr      <= to_signed(2**(wr_addr'length-1)-1, wr_cntr'length);
 					trigger_addr <= wr_addr;
 				end if;
 				if downsample_ena='1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
+
+				-- if frozen, "capture_addr" is always updated
+				-- if not frozen, "capture_addr" is updated only at rising edge of wr_cntr(0)
+				if sync_tf='1' or (wr_cntr(0)='1' and prev_wr_cntr_0='0') then
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
+				end if;
+				prev_wr_cntr_0 <= wr_cntr(0); -- for edge detection
 			end if;
 
 		end process;
