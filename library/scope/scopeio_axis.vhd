@@ -73,10 +73,7 @@ architecture def of scopeio_axis is
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
-
-	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto division_bits);
-
-	signal hz_taddr    : std_logic_vector(13-1 downto 6);
+	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
@@ -126,6 +123,9 @@ architecture def of scopeio_axis is
 		end loop;
 		return rval;
 	end;
+
+	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto division_bits);
+	signal hz_taddr    : std_logic_vector(13-1 downto hztick_bits);
 
 begin
 
@@ -245,7 +245,7 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(x'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(3+font_bits-1 downto font_bits);
+			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
 		begin 
 
 			x <= resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset);
@@ -323,7 +323,7 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(3+font_bits-1 downto font_bits);
+			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
 			signal vton   : std_logic;
 		begin 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
