@@ -33,7 +33,7 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural;
 
-		C_experimental_trigger : boolean := true;
+		C_experimental_trigger : boolean := false;
 
 		inputs      : natural;
 		vt_gains    : natural_vector := (
@@ -129,7 +129,6 @@ architecture beh of scopeio is
 
 	signal capture_addr   : std_logic_vector(storage_addr'range);
 	signal scrolled_capture_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_addr   : std_logic_vector(storage_addr'range);
 	signal trigger_shot   : std_logic;
 
 	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
@@ -307,6 +306,7 @@ begin
 		signal rd_data   : std_logic_vector(wr_data'range);
 		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
+		signal trigger_addr : std_logic_vector(storage_addr'range);
 		signal hz_delay  : signed(hz_offset'length-1 downto 0);
 		signal sync_videofrm : std_logic;
 		signal prev_sync_videofrm : std_logic;
@@ -355,13 +355,11 @@ begin
 				end if;
 
 				if sync_tf='1' or wr_cntr(0)='0' then
-					--scrolled_capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
 					capture_addr <= std_logic_vector(signed(trigger_addr));
 					if downsample_ena='1' then
 						wr_cntr <= wr_cntr - 1;
 					end if;
 				elsif sync_videofrm='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
-					--scrolled_capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
 					capture_addr <= std_logic_vector(signed(wr_addr));
 					wr_cntr      <= resize(hz_delay, wr_cntr'length) + (2**wr_addr'length-1);
 					trigger_addr <= wr_addr;
@@ -390,114 +388,130 @@ begin
 	end block;
 	end generate; -- not experimental trigger
 
-	G_yes_experimental_trigger: if C_experimental_trigger generate
-	-- contains EMARD's experimental trigger
-	-- signal in kHz range: trying to fix discontinuity triggered point T=0
-	--                      try to improve response to signal changes
-	-- signal in MHz range: vertical traces are dotted
-	
-	-- TODO
+	G_yes_1shot_trigger: if C_experimental_trigger generate
+	-- contains EMARD's experimental 1-shot trigger
 
-	-- 1-shot trigger: record at least first half of the buffer,
-	-- keep recording and wait for trigger. After trigger, record
-	-- last half of the buffer and stop recording.
-	-- triggering point T=0 will be at the middle of the buffer
-	
-	-- one-shot trigger counter states
-	-- state 0: start recording at least half of the buffer (decrementing counter until 0x400, dec while bit(MSB-1)=1)
-	-- state 1: wait for trigger (don't decrement stay at 0x400)
-	-- state 2: decrement to -1 (from 0x3FF to 0 and then 0xFFF)
-	-- state 3: wait to re-arm (stay at 0xFFF)
-	--          re-arm by event, initializing counter to 0x7FF
+	-- storage is a circular buffer and it must have
+	-- discontinuity somewhere. This code keeps
+	-- the discontinuity away from triggering point T=0.
 
-	-- while counter bit(MSB) = 0: write to storage buffer, also increment addr
+	-- 1-shot trigger armed:
+	-- record first part of the buffer (configurable size)
+	-- then wait for trigger, keep recording.
+	-- After trigger, do some more recording for the last
+	-- part of the buffer and stop (freeze display, dis-arm trigger).
+	-- When stopped, wait configurable number of video frames
+	-- for the user to be able to see waveform and then
+	-- re-arm 1-shot trigger.
+
+	-- NOTE: during time when 1-shot trigger is armed,
+        -- storage continuously records data while waiting for trigger.
+        -- Same memory currently recorded is at the same displayed,
+	-- so the traces may flicker or become dotted or dashed.
+	-- This is considered as normal for now.
+	-- When display is frozen, it will display correct waveform.
+
+	-- Triggering point T=0 can be placed at configurable position
+	-- in the buffer.
+	
+	-- one-shot trigger states:
+	-- state 0: start recording first half of the buffer (decrementing counter)
+	-- state 1: wait for trigger (don't decrement during waiting)
+	-- state 2: decrement counter until it wraps around to -1 and stop
+	-- state 3: wait for re-arm (counter is at -1)
+	--          re-armed by event, initializing counter to buffer length
+
+	-- while counter bit(MSB) = 0 write to storage buffer and increment addr
 
 	-- auto trigger is special case of 1-shot trigger
-	-- which is re-armed at every frame.
-	-- optinally allow N stable frames until next re-armong
-	storage_exp_trig_b : block
+	-- which is re-armed at frame blank.
+	-- optionally, N stable frames can be configured until next re-armong
+
+	-- TODO: external trigger, external re-arm
+
+	storage_1shot_trig_b : block
 
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
 		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : signed(0 to wr_addr'length);
-		signal prev_wr_cntr_0: std_logic;
+		signal wr_cntr   : unsigned(0 to wr_addr'length); -- has one bit more than wr_addr
+		-- use "C_trigger_storage_position" to adjust position 
+		-- of triggering point in the storage buffer.
+		-- by default it is set at center of the storage buffer
+		-- > 2**(wr_addr'length-1) : record more data after trigger
+		-- = 2**(wr_addr'length-1) : record same amount of data before and after trigger
+		-- < 2**(wr_addr'length-1) : record more data before trigger
+		constant C_trigger_storage_position : unsigned(0 to wr_addr'length-1) := to_unsigned(2**(wr_addr'length-1), wr_addr'length);
 		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk    : std_logic;
 		signal rd_addr   : std_logic_vector(wr_addr'range);
 		signal rd_data   : std_logic_vector(wr_data'range);
-		signal free_shot : std_logic;
 		signal sync_tf   : std_logic;
-		signal hz_delay  : signed(hz_offset'length-1 downto 0);
 		signal sync_videofrm : std_logic;
 		signal prev_sync_videofrm : std_logic;
-		constant C_auto_trigger_wait: natural := 0; -- wait 2**n video frames until free shot triggering
+		constant C_auto_trigger_wait: natural := 0; -- 2**n video frames frozen until auto re-arming trigger
 		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
 
 	begin
-
+		-- for BRAM memory
 		wr_clk  <= input_clk;
-		wr_ena  <= (not wr_cntr(0) or free_shot) and not sync_tf;
+		wr_ena  <= downsample_ena and not wr_cntr(0);
 		wr_data <= downsample_data;
+		rd_clk  <= video_clk;
+
+		-- storage records data during wr_cntr(0)='0'
+		process(wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				if downsample_ena = '1' and wr_cntr(0) = '0' then
+					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+				end if;
+			end if;
+		end process;
 
 		process(wr_clk)
 		begin
 			if rising_edge(wr_clk) then
 				sync_tf <= trigger_freeze;
+				prev_sync_videofrm <= sync_videofrm;
 				sync_videofrm <= video_vton;
 			end if;
 		end process;
 
-		-- auto trigger generator
-		-- if there was no trigger shot in previous frame
-		-- then make a "free_shot" signal
 		process(wr_clk)
 		begin
 			if rising_edge(wr_clk) then
-				if prev_sync_videofrm = '1' and sync_videofrm = '0' then
-					-- falling edge of video frame resets trigger shot tracking
-					-- if no trigger happend during the prev video frame
-					-- then make a free shot now
-					if videofrm_without_trigger(0) = '0' then
-						videofrm_without_trigger <= videofrm_without_trigger + 1;
+				if wr_cntr(0) = '0' then -- storage is recording data to memory
+					if wr_cntr(1 to wr_cntr'high) = C_trigger_storage_position then
+						-- stop countdown, wait for rising edge of "trigger_shot" signal
+						if trigger_shot = '1' then
+							capture_addr <= wr_addr; -- mark triggering point in the buffer
+							wr_cntr <= wr_cntr - 1; -- continue countdown
+						end if;
+					else -- regular countdown before and after trigger
+						if downsample_ena = '1' then
+							wr_cntr <= wr_cntr - 1;
+						end if;
 					end if;
-					free_shot <= videofrm_without_trigger(0);
-				else -- in the middle of a video frame
-					if trigger_shot = '1' then
-						videofrm_without_trigger <= (others => '0');
-					end if; -- trigger shot
-				end if; -- falling edge of sync_videofrm
-				prev_sync_videofrm <= sync_videofrm;
+					-- reset frame counter for temporary
+					-- freezing display after the trigger
+					videofrm_without_trigger <= (others => '0');
+				else -- wr_cntr(0)='1' storage is not recording data
+					-- count video frames without trigger
+					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
+						if videofrm_without_trigger(0) = '0' then
+							videofrm_without_trigger <= videofrm_without_trigger + 1;
+						end if;
+					end if;
+					-- in auto trig mode, wait a frame or more
+					-- for user to view temporary frozen display and then re-arm
+					if sync_tf = '0' and videofrm_without_trigger(0) = '1' then -- if not frozen and enough frames have passed
+						-- re-arm, initialize counter for full buffer length countdown
+						--wr_cntr <= to_unsigned(2**(wr_addr'length)-1, wr_cntr'length);
+						wr_cntr <= (0 => '0', others => '1'); -- same as above
+					end if; -- re-arming
+				end if; -- storage is not recording
 			end if; -- rising_edge
-		end process;
-
-		hz_delay <= signed(hz_offset);
-		rd_clk   <= video_clk;
-		gen_addr_p : process (wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-
-				if sync_tf='1' or wr_cntr(0)='0' then
-					--capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
-					if downsample_ena='1' then
-						wr_cntr <= wr_cntr - 1;
-					end if;
-				elsif free_shot='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
-					--capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
-					wr_cntr      <= to_signed(2**(wr_addr'length-1)-1, wr_cntr'length);
-					trigger_addr <= wr_addr;
-				end if;
-				if downsample_ena='1' then
-					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-				end if;
-
-				-- if frozen, "capture_addr" is always updated
-				-- if not frozen, "capture_addr" is updated only at rising edge of wr_cntr(0)
-				if sync_tf='1' or (wr_cntr(0)='1' and prev_wr_cntr_0='0') then
-					capture_addr <= std_logic_vector(signed(trigger_addr));
-				end if;
-				prev_wr_cntr_0 <= wr_cntr(0); -- for edge detection
-			end if;
 
 		end process;
 
@@ -516,7 +530,7 @@ begin
 			dob   => storage_data);
 
 	end block;
-	end generate; -- experimental trigger
+	end generate; -- 1shot trigger
 
 	-- allows horizontal scrolling of the waveform
 	storage_horizontal_scroll_b: block
@@ -524,7 +538,7 @@ begin
 		process(input_clk)
 		begin
 			if rising_edge(input_clk) then
-				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(trigger_addr));
+				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr));
 			end if;
 		end process;
 	end block;
