@@ -33,6 +33,8 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural;
 
+		C_experimental_trigger : boolean := false;
+
 		inputs      : natural;
 		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
@@ -288,7 +290,109 @@ begin
 		output_ena   => downsample_ena,
 		output_data  => downsample_data);
 
+	G_not_experimental_trigger: if not C_experimental_trigger generate
+	-- signals in MHz range: ok
+	-- signals in kHz range: discontinuity around T=0
 	storage_b : block
+
+		signal wr_clk    : std_logic;
+		signal wr_ena    : std_logic;
+		signal wr_addr   : std_logic_vector(storage_addr'range);
+		signal wr_cntr   : signed(0 to wr_addr'length+1);
+		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
+		signal rd_clk    : std_logic;
+		signal rd_addr   : std_logic_vector(wr_addr'range);
+		signal rd_data   : std_logic_vector(wr_data'range);
+		signal free_shot : std_logic;
+		signal sync_tf   : std_logic;
+		signal hz_delay  : signed(hz_offset'length-1 downto 0);
+		signal sync_videofrm : std_logic;
+		signal prev_sync_videofrm : std_logic;
+		constant C_auto_trigger_wait: natural := 0; -- wait 2**n video frames until free shot triggering
+		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
+		signal trigger_addr   : std_logic_vector(storage_addr'range);
+
+	begin
+
+		wr_clk  <= input_clk;
+		wr_ena  <= (not wr_cntr(0) or free_shot) and not sync_tf;
+		wr_data <= downsample_data;
+
+		process(wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				sync_tf <= trigger_freeze;
+				sync_videofrm <= video_vton;
+			end if;
+		end process;
+
+		hz_delay <= signed(hz_offset);
+		rd_clk   <= video_clk;
+		gen_addr_p : process (wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+
+--              ----------------
+--				-- CALIBRATON --
+--              ----------------
+--
+--				wr_data <= ('0','0', '0', '0', others => '1');
+--				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
+--					wr_data <= ('0', '0', '1', others => '0');
+--				end if;
+--				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
+
+				free_shot <= '0';
+				if sync_videofrm='0' and trigger_shot='0' then
+					free_shot <= '1';
+				end if;
+
+				if sync_tf='1' or wr_cntr(0)='0' then
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
+					if downsample_ena='1' then
+						wr_cntr <= wr_cntr - 1;
+					end if;
+				elsif sync_videofrm='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
+					capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
+					wr_cntr      <= resize(hz_delay, wr_cntr'length) + (2**wr_addr'length-1);
+					trigger_addr <= wr_addr;
+				end if;
+				if downsample_ena='1' then
+					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+				end if;
+			end if;
+
+		end process;
+
+--		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
+		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testing:w for portabilty
+		port map (
+			clka  => wr_clk,
+			addra => wr_addr,
+			wea   => wr_ena,
+			dia   => wr_data,
+			doa   => rd_data,
+
+			clkb  => rd_clk,
+			addrb => storage_addr,
+			dib   => rd_data,
+			dob   => storage_data);
+
+	end block;
+	end generate; -- not experimental trigger
+
+	G_yes_experimental_trigger: if C_experimental_trigger generate
+	-- contains EMARD's experimental trigger
+	-- signal in kHz range: trying to fix discontinuity triggered point T=0
+	--                      try to improve response to signal changes
+	-- signal in MHz range: vertical traces are dotted
+	storage_exp_trig_b : block
 
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
@@ -318,6 +422,7 @@ begin
 		begin
 			if rising_edge(wr_clk) then
 				sync_tf <= trigger_freeze;
+				sync_videofrm <= video_vton;
 			end if;
 		end process;
 
@@ -341,8 +446,6 @@ begin
 					end if; -- trigger shot
 				end if; -- falling edge of sync_videofrm
 				prev_sync_videofrm <= sync_videofrm;
-				-- clock domain crossing
-				sync_videofrm <= video_vton;
 			end if; -- rising_edge
 		end process;
 
@@ -352,27 +455,13 @@ begin
 		begin
 			if rising_edge(wr_clk) then
 
---              ----------------
---				-- CALIBRATON --
---              ----------------
---
---				wr_data <= ('0','0', '0', '0', others => '1');
---				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				end if;
---				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
-
 				if sync_tf='1' or wr_cntr(0)='0' then
+					--capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(trigger_addr));
 					if downsample_ena='1' then
 						wr_cntr <= wr_cntr - 1;
 					end if;
 				elsif free_shot='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
+					--capture_addr <= std_logic_vector(hz_delay(capture_addr'reverse_range) + signed(wr_addr));
 					wr_cntr      <= to_signed(2**(wr_addr'length-1)-1, wr_cntr'length);
 					trigger_addr <= wr_addr;
 				end if;
@@ -390,7 +479,6 @@ begin
 
 		end process;
 
-
 --		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
 		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testing:w for portabilty
 		port map (
@@ -406,6 +494,7 @@ begin
 			dob   => storage_data);
 
 	end block;
+	end generate; -- experimental trigger
 
 	video_b : block
 
