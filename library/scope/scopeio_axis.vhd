@@ -75,7 +75,7 @@ architecture def of scopeio_axis is
 	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vttick_bits   : natural := unsigned_num_bits(division_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
@@ -126,7 +126,7 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto division_bits);
+	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vttick_bits);
 	signal hz_taddr    : std_logic_vector(13-1 downto hztick_bits);
 
 begin
@@ -189,7 +189,7 @@ begin
 
 		last <= 
 			x"7e" when axis_sel='0' else 
-			std_logic_vector(to_unsigned(2**vtheight_bits/division_size-1,last'length)); 
+			std_logic_vector(to_unsigned(2**vtheight_bits/2**vttick_bits-1,last'length)); 
 
 		updn <= axis_sel;
 		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
@@ -208,7 +208,8 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
-		wu_align <= not axis_sel;
+--		wu_align <= not axis_sel;
+		wu_align <= '1'; --not axis_sel;
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left) or axis_sel;
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
@@ -326,7 +327,8 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
+--			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
+			signal vcol   : std_logic_vector(vttick_bits-1 downto font_bits);
 			signal vton   : std_logic;
 		begin 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
@@ -363,7 +365,7 @@ begin
 				d => (vcol'range => 2))
 			port map (
 				clk => video_clk,
-				di  => video_hcntr(vcol'range),
+				di  => vaddr(vcol'range), --video_vcntr(vcol'range),
 				do  => vcol);
 
 			crow_e : entity hdl4fpga.align
@@ -384,7 +386,7 @@ begin
 				di  => video_hcntr(vt_ccol'range),
 				do  => vt_ccol);
 
-			vton <= video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')); --y(n-1); -- and y(n-2);
+			vton <= video_vton; -- and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')); --y(n-1); -- and y(n-2);
 			on_e : entity hdl4fpga.align
 			generic map (
 				n => 1,
@@ -394,7 +396,8 @@ begin
 				di(0) => vton,
 				do(0) => vt_on);
 
-			vt_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length);
+--			vt_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length);
+			vt_bcd <= word2byte(std_logic_vector(unsigned(tick)), not vcol, char_code'length);
 
 		end block;
 

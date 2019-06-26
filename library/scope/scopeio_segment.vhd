@@ -12,7 +12,7 @@ entity scopeio_segment is
 		latency       : natural;
 		inputs        : natural;
 		vt_height     : natural;
-		axis_fontsize : natural;
+		font_size     : natural;
 		division_size : natural);
 	port (
 		in_clk        : in  std_logic;
@@ -60,6 +60,7 @@ end;
 architecture def of scopeio_segment is
 
 	constant division_bits   : natural := unsigned_num_bits(division_size-1);
+	constant vttick_bits     : natural := unsigned_num_bits(8*font_size-1);
 	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
 	constant vt_bias         : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
@@ -69,7 +70,7 @@ architecture def of scopeio_segment is
 	signal axis_dv      : std_logic := '0';
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(division_bits+axisy_backscale))-1 downto 0);
+	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vttick_bits+axisy_backscale))-1 downto 0);
 	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
 	signal y_offset     : std_logic_vector(y'range);
@@ -126,16 +127,16 @@ begin
 	process (axis_sel, hz_base, vt_offset)
 		variable vt_base : std_logic_vector(vt_offset'range);
 	begin
-		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits+axisy_backscale));
+		vt_base   := std_logic_vector(shift_right(signed(vt_offset), vttick_bits+axisy_backscale));
 		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
 	end process;
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency       => latency,
-		axis_unit     => std_logic_vector(to_unsigned(25,5)),
+		axis_unit     => std_logic_vector(to_unsigned(1,5)),
 		vt_height     => vt_height,
-		font_size     => axis_fontsize,
+		font_size     => font_size,
 		division_size => division_size)
 	port map (
 		clk         => in_clk,
@@ -163,7 +164,7 @@ begin
 		video_hzon  => hz_on,
 		video_hzdot => hz_dot,
 
-		vt_offset   => vt_offset(division_bits+axisy_backscale-1 downto 0),
+		vt_offset   => vt_offset(vttick_bits+axisy_backscale-1 downto 0),
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
 
