@@ -461,6 +461,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
+	        C_experimental_trigger => true,
 		vlayout_id       => vlayout_id,
                 default_tracesfg => C_tracesfg,
                 default_gridfg   => b"110000",
