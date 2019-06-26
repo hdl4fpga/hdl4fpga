@@ -75,6 +75,7 @@ architecture def of scopeio_axis is
 	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(division_size-1);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
@@ -178,9 +179,9 @@ begin
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
-				aux := aux + mul(to_signed((vt_height/2)/division_size,4), unsigned(axis_unit));
+				aux := aux + mul(to_signed((vt_height/2)/2**vttick_bits,4), unsigned(axis_unit));
 			else
-				aux  := shift_left(aux, axisx_backscale+division_bits-hz_taddr'right);
+				aux  := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
 			end if;
 			base <= std_logic_vector(aux);

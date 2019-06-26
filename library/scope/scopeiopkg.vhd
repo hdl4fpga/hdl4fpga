@@ -33,7 +33,7 @@ package scopeiopkg is
 
 	constant max_inputs      : natural := 64;
 	constant axisy_backscale : natural := 0;
-	constant axisx_backscale : natural := 0;
+	constant axisx_backscale : natural := 1;
 
 	type border        is (left, right, top, bottom);
 	type direction     is (horizontal, vertical);
