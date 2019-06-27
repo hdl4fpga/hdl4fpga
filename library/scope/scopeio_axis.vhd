@@ -74,7 +74,7 @@ architecture def of scopeio_axis is
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vt_height     : natural := grid_height(layout);
-	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
+	constant vtheight_bits : natural := unsigned_num_bits(2*division_size*((vt_height+2*division_size-1)/2*division_size));
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
@@ -129,7 +129,7 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vtstep_bits); --vttick_bits);
+	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vtstep_bits);
 	signal hz_taddr    : std_logic_vector(13-1 downto hztick_bits);
 
 begin
@@ -183,7 +183,6 @@ begin
 			if axis_sel='1' then
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
 				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,4), unsigned(axis_unit));
---				aux := aux + mul(to_signed((vt_height/2)/vttick_bits,4), unsigned(axis_unit));
 			else
 				aux  := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
@@ -212,7 +211,10 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
-		wu_align <= setif(vtaxis_tickdirection(layout)=horizontal, not axis_sel, '1');
+		wu_align <=
+			not axis_sel when vtaxis_tickdirection(layout)=horizontal else
+			not axis_sel when vtaxis_tickheading(layout)=up else
+			'1';
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left) or axis_sel;
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
@@ -220,8 +222,6 @@ begin
 	end block;
 
 	video_b : block
---		attribute ram_style : string;
---		attribute ram_style of cgarom_e : label is "distributed";
 
 		signal char_code : std_logic_vector(4-1 downto 0);
 		signal char_row  : std_logic_vector(font_bits-1 downto 0);
@@ -243,8 +243,6 @@ begin
 	begin
 
 		hz_b : block
---			attribute ram_style : string;
---			attribute ram_style of hzmem_e : label is "distributed";
 
 			signal x      : unsigned(hz_taddr'left downto 0);
 			signal tick   : std_logic_vector(wu_format'range);
@@ -391,7 +389,7 @@ begin
 				d => (vt_crow'range => 2))
 			port map (
 				clk => video_clk,
-				di  => rot_crow, --std_logic_vector(y(vt_crow'range)),
+				di  => rot_crow,
 				do  => vt_crow);
 
 			rot_ccol <= 
