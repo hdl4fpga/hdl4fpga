@@ -74,11 +74,11 @@ architecture def of scopeio_axis is
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vt_height     : natural := grid_height(layout);
-	constant vtheight_bits : natural := unsigned_num_bits(2*division_size*((vt_height+2*division_size-1)/2*division_size));
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
+	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
