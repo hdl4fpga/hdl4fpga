@@ -70,7 +70,7 @@ package scopeiopkg is
 	constant vesa1280x1024: natural := 3;
 	constant sd600x16 : natural := 4;
 	constant sd600x16fs : natural := 5;
-	constant sd600x16oled : natural := 6;
+	constant oled96x64  : natural := 6;
 
 	type displaylayout_vector is array (natural range <>) of display_layout;
 
@@ -108,37 +108,37 @@ package scopeiopkg is
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		sd600x16fs => (
-			display_width    =>  800,
-			num_of_segments  =>    4,
-			division_size    =>   16,
-			grid_width       =>   30,
-			grid_height      =>    8,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    8,
-			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
-			textbox_width    => 33*8,
-			main_margin      => (top => 5, left => 1, others => 0),
-			main_gap         => (vertical => 8, others => 0),
-			sgmnt_margin     => (top => 2, bottom => 2, others => 1),
-			sgmnt_gap        => (horizontal => 1, others => 0)),
-		sd600x16oled => (
-			display_width    =>  800,
-			num_of_segments  =>    1,
-			division_size    =>   16,
-			grid_width       =>    5,
-			grid_height      =>    4,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    8,
-			vtaxis_width     =>  1*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
-			textbox_width    =>    1,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
+			display_width   =>  800,
+			num_of_segments =>    4,
+			division_size   =>   16,
+			grid_width      =>   46,
+			grid_height     =>    9,
+			axis_fontsize   =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			vttick_direction => vertical,
+			vttick_heading   => down,
+			textbox_width   =>  1*8,
+			main_margin     => (others => 0),
+			main_gap        => (others => 0),
+			sgmnt_margin    => (others => 0),
+			sgmnt_gap       => (others => 0)),
+		oled96x64 => (
+			display_width   =>   96,
+			num_of_segments =>    1,
+			division_size   =>    8,
+			grid_width      =>    9,
+			grid_height     =>    7,
+			axis_fontsize   =>    4,
+			hzaxis_height   =>    4,
+			vtaxis_width    =>  6*4,
+			vttick_direction => vertical,
+			vttick_heading   => down,
+			textbox_width   =>    1, -- no textbox
+			main_margin     => (others => 0),
+			main_gap        => (others => 0),
+			sgmnt_margin    => (others => 0),
+			sgmnt_gap       => (others => 0)),
 		hd720 => (
 			display_width    => 1280,
 			num_of_segments  =>    3,
@@ -203,7 +203,7 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16),
 		6 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
-		7 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16oled));
+		7 => (mode_id => pclk38_25m800x600Cat60,    layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
