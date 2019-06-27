@@ -34,9 +34,7 @@ entity scopeio_axis is
 	generic (
 		latency       : natural;
 		axis_unit     : std_logic_vector;
-		vt_height     : natural;
-		font_size     : natural;
-		division_size : natural);
+		layout        : display_layout);
 	port (
 		clk         : in  std_logic;
 
@@ -71,7 +69,11 @@ end;
 
 architecture def of scopeio_axis is
 
+	constant division_size : natural := grid_divisionsize(layout);
+	constant font_size     : natural := axis_fontsize(layout);
+
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
+	constant vt_height     : natural := grid_height(layout);
 	constant vtheight_bits : natural := unsigned_num_bits(vt_height);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
@@ -208,8 +210,7 @@ begin
 			wu_trdy  => wu_trdy,
 			wu_value => value);
 
---		wu_align <= not axis_sel;
-		wu_align <= '1'; --not axis_sel;
+		wu_align <= setif(vtaxis_tickdirection(layout)=horizontal, not axis_sel, '1');
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left) or axis_sel;
 		wu_value <= scale_1245(neg(value, value(value'left)), axis_scale) & x"f";
@@ -327,9 +328,11 @@ begin
 			signal wr_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
---			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
 			signal vcol   : std_logic_vector(vttick_bits-1 downto font_bits);
 			signal vton   : std_logic;
+
+			signal cchar   : std_logic_vector(vcol'range);
+
 		begin 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)
@@ -359,14 +362,15 @@ begin
 				end if;
 			end process;
 
+			vcol <= setif(vtaxis_tickdirection(layout)=vertical, vaddr(vcol'range), video_vcntr(vcol'range));
 			col_e : entity hdl4fpga.align
 			generic map (
 				n => vcol'length,
 				d => (vcol'range => 2))
 			port map (
 				clk => video_clk,
-				di  => vaddr(vcol'range), --video_vcntr(vcol'range),
-				do  => vcol);
+				di  => vcol,
+				do  => cchar);
 
 			crow_e : entity hdl4fpga.align
 			generic map (
@@ -386,7 +390,10 @@ begin
 				di  => video_hcntr(vt_ccol'range),
 				do  => vt_ccol);
 
-			vton <= video_vton; -- and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')); --y(n-1); -- and y(n-2);
+			vton <= 
+				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickdirection(layout)=horizontal else
+				video_vton;
+
 			on_e : entity hdl4fpga.align
 			generic map (
 				n => 1,
@@ -396,8 +403,9 @@ begin
 				di(0) => vton,
 				do(0) => vt_on);
 
---			vt_bcd <= word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length);
-			vt_bcd <= word2byte(std_logic_vector(unsigned(tick)), not vcol, char_code'length);
+			vt_bcd <= 
+				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), cchar, char_code'length)  when vtaxis_tickdirection(layout)=horizontal else
+				word2byte(tick, setif(vtaxis_tickheading(layout)=down, not cchar, cchar), char_code'length);
 
 		end block;
 

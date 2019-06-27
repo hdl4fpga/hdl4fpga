@@ -10,10 +10,8 @@ entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		inputs        : natural;
-		vt_height     : natural;
-		font_size     : natural;
-		division_size : natural);
+		layout        : display_layout;
+		inputs        : natural);
 	port (
 		in_clk        : in  std_logic;
 
@@ -59,10 +57,14 @@ end;
 
 architecture def of scopeio_segment is
 
-	constant division_bits   : natural := unsigned_num_bits(division_size-1);
-	constant vttick_bits     : natural := unsigned_num_bits(8*font_size-1);
-	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
-	constant vt_bias         : natural := (division_size/2)*((vt_height/division_size) mod 2);
+	constant division_size : natural := grid_divisionsize(layout);
+	constant font_size     : natural := axis_fontsize(layout);
+	constant vt_height     : natural := grid_height(layout);
+
+	constant division_bits : natural := unsigned_num_bits(division_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
+	constant vt_bias       : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -133,11 +135,9 @@ begin
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency       => latency,
-		axis_unit     => std_logic_vector(to_unsigned(1,5)),
-		vt_height     => vt_height,
-		font_size     => font_size,
-		division_size => division_size)
+		latency     => latency,
+		axis_unit   => std_logic_vector(to_unsigned(1,5)),
+		layout      => layout)
 	port map (
 		clk         => in_clk,
 

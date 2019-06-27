@@ -681,9 +681,7 @@ begin
 					input_latency => input_latency,
 					latency       => segmment_latency+input_latency,
 					inputs        => inputs,
-					vt_height     => grid_height(layout),
-					font_size     => axis_fontsize(layout),
-					division_size => grid_divisionsize(layout))
+					layout        => layout)
 				port map (
 					in_clk        => si_clk,
 
