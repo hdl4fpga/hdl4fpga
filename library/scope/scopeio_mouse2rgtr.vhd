@@ -196,7 +196,7 @@ architecture def of scopeio_mouse2rgtr is
   end; -- function
   constant C_click_to_trigger: T_click_to_trigger := F_click_to_trigger
   (
-    grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top),
+    grid_y(layout) + grid_height(layout)/2 + layout.main_margin(top) + (layout.grid_height mod 2)*layout.division_size/2,
     C_segment_step, C_num_segments
   );
 -- example what would this function do for 3 segments:
