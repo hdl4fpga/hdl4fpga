@@ -31,33 +31,37 @@ use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
 
-	constant max_inputs : natural := 64;
+	constant max_inputs      : natural := 64;
+	constant axisy_backscale : natural := 0;
+	constant axisx_backscale : natural := 1;
 
 	type border        is (left, right, top, bottom);
+	type heading       is (up, down);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
-	type margin_vector is array (border) of natural;
+	type margin_vector is array (border)    of natural;
 
 	type style is record 
 		gap    : gap_vector;
 		margin : margin_vector;
 	end record;
 
-
 	type display_layout is record 
-		display_width   : natural;            -- Maximun display width
-		num_of_segments : natural;	          -- Number of segments to display
-		division_size   : natural;            -- Length in pixels
-		grid_width      : natural;            -- Width of the grid in divisions
-		grid_height     : natural;            -- Width of the grid in divisions
-		axis_fontsize   : natural;            -- Axis font size
-		hzaxis_height   : natural;            -- Height of the horizontal axis 
-		vtaxis_width    : natural;            -- Width of the vetical axis 
-		textbox_width   : natural;            -- Width of the text box
-		main_margin     : margin_vector;      -- Main Margin
-		main_gap        : gap_vector;         -- Main Padding
-		sgmnt_margin    : margin_vector;      -- Segment Margin
-		sgmnt_gap       : gap_vector;         -- Segment Padding
+		display_width    : natural;            -- Maximun display width
+		num_of_segments  : natural;	          -- Number of segments to display
+		division_size    : natural;            -- Length in pixels
+		grid_width       : natural;            -- Width of the grid in divisions
+		grid_height      : natural;            -- Width of the grid in divisions
+		axis_fontsize    : natural;            -- Axis font size
+		hzaxis_height    : natural;            -- Height of the horizontal axis 
+		vtaxis_width     : natural;            -- Width of the vetical axis 
+		vttick_direction : direction;          -- Vertical label direction
+		vttick_heading   : heading;            -- Vertical label heading
+		textbox_width    : natural;            -- Width of the text box
+		main_margin      : margin_vector;      -- Main Margin
+		main_gap         : gap_vector;         -- Main Padding
+		sgmnt_margin     : margin_vector;      -- Segment Margin
+		sgmnt_gap        : gap_vector;         -- Segment Padding
 	end record;
 
 	constant sd600  : natural := 0;
@@ -72,33 +76,37 @@ package scopeiopkg is
 
 	constant displaylayout_table : displaylayout_vector := (
 		sd600 => (            
-			display_width   =>  800,
-			num_of_segments =>    2,
-			division_size   =>   32,
-			grid_width      =>   15,
-			grid_height     =>    8,
-			axis_fontsize   =>    8,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  6*8,
-			textbox_width   => 33*8,
-			main_margin     => (left => 3, top => 23, others => 0),
-			main_gap        => (vertical => 16, others => 0),
-			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
-			sgmnt_gap       => (horizontal => 1, others => 0)),
+			display_width    =>  800,
+			num_of_segments  =>    2,
+			division_size    =>   32,
+			grid_width       =>   15,
+			grid_height      =>    8,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    8,
+			vtaxis_width     =>  1*8,
+			vttick_direction => vertical,
+			vttick_heading   => up,
+			textbox_width    => 33*8,
+			main_margin      => (left => 3, top => 23, others => 0),
+			main_gap         => (vertical => 16, others => 0),
+			sgmnt_margin     => (top => 2, bottom => 2, others => 1),
+			sgmnt_gap        => (horizontal => 1, others => 0)),
 		sd600x16 => (            
-			display_width   =>  800,
-			num_of_segments =>    1,
-			division_size   =>    8,
-			grid_width      =>    9,
-			grid_height     =>    7,
-			axis_fontsize   =>    4,
-			hzaxis_height   =>    4,
-			vtaxis_width    =>  6*4,
-			textbox_width   => 33*8,
-			main_margin     => (others => 0),
-			main_gap        => (others => 0),
-			sgmnt_margin    => (others => 0),
-			sgmnt_gap       => (others => 0)),
+			display_width    =>  800,
+			num_of_segments  =>    1,
+			division_size    =>    8,
+			grid_width       =>   11,
+			grid_height      =>    7,
+			axis_fontsize    =>    4,
+			hzaxis_height    =>    4,
+			vtaxis_width     =>  1*4,
+			vttick_direction => vertical,
+			vttick_heading   => down,
+			textbox_width    => 33*8,
+			main_margin      => (others => 0),
+			main_gap         => (others => 0),
+			sgmnt_margin     => (others => 0),
+			sgmnt_gap        => (others => 0)),
 		sd600x16fs => (
 			display_width   =>  800,
 			num_of_segments =>    4,
@@ -108,6 +116,8 @@ package scopeiopkg is
 			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  6*8,
+			vttick_direction => vertical,
+			vttick_heading   => down,
 			textbox_width   =>  1*8,
 			main_margin     => (others => 0),
 			main_gap        => (others => 0),
@@ -122,53 +132,61 @@ package scopeiopkg is
 			axis_fontsize   =>    4,
 			hzaxis_height   =>    4,
 			vtaxis_width    =>  6*4,
+			vttick_direction => vertical,
+			vttick_heading   => down,
 			textbox_width   =>    1, -- no textbox
 			main_margin     => (others => 0),
 			main_gap        => (others => 0),
 			sgmnt_margin    => (others => 0),
 			sgmnt_gap       => (others => 0)),
 		hd720 => (
-			display_width   => 1280,
-			num_of_segments =>    3,
-			division_size   =>   32,
-			grid_width      =>   30,
-			grid_height     =>    8,
-			axis_fontsize   =>    8,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  6*8,
-			textbox_width   => 33*8,
-			main_margin     => (others => 0),
-			main_gap        => (others => 0),
-			sgmnt_margin    => (others => 0),
-			sgmnt_gap       => (others => 0)),
+			display_width    => 1280,
+			num_of_segments  =>    3,
+			division_size    =>   32,
+			grid_width       =>   30,
+			grid_height      =>    8,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    8,
+			vtaxis_width     =>  6*8,
+			vttick_direction => horizontal,
+			vttick_heading   => up,
+			textbox_width    => 33*8,
+			main_margin      => (others => 0),
+			main_gap         => (others => 0),
+			sgmnt_margin     => (others => 0),
+			sgmnt_gap        => (others => 0)),
 		vesa1280x1024 => (
-			display_width   => 1280,
-			num_of_segments =>    4,
-			division_size   =>   32,
-			grid_width      =>   30,
-			grid_height     =>    8,
-			axis_fontsize   =>    8,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  6*8,
-			textbox_width   => 33*8,
-			main_margin     => (others => 0),
-			main_gap        => (others => 0),
-			sgmnt_margin    => (others => 0),
-			sgmnt_gap       => (others => 0)),
+			display_width    => 1280,
+			num_of_segments  =>    4,
+			division_size    =>   32,
+			grid_width       =>   30,
+			grid_height      =>    8,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    8,
+			vtaxis_width     =>  6*8,
+			vttick_direction => horizontal,
+			vttick_heading   => up,
+			textbox_width    => 33*8,
+			main_margin      => (others => 0),
+			main_gap         => (others => 0),
+			sgmnt_margin     => (others => 0),
+			sgmnt_gap        => (others => 0)),
 		hd1080 => (
-			display_width   => 1920,
-			num_of_segments =>    4,
-			division_size   =>   32,
-			grid_width      =>   50,
-			grid_height     =>    8,
-			axis_fontsize   =>    8,
-			hzaxis_height   =>    8,
-			vtaxis_width    =>  6*8,
-			textbox_width   => 33*8,
-			main_margin     => (top => 5, left => 1, others => 0),
-			main_gap        => (others => 1),
-			sgmnt_margin    => (others => 1),
-			sgmnt_gap       => (horizontal => 1, others => 0)));
+			display_width    => 1920,
+			num_of_segments  =>    4,
+			division_size    =>   32,
+			grid_width       =>   50,
+			grid_height      =>    8,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    8,
+			vtaxis_width     =>  6*8,
+			vttick_direction => horizontal,
+			vttick_heading   => up,
+			textbox_width    => 33*8,
+			main_margin      => (top => 5, left => 1, others => 0),
+			main_gap         => (others => 1),
+			sgmnt_margin     => (others => 1),
+			sgmnt_gap        => (horizontal => 1, others => 0)));
 
 	type mode_layout is record
 		mode_id   : natural;
@@ -203,6 +221,8 @@ package scopeiopkg is
 	function vtaxis_x          (constant layout : display_layout) return natural;
 	function vtaxis_width      (constant layout : display_layout) return natural;
 	function vtaxis_height     (constant layout : display_layout) return natural;
+	function vtaxis_tickdirection (constant layout : display_layout) return direction;
+	function vtaxis_tickheading   (constant layout : display_layout) return heading;
 
 	function grid_x            (constant layout : display_layout) return natural;
 	function grid_y            (constant layout : display_layout) return natural;
@@ -421,6 +441,20 @@ package body scopeiopkg is
 		return natural is
 	begin
 		return grid_height(layout);
+	end;
+
+	function vtaxis_tickdirection (
+		constant layout : display_layout)
+		return direction is
+	begin
+		return layout.vttick_direction;
+	end;
+
+	function vtaxis_tickheading (
+		constant layout : display_layout)
+		return heading is
+	begin
+		return layout.vttick_heading;
 	end;
 
 	function textbox_x (

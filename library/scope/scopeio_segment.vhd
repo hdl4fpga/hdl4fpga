@@ -1,20 +1,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use std.textio.all;
-use ieee.std_logic_textio.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		inputs        : natural;
-		vt_height     : natural;
-		axis_fontsize : natural;
-		division_size : natural);
+		layout        : display_layout;
+		inputs        : natural);
 	port (
 		in_clk        : in  std_logic;
 
@@ -60,11 +57,15 @@ end;
 
 architecture def of scopeio_segment is
 
-	constant discard_latency : natural := 1;
-	constant vtheight_bits   : natural := unsigned_num_bits((vt_height-1)-1);
-	constant division_bits   : natural := unsigned_num_bits(division_size-1);
-	constant axisy_backscale : natural := 0;
-	constant vt_bias         : natural := (division_size/2)*((vt_height/division_size) mod 2);
+	constant division_size : natural := grid_divisionsize(layout);
+	constant font_size     : natural := axis_fontsize(layout);
+	constant vt_height     : natural := grid_height(layout);
+
+	constant division_bits : natural := unsigned_num_bits(division_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
+	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
+	constant vt_bias       : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
 	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
@@ -72,7 +73,7 @@ architecture def of scopeio_segment is
 	signal axis_dv      : std_logic := '0';
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(division_bits+axisy_backscale))-1 downto 0);
+	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
 	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
 	signal y_offset     : std_logic_vector(y'range);
@@ -129,17 +130,15 @@ begin
 	process (axis_sel, hz_base, vt_offset)
 		variable vt_base : std_logic_vector(vt_offset'range);
 	begin
-		vt_base   := std_logic_vector(shift_right(signed(vt_offset), division_bits+axisy_backscale));
+		vt_base   := std_logic_vector(shift_right(signed(vt_offset), vtstep_bits+axisy_backscale));
 		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
 	end process;
 
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
-		latency       => latency,
-		axis_unit     => std_logic_vector(to_unsigned(25,5)),
-		vt_height     => vt_height,
-		font_size     => axis_fontsize,
-		division_size => division_size)
+		latency     => latency,
+		axis_unit   => std_logic_vector(to_unsigned(25,5)),
+		layout      => layout)
 	port map (
 		clk         => in_clk,
 
@@ -166,7 +165,7 @@ begin
 		video_hzon  => hz_on,
 		video_hzdot => hz_dot,
 
-		vt_offset   => vt_offset(division_bits+axisy_backscale -1 downto 0),
+		vt_offset   => vt_offset(vtstep_bits+axisy_backscale-1 downto 0),
 		video_vton  => vt_on,
 		video_vtdot => vt_dot);
 
