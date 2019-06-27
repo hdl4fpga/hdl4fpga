@@ -435,13 +435,13 @@ begin
 		signal wr_ena    : std_logic;
 		signal wr_addr   : std_logic_vector(storage_addr'range);
 		signal wr_cntr   : unsigned(0 to wr_addr'length); -- has one bit more than wr_addr
-		-- use "C_trigger_storage_position" to adjust position 
-		-- of triggering point in the storage buffer.
-		-- by default it is set at center of the storage buffer
+		-- "C_samples_after_trigger" sets position
+		-- of the triggering point in the storage buffer.
+		-- By default it is set at center of the storage buffer
 		-- > 2**(wr_addr'length-1) : record more data after trigger
-		-- = 2**(wr_addr'length-1) : record same amount of data before and after trigger
+		-- = 2**(wr_addr'length-1) : record same amount of data before and after trigger (default)
 		-- < 2**(wr_addr'length-1) : record more data before trigger
-		constant C_trigger_storage_position : unsigned(0 to wr_addr'length-1) := to_unsigned(2**(wr_addr'length-1), wr_addr'length);
+		constant C_samples_after_trigger : unsigned(0 to wr_addr'length-1) := to_unsigned(2**(wr_addr'length-1), wr_addr'length);
 		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
 		signal rd_clk    : std_logic;
 		signal rd_addr   : std_logic_vector(wr_addr'range);
@@ -482,8 +482,8 @@ begin
 		begin
 			if rising_edge(wr_clk) then
 				if wr_cntr(0) = '0' then -- storage is recording data to memory
-					if wr_cntr(1 to wr_cntr'high) = C_trigger_storage_position then
-						-- stop countdown, wait for rising edge of "trigger_shot" signal
+					if wr_cntr(1 to wr_cntr'high) = C_samples_after_trigger then
+						-- stop countdown, wait for "trigger_shot" signal
 						if trigger_shot = '1' then
 							capture_addr <= wr_addr; -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
