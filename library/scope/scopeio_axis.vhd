@@ -333,7 +333,9 @@ begin
 			signal vcol   : std_logic_vector(vttick_bits-1 downto font_bits);
 			signal vton   : std_logic;
 
-			signal cchar   : std_logic_vector(vcol'range);
+			signal rot_vcol   : std_logic_vector(vcol'range);
+			signal rot_crow   : std_logic_vector(vt_crow'range);
+			signal rot_ccol   : std_logic_vector(vt_ccol'range);
 
 		begin 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
@@ -364,15 +366,24 @@ begin
 				end if;
 			end process;
 
-			vcol <= setif(vtaxis_tickdirection(layout)=vertical, vaddr(vcol'range), video_hcntr(vcol'range));
+			rot_vcol <= 
+				video_hcntr(vcol'range) when vtaxis_tickdirection(layout)=horizontal else
+				vaddr(vcol'range) when vtaxis_tickheading(layout)=up else
+				not vaddr(vcol'range);
+
 			col_e : entity hdl4fpga.align
 			generic map (
 				n => vcol'length,
 				d => (vcol'range => 2))
 			port map (
 				clk => video_clk,
-				di  => vcol,
-				do  => cchar);
+				di  => rot_vcol,
+				do  => vcol);
+
+			rot_crow <= 
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickdirection(layout)=horizontal else
+				not video_hcntr(vt_ccol'range) when vtaxis_tickheading(layout)=up else
+				video_hcntr(vt_ccol'range);
 
 			crow_e : entity hdl4fpga.align
 			generic map (
@@ -380,8 +391,13 @@ begin
 				d => (vt_crow'range => 2))
 			port map (
 				clk => video_clk,
-				di  => std_logic_vector(y(vt_crow'range)),
+				di  => rot_crow, --std_logic_vector(y(vt_crow'range)),
 				do  => vt_crow);
+
+			rot_ccol <= 
+				video_hcntr(vt_ccol'range) when vtaxis_tickdirection(layout)=horizontal else
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickheading(layout)=up else
+				not std_logic_vector(y(vt_crow'range));
 
 			ccol_e : entity hdl4fpga.align
 			generic map (
@@ -389,7 +405,7 @@ begin
 				d => (hz_ccol'range => 2))
 			port map (
 				clk => video_clk,
-				di  => video_hcntr(vt_ccol'range),
+				di  => rot_ccol, --video_hcntr(vt_ccol'range),
 				do  => vt_ccol);
 
 			vton <= 
@@ -406,8 +422,8 @@ begin
 				do(0) => vt_on);
 
 			vt_bcd <= 
-				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), cchar, char_code'length) when vtaxis_tickdirection(layout)=horizontal else
-				word2byte(tick, setif(vtaxis_tickheading(layout)=down, not cchar, cchar), char_code'length);
+				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickdirection(layout)=horizontal else
+				word2byte(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
 
 		end block;
 
