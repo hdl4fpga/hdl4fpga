@@ -76,25 +76,33 @@ architecture def of scopeio_segment is
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
 	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
-	signal y_offset     : std_logic_vector(y'range);
 
 begin
 
-	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
+	process (in_clk)
+		variable offset : std_logic_vector(vt_offset'range);
+	begin
+		if rising_edge(in_clk) then
+			vt_offset <= std_logic_vector(unsigned(offset) - vt_bias);
+			offset    := word2byte(vt_offsets, vt_chanid, vt_offset'length);
+		end if;
+	end process;
+
 	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
 
-	y_offset <= std_logic_vector(unsigned(y) - vt_bias);
 	grid_b : block
 		constant offset_latency : natural := 1;
 
-		signal x_grid : std_logic_vector(x'range);
+		signal y_grid   : std_logic_vector(y'range);
+		signal x_grid   : std_logic_vector(x'range);
 		signal grid_ena : std_logic;
 	begin
 
 		offset_p : process (video_clk)
 		begin
 			if rising_edge(video_clk) then
-				x_grid <= std_logic_vector(unsigned(x) + unsigned(hz_offset(division_bits-1 downto 0)));
+				y_grid   <= std_logic_vector(unsigned(y) - vt_bias);
+				x_grid   <= std_logic_vector(unsigned(x) + unsigned(hz_offset(division_bits-1 downto 0)));
 				grid_ena <= grid_on;
 			end if;
 		end process;
@@ -107,7 +115,7 @@ begin
 			clk  => video_clk,
 			ena  => grid_ena,
 			x    => x_grid,
-			y    => y_offset,
+			y    => y_grid,
 			dot  => grid_dot);
 	end block;
 
@@ -159,7 +167,7 @@ begin
 
 		video_clk   => video_clk,
 		video_hcntr => x,
-		video_vcntr => y_offset,
+		video_vcntr => y,
 
 		hz_offset   => hz_offset,
 		video_hzon  => hz_on,
