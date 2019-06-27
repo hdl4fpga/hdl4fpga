@@ -78,6 +78,7 @@ architecture def of scopeio_axis is
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
 
 	function scale_1245 (
 		constant val   : std_logic_vector;
@@ -128,7 +129,7 @@ architecture def of scopeio_axis is
 		return rval;
 	end;
 
-	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vttick_bits);
+	signal vt_taddr    : std_logic_vector(vtheight_bits-1 downto vtstep_bits); --vttick_bits);
 	signal hz_taddr    : std_logic_vector(13-1 downto hztick_bits);
 
 begin
@@ -181,7 +182,8 @@ begin
 			aux  := resize(mul(signed(neg(axis_base, axis_sel)), unsigned(axis_unit)), aux'length);
 			if axis_sel='1' then
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
-				aux := aux + mul(to_signed((vt_height/2)/2**vttick_bits,4), unsigned(axis_unit));
+				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,4), unsigned(axis_unit));
+--				aux := aux + mul(to_signed((vt_height/2)/vttick_bits,4), unsigned(axis_unit));
 			else
 				aux  := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
@@ -191,7 +193,7 @@ begin
 
 		last <= 
 			x"7e" when axis_sel='0' else 
-			std_logic_vector(to_unsigned(2**vtheight_bits/2**vttick_bits-1,last'length)); 
+			std_logic_vector(to_unsigned(2**vtheight_bits/2**vtstep_bits-1,last'length)); 
 
 		updn <= axis_sel;
 		step <= std_logic_vector(resize(unsigned(axis_unit), base'length));
@@ -362,7 +364,7 @@ begin
 				end if;
 			end process;
 
-			vcol <= setif(vtaxis_tickdirection(layout)=vertical, vaddr(vcol'range), video_vcntr(vcol'range));
+			vcol <= setif(vtaxis_tickdirection(layout)=vertical, vaddr(vcol'range), video_hcntr(vcol'range));
 			col_e : entity hdl4fpga.align
 			generic map (
 				n => vcol'length,
@@ -404,7 +406,7 @@ begin
 				do(0) => vt_on);
 
 			vt_bcd <= 
-				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), cchar, char_code'length)  when vtaxis_tickdirection(layout)=horizontal else
+				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), cchar, char_code'length) when vtaxis_tickdirection(layout)=horizontal else
 				word2byte(tick, setif(vtaxis_tickheading(layout)=down, not cchar, cchar), char_code'length);
 
 		end block;
