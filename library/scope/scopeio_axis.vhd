@@ -336,6 +336,7 @@ begin
 			signal rot_ccol   : std_logic_vector(vt_ccol'range);
 
 		begin 
+
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(vt_offset);
 			vtvaddr_p : process (video_clk)
 			begin
