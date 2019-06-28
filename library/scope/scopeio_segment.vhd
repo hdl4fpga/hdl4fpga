@@ -88,7 +88,7 @@ begin
 	begin
 
 		offset_p : process (video_clk)
-			constant bias : natural := (vt_height mod division_size)/2;
+			constant bias : natural := (vt_height/2) mod division_size;
 		begin
 			if rising_edge(video_clk) then
 				y_grid   <= std_logic_vector(unsigned(y) + bias);
@@ -132,7 +132,7 @@ begin
 			constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
 		begin
 			if rising_edge(in_clk) then
-				v_offset <= std_logic_vector(unsigned(vt_offset) + bias);
+				v_offset <= std_logic_vector(unsigned(vt_offset) - bias);
 			end if;
 		end process;
 
