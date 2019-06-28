@@ -76,21 +76,19 @@ package scopeiopkg is
 
 	constant displaylayout_table : displaylayout_vector := (
 		sd600 => (            
-			display_width    =>  800,
-			num_of_segments  =>    2,
-			division_size    =>   32,
-			grid_width       =>   15,
-			grid_height      =>    8,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    8,
-			vtaxis_width     =>  1*8,
-			vttick_direction => vertical,
-			vttick_heading   => up,
-			textbox_width    => 33*8,
-			main_margin      => (left => 3, top => 23, others => 0),
-			main_gap         => (vertical => 16, others => 0),
-			sgmnt_margin     => (top => 2, bottom => 2, others => 1),
-			sgmnt_gap        => (horizontal => 1, others => 0)),
+			display_width   =>  800,
+			num_of_segments =>    2,
+			division_size   =>   32,
+			grid_width      =>   15,
+			grid_height     =>    8,
+			axis_fontsize   =>    8,
+			hzaxis_height   =>    8,
+			vtaxis_width    =>  6*8,
+			textbox_width   => 33*8,
+			main_margin     => (left => 3, top => 23, others => 0),
+			main_gap        => (vertical => 16, others => 0),
+			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
+			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
 			display_width    =>  800,
 			num_of_segments  =>    1,
@@ -355,16 +353,19 @@ package body scopeiopkg is
 
 		n := 0;
 		retval(n*(pos(gap)+1)) := margin_start;
-		retval(pos(margin_start)+n*(pos(gap)+1)) := retval(n*(pos(gap+1))) + sides(n);
---		for i in 0 to sides'length-2 loop
-		while n < sides'length-1 loop
---			if sides(n+1)/=0 then
+		retval(pos(margin_start)+n*(pos(gap)+1)) := retval(n*(pos(gap+1))) + sides(0);
+		for i in 0 to sides'length-2 loop
+			if sides(i)/=0 then
 				retval(pos(margin_start)+n*(pos(gap)+1)+1) := retval(pos(margin_start)+n*(pos(gap)+1)) + gap;
 				n := n + 1;
-				retval(pos(margin_start)+n*(pos(gap)+1))   := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(n);
---			end if;
+			end if;
+			retval(pos(margin_start)+n*(pos(gap)+1)) := retval(pos(margin_start)+(n-1)*(pos(gap)+1)+1) + sides(i+1);
 		end loop;
-		retval(pos(margin_start)+pos(margin_end)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + margin_end;
+		if sides(sides'right)/=0 then
+			retval(pos(margin_start)+pos(margin_end)+n*(pos(gap)+1)) := retval(pos(margin_start)+n*(pos(gap)+1)) + margin_end;
+		else
+			n := n - 1;
+		end if;
 
 		return retval(0 to n+n*pos(gap)+pos(margin_start)+pos(margin_end));
 	end;
@@ -580,13 +581,41 @@ package body scopeiopkg is
 		constant y_div  : std_logic_vector;
 		constant layout : display_layout)
 		return std_logic is
-		variable retval : std_logic;
+		constant x_sides  : natural_vector := (
+			vtaxis_boxid => vtaxis_width(layout),
+			grid_boxid   => grid_width(layout),
+			text_boxid   => textbox_width(layout),
+			hzaxis_boxid => grid_width(layout));
+
+		constant y_sides  : natural_vector := (
+			vtaxis_boxid => vtaxis_height(layout),
+			grid_boxid   => grid_height(layout),
+			text_boxid   => textbox_height(layout),
+			hzaxis_boxid => hzaxis_height(layout));
+
+		variable retval   : std_logic;
 		variable x_margin : natural;
 		variable y_margin : natural;
-		variable x_gap   : natural;
-		variable y_gap   : natural;
+		variable x_gap    : natural;
+		variable y_gap    : natural;
+
+		function lookup (
+			constant id    : natural;
+			constant sides : natural_vector)
+			return natural is
+			variable div   : natural;
+		begin
+			div := 0;
+			for i in 0 to id-1  loop
+				if sides(i) /= 0 then
+					div := div + 1;
+				end if;
+			end loop;
+			return div;
+		end;
 	begin
 
+		retval   := '0';
 		x_margin := pos(layout.sgmnt_margin(left));
 		y_margin := pos(layout.sgmnt_margin(top));
 		x_gap    := pos(layout.sgmnt_gap(horizontal));
@@ -594,9 +623,13 @@ package body scopeiopkg is
 
 		case box_id is
 		when vtaxis_boxid | grid_boxid | text_boxid =>                 
-			retval := setif(unsigned(y_div)=0*(y_gap+1)+y_margin and unsigned(x_div)=box_id*(x_gap+1)+x_margin);
-		when hzaxis_boxid   =>               
-			retval := setif(unsigned(y_div)=1*(y_gap+1)+y_margin and unsigned(x_div)=grid_boxid*(x_gap+1)+x_margin);
+			if x_sides(box_id)/=0 then
+				retval := setif(unsigned(y_div)=(0*(y_gap+1)+y_margin) and unsigned(x_div)=(lookup(box_id, x_sides)*(x_gap+1)+x_margin));
+			end if;
+		when hzaxis_boxid =>               
+			if y_sides(hzaxis_boxid)/=0 then
+				retval := setif(unsigned(y_div)=(1*(y_gap+1)+y_margin) and unsigned(x_div)=(lookup(grid_boxid, x_sides)*(x_gap+1)+x_margin));
+			end if;
 		when others =>
 			retval := '0';
 		end case;
