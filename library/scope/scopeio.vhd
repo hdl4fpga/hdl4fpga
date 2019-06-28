@@ -428,13 +428,21 @@ begin
 	-- optionally, N stable frames can be configured until next re-armong
 
 	-- TODO: external trigger, external re-arm
+	
+	-- flicker reduction:
+	-- at re-arming trigger, calculate initialization of wr_cntr
+	-- this could be done by constantly monitor trigger in real time (counting samples)
+	-- and calculating initialization wr_cntr constant or
+	-- or monitoring change of capture_addr and adjusting initialization constant by +-1
 
 	storage_1shot_trig_b : block
+
+		constant C_trigger_deflicker : boolean := true; -- predicitve deflickering calculation
 
 		signal wr_clk    : std_logic;
 		signal wr_ena    : std_logic;
 		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : unsigned(0 to wr_addr'length); -- has one bit more than wr_addr
+		signal wr_cntr   : unsigned(0 to wr_addr'length+2); -- has 3 bits more than wr_addr to adjust re-arming
 		-- "C_samples_after_trigger" sets position
 		-- of the triggering point in the storage buffer.
 		-- By default it is set at center of the storage buffer
@@ -451,6 +459,8 @@ begin
 		signal prev_sync_videofrm : std_logic;
 		constant C_auto_trigger_wait: natural := 0; -- 2**n video frames frozen until auto re-arming trigger
 		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
+		signal rearm_wr_cntr: unsigned(wr_cntr'range) :=  to_unsigned(2**(wr_addr'length)-1, wr_cntr'length); -- default value for re-arming
+		signal prev_trigger_shot: std_logic;
 
 	begin
 		-- for BRAM memory
@@ -460,10 +470,12 @@ begin
 		rd_clk  <= video_clk;
 
 		-- storage records data during wr_cntr(0)='0'
+		-- but increments address constantly for easier
+		-- realtime prediction of deflickering
 		process(wr_clk)
 		begin
 			if rising_edge(wr_clk) then
-				if downsample_ena = '1' and wr_cntr(0) = '0' then
+				if downsample_ena = '1' then
 					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
 				end if;
 			end if;
@@ -475,8 +487,31 @@ begin
 				sync_tf <= trigger_freeze;
 				prev_sync_videofrm <= sync_videofrm;
 				sync_videofrm <= video_vton;
+				prev_trigger_shot <= trigger_shot;
 			end if;
 		end process;
+		
+		-- constanty monitor rising edge of "the trigger_shot" and capture wr_addr 
+		-- to predict value of "rearm_wr_cntr" in order to minimize flickering
+		-- by overwriting nerly the same values to the same locations in storage buffer.
+		-- This method works well for repetitive signals like squarewaves, sinewaves, etc.
+		G_yes_trigger_deflicker: if C_trigger_deflicker generate
+		process(wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				if prev_trigger_shot = '0' and trigger_shot = '1' then -- if rising edge of "trigger_shot"
+					-- calculate value for countdown after re-arming
+					-- must be more or equal than buffer length
+					-- 2*buffer_length+samples_before_trigger-wr_addr
+					-- this is the same as
+					-- 3*buffer_length-samples_after_trigger-wr_addr
+					rearm_wr_cntr <= to_unsigned(2**(wr_addr'length+1)+2**(wr_addr'length), wr_cntr'length) - C_samples_after_trigger - resize(unsigned(wr_addr), wr_cntr'length);
+				end if;
+				-- TODO: if too many frames pass without trigger,
+				-- revert do default rearm_wr_cntr value
+			end if;
+		end process;
+		end generate;
 
 		process(wr_clk)
 		begin
@@ -485,6 +520,10 @@ begin
 					if wr_cntr(1 to wr_cntr'high) = C_samples_after_trigger then
 						-- stop countdown, wait for "trigger_shot" signal
 						if trigger_shot = '1' then
+							-- to reduce flicker of the trace displayed,
+						        -- re-arming of the trigger should be
+						        -- precisely timed, prediced in advance to
+						        -- minimize changing of "capture_addr" here
 							capture_addr <= wr_addr; -- mark triggering point in the buffer
 							wr_cntr <= wr_cntr - 1; -- continue countdown
 						end if;
@@ -497,7 +536,8 @@ begin
 					-- freezing display after the trigger
 					videofrm_without_trigger <= (others => '0');
 				else -- wr_cntr(0)='1' storage is not recording data
-					-- count video frames without trigger
+					-- count configurable number of video frames
+					-- before re-arming the trigger
 					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
 						if videofrm_without_trigger(0) = '0' then
 							videofrm_without_trigger <= videofrm_without_trigger + 1;
@@ -506,13 +546,12 @@ begin
 					-- in auto trig mode, wait a frame or more
 					-- for user to view temporary frozen display and then re-arm
 					if sync_tf = '0' and videofrm_without_trigger(0) = '1' then -- if not frozen and enough frames have passed
-						-- re-arm, initialize counter for full buffer length countdown
-						--wr_cntr <= to_unsigned(2**(wr_addr'length)-1, wr_cntr'length);
-						wr_cntr <= (0 => '0', others => '1'); -- same as above
+						-- re-arm, initialize counter for at least full buffer length countdown
+						-- or more as required for deflickering
+						wr_cntr <= rearm_wr_cntr;
 					end if; -- re-arming
-				end if; -- storage is not recording
+				end if; -- storage is (not) recording
 			end if; -- rising_edge
-
 		end process;
 
 --		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
