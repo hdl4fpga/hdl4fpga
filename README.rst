@@ -84,3 +84,9 @@ kit board, ScopeIO is easy to port to other manufactures' devices and kit
 boards. You can find a porting to Latticesemi ECP3Versa at
 ecp3versa/diamond/ecp3versa.ldf, kit to which I have access.
 
+TODO
+~~~~
+
+| [x] Add DDR core to capture high speed data.
+| |x] Add data output stream.
+| [x] Add Axis within grid as an option.

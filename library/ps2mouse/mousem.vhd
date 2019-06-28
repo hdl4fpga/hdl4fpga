@@ -34,6 +34,7 @@ entity mousem is
     c_x_bits: integer range 8 to 11 := 8;
     c_y_bits: integer range 8 to 11 := 8;
     c_z_bits: integer range 4 to 11 := 4;
+    c_hotplug: integer range 0 to 1 := 1; -- 1:mouse hotplug detection 0:no mouse hotplug (save LUTs)
     c_z_ena:  integer range 0 to  1 := 1  -- 1:yes wheel, 0:not wheel
   );
   port
@@ -59,6 +60,8 @@ architecture syn of mousem is
   signal r_btn, btn_next : std_logic_vector(2 downto 0);
   signal sent, sent_next : std_logic_vector(2 downto 0);
   constant c_rx_bits : integer := 31 + 11*c_z_ena;
+  constant c_rx_hotplug_pad : std_logic_vector(c_rx_bits-21 downto 0) := (others => '1');
+  constant c_rx_hotplug : std_logic_vector(c_rx_bits-1 downto 0) := "00000000011101010100" & c_rx_hotplug_pad;
   signal rx, rx_next : std_logic_vector(c_rx_bits-1 downto 0);
   signal tx, tx_next : std_logic_vector(9 downto 0);
   signal rx7, rx8 : std_logic_vector(7 downto 0);
@@ -67,6 +70,7 @@ architecture syn of mousem is
   signal req : std_logic;
   signal shift, endbit, endcount, done, run : std_logic;
   signal cmd : std_logic_vector(8 downto 0);  --including odd tx parity bit
+  signal r_ps2m_reset: std_logic;
 begin
   -- 322222222221111111111 (scroll mouse z and rx parity p ignored)
   -- 0987654321098765432109876543210   X, Y = overflow
@@ -85,6 +89,36 @@ begin
   shift <= '1' when req = '0' and filter = "100000" else '0'; -- low for 200nS @25MHz
   endbit <= (not rx(0)) when run = '1' else (not rx(rx'high-20));
   done <= endbit and endcount and not req;
+
+  G_yes_hotplug: if c_hotplug = 1 generate
+  -- after hot-plug, mouse sends AA 00
+  -- when scoped it looks like: "0010101011100000000011"
+  -- rx stores it in reverse    "1100000000011101010100"
+  -- mouse will be reinitialized when this bit
+  -- combination appears in rx: "00000000011101010100" & "1..1"
+  -- trailing 1's match initialized (empty) rx.
+  -- unwanted reset is unlikely during normal mouse operation.
+  process(clk)
+  begin
+    if rising_edge(clk) then
+      if run = '1' then -- normal run after initialization
+        if r_ps2m_reset = '0' then
+          if rx(rx'high downto rx'length-c_rx_hotplug'length) = c_rx_hotplug then
+            r_ps2m_reset <= '1'; -- self-reset when mouse is hot-plugged
+          else
+            r_ps2m_reset <= ps2m_reset; -- reset by external
+          end if;
+        end if;
+      else -- run = '0' prevent reset during initialization sequence
+        r_ps2m_reset <= '0';
+      end if; -- if run
+    end if;
+  end process;
+  end generate;
+
+  G_not_hotplug: if not (c_hotplug = 1) generate
+  r_ps2m_reset <= ps2m_reset;
+  end generate;
 
   rx7 <= x"00" when rx(7) = '1' else rx(19 downto 12);
   G_yes_pad_x: if C_x_bits > 8 generate
@@ -123,15 +157,15 @@ begin
   ps2m_clk <= '0' when req = '1' else 'Z'; -- bidir clk/request
   ps2m_dat <= '0' when tx(0) = '0' else 'Z'; -- bidir data
 
-  count_next <= (others => '0') when (ps2m_reset or shift or endcount) = '1' else count + 1;
-  sent_next <= (others => '0') when ps2m_reset = '1' 
+  count_next <= (others => '0') when (r_ps2m_reset or shift or endcount) = '1' else count + 1;
+  sent_next <= (others => '0') when r_ps2m_reset = '1'
         else sent + 1 when (done and not run) = '1'
         else sent;
-  tx_next <= (others => '1') when (ps2m_reset or run) = '1' 
+  tx_next <= (others => '1') when (r_ps2m_reset or run) = '1'
         else cmd & "0" when req = '1'
         else "1" & tx(tx'high downto 1) when shift = '1'
         else tx;
-  rx_next <= (others => '1') when (ps2m_reset or done) = '1'
+  rx_next <= (others => '1') when (r_ps2m_reset or done) = '1'
         else ps2m_dat & rx(rx'high downto 1) when (shift and not endbit) = '1'
         else rx;
   x_next <= (others => '0') when run = '0'
@@ -149,24 +183,24 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
-    if clk_ena = '1' then
-      filter <= filter(filter'high-1 downto 0) & ps2m_clk;
-      count <= count_next;
-      req <= (not ps2m_reset) and (not run) and (req xor endcount);
-      sent <= sent_next;
-      tx <= tx_next;
-      rx <= rx_next;
-      r_x <= x_next;
-      r_y <= y_next;
-      r_z <= z_next;
-      r_btn <= btn_next;
-      r_dx <= s_dx;
-      r_dy <= s_dy;
-      r_dz <= s_dz;
-      update <= done;
+      if clk_ena = '1' then
+        filter <= filter(filter'high-1 downto 0) & ps2m_clk;
+        count <= count_next;
+        req <= (not r_ps2m_reset) and (not run) and (req xor endcount);
+        sent <= sent_next;
+        tx <= tx_next;
+        rx <= rx_next;
+        r_x <= x_next;
+        r_y <= y_next;
+        r_z <= z_next;
+        r_btn <= btn_next;
+        r_dx <= s_dx;
+        r_dy <= s_dy;
+        r_dz <= s_dz;
+        update <= done;
       else -- clk_ena = '0'
-      update <= '0';
-    end if; -- clk_ena
+        update <= '0';
+      end if; -- clk_ena
     end if; -- rising_edge
   end process;  
   x <= r_x;
