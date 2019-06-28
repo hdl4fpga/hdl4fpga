@@ -65,31 +65,20 @@ architecture def of scopeio_segment is
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
-	constant vt_bias       : natural := (division_size/2)*((vt_height/division_size) mod 2);
 
-	signal vt_offset    : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
+	signal vt_offset : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 
 	signal axis_dv      : std_logic := '0';
 	signal axis_sel     : std_logic;
 	signal axis_scale   : std_logic_vector(4-1 downto 0);
 	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
-	signal axis_voffset : std_logic_vector(0 to vt_offsets'length-1);
 
 
 begin
 
-	process (in_clk)
-		variable offset : std_logic_vector(vt_offset'range);
-	begin
-		if rising_edge(in_clk) then
-			vt_offset <= std_logic_vector(unsigned(offset) - vt_bias);
-			offset    := word2byte(vt_offsets, vt_chanid, vt_offset'length);
-		end if;
-	end process;
-
-	vt_scale  <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
-
+	vt_scale <= word2byte(gain_ids,   vt_chanid, vt_scale'length);
+	vt_offset <= word2byte(vt_offsets, vt_chanid, vt_offset'length);
 	grid_b : block
 		constant offset_latency : natural := 1;
 
@@ -99,9 +88,10 @@ begin
 	begin
 
 		offset_p : process (video_clk)
+			constant bias : natural := (vt_height/2) mod division_size;
 		begin
 			if rising_edge(video_clk) then
-				y_grid   <= std_logic_vector(unsigned(y) - vt_bias);
+				y_grid   <= std_logic_vector(unsigned(y) + bias);
 				x_grid   <= std_logic_vector(unsigned(x) + unsigned(hz_offset(division_bits-1 downto 0)));
 				grid_ena <= grid_on;
 			end if;
@@ -119,70 +109,90 @@ begin
 			dot  => grid_dot);
 	end block;
 
-	process (in_clk)
+	axis_b : block
+		signal v_offset : std_logic_vector(vt_offset'range);
 	begin
-		if rising_edge(in_clk) then
-			if vt_dv='1' or gain_dv='1' then
-				axis_sel <= '1';
-				axis_dv  <= '1';
-			elsif hz_dv='1' then
-				axis_sel <= '0';
-				axis_dv  <= '1';
-			else
-				axis_dv  <= '0';
+		process (in_clk)
+		begin
+			if rising_edge(in_clk) then
+				if vt_dv='1' or gain_dv='1' then
+					axis_sel <= '1';
+					axis_dv  <= '1';
+				elsif hz_dv='1' then
+					axis_sel <= '0';
+					axis_dv  <= '1';
+				else
+					axis_dv  <= '0';
+				end if;
 			end if;
-		end if;
-	end process;
-	axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
+		end process;
+		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-	process (axis_sel, hz_base, vt_offset)
-		variable vt_base : std_logic_vector(vt_offset'range);
-	begin
-		vt_base   := std_logic_vector(shift_right(signed(vt_offset), vtstep_bits+axisy_backscale));
-		axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
-	end process;
+		bias_p : process (in_clk)
+			constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
+		begin
+			if rising_edge(in_clk) then
+				v_offset <= std_logic_vector(unsigned(vt_offset) - bias);
+			end if;
+		end process;
 
-	axis_e : entity hdl4fpga.scopeio_axis
-	generic map (
-		latency     => latency,
-		axis_unit   => std_logic_vector(to_unsigned(25,5)),
-		layout      => layout)
-	port map (
-		clk         => in_clk,
+		process (axis_sel, hz_base, v_offset)
+			variable vt_base : std_logic_vector(v_offset'range);
+		begin
+			vt_base   := std_logic_vector(shift_right(signed(v_offset), vtstep_bits+axisy_backscale));
+			axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
+		end process;
 
-		axis_dv     => axis_dv,
-		axis_sel    => axis_sel,
-		axis_base   => axis_base,
-		axis_scale  => axis_scale,
+		axis_e : entity hdl4fpga.scopeio_axis
+		generic map (
+			latency     => latency,
+			axis_unit   => std_logic_vector(to_unsigned(25,5)),
+			layout      => layout)
+		port map (
+			clk         => in_clk,
 
-		wu_frm      => wu_frm,
-		wu_irdy     => wu_irdy,
-		wu_trdy     => wu_trdy,
-		wu_unit     => wu_unit,
-		wu_neg      => wu_neg,
-		wu_sign     => wu_sign,
-		wu_value    => wu_value,
-		wu_align    => wu_align,
-		wu_format   => wu_format,
+			axis_dv     => axis_dv,
+			axis_sel    => axis_sel,
+			axis_base   => axis_base,
+			axis_scale  => axis_scale,
 
-		video_clk   => video_clk,
-		video_hcntr => x,
-		video_vcntr => y,
+			wu_frm      => wu_frm,
+			wu_irdy     => wu_irdy,
+			wu_trdy     => wu_trdy,
+			wu_unit     => wu_unit,
+			wu_neg      => wu_neg,
+			wu_sign     => wu_sign,
+			wu_value    => wu_value,
+			wu_align    => wu_align,
+			wu_format   => wu_format,
 
-		hz_offset   => hz_offset,
-		video_hzon  => hz_on,
-		video_hzdot => hz_dot,
+			video_clk   => video_clk,
+			video_hcntr => x,
+			video_vcntr => y,
 
-		vt_offset   => vt_offset(vtstep_bits+axisy_backscale-1 downto 0),
-		video_vton  => vt_on,
-		video_vtdot => vt_dot);
+			hz_offset   => hz_offset,
+			video_hzon  => hz_on,
+			video_hzdot => hz_dot,
+
+			vt_offset   => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
+			video_vton  => vt_on,
+			video_vtdot => vt_dot);
+	end block;
 
 	trigger_b : block 
+		signal offset : unsigned(vt_offsets'length/inputs-1 downto 0);
 		signal row  : unsigned(trigger_level'range);
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
-		row <= resize(unsigned(trigger_level)+(vt_height-1)/2-unsigned(vt_offset), row'length);
+		process (in_clk)
+		begin
+			if rising_edge(in_clk) then
+				offset <= vt_height/2-unsigned(word2byte(vt_offsets, vt_chanid, offset'length));
+			end if;
+		end process;
+
+		row <= resize(unsigned(trigger_level)+offset, row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
@@ -232,7 +242,7 @@ begin
 				for i in 0 to inputs-1 loop
 					samples1(sample'range) := samples1(sample'range) - offsets(sample'range);
 					samples1 := samples1 ror sample'length;
-					offsets  := offsets  ror vt_offset'length;
+					offsets  := offsets  ror (vt_offsets'length/inputs);
 				end loop;
 				samples2 <= std_logic_vector(samples1);
 			end if;
