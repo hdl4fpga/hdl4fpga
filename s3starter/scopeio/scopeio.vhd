@@ -68,6 +68,7 @@ architecture beh of s3starter is
 	signal uart_rxd   : std_logic_vector(8-1 downto 0);
 	signal vga_rgb    : std_logic_vector(3-1 downto 0);
 
+	signal clk_mouse  : std_logic;
 	signal istreamdaisy_frm  : std_logic;
 	signal istreamdaisy_irdy : std_logic;
 	signal istreamdaisy_data : std_logic_vector(8-1 downto 0);
@@ -84,6 +85,7 @@ architecture beh of s3starter is
 
 	signal display    : std_logic_vector(0 to 16-1);
 	signal vga_blank  : std_logic;
+	signal vga_lck    : std_logic;
 
 	type display_param is record
 		layout : natural;
@@ -119,7 +121,8 @@ begin
 	port map(
 		dcm_rst => button(0),
 		dcm_clk => sys_clk,
-		dfs_clk => vga_clk);
+		dfs_clk => vga_clk,
+		dcm_lck => vga_lck);
 
 	process (sys_clk)
 	begin
@@ -178,9 +181,60 @@ begin
 
 		chaini_data => uart_rxd,
 
-		chaino_frm  => si_frm, 
-		chaino_irdy => si_irdy,
-		chaino_data => si_data);
+		chaino_frm  => istreamdaisy_frm,  
+		chaino_irdy => istreamdaisy_irdy,
+		chaino_data => istreamdaisy_data);
+
+	ps2mouse_b : block
+		-- From EMARD's ULX3S code
+		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
+			--b"111100";
+			  b"111";
+			--b"111100_001111_001100_110000_111111";
+			--  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
+			--  trace0 trace1 trace2 trace3 trace4
+			--  yellow cyan   green  red    white
+
+		signal rst          : std_logic;
+		signal clk_mouse    : std_logic;
+		signal clkmouse_ena : std_logic;
+	begin
+
+		rst <= not vga_lck;
+		clk_mouse <= sys_clk;
+		process (sys_clk)
+		begin
+			if rising_edge(sys_clk) then
+				clkmouse_ena <= not clkmouse_ena;
+			end if;
+		end process;
+	
+		ps2mouse2daisy_e: entity hdl4fpga.scopeio_ps2mouse2daisy
+		generic map(
+			C_inputs    => inputs,
+			C_tracesfg  => C_tracesfg_gui,
+			vlayout_id  => video_params(video_mode).layout
+		)
+		port map (
+			clk         => clk_mouse,
+			clk_ena     => clkmouse_ena,
+			ps2m_reset  => rst,
+			ps2m_clk    => ps2_clk,
+			ps2m_dat    => ps2_data,
+			-- daisy input
+			chaini_frm  => istreamdaisy_frm,
+			chaini_irdy => istreamdaisy_irdy,
+			chaini_data => istreamdaisy_data,
+			-- daisy output
+			chaino_frm  => mousedaisy_frm,
+			chaino_irdy => mousedaisy_irdy,
+			chaino_data => mousedaisy_data
+		);
+
+		si_frm  <= mousedaisy_frm;
+		si_irdy <= mousedaisy_irdy;
+		si_data <= mousedaisy_data;
+	end block;
 
 	si_clk  <= sys_clk;
 	scopeio_e : entity hdl4fpga.scopeio
