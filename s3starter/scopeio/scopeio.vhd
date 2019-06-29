@@ -185,15 +185,9 @@ begin
 		chaino_irdy => istreamdaisy_irdy,
 		chaino_data => istreamdaisy_data);
 
+	-- From EMARD's ULX3S code
 	ps2mouse_b : block
-		-- From EMARD's ULX3S code
-		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) :=
-			--b"111100";
-			  b"111";
-			--b"111100_001111_001100_110000_111111";
-			--  RRGGBB RRGGBB RRGGBB RRGGBB RRGGBB
-			--  trace0 trace1 trace2 trace3 trace4
-			--  yellow cyan   green  red    white
+		constant C_tracesfg_gui: std_logic_vector(0 to inputs*vga_rgb'length-1) := b"111"; --  RGB
 
 		signal rst          : std_logic;
 		signal clk_mouse    : std_logic;
