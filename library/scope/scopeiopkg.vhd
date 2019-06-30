@@ -49,7 +49,7 @@ package scopeiopkg is
 
 	type display_layout is record 
 		display_width    : natural;            -- Maximun display width
-		num_of_segments  : natural;	          -- Number of segments to display
+		num_of_segments  : natural;	           -- Number of segments to display
 		division_size    : natural;            -- Length in pixels
 		grid_width       : natural;            -- Width of the grid in divisions
 		grid_height      : natural;            -- Width of the grid in divisions

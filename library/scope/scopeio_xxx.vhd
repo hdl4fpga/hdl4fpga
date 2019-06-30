@@ -123,52 +123,49 @@ architecture beh of scopeio is
 	signal downsample_ena     : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
-	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
-	signal storage_addr : std_logic_vector(0 to storage_size-1);
-	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
+	constant capture_size     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+	signal capture_addr       : std_logic_vector(0 to capture_size-1);
 
-	signal capture_addr   : std_logic_vector(storage_addr'range);
-	signal scrolled_capture_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_shot   : std_logic;
+	signal trigger_shot       : std_logic;
 
-	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
-	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
+	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
+	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal hz_segment     : std_logic_vector(13-1 downto 0);
-	signal hz_offset      : std_logic_vector(hz_segment'range);
-	signal hz_scale       : std_logic_vector(4-1 downto 0);
-	signal hz_dv          : std_logic;
-	signal vt_dv          : std_logic;
-	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
-	signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
+	signal hz_segment         : std_logic_vector(13-1 downto 0);
+	signal hz_offset          : std_logic_vector(hz_segment'range);
+	signal hz_scale           : std_logic_vector(4-1 downto 0);
+	signal hz_dv              : std_logic;
+	signal vt_dv              : std_logic;
+	signal vt_offsets         : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_chanid          : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
-	signal palette_color  : std_logic_vector(max_pixelsize-1 downto 0);
+	signal palette_dv         : std_logic;
+	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_color      : std_logic_vector(max_pixelsize-1 downto 0);
 
-	signal gain_dv        : std_logic;
-	signal gain_ids       : std_logic_vector(0 to inputs*gainid_size-1);
+	signal gain_dv            : std_logic;
+	signal gain_ids           : std_logic_vector(0 to inputs*gainid_size-1);
 
-	signal trigger_dv     : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_size-1 downto 0);
-	signal trigger_edge   : std_logic;
-	signal trigger_freeze : std_logic;
-	signal trigger_level  : std_logic_vector(storage_word'range);
+	signal trigger_dv         : std_logic;
+	signal trigger_chanid     : std_logic_vector(chanid_size-1 downto 0);
+	signal trigger_edge       : std_logic;
+	signal trigger_freeze     : std_logic;
+	signal trigger_level      : std_logic_vector(storage_word'range);
 
-	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(video_hzcntr'range);
-	signal pointer_y      : std_logic_vector(video_vtcntr'range);
+	signal pointer_dv         : std_logic;
+	signal pointer_x          : std_logic_vector(video_hzcntr'range);
+	signal pointer_y          : std_logic_vector(video_vtcntr'range);
 
-	signal wu_frm         : std_logic;
-	signal wu_irdy        : std_logic;
-	signal wu_trdy        : std_logic;
-	signal wu_unit        : std_logic_vector(4-1 downto 0);
-	signal wu_neg         : std_logic;
-	signal wu_sign        : std_logic;
-	signal wu_align       : std_logic;
-	signal wu_value       : std_logic_vector(4*4-1 downto 0);
-	signal wu_format      : std_logic_vector(8*4-1 downto 0);
+	signal wu_frm             : std_logic;
+	signal wu_irdy            : std_logic;
+	signal wu_trdy            : std_logic;
+	signal wu_unit            : std_logic_vector(4-1 downto 0);
+	signal wu_neg             : std_logic;
+	signal wu_sign            : std_logic;
+	signal wu_align           : std_logic;
+	signal wu_value           : std_logic_vector(4*4-1 downto 0);
+	signal wu_format          : std_logic_vector(8*4-1 downto 0);
 
 begin
 
@@ -294,17 +291,16 @@ begin
 
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
-			 )
-	-- allows horizontal scrolling of the waveform
-	storage_horizontal_scroll_b: block
-	begin
-		process(input_clk)
-		begin
-			if rising_edge(input_clk) then
-				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr));
-			end if;
-		end process;
-	end block;
+		input_clk     => input_clk,
+		input_trigger => trigger_shot,
+		input_ena     => downsample_ena,
+		input_data    => input_data,
+		input_delay   => hz_offset,
+
+		capture_clk   => video_clk,
+		capture_addr  => capture_addr,
+		capture_data  => capture_data,
+		capture_vld   => open);
 
 	video_b : block
 
@@ -376,15 +372,16 @@ begin
 
 		graphics_b : block
 
-			signal mainbox_xdiv     : std_logic_vector(0 to 2-1);
-			signal mainbox_ydiv     : std_logic_vector(0 to 4-1);
-			signal mainbox_xedge    : std_logic;
-			signal mainbox_yedge    : std_logic;
-			signal mainbox_nexty    : std_logic;
-			signal mainbox_eox      : std_logic;
-			signal mainbox_xon      : std_logic;
-			signal mainbox_yon      : std_logic;
+			signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
+			signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
+			signal mainbox_xedge : std_logic;
+			signal mainbox_yedge : std_logic;
+			signal mainbox_nexty : std_logic;
+			signal mainbox_eox   : std_logic;
+			signal mainbox_xon   : std_logic;
+			signal mainbox_yon   : std_logic;
 
+			signal sgmnt_decode  : std_logic_vector(0 to layout.num_of_segments-1);
 		begin
 
 			mainlayout_e : entity hdl4fpga.videobox_layout
@@ -406,15 +403,15 @@ begin
 				box_nexty  => mainbox_nexty,
 				box_ydiv   => mainbox_ydiv);
 
-			process (video_clk)
+			sgmnt_decode_p: process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					sgmntbox_on  <= '0';
-					storage_bsel <= (others => '0');
+					sgmntbox_on   <= '0';
+					sgmnt_decode <= (others => '0');
 					for i in 0 to layout.num_of_segments-1 loop
 						if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
 							sgmntbox_on     <= mainbox_xon;
-							storage_bsel(i) <= '1';
+							sgmnt_decode(i) <= '1';
 						end if;
 					end loop;
 				end if;
@@ -569,20 +566,20 @@ begin
 					end process;
 				end block;
 
-				storage_addr_p : process (video_clk)
-					variable base : unsigned(0 to storage_addr'length-1);
+				capture_addr_p : process (video_clk)
+					variable base : unsigned(0 to capture_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
 						base := (others => '0');
 						for i in 0 to layout.num_of_segments-1 loop
-							if storage_bsel(i)='1' then
+							if sgmnt_decode(i)='1' then
 								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
 							end if;
 						end loop;
-                                            
-						storage_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), storage_addr'length) + unsigned(scrolled_capture_addr));
+											   
+						capture_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), capture_addr'length));
 						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
-                                                           
+															  
 					end if;
 				end process;
 
@@ -624,7 +621,7 @@ begin
 					vt_on         => vt_on,
 					grid_on       => grid_on,
 
-					samples       => storage_data,
+					samples       => capture_data,
 					trigger_level => trigger_level,
 					grid_dot      => grid_dot,
 					hz_dot        => hz_dot,

@@ -34,16 +34,13 @@ entity scopeio_capture is
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic := '1';
 		input_trigger : in  std_logic;
-		free_running  : in  std_logic;
-		capture_addr  : out std_logic_vector;
-		capture_data  : in  std_logic_vector;
-		capture_delay : in  std_logic_vector;
+		input_data    : in  std_logic_vector;
+		input_delay   : in  std_logic_vector;
 
-		video_clk     : in  std_logic;
-		video_addr    : in  std_logic_vector;
-		video_data    : out std_logic_vector;
-		video_sync    : in  std_logic;
-		video_vld     : out std_logic);
+		capture_clk     : in  std_logic;
+		capture_addr    : in  std_logic_vector;
+		capture_data    : out std_logic_vector;
+		capture_vld     : out std_logic);
 
 end;
 
@@ -52,15 +49,17 @@ architecture beh of scopeio_capture is
 	constant delay_bits   : natural := unsigned_num_bits(max_delay-1);
 	constant counter_bits : natural := unsigned_num_bits(max_delay+2**capture_addr'length-1);
 
-	signal counter   : signed(0 to counter_bits);
+	signal trigger_addr : unsigned(capture_addr'range);
+	signal rd_addr      : unsigned(capture_addr'range);
+	signal wr_addr      : unsigned(capture_addr'range);
+	signal wr_ena       : std_logic;
+	signal null_data    : std_logic_vector(input_data'range);
 
-	signal wr_ena    : std_logic;
-	signal wr_addr   : std_logic_vector(capture_addr'range);
-	signal null_data : std_logic_vector(capture_data'range);
+	signal counter      : signed(0 to counter_bits-1);
 
 begin
 
-	gen_addr_p : process (input_clk)
+	addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 
@@ -68,34 +67,32 @@ begin
 				if input_ena='1' then
 					counter <= counter + 1;
 				end if;
-			elsif video_sync='0' and input_trigger='1' then
-				capture_addr <= std_logic_vector(signed(capture_delay) + signed(wr_addr));
-				counter      <= resize(signed(capture_delay), counter'length)+(2**counter_bits-2**capture_addr'length);
-			end if;
-			if counter(1 to counter_bits-capture_addr'length)=(1 to counter_bits-capture_addr'length => '1') then
-				video_vld <= '1';
+			elsif input_trigger='1' then
+				trigger_addr <= unsigned(input_delay) + wr_addr;
+				counter      <= resize(signed(input_delay), counter'length)+(2**counter_bits-2**capture_addr'length);
 			end if;
 			if input_ena='1' then
-				wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
+				wr_addr <= wr_addr + 1;
 			end if;
 
 		end if;
 
 	end process;
 
-	wr_ena <= (not counter(0) or free_running) and input_ena;
+	rd_addr <= unsigned(capture_addr) + trigger_addr;
+	wr_ena  <= (not counter(0) or input_trigger) and input_ena;
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
 		clka  => input_clk,
-		addra => wr_addr,
+		addra => std_logic_vector(wr_addr),
 		wea   => wr_ena,
-		dia   => capture_data,
+		dia   => input_data,
 		doa   => null_data,
 
-		clkb  => video_clk,
-		addrb => video_addr,
+		clkb  => capture_clk,
+		addrb => std_logic_vector(rd_addr),
 		dib   => null_data,
-		dob   => video_data);
+		dob   => capture_data);
 
-	video_vld <= setif(counter(1 to counter_bits-capture_addr'length)=(1 to counter_bits-capture_addr'length => '1'));
+	capture_vld <= setif(counter(0 to counter_bits-capture_addr'length)=(0 to counter_bits-capture_addr'length => '1'));
 end;
