@@ -562,7 +562,10 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
+			sides        => (
+				vtaxis_boxid => vtaxis_width(layout), 
+				grid_boxid   => grid_width(layout), 
+				text_boxid   => textbox_width(layout)),
 			margin_start => layout.sgmnt_margin(left),
 			margin_end   => layout.sgmnt_margin(right),
 			gap          => layout.sgmnt_gap(horizontal)));
@@ -574,7 +577,9 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (grid_height(layout), hzaxis_height(layout)),
+			sides        => (
+				0 => grid_height(layout),
+				1 => hzaxis_height(layout)),
 			margin_start => layout.sgmnt_margin(top),
 			margin_end   => layout.sgmnt_margin(bottom),
 			gap          => layout.sgmnt_gap(vertical)));
