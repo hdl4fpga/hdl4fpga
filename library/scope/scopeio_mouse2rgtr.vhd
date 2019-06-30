@@ -348,6 +348,10 @@ begin
     constant C_vertical_scale_offset: signed(vtoffset_bf(vtoffset_id)-1 downto 0) := (others => '0');
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(C_vertical_scale_offset'range);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
+    signal S_vertical_scale_offset: signed(vtoffset_bf(vtoffset_id)-1 downto 0);
+    signal S_vertical_scale_offset_snapped: signed(vtoffset_bf(vtoffset_id)-1 downto 0);
+    signal R_snap_to_vertical_grid: std_logic;
+    constant C_snap_to_grid_bits: integer := unsigned_num_bits(layout.division_size)-1;
     signal R_after_trace_select: unsigned(7 downto 0);
     signal C_vertical_scale_gain: signed(gainid_maxsize-1 downto 0) := (others => '0');
     type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
@@ -409,8 +413,15 @@ begin
       return V_bitfield_range;
     end; -- function
   begin
+    -- arithmetic helper for click to set vertical trigger
+    S_vertical_scale_offset <= R_vertical_scale_offset(to_integer(R_trace_selected));
+    S_vertical_scale_offset_snapped(C_vertical_scale_offset'high downto C_snap_to_grid_bits) <=
+      S_vertical_scale_offset(C_vertical_scale_offset'high downto C_snap_to_grid_bits);
+    S_vertical_scale_offset_snapped(C_snap_to_grid_bits-1 downto 0) <= (others => '0')
+      when R_snap_to_vertical_grid = '1'
+      else S_vertical_scale_offset(C_snap_to_grid_bits-1 downto 0);
     G_single_segment: if C_num_segments = 1 generate
-      R_trigger_on_screen <= resize(C_click_to_trigger(0) - R_vertical_scale_offset(to_integer(R_trace_selected)), C_XY_coordinate_bits);
+      R_trigger_on_screen <= resize(C_click_to_trigger(0) - S_vertical_scale_offset_snapped, C_XY_coordinate_bits);
     end generate;
     -- a screen arithmetic required to set trigger with the left click
     -- depending on the segment where the cursor is we have different y offsets
@@ -423,7 +434,7 @@ begin
           -- HACK: bitwise arithmetic to calculate segment number from box ID:
           -- C_max_boxes_bits is for the step of repeating segments
           C_click_to_trigger(to_integer(R_clicked_box_id(R_clicked_box_id'high downto C_max_boxes_bits)))
-          - R_vertical_scale_offset(to_integer(R_trace_selected)), -- current trigger setting
+          - S_vertical_scale_offset_snapped, -- current trigger setting
           C_XY_coordinate_bits); -- resize to required number of bits
       end if;
     end process;
@@ -440,6 +451,13 @@ begin
                     R_A(C_vertical_scale_offset'range) <= R_vertical_scale_offset(to_integer(R_trace_selected));
                     R_B(C_vertical_scale_offset'range) <= resize(R_mouse_dy, C_vertical_scale_offset'length);
                     R_action_id <= C_action_vertical_scale_offset_change;
+                    if R_mouse_btn(0) = '1' then
+                      R_snap_to_vertical_grid <= '0';
+                    else
+                      if R_mouse_btn(1) = '1' then
+                        R_snap_to_vertical_grid <= '1';
+                      end if;
+                    end if;
                   else
                     if R_mouse_btn(0) = '0' and R_prev_mouse_btn(0) = '1' then
                       -- after left click, directy set the trigger level
@@ -543,8 +561,16 @@ begin
                  downto F_bitfield(vtoffset_bf,vtchanid_id)(0)) <=
               std_logic_vector(R_trace_selected);
             R_rgtr_data(F_bitfield(vtoffset_bf,vtoffset_id)(1)
-                 downto F_bitfield(vtoffset_bf,vtoffset_id)(0)) <=
-              std_logic_vector(S_APB(C_vertical_scale_offset'range));
+                 downto F_bitfield(vtoffset_bf,vtoffset_id)(0) + C_snap_to_grid_bits) <=
+              std_logic_vector(S_APB(C_vertical_scale_offset'high downto C_snap_to_grid_bits));
+            if R_snap_to_vertical_grid = '1' then
+              R_rgtr_data(F_bitfield(vtoffset_bf,vtoffset_id)(0) + C_snap_to_grid_bits-1
+                   downto F_bitfield(vtoffset_bf,vtoffset_id)(0)) <= (others => '0'); -- yes snap
+            else
+              R_rgtr_data(F_bitfield(vtoffset_bf,vtoffset_id)(0) + C_snap_to_grid_bits-1
+                   downto F_bitfield(vtoffset_bf,vtoffset_id)(0)) <=
+                std_logic_vector(S_APB(C_snap_to_grid_bits-1  downto 0)); -- not snap
+            end if;
             R_vertical_scale_offset(to_integer(R_trace_selected)) <= S_APB(C_vertical_scale_offset'range);
           when C_action_vertical_scale_gain_change =>
             R_rgtr_dv <= '1';
