@@ -11,11 +11,10 @@ entity scopeio_downsampler is
 	port (
 		factor        : in  std_logic_vector;
 		input_clk     : in  std_logic;
-		input_ena     : in  std_logic;
+		scaler_ini    : in  std_logic;
+		input_dv      : in  std_logic;
 		input_data    : in  std_logic_vector;
-		trigger_shot  : in std_logic;
-		display_ena   : in  std_logic;
-		output_ena    : out std_logic;
+		output_dv     : out std_logic;
 		output_data   : out std_logic_vector);
 end;
 
@@ -34,7 +33,7 @@ architecture beh of scopeio_downsampler is
 	end;
 
 	constant adjusted_factors : integer_vector := adjust(factors);
-	signal scale_factor : signed(scaler'range);
+	signal scale_factor : signed(0 to scaler'length-1);
 
 begin
 
@@ -42,20 +41,18 @@ begin
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-			if display_ena='0' and trigger_shot='1' then
-				output_ena <= '1';
-				scaler     <= scale_factor;
-			else
-				if input_ena='1' then
-					if scaler(scaler'left)='1' then
-						scaler <= scale_factor;
-					else
-						scaler <= scaler - 1;
-					end if;
-					output_ena <= scaler(scaler'left);
+			if scaler_ini='0' then
+				scaler    <= scale_factor;
+				output_dv <= '1';
+			elsif input_dv='1' then
+				if scaler(scaler'left)='1' then
+					scaler <= scale_factor;
 				else
-					output_ena <= '0';
+					scaler <= scaler - 1;
 				end if;
+				output_dv <= scaler(0);
+			else
+				output_dv <= '0';
 			end if;
 		end if;
 	end process;
