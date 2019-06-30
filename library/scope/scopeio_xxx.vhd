@@ -291,95 +291,10 @@ begin
 		output_ena   => downsample_ena,
 		output_data  => downsample_data);
 
-	storage_b : block
 
-		signal wr_clk    : std_logic;
-		signal wr_ena    : std_logic;
-		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : signed(0 to wr_addr'length+1);
-		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
-		signal rd_clk    : std_logic;
-		signal rd_addr   : std_logic_vector(wr_addr'range);
-		signal rd_data   : std_logic_vector(wr_data'range);
-		signal free_shot : std_logic;
-		signal sync_tf   : std_logic;
-		signal trigger_addr : std_logic_vector(storage_addr'range);
-		signal hz_delay  : signed(hz_offset'length-1 downto 0);
-		signal sync_videofrm : std_logic;
-		signal prev_sync_videofrm : std_logic;
-
-	begin
-
-		wr_clk  <= input_clk;
-		wr_ena  <= (not wr_cntr(0) or free_shot) and not sync_tf;
-		wr_data <= downsample_data;
-
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				sync_tf <= trigger_freeze;
-				sync_videofrm <= video_vton;
-			end if;
-		end process;
-
-		hz_delay <= signed(hz_offset);
-		rd_clk   <= video_clk;
-		gen_addr_p : process (wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-
---              ----------------
---				-- CALIBRATON --
---              ----------------
---
---				wr_data <= ('0','0', '0', '0', others => '1');
---				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				end if;
---				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
-
-				free_shot <= '0';
-				if sync_videofrm='0' and trigger_shot='0' then
-					free_shot <= '1';
-				end if;
-
-				if sync_tf='1' or wr_cntr(0)='0' then
-					capture_addr <= std_logic_vector(signed(trigger_addr));
-					if downsample_ena='1' then
-						wr_cntr <= wr_cntr - 1;
-					end if;
-				elsif sync_videofrm='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
-					capture_addr <= std_logic_vector(signed(wr_addr));
-					wr_cntr      <= resize(hz_delay, wr_cntr'length) + (2**wr_addr'length-1);
-					trigger_addr <= wr_addr;
-				end if;
-				if downsample_ena='1' then
-					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-				end if;
-			end if;
-
-		end process;
-
---		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
-		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testingw for portabilty
-		port map (
-			clka  => wr_clk,
-			addra => wr_addr,
-			wea   => wr_ena,
-			dia   => wr_data,
-			doa   => rd_data,
-
-			clkb  => rd_clk,
-			addrb => storage_addr,
-			dib   => rd_data,
-			dob   => storage_data);
-
+	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	port map (
+			 )
 	-- allows horizontal scrolling of the waveform
 	storage_horizontal_scroll_b: block
 	begin
