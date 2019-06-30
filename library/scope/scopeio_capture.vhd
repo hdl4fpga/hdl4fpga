@@ -31,23 +31,23 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture is
 	port (
-		input_clk     : in  std_logic;
-		input_ena     : in  std_logic := '1';
-		input_trigger : in  std_logic;
-		input_data    : in  std_logic_vector;
-		input_delay   : in  std_logic_vector;
+		input_clk      : in  std_logic;
+		input_ena      : in  std_logic := '1';
+		input_trigger  : in  std_logic;
+		input_data     : in  std_logic_vector;
+		input_delay    : in  std_logic_vector;
+		input_captured : out std_logic;
 
-		capture_clk     : in  std_logic;
-		capture_addr    : in  std_logic_vector;
-		capture_data    : out std_logic_vector;
-		capture_vld     : out std_logic);
+		capture_clk    : in  std_logic;
+		capture_addr   : in  std_logic_vector;
+		capture_data   : out std_logic_vector;
+		capture_vld    : out std_logic);
 
 end;
 
 architecture beh of scopeio_capture is
 
-	constant delay_bits   : natural := unsigned_num_bits(max_delay-1);
-	constant counter_bits : natural := unsigned_num_bits(max_delay+2**capture_addr'length-1);
+	constant counter_bits : natural := unsigned_num_bits(input_delay'length-1);
 
 	signal trigger_addr : unsigned(capture_addr'range);
 	signal rd_addr      : unsigned(capture_addr'range);
@@ -59,28 +59,31 @@ architecture beh of scopeio_capture is
 
 begin
 
-	addr_p : process (input_clk)
+	capture_addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
-
-			if counter(0)='0' then
+			if input_trigger='1' then
+				trigger_addr <= unsigned(input_delay) + wr_addr;
+				counter      <= resize(signed(input_delay), counter'length)+(2**counter_bits-2**capture_addr'length);
+			elsif counter(0)='0' then
 				if input_ena='1' then
 					counter <= counter + 1;
 				end if;
-			elsif input_trigger='1' then
-				trigger_addr <= unsigned(input_delay) + wr_addr;
-				counter      <= resize(signed(input_delay), counter'length)+(2**counter_bits-2**capture_addr'length);
 			end if;
+		end if;
+	end process;
+
+	wr_addr_p : process (input_clk)
+	begin
+		if rising_edge(input_clk) then
 			if input_ena='1' then
 				wr_addr <= wr_addr + 1;
 			end if;
-
 		end if;
-
 	end process;
-
-	rd_addr <= unsigned(capture_addr) + trigger_addr;
 	wr_ena  <= (not counter(0) or input_trigger) and input_ena;
+	rd_addr <= unsigned(capture_addr) + trigger_addr;
+
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
 		clka  => input_clk,
@@ -94,5 +97,6 @@ begin
 		dib   => null_data,
 		dob   => capture_data);
 
-	capture_vld <= setif(counter(0 to counter_bits-capture_addr'length)=(0 to counter_bits-capture_addr'length => '1'));
+	input_captured <= counter(0);
+	capture_vld    <= setif(counter(0 to counter_bits-capture_addr'length)=(0 to counter_bits-capture_addr'length => '1'));
 end;

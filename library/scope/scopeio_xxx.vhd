@@ -117,23 +117,24 @@ architecture beh of scopeio is
 	signal triggersample_ena  : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
 
-
 	signal resizedsample_ena  : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal downsample_ena     : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
-	constant capture_size     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
-	signal capture_addr       : std_logic_vector(0 to capture_size-1);
+	constant capture_bits     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;
 
+	signal input_captured     : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal hz_segment         : std_logic_vector(13-1 downto 0);
-	signal hz_offset          : std_logic_vector(hz_segment'range);
+	signal hz_offset          : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_segment         : std_logic_vector(hz_offset'range);
+
 	signal hz_scale           : std_logic_vector(4-1 downto 0);
 	signal hz_dv              : std_logic;
 	signal vt_dv              : std_logic;
@@ -288,19 +289,23 @@ begin
 		output_ena   => downsample_ena,
 		output_data  => downsample_data);
 
+	triggers_mode_b : block
+	begin
+	end block;
 
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
-		input_clk     => input_clk,
-		input_trigger => trigger_shot,
-		input_ena     => downsample_ena,
-		input_data    => input_data,
-		input_delay   => hz_offset,
+		input_clk      => input_clk,
+		input_trigger  => trigger_shot,
+		input_ena      => downsample_ena,
+		input_data     => input_data,
+		input_delay    => hz_offset,
+		input_captured => input_captured,
 
-		capture_clk   => video_clk,
-		capture_addr  => capture_addr,
-		capture_data  => capture_data,
-		capture_vld   => open);
+		capture_clk    => video_clk,
+		capture_addr   => capture_addr,
+		capture_data   => capture_data,
+		capture_vld    => open);
 
 	video_b : block
 
