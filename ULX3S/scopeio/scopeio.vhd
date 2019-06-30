@@ -129,8 +129,6 @@ architecture beh of ulx3s is
 	signal S_adc_dv: std_logic;
 	signal S_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
 
-	signal R_test_counter: unsigned(15 downto 0); -- 64MHz -> 1kHz to ADC for buttons test
-	signal S_test_p, S_test_n: std_logic;
 
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
@@ -259,32 +257,45 @@ begin
 	-- press buttons to test ADC
 	-- for normal use disable this
 	G_btn_test: if C_buttons_test generate
-	  process(clk_adc)
+	  B_signal_gen: block
+            signal R_phase_accu: unsigned(31 downto 0); -- phase accumulator
+            signal R_freq: unsigned(31 downto 0) := x"00000043"; -- initial frequency (phase increment)
+            signal R_keyrepeat: unsigned(9 downto 0);
+	    signal S_generator_p, S_generator_n: std_logic; -- differential pair output
 	  begin
-	    if rising_edge(clk_adc) then
-	      -- reset counter a bit earlier so the period of
-	      -- test signal will not match with buffering period
-	      if R_test_counter(R_test_counter'high downto 4) = x"FFF" then
-	        R_test_counter <= (others => '0');
-	      else
-	        R_test_counter <= R_test_counter + 1;
+	    process(clk_adc)
+	    begin
+	      if rising_edge(clk_adc) then
+	        R_phase_accu <= R_phase_accu + R_freq;
+	        if R_keyrepeat(R_keyrepeat'high) = '0' then
+	          R_keyrepeat <= R_keyrepeat + 1;
+	        else
+	          R_keyrepeat <= (others => '0');
+	          if btn(1) = '1' and to_integer(R_freq) /= 0  then -- frequency down
+	            R_freq <= R_freq - 1;
+	            else
+                    if btn(2) = '1' then -- frequency up
+	              R_freq <= R_freq + 1;
+	            end if;
+	          end if;
+	        end if;
 	      end if;
-	    end if;
-	  end process;
-	  S_test_p <= R_test_counter(R_test_counter'high);
-	  S_test_n <= R_test_counter(R_test_counter'high) xor R_test_counter(R_test_counter'high-1);
-	  -- each pressed button will apply a logic level '1'
-	  -- to FPGA pin shared with ADC channel which should
-	  -- read something from 12'h000 to 12'hFFF with some
-	  -- conversion noise
-          gn(14) <= S_test_n when btn(3) = '1' else 'Z';
-          gp(14) <= S_test_p when btn(3) = '1' else 'Z';
-          gn(15) <= S_test_n when btn(4) = '1' else 'Z';
-          gp(15) <= S_test_p when btn(4) = '1' else 'Z';
-          gn(16) <= S_test_p when btn(5) = '1' else 'Z';
-          gp(16) <= S_test_n when btn(5) = '1' else 'Z';
-          gn(17) <= S_test_p when btn(6) = '1' else 'Z';
-          gp(17) <= S_test_n when btn(6) = '1' else 'Z';
+	    end process;
+	    S_generator_p <= R_phase_accu(R_phase_accu'high);
+	    S_generator_n <= R_phase_accu(R_phase_accu'high) xor R_phase_accu(R_phase_accu'high-1);
+	    -- each pressed button will apply a logic level '1'
+	    -- to FPGA pin shared with ADC channel which should
+	    -- read something from 12'h000 to 12'hFFF with some
+	    -- conversion noise
+            gn(14) <= S_generator_n when btn(3) = '1' else 'Z';
+            gp(14) <= S_generator_p when btn(3) = '1' else 'Z';
+            gn(15) <= S_generator_n when btn(4) = '1' else 'Z';
+            gp(15) <= S_generator_p when btn(4) = '1' else 'Z';
+            gn(16) <= S_generator_p when btn(5) = '1' else 'Z';
+            gp(16) <= S_generator_n when btn(5) = '1' else 'Z';
+            gn(17) <= S_generator_p when btn(6) = '1' else 'Z';
+            gp(17) <= S_generator_n when btn(6) = '1' else 'Z';
+          end block;
 	end generate;
 
 	process (clk)
