@@ -127,7 +127,6 @@ architecture beh of scopeio is
 
 	signal trigger_shot       : std_logic;
 
-	signal input_captured     : std_logic;
 	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
 	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
 	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
@@ -375,7 +374,7 @@ begin
 			di(2) => video_vld,
 			do    => video_io);
 
-		graphics_b : block
+		layout_b : block
 
 			signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
 			signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
