@@ -473,19 +473,12 @@ begin
 	begin
 		-- for BRAM memory
 		wr_clk  <= input_clk;
-		-- armed triggers needs to write storage only for
-		-- last 1 full buffer run and not need to be written before this
-		-- therefore we have extra bits contition and not only
-		-- wr_cntr(0) = '0' because less writing reduces flicker and
-		-- the buffer content will be overwritten anyway on last buffer run
+		-- armed trigger needs to write storage only for
+		-- last 1 full buffer run during wr_cntr(C_wr_cntr_extra_bits'range) = 0
 		wr_ena  <= '1' when downsample_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
 		wr_data <= downsample_data;
 		rd_clk  <= video_clk;
 
-		-- storage records data only during
-		-- wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits
-		-- but this increments address constantly
-		-- realtime prediction of deflickering
 		process(wr_clk)
 		begin
 			if rising_edge(wr_clk) then
@@ -547,12 +540,15 @@ begin
 				-- for signal that doesn't trigger
 			end if;
 		end process;
-		S_rearm_condition <= videofrm_without_trigger(0); -- rearm can happen independent of trigger edge
+		-- "rearm_wr_cntr" is constantly updated to a valid value
+		-- so trigger can be re-armed at any time
+		S_rearm_condition <= videofrm_without_trigger(0);
 		end generate; -- G_yes_trigger_deflicker
 
 		G_not_trigger_deflicker: if not C_trigger_deflicker generate
 		-- similar as abuve but a LUT saver, traces will shake a bit
 		rearm_wr_cntr <= unsigned(last_wr_addr);
+		-- "rearm_wr_cntr" is valid for use only at trigger edge.
 		S_rearm_condition <= videofrm_without_trigger(0) or S_trigger_edge;
 		end generate;
 
