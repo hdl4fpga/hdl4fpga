@@ -402,14 +402,14 @@ begin
     )
     return T_bitfield_range is
       variable V_bitfield_range: T_bitfield_range;
-      variable V_bit_position: integer := 0;
+      variable V_bit_position: natural := 0;
     begin
       if bitfield_id > 0 then
         for i in 0 to bitfield_id-1 loop
           V_bit_position := V_bit_position + bitfield_descriptor(i);
         end loop;
       end if;
-      V_bitfield_range := (bitfield_descriptor(bitfield_id)+V_bit_position-1, V_bit_position);
+      V_bitfield_range := (integer(bitfield_descriptor(bitfield_id)+V_bit_position-1), integer(V_bit_position));
       return V_bitfield_range;
     end; -- function
   begin
