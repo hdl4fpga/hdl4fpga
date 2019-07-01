@@ -9,7 +9,7 @@ entity scopeio_downsampler is
 	generic (
 		factors : natural_vector);
 	port (
-		factor        : in  std_logic_vector;
+		factor_id     : in  std_logic_vector;
 		input_clk     : in  std_logic;
 		scaler_sync   : in  std_logic;
 		input_dv      : in  std_logic;
@@ -31,24 +31,29 @@ architecture beh of scopeio_downsampler is
 		return retval;
 	end;
 
-	constant adjusted_factors : integer_vector := adjust(factors);
-	constant scaler_bits      : natural := signed_num_bits(max(factors)-2);
+	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
-	signal scale_factor : signed(0 to scaler_bits-1);
+	signal factor : std_logic_vector(0 to scaler_bits-1);
 
 begin
 
-	scale_factor <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scale_factor'length);
+	factorrom_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => to_bitrom(adjust(factors), scaler_bits))
+	port map (
+		addr => factor_id,
+		data => factor);
+
 	process (input_clk)
-		variable scaler : signed(scale_factor'range);
+		variable scaler : unsigned(factor'range);
 	begin
 		if rising_edge(input_clk) then
 			if scaler_sync='1' then
-				scaler    := scale_factor;
+				scaler    := (others => '1');
 				output_dv <= '1';
 			elsif input_dv='1' then
 				if scaler(0)='1' then
-					scaler := scale_factor;
+					scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
 				end if;

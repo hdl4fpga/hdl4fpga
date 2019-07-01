@@ -284,7 +284,7 @@ begin
 	generic map (
 		factors => hz_factors)
 	port map (
-		factor       => hz_scale,
+		factor_id    => hz_scale,
 		input_clk    => input_clk,
 		scaler_sync  => scaler_sync,
 		input_dv     => resizedsample_dv,
@@ -299,7 +299,7 @@ begin
 		capture_rdy   => capture_rdy,
 		input_ena     => downsample_dv,
 		input_data    => downsample_data,
-		input_delay   => b"00_0000_0000_0000", --hz_offset,
+		input_delay   => hz_offset,
 
 		captured_clk  => video_clk,
 		captured_addr => capture_addr,
@@ -421,7 +421,7 @@ begin
 				end if;
 			end process;
 
-			sgmntbox_b : block
+			mainbox_b : block
 
 				constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
 				constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
@@ -448,7 +448,7 @@ begin
 
 			begin
 
-				mainbox_b : block
+				videobox_b : block
 					signal xon   : std_logic;
 					signal yon   : std_logic;
 					signal eox   : std_logic;

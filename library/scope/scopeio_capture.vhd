@@ -53,15 +53,16 @@ architecture beh of scopeio_capture is
 	signal null_data    : std_logic_vector(input_data'range);
 
 	signal counter      : unsigned(0 to input_delay'length);
+	signal offset       : unsigned(0 to input_delay'length);
 
 begin
-
+ 
 	captured_addr_p : process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 			if capture_req='0' then
 				capture_addr <= resize(unsigned(input_delay) + wr_addr, capture_addr'length);
-				counter      <= resize(unsigned(input_delay), counter'length)+(2**input_delay'length-2**captured_addr'length);
+				counter      <= resize(unsigned(input_delay) + (2**input_delay'length-2**captured_addr'length), counter'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
 					counter <= counter + 1;
@@ -81,7 +82,7 @@ begin
 		end if;
 	end process;
 	wr_ena  <= (not counter(0) or not capture_req) and input_ena;
-	rd_addr <= unsigned(captured_addr); -- + capture_addr;
+	rd_addr <= unsigned(captured_addr) + capture_addr;
 
 	mem_e : entity hdl4fpga.bram(inference)
 	port map (
