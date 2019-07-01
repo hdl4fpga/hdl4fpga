@@ -203,6 +203,7 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16),
 		6 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
+		8 => (mode_id => pclk0_78m96x64Rat60,       layout_id => oled96x64),
 		7 => (mode_id => pclk38_25m800x600Cat60,    layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
