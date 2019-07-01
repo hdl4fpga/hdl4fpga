@@ -39,7 +39,7 @@ package scopeiopkg is
 	constant axisx_backscale : natural := 1;
 
 	type border        is (left, right, top, bottom);
-	type rotate        is (ccw0, ccw90, ccw180, ccw270);
+	type rotate        is (ccw0, ccw90, ccw270);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
 	type margin_vector is array (border)    of natural;
@@ -58,7 +58,7 @@ package scopeiopkg is
 		axis_fontsize    : natural;            -- Axis font size
 		hzaxis_height    : natural;            -- Height of the horizontal axis 
 		vtaxis_width     : natural;            -- Width of the vetical axis 
-		vttick_rotate    : rotate;            -- Vertical label rotate
+		vttick_rotate    : rotate;             -- Vertical label rotating
 		textbox_width    : natural;            -- Width of the text box
 		main_margin      : margin_vector;      -- Main Margin
 		main_gap         : gap_vector;         -- Main Padding
@@ -198,7 +198,7 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16),
 		6 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
-		7 => (mode_id => pclk0_78m96x64Rat60,    layout_id => oled96x64));
+		7 => (mode_id => pclk0_78m96x64Rat60,       layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
