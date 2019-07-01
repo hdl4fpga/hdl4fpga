@@ -11,6 +11,8 @@ VHDL_FILES = \
   ../common/hdl/oled/oled_hex_decoder.vhd \
   ../common/hdl/oled/oled_init_pack.vhd \
   ../common/hdl/oled/oled_font_pack.vhd \
+  ../common/hdl/oled/vga/oled_vga.vhd \
+  ../common/hdl/oled/vga/oled_vga_init_pack.vhd \
   ../common/hdl/adc/max1112x_reader.vhd \
   ../common/hdl/adc/max1112x_init_pack.vhd \
 

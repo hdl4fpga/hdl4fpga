@@ -22,8 +22,9 @@ architecture beh of ulx3s is
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 OLED
-        constant vlayout_id: integer := 6;
+	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
+	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
+        constant vlayout_id: integer := 8;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -34,7 +35,8 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled: boolean := true; -- true: use OLED, false: no oled - can save some LUTs
+        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -52,13 +54,13 @@ architecture beh of ulx3s is
 	signal vga_blank  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 6-1);
 
-	signal vga_hsync_test  : std_logic;
-	signal vga_vsync_test  : std_logic;
-	signal vga_blank_test  : std_logic;
-	signal vga_rgb_test: std_logic_vector(0 to 6-1);
-        signal dvid_crgb  : std_logic_vector(7 downto 0);
-        signal ddr_d      : std_logic_vector(3 downto 0);
-	constant sample_size : natural := 12;
+	signal vga_hsync_test : std_logic;
+	signal vga_vsync_test : std_logic;
+	signal vga_blank_test : std_logic;
+	signal vga_rgb_test   : std_logic_vector(0 to 6-1);
+        signal dvid_crgb      : std_logic_vector(7 downto 0);
+        signal ddr_d          : std_logic_vector(3 downto 0);
+	constant sample_size  : natural := 12;
 
 	signal clk_oled : std_logic := '0';
 	signal clk_ena_oled : std_logic := '1';
@@ -129,9 +131,6 @@ architecture beh of ulx3s is
 	signal S_adc_dv: std_logic;
 	signal S_adc_data: std_logic_vector(C_adc_channels*C_adc_bits-1 downto 0);
 
-	signal R_test_counter: unsigned(15 downto 0); -- 64MHz -> 1kHz to ADC for buttons test
-	signal S_test_p, S_test_n: std_logic;
-
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
 begin
@@ -149,10 +148,11 @@ begin
           clkout      =>  clk_pll
         );
         -- 800x600
+        G_vga_clk: if not C_oled_vga generate
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
-        clk <= clk_pll(3); -- 25 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
+        clk <= clk_pll(3); -- 25 MHz
         --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
         clk_adc <= clk_pll(1); -- 40/75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
         clk_uart <= clk_pll(1); -- 40/75 MHz same as vga_clk
@@ -160,6 +160,7 @@ begin
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
+        end generate;
 
         process(clk_mouse)
         begin
@@ -169,9 +170,9 @@ begin
         end process;
         clk_ena_oled <= clk_ena_mouse; -- same clock, same ena
 
-	process(vga_clk)
+	process(clk)
 	begin
-          if rising_edge(vga_clk) then
+          if rising_edge(clk) then
             if btn(0) = '0' then -- BTN0 = 0 when pressed
               if(reset_counter(reset_counter'high) = '0') then
                 reset_counter <= reset_counter + 1;
@@ -259,32 +260,45 @@ begin
 	-- press buttons to test ADC
 	-- for normal use disable this
 	G_btn_test: if C_buttons_test generate
-	  process(clk_adc)
+	  B_signal_gen: block
+            signal R_phase_accu: unsigned(31 downto 0); -- phase accumulator
+            signal R_freq: unsigned(31 downto 0) := x"00000043"; -- initial frequency (phase increment)
+            signal R_keyrepeat: unsigned(9 downto 0);
+	    signal S_generator_p, S_generator_n: std_logic; -- differential pair output
 	  begin
-	    if rising_edge(clk_adc) then
-	      -- reset counter a bit earlier so the period of
-	      -- test signal will not match with buffering period
-	      if R_test_counter(R_test_counter'high downto 4) = x"FFF" then
-	        R_test_counter <= (others => '0');
-	      else
-	        R_test_counter <= R_test_counter + 1;
+	    process(clk_adc)
+	    begin
+	      if rising_edge(clk_adc) then
+	        R_phase_accu <= R_phase_accu + R_freq;
+	        if R_keyrepeat(R_keyrepeat'high) = '0' then
+	          R_keyrepeat <= R_keyrepeat + 1;
+	        else
+	          R_keyrepeat <= (others => '0');
+	          if btn(1) = '1' and to_integer(R_freq) /= 0  then -- frequency down
+	            R_freq <= R_freq - 1;
+	            else
+                    if btn(2) = '1' then -- frequency up
+	              R_freq <= R_freq + 1;
+	            end if;
+	          end if;
+	        end if;
 	      end if;
-	    end if;
-	  end process;
-	  S_test_p <= R_test_counter(R_test_counter'high);
-	  S_test_n <= R_test_counter(R_test_counter'high) xor R_test_counter(R_test_counter'high-1);
-	  -- each pressed button will apply a logic level '1'
-	  -- to FPGA pin shared with ADC channel which should
-	  -- read something from 12'h000 to 12'hFFF with some
-	  -- conversion noise
-          gn(14) <= S_test_n when btn(3) = '1' else 'Z';
-          gp(14) <= S_test_p when btn(3) = '1' else 'Z';
-          gn(15) <= S_test_n when btn(4) = '1' else 'Z';
-          gp(15) <= S_test_p when btn(4) = '1' else 'Z';
-          gn(16) <= S_test_p when btn(5) = '1' else 'Z';
-          gp(16) <= S_test_n when btn(5) = '1' else 'Z';
-          gn(17) <= S_test_p when btn(6) = '1' else 'Z';
-          gp(17) <= S_test_n when btn(6) = '1' else 'Z';
+	    end process;
+	    S_generator_p <= R_phase_accu(R_phase_accu'high);
+	    S_generator_n <= R_phase_accu(R_phase_accu'high) xor R_phase_accu(R_phase_accu'high-1);
+	    -- each pressed button will apply a logic level '1'
+	    -- to FPGA pin shared with ADC channel which should
+	    -- read something from 12'h000 to 12'hFFF with some
+	    -- conversion noise
+            gn(14) <= S_generator_n when btn(3) = '1' else 'Z';
+            gp(14) <= S_generator_p when btn(3) = '1' else 'Z';
+            gn(15) <= S_generator_n when btn(4) = '1' else 'Z';
+            gp(15) <= S_generator_p when btn(4) = '1' else 'Z';
+            gn(16) <= S_generator_p when btn(5) = '1' else 'Z';
+            gp(16) <= S_generator_n when btn(5) = '1' else 'Z';
+            gn(17) <= S_generator_p when btn(6) = '1' else 'Z';
+            gp(17) <= S_generator_n when btn(6) = '1' else 'Z';
+          end block;
 	end generate;
 
 	process (clk)
@@ -414,7 +428,7 @@ begin
 		chaino_data => fromistreamdaisy_data
 	);
 
-	G_oled: if C_oled generate
+	G_oled: if C_oled_hex generate
 	-- OLED display for debugging
 	oled_e: entity work.oled_hex_decoder
 	generic map
@@ -519,14 +533,26 @@ begin
 --      C_bits_y => 11    
 
 --      -- 1920x1080 75 MHz pixel clock, doesn't work on lenovo, works on Samsung TV
-      C_resolution_x => 1920,
-      C_hsync_front_porch => 88,
-      C_hsync_pulse => 44,
-      C_hsync_back_porch => 133,
-      C_resolution_y => 1080,
-      C_vsync_front_porch => 4,
-      C_vsync_pulse => 5,
-      C_vsync_back_porch => 46,
+      --C_resolution_x => 1920,
+      --C_hsync_front_porch => 88,
+      --C_hsync_pulse => 44,
+      --C_hsync_back_porch => 133,
+      --C_resolution_y => 1080,
+      --C_vsync_front_porch => 4,
+      --C_vsync_pulse => 5,
+      --C_vsync_back_porch => 46,
+      --C_bits_x => 12,
+      --C_bits_y => 11,
+
+      -- OLED 96x64
+      C_resolution_x => 96,
+      C_hsync_front_porch => 1,
+      C_hsync_pulse => 1,
+      C_hsync_back_porch => 1,
+      C_resolution_y => 64,
+      C_vsync_front_porch => 1,
+      C_vsync_pulse => 1,
+      C_vsync_back_porch => 1,
       C_bits_x => 12,
       C_bits_y => 11    
     )
@@ -544,7 +570,8 @@ begin
       vga_vsync => vga_vsync_test,
       vga_blank => vga_blank_test
     );    
-    
+
+    G_dvi_vga: if not C_oled_vga generate
     vga2dvid: entity hdl4fpga.vga2dvid
     generic map
     (
@@ -572,4 +599,67 @@ begin
       gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
       gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
     end generate;
+    end generate; -- dvi vga (not oled vga)
+
+    G_oled_vga: if C_oled_vga generate
+    B_oled_vga: block
+      signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
+      signal clk_vga: std_logic;
+      signal R_downclk: unsigned(7 downto 0);
+    begin
+      clk_oled <= clk_pll(3); -- 25 MHz
+      clk <= clk_pll(3); -- 25 MHz
+      --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
+      clk_adc <= clk_pll(3); -- 25 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+      clk_uart <= clk_pll(3); -- 25 MHz same as vga_clk
+      clk_mouse <= clk_pll(3); -- 25 MHz same as vga_clk
+      -- LUT-generated very slow pixel clock for display core
+      -- I know it's not the proper way to do the clock.
+      -- but ECP5 PLLs don't and display core doesn't provide
+      -- clk_ena input. If this way it works, it's good enough for me.
+      process(clk_oled) -- nominally 25 MHz for OLED here
+      begin
+        if rising_edge(clk_oled) then
+          if R_downclk(R_downclk'high) = '0' then
+            R_downclk <= R_downclk - 1;
+          else
+            R_downclk <= x"20"; -- clock divider to generate OLED-VGA pixel clock
+          end if;
+        end if;
+      end process;
+      vga_clk <= R_downclk(R_downclk'high); -- slow clock, around 860 kHz
+
+      S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
+      S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
+      S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);
+
+      oled_vga_inst: entity oled_vga
+      generic map
+      (
+        C_bits => S_vga_oled_pixel'length
+      )
+      port map
+      (
+        clk => clk_oled,
+        clken => clk_ena_oled, -- clk_ena_oled
+        clk_pixel => vga_clk,
+        hsync => vga_hsync,
+        vsync => vga_vsync,
+        blank => vga_blank,
+        pixel => S_vga_oled_pixel,
+        spi_resn => oled_resn,
+        spi_clk => oled_clk,
+        spi_csn => oled_csn,
+        spi_dc => oled_dc,
+        spi_mosi => oled_mosi
+      );
+    end block;
+
+    -- only needed for compile to pass with the same constraints
+    -- otherwise this module has no function with oled_vga
+    G_x_ddr_diff: for i in 0 to 3 generate
+      x_gpdi_ddr: ODDRX1F port map(D0=>dvid_crgb(2*i), D1=>dvid_crgb(2*i+1), Q=>ddr_d(i), SCLK=>clk_pixel_shift, RST=>'0');
+      x_gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
+    end generate;
+    end generate; -- yes oled_vga
 end;
