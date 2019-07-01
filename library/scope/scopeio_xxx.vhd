@@ -98,7 +98,6 @@ architecture beh of scopeio is
 	signal video_vtsync       : std_logic;
 	signal video_vton         : std_logic;
 	signal video_hzon         : std_logic;
-	signal video_hzl          : std_logic;
 	signal video_vld          : std_logic;
 	signal video_vtcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hzcntr       : std_logic_vector(11-1 downto 0);
@@ -123,7 +122,7 @@ architecture beh of scopeio is
 	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
 	signal trigger_shot       : std_logic;
-	signal scaler_ini         : std_logic;
+	signal scaler_sync        : std_logic;
 
 	signal capture_rdy        : std_logic;
 	signal capture_req        : std_logic;
@@ -275,10 +274,10 @@ begin
 	end process;
 	resizedsample_dv  <= triggersample_dv;
 
-	triggers_mode_b : block
+	triggers_modes_b : block
 	begin
-		capture_req <= '1';
-		--if video_vton='0' then
+		capture_req <= not capture_rdy or video_vton or not trigger_shot;
+		scaler_sync <= not capture_req;
 	end block;
 
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
@@ -287,7 +286,7 @@ begin
 	port map (
 		factor       => hz_scale,
 		input_clk    => input_clk,
-		scaler_ini   => scaler_ini,
+		scaler_sync  => scaler_sync,
 		input_dv     => resizedsample_dv,
 		input_data   => resizedsample_data,
 		output_dv    => downsample_dv ,
@@ -300,7 +299,7 @@ begin
 		capture_rdy   => capture_rdy,
 		input_ena     => downsample_dv,
 		input_data    => downsample_data,
-		input_delay   => hz_offset,
+		input_delay   => b"00_0000_0000_0000", --hz_offset,
 
 		captured_clk  => video_clk,
 		captured_addr => capture_addr,
@@ -424,19 +423,16 @@ begin
 
 			sgmntbox_b : block
 
-				constant mainboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-				constant mainboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+				constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
+				constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal mainbox_x      : std_logic_vector(mainboxx_size-1 downto 0);
-				signal mainbox_y      : std_logic_vector(mainboxy_size-1 downto 0);
+				signal sgmntbox_vyon   : std_logic;
+				signal sgmntbox_vxon   : std_logic;
+				signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 
-				signal sgmntbox_y     : std_logic_vector(mainbox_y'range);
-				signal sgmntbox_x     : std_logic_vector(mainbox_x'range);
-
-				signal mainbox_vyon   : std_logic;
-				signal mainbox_vxon   : std_logic;
-				signal mainbox_vx     : std_logic_vector(mainboxx_size-1 downto 0);
-				signal mainbox_vy     : std_logic_vector(mainboxy_size-1 downto 0);
+				signal sgmntbox_y     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_x     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				signal sgmntbox_xedge : std_logic;
 				signal sgmntbox_yedge : std_logic;
 				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);
@@ -459,8 +455,8 @@ begin
 					signal xedge : std_logic;
 					signal yedge : std_logic;
 					signal nexty : std_logic;
-					signal x      : std_logic_vector(mainboxx_size-1 downto 0);
-					signal y      : std_logic_vector(mainboxy_size-1 downto 0);
+					signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
+					signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				begin 
 
 					rgtrin_p : process (video_clk)
@@ -489,10 +485,10 @@ begin
 					rgtrout_p : process (video_clk)
 					begin
 						if rising_edge(video_clk) then
-							mainbox_vxon <= xon;
-							mainbox_vyon <= yon and not nexty;
-							mainbox_vx   <= x;
-							mainbox_vy   <= y;
+							sgmntbox_vxon <= xon;
+							sgmntbox_vyon <= yon and not nexty;
+							sgmntbox_vx   <= x;
+							sgmntbox_vy   <= y;
 						end if;
 					end process;
 
@@ -507,10 +503,10 @@ begin
 						y_edges   => sgmnt_yedges(layout))
 					port map (
 						video_clk => video_clk,
-						video_xon => mainbox_vxon,
-						video_yon => mainbox_vyon,
-						video_x   => mainbox_vx,
-						video_y   => mainbox_vy,
+						video_xon => sgmntbox_vxon,
+						video_yon => sgmntbox_vyon,
+						video_x   => sgmntbox_vx,
+						video_y   => sgmntbox_vy,
 						box_xon   => sgmntbox_xon,
 						box_yon   => sgmntbox_yon,
 						box_eox   => sgmntbox_eox,

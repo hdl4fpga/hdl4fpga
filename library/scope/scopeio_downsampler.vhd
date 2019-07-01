@@ -11,7 +11,7 @@ entity scopeio_downsampler is
 	port (
 		factor        : in  std_logic_vector;
 		input_clk     : in  std_logic;
-		scaler_ini    : in  std_logic;
+		scaler_sync   : in  std_logic;
 		input_dv      : in  std_logic;
 		input_data    : in  std_logic_vector;
 		output_dv     : out std_logic;
@@ -19,7 +19,6 @@ entity scopeio_downsampler is
 end;
 
 architecture beh of scopeio_downsampler is
-	signal scaler : signed(0 to signed_num_bits(max(factors)-2)-1);
 
 	function adjust (
 		constant arg : natural_vector)
@@ -33,22 +32,25 @@ architecture beh of scopeio_downsampler is
 	end;
 
 	constant adjusted_factors : integer_vector := adjust(factors);
-	signal scale_factor : signed(0 to scaler'length-1);
+	constant scaler_bits      : natural := signed_num_bits(max(factors)-2);
+
+	signal scale_factor : signed(0 to scaler_bits-1);
 
 begin
 
 	scale_factor <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scale_factor'length);
 	process (input_clk)
+		variable scaler : signed(scale_factor'range);
 	begin
 		if rising_edge(input_clk) then
-			if scaler_ini='0' then
-				scaler    <= scale_factor;
+			if scaler_sync='1' then
+				scaler    := scale_factor;
 				output_dv <= '1';
 			elsif input_dv='1' then
-				if scaler(scaler'left)='1' then
-					scaler <= scale_factor;
+				if scaler(0)='1' then
+					scaler := scale_factor;
 				else
-					scaler <= scaler - 1;
+					scaler := scaler - 1;
 				end if;
 				output_dv <= scaler(0);
 			else

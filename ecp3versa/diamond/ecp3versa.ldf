@@ -82,7 +82,7 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Timing">
-        <Options def_top="hdl4fpga.ecp3versa" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
+        <Options def_top="hdl4fpga.pipe_le" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
@@ -106,9 +106,6 @@
         </Source>
         <Source name="../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
         </Source>
         <Source name="../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -243,6 +240,12 @@
             <Options/>
         </Source>
         <Source name="../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_capture.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../library/scope/scopeio_xxx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
