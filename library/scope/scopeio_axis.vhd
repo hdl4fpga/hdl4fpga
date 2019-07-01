@@ -77,7 +77,7 @@ architecture def of scopeio_axis is
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
 	function scale_1245 (
@@ -212,8 +212,8 @@ begin
 			wu_value => value);
 
 		wu_align <=
-			not axis_sel when vtaxis_tickdirection(layout)=horizontal else
-			not axis_sel when vtaxis_tickheading(layout)=up else
+			not axis_sel when vtaxis_tickrotate(layout)=ccw0 else
+			not axis_sel when vtaxis_tickrotate(layout)=ccw270 else
 			'1';
 		wu_neg   <= value(value'left);
 		wu_sign  <= value(value'left) or axis_sel;
@@ -366,8 +366,8 @@ begin
 			end process;
 
 			rot_vcol <= 
-				video_hcntr(vcol'range) when vtaxis_tickdirection(layout)=horizontal else
-				vaddr(vcol'range) when vtaxis_tickheading(layout)=up else
+				video_hcntr(vcol'range) when vtaxis_tickrotate(layout)=ccw0 else
+				vaddr(vcol'range) when vtaxis_tickrotate(layout)=ccw270 else
 				not vaddr(vcol'range);
 
 			col_e : entity hdl4fpga.align
@@ -380,8 +380,8 @@ begin
 				do  => vcol);
 
 			rot_crow <= 
-				std_logic_vector(y(vt_crow'range)) when vtaxis_tickdirection(layout)=horizontal else
-				not video_hcntr(vt_ccol'range) when vtaxis_tickheading(layout)=up else
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)=ccw0 else
+				not video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)=ccw270 else
 				video_hcntr(vt_ccol'range);
 
 			crow_e : entity hdl4fpga.align
@@ -394,8 +394,8 @@ begin
 				do  => vt_crow);
 
 			rot_ccol <= 
-				video_hcntr(vt_ccol'range) when vtaxis_tickdirection(layout)=horizontal else
-				std_logic_vector(y(vt_crow'range)) when vtaxis_tickheading(layout)=up else
+				video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)=ccw0 else
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)=ccw270 else
 				not std_logic_vector(y(vt_crow'range));
 
 			ccol_e : entity hdl4fpga.align
@@ -408,7 +408,7 @@ begin
 				do  => vt_ccol);
 
 			vton <= 
-				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickdirection(layout)=horizontal else
+				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickrotate(layout)=ccw0 else
 				video_vton;
 
 			on_e : entity hdl4fpga.align
@@ -421,7 +421,7 @@ begin
 				do(0) => vt_on);
 
 			vt_bcd <= 
-				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickdirection(layout)=horizontal else
+				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)=ccw0 else
 				word2byte(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
 
 		end block;

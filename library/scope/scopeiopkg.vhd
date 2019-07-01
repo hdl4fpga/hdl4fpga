@@ -39,7 +39,7 @@ package scopeiopkg is
 	constant axisx_backscale : natural := 1;
 
 	type border        is (left, right, top, bottom);
-	type heading       is (up, down);
+	type rotate        is (ccw0, ccw90, ccw180, ccw270);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
 	type margin_vector is array (border)    of natural;
@@ -58,8 +58,7 @@ package scopeiopkg is
 		axis_fontsize    : natural;            -- Axis font size
 		hzaxis_height    : natural;            -- Height of the horizontal axis 
 		vtaxis_width     : natural;            -- Width of the vetical axis 
-		vttick_direction : direction;          -- Vertical label direction
-		vttick_heading   : heading;            -- Vertical label heading
+		vttick_rotate    : rotate;            -- Vertical label rotate
 		textbox_width    : natural;            -- Width of the text box
 		main_margin      : margin_vector;      -- Main Margin
 		main_gap         : gap_vector;         -- Main Padding
@@ -87,8 +86,7 @@ package scopeiopkg is
 			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  1*8,
-			vttick_direction => vertical,
-			vttick_heading   => down,
+			vttick_rotate   => ccw90,
 			textbox_width   => 33*8,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
@@ -103,8 +101,7 @@ package scopeiopkg is
 			axis_fontsize    =>    4,
 			hzaxis_height    =>    4,
 			vtaxis_width     =>  1*4,
-			vttick_direction => vertical,
-			vttick_heading   => down,
+			vttick_rotate    => ccw90,
 			textbox_width    => 33*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -119,8 +116,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw270,
 			textbox_width    =>  1*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -130,14 +126,13 @@ package scopeiopkg is
 			display_width    =>   96,
 			num_of_segments  =>    1,
 			division_size    =>    8,
-			grid_width       =>   10,
+			grid_width       =>   11,
 			grid_height      =>    7,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>    7,
-			vttick_direction => vertical,
-			vttick_heading   => down,
-			textbox_width    =>    0,
+			vttick_rotate    => ccw90,
+			textbox_width    =>    0, -- no textbox
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
@@ -151,8 +146,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -167,8 +161,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -183,8 +176,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (top => 5, left => 1, others => 0),
 			main_gap         => (others => 1),
@@ -206,8 +198,7 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16),
 		6 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
-		8 => (mode_id => pclk0_78m96x64Rat60,       layout_id => oled96x64),
-		7 => (mode_id => pclk38_25m800x600Cat60,    layout_id => oled96x64));
+		7 => (mode_id => pclk0_78m96x64Rat60,    layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
@@ -225,8 +216,7 @@ package scopeiopkg is
 	function vtaxis_x          (constant layout : display_layout) return natural;
 	function vtaxis_width      (constant layout : display_layout) return natural;
 	function vtaxis_height     (constant layout : display_layout) return natural;
-	function vtaxis_tickdirection (constant layout : display_layout) return direction;
-	function vtaxis_tickheading   (constant layout : display_layout) return heading;
+	function vtaxis_tickrotate (constant layout : display_layout) return rotate;
 
 	function grid_x            (constant layout : display_layout) return natural;
 	function grid_y            (constant layout : display_layout) return natural;
@@ -450,18 +440,11 @@ package body scopeiopkg is
 		return grid_height(layout);
 	end;
 
-	function vtaxis_tickdirection (
+	function vtaxis_tickrotate (
 		constant layout : display_layout)
-		return direction is
+		return rotate is
 	begin
-		return layout.vttick_direction;
-	end;
-
-	function vtaxis_tickheading (
-		constant layout : display_layout)
-		return heading is
-	begin
-		return layout.vttick_heading;
+		return layout.vttick_rotate;
 	end;
 
 	function textbox_x (
