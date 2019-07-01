@@ -24,7 +24,7 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
 	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
-        constant vlayout_id: integer := 6;
+        constant vlayout_id: integer := 8;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -35,8 +35,8 @@ architecture beh of ulx3s is
 	constant C_adc_channels: integer := 4; -- don't touch
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
-        constant C_oled_hex: boolean := true; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -623,7 +623,7 @@ begin
           if R_downclk(R_downclk'high) = '0' then
             R_downclk <= R_downclk - 1;
           else
-            R_downclk <= x"1D"; -- clock divider to generate OLED-VGA pixel clock
+            R_downclk <= x"20"; -- clock divider to generate OLED-VGA pixel clock
           end if;
         end if;
       end process;

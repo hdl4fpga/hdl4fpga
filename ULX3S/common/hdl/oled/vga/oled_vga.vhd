@@ -37,8 +37,10 @@ architecture rtl of oled_vga is
   signal R_spi_data: std_logic_vector(7 downto 0) := x"00"; -- one bit more
   signal R_dc: std_logic := '0'; -- 0-command, 1-data
   --signal R_x: std_logic_vector(6 downto 0) := "1011111"; -- adjusted to start at X=0
-  signal R_x, R_x_in: std_logic_vector(6 downto 0) := "0000001"; -- adjusted to start at X=0
-  signal R_y, R_y_in: std_logic_vector(5 downto 0) :=  "000000"; -- adjusted to start at Y=0
+  signal R_x: std_logic_vector(6 downto 0) := "0000001"; -- adjusted to start at X=0
+  signal R_y: std_logic_vector(5 downto 0) :=  "000000"; -- adjusted to start at Y=0
+  signal R_x_in: std_logic_vector(6 downto 0) := "0000000"; -- adjusted to start at X=0
+  signal R_y_in: std_logic_vector(5 downto 0) :=  "000000"; -- adjusted to start at Y=0
   signal S_pixel: std_logic_vector(7 downto 0);
   constant C_last_init_send_as_data: integer := 1;
   signal R_clk_pixel: std_logic_vector(2 downto 0);
@@ -46,7 +48,7 @@ architecture rtl of oled_vga is
 begin
   process(clk)
   begin
-    if rising_edge(clk) and clken = '1' then
+    if rising_edge(clk) then
       R_clk_pixel <= clk_pixel & R_clk_pixel(2 downto 1);
     end if;
   end process;
@@ -55,14 +57,14 @@ begin
   -- track signal's pixel coordinates
   process(clk)
   begin
-    if rising_edge(clk) and clken = '1' then
+    if rising_edge(clk) then
       if blank = '0' and S_clk_pixel_rising_edge = '1' then
-            if conv_integer(R_x_in) = 95 then
-              R_x_in <= (others => '0');
-              R_y_in <= R_y_in + 1;
-            else
-              R_x_in <= R_x_in + 1;
-            end if;
+        if conv_integer(R_x_in) = 95 then
+          R_x_in <= (others => '0');
+          R_y_in <= R_y_in + 1;
+        else
+          R_x_in <= R_x_in + 1;
+        end if;
       end if;
     end if;
   end process;
