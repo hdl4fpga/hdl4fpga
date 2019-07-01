@@ -63,7 +63,7 @@ architecture def of scopeio_segment is
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickdirection(layout)=horizontal, division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
 	signal vt_scale     : std_logic_vector(gain_ids'length/inputs-1 downto 0);
