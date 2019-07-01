@@ -51,6 +51,7 @@ package scopeiopkg is
 
 	type display_layout is record 
 		display_width    : natural;            -- Maximun display width
+		display_height   : natural;            -- Maximun display height
 		num_of_segments  : natural;	           -- Number of segments to display
 		division_size    : natural;            -- Length in pixels
 		grid_width       : natural;            -- Width of the grid in divisions
@@ -79,6 +80,7 @@ package scopeiopkg is
 	constant displaylayout_table : displaylayout_vector := (
 		sd600 => (            
 			display_width   =>  800,
+			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
 			grid_width      =>   15,
@@ -93,22 +95,24 @@ package scopeiopkg is
 			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
 			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
-			display_width    =>  800,
+			display_width    =>  96,
+			display_height   =>  64,
 			num_of_segments  =>    1,
 			division_size    =>    8,
 			grid_width       =>   11,
 			grid_height      =>    7,
-			axis_fontsize    =>    4,
-			hzaxis_height    =>    4,
-			vtaxis_width     =>  1*4,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    7,
+			vtaxis_width     =>  1*7,
 			vttick_rotate    => ccw90,
-			textbox_width    => 33*8,
+			textbox_width    => 0,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		sd600x16fs => (
 			display_width    =>  800,
+			display_height   =>  600,
 			num_of_segments  =>    4,
 			division_size    =>   16,
 			grid_width       =>   46,
@@ -124,6 +128,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		oled96x64 => (
 			display_width    =>   96,
+			display_height   =>   64,
 			num_of_segments  =>    1,
 			division_size    =>    8,
 			grid_width       =>   11,
@@ -139,6 +144,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		hd720 => (
 			display_width    => 1280,
+			display_height   =>  720,
 			num_of_segments  =>    3,
 			division_size    =>   32,
 			grid_width       =>   30,
@@ -154,6 +160,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		vesa1280x1024 => (
 			display_width    => 1280,
+			display_height   =>  720,
 			num_of_segments  =>    4,
 			division_size    =>   32,
 			grid_width       =>   30,
@@ -169,6 +176,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		hd1080 => (
 			display_width    => 1920,
+			display_height   => 1080,
 			num_of_segments  =>    4,
 			division_size    =>   32,
 			grid_width       =>   50,
@@ -242,6 +250,7 @@ package scopeiopkg is
 		return std_logic;
 
 	function main_width  (constant layout : display_layout) return natural;
+	function main_height (constant layout : display_layout) return natural;
 	function main_xedges (constant layout : display_layout) return natural_vector;
 	function main_yedges (constant layout : display_layout) return natural_vector;
 
@@ -637,27 +646,42 @@ package body scopeiopkg is
 		return layout.display_width;
 	end;
 
+	function main_height (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.display_height;
+	end;
+
 	function main_xedges(
 		constant layout : display_layout)
 		return natural_vector is
-
-	begin
-		return to_edges(boxes_sides(
+		constant sides : natural_vector := boxes_sides(
 			sides        => (0 => sgmnt_width(layout)),
 			margin_start => layout.main_margin(left),
 			margin_end   => layout.main_margin(right),
-			gap          => layout.main_gap(horizontal)));
+			gap          => layout.main_gap(horizontal));
+
+	begin
+		assert sides(sides'right)<=main_width(layout)
+		report "Boxes' Width sum up cannot be greater than Display's Width"
+		severity FAILURE;
+		return to_edges(sides);
 	end;
 
 	function main_yedges(
 		constant layout : display_layout)
 		return natural_vector is
-	begin
-		return to_edges(boxes_sides(
+		constant sides : natural_vector := boxes_sides(
 			sides        => (0 to layout.num_of_segments-1 => sgmnt_height(layout)),
 			margin_start => layout.main_margin(top),
 			margin_end   => layout.main_margin(bottom),
-			gap          => layout.main_gap(vertical)));
+			gap          => layout.main_gap(vertical));
+	begin
+		assert sides(sides'right)<=main_height(layout)
+		report "Boxes' Height sum up cannot be greater than Display's Height"
+		severity FAILURE;
+		return to_edges(sides);
 	end;
 
 	function main_boxon (
