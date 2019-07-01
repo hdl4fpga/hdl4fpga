@@ -32,6 +32,9 @@ use hdl4fpga.videopkg.all;
 package scopeiopkg is
 
 	constant max_inputs      : natural := 64;
+	constant max_delay       : natural := 2**14;
+	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
+
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 
@@ -48,7 +51,7 @@ package scopeiopkg is
 
 	type display_layout is record 
 		display_width    : natural;            -- Maximun display width
-		num_of_segments  : natural;	          -- Number of segments to display
+		num_of_segments  : natural;	           -- Number of segments to display
 		division_size    : natural;            -- Length in pixels
 		grid_width       : natural;            -- Width of the grid in divisions
 		grid_height      : natural;            -- Width of the grid in divisions
@@ -131,7 +134,7 @@ package scopeiopkg is
 			grid_height      =>    7,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
-			vtaxis_width     =>    8,
+			vtaxis_width     =>    7,
 			vttick_direction => vertical,
 			vttick_heading   => down,
 			textbox_width    =>    0,
@@ -560,7 +563,10 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
+			sides        => (
+				vtaxis_boxid => vtaxis_width(layout), 
+				grid_boxid   => grid_width(layout), 
+				text_boxid   => textbox_width(layout)),
 			margin_start => layout.sgmnt_margin(left),
 			margin_end   => layout.sgmnt_margin(right),
 			gap          => layout.sgmnt_gap(horizontal)));
@@ -572,7 +578,9 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (grid_height(layout), hzaxis_height(layout)),
+			sides        => (
+				0 => grid_height(layout),
+				1 => hzaxis_height(layout)),
 			margin_start => layout.sgmnt_margin(top),
 			margin_end   => layout.sgmnt_margin(bottom),
 			gap          => layout.sgmnt_gap(vertical)));

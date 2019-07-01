@@ -253,7 +253,7 @@ begin
 			signal vcol   : std_logic_vector(hztick_bits-1 downto font_bits);
 		begin 
 
-			x <= resize(unsigned(video_hcntr), x'length) + unsigned(hz_offset);
+			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
 			hzvaddr_p : process (video_clk)
 			begin

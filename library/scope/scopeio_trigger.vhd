@@ -33,11 +33,13 @@ begin
 		variable edge : std_logic;
 	begin
 		if rising_edge(input_clk) then
-			trigger_shot <= (lt and ge and not edge) or (not lt and not ge and edge);
-			lt     := not ge;
-			ge     := setif(signed(sample(sample'length - trigger_level'length to sample'high)) >= signed(trigger_level));
-			edge   := not trigger_edge;
-			sample <= word2byte(input_data, trigger_chanid, sample'length);
+			if input_ena='1' then
+				trigger_shot <= (lt and ge and not edge) or (not lt and not ge and edge);
+				lt     := not ge;
+				ge     := setif(signed(sample(sample'length - trigger_level'length to sample'high)) >= signed(trigger_level));
+				edge   := not trigger_edge;
+				sample <= word2byte(input_data, trigger_chanid, sample'length);
+			end if;
 		end if;
 	end process;
 
