@@ -643,6 +643,8 @@ begin
         clk => clk_oled,
         clken => clk_ena_oled, -- clk_ena_oled
         clk_pixel => vga_clk,
+        hsync => vga_hsync,
+        vsync => vga_vsync,
         blank => vga_blank,
         pixel => S_vga_oled_pixel,
         spi_resn => oled_resn,
