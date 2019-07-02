@@ -50,8 +50,8 @@ package scopeiopkg is
 	end record;
 
 	type display_layout is record 
-		display_width    : natural;            -- Maximun display width
-		display_height   : natural;            -- Maximun display height
+		display_width    : natural;            -- Display's width
+		display_height   : natural;            -- Display's height
 		num_of_segments  : natural;	           -- Number of segments to display
 		division_size    : natural;            -- Length in pixels
 		grid_width       : natural;            -- Width of the grid in divisions
@@ -116,14 +116,14 @@ package scopeiopkg is
 			num_of_segments  =>    4,
 			division_size    =>   16,
 			grid_width       =>   46,
-			grid_height      =>    9,
+			grid_height      =>    8,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
-			vtaxis_width     =>  6*8,
+			vtaxis_width     =>  1*8,
 			vttick_rotate    => ccw270,
-			textbox_width    =>  1*8,
+			textbox_width    =>  0,
 			main_margin      => (others => 0),
-			main_gap         => (others => 0),
+			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		oled96x64 => (
