@@ -118,9 +118,9 @@ architecture beh of nexys2 is
 	constant video_params : displayparam_vector(0 to 2) := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode600px16 => (layout => 5, mul => 4, div => 5));
+		mode600px16 => (layout => 6, mul => 4, div => 5));
 
-	constant video_mode : natural := mode600p;
+	constant video_mode : natural := mode600px16;
 
 begin
 
