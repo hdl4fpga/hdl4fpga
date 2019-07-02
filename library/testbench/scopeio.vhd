@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 architecture scopeio of testbench is
 
-	signal sys_clk : std_logic;
-	signal vga_clk : std_logic;
+	signal sys_clk : std_logic := '0';
+	signal vga_clk : std_logic := '0';
 
 	constant inputs : natural := 1;
 	constant sample_size : natural := 14;
@@ -108,8 +108,8 @@ architecture scopeio of testbench is
 
 begin
 
-	sys_clk <= setif(sys_clk/='0') after 20 ns;
-	vga_clk <= setif(vga_clk/='0') after 25 ns;
+	sys_clk <= not sys_clk after 20 ns;
+	vga_clk <= not vga_clk after 25 ns;
 
 	process (sys_clk)
 	begin

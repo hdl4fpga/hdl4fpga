@@ -32,11 +32,14 @@ use hdl4fpga.videopkg.all;
 package scopeiopkg is
 
 	constant max_inputs      : natural := 64;
+	constant max_delay       : natural := 2**14;
+	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
+
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 
 	type border        is (left, right, top, bottom);
-	type heading       is (up, down);
+	type rotate        is (ccw0, ccw90, ccw270);
 	type direction     is (horizontal, vertical);
 	type gap_vector    is array (direction) of natural;
 	type margin_vector is array (border)    of natural;
@@ -47,16 +50,16 @@ package scopeiopkg is
 	end record;
 
 	type display_layout is record 
-		display_width    : natural;            -- Maximun display width
-		num_of_segments  : natural;	          -- Number of segments to display
+		display_width    : natural;            -- Display's width
+		display_height   : natural;            -- Display's height
+		num_of_segments  : natural;	           -- Number of segments to display
 		division_size    : natural;            -- Length in pixels
 		grid_width       : natural;            -- Width of the grid in divisions
 		grid_height      : natural;            -- Width of the grid in divisions
 		axis_fontsize    : natural;            -- Axis font size
 		hzaxis_height    : natural;            -- Height of the horizontal axis 
 		vtaxis_width     : natural;            -- Width of the vetical axis 
-		vttick_direction : direction;          -- Vertical label direction
-		vttick_heading   : heading;            -- Vertical label heading
+		vttick_rotate    : rotate;             -- Vertical label rotating
 		textbox_width    : natural;            -- Width of the text box
 		main_margin      : margin_vector;      -- Main Margin
 		main_gap         : gap_vector;         -- Main Padding
@@ -77,6 +80,7 @@ package scopeiopkg is
 	constant displaylayout_table : displaylayout_vector := (
 		sd600 => (            
 			display_width   =>  800,
+			display_height  =>  600,
 			num_of_segments =>    2,
 			division_size   =>   32,
 			grid_width      =>   15,
@@ -84,63 +88,63 @@ package scopeiopkg is
 			axis_fontsize   =>    8,
 			hzaxis_height   =>    8,
 			vtaxis_width    =>  1*8,
-			vttick_direction => vertical,
-			vttick_heading   => down,
+			vttick_rotate   => ccw90,
 			textbox_width   => 33*8,
 			main_margin     => (left => 3, top => 23, others => 0),
 			main_gap        => (vertical => 16, others => 0),
 			sgmnt_margin    => (top => 2, bottom => 2, others => 1),
 			sgmnt_gap       => (horizontal => 1, others => 0)),
 		sd600x16 => (            
-			display_width    =>  800,
+			display_width    =>  96,
+			display_height   =>  64,
 			num_of_segments  =>    1,
 			division_size    =>    8,
 			grid_width       =>   11,
 			grid_height      =>    7,
-			axis_fontsize    =>    4,
-			hzaxis_height    =>    4,
-			vtaxis_width     =>  1*4,
-			vttick_direction => vertical,
-			vttick_heading   => down,
-			textbox_width    => 33*8,
+			axis_fontsize    =>    8,
+			hzaxis_height    =>    7,
+			vtaxis_width     =>  1*7,
+			vttick_rotate    => ccw90,
+			textbox_width    => 0,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		sd600x16fs => (
 			display_width    =>  800,
+			display_height   =>  600,
 			num_of_segments  =>    4,
 			division_size    =>   16,
 			grid_width       =>   46,
-			grid_height      =>    9,
+			grid_height      =>    8,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
-			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
-			textbox_width    =>  1*8,
+			vtaxis_width     =>  1*8,
+			vttick_rotate    => ccw270,
+			textbox_width    =>  0,
 			main_margin      => (others => 0),
-			main_gap         => (others => 0),
+			main_gap         => (others => 4),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		oled96x64 => (
 			display_width    =>   96,
+			display_height   =>   64,
 			num_of_segments  =>    1,
 			division_size    =>    8,
-			grid_width       =>   10,
+			grid_width       =>   11,
 			grid_height      =>    7,
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
-			vtaxis_width     =>    8,
-			vttick_direction => vertical,
-			vttick_heading   => down,
-			textbox_width    =>    0,
+			vtaxis_width     =>    7,
+			vttick_rotate    => ccw90,
+			textbox_width    =>    0, -- no textbox
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
 			sgmnt_margin     => (others => 0),
 			sgmnt_gap        => (others => 0)),
 		hd720 => (
 			display_width    => 1280,
+			display_height   =>  720,
 			num_of_segments  =>    3,
 			division_size    =>   32,
 			grid_width       =>   30,
@@ -148,8 +152,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -157,6 +160,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		vesa1280x1024 => (
 			display_width    => 1280,
+			display_height   =>  720,
 			num_of_segments  =>    4,
 			division_size    =>   32,
 			grid_width       =>   30,
@@ -164,8 +168,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (others => 0),
 			main_gap         => (others => 0),
@@ -173,6 +176,7 @@ package scopeiopkg is
 			sgmnt_gap        => (others => 0)),
 		hd1080 => (
 			display_width    => 1920,
+			display_height   => 1080,
 			num_of_segments  =>    4,
 			division_size    =>   32,
 			grid_width       =>   50,
@@ -180,8 +184,7 @@ package scopeiopkg is
 			axis_fontsize    =>    8,
 			hzaxis_height    =>    8,
 			vtaxis_width     =>  6*8,
-			vttick_direction => horizontal,
-			vttick_heading   => up,
+			vttick_rotate    => ccw0,
 			textbox_width    => 33*8,
 			main_margin      => (top => 5, left => 1, others => 0),
 			main_gap         => (others => 1),
@@ -203,8 +206,7 @@ package scopeiopkg is
 		4 => (mode_id => pclk108_00m1280x1024Cat60, layout_id => vesa1280x1024),
 		5 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16),
 		6 => (mode_id => pclk38_25m800x600Cat60,    layout_id => sd600x16fs),
-		8 => (mode_id => pclk0_78m96x64Rat60,       layout_id => oled96x64),
-		7 => (mode_id => pclk38_25m800x600Cat60,    layout_id => oled96x64));
+		7 => (mode_id => pclk0_78m96x64Rat60,       layout_id => oled96x64));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
@@ -222,8 +224,7 @@ package scopeiopkg is
 	function vtaxis_x          (constant layout : display_layout) return natural;
 	function vtaxis_width      (constant layout : display_layout) return natural;
 	function vtaxis_height     (constant layout : display_layout) return natural;
-	function vtaxis_tickdirection (constant layout : display_layout) return direction;
-	function vtaxis_tickheading   (constant layout : display_layout) return heading;
+	function vtaxis_tickrotate (constant layout : display_layout) return rotate;
 
 	function grid_x            (constant layout : display_layout) return natural;
 	function grid_y            (constant layout : display_layout) return natural;
@@ -249,6 +250,7 @@ package scopeiopkg is
 		return std_logic;
 
 	function main_width  (constant layout : display_layout) return natural;
+	function main_height (constant layout : display_layout) return natural;
 	function main_xedges (constant layout : display_layout) return natural_vector;
 	function main_yedges (constant layout : display_layout) return natural_vector;
 
@@ -447,18 +449,11 @@ package body scopeiopkg is
 		return grid_height(layout);
 	end;
 
-	function vtaxis_tickdirection (
+	function vtaxis_tickrotate (
 		constant layout : display_layout)
-		return direction is
+		return rotate is
 	begin
-		return layout.vttick_direction;
-	end;
-
-	function vtaxis_tickheading (
-		constant layout : display_layout)
-		return heading is
-	begin
-		return layout.vttick_heading;
+		return layout.vttick_rotate;
 	end;
 
 	function textbox_x (
@@ -560,7 +555,10 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (vtaxis_width(layout), grid_width(layout), textbox_width(layout)),
+			sides        => (
+				vtaxis_boxid => vtaxis_width(layout), 
+				grid_boxid   => grid_width(layout), 
+				text_boxid   => textbox_width(layout)),
 			margin_start => layout.sgmnt_margin(left),
 			margin_end   => layout.sgmnt_margin(right),
 			gap          => layout.sgmnt_gap(horizontal)));
@@ -572,7 +570,9 @@ package body scopeiopkg is
 	begin
 
 		return to_edges(boxes_sides(
-			sides        => (grid_height(layout), hzaxis_height(layout)),
+			sides        => (
+				0 => grid_height(layout),
+				1 => hzaxis_height(layout)),
 			margin_start => layout.sgmnt_margin(top),
 			margin_end   => layout.sgmnt_margin(bottom),
 			gap          => layout.sgmnt_gap(vertical)));
@@ -646,27 +646,42 @@ package body scopeiopkg is
 		return layout.display_width;
 	end;
 
+	function main_height (
+		constant layout : display_layout)
+		return natural is
+	begin
+		return layout.display_height;
+	end;
+
 	function main_xedges(
 		constant layout : display_layout)
 		return natural_vector is
-
-	begin
-		return to_edges(boxes_sides(
+		constant sides : natural_vector := boxes_sides(
 			sides        => (0 => sgmnt_width(layout)),
 			margin_start => layout.main_margin(left),
 			margin_end   => layout.main_margin(right),
-			gap          => layout.main_gap(horizontal)));
+			gap          => layout.main_gap(horizontal));
+
+	begin
+		assert sides(sides'right)<=main_width(layout)
+		report "Boxes' Width sum up cannot be greater than Display's Width"
+		severity FAILURE;
+		return to_edges(sides);
 	end;
 
 	function main_yedges(
 		constant layout : display_layout)
 		return natural_vector is
-	begin
-		return to_edges(boxes_sides(
+		constant sides : natural_vector := boxes_sides(
 			sides        => (0 to layout.num_of_segments-1 => sgmnt_height(layout)),
 			margin_start => layout.main_margin(top),
 			margin_end   => layout.main_margin(bottom),
-			gap          => layout.main_gap(vertical)));
+			gap          => layout.main_gap(vertical));
+	begin
+		assert sides(sides'right)<=main_height(layout)
+		report "Boxes' Height sum up cannot be greater than Display's Height"
+		severity FAILURE;
+		return to_edges(sides);
 	end;
 
 	function main_boxon (

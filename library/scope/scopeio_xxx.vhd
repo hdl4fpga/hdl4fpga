@@ -33,8 +33,6 @@ entity scopeio is
 	generic (
 		vlayout_id  : natural;
 
-		C_experimental_trigger : boolean := false;
-
 		inputs      : natural;
 		vt_gains    : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
@@ -85,12 +83,11 @@ entity scopeio is
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
 
-	constant chanid_size  : natural := unsigned_num_bits(inputs-1);
+	constant chanid_bits  : natural := unsigned_num_bits(inputs-1);
 
 end;
 
 architecture beh of scopeio is
-
 
 	constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
@@ -101,7 +98,6 @@ architecture beh of scopeio is
 	signal video_vtsync       : std_logic;
 	signal video_vton         : std_logic;
 	signal video_hzon         : std_logic;
-	signal video_hzl          : std_logic;
 	signal video_vld          : std_logic;
 	signal video_vtcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hzcntr       : std_logic_vector(11-1 downto 0);
@@ -114,63 +110,62 @@ architecture beh of scopeio is
 
 	signal ampsample_ena      : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
-	signal triggersample_ena  : std_logic;
+	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
 
-
-	signal resizedsample_ena  : std_logic;
+	signal resizedsample_dv   : std_logic;
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_ena     : std_logic;
+	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(resizedsample_data'range);
 
-	constant storage_size : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
-	signal storage_addr : std_logic_vector(0 to storage_size-1);
-	signal storage_bsel   : std_logic_vector(0 to layout.num_of_segments-1);
+	constant capture_bits     : natural := unsigned_num_bits(layout.num_of_segments*grid_width(layout)-1);
+	signal capture_addr       : std_logic_vector(0 to capture_bits-1);
 
-	signal capture_addr   : std_logic_vector(storage_addr'range);
-	signal scrolled_capture_addr   : std_logic_vector(storage_addr'range);
-	signal trigger_shot   : std_logic;
+	signal trigger_shot       : std_logic;
+	signal scaler_sync        : std_logic;
 
-	signal storage_data   : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal scope_color    : std_logic_vector(video_pixel'length-1 downto 0);
-	signal video_color    : std_logic_vector(video_pixel'length-1 downto 0);
+	signal capture_rdy        : std_logic;
+	signal capture_req        : std_logic;
+	signal capture_data       : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal scope_color        : std_logic_vector(video_pixel'length-1 downto 0);
+	signal video_color        : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal hz_segment     : std_logic_vector(13-1 downto 0);
-	signal hz_offset      : std_logic_vector(hz_segment'range);
-	signal hz_scale       : std_logic_vector(4-1 downto 0);
-	signal hz_dv          : std_logic;
-	signal vt_dv          : std_logic;
-	signal vt_offsets     : std_logic_vector(inputs*(5+8)-1 downto 0);
-	signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
+	signal hz_offset          : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_segment         : std_logic_vector(hz_offset'range);
 
-	signal palette_dv     : std_logic;
-	signal palette_id     : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
-	signal palette_color  : std_logic_vector(max_pixelsize-1 downto 0);
+	signal hz_scale           : std_logic_vector(4-1 downto 0);
+	signal hz_dv              : std_logic;
+	signal vt_dv              : std_logic;
+	signal vt_offsets         : std_logic_vector(inputs*(5+8)-1 downto 0);
+	signal vt_chanid          : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	signal gain_dv        : std_logic;
-	signal gain_ids       : std_logic_vector(0 to inputs*gainid_size-1);
+	signal palette_dv         : std_logic;
+	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(max_inputs+9-1)-1);
+	signal palette_color      : std_logic_vector(max_pixelsize-1 downto 0);
 
-	signal trigger_dv     : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_size-1 downto 0);
-	signal trigger_edge   : std_logic;
-	signal trigger_freeze : std_logic;
-	signal trigger_level  : std_logic_vector(storage_word'range);
+	signal gain_dv            : std_logic;
+	signal gain_ids           : std_logic_vector(0 to inputs*gainid_size-1);
 
-	signal pointer_dv     : std_logic;
-	signal pointer_x      : std_logic_vector(video_hzcntr'range);
-	signal pointer_y      : std_logic_vector(video_vtcntr'range);
+	signal trigger_dv         : std_logic;
+	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_edge       : std_logic;
+	signal trigger_freeze     : std_logic;
+	signal trigger_level      : std_logic_vector(storage_word'range);
 
-	signal wu_frm         : std_logic;
-	signal wu_irdy        : std_logic;
-	signal wu_trdy        : std_logic;
-	signal wu_unit        : std_logic_vector(4-1 downto 0);
-	signal wu_neg         : std_logic;
-	signal wu_sign        : std_logic;
-	signal wu_align       : std_logic;
-	signal wu_value       : std_logic_vector(4*4-1 downto 0);
-	signal wu_format      : std_logic_vector(8*4-1 downto 0);
+	signal pointer_dv         : std_logic;
+	signal pointer_x          : std_logic_vector(video_hzcntr'range);
+	signal pointer_y          : std_logic_vector(video_vtcntr'range);
 
-	signal scaler_sync    : std_logic;
+	signal wu_frm             : std_logic;
+	signal wu_irdy            : std_logic;
+	signal wu_trdy            : std_logic;
+	signal wu_unit            : std_logic_vector(4-1 downto 0);
+	signal wu_neg             : std_logic;
+	signal wu_sign            : std_logic;
+	signal wu_align           : std_logic;
+	signal wu_value           : std_logic_vector(4*4-1 downto 0);
+	signal wu_format          : std_logic_vector(8*4-1 downto 0);
+
 begin
 
 	assert inputs < max_inputs
@@ -261,7 +256,7 @@ begin
 		trigger_level  => trigger_level,
 		trigger_edge   => trigger_edge,
 		trigger_shot   => trigger_shot,
-		output_ena     => triggersample_ena,
+		output_ena     => triggersample_dv,
 		output_data    => triggersample_data);
 
 	resize_p : process (triggersample_data)
@@ -277,362 +272,39 @@ begin
 		end loop;
 		resizedsample_data <= std_logic_vector(aux1);
 	end process;
-	resizedsample_ena <= triggersample_ena;
+	resizedsample_dv  <= triggersample_dv;
 
-	scaler_sync <= trigger_shot and not video_vton;
+	triggers_modes_b : block
+	begin
+		capture_req <= not capture_rdy or video_vton or not trigger_shot;
+		scaler_sync <= not capture_req;
+	end block;
+
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
 	port map (
 		factor_id    => hz_scale,
-		scaler_sync  => scaler_sync,
 		input_clk    => input_clk,
-		input_dv     => resizedsample_ena,
+		scaler_sync  => scaler_sync,
+		input_dv     => resizedsample_dv,
 		input_data   => resizedsample_data,
-		output_dv    => downsample_ena,
+		output_dv    => downsample_dv ,
 		output_data  => downsample_data);
 
-	G_not_experimental_trigger: if not C_experimental_trigger generate
-	-- signals in MHz range: ok
-	-- signals in kHz range: discontinuity around T=0
-	storage_b : block
+	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	port map (
+		input_clk     => input_clk,
+		capture_req   => capture_req,
+		capture_rdy   => capture_rdy,
+		input_ena     => downsample_dv,
+		input_data    => downsample_data,
+		input_delay   => hz_offset,
 
-		signal wr_clk    : std_logic;
-		signal wr_ena    : std_logic;
-		signal wr_addr   : std_logic_vector(storage_addr'range);
-		signal wr_cntr   : signed(0 to wr_addr'length+1);
-		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
-		signal rd_clk    : std_logic;
-		signal rd_addr   : std_logic_vector(wr_addr'range);
-		signal rd_data   : std_logic_vector(wr_data'range);
-		signal free_shot : std_logic;
-		signal sync_tf   : std_logic;
-		signal trigger_addr : std_logic_vector(storage_addr'range);
-		signal hz_delay  : signed(hz_offset'length-1 downto 0);
-		signal sync_videofrm : std_logic;
-		signal prev_sync_videofrm : std_logic;
-		constant C_auto_trigger_wait: natural := 0; -- wait 2**n video frames until free shot triggering
-		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
-
-	begin
-
-		wr_clk  <= input_clk;
-		wr_ena  <= (not wr_cntr(0) or free_shot) and not sync_tf;
-		wr_data <= downsample_data;
-
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				sync_tf <= trigger_freeze;
-				sync_videofrm <= video_vton;
-			end if;
-		end process;
-
-		hz_delay <= signed(hz_offset);
-		rd_clk   <= video_clk;
-		gen_addr_p : process (wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-
---              ----------------
---				-- CALIBRATON --
---              ----------------
---
---				wr_data <= ('0','0', '0', '0', others => '1');
---				if wr_addr=std_logic_vector(to_unsigned(0,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1600,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				elsif wr_addr=std_logic_vector(to_unsigned(1601,wr_addr'length)) then
---					wr_data <= ('0', '0', '1', others => '0');
---				end if;
---				wr_data  <= std_logic_vector(resize(unsigned(wr_addr),wr_data'length));
-
-				free_shot <= '0';
-				if sync_videofrm='0' and trigger_shot='0' then
-					free_shot <= '1';
-				end if;
-
-				if sync_tf='1' or wr_cntr(0)='0' then
-					capture_addr <= std_logic_vector(signed(trigger_addr));
-					if downsample_ena='1' then
-						wr_cntr <= wr_cntr - 1;
-					end if;
-				elsif sync_videofrm='0' and trigger_shot='1' then -- here is wr_cntr(0)='1'
-					capture_addr <= std_logic_vector(signed(wr_addr));
-					wr_cntr      <= resize(hz_delay, wr_cntr'length) + (2**wr_addr'length-1);
-					trigger_addr <= wr_addr;
-				end if;
-				if downsample_ena='1' then
-					wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-				end if;
-			end if;
-
-		end process;
-
---		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
-		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testing:w for portabilty
-		port map (
-			clka  => wr_clk,
-			addra => wr_addr,
-			wea   => wr_ena,
-			dia   => wr_data,
-			doa   => rd_data,
-
-			clkb  => rd_clk,
-			addrb => storage_addr,
-			dib   => rd_data,
-			dob   => storage_data);
-
-	end block;
-	end generate; -- not experimental trigger
-
-	G_yes_1shot_trigger: if C_experimental_trigger generate
-	-- contains EMARD's experimental 1-shot trigger
-
-	-- storage is a circular buffer and it must have
-	-- discontinuity somewhere. This code keeps
-	-- the discontinuity away from triggering point T=0.
-
-	-- 1-shot trigger armed:
-	-- record first part of the buffer (configurable size)
-	-- then wait for trigger, keep recording.
-	-- After trigger, do some more recording for the last
-	-- part of the buffer and stop (freeze display, dis-arm trigger).
-	-- When stopped, wait configurable number of video frames
-	-- for the user to be able to see waveform and then
-	-- re-arm 1-shot trigger.
-
-	-- NOTE: during the period when 1-shot trigger is armed,
-        -- storage continuously records data while waiting for trigger.
-        -- Same memory currently recorded is at the same displayed,
-	-- so the traces may flicker or become dotted or dashed.
-	-- This is considered as normal for now but can be improved.
-	-- When display is frozen, it will display correct waveform.
-
-	-- Triggering point T=0 can be placed at configurable position
-	-- in the buffer.
-
-	-- one-shot trigger states:
-	-- state 0: start recording first half of the buffer (decrementing counter)
-	-- state 1: wait for trigger (don't decrement during waiting)
-	-- state 2: decrement counter until it wraps around to -1 and stop
-	-- state 3: wait for re-arm (counter is at -1)
-	--          re-armed by event, initializing counter to buffer length
-
-	-- auto trigger is special case of 1-shot trigger
-	-- which is re-armed at frame blank.
-	-- optionally, N stable frames can be configured until next re-armong
-
-	-- NOTE: flicker reduction:
-	-- rearming time should be calculated precisely in advance
-	-- so that when new storage recording run starts, it should overwrite
-	-- new data exactly at the same buffer locations over the old data.
-	-- For repeatable signals, old and new data are similar so this will
-	-- reduce flickering if done right.
-
-	-- TODO:
-	-- [ ] external trigger, external re-arm
-
-	storage_1shot_trig_b : block
-		constant C_trigger_deflicker : boolean := true; -- complex deflickering calculation
-
-		signal wr_clk    : std_logic;
-		signal wr_ena    : std_logic;
-		signal wr_addr   : std_logic_vector(storage_addr'range); -- running only during write
-		signal last_wr_addr: unsigned(wr_addr'range);
-		-- "C_samples_after_trigger" sets position
-		-- of the triggering point in the storage buffer.
-		-- By default it is set at center of the storage buffer
-		-- > 2**(wr_addr'length-1) : record more data after trigger
-		-- = 2**(wr_addr'length-1) : record same amount of data before and after trigger (default)
-		-- < 2**(wr_addr'length-1) : record more data before trigger
-		constant C_samples_after_trigger: integer range 0 to 2**(wr_addr'length)-1 := 2**(wr_addr'length-1); -- configure this
-		-- calculate how many samples after the trigger:
-		--constant C_samples_before_trigger: integer range 0 to 2**(wr_addr'length)-1 := 2**(wr_addr'length)-C_samples_after_trigger;
-		constant C_wr_cntr_extra_bits : unsigned(0 to 1) := (others => '0');
-		signal wr_cntr   : unsigned(0 to wr_addr'length+C_wr_cntr_extra_bits'length-1); -- counts down when trigger is armed, extra bits to adjust re-arming
-		constant C_samples_after_trigger_unsigned : unsigned(0 to wr_cntr'length-2) := to_unsigned(C_samples_after_trigger, wr_cntr'length-1);
-		constant C_rearm_wr_cntr_0: unsigned(wr_addr'range) := (others => '0'); -- default value for re-arming: full buffer length
-		signal rearm_wr_cntr: unsigned(wr_addr'range) := C_rearm_wr_cntr_0; -- re-arming and deflickering
-		signal wr_data   : std_logic_vector(0 to storage_word'length*inputs-1);
-		signal rd_clk    : std_logic;
-		signal rd_addr   : std_logic_vector(wr_addr'range);
-		signal rd_data   : std_logic_vector(wr_data'range);
-		signal sync_tf   : std_logic;
-		signal sync_videofrm : std_logic;
-		signal prev_sync_videofrm : std_logic;
-		constant C_auto_trigger_wait: natural := 0; -- 2**n video frames frozen until auto re-arming trigger
-		signal videofrm_without_trigger : unsigned(0 to C_auto_trigger_wait); -- counts video frames without trigger event before free shot triggering
-		signal prev_trigger_shot: std_logic; -- for rising edge detection
-		signal R_ticks, R_prev_ticks, R_trigger_period: unsigned(wr_addr'range);
-		signal S_trigger_edge: std_logic;
-		signal S_rearm_condition: std_logic;
-
-	begin
-		-- for BRAM memory
-		wr_clk  <= input_clk;
-		-- armed trigger needs to write storage only for
-		-- last 1 full buffer run during wr_cntr(C_wr_cntr_extra_bits'range) = 0
-		wr_ena  <= '1' when downsample_ena = '1' and wr_cntr(C_wr_cntr_extra_bits'range) = C_wr_cntr_extra_bits else '0';
-		wr_data <= downsample_data;
-		rd_clk  <= video_clk;
-
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				if wr_cntr(0) = '1' then -- storage is not armed
-					wr_addr <= (others => '0'); -- reset address
-				else
-					if downsample_ena = '1' and wr_cntr(1) = '0' then -- runs address only when recording
-						wr_addr <= std_logic_vector(unsigned(wr_addr) + 1);
-					end if;
-				end if;
-			end if;
-		end process;
-
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				sync_tf <= trigger_freeze;
-				prev_sync_videofrm <= sync_videofrm;
-				sync_videofrm <= video_vton;
-				prev_trigger_shot <= trigger_shot;
-			end if;
-		end process;
-		S_trigger_edge <= '1' when prev_trigger_shot = '0' and trigger_shot = '1' else '0';
-
-		G_yes_trigger_deflicker: if C_trigger_deflicker generate
-		-- predict value of "rearm_wr_cntr" in order to minimize flickering
-		-- by overwriting waveform over the same values to the same locations in storage buffer.
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				if downsample_ena = '1' then
-					-- runs always to measure the period between triggers
-					R_ticks <= R_ticks + 1;
-				end if;
-				if S_trigger_edge = '1' then -- if rising edge of "trigger_shot"
-					--8<------- it works somehow when "if" code is deleted, but not as good :)
-					if rearm_wr_cntr(0) = '0' then
-						rearm_wr_cntr <= rearm_wr_cntr + R_trigger_period;
-					else -- high bit set, we have remainder in lower bits
-						rearm_wr_cntr <= to_unsigned(C_samples_after_trigger-1, rearm_wr_cntr'length); -- use C_samples_after_trigger-1 if decrementing rearm_wr_cntr
-					end if;
-					--8<-------
-					R_trigger_period <= R_ticks - R_prev_ticks; -- measures trigger period
-					R_prev_ticks <= R_ticks;
-				else -- not trigger edge, update rearm_wr_cntr as time passes
-					-- more LUTs for less flickering
-					if downsample_ena = '1' then
-						if rearm_wr_cntr = C_rearm_wr_cntr_0 then -- C_rearm_wr_cntr_0 = 0
-							rearm_wr_cntr <= R_trigger_period - 1; -- wraparound over the mesured period
-						else
-							rearm_wr_cntr <= rearm_wr_cntr - 1; -- decrement as time passes
-						end if;
-					end if;
-				end if;
-				-- TODO: if too many frames pass without trigger,
-				-- revert to default value:
-				-- rearm_wr_cntr <= C_rearm_wr_cntr_0;
-				-- this has the fastest possible visual response
-				-- for signal that doesn't trigger
-			end if;
-		end process;
-		-- "rearm_wr_cntr" is constantly updated to a valid value
-		-- so trigger can be re-armed at any time
-		S_rearm_condition <= videofrm_without_trigger(0);
-		end generate; -- G_yes_trigger_deflicker
-
-		G_not_trigger_deflicker: if not C_trigger_deflicker generate
-		-- similar as abuve but a LUT saver, traces will shake a bit
-		rearm_wr_cntr <= unsigned(last_wr_addr);
-		-- "rearm_wr_cntr" is valid for use only at trigger edge.
-		S_rearm_condition <= videofrm_without_trigger(0) or S_trigger_edge;
-		end generate;
-
-		process(wr_clk)
-		begin
-			if rising_edge(wr_clk) then
-				if wr_cntr(0) = '0' then -- storage is armed: it is (or soon will be) recording data to memory
-					if wr_cntr(1 to wr_cntr'length-1) = C_samples_after_trigger_unsigned then
-						-- stop countdown, wait for rising edge of "trigger_shot" signal
-						if S_trigger_edge = '1' then -- wait for the edge not level
-							-- to reduce flicker of the trace displayed,
-						        -- re-arming of the trigger should be
-						        -- precisely timed, prediced in advance to
-						        -- minimize changing of "capture_addr" here
-						        -- NOTE: disable line which is updating "capture_addr"
-						        -- to check if trigger really hits the same data - then
-						        -- the traces should be more-or-less X-stable.
-							capture_addr <= wr_addr; -- mark triggering point in the buffer
-							wr_cntr <= wr_cntr - 1; -- continue countdown
-						end if;
-					else -- regular countdown before and after trigger
-						if downsample_ena = '1' then
-							wr_cntr <= wr_cntr - 1;
-						end if;
-						-- at last trigger during writing,_wr_addr will contain
-						-- remainder value that can be used for deflickering
-						-- in the next rearming. This is a LUT saver,
-						-- traces will still shake a bit.
-						if S_trigger_edge = '1' and downsample_ena = '1' then
-							last_wr_addr <= unsigned(wr_addr);
-						end if;
-					end if;
-					-- reset frame counter for temporary
-					-- freezing display after the trigger
-					videofrm_without_trigger <= (others => '0');
-				else -- wr_cntr(0)='1' storage is not armed (not recording data)
-					-- count configurable number of video frames
-					-- before re-arming the trigger
-					if prev_sync_videofrm = '1' and sync_videofrm = '0' then
-						if videofrm_without_trigger(0) = '0' then
-							videofrm_without_trigger <= videofrm_without_trigger + 1;
-						end if;
-					end if;
-					-- in auto trig mode, wait a frame or more
-					-- for user to view temporary frozen display and then re-arm
-					if sync_tf = '0' then -- if not frozen
-						-- re-arm, initialize counter for at least full buffer length countdown
-						-- or more as required for deflickering
-						if S_rearm_condition = '1' then -- use this if not decrementing rearm_wr_addr
-							wr_cntr <= "01" & rearm_wr_cntr;
-						end if;
-					end if; -- re-arming the storage
-				end if; -- storage is (not) armed
-			end if; -- rising_edge
-		end process;
-
---		mem_e : entity hdl4fpga.bram(bram_true2p_2clk)    -- Tested for portabilty
-		mem_e : entity hdl4fpga.bram(inference)           -- It's syntetized with less delay and smaller resources but it lacks testing:w for portabilty
-		port map (
-			clka  => wr_clk,
-			addra => wr_addr,
-			wea   => wr_ena,
-			dia   => wr_data,
-			doa   => rd_data,
-
-			clkb  => rd_clk,
-			addrb => storage_addr,
-			dib   => rd_data,
-			dob   => storage_data);
-
-	end block;
-	end generate; -- 1shot trigger
-
-	-- allows horizontal scrolling of the waveform
-	storage_horizontal_scroll_b: block
-	begin
-		process(input_clk)
-		begin
-			if rising_edge(input_clk) then
-				scrolled_capture_addr <= std_logic_vector(signed(hz_offset(capture_addr'reverse_range)) + signed(capture_addr));
-			end if;
-		end process;
-	end block;
+		captured_clk  => video_clk,
+		captured_addr => capture_addr,
+		captured_data => capture_data,
+		captured_vld  => open);
 
 	video_b : block
 
@@ -702,17 +374,18 @@ begin
 			di(2) => video_vld,
 			do    => video_io);
 
-		graphics_b : block
+		layout_b : block
 
-			signal mainbox_xdiv     : std_logic_vector(0 to 2-1);
-			signal mainbox_ydiv     : std_logic_vector(0 to 4-1);
-			signal mainbox_xedge    : std_logic;
-			signal mainbox_yedge    : std_logic;
-			signal mainbox_nexty    : std_logic;
-			signal mainbox_eox      : std_logic;
-			signal mainbox_xon      : std_logic;
-			signal mainbox_yon      : std_logic;
+			signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
+			signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
+			signal mainbox_xedge : std_logic;
+			signal mainbox_yedge : std_logic;
+			signal mainbox_nexty : std_logic;
+			signal mainbox_eox   : std_logic;
+			signal mainbox_xon   : std_logic;
+			signal mainbox_yon   : std_logic;
 
+			signal sgmnt_decode  : std_logic_vector(0 to layout.num_of_segments-1);
 		begin
 
 			mainlayout_e : entity hdl4fpga.videobox_layout
@@ -734,35 +407,32 @@ begin
 				box_nexty  => mainbox_nexty,
 				box_ydiv   => mainbox_ydiv);
 
-			process (video_clk)
+			sgmnt_decode_p: process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					sgmntbox_on  <= '0';
-					storage_bsel <= (others => '0');
+					sgmntbox_on   <= '0';
+					sgmnt_decode <= (others => '0');
 					for i in 0 to layout.num_of_segments-1 loop
 						if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
 							sgmntbox_on     <= mainbox_xon;
-							storage_bsel(i) <= '1';
+							sgmnt_decode(i) <= '1';
 						end if;
 					end loop;
 				end if;
 			end process;
 
-			sgmntbox_b : block
+			mainbox_b : block
 
-				constant mainboxx_size : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-				constant mainboxy_size : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+				constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
+				constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
 
-				signal mainbox_x      : std_logic_vector(mainboxx_size-1 downto 0);
-				signal mainbox_y      : std_logic_vector(mainboxy_size-1 downto 0);
+				signal sgmntbox_vyon   : std_logic;
+				signal sgmntbox_vxon   : std_logic;
+				signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 
-				signal sgmntbox_y     : std_logic_vector(mainbox_y'range);
-				signal sgmntbox_x     : std_logic_vector(mainbox_x'range);
-
-				signal mainbox_vyon   : std_logic;
-				signal mainbox_vxon   : std_logic;
-				signal mainbox_vx     : std_logic_vector(mainboxx_size-1 downto 0);
-				signal mainbox_vy     : std_logic_vector(mainboxy_size-1 downto 0);
+				signal sgmntbox_y     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_x     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				signal sgmntbox_xedge : std_logic;
 				signal sgmntbox_yedge : std_logic;
 				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);
@@ -778,15 +448,15 @@ begin
 
 			begin
 
-				mainbox_b : block
+				videobox_b : block
 					signal xon   : std_logic;
 					signal yon   : std_logic;
 					signal eox   : std_logic;
 					signal xedge : std_logic;
 					signal yedge : std_logic;
 					signal nexty : std_logic;
-					signal x      : std_logic_vector(mainboxx_size-1 downto 0);
-					signal y      : std_logic_vector(mainboxy_size-1 downto 0);
+					signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
+					signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				begin 
 
 					rgtrin_p : process (video_clk)
@@ -815,10 +485,10 @@ begin
 					rgtrout_p : process (video_clk)
 					begin
 						if rising_edge(video_clk) then
-							mainbox_vxon <= xon;
-							mainbox_vyon <= yon and not nexty;
-							mainbox_vx   <= x;
-							mainbox_vy   <= y;
+							sgmntbox_vxon <= xon;
+							sgmntbox_vyon <= yon and not nexty;
+							sgmntbox_vx   <= x;
+							sgmntbox_vy   <= y;
 						end if;
 					end process;
 
@@ -833,10 +503,10 @@ begin
 						y_edges   => sgmnt_yedges(layout))
 					port map (
 						video_clk => video_clk,
-						video_xon => mainbox_vxon,
-						video_yon => mainbox_vyon,
-						video_x   => mainbox_vx,
-						video_y   => mainbox_vy,
+						video_xon => sgmntbox_vxon,
+						video_yon => sgmntbox_vyon,
+						video_x   => sgmntbox_vx,
+						video_y   => sgmntbox_vy,
 						box_xon   => sgmntbox_xon,
 						box_yon   => sgmntbox_yon,
 						box_eox   => sgmntbox_eox,
@@ -897,20 +567,20 @@ begin
 					end process;
 				end block;
 
-				storage_addr_p : process (video_clk)
-					variable base : unsigned(0 to storage_addr'length-1);
+				capture_addr_p : process (video_clk)
+					variable base : unsigned(0 to capture_addr'length-1);
 				begin
 					if rising_edge(video_clk) then
 						base := (others => '0');
 						for i in 0 to layout.num_of_segments-1 loop
-							if storage_bsel(i)='1' then
+							if sgmnt_decode(i)='1' then
 								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
 							end if;
 						end loop;
-                                            
-						storage_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), storage_addr'length) + unsigned(scrolled_capture_addr));
+											   
+						capture_addr <= std_logic_vector(base + resize(unsigned(sgmntbox_x), capture_addr'length));
 						hz_segment   <= std_logic_vector(base + resize(unsigned(hz_offset(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
-                                                           
+															  
 					end if;
 				end process;
 
@@ -952,7 +622,7 @@ begin
 					vt_on         => vt_on,
 					grid_on       => grid_on,
 
-					samples       => storage_data,
+					samples       => capture_data,
 					trigger_level => trigger_level,
 					grid_dot      => grid_dot,
 					hz_dot        => hz_dot,

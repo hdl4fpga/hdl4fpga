@@ -9,18 +9,16 @@ entity scopeio_downsampler is
 	generic (
 		factors : natural_vector);
 	port (
-		factor        : in  std_logic_vector;
+		factor_id     : in  std_logic_vector;
 		input_clk     : in  std_logic;
-		input_ena     : in  std_logic;
+		scaler_sync   : in  std_logic;
+		input_dv      : in  std_logic;
 		input_data    : in  std_logic_vector;
-		trigger_shot  : in std_logic;
-		display_ena   : in  std_logic;
-		output_ena    : out std_logic;
+		output_dv     : out std_logic;
 		output_data   : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
-	signal scaler : signed(0 to signed_num_bits(max(factors)-2)-1);
 
 	function adjust (
 		constant arg : natural_vector)
@@ -33,29 +31,35 @@ architecture beh of scopeio_downsampler is
 		return retval;
 	end;
 
-	constant adjusted_factors : integer_vector := adjust(factors);
-	signal scale_factor : signed(scaler'range);
+	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
+
+	signal factor : std_logic_vector(0 to scaler_bits-1);
 
 begin
 
-	scale_factor <= to_signed(adjusted_factors(to_integer(unsigned(factor))), scale_factor'length);
+	factorrom_e : entity hdl4fpga.rom
+	generic map (
+		bitrom => to_bitrom(adjust(factors), scaler_bits))
+	port map (
+		addr => factor_id,
+		data => factor);
+
 	process (input_clk)
+		variable scaler : unsigned(factor'range);
 	begin
 		if rising_edge(input_clk) then
-			if display_ena='0' and trigger_shot='1' then
-				output_ena <= '1';
-				scaler     <= scale_factor;
-			else
-				if input_ena='1' then
-					if scaler(scaler'left)='1' then
-						scaler <= scale_factor;
-					else
-						scaler <= scaler - 1;
-					end if;
-					output_ena <= scaler(scaler'left);
+			if scaler_sync='1' then
+				scaler    := (others => '1');
+				output_dv <= '1';
+			elsif input_dv='1' then
+				if scaler(0)='1' then
+					scaler := unsigned(factor);
 				else
-					output_ena <= '0';
+					scaler := scaler - 1;
 				end if;
+				output_dv <= scaler(0);
+			else
+				output_dv <= '0';
 			end if;
 		end if;
 	end process;
