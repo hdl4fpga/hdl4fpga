@@ -241,8 +241,8 @@ begin
   end process;
   -- output for updating pointer on display
   pointer_dv <= R_pointer_dv;
-  pointer_x  <= std_logic_vector(R_mouse_x);
-  pointer_y  <= std_logic_vector(R_mouse_y);
+  pointer_x  <= std_logic_vector(resize(R_mouse_x, pointer_x'length));
+  pointer_y  <= std_logic_vector(resize(R_mouse_y, pointer_y'length));
 
   -- for mouse x/y pointer position, find the ID of the box where the pointer is.
   find_box: block
