@@ -31,8 +31,9 @@ NET "sys_clk" TNM_NET = FFS  FFS_sysclk;
 NET "sys_clk" TNM_NET = RAMS RAMS_sysclk;
 
 TIMESPEC TS_video2sys1 = FROM FFS_videoclk TO FFS_sysclk TIG;
-TIMESPEC TS_sys2video1 = FROM FFS_sysclk TO FFS_videoclk TIG;
-TIMESPEC TS_sys2video2 = FROM RAMS_sysclk TO FFS_videoclk TIG;
+TIMESPEC TS_sys2video1 = FROM FFS_sysclk   TO FFS_videoclk TIG;
+TIMESPEC TS_sys2video2 = FROM RAMS_sysclk  TO FFS_videoclk TIG;
+TIMESPEC TS_sys2video3 = FROM FFS_sysclk   TO RAMS_videoclk TIG;
 
 NET "xtal"             IOSTANDARD = LVCMOS33 | FAST;
 NET "led[*]"           IOSTANDARD = LVCMOS33 | FAST | IOB=TRUE;

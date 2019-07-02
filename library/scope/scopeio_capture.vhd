@@ -62,7 +62,7 @@ begin
 		if rising_edge(input_clk) then
 			if capture_req='0' then
 				capture_addr <= resize(unsigned(input_delay) + wr_addr, capture_addr'length);
-				counter      <= resize(unsigned(input_delay) + (2**input_delay'length-2**captured_addr'length), counter'length);
+				counter      <= resize(unsigned(input_delay) + (2**input_delay'length-2**captured_addr'length)+1, counter'length);
 			elsif counter(0)='0' then
 				if input_ena='1' then
 					counter <= counter + 1;

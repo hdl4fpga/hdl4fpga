@@ -32,6 +32,8 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio is
 	generic (
 		vlayout_id  : natural;
+		max_delay   : natural := 2**14;
+
 
 		inputs      : natural;
 		vt_gains    : natural_vector := (
@@ -83,7 +85,8 @@ entity scopeio is
 		video_blank : out std_logic;
 		video_sync  : out std_logic);
 
-	constant chanid_bits  : natural := unsigned_num_bits(inputs-1);
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 end;
 
@@ -431,8 +434,8 @@ begin
 				signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
 				signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 
-				signal sgmntbox_y     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-				signal sgmntbox_x     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+				signal sgmntbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				signal sgmntbox_xedge : std_logic;
 				signal sgmntbox_yedge : std_logic;
 				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);

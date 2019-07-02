@@ -31,10 +31,7 @@ use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
 
-	constant max_inputs      : natural := 64;
-	constant max_delay       : natural := 2**14;
-	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
-
+	constant max_inputs    : natural := 64;
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 
