@@ -24,7 +24,7 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
 	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
-        constant vlayout_id: integer := 6;
+        constant vlayout_id: integer := 8;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -36,7 +36,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -628,12 +628,12 @@ begin
       signal clk_vga: std_logic;
       signal R_downclk: unsigned(7 downto 0);
     begin
-      clk_oled <= clk_pll(3); -- 25 MHz
-      clk <= clk_pll(3); -- 25 MHz
+      clk_oled <= clk_pll(1); -- 40 MHz
+      clk <= clk_pll(1); -- 40 MHz
       --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-      clk_adc <= clk_pll(3); -- 25 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-      clk_uart <= clk_pll(3); -- 25 MHz same as vga_clk
-      clk_mouse <= clk_pll(3); -- 25 MHz same as vga_clk
+      clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+      clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
+      clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
       -- LUT-generated very slow pixel clock for display core
       -- I know it's not the proper way to do the clock.
       -- but ECP5 PLLs don't and display core doesn't provide
