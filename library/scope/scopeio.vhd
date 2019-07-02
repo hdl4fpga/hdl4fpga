@@ -170,6 +170,7 @@ architecture beh of scopeio is
 	signal wu_value       : std_logic_vector(4*4-1 downto 0);
 	signal wu_format      : std_logic_vector(8*4-1 downto 0);
 
+	signal scaler_sync    : std_logic;
 begin
 
 	assert inputs < max_inputs
@@ -278,17 +279,17 @@ begin
 	end process;
 	resizedsample_ena <= triggersample_ena;
 
+	scaler_sync <= trigger_shot and not video_vton;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		factors => hz_factors)
 	port map (
-		factor       => hz_scale,
+		factor_id    => hz_scale,
+		scaler_sync  => scaler_sync,
 		input_clk    => input_clk,
-		input_ena    => resizedsample_ena,
+		input_dv     => resizedsample_ena,
 		input_data   => resizedsample_data,
-		trigger_shot => trigger_shot,
-		display_ena  => video_vton,
-		output_ena   => downsample_ena,
+		output_dv    => downsample_ena,
 		output_data  => downsample_data);
 
 	G_not_experimental_trigger: if not C_experimental_trigger generate
@@ -578,7 +579,7 @@ begin
 						-- in the next rearming. This is a LUT saver,
 						-- traces will still shake a bit.
 						if S_trigger_edge = '1' and downsample_ena = '1' then
-							last_wr_addr <= wr_addr;
+							last_wr_addr <= unsigned(wr_addr);
 						end if;
 					end if;
 					-- reset frame counter for temporary
