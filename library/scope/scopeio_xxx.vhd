@@ -434,8 +434,8 @@ begin
 				signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
 				signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 
-				signal sgmntbox_y     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-				signal sgmntbox_x     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+				signal sgmntbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				signal sgmntbox_xedge : std_logic;
 				signal sgmntbox_yedge : std_logic;
 				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);

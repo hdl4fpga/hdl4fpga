@@ -75,7 +75,7 @@ architecture def of scopeio_axis is
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 
-	constant hz_width      : natural := grid_height(layout);
+	constant hz_width      : natural := grid_width(layout);
 	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant hzstep_bits   : natural := hztick_bits;
 	constant hzwidth_bits  : natural := unsigned_num_bits(2**hzstep_bits*((hz_width +2**hzstep_bits-1)/2**hzstep_bits)+2**hzstep_bits);
@@ -189,7 +189,7 @@ begin
 				aux := shift_left(aux, vt_offset'length-vt_taddr'right);
 				aux := aux + mul(to_signed((vt_height/2)/2**vtstep_bits,4), unsigned(axis_unit));
 			else
-				aux  := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
+				aux := shift_left(aux, axisx_backscale+hztick_bits-hz_taddr'right);
 				aux := aux + mul(to_signed(1,1), unsigned(axis_unit));
 			end if;
 			base <= std_logic_vector(aux);
