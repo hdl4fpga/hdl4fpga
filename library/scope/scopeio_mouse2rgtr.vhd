@@ -44,7 +44,10 @@ port
 end;
 
 architecture def of scopeio_mouse2rgtr is
-  constant C_XY_coordinate_bits: integer := 11;
+  -- screen geometry functions, imported from scopeiopkg
+  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+
+  constant C_XY_coordinate_bits: integer range 8 to 11 := 11; -- assumed display_width >= display_height
 
   signal R_mouse_update: std_logic; -- data valid signal
 
@@ -67,8 +70,6 @@ architecture def of scopeio_mouse2rgtr is
   signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
   signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
 
-  -- screen geometry functions, imported from scopeiopkg
-  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -463,6 +464,7 @@ begin
                       -- after left click, directy set the trigger level
                       R_A(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
                       R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
+                      R_B(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
                       R_B(R_mouse_y'range) <= -R_mouse_y;
                       R_action_id <= C_action_trigger_level_change;
                     else -- rotate wheel to change vertical gain
