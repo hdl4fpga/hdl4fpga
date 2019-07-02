@@ -44,7 +44,10 @@ port
 end;
 
 architecture def of scopeio_mouse2rgtr is
-  constant C_XY_coordinate_bits: integer := 11;
+  -- screen geometry functions, imported from scopeiopkg
+  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
+
+  constant C_XY_coordinate_bits: integer range 8 to 11 := 11; -- assumed display_width >= display_height
 
   signal R_mouse_update: std_logic; -- data valid signal
 
@@ -67,8 +70,6 @@ architecture def of scopeio_mouse2rgtr is
   signal R_rgtr_id      : std_logic_vector(7 downto 0); -- register address
   signal R_rgtr_data    : std_logic_vector(31 downto 0); -- register value
 
-  -- screen geometry functions, imported from scopeiopkg
-  constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
   -- search list of rectangular areas on the screen
   -- to find in which box the mouse is. It is to be
   -- used somehow like this:
@@ -241,8 +242,8 @@ begin
   end process;
   -- output for updating pointer on display
   pointer_dv <= R_pointer_dv;
-  pointer_x  <= std_logic_vector(R_mouse_x);
-  pointer_y  <= std_logic_vector(R_mouse_y);
+  pointer_x  <= std_logic_vector(resize(R_mouse_x, pointer_x'length));
+  pointer_y  <= std_logic_vector(resize(R_mouse_y, pointer_y'length));
 
   -- for mouse x/y pointer position, find the ID of the box where the pointer is.
   find_box: block
@@ -402,14 +403,15 @@ begin
     )
     return T_bitfield_range is
       variable V_bitfield_range: T_bitfield_range;
-      variable V_bit_position: natural := 0;
+      variable V_bit_position, V_bit_position_high: integer := 0;
     begin
       if bitfield_id > 0 then
         for i in 0 to bitfield_id-1 loop
-          V_bit_position := V_bit_position + bitfield_descriptor(i);
+          V_bit_position := V_bit_position + integer(bitfield_descriptor(i));
         end loop;
       end if;
-      V_bitfield_range := (integer(bitfield_descriptor(bitfield_id)+V_bit_position-1), integer(V_bit_position));
+      V_bit_position_high := integer(bitfield_descriptor(bitfield_id))+V_bit_position-1;
+      V_bitfield_range := (V_bit_position_high, V_bit_position);
       return V_bitfield_range;
     end; -- function
   begin
@@ -463,6 +465,7 @@ begin
                       -- after left click, directy set the trigger level
                       R_A(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
                       R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
+                      R_B(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
                       R_B(R_mouse_y'range) <= -R_mouse_y;
                       R_action_id <= C_action_trigger_level_change;
                     else -- rotate wheel to change vertical gain

@@ -134,6 +134,27 @@ architecture beh of ulx3s is
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
 begin
+    -- EXIT from this bitstream:
+    -- Pressing (debounced) of BTN0 will pull down PROGRAMN and
+    -- initiate jump to the next multiboot image.
+    -- multiboot image can be made with lattice deployment tool "ddt_cmd"
+    -- or opensource prjtrellis "ecpmulti".
+    B_exit_this_bitstream: block
+      signal R_progn: unsigned(20 downto 0) := (others => '0');
+    begin
+      process(clk)
+      begin
+        if rising_edge(clk) then
+          if btn(0) = '0' then
+            R_progn <= R_progn + 1; -- BTN0 is pressed
+          else
+            R_progn <= (others => '0'); -- BTN0 is not pressed
+          end if;
+        end if;
+      end process;
+      user_programn <= not R_progn(R_progn'high);
+    end block;
+
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 	
@@ -607,12 +628,12 @@ begin
       signal clk_vga: std_logic;
       signal R_downclk: unsigned(7 downto 0);
     begin
-      clk_oled <= clk_pll(3); -- 25 MHz
-      clk <= clk_pll(3); -- 25 MHz
+      clk_oled <= clk_pll(1); -- 40 MHz
+      clk <= clk_pll(1); -- 40 MHz
       --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-      clk_adc <= clk_pll(3); -- 25 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-      clk_uart <= clk_pll(3); -- 25 MHz same as vga_clk
-      clk_mouse <= clk_pll(3); -- 25 MHz same as vga_clk
+      clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+      clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
+      clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
       -- LUT-generated very slow pixel clock for display core
       -- I know it's not the proper way to do the clock.
       -- but ECP5 PLLs don't and display core doesn't provide
@@ -662,4 +683,5 @@ begin
       x_gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
     end generate;
     end generate; -- yes oled_vga
+
 end;
