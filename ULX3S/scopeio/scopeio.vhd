@@ -24,7 +24,7 @@ architecture beh of ulx3s is
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
 	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
 	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
-        constant vlayout_id: integer := 8;
+        constant vlayout_id: integer := 6;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -36,7 +36,7 @@ architecture beh of ulx3s is
 	constant inputs: natural := 4; -- number of input channels (traces)
         constant C_buttons_test: boolean := true; -- false: normal use, true: pressing buttons will test ADC channels
         constant C_oled_hex: boolean := false; -- true: use OLED HEX, false: no oled - can save some LUTs
-        constant C_oled_vga: boolean := true; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
+        constant C_oled_vga: boolean := false; -- false:DVI video, true:OLED video, enable either HEX or VGA, not both OLEDs
 
 	alias ps2_clock        : std_logic is usb_fpga_bd_dp;
 	alias ps2_data         : std_logic is usb_fpga_bd_dn;
@@ -134,6 +134,27 @@ architecture beh of ulx3s is
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
 begin
+    -- EXIT from this bitstream:
+    -- Pressing (debounced) of BTN0 will pull down PROGRAMN and
+    -- initiate jump to the next multiboot image.
+    -- multiboot image can be made with lattice deployment tool "ddt_cmd"
+    -- or opensource prjtrellis "ecpmulti".
+    B_exit_this_bitstream: block
+      signal R_progn: unsigned(20 downto 0) := (others => '0');
+    begin
+      process(clk)
+      begin
+        if rising_edge(clk) then
+          if btn(0) = '0' then
+            R_progn <= R_progn + 1; -- BTN0 is pressed
+          else
+            R_progn <= (others => '0'); -- BTN0 is not pressed
+          end if;
+        end if;
+      end process;
+      user_programn <= not R_progn(R_progn'high);
+    end block;
+
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 	
@@ -662,4 +683,5 @@ begin
       x_gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
     end generate;
     end generate; -- yes oled_vga
+
 end;
