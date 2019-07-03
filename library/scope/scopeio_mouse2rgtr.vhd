@@ -48,7 +48,7 @@ architecture def of scopeio_mouse2rgtr is
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
   constant C_XY_coordinate_bits: integer := unsigned_num_bits(
-    max(integer(layout.display_width), integer(layout.display_height)) - 1) + 1; -- FIXME get rid of "+1", extra bit for the sign
+    max(integer(layout.display_width), integer(layout.display_height)) - 1);
 
   signal R_mouse_update: std_logic; -- data valid signal
 
@@ -243,8 +243,8 @@ begin
   end process;
   -- output for updating pointer on display
   pointer_dv <= R_pointer_dv;
-  pointer_x  <= std_logic_vector(resize(R_mouse_x, pointer_x'length));
-  pointer_y  <= std_logic_vector(resize(R_mouse_y, pointer_y'length));
+  pointer_x  <= std_logic_vector(resize(unsigned(R_mouse_x), pointer_x'length));
+  pointer_y  <= std_logic_vector(resize(unsigned(R_mouse_y), pointer_y'length));
 
   -- for mouse x/y pointer position, find the ID of the box where the pointer is.
   find_box: block
