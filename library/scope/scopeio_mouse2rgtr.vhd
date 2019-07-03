@@ -337,7 +337,7 @@ begin
     signal R_A, R_B, S_APB: signed(15 downto 0); -- for register arithmetic function unit
     constant C_action_nop: integer := 0;
     constant C_action_trace_select: integer := 1;
-    constant C_action_frame_color_as_trace_selected: integer := 2;
+    constant C_action_set_color: integer := 2;
     constant C_action_pointer_update: integer := 3;
     constant C_action_vertical_scale_offset_change: integer := 4;
     constant C_action_vertical_scale_gain_change: integer := 5;
@@ -354,7 +354,8 @@ begin
     signal S_vertical_scale_offset_snapped: signed(C_vertical_scale_offset'range);
     signal R_snap_to_vertical_grid: std_logic;
     constant C_snap_to_grid_bits: integer := unsigned_num_bits(layout.division_size)-1;
-    signal R_after_trace_select: unsigned(7 downto 0);
+    signal R_after_trace_select: unsigned(6 downto 0);
+    signal R_after_trigger_level: unsigned(4 downto 0);
     signal C_vertical_scale_gain: signed(gainid_maxsize-1 downto 0) := (others => '0');
     type T_vertical_scale_gain is array (0 to C_inputs-1) of signed(C_vertical_scale_gain'range);
     signal R_vertical_scale_gain: T_vertical_scale_gain;
@@ -505,6 +506,7 @@ begin
                     R_B(R_B'high-2) <= R_mouse_btn(1) and not R_prev_mouse_btn(1); -- right click
                     R_B(R_B'high-3) <= '0'; -- space bit to avoid carry going higher
                     R_action_id <= C_action_trigger_level_change;
+                    R_after_trigger_level <= (others => '0'); -- HACK: to change hzscale color when freeze
                   end if;
                 --when C_window_textbox => -- mouse clicked on the text window (to the right of the grid)
                 when C_window_below_vtaxis => -- tiny color box below vtscale and left of hzscale
@@ -527,7 +529,7 @@ begin
                   R_action_id <= C_action_pointer_update;
               end case;
             else -- R_mouse_update = '0'
-              if R_after_trace_select(R_after_trace_select'high) = '0' then
+              if R_after_trace_select(R_after_trace_select'high) = '0' then -- counts up to 64
                 -- rgtr2daisy must serialize commands - schedule them slowly
                 case to_integer(R_after_trace_select(R_after_trace_select'high-1 downto 0)) is
                   when 16 =>
@@ -541,12 +543,28 @@ begin
                     R_B(C_trigger_level'range) <= (others => '0'); -- no change
                     R_action_id <= C_action_trigger_level_change;
                   when 48 =>
-                    -- set frame color
-                    R_action_id <= C_action_frame_color_as_trace_selected;
+                    -- set frame color as trace selected
+                    R_A(C_color_bits-1 downto 0) <=
+                      std_logic_vector(C_trace_color(to_integer(R_trace_selected))); -- color value
+                    R_B(palette_bf(paletteid_id)-1 downto 0) <=
+                      std_logic_vector(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
+                    R_action_id <= C_action_set_color;
                   when others =>
                     R_action_id <= C_action_nop;
                 end case;
                 R_after_trace_select <= R_after_trace_select + 1;
+              elsif R_after_trigger_level(R_after_trigger_level'high) = '0' then -- counts up to 16
+                case to_integer(R_after_trigger_level(R_after_trigger_level'high-1 downto 0)) is
+                  when 15 =>
+                    -- set hzscale bgcolor blue when trigger freeze
+                    R_A(C_color_bits-1 downto 0) <= (0 => R_trigger_freeze, others => '0'); -- color value
+                    R_B(palette_bf(paletteid_id)-1 downto 0) <=
+                      std_logic_vector(to_unsigned(3,palette_bf(paletteid_id))); -- 3: hzscale color indicates trigger freeze
+                    R_action_id <= C_action_set_color;
+                  when others =>
+                    R_action_id <= C_action_nop;
+                end case;
+                R_after_trigger_level <= R_after_trigger_level + 1;
               else
                 R_action_id <= C_action_nop;
               end if;
@@ -657,16 +675,16 @@ begin
                    downto F_bitfield(palette_bf,palettecolor_id)(0)) <=
                 std_logic_vector(C_trace_color(to_integer(R_trace_selected)));
             end if;
-          when C_action_frame_color_as_trace_selected =>
+          when C_action_set_color =>
             R_rgtr_dv <= '1';
             R_rgtr_id <= x"11"; -- palette (color)
             --R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
             R_rgtr_data(F_bitfield(palette_bf,palettecolor_id)(0)+C_color_bits-1
                  downto F_bitfield(palette_bf,palettecolor_id)(0)) <=
-              std_logic_vector(C_trace_color(to_integer(R_trace_selected)));
+              R_A(C_color_bits-1 downto 0); -- color value
             R_rgtr_data(F_bitfield(palette_bf,paletteid_id)(1)
                  downto F_bitfield(palette_bf,paletteid_id)(0)) <=
-              std_logic_vector(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
+              R_B(palette_bf(paletteid_id)-1 downto 0); -- element to colorize
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register
