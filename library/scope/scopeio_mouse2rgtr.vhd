@@ -47,7 +47,8 @@ architecture def of scopeio_mouse2rgtr is
   -- screen geometry functions, imported from scopeiopkg
   constant layout : display_layout := displaylayout_table(video_description(vlayout_id).layout_id);
 
-  constant C_XY_coordinate_bits: integer range 8 to 11 := 11; -- assumed display_width >= display_height
+  constant C_XY_coordinate_bits: integer := unsigned_num_bits(
+    max(integer(layout.display_width), integer(layout.display_height)) - 1) + 1; -- FIXME get rid of "+1", extra bit for the sign
 
   signal R_mouse_update: std_logic; -- data valid signal
 
@@ -227,9 +228,9 @@ begin
         R_mouse_dx <= mouse_dx;
         R_mouse_dy <= mouse_dy;
         R_mouse_dz <= mouse_dz;
-        R_mouse_x <= R_mouse_x + mouse_dx;
-        R_mouse_y <= R_mouse_y - mouse_dy;
-        R_mouse_z <= R_mouse_z + mouse_dz;
+        R_mouse_x <= R_mouse_x + resize(mouse_dx, R_mouse_x'length);
+        R_mouse_y <= R_mouse_y - resize(mouse_dy, R_mouse_y'length);
+        R_mouse_z <= R_mouse_z + resize(mouse_dz, R_mouse_z'length);
         R_mouse_btn <= mouse_btn;
         R_prev_mouse_btn <= R_mouse_btn;
         if mouse_dx /= 0 or mouse_dy /= 0 then
@@ -349,8 +350,8 @@ begin
     constant C_vertical_scale_offset: signed(vtoffset_bf(vtoffset_id)-1 downto 0) := (others => '0');
     type T_vertical_scale_offset is array (0 to C_inputs-1) of signed(C_vertical_scale_offset'range);
     signal R_vertical_scale_offset: T_vertical_scale_offset;
-    signal S_vertical_scale_offset: signed(vtoffset_bf(vtoffset_id)-1 downto 0);
-    signal S_vertical_scale_offset_snapped: signed(vtoffset_bf(vtoffset_id)-1 downto 0);
+    signal S_vertical_scale_offset: signed(C_vertical_scale_offset'range);
+    signal S_vertical_scale_offset_snapped: signed(C_vertical_scale_offset'range);
     signal R_snap_to_vertical_grid: std_logic;
     constant C_snap_to_grid_bits: integer := unsigned_num_bits(layout.division_size)-1;
     signal R_after_trace_select: unsigned(7 downto 0);
@@ -463,10 +464,13 @@ begin
                   else
                     if R_mouse_btn(0) = '0' and R_prev_mouse_btn(0) = '1' then
                       -- after left click, directy set the trigger level
-                      R_A(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
-                      R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
-                      R_B(R_A'high downto R_A'high-3) <= (others => '0'); -- don't change edge/freeze
-                      R_B(R_mouse_y'range) <= -R_mouse_y;
+                      R_A(R_A'high)   <= R_trigger_edge;
+                      R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
+                      R_A(R_A'high-2) <= R_trigger_freeze;
+                      R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
+                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
+                      R_B(R_B'high downto R_B'high-3) <= (others => '0'); -- don't change edge/freeze
+                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
                       R_action_id <= C_action_trigger_level_change;
                     else -- rotate wheel to change vertical gain
                       R_A(C_vertical_scale_gain'range) <= R_vertical_scale_gain(to_integer(R_trace_selected));
@@ -482,8 +486,9 @@ begin
                   else  -- not dragging: clicking or wheel rotation
                     if R_mouse_btn(0) = '1' and R_prev_mouse_btn(0) = '0' then
                       -- left click to directy set the trigger level
-                      R_A(R_trigger_on_screen'range) <= R_trigger_on_screen;
-                      R_B(R_mouse_y'range) <= -R_mouse_y;
+                      R_A(C_trigger_level'range) <= resize(R_trigger_on_screen, C_trigger_level'length);
+                      R_B(C_trigger_level'range) <= resize(-R_mouse_y, C_trigger_level'length);
+                      --R_B(R_trigger_on_screen'range) <= (others => '0'); -- -R_mouse_y;
                     else
                       -- rotate wheel to change trigger level
                       R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));

@@ -22,9 +22,8 @@ architecture beh of ulx3s is
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
-	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
-        constant vlayout_id: integer := 8;
+	-- 7:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment
+        constant vlayout_id: integer := 7;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -634,21 +633,8 @@ begin
       clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
       clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
       clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
-      -- LUT-generated very slow pixel clock for display core
-      -- I know it's not the proper way to do the clock.
-      -- but ECP5 PLLs don't and display core doesn't provide
-      -- clk_ena input. If this way it works, it's good enough for me.
-      process(clk_oled) -- nominally 25 MHz for OLED here
-      begin
-        if rising_edge(clk_oled) then
-          if R_downclk(R_downclk'high) = '0' then
-            R_downclk <= R_downclk - 1;
-          else
-            R_downclk <= x"20"; -- clock divider to generate OLED-VGA pixel clock
-          end if;
-        end if;
-      end process;
-      vga_clk <= R_downclk(R_downclk'high); -- slow clock, around 860 kHz
+
+      vga_clk <= clk_oled;
 
       S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
       S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
@@ -662,8 +648,8 @@ begin
       port map
       (
         clk => clk_oled,
-        clken => clk_ena_oled, -- clk_ena_oled
-        clk_pixel => vga_clk,
+        clken => clk_ena_oled,
+        clk_pixel_ena => '1',
         hsync => vga_hsync,
         vsync => vga_vsync,
         blank => vga_blank,
