@@ -22,9 +22,8 @@ architecture beh of ulx3s is
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 7:  800x600  @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment 96x64 VGA demo for OLED
-	-- 8:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment 96x64 real OLED
-        constant vlayout_id: integer := 8;
+	-- 7:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment
+        constant vlayout_id: integer := 7;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
         constant C_adc_binary_gain: integer := 5; -- 2**n
@@ -134,6 +133,27 @@ architecture beh of ulx3s is
 	signal fpga_gsrn : std_logic;
 	signal reset_counter : unsigned(19 downto 0);
 begin
+    -- EXIT from this bitstream:
+    -- Pressing (debounced) of BTN0 will pull down PROGRAMN and
+    -- initiate jump to the next multiboot image.
+    -- multiboot image can be made with lattice deployment tool "ddt_cmd"
+    -- or opensource prjtrellis "ecpmulti".
+    B_exit_this_bitstream: block
+      signal R_progn: unsigned(20 downto 0) := (others => '0');
+    begin
+      process(clk)
+      begin
+        if rising_edge(clk) then
+          if btn(0) = '0' then
+            R_progn <= R_progn + 1; -- BTN0 is pressed
+          else
+            R_progn <= (others => '0'); -- BTN0 is not pressed
+          end if;
+        end if;
+      end process;
+      user_programn <= not R_progn(R_progn'high);
+    end block;
+
 	-- fpga_gsrn <= btn(0);
 	fpga_gsrn <= '1';
 	
@@ -607,27 +627,14 @@ begin
       signal clk_vga: std_logic;
       signal R_downclk: unsigned(7 downto 0);
     begin
-      clk_oled <= clk_pll(3); -- 25 MHz
-      clk <= clk_pll(3); -- 25 MHz
+      clk_oled <= clk_pll(1); -- 40 MHz
+      clk <= clk_pll(1); -- 40 MHz
       --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-      clk_adc <= clk_pll(3); -- 25 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-      clk_uart <= clk_pll(3); -- 25 MHz same as vga_clk
-      clk_mouse <= clk_pll(3); -- 25 MHz same as vga_clk
-      -- LUT-generated very slow pixel clock for display core
-      -- I know it's not the proper way to do the clock.
-      -- but ECP5 PLLs don't and display core doesn't provide
-      -- clk_ena input. If this way it works, it's good enough for me.
-      process(clk_oled) -- nominally 25 MHz for OLED here
-      begin
-        if rising_edge(clk_oled) then
-          if R_downclk(R_downclk'high) = '0' then
-            R_downclk <= R_downclk - 1;
-          else
-            R_downclk <= x"20"; -- clock divider to generate OLED-VGA pixel clock
-          end if;
-        end if;
-      end process;
-      vga_clk <= R_downclk(R_downclk'high); -- slow clock, around 860 kHz
+      clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
+      clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
+      clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
+
+      vga_clk <= clk_oled;
 
       S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
       S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
@@ -641,8 +648,8 @@ begin
       port map
       (
         clk => clk_oled,
-        clken => clk_ena_oled, -- clk_ena_oled
-        clk_pixel => vga_clk,
+        clken => clk_ena_oled,
+        clk_pixel_ena => '1',
         hsync => vga_hsync,
         vsync => vga_vsync,
         blank => vga_blank,
@@ -662,4 +669,5 @@ begin
       x_gpdi_diff: OLVDS port map(A => ddr_d(i), Z => gpdi_dp(i), ZN => gpdi_dn(i));
     end generate;
     end generate; -- yes oled_vga
+
 end;
