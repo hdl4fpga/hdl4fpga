@@ -434,32 +434,32 @@ begin
 				signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
 				signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 
-				signal sgmntbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-				signal sgmntbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
-				signal sgmntbox_xedge : std_logic;
-				signal sgmntbox_yedge : std_logic;
-				signal sgmntbox_xdiv  : std_logic_vector(0 to 3-1);
-				signal sgmntbox_ydiv  : std_logic_vector(0 to 3-1);
-				signal sgmntbox_xon   : std_logic;
-				signal sgmntbox_yon   : std_logic;
-				signal sgmntbox_eox   : std_logic;
+				signal sgmntbox_x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
+				signal sgmntbox_y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
+				signal sgmntbox_xedge  : std_logic;
+				signal sgmntbox_yedge  : std_logic;
+				signal sgmntbox_xdiv   : std_logic_vector(0 to 3-1);
+				signal sgmntbox_ydiv   : std_logic_vector(0 to 3-1);
+				signal sgmntbox_xon    : std_logic;
+				signal sgmntbox_yon    : std_logic;
+				signal sgmntbox_eox    : std_logic;
 
-				signal grid_on        : std_logic;
-				signal hz_on          : std_logic;
-				signal vt_on          : std_logic;
-				signal text_on        : std_logic;
+				signal grid_on         : std_logic;
+				signal hz_on           : std_logic;
+				signal vt_on           : std_logic;
+				signal text_on         : std_logic;
 
 			begin
 
-				videobox_b : block
+				box_b : block
 					signal xon   : std_logic;
 					signal yon   : std_logic;
 					signal eox   : std_logic;
 					signal xedge : std_logic;
 					signal yedge : std_logic;
 					signal nexty : std_logic;
-					signal x      : std_logic_vector(sgmntboxx_bits-1 downto 0);
-					signal y      : std_logic_vector(sgmntboxy_bits-1 downto 0);
+					signal x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
+					signal y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
 				begin 
 
 					rgtrin_p : process (video_clk)
@@ -486,12 +486,15 @@ begin
 						box_y     => y);
 
 					rgtrout_p : process (video_clk)
+						variable nx : std_logic;
 					begin
 						if rising_edge(video_clk) then
 							sgmntbox_vxon <= xon;
-							sgmntbox_vyon <= yon and not nexty;
+							sgmntbox_vyon <= yon and not nx;
+--							sgmntbox_vyon <= yon;
 							sgmntbox_vx   <= x;
 							sgmntbox_vy   <= y;
+							nx := nexty;
 						end if;
 					end process;
 
@@ -529,6 +532,7 @@ begin
 					signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
 					signal x     : std_logic_vector(sgmntbox_x'range);
 					signal y     : std_logic_vector(sgmntbox_y'range);
+					signal box_on : std_logic;
 				begin
 
 					rgtrin_p : process (video_clk)
@@ -555,11 +559,10 @@ begin
 						box_x     => x,
 						box_y     => y);
 
+					box_on <= xon and yon;
 					rgtrout_p: process (video_clk)
-						variable box_on : std_logic;
 					begin
 						if rising_edge(video_clk) then
-							box_on     := xon and yon;
 							vt_on      <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							hz_on      <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
