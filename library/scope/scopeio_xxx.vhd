@@ -596,7 +596,7 @@ begin
 						base := (others => '0');
 						for i in 0 to layout.num_of_segments-1 loop
 							if sgmnt_decode(i)='1' then
-								base := base or to_unsigned((grid_width(layout)-1)*i, base'length);
+								base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_divisionsize(layout))*i, base'length);
 							end if;
 						end loop;
 											   
