@@ -520,10 +520,26 @@ begin
                     R_A(R_horizontal_scale_offset'range) <= R_horizontal_scale_offset;
                     R_B(R_horizontal_scale_offset'range) <= resize(-R_mouse_dx, R_horizontal_scale_offset'length);
                     R_action_id <= C_action_horizontal_scale_offset_change;
-                  else -- rotate wheel to change trigger level
-                    R_A(R_horizontal_scale_timebase'range) <= R_horizontal_scale_timebase;
-                    R_B(R_horizontal_scale_timebase'range) <= resize(R_mouse_dz, R_horizontal_scale_timebase'length);
-                    R_action_id <= C_action_horizontal_scale_timebase_change;
+                  else -- click to change trigger edge/freeze
+                    if R_mouse_btn(1) = '1' or R_mouse_btn(2) = '1' then
+                      -- HACK: using free bits in the adder to toggle 0/1
+                      R_A(R_A'high)   <= R_trigger_edge;
+                      R_A(R_A'high-1) <= '0'; -- space bit to avoid carry going higher
+                      R_A(R_A'high-2) <= R_trigger_freeze;
+                      R_A(R_A'high-3) <= '0'; -- space bit to avoid carry going higher
+                      R_A(C_trigger_level'range) <= R_trigger_level(to_integer(R_trace_selected));
+                      R_B(R_B'high)   <= R_mouse_btn(2) and not R_prev_mouse_btn(2); -- wheel click
+                      R_B(R_B'high-1) <= '0'; -- space bit to avoid carry going higher
+                      R_B(R_B'high-2) <= R_mouse_btn(1) and not R_prev_mouse_btn(1); -- right click
+                      R_B(R_B'high-3) <= '0'; -- space bit to avoid carry going higher
+                      R_B(C_trigger_level'range) <= (others => '0'); -- no level change
+                      R_action_id <= C_action_trigger_level_change;
+                      R_after_trigger_level <= (others => '0'); -- HACK: to change hzscale color when freeze
+                    else -- rotate wheel to change timebase
+                      R_A(R_horizontal_scale_timebase'range) <= R_horizontal_scale_timebase;
+                      R_B(R_horizontal_scale_timebase'range) <= resize(R_mouse_dz, R_horizontal_scale_timebase'length);
+                      R_action_id <= C_action_horizontal_scale_timebase_change;
+                    end if;
                   end if;
                 when others => -- help rgtr2daisy to update mouse always
                   R_action_id <= C_action_pointer_update;
