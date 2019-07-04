@@ -75,7 +75,7 @@ begin
 	wr_addr <= std_logic_vector(resize(unsigned(wr_palette), wr_addr'length));
 	mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => default_gridfg & default_gridbg & default_hzfg & default_hzbg & default_vtfg & default_vtbg & default_textbg & default_sgmntbg & default_bg & default_tracesfg)
+		bitrom => default_gridfg & default_vtfg & default_vtbg & default_hzfg & default_hzbg & default_textbg & default_gridbg & default_sgmntbg & default_bg & default_tracesfg)
 	port map (
 		wr_clk  => wr_clk,
 		wr_ena  => wr_dv,
@@ -106,7 +106,8 @@ begin
 	begin
 		if rising_edge(video_clk) then
 			aux     := std_logic_vector(unsigned(palette_ids) rol paletteid_size*traces_dots'length);
-			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & text_bgon & sgmnt_bgon & '1');
+--			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & grid_bgon & hz_dot & hz_bgon & vt_dot & vt_bgon & text_bgon & sgmnt_bgon & '1');
+			fgbg_id <= primux(aux(0 to 9*paletteid_size-1), grid_dot & vt_dot & vt_bgon & hz_dot & hz_bgon & text_bgon & grid_bgon & sgmnt_bgon & '1');
 		end if;
 	end process;
 

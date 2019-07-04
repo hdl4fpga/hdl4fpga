@@ -856,6 +856,7 @@ begin
 					signal ydiv  : std_logic_vector(sgmntbox_ydiv'range);
 					signal x     : std_logic_vector(sgmntbox_x'range);
 					signal y     : std_logic_vector(sgmntbox_y'range);
+					signal box_on : std_logic;
 				begin
 
 					rgtrin_p : process (video_clk)
@@ -883,12 +884,27 @@ begin
 						box_y     => y);
 
 					rgtrout_p: process (video_clk)
-						variable box_on : std_logic;
+						constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
+						variable vt_mask : unsigned(x'range);
+						variable hz_mask : unsigned(y'range);
 					begin
 						if rising_edge(video_clk) then
-							box_on     := xon and yon;
-							vt_on      <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
-							hz_on      <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							vt_mask := unsigned(x) srl font_bits;
+							if vtaxis_width(layout)=0  then
+								if vtaxis_tickrotate(layout)=ccw90 or vtaxis_tickrotate(layout)=ccw270 then
+									vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								else
+									vt_on <= setif(vt_mask < 6) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+								end if;
+							else
+								vt_on <= sgmnt_boxon(box_id => vtaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
+							hz_mask := unsigned(y) srl font_bits;
+							if hzaxis_height(layout)=0  then
+								hz_on <= setif((hz_mask'range => '0')=hz_mask) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							else
+								hz_on <= sgmnt_boxon(box_id => hzaxis_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
+							end if;
 							grid_on    <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							text_on    <= sgmnt_boxon(box_id => text_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							sgmntbox_x <= x;

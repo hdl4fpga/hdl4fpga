@@ -431,9 +431,9 @@ begin
 
 		end block;
 
-		char_code <= word2byte(vt_bcd  & hz_bcd,  hz_on);
-		char_row  <= word2byte(vt_crow & hz_crow, hz_on); 
-		char_col  <= word2byte(vt_ccol & hz_ccol, hz_on); 
+		char_code <= word2byte(vt_bcd  & hz_bcd,  not vt_on);
+		char_row  <= word2byte(vt_crow & hz_crow, not vt_on); 
+		char_col  <= word2byte(vt_ccol & hz_ccol, not vt_on); 
 
 		cgarom_e : entity hdl4fpga.cga_rom
 		generic map (

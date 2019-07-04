@@ -47,16 +47,18 @@ architecture beh of s3starter is
 		constant n  : integer)
 		return std_logic_vector is
 		variable y   : real;
-		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1);
+		variable aux : std_logic_vector(0 to n*(x1-x0+1)-1) := (others => '0');
 	begin
 		for i in 0 to x1-x0 loop
-			y := 127.0*sin(2.0*MATH_PI*real((i+x0))/64.0);
-			aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
+			y := 127.0; --*sin(2.0*MATH_PI*real((i+x0))/64.0);
+			if (i mod 1024)=0 then
+				aux(i*n to (i+1)*n-1) := std_logic_vector(to_unsigned(integer(y),n));
+			end if;
 		end loop;
 		return aux;
 	end;
 
-	signal input_addr : std_logic_vector(11-1 downto 0);
+	signal input_addr : std_logic_vector(14-1 downto 0);
 	signal sample     : std_logic_vector(sample_size-1 downto 0);
 	
 	constant baudrate      : natural := 115200;
@@ -101,7 +103,7 @@ architecture beh of s3starter is
 	constant video_params : displayparam_vector(0 to 2) := (
 		mode600p    => (layout => 1, mul => 4, div => 5),
 		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode600px16 => (layout => 5, mul => 4, div => 5));
+		mode600px16 => (layout => 6, mul => 4, div => 5));
 
 	constant video_mode : natural := mode600px16;
 
@@ -136,7 +138,7 @@ begin
 	samples_e : entity hdl4fpga.rom
 	generic map (
 		latency => 2,
-		bitrom => sintab(-1024+256, 1023+256, sample_size))
+		bitrom => sintab(0, 2**input_addr'length-1, sample_size))
 	port map (
 		clk  => sys_clk,
 		addr => input_addr,
