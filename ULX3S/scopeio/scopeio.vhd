@@ -493,7 +493,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
-	        --axis_unit        => 1, -- per 128 pixels
+	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 	        C_experimental_trigger => true,
 		vlayout_id       => vlayout_id,
                 default_tracesfg => C_tracesfg,
