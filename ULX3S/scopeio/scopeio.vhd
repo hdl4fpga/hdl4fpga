@@ -22,7 +22,7 @@ architecture beh of ulx3s is
 	-- 4: 1280x1024 @ 60Hz 108MHz NOTE: HARD OVERCLOCK
 	-- 5:  800x600  @ 60Hz  40MHz  8-pix grid 4-pix font 1 segment
 	-- 6:  800x600  @ 60Hz  40MHz 16-pix grid 8-pix font 4 segments FULL SCREEN
-	-- 7:   96x64   @ 60Hz 781kHz  8-pix grid 8-pix font 1 segment
+	-- 7:   96x64   @ 60Hz  40MHz  8-pix grid 8-pix font 1 segment
         constant vlayout_id: integer := 6;
         constant C_adc: boolean := true; -- true: normal ADC use, false: soft replacement
         constant C_adc_analog_view: boolean := true; -- true: normal use, false: SPI digital debug
@@ -168,11 +168,10 @@ begin
           clkout      =>  clk_pll
         );
         -- 800x600
-        G_vga_clk: if not C_oled_vga generate
         clk_pixel_shift <= clk_pll(0); -- 200/375 MHz
         vga_clk <= clk_pll(1); -- 40 MHz
         clk_oled <= clk_pll(1); -- 40/75 MHz
-        clk <= clk_pll(3); -- 25 MHz
+        clk <= clk_pll(1); -- 25 MHz pulse sinewave function
         --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
         clk_adc <= clk_pll(1); -- 40/75 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
         clk_uart <= clk_pll(1); -- 40/75 MHz same as vga_clk
@@ -180,7 +179,6 @@ begin
         -- 1920x1080
         --clk_pixel_shift <= clk_pll(0); -- 375 MHz
         --vga_clk <= clk_pll(1); -- 75 MHz
-        end generate;
 
         process(clk_mouse)
         begin
@@ -190,9 +188,9 @@ begin
         end process;
         clk_ena_oled <= clk_ena_mouse; -- same clock, same ena
 
-	process(clk)
+	process(vga_clk)
 	begin
-          if rising_edge(clk) then
+          if rising_edge(vga_clk) then
             if btn(0) = '0' then -- BTN0 = 0 when pressed
               if(reset_counter(reset_counter'high) = '0') then
                 reset_counter <= reset_counter + 1;
@@ -495,6 +493,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 	        inputs           => inputs, -- number of input channels
+	        axis_unit        => std_logic_vector(to_unsigned(1,5)), -- 1.0 each 128 samples
 	        C_experimental_trigger => true,
 		vlayout_id       => vlayout_id,
                 default_tracesfg => C_tracesfg,
@@ -624,18 +623,7 @@ begin
     G_oled_vga: if C_oled_vga generate
     B_oled_vga: block
       signal S_vga_oled_pixel: std_logic_vector(7 downto 0);
-      signal clk_vga: std_logic;
-      signal R_downclk: unsigned(7 downto 0);
     begin
-      clk_oled <= clk_pll(1); -- 40 MHz
-      clk <= clk_pll(1); -- 40 MHz
-      --clk_adc <= clk_pll(2); -- 62.5 MHz (ADC clock 15.625MHz)
-      clk_adc <= clk_pll(1); -- 40 MHz (same as vga_clk, ADC overclock 18.75MHz > 16MHz)
-      clk_uart <= clk_pll(1); -- 40 MHz same as vga_clk
-      clk_mouse <= clk_pll(1); -- 40 MHz same as vga_clk
-
-      vga_clk <= clk_oled;
-
       S_vga_oled_pixel(7 downto 6) <= vga_rgb(0 to 1);
       S_vga_oled_pixel(4 downto 3) <= vga_rgb(2 to 3);
       S_vga_oled_pixel(1 downto 0) <= vga_rgb(4 to 5);

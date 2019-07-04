@@ -11,6 +11,7 @@ entity scopeio_segment is
 		input_latency : natural;
 		latency       : natural;
 		layout        : display_layout;
+		axis_unit     : std_logic_vector := std_logic_vector(to_unsigned(25,5));
 		inputs        : natural);
 	port (
 		in_clk        : in  std_logic;
@@ -146,7 +147,7 @@ begin
 		axis_e : entity hdl4fpga.scopeio_axis
 		generic map (
 			latency     => latency,
-			axis_unit   => std_logic_vector(to_unsigned(25,5)),
+			axis_unit   => axis_unit,
 			layout      => layout)
 		port map (
 			clk         => in_clk,
