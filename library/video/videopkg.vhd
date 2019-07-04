@@ -51,7 +51,7 @@ package videopkg is
 --Modeline "1280x1024_30.00" 50.52 1280 1320 1448 1616 1024 1025 1028 1042 -HSync +Vsync
 
 	constant modeline_data : modeline_vector := (
-		pclk38_25m96x64Rat60      => (  96, 97, 98, 99,   128,   129,   130,   131), -- pclk   38.25MHz 	Added by emard@github.com for ULX3S kit
+		pclk38_25m96x64Rat60      => (  96, 1999, 2000, 4000,   64,   65,   66,   67), -- pclk   38.25MHz 	Added by emard@github.com for ULX3S kit
 		pclk23_75m640x480Cat60    => ( 640,  664,  720,  800,  480,  483,  487,  500),
 		pclk38_25m800x600Cat60    => ( 800,  832,  912, 1024,  600,  603,  607,  624),
 		pclk63_50m1024x768Cat60   => (1024, 1072, 1176, 1328,  768,  771,  775,  798),
