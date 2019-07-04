@@ -561,9 +561,9 @@ begin
                   when 48 =>
                     -- set frame color as trace selected
                     R_A(C_color_bits-1 downto 0) <=
-                      std_logic_vector(C_trace_color(to_integer(R_trace_selected))); -- color value
+                      signed(C_trace_color(to_integer(R_trace_selected))); -- color value
                     R_B(palette_bf(paletteid_id)-1 downto 0) <=
-                      std_logic_vector(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
+                      signed(to_unsigned(7,palette_bf(paletteid_id))); -- 7: frame color indicates selected channel/trace
                     R_action_id <= C_action_set_color;
                   when others =>
                     R_action_id <= C_action_nop;
@@ -575,7 +575,7 @@ begin
                     -- set hzscale bgcolor blue when trigger freeze
                     R_A(C_color_bits-1 downto 0) <= (0 => R_trigger_freeze, others => '0'); -- color value
                     R_B(palette_bf(paletteid_id)-1 downto 0) <=
-                      std_logic_vector(to_unsigned(3,palette_bf(paletteid_id))); -- 3: hzscale color indicates trigger freeze
+                      signed(to_unsigned(3,palette_bf(paletteid_id))); -- 3: hzscale color indicates trigger freeze
                     R_action_id <= C_action_set_color;
                   when others =>
                     R_action_id <= C_action_nop;
@@ -697,10 +697,10 @@ begin
             --R_rgtr_data(31 downto palette_bf(palettecolor_id)+palette_bf(paletteid_id)) <= (others => '0');
             R_rgtr_data(F_bitfield(palette_bf,palettecolor_id)(0)+C_color_bits-1
                  downto F_bitfield(palette_bf,palettecolor_id)(0)) <=
-              R_A(C_color_bits-1 downto 0); -- color value
+              std_logic_vector(R_A(C_color_bits-1 downto 0)); -- color value
             R_rgtr_data(F_bitfield(palette_bf,paletteid_id)(1)
                  downto F_bitfield(palette_bf,paletteid_id)(0)) <=
-              R_B(palette_bf(paletteid_id)-1 downto 0); -- element to colorize
+              std_logic_vector(R_B(palette_bf(paletteid_id)-1 downto 0)); -- element to colorize
           when C_action_pointer_update =>
             R_rgtr_dv <= '1'; -- help rgtr2daisy to update mouse always
             R_rgtr_id <= (others => '0'); -- no register

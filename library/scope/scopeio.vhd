@@ -886,6 +886,7 @@ begin
 						box_x     => x,
 						box_y     => y);
 
+					box_on <= xon and yon;
 					rgtrout_p: process (video_clk)
 						constant font_bits : natural := unsigned_num_bits(axis_fontsize(layout)-1);
 						variable vt_mask : unsigned(x'range);
